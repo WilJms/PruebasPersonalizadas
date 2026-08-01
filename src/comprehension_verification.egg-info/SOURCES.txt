@@ -41,6 +41,7 @@ tests/test_exports.py
 tests/test_model_gateway.py
 tests/test_parsers.py
 tests/test_planning.py
+tests/test_stage1_adapters.py
 tests/test_stage1_backend.py
 tests/test_stage1_web.py
 tests/test_validation.py

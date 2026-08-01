@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { AppRoutes } from "./App";
+import { MemoryRouter } from "./routing";
 
 describe("private application shell", () => {
   afterEach(() => {
@@ -26,6 +26,9 @@ describe("private application shell", () => {
     );
 
     expect(await screen.findByRole("heading", { name: "Entrar al workspace" })).toBeInTheDocument();
+    expect(screen.getByRole("textbox", { name: "Correo institucional" })).toHaveValue(
+      "teacher@example.test",
+    );
     expect(screen.queryByRole("heading", { name: "Configura el recorrido de verificación" })).not.toBeInTheDocument();
   });
 });

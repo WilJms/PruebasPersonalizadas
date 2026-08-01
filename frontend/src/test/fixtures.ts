@@ -130,6 +130,7 @@ export const assessmentBundle: AssessmentBundle = {
     questions: [
       {
         question_id: "question_01",
+        opportunity_id: "opp_01",
         dimension_id: "dim_causal",
         variant_id: "variant_tradeoff",
         cognitive_operation: "EXPLAIN_CAUSALLY",

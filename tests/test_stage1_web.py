@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import os
 from uuid import uuid4
 
 from fastapi.testclient import TestClient
@@ -22,14 +23,26 @@ from comprehension_verification.web.workflows import Stage1Service
 
 
 def _app():
+    database_url = os.environ.get("CVA_TEST_DATABASE_URL", "sqlite+pysqlite://")
+    if database_url.startswith("postgresql://"):
+        database_url = database_url.replace(
+            "postgresql://", "postgresql+psycopg://", 1
+        )
+    settings = Settings(
+        environment="test",
+        database_url=database_url,
+        session_secret="stage1-test-secret-with-sufficient-length",
+        local_invited_emails="teacher@example.test,assistant@example.test",
+        model_mode="mock",
+    )
+    repository = (
+        Repository(database_url, create_schema=False)
+        if "CVA_TEST_DATABASE_URL" in os.environ
+        else None
+    )
     return create_app(
-        Settings(
-            environment="test",
-            database_url="sqlite+pysqlite://",
-            session_secret="stage1-test-secret-with-sufficient-length",
-            local_invited_emails="teacher@example.test,assistant@example.test",
-            model_mode="mock",
-        ),
+        settings,
+        repository=repository,
         inline_wait_for_completion=True,
     )
 

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { MemoryRouter, Route, Routes } from "react-router-dom";
+import { Route } from "wouter";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   ApiError,
@@ -26,6 +26,7 @@ import { ActivityCreatePage } from "./ActivityCreatePage";
 import { AssessmentReview } from "./AssessmentReviewPage";
 import { BlueprintPage } from "./BlueprintPage";
 import { SubmissionProgress } from "./SubmissionPage";
+import { MemoryRouter } from "../routing";
 
 vi.mock("../api/client", async (importOriginal) => {
   const original = await importOriginal<typeof import("../api/client")>();
@@ -92,9 +93,7 @@ describe("Stage 1 blueprint review", () => {
     const user = userEvent.setup();
     render(
       <MemoryRouter initialEntries={["/activities/activity_01/blueprint"]}>
-        <Routes>
-          <Route path="/activities/:activityId/blueprint" element={<BlueprintPage />} />
-        </Routes>
+        <Route path="/activities/:activityId/blueprint"><BlueprintPage /></Route>
       </MemoryRouter>,
     );
 
@@ -151,9 +150,7 @@ describe("Stage 1 blueprint review", () => {
           },
         ]}
       >
-        <Routes>
-          <Route path="/activities/:activityId/blueprint" element={<BlueprintPage />} />
-        </Routes>
+        <Route path="/activities/:activityId/blueprint"><BlueprintPage /></Route>
       </MemoryRouter>,
     );
 
@@ -182,6 +179,7 @@ describe("Stage 1 blueprint review", () => {
       title: "Actividad durable",
       output_language: "es-CL",
       assessment_modality: "WRITTEN",
+      allowed_response_formats: ["OPEN_SHORT"],
       allowed_artifact_media_types: ["text/plain"],
       structured_justification_mode: "NOT_REQUIRED",
       context_mode: "CLOSED",
@@ -190,9 +188,7 @@ describe("Stage 1 blueprint review", () => {
 
     render(
       <MemoryRouter initialEntries={["/activities/activity_01/blueprint"]}>
-        <Routes>
-          <Route path="/activities/:activityId/blueprint" element={<BlueprintPage />} />
-        </Routes>
+        <Route path="/activities/:activityId/blueprint"><BlueprintPage /></Route>
       </MemoryRouter>,
     );
 
@@ -225,9 +221,7 @@ describe("Stage 1 blueprint review", () => {
           },
         ]}
       >
-        <Routes>
-          <Route path="/activities/:activityId/blueprint" element={<BlueprintPage />} />
-        </Routes>
+        <Route path="/activities/:activityId/blueprint"><BlueprintPage /></Route>
       </MemoryRouter>,
     );
 

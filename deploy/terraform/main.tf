@@ -9,6 +9,7 @@ locals {
     "iam.googleapis.com",
     "run.googleapis.com",
     "secretmanager.googleapis.com",
+    "storage.googleapis.com",
   ])
 
   default_labels = {
@@ -115,6 +116,8 @@ resource "google_project_iam_member" "build_roles" {
     "roles/logging.logWriter",
     "roles/run.admin",
     "roles/serviceusage.serviceUsageConsumer",
+    "roles/storage.bucketViewer",
+    "roles/storage.objectUser",
   ])
 
   project = var.project_id

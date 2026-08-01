@@ -2,21 +2,25 @@
 
 Este directorio deja reproducible el despliegue, pero no crea cuentas ni
 introduce secretos. El recorrido se mantiene en `CVA_MODEL_MODE=mock` y P10
-queda deshabilitado.
+queda deshabilitado. La checklist canónica, con intervención humana, manejo de
+secretos y comandos de verificación, está en `docs/EXTERNAL_SETUP.md`.
 
 ## Boundary 1: recursos sin secretos ni imagen
 
 1. Crear o seleccionar un proyecto GCP con facturación y una cuenta Supabase.
 2. Crear un bucket R2 privado, sin `r2.dev` ni dominio público.
-3. Copiar `deploy/terraform/terraform.tfvars.example` fuera del repositorio,
-   reemplazar solo valores no secretos y mantener
+3. Copiar `deploy/terraform/terraform.tfvars.example` a
+   `/tmp/cva-stage1.tfvars`, reemplazar solo valores no secretos y mantener
    `enable_runtime_resources = false`.
-4. Ejecutar desde `deploy/terraform`:
+4. Ejecutar desde la raíz:
 
    ```bash
-   terraform init
-   terraform plan -out stage1-bootstrap.tfplan
-   terraform apply stage1-bootstrap.tfplan
+   terraform -chdir=deploy/terraform init
+   terraform -chdir=deploy/terraform plan \
+     -var-file=/tmp/cva-stage1.tfvars \
+     -out=/tmp/cva-stage1-bootstrap.tfplan
+   terraform -chdir=deploy/terraform apply \
+     /tmp/cva-stage1-bootstrap.tfplan
    ```
 
 Esto habilita APIs y crea Artifact Registry, identidades y contenedores de

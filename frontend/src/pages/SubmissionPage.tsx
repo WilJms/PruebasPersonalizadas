@@ -1,5 +1,5 @@
 import { type FormEvent, useCallback, useEffect, useMemo, useState } from "react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useLocation, useParams } from "wouter";
 import {
   createSubmission,
   getJob,
@@ -10,6 +10,7 @@ import {
 import type { JobStatus, SubmissionDomainState, SubmissionResource } from "../api/types";
 import { Diagnostics, ErrorNotice } from "../components/Feedback";
 import { StatusBadge } from "../components/StatusBadge";
+import { useRouteState } from "../routing";
 
 const SUBMISSION_ACCEPT = ".pdf,.txt,.md,text/plain,text/markdown,application/pdf";
 
@@ -38,7 +39,7 @@ const TERMINAL_DOMAIN_STATES: SubmissionDomainState[] = [
 
 export function SubmissionStartPage() {
   const { activityId = "" } = useParams();
-  const navigate = useNavigate();
+  const [, navigate] = useLocation();
   const [subjectRef, setSubjectRef] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -138,9 +139,8 @@ export function SubmissionStartPage() {
 
 export function SubmissionProgressPage() {
   const { submissionId = "" } = useParams();
-  const location = useLocation();
-  const navigate = useNavigate();
-  const initialJobId = (location.state as { jobId?: string } | null)?.jobId;
+  const [, navigate] = useLocation();
+  const initialJobId = useRouteState<{ jobId?: string }>()?.jobId;
   const [submission, setSubmission] = useState<SubmissionResource | null>(null);
   const [job, setJob] = useState<JobStatus | null>(null);
   const [error, setError] = useState<unknown>(null);

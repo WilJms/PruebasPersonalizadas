@@ -2,8 +2,11 @@
 
 ## Alcance actual
 
-Este repositorio implementa exclusivamente la Etapa 0 offline. No añadir web,
-FastAPI, Cloud Run, Supabase, R2, autenticación, LMS, OCR, DOCX completo,
+Este repositorio implementa las Etapas 0 y 1: núcleo offline verificable y un
+laboratorio privado de una actividad y una submission, con FastAPI/React,
+persistencia PostgreSQL/Supabase, objetos privados R2 y ejecución en Cloud Run
+Jobs. No añadir ninguna historia de Etapa 2 (batch, retry/cancel, acciones por
+pregunta, aprobación masiva, DOCX completo, métricas/feedback), LMS, OCR,
 calificación ni detección de IA sin una instrucción humana que abra otro gate.
 
 ## Autoridad canónica
@@ -17,7 +20,7 @@ calificación ni detección de IA sin una instrucción humana que abra otro gate
 
 No copie ni redefina modelos Pydantic. Importe `comprehension_verification.contracts.models`.
 
-## Arquitectura E0
+## Arquitectura E0/E1
 
 - adaptadores de parser seguros -> EvidenceUnit con procedencia;
 - dos pipelines explícitos: actividad y submission;
@@ -26,6 +29,12 @@ No copie ni redefina modelos Pydantic. Importe `comprehension_verification.contr
 - planificador determinista antes de generación;
 - Assessment y EvaluationGuide JSON separados; HTML/PDF son vistas derivadas;
 - artefactos locales son solo desarrollo/fixtures, no operación productiva.
+- shell E1 privado y tenant-scoped; Supabase se usa para Auth y PostgreSQL;
+- archivos E1 en R2 privado mediante capacidades firmadas de corta vida;
+- jobs técnicos durables y estado de dominio son conceptos separados;
+- E1 procesa exactamente una submission por actividad y exige aprobación
+  humana de blueprint y assessment;
+- `CVA_MODEL_MODE=mock` es el modo de cierre; P10 sigue deshabilitado.
 
 ## Comandos previstos
 
@@ -37,6 +46,12 @@ make test
 make stage0-demo
 make stage0-fail
 make stage0-injection
+make frontend-install
+make frontend-typecheck
+make frontend-test
+make frontend-build
+make postgres-prepare CVA_TEST_POSTGRES_URL=postgresql://...
+make postgres-e2e CVA_TEST_POSTGRES_URL=postgresql://...
 ```
 
 ## Reglas de seguridad
@@ -52,4 +67,3 @@ Regenerar siempre desde el modelo canónico a un temporal, revisar diff y solo
 entonces reemplazar el artefacto generado. Los fixtures Markdown etiquetados
 `contract-fixture` y los JSON de `tests/fixtures/contracts/v1.1` deben validar
 en CI, incluidos negativos. Nunca arreglar `$defs` manualmente.
-

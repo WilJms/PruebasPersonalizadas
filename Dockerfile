@@ -34,7 +34,7 @@ RUN pip install --no-cache-dir --upgrade pip \
     && pip install --no-cache-dir -e . "uvicorn[standard]>=0.30,<1"
 
 
-FROM ${PYTHON_IMAGE} AS runtime
+FROM ${PYTHON_IMAGE} AS runtime-base
 ENV VIRTUAL_ENV=/opt/venv
 ENV PATH="${VIRTUAL_ENV}/bin:${PATH}"
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -77,3 +77,13 @@ EXPOSE 8080
 
 ENTRYPOINT ["/usr/local/bin/cva-entrypoint"]
 CMD ["web"]
+
+
+# Verification-only image: keeps synthetic fixtures out of the deployable
+# runtime while allowing the Stage 0 export path to run inside a container.
+FROM runtime-base AS audit
+COPY --chown=65532:65532 fixtures/ /app/fixtures/
+
+
+# Keep the deployable image as the default (last) target.
+FROM runtime-base AS runtime

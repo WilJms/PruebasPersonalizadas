@@ -33,7 +33,7 @@ describe("Supabase invite-only browser authentication", () => {
     });
   });
 
-  it("returns an immediate access token so the app can exchange it for its HttpOnly session", async () => {
+  it("waits for the auth state callback instead of trusting a noncanonical immediate session", async () => {
     const signInWithOtp = vi.fn().mockResolvedValue({
       data: { user: null, session: { access_token: "access-token-01" } },
       error: null,
@@ -42,6 +42,6 @@ describe("Supabase invite-only browser authentication", () => {
 
     await expect(
       beginCloudLogin("docente@example.test", client, "https://app.example.test"),
-    ).resolves.toBe("access-token-01");
+    ).resolves.toBeNull();
   });
 });

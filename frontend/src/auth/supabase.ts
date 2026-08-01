@@ -49,7 +49,7 @@ export async function beginCloudLogin(
   client: SupabaseClient = getSupabaseClient(),
   redirectOrigin = window.location.origin,
 ): Promise<string | null> {
-  const { data, error } = await client.auth.signInWithOtp({
+  const { error } = await client.auth.signInWithOtp({
     email,
     options: {
       emailRedirectTo: redirectOrigin,
@@ -57,7 +57,10 @@ export async function beginCloudLogin(
     },
   });
   if (error) throw error;
-  return data.session?.access_token ?? null;
+  // Email OTP/magic-link initiation never establishes a session in this
+  // response. The browser receives the authenticated session through
+  // onAuthStateChange after the invited user follows the link.
+  return null;
 }
 
 export async function currentCloudAccessToken(

@@ -1,9 +1,10 @@
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { type PropsWithChildren } from "react";
+import { Link, useLocation } from "wouter";
 import { useAuth } from "../auth/AuthContext";
 
-export function AppShell() {
+export function AppShell({ children }: PropsWithChildren) {
   const { session, logout } = useAuth();
-  const navigate = useNavigate();
+  const [, navigate] = useLocation();
 
   const signOut = async () => {
     await logout();
@@ -24,10 +25,10 @@ export function AppShell() {
         </div>
 
         <nav aria-label="Navegación principal">
-          <NavLink to="/activities/new" className={({ isActive }) => (isActive ? "active" : "")}>
+          <Link to="/activities/new" className={(isActive) => (isActive ? "active" : "")}>
             <span className="nav-glyph" aria-hidden="true">＋</span>
             Nueva actividad
-          </NavLink>
+          </Link>
         </nav>
 
         <div className="stage-card">
@@ -57,10 +58,9 @@ export function AppShell() {
           </div>
         </header>
         <main className="page-area">
-          <Outlet />
+          {children}
         </main>
       </div>
     </div>
   );
 }
-

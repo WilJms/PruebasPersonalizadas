@@ -7,7 +7,7 @@ import {
   useMemo,
   useState,
 } from "react";
-import { Navigate, Outlet, useLocation } from "react-router-dom";
+import { Redirect, useLocation } from "wouter";
 import {
   ApiError,
   exchangeSession,
@@ -111,9 +111,9 @@ export function useAuth(): AuthContextValue {
   return context;
 }
 
-export function PrivateRoute() {
+export function PrivateRoute({ children }: PropsWithChildren) {
   const { session, loading } = useAuth();
-  const location = useLocation();
+  const [location] = useLocation();
 
   if (loading) {
     return (
@@ -125,8 +125,8 @@ export function PrivateRoute() {
   }
 
   if (!session) {
-    return <Navigate to="/login" replace state={{ from: location.pathname }} />;
+    return <Redirect to="/login" replace state={{ from: location }} />;
   }
 
-  return <Outlet />;
+  return children;
 }

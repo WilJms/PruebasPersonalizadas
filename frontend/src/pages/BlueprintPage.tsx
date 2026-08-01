@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useLocation, useParams } from "wouter";
 import {
   approveBlueprint,
   createPolicyDecision,
@@ -20,6 +20,7 @@ import type {
 } from "../api/types";
 import { Diagnostics, ErrorNotice } from "../components/Feedback";
 import { StatusBadge } from "../components/StatusBadge";
+import { useRouteState } from "../routing";
 
 interface RouteState {
   jobId?: string;
@@ -173,8 +174,7 @@ export function AmbiguityResolution({
 
 export function BlueprintPage() {
   const { activityId = "" } = useParams();
-  const location = useLocation();
-  const navigate = useNavigate();
+  const [, navigate] = useLocation();
   const [view, setView] = useState<BlueprintView | null>(null);
   const [ambiguity, setAmbiguity] = useState<AmbiguityView | null>(null);
   const [draft, setDraft] = useState<AssessmentBlueprint | null>(null);
@@ -185,7 +185,7 @@ export function BlueprintPage() {
   const [recoveringActivity, setRecoveringActivity] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<unknown>(null);
-  const routeState = location.state as RouteState | null;
+  const routeState = useRouteState<RouteState>();
   const [activeJobId, setActiveJobId] = useState(routeState?.jobId);
 
   const loadBlueprint = useCallback(async () => {

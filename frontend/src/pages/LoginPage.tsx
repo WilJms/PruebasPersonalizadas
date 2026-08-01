@@ -1,18 +1,19 @@
 import { type FormEvent, useState } from "react";
-import { Navigate, useLocation, useNavigate } from "react-router-dom";
+import { Redirect, useLocation } from "wouter";
 import { useAuth } from "../auth/AuthContext";
 import { ErrorNotice } from "../components/Feedback";
+import { useRouteState } from "../routing";
 
 export function LoginPage() {
   const { session, loading, login } = useAuth();
-  const [email, setEmail] = useState("docente@example.edu");
+  const [email, setEmail] = useState("teacher@example.test");
   const [error, setError] = useState<unknown>(null);
   const [linkSent, setLinkSent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const navigate = useNavigate();
-  const location = useLocation();
+  const [, navigate] = useLocation();
+  const routeState = useRouteState<{ from?: string }>();
 
-  if (!loading && session) return <Navigate to="/activities/new" replace />;
+  if (!loading && session) return <Redirect to="/activities/new" replace />;
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
@@ -24,8 +25,7 @@ export function LoginPage() {
         setLinkSent(true);
         return;
       }
-      const state = location.state as { from?: string } | null;
-      navigate(state?.from ?? "/activities/new", { replace: true });
+      navigate(routeState?.from ?? "/activities/new", { replace: true });
     } catch (caught) {
       setError(caught);
     } finally {

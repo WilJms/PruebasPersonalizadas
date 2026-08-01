@@ -249,6 +249,7 @@ export interface AnchorFragment {
 
 export interface SelectedQuestion {
   question_id: string;
+  opportunity_id: string;
   dimension_id: string;
   variant_id: string;
   cognitive_operation: string;

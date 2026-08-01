@@ -1,0 +1,5 @@
+# Terraform: proveedores y caché local
+**/.terraform/*
+
+# macOS
+.DS_Store

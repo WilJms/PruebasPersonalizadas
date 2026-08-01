@@ -13,7 +13,7 @@
     "target_total_minutes": 10,
     "structured_justification_mode": "SELECTED",
     "priority_criterion_ids": [
-      "criterion_traceability"
+      "criterion_1"
     ],
     "allowed_response_formats": [
       "OPEN_SHORT",

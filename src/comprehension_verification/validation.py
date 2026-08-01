@@ -253,6 +253,14 @@ def validate_evidence_map(
                 "BLUEPRINT_REFERENCE_MISMATCH",
                 "opportunity has no validated variant match",
             )
+        if any(
+            evidence_id not in context.evidence_by_id
+            for evidence_id in opportunity.evidence_ids
+        ):
+            raise ContextValidationError(
+                "INVENTED_EVIDENCE_ID",
+                "opportunity references unknown evidence",
+            )
         if not set(opportunity.evidence_ids).issubset(set(match.evidence_ids)):
             raise ContextValidationError(
                 "UNAUTHORIZED_EVIDENCE",

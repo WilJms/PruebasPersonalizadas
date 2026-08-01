@@ -125,6 +125,9 @@ def test_terraform_declares_service_job_secrets_and_job_invocation() -> None:
     assert 'resource "google_secret_manager_secret" "runtime"' in terraform
     assert 'resource "google_cloud_run_v2_job_iam_member" "web_can_execute_worker"' in terraform
     assert 'role     = "roles/run.invoker"' in terraform
+    assert '"storage.googleapis.com"' in terraform
+    assert '"roles/storage.bucketViewer"' in terraform
+    assert '"roles/storage.objectUser"' in terraform
     assert "enable_runtime_resources" in terraform
     assert 'version = var.secret_version' in terraform
     assert terraform.count('name = "CVA_SESSION_SECRET"') == 2

@@ -1,5 +1,5 @@
 import { type FormEvent, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation } from "wouter";
 import {
   createActivity,
   generateBlueprint,
@@ -34,7 +34,7 @@ const ARTIFACT_FORMATS = [
 const SOURCE_ACCEPT = ".pdf,.txt,.md,text/plain,text/markdown,application/pdf";
 
 export function ActivityCreatePage() {
-  const navigate = useNavigate();
+  const [, navigate] = useLocation();
   const [title, setTitle] = useState("");
   const [language, setLanguage] = useState("es-CL");
   const [modality, setModality] = useState<AssessmentModality>("WRITTEN");
