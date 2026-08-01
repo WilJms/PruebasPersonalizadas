@@ -1,0 +1,36 @@
+{
+  "activity_id": "act_stage0_cache",
+  "allowed_response_formats": [
+    "OPEN_SHORT",
+    "STRUCTURED_BULLETS"
+  ],
+  "human_review_required": true,
+  "max_local_regenerations": 1,
+  "planning_policy": {
+    "activity_priority_weight": 0.35,
+    "evidence_fit_weight": 0.35,
+    "evidence_overlap_penalty": 0.15,
+    "max_reserve_opportunities": 3,
+    "maximum_evidence_overlap": 0.5,
+    "minimum_evidence_fit": 0.7,
+    "minimum_opportunity_quality": 0.75,
+    "opportunity_quality_weight": 0.3,
+    "policy_id": "policy_0632d94a650f32c8879e",
+    "repeated_dimension_penalty": 0.08,
+    "repeated_variant_penalty": 0.12,
+    "schema_version": "1.1.0"
+  },
+  "policy_id": "policy_1c90bf1487e17aa3af0e",
+  "priority_criterion_ids": [
+    "criterion_coherence",
+    "criterion_limits"
+  ],
+  "question_count": 3,
+  "required_criterion_ids": [],
+  "schema_version": "1.1.0",
+  "structured_justification_policy": {
+    "mode": "NOT_REQUIRED",
+    "selected_opportunity_template_ids": []
+  },
+  "target_total_minutes": 10
+}

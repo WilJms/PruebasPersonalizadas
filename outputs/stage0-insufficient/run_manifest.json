@@ -1,0 +1,9 @@
+{
+  "actual_status": "INSUFFICIENT_DISTINCT_QUESTION_OPPORTUNITIES",
+  "case": "insufficient",
+  "expected_outcome_matched": true,
+  "expected_status": "INSUFFICIENT_DISTINCT_QUESTION_OPPORTUNITIES",
+  "mode": "mock",
+  "model_call_count": 5,
+  "partial_assessment_emitted": false
+}

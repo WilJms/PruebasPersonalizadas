@@ -1,0 +1,33 @@
+{
+  "artifacts": {
+    "assessment_html": {
+      "filename": "assessment.html",
+      "sha256": "sha256:180c25be27f0e3b02c761ee446d9788cac620b8feb8677c38b8461d2d732b89b"
+    },
+    "assessment_json": {
+      "filename": "assessment.json",
+      "sha256": "sha256:ca1b172cd1d191cd90f75dd6c0b226d2f3acadcbca0401235ac19511da734152"
+    },
+    "assessment_pdf": {
+      "filename": "assessment.pdf",
+      "sha256": "sha256:26a5be77a53fa58bc55d180e16b00f43894ab9e325a3653fae2fe23a7622dd69"
+    },
+    "guide_html": {
+      "filename": "evaluation_guide.html",
+      "sha256": "sha256:d7d489e28428cbfb5b1043dacdfacd61ce5cd522c5136653746d2da3ec386f18"
+    },
+    "guide_json": {
+      "filename": "evaluation_guide.json",
+      "sha256": "sha256:87858e8a070a8e5ef7fc0bf18506d5b571bdf272fb7ecb4017d0dbb030938d41"
+    },
+    "guide_pdf": {
+      "filename": "evaluation_guide.pdf",
+      "sha256": "sha256:ba50b5e4a17e7a64fad767b34b24000c38023ff47b55c611a0e7f387a7ad31dd"
+    }
+  },
+  "assessment_id": "assessment_424ca6b8837f21814d45",
+  "guide_id": "guide_df261b490c0b09f69215",
+  "renderer_version": "stage0-renderer/1.0.0",
+  "schema_version": "1.1.0",
+  "submission_id": "sub_cache_sufficient"
+}

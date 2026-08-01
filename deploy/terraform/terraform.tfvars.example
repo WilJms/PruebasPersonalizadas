@@ -1,0 +1,21 @@
+project_id = "replace-with-gcp-project-id"
+region     = "us-central1"
+
+repository_id = "comprehension-verification"
+service_name  = "cva-web"
+job_name      = "cva-worker"
+
+# First apply with false. Add Secret Manager version 1 values out-of-band,
+# build/push an image, then fill container_image and set this to true.
+enable_runtime_resources = false
+container_image          = ""
+secret_version           = "1"
+
+supabase_url             = "https://replace-with-project-ref.supabase.co"
+supabase_publishable_key = "replace-with-publishable-not-secret-key"
+supabase_jwt_audience    = "authenticated"
+
+r2_endpoint_url = "https://replace-with-account-id.r2.cloudflarestorage.com"
+r2_bucket_name  = "replace-with-private-bucket-name"
+
+allow_unauthenticated = true

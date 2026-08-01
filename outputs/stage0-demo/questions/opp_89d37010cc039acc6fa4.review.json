@@ -1,0 +1,35 @@
+{
+  "diagnostics": [],
+  "opportunity_id": "opp_89d37010cc039acc6fa4",
+  "review": {
+    "candidate_id": "candidate_a9c6ec438237a4f8f2ec",
+    "confidence": 0.95,
+    "critical_failure_codes": [],
+    "decision": "ACCEPT",
+    "diagnostics": [],
+    "estimated_difficulty": "LOW",
+    "estimated_minutes": 3,
+    "evidence_ids": [
+      "ev_d2296a23c9c83dfe56f9"
+    ],
+    "justifications": [
+      "La pregunta se resuelve desde la evidencia permitida."
+    ],
+    "scores": {
+      "accessibility": 0.95,
+      "anchor_sufficiency": 0.95,
+      "answerability": 0.95,
+      "clarity": 0.95,
+      "cognitive_demand": 0.85,
+      "criterion_relevance": 0.9,
+      "discriminative_potential": 0.85,
+      "groundedness": 0.98,
+      "guide_observability": 0.9,
+      "submission_specificity": 0.95
+    },
+    "source_ids": []
+  },
+  "schema_version": "1.1.0",
+  "status": "READY",
+  "submission_id": "sub_cache_sufficient"
+}

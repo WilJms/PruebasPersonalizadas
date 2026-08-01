@@ -1,0 +1,47 @@
+{
+  "fixture_version": "stage0-fixture/1.0.0",
+  "corpus_partition": "DEVELOPMENT",
+  "activity_config": {
+    "schema_version": "1.1.0",
+    "activity_id": "act_stage0_campaign",
+    "tenant_id": "tnt_stage0",
+    "title": "Analizar una decision de segmentacion",
+    "output_language": "es-CL",
+    "context_mode": "CLOSED",
+    "assessment_modality": "WRITTEN",
+    "question_count": 3,
+    "target_total_minutes": 9,
+    "structured_justification_mode": "NOT_REQUIRED",
+    "priority_criterion_ids": [],
+    "allowed_response_formats": [
+      "OPEN_SHORT"
+    ],
+    "allowed_artifact_media_types": [
+      "text/plain"
+    ],
+    "course_source_ids": [],
+    "adaptation_policy_id": null,
+    "require_blueprint_approval": true
+  },
+  "paths": {
+    "assignment": "assignment.txt",
+    "rubric": null,
+    "submissions": [
+      {
+        "submission_id": "sub_campaign_insufficient",
+        "subject_ref": "subject_campaign_a",
+        "path": "submission_insufficient.txt",
+        "declared_media_type": "text/plain",
+        "expected_status": "INSUFFICIENT_DISTINCT_QUESTION_OPPORTUNITIES"
+      }
+    ]
+  },
+  "blueprint_approval": {
+    "blueprint_id": "blueprint_campaign_synthetic",
+    "blueprint_version": 1,
+    "status": "APPROVED",
+    "synthetic": true,
+    "approved_by": "teacher_synthetic",
+    "approved_at": "2026-07-31T12:00:00Z"
+  }
+}

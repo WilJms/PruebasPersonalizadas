@@ -1,0 +1,43 @@
+{
+  "activity_id": "act_stage0_campaign",
+  "allowed_evidence_ids": [
+    "ev_8502fac83ca6deadfbe2"
+  ],
+  "bundle_id": "bundle_9fba43baad1898096566",
+  "context_mode": "CLOSED",
+  "course_passages": [],
+  "evidence_units": [
+    {
+      "artifact_hash": "sha256:34e9b32b1c43527395f45d6b197d710b67669b44aed1065e3a18ae5fbf762b1a",
+      "artifact_id": "art_3b5fb1e9f974cc315b7d",
+      "content_text": "Se eligio una segmentacion adecuada y se prepararon mensajes distintos para cada grupo.",
+      "evidence_id": "ev_8502fac83ca6deadfbe2",
+      "extraction_confidence": 1.0,
+      "language": "es",
+      "locator": {
+        "column": null,
+        "heading_path": [],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 0,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "PARAGRAPH",
+      "normalized_hash": "sha256:04ef5b0d85f6e3cbdd89b760ce74b2951e4229f85fb3e2a89d2bb8be7540f8cc",
+      "ocr_used": false,
+      "relations": [],
+      "schema_version": "1.1.0",
+      "sensitive_labels": [],
+      "source_role": "SUBMISSION",
+      "structured_content": {
+        "line_end": 1,
+        "line_start": 1
+      },
+      "submission_id": "sub_campaign_insufficient",
+      "tenant_id": "tnt_stage0"
+    }
+  ],
+  "schema_version": "1.1.0",
+  "submission_id": "sub_campaign_insufficient",
+  "tenant_id": "tnt_stage0"
+}

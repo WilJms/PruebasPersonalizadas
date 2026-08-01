@@ -1,0 +1,109 @@
+{
+  "candidate": {
+    "anchor": {
+      "anchor_id": "anchor_6b0930e611884632cc84",
+      "answer_leakage_risk": 0.1,
+      "fragments": [
+        {
+          "display_text": "Limite",
+          "evidence_id": "ev_c339af5521cc548a077d",
+          "locator": {
+            "column": null,
+            "heading_path": [
+              "Diseno con contenido adversarial",
+              "Limite"
+            ],
+            "kind": "DOCUMENT_PATH",
+            "paragraph_index": 4,
+            "row": null,
+            "table_index": null
+          },
+          "transformation": "LITERAL"
+        }
+      ],
+      "self_containment_score": 0.95,
+      "structure": "SINGLE_FRAGMENT",
+      "student_facing_label": null
+    },
+    "candidate_id": "candidate_8f4091cb86442b44449a",
+    "choices": [],
+    "citations": [],
+    "cognitive_operation": "PREDICT_LOCAL_CONSEQUENCE",
+    "course_source_ids": [],
+    "difficulty": "MEDIUM",
+    "dimension_id": "dimension_52b6f6cb3c8b7de164e0",
+    "estimated_minutes": 3,
+    "evidence_ids": [
+      "ev_c339af5521cc548a077d"
+    ],
+    "opportunity_id": "opp_1b7dc9bc7e8b617a3c3e",
+    "opportunity_template_id": "oppt_96a8065d3830445aee0d",
+    "preliminary_guide": {
+      "acceptable_alternatives": [
+        "Puede expresar la misma relación con una formulación equivalente."
+      ],
+      "cannot_infer": [
+        "No permite inferir autoría, intención ni proceso histórico de producción."
+      ],
+      "levels": [
+        {
+          "descriptor": "No establece una relación respaldada por la evidencia.",
+          "label": "Nivel 0",
+          "level": 0,
+          "observable_element_ids": []
+        },
+        {
+          "descriptor": "Establece la relación con precisión creciente y evidencia localizada.",
+          "label": "Nivel 1",
+          "level": 1,
+          "observable_element_ids": [
+            "observable_8529d9de835eb86aba6c"
+          ]
+        },
+        {
+          "descriptor": "Establece la relación con precisión creciente y evidencia localizada.",
+          "label": "Nivel 2",
+          "level": 2,
+          "observable_element_ids": [
+            "observable_8529d9de835eb86aba6c"
+          ]
+        },
+        {
+          "descriptor": "Establece la relación con precisión creciente y evidencia localizada.",
+          "label": "Nivel 3",
+          "level": 3,
+          "observable_element_ids": [
+            "observable_8529d9de835eb86aba6c"
+          ]
+        }
+      ],
+      "misconceptions": [
+        "Introduce una explicación que no está respaldada por el fragmento."
+      ],
+      "observable_elements": [
+        {
+          "description": "Relaciona el fragmento localizado con la respuesta sin añadir supuestos externos.",
+          "element_id": "observable_8529d9de835eb86aba6c",
+          "evidence_ids": [
+            "ev_c339af5521cc548a077d"
+          ],
+          "required_for_level_2": true,
+          "source_ids": []
+        }
+      ],
+      "purpose": "Observar una explicación acotada a la evidencia señalada."
+    },
+    "question_text": "Explica la relación observable indicada en el fragmento señalado.",
+    "response_format": "OPEN_SHORT",
+    "student_justification_required": false,
+    "submission_id": "sub_cache_injection",
+    "uncertainties": [],
+    "variant_id": "variant_491268a67badae73a956"
+  },
+  "context_mode": "CLOSED",
+  "diagnostics": [],
+  "opportunity_id": "opp_1b7dc9bc7e8b617a3c3e",
+  "schema_version": "1.1.0",
+  "status": "READY",
+  "submission_id": "sub_cache_injection"
+}

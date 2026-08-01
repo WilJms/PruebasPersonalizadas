@@ -1,0 +1,31 @@
+[
+  {
+    "artifact_hash": "sha256:19f7ab04e638127dfd0279669492243dcdcfe9c55590c8bec7c575ae69128ae5",
+    "artifact_id": "art_77a343fe50dab3e5ba12",
+    "content_text": "Proponga una segmentacion para una campana informativa. Describa la evidencia interna que respalda al menos dos segmentos, una diferencia de mensaje y una limitacion del analisis. No use fuentes externas.",
+    "evidence_id": "ev_8fc57caf892159e50ddd",
+    "extraction_confidence": 1.0,
+    "language": "es",
+    "locator": {
+      "column": null,
+      "heading_path": [],
+      "kind": "DOCUMENT_PATH",
+      "paragraph_index": 0,
+      "row": null,
+      "table_index": null
+    },
+    "modality": "PARAGRAPH",
+    "normalized_hash": "sha256:41257db6117ddfda9308055edb9e8d7f7c348b8d8146b701049c5aac162e7a38",
+    "ocr_used": false,
+    "relations": [],
+    "schema_version": "1.1.0",
+    "sensitive_labels": [],
+    "source_role": "ASSIGNMENT_PROMPT",
+    "structured_content": {
+      "line_end": 1,
+      "line_start": 1
+    },
+    "submission_id": null,
+    "tenant_id": "tnt_stage0"
+  }
+]

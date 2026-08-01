@@ -1,0 +1,185 @@
+{
+  "assessment_id": "assessment_424ca6b8837f21814d45",
+  "created_at": "2026-07-30T12:00:00Z",
+  "diagnostics": [],
+  "guide_id": "guide_df261b490c0b09f69215",
+  "items": [
+    {
+      "guide": {
+        "acceptable_alternatives": [
+          "Puede expresar la misma relación con una formulación equivalente."
+        ],
+        "cannot_infer": [
+          "No permite inferir autoría, intención ni proceso histórico de producción."
+        ],
+        "levels": [
+          {
+            "descriptor": "No establece una relación respaldada por la evidencia.",
+            "label": "Nivel 0",
+            "level": 0,
+            "observable_element_ids": []
+          },
+          {
+            "descriptor": "Establece la relación con precisión creciente y evidencia localizada.",
+            "label": "Nivel 1",
+            "level": 1,
+            "observable_element_ids": [
+              "observable_25615757173eaa7bb545"
+            ]
+          },
+          {
+            "descriptor": "Establece la relación con precisión creciente y evidencia localizada.",
+            "label": "Nivel 2",
+            "level": 2,
+            "observable_element_ids": [
+              "observable_25615757173eaa7bb545"
+            ]
+          },
+          {
+            "descriptor": "Establece la relación con precisión creciente y evidencia localizada.",
+            "label": "Nivel 3",
+            "level": 3,
+            "observable_element_ids": [
+              "observable_25615757173eaa7bb545"
+            ]
+          }
+        ],
+        "misconceptions": [
+          "Introduce una explicación que no está respaldada por el fragmento."
+        ],
+        "observable_elements": [
+          {
+            "description": "Relaciona el fragmento localizado con la respuesta sin añadir supuestos externos.",
+            "element_id": "observable_25615757173eaa7bb545",
+            "evidence_ids": [
+              "ev_b0eac2cbfbe94059c697"
+            ],
+            "required_for_level_2": true,
+            "source_ids": []
+          }
+        ],
+        "purpose": "Observar una explicación acotada a la evidencia señalada."
+      },
+      "question_id": "question_958060955c9765f0b5ea"
+    },
+    {
+      "guide": {
+        "acceptable_alternatives": [
+          "Puede expresar la misma relación con una formulación equivalente."
+        ],
+        "cannot_infer": [
+          "No permite inferir autoría, intención ni proceso histórico de producción."
+        ],
+        "levels": [
+          {
+            "descriptor": "No establece una relación respaldada por la evidencia.",
+            "label": "Nivel 0",
+            "level": 0,
+            "observable_element_ids": []
+          },
+          {
+            "descriptor": "Establece la relación con precisión creciente y evidencia localizada.",
+            "label": "Nivel 1",
+            "level": 1,
+            "observable_element_ids": [
+              "observable_8879d00c5e6d5bdd44c1"
+            ]
+          },
+          {
+            "descriptor": "Establece la relación con precisión creciente y evidencia localizada.",
+            "label": "Nivel 2",
+            "level": 2,
+            "observable_element_ids": [
+              "observable_8879d00c5e6d5bdd44c1"
+            ]
+          },
+          {
+            "descriptor": "Establece la relación con precisión creciente y evidencia localizada.",
+            "label": "Nivel 3",
+            "level": 3,
+            "observable_element_ids": [
+              "observable_8879d00c5e6d5bdd44c1"
+            ]
+          }
+        ],
+        "misconceptions": [
+          "Introduce una explicación que no está respaldada por el fragmento."
+        ],
+        "observable_elements": [
+          {
+            "description": "Relaciona el fragmento localizado con la respuesta sin añadir supuestos externos.",
+            "element_id": "observable_8879d00c5e6d5bdd44c1",
+            "evidence_ids": [
+              "ev_f9384e680978b877664d"
+            ],
+            "required_for_level_2": true,
+            "source_ids": []
+          }
+        ],
+        "purpose": "Observar una explicación acotada a la evidencia señalada."
+      },
+      "question_id": "question_00ca5ed16cfe62ba98e7"
+    },
+    {
+      "guide": {
+        "acceptable_alternatives": [
+          "Puede expresar la misma relación con una formulación equivalente."
+        ],
+        "cannot_infer": [
+          "No permite inferir autoría, intención ni proceso histórico de producción."
+        ],
+        "levels": [
+          {
+            "descriptor": "No establece una relación respaldada por la evidencia.",
+            "label": "Nivel 0",
+            "level": 0,
+            "observable_element_ids": []
+          },
+          {
+            "descriptor": "Establece la relación con precisión creciente y evidencia localizada.",
+            "label": "Nivel 1",
+            "level": 1,
+            "observable_element_ids": [
+              "observable_4031c59f70346a2af229"
+            ]
+          },
+          {
+            "descriptor": "Establece la relación con precisión creciente y evidencia localizada.",
+            "label": "Nivel 2",
+            "level": 2,
+            "observable_element_ids": [
+              "observable_4031c59f70346a2af229"
+            ]
+          },
+          {
+            "descriptor": "Establece la relación con precisión creciente y evidencia localizada.",
+            "label": "Nivel 3",
+            "level": 3,
+            "observable_element_ids": [
+              "observable_4031c59f70346a2af229"
+            ]
+          }
+        ],
+        "misconceptions": [
+          "Introduce una explicación que no está respaldada por el fragmento."
+        ],
+        "observable_elements": [
+          {
+            "description": "Relaciona el fragmento localizado con la respuesta sin añadir supuestos externos.",
+            "element_id": "observable_4031c59f70346a2af229",
+            "evidence_ids": [
+              "ev_d2296a23c9c83dfe56f9"
+            ],
+            "required_for_level_2": true,
+            "source_ids": []
+          }
+        ],
+        "purpose": "Observar una explicación acotada a la evidencia señalada."
+      },
+      "question_id": "question_d52713b56f1232138c84"
+    }
+  ],
+  "schema_version": "1.1.0",
+  "status": "READY",
+  "submission_id": "sub_cache_sufficient"
+}

@@ -1,0 +1,21 @@
+{
+  "blueprint_id": "blueprint_818c3cbec3913d96c5a7",
+  "blueprint_version": 1,
+  "diagnostics": [],
+  "estimated_total_minutes": 9,
+  "plan_id": "plan_f1ead48276b4425d2da8",
+  "question_count": 3,
+  "reserve_opportunity_ids": [
+    "opp_89ad34340e2d98da7bff",
+    "opp_9d3e513176fcc63c0f2f",
+    "opp_9e29a82988ccc0d27b27"
+  ],
+  "schema_version": "1.1.0",
+  "selected_opportunity_ids": [
+    "opp_1264764bd9d8db1eac3b",
+    "opp_1b7dc9bc7e8b617a3c3e",
+    "opp_4e8d6f695d7a81ed3323"
+  ],
+  "status": "READY",
+  "submission_id": "sub_cache_injection"
+}

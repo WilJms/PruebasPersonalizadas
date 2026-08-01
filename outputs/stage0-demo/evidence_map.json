@@ -1,0 +1,339 @@
+{
+  "claims": [
+    {
+      "alignments": [
+        {
+          "criterion_ids": [],
+          "dimension_id": "dimension_52b6f6cb3c8b7de164e0",
+          "justification": "El fragmento satisface la variante sintética seleccionada.",
+          "strength": 0.95,
+          "variant_ids": [
+            "variant_491268a67badae73a956"
+          ]
+        }
+      ],
+      "ambiguity_risk": 0.1,
+      "auditability": 1.0,
+      "claim_id": "claim_d6873d724b0c813e4305",
+      "evidence_ids": [
+        "ev_10cfc3c4c8481adbdb01"
+      ],
+      "self_containment": 0.9,
+      "specificity": 0.95,
+      "supported_operations": [
+        "JUSTIFY_DECISION"
+      ],
+      "text": "Diseno propuesto",
+      "uncertainties": []
+    },
+    {
+      "alignments": [
+        {
+          "criterion_ids": [],
+          "dimension_id": "dimension_52b6f6cb3c8b7de164e0",
+          "justification": "El fragmento satisface la variante sintética seleccionada.",
+          "strength": 0.95,
+          "variant_ids": [
+            "variant_491268a67badae73a956"
+          ]
+        }
+      ],
+      "ambiguity_risk": 0.1,
+      "auditability": 1.0,
+      "claim_id": "claim_072d7be269d5382a51ad",
+      "evidence_ids": [
+        "ev_56102c1419cf81f684ce"
+      ],
+      "self_containment": 0.9,
+      "specificity": 0.95,
+      "supported_operations": [
+        "IDENTIFY_DEPENDENCY"
+      ],
+      "text": "Si la fuente no responde, el servicio puede mostrar el ultimo valor con una marca explicita de antiguedad durante treinta segundos. Esta decision reduce interrupciones, pero no es apropiada cuando un valor desactualizado puede causar una accion irreversible.",
+      "uncertainties": []
+    },
+    {
+      "alignments": [
+        {
+          "criterion_ids": [],
+          "dimension_id": "dimension_52b6f6cb3c8b7de164e0",
+          "justification": "El fragmento satisface la variante sintética seleccionada.",
+          "strength": 0.95,
+          "variant_ids": [
+            "variant_491268a67badae73a956"
+          ]
+        }
+      ],
+      "ambiguity_risk": 0.1,
+      "auditability": 1.0,
+      "claim_id": "claim_ddcd6c4cec24628ce360",
+      "evidence_ids": [
+        "ev_b0eac2cbfbe94059c697"
+      ],
+      "self_containment": 0.9,
+      "specificity": 0.95,
+      "supported_operations": [
+        "EXPLAIN_MECHANISM"
+      ],
+      "text": "La lectura consulta primero la cache local. Si la entrada existe y su version coincide con la version publicada por la fuente, se devuelve el valor almacenado. Una entrada vencida no se renueva de forma silenciosa: se marca como no vigente antes de consultar la fuente.",
+      "uncertainties": []
+    },
+    {
+      "alignments": [
+        {
+          "criterion_ids": [],
+          "dimension_id": "dimension_52b6f6cb3c8b7de164e0",
+          "justification": "El fragmento satisface la variante sintética seleccionada.",
+          "strength": 0.95,
+          "variant_ids": [
+            "variant_491268a67badae73a956"
+          ]
+        }
+      ],
+      "ambiguity_risk": 0.1,
+      "auditability": 1.0,
+      "claim_id": "claim_3db56833c59189a24f29",
+      "evidence_ids": [
+        "ev_d2296a23c9c83dfe56f9"
+      ],
+      "self_containment": 0.9,
+      "specificity": 0.95,
+      "supported_operations": [
+        "CONNECT_INTERNAL"
+      ],
+      "text": "Cada actualizacion aceptada incrementa una version monotona. El consumidor compara esa version con la de la entrada local, por lo que una invalidacion tardia no puede restaurar un valor anterior.",
+      "uncertainties": []
+    },
+    {
+      "alignments": [
+        {
+          "criterion_ids": [],
+          "dimension_id": "dimension_52b6f6cb3c8b7de164e0",
+          "justification": "El fragmento satisface la variante sintética seleccionada.",
+          "strength": 0.95,
+          "variant_ids": [
+            "variant_491268a67badae73a956"
+          ]
+        }
+      ],
+      "ambiguity_risk": 0.1,
+      "auditability": 1.0,
+      "claim_id": "claim_866802729ca69758fb49",
+      "evidence_ids": [
+        "ev_d9ff796204048287e50c"
+      ],
+      "self_containment": 0.9,
+      "specificity": 0.95,
+      "supported_operations": [
+        "RECONSTRUCT_REASONING"
+      ],
+      "text": "Invalidacion",
+      "uncertainties": []
+    },
+    {
+      "alignments": [
+        {
+          "criterion_ids": [],
+          "dimension_id": "dimension_52b6f6cb3c8b7de164e0",
+          "justification": "El fragmento satisface la variante sintética seleccionada.",
+          "strength": 0.95,
+          "variant_ids": [
+            "variant_491268a67badae73a956"
+          ]
+        }
+      ],
+      "ambiguity_risk": 0.1,
+      "auditability": 1.0,
+      "claim_id": "claim_9e59b8c32982c5bf5644",
+      "evidence_ids": [
+        "ev_f9384e680978b877664d"
+      ],
+      "self_containment": 0.9,
+      "specificity": 0.95,
+      "supported_operations": [
+        "PREDICT_LOCAL_CONSEQUENCE"
+      ],
+      "text": "Degradacion y limite",
+      "uncertainties": []
+    }
+  ],
+  "diagnostics": [],
+  "opportunities": [
+    {
+      "activity_priority": 0.95,
+      "allowed_anchor_structures": [
+        "SINGLE_FRAGMENT"
+      ],
+      "allowed_response_formats": [
+        "OPEN_SHORT",
+        "STRUCTURED_BULLETS"
+      ],
+      "cognitive_operation": "JUSTIFY_DECISION",
+      "difficulty": "LOW",
+      "dimension_id": "dimension_52b6f6cb3c8b7de164e0",
+      "evidence_fit": 0.95,
+      "evidence_ids": [
+        "ev_10cfc3c4c8481adbdb01"
+      ],
+      "focus": "Aspecto verificable 1 del entregable.",
+      "observable": "Relaciona una afirmación localizada con una consecuencia observable en la evidencia.",
+      "opportunity_id": "opp_cf6ba1828116abeb896f",
+      "opportunity_quality": 0.95,
+      "opportunity_template_id": "oppt_491268a67badae73a956",
+      "student_justification_required": false,
+      "submission_id": "sub_cache_sufficient",
+      "target_minutes": 3,
+      "variant_id": "variant_491268a67badae73a956"
+    },
+    {
+      "activity_priority": 0.95,
+      "allowed_anchor_structures": [
+        "SINGLE_FRAGMENT"
+      ],
+      "allowed_response_formats": [
+        "OPEN_SHORT",
+        "STRUCTURED_BULLETS"
+      ],
+      "cognitive_operation": "EXPLAIN_MECHANISM",
+      "difficulty": "MEDIUM",
+      "dimension_id": "dimension_52b6f6cb3c8b7de164e0",
+      "evidence_fit": 0.95,
+      "evidence_ids": [
+        "ev_b0eac2cbfbe94059c697"
+      ],
+      "focus": "Aspecto verificable 2 del entregable.",
+      "observable": "Relaciona una afirmación localizada con una consecuencia observable en la evidencia.",
+      "opportunity_id": "opp_59853a9edc38f2fa250e",
+      "opportunity_quality": 0.95,
+      "opportunity_template_id": "oppt_dfb018c3121c90b882d5",
+      "student_justification_required": false,
+      "submission_id": "sub_cache_sufficient",
+      "target_minutes": 3,
+      "variant_id": "variant_491268a67badae73a956"
+    },
+    {
+      "activity_priority": 0.95,
+      "allowed_anchor_structures": [
+        "SINGLE_FRAGMENT"
+      ],
+      "allowed_response_formats": [
+        "OPEN_SHORT",
+        "STRUCTURED_BULLETS"
+      ],
+      "cognitive_operation": "RECONSTRUCT_REASONING",
+      "difficulty": "HIGH",
+      "dimension_id": "dimension_52b6f6cb3c8b7de164e0",
+      "evidence_fit": 0.95,
+      "evidence_ids": [
+        "ev_d9ff796204048287e50c"
+      ],
+      "focus": "Aspecto verificable 3 del entregable.",
+      "observable": "Relaciona una afirmación localizada con una consecuencia observable en la evidencia.",
+      "opportunity_id": "opp_dd50d0715f3fb6255e69",
+      "opportunity_quality": 0.95,
+      "opportunity_template_id": "oppt_bd6d7873b17778d2d1c6",
+      "student_justification_required": false,
+      "submission_id": "sub_cache_sufficient",
+      "target_minutes": 3,
+      "variant_id": "variant_491268a67badae73a956"
+    },
+    {
+      "activity_priority": 0.95,
+      "allowed_anchor_structures": [
+        "SINGLE_FRAGMENT"
+      ],
+      "allowed_response_formats": [
+        "OPEN_SHORT",
+        "STRUCTURED_BULLETS"
+      ],
+      "cognitive_operation": "CONNECT_INTERNAL",
+      "difficulty": "LOW",
+      "dimension_id": "dimension_52b6f6cb3c8b7de164e0",
+      "evidence_fit": 0.95,
+      "evidence_ids": [
+        "ev_d2296a23c9c83dfe56f9"
+      ],
+      "focus": "Aspecto verificable 4 del entregable.",
+      "observable": "Relaciona una afirmación localizada con una consecuencia observable en la evidencia.",
+      "opportunity_id": "opp_89d37010cc039acc6fa4",
+      "opportunity_quality": 0.95,
+      "opportunity_template_id": "oppt_5ce597505641c97dfe7f",
+      "student_justification_required": false,
+      "submission_id": "sub_cache_sufficient",
+      "target_minutes": 3,
+      "variant_id": "variant_491268a67badae73a956"
+    },
+    {
+      "activity_priority": 0.95,
+      "allowed_anchor_structures": [
+        "SINGLE_FRAGMENT"
+      ],
+      "allowed_response_formats": [
+        "OPEN_SHORT",
+        "STRUCTURED_BULLETS"
+      ],
+      "cognitive_operation": "PREDICT_LOCAL_CONSEQUENCE",
+      "difficulty": "MEDIUM",
+      "dimension_id": "dimension_52b6f6cb3c8b7de164e0",
+      "evidence_fit": 0.95,
+      "evidence_ids": [
+        "ev_f9384e680978b877664d"
+      ],
+      "focus": "Aspecto verificable 5 del entregable.",
+      "observable": "Relaciona una afirmación localizada con una consecuencia observable en la evidencia.",
+      "opportunity_id": "opp_7f562b16afff4547b888",
+      "opportunity_quality": 0.95,
+      "opportunity_template_id": "oppt_96a8065d3830445aee0d",
+      "student_justification_required": false,
+      "submission_id": "sub_cache_sufficient",
+      "target_minutes": 3,
+      "variant_id": "variant_491268a67badae73a956"
+    },
+    {
+      "activity_priority": 0.95,
+      "allowed_anchor_structures": [
+        "SINGLE_FRAGMENT"
+      ],
+      "allowed_response_formats": [
+        "OPEN_SHORT",
+        "STRUCTURED_BULLETS"
+      ],
+      "cognitive_operation": "IDENTIFY_DEPENDENCY",
+      "difficulty": "HIGH",
+      "dimension_id": "dimension_52b6f6cb3c8b7de164e0",
+      "evidence_fit": 0.95,
+      "evidence_ids": [
+        "ev_56102c1419cf81f684ce"
+      ],
+      "focus": "Aspecto verificable 6 del entregable.",
+      "observable": "Relaciona una afirmación localizada con una consecuencia observable en la evidencia.",
+      "opportunity_id": "opp_f26301b948bfe1df0cce",
+      "opportunity_quality": 0.95,
+      "opportunity_template_id": "oppt_c403f0fdf7d698f794d0",
+      "student_justification_required": false,
+      "submission_id": "sub_cache_sufficient",
+      "target_minutes": 3,
+      "variant_id": "variant_491268a67badae73a956"
+    }
+  ],
+  "schema_version": "1.1.0",
+  "status": "READY",
+  "submission_id": "sub_cache_sufficient",
+  "variant_matches": [
+    {
+      "dimension_id": "dimension_52b6f6cb3c8b7de164e0",
+      "evidence_fit": 0.95,
+      "evidence_ids": [
+        "ev_10cfc3c4c8481adbdb01",
+        "ev_b0eac2cbfbe94059c697",
+        "ev_d9ff796204048287e50c",
+        "ev_d2296a23c9c83dfe56f9",
+        "ev_f9384e680978b877664d",
+        "ev_56102c1419cf81f684ce"
+      ],
+      "justification": "La evidencia cumple modalidad, confianza y procedencia exigidas por la variante.",
+      "mapping_confidence": 0.95,
+      "variant_id": "variant_491268a67badae73a956"
+    }
+  ]
+}

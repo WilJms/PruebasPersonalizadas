@@ -1,0 +1,130 @@
+[
+  {
+    "artifact_hash": "sha256:47dfa375545685e5ef3717b484aed77a7bd9dea22d169b7232f7e5a0c0774f6e",
+    "artifact_id": "art_3adefdfb75b9c965edee",
+    "content_text": "Actividad: politica de cache",
+    "evidence_id": "ev_9a74826b7e25dadef012",
+    "extraction_confidence": 1.0,
+    "language": "es",
+    "locator": {
+      "column": null,
+      "heading_path": [
+        "Actividad: politica de cache"
+      ],
+      "kind": "DOCUMENT_PATH",
+      "paragraph_index": 0,
+      "row": null,
+      "table_index": null
+    },
+    "modality": "HEADING",
+    "normalized_hash": "sha256:d4a29ef31d3e5b3f7ec18cc6a8709fcb2cbc07132d45ceb1652f724509f14cd7",
+    "ocr_used": false,
+    "relations": [],
+    "schema_version": "1.1.0",
+    "sensitive_labels": [],
+    "source_role": "ASSIGNMENT_PROMPT",
+    "structured_content": {
+      "heading_level": 1,
+      "line_end": 1,
+      "line_start": 1
+    },
+    "submission_id": null,
+    "tenant_id": "tnt_stage0"
+  },
+  {
+    "artifact_hash": "sha256:47dfa375545685e5ef3717b484aed77a7bd9dea22d169b7232f7e5a0c0774f6e",
+    "artifact_id": "art_3adefdfb75b9c965edee",
+    "content_text": "Explique una politica de cache para un servicio de consulta. El entregable debe describir el orden de lectura, la invalidacion y el comportamiento cuando la fuente principal no responde.",
+    "evidence_id": "ev_6070cf1a5206336c5349",
+    "extraction_confidence": 1.0,
+    "language": "es",
+    "locator": {
+      "column": null,
+      "heading_path": [
+        "Actividad: politica de cache"
+      ],
+      "kind": "DOCUMENT_PATH",
+      "paragraph_index": 1,
+      "row": null,
+      "table_index": null
+    },
+    "modality": "PARAGRAPH",
+    "normalized_hash": "sha256:83130b0466346dcf17ee40467f67567844db34ff20489de8b908e051c00fcc18",
+    "ocr_used": false,
+    "relations": [],
+    "schema_version": "1.1.0",
+    "sensitive_labels": [],
+    "source_role": "ASSIGNMENT_PROMPT",
+    "structured_content": {
+      "line_end": 3,
+      "line_start": 3
+    },
+    "submission_id": null,
+    "tenant_id": "tnt_stage0"
+  },
+  {
+    "artifact_hash": "sha256:47dfa375545685e5ef3717b484aed77a7bd9dea22d169b7232f7e5a0c0774f6e",
+    "artifact_id": "art_3adefdfb75b9c965edee",
+    "content_text": "Restricciones",
+    "evidence_id": "ev_05bfbfeec3411098deb2",
+    "extraction_confidence": 1.0,
+    "language": "es",
+    "locator": {
+      "column": null,
+      "heading_path": [
+        "Actividad: politica de cache",
+        "Restricciones"
+      ],
+      "kind": "DOCUMENT_PATH",
+      "paragraph_index": 2,
+      "row": null,
+      "table_index": null
+    },
+    "modality": "HEADING",
+    "normalized_hash": "sha256:4e2c2e904190bf81bb57e230a3847cddde8ad66ac845cfa62eb258d7d701f8ad",
+    "ocr_used": false,
+    "relations": [],
+    "schema_version": "1.1.0",
+    "sensitive_labels": [],
+    "source_role": "ASSIGNMENT_PROMPT",
+    "structured_content": {
+      "heading_level": 2,
+      "line_end": 5,
+      "line_start": 5
+    },
+    "submission_id": null,
+    "tenant_id": "tnt_stage0"
+  },
+  {
+    "artifact_hash": "sha256:47dfa375545685e5ef3717b484aed77a7bd9dea22d169b7232f7e5a0c0774f6e",
+    "artifact_id": "art_3adefdfb75b9c965edee",
+    "content_text": "- No ejecute servicios externos.\n- Distinga los datos observados de los supuestos.\n- Incluya al menos una limitacion defendible desde el diseno presentado.",
+    "evidence_id": "ev_2a5070d5f9bf8954074c",
+    "extraction_confidence": 1.0,
+    "language": "es",
+    "locator": {
+      "column": null,
+      "heading_path": [
+        "Actividad: politica de cache",
+        "Restricciones"
+      ],
+      "kind": "DOCUMENT_PATH",
+      "paragraph_index": 3,
+      "row": null,
+      "table_index": null
+    },
+    "modality": "PARAGRAPH",
+    "normalized_hash": "sha256:8cf7bbaf4d51f65fae3cffdf14173308896b7e61055f57c8b2ac8322db756a6c",
+    "ocr_used": false,
+    "relations": [],
+    "schema_version": "1.1.0",
+    "sensitive_labels": [],
+    "source_role": "ASSIGNMENT_PROMPT",
+    "structured_content": {
+      "line_end": 9,
+      "line_start": 7
+    },
+    "submission_id": null,
+    "tenant_id": "tnt_stage0"
+  }
+]

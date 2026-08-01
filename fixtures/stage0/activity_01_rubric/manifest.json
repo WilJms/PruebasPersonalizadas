@@ -1,0 +1,59 @@
+{
+  "fixture_version": "stage0-fixture/1.0.0",
+  "corpus_partition": "DEVELOPMENT",
+  "activity_config": {
+    "schema_version": "1.1.0",
+    "activity_id": "act_stage0_cache",
+    "tenant_id": "tnt_stage0",
+    "title": "Explicar decisiones de una politica de cache",
+    "output_language": "es-CL",
+    "context_mode": "CLOSED",
+    "assessment_modality": "WRITTEN",
+    "question_count": 3,
+    "target_total_minutes": 10,
+    "structured_justification_mode": "NOT_REQUIRED",
+    "priority_criterion_ids": [
+      "criterion_coherence",
+      "criterion_limits"
+    ],
+    "allowed_response_formats": [
+      "OPEN_SHORT",
+      "STRUCTURED_BULLETS"
+    ],
+    "allowed_artifact_media_types": [
+      "text/markdown"
+    ],
+    "course_source_ids": [],
+    "adaptation_policy_id": null,
+    "require_blueprint_approval": true
+  },
+  "paths": {
+    "assignment": "assignment.md",
+    "rubric": "rubric.md",
+    "submissions": [
+      {
+        "submission_id": "sub_cache_sufficient",
+        "subject_ref": "subject_cache_a",
+        "path": "submission_sufficient.md",
+        "declared_media_type": "text/markdown",
+        "expected_status": "READY"
+      },
+      {
+        "submission_id": "sub_cache_injection",
+        "subject_ref": "subject_cache_b",
+        "path": "submission_injection.md",
+        "declared_media_type": "text/markdown",
+        "expected_status": "READY",
+        "adversarial": true
+      }
+    ]
+  },
+  "blueprint_approval": {
+    "blueprint_id": "blueprint_cache_synthetic",
+    "blueprint_version": 1,
+    "status": "APPROVED",
+    "synthetic": true,
+    "approved_by": "teacher_synthetic",
+    "approved_at": "2026-07-31T12:00:00Z"
+  }
+}

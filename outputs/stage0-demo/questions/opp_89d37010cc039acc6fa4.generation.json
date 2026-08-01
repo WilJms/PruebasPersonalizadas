@@ -1,0 +1,109 @@
+{
+  "candidate": {
+    "anchor": {
+      "anchor_id": "anchor_3d0f98c03a743c36605d",
+      "answer_leakage_risk": 0.1,
+      "fragments": [
+        {
+          "display_text": "Cada actualizacion aceptada incrementa una version monotona. El consumidor compara esa version con la de la entrada local, por lo que una invalidacion tardia no puede restaurar un valor anterior.",
+          "evidence_id": "ev_d2296a23c9c83dfe56f9",
+          "locator": {
+            "column": null,
+            "heading_path": [
+              "Diseno propuesto",
+              "Invalidacion"
+            ],
+            "kind": "DOCUMENT_PATH",
+            "paragraph_index": 3,
+            "row": null,
+            "table_index": null
+          },
+          "transformation": "LITERAL"
+        }
+      ],
+      "self_containment_score": 0.95,
+      "structure": "SINGLE_FRAGMENT",
+      "student_facing_label": null
+    },
+    "candidate_id": "candidate_a9c6ec438237a4f8f2ec",
+    "choices": [],
+    "citations": [],
+    "cognitive_operation": "CONNECT_INTERNAL",
+    "course_source_ids": [],
+    "difficulty": "LOW",
+    "dimension_id": "dimension_52b6f6cb3c8b7de164e0",
+    "estimated_minutes": 3,
+    "evidence_ids": [
+      "ev_d2296a23c9c83dfe56f9"
+    ],
+    "opportunity_id": "opp_89d37010cc039acc6fa4",
+    "opportunity_template_id": "oppt_5ce597505641c97dfe7f",
+    "preliminary_guide": {
+      "acceptable_alternatives": [
+        "Puede expresar la misma relación con una formulación equivalente."
+      ],
+      "cannot_infer": [
+        "No permite inferir autoría, intención ni proceso histórico de producción."
+      ],
+      "levels": [
+        {
+          "descriptor": "No establece una relación respaldada por la evidencia.",
+          "label": "Nivel 0",
+          "level": 0,
+          "observable_element_ids": []
+        },
+        {
+          "descriptor": "Establece la relación con precisión creciente y evidencia localizada.",
+          "label": "Nivel 1",
+          "level": 1,
+          "observable_element_ids": [
+            "observable_611c05108807ba0ea70d"
+          ]
+        },
+        {
+          "descriptor": "Establece la relación con precisión creciente y evidencia localizada.",
+          "label": "Nivel 2",
+          "level": 2,
+          "observable_element_ids": [
+            "observable_611c05108807ba0ea70d"
+          ]
+        },
+        {
+          "descriptor": "Establece la relación con precisión creciente y evidencia localizada.",
+          "label": "Nivel 3",
+          "level": 3,
+          "observable_element_ids": [
+            "observable_611c05108807ba0ea70d"
+          ]
+        }
+      ],
+      "misconceptions": [
+        "Introduce una explicación que no está respaldada por el fragmento."
+      ],
+      "observable_elements": [
+        {
+          "description": "Relaciona el fragmento localizado con la respuesta sin añadir supuestos externos.",
+          "element_id": "observable_611c05108807ba0ea70d",
+          "evidence_ids": [
+            "ev_d2296a23c9c83dfe56f9"
+          ],
+          "required_for_level_2": true,
+          "source_ids": []
+        }
+      ],
+      "purpose": "Observar una explicación acotada a la evidencia señalada."
+    },
+    "question_text": "Explica la relación observable indicada en el fragmento señalado.",
+    "response_format": "OPEN_SHORT",
+    "student_justification_required": false,
+    "submission_id": "sub_cache_sufficient",
+    "uncertainties": [],
+    "variant_id": "variant_491268a67badae73a956"
+  },
+  "context_mode": "CLOSED",
+  "diagnostics": [],
+  "opportunity_id": "opp_89d37010cc039acc6fa4",
+  "schema_version": "1.1.0",
+  "status": "READY",
+  "submission_id": "sub_cache_sufficient"
+}

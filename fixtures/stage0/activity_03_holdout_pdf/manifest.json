@@ -1,0 +1,51 @@
+{
+  "fixture_version": "stage0-fixture/1.0.0",
+  "corpus_partition": "HOLDOUT",
+  "activity_config": {
+    "schema_version": "1.1.0",
+    "activity_id": "act_stage0_sensors",
+    "tenant_id": "tnt_stage0",
+    "title": "Defender un flujo de limpieza de sensores",
+    "output_language": "es-CL",
+    "context_mode": "CLOSED",
+    "assessment_modality": "WRITTEN",
+    "question_count": 3,
+    "target_total_minutes": 10,
+    "structured_justification_mode": "SELECTED",
+    "priority_criterion_ids": [
+      "criterion_traceability"
+    ],
+    "allowed_response_formats": [
+      "OPEN_SHORT",
+      "STRUCTURED_BULLETS",
+      "CHOICE"
+    ],
+    "allowed_artifact_media_types": [
+      "application/pdf"
+    ],
+    "course_source_ids": [],
+    "adaptation_policy_id": null,
+    "require_blueprint_approval": true
+  },
+  "paths": {
+    "assignment": "assignment.md",
+    "rubric": "rubric.md",
+    "submissions": [
+      {
+        "submission_id": "sub_sensors_pdf",
+        "subject_ref": "subject_sensors_a",
+        "path": "submission_sufficient.pdf",
+        "declared_media_type": "application/pdf",
+        "expected_status": "READY"
+      }
+    ]
+  },
+  "blueprint_approval": {
+    "blueprint_id": "blueprint_sensors_synthetic",
+    "blueprint_version": 1,
+    "status": "APPROVED",
+    "synthetic": true,
+    "approved_by": "teacher_synthetic",
+    "approved_at": "2026-07-31T12:00:00Z"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "plan_id": "plan_fixture",
+  "submission_id": "sub_fixture",
+  "blueprint_id": "blueprint_fixture",
+  "blueprint_version": 1,
+  "status": "READY",
+  "question_count": 2,
+  "selected_opportunity_ids": ["opp_primary_a", "opp_primary_b"],
+  "reserve_opportunity_ids": [],
+  "estimated_total_minutes": 6,
+  "diagnostics": []
+}

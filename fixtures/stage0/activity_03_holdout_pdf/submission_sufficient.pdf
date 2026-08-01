@@ -1,0 +1,117 @@
+%PDF-1.4
+%“Œ‹ž ReportLab Generated PDF document (opensource)
+1 0 obj
+<<
+/F1 2 0 R /F2 3 0 R
+>>
+endobj
+2 0 obj
+<<
+/BaseFont /Helvetica /Encoding /WinAnsiEncoding /Name /F1 /Subtype /Type1 /Type /Font
+>>
+endobj
+3 0 obj
+<<
+/BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding /Name /F2 /Subtype /Type1 /Type /Font
+>>
+endobj
+4 0 obj
+<<
+/Contents 8 0 R /MediaBox [ 0 0 595.2756 841.8898 ] /Parent 7 0 R /Resources <<
+/Font 1 0 R /ProcSet [ /PDF /Text /ImageB /ImageC /ImageI ]
+>> /Rotate 0 /Trans <<
+
+>> 
+  /Type /Page
+>>
+endobj
+5 0 obj
+<<
+/PageMode /UseNone /Pages 7 0 R /Type /Catalog
+>>
+endobj
+6 0 obj
+<<
+/Author (Stage 0 synthetic fixture) /CreationDate (D:20000101000000+00'00') /Creator (comprehension_verification.fixture_builder) /Keywords () /ModDate (D:20000101000000+00'00') /Producer (ReportLab PDF Library - \(opensource\)) 
+  /Subject (Synthetic selectable-text fixture for parser tests) /Title (Informe sintetico: flujo de limpieza de sensores) /Trapped /False
+>>
+endobj
+7 0 obj
+<<
+/Count 1 /Kids [ 4 0 R ] /Type /Pages
+>>
+endobj
+8 0 obj
+<<
+/Length 2202
+>>
+stream
+1 0 0 1 0 0 cm  BT /F1 12 Tf 14.4 TL ET
+.090196 .196078 .301961 rg
+n 0 745.8898 595.2756 96 re f*
+1 1 1 rg
+BT /F2 17 Tf 20.4 TL ET
+BT 1 0 0 1 56 789.8898 Tm (Informe sintetico) Tj T* ET
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 56 769.8898 Tm (Flujo reproducible de limpieza de sensores) Tj T* ET
+.090196 .196078 .301961 rg
+BT /F2 12 Tf 14.4 TL ET
+BT 1 0 0 1 56 713.8898 Tm (Resumen) Tj T* ET
+.12549 .164706 .2 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 66 694.8898 Tm (El flujo recibe mediciones con un identificador de sensor y una marca temporal.) Tj T* ET
+BT 1 0 0 1 66 679.8898 Tm (Primero elimina duplicados exactos y despues calcula estadisticas por ventana.) Tj T* ET
+.090196 .196078 .301961 rg
+BT /F2 12 Tf 14.4 TL ET
+BT 1 0 0 1 56 653.8898 Tm (Orden de transformaciones) Tj T* ET
+.12549 .164706 .2 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 66 634.8898 Tm (La deduplicacion ocurre antes del promedio para impedir que una retransmision pese dos veces.) Tj T* ET
+BT 1 0 0 1 66 619.8898 Tm (Luego se marca como atipico un valor que excede tres desviaciones de su ventana local.) Tj T* ET
+BT 1 0 0 1 66 604.8898 Tm (El valor atipico se conserva con una bandera; no se reemplaza ni se borra silenciosamente.) Tj T* ET
+.090196 .196078 .301961 rg
+BT /F2 12 Tf 14.4 TL ET
+BT 1 0 0 1 56 578.8898 Tm (Trazabilidad) Tj T* ET
+.12549 .164706 .2 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 66 559.8898 Tm (Cada fila procesada conserva el identificador de origen y el codigo de transformacion aplicado.) Tj T* ET
+BT 1 0 0 1 66 544.8898 Tm (Un conteo por etapa permite reconciliar entradas, duplicados y observaciones finales.) Tj T* ET
+.090196 .196078 .301961 rg
+BT /F2 12 Tf 14.4 TL ET
+BT 1 0 0 1 56 518.8898 Tm (Limite declarado) Tj T* ET
+.12549 .164706 .2 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 66 499.8898 Tm (Una lectura extrema puede ser una falla o un evento real; la bandera no distingue su causa.) Tj T* ET
+BT 1 0 0 1 66 484.8898 Tm (Sin una referencia externa autorizada, el informe solo defiende que el valor requiere revision.) Tj T* ET
+.717647 .768627 .811765 RG
+n 56 48 m 539.2756 48 l S
+.321569 .396078 .454902 rg
+BT /F1 8 Tf 9.6 TL ET
+BT 1 0 0 1 56 34 Tm (Fixture sintetico - sin datos personales - pagina 1 de 1) Tj T* ET
+ 
+endstream
+endobj
+xref
+0 9
+0000000000 65535 f 
+0000000061 00000 n 
+0000000102 00000 n 
+0000000209 00000 n 
+0000000321 00000 n 
+0000000524 00000 n 
+0000000592 00000 n 
+0000000981 00000 n 
+0000001040 00000 n 
+trailer
+<<
+/ID 
+[<552531235760d929591465485a9f8ef0><552531235760d929591465485a9f8ef0>]
+% ReportLab generated PDF document -- digest (opensource)
+
+/Info 6 0 R
+/Root 5 0 R
+/Size 9
+>>
+startxref
+3293
+%%EOF

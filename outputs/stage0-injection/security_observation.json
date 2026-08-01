@@ -1,0 +1,7 @@
+{
+  "case": "injection",
+  "generated_question_contains_injection": false,
+  "model_tools_enabled": false,
+  "network_provider_called": false,
+  "source_contains_injection": true
+}

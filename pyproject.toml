@@ -1,0 +1,57 @@
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "comprehension-verification"
+version = "0.2.0"
+description = "Stage 1 cloud experimental lab for evidence-bound comprehension verification"
+requires-python = ">=3.12"
+dependencies = [
+  "alembic>=1.16,<2",
+  "boto3>=1.40,<2",
+  "fastapi>=0.116,<1",
+  "google-auth>=2.40,<3",
+  "Jinja2>=3.1,<4",
+  "jsonschema[format]>=4.23,<5",
+  "pdfplumber>=0.11,<1",
+  "psycopg[binary]>=3.2,<4",
+  "pydantic>=2.13,<3",
+  "pydantic-settings>=2.10,<3",
+  "PyJWT[crypto]>=2.10,<3",
+  "pypdf>=6,<7",
+  "python-multipart>=0.0.20,<1",
+  "reportlab>=4.4,<5",
+  "requests>=2.32,<3",
+  "SQLAlchemy>=2.0.43,<3",
+  "uvicorn[standard]>=0.35,<1",
+  "weasyprint>=62,<70",
+]
+
+[project.optional-dependencies]
+dev = [
+  "httpx>=0.28,<1",
+  "pytest>=8.4,<9",
+  "pytest-cov>=7,<8",
+]
+
+[project.scripts]
+cv-stage0 = "comprehension_verification.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+comprehension_verification = ["templates/*.html"]
+
+[tool.pytest.ini_options]
+addopts = "-ra --strict-markers --strict-config"
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.coverage.run]
+branch = true
+source = ["comprehension_verification"]

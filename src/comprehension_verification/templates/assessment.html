@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Evaluación {{ assessment.assessment_id }}</title>
+  <style>
+    :root { color-scheme: light; --ink: #172033; --muted: #5b6475; --line: #d8dde8; --accent: #2457a6; }
+    body { color: var(--ink); font: 16px/1.5 system-ui, sans-serif; margin: 2rem auto; max-width: 52rem; padding: 0 1.25rem; }
+    header { border-bottom: 3px solid var(--accent); margin-bottom: 2rem; padding-bottom: 1rem; }
+    h1 { font-size: 1.8rem; margin: 0 0 .5rem; }
+    .meta { color: var(--muted); font-size: .9rem; }
+    article { border: 1px solid var(--line); border-radius: .5rem; margin: 1.5rem 0; padding: 1.25rem; }
+    h2 { font-size: 1.15rem; margin-top: 0; }
+    blockquote { background: #f5f7fb; border-left: 4px solid var(--accent); margin: 1rem 0; padding: .75rem 1rem; white-space: pre-wrap; }
+    .anchor-label { color: var(--muted); font-size: .85rem; font-weight: 700; text-transform: uppercase; }
+    ol.options { padding-left: 1.5rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Verificación de comprensión</h1>
+    <div class="meta">ID {{ assessment.assessment_id }} · actividad {{ assessment.activity_id }} · referencia {{ assessment.subject_ref }}</div>
+  </header>
+  {% for question in assessment.questions %}
+  <article>
+    <h2>Pregunta {{ loop.index }}</h2>
+    {% for fragment in question.anchor.fragments %}
+      <div class="anchor-label">Fragmento {{ loop.index }}</div>
+      <blockquote>{{ fragment.display_text or "[Vista no textual]" }}</blockquote>
+    {% endfor %}
+    <p>{{ question.question_text }}</p>
+    {% if question.choices %}
+    <ol class="options" type="A">
+      {% for option in question.choices %}<li>{{ option.text }}</li>{% endfor %}
+    </ol>
+    {% endif %}
+    {% if question.student_justification_required %}<p><strong>Incluye una justificación breve referida al fragmento.</strong></p>{% endif %}
+  </article>
+  {% endfor %}
+</body>
+</html>
+

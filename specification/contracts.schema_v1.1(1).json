@@ -1,0 +1,6567 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.evaluaciones-personalizadas.local/assessment-contracts/1.1.0",
+  "title": "Comprehension Verification Assessment Contracts",
+  "version": "1.1.0",
+  "roots": {
+    "Diagnostic": {
+      "$ref": "#/$defs/Diagnostic"
+    },
+    "ArtifactRef": {
+      "$ref": "#/$defs/ArtifactRef"
+    },
+    "EvidenceUnit": {
+      "$ref": "#/$defs/EvidenceUnit"
+    },
+    "CoursePassage": {
+      "$ref": "#/$defs/CoursePassage"
+    },
+    "SourceCitation": {
+      "$ref": "#/$defs/SourceCitation"
+    },
+    "EvidenceBundle": {
+      "$ref": "#/$defs/EvidenceBundle"
+    },
+    "TrustedPromptContext": {
+      "$ref": "#/$defs/TrustedPromptContext"
+    },
+    "ModelTaskEnvelope": {
+      "$ref": "#/$defs/ModelTaskEnvelope"
+    },
+    "ActivityConfig": {
+      "$ref": "#/$defs/ActivityConfig"
+    },
+    "ActivitySpec": {
+      "$ref": "#/$defs/ActivitySpec"
+    },
+    "RubricSpec": {
+      "$ref": "#/$defs/RubricSpec"
+    },
+    "AmbiguityReport": {
+      "$ref": "#/$defs/AmbiguityReport"
+    },
+    "PolicyDecision": {
+      "$ref": "#/$defs/PolicyDecision"
+    },
+    "AssessmentPlanningPolicy": {
+      "$ref": "#/$defs/AssessmentPlanningPolicy"
+    },
+    "BlueprintPolicy": {
+      "$ref": "#/$defs/BlueprintPolicy"
+    },
+    "QuestionGenerationPolicy": {
+      "$ref": "#/$defs/QuestionGenerationPolicy"
+    },
+    "QuestionValidationPolicy": {
+      "$ref": "#/$defs/QuestionValidationPolicy"
+    },
+    "AssessmentBlueprint": {
+      "$ref": "#/$defs/AssessmentBlueprint"
+    },
+    "BlueprintReview": {
+      "$ref": "#/$defs/BlueprintReview"
+    },
+    "EvidenceMapPatch": {
+      "$ref": "#/$defs/EvidenceMapPatch"
+    },
+    "AssessmentPlan": {
+      "$ref": "#/$defs/AssessmentPlan"
+    },
+    "QuestionGenerationResult": {
+      "$ref": "#/$defs/QuestionGenerationResult"
+    },
+    "QuestionReviewResult": {
+      "$ref": "#/$defs/QuestionReviewResult"
+    },
+    "EvaluationGuide": {
+      "$ref": "#/$defs/EvaluationGuide"
+    },
+    "Assessment": {
+      "$ref": "#/$defs/Assessment"
+    },
+    "QuestionReviewAction": {
+      "$ref": "#/$defs/QuestionReviewAction"
+    },
+    "BulkApprovalRequest": {
+      "$ref": "#/$defs/BulkApprovalRequest"
+    },
+    "BulkApprovalRecord": {
+      "$ref": "#/$defs/BulkApprovalRecord"
+    },
+    "ModelRoute": {
+      "$ref": "#/$defs/ModelRoute"
+    },
+    "ModelRouteResolution": {
+      "$ref": "#/$defs/ModelRouteResolution"
+    },
+    "ModelCallLedger": {
+      "$ref": "#/$defs/ModelCallLedger"
+    },
+    "DomainEvent": {
+      "$ref": "#/$defs/DomainEvent"
+    },
+    "JobStatus": {
+      "$ref": "#/$defs/JobStatus"
+    },
+    "SubmissionProcessingState": {
+      "$ref": "#/$defs/SubmissionProcessingState"
+    },
+    "ProblemDetail": {
+      "$ref": "#/$defs/ProblemDetail"
+    },
+    "ActivitySpecRequest": {
+      "$ref": "#/$defs/ActivitySpecRequest"
+    },
+    "RubricNormalizeRequest": {
+      "$ref": "#/$defs/RubricNormalizeRequest"
+    },
+    "AmbiguityTriageRequest": {
+      "$ref": "#/$defs/AmbiguityTriageRequest"
+    },
+    "BlueprintBuildRequest": {
+      "$ref": "#/$defs/BlueprintBuildRequest"
+    },
+    "BlueprintReviewRequest": {
+      "$ref": "#/$defs/BlueprintReviewRequest"
+    },
+    "EvidenceMapRequest": {
+      "$ref": "#/$defs/EvidenceMapRequest"
+    },
+    "QuestionBuildRequest": {
+      "$ref": "#/$defs/QuestionBuildRequest"
+    },
+    "QuestionReviewRequest": {
+      "$ref": "#/$defs/QuestionReviewRequest"
+    },
+    "GuideBuildRequest": {
+      "$ref": "#/$defs/GuideBuildRequest"
+    },
+    "SchemaRepairRequest": {
+      "$ref": "#/$defs/SchemaRepairRequest"
+    },
+    "SchemaRepairResult": {
+      "$ref": "#/$defs/SchemaRepairResult"
+    }
+  },
+  "$defs": {
+    "ActivityConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": "1.1.0",
+          "default": "1.1.0",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "activity_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Activity Id",
+          "type": "string"
+        },
+        "tenant_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Tenant Id",
+          "type": "string"
+        },
+        "title": {
+          "maxLength": 300,
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        },
+        "output_language": {
+          "default": "es-CL",
+          "maxLength": 35,
+          "minLength": 2,
+          "title": "Output Language",
+          "type": "string"
+        },
+        "context_mode": {
+          "$ref": "#/$defs/ContextMode",
+          "default": "CLOSED"
+        },
+        "assessment_modality": {
+          "$ref": "#/$defs/AssessmentModality",
+          "default": "WRITTEN"
+        },
+        "question_count": {
+          "default": 5,
+          "maximum": 20,
+          "minimum": 1,
+          "title": "Question Count",
+          "type": "integer"
+        },
+        "target_total_minutes": {
+          "default": 15,
+          "maximum": 120,
+          "minimum": 3,
+          "title": "Target Total Minutes",
+          "type": "integer"
+        },
+        "structured_justification_mode": {
+          "$ref": "#/$defs/StructuredJustificationMode",
+          "default": "NOT_REQUIRED"
+        },
+        "priority_criterion_ids": {
+          "items": {
+            "maxLength": 128,
+            "minLength": 3,
+            "pattern": "^[a-z][a-z0-9_-]*$",
+            "type": "string"
+          },
+          "maxItems": 100,
+          "title": "Priority Criterion Ids",
+          "type": "array"
+        },
+        "allowed_response_formats": {
+          "items": {
+            "$ref": "#/$defs/ResponseFormat"
+          },
+          "minItems": 1,
+          "title": "Allowed Response Formats",
+          "type": "array"
+        },
+        "allowed_artifact_media_types": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 50,
+          "minItems": 1,
+          "title": "Allowed Artifact Media Types",
+          "type": "array"
+        },
+        "course_source_ids": {
+          "items": {
+            "maxLength": 128,
+            "minLength": 3,
+            "pattern": "^[a-z][a-z0-9_-]*$",
+            "type": "string"
+          },
+          "title": "Course Source Ids",
+          "type": "array"
+        },
+        "adaptation_policy_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 3,
+              "pattern": "^[a-z][a-z0-9_-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Adaptation Policy Id"
+        },
+        "require_blueprint_approval": {
+          "const": true,
+          "default": true,
+          "title": "Require Blueprint Approval",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "activity_id",
+        "tenant_id",
+        "title",
+        "allowed_response_formats",
+        "allowed_artifact_media_types"
+      ],
+      "title": "ActivityConfig",
+      "type": "object"
+    },
+    "ActivitySpec": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": "1.1.0",
+          "default": "1.1.0",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "activity_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Activity Id",
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/$defs/WorkflowStatus"
+        },
+        "learning_outcomes": {
+          "items": {
+            "$ref": "#/$defs/SourcedStatement"
+          },
+          "title": "Learning Outcomes",
+          "type": "array"
+        },
+        "expected_products": {
+          "items": {
+            "$ref": "#/$defs/SourcedStatement"
+          },
+          "title": "Expected Products",
+          "type": "array"
+        },
+        "requirements": {
+          "items": {
+            "$ref": "#/$defs/SourcedStatement"
+          },
+          "title": "Requirements",
+          "type": "array"
+        },
+        "allowed_materials": {
+          "items": {
+            "$ref": "#/$defs/SourcedStatement"
+          },
+          "title": "Allowed Materials",
+          "type": "array"
+        },
+        "prohibited_materials": {
+          "items": {
+            "$ref": "#/$defs/SourcedStatement"
+          },
+          "title": "Prohibited Materials",
+          "type": "array"
+        },
+        "contradictions": {
+          "items": {
+            "$ref": "#/$defs/Diagnostic"
+          },
+          "title": "Contradictions",
+          "type": "array"
+        },
+        "diagnostics": {
+          "items": {
+            "$ref": "#/$defs/Diagnostic"
+          },
+          "title": "Diagnostics",
+          "type": "array"
+        }
+      },
+      "required": [
+        "activity_id",
+        "status"
+      ],
+      "title": "ActivitySpec",
+      "type": "object"
+    },
+    "ActivitySpecRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": "1.1.0",
+          "default": "1.1.0",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "activity_config": {
+          "$ref": "#/$defs/ActivityConfig"
+        },
+        "prompt_evidence": {
+          "items": {
+            "$ref": "#/$defs/EvidenceUnit"
+          },
+          "maxItems": 500,
+          "minItems": 1,
+          "title": "Prompt Evidence",
+          "type": "array"
+        }
+      },
+      "required": [
+        "activity_config",
+        "prompt_evidence"
+      ],
+      "title": "ActivitySpecRequest",
+      "type": "object"
+    },
+    "AmbiguityIssue": {
+      "additionalProperties": false,
+      "properties": {
+        "issue_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Issue Id",
+          "type": "string"
+        },
+        "issue_code": {
+          "pattern": "^[A-Z][A-Z0-9_]{2,63}$",
+          "title": "Issue Code",
+          "type": "string"
+        },
+        "severity": {
+          "$ref": "#/$defs/Severity"
+        },
+        "evidence_ids": {
+          "items": {
+            "maxLength": 128,
+            "minLength": 3,
+            "pattern": "^[a-z][a-z0-9_-]*$",
+            "type": "string"
+          },
+          "title": "Evidence Ids",
+          "type": "array"
+        },
+        "explanation": {
+          "maxLength": 1500,
+          "minLength": 1,
+          "title": "Explanation",
+          "type": "string"
+        },
+        "options": {
+          "items": {
+            "$ref": "#/$defs/DecisionOption"
+          },
+          "maxItems": 3,
+          "minItems": 2,
+          "title": "Options",
+          "type": "array"
+        },
+        "recommended_option_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Recommended Option Id",
+          "type": "string"
+        },
+        "blocking": {
+          "title": "Blocking",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "issue_id",
+        "issue_code",
+        "severity",
+        "explanation",
+        "options",
+        "recommended_option_id",
+        "blocking"
+      ],
+      "title": "AmbiguityIssue",
+      "type": "object"
+    },
+    "AmbiguityReport": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": "1.1.0",
+          "default": "1.1.0",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "activity_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Activity Id",
+          "type": "string"
+        },
+        "issues": {
+          "items": {
+            "$ref": "#/$defs/AmbiguityIssue"
+          },
+          "maxItems": 8,
+          "title": "Issues",
+          "type": "array"
+        },
+        "blocked": {
+          "title": "Blocked",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "activity_id",
+        "blocked"
+      ],
+      "title": "AmbiguityReport",
+      "type": "object"
+    },
+    "AmbiguityTriageRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": "1.1.0",
+          "default": "1.1.0",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "activity_spec": {
+          "$ref": "#/$defs/ActivitySpec"
+        },
+        "rubric_spec": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RubricSpec"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "rule_findings": {
+          "items": {
+            "$ref": "#/$defs/Diagnostic"
+          },
+          "maxItems": 100,
+          "title": "Rule Findings",
+          "type": "array"
+        }
+      },
+      "required": [
+        "activity_spec"
+      ],
+      "title": "AmbiguityTriageRequest",
+      "type": "object"
+    },
+    "Anchor": {
+      "additionalProperties": false,
+      "properties": {
+        "anchor_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Anchor Id",
+          "type": "string"
+        },
+        "structure": {
+          "$ref": "#/$defs/AnchorStructure"
+        },
+        "fragments": {
+          "items": {
+            "$ref": "#/$defs/AnchorFragment"
+          },
+          "maxItems": 8,
+          "minItems": 1,
+          "title": "Fragments",
+          "type": "array"
+        },
+        "student_facing_label": {
+          "anyOf": [
+            {
+              "maxLength": 300,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Student Facing Label"
+        },
+        "self_containment_score": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Self Containment Score",
+          "type": "number"
+        },
+        "answer_leakage_risk": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Answer Leakage Risk",
+          "type": "number"
+        }
+      },
+      "required": [
+        "anchor_id",
+        "structure",
+        "fragments",
+        "self_containment_score",
+        "answer_leakage_risk"
+      ],
+      "title": "Anchor",
+      "type": "object"
+    },
+    "AnchorFragment": {
+      "additionalProperties": false,
+      "properties": {
+        "evidence_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Evidence Id",
+          "type": "string"
+        },
+        "display_text": {
+          "anyOf": [
+            {
+              "maxLength": 20000,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Display Text"
+        },
+        "transformation": {
+          "enum": [
+            "LITERAL",
+            "CROP",
+            "TABLE_SLICE",
+            "CODE_CONTEXT",
+            "ALT_TEXT"
+          ],
+          "title": "Transformation",
+          "type": "string"
+        },
+        "locator": {
+          "discriminator": {
+            "mapping": {
+              "CODE_SPAN": "#/$defs/CodeLocator",
+              "DOCUMENT_PATH": "#/$defs/DocumentLocator",
+              "IMAGE_REGION": "#/$defs/ImageLocator",
+              "NOTEBOOK_CELL": "#/$defs/NotebookLocator",
+              "PAGE_BBOX": "#/$defs/PageLocator",
+              "SHEET_RANGE": "#/$defs/SheetLocator",
+              "SLIDE_SHAPE": "#/$defs/SlideLocator"
+            },
+            "propertyName": "kind"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/PageLocator"
+            },
+            {
+              "$ref": "#/$defs/DocumentLocator"
+            },
+            {
+              "$ref": "#/$defs/SlideLocator"
+            },
+            {
+              "$ref": "#/$defs/SheetLocator"
+            },
+            {
+              "$ref": "#/$defs/CodeLocator"
+            },
+            {
+              "$ref": "#/$defs/NotebookLocator"
+            },
+            {
+              "$ref": "#/$defs/ImageLocator"
+            }
+          ],
+          "title": "Locator"
+        }
+      },
+      "required": [
+        "evidence_id",
+        "transformation",
+        "locator"
+      ],
+      "title": "AnchorFragment",
+      "type": "object"
+    },
+    "AnchorStructure": {
+      "enum": [
+        "SINGLE_FRAGMENT",
+        "PAIRED_FRAGMENTS",
+        "TABLE_OR_RANGE",
+        "CODE_CONTEXT",
+        "FIGURE_WITH_CONTEXT",
+        "SEQUENCE",
+        "CROSS_ARTIFACT"
+      ],
+      "title": "AnchorStructure",
+      "type": "string"
+    },
+    "ArtifactRef": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": "1.1.0",
+          "default": "1.1.0",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "artifact_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "role": {
+          "$ref": "#/$defs/ArtifactRole"
+        },
+        "filename": {
+          "maxLength": 512,
+          "minLength": 1,
+          "title": "Filename",
+          "type": "string"
+        },
+        "media_type": {
+          "maxLength": 255,
+          "minLength": 3,
+          "title": "Media Type",
+          "type": "string"
+        },
+        "sha256": {
+          "pattern": "^sha256:[a-f0-9]{64}$",
+          "title": "Sha256",
+          "type": "string"
+        },
+        "byte_size": {
+          "minimum": 0,
+          "title": "Byte Size",
+          "type": "integer"
+        },
+        "parser_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Parser Id"
+        },
+        "parser_version": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Parser Version"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "role",
+        "filename",
+        "media_type",
+        "sha256",
+        "byte_size"
+      ],
+      "title": "ArtifactRef",
+      "type": "object"
+    },
+    "ArtifactRole": {
+      "enum": [
+        "ASSIGNMENT_PROMPT",
+        "RUBRIC",
+        "COURSE_SOURCE",
+        "SUBMISSION",
+        "DERIVED_PREVIEW"
+      ],
+      "title": "ArtifactRole",
+      "type": "string"
+    },
+    "Assessment": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": "1.1.0",
+          "default": "1.1.0",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "assessment_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Assessment Id",
+          "type": "string"
+        },
+        "tenant_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Tenant Id",
+          "type": "string"
+        },
+        "activity_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Activity Id",
+          "type": "string"
+        },
+        "submission_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Submission Id",
+          "type": "string"
+        },
+        "subject_ref": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Subject Ref",
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/$defs/WorkflowStatus"
+        },
+        "context_mode": {
+          "$ref": "#/$defs/ContextMode"
+        },
+        "assessment_plan_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Assessment Plan Id",
+          "type": "string"
+        },
+        "question_count": {
+          "maximum": 20,
+          "minimum": 1,
+          "title": "Question Count",
+          "type": "integer"
+        },
+        "questions": {
+          "items": {
+            "$ref": "#/$defs/SelectedQuestion"
+          },
+          "title": "Questions",
+          "type": "array"
+        },
+        "coverage": {
+          "items": {
+            "$ref": "#/$defs/CoverageItem"
+          },
+          "title": "Coverage",
+          "type": "array"
+        },
+        "structured_justification": {
+          "$ref": "#/$defs/StructuredJustificationSummary"
+        },
+        "diagnostics": {
+          "items": {
+            "$ref": "#/$defs/Diagnostic"
+          },
+          "title": "Diagnostics",
+          "type": "array"
+        },
+        "lineage": {
+          "$ref": "#/$defs/Lineage"
+        },
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        },
+        "approved_by": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 3,
+              "pattern": "^[a-z][a-z0-9_-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Approved By"
+        },
+        "approved_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Approved At"
+        }
+      },
+      "required": [
+        "assessment_id",
+        "tenant_id",
+        "activity_id",
+        "submission_id",
+        "subject_ref",
+        "status",
+        "context_mode",
+        "assessment_plan_id",
+        "question_count",
+        "structured_justification",
+        "lineage",
+        "created_at"
+      ],
+      "title": "Assessment",
+      "type": "object"
+    },
+    "AssessmentBlueprint": {
+      "additionalProperties": false,
+      "description": "Activity catalog; its size is independent of question_count.",
+      "properties": {
+        "schema_version": {
+          "const": "1.1.0",
+          "default": "1.1.0",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "blueprint_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Blueprint Id",
+          "type": "string"
+        },
+        "blueprint_version": {
+          "minimum": 1,
+          "title": "Blueprint Version",
+          "type": "integer"
+        },
+        "activity_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Activity Id",
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/$defs/WorkflowStatus"
+        },
+        "context_mode": {
+          "$ref": "#/$defs/ContextMode"
+        },
+        "dimensions": {
+          "items": {
+            "$ref": "#/$defs/BlueprintDimension"
+          },
+          "minItems": 1,
+          "title": "Dimensions",
+          "type": "array"
+        },
+        "assessment_constraints": {
+          "$ref": "#/$defs/AssessmentConstraints"
+        },
+        "decision_ids": {
+          "items": {
+            "maxLength": 128,
+            "minLength": 3,
+            "pattern": "^[a-z][a-z0-9_-]*$",
+            "type": "string"
+          },
+          "title": "Decision Ids",
+          "type": "array"
+        },
+        "diagnostics": {
+          "items": {
+            "$ref": "#/$defs/Diagnostic"
+          },
+          "title": "Diagnostics",
+          "type": "array"
+        },
+        "approved_by": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 3,
+              "pattern": "^[a-z][a-z0-9_-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Approved By"
+        },
+        "approved_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Approved At"
+        }
+      },
+      "required": [
+        "blueprint_id",
+        "blueprint_version",
+        "activity_id",
+        "status",
+        "context_mode",
+        "dimensions",
+        "assessment_constraints"
+      ],
+      "title": "AssessmentBlueprint",
+      "type": "object"
+    },
+    "AssessmentConstraints": {
+      "additionalProperties": false,
+      "properties": {
+        "question_count": {
+          "maximum": 20,
+          "minimum": 1,
+          "title": "Question Count",
+          "type": "integer"
+        },
+        "target_total_minutes": {
+          "maximum": 120,
+          "minimum": 3,
+          "title": "Target Total Minutes",
+          "type": "integer"
+        },
+        "allowed_response_formats": {
+          "items": {
+            "$ref": "#/$defs/ResponseFormat"
+          },
+          "maxItems": 20,
+          "minItems": 1,
+          "title": "Allowed Response Formats",
+          "type": "array"
+        },
+        "minimum_opportunity_quality": {
+          "default": 0.75,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Minimum Opportunity Quality",
+          "type": "number"
+        },
+        "max_reserve_opportunities": {
+          "default": 3,
+          "maximum": 10,
+          "minimum": 0,
+          "title": "Max Reserve Opportunities",
+          "type": "integer"
+        },
+        "structured_justification_policy": {
+          "$ref": "#/$defs/StructuredJustificationPolicy"
+        }
+      },
+      "required": [
+        "question_count",
+        "target_total_minutes",
+        "allowed_response_formats",
+        "structured_justification_policy"
+      ],
+      "title": "AssessmentConstraints",
+      "type": "object"
+    },
+    "AssessmentModality": {
+      "enum": [
+        "WRITTEN",
+        "ORAL",
+        "MIXED"
+      ],
+      "title": "AssessmentModality",
+      "type": "string"
+    },
+    "AssessmentPlan": {
+      "additionalProperties": false,
+      "description": "Exactly N primary opportunities plus a small, disjoint reserve.",
+      "properties": {
+        "schema_version": {
+          "const": "1.1.0",
+          "default": "1.1.0",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "plan_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Plan Id",
+          "type": "string"
+        },
+        "submission_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Submission Id",
+          "type": "string"
+        },
+        "blueprint_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Blueprint Id",
+          "type": "string"
+        },
+        "blueprint_version": {
+          "minimum": 1,
+          "title": "Blueprint Version",
+          "type": "integer"
+        },
+        "status": {
+          "enum": [
+            "READY",
+            "INSUFFICIENT_RELEVANT_EVIDENCE",
+            "INSUFFICIENT_DISTINCT_QUESTION_OPPORTUNITIES",
+            "EVIDENCE_MAPPING_UNCERTAIN",
+            "ASSESSMENT_PLAN_INFEASIBLE"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "question_count": {
+          "maximum": 20,
+          "minimum": 1,
+          "title": "Question Count",
+          "type": "integer"
+        },
+        "selected_opportunity_ids": {
+          "items": {
+            "maxLength": 128,
+            "minLength": 3,
+            "pattern": "^[a-z][a-z0-9_-]*$",
+            "type": "string"
+          },
+          "maxItems": 20,
+          "title": "Selected Opportunity Ids",
+          "type": "array"
+        },
+        "reserve_opportunity_ids": {
+          "items": {
+            "maxLength": 128,
+            "minLength": 3,
+            "pattern": "^[a-z][a-z0-9_-]*$",
+            "type": "string"
+          },
+          "maxItems": 10,
+          "title": "Reserve Opportunity Ids",
+          "type": "array"
+        },
+        "estimated_total_minutes": {
+          "default": 0,
+          "maximum": 120,
+          "minimum": 0,
+          "title": "Estimated Total Minutes",
+          "type": "integer"
+        },
+        "diagnostics": {
+          "items": {
+            "$ref": "#/$defs/Diagnostic"
+          },
+          "title": "Diagnostics",
+          "type": "array"
+        }
+      },
+      "required": [
+        "plan_id",
+        "submission_id",
+        "blueprint_id",
+        "blueprint_version",
+        "status",
+        "question_count"
+      ],
+      "title": "AssessmentPlan",
+      "type": "object"
+    },
+    "AssessmentPlanningPolicy": {
+      "additionalProperties": false,
+      "description": "Deterministic policy used before question generation.",
+      "properties": {
+        "schema_version": {
+          "const": "1.1.0",
+          "default": "1.1.0",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "policy_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Policy Id",
+          "type": "string"
+        },
+        "minimum_opportunity_quality": {
+          "default": 0.75,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Minimum Opportunity Quality",
+          "type": "number"
+        },
+        "minimum_evidence_fit": {
+          "default": 0.7,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Minimum Evidence Fit",
+          "type": "number"
+        },
+        "activity_priority_weight": {
+          "default": 0.35,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Activity Priority Weight",
+          "type": "number"
+        },
+        "evidence_fit_weight": {
+          "default": 0.35,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Evidence Fit Weight",
+          "type": "number"
+        },
+        "opportunity_quality_weight": {
+          "default": 0.3,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Opportunity Quality Weight",
+          "type": "number"
+        },
+        "repeated_dimension_penalty": {
+          "default": 0.08,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Repeated Dimension Penalty",
+          "type": "number"
+        },
+        "repeated_variant_penalty": {
+          "default": 0.12,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Repeated Variant Penalty",
+          "type": "number"
+        },
+        "evidence_overlap_penalty": {
+          "default": 0.15,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Evidence Overlap Penalty",
+          "type": "number"
+        },
+        "maximum_evidence_overlap": {
+          "default": 0.5,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Maximum Evidence Overlap",
+          "type": "number"
+        },
+        "max_reserve_opportunities": {
+          "default": 3,
+          "maximum": 10,
+          "minimum": 0,
+          "title": "Max Reserve Opportunities",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "policy_id"
+      ],
+      "title": "AssessmentPlanningPolicy",
+      "type": "object"
+    },
+    "AssessmentVersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "assessment_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Assessment Id",
+          "type": "string"
+        },
+        "assessment_version": {
+          "minimum": 1,
+          "title": "Assessment Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "assessment_id",
+        "assessment_version"
+      ],
+      "title": "AssessmentVersionRef",
+      "type": "object"
+    },
+    "BlueprintApprovalRecommendation": {
+      "enum": [
+        "APPROVE",
+        "APPROVE_WITH_CHANGES",
+        "REJECT"
+      ],
+      "title": "BlueprintApprovalRecommendation",
+      "type": "string"
+    },
+    "BlueprintBuildRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": "1.1.0",
+          "default": "1.1.0",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "activity_spec": {
+          "$ref": "#/$defs/ActivitySpec"
+        },
+        "rubric_spec": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RubricSpec"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "resolved_decisions": {
+          "items": {
+            "$ref": "#/$defs/PolicyDecision"
+          },
+          "maxItems": 100,
+          "title": "Resolved Decisions",
+          "type": "array"
+        },
+        "blueprint_policy": {
+          "$ref": "#/$defs/BlueprintPolicy"
+        }
+      },
+      "required": [
+        "activity_spec",
+        "blueprint_policy"
+      ],
+      "title": "BlueprintBuildRequest",
+      "type": "object"
+    },
+    "BlueprintDimension": {
+      "additionalProperties": false,
+      "properties": {
+        "dimension_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Dimension Id",
+          "type": "string"
+        },
+        "name": {
+          "maxLength": 300,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "criterion_ids": {
+          "items": {
+            "maxLength": 128,
+            "minLength": 3,
+            "pattern": "^[a-z][a-z0-9_-]*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Criterion Ids",
+          "type": "array"
+        },
+        "learning_outcome_ids": {
+          "items": {
+            "maxLength": 128,
+            "minLength": 3,
+            "pattern": "^[a-z][a-z0-9_-]*$",
+            "type": "string"
+          },
+          "title": "Learning Outcome Ids",
+          "type": "array"
+        },
+        "grading_weight": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Grading Weight"
+        },
+        "verification_priority": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Verification Priority",
+          "type": "number"
+        },
+        "factors": {
+          "$ref": "#/$defs/VerificationFactors"
+        },
+        "justification": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "title": "Justification",
+          "type": "string"
+        },
+        "evidence_variants": {
+          "items": {
+            "$ref": "#/$defs/EvidenceVariant"
+          },
+          "minItems": 1,
+          "title": "Evidence Variants",
+          "type": "array"
+        }
+      },
+      "required": [
+        "dimension_id",
+        "name",
+        "criterion_ids",
+        "verification_priority",
+        "factors",
+        "justification",
+        "evidence_variants"
+      ],
+      "title": "BlueprintDimension",
+      "type": "object"
+    },
+    "BlueprintPolicy": {
+      "additionalProperties": false,
+      "description": "Trusted constraints used by P04; depth is derived rather than selected.",
+      "properties": {
+        "schema_version": {
+          "const": "1.1.0",
+          "default": "1.1.0",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "policy_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Policy Id",
+          "type": "string"
+        },
+        "activity_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Activity Id",
+          "type": "string"
+        },
+        "question_count": {
+          "maximum": 20,
+          "minimum": 1,
+          "title": "Question Count",
+          "type": "integer"
+        },
+        "target_total_minutes": {
+          "maximum": 120,
+          "minimum": 3,
+          "title": "Target Total Minutes",
+          "type": "integer"
+        },
+        "allowed_response_formats": {
+          "items": {
+            "$ref": "#/$defs/ResponseFormat"
+          },
+          "maxItems": 20,
+          "minItems": 1,
+          "title": "Allowed Response Formats",
+          "type": "array"
+        },
+        "priority_criterion_ids": {
+          "items": {
+            "maxLength": 128,
+            "minLength": 3,
+            "pattern": "^[a-z][a-z0-9_-]*$",
+            "type": "string"
+          },
+          "maxItems": 100,
+          "title": "Priority Criterion Ids",
+          "type": "array"
+        },
+        "required_criterion_ids": {
+          "items": {
+            "maxLength": 128,
+            "minLength": 3,
+            "pattern": "^[a-z][a-z0-9_-]*$",
+            "type": "string"
+          },
+          "maxItems": 100,
+          "title": "Required Criterion Ids",
+          "type": "array"
+        },
+        "structured_justification_policy": {
+          "$ref": "#/$defs/StructuredJustificationPolicy"
+        },
+        "planning_policy": {
+          "$ref": "#/$defs/AssessmentPlanningPolicy"
+        },
+        "max_local_regenerations": {
+          "default": 1,
+          "maximum": 3,
+          "minimum": 0,
+          "title": "Max Local Regenerations",
+          "type": "integer"
+        },
+        "human_review_required": {
+          "const": true,
+          "default": true,
+          "title": "Human Review Required",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "policy_id",
+        "activity_id",
+        "question_count",
+        "target_total_minutes",
+        "allowed_response_formats",
+        "structured_justification_policy",
+        "planning_policy"
+      ],
+      "title": "BlueprintPolicy",
+      "type": "object"
+    },
+    "BlueprintReview": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": "1.1.0",
+          "default": "1.1.0",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "activity_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Activity Id",
+          "type": "string"
+        },
+        "blueprint_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Blueprint Id",
+          "type": "string"
+        },
+        "blueprint_version": {
+          "minimum": 1,
+          "title": "Blueprint Version",
+          "type": "integer"
+        },
+        "status": {
+          "enum": [
+            "READY",
+            "NEEDS_REVIEW",
+            "TECHNICAL_FAILURE"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "approval_recommendation": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/BlueprintApprovalRecommendation"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "checks": {
+          "items": {
+            "$ref": "#/$defs/BlueprintReviewCheck"
+          },
+          "maxItems": 100,
+          "title": "Checks",
+          "type": "array"
+        },
+        "diagnostics": {
+          "items": {
+            "$ref": "#/$defs/Diagnostic"
+          },
+          "title": "Diagnostics",
+          "type": "array"
+        }
+      },
+      "required": [
+        "activity_id",
+        "blueprint_id",
+        "blueprint_version",
+        "status"
+      ],
+      "title": "BlueprintReview",
+      "type": "object"
+    },
+    "BlueprintReviewCheck": {
+      "additionalProperties": false,
+      "properties": {
+        "check_code": {
+          "pattern": "^[A-Z][A-Z0-9_]{2,63}$",
+          "title": "Check Code",
+          "type": "string"
+        },
+        "category": {
+          "enum": [
+            "CONSTRUCT",
+            "SOURCE_FIDELITY",
+            "COVERAGE",
+            "COMPARABILITY",
+            "COGNITIVE_DEMAND",
+            "TIME",
+            "FORMAT_FEASIBILITY",
+            "OPPORTUNITY_CATALOG",
+            "PLAN_FEASIBILITY",
+            "ACCESSIBILITY"
+          ],
+          "title": "Category",
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/$defs/ReviewCheckStatus"
+        },
+        "message": {
+          "maxLength": 1500,
+          "minLength": 3,
+          "title": "Message",
+          "type": "string"
+        },
+        "referenced_ids": {
+          "items": {
+            "maxLength": 128,
+            "minLength": 3,
+            "pattern": "^[a-z][a-z0-9_-]*$",
+            "type": "string"
+          },
+          "maxItems": 100,
+          "title": "Referenced Ids",
+          "type": "array"
+        },
+        "correction": {
+          "anyOf": [
+            {
+              "maxLength": 1500,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Correction"
+        },
+        "critical": {
+          "default": false,
+          "title": "Critical",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "check_code",
+        "category",
+        "status",
+        "message"
+      ],
+      "title": "BlueprintReviewCheck",
+      "type": "object"
+    },
+    "BlueprintReviewRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": "1.1.0",
+          "default": "1.1.0",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "blueprint": {
+          "$ref": "#/$defs/AssessmentBlueprint"
+        },
+        "activity_spec": {
+          "$ref": "#/$defs/ActivitySpec"
+        },
+        "rubric_spec": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RubricSpec"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "resolved_decisions": {
+          "items": {
+            "$ref": "#/$defs/PolicyDecision"
+          },
+          "maxItems": 100,
+          "title": "Resolved Decisions",
+          "type": "array"
+        },
+        "blueprint_policy": {
+          "$ref": "#/$defs/BlueprintPolicy"
+        }
+      },
+      "required": [
+        "blueprint",
+        "activity_spec",
+        "blueprint_policy"
+      ],
+      "title": "BlueprintReviewRequest",
+      "type": "object"
+    },
+    "BulkApprovalExclusion": {
+      "additionalProperties": false,
+      "properties": {
+        "target": {
+          "$ref": "#/$defs/AssessmentVersionRef"
+        },
+        "reason_code": {
+          "pattern": "^[A-Z][A-Z0-9_]{2,63}$",
+          "title": "Reason Code",
+          "type": "string"
+        },
+        "message": {
+          "maxLength": 1000,
+          "minLength": 3,
+          "title": "Message",
+          "type": "string"
+        },
+        "requires_individual_review": {
+          "const": true,
+          "default": true,
+          "title": "Requires Individual Review",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "target",
+        "reason_code",
+        "message"
+      ],
+      "title": "BulkApprovalExclusion",
+      "type": "object"
+    },
+    "BulkApprovalRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": "1.1.0",
+          "default": "1.1.0",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "approval_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Approval Id",
+          "type": "string"
+        },
+        "request_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Request Id",
+          "type": "string"
+        },
+        "tenant_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Tenant Id",
+          "type": "string"
+        },
+        "actor_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "scope": {
+          "const": "SELECTED_ELIGIBLE_ASSESSMENTS",
+          "title": "Scope",
+          "type": "string"
+        },
+        "approved_at": {
+          "format": "date-time",
+          "title": "Approved At",
+          "type": "string"
+        },
+        "requested_targets": {
+          "items": {
+            "$ref": "#/$defs/AssessmentVersionRef"
+          },
+          "maxItems": 500,
+          "minItems": 1,
+          "title": "Requested Targets",
+          "type": "array"
+        },
+        "approved_targets": {
+          "items": {
+            "$ref": "#/$defs/AssessmentVersionRef"
+          },
+          "maxItems": 500,
+          "title": "Approved Targets",
+          "type": "array"
+        },
+        "excluded_targets": {
+          "items": {
+            "$ref": "#/$defs/BulkApprovalExclusion"
+          },
+          "maxItems": 500,
+          "title": "Excluded Targets",
+          "type": "array"
+        }
+      },
+      "required": [
+        "approval_id",
+        "request_id",
+        "tenant_id",
+        "actor_id",
+        "scope",
+        "approved_at",
+        "requested_targets"
+      ],
+      "title": "BulkApprovalRecord",
+      "type": "object"
+    },
+    "BulkApprovalRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": "1.1.0",
+          "default": "1.1.0",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "request_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Request Id",
+          "type": "string"
+        },
+        "tenant_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Tenant Id",
+          "type": "string"
+        },
+        "actor_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "targets": {
+          "items": {
+            "$ref": "#/$defs/AssessmentVersionRef"
+          },
+          "maxItems": 500,
+          "minItems": 1,
+          "title": "Targets",
+          "type": "array"
+        },
+        "explicit_confirmation": {
+          "const": "CONFIRM_BULK_APPROVAL_OF_ALL_ELIGIBLE_SELECTED_ASSESSMENTS",
+          "title": "Explicit Confirmation",
+          "type": "string"
+        },
+        "requested_at": {
+          "format": "date-time",
+          "title": "Requested At",
+          "type": "string"
+        }
+      },
+      "required": [
+        "request_id",
+        "tenant_id",
+        "actor_id",
+        "targets",
+        "explicit_confirmation",
+        "requested_at"
+      ],
+      "title": "BulkApprovalRequest",
+      "type": "object"
+    },
+    "ChoiceOption": {
+      "additionalProperties": false,
+      "properties": {
+        "option_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Option Id",
+          "type": "string"
+        },
+        "text": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "title": "Text",
+          "type": "string"
+        },
+        "is_best_answer": {
+          "title": "Is Best Answer",
+          "type": "boolean"
+        },
+        "evaluator_rationale": {
+          "maxLength": 1500,
+          "minLength": 1,
+          "title": "Evaluator Rationale",
+          "type": "string"
+        },
+        "misconception": {
+          "anyOf": [
+            {
+              "maxLength": 1000,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Misconception"
+        }
+      },
+      "required": [
+        "option_id",
+        "text",
+        "is_best_answer",
+        "evaluator_rationale"
+      ],
+      "title": "ChoiceOption",
+      "type": "object"
+    },
+    "CodeLocator": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "CODE_SPAN",
+          "default": "CODE_SPAN",
+          "title": "Kind",
+          "type": "string"
+        },
+        "path": {
+          "maxLength": 1024,
+          "minLength": 1,
+          "title": "Path",
+          "type": "string"
+        },
+        "start_line": {
+          "minimum": 1,
+          "title": "Start Line",
+          "type": "integer"
+        },
+        "end_line": {
+          "minimum": 1,
+          "title": "End Line",
+          "type": "integer"
+        },
+        "start_column": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Start Column"
+        },
+        "end_column": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "End Column"
+        },
+        "symbol": {
+          "anyOf": [
+            {
+              "maxLength": 512,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Symbol"
+        }
+      },
+      "required": [
+        "path",
+        "start_line",
+        "end_line"
+      ],
+      "title": "CodeLocator",
+      "type": "object"
+    },
+    "CognitiveOperation": {
+      "enum": [
+        "JUSTIFY_DECISION",
+        "EXPLAIN_MECHANISM",
+        "RECONSTRUCT_REASONING",
+        "CONNECT_INTERNAL",
+        "PREDICT_LOCAL_CONSEQUENCE",
+        "IDENTIFY_DEPENDENCY",
+        "CRITIQUE_LIMITATION",
+        "INTERPRET_REPRESENTATION",
+        "TRACE_FLOW"
+      ],
+      "title": "CognitiveOperation",
+      "type": "string"
+    },
+    "ContextMode": {
+      "enum": [
+        "CLOSED",
+        "COURSE_ENRICHED"
+      ],
+      "title": "ContextMode",
+      "type": "string"
+    },
+    "CoursePassage": {
+      "additionalProperties": false,
+      "description": "Authorized, versioned course passage supplied to an enriched-context call.",
+      "properties": {
+        "source_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Source Id",
+          "type": "string"
+        },
+        "artifact_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "artifact_hash": {
+          "pattern": "^sha256:[a-f0-9]{64}$",
+          "title": "Artifact Hash",
+          "type": "string"
+        },
+        "title": {
+          "maxLength": 500,
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        },
+        "locator": {
+          "discriminator": {
+            "mapping": {
+              "CODE_SPAN": "#/$defs/CodeLocator",
+              "DOCUMENT_PATH": "#/$defs/DocumentLocator",
+              "IMAGE_REGION": "#/$defs/ImageLocator",
+              "NOTEBOOK_CELL": "#/$defs/NotebookLocator",
+              "PAGE_BBOX": "#/$defs/PageLocator",
+              "SHEET_RANGE": "#/$defs/SheetLocator",
+              "SLIDE_SHAPE": "#/$defs/SlideLocator"
+            },
+            "propertyName": "kind"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/PageLocator"
+            },
+            {
+              "$ref": "#/$defs/DocumentLocator"
+            },
+            {
+              "$ref": "#/$defs/SlideLocator"
+            },
+            {
+              "$ref": "#/$defs/SheetLocator"
+            },
+            {
+              "$ref": "#/$defs/CodeLocator"
+            },
+            {
+              "$ref": "#/$defs/NotebookLocator"
+            },
+            {
+              "$ref": "#/$defs/ImageLocator"
+            }
+          ],
+          "title": "Locator"
+        },
+        "content_text": {
+          "maxLength": 50000,
+          "minLength": 1,
+          "title": "Content Text",
+          "type": "string"
+        },
+        "language": {
+          "anyOf": [
+            {
+              "maxLength": 35,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Language"
+        },
+        "extraction_confidence": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Extraction Confidence",
+          "type": "number"
+        }
+      },
+      "required": [
+        "source_id",
+        "artifact_id",
+        "artifact_hash",
+        "title",
+        "locator",
+        "content_text",
+        "extraction_confidence"
+      ],
+      "title": "CoursePassage",
+      "type": "object"
+    },
+    "CoverageItem": {
+      "additionalProperties": false,
+      "properties": {
+        "dimension_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Dimension Id",
+          "type": "string"
+        },
+        "available_variant_count": {
+          "minimum": 0,
+          "title": "Available Variant Count",
+          "type": "integer"
+        },
+        "available_opportunity_count": {
+          "minimum": 0,
+          "title": "Available Opportunity Count",
+          "type": "integer"
+        },
+        "selected_opportunity_count": {
+          "minimum": 0,
+          "title": "Selected Opportunity Count",
+          "type": "integer"
+        },
+        "reused_variant_count": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Reused Variant Count",
+          "type": "integer"
+        },
+        "evidence_unit_count": {
+          "minimum": 0,
+          "title": "Evidence Unit Count",
+          "type": "integer"
+        },
+        "diagnostics": {
+          "items": {
+            "$ref": "#/$defs/Diagnostic"
+          },
+          "title": "Diagnostics",
+          "type": "array"
+        }
+      },
+      "required": [
+        "dimension_id",
+        "available_variant_count",
+        "available_opportunity_count",
+        "selected_opportunity_count",
+        "evidence_unit_count"
+      ],
+      "title": "CoverageItem",
+      "type": "object"
+    },
+    "DecisionOption": {
+      "additionalProperties": false,
+      "properties": {
+        "option_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Option Id",
+          "type": "string"
+        },
+        "label": {
+          "maxLength": 300,
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "consequence": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "title": "Consequence",
+          "type": "string"
+        }
+      },
+      "required": [
+        "option_id",
+        "label",
+        "consequence"
+      ],
+      "title": "DecisionOption",
+      "type": "object"
+    },
+    "Diagnostic": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "pattern": "^[A-Z][A-Z0-9_]{2,63}$",
+          "title": "Code",
+          "type": "string"
+        },
+        "severity": {
+          "$ref": "#/$defs/Severity"
+        },
+        "message": {
+          "maxLength": 1000,
+          "minLength": 3,
+          "title": "Message",
+          "type": "string"
+        },
+        "evidence_ids": {
+          "items": {
+            "maxLength": 128,
+            "minLength": 3,
+            "pattern": "^[a-z][a-z0-9_-]*$",
+            "type": "string"
+          },
+          "maxItems": 100,
+          "title": "Evidence Ids",
+          "type": "array"
+        },
+        "source_ids": {
+          "items": {
+            "maxLength": 128,
+            "minLength": 3,
+            "pattern": "^[a-z][a-z0-9_-]*$",
+            "type": "string"
+          },
+          "maxItems": 100,
+          "title": "Source Ids",
+          "type": "array"
+        },
+        "retryable": {
+          "default": false,
+          "title": "Retryable",
+          "type": "boolean"
+        },
+        "details": {
+          "additionalProperties": true,
+          "title": "Details",
+          "type": "object"
+        }
+      },
+      "required": [
+        "code",
+        "severity",
+        "message"
+      ],
+      "title": "Diagnostic",
+      "type": "object"
+    },
+    "DifficultyBand": {
+      "enum": [
+        "LOW",
+        "MEDIUM",
+        "HIGH"
+      ],
+      "title": "DifficultyBand",
+      "type": "string"
+    },
+    "DocumentLocator": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "DOCUMENT_PATH",
+          "default": "DOCUMENT_PATH",
+          "title": "Kind",
+          "type": "string"
+        },
+        "paragraph_index": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Paragraph Index"
+        },
+        "heading_path": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 20,
+          "title": "Heading Path",
+          "type": "array"
+        },
+        "table_index": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Table Index"
+        },
+        "row": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Row"
+        },
+        "column": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Column"
+        }
+      },
+      "title": "DocumentLocator",
+      "type": "object"
+    },
+    "DomainEvent": {
+      "additionalProperties": false,
+      "description": "Versioned internal event envelope; payload shape is selected by event_type.",
+      "properties": {
+        "schema_version": {
+          "const": "1.1.0",
+          "default": "1.1.0",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "event_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Event Id",
+          "type": "string"
+        },
+        "event_type": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Event Type",
+          "type": "string"
+        },
+        "event_version": {
+          "const": "1.1.0",
+          "default": "1.1.0",
+          "title": "Event Version",
+          "type": "string"
+        },
+        "occurred_at": {
+          "format": "date-time",
+          "title": "Occurred At",
+          "type": "string"
+        },
+        "tenant_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Tenant Id",
+          "type": "string"
+        },
+        "aggregate_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Aggregate Id",
+          "type": "string"
+        },
+        "aggregate_version": {
+          "minimum": 1,
+          "title": "Aggregate Version",
+          "type": "integer"
+        },
+        "actor": {
+          "$ref": "#/$defs/EventActor"
+        },
+        "correlation_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Correlation Id",
+          "type": "string"
+        },
+        "causation_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 3,
+              "pattern": "^[a-z][a-z0-9_-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Causation Id"
+        },
+        "payload": {
+          "additionalProperties": true,
+          "title": "Payload",
+          "type": "object"
+        }
+      },
+      "required": [
+        "event_id",
+        "event_type",
+        "occurred_at",
+        "tenant_id",
+        "aggregate_id",
+        "aggregate_version",
+        "actor",
+        "correlation_id",
+        "payload"
+      ],
+      "title": "DomainEvent",
+      "type": "object"
+    },
+    "EvaluationGuide": {
+      "additionalProperties": false,
+      "description": "Structured guide persisted with the assessment and submission.",
+      "properties": {
+        "schema_version": {
+          "const": "1.1.0",
+          "default": "1.1.0",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "guide_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Guide Id",
+          "type": "string"
+        },
+        "assessment_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Assessment Id",
+          "type": "string"
+        },
+        "submission_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Submission Id",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "READY",
+            "NEEDS_REVIEW",
+            "TECHNICAL_FAILURE"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "items": {
+          "items": {
+            "$ref": "#/$defs/EvaluationGuideItem"
+          },
+          "maxItems": 20,
+          "title": "Items",
+          "type": "array"
+        },
+        "diagnostics": {
+          "items": {
+            "$ref": "#/$defs/Diagnostic"
+          },
+          "title": "Diagnostics",
+          "type": "array"
+        },
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        }
+      },
+      "required": [
+        "guide_id",
+        "assessment_id",
+        "submission_id",
+        "status",
+        "created_at"
+      ],
+      "title": "EvaluationGuide",
+      "type": "object"
+    },
+    "EvaluationGuideItem": {
+      "additionalProperties": false,
+      "properties": {
+        "question_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Question Id",
+          "type": "string"
+        },
+        "guide": {
+          "$ref": "#/$defs/GuideDraft"
+        }
+      },
+      "required": [
+        "question_id",
+        "guide"
+      ],
+      "title": "EvaluationGuideItem",
+      "type": "object"
+    },
+    "EventActor": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "enum": [
+            "USER",
+            "SERVICE",
+            "SYSTEM"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "id"
+      ],
+      "title": "EventActor",
+      "type": "object"
+    },
+    "EvidenceAlignment": {
+      "additionalProperties": false,
+      "properties": {
+        "dimension_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Dimension Id",
+          "type": "string"
+        },
+        "variant_ids": {
+          "items": {
+            "maxLength": 128,
+            "minLength": 3,
+            "pattern": "^[a-z][a-z0-9_-]*$",
+            "type": "string"
+          },
+          "maxItems": 50,
+          "minItems": 1,
+          "title": "Variant Ids",
+          "type": "array"
+        },
+        "criterion_ids": {
+          "items": {
+            "maxLength": 128,
+            "minLength": 3,
+            "pattern": "^[a-z][a-z0-9_-]*$",
+            "type": "string"
+          },
+          "title": "Criterion Ids",
+          "type": "array"
+        },
+        "strength": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Strength",
+          "type": "number"
+        },
+        "justification": {
+          "maxLength": 800,
+          "minLength": 1,
+          "title": "Justification",
+          "type": "string"
+        }
+      },
+      "required": [
+        "dimension_id",
+        "variant_ids",
+        "strength",
+        "justification"
+      ],
+      "title": "EvidenceAlignment",
+      "type": "object"
+    },
+    "EvidenceBundle": {
+      "additionalProperties": false,
+      "description": "Exact allowlisted evidence sent to one model call.",
+      "properties": {
+        "schema_version": {
+          "const": "1.1.0",
+          "default": "1.1.0",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "bundle_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Bundle Id",
+          "type": "string"
+        },
+        "tenant_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Tenant Id",
+          "type": "string"
+        },
+        "activity_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Activity Id",
+          "type": "string"
+        },
+        "submission_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Submission Id",
+          "type": "string"
+        },
+        "context_mode": {
+          "$ref": "#/$defs/ContextMode",
+          "default": "CLOSED"
+        },
+        "allowed_evidence_ids": {
+          "items": {
+            "maxLength": 128,
+            "minLength": 3,
+            "pattern": "^[a-z][a-z0-9_-]*$",
+            "type": "string"
+          },
+          "maxItems": 500,
+          "minItems": 1,
+          "title": "Allowed Evidence Ids",
+          "type": "array"
+        },
+        "evidence_units": {
+          "items": {
+            "$ref": "#/$defs/EvidenceUnit"
+          },
+          "maxItems": 500,
+          "minItems": 1,
+          "title": "Evidence Units",
+          "type": "array"
+        },
+        "course_passages": {
+          "items": {
+            "$ref": "#/$defs/CoursePassage"
+          },
+          "maxItems": 100,
+          "title": "Course Passages",
+          "type": "array"
+        }
+      },
+      "required": [
+        "bundle_id",
+        "tenant_id",
+        "activity_id",
+        "submission_id",
+        "allowed_evidence_ids",
+        "evidence_units"
+      ],
+      "title": "EvidenceBundle",
+      "type": "object"
+    },
+    "EvidenceClaim": {
+      "additionalProperties": false,
+      "properties": {
+        "claim_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Claim Id",
+          "type": "string"
+        },
+        "text": {
+          "maxLength": 1500,
+          "minLength": 1,
+          "title": "Text",
+          "type": "string"
+        },
+        "evidence_ids": {
+          "items": {
+            "maxLength": 128,
+            "minLength": 3,
+            "pattern": "^[a-z][a-z0-9_-]*$",
+            "type": "string"
+          },
+          "maxItems": 50,
+          "minItems": 1,
+          "title": "Evidence Ids",
+          "type": "array"
+        },
+        "alignments": {
+          "items": {
+            "$ref": "#/$defs/EvidenceAlignment"
+          },
+          "title": "Alignments",
+          "type": "array"
+        },
+        "supported_operations": {
+          "items": {
+            "$ref": "#/$defs/CognitiveOperation"
+          },
+          "title": "Supported Operations",
+          "type": "array"
+        },
+        "specificity": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Specificity",
+          "type": "number"
+        },
+        "auditability": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Auditability",
+          "type": "number"
+        },
+        "self_containment": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Self Containment",
+          "type": "number"
+        },
+        "ambiguity_risk": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Ambiguity Risk",
+          "type": "number"
+        },
+        "uncertainties": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 20,
+          "title": "Uncertainties",
+          "type": "array"
+        }
+      },
+      "required": [
+        "claim_id",
+        "text",
+        "evidence_ids",
+        "specificity",
+        "auditability",
+        "self_containment",
+        "ambiguity_risk"
+      ],
+      "title": "EvidenceClaim",
+      "type": "object"
+    },
+    "EvidenceMapPatch": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": "1.1.0",
+          "default": "1.1.0",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "submission_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Submission Id",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "READY",
+            "INSUFFICIENT_RELEVANT_EVIDENCE",
+            "INSUFFICIENT_DISTINCT_QUESTION_OPPORTUNITIES",
+            "EVIDENCE_MAPPING_UNCERTAIN",
+            "TECHNICAL_FAILURE"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "claims": {
+          "items": {
+            "$ref": "#/$defs/EvidenceClaim"
+          },
+          "title": "Claims",
+          "type": "array"
+        },
+        "variant_matches": {
+          "items": {
+            "$ref": "#/$defs/EvidenceVariantMatch"
+          },
+          "title": "Variant Matches",
+          "type": "array"
+        },
+        "opportunities": {
+          "items": {
+            "$ref": "#/$defs/QuestionOpportunity"
+          },
+          "title": "Opportunities",
+          "type": "array"
+        },
+        "diagnostics": {
+          "items": {
+            "$ref": "#/$defs/Diagnostic"
+          },
+          "title": "Diagnostics",
+          "type": "array"
+        }
+      },
+      "required": [
+        "submission_id",
+        "status"
+      ],
+      "title": "EvidenceMapPatch",
+      "type": "object"
+    },
+    "EvidenceMapRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": "1.1.0",
+          "default": "1.1.0",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "blueprint": {
+          "$ref": "#/$defs/AssessmentBlueprint"
+        },
+        "evidence_bundle": {
+          "$ref": "#/$defs/EvidenceBundle"
+        }
+      },
+      "required": [
+        "blueprint",
+        "evidence_bundle"
+      ],
+      "title": "EvidenceMapRequest",
+      "type": "object"
+    },
+    "EvidenceModality": {
+      "enum": [
+        "HEADING",
+        "PARAGRAPH",
+        "LIST",
+        "TABLE",
+        "CELL_RANGE",
+        "FORMULA",
+        "SLIDE_SHAPE",
+        "SPEAKER_NOTES",
+        "CODE_SYMBOL",
+        "CODE_SPAN",
+        "NOTEBOOK_CELL",
+        "IMAGE_REGION",
+        "CHART",
+        "EQUATION",
+        "OTHER"
+      ],
+      "title": "EvidenceModality",
+      "type": "string"
+    },
+    "EvidenceRelation": {
+      "additionalProperties": false,
+      "properties": {
+        "relation": {
+          "enum": [
+            "CONTAINS",
+            "DEPENDS_ON",
+            "REFERENCES",
+            "CONTINUES",
+            "DERIVED_FROM",
+            "CORROBORATES",
+            "CONTRADICTS"
+          ],
+          "title": "Relation",
+          "type": "string"
+        },
+        "target_evidence_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Target Evidence Id",
+          "type": "string"
+        },
+        "confidence": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Confidence",
+          "type": "number"
+        }
+      },
+      "required": [
+        "relation",
+        "target_evidence_id",
+        "confidence"
+      ],
+      "title": "EvidenceRelation",
+      "type": "object"
+    },
+    "EvidenceRequirement": {
+      "additionalProperties": false,
+      "properties": {
+        "allowed_modalities": {
+          "items": {
+            "$ref": "#/$defs/EvidenceModality"
+          },
+          "minItems": 1,
+          "title": "Allowed Modalities",
+          "type": "array"
+        },
+        "min_distinct_units": {
+          "default": 1,
+          "maximum": 20,
+          "minimum": 1,
+          "title": "Min Distinct Units",
+          "type": "integer"
+        },
+        "min_extraction_confidence": {
+          "default": 0.75,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Min Extraction Confidence",
+          "type": "number"
+        },
+        "min_alignment": {
+          "default": 0.65,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Min Alignment",
+          "type": "number"
+        },
+        "cross_artifact_required": {
+          "default": false,
+          "title": "Cross Artifact Required",
+          "type": "boolean"
+        },
+        "course_sources_allowed": {
+          "default": false,
+          "title": "Course Sources Allowed",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "allowed_modalities"
+      ],
+      "title": "EvidenceRequirement",
+      "type": "object"
+    },
+    "EvidenceUnit": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": "1.1.0",
+          "default": "1.1.0",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "evidence_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Evidence Id",
+          "type": "string"
+        },
+        "tenant_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Tenant Id",
+          "type": "string"
+        },
+        "submission_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 3,
+              "pattern": "^[a-z][a-z0-9_-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Submission Id"
+        },
+        "artifact_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "artifact_hash": {
+          "pattern": "^sha256:[a-f0-9]{64}$",
+          "title": "Artifact Hash",
+          "type": "string"
+        },
+        "source_role": {
+          "$ref": "#/$defs/ArtifactRole"
+        },
+        "modality": {
+          "$ref": "#/$defs/EvidenceModality"
+        },
+        "locator": {
+          "discriminator": {
+            "mapping": {
+              "CODE_SPAN": "#/$defs/CodeLocator",
+              "DOCUMENT_PATH": "#/$defs/DocumentLocator",
+              "IMAGE_REGION": "#/$defs/ImageLocator",
+              "NOTEBOOK_CELL": "#/$defs/NotebookLocator",
+              "PAGE_BBOX": "#/$defs/PageLocator",
+              "SHEET_RANGE": "#/$defs/SheetLocator",
+              "SLIDE_SHAPE": "#/$defs/SlideLocator"
+            },
+            "propertyName": "kind"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/PageLocator"
+            },
+            {
+              "$ref": "#/$defs/DocumentLocator"
+            },
+            {
+              "$ref": "#/$defs/SlideLocator"
+            },
+            {
+              "$ref": "#/$defs/SheetLocator"
+            },
+            {
+              "$ref": "#/$defs/CodeLocator"
+            },
+            {
+              "$ref": "#/$defs/NotebookLocator"
+            },
+            {
+              "$ref": "#/$defs/ImageLocator"
+            }
+          ],
+          "title": "Locator"
+        },
+        "content_text": {
+          "anyOf": [
+            {
+              "maxLength": 100000,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Content Text"
+        },
+        "structured_content": {
+          "anyOf": [
+            {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Structured Content"
+        },
+        "language": {
+          "anyOf": [
+            {
+              "maxLength": 35,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Language"
+        },
+        "extraction_confidence": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Extraction Confidence",
+          "type": "number"
+        },
+        "ocr_used": {
+          "default": false,
+          "title": "Ocr Used",
+          "type": "boolean"
+        },
+        "sensitive_labels": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 50,
+          "title": "Sensitive Labels",
+          "type": "array"
+        },
+        "relations": {
+          "items": {
+            "$ref": "#/$defs/EvidenceRelation"
+          },
+          "maxItems": 500,
+          "title": "Relations",
+          "type": "array"
+        },
+        "normalized_hash": {
+          "pattern": "^sha256:[a-f0-9]{64}$",
+          "title": "Normalized Hash",
+          "type": "string"
+        }
+      },
+      "required": [
+        "evidence_id",
+        "tenant_id",
+        "artifact_id",
+        "artifact_hash",
+        "source_role",
+        "modality",
+        "locator",
+        "extraction_confidence",
+        "normalized_hash"
+      ],
+      "title": "EvidenceUnit",
+      "type": "object"
+    },
+    "EvidenceVariant": {
+      "additionalProperties": false,
+      "properties": {
+        "variant_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Variant Id",
+          "type": "string"
+        },
+        "name": {
+          "maxLength": 300,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "description": {
+          "maxLength": 1200,
+          "minLength": 1,
+          "title": "Description",
+          "type": "string"
+        },
+        "evidence_requirement": {
+          "$ref": "#/$defs/EvidenceRequirement"
+        },
+        "verification_potential": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Verification Potential",
+          "type": "number"
+        },
+        "supported_operations": {
+          "items": {
+            "$ref": "#/$defs/SupportedOperation"
+          },
+          "maxItems": 9,
+          "minItems": 1,
+          "title": "Supported Operations",
+          "type": "array"
+        },
+        "question_opportunities": {
+          "items": {
+            "$ref": "#/$defs/QuestionOpportunityTemplate"
+          },
+          "maxItems": 100,
+          "minItems": 1,
+          "title": "Question Opportunities",
+          "type": "array"
+        }
+      },
+      "required": [
+        "variant_id",
+        "name",
+        "description",
+        "evidence_requirement",
+        "verification_potential",
+        "supported_operations",
+        "question_opportunities"
+      ],
+      "title": "EvidenceVariant",
+      "type": "object"
+    },
+    "EvidenceVariantMatch": {
+      "additionalProperties": false,
+      "properties": {
+        "dimension_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Dimension Id",
+          "type": "string"
+        },
+        "variant_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Variant Id",
+          "type": "string"
+        },
+        "evidence_ids": {
+          "items": {
+            "maxLength": 128,
+            "minLength": 3,
+            "pattern": "^[a-z][a-z0-9_-]*$",
+            "type": "string"
+          },
+          "maxItems": 50,
+          "minItems": 1,
+          "title": "Evidence Ids",
+          "type": "array"
+        },
+        "evidence_fit": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Evidence Fit",
+          "type": "number"
+        },
+        "mapping_confidence": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Mapping Confidence",
+          "type": "number"
+        },
+        "justification": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "title": "Justification",
+          "type": "string"
+        }
+      },
+      "required": [
+        "dimension_id",
+        "variant_id",
+        "evidence_ids",
+        "evidence_fit",
+        "mapping_confidence",
+        "justification"
+      ],
+      "title": "EvidenceVariantMatch",
+      "type": "object"
+    },
+    "GuideBuildRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": "1.1.0",
+          "default": "1.1.0",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "guide_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Guide Id",
+          "type": "string"
+        },
+        "assessment": {
+          "$ref": "#/$defs/Assessment"
+        },
+        "evidence_bundle": {
+          "$ref": "#/$defs/EvidenceBundle"
+        }
+      },
+      "required": [
+        "guide_id",
+        "assessment",
+        "evidence_bundle"
+      ],
+      "title": "GuideBuildRequest",
+      "type": "object"
+    },
+    "GuideDraft": {
+      "additionalProperties": false,
+      "properties": {
+        "purpose": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "title": "Purpose",
+          "type": "string"
+        },
+        "observable_elements": {
+          "items": {
+            "$ref": "#/$defs/ObservableElement"
+          },
+          "maxItems": 20,
+          "title": "Observable Elements",
+          "type": "array"
+        },
+        "acceptable_alternatives": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 20,
+          "title": "Acceptable Alternatives",
+          "type": "array"
+        },
+        "misconceptions": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 20,
+          "title": "Misconceptions",
+          "type": "array"
+        },
+        "levels": {
+          "items": {
+            "$ref": "#/$defs/GuideLevel"
+          },
+          "maxItems": 4,
+          "title": "Levels",
+          "type": "array"
+        },
+        "cannot_infer": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 20,
+          "title": "Cannot Infer",
+          "type": "array"
+        }
+      },
+      "required": [
+        "purpose"
+      ],
+      "title": "GuideDraft",
+      "type": "object"
+    },
+    "GuideLevel": {
+      "additionalProperties": false,
+      "properties": {
+        "level": {
+          "maximum": 3,
+          "minimum": 0,
+          "title": "Level",
+          "type": "integer"
+        },
+        "label": {
+          "maxLength": 100,
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "descriptor": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "title": "Descriptor",
+          "type": "string"
+        },
+        "observable_element_ids": {
+          "items": {
+            "maxLength": 128,
+            "minLength": 3,
+            "pattern": "^[a-z][a-z0-9_-]*$",
+            "type": "string"
+          },
+          "title": "Observable Element Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "level",
+        "label",
+        "descriptor"
+      ],
+      "title": "GuideLevel",
+      "type": "object"
+    },
+    "ImageLocator": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "IMAGE_REGION",
+          "default": "IMAGE_REGION",
+          "title": "Kind",
+          "type": "string"
+        },
+        "path": {
+          "maxLength": 1024,
+          "minLength": 1,
+          "title": "Path",
+          "type": "string"
+        },
+        "bbox": {
+          "items": {
+            "type": "number"
+          },
+          "maxItems": 4,
+          "minItems": 4,
+          "title": "Bbox",
+          "type": "array"
+        },
+        "coordinate_space": {
+          "default": "PIXELS",
+          "enum": [
+            "PIXELS",
+            "NORMALIZED"
+          ],
+          "title": "Coordinate Space",
+          "type": "string"
+        }
+      },
+      "required": [
+        "path",
+        "bbox"
+      ],
+      "title": "ImageLocator",
+      "type": "object"
+    },
+    "JobStatus": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": "1.1.0",
+          "default": "1.1.0",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "job_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Job Id",
+          "type": "string"
+        },
+        "tenant_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Tenant Id",
+          "type": "string"
+        },
+        "aggregate_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Aggregate Id",
+          "type": "string"
+        },
+        "stage": {
+          "title": "Stage",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "QUEUED",
+            "RUNNING",
+            "SUCCEEDED",
+            "FAILED",
+            "NEEDS_REVIEW"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "progress": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Progress",
+          "type": "number"
+        },
+        "attempt": {
+          "minimum": 0,
+          "title": "Attempt",
+          "type": "integer"
+        },
+        "diagnostics": {
+          "items": {
+            "$ref": "#/$defs/Diagnostic"
+          },
+          "title": "Diagnostics",
+          "type": "array"
+        },
+        "started_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Started At"
+        },
+        "finished_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Finished At"
+        }
+      },
+      "required": [
+        "job_id",
+        "tenant_id",
+        "aggregate_id",
+        "stage",
+        "status",
+        "progress",
+        "attempt"
+      ],
+      "title": "JobStatus",
+      "type": "object"
+    },
+    "Lineage": {
+      "additionalProperties": false,
+      "properties": {
+        "assignment_prompt_hashes": {
+          "items": {
+            "pattern": "^sha256:[a-f0-9]{64}$",
+            "type": "string"
+          },
+          "title": "Assignment Prompt Hashes",
+          "type": "array"
+        },
+        "rubric_hashes": {
+          "items": {
+            "pattern": "^sha256:[a-f0-9]{64}$",
+            "type": "string"
+          },
+          "title": "Rubric Hashes",
+          "type": "array"
+        },
+        "submission_hashes": {
+          "items": {
+            "pattern": "^sha256:[a-f0-9]{64}$",
+            "type": "string"
+          },
+          "title": "Submission Hashes",
+          "type": "array"
+        },
+        "blueprint_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Blueprint Id",
+          "type": "string"
+        },
+        "blueprint_version": {
+          "minimum": 1,
+          "title": "Blueprint Version",
+          "type": "integer"
+        },
+        "parser_versions": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Parser Versions",
+          "type": "object"
+        },
+        "prompt_versions": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Prompt Versions",
+          "type": "object"
+        },
+        "schema_version": {
+          "const": "1.1.0",
+          "default": "1.1.0",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "model_snapshots": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Model Snapshots",
+          "type": "object"
+        },
+        "policy_hash": {
+          "pattern": "^sha256:[a-f0-9]{64}$",
+          "title": "Policy Hash",
+          "type": "string"
+        },
+        "planner_version": {
+          "title": "Planner Version",
+          "type": "string"
+        },
+        "renderer_version": {
+          "title": "Renderer Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "assignment_prompt_hashes",
+        "rubric_hashes",
+        "submission_hashes",
+        "blueprint_id",
+        "blueprint_version",
+        "parser_versions",
+        "prompt_versions",
+        "model_snapshots",
+        "policy_hash",
+        "planner_version",
+        "renderer_version"
+      ],
+      "title": "Lineage",
+      "type": "object"
+    },
+    "ModelCallLedger": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": "1.1.0",
+          "default": "1.1.0",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "model_call_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Model Call Id",
+          "type": "string"
+        },
+        "tenant_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Tenant Id",
+          "type": "string"
+        },
+        "job_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Job Id",
+          "type": "string"
+        },
+        "stage": {
+          "title": "Stage",
+          "type": "string"
+        },
+        "prompt_id": {
+          "title": "Prompt Id",
+          "type": "string"
+        },
+        "prompt_version": {
+          "title": "Prompt Version",
+          "type": "string"
+        },
+        "prompt_hash": {
+          "pattern": "^sha256:[a-f0-9]{64}$",
+          "title": "Prompt Hash",
+          "type": "string"
+        },
+        "input_bundle_hash": {
+          "pattern": "^sha256:[a-f0-9]{64}$",
+          "title": "Input Bundle Hash",
+          "type": "string"
+        },
+        "schema_name": {
+          "title": "Schema Name",
+          "type": "string"
+        },
+        "schema_version_used": {
+          "title": "Schema Version Used",
+          "type": "string"
+        },
+        "route": {
+          "$ref": "#/$defs/ModelRoute"
+        },
+        "input_tokens": {
+          "minimum": 0,
+          "title": "Input Tokens",
+          "type": "integer"
+        },
+        "cached_input_tokens": {
+          "minimum": 0,
+          "title": "Cached Input Tokens",
+          "type": "integer"
+        },
+        "output_tokens": {
+          "minimum": 0,
+          "title": "Output Tokens",
+          "type": "integer"
+        },
+        "latency_ms": {
+          "minimum": 0,
+          "title": "Latency Ms",
+          "type": "integer"
+        },
+        "estimated_cost_usd": {
+          "minimum": 0.0,
+          "title": "Estimated Cost Usd",
+          "type": "number"
+        },
+        "actual_cost_usd": {
+          "anyOf": [
+            {
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Actual Cost Usd"
+        },
+        "result": {
+          "enum": [
+            "SCHEMA_VALID",
+            "SCHEMA_INVALID",
+            "SAFETY_BLOCK",
+            "RATE_LIMIT",
+            "TIMEOUT",
+            "PROVIDER_ERROR"
+          ],
+          "title": "Result",
+          "type": "string"
+        },
+        "attempt": {
+          "maximum": 10,
+          "minimum": 1,
+          "title": "Attempt",
+          "type": "integer"
+        },
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        }
+      },
+      "required": [
+        "model_call_id",
+        "tenant_id",
+        "job_id",
+        "stage",
+        "prompt_id",
+        "prompt_version",
+        "prompt_hash",
+        "input_bundle_hash",
+        "schema_name",
+        "schema_version_used",
+        "route",
+        "input_tokens",
+        "cached_input_tokens",
+        "output_tokens",
+        "latency_ms",
+        "estimated_cost_usd",
+        "result",
+        "attempt",
+        "created_at"
+      ],
+      "title": "ModelCallLedger",
+      "type": "object"
+    },
+    "ModelCapabilities": {
+      "additionalProperties": false,
+      "properties": {
+        "input_modalities": {
+          "items": {
+            "$ref": "#/$defs/ModelInputModality"
+          },
+          "minItems": 1,
+          "title": "Input Modalities",
+          "type": "array"
+        },
+        "output_modalities": {
+          "items": {
+            "$ref": "#/$defs/ModelOutputModality"
+          },
+          "minItems": 1,
+          "title": "Output Modalities",
+          "type": "array"
+        },
+        "structured_outputs": {
+          "title": "Structured Outputs",
+          "type": "boolean"
+        },
+        "max_context_tokens": {
+          "exclusiveMinimum": 0,
+          "title": "Max Context Tokens",
+          "type": "integer"
+        },
+        "supported_reasoning_efforts": {
+          "items": {
+            "$ref": "#/$defs/ReasoningEffort"
+          },
+          "minItems": 1,
+          "title": "Supported Reasoning Efforts",
+          "type": "array"
+        },
+        "supports_zero_data_retention": {
+          "title": "Supports Zero Data Retention",
+          "type": "boolean"
+        },
+        "supported_regions": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 100,
+          "title": "Supported Regions",
+          "type": "array"
+        }
+      },
+      "required": [
+        "input_modalities",
+        "output_modalities",
+        "structured_outputs",
+        "max_context_tokens",
+        "supported_reasoning_efforts",
+        "supports_zero_data_retention"
+      ],
+      "title": "ModelCapabilities",
+      "type": "object"
+    },
+    "ModelInputModality": {
+      "enum": [
+        "TEXT",
+        "IMAGE",
+        "PDF",
+        "AUDIO",
+        "VIDEO"
+      ],
+      "title": "ModelInputModality",
+      "type": "string"
+    },
+    "ModelOutputModality": {
+      "enum": [
+        "TEXT",
+        "STRUCTURED_JSON"
+      ],
+      "title": "ModelOutputModality",
+      "type": "string"
+    },
+    "ModelRoute": {
+      "additionalProperties": false,
+      "description": "Approved callable unit; routing resolves policy instead of choosing dynamically.",
+      "properties": {
+        "schema_version": {
+          "const": "1.1.0",
+          "default": "1.1.0",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "route_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Route Id",
+          "type": "string"
+        },
+        "task": {
+          "title": "Task",
+          "type": "string"
+        },
+        "provider": {
+          "enum": [
+            "openai",
+            "anthropic",
+            "google",
+            "other"
+          ],
+          "title": "Provider",
+          "type": "string"
+        },
+        "model": {
+          "maxLength": 255,
+          "minLength": 1,
+          "title": "Model",
+          "type": "string"
+        },
+        "model_snapshot": {
+          "maxLength": 255,
+          "minLength": 1,
+          "title": "Model Snapshot",
+          "type": "string"
+        },
+        "reasoning_effort": {
+          "$ref": "#/$defs/ReasoningEffort"
+        },
+        "temperature": {
+          "maximum": 2.0,
+          "minimum": 0.0,
+          "title": "Temperature",
+          "type": "number"
+        },
+        "capabilities": {
+          "$ref": "#/$defs/ModelCapabilities"
+        },
+        "retention_mode": {
+          "enum": [
+            "DEFAULT",
+            "MAM",
+            "ZDR"
+          ],
+          "title": "Retention Mode",
+          "type": "string"
+        },
+        "region": {
+          "anyOf": [
+            {
+              "maxLength": 100,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Region"
+        },
+        "max_cost_usd": {
+          "exclusiveMinimum": 0.0,
+          "title": "Max Cost Usd",
+          "type": "number"
+        },
+        "max_input_tokens": {
+          "exclusiveMinimum": 0,
+          "title": "Max Input Tokens",
+          "type": "integer"
+        },
+        "max_output_tokens": {
+          "exclusiveMinimum": 0,
+          "title": "Max Output Tokens",
+          "type": "integer"
+        },
+        "fallback_route_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 3,
+              "pattern": "^[a-z][a-z0-9_-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Fallback Route Id"
+        },
+        "reason_codes": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Reason Codes",
+          "type": "array"
+        }
+      },
+      "required": [
+        "route_id",
+        "task",
+        "provider",
+        "model",
+        "model_snapshot",
+        "reasoning_effort",
+        "temperature",
+        "capabilities",
+        "retention_mode",
+        "max_cost_usd",
+        "max_input_tokens",
+        "max_output_tokens"
+      ],
+      "title": "ModelRoute",
+      "type": "object"
+    },
+    "ModelRouteResolution": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": "1.1.0",
+          "default": "1.1.0",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "resolution_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Resolution Id",
+          "type": "string"
+        },
+        "task": {
+          "title": "Task",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "RESOLVED",
+            "NEEDS_REVIEW",
+            "BLOCKED"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "required_input_modalities": {
+          "items": {
+            "$ref": "#/$defs/ModelInputModality"
+          },
+          "minItems": 1,
+          "title": "Required Input Modalities",
+          "type": "array"
+        },
+        "required_output_modalities": {
+          "items": {
+            "$ref": "#/$defs/ModelOutputModality"
+          },
+          "minItems": 1,
+          "title": "Required Output Modalities",
+          "type": "array"
+        },
+        "route": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ModelRoute"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "evaluated_route_ids": {
+          "items": {
+            "maxLength": 128,
+            "minLength": 3,
+            "pattern": "^[a-z][a-z0-9_-]*$",
+            "type": "string"
+          },
+          "maxItems": 100,
+          "title": "Evaluated Route Ids",
+          "type": "array"
+        },
+        "reason_codes": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 100,
+          "minItems": 1,
+          "title": "Reason Codes",
+          "type": "array"
+        }
+      },
+      "required": [
+        "resolution_id",
+        "task",
+        "status",
+        "required_input_modalities",
+        "required_output_modalities",
+        "reason_codes"
+      ],
+      "title": "ModelRouteResolution",
+      "type": "object"
+    },
+    "ModelTaskEnvelope": {
+      "additionalProperties": false,
+      "description": "Transport envelope; payload is validated again against its prompt request root.",
+      "properties": {
+        "schema_version": {
+          "const": "1.1.0",
+          "default": "1.1.0",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "prompt_id": {
+          "pattern": "^P(?:0[1-9]|1[01])_[A-Z0-9_]+_V1$",
+          "title": "Prompt Id",
+          "type": "string"
+        },
+        "prompt_version": {
+          "pattern": "^1\\.1\\.\\d+$",
+          "title": "Prompt Version",
+          "type": "string"
+        },
+        "output_schema_name": {
+          "maxLength": 128,
+          "minLength": 3,
+          "title": "Output Schema Name",
+          "type": "string"
+        },
+        "output_schema_version": {
+          "const": "1.1.0",
+          "default": "1.1.0",
+          "title": "Output Schema Version",
+          "type": "string"
+        },
+        "trusted_context": {
+          "$ref": "#/$defs/TrustedPromptContext"
+        },
+        "payload": {
+          "additionalProperties": true,
+          "title": "Payload",
+          "type": "object"
+        }
+      },
+      "required": [
+        "prompt_id",
+        "prompt_version",
+        "output_schema_name",
+        "trusted_context",
+        "payload"
+      ],
+      "title": "ModelTaskEnvelope",
+      "type": "object"
+    },
+    "NotebookLocator": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "NOTEBOOK_CELL",
+          "default": "NOTEBOOK_CELL",
+          "title": "Kind",
+          "type": "string"
+        },
+        "path": {
+          "maxLength": 1024,
+          "minLength": 1,
+          "title": "Path",
+          "type": "string"
+        },
+        "cell_id": {
+          "maxLength": 255,
+          "minLength": 1,
+          "title": "Cell Id",
+          "type": "string"
+        },
+        "cell_index": {
+          "minimum": 0,
+          "title": "Cell Index",
+          "type": "integer"
+        },
+        "output_index": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Output Index"
+        }
+      },
+      "required": [
+        "path",
+        "cell_id",
+        "cell_index"
+      ],
+      "title": "NotebookLocator",
+      "type": "object"
+    },
+    "ObservableElement": {
+      "additionalProperties": false,
+      "properties": {
+        "element_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Element Id",
+          "type": "string"
+        },
+        "description": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "title": "Description",
+          "type": "string"
+        },
+        "evidence_ids": {
+          "items": {
+            "maxLength": 128,
+            "minLength": 3,
+            "pattern": "^[a-z][a-z0-9_-]*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Evidence Ids",
+          "type": "array"
+        },
+        "source_ids": {
+          "items": {
+            "maxLength": 128,
+            "minLength": 3,
+            "pattern": "^[a-z][a-z0-9_-]*$",
+            "type": "string"
+          },
+          "maxItems": 50,
+          "title": "Source Ids",
+          "type": "array"
+        },
+        "required_for_level_2": {
+          "default": true,
+          "title": "Required For Level 2",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "element_id",
+        "description",
+        "evidence_ids"
+      ],
+      "title": "ObservableElement",
+      "type": "object"
+    },
+    "PageLocator": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "PAGE_BBOX",
+          "default": "PAGE_BBOX",
+          "title": "Kind",
+          "type": "string"
+        },
+        "page": {
+          "minimum": 1,
+          "title": "Page",
+          "type": "integer"
+        },
+        "bbox": {
+          "items": {
+            "type": "number"
+          },
+          "maxItems": 4,
+          "minItems": 4,
+          "title": "Bbox",
+          "type": "array"
+        },
+        "block_index": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Block Index"
+        }
+      },
+      "required": [
+        "page",
+        "bbox"
+      ],
+      "title": "PageLocator",
+      "type": "object"
+    },
+    "PolicyDecision": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": "1.1.0",
+          "default": "1.1.0",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "decision_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Decision Id",
+          "type": "string"
+        },
+        "issue_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Issue Id",
+          "type": "string"
+        },
+        "selected_option_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Selected Option Id",
+          "type": "string"
+        },
+        "decided_by": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Decided By",
+          "type": "string"
+        },
+        "decided_at": {
+          "format": "date-time",
+          "title": "Decided At",
+          "type": "string"
+        },
+        "note": {
+          "anyOf": [
+            {
+              "maxLength": 2000,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Note"
+        }
+      },
+      "required": [
+        "decision_id",
+        "issue_id",
+        "selected_option_id",
+        "decided_by",
+        "decided_at"
+      ],
+      "title": "PolicyDecision",
+      "type": "object"
+    },
+    "ProblemDetail": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "default": "about:blank",
+          "title": "Type",
+          "type": "string"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        },
+        "status": {
+          "maximum": 599,
+          "minimum": 400,
+          "title": "Status",
+          "type": "integer"
+        },
+        "detail": {
+          "title": "Detail",
+          "type": "string"
+        },
+        "instance": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Instance"
+        },
+        "code": {
+          "pattern": "^[A-Z][A-Z0-9_]{2,63}$",
+          "title": "Code",
+          "type": "string"
+        },
+        "trace_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Trace Id"
+        },
+        "retryable": {
+          "default": false,
+          "title": "Retryable",
+          "type": "boolean"
+        },
+        "fields": {
+          "additionalProperties": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "title": "Fields",
+          "type": "object"
+        }
+      },
+      "required": [
+        "title",
+        "status",
+        "detail",
+        "code"
+      ],
+      "title": "ProblemDetail",
+      "type": "object"
+    },
+    "QuestionBuildRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": "1.1.0",
+          "default": "1.1.0",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "plan": {
+          "$ref": "#/$defs/AssessmentPlan"
+        },
+        "opportunity": {
+          "$ref": "#/$defs/QuestionOpportunity"
+        },
+        "evidence_bundle": {
+          "$ref": "#/$defs/EvidenceBundle"
+        },
+        "generation_policy": {
+          "$ref": "#/$defs/QuestionGenerationPolicy"
+        },
+        "avoid": {
+          "items": {
+            "$ref": "#/$defs/RejectedQuestionFingerprint"
+          },
+          "maxItems": 100,
+          "title": "Avoid",
+          "type": "array"
+        }
+      },
+      "required": [
+        "plan",
+        "opportunity",
+        "evidence_bundle",
+        "generation_policy"
+      ],
+      "title": "QuestionBuildRequest",
+      "type": "object"
+    },
+    "QuestionCandidate": {
+      "additionalProperties": false,
+      "properties": {
+        "candidate_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Candidate Id",
+          "type": "string"
+        },
+        "submission_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Submission Id",
+          "type": "string"
+        },
+        "opportunity_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Opportunity Id",
+          "type": "string"
+        },
+        "opportunity_template_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Opportunity Template Id",
+          "type": "string"
+        },
+        "dimension_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Dimension Id",
+          "type": "string"
+        },
+        "variant_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Variant Id",
+          "type": "string"
+        },
+        "cognitive_operation": {
+          "$ref": "#/$defs/CognitiveOperation"
+        },
+        "response_format": {
+          "$ref": "#/$defs/ResponseFormat"
+        },
+        "difficulty": {
+          "$ref": "#/$defs/DifficultyBand"
+        },
+        "estimated_minutes": {
+          "maximum": 60,
+          "minimum": 1,
+          "title": "Estimated Minutes",
+          "type": "integer"
+        },
+        "question_text": {
+          "maxLength": 4000,
+          "minLength": 5,
+          "title": "Question Text",
+          "type": "string"
+        },
+        "anchor": {
+          "$ref": "#/$defs/Anchor"
+        },
+        "evidence_ids": {
+          "items": {
+            "maxLength": 128,
+            "minLength": 3,
+            "pattern": "^[a-z][a-z0-9_-]*$",
+            "type": "string"
+          },
+          "maxItems": 50,
+          "minItems": 1,
+          "title": "Evidence Ids",
+          "type": "array"
+        },
+        "course_source_ids": {
+          "items": {
+            "maxLength": 128,
+            "minLength": 3,
+            "pattern": "^[a-z][a-z0-9_-]*$",
+            "type": "string"
+          },
+          "maxItems": 50,
+          "title": "Course Source Ids",
+          "type": "array"
+        },
+        "citations": {
+          "items": {
+            "$ref": "#/$defs/SourceCitation"
+          },
+          "maxItems": 50,
+          "title": "Citations",
+          "type": "array"
+        },
+        "choices": {
+          "items": {
+            "$ref": "#/$defs/ChoiceOption"
+          },
+          "maxItems": 8,
+          "title": "Choices",
+          "type": "array"
+        },
+        "student_justification_required": {
+          "default": false,
+          "title": "Student Justification Required",
+          "type": "boolean"
+        },
+        "preliminary_guide": {
+          "$ref": "#/$defs/GuideDraft"
+        },
+        "uncertainties": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 20,
+          "title": "Uncertainties",
+          "type": "array"
+        }
+      },
+      "required": [
+        "candidate_id",
+        "submission_id",
+        "opportunity_id",
+        "opportunity_template_id",
+        "dimension_id",
+        "variant_id",
+        "cognitive_operation",
+        "response_format",
+        "difficulty",
+        "estimated_minutes",
+        "question_text",
+        "anchor",
+        "evidence_ids",
+        "preliminary_guide"
+      ],
+      "title": "QuestionCandidate",
+      "type": "object"
+    },
+    "QuestionGenerationPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": "1.1.0",
+          "default": "1.1.0",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "policy_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Policy Id",
+          "type": "string"
+        },
+        "max_anchor_fragments": {
+          "default": 4,
+          "maximum": 8,
+          "minimum": 1,
+          "title": "Max Anchor Fragments",
+          "type": "integer"
+        },
+        "max_course_passages": {
+          "default": 8,
+          "maximum": 50,
+          "minimum": 0,
+          "title": "Max Course Passages",
+          "type": "integer"
+        },
+        "require_accessible_alternative": {
+          "default": true,
+          "title": "Require Accessible Alternative",
+          "type": "boolean"
+        },
+        "max_local_regenerations": {
+          "default": 1,
+          "maximum": 3,
+          "minimum": 0,
+          "title": "Max Local Regenerations",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "policy_id"
+      ],
+      "title": "QuestionGenerationPolicy",
+      "type": "object"
+    },
+    "QuestionGenerationResult": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": "1.1.0",
+          "default": "1.1.0",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "submission_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Submission Id",
+          "type": "string"
+        },
+        "opportunity_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Opportunity Id",
+          "type": "string"
+        },
+        "context_mode": {
+          "$ref": "#/$defs/ContextMode",
+          "default": "CLOSED"
+        },
+        "status": {
+          "enum": [
+            "READY",
+            "REPLACEMENT_REQUIRED",
+            "TECHNICAL_FAILURE"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "candidate": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/QuestionCandidate"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "diagnostics": {
+          "items": {
+            "$ref": "#/$defs/Diagnostic"
+          },
+          "title": "Diagnostics",
+          "type": "array"
+        }
+      },
+      "required": [
+        "submission_id",
+        "opportunity_id",
+        "status"
+      ],
+      "title": "QuestionGenerationResult",
+      "type": "object"
+    },
+    "QuestionOpportunity": {
+      "additionalProperties": false,
+      "properties": {
+        "opportunity_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Opportunity Id",
+          "type": "string"
+        },
+        "opportunity_template_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Opportunity Template Id",
+          "type": "string"
+        },
+        "submission_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Submission Id",
+          "type": "string"
+        },
+        "dimension_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Dimension Id",
+          "type": "string"
+        },
+        "variant_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Variant Id",
+          "type": "string"
+        },
+        "evidence_ids": {
+          "items": {
+            "maxLength": 128,
+            "minLength": 3,
+            "pattern": "^[a-z][a-z0-9_-]*$",
+            "type": "string"
+          },
+          "maxItems": 50,
+          "minItems": 1,
+          "title": "Evidence Ids",
+          "type": "array"
+        },
+        "cognitive_operation": {
+          "$ref": "#/$defs/CognitiveOperation"
+        },
+        "focus": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "title": "Focus",
+          "type": "string"
+        },
+        "observable": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "title": "Observable",
+          "type": "string"
+        },
+        "difficulty": {
+          "$ref": "#/$defs/DifficultyBand"
+        },
+        "target_minutes": {
+          "maximum": 60,
+          "minimum": 1,
+          "title": "Target Minutes",
+          "type": "integer"
+        },
+        "allowed_anchor_structures": {
+          "items": {
+            "$ref": "#/$defs/AnchorStructure"
+          },
+          "minItems": 1,
+          "title": "Allowed Anchor Structures",
+          "type": "array"
+        },
+        "allowed_response_formats": {
+          "items": {
+            "$ref": "#/$defs/ResponseFormat"
+          },
+          "minItems": 1,
+          "title": "Allowed Response Formats",
+          "type": "array"
+        },
+        "activity_priority": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Activity Priority",
+          "type": "number"
+        },
+        "evidence_fit": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Evidence Fit",
+          "type": "number"
+        },
+        "opportunity_quality": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Opportunity Quality",
+          "type": "number"
+        },
+        "student_justification_required": {
+          "default": false,
+          "title": "Student Justification Required",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "opportunity_id",
+        "opportunity_template_id",
+        "submission_id",
+        "dimension_id",
+        "variant_id",
+        "evidence_ids",
+        "cognitive_operation",
+        "focus",
+        "observable",
+        "difficulty",
+        "target_minutes",
+        "allowed_anchor_structures",
+        "allowed_response_formats",
+        "activity_priority",
+        "evidence_fit",
+        "opportunity_quality"
+      ],
+      "title": "QuestionOpportunity",
+      "type": "object"
+    },
+    "QuestionOpportunityTemplate": {
+      "additionalProperties": false,
+      "properties": {
+        "opportunity_template_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Opportunity Template Id",
+          "type": "string"
+        },
+        "cognitive_operation": {
+          "$ref": "#/$defs/CognitiveOperation"
+        },
+        "focus": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "title": "Focus",
+          "type": "string"
+        },
+        "observable": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "title": "Observable",
+          "type": "string"
+        },
+        "difficulty": {
+          "$ref": "#/$defs/DifficultyBand"
+        },
+        "target_minutes": {
+          "maximum": 60,
+          "minimum": 1,
+          "title": "Target Minutes",
+          "type": "integer"
+        },
+        "allowed_anchor_structures": {
+          "items": {
+            "$ref": "#/$defs/AnchorStructure"
+          },
+          "minItems": 1,
+          "title": "Allowed Anchor Structures",
+          "type": "array"
+        },
+        "allowed_response_formats": {
+          "items": {
+            "$ref": "#/$defs/ResponseFormat"
+          },
+          "minItems": 1,
+          "title": "Allowed Response Formats",
+          "type": "array"
+        },
+        "verification_potential": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Verification Potential",
+          "type": "number"
+        },
+        "minimum_quality": {
+          "default": 0.75,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Minimum Quality",
+          "type": "number"
+        },
+        "student_justification_required": {
+          "default": false,
+          "title": "Student Justification Required",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "opportunity_template_id",
+        "cognitive_operation",
+        "focus",
+        "observable",
+        "difficulty",
+        "target_minutes",
+        "allowed_anchor_structures",
+        "allowed_response_formats",
+        "verification_potential"
+      ],
+      "title": "QuestionOpportunityTemplate",
+      "type": "object"
+    },
+    "QuestionReviewAction": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": "1.1.0",
+          "default": "1.1.0",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "action_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Action Id",
+          "type": "string"
+        },
+        "assessment_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Assessment Id",
+          "type": "string"
+        },
+        "question_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Question Id",
+          "type": "string"
+        },
+        "action": {
+          "$ref": "#/$defs/QuestionReviewActionType"
+        },
+        "actor_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "occurred_at": {
+          "format": "date-time",
+          "title": "Occurred At",
+          "type": "string"
+        },
+        "reason_code": {
+          "anyOf": [
+            {
+              "pattern": "^[A-Z][A-Z0-9_]{2,63}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reason Code"
+        },
+        "note": {
+          "anyOf": [
+            {
+              "maxLength": 2000,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Note"
+        },
+        "replacement": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SelectedQuestion"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "action_id",
+        "assessment_id",
+        "question_id",
+        "action",
+        "actor_id",
+        "occurred_at"
+      ],
+      "title": "QuestionReviewAction",
+      "type": "object"
+    },
+    "QuestionReviewActionType": {
+      "enum": [
+        "ACCEPT",
+        "REJECT",
+        "EDIT",
+        "REGENERATE"
+      ],
+      "title": "QuestionReviewActionType",
+      "type": "string"
+    },
+    "QuestionReviewRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": "1.1.0",
+          "default": "1.1.0",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "generation_result": {
+          "$ref": "#/$defs/QuestionGenerationResult"
+        },
+        "opportunity": {
+          "$ref": "#/$defs/QuestionOpportunity"
+        },
+        "evidence_bundle": {
+          "$ref": "#/$defs/EvidenceBundle"
+        },
+        "validation_policy": {
+          "$ref": "#/$defs/QuestionValidationPolicy"
+        }
+      },
+      "required": [
+        "generation_result",
+        "opportunity",
+        "evidence_bundle",
+        "validation_policy"
+      ],
+      "title": "QuestionReviewRequest",
+      "type": "object"
+    },
+    "QuestionReviewResult": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": "1.1.0",
+          "default": "1.1.0",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "submission_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Submission Id",
+          "type": "string"
+        },
+        "opportunity_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Opportunity Id",
+          "type": "string"
+        },
+        "status": {
+          "default": "READY",
+          "enum": [
+            "READY",
+            "NEEDS_REVIEW",
+            "TECHNICAL_FAILURE"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "review": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/QuestionSemanticReview"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "diagnostics": {
+          "items": {
+            "$ref": "#/$defs/Diagnostic"
+          },
+          "title": "Diagnostics",
+          "type": "array"
+        }
+      },
+      "required": [
+        "submission_id",
+        "opportunity_id"
+      ],
+      "title": "QuestionReviewResult",
+      "type": "object"
+    },
+    "QuestionScores": {
+      "additionalProperties": false,
+      "properties": {
+        "groundedness": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Groundedness",
+          "type": "number"
+        },
+        "anchor_sufficiency": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Anchor Sufficiency",
+          "type": "number"
+        },
+        "criterion_relevance": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Criterion Relevance",
+          "type": "number"
+        },
+        "answerability": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Answerability",
+          "type": "number"
+        },
+        "cognitive_demand": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Cognitive Demand",
+          "type": "number"
+        },
+        "submission_specificity": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Submission Specificity",
+          "type": "number"
+        },
+        "clarity": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Clarity",
+          "type": "number"
+        },
+        "accessibility": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Accessibility",
+          "type": "number"
+        },
+        "discriminative_potential": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Discriminative Potential",
+          "type": "number"
+        },
+        "guide_observability": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Guide Observability",
+          "type": "number"
+        }
+      },
+      "required": [
+        "groundedness",
+        "anchor_sufficiency",
+        "criterion_relevance",
+        "answerability",
+        "cognitive_demand",
+        "submission_specificity",
+        "clarity",
+        "accessibility",
+        "discriminative_potential",
+        "guide_observability"
+      ],
+      "title": "QuestionScores",
+      "type": "object"
+    },
+    "QuestionSemanticReview": {
+      "additionalProperties": false,
+      "properties": {
+        "candidate_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Candidate Id",
+          "type": "string"
+        },
+        "decision": {
+          "$ref": "#/$defs/ReviewDecision"
+        },
+        "critical_failure_codes": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Critical Failure Codes",
+          "type": "array"
+        },
+        "scores": {
+          "$ref": "#/$defs/QuestionScores"
+        },
+        "estimated_difficulty": {
+          "$ref": "#/$defs/DifficultyBand"
+        },
+        "estimated_minutes": {
+          "maximum": 60,
+          "minimum": 1,
+          "title": "Estimated Minutes",
+          "type": "integer"
+        },
+        "confidence": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "justifications": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 20,
+          "title": "Justifications",
+          "type": "array"
+        },
+        "evidence_ids": {
+          "items": {
+            "maxLength": 128,
+            "minLength": 3,
+            "pattern": "^[a-z][a-z0-9_-]*$",
+            "type": "string"
+          },
+          "maxItems": 50,
+          "title": "Evidence Ids",
+          "type": "array"
+        },
+        "source_ids": {
+          "items": {
+            "maxLength": 128,
+            "minLength": 3,
+            "pattern": "^[a-z][a-z0-9_-]*$",
+            "type": "string"
+          },
+          "maxItems": 50,
+          "title": "Source Ids",
+          "type": "array"
+        },
+        "diagnostics": {
+          "items": {
+            "$ref": "#/$defs/Diagnostic"
+          },
+          "title": "Diagnostics",
+          "type": "array"
+        }
+      },
+      "required": [
+        "candidate_id",
+        "decision",
+        "scores",
+        "estimated_difficulty",
+        "estimated_minutes",
+        "confidence"
+      ],
+      "title": "QuestionSemanticReview",
+      "type": "object"
+    },
+    "QuestionValidationPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": "1.1.0",
+          "default": "1.1.0",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "policy_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Policy Id",
+          "type": "string"
+        },
+        "minimum_groundedness": {
+          "default": 0.9,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Minimum Groundedness",
+          "type": "number"
+        },
+        "minimum_anchor_sufficiency": {
+          "default": 0.8,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Minimum Anchor Sufficiency",
+          "type": "number"
+        },
+        "minimum_answerability": {
+          "default": 0.85,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Minimum Answerability",
+          "type": "number"
+        },
+        "minimum_criterion_relevance": {
+          "default": 0.8,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Minimum Criterion Relevance",
+          "type": "number"
+        },
+        "escalate_below_confidence": {
+          "default": 0.65,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Escalate Below Confidence",
+          "type": "number"
+        },
+        "critical_failure_codes": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 100,
+          "title": "Critical Failure Codes",
+          "type": "array"
+        }
+      },
+      "required": [
+        "policy_id"
+      ],
+      "title": "QuestionValidationPolicy",
+      "type": "object"
+    },
+    "ReasoningEffort": {
+      "enum": [
+        "MINIMAL",
+        "LOW",
+        "MEDIUM",
+        "HIGH"
+      ],
+      "title": "ReasoningEffort",
+      "type": "string"
+    },
+    "RejectedQuestionFingerprint": {
+      "additionalProperties": false,
+      "properties": {
+        "fingerprint_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Fingerprint Id",
+          "type": "string"
+        },
+        "opportunity_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Opportunity Id",
+          "type": "string"
+        },
+        "evidence_ids": {
+          "items": {
+            "maxLength": 128,
+            "minLength": 3,
+            "pattern": "^[a-z][a-z0-9_-]*$",
+            "type": "string"
+          },
+          "maxItems": 50,
+          "title": "Evidence Ids",
+          "type": "array"
+        },
+        "normalized_question_hash": {
+          "pattern": "^sha256:[a-f0-9]{64}$",
+          "title": "Normalized Question Hash",
+          "type": "string"
+        },
+        "rejection_codes": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 20,
+          "title": "Rejection Codes",
+          "type": "array"
+        }
+      },
+      "required": [
+        "fingerprint_id",
+        "opportunity_id",
+        "normalized_question_hash"
+      ],
+      "title": "RejectedQuestionFingerprint",
+      "type": "object"
+    },
+    "RepairStatus": {
+      "enum": [
+        "REPAIRED",
+        "UNREPAIRABLE"
+      ],
+      "title": "RepairStatus",
+      "type": "string"
+    },
+    "ResponseFormat": {
+      "enum": [
+        "OPEN_SHORT",
+        "STRUCTURED_BULLETS",
+        "CHOICE",
+        "ANNOTATION_OR_DIAGRAM",
+        "ORAL_EQUIVALENT"
+      ],
+      "title": "ResponseFormat",
+      "type": "string"
+    },
+    "ReviewCheckStatus": {
+      "enum": [
+        "PASS",
+        "WARN",
+        "FAIL"
+      ],
+      "title": "ReviewCheckStatus",
+      "type": "string"
+    },
+    "ReviewDecision": {
+      "enum": [
+        "ACCEPT",
+        "REJECT",
+        "ESCALATE"
+      ],
+      "title": "ReviewDecision",
+      "type": "string"
+    },
+    "RubricCriterion": {
+      "additionalProperties": false,
+      "properties": {
+        "criterion_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Criterion Id",
+          "type": "string"
+        },
+        "name": {
+          "maxLength": 300,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "description": {
+          "anyOf": [
+            {
+              "maxLength": 4000,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Description"
+        },
+        "evidence_ids": {
+          "items": {
+            "maxLength": 128,
+            "minLength": 3,
+            "pattern": "^[a-z][a-z0-9_-]*$",
+            "type": "string"
+          },
+          "maxItems": 100,
+          "minItems": 1,
+          "title": "Evidence Ids",
+          "type": "array"
+        },
+        "grading_weight": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Grading Weight"
+        },
+        "levels": {
+          "items": {
+            "$ref": "#/$defs/RubricLevel"
+          },
+          "maxItems": 20,
+          "title": "Levels",
+          "type": "array"
+        },
+        "observables": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 50,
+          "title": "Observables",
+          "type": "array"
+        },
+        "verification_fit": {
+          "enum": [
+            "HIGH",
+            "MEDIUM",
+            "LOW",
+            "NOT_VERIFIABLE"
+          ],
+          "title": "Verification Fit",
+          "type": "string"
+        },
+        "overlaps_with": {
+          "items": {
+            "maxLength": 128,
+            "minLength": 3,
+            "pattern": "^[a-z][a-z0-9_-]*$",
+            "type": "string"
+          },
+          "title": "Overlaps With",
+          "type": "array"
+        }
+      },
+      "required": [
+        "criterion_id",
+        "name",
+        "evidence_ids",
+        "verification_fit"
+      ],
+      "title": "RubricCriterion",
+      "type": "object"
+    },
+    "RubricLevel": {
+      "additionalProperties": false,
+      "properties": {
+        "level_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Level Id",
+          "type": "string"
+        },
+        "label": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "ordinal": {
+          "maximum": 20,
+          "minimum": 0,
+          "title": "Ordinal",
+          "type": "integer"
+        },
+        "descriptor": {
+          "anyOf": [
+            {
+              "maxLength": 4000,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Descriptor"
+        },
+        "evidence_ids": {
+          "items": {
+            "maxLength": 128,
+            "minLength": 3,
+            "pattern": "^[a-z][a-z0-9_-]*$",
+            "type": "string"
+          },
+          "maxItems": 50,
+          "title": "Evidence Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "level_id",
+        "label",
+        "ordinal"
+      ],
+      "title": "RubricLevel",
+      "type": "object"
+    },
+    "RubricNormalizeRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": "1.1.0",
+          "default": "1.1.0",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "activity_spec": {
+          "$ref": "#/$defs/ActivitySpec"
+        },
+        "rubric_evidence": {
+          "items": {
+            "$ref": "#/$defs/EvidenceUnit"
+          },
+          "maxItems": 500,
+          "minItems": 1,
+          "title": "Rubric Evidence",
+          "type": "array"
+        }
+      },
+      "required": [
+        "activity_spec",
+        "rubric_evidence"
+      ],
+      "title": "RubricNormalizeRequest",
+      "type": "object"
+    },
+    "RubricSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": "1.1.0",
+          "default": "1.1.0",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "activity_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Activity Id",
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/$defs/WorkflowStatus"
+        },
+        "scale_label": {
+          "anyOf": [
+            {
+              "maxLength": 200,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Scale Label"
+        },
+        "criteria": {
+          "items": {
+            "$ref": "#/$defs/RubricCriterion"
+          },
+          "title": "Criteria",
+          "type": "array"
+        },
+        "reported_weight_total": {
+          "anyOf": [
+            {
+              "maximum": 100.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reported Weight Total"
+        },
+        "diagnostics": {
+          "items": {
+            "$ref": "#/$defs/Diagnostic"
+          },
+          "title": "Diagnostics",
+          "type": "array"
+        }
+      },
+      "required": [
+        "activity_id",
+        "status",
+        "criteria"
+      ],
+      "title": "RubricSpec",
+      "type": "object"
+    },
+    "SchemaRepairRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": "1.1.0",
+          "default": "1.1.0",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "target_schema_name": {
+          "maxLength": 128,
+          "minLength": 3,
+          "title": "Target Schema Name",
+          "type": "string"
+        },
+        "invalid_output": {
+          "title": "Invalid Output"
+        },
+        "validation_issues": {
+          "items": {
+            "$ref": "#/$defs/SchemaValidationIssue"
+          },
+          "maxItems": 100,
+          "minItems": 1,
+          "title": "Validation Issues",
+          "type": "array"
+        }
+      },
+      "required": [
+        "target_schema_name",
+        "invalid_output",
+        "validation_issues"
+      ],
+      "title": "SchemaRepairRequest",
+      "type": "object"
+    },
+    "SchemaRepairResult": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": "1.1.0",
+          "default": "1.1.0",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "target_schema_name": {
+          "maxLength": 128,
+          "minLength": 3,
+          "title": "Target Schema Name",
+          "type": "string"
+        },
+        "repair_status": {
+          "$ref": "#/$defs/RepairStatus"
+        },
+        "repaired_output": {
+          "anyOf": [
+            {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Repaired Output"
+        },
+        "diagnostics": {
+          "items": {
+            "$ref": "#/$defs/Diagnostic"
+          },
+          "title": "Diagnostics",
+          "type": "array"
+        }
+      },
+      "required": [
+        "target_schema_name",
+        "repair_status"
+      ],
+      "title": "SchemaRepairResult",
+      "type": "object"
+    },
+    "SchemaValidationIssue": {
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "title": "Path",
+          "type": "string"
+        },
+        "error_type": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Error Type",
+          "type": "string"
+        },
+        "message": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "title": "Message",
+          "type": "string"
+        }
+      },
+      "required": [
+        "path",
+        "error_type",
+        "message"
+      ],
+      "title": "SchemaValidationIssue",
+      "type": "object"
+    },
+    "SelectedQuestion": {
+      "additionalProperties": false,
+      "properties": {
+        "question_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Question Id",
+          "type": "string"
+        },
+        "source_candidate_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Source Candidate Id",
+          "type": "string"
+        },
+        "opportunity_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Opportunity Id",
+          "type": "string"
+        },
+        "opportunity_template_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Opportunity Template Id",
+          "type": "string"
+        },
+        "dimension_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Dimension Id",
+          "type": "string"
+        },
+        "variant_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Variant Id",
+          "type": "string"
+        },
+        "cognitive_operation": {
+          "$ref": "#/$defs/CognitiveOperation"
+        },
+        "response_format": {
+          "$ref": "#/$defs/ResponseFormat"
+        },
+        "difficulty": {
+          "$ref": "#/$defs/DifficultyBand"
+        },
+        "estimated_minutes": {
+          "maximum": 60,
+          "minimum": 1,
+          "title": "Estimated Minutes",
+          "type": "integer"
+        },
+        "question_text": {
+          "maxLength": 4000,
+          "minLength": 5,
+          "title": "Question Text",
+          "type": "string"
+        },
+        "anchor": {
+          "$ref": "#/$defs/Anchor"
+        },
+        "evidence_ids": {
+          "items": {
+            "maxLength": 128,
+            "minLength": 3,
+            "pattern": "^[a-z][a-z0-9_-]*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Evidence Ids",
+          "type": "array"
+        },
+        "course_source_ids": {
+          "items": {
+            "maxLength": 128,
+            "minLength": 3,
+            "pattern": "^[a-z][a-z0-9_-]*$",
+            "type": "string"
+          },
+          "title": "Course Source Ids",
+          "type": "array"
+        },
+        "citations": {
+          "items": {
+            "$ref": "#/$defs/SourceCitation"
+          },
+          "maxItems": 50,
+          "title": "Citations",
+          "type": "array"
+        },
+        "choices": {
+          "items": {
+            "$ref": "#/$defs/ChoiceOption"
+          },
+          "title": "Choices",
+          "type": "array"
+        },
+        "student_justification_required": {
+          "default": false,
+          "title": "Student Justification Required",
+          "type": "boolean"
+        },
+        "preliminary_guide": {
+          "$ref": "#/$defs/GuideDraft"
+        },
+        "planning_score": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Planning Score",
+          "type": "number"
+        }
+      },
+      "required": [
+        "question_id",
+        "source_candidate_id",
+        "opportunity_id",
+        "opportunity_template_id",
+        "dimension_id",
+        "variant_id",
+        "cognitive_operation",
+        "response_format",
+        "difficulty",
+        "estimated_minutes",
+        "question_text",
+        "anchor",
+        "evidence_ids",
+        "preliminary_guide",
+        "planning_score"
+      ],
+      "title": "SelectedQuestion",
+      "type": "object"
+    },
+    "Severity": {
+      "enum": [
+        "INFO",
+        "WARNING",
+        "ERROR",
+        "CRITICAL"
+      ],
+      "title": "Severity",
+      "type": "string"
+    },
+    "SheetLocator": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "SHEET_RANGE",
+          "default": "SHEET_RANGE",
+          "title": "Kind",
+          "type": "string"
+        },
+        "workbook": {
+          "anyOf": [
+            {
+              "maxLength": 255,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Workbook"
+        },
+        "sheet": {
+          "maxLength": 255,
+          "minLength": 1,
+          "title": "Sheet",
+          "type": "string"
+        },
+        "range_a1": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Range A1",
+          "type": "string"
+        }
+      },
+      "required": [
+        "sheet",
+        "range_a1"
+      ],
+      "title": "SheetLocator",
+      "type": "object"
+    },
+    "SlideLocator": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "SLIDE_SHAPE",
+          "default": "SLIDE_SHAPE",
+          "title": "Kind",
+          "type": "string"
+        },
+        "slide_number": {
+          "minimum": 1,
+          "title": "Slide Number",
+          "type": "integer"
+        },
+        "shape_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Shape Id"
+        },
+        "notes": {
+          "default": false,
+          "title": "Notes",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "slide_number"
+      ],
+      "title": "SlideLocator",
+      "type": "object"
+    },
+    "SourceCitation": {
+      "additionalProperties": false,
+      "properties": {
+        "source_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Source Id",
+          "type": "string"
+        },
+        "locator": {
+          "discriminator": {
+            "mapping": {
+              "CODE_SPAN": "#/$defs/CodeLocator",
+              "DOCUMENT_PATH": "#/$defs/DocumentLocator",
+              "IMAGE_REGION": "#/$defs/ImageLocator",
+              "NOTEBOOK_CELL": "#/$defs/NotebookLocator",
+              "PAGE_BBOX": "#/$defs/PageLocator",
+              "SHEET_RANGE": "#/$defs/SheetLocator",
+              "SLIDE_SHAPE": "#/$defs/SlideLocator"
+            },
+            "propertyName": "kind"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/PageLocator"
+            },
+            {
+              "$ref": "#/$defs/DocumentLocator"
+            },
+            {
+              "$ref": "#/$defs/SlideLocator"
+            },
+            {
+              "$ref": "#/$defs/SheetLocator"
+            },
+            {
+              "$ref": "#/$defs/CodeLocator"
+            },
+            {
+              "$ref": "#/$defs/NotebookLocator"
+            },
+            {
+              "$ref": "#/$defs/ImageLocator"
+            }
+          ],
+          "title": "Locator"
+        },
+        "supported_claim": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "title": "Supported Claim",
+          "type": "string"
+        }
+      },
+      "required": [
+        "source_id",
+        "locator",
+        "supported_claim"
+      ],
+      "title": "SourceCitation",
+      "type": "object"
+    },
+    "SourcedStatement": {
+      "additionalProperties": false,
+      "properties": {
+        "statement_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Statement Id",
+          "type": "string"
+        },
+        "text": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "title": "Text",
+          "type": "string"
+        },
+        "evidence_ids": {
+          "items": {
+            "maxLength": 128,
+            "minLength": 3,
+            "pattern": "^[a-z][a-z0-9_-]*$",
+            "type": "string"
+          },
+          "maxItems": 50,
+          "minItems": 1,
+          "title": "Evidence Ids",
+          "type": "array"
+        },
+        "certainty": {
+          "default": "EXPLICIT",
+          "enum": [
+            "EXPLICIT",
+            "WEAK_INFERENCE",
+            "MISSING"
+          ],
+          "title": "Certainty",
+          "type": "string"
+        }
+      },
+      "required": [
+        "statement_id",
+        "text",
+        "evidence_ids"
+      ],
+      "title": "SourcedStatement",
+      "type": "object"
+    },
+    "StructuredJustificationMode": {
+      "enum": [
+        "NOT_REQUIRED",
+        "SELECTED",
+        "ALL"
+      ],
+      "title": "StructuredJustificationMode",
+      "type": "string"
+    },
+    "StructuredJustificationPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "mode": {
+          "$ref": "#/$defs/StructuredJustificationMode",
+          "default": "NOT_REQUIRED"
+        },
+        "selected_opportunity_template_ids": {
+          "items": {
+            "maxLength": 128,
+            "minLength": 3,
+            "pattern": "^[a-z][a-z0-9_-]*$",
+            "type": "string"
+          },
+          "maxItems": 200,
+          "title": "Selected Opportunity Template Ids",
+          "type": "array"
+        }
+      },
+      "title": "StructuredJustificationPolicy",
+      "type": "object"
+    },
+    "StructuredJustificationSummary": {
+      "additionalProperties": false,
+      "properties": {
+        "mode": {
+          "$ref": "#/$defs/StructuredJustificationMode"
+        },
+        "required_question_ids": {
+          "items": {
+            "maxLength": 128,
+            "minLength": 3,
+            "pattern": "^[a-z][a-z0-9_-]*$",
+            "type": "string"
+          },
+          "maxItems": 20,
+          "title": "Required Question Ids",
+          "type": "array"
+        },
+        "limited_evidence_notice_required": {
+          "default": false,
+          "title": "Limited Evidence Notice Required",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "mode"
+      ],
+      "title": "StructuredJustificationSummary",
+      "type": "object"
+    },
+    "SubmissionProcessingState": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": "1.1.0",
+          "default": "1.1.0",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "submission_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Submission Id",
+          "type": "string"
+        },
+        "activity_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Activity Id",
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/$defs/SubmissionProcessingStatus"
+        },
+        "current_stage": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Current Stage"
+        },
+        "progress": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Progress",
+          "type": "number"
+        },
+        "active_job_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 3,
+              "pattern": "^[a-z][a-z0-9_-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Active Job Id"
+        },
+        "diagnostics": {
+          "items": {
+            "$ref": "#/$defs/Diagnostic"
+          },
+          "title": "Diagnostics",
+          "type": "array"
+        },
+        "updated_at": {
+          "format": "date-time",
+          "title": "Updated At",
+          "type": "string"
+        }
+      },
+      "required": [
+        "submission_id",
+        "activity_id",
+        "status",
+        "progress",
+        "updated_at"
+      ],
+      "title": "SubmissionProcessingState",
+      "type": "object"
+    },
+    "SubmissionProcessingStatus": {
+      "enum": [
+        "UPLOADED",
+        "VALIDATING",
+        "PARSING",
+        "EVIDENCE_READY",
+        "MAPPING_OPPORTUNITIES",
+        "PLANNING",
+        "GENERATING",
+        "VALIDATING_QUESTIONS",
+        "GUIDE_READY",
+        "NEEDS_REVIEW",
+        "APPROVED",
+        "INSUFFICIENT_RELEVANT_EVIDENCE",
+        "INSUFFICIENT_DISTINCT_QUESTION_OPPORTUNITIES",
+        "EVIDENCE_MAPPING_UNCERTAIN",
+        "ASSESSMENT_PLAN_INFEASIBLE",
+        "TECHNICAL_FAILURE",
+        "REJECTED_SECURITY",
+        "CANCELLED"
+      ],
+      "title": "SubmissionProcessingStatus",
+      "type": "string"
+    },
+    "SupportedOperation": {
+      "additionalProperties": false,
+      "properties": {
+        "cognitive_operation": {
+          "$ref": "#/$defs/CognitiveOperation"
+        },
+        "support_strength": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Support Strength",
+          "type": "number"
+        },
+        "rationale": {
+          "maxLength": 800,
+          "minLength": 1,
+          "title": "Rationale",
+          "type": "string"
+        }
+      },
+      "required": [
+        "cognitive_operation",
+        "support_strength",
+        "rationale"
+      ],
+      "title": "SupportedOperation",
+      "type": "object"
+    },
+    "TrustedPromptContext": {
+      "additionalProperties": false,
+      "properties": {
+        "tenant_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Tenant Id",
+          "type": "string"
+        },
+        "activity_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Activity Id",
+          "type": "string"
+        },
+        "submission_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 3,
+              "pattern": "^[a-z][a-z0-9_-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Submission Id"
+        },
+        "blueprint_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 3,
+              "pattern": "^[a-z][a-z0-9_-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Blueprint Id"
+        },
+        "blueprint_version": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Blueprint Version"
+        },
+        "allowed_evidence_ids": {
+          "items": {
+            "maxLength": 128,
+            "minLength": 3,
+            "pattern": "^[a-z][a-z0-9_-]*$",
+            "type": "string"
+          },
+          "maxItems": 500,
+          "title": "Allowed Evidence Ids",
+          "type": "array"
+        },
+        "allowed_course_source_ids": {
+          "items": {
+            "maxLength": 128,
+            "minLength": 3,
+            "pattern": "^[a-z][a-z0-9_-]*$",
+            "type": "string"
+          },
+          "maxItems": 100,
+          "title": "Allowed Course Source Ids",
+          "type": "array"
+        },
+        "output_language": {
+          "default": "es-CL",
+          "maxLength": 35,
+          "minLength": 2,
+          "title": "Output Language",
+          "type": "string"
+        },
+        "context_mode": {
+          "$ref": "#/$defs/ContextMode",
+          "default": "CLOSED"
+        }
+      },
+      "required": [
+        "tenant_id",
+        "activity_id"
+      ],
+      "title": "TrustedPromptContext",
+      "type": "object"
+    },
+    "VerificationFactors": {
+      "additionalProperties": false,
+      "properties": {
+        "learning_relevance": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Learning Relevance",
+          "type": "number"
+        },
+        "centrality": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Centrality",
+          "type": "number"
+        },
+        "expected_evidence": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Expected Evidence",
+          "type": "number"
+        },
+        "discriminative_potential": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Discriminative Potential",
+          "type": "number"
+        },
+        "auditability": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Auditability",
+          "type": "number"
+        },
+        "short_response_observability": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Short Response Observability",
+          "type": "number"
+        }
+      },
+      "required": [
+        "learning_relevance",
+        "centrality",
+        "expected_evidence",
+        "discriminative_potential",
+        "auditability",
+        "short_response_observability"
+      ],
+      "title": "VerificationFactors",
+      "type": "object"
+    },
+    "WorkflowStatus": {
+      "enum": [
+        "DRAFT",
+        "BLOCKED",
+        "READY",
+        "NEEDS_REVIEW",
+        "APPROVED",
+        "PUBLISHED",
+        "INSUFFICIENT_RELEVANT_EVIDENCE",
+        "INSUFFICIENT_DISTINCT_QUESTION_OPPORTUNITIES",
+        "EVIDENCE_MAPPING_UNCERTAIN",
+        "ASSESSMENT_PLAN_INFEASIBLE",
+        "TECHNICAL_FAILURE",
+        "REJECTED_SECURITY"
+      ],
+      "title": "WorkflowStatus",
+      "type": "string"
+    }
+  }
+}

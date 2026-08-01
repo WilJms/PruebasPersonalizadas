@@ -1,0 +1,26 @@
+{
+  "activity_id": "act_stage0_cache",
+  "adaptation_policy_id": null,
+  "allowed_artifact_media_types": [
+    "text/markdown"
+  ],
+  "allowed_response_formats": [
+    "OPEN_SHORT",
+    "STRUCTURED_BULLETS"
+  ],
+  "assessment_modality": "WRITTEN",
+  "context_mode": "CLOSED",
+  "course_source_ids": [],
+  "output_language": "es-CL",
+  "priority_criterion_ids": [
+    "criterion_coherence",
+    "criterion_limits"
+  ],
+  "question_count": 3,
+  "require_blueprint_approval": true,
+  "schema_version": "1.1.0",
+  "structured_justification_mode": "NOT_REQUIRED",
+  "target_total_minutes": 10,
+  "tenant_id": "tnt_stage0",
+  "title": "Explicar decisiones de una politica de cache"
+}

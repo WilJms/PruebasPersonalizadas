@@ -1,0 +1,78 @@
+{
+  "claims": [
+    {
+      "alignments": [
+        {
+          "criterion_ids": [],
+          "dimension_id": "dimension_386080d68583b6611a90",
+          "justification": "El fragmento satisface la variante sintética seleccionada.",
+          "strength": 0.95,
+          "variant_ids": [
+            "variant_6ce4b2b3e2a682f60042"
+          ]
+        }
+      ],
+      "ambiguity_risk": 0.1,
+      "auditability": 1.0,
+      "claim_id": "claim_b4a15317b5fc6ffa01be",
+      "evidence_ids": [
+        "ev_8502fac83ca6deadfbe2"
+      ],
+      "self_containment": 0.9,
+      "specificity": 0.95,
+      "supported_operations": [
+        "JUSTIFY_DECISION",
+        "EXPLAIN_MECHANISM",
+        "RECONSTRUCT_REASONING",
+        "CONNECT_INTERNAL",
+        "PREDICT_LOCAL_CONSEQUENCE",
+        "IDENTIFY_DEPENDENCY"
+      ],
+      "text": "Se eligio una segmentacion adecuada y se prepararon mensajes distintos para cada grupo.",
+      "uncertainties": []
+    }
+  ],
+  "diagnostics": [],
+  "opportunities": [
+    {
+      "activity_priority": 0.95,
+      "allowed_anchor_structures": [
+        "SINGLE_FRAGMENT"
+      ],
+      "allowed_response_formats": [
+        "OPEN_SHORT"
+      ],
+      "cognitive_operation": "JUSTIFY_DECISION",
+      "difficulty": "LOW",
+      "dimension_id": "dimension_386080d68583b6611a90",
+      "evidence_fit": 0.95,
+      "evidence_ids": [
+        "ev_8502fac83ca6deadfbe2"
+      ],
+      "focus": "Aspecto verificable 1 del entregable.",
+      "observable": "Relaciona una afirmación localizada con una consecuencia observable en la evidencia.",
+      "opportunity_id": "opp_6175f33433296cbc1016",
+      "opportunity_quality": 0.95,
+      "opportunity_template_id": "oppt_6ce4b2b3e2a682f60042",
+      "student_justification_required": false,
+      "submission_id": "sub_campaign_insufficient",
+      "target_minutes": 3,
+      "variant_id": "variant_6ce4b2b3e2a682f60042"
+    }
+  ],
+  "schema_version": "1.1.0",
+  "status": "READY",
+  "submission_id": "sub_campaign_insufficient",
+  "variant_matches": [
+    {
+      "dimension_id": "dimension_386080d68583b6611a90",
+      "evidence_fit": 0.95,
+      "evidence_ids": [
+        "ev_8502fac83ca6deadfbe2"
+      ],
+      "justification": "La evidencia cumple modalidad, confianza y procedencia exigidas por la variante.",
+      "mapping_confidence": 0.95,
+      "variant_id": "variant_6ce4b2b3e2a682f60042"
+    }
+  ]
+}

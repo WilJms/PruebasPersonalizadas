@@ -1,0 +1,28 @@
+{
+  "blueprint_id": "blueprint_221ff281dc3e54bd08f9",
+  "blueprint_version": 1,
+  "diagnostics": [
+    {
+      "code": "INSUFFICIENT_DISTINCT_QUESTION_OPPORTUNITIES",
+      "details": {
+        "distinct_opportunity_count": 1,
+        "required_question_count": 3
+      },
+      "evidence_ids": [
+        "ev_8502fac83ca6deadfbe2"
+      ],
+      "message": "No existen oportunidades sustancialmente distintas suficientes para el número solicitado.",
+      "retryable": false,
+      "severity": "ERROR",
+      "source_ids": []
+    }
+  ],
+  "estimated_total_minutes": 0,
+  "plan_id": "plan_66c782f38ce7971b7b68",
+  "question_count": 3,
+  "reserve_opportunity_ids": [],
+  "schema_version": "1.1.0",
+  "selected_opportunity_ids": [],
+  "status": "INSUFFICIENT_DISTINCT_QUESTION_OPPORTUNITIES",
+  "submission_id": "sub_campaign_insufficient"
+}

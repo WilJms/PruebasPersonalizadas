@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Guía {{ guide.guide_id }}</title>
+  <style>
+    :root { color-scheme: light; --ink: #172033; --muted: #5b6475; --line: #d8dde8; --accent: #176b55; --note: #fff7db; }
+    body { color: var(--ink); font: 16px/1.5 system-ui, sans-serif; margin: 2rem auto; max-width: 58rem; padding: 0 1.25rem; }
+    header { border-bottom: 3px solid var(--accent); margin-bottom: 2rem; padding-bottom: 1rem; }
+    h1 { font-size: 1.8rem; margin: 0 0 .5rem; }
+    .meta { color: var(--muted); font-size: .9rem; }
+    .notice { background: var(--note); border: 1px solid #e0c76e; border-radius: .4rem; padding: .8rem 1rem; }
+    article { border: 1px solid var(--line); border-radius: .5rem; margin: 1.5rem 0; padding: 1.25rem; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border-bottom: 1px solid var(--line); padding: .5rem; text-align: left; vertical-align: top; }
+    th { background: #eef7f3; }
+    code { color: var(--muted); }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Guía de evaluación</h1>
+    <div class="meta">Guía {{ guide.guide_id }} · Assessment {{ guide.assessment_id }} · submission {{ guide.submission_id }}</div>
+  </header>
+  {% if limited_evidence_notice %}
+  <p class="notice">La justificación no se exige en todas las preguntas; la evidencia observable tiene alcance limitado.</p>
+  {% endif %}
+  {% for item in guide.items %}
+  <article>
+    <h2>Pregunta {{ loop.index }} · <code>{{ item.question_id }}</code></h2>
+    <p><strong>Propósito:</strong> {{ item.guide.purpose }}</p>
+    <h3>Elementos observables</h3>
+    <ul>{% for element in item.guide.observable_elements %}<li>{{ element.description }}</li>{% endfor %}</ul>
+    <h3>Niveles</h3>
+    <table>
+      <thead><tr><th>Nivel</th><th>Descriptor</th></tr></thead>
+      <tbody>{% for level in item.guide.levels %}<tr><td>{{ level.level }} · {{ level.label }}</td><td>{{ level.descriptor }}</td></tr>{% endfor %}</tbody>
+    </table>
+    {% if item.guide.acceptable_alternatives %}<h3>Alternativas aceptables</h3><ul>{% for value in item.guide.acceptable_alternatives %}<li>{{ value }}</li>{% endfor %}</ul>{% endif %}
+    {% if item.guide.misconceptions %}<h3>Confusiones observables</h3><ul>{% for value in item.guide.misconceptions %}<li>{{ value }}</li>{% endfor %}</ul>{% endif %}
+    {% if item.guide.cannot_infer %}<h3>No permite inferir</h3><ul>{% for value in item.guide.cannot_infer %}<li>{{ value }}</li>{% endfor %}</ul>{% endif %}
+  </article>
+  {% endfor %}
+</body>
+</html>
+

@@ -1,0 +1,164 @@
+[
+  {
+    "artifact_hash": "sha256:259a0a81303f3fb7ca610eb0c75f4ca286360aa8d4801486f7f3efa2484dce41",
+    "artifact_id": "art_be738e6c99fc9dcef377",
+    "content_text": "Rubrica",
+    "evidence_id": "ev_3f9c942a5c53da37d7ed",
+    "extraction_confidence": 1.0,
+    "language": "es",
+    "locator": {
+      "column": null,
+      "heading_path": [
+        "Rubrica"
+      ],
+      "kind": "DOCUMENT_PATH",
+      "paragraph_index": 0,
+      "row": null,
+      "table_index": null
+    },
+    "modality": "HEADING",
+    "normalized_hash": "sha256:60da75a905a2f2e254db2866785cb93e3b8000a24a0a358e82ffd4779106b399",
+    "ocr_used": false,
+    "relations": [],
+    "schema_version": "1.1.0",
+    "sensitive_labels": [],
+    "source_role": "RUBRIC",
+    "structured_content": {
+      "heading_level": 1,
+      "line_end": 1,
+      "line_start": 1
+    },
+    "submission_id": null,
+    "tenant_id": "tnt_stage0"
+  },
+  {
+    "artifact_hash": "sha256:259a0a81303f3fb7ca610eb0c75f4ca286360aa8d4801486f7f3efa2484dce41",
+    "artifact_id": "art_be738e6c99fc9dcef377",
+    "content_text": "Coherencia del mecanismo",
+    "evidence_id": "ev_f2deae8466de2b8ce836",
+    "extraction_confidence": 1.0,
+    "language": "es",
+    "locator": {
+      "column": null,
+      "heading_path": [
+        "Rubrica",
+        "Coherencia del mecanismo"
+      ],
+      "kind": "DOCUMENT_PATH",
+      "paragraph_index": 1,
+      "row": null,
+      "table_index": null
+    },
+    "modality": "HEADING",
+    "normalized_hash": "sha256:fcfc31d28bcb6e36385e88e9c7caf52eb9fc680fe8122d8cd11bd7c18d1c033c",
+    "ocr_used": false,
+    "relations": [],
+    "schema_version": "1.1.0",
+    "sensitive_labels": [],
+    "source_role": "RUBRIC",
+    "structured_content": {
+      "heading_level": 2,
+      "line_end": 3,
+      "line_start": 3
+    },
+    "submission_id": null,
+    "tenant_id": "tnt_stage0"
+  },
+  {
+    "artifact_hash": "sha256:259a0a81303f3fb7ca610eb0c75f4ca286360aa8d4801486f7f3efa2484dce41",
+    "artifact_id": "art_be738e6c99fc9dcef377",
+    "content_text": "La explicacion relaciona el orden de consulta con la invalidacion y con el resultado visible para quien usa el servicio.",
+    "evidence_id": "ev_7f66dcc3e977cf9fb0e9",
+    "extraction_confidence": 1.0,
+    "language": "es",
+    "locator": {
+      "column": null,
+      "heading_path": [
+        "Rubrica",
+        "Coherencia del mecanismo"
+      ],
+      "kind": "DOCUMENT_PATH",
+      "paragraph_index": 2,
+      "row": null,
+      "table_index": null
+    },
+    "modality": "PARAGRAPH",
+    "normalized_hash": "sha256:9c576086ebe0b1e4ae712972c4e72fa58556d348f08255ff4cdf73a3f47a2c41",
+    "ocr_used": false,
+    "relations": [],
+    "schema_version": "1.1.0",
+    "sensitive_labels": [],
+    "source_role": "RUBRIC",
+    "structured_content": {
+      "line_end": 5,
+      "line_start": 5
+    },
+    "submission_id": null,
+    "tenant_id": "tnt_stage0"
+  },
+  {
+    "artifact_hash": "sha256:259a0a81303f3fb7ca610eb0c75f4ca286360aa8d4801486f7f3efa2484dce41",
+    "artifact_id": "art_be738e6c99fc9dcef377",
+    "content_text": "Limites",
+    "evidence_id": "ev_0a755b9e889acde3a1a3",
+    "extraction_confidence": 1.0,
+    "language": "es",
+    "locator": {
+      "column": null,
+      "heading_path": [
+        "Rubrica",
+        "Limites"
+      ],
+      "kind": "DOCUMENT_PATH",
+      "paragraph_index": 3,
+      "row": null,
+      "table_index": null
+    },
+    "modality": "HEADING",
+    "normalized_hash": "sha256:fb0ce766ae844a531c1e2a984d5be8e27aa055ccbcc2cf90f9d70d79a8a94aed",
+    "ocr_used": false,
+    "relations": [],
+    "schema_version": "1.1.0",
+    "sensitive_labels": [],
+    "source_role": "RUBRIC",
+    "structured_content": {
+      "heading_level": 2,
+      "line_end": 7,
+      "line_start": 7
+    },
+    "submission_id": null,
+    "tenant_id": "tnt_stage0"
+  },
+  {
+    "artifact_hash": "sha256:259a0a81303f3fb7ca610eb0c75f4ca286360aa8d4801486f7f3efa2484dce41",
+    "artifact_id": "art_be738e6c99fc9dcef377",
+    "content_text": "La entrega identifica un supuesto o una condicion bajo la cual la politica deja de ser adecuada, sin inventar evidencia externa.",
+    "evidence_id": "ev_ff39efb751027c491e7d",
+    "extraction_confidence": 1.0,
+    "language": "es",
+    "locator": {
+      "column": null,
+      "heading_path": [
+        "Rubrica",
+        "Limites"
+      ],
+      "kind": "DOCUMENT_PATH",
+      "paragraph_index": 4,
+      "row": null,
+      "table_index": null
+    },
+    "modality": "PARAGRAPH",
+    "normalized_hash": "sha256:351b5f052ef2885288b7537f9cd0f4dd159e7f3739eb23dc42df5afe94ffeea7",
+    "ocr_used": false,
+    "relations": [],
+    "schema_version": "1.1.0",
+    "sensitive_labels": [],
+    "source_role": "RUBRIC",
+    "structured_content": {
+      "line_end": 9,
+      "line_start": 9
+    },
+    "submission_id": null,
+    "tenant_id": "tnt_stage0"
+  }
+]

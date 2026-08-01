@@ -1,0 +1,43 @@
+{
+  "rules": [
+    {
+      "id": "abort-incomplete-multipart-after-one-day",
+      "conditions": {
+        "prefix": ""
+      },
+      "enabled": true,
+      "abortMultipartUploadsTransition": {
+        "condition": {
+          "type": "Age",
+          "maxAge": 86400
+        }
+      }
+    },
+    {
+      "id": "expire-raw-after-thirty-days",
+      "conditions": {
+        "prefix": "raw/"
+      },
+      "enabled": true,
+      "deleteObjectsTransition": {
+        "condition": {
+          "type": "Age",
+          "maxAge": 2592000
+        }
+      }
+    },
+    {
+      "id": "expire-exports-after-one-hundred-twenty-days",
+      "conditions": {
+        "prefix": "exports/"
+      },
+      "enabled": true,
+      "deleteObjectsTransition": {
+        "condition": {
+          "type": "Age",
+          "maxAge": 10368000
+        }
+      }
+    }
+  ]
+}

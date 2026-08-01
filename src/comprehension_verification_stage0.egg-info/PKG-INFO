@@ -1,0 +1,14 @@
+Metadata-Version: 2.4
+Name: comprehension-verification-stage0
+Version: 0.1.0
+Summary: Offline Stage 0 harness for evidence-bound comprehension verification
+Requires-Python: >=3.12
+Requires-Dist: Jinja2<4,>=3.1
+Requires-Dist: jsonschema[format]<5,>=4.23
+Requires-Dist: pdfplumber<1,>=0.11
+Requires-Dist: pydantic<3,>=2.13
+Requires-Dist: pypdf<7,>=6
+Requires-Dist: reportlab<5,>=4.4
+Provides-Extra: dev
+Requires-Dist: pytest<9,>=8.4; extra == "dev"
+Requires-Dist: pytest-cov<8,>=7; extra == "dev"

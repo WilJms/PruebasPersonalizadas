@@ -1,0 +1,27 @@
+Metadata-Version: 2.4
+Name: comprehension-verification
+Version: 0.2.0
+Summary: Stage 1 cloud experimental lab for evidence-bound comprehension verification
+Requires-Python: >=3.12
+Requires-Dist: alembic<2,>=1.16
+Requires-Dist: boto3<2,>=1.40
+Requires-Dist: fastapi<1,>=0.116
+Requires-Dist: google-auth<3,>=2.40
+Requires-Dist: Jinja2<4,>=3.1
+Requires-Dist: jsonschema[format]<5,>=4.23
+Requires-Dist: pdfplumber<1,>=0.11
+Requires-Dist: psycopg[binary]<4,>=3.2
+Requires-Dist: pydantic<3,>=2.13
+Requires-Dist: pydantic-settings<3,>=2.10
+Requires-Dist: PyJWT[crypto]<3,>=2.10
+Requires-Dist: pypdf<7,>=6
+Requires-Dist: python-multipart<1,>=0.0.20
+Requires-Dist: reportlab<5,>=4.4
+Requires-Dist: requests<3,>=2.32
+Requires-Dist: SQLAlchemy<3,>=2.0.43
+Requires-Dist: uvicorn[standard]<1,>=0.35
+Requires-Dist: weasyprint<70,>=62
+Provides-Extra: dev
+Requires-Dist: httpx<1,>=0.28; extra == "dev"
+Requires-Dist: pytest<9,>=8.4; extra == "dev"
+Requires-Dist: pytest-cov<8,>=7; extra == "dev"

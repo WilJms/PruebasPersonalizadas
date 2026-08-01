@@ -1,0 +1,33 @@
+{
+  "activity_id": "act_stage0_cache",
+  "approval_recommendation": "APPROVE",
+  "blueprint_id": "blueprint_818c3cbec3913d96c5a7",
+  "blueprint_version": 1,
+  "checks": [
+    {
+      "category": "SOURCE_FIDELITY",
+      "check_code": "BLUEPRINT_SOURCE_FIDELITY",
+      "correction": null,
+      "critical": false,
+      "message": "El catálogo conserva la frontera de evidencia.",
+      "referenced_ids": [
+        "blueprint_818c3cbec3913d96c5a7"
+      ],
+      "status": "PASS"
+    },
+    {
+      "category": "PLAN_FEASIBILITY",
+      "check_code": "BLUEPRINT_PLAN_FEASIBILITY",
+      "correction": null,
+      "critical": false,
+      "message": "El catálogo contiene suficientes oportunidades y conserva las restricciones configuradas.",
+      "referenced_ids": [
+        "blueprint_818c3cbec3913d96c5a7"
+      ],
+      "status": "PASS"
+    }
+  ],
+  "diagnostics": [],
+  "schema_version": "1.1.0",
+  "status": "READY"
+}

@@ -1,0 +1,327 @@
+[
+  {
+    "actual_cost_usd": 0.0,
+    "attempt": 1,
+    "cached_input_tokens": 0,
+    "created_at": "2026-07-31T12:00:00Z",
+    "estimated_cost_usd": 0.0,
+    "input_bundle_hash": "sha256:6dc4d7b2d8951313ba209041f789c93cf8404a24e8374273b757cab621bea8aa",
+    "input_tokens": 363,
+    "job_id": "job_d9517d29742e1322860d",
+    "latency_ms": 0,
+    "model_call_id": "modelcall_10996ae3d000565d44bf18bb",
+    "output_tokens": 183,
+    "prompt_hash": "sha256:512a926b6eda2157b20820292a340a8437db2969fce861a19aefb930a9076723",
+    "prompt_id": "P01_ACTIVITY_SPEC_V1",
+    "prompt_version": "1.1.0",
+    "result": "SCHEMA_VALID",
+    "route": {
+      "capabilities": {
+        "input_modalities": [
+          "TEXT",
+          "IMAGE",
+          "PDF"
+        ],
+        "max_context_tokens": 250000,
+        "output_modalities": [
+          "STRUCTURED_JSON"
+        ],
+        "structured_outputs": true,
+        "supported_reasoning_efforts": [
+          "MINIMAL",
+          "LOW",
+          "MEDIUM",
+          "HIGH"
+        ],
+        "supported_regions": [
+          "local-offline"
+        ],
+        "supports_zero_data_retention": true
+      },
+      "fallback_route_id": null,
+      "max_cost_usd": 0.01,
+      "max_input_tokens": 250000,
+      "max_output_tokens": 16000,
+      "model": "deterministic-mock-p01_activity_spec_v1",
+      "model_snapshot": "deterministic-mock-v1",
+      "provider": "other",
+      "reason_codes": [
+        "MOCK_MODE",
+        "NO_NETWORK",
+        "PROMPT_POLICY_P01"
+      ],
+      "reasoning_effort": "MEDIUM",
+      "region": "local-offline",
+      "retention_mode": "ZDR",
+      "route_id": "route_mock_p01_activity_spec_v1",
+      "schema_version": "1.1.0",
+      "task": "activity_specification",
+      "temperature": 0.1
+    },
+    "schema_name": "ActivitySpec",
+    "schema_version": "1.1.0",
+    "schema_version_used": "1.1.0",
+    "stage": "activity_specification",
+    "tenant_id": "tnt_stage0"
+  },
+  {
+    "actual_cost_usd": 0.0,
+    "attempt": 1,
+    "cached_input_tokens": 0,
+    "created_at": "2026-07-31T12:00:00Z",
+    "estimated_cost_usd": 0.0,
+    "input_bundle_hash": "sha256:c593c40d64309a7c1405e3cebf17e3d4fd692536d01c38806694ec3c0745f002",
+    "input_tokens": 194,
+    "job_id": "job_d9517d29742e1322860d",
+    "latency_ms": 0,
+    "model_call_id": "modelcall_490d93e725fef3aba3e74938",
+    "output_tokens": 24,
+    "prompt_hash": "sha256:2764a7bc1fa5cde81ddfda18d5278874b0add496570239a345c73c7f0b30edec",
+    "prompt_id": "P03_AMBIGUITY_TRIAGE_V1",
+    "prompt_version": "1.1.0",
+    "result": "SCHEMA_VALID",
+    "route": {
+      "capabilities": {
+        "input_modalities": [
+          "TEXT",
+          "IMAGE",
+          "PDF"
+        ],
+        "max_context_tokens": 250000,
+        "output_modalities": [
+          "STRUCTURED_JSON"
+        ],
+        "structured_outputs": true,
+        "supported_reasoning_efforts": [
+          "MINIMAL",
+          "LOW",
+          "MEDIUM",
+          "HIGH"
+        ],
+        "supported_regions": [
+          "local-offline"
+        ],
+        "supports_zero_data_retention": true
+      },
+      "fallback_route_id": null,
+      "max_cost_usd": 0.01,
+      "max_input_tokens": 250000,
+      "max_output_tokens": 16000,
+      "model": "deterministic-mock-p03_ambiguity_triage_v1",
+      "model_snapshot": "deterministic-mock-v1",
+      "provider": "other",
+      "reason_codes": [
+        "MOCK_MODE",
+        "NO_NETWORK",
+        "PROMPT_POLICY_P03"
+      ],
+      "reasoning_effort": "HIGH",
+      "region": "local-offline",
+      "retention_mode": "ZDR",
+      "route_id": "route_mock_p03_ambiguity_triage_v1",
+      "schema_version": "1.1.0",
+      "task": "ambiguity_triage",
+      "temperature": 0.1
+    },
+    "schema_name": "AmbiguityReport",
+    "schema_version": "1.1.0",
+    "schema_version_used": "1.1.0",
+    "stage": "ambiguity_triage",
+    "tenant_id": "tnt_stage0"
+  },
+  {
+    "actual_cost_usd": 0.0,
+    "attempt": 1,
+    "cached_input_tokens": 0,
+    "created_at": "2026-07-31T12:00:00Z",
+    "estimated_cost_usd": 0.0,
+    "input_bundle_hash": "sha256:4ee703bcd97a956a0f63022c185994fa3809f6547e48e3ec9c5620c6a60f942f",
+    "input_tokens": 400,
+    "job_id": "job_d9517d29742e1322860d",
+    "latency_ms": 0,
+    "model_call_id": "modelcall_7225e1d0e7c5df9b2934aed1",
+    "output_tokens": 1407,
+    "prompt_hash": "sha256:cdc297d5d77cf39a08f43ddf148c38f20111bd38d92b35932394ced40c91cdb9",
+    "prompt_id": "P04_BLUEPRINT_BUILD_V1",
+    "prompt_version": "1.1.0",
+    "result": "SCHEMA_VALID",
+    "route": {
+      "capabilities": {
+        "input_modalities": [
+          "TEXT",
+          "IMAGE",
+          "PDF"
+        ],
+        "max_context_tokens": 250000,
+        "output_modalities": [
+          "STRUCTURED_JSON"
+        ],
+        "structured_outputs": true,
+        "supported_reasoning_efforts": [
+          "MINIMAL",
+          "LOW",
+          "MEDIUM",
+          "HIGH"
+        ],
+        "supported_regions": [
+          "local-offline"
+        ],
+        "supports_zero_data_retention": true
+      },
+      "fallback_route_id": null,
+      "max_cost_usd": 0.01,
+      "max_input_tokens": 250000,
+      "max_output_tokens": 16000,
+      "model": "deterministic-mock-p04_blueprint_build_v1",
+      "model_snapshot": "deterministic-mock-v1",
+      "provider": "other",
+      "reason_codes": [
+        "MOCK_MODE",
+        "NO_NETWORK",
+        "PROMPT_POLICY_P04"
+      ],
+      "reasoning_effort": "HIGH",
+      "region": "local-offline",
+      "retention_mode": "ZDR",
+      "route_id": "route_mock_p04_blueprint_build_v1",
+      "schema_version": "1.1.0",
+      "task": "blueprint_build",
+      "temperature": 0.1
+    },
+    "schema_name": "AssessmentBlueprint",
+    "schema_version": "1.1.0",
+    "schema_version_used": "1.1.0",
+    "stage": "blueprint_build",
+    "tenant_id": "tnt_stage0"
+  },
+  {
+    "actual_cost_usd": 0.0,
+    "attempt": 1,
+    "cached_input_tokens": 0,
+    "created_at": "2026-07-31T12:00:00Z",
+    "estimated_cost_usd": 0.0,
+    "input_bundle_hash": "sha256:2ea7d54d74c15cd18d9435ecdcf4ad53544e75e725c126049746cf99898de11b",
+    "input_tokens": 1746,
+    "job_id": "job_d9517d29742e1322860d",
+    "latency_ms": 0,
+    "model_call_id": "modelcall_5d95a93a3ba711d0e6e9a935",
+    "output_tokens": 192,
+    "prompt_hash": "sha256:1c25af3785aadd78165fd4f9c8ab00316665aab8ef71e73bde37b75f7f05384d",
+    "prompt_id": "P05_BLUEPRINT_REVIEW_V1",
+    "prompt_version": "1.1.0",
+    "result": "SCHEMA_VALID",
+    "route": {
+      "capabilities": {
+        "input_modalities": [
+          "TEXT",
+          "IMAGE",
+          "PDF"
+        ],
+        "max_context_tokens": 250000,
+        "output_modalities": [
+          "STRUCTURED_JSON"
+        ],
+        "structured_outputs": true,
+        "supported_reasoning_efforts": [
+          "MINIMAL",
+          "LOW",
+          "MEDIUM",
+          "HIGH"
+        ],
+        "supported_regions": [
+          "local-offline"
+        ],
+        "supports_zero_data_retention": true
+      },
+      "fallback_route_id": null,
+      "max_cost_usd": 0.01,
+      "max_input_tokens": 250000,
+      "max_output_tokens": 16000,
+      "model": "deterministic-mock-p05_blueprint_review_v1",
+      "model_snapshot": "deterministic-mock-v1",
+      "provider": "other",
+      "reason_codes": [
+        "MOCK_MODE",
+        "NO_NETWORK",
+        "PROMPT_POLICY_P05"
+      ],
+      "reasoning_effort": "HIGH",
+      "region": "local-offline",
+      "retention_mode": "ZDR",
+      "route_id": "route_mock_p05_blueprint_review_v1",
+      "schema_version": "1.1.0",
+      "task": "blueprint_review",
+      "temperature": 0.1
+    },
+    "schema_name": "BlueprintReview",
+    "schema_version": "1.1.0",
+    "schema_version_used": "1.1.0",
+    "stage": "blueprint_review",
+    "tenant_id": "tnt_stage0"
+  },
+  {
+    "actual_cost_usd": 0.0,
+    "attempt": 1,
+    "cached_input_tokens": 0,
+    "created_at": "2026-07-31T12:00:00Z",
+    "estimated_cost_usd": 0.0,
+    "input_bundle_hash": "sha256:a5673a5e9e47c0721d7ab1b66ff905feaec3873ff1cc0053827c010c4fd64eee",
+    "input_tokens": 1633,
+    "job_id": "job_d9517d29742e1322860d",
+    "latency_ms": 0,
+    "model_call_id": "modelcall_c9ad800f46dc0301d96d8c6b",
+    "output_tokens": 1408,
+    "prompt_hash": "sha256:bac4c542b034616238337a6ce5d89eb3c174cb545a49fd25795f87eada6c0961",
+    "prompt_id": "P06_EVIDENCE_MAP_V1",
+    "prompt_version": "1.1.0",
+    "result": "SCHEMA_VALID",
+    "route": {
+      "capabilities": {
+        "input_modalities": [
+          "TEXT",
+          "IMAGE",
+          "PDF"
+        ],
+        "max_context_tokens": 250000,
+        "output_modalities": [
+          "STRUCTURED_JSON"
+        ],
+        "structured_outputs": true,
+        "supported_reasoning_efforts": [
+          "MINIMAL",
+          "LOW",
+          "MEDIUM",
+          "HIGH"
+        ],
+        "supported_regions": [
+          "local-offline"
+        ],
+        "supports_zero_data_retention": true
+      },
+      "fallback_route_id": null,
+      "max_cost_usd": 0.01,
+      "max_input_tokens": 250000,
+      "max_output_tokens": 16000,
+      "model": "deterministic-mock-p06_evidence_map_v1",
+      "model_snapshot": "deterministic-mock-v1",
+      "provider": "other",
+      "reason_codes": [
+        "MOCK_MODE",
+        "NO_NETWORK",
+        "PROMPT_POLICY_P06"
+      ],
+      "reasoning_effort": "HIGH",
+      "region": "local-offline",
+      "retention_mode": "ZDR",
+      "route_id": "route_mock_p06_evidence_map_v1",
+      "schema_version": "1.1.0",
+      "task": "evidence_mapping",
+      "temperature": 0.1
+    },
+    "schema_name": "EvidenceMapPatch",
+    "schema_version": "1.1.0",
+    "schema_version_used": "1.1.0",
+    "stage": "evidence_mapping",
+    "tenant_id": "tnt_stage0"
+  }
+]

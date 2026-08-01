@@ -1,0 +1,212 @@
+{
+  "activity_id": "act_stage0_cache",
+  "allowed_evidence_ids": [
+    "ev_10cfc3c4c8481adbdb01",
+    "ev_b0eac2cbfbe94059c697",
+    "ev_d9ff796204048287e50c",
+    "ev_d2296a23c9c83dfe56f9",
+    "ev_f9384e680978b877664d",
+    "ev_56102c1419cf81f684ce"
+  ],
+  "bundle_id": "bundle_34e1f713bec50363ae95",
+  "context_mode": "CLOSED",
+  "course_passages": [],
+  "evidence_units": [
+    {
+      "artifact_hash": "sha256:b05dec8cb352e6fba3cf3bd7aad84d180159c16d8c77c46e288faee4e3fdc62e",
+      "artifact_id": "art_6fda2e7e5a01f6648d5e",
+      "content_text": "Diseno propuesto",
+      "evidence_id": "ev_10cfc3c4c8481adbdb01",
+      "extraction_confidence": 1.0,
+      "language": "es",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Diseno propuesto"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 0,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "HEADING",
+      "normalized_hash": "sha256:353dc2abfc0a95dd92eee7b13757ad0f4c39b81beed3bec5bbfc1c515d0a792e",
+      "ocr_used": false,
+      "relations": [],
+      "schema_version": "1.1.0",
+      "sensitive_labels": [],
+      "source_role": "SUBMISSION",
+      "structured_content": {
+        "heading_level": 1,
+        "line_end": 1,
+        "line_start": 1
+      },
+      "submission_id": "sub_cache_sufficient",
+      "tenant_id": "tnt_stage0"
+    },
+    {
+      "artifact_hash": "sha256:b05dec8cb352e6fba3cf3bd7aad84d180159c16d8c77c46e288faee4e3fdc62e",
+      "artifact_id": "art_6fda2e7e5a01f6648d5e",
+      "content_text": "La lectura consulta primero la cache local. Si la entrada existe y su version coincide con la version publicada por la fuente, se devuelve el valor almacenado. Una entrada vencida no se renueva de forma silenciosa: se marca como no vigente antes de consultar la fuente.",
+      "evidence_id": "ev_b0eac2cbfbe94059c697",
+      "extraction_confidence": 1.0,
+      "language": "es",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Diseno propuesto"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 1,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "PARAGRAPH",
+      "normalized_hash": "sha256:1989356d62fa89a9d1f5aa05c417fefa7f90138de40b4d8f4778f893e17a2d59",
+      "ocr_used": false,
+      "relations": [],
+      "schema_version": "1.1.0",
+      "sensitive_labels": [],
+      "source_role": "SUBMISSION",
+      "structured_content": {
+        "line_end": 3,
+        "line_start": 3
+      },
+      "submission_id": "sub_cache_sufficient",
+      "tenant_id": "tnt_stage0"
+    },
+    {
+      "artifact_hash": "sha256:b05dec8cb352e6fba3cf3bd7aad84d180159c16d8c77c46e288faee4e3fdc62e",
+      "artifact_id": "art_6fda2e7e5a01f6648d5e",
+      "content_text": "Invalidacion",
+      "evidence_id": "ev_d9ff796204048287e50c",
+      "extraction_confidence": 1.0,
+      "language": "es",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Diseno propuesto",
+          "Invalidacion"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 2,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "HEADING",
+      "normalized_hash": "sha256:13a95495acd8847160bc3d5f9c921eb59c41d9aafb0fa1e998428aabc5ad9f0d",
+      "ocr_used": false,
+      "relations": [],
+      "schema_version": "1.1.0",
+      "sensitive_labels": [],
+      "source_role": "SUBMISSION",
+      "structured_content": {
+        "heading_level": 2,
+        "line_end": 5,
+        "line_start": 5
+      },
+      "submission_id": "sub_cache_sufficient",
+      "tenant_id": "tnt_stage0"
+    },
+    {
+      "artifact_hash": "sha256:b05dec8cb352e6fba3cf3bd7aad84d180159c16d8c77c46e288faee4e3fdc62e",
+      "artifact_id": "art_6fda2e7e5a01f6648d5e",
+      "content_text": "Cada actualizacion aceptada incrementa una version monotona. El consumidor compara esa version con la de la entrada local, por lo que una invalidacion tardia no puede restaurar un valor anterior.",
+      "evidence_id": "ev_d2296a23c9c83dfe56f9",
+      "extraction_confidence": 1.0,
+      "language": "es",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Diseno propuesto",
+          "Invalidacion"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 3,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "PARAGRAPH",
+      "normalized_hash": "sha256:f77c3b101a17c3a4cd69ea989615afee28def0830147d4ef2d505928466e0dae",
+      "ocr_used": false,
+      "relations": [],
+      "schema_version": "1.1.0",
+      "sensitive_labels": [],
+      "source_role": "SUBMISSION",
+      "structured_content": {
+        "line_end": 7,
+        "line_start": 7
+      },
+      "submission_id": "sub_cache_sufficient",
+      "tenant_id": "tnt_stage0"
+    },
+    {
+      "artifact_hash": "sha256:b05dec8cb352e6fba3cf3bd7aad84d180159c16d8c77c46e288faee4e3fdc62e",
+      "artifact_id": "art_6fda2e7e5a01f6648d5e",
+      "content_text": "Degradacion y limite",
+      "evidence_id": "ev_f9384e680978b877664d",
+      "extraction_confidence": 1.0,
+      "language": "es",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Diseno propuesto",
+          "Degradacion y limite"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 4,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "HEADING",
+      "normalized_hash": "sha256:07bded6c39e2e70575df1f38ceb0b1abc7090dfa3816f344eb54ab06016aa9b4",
+      "ocr_used": false,
+      "relations": [],
+      "schema_version": "1.1.0",
+      "sensitive_labels": [],
+      "source_role": "SUBMISSION",
+      "structured_content": {
+        "heading_level": 2,
+        "line_end": 9,
+        "line_start": 9
+      },
+      "submission_id": "sub_cache_sufficient",
+      "tenant_id": "tnt_stage0"
+    },
+    {
+      "artifact_hash": "sha256:b05dec8cb352e6fba3cf3bd7aad84d180159c16d8c77c46e288faee4e3fdc62e",
+      "artifact_id": "art_6fda2e7e5a01f6648d5e",
+      "content_text": "Si la fuente no responde, el servicio puede mostrar el ultimo valor con una marca explicita de antiguedad durante treinta segundos. Esta decision reduce interrupciones, pero no es apropiada cuando un valor desactualizado puede causar una accion irreversible.",
+      "evidence_id": "ev_56102c1419cf81f684ce",
+      "extraction_confidence": 1.0,
+      "language": "es",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Diseno propuesto",
+          "Degradacion y limite"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 5,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "PARAGRAPH",
+      "normalized_hash": "sha256:2423716cabcac2ee9c9f16ead9391450b5ebdfe65eb55461d838510ef22a4334",
+      "ocr_used": false,
+      "relations": [],
+      "schema_version": "1.1.0",
+      "sensitive_labels": [],
+      "source_role": "SUBMISSION",
+      "structured_content": {
+        "line_end": 11,
+        "line_start": 11
+      },
+      "submission_id": "sub_cache_sufficient",
+      "tenant_id": "tnt_stage0"
+    }
+  ],
+  "schema_version": "1.1.0",
+  "submission_id": "sub_cache_sufficient",
+  "tenant_id": "tnt_stage0"
+}

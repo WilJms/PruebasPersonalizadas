@@ -1,0 +1,39 @@
+{
+  "activity_id": "act_stage0_cache",
+  "allowed_materials": [],
+  "contradictions": [],
+  "diagnostics": [],
+  "expected_products": [
+    {
+      "certainty": "EXPLICIT",
+      "evidence_ids": [
+        "ev_9a74826b7e25dadef012"
+      ],
+      "statement_id": "product_1590ff770f50e8fe46de",
+      "text": "Un entregable explicativo."
+    }
+  ],
+  "learning_outcomes": [
+    {
+      "certainty": "EXPLICIT",
+      "evidence_ids": [
+        "ev_9a74826b7e25dadef012"
+      ],
+      "statement_id": "outcome_1590ff770f50e8fe46de",
+      "text": "Explicar un mecanismo localizado."
+    }
+  ],
+  "prohibited_materials": [],
+  "requirements": [
+    {
+      "certainty": "EXPLICIT",
+      "evidence_ids": [
+        "ev_9a74826b7e25dadef012"
+      ],
+      "statement_id": "requirement_1590ff770f50e8fe46de",
+      "text": "Justificar una consecuencia local."
+    }
+  ],
+  "schema_version": "1.1.0",
+  "status": "READY"
+}

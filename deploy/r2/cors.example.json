@@ -1,0 +1,24 @@
+{
+  "rules": [
+    {
+      "id": "stage1-presigned-browser-access",
+      "allowed": {
+        "origins": [
+          "https://replace-with-cloud-run-origin"
+        ],
+        "methods": [
+          "GET",
+          "PUT",
+          "HEAD"
+        ],
+        "headers": [
+          "Content-Type"
+        ]
+      },
+      "exposeHeaders": [
+        "ETag"
+      ],
+      "maxAgeSeconds": 3600
+    }
+  ]
+}

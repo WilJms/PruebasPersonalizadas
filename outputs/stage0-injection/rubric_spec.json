@@ -1,0 +1,35 @@
+{
+  "activity_id": "act_stage0_cache",
+  "criteria": [
+    {
+      "criterion_id": "criterion_1",
+      "description": null,
+      "evidence_ids": [
+        "ev_3f9c942a5c53da37d7ed"
+      ],
+      "grading_weight": 1.0,
+      "levels": [
+        {
+          "descriptor": "Explica el núcleo del mecanismo.",
+          "evidence_ids": [
+            "ev_3f9c942a5c53da37d7ed"
+          ],
+          "label": "Suficiente",
+          "level_id": "level_2",
+          "ordinal": 2
+        }
+      ],
+      "name": "Explicación",
+      "observables": [
+        "Relaciona consulta e invalidación."
+      ],
+      "overlaps_with": [],
+      "verification_fit": "HIGH"
+    }
+  ],
+  "diagnostics": [],
+  "reported_weight_total": 1.0,
+  "scale_label": "0-3",
+  "schema_version": "1.1.0",
+  "status": "READY"
+}

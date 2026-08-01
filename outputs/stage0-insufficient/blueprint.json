@@ -1,0 +1,205 @@
+{
+  "activity_id": "act_stage0_campaign",
+  "approved_at": "2026-07-31T12:00:00Z",
+  "approved_by": "teacher_synthetic",
+  "assessment_constraints": {
+    "allowed_response_formats": [
+      "OPEN_SHORT"
+    ],
+    "max_reserve_opportunities": 3,
+    "minimum_opportunity_quality": 0.75,
+    "question_count": 3,
+    "structured_justification_policy": {
+      "mode": "NOT_REQUIRED",
+      "selected_opportunity_template_ids": []
+    },
+    "target_total_minutes": 9
+  },
+  "blueprint_id": "blueprint_221ff281dc3e54bd08f9",
+  "blueprint_version": 1,
+  "context_mode": "CLOSED",
+  "decision_ids": [],
+  "diagnostics": [],
+  "dimensions": [
+    {
+      "criterion_ids": [
+        "criterion_c4e0d78f73bb1f049834"
+      ],
+      "dimension_id": "dimension_386080d68583b6611a90",
+      "evidence_variants": [
+        {
+          "description": "Fragmentos textuales localizables que permiten una verificación acotada.",
+          "evidence_requirement": {
+            "allowed_modalities": [
+              "HEADING",
+              "PARAGRAPH",
+              "LIST",
+              "OTHER"
+            ],
+            "course_sources_allowed": false,
+            "cross_artifact_required": false,
+            "min_alignment": 0.0,
+            "min_distinct_units": 1,
+            "min_extraction_confidence": 0.0
+          },
+          "name": "Evidencia localizada 1",
+          "question_opportunities": [
+            {
+              "allowed_anchor_structures": [
+                "SINGLE_FRAGMENT"
+              ],
+              "allowed_response_formats": [
+                "OPEN_SHORT"
+              ],
+              "cognitive_operation": "JUSTIFY_DECISION",
+              "difficulty": "LOW",
+              "focus": "Aspecto verificable 1 del entregable.",
+              "minimum_quality": 0.75,
+              "observable": "Relaciona una afirmación localizada con una consecuencia observable en la evidencia.",
+              "opportunity_template_id": "oppt_6ce4b2b3e2a682f60042",
+              "student_justification_required": false,
+              "target_minutes": 3,
+              "verification_potential": 0.95
+            },
+            {
+              "allowed_anchor_structures": [
+                "SINGLE_FRAGMENT"
+              ],
+              "allowed_response_formats": [
+                "OPEN_SHORT"
+              ],
+              "cognitive_operation": "EXPLAIN_MECHANISM",
+              "difficulty": "MEDIUM",
+              "focus": "Aspecto verificable 2 del entregable.",
+              "minimum_quality": 0.75,
+              "observable": "Relaciona una afirmación localizada con una consecuencia observable en la evidencia.",
+              "opportunity_template_id": "oppt_14acf1717250bc0ff385",
+              "student_justification_required": false,
+              "target_minutes": 3,
+              "verification_potential": 0.95
+            },
+            {
+              "allowed_anchor_structures": [
+                "SINGLE_FRAGMENT"
+              ],
+              "allowed_response_formats": [
+                "OPEN_SHORT"
+              ],
+              "cognitive_operation": "RECONSTRUCT_REASONING",
+              "difficulty": "HIGH",
+              "focus": "Aspecto verificable 3 del entregable.",
+              "minimum_quality": 0.75,
+              "observable": "Relaciona una afirmación localizada con una consecuencia observable en la evidencia.",
+              "opportunity_template_id": "oppt_a9456e5d327e8ff747c2",
+              "student_justification_required": false,
+              "target_minutes": 3,
+              "verification_potential": 0.95
+            },
+            {
+              "allowed_anchor_structures": [
+                "SINGLE_FRAGMENT"
+              ],
+              "allowed_response_formats": [
+                "OPEN_SHORT"
+              ],
+              "cognitive_operation": "CONNECT_INTERNAL",
+              "difficulty": "LOW",
+              "focus": "Aspecto verificable 4 del entregable.",
+              "minimum_quality": 0.75,
+              "observable": "Relaciona una afirmación localizada con una consecuencia observable en la evidencia.",
+              "opportunity_template_id": "oppt_5f10fa2f56484cf6f896",
+              "student_justification_required": false,
+              "target_minutes": 3,
+              "verification_potential": 0.95
+            },
+            {
+              "allowed_anchor_structures": [
+                "SINGLE_FRAGMENT"
+              ],
+              "allowed_response_formats": [
+                "OPEN_SHORT"
+              ],
+              "cognitive_operation": "PREDICT_LOCAL_CONSEQUENCE",
+              "difficulty": "MEDIUM",
+              "focus": "Aspecto verificable 5 del entregable.",
+              "minimum_quality": 0.75,
+              "observable": "Relaciona una afirmación localizada con una consecuencia observable en la evidencia.",
+              "opportunity_template_id": "oppt_119c86d7362f6b0d8c71",
+              "student_justification_required": false,
+              "target_minutes": 3,
+              "verification_potential": 0.95
+            },
+            {
+              "allowed_anchor_structures": [
+                "SINGLE_FRAGMENT"
+              ],
+              "allowed_response_formats": [
+                "OPEN_SHORT"
+              ],
+              "cognitive_operation": "IDENTIFY_DEPENDENCY",
+              "difficulty": "HIGH",
+              "focus": "Aspecto verificable 6 del entregable.",
+              "minimum_quality": 0.75,
+              "observable": "Relaciona una afirmación localizada con una consecuencia observable en la evidencia.",
+              "opportunity_template_id": "oppt_9b4ec6f4f6c51cf607c5",
+              "student_justification_required": false,
+              "target_minutes": 3,
+              "verification_potential": 0.95
+            }
+          ],
+          "supported_operations": [
+            {
+              "cognitive_operation": "JUSTIFY_DECISION",
+              "rationale": "La operación se deriva del catálogo y se valida contra evidencia localizada.",
+              "support_strength": 0.95
+            },
+            {
+              "cognitive_operation": "EXPLAIN_MECHANISM",
+              "rationale": "La operación se deriva del catálogo y se valida contra evidencia localizada.",
+              "support_strength": 0.95
+            },
+            {
+              "cognitive_operation": "RECONSTRUCT_REASONING",
+              "rationale": "La operación se deriva del catálogo y se valida contra evidencia localizada.",
+              "support_strength": 0.95
+            },
+            {
+              "cognitive_operation": "CONNECT_INTERNAL",
+              "rationale": "La operación se deriva del catálogo y se valida contra evidencia localizada.",
+              "support_strength": 0.95
+            },
+            {
+              "cognitive_operation": "PREDICT_LOCAL_CONSEQUENCE",
+              "rationale": "La operación se deriva del catálogo y se valida contra evidencia localizada.",
+              "support_strength": 0.95
+            },
+            {
+              "cognitive_operation": "IDENTIFY_DEPENDENCY",
+              "rationale": "La operación se deriva del catálogo y se valida contra evidencia localizada.",
+              "support_strength": 0.95
+            }
+          ],
+          "variant_id": "variant_6ce4b2b3e2a682f60042",
+          "verification_potential": 0.95
+        }
+      ],
+      "factors": {
+        "auditability": 1.0,
+        "centrality": 0.9,
+        "discriminative_potential": 0.85,
+        "expected_evidence": 0.9,
+        "learning_relevance": 0.95,
+        "short_response_observability": 0.9
+      },
+      "grading_weight": null,
+      "justification": "Dimensión sintética derivada de requisitos y evidencia autorizados para probar la orquestación.",
+      "learning_outcome_ids": [
+        "outcome_908c77ddef69814015d9"
+      ],
+      "name": "Comprensión verificable del entregable",
+      "verification_priority": 0.95
+    }
+  ],
+  "schema_version": "1.1.0",
+  "status": "APPROVED"
+}
