@@ -130,6 +130,31 @@ def test_every_prompt_happy_path_is_canonical_and_deterministic(prompt_id: str) 
     assert first.route_resolution.status == "RESOLVED"
 
 
+def test_mock_ledger_is_byte_stable_across_runtime_latencies(monkeypatch) -> None:
+    def serialized_ledger(started: float, finished: float) -> str:
+        ticks = iter((started, finished))
+        monkeypatch.setattr(
+            "comprehension_verification.model_gateway.gateway.perf_counter",
+            lambda: next(ticks),
+        )
+        result = _invoke(
+            "P01_ACTIVITY_SPEC_V1",
+            gateway=ModelGateway(GatewayConfig(clock=FIXED_CLOCK)),
+        )
+        return json.dumps(
+            [item.model_dump(mode="json") for item in result.ledgers],
+            ensure_ascii=False,
+            sort_keys=True,
+            indent=2,
+        )
+
+    fast = serialized_ledger(10.0, 10.001)
+    slow = serialized_ledger(20.0, 20.750)
+
+    assert fast == slow
+    assert json.loads(fast)[0]["latency_ms"] == 0
+
+
 @pytest.mark.parametrize("prompt_id", tuple(EXPECTED_PROMPT_CONTRACTS))
 def test_every_prompt_has_contract_valid_abstention(prompt_id: str) -> None:
     result = _invoke(prompt_id, behavior=MockBehavior.ABSTAIN)

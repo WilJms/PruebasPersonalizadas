@@ -1290,8 +1290,12 @@ class ModelGateway:
         )
         self._record(ledger, ledgers)
 
-    @staticmethod
-    def _elapsed_ms(started: float) -> int:
+    def _elapsed_ms(self, started: float) -> int:
+        if self.config.mode == GatewayMode.MOCK:
+            # Wall-clock timings make otherwise identical offline runs differ at
+            # the byte level.  A mock call has no provider latency to measure,
+            # so keep the canonical ledger value deterministic.
+            return 0
         return max(0, int((perf_counter() - started) * 1000))
 
     async def _backoff(self, attempt: int) -> None:
