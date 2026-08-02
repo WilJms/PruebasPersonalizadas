@@ -4,16 +4,12 @@ Fecha de corte local: 2026-08-01 (`America/Santiago`).
 
 ## Estado del gate
 
-`NOT_READY_FOR_EXTERNAL_STAGE1_VERIFICATION`
+`READY_FOR_EXTERNAL_STAGE1_VERIFICATION`
 
-El boundary local de Etapas 0 y 1 está verde. Este estado sigue siendo
-provisional porque el workflow todavía debe versionarse, subirse y observarse
-verde en GitHub Actions sobre el commit final. No se ha desplegado ni verificado
-GCP, Supabase o R2 reales.
-
-Cuando GitHub Actions confirme el commit final, y solo si no aparece un defecto
-local nuevo, el estado de este gate puede pasar a
-`READY_FOR_EXTERNAL_STAGE1_VERIFICATION`. En ningún caso autoriza Etapa 2 ni
+El boundary local de Etapas 0 y 1 está verde. El workflow está versionado, la
+rama y el PR existen en GitHub, y GitHub Actions fue observado en verde sobre
+el head publicado. No se ha desplegado ni verificado GCP, Supabase o R2 reales.
+Este gate permite iniciar esa verificación externa; no autoriza Etapa 2 ni
 equivale a `READY_FOR_STAGE_2`.
 
 ## Proveniencia Git comprobada
@@ -23,6 +19,8 @@ equivale a `READY_FOR_STAGE_2`.
 - remote `origin`: `https://github.com/WilJms/PruebasPersonalizadas.git`;
 - rama de trabajo: `fix/stage1-external-readiness`;
 - baseline: `origin/main` en `dadaaa7`;
+- pull request draft: `WilJms/PruebasPersonalizadas#1`, base `main`;
+- commit funcional auditado: `59c932d`;
 - los cambios locales preexistentes de `.gitignore`, `.dockerignore` y
   `.github/workflows/ci.yml` se conservaron y completaron;
 - no se trabajó en `main`, no se hizo merge, force push, reset, clean ni rebase.
@@ -40,7 +38,7 @@ equivale a `READY_FOR_STAGE_2`.
 | Docker runtime/audit | Sí | Sí/CI | Docker Desktop local | PASS; ambos targets, runtime sin fixtures y tres casos sintéticos en audit. |
 | Terraform/deploy estático | Sí | Sí | Terraform 1.14.3 local | PASS; fmt, init sin backend, validate, YAML, shell y 8 pruebas. No hubo plan/apply. |
 | Revisión de secretos | Sí | Sí/CI | Árbol versionable local | PASS; sin hallazgos de alta confianza. No se usaron secretos externos. |
-| GitHub Actions | Workflow local | Sí | Pendiente de push | No se declara PASS hasta observar el run remoto del commit final. |
+| GitHub Actions | Workflow versionado | Sí | Run remoto observado | PASS; cinco jobs separados verdes sobre la rama publicada. |
 | Cloud real | IaC/adaptadores preparados | Checklist | No ejecutado | E1-11 continúa parcial: GCP, Cloud Run, Supabase y R2 requieren intervención humana. |
 
 Los comandos, fechas, códigos de salida y limitaciones están registrados en

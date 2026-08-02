@@ -1,7 +1,7 @@
 # Resultados verificables de la corrección final E0/E1
 
-Fecha de ejecución: **2026-08-01** (`America/Santiago`). Corte local de este
-registro: `2026-08-01T20:14:52-04:00`.
+Fecha de ejecución: **2026-08-01** (`America/Santiago`). Corte de este registro:
+`2026-08-01T20:23:20-04:00`.
 
 Solo se marca como ejecutado lo observado en esta corrección. `$PY` representa
 `/tmp/cva-stage1-final-venv-019fbfaa/bin/python`; las credenciales PostgreSQL
@@ -108,8 +108,12 @@ después de la última modificación del Dockerfile.
 |---|---|---:|---|---|
 | `$PY scripts/check_secrets.py` | 2026-08-01 | 0 | Sin hallazgos de alta confianza en archivos versionables. | Heurístico; se complementa con revisión de rutas ignoradas sin mostrar valores. |
 | revisión de rutas `.env`, tfvars/state, credenciales y tokens ignorados | 2026-08-01 | 0 | Sin material versionable que requiera saneamiento. | No se imprimieron contenidos. |
-| `git diff --check` | 2026-08-01 | 0 | Sin errores de whitespace antes del staging; se repetirá sobre el índice. | Validación local del diff. |
-| revisión Git final completa, commit, push, PR y GitHub Actions | 2026-08-01 | pendiente | Pendiente de las fases Git/remota. | No se declarará CI verde por YAML o pruebas locales. |
+| `git diff --check` y `git diff --cached --check` | 2026-08-01 | 0 / 0 | Sin errores de whitespace antes y después del staging. | Validación local del diff. |
+| revisión final: status/stat/diff, workflow en `git ls-files` y búsqueda de caches indexados | 2026-08-01 | 0 | Workflow versionado; ningún `__pycache__`, `.pyc`, `.tsbuildinfo` o `.DS_Store` permanece en el índice. | Revisión del commit local. |
+| `git commit -m "Prepare Stage 1 for external verification"` | 2026-08-01 | 0 | Commit funcional `59c932d`, 108 rutas. | Rama `fix/stage1-external-readiness`, no `main`. |
+| `git push -u origin fix/stage1-external-readiness` | 2026-08-01 | 0 | Rama publicada sin force. | No se hizo merge. |
+| creación del PR draft `#1` con base `main` | 2026-08-01 | 0 | PR abierto: `WilJms/PruebasPersonalizadas#1`. | Permanece draft y sin merge. |
+| GitHub Actions run `30725021051` sobre `59c932d` | 2026-08-01 | 0 | **SUCCESS**: backend/Stage 0, PostgreSQL 16, frontend, Terraform/deploy y Docker verdes. | CI real del commit funcional; no prueba cloud real. |
 
 ## Intentos fallidos que no se contabilizan como PASS
 
@@ -123,7 +127,7 @@ después de la última modificación del Dockerfile.
 
 ## Pendiente externo real
 
-No se ejecutó GitHub Actions remoto todavía, ni `terraform plan/apply`, Cloud
-Build, GCP, Cloud Run Service/Jobs, Supabase PostgreSQL/Auth o Cloudflare R2.
-E1-11 sigue parcial hasta completar `docs/EXTERNAL_SETUP.md`. No se llamó a un
-proveedor de IA real y no se implementó ninguna capacidad de Etapa 2.
+No se ejecutó `terraform plan/apply`, Cloud Build, GCP, Cloud Run Service/Jobs,
+Supabase PostgreSQL/Auth o Cloudflare R2. E1-11 sigue parcial hasta completar
+`docs/EXTERNAL_SETUP.md`. No se llamó a un proveedor de IA real y no se
+implementó ninguna capacidad de Etapa 2.
