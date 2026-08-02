@@ -23,6 +23,7 @@ from sqlalchemy import (
     create_engine,
     delete,
     select,
+    text,
 )
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, sessionmaker
@@ -334,6 +335,22 @@ class Repository:
         self.sessions = sessionmaker(self.engine, expire_on_commit=False)
         if create_schema:
             Base.metadata.create_all(self.engine)
+
+    def check_readiness(self) -> None:
+        """Check connectivity and the final expected Stage 1 schema surface.
+
+        ``idempotency_keys`` is created at the end of the Stage 1 migration and
+        is also present in the local ORM schema. The fixed query returns no
+        application data and lets connection or migration errors fail closed.
+        """
+
+        marker = (
+            "public.idempotency_keys"
+            if self.engine.dialect.name == "postgresql"
+            else "idempotency_keys"
+        )
+        with self.engine.connect() as connection:
+            connection.execute(text(f"select 1 from {marker} limit 0"))
 
     @contextmanager
     def session(self) -> Iterator[Session]:

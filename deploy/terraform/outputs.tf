@@ -32,3 +32,8 @@ output "job_name" {
   description = "Cloud Run Job name after the second apply."
   value       = try(google_cloud_run_v2_job.worker[0].name, null)
 }
+
+output "runtime_container_image" {
+  description = "Immutable digest reference Terraform applies to both Service and Job."
+  value       = var.enable_runtime_resources ? var.container_image : null
+}

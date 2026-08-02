@@ -5,6 +5,9 @@ from __future__ import annotations
 import json
 import re
 from pathlib import Path
+import subprocess
+
+import yaml
 
 from comprehension_verification.web.repository import Base
 
@@ -32,7 +35,7 @@ def _migration_schema(sql: str) -> dict[str, set[str]]:
     return tables
 
 
-def test_supabase_migration_matches_executable_orm_tables_and_columns() -> None:
+def test_supabase_migration_matches_orm_table_and_column_surface() -> None:
     actual = _migration_schema(MIGRATION.read_text(encoding="utf-8"))
     expected = {
         table.name: {column.name for column in table.columns}
@@ -60,6 +63,8 @@ def test_supabase_migration_has_stage_one_security_and_drift_guards() -> None:
     assert "audit_events_are_append_only" in sql
     assert "activity_artifacts" not in sql
     assert "submission_artifacts" not in sql
+    index_names = re.findall(r"create\s+(?:unique\s+)?index\s+([a-z0-9_]+)", sql)
+    assert len(index_names) == len(set(index_names))
 
 
 def test_runtime_configuration_uses_exact_settings_names_and_safe_defaults() -> None:
@@ -87,6 +92,8 @@ def test_runtime_configuration_uses_exact_settings_names_and_safe_defaults() -> 
         "CVA_CLOUD_RUN_JOB_NAME",
         "CVA_FRONTEND_DIST",
         "CVA_RENDERER_MODE",
+        "CVA_UPLOAD_URL_TTL_SECONDS",
+        "CVA_DOWNLOAD_URL_TTL_SECONDS",
     }
 
     assert not {name for name in required if name not in combined}
@@ -96,6 +103,8 @@ def test_runtime_configuration_uses_exact_settings_names_and_safe_defaults() -> 
     assert "CVA_OBJECT_STORE=" not in combined
     assert "CVA_JOB_RUNNER=" not in combined
     assert "/api/health" in terraform
+    assert "/api/readiness" in terraform
+    assert "CVA_SIGNED_URL_TTL_SECONDS" not in combined
     assert "/healthz" not in terraform
 
 
@@ -113,12 +122,29 @@ def test_container_and_cloud_build_are_single_image_and_mock_safe() -> None:
     assert "comprehension_verification.web.worker" in entrypoint
     assert "VITE_SUPABASE_URL=${_VITE_SUPABASE_URL}" in cloudbuild
     assert "VITE_SUPABASE_PUBLISHABLE_KEY=${_VITE_SUPABASE_PUBLISHABLE_KEY}" in cloudbuild
-    assert "_DEPLOY_RUNTIME" in cloudbuild
+    assert "gcloud run" not in cloudbuild
+    assert "resolve-immutable-image" in cloudbuild
+    assert "image_summary.digest" in cloudbuild
+    assert "/workspace/container-image.txt" in cloudbuild
     assert "/api/health" in cloudbuild
+    assert "/api/readiness" in cloudbuild
+
+
+def test_cloud_build_yaml_and_entrypoint_are_parseable() -> None:
+    parsed = yaml.safe_load(
+        (ROOT / "deploy/cloudbuild.yaml").read_text(encoding="utf-8")
+    )
+    assert isinstance(parsed, dict)
+    assert parsed["steps"]
+    subprocess.run(
+        ["sh", "-n", str(ROOT / "deploy/docker-entrypoint.sh")],
+        check=True,
+    )
 
 
 def test_terraform_declares_service_job_secrets_and_job_invocation() -> None:
     terraform = (ROOT / "deploy/terraform/main.tf").read_text(encoding="utf-8")
+    variables = (ROOT / "deploy/terraform/variables.tf").read_text(encoding="utf-8")
 
     assert 'resource "google_cloud_run_v2_service" "web"' in terraform
     assert 'resource "google_cloud_run_v2_job" "worker"' in terraform
@@ -131,6 +157,33 @@ def test_terraform_declares_service_job_secrets_and_job_invocation() -> None:
     assert "enable_runtime_resources" in terraform
     assert 'version = var.secret_version' in terraform
     assert terraform.count('name = "CVA_SESSION_SECRET"') == 2
+    assert re.search(r"max_retries\s*=\s*0", terraform)
+    assert terraform.count("image = var.container_image") == 2
+    assert '@sha256:' in variables
+    assert '"roles/run.admin"' not in terraform
+    assert "build_can_use_web_identity" not in terraform
+    assert "build_can_use_worker_identity" not in terraform
+    startup = re.search(r"startup_probe\s*\{(?P<body>.*?)\n\s*\}", terraform, re.DOTALL)
+    liveness = re.search(r"liveness_probe\s*\{(?P<body>.*?)\n\s*\}", terraform, re.DOTALL)
+    assert startup and '/api/readiness' in startup.group("body")
+    assert liveness and '/api/health' in liveness.group("body")
+
+
+def test_docker_context_keeps_audit_fixtures_out_of_runtime() -> None:
+    dockerfile = (ROOT / "Dockerfile").read_text(encoding="utf-8")
+    dockerignore = (ROOT / ".dockerignore").read_text(encoding="utf-8")
+
+    runtime_section = dockerfile.split("FROM runtime-base AS runtime", 1)[1]
+    audit_section = dockerfile.split("FROM runtime-base AS audit", 1)[1].split(
+        "FROM runtime-base AS runtime", 1
+    )[0]
+    assert "fixtures" not in runtime_section
+    assert "COPY --chown=65532:65532 fixtures/ /app/fixtures/" in audit_section
+    assert "fixtures" not in {
+        line.strip().rstrip("/")
+        for line in dockerignore.splitlines()
+        if line.strip() and not line.startswith("#")
+    }
 
 
 def test_r2_policy_examples_are_private_origin_scoped_and_expiring() -> None:

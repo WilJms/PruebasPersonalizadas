@@ -116,7 +116,9 @@ def test_cloud_settings_fail_closed_without_managed_adapters_and_secrets() -> No
 
 def test_signed_memory_object_capability_enforces_method_and_content_type() -> None:
     store = MemoryObjectStore(
-        secret="object-test-secret-with-at-least-thirty-two-bytes", ttl_seconds=600
+        secret="object-test-secret-with-at-least-thirty-two-bytes",
+        upload_ttl_seconds=600,
+        download_ttl_seconds=600,
     )
     upload = store.sign_put("raw/tnt/act/art", "text/plain")
     token = upload.url.rsplit("/", 1)[-1]

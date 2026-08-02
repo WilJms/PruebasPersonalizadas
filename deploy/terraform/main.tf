@@ -27,23 +27,24 @@ locals {
   }
 
   common_environment = {
-    CVA_ENVIRONMENT            = "cloud"
-    CVA_AUTH_MODE              = "supabase"
-    CVA_OBJECT_STORE_MODE      = "r2"
-    CVA_JOB_RUNNER_MODE        = "cloud_run"
-    CVA_MODEL_MODE             = "mock"
-    CVA_P10_ENABLED            = "false"
-    CVA_FRONTEND_DIST          = "/app/static"
-    CVA_RENDERER_MODE          = "weasyprint"
-    CVA_SIGNED_URL_TTL_SECONDS = tostring(var.upload_url_ttl_seconds)
-    CVA_SUPABASE_JWT_ISSUER    = "${trimsuffix(var.supabase_url, "/")}/auth/v1"
-    CVA_SUPABASE_JWKS_URL      = "${trimsuffix(var.supabase_url, "/")}/auth/v1/.well-known/jwks.json"
-    CVA_SUPABASE_JWT_AUDIENCE  = var.supabase_jwt_audience
-    CVA_R2_ENDPOINT_URL        = var.r2_endpoint_url
-    CVA_R2_BUCKET              = var.r2_bucket_name
-    CVA_GCP_PROJECT_ID         = var.project_id
-    CVA_GCP_REGION             = var.region
-    CVA_CLOUD_RUN_JOB_NAME     = var.job_name
+    CVA_ENVIRONMENT              = "cloud"
+    CVA_AUTH_MODE                = "supabase"
+    CVA_OBJECT_STORE_MODE        = "r2"
+    CVA_JOB_RUNNER_MODE          = "cloud_run"
+    CVA_MODEL_MODE               = "mock"
+    CVA_P10_ENABLED              = "false"
+    CVA_FRONTEND_DIST            = "/app/static"
+    CVA_RENDERER_MODE            = "weasyprint"
+    CVA_UPLOAD_URL_TTL_SECONDS   = tostring(var.upload_url_ttl_seconds)
+    CVA_DOWNLOAD_URL_TTL_SECONDS = tostring(var.download_url_ttl_seconds)
+    CVA_SUPABASE_JWT_ISSUER      = "${trimsuffix(var.supabase_url, "/")}/auth/v1"
+    CVA_SUPABASE_JWKS_URL        = "${trimsuffix(var.supabase_url, "/")}/auth/v1/.well-known/jwks.json"
+    CVA_SUPABASE_JWT_AUDIENCE    = var.supabase_jwt_audience
+    CVA_R2_ENDPOINT_URL          = var.r2_endpoint_url
+    CVA_R2_BUCKET                = var.r2_bucket_name
+    CVA_GCP_PROJECT_ID           = var.project_id
+    CVA_GCP_REGION               = var.region
+    CVA_CLOUD_RUN_JOB_NAME       = var.job_name
   }
 
   web_environment    = local.common_environment
@@ -105,7 +106,7 @@ resource "google_service_account" "worker" {
 resource "google_service_account" "build" {
   project      = var.project_id
   account_id   = "${var.name_prefix}-cloudbuild"
-  display_name = "CVA Stage 1 Cloud Build deployer"
+  display_name = "CVA Stage 1 Cloud Build publisher"
 
   depends_on = [google_project_service.required["iam.googleapis.com"]]
 }
@@ -114,7 +115,6 @@ resource "google_project_iam_member" "build_roles" {
   for_each = toset([
     "roles/artifactregistry.writer",
     "roles/logging.logWriter",
-    "roles/run.admin",
     "roles/serviceusage.serviceUsageConsumer",
     "roles/storage.bucketViewer",
     "roles/storage.objectUser",
@@ -123,18 +123,6 @@ resource "google_project_iam_member" "build_roles" {
   project = var.project_id
   role    = each.value
   member  = "serviceAccount:${google_service_account.build.email}"
-}
-
-resource "google_service_account_iam_member" "build_can_use_web_identity" {
-  service_account_id = google_service_account.web.name
-  role               = "roles/iam.serviceAccountUser"
-  member             = "serviceAccount:${google_service_account.build.email}"
-}
-
-resource "google_service_account_iam_member" "build_can_use_worker_identity" {
-  service_account_id = google_service_account.worker.name
-  role               = "roles/iam.serviceAccountUser"
-  member             = "serviceAccount:${google_service_account.build.email}"
 }
 
 resource "google_secret_manager_secret" "runtime" {
@@ -264,7 +252,7 @@ resource "google_cloud_run_v2_service" "web" {
         failure_threshold     = 12
 
         http_get {
-          path = "/api/health"
+          path = "/api/readiness"
           port = 8080
         }
       }
@@ -312,7 +300,9 @@ resource "google_cloud_run_v2_job" "worker" {
     template {
       service_account = google_service_account.worker.email
       timeout         = "3600s"
-      max_retries     = 1
+      # Dispatch carries no job id; an infrastructure retry could otherwise
+      # claim a different durable QUEUED row after the first row failed.
+      max_retries = 0
 
       containers {
         image = var.container_image

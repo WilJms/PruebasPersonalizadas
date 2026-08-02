@@ -6,7 +6,8 @@ service_name  = "cva-web"
 job_name      = "cva-worker"
 
 # First apply with false. Add Secret Manager version 1 values out-of-band,
-# build/push an image, then fill container_image and set this to true.
+# build/push an image, then copy the immutable @sha256 reference emitted by
+# Cloud Build into an unversioned copy of this file and set this to true.
 enable_runtime_resources = false
 container_image          = ""
 secret_version           = "1"
@@ -17,5 +18,8 @@ supabase_jwt_audience    = "authenticated"
 
 r2_endpoint_url = "https://replace-with-account-id.r2.cloudflarestorage.com"
 r2_bucket_name  = "replace-with-private-bucket-name"
+
+upload_url_ttl_seconds   = 900
+download_url_ttl_seconds = 300
 
 allow_unauthenticated = true

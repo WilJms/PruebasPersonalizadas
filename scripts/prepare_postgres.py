@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Apply and verify the Stage 1 migration on an empty local PostgreSQL DB."""
+"""Apply and verify selected Stage 1 migration invariants on local PostgreSQL."""
 
 from __future__ import annotations
 
@@ -166,6 +166,7 @@ def main() -> int:
                     MIGRATION.read_bytes()
                 ).hexdigest(),
                 "rls_table_count": len(rls_tables),
+                "schema_checks": "tables_columns_rls_append_only_triggers",
                 "status": "PASS",
                 "table_count": len(actual),
             },

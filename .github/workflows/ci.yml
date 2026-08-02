@@ -1,0 +1,219 @@
+name: Stage 0 and Stage 1 CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - "fix/**"
+      - "codex/**"
+
+permissions:
+  contents: read
+
+env:
+  CVA_MODEL_MODE: mock
+  CVA_P10_ENABLED: "false"
+
+jobs:
+  contracts-backend-stage0:
+    name: Contracts, backend, and Stage 0
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install from a clean environment
+        run: python -m pip install -e '.[dev]'
+      - name: Validate contracts and rebuild fixtures
+        run: |
+          make contracts PYTHON=python
+          make fixtures PYTHON=python
+          git diff --exit-code -- specification/contracts.schema_v1.1\(1\).json fixtures/stage0 tests/fixtures/contracts/v1.1
+      - name: Run the Python suite with coverage
+        run: python -m pytest --cov=comprehension_verification --cov-report=term-missing --cov-report=xml
+      - name: Run deployment artifact tests
+        run: python -m pytest deploy/tests/test_deploy_artifacts.py
+      - name: Exercise all Stage 0 boundaries
+        run: |
+          python -m comprehension_verification.cli run-synthetic --case sufficient --output "$RUNNER_TEMP/stage0-sufficient"
+          python -m comprehension_verification.cli run-synthetic --case insufficient --output "$RUNNER_TEMP/stage0-insufficient"
+          python -m comprehension_verification.cli run-synthetic --case injection --output "$RUNNER_TEMP/stage0-injection"
+      - name: Prove deterministic output across independent processes
+        run: |
+          python -m comprehension_verification.cli run-synthetic --case sufficient --output /tmp/repro-a
+          python -m comprehension_verification.cli run-synthetic --case sufficient --output /tmp/repro-b
+          diff -rq /tmp/repro-a /tmp/repro-b
+
+  postgres-integration:
+    name: PostgreSQL 16 migration and semantics
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    services:
+      postgres:
+        image: postgres:16-bookworm
+        env:
+          POSTGRES_USER: cva
+          POSTGRES_PASSWORD: cva_ci_password_not_a_secret
+          POSTGRES_DB: cva_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U cva -d cva_ci"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      CVA_TEST_POSTGRES_URL: postgresql://cva:cva_ci_password_not_a_secret@127.0.0.1:5432/cva_ci
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install from a clean environment
+        run: python -m pip install -e '.[dev]'
+      - name: Confirm the migration starts from an empty public schema
+        run: |
+          python - <<'PY'
+          import os
+          import psycopg
+
+          with psycopg.connect(os.environ["CVA_TEST_POSTGRES_URL"]) as connection:
+              count = connection.execute(
+                  "select count(*) from information_schema.tables "
+                  "where table_schema = 'public' and table_type = 'BASE TABLE'"
+              ).fetchone()[0]
+          if count != 0:
+              raise SystemExit("expected an empty public schema")
+          PY
+      - name: Apply and inspect the Stage 1 migration
+        run: python scripts/prepare_postgres.py --database-url "$CVA_TEST_POSTGRES_URL"
+      - name: Run the Stage 1 PostgreSQL E2E
+        run: make postgres-e2e PYTHON=python
+      - name: Run PostgreSQL-sensitive transactional tests
+        run: make postgres-sensitive PYTHON=python
+
+  frontend:
+    name: Frontend typecheck, tests, build, and audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22.13.1"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run test
+      - run: npm run build
+      - name: Reject high or critical dependency advisories
+        run: npm audit --audit-level=high
+
+  deployment-artifacts:
+    name: Terraform and static deployment validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.14.3"
+      - run: python -m pip install -e '.[dev]'
+      - run: terraform fmt -check -recursive deploy/terraform
+      - run: terraform -chdir=deploy/terraform init -backend=false -input=false
+      - run: terraform -chdir=deploy/terraform validate
+      - run: python -m pytest deploy/tests/test_deploy_artifacts.py
+      - name: Parse deployment YAML
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import yaml
+
+          for path in (Path("deploy/cloudbuild.yaml"), Path(".github/workflows/ci.yml")):
+              if not isinstance(yaml.safe_load(path.read_text(encoding="utf-8")), dict):
+                  raise SystemExit(f"{path} is not a YAML mapping")
+          PY
+      - name: Validate shell entrypoints
+        run: sh -n deploy/docker-entrypoint.sh
+      - name: Scan tracked files for accidental secrets
+        run: python scripts/check_secrets.py
+
+  docker:
+    name: Docker runtime and audit targets
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build deployable and audit images
+        run: |
+          docker build --target runtime --tag cva-runtime:ci .
+          docker build --target audit --tag cva-audit:ci .
+      - name: Smoke liveness and readiness with safe local adapters
+        run: |
+          container=cva-runtime-ci
+          cleanup() {
+            docker rm --force "$container" >/dev/null 2>&1 || true
+          }
+          trap cleanup EXIT
+          docker run --detach --name "$container" \
+            --publish 127.0.0.1:18080:8080 \
+            --read-only \
+            --tmpfs /tmp:rw,noexec,nosuid,size=64m \
+            --cap-drop ALL \
+            --env CVA_ENVIRONMENT=local \
+            --env CVA_DATABASE_URL=sqlite+pysqlite:////tmp/stage1.db \
+            --env CVA_AUTH_MODE=local \
+            --env CVA_OBJECT_STORE_MODE=memory \
+            --env CVA_JOB_RUNNER_MODE=inline \
+            --env CVA_MODEL_MODE=mock \
+            --env CVA_P10_ENABLED=false \
+            --env CVA_SESSION_SECRET=docker-ci-session-secret-not-production \
+            cva-runtime:ci
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent --show-error http://127.0.0.1:18080/api/readiness; then
+              break
+            fi
+            if [ "$attempt" -eq 30 ]; then
+              docker logs "$container"
+              exit 1
+            fi
+            sleep 1
+          done
+          curl --fail --silent --show-error http://127.0.0.1:18080/api/health
+          curl --fail --silent --show-error http://127.0.0.1:18080/api/readiness
+      - name: Exercise Stage 0 inside the audit target
+        run: |
+          export_root="$RUNNER_TEMP/audit-exports"
+          mkdir -p "$export_root"
+          chmod 0777 "$export_root"
+          for case_name in sufficient insufficient injection; do
+            docker run --rm \
+              --volume "$export_root:/exports" \
+              --entrypoint python \
+              cva-audit:ci \
+              -m comprehension_verification.cli run-synthetic \
+              --case "$case_name" --output "/exports/$case_name"
+          done
+          for case_name in sufficient injection; do
+            test -s "$export_root/$case_name/assessment.json"
+            test -s "$export_root/$case_name/evaluation_guide.json"
+            test -s "$export_root/$case_name/assessment.html"
+            test -s "$export_root/$case_name/evaluation_guide.html"
+            test -s "$export_root/$case_name/assessment.pdf"
+            test -s "$export_root/$case_name/evaluation_guide.pdf"
+          done
+          test -s "$export_root/insufficient/run_manifest.json"
+          test ! -e "$export_root/insufficient/assessment.json"

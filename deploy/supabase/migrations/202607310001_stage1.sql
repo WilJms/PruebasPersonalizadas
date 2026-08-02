@@ -1,8 +1,8 @@
 begin;
 
--- This migration mirrors comprehension_verification.web.repository.Base.
--- Contract payloads remain JSON snapshots; canonical Pydantic models are not
--- redefined in the database layer.
+-- This migration keeps the Stage 1 table/column surface aligned with
+-- comprehension_verification.web.repository.Base. PostgreSQL-only defaults,
+-- checks, indexes, RLS and triggers are verified separately.
 
 create or replace function public.cva_set_updated_at()
 returns trigger

@@ -410,6 +410,15 @@ def create_app(
     def health() -> dict[str, str]:
         return {"status": "ok", "stage": "1", "model_mode": selected.model_mode}
 
+    @app.get("/api/readiness")
+    def readiness() -> JSONResponse:
+        try:
+            runtime.repository.check_readiness()
+        except Exception:
+            # Never expose a database URL, SQL, driver exception or stack trace.
+            return JSONResponse({"status": "not_ready"}, status_code=503)
+        return JSONResponse({"status": "ready"})
+
     @app.get("/api/v1/session")
     def session(actor: Annotated[Actor, Depends(current_actor)]) -> dict[str, Any]:
         return {

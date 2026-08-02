@@ -1,81 +1,65 @@
 # Verificación externa pendiente de Etapa 1
 
-Estado al 2026-08-01: **no ejecutada**. El boundary local está verde y el
-repositorio está `READY_FOR_EXTERNAL_STAGE1_VERIFICATION`, pero E1-11 sigue
-parcial. Esta guía comienza donde termina la auditoría local: requiere cuentas,
-facturación, IAM y secretos reales. No autoriza Etapa 2 ni un proveedor de IA;
-todo el recorrido debe conservar `CVA_MODEL_MODE=mock` y
-`CVA_P10_ENABLED=false`.
+Estado al 2026-08-01: **no ejecutada**. Esta guía requiere cuentas, facturación,
+IAM y secretos reales, por lo que queda fuera de la corrección local. Consultar
+`docs/IMPLEMENTATION_STATUS.md` para el estado Git/CI observado del commit que
+se pretende verificar.
 
-No ejecutar automáticamente esta checklist. Una persona debe revisar costos,
-región, retención, identidades y el plan de Terraform antes de cada `apply`.
+La checklist no autoriza Etapa 2 ni un proveedor de IA real. Todo el recorrido
+debe conservar:
 
-## 1. Cuentas y recursos mínimos
+```text
+CVA_MODEL_MODE=mock
+CVA_P10_ENABLED=false
+```
 
-| Sistema | Recurso mínimo | Acción exclusivamente humana |
-|---|---|---|
-| GCP | Un proyecto experimental dedicado, con facturación; `gcloud` y Terraform autenticados por una persona autorizada | Crear/seleccionar proyecto, aceptar facturación y otorgar al operador permisos para APIs, IAM, Cloud Build, Artifact Registry, Secret Manager y Cloud Run. |
-| Supabase | Un proyecto vacío de prueba con PostgreSQL y Auth por email | Elegir región, conservar el password de DB fuera del chat, activar un signing key asimétrico ES256/RS256, configurar magic links y crear/invitar el único usuario de prueba. |
-| Cloudflare R2 | Un bucket privado y un token **Object Read & Write** limitado a ese bucket | Aceptar facturación R2, crear bucket/token, mantener deshabilitados `r2.dev` y dominios públicos y ratificar retención. |
-| GitHub/Cloud Build | Un repositorio privado con este árbol y una conexión de Cloud Build | Revisar/crear el primer commit, hacer push, instalar/autorizar la GitHub App de Cloud Build solo para ese repositorio y aprobar el trigger. |
+Una persona autorizada debe revisar costos, región, retención, identidades y
+cada plan antes de `terraform apply`.
 
-No hace falta una cuenta, clave ni presupuesto de IA real.
+## 1. Recursos y secretos
 
-## 2. Valores que sí y que no pueden compartirse
+Recursos externos mínimos:
 
-Valores no secretos que pueden proporcionarse para preparar comandos:
+- proyecto GCP experimental con facturación;
+- proyecto Supabase vacío con PostgreSQL y Auth por email;
+- bucket Cloudflare R2 privado y token limitado a ese bucket;
+- repositorio GitHub privado y conexión de Cloud Build limitada al repositorio.
 
-- GCP project ID, región y nombres de repository/service/job;
-- URL del proyecto Supabase, project ref, publishable key y audiencia JWT;
-- account ID/endpoint y nombre de bucket R2;
-- recurso de repositorio/trigger de Cloud Build y URL final de Cloud Run;
-- UUID de Auth y correo del usuario invitado, si la política de privacidad local
-  permite compartirlos. No son credenciales, pero sí identificadores.
+Datos públicos que sí pueden usarse en comandos: project ID, región, nombres de
+Repository/Service/Job, URL y publishable key de Supabase, endpoint/nombre del
+bucket R2, commit y digest de imagen.
 
-No introducir en chat, Git, `terraform.tfvars`, build args ni logs:
+Nunca introducir en chat, Git, tfvars versionados, substitutions, build args o
+logs:
 
 - password o URL autenticada de PostgreSQL;
-- R2 Access Key ID, Secret Access Key o token de Cloudflare;
+- R2 Access Key ID/Secret Access Key o token Cloudflare;
 - `CVA_SESSION_SECRET`;
-- access/refresh tokens de GCP, GitHub o Supabase, claves secret/service-role o
-  enlaces magic-link;
+- tokens GCP/GitHub/Supabase, secret/service-role keys o magic links;
 - cualquier secreto de proveedor de IA.
 
-Los secretos se capturan en una terminal privada, por stdin, y se envían
-directamente a Secret Manager. La publishable key de Supabase es pública y es
-la única key que se compila en Vite.
+La publishable key de Supabase es pública y es la única key compilada por Vite.
 
-## 3. Preflight humano y variables públicas
+## 2. Preflight de repositorio
 
-El repositorio auditado no tenía `HEAD` ni remoto. Antes de cloud, una persona
-debe revisar el árbol completo, crear el commit inicial y hacer push al remoto
-privado. Verificación (debe terminar 0 y mostrar valores reales):
+Trabajar solo desde el commit final aprobado de la rama/PR y comprobar que CI
+remota está verde para ese SHA:
 
 ```bash
-git rev-parse --verify HEAD
+git rev-parse --show-toplevel
 git remote get-url origin
+git branch --show-current
 git status --short
+git rev-parse HEAD
+gh pr view --json number,url,baseRefName,headRefName,headRefOid
+gh pr checks --watch --fail-fast
 ```
 
-Desde la raíz del repositorio, definir solo datos públicos:
+No desplegar desde un árbol sucio ni desde un SHA distinto al observado por
+GitHub Actions.
 
-```bash
-export CVA_GCP_PROJECT_ID='replace-with-project-id'
-export CVA_GCP_REGION='us-central1'
-export CVA_REPOSITORY_ID='comprehension-verification'
-export CVA_SERVICE_NAME='cva-web'
-export CVA_JOB_NAME='cva-worker'
-export CVA_SUPABASE_URL='https://replace-with-project-ref.supabase.co'
-export CVA_SUPABASE_PUBLISHABLE_KEY='replace-with-publishable-key'
-export CVA_R2_ACCOUNT_ID='replace-with-account-id'
-export CVA_R2_ENDPOINT_URL="https://${CVA_R2_ACCOUNT_ID}.r2.cloudflarestorage.com"
-export CVA_R2_BUCKET='replace-with-private-bucket-name'
-```
-
-Copiar el archivo de variables fuera del repositorio y editar únicamente los
-valores anteriores. En este primer boundary deben quedar
-`enable_runtime_resources = false`, `container_image = ""` y
-`secret_version = "1"`.
+Crear un archivo de variables fuera del repositorio. Solo contiene valores
+públicos y la referencia de imagen, que tampoco es secreta:
 
 ```bash
 cp deploy/terraform/terraform.tfvars.example /tmp/cva-stage1.tfvars
@@ -83,20 +67,25 @@ chmod 600 /tmp/cva-stage1.tfvars
 ${EDITOR:-vi} /tmp/cva-stage1.tfvars
 ```
 
-Autenticación interactiva, realizada por la persona y nunca por el agente:
+Para bootstrap deben permanecer:
+
+```hcl
+enable_runtime_resources = false
+container_image          = ""
+```
+
+## 3. Bootstrap GCP sin runtime
+
+La autenticación es interactiva y humana:
 
 ```bash
 gcloud auth login
 gcloud auth application-default login
-gcloud config set project "$CVA_GCP_PROJECT_ID"
-gcloud auth list --filter=status:ACTIVE
-gcloud billing projects describe "$CVA_GCP_PROJECT_ID"
+gcloud config set project PROJECT_ID
+gcloud billing projects describe PROJECT_ID
 ```
 
-## 4. Bootstrap GCP sin runtime
-
-Esto habilita APIs y crea Artifact Registry, identidades separadas y cuatro
-contenedores vacíos de Secret Manager. Todavía no crea Service ni Job.
+Revisar y aplicar el primer boundary:
 
 ```bash
 terraform -chdir=deploy/terraform init
@@ -108,23 +97,22 @@ terraform -chdir=deploy/terraform show -no-color \
   /tmp/cva-stage1-bootstrap.tfplan
 terraform -chdir=deploy/terraform apply \
   /tmp/cva-stage1-bootstrap.tfplan
-terraform -chdir=deploy/terraform output -json
 ```
 
-La revisión humana del plan debe confirmar cero recursos
-`google_cloud_run_v2_service`/`google_cloud_run_v2_job`, ningún valor secreto y
-una cuenta de build distinta de web/worker.
+El plan debe crear APIs, Artifact Registry, tres identidades y cuatro
+contenedores vacíos de Secret Manager, pero ningún Service/Job. La cuenta de
+Cloud Build no debe tener `roles/run.admin` ni permiso para actuar como web o
+worker.
 
-## 5. Supabase PostgreSQL y Auth
+## 4. Supabase PostgreSQL y Auth
 
-### 5.1 Aplicar y validar la migración
+### 4.1 Migración
 
-Usar una base nueva. Para migración, tomar del panel **Connect** el host/usuario
-directo o session-pooler; la contraseña se solicita silenciosamente y nunca va
-en el comando:
+Aplicar la migración a una base vacía con el password solicitado en una terminal
+privada. El comando de `psql` no incluye la contraseña:
 
 ```bash
-export CVA_SUPABASE_DB_HOST='replace-with-db-or-session-pooler-host'
+export CVA_SUPABASE_DB_HOST='replace-with-session-pooler-host'
 export CVA_SUPABASE_DB_USER='replace-with-postgres-user'
 printf 'Supabase DB password: '
 IFS= read -r -s PGPASSWORD
@@ -135,8 +123,7 @@ psql "host=$CVA_SUPABASE_DB_HOST port=5432 dbname=postgres user=$CVA_SUPABASE_DB
   -f deploy/supabase/migrations/202607310001_stage1.sql
 ```
 
-Comprobaciones exactas; los resultados esperados son `24|24`, cero filas de
-grants y dos triggers:
+Comprobar 24 tablas con RLS, cero grants a browser y dos triggers append-only:
 
 ```bash
 psql "host=$CVA_SUPABASE_DB_HOST port=5432 dbname=postgres user=$CVA_SUPABASE_DB_USER sslmode=require" \
@@ -150,194 +137,101 @@ psql "host=$CVA_SUPABASE_DB_HOST port=5432 dbname=postgres user=$CVA_SUPABASE_DB
 psql "host=$CVA_SUPABASE_DB_HOST port=5432 dbname=postgres user=$CVA_SUPABASE_DB_USER sslmode=require" \
   -v ON_ERROR_STOP=1 -Atc \
   "select count(distinct trigger_name) from information_schema.triggers where trigger_schema='public' and trigger_name in ('model_calls_are_append_only','audit_events_are_append_only');"
-```
-
-Conservar la conexión de aplicación como secreto con el prefijo explícito
-`postgresql+psycopg://` y `sslmode=require`. Para Cloud Run sin IPv4 adicional,
-usar el **Supavisor session pooler, puerto 5432**, no transaction mode 6543.
-Finalmente limpiar la contraseña del shell:
-
-```bash
 unset PGPASSWORD
 ```
 
-### 5.2 Configurar Auth y membresía
+La verificación anterior demuestra la superficie seleccionada —tablas,
+columnas, RLS y triggers—, no una equivalencia exhaustiva DDL↔ORM.
 
-Después de conocer la URL de Cloud Run, una persona debe:
+La URL secreta de aplicación debe ser completa, usar
+`postgresql+psycopg://` y `sslmode=require`. El runtime rechaza SQLite,
+`postgresql://` sin driver y URLs parciales.
 
-1. en JWT Signing Keys, migrar/rotar la clave activa a **ES256** (preferida) o
-   RS256; el backend deliberadamente no recibe el secreto legacy HS256;
-2. comprobar que JWKS publica al menos una key compatible:
+### 4.2 Auth y membresía
 
-   ```bash
-   curl --fail --show-error \
-     "$CVA_SUPABASE_URL/auth/v1/.well-known/jwks.json" | \
-     jq -e '.keys | length > 0 and all(.[]; (.alg == "ES256" or .alg == "RS256"))'
-   ```
+1. usar signing key ES256 o RS256 y confirmar un JWKS compatible;
+2. después del deploy, fijar Site URL y único redirect al origen HTTPS exacto;
+3. invitar el único usuario sintético de prueba;
+4. persistir su UUID en `public.users` y `public.workspace_roles` dentro de
+   `tnt_experimental` con rol `TEACHER`.
 
-3. fijar en Supabase Auth URL Configuration el Site URL y único redirect
-   permitido al origen HTTPS exacto de Cloud Run;
-4. invitar/crear el usuario de prueba por email; `shouldCreateUser=false`
-   impide que la aplicación cree cuentas;
-5. copiar el UUID real desde `auth.users` y ejecutar en SQL Editor, sustituyendo
-   los tres placeholders antes de confirmar:
+No entregar una secret/service-role key a la aplicación: FastAPI usa la conexión
+PostgreSQL y el browser solo la publishable key.
 
-```sql
-begin;
-insert into public.workspaces (id, name)
-values ('tnt_experimental', 'Workspace experimental')
-on conflict (id) do update set name = excluded.name;
+## 5. R2 privado
 
-insert into public.users (id, email)
-values ('REPLACE_WITH_AUTH_USER_UUID', 'REPLACE_WITH_INVITED_EMAIL')
-on conflict (id) do update set email = excluded.email;
-
-insert into public.workspace_roles
-  (user_id, workspace_id, role, can_approve_assessments)
-values
-  ('REPLACE_WITH_AUTH_USER_UUID', 'tnt_experimental', 'TEACHER', true)
-on conflict (user_id, workspace_id) do update
-set role = excluded.role,
-    can_approve_assessments = excluded.can_approve_assessments;
-commit;
-```
-
-No crear ni entregar una secret/service-role key a la aplicación: FastAPI usa
-la conexión PostgreSQL y el browser usa solo la publishable key.
-
-## 6. R2 privado
-
-Una persona crea el bucket y un token **Object Read & Write** limitado a ese
-bucket. Autenticar Wrangler interactivamente y comprobar que no hay URL pública:
+Comprobar que `r2.dev` está deshabilitado y no existe dominio público. Revisar
+los plazos experimentales antes de aplicar:
 
 ```bash
 npx wrangler login
-npx wrangler r2 bucket list
-npx wrangler r2 bucket dev-url get "$CVA_R2_BUCKET"
-npx wrangler r2 bucket domain list "$CVA_R2_BUCKET"
+npx wrangler r2 bucket dev-url get BUCKET
+npx wrangler r2 bucket domain list BUCKET
+npx wrangler r2 bucket lifecycle set BUCKET \
+  --file deploy/r2/lifecycle.example.json
+npx wrangler r2 bucket lifecycle list BUCKET
 ```
 
-El estado de `dev-url` debe ser deshabilitado y la lista de dominios vacía. Si
-no lo está, corregirlo manualmente antes de continuar. Ratificar explícitamente
-los defaults experimentales: abort multipart 1 día, `raw/` 30 días y
-`exports/` 120 días. Si son aceptados:
+Después de conocer la URL de Cloud Run, copiar el ejemplo CORS a `/tmp`,
+reemplazar el origen y aplicar. Debe haber un único origen HTTPS, métodos
+`GET/PUT/HEAD`, header `Content-Type`, `ETag` expuesto y ningún wildcard.
 
-```bash
-cp deploy/r2/lifecycle.example.json /tmp/cva-r2-lifecycle.json
-npx wrangler r2 bucket lifecycle set "$CVA_R2_BUCKET" \
-  --file /tmp/cva-r2-lifecycle.json
-npx wrangler r2 bucket lifecycle list "$CVA_R2_BUCKET"
-```
+## 6. Secret Manager
 
-El CORS se aplica solo después de obtener el origen Cloud Run exacto:
+Obtener nombres mediante `terraform output -json runtime_secret_names`. Añadir
+por stdin, nunca como argumento, estas cuatro versiones:
 
-```bash
-jq --arg origin "$CVA_SERVICE_URI" \
-  '.rules[0].allowed.origins = [$origin]' \
-  deploy/r2/cors.example.json > /tmp/cva-r2-cors.json
-npx wrangler r2 bucket cors set "$CVA_R2_BUCKET" \
-  --file /tmp/cva-r2-cors.json
-npx wrangler r2 bucket cors list "$CVA_R2_BUCKET"
-```
+- URL `postgresql+psycopg://...`;
+- R2 Access Key ID;
+- R2 Secret Access Key;
+- session secret aleatorio de al menos 32 caracteres.
 
-La regla debe contener un solo origen HTTPS, métodos `GET`, `PUT`, `HEAD`, solo
-`Content-Type` como header permitido y `ETag` expuesto; nunca `*`.
+Verificar solo metadata con `gcloud secrets versions list`; nunca leer ni
+imprimir valores. `secret_version` del tfvars externo debe apuntar a una versión
+numérica habilitada que exista para los cuatro secretos.
 
-## 7. Introducir secretos fuera del chat
+## 7. Imagen: Cloud Build publica, Terraform despliega
 
-Obtener los nombres no secretos y confirmar que cada contenedor está vacío.
-En un bootstrap nuevo, la primera versión real de los cuatro debe ser `1`, que
-es el valor fijado en `/tmp/cva-stage1.tfvars`.
+Terraform es el único propietario de la imagen desplegada. Cloud Build no
+actualiza Service ni Job.
 
-```bash
-export CVA_DB_SECRET_NAME="$(terraform -chdir=deploy/terraform output -json runtime_secret_names | jq -r '.database_url')"
-export CVA_R2_ID_SECRET_NAME="$(terraform -chdir=deploy/terraform output -json runtime_secret_names | jq -r '.r2_access_key_id')"
-export CVA_R2_SECRET_NAME="$(terraform -chdir=deploy/terraform output -json runtime_secret_names | jq -r '.r2_secret_access_key')"
-export CVA_SESSION_SECRET_NAME="$(terraform -chdir=deploy/terraform output -json runtime_secret_names | jq -r '.session_secret')"
-```
-
-Captura silenciosa y envío por stdin:
-
-```bash
-printf 'CVA_DATABASE_URL (postgresql+psycopg, sslmode=require): '
-IFS= read -r -s CVA_DATABASE_URL_SECRET
-printf '\n'
-printf '%s' "$CVA_DATABASE_URL_SECRET" | \
-  gcloud secrets versions add "$CVA_DB_SECRET_NAME" --data-file=-
-unset CVA_DATABASE_URL_SECRET
-
-printf 'R2 Access Key ID: '
-IFS= read -r -s CVA_R2_ACCESS_KEY_ID_SECRET
-printf '\n'
-printf '%s' "$CVA_R2_ACCESS_KEY_ID_SECRET" | \
-  gcloud secrets versions add "$CVA_R2_ID_SECRET_NAME" --data-file=-
-unset CVA_R2_ACCESS_KEY_ID_SECRET
-
-printf 'R2 Secret Access Key: '
-IFS= read -r -s CVA_R2_SECRET_ACCESS_KEY_SECRET
-printf '\n'
-printf '%s' "$CVA_R2_SECRET_ACCESS_KEY_SECRET" | \
-  gcloud secrets versions add "$CVA_R2_SECRET_NAME" --data-file=-
-unset CVA_R2_SECRET_ACCESS_KEY_SECRET
-
-openssl rand -base64 48 | tr -d '\n' | \
-  gcloud secrets versions add "$CVA_SESSION_SECRET_NAME" --data-file=-
-```
-
-Verificar solo metadata, nunca contenido:
-
-```bash
-for secret_name in \
-  "$CVA_DB_SECRET_NAME" \
-  "$CVA_R2_ID_SECRET_NAME" \
-  "$CVA_R2_SECRET_NAME" \
-  "$CVA_SESSION_SECRET_NAME"
-do
-  gcloud secrets versions list "$secret_name" \
-    --filter='state=ENABLED' \
-    --format='table(name,state,createTime)'
-done
-```
-
-Si alguna primera versión no es `1`, detenerse: no habilitar runtime hasta que
-los cuatro secretos tengan una misma versión numérica y `secret_version` la
-refleje.
-
-## 8. Construir imagen, habilitar runtime y desplegar
-
-La cuenta dedicada de build y la publishable key no son secretos:
+### 7.1 Construir y publicar
 
 ```bash
 export CVA_BUILD_SA_EMAIL="$(terraform -chdir=deploy/terraform output -raw cloud_build_service_account)"
-export CVA_BUILD_SA="projects/${CVA_GCP_PROJECT_ID}/serviceAccounts/${CVA_BUILD_SA_EMAIL}"
-```
-
-Primer build sin update de Service/Job:
-
-```bash
+export CVA_BUILD_SA="projects/PROJECT_ID/serviceAccounts/${CVA_BUILD_SA_EMAIL}"
 export CVA_BUILD_ID="$(gcloud builds submit . \
   --async \
-  --project="$CVA_GCP_PROJECT_ID" \
-  --region="$CVA_GCP_REGION" \
+  --project=PROJECT_ID \
+  --region=REGION \
   --service-account="$CVA_BUILD_SA" \
   --config=deploy/cloudbuild.yaml \
-  --substitutions="_DEPLOY_RUNTIME=false,_REGION=$CVA_GCP_REGION,_REPOSITORY=$CVA_REPOSITORY_ID,_IMAGE=application,_SERVICE_NAME=$CVA_SERVICE_NAME,_JOB_NAME=$CVA_JOB_NAME,_VITE_SUPABASE_URL=$CVA_SUPABASE_URL,_VITE_SUPABASE_PUBLISHABLE_KEY=$CVA_SUPABASE_PUBLISHABLE_KEY" \
+  --substitutions=_REGION=REGION,_REPOSITORY=REPOSITORY,_IMAGE=application,_VITE_SUPABASE_URL=SUPABASE_URL,_VITE_SUPABASE_PUBLISHABLE_KEY=PUBLISHABLE_KEY \
   --format='value(id)')"
-gcloud builds log --stream "$CVA_BUILD_ID" \
-  --project="$CVA_GCP_PROJECT_ID" --region="$CVA_GCP_REGION"
-test "$(gcloud builds describe "$CVA_BUILD_ID" \
-  --project="$CVA_GCP_PROJECT_ID" --region="$CVA_GCP_REGION" \
-  --format='value(status)')" = 'SUCCESS'
-export CVA_CONTAINER_IMAGE="${CVA_GCP_REGION}-docker.pkg.dev/${CVA_GCP_PROJECT_ID}/${CVA_REPOSITORY_ID}/application:${CVA_BUILD_ID}"
-gcloud artifacts docker images describe "$CVA_CONTAINER_IMAGE" \
-  --project="$CVA_GCP_PROJECT_ID"
+gcloud builds log --stream "$CVA_BUILD_ID" --project=PROJECT_ID --region=REGION
+test "$(gcloud builds describe "$CVA_BUILD_ID" --project=PROJECT_ID --region=REGION --format='value(status)')" = SUCCESS
 ```
 
-Editar `/tmp/cva-stage1.tfvars`: fijar `container_image` al valor inmutable
-anterior y `enable_runtime_resources = true`. Revisar y aplicar el segundo plan:
+Cloud Build ejecuta smoke local de health/readiness, publica y muestra la
+referencia inmutable. Verificarla independientemente:
 
 ```bash
-${EDITOR:-vi} /tmp/cva-stage1.tfvars
+export CVA_TAGGED_IMAGE="REGION-docker.pkg.dev/PROJECT_ID/REPOSITORY/application:${CVA_BUILD_ID}"
+export CVA_IMAGE_DIGEST="$(gcloud artifacts docker images describe "$CVA_TAGGED_IMAGE" --project=PROJECT_ID --format='value(image_summary.digest)')"
+case "$CVA_IMAGE_DIGEST" in
+  sha256:????????????????????????????????????????????????????????????????) ;;
+  *) echo 'digest inválido' >&2; exit 1 ;;
+esac
+export CVA_IMMUTABLE_IMAGE="${CVA_TAGGED_IMAGE%:*}@${CVA_IMAGE_DIGEST}"
+printf '%s\n' "$CVA_IMMUTABLE_IMAGE"
+```
+
+### 7.2 Plan, apply y prueba de drift
+
+Copiar `CVA_IMMUTABLE_IMAGE` en `container_image` del tfvars externo y cambiar
+`enable_runtime_resources = true`. Luego:
+
+```bash
 terraform -chdir=deploy/terraform plan \
   -var-file=/tmp/cva-stage1.tfvars \
   -out=/tmp/cva-stage1-runtime.tfplan
@@ -345,186 +239,92 @@ terraform -chdir=deploy/terraform show -no-color \
   /tmp/cva-stage1-runtime.tfplan
 terraform -chdir=deploy/terraform apply \
   /tmp/cva-stage1-runtime.tfplan
+
+gcloud run services describe SERVICE --project=PROJECT_ID --region=REGION \
+  --format='value(spec.template.spec.containers[0].image)'
+gcloud run jobs describe JOB --project=PROJECT_ID --region=REGION \
+  --format='value(template.template.containers[0].image)'
+
+terraform -chdir=deploy/terraform plan \
+  -var-file=/tmp/cva-stage1.tfvars -detailed-exitcode
+```
+
+Service y Job deben usar el mismo digest. El plan posterior debe terminar 0;
+exit 2 indica drift y bloquea la verificación.
+
+## 8. GitHub Actions y trigger de Cloud Build
+
+GitHub Actions debe estar verde sobre el mismo SHA desplegado. El trigger de
+Cloud Build puede construir/publicar en `main`, pero no despliega directamente:
+cada nueva imagen requiere copiar el digest a tfvars, revisar plan y aplicar
+Terraform.
+
+```bash
+gh run list --workflow ci.yml --branch main --limit 3
+gh run watch RUN_ID --exit-status
+gcloud builds triggers describe TRIGGER --project=PROJECT_ID --region=REGION
+```
+
+No configurar substitutions secretas ni permisos `run.admin` para la cuenta de
+build.
+
+## 9. Verificación cloud obligatoria de E1-11
+
+### 9.1 Runtime e infraestructura
+
+```bash
 export CVA_SERVICE_URI="$(terraform -chdir=deploy/terraform output -raw service_uri)"
-```
-
-Ahora aplicar CORS y Auth URL del paso 5/6. Ejecutar un segundo Cloud Build con
-`_DEPLOY_RUNTIME=true`; esto prueba realmente las fases de update y health del
-artefacto de CD:
-
-```bash
-export CVA_DEPLOY_BUILD_ID="$(gcloud builds submit . \
-  --async \
-  --project="$CVA_GCP_PROJECT_ID" \
-  --region="$CVA_GCP_REGION" \
-  --service-account="$CVA_BUILD_SA" \
-  --config=deploy/cloudbuild.yaml \
-  --substitutions="_DEPLOY_RUNTIME=true,_REGION=$CVA_GCP_REGION,_REPOSITORY=$CVA_REPOSITORY_ID,_IMAGE=application,_SERVICE_NAME=$CVA_SERVICE_NAME,_JOB_NAME=$CVA_JOB_NAME,_VITE_SUPABASE_URL=$CVA_SUPABASE_URL,_VITE_SUPABASE_PUBLISHABLE_KEY=$CVA_SUPABASE_PUBLISHABLE_KEY" \
-  --format='value(id)')"
-gcloud builds log --stream "$CVA_DEPLOY_BUILD_ID" \
-  --project="$CVA_GCP_PROJECT_ID" --region="$CVA_GCP_REGION"
-test "$(gcloud builds describe "$CVA_DEPLOY_BUILD_ID" \
-  --project="$CVA_GCP_PROJECT_ID" --region="$CVA_GCP_REGION" \
-  --format='value(status)')" = 'SUCCESS'
-```
-
-## 9. GitHub Actions y trigger de Cloud Build
-
-Una persona debe ejecutar/autorizar estas dos integraciones; la auditoría local
-solo validó sus archivos:
-
-1. comprobar que `.github/workflows/ci.yml` pasa en el commit desplegado;
-2. conectar el repositorio privado a Cloud Build y crear un trigger de push a
-   `main` que use `deploy/cloudbuild.yaml`, la cuenta
-   `$CVA_BUILD_SA`, `_DEPLOY_RUNTIME=true` y las mismas substitutions públicas
-   del build anterior.
-
-Verificación exacta de GitHub Actions con `gh` autenticado fuera del chat:
-
-```bash
-export CVA_GIT_BRANCH='main'
-export CVA_GH_RUN_ID="$(gh run list --workflow ci.yml \
-  --branch "$CVA_GIT_BRANCH" --limit 1 \
-  --json databaseId --jq '.[0].databaseId')"
-gh run watch "$CVA_GH_RUN_ID" --exit-status
-```
-
-Verificación del trigger (sustituir el nombre creado por la persona):
-
-```bash
-export CVA_BUILD_TRIGGER='replace-with-trigger-name'
-gcloud builds triggers describe "$CVA_BUILD_TRIGGER" \
-  --project="$CVA_GCP_PROJECT_ID" --region="$CVA_GCP_REGION"
-gcloud builds triggers run "$CVA_BUILD_TRIGGER" \
-  --branch="$CVA_GIT_BRANCH" \
-  --project="$CVA_GCP_PROJECT_ID" --region="$CVA_GCP_REGION"
-gcloud builds list --project="$CVA_GCP_PROJECT_ID" \
-  --region="$CVA_GCP_REGION" --limit=3
-```
-
-El último build del trigger debe ser `SUCCESS` y su imagen debe quedar aplicada
-tanto al Service como al Job.
-
-## 10. Comandos de verificación cloud
-
-### 10.1 Runtime, privacidad y modo mock
-
-```bash
 curl --fail --show-error "$CVA_SERVICE_URI/api/health"
-test "$(curl -sS -o /tmp/cva-private-route.json -w '%{http_code}' \
-  "$CVA_SERVICE_URI/api/v1/session")" = '401'
-gcloud run services describe "$CVA_SERVICE_NAME" \
-  --project="$CVA_GCP_PROJECT_ID" --region="$CVA_GCP_REGION"
-gcloud run jobs describe "$CVA_JOB_NAME" \
-  --project="$CVA_GCP_PROJECT_ID" --region="$CVA_GCP_REGION"
+curl --fail --show-error "$CVA_SERVICE_URI/api/readiness"
+test "$(curl -sS -o /tmp/cva-private-route.json -w '%{http_code}' "$CVA_SERVICE_URI/api/v1/session")" = 401
 ```
 
-Health debe responder `status=ok`, `stage=1`, `model_mode=mock`; la ruta privada
-sin cookie debe ser 401. Las descripciones deben mostrar identidades distintas,
-referencias versionadas a Secret Manager y la misma imagen inmutable.
+Comprobar además:
 
-### 10.2 E2E cloud obligatorio de E1-11
+- identidades web/worker distintas;
+- secrets por versión, nunca valores inline;
+- `maxRetries = 0`, una tarea y paralelismo uno;
+- startup probe a `/api/readiness` y liveness a `/api/health`;
+- misma imagen `@sha256` en Service y Job;
+- TTL de upload y download separados y dentro de límites.
 
-Usar solo archivos sintéticos. Una persona debe observar y registrar hora/IDs:
+### 9.2 E2E con fixtures sintéticos
 
-1. seguir el magic link del usuario previamente invitado;
-2. crear una actividad de tres preguntas, cargar consigna y rúbrica, ejecutar
-   P01-P05 y aprobar el blueprint;
-3. crear la única submission, cargar PDF digital/TXT/MD y arrancar el pipeline;
-4. anotar `job_id` y cerrar **todo el navegador inmediatamente**, sin esperar el
-   resultado;
-5. comprobar en terminal que una ejecución real del Job termina sin intervención:
+1. entrar mediante magic link del usuario invitado;
+2. crear una actividad de tres preguntas, cargar consigna/rúbrica sintéticas,
+   ejecutar P01–P05 y aprobar blueprint;
+3. crear la única submission, cargar un fixture y arrancar el pipeline;
+4. anotar `job_id` y cerrar todo el navegador inmediatamente;
+5. observar una ejecución real del Cloud Run Job;
+6. abrir una sesión nueva y confirmar el estado durable terminal;
+7. abrir todas las fuentes, aprobar Assessment y generar Assessment PDF, Guide
+   PDF y JSON sin nuevas model calls;
+8. comprobar CORS/PUT/GET R2 sin credenciales en requests o logs;
+9. confirmar que una capacidad de descarga expira después de
+   `CVA_DOWNLOAD_URL_TTL_SECONDS`;
+10. verificar en PostgreSQL que el job esperado, y no otro, quedó terminal; un
+    fallo queda `FAILED` y no dispara un retry automático.
 
-   ```bash
-   gcloud run jobs executions list \
-     --job="$CVA_JOB_NAME" \
-     --project="$CVA_GCP_PROJECT_ID" \
-     --region="$CVA_GCP_REGION" --limit=5
-   ```
-
-6. abrir una sesión nueva, entrar al deep link y confirmar estado terminal,
-   tres preguntas evidence-first y todos sus campos;
-7. abrir cada fuente firmada, aprobar el Assessment y generar Assessment PDF,
-   Guide PDF y JSON; confirmar que exportar no agrega model calls;
-8. en DevTools/Network comprobar `OPTIONS`/`PUT`/`GET` R2 sin error CORS, origen
-   exacto y ausencia de credenciales en requests/logs;
-9. conservar una URL firmada de un fixture y confirmar que deja de funcionar
-   después de `CVA_SIGNED_URL_TTL_SECONDS`.
-
-Verificación PostgreSQL posterior (password por prompt como en el paso 5):
-
-```bash
-psql "host=$CVA_SUPABASE_DB_HOST port=5432 dbname=postgres user=$CVA_SUPABASE_DB_USER sslmode=require" \
-  -v ON_ERROR_STOP=1 -c \
-  "select id, kind, stage, status, progress, attempt, finished_at from public.jobs order by created_at desc limit 4;"
-psql "host=$CVA_SUPABASE_DB_HOST port=5432 dbname=postgres user=$CVA_SUPABASE_DB_USER sslmode=require" \
-  -v ON_ERROR_STOP=1 -c \
-  "select stage, data->>'result' as result, data->'route'->>'provider' as provider, data->>'estimated_cost_usd' as estimated_cost_usd from public.model_calls order by id;"
-```
-
-Todos los jobs deben estar en estado de dominio/técnico esperado, y el ledger
-debe reflejar exclusivamente el proveedor mock/configurado como `other`, costo
-cero y resultados estructurados; nunca contenido estudiantil.
-
-Con AWS CLI, introducir R2 keys solo como variables temporales de una terminal
-segura y verificar los dos prefijos realmente creados:
-
-```bash
-printf 'R2 Access Key ID para verificación: '
-IFS= read -r -s AWS_ACCESS_KEY_ID
-printf '\n'
-export AWS_ACCESS_KEY_ID
-printf 'R2 Secret Access Key para verificación: '
-IFS= read -r -s AWS_SECRET_ACCESS_KEY
-printf '\n'
-export AWS_SECRET_ACCESS_KEY
-export AWS_DEFAULT_REGION='auto'
-
-aws --endpoint-url "$CVA_R2_ENDPOINT_URL" s3 ls \
-  "s3://$CVA_R2_BUCKET/raw/" --recursive
-aws --endpoint-url "$CVA_R2_ENDPOINT_URL" s3 ls \
-  "s3://$CVA_R2_BUCKET/exports/" --recursive
-
-unset AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_DEFAULT_REGION
-```
-
-Finalmente revisar errores sin imprimir payloads:
+Revisar logs por metadata/códigos, nunca por payload estudiantil:
 
 ```bash
 gcloud logging read \
   'severity>=ERROR AND (resource.type="cloud_run_revision" OR resource.type="cloud_run_job")' \
-  --project="$CVA_GCP_PROJECT_ID" --freshness=2h --limit=100
+  --project=PROJECT_ID --freshness=2h --limit=100
 ```
 
-## 11. Evidencia y criterio de cierre
+## 10. Evidencia y criterio de cierre
 
-Guardar fuera del repositorio de código, con timestamps y valores sensibles
-redactados:
+Guardar fuera del repositorio, con timestamps y secretos redactados:
 
-- URL/commit/build IDs e imagen por digest;
-- outputs de `terraform plan/apply`, GitHub Actions y Cloud Build;
-- health, 401 de ruta privada, Service/Job/IAM y ejecución del Job;
-- resultado de migración, RLS/grants/triggers y filas terminales;
-- CORS/lifecycle/privacidad de R2 y listado de prefijos;
-- capturas del E2E antes de cerrar y después de reabrir el navegador;
-- confirmación explícita de `CVA_MODEL_MODE=mock` y cero secretos en logs.
+- commit/PR/run de GitHub Actions;
+- build ID, digest y dos planes Terraform, incluido el plan sin drift;
+- outputs de health/readiness, Service/Job/IAM y ejecución;
+- migración, tablas/RLS/grants/triggers y filas terminales;
+- Auth, CORS/lifecycle/privacidad R2 y expiración de download;
+- cierre/reapertura del navegador y exports;
+- confirmación de gateway mock, P10 deshabilitado y cero secretos en logs.
 
-Estado antes de esta checklist:
-
-- **completas:** E0-01 a E0-08; E1-02, E1-04, E1-05, E1-07, E1-09 y E1-10
-  en su boundary local;
-- **parciales exclusivamente por cloud:** E1-01, E1-03, E1-06 y E1-08;
-- **parcial y no cerrada:** E1-11.
-
-Solo si toda la evidencia externa anterior pasa pueden cerrarse las partes
-cloud y E1-11. Un fallo de Auth, RLS, R2, IAM, Job, CI/CD o reapertura mantiene
-Etapa 1 parcial. Incluso con todo verde, este procedimiento **no** declara
-`READY_FOR_STAGE_2`; esa decisión requiere un gate humano posterior y separado.
-
-Referencias operativas vigentes consultadas: documentación oficial de
-[Cloud Build con service accounts dedicadas](https://docs.cloud.google.com/build/docs/securing-builds/configure-user-specified-service-accounts),
-[Cloud Run Jobs](https://docs.cloud.google.com/run/docs/execute/jobs),
-[conexiones PostgreSQL de Supabase](https://supabase.com/docs/guides/database/connecting-to-postgres),
-[redirect URLs de Supabase Auth](https://supabase.com/docs/guides/auth/redirect-urls),
-[JWT Signing Keys de Supabase](https://supabase.com/docs/guides/auth/signing-keys)
-y [Wrangler para R2](https://developers.cloudflare.com/r2/reference/wrangler-commands/).
+E1-11 continúa **parcial y no cerrada** hasta que toda esta evidencia real
+pase. Incluso entonces, esta checklist no declara `READY_FOR_STAGE_2`; requiere
+un gate humano posterior y separado.

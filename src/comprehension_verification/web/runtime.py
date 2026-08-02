@@ -57,7 +57,8 @@ def build_runtime(
     else:
         store = MemoryObjectStore(
             secret=settings.session_secret,
-            ttl_seconds=settings.signed_url_ttl_seconds,
+            upload_ttl_seconds=settings.upload_url_ttl_seconds,
+            download_ttl_seconds=settings.download_url_ttl_seconds,
         )
 
     service = Stage1Service(settings=settings, repository=repo, object_store=store)

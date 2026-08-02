@@ -44,9 +44,17 @@ variable "job_name" {
 }
 
 variable "container_image" {
-  description = "Immutable Artifact Registry image reference used to bootstrap Cloud Run."
+  description = "Immutable Artifact Registry image reference owned by Terraform, including @sha256 digest."
   type        = string
   default     = ""
+
+  validation {
+    condition = var.container_image == "" || can(regex(
+      "^[a-z0-9][a-z0-9.-]*/[a-z0-9][a-z0-9._/-]*@sha256:[0-9a-f]{64}$",
+      var.container_image,
+    ))
+    error_message = "container_image must be empty or an immutable registry reference ending in @sha256:<64 lowercase hex>."
+  }
 }
 
 variable "enable_runtime_resources" {

@@ -1,0 +1,37 @@
+.git
+.github
+.gitignore
+.dockerignore
+.DS_Store
+.env
+.env.*
+.venv
+.local
+.pnpm-store
+.pytest_cache
+.mypy_cache
+.ruff_cache
+**/__pycache__
+**/*.py[cod]
+**/*.egg-info
+.coverage
+.coverage.*
+htmlcov
+build
+dist
+outputs
+tmp
+frontend/node_modules
+frontend/dist
+frontend/*.tsbuildinfo
+tests
+# Fixtures are part of the build context only for the Dockerfile `audit` target;
+# the default `runtime` target never copies them.
+docs
+AGENTS.md
+specification/*.md
+specification/*.xlsx
+deploy/README.md
+deploy/r2
+deploy/supabase
+deploy/terraform

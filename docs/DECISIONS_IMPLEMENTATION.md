@@ -117,14 +117,17 @@
 - **Razón:** exportar no puede cambiar preguntas, guía, costos ni trazabilidad.
 - **Relación:** E1-09 y ADR-003/032.
 
-## D-012 - Persistencia cloud refleja el ORM ejecutado
+## D-012 - Persistencia cloud alinea una superficie verificable con el ORM
 
-- **Decisión:** la migración Supabase crea exactamente las tablas/columnas del
-  modelo SQLAlchemy de Etapa 1, habilita RLS y revoca acceso directo del
-  navegador. FastAPI y el worker usan la conexión de servicio; R2 conserva
-  bytes raw/sellados y exports.
-- **Razón:** un esquema conceptual paralelo que no coincide con el repositorio
-  ejecutable produciría un despliegue que compila pero no inicia.
+- **Decisión:** la migración Supabase alinea nombres de tablas y columnas con
+  el modelo SQLAlchemy de Etapa 1. PostgreSQL real comprueba además que todas
+  las tablas tienen RLS y que existen los dos triggers append-only. Esto no se
+  denomina “equivalencia exacta”: el verificador no compara exhaustivamente
+  todos los tipos, defaults, foreign keys, uniques e índices entre DDL y ORM.
+  FastAPI y el worker usan la conexión de servicio; R2 conserva bytes
+  raw/sellados y exports.
+- **Razón:** declarar con precisión la superficie comprobada evita atribuir a
+  una comparación parcial garantías que no demuestra.
 - **Relación:** E1-10/E1-11 y ADR-032.
 
 ## D-013 - No adelantar robustez ni acciones de Etapa 2
@@ -151,9 +154,12 @@
 - **Decisión:** `scripts/prepare_postgres.py` solo acepta URLs PostgreSQL de
   loopback, aplica la migración a una base vacía y compara tablas/columnas con
   `Base.metadata`; además exige RLS en las 24 tablas y los dos triggers
-  append-only. CI ejecuta este boundary con PostgreSQL 16 antes del E2E.
-- **Razón:** SQLite y una comparación textual no validan DDL, tipos, RLS,
-  triggers ni comportamiento del driver PostgreSQL.
+  append-only. CI ejecuta este boundary con PostgreSQL 16 antes del E2E y de
+  pruebas transaccionales de idempotencia, claims, unicidad, stage keys, CAS,
+  aislamiento tenant y append-only.
+- **Razón:** SQLite y una comparación textual no validan la aplicación del DDL,
+  RLS, triggers ni el comportamiento transaccional del driver PostgreSQL. La
+  comparación ORM continúa limitada a tablas y columnas, como explicita D-012.
 - **Relación:** E1-06/E1-10/E1-11, ADR-032 y D-012.
 
 ## D-016 - Runtime Docker y target de auditoría son superficies distintas
@@ -187,10 +193,13 @@
 
 ## D-019 - Dos gates de cierre distintos
 
-- **Decisión:** `READY_FOR_EXTERNAL_STAGE1_VERIFICATION` significa que el
-  boundary local/reproducible está verde. E1-11 continúa parcial hasta evidencia
-  real de GCP, Supabase y R2. Solo después de esa evidencia podría evaluarse un
-  gate posterior; esta auditoría nunca declara `READY_FOR_STAGE_2`.
+- **Decisión:** `READY_FOR_EXTERNAL_STAGE1_VERIFICATION` exige el boundary local
+  verde, commit y rama publicados, PR existente y GitHub Actions verde sobre el
+  commit final. `READY_TO_PUSH_FOR_CI` se reserva al mismo boundary local cuando
+  autenticación o permisos impiden publicar u observar CI. E1-11 continúa
+  parcial hasta evidencia real de GCP, Supabase y R2. Solo después de esa
+  evidencia podría evaluarse un gate posterior; esta auditoría nunca declara
+  `READY_FOR_STAGE_2`.
 - **Razón:** IaC válida, adapters y fakes no demuestran IAM, Auth, RLS, CORS,
   lifecycle, red ni durabilidad de un Cloud Run Job real.
 - **Relación:** E1-11 y restricción explícita de alcance.
@@ -199,10 +208,42 @@
 
 - **Decisión:** Terraform habilita Cloud Storage y concede a la cuenta dedicada
   de Cloud Build `roles/storage.bucketViewer` y `roles/storage.objectUser`,
-  además de los permisos ya acotados para Artifact Registry, Logging y Cloud
-  Run. La cuenta del build sigue separada de las identidades web y worker.
+  además de permisos de escritura en Artifact Registry y Logging. No recibe
+  `roles/run.admin` ni permiso para actuar como las identidades web/worker.
 - **Razón:** un `gcloud builds submit` o trigger con cuenta indicada necesita
   acceder al staging de código; validar solo el push de la imagen dejaba el
   primer build expuesto a fallar antes de ejecutar el Dockerfile.
 - **Relación:** E1-11, D-016 y principio de mínimo privilegio dentro del proyecto
   experimental dedicado.
+
+## D-021 - Cloud Run no reintenta una ejecución sin identidad de job
+
+- **Decisión:** el Job de Etapa 1 usa `task_count = 1`, `parallelism = 1` y
+  `max_retries = 0`. Cada proceso llama una sola vez a `claim_next_job` y deja
+  cualquier fallo como estado durable `FAILED` en PostgreSQL.
+- **Razón:** como el dispatch deliberadamente no transmite `job_id`, un retry
+  automático podría reclamar otra fila `QUEUED` y presentarla falsamente como
+  retry de la primera. El retry funcional general pertenece a Etapa 2.
+- **Relación:** E1-06/E1-07/E1-11, D-006 y D-013.
+
+## D-022 - Terraform es el único propietario de la imagen desplegada
+
+- **Decisión:** Cloud Build construye, prueba y publica una imagen, obtiene su
+  digest y emite una referencia `@sha256`. No ejecuta `gcloud run ... update`.
+  Una persona copia la referencia a un `tfvars` fuera del repositorio, revisa
+  el plan y aplica Terraform, que configura la misma imagen en Service y Job.
+- **Razón:** dos escritores sobre la imagen causaban drift y podían hacer que un
+  plan posterior restaurara una versión antigua.
+- **Relación:** E1-11 y D-020.
+
+## D-023 - Cloud falla cerrado y separa liveness de readiness
+
+- **Decisión:** cloud exige una URL completa `postgresql+psycopg://`, adapters
+  Supabase/R2/Cloud Run, secreto de sesión gestionado, gateway mock y P10
+  deshabilitado. `/api/health` no toca dependencias; `/api/readiness` ejecuta
+  una consulta fija contra la tabla final esperada de la migración. Upload y
+  download usan TTL separados y acotados.
+- **Razón:** una configuración parcial no debe iniciar silenciosamente con
+  SQLite ni provocar reinicios por una dependencia externa caída; un TTL
+  declarado debe afectar realmente la capacidad correspondiente.
+- **Relación:** E1-01/E1-03/E1-06/E1-11 y ADR-032/034.
