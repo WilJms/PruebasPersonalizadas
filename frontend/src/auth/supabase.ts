@@ -49,10 +49,12 @@ export async function beginCloudLogin(
   client: SupabaseClient = getSupabaseClient(),
   redirectOrigin = window.location.origin,
 ): Promise<string | null> {
+  const redirectUrl = new URL("/login", redirectOrigin).toString();
+
   const { error } = await client.auth.signInWithOtp({
     email,
     options: {
-      emailRedirectTo: redirectOrigin,
+      emailRedirectTo: redirectUrl,
       shouldCreateUser: false,
     },
   });
