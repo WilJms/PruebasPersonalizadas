@@ -864,7 +864,7 @@
             {
               "maxLength": 128,
               "minLength": 3,
-              "pattern": "^[a-z][a-z0-9_-]*$",
+              "pattern": "^([a-z][a-z0-9_-]*|[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12})$",
               "type": "string"
             },
             {
@@ -973,7 +973,7 @@
             {
               "maxLength": 128,
               "minLength": 3,
-              "pattern": "^[a-z][a-z0-9_-]*$",
+              "pattern": "^([a-z][a-z0-9_-]*|[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12})$",
               "type": "string"
             },
             {
@@ -2273,7 +2273,6 @@
           "type": "boolean"
         },
         "details": {
-          "additionalProperties": true,
           "title": "Details",
           "type": "object"
         }
@@ -2448,7 +2447,6 @@
           "title": "Causation Id"
         },
         "payload": {
-          "additionalProperties": true,
           "title": "Payload",
           "type": "object"
         }
@@ -3114,7 +3112,6 @@
         "structured_content": {
           "anyOf": [
             {
-              "additionalProperties": true,
               "type": "object"
             },
             {
@@ -4155,7 +4152,6 @@
           "$ref": "#/$defs/TrustedPromptContext"
         },
         "payload": {
-          "additionalProperties": true,
           "title": "Payload",
           "type": "object"
         }
@@ -4347,7 +4343,7 @@
         "decided_by": {
           "maxLength": 128,
           "minLength": 3,
-          "pattern": "^[a-z][a-z0-9_-]*$",
+          "pattern": "^([a-z][a-z0-9_-]*|[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12})$",
           "title": "Decided By",
           "type": "string"
         },
@@ -5803,7 +5799,6 @@
         "repaired_output": {
           "anyOf": [
             {
-              "additionalProperties": true,
               "type": "object"
             },
             {

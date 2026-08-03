@@ -16,6 +16,19 @@ from pydantic import BaseModel, ConfigDict, Field, HttpUrl, model_validator
 SCHEMA_VERSION = "1.1.0"
 
 Id = Annotated[str, Field(min_length=3, max_length=128, pattern=r"^[a-z][a-z0-9_-]*$")]
+
+PrincipalId = Annotated[
+    str,
+    Field(
+        min_length=3,
+        max_length=128,
+        pattern=(
+            r"^([a-z][a-z0-9_-]*|"
+            r"[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12})$"
+        ),
+    ),
+]
+
 Hash = Annotated[str, Field(pattern=r"^sha256:[a-f0-9]{64}$")]
 Score = Annotated[float, Field(ge=0.0, le=1.0)]
 PositiveInt = Annotated[int, Field(ge=1)]
@@ -543,7 +556,7 @@ class PolicyDecision(StrictModel):
     decision_id: Id
     issue_id: Id
     selected_option_id: Id
-    decided_by: Id
+    decided_by: PrincipalId
     decided_at: datetime
     note: str | None = Field(default=None, max_length=2000)
 
@@ -728,7 +741,7 @@ class AssessmentBlueprint(StrictModel):
     assessment_constraints: AssessmentConstraints
     decision_ids: list[Id] = Field(default_factory=list)
     diagnostics: list[Diagnostic] = Field(default_factory=list)
-    approved_by: Id | None = None
+    approved_by: PrincipalId | None = None
     approved_at: datetime | None = None
 
     @model_validator(mode="after")
@@ -1243,7 +1256,7 @@ class Assessment(StrictModel):
     diagnostics: list[Diagnostic] = Field(default_factory=list)
     lineage: Lineage
     created_at: datetime
-    approved_by: Id | None = None
+    approved_by: PrincipalId | None = None
     approved_at: datetime | None = None
 
     @model_validator(mode="after")
