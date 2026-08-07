@@ -1,12 +1,15 @@
 PYTHON ?= .venv/bin/python
 
-.PHONY: install contracts fixtures test test-cov stage0-demo stage0-fail stage0-injection real-smoke frontend-install frontend-typecheck frontend-test frontend-build postgres-prepare postgres-e2e postgres-sensitive secrets-check
+.PHONY: install contracts openapi fixtures test test-cov stage0-demo stage0-fail stage0-injection real-smoke frontend-install frontend-typecheck frontend-test frontend-build postgres-prepare postgres-e2e postgres-sensitive secrets-check
 
 install:
 	$(PYTHON) -m pip install -e '.[dev]'
 
 contracts:
 	$(PYTHON) -m comprehension_verification.cli validate-contracts
+
+openapi:
+	$(PYTHON) scripts/generate_openapi.py
 
 fixtures:
 	$(PYTHON) -m comprehension_verification.cli build-fixtures

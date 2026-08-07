@@ -1780,7 +1780,7 @@
         "actor_id": {
           "maxLength": 128,
           "minLength": 3,
-          "pattern": "^[a-z][a-z0-9_-]*$",
+          "pattern": "^([a-z][a-z0-9_-]*|[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12})$",
           "title": "Actor Id",
           "type": "string"
         },
@@ -1858,7 +1858,7 @@
         "actor_id": {
           "maxLength": 128,
           "minLength": 3,
-          "pattern": "^[a-z][a-z0-9_-]*$",
+          "pattern": "^([a-z][a-z0-9_-]*|[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12})$",
           "title": "Actor Id",
           "type": "string"
         },
@@ -2574,7 +2574,7 @@
         "id": {
           "maxLength": 128,
           "minLength": 3,
-          "pattern": "^[a-z][a-z0-9_-]*$",
+          "pattern": "^([a-z][a-z0-9_-]*|[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12})$",
           "title": "Id",
           "type": "string"
         }
@@ -5005,7 +5005,7 @@
         "actor_id": {
           "maxLength": 128,
           "minLength": 3,
-          "pattern": "^[a-z][a-z0-9_-]*$",
+          "pattern": "^([a-z][a-z0-9_-]*|[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12})$",
           "title": "Actor Id",
           "type": "string"
         },

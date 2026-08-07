@@ -1314,7 +1314,7 @@ class BulkApprovalRequest(StrictModel):
     schema_version: Literal[SCHEMA_VERSION] = SCHEMA_VERSION
     request_id: Id
     tenant_id: Id
-    actor_id: Id
+    actor_id: PrincipalId
     targets: Annotated[list[AssessmentVersionRef], Field(min_length=1, max_length=500)]
     explicit_confirmation: Literal[
         "CONFIRM_BULK_APPROVAL_OF_ALL_ELIGIBLE_SELECTED_ASSESSMENTS"
@@ -1341,7 +1341,7 @@ class BulkApprovalRecord(StrictModel):
     approval_id: Id
     request_id: Id
     tenant_id: Id
-    actor_id: Id
+    actor_id: PrincipalId
     scope: Literal["SELECTED_ELIGIBLE_ASSESSMENTS"]
     approved_at: datetime
     requested_targets: Annotated[
@@ -1379,7 +1379,7 @@ class QuestionReviewAction(StrictModel):
     assessment_id: Id
     question_id: Id
     action: QuestionReviewActionType
-    actor_id: Id
+    actor_id: PrincipalId
     occurred_at: datetime
     reason_code: str | None = Field(
         default=None, pattern=r"^[A-Z][A-Z0-9_]{2,63}$"
@@ -1525,7 +1525,7 @@ class ModelCallLedger(StrictModel):
 
 class EventActor(StrictModel):
     kind: Literal["USER", "SERVICE", "SYSTEM"]
-    id: Id
+    id: PrincipalId
 
 
 class DomainEvent(StrictModel):
