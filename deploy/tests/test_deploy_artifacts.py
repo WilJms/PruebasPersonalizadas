@@ -112,6 +112,7 @@ def test_container_and_cloud_build_are_single_image_and_mock_safe() -> None:
     dockerfile = (ROOT / "Dockerfile").read_text(encoding="utf-8")
     entrypoint = (ROOT / "deploy/docker-entrypoint.sh").read_text(encoding="utf-8")
     cloudbuild = (ROOT / "deploy/cloudbuild.yaml").read_text(encoding="utf-8")
+    parsed_cloudbuild = yaml.safe_load(cloudbuild)
 
     assert "ARG VITE_SUPABASE_URL" in dockerfile
     assert "ARG VITE_SUPABASE_PUBLISHABLE_KEY" in dockerfile
@@ -123,11 +124,33 @@ def test_container_and_cloud_build_are_single_image_and_mock_safe() -> None:
     assert "VITE_SUPABASE_URL=${_VITE_SUPABASE_URL}" in cloudbuild
     assert "VITE_SUPABASE_PUBLISHABLE_KEY=${_VITE_SUPABASE_PUBLISHABLE_KEY}" in cloudbuild
     assert "gcloud run" not in cloudbuild
-    assert "resolve-immutable-image" in cloudbuild
-    assert "image_summary.digest" in cloudbuild
-    assert "/workspace/container-image.txt" in cloudbuild
+    assert "org.opencontainers.image.revision=$COMMIT_SHA" in cloudbuild
+    assert "requestedVerifyOption: VERIFIED" in cloudbuild
+    assert parsed_cloudbuild["options"]["requestedVerifyOption"] == "VERIFIED"
+    assert all(step.get("args", [None])[0] != "push" for step in parsed_cloudbuild["steps"])
+    assert parsed_cloudbuild["images"]
     assert "/api/health" in cloudbuild
     assert "/api/readiness" in cloudbuild
+
+
+def test_build_inputs_are_immutable_and_dependency_installs_are_locked() -> None:
+    dockerfile = (ROOT / "Dockerfile").read_text(encoding="utf-8")
+    workflow = (ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8")
+    production_lock = (ROOT / "requirements.lock").read_text(encoding="utf-8")
+    development_lock = (ROOT / "requirements-dev.lock").read_text(encoding="utf-8")
+
+    assert re.search(r"ARG NODE_IMAGE=node:[^\s]+@sha256:[0-9a-f]{64}", dockerfile)
+    assert re.search(r"ARG PYTHON_IMAGE=python:[^\s]+@sha256:[0-9a-f]{64}", dockerfile)
+    assert "RUN npm ci" in dockerfile
+    assert "npm install" not in dockerfile
+    assert "pip install --no-cache-dir --require-hashes -r requirements.lock" in dockerfile
+    for lock in (production_lock, development_lock):
+        assert "--hash=sha256:" in lock
+        assert "comprehension-verification (pyproject.toml)" in lock
+
+    action_refs = re.findall(r"uses:\s+[^@\s]+@([^\s#]+)", workflow)
+    assert action_refs
+    assert all(re.fullmatch(r"[0-9a-f]{40}", ref) for ref in action_refs)
 
 
 def test_cloud_build_yaml_and_entrypoint_are_parseable() -> None:
@@ -156,13 +179,38 @@ def test_terraform_declares_service_job_secrets_and_job_invocation() -> None:
     assert '"roles/storage.objectUser"' in terraform
     assert "enable_runtime_resources" in terraform
     assert 'version = var.secret_version' in terraform
-    assert terraform.count('name = "CVA_SESSION_SECRET"') == 2
+    assert terraform.count('name = "CVA_SESSION_SECRET"') == 1
+    worker = terraform.split(
+        'resource "google_cloud_run_v2_job" "worker"', 1
+    )[1].split(
+        'resource "google_cloud_run_v2_service_iam_member" "public_login"', 1
+    )[0]
+    assert "CVA_SESSION_SECRET" not in worker
+    assert 'toset(["session_secret"])' in terraform
     assert re.search(r"max_retries\s*=\s*0", terraform)
     assert terraform.count("image = var.container_image") == 2
     assert '@sha256:' in variables
     assert '"roles/run.admin"' not in terraform
     assert "build_can_use_web_identity" not in terraform
     assert "build_can_use_worker_identity" not in terraform
+    assert re.search(
+        r"scaling\s*\{\s*manual_instance_count\s*=\s*0\s*"
+        r"min_instance_count\s*=\s*0\s*\}",
+        terraform,
+    )
+    assert 'resource "google_cloudbuildv2_connection" "github"' in terraform
+    assert 'resource "google_cloudbuildv2_repository" "github"' in terraform
+    assert 'resource "google_cloudbuild_trigger" "github_push"' in terraform
+    assert 'https://github.com/WilJms/PruebasPersonalizadas.git' in terraform
+    assert 'branch = "^(main|fix/stage1-external-readiness)$"' in terraform
+    assert 'filename    = "deploy/cloudbuild.yaml"' in terraform
+    assert "google_service_account.build.email" in terraform
+    assert "github_oauth_token_secret_version" in terraform
+    assert "oauth_token_secret_version = authorizer_credential.value" in terraform
+    assert "github_app_installation_id != null" in terraform
+    assert "pull_request" not in terraform
+    assert '"containeranalysis.googleapis.com"' in terraform
+    assert '"containerscanning.googleapis.com"' in terraform
     startup = re.search(r"startup_probe\s*\{(?P<body>.*?)\n\s*\}", terraform, re.DOTALL)
     liveness = re.search(r"liveness_probe\s*\{(?P<body>.*?)\n\s*\}", terraform, re.DOTALL)
     assert startup and '/api/readiness' in startup.group("body")

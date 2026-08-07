@@ -5,6 +5,13 @@ repository_id = "comprehension-verification"
 service_name  = "cva-web"
 job_name      = "cva-worker"
 
+# Apply the connection first, complete the official OAuth/GitHub App flow,
+# record its public installation id, and only then enable the repository/trigger.
+enable_cloud_build_connection = false
+github_app_installation_id    = null
+github_oauth_token_secret_version = null # Resource name only; never put a token here.
+enable_cloud_build_trigger    = false
+
 # First apply with false. Add Secret Manager version 1 values out-of-band,
 # build/push an image, then copy the immutable @sha256 reference emitted by
 # Cloud Build into an unversioned copy of this file and set this to true.

@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.7
 
-ARG NODE_IMAGE=node:22-bookworm-slim
-ARG PYTHON_IMAGE=python:3.12-slim-bookworm
+ARG NODE_IMAGE=node:22-bookworm-slim@sha256:d649c27dae7ba0137b3cef5dd75baa422c08dc3d9e3fc0c23dfb172dc3cc6436
+ARG PYTHON_IMAGE=python:3.12-slim-bookworm@sha256:4766d8b510c428e595d74b9cc5bbb2fae8e26316fffb4adc89908d79aacd58a2
 
 FROM ${NODE_IMAGE} AS frontend-build
 WORKDIR /build/frontend
@@ -12,7 +12,7 @@ ENV VITE_SUPABASE_URL=${VITE_SUPABASE_URL}
 ENV VITE_SUPABASE_PUBLISHABLE_KEY=${VITE_SUPABASE_PUBLISHABLE_KEY}
 
 COPY frontend/package*.json ./
-RUN if [ -f package-lock.json ]; then npm ci; else npm install; fi
+RUN npm ci
 COPY frontend/ ./
 RUN npm run build
 
@@ -27,16 +27,16 @@ WORKDIR /app
 # The canonical contracts deliberately remain under specification/. Installing
 # the project editable keeps contracts.py anchored at /app in the runtime image
 # without duplicating the Pydantic models.
-COPY pyproject.toml ./
+COPY requirements.lock ./
 COPY src/ ./src/
 COPY specification/ ./specification/
-RUN pip install --no-cache-dir --upgrade pip \
-    && pip install --no-cache-dir -e . "uvicorn[standard]>=0.30,<1"
+RUN pip install --no-cache-dir --require-hashes -r requirements.lock
 
 
 FROM ${PYTHON_IMAGE} AS runtime-base
 ENV VIRTUAL_ENV=/opt/venv
 ENV PATH="${VIRTUAL_ENV}/bin:${PATH}"
+ENV PYTHONPATH=/app/src
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 ENV XDG_CACHE_HOME=/tmp/.cache

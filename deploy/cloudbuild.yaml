@@ -58,42 +58,11 @@ steps:
         docker exec "$${container}" python -c \
           "import requests; r=requests.get('http://127.0.0.1:8080/api/readiness', timeout=2); r.raise_for_status(); assert r.json() == {'status': 'ready'}"
 
-  - id: push-image
-    name: gcr.io/cloud-builders/docker
-    args:
-      - push
-      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_IMAGE}:$BUILD_ID
-
-  - id: resolve-immutable-image
-    name: gcr.io/google.com/cloudsdktool/google-cloud-cli:slim
-    entrypoint: bash
-    args:
-      - -ceu
-      - |
-        tagged_image="${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_IMAGE}:$BUILD_ID"
-        digest=""
-        for attempt in $$(seq 1 12); do
-          digest="$$(gcloud artifacts docker images describe "$${tagged_image}" \
-            --project="$PROJECT_ID" \
-            --format='value(image_summary.digest)' 2>/dev/null || true)"
-          if printf '%s\n' "$${digest}" | grep -Eq '^sha256:[0-9a-f]{64}$'; then
-            break
-          fi
-          sleep 5
-        done
-        if ! printf '%s\n' "$${digest}" | grep -Eq '^sha256:[0-9a-f]{64}$'; then
-          echo "Artifact Registry did not return a valid sha256 digest" >&2
-          exit 1
-        fi
-        repository_image="$${tagged_image%:*}"
-        immutable_image="$${repository_image}@$${digest}"
-        printf '%s\n' "$${immutable_image}" | tee /workspace/container-image.txt
-        echo "Terraform is the only deployment owner; pass this digest reference through an unversioned tfvars file."
-
 images:
   - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_IMAGE}:$BUILD_ID
 
 options:
   logging: CLOUD_LOGGING_ONLY
+  requestedVerifyOption: VERIFIED
 
 timeout: 1800s

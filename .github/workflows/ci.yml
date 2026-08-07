@@ -14,6 +14,7 @@ permissions:
 env:
   CVA_MODEL_MODE: mock
   CVA_P10_ENABLED: "false"
+  PYTHONPATH: src
 
 jobs:
   contracts-backend-stage0:
@@ -21,18 +22,20 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 35
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: "3.12"
           cache: pip
       - name: Install from a clean environment
-        run: python -m pip install -e '.[dev]'
+        run: python -m pip install --require-hashes -r requirements-dev.lock
       - name: Validate contracts and rebuild fixtures
         run: |
           make contracts PYTHON=python
           make fixtures PYTHON=python
+          make openapi PYTHON=python
           git diff --exit-code -- specification/contracts.schema_v1.1\(1\).json fixtures/stage0 tests/fixtures/contracts/v1.1
+          git diff --exit-code -- tests/fixtures/openapi/stage1-v1.json
       - name: Run the Python suite with coverage
         run: python -m pytest --cov=comprehension_verification --cov-report=term-missing --cov-report=xml
       - name: Run deployment artifact tests
@@ -49,12 +52,16 @@ jobs:
           diff -rq /tmp/repro-a /tmp/repro-b
 
   postgres-integration:
-    name: PostgreSQL 16 migration and semantics
+    name: PostgreSQL ${{ matrix.postgres }} migration and repeatability
     runs-on: ubuntu-latest
     timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        postgres: ["16", "17"]
     services:
       postgres:
-        image: postgres:16-bookworm
+        image: postgres:${{ matrix.postgres }}-bookworm
         env:
           POSTGRES_USER: cva
           POSTGRES_PASSWORD: cva_ci_password_not_a_secret
@@ -69,13 +76,13 @@ jobs:
     env:
       CVA_TEST_POSTGRES_URL: postgresql://cva:cva_ci_password_not_a_secret@127.0.0.1:5432/cva_ci
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: "3.12"
           cache: pip
       - name: Install from a clean environment
-        run: python -m pip install -e '.[dev]'
+        run: python -m pip install --require-hashes -r requirements-dev.lock
       - name: Confirm the migration starts from an empty public schema
         run: |
           python - <<'PY'
@@ -92,10 +99,13 @@ jobs:
           PY
       - name: Apply and inspect the Stage 1 migration
         run: python scripts/prepare_postgres.py --database-url "$CVA_TEST_POSTGRES_URL"
-      - name: Run the Stage 1 PostgreSQL E2E
-        run: make postgres-e2e PYTHON=python
-      - name: Run PostgreSQL-sensitive transactional tests
-        run: make postgres-sensitive PYTHON=python
+      - name: Run the complete PostgreSQL matrix twice without cleanup
+        run: |
+          for pass in 1 2; do
+            echo "PostgreSQL ${{ matrix.postgres }} pass ${pass}"
+            make postgres-e2e PYTHON=python
+            make postgres-sensitive PYTHON=python
+          done
 
   frontend:
     name: Frontend typecheck, tests, build, and audit
@@ -105,33 +115,61 @@ jobs:
       run:
         working-directory: frontend
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: "22.13.1"
           cache: npm
           cache-dependency-path: frontend/package-lock.json
       - run: npm ci
+      - name: Regenerate the OpenAPI client and reject drift
+        run: |
+          npm run openapi:generate
+          git diff --exit-code -- src/api/generated.ts
       - run: npm run typecheck
       - run: npm run test
       - run: npm run build
       - name: Reject high or critical dependency advisories
         run: npm audit --audit-level=high
 
+  browser-e2e:
+    name: Browser E2E, recovery, and accessibility
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "22.13.1"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install backend and frontend from clean environments
+        run: |
+          python -m pip install --require-hashes -r requirements-dev.lock
+          npm ci --prefix frontend
+      - name: Install the pinned Playwright Chromium runtime
+        run: npx --prefix frontend playwright install --with-deps chromium
+      - name: Exercise the complete Stage 1 browser journey
+        run: npm --prefix frontend run test:e2e
+
   deployment-artifacts:
     name: Terraform and static deployment validation
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: "3.12"
           cache: pip
-      - uses: hashicorp/setup-terraform@v3
+      - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
         with:
           terraform_version: "1.14.3"
-      - run: python -m pip install -e '.[dev]'
+      - run: python -m pip install --require-hashes -r requirements-dev.lock
       - run: terraform fmt -check -recursive deploy/terraform
       - run: terraform -chdir=deploy/terraform init -backend=false -input=false
       - run: terraform -chdir=deploy/terraform validate
@@ -156,7 +194,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - name: Build deployable and audit images
         run: |
           docker build --target runtime --tag cva-runtime:ci .
