@@ -90,15 +90,16 @@ def test_postgres_idempotency_reservation_is_durable_and_unique(
         )
         is None
     )
-    with postgres_repository.session() as session:
-        session.execute(
-            update(IdempotencyRow)
-            .where(
-                IdempotencyRow.tenant_id == tenant_id,
-                IdempotencyRow.key == legacy_json_null_key,
+    with pytest.raises(IntegrityError):
+        with postgres_repository.session() as session:
+            session.execute(
+                update(IdempotencyRow)
+                .where(
+                    IdempotencyRow.tenant_id == tenant_id,
+                    IdempotencyRow.key == legacy_json_null_key,
+                )
+                .values(response=text("'null'::jsonb"))
             )
-            .values(response=text("'null'::jsonb"))
-        )
     postgres_repository.release_idempotency(
         tenant_id, legacy_json_null_key, fingerprint
     )
@@ -107,6 +108,42 @@ def test_postgres_idempotency_reservation_is_durable_and_unique(
             select(IdempotencyRow).where(
                 IdempotencyRow.tenant_id == tenant_id,
                 IdempotencyRow.key == legacy_json_null_key,
+            )
+        ) is None
+
+    unsafe_key = _id("key_unsafe_capability")
+    assert (
+        postgres_repository.reserve_idempotency(
+            tenant_id, unsafe_key, fingerprint
+        )
+        is None
+    )
+    with pytest.raises(IntegrityError):
+        with postgres_repository.session() as session:
+            session.execute(
+                update(IdempotencyRow)
+                .where(
+                    IdempotencyRow.tenant_id == tenant_id,
+                    IdempotencyRow.key == unsafe_key,
+                )
+                .values(
+                    response={
+                        "kind": "json",
+                        "body": {
+                            "view_url": "https://synthetic.invalid/object"
+                            "?X-Amz-Signature=synthetic"
+                        },
+                    }
+                )
+            )
+    postgres_repository.release_idempotency(
+        tenant_id, unsafe_key, fingerprint
+    )
+    with postgres_repository.session() as session:
+        assert session.scalar(
+            select(IdempotencyRow).where(
+                IdempotencyRow.tenant_id == tenant_id,
+                IdempotencyRow.key == unsafe_key,
             )
         ) is None
 

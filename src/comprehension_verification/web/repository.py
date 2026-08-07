@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from contextlib import contextmanager
 from datetime import UTC, datetime
+import re
 from typing import Any, Iterator
 
 from sqlalchemy import (
@@ -33,6 +34,9 @@ from sqlalchemy.pool import StaticPool
 
 from ..canonical import canonical_hash, stable_id
 from ..contracts import models as m
+
+
+IDEMPOTENCY_CAPABILITY_CONSTRAINT = "ck_idempotency_keys_safe_response"
 
 
 def utc_now() -> datetime:
@@ -339,16 +343,24 @@ def _contains_transient_capability(value: Any) -> bool:
         return any(_contains_transient_capability(item) for item in value)
     if isinstance(value, str):
         lowered = value.lower()
-        return any(
+        if any(
             marker in lowered
             for marker in (
                 "/api/v1/objects/",
                 "/api/v1/object-uploads/",
+                "x-amz-algorithm=",
                 "x-amz-signature=",
                 "x-amz-credential=",
+                "x-amz-date=",
+                "x-amz-expires=",
+                "x-amz-signedheaders=",
                 "x-amz-security-token=",
             )
-        )
+        ):
+            return True
+        return re.search(
+            r"https?://[^\s\"/:]+:[^\s\"@]+@", value, re.IGNORECASE
+        ) is not None
     return False
 
 
@@ -370,18 +382,30 @@ class Repository:
     def check_readiness(self) -> None:
         """Check connectivity and the final expected Stage 1 schema surface.
 
-        ``idempotency_keys`` is created at the end of the Stage 1 migration and
-        is also present in the local ORM schema. The fixed query returns no
-        application data and lets connection or migration errors fail closed.
+        PostgreSQL must expose the final idempotency capability constraint;
+        local adapters require the ORM table. Both fixed queries return no
+        application data and let connection or migration errors fail closed.
         """
 
-        marker = (
-            "public.idempotency_keys"
-            if self.engine.dialect.name == "postgresql"
-            else "idempotency_keys"
-        )
         with self.engine.connect() as connection:
-            connection.execute(text(f"select 1 from {marker} limit 0"))
+            if self.engine.dialect.name == "postgresql":
+                constraint_exists = connection.scalar(
+                    text(
+                        """
+                        select exists (
+                          select 1
+                          from pg_constraint
+                          where conrelid = to_regclass('public.idempotency_keys')
+                            and conname = :constraint_name
+                        )
+                        """
+                    ),
+                    {"constraint_name": IDEMPOTENCY_CAPABILITY_CONSTRAINT},
+                )
+                if not constraint_exists:
+                    raise RepositoryError("EXPECTED_MIGRATION_SURFACE_MISSING")
+            else:
+                connection.execute(text("select 1 from idempotency_keys limit 0"))
 
     @contextmanager
     def session(self) -> Iterator[Session]:

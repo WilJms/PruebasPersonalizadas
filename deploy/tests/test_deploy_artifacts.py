@@ -13,7 +13,11 @@ from comprehension_verification.web.repository import Base
 
 
 ROOT = Path(__file__).resolve().parents[2]
-MIGRATION = ROOT / "deploy/supabase/migrations/202607310001_stage1.sql"
+MIGRATION_DIR = ROOT / "deploy/supabase/migrations"
+MIGRATION = MIGRATION_DIR / "202607310001_stage1.sql"
+IDEMPOTENCY_HYGIENE_MIGRATION = (
+    MIGRATION_DIR / "202608070002_idempotency_capability_hygiene.sql"
+)
 
 
 def _migration_schema(sql: str) -> dict[str, set[str]]:
@@ -65,6 +69,23 @@ def test_supabase_migration_has_stage_one_security_and_drift_guards() -> None:
     assert "submission_artifacts" not in sql
     index_names = re.findall(r"create\s+(?:unique\s+)?index\s+([a-z0-9_]+)", sql)
     assert len(index_names) == len(set(index_names))
+
+
+def test_idempotency_hygiene_migration_removes_and_blocks_capabilities() -> None:
+    assert [path.name for path in sorted(MIGRATION_DIR.glob("*.sql"))] == [
+        "202607310001_stage1.sql",
+        "202608070002_idempotency_capability_hygiene.sql",
+    ]
+    sql = IDEMPOTENCY_HYGIENE_MIGRATION.read_text(encoding="utf-8").lower()
+    assert sql.startswith("begin;")
+    assert sql.rstrip().endswith("commit;")
+    assert "delete from public.idempotency_keys" in sql
+    assert "response = 'null'::jsonb" in sql
+    assert '"[^"]*_url"' in sql
+    assert "x-amz-" in sql
+    assert "ck_idempotency_keys_safe_response" in sql
+    assert "jsonb_typeof(response) = 'object'" in sql
+    assert "drop table" not in sql
 
 
 def test_runtime_configuration_uses_exact_settings_names_and_safe_defaults() -> None:
