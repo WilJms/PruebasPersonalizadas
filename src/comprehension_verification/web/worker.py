@@ -4,12 +4,12 @@ from __future__ import annotations
 
 import asyncio
 
-from .runtime import build_runtime
-from .settings import get_settings
+from .runtime import build_worker_runtime
+from .settings import get_worker_settings
 
 
 async def run_once() -> int:
-    runtime = build_runtime(get_settings())
+    runtime = build_worker_runtime(get_worker_settings())
     claimed = runtime.repository.claim_next_job()
     if claimed is None:
         return 0

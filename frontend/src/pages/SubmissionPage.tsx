@@ -4,10 +4,11 @@ import {
   createSubmission,
   getJob,
   getSubmission,
+  getSubmissionEstimate,
   runSubmission,
   uploadSubmissionArtifact,
 } from "../api/client";
-import type { JobStatus, SubmissionDomainState, SubmissionResource } from "../api/types";
+import type { CostEstimate, JobStatus, SubmissionDomainState, SubmissionResource } from "../api/types";
 import { Diagnostics, ErrorNotice } from "../components/Feedback";
 import { StatusBadge } from "../components/StatusBadge";
 import { useRouteState } from "../routing";
@@ -45,6 +46,8 @@ export function SubmissionStartPage() {
   const [submitting, setSubmitting] = useState(false);
   const [phase, setPhase] = useState("Cargar e iniciar pipeline");
   const [error, setError] = useState<unknown>(null);
+  const [preparedSubmissionId, setPreparedSubmissionId] = useState<string | null>(null);
+  const [estimate, setEstimate] = useState<CostEstimate | null>(null);
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
@@ -56,9 +59,26 @@ export function SubmissionStartPage() {
       const submission = await createSubmission(activityId, subjectRef.trim());
       setPhase("Guardando archivo privado…");
       await uploadSubmissionArtifact(submission.submission_id, file);
-      setPhase("Iniciando job…");
-      const operation = await runSubmission(submission.submission_id);
-      navigate(`/submissions/${submission.submission_id}`, {
+      setPhase("Calculando estimación…");
+      const nextEstimate = await getSubmissionEstimate(submission.submission_id);
+      setPreparedSubmissionId(submission.submission_id);
+      setEstimate(nextEstimate);
+    } catch (caught) {
+      setError(caught);
+    } finally {
+      setSubmitting(false);
+      setPhase("Cargar e iniciar pipeline");
+    }
+  };
+
+  const start = async () => {
+    if (!preparedSubmissionId || !estimate?.within_limit) return;
+    setSubmitting(true);
+    setError(null);
+    setPhase("Iniciando job…");
+    try {
+      const operation = await runSubmission(preparedSubmissionId);
+      navigate(`/submissions/${preparedSubmissionId}`, {
         replace: true,
         state: { jobId: operation.job_id },
       });
@@ -66,7 +86,6 @@ export function SubmissionStartPage() {
       setError(caught);
     } finally {
       setSubmitting(false);
-      setPhase("Cargar e iniciar pipeline");
     }
   };
 
@@ -125,13 +144,26 @@ export function SubmissionStartPage() {
         </div>
 
         <ErrorNotice error={error} />
-        <button
-          className="button button-primary button-full"
-          disabled={!file || !subjectRef.trim() || submitting}
-          type="submit"
-        >
-          {submitting ? phase : "Cargar e iniciar pipeline"}
-        </button>
+        {estimate ? (
+          <section className="estimate-panel" aria-live="polite">
+            <div>
+              <span className="eyebrow">Estimación preflight</span>
+              <p>{estimate.estimated_model_calls} llamadas · límite superior USD {estimate.upper_bound_cost_usd.toFixed(2)} de USD {estimate.authorized_limit_usd.toFixed(2)}.</p>
+              <small>Calculada {new Date(estimate.generated_at).toLocaleString()} · no es una promesa de precio.</small>
+            </div>
+            <button className="button button-primary" disabled={!estimate.within_limit || submitting} onClick={() => void start()} type="button">
+              {submitting ? phase : "Confirmar e iniciar pipeline"}
+            </button>
+          </section>
+        ) : (
+          <button
+            className="button button-primary button-full"
+            disabled={!file || !subjectRef.trim() || submitting}
+            type="submit"
+          >
+            {submitting ? phase : "Cargar y estimar"}
+          </button>
+        )}
       </form>
     </div>
   );
@@ -144,6 +176,8 @@ export function SubmissionProgressPage() {
   const [submission, setSubmission] = useState<SubmissionResource | null>(null);
   const [job, setJob] = useState<JobStatus | null>(null);
   const [error, setError] = useState<unknown>(null);
+  const [estimate, setEstimate] = useState<CostEstimate | null>(null);
+  const [starting, setStarting] = useState(false);
 
   const refresh = useCallback(async () => {
     const nextSubmission = await getSubmission(submissionId);
@@ -160,7 +194,11 @@ export function SubmissionProgressPage() {
     const poll = async () => {
       try {
         const next = await refresh();
-        if (cancelled || TERMINAL_DOMAIN_STATES.includes(next.status)) return;
+        if (
+          cancelled ||
+          TERMINAL_DOMAIN_STATES.includes(next.status) ||
+          (next.status === "UPLOADED" && !next.active_job_id)
+        ) return;
         timer = window.setTimeout(() => void poll(), 1800);
       } catch (caught) {
         if (!cancelled) setError(caught);
@@ -172,6 +210,28 @@ export function SubmissionProgressPage() {
       if (timer) window.clearTimeout(timer);
     };
   }, [refresh]);
+
+  useEffect(() => {
+    if (submission?.status !== "UPLOADED" || submission.active_job_id || estimate) return;
+    getSubmissionEstimate(submission.submission_id)
+      .then(setEstimate)
+      .catch(setError);
+  }, [estimate, submission]);
+
+  const startRecovered = async () => {
+    if (!submission || !estimate?.within_limit) return;
+    setStarting(true);
+    setError(null);
+    try {
+      const operation = await runSubmission(submission.submission_id);
+      setJob(operation);
+      await refresh();
+    } catch (caught) {
+      setError(caught);
+    } finally {
+      setStarting(false);
+    }
+  };
 
   if (!submission) {
     return (
@@ -189,7 +249,10 @@ export function SubmissionProgressPage() {
   return (
     <SubmissionProgress
       job={job}
+      estimate={estimate}
       onOpenAssessment={() => navigate(`/submissions/${submission.submission_id}/review`)}
+      onStart={() => void startRecovered()}
+      starting={starting}
       submission={submission}
     />
   );
@@ -198,11 +261,17 @@ export function SubmissionProgressPage() {
 export function SubmissionProgress({
   submission,
   job,
+  estimate = null,
   onOpenAssessment,
+  onStart = () => undefined,
+  starting = false,
 }: {
   submission: SubmissionResource;
   job: JobStatus | null;
+  estimate?: CostEstimate | null;
   onOpenAssessment: () => void;
+  onStart?: () => void;
+  starting?: boolean;
 }) {
   const currentIndex = useMemo(
     () => PIPELINE_STAGES.findIndex((item) => item.state === submission.status),
@@ -211,6 +280,7 @@ export function SubmissionProgress({
   const canReview =
     Boolean(submission.assessment_id) &&
     ["GUIDE_READY", "NEEDS_REVIEW", "APPROVED"].includes(submission.status);
+  const canStart = submission.status === "UPLOADED" && !submission.active_job_id;
 
   return (
     <div className="content-stack">
@@ -270,6 +340,19 @@ export function SubmissionProgress({
       </section>
 
       <Diagnostics items={[...(job?.diagnostics ?? []), ...(submission.diagnostics ?? [])]} />
+
+      {canStart && estimate && (
+        <section className="estimate-panel" aria-live="polite">
+          <div>
+            <span className="eyebrow">Estimación recuperada</span>
+            <h2>La entrega está cargada, pero el job aún no comenzó</h2>
+            <p>{estimate.estimated_model_calls} llamadas · límite superior USD {estimate.upper_bound_cost_usd.toFixed(2)} de USD {estimate.authorized_limit_usd.toFixed(2)}.</p>
+          </div>
+          <button className="button button-primary" disabled={!estimate.within_limit || starting} onClick={onStart} type="button">
+            {starting ? "Iniciando…" : "Confirmar e iniciar pipeline"}
+          </button>
+        </section>
+      )}
 
       <section className="state-legend" aria-label="Estados técnicos posibles">
         <span>Estados técnicos:</span>

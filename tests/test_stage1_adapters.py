@@ -49,6 +49,8 @@ def test_r2_adapter_uses_bounded_private_signed_operations(monkeypatch) -> None:
         r2_bucket="private-stage1",
         r2_access_key_id="scoped-key",
         r2_secret_access_key="scoped-secret",
+        upload_url_ttl_seconds=1200,
+        download_url_ttl_seconds=180,
     )
     store = R2ObjectStore(settings)
     upload = store.sign_put("raw/tnt/art/upload", "text/plain", 4)
@@ -65,6 +67,9 @@ def test_r2_adapter_uses_bounded_private_signed_operations(monkeypatch) -> None:
     # Browsers calculate Content-Length themselves; the signed S3 params bind
     # it without asking frontend JavaScript to set a forbidden header.
     assert upload.headers == {"Content-Type": "text/plain"}
+    assert fake.presigned[0][2] == 1200
+    assert fake.presigned[1][0] == "get_object"
+    assert fake.presigned[1][2] == 180
     assert store.get_bytes("raw/tnt/art/sealed/hash", max_bytes=4) == b"data"
     store.put_immutable("raw/tnt/art/sealed/hash", b"data", "text/plain")
     assert fake.puts[0]["IfNoneMatch"] == "*"

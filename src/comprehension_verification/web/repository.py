@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from contextlib import contextmanager
 from datetime import UTC, datetime
+import re
 from typing import Any, Iterator
 
 from sqlalchemy import (
@@ -20,9 +21,12 @@ from sqlalchemy import (
     String,
     Text,
     UniqueConstraint,
+    cast,
     create_engine,
     delete,
+    or_,
     select,
+    text,
 )
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, sessionmaker
@@ -30,6 +34,9 @@ from sqlalchemy.pool import StaticPool
 
 from ..canonical import canonical_hash, stable_id
 from ..contracts import models as m
+
+
+IDEMPOTENCY_CAPABILITY_CONSTRAINT = "ck_idempotency_keys_safe_response"
 
 
 def utc_now() -> datetime:
@@ -304,7 +311,9 @@ class IdempotencyRow(Base):
     # NULL means that this key has been atomically reserved and the first
     # request is still executing. Capabilities such as signed URLs are never
     # stored here; the API persists only a canonical replay descriptor.
-    response: Mapped[dict[str, Any] | None] = mapped_column(JSON, nullable=True)
+    response: Mapped[dict[str, Any] | None] = mapped_column(
+        JSON(none_as_null=True), nullable=True
+    )
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
 
 
@@ -318,6 +327,41 @@ class NotFound(RepositoryError):
 
 class Conflict(RepositoryError):
     pass
+
+
+def _contains_transient_capability(value: Any) -> bool:
+    """Reject signed/capability URLs from durable idempotency descriptors."""
+
+    if isinstance(value, dict):
+        for key, item in value.items():
+            if isinstance(key, str) and key.lower().endswith("_url"):
+                return True
+            if _contains_transient_capability(item):
+                return True
+        return False
+    if isinstance(value, list):
+        return any(_contains_transient_capability(item) for item in value)
+    if isinstance(value, str):
+        lowered = value.lower()
+        if any(
+            marker in lowered
+            for marker in (
+                "/api/v1/objects/",
+                "/api/v1/object-uploads/",
+                "x-amz-algorithm=",
+                "x-amz-signature=",
+                "x-amz-credential=",
+                "x-amz-date=",
+                "x-amz-expires=",
+                "x-amz-signedheaders=",
+                "x-amz-security-token=",
+            )
+        ):
+            return True
+        return re.search(
+            r"https?://[^\s\"/:]+:[^\s\"@]+@", value, re.IGNORECASE
+        ) is not None
+    return False
 
 
 class Repository:
@@ -334,6 +378,34 @@ class Repository:
         self.sessions = sessionmaker(self.engine, expire_on_commit=False)
         if create_schema:
             Base.metadata.create_all(self.engine)
+
+    def check_readiness(self) -> None:
+        """Check connectivity and the final expected Stage 1 schema surface.
+
+        PostgreSQL must expose the final idempotency capability constraint;
+        local adapters require the ORM table. Both fixed queries return no
+        application data and let connection or migration errors fail closed.
+        """
+
+        with self.engine.connect() as connection:
+            if self.engine.dialect.name == "postgresql":
+                constraint_exists = connection.scalar(
+                    text(
+                        """
+                        select exists (
+                          select 1
+                          from pg_constraint
+                          where conrelid = to_regclass('public.idempotency_keys')
+                            and conname = :constraint_name
+                        )
+                        """
+                    ),
+                    {"constraint_name": IDEMPOTENCY_CAPABILITY_CONSTRAINT},
+                )
+                if not constraint_exists:
+                    raise RepositoryError("EXPECTED_MIGRATION_SURFACE_MISSING")
+            else:
+                connection.execute(text("select 1 from idempotency_keys limit 0"))
 
     @contextmanager
     def session(self) -> Iterator[Session]:
@@ -801,6 +873,21 @@ class Repository:
             finished_at=row.finished_at,
         )
 
+    def latest_job_for_aggregate(
+        self, aggregate_id: str, tenant_id: str
+    ) -> m.JobStatus | None:
+        with self.session() as session:
+            row = session.scalar(
+                select(JobRow)
+                .where(
+                    JobRow.aggregate_id == aggregate_id,
+                    JobRow.tenant_id == tenant_id,
+                )
+                .order_by(JobRow.created_at.desc(), JobRow.id.desc())
+                .limit(1)
+            )
+        return None if row is None else self.job_status(row.id, tenant_id)
+
     def claim_next_job(self) -> JobRow | None:
         with self.session() as session:
             statement = (
@@ -954,17 +1041,53 @@ class Repository:
                 )
             )
 
-    def audit(self, *, tenant_id: str, event_type: str, aggregate_id: str, actor_id: str, payload: dict[str, Any]) -> None:
-        self.add(
-            AuditEventRow(
-                id=stable_id("evt", tenant_id, event_type, aggregate_id, actor_id, utc_now()),
-                tenant_id=tenant_id,
-                event_type=event_type,
-                aggregate_id=aggregate_id,
-                actor_id=actor_id,
-                payload=payload,
-            )
+    def audit(
+        self,
+        *,
+        tenant_id: str,
+        event_type: str,
+        aggregate_id: str,
+        actor_id: str,
+        payload: dict[str, Any],
+    ) -> AuditEventRow:
+        row = AuditEventRow(
+            id=stable_id(
+                "evt", tenant_id, event_type, aggregate_id, actor_id, utc_now()
+            ),
+            tenant_id=tenant_id,
+            event_type=event_type,
+            aggregate_id=aggregate_id,
+            actor_id=actor_id,
+            payload=payload,
         )
+        self.add(
+            row
+        )
+        return row
+
+    def audit_events(
+        self,
+        *,
+        tenant_id: str,
+        event_type: str,
+        aggregate_id: str,
+        actor_id: str | None = None,
+    ) -> list[AuditEventRow]:
+        """Return tenant-scoped audit evidence without inspecting payload text."""
+
+        with self.session() as session:
+            statement = select(AuditEventRow).where(
+                AuditEventRow.tenant_id == tenant_id,
+                AuditEventRow.event_type == event_type,
+                AuditEventRow.aggregate_id == aggregate_id,
+            )
+            if actor_id is not None:
+                statement = statement.where(AuditEventRow.actor_id == actor_id)
+            return list(
+                session.scalars(
+                    statement.order_by(AuditEventRow.occurred_at, AuditEventRow.id)
+                )
+            )
 
     def has_audit_event(
         self,
@@ -972,21 +1095,23 @@ class Repository:
         tenant_id: str,
         event_type: str,
         aggregate_id: str,
+        actor_id: str | None = None,
         payload_contains: dict[str, Any] | None = None,
     ) -> bool:
-        with self.session() as session:
-            rows = session.scalars(
-                select(AuditEventRow).where(
-                    AuditEventRow.tenant_id == tenant_id,
-                    AuditEventRow.event_type == event_type,
-                    AuditEventRow.aggregate_id == aggregate_id,
-                )
+        rows = self.audit_events(
+            tenant_id=tenant_id,
+            event_type=event_type,
+            aggregate_id=aggregate_id,
+            actor_id=actor_id,
+        )
+        return any(
+            payload_contains is None
+            or all(
+                row.payload.get(key) == value
+                for key, value in payload_contains.items()
             )
-            return any(
-                payload_contains is None
-                or all(row.payload.get(key) == value for key, value in payload_contains.items())
-                for row in rows
-            )
+            for row in rows
+        )
 
     def reserve_idempotency(
         self, tenant_id: str, key: str, fingerprint: str
@@ -1045,6 +1170,8 @@ class Repository:
         fingerprint: str,
         response: dict[str, Any],
     ) -> None:
+        if _contains_transient_capability(response):
+            raise ValueError("IDEMPOTENCY_RESPONSE_CONTAINS_TRANSIENT_CAPABILITY")
         with self.session() as session:
             row = session.scalar(
                 select(IdempotencyRow).where(
@@ -1065,6 +1192,9 @@ class Repository:
                     IdempotencyRow.tenant_id == tenant_id,
                     IdempotencyRow.key == key,
                     IdempotencyRow.fingerprint == fingerprint,
-                    IdempotencyRow.response.is_(None),
+                    or_(
+                        IdempotencyRow.response.is_(None),
+                        cast(IdempotencyRow.response, Text) == "null",
+                    ),
                 )
             )

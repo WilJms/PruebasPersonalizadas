@@ -27,7 +27,7 @@ describe("Supabase invite-only browser authentication", () => {
     expect(signInWithOtp).toHaveBeenCalledWith({
       email: "docente@example.test",
       options: {
-        emailRedirectTo: "https://app.example.test",
+        emailRedirectTo: "https://app.example.test/login",
         shouldCreateUser: false,
       },
     });

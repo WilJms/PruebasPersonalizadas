@@ -13,7 +13,7 @@ export function LoginPage() {
   const [, navigate] = useLocation();
   const routeState = useRouteState<{ from?: string }>();
 
-  if (!loading && session) return <Redirect to="/activities/new" replace />;
+  if (!loading && session) return <Redirect to="/activities" replace />;
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
@@ -25,7 +25,7 @@ export function LoginPage() {
         setLinkSent(true);
         return;
       }
-      navigate(routeState?.from ?? "/activities/new", { replace: true });
+      navigate(routeState?.from ?? "/activities", { replace: true });
     } catch (caught) {
       setError(caught);
     } finally {

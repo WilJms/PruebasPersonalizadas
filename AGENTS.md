@@ -35,6 +35,14 @@ No copie ni redefina modelos Pydantic. Importe `comprehension_verification.contr
 - E1 procesa exactamente una submission por actividad y exige aprobación
   humana de blueprint y assessment;
 - `CVA_MODEL_MODE=mock` es el modo de cierre; P10 sigue deshabilitado.
+- en cloud, `CVA_DATABASE_URL` debe usar explícitamente
+  `postgresql+psycopg://`; SQLite y drivers implícitos fallan antes del arranque;
+- `/api/health` es liveness sin dependencias y `/api/readiness` comprueba
+  PostgreSQL y la superficie de migración esperada;
+- cada ejecución del worker reclama como máximo un job y Cloud Run usa
+  `max_retries = 0`; retry funcional general sigue fuera de Etapa 1;
+- Terraform es el único propietario de la imagen de Service/Job y solo acepta
+  referencias inmutables `@sha256`; Cloud Build construye, prueba y publica.
 
 ## Comandos previstos
 
@@ -43,6 +51,7 @@ make install
 make contracts
 make fixtures
 make test
+make test-cov
 make stage0-demo
 make stage0-fail
 make stage0-injection
@@ -52,6 +61,8 @@ make frontend-test
 make frontend-build
 make postgres-prepare CVA_TEST_POSTGRES_URL=postgresql://...
 make postgres-e2e CVA_TEST_POSTGRES_URL=postgresql://...
+make postgres-sensitive CVA_TEST_POSTGRES_URL=postgresql://...
+make secrets-check
 ```
 
 ## Reglas de seguridad

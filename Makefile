@@ -1,12 +1,15 @@
 PYTHON ?= .venv/bin/python
 
-.PHONY: install contracts fixtures test test-cov stage0-demo stage0-fail stage0-injection real-smoke frontend-install frontend-typecheck frontend-test frontend-build postgres-prepare postgres-e2e
+.PHONY: install contracts openapi fixtures test test-cov stage0-demo stage0-fail stage0-injection real-smoke frontend-install frontend-typecheck frontend-test frontend-build postgres-prepare postgres-e2e postgres-sensitive secrets-check
 
 install:
 	$(PYTHON) -m pip install -e '.[dev]'
 
 contracts:
 	$(PYTHON) -m comprehension_verification.cli validate-contracts
+
+openapi:
+	$(PYTHON) scripts/generate_openapi.py
 
 fixtures:
 	$(PYTHON) -m comprehension_verification.cli build-fixtures
@@ -46,3 +49,9 @@ postgres-prepare:
 
 postgres-e2e:
 	CVA_TEST_DATABASE_URL="$${CVA_TEST_POSTGRES_URL}" $(PYTHON) -m pytest tests/test_stage1_web.py::test_stage1_single_submission_mock_e2e_survives_new_browser_session
+
+postgres-sensitive:
+	CVA_TEST_DATABASE_URL="$${CVA_TEST_POSTGRES_URL}" $(PYTHON) -m pytest tests/test_stage1_postgres.py
+
+secrets-check:
+	$(PYTHON) scripts/check_secrets.py

@@ -5,12 +5,19 @@ from __future__ import annotations
 import json
 import re
 from pathlib import Path
+import subprocess
+
+import yaml
 
 from comprehension_verification.web.repository import Base
 
 
 ROOT = Path(__file__).resolve().parents[2]
-MIGRATION = ROOT / "deploy/supabase/migrations/202607310001_stage1.sql"
+MIGRATION_DIR = ROOT / "deploy/supabase/migrations"
+MIGRATION = MIGRATION_DIR / "202607310001_stage1.sql"
+IDEMPOTENCY_HYGIENE_MIGRATION = (
+    MIGRATION_DIR / "202608070002_idempotency_capability_hygiene.sql"
+)
 
 
 def _migration_schema(sql: str) -> dict[str, set[str]]:
@@ -32,7 +39,7 @@ def _migration_schema(sql: str) -> dict[str, set[str]]:
     return tables
 
 
-def test_supabase_migration_matches_executable_orm_tables_and_columns() -> None:
+def test_supabase_migration_matches_orm_table_and_column_surface() -> None:
     actual = _migration_schema(MIGRATION.read_text(encoding="utf-8"))
     expected = {
         table.name: {column.name for column in table.columns}
@@ -60,6 +67,25 @@ def test_supabase_migration_has_stage_one_security_and_drift_guards() -> None:
     assert "audit_events_are_append_only" in sql
     assert "activity_artifacts" not in sql
     assert "submission_artifacts" not in sql
+    index_names = re.findall(r"create\s+(?:unique\s+)?index\s+([a-z0-9_]+)", sql)
+    assert len(index_names) == len(set(index_names))
+
+
+def test_idempotency_hygiene_migration_removes_and_blocks_capabilities() -> None:
+    assert [path.name for path in sorted(MIGRATION_DIR.glob("*.sql"))] == [
+        "202607310001_stage1.sql",
+        "202608070002_idempotency_capability_hygiene.sql",
+    ]
+    sql = IDEMPOTENCY_HYGIENE_MIGRATION.read_text(encoding="utf-8").lower()
+    assert sql.startswith("begin;")
+    assert sql.rstrip().endswith("commit;")
+    assert "delete from public.idempotency_keys" in sql
+    assert "response = 'null'::jsonb" in sql
+    assert '"[^"]*_url"' in sql
+    assert "x-amz-" in sql
+    assert "ck_idempotency_keys_safe_response" in sql
+    assert "jsonb_typeof(response) = 'object'" in sql
+    assert "drop table" not in sql
 
 
 def test_runtime_configuration_uses_exact_settings_names_and_safe_defaults() -> None:
@@ -87,6 +113,8 @@ def test_runtime_configuration_uses_exact_settings_names_and_safe_defaults() -> 
         "CVA_CLOUD_RUN_JOB_NAME",
         "CVA_FRONTEND_DIST",
         "CVA_RENDERER_MODE",
+        "CVA_UPLOAD_URL_TTL_SECONDS",
+        "CVA_DOWNLOAD_URL_TTL_SECONDS",
     }
 
     assert not {name for name in required if name not in combined}
@@ -96,6 +124,8 @@ def test_runtime_configuration_uses_exact_settings_names_and_safe_defaults() -> 
     assert "CVA_OBJECT_STORE=" not in combined
     assert "CVA_JOB_RUNNER=" not in combined
     assert "/api/health" in terraform
+    assert "/api/readiness" in terraform
+    assert "CVA_SIGNED_URL_TTL_SECONDS" not in combined
     assert "/healthz" not in terraform
 
 
@@ -103,6 +133,7 @@ def test_container_and_cloud_build_are_single_image_and_mock_safe() -> None:
     dockerfile = (ROOT / "Dockerfile").read_text(encoding="utf-8")
     entrypoint = (ROOT / "deploy/docker-entrypoint.sh").read_text(encoding="utf-8")
     cloudbuild = (ROOT / "deploy/cloudbuild.yaml").read_text(encoding="utf-8")
+    parsed_cloudbuild = yaml.safe_load(cloudbuild)
 
     assert "ARG VITE_SUPABASE_URL" in dockerfile
     assert "ARG VITE_SUPABASE_PUBLISHABLE_KEY" in dockerfile
@@ -113,12 +144,60 @@ def test_container_and_cloud_build_are_single_image_and_mock_safe() -> None:
     assert "comprehension_verification.web.worker" in entrypoint
     assert "VITE_SUPABASE_URL=${_VITE_SUPABASE_URL}" in cloudbuild
     assert "VITE_SUPABASE_PUBLISHABLE_KEY=${_VITE_SUPABASE_PUBLISHABLE_KEY}" in cloudbuild
-    assert "_DEPLOY_RUNTIME" in cloudbuild
+    assert "gcloud run" not in cloudbuild
+    assert "org.opencontainers.image.revision=$COMMIT_SHA" in cloudbuild
+    assert "requestedVerifyOption: VERIFIED" in cloudbuild
+    assert parsed_cloudbuild["options"]["requestedVerifyOption"] == "VERIFIED"
+    assert all(step.get("args", [None])[0] != "push" for step in parsed_cloudbuild["steps"])
+    assert parsed_cloudbuild["images"]
     assert "/api/health" in cloudbuild
+    assert "/api/readiness" in cloudbuild
+
+
+def test_build_inputs_are_immutable_and_dependency_installs_are_locked() -> None:
+    dockerfile = (ROOT / "Dockerfile").read_text(encoding="utf-8")
+    workflow = (ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8")
+    production_lock = (ROOT / "requirements.lock").read_text(encoding="utf-8")
+    development_lock = (ROOT / "requirements-dev.lock").read_text(encoding="utf-8")
+
+    assert re.search(r"ARG NODE_IMAGE=node:[^\s]+@sha256:[0-9a-f]{64}", dockerfile)
+    assert re.search(r"ARG PYTHON_IMAGE=python:[^\s]+@sha256:[0-9a-f]{64}", dockerfile)
+    assert re.search(
+        r"ARG PYTHON_IMAGE=python:3\.12-alpine[^\s]*@sha256:[0-9a-f]{64}",
+        dockerfile,
+    )
+    assert "apt-get" not in dockerfile
+    assert "libmagic" not in dockerfile
+    assert "apk upgrade --no-cache" in dockerfile
+    assert "RUN npm ci" in dockerfile
+    assert "npm install" not in dockerfile
+    assert "pip install --no-cache-dir --require-hashes -r requirements.lock" in dockerfile
+    assert dockerfile.count("pip uninstall --yes pip") == 2
+    assert "rm -rf /usr/local/lib/python3.12/ensurepip" in dockerfile
+    for lock in (production_lock, development_lock):
+        assert "--hash=sha256:" in lock
+        assert "comprehension-verification (pyproject.toml)" in lock
+
+    action_refs = re.findall(r"uses:\s+[^@\s]+@([^\s#]+)", workflow)
+    assert action_refs
+    assert all(re.fullmatch(r"[0-9a-f]{40}", ref) for ref in action_refs)
+
+
+def test_cloud_build_yaml_and_entrypoint_are_parseable() -> None:
+    parsed = yaml.safe_load(
+        (ROOT / "deploy/cloudbuild.yaml").read_text(encoding="utf-8")
+    )
+    assert isinstance(parsed, dict)
+    assert parsed["steps"]
+    subprocess.run(
+        ["sh", "-n", str(ROOT / "deploy/docker-entrypoint.sh")],
+        check=True,
+    )
 
 
 def test_terraform_declares_service_job_secrets_and_job_invocation() -> None:
     terraform = (ROOT / "deploy/terraform/main.tf").read_text(encoding="utf-8")
+    variables = (ROOT / "deploy/terraform/variables.tf").read_text(encoding="utf-8")
 
     assert 'resource "google_cloud_run_v2_service" "web"' in terraform
     assert 'resource "google_cloud_run_v2_job" "worker"' in terraform
@@ -130,7 +209,59 @@ def test_terraform_declares_service_job_secrets_and_job_invocation() -> None:
     assert '"roles/storage.objectUser"' in terraform
     assert "enable_runtime_resources" in terraform
     assert 'version = var.secret_version' in terraform
-    assert terraform.count('name = "CVA_SESSION_SECRET"') == 2
+    assert terraform.count('name = "CVA_SESSION_SECRET"') == 1
+    worker = terraform.split(
+        'resource "google_cloud_run_v2_job" "worker"', 1
+    )[1].split(
+        'resource "google_cloud_run_v2_service_iam_member" "public_login"', 1
+    )[0]
+    assert "CVA_SESSION_SECRET" not in worker
+    assert 'toset(["session_secret"])' in terraform
+    assert re.search(r"max_retries\s*=\s*0", terraform)
+    assert terraform.count("image = var.container_image") == 2
+    assert '@sha256:' in variables
+    assert '"roles/run.admin"' not in terraform
+    assert "build_can_use_web_identity" not in terraform
+    assert "build_can_use_worker_identity" not in terraform
+    assert re.search(
+        r"scaling\s*\{\s*manual_instance_count\s*=\s*0\s*"
+        r"min_instance_count\s*=\s*0\s*\}",
+        terraform,
+    )
+    assert 'resource "google_cloudbuildv2_connection" "github"' in terraform
+    assert 'resource "google_cloudbuildv2_repository" "github"' in terraform
+    assert 'resource "google_cloudbuild_trigger" "github_push"' in terraform
+    assert 'https://github.com/WilJms/PruebasPersonalizadas.git' in terraform
+    assert 'branch = "^(main|fix/stage1-external-readiness)$"' in terraform
+    assert 'filename    = "deploy/cloudbuild.yaml"' in terraform
+    assert "google_service_account.build.email" in terraform
+    assert "github_oauth_token_secret_version" in terraform
+    assert "oauth_token_secret_version = authorizer_credential.value" in terraform
+    assert "github_app_installation_id != null" in terraform
+    assert "pull_request" not in terraform
+    assert '"containeranalysis.googleapis.com"' in terraform
+    assert '"containerscanning.googleapis.com"' in terraform
+    startup = re.search(r"startup_probe\s*\{(?P<body>.*?)\n\s*\}", terraform, re.DOTALL)
+    liveness = re.search(r"liveness_probe\s*\{(?P<body>.*?)\n\s*\}", terraform, re.DOTALL)
+    assert startup and '/api/readiness' in startup.group("body")
+    assert liveness and '/api/health' in liveness.group("body")
+
+
+def test_docker_context_keeps_audit_fixtures_out_of_runtime() -> None:
+    dockerfile = (ROOT / "Dockerfile").read_text(encoding="utf-8")
+    dockerignore = (ROOT / ".dockerignore").read_text(encoding="utf-8")
+
+    runtime_section = dockerfile.split("FROM runtime-base AS runtime", 1)[1]
+    audit_section = dockerfile.split("FROM runtime-base AS audit", 1)[1].split(
+        "FROM runtime-base AS runtime", 1
+    )[0]
+    assert "fixtures" not in runtime_section
+    assert "COPY --chown=65532:65532 fixtures/ /app/fixtures/" in audit_section
+    assert "fixtures" not in {
+        line.strip().rstrip("/")
+        for line in dockerignore.splitlines()
+        if line.strip() and not line.startswith("#")
+    }
 
 
 def test_r2_policy_examples_are_private_origin_scoped_and_expiring() -> None:

@@ -116,7 +116,9 @@ def test_cloud_settings_fail_closed_without_managed_adapters_and_secrets() -> No
 
 def test_signed_memory_object_capability_enforces_method_and_content_type() -> None:
     store = MemoryObjectStore(
-        secret="object-test-secret-with-at-least-thirty-two-bytes", ttl_seconds=600
+        secret="object-test-secret-with-at-least-thirty-two-bytes",
+        upload_ttl_seconds=600,
+        download_ttl_seconds=600,
     )
     upload = store.sign_put("raw/tnt/act/art", "text/plain")
     token = upload.url.rsplit("/", 1)[-1]
@@ -321,6 +323,25 @@ def test_idempotency_reservation_is_fail_closed_until_completed() -> None:
         repo.reserve_idempotency(
             "tnt_backend", "key-1", "sha256:" + "0" * 64
         )
+
+    unsafe_key = "key-with-transient-capability"
+    assert repo.reserve_idempotency("tnt_backend", unsafe_key, fingerprint) is None
+    with pytest.raises(
+        ValueError, match="IDEMPOTENCY_RESPONSE_CONTAINS_TRANSIENT_CAPABILITY"
+    ):
+        repo.complete_idempotency(
+            "tnt_backend",
+            unsafe_key,
+            fingerprint,
+            {
+                "kind": "json",
+                "body": {
+                    "capability": "https://example.invalid/?X-Amz-Signature=redacted"
+                },
+            },
+        )
+    repo.release_idempotency("tnt_backend", unsafe_key, fingerprint)
+    assert repo.reserve_idempotency("tnt_backend", unsafe_key, fingerprint) is None
 
 
 def test_activity_pipeline_stops_on_non_ready_p01_without_blueprint() -> None:

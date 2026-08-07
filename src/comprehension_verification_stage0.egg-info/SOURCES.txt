@@ -1,9 +1,0 @@
-pyproject.toml
-src/comprehension_verification/__init__.py
-src/comprehension_verification/contracts.py
-src/comprehension_verification_stage0.egg-info/PKG-INFO
-src/comprehension_verification_stage0.egg-info/SOURCES.txt
-src/comprehension_verification_stage0.egg-info/dependency_links.txt
-src/comprehension_verification_stage0.egg-info/entry_points.txt
-src/comprehension_verification_stage0.egg-info/requires.txt
-src/comprehension_verification_stage0.egg-info/top_level.txt

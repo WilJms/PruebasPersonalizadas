@@ -1,93 +1,132 @@
-# Estado de implementación y matriz de cierre
+# Estado de implementación y cierre de Etapa 1
 
-## Veredicto de esta fase
+Fecha de corte documental: 2026-08-07 (America/Santiago).
 
-`READY_FOR_EXTERNAL_STAGE1_VERIFICATION`
+## Estado del gate
 
-Fecha de corte: 2026-08-01, America/Santiago.
+La implementación de Etapas 0 y 1 está en estado
+**CORRECTIVE_CANDIDATE_STAGE1_VERIFIED**. Los once hallazgos P1 quedaron
+cerrados sobre el candidato funcional
+6374e60ce74ebb2a1ee0ec80531eab218d1b9548. El snapshot f982ef89 y el primer
+intento de cierre 5b13428ace03ef2852ef3f6f1b942e54151a5204 fueron rechazados
+por auditoría independiente y se conservan solo como historia. El candidato
+correctivo 4bab5b400199b94f2fd003c7f959b4d341363b26 elimina el residuo
+histórico de capabilities en PostgreSQL, impone el invariante también en la
+base y corrige la exigencia de procedencia CI. La decisión definitiva
+READY_FOR_STAGE_2 se emite únicamente después de:
 
-Todo el boundary reproducible sin cuentas ni secretos externos quedó verde. La
-Etapa 1 **no** está cerrada en cloud: E1-11 y las partes de historias que exigen
-Supabase/R2/Cloud Run reales permanecen parciales hasta ejecutar la checklist de
-`docs/EXTERNAL_SETUP.md`. Este estado no autoriza Etapa 2 y no equivale a
-`READY_FOR_STAGE_2`.
+1. crear el último commit documental, denominado FINAL_STAGE1_SHA;
+2. construir y desplegar ese SHA exacto;
+3. generar el paquete de evidencia externo;
+4. completar la auditoría independiente de solo lectura.
 
-## Proveniencia del repositorio
+Un commit no puede contener de forma verificable su propio hash ni los
+identificadores del build que se ejecuta después de publicarlo. Por eso esos
+valores finales viven en el manifest externo y no se sustituyen posteriormente
+en este archivo. No se harán commits después de FINAL_STAGE1_SHA.
 
-- `git rev-parse --verify HEAD` terminó 128: el repositorio no tiene commit
-  inicial (`HEAD` no existe).
-- `git log --all --oneline --decorate -n 20` terminó 0 sin entradas.
-- `git status --short --untracked-files=all` mostró el árbol completo como
-  `??`; por eso `git diff --stat` terminó 0 sin contenido.
-- En consecuencia, no hay historial ni baseline Git contra los que atribuir
-  cambios. La evidencia de cierre se basa en lectura íntegra, inspección del
-  árbol actual y ejecuciones registradas, no en supuestos sobre commits.
+## Identidad de los candidatos verificados
 
-## Claves de evidencia realmente ejecutada
-
-| Clave | Evidencia del 2026-08-01 |
+| Elemento | Valor |
 |---|---|
-| V-CONTRACTS | Gate contractual exit 0: 46 roots, 112 `$defs`, 231 referencias y 8 fixtures; hashes de modelo/schema registrados en `TEST_RESULTS.md`. |
-| V-PY | Suite Python final exit 0: 117/117 pruebas. |
-| V-COV | Suite con coverage exit 0: 117/117 y 82% total. |
-| V-S0 | Recorridos `sufficient`, `insufficient` e `injection`, cada uno exit 0 y outcome esperado. |
-| V-REPRO | Dos procesos independientes de `sufficient`; `diff -rq` exit 0 y hashes de los seis exports idénticos. |
-| V-FE | Instalación limpia con `npm ci`, typecheck exit 0, 16/16 tests y build Vite exit 0. |
-| V-PG | PostgreSQL 16.14 temporal real; migración aplicada a base vacía, 24 tablas/24 RLS/2 triggers validados y E2E mock exit 0. |
-| V-BROWSER | Recorrido UI real: login, actividad, uploads, blueprint, aprobación, submission, job, evidence-first, aprobación, tres exports y reapertura; consola sin errores/warnings. |
-| V-DOCKER | Runtime construido/ejecutado con health exit 0; target `audit` ejecutó `run-synthetic` dentro del contenedor y produjo 32 archivos. |
-| V-IAC | 6/6 tests de deploy, YAML/shell válidos, Terraform fmt/init/validate exit 0 con Google provider 6.50.0; source staging de Cloud Build quedó cubierto por IAM explícito. |
+| Repositorio | WilJms/PruebasPersonalizadas |
+| Rama | fix/stage1-external-readiness |
+| PR | #1, abierto y draft |
+| Candidato funcional completo | 6374e60ce74ebb2a1ee0ec80531eab218d1b9548 |
+| Candidato correctivo | 4bab5b400199b94f2fd003c7f959b4d341363b26 |
+| CI correctivo push | 31209547327, SUCCESS, 7/7 jobs |
+| CI correctivo pull request | 31209552197, SUCCESS, 7/7 jobs |
+| Merge CI correctivo | 1e695278b5ea25d5e94756e67eb9f47c11ecdde0 = merge(dadaaa7, 4bab5b4) |
+| Cloud Build correctivo | 745eb275-eea4-4493-8b64-293570472265, SUCCESS |
+| Digest correctivo | sha256:7d73b1cb7a438f6f8adb8de10f31752efdbca860e1aa08c9314097d4e5daed7a |
+| Runtime correctivo | cva-web generación 11 y cva-worker generación 11, Ready, mismo digest |
+| Terraform correctivo | imagen 0/2/0; dos planes vivos consecutivos exit 0 |
 
-## Matriz completa E0/E1
+El build correctivo fue disparado por la conexión regional al repositorio
+autorizado, registró source exacto del candidato, produjo dos occurrences de
+provenance verificada, SLSA nivel 3 y análisis terminado sin vulnerabilidades.
+El SBOM y la cadena del SHA definitivo se vuelven a capturar en el artifact
+externo posterior a FINAL_STAGE1_SHA.
+Terraform continúa siendo el único escritor del deployment.
 
-“Prueba escrita” indica solo que el caso existe. “Ejecutada” cita exclusivamente
-las claves anteriores; no se infiere un PASS por la mera presencia de un test.
+## Gates implementados
 
-| Historia y criterio canónico | Implementación inspeccionada | Prueba escrita localizada | Prueba realmente ejecutada | Verificación externa pendiente | Estado formal |
-|---|---|---|---|---|---|
-| **E0-01** — modelos compilan; bundle regenerable; roots/prompts/fixtures validan | Modelo único en `specification/models_v1.1(1).py`, loader, schema generado y validador de drift | `tests/test_contract_validation.py` y fixtures válidos/negativos | V-CONTRACTS, V-PY, V-COV | Ninguna | **COMPLETA** |
-| **E0-02** — ≥3 actividades; rúbrica presente/ausente; suficiente/insuficiente/injection | Tres actividades bajo `fixtures/stage0`; CLI explícita por caso | `tests/test_cli.py`, `tests/test_parsers.py` | V-S0, V-PY | Ninguna | **COMPLETA** |
-| **E0-03** — TXT/MD/PDF digital producen `EvidenceUnit` con hash/localizador reproducible | `parsers/service.py` limita MIME/tamaño, rechaza PDF activo/cifrado y conserva procedencia | `tests/test_parsers.py` | V-PY, V-REPRO | Ninguna | **COMPLETA** |
-| **E0-04** — P01–P11 con roots, mock, timeout, ledger y abstención | Registry explícito, `ModelGateway`, mock determinista, adapter real bloqueado por gate | `tests/test_model_gateway.py`, `tests/test_dynamic_model_gateway.py` | V-PY; V-S0 confirmó mock sin red | Proveedor real excluido por requisito; no bloquea E1 | **COMPLETA** |
-| **E0-05** — pipeline sin pasos implícitos hasta guía/JSON | Pipelines actividad/submission, P01–P09 y planificador antes de generar | CLI, `tests/test_planning.py`, `tests/test_stage1_web.py` | V-PY, V-S0, V-PG, V-BROWSER | Ninguna | **COMPLETA** |
-| **E0-06** — rechazar IDs/anclas/fuentes/schema/diagnóstico inválidos | Validación estructural y contextual separada; se corrigió precedencia para `INVENTED_EVIDENCE_ID` | `tests/test_validation.py`, negativos contractuales | V-CONTRACTS, V-PY | Ninguna | **COMPLETA** |
-| **E0-07** — exactamente N + reserva o uno de cuatro diagnósticos, nunca parcial | Planner determinista y cierre fail-closed | `tests/test_planning.py`, `tests/test_cli.py` | V-PY, V-S0, V-REPRO | Ninguna | **COMPLETA** |
-| **E0-08** — Assessment/Guide separados; export no filtra guía | JSON separados y HTML/PDF derivados | `tests/test_exports.py`, E2E web | V-PY, V-S0, V-REPRO, V-DOCKER | Ninguna | **COMPLETA** |
-| **E1-01** — usuario autorizado entra; rutas privadas no son públicas | Cookie HttpOnly + CSRF, membresía por workspace, Supabase/JWKS y shell privado; se alineó el correo local precargado con la invitación real | web/backend/adapters, `frontend/src/App.test.tsx`, tests Supabase | V-PY, V-FE, V-BROWSER | Auth, membresía y RLS en Supabase real | **PARCIAL SOLO POR CLOUD** |
-| **E1-02** — captura campos permitidos; profundidad/operaciones derivadas | Formulario/API acotados; config congelada; sin controles de profundidad/operación | backend/web y `Stage1Views.test.tsx` | V-PY, V-FE, V-BROWSER | Ninguna | **COMPLETA** |
-| **E1-03** — prompt, rúbrica opcional y una entrega en R2 privado con tamaño/MIME/hash/URL temporal | Upload desechable, HEAD/lectura acotada, sellado content-addressed y adapter R2 | `test_stage1_adapters.py`, backend/web | V-PY, V-PG, V-BROWSER | Bucket/token/CORS/lifecycle y URLs firmadas R2 reales | **PARCIAL SOLO POR CLOUD** |
-| **E1-04** — P01–P05 producen specs, ambigüedades, review y versión aprobable | Workflow durable P01–P05, decisiones P03 y aprobación | backend/web/frontend | V-PY, V-PG, V-BROWSER | Recorrido desplegado forma parte de E1-11 | **COMPLETA LOCAL** |
-| **E1-05** — pantalla muestra catálogo; editar/aprobar crea versión + ETag | Vista completa, PATCH con `If-Match`, CAS y versiones inmutables | backend/web/`Stage1Views.test.tsx` | V-PY, V-FE, V-BROWSER | Ninguna fuera del smoke cloud | **COMPLETA** |
-| **E1-06** — parser→mapa→plan N→P07/P08→P09 corre en Cloud Run Jobs | Fila durable antes del dispatch, inputs congelados, worker separado y adapter Cloud Run | backend/web/jobs y E2E mock | V-PY, V-PG, V-BROWSER, V-DOCKER | Ejecución real de Cloud Run Job e IAM | **PARCIAL SOLO POR CLOUD** |
-| **E1-07** — UI separa estados técnicos y estado de dominio | DTO/polling y paneles distintos; job persiste fuera del navegador | web/frontend | V-PY, V-FE, V-PG, V-BROWSER (reapertura en otra pestaña) | Prueba de cerrar navegador durante Job real pertenece a E1-11 | **COMPLETA LOCAL** |
-| **E1-08** — pregunta muestra ancla, localizador, dimensión, operación, scores y diagnósticos | Endpoints evidence-first, fuente firmada y aprobación bloqueada hasta abrir anclas | web/frontend | V-PY, V-FE, V-BROWSER (3/3 fuentes) | Fuente exacta mediante R2 real | **PARCIAL SOLO POR CLOUD** |
-| **E1-09** — guía en plataforma; PDF/JSON derivados sin otra llamada | Assessment/Guide separados; tres tipos de export desde objetos aprobados | `tests/test_exports.py`, E2E web/frontend | V-PY, V-REPRO, V-BROWSER, V-DOCKER | Descarga desde runtime cloud, dentro de E1-11 | **COMPLETA LOCAL** |
-| **E1-10** — ledger con provider/snapshot/model/effort/temperatura/reasons/tokens/latencia/costo/intentos/resultado | Ledger append-only y redacción de contenido sensible | gateway, backend y E2E web | V-PY, V-PG | Observación operacional cloud, dentro de E1-11 | **COMPLETA LOCAL** |
-| **E1-11** — Service + Job en GCP, Supabase y R2 reales; CI/CD; cerrar navegador no detiene job | Docker runtime/audit, migración, adapters, Terraform, Cloud Build y Actions | `deploy/tests/test_deploy_artifacts.py`, E2E análogo local | V-PG, V-BROWSER, V-DOCKER, V-IAC | **Obligatoria:** desplegar y ejecutar checklist GCP + Supabase + R2 | **PARCIAL; NO CERRADA** |
+| Boundary | Estado | Evidencia resumida |
+|---|---|---|
+| Contratos canónicos | PASS | Schema 1.1.0, 46 roots, 112 definiciones, 231 referencias y 8 fixtures. |
+| PrincipalId | PASS | Principales externos aceptan UUID Supabase sin ampliar Id globalmente. |
+| OpenAPI | PASS | DTOs tipados, responses validadas, snapshot determinista y consumer/provider tests. |
+| Backend y Stage 0 | PASS | 163 pruebas locales verdes; 7 PostgreSQL-only ejecutadas aparte; 10 pruebas de artifacts de deploy. |
+| Review UX | PASS | Blueprint, SelectedQuestion, CHOICE y Guide proyectan la trazabilidad requerida. |
+| Evidence-first | PASS | Receipt durable por fragmento; replay sin URL persistida y ligado a autorización vigente; aprobación server-side. |
+| Frontend | PASS | Typecheck, 19 tests, build, audit sin vulnerabilidades y Playwright crítico. |
+| PostgreSQL | PASS | PG16 y PG17: dos migraciones, 24 tablas/RLS, 2 triggers, constraint de idempotencia y matriz repetida dos veces sin limpieza. |
+| Logging | PASS | Access log deshabilitado; 650 eventos JSON por plantilla; scan de 2.881 entradas sin capability, credencial ni payload sintético. |
+| GitHub a Cloud Build | PASS | Connection, repository y trigger regionales limitados al repo; build SA sin Run Admin. |
+| Supply chain | PASS E1 | Bases por digest, locks con hashes, Actions por SHA, provenance, scan y SBOM ligados al digest. |
+| Terraform | PASS | Scaling superior declarado; apply revisado; dos planes vivos consecutivos exit 0. |
+| Cloud runtime | PASS candidato correctivo | Health/readiness 200, privado 401, mismo digest, secretos version 2, Service/Job Ready, 1/1/0 y mock/P10 off. |
+| Supabase | PASS candidato correctivo | Proyecto correcto, PostgreSQL 17, Auth sintético, constraint validado y cero descriptores inseguros/JSON null. |
+| Cloudflare R2 | PASS candidato | Bucket privado correcto, CORS/lifecycle exactos, r2.dev off y cero dominios. |
+| Browser cloud | PASS candidato + correctivo | Recorrido completo nuevo en 6374e60; cierre/reapertura desde raíz y recuperación de Assessment/Guide sobre el digest 4bab5b4. |
 
-## Correcciones realizadas durante la auditoría
+## Correcciones principales
 
-- dos manifests sintéticos usaban IDs de criterio inexistentes;
-- la validación de oportunidades ocultaba un ID de evidencia inventado detrás
-  de otro diagnóstico;
-- tipos/fixtures frontend no reflejaban `opportunity_id` ni formatos exactos;
-- el flujo OTP trataba como sesión confiable una respuesta inmediata no
-  canónica, en vez de esperar el callback de Auth;
-- el correo precargado de login local no era uno de los invitados;
-- la cadena Vite/Vitest antigua se bloqueaba con el runtime disponible; se
-  actualizó y se generó `package-lock.json`; React Router se sustituyó por
-  Wouter tras comprobar que no existía una versión sin advisories para los
-  rangos necesarios; el audit final quedó en cero;
-- faltaban CI integral, verificador PostgreSQL y target Docker de auditoría;
-- dos manifests de Docker excluían los fixtures necesarios para el target de
-  auditoría; el runtime productivo sigue sin copiarlos.
-- la cuenta dedicada de Cloud Build no declaraba acceso al source staging; se
-  habilitó Cloud Storage y se añadieron los roles `storage.bucketViewer` y
-  `storage.objectUser`, con regresión estática y Terraform final verde.
+- lista autenticada de actividades y acciones de continuación derivadas desde
+  estado durable del servidor;
+- edición de actividad draft con ETag/If-Match y preflight de costo;
+- blueprint y assessment review completos, dificultad derivada de solo lectura
+  y separación explícita entre contenido estudiantil y datos del evaluador;
+- alternativas CHOICE visibles, exactamente una mejor respuesta y
+  misconceptions/rationales reservados al evaluador;
+- receipt evidence-first durable por fragmento antes de aprobar;
+- replay idempotente ligado a principal, rol y permiso actuales; los
+  descriptores de upload, export y evidence verify no contienen capabilities;
+- migración de higiene que elimina reservas legacy JSON null/capabilities y
+  constraint PostgreSQL validado que impide volver a persistirlas;
+- EvaluationGuide visible con observables, evidencia, fuentes, niveles,
+  alternativas, misconceptions y cannot_infer;
+- frontera OpenAPI tipada desde DTOs que componen contratos canónicos; las
+  rutas con response_model retornan DTOs y no objetos Response que omitan la
+  validación runtime;
+- PrincipalId aplicado solo a actores/principales externos;
+- logs HTTP estructurados por plantilla de ruta, sin URL, query, payload ni
+  capability;
+- worker separado de settings web y sin secreto de sesión;
+- CI PostgreSQL 16/17, navegador E2E, dependencias fijadas y build verificable;
+- Terraform convergente y trigger GitHub a Cloud Build de mínimo privilegio;
+- documentos SPA no-store, assets hashados inmutables y epoch de shell que
+  purga solo la caché HTTP de clientes anteriores sin borrar su sesión.
 
-## Frontera de Etapa 2
+Durante la verificación del candidato, una invocación fallida de un cliente
+PostgreSQL incluyó una credencial en su diagnóstico. Esa salida se invalidó y
+se excluye de evidencia: la contraseña Supabase fue rotada mediante la API
+oficial, la credencial anterior quedó denegada, Secret Manager recibió la
+versión 2 y Terraform actualizó únicamente las referencias de secretos de
+Service/Job. No se conserva ni reproduce el valor.
 
-No se añadió batch, retry/cancel general, acciones por pregunta,
-aprobación masiva, DOCX completo, OCR, LMS, feedback, calificación ni detección
-de IA. `CVA_MODEL_MODE=mock` y `CVA_P10_ENABLED=false` permanecen fijados para
-este cierre.
+## Estado de Etapa 0 y Etapa 1
+
+- E0-01 a E0-08: PASS.
+- E1-01 a E1-11: PASS en implementación y candidato cloud.
+- P0: 0.
+- P1: 0 abiertos.
+- P2/P3 residuales: solo deuda no bloqueante descrita en
+  [STAGE1_FINAL_REMEDIATION_BACKLOG.md](audits/STAGE1_FINAL_REMEDIATION_BACKLOG.md).
+
+La matriz detallada está en
+[STAGE1_FINAL_ACCEPTANCE_MATRIX.md](audits/STAGE1_FINAL_ACCEPTANCE_MATRIX.md).
+
+## Frontera preservada
+
+La revisión humana académica del producto se conserva para blueprint y
+Assessment. La verificación de ingeniería se realiza mediante pruebas,
+evidencia y agentes de IA; no existe un gate humano de revisión de código.
+
+No se implementó batch, retry/cancel general, acciones o regeneración por
+pregunta, aprobación masiva, feedback/métricas E2, DOCX completo, OCR, LMS,
+calificación, detección de IA, múltiples submissions ni proveedor IA real.
+El modo cloud permanece mock y P10 permanece deshabilitado.
+
+No se hizo merge ni tag. El PR debe permanecer draft hasta que el propietario
+dé una instrucción posterior.

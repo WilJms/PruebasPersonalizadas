@@ -1,28 +1,36 @@
 from __future__ import annotations
 
 import asyncio
+from datetime import UTC, datetime, timedelta
 import json
 import os
 from uuid import uuid4
 
+import jwt
+import pytest
 from fastapi.testclient import TestClient
 
 from comprehension_verification.canonical import sha256_bytes, stable_id
 from comprehension_verification.contracts import models as m
+from comprehension_verification.web import dto
 from comprehension_verification.web.app import create_app
+from comprehension_verification.web.auth import Actor
 from comprehension_verification.web.jobs import RecordingJobRunner
 from comprehension_verification.web.object_store import MemoryObjectStore
 from comprehension_verification.web.repository import (
     ArtifactRow,
+    EvidenceRow,
     IdempotencyRow,
     JobRow,
+    NotFound,
     Repository,
+    WorkspaceRoleRow,
 )
 from comprehension_verification.web.settings import Settings
 from comprehension_verification.web.workflows import Stage1Service
 
 
-def _app():
+def _app(*, max_job_cost_usd: float = 0.50):
     database_url = os.environ.get("CVA_TEST_DATABASE_URL", "sqlite+pysqlite://")
     if database_url.startswith("postgresql://"):
         database_url = database_url.replace(
@@ -32,8 +40,9 @@ def _app():
         environment="test",
         database_url=database_url,
         session_secret="stage1-test-secret-with-sufficient-length",
-        local_invited_emails="teacher@example.test,assistant@example.test",
+        local_invited_emails="teacher@example.test,reviewer@example.test,assistant@example.test",
         model_mode="mock",
+        max_job_cost_usd=max_job_cost_usd,
     )
     repository = (
         Repository(database_url, create_schema=False)
@@ -129,6 +138,56 @@ def test_private_routes_invitation_and_csrf_are_enforced() -> None:
         assert rejected.status_code == 403
 
 
+def test_activity_landing_is_scoped_to_the_authenticated_workspace() -> None:
+    app = _app()
+    with TestClient(app) as client:
+        teacher = _login(client)
+        created = client.post(
+            "/api/v1/activities",
+            headers=_mutating(teacher),
+            json={
+                "title": "Visible solo en workspace experimental",
+                "output_language": "es-CL",
+                "assessment_modality": "WRITTEN",
+                "question_count": 1,
+                "target_total_minutes": 3,
+                "allowed_response_formats": ["OPEN_SHORT"],
+                "allowed_artifact_media_types": ["text/plain"],
+                "structured_justification_mode": "NOT_REQUIRED",
+            },
+        )
+        assert created.status_code == 201
+
+        other_user = "usr_other_workspace"
+        other_workspace = "tnt_other_workspace"
+        app.state.runtime.repository.seed_workspace(
+            other_workspace,
+            [(other_user, "other-teacher@example.test", "TEACHER")],
+        )
+        now = datetime.now(UTC)
+        other_csrf = "other-workspace-csrf-token"
+        other_session = jwt.encode(
+            {
+                "iss": "cva-web",
+                "aud": "cva-web",
+                "sub": other_user,
+                "workspace_id": other_workspace,
+                "csrf": other_csrf,
+                "iat": now,
+                "exp": now + timedelta(minutes=5),
+            },
+            app.state.runtime.settings.session_secret,
+            algorithm="HS256",
+        )
+
+        with TestClient(app) as other:
+            other.cookies.set("cva_session", other_session)
+            other.cookies.set("cva_csrf", other_csrf)
+            isolated = other.get("/api/v1/activities")
+            assert isolated.status_code == 200
+            assert isolated.json()["items"] == []
+
+
 def test_assistant_cannot_mutate_or_launch_activity_inputs() -> None:
     with TestClient(_app()) as client:
         assistant = _login(client, "assistant@example.test")
@@ -181,7 +240,12 @@ def test_mutations_require_atomic_idempotency_and_never_persist_signed_urls() ->
         assert replay.status_code == 201, replay.text
         assert replay.headers["Idempotency-Replayed"] == "true"
         assert replay.json() == first.json()
-        assert len(client.get("/api/v1/activities").json()["items"]) == 1
+        activity_id = first.json()["activity"]["activity_id"]
+        listed_ids = {
+            item["activity_id"]
+            for item in client.get("/api/v1/activities").json()["items"]
+        }
+        assert activity_id in listed_ids
 
         replay_without_csrf = client.post(
             "/api/v1/activities",
@@ -198,7 +262,6 @@ def test_mutations_require_atomic_idempotency_and_never_persist_signed_urls() ->
         assert conflict.status_code == 409
         assert conflict.json()["code"] == "IDEMPOTENCY_KEY_REUSED"
 
-        activity_id = first.json()["activity"]["activity_id"]
         upload_key = str(uuid4())
         upload_headers = {**csrf, "Idempotency-Key": upload_key}
         upload_body = {
@@ -230,6 +293,43 @@ def test_mutations_require_atomic_idempotency_and_never_persist_signed_urls() ->
         serialized = json.dumps(persisted.response, sort_keys=True)
         assert "upload_url" not in serialized
         assert "expires_at" not in serialized
+
+        with TestClient(app) as assistant_client:
+            assistant_csrf = _login(
+                assistant_client, "assistant@example.test"
+            )
+            cross_principal = assistant_client.post(
+                f"/api/v1/activities/{activity_id}/artifacts/uploads",
+                headers={**assistant_csrf, "Idempotency-Key": upload_key},
+                json=upload_body,
+            )
+            assert cross_principal.status_code == 409
+            assert cross_principal.json()["code"] == "IDEMPOTENCY_KEY_REUSED"
+            assert "upload_url" not in cross_principal.text
+
+        teacher_id = stable_id("usr", "teacher@example.test")
+        with app.state.runtime.repository.session() as session:
+            membership = session.get(
+                WorkspaceRoleRow, (teacher_id, "tnt_experimental")
+            )
+            assert membership is not None
+            membership.role = "ASSISTANT"
+            membership.can_approve_assessments = False
+        downgraded = client.post(
+            f"/api/v1/activities/{activity_id}/artifacts/uploads",
+            headers=upload_headers,
+            json=upload_body,
+        )
+        assert downgraded.status_code == 409
+        assert downgraded.json()["code"] == "IDEMPOTENCY_KEY_REUSED"
+        assert "upload_url" not in downgraded.text
+        with app.state.runtime.repository.session() as session:
+            membership = session.get(
+                WorkspaceRoleRow, (teacher_id, "tnt_experimental")
+            )
+            assert membership is not None
+            membership.role = "TEACHER"
+            membership.can_approve_assessments = True
 
         original = b"sealed-original!"
         sent = client.put(
@@ -306,14 +406,27 @@ def test_activity_configuration_uses_etag_and_locks_after_pipeline_start() -> No
         activity_id = created.json()["activity"]["activity_id"]
         detail = client.get(f"/api/v1/activities/{activity_id}")
         original_etag = detail.headers["etag"]
+        initial_estimate_response = client.get(
+            f"/api/v1/activities/{activity_id}/estimate"
+        )
+        assert initial_estimate_response.status_code == 200
+        initial_estimate = initial_estimate_response.json()["estimate"]
+        assert initial_estimate["phase"] == "ACTIVITY_BLUEPRINT"
+        assert initial_estimate["estimated_model_calls"] == 4
+        assert initial_estimate["within_limit"] is True
         edited = client.patch(
             f"/api/v1/activities/{activity_id}",
             headers=_mutating(csrf, **{"If-Match": original_etag}),
             json={"title": "Borrador revisado", "target_total_minutes": 4},
         )
         assert edited.status_code == 200, edited.text
+        dto.ActivityEnvelope.model_validate(edited.json())
         assert edited.json()["activity"]["title"] == "Borrador revisado"
         assert edited.headers["etag"] != original_etag
+        revised_estimate = client.get(
+            f"/api/v1/activities/{activity_id}/estimate"
+        ).json()["estimate"]
+        assert revised_estimate["input_fingerprint"] != initial_estimate["input_fingerprint"]
 
         stale = client.patch(
             f"/api/v1/activities/{activity_id}",
@@ -347,6 +460,49 @@ def test_activity_configuration_uses_etag_and_locks_after_pipeline_start() -> No
         )
         assert locked.status_code == 409
         assert locked.json()["code"] == "ACTIVITY_CONFIG_LOCKED"
+
+
+def test_activity_estimate_fails_closed_before_launch_when_limit_is_exceeded() -> None:
+    with TestClient(_app(max_job_cost_usd=0.01)) as client:
+        csrf = _login(client)
+        created = client.post(
+            "/api/v1/activities",
+            headers=_mutating(csrf),
+            json={
+                "title": "Actividad sobre límite",
+                "output_language": "es-CL",
+                "assessment_modality": "WRITTEN",
+                "question_count": 1,
+                "target_total_minutes": 3,
+                "allowed_response_formats": ["OPEN_SHORT"],
+                "allowed_artifact_media_types": ["text/markdown"],
+                "structured_justification_mode": "NOT_REQUIRED",
+            },
+        )
+        activity_id = created.json()["activity"]["activity_id"]
+        _upload(
+            client,
+            csrf,
+            f"/api/v1/activities/{activity_id}/artifacts/uploads",
+            f"/api/v1/activities/{activity_id}/artifacts/{{artifact_id}}:complete",
+            role="ASSIGNMENT_PROMPT",
+            filename="assignment.md",
+            media_type="text/markdown",
+            content=b"# Consigna\n\nExplique un mecanismo localizado.\n",
+        )
+
+        estimate = client.get(
+            f"/api/v1/activities/{activity_id}/estimate"
+        ).json()["estimate"]
+        assert estimate["upper_bound_cost_usd"] > estimate["authorized_limit_usd"]
+        assert estimate["within_limit"] is False
+        blocked = client.post(
+            f"/api/v1/activities/{activity_id}/blueprints:generate",
+            headers=_mutating(csrf),
+            json={},
+        )
+        assert blocked.status_code == 409
+        assert blocked.json()["code"] == "COST_LIMIT_EXCEEDED"
 
 
 def test_blocking_ambiguity_requires_durable_teacher_decision_before_blueprint() -> None:
@@ -539,6 +695,12 @@ def test_stage1_single_submission_mock_e2e_survives_new_browser_session() -> Non
 
         latest = client.get(f"/api/v1/activities/{activity_id}/blueprints/latest")
         assert latest.status_code == 200, latest.text
+        dto.BlueprintEnvelope.model_validate(latest.json())
+        dto.BlueprintEnvelope.model_validate(
+            client.get(
+                f"/api/v1/activities/{activity_id}/blueprints/1"
+            ).json()
+        )
         original = latest.json()["blueprint"]
         assert original["assessment_constraints"]["question_count"] == 2
         assert len(
@@ -569,6 +731,7 @@ def test_stage1_single_submission_mock_e2e_survives_new_browser_session() -> Non
             json=original,
         )
         assert edited.status_code == 200, edited.text
+        dto.BlueprintEnvelope.model_validate(edited.json())
         assert edited.json()["blueprint"]["blueprint_version"] == 2
         approved = client.post(
             f"/api/v1/activities/{activity_id}/blueprints/2:approve",
@@ -576,6 +739,7 @@ def test_stage1_single_submission_mock_e2e_survives_new_browser_session() -> Non
             json={},
         )
         assert approved.status_code == 200, approved.text
+        dto.BlueprintEnvelope.model_validate(approved.json())
         assert approved.json()["blueprint"]["status"] == "APPROVED"
         assert approved.json()["blueprint"]["blueprint_version"] == 3
 
@@ -645,9 +809,189 @@ def test_stage1_single_submission_mock_e2e_survives_new_browser_session() -> Non
         assert evidence.status_code == 200, evidence.text
         evidence_items = evidence.json()["items"]
         assert evidence_items
-        exact_source = reopened.get(evidence_items[0]["view_url"])
-        assert exact_source.status_code == 200
-        assert exact_source.content == deliverable
+        assert all("view_url" not in item for item in evidence_items)
+
+        first_question = assessment["questions"][0]
+        verify_path = f"/api/v1/assessments/{assessment_id}/evidence:verify"
+        valid_verification = {
+            "assessment_version": review_body["assessment_version"],
+            "assessment_etag": review_body["etag"],
+            "question_id": first_question["question_id"],
+            "fragment_index": 0,
+        }
+        stale_version = reopened.post(
+            verify_path,
+            headers=_mutating(headers),
+            json={
+                **valid_verification,
+                "assessment_version": review_body["assessment_version"] + 1,
+            },
+        )
+        assert stale_version.status_code == 412
+        assert stale_version.json()["code"] == "ETAG_MISMATCH"
+        stale_etag = reopened.post(
+            verify_path,
+            headers=_mutating(headers),
+            json={**valid_verification, "assessment_etag": '"stale-etag"'},
+        )
+        assert stale_etag.status_code == 412
+        missing_question = reopened.post(
+            verify_path,
+            headers=_mutating(headers),
+            json={**valid_verification, "question_id": "question_missing"},
+        )
+        assert missing_question.status_code == 404
+        missing_fragment = reopened.post(
+            verify_path,
+            headers=_mutating(headers),
+            json={**valid_verification, "fragment_index": 1},
+        )
+        assert missing_fragment.status_code == 404
+
+        with pytest.raises(NotFound):
+            app.state.runtime.service.verify_evidence_fragment(
+                assessment_id=assessment_id,
+                assessment_version=review_body["assessment_version"],
+                assessment_etag=review_body["etag"],
+                question_id=first_question["question_id"],
+                fragment_index=0,
+                actor=Actor(
+                    user_id="usr_other_tenant",
+                    email="other@example.test",
+                    workspace_id="tnt_other",
+                    role="TEACHER",
+                    can_approve_assessments=True,
+                    csrf_token="synthetic-csrf",
+                ),
+            )
+
+        first_evidence_id = first_question["anchor"]["fragments"][0]["evidence_id"]
+        with app.state.runtime.repository.session() as session:
+            persisted_evidence = session.get(EvidenceRow, first_evidence_id)
+            assert persisted_evidence is not None
+            original_evidence = json.loads(json.dumps(persisted_evidence.data))
+            tampered_evidence = json.loads(json.dumps(persisted_evidence.data))
+            tampered_evidence["locator"] = {
+                "kind": "DOCUMENT_PATH",
+                "paragraph_index": 999,
+            }
+            persisted_evidence.data = tampered_evidence
+        locator_mismatch = reopened.post(
+            verify_path,
+            headers=_mutating(headers),
+            json=valid_verification,
+        )
+        assert locator_mismatch.status_code == 409
+        assert locator_mismatch.json()["code"] == "IR_PROVENANCE_GAP"
+        with app.state.runtime.repository.session() as session:
+            persisted_evidence = session.get(EvidenceRow, first_evidence_id)
+            assert persisted_evidence is not None
+            persisted_evidence.data = original_evidence
+
+        direct_approval = reopened.post(
+            f"/api/v1/assessments/{assessment_id}:approve",
+            headers=_mutating(headers, **{"If-Match": review_body["etag"]}),
+            json={},
+        )
+        assert direct_approval.status_code == 409
+        assert direct_approval.json()["code"] == "EVIDENCE_REVIEW_REQUIRED"
+
+        expected_fragments = 0
+        first_view_url = ""
+        for question in assessment["questions"]:
+            for fragment_index, _fragment in enumerate(question["anchor"]["fragments"]):
+                expected_fragments += 1
+                verification_payload = {
+                    "assessment_version": review_body["assessment_version"],
+                    "assessment_etag": review_body["etag"],
+                    "question_id": question["question_id"],
+                    "fragment_index": fragment_index,
+                }
+                verification_key = str(uuid4())
+                verification_headers = {
+                    **headers,
+                    "Idempotency-Key": verification_key,
+                }
+                verified = reopened.post(
+                    f"/api/v1/assessments/{assessment_id}/evidence:verify",
+                    headers=verification_headers,
+                    json=verification_payload,
+                )
+                assert verified.status_code == 200, verified.text
+                dto.EvidenceVerifyEnvelope.model_validate(verified.json())
+                if expected_fragments == 1:
+                    persisted = app.state.runtime.repository.get(
+                        IdempotencyRow,
+                        stable_id(
+                            "idem", "tnt_experimental", verification_key
+                        ),
+                    )
+                    assert isinstance(persisted, IdempotencyRow)
+                    serialized = json.dumps(persisted.response, sort_keys=True)
+                    for forbidden in (
+                        "view_url",
+                        "expires_at",
+                        "/api/v1/objects/",
+                        "x-amz-signature",
+                        "normalized_text",
+                    ):
+                        assert forbidden not in serialized.lower()
+
+                    replayed = reopened.post(
+                        verify_path,
+                        headers=verification_headers,
+                        json=verification_payload,
+                    )
+                    assert replayed.status_code == 200, replayed.text
+                    assert replayed.headers["Idempotency-Replayed"] == "true"
+                    assert (
+                        replayed.json()["verification"]["receipt"]
+                        == verified.json()["verification"]["receipt"]
+                    )
+                    dto.EvidenceVerifyEnvelope.model_validate(replayed.json())
+                first_view_url = first_view_url or verified.json()["verification"]["view_url"]
+                exact_source = reopened.get(
+                    verified.json()["verification"]["view_url"]
+                )
+                assert exact_source.status_code == 200
+                assert exact_source.content == deliverable
+
+        reloaded_review = reopened.get(
+            f"/api/v1/submissions/{submission_id}/assessment"
+        )
+        assert reloaded_review.status_code == 200
+        assert len(reloaded_review.json()["evidence_receipts"]) == expected_fragments
+
+        object_store = app.state.runtime.object_store
+        assert isinstance(object_store, MemoryObjectStore)
+        artifact_row = app.state.runtime.repository.get(
+            ArtifactRow, artifact["artifact_id"]
+        )
+        assert isinstance(artifact_row, ArtifactRow)
+        expired_token = object_store._token(artifact_row.object_key, "GET", -1)
+        expired_source = reopened.get(f"/api/v1/objects/{expired_token}")
+        assert expired_source.status_code == 403
+        assert expired_source.json()["code"] == "SIGNED_URL_INVALID"
+        invalid_source = reopened.get("/api/v1/objects/not-a-valid-capability")
+        assert invalid_source.status_code == 403
+        assert invalid_source.json()["code"] == "SIGNED_URL_INVALID"
+
+        with TestClient(app) as reviewer:
+            reviewer_headers = _login(reviewer, "reviewer@example.test")
+            reviewer_view = reviewer.get(
+                f"/api/v1/submissions/{submission_id}/assessment"
+            )
+            assert reviewer_view.status_code == 200
+            assert reviewer_view.json()["evidence_receipts"] == []
+            reviewer_approval = reviewer.post(
+                f"/api/v1/assessments/{assessment_id}:approve",
+                headers=_mutating(
+                    reviewer_headers, **{"If-Match": review_body["etag"]}
+                ),
+                json={},
+            )
+            assert reviewer_approval.status_code == 409
+            assert reviewer_approval.json()["code"] == "EVIDENCE_REVIEW_REQUIRED"
 
         ledger_before = reopened.get(
             f"/api/v1/jobs/{submission_job}/model-calls"

@@ -46,6 +46,7 @@ describe("API client security defaults", () => {
     expect(init.method).toBe("POST");
     expect(headers.get("X-CSRF-Token")).toBe("csrf-token-01");
     expect(headers.get("Content-Type")).toBe("application/json");
+    expect(headers.get("X-CVA-Shell-Epoch")).toBe("stage1-v1");
     expect(headers.has("Idempotency-Key")).toBe(false);
   });
 
@@ -82,7 +83,6 @@ describe("API client security defaults", () => {
       allowed_response_formats: ["OPEN_SHORT"],
       allowed_artifact_media_types: ["text/plain"],
       structured_justification_mode: "NOT_REQUIRED",
-      context_mode: "CLOSED",
     });
 
     const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
@@ -138,7 +138,9 @@ describe("API client security defaults", () => {
   });
 
   it("follows evidence cursors until every signed source is loaded", async () => {
-    const first = assessmentBundle.evidence[0];
+    const first = assessmentBundle.evidence?.[0];
+    expect(first).toBeDefined();
+    if (!first) throw new Error("fixture evidence missing");
     const second = { ...first, evidence_id: "evidence_02" };
     const fetchMock = vi
       .fn()

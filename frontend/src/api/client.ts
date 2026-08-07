@@ -1,6 +1,7 @@
 import type {
   ActivityCreateInput,
   ActivityResource,
+  ActivityUpdateInput,
   AmbiguityView,
   ArtifactResource,
   AssessmentBlueprint,
@@ -16,9 +17,12 @@ import type {
   UploadSession,
   BlueprintView,
   EvidenceUnit,
+  EvidenceVerification,
+  CostEstimate,
 } from "./types";
 
 const API_BASE = (import.meta.env.VITE_API_BASE_URL || "/api/v1").replace(/\/$/, "");
+const SHELL_CACHE_EPOCH = "stage1-v1";
 
 type JsonObject = Record<string, unknown>;
 
@@ -128,6 +132,7 @@ async function requestWithMeta<T>(
     headers.set("Idempotency-Key", idempotencyKey());
   }
   headers.set("Accept", "application/json");
+  headers.set("X-CVA-Shell-Epoch", SHELL_CACHE_EPOCH);
 
   const response = await fetch(`${API_BASE}${path}`, {
     ...init,
@@ -188,6 +193,37 @@ export async function getActivity(activityId: string): Promise<ActivityResource>
   return pick<ActivityResource>(result, "activity");
 }
 
+export async function listActivities(): Promise<ActivityResource[]> {
+  const result = await request<unknown>("/activities");
+  return pick<ActivityResource[]>(result, "items");
+}
+
+export async function getActivityWithEtag(
+  activityId: string,
+): Promise<{ activity: ActivityResource; etag: string }> {
+  const result = await requestWithMeta<unknown>(`/activities/${activityId}`);
+  if (!result.etag) {
+    throw new ApiError(500, "La actividad no incluyó el ETag requerido para editar.");
+  }
+  return { activity: pick<ActivityResource>(result.data, "activity"), etag: result.etag };
+}
+
+export async function updateActivity(
+  activityId: string,
+  payload: ActivityUpdateInput,
+  etag: string,
+): Promise<{ activity: ActivityResource; etag: string }> {
+  const result = await requestWithMeta<unknown>(`/activities/${activityId}`, {
+    method: "PATCH",
+    headers: { "If-Match": etag },
+    body: JSON.stringify(payload),
+  });
+  if (!result.etag) {
+    throw new ApiError(500, "La actividad editada no incluyó su nuevo ETag.");
+  }
+  return { activity: pick<ActivityResource>(result.data, "activity"), etag: result.etag };
+}
+
 export async function createActivityUpload(
   activityId: string,
   role: "ASSIGNMENT_PROMPT" | "RUBRIC",
@@ -243,6 +279,11 @@ export async function generateBlueprint(activityId: string): Promise<StartedOper
   return pick<StartedOperation>(result, "operation");
 }
 
+export async function getActivityEstimate(activityId: string): Promise<CostEstimate> {
+  const result = await request<unknown>(`/activities/${activityId}/estimate`);
+  return pick<CostEstimate>(result, "estimate");
+}
+
 export async function getActivityAmbiguity(activityId: string): Promise<AmbiguityView> {
   return request<AmbiguityView>(`/activities/${activityId}/ambiguity`);
 }
@@ -274,6 +315,7 @@ function normalizeBlueprintView(
   return {
     blueprint,
     etag: headerEtag ?? `W/\"${blueprint.blueprint_version}\"`,
+    version: blueprint.blueprint_version,
   };
 }
 
@@ -389,6 +431,11 @@ export async function runSubmission(submissionId: string): Promise<StartedOperat
   return pick<StartedOperation>(result, "operation");
 }
 
+export async function getSubmissionEstimate(submissionId: string): Promise<CostEstimate> {
+  const result = await request<unknown>(`/submissions/${submissionId}/estimate`);
+  return pick<CostEstimate>(result, "estimate");
+}
+
 export async function getSubmission(submissionId: string): Promise<SubmissionResource> {
   const result = await request<unknown>(`/submissions/${submissionId}`);
   return pick<SubmissionResource>(result, "submission");
@@ -435,6 +482,8 @@ export async function getAssessmentBundle(
       assessment: bundle.assessment,
       reviews: bundle.reviews ?? [],
       evidence: bundle.evidence ?? [],
+      evidence_receipts: bundle.evidence_receipts ?? [],
+      guide: bundle.guide,
       etag: bundle.etag,
       assessment_version: bundle.assessment_version,
     };
@@ -445,6 +494,22 @@ export async function getAssessmentBundle(
 export async function getGuide(assessmentId: string): Promise<EvaluationGuide> {
   const result = await request<unknown>(`/assessments/${assessmentId}/guide`);
   return pick<EvaluationGuide>(result, "guide");
+}
+
+export async function verifyEvidenceFragment(
+  assessmentId: string,
+  input: {
+    assessment_version: number;
+    assessment_etag: string;
+    question_id: string;
+    fragment_index: number;
+  },
+): Promise<EvidenceVerification> {
+  const result = await request<unknown>(`/assessments/${assessmentId}/evidence:verify`, {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+  return pick<EvidenceVerification>(result, "verification");
 }
 
 export async function approveAssessment(
@@ -466,6 +531,8 @@ export async function approveAssessment(
       assessment: bundle.assessment,
       reviews: bundle.reviews ?? [],
       evidence: bundle.evidence ?? [],
+      evidence_receipts: bundle.evidence_receipts ?? [],
+      guide: bundle.guide,
       etag: bundle.etag,
       assessment_version: bundle.assessment_version,
     };

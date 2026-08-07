@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Apply and verify the Stage 1 migration on an empty local PostgreSQL DB."""
+"""Apply and verify selected Stage 1 migration invariants on local PostgreSQL."""
 
 from __future__ import annotations
 
@@ -12,11 +12,16 @@ from urllib.parse import urlparse
 
 import psycopg
 
-from comprehension_verification.web.repository import Base
+from comprehension_verification.web.repository import (
+    Base,
+    IDEMPOTENCY_CAPABILITY_CONSTRAINT,
+)
 
 
 ROOT = Path(__file__).resolve().parents[1]
-MIGRATION = ROOT / "deploy/supabase/migrations/202607310001_stage1.sql"
+MIGRATION_DIR = ROOT / "deploy/supabase/migrations"
+MIGRATIONS = tuple(sorted(MIGRATION_DIR.glob("*.sql")))
+PRIMARY_MIGRATION = MIGRATION_DIR / "202607310001_stage1.sql"
 LOCAL_HOSTS = frozenset({"127.0.0.1", "localhost", "::1"})
 
 BOOTSTRAP_SQL = """
@@ -76,7 +81,11 @@ def main() -> int:
     if parsed.scheme not in {"postgresql", "postgres"} or parsed.hostname not in LOCAL_HOSTS:
         raise SystemExit("refusing to mutate a non-loopback or non-PostgreSQL database")
 
-    migration_sql = MIGRATION.read_text(encoding="utf-8")
+    if not MIGRATIONS or MIGRATIONS[0] != PRIMARY_MIGRATION:
+        raise SystemExit("the ordered Stage 1 migration set is incomplete")
+    migration_sql = [
+        (path, path.read_text(encoding="utf-8")) for path in MIGRATIONS
+    ]
     expected = {
         table.name: {column.name for column in table.columns}
         for table in Base.metadata.sorted_tables
@@ -100,7 +109,65 @@ def main() -> int:
             )
 
         conn.execute(BOOTSTRAP_SQL, prepare=False)
-        conn.execute(migration_sql, prepare=False)
+        _, first_sql = migration_sql[0]
+        conn.execute(first_sql, prepare=False)
+        conn.execute(
+            """
+            insert into public.idempotency_keys
+              (id, tenant_id, key, fingerprint, response)
+            values
+              (
+                'idem_migration_probe_json_null',
+                'tnt_migration_probe',
+                'migration-probe-json-null',
+                'sha256:' || repeat('a', 64),
+                'null'::jsonb
+              ),
+              (
+                'idem_migration_probe_capability',
+                'tnt_migration_probe',
+                'migration-probe-capability',
+                'sha256:' || repeat('b', 64),
+                jsonb_build_object(
+                  'kind', 'json',
+                  'body', jsonb_build_object(
+                    'view_url',
+                    'https://synthetic.invalid/object?X-Amz-Signature=synthetic'
+                  )
+                )
+              )
+            """
+        )
+        for _, sql in migration_sql[1:]:
+            conn.execute(sql, prepare=False)
+
+        legacy_probe_count = int(
+            conn.execute(
+                """
+                select count(*)
+                from public.idempotency_keys
+                where tenant_id = 'tnt_migration_probe'
+                """
+            ).fetchone()[0]
+        )
+        if legacy_probe_count != 0:
+            raise SystemExit("idempotency capability hygiene did not remove probes")
+
+        capability_constraint = bool(
+            conn.execute(
+                """
+                select exists (
+                  select 1
+                  from pg_constraint
+                  where conrelid = 'public.idempotency_keys'::regclass
+                    and conname = %s
+                )
+                """,
+                (IDEMPOTENCY_CAPABILITY_CONSTRAINT,),
+            ).fetchone()[0]
+        )
+        if not capability_constraint:
+            raise SystemExit("idempotency capability constraint is missing")
 
         actual = _database_schema(conn)
         if actual != expected:
@@ -161,11 +228,19 @@ def main() -> int:
         json.dumps(
             {
                 "append_only_triggers": sorted(append_only_triggers),
-                "migration": str(MIGRATION.relative_to(ROOT)),
-                "migration_sha256": hashlib.sha256(
-                    MIGRATION.read_bytes()
-                ).hexdigest(),
+                "idempotency_capability_constraint": capability_constraint,
+                "idempotency_legacy_probe_count": legacy_probe_count,
+                "migrations": [
+                    str(path.relative_to(ROOT)) for path in MIGRATIONS
+                ],
+                "migration_sha256": {
+                    str(path.relative_to(ROOT)): hashlib.sha256(
+                        path.read_bytes()
+                    ).hexdigest()
+                    for path in MIGRATIONS
+                },
                 "rls_table_count": len(rls_tables),
+                "schema_checks": "tables_columns_rls_append_only_triggers",
                 "status": "PASS",
                 "table_count": len(actual),
             },

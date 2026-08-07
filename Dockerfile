@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.7
 
-ARG NODE_IMAGE=node:22-bookworm-slim
-ARG PYTHON_IMAGE=python:3.12-slim-bookworm
+ARG NODE_IMAGE=node:22-bookworm-slim@sha256:d649c27dae7ba0137b3cef5dd75baa422c08dc3d9e3fc0c23dfb172dc3cc6436
+ARG PYTHON_IMAGE=python:3.12-alpine3.22@sha256:a190708a2dec1bd18b1decb539f8e8f5407abaa9bf39cacda583f7f8c11db322
 
 FROM ${NODE_IMAGE} AS frontend-build
 WORKDIR /build/frontend
@@ -12,7 +12,7 @@ ENV VITE_SUPABASE_URL=${VITE_SUPABASE_URL}
 ENV VITE_SUPABASE_PUBLISHABLE_KEY=${VITE_SUPABASE_PUBLISHABLE_KEY}
 
 COPY frontend/package*.json ./
-RUN if [ -f package-lock.json ]; then npm ci; else npm install; fi
+RUN npm ci
 COPY frontend/ ./
 RUN npm run build
 
@@ -27,18 +27,20 @@ WORKDIR /app
 # The canonical contracts deliberately remain under specification/. Installing
 # the project editable keeps contracts.py anchored at /app in the runtime image
 # without duplicating the Pydantic models.
-COPY pyproject.toml ./
+COPY requirements.lock ./
 COPY src/ ./src/
 COPY specification/ ./specification/
-RUN pip install --no-cache-dir --upgrade pip \
-    && pip install --no-cache-dir -e . "uvicorn[standard]>=0.30,<1"
+RUN pip install --no-cache-dir --require-hashes -r requirements.lock \
+    && pip uninstall --yes pip
 
 
 FROM ${PYTHON_IMAGE} AS runtime-base
 ENV VIRTUAL_ENV=/opt/venv
 ENV PATH="${VIRTUAL_ENV}/bin:${PATH}"
+ENV PYTHONPATH=/app/src
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
+ENV XDG_CACHE_HOME=/tmp/.cache
 ENV PORT=8080
 ENV CVA_ENVIRONMENT=cloud
 ENV CVA_AUTH_MODE=supabase
@@ -49,20 +51,19 @@ ENV CVA_P10_ENABLED=false
 ENV CVA_FRONTEND_DIST=/app/static
 ENV CVA_RENDERER_MODE=weasyprint
 
-# libmagic supports MIME inspection. The remaining libraries are the minimal
-# runtime surface used by WeasyPrint when the web export adapter is enabled.
-RUN apt-get update \
-    && apt-get install --no-install-recommends -y \
-        libffi8 \
-        libharfbuzz-subset0 \
-        libjpeg62-turbo \
-        libmagic1 \
-        libopenjp2-7 \
-        libpango-1.0-0 \
-        libpangoft2-1.0-0 \
-    && rm -rf /var/lib/apt/lists/* \
-    && groupadd --gid 65532 cva \
-    && useradd --uid 65532 --gid 65532 --no-create-home --home-dir /nonexistent --shell /usr/sbin/nologin cva
+# Minimal native surface and fonts used by WeasyPrint for cloud exports.
+RUN apk upgrade --no-cache \
+    && apk add --no-cache \
+        font-dejavu \
+        harfbuzz \
+        libffi \
+        libjpeg-turbo \
+        openjpeg \
+        pango \
+    && python -m pip uninstall --yes pip \
+    && rm -rf /usr/local/lib/python3.12/ensurepip \
+    && addgroup -S -g 65532 cva \
+    && adduser -S -D -H -h /nonexistent -s /sbin/nologin -u 65532 -G cva cva
 
 WORKDIR /app
 COPY --from=python-build /opt/venv /opt/venv

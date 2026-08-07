@@ -6,6 +6,8 @@ locals {
   required_services = toset([
     "artifactregistry.googleapis.com",
     "cloudbuild.googleapis.com",
+    "containeranalysis.googleapis.com",
+    "containerscanning.googleapis.com",
     "iam.googleapis.com",
     "run.googleapis.com",
     "secretmanager.googleapis.com",
@@ -27,27 +29,40 @@ locals {
   }
 
   common_environment = {
-    CVA_ENVIRONMENT            = "cloud"
-    CVA_AUTH_MODE              = "supabase"
-    CVA_OBJECT_STORE_MODE      = "r2"
-    CVA_JOB_RUNNER_MODE        = "cloud_run"
-    CVA_MODEL_MODE             = "mock"
-    CVA_P10_ENABLED            = "false"
-    CVA_FRONTEND_DIST          = "/app/static"
-    CVA_RENDERER_MODE          = "weasyprint"
-    CVA_SIGNED_URL_TTL_SECONDS = tostring(var.upload_url_ttl_seconds)
-    CVA_SUPABASE_JWT_ISSUER    = "${trimsuffix(var.supabase_url, "/")}/auth/v1"
-    CVA_SUPABASE_JWKS_URL      = "${trimsuffix(var.supabase_url, "/")}/auth/v1/.well-known/jwks.json"
-    CVA_SUPABASE_JWT_AUDIENCE  = var.supabase_jwt_audience
-    CVA_R2_ENDPOINT_URL        = var.r2_endpoint_url
-    CVA_R2_BUCKET              = var.r2_bucket_name
-    CVA_GCP_PROJECT_ID         = var.project_id
-    CVA_GCP_REGION             = var.region
-    CVA_CLOUD_RUN_JOB_NAME     = var.job_name
+    CVA_ENVIRONMENT              = "cloud"
+    CVA_AUTH_MODE                = "supabase"
+    CVA_OBJECT_STORE_MODE        = "r2"
+    CVA_JOB_RUNNER_MODE          = "cloud_run"
+    CVA_MODEL_MODE               = "mock"
+    CVA_P10_ENABLED              = "false"
+    CVA_FRONTEND_DIST            = "/app/static"
+    CVA_RENDERER_MODE            = "weasyprint"
+    CVA_UPLOAD_URL_TTL_SECONDS   = tostring(var.upload_url_ttl_seconds)
+    CVA_DOWNLOAD_URL_TTL_SECONDS = tostring(var.download_url_ttl_seconds)
+    CVA_SUPABASE_JWT_ISSUER      = "${trimsuffix(var.supabase_url, "/")}/auth/v1"
+    CVA_SUPABASE_JWKS_URL        = "${trimsuffix(var.supabase_url, "/")}/auth/v1/.well-known/jwks.json"
+    CVA_SUPABASE_JWT_AUDIENCE    = var.supabase_jwt_audience
+    CVA_R2_ENDPOINT_URL          = var.r2_endpoint_url
+    CVA_R2_BUCKET                = var.r2_bucket_name
+    CVA_GCP_PROJECT_ID           = var.project_id
+    CVA_GCP_REGION               = var.region
+    CVA_CLOUD_RUN_JOB_NAME       = var.job_name
   }
 
-  web_environment    = local.common_environment
-  worker_environment = local.common_environment
+  web_environment = local.common_environment
+  worker_environment = {
+    CVA_ENVIRONMENT              = "cloud"
+    CVA_OBJECT_STORE_MODE        = "r2"
+    CVA_MODEL_MODE               = "mock"
+    CVA_P10_ENABLED              = "false"
+    CVA_RENDERER_MODE            = "weasyprint"
+    CVA_UPLOAD_URL_TTL_SECONDS   = tostring(var.upload_url_ttl_seconds)
+    CVA_DOWNLOAD_URL_TTL_SECONDS = tostring(var.download_url_ttl_seconds)
+    CVA_R2_ENDPOINT_URL          = var.r2_endpoint_url
+    CVA_R2_BUCKET                = var.r2_bucket_name
+  }
+
+  authorized_github_repository = "https://github.com/WilJms/PruebasPersonalizadas.git"
 }
 
 resource "terraform_data" "runtime_preconditions" {
@@ -63,6 +78,23 @@ resource "terraform_data" "runtime_preconditions" {
         trimspace(var.r2_bucket_name) != "",
       ])
       error_message = "Runtime resources require an image and all non-secret Supabase/R2 settings."
+    }
+  }
+}
+
+resource "terraform_data" "cloud_build_preconditions" {
+  input = var.enable_cloud_build_trigger
+
+  lifecycle {
+    precondition {
+      condition = !var.enable_cloud_build_trigger || alltrue([
+        var.enable_cloud_build_connection,
+        var.github_app_installation_id != null,
+        var.github_oauth_token_secret_version != null,
+        trimspace(var.supabase_url) != "",
+        trimspace(var.supabase_publishable_key) != "",
+      ])
+      error_message = "The GitHub trigger requires its connection and all public frontend build settings."
     }
   }
 }
@@ -105,7 +137,7 @@ resource "google_service_account" "worker" {
 resource "google_service_account" "build" {
   project      = var.project_id
   account_id   = "${var.name_prefix}-cloudbuild"
-  display_name = "CVA Stage 1 Cloud Build deployer"
+  display_name = "CVA Stage 1 Cloud Build publisher"
 
   depends_on = [google_project_service.required["iam.googleapis.com"]]
 }
@@ -114,7 +146,6 @@ resource "google_project_iam_member" "build_roles" {
   for_each = toset([
     "roles/artifactregistry.writer",
     "roles/logging.logWriter",
-    "roles/run.admin",
     "roles/serviceusage.serviceUsageConsumer",
     "roles/storage.bucketViewer",
     "roles/storage.objectUser",
@@ -123,18 +154,6 @@ resource "google_project_iam_member" "build_roles" {
   project = var.project_id
   role    = each.value
   member  = "serviceAccount:${google_service_account.build.email}"
-}
-
-resource "google_service_account_iam_member" "build_can_use_web_identity" {
-  service_account_id = google_service_account.web.name
-  role               = "roles/iam.serviceAccountUser"
-  member             = "serviceAccount:${google_service_account.build.email}"
-}
-
-resource "google_service_account_iam_member" "build_can_use_worker_identity" {
-  service_account_id = google_service_account.worker.name
-  role               = "roles/iam.serviceAccountUser"
-  member             = "serviceAccount:${google_service_account.build.email}"
 }
 
 resource "google_secret_manager_secret" "runtime" {
@@ -152,15 +171,25 @@ resource "google_secret_manager_secret" "runtime" {
 }
 
 locals {
-  runtime_secret_members = {
-    for pair in setproduct(keys(google_secret_manager_secret.runtime), [
-      google_service_account.web.email,
-      google_service_account.worker.email,
-      ]) : "${pair[0]}|${pair[1]}" => {
-      secret_key = pair[0]
-      member     = pair[1]
-    }
-  }
+  runtime_secret_members = merge(
+    {
+      for secret_key in keys(google_secret_manager_secret.runtime) :
+      "${secret_key}|${google_service_account.web.email}" => {
+        secret_key = secret_key
+        member     = google_service_account.web.email
+      }
+    },
+    {
+      for secret_key in setsubtract(
+        toset(keys(google_secret_manager_secret.runtime)),
+        toset(["session_secret"]),
+      ) :
+      "${secret_key}|${google_service_account.worker.email}" => {
+        secret_key = secret_key
+        member     = google_service_account.worker.email
+      }
+    },
+  )
 }
 
 resource "google_secret_manager_secret_iam_member" "runtime_access" {
@@ -181,6 +210,13 @@ resource "google_cloud_run_v2_service" "web" {
   ingress             = "INGRESS_TRAFFIC_ALL"
   deletion_protection = false
   labels              = local.labels
+
+  # The Cloud Run API persists these zero values in the service-level scaling
+  # object.  Declaring them makes refresh/plan converge without ignore_changes.
+  scaling {
+    manual_instance_count = 0
+    min_instance_count    = 0
+  }
 
   template {
     service_account = google_service_account.web.email
@@ -264,7 +300,7 @@ resource "google_cloud_run_v2_service" "web" {
         failure_threshold     = 12
 
         http_get {
-          path = "/api/health"
+          path = "/api/readiness"
           port = 8080
         }
       }
@@ -312,7 +348,9 @@ resource "google_cloud_run_v2_job" "worker" {
     template {
       service_account = google_service_account.worker.email
       timeout         = "3600s"
-      max_retries     = 1
+      # Dispatch carries no job id; an infrastructure retry could otherwise
+      # claim a different durable QUEUED row after the first row failed.
+      max_retries = 0
 
       containers {
         image = var.container_image
@@ -363,15 +401,6 @@ resource "google_cloud_run_v2_job" "worker" {
           }
         }
 
-        env {
-          name = "CVA_SESSION_SECRET"
-          value_source {
-            secret_key_ref {
-              secret  = google_secret_manager_secret.runtime["session_secret"].secret_id
-              version = var.secret_version
-            }
-          }
-        }
       }
     }
   }
@@ -407,4 +436,71 @@ resource "google_cloud_run_v2_job_iam_member" "web_can_execute_worker" {
   name     = google_cloud_run_v2_job.worker[0].name
   role     = "roles/run.invoker"
   member   = "serviceAccount:${google_service_account.web.email}"
+}
+
+resource "google_cloudbuildv2_connection" "github" {
+  count = var.enable_cloud_build_connection ? 1 : 0
+
+  project  = var.project_id
+  location = var.region
+  name     = "${var.name_prefix}-github"
+
+  github_config {
+    app_installation_id = var.github_app_installation_id
+
+    dynamic "authorizer_credential" {
+      for_each = var.github_oauth_token_secret_version == null ? [] : [var.github_oauth_token_secret_version]
+
+      content {
+        oauth_token_secret_version = authorizer_credential.value
+      }
+    }
+  }
+
+  depends_on = [google_project_service.required["cloudbuild.googleapis.com"]]
+}
+
+resource "google_cloudbuildv2_repository" "github" {
+  count = var.enable_cloud_build_trigger ? 1 : 0
+
+  project           = var.project_id
+  location          = var.region
+  name              = "${var.name_prefix}-github-repository"
+  parent_connection = google_cloudbuildv2_connection.github[0].id
+  remote_uri        = local.authorized_github_repository
+}
+
+resource "google_cloudbuild_trigger" "github_push" {
+  count = var.enable_cloud_build_trigger ? 1 : 0
+
+  project     = var.project_id
+  location    = var.region
+  name        = "${var.name_prefix}-github-push"
+  description = "Build and verify Stage 1 from the authorized GitHub repository"
+  filename    = "deploy/cloudbuild.yaml"
+  service_account = (
+    "projects/${var.project_id}/serviceAccounts/${google_service_account.build.email}"
+  )
+  substitutions = {
+    _REGION                        = var.region
+    _REPOSITORY                    = var.repository_id
+    _IMAGE                         = "application"
+    _VITE_SUPABASE_URL             = var.supabase_url
+    _VITE_SUPABASE_PUBLISHABLE_KEY = var.supabase_publishable_key
+  }
+
+  repository_event_config {
+    repository = google_cloudbuildv2_repository.github[0].id
+
+    push {
+      branch = "^(main|fix/stage1-external-readiness)$"
+    }
+  }
+
+  lifecycle {
+    precondition {
+      condition     = terraform_data.cloud_build_preconditions.output
+      error_message = "Cloud Build trigger preconditions were not satisfied."
+    }
+  }
 }

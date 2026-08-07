@@ -43,10 +43,57 @@ variable "job_name" {
   default     = "cva-worker"
 }
 
+variable "enable_cloud_build_connection" {
+  description = "Create the regional GitHub connection. OAuth/GitHub App authorization is completed interactively after its first apply."
+  type        = bool
+  default     = false
+}
+
+variable "enable_cloud_build_trigger" {
+  description = "Create the authorized repository and push trigger after the GitHub connection reaches COMPLETE."
+  type        = bool
+  default     = false
+}
+
+variable "github_app_installation_id" {
+  description = "Cloud Build GitHub App installation id returned by the official authorization flow."
+  type        = number
+  default     = null
+  nullable    = true
+
+  validation {
+    condition     = var.github_app_installation_id == null || var.github_app_installation_id > 0
+    error_message = "github_app_installation_id must be null or a positive installation id."
+  }
+}
+
+variable "github_oauth_token_secret_version" {
+  description = "Secret Manager version reference created by the official Cloud Build GitHub OAuth flow; never the token value."
+  type        = string
+  default     = null
+  nullable    = true
+
+  validation {
+    condition = var.github_oauth_token_secret_version == null || can(regex(
+      "^projects/[a-z][a-z0-9-]{4,28}[a-z0-9]/secrets/[A-Za-z0-9_-]+/versions/(latest|[1-9][0-9]*)$",
+      var.github_oauth_token_secret_version,
+    ))
+    error_message = "github_oauth_token_secret_version must be null or a Secret Manager version resource name."
+  }
+}
+
 variable "container_image" {
-  description = "Immutable Artifact Registry image reference used to bootstrap Cloud Run."
+  description = "Immutable Artifact Registry image reference owned by Terraform, including @sha256 digest."
   type        = string
   default     = ""
+
+  validation {
+    condition = var.container_image == "" || can(regex(
+      "^[a-z0-9][a-z0-9.-]*/[a-z0-9][a-z0-9._/-]*@sha256:[0-9a-f]{64}$",
+      var.container_image,
+    ))
+    error_message = "container_image must be empty or an immutable registry reference ending in @sha256:<64 lowercase hex>."
+  }
 }
 
 variable "enable_runtime_resources" {

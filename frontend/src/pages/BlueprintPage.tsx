@@ -59,7 +59,7 @@ export function AmbiguityResolution({
 
   useEffect(() => setSelections(persistedSelections), [persistedSelections]);
 
-  const blockingResolved = view.report.issues
+  const blockingResolved = (view.report.issues ?? [])
     .filter((issue) => issue.blocking)
     .every((issue) => Boolean(selections[issue.issue_id]));
 
@@ -78,7 +78,7 @@ export function AmbiguityResolution({
       </header>
 
       <div className="ambiguity-list">
-        {view.report.issues.map((issue, issueIndex) => {
+        {(view.report.issues ?? []).map((issue, issueIndex) => {
           const persisted = view.decisions.some((decision) => decision.issue_id === issue.issue_id);
           return (
             <article className="ambiguity-card" key={issue.issue_id}>
@@ -97,9 +97,9 @@ export function AmbiguityResolution({
 
               <div className="ambiguity-evidence" aria-label="Evidencia vinculada">
                 <span className="mini-label">Evidencia que originó la duda</span>
-                {issue.evidence_ids.length ? (
+                {(issue.evidence_ids ?? []).length ? (
                   <div className="chip-row">
-                    {issue.evidence_ids.map((evidenceId) => <code key={evidenceId}>{evidenceId}</code>)}
+                    {(issue.evidence_ids ?? []).map((evidenceId) => <code key={evidenceId}>{evidenceId}</code>)}
                   </div>
                 ) : (
                   <span className="muted">Hallazgo de reglas sobre la consigna completa.</span>
@@ -312,7 +312,7 @@ export function BlueprintPage() {
     setError(null);
     try {
       const resolvedIssueIds = new Set(ambiguity.decisions.map((item) => item.issue_id));
-      for (const issue of ambiguity.report.issues) {
+      for (const issue of ambiguity.report.issues ?? []) {
         const selectedOptionId = selections[issue.issue_id];
         if (!selectedOptionId || resolvedIssueIds.has(issue.issue_id)) continue;
         await createPolicyDecision(activityId, {
@@ -336,7 +336,7 @@ export function BlueprintPage() {
   };
 
   const criticalFailure = useMemo(
-    () => view?.review?.checks.some((check) => check.critical && check.status === "FAIL") ?? false,
+    () => view?.review?.checks?.some((check) => check.critical && check.status === "FAIL") ?? false,
     [view],
   );
 
@@ -552,6 +552,28 @@ export function BlueprintPage() {
         <div><span>Preguntas por entrega</span><strong>{blueprint.assessment_constraints.question_count}</strong></div>
       </section>
 
+      <section className="form-card blueprint-constraints">
+        <div className="section-heading compact-heading">
+          <span className="section-number">C</span>
+          <div><h2>Restricciones globales</h2><p>La dificultad no se selecciona: se deriva por oportunidad.</p></div>
+        </div>
+        <dl className="activity-summary">
+          <div><dt>Contexto</dt><dd>{blueprint.context_mode}</dd></div>
+          <div><dt>Tiempo objetivo</dt><dd>{blueprint.assessment_constraints.target_total_minutes} min</dd></div>
+          <div><dt>Calidad mínima</dt><dd>{percentage(blueprint.assessment_constraints.minimum_opportunity_quality)}</dd></div>
+          <div><dt>Reserva máxima</dt><dd>{blueprint.assessment_constraints.max_reserve_opportunities}</dd></div>
+          <div><dt>Justificación</dt><dd>{blueprint.assessment_constraints.structured_justification_policy.mode}</dd></div>
+          <div><dt>Formatos</dt><dd>{blueprint.assessment_constraints.allowed_response_formats.join(", ")}</dd></div>
+        </dl>
+        <div className="reference-list">
+          <span className="mini-label">Templates con justificación seleccionada</span>
+          {(blueprint.assessment_constraints.structured_justification_policy.selected_opportunity_template_ids ?? []).length ? (
+            <div className="chip-row">{(blueprint.assessment_constraints.structured_justification_policy.selected_opportunity_template_ids ?? []).map((id) => <code key={id}>{id}</code>)}</div>
+          ) : <p className="muted">No aplica a esta política.</p>}
+        </div>
+        <div className="reference-list"><span className="mini-label">Decisiones docentes vinculadas</span>{(blueprint.decision_ids ?? []).length ? <div className="chip-row">{(blueprint.decision_ids ?? []).map((id) => <code key={id}>{id}</code>)}</div> : <p className="muted">Sin decisiones adicionales.</p>}</div>
+      </section>
+
       {view.review && (
         <section className="review-banner">
           <div>
@@ -559,10 +581,20 @@ export function BlueprintPage() {
             <h2>{view.review.approval_recommendation?.replaceAll("_", " ") ?? "Requiere revisión"}</h2>
           </div>
           <div className="review-checks">
-            {view.review.checks.map((check) => (
-              <span className={`review-check check-${check.status.toLowerCase()}`} key={check.check_code} title={check.message}>
+            {(view.review.checks ?? []).map((check) => (
+              <span className={`review-check check-${check.status.toLowerCase()}`} key={check.check_code}>
                 {check.status} · {check.category.replaceAll("_", " ")}
               </span>
+            ))}
+          </div>
+          <div className="review-check-details">
+            {(view.review.checks ?? []).map((check) => (
+              <article key={check.check_code}>
+                <header><code>{check.check_code}</code><StatusBadge status={check.status === "FAIL" ? "ERROR" : check.status === "WARN" ? "WARNING" : "READY"} label={check.status} />{check.critical && <strong>Crítico</strong>}</header>
+                <p>{check.message}</p>
+                {(check.referenced_ids ?? []).length > 0 && <div className="chip-row">{(check.referenced_ids ?? []).map((id) => <code key={id}>{id}</code>)}</div>}
+                {check.correction && <p><strong>Corrección:</strong> {check.correction}</p>}
+              </article>
             ))}
           </div>
         </section>
@@ -603,6 +635,15 @@ export function BlueprintPage() {
               </div>
             </header>
 
+            <div className="dimension-metadata">
+              <div><span className="mini-label">Criterios</span><div className="chip-row">{dimension.criterion_ids.map((id) => <code key={id}>{id}</code>)}</div></div>
+              <div><span className="mini-label">Resultados de aprendizaje</span>{(dimension.learning_outcome_ids ?? []).length ? <div className="chip-row">{(dimension.learning_outcome_ids ?? []).map((id) => <code key={id}>{id}</code>)}</div> : <span className="muted">Sin referencias adicionales</span>}</div>
+              <div><span className="mini-label">Peso</span><strong>{dimension.grading_weight == null ? "No informado" : percentage(dimension.grading_weight)}</strong></div>
+              <dl className="factor-grid">
+                {Object.entries(dimension.factors).map(([name, value]) => <div key={name}><dt>{name.replaceAll("_", " ")}</dt><dd>{percentage(value)}</dd></div>)}
+              </dl>
+            </div>
+
             <div className="variant-list">
               {dimension.evidence_variants.map((variant, variantIndex) => (
                 <section className="variant-card" key={variant.variant_id}>
@@ -633,14 +674,27 @@ export function BlueprintPage() {
                     )}
                   </div>
 
+                  <div className="variant-requirement">
+                    <span className="mini-label">Requisito de evidencia</span>
+                    <dl className="activity-summary">
+                      <div><dt>Modalidades</dt><dd>{variant.evidence_requirement.allowed_modalities.join(", ")}</dd></div>
+                      <div><dt>Unidades distintas</dt><dd>{variant.evidence_requirement.min_distinct_units}</dd></div>
+                      <div><dt>Confianza mínima</dt><dd>{percentage(variant.evidence_requirement.min_extraction_confidence)}</dd></div>
+                      <div><dt>Alineación mínima</dt><dd>{percentage(variant.evidence_requirement.min_alignment)}</dd></div>
+                      <div><dt>Cross-artifact</dt><dd>{variant.evidence_requirement.cross_artifact_required ? "Sí" : "No"}</dd></div>
+                      <div><dt>Fuentes de curso</dt><dd>{variant.evidence_requirement.course_sources_allowed ? "Permitidas" : "No permitidas"}</dd></div>
+                      <div><dt>Potencial</dt><dd>{percentage(variant.verification_potential)}</dd></div>
+                    </dl>
+                  </div>
+
                   <div className="supported-operations">
                     <span className="mini-label">Operaciones soportadas</span>
                     <div className="chip-row">
                       {variant.supported_operations.map((operation) => (
-                        <span className="operation-chip" key={operation.cognitive_operation} title={operation.rationale}>
-                          {operation.cognitive_operation.replaceAll("_", " ")}
-                          <em>{percentage(operation.support_strength)}</em>
-                        </span>
+                        <details className="operation-detail" key={operation.cognitive_operation}>
+                          <summary className="operation-chip">{operation.cognitive_operation.replaceAll("_", " ")} <em>{percentage(operation.support_strength)}</em></summary>
+                          <p>{operation.rationale}</p>
+                        </details>
                       ))}
                     </div>
                   </div>
@@ -688,6 +742,15 @@ export function BlueprintPage() {
                             <>
                               <strong>{opportunity.focus}</strong>
                               <span>{opportunity.observable}</span>
+                              <div className="chip-row">
+                                <span className="meta-chip">Dificultad derivada · {opportunity.difficulty}</span>
+                                <span className="meta-chip">Calidad mínima · {percentage(opportunity.minimum_quality)}</span>
+                                <span className="meta-chip">Potencial · {percentage(opportunity.verification_potential)}</span>
+                                <span className="meta-chip">Justificación · {opportunity.student_justification_required ? "sí" : "no"}</span>
+                              </div>
+                              <small>Anclas: {opportunity.allowed_anchor_structures.join(", ")}</small>
+                              <small>Formatos: {opportunity.allowed_response_formats.join(", ")}</small>
+                              <code>{opportunity.opportunity_template_id}</code>
                             </>
                           )}
                         </div>

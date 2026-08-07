@@ -8,6 +8,24 @@ output "cloud_build_service_account" {
   value       = google_service_account.build.email
 }
 
+output "cloud_build_connection" {
+  description = "Regional GitHub connection and its non-secret installation state."
+  value = var.enable_cloud_build_connection ? {
+    id                 = google_cloudbuildv2_connection.github[0].id
+    installation_state = google_cloudbuildv2_connection.github[0].installation_state
+  } : null
+}
+
+output "cloud_build_repository" {
+  description = "Authorized GitHub repository resource used by the trigger."
+  value       = try(google_cloudbuildv2_repository.github[0].id, null)
+}
+
+output "cloud_build_trigger" {
+  description = "Regional push trigger id."
+  value       = try(google_cloudbuild_trigger.github_push[0].trigger_id, null)
+}
+
 output "runtime_secret_names" {
   description = "Add secret version values outside Terraform before enabling runtime resources."
   value = {
@@ -31,4 +49,9 @@ output "service_uri" {
 output "job_name" {
   description = "Cloud Run Job name after the second apply."
   value       = try(google_cloud_run_v2_job.worker[0].name, null)
+}
+
+output "runtime_container_image" {
+  description = "Immutable digest reference Terraform applies to both Service and Job."
+  value       = var.enable_runtime_resources ? var.container_image : null
 }

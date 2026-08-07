@@ -13,7 +13,7 @@ import boto3
 from botocore.exceptions import ClientError
 import jwt
 
-from .settings import Settings
+from .settings import Settings, WorkerSettings
 
 
 @dataclass(frozen=True, slots=True)
@@ -47,9 +47,16 @@ class ObjectStore(Protocol):
 class MemoryObjectStore:
     """Process-local fake used only for tests/development, never cloud mode."""
 
-    def __init__(self, *, secret: str, ttl_seconds: int = 600) -> None:
+    def __init__(
+        self,
+        *,
+        secret: str,
+        upload_ttl_seconds: int = 900,
+        download_ttl_seconds: int = 300,
+    ) -> None:
         self.secret = secret
-        self.ttl_seconds = ttl_seconds
+        self.upload_ttl_seconds = upload_ttl_seconds
+        self.download_ttl_seconds = download_ttl_seconds
         self._objects: dict[str, tuple[bytes, str]] = {}
         self._lock = RLock()
 
@@ -57,6 +64,7 @@ class MemoryObjectStore:
         self,
         key: str,
         method: str,
+        ttl_seconds: int,
         content_type: str | None = None,
         expected_byte_size: int | None = None,
     ) -> str:
@@ -69,7 +77,7 @@ class MemoryObjectStore:
             "content_type": content_type,
             "expected_byte_size": expected_byte_size,
             "iat": now,
-            "exp": now + timedelta(seconds=self.ttl_seconds),
+            "exp": now + timedelta(seconds=ttl_seconds),
         }
         return jwt.encode(payload, self.secret, algorithm="HS256")
 
@@ -89,8 +97,14 @@ class MemoryObjectStore:
     def sign_put(
         self, key: str, content_type: str, expected_byte_size: int | None = None
     ) -> SignedObjectUrl:
-        expires = datetime.now(UTC) + timedelta(seconds=self.ttl_seconds)
-        token = self._token(key, "PUT", content_type, expected_byte_size)
+        expires = datetime.now(UTC) + timedelta(seconds=self.upload_ttl_seconds)
+        token = self._token(
+            key,
+            "PUT",
+            self.upload_ttl_seconds,
+            content_type,
+            expected_byte_size,
+        )
         headers = {"Content-Type": content_type}
         return SignedObjectUrl(
             url=f"/api/v1/object-uploads/{token}",
@@ -99,8 +113,8 @@ class MemoryObjectStore:
         )
 
     def sign_get(self, key: str) -> SignedObjectUrl:
-        expires = datetime.now(UTC) + timedelta(seconds=self.ttl_seconds)
-        token = self._token(key, "GET")
+        expires = datetime.now(UTC) + timedelta(seconds=self.download_ttl_seconds)
+        token = self._token(key, "GET", self.download_ttl_seconds)
         return SignedObjectUrl(
             url=f"/api/v1/objects/{token}",
             expires_at=expires,
@@ -151,10 +165,11 @@ class R2ObjectStore:
     trusted as a content checksum.
     """
 
-    def __init__(self, settings: Settings) -> None:
+    def __init__(self, settings: Settings | WorkerSettings) -> None:
         assert settings.r2_endpoint_url and settings.r2_bucket
         self.bucket = settings.r2_bucket
-        self.ttl_seconds = settings.signed_url_ttl_seconds
+        self.upload_ttl_seconds = settings.upload_url_ttl_seconds
+        self.download_ttl_seconds = settings.download_url_ttl_seconds
         self.client = boto3.client(
             "s3",
             endpoint_url=settings.r2_endpoint_url,
@@ -180,11 +195,12 @@ class R2ObjectStore:
         url = self.client.generate_presigned_url(
             "put_object",
             Params=params,
-            ExpiresIn=self.ttl_seconds,
+            ExpiresIn=self.upload_ttl_seconds,
         )
         return SignedObjectUrl(
             url=url,
-            expires_at=datetime.now(UTC) + timedelta(seconds=self.ttl_seconds),
+            expires_at=datetime.now(UTC)
+            + timedelta(seconds=self.upload_ttl_seconds),
             headers=headers,
         )
 
@@ -192,11 +208,12 @@ class R2ObjectStore:
         url = self.client.generate_presigned_url(
             "get_object",
             Params={"Bucket": self.bucket, "Key": key},
-            ExpiresIn=self.ttl_seconds,
+            ExpiresIn=self.download_ttl_seconds,
         )
         return SignedObjectUrl(
             url=url,
-            expires_at=datetime.now(UTC) + timedelta(seconds=self.ttl_seconds),
+            expires_at=datetime.now(UTC)
+            + timedelta(seconds=self.download_ttl_seconds),
             headers={},
         )
 

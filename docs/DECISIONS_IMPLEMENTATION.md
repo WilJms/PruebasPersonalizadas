@@ -79,10 +79,12 @@
 
 - **Decisión:** cada mutación de dominio POST/PATCH/DELETE requiere un
   `Idempotency-Key` UUID. Se reserva `(tenant,key,fingerprint)` antes del
-  handler; un replay devuelve el resultado canónico. URLs firmadas y
-  expiraciones no se guardan: para uploads/exports solo se persiste un
-  descriptor y se firma una capacidad nueva después de volver a autorizar y
-  validar CSRF.
+  handler; el fingerprint incluye principal, rol y permiso de aprobación. Un
+  replay solo devuelve el resultado canónico si la membresía vigente coincide.
+  URLs firmadas y expiraciones no se guardan: para uploads, exports y evidence
+  verify solo se persiste un descriptor allowlist y se firma una capacidad
+  nueva después de volver a autorizar y validar CSRF. Un guard recursivo del
+  repositorio rechaza cualquier descriptor que contenga una URL/capability.
 - **Razón:** evita efectos duplicados y evita convertir la tabla de
   idempotencia en un almacén de credenciales temporales.
 - **Relación:** ADR-013 y E1-03/E1-11.
@@ -117,14 +119,17 @@
 - **Razón:** exportar no puede cambiar preguntas, guía, costos ni trazabilidad.
 - **Relación:** E1-09 y ADR-003/032.
 
-## D-012 - Persistencia cloud refleja el ORM ejecutado
+## D-012 - Persistencia cloud alinea una superficie verificable con el ORM
 
-- **Decisión:** la migración Supabase crea exactamente las tablas/columnas del
-  modelo SQLAlchemy de Etapa 1, habilita RLS y revoca acceso directo del
-  navegador. FastAPI y el worker usan la conexión de servicio; R2 conserva
-  bytes raw/sellados y exports.
-- **Razón:** un esquema conceptual paralelo que no coincide con el repositorio
-  ejecutable produciría un despliegue que compila pero no inicia.
+- **Decisión:** la migración Supabase alinea nombres de tablas y columnas con
+  el modelo SQLAlchemy de Etapa 1. PostgreSQL real comprueba además que todas
+  las tablas tienen RLS y que existen los dos triggers append-only. Esto no se
+  denomina “equivalencia exacta”: el verificador no compara exhaustivamente
+  todos los tipos, defaults, foreign keys, uniques e índices entre DDL y ORM.
+  FastAPI y el worker usan la conexión de servicio; R2 conserva bytes
+  raw/sellados y exports.
+- **Razón:** declarar con precisión la superficie comprobada evita atribuir a
+  una comparación parcial garantías que no demuestra.
 - **Relación:** E1-10/E1-11 y ADR-032.
 
 ## D-013 - No adelantar robustez ni acciones de Etapa 2
@@ -151,9 +156,12 @@
 - **Decisión:** `scripts/prepare_postgres.py` solo acepta URLs PostgreSQL de
   loopback, aplica la migración a una base vacía y compara tablas/columnas con
   `Base.metadata`; además exige RLS en las 24 tablas y los dos triggers
-  append-only. CI ejecuta este boundary con PostgreSQL 16 antes del E2E.
-- **Razón:** SQLite y una comparación textual no validan DDL, tipos, RLS,
-  triggers ni comportamiento del driver PostgreSQL.
+  append-only. CI ejecuta este boundary con PostgreSQL 16 antes del E2E y de
+  pruebas transaccionales de idempotencia, claims, unicidad, stage keys, CAS,
+  aislamiento tenant y append-only.
+- **Razón:** SQLite y una comparación textual no validan la aplicación del DDL,
+  RLS, triggers ni el comportamiento transaccional del driver PostgreSQL. La
+  comparación ORM continúa limitada a tablas y columnas, como explicita D-012.
 - **Relación:** E1-06/E1-10/E1-11, ADR-032 y D-012.
 
 ## D-016 - Runtime Docker y target de auditoría son superficies distintas
@@ -185,24 +193,189 @@
   oculta fallos de integración detrás de un detalle cosmético.
 - **Relación:** E1-01.
 
-## D-019 - Dos gates de cierre distintos
+## D-019 - Dos gates de cierre distintos (decisión histórica del 2026-08-01)
 
-- **Decisión:** `READY_FOR_EXTERNAL_STAGE1_VERIFICATION` significa que el
-  boundary local/reproducible está verde. E1-11 continúa parcial hasta evidencia
-  real de GCP, Supabase y R2. Solo después de esa evidencia podría evaluarse un
-  gate posterior; esta auditoría nunca declara `READY_FOR_STAGE_2`.
-- **Razón:** IaC válida, adapters y fakes no demuestran IAM, Auth, RLS, CORS,
-  lifecycle, red ni durabilidad de un Cloud Run Job real.
+- **Decisión:** este registro documenta el gate local que existía antes de la
+  verificación externa. Exigía código, rama, PR y CI verdes, pero mantenía
+  E1-11 parcial mientras GCP, Supabase y R2 no hubieran sido observados.
+- **Estado actual:** la verificación externa ya se ejecutó. D-030 define la
+  separación candidate/final y el manifest externo que sustituyen ese gate
+  histórico para el cierre vigente.
+- **Razón histórica:** IaC válida, adapters y fakes no demostraban IAM, Auth,
+  RLS, CORS, lifecycle, red ni durabilidad de un Cloud Run Job real.
 - **Relación:** E1-11 y restricción explícita de alcance.
 
 ## D-020 - Cloud Build usa identidad dedicada también para el source staging
 
 - **Decisión:** Terraform habilita Cloud Storage y concede a la cuenta dedicada
   de Cloud Build `roles/storage.bucketViewer` y `roles/storage.objectUser`,
-  además de los permisos ya acotados para Artifact Registry, Logging y Cloud
-  Run. La cuenta del build sigue separada de las identidades web y worker.
+  además de permisos de escritura en Artifact Registry y Logging. No recibe
+  `roles/run.admin` ni permiso para actuar como las identidades web/worker.
 - **Razón:** un `gcloud builds submit` o trigger con cuenta indicada necesita
   acceder al staging de código; validar solo el push de la imagen dejaba el
   primer build expuesto a fallar antes de ejecutar el Dockerfile.
 - **Relación:** E1-11, D-016 y principio de mínimo privilegio dentro del proyecto
   experimental dedicado.
+
+## D-021 - Cloud Run no reintenta una ejecución sin identidad de job
+
+- **Decisión:** el Job de Etapa 1 usa `task_count = 1`, `parallelism = 1` y
+  `max_retries = 0`. Cada proceso llama una sola vez a `claim_next_job` y deja
+  cualquier fallo como estado durable `FAILED` en PostgreSQL.
+- **Razón:** como el dispatch deliberadamente no transmite `job_id`, un retry
+  automático podría reclamar otra fila `QUEUED` y presentarla falsamente como
+  retry de la primera. El retry funcional general pertenece a Etapa 2.
+- **Relación:** E1-06/E1-07/E1-11, D-006 y D-013.
+
+## D-022 - Terraform es el único propietario de la imagen desplegada
+
+- **Decisión:** Cloud Build construye, prueba y publica una imagen, obtiene su
+  digest y emite una referencia `@sha256`. No ejecuta `gcloud run ... update`.
+  Una persona copia la referencia a un `tfvars` fuera del repositorio, revisa
+  el plan y aplica Terraform, que configura la misma imagen en Service y Job.
+- **Razón:** dos escritores sobre la imagen causaban drift y podían hacer que un
+  plan posterior restaurara una versión antigua.
+- **Relación:** E1-11 y D-020.
+
+## D-023 - Cloud falla cerrado y separa liveness de readiness
+
+- **Decisión:** cloud exige una URL completa `postgresql+psycopg://`, adapters
+  Supabase/R2/Cloud Run, secreto de sesión gestionado, gateway mock y P10
+  deshabilitado. `/api/health` no toca dependencias; `/api/readiness` ejecuta
+  una consulta fija contra la tabla final esperada de la migración. Upload y
+  download usan TTL separados y acotados.
+- **Razón:** una configuración parcial no debe iniciar silenciosamente con
+  SQLite ni provocar reinicios por una dependencia externa caída; un TTL
+  declarado debe afectar realmente la capacidad correspondiente.
+- **Relación:** E1-01/E1-03/E1-06/E1-11 y ADR-032/034.
+
+## D-024 - PrincipalId se aplica por semántica, no por forma global
+
+- **Decisión:** los campos que representan actores externos, usuarios Supabase,
+  servicios o sistema usan PrincipalId; los IDs internos de dominio conservan
+  Id. Los roots futuros pueden corregirse estructuralmente sin activar sus
+  endpoints.
+- **Razón:** un UUID Supabase válido no debe ser rechazado por el patrón de un
+  identificador interno, pero ampliar Id globalmente debilitaría contratos no
+  relacionados.
+- **Relación:** AUD-P1-11, modelos canónicos y ADR-028.
+
+## D-025 - OpenAPI usa DTOs de transporte que componen contratos canónicos
+
+- **Decisión:** requests y responses de Etapa 1 usan DTOs Pydantic estrictos
+  que importan modelos/enums canónicos. El snapshot OpenAPI normalizado y el
+  cliente TypeScript generado se rechazan por drift en tests y CI.
+- **Razón:** la wire shape necesita distinguir campos client-owned y
+  server-owned sin copiar ni redefinir roots canónicos.
+- **Relación:** AUD-P1-10 y F-017 a F-019.
+
+## D-026 - Evidence-first es un receipt durable por fragmento
+
+- **Decisión:** una versión de Assessment solo puede aprobarse cuando cada
+  fragmento requerido tiene un receipt server-side tenant-, actor- y
+  version-scoped que confirma carga y resolución exacta del locator. Un click
+  React no es evidencia.
+- **Razón:** cargar/resolver una fuente es verificable; afirmar comprensión
+  cognitiva del humano no lo es.
+- **Relación:** AUD-P1-08, F-014 y ADR-005/008.
+
+## D-027 - Rollouts SPA separan documentos, assets y cache histórica
+
+- **Decisión:** index y fallbacks HTML usan no-store; assets con hash son
+  inmutables. El cliente actual envía un epoch en todas las llamadas API. Un
+  GET de sesión desde un shell anterior recibe Clear-Site-Data limitado a
+  cache; cookies y storage de autenticación no se borran.
+- **Razón:** no-store protege respuestas nuevas, pero no puede retirar por sí
+  solo una respuesta almacenada antes de esa política. El epoch ofrece
+  autorrecuperación acotada y verificable.
+- **Relación:** AUD-P1-03 y E1-11.
+
+## D-028 - GitHub dispara builds; Terraform conserva ownership del runtime
+
+- **Decisión:** una conexión Cloud Build v2 limitada al repositorio y un trigger
+  regional de push construyen la rama autorizada con cuenta dedicada. Cloud
+  Build prueba y publica; Terraform recibe el digest y es el único que modifica
+  Service y Job.
+- **Razón:** evita doble escritor, despliegue de código no revisado y permisos
+  Run Admin en la identidad de build.
+- **Relación:** AUD-P1-01/02, D-020/D-022 y E1-11.
+
+## D-029 - Supply chain reproducible en el boundary práctico de E1
+
+- **Decisión:** bases Docker se fijan por digest, Python por requirements con
+  hashes, npm por lockfile/ci y Actions por commit SHA. Cloud Build exige
+  provenance verificada; scan y SBOM se ligan al digest.
+- **Razón:** permite reconstruir source a runtime y detectar vulnerabilidades
+  sin afirmar reproducibilidad bit a bit entre arquitecturas o servicios
+  administrados.
+- **Relación:** AUD-P2-12 y Plan E1-11.
+
+## D-030 - Candidate y final se separan para evitar autorreferencia falsa
+
+- **Decisión:** el candidato funcional recibe regresión completa, CI, build,
+  deployment y verificación cloud. El último commit solo cierra documentación y
+  se denomina FINAL_STAGE1_SHA. Su build, digest, runtime y auditoría se guardan
+  fuera del repositorio; no existe commit posterior para insertar esos valores.
+- **Razón:** el hash de un commit depende de su contenido y los outputs externos
+  solo existen después de publicarlo. Es imposible incluir honestamente el hash
+  final dentro del propio commit.
+- **Relación:** estrategia de candidate/final y procedencia del prompt de cierre.
+
+## D-031 - Verificación de ingeniería y revisión académica son gates distintos
+
+- **Decisión:** agentes de IA, tests y evidencia realizan el cierre técnico. La
+  aprobación humana del blueprint y del Assessment permanece como garantía
+  académica del producto. No se exige revisión humana de código.
+- **Razón:** evita confundir una decisión docente sobre el constructo con un
+  proceso de ingeniería no requerido.
+- **Relación:** decisión cerrada 5.3 del propietario y ADR-001/034.
+
+## D-032 - Deuda residual no puede degradar un P1
+
+- **Decisión:** solo se acepta deuda P2/P3 con fuente, riesgo residual y
+  justificación de no bloqueo. P1 permanece en cero. El backlog final contiene
+  copy legal pendiente de autoridad, recuperación visual de exports, limpieza
+  de documentación histórica E2 y una deprecación de tests.
+- **Razón:** conservar explícitamente deuda menor es más seguro que inventar
+  política legal, expandir Etapa 1 o alterar dependencias sin necesidad.
+- **Relación:** STAGE1_FINAL_REMEDIATION_BACKLOG.
+
+## D-033 - Replay de capacidades exige la autorización vigente
+
+- **Decisión:** todos los descriptores idempotentes conservan un snapshot
+  mínimo de autorización (`principal_id`, rol y permiso de aprobación). Antes
+  de resolver un objeto o firmar otra URL, el replay compara exactamente ese
+  snapshot con la membresía actual. Un actor distinto del mismo workspace o un
+  downgrade del actor original falla cerrado. Evidence verify persiste solo el
+  receipt y los IDs/hash necesarios para volver a resolver; nunca guarda URL,
+  expiración, object key ni texto normalizado.
+- **Razón:** la unicidad `(tenant,key)` por sí sola permitiría que otro
+  principal reutilizara una clave conocida y recibiera una capability fresca,
+  o que un actor degradado conservara privilegios de una respuesta anterior.
+- **Relación:** AUD-P1-08, D-008 y E1-03/E1-08.
+
+## D-034 - Response model debe validar la respuesta runtime
+
+- **Decisión:** las rutas tipadas de Activity, Blueprint y readiness retornan
+  DTOs Pydantic. El objeto `Response` inyectado se usa solo para ETag o status;
+  no se retorna una `JSONResponse` preconstruida que salte el response_model.
+  Los provider tests sustituyen outputs por payloads inválidos y exigen fallo
+  500 ProblemDetail en lugar de publicar drift.
+- **Razón:** declarar un schema OpenAPI no demuestra que FastAPI filtre o
+  valide el body cuando el handler devuelve directamente una subclase de
+  `Response`.
+- **Relación:** AUD-P1-10, D-025 y F-017/F-018/F-019.
+
+## D-035 - La higiene de idempotencia es un invariante de aplicación y base
+
+- **Decisión:** una migración ordenada elimina reservas legacy representadas
+  como JSON `null` y cualquier descriptor que contenga claves de URL,
+  capabilities locales, parámetros X-Amz o URLs con credenciales. PostgreSQL
+  impone después `ck_idempotency_keys_safe_response`: una respuesta completada
+  debe ser un objeto JSON seguro; SQL NULL queda reservado a la petición en
+  curso. Readiness cloud exige que ese constraint exista y esté validado.
+- **Razón:** corregir el escritor evita nuevos casos pero no sanea datos
+  históricos ni protege frente a otro escritor o despliegue incompleto. El
+  constraint hace durable la garantía y readiness impide servir con esquema
+  anterior al código.
+- **Relación:** AUD-P1-08, D-008, D-033 y E1-03/E1-08/E1-11.
