@@ -41,7 +41,7 @@ steps:
           --env CVA_JOB_RUNNER_MODE=inline \
           --env CVA_MODEL_MODE=mock \
           --env CVA_P10_ENABLED=false \
-          --env CVA_SESSION_SECRET=cloud-build-smoke-secret-not-production \
+          --env CVA_SESSION_SECRET=not-a-secret-cloud-build-smoke-session-key \
           "$${image}"
         for attempt in $$(seq 1 30); do
           if docker exec "$${container}" python -c \

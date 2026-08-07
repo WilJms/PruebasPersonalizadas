@@ -141,9 +141,18 @@ def test_build_inputs_are_immutable_and_dependency_installs_are_locked() -> None
 
     assert re.search(r"ARG NODE_IMAGE=node:[^\s]+@sha256:[0-9a-f]{64}", dockerfile)
     assert re.search(r"ARG PYTHON_IMAGE=python:[^\s]+@sha256:[0-9a-f]{64}", dockerfile)
+    assert re.search(
+        r"ARG PYTHON_IMAGE=python:3\.12-alpine[^\s]*@sha256:[0-9a-f]{64}",
+        dockerfile,
+    )
+    assert "apt-get" not in dockerfile
+    assert "libmagic" not in dockerfile
+    assert "apk upgrade --no-cache" in dockerfile
     assert "RUN npm ci" in dockerfile
     assert "npm install" not in dockerfile
     assert "pip install --no-cache-dir --require-hashes -r requirements.lock" in dockerfile
+    assert dockerfile.count("pip uninstall --yes pip") == 2
+    assert "rm -rf /usr/local/lib/python3.12/ensurepip" in dockerfile
     for lock in (production_lock, development_lock):
         assert "--hash=sha256:" in lock
         assert "comprehension-verification (pyproject.toml)" in lock
