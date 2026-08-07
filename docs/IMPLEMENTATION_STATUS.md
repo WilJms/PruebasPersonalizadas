@@ -4,12 +4,15 @@ Fecha de corte documental: 2026-08-07 (America/Santiago).
 
 ## Estado del gate
 
-La implementación de Etapas 0 y 1 está en estado **CANDIDATE_STAGE1_VERIFIED**.
-Los once hallazgos P1 están cerrados sobre el candidato funcional
-6374e60ce74ebb2a1ee0ec80531eab218d1b9548. El supuesto cierre documental
-f982ef89a57bdcc09084acd5b7f554a36618fe3e fue rechazado por la auditoría
-independiente al encontrar dos defectos y no se presenta como final. La
-decisión definitiva
+La implementación de Etapas 0 y 1 está en estado
+**CORRECTIVE_CANDIDATE_STAGE1_VERIFIED**. Los once hallazgos P1 quedaron
+cerrados sobre el candidato funcional
+6374e60ce74ebb2a1ee0ec80531eab218d1b9548. El snapshot f982ef89 y el primer
+intento de cierre 5b13428ace03ef2852ef3f6f1b942e54151a5204 fueron rechazados
+por auditoría independiente y se conservan solo como historia. El candidato
+correctivo 4bab5b400199b94f2fd003c7f959b4d341363b26 elimina el residuo
+histórico de capabilities en PostgreSQL, impone el invariante también en la
+base y corrige la exigencia de procedencia CI. La decisión definitiva
 READY_FOR_STAGE_2 se emite únicamente después de:
 
 1. crear el último commit documental, denominado FINAL_STAGE1_SHA;
@@ -22,25 +25,28 @@ identificadores del build que se ejecuta después de publicarlo. Por eso esos
 valores finales viven en el manifest externo y no se sustituyen posteriormente
 en este archivo. No se harán commits después de FINAL_STAGE1_SHA.
 
-## Identidad del candidato verificado
+## Identidad de los candidatos verificados
 
 | Elemento | Valor |
 |---|---|
 | Repositorio | WilJms/PruebasPersonalizadas |
 | Rama | fix/stage1-external-readiness |
 | PR | #1, abierto y draft |
-| Candidato funcional | 6374e60ce74ebb2a1ee0ec80531eab218d1b9548 |
-| CI push | 31199864090, SUCCESS |
-| CI pull request | 31199869015, SUCCESS |
-| Cloud Build | b274ccc5-ef4d-42b1-b4fe-893d77d3b898, SUCCESS |
-| Digest candidato | sha256:94e6b4e786c95f0c746f48703fdd8a4f3641c9627a9fe6766e6ffc25a845967c |
-| Runtime candidato | cva-web generación 9 y cva-worker generación 9, Ready, mismo digest |
-| Terraform candidato | imagen 0/2/0; rotación de referencias 0/2/0; dos planes finales exit 0 |
+| Candidato funcional completo | 6374e60ce74ebb2a1ee0ec80531eab218d1b9548 |
+| Candidato correctivo | 4bab5b400199b94f2fd003c7f959b4d341363b26 |
+| CI correctivo push | 31209547327, SUCCESS, 7/7 jobs |
+| CI correctivo pull request | 31209552197, SUCCESS, 7/7 jobs |
+| Merge CI correctivo | 1e695278b5ea25d5e94756e67eb9f47c11ecdde0 = merge(dadaaa7, 4bab5b4) |
+| Cloud Build correctivo | 745eb275-eea4-4493-8b64-293570472265, SUCCESS |
+| Digest correctivo | sha256:7d73b1cb7a438f6f8adb8de10f31752efdbca860e1aa08c9314097d4e5daed7a |
+| Runtime correctivo | cva-web generación 11 y cva-worker generación 11, Ready, mismo digest |
+| Terraform correctivo | imagen 0/2/0; dos planes vivos consecutivos exit 0 |
 
-El build fue disparado por la conexión regional al repositorio autorizado,
-registró source y OCI revision del candidato, produjo dos occurrences de
-provenance verificada, SLSA nivel 3, análisis terminado sin vulnerabilidades y
-SBOM SPDX 2.3 ligado al digest.
+El build correctivo fue disparado por la conexión regional al repositorio
+autorizado, registró source exacto del candidato, produjo dos occurrences de
+provenance verificada, SLSA nivel 3 y análisis terminado sin vulnerabilidades.
+El SBOM y la cadena del SHA definitivo se vuelven a capturar en el artifact
+externo posterior a FINAL_STAGE1_SHA.
 Terraform continúa siendo el único escritor del deployment.
 
 ## Gates implementados
@@ -50,19 +56,19 @@ Terraform continúa siendo el único escritor del deployment.
 | Contratos canónicos | PASS | Schema 1.1.0, 46 roots, 112 definiciones, 231 referencias y 8 fixtures. |
 | PrincipalId | PASS | Principales externos aceptan UUID Supabase sin ampliar Id globalmente. |
 | OpenAPI | PASS | DTOs tipados, responses validadas, snapshot determinista y consumer/provider tests. |
-| Backend y Stage 0 | PASS | 163 pruebas locales verdes; 7 PostgreSQL-only ejecutadas aparte. |
+| Backend y Stage 0 | PASS | 163 pruebas locales verdes; 7 PostgreSQL-only ejecutadas aparte; 10 pruebas de artifacts de deploy. |
 | Review UX | PASS | Blueprint, SelectedQuestion, CHOICE y Guide proyectan la trazabilidad requerida. |
 | Evidence-first | PASS | Receipt durable por fragmento; replay sin URL persistida y ligado a autorización vigente; aprobación server-side. |
 | Frontend | PASS | Typecheck, 19 tests, build, audit sin vulnerabilidades y Playwright crítico. |
-| PostgreSQL | PASS | PG16 y PG17: 24 tablas/RLS, 2 triggers y matriz repetida dos veces sin limpieza. |
+| PostgreSQL | PASS | PG16 y PG17: dos migraciones, 24 tablas/RLS, 2 triggers, constraint de idempotencia y matriz repetida dos veces sin limpieza. |
 | Logging | PASS | Access log deshabilitado; 650 eventos JSON por plantilla; scan de 2.881 entradas sin capability, credencial ni payload sintético. |
 | GitHub a Cloud Build | PASS | Connection, repository y trigger regionales limitados al repo; build SA sin Run Admin. |
 | Supply chain | PASS E1 | Bases por digest, locks con hashes, Actions por SHA, provenance, scan y SBOM ligados al digest. |
 | Terraform | PASS | Scaling superior declarado; apply revisado; dos planes vivos consecutivos exit 0. |
-| Cloud runtime | PASS candidato | Health/readiness 200, privado 401, mismo digest, secretos version 2, Service/Job Ready, 1/1/0 y mock/P10 off. |
-| Supabase | PASS candidato | Proyecto correcto, PostgreSQL 17, Auth sintético y membresía TEACHER tenant-scoped. |
+| Cloud runtime | PASS candidato correctivo | Health/readiness 200, privado 401, mismo digest, secretos version 2, Service/Job Ready, 1/1/0 y mock/P10 off. |
+| Supabase | PASS candidato correctivo | Proyecto correcto, PostgreSQL 17, Auth sintético, constraint validado y cero descriptores inseguros/JSON null. |
 | Cloudflare R2 | PASS candidato | Bucket privado correcto, CORS/lifecycle exactos, r2.dev off y cero dominios. |
-| Browser cloud | PASS candidato | Recorrido nuevo exacto, dos reaperturas durables, evidence-first, Guide, tres exports y delta de modelo 0. |
+| Browser cloud | PASS candidato + correctivo | Recorrido completo nuevo en 6374e60; cierre/reapertura desde raíz y recuperación de Assessment/Guide sobre el digest 4bab5b4. |
 
 ## Correcciones principales
 
@@ -76,6 +82,8 @@ Terraform continúa siendo el único escritor del deployment.
 - receipt evidence-first durable por fragmento antes de aprobar;
 - replay idempotente ligado a principal, rol y permiso actuales; los
   descriptores de upload, export y evidence verify no contienen capabilities;
+- migración de higiene que elimina reservas legacy JSON null/capabilities y
+  constraint PostgreSQL validado que impide volver a persistirlas;
 - EvaluationGuide visible con observables, evidencia, fuentes, niveles,
   alternativas, misconceptions y cannot_infer;
 - frontera OpenAPI tipada desde DTOs que componen contratos canónicos; las

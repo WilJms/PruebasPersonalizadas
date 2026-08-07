@@ -365,3 +365,17 @@
   valide el body cuando el handler devuelve directamente una subclase de
   `Response`.
 - **Relación:** AUD-P1-10, D-025 y F-017/F-018/F-019.
+
+## D-035 - La higiene de idempotencia es un invariante de aplicación y base
+
+- **Decisión:** una migración ordenada elimina reservas legacy representadas
+  como JSON `null` y cualquier descriptor que contenga claves de URL,
+  capabilities locales, parámetros X-Amz o URLs con credenciales. PostgreSQL
+  impone después `ck_idempotency_keys_safe_response`: una respuesta completada
+  debe ser un objeto JSON seguro; SQL NULL queda reservado a la petición en
+  curso. Readiness cloud exige que ese constraint exista y esté validado.
+- **Razón:** corregir el escritor evita nuevos casos pero no sanea datos
+  históricos ni protege frente a otro escritor o despliegue incompleto. El
+  constraint hace durable la garantía y readiness impide servir con esquema
+  anterior al código.
+- **Relación:** AUD-P1-08, D-008, D-033 y E1-03/E1-08/E1-11.

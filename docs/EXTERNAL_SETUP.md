@@ -26,8 +26,9 @@ tenant. El runtime debe mantener CVA_MODEL_MODE=mock y CVA_P10_ENABLED=false.
 
 ### GitHub y Cloud Build
 
-- GitHub Actions push 31199864090 y pull_request 31199869015 del candidato
-  6374e60 terminaron SUCCESS sobre el mismo head.
+- GitHub Actions push 31209547327 y pull_request 31209552197 del correctivo
+  4bab5b4 terminaron SUCCESS, siete jobs cada uno. El checkout PR fue el merge
+  sintético 1e695278... con padres base dadaaa7 y head 4bab5b4.
 - La conexión cva-github está COMPLETE y el repository resource apunta
   exclusivamente a WilJms/PruebasPersonalizadas.
 - El trigger regional cva-github-push usa deploy/cloudbuild.yaml y la identidad
@@ -36,15 +37,15 @@ tenant. El runtime debe mantener CVA_MODEL_MODE=mock y CVA_P10_ENABLED=false.
 - La cuenta de build tiene Artifact Registry writer, Logging writer,
   Service Usage consumer y los permisos Storage mínimos de staging; no tiene
   Run Admin ni actAs sobre web/worker.
-- El build candidato b274ccc5-ef4d-42b1-b4fe-893d77d3b898 construyó source y
-  resolved source 6374e60ce74ebb2a1ee0ec80531eab218d1b9548, grabó la misma
-  OCI revision y publicó el digest
-  sha256:94e6b4e786c95f0c746f48703fdd8a4f3641c9627a9fe6766e6ffc25a845967c.
+- El build correctivo 745eb275-eea4-4493-8b64-293570472265 construyó source
+  4bab5b400199b94f2fd003c7f959b4d341363b26, grabó esa OCI revision y
+  publicó el digest
+  sha256:7d73b1cb7a438f6f8adb8de10f31752efdbca860e1aa08c9314097d4e5daed7a.
 
 ### GCP y Terraform
 
-- cva-web y cva-worker están Ready en generación 9 y usan el mismo digest
-  inmutable candidato.
+- cva-web y cva-worker están Ready en generación 11 y usan el mismo digest
+  inmutable correctivo.
 - Service y Job usan identidades distintas.
 - El Job conserva task count 1, parallelism 1 y max retries 0.
 - El worker no recibe CVA_SESSION_SECRET ni su binding de Secret Manager.
@@ -60,8 +61,12 @@ tenant. El runtime debe mantener CVA_MODEL_MODE=mock y CVA_P10_ENABLED=false.
 ### Supabase
 
 - El proyecto está ACTIVE_HEALTHY y usa PostgreSQL 17.
-- La migración seleccionada expone 24 tablas con RLS y dos triggers
-  append-only; no concede tablas al browser.
+- Las dos migraciones ordenadas exponen 24 tablas con RLS, dos triggers
+  append-only y el constraint validado
+  `ck_idempotency_keys_safe_response`; no conceden tablas al browser.
+- La migración correctiva eliminó una respuesta histórica con capability y
+  cinco reservas JSON null. La verificación read-only posterior observó 75
+  filas, cero SQL/JSON null, cero claves `_url` y cero marcadores X-Amz.
 - Existe el workspace tnt_experimental.
 - El usuario sintético teacher@example.test tiene UUID Supabase persistido y
   membresía TEACHER can_approve=true en ese workspace.
@@ -146,13 +151,18 @@ Para cada candidato final:
 - fallo controlado durable con una ejecución fallida y sin retry automático;
 - búsqueda de secretos/capabilities/payload sintético en logs igual a cero.
 
-El candidato 6374e60 ejecutó este recorrido desde cero con la actividad
+El candidato funcional 6374e60 ejecutó este recorrido desde cero con la actividad
 `act_1497be02cbfc6cf35743` y una única submission
 `sub_cfb5cae00678b8ab200f`. La revisión se recuperó dos veces desde la raíz,
 los tres exports quedaron READY y el conteo de model calls permaneció 36 antes
 y 36 después (4 y 4 para su job). El fallo deliberado
 `job_control_6374e60` quedó FAILED, attempt 1, diagnóstico JOB_KIND_INVALID;
 la ejecución cva-worker-w9wtl terminó con exit 1, una task y cero retries.
+
+Sobre el digest correctivo 4bab5b4 se cerraron todas las pestañas de la
+aplicación, se reabrió la raíz y se recuperaron `/activities`, el Assessment
+aprobado y la Guide sin usar ID, history ni URL recordada. Health/readiness y
+privado fueron 200/200/401; la base conservó el constraint y cero capabilities.
 
 ## Cache y rollouts de la SPA
 
@@ -190,8 +200,10 @@ procedencia completos. Cualquier intento que haya expuesto una capacidad
 efímera en output de herramienta debe marcarse inválido, excluirse del paquete
 y documentarse solo por su expiración, nunca copiando el valor.
 
-El paquete histórico asociado a f982ef89 fue rechazado por la auditoría
-independiente y no puede reutilizarse como evidencia final.
+Los paquetes asociados a f982ef89 y 5b13428 fueron rechazados por la auditoría
+independiente y no pueden reutilizarse como evidencia final. El segundo carecía
+del inventario/checksum material que su manifest afirmaba, omitía el merge SHA
+real del run PR y precedía al saneamiento live de idempotencia.
 
 ## Operación posterior
 

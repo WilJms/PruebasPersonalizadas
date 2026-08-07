@@ -4,10 +4,12 @@ Fecha de corte documental: 2026-08-07.
 
 P0 abiertos: 0. P1 abiertos: 0. No existe deuda P1 aceptada. Este archivo solo
 contiene deuda P2/P3 que no bloquea E0/E1 y no autoriza implementar Etapa 2.
-El cierre de P1 fue revalidado sobre el candidato 6374e60 después de rechazar
-el snapshot documental f982ef89: las respuestas tipadas se validan en runtime
-y el replay idempotente vuelve a comprobar la autorización vigente sin
-persistir capabilities.
+El cierre de P1 fue revalidado sobre el candidato funcional 6374e60 y el
+correctivo 4bab5b4 después de rechazar tanto f982ef89 como el primer cierre
+5b13428. Las respuestas tipadas se validan en runtime; el replay reautoriza; la
+migración de higiene elimina residuos legacy y un constraint PostgreSQL
+validado impide persistir nuevamente una capability. La base autorizada quedó
+con cero JSON null, claves `_url` o firmas X-Amz en idempotencia.
 
 ## AUD-P2-04 — Copy institucional de privacidad
 

@@ -20,6 +20,8 @@ repositorio después de FINAL_STAGE1_SHA.
 | 6d0c968 | autorrecuperación de cache histórica mediante shell epoch |
 | f982ef8 | cierre documental rechazado por la primera auditoría independiente; histórico, no final |
 | 6374e60 | validación runtime de responses, replay de capabilities saneado/autorizado y NULL idempotente PostgreSQL |
+| 5b13428 | primer FINAL_STAGE1_SHA rechazado: residuo DB histórico y paquete/procedencia incompletos |
+| 4bab5b4 | migración de higiene, constraint DB, readiness y pruebas de regresión |
 | FINAL_STAGE1_SHA | documentación de cierre; su hash se resuelve al crear este último commit |
 
 ## P1: todos cerrados
@@ -33,7 +35,7 @@ repositorio después de FINAL_STAGE1_SHA.
 | AUD-P1-05 | F-009 | BlueprintPage proyecta restricciones, checks, requisitos y derivados | Dificultad/operaciones siguen read-only | Tests frontend y revisión cloud del blueprint sintético | CLOSED |
 | AUD-P1-06 | F-012 | DTO/tipos y AssessmentReviewPage conservan SelectedQuestion completo | No se estrecha el root canónico | Snapshot OpenAPI, consumer tests y cloud review | CLOSED |
 | AUD-P1-07 | F-013 | CHOICE muestra orden, alternativas, best, rationale y misconception | Student justification permanece independiente | Validator, frontend y caso cloud CHOICE+NOT_REQUIRED | CLOSED |
-| AUD-P1-08 | F-014 | Evidence receipt durable; descriptor verify sin URL/expiry/texto y guard recursivo de capabilities | Tenant/actor/version scoped; fingerprint y replay ligados a membresía vigente | Éxito, múltiples fragments, cross-principal, downgrade, expiración, locator, reload y API directa | CLOSED |
+| AUD-P1-08 | F-014 | Evidence receipt durable; descriptor verify allowlist; guard recursivo; migración de higiene y constraint DB | Tenant/actor/version scoped; fingerprint y replay ligados a membresía vigente | Casos funcionales, cross-principal/downgrade, PG16/17 y producción con cero capability/JSON null | CLOSED |
 | AUD-P1-09 | F-016 | Guide UI/template conserva purpose, observables, refs, alternatives, misconceptions, levels y cannot_infer | Assessment y Guide siguen separados | Tests de export/UI y Guide cloud completa | CLOSED |
 | AUD-P1-10 | F-017/F-018/F-019 | web/dto.py, response models, generator, snapshot y cliente generado; Activity/Blueprint retornan DTOs | DTOs componen modelos/enums canónicos; Response solo aporta ETag/status | Provider drift Activity/Blueprint falla 500, consumer, ref crawl, negativos, determinismo y CI | CLOSED |
 | AUD-P1-11 | — | PrincipalId en actores externos canónicos y tests negativos/UUID | Id interno no se amplió globalmente | Pydantic, schema, fixtures, events y OpenAPI | CLOSED |
@@ -50,7 +52,7 @@ repositorio después de FINAL_STAGE1_SHA.
 | AUD-P2-06 | F-015/F-020 | Tablist/tab/tabpanel, roving tabindex, flechas, Home/End y focus-visible | e3b8d67 | teclado, Vitest y Playwright accessibility | CLOSED |
 | AUD-P2-07 | — | Fixtures y conteos scoped; no dejan QUEUED/RUNNING contaminantes | 000e771 | matriz PG16/17 repetida dos veces sin limpieza | CLOSED |
 | AUD-P2-08 | — | CI matrix PostgreSQL 16 y 17 | 000e771 | migración, E2E y sensibles en ambos majors | CLOSED |
-| AUD-P2-09 | — | Estado, setup, decisiones, resultados, matrices y PR actualizados | FINAL_STAGE1_SHA | stale markers históricos diferenciados | CLOSED |
+| AUD-P2-09 | — | Estado, setup, decisiones, resultados, matrices y PR actualizados | 5b13428/4bab5b4/FINAL_STAGE1_SHA | intentos rechazados diferenciados del cierre vigente | CLOSED |
 | AUD-P2-10 | — | Paquete final externo con manifest, timestamps, hashes y clasificación | Evidencia final externa | excluye secretos, URLs firmadas y archivos vacíos | CLOSED |
 | AUD-P2-11 | — | Cadena PR head a CI/build/OCI/digest/Terraform/runtime explícita | Trigger + manifest final | distingue CI_MERGE_SHA de head | CLOSED |
 | AUD-P2-12 | — | Bases por digest, locks con hashes, Actions por SHA, provenance, scan y SBOM | 000e771/5e7eaca | cierre práctico E1; no afirma bit reproducibility universal | CLOSED |
@@ -58,7 +60,7 @@ repositorio después de FINAL_STAGE1_SHA.
 | AUD-P2-14 | — | Control plane R2 revalidado directamente en cuenta/bucket autorizados | CLOUD_REAL | CORS/lifecycle/privacy; no objetos ajenos | CLOSED |
 | AUD-P2-15 | — | Export durable puede recrearse determinísticamente con delta de modelo 0; falta lista/reemisión visual automática tras reload | Backlog final | Riesgo de usabilidad, no pérdida del snapshot ni del objeto | ACCEPTED_DEBT |
 | AUD-P2-16 | F-021/F-022 | Jerarquía y AGENTS bloquean E2; no se reescribe historia contractual inferior | Backlog final | Riesgo documental controlado por gate explícito | ACCEPTED_DEBT |
-| AUD-P2-17 | — | Playwright crítico local en CI y verificación cloud exacta del candidato | e3b8d67/000e771/6374e60 | actividad nueva, dos close/reopen, evidence-first y tres exports | CLOSED |
+| AUD-P2-17 | — | Playwright crítico local en CI y verificación cloud de candidato/correctivo | e3b8d67/000e771/6374e60/4bab5b4 | recorrido completo, dos close/reopen y recuperación adicional sobre el digest correctivo | CLOSED |
 | AUD-P3-01 | — | Combinación actual compatible y fijada; warning documentado | Backlog final | Upgrade sin necesidad puede romper FastAPI/TestClient | ACCEPTED_DEBT |
 | AUD-P3-02 | F-004 | OPEN_SHORT explicado como formato operacional sin palabras, caracteres ni dificultad | e3b8d67 | payload/enum/schema 1.1.0 sin cambio semántico | CLOSED |
 
@@ -82,13 +84,32 @@ y evidence verify podía persistir su view_url dentro de idempotencia. El commit
 6374e60 cerró ambos; una revisión adversarial adicional detectó y cerró además
 el replay cross-principal/downgrade antes de desplegar el candidato.
 
-El candidato 6374e60 fue validado con CI doble verde, Cloud Build exacto
+La auditoría independiente del primer FINAL_STAGE1_SHA 5b13428 encontró que la
+protección nueva no había saneado una fila histórica que aún contenía una URL
+firmada, además de cinco reservas legacy JSON null. También refutó la evidencia
+final: faltaban el inventario/checksum externos que el manifest afirmaba y el
+run pull_request se había clasificado sin su merge sintético. 4bab5b4 añadió la
+migración SQL ordenada y el constraint durable, la aplicó al único proyecto
+Supabase autorizado y dejó 75 filas seguras, cero JSON null, cero claves `_url`
+y cero marcadores X-Amz. La procedencia correctiva registra explícitamente el
+merge 1e695278... con padres dadaaa7 y 4bab5b4; el manifest definitivo repite
+la misma demostración para FINAL_STAGE1_SHA.
+
+El candidato funcional 6374e60 fue validado con CI doble verde, Cloud Build exacto
 b274ccc5-ef4d-42b1-b4fe-893d77d3b898, provenance SLSA 3, scan limpio, SBOM,
 digest sha256:94e6b4e786c95f0c746f48703fdd8a4f3641c9627a9fe6766e6ffc25a845967c
 en Service/Job, Terraform convergente, Supabase/PostgreSQL/Auth, R2 privado y
 un recorrido cloud completo nuevo. El incidente local de credential URL fue
 remediado mediante rotación; la versión anterior quedó denegada y el runtime
 fija Secret Manager version 2.
+
+El correctivo 4bab5b4 pasó los dos CI de siete jobs, PG16/17 repetido, Cloud
+Build 745eb275-eea4-4493-8b64-293570472265 con provenance verificada y scan
+limpio, y se desplegó como digest
+sha256:7d73b1cb7a438f6f8adb8de10f31752efdbca860e1aa08c9314097d4e5daed7a.
+Service/Job quedaron Ready en generación 11; health/readiness/privado dieron
+200/200/401; una reapertura real desde la raíz recuperó el Assessment aprobado
+y su Guide; dos planes vivos consecutivos terminaron exit 0.
 
 FINAL_STAGE1_SHA repite esa cadena desde su source exacto. Los identificadores,
 checksums y resultados posteriores al commit se guardan en el artifact externo

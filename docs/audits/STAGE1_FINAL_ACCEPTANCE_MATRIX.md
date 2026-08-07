@@ -25,7 +25,7 @@ Boundary evita presentar un mock como prueba cloud. Los identificadores del
 |---|---|---|---|---|
 | E1-01 | Auth invitada, sesión propia y workspace privado | CLOUD_REAL | Supabase magic link, membership TEACHER, cookie/CSRF y anónimo 401 | PASS |
 | E1-02 | Configuración editable hasta freeze; derivados no son inputs | LOCAL_REAL + CLOUD_REAL | ActivityEdit ETag, preflight y dificultad read-only | PASS |
-| E1-03 | R2 privado, uploads acotados, sellado y TTL | CLOUD_REAL | CORS/lifecycle/privacy, PUT/HEAD/hash/sealed y expiración 300 s | PASS |
+| E1-03 | R2 privado, uploads acotados, sellado y TTL | CLOUD_REAL | CORS/lifecycle/privacy, PUT/HEAD/hash/sealed, expiración 300 s y cero capabilities persistidas | PASS |
 | E1-04 | P01-P05 producen blueprint versionado y aprobable | CLOUD_REAL | Job de actividad, P05 visible y aprobación académica | PASS |
 | E1-05 | Blueprint review muestra restricciones completas y CAS | LOCAL_REAL + CLOUD_REAL | UI completa, derived difficulty, checks y versión aprobada | PASS |
 | E1-06 | P06-P09 corren como Job durable de una submission | POSTGRESQL_REAL + CLOUD_REAL | Job real, close browser, claim único, 1/1/0 y fallo durable | PASS |
@@ -46,16 +46,16 @@ Boundary evita presentar un mock como prueba cloud. Los identificadores del
 | OPEN_SHORT | Enum/semántica sin cambio; no OPEN_LONG ni límites | PASS |
 | Dificultad | Derivada, coherente y solo lectura | PASS |
 | CHOICE | Alternativas/best/rationale/misconception visibles al evaluador | PASS |
-| Evidence-first | Receipt durable tenant/actor/version/fragment; replay reautoriza y no persiste URL | PASS |
+| Evidence-first | Receipt durable tenant/actor/version/fragment; replay reautoriza; guard app + constraint DB impiden persistir URL | PASS |
 | Guide | Trazabilidad y cannot_infer visibles | PASS |
 | Tenant isolation | Repository/API/receipts y negativos cross-tenant | PASS |
 | Logging | 2.881 entradas sin capabilities/credenciales/payload; 650 eventos por route template | PASS |
-| PostgreSQL | PG16/17 y repetición sin limpieza | PASS |
-| CI | Push 31199864090 y PR 31199869015 verdes sobre 6374e60; final se captura externamente | PASS |
+| PostgreSQL | Dos migraciones; PG16/17 repetidos sin limpieza; producción con constraint validado y residuos 0 | PASS |
+| CI | Correctivo: push 31209547327 y PR 31209552197 verdes, 7/7; merge 1e695278 = merge(dadaaa7, 4bab5b4) | PASS |
 | GitHub a Cloud Build | Repo/trigger/SA limitados; no direct deploy | PASS |
-| Terraform | Imagen y rotación de refs revisadas; dos planes finales exit 0 | PASS |
+| Terraform | Imagen correctiva 0/2/0 revisada; dos planes vivos consecutivos exit 0 | PASS |
 | Supply chain | OCI revision, digest, provenance, scan y SBOM | PASS |
-| Browser | CI E2E y candidato cloud nuevo con dos close/reopen desde shell | PASS |
+| Browser | CI E2E; recorrido cloud completo 6374e60; close/reopen y review sobre digest correctivo 4bab5b4 | PASS |
 | Model/P10 | mock y P10 off en runtime | PASS |
 | Etapa 2 | Ninguna historia activada | PASS |
 
