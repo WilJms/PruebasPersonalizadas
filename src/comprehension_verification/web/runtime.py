@@ -1,4 +1,4 @@
-"""Composition root shared by the Stage 1 API and Cloud Run Job worker."""
+"""Separate composition roots for the Stage 1 API and one-shot worker."""
 
 from __future__ import annotations
 
@@ -9,7 +9,7 @@ from .auth import AuthService
 from .jobs import CloudRunJobRunner, InlineJobRunner, JobRunner
 from .object_store import MemoryObjectStore, ObjectStore, R2ObjectStore
 from .repository import Repository
-from .settings import Settings
+from .settings import Settings, WorkerSettings
 from .workflows import Stage1Service
 
 
@@ -23,7 +23,15 @@ class Runtime:
     job_runner: JobRunner
 
 
-def _prepare_local_database(settings: Settings) -> None:
+@dataclass(frozen=True, slots=True)
+class WorkerRuntime:
+    settings: WorkerSettings
+    repository: Repository
+    object_store: ObjectStore
+    service: Stage1Service
+
+
+def _prepare_local_database(settings: Settings | WorkerSettings) -> None:
     prefix = "sqlite+pysqlite:///"
     if not settings.database_url.startswith(prefix):
         return
@@ -81,4 +89,41 @@ def build_runtime(
         auth=auth,
         service=service,
         job_runner=runner,
+    )
+
+
+def build_worker_runtime(
+    settings: WorkerSettings,
+    *,
+    repository: Repository | None = None,
+    object_store: ObjectStore | None = None,
+) -> WorkerRuntime:
+    """Build only the adapters required to claim and process one durable job."""
+
+    _prepare_local_database(settings)
+    repo = repository or Repository(
+        settings.database_url,
+        # Cloud schema changes are a controlled migration step, never job boot.
+        create_schema=settings.environment != "cloud",
+    )
+    if object_store is not None:
+        store = object_store
+    elif settings.object_store_mode == "r2":
+        store = R2ObjectStore(settings)
+    else:
+        # A memory store is development-only and cannot be shared across
+        # processes.  It deliberately has a capability key unrelated to web
+        # authentication or browser sessions.
+        store = MemoryObjectStore(
+            secret="worker-local-memory-capability-secret-change-me",
+            upload_ttl_seconds=settings.upload_url_ttl_seconds,
+            download_ttl_seconds=settings.download_url_ttl_seconds,
+        )
+
+    service = Stage1Service(settings=settings, repository=repo, object_store=store)
+    return WorkerRuntime(
+        settings=settings,
+        repository=repo,
+        object_store=store,
+        service=service,
     )

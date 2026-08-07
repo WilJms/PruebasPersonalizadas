@@ -2,8 +2,10 @@
 
 from datetime import UTC, datetime
 import json
+import logging
 from pathlib import Path
 import secrets
+from time import monotonic
 from typing import Annotated, Any, cast
 from uuid import UUID
 
@@ -15,6 +17,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from ..canonical import canonical_hash, stable_id
 from ..contracts import models as m
 from .auth import Actor
+from . import dto
 from .object_store import MemoryObjectStore, ObjectSizeExceeded, ObjectStore
 from .repository import (
     ActivityRow,
@@ -31,12 +34,44 @@ from .settings import Settings, get_settings
 from .workflows import ALLOWED_MEDIA_TYPES, Stage1Service, WorkflowError
 
 
+HTTP_LOGGER = logging.getLogger("cva.http")
+if not HTTP_LOGGER.handlers:
+    _http_handler = logging.StreamHandler()
+    _http_handler.setFormatter(logging.Formatter("%(message)s"))
+    HTTP_LOGGER.addHandler(_http_handler)
+HTTP_LOGGER.setLevel(logging.INFO)
+HTTP_LOGGER.propagate = False
+
+PROBLEM_RESPONSES = {
+    status: {
+        "description": "RFC 9457-style problem detail",
+        "model": m.ProblemDetail,
+        "content": {
+            "application/problem+json": {
+                "schema": {"$ref": "#/components/schemas/ProblemDetail"}
+            }
+        },
+    }
+    for status in (401, 403, 404, 409, 410, 412, 422, 428, 500)
+}
+
+
+def _safe_route_template(request: Request) -> str:
+    """Return a framework route template, never a user-controlled URL/path."""
+
+    route = request.scope.get("route")
+    template = getattr(route, "path", None)
+    if isinstance(template, str) and template.startswith("/") and len(template) <= 500:
+        return template
+    return "/api/unmatched" if request.scope.get("type") == "http" else "/unmatched"
+
+
 def _problem(status_code: int, code: str, detail: str, request: Request) -> JSONResponse:
     problem = m.ProblemDetail(
         title="Request could not be completed",
         status=status_code,
         detail=detail,
-        instance=request.url.path,
+        instance=_safe_route_template(request),
         code=code,
         trace_id=stable_id("trace", secrets.token_hex(16)),
         retryable=status_code >= 500,
@@ -50,6 +85,7 @@ def _problem(status_code: int, code: str, detail: str, request: Request) -> JSON
 
 def _activity_payload(row: ActivityRow, repository: Repository) -> dict[str, Any]:
     value = dict(row.config)
+    blueprint = None
     value.update(
         {
             "activity_id": row.id,
@@ -59,14 +95,100 @@ def _activity_payload(row: ActivityRow, repository: Repository) -> dict[str, Any
         }
     )
     try:
-        value["latest_blueprint_version"] = repository.latest_blueprint(
-            row.id, row.tenant_id
-        ).version
+        blueprint = repository.latest_blueprint(row.id, row.tenant_id)
+        value["latest_blueprint_version"] = blueprint.version
+        value["approved_blueprint_version"] = (
+            blueprint.version if blueprint.status == "APPROVED" else None
+        )
     except NotFound:
         value["latest_blueprint_version"] = None
+        value["approved_blueprint_version"] = None
     submission = repository.submission_for_activity(row.id, row.tenant_id)
+    job = repository.latest_job_for_aggregate(
+        submission.id if submission is not None else row.id, row.tenant_id
+    )
+    assessment_row = None
     if submission is not None:
         value["submission_id"] = submission.id
+        try:
+            assessment_row = repository.latest_assessment(
+                submission.id, row.tenant_id
+            )
+        except NotFound:
+            assessment_row = None
+
+    if assessment_row is not None:
+        continue_path = f"/submissions/{submission.id}/review"
+        next_action = "REVIEW_ASSESSMENT"
+    elif submission is not None:
+        submission_state = m.SubmissionProcessingState.model_validate(submission.state)
+        if (
+            submission_state.status == m.SubmissionProcessingStatus.UPLOADED
+            and submission.active_job_id is None
+        ):
+            continue_path = f"/submissions/{submission.id}"
+            next_action = "RUN_SUBMISSION"
+        else:
+            continue_path = f"/submissions/{submission.id}"
+            next_action = "VIEW_PROGRESS"
+    elif blueprint is not None and blueprint.status == "APPROVED":
+        continue_path = f"/activities/{row.id}/submission"
+        next_action = "UPLOAD_SUBMISSION"
+    elif row.status == "DRAFT":
+        continue_path = f"/activities/{row.id}/edit"
+        next_action = "EDIT_ACTIVITY"
+    else:
+        continue_path = f"/activities/{row.id}/blueprint"
+        next_action = (
+            "VIEW_PROGRESS"
+            if job is not None and job.status in {"QUEUED", "RUNNING"}
+            else "REVIEW_BLUEPRINT"
+        )
+
+    value["journey"] = {
+        "continue_path": continue_path,
+        "next_action": next_action,
+        "blueprint": (
+            {
+                "version": blueprint.version,
+                "status": blueprint.status,
+                "etag": blueprint.etag,
+            }
+            if blueprint is not None
+            else None
+        ),
+        "submission": (
+            {
+                "submission_id": submission.id,
+                "status": m.SubmissionProcessingState.model_validate(
+                    submission.state
+                ).status,
+                "active_job_id": submission.active_job_id,
+            }
+            if submission is not None
+            else None
+        ),
+        "job": (
+            {
+                "job_id": job.job_id,
+                "stage": job.stage,
+                "status": job.status,
+                "progress": job.progress,
+            }
+            if job is not None
+            else None
+        ),
+        "assessment": (
+            {
+                "assessment_id": assessment_row.assessment_id,
+                "version": assessment_row.version,
+                "status": assessment_row.status,
+                "etag": assessment_row.etag,
+            }
+            if assessment_row is not None
+            else None
+        ),
+    }
     return value
 
 
@@ -135,15 +257,17 @@ def create_app(
     )
     app = FastAPI(
         title="Comprehension Verification Lab",
-        version="0.2.0",
+        version="0.3.0",
         docs_url="/api/docs" if selected.environment != "cloud" else None,
         redoc_url=None,
         openapi_url="/api/openapi.json" if selected.environment != "cloud" else None,
+        responses=PROBLEM_RESPONSES,
     )
     app.state.runtime = runtime
 
     @app.middleware("http")
     async def security_headers(request: Request, call_next: Any) -> Response:
+        started = monotonic()
         response = await call_next(request)
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["Referrer-Policy"] = "no-referrer"
@@ -154,8 +278,22 @@ def create_app(
             "script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; "
             "connect-src 'self' https:; object-src 'none'"
         )
-        if request.url.path.startswith("/api/"):
+        route_template = _safe_route_template(request)
+        if route_template.startswith("/api/"):
             response.headers["Cache-Control"] = "no-store"
+        HTTP_LOGGER.info(
+            json.dumps(
+                {
+                    "event": "http.request.completed",
+                    "method": request.method,
+                    "route": route_template,
+                    "status": response.status_code,
+                    "duration_ms": round((monotonic() - started) * 1000),
+                },
+                sort_keys=True,
+                separators=(",", ":"),
+            )
+        )
         return response
 
     def replay_response(
@@ -355,6 +493,33 @@ def create_app(
     async def workflow_error(request: Request, exc: WorkflowError) -> JSONResponse:
         return _problem(exc.status_code, exc.code, str(exc), request)
 
+    @app.exception_handler(HTTPException)
+    async def http_error(request: Request, exc: HTTPException) -> JSONResponse:
+        code_by_status = {
+            401: "AUTHENTICATION_REQUIRED",
+            403: "ROLE_FORBIDDEN",
+            404: "RESOURCE_NOT_FOUND",
+        }
+        detail = exc.detail
+        code = code_by_status.get(exc.status_code, "REQUEST_REJECTED")
+        if isinstance(detail, dict):
+            candidate = detail.get("code")
+            if isinstance(candidate, str) and candidate.isupper():
+                code = candidate
+            message = detail.get("message")
+            detail_text = (
+                str(message)
+                if isinstance(message, str)
+                else "The request was rejected at the authorization boundary."
+            )
+        else:
+            detail_text = (
+                str(detail)
+                if isinstance(detail, str) and exc.status_code < 500
+                else "The request was rejected without exposing internal detail."
+            )
+        return _problem(exc.status_code, code, detail_text, request)
+
     @app.exception_handler(NotFound)
     async def not_found(request: Request, _exc: NotFound) -> JSONResponse:
         return _problem(404, "RESOURCE_NOT_FOUND", "The requested resource was not found.", request)
@@ -374,7 +539,7 @@ def create_app(
             title="Validation failed",
             status=422,
             detail="The request does not satisfy the versioned boundary.",
-            instance=request.url.path,
+            instance=_safe_route_template(request),
             code="VALIDATION_FAILED",
             trace_id=stable_id("trace", secrets.token_hex(16)),
             fields=fields,
@@ -406,11 +571,13 @@ def create_app(
         runtime.auth.require_csrf(request, actor)
         return actor
 
-    @app.get("/api/health")
-    def health() -> dict[str, str]:
-        return {"status": "ok", "stage": "1", "model_mode": selected.model_mode}
+    @app.get("/api/health", response_model=dto.HealthResource)
+    def health() -> dto.HealthResource:
+        return dto.HealthResource(
+            status="ok", stage="1", model_mode=selected.model_mode
+        )
 
-    @app.get("/api/readiness")
+    @app.get("/api/readiness", response_model=dto.ReadinessResource)
     def readiness() -> JSONResponse:
         try:
             runtime.repository.check_readiness()
@@ -419,7 +586,7 @@ def create_app(
             return JSONResponse({"status": "not_ready"}, status_code=503)
         return JSONResponse({"status": "ready"})
 
-    @app.get("/api/v1/session")
+    @app.get("/api/v1/session", response_model=dto.SessionEnvelope)
     def session(actor: Annotated[Actor, Depends(current_actor)]) -> dict[str, Any]:
         return {
             "session": {
@@ -431,12 +598,12 @@ def create_app(
             }
         }
 
-    @app.post("/api/v1/session/login")
+    @app.post("/api/v1/session/login", response_model=dto.SessionEnvelope)
     def login(
         response: Response,
-        payload: Annotated[dict[str, Any], Body(...)],
+        payload: dto.LoginCommand,
     ) -> dict[str, Any]:
-        email = str(payload.get("email", "")).strip().lower()
+        email = payload.email.strip().lower()
         actor = runtime.auth.local_login(email, response)
         return {
             "session": {
@@ -448,7 +615,7 @@ def create_app(
             }
         }
 
-    @app.post("/api/v1/session/exchange")
+    @app.post("/api/v1/session/exchange", response_model=dto.SessionEnvelope)
     def exchange_session(
         response: Response,
         authorization: Annotated[str | None, Header(alias="Authorization")] = None,
@@ -473,7 +640,7 @@ def create_app(
     ) -> None:
         runtime.auth.logout(response)
 
-    @app.get("/api/v1/activities")
+    @app.get("/api/v1/activities", response_model=dto.ActivityListEnvelope)
     def activities(actor: Annotated[Actor, Depends(current_actor)]) -> dict[str, Any]:
         return {
             "items": [
@@ -482,30 +649,43 @@ def create_app(
             ]
         }
 
-    @app.post("/api/v1/activities", status_code=201)
+    @app.post(
+        "/api/v1/activities",
+        status_code=201,
+        response_model=dto.ActivityEnvelope,
+    )
     def create_activity(
-        payload: Annotated[dict[str, Any], Body(...)],
+        payload: dto.ActivityCreateCommand,
         actor: Annotated[Actor, Depends(mutating_actor)],
     ) -> dict[str, Any]:
-        title = str(payload.get("title", "")).strip()
+        title = payload.title
         activity_id = stable_id("act", actor.workspace_id, title, datetime.now(UTC))
+        client_payload = payload.model_dump(mode="json")
+        if not client_payload["allowed_artifact_media_types"]:
+            client_payload["allowed_artifact_media_types"] = sorted(ALLOWED_MEDIA_TYPES)
         canonical = m.ActivityConfig.model_validate(
             {
-                **payload,
+                **client_payload,
                 "activity_id": activity_id,
                 "tenant_id": actor.workspace_id,
                 "context_mode": "CLOSED",
                 "course_source_ids": [],
                 "require_blueprint_approval": True,
-                "allowed_artifact_media_types": payload.get(
-                    "allowed_artifact_media_types", sorted(ALLOWED_MEDIA_TYPES)
-                ),
             }
         )
         row = runtime.service.create_activity(canonical, actor)
         return {"activity": _activity_payload(row, runtime.repository)}
 
-    @app.get("/api/v1/activities/{activity_id}")
+    @app.get(
+        "/api/v1/activities/{activity_id}",
+        response_model=dto.ActivityEnvelope,
+        responses={
+            200: {
+                "description": "Current activity resource",
+                "headers": {"ETag": {"schema": {"type": "string"}}},
+            }
+        },
+    )
     def activity_detail(
         activity_id: str,
         actor: Annotated[Actor, Depends(current_actor)],
@@ -516,10 +696,19 @@ def create_app(
         )
         return _activity_response(row, runtime.repository)
 
-    @app.patch("/api/v1/activities/{activity_id}")
+    @app.patch(
+        "/api/v1/activities/{activity_id}",
+        response_model=dto.ActivityEnvelope,
+        responses={
+            200: {
+                "description": "Updated draft activity",
+                "headers": {"ETag": {"schema": {"type": "string"}}},
+            }
+        },
+    )
     def edit_activity(
         activity_id: str,
-        payload: Annotated[dict[str, Any], Body(...)],
+        payload: dto.ActivityUpdateCommand,
         actor: Annotated[Actor, Depends(mutating_actor)],
         if_match: Annotated[str | None, Header(alias="If-Match")] = None,
     ) -> Response:
@@ -536,7 +725,7 @@ def create_app(
         canonical = m.ActivityConfig.model_validate(
             {
                 **current.config,
-                **payload,
+                **payload.model_dump(mode="json", exclude_unset=True),
                 "activity_id": activity_id,
                 "tenant_id": actor.workspace_id,
                 "context_mode": "CLOSED",
@@ -556,27 +745,20 @@ def create_app(
         *,
         activity_id: str,
         submission_id: str | None,
-        payload: dict[str, Any],
+        payload: dto.UploadCommand,
         actor: Actor,
     ) -> dict[str, Any]:
-        try:
-            claimed_size = int(payload.get("byte_size", 0))
-        except (TypeError, ValueError) as exc:
-            raise WorkflowError("INGEST_SIZE_LIMIT", "Declared object size is invalid") from exc
+        claimed_size = payload.byte_size
         if claimed_size < 1 or claimed_size > selected.max_upload_bytes:
             raise WorkflowError("INGEST_SIZE_LIMIT", "Declared object size is invalid")
-        try:
-            role = m.ArtifactRole(str(payload.get("role", "")))
-        except ValueError as exc:
-            raise WorkflowError("INGEST_ROLE_INVALID", "Artifact role is not accepted") from exc
         row, upload = runtime.service.create_upload(
             actor=actor,
             activity_id=activity_id,
             submission_id=submission_id,
-            filename=str(payload.get("filename", "")),
-            media_type=str(payload.get("media_type", "")),
+            filename=payload.filename,
+            media_type=payload.media_type,
             expected_byte_size=claimed_size,
-            role=role,
+            role=payload.role,
         )
         upload_headers = upload.pop("headers", {})
         return {
@@ -587,20 +769,28 @@ def create_app(
             }
         }
 
-    @app.post("/api/v1/activities/{activity_id}/artifacts/uploads", status_code=201)
+    @app.post(
+        "/api/v1/activities/{activity_id}/artifacts/uploads",
+        status_code=201,
+        response_model=dto.UploadEnvelope,
+    )
     def activity_upload(
         activity_id: str,
-        payload: Annotated[dict[str, Any], Body(...)],
+        payload: dto.UploadCommand,
         actor: Annotated[Actor, Depends(mutating_actor)],
     ) -> dict[str, Any]:
         return prepare_upload(
             activity_id=activity_id, submission_id=None, payload=payload, actor=actor
         )
 
-    @app.post("/api/v1/submissions/{submission_id}/artifacts/uploads", status_code=201)
+    @app.post(
+        "/api/v1/submissions/{submission_id}/artifacts/uploads",
+        status_code=201,
+        response_model=dto.UploadEnvelope,
+    )
     def submission_upload(
         submission_id: str,
-        payload: Annotated[dict[str, Any], Body(...)],
+        payload: dto.UploadCommand,
         actor: Annotated[Actor, Depends(mutating_actor)],
     ) -> dict[str, Any]:
         submission = cast(
@@ -644,20 +834,14 @@ def create_app(
         return Response(data, media_type=media_type, headers={"Cache-Control": "private, no-store"})
 
     def complete_artifact(
-        artifact_id: str, payload: dict[str, Any], actor: Actor
+        artifact_id: str, payload: dto.UploadCompletionCommand, actor: Actor
     ) -> dict[str, Any]:
-        try:
-            claimed_size = int(payload.get("byte_size", -1))
-        except (TypeError, ValueError) as exc:
-            raise WorkflowError(
-                "UPLOAD_COMPLETION_MISMATCH", "Completion metadata does not match the object"
-            ) from exc
         runtime.service.complete_upload(
             artifact_id,
             actor,
-            claimed_sha256=str(payload.get("sha256", "")),
-            claimed_byte_size=claimed_size,
-            claimed_media_type=str(payload.get("media_type", "")),
+            claimed_sha256=payload.sha256,
+            claimed_byte_size=payload.byte_size,
+            claimed_media_type=payload.media_type,
         )
         completed = cast(
             ArtifactRow,
@@ -667,11 +851,14 @@ def create_app(
         )
         return {"artifact": _artifact_payload(completed)}
 
-    @app.post("/api/v1/activities/{activity_id}/artifacts/{artifact_id}:complete")
+    @app.post(
+        "/api/v1/activities/{activity_id}/artifacts/{artifact_id}:complete",
+        response_model=dto.ArtifactEnvelope,
+    )
     def complete_activity_artifact(
         activity_id: str,
         artifact_id: str,
-        payload: Annotated[dict[str, Any], Body(...)],
+        payload: dto.UploadCompletionCommand,
         actor: Annotated[Actor, Depends(mutating_actor)],
     ) -> dict[str, Any]:
         row = cast(ArtifactRow, runtime.repository.scoped(ArtifactRow, artifact_id, actor.workspace_id))
@@ -679,11 +866,14 @@ def create_app(
             raise NotFound("artifact not found")
         return complete_artifact(artifact_id, payload, actor)
 
-    @app.post("/api/v1/submissions/{submission_id}/artifacts/{artifact_id}:complete")
+    @app.post(
+        "/api/v1/submissions/{submission_id}/artifacts/{artifact_id}:complete",
+        response_model=dto.ArtifactEnvelope,
+    )
     def complete_submission_artifact(
         submission_id: str,
         artifact_id: str,
-        payload: Annotated[dict[str, Any], Body(...)],
+        payload: dto.UploadCompletionCommand,
         actor: Annotated[Actor, Depends(mutating_actor)],
     ) -> dict[str, Any]:
         row = cast(ArtifactRow, runtime.repository.scoped(ArtifactRow, artifact_id, actor.workspace_id))
@@ -691,38 +881,69 @@ def create_app(
             raise NotFound("artifact not found")
         return complete_artifact(artifact_id, payload, actor)
 
-    @app.post("/api/v1/activities/{activity_id}/blueprints:generate", status_code=202)
+    @app.post(
+        "/api/v1/activities/{activity_id}/blueprints:generate",
+        status_code=202,
+        response_model=dto.OperationEnvelope,
+    )
     async def generate_blueprint(
         activity_id: str,
-        _payload: Annotated[dict[str, Any], Body(default_factory=dict)],
+        _payload: Annotated[dto.EmptyCommand, Body(default_factory=dto.EmptyCommand)],
         actor: Annotated[Actor, Depends(mutating_actor)],
     ) -> dict[str, Any]:
         job = await runtime.service.enqueue_activity_pipeline(activity_id, actor)
         return {"job_id": job.job_id, "operation": job.model_dump(mode="json")}
 
-    @app.get("/api/v1/activities/{activity_id}/ambiguity")
+    @app.get(
+        "/api/v1/activities/{activity_id}/estimate",
+        response_model=dto.EstimateEnvelope,
+    )
+    def activity_estimate(
+        activity_id: str,
+        actor: Annotated[Actor, Depends(current_actor)],
+    ) -> dict[str, Any]:
+        estimate = runtime.service.activity_cost_estimate(activity_id, actor)
+        return {"estimate": estimate.model_dump(mode="json")}
+
+    @app.get(
+        "/api/v1/activities/{activity_id}/ambiguity",
+        response_model=dto.AmbiguityEnvelope,
+    )
     def activity_ambiguity(
         activity_id: str,
         actor: Annotated[Actor, Depends(current_actor)],
     ) -> dict[str, Any]:
         return runtime.service.ambiguity_view(activity_id, actor)
 
-    @app.post("/api/v1/activities/{activity_id}/decisions", status_code=201)
+    @app.post(
+        "/api/v1/activities/{activity_id}/decisions",
+        status_code=201,
+        response_model=dto.PolicyDecisionEnvelope,
+    )
     def create_policy_decision(
         activity_id: str,
-        payload: Annotated[dict[str, Any], Body(...)],
+        payload: dto.PolicyDecisionCommand,
         actor: Annotated[Actor, Depends(mutating_actor)],
     ) -> dict[str, Any]:
         decision = runtime.service.record_policy_decision(
             activity_id=activity_id,
-            issue_id=str(payload.get("issue_id", "")),
-            selected_option_id=str(payload.get("selected_option_id", "")),
-            note=(str(payload["note"]) if payload.get("note") is not None else None),
+            issue_id=payload.issue_id,
+            selected_option_id=payload.selected_option_id,
+            note=payload.note,
             actor=actor,
         )
         return {"decision": decision.model_dump(mode="json")}
 
-    @app.get("/api/v1/activities/{activity_id}/blueprints/latest")
+    @app.get(
+        "/api/v1/activities/{activity_id}/blueprints/latest",
+        response_model=dto.BlueprintEnvelope,
+        responses={
+            200: {
+                "description": "Latest immutable blueprint version",
+                "headers": {"ETag": {"schema": {"type": "string"}}},
+            }
+        },
+    )
     def latest_blueprint(
         activity_id: str,
         actor: Annotated[Actor, Depends(current_actor)],
@@ -731,7 +952,16 @@ def create_app(
             runtime.repository.latest_blueprint(activity_id, actor.workspace_id)
         )
 
-    @app.get("/api/v1/activities/{activity_id}/blueprints/{version}")
+    @app.get(
+        "/api/v1/activities/{activity_id}/blueprints/{version}",
+        response_model=dto.BlueprintEnvelope,
+        responses={
+            200: {
+                "description": "Requested immutable blueprint version",
+                "headers": {"ETag": {"schema": {"type": "string"}}},
+            }
+        },
+    )
     def blueprint_version(
         activity_id: str,
         version: int,
@@ -741,7 +971,10 @@ def create_app(
             runtime.repository.blueprint_version(activity_id, version, actor.workspace_id)
         )
 
-    @app.patch("/api/v1/activities/{activity_id}/blueprints/{version}")
+    @app.patch(
+        "/api/v1/activities/{activity_id}/blueprints/{version}",
+        response_model=dto.BlueprintEnvelope,
+    )
     async def edit_blueprint(
         activity_id: str,
         version: int,
@@ -760,11 +993,14 @@ def create_app(
         )
         return _blueprint_response(row)
 
-    @app.post("/api/v1/activities/{activity_id}/blueprints/{version}:approve")
+    @app.post(
+        "/api/v1/activities/{activity_id}/blueprints/{version}:approve",
+        response_model=dto.BlueprintEnvelope,
+    )
     def approve_blueprint(
         activity_id: str,
         version: int,
-        _payload: Annotated[dict[str, Any], Body(default_factory=dict)],
+        _payload: Annotated[dto.EmptyCommand, Body(default_factory=dto.EmptyCommand)],
         actor: Annotated[Actor, Depends(mutating_actor)],
         if_match: Annotated[str | None, Header(alias="If-Match")] = None,
     ) -> Response:
@@ -779,20 +1015,27 @@ def create_app(
             )
         )
 
-    @app.post("/api/v1/activities/{activity_id}/submissions", status_code=201)
+    @app.post(
+        "/api/v1/activities/{activity_id}/submissions",
+        status_code=201,
+        response_model=dto.SubmissionEnvelope,
+    )
     def create_submission(
         activity_id: str,
-        payload: Annotated[dict[str, Any], Body(...)],
+        payload: dto.SubmissionCreateCommand,
         actor: Annotated[Actor, Depends(mutating_actor)],
     ) -> dict[str, Any]:
         row = runtime.service.create_submission(
             activity_id=activity_id,
-            subject_ref=str(payload.get("subject_ref", "")).strip(),
+            subject_ref=payload.subject_ref,
             actor=actor,
         )
         return {"submission": _submission_payload(row)}
 
-    @app.get("/api/v1/submissions/{submission_id}")
+    @app.get(
+        "/api/v1/submissions/{submission_id}",
+        response_model=dto.SubmissionEnvelope,
+    )
     def submission_detail(
         submission_id: str,
         actor: Annotated[Actor, Depends(current_actor)],
@@ -810,10 +1053,14 @@ def create_app(
             payload["assessment_id"] = None
         return {"submission": payload}
 
-    @app.post("/api/v1/submissions/{submission_id}:run", status_code=202)
+    @app.post(
+        "/api/v1/submissions/{submission_id}:run",
+        status_code=202,
+        response_model=dto.OperationEnvelope,
+    )
     async def run_submission(
         submission_id: str,
-        _payload: Annotated[dict[str, Any], Body(default_factory=dict)],
+        _payload: Annotated[dto.EmptyCommand, Body(default_factory=dto.EmptyCommand)],
         actor: Annotated[Actor, Depends(mutating_actor)],
     ) -> dict[str, Any]:
         job = await runtime.service.enqueue_submission_pipeline(submission_id, actor)
@@ -823,14 +1070,28 @@ def create_app(
             "operation": job.model_dump(mode="json"),
         }
 
-    @app.get("/api/v1/jobs/{job_id}")
+    @app.get(
+        "/api/v1/submissions/{submission_id}/estimate",
+        response_model=dto.EstimateEnvelope,
+    )
+    def submission_estimate(
+        submission_id: str,
+        actor: Annotated[Actor, Depends(current_actor)],
+    ) -> dict[str, Any]:
+        estimate = runtime.service.submission_cost_estimate(submission_id, actor)
+        return {"estimate": estimate.model_dump(mode="json")}
+
+    @app.get("/api/v1/jobs/{job_id}", response_model=dto.JobEnvelope)
     def job_status(
         job_id: str,
         actor: Annotated[Actor, Depends(current_actor)],
     ) -> dict[str, Any]:
         return {"job": runtime.repository.job_status(job_id, actor.workspace_id).model_dump(mode="json")}
 
-    @app.get("/api/v1/jobs/{job_id}/model-calls")
+    @app.get(
+        "/api/v1/jobs/{job_id}/model-calls",
+        response_model=dto.ModelCallListEnvelope,
+    )
     def model_calls(
         job_id: str,
         actor: Annotated[Actor, Depends(current_actor)],
@@ -842,7 +1103,10 @@ def create_app(
             )
         }
 
-    @app.get("/api/v1/submissions/{submission_id}/evidence")
+    @app.get(
+        "/api/v1/submissions/{submission_id}/evidence",
+        response_model=dto.EvidenceListEnvelope,
+    )
     def evidence(
         submission_id: str,
         actor: Annotated[Actor, Depends(current_actor)],
@@ -859,27 +1123,34 @@ def create_app(
         page = items[offset : offset + limit]
         next_offset = offset + len(page)
         return {
-            "items": [
-                {
-                    **item["evidence"],
-                    "view_url": item["source_url"],
-                    "view_url_expires_at": item["source_url_expires_at"],
-                }
-                for item in page
-            ],
+            "items": [item["evidence"] for item in page],
             "next_cursor": str(next_offset) if next_offset < len(items) else None,
         }
 
-    @app.get("/api/v1/submissions/{submission_id}/assessment")
+    @app.get(
+        "/api/v1/submissions/{submission_id}/assessment",
+        response_model=dto.AssessmentEnvelope,
+        responses={
+            200: {
+                "description": "Assessment review bundle",
+                "headers": {"ETag": {"schema": {"type": "string"}}},
+            }
+        },
+    )
     def assessment(
         submission_id: str,
+        response: Response,
         actor: Annotated[Actor, Depends(current_actor)],
     ) -> dict[str, Any]:
         value = runtime.service.assessment_view(submission_id, actor)
         value["evidence"] = evidence(submission_id, actor)["items"]
+        response.headers["ETag"] = str(value["etag"])
         return value
 
-    @app.get("/api/v1/assessments/{assessment_id}/guide")
+    @app.get(
+        "/api/v1/assessments/{assessment_id}/guide",
+        response_model=dto.GuideEnvelope,
+    )
     def guide(
         assessment_id: str,
         actor: Annotated[Actor, Depends(current_actor)],
@@ -890,10 +1161,33 @@ def create_app(
         )
         return {"guide": row.data}
 
-    @app.post("/api/v1/assessments/{assessment_id}:approve")
+    @app.post(
+        "/api/v1/assessments/{assessment_id}/evidence:verify",
+        response_model=dto.EvidenceVerifyEnvelope,
+    )
+    def verify_assessment_evidence(
+        assessment_id: str,
+        payload: dto.EvidenceVerifyCommand,
+        actor: Annotated[Actor, Depends(mutating_actor)],
+    ) -> dict[str, Any]:
+        verification = runtime.service.verify_evidence_fragment(
+            assessment_id=assessment_id,
+            assessment_version=payload.assessment_version,
+            assessment_etag=payload.assessment_etag,
+            question_id=payload.question_id,
+            fragment_index=payload.fragment_index,
+            actor=actor,
+        )
+        return {"verification": verification}
+
+    @app.post(
+        "/api/v1/assessments/{assessment_id}:approve",
+        response_model=dto.AssessmentEnvelope,
+    )
     def approve_assessment(
         assessment_id: str,
-        _payload: Annotated[dict[str, Any], Body(default_factory=dict)],
+        _payload: Annotated[dto.EmptyCommand, Body(default_factory=dto.EmptyCommand)],
+        response: Response,
         actor: Annotated[Actor, Depends(mutating_actor)],
         if_match: Annotated[str | None, Header(alias="If-Match")] = None,
     ) -> dict[str, Any]:
@@ -906,15 +1200,22 @@ def create_app(
             if_match=if_match,
             actor=actor,
         )
-        return runtime.service.assessment_view(row.submission_id, actor)
+        value = runtime.service.assessment_view(row.submission_id, actor)
+        value["evidence"] = evidence(row.submission_id, actor)["items"]
+        response.headers["ETag"] = str(value["etag"])
+        return value
 
-    @app.post("/api/v1/assessments/{assessment_id}/exports", status_code=201)
+    @app.post(
+        "/api/v1/assessments/{assessment_id}/exports",
+        status_code=201,
+        response_model=dto.ExportEnvelope,
+    )
     def create_export(
         assessment_id: str,
-        payload: Annotated[dict[str, Any], Body(...)],
+        payload: dto.ExportKindCommand,
         actor: Annotated[Actor, Depends(mutating_actor)],
     ) -> dict[str, Any]:
-        kind = str(payload.get("kind", ""))
+        kind = payload.kind
         key_by_kind = {
             "ASSESSMENT_PDF": "assessment_pdf",
             "GUIDE_PDF": "guide_pdf",

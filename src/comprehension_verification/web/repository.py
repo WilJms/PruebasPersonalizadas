@@ -818,6 +818,21 @@ class Repository:
             finished_at=row.finished_at,
         )
 
+    def latest_job_for_aggregate(
+        self, aggregate_id: str, tenant_id: str
+    ) -> m.JobStatus | None:
+        with self.session() as session:
+            row = session.scalar(
+                select(JobRow)
+                .where(
+                    JobRow.aggregate_id == aggregate_id,
+                    JobRow.tenant_id == tenant_id,
+                )
+                .order_by(JobRow.created_at.desc(), JobRow.id.desc())
+                .limit(1)
+            )
+        return None if row is None else self.job_status(row.id, tenant_id)
+
     def claim_next_job(self) -> JobRow | None:
         with self.session() as session:
             statement = (
@@ -971,17 +986,53 @@ class Repository:
                 )
             )
 
-    def audit(self, *, tenant_id: str, event_type: str, aggregate_id: str, actor_id: str, payload: dict[str, Any]) -> None:
-        self.add(
-            AuditEventRow(
-                id=stable_id("evt", tenant_id, event_type, aggregate_id, actor_id, utc_now()),
-                tenant_id=tenant_id,
-                event_type=event_type,
-                aggregate_id=aggregate_id,
-                actor_id=actor_id,
-                payload=payload,
-            )
+    def audit(
+        self,
+        *,
+        tenant_id: str,
+        event_type: str,
+        aggregate_id: str,
+        actor_id: str,
+        payload: dict[str, Any],
+    ) -> AuditEventRow:
+        row = AuditEventRow(
+            id=stable_id(
+                "evt", tenant_id, event_type, aggregate_id, actor_id, utc_now()
+            ),
+            tenant_id=tenant_id,
+            event_type=event_type,
+            aggregate_id=aggregate_id,
+            actor_id=actor_id,
+            payload=payload,
         )
+        self.add(
+            row
+        )
+        return row
+
+    def audit_events(
+        self,
+        *,
+        tenant_id: str,
+        event_type: str,
+        aggregate_id: str,
+        actor_id: str | None = None,
+    ) -> list[AuditEventRow]:
+        """Return tenant-scoped audit evidence without inspecting payload text."""
+
+        with self.session() as session:
+            statement = select(AuditEventRow).where(
+                AuditEventRow.tenant_id == tenant_id,
+                AuditEventRow.event_type == event_type,
+                AuditEventRow.aggregate_id == aggregate_id,
+            )
+            if actor_id is not None:
+                statement = statement.where(AuditEventRow.actor_id == actor_id)
+            return list(
+                session.scalars(
+                    statement.order_by(AuditEventRow.occurred_at, AuditEventRow.id)
+                )
+            )
 
     def has_audit_event(
         self,
@@ -989,21 +1040,23 @@ class Repository:
         tenant_id: str,
         event_type: str,
         aggregate_id: str,
+        actor_id: str | None = None,
         payload_contains: dict[str, Any] | None = None,
     ) -> bool:
-        with self.session() as session:
-            rows = session.scalars(
-                select(AuditEventRow).where(
-                    AuditEventRow.tenant_id == tenant_id,
-                    AuditEventRow.event_type == event_type,
-                    AuditEventRow.aggregate_id == aggregate_id,
-                )
+        rows = self.audit_events(
+            tenant_id=tenant_id,
+            event_type=event_type,
+            aggregate_id=aggregate_id,
+            actor_id=actor_id,
+        )
+        return any(
+            payload_contains is None
+            or all(
+                row.payload.get(key) == value
+                for key, value in payload_contains.items()
             )
-            return any(
-                payload_contains is None
-                or all(row.payload.get(key) == value for key, value in payload_contains.items())
-                for row in rows
-            )
+            for row in rows
+        )
 
     def reserve_idempotency(
         self, tenant_id: str, key: str, fingerprint: str

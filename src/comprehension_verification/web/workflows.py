@@ -28,6 +28,7 @@ from ..validation import (
     validate_review_result,
 )
 from .auth import Actor
+from . import dto
 from .jobs import JobRunner
 from .object_store import ObjectSizeExceeded, ObjectStore
 from .repository import (
@@ -53,7 +54,7 @@ from .repository import (
     SubmissionRow,
     utc_now,
 )
-from .settings import Settings
+from .settings import Settings, WorkerSettings
 
 
 ALLOWED_MEDIA_TYPES = frozenset({"text/plain", "text/markdown", "application/pdf"})
@@ -157,7 +158,7 @@ class Stage1Service:
     def __init__(
         self,
         *,
-        settings: Settings,
+        settings: Settings | WorkerSettings,
         repository: Repository,
         object_store: ObjectStore,
         parser: SafeParserService | None = None,
@@ -554,6 +555,131 @@ class Stage1Service:
             raise
         return self._artifact_ref(completed)
 
+    def _cost_estimate(
+        self,
+        *,
+        phase: str,
+        aggregate_id: str,
+        calls: int,
+        input_bytes: int,
+        fingerprint_source: dict[str, Any],
+    ) -> dto.CostEstimate:
+        input_fingerprint = canonical_hash(fingerprint_source)
+        # A conservative deterministic envelope: every call may receive the
+        # complete bounded native input plus trusted prompt/context overhead.
+        estimated_input_tokens = calls * ((input_bytes + 3) // 4 + 1_000)
+        estimated_output_tokens = calls * 2_000
+        upper_bound_cost_usd = round(calls * 0.01, 6)
+        estimated_cost_usd = (
+            0.0
+            if self.settings.model_mode == "mock"
+            else round(upper_bound_cost_usd * 0.8, 6)
+        )
+        return dto.CostEstimate(
+            estimate_id=stable_id(
+                "estimate", phase, aggregate_id, input_fingerprint, calls
+            ),
+            phase=phase,
+            model_mode=self.settings.model_mode,
+            estimated_model_calls=calls,
+            estimated_input_tokens=estimated_input_tokens,
+            estimated_output_tokens=estimated_output_tokens,
+            estimated_cost_usd=estimated_cost_usd,
+            upper_bound_cost_usd=upper_bound_cost_usd,
+            authorized_limit_usd=self.settings.max_job_cost_usd,
+            within_limit=upper_bound_cost_usd <= self.settings.max_job_cost_usd,
+            assumptions=[
+                "CVA_MODEL_MODE=mock has zero billable provider cost during Stage 1 closure."
+                if self.settings.model_mode == "mock"
+                else "Provider pricing is an upper-bound estimate, not a quoted price.",
+                "P10 and course-enriched context remain disabled.",
+                "The estimate covers one durable Stage 1 run and no retry.",
+            ],
+            input_fingerprint=input_fingerprint,
+            generated_at=utc_now(),
+        )
+
+    @staticmethod
+    def _artifact_estimate_fingerprint(artifacts: list[ArtifactRow]) -> list[dict[str, Any]]:
+        return [
+            {
+                "artifact_id": row.id,
+                "role": row.role,
+                "byte_size": row.byte_size,
+                "sha256": row.sha256,
+                "status": row.status,
+            }
+            for row in sorted(artifacts, key=lambda item: item.id)
+        ]
+
+    def activity_cost_estimate(
+        self, activity_id: str, actor: Actor
+    ) -> dto.CostEstimate:
+        activity = cast(
+            ActivityRow,
+            self.repository.scoped(ActivityRow, activity_id, actor.workspace_id),
+        )
+        artifacts = self.repository.artifacts_for(
+            activity_id=activity.id,
+            tenant_id=actor.workspace_id,
+            submission_id=None,
+        )
+        calls = 5 if any(row.role == m.ArtifactRole.RUBRIC.value for row in artifacts) else 4
+        return self._cost_estimate(
+            phase="ACTIVITY_BLUEPRINT",
+            aggregate_id=activity.id,
+            calls=calls,
+            input_bytes=sum(row.byte_size or 0 for row in artifacts),
+            fingerprint_source={
+                "activity_config": activity.config,
+                "artifacts": self._artifact_estimate_fingerprint(artifacts),
+                "pipeline_version": ACTIVITY_PIPELINE_VERSION,
+            },
+        )
+
+    def submission_cost_estimate(
+        self, submission_id: str, actor: Actor
+    ) -> dto.CostEstimate:
+        submission = cast(
+            SubmissionRow,
+            self.repository.scoped(
+                SubmissionRow, submission_id, actor.workspace_id
+            ),
+        )
+        _row, blueprint = self._approved_blueprint(
+            activity_id=submission.activity_id,
+            tenant_id=actor.workspace_id,
+        )
+        artifacts = self.repository.artifacts_for(
+            activity_id=submission.activity_id,
+            tenant_id=actor.workspace_id,
+            submission_id=submission.id,
+        )
+        calls = 2 + 2 * blueprint.assessment_constraints.question_count
+        return self._cost_estimate(
+            phase="SUBMISSION_ASSESSMENT",
+            aggregate_id=submission.id,
+            calls=calls,
+            input_bytes=sum(row.byte_size or 0 for row in artifacts),
+            fingerprint_source={
+                "submission_id": submission.id,
+                "blueprint_id": blueprint.blueprint_id,
+                "blueprint_version": blueprint.blueprint_version,
+                "question_count": blueprint.assessment_constraints.question_count,
+                "artifacts": self._artifact_estimate_fingerprint(artifacts),
+                "pipeline_version": SUBMISSION_PIPELINE_VERSION,
+            },
+        )
+
+    @staticmethod
+    def _require_cost_within_limit(estimate: dto.CostEstimate) -> None:
+        if not estimate.within_limit:
+            raise WorkflowError(
+                "COST_LIMIT_EXCEEDED",
+                "The conservative Stage 1 cost envelope exceeds the authorized limit",
+                status_code=409,
+            )
+
     async def enqueue_activity_pipeline(self, activity_id: str, actor: Actor) -> m.JobStatus:
         self._require_activity_teacher(actor)
         activity = cast(ActivityRow, self.repository.scoped(ActivityRow, activity_id, actor.workspace_id))
@@ -605,6 +731,9 @@ class Stage1Service:
         )
         if not any(row.role == m.ArtifactRole.ASSIGNMENT_PROMPT.value for row in sources):
             raise WorkflowError("ASSIGNMENT_FIELD_MISSING", "Assignment prompt is required")
+        self._require_cost_within_limit(
+            self.activity_cost_estimate(activity_id, actor)
+        )
         job = self._new_job(actor.workspace_id, activity_id, "ACTIVITY", "ACTIVITY_PARSE")
         try:
             self.repository.queue_activity_job(
@@ -700,6 +829,9 @@ class Stage1Service:
         )
         if len(artifacts) != 1:
             raise WorkflowError("SUBMISSION_ARTIFACT_REQUIRED", "Stage 1 requires exactly one completed deliverable")
+        self._require_cost_within_limit(
+            self.submission_cost_estimate(submission_id, actor)
+        )
         job = self._new_job(actor.workspace_id, submission.id, "SUBMISSION", "SUBMISSION_PARSE")
         queued_state = m.SubmissionProcessingState(
             submission_id=submission.id,
@@ -1347,6 +1479,255 @@ class Stage1Service:
             })
         return views
 
+    @staticmethod
+    def _receipt_payload(
+        *,
+        assessment_row: AssessmentRow,
+        actor_id: str,
+        question_id: str,
+        fragment_index: int,
+        evidence: m.EvidenceUnit,
+    ) -> dict[str, Any]:
+        locator_hash = canonical_hash(evidence.locator.model_dump(mode="json"))
+        receipt_id = stable_id(
+            "receipt",
+            assessment_row.tenant_id,
+            actor_id,
+            assessment_row.assessment_id,
+            assessment_row.version,
+            assessment_row.etag,
+            question_id,
+            fragment_index,
+            evidence.evidence_id,
+            evidence.artifact_hash,
+            locator_hash,
+            evidence.normalized_hash,
+        )
+        return {
+            "receipt_id": receipt_id,
+            "assessment_id": assessment_row.assessment_id,
+            "assessment_version": assessment_row.version,
+            "assessment_etag": assessment_row.etag,
+            "question_id": question_id,
+            "fragment_index": fragment_index,
+            "evidence_id": evidence.evidence_id,
+            "artifact_hash": evidence.artifact_hash,
+            "locator_hash": locator_hash,
+            "normalized_hash": evidence.normalized_hash,
+        }
+
+    def evidence_receipts(
+        self, assessment_row: AssessmentRow, actor: Actor
+    ) -> list[dict[str, Any]]:
+        """Return only receipts valid for this exact actor and assessment version."""
+
+        receipts: dict[str, dict[str, Any]] = {}
+        for event in self.repository.audit_events(
+            tenant_id=actor.workspace_id,
+            event_type="evidence.viewed",
+            aggregate_id=assessment_row.assessment_id,
+            actor_id=actor.user_id,
+        ):
+            payload = dict(event.payload)
+            if (
+                payload.get("assessment_version") != assessment_row.version
+                or payload.get("assessment_etag") != assessment_row.etag
+            ):
+                continue
+            candidate = {
+                **payload,
+                "assessment_id": assessment_row.assessment_id,
+                "verified_at": event.occurred_at,
+            }
+            try:
+                receipt = dto.EvidenceReceipt.model_validate(candidate)
+            except ValidationError:
+                continue
+            receipts[receipt.receipt_id] = receipt.model_dump(mode="json")
+        return [receipts[key] for key in sorted(receipts)]
+
+    def verify_evidence_fragment(
+        self,
+        *,
+        assessment_id: str,
+        assessment_version: int,
+        assessment_etag: str,
+        question_id: str,
+        fragment_index: int,
+        actor: Actor,
+    ) -> dict[str, Any]:
+        """Resolve one anchor fragment against sealed bytes, then persist a receipt."""
+
+        current = self.repository.assessment_by_id(assessment_id, actor.workspace_id)
+        if current.version != assessment_version or current.etag != assessment_etag:
+            raise WorkflowError(
+                "ETAG_MISMATCH", "Assessment has changed", status_code=412
+            )
+        assessment = m.Assessment.model_validate(current.data)
+        if assessment.status != m.WorkflowStatus.NEEDS_REVIEW:
+            raise WorkflowError(
+                "ASSESSMENT_NOT_REVIEWABLE",
+                "Evidence verification is only available during assessment review",
+                status_code=409,
+            )
+        question = next(
+            (item for item in assessment.questions if item.question_id == question_id),
+            None,
+        )
+        if question is None or fragment_index >= len(question.anchor.fragments):
+            raise WorkflowError(
+                "EVIDENCE_FRAGMENT_NOT_FOUND",
+                "The requested evidence fragment was not found",
+                status_code=404,
+            )
+        fragment = question.anchor.fragments[fragment_index]
+        evidence_rows = {
+            row.id: row
+            for row in self.repository.evidence_for_submission(
+                assessment.submission_id, actor.workspace_id
+            )
+        }
+        evidence_row = evidence_rows.get(fragment.evidence_id)
+        if evidence_row is None:
+            raise WorkflowError(
+                "IR_PROVENANCE_GAP",
+                "The anchor no longer resolves to persisted evidence",
+                status_code=409,
+            )
+        evidence = m.EvidenceUnit.model_validate(evidence_row.data)
+        if (
+            evidence.evidence_id != fragment.evidence_id
+            or evidence.locator.model_dump(mode="json")
+            != fragment.locator.model_dump(mode="json")
+        ):
+            raise WorkflowError(
+                "IR_PROVENANCE_GAP",
+                "The anchor locator no longer matches persisted evidence",
+                status_code=409,
+            )
+        artifact = cast(
+            ArtifactRow,
+            self.repository.scoped(
+                ArtifactRow, evidence.artifact_id, actor.workspace_id
+            ),
+        )
+        if (
+            artifact.submission_id != assessment.submission_id
+            or artifact.sha256 != evidence.artifact_hash
+        ):
+            raise WorkflowError(
+                "IR_PROVENANCE_GAP",
+                "The evidence no longer resolves to the exact submission artifact",
+                status_code=409,
+            )
+        try:
+            reparsed = self._parse_bytes(
+                artifact, self._verified_artifact_bytes(artifact)
+            )
+        except ParseRejected as exc:
+            raise WorkflowError(
+                "IR_PROVENANCE_GAP",
+                "The sealed evidence could not be resolved by the safe parser",
+                status_code=409,
+            ) from exc
+        reparsed_by_id = {unit.evidence_id: unit for unit in reparsed.evidence_units}
+        exact = reparsed_by_id.get(evidence.evidence_id)
+        if exact is None or any(
+            (
+                exact.artifact_id != evidence.artifact_id,
+                exact.artifact_hash != evidence.artifact_hash,
+                exact.normalized_hash != evidence.normalized_hash,
+                exact.locator.model_dump(mode="json")
+                != evidence.locator.model_dump(mode="json"),
+            )
+        ):
+            raise WorkflowError(
+                "IR_PROVENANCE_GAP",
+                "The evidence locator did not survive safe re-parsing",
+                status_code=409,
+            )
+        payload = self._receipt_payload(
+            assessment_row=current,
+            actor_id=actor.user_id,
+            question_id=question_id,
+            fragment_index=fragment_index,
+            evidence=evidence,
+        )
+        existing = next(
+            (
+                event
+                for event in self.repository.audit_events(
+                    tenant_id=actor.workspace_id,
+                    event_type="evidence.viewed",
+                    aggregate_id=assessment_id,
+                    actor_id=actor.user_id,
+                )
+                if all(event.payload.get(key) == value for key, value in payload.items())
+            ),
+            None,
+        )
+        event = existing or self.repository.audit(
+            tenant_id=actor.workspace_id,
+            event_type="evidence.viewed",
+            aggregate_id=assessment_id,
+            actor_id=actor.user_id,
+            payload=payload,
+        )
+        signed = self.object_store.sign_get(artifact.object_key)
+        receipt = dto.EvidenceReceipt.model_validate(
+            {
+                **payload,
+                "verified_at": event.occurred_at,
+            }
+        )
+        return {
+            "receipt": receipt.model_dump(mode="json"),
+            "evidence": evidence.model_dump(mode="json"),
+            "view_url": signed.url,
+            "view_url_expires_at": signed.expires_at.isoformat(),
+        }
+
+    def _assert_evidence_receipts_complete(
+        self, assessment_row: AssessmentRow, assessment: m.Assessment, actor: Actor
+    ) -> None:
+        actual = {
+            receipt["receipt_id"]
+            for receipt in self.evidence_receipts(assessment_row, actor)
+        }
+        expected: set[str] = set()
+        evidence_by_id = {
+            row.id: m.EvidenceUnit.model_validate(row.data)
+            for row in self.repository.evidence_for_submission(
+                assessment.submission_id, actor.workspace_id
+            )
+        }
+        for question in assessment.questions:
+            for fragment_index, fragment in enumerate(question.anchor.fragments):
+                evidence = evidence_by_id.get(fragment.evidence_id)
+                if evidence is None:
+                    raise WorkflowError(
+                        "IR_PROVENANCE_GAP",
+                        "Assessment evidence is incomplete",
+                        status_code=409,
+                    )
+                expected.add(
+                    str(
+                        self._receipt_payload(
+                            assessment_row=assessment_row,
+                            actor_id=actor.user_id,
+                            question_id=question.question_id,
+                            fragment_index=fragment_index,
+                            evidence=evidence,
+                        )["receipt_id"]
+                    )
+                )
+        if expected != actual:
+            raise WorkflowError(
+                "EVIDENCE_REVIEW_REQUIRED",
+                "Every source fragment must be loaded and locator-verified by the approving actor",
+                status_code=409,
+            )
+
     def assessment_view(self, submission_id: str, actor: Actor) -> dict[str, Any]:
         submission = cast(SubmissionRow, self.repository.scoped(SubmissionRow, submission_id, actor.workspace_id))
         assessment_row = self.repository.latest_assessment(submission.id, actor.workspace_id)
@@ -1370,6 +1751,7 @@ class Stage1Service:
             "etag": assessment_row.etag,
             "guide": guide.data,
             "reviews": review_items,
+            "evidence_receipts": self.evidence_receipts(assessment_row, actor),
         }
 
     def approve_assessment(self, *, assessment_id: str, if_match: str, actor: Actor) -> AssessmentRow:
@@ -1394,6 +1776,7 @@ class Stage1Service:
             )
         # Approval is blocked unless every anchor still resolves byte-for-byte.
         self.evidence_view(assessment.submission_id, actor)
+        self._assert_evidence_receipts_complete(current, assessment, actor)
         approved = assessment.model_copy(
             update={
                 "status": m.WorkflowStatus.APPROVED,

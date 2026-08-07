@@ -154,6 +154,12 @@ def test_postgres_claim_skips_a_locked_job_and_claims_only_one(
     assert first.attempt == 0
     assert second.status == "RUNNING"
     assert second.attempt == 1
+    with postgres_repository.session() as session:
+        session.execute(
+            update(JobRow)
+            .where(JobRow.id.in_(ordered_ids))
+            .values(status="SUCCEEDED", stage="TEST_CLEANUP")
+        )
 
 
 def test_postgres_stage_keys_are_replayed_and_tenant_bound(
@@ -234,6 +240,12 @@ def test_postgres_repository_hides_cross_tenant_rows(
     )
     with pytest.raises(NotFound, match="not found"):
         postgres_repository.scoped(JobRow, job_id, _id("tnt_other"))
+    with postgres_repository.session() as session:
+        session.execute(
+            update(JobRow)
+            .where(JobRow.id == job_id)
+            .values(status="SUCCEEDED", stage="TEST_CLEANUP")
+        )
 
 
 def test_postgres_model_calls_and_audit_events_are_append_only(

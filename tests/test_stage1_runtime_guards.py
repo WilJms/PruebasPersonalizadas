@@ -1,8 +1,17 @@
 from __future__ import annotations
 
 import asyncio
+from datetime import UTC, datetime, timedelta
+import os
+from pathlib import Path
+import socket
+import subprocess
+import sys
+import time
 from types import SimpleNamespace
+from uuid import uuid4
 
+import httpx
 import jwt
 import pytest
 from sqlalchemy import text
@@ -13,8 +22,14 @@ from comprehension_verification.web import worker
 from comprehension_verification.web.app import create_app
 from comprehension_verification.web.object_store import MemoryObjectStore
 from comprehension_verification.web.repository import JobRow, Repository
-from comprehension_verification.web.settings import Settings
+from comprehension_verification.web.settings import Settings, WorkerSettings
 from comprehension_verification.web.workflows import Stage1Service
+
+
+def _unused_local_port() -> int:
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as probe:
+        probe.bind(("127.0.0.1", 0))
+        return int(probe.getsockname()[1])
 
 
 def _cloud_settings(**overrides: object) -> dict[str, object]:
@@ -82,6 +97,16 @@ def test_cloud_accepts_only_complete_explicit_psycopg_configuration() -> None:
     assert settings.p10_enabled is False
 
 
+def test_cloud_worker_settings_exclude_web_auth_and_session_secrets() -> None:
+    settings = WorkerSettings(**_cloud_settings())
+
+    assert settings.model_mode == "mock"
+    assert "session_secret" not in WorkerSettings.model_fields
+    assert "auth_mode" not in WorkerSettings.model_fields
+    assert "supabase_jwt_issuer" not in WorkerSettings.model_fields
+    assert "job_runner_mode" not in WorkerSettings.model_fields
+
+
 def test_upload_and_download_capabilities_use_separate_bounded_ttls() -> None:
     store = MemoryObjectStore(
         secret="signed-url-test-secret-with-at-least-32-bytes",
@@ -103,6 +128,154 @@ def test_upload_and_download_capabilities_use_separate_bounded_ttls() -> None:
     )
     assert upload_claims["exp"] - upload_claims["iat"] == 1200
     assert download_claims["exp"] - download_claims["iat"] == 180
+
+
+def test_real_uvicorn_process_never_logs_valid_invalid_or_expired_capabilities(
+    tmp_path: Path,
+) -> None:
+    port = _unused_local_port()
+    session_secret = "process-log-session-secret-with-at-least-32-bytes"
+    database = tmp_path / "process-log.db"
+    repo_root = Path(__file__).resolve().parents[1]
+    python_bin = Path(sys.executable).parent
+    environment = os.environ.copy()
+    environment.update(
+        {
+            "PATH": f"{python_bin}{os.pathsep}{environment.get('PATH', '')}",
+            "PYTHONUNBUFFERED": "1",
+            "PORT": str(port),
+            "CVA_ENVIRONMENT": "test",
+            "CVA_DATABASE_URL": f"sqlite+pysqlite:///{database}",
+            "CVA_AUTH_MODE": "local",
+            "CVA_OBJECT_STORE_MODE": "memory",
+            "CVA_JOB_RUNNER_MODE": "inline",
+            "CVA_MODEL_MODE": "mock",
+            "CVA_P10_ENABLED": "false",
+            "CVA_SESSION_SECRET": session_secret,
+            "CVA_LOCAL_INVITED_EMAILS": "teacher@example.test",
+        }
+    )
+    process = subprocess.Popen(
+        [
+            "sh",
+            "deploy/docker-entrypoint.sh",
+            "web",
+            "--host",
+            "127.0.0.1",
+            "--log-level",
+            "info",
+        ],
+        cwd=repo_root,
+        env=environment,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+    )
+    sensitive_values: set[str] = set()
+    output = ""
+    try:
+        base_url = f"http://127.0.0.1:{port}"
+        with httpx.Client(base_url=base_url, timeout=3.0) as client:
+            deadline = time.monotonic() + 15
+            while True:
+                try:
+                    if client.get("/api/health").status_code == 200:
+                        break
+                except httpx.HTTPError:
+                    pass
+                if process.poll() is not None:
+                    startup_output = process.stdout.read() if process.stdout else ""
+                    raise AssertionError(
+                        f"Uvicorn exited before readiness with {process.returncode}: "
+                        f"{startup_output}"
+                    )
+                if time.monotonic() >= deadline:
+                    raise AssertionError("Uvicorn did not become ready")
+                time.sleep(0.05)
+
+            logged_in = client.post(
+                "/api/v1/session/login", json={"email": "teacher@example.test"}
+            )
+            assert logged_in.status_code == 200
+            csrf = client.cookies.get("cva_csrf")
+            assert csrf
+            mutation_headers = {
+                "X-CSRF-Token": csrf,
+                "Idempotency-Key": str(uuid4()),
+            }
+            created = client.post(
+                "/api/v1/activities",
+                headers=mutation_headers,
+                json={
+                    "title": "Synthetic capability log probe",
+                    "output_language": "es-CL",
+                    "assessment_modality": "WRITTEN",
+                    "question_count": 1,
+                    "target_total_minutes": 3,
+                    "allowed_response_formats": ["OPEN_SHORT"],
+                    "allowed_artifact_media_types": ["text/plain"],
+                    "structured_justification_mode": "NOT_REQUIRED",
+                },
+            )
+            assert created.status_code == 201, created.text
+            activity_id = created.json()["activity"]["activity_id"]
+            prepared = client.post(
+                f"/api/v1/activities/{activity_id}/artifacts/uploads",
+                headers={
+                    "X-CSRF-Token": csrf,
+                    "Idempotency-Key": str(uuid4()),
+                },
+                json={
+                    "role": "ASSIGNMENT_PROMPT",
+                    "filename": "synthetic.txt",
+                    "media_type": "text/plain",
+                    "byte_size": 4,
+                },
+            )
+            assert prepared.status_code == 201, prepared.text
+            upload_url = prepared.json()["upload"]["upload_url"]
+            valid_capability = upload_url.rsplit("/", 1)[-1]
+            sensitive_values.add(valid_capability)
+            assert client.put(
+                upload_url,
+                headers={"Content-Type": "text/plain"},
+                content=b"safe",
+            ).status_code == 204
+
+            now = datetime.now(UTC)
+            expired_capability = jwt.encode(
+                {
+                    "iss": "cva-object-fake",
+                    "aud": "cva-object-fake",
+                    "key": "synthetic/expired",
+                    "method": "GET",
+                    "iat": now - timedelta(minutes=2),
+                    "exp": now - timedelta(minutes=1),
+                },
+                session_secret,
+                algorithm="HS256",
+            )
+            invalid_capability = f"invalid-capability-{uuid4()}"
+            sensitive_values.update({expired_capability, invalid_capability})
+            assert client.get(
+                f"/api/v1/objects/{expired_capability}"
+            ).status_code == 403
+            assert client.get(
+                f"/api/v1/objects/{invalid_capability}"
+            ).status_code == 403
+    finally:
+        process.terminate()
+        try:
+            output = process.communicate(timeout=10)[0]
+        except subprocess.TimeoutExpired:
+            process.kill()
+            output = process.communicate(timeout=5)[0]
+
+    assert sensitive_values
+    assert all(value not in output for value in sensitive_values)
+    assert '"event":"http.request.completed"' in output
+    assert '"route":"/api/v1/object-uploads/{token}"' in output
+    assert '"route":"/api/v1/objects/{token}"' in output
 
 
 def _test_settings() -> Settings:
@@ -185,8 +358,8 @@ def test_worker_execution_claims_at_most_one_job_and_persists_failure(
         ),
     )
     runtime = SimpleNamespace(repository=repository, service=service)
-    monkeypatch.setattr(worker, "get_settings", lambda: object())
-    monkeypatch.setattr(worker, "build_runtime", lambda _settings: runtime)
+    monkeypatch.setattr(worker, "get_worker_settings", lambda: object())
+    monkeypatch.setattr(worker, "build_worker_runtime", lambda _settings: runtime)
 
     assert asyncio.run(worker.run_once()) == 1
     failed = repository.job_status("job_first", "tnt_worker")

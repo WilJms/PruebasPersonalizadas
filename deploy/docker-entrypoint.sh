@@ -17,6 +17,7 @@ case "${mode}" in
             "${CVA_ASGI_APP:-comprehension_verification.web.app:app}" \
             --host 0.0.0.0 \
             --port "${PORT:-8080}" \
+            --no-access-log \
             "$@"
         ;;
     worker)

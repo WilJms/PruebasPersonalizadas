@@ -20,7 +20,7 @@ from .canonical import pretty_json, sha256_bytes
 from .contracts import models as m
 
 
-RENDERER_VERSION = "stage1-renderer/2.0.0"
+RENDERER_VERSION = "stage1-renderer/2.1.0"
 
 
 class _InvariantCanvas(canvas.Canvas):
@@ -183,8 +183,28 @@ def _build_guide_pdf(assessment: m.Assessment, guide: m.EvaluationGuide, path: P
             Paragraph(f"<b>Propósito:</b> {_safe_paragraph(item.guide.purpose)}", styles["body"])
         )
         for element in item.guide.observable_elements:
+            source_trace = (
+                " · Fuentes: "
+                + ", ".join(_safe_paragraph(value) for value in element.source_ids)
+                if element.source_ids
+                else " · Sin fuentes de curso (contexto CLOSED)"
+            )
             story.append(
-                Paragraph(f"• {_safe_paragraph(element.description)}", styles["body"])
+                Paragraph(
+                    f"• <b>{_safe_paragraph(element.element_id)}</b> · "
+                    f"{_safe_paragraph(element.description)}",
+                    styles["body"],
+                )
+            )
+            story.append(
+                Paragraph(
+                    "Evidencia: "
+                    + ", ".join(_safe_paragraph(value) for value in element.evidence_ids)
+                    + source_trace
+                    + " · Requerido para nivel 2: "
+                    + ("sí" if element.required_for_level_2 else "no"),
+                    styles["body"],
+                )
             )
         for level in item.guide.levels:
             story.append(
@@ -193,11 +213,57 @@ def _build_guide_pdf(assessment: m.Assessment, guide: m.EvaluationGuide, path: P
                     styles["body"],
                 )
             )
+            story.append(
+                Paragraph(
+                    "Observables: "
+                    + (
+                        ", ".join(
+                            _safe_paragraph(value)
+                            for value in level.observable_element_ids
+                        )
+                        or "ninguno"
+                    ),
+                    styles["body"],
+                )
+            )
+        if item.guide.acceptable_alternatives:
+            story.append(
+                Paragraph(
+                    "<b>Alternativas aceptables:</b> "
+                    + "; ".join(
+                        _safe_paragraph(value)
+                        for value in item.guide.acceptable_alternatives
+                    ),
+                    styles["body"],
+                )
+            )
+        if item.guide.misconceptions:
+            story.append(
+                Paragraph(
+                    "<b>Posibles errores conceptuales a observar (no confirmados):</b> "
+                    + "; ".join(
+                        _safe_paragraph(value)
+                        for value in item.guide.misconceptions
+                    ),
+                    styles["body"],
+                )
+            )
         if item.guide.cannot_infer:
             story.append(
                 Paragraph(
                     "<b>No permite inferir:</b> "
                     + "; ".join(_safe_paragraph(value) for value in item.guide.cannot_infer),
+                    styles["body"],
+                )
+            )
+    if guide.diagnostics:
+        story.append(Paragraph("Diagnósticos de la guía", styles["heading"]))
+        for item in guide.diagnostics:
+            story.append(
+                Paragraph(
+                    f"<b>{_safe_paragraph(item.code)}</b> · "
+                    f"{_safe_paragraph(item.severity.value)} · "
+                    f"{_safe_paragraph(item.message)}",
                     styles["body"],
                 )
             )

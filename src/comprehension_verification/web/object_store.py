@@ -13,7 +13,7 @@ import boto3
 from botocore.exceptions import ClientError
 import jwt
 
-from .settings import Settings
+from .settings import Settings, WorkerSettings
 
 
 @dataclass(frozen=True, slots=True)
@@ -165,7 +165,7 @@ class R2ObjectStore:
     trusted as a content checksum.
     """
 
-    def __init__(self, settings: Settings) -> None:
+    def __init__(self, settings: Settings | WorkerSettings) -> None:
         assert settings.r2_endpoint_url and settings.r2_bucket
         self.bucket = settings.r2_bucket
         self.upload_ttl_seconds = settings.upload_url_ttl_seconds
