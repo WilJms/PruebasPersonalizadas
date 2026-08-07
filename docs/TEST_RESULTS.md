@@ -1,133 +1,190 @@
-# Resultados verificables de la corrección final E0/E1
+# Resultados verificables de remediación E0/E1
 
-Fecha de ejecución: **2026-08-01** (`America/Santiago`). Corte de este registro:
-`2026-08-01T20:23:20-04:00`.
+Fecha de corte documental: 2026-08-07 (America/Santiago).
 
-Solo se marca como ejecutado lo observado en esta corrección. `$PY` representa
-`/tmp/cva-stage1-final-venv-019fbfaa/bin/python`; las credenciales PostgreSQL
-fueron ficticias, efímeras y no se registran. Todos los casos usaron
-`CVA_MODEL_MODE=mock` y `CVA_P10_ENABLED=false`.
+Este archivo registra únicamente resultados observados. Las credenciales y
+capacidades no se registran. Todos los recorridos usaron model mode mock y P10
+deshabilitado. Los identificadores posteriores a FINAL_STAGE1_SHA se guardan
+en el paquete de evidencia externo, no mediante un commit adicional.
 
-## Precheck Git obligatorio
+## Candidato funcional
 
-| Comando | Fecha | Exit | Resultado | Limitación |
-|---|---|---:|---|---|
-| `pwd` | 2026-08-01 | 0 | Raíz esperada. | Inspección local. |
-| `git rev-parse --show-toplevel` | 2026-08-01 | 0 | `/Users/wiljms/Documents/PruebasPersonalizadasCodex`. | Ninguna. |
-| `git remote -v` | 2026-08-01 | 0 | `origin` apunta a `WilJms/PruebasPersonalizadas`. | No prueba autenticación de escritura. |
-| `git branch --show-current` | 2026-08-01 | 0 | `fix/stage1-external-readiness`. | Ninguna. |
-| `git log --oneline --decorate -5` | 2026-08-01 | 0 | `origin/main` y baseline en `dadaaa7`. | Solo historial local/fetched. |
-| `git status --short --untracked-files=all` | 2026-08-01 | 0 | Se observaron y preservaron `.gitignore`, `.dockerignore` y el workflow preexistentes. | Estado previo al trabajo. |
-| diffs solicitados de `.gitignore`, `.dockerignore` y `.github/workflows/ci.yml` | 2026-08-01 | 0 | Los tres cambios locales quedaron registrados antes de editar. | Los dos `--no-index` usan 1 cuando existe diferencia; `|| true` dejó el bloque en 0 como se pidió. |
+| Elemento | Resultado |
+|---|---|
+| SHA | 6d0c96837c552254d8f23a534975862e47d5a079 |
+| Worktree | Limpio y sincronizado con origin |
+| CI push | 31154598870, SUCCESS |
+| CI pull_request | 31154601586, SUCCESS |
+| Cloud Build | 4be4e25b-98f7-4d06-a3b9-59ea4f99625f, SUCCESS |
+| Build source | SHA candidato exacto |
+| Digest | sha256:4611f0812da2402b30e81bcfaa6aa5cb73a558c6f411db2ba259eaffe9f190d4 |
+| Provenance | requested VERIFIED; SLSA build level 3 |
+| Scan | FINISHED_SUCCESS; OS/PyPI/npm/secret y otros; 0 vulnerabilidades |
+| SBOM | SPDX 2.3; 146 paquetes; 290 relaciones; SHA-256 f3a7aa44f2039e162a00d15dabfa344193c6ed3d064638a1b7155e016430c4f8 |
 
-## Entornos limpios
+## Regresión local
 
-| Comando | Fecha | Exit | Resultado | Limitación |
-|---|---|---:|---|---|
-| Python 3.12.13 bundled: `-m venv /tmp/cva-stage1-final-venv-019fbfaa` | 2026-08-01 | 0 | Entorno nuevo fuera del workspace. | Temporal local. |
-| `$PY -m pip install -e '.[dev]'` | 2026-08-01 | 0 | Proyecto y dependencias dev instalados limpiamente. | El primer intento sandbox falló por DNS; el reintento de red autorizado fue el PASS. |
-| `make frontend-install` con Node bundled y caché npm temporal vacía | 2026-08-01 | 0 | `npm ci`, 158 paquetes desde `package-lock.json`. | Un primer intento sandbox terminó 2 por el entorno npm; el reintento autorizado terminó 0. |
+| Prueba | Clasificación | Resultado |
+|---|---|---|
+| Validación contractual | LOCAL_REAL | PASS: schema 1.1.0, 46 roots, 112 definiciones, 231 referencias, 8 fixtures |
+| Suite Python | LOCAL_REAL | 162 passed, 7 PostgreSQL-only skipped |
+| Guardas runtime focalizadas | LOCAL_REAL | 21 passed; incluye proceso Uvicorn y cache epoch |
+| Deploy artifacts | LOCAL_REAL | 9 passed |
+| Secret scan | LOCAL_REAL | PASS en 231 archivos versionables |
+| Compileall | LOCAL_REAL | PASS |
+| Frontend typecheck | LOCAL_REAL | PASS |
+| Vitest | LOCAL_REAL | 4 files, 19 tests passed |
+| Vite build | LOCAL_REAL | PASS; bundle candidato generado |
+| npm audit moderate | LOCAL_REAL + red | 0 vulnerabilidades |
+| Playwright crítico | LOCAL_REAL | 1 passed; login a export y reload/recovery |
 
-## Contratos, backend y Stage 0
+La advertencia StarletteDeprecationWarning del adaptador TestClient permanece
+clasificada como deuda P3 compatible; no ocultó fallos ni afecta el runtime.
 
-| Comando | Hora | Exit | Resultado | Limitación |
-|---|---|---:|---|---|
-| `make contracts PYTHON=$PY` | 20:02 | 0 | Schema 1.1.0: 46 roots, 112 `$defs`, 231 referencias y 8 fixtures. Hash modelo `38c6691a…671ba`; hash schema `e7f0b54d…cc12f`. | Validación/generación local. |
-| `make fixtures PYTHON=$PY` | 20:02 | 0 | Fixtures reconstruidos y validados; PDF contractual determinista, 3684 bytes. | No modificó manualmente el schema. |
-| `make test PYTHON=$PY` | 20:02 | 0 | **134 passed, 7 skipped**, 9.96 s. | Los 7 skips requieren PostgreSQL y se ejecutaron aparte. Suite general usa SQLite local/fakes. |
-| `make test-cov PYTHON=$PY` | 20:02 | 0 | **134 passed, 7 skipped**, cobertura total **82%**, 24.56 s. | Misma separación PostgreSQL. |
-| `make stage0-demo PYTHON=$PY` | 20:03 | 0 | `READY`, 3 preguntas, 13 calls mock, outcome esperado, sin red/tools. | Fixture sintético. |
-| `make stage0-fail PYTHON=$PY` | 20:04 | 0 | Diagnóstico insuficiente esperado, 5 calls, sin Assessment parcial. | Fixture sintético. |
-| `make stage0-injection PYTHON=$PY` | 20:04 | 0 | `READY`; injection presente en fuente y ausente en generación, sin red/tools. | Fixture sintético hostil. |
-| dos procesos `$PY -m comprehension_verification.cli run-synthetic --case sufficient --output /tmp/cva-stage1-repro-{a,b}-019fbfaa` | 20:04 | 0 / 0 | Ambos recorridos terminaron `READY`. | Procesos locales independientes. |
-| `diff -rq /tmp/cva-stage1-repro-a-019fbfaa /tmp/cva-stage1-repro-b-019fbfaa` | 20:04 | 0 | Directorios idénticos byte a byte, incluidos JSON, HTML y PDF. | Reproducibilidad en el mismo SO/runtime. |
-| `$PY -m pytest deploy/tests/test_deploy_artifacts.py tests/test_stage1_runtime_guards.py -q` | 20:09 | 0 | **25 passed**, 1 warning. | Focalizada tras las correcciones finales. |
+## PostgreSQL 16 y 17
 
-La única advertencia de pytest es `StarletteDeprecationWarning` del adaptador de
-`TestClient`; no afecta el runtime ni ocultó fallos.
+Se usaron dos contenedores efímeros dedicados, solo en loopback, con
+credenciales sintéticas. Ambos fueron detenidos y autoeliminados.
 
-Hashes de los seis exports reproducibles de `sufficient`:
+| Major | Migración | Superficie | Primera matriz | Segunda matriz |
+|---|---|---|---|---|
+| PostgreSQL 16 | PASS | 24 tablas, 24 RLS, 2 triggers append-only | E2E 1 + sensibles 7 PASS | E2E 1 + sensibles 7 PASS |
+| PostgreSQL 17 | PASS | 24 tablas, 24 RLS, 2 triggers append-only | E2E 1 + sensibles 7 PASS | E2E 1 + sensibles 7 PASS |
 
-- Assessment JSON `bbe394bd14cbe88acec94dbf727a69253923ee13d0b91badb1ca041265a9db44`;
-- Assessment HTML `180c25be27f0e3b02c761ee446d9788cac620b8feb8677c38b8461d2d732b89b`;
-- Assessment PDF `26a5be77a53fa58bc55d180e16b00f43894ab9e325a3653fae2fe23a7622dd69`;
-- Guide JSON `87858e8a070a8e5ef7fc0bf18506d5b571bdf272fb7ecb4017d0dbb030938d41`;
-- Guide HTML `d7d489e28428cbfb5b1043dacdfacd61ce5cd522c5136653746d2da3ec386f18`;
-- Guide PDF `ba50b5e4a17e7a64fad767b34b24000c38023ff47b55c611a0e7f387a7ad31dd`.
+No se limpió la base entre las dos matrices. El harness dejó de depender de
+conteos globales y no contaminó claim_next_job.
 
-## Frontend
+## GitHub Actions
 
-| Comando | Hora | Exit | Resultado | Limitación |
-|---|---|---:|---|---|
-| `make frontend-typecheck` | 20:06 | 0 | TypeScript sin errores. | Node 24.14 local; CI declara Node 22.13.1 compatible. |
-| `make frontend-test` | 20:06 | 0 | Vitest: **4 files, 16 tests passed**. | DOM simulado; no servicio cloud. |
-| `make frontend-build` | 20:06 | 0 | Vite 8.2.0, 80 módulos, bundle JS 411.18 kB (116.47 kB gzip). | Build local. |
-| `npm audit --audit-level=high` | 20:06 | 0 | **0 vulnerabilidades**. | Snapshot del registry en la fecha indicada. |
+Cada run ejecutó siete jobs:
 
-## PostgreSQL 16 real temporal
+- contratos, backend y Stage 0;
+- PostgreSQL 16;
+- PostgreSQL 17;
+- frontend, build y audit;
+- Terraform/deploy estático;
+- Docker runtime/audit;
+- Browser E2E, recuperación y accesibilidad.
 
-Se usó `postgres:16-bookworm`, PostgreSQL **16.14**, solo en loopback. La
-segunda base `cva_stage1_final` se creó vacía para la ejecución final. Los
-comandos siguientes recibieron la URL mediante `$CVA_TEST_POSTGRES_URL`; no se
-registra la URL autenticada.
+Los runs push 31154598870 y pull_request 31154601586 terminaron verdes y
+reportaron el mismo head candidato. GitHub puede usar un merge ref sintético
+para pull_request; la evidencia final distingue CI_MERGE_SHA de PR head.
 
-| Comando | Fecha | Exit | Resultado | Limitación |
-|---|---|---:|---|---|
-| `make postgres-prepare CVA_TEST_POSTGRES_URL=… PYTHON=$PY` | 2026-08-01 | 0 | Migración aplicada a DB vacía; SHA `465ec240…fa27`; 24 tablas, 24 RLS y 2 triggers append-only. | Comprueba tablas/columnas y estas invariantes seleccionadas; **no** afirma equivalencia exacta con ORM. |
-| `make postgres-e2e CVA_TEST_POSTGRES_URL=… PYTHON=$PY` | 2026-08-01 | 0 | **1 passed**: E2E E1 de una actividad/submission, reapertura y exports. | Model gateway mock; PostgreSQL real. |
-| `make postgres-sensitive CVA_TEST_POSTGRES_URL=… PYTHON=$PY` | 2026-08-01 | 0 | **7 passed**: idempotencia, claim/SKIP LOCKED, unicidad, stage keys, CAS/ETag, tenant y append-only. | Contenedor local, no Supabase administrado. |
+## Cloud Build, scan y SBOM
 
-## Terraform y despliegue estático
+El trigger regional creó el build candidato desde el repositorio GitHub
+autorizado. El build:
 
-| Comando | Fecha | Exit | Resultado | Limitación |
-|---|---|---:|---|---|
-| `terraform fmt -check -recursive deploy/terraform` | 2026-08-01 | 0 | Sin drift de formato. | Estático. |
-| `terraform -chdir=deploy/terraform init -backend=false -input=false` | 2026-08-01 | 0 | Provider `hashicorp/google 6.50.0` desde lockfile. | Sin backend, credenciales ni acceso cloud. |
-| `terraform -chdir=deploy/terraform validate` | 2026-08-01 | 0 | Configuración válida con Terraform 1.14.3. | No se ejecutó plan/apply. |
-| `$PY -m pytest deploy/tests/test_deploy_artifacts.py -q` | 2026-08-01 | 0 | **8 passed**. | Regresión estática de IaC/artefactos. |
-| parseo `yaml.safe_load` de `deploy/cloudbuild.yaml` | 2026-08-01 | 0 | YAML válido. | No ejecuta Cloud Build. |
-| `sh -n deploy/docker-entrypoint.sh` | 2026-08-01 | 0 | Sintaxis shell válida. | No sustituye el smoke Docker. |
+- usó la cuenta cva-cloudbuild;
+- construyó con base y dependencias fijadas;
+- ejecutó smoke de health/readiness;
+- publicó por la sección images;
+- exigió provenance verificada;
+- no ejecutó gcloud run ni desplegó;
+- produjo dos occurrences de provenance ligadas al digest;
+- produjo discovery FINISHED_SUCCESS y cero vulnerabilidades;
+- exportó un SBOM oficial cuyo nombre incluye el digest exacto.
 
-## Docker
+No se incluyen substitutions completas ni sobres firmados en la evidencia
+porque contienen material público innecesario y aumentan el riesgo de copiar
+datos operacionales.
 
-Motor local: Docker Desktop 29.5.3. Las imágenes finales se reconstruyeron
-después de la última modificación del Dockerfile.
+## Terraform candidato
 
-| Comando/acción | Fecha | Exit | Resultado | Limitación |
-|---|---|---:|---|---|
-| `docker build --target runtime -t cva-runtime:local .` | 2026-08-01 | 0 | Target runtime construido. | Arquitectura local; no push. |
-| `docker build --target audit -t cva-audit:local .` | 2026-08-01 | 0 | Target audit construido con fixtures. | Arquitectura local; no push. |
-| runtime con filesystem read-only, tmpfs, `--cap-drop ALL` y adaptadores locales; `GET /api/health` | 2026-08-01 | 0 | `status=ok`, Stage 1, mock. | Liveness intencionalmente no consulta dependencias externas. |
-| mismo runtime; `GET /api/readiness` | 2026-08-01 | 0 | `status=ready`; se comprobó además que `/app/fixtures` no existe. | SQLite seguro solo para smoke local; cloud exige PostgreSQL. |
-| target audit: `run-synthetic` para `sufficient`, `insufficient`, `injection` | 2026-08-01 | 0 / 0 / 0 | Outcomes esperados; JSON/HTML/PDF presentes para sufficient/injection y ausentes para insufficient. | Fixtures sintéticos; no proveedor real. |
-| cleanup automático del contenedor runtime | 2026-08-01 | 0 | Contenedor eliminado incluso ante fallo por `trap`. | Las imágenes locales se conservaron. |
+| Acción | Exit/resultado |
+|---|---|
+| fmt recursive | 0 |
+| init | 0, provider Google 6.50.0 |
+| validate | 0 |
+| pruebas deploy | 9 passed |
+| plan guardado | exit 2 esperado: 0 add, 2 update in-place, 0 destroy |
+| revisión JSON | solo imagen de cva-web y cva-worker; Job mantuvo 1/1/0 |
+| apply del plan guardado | 0 add, 2 change, 0 destroy |
+| plan post-apply A | exit 0, no changes |
+| plan post-apply B | exit 0, no changes |
 
-## Seguridad, integridad y Git
+No hubo replace, destroy, IAM, secretos inline, cambio de proyecto/región,
+task, parallelism, retries, model mode ni P10.
 
-| Comando | Fecha | Exit | Resultado | Limitación |
-|---|---|---:|---|---|
-| `$PY scripts/check_secrets.py` | 2026-08-01 | 0 | Sin hallazgos de alta confianza en archivos versionables. | Heurístico; se complementa con revisión de rutas ignoradas sin mostrar valores. |
-| revisión de rutas `.env`, tfvars/state, credenciales y tokens ignorados | 2026-08-01 | 0 | Sin material versionable que requiera saneamiento. | No se imprimieron contenidos. |
-| `git diff --check` y `git diff --cached --check` | 2026-08-01 | 0 / 0 | Sin errores de whitespace antes y después del staging. | Validación local del diff. |
-| revisión final: status/stat/diff, workflow en `git ls-files` y búsqueda de caches indexados | 2026-08-01 | 0 | Workflow versionado; ningún `__pycache__`, `.pyc`, `.tsbuildinfo` o `.DS_Store` permanece en el índice. | Revisión del commit local. |
-| `git commit -m "Prepare Stage 1 for external verification"` | 2026-08-01 | 0 | Commit funcional `59c932d`, 108 rutas. | Rama `fix/stage1-external-readiness`, no `main`. |
-| `git push -u origin fix/stage1-external-readiness` | 2026-08-01 | 0 | Rama publicada sin force. | No se hizo merge. |
-| creación del PR draft `#1` con base `main` | 2026-08-01 | 0 | PR abierto: `WilJms/PruebasPersonalizadas#1`. | Permanece draft y sin merge. |
-| GitHub Actions run `30725021051` sobre `59c932d` | 2026-08-01 | 0 | **SUCCESS**: backend/Stage 0, PostgreSQL 16, frontend, Terraform/deploy y Docker verdes. | CI real del commit funcional; no prueba cloud real. |
+## Cloud runtime y navegador
 
-## Intentos fallidos que no se contabilizan como PASS
+### Runtime
 
-| Comando/intento | Exit | Causa y acción |
-|---|---:|---|
-| instalación Python inicial dentro del sandbox | 1 | DNS bloqueado; se repitió con autorización y entorno temporal limpio. |
-| primer `make frontend-install` dentro del sandbox | 2 | npm no pudo completar su handler/caché; se repitió con caché temporal writable y terminó 0. |
-| primer acceso PostgreSQL desde sandbox | no cero | Loopback restringido; se repitió con autorización contra el mismo contenedor local. |
-| primer `terraform validate` sandbox | 1 | Handshake del provider restringido; el reintento autorizado terminó 0. |
-| `pytest tests/test_deploy_artifacts.py …` | 4 | Error del operador: el archivo está bajo `deploy/tests/`; el comando corregido pasó 25 pruebas. |
+- cva-web Ready en us-east1;
+- cva-worker Ready en us-east1;
+- mismo digest candidato en ambos;
+- task count 1, parallelism 1, max retries 0;
+- health 200 y readiness 200;
+- API privada anónima 401;
+- documentos SPA no-store y assets versionados immutable;
+- request de sesión sin cache epoch recibe Clear-Site-Data solo para cache;
+- request del shell actual no recibe ese header.
 
-## Pendiente externo real
+### Recorrido cloud sintético
 
-No se ejecutó `terraform plan/apply`, Cloud Build, GCP, Cloud Run Service/Jobs,
-Supabase PostgreSQL/Auth o Cloudflare R2. E1-11 sigue parcial hasta completar
-`docs/EXTERNAL_SETUP.md`. No se llamó a un proveedor de IA real y no se
-implementó ninguna capacidad de Etapa 2.
+Se completó un recorrido real autorizado con:
+
+- login Supabase y membresía TEACHER;
+- actividad Aceptación final Etapa 1 2026-08-07;
+- CHOICE + NOT_REQUIRED, una pregunta y tres minutos;
+- consigna y rúbrica sintéticas subidas a R2;
+- blueprint derivado, P05 visible y aprobado;
+- submission sintética y Cloud Run Job real;
+- assessment con tres alternativas, una best, rationales y misconceptions;
+- dificultad derivada HIGH de solo lectura;
+- planning, operación, dimensión, anclas, locators, scores y referencias;
+- source R2 cargada y receipt durable tras reload;
+- aprobación bloqueada antes del receipt y habilitada después;
+- Guide con propósito, observables, evidencia, fuentes, alternativas,
+  misconceptions, niveles y cannot_infer;
+- Assessment PDF, Guide PDF y JSON canónico;
+- model calls 4 antes y 4 después de export: delta 0;
+- capacidad de descarga con TTL 300 segundos que dejó de funcionar al expirar.
+
+Los tres exports fueron leídos únicamente como datos sintéticos de aceptación:
+10.372, 19.271 y 9.614 bytes; hashes y tamaños coincidieron con sus receipts.
+El Assessment PDF excluyó datos del evaluador y el Guide PDF conservó
+trazabilidad.
+
+### Recuperación de shell
+
+El primer candidato de cache no podía retirar retroactivamente un index.html
+almacenado antes de la política no-store. El candidato 6d0c968 añadió el epoch.
+Con el mismo perfil autenticado:
+
+1. una apertura reprodujo deliberadamente el shell anterior y su GET de sesión
+   recibió la purga de cache;
+2. se cerró completamente esa pestaña;
+3. una nueva apertura en la raíz resolvió /activities sin /login, hard refresh,
+   ID ni URL recordada;
+4. aparecieron navegación actual, actividad, blueprint APPROVED, submission
+   APPROVED, Job SUCCEEDED y Assessment APPROVED.
+
+## Supabase y Cloudflare
+
+| Boundary | Clasificación | Resultado |
+|---|---|---|
+| Supabase health | CLOUD_REAL | ACTIVE_HEALTHY, PostgreSQL 17 |
+| Auth | CLOUD_REAL | Magic link sintético; usuario y membresía tenant-scoped |
+| Migración | CLOUD_REAL | 24 tablas/RLS y 2 triggers append-only |
+| R2 control plane | CLOUD_REAL | Bucket correcto, privado, r2.dev off, domains 0 |
+| R2 CORS | CLOUD_REAL | Origen Cloud Run exacto; GET/PUT/HEAD; Content-Type; ETag; 3600 |
+| R2 lifecycle | CLOUD_REAL | multipart 1d, raw 30d, exports 120d |
+
+## Intentos inválidos o fallidos no contados como PASS
+
+| Intento | Clasificación | Causa/acción |
+|---|---|---|
+| npm audit dentro del sandbox | INTENTO_INVALIDO | DNS bloqueado; reintento autorizado terminó con 0 vulnerabilidades |
+| suite runtime dentro del sandbox | INTENTO_INVALIDO | Bind de puerto local bloqueado; misma suite autorizada terminó 21/21 |
+| terraform show JSON dentro del sandbox | INTENTO_INVALIDO | Provider no pudo iniciar; reintento read-only autorizado produjo resumen sanitizado |
+| export SBOM con location forzada | INTENTO_INVALIDO | Artifact Analysis no resolvió occurrence; resolución automática exportó el SBOM correcto |
+| candidato b1d1aa6 | SNAPSHOT_INTERMEDIO | no-store correcto para respuestas nuevas, pero no desalojaba cache histórica; reemplazado por 6d0c968 |
+| dos URLs R2 firmadas mostradas por output de herramienta | INTENTO_INVALIDO | capacidades sintéticas individuales de 300 s, ya expiradas; excluidas de evidencia y nunca repetidas |
+
+## Baseline histórico
+
+El corte del 2026-08-01 y sus detalles siguen disponibles en el historial Git
+anterior a esta remediación. Aquella evidencia local y el tar histórico no se
+presentan como evidencia final. Las auditorías previas permanecen intactas en
+docs/audits.

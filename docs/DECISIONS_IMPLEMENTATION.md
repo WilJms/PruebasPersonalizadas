@@ -191,17 +191,16 @@
   oculta fallos de integración detrás de un detalle cosmético.
 - **Relación:** E1-01.
 
-## D-019 - Dos gates de cierre distintos
+## D-019 - Dos gates de cierre distintos (decisión histórica del 2026-08-01)
 
-- **Decisión:** `READY_FOR_EXTERNAL_STAGE1_VERIFICATION` exige el boundary local
-  verde, commit y rama publicados, PR existente y GitHub Actions verde sobre el
-  commit final. `READY_TO_PUSH_FOR_CI` se reserva al mismo boundary local cuando
-  autenticación o permisos impiden publicar u observar CI. E1-11 continúa
-  parcial hasta evidencia real de GCP, Supabase y R2. Solo después de esa
-  evidencia podría evaluarse un gate posterior; esta auditoría nunca declara
-  `READY_FOR_STAGE_2`.
-- **Razón:** IaC válida, adapters y fakes no demuestran IAM, Auth, RLS, CORS,
-  lifecycle, red ni durabilidad de un Cloud Run Job real.
+- **Decisión:** este registro documenta el gate local que existía antes de la
+  verificación externa. Exigía código, rama, PR y CI verdes, pero mantenía
+  E1-11 parcial mientras GCP, Supabase y R2 no hubieran sido observados.
+- **Estado actual:** la verificación externa ya se ejecutó. D-030 define la
+  separación candidate/final y el manifest externo que sustituyen ese gate
+  histórico para el cierre vigente.
+- **Razón histórica:** IaC válida, adapters y fakes no demostraban IAM, Auth,
+  RLS, CORS, lifecycle, red ni durabilidad de un Cloud Run Job real.
 - **Relación:** E1-11 y restricción explícita de alcance.
 
 ## D-020 - Cloud Build usa identidad dedicada también para el source staging
@@ -247,3 +246,94 @@
   SQLite ni provocar reinicios por una dependencia externa caída; un TTL
   declarado debe afectar realmente la capacidad correspondiente.
 - **Relación:** E1-01/E1-03/E1-06/E1-11 y ADR-032/034.
+
+## D-024 - PrincipalId se aplica por semántica, no por forma global
+
+- **Decisión:** los campos que representan actores externos, usuarios Supabase,
+  servicios o sistema usan PrincipalId; los IDs internos de dominio conservan
+  Id. Los roots futuros pueden corregirse estructuralmente sin activar sus
+  endpoints.
+- **Razón:** un UUID Supabase válido no debe ser rechazado por el patrón de un
+  identificador interno, pero ampliar Id globalmente debilitaría contratos no
+  relacionados.
+- **Relación:** AUD-P1-11, modelos canónicos y ADR-028.
+
+## D-025 - OpenAPI usa DTOs de transporte que componen contratos canónicos
+
+- **Decisión:** requests y responses de Etapa 1 usan DTOs Pydantic estrictos
+  que importan modelos/enums canónicos. El snapshot OpenAPI normalizado y el
+  cliente TypeScript generado se rechazan por drift en tests y CI.
+- **Razón:** la wire shape necesita distinguir campos client-owned y
+  server-owned sin copiar ni redefinir roots canónicos.
+- **Relación:** AUD-P1-10 y F-017 a F-019.
+
+## D-026 - Evidence-first es un receipt durable por fragmento
+
+- **Decisión:** una versión de Assessment solo puede aprobarse cuando cada
+  fragmento requerido tiene un receipt server-side tenant-, actor- y
+  version-scoped que confirma carga y resolución exacta del locator. Un click
+  React no es evidencia.
+- **Razón:** cargar/resolver una fuente es verificable; afirmar comprensión
+  cognitiva del humano no lo es.
+- **Relación:** AUD-P1-08, F-014 y ADR-005/008.
+
+## D-027 - Rollouts SPA separan documentos, assets y cache histórica
+
+- **Decisión:** index y fallbacks HTML usan no-store; assets con hash son
+  inmutables. El cliente actual envía un epoch en todas las llamadas API. Un
+  GET de sesión desde un shell anterior recibe Clear-Site-Data limitado a
+  cache; cookies y storage de autenticación no se borran.
+- **Razón:** no-store protege respuestas nuevas, pero no puede retirar por sí
+  solo una respuesta almacenada antes de esa política. El epoch ofrece
+  autorrecuperación acotada y verificable.
+- **Relación:** AUD-P1-03 y E1-11.
+
+## D-028 - GitHub dispara builds; Terraform conserva ownership del runtime
+
+- **Decisión:** una conexión Cloud Build v2 limitada al repositorio y un trigger
+  regional de push construyen la rama autorizada con cuenta dedicada. Cloud
+  Build prueba y publica; Terraform recibe el digest y es el único que modifica
+  Service y Job.
+- **Razón:** evita doble escritor, despliegue de código no revisado y permisos
+  Run Admin en la identidad de build.
+- **Relación:** AUD-P1-01/02, D-020/D-022 y E1-11.
+
+## D-029 - Supply chain reproducible en el boundary práctico de E1
+
+- **Decisión:** bases Docker se fijan por digest, Python por requirements con
+  hashes, npm por lockfile/ci y Actions por commit SHA. Cloud Build exige
+  provenance verificada; scan y SBOM se ligan al digest.
+- **Razón:** permite reconstruir source a runtime y detectar vulnerabilidades
+  sin afirmar reproducibilidad bit a bit entre arquitecturas o servicios
+  administrados.
+- **Relación:** AUD-P2-12 y Plan E1-11.
+
+## D-030 - Candidate y final se separan para evitar autorreferencia falsa
+
+- **Decisión:** el candidato funcional recibe regresión completa, CI, build,
+  deployment y verificación cloud. El último commit solo cierra documentación y
+  se denomina FINAL_STAGE1_SHA. Su build, digest, runtime y auditoría se guardan
+  fuera del repositorio; no existe commit posterior para insertar esos valores.
+- **Razón:** el hash de un commit depende de su contenido y los outputs externos
+  solo existen después de publicarlo. Es imposible incluir honestamente el hash
+  final dentro del propio commit.
+- **Relación:** estrategia de candidate/final y procedencia del prompt de cierre.
+
+## D-031 - Verificación de ingeniería y revisión académica son gates distintos
+
+- **Decisión:** agentes de IA, tests y evidencia realizan el cierre técnico. La
+  aprobación humana del blueprint y del Assessment permanece como garantía
+  académica del producto. No se exige revisión humana de código.
+- **Razón:** evita confundir una decisión docente sobre el constructo con un
+  proceso de ingeniería no requerido.
+- **Relación:** decisión cerrada 5.3 del propietario y ADR-001/034.
+
+## D-032 - Deuda residual no puede degradar un P1
+
+- **Decisión:** solo se acepta deuda P2/P3 con fuente, riesgo residual y
+  justificación de no bloqueo. P1 permanece en cero. El backlog final contiene
+  copy legal pendiente de autoridad, recuperación visual de exports, limpieza
+  de documentación histórica E2 y una deprecación de tests.
+- **Razón:** conservar explícitamente deuda menor es más seguro que inventar
+  política legal, expandir Etapa 1 o alterar dependencias sin necesidad.
+- **Relación:** STAGE1_FINAL_REMEDIATION_BACKLOG.
