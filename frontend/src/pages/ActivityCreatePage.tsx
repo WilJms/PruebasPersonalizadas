@@ -3,20 +3,30 @@ import { useLocation } from "wouter";
 import {
   createActivity,
   generateBlueprint,
+  getActivityEstimate,
   uploadActivityArtifact,
 } from "../api/client";
 import type {
   ActivityCreateInput,
   AssessmentModality,
+  CostEstimate,
   ResponseFormat,
   StructuredJustificationMode,
 } from "../api/types";
 import { ErrorNotice } from "../components/Feedback";
 
 const RESPONSE_FORMATS: Array<{ value: ResponseFormat; label: string; note: string }> = [
-  { value: "OPEN_SHORT", label: "Respuesta abierta breve", note: "Explicación concisa" },
+  {
+    value: "OPEN_SHORT",
+    label: "Respuesta abierta breve",
+    note: "Formato operacional: no fija límite contractual de palabras ni dificultad",
+  },
   { value: "STRUCTURED_BULLETS", label: "Bullets estructurados", note: "Ideas separadas" },
-  { value: "CHOICE", label: "Selección", note: "Con opciones justificadas" },
+  {
+    value: "CHOICE",
+    label: "Selección entre alternativas",
+    note: "La explicación de cada alternativa es solo para el evaluador; la justificación estudiantil se configura aparte",
+  },
   {
     value: "ANNOTATION_OR_DIAGRAM",
     label: "Anotación o diagrama",
@@ -56,6 +66,8 @@ export function ActivityCreatePage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<unknown>(null);
   const [step, setStep] = useState("Configuración");
+  const [preparedActivityId, setPreparedActivityId] = useState<string | null>(null);
+  const [estimate, setEstimate] = useState<CostEstimate | null>(null);
 
   const canSubmit = useMemo(
     () =>
@@ -97,7 +109,6 @@ export function ActivityCreatePage() {
         allowed_response_formats: responseFormats,
         allowed_artifact_media_types: artifactFormats,
         structured_justification_mode: justification,
-        context_mode: "CLOSED",
       };
       setStep("Creando actividad");
       const activity = await createActivity(payload);
@@ -107,16 +118,33 @@ export function ActivityCreatePage() {
         setStep("Guardando rúbrica");
         await uploadActivityArtifact(activity.activity_id, "RUBRIC", rubric);
       }
-      setStep("Iniciando blueprint");
-      const operation = await generateBlueprint(activity.activity_id);
-      navigate(`/activities/${activity.activity_id}/blueprint`, {
+      setStep("Calculando estimación");
+      const nextEstimate = await getActivityEstimate(activity.activity_id);
+      setPreparedActivityId(activity.activity_id);
+      setEstimate(nextEstimate);
+      setStep("Estimación lista");
+    } catch (caught) {
+      setError(caught);
+    } finally {
+      setSubmitting(false);
+      if (!preparedActivityId) setStep("Configuración");
+    }
+  };
+
+  const startBlueprint = async () => {
+    if (!preparedActivityId || !estimate?.within_limit) return;
+    setSubmitting(true);
+    setError(null);
+    setStep("Iniciando blueprint");
+    try {
+      const operation = await generateBlueprint(preparedActivityId);
+      navigate(`/activities/${preparedActivityId}/blueprint`, {
         state: { jobId: operation.job_id },
       });
     } catch (caught) {
       setError(caught);
     } finally {
       setSubmitting(false);
-      setStep("Configuración");
     }
   };
 
@@ -250,6 +278,9 @@ export function ActivityCreatePage() {
                 </label>
               ))}
             </div>
+            <p className="field-help">
+              “Seleccionada” significa solo preguntas elegidas por el sistema; el blueprint materializa cuáles. La dificultad siempre se deriva de la evidencia.
+            </p>
           </fieldset>
         </section>
 
@@ -308,14 +339,38 @@ export function ActivityCreatePage() {
           </div>
         </section>
 
+        {estimate && (
+          <section className="estimate-panel" aria-live="polite">
+            <div>
+              <span className="eyebrow">Estimación preflight</span>
+              <h2>Blueprint listo para iniciar</h2>
+              <p>
+                {estimate.estimated_model_calls} llamadas · estimado USD {estimate.estimated_cost_usd.toFixed(2)} · límite superior USD {estimate.upper_bound_cost_usd.toFixed(2)} de USD {estimate.authorized_limit_usd.toFixed(2)}.
+              </p>
+              <small>Calculada {new Date(estimate.generated_at).toLocaleString()} · no es una promesa de precio.</small>
+              <ul>{estimate.assumptions.map((item) => <li key={item}>{item}</li>)}</ul>
+            </div>
+            <button
+              className="button button-primary"
+              disabled={!estimate.within_limit || submitting}
+              onClick={() => void startBlueprint()}
+              type="button"
+            >
+              {submitting ? step : "Confirmar e iniciar blueprint"}
+            </button>
+          </section>
+        )}
+
         <ErrorNotice error={error} />
         <footer className="form-actions">
           <p>
             <strong>Contexto cerrado.</strong> No se usará internet ni conocimiento de curso externo.
           </p>
-          <button className="button button-primary" disabled={!canSubmit || submitting} type="submit">
-            {submitting ? step : "Crear y generar blueprint"}
-          </button>
+          {!estimate && (
+            <button className="button button-primary" disabled={!canSubmit || submitting} type="submit">
+              {submitting ? step : "Crear, cargar y estimar"}
+            </button>
+          )}
         </footer>
       </form>
     </div>

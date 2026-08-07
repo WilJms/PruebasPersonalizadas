@@ -25,6 +25,10 @@ export function AppShell({ children }: PropsWithChildren) {
         </div>
 
         <nav aria-label="Navegación principal">
+          <Link to="/activities" className={(isActive) => (isActive ? "active" : "")}>
+            <span className="nav-glyph" aria-hidden="true">◫</span>
+            Actividades
+          </Link>
           <Link to="/activities/new" className={(isActive) => (isActive ? "active" : "")}>
             <span className="nav-glyph" aria-hidden="true">＋</span>
             Nueva actividad
@@ -46,10 +50,10 @@ export function AppShell({ children }: PropsWithChildren) {
           </div>
           <div className="account-menu">
             <span className="avatar" aria-hidden="true">
-              {(session?.display_name ?? session?.email ?? "U").slice(0, 1).toUpperCase()}
+              {(session?.email ?? "U").slice(0, 1).toUpperCase()}
             </span>
             <div>
-              <strong>{session?.display_name ?? session?.email}</strong>
+              <strong>{session?.email}</strong>
               <span>{session?.roles?.[0] ?? "Usuario autorizado"}</span>
             </div>
             <button className="button button-quiet" onClick={() => void signOut()} type="button">

@@ -12,17 +12,19 @@ import {
   getActivityAmbiguity,
   getJob,
   getLatestBlueprint,
+  listActivities,
   updateBlueprint,
 } from "../api/client";
+import type { ActivityResource, AssessmentBundle } from "../api/types";
 import {
   ambiguityView,
   assessmentBundle,
   blueprintView,
-  evaluationGuide,
   failedTechnicalJob,
   submission,
 } from "../test/fixtures";
 import { ActivityCreatePage } from "./ActivityCreatePage";
+import { ActivitiesPage } from "./ActivitiesPage";
 import { AssessmentReview } from "./AssessmentReviewPage";
 import { BlueprintPage } from "./BlueprintPage";
 import { SubmissionProgress } from "./SubmissionPage";
@@ -39,9 +41,45 @@ vi.mock("../api/client", async (importOriginal) => {
     getActivityAmbiguity: vi.fn(),
     getJob: vi.fn(),
     getLatestBlueprint: vi.fn(),
+    listActivities: vi.fn(),
     updateBlueprint: vi.fn(),
   };
 });
+
+function activityResource(
+  overrides: Partial<ActivityResource> & Pick<ActivityResource, "activity_id" | "title">,
+): ActivityResource {
+  const { activity_id, title, ...rest } = overrides;
+  return {
+    schema_version: "1.1.0",
+    activity_id,
+    tenant_id: "tenant_01",
+    title,
+    output_language: "es-CL",
+    assessment_modality: "WRITTEN",
+    question_count: 1,
+    target_total_minutes: 8,
+    allowed_response_formats: ["OPEN_SHORT"],
+    allowed_artifact_media_types: ["text/plain"],
+    structured_justification_mode: "NOT_REQUIRED",
+    context_mode: "CLOSED",
+    course_source_ids: [],
+    priority_criterion_ids: [],
+    require_blueprint_approval: true,
+    status: "DRAFT",
+    created_at: "2026-07-31T12:00:00Z",
+    updated_at: "2026-07-31T12:00:00Z",
+    journey: {
+      continue_path: `/activities/${activity_id}/edit`,
+      next_action: "EDIT_ACTIVITY",
+      blueprint: null,
+      submission: null,
+      job: null,
+      assessment: null,
+    },
+    ...rest,
+  };
+}
 
 describe("Stage 1 activity configuration", () => {
   it("captures the allowed controls and does not expose depth or cognitive operations", () => {
@@ -77,6 +115,89 @@ describe("Stage 1 activity configuration", () => {
   });
 });
 
+describe("Stage 1 durable landing", () => {
+  it("recovers server-confirmed draft, pipeline, submission and assessment states", async () => {
+    vi.mocked(listActivities).mockResolvedValue([
+      activityResource({ activity_id: "activity_draft", title: "Borrador durable" }),
+      activityResource({
+        activity_id: "activity_running",
+        title: "Blueprint en curso",
+        status: "QUEUED",
+        journey: {
+          continue_path: "/activities/activity_running/blueprint",
+          next_action: "VIEW_PROGRESS",
+          blueprint: null,
+          submission: null,
+          job: {
+            job_id: "job_running",
+            stage: "BLUEPRINT_BUILD",
+            status: "RUNNING",
+            progress: 0.5,
+          },
+          assessment: null,
+        },
+      }),
+      activityResource({
+        activity_id: "activity_uploaded",
+        title: "Entrega lista para iniciar",
+        status: "BLUEPRINT_APPROVED",
+        journey: {
+          continue_path: "/submissions/submission_uploaded",
+          next_action: "RUN_SUBMISSION",
+          blueprint: { version: 2, status: "APPROVED", etag: '"blueprint-2"' },
+          submission: {
+            submission_id: "submission_uploaded",
+            status: "UPLOADED",
+            active_job_id: null,
+          },
+          job: null,
+          assessment: null,
+        },
+      }),
+      activityResource({
+        activity_id: "activity_review",
+        title: "Assessment por revisar",
+        status: "BLUEPRINT_APPROVED",
+        journey: {
+          continue_path: "/submissions/submission_review/review",
+          next_action: "REVIEW_ASSESSMENT",
+          blueprint: { version: 3, status: "APPROVED", etag: '"blueprint-3"' },
+          submission: {
+            submission_id: "submission_review",
+            status: "NEEDS_REVIEW",
+            active_job_id: "job_done",
+          },
+          job: {
+            job_id: "job_done",
+            stage: "FINALIZE",
+            status: "SUCCEEDED",
+            progress: 1,
+          },
+          assessment: {
+            assessment_id: "assessment_01",
+            version: 1,
+            status: "NEEDS_REVIEW",
+            etag: '"assessment-1"',
+          },
+        },
+      }),
+    ]);
+
+    render(
+      <MemoryRouter initialEntries={["/activities"]}>
+        <Route path="/activities"><ActivitiesPage /></Route>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByRole("heading", { name: "Borrador durable" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Blueprint en curso" })).toBeInTheDocument();
+    expect(screen.getByText("RUNNING")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Estimar e iniciar" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Revisar Assessment" })).toBeInTheDocument();
+    expect(listActivities).toHaveBeenCalledTimes(1);
+  });
+});
+
 describe("Stage 1 blueprint review", () => {
   beforeEach(() => {
     vi.mocked(getLatestBlueprint).mockReset().mockResolvedValue(structuredClone(blueprintView));
@@ -99,13 +220,13 @@ describe("Stage 1 blueprint review", () => {
 
     expect(await screen.findByRole("heading", { name: "Comprensión causal" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Decisión con trade-off" })).toBeInTheDocument();
-    expect(screen.getAllByText("EXPLAIN CAUSALLY").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("EXPLAIN MECHANISM").length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText("Efecto de la decisión principal")).toBeInTheDocument();
     expect(screen.getByText(/blueprint-3/)).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Editar blueprint" }));
     expect(screen.getByRole("textbox", { name: "Nombre de dimensión 1" })).toBeInTheDocument();
-    expect(screen.getByRole("textbox", { name: "Foco opp_01" })).toBeInTheDocument();
+    expect(screen.getByRole("textbox", { name: "Foco opportunity_template_01" })).toBeInTheDocument();
     expect(screen.queryByRole("textbox", { name: /operación/i })).not.toBeInTheDocument();
   });
 
@@ -118,28 +239,40 @@ describe("Stage 1 blueprint review", () => {
     vi.mocked(getActivityAmbiguity).mockResolvedValue(structuredClone(ambiguityView));
     vi.mocked(getJob)
       .mockResolvedValueOnce({
+        ...failedTechnicalJob,
         job_id: "job_ambiguity",
+        aggregate_id: "activity_01",
         stage: "AMBIGUITY_TRIAGE",
         status: "NEEDS_REVIEW",
         progress: 0.45,
         attempt: 1,
+        diagnostics: [],
       })
       .mockResolvedValue({
+        ...failedTechnicalJob,
         job_id: "job_resumed",
+        aggregate_id: "activity_01",
         stage: "BLUEPRINT_REVIEW",
         status: "SUCCEEDED",
         progress: 1,
         attempt: 1,
+        diagnostics: [],
       });
     vi.mocked(createPolicyDecision).mockResolvedValue({
-      schema_version: "1.1",
+      schema_version: "1.1.0",
       decision_id: "decision_01",
       issue_id: "issue_scope",
       selected_option_id: "option_keep",
       decided_by: "user_01",
       decided_at: "2026-07-31T12:00:00Z",
     });
-    vi.mocked(generateBlueprint).mockResolvedValue({ job_id: "job_resumed" });
+    vi.mocked(generateBlueprint).mockResolvedValue({
+      ...failedTechnicalJob,
+      job_id: "job_resumed",
+      aggregate_id: "activity_01",
+      status: "SUCCEEDED",
+      diagnostics: [],
+    });
 
     render(
       <MemoryRouter
@@ -174,16 +307,29 @@ describe("Stage 1 blueprint review", () => {
       .mockRejectedValueOnce(new ApiError(404, "Blueprint not ready"))
       .mockResolvedValue(structuredClone(blueprintView));
     vi.mocked(getActivity).mockResolvedValue({
-      ...blueprintView.blueprint.assessment_constraints,
+      schema_version: "1.1.0",
       activity_id: "activity_01",
+      tenant_id: "tenant_01",
       title: "Actividad durable",
       output_language: "es-CL",
       assessment_modality: "WRITTEN",
+      question_count: 1,
+      target_total_minutes: 8,
       allowed_response_formats: ["OPEN_SHORT"],
       allowed_artifact_media_types: ["text/plain"],
       structured_justification_mode: "NOT_REQUIRED",
       context_mode: "CLOSED",
+      course_source_ids: [],
+      priority_criterion_ids: [],
+      require_blueprint_approval: true,
       status: "QUEUED",
+      created_at: "2026-07-31T12:00:00Z",
+      updated_at: "2026-07-31T12:00:00Z",
+      latest_blueprint_version: undefined,
+      journey: {
+        continue_path: "/activities/activity_01/blueprint",
+        next_action: "VIEW_PROGRESS",
+      },
     });
 
     render(
@@ -202,13 +348,15 @@ describe("Stage 1 blueprint review", () => {
       .mockReset()
       .mockRejectedValue(new ApiError(404, "Blueprint not available"));
     vi.mocked(getJob).mockResolvedValue({
+      ...failedTechnicalJob,
       job_id: "job_failed",
+      aggregate_id: "activity_01",
       stage: "BLUEPRINT_BUILD",
       status: "FAILED",
       progress: 0.7,
       attempt: 1,
       diagnostics: [
-        { code: "BLUEPRINT_BUILD_FAILED", severity: "ERROR", message: "Fallo validado." },
+        { code: "BLUEPRINT_BUILD_FAILED", severity: "ERROR", message: "Fallo validado.", retryable: false },
       ],
     });
 
@@ -251,21 +399,41 @@ describe("Stage 1 durable progress", () => {
   });
 });
 
-function ReviewHarness() {
-  const [opened, setOpened] = useState(false);
+function ReviewHarness({ initialBundle = assessmentBundle }: { initialBundle?: AssessmentBundle }) {
+  const [bundle, setBundle] = useState(structuredClone(initialBundle));
   const [tab, setTab] = useState<"assessment" | "guide">("assessment");
+  const verified = (bundle.evidence_receipts ?? []).length > 0;
   return (
     <AssessmentReview
-      allEvidenceOpened={opened}
-      bundle={assessmentBundle}
+      allEvidenceVerified={verified}
+      bundle={bundle}
       busy={false}
       exports={[]}
-      guide={evaluationGuide}
       onApprove={vi.fn()}
-      onEvidenceOpened={() => setOpened(true)}
       onExport={vi.fn()}
       onTabChange={setTab}
+      onVerify={(questionId, fragmentIndex) =>
+        setBundle((current) => ({
+          ...current,
+          evidence_receipts: [
+            {
+              receipt_id: "receipt_01",
+              assessment_id: current.assessment.assessment_id,
+              assessment_version: current.assessment_version,
+              assessment_etag: current.etag,
+              question_id: questionId,
+              fragment_index: fragmentIndex,
+              evidence_id: "evidence_01",
+              artifact_hash: `sha256:${"b".repeat(64)}`,
+              locator_hash: `sha256:${"c".repeat(64)}`,
+              normalized_hash: `sha256:${"a".repeat(64)}`,
+              verified_at: "2026-07-31T12:00:00Z",
+            },
+          ],
+        }))
+      }
       tab={tab}
+      verifying={null}
     />
   );
 }
@@ -279,24 +447,107 @@ describe("Stage 1 evidence-first review", () => {
       </MemoryRouter>,
     );
 
-    expect(screen.getByText("¿Cómo produjo la decisión descrita el efecto observado?")).toBeInTheDocument();
-    expect(screen.getAllByText("dim_causal").length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByText("variant_tradeoff")).toBeInTheDocument();
-    expect(screen.getByText("page: 3", { exact: false })).toBeInTheDocument();
+    const assessmentTab = screen.getByRole("tab", { name: /Evaluación/ });
+    assessmentTab.focus();
+    await user.keyboard("{ArrowRight}");
+    const guideTab = screen.getByRole("tab", { name: /Guía estructurada/ });
+    expect(guideTab).toHaveFocus();
+    expect(guideTab).toHaveAttribute("aria-selected", "true");
+    await user.keyboard("{Home}");
+    expect(assessmentTab).toHaveFocus();
+    expect(assessmentTab).toHaveAttribute("aria-selected", "true");
+
+    expect(screen.getAllByText("¿Cómo produjo la decisión descrita el efecto observado?")).toHaveLength(2);
+    expect(screen.getByText("dimension: dim_causal")).toBeInTheDocument();
+    expect(screen.getByText("variant: variant_tradeoff")).toBeInTheDocument();
+    expect(screen.getByText("paragraph index: 3", { exact: false })).toBeInTheDocument();
     expect(screen.getByText("QUESTION_GROUNDED")).toBeInTheDocument();
     expect(screen.getByText("Grounding")).toBeInTheDocument();
 
     const approve = screen.getByRole("button", { name: "Aprobar Assessment" });
     expect(approve).toBeDisabled();
-    await user.click(screen.getByRole("link", { name: "Abrir fuente exacta" }));
+    await user.click(screen.getByRole("button", { name: "Cargar y verificar fuente exacta" }));
     await waitFor(() => expect(approve).toBeEnabled());
 
     expect(screen.queryByRole("button", { name: /rechazar|editar pregunta|regenerar/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /evaluación pdf|guía pdf|json canónico/i })).not.toBeInTheDocument();
 
     await user.click(screen.getByRole("tab", { name: /Guía estructurada/ }));
-    expect(screen.getByText("Observar una explicación causal basada en la entrega.")).toBeInTheDocument();
-    expect(screen.getByText("Relaciona la decisión con su efecto y su trade-off.")).toBeInTheDocument();
-    expect(screen.getByText("Intención personal del estudiante.")).toBeInTheDocument();
+    const guidePanel = screen.getByRole("tabpanel", { name: /Guía estructurada/ });
+    expect(within(guidePanel).getByText("Observar una explicación causal basada en la entrega.")).toBeInTheDocument();
+    expect(within(guidePanel).getByText("Relaciona la decisión con su efecto y su trade-off.")).toBeInTheDocument();
+    expect(within(guidePanel).getByText("Intención personal del estudiante.")).toBeInTheDocument();
+  });
+
+  it("separates every CHOICE alternative from evaluator-only answer metadata", async () => {
+    const user = userEvent.setup();
+    const choiceBundle = structuredClone(assessmentBundle);
+    const question = choiceBundle.assessment.questions?.[0];
+    if (!question) throw new Error("fixture must include one question");
+    question.response_format = "CHOICE";
+    question.choices = [
+      {
+        option_id: "option_a",
+        text: "Mantener la deduplicación antes del promedio.",
+        is_best_answer: true,
+        evaluator_rationale: "Preserva el peso único de cada observación.",
+        misconception: null,
+      },
+      {
+        option_id: "option_b",
+        text: "Promediar primero y deduplicar después.",
+        is_best_answer: false,
+        evaluator_rationale: "Duplica el peso antes de eliminar repeticiones.",
+        misconception: "Confunde limpieza tardía con ponderación neutral.",
+      },
+      {
+        option_id: "option_c",
+        text: "Eliminar todos los valores extremos.",
+        is_best_answer: false,
+        evaluator_rationale: "La evidencia exige conservarlos y marcarlos.",
+        misconception: "Asume que todo extremo es un error.",
+      },
+    ];
+
+    render(
+      <MemoryRouter>
+        <ReviewHarness initialBundle={choiceBundle} />
+      </MemoryRouter>,
+    );
+
+    const studentSection = screen.getByText("Contenido del estudiante").closest("section");
+    const evaluatorSection = screen.getByText("Información del evaluador").closest("section");
+    expect(studentSection).not.toBeNull();
+    expect(evaluatorSection).not.toBeNull();
+    expect(within(studentSection!).getAllByRole("listitem")).toHaveLength(3);
+    expect(within(studentSection!).queryByText(/Mejor respuesta|error conceptual/)).not.toBeInTheDocument();
+    expect(within(evaluatorSection!).getByText(/Mejor respuesta · option_a/)).toBeInTheDocument();
+    expect(within(evaluatorSection!).getByText(/Confunde limpieza tardía/)).toBeInTheDocument();
+    expect(screen.getByText("Justificación estudiantil: no requerida")).toBeInTheDocument();
+
+    const approve = screen.getByRole("button", { name: "Aprobar Assessment" });
+    expect(approve).toBeDisabled();
+    await user.click(screen.getByRole("button", { name: "Cargar y verificar fuente exacta" }));
+    await waitFor(() => expect(approve).toBeEnabled());
+  });
+
+  it("blocks approval when a CHOICE contract omits its alternatives", async () => {
+    const user = userEvent.setup();
+    const incomplete = structuredClone(assessmentBundle);
+    const question = incomplete.assessment.questions?.[0];
+    if (!question) throw new Error("fixture must include one question");
+    question.response_format = "CHOICE";
+    question.choices = [];
+    render(
+      <MemoryRouter>
+        <ReviewHarness initialBundle={incomplete} />
+      </MemoryRouter>,
+    );
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "Una pregunta CHOICE no contiene alternativas evaluables completas",
+    );
+    const approve = screen.getByRole("button", { name: "Aprobar Assessment" });
+    await user.click(screen.getByRole("button", { name: "Cargar y verificar fuente exacta" }));
+    await waitFor(() => expect(approve).toBeDisabled());
   });
 });
