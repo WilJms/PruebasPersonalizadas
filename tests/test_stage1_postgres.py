@@ -5,7 +5,7 @@ import os
 from uuid import uuid4
 
 import pytest
-from sqlalchemy import delete, select, update
+from sqlalchemy import delete, select, text, update
 from sqlalchemy.exc import DBAPIError, IntegrityError
 
 from comprehension_verification.canonical import canonical_hash
@@ -14,6 +14,7 @@ from comprehension_verification.web.repository import (
     ArtifactRow,
     AuditEventRow,
     Conflict,
+    IdempotencyRow,
     JobRow,
     ModelCallRow,
     NotFound,
@@ -63,6 +64,51 @@ def test_postgres_idempotency_reservation_is_durable_and_unique(
         postgres_repository.reserve_idempotency(
             tenant_id, key, "sha256:" + "b" * 64
         )
+
+    sql_null_key = _id("key_sql_null")
+    assert (
+        postgres_repository.reserve_idempotency(
+            tenant_id, sql_null_key, fingerprint
+        )
+        is None
+    )
+    postgres_repository.release_idempotency(
+        tenant_id, sql_null_key, fingerprint
+    )
+    with postgres_repository.session() as session:
+        assert session.scalar(
+            select(IdempotencyRow).where(
+                IdempotencyRow.tenant_id == tenant_id,
+                IdempotencyRow.key == sql_null_key,
+            )
+        ) is None
+
+    legacy_json_null_key = _id("key_json_null")
+    assert (
+        postgres_repository.reserve_idempotency(
+            tenant_id, legacy_json_null_key, fingerprint
+        )
+        is None
+    )
+    with postgres_repository.session() as session:
+        session.execute(
+            update(IdempotencyRow)
+            .where(
+                IdempotencyRow.tenant_id == tenant_id,
+                IdempotencyRow.key == legacy_json_null_key,
+            )
+            .values(response=text("'null'::jsonb"))
+        )
+    postgres_repository.release_idempotency(
+        tenant_id, legacy_json_null_key, fingerprint
+    )
+    with postgres_repository.session() as session:
+        assert session.scalar(
+            select(IdempotencyRow).where(
+                IdempotencyRow.tenant_id == tenant_id,
+                IdempotencyRow.key == legacy_json_null_key,
+            )
+        ) is None
 
 
 def test_postgres_artifact_scope_uniqueness_is_enforced(

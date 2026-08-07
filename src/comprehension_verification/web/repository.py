@@ -20,8 +20,10 @@ from sqlalchemy import (
     String,
     Text,
     UniqueConstraint,
+    cast,
     create_engine,
     delete,
+    or_,
     select,
     text,
 )
@@ -305,7 +307,9 @@ class IdempotencyRow(Base):
     # NULL means that this key has been atomically reserved and the first
     # request is still executing. Capabilities such as signed URLs are never
     # stored here; the API persists only a canonical replay descriptor.
-    response: Mapped[dict[str, Any] | None] = mapped_column(JSON, nullable=True)
+    response: Mapped[dict[str, Any] | None] = mapped_column(
+        JSON(none_as_null=True), nullable=True
+    )
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
 
 
@@ -319,6 +323,33 @@ class NotFound(RepositoryError):
 
 class Conflict(RepositoryError):
     pass
+
+
+def _contains_transient_capability(value: Any) -> bool:
+    """Reject signed/capability URLs from durable idempotency descriptors."""
+
+    if isinstance(value, dict):
+        for key, item in value.items():
+            if isinstance(key, str) and key.lower().endswith("_url"):
+                return True
+            if _contains_transient_capability(item):
+                return True
+        return False
+    if isinstance(value, list):
+        return any(_contains_transient_capability(item) for item in value)
+    if isinstance(value, str):
+        lowered = value.lower()
+        return any(
+            marker in lowered
+            for marker in (
+                "/api/v1/objects/",
+                "/api/v1/object-uploads/",
+                "x-amz-signature=",
+                "x-amz-credential=",
+                "x-amz-security-token=",
+            )
+        )
+    return False
 
 
 class Repository:
@@ -1115,6 +1146,8 @@ class Repository:
         fingerprint: str,
         response: dict[str, Any],
     ) -> None:
+        if _contains_transient_capability(response):
+            raise ValueError("IDEMPOTENCY_RESPONSE_CONTAINS_TRANSIENT_CAPABILITY")
         with self.session() as session:
             row = session.scalar(
                 select(IdempotencyRow).where(
@@ -1135,6 +1168,9 @@ class Repository:
                     IdempotencyRow.tenant_id == tenant_id,
                     IdempotencyRow.key == key,
                     IdempotencyRow.fingerprint == fingerprint,
-                    IdempotencyRow.response.is_(None),
+                    or_(
+                        IdempotencyRow.response.is_(None),
+                        cast(IdempotencyRow.response, Text) == "null",
+                    ),
                 )
             )

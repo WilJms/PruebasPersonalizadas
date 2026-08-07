@@ -24,6 +24,7 @@ from .repository import (
     ArtifactRow,
     Conflict,
     ExportRow,
+    EvidenceRow,
     GuideRow,
     NotFound,
     Repository,
@@ -193,10 +194,15 @@ def _activity_payload(row: ActivityRow, repository: Repository) -> dict[str, Any
     return value
 
 
-def _activity_response(row: ActivityRow, repository: Repository) -> JSONResponse:
-    response = JSONResponse({"activity": _activity_payload(row, repository)})
+def _activity_response(
+    row: ActivityRow,
+    repository: Repository,
+    response: Response,
+) -> dto.ActivityEnvelope:
     response.headers["ETag"] = f'"{canonical_hash(row.config)}"'
-    return response
+    return dto.ActivityEnvelope.model_validate(
+        {"activity": _activity_payload(row, repository)}
+    )
 
 
 def _artifact_payload(row: ArtifactRow) -> dict[str, Any]:
@@ -226,8 +232,9 @@ def _submission_payload(row: SubmissionRow) -> dict[str, Any]:
     return state
 
 
-def _blueprint_response(row: Any) -> JSONResponse:
-    response = JSONResponse(
+def _blueprint_response(row: Any, response: Response) -> dto.BlueprintEnvelope:
+    response.headers["ETag"] = row.etag
+    return dto.BlueprintEnvelope.model_validate(
         {
             "blueprint": row.data,
             "review": row.review,
@@ -236,8 +243,6 @@ def _blueprint_response(row: Any) -> JSONResponse:
             "version": row.version,
         }
     )
-    response.headers["ETag"] = row.etag
-    return response
 
 
 def create_app(
@@ -309,6 +314,15 @@ def create_app(
     def replay_response(
         descriptor: dict[str, Any], actor: Actor
     ) -> JSONResponse:
+        current_authorization = {
+            "principal_id": actor.user_id,
+            "role": actor.role,
+            "can_approve_assessments": actor.can_approve_assessments,
+        }
+        if descriptor.get("authorization") != current_authorization:
+            # Historical descriptors and changed memberships fail closed. A
+            # replay must never become a capability transfer between actors.
+            raise Conflict("IDEMPOTENCY_PRINCIPAL_MISMATCH")
         kind = descriptor.get("kind")
         if kind == "upload":
             artifact = cast(
@@ -329,15 +343,17 @@ def create_app(
                 artifact.declared_media_type,
                 artifact.expected_byte_size,
             )
-            body = {
-                "upload": {
-                    "artifact_id": artifact.id,
-                    "upload_url": signed.url,
-                    "expires_at": signed.expires_at.isoformat(),
-                    "upload_headers": signed.headers,
-                    "artifact": _artifact_payload(artifact),
+            body = dto.UploadEnvelope.model_validate(
+                {
+                    "upload": {
+                        "artifact_id": artifact.id,
+                        "upload_url": signed.url,
+                        "expires_at": signed.expires_at.isoformat(),
+                        "upload_headers": signed.headers,
+                        "artifact": _artifact_payload(artifact),
+                    }
                 }
-            }
+            ).model_dump(mode="json")
         elif kind == "export":
             row = cast(
                 ExportRow,
@@ -352,17 +368,57 @@ def create_app(
                 "CANONICAL_JSON": "canonical_json",
             }[api_kind]
             item = runtime.service.export_artifact(row, stored_kind)
-            body = {
-                "export": {
-                    "export_id": row.id,
-                    "kind": api_kind,
-                    "status": row.status,
-                    "download_url": item["url"],
-                    "expires_at": item["expires_at"],
-                    "sha256": item["sha256"],
-                    "byte_size": item["byte_size"],
+            body = dto.ExportEnvelope.model_validate(
+                {
+                    "export": {
+                        "export_id": row.id,
+                        "kind": api_kind,
+                        "status": row.status,
+                        "download_url": item["url"],
+                        "expires_at": item["expires_at"],
+                        "sha256": item["sha256"],
+                        "byte_size": item["byte_size"],
+                    }
                 }
-            }
+            ).model_dump(mode="json")
+        elif kind == "evidence_verify":
+            receipt = dto.EvidenceReceipt.model_validate(descriptor["receipt"])
+            evidence_row = cast(
+                EvidenceRow,
+                runtime.repository.scoped(
+                    EvidenceRow, receipt.evidence_id, actor.workspace_id
+                ),
+            )
+            evidence = m.EvidenceUnit.model_validate(evidence_row.data)
+            if any(
+                (
+                    evidence.evidence_id != receipt.evidence_id,
+                    evidence.artifact_hash != receipt.artifact_hash,
+                    evidence.normalized_hash != receipt.normalized_hash,
+                    canonical_hash(evidence.locator.model_dump(mode="json"))
+                    != receipt.locator_hash,
+                )
+            ):
+                raise Conflict("IDEMPOTENCY_EVIDENCE_CHANGED")
+            artifact = cast(
+                ArtifactRow,
+                runtime.repository.scoped(
+                    ArtifactRow, evidence.artifact_id, actor.workspace_id
+                ),
+            )
+            if artifact.sha256 != evidence.artifact_hash:
+                raise Conflict("IDEMPOTENCY_EVIDENCE_CHANGED")
+            signed = runtime.object_store.sign_get(artifact.object_key)
+            body = dto.EvidenceVerifyEnvelope.model_validate(
+                {
+                    "verification": {
+                        "receipt": receipt.model_dump(mode="json"),
+                        "evidence": evidence.model_dump(mode="json"),
+                        "view_url": signed.url,
+                        "view_url_expires_at": signed.expires_at.isoformat(),
+                    }
+                }
+            ).model_dump(mode="json")
         else:
             body = cast(dict[str, Any], descriptor["body"])
         response = JSONResponse(body, status_code=int(descriptor["status_code"]))
@@ -376,8 +432,14 @@ def create_app(
         request: Request,
         response: Response,
         body: dict[str, Any],
+        actor: Actor,
     ) -> dict[str, Any]:
         headers: dict[str, str] = {}
+        authorization = {
+            "principal_id": actor.user_id,
+            "role": actor.role,
+            "can_approve_assessments": actor.can_approve_assessments,
+        }
         if response.headers.get("etag"):
             headers["etag"] = str(response.headers["etag"])
         if request.url.path.endswith("/artifacts/uploads"):
@@ -387,6 +449,7 @@ def create_app(
                 "artifact_id": upload["artifact_id"],
                 "status_code": response.status_code,
                 "headers": headers,
+                "authorization": authorization,
             }
         if request.url.path.endswith("/exports"):
             exported = cast(dict[str, Any], body["export"])
@@ -396,12 +459,25 @@ def create_app(
                 "export_kind": exported["kind"],
                 "status_code": response.status_code,
                 "headers": headers,
+                "authorization": authorization,
+            }
+        if request.url.path.endswith("/evidence:verify"):
+            verification = dto.EvidenceVerifyEnvelope.model_validate(
+                body
+            ).verification
+            return {
+                "kind": "evidence_verify",
+                "receipt": verification.receipt.model_dump(mode="json"),
+                "status_code": response.status_code,
+                "headers": headers,
+                "authorization": authorization,
             }
         return {
             "kind": "json",
             "body": body,
             "status_code": response.status_code,
             "headers": headers,
+            "authorization": authorization,
         }
 
     @app.middleware("http")
@@ -444,6 +520,11 @@ def create_app(
         fingerprint = canonical_hash(
             {
                 "tenant_id": actor.workspace_id,
+                "authorization": {
+                    "principal_id": actor.user_id,
+                    "role": actor.role,
+                    "can_approve_assessments": actor.can_approve_assessments,
+                },
                 "method": request.method,
                 "path": request.url.path,
                 "query": str(request.url.query),
@@ -487,7 +568,7 @@ def create_app(
             parsed = json.loads(response_body)
             if not isinstance(parsed, dict):
                 raise RuntimeError("Mutable JSON responses must be objects")
-            descriptor = replay_descriptor(request, response, parsed)
+            descriptor = replay_descriptor(request, response, parsed, actor)
             runtime.repository.complete_idempotency(
                 actor.workspace_id, key, fingerprint, descriptor
             )
@@ -588,13 +669,14 @@ def create_app(
         )
 
     @app.get("/api/readiness", response_model=dto.ReadinessResource)
-    def readiness() -> JSONResponse:
+    def readiness(response: Response) -> dto.ReadinessResource:
         try:
             runtime.repository.check_readiness()
         except Exception:
             # Never expose a database URL, SQL, driver exception or stack trace.
-            return JSONResponse({"status": "not_ready"}, status_code=503)
-        return JSONResponse({"status": "ready"})
+            response.status_code = 503
+            return dto.ReadinessResource(status="not_ready")
+        return dto.ReadinessResource(status="ready")
 
     @app.get("/api/v1/session", response_model=dto.SessionEnvelope)
     def session(actor: Annotated[Actor, Depends(current_actor)]) -> dict[str, Any]:
@@ -698,13 +780,14 @@ def create_app(
     )
     def activity_detail(
         activity_id: str,
+        response: Response,
         actor: Annotated[Actor, Depends(current_actor)],
-    ) -> Response:
+    ) -> dto.ActivityEnvelope:
         row = cast(
             ActivityRow,
             runtime.repository.scoped(ActivityRow, activity_id, actor.workspace_id),
         )
-        return _activity_response(row, runtime.repository)
+        return _activity_response(row, runtime.repository, response)
 
     @app.patch(
         "/api/v1/activities/{activity_id}",
@@ -719,9 +802,10 @@ def create_app(
     def edit_activity(
         activity_id: str,
         payload: dto.ActivityUpdateCommand,
+        response: Response,
         actor: Annotated[Actor, Depends(mutating_actor)],
         if_match: Annotated[str | None, Header(alias="If-Match")] = None,
-    ) -> Response:
+    ) -> dto.ActivityEnvelope:
         if not if_match:
             raise WorkflowError(
                 "IF_MATCH_REQUIRED", "If-Match is required", status_code=428
@@ -749,7 +833,7 @@ def create_app(
             if_match=if_match,
             actor=actor,
         )
-        return _activity_response(row, runtime.repository)
+        return _activity_response(row, runtime.repository, response)
 
     def prepare_upload(
         *,
@@ -956,10 +1040,12 @@ def create_app(
     )
     def latest_blueprint(
         activity_id: str,
+        response: Response,
         actor: Annotated[Actor, Depends(current_actor)],
-    ) -> Response:
+    ) -> dto.BlueprintEnvelope:
         return _blueprint_response(
-            runtime.repository.latest_blueprint(activity_id, actor.workspace_id)
+            runtime.repository.latest_blueprint(activity_id, actor.workspace_id),
+            response,
         )
 
     @app.get(
@@ -975,10 +1061,12 @@ def create_app(
     def blueprint_version(
         activity_id: str,
         version: int,
+        response: Response,
         actor: Annotated[Actor, Depends(current_actor)],
-    ) -> Response:
+    ) -> dto.BlueprintEnvelope:
         return _blueprint_response(
-            runtime.repository.blueprint_version(activity_id, version, actor.workspace_id)
+            runtime.repository.blueprint_version(activity_id, version, actor.workspace_id),
+            response,
         )
 
     @app.patch(
@@ -989,9 +1077,10 @@ def create_app(
         activity_id: str,
         version: int,
         edited: m.AssessmentBlueprint,
+        response: Response,
         actor: Annotated[Actor, Depends(mutating_actor)],
         if_match: Annotated[str | None, Header(alias="If-Match")] = None,
-    ) -> Response:
+    ) -> dto.BlueprintEnvelope:
         if not if_match:
             raise WorkflowError("IF_MATCH_REQUIRED", "If-Match is required", status_code=428)
         row = await runtime.service.edit_blueprint(
@@ -1001,7 +1090,7 @@ def create_app(
             edited=edited,
             actor=actor,
         )
-        return _blueprint_response(row)
+        return _blueprint_response(row, response)
 
     @app.post(
         "/api/v1/activities/{activity_id}/blueprints/{version}:approve",
@@ -1011,9 +1100,10 @@ def create_app(
         activity_id: str,
         version: int,
         _payload: Annotated[dto.EmptyCommand, Body(default_factory=dto.EmptyCommand)],
+        response: Response,
         actor: Annotated[Actor, Depends(mutating_actor)],
         if_match: Annotated[str | None, Header(alias="If-Match")] = None,
-    ) -> Response:
+    ) -> dto.BlueprintEnvelope:
         if not if_match:
             raise WorkflowError("IF_MATCH_REQUIRED", "If-Match is required", status_code=428)
         return _blueprint_response(
@@ -1022,7 +1112,8 @@ def create_app(
                 version=version,
                 if_match=if_match,
                 actor=actor,
-            )
+            ),
+            response,
         )
 
     @app.post(

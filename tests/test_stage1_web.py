@@ -12,6 +12,7 @@ from fastapi.testclient import TestClient
 
 from comprehension_verification.canonical import sha256_bytes, stable_id
 from comprehension_verification.contracts import models as m
+from comprehension_verification.web import dto
 from comprehension_verification.web.app import create_app
 from comprehension_verification.web.auth import Actor
 from comprehension_verification.web.jobs import RecordingJobRunner
@@ -23,6 +24,7 @@ from comprehension_verification.web.repository import (
     JobRow,
     NotFound,
     Repository,
+    WorkspaceRoleRow,
 )
 from comprehension_verification.web.settings import Settings
 from comprehension_verification.web.workflows import Stage1Service
@@ -292,6 +294,43 @@ def test_mutations_require_atomic_idempotency_and_never_persist_signed_urls() ->
         assert "upload_url" not in serialized
         assert "expires_at" not in serialized
 
+        with TestClient(app) as assistant_client:
+            assistant_csrf = _login(
+                assistant_client, "assistant@example.test"
+            )
+            cross_principal = assistant_client.post(
+                f"/api/v1/activities/{activity_id}/artifacts/uploads",
+                headers={**assistant_csrf, "Idempotency-Key": upload_key},
+                json=upload_body,
+            )
+            assert cross_principal.status_code == 409
+            assert cross_principal.json()["code"] == "IDEMPOTENCY_KEY_REUSED"
+            assert "upload_url" not in cross_principal.text
+
+        teacher_id = stable_id("usr", "teacher@example.test")
+        with app.state.runtime.repository.session() as session:
+            membership = session.get(
+                WorkspaceRoleRow, (teacher_id, "tnt_experimental")
+            )
+            assert membership is not None
+            membership.role = "ASSISTANT"
+            membership.can_approve_assessments = False
+        downgraded = client.post(
+            f"/api/v1/activities/{activity_id}/artifacts/uploads",
+            headers=upload_headers,
+            json=upload_body,
+        )
+        assert downgraded.status_code == 409
+        assert downgraded.json()["code"] == "IDEMPOTENCY_KEY_REUSED"
+        assert "upload_url" not in downgraded.text
+        with app.state.runtime.repository.session() as session:
+            membership = session.get(
+                WorkspaceRoleRow, (teacher_id, "tnt_experimental")
+            )
+            assert membership is not None
+            membership.role = "TEACHER"
+            membership.can_approve_assessments = True
+
         original = b"sealed-original!"
         sent = client.put(
             uploaded.json()["upload"]["upload_url"],
@@ -381,6 +420,7 @@ def test_activity_configuration_uses_etag_and_locks_after_pipeline_start() -> No
             json={"title": "Borrador revisado", "target_total_minutes": 4},
         )
         assert edited.status_code == 200, edited.text
+        dto.ActivityEnvelope.model_validate(edited.json())
         assert edited.json()["activity"]["title"] == "Borrador revisado"
         assert edited.headers["etag"] != original_etag
         revised_estimate = client.get(
@@ -655,6 +695,12 @@ def test_stage1_single_submission_mock_e2e_survives_new_browser_session() -> Non
 
         latest = client.get(f"/api/v1/activities/{activity_id}/blueprints/latest")
         assert latest.status_code == 200, latest.text
+        dto.BlueprintEnvelope.model_validate(latest.json())
+        dto.BlueprintEnvelope.model_validate(
+            client.get(
+                f"/api/v1/activities/{activity_id}/blueprints/1"
+            ).json()
+        )
         original = latest.json()["blueprint"]
         assert original["assessment_constraints"]["question_count"] == 2
         assert len(
@@ -685,6 +731,7 @@ def test_stage1_single_submission_mock_e2e_survives_new_browser_session() -> Non
             json=original,
         )
         assert edited.status_code == 200, edited.text
+        dto.BlueprintEnvelope.model_validate(edited.json())
         assert edited.json()["blueprint"]["blueprint_version"] == 2
         approved = client.post(
             f"/api/v1/activities/{activity_id}/blueprints/2:approve",
@@ -692,6 +739,7 @@ def test_stage1_single_submission_mock_e2e_survives_new_browser_session() -> Non
             json={},
         )
         assert approved.status_code == 200, approved.text
+        dto.BlueprintEnvelope.model_validate(approved.json())
         assert approved.json()["blueprint"]["status"] == "APPROVED"
         assert approved.json()["blueprint"]["blueprint_version"] == 3
 
@@ -853,17 +901,54 @@ def test_stage1_single_submission_mock_e2e_survives_new_browser_session() -> Non
         for question in assessment["questions"]:
             for fragment_index, _fragment in enumerate(question["anchor"]["fragments"]):
                 expected_fragments += 1
+                verification_payload = {
+                    "assessment_version": review_body["assessment_version"],
+                    "assessment_etag": review_body["etag"],
+                    "question_id": question["question_id"],
+                    "fragment_index": fragment_index,
+                }
+                verification_key = str(uuid4())
+                verification_headers = {
+                    **headers,
+                    "Idempotency-Key": verification_key,
+                }
                 verified = reopened.post(
                     f"/api/v1/assessments/{assessment_id}/evidence:verify",
-                    headers=_mutating(headers),
-                    json={
-                        "assessment_version": review_body["assessment_version"],
-                        "assessment_etag": review_body["etag"],
-                        "question_id": question["question_id"],
-                        "fragment_index": fragment_index,
-                    },
+                    headers=verification_headers,
+                    json=verification_payload,
                 )
                 assert verified.status_code == 200, verified.text
+                dto.EvidenceVerifyEnvelope.model_validate(verified.json())
+                if expected_fragments == 1:
+                    persisted = app.state.runtime.repository.get(
+                        IdempotencyRow,
+                        stable_id(
+                            "idem", "tnt_experimental", verification_key
+                        ),
+                    )
+                    assert isinstance(persisted, IdempotencyRow)
+                    serialized = json.dumps(persisted.response, sort_keys=True)
+                    for forbidden in (
+                        "view_url",
+                        "expires_at",
+                        "/api/v1/objects/",
+                        "x-amz-signature",
+                        "normalized_text",
+                    ):
+                        assert forbidden not in serialized.lower()
+
+                    replayed = reopened.post(
+                        verify_path,
+                        headers=verification_headers,
+                        json=verification_payload,
+                    )
+                    assert replayed.status_code == 200, replayed.text
+                    assert replayed.headers["Idempotency-Replayed"] == "true"
+                    assert (
+                        replayed.json()["verification"]["receipt"]
+                        == verified.json()["verification"]["receipt"]
+                    )
+                    dto.EvidenceVerifyEnvelope.model_validate(replayed.json())
                 first_view_url = first_view_url or verified.json()["verification"]["view_url"]
                 exact_source = reopened.get(
                     verified.json()["verification"]["view_url"]

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any
 from uuid import uuid4
 
@@ -9,6 +10,7 @@ from fastapi.testclient import TestClient
 import pytest
 from pydantic import ValidationError
 
+import comprehension_verification.web.app as web_app_module
 from comprehension_verification.contracts import models as m
 from comprehension_verification.web import dto
 from comprehension_verification.web.app import create_app
@@ -149,6 +151,69 @@ def test_provider_responses_validate_against_declared_transport_models() -> None
         problem = client.get("/api/v1/activities/activity_missing")
         assert problem.headers["content-type"].startswith("application/problem+json")
         m.ProblemDetail.model_validate(problem.json())
+
+
+def test_declared_response_models_fail_closed_on_provider_drift(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    app = create_app(
+        Settings(
+            environment="test",
+            database_url="sqlite+pysqlite://",
+            session_secret="openapi-drift-test-secret-with-32-bytes",
+            local_invited_emails="teacher@example.test",
+        )
+    )
+    with TestClient(app, raise_server_exceptions=False) as client:
+        login = client.post(
+            "/api/v1/session/login", json={"email": "teacher@example.test"}
+        )
+        assert login.status_code == 200
+        csrf = client.cookies.get("cva_csrf")
+        assert csrf
+        created = client.post(
+            "/api/v1/activities",
+            headers={"X-CSRF-Token": csrf, "Idempotency-Key": str(uuid4())},
+            json={
+                "title": "Provider drift must fail closed",
+                "output_language": "es-CL",
+                "assessment_modality": "WRITTEN",
+                "question_count": 1,
+                "target_total_minutes": 3,
+                "allowed_response_formats": ["OPEN_SHORT"],
+                "allowed_artifact_media_types": ["text/plain"],
+                "structured_justification_mode": "NOT_REQUIRED",
+            },
+        )
+        activity_id = dto.ActivityEnvelope.model_validate(
+            created.json()
+        ).activity.activity_id
+
+        monkeypatch.setattr(
+            web_app_module,
+            "_activity_payload",
+            lambda _row, _repository: {"activity_id": activity_id},
+        )
+        drifted = client.get(f"/api/v1/activities/{activity_id}")
+        assert drifted.status_code == 500
+        problem = m.ProblemDetail.model_validate(drifted.json())
+        assert problem.code == "TECHNICAL_FAILURE"
+
+        monkeypatch.setattr(
+            app.state.runtime.repository,
+            "latest_blueprint",
+            lambda _activity_id, _tenant_id: SimpleNamespace(
+                data={}, review=None, etag='"' + "a" * 64 + '"', version=1
+            ),
+        )
+        drifted_blueprint = client.get(
+            f"/api/v1/activities/{activity_id}/blueprints/latest"
+        )
+        assert drifted_blueprint.status_code == 500
+        blueprint_problem = m.ProblemDetail.model_validate(
+            drifted_blueprint.json()
+        )
+        assert blueprint_problem.code == "TECHNICAL_FAILURE"
 
 
 def test_transport_dtos_reject_coercion_extra_fields_and_invented_enums() -> None:

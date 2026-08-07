@@ -324,6 +324,25 @@ def test_idempotency_reservation_is_fail_closed_until_completed() -> None:
             "tnt_backend", "key-1", "sha256:" + "0" * 64
         )
 
+    unsafe_key = "key-with-transient-capability"
+    assert repo.reserve_idempotency("tnt_backend", unsafe_key, fingerprint) is None
+    with pytest.raises(
+        ValueError, match="IDEMPOTENCY_RESPONSE_CONTAINS_TRANSIENT_CAPABILITY"
+    ):
+        repo.complete_idempotency(
+            "tnt_backend",
+            unsafe_key,
+            fingerprint,
+            {
+                "kind": "json",
+                "body": {
+                    "capability": "https://example.invalid/?X-Amz-Signature=redacted"
+                },
+            },
+        )
+    repo.release_idempotency("tnt_backend", unsafe_key, fingerprint)
+    assert repo.reserve_idempotency("tnt_backend", unsafe_key, fingerprint) is None
+
 
 def test_activity_pipeline_stops_on_non_ready_p01_without_blueprint() -> None:
     repo = Repository("sqlite+pysqlite://")
