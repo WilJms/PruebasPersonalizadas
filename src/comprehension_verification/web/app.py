@@ -1245,10 +1245,27 @@ def create_app(
             raise NotFound("API route not found")
         candidate = (frontend / spa_path).resolve()
         if candidate.is_file() and (candidate == frontend or frontend in candidate.parents):
-            return FileResponse(candidate)
+            if candidate.name == "index.html":
+                return FileResponse(
+                    candidate,
+                    headers={"Cache-Control": "no-store, max-age=0"},
+                )
+            cache_control = (
+                "public, max-age=31536000, immutable"
+                if spa_path.startswith("assets/")
+                else "no-cache"
+            )
+            return FileResponse(candidate, headers={"Cache-Control": cache_control})
         index = frontend / "index.html"
         if index.is_file():
-            return FileResponse(index)
+            # Every client-side route serves the same mutable SPA document.  It
+            # must be re-fetched after a rollout so a browser cannot pair an old
+            # index with the newly deployed API. Vite's fingerprinted assets
+            # remain independently cacheable above.
+            return FileResponse(
+                index,
+                headers={"Cache-Control": "no-store, max-age=0"},
+            )
         raise NotFound("frontend build not found")
 
     return app

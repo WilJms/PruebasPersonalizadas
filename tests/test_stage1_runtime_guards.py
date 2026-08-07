@@ -97,6 +97,39 @@ def test_cloud_accepts_only_complete_explicit_psycopg_configuration() -> None:
     assert settings.p10_enabled is False
 
 
+def test_spa_document_cannot_survive_a_rollout_in_browser_cache(tmp_path: Path) -> None:
+    frontend = tmp_path / "dist"
+    assets = frontend / "assets"
+    assets.mkdir(parents=True)
+    (frontend / "index.html").write_text("<main>current shell</main>", encoding="utf-8")
+    (frontend / "manifest.webmanifest").write_text("{}", encoding="utf-8")
+    (assets / "app-deadbeef.js").write_text("export {};", encoding="utf-8")
+    settings = Settings(
+        environment="test",
+        database_url="sqlite+pysqlite://",
+        session_secret="spa-cache-test-secret-with-sufficient-length",
+        local_invited_emails="teacher@example.test",
+        frontend_dist=str(frontend),
+    )
+
+    with TestClient(create_app(settings)) as client:
+        for path in ("/", "/index.html", "/login", "/activities/example"):
+            response = client.get(path)
+            assert response.status_code == 200
+            assert response.text == "<main>current shell</main>"
+            assert response.headers["cache-control"] == "no-store, max-age=0"
+
+        manifest = client.get("/manifest.webmanifest")
+        assert manifest.status_code == 200
+        assert manifest.headers["cache-control"] == "no-cache"
+
+        asset = client.get("/assets/app-deadbeef.js")
+        assert asset.status_code == 200
+        assert asset.headers["cache-control"] == (
+            "public, max-age=31536000, immutable"
+        )
+
+
 def test_cloud_worker_settings_exclude_web_auth_and_session_secrets() -> None:
     settings = WorkerSettings(**_cloud_settings())
 
