@@ -30,8 +30,8 @@ Boundary evita presentar un mock como prueba cloud. Los identificadores del
 | E1-05 | Blueprint review muestra restricciones completas y CAS | LOCAL_REAL + CLOUD_REAL | UI completa, derived difficulty, checks y versión aprobada | PASS |
 | E1-06 | P06-P09 corren como Job durable de una submission | POSTGRESQL_REAL + CLOUD_REAL | Job real, close browser, claim único, 1/1/0 y fallo durable | PASS |
 | E1-07 | Estado técnico y estado de dominio son distintos y recuperables | LOCAL_REAL + CLOUD_REAL | activities landing, Job SUCCEEDED y Assessment/Submission separados | PASS |
-| E1-08 | Review muestra SelectedQuestion y exige evidence-first | LOCAL_REAL + CLOUD_REAL | CHOICE completa, receipts por fragmento, reload y API gate | PASS |
-| E1-09 | Guide consultable; PDF/JSON sin model calls nuevas | CLOUD_REAL | Guide trazable, tres exports y delta 4 a 4 | PASS |
+| E1-08 | Review muestra SelectedQuestion y exige evidence-first | LOCAL_REAL + CLOUD_REAL | CHOICE completa, receipts por fragmento, replay actor-bound, reload y API gate | PASS |
+| E1-09 | Guide consultable; PDF/JSON sin model calls nuevas | CLOUD_REAL | Guide trazable, tres exports y delta tenant 36 a 36/job 4 a 4 | PASS |
 | E1-10 | Ledger tipado y append-only | POSTGRESQL_REAL + CLOUD_REAL | P01-P09, resultados/costos y trigger model_calls append-only | PASS |
 | E1-11 | React/FastAPI/Jobs/Supabase/R2/CI/CD/Terraform integrados | CI_REAL + CLOUD_REAL | source a digest/runtime, health/readiness, recovery y dos plans 0 | PASS |
 
@@ -42,20 +42,20 @@ Boundary evita presentar un mock como prueba cloud. Los identificadores del
 | P0 | Ningún hallazgo | PASS |
 | P1 | AUD-P1-01 a AUD-P1-11 CLOSED | PASS |
 | PrincipalId | UUID Supabase y actores externos; Id interno estable | PASS |
-| OpenAPI | DTOs, provider/consumer, snapshot, ref crawl y determinismo | PASS |
+| OpenAPI | DTOs runtime-validated, provider drift 500, consumer, snapshot, ref crawl y determinismo | PASS |
 | OPEN_SHORT | Enum/semántica sin cambio; no OPEN_LONG ni límites | PASS |
 | Dificultad | Derivada, coherente y solo lectura | PASS |
 | CHOICE | Alternativas/best/rationale/misconception visibles al evaluador | PASS |
-| Evidence-first | Receipt durable tenant/actor/version/fragment scoped | PASS |
+| Evidence-first | Receipt durable tenant/actor/version/fragment; replay reautoriza y no persiste URL | PASS |
 | Guide | Trazabilidad y cannot_infer visibles | PASS |
 | Tenant isolation | Repository/API/receipts y negativos cross-tenant | PASS |
-| Logging | Allowlist por route template; 0 capabilities/payload | PASS |
+| Logging | 2.881 entradas sin capabilities/credenciales/payload; 650 eventos por route template | PASS |
 | PostgreSQL | PG16/17 y repetición sin limpieza | PASS |
-| CI | Push y PR verdes sobre candidate; final se captura externamente | PASS |
+| CI | Push 31199864090 y PR 31199869015 verdes sobre 6374e60; final se captura externamente | PASS |
 | GitHub a Cloud Build | Repo/trigger/SA limitados; no direct deploy | PASS |
-| Terraform | Plan revisado, apply y dos plans exit 0 | PASS |
+| Terraform | Imagen y rotación de refs revisadas; dos planes finales exit 0 | PASS |
 | Supply chain | OCI revision, digest, provenance, scan y SBOM | PASS |
-| Browser | CI E2E y cloud close/reopen desde shell | PASS |
+| Browser | CI E2E y candidato cloud nuevo con dos close/reopen desde shell | PASS |
 | Model/P10 | mock y P10 off en runtime | PASS |
 | Etapa 2 | Ninguna historia activada | PASS |
 

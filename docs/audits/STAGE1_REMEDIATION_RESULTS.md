@@ -18,6 +18,8 @@ repositorio después de FINAL_STAGE1_SHA.
 | 5e7eaca | eliminación de superficie runtime vulnerable |
 | b1d1aa6 | documentos SPA no-store y assets inmutables |
 | 6d0c968 | autorrecuperación de cache histórica mediante shell epoch |
+| f982ef8 | cierre documental rechazado por la primera auditoría independiente; histórico, no final |
+| 6374e60 | validación runtime de responses, replay de capabilities saneado/autorizado y NULL idempotente PostgreSQL |
 | FINAL_STAGE1_SHA | documentación de cierre; su hash se resuelve al crear este último commit |
 
 ## P1: todos cerrados
@@ -31,9 +33,9 @@ repositorio después de FINAL_STAGE1_SHA.
 | AUD-P1-05 | F-009 | BlueprintPage proyecta restricciones, checks, requisitos y derivados | Dificultad/operaciones siguen read-only | Tests frontend y revisión cloud del blueprint sintético | CLOSED |
 | AUD-P1-06 | F-012 | DTO/tipos y AssessmentReviewPage conservan SelectedQuestion completo | No se estrecha el root canónico | Snapshot OpenAPI, consumer tests y cloud review | CLOSED |
 | AUD-P1-07 | F-013 | CHOICE muestra orden, alternativas, best, rationale y misconception | Student justification permanece independiente | Validator, frontend y caso cloud CHOICE+NOT_REQUIRED | CLOSED |
-| AUD-P1-08 | F-014 | Evidence receipt durable por fragmento en repository/workflows/API | Tenant, actor y assessment version scoped | Éxito, múltiples fragments, expiración, locator, tenant, actor, reload y API directa | CLOSED |
+| AUD-P1-08 | F-014 | Evidence receipt durable; descriptor verify sin URL/expiry/texto y guard recursivo de capabilities | Tenant/actor/version scoped; fingerprint y replay ligados a membresía vigente | Éxito, múltiples fragments, cross-principal, downgrade, expiración, locator, reload y API directa | CLOSED |
 | AUD-P1-09 | F-016 | Guide UI/template conserva purpose, observables, refs, alternatives, misconceptions, levels y cannot_infer | Assessment y Guide siguen separados | Tests de export/UI y Guide cloud completa | CLOSED |
-| AUD-P1-10 | F-017/F-018/F-019 | web/dto.py, response models, generator, snapshot y cliente generado | DTOs componen modelos/enums canónicos | Provider/consumer, ref crawl, negativos, determinismo y CI | CLOSED |
+| AUD-P1-10 | F-017/F-018/F-019 | web/dto.py, response models, generator, snapshot y cliente generado; Activity/Blueprint retornan DTOs | DTOs componen modelos/enums canónicos; Response solo aporta ETag/status | Provider drift Activity/Blueprint falla 500, consumer, ref crawl, negativos, determinismo y CI | CLOSED |
 | AUD-P1-11 | — | PrincipalId en actores externos canónicos y tests negativos/UUID | Id interno no se amplió globalmente | Pydantic, schema, fixtures, events y OpenAPI | CLOSED |
 
 ## P2 y P3
@@ -56,7 +58,7 @@ repositorio después de FINAL_STAGE1_SHA.
 | AUD-P2-14 | — | Control plane R2 revalidado directamente en cuenta/bucket autorizados | CLOUD_REAL | CORS/lifecycle/privacy; no objetos ajenos | CLOSED |
 | AUD-P2-15 | — | Export durable puede recrearse determinísticamente con delta de modelo 0; falta lista/reemisión visual automática tras reload | Backlog final | Riesgo de usabilidad, no pérdida del snapshot ni del objeto | ACCEPTED_DEBT |
 | AUD-P2-16 | F-021/F-022 | Jerarquía y AGENTS bloquean E2; no se reescribe historia contractual inferior | Backlog final | Riesgo documental controlado por gate explícito | ACCEPTED_DEBT |
-| AUD-P2-17 | — | Playwright crítico local en CI y verificación cloud real | e3b8d67/000e771 | login a export, close/reopen y accessibility | CLOSED |
+| AUD-P2-17 | — | Playwright crítico local en CI y verificación cloud exacta del candidato | e3b8d67/000e771/6374e60 | actividad nueva, dos close/reopen, evidence-first y tres exports | CLOSED |
 | AUD-P3-01 | — | Combinación actual compatible y fijada; warning documentado | Backlog final | Upgrade sin necesidad puede romper FastAPI/TestClient | ACCEPTED_DEBT |
 | AUD-P3-02 | F-004 | OPEN_SHORT explicado como formato operacional sin palabras, caracteres ni dificultad | e3b8d67 | payload/enum/schema 1.1.0 sin cambio semántico | CLOSED |
 
@@ -74,9 +76,19 @@ repositorio después de FINAL_STAGE1_SHA.
 
 ## Infraestructura y evidencia
 
-El candidato 6d0c968 fue validado con CI doble verde, Cloud Build exacto,
-provenance SLSA 3, scan limpio, SBOM, mismo digest en Service/Job, Terraform
-convergente, Supabase/PostgreSQL/Auth, R2 privado y navegador cloud.
+La primera auditoría independiente rechazó f982ef89 por dos blockers concretos:
+algunas rutas declaraban response_model pero devolvían Response directamente,
+y evidence verify podía persistir su view_url dentro de idempotencia. El commit
+6374e60 cerró ambos; una revisión adversarial adicional detectó y cerró además
+el replay cross-principal/downgrade antes de desplegar el candidato.
+
+El candidato 6374e60 fue validado con CI doble verde, Cloud Build exacto
+b274ccc5-ef4d-42b1-b4fe-893d77d3b898, provenance SLSA 3, scan limpio, SBOM,
+digest sha256:94e6b4e786c95f0c746f48703fdd8a4f3641c9627a9fe6766e6ffc25a845967c
+en Service/Job, Terraform convergente, Supabase/PostgreSQL/Auth, R2 privado y
+un recorrido cloud completo nuevo. El incidente local de credential URL fue
+remediado mediante rotación; la versión anterior quedó denegada y el runtime
+fija Secret Manager version 2.
 
 FINAL_STAGE1_SHA repite esa cadena desde su source exacto. Los identificadores,
 checksums y resultados posteriores al commit se guardan en el artifact externo

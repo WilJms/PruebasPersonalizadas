@@ -6,7 +6,10 @@ Fecha de corte documental: 2026-08-07 (America/Santiago).
 
 La implementación de Etapas 0 y 1 está en estado **CANDIDATE_STAGE1_VERIFIED**.
 Los once hallazgos P1 están cerrados sobre el candidato funcional
-6d0c96837c552254d8f23a534975862e47d5a079. La decisión definitiva
+6374e60ce74ebb2a1ee0ec80531eab218d1b9548. El supuesto cierre documental
+f982ef89a57bdcc09084acd5b7f554a36618fe3e fue rechazado por la auditoría
+independiente al encontrar dos defectos y no se presenta como final. La
+decisión definitiva
 READY_FOR_STAGE_2 se emite únicamente después de:
 
 1. crear el último commit documental, denominado FINAL_STAGE1_SHA;
@@ -26,17 +29,18 @@ en este archivo. No se harán commits después de FINAL_STAGE1_SHA.
 | Repositorio | WilJms/PruebasPersonalizadas |
 | Rama | fix/stage1-external-readiness |
 | PR | #1, abierto y draft |
-| Candidato funcional | 6d0c96837c552254d8f23a534975862e47d5a079 |
-| CI push | 31154598870, SUCCESS |
-| CI pull request | 31154601586, SUCCESS |
-| Cloud Build | 4be4e25b-98f7-4d06-a3b9-59ea4f99625f, SUCCESS |
-| Digest candidato | sha256:4611f0812da2402b30e81bcfaa6aa5cb73a558c6f411db2ba259eaffe9f190d4 |
-| Runtime candidato | cva-web y cva-worker Ready, mismo digest |
-| Terraform candidato | apply 0/2/0; dos planes posteriores exit 0 |
+| Candidato funcional | 6374e60ce74ebb2a1ee0ec80531eab218d1b9548 |
+| CI push | 31199864090, SUCCESS |
+| CI pull request | 31199869015, SUCCESS |
+| Cloud Build | b274ccc5-ef4d-42b1-b4fe-893d77d3b898, SUCCESS |
+| Digest candidato | sha256:94e6b4e786c95f0c746f48703fdd8a4f3641c9627a9fe6766e6ffc25a845967c |
+| Runtime candidato | cva-web generación 9 y cva-worker generación 9, Ready, mismo digest |
+| Terraform candidato | imagen 0/2/0; rotación de referencias 0/2/0; dos planes finales exit 0 |
 
 El build fue disparado por la conexión regional al repositorio autorizado,
-registró source y OCI revision del candidato, produjo provenance verificada
-SLSA nivel 3, análisis terminado sin vulnerabilidades y SBOM SPDX 2.3.
+registró source y OCI revision del candidato, produjo dos occurrences de
+provenance verificada, SLSA nivel 3, análisis terminado sin vulnerabilidades y
+SBOM SPDX 2.3 ligado al digest.
 Terraform continúa siendo el único escritor del deployment.
 
 ## Gates implementados
@@ -46,19 +50,19 @@ Terraform continúa siendo el único escritor del deployment.
 | Contratos canónicos | PASS | Schema 1.1.0, 46 roots, 112 definiciones, 231 referencias y 8 fixtures. |
 | PrincipalId | PASS | Principales externos aceptan UUID Supabase sin ampliar Id globalmente. |
 | OpenAPI | PASS | DTOs tipados, responses validadas, snapshot determinista y consumer/provider tests. |
-| Backend y Stage 0 | PASS | 162 pruebas locales verdes; 7 PostgreSQL-only ejecutadas aparte. |
+| Backend y Stage 0 | PASS | 163 pruebas locales verdes; 7 PostgreSQL-only ejecutadas aparte. |
 | Review UX | PASS | Blueprint, SelectedQuestion, CHOICE y Guide proyectan la trazabilidad requerida. |
-| Evidence-first | PASS | Receipt durable por fragmento, tenant, actor y versión; aprobación server-side. |
+| Evidence-first | PASS | Receipt durable por fragmento; replay sin URL persistida y ligado a autorización vigente; aprobación server-side. |
 | Frontend | PASS | Typecheck, 19 tests, build, audit sin vulnerabilidades y Playwright crítico. |
 | PostgreSQL | PASS | PG16 y PG17: 24 tablas/RLS, 2 triggers y matriz repetida dos veces sin limpieza. |
-| Logging | PASS | Access log deshabilitado; evento JSON allowlist; capabilities válidas, inválidas y expiradas no aparecen. |
+| Logging | PASS | Access log deshabilitado; 650 eventos JSON por plantilla; scan de 2.881 entradas sin capability, credencial ni payload sintético. |
 | GitHub a Cloud Build | PASS | Connection, repository y trigger regionales limitados al repo; build SA sin Run Admin. |
 | Supply chain | PASS E1 | Bases por digest, locks con hashes, Actions por SHA, provenance, scan y SBOM ligados al digest. |
 | Terraform | PASS | Scaling superior declarado; apply revisado; dos planes vivos consecutivos exit 0. |
-| Cloud runtime | PASS candidato | Health/readiness 200, privado 401, Service/Job Ready, 1/1/0 y mock/P10 off. |
+| Cloud runtime | PASS candidato | Health/readiness 200, privado 401, mismo digest, secretos version 2, Service/Job Ready, 1/1/0 y mock/P10 off. |
 | Supabase | PASS candidato | Proyecto correcto, PostgreSQL 17, Auth sintético y membresía TEACHER tenant-scoped. |
 | Cloudflare R2 | PASS candidato | Bucket privado correcto, CORS/lifecycle exactos, r2.dev off y cero dominios. |
-| Browser cloud | PASS candidato | Recorrido real sintético, cierre/reapertura durable, evidence-first, Guide y exports. |
+| Browser cloud | PASS candidato | Recorrido nuevo exacto, dos reaperturas durables, evidence-first, Guide, tres exports y delta de modelo 0. |
 
 ## Correcciones principales
 
@@ -70,9 +74,13 @@ Terraform continúa siendo el único escritor del deployment.
 - alternativas CHOICE visibles, exactamente una mejor respuesta y
   misconceptions/rationales reservados al evaluador;
 - receipt evidence-first durable por fragmento antes de aprobar;
+- replay idempotente ligado a principal, rol y permiso actuales; los
+  descriptores de upload, export y evidence verify no contienen capabilities;
 - EvaluationGuide visible con observables, evidencia, fuentes, niveles,
   alternativas, misconceptions y cannot_infer;
-- frontera OpenAPI tipada desde DTOs que componen contratos canónicos;
+- frontera OpenAPI tipada desde DTOs que componen contratos canónicos; las
+  rutas con response_model retornan DTOs y no objetos Response que omitan la
+  validación runtime;
 - PrincipalId aplicado solo a actores/principales externos;
 - logs HTTP estructurados por plantilla de ruta, sin URL, query, payload ni
   capability;
@@ -81,6 +89,13 @@ Terraform continúa siendo el único escritor del deployment.
 - Terraform convergente y trigger GitHub a Cloud Build de mínimo privilegio;
 - documentos SPA no-store, assets hashados inmutables y epoch de shell que
   purga solo la caché HTTP de clientes anteriores sin borrar su sesión.
+
+Durante la verificación del candidato, una invocación fallida de un cliente
+PostgreSQL incluyó una credencial en su diagnóstico. Esa salida se invalidó y
+se excluye de evidencia: la contraseña Supabase fue rotada mediante la API
+oficial, la credencial anterior quedó denegada, Secret Manager recibió la
+versión 2 y Terraform actualizó únicamente las referencias de secretos de
+Service/Job. No se conserva ni reproduce el valor.
 
 ## Estado de Etapa 0 y Etapa 1
 

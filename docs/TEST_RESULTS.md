@@ -11,26 +11,26 @@ en el paquete de evidencia externo, no mediante un commit adicional.
 
 | Elemento | Resultado |
 |---|---|
-| SHA | 6d0c96837c552254d8f23a534975862e47d5a079 |
+| SHA | 6374e60ce74ebb2a1ee0ec80531eab218d1b9548 |
 | Worktree | Limpio y sincronizado con origin |
-| CI push | 31154598870, SUCCESS |
-| CI pull_request | 31154601586, SUCCESS |
-| Cloud Build | 4be4e25b-98f7-4d06-a3b9-59ea4f99625f, SUCCESS |
+| CI push | 31199864090, SUCCESS |
+| CI pull_request | 31199869015, SUCCESS |
+| Cloud Build | b274ccc5-ef4d-42b1-b4fe-893d77d3b898, SUCCESS |
 | Build source | SHA candidato exacto |
-| Digest | sha256:4611f0812da2402b30e81bcfaa6aa5cb73a558c6f411db2ba259eaffe9f190d4 |
+| Digest | sha256:94e6b4e786c95f0c746f48703fdd8a4f3641c9627a9fe6766e6ffc25a845967c |
 | Provenance | requested VERIFIED; SLSA build level 3 |
 | Scan | FINISHED_SUCCESS; OS/PyPI/npm/secret y otros; 0 vulnerabilidades |
-| SBOM | SPDX 2.3; 146 paquetes; 290 relaciones; SHA-256 f3a7aa44f2039e162a00d15dabfa344193c6ed3d064638a1b7155e016430c4f8 |
+| SBOM | SPDX 2.3; 146 paquetes; 290 relaciones; SHA-256 e4a26d8ff24f6595332460f6af59eb73eb78dcc131ef4150a3b99833608e97ae |
 
 ## Regresión local
 
 | Prueba | Clasificación | Resultado |
 |---|---|---|
 | Validación contractual | LOCAL_REAL | PASS: schema 1.1.0, 46 roots, 112 definiciones, 231 referencias, 8 fixtures |
-| Suite Python | LOCAL_REAL | 162 passed, 7 PostgreSQL-only skipped |
+| Suite Python | LOCAL_REAL | 163 passed, 7 PostgreSQL-only skipped |
 | Guardas runtime focalizadas | LOCAL_REAL | 21 passed; incluye proceso Uvicorn y cache epoch |
 | Deploy artifacts | LOCAL_REAL | 9 passed |
-| Secret scan | LOCAL_REAL | PASS en 231 archivos versionables |
+| Secret scan | LOCAL_REAL | PASS en 234 archivos versionables |
 | Compileall | LOCAL_REAL | PASS |
 | Frontend typecheck | LOCAL_REAL | PASS |
 | Vitest | LOCAL_REAL | 4 files, 19 tests passed |
@@ -66,7 +66,7 @@ Cada run ejecutó siete jobs:
 - Docker runtime/audit;
 - Browser E2E, recuperación y accesibilidad.
 
-Los runs push 31154598870 y pull_request 31154601586 terminaron verdes y
+Los runs push 31199864090 y pull_request 31199869015 terminaron verdes y
 reportaron el mismo head candidato. GitHub puede usar un merge ref sintético
 para pull_request; la evidencia final distingue CI_MERGE_SHA de PR head.
 
@@ -83,7 +83,8 @@ autorizado. El build:
 - no ejecutó gcloud run ni desplegó;
 - produjo dos occurrences de provenance ligadas al digest;
 - produjo discovery FINISHED_SUCCESS y cero vulnerabilidades;
-- exportó un SBOM oficial cuyo nombre incluye el digest exacto.
+- produjo un SBOM_REFERENCE oficial ligado al digest y exportó el SPDX 2.3;
+- la OCI revision remota coincide exactamente con 6374e60.
 
 No se incluyen substitutions completas ni sobres firmados en la evidencia
 porque contienen material público innecesario y aumentan el riesgo de copiar
@@ -106,6 +107,14 @@ datos operacionales.
 No hubo replace, destroy, IAM, secretos inline, cambio de proyecto/región,
 task, parallelism, retries, model mode ni P10.
 
+Durante una consulta posterior, un diagnóstico inválido de psql mostró una
+connection URL autenticada. Se detuvo la verificación, se rotó la contraseña
+mediante la API oficial de Supabase y se creó la versión 2 de los cuatro
+secretos para conservar el pin común sin copiar valores. Un segundo plan
+guardado mostró solo Service/Job in-place de referencias 1 a 2, se aplicó
+0/2/0 y dos planes vivos posteriores terminaron exit 0. La credencial anterior
+fue probada como DENIED y la nueva como OK; health/readiness continuaron 200.
+
 ## Cloud runtime y navegador
 
 ### Runtime
@@ -125,40 +134,61 @@ task, parallelism, retries, model mode ni P10.
 Se completó un recorrido real autorizado con:
 
 - login Supabase y membresía TEACHER;
-- actividad Aceptación final Etapa 1 2026-08-07;
+- actividad Aceptación candidato 6374 2026-08-07;
 - CHOICE + NOT_REQUIRED, una pregunta y tres minutos;
 - consigna y rúbrica sintéticas subidas a R2;
 - blueprint derivado, P05 visible y aprobado;
 - submission sintética y Cloud Run Job real;
 - assessment con tres alternativas, una best, rationales y misconceptions;
-- dificultad derivada HIGH de solo lectura;
+- dificultad derivada MEDIUM de solo lectura;
 - planning, operación, dimensión, anclas, locators, scores y referencias;
 - source R2 cargada y receipt durable tras reload;
 - aprobación bloqueada antes del receipt y habilitada después;
 - Guide con propósito, observables, evidencia, fuentes, alternativas,
   misconceptions, niveles y cannot_infer;
 - Assessment PDF, Guide PDF y JSON canónico;
-- model calls 4 antes y 4 después de export: delta 0;
+- model calls tenant 36 antes y 36 después de export; para el job 4 y 4:
+  delta 0 en ambas mediciones;
 - capacidad de descarga con TTL 300 segundos que dejó de funcionar al expirar.
 
 Los tres exports fueron leídos únicamente como datos sintéticos de aceptación:
-10.372, 19.271 y 9.614 bytes; hashes y tamaños coincidieron con sus receipts.
+10.567, 19.669 y 9.784 bytes; hashes y tamaños coincidieron con sus receipts.
 El Assessment PDF excluyó datos del evaluador y el Guide PDF conservó
 trazabilidad.
 
 ### Recuperación de shell
 
 El primer candidato de cache no podía retirar retroactivamente un index.html
-almacenado antes de la política no-store. El candidato 6d0c968 añadió el epoch.
-Con el mismo perfil autenticado:
+almacenado antes de la política no-store. El commit 6d0c968 añadió el epoch.
+En el candidato 6374e60 y con el mismo perfil autenticado:
 
 1. una apertura reprodujo deliberadamente el shell anterior y su GET de sesión
    recibió la purga de cache;
 2. se cerró completamente esa pestaña;
 3. una nueva apertura en la raíz resolvió /activities sin /login, hard refresh,
    ID ni URL recordada;
-4. aparecieron navegación actual, actividad, blueprint APPROVED, submission
-   APPROVED, Job SUCCEEDED y Assessment APPROVED.
+4. la actividad nueva se recuperó primero con blueprint APPROVED y sin
+   submission;
+5. después del Job real se cerró otra vez la pestaña, y la raíz recuperó
+   submission NEEDS_REVIEW, Job SUCCEEDED y Assessment NEEDS_REVIEW;
+6. tras evidence-first, aprobación y reload se recuperó Assessment APPROVED.
+
+### Fallo controlado
+
+Antes de insertar el probe había cero jobs QUEUED. `job_control_6374e60` fue el
+único job elegible y la ejecución cva-worker-w9wtl usó el digest candidato con
+task count 1, parallelism 1 y max retries 0. El comando `gcloud run jobs
+execute --wait` terminó exit 1; Cloud Run registró una task fallida y
+PostgreSQL persistió FAILED, attempt 1, diagnóstico JOB_KIND_INVALID. Después
+quedaron cero jobs QUEUED.
+
+### Logs
+
+Se escanearon 2.881 entradas de Service/Job de siete días: 0 Bearer, 0 JWT, 0
+firmas R2, 0 credential URLs, 0 capability paths, 0 valores de los secretos
+viejos/nuevos y 0 título, subject o texto sintético. Además se observaron 650
+eventos `http.request.completed`; sus 25 rutas únicas son plantillas de
+framework y ninguna contiene un ID dinámico.
 
 ## Supabase y Cloudflare
 
@@ -170,6 +200,7 @@ Con el mismo perfil autenticado:
 | R2 control plane | CLOUD_REAL | Bucket correcto, privado, r2.dev off, domains 0 |
 | R2 CORS | CLOUD_REAL | Origen Cloud Run exacto; GET/PUT/HEAD; Content-Type; ETag; 3600 |
 | R2 lifecycle | CLOUD_REAL | multipart 1d, raw 30d, exports 120d |
+| Secret rotation | CLOUD_REAL | versión anterior DENIED; versión 2 OK; Service/Job Ready |
 
 ## Intentos inválidos o fallidos no contados como PASS
 
@@ -180,7 +211,10 @@ Con el mismo perfil autenticado:
 | terraform show JSON dentro del sandbox | INTENTO_INVALIDO | Provider no pudo iniciar; reintento read-only autorizado produjo resumen sanitizado |
 | export SBOM con location forzada | INTENTO_INVALIDO | Artifact Analysis no resolvió occurrence; resolución automática exportó el SBOM correcto |
 | candidato b1d1aa6 | SNAPSHOT_INTERMEDIO | no-store correcto para respuestas nuevas, pero no desalojaba cache histórica; reemplazado por 6d0c968 |
-| dos URLs R2 firmadas mostradas por output de herramienta | INTENTO_INVALIDO | capacidades sintéticas individuales de 300 s, ya expiradas; excluidas de evidencia y nunca repetidas |
+| cierre f982ef89 | FINAL_RECHAZADO | auditoría independiente encontró bypass de response_model y persistencia de view_url; reemplazado por 6374e60 |
+| dos URLs R2 firmadas históricas mostradas por output de herramienta | INTENTO_INVALIDO | capacidades sintéticas individuales de 300 s, expiradas y excluidas de evidencia |
+| URL R2 del candidato mostrada por título de pestaña | INTENTO_INVALIDO | capability sintética cerrada, expiró con HEAD 403 y queda excluida; el recorrido se acredita por receipt/bytes, nunca por ese output |
+| diagnóstico psql con connection URL | INCIDENTE_REMEDIADO | no se reutiliza como evidencia; contraseña rotada, versión anterior DENIED y nueva OK |
 
 ## Baseline histórico
 

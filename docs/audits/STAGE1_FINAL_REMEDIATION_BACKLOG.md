@@ -4,6 +4,10 @@ Fecha de corte documental: 2026-08-07.
 
 P0 abiertos: 0. P1 abiertos: 0. No existe deuda P1 aceptada. Este archivo solo
 contiene deuda P2/P3 que no bloquea E0/E1 y no autoriza implementar Etapa 2.
+El cierre de P1 fue revalidado sobre el candidato 6374e60 después de rechazar
+el snapshot documental f982ef89: las respuestas tipadas se validan en runtime
+y el replay idempotente vuelve a comprobar la autorización vigente sin
+persistir capabilities.
 
 ## AUD-P2-04 — Copy institucional de privacidad
 

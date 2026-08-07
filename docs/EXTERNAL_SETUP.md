@@ -26,7 +26,8 @@ tenant. El runtime debe mantener CVA_MODEL_MODE=mock y CVA_P10_ENABLED=false.
 
 ### GitHub y Cloud Build
 
-- GitHub Actions push y pull_request del candidato 6d0c968 terminaron SUCCESS.
+- GitHub Actions push 31199864090 y pull_request 31199869015 del candidato
+  6374e60 terminaron SUCCESS sobre el mismo head.
 - La conexión cva-github está COMPLETE y el repository resource apunta
   exclusivamente a WilJms/PruebasPersonalizadas.
 - El trigger regional cva-github-push usa deploy/cloudbuild.yaml y la identidad
@@ -35,20 +36,24 @@ tenant. El runtime debe mantener CVA_MODEL_MODE=mock y CVA_P10_ENABLED=false.
 - La cuenta de build tiene Artifact Registry writer, Logging writer,
   Service Usage consumer y los permisos Storage mínimos de staging; no tiene
   Run Admin ni actAs sobre web/worker.
-- El build candidato 4be4e25b-98f7-4d06-a3b9-59ea4f99625f construyó source
-  6d0c96837c552254d8f23a534975862e47d5a079 y publicó el digest
-  sha256:4611f0812da2402b30e81bcfaa6aa5cb73a558c6f411db2ba259eaffe9f190d4.
+- El build candidato b274ccc5-ef4d-42b1-b4fe-893d77d3b898 construyó source y
+  resolved source 6374e60ce74ebb2a1ee0ec80531eab218d1b9548, grabó la misma
+  OCI revision y publicó el digest
+  sha256:94e6b4e786c95f0c746f48703fdd8a4f3641c9627a9fe6766e6ffc25a845967c.
 
 ### GCP y Terraform
 
-- cva-web y cva-worker están Ready y usan el mismo digest inmutable.
+- cva-web y cva-worker están Ready en generación 9 y usan el mismo digest
+  inmutable candidato.
 - Service y Job usan identidades distintas.
 - El Job conserva task count 1, parallelism 1 y max retries 0.
 - El worker no recibe CVA_SESSION_SECRET ni su binding de Secret Manager.
 - Health y readiness responden 200; la ruta privada de sesión responde 401 sin
   autenticación.
-- Terraform aplicó únicamente dos actualizaciones in-place de imagen, sin
-  altas, bajas, reemplazos o IAM, y dos planes posteriores terminaron exit 0.
+- Terraform aplicó dos actualizaciones in-place de imagen. Una rotación
+  correctiva posterior aplicó solo dos actualizaciones in-place de referencias
+  de Secret Manager; no cambió imagen, IAM ni topología. El estado final tuvo
+  dos planes vivos consecutivos exit 0.
 - El bloque scaling superior fija manual instance count 0 y min instance count
   0; no se usa ignore_changes para ocultar drift.
 
@@ -65,6 +70,10 @@ tenant. El runtime debe mantener CVA_MODEL_MODE=mock y CVA_P10_ENABLED=false.
   evidencia.
 - FastAPI valida JWKS y emite su propia cookie segura; el frontend compila solo
   la URL y publishable key públicas.
+- La contraseña PostgreSQL fue rotada durante esta verificación después de que
+  un diagnóstico local inválido mostrara la credencial anterior. La versión 1
+  quedó denegada, la versión 2 conecta y health/readiness permanecen 200. El
+  valor no se copia en este repositorio ni en la evidencia.
 
 ### Cloudflare R2
 
@@ -91,7 +100,8 @@ Nunca introducir en chat, Git, substitutions, build args, evidencia o logs:
 
 Secret Manager contiene cuatro secret containers. cva-web accede a database,
 R2 key pair y session secret. cva-worker accede únicamente a database y R2 key
-pair. Las versiones se inspeccionan por metadata, nunca imprimiendo valores.
+pair. El runtime candidato fija sus referencias en la versión 2. Las versiones
+se inspeccionan por metadata, nunca imprimiendo valores.
 
 ## Flujo reproducible de build y deploy
 
@@ -136,6 +146,14 @@ Para cada candidato final:
 - fallo controlado durable con una ejecución fallida y sin retry automático;
 - búsqueda de secretos/capabilities/payload sintético en logs igual a cero.
 
+El candidato 6374e60 ejecutó este recorrido desde cero con la actividad
+`act_1497be02cbfc6cf35743` y una única submission
+`sub_cfb5cae00678b8ab200f`. La revisión se recuperó dos veces desde la raíz,
+los tres exports quedaron READY y el conteo de model calls permaneció 36 antes
+y 36 después (4 y 4 para su job). El fallo deliberado
+`job_control_6374e60` quedó FAILED, attempt 1, diagnóstico JOB_KIND_INVALID;
+la ejecución cva-worker-w9wtl terminó con exit 1, una task y cero retries.
+
 ## Cache y rollouts de la SPA
 
 Las rutas documento, incluida la raíz y los deep links, responden
@@ -163,12 +181,17 @@ SHA-256 de cada archivo. Debe registrar:
 - R2/CORS/lifecycle/privacidad/TTL;
 - navegador, close/reopen, exports y model-call delta;
 - fallo controlado y log/secret scan;
+- registro sanitizado de la rotación correctiva, demostrando únicamente que la
+  credencial anterior falla y la versión nueva funciona;
 - informe del auditor independiente.
 
 No incluir tokens, URLs firmadas, secretos, database URLs ni sobres de
 procedencia completos. Cualquier intento que haya expuesto una capacidad
 efímera en output de herramienta debe marcarse inválido, excluirse del paquete
 y documentarse solo por su expiración, nunca copiando el valor.
+
+El paquete histórico asociado a f982ef89 fue rechazado por la auditoría
+independiente y no puede reutilizarse como evidencia final.
 
 ## Operación posterior
 

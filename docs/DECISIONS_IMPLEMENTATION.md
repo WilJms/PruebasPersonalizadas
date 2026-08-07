@@ -79,10 +79,12 @@
 
 - **Decisión:** cada mutación de dominio POST/PATCH/DELETE requiere un
   `Idempotency-Key` UUID. Se reserva `(tenant,key,fingerprint)` antes del
-  handler; un replay devuelve el resultado canónico. URLs firmadas y
-  expiraciones no se guardan: para uploads/exports solo se persiste un
-  descriptor y se firma una capacidad nueva después de volver a autorizar y
-  validar CSRF.
+  handler; el fingerprint incluye principal, rol y permiso de aprobación. Un
+  replay solo devuelve el resultado canónico si la membresía vigente coincide.
+  URLs firmadas y expiraciones no se guardan: para uploads, exports y evidence
+  verify solo se persiste un descriptor allowlist y se firma una capacidad
+  nueva después de volver a autorizar y validar CSRF. Un guard recursivo del
+  repositorio rechaza cualquier descriptor que contenga una URL/capability.
 - **Razón:** evita efectos duplicados y evita convertir la tabla de
   idempotencia en un almacén de credenciales temporales.
 - **Relación:** ADR-013 y E1-03/E1-11.
@@ -337,3 +339,29 @@
 - **Razón:** conservar explícitamente deuda menor es más seguro que inventar
   política legal, expandir Etapa 1 o alterar dependencias sin necesidad.
 - **Relación:** STAGE1_FINAL_REMEDIATION_BACKLOG.
+
+## D-033 - Replay de capacidades exige la autorización vigente
+
+- **Decisión:** todos los descriptores idempotentes conservan un snapshot
+  mínimo de autorización (`principal_id`, rol y permiso de aprobación). Antes
+  de resolver un objeto o firmar otra URL, el replay compara exactamente ese
+  snapshot con la membresía actual. Un actor distinto del mismo workspace o un
+  downgrade del actor original falla cerrado. Evidence verify persiste solo el
+  receipt y los IDs/hash necesarios para volver a resolver; nunca guarda URL,
+  expiración, object key ni texto normalizado.
+- **Razón:** la unicidad `(tenant,key)` por sí sola permitiría que otro
+  principal reutilizara una clave conocida y recibiera una capability fresca,
+  o que un actor degradado conservara privilegios de una respuesta anterior.
+- **Relación:** AUD-P1-08, D-008 y E1-03/E1-08.
+
+## D-034 - Response model debe validar la respuesta runtime
+
+- **Decisión:** las rutas tipadas de Activity, Blueprint y readiness retornan
+  DTOs Pydantic. El objeto `Response` inyectado se usa solo para ETag o status;
+  no se retorna una `JSONResponse` preconstruida que salte el response_model.
+  Los provider tests sustituyen outputs por payloads inválidos y exigen fallo
+  500 ProblemDetail en lugar de publicar drift.
+- **Razón:** declarar un schema OpenAPI no demuestra que FastAPI filtre o
+  valide el body cuando el handler devuelve directamente una subclase de
+  `Response`.
+- **Relación:** AUD-P1-10, D-025 y F-017/F-018/F-019.
