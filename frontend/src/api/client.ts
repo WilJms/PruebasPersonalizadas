@@ -22,6 +22,7 @@ import type {
 } from "./types";
 
 const API_BASE = (import.meta.env.VITE_API_BASE_URL || "/api/v1").replace(/\/$/, "");
+const SHELL_CACHE_EPOCH = "stage1-v1";
 
 type JsonObject = Record<string, unknown>;
 
@@ -131,6 +132,7 @@ async function requestWithMeta<T>(
     headers.set("Idempotency-Key", idempotencyKey());
   }
   headers.set("Accept", "application/json");
+  headers.set("X-CVA-Shell-Epoch", SHELL_CACHE_EPOCH);
 
   const response = await fetch(`${API_BASE}${path}`, {
     ...init,

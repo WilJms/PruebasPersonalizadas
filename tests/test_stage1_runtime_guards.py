@@ -130,6 +130,27 @@ def test_spa_document_cannot_survive_a_rollout_in_browser_cache(tmp_path: Path) 
         )
 
 
+def test_stale_spa_shell_clears_only_http_cache_on_session_probe() -> None:
+    settings = Settings(
+        environment="test",
+        database_url="sqlite+pysqlite://",
+        session_secret="spa-cache-test-secret-with-sufficient-length",
+        local_invited_emails="teacher@example.test",
+    )
+
+    with TestClient(create_app(settings)) as client:
+        stale = client.get("/api/v1/session")
+        assert stale.status_code == 401
+        assert stale.headers["clear-site-data"] == '"cache"'
+
+        current = client.get(
+            "/api/v1/session",
+            headers={"X-CVA-Shell-Epoch": "stage1-v1"},
+        )
+        assert current.status_code == 401
+        assert "clear-site-data" not in current.headers
+
+
 def test_cloud_worker_settings_exclude_web_auth_and_session_secrets() -> None:
     settings = WorkerSettings(**_cloud_settings())
 

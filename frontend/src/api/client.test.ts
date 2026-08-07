@@ -46,6 +46,7 @@ describe("API client security defaults", () => {
     expect(init.method).toBe("POST");
     expect(headers.get("X-CSRF-Token")).toBe("csrf-token-01");
     expect(headers.get("Content-Type")).toBe("application/json");
+    expect(headers.get("X-CVA-Shell-Epoch")).toBe("stage1-v1");
     expect(headers.has("Idempotency-Key")).toBe(false);
   });
 

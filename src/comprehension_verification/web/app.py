@@ -35,6 +35,7 @@ from .workflows import ALLOWED_MEDIA_TYPES, Stage1Service, WorkflowError
 
 
 HTTP_LOGGER = logging.getLogger("cva.http")
+SHELL_CACHE_EPOCH = "stage1-v1"
 if not HTTP_LOGGER.handlers:
     _http_handler = logging.StreamHandler()
     _http_handler.setFormatter(logging.Formatter("%(message)s"))
@@ -281,6 +282,15 @@ def create_app(
         route_template = _safe_route_template(request)
         if route_template.startswith("/api/"):
             response.headers["Cache-Control"] = "no-store"
+        if (
+            request.method == "GET"
+            and request.url.path == "/api/v1/session"
+            and request.headers.get("X-CVA-Shell-Epoch") != SHELL_CACHE_EPOCH
+        ):
+            # Shells cached before HTML responses became ``no-store`` still
+            # call this endpoint on startup. Clear only their HTTP cache; the
+            # current authenticated session and all browser storage survive.
+            response.headers["Clear-Site-Data"] = '"cache"'
         HTTP_LOGGER.info(
             json.dumps(
                 {
