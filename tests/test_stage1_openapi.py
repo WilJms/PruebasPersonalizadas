@@ -57,7 +57,7 @@ def test_every_local_openapi_reference_resolves() -> None:
         _resolve_local_ref(schema, ref)
 
 
-def test_every_stage1_success_response_has_a_schema() -> None:
+def test_every_stage2_success_response_has_a_schema() -> None:
     schema = build_schema()
     for path, path_item in schema["paths"].items():
         for method, operation in path_item.items():
@@ -77,7 +77,7 @@ def test_every_stage1_success_response_has_a_schema() -> None:
                 assert "schema" in content["application/json"], (method, path, code)
 
 
-def test_openapi_exposes_complete_review_contracts_and_no_stage2_actions() -> None:
+def test_openapi_exposes_complete_review_and_stage2_action_contracts() -> None:
     schema = build_schema()
     components = schema["components"]["schemas"]
     selected = components["SelectedQuestion"]["properties"]
@@ -94,9 +94,24 @@ def test_openapi_exposes_complete_review_contracts_and_no_stage2_actions() -> No
     assert "source_ids" in observable
     level = components["GuideLevel"]["properties"]
     assert "observable_element_ids" in level
-    paths = "\n".join(schema["paths"])
-    for forbidden in ("bulk", "question-action", "retry", "cancel"):
-        assert forbidden not in paths.lower()
+    paths = set(schema["paths"])
+    assert {
+        "/api/v1/activities/{activity_id}/submissions:batch",
+        "/api/v1/assessments/{assessment_id}/questions/{question_id}/actions",
+        "/api/v1/jobs/{job_id}:retry",
+        "/api/v1/jobs/{job_id}:cancel",
+        "/api/v1/jobs/{job_id}:resume",
+        "/api/v1/activities/{activity_id}/assessments:bulk-approve",
+    }.issubset(paths)
+    assert {
+        "QuestionReviewActionRecord",
+        "CoverageReport",
+        "ExperimentMetrics",
+        "FeedbackEvent",
+        "ExportRecord",
+        "JobControlRecord",
+        "StageRun",
+    }.issubset(components)
 
 
 def test_problem_detail_and_etag_are_documented() -> None:

@@ -53,6 +53,41 @@ export type EvidenceReceipt = Schema<"EvidenceReceipt">;
 export type EvidenceVerification = Schema<"EvidenceVerifyResource">;
 export type CostEstimate = Schema<"CostEstimate">;
 
-export type ExportKind = Schema<"ExportKindCommand">["kind"];
+/** Stage 2 keeps exports as derived views of the same approved canonical objects. */
+export type ExportKind = Schema<"ExportKind">;
 export type ExportResource = Schema<"ExportResource">;
 export type StartedOperation = Schema<"JobStatus">;
+
+export type Stage2Submission = SubmissionResource & {
+  assessment_version?: number | null;
+  job_status?: TechnicalJobState | null;
+};
+
+export type SubmissionBatchResult = Schema<"SubmissionBatchEnvelope">;
+export type QuestionReviewAction = Schema<"QuestionReviewActionType">;
+export type QuestionReviewActionInput = Schema<"QuestionReviewActionCommand">;
+export type QuestionReviewActionEvent = Schema<"QuestionReviewAction">;
+export type Lineage = Schema<"Lineage">;
+export type QuestionReviewActionRecord = Schema<"QuestionReviewActionRecord">;
+export type CoverageSummaryItem = Schema<"CoverageItem">;
+export type CoverageTraceItem = Schema<"CoverageTraceItem">;
+export type CoverageReport = Schema<"CoverageReport">;
+export type ExperimentMetrics = Schema<"ExperimentMetrics">;
+export type FeedbackTarget = Schema<"FeedbackTargetType">;
+export type FeedbackRating = Schema<"FeedbackRating">;
+export type FeedbackCategory = Schema<"FeedbackCategory">;
+export type FeedbackInput = Schema<"FeedbackCommand">;
+export type FeedbackEvent = Schema<"FeedbackEvent">;
+export type ExportArtifact = Schema<"ExportArtifact">;
+export type ExportRecord = Schema<"ExportRecord">;
+export type ExportDownloadResource = Schema<"ExportDownloadResource">;
+export type ExportCreateResult = Schema<"ExportCreateEnvelope">;
+export type StageRunView = Schema<"StageRun">;
+export type FailureClass = Schema<"FailureClass">;
+export type JobControlRecord = Schema<"JobControlRecord">;
+export type JobControlView = Schema<"JobControlEnvelope">;
+export type BulkApprovalTarget = Schema<"AssessmentVersionRef">;
+export type BulkApprovalRecord = Schema<"BulkApprovalRecord">;
+
+export const BULK_APPROVAL_CONFIRMATION =
+  "CONFIRM_BULK_APPROVAL_OF_ALL_ELIGIBLE_SELECTED_ASSESSMENTS" as const;

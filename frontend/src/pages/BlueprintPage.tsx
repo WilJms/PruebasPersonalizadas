@@ -19,6 +19,7 @@ import type {
   JobStatus,
 } from "../api/types";
 import { Diagnostics, ErrorNotice } from "../components/Feedback";
+import { JobControlPanel } from "../components/JobControlPanel";
 import { StatusBadge } from "../components/StatusBadge";
 import { useRouteState } from "../routing";
 
@@ -471,12 +472,13 @@ export function BlueprintPage() {
         <section className="processing-card" aria-live="polite">
           <span className="spinner spinner-large" aria-hidden="true" />
           <h2>{job?.stage ? job.stage.replaceAll("_", " ") : "Recuperando pipeline durable"}</h2>
-          <div className="progress-track">
+          <div aria-label="Progreso del pipeline de actividad" aria-valuemax={100} aria-valuemin={0} aria-valuenow={Math.round((job?.progress ?? 0.08) * 100)} className="progress-track" role="progressbar">
             <span style={{ width: `${Math.round((job?.progress ?? 0.08) * 100)}%` }} />
           </div>
           <p>Esta vista se actualizará cuando la versión sea revisable.</p>
         </section>
         <ErrorNotice error={error} />
+        {job && <JobControlPanel jobId={job.job_id} onChange={(next) => { setJob(next.job); setActiveJobId(next.job.job_id); }} />}
       </div>
     );
   }
@@ -503,6 +505,7 @@ export function BlueprintPage() {
         </header>
         <Diagnostics items={job?.diagnostics} />
         <ErrorNotice error={error} />
+        {job && <JobControlPanel jobId={job.job_id} onChange={(next) => { setJob(next.job); setActiveJobId(next.job.job_id); }} />}
       </div>
     );
   }
@@ -812,10 +815,10 @@ export function BlueprintPage() {
           {approved && (
             <button
               className="button button-primary"
-              onClick={() => navigate(`/activities/${activityId}/submission`)}
+              onClick={() => navigate(`/activities/${activityId}/submissions`)}
               type="button"
             >
-              Cargar entrega
+              Abrir lote de entregas
             </button>
           )}
         </div>

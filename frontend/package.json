@@ -12,6 +12,7 @@
     "openapi:generate": "openapi-typescript ../tests/fixtures/openapi/stage1-v1.json -o src/api/generated.ts --alphabetize",
     "test": "vitest run",
     "test:e2e": "playwright test",
+    "test:e2e:stage2": "playwright test --config playwright.stage2.config.ts",
     "test:watch": "vitest",
     "typecheck": "tsc -b --pretty false"
   },

@@ -56,7 +56,7 @@ export function ActivitiesPage() {
       ) : items.length === 0 ? (
         <section className="empty-state">
           <h2>Aún no hay actividades</h2>
-          <p>Crea la primera actividad privada de Etapa 1.</p>
+          <p>Crea la primera actividad privada del entorno experimental.</p>
           <Link className="button button-primary" to="/activities/new">Crear actividad</Link>
         </section>
       ) : (
@@ -84,6 +84,9 @@ export function ActivitiesPage() {
                     Editar configuración
                   </Link>
                 )}
+                <Link className="button button-secondary" to={`/activities/${activity.activity_id}/submissions`}>
+                  Abrir lote E2
+                </Link>
                 <button
                   className="button button-primary"
                   onClick={() => navigate(activity.journey.continue_path)}

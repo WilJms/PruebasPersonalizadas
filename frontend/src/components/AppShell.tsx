@@ -4,7 +4,7 @@ import { useAuth } from "../auth/AuthContext";
 
 export function AppShell({ children }: PropsWithChildren) {
   const { session, logout } = useAuth();
-  const [, navigate] = useLocation();
+  const [location, navigate] = useLocation();
 
   const signOut = async () => {
     await logout();
@@ -13,6 +13,7 @@ export function AppShell({ children }: PropsWithChildren) {
 
   return (
     <div className="app-shell">
+      <a className="skip-link" href="#main-content">Saltar al contenido principal</a>
       <aside className="sidebar">
         <div className="brand-lockup">
           <span className="brand-mark" aria-hidden="true">
@@ -25,20 +26,20 @@ export function AppShell({ children }: PropsWithChildren) {
         </div>
 
         <nav aria-label="Navegación principal">
-          <Link to="/activities" className={(isActive) => (isActive ? "active" : "")}>
+          <Link aria-current={location === "/activities" ? "page" : undefined} to="/activities" className={(isActive) => (isActive ? "active" : "")}>
             <span className="nav-glyph" aria-hidden="true">◫</span>
             Actividades
           </Link>
-          <Link to="/activities/new" className={(isActive) => (isActive ? "active" : "")}>
+          <Link aria-current={location === "/activities/new" ? "page" : undefined} to="/activities/new" className={(isActive) => (isActive ? "active" : "")}>
             <span className="nav-glyph" aria-hidden="true">＋</span>
             Nueva actividad
           </Link>
         </nav>
 
         <div className="stage-card">
-          <span className="eyebrow">Etapa 1</span>
-          <strong>Primer recorrido vertical</strong>
-          <p>Una actividad, una entrega y revisión humana obligatoria.</p>
+          <span className="eyebrow">Etapa 2</span>
+          <strong>Entorno experimental usable</strong>
+          <p>Múltiples entregas con revisión humana obligatoria y estados independientes.</p>
         </div>
       </aside>
 
@@ -61,7 +62,7 @@ export function AppShell({ children }: PropsWithChildren) {
             </button>
           </div>
         </header>
-        <main className="page-area">
+        <main className="page-area" id="main-content" tabIndex={-1}>
           {children}
         </main>
       </div>

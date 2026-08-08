@@ -55,6 +55,7 @@ def _cloud_settings(**overrides: object) -> dict[str, object]:
         "gcp_project_id": "project-stage1",
         "gcp_region": "us-central1",
         "cloud_run_job_name": "cva-worker",
+        "require_libmagic": True,
     }
     values.update(overrides)
     return values
@@ -80,6 +81,7 @@ def _cloud_settings(**overrides: object) -> dict[str, object]:
         ({"supabase_jwks_url": None}, "issuer and JWKS URL"),
         ({"r2_secret_access_key": None}, "scoped credentials"),
         ({"gcp_region": None}, "project, region and job name"),
+        ({"require_libmagic": False}, "libmagic MIME detection"),
     ],
 )
 def test_cloud_configuration_fails_closed(
@@ -145,7 +147,7 @@ def test_stale_spa_shell_clears_only_http_cache_on_session_probe() -> None:
 
         current = client.get(
             "/api/v1/session",
-            headers={"X-CVA-Shell-Epoch": "stage1-v1"},
+            headers={"X-CVA-Shell-Epoch": "stage2-v1"},
         )
         assert current.status_code == 401
         assert "clear-site-data" not in current.headers

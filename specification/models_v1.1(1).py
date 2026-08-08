@@ -1,19 +1,27 @@
-"""Canonical contracts for comprehension-verification assessments v1.1.
+"""Canonical contracts for comprehension-verification assessments.
 
 Pydantic v2.13+. Student content is data only; these models do not execute or
-dereference artifacts. All persisted domain objects include schema_version.
+dereference artifacts. The 1.2 bundle preserves legacy 1.1 roots and adds
+independent Stage 2 roots. All persisted domain objects include schema_version.
 """
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from enum import StrEnum
 from typing import Annotated, Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, HttpUrl, model_validator
 
 
-SCHEMA_VERSION = "1.1.0"
+LEGACY_SCHEMA_VERSION = "1.1.0"
+CONTRACT_VERSION = "1.2.0"
+
+# Runtime prompt contracts remain on 1.1.0.  The bundle advances to 1.2.0 only
+# because Stage 2 adds independent roots without changing any existing root.
+SCHEMA_VERSION = LEGACY_SCHEMA_VERSION
+SchemaVersion = Literal[LEGACY_SCHEMA_VERSION]
+Stage2SchemaVersion = Literal[CONTRACT_VERSION]
 
 Id = Annotated[str, Field(min_length=3, max_length=128, pattern=r"^[a-z][a-z0-9_-]*$")]
 
@@ -36,6 +44,32 @@ PositiveInt = Annotated[int, Field(ge=1)]
 
 class StrictModel(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=False, str_strip_whitespace=True)
+
+
+def _require_utc(value: datetime, field_name: str) -> None:
+    if value.utcoffset() != timedelta(0):
+        raise ValueError(f"{field_name} must be timezone-aware UTC")
+
+
+def _require_private_reference(value: str, field_name: str) -> None:
+    lowered = value.lower()
+    forbidden_markers = (
+        "://",
+        "?",
+        "#",
+        "x-amz-signature",
+        "x-amz-credential",
+        "x-amz-security-token",
+        "authorization=",
+        "access_token=",
+        "token=",
+    )
+    if value.startswith(("/", "\\")) or any(
+        marker in lowered for marker in forbidden_markers
+    ):
+        raise ValueError(f"{field_name} must be a private opaque reference, not a capability")
+    if any(part in {"", ".", ".."} for part in value.replace("\\", "/").split("/")):
+        raise ValueError(f"{field_name} contains an unsafe path segment")
 
 
 class ContextMode(StrEnum):
@@ -214,6 +248,108 @@ class SubmissionProcessingStatus(StrEnum):
     CANCELLED = "CANCELLED"
 
 
+class StageRunStatus(StrEnum):
+    QUEUED = "QUEUED"
+    RUNNING = "RUNNING"
+    SUCCEEDED = "SUCCEEDED"
+    FAILED = "FAILED"
+    CANCELLED = "CANCELLED"
+
+
+class FailureClass(StrEnum):
+    TRANSIENT = "TRANSIENT"
+    PERMANENT = "PERMANENT"
+    SECURITY = "SECURITY"
+    VALIDATION = "VALIDATION"
+    PRECONDITION = "PRECONDITION"
+    PROVIDER = "PROVIDER"
+    CANCELLATION = "CANCELLATION"
+
+
+class JobControlActionType(StrEnum):
+    RETRY = "RETRY"
+    CANCEL = "CANCEL"
+    RESUME = "RESUME"
+
+
+class JobControlStatus(StrEnum):
+    REQUESTED = "REQUESTED"
+    APPLIED = "APPLIED"
+    REJECTED = "REJECTED"
+
+
+class CoverageScope(StrEnum):
+    SUBMISSION = "SUBMISSION"
+    ACTIVITY = "ACTIVITY"
+
+
+class CoveragePlanningRole(StrEnum):
+    PRIMARY = "PRIMARY"
+    RESERVE = "RESERVE"
+    EXCLUDED = "EXCLUDED"
+
+
+class CoverageOutcome(StrEnum):
+    PLANNED = "PLANNED"
+    GENERATED = "GENERATED"
+    REVIEWED = "REVIEWED"
+    APPROVED = "APPROVED"
+    FAILED = "FAILED"
+    EXCLUDED = "EXCLUDED"
+
+
+class ExportKind(StrEnum):
+    ASSESSMENT_PDF = "ASSESSMENT_PDF"
+    ASSESSMENT_HTML = "ASSESSMENT_HTML"
+    GUIDE_PDF = "GUIDE_PDF"
+    GUIDE_HTML = "GUIDE_HTML"
+    COVERAGE_CSV = "COVERAGE_CSV"
+    COVERAGE_JSON = "COVERAGE_JSON"
+    CANONICAL_JSON = "CANONICAL_JSON"
+
+
+class ExportStatus(StrEnum):
+    QUEUED = "QUEUED"
+    READY = "READY"
+    FAILED = "FAILED"
+
+
+class FeedbackTargetType(StrEnum):
+    ACTIVITY = "ACTIVITY"
+    ASSESSMENT = "ASSESSMENT"
+    QUESTION = "QUESTION"
+
+
+class FeedbackRating(StrEnum):
+    VERY_UNHELPFUL = "VERY_UNHELPFUL"
+    UNHELPFUL = "UNHELPFUL"
+    NEUTRAL = "NEUTRAL"
+    HELPFUL = "HELPFUL"
+    VERY_HELPFUL = "VERY_HELPFUL"
+
+
+class FeedbackCategory(StrEnum):
+    GROUNDING = "GROUNDING"
+    ANSWERABILITY = "ANSWERABILITY"
+    QUESTION_QUALITY = "QUESTION_QUALITY"
+    GUIDE_QUALITY = "GUIDE_QUALITY"
+    COVERAGE = "COVERAGE"
+    WORKFLOW = "WORKFLOW"
+    EXPORT = "EXPORT"
+    OTHER = "OTHER"
+
+
+class QuestionReviewRecordStatus(StrEnum):
+    APPLIED = "APPLIED"
+    FAILED = "FAILED"
+
+
+class RevalidationStatus(StrEnum):
+    NOT_REQUIRED = "NOT_REQUIRED"
+    PASSED = "PASSED"
+    FAILED = "FAILED"
+
+
 class Diagnostic(StrictModel):
     code: Annotated[str, Field(pattern=r"^[A-Z][A-Z0-9_]{2,63}$")]
     severity: Severity
@@ -305,7 +441,7 @@ SourceLocator = Annotated[
 
 
 class ArtifactRef(StrictModel):
-    schema_version: Literal[SCHEMA_VERSION] = SCHEMA_VERSION
+    schema_version: SchemaVersion = LEGACY_SCHEMA_VERSION
     artifact_id: Id
     role: ArtifactRole
     filename: Annotated[str, Field(min_length=1, max_length=512)]
@@ -331,7 +467,7 @@ class EvidenceRelation(StrictModel):
 
 
 class EvidenceUnit(StrictModel):
-    schema_version: Literal[SCHEMA_VERSION] = SCHEMA_VERSION
+    schema_version: SchemaVersion = LEGACY_SCHEMA_VERSION
     evidence_id: Id
     tenant_id: Id
     submission_id: Id | None = None
@@ -380,7 +516,7 @@ class SourceCitation(StrictModel):
 class EvidenceBundle(StrictModel):
     """Exact allowlisted evidence sent to one model call."""
 
-    schema_version: Literal[SCHEMA_VERSION] = SCHEMA_VERSION
+    schema_version: SchemaVersion = LEGACY_SCHEMA_VERSION
     bundle_id: Id
     tenant_id: Id
     activity_id: Id
@@ -433,17 +569,17 @@ class TrustedPromptContext(StrictModel):
 class ModelTaskEnvelope(StrictModel):
     """Transport envelope; payload is validated again against its prompt request root."""
 
-    schema_version: Literal[SCHEMA_VERSION] = SCHEMA_VERSION
+    schema_version: SchemaVersion = LEGACY_SCHEMA_VERSION
     prompt_id: Annotated[str, Field(pattern=r"^P(?:0[1-9]|1[01])_[A-Z0-9_]+_V1$")]
     prompt_version: Annotated[str, Field(pattern=r"^1\.1\.\d+$")]
     output_schema_name: Annotated[str, Field(min_length=3, max_length=128)]
-    output_schema_version: Literal[SCHEMA_VERSION] = SCHEMA_VERSION
+    output_schema_version: SchemaVersion = LEGACY_SCHEMA_VERSION
     trusted_context: TrustedPromptContext
     payload: dict[str, Any]
 
 
 class ActivityConfig(StrictModel):
-    schema_version: Literal[SCHEMA_VERSION] = SCHEMA_VERSION
+    schema_version: SchemaVersion = LEGACY_SCHEMA_VERSION
     activity_id: Id
     tenant_id: Id
     title: Annotated[str, Field(min_length=1, max_length=300)]
@@ -479,7 +615,7 @@ class SourcedStatement(StrictModel):
 
 
 class ActivitySpec(StrictModel):
-    schema_version: Literal[SCHEMA_VERSION] = SCHEMA_VERSION
+    schema_version: SchemaVersion = LEGACY_SCHEMA_VERSION
     activity_id: Id
     status: WorkflowStatus
     learning_outcomes: list[SourcedStatement] = Field(default_factory=list)
@@ -512,7 +648,7 @@ class RubricCriterion(StrictModel):
 
 
 class RubricSpec(StrictModel):
-    schema_version: Literal[SCHEMA_VERSION] = SCHEMA_VERSION
+    schema_version: SchemaVersion = LEGACY_SCHEMA_VERSION
     activity_id: Id
     status: WorkflowStatus
     scale_label: str | None = Field(default=None, max_length=200)
@@ -545,14 +681,14 @@ class AmbiguityIssue(StrictModel):
 
 
 class AmbiguityReport(StrictModel):
-    schema_version: Literal[SCHEMA_VERSION] = SCHEMA_VERSION
+    schema_version: SchemaVersion = LEGACY_SCHEMA_VERSION
     activity_id: Id
     issues: list[AmbiguityIssue] = Field(default_factory=list, max_length=8)
     blocked: bool
 
 
 class PolicyDecision(StrictModel):
-    schema_version: Literal[SCHEMA_VERSION] = SCHEMA_VERSION
+    schema_version: SchemaVersion = LEGACY_SCHEMA_VERSION
     decision_id: Id
     issue_id: Id
     selected_option_id: Id
@@ -580,7 +716,7 @@ class StructuredJustificationPolicy(StrictModel):
 class AssessmentPlanningPolicy(StrictModel):
     """Deterministic policy used before question generation."""
 
-    schema_version: Literal[SCHEMA_VERSION] = SCHEMA_VERSION
+    schema_version: SchemaVersion = LEGACY_SCHEMA_VERSION
     policy_id: Id
     minimum_opportunity_quality: Score = 0.75
     minimum_evidence_fit: Score = 0.7
@@ -597,7 +733,7 @@ class AssessmentPlanningPolicy(StrictModel):
 class BlueprintPolicy(StrictModel):
     """Trusted constraints used by P04; depth is derived rather than selected."""
 
-    schema_version: Literal[SCHEMA_VERSION] = SCHEMA_VERSION
+    schema_version: SchemaVersion = LEGACY_SCHEMA_VERSION
     policy_id: Id
     activity_id: Id
     question_count: int = Field(ge=1, le=20)
@@ -620,7 +756,7 @@ class BlueprintPolicy(StrictModel):
 
 
 class QuestionGenerationPolicy(StrictModel):
-    schema_version: Literal[SCHEMA_VERSION] = SCHEMA_VERSION
+    schema_version: SchemaVersion = LEGACY_SCHEMA_VERSION
     policy_id: Id
     max_anchor_fragments: int = Field(default=4, ge=1, le=8)
     max_course_passages: int = Field(default=8, ge=0, le=50)
@@ -629,7 +765,7 @@ class QuestionGenerationPolicy(StrictModel):
 
 
 class QuestionValidationPolicy(StrictModel):
-    schema_version: Literal[SCHEMA_VERSION] = SCHEMA_VERSION
+    schema_version: SchemaVersion = LEGACY_SCHEMA_VERSION
     policy_id: Id
     minimum_groundedness: Score = 0.9
     minimum_anchor_sufficiency: Score = 0.8
@@ -731,7 +867,7 @@ class AssessmentConstraints(StrictModel):
 class AssessmentBlueprint(StrictModel):
     """Activity catalog; its size is independent of question_count."""
 
-    schema_version: Literal[SCHEMA_VERSION] = SCHEMA_VERSION
+    schema_version: SchemaVersion = LEGACY_SCHEMA_VERSION
     blueprint_id: Id
     blueprint_version: PositiveInt
     activity_id: Id
@@ -805,7 +941,7 @@ class BlueprintReviewCheck(StrictModel):
 
 
 class BlueprintReview(StrictModel):
-    schema_version: Literal[SCHEMA_VERSION] = SCHEMA_VERSION
+    schema_version: SchemaVersion = LEGACY_SCHEMA_VERSION
     activity_id: Id
     blueprint_id: Id
     blueprint_version: PositiveInt
@@ -890,7 +1026,7 @@ PlanningFailure = Literal[
 
 
 class EvidenceMapPatch(StrictModel):
-    schema_version: Literal[SCHEMA_VERSION] = SCHEMA_VERSION
+    schema_version: SchemaVersion = LEGACY_SCHEMA_VERSION
     submission_id: Id
     status: Literal[
         "READY",
@@ -919,7 +1055,7 @@ class EvidenceMapPatch(StrictModel):
 class AssessmentPlan(StrictModel):
     """Exactly N primary opportunities plus a small, disjoint reserve."""
 
-    schema_version: Literal[SCHEMA_VERSION] = SCHEMA_VERSION
+    schema_version: SchemaVersion = LEGACY_SCHEMA_VERSION
     plan_id: Id
     submission_id: Id
     blueprint_id: Id
@@ -1000,7 +1136,7 @@ class EvaluationGuideItem(StrictModel):
 class EvaluationGuide(StrictModel):
     """Structured guide persisted with the assessment and submission."""
 
-    schema_version: Literal[SCHEMA_VERSION] = SCHEMA_VERSION
+    schema_version: SchemaVersion = LEGACY_SCHEMA_VERSION
     guide_id: Id
     assessment_id: Id
     submission_id: Id
@@ -1078,7 +1214,7 @@ class QuestionCandidate(StrictModel):
 
 
 class QuestionGenerationResult(StrictModel):
-    schema_version: Literal[SCHEMA_VERSION] = SCHEMA_VERSION
+    schema_version: SchemaVersion = LEGACY_SCHEMA_VERSION
     submission_id: Id
     opportunity_id: Id
     context_mode: ContextMode = ContextMode.CLOSED
@@ -1133,7 +1269,7 @@ class QuestionSemanticReview(StrictModel):
 
 
 class QuestionReviewResult(StrictModel):
-    schema_version: Literal[SCHEMA_VERSION] = SCHEMA_VERSION
+    schema_version: SchemaVersion = LEGACY_SCHEMA_VERSION
     submission_id: Id
     opportunity_id: Id
     status: Literal["READY", "NEEDS_REVIEW", "TECHNICAL_FAILURE"] = "READY"
@@ -1232,7 +1368,7 @@ class Lineage(StrictModel):
     blueprint_version: PositiveInt
     parser_versions: dict[str, str]
     prompt_versions: dict[str, str]
-    schema_version: Literal[SCHEMA_VERSION] = SCHEMA_VERSION
+    schema_version: SchemaVersion = LEGACY_SCHEMA_VERSION
     model_snapshots: dict[str, str]
     policy_hash: Hash
     planner_version: str
@@ -1240,7 +1376,7 @@ class Lineage(StrictModel):
 
 
 class Assessment(StrictModel):
-    schema_version: Literal[SCHEMA_VERSION] = SCHEMA_VERSION
+    schema_version: SchemaVersion = LEGACY_SCHEMA_VERSION
     assessment_id: Id
     tenant_id: Id
     activity_id: Id
@@ -1311,7 +1447,7 @@ class AssessmentVersionRef(StrictModel):
 
 
 class BulkApprovalRequest(StrictModel):
-    schema_version: Literal[SCHEMA_VERSION] = SCHEMA_VERSION
+    schema_version: SchemaVersion = LEGACY_SCHEMA_VERSION
     request_id: Id
     tenant_id: Id
     actor_id: PrincipalId
@@ -1337,7 +1473,7 @@ class BulkApprovalExclusion(StrictModel):
 
 
 class BulkApprovalRecord(StrictModel):
-    schema_version: Literal[SCHEMA_VERSION] = SCHEMA_VERSION
+    schema_version: SchemaVersion = LEGACY_SCHEMA_VERSION
     approval_id: Id
     request_id: Id
     tenant_id: Id
@@ -1374,7 +1510,7 @@ class BulkApprovalRecord(StrictModel):
 
 
 class QuestionReviewAction(StrictModel):
-    schema_version: Literal[SCHEMA_VERSION] = SCHEMA_VERSION
+    schema_version: SchemaVersion = LEGACY_SCHEMA_VERSION
     action_id: Id
     assessment_id: Id
     question_id: Id
@@ -1420,7 +1556,7 @@ class ModelCapabilities(StrictModel):
 class ModelRoute(StrictModel):
     """Approved callable unit; routing resolves policy instead of choosing dynamically."""
 
-    schema_version: Literal[SCHEMA_VERSION] = SCHEMA_VERSION
+    schema_version: SchemaVersion = LEGACY_SCHEMA_VERSION
     route_id: Id
     task: str
     provider: Literal["openai", "anthropic", "google", "other"]
@@ -1456,7 +1592,7 @@ class ModelRoute(StrictModel):
 
 
 class ModelRouteResolution(StrictModel):
-    schema_version: Literal[SCHEMA_VERSION] = SCHEMA_VERSION
+    schema_version: SchemaVersion = LEGACY_SCHEMA_VERSION
     resolution_id: Id
     task: str
     status: Literal["RESOLVED", "NEEDS_REVIEW", "BLOCKED"]
@@ -1493,7 +1629,7 @@ class ModelRouteResolution(StrictModel):
 
 
 class ModelCallLedger(StrictModel):
-    schema_version: Literal[SCHEMA_VERSION] = SCHEMA_VERSION
+    schema_version: SchemaVersion = LEGACY_SCHEMA_VERSION
     model_call_id: Id
     tenant_id: Id
     job_id: Id
@@ -1531,12 +1667,12 @@ class EventActor(StrictModel):
 class DomainEvent(StrictModel):
     """Versioned internal event envelope; payload shape is selected by event_type."""
 
-    schema_version: Literal[SCHEMA_VERSION] = SCHEMA_VERSION
+    schema_version: SchemaVersion = LEGACY_SCHEMA_VERSION
     event_id: Id
     event_type: Annotated[
         str, Field(min_length=3, max_length=128, pattern=r"^[a-z][a-z0-9_.-]*$")
     ]
-    event_version: Literal[SCHEMA_VERSION] = SCHEMA_VERSION
+    event_version: SchemaVersion = LEGACY_SCHEMA_VERSION
     occurred_at: datetime
     tenant_id: Id
     aggregate_id: Id
@@ -1548,7 +1684,7 @@ class DomainEvent(StrictModel):
 
 
 class JobStatus(StrictModel):
-    schema_version: Literal[SCHEMA_VERSION] = SCHEMA_VERSION
+    schema_version: SchemaVersion = LEGACY_SCHEMA_VERSION
     job_id: Id
     tenant_id: Id
     aggregate_id: Id
@@ -1562,7 +1698,7 @@ class JobStatus(StrictModel):
 
 
 class SubmissionProcessingState(StrictModel):
-    schema_version: Literal[SCHEMA_VERSION] = SCHEMA_VERSION
+    schema_version: SchemaVersion = LEGACY_SCHEMA_VERSION
     submission_id: Id
     activity_id: Id
     status: SubmissionProcessingStatus
@@ -1571,6 +1707,653 @@ class SubmissionProcessingState(StrictModel):
     active_job_id: Id | None = None
     diagnostics: list[Diagnostic] = Field(default_factory=list)
     updated_at: datetime
+
+
+class StageRun(StrictModel):
+    """Durable, reusable execution of one deterministic application stage."""
+
+    schema_version: Stage2SchemaVersion = CONTRACT_VERSION
+    stage_run_id: Id
+    tenant_id: Id
+    job_id: Id
+    aggregate_id: Id
+    stage: Annotated[
+        str, Field(min_length=3, max_length=128, pattern=r"^[A-Z][A-Z0-9_]{2,127}$")
+    ]
+    stage_key: Hash
+    input_hash: Hash
+    policy_hash: Hash
+    component_version: Annotated[str, Field(min_length=1, max_length=128)]
+    status: StageRunStatus
+    attempt: int = Field(ge=1, le=10)
+    retryable: bool = False
+    failure_class: FailureClass | None = None
+    output_ref: str | None = Field(default=None, min_length=1, max_length=1024)
+    output_hash: Hash | None = None
+    diagnostics: list[Diagnostic] = Field(default_factory=list, max_length=100)
+    created_at: datetime
+    started_at: datetime | None = None
+    cancel_requested_at: datetime | None = None
+    finished_at: datetime | None = None
+
+    @model_validator(mode="after")
+    def lifecycle_is_consistent(self) -> "StageRun":
+        timestamps = {
+            "created_at": self.created_at,
+            "started_at": self.started_at,
+            "cancel_requested_at": self.cancel_requested_at,
+            "finished_at": self.finished_at,
+        }
+        for name, value in timestamps.items():
+            if value is not None:
+                _require_utc(value, name)
+        if self.started_at is not None and self.started_at < self.created_at:
+            raise ValueError("started_at cannot precede created_at")
+        if self.cancel_requested_at is not None and self.cancel_requested_at < self.created_at:
+            raise ValueError("cancel_requested_at cannot precede created_at")
+        if self.finished_at is not None:
+            lower_bound = self.started_at or self.created_at
+            if self.finished_at < lower_bound:
+                raise ValueError("finished_at cannot precede stage execution")
+
+        if (self.output_ref is None) != (self.output_hash is None):
+            raise ValueError("output_ref and output_hash must both be set or absent")
+        if self.output_ref is not None:
+            _require_private_reference(self.output_ref, "output_ref")
+
+        if self.status == StageRunStatus.QUEUED:
+            if self.started_at or self.cancel_requested_at or self.finished_at:
+                raise ValueError("QUEUED stage cannot have execution timestamps")
+        elif self.status == StageRunStatus.RUNNING:
+            if self.started_at is None or self.finished_at is not None:
+                raise ValueError("RUNNING stage requires started_at and no finished_at")
+        else:
+            if self.started_at is None or self.finished_at is None:
+                raise ValueError("terminal stage requires started_at and finished_at")
+
+        if self.status == StageRunStatus.SUCCEEDED:
+            if self.output_ref is None:
+                raise ValueError("SUCCEEDED stage requires a durable output reference")
+            if self.failure_class is not None or self.retryable:
+                raise ValueError("SUCCEEDED stage cannot expose failure state")
+        elif self.status == StageRunStatus.FAILED:
+            if self.failure_class is None or not self.diagnostics:
+                raise ValueError("FAILED stage requires failure_class and diagnostics")
+            if self.failure_class == FailureClass.CANCELLATION:
+                raise ValueError("FAILED stage cannot use CANCELLATION failure class")
+            if self.output_ref is not None:
+                raise ValueError("FAILED stage cannot expose a reusable output")
+        elif self.status == StageRunStatus.CANCELLED:
+            if self.failure_class != FailureClass.CANCELLATION:
+                raise ValueError("CANCELLED stage requires CANCELLATION failure class")
+            if self.cancel_requested_at is None:
+                raise ValueError("CANCELLED stage requires cancel_requested_at")
+            if self.output_ref is not None or self.retryable:
+                raise ValueError("CANCELLED stage cannot expose output or retryable state")
+        elif self.failure_class is not None or self.retryable or self.output_ref is not None:
+            raise ValueError("non-terminal stage cannot expose result or failure state")
+
+        if self.retryable and self.failure_class not in {
+            FailureClass.TRANSIENT,
+            FailureClass.PROVIDER,
+        }:
+            raise ValueError("only transient/provider failures may be retryable")
+        return self
+
+
+class JobControlRecord(StrictModel):
+    """Durable authorization and outcome for retry, cancel, or stage resume."""
+
+    schema_version: Stage2SchemaVersion = CONTRACT_VERSION
+    control_id: Id
+    tenant_id: Id
+    job_id: Id
+    aggregate_id: Id
+    action: JobControlActionType
+    status: JobControlStatus
+    actor_id: PrincipalId
+    source_attempt: int = Field(ge=0, le=10)
+    reason_code: Annotated[str, Field(pattern=r"^[A-Z][A-Z0-9_]{2,63}$")]
+    target_stage: str | None = Field(
+        default=None,
+        min_length=3,
+        max_length=128,
+        pattern=r"^[A-Z][A-Z0-9_]{2,127}$",
+    )
+    failure_class: FailureClass | None = None
+    resulting_job_id: Id | None = None
+    diagnostics: list[Diagnostic] = Field(default_factory=list, max_length=100)
+    requested_at: datetime
+    decided_at: datetime | None = None
+
+    @model_validator(mode="after")
+    def control_is_auditable(self) -> "JobControlRecord":
+        _require_utc(self.requested_at, "requested_at")
+        if self.decided_at is not None:
+            _require_utc(self.decided_at, "decided_at")
+            if self.decided_at < self.requested_at:
+                raise ValueError("decided_at cannot precede requested_at")
+
+        if self.action in {JobControlActionType.RETRY, JobControlActionType.RESUME}:
+            if self.target_stage is None:
+                raise ValueError("RETRY/RESUME require target_stage")
+        elif self.target_stage is not None:
+            raise ValueError("CANCEL cannot specify target_stage")
+
+        if self.action == JobControlActionType.RETRY:
+            if self.failure_class is None:
+                raise ValueError("RETRY requires the classified source failure")
+        elif self.failure_class is not None:
+            raise ValueError("failure_class is allowed only for RETRY")
+
+        if self.status == JobControlStatus.REQUESTED:
+            if self.decided_at is not None or self.resulting_job_id is not None:
+                raise ValueError("REQUESTED control cannot expose an outcome")
+        elif self.status == JobControlStatus.REJECTED:
+            if self.decided_at is None or self.resulting_job_id is not None:
+                raise ValueError("REJECTED control requires decision without a new job")
+            if not self.diagnostics:
+                raise ValueError("REJECTED control requires diagnostics")
+        else:
+            if self.decided_at is None:
+                raise ValueError("APPLIED control requires decided_at")
+            if self.action in {
+                JobControlActionType.RETRY,
+                JobControlActionType.RESUME,
+            }:
+                if self.resulting_job_id is None or self.resulting_job_id == self.job_id:
+                    raise ValueError("applied RETRY/RESUME requires a distinct resulting job")
+            elif self.resulting_job_id is not None:
+                raise ValueError("applied CANCEL does not create a new job")
+            if (
+                self.action == JobControlActionType.RETRY
+                and self.failure_class
+                not in {FailureClass.TRANSIENT, FailureClass.PROVIDER}
+            ):
+                raise ValueError("only transient/provider failures may be retried")
+        return self
+
+
+class CoverageTraceItem(StrictModel):
+    submission_id: Id
+    assessment_id: Id | None = None
+    assessment_version: PositiveInt | None = None
+    dimension_id: Id
+    criterion_ids: list[Id] = Field(default_factory=list, max_length=100)
+    variant_id: Id
+    opportunity_id: Id
+    evidence_ids: list[Id] = Field(default_factory=list, max_length=50)
+    cognitive_operation: CognitiveOperation
+    planning_role: CoveragePlanningRole
+    outcome: CoverageOutcome
+    reused_variant: bool = False
+    failure_code: Annotated[
+        str, Field(pattern=r"^[A-Z][A-Z0-9_]{2,63}$")
+    ] | None = None
+    exclusion_reason_code: Annotated[
+        str, Field(pattern=r"^[A-Z][A-Z0-9_]{2,63}$")
+    ] | None = None
+    diagnostics: list[Diagnostic] = Field(default_factory=list, max_length=100)
+
+    @model_validator(mode="after")
+    def trace_is_consistent(self) -> "CoverageTraceItem":
+        if (self.assessment_id is None) != (self.assessment_version is None):
+            raise ValueError("assessment_id and assessment_version must be paired")
+        if len(self.criterion_ids) != len(set(self.criterion_ids)):
+            raise ValueError("coverage criterion_ids must be unique")
+        if len(self.evidence_ids) != len(set(self.evidence_ids)):
+            raise ValueError("coverage evidence_ids must be unique")
+        if self.planning_role in {
+            CoveragePlanningRole.PRIMARY,
+            CoveragePlanningRole.RESERVE,
+        } and not self.evidence_ids:
+            raise ValueError("planned opportunity requires evidence_ids")
+        if self.planning_role == CoveragePlanningRole.EXCLUDED:
+            if (
+                self.outcome != CoverageOutcome.EXCLUDED
+                or self.exclusion_reason_code is None
+            ):
+                raise ValueError("excluded opportunity requires outcome and reason")
+        elif (
+            self.outcome == CoverageOutcome.EXCLUDED
+            or self.exclusion_reason_code is not None
+        ):
+            raise ValueError("exclusion fields are allowed only for EXCLUDED planning role")
+        if (self.outcome == CoverageOutcome.FAILED) != (self.failure_code is not None):
+            raise ValueError("failure_code is required exactly for FAILED outcome")
+        return self
+
+
+class CoverageReport(StrictModel):
+    """Traceable coverage snapshot for one submission or an activity aggregate."""
+
+    schema_version: Stage2SchemaVersion = CONTRACT_VERSION
+    report_id: Id
+    tenant_id: Id
+    activity_id: Id
+    scope: CoverageScope
+    submission_id: Id | None = None
+    assessment_id: Id | None = None
+    assessment_version: PositiveInt | None = None
+    blueprint_id: Id
+    blueprint_version: PositiveInt
+    source_snapshot_hash: Hash
+    summary: Annotated[list[CoverageItem], Field(min_length=1, max_length=500)]
+    traces: list[CoverageTraceItem] = Field(default_factory=list, max_length=10_000)
+    diagnostics: list[Diagnostic] = Field(default_factory=list, max_length=500)
+    generated_at: datetime
+
+    @model_validator(mode="after")
+    def report_is_complete(self) -> "CoverageReport":
+        _require_utc(self.generated_at, "generated_at")
+        if (self.assessment_id is None) != (self.assessment_version is None):
+            raise ValueError("assessment_id and assessment_version must be paired")
+        if self.scope == CoverageScope.SUBMISSION:
+            if self.submission_id is None:
+                raise ValueError("SUBMISSION coverage requires submission_id")
+            if any(item.submission_id != self.submission_id for item in self.traces):
+                raise ValueError("coverage trace belongs to another submission")
+            if self.assessment_id is not None and any(
+                item.assessment_id != self.assessment_id
+                or item.assessment_version != self.assessment_version
+                for item in self.traces
+            ):
+                raise ValueError("coverage trace belongs to another assessment version")
+        elif self.submission_id is not None or self.assessment_id is not None:
+            raise ValueError("ACTIVITY coverage cannot select one submission/assessment")
+
+        trace_keys = [
+            (item.submission_id, item.opportunity_id) for item in self.traces
+        ]
+        if len(trace_keys) != len(set(trace_keys)):
+            raise ValueError("coverage traces must have unique submission/opportunity pairs")
+        summary_ids = [item.dimension_id for item in self.summary]
+        if len(summary_ids) != len(set(summary_ids)):
+            raise ValueError("coverage summary dimension_ids must be unique")
+        if {item.dimension_id for item in self.traces} - set(summary_ids):
+            raise ValueError("every trace dimension requires a summary item")
+
+        for item in self.summary:
+            traces = [x for x in self.traces if x.dimension_id == item.dimension_id]
+            expected = {
+                "available_variant_count": len({x.variant_id for x in traces}),
+                "available_opportunity_count": len(traces),
+                "selected_opportunity_count": sum(
+                    x.planning_role == CoveragePlanningRole.PRIMARY for x in traces
+                ),
+                "reused_variant_count": sum(x.reused_variant for x in traces),
+                "evidence_unit_count": len(
+                    {evidence_id for x in traces for evidence_id in x.evidence_ids}
+                ),
+            }
+            if any(getattr(item, name) != value for name, value in expected.items()):
+                raise ValueError("coverage summary counts must match traceable items")
+        return self
+
+
+class ExportArtifact(StrictModel):
+    export_artifact_id: Id
+    kind: ExportKind
+    media_type: Annotated[str, Field(min_length=3, max_length=255)]
+    object_key: Annotated[str, Field(min_length=1, max_length=1024)]
+    sha256: Hash
+    byte_size: int = Field(ge=1)
+    created_at: datetime
+
+    @model_validator(mode="after")
+    def artifact_is_private_and_typed(self) -> "ExportArtifact":
+        _require_utc(self.created_at, "created_at")
+        _require_private_reference(self.object_key, "object_key")
+        expected_media_type = {
+            ExportKind.ASSESSMENT_PDF: "application/pdf",
+            ExportKind.ASSESSMENT_HTML: "text/html",
+            ExportKind.GUIDE_PDF: "application/pdf",
+            ExportKind.GUIDE_HTML: "text/html",
+            ExportKind.COVERAGE_CSV: "text/csv",
+            ExportKind.COVERAGE_JSON: "application/json",
+            ExportKind.CANONICAL_JSON: "application/json",
+        }[self.kind]
+        if self.media_type != expected_media_type:
+            raise ValueError("export media_type does not match kind")
+        return self
+
+
+class ExportRecord(StrictModel):
+    """Durable export metadata; download capabilities are intentionally absent."""
+
+    schema_version: Stage2SchemaVersion = CONTRACT_VERSION
+    export_id: Id
+    tenant_id: Id
+    activity_id: Id
+    assessment_id: Id
+    assessment_version: PositiveInt
+    requested_by: PrincipalId
+    requested_kinds: Annotated[list[ExportKind], Field(min_length=1, max_length=7)]
+    status: ExportStatus
+    assessment_snapshot_hash: Hash
+    guide_snapshot_hash: Hash | None = None
+    coverage_snapshot_hash: Hash | None = None
+    renderer_version: Annotated[str, Field(min_length=1, max_length=128)]
+    artifacts: list[ExportArtifact] = Field(default_factory=list, max_length=7)
+    model_call_delta: Literal[0] = 0
+    diagnostics: list[Diagnostic] = Field(default_factory=list, max_length=100)
+    requested_at: datetime
+    completed_at: datetime | None = None
+
+    @model_validator(mode="after")
+    def export_is_derived_and_complete(self) -> "ExportRecord":
+        _require_utc(self.requested_at, "requested_at")
+        if self.completed_at is not None:
+            _require_utc(self.completed_at, "completed_at")
+            if self.completed_at < self.requested_at:
+                raise ValueError("completed_at cannot precede requested_at")
+        if len(self.requested_kinds) != len(set(self.requested_kinds)):
+            raise ValueError("requested export kinds must be unique")
+
+        guide_kinds = {
+            ExportKind.GUIDE_PDF,
+            ExportKind.GUIDE_HTML,
+            ExportKind.CANONICAL_JSON,
+        }
+        coverage_kinds = {ExportKind.COVERAGE_CSV, ExportKind.COVERAGE_JSON}
+        if set(self.requested_kinds).intersection(guide_kinds) and not self.guide_snapshot_hash:
+            raise ValueError("guide export requires guide_snapshot_hash")
+        if (
+            set(self.requested_kinds).intersection(coverage_kinds)
+            and not self.coverage_snapshot_hash
+        ):
+            raise ValueError("coverage export requires coverage_snapshot_hash")
+
+        artifact_ids = [item.export_artifact_id for item in self.artifacts]
+        object_keys = [item.object_key for item in self.artifacts]
+        artifact_kinds = [item.kind for item in self.artifacts]
+        if len(artifact_ids) != len(set(artifact_ids)):
+            raise ValueError("export artifact IDs must be unique")
+        if len(object_keys) != len(set(object_keys)):
+            raise ValueError("export object keys must be unique")
+        if len(artifact_kinds) != len(set(artifact_kinds)):
+            raise ValueError("an export record has at most one artifact per kind")
+
+        if self.status == ExportStatus.QUEUED:
+            if self.completed_at is not None or self.artifacts:
+                raise ValueError("QUEUED export cannot expose completed artifacts")
+        elif self.status == ExportStatus.READY:
+            if self.completed_at is None:
+                raise ValueError("READY export requires completed_at")
+            if set(artifact_kinds) != set(self.requested_kinds):
+                raise ValueError("READY export must contain every requested kind exactly once")
+            if any(
+                artifact.created_at < self.requested_at
+                or artifact.created_at > self.completed_at
+                for artifact in self.artifacts
+            ):
+                raise ValueError("export artifact timestamp is outside the render window")
+        else:
+            if self.completed_at is None or self.artifacts or not self.diagnostics:
+                raise ValueError("FAILED export requires diagnostics and no artifacts")
+        return self
+
+
+class TechnicalMetricAggregate(StrictModel):
+    job_count: int = Field(ge=0)
+    succeeded_count: int = Field(ge=0)
+    failed_count: int = Field(ge=0)
+    cancelled_count: int = Field(ge=0)
+    retry_count: int = Field(ge=0)
+    latency_p50_ms: int = Field(ge=0)
+    latency_p95_ms: int = Field(ge=0)
+    input_tokens: int = Field(ge=0)
+    cached_input_tokens: int = Field(ge=0)
+    output_tokens: int = Field(ge=0)
+    estimated_cost_usd: float = Field(ge=0.0)
+    actual_cost_usd: float = Field(ge=0.0)
+
+    @model_validator(mode="after")
+    def totals_are_consistent(self) -> "TechnicalMetricAggregate":
+        if self.succeeded_count + self.failed_count + self.cancelled_count > self.job_count:
+            raise ValueError("terminal job counts cannot exceed job_count")
+        if self.latency_p95_ms < self.latency_p50_ms:
+            raise ValueError("latency p95 must be >= p50")
+        if self.cached_input_tokens > self.input_tokens:
+            raise ValueError("cached input tokens cannot exceed input tokens")
+        return self
+
+
+class QualityMetricAggregate(StrictModel):
+    assessment_count: int = Field(ge=0)
+    fail_closed_count: int = Field(ge=0)
+    defect_count: int = Field(ge=0)
+    exact_plan_count: int = Field(ge=0)
+    replacement_count: int = Field(ge=0)
+
+    @model_validator(mode="after")
+    def assessment_counts_are_consistent(self) -> "QualityMetricAggregate":
+        if self.fail_closed_count + self.assessment_count < self.exact_plan_count:
+            raise ValueError("exact_plan_count exceeds observable outcomes")
+        return self
+
+
+class HumanReviewMetricAggregate(StrictModel):
+    reviewed_question_count: int = Field(ge=0)
+    accepted_count: int = Field(ge=0)
+    edited_count: int = Field(ge=0)
+    rejected_count: int = Field(ge=0)
+    regenerated_count: int = Field(ge=0)
+    review_seconds: int = Field(ge=0)
+
+
+class StageMetricAggregate(StrictModel):
+    stage: Annotated[
+        str, Field(min_length=3, max_length=128, pattern=r"^[A-Z][A-Z0-9_]{2,127}$")
+    ]
+    runs: int = Field(ge=0)
+    succeeded: int = Field(ge=0)
+    failed: int = Field(ge=0)
+    cancelled: int = Field(ge=0)
+    retries: int = Field(ge=0)
+    latency_p50_ms: int = Field(ge=0)
+    latency_p95_ms: int = Field(ge=0)
+
+    @model_validator(mode="after")
+    def stage_counts_are_consistent(self) -> "StageMetricAggregate":
+        if self.succeeded + self.failed + self.cancelled > self.runs:
+            raise ValueError("terminal stage counts cannot exceed runs")
+        if self.latency_p95_ms < self.latency_p50_ms:
+            raise ValueError("stage latency p95 must be >= p50")
+        return self
+
+
+class ModelMetricAggregate(StrictModel):
+    route_id: Id
+    provider: Literal["openai", "anthropic", "google", "other"]
+    model: Annotated[str, Field(min_length=1, max_length=255)]
+    model_snapshot: Annotated[str, Field(min_length=1, max_length=255)]
+    call_count: int = Field(ge=0)
+    schema_valid_count: int = Field(ge=0)
+    error_count: int = Field(ge=0)
+    input_tokens: int = Field(ge=0)
+    cached_input_tokens: int = Field(ge=0)
+    output_tokens: int = Field(ge=0)
+    latency_p50_ms: int = Field(ge=0)
+    latency_p95_ms: int = Field(ge=0)
+    estimated_cost_usd: float = Field(ge=0.0)
+    actual_cost_usd: float = Field(ge=0.0)
+
+    @model_validator(mode="after")
+    def model_counts_are_consistent(self) -> "ModelMetricAggregate":
+        if self.schema_valid_count + self.error_count > self.call_count:
+            raise ValueError("model result counts cannot exceed call_count")
+        if self.cached_input_tokens > self.input_tokens:
+            raise ValueError("cached model tokens cannot exceed input tokens")
+        if self.latency_p95_ms < self.latency_p50_ms:
+            raise ValueError("model latency p95 must be >= p50")
+        return self
+
+
+class ExperimentMetrics(StrictModel):
+    """Content-free aggregate metrics for one experimental activity window."""
+
+    schema_version: Stage2SchemaVersion = CONTRACT_VERSION
+    metrics_id: Id
+    tenant_id: Id
+    activity_id: Id
+    technical: TechnicalMetricAggregate
+    quality: QualityMetricAggregate
+    human_review: HumanReviewMetricAggregate
+    by_stage: list[StageMetricAggregate] = Field(default_factory=list, max_length=100)
+    by_model: list[ModelMetricAggregate] = Field(default_factory=list, max_length=100)
+    window_start: datetime
+    window_end: datetime
+    generated_at: datetime
+
+    @model_validator(mode="after")
+    def dimensions_are_unique(self) -> "ExperimentMetrics":
+        for name, value in {
+            "window_start": self.window_start,
+            "window_end": self.window_end,
+            "generated_at": self.generated_at,
+        }.items():
+            _require_utc(value, name)
+        if self.window_end < self.window_start:
+            raise ValueError("metrics window_end cannot precede window_start")
+        if self.generated_at < self.window_end:
+            raise ValueError("metrics generated_at cannot precede window_end")
+        stages = [item.stage for item in self.by_stage]
+        if len(stages) != len(set(stages)):
+            raise ValueError("stage metric dimensions must be unique")
+        models = [(item.route_id, item.model_snapshot) for item in self.by_model]
+        if len(models) != len(set(models)):
+            raise ValueError("model metric dimensions must be unique")
+        return self
+
+
+class FeedbackEvent(StrictModel):
+    """Governed teacher feedback; never authorizes training or academic action."""
+
+    schema_version: Stage2SchemaVersion = CONTRACT_VERSION
+    feedback_id: Id
+    tenant_id: Id
+    activity_id: Id
+    assessment_id: Id | None = None
+    assessment_version: PositiveInt | None = None
+    question_id: Id | None = None
+    target_type: FeedbackTargetType
+    actor_id: PrincipalId
+    category: FeedbackCategory
+    rating: FeedbackRating
+    comment: Annotated[str, Field(min_length=1, max_length=2000)] | None = None
+    training_use_allowed: Literal[False] = False
+    public_dataset_use_allowed: Literal[False] = False
+    academic_decision_use_allowed: Literal[False] = False
+    created_at: datetime
+
+    @model_validator(mode="after")
+    def target_and_governance_are_explicit(self) -> "FeedbackEvent":
+        _require_utc(self.created_at, "created_at")
+        if (self.assessment_id is None) != (self.assessment_version is None):
+            raise ValueError("assessment_id and assessment_version must be paired")
+        if self.target_type == FeedbackTargetType.ACTIVITY:
+            if self.assessment_id is not None or self.question_id is not None:
+                raise ValueError("ACTIVITY feedback cannot target assessment/question")
+        elif self.target_type == FeedbackTargetType.ASSESSMENT:
+            if self.assessment_id is None or self.question_id is not None:
+                raise ValueError("ASSESSMENT feedback requires only assessment target")
+        elif self.assessment_id is None or self.question_id is None:
+            raise ValueError("QUESTION feedback requires assessment and question targets")
+        return self
+
+
+class QuestionReviewActionRecord(StrictModel):
+    """Versioned outcome around the unchanged v1.1 QuestionReviewAction root."""
+
+    schema_version: Stage2SchemaVersion = CONTRACT_VERSION
+    record_id: Id
+    tenant_id: Id
+    activity_id: Id
+    submission_id: Id
+    assessment_id: Id
+    assessment_version_before: PositiveInt
+    assessment_version_after: PositiveInt | None = None
+    action: QuestionReviewAction
+    status: QuestionReviewRecordStatus
+    revalidation_status: RevalidationStatus
+    before_question: SelectedQuestion
+    after_question: SelectedQuestion | None = None
+    lineage_before: Lineage
+    lineage_after: Lineage | None = None
+    diagnostics: list[Diagnostic] = Field(default_factory=list, max_length=100)
+    recorded_at: datetime
+
+    @model_validator(mode="after")
+    def revision_is_versioned(self) -> "QuestionReviewActionRecord":
+        _require_utc(self.recorded_at, "recorded_at")
+        _require_utc(self.action.occurred_at, "action.occurred_at")
+        if self.recorded_at < self.action.occurred_at:
+            raise ValueError("recorded_at cannot precede action occurrence")
+        if self.action.assessment_id != self.assessment_id:
+            raise ValueError("action belongs to another assessment")
+        if self.before_question.question_id != self.action.question_id:
+            raise ValueError("before question does not match action question_id")
+
+        mutable_action = self.action.action in {
+            QuestionReviewActionType.EDIT,
+            QuestionReviewActionType.REGENERATE,
+        }
+        if self.status == QuestionReviewRecordStatus.FAILED:
+            if not mutable_action:
+                raise ValueError("only EDIT/REGENERATE may record failed revalidation")
+            if self.revalidation_status != RevalidationStatus.FAILED:
+                raise ValueError("failed review action requires FAILED revalidation")
+            if any(
+                value is not None
+                for value in (
+                    self.assessment_version_after,
+                    self.after_question,
+                    self.lineage_after,
+                )
+            ) or not self.diagnostics:
+                raise ValueError("failed review action cannot expose a resulting version")
+            return self
+
+        if self.action.action == QuestionReviewActionType.ACCEPT:
+            if (
+                self.assessment_version_after != self.assessment_version_before
+                or self.after_question != self.before_question
+                or self.lineage_after != self.lineage_before
+                or self.revalidation_status != RevalidationStatus.NOT_REQUIRED
+            ):
+                raise ValueError("ACCEPT must preserve version, question, and lineage")
+            return self
+
+        if self.assessment_version_after != self.assessment_version_before + 1:
+            raise ValueError("mutating review action must create the next assessment version")
+        if self.lineage_after is None:
+            raise ValueError("mutating review action requires resulting lineage")
+
+        if self.action.action == QuestionReviewActionType.REJECT:
+            if self.after_question is not None:
+                raise ValueError("REJECT cannot expose an accepted after question")
+            if self.revalidation_status != RevalidationStatus.NOT_REQUIRED:
+                raise ValueError("REJECT does not run semantic revalidation")
+            return self
+
+        if self.after_question is None:
+            raise ValueError("EDIT/REGENERATE require an after question when applied")
+        if self.after_question.question_id != self.action.question_id:
+            raise ValueError("review replacement must preserve question_id")
+        if self.revalidation_status != RevalidationStatus.PASSED:
+            raise ValueError("applied EDIT/REGENERATE requires passed revalidation")
+        if (
+            self.action.action == QuestionReviewActionType.EDIT
+            and self.action.replacement != self.after_question
+        ):
+            raise ValueError("EDIT after question must equal canonical action replacement")
+        if (
+            self.action.action == QuestionReviewActionType.REGENERATE
+            and self.after_question.opportunity_id == self.before_question.opportunity_id
+        ):
+            raise ValueError("REGENERATE must use a distinct reserve opportunity")
+        return self
 
 
 class ProblemDetail(StrictModel):
@@ -1586,26 +2369,26 @@ class ProblemDetail(StrictModel):
 
 
 class ActivitySpecRequest(StrictModel):
-    schema_version: Literal[SCHEMA_VERSION] = SCHEMA_VERSION
+    schema_version: SchemaVersion = LEGACY_SCHEMA_VERSION
     activity_config: ActivityConfig
     prompt_evidence: Annotated[list[EvidenceUnit], Field(min_length=1, max_length=500)]
 
 
 class RubricNormalizeRequest(StrictModel):
-    schema_version: Literal[SCHEMA_VERSION] = SCHEMA_VERSION
+    schema_version: SchemaVersion = LEGACY_SCHEMA_VERSION
     activity_spec: ActivitySpec
     rubric_evidence: Annotated[list[EvidenceUnit], Field(min_length=1, max_length=500)]
 
 
 class AmbiguityTriageRequest(StrictModel):
-    schema_version: Literal[SCHEMA_VERSION] = SCHEMA_VERSION
+    schema_version: SchemaVersion = LEGACY_SCHEMA_VERSION
     activity_spec: ActivitySpec
     rubric_spec: RubricSpec | None = None
     rule_findings: list[Diagnostic] = Field(default_factory=list, max_length=100)
 
 
 class BlueprintBuildRequest(StrictModel):
-    schema_version: Literal[SCHEMA_VERSION] = SCHEMA_VERSION
+    schema_version: SchemaVersion = LEGACY_SCHEMA_VERSION
     activity_spec: ActivitySpec
     rubric_spec: RubricSpec | None = None
     resolved_decisions: list[PolicyDecision] = Field(default_factory=list, max_length=100)
@@ -1613,7 +2396,7 @@ class BlueprintBuildRequest(StrictModel):
 
 
 class BlueprintReviewRequest(StrictModel):
-    schema_version: Literal[SCHEMA_VERSION] = SCHEMA_VERSION
+    schema_version: SchemaVersion = LEGACY_SCHEMA_VERSION
     blueprint: AssessmentBlueprint
     activity_spec: ActivitySpec
     rubric_spec: RubricSpec | None = None
@@ -1622,13 +2405,13 @@ class BlueprintReviewRequest(StrictModel):
 
 
 class EvidenceMapRequest(StrictModel):
-    schema_version: Literal[SCHEMA_VERSION] = SCHEMA_VERSION
+    schema_version: SchemaVersion = LEGACY_SCHEMA_VERSION
     blueprint: AssessmentBlueprint
     evidence_bundle: EvidenceBundle
 
 
 class QuestionBuildRequest(StrictModel):
-    schema_version: Literal[SCHEMA_VERSION] = SCHEMA_VERSION
+    schema_version: SchemaVersion = LEGACY_SCHEMA_VERSION
     plan: AssessmentPlan
     opportunity: QuestionOpportunity
     evidence_bundle: EvidenceBundle
@@ -1652,7 +2435,7 @@ class QuestionBuildRequest(StrictModel):
 
 
 class QuestionReviewRequest(StrictModel):
-    schema_version: Literal[SCHEMA_VERSION] = SCHEMA_VERSION
+    schema_version: SchemaVersion = LEGACY_SCHEMA_VERSION
     generation_result: QuestionGenerationResult
     opportunity: QuestionOpportunity
     evidence_bundle: EvidenceBundle
@@ -1666,7 +2449,7 @@ class QuestionReviewRequest(StrictModel):
 
 
 class GuideBuildRequest(StrictModel):
-    schema_version: Literal[SCHEMA_VERSION] = SCHEMA_VERSION
+    schema_version: SchemaVersion = LEGACY_SCHEMA_VERSION
     guide_id: Id
     assessment: Assessment
     evidence_bundle: EvidenceBundle
@@ -1679,14 +2462,14 @@ class SchemaValidationIssue(StrictModel):
 
 
 class SchemaRepairRequest(StrictModel):
-    schema_version: Literal[SCHEMA_VERSION] = SCHEMA_VERSION
+    schema_version: SchemaVersion = LEGACY_SCHEMA_VERSION
     target_schema_name: Annotated[str, Field(min_length=3, max_length=128)]
     invalid_output: Any
     validation_issues: Annotated[list[SchemaValidationIssue], Field(min_length=1, max_length=100)]
 
 
 class SchemaRepairResult(StrictModel):
-    schema_version: Literal[SCHEMA_VERSION] = SCHEMA_VERSION
+    schema_version: SchemaVersion = LEGACY_SCHEMA_VERSION
     target_schema_name: Annotated[str, Field(min_length=3, max_length=128)]
     repair_status: RepairStatus
     repaired_output: dict[str, Any] | None = None
@@ -1727,14 +2510,21 @@ CONTRACT_MODELS: tuple[type[BaseModel], ...] = (
     QuestionReviewResult,
     EvaluationGuide,
     Assessment,
+    CoverageReport,
     QuestionReviewAction,
+    QuestionReviewActionRecord,
     BulkApprovalRequest,
     BulkApprovalRecord,
+    ExportRecord,
+    ExperimentMetrics,
+    FeedbackEvent,
     ModelRoute,
     ModelRouteResolution,
     ModelCallLedger,
     DomainEvent,
     JobStatus,
+    StageRun,
+    JobControlRecord,
     SubmissionProcessingState,
     ProblemDetail,
     ActivitySpecRequest,
@@ -1768,10 +2558,10 @@ def build_schema_bundle() -> dict[str, Any]:
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$id": (
             "https://schemas.evaluaciones-personalizadas.local/"
-            f"assessment-contracts/{SCHEMA_VERSION}"
+            f"assessment-contracts/{CONTRACT_VERSION}"
         ),
         "title": "Comprehension Verification Assessment Contracts",
-        "version": SCHEMA_VERSION,
+        "version": CONTRACT_VERSION,
         "roots": roots,
         "$defs": definitions["$defs"],
     }
@@ -1790,7 +2580,7 @@ def export_schema(path: str) -> None:
 if __name__ == "__main__":
     import argparse
 
-    parser = argparse.ArgumentParser(description="Export v1.1 contract JSON Schema")
+    parser = argparse.ArgumentParser(description="Export the canonical contract bundle")
     parser.add_argument("--schema", required=True, help="output JSON Schema path")
     args = parser.parse_args()
     export_schema(args.schema)

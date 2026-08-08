@@ -1,4 +1,4 @@
-name: Stage 0 and Stage 1 CI
+name: Stage 0, Stage 1, and Stage 2 CI
 
 on:
   pull_request:
@@ -97,8 +97,10 @@ jobs:
           if count != 0:
               raise SystemExit("expected an empty public schema")
           PY
-      - name: Apply and inspect the Stage 1 migration
+      - name: Apply and inspect the ordered Stage 1 to Stage 2 migrations
         run: python scripts/prepare_postgres.py --database-url "$CVA_TEST_POSTGRES_URL"
+      - name: Prove Stage 2 readiness and lossless recovery under a racing writer
+        run: make postgres-stage2-recovery PYTHON=python
       - name: Run the complete PostgreSQL matrix twice without cleanup
         run: |
           for pass in 1 2; do
@@ -155,6 +157,8 @@ jobs:
         run: npx --prefix frontend playwright install --with-deps chromium
       - name: Exercise the complete Stage 1 browser journey
         run: npm --prefix frontend run test:e2e
+      - name: Exercise the Stage 2 experiment and accessibility journey
+        run: npm --prefix frontend run test:e2e:stage2
 
   deployment-artifacts:
     name: Terraform and static deployment validation
@@ -209,8 +213,9 @@ jobs:
           docker run --detach --name "$container" \
             --publish 127.0.0.1:18080:8080 \
             --read-only \
-            --tmpfs /tmp:rw,noexec,nosuid,size=64m \
+            --tmpfs /tmp:rw,noexec,nosuid,nodev,size=128m \
             --cap-drop ALL \
+            --security-opt no-new-privileges \
             --env CVA_ENVIRONMENT=local \
             --env CVA_DATABASE_URL=sqlite+pysqlite:////tmp/stage1.db \
             --env CVA_AUTH_MODE=local \
@@ -232,6 +237,8 @@ jobs:
           done
           curl --fail --silent --show-error http://127.0.0.1:18080/api/health
           curl --fail --silent --show-error http://127.0.0.1:18080/api/readiness
+          docker exec "$container" python -c \
+            'from pathlib import Path; from tempfile import TemporaryDirectory; from comprehension_verification.contracts import models as m; from comprehension_verification.parsers import SafeParserService; from comprehension_verification.parsers.sandbox import parse_in_subprocess; d=TemporaryDirectory(dir="/tmp"); p=Path(d.name)/"synthetic.txt"; p.write_text("contenido sintetico suficientemente largo\n", encoding="utf-8"); parsed=parse_in_subprocess(p, parser=SafeParserService(require_libmagic=True), tenant_id="tnt_synthetic", source_role=m.ArtifactRole.SUBMISSION, submission_id="sub_synthetic", declared_media_type="text/plain", timeout_seconds=5, require_isolation=True); assert parsed.mime_detector == "libmagic"; assert parsed.libmagic_media_type == "text/plain"; assert {x.tenant_id for x in parsed.evidence_units} == {"tnt_synthetic"}; d.cleanup()'
       - name: Exercise Stage 0 inside the audit target
         run: |
           export_root="$RUNNER_TEMP/audit-exports"

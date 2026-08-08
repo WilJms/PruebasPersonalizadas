@@ -1,0 +1,43 @@
+{
+  "schema_version": "1.2.0",
+  "report_id": "coverage_fixture",
+  "tenant_id": "tenant_fixture",
+  "activity_id": "activity_fixture",
+  "scope": "SUBMISSION",
+  "submission_id": "submission_fixture",
+  "assessment_id": "assessment_fixture",
+  "assessment_version": 2,
+  "blueprint_id": "blueprint_fixture",
+  "blueprint_version": 1,
+  "source_snapshot_hash": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+  "summary": [
+    {
+      "dimension_id": "dimension_fixture",
+      "available_variant_count": 1,
+      "available_opportunity_count": 1,
+      "selected_opportunity_count": 1,
+      "reused_variant_count": 0,
+      "evidence_unit_count": 1,
+      "diagnostics": []
+    }
+  ],
+  "traces": [
+    {
+      "submission_id": "submission_fixture",
+      "assessment_id": "assessment_fixture",
+      "assessment_version": 2,
+      "dimension_id": "dimension_fixture",
+      "criterion_ids": ["criterion_fixture"],
+      "variant_id": "variant_fixture",
+      "opportunity_id": "opportunity_fixture",
+      "evidence_ids": ["evidence_fixture"],
+      "cognitive_operation": "EXPLAIN_MECHANISM",
+      "planning_role": "PRIMARY",
+      "outcome": "GENERATED",
+      "reused_variant": false,
+      "diagnostics": []
+    }
+  ],
+  "diagnostics": [],
+  "generated_at": "2026-08-07T12:02:00Z"
+}

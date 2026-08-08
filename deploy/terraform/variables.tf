@@ -12,10 +12,15 @@ variable "region" {
   description = "Single region used by Artifact Registry and Cloud Run."
   type        = string
   default     = "us-central1"
+
+  validation {
+    condition     = can(regex("^[a-z]+-[a-z0-9]+[0-9]+$", var.region))
+    error_message = "region must be a concrete lowercase Google Cloud region."
+  }
 }
 
 variable "name_prefix" {
-  description = "Prefix for Stage 1 resources."
+  description = "Prefix for experimental resources."
   type        = string
   default     = "cva"
 
@@ -29,6 +34,11 @@ variable "repository_id" {
   description = "Artifact Registry Docker repository id."
   type        = string
   default     = "comprehension-verification"
+
+  validation {
+    condition     = can(regex("^[a-z][a-z0-9_-]{2,62}$", var.repository_id))
+    error_message = "repository_id must be a valid lowercase Artifact Registry repository id."
+  }
 }
 
 variable "service_name" {
@@ -83,16 +93,16 @@ variable "github_oauth_token_secret_version" {
 }
 
 variable "container_image" {
-  description = "Immutable Artifact Registry image reference owned by Terraform, including @sha256 digest."
+  description = "Immutable application image from the configured regional Artifact Registry repository, including @sha256 digest."
   type        = string
   default     = ""
 
   validation {
     condition = var.container_image == "" || can(regex(
-      "^[a-z0-9][a-z0-9.-]*/[a-z0-9][a-z0-9._/-]*@sha256:[0-9a-f]{64}$",
+      "^${var.region}-docker\\.pkg\\.dev/${var.project_id}/${var.repository_id}/application@sha256:[0-9a-f]{64}$",
       var.container_image,
     ))
-    error_message = "container_image must be empty or an immutable registry reference ending in @sha256:<64 lowercase hex>."
+    error_message = "container_image must be empty or the immutable application@sha256 reference from the configured region, project, and repository."
   }
 }
 
@@ -178,7 +188,7 @@ variable "web_min_instances" {
 }
 
 variable "web_max_instances" {
-  description = "Maximum Cloud Run web instances during Stage 1."
+  description = "Maximum Cloud Run web instances during the controlled experiment."
   type        = number
   default     = 3
 }

@@ -18,6 +18,11 @@ MIGRATION = MIGRATION_DIR / "202607310001_stage1.sql"
 IDEMPOTENCY_HYGIENE_MIGRATION = (
     MIGRATION_DIR / "202608070002_idempotency_capability_hygiene.sql"
 )
+STAGE2_MIGRATION = MIGRATION_DIR / "202608070003_stage2_experimental.sql"
+STAGE2_RECOVERY = (
+    ROOT
+    / "deploy/supabase/rollbacks/202608070003_stage2_experimental_recovery.sql"
+)
 
 
 def _migration_schema(sql: str) -> dict[str, set[str]]:
@@ -41,9 +46,34 @@ def _migration_schema(sql: str) -> dict[str, set[str]]:
 
 def test_supabase_migration_matches_orm_table_and_column_surface() -> None:
     actual = _migration_schema(MIGRATION.read_text(encoding="utf-8"))
+    stage2_tables = {
+        "bulk_approval_records",
+        "bulk_approval_requests",
+        "feedback_events",
+        "job_control_records",
+        "question_review_actions",
+    }
+    stage2_columns = {
+        "exports": {
+            "activity_id", "assessment_version", "assessment_snapshot_hash",
+            "renderer_version", "requested_by", "requested_kinds",
+            "guide_snapshot_hash", "coverage_snapshot_hash", "completed_at", "data",
+        },
+        "jobs": {
+            "control_state", "failure_class", "max_attempts", "next_attempt_at",
+            "resume_from_stage", "cancel_requested_at", "cancel_requested_by",
+            "cancelled_at",
+        },
+        "stage_runs": {
+            "component_version", "output_hash", "failure_class", "next_attempt_at",
+            "resumed_from_stage_run_id",
+        },
+    }
     expected = {
         table.name: {column.name for column in table.columns}
+        - stage2_columns.get(table.name, set())
         for table in Base.metadata.sorted_tables
+        if table.name not in stage2_tables
     }
 
     assert actual == expected
@@ -51,10 +81,17 @@ def test_supabase_migration_matches_orm_table_and_column_surface() -> None:
 
 def test_supabase_migration_has_stage_one_security_and_drift_guards() -> None:
     sql = MIGRATION.read_text(encoding="utf-8").lower()
+    ordered_sql = "\n".join(
+        path.read_text(encoding="utf-8").lower()
+        for path in sorted(MIGRATION_DIR.glob("*.sql"))
+    )
     table_names = {table.name for table in Base.metadata.sorted_tables}
 
     for table_name in table_names:
-        assert f"alter table public.{table_name} enable row level security;" in sql
+        assert (
+            f"alter table public.{table_name} enable row level security;"
+            in ordered_sql
+        )
 
     assert "revoke all on all tables in schema public from anon, authenticated;" in sql
     assert "grant all on all tables in schema public to service_role;" in sql
@@ -75,6 +112,7 @@ def test_idempotency_hygiene_migration_removes_and_blocks_capabilities() -> None
     assert [path.name for path in sorted(MIGRATION_DIR.glob("*.sql"))] == [
         "202607310001_stage1.sql",
         "202608070002_idempotency_capability_hygiene.sql",
+        "202608070003_stage2_experimental.sql",
     ]
     sql = IDEMPOTENCY_HYGIENE_MIGRATION.read_text(encoding="utf-8").lower()
     assert sql.startswith("begin;")
@@ -140,6 +178,8 @@ def test_container_and_cloud_build_are_single_image_and_mock_safe() -> None:
     assert "SUPABASE_SERVICE" not in dockerfile + cloudbuild
     assert "COPY --from=frontend-build /build/frontend/dist /app/static" in dockerfile
     assert "USER 65532:65532" in dockerfile
+    assert "chown -R root:root /app" in dockerfile
+    assert "chmod -R a-w /app" in dockerfile
     assert "comprehension_verification.web.app:app" in entrypoint
     assert "comprehension_verification.web.worker" in entrypoint
     assert "VITE_SUPABASE_URL=${_VITE_SUPABASE_URL}" in cloudbuild
@@ -152,6 +192,75 @@ def test_container_and_cloud_build_are_single_image_and_mock_safe() -> None:
     assert parsed_cloudbuild["images"]
     assert "/api/health" in cloudbuild
     assert "/api/readiness" in cloudbuild
+
+    steps = {step["id"]: step for step in parsed_cloudbuild["steps"]}
+    step_ids = [step["id"] for step in parsed_cloudbuild["steps"]]
+    assert step_ids[:3] == [
+        "verify-contracts-backend-deploy-security",
+        "verify-terraform",
+        "verify-frontend",
+    ]
+    assert step_ids.index("verify-terraform") < step_ids.index("build-image")
+    assert step_ids.index("verify-frontend") < step_ids.index("build-image")
+    assert step_ids.index("build-image") < step_ids.index("smoke-runtime-locally")
+    assert all("waitFor" not in step for step in parsed_cloudbuild["steps"])
+    assert all(not step.get("allowFailure", False) for step in parsed_cloudbuild["steps"])
+    assert all("allowExitCodes" not in step for step in parsed_cloudbuild["steps"])
+    for gate_id in step_ids[:3]:
+        assert re.fullmatch(
+            r"[^@\s]+@sha256:[0-9a-f]{64}",
+            steps[gate_id]["name"],
+        )
+
+    runtime_smoke = "\n".join(steps["smoke-runtime-locally"]["args"])
+    for boundary in (
+        "--read-only",
+        "--cap-drop ALL",
+        "--security-opt no-new-privileges",
+        "SafeParserService(require_libmagic=True)",
+        "require_isolation=True",
+        "parsed.mime_detector == \"libmagic\"",
+    ):
+        assert boundary in runtime_smoke
+
+    python_gate = "\n".join(steps["verify-contracts-backend-deploy-security"]["args"])
+    for command in (
+        "python -m pip install --no-cache-dir --require-hashes -r requirements-dev.lock",
+        "git init -q",
+        "git add -A",
+        "python -m comprehension_verification.cli validate-contracts",
+        "python -m comprehension_verification.cli build-fixtures",
+        "python scripts/generate_openapi.py",
+        "python -m pytest tests",
+        "python -m pytest deploy/tests/test_deploy_artifacts.py",
+        "python -m pytest tests/test_stage2_security.py",
+        "python scripts/check_secrets.py",
+    ):
+        assert command in python_gate
+    assert "git diff --exit-code" in python_gate
+    assert python_gate.index("git add -A") < python_gate.index("python scripts/generate_openapi.py")
+
+    terraform_gate = "\n".join(steps["verify-terraform"]["args"])
+    for command in (
+        "terraform fmt -check -recursive deploy/terraform",
+        "terraform -chdir=deploy/terraform init -backend=false -input=false -lockfile=readonly",
+        "terraform -chdir=deploy/terraform validate",
+    ):
+        assert command in terraform_gate
+
+    frontend_gate = "\n".join(steps["verify-frontend"]["args"])
+    for command in (
+        "npm ci",
+        "npm run openapi:generate",
+        "sha256sum --check /tmp/cva-generated-openapi.sha256",
+        "npm run typecheck",
+        "npm run test",
+        "npm run build",
+        "npm audit --audit-level=high",
+    ):
+        assert command in frontend_gate
+    assert steps["verify-frontend"]["dir"] == "frontend"
+    assert parsed_cloudbuild["timeout"] == "3600s"
 
 
 def test_build_inputs_are_immutable_and_dependency_installs_are_locked() -> None:
@@ -167,7 +276,8 @@ def test_build_inputs_are_immutable_and_dependency_installs_are_locked() -> None
         dockerfile,
     )
     assert "apt-get" not in dockerfile
-    assert "libmagic" not in dockerfile
+    assert re.search(r"apk add --no-cache[\s\\\n]+.*libmagic", dockerfile, re.DOTALL)
+    assert "ENV CVA_REQUIRE_LIBMAGIC=true" in dockerfile
     assert "apk upgrade --no-cache" in dockerfile
     assert "RUN npm ci" in dockerfile
     assert "npm install" not in dockerfile
@@ -198,6 +308,7 @@ def test_cloud_build_yaml_and_entrypoint_are_parseable() -> None:
 def test_terraform_declares_service_job_secrets_and_job_invocation() -> None:
     terraform = (ROOT / "deploy/terraform/main.tf").read_text(encoding="utf-8")
     variables = (ROOT / "deploy/terraform/variables.tf").read_text(encoding="utf-8")
+    outputs = (ROOT / "deploy/terraform/outputs.tf").read_text(encoding="utf-8")
 
     assert 'resource "google_cloud_run_v2_service" "web"' in terraform
     assert 'resource "google_cloud_run_v2_job" "worker"' in terraform
@@ -219,7 +330,19 @@ def test_terraform_declares_service_job_secrets_and_job_invocation() -> None:
     assert 'toset(["session_secret"])' in terraform
     assert re.search(r"max_retries\s*=\s*0", terraform)
     assert terraform.count("image = var.container_image") == 2
-    assert '@sha256:' in variables
+    assert (
+        "${var.region}-docker\\\\.pkg\\\\.dev/${var.project_id}/"
+        "${var.repository_id}/application@sha256:[0-9a-f]{64}"
+        in variables
+    )
+    assert "local.expected_container_image_prefix" in terraform
+    assert "/application@sha256:" in terraform
+    assert "deletion_protection = false" not in terraform
+    assert terraform.count("deletion_protection = true") == 3
+    assert terraform.count("prevent_destroy = true") == 4
+    assert 'output "service_name"' in outputs
+    assert 'output "job_name"' in outputs
+    assert 'output "runtime_container_image"' in outputs
     assert '"roles/run.admin"' not in terraform
     assert "build_can_use_web_identity" not in terraform
     assert "build_can_use_worker_identity" not in terraform
@@ -232,7 +355,11 @@ def test_terraform_declares_service_job_secrets_and_job_invocation() -> None:
     assert 'resource "google_cloudbuildv2_repository" "github"' in terraform
     assert 'resource "google_cloudbuild_trigger" "github_push"' in terraform
     assert 'https://github.com/WilJms/PruebasPersonalizadas.git' in terraform
-    assert 'branch = "^(main|fix/stage1-external-readiness)$"' in terraform
+    assert (
+        'branch = "^(main|fix/stage1-external-readiness|codex/stage2-experimental-mvp)$"'
+        in terraform
+    )
+    assert terraform.count('CVA_REQUIRE_LIBMAGIC         = "true"') == 2
     assert 'filename    = "deploy/cloudbuild.yaml"' in terraform
     assert "google_service_account.build.email" in terraform
     assert "github_oauth_token_secret_version" in terraform
@@ -245,6 +372,41 @@ def test_terraform_declares_service_job_secrets_and_job_invocation() -> None:
     liveness = re.search(r"liveness_probe\s*\{(?P<body>.*?)\n\s*\}", terraform, re.DOTALL)
     assert startup and '/api/readiness' in startup.group("body")
     assert liveness and '/api/health' in liveness.group("body")
+
+
+def test_stage2_deployment_runbook_has_real_digest_and_fail_closed_recovery() -> None:
+    readme = (ROOT / "deploy/README.md").read_text(encoding="utf-8")
+    migrations = [
+        "202607310001_stage1.sql",
+        "202608070002_idempotency_capability_hygiene.sql",
+        "202608070003_stage2_experimental.sql",
+    ]
+    positions = [readme.index(name) for name in migrations]
+    assert positions == sorted(positions)
+    assert all((MIGRATION_DIR / name).is_file() for name in migrations)
+    assert STAGE2_MIGRATION.is_file()
+    assert STAGE2_RECOVERY.is_file()
+    assert str(STAGE2_RECOVERY.relative_to(ROOT)) in readme
+    assert "PGSERVICE=cva-stage2-admin" in readme
+    assert "--set=ON_ERROR_STOP=1" in readme
+    assert "gcloud artifacts docker images describe" in readme
+    assert "value(results.images[0].digest)" in readme
+    assert "value(image_summary.digest)" in readme
+    assert "^sha256:[0-9a-f]{64}$" in readme
+    assert 'test "$CVA_STAGE2_BUILD_DIGEST" = "$CVA_STAGE2_REGISTRY_DIGEST"' in readme
+    assert "/tmp/cva-stage2-container-image.txt" in readme
+    assert "/workspace/container-image.txt" not in readme
+    assert 'COMMIT_SHA="$CVA_STAGE2_SOURCE_SHA"' in readme
+    assert 'test -z "$(git status --porcelain=v1)"' in readme
+    assert readme.count("-detailed-exitcode") == 2
+    assert "gcloud run services describe" in readme
+    assert "gcloud run jobs describe" in readme
+    assert 'test "$CVA_STAGE2_SERVICE_IMAGE" = "$CVA_STAGE2_EXPECTED_IMAGE"' in readme
+    assert 'test "$CVA_STAGE2_JOB_IMAGE" = "$CVA_STAGE2_EXPECTED_IMAGE"' in readme
+    assert "transacción conserva íntegro el schema E2" in readme
+    assert "no se fuerzan `DROP`" in readme
+    recovery = STAGE2_RECOVERY.read_text(encoding="utf-8").lower()
+    assert "max_attempts <> 3" in recovery
 
 
 def test_docker_context_keeps_audit_fixtures_out_of_runtime() -> None:

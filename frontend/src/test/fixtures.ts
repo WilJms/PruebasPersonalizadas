@@ -326,6 +326,7 @@ export const submission: SubmissionResource = {
   current_stage: "P09_GUIDE",
   progress: 1,
   active_job_id: "job_01",
+  artifact_uploaded: true,
   assessment_id: "assessment_01",
   diagnostics: [],
   updated_at: "2026-07-31T12:00:00Z",

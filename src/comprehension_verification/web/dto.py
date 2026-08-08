@@ -1,4 +1,4 @@
-"""Strict HTTP transport models for the private Stage 1 API.
+"""Strict HTTP transport models for the private experimental API.
 
 Domain roots are always composed from the canonical contracts.  The models in
 this module only describe HTTP commands, resource metadata and response
@@ -25,7 +25,7 @@ class EmptyCommand(m.StrictModel):
 
 class HealthResource(m.StrictModel):
     status: Literal["ok"]
-    stage: Literal["1"]
+    stage: Literal["2"]
     model_mode: Literal["mock", "real"]
 
 
@@ -246,18 +246,69 @@ class SubmissionCreateCommand(m.StrictModel):
     subject_ref: m.Id
 
 
+class SubmissionBatchCommand(m.StrictModel):
+    subject_refs: Annotated[list[m.Id], Field(min_length=1, max_length=500)]
+
+    @model_validator(mode="after")
+    def subject_refs_are_unique(self) -> "SubmissionBatchCommand":
+        if len(self.subject_refs) != len(set(self.subject_refs)):
+            raise ValueError("subject_refs must be unique")
+        return self
+
+
 class SubmissionResource(m.SubmissionProcessingState):
     activity_id: m.Id
     subject_ref: m.Id
+    artifact_uploaded: bool = False
     assessment_id: m.Id | None = None
+    assessment_version: Annotated[StrictInt, Field(ge=1)] | None = None
+
+    @model_validator(mode="after")
+    def assessment_reference_is_paired(self) -> "SubmissionResource":
+        if (self.assessment_id is None) != (self.assessment_version is None):
+            raise ValueError("assessment_id and assessment_version must be paired")
+        return self
 
 
 class SubmissionEnvelope(m.StrictModel):
     submission: SubmissionResource
 
 
+class SubmissionListEnvelope(m.StrictModel):
+    items: list[SubmissionResource]
+
+
+class SubmissionBatchEnvelope(m.StrictModel):
+    submissions: list[SubmissionResource]
+    created_count: int = Field(ge=1, le=500)
+
+
 class JobEnvelope(m.StrictModel):
     job: m.JobStatus
+
+
+class JobControlCommand(m.StrictModel):
+    reason_code: Annotated[
+        str, Field(pattern=r"^[A-Z][A-Z0-9_]{2,63}$")
+    ]
+    target_stage: Annotated[
+        str,
+        Field(
+            min_length=3,
+            max_length=128,
+            pattern=r"^[A-Z][A-Z0-9_]{2,127}$",
+        ),
+    ] | None = None
+
+
+class JobControlEnvelope(m.StrictModel):
+    job: m.JobStatus
+    stage_runs: list[m.StageRun] = Field(default_factory=list)
+    control_records: list[m.JobControlRecord] = Field(default_factory=list)
+    allowed_actions: list[m.JobControlActionType] = Field(default_factory=list)
+    resumable_stage: str | None = None
+    control_state: Literal["ACTIVE", "CANCEL_REQUESTED", "CANCELLED"]
+    failure_class: m.FailureClass | None = None
 
 
 class ModelCallListEnvelope(m.StrictModel):
@@ -306,6 +357,79 @@ class GuideEnvelope(m.StrictModel):
     guide: m.EvaluationGuide
 
 
+class QuestionReviewActionCommand(m.StrictModel):
+    action: m.QuestionReviewActionType
+    reason_code: Annotated[
+        str, Field(pattern=r"^[A-Z][A-Z0-9_]{2,63}$")
+    ] | None = None
+    note: str | None = Field(default=None, max_length=2000)
+    replacement: m.SelectedQuestion | None = None
+
+    @model_validator(mode="after")
+    def action_payload_is_consistent(self) -> "QuestionReviewActionCommand":
+        if self.action == m.QuestionReviewActionType.EDIT and self.replacement is None:
+            raise ValueError("EDIT requires replacement")
+        if self.action != m.QuestionReviewActionType.EDIT and self.replacement is not None:
+            raise ValueError("replacement is allowed only for EDIT")
+        if self.action in {
+            m.QuestionReviewActionType.REJECT,
+            m.QuestionReviewActionType.REGENERATE,
+        } and self.reason_code is None:
+            raise ValueError("REJECT/REGENERATE require reason_code")
+        return self
+
+
+class QuestionReviewActionEnvelope(m.StrictModel):
+    action_record: m.QuestionReviewActionRecord
+    bundle: AssessmentEnvelope
+
+
+class CoverageEnvelope(m.StrictModel):
+    coverage: m.CoverageReport
+
+
+class MetricsEnvelope(m.StrictModel):
+    metrics: m.ExperimentMetrics
+
+
+class FeedbackCommand(m.StrictModel):
+    activity_id: m.Id
+    target_type: m.FeedbackTargetType
+    category: m.FeedbackCategory
+    rating: m.FeedbackRating
+    assessment_id: m.Id | None = None
+    assessment_version: Annotated[StrictInt, Field(ge=1)] | None = None
+    question_id: m.Id | None = None
+    comment: Annotated[str, Field(min_length=1, max_length=2000)] | None = None
+
+    @model_validator(mode="after")
+    def target_shape_is_consistent(self) -> "FeedbackCommand":
+        paired = (self.assessment_id is None) == (self.assessment_version is None)
+        if not paired:
+            raise ValueError("assessment_id and assessment_version must be paired")
+        if self.target_type == m.FeedbackTargetType.ACTIVITY:
+            if self.assessment_id is not None or self.question_id is not None:
+                raise ValueError("ACTIVITY feedback cannot target assessment/question")
+        elif self.target_type == m.FeedbackTargetType.ASSESSMENT:
+            if self.assessment_id is None or self.question_id is not None:
+                raise ValueError("ASSESSMENT feedback requires only assessment target")
+        elif self.assessment_id is None or self.question_id is None:
+            raise ValueError("QUESTION feedback requires assessment and question")
+        return self
+
+
+class FeedbackEnvelope(m.StrictModel):
+    feedback: m.FeedbackEvent
+
+
+class FeedbackListEnvelope(m.StrictModel):
+    items: list[m.FeedbackEvent]
+
+
+class QuestionReviewActionListEnvelope(m.StrictModel):
+    items: list[m.QuestionReviewActionRecord]
+
+
 class EvidenceVerifyCommand(m.StrictModel):
     assessment_version: Annotated[StrictInt, Field(ge=1)]
     assessment_etag: Etag
@@ -325,12 +449,24 @@ class EvidenceVerifyEnvelope(m.StrictModel):
 
 
 class ExportKindCommand(m.StrictModel):
-    kind: Literal["ASSESSMENT_PDF", "GUIDE_PDF", "CANONICAL_JSON"]
+    kind: m.ExportKind | None = None
+    kinds: Annotated[list[m.ExportKind], Field(min_length=1, max_length=7)] | None = None
+
+    @model_validator(mode="after")
+    def exactly_one_kind_shape(self) -> "ExportKindCommand":
+        if (self.kind is None) == (self.kinds is None):
+            raise ValueError("provide exactly one of kind or kinds")
+        if self.kinds is not None and len(self.kinds) != len(set(self.kinds)):
+            raise ValueError("export kinds must be unique")
+        return self
+
+    def requested_kinds(self) -> list[m.ExportKind]:
+        return [self.kind] if self.kind is not None else list(self.kinds or [])
 
 
 class ExportResource(m.StrictModel):
     export_id: m.Id
-    kind: Literal["ASSESSMENT_PDF", "GUIDE_PDF", "CANONICAL_JSON"]
+    kind: m.ExportKind
     status: Literal["QUEUED", "READY", "FAILED"]
     download_url: Annotated[str, Field(min_length=1, max_length=4096)]
     expires_at: datetime
@@ -340,6 +476,52 @@ class ExportResource(m.StrictModel):
 
 class ExportEnvelope(m.StrictModel):
     export: ExportResource
+
+
+class ExportDownloadResource(m.StrictModel):
+    export_artifact_id: m.Id
+    kind: m.ExportKind
+    media_type: Annotated[str, Field(min_length=3, max_length=255)]
+    sha256: m.Hash
+    byte_size: int = Field(ge=1)
+    download_url: Annotated[str, Field(min_length=1, max_length=4096)]
+    expires_at: datetime
+
+
+class ExportCreateEnvelope(m.StrictModel):
+    # `export` preserves the single-download E1 consumer shape while `record`
+    # and `downloads` expose the complete durable Stage 2 snapshot.
+    export: ExportResource
+    record: m.ExportRecord
+    downloads: Annotated[list[ExportDownloadResource], Field(min_length=1, max_length=7)]
+
+
+class ExportHistoryEnvelope(m.StrictModel):
+    items: list[m.ExportRecord]
+
+
+class BulkApprovalCommand(m.StrictModel):
+    targets: Annotated[
+        list[m.AssessmentVersionRef], Field(min_length=1, max_length=500)
+    ]
+    explicit_confirmation: Literal[
+        "CONFIRM_BULK_APPROVAL_OF_ALL_ELIGIBLE_SELECTED_ASSESSMENTS"
+    ]
+
+    @model_validator(mode="after")
+    def targets_are_unique(self) -> "BulkApprovalCommand":
+        keys = [(item.assessment_id, item.assessment_version) for item in self.targets]
+        if len(keys) != len(set(keys)):
+            raise ValueError("bulk approval targets must be unique")
+        return self
+
+
+class BulkApprovalEnvelope(m.StrictModel):
+    bulk_approval: m.BulkApprovalRecord
+
+
+class BulkApprovalHistoryEnvelope(m.StrictModel):
+    items: list[m.BulkApprovalRecord]
 
 
 class CostEstimate(m.StrictModel):

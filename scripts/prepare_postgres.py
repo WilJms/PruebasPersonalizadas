@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Apply and verify selected Stage 1 migration invariants on local PostgreSQL."""
+"""Apply and verify the ordered Stage 1 -> Stage 2 migrations locally."""
 
 from __future__ import annotations
 
@@ -15,6 +15,8 @@ import psycopg
 from comprehension_verification.web.repository import (
     Base,
     IDEMPOTENCY_CAPABILITY_CONSTRAINT,
+    STAGE2_JOB_CONTROL_CONSTRAINT,
+    STAGE2_SUBMISSION_CONSTRAINT,
 )
 
 
@@ -48,7 +50,7 @@ as $$ select null::uuid $$;
 
 def _arguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Prepare an empty loopback PostgreSQL database for Stage 1 tests."
+        description="Prepare an empty loopback PostgreSQL database for Stage 2 tests."
     )
     parser.add_argument(
         "--database-url",
@@ -82,7 +84,7 @@ def main() -> int:
         raise SystemExit("refusing to mutate a non-loopback or non-PostgreSQL database")
 
     if not MIGRATIONS or MIGRATIONS[0] != PRIMARY_MIGRATION:
-        raise SystemExit("the ordered Stage 1 migration set is incomplete")
+        raise SystemExit("the ordered Stage 1/2 migration set is incomplete")
     migration_sql = [
         (path, path.read_text(encoding="utf-8")) for path in MIGRATIONS
     ]
@@ -138,8 +140,83 @@ def main() -> int:
               )
             """
         )
+        conn.execute(
+            """
+            insert into public.activities
+              (id, tenant_id, status, config, blueprint_policy, created_by)
+            values
+              (
+                'act_stage2_upgrade_probe',
+                'tnt_stage2_upgrade_probe',
+                'BLUEPRINT_APPROVED',
+                '{}'::jsonb,
+                '{}'::jsonb,
+                'usr_stage2_upgrade_probe'
+              );
+            insert into public.submissions
+              (id, tenant_id, activity_id, subject_ref, state)
+            values
+              (
+                'sub_stage2_upgrade_probe_e1',
+                'tnt_stage2_upgrade_probe',
+                'act_stage2_upgrade_probe',
+                'subject_e1',
+                '{}'::jsonb
+              )
+            """,
+            prepare=False,
+        )
         for _, sql in migration_sql[1:]:
             conn.execute(sql, prepare=False)
+
+        preserved_upgrade_rows = int(
+            conn.execute(
+                """
+                select count(*) from public.submissions
+                where id = 'sub_stage2_upgrade_probe_e1'
+                  and tenant_id = 'tnt_stage2_upgrade_probe'
+                  and activity_id = 'act_stage2_upgrade_probe'
+                  and subject_ref = 'subject_e1'
+                """
+            ).fetchone()[0]
+        )
+        if preserved_upgrade_rows != 1:
+            raise SystemExit("E1 submission was not preserved by the Stage 2 upgrade")
+        conn.execute(
+            """
+            insert into public.submissions
+              (id, tenant_id, activity_id, subject_ref, state)
+            values
+              (
+                'sub_stage2_upgrade_probe_e2',
+                'tnt_stage2_upgrade_probe',
+                'act_stage2_upgrade_probe',
+                'subject_e2',
+                '{}'::jsonb
+              )
+            """
+        )
+        try:
+            conn.execute(
+                """
+                insert into public.submissions
+                  (id, tenant_id, activity_id, subject_ref, state)
+                values
+                  (
+                    'sub_stage2_upgrade_probe_duplicate',
+                    'tnt_stage2_upgrade_probe',
+                    'act_stage2_upgrade_probe',
+                    'subject_e2',
+                    '{}'::jsonb
+                  )
+                """
+            )
+        except psycopg.errors.UniqueViolation:
+            duplicate_subject_blocked = True
+        else:
+            duplicate_subject_blocked = False
+        if not duplicate_subject_blocked:
+            raise SystemExit("Stage 2 submission subject uniqueness is not enforced")
 
         legacy_probe_count = int(
             conn.execute(
@@ -168,6 +245,28 @@ def main() -> int:
         )
         if not capability_constraint:
             raise SystemExit("idempotency capability constraint is missing")
+
+        stage2_constraints = {
+            str(row[0])
+            for row in conn.execute(
+                """
+                select conname
+                from pg_constraint
+                where conname = any(%s)
+                """,
+                (
+                    [
+                        STAGE2_SUBMISSION_CONSTRAINT,
+                        STAGE2_JOB_CONTROL_CONSTRAINT,
+                    ],
+                ),
+            ).fetchall()
+        }
+        if stage2_constraints != {
+            STAGE2_SUBMISSION_CONSTRAINT,
+            STAGE2_JOB_CONTROL_CONSTRAINT,
+        }:
+            raise SystemExit("Stage 2 migration constraints are incomplete")
 
         actual = _database_schema(conn)
         if actual != expected:
@@ -213,7 +312,12 @@ def main() -> int:
                 where trigger_schema = 'public'
                   and trigger_name in (
                     'model_calls_are_append_only',
-                    'audit_events_are_append_only'
+                    'audit_events_are_append_only',
+                    'job_control_records_are_append_only',
+                    'question_review_actions_are_append_only',
+                    'feedback_events_are_append_only',
+                    'bulk_approval_requests_are_append_only',
+                    'bulk_approval_records_are_append_only'
                   )
                 """
             ).fetchall()
@@ -221,8 +325,23 @@ def main() -> int:
         if append_only_triggers != {
             "model_calls_are_append_only",
             "audit_events_are_append_only",
+            "job_control_records_are_append_only",
+            "question_review_actions_are_append_only",
+            "feedback_events_are_append_only",
+            "bulk_approval_requests_are_append_only",
+            "bulk_approval_records_are_append_only",
         }:
             raise SystemExit("append-only audit triggers are incomplete")
+
+        conn.execute(
+            """
+            delete from public.submissions
+            where tenant_id = 'tnt_stage2_upgrade_probe';
+            delete from public.activities
+            where tenant_id = 'tnt_stage2_upgrade_probe'
+            """,
+            prepare=False,
+        )
 
     print(
         json.dumps(
@@ -230,6 +349,9 @@ def main() -> int:
                 "append_only_triggers": sorted(append_only_triggers),
                 "idempotency_capability_constraint": capability_constraint,
                 "idempotency_legacy_probe_count": legacy_probe_count,
+                "stage2_constraints": sorted(stage2_constraints),
+                "stage2_duplicate_subject_blocked": duplicate_subject_blocked,
+                "stage2_preserved_upgrade_rows": preserved_upgrade_rows,
                 "migrations": [
                     str(path.relative_to(ROOT)) for path in MIGRATIONS
                 ],

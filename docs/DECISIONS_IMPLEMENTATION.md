@@ -132,7 +132,7 @@
   una comparación parcial garantías que no demuestra.
 - **Relación:** E1-10/E1-11 y ADR-032.
 
-## D-013 - No adelantar robustez ni acciones de Etapa 2
+## D-013 - No adelantar robustez ni acciones de Etapa 2 (histórica E1)
 
 - **Decisión:** Etapa 1 admite una sola submission, una única ejecución por
   estado de decisión y aprobación completa. No se añaden retry general,
@@ -140,6 +140,8 @@
   masiva, feedback ni borrado operativo.
 - **Razón:** esas capacidades pertenecen expresamente a E2-01 a E2-15.
 - **Relación:** plan v1.1, secciones “Fuera de etapa” de Etapa 1 y Etapa 2.
+- **Vigencia:** preserva el alcance histórico de E1. Fue superada para la rama
+  E2 por `STAGE2_GATE_OPEN` del 2026-08-07; no limita E2-01 a E2-15 ni abre E3.
 
 ## D-014 - El magic link se completa solo mediante el callback de Auth
 
@@ -379,3 +381,107 @@
   constraint hace durable la garantía y readiness impide servir con esquema
   anterior al código.
 - **Relación:** AUD-P1-08, D-008, D-033 y E1-03/E1-08/E1-11.
+
+## D-036 - Bundle contractual 1.2 compatible con raíces 1.1
+
+- **Decisión:** el bundle generado avanza a `1.2.0` y añade siete raíces E2:
+  `StageRun`, `JobControlRecord`, `CoverageReport`, `ExportRecord`,
+  `ExperimentMetrics`, `FeedbackEvent` y `QuestionReviewActionRecord`. Las 46
+  raíces y 112 definiciones heredadas conservan estructura 1.1 y siguen
+  aceptando fixtures explícitos 1.1.
+- **Razón:** E2 requiere tipos e invariantes nuevos sin invalidar persistencia,
+  fixtures ni consumidores E1.
+- **Relación:** E2-03 a E2-09, E2-14 y autoridad canónica Pydantic.
+
+## D-037 - Retry, cancel y resume son control durable de aplicación
+
+- **Decisión:** una continuación crea un Job nuevo ligado a un
+  `JobControlRecord`; una fuente/attempt solo puede consumirse una vez. La
+  elegibilidad depende de clase y `retryable`, el resume reutiliza únicamente
+  `StageRun` con hashes/versiones coincidentes y los jobs RUNNING poseen lease
+  reconciliable. Cloud Run conserva `max_retries=0`.
+- **Razón:** evita fan-out, denial-of-wallet, efectos duplicados y jobs
+  huérfanos; un error de dispatch ambiguo no puede sobrescribir un terminal ya
+  confirmado.
+- **Relación:** E2-03, E2-04 y ADR-032.
+
+## D-038 - Acciones y aprobación cierran en transacciones atómicas
+
+- **Decisión:** las acciones de pregunta preparan antes del provider un
+  descriptor durable content-free, y el terminal Job + action record se
+  confirma en una transacción. EDIT conserva su snapshot protegido por hash.
+  La aprobación individual confirma versión, proyección de submission y audit
+  atómicamente. Bulk usa versiones exactas y partición aprobados/excluidos.
+- **Razón:** permite retry tras crash/lease sin perder el intento lógico ni
+  dejar un Assessment aprobado con estado de submission divergente.
+- **Relación:** E2-04, E2-05 y E2-14.
+
+## D-039 - Parser hostil se aísla y los datos reales continúan bloqueados
+
+- **Decisión:** TXT/Markdown/PDF/DOCX se parsean en subproceso no-root con
+  libmagic, seccomp que deniega red, límites de CPU/memoria/ficheros/procesos,
+  timeout con kill del grupo, output acotado y sobre de resultado ligado al
+  request por hashes e identidad. ClamAV no se despliega en E2.
+- **Razón:** la librería parser no debe compartir red o secretos del proceso
+  web/worker. Para el piloto sintético, el aislamiento es compensatorio; no se
+  atribuye capacidad antivirus inexistente.
+- **Relación:** E2-02, E2-10, ADR-032 y `docs/PARSER_SECURITY_E2.md`.
+
+## D-040 - Recovery E2 es fail-closed y no un rollback rutinario
+
+- **Decisión:** la recovery a E1 adquiere locks sobre toda tabla E2 antes de
+  comprobar hechos, bloquea writers concurrentes y aborta ante cualquier dato
+  o metadata E2 que se perdería. El rollback normal restaura un digest E2
+  conocido sin revertir schema.
+- **Razón:** un guard que consulta y luego elimina sin quiesce puede perder un
+  commit concurrente aunque ambas transacciones hayan sido exitosas.
+- **Relación:** E2-01, E2-03, E2-11 y migración 003.
+
+## D-041 - Roles E2 separan propuesta de aprobación
+
+- **Decisión:** OWNER/TEACHER y ASSISTANT pueden cargar submissions, ejecutar y
+  proponer acciones de revisión. Aprobar blueprint o Assessment exige
+  `can_approve_assessments`; bulk también admite ASSISTANT únicamente con ese
+  permiso expreso. Fuentes de actividad continúan restringidas a docentes.
+- **Razón:** materializa el subconjunto canónico del ayudante sin inferir
+  capacidad académica por el nombre del rol.
+- **Relación:** E2-01, E2-04 y E2-14.
+
+## D-042 - Cloud candidate usa mock y Terraform es el único writer
+
+- **Decisión:** CI y Cloud Build prueban con `CVA_MODEL_MODE=mock` y P10
+  apagado. Cloud Build publica una etiqueta solo después de gates; el digest se
+  resuelve y Terraform aplica un plan guardado que bloquea target, delete,
+  replace, IAM, secretos inline, modelo real y P10 inesperados.
+- **Razón:** separar build de deployment conserva procedencia e impide que una
+  etiqueta mutable o un trigger altere Service/Job fuera del estado.
+- **Relación:** E2-11 y runbook `deploy/README.md`.
+
+## D-043 - Fault injection cloud se etiqueta como seed administrativo
+
+- **Decisión:** el recorrido cloud puede insertar estados sintéticos
+  deterministas para insuficiencia y para jobs TRANSIENT, RUNNING y
+  PRECONDITION exclusivamente mediante el harness temporal autorizado. Esa
+  evidencia se clasifica `CLOUD_REAL + CONTROLLED_ADMIN_SEED`: acredita schema,
+  persistencia, autorización, idempotencia, cancelación y lineage en el runtime
+  real, pero no simula ni reclama un fallo natural de proveedor.
+- **Razón:** no existe un endpoint público para fabricar esos estados y no debe
+  añadirse uno al producto. La separación evita presentar fault injection como
+  calidad semántica o disponibilidad real del proveedor.
+- **Relación:** E2-03, pasos 12 y 33–36 del recorrido obligatorio y
+  `docs/audits/STAGE2_EVIDENCE_MANIFEST.md`.
+
+## D-044 - El cierre externo acredita solo artefactos observados
+
+- **Decisión:** `STAGE2_RUNTIME_SHA`, el candidato runtime
+  `44b94830bf3346a8fcbc0a8ce11247a42ae5daf5` se acredita mediante dos runs CI
+  verdes, Cloud Build SUCCESS/VERIFIED, digest inmutable, provenance SLSA 3 v1,
+  scan finalizado, apply Terraform revisado, doble no-drift y E2E cloud 38/38.
+  No se reclama SBOM porque no se observó uno ligado a este digest. Los usuarios
+  Auth efímeros se eliminan al cerrar; los hechos sintéticos DB/R2 permanecen
+  como evidencia gobernada. El commit documental posterior tiene otra
+  identidad y su propia CI; no se presenta como el runtime ya desplegado.
+- **Razón:** una afirmación de supply chain, limpieza o ejecución debe estar
+  ligada a evidencia real del mismo candidato; un artifact histórico o una
+  intención documental no la sustituye.
+- **Relación:** E2-11, E2-10, D-032, D-042 y auditorías finales E2.

@@ -48,6 +48,7 @@ ENV CVA_OBJECT_STORE_MODE=r2
 ENV CVA_JOB_RUNNER_MODE=cloud_run
 ENV CVA_MODEL_MODE=mock
 ENV CVA_P10_ENABLED=false
+ENV CVA_REQUIRE_LIBMAGIC=true
 ENV CVA_FRONTEND_DIST=/app/static
 ENV CVA_RENDERER_MODE=weasyprint
 
@@ -58,6 +59,8 @@ RUN apk upgrade --no-cache \
         harfbuzz \
         libffi \
         libjpeg-turbo \
+        libmagic \
+        libseccomp \
         openjpeg \
         pango \
     && python -m pip uninstall --yes pip \
@@ -71,7 +74,8 @@ COPY --from=python-build /app /app
 COPY --from=frontend-build /build/frontend/dist /app/static
 COPY deploy/docker-entrypoint.sh /usr/local/bin/cva-entrypoint
 RUN chmod 0555 /usr/local/bin/cva-entrypoint \
-    && chown -R 65532:65532 /app
+    && chown -R root:root /app \
+    && chmod -R a-w /app
 
 USER 65532:65532
 EXPOSE 8080

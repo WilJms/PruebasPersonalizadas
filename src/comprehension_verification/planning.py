@@ -158,6 +158,7 @@ def _select_exact(
     count: int,
     max_minutes: int,
     policy: m.AssessmentPlanningPolicy,
+    justification_mode: m.StructuredJustificationMode,
     beam_width: int = 512,
 ) -> _State | None:
     states = [_State(selected=(), score=0.0, minutes=0)]
@@ -194,7 +195,34 @@ def _select_exact(
             )
         )
         states = next_states[:beam_width]
-    return states[0] if states else None
+    if not states:
+        return None
+
+    if justification_mode != m.StructuredJustificationMode.SELECTED:
+        return states[0]
+
+    # SELECTED must choose at least one justification question.  When the
+    # policy permits reserves, every requirement represented in the primary
+    # set must also remain available outside it.  This makes localized
+    # replacement exact and prevents silently changing assessment-level
+    # justification semantics.
+    for state in states:
+        primary_flags = {
+            scored[index].opportunity.student_justification_required
+            for index in state.selected
+        }
+        if True not in primary_flags:
+            continue
+        remaining_flags = {
+            item.opportunity.student_justification_required
+            for index, item in enumerate(scored)
+            if index not in state.selected
+        }
+        if policy.max_reserve_opportunities == 0 or primary_flags.issubset(
+            remaining_flags
+        ):
+            return state
+    return None
 
 
 def build_assessment_plan(
@@ -242,6 +270,9 @@ def build_assessment_plan(
         count=question_count,
         max_minutes=blueprint.assessment_constraints.target_total_minutes,
         policy=policy,
+        justification_mode=(
+            blueprint.assessment_constraints.structured_justification_policy.mode
+        ),
     )
     if state is None:
         return _complete_failure(
@@ -267,7 +298,33 @@ def build_assessment_plan(
     reserve_candidates.sort(
         key=lambda item: (-_marginal_score(item, primary, policy), item.opportunity_id)
     )
-    reserve = reserve_candidates[: policy.max_reserve_opportunities]
+    reserve: list[m.QuestionOpportunity] = []
+    if policy.max_reserve_opportunities:
+        # Put one compatible replacement for every primary justification
+        # class in the durable reserve before filling the remaining capacity
+        # by score.  The selection above proved these candidates exist.
+        for justification_required in sorted(
+            {item.student_justification_required for item in primary},
+            reverse=True,
+        ):
+            compatible = next(
+                (
+                    item
+                    for item in reserve_candidates
+                    if item.student_justification_required
+                    == justification_required
+                    and item not in reserve
+                ),
+                None,
+            )
+            if compatible is not None:
+                reserve.append(compatible)
+        reserve.extend(
+            item
+            for item in reserve_candidates
+            if item not in reserve
+        )
+        reserve = reserve[: policy.max_reserve_opportunities]
     selected_ids = [item.opportunity_id for item in primary]
     reserve_ids = [item.opportunity_id for item in reserve]
     plan_id = stable_id(
@@ -291,4 +348,3 @@ def build_assessment_plan(
         estimated_total_minutes=sum(item.target_minutes for item in primary),
         diagnostics=[],
     )
-

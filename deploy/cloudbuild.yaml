@@ -6,6 +6,66 @@ substitutions:
   _VITE_SUPABASE_PUBLISHABLE_KEY: replace-with-publishable-key
 
 steps:
+  - id: verify-contracts-backend-deploy-security
+    name: python:3.12-alpine3.22@sha256:a190708a2dec1bd18b1decb539f8e8f5407abaa9bf39cacda583f7f8c11db322
+    entrypoint: sh
+    env:
+      - CVA_MODEL_MODE=mock
+      - CVA_P10_ENABLED=false
+      - CVA_REQUIRE_LIBMAGIC=true
+      - PYTHONPATH=src
+    args:
+      - -ceu
+      - |
+        apk add --no-cache git libmagic
+        python -m pip install --no-cache-dir --require-hashes -r requirements-dev.lock
+        # Manual Cloud Build uploads are source archives without .git. Create
+        # an index-only baseline so generated-artifact drift and the secret
+        # scanner retain the same semantics as CI without requiring history.
+        git init -q
+        git add -A
+        python -m comprehension_verification.cli validate-contracts
+        python -m comprehension_verification.cli build-fixtures
+        python scripts/generate_openapi.py
+        git diff --exit-code -- 'specification/contracts.schema_v1.1(1).json' fixtures/stage0 tests/fixtures/contracts/v1.1
+        git diff --exit-code -- tests/fixtures/openapi/stage1-v1.json
+        # Scan the immutable source/index before pytest creates ignored bytecode
+        # caches. Those runtime files are not build inputs and can contain
+        # compiled copies of intentional negative-test fixtures.
+        python scripts/check_secrets.py
+        python -m pytest tests
+        python -m pytest deploy/tests/test_deploy_artifacts.py
+        python -m pytest tests/test_stage2_security.py
+
+  - id: verify-terraform
+    name: hashicorp/terraform:1.14.3@sha256:20056ea0d2706f2a944e202befa8a558dbcc5798da0b64f884b2647aab82a4ef
+    entrypoint: sh
+    args:
+      - -ceu
+      - |
+        terraform fmt -check -recursive deploy/terraform
+        terraform -chdir=deploy/terraform init -backend=false -input=false -lockfile=readonly
+        terraform -chdir=deploy/terraform validate
+
+  - id: verify-frontend
+    name: node:22-bookworm-slim@sha256:d649c27dae7ba0137b3cef5dd75baa422c08dc3d9e3fc0c23dfb172dc3cc6436
+    entrypoint: sh
+    dir: frontend
+    env:
+      - VITE_SUPABASE_URL=${_VITE_SUPABASE_URL}
+      - VITE_SUPABASE_PUBLISHABLE_KEY=${_VITE_SUPABASE_PUBLISHABLE_KEY}
+    args:
+      - -ceu
+      - |
+        npm ci
+        sha256sum src/api/generated.ts > /tmp/cva-generated-openapi.sha256
+        npm run openapi:generate
+        sha256sum --check /tmp/cva-generated-openapi.sha256
+        npm run typecheck
+        npm run test
+        npm run build
+        npm audit --audit-level=high
+
   - id: build-image
     name: gcr.io/cloud-builders/docker
     args:
@@ -34,8 +94,12 @@ steps:
         }
         trap cleanup EXIT
         docker run --detach --name "$${container}" \
+          --read-only \
+          --tmpfs /tmp:rw,noexec,nosuid,nodev,size=128m \
+          --cap-drop ALL \
+          --security-opt no-new-privileges \
           --env CVA_ENVIRONMENT=local \
-          --env CVA_DATABASE_URL=sqlite+pysqlite:////tmp/stage1.db \
+          --env CVA_DATABASE_URL=sqlite+pysqlite:////tmp/stage2.db \
           --env CVA_AUTH_MODE=local \
           --env CVA_OBJECT_STORE_MODE=memory \
           --env CVA_JOB_RUNNER_MODE=inline \
@@ -57,12 +121,16 @@ steps:
           "import requests; r=requests.get('http://127.0.0.1:8080/api/health', timeout=2); r.raise_for_status(); assert r.json()['status'] == 'ok'"
         docker exec "$${container}" python -c \
           "import requests; r=requests.get('http://127.0.0.1:8080/api/readiness', timeout=2); r.raise_for_status(); assert r.json() == {'status': 'ready'}"
+        docker exec "$${container}" python -c \
+          'from pathlib import Path; from tempfile import TemporaryDirectory; from comprehension_verification.contracts import models as m; from comprehension_verification.parsers import SafeParserService; from comprehension_verification.parsers.sandbox import parse_in_subprocess; d=TemporaryDirectory(dir="/tmp"); p=Path(d.name)/"synthetic.txt"; p.write_text("contenido sintetico suficientemente largo\n", encoding="utf-8"); parsed=parse_in_subprocess(p, parser=SafeParserService(require_libmagic=True), tenant_id="tnt_synthetic", source_role=m.ArtifactRole.SUBMISSION, submission_id="sub_synthetic", declared_media_type="text/plain", timeout_seconds=5, require_isolation=True); assert parsed.mime_detector == "libmagic"; assert parsed.libmagic_media_type == "text/plain"; assert {x.tenant_id for x in parsed.evidence_units} == {"tnt_synthetic"}; d.cleanup()'
 
 images:
+  # Cloud Build publishes this tag only after every verification and smoke step
+  # succeeds. Terraform subsequently consumes the resolved @sha256 reference.
   - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_IMAGE}:$BUILD_ID
 
 options:
   logging: CLOUD_LOGGING_ONLY
   requestedVerifyOption: VERIFIED
 
-timeout: 1800s
+timeout: 3600s

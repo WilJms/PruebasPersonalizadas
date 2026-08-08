@@ -423,6 +423,16 @@ La v1.1 conserva las decisiones no sustituidas. ADR-030 a ADR-034 reemplazan exp
 
 **Consecuencias:** local queda limitado a desarrollo, pruebas y fixtures. Registros estructurados viven en PostgreSQL; raw, JSON grandes y exports en R2. Mocks cubren tests y las llamadas pagadas a modelos son reales solo en ejecuciones explícitas. Jinja2 + WeasyPrint producen exportaciones. Dentro de cuotas gratuitas esperadas, infraestructura fija puede acercarse a USD 0 más APIs; Vercel Pro opcional o overages serían costos posteriores. Vercel Hobby no se usa comercialmente.
 
+**Aclaración operativa de Etapa 2 (2026-08-07; no sustituye la decisión):**
+ClamAV no forma parte del runtime experimental mientras solo se usen fixtures
+sintéticos controlados. Instalar un motor sin ciclo gobernado de firmas,
+cuarentena y salud fail-closed produciría una garantía aparente. Esta omisión no
+autoriza archivos estudiantiles reales: antes de ese cambio debe existir AV o
+un control compensatorio aprobado expresamente por seguridad/privacidad. Los
+controles actuales, el riesgo residual y la evidencia exigida para salir de
+este gate están registrados en
+[`docs/PARSER_SECURITY_E2.md`](../docs/PARSER_SECURITY_E2.md).
+
 ---
 
 ## ADR-033 - Guía estructurada en plataforma, justificación configurable y aviso fijo

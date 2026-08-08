@@ -11,6 +11,7 @@ import {
   getActivity,
   getActivityAmbiguity,
   getJob,
+  getJobControl,
   getLatestBlueprint,
   listActivities,
   updateBlueprint,
@@ -40,6 +41,7 @@ vi.mock("../api/client", async (importOriginal) => {
     getActivity: vi.fn(),
     getActivityAmbiguity: vi.fn(),
     getJob: vi.fn(),
+    getJobControl: vi.fn(),
     getLatestBlueprint: vi.fn(),
     listActivities: vi.fn(),
     updateBlueprint: vi.fn(),
@@ -202,6 +204,14 @@ describe("Stage 1 blueprint review", () => {
   beforeEach(() => {
     vi.mocked(getLatestBlueprint).mockReset().mockResolvedValue(structuredClone(blueprintView));
     vi.mocked(getJob).mockReset();
+    vi.mocked(getJobControl).mockReset().mockResolvedValue({
+      job: failedTechnicalJob,
+      stage_runs: [],
+      control_records: [],
+      allowed_actions: [],
+      control_state: "ACTIVE",
+      failure_class: "PERMANENT",
+    });
     vi.mocked(getActivity).mockReset();
     vi.mocked(getActivityAmbiguity).mockReset();
     vi.mocked(createPolicyDecision).mockReset();
@@ -228,6 +238,29 @@ describe("Stage 1 blueprint review", () => {
     expect(screen.getByRole("textbox", { name: "Nombre de dimensión 1" })).toBeInTheDocument();
     expect(screen.getByRole("textbox", { name: "Foco opportunity_template_01" })).toBeInTheDocument();
     expect(screen.queryByRole("textbox", { name: /operación/i })).not.toBeInTheDocument();
+  });
+
+  it("continues an approved blueprint into the Stage 2 batch dashboard", async () => {
+    const user = userEvent.setup();
+    const approved = structuredClone(blueprintView);
+    approved.blueprint.status = "APPROVED";
+    vi.mocked(getLatestBlueprint).mockResolvedValue(approved);
+
+    render(
+      <MemoryRouter initialEntries={["/activities/activity_01/blueprint"]}>
+        <Route path="/activities/:activityId/blueprint"><BlueprintPage /></Route>
+        <Route path="/activities/:activityId/submissions">
+          <h1>Dashboard de lote E2</h1>
+        </Route>
+      </MemoryRouter>,
+    );
+
+    await user.click(
+      await screen.findByRole("button", { name: "Abrir lote de entregas" }),
+    );
+    expect(
+      screen.getByRole("heading", { name: "Dashboard de lote E2" }),
+    ).toBeInTheDocument();
   });
 
   it("persists every blocking P03 decision and resumes blueprint generation", async () => {

@@ -11,9 +11,10 @@ import {
 import type { CostEstimate, JobStatus, SubmissionDomainState, SubmissionResource } from "../api/types";
 import { Diagnostics, ErrorNotice } from "../components/Feedback";
 import { StatusBadge } from "../components/StatusBadge";
+import { JobControlPanel } from "../components/JobControlPanel";
 import { useRouteState } from "../routing";
 
-const SUBMISSION_ACCEPT = ".pdf,.txt,.md,text/plain,text/markdown,application/pdf";
+const SUBMISSION_ACCEPT = ".pdf,.docx,.txt,.md,text/plain,text/markdown,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document";
 
 const PIPELINE_STAGES: Array<{ state: SubmissionDomainState; label: string; detail: string }> = [
   { state: "VALIDATING", label: "Validación", detail: "MIME, tamaño y hash" },
@@ -126,7 +127,7 @@ export function SubmissionStartPage() {
         <label className={`drop-field drop-field-large ${file ? "has-file" : ""}`}>
           <span className="drop-icon" aria-hidden="true">↑</span>
           <strong>{file?.name ?? "Selecciona un único entregable"}</strong>
-          <span>{file ? `${Math.max(1, Math.round(file.size / 1024))} KB` : "PDF digital, TXT o Markdown"}</span>
+          <span>{file ? `${Math.max(1, Math.round(file.size / 1024))} KB` : "DOCX, PDF digital, TXT o Markdown"}</span>
           <input
             accept={SUBMISSION_ACCEPT}
             name="submission_file"
@@ -138,6 +139,7 @@ export function SubmissionStartPage() {
 
         <div className="format-guardrail">
           <span>PDF digital</span>
+          <span>DOCX</span>
           <span>TXT</span>
           <span>MD</span>
           <small>Solo formatos seguros habilitados en esta etapa.</small>
@@ -247,14 +249,17 @@ export function SubmissionProgressPage() {
   }
 
   return (
-    <SubmissionProgress
-      job={job}
-      estimate={estimate}
-      onOpenAssessment={() => navigate(`/submissions/${submission.submission_id}/review`)}
-      onStart={() => void startRecovered()}
-      starting={starting}
-      submission={submission}
-    />
+    <>
+      <SubmissionProgress
+        job={job}
+        estimate={estimate}
+        onOpenAssessment={() => navigate(`/submissions/${submission.submission_id}/review`)}
+        onStart={() => void startRecovered()}
+        starting={starting}
+        submission={submission}
+      />
+      {job && <JobControlPanel jobId={job.job_id} onChange={(view) => setJob(view.job)} />}
+    </>
   );
 }
 
@@ -300,7 +305,7 @@ export function SubmissionProgress({
             <StatusBadge status={job?.status ?? "QUEUED"} />
             <strong>{Math.round((job?.progress ?? 0) * 100)}%</strong>
           </div>
-          <div className="progress-track"><span style={{ width: `${Math.round((job?.progress ?? 0) * 100)}%` }} /></div>
+          <div aria-label="Progreso del job técnico" aria-valuemax={100} aria-valuemin={0} aria-valuenow={Math.round((job?.progress ?? 0) * 100)} className="progress-track" role="progressbar"><span style={{ width: `${Math.round((job?.progress ?? 0) * 100)}%` }} /></div>
           <dl>
             <div><dt>Etapa</dt><dd>{job?.stage?.replaceAll("_", " ") ?? "Pendiente"}</dd></div>
             <div><dt>Intento</dt><dd>{job?.attempt ?? 0}</dd></div>
@@ -312,7 +317,7 @@ export function SubmissionProgress({
             <StatusBadge status={submission.status} />
             <strong>{Math.round(submission.progress * 100)}%</strong>
           </div>
-          <div className="progress-track"><span style={{ width: `${Math.round(submission.progress * 100)}%` }} /></div>
+          <div aria-label="Progreso de dominio" aria-valuemax={100} aria-valuemin={0} aria-valuenow={Math.round(submission.progress * 100)} className="progress-track" role="progressbar"><span style={{ width: `${Math.round(submission.progress * 100)}%` }} /></div>
           <p>{submission.current_stage?.replaceAll("_", " ") ?? "Sin etapa activa"}</p>
         </article>
       </section>

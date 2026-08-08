@@ -46,6 +46,11 @@ output "service_uri" {
   value       = try(google_cloud_run_v2_service.web[0].uri, null)
 }
 
+output "service_name" {
+  description = "Cloud Run Service name after the second apply."
+  value       = try(google_cloud_run_v2_service.web[0].name, null)
+}
+
 output "job_name" {
   description = "Cloud Run Job name after the second apply."
   value       = try(google_cloud_run_v2_job.worker[0].name, null)
