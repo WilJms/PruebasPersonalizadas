@@ -1,7 +1,8 @@
 # Backlog de remediación — Etapa 2
 
-Fecha: 2026-08-07. Solo deuda P2/P3 puede sobrevivir al cierre técnico. CI o
-cloud fallidos se elevan a P1 y bloquean el estado final.
+Fecha: 2026-08-07; evidencia externa observada hasta 2026-08-08 UTC. Solo
+deuda P2/P3 puede sobrevivir al cierre técnico. CI o cloud fallidos se elevan
+a P1 y bloquean el estado final.
 
 ## Cerrados durante la auditoría
 
@@ -38,5 +39,20 @@ cloud fallidos se elevan a P1 y bloquean el estado final.
 | P2 | 3 |
 | P3 | 1 |
 
+## Validación externa del backlog
+
+La CI del runtime pasó 7/7 tanto en push (`31232751301`) como en PR
+(`31232752740`). Migración 003, Cloud Build/digest, Service/Job,
+health/readiness, Terraform apply y dos planes no-drift pasaron en cloud. El
+manifest sintético completó 38/38 y el browser real pasó 1440/390 px,
+cierre/reapertura, consola limpia y sin overflow global. El cierre operacional
+dejó Auth efímero 0, jobs activos 0, capabilities persistidas 0 y errores/fugas
+de logs 0/0. No surgió ningún P0/P1 nuevo.
+
+Los pasos 12 y 33–36 usaron `CONTROLLED_ADMIN_SEED`; no se contabilizan como
+fallos naturales del proveedor. La provenance SLSA 3 v1 y el scan
+`FINISHED_SUCCESS` fueron observados; SBOM quedó `NOT_OBSERVED / NO CLAIM`.
+
 Los P2 no autorizan datos reales, modelos reales ni Etapa 3. No bloquean una
-validación controlada exclusivamente sintética en modelo mock.
+validación controlada exclusivamente sintética en modelo mock. P10 continúa
+deshabilitado y ClamAV continúa ausente.

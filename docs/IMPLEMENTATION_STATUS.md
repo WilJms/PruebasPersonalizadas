@@ -1,6 +1,7 @@
 # Estado de implementación — Etapa 2
 
-Fecha de corte: 2026-08-07 (America/Santiago).
+Fecha de corte: 2026-08-07 (America/Santiago; evidencia externa hasta
+2026-08-08 UTC).
 
 ## Identidad y gate
 
@@ -11,10 +12,11 @@ Fecha de corte: 2026-08-07 (America/Santiago).
 |---|---|
 | Repositorio | `WilJms/PruebasPersonalizadas` |
 | Rama | `codex/stage2-experimental-mvp` |
-| Candidato | Worktree local; el SHA final se registra después del commit |
+| Candidato runtime probado | `44b94830bf3346a8fcbc0a8ce11247a42ae5daf5` |
+| Pull request | Draft `#2` |
 | Etapa 0 | Cerrada; regresión preservada |
 | Etapa 1 | Cerrada; baseline y auditorías históricas preservados |
-| Etapa 2 | Implementada localmente; CI y cloud pendientes de evidencia del SHA final |
+| Etapa 2 | Implementada y verificada localmente, en CI y en cloud con datos sintéticos |
 | Etapa 3 | No autorizada |
 | Modelo | `CVA_MODEL_MODE=mock`; proveedor real no autorizado |
 | P10 | `CVA_P10_ENABLED=false` |
@@ -58,15 +60,21 @@ final queda en cero vulnerabilidades high/critical.
 | PostgreSQL 17 | POSTGRESQL_REAL | PASS: upgrade E1→E2, recovery segura, carrera de writer y readiness negativa |
 | Docker | LOCAL_REAL | PASS: runtime no-root/read-only, app inmutable, health/readiness y parser aislado |
 | Secrets/deploy/schema drift | LOCAL_REAL | PASS |
-| GitHub Actions del SHA E2 | NOT_VERIFIED | Pendiente de publicar el candidato |
-| Migración Supabase 003 | NOT_VERIFIED | Pendiente de backup, quiesce y aplicación live revisada |
-| Cloud Build/digest E2 | NOT_VERIFIED | Pendiente del SHA publicado y CI verde |
-| Terraform apply y doble no-drift | NOT_VERIFIED | Pendiente del digest E2 |
-| Cloud E2E sintético 1–38 | NOT_VERIFIED | Pendiente del runtime E2 Ready |
+| GitHub Actions del SHA E2 | CI_REAL | PASS: push `31232751301` y PR `31232752740`, 7/7 jobs SUCCESS cada uno |
+| Migración Supabase 003 | CLOUD_REAL | PASS: aplicada una vez; SHA-256 `6bb9de336b176e89abced2dc56032b83c05e4613c9f2462cde3835573a22df61`; backup previo verificado |
+| Cloud Build/digest E2 | CLOUD_REAL | PASS: build `aad1bf58-966e-44f9-ad10-5d7b81144854` SUCCESS/VERIFIED; digest `sha256:0c6be928c698cd052763c9daf683ae19d4f5b8a99cba06b54fc32e244d70044e` |
+| Supply chain cloud | CLOUD_REAL | PASS observado: SLSA 3 v1 `GoogleHostedWorker` y continuous scan `FINISHED_SUCCESS`; SBOM no reclamado |
+| Terraform apply y doble no-drift | CLOUD_REAL | PASS: 0 add, 2 change, 0 destroy; dos planes vivos consecutivos sin cambios |
+| Cloud Run | CLOUD_REAL | PASS: Service/Job Ready, mismo digest, mock, P10 false y libmagic true |
+| Cloud E2E sintético 1–38 | CLOUD_REAL + MOCK_MODEL | PASS 38/38; pasos 12 y 33–36 usan seed administrativo controlado y se declaran como tales |
+| Browser cloud | CLOUD_REAL_BROWSER | PASS desktop 1440 px y móvil 390 px, close/reopen, consola limpia y sin overflow global |
+| Logs/capabilities | CLOUD_REAL | PASS: jobs activos 0, persistencia de capabilities 0, errores finales 0 y leaks 0 |
 
 Los detalles reproducibles están en [TEST_RESULTS.md](TEST_RESULTS.md) y en
-[STAGE2_EVIDENCE_MANIFEST.md](audits/STAGE2_EVIDENCE_MANIFEST.md). Una entrada
-`NOT_VERIFIED` no se presenta como PASS ni se sustituye por evidencia cloud E1.
+[STAGE2_EVIDENCE_MANIFEST.md](audits/STAGE2_EVIDENCE_MANIFEST.md). La prueba de
+retry/resume en cloud acredita control durable y lineage; su éxito semántico
+se conserva como evidencia local/CI, no se presenta como un fallo natural de
+proveedor. Tampoco se reclama SBOM para este digest.
 
 ## Auditoría y deuda
 
@@ -76,7 +84,7 @@ pregunta no recuperables, límites de regeneración, roles, uploads rechazados,
 readiness incompleta y recovery con pérdida concurrente. Cada corrección se
 revalidó y la regresión completa quedó verde.
 
-| Severidad | Abiertos locales |
+| Severidad | Abiertos |
 |---|---:|
 | P0 | 0 |
 | P1 | 0 |
@@ -97,10 +105,10 @@ La deuda P2/P3 está limitada a gates posteriores o no bloqueantes:
 ## Límites de cierre
 
 Este candidato no autoriza Etapa 3, modelos reales, datos estudiantiles reales,
-OCR, LMS, calificación, detección de IA, inferencia de autoría o fraude. El
-estado `READY_FOR_CONTROLLED_PILOT` solo puede emitirse después de CI verde,
-migración live, build por digest, apply Terraform revisado, runtime Ready,
-cloud E2E sintético y dos planes sin drift.
+OCR, LMS, calificación, detección de IA, inferencia de autoría o fraude. Los
+gates técnicos de CI, migración, build por digest, apply Terraform, runtime,
+cloud E2E sintético y doble no-drift quedaron observados. El alcance continúa
+siendo exclusivamente un piloto controlado sintético en modo mock.
 
 El cierre histórico de E1 permanece inalterado en
 [STAGE1_FINAL_ACCEPTANCE_MATRIX.md](audits/STAGE1_FINAL_ACCEPTANCE_MATRIX.md) y

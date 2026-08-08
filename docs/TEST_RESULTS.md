@@ -1,6 +1,7 @@
 # Resultados verificables — candidato Etapa 2
 
-Fecha de corte documental: 2026-08-07 (America/Santiago).
+Fecha de corte documental: 2026-08-07 (America/Santiago; ejecución cloud hasta
+2026-08-08 UTC).
 
 Este archivo registra únicamente resultados observados. Las credenciales y
 capacidades no se registran. Todos los recorridos E2 usaron modelo mock, P10
@@ -13,7 +14,8 @@ final y no se presentan como evidencia del candidato E2.
 |---|---|
 | Baseline | `80dd57dbf38d56929c307eca956833c31e53bf33` |
 | Rama | `codex/stage2-experimental-mvp` |
-| SHA candidato | Se completa después del commit; estas ejecuciones corresponden al worktree que lo precede |
+| SHA candidato runtime probado | `44b94830bf3346a8fcbc0a8ce11247a42ae5daf5` |
+| PR | Draft `#2` |
 | Modelo | `mock` |
 | P10 | `false` |
 | Datos | Fixtures sintéticos exclusivamente |
@@ -27,13 +29,13 @@ final y no se presentan como evidencia del candidato E2.
 | `make test` | LOCAL_REAL + MOCK_MODEL | 407 passed, 16 skipped, 1 warning; skips solo por URL PostgreSQL ausente en esa ejecución |
 | Parser + sandbox focal | LOCAL_REAL | 57 passed; libmagic, seccomp sin socket, RLIMIT/timeout, symlink/output/context hostil |
 | Deploy artifacts | LOCAL_REAL | 11 passed |
-| Secret scan | LOCAL_REAL | PASS en 270 archivos versionables |
+| Secret scan | LOCAL_REAL | PASS en 275 archivos versionables |
 | Terraform | LOCAL_REAL | fmt, init `-backend=false -lockfile=readonly` y validate PASS; provider Google 6.50.0 |
 | YAML y shell | LOCAL_REAL | Cloud Build/Actions parsean; entrypoint `sh -n` PASS |
 | Frontend | LOCAL_REAL | typecheck PASS; 6 archivos/32 Vitest PASS; build 87 módulos PASS |
 | Dependency audit | LOCAL_REAL + red | `npm audit --audit-level=high`: 0 vulnerabilidades |
 | Playwright E1 | LOCAL_REAL_BROWSER + MOCK_MODEL | 1 passed; recorrido crítico, evidence-first y cierre/reapertura |
-| Playwright E2 | LOCAL_REAL_BROWSER + MOCK_API | 1 passed; lote, teclado, axe y viewport 390 px |
+| Playwright E2 | LOCAL_REAL_BROWSER + MOCK_API | 2 passed; lote, teclado, axe, viewport 390 px y regresión de overflow móvil |
 | Browser integrado | LOCAL_REAL_BROWSER + MOCK_MODEL | Flujo sintético de actividad/lote/submissions; consola limpia; scrollWidth=innerWidth=390 |
 | Docker runtime | LOCAL_REAL | Imagen arm64 `sha256:5644dfadccfb1e43f0ce3155912fba44ba069d138199df3ca9d77e51aadf764c`; UID 65532, app no escribible, health/readiness PASS |
 | Docker parser aislado | LOCAL_REAL | `require_isolation` y `require_libmagic` PASS; socket denegado con `EPERM`; provenance tenant/submission preservada |
@@ -72,16 +74,74 @@ cancelación, resume, roles, regeneración SELECTED, approvals, parser, uploads,
 readiness y rollback. Después de las remediaciones, la regresión completa quedó
 en 407/407 casos ejecutables localmente y P0/P1 abiertos igual a cero.
 
-### Gates todavía no ejecutados para E2
+### Gates externos ejecutados para E2
 
 | Gate | Clasificación | Estado |
 |---|---|---|
-| GitHub Actions del SHA final | NOT_VERIFIED | Pendiente de commit/push/PR |
-| Migración 003 en Supabase autorizado | NOT_VERIFIED | Pendiente de backup/quiesce/aplicación |
-| Cloud Build E2, scan, SBOM y digest | NOT_VERIFIED | Pendiente del SHA publicado |
-| Terraform apply E2 y doble plan | NOT_VERIFIED | Pendiente del digest |
-| Cloud Run E2 y E2E sintético 1–38 | NOT_VERIFIED | Pendiente del apply |
+| GitHub Actions | CI_REAL | Push `31232751301` y PR `31232752740`: SUCCESS, 7/7 jobs cada uno |
+| Migración 003 en Supabase autorizado | CLOUD_REAL | Aplicada exactamente una vez; readiness posterior PASS |
+| Cloud Build E2 | CLOUD_REAL | `aad1bf58-966e-44f9-ad10-5d7b81144854`: SUCCESS y VERIFIED |
+| Provenance y scan | CLOUD_REAL | SLSA 3 v1, builder `GoogleHostedWorker`; continuous scan `FINISHED_SUCCESS`; no se reclama SBOM |
+| Digest | CLOUD_REAL | `sha256:0c6be928c698cd052763c9daf683ae19d4f5b8a99cba06b54fc32e244d70044e` |
+| Terraform apply E2 y doble plan | CLOUD_REAL | 0 add, 2 change, 0 destroy; dos planes vivos sin drift |
+| Cloud Run E2 | CLOUD_REAL | Service/Job Ready y mismo digest; mock, P10 false, libmagic true; health/readiness PASS |
+| E2E sintético 1–38 | CLOUD_REAL + MOCK_MODEL | 38/38 PASS; seeds administrativos controlados declarados en pasos 12 y 33–36 |
+| Browser E2 | CLOUD_REAL_BROWSER | Desktop 1440 y móvil 390; close/reopen, consola sin errores y sin overflow global |
+| Logs y persistencia | CLOUD_REAL | Jobs activos 0; capabilities persistidas 0; errores finales 0; leaks 0 |
 | Proveedor IA real y corpus real | BLOCKED | Fuera del gate; no se ejecutarán en E2 |
+
+### Migración, build y runtime E2
+
+La migración
+`deploy/supabase/migrations/202608070003_stage2_experimental.sql` se aplicó una
+sola vez. Su SHA-256 observado fue
+`6bb9de336b176e89abced2dc56032b83c05e4613c9f2462cde3835573a22df61`.
+Antes del cambio se creó el backup restaurable
+`/private/tmp/cva-stage2-pre003-20260808T002738Z.dump`, 347166 bytes, SHA-256
+`30b39631dda914245196f3cad87cb740b7b2c7294084df02f93fd83bf13cdd2e`.
+El archivo permanece fuera de Git y su contenido no se incluye en esta
+evidencia.
+
+Cloud Build construyó el source exacto
+`44b94830bf3346a8fcbc0a8ce11247a42ae5daf5`, terminó SUCCESS con verificación
+habilitada y publicó el digest inmutable indicado arriba. La evidencia de
+supply chain disponible para ese digest es provenance SLSA 3 v1 con
+`GoogleHostedWorker` y continuous scan `FINISHED_SUCCESS`. No se observó ni se
+reclama un SBOM E2.
+
+Terraform aplicó exclusivamente dos cambios in-place, sin altas ni
+destrucciones. Service y Job quedaron Ready con el mismo digest, el Job
+conservó retry de infraestructura deshabilitado, y el entorno respondió health
+y readiness correctamente con `CVA_MODEL_MODE=mock`, `CVA_P10_ENABLED=false`
+y `CVA_REQUIRE_LIBMAGIC=true`. Dos planes vivos posteriores convergieron sin
+cambios.
+
+### E2E cloud 1–38, navegador y cierre operativo
+
+El manifest no secreto
+`/private/tmp/cva_stage2_cloud_e2e_state_e2e08080110.json` registró 38/38 pasos
+PASS; su SHA-256 observado fue
+`38b67798cdc8de3fd60a9464cb4a781cd8c3111f7b6cba3f15a41df75155b628`.
+El recorrido usó dos workspaces y subjects seudónimos, DOCX/TXT, flujo
+suficiente, fail-closed insuficiente, las cuatro acciones de pregunta,
+replacement/lineage/exactly N, coverage, guide, feedback, aprobación
+individual/masiva, siete exports, replay sin llamadas de modelo, métricas y
+negativos cross-submission/cross-tenant.
+
+Los pasos 12 y 33–36 son `CLOUD_REAL + CONTROLLED_ADMIN_SEED`: prueban la
+proyección cloud, persistencia, autorización, idempotencia y lineage de
+insuficiencia/retry/cancel/resume, pero no se presentan como fallos naturales
+de proveedor ni como éxito semántico del hijo retry/resume. Esa semántica está
+cubierta por pruebas locales y CI en modo mock.
+
+El navegador real verificó el recorrido en desktop 1440 px y móvil 390 px,
+incluidos cierre completo, reapertura desde raíz, ausencia de errores de
+consola y ausencia de overflow global. Las capturas se conservaron fuera del
+repositorio. Los dos usuarios Auth iniciales y los usuarios efímeros finales
+fueron eliminados; quedaron cero usuarios de aceptación. La evidencia sintética en
+PostgreSQL/R2 se retuvo para auditoría. Al cierre había cero jobs activos, cero
+capabilities persistidas, cero errores finales de aplicación y cero leaks en
+logs.
 
 ## Evidencia histórica de Etapa 1
 

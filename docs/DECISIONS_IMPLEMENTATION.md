@@ -456,3 +456,32 @@
 - **Razón:** separar build de deployment conserva procedencia e impide que una
   etiqueta mutable o un trigger altere Service/Job fuera del estado.
 - **Relación:** E2-11 y runbook `deploy/README.md`.
+
+## D-043 - Fault injection cloud se etiqueta como seed administrativo
+
+- **Decisión:** el recorrido cloud puede insertar estados sintéticos
+  deterministas para insuficiencia y para jobs TRANSIENT, RUNNING y
+  PRECONDITION exclusivamente mediante el harness temporal autorizado. Esa
+  evidencia se clasifica `CLOUD_REAL + CONTROLLED_ADMIN_SEED`: acredita schema,
+  persistencia, autorización, idempotencia, cancelación y lineage en el runtime
+  real, pero no simula ni reclama un fallo natural de proveedor.
+- **Razón:** no existe un endpoint público para fabricar esos estados y no debe
+  añadirse uno al producto. La separación evita presentar fault injection como
+  calidad semántica o disponibilidad real del proveedor.
+- **Relación:** E2-03, pasos 12 y 33–36 del recorrido obligatorio y
+  `docs/audits/STAGE2_EVIDENCE_MANIFEST.md`.
+
+## D-044 - El cierre externo acredita solo artefactos observados
+
+- **Decisión:** `STAGE2_RUNTIME_SHA`, el candidato runtime
+  `44b94830bf3346a8fcbc0a8ce11247a42ae5daf5` se acredita mediante dos runs CI
+  verdes, Cloud Build SUCCESS/VERIFIED, digest inmutable, provenance SLSA 3 v1,
+  scan finalizado, apply Terraform revisado, doble no-drift y E2E cloud 38/38.
+  No se reclama SBOM porque no se observó uno ligado a este digest. Los usuarios
+  Auth efímeros se eliminan al cerrar; los hechos sintéticos DB/R2 permanecen
+  como evidencia gobernada. El commit documental posterior tiene otra
+  identidad y su propia CI; no se presenta como el runtime ya desplegado.
+- **Razón:** una afirmación de supply chain, limpieza o ejecución debe estar
+  ligada a evidencia real del mismo candidato; un artifact histórico o una
+  intención documental no la sustituye.
+- **Relación:** E2-11, E2-10, D-032, D-042 y auditorías finales E2.
