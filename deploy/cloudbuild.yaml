@@ -29,10 +29,13 @@ steps:
         python scripts/generate_openapi.py
         git diff --exit-code -- 'specification/contracts.schema_v1.1(1).json' fixtures/stage0 tests/fixtures/contracts/v1.1
         git diff --exit-code -- tests/fixtures/openapi/stage1-v1.json
+        # Scan the immutable source/index before pytest creates ignored bytecode
+        # caches. Those runtime files are not build inputs and can contain
+        # compiled copies of intentional negative-test fixtures.
+        python scripts/check_secrets.py
         python -m pytest tests
         python -m pytest deploy/tests/test_deploy_artifacts.py
         python -m pytest tests/test_stage2_security.py
-        python scripts/check_secrets.py
 
   - id: verify-terraform
     name: hashicorp/terraform:1.14.3@sha256:20056ea0d2706f2a944e202befa8a558dbcc5798da0b64f884b2647aab82a4ef
