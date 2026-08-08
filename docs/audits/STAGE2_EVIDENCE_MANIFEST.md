@@ -101,8 +101,29 @@ las cuatro correcciones nuevas estén desplegadas: quedan ligadas al commit
 candidato y a su CI. La revisión browser no mutante del runtime desplegado
 repitió desktop/390 px con consola y overflow global en cero.
 
-No existía un paquete durable externo E2. Se crea un paquete core fuera de Git
-después de asignar SHA al commit candidato, con manifest e inventario SHA-256,
-validación del tar antes/después y únicamente resúmenes sanitizados. El nombre,
-checksum, fecha e instrucciones de custodia se completan en este documento en
-un commit documental posterior; ese commit no cambia el código auditado.
+No existía un paquete durable externo E2. Se creó el siguiente core fuera de
+Git, ligado al candidato auditado `d905557eed4a1f4bb38e8aef2a7823beeba5064a`:
+
+| Campo de custodia | Valor |
+|---|---|
+| Nombre lógico | `STAGE2_FINAL_AUDIT_d905557_20260808T165002Z` |
+| Archivo | `STAGE2_FINAL_AUDIT_d905557_20260808T165002Z.tar.gz` |
+| Fecha de materialización | `2026-08-08T17:00:36Z` |
+| SHA-256 del tar | `cb5e61e25d43a866bd11a0126bf229636fae57366c17dbdba6090657e0bd978d` |
+| Inventario | `INVENTORY.sha256`, 14 payload files; checksum verificado después de extracción |
+| Validación | sin rutas absolutas/traversal, symlinks, devices ni diferencias pre/post extracción |
+
+El paquete contiene solo documentos/resúmenes sanitizados y la migración 003;
+excluye dumps, states, screenshots/logs crudos, credenciales, URLs autenticadas,
+capabilities y contenido estudiantil. Debe custodiarse fuera de Git con acceso
+del propietario, conservar juntos el tar, su `.sha256` y su `.contents.txt`, y
+verificarse con `shasum -a 256 -c` antes de cualquier traslado. Este commit de
+custodia no cambia el código auditado.
+
+La CI del candidato auditado terminó verde: push `31267922067` y PR
+`31267923824`, 7/7 cada uno. Cloud Build
+`40d124f3-8037-49be-8330-49b7bec12aa5` terminó `SUCCESS/VERIFIED` con source
+revision exacta, digest
+`sha256:4ef1e548359230a981eeeea2e3f002c8304dc835e0ee9c8b4705889b42caf468`,
+provenance SLSA v1 y scan `FINISHED_SUCCESS`; no se observó referencia SBOM.
+La imagen fue construida y smoke-tested, no desplegada por esta auditoría.

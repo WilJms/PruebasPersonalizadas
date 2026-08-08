@@ -127,7 +127,9 @@ reales.
 El candidato corregido pasa 410 pruebas backend (16 skips PostgreSQL locales
 declarados), 79% de cobertura, 57 pruebas parser, 11 de deploy, typecheck,
 32 tests frontend, build, audit sin vulnerabilidades, Playwright 1+2, Stage 0,
-Terraform, secrets y regeneración sin drift. La CI y el paquete externo durable
-se registran por SHA antes de declarar el checkpoint listo para merge. La
-evidencia cloud permanece ligada a `44b9483…`; las correcciones nuevas no se
-declaran desplegadas.
+Terraform, secrets y regeneración sin drift. El candidato `d905557…` pasó CI
+push/PR 7/7 y Cloud Build `SUCCESS/VERIFIED`; el paquete externo durable quedó
+registrado con SHA-256
+`cb5e61e25d43a866bd11a0126bf229636fae57366c17dbdba6090657e0bd978d`.
+La evidencia cloud desplegada permanece ligada a `44b9483…`; las correcciones
+nuevas fueron construidas/smoke-tested, pero no se declaran desplegadas.

@@ -87,7 +87,13 @@ Los P2 son ClamAV/compensación pendiente, corpus/política de retención real n
 autorizados y validación semántica/latencia/costo con proveedor real pendiente.
 El P3 es `StarletteDeprecationWarning` del adaptador de tests.
 
-El dictamen técnico es apto para el checkpoint pre-merge después de que el
-commit candidato tenga CI final verde, el paquete externo durable quede
-inventariado y el PR siga mergeable. El merge continúa reservado a una nueva
-autorización humana explícita.
+El candidato auditado
+`d905557eed4a1f4bb38e8aef2a7823beeba5064a` pasó CI push/PR 7/7, Cloud Build
+`SUCCESS/VERIFIED`, provenance y scan. El paquete externo
+`STAGE2_FINAL_AUDIT_d905557_20260808T165002Z.tar.gz` quedó inventariado y su
+SHA-256 es
+`cb5e61e25d43a866bd11a0126bf229636fae57366c17dbdba6090657e0bd978d`.
+El PR siguió draft, `MERGEABLE` y `CLEAN` con 15/15 checks en éxito.
+
+El dictamen técnico queda listo para el checkpoint pre-merge. El merge continúa
+reservado a una nueva autorización humana explícita.

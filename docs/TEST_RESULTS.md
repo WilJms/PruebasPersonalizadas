@@ -25,7 +25,9 @@ identidad. Cubre las cuatro correcciones P1 del checkpoint pre-merge.
 | frontend | typecheck, 32 tests, build 87 módulos, audit 0 vulnerabilidades |
 | Playwright | E1 1 passed; E2 2 passed, incluido 390 px |
 | Terraform | fmt/init/validate PASS |
-| secret scan | PASS, 275 archivos versionables |
+| secret scan | PASS, 276 archivos versionables |
+| GitHub Actions candidato | push `31267922067` y PR `31267923824`: 7/7 `SUCCESS` cada uno |
+| Cloud Build candidato | `40d124f3-8037-49be-8330-49b7bec12aa5`: `SUCCESS/VERIFIED`; source `d905557…`; digest `sha256:4ef1e548…`; provenance y scan PASS; SBOM no observado |
 
 El daemon Docker no estaba disponible en esta máquina y no se reclama una
 ejecución Docker nueva. PostgreSQL 16/17 y Docker quedan cubiertos por la CI

@@ -112,7 +112,10 @@ completa pasaron; backend local actual: 410 passed, 16 skips PostgreSQL
 declarados, 79% de cobertura. Los gates frontend/browser/parser/deploy/Stage 0
 y drift generado también pasaron.
 
-La aceptación del código nuevo es `PASS_LOCAL` y queda condicionada a CI final
-verde del nuevo SHA. `PASS_CLOUD_REAL` continúa describiendo exclusivamente el
-runtime `44b9483…`; no se extiende por inferencia al código aún no desplegado.
-P0/P1 abiertos permanecen 0/0 y P2/P3 permanecen 3/1.
+La aceptación del código nuevo es `PASS_LOCAL + PASS_CI_REAL`: candidato
+`d905557…`, GitHub Actions push `31267922067` y PR `31267923824` 7/7 cada uno,
+y Cloud Build `40d124f3…` `SUCCESS/VERIFIED` sobre el source exacto. La imagen
+por digest solo fue construida/smoke-tested. `PASS_CLOUD_REAL` continúa
+describiendo exclusivamente el runtime desplegado `44b9483…`; no se extiende
+por inferencia al código nuevo. P0/P1 abiertos permanecen 0/0 y P2/P3
+permanecen 3/1.
