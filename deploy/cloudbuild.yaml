@@ -19,6 +19,11 @@ steps:
       - |
         apk add --no-cache git libmagic
         python -m pip install --no-cache-dir --require-hashes -r requirements-dev.lock
+        # Manual Cloud Build uploads are source archives without .git. Create
+        # an index-only baseline so generated-artifact drift and the secret
+        # scanner retain the same semantics as CI without requiring history.
+        git init -q
+        git add -A
         python -m comprehension_verification.cli validate-contracts
         python -m comprehension_verification.cli build-fixtures
         python scripts/generate_openapi.py

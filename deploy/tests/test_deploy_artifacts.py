@@ -226,6 +226,8 @@ def test_container_and_cloud_build_are_single_image_and_mock_safe() -> None:
     python_gate = "\n".join(steps["verify-contracts-backend-deploy-security"]["args"])
     for command in (
         "python -m pip install --no-cache-dir --require-hashes -r requirements-dev.lock",
+        "git init -q",
+        "git add -A",
         "python -m comprehension_verification.cli validate-contracts",
         "python -m comprehension_verification.cli build-fixtures",
         "python scripts/generate_openapi.py",
@@ -236,6 +238,7 @@ def test_container_and_cloud_build_are_single_image_and_mock_safe() -> None:
     ):
         assert command in python_gate
     assert "git diff --exit-code" in python_gate
+    assert python_gate.index("git add -A") < python_gate.index("python scripts/generate_openapi.py")
 
     terraform_gate = "\n".join(steps["verify-terraform"]["args"])
     for command in (
