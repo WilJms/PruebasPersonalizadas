@@ -137,6 +137,7 @@ def test_runtime_configuration_uses_exact_settings_names_and_safe_defaults() -> 
         "CVA_OBJECT_STORE_MODE",
         "CVA_JOB_RUNNER_MODE",
         "CVA_MODEL_MODE",
+        "CVA_WORKER_MODEL_MODE",
         "CVA_P10_ENABLED",
         "CVA_SESSION_SECRET",
         "CVA_SUPABASE_JWT_ISSUER",
@@ -157,6 +158,7 @@ def test_runtime_configuration_uses_exact_settings_names_and_safe_defaults() -> 
 
     assert not {name for name in required if name not in combined}
     assert re.search(r'CVA_MODEL_MODE\s*=\s*"mock"', terraform)
+    assert 'var.enable_openai_real_provider ? "real" : "mock"' in terraform
     assert re.search(r'CVA_P10_ENABLED\s*=\s*"false"', terraform)
     assert "CVA_ENV=" not in combined
     assert "CVA_OBJECT_STORE=" not in combined
@@ -338,8 +340,8 @@ def test_terraform_declares_service_job_secrets_and_job_invocation() -> None:
     assert "local.expected_container_image_prefix" in terraform
     assert "/application@sha256:" in terraform
     assert "deletion_protection = false" not in terraform
-    assert terraform.count("deletion_protection = true") == 3
-    assert terraform.count("prevent_destroy = true") == 4
+    assert terraform.count("deletion_protection = true") == 4
+    assert terraform.count("prevent_destroy = true") == 5
     assert 'output "service_name"' in outputs
     assert 'output "job_name"' in outputs
     assert 'output "runtime_container_image"' in outputs
@@ -360,6 +362,35 @@ def test_terraform_declares_service_job_secrets_and_job_invocation() -> None:
         in terraform
     )
     assert terraform.count('CVA_REQUIRE_LIBMAGIC         = "true"') == 2
+    assert terraform.count('name = "CVA_OPENAI_API_KEY"') == 1
+    assert terraform.count("CVA_MAX_JOB_COST_USD") == 2
+    assert 'resource "google_secret_manager_secret" "openai_api_key"' in terraform
+    assert (
+        'resource "google_secret_manager_secret_iam_member" "openai_worker_access"'
+        in terraform
+    )
+    web = terraform.split(
+        'resource "google_cloud_run_v2_service" "web"', 1
+    )[1].split('resource "google_cloud_run_v2_job" "worker"', 1)[0]
+    assert "CVA_OPENAI_API_KEY" not in web
+    openai_iam = terraform.split(
+        'resource "google_secret_manager_secret_iam_member" "openai_worker_access"', 1
+    )[1].split("\n}\n\nlocals", 1)[0]
+    assert "google_service_account.worker.email" in openai_iam
+    assert "google_service_account.web.email" not in openai_iam
+    assert 'version = var.openai_api_key_secret_version' in worker
+    assert "CVA_MAX_JOB_COST_USD" in terraform
+    assert "var.openai_max_job_cost_usd != null" in terraform
+    assert "openai_max_job_cost_usd         = null" in (
+        ROOT / "deploy/terraform/terraform.tfvars.example"
+    ).read_text(encoding="utf-8")
+    assert "OPENAI_API_KEY" not in (ROOT / "deploy/cloudbuild.yaml").read_text(
+        encoding="utf-8"
+    )
+    assert "OPENAI_API_KEY" not in (ROOT / "Dockerfile").read_text(encoding="utf-8")
+    assert "openai_api_key =" not in (
+        ROOT / "deploy/terraform/terraform.tfvars.example"
+    ).read_text(encoding="utf-8")
     assert 'filename    = "deploy/cloudbuild.yaml"' in terraform
     assert "google_service_account.build.email" in terraform
     assert "github_oauth_token_secret_version" in terraform

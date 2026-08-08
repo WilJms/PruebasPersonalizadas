@@ -6,7 +6,7 @@
     },
     "assessment_json": {
       "filename": "assessment.json",
-      "sha256": "sha256:ca1b172cd1d191cd90f75dd6c0b226d2f3acadcbca0401235ac19511da734152"
+      "sha256": "sha256:e77364715348ab6b7748c693a57b4379789ea2df1a9add774868817b39650f47"
     },
     "assessment_pdf": {
       "filename": "assessment.pdf",
@@ -14,7 +14,7 @@
     },
     "guide_html": {
       "filename": "evaluation_guide.html",
-      "sha256": "sha256:d7d489e28428cbfb5b1043dacdfacd61ce5cd522c5136653746d2da3ec386f18"
+      "sha256": "sha256:9a7b61dfc7811a2858185a2d549f5441168b03a7e2a04917e5ec5fa275922f79"
     },
     "guide_json": {
       "filename": "evaluation_guide.json",
@@ -22,12 +22,12 @@
     },
     "guide_pdf": {
       "filename": "evaluation_guide.pdf",
-      "sha256": "sha256:ba50b5e4a17e7a64fad767b34b24000c38023ff47b55c611a0e7f387a7ad31dd"
+      "sha256": "sha256:3a121a9c78f547b1798ae963e434620e9439d1323ed40fdcb96a9d84a02e7d3d"
     }
   },
   "assessment_id": "assessment_424ca6b8837f21814d45",
   "guide_id": "guide_df261b490c0b09f69215",
-  "renderer_version": "stage0-renderer/1.0.0",
+  "renderer_version": "stage1-renderer/2.1.0",
   "schema_version": "1.1.0",
   "submission_id": "sub_cache_sufficient"
 }

@@ -458,3 +458,48 @@ este gate están registrados en
 **Alternativas:** aprobación exclusivamente individual; “aprobar todo” sin selección/confirmación; aprobación automática. Se rechazan por ineficiencia o falta de control.
 
 **Consecuencias:** el contrato divide targets aprobados y excluidos, sin solapamiento ni omisiones. Versiones obsoletas, preguntas rechazadas, diagnósticos pendientes o conflictos de concurrencia nunca se fuerzan. No cambia la prohibición de grade passback o sanción automática.
+
+---
+
+## ADR-035 - Gate OpenAI real aislado y P11 Luna-low
+
+**Estado:** Accepted el 2026-08-08; sustituye únicamente la selección
+`minimal` de P11 en ADR-031.
+**Autorización:** decisión humana vinculante del prompt de apertura del gate
+OpenAI posterior a `STAGE2_MERGED_AND_VERIFIED`.
+
+**Decisión:** la integración inicial usa exclusivamente Responses API mediante
+el SDK oficial fijado, modelos explícitos `gpt-5.6-sol` y `gpt-5.6-luna`,
+Structured Outputs estrictos derivados de los contratos canónicos y
+`store=false`. P11 usa `gpt-5.6-luna` con `reasoning_effort=low`, una sola
+oportunidad y cero herramientas. La temperatura deseada de P11 es cero, pero no
+se envía mientras no exista compatibilidad oficial documentada para esa
+combinación. No hay selección dinámica, fallback silencioso, estado de
+conversación ni reintentos internos del SDK.
+
+La clave se monta solo en el Cloud Run Job worker desde una versión explícita
+de Secret Manager. El Service web no recibe la clave. Terraform conserva por
+defecto `CVA_MODEL_MODE=mock`, `CVA_P10_ENABLED=false` y ningún contenedor de
+secreto; habilitar el proveedor real exige un cambio posterior, explícito y
+revisable. CI y pruebas offline nunca necesitan una clave.
+
+**Contexto:** la documentación oficial observada publica esfuerzos
+`low`/`medium`/`high` para GPT-5.6 Luna, pero no acredita `minimal` ni snapshots
+fechados para ese modelo. `store=false` evita almacenamiento de estado de la
+respuesta, pero no se presenta como Zero Data Retention: ZDR requiere aprobación
+separada y los abuse-monitoring logs pueden conservarse hasta 30 días según la
+política aplicable.
+
+**Consecuencias:** P01-P09 conservan exactamente la matriz de ADR-031; P10 sigue
+deshabilitado. P11 nunca repara grounding, IDs, evidencia, fuente, seguridad,
+suficiencia ni significado. Los outputs vuelven a Pydantic y a validación
+contextual; los fallos son fail-closed y se registran sin contenido. El cambio
+es reversible retornando P11 a mock o sustituyendo la ruta mediante una nueva
+decisión autorizada. La aceptación semántica y el despliegue real requieren
+credenciales, presupuesto y checkpoints humanos posteriores; esta ADR no
+autoriza llamadas facturables ni datos reales.
+
+**Evidencia requerida:** pruebas de matriz y payload, schemas estrictos,
+refusal/incomplete, retries acotados, presupuesto previo, sanitización de
+errores, aislamiento de secretos, golden set sintético y smoke real
+explícitamente aprobado.

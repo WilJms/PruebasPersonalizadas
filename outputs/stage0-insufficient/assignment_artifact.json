@@ -4,7 +4,7 @@
   "filename": "assignment.txt",
   "media_type": "text/plain",
   "parser_id": "stage0-txt",
-  "parser_version": "stage0-parser/1.0.0",
+  "parser_version": "stage2-parser/2.0.0",
   "role": "ASSIGNMENT_PROMPT",
   "schema_version": "1.1.0",
   "sha256": "sha256:19f7ab04e638127dfd0279669492243dcdcfe9c55590c8bec7c575ae69128ae5"

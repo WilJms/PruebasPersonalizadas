@@ -5,7 +5,7 @@ from __future__ import annotations
 from functools import lru_cache
 from typing import Literal
 
-from pydantic import Field, model_validator
+from pydantic import Field, SecretStr, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from sqlalchemy.engine import make_url
 from sqlalchemy.exc import ArgumentError
@@ -26,7 +26,9 @@ class Settings(BaseSettings):
     object_store_mode: Literal["memory", "r2"] = "memory"
     job_runner_mode: Literal["inline", "cloud_run"] = "inline"
     model_mode: Literal["mock", "real"] = "mock"
+    worker_model_mode: Literal["mock", "real"] = "mock"
     p10_enabled: bool = False
+    openai_api_key: SecretStr | None = None
 
     session_secret: str = Field(
         default="local-development-secret-change-me", min_length=32
@@ -74,6 +76,8 @@ class Settings(BaseSettings):
     def experimental_guards(self) -> "Settings":
         if self.p10_enabled:
             raise ValueError("P10 is disabled throughout the experimental environment")
+        if self.openai_api_key and self.openai_api_key.get_secret_value().strip():
+            raise ValueError("web runtime must not receive an OpenAI API key")
         if self.environment == "cloud":
             if self.auth_mode != "supabase":
                 raise ValueError("cloud requires Supabase authentication")
@@ -147,6 +151,8 @@ class WorkerSettings(BaseSettings):
     object_store_mode: Literal["memory", "r2"] = "memory"
     model_mode: Literal["mock", "real"] = "mock"
     p10_enabled: bool = False
+    openai_api_key: SecretStr | None = None
+    openai_request_timeout_seconds: float = Field(default=120.0, ge=5.0, le=300.0)
 
     r2_endpoint_url: str | None = None
     r2_bucket: str | None = None
@@ -165,11 +171,17 @@ class WorkerSettings(BaseSettings):
     def experimental_worker_guards(self) -> "WorkerSettings":
         if self.p10_enabled:
             raise ValueError("P10 is disabled throughout the experimental environment")
+        key_configured = bool(
+            self.openai_api_key
+            and self.openai_api_key.get_secret_value().strip()
+        )
+        if self.model_mode == "real" and not key_configured:
+            raise ValueError("real worker mode requires a managed OpenAI project API key")
+        if self.model_mode == "mock" and key_configured:
+            raise ValueError("mock worker mode must not receive OPENAI_API_KEY")
         if self.environment == "cloud":
             if self.object_store_mode != "r2":
                 raise ValueError("cloud worker requires private R2 object storage")
-            if self.model_mode != "mock":
-                raise ValueError("cloud experimental worker requires the mock model gateway")
             try:
                 database = make_url(self.database_url)
             except (ArgumentError, TypeError, ValueError) as exc:

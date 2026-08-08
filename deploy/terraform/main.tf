@@ -34,6 +34,8 @@ locals {
     CVA_OBJECT_STORE_MODE        = "r2"
     CVA_JOB_RUNNER_MODE          = "cloud_run"
     CVA_MODEL_MODE               = "mock"
+    CVA_WORKER_MODEL_MODE        = var.enable_openai_real_provider ? "real" : "mock"
+    CVA_MAX_JOB_COST_USD         = tostring(coalesce(var.openai_max_job_cost_usd, 0.50))
     CVA_P10_ENABLED              = "false"
     CVA_REQUIRE_LIBMAGIC         = "true"
     CVA_FRONTEND_DIST            = "/app/static"
@@ -54,7 +56,8 @@ locals {
   worker_environment = {
     CVA_ENVIRONMENT              = "cloud"
     CVA_OBJECT_STORE_MODE        = "r2"
-    CVA_MODEL_MODE               = "mock"
+    CVA_MODEL_MODE               = var.enable_openai_real_provider ? "real" : "mock"
+    CVA_MAX_JOB_COST_USD         = tostring(coalesce(var.openai_max_job_cost_usd, 0.50))
     CVA_P10_ENABLED              = "false"
     CVA_REQUIRE_LIBMAGIC         = "true"
     CVA_RENDERER_MODE            = "weasyprint"
@@ -89,6 +92,16 @@ resource "terraform_data" "runtime_preconditions" {
         trimspace(var.r2_bucket_name) != "",
       ])
       error_message = "Runtime resources require an image and all non-secret Supabase/R2 settings."
+    }
+
+    precondition {
+      condition = !var.enable_openai_real_provider || alltrue([
+        var.enable_runtime_resources,
+        var.enable_openai_secret_container,
+        var.openai_api_key_secret_version != null,
+        var.openai_max_job_cost_usd != null,
+      ])
+      error_message = "Real OpenAI worker mode requires runtime resources, the separately managed secret container, a pinned secret version, and an explicit job-cost ceiling."
     }
   }
 }
@@ -188,6 +201,34 @@ resource "google_secret_manager_secret" "runtime" {
   }
 
   depends_on = [google_project_service.required["secretmanager.googleapis.com"]]
+}
+
+resource "google_secret_manager_secret" "openai_api_key" {
+  count = var.enable_openai_secret_container ? 1 : 0
+
+  project             = var.project_id
+  secret_id           = "${var.name_prefix}-openai-api-key"
+  labels              = local.labels
+  deletion_protection = true
+
+  replication {
+    auto {}
+  }
+
+  lifecycle {
+    prevent_destroy = true
+  }
+
+  depends_on = [google_project_service.required["secretmanager.googleapis.com"]]
+}
+
+resource "google_secret_manager_secret_iam_member" "openai_worker_access" {
+  count = var.enable_openai_real_provider ? 1 : 0
+
+  project   = var.project_id
+  secret_id = google_secret_manager_secret.openai_api_key[0].secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.worker.email}"
 }
 
 locals {
@@ -423,6 +464,20 @@ resource "google_cloud_run_v2_job" "worker" {
           }
         }
 
+        dynamic "env" {
+          for_each = var.enable_openai_real_provider ? [1] : []
+
+          content {
+            name = "CVA_OPENAI_API_KEY"
+            value_source {
+              secret_key_ref {
+                secret  = google_secret_manager_secret.openai_api_key[0].secret_id
+                version = var.openai_api_key_secret_version
+              }
+            }
+          }
+        }
+
       }
     }
   }
@@ -439,6 +494,7 @@ resource "google_cloud_run_v2_job" "worker" {
   depends_on = [
     google_project_service.required["run.googleapis.com"],
     google_secret_manager_secret_iam_member.runtime_access,
+    google_secret_manager_secret_iam_member.openai_worker_access,
   ]
 }
 

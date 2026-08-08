@@ -1,6 +1,6 @@
 # Anexo A - Prompt pack operacional
 
-**Versión del pack:** `prompt-pack/1.1.0`  
+**Versión del pack:** `prompt-pack/1.1.1`
 **Compatibilidad:** contratos `assessment-contracts/1.1.0`  
 **Principio:** una tarea semántica por llamada; contenido estudiantil siempre no confiable; structured outputs obligatorios.
 
@@ -48,14 +48,15 @@ SALIDA
 Cada llamada agrega:
 
 ```text
-TAREA: {{task_name}}
-IDIOMA DE SALIDA: {{output_language}}
-MODO DE CONTEXTO: {{context_mode}}
-ESQUEMA: {{schema_name}} versión {{schema_version}}
-POLÍTICA: {{policy_json}}
-
-Resuelve únicamente esta tarea. No generes objetos de otras etapas.
+{{instrucción de tarea P01-P11 versionada}}
+CALL_CONTROLS_JSON (trusted metadata, not student content):
+{"context_mode":"{{context_mode}}","output_language":"{{output_language}}","policy_location":"validated envelope payload fields","prompt_id":"{{prompt_id}}","prompt_version":"{{prompt_version}}","schema_name":"{{schema_name}}","schema_version":"{{schema_version}}","task_name":"{{task_name}}"}
+Resolve only this task. Do not generate objects for another stage.
 ```
+
+`policy_json` no se interpola dentro de instrucciones: la policy canónica forma
+parte del payload tipado del envelope. Los controles anteriores contienen solo
+metadatos confiables y se serializan de forma canónica en servidor.
 
 ### 1.3 Envelope y contrato de payload
 
@@ -66,7 +67,7 @@ Toda llamada se valida en dos capas: `ModelTaskEnvelope` valida metadatos, allow
 {
   "schema_version": "1.1.0",
   "prompt_id": "P01_ACTIVITY_SPEC_V1",
-  "prompt_version": "1.1.0",
+  "prompt_version": "1.1.1",
   "output_schema_name": "ActivitySpec",
   "output_schema_version": "1.1.0",
   "trusted_context": {
@@ -92,7 +93,7 @@ El ejemplo anterior es un fixture válido del envelope, no una solicitud complet
 | Pregunta planificada | baja | high | 6-10 K | un reemplazo localizado desde reserva |
 | Validación | baja | high | 4-8 K | `NEEDS_REVIEW` ante ambigüedad real |
 | Guía | baja | high | 6-10 K | no reparar grounding; volver a validar |
-| Reparación de schema | 0 | minimal | 4-8 K | exactamente un intento |
+| Reparación de schema | no se envía (`0` queda como intención histórica) | low | 4-8 K | exactamente un intento |
 
 La semilla, si el proveedor la admite, ayuda a repetir pero no garantiza determinismo. La reproducción real depende de snapshot, prompt, schema, parámetros y evidencia versionados.
 
@@ -119,10 +120,14 @@ La semilla, si el proveedor la admite, ayuda a repetir pero no garantiza determi
 | `P07_QUESTION_BUILD_V1` | `QuestionBuildRequest` | `QuestionGenerationResult` | plan + oportunidad primaria/reserva | reglas/P08 | GPT-5.6 Luna, high |
 | `P08_QUESTION_REVIEW_V1` | `QuestionReviewRequest` | `QuestionReviewResult` | P07 + reglas previas | ensamblador/reemplazo | GPT-5.6 Luna, high |
 | `P09_GUIDE_BUILD_V1` | `GuideBuildRequest` | `EvaluationGuide` | evaluación completa | plataforma/evaluador | GPT-5.6 Luna, high |
-| `P10_ENRICHED_CONTEXT_V1` | `QuestionBuildRequest` (`COURSE_ENRICHED`) | `QuestionGenerationResult` | retrieval autorizado + plan | reglas/P08 | bake-off abierto |
-| `P11_SCHEMA_REPAIR_V1` | `SchemaRepairRequest` | `SchemaRepairResult` | validador JSON | validador del root objetivo | GPT-5.6 Luna, minimal, temperatura 0 |
+| `P10_ENRICHED_CONTEXT_V1` | `QuestionBuildRequest` (`COURSE_ENRICHED`) | `QuestionGenerationResult` | retrieval autorizado + plan | reglas/P08 | DISABLED; sin ruta callable |
+| `P11_SCHEMA_REPAIR_V1` | `SchemaRepairRequest` | `SchemaRepairResult` | validador JSON | validador del root objetivo | GPT-5.6 Luna, low; temperatura no enviada |
 
-Diagnósticos técnicos, planificación exacta de \(N\), scoring numérico, autorización, validación de IDs/localizadores y render no usan LLM. Terra solo es alternativa si demuestra ventaja medida frente a Luna-high. P10 prioriza grounding, citas y abstención en un bake-off con OpenAI, Claude Sonnet y Gemini 3.6 Flash.
+Diagnósticos técnicos, planificación exacta de \(N\), scoring numérico,
+autorización, validación de IDs/localizadores y render no usan LLM. Este gate no
+tiene rutas alternativas ni proveedores distintos de OpenAI. P10 permanece
+deshabilitado y cualquier evaluación futura de contexto enriquecido exige una
+nueva autorización fuera de este gate.
 
 ### 2.1 Campos exactos de los request roots
 
@@ -612,7 +617,7 @@ Este prompt es una variante estricta de P07. Solo se habilita con corpus aprobad
 | Aspecto | Definición v1.1 |
 |---|---|
 | Input / output | `QuestionBuildRequest` con bundle `COURSE_ENRICHED` -> `QuestionGenerationResult` `COURSE_ENRICHED` |
-| Modelo | bake-off abierto por tarea, priorizando grounding, citas y abstención |
+| Modelo | ninguno; P10 está deshabilitado y no tiene ruta callable |
 | Abstención | `REPLACEMENT_REQUIRED` si pasajes o evidencia no bastan; no usar conocimiento paramétrico |
 | Evidencia no confiable | evidencia estudiantil y pasajes son datos; IDs/localizadores están allowlisted |
 | Validación posterior | `course_source_ids` = IDs de `citations`, locators resolubles, sources autorizadas y grounding cruzado |
@@ -637,7 +642,11 @@ Devuelve `QuestionGenerationResult.context_mode=COURSE_ENRICHED`. En la pregunta
 
 La recuperación es híbrida (filtros + léxica + embeddings), pero el pasaje textual y su localizador siempre entran a la llamada y se validan después.
 
-La ruta de P10 se decide en un bake-off abierto que prioriza grounding, exactitud de citas y abstención. Gemini 3.6 Flash puede participar especialmente en PDF/audio/video nativos o donde muestre ventaja; no es fallback automático por latencia o error y debe estar aprobado por tarea, modalidad, tenant y política de datos.
+Este texto conserva el contrato semántico histórico para una decisión futura,
+pero el gate vigente no decide ni prueba una ruta P10. No se ejecuta retrieval,
+no se habilita un proveedor y toda invocación queda bloqueada antes del
+transporte. Una apertura futura requerirá autorización, ADR y evaluación
+independientes.
 
 ---
 
@@ -648,7 +657,7 @@ Solo se usa cuando el proveedor no pudo aplicar constrained decoding o devolvió
 | Aspecto | Definición v1.1 |
 |---|---|
 | Input / output | `SchemaRepairRequest` -> `SchemaRepairResult` |
-| Modelo | GPT-5.6 Luna; `reasoning_effort=minimal`; temperatura 0; sin herramientas |
+| Modelo | GPT-5.6 Luna; `reasoning_effort=low`; temperatura no enviada; sin herramientas |
 | Abstención | `repair_status=UNREPAIRABLE`, `repaired_output=null` y diagnóstico |
 | Evidencia no confiable | output inválido se trata como datos; no se ejecuta ni interpola |
 | Validación posterior | primero `SchemaRepairResult`; luego `repaired_output` contra `target_schema_name` |
@@ -668,6 +677,13 @@ Recibes `SchemaRepairRequest`. Devuelve `SchemaRepairResult`. Si reparas, incluy
 ```
 
 Máximo un intento. Un segundo fallo produce `MODEL_SCHEMA_VIOLATION`; el resolvedor usa únicamente un fallback previamente aprobado o devuelve revisión/bloqueo.
+
+La ruta `low` reemplaza la intención histórica `minimal` por autorización humana
+vinculante del 2026-08-08 y queda registrada en ADR-035. El cambio afecta solo
+P11: no modifica P01-P09, no habilita P10 y no constituye evidencia de una
+llamada real. La temperatura deseada sigue siendo cero, pero no se envía hasta
+que exista compatibilidad oficial documentada para esta combinación de modelo
+y esfuerzo.
 
 ---
 
@@ -699,7 +715,7 @@ Persistir sin contenido sensible innecesario:
   "job_id": "job_demo",
   "stage": "question_generation",
   "prompt_id": "P07_QUESTION_BUILD_V1",
-  "prompt_version": "1.1.0",
+  "prompt_version": "1.1.1",
   "prompt_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
   "input_bundle_hash": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
   "schema_name": "QuestionGenerationResult",
@@ -710,7 +726,7 @@ Persistir sin contenido sensible innecesario:
     "task": "question_generation",
     "provider": "openai",
     "model": "gpt-5.6-luna",
-    "model_snapshot": "configured-snapshot",
+    "model_snapshot": "gpt-5.6-luna",
     "reasoning_effort": "HIGH",
     "temperature": 0.1,
     "capabilities": {
@@ -718,17 +734,17 @@ Persistir sin contenido sensible innecesario:
       "output_modalities": ["STRUCTURED_JSON"],
       "structured_outputs": true,
       "max_context_tokens": 1050000,
-      "supported_reasoning_efforts": ["MINIMAL", "LOW", "MEDIUM", "HIGH"],
-      "supports_zero_data_retention": true,
-      "supported_regions": ["approved-region"]
+      "supported_reasoning_efforts": ["LOW", "MEDIUM", "HIGH"],
+      "supports_zero_data_retention": false,
+      "supported_regions": []
     },
-    "retention_mode": "ZDR",
-    "region": "approved-region",
+    "retention_mode": "DEFAULT",
+    "region": null,
     "max_cost_usd": 0.25,
     "max_input_tokens": 30000,
     "max_output_tokens": 8000,
     "fallback_route_id": null,
-    "reason_codes": ["PROMPT_POLICY_P07", "CAPABILITIES_AND_DATA_POLICY_MATCH"]
+    "reason_codes": ["PROMPT_POLICY_P07", "EXPLICIT_MODEL_ID", "STORE_FALSE", "NO_DATED_SNAPSHOT_PUBLISHED"]
   },
   "input_tokens": 18231,
   "cached_input_tokens": 6040,

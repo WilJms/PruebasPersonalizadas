@@ -42,6 +42,12 @@ class AdapterResult:
     output_tokens: int
     estimated_cost_usd: float = 0.0
     actual_cost_usd: float = 0.0
+    cache_write_input_tokens: int = 0
+    reasoning_tokens: int = 0
+    effective_model: str | None = None
+    output_hash: str | None = None
+    provider_request_id_hash: str | None = None
+    reason_codes: tuple[str, ...] = ()
 
 
 def _diagnostic(
@@ -1078,7 +1084,7 @@ def _assessment() -> models.Assessment:
             blueprint_id="blueprint_demo",
             blueprint_version=1,
             parser_versions={"text": "mock-parser/1"},
-            prompt_versions={"pack": "1.1.0"},
+            prompt_versions={"pack": "1.1.1"},
             model_snapshots={"mock": "deterministic-mock-v1"},
             policy_hash=HASH_D,
             planner_version="mock-planner/1",

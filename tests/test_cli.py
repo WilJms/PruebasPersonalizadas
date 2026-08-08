@@ -1,8 +1,11 @@
 from __future__ import annotations
 
 import json
+from types import SimpleNamespace
 
+import comprehension_verification.cli as cli_module
 from comprehension_verification.cli import main
+from comprehension_verification.model_gateway import GatewayProviderError
 
 
 def test_real_smoke_without_budget_is_blocked_before_network(capsys) -> None:
@@ -15,6 +18,74 @@ def test_real_smoke_without_budget_is_blocked_before_network(capsys) -> None:
         "network_call_attempted": False,
         "status": "BLOCKED",
     }
+
+
+def test_real_smoke_with_budget_stops_at_credentials_without_network(
+    capsys, monkeypatch
+) -> None:
+    monkeypatch.delenv("CVA_OPENAI_API_KEY", raising=False)
+    result = main(["real-provider-smoke", "--budget-usd", "0.06"])
+    output = json.loads(capsys.readouterr().out)
+    assert result == 2
+    assert output["code"] == "OPENAI_CREDENTIALS_REQUIRED"
+    assert output["network_call_attempted"] is False
+
+
+def test_real_smoke_with_placeholder_key_stops_at_human_spend_gate(
+    capsys, monkeypatch
+) -> None:
+    monkeypatch.setenv(
+        "CVA_OPENAI_API_KEY", "sk-project-synthetic-placeholder-not-a-real-key"
+    )
+    monkeypatch.delenv("CVA_OPENAI_BILLABLE_SMOKE_APPROVAL", raising=False)
+    result = main(["real-provider-smoke", "--budget-usd", "0.06"])
+    output = json.loads(capsys.readouterr().out)
+    assert result == 2
+    assert output["code"] == "OPENAI_BILLABLE_SMOKE_APPROVAL_REQUIRED"
+    assert output["network_call_attempted"] is False
+
+
+def test_real_smoke_sanitizes_provider_failure_after_an_attempt(
+    capsys, monkeypatch
+) -> None:
+    class FailingGateway:
+        def __init__(self, *_args, **_kwargs) -> None:
+            pass
+
+        async def invoke(self, *_args, **_kwargs):
+            raise GatewayProviderError(
+                "provider detail must not escape",
+                ledgers=[SimpleNamespace(actual_cost_usd=None)],
+            )
+
+    monkeypatch.setenv(
+        "CVA_OPENAI_API_KEY", "sk-project-synthetic-placeholder-not-a-real-key"
+    )
+    monkeypatch.setenv(
+        "CVA_OPENAI_BILLABLE_SMOKE_APPROVAL", "OPENAI_BILLABLE_SMOKE_APPROVED"
+    )
+    monkeypatch.setattr(cli_module, "OpenAIResponsesAdapter", lambda **_: object())
+    monkeypatch.setattr(cli_module, "ModelGateway", FailingGateway)
+
+    result = main(
+        [
+            "real-provider-smoke",
+            "--budget-usd",
+            "0.06",
+            "--allow-billable",
+        ]
+    )
+    captured = capsys.readouterr().out
+    output = json.loads(captured)
+    assert result == 1
+    assert output == {
+        "actual_cost_usd": 0.0,
+        "attempts": 1,
+        "code": "MODEL_PROVIDER_ERROR",
+        "network_call_attempted": True,
+        "status": "FAIL",
+    }
+    assert "provider detail" not in captured
 
 
 def test_insufficient_synthetic_case_is_expected_fail_closed(tmp_path) -> None:

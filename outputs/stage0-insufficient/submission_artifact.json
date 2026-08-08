@@ -4,7 +4,7 @@
   "filename": "submission_insufficient.txt",
   "media_type": "text/plain",
   "parser_id": "stage0-txt",
-  "parser_version": "stage0-parser/1.0.0",
+  "parser_version": "stage2-parser/2.0.0",
   "role": "SUBMISSION",
   "schema_version": "1.1.0",
   "sha256": "sha256:34e9b32b1c43527395f45d6b197d710b67669b44aed1065e3a18ae5fbf762b1a"

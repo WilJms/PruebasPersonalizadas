@@ -149,6 +149,31 @@ Los dos planes consecutivos posteriores al apply deben terminar con exit 0.
 Exit 2 indica drift o cambios pendientes y debe investigarse; no se aplica a
 ciegas.
 
+## Boundary OpenAI posterior (no aplicado)
+
+El baseline E2 se despliega y verifica primero en mock. Crear el adapter no
+cambia ese runtime: los defaults permanecen
+`enable_openai_secret_container=false`,
+`enable_openai_real_provider=false` y
+`openai_api_key_secret_version=null`; el presupuesto humano
+`openai_max_job_cost_usd` también permanece `null`.
+
+La apertura posterior se divide en planes revisables. El primero puede crear
+solo el contenedor vacío protegido del secreto. Una persona carga la clave del
+proyecto dedicado fuera de Git y Terraform; el valor nunca se escribe en
+tfvars. Solo después de los checkpoints de credenciales, smoke, evals y gasto
+se puede fijar una versión numérica, un techo agregado por job y habilitar real
+mode. La precondición rechaza cualquier combinación incompleta.
+
+La cuenta del worker es la única que obtiene acceso a ese secreto y el Job es
+el único recurso que recibe `CVA_OPENAI_API_KEY`. El Service web continúa en
+mock y sin clave; recibe solo `CVA_WORKER_MODEL_MODE` para bloquear de forma
+explícita cualquier invocación directa cuando el worker sea real. P10 permanece
+`false` en ambos recursos. La imagen sigue
+siendo propiedad exclusiva de Terraform y debe ser un digest construido desde
+el commit aprobado. Los pasos y dobles opt-ins están detallados en
+[`OPENAI_PROVIDER_SETUP.md`](../docs/OPENAI_PROVIDER_SETUP.md).
+
 ## Recovery y rollback
 
 El rollback normal cambia únicamente `container_image` a un digest E2 conocido

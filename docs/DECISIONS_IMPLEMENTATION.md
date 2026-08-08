@@ -485,3 +485,18 @@
   ligada a evidencia real del mismo candidato; un artifact histórico o una
   intención documental no la sustituye.
 - **Relación:** E2-11, E2-10, D-032, D-042 y auditorías finales E2.
+
+## D-045 - El proveedor OpenAI queda detrás de dos gates humanos
+
+- **Decisión:** el adapter real puede implementarse y probarse offline desde el
+  merge E2 verificado, pero ninguna llamada se ejecuta sin proyecto dedicado,
+  billing/límites, clave privada y aprobación humana. El smoke requiere además
+  dos confirmaciones técnicas independientes y presupuesto preflight. P11 queda
+  fijado a `gpt-5.6-luna` con `reasoning_effort=low`; P10 continúa ausente del
+  router. El Service web no recibe la clave y el worker desactiva los retries
+  internos del SDK.
+- **Razón:** separar implementación, credenciales y gasto hace auditable el
+  primer costo y evita que CI, deploy o un fallback inesperado activen modelos
+  reales. `store=false` se usa sin reclamar ZDR.
+- **Relación:** ADR-035, `OPENAI_PROVIDER_SETUP.md`,
+  `OPENAI_REAL_MODEL_VALIDATION.md` y `OPENAI_COST_BUDGETS.md`.

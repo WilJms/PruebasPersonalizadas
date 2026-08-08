@@ -13,8 +13,7 @@
   "course_source_ids": [],
   "output_language": "es-CL",
   "priority_criterion_ids": [
-    "criterion_coherence",
-    "criterion_limits"
+    "criterion_1"
   ],
   "question_count": 3,
   "require_blueprint_approval": true,

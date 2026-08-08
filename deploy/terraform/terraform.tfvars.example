@@ -20,6 +20,14 @@ enable_runtime_resources = false
 container_image          = ""
 secret_version           = "1"
 
+# Gate OpenAI: first create only the empty container, insert the key with a
+# private out-of-band command, then pin that version and enable the worker.
+# Never place the key value in this file.
+enable_openai_secret_container  = false
+enable_openai_real_provider     = false
+openai_api_key_secret_version   = null
+openai_max_job_cost_usd         = null
+
 supabase_url             = "https://replace-with-project-ref.supabase.co"
 supabase_publishable_key = "replace-with-publishable-not-secret-key"
 supabase_jwt_audience    = "authenticated"

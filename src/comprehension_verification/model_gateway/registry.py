@@ -14,10 +14,17 @@ from types import MappingProxyType
 from typing import Final, Mapping
 
 from comprehension_verification.contracts import SCHEMA_VERSION, model_by_name, models
+from comprehension_verification.model_gateway.prompt_text import (
+    P11_SYSTEM_INSTRUCTION,
+    SYSTEM_INSTRUCTION,
+    TASK_INSTRUCTIONS,
+)
 
 
-PROMPT_VERSION: Final = "1.1.0"
+PROMPT_VERSION: Final = "1.1.1"
 SYSTEM_PROMPT_ID: Final = "SYS_EVIDENCE_BOUND_V1"
+P11_SYSTEM_PROMPT_ID: Final = "SYS_SCHEMA_REPAIR_V1"
+PROMPT_SCHEMA_COMPATIBILITY: Final = frozenset({("1.1.1", "1.1.0")})
 
 # This mapping is intentionally written out instead of inferred from prose.
 # It is the executable version of VALIDACION_CONTRATOS section 5.4.
@@ -42,9 +49,8 @@ PROMPT_CONTRACTS: Final[Mapping[str, tuple[str, str]]] = MappingProxyType(
 class PromptSpec:
     """Immutable prompt registry entry.
 
-    ``prompt_hash`` fingerprints the complete executable registry material for
-    Stage 0.  Real prompt text remains a separately versioned deployment
-    concern; a real call is blocked unless an explicit route and adapter are
+    ``prompt_hash`` fingerprints the complete executable prompt and registry
+    material. A real call is blocked unless an explicit route and adapter are
     installed.
     """
 
@@ -54,6 +60,8 @@ class PromptSpec:
     task: str
     input_schema_name: str
     output_schema_name: str
+    system_instruction: str
+    developer_instruction: str
     reasoning_effort: models.ReasoningEffort
     temperature: float
     max_output_tokens: int
@@ -84,10 +92,20 @@ def _spec(
     return PromptSpec(
         prompt_id=prompt_id,
         prompt_version=PROMPT_VERSION,
-        system_prompt_id=SYSTEM_PROMPT_ID,
+        system_prompt_id=(
+            P11_SYSTEM_PROMPT_ID
+            if prompt_id == "P11_SCHEMA_REPAIR_V1"
+            else SYSTEM_PROMPT_ID
+        ),
         task=task,
         input_schema_name=input_root,
         output_schema_name=output_root,
+        system_instruction=(
+            P11_SYSTEM_INSTRUCTION
+            if prompt_id == "P11_SCHEMA_REPAIR_V1"
+            else SYSTEM_INSTRUCTION
+        ),
+        developer_instruction=TASK_INSTRUCTIONS[prompt_id],
         reasoning_effort=effort,
         temperature=temperature,
         max_output_tokens=max_output_tokens,
@@ -156,7 +174,7 @@ PROMPT_SPECS: Final[Mapping[str, PromptSpec]] = MappingProxyType(
         "P11_SCHEMA_REPAIR_V1": _spec(
             "P11_SCHEMA_REPAIR_V1",
             task="schema_repair",
-            effort=models.ReasoningEffort.MINIMAL,
+            effort=models.ReasoningEffort.LOW,
             temperature=0.0,
             max_transient_retries=0,
         ),
@@ -183,9 +201,10 @@ def assert_registry_complete() -> None:
             output_root,
         ):
             raise RuntimeError(f"Contract drift for {prompt_id}")
-        if spec.prompt_version != SCHEMA_VERSION:
-            raise RuntimeError(f"Version drift for {prompt_id}")
+        if (spec.prompt_version, SCHEMA_VERSION) not in PROMPT_SCHEMA_COMPATIBILITY:
+            raise RuntimeError(f"Unsupported prompt/schema compatibility for {prompt_id}")
+        if not spec.system_instruction or not spec.developer_instruction:
+            raise RuntimeError(f"Executable prompt material is missing for {prompt_id}")
 
 
 assert_registry_complete()
-

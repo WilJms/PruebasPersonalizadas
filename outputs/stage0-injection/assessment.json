@@ -35,21 +35,21 @@
       "P08_QUESTION_REVIEW_V1": "deterministic-mock-v1"
     },
     "parser_versions": {
-      "text/markdown": "stage0-parser/1.0.0"
+      "text/markdown": "stage2-parser/2.0.0"
     },
     "planner_version": "stage0-planner/1.0.0",
-    "policy_hash": "sha256:e4b2aad0171d10e17105a490275a05c5c6e84f206094d7392485ed6b5c909ce7",
+    "policy_hash": "sha256:fda44700341b7bfb646562dbd9c62fef95b8523eb1f6476069b67c8ddfd23c47",
     "prompt_versions": {
-      "P01_ACTIVITY_SPEC_V1": "1.1.0",
-      "P02_RUBRIC_NORMALIZE_V1": "1.1.0",
-      "P03_AMBIGUITY_TRIAGE_V1": "1.1.0",
-      "P04_BLUEPRINT_BUILD_V1": "1.1.0",
-      "P05_BLUEPRINT_REVIEW_V1": "1.1.0",
-      "P06_EVIDENCE_MAP_V1": "1.1.0",
-      "P07_QUESTION_BUILD_V1": "1.1.0",
-      "P08_QUESTION_REVIEW_V1": "1.1.0"
+      "P01_ACTIVITY_SPEC_V1": "1.1.1",
+      "P02_RUBRIC_NORMALIZE_V1": "1.1.1",
+      "P03_AMBIGUITY_TRIAGE_V1": "1.1.1",
+      "P04_BLUEPRINT_BUILD_V1": "1.1.1",
+      "P05_BLUEPRINT_REVIEW_V1": "1.1.1",
+      "P06_EVIDENCE_MAP_V1": "1.1.1",
+      "P07_QUESTION_BUILD_V1": "1.1.1",
+      "P08_QUESTION_REVIEW_V1": "1.1.1"
     },
-    "renderer_version": "stage0-renderer/1.0.0",
+    "renderer_version": "stage1-renderer/2.1.0",
     "rubric_hashes": [
       "sha256:259a0a81303f3fb7ca610eb0c75f4ca286360aa8d4801486f7f3efa2484dce41"
     ],

@@ -8,6 +8,35 @@ capacidades no se registran. Todos los recorridos E2 usaron modelo mock, P10
 deshabilitado y datos sintéticos. Los resultados históricos E1 se conservan al
 final y no se presentan como evidencia del candidato E2.
 
+## Gate OpenAI offline — 2026-08-08
+
+| Prueba o gate | Resultado observado |
+|---|---|
+| `make test` | 455 passed, 16 skips PostgreSQL explícitos, 1 warning P3 conocido |
+| `make test-cov` | 455 passed, 16 skips, 80% global |
+| Adapter/matriz/schema/payload/fallos/budget/ledger | 32 passed |
+| Golden set sintético | 20/20 PASS; TXT/MD/PDF/DOCX, con/sin rúbrica, insuficiencia, inyección, ambigüedad, CHOICE/OPEN_SHORT, justificación y 3 operaciones; `network_calls=0`, `billable_calls=0` |
+| Harness real sin doble opt-in | BLOCKED antes de transporte |
+| Smoke con USD 0.06 y sin clave | `OPENAI_CREDENTIALS_REQUIRED`, `network_call_attempted=false` |
+| SDK/supply chain | `openai==2.53.0` coincide con runtime, pyproject y ambos locks con hashes |
+| Contratos/fixtures/OpenAPI | PASS; 53 roots, 140 definiciones, 274 referencias; cero drift generado |
+| Secret scan | PASS; sin claves de alta confianza en archivos versionables |
+| Terraform | fmt/init/validate PASS; secreto opcional, IAM worker-only, presupuesto obligatorio y defaults apagados |
+| Frontend | typecheck, 6 archivos/32 tests, build 87 módulos, audit 0 vulnerabilidades |
+
+Las pruebas cubren P11 Luna/low y una sola oportunidad, P10 sin ruta, schema
+estricto para todos los output roots, especialización del root reparado,
+refusal/incomplete, timeout/429/5xx acotados, auth/quota sin retry, modelo
+efectivo, hashes, usage/costo, SDK retries 0, preflight con prompt+schema y
+ceiling de retries, saldo durable por job, secreto ausente del Service y
+bloqueo de invocación directa cuando el worker sea real.
+
+No se ejecutó smoke real, eval semántico, Cloud Build/imagen, deploy ni
+Terraform apply para esta rama: todos requieren checkpoints humanos
+posteriores. El runtime cloud
+observado para esta ejecución continúa siendo el baseline E2 fusionado en mock
+con P10 false.
+
 ## Ejecución de auditoría final focalizada — 2026-08-08
 
 Esta ejecución es posterior al candidato runtime cloud y no sustituye su

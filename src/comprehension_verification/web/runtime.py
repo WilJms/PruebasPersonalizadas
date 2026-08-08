@@ -6,6 +6,16 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from .auth import AuthService
+from ..model_gateway import (
+    GatewayConfig,
+    GatewayMode,
+    ModelGateway,
+    OpenAIAdapterConfig,
+    OpenAIResponsesAdapter,
+    build_openai_cost_estimator,
+    build_openai_routes,
+    estimate_openai_input_tokens,
+)
 from ..parsers import harden_parent_process
 from .jobs import CloudRunJobRunner, InlineJobRunner, JobRunner
 from .object_store import MemoryObjectStore, ObjectStore, R2ObjectStore
@@ -130,7 +140,41 @@ def build_worker_runtime(
             download_ttl_seconds=settings.download_url_ttl_seconds,
         )
 
-    service = Stage1Service(settings=settings, repository=repo, object_store=store)
+    gateway_factory = None
+    if settings.model_mode == "real":
+        routes = build_openai_routes(max_call_cost_usd=settings.max_job_cost_usd)
+        adapter = OpenAIResponsesAdapter(
+            api_key=settings.openai_api_key,
+            config=OpenAIAdapterConfig(
+                request_timeout_seconds=settings.openai_request_timeout_seconds
+            ),
+        )
+        cost_estimator = build_openai_cost_estimator(routes)
+
+        def real_gateway(job_id: str) -> ModelGateway:
+            return ModelGateway(
+                GatewayConfig(
+                    mode=GatewayMode.REAL,
+                    job_id=job_id,
+                    timeout_seconds=settings.openai_request_timeout_seconds + 5.0,
+                    max_retries=2,
+                    default_budget_usd=settings.max_job_cost_usd,
+                ),
+                real_routes=routes,
+                adapters={"openai": adapter},
+                ledger_sink=repo.model_call_sink,
+                cost_estimator=cost_estimator,
+                input_token_estimator=estimate_openai_input_tokens,
+            )
+
+        gateway_factory = real_gateway
+
+    service = Stage1Service(
+        settings=settings,
+        repository=repo,
+        object_store=store,
+        gateway_factory=gateway_factory,
+    )
     stage2 = Stage2Service(service)
     service.set_question_action_processor(stage2.process_question_action_retry)
     return WorkerRuntime(

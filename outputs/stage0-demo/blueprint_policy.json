@@ -22,8 +22,7 @@
   },
   "policy_id": "policy_1c90bf1487e17aa3af0e",
   "priority_criterion_ids": [
-    "criterion_coherence",
-    "criterion_limits"
+    "criterion_1"
   ],
   "question_count": 3,
   "required_criterion_ids": [],

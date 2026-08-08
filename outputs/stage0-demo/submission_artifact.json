@@ -4,7 +4,7 @@
   "filename": "submission_sufficient.md",
   "media_type": "text/markdown",
   "parser_id": "stage0-markdown",
-  "parser_version": "stage0-parser/1.0.0",
+  "parser_version": "stage2-parser/2.0.0",
   "role": "SUBMISSION",
   "schema_version": "1.1.0",
   "sha256": "sha256:b05dec8cb352e6fba3cf3bd7aad84d180159c16d8c77c46e288faee4e3fdc62e"

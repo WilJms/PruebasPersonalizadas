@@ -3,6 +3,64 @@
 Fecha de corte: 2026-08-07 (America/Santiago; evidencia externa hasta
 2026-08-08 UTC).
 
+## Estado vigente — merge E2 y gate OpenAI (2026-08-08)
+
+`STAGE2_MERGED_AND_VERIFIED` quedó registrado antes de iniciar este gate.
+
+| Elemento | Evidencia vigente |
+|---|---|
+| Merge E2 en `main` | `ced91544931afe4453d39ba5e7e86b399d18fcdc` |
+| CI completa de `main` | run `31269564662`, 7/7 jobs; commit checks 8/8 |
+| Cloud Build baseline corregido | `7c05fba0-a573-44e3-b1a2-4f1338ef21ec`, `SUCCESS/VERIFIED`, SLSA 3 |
+| Digest desplegado | `sha256:0d8f29f28dc510bf2cb14f10252e42afe5a7ce05c14e67facccaa066d0065765` |
+| Cloud Run | Service rev `cva-web-00016-gml` y Job generación 16 Ready, mismo digest |
+| Invariantes runtime | health/readiness 200, privado anónimo 401, mock, P10 false, libmagic true, Job retries 0 |
+| Verificación focalizada cloud | E2-FINAL-001..004 y regresión sintética PASS |
+| Terraform | apply revisado y dos planes vivos consecutivos sin drift |
+| Evidencia durable del cierre | `STAGE2_MERGED_AND_VERIFIED_ced9154_20260808T180056Z.json`, SHA-256 `f70a2aea2d8193e85d81770b60c0e0f555079de669f2a9a39a9c220db3efb71b` |
+| Paquete de auditoría focalizada | SHA-256 `cb5e61e25d43a866bd11a0126bf229636fae57366c17dbdba6090657e0bd978d` |
+
+El código auditado fue `d905557…` con 410 passed/16 skips PostgreSQL
+explícitos y auditoría focalizada P0=0/P1=0. El runtime histórico
+`44b9483…` precede las cuatro correcciones P1 y no se presenta como runtime del
+candidato corregido.
+
+Desde ese `main` verificado se creó `codex/openai-real-provider-gate`.
+El estado técnico alcanzado es `OPENAI_ADAPTER_IMPLEMENTED`: SDK oficial
+`openai==2.53.0` fijado con hashes, Responses API, modelos explícitos,
+Structured Outputs derivados de Pydantic, errores/retries/budget/ledger,
+Secret Manager/IAM worker-only, smoke gobernado y golden set sintético. P11 es
+efectivamente `gpt-5.6-luna` con `reasoning_effort=low`; P10 no tiene ruta.
+Los schemas, prompts versionados, allowlists y validación posterior alcanzan
+`OPENAI_CONTRACT_BOUNDARIES_PASS` offline. La calidad del proveedor permanece
+en `OPENAI_SEMANTIC_EVAL_PENDING`; no se declara
+`OPENAI_SYNTHETIC_E2E_PASS` antes de ejecutar el recorrido real autorizado.
+
+El checkpoint actual es `OPENAI_CREDENTIALS_REQUIRED`. No se configuraron
+proyecto, billing ni clave; no se creó un cliente en evals offline y no hubo
+llamadas de modelo reales, tokens facturables ni costo (`USD 0.00`). El cloud
+vigente no fue modificado: sigue en mock/P10 false. La temperatura deseada se
+conserva en la ruta canónica y se omite del request, con reason codes explícitos.
+
+La regresión local del gate queda en 455 passed/16 skips PostgreSQL explícitos,
+80% de cobertura, golden set 20/20 con 0 network/0 billable, frontend 32/32,
+contratos/OpenAPI sin drift, Terraform válido y secret scan limpio. La CI de la
+rama se registra al publicar el commit.
+
+| Severidad vigente | Abiertos |
+|---|---:|
+| P0 | 0 |
+| P1 | 0 |
+| P2 | 4 |
+| P3 | 1 |
+
+Los P2 históricos siguen siendo AV/compensación, corpus/política de privacidad
+y semántica real pendiente. El cuarto P2 es la re-revisión interactiva P05 del
+Service: queda bloqueada con `MODEL_EXECUTION_REQUIRES_WORKER` cuando el worker
+sea real hasta migrarla a un job durable, por lo que nunca mezcla silenciosamente
+mock con OpenAI. El P3 continúa siendo el warning deprecado Starlette/httpx del
+adaptador de tests.
+
 ## Identidad y gate
 
 `STAGE2_GATE_OPEN` fue autorizado el 2026-08-07 sobre

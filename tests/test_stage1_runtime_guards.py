@@ -23,7 +23,7 @@ from comprehension_verification.web.app import create_app
 from comprehension_verification.web.object_store import MemoryObjectStore
 from comprehension_verification.web.repository import JobRow, Repository
 from comprehension_verification.web.settings import Settings, WorkerSettings
-from comprehension_verification.web.workflows import Stage1Service
+from comprehension_verification.web.workflows import Stage1Service, WorkflowError
 
 
 def _unused_local_port() -> int:
@@ -75,6 +75,10 @@ def _cloud_settings(**overrides: object) -> dict[str, object]:
         ({"job_runner_mode": "inline"}, "Cloud Run Jobs"),
         ({"model_mode": "real"}, "mock model gateway"),
         (
+            {"openai_api_key": "sk-project-synthetic-placeholder-not-a-real-key"},
+            "web runtime must not receive",
+        ),
+        (
             {"session_secret": "local-development-secret-change-me"},
             "managed session secret",
         ),
@@ -97,6 +101,82 @@ def test_cloud_accepts_only_complete_explicit_psycopg_configuration() -> None:
     assert settings.database_url.startswith("postgresql+psycopg://")
     assert settings.model_mode == "mock"
     assert settings.p10_enabled is False
+
+
+def test_web_with_real_worker_has_no_key_and_blocks_direct_model_execution() -> None:
+    settings = Settings(**_cloud_settings(worker_model_mode="real"))
+    assert settings.model_mode == "mock"
+    assert settings.worker_model_mode == "real"
+    assert settings.openai_api_key is None
+
+    service = object.__new__(Stage1Service)
+    service.settings = settings
+    with pytest.raises(WorkflowError, match="durable worker job") as caught:
+        asyncio.run(
+            service._direct_gateway(
+                "job_synthetic",
+                "tnt_synthetic",
+                "P05_BLUEPRINT_REVIEW_V1",
+                object(),  # type: ignore[arg-type]
+                object,  # type: ignore[arg-type]
+            )
+        )
+    assert caught.value.code == "MODEL_EXECUTION_REQUIRES_WORKER"
+
+
+def test_job_budget_reconstructs_conservative_spend_from_persisted_ledgers() -> None:
+    service = object.__new__(Stage1Service)
+    service.settings = SimpleNamespace(max_job_cost_usd=0.50)
+    service.repository = SimpleNamespace(
+        model_calls=lambda **_: [
+            {"estimated_cost_usd": 0.10, "actual_cost_usd": 0.08},
+            {"estimated_cost_usd": 0.07, "actual_cost_usd": 0.09},
+            {"estimated_cost_usd": 0.05, "actual_cost_usd": None},
+        ]
+    )
+
+    assert service._remaining_model_budget_usd(
+        "job_synthetic", "tnt_synthetic"
+    ) == pytest.approx(0.26)
+
+
+def test_web_uses_real_worker_route_profile_for_cost_authorization() -> None:
+    service = object.__new__(Stage1Service)
+    service.settings = SimpleNamespace(
+        model_mode="mock",
+        worker_model_mode="real",
+        max_job_cost_usd=10.0,
+    )
+
+    estimate = service._cost_estimate(
+        phase="ACTIVITY_BLUEPRINT",
+        aggregate_id="act_synthetic",
+        calls=4,
+        input_bytes=10_000,
+        fingerprint_source={"synthetic": True},
+    )
+
+    assert estimate.model_mode == "real"
+    assert estimate.estimated_model_calls == 4
+    assert estimate.estimated_input_tokens == 640_000
+    assert estimate.estimated_output_tokens == 176_000
+    assert estimate.upper_bound_cost_usd == pytest.approx(6.016)
+    assert estimate.within_limit is True
+
+    submission = service._cost_estimate(
+        phase="SUBMISSION_ASSESSMENT",
+        aggregate_id="sub_synthetic",
+        # One selected question plus three governed reserve opportunities.
+        calls=10,
+        input_bytes=10_000,
+        fingerprint_source={"synthetic": True, "reserves": 3},
+    )
+    assert submission.model_mode == "real"
+    assert submission.estimated_model_calls == 10
+    assert submission.estimated_input_tokens == 1_600_000
+    assert submission.estimated_output_tokens == 374_000
+    assert submission.upper_bound_cost_usd == pytest.approx(3.844)
+    assert submission.within_limit is True
 
 
 def test_spa_document_cannot_survive_a_rollout_in_browser_cache(tmp_path: Path) -> None:
@@ -161,6 +241,28 @@ def test_cloud_worker_settings_exclude_web_auth_and_session_secrets() -> None:
     assert "auth_mode" not in WorkerSettings.model_fields
     assert "supabase_jwt_issuer" not in WorkerSettings.model_fields
     assert "job_runner_mode" not in WorkerSettings.model_fields
+
+
+def test_real_worker_requires_secret_and_mock_worker_rejects_it() -> None:
+    with pytest.raises(ValidationError, match="managed OpenAI project API key"):
+        WorkerSettings(**_cloud_settings(model_mode="real"))
+
+    real = WorkerSettings(
+        **_cloud_settings(
+            model_mode="real",
+            openai_api_key="sk-project-synthetic-placeholder-not-a-real-key",
+        )
+    )
+    assert real.model_mode == "real"
+    assert real.openai_api_key is not None
+    assert "synthetic-placeholder" not in repr(real)
+
+    with pytest.raises(ValidationError, match="mock worker mode must not receive"):
+        WorkerSettings(
+            **_cloud_settings(
+                openai_api_key="sk-project-synthetic-placeholder-not-a-real-key"
+            )
+        )
 
 
 def test_upload_and_download_capabilities_use_separate_bounded_ttls() -> None:

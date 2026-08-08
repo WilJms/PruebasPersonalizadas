@@ -112,6 +112,48 @@ variable "enable_runtime_resources" {
   default     = false
 }
 
+variable "enable_openai_secret_container" {
+  description = "Create only the empty OpenAI API key Secret Manager container. The value is added out-of-band and never enters Terraform."
+  type        = bool
+  default     = false
+}
+
+variable "enable_openai_real_provider" {
+  description = "Opt the worker into the real OpenAI adapter after the dedicated project, billing, key secret version, and human spend gate exist."
+  type        = bool
+  default     = false
+}
+
+variable "openai_api_key_secret_version" {
+  description = "Pinned numeric version of the separately inserted OpenAI project API key. This is a version identifier, never the key value."
+  type        = string
+  default     = null
+  nullable    = true
+
+  validation {
+    condition = (
+      var.openai_api_key_secret_version == null
+      || can(regex("^[1-9][0-9]*$", var.openai_api_key_secret_version))
+    )
+    error_message = "openai_api_key_secret_version must be null or a pinned positive numeric version."
+  }
+}
+
+variable "openai_max_job_cost_usd" {
+  description = "Explicit human-authorized aggregate model-cost ceiling per worker job. Required for real mode."
+  type        = number
+  default     = null
+  nullable    = true
+
+  validation {
+    condition = (
+      var.openai_max_job_cost_usd == null
+      || (var.openai_max_job_cost_usd >= 0.01 && var.openai_max_job_cost_usd <= 10.0)
+    )
+    error_message = "openai_max_job_cost_usd must be null or between USD 0.01 and USD 10.00."
+  }
+}
+
 variable "allow_unauthenticated" {
   description = "Expose login/static routes; application authorization still protects private routes."
   type        = bool

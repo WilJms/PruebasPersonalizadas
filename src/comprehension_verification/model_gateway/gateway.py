@@ -14,6 +14,7 @@ from datetime import UTC, datetime
 from enum import StrEnum
 from hashlib import sha256
 import json
+import re
 from time import perf_counter
 from typing import Any, Protocol, runtime_checkable
 
@@ -25,7 +26,11 @@ from comprehension_verification.model_gateway.mock_factory import (
     DeterministicMockAdapter,
     MockBehavior,
 )
-from comprehension_verification.model_gateway.registry import PromptSpec, prompt_spec
+from comprehension_verification.model_gateway.registry import (
+    PROMPT_CONTRACTS,
+    PromptSpec,
+    prompt_spec,
+)
 
 
 class GatewayMode(StrEnum):
@@ -146,20 +151,75 @@ class GatewaySchemaViolation(GatewayValidationError):
     code = "MODEL_SCHEMA_VIOLATION"
 
 
-class TransientProviderError(RuntimeError):
+class ProviderAdapterError(RuntimeError):
+    """Sanitized adapter failure metadata safe for canonical ledger reason codes."""
+
+    default_reason_code = "PROVIDER_ERROR"
+
+    def __init__(
+        self,
+        reason_code: str | None = None,
+        *,
+        request_id_hash: str | None = None,
+    ) -> None:
+        candidate = reason_code or self.default_reason_code
+        self.reason_code = (
+            candidate
+            if re.fullmatch(r"[A-Z][A-Z0-9_]{2,95}", candidate)
+            else self.default_reason_code
+        )
+        self.request_id_hash = request_id_hash
+        super().__init__(self.reason_code)
+
+
+class TransientProviderError(ProviderAdapterError):
     """An adapter may raise this to request governed transient retry."""
+
+    default_reason_code = "PROVIDER_TRANSIENT"
 
 
 class RateLimitProviderError(TransientProviderError):
     """Transient provider rate limit, recorded separately in the ledger."""
 
+    default_reason_code = "PROVIDER_RATE_LIMIT"
 
-class PermanentProviderError(RuntimeError):
+
+class ProviderTimeoutError(TransientProviderError):
+    """Provider/SDK timeout governed by the same bounded gateway retry policy."""
+
+    default_reason_code = "PROVIDER_TIMEOUT"
+
+
+class PermanentProviderError(ProviderAdapterError):
     """Non-retryable provider failure."""
 
+    default_reason_code = "PROVIDER_PERMANENT"
 
-class SafetyBlockProviderError(RuntimeError):
+
+class AuthenticationProviderError(PermanentProviderError):
+    default_reason_code = "PROVIDER_AUTHENTICATION"
+
+
+class AuthorizationProviderError(PermanentProviderError):
+    default_reason_code = "PROVIDER_AUTHORIZATION"
+
+
+class ModelUnavailableProviderError(PermanentProviderError):
+    default_reason_code = "PROVIDER_MODEL_UNAVAILABLE"
+
+
+class ProviderBudgetError(PermanentProviderError):
+    default_reason_code = "PROVIDER_BUDGET_OR_QUOTA"
+
+
+class MalformedProviderResponseError(PermanentProviderError):
+    default_reason_code = "PROVIDER_MALFORMED_RESPONSE"
+
+
+class SafetyBlockProviderError(ProviderAdapterError):
     """Provider safety refusal; the gateway never retries to evade it."""
+
+    default_reason_code = "PROVIDER_SAFETY_REFUSAL"
 
 
 @runtime_checkable
@@ -388,11 +448,17 @@ class ModelGateway:
         adapters: Mapping[str, ModelAdapter] | None = None,
         ledger_sink: Callable[[models.ModelCallLedger], None] | None = None,
         mock_adapter: DeterministicMockAdapter | None = None,
+        cost_estimator: Callable[[PromptSpec, int], float] | None = None,
+        input_token_estimator: (
+            Callable[[PromptSpec, BaseModel, models.ModelTaskEnvelope], int] | None
+        ) = None,
     ) -> None:
         self.config = config or GatewayConfig()
         self.adapters = dict(adapters or {})
         self.mock_adapter = mock_adapter or DeterministicMockAdapter()
         self.ledger_sink = ledger_sink
+        self.cost_estimator = cost_estimator
+        self.input_token_estimator = input_token_estimator
         self.resolver = ModelRouteResolver(
             mode=self.config.mode,
             real_routes=real_routes,
@@ -429,8 +495,35 @@ class ModelGateway:
         self._validate_context(request, envelope.trusted_context, prompt_id=prompt_id)
 
         encoded_request = _canonical_json(request)
-        input_token_estimate = max(1, len(encoded_request) // 4)
-        call_budget = budget or CallBudget(self.config.default_budget_usd)
+        input_token_estimate = (
+            self.input_token_estimator(spec, request, envelope)
+            if self.config.mode == GatewayMode.REAL
+            and self.input_token_estimator is not None
+            else max(1, len(encoded_request) // 4)
+        )
+        attempt_estimated_cost = (
+            self.cost_estimator(spec, input_token_estimate)
+            if self.config.mode == GatewayMode.REAL and self.cost_estimator is not None
+            else 0.0
+        )
+        retry_limit = min(self.config.max_retries, spec.max_transient_retries)
+        authorization_estimated_cost = attempt_estimated_cost * (retry_limit + 1)
+        if budget is None:
+            call_budget = CallBudget(
+                self.config.default_budget_usd,
+                estimated_cost_usd=authorization_estimated_cost,
+            )
+        else:
+            call_budget = CallBudget(
+                budget.max_cost_usd,
+                estimated_cost_usd=max(
+                    budget.estimated_cost_usd, authorization_estimated_cost
+                ),
+            )
+        attempt_budget = CallBudget(
+            call_budget.max_cost_usd,
+            estimated_cost_usd=attempt_estimated_cost,
+        )
         resolution = self.resolver.resolve(
             spec,
             required_input_modalities=required_input_modalities,
@@ -456,8 +549,6 @@ class ModelGateway:
             if self.config.mode == GatewayMode.MOCK
             else MockBehavior.HAPPY
         )
-        retry_limit = min(self.config.max_retries, spec.max_transient_retries)
-
         for attempt in range(1, retry_limit + 2):
             started = perf_counter()
             try:
@@ -472,7 +563,7 @@ class ModelGateway:
                     ),
                     timeout=self.config.timeout_seconds,
                 )
-            except TimeoutError as exc:
+            except (TimeoutError, ProviderTimeoutError) as exc:
                 ledger = self._ledger(
                     spec=spec,
                     envelope=envelope,
@@ -482,8 +573,9 @@ class ModelGateway:
                     latency_ms=self._elapsed_ms(started),
                     input_tokens=input_token_estimate,
                     output_tokens=0,
-                    estimated_cost_usd=call_budget.estimated_cost_usd,
+                    estimated_cost_usd=attempt_estimated_cost,
                     actual_cost_usd=0.0 if self.config.mode == GatewayMode.MOCK else None,
+                    reason_codes=self._error_reason_codes(exc),
                 )
                 self._record(ledger, ledgers)
                 if attempt <= retry_limit:
@@ -502,7 +594,8 @@ class ModelGateway:
                     started,
                     "RATE_LIMIT",
                     input_token_estimate,
-                    call_budget,
+                    attempt_budget,
+                    error=exc,
                 )
                 if attempt <= retry_limit:
                     await self._backoff(attempt)
@@ -520,7 +613,8 @@ class ModelGateway:
                     started,
                     "PROVIDER_ERROR",
                     input_token_estimate,
-                    call_budget,
+                    attempt_budget,
+                    error=exc,
                 )
                 if attempt <= retry_limit:
                     await self._backoff(attempt)
@@ -539,13 +633,32 @@ class ModelGateway:
                     started,
                     "SAFETY_BLOCK",
                     input_token_estimate,
-                    call_budget,
+                    attempt_budget,
+                    error=exc,
                 )
                 raise GatewaySafetyBlock(
                     "Provider returned a safety block; no evasion retry is allowed",
                     ledgers=ledgers,
                 ) from exc
-            except (PermanentProviderError, Exception) as exc:
+            except ProviderBudgetError as exc:
+                self._record_provider_failure(
+                    ledgers,
+                    spec,
+                    envelope,
+                    route,
+                    attempt,
+                    started,
+                    "PROVIDER_ERROR",
+                    input_token_estimate,
+                    attempt_budget,
+                    error=exc,
+                )
+                raise GatewayBudgetExceeded(
+                    "Provider project budget or quota blocked the call",
+                    ledgers=ledgers,
+                    resolution=resolution,
+                ) from exc
+            except PermanentProviderError as exc:
                 # Adapter exceptions are never exposed with provider/content detail.
                 self._record_provider_failure(
                     ledgers,
@@ -556,10 +669,27 @@ class ModelGateway:
                     started,
                     "PROVIDER_ERROR",
                     input_token_estimate,
-                    call_budget,
+                    attempt_budget,
+                    error=exc,
                 )
                 raise GatewayProviderError(
                     "Non-retryable model adapter failure", ledgers=ledgers
+                ) from exc
+            except Exception as exc:
+                self._record_provider_failure(
+                    ledgers,
+                    spec,
+                    envelope,
+                    route,
+                    attempt,
+                    started,
+                    "PROVIDER_ERROR",
+                    input_token_estimate,
+                    attempt_budget,
+                    reason_codes=("ADAPTER_UNEXPECTED_EXCEPTION",),
+                )
+                raise GatewayProviderError(
+                    "Unexpected non-retryable model adapter failure", ledgers=ledgers
                 ) from exc
 
             try:
@@ -578,6 +708,7 @@ class ModelGateway:
                     output_tokens=adapter_result.output_tokens,
                     estimated_cost_usd=adapter_result.estimated_cost_usd,
                     actual_cost_usd=adapter_result.actual_cost_usd,
+                    adapter_result=adapter_result,
                 )
                 self._record(invalid_ledger, ledgers)
                 if prompt_id == "P11_SCHEMA_REPAIR_V1":
@@ -591,6 +722,11 @@ class ModelGateway:
                     invalid_output=adapter_result.raw_output,
                     validation_error=exc,
                     trusted_context=envelope.trusted_context,
+                    max_cost_usd=max(
+                        0.0,
+                        call_budget.max_cost_usd
+                        - sum(self._ledger_budget_charge(item) for item in ledgers),
+                    ),
                 )
                 ledgers.extend(repair_ledgers)
                 validation_order.append(ValidationPhase.REPAIRED_OUTPUT)
@@ -654,6 +790,7 @@ class ModelGateway:
                 output_tokens=adapter_result.output_tokens,
                 estimated_cost_usd=adapter_result.estimated_cost_usd,
                 actual_cost_usd=adapter_result.actual_cost_usd,
+                adapter_result=adapter_result,
             )
             self._record(valid_ledger, ledgers)
             return GatewayCallResult(
@@ -673,11 +810,26 @@ class ModelGateway:
         request_model = model_by_name(spec.input_schema_name)
         raw = payload.model_dump(mode="json") if isinstance(payload, BaseModel) else payload
         try:
-            return request_model.model_validate(raw)
+            request = request_model.model_validate(raw)
         except ValidationError as exc:
             raise GatewayValidationError(
                 "Request root validation failed", phase=ValidationPhase.REQUEST
             ) from exc
+        if spec.prompt_id == "P11_SCHEMA_REPAIR_V1":
+            repairable_roots = {
+                output_root
+                for prompt_id, (_input_root, output_root) in PROMPT_CONTRACTS.items()
+                if prompt_id not in {
+                    "P10_ENRICHED_CONTEXT_V1",
+                    "P11_SCHEMA_REPAIR_V1",
+                }
+            }
+            if request.target_schema_name not in repairable_roots:
+                raise GatewayValidationError(
+                    "P11 target is not an approved P01-P09 output root",
+                    phase=ValidationPhase.REQUEST,
+                )
+        return request
 
     def _validate_envelope(
         self,
@@ -1010,6 +1162,7 @@ class ModelGateway:
         invalid_output: Any,
         validation_error: GatewaySchemaViolation,
         trusted_context: models.TrustedPromptContext,
+        max_cost_usd: float,
     ) -> tuple[BaseModel, tuple[models.ModelCallLedger, ...], tuple[ValidationPhase, ...]]:
         repair_spec = prompt_spec("P11_SCHEMA_REPAIR_V1")
         issues = []
@@ -1038,16 +1191,35 @@ class ModelGateway:
             repair_spec, repair_request, trusted_context
         )
         order.append(ValidationPhase.ENVELOPE)
-        input_tokens = max(1, len(_canonical_json(repair_request)) // 4)
+        input_tokens = (
+            self.input_token_estimator(repair_spec, repair_request, repair_envelope)
+            if self.config.mode == GatewayMode.REAL
+            and self.input_token_estimator is not None
+            else max(1, len(_canonical_json(repair_request)) // 4)
+        )
+        repair_budget = CallBudget(
+            max_cost_usd,
+            estimated_cost_usd=(
+                self.cost_estimator(repair_spec, input_tokens)
+                if self.config.mode == GatewayMode.REAL
+                and self.cost_estimator is not None
+                else 0.0
+            ),
+        )
         repair_resolution = self.resolver.resolve(
             repair_spec,
             required_input_modalities=(models.ModelInputModality.TEXT,),
             required_output_modalities=(models.ModelOutputModality.STRUCTURED_JSON,),
-            budget=CallBudget(self.config.default_budget_usd),
+            budget=repair_budget,
             estimated_input_tokens=input_tokens,
         )
         if repair_resolution.status != "RESOLVED" or repair_resolution.route is None:
-            raise GatewayRouteBlocked(
+            error_type = (
+                GatewayBudgetExceeded
+                if any("BUDGET" in reason for reason in repair_resolution.reason_codes)
+                else GatewayRouteBlocked
+            )
+            raise error_type(
                 "No approved route for the single structural repair",
                 resolution=repair_resolution,
             )
@@ -1067,7 +1239,7 @@ class ModelGateway:
                 ),
                 timeout=self.config.timeout_seconds,
             )
-        except TimeoutError as exc:
+        except (TimeoutError, ProviderTimeoutError) as exc:
             ledger = self._ledger(
                 spec=repair_spec,
                 envelope=repair_envelope,
@@ -1077,13 +1249,83 @@ class ModelGateway:
                 latency_ms=self._elapsed_ms(started),
                 input_tokens=input_tokens,
                 output_tokens=0,
-                estimated_cost_usd=0.0,
+                estimated_cost_usd=repair_budget.estimated_cost_usd,
                 actual_cost_usd=0.0 if self.config.mode == GatewayMode.MOCK else None,
+                reason_codes=self._error_reason_codes(exc),
             )
             self._record(ledger, repair_ledgers)
             raise GatewaySchemaViolation(
                 "The single P11 repair attempt timed out",
                 phase=ValidationPhase.OUTPUT,
+                ledgers=repair_ledgers,
+            ) from exc
+        except SafetyBlockProviderError as exc:
+            self._record_provider_failure(
+                repair_ledgers,
+                repair_spec,
+                repair_envelope,
+                route,
+                1,
+                started,
+                "SAFETY_BLOCK",
+                input_tokens,
+                repair_budget,
+                error=exc,
+            )
+            raise GatewaySafetyBlock(
+                "P11 returned a safety refusal; no evasion retry is allowed",
+                ledgers=repair_ledgers,
+            ) from exc
+        except ProviderBudgetError as exc:
+            self._record_provider_failure(
+                repair_ledgers,
+                repair_spec,
+                repair_envelope,
+                route,
+                1,
+                started,
+                "PROVIDER_ERROR",
+                input_tokens,
+                repair_budget,
+                error=exc,
+            )
+            raise GatewayBudgetExceeded(
+                "Provider budget blocked the single P11 attempt",
+                ledgers=repair_ledgers,
+                resolution=repair_resolution,
+            ) from exc
+        except ProviderAdapterError as exc:
+            self._record_provider_failure(
+                repair_ledgers,
+                repair_spec,
+                repair_envelope,
+                route,
+                1,
+                started,
+                "PROVIDER_ERROR",
+                input_tokens,
+                repair_budget,
+                error=exc,
+            )
+            raise GatewayProviderError(
+                "Provider failed during the single P11 attempt",
+                ledgers=repair_ledgers,
+            ) from exc
+        except Exception as exc:
+            self._record_provider_failure(
+                repair_ledgers,
+                repair_spec,
+                repair_envelope,
+                route,
+                1,
+                started,
+                "PROVIDER_ERROR",
+                input_tokens,
+                repair_budget,
+                reason_codes=("ADAPTER_UNEXPECTED_EXCEPTION",),
+            )
+            raise GatewayProviderError(
+                "Unexpected provider failure during the single P11 attempt",
                 ledgers=repair_ledgers,
             ) from exc
         try:
@@ -1101,6 +1343,7 @@ class ModelGateway:
                 output_tokens=result.output_tokens,
                 estimated_cost_usd=result.estimated_cost_usd,
                 actual_cost_usd=result.actual_cost_usd,
+                adapter_result=result,
             )
             self._record(ledger, repair_ledgers)
             raise GatewaySchemaViolation(
@@ -1142,6 +1385,7 @@ class ModelGateway:
             output_tokens=result.output_tokens,
             estimated_cost_usd=result.estimated_cost_usd,
             actual_cost_usd=result.actual_cost_usd,
+            adapter_result=result,
         )
         self._record(ledger, repair_ledgers)
         if repair_output.repair_status != models.RepairStatus.REPAIRED:
@@ -1190,11 +1434,18 @@ class ModelGateway:
         cached_input_tokens: int = 0,
         estimated_cost_usd: float = 0.0,
         actual_cost_usd: float | None = None,
+        adapter_result: AdapterResult | None = None,
+        reason_codes: Sequence[str] = (),
     ) -> models.ModelCallLedger:
         input_hash = _hash(envelope)
         created = self.config.clock()
         if created.tzinfo is None:
             created = created.replace(tzinfo=UTC)
+        ledger_route = self._route_for_ledger(
+            route,
+            adapter_result=adapter_result,
+            reason_codes=reason_codes,
+        )
         return models.ModelCallLedger(
             model_call_id=_stable_id(
                 "modelcall",
@@ -1213,7 +1464,7 @@ class ModelGateway:
             input_bundle_hash=input_hash,
             schema_name=spec.output_schema_name,
             schema_version_used=SCHEMA_VERSION,
-            route=route,
+            route=ledger_route,
             input_tokens=max(0, input_tokens),
             cached_input_tokens=max(0, cached_input_tokens),
             output_tokens=max(0, output_tokens),
@@ -1247,6 +1498,8 @@ class ModelGateway:
         result: str,
         input_tokens: int,
         budget: CallBudget,
+        error: BaseException | None = None,
+        reason_codes: Sequence[str] = (),
     ) -> None:
         ledger = self._ledger(
             spec=spec,
@@ -1259,6 +1512,7 @@ class ModelGateway:
             output_tokens=0,
             estimated_cost_usd=budget.estimated_cost_usd,
             actual_cost_usd=0.0 if self.config.mode == GatewayMode.MOCK else None,
+            reason_codes=(*reason_codes, *self._error_reason_codes(error)),
         )
         self._record(ledger, ledgers)
 
@@ -1287,8 +1541,67 @@ class ModelGateway:
             output_tokens=result.output_tokens,
             estimated_cost_usd=result.estimated_cost_usd,
             actual_cost_usd=result.actual_cost_usd,
+            adapter_result=result,
         )
         self._record(ledger, ledgers)
+
+    @staticmethod
+    def _error_reason_codes(error: BaseException | None) -> tuple[str, ...]:
+        if error is None:
+            return ()
+        reason = getattr(error, "reason_code", None)
+        request_hash = getattr(error, "request_id_hash", None)
+        codes: list[str] = []
+        if isinstance(reason, str):
+            codes.append(reason)
+        if isinstance(request_hash, str):
+            codes.append(
+                f"PROVIDER_REQUEST_ID_HASH_{request_hash.removeprefix('sha256:')}"
+            )
+        return tuple(codes)
+
+    @staticmethod
+    def _ledger_budget_charge(ledger: models.ModelCallLedger) -> float:
+        """Reserve the larger observed or preflight cost for later calls."""
+
+        return max(ledger.estimated_cost_usd, ledger.actual_cost_usd or 0.0)
+
+    @staticmethod
+    def _route_for_ledger(
+        route: models.ModelRoute,
+        *,
+        adapter_result: AdapterResult | None,
+        reason_codes: Sequence[str],
+    ) -> models.ModelRoute:
+        codes = [*route.reason_codes, *reason_codes]
+        model_snapshot = route.model_snapshot
+        if adapter_result is not None:
+            codes.extend(adapter_result.reason_codes)
+            codes.append(
+                "CACHE_WRITE_INPUT_TOKENS_"
+                f"{max(0, adapter_result.cache_write_input_tokens)}"
+            )
+            codes.append(
+                f"REASONING_TOKENS_{max(0, adapter_result.reasoning_tokens)}"
+            )
+            if adapter_result.effective_model:
+                model_snapshot = adapter_result.effective_model
+                codes.append(f"EFFECTIVE_MODEL_{adapter_result.effective_model}")
+            if adapter_result.output_hash:
+                codes.append(
+                    f"OUTPUT_HASH_{adapter_result.output_hash.removeprefix('sha256:')}"
+                )
+            if adapter_result.provider_request_id_hash:
+                codes.append(
+                    "PROVIDER_REQUEST_ID_HASH_"
+                    + adapter_result.provider_request_id_hash.removeprefix("sha256:")
+                )
+        return route.model_copy(
+            update={
+                "model_snapshot": model_snapshot,
+                "reason_codes": list(dict.fromkeys(codes)),
+            }
+        )
 
     def _elapsed_ms(self, started: float) -> int:
         if self.config.mode == GatewayMode.MOCK:

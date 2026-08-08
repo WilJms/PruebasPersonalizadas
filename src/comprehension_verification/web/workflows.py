@@ -16,6 +16,7 @@ from ..contracts import models as m
 from ..diagnostics import diagnostic
 from ..exports import RENDERER_VERSION, render_views
 from ..model_gateway import (
+    CallBudget,
     GatewayConfig,
     GatewayContextError,
     GatewayMode,
@@ -26,7 +27,12 @@ from ..model_gateway import (
     TransientProviderError,
 )
 from ..model_gateway.mock_factory import build_trusted_context
-from ..model_gateway.registry import PROMPT_VERSION
+from ..model_gateway.openai_pricing import estimate_cost_usd
+from ..model_gateway.openai_routes import (
+    LUNA_MODEL_ID,
+    OPENAI_MODEL_BY_PROMPT,
+)
+from ..model_gateway.registry import PROMPT_VERSION, prompt_spec
 from ..parsers import (
     DOCX_MEDIA_TYPE,
     PARSER_VERSION,
@@ -249,6 +255,7 @@ class Stage1Service:
         object_store: ObjectStore,
         parser: SafeParserService | None = None,
         job_runner: JobRunner | None = None,
+        gateway_factory: Callable[[str], ModelGateway] | None = None,
     ) -> None:
         self.settings = settings
         self.repository = repository
@@ -257,6 +264,7 @@ class Stage1Service:
             require_libmagic=settings.require_libmagic
         )
         self.job_runner = job_runner
+        self.gateway_factory = gateway_factory
         self._resume_floor_reached: set[str] = set()
         self._question_action_processor: (
             Callable[[JobRow], Awaitable[None]] | None
@@ -737,22 +745,74 @@ class Stage1Service:
         fingerprint_source: dict[str, Any],
     ) -> dto.CostEstimate:
         input_fingerprint = canonical_hash(fingerprint_source)
+        execution_model_mode = getattr(
+            self.settings, "worker_model_mode", self.settings.model_mode
+        )
         # A conservative deterministic envelope: every call may receive the
         # complete bounded native input plus trusted prompt/context overhead.
-        estimated_input_tokens = calls * ((input_bytes + 3) // 4 + 1_000)
-        estimated_output_tokens = calls * 2_000
-        upper_bound_cost_usd = round(calls * 0.01, 6)
-        estimated_cost_usd = (
-            0.0
-            if self.settings.model_mode == "mock"
-            else round(upper_bound_cost_usd * 0.8, 6)
-        )
+        if execution_model_mode == "mock":
+            estimated_input_tokens = calls * ((input_bytes + 3) // 4 + 1_000)
+            estimated_output_tokens = calls * 2_000
+            upper_bound_cost_usd = round(calls * 0.01, 6)
+            estimated_cost_usd = 0.0
+        else:
+            if phase == "ACTIVITY_BLUEPRINT":
+                prompt_ids = [
+                    "P01_ACTIVITY_SPEC_V1",
+                    *(["P02_RUBRIC_NORMALIZE_V1"] if calls == 5 else []),
+                    "P03_AMBIGUITY_TRIAGE_V1",
+                    "P04_BLUEPRINT_BUILD_V1",
+                    "P05_BLUEPRINT_REVIEW_V1",
+                ]
+            elif phase == "SUBMISSION_ASSESSMENT" and calls >= 2:
+                question_count = max(0, (calls - 2) // 2)
+                prompt_ids = [
+                    "P06_EVIDENCE_MAP_V1",
+                    *[
+                        prompt_id
+                        for _ in range(question_count)
+                        for prompt_id in (
+                            "P07_QUESTION_BUILD_V1",
+                            "P08_QUESTION_REVIEW_V1",
+                        )
+                    ],
+                    "P09_GUIDE_BUILD_V1",
+                ]
+            else:
+                raise ValueError(f"Unknown real-mode cost phase: {phase}")
+            if len(prompt_ids) != calls:
+                raise ValueError("Real-mode cost profile does not match call count")
+
+            # Thirty thousand tokens conservatively cover the largest current
+            # strict schema, instructions, envelope metadata, and provider
+            # framing before adding every native input byte as one token.
+            per_call_input_ceiling = min(250_000, input_bytes + 30_000)
+            estimated_input_tokens = 0
+            estimated_output_tokens = 0
+            upper_bound_cost_usd = 0.0
+            for prompt_id in prompt_ids:
+                spec = prompt_spec(prompt_id)
+                attempts = min(2, spec.max_transient_retries) + 1
+                estimated_input_tokens += per_call_input_ceiling * (attempts + 1)
+                estimated_output_tokens += spec.max_output_tokens * attempts + 8_000
+                upper_bound_cost_usd += estimate_cost_usd(
+                    model=OPENAI_MODEL_BY_PROMPT[prompt_id],
+                    input_tokens=per_call_input_ceiling,
+                    output_tokens=spec.max_output_tokens,
+                ) * attempts
+                upper_bound_cost_usd += estimate_cost_usd(
+                    model=LUNA_MODEL_ID,
+                    input_tokens=per_call_input_ceiling,
+                    output_tokens=8_000,
+                )
+            upper_bound_cost_usd = round(upper_bound_cost_usd, 6)
+            estimated_cost_usd = upper_bound_cost_usd
         return dto.CostEstimate(
             estimate_id=stable_id(
                 "estimate", phase, aggregate_id, input_fingerprint, calls
             ),
             phase=phase,
-            model_mode=self.settings.model_mode,
+            model_mode=execution_model_mode,
             estimated_model_calls=calls,
             estimated_input_tokens=estimated_input_tokens,
             estimated_output_tokens=estimated_output_tokens,
@@ -762,10 +822,12 @@ class Stage1Service:
             within_limit=upper_bound_cost_usd <= self.settings.max_job_cost_usd,
             assumptions=[
                 "CVA_MODEL_MODE=mock has zero billable provider cost during Stage 1 closure."
-                if self.settings.model_mode == "mock"
+                if execution_model_mode == "mock"
                 else "Provider pricing is an upper-bound estimate, not a quoted price.",
                 "P10 and course-enriched context remain disabled.",
-                "The estimate covers one durable Stage 1 run and no retry.",
+                "Real-mode upper bounds include the technical retry ceiling and one eligible P11 repair per semantic call."
+                if execution_model_mode == "real"
+                else "The mock estimate covers one durable run and no billable retry.",
             ],
             input_fingerprint=input_fingerprint,
             generated_at=utc_now(),
@@ -827,7 +889,12 @@ class Stage1Service:
             tenant_id=actor.workspace_id,
             submission_id=submission.id,
         )
-        calls = 2 + 2 * blueprint.assessment_constraints.question_count
+        # Reserve the complete governed replacement surface: P06 and P09 once,
+        # plus P07/P08 for every selected and maximum reserve opportunity.
+        constraints = blueprint.assessment_constraints
+        calls = 2 + 2 * (
+            constraints.question_count + constraints.max_reserve_opportunities
+        )
         return self._cost_estimate(
             phase="SUBMISSION_ASSESSMENT",
             aggregate_id=submission.id,
@@ -2397,6 +2464,8 @@ class Stage1Service:
         )
 
     def _gateway(self, job_id: str) -> ModelGateway:
+        if self.gateway_factory is not None:
+            return self.gateway_factory(job_id)
         return ModelGateway(
             GatewayConfig(
                 mode=GatewayMode(self.settings.model_mode),
@@ -2408,11 +2477,39 @@ class Stage1Service:
             ledger_sink=self.repository.model_call_sink,
         )
 
+    def _remaining_model_budget_usd(self, job_id: str, tenant_id: str) -> float:
+        spent = sum(
+            max(
+                float(item.get("estimated_cost_usd") or 0.0),
+                float(item.get("actual_cost_usd") or 0.0),
+            )
+            for item in self.repository.model_calls(
+                tenant_id=tenant_id,
+                job_id=job_id,
+            )
+        )
+        return max(0.0, self.settings.max_job_cost_usd - spent)
+
     async def _direct_gateway(self, job_id: str, tenant_id: str, prompt_id: str, request: BaseModel, output_model: type[T]) -> T:
+        if getattr(
+            self.settings, "worker_model_mode", self.settings.model_mode
+        ) == "real":
+            raise WorkflowError(
+                "MODEL_EXECUTION_REQUIRES_WORKER",
+                "Interactive model review is blocked until it is backed by a durable worker job",
+                status_code=409,
+            )
         trusted = build_trusted_context(request).model_copy(
             update={"tenant_id": tenant_id}
         )
-        result = await self._gateway(job_id).invoke(prompt_id, request, trusted)
+        result = await self._gateway(job_id).invoke(
+            prompt_id,
+            request,
+            trusted,
+            budget=CallBudget(
+                max_cost_usd=self._remaining_model_budget_usd(job_id, tenant_id)
+            ),
+        )
         return cast(T, output_model.model_validate(result.output.model_dump(mode="json")))
 
     async def _gateway_stage(
@@ -2439,7 +2536,16 @@ class Stage1Service:
             trusted = build_trusted_context(request).model_copy(
                 update={"tenant_id": job.tenant_id}
             )
-            result = await self._gateway(job.id).invoke(prompt_id, request, trusted)
+            result = await self._gateway(job.id).invoke(
+                prompt_id,
+                request,
+                trusted,
+                budget=CallBudget(
+                    max_cost_usd=self._remaining_model_budget_usd(
+                        job.id, job.tenant_id
+                    )
+                ),
+            )
             self._cancellation_checkpoint(job)
             output = output_model.model_validate(
                 result.output.model_dump(mode="json")

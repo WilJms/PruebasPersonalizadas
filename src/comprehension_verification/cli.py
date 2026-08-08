@@ -12,11 +12,12 @@ import argparse
 import asyncio
 from dataclasses import asdict, dataclass
 import json
+import os
 from pathlib import Path
 import sys
 from typing import Any
 
-from pydantic import BaseModel
+from pydantic import BaseModel, SecretStr
 
 from .canonical import StableClock, canonical_hash, sha256_bytes, stable_id
 from .contract_validation import run_contract_validation_gate
@@ -24,7 +25,19 @@ from .contracts import models as m
 from .diagnostics import diagnostic
 from .exports import RENDERER_VERSION, render_views
 from .fixture_builder import DEFAULT_STAGE0_ROOT, build_stage0_fixtures
-from .model_gateway import GatewayConfig, GatewayMode, ModelGateway, build_trusted_context
+from .model_gateway import (
+    CallBudget,
+    GatewayConfig,
+    GatewayError,
+    GatewayMode,
+    ModelGateway,
+    OpenAIResponsesAdapter,
+    build_mock_request,
+    build_openai_cost_estimator,
+    build_openai_routes,
+    build_trusted_context,
+    estimate_openai_input_tokens,
+)
 from .model_gateway.registry import PROMPT_VERSION
 from .parsers import PARSER_VERSION, ParsedArtifact, SafeParserService
 from .planning import PLANNER_VERSION, build_assessment_plan
@@ -753,18 +766,92 @@ def _real_provider_smoke(args: argparse.Namespace) -> int:
             )
         )
         return 2
-    # No real adapter is installed in Stage 0.  A positive budget alone never
-    # authorizes an implicit provider, credential lookup, or network fallback.
+    api_key = os.environ.get("CVA_OPENAI_API_KEY", "").strip()
+    if not api_key:
+        print(
+            _json_line(
+                {
+                    "status": "BLOCKED",
+                    "code": "OPENAI_CREDENTIALS_REQUIRED",
+                    "network_call_attempted": False,
+                }
+            )
+        )
+        return 2
+    approval = os.environ.get("CVA_OPENAI_BILLABLE_SMOKE_APPROVAL", "")
+    if not args.allow_billable or approval != "OPENAI_BILLABLE_SMOKE_APPROVED":
+        print(
+            _json_line(
+                {
+                    "status": "BLOCKED",
+                    "code": "OPENAI_BILLABLE_SMOKE_APPROVAL_REQUIRED",
+                    "network_call_attempted": False,
+                }
+            )
+        )
+        return 2
+
+    prompt_id = "P11_SCHEMA_REPAIR_V1"
+    routes = build_openai_routes(max_call_cost_usd=args.budget_usd)
+    adapter = OpenAIResponsesAdapter(api_key=SecretStr(api_key))
+    gateway = ModelGateway(
+        GatewayConfig(
+            mode=GatewayMode.REAL,
+            timeout_seconds=125.0,
+            max_retries=0,
+            default_budget_usd=args.budget_usd,
+            job_id="job_openai_low_smoke",
+        ),
+        real_routes=routes,
+        adapters={"openai": adapter},
+        cost_estimator=build_openai_cost_estimator(routes),
+        input_token_estimator=estimate_openai_input_tokens,
+    )
+    request = build_mock_request(prompt_id)
+    try:
+        result = asyncio.run(
+            gateway.invoke(
+                prompt_id,
+                request,
+                build_trusted_context(request),
+                budget=CallBudget(max_cost_usd=args.budget_usd),
+            )
+        )
+    except GatewayError as exc:
+        print(
+            _json_line(
+                {
+                    "status": "FAIL",
+                    "code": exc.code,
+                    "network_call_attempted": bool(exc.ledgers),
+                    "attempts": len(exc.ledgers),
+                    "actual_cost_usd": round(
+                        sum(item.actual_cost_usd or 0.0 for item in exc.ledgers), 8
+                    ),
+                }
+            )
+        )
+        return 1
+    ledger = result.ledgers[-1]
     print(
         _json_line(
             {
-                "status": "BLOCKED",
-                "code": "REAL_PROVIDER_ADAPTER_NOT_CONFIGURED",
-                "network_call_attempted": False,
+                "status": "PASS",
+                "code": "OPENAI_REAL_SMOKE_PASS",
+                "network_call_attempted": True,
+                "prompt_id": ledger.prompt_id,
+                "model": ledger.route.model,
+                "reasoning_effort": ledger.route.reasoning_effort,
+                "input_tokens": ledger.input_tokens,
+                "cached_input_tokens": ledger.cached_input_tokens,
+                "output_tokens": ledger.output_tokens,
+                "latency_ms": ledger.latency_ms,
+                "actual_cost_usd": ledger.actual_cost_usd,
+                "attempts": len(result.ledgers),
             }
         )
     )
-    return 2
+    return 0
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -796,6 +883,11 @@ def _parser() -> argparse.ArgumentParser:
         "real-provider-smoke", help="Governed, opt-in real-provider smoke gate"
     )
     smoke.add_argument("--budget-usd", type=float, default=0.0)
+    smoke.add_argument(
+        "--allow-billable",
+        action="store_true",
+        help="Requires the separate human approval environment guard as well",
+    )
     smoke.set_defaults(handler=_real_provider_smoke)
     return parser
 
