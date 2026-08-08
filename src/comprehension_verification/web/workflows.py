@@ -580,10 +580,20 @@ class Stage1Service:
                 allowed_activity_statuses=set(ACTIVITY_UPLOAD_OPEN_STATUSES),
             )
         except Conflict as exc:
-            if str(exc) in {"ACTIVITY_INPUTS_FROZEN", "SUBMISSION_INPUTS_FROZEN"}:
+            conflict_code = str(exc)
+            if conflict_code in {"ACTIVITY_INPUTS_FROZEN", "SUBMISSION_INPUTS_FROZEN"}:
                 raise WorkflowError(
-                    str(exc),
+                    conflict_code,
                     "Inputs became immutable before the upload session was reserved",
+                    status_code=409,
+                ) from exc
+            if conflict_code in {
+                "ARTIFACT_ALREADY_EXISTS",
+                "ARTIFACT_RESERVATION_CHANGED",
+            }:
+                raise WorkflowError(
+                    "ARTIFACT_ALREADY_EXISTS",
+                    "Only one artifact of this role may be active or completed.",
                     status_code=409,
                 ) from exc
             raise

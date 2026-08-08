@@ -802,10 +802,18 @@ def test_concurrent_upload_sessions_preserve_one_role_per_scope(tmp_path) -> Non
     class BarrierRepository(Repository):
         synchronize_artifacts = False
 
-        def add(self, row):  # type: ignore[no-untyped-def]
-            if self.synchronize_artifacts and isinstance(row, ArtifactRow):
+        def reserve_artifact_upload(  # type: ignore[no-untyped-def]
+            self,
+            row,
+            *,
+            allowed_activity_statuses,
+        ):
+            if self.synchronize_artifacts:
                 barrier.wait(timeout=5)
-            return super().add(row)
+            return super().reserve_artifact_upload(
+                row,
+                allowed_activity_statuses=allowed_activity_statuses,
+            )
 
     repo = BarrierRepository(f"sqlite+pysqlite:///{tmp_path / 'uploads.db'}")
     store = MemoryObjectStore(
