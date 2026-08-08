@@ -42,6 +42,7 @@ from .repository import (
     EvidenceRow,
     ExportRow,
     GuideRow,
+    JobControlRecordRow,
     JobRow,
     ModelCallRow,
     NotFound,
@@ -682,6 +683,20 @@ class Stage2Service:
                 if assessments
                 else []
             )
+            control_rows = (
+                list(
+                    session.scalars(
+                        select(JobControlRecordRow).where(
+                            JobControlRecordRow.tenant_id == actor.workspace_id,
+                            JobControlRecordRow.job_id.in_(job_ids),
+                            JobControlRecordRow.action == "RETRY",
+                            JobControlRecordRow.status == "APPLIED",
+                        )
+                    )
+                )
+                if job_ids
+                else []
+            )
 
         model_calls = [m.ModelCallLedger.model_validate(row.data) for row in model_rows]
         job_latencies = [_duration_ms(row.started_at, row.finished_at) for row in jobs]
@@ -693,7 +708,7 @@ class Stage2Service:
                 for row in jobs
             ),
             cancelled_count=sum(row.control_state == "CANCELLED" for row in jobs),
-            retry_count=sum(max(0, row.attempt - 1) for row in jobs),
+            retry_count=len(control_rows),
             latency_p50_ms=_percentile(job_latencies, 0.50),
             latency_p95_ms=_percentile(job_latencies, 0.95),
             input_tokens=sum(item.input_tokens for item in model_calls),
@@ -751,8 +766,10 @@ class Stage2Service:
         closed_by_assessment: dict[str, datetime] = {}
         for event in audit_rows:
             if event.event_type == "assessment.review.opened":
-                opened_by_assessment.setdefault(
-                    event.aggregate_id, _as_utc(event.occurred_at)
+                occurred_at = _as_utc(event.occurred_at)
+                opened_by_assessment[event.aggregate_id] = min(
+                    occurred_at,
+                    opened_by_assessment.get(event.aggregate_id, occurred_at),
                 )
             elif event.event_type in {
                 "assessment.approved",
@@ -791,6 +808,11 @@ class Stage2Service:
         )
 
         by_stage_values: list[m.StageMetricAggregate] = []
+        retry_job_ids = {
+            row.resulting_job_id
+            for row in control_rows
+            if row.resulting_job_id is not None
+        }
         stage_groups: dict[str, list[StageRunRow]] = defaultdict(list)
         for row in stage_runs:
             stage_groups[row.stage.split(":", 1)[0]].append(row)
@@ -803,7 +825,7 @@ class Stage2Service:
                     succeeded=sum(row.status == "SUCCEEDED" for row in rows),
                     failed=sum(row.status == "FAILED" for row in rows),
                     cancelled=sum(row.status == "CANCELLED" for row in rows),
-                    retries=sum(row.attempt > 1 for row in rows),
+                    retries=sum(row.job_id in retry_job_ids for row in rows),
                     latency_p50_ms=_percentile(latencies, 0.50),
                     latency_p95_ms=_percentile(latencies, 0.95),
                 )
@@ -1169,11 +1191,17 @@ class Stage2Service:
             diagnostics=diagnostics,
             recorded_at=utc_now(),
         )
-        self.repository.apply_question_review_action(
+        stored = self.repository.apply_question_review_action(
             record,
             terminal_job=job,
             failure_class=failure_class if job is not None else None,
         )
+        if stored is None:
+            raise WorkflowError(
+                "JOB_CANCELLED",
+                "The localized question action stopped at a cancellation boundary.",
+                status_code=409,
+            )
         return record
 
     async def review_question(
@@ -1740,12 +1768,18 @@ class Stage2Service:
             recorded_at=utc_now(),
         )
         try:
-            self.repository.apply_question_review_action(
+            stored = self.repository.apply_question_review_action(
                 record,
                 resulting_row,
                 resulting_guide,
                 terminal_job=job,
             )
+            if stored is None:
+                raise WorkflowError(
+                    "JOB_CANCELLED",
+                    "The localized question action stopped at a cancellation boundary.",
+                    status_code=409,
+                )
         except Exception as exc:
             failure_class, retryable, code = self.legacy._classify_failure(exc)
             return self._failed_question_action(

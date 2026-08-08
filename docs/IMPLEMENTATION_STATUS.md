@@ -113,3 +113,21 @@ siendo exclusivamente un piloto controlado sintético en modo mock.
 El cierre histórico de E1 permanece inalterado en
 [STAGE1_FINAL_ACCEPTANCE_MATRIX.md](audits/STAGE1_FINAL_ACCEPTANCE_MATRIX.md) y
 [STAGE1_EVIDENCE_MANIFEST.md](audits/STAGE1_EVIDENCE_MANIFEST.md).
+
+## Checkpoint de auditoría final focalizada — 2026-08-08
+
+Una pasada inicial de solo lectura confirmó PR/base/head/CI y que
+`44b9483…bdb4469` modifica únicamente nueve documentos. La revisión focalizada
+posterior reprodujo y cerró cuatro P1: reserva exacta en replay de upload,
+actividad recuperable tras cancelación, conteo correcto de retries y frontera
+atómica entre cancelación y acción de pregunta. La contradicción del digest en
+`PARSER_SECURITY_E2.md` también quedó corregida sin levantar el gate de datos
+reales.
+
+El candidato corregido pasa 410 pruebas backend (16 skips PostgreSQL locales
+declarados), 79% de cobertura, 57 pruebas parser, 11 de deploy, typecheck,
+32 tests frontend, build, audit sin vulnerabilidades, Playwright 1+2, Stage 0,
+Terraform, secrets y regeneración sin drift. La CI y el paquete externo durable
+se registran por SHA antes de declarar el checkpoint listo para merge. La
+evidencia cloud permanece ligada a `44b9483…`; las correcciones nuevas no se
+declaran desplegadas.

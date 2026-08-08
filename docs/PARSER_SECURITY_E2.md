@@ -1,6 +1,6 @@
 # Seguridad del parser aislado — Etapa 2
 
-Fecha de corte: 2026-08-07 (America/Santiago).
+Fecha de corte: 2026-08-08 (America/Santiago).
 
 ## Decisión temporal sobre antivirus
 
@@ -66,9 +66,11 @@ Además, ambas rutas requieren sobre el digest exacto candidato a despliegue:
   deshabilitada para el trabajo de parsing y ninguna capability adicional;
 - revisión del SBOM/scan de imagen y registro de la evidencia del gate.
 
-La prueba Docker descrita abajo es evidencia de desarrollo. Hasta que esos
-checks estén ligados al digest de despliegue y la ruta AV/compensatoria esté
-aprobada, el resultado del exit gate es **NO APROBADO PARA DATOS REALES**.
+La prueba Docker descrita abajo sigue siendo evidencia de desarrollo. El cierre
+cloud posterior sí ligó imagen, Service/Job, `libmagic` y el recorrido sintético
+al digest indicado en la tabla. Eso no sustituye la ruta AV/compensatoria, que
+continúa inexistente; por tanto el resultado del exit gate sigue siendo **NO
+APROBADO PARA DATOS REALES**.
 
 ## Verificación reproducible
 
@@ -78,7 +80,7 @@ aprobada, el resultado del exit gate es **NO APROBADO PARA DATOS REALES**.
 | Docker runtime local | LOCAL_REAL | `sha256:5644dfadccfb1e43f0ce3155912fba44ba069d138199df3ca9d77e51aadf764c`, Linux arm64, UID 65532 |
 | Health/readiness con rootfs read-only | LOCAL_REAL | PASS; `/app` no escribible y sin archivos world-writable |
 | Roundtrip libmagic + isolation | LOCAL_REAL | PASS; socket `EPERM`, tenant/submission/rol ligados |
-| Digest de despliegue E2 | NOT_VERIFIED | Pendiente de Cloud Build/Artifact Registry |
+| Digest de despliegue E2 | CLOUD_REAL | `sha256:0c6be928c698cd052763c9daf683ae19d4f5b8a99cba06b54fc32e244d70044e`; Cloud Build `aad1bf58-966e-44f9-ad10-5d7b81144854` SUCCESS/VERIFIED; Service y Job Ready sobre el mismo digest |
 | Exit gate de datos reales | BLOCKED | ClamAV/compensación formal aún inexistente |
 
 ```bash

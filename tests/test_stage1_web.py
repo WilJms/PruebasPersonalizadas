@@ -293,6 +293,11 @@ def test_mutations_require_atomic_idempotency_and_never_persist_signed_urls() ->
         serialized = json.dumps(persisted.response, sort_keys=True)
         assert "upload_url" not in serialized
         assert "expires_at" not in serialized
+        pending_key = persisted.response["upload_object_key"]
+        assert pending_key.startswith(
+            f"raw/tnt_experimental/{activity_id}/"
+            f"{uploaded.json()['upload']['artifact_id']}/"
+        )
 
         with TestClient(app) as assistant_client:
             assistant_csrf = _login(
@@ -369,9 +374,6 @@ def test_mutations_require_atomic_idempotency_and_never_persist_signed_urls() ->
         assert "/sealed/" in artifact.object_key
         store = app.state.runtime.object_store
         assert store.get_bytes(artifact.object_key, max_bytes=16) == original
-        pending_key = (
-            f"raw/{artifact.tenant_id}/{artifact.activity_id}/{artifact.id}/upload"
-        )
         assert store.get_bytes(pending_key, max_bytes=16) == replacement
 
         verified_again = client.post(

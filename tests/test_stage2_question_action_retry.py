@@ -17,6 +17,68 @@ from tests.test_stage2_web import (
 )
 
 
+def test_question_action_cancellation_wins_without_persisting_failed_action(
+    monkeypatch,
+) -> None:
+    app = _app()
+    with TestClient(app, raise_server_exceptions=False) as client:
+        headers = _login(client)
+        fixture = _processed_submission(
+            client,
+            headers,
+            subject_ref="question_action_cancelled",
+        )
+        assessment_id = fixture["assessment_id"]
+        question_id = fixture["review"]["assessment"]["questions"][0][
+            "question_id"
+        ]
+        service = app.state.runtime.service
+        repository = app.state.runtime.repository
+        original_gateway_stage = service._gateway_stage
+        cancelled_job_ids: list[str] = []
+
+        async def cancel_before_generation(job, prompt_id: str, *args, **kwargs):
+            if prompt_id == "P07_QUESTION_BUILD_V1":
+                cancelled_job_ids.append(job.id)
+                repository.request_job_cancel(
+                    job_id=job.id,
+                    tenant_id=TENANT_ID,
+                    actor_id="usr_stage2_cancel_test",
+                    control_id="control_question_action_cancel_test",
+                )
+            return await original_gateway_stage(job, prompt_id, *args, **kwargs)
+
+        monkeypatch.setattr(service, "_gateway_stage", cancel_before_generation)
+        cancelled = client.post(
+            (
+                f"/api/v1/assessments/{assessment_id}/questions/"
+                f"{question_id}/actions"
+            ),
+            headers=_mutating(headers, **{"If-Match": fixture["etag"]}),
+            json={
+                "action": "REGENERATE",
+                "reason_code": "SYNTHETIC_COOPERATIVE_CANCEL",
+            },
+        )
+
+        assert cancelled.status_code == 409, cancelled.text
+        assert cancelled.json()["code"] == "JOB_CANCELLED"
+        assert len(cancelled_job_ids) == 1
+        job = repository.job_control(cancelled_job_ids[0], TENANT_ID)
+        assert job.control_state == "CANCELLED"
+        assert job.failure_class == "CANCELLATION"
+        assert repository.question_review_actions(
+            tenant_id=TENANT_ID,
+            assessment_id=assessment_id,
+            question_id=question_id,
+        ) == []
+        unchanged = client.get(
+            f"/api/v1/submissions/{fixture['submission_id']}/assessment"
+        )
+        assert unchanged.status_code == 200
+        assert unchanged.json()["assessment_version"] == 1
+
+
 def test_question_action_terminal_rollback_survives_lease_and_retries(
     monkeypatch,
 ) -> None:

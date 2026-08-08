@@ -1966,6 +1966,23 @@ class Repository:
         row.cancelled_at = completed_at
         row.next_attempt_at = None
         row.diagnostics = self._append_diagnostic_once(row.diagnostics or [], cancellation)
+        if row.kind == "ACTIVITY":
+            activity_statement = select(ActivityRow).where(
+                ActivityRow.id == row.aggregate_id,
+                ActivityRow.tenant_id == row.tenant_id,
+            )
+            if self.engine.dialect.name == "postgresql":
+                activity_statement = activity_statement.with_for_update()
+            activity = session.scalar(activity_statement)
+            if activity is None:
+                raise NotFound("activity not found")
+            # Cancellation is terminal for this Job, but must not strand the
+            # editable aggregate in its transient QUEUED projection. Verified
+            # StageRuns remain durable and a later explicit run may reuse only
+            # hash/version-compatible outputs.
+            activity.status = "DRAFT"
+            activity.updated_at = completed_at
+            return
         if row.kind != "SUBMISSION":
             return
         submission_statement = select(SubmissionRow).where(
@@ -2729,11 +2746,32 @@ class Repository:
         resulting_guide: GuideRow | None = None,
         terminal_job: JobRow | None = None,
         failure_class: m.FailureClass | None = None,
-    ) -> QuestionReviewActionRow:
+    ) -> QuestionReviewActionRow | None:
         """Apply a review record and any next immutable version atomically."""
 
         try:
             with self.session() as session:
+                locked_job: JobRow | None = None
+                if terminal_job is not None:
+                    locked_job = self._lock_job(
+                        session,
+                        terminal_job.id,
+                        record.tenant_id,
+                        self.engine.dialect.name,
+                    )
+                    if (
+                        locked_job.kind != "QUESTION_ACTION"
+                        or locked_job.aggregate_id != record.submission_id
+                    ):
+                        raise Conflict("QUESTION_REVIEW_JOB_MISMATCH")
+                    if locked_job.control_state != "ACTIVE":
+                        if locked_job.control_state == "CANCEL_REQUESTED":
+                            self._complete_job_cancellation(
+                                session, locked_job, record.recorded_at
+                            )
+                        return None
+                    if locked_job.status != "RUNNING":
+                        raise Conflict("QUESTION_REVIEW_JOB_NOT_RUNNING")
                 latest_statement = (
                     select(AssessmentRow)
                     .where(
@@ -2846,18 +2884,8 @@ class Repository:
                     occurred_at=record.recorded_at,
                 )
                 session.add(row)
-                if terminal_job is not None:
-                    job = self._lock_job(
-                        session,
-                        terminal_job.id,
-                        record.tenant_id,
-                        self.engine.dialect.name,
-                    )
-                    if (
-                        job.kind != "QUESTION_ACTION"
-                        or job.aggregate_id != record.submission_id
-                    ):
-                        raise Conflict("QUESTION_REVIEW_JOB_MISMATCH")
+                if locked_job is not None:
+                    job = locked_job
                     job.finished_at = record.recorded_at
                     job.next_attempt_at = None
                     if record.status == m.QuestionReviewRecordStatus.APPLIED:

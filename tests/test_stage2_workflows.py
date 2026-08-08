@@ -333,6 +333,7 @@ def test_cancellation_during_gateway_discards_uncommitted_stage_output() -> None
     repo = Repository("sqlite+pysqlite://")
     activity = _activity()
     repo.add(activity)
+    repo.set_activity_status(activity.id, TENANT_ID, "QUEUED")
     job = JobRow(
         id="job_cancel_during_gateway",
         tenant_id=TENANT_ID,
@@ -376,8 +377,10 @@ def test_cancellation_during_gateway_discards_uncommitted_stage_output() -> None
     asyncio.run(service.process_job(job.id))
 
     control = repo.job_control(job.id, TENANT_ID)
+    reopened = repo.scoped(ActivityRow, activity.id, TENANT_ID)
     assert control.control_state == "CANCELLED"
     assert control.failure_class == "CANCELLATION"
+    assert reopened.status == "DRAFT"
     assert repo.stage_runs_for_job(job.id, TENANT_ID) == []
 
 

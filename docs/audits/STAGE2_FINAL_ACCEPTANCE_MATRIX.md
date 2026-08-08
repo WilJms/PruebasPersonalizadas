@@ -101,3 +101,18 @@ Resultado del manifest cloud: 38/38 PASS. Estado externo:
 La matriz admite un piloto controlado exclusivamente sintético en modelo mock.
 Datos reales, modelo real, P10 y Etapa 3 permanecen bloqueados; ClamAV está
 ausente. P2/P3 abiertos: 3/1.
+
+## Addendum de auditoría final focalizada — 2026-08-08
+
+La matriz fue reabierta únicamente para cuatro defectos P1 reproducibles y se
+volvió a cerrar después de corregirlos: replay de upload sobre la reserva
+exacta, actividad cancelada recuperable, métricas de retry no triangulares y
+cancelación atómica de `QUESTION_ACTION`. Las pruebas adversariales y la suite
+completa pasaron; backend local actual: 410 passed, 16 skips PostgreSQL
+declarados, 79% de cobertura. Los gates frontend/browser/parser/deploy/Stage 0
+y drift generado también pasaron.
+
+La aceptación del código nuevo es `PASS_LOCAL` y queda condicionada a CI final
+verde del nuevo SHA. `PASS_CLOUD_REAL` continúa describiendo exclusivamente el
+runtime `44b9483…`; no se extiende por inferencia al código aún no desplegado.
+P0/P1 abiertos permanecen 0/0 y P2/P3 permanecen 3/1.

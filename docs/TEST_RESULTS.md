@@ -8,6 +8,31 @@ capacidades no se registran. Todos los recorridos E2 usaron modelo mock, P10
 deshabilitado y datos sintéticos. Los resultados históricos E1 se conservan al
 final y no se presentan como evidencia del candidato E2.
 
+## Ejecución de auditoría final focalizada — 2026-08-08
+
+Esta ejecución es posterior al candidato runtime cloud y no sustituye su
+identidad. Cubre las cuatro correcciones P1 del checkpoint pre-merge.
+
+| Prueba o gate | Resultado observado |
+|---|---|
+| `make test` | 410 passed, 16 skipped PostgreSQL explícitos, 1 warning conocido |
+| `make test-cov` | 410 passed, 16 skipped; 79% global |
+| recovery/migración sin URL PG local | 146 passed, 9 skipped explícitos |
+| parser/sandbox | 57 passed |
+| deploy artifacts | 11 passed |
+| contracts/fixtures/OpenAPI/TS | PASS, bundle 1.2.0; cero drift |
+| Stage 0 | sufficient/insufficient/injection PASS; dos ejecuciones sufficient idénticas |
+| frontend | typecheck, 32 tests, build 87 módulos, audit 0 vulnerabilidades |
+| Playwright | E1 1 passed; E2 2 passed, incluido 390 px |
+| Terraform | fmt/init/validate PASS |
+| secret scan | PASS, 275 archivos versionables |
+
+El daemon Docker no estaba disponible en esta máquina y no se reclama una
+ejecución Docker nueva. PostgreSQL 16/17 y Docker quedan cubiertos por la CI
+del nuevo SHA; la evidencia cloud histórica sigue ligada a `44b9483…`. La
+revisión browser no mutante del runtime desplegado pasó desktop y 390×844,
+Métricas interactiva, consola limpia y `scrollWidth = innerWidth = 390`.
+
 ## Candidato E2 local
 
 | Elemento | Resultado |

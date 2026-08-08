@@ -20,6 +20,10 @@ a P1 y bloquean el estado final.
 | E2-AUD-010 | P1 | job RUNNING sin lease/reaper | CLOSED |
 | E2-AUD-011 | P1 | readiness incompleta para schema E2 | CLOSED |
 | E2-AUD-012 | P1 | UI batch sin assessment elegible y overflow móvil | CLOSED |
+| E2-FINAL-001 | P1 | replay de upload firmaba una clave distinta de la reserva y fallaba después de terminal | CLOSED |
+| E2-FINAL-002 | P1 | cancelación de actividad dejaba el aggregate varado en `QUEUED` | CLOSED |
+| E2-FINAL-003 | P1 | métricas sobrecontaban retries y mezclaban `RESUME` | CLOSED |
+| E2-FINAL-004 | P1 | carrera de cancelación podía persistir una acción de pregunta falsa | CLOSED |
 
 ## Abiertos aceptables
 
@@ -56,3 +60,12 @@ fallos naturales del proveedor. La provenance SLSA 3 v1 y el scan
 Los P2 no autorizan datos reales, modelos reales ni Etapa 3. No bloquean una
 validación controlada exclusivamente sintética en modelo mock. P10 continúa
 deshabilitado y ClamAV continúa ausente.
+
+## Auditoría final focalizada del 2026-08-08
+
+Los cuatro hallazgos `E2-FINAL-*` fueron reproducidos, corregidos y cubiertos
+con regresiones adversariales. El cierre local posterior pasó 410 pruebas, con
+16 omisiones exclusivamente PostgreSQL declaradas, además de frontend,
+Playwright, parser, deploy, Terraform, secretos y Stage 0. Los conteos abiertos
+permanecen 0/0/3/1; la evidencia del nuevo commit se registra separada de la
+evidencia cloud histórica de `44b9483…`.

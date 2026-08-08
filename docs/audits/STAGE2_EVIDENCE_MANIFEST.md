@@ -85,3 +85,24 @@ P0/P1 abiertos: 0/0; P2/P3: 3/1. La evidencia autoriza únicamente un piloto
 controlado con fixtures sintéticos, modelo mock y P10 deshabilitado. Datos
 estudiantiles reales, modelo real, P10 y Etapa 3 siguen bloqueados. ClamAV no
 está instalado y esa ausencia permanece documentada.
+
+## Auditoría final focalizada y custodia externa
+
+La auditoría final del 2026-08-08 cerró cuatro P1 adicionales: replay exacto de
+la reserva de upload, recuperación de actividad después de cancel, conteo
+canónico de retry y atomicidad cancel/action por pregunta. La regresión del
+nuevo candidato pasó 410 pruebas con 16 skips PostgreSQL explícitos, cobertura
+79%, parser 57/57, deploy 11/11, frontend 32/32, Playwright 1+2, Terraform,
+secret scan y los tres límites Stage 0. Los artefactos generados continúan sin
+drift.
+
+La evidencia cloud anterior permanece ligada a `44b9483…`. No se afirma que
+las cuatro correcciones nuevas estén desplegadas: quedan ligadas al commit
+candidato y a su CI. La revisión browser no mutante del runtime desplegado
+repitió desktop/390 px con consola y overflow global en cero.
+
+No existía un paquete durable externo E2. Se crea un paquete core fuera de Git
+después de asignar SHA al commit candidato, con manifest e inventario SHA-256,
+validación del tar antes/después y únicamente resúmenes sanitizados. El nombre,
+checksum, fecha e instrucciones de custodia se completan en este documento en
+un commit documental posterior; ese commit no cambia el código auditado.

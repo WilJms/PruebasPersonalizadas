@@ -376,13 +376,16 @@ def create_app(
                     ArtifactRow, str(descriptor["artifact_id"]), actor.workspace_id
                 ),
             )
-            # Completion moves the durable row to a sealed content-addressed
-            # key. Replays may only reissue the original disposable upload
-            # capability, never a PUT capability for the sealed artifact.
-            pending_key = (
-                f"raw/{artifact.tenant_id}/{artifact.activity_id}/"
-                f"{artifact.id}/upload"
+            pending_key = descriptor.get("upload_object_key")
+            expected_prefix = (
+                f"raw/{artifact.tenant_id}/{artifact.activity_id}/{artifact.id}/"
             )
+            if (
+                not isinstance(pending_key, str)
+                or not pending_key.startswith(expected_prefix)
+                or "/sealed/" in pending_key
+            ):
+                raise Conflict("IDEMPOTENCY_UPLOAD_RESERVATION_INVALID")
             signed = runtime.object_store.sign_put(
                 pending_key,
                 artifact.declared_media_type,
@@ -395,7 +398,15 @@ def create_app(
                         "upload_url": signed.url,
                         "expires_at": signed.expires_at.isoformat(),
                         "upload_headers": signed.headers,
-                        "artifact": _artifact_payload(artifact),
+                        # Reproduce the historical upload-session projection,
+                        # not the Artifact row's later COMPLETE/REJECTED state.
+                        "artifact": {
+                            **_artifact_payload(artifact),
+                            "media_type": artifact.declared_media_type,
+                            "byte_size": None,
+                            "sha256": None,
+                            "status": "PENDING",
+                        },
                     }
                 }
             ).model_dump(mode="json")
@@ -496,9 +507,21 @@ def create_app(
             headers["etag"] = str(response.headers["etag"])
         if request.url.path.endswith("/artifacts/uploads"):
             upload = cast(dict[str, Any], body["upload"])
+            artifact = cast(
+                ArtifactRow,
+                runtime.repository.scoped(
+                    ArtifactRow,
+                    str(upload["artifact_id"]),
+                    actor.workspace_id,
+                ),
+            )
             return {
                 "kind": "upload",
                 "artifact_id": upload["artifact_id"],
+                # This is an address, not a capability. A replay uses it to
+                # mint a fresh short-lived URL for the exact disposable
+                # reservation even after the Artifact moves to a sealed key.
+                "upload_object_key": artifact.object_key,
                 "status_code": response.status_code,
                 "headers": headers,
                 "authorization": authorization,

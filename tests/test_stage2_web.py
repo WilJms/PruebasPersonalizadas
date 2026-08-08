@@ -18,6 +18,7 @@ from comprehension_verification.web.repository import (
     ActivityRow,
     ExportRow,
     IdempotencyRow,
+    JobControlRecordRow,
     JobRow,
     Repository,
     StageRunRow,
@@ -168,6 +169,82 @@ def _upload(
     )
     assert completed.status_code == 200, completed.text
     return completed.json()["artifact"]
+
+
+def test_upload_idempotency_replay_reissues_exact_disposable_reservation() -> None:
+    app = _app()
+    with TestClient(app) as client:
+        headers = _login(client)
+        activity_id = _create_activity(client, headers)
+        content = b"# Consigna\n\nEvidencia sintetica para replay durable.\n"
+        payload = {
+            "role": "ASSIGNMENT_PROMPT",
+            "filename": "replay.md",
+            "media_type": "text/markdown",
+            "byte_size": len(content),
+        }
+        key = str(uuid4())
+        path = f"/api/v1/activities/{activity_id}/artifacts/uploads"
+
+        started = client.post(
+            path,
+            headers=_mutating(headers, idempotency_key=key),
+            json=payload,
+        )
+        assert started.status_code == 201, started.text
+        artifact_id = started.json()["upload"]["artifact_id"]
+
+        replayed = client.post(
+            path,
+            headers=_mutating(headers, idempotency_key=key),
+            json=payload,
+        )
+        assert replayed.status_code == 201, replayed.text
+        assert replayed.headers["Idempotency-Replayed"] == "true"
+        replayed_upload = replayed.json()["upload"]
+        assert replayed_upload["artifact"]["status"] == "PENDING"
+
+        sent = client.put(
+            replayed_upload["upload_url"],
+            headers=replayed_upload["upload_headers"],
+            content=content,
+        )
+        assert sent.status_code == 204, sent.text
+        completed = client.post(
+            f"/api/v1/activities/{activity_id}/artifacts/{artifact_id}:complete",
+            headers=_mutating(headers),
+            json={
+                "sha256": sha256_bytes(content),
+                "byte_size": len(content),
+                "media_type": "text/markdown",
+            },
+        )
+        assert completed.status_code == 200, completed.text
+        assert completed.json()["artifact"]["status"] == "COMPLETE"
+
+        replayed_after_completion = client.post(
+            path,
+            headers=_mutating(headers, idempotency_key=key),
+            json=payload,
+        )
+        assert replayed_after_completion.status_code == 201
+        assert replayed_after_completion.json()["upload"]["artifact"]["status"] == (
+            "PENDING"
+        )
+
+        repository: Repository = app.state.runtime.repository
+        descriptor = repository.scoped(
+            IdempotencyRow,
+            stable_id("idem", TENANT_ID, key),
+            TENANT_ID,
+        ).response
+        assert descriptor is not None
+        assert descriptor["upload_object_key"].startswith(
+            f"raw/{TENANT_ID}/{activity_id}/{artifact_id}/"
+        )
+        serialized = json.dumps(descriptor, sort_keys=True)
+        assert "upload_url" not in serialized
+        assert "/api/v1/object-uploads/" not in serialized
 
 
 def _approve_blueprint(
@@ -839,6 +916,111 @@ def test_job_control_http_creates_distinct_retry_and_durable_cancel() -> None:
         assert rejected_resume.status_code == 409, rejected_resume.text
         assert rejected_resume.json()["code"] == "JOB_CONTROL_NOT_ALLOWED"
         assert runner.dispatched == [resulting_job_id]
+
+
+def test_metrics_count_retry_controls_without_triangular_or_resume_overcount() -> None:
+    app = _app()
+    with TestClient(app) as client:
+        headers = _login(client)
+        activity_id = _create_activity(client, headers)
+        repository: Repository = app.state.runtime.repository
+        now = utc_now()
+        jobs = [
+            ("job_metrics_initial", 1),
+            ("job_metrics_retry_one", 2),
+            ("job_metrics_retry_two", 3),
+            ("job_metrics_resume_source", 1),
+            ("job_metrics_resume_result", 2),
+        ]
+        for job_id, attempt in jobs:
+            repository.add(
+                JobRow(
+                    id=job_id,
+                    tenant_id=TENANT_ID,
+                    kind="ACTIVITY",
+                    aggregate_id=activity_id,
+                    stage="ACTIVITY_SPEC",
+                    status="FAILED",
+                    progress=0.5,
+                    attempt=attempt,
+                    diagnostics=[],
+                    failure_class="TRANSIENT",
+                    started_at=now,
+                    finished_at=now,
+                )
+            )
+        for control_id, source, result, action, attempt in (
+            (
+                "control_metrics_retry_one",
+                "job_metrics_initial",
+                "job_metrics_retry_one",
+                "RETRY",
+                1,
+            ),
+            (
+                "control_metrics_retry_two",
+                "job_metrics_retry_one",
+                "job_metrics_retry_two",
+                "RETRY",
+                2,
+            ),
+            (
+                "control_metrics_resume",
+                "job_metrics_resume_source",
+                "job_metrics_resume_result",
+                "RESUME",
+                1,
+            ),
+        ):
+            repository.add(
+                JobControlRecordRow(
+                    id=control_id,
+                    tenant_id=TENANT_ID,
+                    job_id=source,
+                    resulting_job_id=result,
+                    aggregate_id=activity_id,
+                    actor_id="usr_stage2_metrics",
+                    action=action,
+                    status="APPLIED",
+                    source_attempt=attempt,
+                    target_stage="ACTIVITY_SPEC",
+                    failure_class=("TRANSIENT" if action == "RETRY" else None),
+                    data={"action": action},
+                    requested_at=now,
+                    decided_at=now,
+                )
+            )
+        for suffix, job_id in (
+            ("retry", "job_metrics_retry_one"),
+            ("resume", "job_metrics_resume_result"),
+        ):
+            repository.add(
+                StageRunRow(
+                    id=f"stage_metrics_{suffix}",
+                    job_id=job_id,
+                    tenant_id=TENANT_ID,
+                    stage="P01_ACTIVITY_SPEC_V1",
+                    stage_key="sha256:" + ("a" if suffix == "retry" else "b") * 64,
+                    status="FAILED",
+                    attempt=2,
+                    input_hash="sha256:" + "c" * 64,
+                    policy_hash="sha256:" + "d" * 64,
+                    component_version="1.1.0",
+                    output=None,
+                    output_hash=None,
+                    failure_class="TRANSIENT",
+                    diagnostics=[],
+                    started_at=now,
+                    finished_at=now,
+                )
+            )
+
+        response = client.get(f"/api/v1/activities/{activity_id}/metrics")
+        assert response.status_code == 200, response.text
+        metrics = m.ExperimentMetrics.model_validate(response.json()["metrics"])
+        assert metrics.technical.retry_count == 2
+        assert metrics.by_stage[0].stage == "P01_ACTIVITY_SPEC_V1"
+        assert metrics.by_stage[0].retries == 1
 
 
 def test_feedback_governance_coverage_and_metrics_are_canonical() -> None:
