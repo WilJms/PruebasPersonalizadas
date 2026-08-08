@@ -2714,7 +2714,10 @@ button.source-link {
 }
 
 .export-panel > .table-scroll {
-  flex: 1 0 100%;
+  background: var(--paper);
+  flex: 1 1 100%;
+  min-width: 0;
+  width: 100%;
 }
 
 .export-panel .export-history { color: var(--ink); }
@@ -2807,7 +2810,15 @@ button.source-link {
   .evaluator-only { border-left: 0; border-top: 3px solid var(--coral); }
   .review-check-details { grid-template-columns: 1fr; }
   .level-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .export-panel { align-items: flex-start; flex-direction: column; }
+  .export-panel {
+    align-items: flex-start;
+    flex-direction: column;
+    flex-wrap: nowrap;
+  }
+  .export-panel > .table-scroll {
+    align-self: stretch;
+    flex: none;
+  }
   .export-actions { justify-content: flex-start; }
 }
 
