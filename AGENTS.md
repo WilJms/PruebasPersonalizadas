@@ -2,12 +2,22 @@
 
 ## Alcance actual
 
-Este repositorio implementa las Etapas 0 y 1: núcleo offline verificable y un
-laboratorio privado de una actividad y una submission, con FastAPI/React,
-persistencia PostgreSQL/Supabase, objetos privados R2 y ejecución en Cloud Run
-Jobs. No añadir ninguna historia de Etapa 2 (batch, retry/cancel, acciones por
-pregunta, aprobación masiva, DOCX completo, métricas/feedback), LMS, OCR,
-calificación ni detección de IA sin una instrucción humana que abra otro gate.
+`STAGE2_GATE_OPEN` desde 2026-08-07, sobre
+`STAGE2_BASELINE_SHA=80dd57dbf38d56929c307eca956833c31e53bf33`.
+
+- Etapa 0: cerrada y protegida por regresión.
+- Etapa 1: cerrada y protegida por regresión.
+- Etapa 2: activa exclusivamente para el entorno experimental usable descrito
+  en la especificación, el plan, el MVP y ADR-030 a ADR-034.
+- Etapa 3: no autorizada.
+- IA real y datos estudiantiles reales: no autorizados; cloud conserva
+  `CVA_MODEL_MODE=mock` y `CVA_P10_ENABLED=false`.
+
+La apertura incluye múltiples submissions, ingestión DOCX segura,
+retry/cancel/resume funcional, acciones y regeneración localizada por pregunta,
+aprobación masiva, exportaciones, cobertura, métricas y feedback de Etapa 2.
+No incluye LMS, OCR, calificación, detección de IA, multi-tenant SaaS ni otras
+historias de Etapa 3.
 
 ## Autoridad canónica
 
@@ -20,7 +30,7 @@ calificación ni detección de IA sin una instrucción humana que abra otro gate
 
 No copie ni redefina modelos Pydantic. Importe `comprehension_verification.contracts.models`.
 
-## Arquitectura E0/E1
+## Arquitectura E0/E1/E2
 
 - adaptadores de parser seguros -> EvidenceUnit con procedencia;
 - dos pipelines explícitos: actividad y submission;
@@ -32,15 +42,17 @@ No copie ni redefina modelos Pydantic. Importe `comprehension_verification.contr
 - shell E1 privado y tenant-scoped; Supabase se usa para Auth y PostgreSQL;
 - archivos E1 en R2 privado mediante capacidades firmadas de corta vida;
 - jobs técnicos durables y estado de dominio son conceptos separados;
-- E1 procesa exactamente una submission por actividad y exige aprobación
-  humana de blueprint y assessment;
+- E1 procesa exactamente una submission por actividad; E2 retira esa
+  restricción mediante migración compatible y conserva aprobación humana de
+  blueprint y assessment;
 - `CVA_MODEL_MODE=mock` es el modo de cierre; P10 sigue deshabilitado.
 - en cloud, `CVA_DATABASE_URL` debe usar explícitamente
   `postgresql+psycopg://`; SQLite y drivers implícitos fallan antes del arranque;
 - `/api/health` es liveness sin dependencias y `/api/readiness` comprueba
   PostgreSQL y la superficie de migración esperada;
 - cada ejecución del worker reclama como máximo un job y Cloud Run usa
-  `max_retries = 0`; retry funcional general sigue fuera de Etapa 1;
+  `max_retries = 0`; retry/cancel/resume de E2 pertenece a la aplicación y a
+  sus `stage_runs`, nunca a reintentos opacos de infraestructura;
 - Terraform es el único propietario de la imagen de Service/Job y solo acepta
   referencias inmutables `@sha256`; Cloud Build construye, prueba y publica.
 
@@ -62,6 +74,7 @@ make frontend-build
 make postgres-prepare CVA_TEST_POSTGRES_URL=postgresql://...
 make postgres-e2e CVA_TEST_POSTGRES_URL=postgresql://...
 make postgres-sensitive CVA_TEST_POSTGRES_URL=postgresql://...
+make postgres-stage2-recovery CVA_TEST_POSTGRES_URL=postgresql://...
 make secrets-check
 ```
 

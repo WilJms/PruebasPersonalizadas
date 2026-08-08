@@ -3,6 +3,7 @@ import { AuthProvider, PrivateRoute } from "./auth/AuthContext";
 import { AppShell } from "./components/AppShell";
 import { ActivityCreatePage } from "./pages/ActivityCreatePage";
 import { ActivityEditPage } from "./pages/ActivityEditPage";
+import { ActivityLabPage } from "./pages/ActivityLabPage";
 import { ActivitiesPage } from "./pages/ActivitiesPage";
 import { AssessmentReviewPage } from "./pages/AssessmentReviewPage";
 import { BlueprintPage } from "./pages/BlueprintPage";
@@ -28,6 +29,12 @@ export function AppRoutes() {
         </Route>
         <Route path="/activities/:activityId/blueprint">
           <PrivateRoute><AppShell><BlueprintPage /></AppShell></PrivateRoute>
+        </Route>
+        <Route path="/activities/:activityId/lab">
+          <PrivateRoute><AppShell><ActivityLabPage /></AppShell></PrivateRoute>
+        </Route>
+        <Route path="/activities/:activityId/submissions">
+          <PrivateRoute><AppShell><ActivityLabPage /></AppShell></PrivateRoute>
         </Route>
         <Route path="/activities/:activityId/submission">
           <PrivateRoute><AppShell><SubmissionStartPage /></AppShell></PrivateRoute>

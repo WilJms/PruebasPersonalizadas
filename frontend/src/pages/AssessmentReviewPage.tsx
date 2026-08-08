@@ -1,4 +1,5 @@
 import {
+  type FormEvent,
   type KeyboardEvent,
   type ReactNode,
   useEffect,
@@ -10,9 +11,14 @@ import {
 import { useParams } from "wouter";
 import {
   approveAssessment,
+  createFeedback,
   createExport,
   getAssessmentBundle,
   getEvidence,
+  getSubmissionCoverage,
+  listExports,
+  listQuestionActions,
+  reviewQuestion,
   verifyEvidenceFragment,
 } from "../api/client";
 import type {
@@ -20,13 +26,21 @@ import type {
   EvaluationGuide,
   EvidenceReceipt,
   EvidenceUnit,
+  ExportDownloadResource,
+  ExportRecord,
   ExportKind,
   ExportResource,
+  CoverageReport,
+  FeedbackCategory,
+  FeedbackRating,
+  QuestionReviewActionInput,
+  QuestionReviewActionRecord,
   QuestionReview,
   SelectedQuestion,
   SourceLocator,
 } from "../api/types";
 import { Diagnostics, ErrorNotice } from "../components/Feedback";
+import { LimitedEvidenceWarning } from "../components/LimitedEvidenceWarning";
 import { StatusBadge } from "../components/StatusBadge";
 
 const SCORE_LABELS: Record<string, string> = {
@@ -90,8 +104,15 @@ export function AssessmentReviewPage() {
   const { submissionId = "" } = useParams();
   const [bundle, setBundle] = useState<AssessmentBundle | null>(null);
   const [tab, setTab] = useState<"assessment" | "guide">("assessment");
-  const [exports, setExports] = useState<ExportResource[]>([]);
+  const [exports, setExports] = useState<ExportRecord[]>([]);
+  const [downloads, setDownloads] = useState<Array<ExportResource | ExportDownloadResource>>([]);
+  const [coverage, setCoverage] = useState<CoverageReport | null>(null);
+  const [actionHistory, setActionHistory] = useState<Record<string, QuestionReviewActionRecord[]>>({});
   const [busy, setBusy] = useState(false);
+  const [questionBusy, setQuestionBusy] = useState<string | null>(null);
+  const [actionMessage, setActionMessage] = useState("");
+  const [feedbackMessage, setFeedbackMessage] = useState("");
+  const actionMessageRef = useRef<HTMLDivElement>(null);
   const [verifying, setVerifying] = useState<string | null>(null);
   const [error, setError] = useState<unknown>(null);
 
@@ -99,13 +120,22 @@ export function AssessmentReviewPage() {
     let cancelled = false;
     const load = async () => {
       try {
-        const [next, catalog] = await Promise.all([
-          getAssessmentBundle(submissionId),
+        const next = await getAssessmentBundle(submissionId);
+        const [catalog, nextCoverage, exportHistory, actionEntries] = await Promise.all([
           getEvidence(submissionId),
+          getSubmissionCoverage(submissionId).catch(() => null),
+          listExports(next.assessment.assessment_id).catch(() => []),
+          Promise.all((next.assessment.questions ?? []).map(async (question) => [
+            question.question_id,
+            await listQuestionActions(next.assessment.assessment_id, question.question_id).catch(() => []),
+          ] as const)),
         ]);
         next.evidence = mergeEvidence(next.evidence ?? [], catalog);
         if (!cancelled) {
           setBundle(next);
+          setCoverage(nextCoverage);
+          setExports(exportHistory);
+          setActionHistory(Object.fromEntries(actionEntries));
           setError(null);
         }
       } catch (caught) {
@@ -195,13 +225,105 @@ export function AssessmentReviewPage() {
     try {
       const created = await createExport(bundle.assessment.assessment_id, kind);
       setExports((current) => [
-        created,
+        created.record,
+        ...current.filter((item) => item.export_id !== created.record.export_id),
+      ]);
+      setDownloads((current) => [
+        created.export,
+        ...created.downloads,
         ...current.filter((item) => item.kind !== kind),
       ]);
     } catch (caught) {
       setError(caught);
     } finally {
       setBusy(false);
+    }
+  };
+
+  const actOnQuestion = async (
+    question: SelectedQuestion,
+    input: QuestionReviewActionInput,
+  ) => {
+    if (!bundle) return;
+    setQuestionBusy(question.question_id);
+    setError(null);
+    setActionMessage("");
+    try {
+      const result = await reviewQuestion(
+        bundle.assessment.assessment_id,
+        question.question_id,
+        input,
+        bundle.etag,
+      );
+      if (result.record.status === "FAILED") {
+        setActionHistory((current) => ({
+          ...current,
+          [question.question_id]: [result.record, ...(current[question.question_id] ?? [])],
+        }));
+        if (result.bundle) {
+          setBundle({
+            ...result.bundle,
+            etag: result.etag ?? result.bundle.etag,
+            evidence: mergeEvidence(result.bundle.evidence ?? [], bundle.evidence ?? []),
+          });
+        }
+        const codes = (result.record.diagnostics ?? []).map((item) => item.code).join(", ");
+        setError(new Error(`La revalidación localizada falló${codes ? ` (${codes})` : ""}. La versión anterior se conserva.`));
+        setActionMessage(`${input.action} no fue aplicado a ${question.question_id}; la revalidación falló y quedó registrada.`);
+        window.setTimeout(() => actionMessageRef.current?.focus(), 0);
+        return;
+      }
+      if (result.bundle) {
+        setBundle({
+          ...result.bundle,
+          etag: result.etag ?? result.bundle.etag,
+          evidence: mergeEvidence(result.bundle.evidence ?? [], bundle.evidence ?? []),
+        });
+      } else {
+        const refreshed = await getAssessmentBundle(submissionId);
+        refreshed.evidence = mergeEvidence(refreshed.evidence ?? [], bundle.evidence ?? []);
+        setBundle(refreshed);
+      }
+      setActionHistory((current) => ({
+        ...current,
+        [question.question_id]: [result.record, ...(current[question.question_id] ?? [])],
+      }));
+      setActionMessage(
+        `${input.action} aplicado a ${question.question_id}; la versión y revalidación quedaron registradas.`,
+      );
+      window.setTimeout(() => actionMessageRef.current?.focus(), 0);
+    } catch (caught) {
+      setError(caught);
+      setActionMessage(`No se pudo aplicar ${input.action} a ${question.question_id}.`);
+      window.setTimeout(() => actionMessageRef.current?.focus(), 0);
+    } finally {
+      setQuestionBusy(null);
+    }
+  };
+
+  const saveReviewFeedback = async (input: {
+    questionId?: string;
+    category: FeedbackCategory;
+    rating: FeedbackRating;
+    comment?: string;
+  }) => {
+    if (!bundle) return;
+    setError(null);
+    setFeedbackMessage("");
+    try {
+      await createFeedback({
+        activity_id: bundle.assessment.activity_id,
+        assessment_id: bundle.assessment.assessment_id,
+        assessment_version: bundle.assessment_version,
+        question_id: input.questionId,
+        target_type: input.questionId ? "QUESTION" : "ASSESSMENT",
+        category: input.category,
+        rating: input.rating,
+        comment: input.comment,
+      });
+      setFeedbackMessage("Feedback guardado sin autorizar training ni decisión académica.");
+    } catch (caught) {
+      setError(caught);
     }
   };
 
@@ -221,16 +343,24 @@ export function AssessmentReviewPage() {
   return (
     <AssessmentReview
       allEvidenceVerified={allEvidenceVerified}
+      actionHistory={actionHistory}
       bundle={bundle}
       busy={busy}
+      coverage={coverage}
+      downloads={downloads}
       exports={exports}
+      feedbackMessage={feedbackMessage}
       onApprove={() => void approve()}
       onExport={(kind) => void exportView(kind)}
+      onFeedback={saveReviewFeedback}
+      onQuestionAction={actOnQuestion}
+      questionBusy={questionBusy}
       onTabChange={setTab}
       onVerify={(questionId, fragmentIndex) => void verify(questionId, fragmentIndex)}
       tab={tab}
       verifying={verifying}
     >
+      <div aria-live="polite" ref={actionMessageRef} tabIndex={-1}>{actionMessage}</div>
       <ErrorNotice error={error} />
     </AssessmentReview>
   );
@@ -242,10 +372,17 @@ export function AssessmentReview({
   onTabChange,
   onVerify,
   allEvidenceVerified,
+  actionHistory = {},
   onApprove,
   onExport,
+  onFeedback,
+  onQuestionAction,
   exports,
+  feedbackMessage = "",
+  downloads = [],
+  coverage = null,
   busy,
+  questionBusy = null,
   verifying,
   children,
 }: {
@@ -254,10 +391,25 @@ export function AssessmentReview({
   onTabChange: (tab: "assessment" | "guide") => void;
   onVerify: (questionId: string, fragmentIndex: number) => void;
   allEvidenceVerified: boolean;
+  actionHistory?: Record<string, QuestionReviewActionRecord[]>;
   onApprove: () => void;
   onExport: (kind: ExportKind) => void;
-  exports: ExportResource[];
+  onFeedback?: (input: {
+    questionId?: string;
+    category: FeedbackCategory;
+    rating: FeedbackRating;
+    comment?: string;
+  }) => Promise<void>;
+  onQuestionAction?: (
+    question: SelectedQuestion,
+    input: QuestionReviewActionInput,
+  ) => Promise<void>;
+  exports: ExportRecord[];
+  feedbackMessage?: string;
+  downloads?: Array<ExportResource | ExportDownloadResource>;
+  coverage?: CoverageReport | null;
   busy: boolean;
+  questionBusy?: string | null;
   verifying: string | null;
   children?: ReactNode;
 }) {
@@ -320,6 +472,19 @@ export function AssessmentReview({
         </div>
       </header>
 
+      <LimitedEvidenceWarning />
+
+      <section className="justification-summary" aria-label="Configuración de justificación estudiantil">
+        <strong>Justificación estructurada · {assessment.structured_justification.mode.replaceAll("_", " ")}</strong>
+        <span>
+          {assessment.structured_justification.mode === "ALL"
+            ? "Se exige en todas las preguntas."
+            : assessment.structured_justification.mode === "SELECTED"
+              ? `Se exige en ${(assessment.structured_justification.required_question_ids ?? []).length} preguntas seleccionadas; la evidencia no es total.`
+              : "No se exige; la evidencia de justificación no es total."}
+        </span>
+      </section>
+
       <div className="tab-list" role="tablist" aria-label="Evaluación y guía">
         <button
           aria-controls={assessmentPanel}
@@ -362,10 +527,14 @@ export function AssessmentReview({
           {questions.map((question, index) => (
             <QuestionEvidenceCard
               evidenceById={evidenceById}
+              actionRecords={actionHistory[question.question_id] ?? []}
               index={index}
               key={question.question_id}
               onVerify={onVerify}
+              onQuestionAction={approved ? undefined : onQuestionAction}
               question={question}
+              questionBusy={questionBusy === question.question_id}
+              questionEvidenceVerified={allEvidenceVerified || question.anchor.fragments.every((fragment, fragmentIndex) => Boolean(receiptFor(receipts, question.question_id, fragmentIndex, fragment.evidence_id)))}
               receipts={receipts}
               review={reviewFor(question, bundle.reviews)}
               verifying={verifying}
@@ -392,24 +561,39 @@ export function AssessmentReview({
       )}
       {children}
 
-      {approved && (
-        <section className="export-panel">
+      {coverage && <AssessmentCoverageView report={coverage} />}
+
+      {onFeedback && (
+        <ReviewFeedbackForm
+          message={feedbackMessage}
+          onSubmit={onFeedback}
+          questions={questions}
+        />
+      )}
+
+      <section className="export-panel">
           <div>
             <span className="eyebrow">Vistas derivadas</span>
             <h2>Exportar sin repetir llamadas al modelo</h2>
             <p>Los PDF y el JSON se regeneran desde objetos canónicos ya aprobados.</p>
           </div>
-          <div className="export-actions">
+          {approved ? <div className="export-actions">
             {([
               ["ASSESSMENT_PDF", "Evaluación PDF"],
+              ["ASSESSMENT_HTML", "Evaluación HTML"],
               ["GUIDE_PDF", "Guía PDF"],
+              ["GUIDE_HTML", "Guía HTML"],
+              ["COVERAGE_CSV", "Cobertura CSV"],
+              ["COVERAGE_JSON", "Cobertura JSON"],
               ["CANONICAL_JSON", "JSON canónico"],
             ] as Array<[ExportKind, string]>).map(([kind, label]) => {
-              const resource = exports.find((item) => item.kind === kind);
-              return resource?.download_url ? (
+              const resource = exports.find((item) => exportKinds(item).includes(kind));
+              const download = downloads.find((item) => item.kind === kind);
+              const downloadUrl = download?.download_url;
+              return downloadUrl ? (
                 <a
                   className="button button-secondary"
-                  href={resource.download_url}
+                  href={downloadUrl}
                   key={kind}
                   rel="noreferrer"
                 >
@@ -427,9 +611,9 @@ export function AssessmentReview({
                 </button>
               );
             })}
-          </div>
-        </section>
-      )}
+          </div> : <p>Las nuevas vistas se habilitan cuando la versión queda aprobada.</p>}
+          <ExportHistory exports={exports} />
+      </section>
 
       <footer className="sticky-actions">
         <div>
@@ -461,21 +645,63 @@ function QuestionEvidenceCard({
   question,
   review,
   evidenceById,
+  actionRecords,
   receipts,
   index,
   onVerify,
+  onQuestionAction,
+  questionBusy,
+  questionEvidenceVerified,
   verifying,
 }: {
   question: SelectedQuestion;
   review?: QuestionReview;
   evidenceById: Map<string, EvidenceUnit>;
+  actionRecords: QuestionReviewActionRecord[];
   receipts: EvidenceReceipt[];
   index: number;
   onVerify: (questionId: string, fragmentIndex: number) => void;
+  onQuestionAction?: (
+    question: SelectedQuestion,
+    input: QuestionReviewActionInput,
+  ) => Promise<void>;
+  questionBusy: boolean;
+  questionEvidenceVerified: boolean;
   verifying: string | null;
 }) {
   const choices = question.choices ?? [];
   const preliminary = question.preliminary_guide;
+  const [action, setAction] = useState<"REJECT" | "EDIT" | "REGENERATE" | null>(null);
+  const [reasonCode, setReasonCode] = useState("INSUFFICIENT_GROUNDING");
+  const [note, setNote] = useState("");
+  const [questionText, setQuestionText] = useState(question.question_text);
+  const confirmationLabel = action === "EDIT"
+    ? "Confirmar edición"
+    : action === "REJECT"
+      ? "Confirmar rechazo"
+      : "Confirmar regeneración";
+
+  useEffect(() => {
+    setQuestionText(question.question_text);
+  }, [question.question_text]);
+
+  const submitAction = async (event: FormEvent) => {
+    event.preventDefault();
+    if (!action || !onQuestionAction) return;
+    const input: QuestionReviewActionInput = {
+      action,
+      note: note.trim() || undefined,
+      ...(action === "REJECT" || action === "REGENERATE"
+        ? { reason_code: reasonCode }
+        : {}),
+      ...(action === "EDIT"
+        ? { replacement: { ...structuredClone(question), question_text: questionText.trim() } }
+        : {}),
+    };
+    await onQuestionAction(question, input);
+    setAction(null);
+    setNote("");
+  };
   return (
     <article className="question-card">
       <header className="question-header">
@@ -593,6 +819,49 @@ function QuestionEvidenceCard({
         </section>
       </div>
 
+      {onQuestionAction && (
+        <section className="question-review-actions" aria-label={`Acciones para ${question.question_id}`}>
+          {!questionEvidenceVerified && <p className="muted">Verifica primero cada fragmento de esta pregunta para habilitar las acciones.</p>}
+          <div className="question-action-buttons">
+            <button className="button button-secondary" disabled={questionBusy || !questionEvidenceVerified} onClick={() => void onQuestionAction(question, { action: "ACCEPT" })} type="button">Aceptar pregunta</button>
+            <button aria-expanded={action === "EDIT"} className="button button-secondary" disabled={questionBusy || !questionEvidenceVerified} onClick={() => setAction(action === "EDIT" ? null : "EDIT")} type="button">Editar pregunta</button>
+            <button aria-expanded={action === "REJECT"} className="button button-secondary" disabled={questionBusy || !questionEvidenceVerified} onClick={() => setAction(action === "REJECT" ? null : "REJECT")} type="button">Rechazar pregunta</button>
+            <button aria-expanded={action === "REGENERATE"} className="button button-secondary" disabled={questionBusy || !questionEvidenceVerified} onClick={() => setAction(action === "REGENERATE" ? null : "REGENERATE")} type="button">Regenerar pregunta</button>
+          </div>
+          {action && (
+            <form className="question-action-form" onSubmit={(event) => void submitAction(event)}>
+              <h3>{action === "EDIT" ? "Editar copia completa" : action === "REJECT" ? "Confirmar rechazo" : "Regeneración localizada"}</h3>
+              {action === "EDIT" ? (
+                <label className="field"><span>Texto de la pregunta</span><textarea autoFocus maxLength={4000} onChange={(event) => setQuestionText(event.target.value)} required rows={4} value={questionText} /></label>
+              ) : (
+                <label className="field"><span>Motivo</span><select autoFocus onChange={(event) => setReasonCode(event.target.value)} required value={reasonCode}><option value="INSUFFICIENT_GROUNDING">Grounding insuficiente</option><option value="NOT_ANSWERABLE">No respondible</option><option value="DUPLICATE_OPPORTUNITY">Oportunidad duplicada</option><option value="TEACHER_JUDGMENT">Juicio docente</option></select></label>
+              )}
+              <label className="field"><span>Nota opcional</span><textarea maxLength={2000} onChange={(event) => setNote(event.target.value)} rows={2} value={note} /></label>
+              <div className="form-actions"><button className="button button-primary" disabled={questionBusy || (action === "EDIT" && !questionText.trim())} type="submit">{questionBusy ? "Aplicando…" : confirmationLabel}</button><button className="button button-quiet" disabled={questionBusy} onClick={() => setAction(null)} type="button">Cancelar</button></div>
+            </form>
+          )}
+        </section>
+      )}
+
+      {actionRecords.length > 0 && (
+        <details className="question-action-history">
+          <summary>Historial durable de acciones ({actionRecords.length})</summary>
+          <ol>
+            {actionRecords.map((record) => (
+              <li key={record.record_id}>
+                <header><strong>{record.action.action}</strong><StatusBadge status={record.status} /></header>
+                <p>Versión {record.assessment_version_before} → {record.assessment_version_after ?? "sin cambio"} · revalidación {record.revalidation_status}</p>
+                <small>{new Date(record.recorded_at).toLocaleString("es-CL")} · {record.action.reason_code ?? "sin reason code"}</small>
+                {record.after_question && record.after_question.question_text !== record.before_question.question_text && (
+                  <details><summary>Ver before / after</summary><p><strong>Before:</strong> {record.before_question.question_text}</p><p><strong>After:</strong> {record.after_question.question_text}</p></details>
+                )}
+                <Diagnostics items={record.diagnostics} />
+              </li>
+            ))}
+          </ol>
+        </details>
+      )}
+
       <details className="technical-details">
         <summary>Trazabilidad técnica y guía preliminar</summary>
         <ReferenceList
@@ -619,6 +888,107 @@ function QuestionEvidenceCard({
         </div>
       </details>
     </article>
+  );
+}
+
+function ReviewFeedbackForm({
+  questions,
+  message,
+  onSubmit,
+}: {
+  questions: SelectedQuestion[];
+  message: string;
+  onSubmit: (input: {
+    questionId?: string;
+    category: FeedbackCategory;
+    rating: FeedbackRating;
+    comment?: string;
+  }) => Promise<void>;
+}) {
+  const [target, setTarget] = useState("ASSESSMENT");
+  const [category, setCategory] = useState<FeedbackCategory>("QUESTION_QUALITY");
+  const [rating, setRating] = useState<FeedbackRating>("NEUTRAL");
+  const [comment, setComment] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  const submit = async (event: FormEvent) => {
+    event.preventDefault();
+    setBusy(true);
+    try {
+      await onSubmit({
+        questionId: target === "ASSESSMENT" ? undefined : target,
+        category,
+        rating,
+        comment: comment.trim() || undefined,
+      });
+      setComment("");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <form className="feedback-card review-feedback-card" onSubmit={(event) => void submit(event)}>
+      <span className="eyebrow">Feedback de revisión</span>
+      <h2>Registrar feedback estructurado</h2>
+      <p>Queda asociado a esta versión; no se convierte en training data ni en una decisión académica.</p>
+      <div className="review-feedback-fields">
+        <label className="field"><span>Objeto del feedback</span><select onChange={(event) => setTarget(event.target.value)} value={target}><option value="ASSESSMENT">Assessment completo</option>{questions.map((question, index) => <option key={question.question_id} value={question.question_id}>Pregunta {index + 1}</option>)}</select></label>
+        <label className="field"><span>Categoría de feedback</span><select onChange={(event) => setCategory(event.target.value as FeedbackCategory)} value={category}><option value="GROUNDING">Grounding</option><option value="ANSWERABILITY">Respondibilidad</option><option value="QUESTION_QUALITY">Calidad de pregunta</option><option value="GUIDE_QUALITY">Calidad de guía</option><option value="COVERAGE">Cobertura</option><option value="WORKFLOW">Flujo</option><option value="EXPORT">Exportación</option><option value="OTHER">Otro</option></select></label>
+        <label className="field"><span>Valoración del feedback</span><select onChange={(event) => setRating(event.target.value as FeedbackRating)} value={rating}><option value="VERY_UNHELPFUL">Muy poco útil</option><option value="UNHELPFUL">Poco útil</option><option value="NEUTRAL">Neutral</option><option value="HELPFUL">Útil</option><option value="VERY_HELPFUL">Muy útil</option></select></label>
+      </div>
+      <label className="field"><span>Comentario opcional de revisión</span><textarea maxLength={2000} onChange={(event) => setComment(event.target.value)} rows={3} value={comment} /></label>
+      <div className="form-actions"><button className="button button-primary" disabled={busy} type="submit">{busy ? "Guardando…" : "Guardar feedback de revisión"}</button></div>
+      <p aria-live="polite">{message}</p>
+    </form>
+  );
+}
+
+function exportKinds(item: ExportRecord): ExportKind[] {
+  return item.requested_kinds;
+}
+
+function ExportHistory({ exports }: { exports: ExportRecord[] }) {
+  if (!exports.length) return <p className="muted">Aún no hay exportaciones persistidas.</p>;
+  return (
+    <div className="table-scroll" tabIndex={0} aria-label="Historial desplazable de exportaciones">
+      <table className="batch-table export-history">
+        <caption>Historial de exportaciones derivadas</caption>
+        <thead><tr><th scope="col">Export ID</th><th scope="col">Vistas</th><th scope="col">Estado</th><th scope="col">Artefactos</th><th scope="col">Modelo</th></tr></thead>
+        <tbody>{exports.map((item) => (
+          <tr key={item.export_id}>
+            <th scope="row"><code>{item.export_id}</code></th>
+            <td>{exportKinds(item).map((kind) => humanizeExport(kind)).join(", ")}</td>
+            <td><StatusBadge status={item.status} /></td>
+            <td>{(item.artifacts ?? []).length}</td>
+            <td>{item.model_call_delta} llamadas</td>
+          </tr>
+        ))}</tbody>
+      </table>
+    </div>
+  );
+}
+
+function humanizeExport(value: ExportKind): string {
+  return value.replaceAll("_", " ").toLocaleLowerCase("es-CL");
+}
+
+function AssessmentCoverageView({ report }: { report: CoverageReport }) {
+  return (
+    <section className="coverage-review-panel" aria-labelledby="assessment-coverage-title">
+      <span className="eyebrow">Trazabilidad de la versión</span>
+      <h2 id="assessment-coverage-title">Cobertura del submission</h2>
+      <p>{(report.traces ?? []).length} oportunidades trazadas contra el snapshot sellado.</p>
+      <div className="metric-grid">
+        {report.summary.map((item) => (
+          <article className="metric-card" key={item.dimension_id}>
+            <span>{item.dimension_id}</span>
+            <strong>{item.selected_opportunity_count}/{item.available_opportunity_count}</strong>
+            <small>{item.evidence_unit_count} unidades de evidencia</small>
+          </article>
+        ))}
+      </div>
+    </section>
   );
 }
 

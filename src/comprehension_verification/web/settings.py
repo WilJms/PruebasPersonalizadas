@@ -1,4 +1,4 @@
-"""Validated Stage 1 runtime settings with fail-closed cloud guards."""
+"""Validated experimental runtime settings with fail-closed cloud guards."""
 
 from __future__ import annotations
 
@@ -49,6 +49,13 @@ class Settings(BaseSettings):
     download_url_ttl_seconds: int = Field(default=300, ge=30, le=900)
     max_upload_bytes: int = Field(default=5_000_000, ge=1, le=25_000_000)
     max_job_cost_usd: float = Field(default=0.50, ge=0.01, le=10.0)
+    max_batch_submissions: int = Field(default=50, ge=2, le=500)
+    job_max_attempts: int = Field(default=3, ge=1, le=5)
+    job_lease_seconds: int = Field(default=3900, ge=300, le=7200)
+    api_read_rate_limit_per_minute: int = Field(default=240, ge=30, le=2_000)
+    api_mutation_rate_limit_per_minute: int = Field(default=60, ge=10, le=500)
+    require_libmagic: bool = False
+    parser_timeout_seconds: int = Field(default=30, ge=5, le=120)
 
     gcp_project_id: str | None = None
     gcp_region: str | None = None
@@ -64,9 +71,9 @@ class Settings(BaseSettings):
         )
 
     @model_validator(mode="after")
-    def stage_one_guards(self) -> "Settings":
+    def experimental_guards(self) -> "Settings":
         if self.p10_enabled:
-            raise ValueError("P10 is disabled throughout Stage 1")
+            raise ValueError("P10 is disabled throughout the experimental environment")
         if self.environment == "cloud":
             if self.auth_mode != "supabase":
                 raise ValueError("cloud requires Supabase authentication")
@@ -75,9 +82,11 @@ class Settings(BaseSettings):
             if self.job_runner_mode != "cloud_run":
                 raise ValueError("cloud requires Cloud Run Jobs")
             if self.model_mode != "mock":
-                raise ValueError("cloud Stage 1 requires the mock model gateway")
+                raise ValueError("cloud experimental runtime requires the mock model gateway")
             if self.session_secret == "local-development-secret-change-me":
                 raise ValueError("cloud requires a managed session secret")
+            if not self.require_libmagic:
+                raise ValueError("cloud experimental runtime requires libmagic MIME detection")
             try:
                 database = make_url(self.database_url)
             except (ArgumentError, TypeError, ValueError) as exc:
@@ -147,16 +156,20 @@ class WorkerSettings(BaseSettings):
     download_url_ttl_seconds: int = Field(default=300, ge=30, le=900)
     max_upload_bytes: int = Field(default=5_000_000, ge=1, le=25_000_000)
     max_job_cost_usd: float = Field(default=0.50, ge=0.01, le=10.0)
+    job_max_attempts: int = Field(default=3, ge=1, le=5)
+    job_lease_seconds: int = Field(default=3900, ge=300, le=7200)
+    require_libmagic: bool = False
+    parser_timeout_seconds: int = Field(default=30, ge=5, le=120)
 
     @model_validator(mode="after")
-    def stage_one_worker_guards(self) -> "WorkerSettings":
+    def experimental_worker_guards(self) -> "WorkerSettings":
         if self.p10_enabled:
-            raise ValueError("P10 is disabled throughout Stage 1")
+            raise ValueError("P10 is disabled throughout the experimental environment")
         if self.environment == "cloud":
             if self.object_store_mode != "r2":
                 raise ValueError("cloud worker requires private R2 object storage")
             if self.model_mode != "mock":
-                raise ValueError("cloud Stage 1 worker requires the mock model gateway")
+                raise ValueError("cloud experimental worker requires the mock model gateway")
             try:
                 database = make_url(self.database_url)
             except (ArgumentError, TypeError, ValueError) as exc:
@@ -178,6 +191,8 @@ class WorkerSettings(BaseSettings):
                 raise ValueError(
                     "cloud worker requires a complete postgresql+psycopg database URL"
                 )
+            if not self.require_libmagic:
+                raise ValueError("cloud experimental worker requires libmagic MIME detection")
         if self.object_store_mode == "r2" and not all(
             (
                 self.r2_endpoint_url,

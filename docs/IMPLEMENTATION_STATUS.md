@@ -1,132 +1,107 @@
-# Estado de implementación y cierre de Etapa 1
+# Estado de implementación — Etapa 2
 
-Fecha de corte documental: 2026-08-07 (America/Santiago).
+Fecha de corte: 2026-08-07 (America/Santiago).
 
-## Estado del gate
+## Identidad y gate
 
-La implementación de Etapas 0 y 1 está en estado
-**CORRECTIVE_CANDIDATE_STAGE1_VERIFIED**. Los once hallazgos P1 quedaron
-cerrados sobre el candidato funcional
-6374e60ce74ebb2a1ee0ec80531eab218d1b9548. El snapshot f982ef89 y el primer
-intento de cierre 5b13428ace03ef2852ef3f6f1b942e54151a5204 fueron rechazados
-por auditoría independiente y se conservan solo como historia. El candidato
-correctivo 4bab5b400199b94f2fd003c7f959b4d341363b26 elimina el residuo
-histórico de capabilities en PostgreSQL, impone el invariante también en la
-base y corrige la exigencia de procedencia CI. La decisión definitiva
-READY_FOR_STAGE_2 se emite únicamente después de:
+`STAGE2_GATE_OPEN` fue autorizado el 2026-08-07 sobre
+`STAGE2_BASELINE_SHA=80dd57dbf38d56929c307eca956833c31e53bf33`.
 
-1. crear el último commit documental, denominado FINAL_STAGE1_SHA;
-2. construir y desplegar ese SHA exacto;
-3. generar el paquete de evidencia externo;
-4. completar la auditoría independiente de solo lectura.
-
-Un commit no puede contener de forma verificable su propio hash ni los
-identificadores del build que se ejecuta después de publicarlo. Por eso esos
-valores finales viven en el manifest externo y no se sustituyen posteriormente
-en este archivo. No se harán commits después de FINAL_STAGE1_SHA.
-
-## Identidad de los candidatos verificados
-
-| Elemento | Valor |
+| Elemento | Estado |
 |---|---|
-| Repositorio | WilJms/PruebasPersonalizadas |
-| Rama | fix/stage1-external-readiness |
-| PR | #1, abierto y draft |
-| Candidato funcional completo | 6374e60ce74ebb2a1ee0ec80531eab218d1b9548 |
-| Candidato correctivo | 4bab5b400199b94f2fd003c7f959b4d341363b26 |
-| CI correctivo push | 31209547327, SUCCESS, 7/7 jobs |
-| CI correctivo pull request | 31209552197, SUCCESS, 7/7 jobs |
-| Merge CI correctivo | 1e695278b5ea25d5e94756e67eb9f47c11ecdde0 = merge(dadaaa7, 4bab5b4) |
-| Cloud Build correctivo | 745eb275-eea4-4493-8b64-293570472265, SUCCESS |
-| Digest correctivo | sha256:7d73b1cb7a438f6f8adb8de10f31752efdbca860e1aa08c9314097d4e5daed7a |
-| Runtime correctivo | cva-web generación 11 y cva-worker generación 11, Ready, mismo digest |
-| Terraform correctivo | imagen 0/2/0; dos planes vivos consecutivos exit 0 |
+| Repositorio | `WilJms/PruebasPersonalizadas` |
+| Rama | `codex/stage2-experimental-mvp` |
+| Candidato | Worktree local; el SHA final se registra después del commit |
+| Etapa 0 | Cerrada; regresión preservada |
+| Etapa 1 | Cerrada; baseline y auditorías históricas preservados |
+| Etapa 2 | Implementada localmente; CI y cloud pendientes de evidencia del SHA final |
+| Etapa 3 | No autorizada |
+| Modelo | `CVA_MODEL_MODE=mock`; proveedor real no autorizado |
+| P10 | `CVA_P10_ENABLED=false` |
+| Datos | Solo fixtures sintéticos; datos estudiantiles reales no autorizados |
 
-El build correctivo fue disparado por la conexión regional al repositorio
-autorizado, registró source exacto del candidato, produjo dos occurrences de
-provenance verificada, SLSA nivel 3 y análisis terminado sin vulnerabilidades.
-El SBOM y la cadena del SHA definitivo se vuelven a capturar en el artifact
-externo posterior a FINAL_STAGE1_SHA.
-Terraform continúa siendo el único escritor del deployment.
+La regresión previa a cualquier cambio fue `163 passed, 7 skipped`, más 19
+pruebas frontend, typecheck, build, Stage 0, contratos y navegador. El único
+gate rojo heredado fue `nanoid@3.3.16`; E2 lo actualiza a `3.3.18` y el audit
+final queda en cero vulnerabilidades high/critical.
 
-## Gates implementados
+## Superficie E2 implementada
 
-| Boundary | Estado | Evidencia resumida |
+| Historia | Resultado del candidato local |
+|---|---|
+| E2-01 | Lote manual, múltiples submissions, `subject_ref` seudónimo, filtros y aislamiento por tenant/submission |
+| E2-02 | TXT, Markdown, PDF digital y DOCX estructural con MIME real, límites, localizadores y rechazo de contenido activo |
+| E2-03 | Jobs durables con clases de fallo, retry acotado, cancel, resume, leases y reutilización de `stage_runs` válida por hashes |
+| E2-04 | ACCEPT, REJECT, EDIT y REGENERATE server-side, append-only, versionadas y revalidadas |
+| E2-05 | Reemplazo localizado desde reserva, lineage, presupuesto durable y exactly N o fail-closed |
+| E2-06 | Coverage por submission y actividad con dimensiones, oportunidades, evidencia, planificación y diagnósticos |
+| E2-07 | EvaluationGuide independiente y siete exports derivados de snapshots, con delta de llamadas de modelo igual a cero |
+| E2-08 | Métricas técnicas, de calidad y de revisión humana sin texto estudiantil |
+| E2-09 | Feedback gobernable de actividad, assessment o pregunta, sin reutilización automática |
+| E2-10 | Sandbox parser en subproceso, libmagic, seccomp sin red, RLIMIT/timeout, rate limit, CSP y fronteras de capabilities |
+| E2-11 | CI, Cloud Build, Terraform y Cloud Run conservados; imagen por digest y Job 1/1/0 |
+| E2-12 | Teclado, foco, labels, tabs roving, Home/End/flechas, axe y viewport de 390 px |
+| E2-13 | `NOT_REQUIRED`, `SELECTED` y `ALL`, incluida regeneración coherente de preguntas seleccionadas |
+| E2-14 | Aprobación masiva confirmada, versionada, particionada, idempotente y con exclusiones auditables |
+| E2-15 | Aviso fijo de límites del producto, independiente del modelo y de P09 |
+
+## Evidencia vigente
+
+| Gate | Clasificación | Estado |
 |---|---|---|
-| Contratos canónicos | PASS | Schema 1.1.0, 46 roots, 112 definiciones, 231 referencias y 8 fixtures. |
-| PrincipalId | PASS | Principales externos aceptan UUID Supabase sin ampliar Id globalmente. |
-| OpenAPI | PASS | DTOs tipados, responses validadas, snapshot determinista y consumer/provider tests. |
-| Backend y Stage 0 | PASS | 163 pruebas locales verdes; 7 PostgreSQL-only ejecutadas aparte; 10 pruebas de artifacts de deploy. |
-| Review UX | PASS | Blueprint, SelectedQuestion, CHOICE y Guide proyectan la trazabilidad requerida. |
-| Evidence-first | PASS | Receipt durable por fragmento; replay sin URL persistida y ligado a autorización vigente; aprobación server-side. |
-| Frontend | PASS | Typecheck, 19 tests, build, audit sin vulnerabilidades y Playwright crítico. |
-| PostgreSQL | PASS | PG16 y PG17: dos migraciones, 24 tablas/RLS, 2 triggers, constraint de idempotencia y matriz repetida dos veces sin limpieza. |
-| Logging | PASS | Access log deshabilitado; 650 eventos JSON por plantilla; scan de 2.881 entradas sin capability, credencial ni payload sintético. |
-| GitHub a Cloud Build | PASS | Connection, repository y trigger regionales limitados al repo; build SA sin Run Admin. |
-| Supply chain | PASS E1 | Bases por digest, locks con hashes, Actions por SHA, provenance, scan y SBOM ligados al digest. |
-| Terraform | PASS | Scaling superior declarado; apply revisado; dos planes vivos consecutivos exit 0. |
-| Cloud runtime | PASS candidato correctivo | Health/readiness 200, privado 401, mismo digest, secretos version 2, Service/Job Ready, 1/1/0 y mock/P10 off. |
-| Supabase | PASS candidato correctivo | Proyecto correcto, PostgreSQL 17, Auth sintético, constraint validado y cero descriptores inseguros/JSON null. |
-| Cloudflare R2 | PASS candidato | Bucket privado correcto, CORS/lifecycle exactos, r2.dev off y cero dominios. |
-| Browser cloud | PASS candidato + correctivo | Recorrido completo nuevo en 6374e60; cierre/reapertura desde raíz y recuperación de Assessment/Guide sobre el digest 4bab5b4. |
+| Contratos | LOCAL_REAL | PASS: bundle 1.2.0, 53 roots, 140 definiciones, 274 referencias; 46 roots/112 definiciones E1 sin drift estructural |
+| Backend completo | LOCAL_REAL + MOCK_MODEL | PASS: 407 passed, 16 PostgreSQL-only skipped |
+| Parser y sandbox | LOCAL_REAL | PASS: 57 pruebas; libmagic, seccomp `EPERM`, timeout, binding de procedencia y rechazo fail-closed |
+| Frontend | LOCAL_REAL | PASS: typecheck, 6 archivos/32 tests, build de 87 módulos, audit 0 vulnerabilidades |
+| Browser | LOCAL_REAL | PASS: recorrido E1 1/1 y recorrido E2 mock API 1/1, axe, teclado y 390 px |
+| PostgreSQL 16 | POSTGRESQL_REAL | PASS: upgrade E1→E2, recovery segura, carrera de writer y readiness negativa |
+| PostgreSQL 17 | POSTGRESQL_REAL | PASS: upgrade E1→E2, recovery segura, carrera de writer y readiness negativa |
+| Docker | LOCAL_REAL | PASS: runtime no-root/read-only, app inmutable, health/readiness y parser aislado |
+| Secrets/deploy/schema drift | LOCAL_REAL | PASS |
+| GitHub Actions del SHA E2 | NOT_VERIFIED | Pendiente de publicar el candidato |
+| Migración Supabase 003 | NOT_VERIFIED | Pendiente de backup, quiesce y aplicación live revisada |
+| Cloud Build/digest E2 | NOT_VERIFIED | Pendiente del SHA publicado y CI verde |
+| Terraform apply y doble no-drift | NOT_VERIFIED | Pendiente del digest E2 |
+| Cloud E2E sintético 1–38 | NOT_VERIFIED | Pendiente del runtime E2 Ready |
 
-## Correcciones principales
+Los detalles reproducibles están en [TEST_RESULTS.md](TEST_RESULTS.md) y en
+[STAGE2_EVIDENCE_MANIFEST.md](audits/STAGE2_EVIDENCE_MANIFEST.md). Una entrada
+`NOT_VERIFIED` no se presenta como PASS ni se sustituye por evidencia cloud E1.
 
-- lista autenticada de actividades y acciones de continuación derivadas desde
-  estado durable del servidor;
-- edición de actividad draft con ETag/If-Match y preflight de costo;
-- blueprint y assessment review completos, dificultad derivada de solo lectura
-  y separación explícita entre contenido estudiantil y datos del evaluador;
-- alternativas CHOICE visibles, exactamente una mejor respuesta y
-  misconceptions/rationales reservados al evaluador;
-- receipt evidence-first durable por fragmento antes de aprobar;
-- replay idempotente ligado a principal, rol y permiso actuales; los
-  descriptores de upload, export y evidence verify no contienen capabilities;
-- migración de higiene que elimina reservas legacy JSON null/capabilities y
-  constraint PostgreSQL validado que impide volver a persistirlas;
-- EvaluationGuide visible con observables, evidencia, fuentes, niveles,
-  alternativas, misconceptions y cannot_infer;
-- frontera OpenAPI tipada desde DTOs que componen contratos canónicos; las
-  rutas con response_model retornan DTOs y no objetos Response que omitan la
-  validación runtime;
-- PrincipalId aplicado solo a actores/principales externos;
-- logs HTTP estructurados por plantilla de ruta, sin URL, query, payload ni
-  capability;
-- worker separado de settings web y sin secreto de sesión;
-- CI PostgreSQL 16/17, navegador E2E, dependencias fijadas y build verificable;
-- Terraform convergente y trigger GitHub a Cloud Build de mínimo privilegio;
-- documentos SPA no-store, assets hashados inmutables y epoch de shell que
-  purga solo la caché HTTP de clientes anteriores sin borrar su sesión.
+## Auditoría y deuda
 
-Durante la verificación del candidato, una invocación fallida de un cliente
-PostgreSQL incluyó una credencial en su diagnóstico. Esa salida se invalidó y
-se excluye de evidencia: la contraseña Supabase fue rotada mediante la API
-oficial, la credencial anterior quedó denegada, Secret Manager recibió la
-versión 2 y Terraform actualizó únicamente las referencias de secretos de
-Service/Job. No se conserva ni reproduce el valor.
+La auditoría adversarial encontró y cerró carreras de cancel/dispatch,
+continuaciones múltiples, resume inválido, aprobación no atómica, acciones de
+pregunta no recuperables, límites de regeneración, roles, uploads rechazados,
+readiness incompleta y recovery con pérdida concurrente. Cada corrección se
+revalidó y la regresión completa quedó verde.
 
-## Estado de Etapa 0 y Etapa 1
+| Severidad | Abiertos locales |
+|---|---:|
+| P0 | 0 |
+| P1 | 0 |
+| P2 | 3 |
+| P3 | 1 |
 
-- E0-01 a E0-08: PASS.
-- E1-01 a E1-11: PASS en implementación y candidato cloud.
-- P0: 0.
-- P1: 0 abiertos.
-- P2/P3 residuales: solo deuda no bloqueante descrita en
-  [STAGE1_FINAL_REMEDIATION_BACKLOG.md](audits/STAGE1_FINAL_REMEDIATION_BACKLOG.md).
+La deuda P2/P3 está limitada a gates posteriores o no bloqueantes:
 
-La matriz detallada está en
-[STAGE1_FINAL_ACCEPTANCE_MATRIX.md](audits/STAGE1_FINAL_ACCEPTANCE_MATRIX.md).
+- ClamAV no está desplegado. El parser aislado es control compensatorio para
+  fixtures sintéticos; los datos reales permanecen bloqueados hasta un AV
+  operativo o una aceptación formal equivalente.
+- No existe corpus autorizado de documentos reales ni política legal de
+  retención; no se infieren.
+- La semántica con proveedor IA real no fue validada porque el proveedor real
+  sigue prohibido.
+- `StarletteDeprecationWarning` del adaptador de tests es deuda P3.
 
-## Frontera preservada
+## Límites de cierre
 
-La revisión humana académica del producto se conserva para blueprint y
-Assessment. La verificación de ingeniería se realiza mediante pruebas,
-evidencia y agentes de IA; no existe un gate humano de revisión de código.
+Este candidato no autoriza Etapa 3, modelos reales, datos estudiantiles reales,
+OCR, LMS, calificación, detección de IA, inferencia de autoría o fraude. El
+estado `READY_FOR_CONTROLLED_PILOT` solo puede emitirse después de CI verde,
+migración live, build por digest, apply Terraform revisado, runtime Ready,
+cloud E2E sintético y dos planes sin drift.
 
-No se implementó batch, retry/cancel general, acciones o regeneración por
-pregunta, aprobación masiva, feedback/métricas E2, DOCX completo, OCR, LMS,
-calificación, detección de IA, múltiples submissions ni proveedor IA real.
-El modo cloud permanece mock y P10 permanece deshabilitado.
-
-No se hizo merge ni tag. El PR debe permanecer draft hasta que el propietario
-dé una instrucción posterior.
+El cierre histórico de E1 permanece inalterado en
+[STAGE1_FINAL_ACCEPTANCE_MATRIX.md](audits/STAGE1_FINAL_ACCEPTANCE_MATRIX.md) y
+[STAGE1_EVIDENCE_MANIFEST.md](audits/STAGE1_EVIDENCE_MANIFEST.md).

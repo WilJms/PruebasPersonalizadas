@@ -1,11 +1,89 @@
-# Resultados verificables de remediación E0/E1
+# Resultados verificables — candidato Etapa 2
 
 Fecha de corte documental: 2026-08-07 (America/Santiago).
 
 Este archivo registra únicamente resultados observados. Las credenciales y
-capacidades no se registran. Todos los recorridos usaron model mode mock y P10
-deshabilitado. Los identificadores posteriores a FINAL_STAGE1_SHA se guardan
-en el paquete de evidencia externo, no mediante un commit adicional.
+capacidades no se registran. Todos los recorridos E2 usaron modelo mock, P10
+deshabilitado y datos sintéticos. Los resultados históricos E1 se conservan al
+final y no se presentan como evidencia del candidato E2.
+
+## Candidato E2 local
+
+| Elemento | Resultado |
+|---|---|
+| Baseline | `80dd57dbf38d56929c307eca956833c31e53bf33` |
+| Rama | `codex/stage2-experimental-mvp` |
+| SHA candidato | Se completa después del commit; estas ejecuciones corresponden al worktree que lo precede |
+| Modelo | `mock` |
+| P10 | `false` |
+| Datos | Fixtures sintéticos exclusivamente |
+
+### Matriz local ejecutada
+
+| Prueba o gate | Clasificación | Resultado observado |
+|---|---|---|
+| `make contracts` | LOCAL_REAL | PASS: schema 1.2.0, 53 roots, 140 definiciones, 274 referencias y 8 fixtures |
+| Regeneración schema/OpenAPI/TS | LOCAL_REAL | PASS: checksums idénticos antes/después; cero drift generado |
+| `make test` | LOCAL_REAL + MOCK_MODEL | 407 passed, 16 skipped, 1 warning; skips solo por URL PostgreSQL ausente en esa ejecución |
+| Parser + sandbox focal | LOCAL_REAL | 57 passed; libmagic, seccomp sin socket, RLIMIT/timeout, symlink/output/context hostil |
+| Deploy artifacts | LOCAL_REAL | 11 passed |
+| Secret scan | LOCAL_REAL | PASS en 270 archivos versionables |
+| Terraform | LOCAL_REAL | fmt, init `-backend=false -lockfile=readonly` y validate PASS; provider Google 6.50.0 |
+| YAML y shell | LOCAL_REAL | Cloud Build/Actions parsean; entrypoint `sh -n` PASS |
+| Frontend | LOCAL_REAL | typecheck PASS; 6 archivos/32 Vitest PASS; build 87 módulos PASS |
+| Dependency audit | LOCAL_REAL + red | `npm audit --audit-level=high`: 0 vulnerabilidades |
+| Playwright E1 | LOCAL_REAL_BROWSER + MOCK_MODEL | 1 passed; recorrido crítico, evidence-first y cierre/reapertura |
+| Playwright E2 | LOCAL_REAL_BROWSER + MOCK_API | 1 passed; lote, teclado, axe y viewport 390 px |
+| Browser integrado | LOCAL_REAL_BROWSER + MOCK_MODEL | Flujo sintético de actividad/lote/submissions; consola limpia; scrollWidth=innerWidth=390 |
+| Docker runtime | LOCAL_REAL | Imagen arm64 `sha256:5644dfadccfb1e43f0ce3155912fba44ba069d138199df3ca9d77e51aadf764c`; UID 65532, app no escribible, health/readiness PASS |
+| Docker parser aislado | LOCAL_REAL | `require_isolation` y `require_libmagic` PASS; socket denegado con `EPERM`; provenance tenant/submission preservada |
+
+La suite Python recolectó 423 casos. Los 16 skips locales fueron siete pruebas
+E1 PostgreSQL, dos pruebas de migración/recovery E2 y siete probes negativos de
+readiness que requieren una URL PostgreSQL real. Esos grupos se ejecutaron por
+separado en contenedores PostgreSQL 16 y 17; no se cuentan como omitidos en la
+evidencia PostgreSQL siguiente.
+
+### PostgreSQL 16 y 17
+
+Se usaron contenedores efímeros dedicados, expuestos solo en loopback y con
+credenciales sintéticas. Fueron detenidos y eliminados al finalizar.
+
+| Major | Clasificación | Resultado |
+|---|---|---|
+| PostgreSQL 16 | POSTGRESQL_REAL | PASS: 5/5 migración/recovery, incluida E1→E2, rechazo con hechos E2 y writer concurrente; 7/7 probes readiness negativos; regresión E1 7/7 |
+| PostgreSQL 17 | POSTGRESQL_REAL | PASS: 5/5 migración/recovery, incluida E1→E2, rechazo con hechos E2 y writer concurrente; 7/7 probes readiness negativos; regresión E1 7/7 |
+
+La recovery adquiere locks sobre todas las tablas E2 antes del guard. En la
+carrera reproducible, el writer no puede confirmar después del corte; la
+recovery solo elimina la superficie E2 cuando no existe ningún hecho que pueda
+perderse.
+
+### E2E de producto y auditoría adversarial
+
+`tests/test_stage2_web.py::test_stage2_controlled_pilot_e2e` recorre los 38
+pasos obligatorios con FastAPI real, repositorio local, modelo mock y datos
+sintéticos: dos submissions, suficiente/insuficiente, exactly N, reserva,
+acciones, guide, coverage, feedback, aprobación individual/masiva, siete
+exports, reload, métricas, fallo/retry/cancel/resume y negativos cross-scope.
+
+La auditoría adversarial reprodujo defectos antes de su corrección en retry,
+cancelación, resume, roles, regeneración SELECTED, approvals, parser, uploads,
+readiness y rollback. Después de las remediaciones, la regresión completa quedó
+en 407/407 casos ejecutables localmente y P0/P1 abiertos igual a cero.
+
+### Gates todavía no ejecutados para E2
+
+| Gate | Clasificación | Estado |
+|---|---|---|
+| GitHub Actions del SHA final | NOT_VERIFIED | Pendiente de commit/push/PR |
+| Migración 003 en Supabase autorizado | NOT_VERIFIED | Pendiente de backup/quiesce/aplicación |
+| Cloud Build E2, scan, SBOM y digest | NOT_VERIFIED | Pendiente del SHA publicado |
+| Terraform apply E2 y doble plan | NOT_VERIFIED | Pendiente del digest |
+| Cloud Run E2 y E2E sintético 1–38 | NOT_VERIFIED | Pendiente del apply |
+| Proveedor IA real y corpus real | BLOCKED | Fuera del gate; no se ejecutarán en E2 |
+
+## Evidencia histórica de Etapa 1
 
 ## Candidato funcional y correctivo
 

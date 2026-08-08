@@ -1,6 +1,6 @@
 PYTHON ?= .venv/bin/python
 
-.PHONY: install contracts openapi fixtures test test-cov stage0-demo stage0-fail stage0-injection real-smoke frontend-install frontend-typecheck frontend-test frontend-build postgres-prepare postgres-e2e postgres-sensitive secrets-check
+.PHONY: install contracts openapi fixtures test test-cov stage0-demo stage0-fail stage0-injection real-smoke frontend-install frontend-typecheck frontend-test frontend-build postgres-prepare postgres-e2e postgres-sensitive postgres-stage2-recovery secrets-check
 
 install:
 	$(PYTHON) -m pip install -e '.[dev]'
@@ -52,6 +52,9 @@ postgres-e2e:
 
 postgres-sensitive:
 	CVA_TEST_DATABASE_URL="$${CVA_TEST_POSTGRES_URL}" $(PYTHON) -m pytest tests/test_stage1_postgres.py
+
+postgres-stage2-recovery:
+	$(PYTHON) -m pytest tests/test_stage2_migration.py tests/test_stage2_readiness.py
 
 secrets-check:
 	$(PYTHON) scripts/check_secrets.py

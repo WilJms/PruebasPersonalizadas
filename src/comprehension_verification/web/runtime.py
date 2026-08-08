@@ -1,4 +1,4 @@
-"""Separate composition roots for the Stage 1 API and one-shot worker."""
+"""Separate composition roots for the Stage 2 API and one-shot worker."""
 
 from __future__ import annotations
 
@@ -6,10 +6,12 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from .auth import AuthService
+from ..parsers import harden_parent_process
 from .jobs import CloudRunJobRunner, InlineJobRunner, JobRunner
 from .object_store import MemoryObjectStore, ObjectStore, R2ObjectStore
 from .repository import Repository
 from .settings import Settings, WorkerSettings
+from .stage2 import Stage2Service
 from .workflows import Stage1Service
 
 
@@ -20,6 +22,7 @@ class Runtime:
     object_store: ObjectStore
     auth: AuthService
     service: Stage1Service
+    stage2: Stage2Service
     job_runner: JobRunner
 
 
@@ -52,6 +55,8 @@ def build_runtime(
     """Build adapters with cloud modes enforced by validated ``Settings``."""
 
     _prepare_local_database(settings)
+    if settings.environment == "cloud":
+        harden_parent_process()
     repo = repository or Repository(
         settings.database_url,
         # Cloud schema changes are a controlled migration step, never app boot.
@@ -80,6 +85,8 @@ def build_runtime(
             wait_for_completion=inline_wait_for_completion,
         )
     service.set_job_runner(runner)
+    stage2 = Stage2Service(service)
+    service.set_question_action_processor(stage2.process_question_action_retry)
     auth = AuthService(settings, repo)
     auth.seed_local_users()
     return Runtime(
@@ -88,6 +95,7 @@ def build_runtime(
         object_store=store,
         auth=auth,
         service=service,
+        stage2=stage2,
         job_runner=runner,
     )
 
@@ -101,6 +109,8 @@ def build_worker_runtime(
     """Build only the adapters required to claim and process one durable job."""
 
     _prepare_local_database(settings)
+    if settings.environment == "cloud":
+        harden_parent_process()
     repo = repository or Repository(
         settings.database_url,
         # Cloud schema changes are a controlled migration step, never job boot.
@@ -121,6 +131,8 @@ def build_worker_runtime(
         )
 
     service = Stage1Service(settings=settings, repository=repo, object_store=store)
+    stage2 = Stage2Service(service)
+    service.set_question_action_processor(stage2.process_question_action_retry)
     return WorkerRuntime(
         settings=settings,
         repository=repo,

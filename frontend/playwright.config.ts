@@ -9,6 +9,7 @@ const databaseUrl =
 
 export default defineConfig({
   testDir: "./e2e",
+  testMatch: "stage1-critical.spec.ts",
   timeout: 90_000,
   expect: { timeout: 15_000 },
   fullyParallel: false,

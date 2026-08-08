@@ -1,4 +1,4 @@
-"""FastAPI shell for the single-activity/single-submission Stage 1 slice."""
+"""FastAPI shell for the private Stage 2 experimental environment."""
 
 from datetime import UTC, datetime
 import json
@@ -30,13 +30,14 @@ from .repository import (
     Repository,
     SubmissionRow,
 )
+from .rate_limit import FixedWindowRateLimiter
 from .runtime import Runtime, build_runtime
 from .settings import Settings, get_settings
 from .workflows import ALLOWED_MEDIA_TYPES, Stage1Service, WorkflowError
 
 
 HTTP_LOGGER = logging.getLogger("cva.http")
-SHELL_CACHE_EPOCH = "stage1-v1"
+SHELL_CACHE_EPOCH = "stage2-v1"
 if not HTTP_LOGGER.handlers:
     _http_handler = logging.StreamHandler()
     _http_handler.setFormatter(logging.Formatter("%(message)s"))
@@ -54,7 +55,7 @@ PROBLEM_RESPONSES = {
             }
         },
     }
-    for status in (401, 403, 404, 409, 410, 412, 422, 428, 500)
+    for status in (401, 403, 404, 409, 410, 412, 422, 428, 429, 500)
 }
 
 
@@ -76,7 +77,7 @@ def _problem(status_code: int, code: str, detail: str, request: Request) -> JSON
         instance=_safe_route_template(request),
         code=code,
         trace_id=stable_id("trace", secrets.token_hex(16)),
-        retryable=status_code >= 500,
+        retryable=status_code >= 500 or status_code == 429,
     )
     return JSONResponse(
         problem.model_dump(mode="json"),
@@ -220,15 +221,29 @@ def _artifact_payload(row: ArtifactRow) -> dict[str, Any]:
     }
 
 
-def _submission_payload(row: SubmissionRow) -> dict[str, Any]:
+def _submission_payload(row: SubmissionRow, repository: Repository) -> dict[str, Any]:
     state = m.SubmissionProcessingState.model_validate(row.state).model_dump(mode="json")
     state.update(
         {
             "submission_id": row.id,
             "activity_id": row.activity_id,
             "subject_ref": row.subject_ref,
+            "artifact_uploaded": bool(
+                repository.artifacts_for(
+                    activity_id=row.activity_id,
+                    tenant_id=row.tenant_id,
+                    submission_id=row.id,
+                )
+            ),
         }
     )
+    try:
+        assessment = repository.latest_assessment(row.id, row.tenant_id)
+        state["assessment_id"] = assessment.assessment_id
+        state["assessment_version"] = assessment.version
+    except NotFound:
+        state["assessment_id"] = None
+        state["assessment_version"] = None
     return state
 
 
@@ -263,18 +278,48 @@ def create_app(
     )
     app = FastAPI(
         title="Comprehension Verification Lab",
-        version="0.3.0",
+        version="0.4.0",
         docs_url="/api/docs" if selected.environment != "cloud" else None,
         redoc_url=None,
         openapi_url="/api/openapi.json" if selected.environment != "cloud" else None,
         responses=PROBLEM_RESPONSES,
     )
     app.state.runtime = runtime
+    rate_limiter = FixedWindowRateLimiter()
 
     @app.middleware("http")
     async def security_headers(request: Request, call_next: Any) -> Response:
         started = monotonic()
-        response = await call_next(request)
+        response: Response
+        if request.url.path.startswith("/api/v1/"):
+            try:
+                actor = runtime.auth.authenticate(request)
+                principal_key = f"{actor.workspace_id}:{actor.user_id}"
+            except HTTPException:
+                peer = request.client.host if request.client is not None else "unknown"
+                principal_key = canonical_hash({"peer": peer})
+            mutation = request.method in {"POST", "PUT", "PATCH", "DELETE"}
+            limit = (
+                selected.api_mutation_rate_limit_per_minute
+                if mutation
+                else selected.api_read_rate_limit_per_minute
+            )
+            allowed, retry_after = rate_limiter.consume(
+                f"{'mutation' if mutation else 'read'}:{principal_key}",
+                limit=limit,
+            )
+            if not allowed:
+                response = _problem(
+                    429,
+                    "RATE_LIMITED",
+                    "The private experimental API rate limit was reached.",
+                    request,
+                )
+                response.headers["Retry-After"] = str(retry_after)
+            else:
+                response = await call_next(request)
+        else:
+            response = await call_next(request)
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["Referrer-Policy"] = "no-referrer"
         response.headers["X-Frame-Options"] = "DENY"
@@ -361,24 +406,31 @@ def create_app(
                     ExportRow, str(descriptor["export_id"]), actor.workspace_id
                 ),
             )
-            api_kind = str(descriptor["export_kind"])
-            stored_kind = {
-                "ASSESSMENT_PDF": "assessment_pdf",
-                "GUIDE_PDF": "guide_pdf",
-                "CANONICAL_JSON": "canonical_json",
-            }[api_kind]
-            item = runtime.service.export_artifact(row, stored_kind)
-            body = dto.ExportEnvelope.model_validate(
+            if row.data is None:
+                raise Conflict("IDEMPOTENCY_EXPORT_SNAPSHOT_MISSING")
+            record = m.ExportRecord.model_validate(row.data)
+            requested_kinds = [m.ExportKind(value) for value in descriptor["export_kinds"]]
+            downloads = [
+                item
+                for item in runtime.stage2.export_downloads(record, actor)
+                if item["kind"] in requested_kinds
+            ]
+            if not downloads:
+                raise Conflict("IDEMPOTENCY_EXPORT_ARTIFACT_MISSING")
+            item = downloads[0]
+            body = dto.ExportCreateEnvelope.model_validate(
                 {
                     "export": {
                         "export_id": row.id,
-                        "kind": api_kind,
+                        "kind": item["kind"],
                         "status": row.status,
-                        "download_url": item["url"],
+                        "download_url": item["download_url"],
                         "expires_at": item["expires_at"],
                         "sha256": item["sha256"],
                         "byte_size": item["byte_size"],
-                    }
+                    },
+                    "record": record,
+                    "downloads": downloads,
                 }
             ).model_dump(mode="json")
         elif kind == "evidence_verify":
@@ -453,10 +505,11 @@ def create_app(
             }
         if request.url.path.endswith("/exports"):
             exported = cast(dict[str, Any], body["export"])
+            record = cast(dict[str, Any], body["record"])
             return {
                 "kind": "export",
                 "export_id": exported["export_id"],
-                "export_kind": exported["kind"],
+                "export_kinds": record["requested_kinds"],
                 "status_code": response.status_code,
                 "headers": headers,
                 "authorization": authorization,
@@ -665,7 +718,7 @@ def create_app(
     @app.get("/api/health", response_model=dto.HealthResource)
     def health() -> dto.HealthResource:
         return dto.HealthResource(
-            status="ok", stage="1", model_mode=selected.model_mode
+            status="ok", stage="2", model_mode=selected.model_mode
         )
 
     @app.get("/api/readiness", response_model=dto.ReadinessResource)
@@ -1131,7 +1184,49 @@ def create_app(
             subject_ref=payload.subject_ref,
             actor=actor,
         )
-        return {"submission": _submission_payload(row)}
+        return {"submission": _submission_payload(row, runtime.repository)}
+
+    @app.post(
+        "/api/v1/activities/{activity_id}/submissions:batch",
+        status_code=201,
+        response_model=dto.SubmissionBatchEnvelope,
+    )
+    def create_submission_batch(
+        activity_id: str,
+        payload: dto.SubmissionBatchCommand,
+        actor: Annotated[Actor, Depends(mutating_actor)],
+    ) -> dict[str, Any]:
+        rows = runtime.stage2.create_submissions(
+            activity_id=activity_id,
+            subject_refs=payload.subject_refs,
+            actor=actor,
+        )
+        return {
+            "submissions": [
+                _submission_payload(row, runtime.repository) for row in rows
+            ],
+            "created_count": len(rows),
+        }
+
+    @app.get(
+        "/api/v1/activities/{activity_id}/submissions",
+        response_model=dto.SubmissionListEnvelope,
+    )
+    def activity_submissions(
+        activity_id: str,
+        actor: Annotated[Actor, Depends(current_actor)],
+        status: Annotated[m.SubmissionProcessingStatus | None, Query()] = None,
+        subject_ref: Annotated[str | None, Query(max_length=128)] = None,
+    ) -> dict[str, Any]:
+        rows = runtime.stage2.submissions(
+            activity_id=activity_id,
+            actor=actor,
+            status=status,
+            subject_ref=subject_ref,
+        )
+        return {
+            "items": [_submission_payload(row, runtime.repository) for row in rows]
+        }
 
     @app.get(
         "/api/v1/submissions/{submission_id}",
@@ -1145,13 +1240,7 @@ def create_app(
             SubmissionRow,
             runtime.repository.scoped(SubmissionRow, submission_id, actor.workspace_id),
         )
-        payload = _submission_payload(row)
-        try:
-            payload["assessment_id"] = runtime.repository.latest_assessment(
-                row.id, actor.workspace_id
-            ).assessment_id
-        except NotFound:
-            payload["assessment_id"] = None
+        payload = _submission_payload(row, runtime.repository)
         return {"submission": payload}
 
     @app.post(
@@ -1187,7 +1276,83 @@ def create_app(
         job_id: str,
         actor: Annotated[Actor, Depends(current_actor)],
     ) -> dict[str, Any]:
+        runtime.repository.reconcile_stale_jobs(
+            lease_seconds=runtime.settings.job_lease_seconds
+        )
         return {"job": runtime.repository.job_status(job_id, actor.workspace_id).model_dump(mode="json")}
+
+    @app.get(
+        "/api/v1/jobs/{job_id}/control",
+        response_model=dto.JobControlEnvelope,
+    )
+    def job_control(
+        job_id: str,
+        actor: Annotated[Actor, Depends(current_actor)],
+    ) -> dict[str, Any]:
+        return runtime.stage2.job_control_view(job_id, actor)
+
+    async def apply_job_control(
+        *,
+        job_id: str,
+        action: m.JobControlActionType,
+        payload: dto.JobControlCommand,
+        actor: Actor,
+    ) -> dict[str, Any]:
+        return await runtime.stage2.control_job(
+            job_id=job_id,
+            action=action,
+            reason_code=payload.reason_code,
+            target_stage=payload.target_stage,
+            actor=actor,
+        )
+
+    @app.post(
+        "/api/v1/jobs/{job_id}:retry",
+        response_model=dto.JobControlEnvelope,
+    )
+    async def retry_job(
+        job_id: str,
+        payload: dto.JobControlCommand,
+        actor: Annotated[Actor, Depends(mutating_actor)],
+    ) -> dict[str, Any]:
+        return await apply_job_control(
+            job_id=job_id,
+            action=m.JobControlActionType.RETRY,
+            payload=payload,
+            actor=actor,
+        )
+
+    @app.post(
+        "/api/v1/jobs/{job_id}:cancel",
+        response_model=dto.JobControlEnvelope,
+    )
+    async def cancel_job(
+        job_id: str,
+        payload: dto.JobControlCommand,
+        actor: Annotated[Actor, Depends(mutating_actor)],
+    ) -> dict[str, Any]:
+        return await apply_job_control(
+            job_id=job_id,
+            action=m.JobControlActionType.CANCEL,
+            payload=payload,
+            actor=actor,
+        )
+
+    @app.post(
+        "/api/v1/jobs/{job_id}:resume",
+        response_model=dto.JobControlEnvelope,
+    )
+    async def resume_job(
+        job_id: str,
+        payload: dto.JobControlCommand,
+        actor: Annotated[Actor, Depends(mutating_actor)],
+    ) -> dict[str, Any]:
+        return await apply_job_control(
+            job_id=job_id,
+            action=m.JobControlActionType.RESUME,
+            payload=payload,
+            actor=actor,
+        )
 
     @app.get(
         "/api/v1/jobs/{job_id}/model-calls",
@@ -1229,6 +1394,68 @@ def create_app(
         }
 
     @app.get(
+        "/api/v1/submissions/{submission_id}/coverage",
+        response_model=dto.CoverageEnvelope,
+    )
+    def submission_coverage(
+        submission_id: str,
+        actor: Annotated[Actor, Depends(current_actor)],
+    ) -> dict[str, Any]:
+        return {"coverage": runtime.stage2.coverage_for_submission(submission_id, actor)}
+
+    @app.get(
+        "/api/v1/activities/{activity_id}/coverage",
+        response_model=dto.CoverageEnvelope,
+    )
+    def activity_coverage(
+        activity_id: str,
+        actor: Annotated[Actor, Depends(current_actor)],
+    ) -> dict[str, Any]:
+        return {"coverage": runtime.stage2.coverage_for_activity(activity_id, actor)}
+
+    @app.get(
+        "/api/v1/activities/{activity_id}/metrics",
+        response_model=dto.MetricsEnvelope,
+    )
+    def activity_metrics(
+        activity_id: str,
+        actor: Annotated[Actor, Depends(current_actor)],
+    ) -> dict[str, Any]:
+        return {"metrics": runtime.stage2.experiment_metrics(activity_id, actor)}
+
+    @app.post(
+        "/api/v1/feedback",
+        status_code=201,
+        response_model=dto.FeedbackEnvelope,
+    )
+    def create_feedback(
+        payload: dto.FeedbackCommand,
+        actor: Annotated[Actor, Depends(mutating_actor)],
+    ) -> dict[str, Any]:
+        event = runtime.stage2.record_feedback(
+            activity_id=payload.activity_id,
+            target_type=payload.target_type,
+            category=payload.category,
+            rating=payload.rating,
+            actor=actor,
+            assessment_id=payload.assessment_id,
+            assessment_version=payload.assessment_version,
+            question_id=payload.question_id,
+            comment=payload.comment,
+        )
+        return {"feedback": event}
+
+    @app.get(
+        "/api/v1/activities/{activity_id}/feedback",
+        response_model=dto.FeedbackListEnvelope,
+    )
+    def activity_feedback(
+        activity_id: str,
+        actor: Annotated[Actor, Depends(current_actor)],
+    ) -> dict[str, Any]:
+        return {"items": runtime.stage2.feedback_for_activity(activity_id, actor)}
+
+    @app.get(
         "/api/v1/submissions/{submission_id}/assessment",
         response_model=dto.AssessmentEnvelope,
         responses={
@@ -1243,7 +1470,7 @@ def create_app(
         response: Response,
         actor: Annotated[Actor, Depends(current_actor)],
     ) -> dict[str, Any]:
-        value = runtime.service.assessment_view(submission_id, actor)
+        value = runtime.stage2.assessment_review_view(submission_id, actor)
         value["evidence"] = evidence(submission_id, actor)["items"]
         response.headers["ETag"] = str(value["etag"])
         return value
@@ -1261,6 +1488,60 @@ def create_app(
             runtime.repository.guide_for_assessment(assessment_id, actor.workspace_id),
         )
         return {"guide": row.data}
+
+    @app.post(
+        "/api/v1/assessments/{assessment_id}/questions/{question_id}/actions",
+        response_model=dto.QuestionReviewActionEnvelope,
+        responses={
+            200: {
+                "description": "Durable question action and current review bundle",
+                "headers": {"ETag": {"schema": {"type": "string"}}},
+            }
+        },
+    )
+    async def review_question(
+        assessment_id: str,
+        question_id: str,
+        payload: dto.QuestionReviewActionCommand,
+        response: Response,
+        actor: Annotated[Actor, Depends(mutating_actor)],
+        if_match: Annotated[str | None, Header(alias="If-Match")] = None,
+    ) -> dict[str, Any]:
+        if not if_match:
+            raise WorkflowError(
+                "IF_MATCH_REQUIRED", "If-Match is required", status_code=428
+            )
+        record = await runtime.stage2.review_question(
+            assessment_id=assessment_id,
+            question_id=question_id,
+            action_type=payload.action,
+            actor=actor,
+            if_match=if_match,
+            reason_code=payload.reason_code,
+            note=payload.note,
+            replacement=payload.replacement,
+        )
+        value = runtime.stage2.assessment_review_view(record.submission_id, actor)
+        value["evidence"] = evidence(record.submission_id, actor)["items"]
+        response.headers["ETag"] = str(value["etag"])
+        return {"action_record": record, "bundle": value}
+
+    @app.get(
+        "/api/v1/assessments/{assessment_id}/questions/{question_id}/actions",
+        response_model=dto.QuestionReviewActionListEnvelope,
+    )
+    def question_action_history(
+        assessment_id: str,
+        question_id: str,
+        actor: Annotated[Actor, Depends(current_actor)],
+    ) -> dict[str, Any]:
+        return {
+            "items": runtime.stage2.question_actions(
+                assessment_id=assessment_id,
+                question_id=question_id,
+                actor=actor,
+            )
+        }
 
     @app.post(
         "/api/v1/assessments/{assessment_id}/evidence:verify",
@@ -1296,12 +1577,13 @@ def create_app(
             raise WorkflowError(
                 "IF_MATCH_REQUIRED", "If-Match is required", status_code=428
             )
+        runtime.stage2.assert_no_unresolved_question_action(assessment_id, actor)
         row = runtime.service.approve_assessment(
             assessment_id=assessment_id,
             if_match=if_match,
             actor=actor,
         )
-        value = runtime.service.assessment_view(row.submission_id, actor)
+        value = runtime.stage2.assessment_review_view(row.submission_id, actor)
         value["evidence"] = evidence(row.submission_id, actor)["items"]
         response.headers["ETag"] = str(value["etag"])
         return value
@@ -1309,33 +1591,76 @@ def create_app(
     @app.post(
         "/api/v1/assessments/{assessment_id}/exports",
         status_code=201,
-        response_model=dto.ExportEnvelope,
+        response_model=dto.ExportCreateEnvelope,
     )
     def create_export(
         assessment_id: str,
         payload: dto.ExportKindCommand,
         actor: Annotated[Actor, Depends(mutating_actor)],
     ) -> dict[str, Any]:
-        kind = payload.kind
-        key_by_kind = {
-            "ASSESSMENT_PDF": "assessment_pdf",
-            "GUIDE_PDF": "guide_pdf",
-            "CANONICAL_JSON": "canonical_json",
-        }
-        if kind not in key_by_kind:
-            raise WorkflowError("EXPORT_KIND_INVALID", "Export kind is not enabled")
-        row = runtime.service.create_export(assessment_id, actor)
-        item = runtime.service.export_artifact(row, key_by_kind[kind])
+        requested_kinds = payload.requested_kinds()
+        record = runtime.stage2.create_export(
+            assessment_id=assessment_id,
+            requested_kinds=requested_kinds,
+            actor=actor,
+        )
+        downloads = runtime.stage2.export_downloads(record, actor)
+        item = downloads[0]
         return {
             "export": {
-                "export_id": row.id,
-                "kind": kind,
-                "status": row.status,
-                "download_url": item["url"],
+                "export_id": record.export_id,
+                "kind": item["kind"],
+                "status": record.status,
+                "download_url": item["download_url"],
                 "expires_at": item["expires_at"],
                 "sha256": item["sha256"],
                 "byte_size": item["byte_size"],
-            }
+            },
+            "record": record,
+            "downloads": downloads,
+        }
+
+    @app.get(
+        "/api/v1/assessments/{assessment_id}/exports",
+        response_model=dto.ExportHistoryEnvelope,
+    )
+    def export_history(
+        assessment_id: str,
+        actor: Annotated[Actor, Depends(current_actor)],
+    ) -> dict[str, Any]:
+        return {
+            "items": runtime.stage2.exports_for_assessment(assessment_id, actor)
+        }
+
+    @app.post(
+        "/api/v1/activities/{activity_id}/assessments:bulk-approve",
+        response_model=dto.BulkApprovalEnvelope,
+    )
+    def bulk_approve_assessments(
+        activity_id: str,
+        payload: dto.BulkApprovalCommand,
+        actor: Annotated[Actor, Depends(mutating_actor)],
+    ) -> dict[str, Any]:
+        record = runtime.stage2.bulk_approve(
+            activity_id=activity_id,
+            targets=payload.targets,
+            explicit_confirmation=payload.explicit_confirmation,
+            actor=actor,
+        )
+        return {"bulk_approval": record}
+
+    @app.get(
+        "/api/v1/activities/{activity_id}/bulk-approvals",
+        response_model=dto.BulkApprovalHistoryEnvelope,
+    )
+    def bulk_approval_history(
+        activity_id: str,
+        actor: Annotated[Actor, Depends(current_actor)],
+    ) -> dict[str, Any]:
+        return {
+            "items": runtime.stage2.bulk_approvals_for_activity(
+                activity_id, actor
+            )
         }
 
     frontend = Path(selected.frontend_dist).resolve()

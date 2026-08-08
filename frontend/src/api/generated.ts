@@ -125,6 +125,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/activities/{activity_id}/assessments:bulk-approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Bulk Approve Assessments */
+        post: operations["bulk_approve_assessments_api_v1_activities__activity_id__assessments_bulk_approve_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/activities/{activity_id}/blueprints:generate": {
         parameters: {
             query?: never;
@@ -194,6 +211,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/activities/{activity_id}/bulk-approvals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Bulk Approval History */
+        get: operations["bulk_approval_history_api_v1_activities__activity_id__bulk_approvals_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/activities/{activity_id}/coverage": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Activity Coverage */
+        get: operations["activity_coverage_api_v1_activities__activity_id__coverage_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/activities/{activity_id}/decisions": {
         parameters: {
             query?: never;
@@ -228,7 +279,59 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/activities/{activity_id}/feedback": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Activity Feedback */
+        get: operations["activity_feedback_api_v1_activities__activity_id__feedback_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/activities/{activity_id}/metrics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Activity Metrics */
+        get: operations["activity_metrics_api_v1_activities__activity_id__metrics_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/activities/{activity_id}/submissions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Activity Submissions */
+        get: operations["activity_submissions_api_v1_activities__activity_id__submissions_get"];
+        put?: never;
+        /** Create Submission */
+        post: operations["create_submission_api_v1_activities__activity_id__submissions_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/activities/{activity_id}/submissions:batch": {
         parameters: {
             query?: never;
             header?: never;
@@ -237,8 +340,8 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Create Submission */
-        post: operations["create_submission_api_v1_activities__activity_id__submissions_post"];
+        /** Create Submission Batch */
+        post: operations["create_submission_batch_api_v1_activities__activity_id__submissions_batch_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -286,7 +389,8 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /** Export History */
+        get: operations["export_history_api_v1_assessments__assessment_id__exports_get"];
         put?: never;
         /** Create Export */
         post: operations["create_export_api_v1_assessments__assessment_id__exports_post"];
@@ -313,6 +417,41 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/assessments/{assessment_id}/questions/{question_id}/actions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Question Action History */
+        get: operations["question_action_history_api_v1_assessments__assessment_id__questions__question_id__actions_get"];
+        put?: never;
+        /** Review Question */
+        post: operations["review_question_api_v1_assessments__assessment_id__questions__question_id__actions_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/feedback": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Feedback */
+        post: operations["create_feedback_api_v1_feedback_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/jobs/{job_id}": {
         parameters: {
             query?: never;
@@ -322,6 +461,74 @@ export interface paths {
         };
         /** Job Status */
         get: operations["job_status_api_v1_jobs__job_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/jobs/{job_id}:cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Cancel Job */
+        post: operations["cancel_job_api_v1_jobs__job_id__cancel_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/jobs/{job_id}:resume": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Resume Job */
+        post: operations["resume_job_api_v1_jobs__job_id__resume_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/jobs/{job_id}:retry": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Retry Job */
+        post: operations["retry_job_api_v1_jobs__job_id__retry_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/jobs/{job_id}/control": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Job Control */
+        get: operations["job_control_api_v1_jobs__job_id__control_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -492,6 +699,23 @@ export interface paths {
         };
         /** Assessment */
         get: operations["assessment_api_v1_submissions__submission_id__assessment_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/submissions/{submission_id}/coverage": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Submission Coverage */
+        get: operations["submission_coverage_api_v1_submissions__submission_id__coverage_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -904,6 +1128,13 @@ export interface components {
          * @enum {string}
          */
         AssessmentModality: "WRITTEN" | "ORAL" | "MIXED";
+        /** AssessmentVersionRef */
+        AssessmentVersionRef: {
+            /** Assessment Id */
+            assessment_id: string;
+            /** Assessment Version */
+            assessment_version: number;
+        };
         /**
          * BlueprintApprovalRecommendation
          * @enum {string}
@@ -986,6 +1217,72 @@ export interface components {
             /** Referenced Ids */
             referenced_ids?: string[];
             status: components["schemas"]["ReviewCheckStatus"];
+        };
+        /** BulkApprovalCommand */
+        BulkApprovalCommand: {
+            /**
+             * Explicit Confirmation
+             * @constant
+             */
+            explicit_confirmation: "CONFIRM_BULK_APPROVAL_OF_ALL_ELIGIBLE_SELECTED_ASSESSMENTS";
+            /** Targets */
+            targets: components["schemas"]["AssessmentVersionRef"][];
+        };
+        /** BulkApprovalEnvelope */
+        BulkApprovalEnvelope: {
+            bulk_approval: components["schemas"]["BulkApprovalRecord"];
+        };
+        /** BulkApprovalExclusion */
+        BulkApprovalExclusion: {
+            /** Message */
+            message: string;
+            /** Reason Code */
+            reason_code: string;
+            /**
+             * Requires Individual Review
+             * @default true
+             * @constant
+             */
+            requires_individual_review: true;
+            target: components["schemas"]["AssessmentVersionRef"];
+        };
+        /** BulkApprovalHistoryEnvelope */
+        BulkApprovalHistoryEnvelope: {
+            /** Items */
+            items: components["schemas"]["BulkApprovalRecord"][];
+        };
+        /** BulkApprovalRecord */
+        BulkApprovalRecord: {
+            /** Actor Id */
+            actor_id: string;
+            /** Approval Id */
+            approval_id: string;
+            /**
+             * Approved At
+             * Format: date-time
+             */
+            approved_at: string;
+            /** Approved Targets */
+            approved_targets?: components["schemas"]["AssessmentVersionRef"][];
+            /** Excluded Targets */
+            excluded_targets?: components["schemas"]["BulkApprovalExclusion"][];
+            /** Request Id */
+            request_id: string;
+            /** Requested Targets */
+            requested_targets: components["schemas"]["AssessmentVersionRef"][];
+            /**
+             * Schema Version
+             * @default 1.1.0
+             * @constant
+             */
+            schema_version: "1.1.0";
+            /**
+             * Scope
+             * @constant
+             */
+            scope: "SELECTED_ELIGIBLE_ASSESSMENTS";
+            /** Tenant Id */
+            tenant_id: string;
         };
         /** ChoiceOption */
         ChoiceOption: {
@@ -1074,6 +1371,10 @@ export interface components {
             /** Within Limit */
             within_limit: boolean;
         };
+        /** CoverageEnvelope */
+        CoverageEnvelope: {
+            coverage: components["schemas"]["CoverageReport"];
+        };
         /** CoverageItem */
         CoverageItem: {
             /** Available Opportunity Count */
@@ -1093,6 +1394,96 @@ export interface components {
             reused_variant_count: number;
             /** Selected Opportunity Count */
             selected_opportunity_count: number;
+        };
+        /**
+         * CoverageOutcome
+         * @enum {string}
+         */
+        CoverageOutcome: "PLANNED" | "GENERATED" | "REVIEWED" | "APPROVED" | "FAILED" | "EXCLUDED";
+        /**
+         * CoveragePlanningRole
+         * @enum {string}
+         */
+        CoveragePlanningRole: "PRIMARY" | "RESERVE" | "EXCLUDED";
+        /**
+         * CoverageReport
+         * @description Traceable coverage snapshot for one submission or an activity aggregate.
+         */
+        CoverageReport: {
+            /** Activity Id */
+            activity_id: string;
+            /** Assessment Id */
+            assessment_id?: string | null;
+            /** Assessment Version */
+            assessment_version?: number | null;
+            /** Blueprint Id */
+            blueprint_id: string;
+            /** Blueprint Version */
+            blueprint_version: number;
+            /** Diagnostics */
+            diagnostics?: components["schemas"]["Diagnostic"][];
+            /**
+             * Generated At
+             * Format: date-time
+             */
+            generated_at: string;
+            /** Report Id */
+            report_id: string;
+            /**
+             * Schema Version
+             * @default 1.2.0
+             * @constant
+             */
+            schema_version: "1.2.0";
+            scope: components["schemas"]["CoverageScope"];
+            /** Source Snapshot Hash */
+            source_snapshot_hash: string;
+            /** Submission Id */
+            submission_id?: string | null;
+            /** Summary */
+            summary: components["schemas"]["CoverageItem"][];
+            /** Tenant Id */
+            tenant_id: string;
+            /** Traces */
+            traces?: components["schemas"]["CoverageTraceItem"][];
+        };
+        /**
+         * CoverageScope
+         * @enum {string}
+         */
+        CoverageScope: "SUBMISSION" | "ACTIVITY";
+        /** CoverageTraceItem */
+        CoverageTraceItem: {
+            /** Assessment Id */
+            assessment_id?: string | null;
+            /** Assessment Version */
+            assessment_version?: number | null;
+            cognitive_operation: components["schemas"]["CognitiveOperation"];
+            /** Criterion Ids */
+            criterion_ids?: string[];
+            /** Diagnostics */
+            diagnostics?: components["schemas"]["Diagnostic"][];
+            /** Dimension Id */
+            dimension_id: string;
+            /** Evidence Ids */
+            evidence_ids?: string[];
+            /** Exclusion Reason Code */
+            exclusion_reason_code?: string | null;
+            /** Failure Code */
+            failure_code?: string | null;
+            /** Opportunity Id */
+            opportunity_id: string;
+            outcome: components["schemas"]["CoverageOutcome"];
+            planning_role: components["schemas"]["CoveragePlanningRole"];
+            /**
+             * Reused Variant
+             * @default false
+             */
+            reused_variant: boolean;
+            /** Submission Id */
+            submission_id: string;
+            /** Variant Id */
+            variant_id: string;
         };
         /** DecisionOption */
         DecisionOption: {
@@ -1366,17 +1757,158 @@ export interface components {
              */
             view_url_expires_at: string;
         };
-        /** ExportEnvelope */
-        ExportEnvelope: {
-            export: components["schemas"]["ExportResource"];
+        /**
+         * ExperimentMetrics
+         * @description Content-free aggregate metrics for one experimental activity window.
+         */
+        ExperimentMetrics: {
+            /** Activity Id */
+            activity_id: string;
+            /** By Model */
+            by_model?: components["schemas"]["ModelMetricAggregate"][];
+            /** By Stage */
+            by_stage?: components["schemas"]["StageMetricAggregate"][];
+            /**
+             * Generated At
+             * Format: date-time
+             */
+            generated_at: string;
+            human_review: components["schemas"]["HumanReviewMetricAggregate"];
+            /** Metrics Id */
+            metrics_id: string;
+            quality: components["schemas"]["QualityMetricAggregate"];
+            /**
+             * Schema Version
+             * @default 1.2.0
+             * @constant
+             */
+            schema_version: "1.2.0";
+            technical: components["schemas"]["TechnicalMetricAggregate"];
+            /** Tenant Id */
+            tenant_id: string;
+            /**
+             * Window End
+             * Format: date-time
+             */
+            window_end: string;
+            /**
+             * Window Start
+             * Format: date-time
+             */
+            window_start: string;
         };
+        /** ExportArtifact */
+        ExportArtifact: {
+            /** Byte Size */
+            byte_size: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Export Artifact Id */
+            export_artifact_id: string;
+            kind: components["schemas"]["ExportKind"];
+            /** Media Type */
+            media_type: string;
+            /** Object Key */
+            object_key: string;
+            /** Sha256 */
+            sha256: string;
+        };
+        /** ExportCreateEnvelope */
+        ExportCreateEnvelope: {
+            /** Downloads */
+            downloads: components["schemas"]["ExportDownloadResource"][];
+            export: components["schemas"]["ExportResource"];
+            record: components["schemas"]["ExportRecord"];
+        };
+        /** ExportDownloadResource */
+        ExportDownloadResource: {
+            /** Byte Size */
+            byte_size: number;
+            /** Download Url */
+            download_url: string;
+            /**
+             * Expires At
+             * Format: date-time
+             */
+            expires_at: string;
+            /** Export Artifact Id */
+            export_artifact_id: string;
+            kind: components["schemas"]["ExportKind"];
+            /** Media Type */
+            media_type: string;
+            /** Sha256 */
+            sha256: string;
+        };
+        /** ExportHistoryEnvelope */
+        ExportHistoryEnvelope: {
+            /** Items */
+            items: components["schemas"]["ExportRecord"][];
+        };
+        /**
+         * ExportKind
+         * @enum {string}
+         */
+        ExportKind: "ASSESSMENT_PDF" | "ASSESSMENT_HTML" | "GUIDE_PDF" | "GUIDE_HTML" | "COVERAGE_CSV" | "COVERAGE_JSON" | "CANONICAL_JSON";
         /** ExportKindCommand */
         ExportKindCommand: {
+            kind?: components["schemas"]["ExportKind"] | null;
+            /** Kinds */
+            kinds?: components["schemas"]["ExportKind"][] | null;
+        };
+        /**
+         * ExportRecord
+         * @description Durable export metadata; download capabilities are intentionally absent.
+         */
+        ExportRecord: {
+            /** Activity Id */
+            activity_id: string;
+            /** Artifacts */
+            artifacts?: components["schemas"]["ExportArtifact"][];
+            /** Assessment Id */
+            assessment_id: string;
+            /** Assessment Snapshot Hash */
+            assessment_snapshot_hash: string;
+            /** Assessment Version */
+            assessment_version: number;
+            /** Completed At */
+            completed_at?: string | null;
+            /** Coverage Snapshot Hash */
+            coverage_snapshot_hash?: string | null;
+            /** Diagnostics */
+            diagnostics?: components["schemas"]["Diagnostic"][];
+            /** Export Id */
+            export_id: string;
+            /** Guide Snapshot Hash */
+            guide_snapshot_hash?: string | null;
             /**
-             * Kind
-             * @enum {string}
+             * Model Call Delta
+             * @default 0
+             * @constant
              */
-            kind: "ASSESSMENT_PDF" | "GUIDE_PDF" | "CANONICAL_JSON";
+            model_call_delta: 0;
+            /** Renderer Version */
+            renderer_version: string;
+            /**
+             * Requested At
+             * Format: date-time
+             */
+            requested_at: string;
+            /** Requested By */
+            requested_by: string;
+            /** Requested Kinds */
+            requested_kinds: components["schemas"]["ExportKind"][];
+            /**
+             * Schema Version
+             * @default 1.2.0
+             * @constant
+             */
+            schema_version: "1.2.0";
+            status: components["schemas"]["ExportStatus"];
+            /** Tenant Id */
+            tenant_id: string;
         };
         /** ExportResource */
         ExportResource: {
@@ -1391,11 +1923,7 @@ export interface components {
             expires_at: string;
             /** Export Id */
             export_id: string;
-            /**
-             * Kind
-             * @enum {string}
-             */
-            kind: "ASSESSMENT_PDF" | "GUIDE_PDF" | "CANONICAL_JSON";
+            kind: components["schemas"]["ExportKind"];
             /** Sha256 */
             sha256: string;
             /**
@@ -1404,6 +1932,110 @@ export interface components {
              */
             status: "QUEUED" | "READY" | "FAILED";
         };
+        /**
+         * ExportStatus
+         * @enum {string}
+         */
+        ExportStatus: "QUEUED" | "READY" | "FAILED";
+        /**
+         * FailureClass
+         * @enum {string}
+         */
+        FailureClass: "TRANSIENT" | "PERMANENT" | "SECURITY" | "VALIDATION" | "PRECONDITION" | "PROVIDER" | "CANCELLATION";
+        /**
+         * FeedbackCategory
+         * @enum {string}
+         */
+        FeedbackCategory: "GROUNDING" | "ANSWERABILITY" | "QUESTION_QUALITY" | "GUIDE_QUALITY" | "COVERAGE" | "WORKFLOW" | "EXPORT" | "OTHER";
+        /** FeedbackCommand */
+        FeedbackCommand: {
+            /** Activity Id */
+            activity_id: string;
+            /** Assessment Id */
+            assessment_id?: string | null;
+            /** Assessment Version */
+            assessment_version?: number | null;
+            category: components["schemas"]["FeedbackCategory"];
+            /** Comment */
+            comment?: string | null;
+            /** Question Id */
+            question_id?: string | null;
+            rating: components["schemas"]["FeedbackRating"];
+            target_type: components["schemas"]["FeedbackTargetType"];
+        };
+        /** FeedbackEnvelope */
+        FeedbackEnvelope: {
+            feedback: components["schemas"]["FeedbackEvent"];
+        };
+        /**
+         * FeedbackEvent
+         * @description Governed teacher feedback; never authorizes training or academic action.
+         */
+        FeedbackEvent: {
+            /**
+             * Academic Decision Use Allowed
+             * @default false
+             * @constant
+             */
+            academic_decision_use_allowed: false;
+            /** Activity Id */
+            activity_id: string;
+            /** Actor Id */
+            actor_id: string;
+            /** Assessment Id */
+            assessment_id?: string | null;
+            /** Assessment Version */
+            assessment_version?: number | null;
+            category: components["schemas"]["FeedbackCategory"];
+            /** Comment */
+            comment?: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Feedback Id */
+            feedback_id: string;
+            /**
+             * Public Dataset Use Allowed
+             * @default false
+             * @constant
+             */
+            public_dataset_use_allowed: false;
+            /** Question Id */
+            question_id?: string | null;
+            rating: components["schemas"]["FeedbackRating"];
+            /**
+             * Schema Version
+             * @default 1.2.0
+             * @constant
+             */
+            schema_version: "1.2.0";
+            target_type: components["schemas"]["FeedbackTargetType"];
+            /** Tenant Id */
+            tenant_id: string;
+            /**
+             * Training Use Allowed
+             * @default false
+             * @constant
+             */
+            training_use_allowed: false;
+        };
+        /** FeedbackListEnvelope */
+        FeedbackListEnvelope: {
+            /** Items */
+            items: components["schemas"]["FeedbackEvent"][];
+        };
+        /**
+         * FeedbackRating
+         * @enum {string}
+         */
+        FeedbackRating: "VERY_UNHELPFUL" | "UNHELPFUL" | "NEUTRAL" | "HELPFUL" | "VERY_HELPFUL";
+        /**
+         * FeedbackTargetType
+         * @enum {string}
+         */
+        FeedbackTargetType: "ACTIVITY" | "ASSESSMENT" | "QUESTION";
         /** GuideDraft */
         GuideDraft: {
             /** Acceptable Alternatives */
@@ -1445,12 +2077,27 @@ export interface components {
              * Stage
              * @constant
              */
-            stage: "1";
+            stage: "2";
             /**
              * Status
              * @constant
              */
             status: "ok";
+        };
+        /** HumanReviewMetricAggregate */
+        HumanReviewMetricAggregate: {
+            /** Accepted Count */
+            accepted_count: number;
+            /** Edited Count */
+            edited_count: number;
+            /** Regenerated Count */
+            regenerated_count: number;
+            /** Rejected Count */
+            rejected_count: number;
+            /** Review Seconds */
+            review_seconds: number;
+            /** Reviewed Question Count */
+            reviewed_question_count: number;
         };
         /** ImageLocator */
         ImageLocator: {
@@ -1470,6 +2117,83 @@ export interface components {
             /** Path */
             path: string;
         };
+        /**
+         * JobControlActionType
+         * @enum {string}
+         */
+        JobControlActionType: "RETRY" | "CANCEL" | "RESUME";
+        /** JobControlCommand */
+        JobControlCommand: {
+            /** Reason Code */
+            reason_code: string;
+            /** Target Stage */
+            target_stage?: string | null;
+        };
+        /** JobControlEnvelope */
+        JobControlEnvelope: {
+            /** Allowed Actions */
+            allowed_actions?: components["schemas"]["JobControlActionType"][];
+            /** Control Records */
+            control_records?: components["schemas"]["JobControlRecord"][];
+            /**
+             * Control State
+             * @enum {string}
+             */
+            control_state: "ACTIVE" | "CANCEL_REQUESTED" | "CANCELLED";
+            failure_class?: components["schemas"]["FailureClass"] | null;
+            job: components["schemas"]["JobStatus"];
+            /** Resumable Stage */
+            resumable_stage?: string | null;
+            /** Stage Runs */
+            stage_runs?: components["schemas"]["StageRun"][];
+        };
+        /**
+         * JobControlRecord
+         * @description Durable authorization and outcome for retry, cancel, or stage resume.
+         */
+        JobControlRecord: {
+            action: components["schemas"]["JobControlActionType"];
+            /** Actor Id */
+            actor_id: string;
+            /** Aggregate Id */
+            aggregate_id: string;
+            /** Control Id */
+            control_id: string;
+            /** Decided At */
+            decided_at?: string | null;
+            /** Diagnostics */
+            diagnostics?: components["schemas"]["Diagnostic"][];
+            failure_class?: components["schemas"]["FailureClass"] | null;
+            /** Job Id */
+            job_id: string;
+            /** Reason Code */
+            reason_code: string;
+            /**
+             * Requested At
+             * Format: date-time
+             */
+            requested_at: string;
+            /** Resulting Job Id */
+            resulting_job_id?: string | null;
+            /**
+             * Schema Version
+             * @default 1.2.0
+             * @constant
+             */
+            schema_version: "1.2.0";
+            /** Source Attempt */
+            source_attempt: number;
+            status: components["schemas"]["JobControlStatus"];
+            /** Target Stage */
+            target_stage?: string | null;
+            /** Tenant Id */
+            tenant_id: string;
+        };
+        /**
+         * JobControlStatus
+         * @enum {string}
+         */
+        JobControlStatus: "REQUESTED" | "APPLIED" | "REJECTED";
         /** JobEnvelope */
         JobEnvelope: {
             job: components["schemas"]["JobStatus"];
@@ -1589,6 +2313,10 @@ export interface components {
             /** Email */
             email: string;
         };
+        /** MetricsEnvelope */
+        MetricsEnvelope: {
+            metrics: components["schemas"]["ExperimentMetrics"];
+        };
         /** ModelCallLedger */
         ModelCallLedger: {
             /** Actual Cost Usd */
@@ -1670,6 +2398,40 @@ export interface components {
          * @enum {string}
          */
         ModelInputModality: "TEXT" | "IMAGE" | "PDF" | "AUDIO" | "VIDEO";
+        /** ModelMetricAggregate */
+        ModelMetricAggregate: {
+            /** Actual Cost Usd */
+            actual_cost_usd: number;
+            /** Cached Input Tokens */
+            cached_input_tokens: number;
+            /** Call Count */
+            call_count: number;
+            /** Error Count */
+            error_count: number;
+            /** Estimated Cost Usd */
+            estimated_cost_usd: number;
+            /** Input Tokens */
+            input_tokens: number;
+            /** Latency P50 Ms */
+            latency_p50_ms: number;
+            /** Latency P95 Ms */
+            latency_p95_ms: number;
+            /** Model */
+            model: string;
+            /** Model Snapshot */
+            model_snapshot: string;
+            /** Output Tokens */
+            output_tokens: number;
+            /**
+             * Provider
+             * @enum {string}
+             */
+            provider: "openai" | "anthropic" | "google" | "other";
+            /** Route Id */
+            route_id: string;
+            /** Schema Valid Count */
+            schema_valid_count: number;
+        };
         /**
          * ModelOutputModality
          * @enum {string}
@@ -1841,6 +2603,19 @@ export interface components {
              */
             type: string;
         };
+        /** QualityMetricAggregate */
+        QualityMetricAggregate: {
+            /** Assessment Count */
+            assessment_count: number;
+            /** Defect Count */
+            defect_count: number;
+            /** Exact Plan Count */
+            exact_plan_count: number;
+            /** Fail Closed Count */
+            fail_closed_count: number;
+            /** Replacement Count */
+            replacement_count: number;
+        };
         /** QuestionOpportunityTemplate */
         QuestionOpportunityTemplate: {
             /** Allowed Anchor Structures */
@@ -1870,6 +2645,103 @@ export interface components {
             /** Verification Potential */
             verification_potential: number;
         };
+        /** QuestionReviewAction */
+        QuestionReviewAction: {
+            action: components["schemas"]["QuestionReviewActionType"];
+            /** Action Id */
+            action_id: string;
+            /** Actor Id */
+            actor_id: string;
+            /** Assessment Id */
+            assessment_id: string;
+            /** Note */
+            note?: string | null;
+            /**
+             * Occurred At
+             * Format: date-time
+             */
+            occurred_at: string;
+            /** Question Id */
+            question_id: string;
+            /** Reason Code */
+            reason_code?: string | null;
+            replacement?: components["schemas"]["SelectedQuestion"] | null;
+            /**
+             * Schema Version
+             * @default 1.1.0
+             * @constant
+             */
+            schema_version: "1.1.0";
+        };
+        /** QuestionReviewActionCommand */
+        QuestionReviewActionCommand: {
+            action: components["schemas"]["QuestionReviewActionType"];
+            /** Note */
+            note?: string | null;
+            /** Reason Code */
+            reason_code?: string | null;
+            replacement?: components["schemas"]["SelectedQuestion"] | null;
+        };
+        /** QuestionReviewActionEnvelope */
+        QuestionReviewActionEnvelope: {
+            action_record: components["schemas"]["QuestionReviewActionRecord"];
+            bundle: components["schemas"]["AssessmentEnvelope"];
+        };
+        /** QuestionReviewActionListEnvelope */
+        QuestionReviewActionListEnvelope: {
+            /** Items */
+            items: components["schemas"]["QuestionReviewActionRecord"][];
+        };
+        /**
+         * QuestionReviewActionRecord
+         * @description Versioned outcome around the unchanged v1.1 QuestionReviewAction root.
+         */
+        QuestionReviewActionRecord: {
+            action: components["schemas"]["QuestionReviewAction"];
+            /** Activity Id */
+            activity_id: string;
+            after_question?: components["schemas"]["SelectedQuestion"] | null;
+            /** Assessment Id */
+            assessment_id: string;
+            /** Assessment Version After */
+            assessment_version_after?: number | null;
+            /** Assessment Version Before */
+            assessment_version_before: number;
+            before_question: components["schemas"]["SelectedQuestion"];
+            /** Diagnostics */
+            diagnostics?: components["schemas"]["Diagnostic"][];
+            lineage_after?: components["schemas"]["Lineage"] | null;
+            lineage_before: components["schemas"]["Lineage"];
+            /** Record Id */
+            record_id: string;
+            /**
+             * Recorded At
+             * Format: date-time
+             */
+            recorded_at: string;
+            revalidation_status: components["schemas"]["RevalidationStatus"];
+            /**
+             * Schema Version
+             * @default 1.2.0
+             * @constant
+             */
+            schema_version: "1.2.0";
+            status: components["schemas"]["QuestionReviewRecordStatus"];
+            /** Submission Id */
+            submission_id: string;
+            /** Tenant Id */
+            tenant_id: string;
+        };
+        /**
+         * QuestionReviewActionType
+         * @enum {string}
+         */
+        QuestionReviewActionType: "ACCEPT" | "REJECT" | "EDIT" | "REGENERATE";
+        /**
+         * QuestionReviewRecordStatus
+         * @enum {string}
+         */
+        QuestionReviewRecordStatus: "APPLIED" | "FAILED";
         /** QuestionReviewResource */
         QuestionReviewResource: {
             /** Candidate Id */
@@ -1937,6 +2809,11 @@ export interface components {
          * @enum {string}
          */
         ResponseFormat: "OPEN_SHORT" | "STRUCTURED_BULLETS" | "CHOICE" | "ANNOTATION_OR_DIAGRAM" | "ORAL_EQUIVALENT";
+        /**
+         * RevalidationStatus
+         * @enum {string}
+         */
+        RevalidationStatus: "NOT_REQUIRED" | "PASSED" | "FAILED";
         /**
          * ReviewCheckStatus
          * @enum {string}
@@ -2048,6 +2925,86 @@ export interface components {
             /** Supported Claim */
             supported_claim: string;
         };
+        /** StageMetricAggregate */
+        StageMetricAggregate: {
+            /** Cancelled */
+            cancelled: number;
+            /** Failed */
+            failed: number;
+            /** Latency P50 Ms */
+            latency_p50_ms: number;
+            /** Latency P95 Ms */
+            latency_p95_ms: number;
+            /** Retries */
+            retries: number;
+            /** Runs */
+            runs: number;
+            /** Stage */
+            stage: string;
+            /** Succeeded */
+            succeeded: number;
+        };
+        /**
+         * StageRun
+         * @description Durable, reusable execution of one deterministic application stage.
+         */
+        StageRun: {
+            /** Aggregate Id */
+            aggregate_id: string;
+            /** Attempt */
+            attempt: number;
+            /** Cancel Requested At */
+            cancel_requested_at?: string | null;
+            /** Component Version */
+            component_version: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Diagnostics */
+            diagnostics?: components["schemas"]["Diagnostic"][];
+            failure_class?: components["schemas"]["FailureClass"] | null;
+            /** Finished At */
+            finished_at?: string | null;
+            /** Input Hash */
+            input_hash: string;
+            /** Job Id */
+            job_id: string;
+            /** Output Hash */
+            output_hash?: string | null;
+            /** Output Ref */
+            output_ref?: string | null;
+            /** Policy Hash */
+            policy_hash: string;
+            /**
+             * Retryable
+             * @default false
+             */
+            retryable: boolean;
+            /**
+             * Schema Version
+             * @default 1.2.0
+             * @constant
+             */
+            schema_version: "1.2.0";
+            /** Stage */
+            stage: string;
+            /** Stage Key */
+            stage_key: string;
+            /** Stage Run Id */
+            stage_run_id: string;
+            /** Started At */
+            started_at?: string | null;
+            status: components["schemas"]["StageRunStatus"];
+            /** Tenant Id */
+            tenant_id: string;
+        };
+        /**
+         * StageRunStatus
+         * @enum {string}
+         */
+        StageRunStatus: "QUEUED" | "RUNNING" | "SUCCEEDED" | "FAILED" | "CANCELLED";
         /**
          * StructuredJustificationMode
          * @enum {string}
@@ -2071,6 +3028,18 @@ export interface components {
             /** Required Question Ids */
             required_question_ids?: string[];
         };
+        /** SubmissionBatchCommand */
+        SubmissionBatchCommand: {
+            /** Subject Refs */
+            subject_refs: string[];
+        };
+        /** SubmissionBatchEnvelope */
+        SubmissionBatchEnvelope: {
+            /** Created Count */
+            created_count: number;
+            /** Submissions */
+            submissions: components["schemas"]["SubmissionResource"][];
+        };
         /** SubmissionCreateCommand */
         SubmissionCreateCommand: {
             /** Subject Ref */
@@ -2079,6 +3048,11 @@ export interface components {
         /** SubmissionEnvelope */
         SubmissionEnvelope: {
             submission: components["schemas"]["SubmissionResource"];
+        };
+        /** SubmissionListEnvelope */
+        SubmissionListEnvelope: {
+            /** Items */
+            items: components["schemas"]["SubmissionResource"][];
         };
         /**
          * SubmissionProcessingStatus
@@ -2091,8 +3065,15 @@ export interface components {
             active_job_id?: string | null;
             /** Activity Id */
             activity_id: string;
+            /**
+             * Artifact Uploaded
+             * @default false
+             */
+            artifact_uploaded: boolean;
             /** Assessment Id */
             assessment_id?: string | null;
+            /** Assessment Version */
+            assessment_version?: number | null;
             /** Current Stage */
             current_stage?: string | null;
             /** Diagnostics */
@@ -2123,6 +3104,33 @@ export interface components {
             rationale: string;
             /** Support Strength */
             support_strength: number;
+        };
+        /** TechnicalMetricAggregate */
+        TechnicalMetricAggregate: {
+            /** Actual Cost Usd */
+            actual_cost_usd: number;
+            /** Cached Input Tokens */
+            cached_input_tokens: number;
+            /** Cancelled Count */
+            cancelled_count: number;
+            /** Estimated Cost Usd */
+            estimated_cost_usd: number;
+            /** Failed Count */
+            failed_count: number;
+            /** Input Tokens */
+            input_tokens: number;
+            /** Job Count */
+            job_count: number;
+            /** Latency P50 Ms */
+            latency_p50_ms: number;
+            /** Latency P95 Ms */
+            latency_p95_ms: number;
+            /** Output Tokens */
+            output_tokens: number;
+            /** Retry Count */
+            retry_count: number;
+            /** Succeeded Count */
+            succeeded_count: number;
         };
         /** UploadCommand */
         UploadCommand: {
@@ -2292,6 +3300,16 @@ export interface operations {
                 };
             };
             /** @description RFC 9457-style problem detail */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
             500: {
                 headers: {
                     [name: string]: unknown;
@@ -2402,6 +3420,16 @@ export interface operations {
                 };
             };
             /** @description RFC 9457-style problem detail */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
             500: {
                 headers: {
                     [name: string]: unknown;
@@ -2503,6 +3531,16 @@ export interface operations {
             };
             /** @description RFC 9457-style problem detail */
             428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            429: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -2626,6 +3664,16 @@ export interface operations {
                 };
             };
             /** @description RFC 9457-style problem detail */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
             500: {
                 headers: {
                     [name: string]: unknown;
@@ -2730,6 +3778,16 @@ export interface operations {
             };
             /** @description RFC 9457-style problem detail */
             428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            429: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -2858,6 +3916,16 @@ export interface operations {
                 };
             };
             /** @description RFC 9457-style problem detail */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
             500: {
                 headers: {
                     [name: string]: unknown;
@@ -2961,6 +4029,16 @@ export interface operations {
             };
             /** @description RFC 9457-style problem detail */
             428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            429: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -3087,6 +4165,16 @@ export interface operations {
                 };
             };
             /** @description RFC 9457-style problem detail */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
             500: {
                 headers: {
                     [name: string]: unknown;
@@ -3194,6 +4282,142 @@ export interface operations {
             };
             /** @description RFC 9457-style problem detail */
             428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    bulk_approve_assessments_api_v1_activities__activity_id__assessments_bulk_approve_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                activity_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BulkApprovalCommand"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BulkApprovalEnvelope"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            429: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -3319,6 +4543,16 @@ export interface operations {
                 };
             };
             /** @description RFC 9457-style problem detail */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
             500: {
                 headers: {
                     [name: string]: unknown;
@@ -3424,6 +4658,16 @@ export interface operations {
             };
             /** @description RFC 9457-style problem detail */
             428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            429: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -3552,6 +4796,16 @@ export interface operations {
                 };
             };
             /** @description RFC 9457-style problem detail */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
             500: {
                 headers: {
                     [name: string]: unknown;
@@ -3671,6 +4925,16 @@ export interface operations {
                 };
             };
             /** @description RFC 9457-style problem detail */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
             500: {
                 headers: {
                     [name: string]: unknown;
@@ -3775,6 +5039,260 @@ export interface operations {
             };
             /** @description RFC 9457-style problem detail */
             428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    bulk_approval_history_api_v1_activities__activity_id__bulk_approvals_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                activity_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BulkApprovalHistoryEnvelope"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    activity_coverage_api_v1_activities__activity_id__coverage_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                activity_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CoverageEnvelope"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            429: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -3900,6 +5418,16 @@ export interface operations {
                 };
             };
             /** @description RFC 9457-style problem detail */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
             500: {
                 headers: {
                     [name: string]: unknown;
@@ -4003,6 +5531,385 @@ export interface operations {
             };
             /** @description RFC 9457-style problem detail */
             428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    activity_feedback_api_v1_activities__activity_id__feedback_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                activity_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FeedbackListEnvelope"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    activity_metrics_api_v1_activities__activity_id__metrics_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                activity_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MetricsEnvelope"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    activity_submissions_api_v1_activities__activity_id__submissions_get: {
+        parameters: {
+            query?: {
+                status?: components["schemas"]["SubmissionProcessingStatus"] | null;
+                subject_ref?: string | null;
+            };
+            header?: never;
+            path: {
+                activity_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SubmissionListEnvelope"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            429: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -4119,6 +6026,142 @@ export interface operations {
             };
             /** @description RFC 9457-style problem detail */
             428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    create_submission_batch_api_v1_activities__activity_id__submissions_batch_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                activity_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SubmissionBatchCommand"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SubmissionBatchEnvelope"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            429: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -4246,6 +6289,16 @@ export interface operations {
                 };
             };
             /** @description RFC 9457-style problem detail */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
             500: {
                 headers: {
                     [name: string]: unknown;
@@ -4362,6 +6415,16 @@ export interface operations {
                 };
             };
             /** @description RFC 9457-style problem detail */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
             500: {
                 headers: {
                     [name: string]: unknown;
@@ -4373,7 +6436,7 @@ export interface operations {
             };
         };
     };
-    create_export_api_v1_assessments__assessment_id__exports_post: {
+    export_history_api_v1_assessments__assessment_id__exports_get: {
         parameters: {
             query?: never;
             header?: never;
@@ -4382,19 +6445,15 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ExportKindCommand"];
-            };
-        };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
-            201: {
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ExportEnvelope"];
+                    "application/json": components["schemas"]["ExportHistoryEnvelope"];
                 };
             };
             /** @description RFC 9457-style problem detail */
@@ -4469,6 +6528,142 @@ export interface operations {
             };
             /** @description RFC 9457-style problem detail */
             428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    create_export_api_v1_assessments__assessment_id__exports_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                assessment_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExportKindCommand"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExportCreateEnvelope"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            429: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -4590,6 +6785,393 @@ export interface operations {
                 };
             };
             /** @description RFC 9457-style problem detail */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    question_action_history_api_v1_assessments__assessment_id__questions__question_id__actions_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                assessment_id: string;
+                question_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QuestionReviewActionListEnvelope"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    review_question_api_v1_assessments__assessment_id__questions__question_id__actions_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "If-Match"?: string | null;
+            };
+            path: {
+                assessment_id: string;
+                question_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["QuestionReviewActionCommand"];
+            };
+        };
+        responses: {
+            /** @description Durable question action and current review bundle */
+            200: {
+                headers: {
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QuestionReviewActionEnvelope"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    create_feedback_api_v1_feedback_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FeedbackCommand"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FeedbackEnvelope"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
             500: {
                 headers: {
                     [name: string]: unknown;
@@ -4693,6 +7275,516 @@ export interface operations {
             };
             /** @description RFC 9457-style problem detail */
             428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    cancel_job_api_v1_jobs__job_id__cancel_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["JobControlCommand"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobControlEnvelope"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    resume_job_api_v1_jobs__job_id__resume_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["JobControlCommand"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobControlEnvelope"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    retry_job_api_v1_jobs__job_id__retry_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["JobControlCommand"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobControlEnvelope"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    job_control_api_v1_jobs__job_id__control_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobControlEnvelope"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            429: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -4814,6 +7906,16 @@ export interface operations {
                 };
             };
             /** @description RFC 9457-style problem detail */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
             500: {
                 headers: {
                     [name: string]: unknown;
@@ -4915,6 +8017,16 @@ export interface operations {
             };
             /** @description RFC 9457-style problem detail */
             428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            429: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -5027,6 +8139,16 @@ export interface operations {
             };
             /** @description RFC 9457-style problem detail */
             428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            429: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -5150,6 +8272,16 @@ export interface operations {
                 };
             };
             /** @description RFC 9457-style problem detail */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
             500: {
                 headers: {
                     [name: string]: unknown;
@@ -5249,6 +8381,16 @@ export interface operations {
             };
             /** @description RFC 9457-style problem detail */
             428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            429: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -5370,6 +8512,16 @@ export interface operations {
                 };
             };
             /** @description RFC 9457-style problem detail */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
             500: {
                 headers: {
                     [name: string]: unknown;
@@ -5477,6 +8629,16 @@ export interface operations {
             };
             /** @description RFC 9457-style problem detail */
             428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            429: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -5603,6 +8765,16 @@ export interface operations {
                 };
             };
             /** @description RFC 9457-style problem detail */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
             500: {
                 headers: {
                     [name: string]: unknown;
@@ -5710,6 +8882,16 @@ export interface operations {
             };
             /** @description RFC 9457-style problem detail */
             428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            429: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -5832,6 +9014,138 @@ export interface operations {
                 };
             };
             /** @description RFC 9457-style problem detail */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    submission_coverage_api_v1_submissions__submission_id__coverage_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                submission_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CoverageEnvelope"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
             500: {
                 headers: {
                     [name: string]: unknown;
@@ -5935,6 +9249,16 @@ export interface operations {
             };
             /** @description RFC 9457-style problem detail */
             428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            429: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -6050,6 +9374,16 @@ export interface operations {
             };
             /** @description RFC 9457-style problem detail */
             428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            429: {
                 headers: {
                     [name: string]: unknown;
                 };

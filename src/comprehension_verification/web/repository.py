@@ -1,4 +1,4 @@
-"""Durable Stage 1 repository backed by PostgreSQL or SQLite in tests.
+"""Durable Stage 1/2 repository backed by PostgreSQL or SQLite in tests.
 
 Only JSON snapshots of canonical contracts are stored here; the contract
 classes remain defined exclusively in ``specification/models_v1.1(1).py``.
@@ -7,16 +7,18 @@ classes remain defined exclusively in ``specification/models_v1.1(1).py``.
 from __future__ import annotations
 
 from contextlib import contextmanager
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 import re
 from typing import Any, Iterator
 
 from sqlalchemy import (
     JSON,
     Boolean,
+    CheckConstraint,
     DateTime,
     Float,
     ForeignKey,
+    Index,
     Integer,
     String,
     Text,
@@ -37,6 +39,25 @@ from ..contracts import models as m
 
 
 IDEMPOTENCY_CAPABILITY_CONSTRAINT = "ck_idempotency_keys_safe_response"
+STAGE2_SUBMISSION_CONSTRAINT = "uq_submissions_tenant_activity_subject"
+STAGE2_JOB_CONTROL_CONSTRAINT = "ck_jobs_control_state"
+STAGE2_CONTINUATION_CONSTRAINT = "uq_job_control_records_source_attempt"
+QUESTION_ACTION_DESCRIPTOR_STAGE = "QUESTION_ACTION_DESCRIPTOR"
+
+JOB_CONTROL_STATES = frozenset({"ACTIVE", "CANCEL_REQUESTED", "CANCELLED"})
+JOB_FAILURE_CLASSES = frozenset(
+    {
+        "TRANSIENT",
+        "PERMANENT",
+        "SECURITY",
+        "VALIDATION",
+        "PRECONDITION",
+        "PROVIDER",
+        "CANCELLATION",
+    }
+)
+RETRYABLE_JOB_FAILURE_CLASSES = frozenset({"TRANSIENT", "PROVIDER"})
+MAX_JOB_ATTEMPTS = 3
 
 
 def utc_now() -> datetime:
@@ -163,7 +184,14 @@ class BlueprintRow(Base):
 
 class SubmissionRow(Base):
     __tablename__ = "submissions"
-    __table_args__ = (UniqueConstraint("activity_id"),)
+    __table_args__ = (
+        UniqueConstraint(
+            "tenant_id",
+            "activity_id",
+            "subject_ref",
+            name=STAGE2_SUBMISSION_CONSTRAINT,
+        ),
+    )
     id: Mapped[str] = mapped_column(String(128), primary_key=True)
     tenant_id: Mapped[str] = mapped_column(String(128), index=True)
     activity_id: Mapped[str] = mapped_column(String(128), index=True)
@@ -239,6 +267,35 @@ class GuideRow(Base):
 
 class JobRow(Base):
     __tablename__ = "jobs"
+    __table_args__ = (
+        CheckConstraint(
+            "control_state in ('ACTIVE', 'CANCEL_REQUESTED', 'CANCELLED')",
+            name=STAGE2_JOB_CONTROL_CONSTRAINT,
+        ),
+        CheckConstraint(
+            "failure_class is null or failure_class in "
+            "('TRANSIENT', 'PERMANENT', 'SECURITY', 'VALIDATION', "
+            "'PRECONDITION', 'PROVIDER', 'CANCELLATION')",
+            name="ck_jobs_failure_class",
+        ),
+        CheckConstraint(
+            "max_attempts between 1 and 10",
+            name="ck_jobs_max_attempts",
+        ),
+        CheckConstraint(
+            "control_state != 'CANCELLED' or "
+            "(status = 'FAILED' and failure_class = 'CANCELLATION' "
+            "and cancelled_at is not null)",
+            name="ck_jobs_cancelled_projection",
+        ),
+        Index(
+            "ix_jobs_claim_eligible",
+            "status",
+            "control_state",
+            "next_attempt_at",
+            "created_at",
+        ),
+    )
     id: Mapped[str] = mapped_column(String(128), primary_key=True)
     tenant_id: Mapped[str] = mapped_column(String(128), index=True)
     kind: Mapped[str] = mapped_column(String(32))
@@ -248,6 +305,20 @@ class JobRow(Base):
     progress: Mapped[float] = mapped_column(Float, default=0.0)
     attempt: Mapped[int] = mapped_column(Integer, default=0)
     diagnostics: Mapped[list[dict[str, Any]]] = mapped_column(JSON, default=list)
+    control_state: Mapped[str] = mapped_column(String(32), default="ACTIVE")
+    failure_class: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    max_attempts: Mapped[int] = mapped_column(Integer, default=MAX_JOB_ATTEMPTS)
+    next_attempt_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    resume_from_stage: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    cancel_requested_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    cancel_requested_by: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    cancelled_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
     started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
@@ -255,7 +326,33 @@ class JobRow(Base):
 
 class StageRunRow(Base):
     __tablename__ = "stage_runs"
-    __table_args__ = (UniqueConstraint("stage_key"),)
+    __table_args__ = (
+        UniqueConstraint(
+            "job_id",
+            "stage_key",
+            "attempt",
+            name="uq_stage_runs_job_key_attempt",
+        ),
+        CheckConstraint(
+            "failure_class is null or failure_class in "
+            "('TRANSIENT', 'PERMANENT', 'SECURITY', 'VALIDATION', "
+            "'PRECONDITION', 'PROVIDER', 'CANCELLATION')",
+            name="ck_stage_runs_failure_class",
+        ),
+        Index(
+            "uq_stage_runs_succeeded_stage_key",
+            "stage_key",
+            unique=True,
+            postgresql_where=text(
+                "status = 'SUCCEEDED' and component_version is not null "
+                "and output_hash is not null"
+            ),
+            sqlite_where=text(
+                "status = 'SUCCEEDED' and component_version is not null "
+                "and output_hash is not null"
+            ),
+        ),
+    )
     id: Mapped[str] = mapped_column(String(128), primary_key=True)
     job_id: Mapped[str] = mapped_column(String(128), index=True)
     tenant_id: Mapped[str] = mapped_column(String(128), index=True)
@@ -265,7 +362,16 @@ class StageRunRow(Base):
     attempt: Mapped[int] = mapped_column(Integer, default=1)
     input_hash: Mapped[str] = mapped_column(String(71))
     policy_hash: Mapped[str] = mapped_column(String(71))
+    component_version: Mapped[str | None] = mapped_column(String(255), nullable=True)
     output: Mapped[dict[str, Any] | None] = mapped_column(JSON, nullable=True)
+    output_hash: Mapped[str | None] = mapped_column(String(71), nullable=True)
+    failure_class: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    next_attempt_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    resumed_from_stage_run_id: Mapped[str | None] = mapped_column(
+        String(128), nullable=True
+    )
     diagnostics: Mapped[list[dict[str, Any]]] = mapped_column(JSON, default=list)
     started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
     finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
@@ -285,9 +391,120 @@ class ExportRow(Base):
     id: Mapped[str] = mapped_column(String(128), primary_key=True)
     tenant_id: Mapped[str] = mapped_column(String(128), index=True)
     assessment_id: Mapped[str] = mapped_column(String(128), index=True)
+    activity_id: Mapped[str | None] = mapped_column(String(128), nullable=True, index=True)
+    assessment_version: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    assessment_snapshot_hash: Mapped[str | None] = mapped_column(
+        String(71), nullable=True
+    )
+    renderer_version: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    requested_by: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    requested_kinds: Mapped[list[str] | None] = mapped_column(JSON, nullable=True)
+    guide_snapshot_hash: Mapped[str | None] = mapped_column(String(71), nullable=True)
+    coverage_snapshot_hash: Mapped[str | None] = mapped_column(String(71), nullable=True)
+    completed_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    data: Mapped[dict[str, Any] | None] = mapped_column(JSON, nullable=True)
     status: Mapped[str] = mapped_column(String(32))
     artifacts: Mapped[dict[str, Any]] = mapped_column(JSON)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
+
+
+class QuestionReviewActionRow(Base):
+    __tablename__ = "question_review_actions"
+    id: Mapped[str] = mapped_column(String(128), primary_key=True)
+    tenant_id: Mapped[str] = mapped_column(String(128), index=True)
+    activity_id: Mapped[str] = mapped_column(String(128), index=True)
+    assessment_id: Mapped[str] = mapped_column(String(128), index=True)
+    assessment_version_before: Mapped[int] = mapped_column(Integer)
+    assessment_version_after: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    submission_id: Mapped[str] = mapped_column(String(128), index=True)
+    question_id: Mapped[str] = mapped_column(String(128), index=True)
+    actor_id: Mapped[str] = mapped_column(String(128), index=True)
+    action: Mapped[str] = mapped_column(String(32))
+    status: Mapped[str] = mapped_column(String(32))
+    revalidation_status: Mapped[str] = mapped_column(String(32))
+    before_snapshot_hash: Mapped[str] = mapped_column(String(71))
+    after_snapshot_hash: Mapped[str | None] = mapped_column(String(71), nullable=True)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON)
+    occurred_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class FeedbackEventRow(Base):
+    __tablename__ = "feedback_events"
+    id: Mapped[str] = mapped_column(String(128), primary_key=True)
+    tenant_id: Mapped[str] = mapped_column(String(128), index=True)
+    actor_id: Mapped[str] = mapped_column(String(128), index=True)
+    activity_id: Mapped[str] = mapped_column(String(128), index=True)
+    assessment_id: Mapped[str | None] = mapped_column(String(128), nullable=True, index=True)
+    assessment_version: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    question_id: Mapped[str | None] = mapped_column(String(128), nullable=True, index=True)
+    target_type: Mapped[str] = mapped_column(String(32))
+    target_id: Mapped[str] = mapped_column(String(128), index=True)
+    rating: Mapped[str] = mapped_column(String(32))
+    category: Mapped[str] = mapped_column(String(64))
+    data: Mapped[dict[str, Any]] = mapped_column(JSON)
+    occurred_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
+
+
+class JobControlRecordRow(Base):
+    __tablename__ = "job_control_records"
+    __table_args__ = (
+        UniqueConstraint(
+            "tenant_id",
+            "job_id",
+            "source_attempt",
+            name=STAGE2_CONTINUATION_CONSTRAINT,
+        ),
+    )
+    id: Mapped[str] = mapped_column(String(128), primary_key=True)
+    tenant_id: Mapped[str] = mapped_column(String(128), index=True)
+    job_id: Mapped[str] = mapped_column(String(128), index=True)
+    resulting_job_id: Mapped[str | None] = mapped_column(
+        String(128), nullable=True, index=True
+    )
+    aggregate_id: Mapped[str] = mapped_column(String(128), index=True)
+    actor_id: Mapped[str] = mapped_column(String(128), index=True)
+    action: Mapped[str] = mapped_column(String(32))
+    status: Mapped[str] = mapped_column(String(32))
+    source_attempt: Mapped[int] = mapped_column(Integer)
+    target_stage: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    failure_class: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON)
+    requested_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    decided_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+
+class BulkApprovalRequestRow(Base):
+    __tablename__ = "bulk_approval_requests"
+    __table_args__ = (
+        CheckConstraint("target_count between 1 and 500", name="ck_bulk_request_count"),
+    )
+    id: Mapped[str] = mapped_column(String(128), primary_key=True)
+    tenant_id: Mapped[str] = mapped_column(String(128), index=True)
+    actor_id: Mapped[str] = mapped_column(String(128), index=True)
+    target_count: Mapped[int] = mapped_column(Integer)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON)
+    requested_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class BulkApprovalRecordRow(Base):
+    __tablename__ = "bulk_approval_records"
+    __table_args__ = (
+        UniqueConstraint("tenant_id", "request_id", name="uq_bulk_record_request"),
+        CheckConstraint(
+            "approved_count >= 0 and excluded_count >= 0",
+            name="ck_bulk_record_counts",
+        ),
+    )
+    id: Mapped[str] = mapped_column(String(128), primary_key=True)
+    tenant_id: Mapped[str] = mapped_column(String(128), index=True)
+    request_id: Mapped[str] = mapped_column(String(128), index=True)
+    actor_id: Mapped[str] = mapped_column(String(128), index=True)
+    approved_count: Mapped[int] = mapped_column(Integer)
+    excluded_count: Mapped[int] = mapped_column(Integer)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON)
+    approved_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
 
 
 class AuditEventRow(Base):
@@ -315,6 +532,130 @@ class IdempotencyRow(Base):
         JSON(none_as_null=True), nullable=True
     )
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
+
+
+_STAGE2_APPEND_ONLY_TABLES = (
+    "job_control_records",
+    "question_review_actions",
+    "feedback_events",
+    "bulk_approval_requests",
+    "bulk_approval_records",
+)
+
+_POSTGRES_REQUIRED_COLUMNS = frozenset(
+    {
+        ("submissions", "tenant_id"),
+        ("submissions", "activity_id"),
+        ("submissions", "subject_ref"),
+        ("jobs", "control_state"),
+        ("jobs", "failure_class"),
+        ("jobs", "max_attempts"),
+        ("jobs", "next_attempt_at"),
+        ("jobs", "resume_from_stage"),
+        ("jobs", "cancel_requested_at"),
+        ("jobs", "cancel_requested_by"),
+        ("jobs", "cancelled_at"),
+        ("stage_runs", "component_version"),
+        ("stage_runs", "output_hash"),
+        ("stage_runs", "failure_class"),
+        ("stage_runs", "next_attempt_at"),
+        ("stage_runs", "resumed_from_stage_run_id"),
+        ("exports", "activity_id"),
+        ("exports", "assessment_version"),
+        ("exports", "assessment_snapshot_hash"),
+        ("exports", "renderer_version"),
+        ("exports", "requested_by"),
+        ("exports", "requested_kinds"),
+        ("exports", "guide_snapshot_hash"),
+        ("exports", "coverage_snapshot_hash"),
+        ("exports", "completed_at"),
+        ("exports", "data"),
+    }
+    | {
+        (table_name, column.name)
+        for table_name in _STAGE2_APPEND_ONLY_TABLES
+        for column in Base.metadata.tables[table_name].columns
+    }
+)
+
+# PostgreSQL ``contype`` values: c = CHECK and u = UNIQUE.
+_POSTGRES_REQUIRED_CONSTRAINTS = {
+    ("idempotency_keys", IDEMPOTENCY_CAPABILITY_CONSTRAINT): "c",
+    ("submissions", STAGE2_SUBMISSION_CONSTRAINT): "u",
+    ("jobs", STAGE2_JOB_CONTROL_CONSTRAINT): "c",
+    ("jobs", "ck_jobs_failure_class"): "c",
+    ("jobs", "ck_jobs_max_attempts"): "c",
+    ("jobs", "ck_jobs_cancelled_projection"): "c",
+    ("stage_runs", "uq_stage_runs_job_key_attempt"): "u",
+    ("stage_runs", "ck_stage_runs_failure_class"): "c",
+    ("job_control_records", STAGE2_CONTINUATION_CONSTRAINT): "u",
+    ("bulk_approval_requests", "ck_bulk_request_count"): "c",
+    ("bulk_approval_records", "uq_bulk_record_request"): "u",
+    ("bulk_approval_records", "ck_bulk_record_counts"): "c",
+}
+
+# These indexes participate in claim ordering and verified cross-job reuse.
+_POSTGRES_REQUIRED_INDEXES = {
+    ("jobs", "ix_jobs_claim_eligible"): False,
+    ("stage_runs", "uq_stage_runs_succeeded_stage_key"): True,
+}
+
+_POSTGRES_POLICY_QUAL = "cva_is_workspace_member((tenant_id)::text)"
+
+
+def _postgres_surface_is_ready(
+    *,
+    relations: dict[str, bool],
+    columns: set[tuple[str, str]],
+    constraints: dict[tuple[str, str], str],
+    indexes: dict[tuple[str, str], tuple[bool, bool, bool]],
+    triggers: dict[tuple[str, str], tuple[str, int, str]],
+    policies: dict[
+        tuple[str, str], tuple[str, bool, bool, int, str | None]
+    ],
+) -> bool:
+    if any(relations.get(table_name) is not True for table_name in _STAGE2_APPEND_ONLY_TABLES):
+        return False
+    if not _POSTGRES_REQUIRED_COLUMNS.issubset(columns):
+        return False
+    if any(
+        constraints.get(key) != constraint_type
+        for key, constraint_type in _POSTGRES_REQUIRED_CONSTRAINTS.items()
+    ):
+        return False
+    for key, must_be_unique in _POSTGRES_REQUIRED_INDEXES.items():
+        index = indexes.get(key)
+        if index is None:
+            return False
+        is_unique, is_valid, is_ready = index
+        if is_unique is not must_be_unique or not is_valid or not is_ready:
+            return False
+    for table_name in _STAGE2_APPEND_ONLY_TABLES:
+        trigger = triggers.get((table_name, f"{table_name}_are_append_only"))
+        if trigger is None:
+            return False
+        function_name, trigger_type, enabled = trigger
+        # 27 = ROW + BEFORE + UPDATE + DELETE, with no INSERT/TRUNCATE event.
+        if function_name != "cva_reject_mutation" or trigger_type != 27:
+            return False
+        if enabled not in {"O", "A"}:
+            return False
+
+        policy = policies.get((table_name, f"{table_name}_tenant_read"))
+        if policy is None:
+            return False
+        command, permissive, authenticated_role, role_count, expression = policy
+        normalized_expression = re.sub(r"\s+", "", expression or "")
+        normalized_expression = normalized_expression.removeprefix("public.")
+        if (
+            command != "r"
+            or not permissive
+            or not authenticated_role
+            or role_count != 1
+            or normalized_expression != _POSTGRES_POLICY_QUAL
+        ):
+            return False
+    return True
 
 
 class RepositoryError(RuntimeError):
@@ -380,32 +721,165 @@ class Repository:
             Base.metadata.create_all(self.engine)
 
     def check_readiness(self) -> None:
-        """Check connectivity and the final expected Stage 1 schema surface.
+        """Check connectivity and the final expected Stage 2 schema surface.
 
-        PostgreSQL must expose the final idempotency capability constraint;
-        local adapters require the ORM table. Both fixed queries return no
-        application data and let connection or migration errors fail closed.
+        PostgreSQL must expose critical Stage 2 columns, constraints, indexes,
+        append-only triggers, tenant policies, and RLS. SQLite/local adapters
+        must expose every ORM table. Catalog queries return no application data
+        and any incomplete migration fails closed.
         """
 
         with self.engine.connect() as connection:
             if self.engine.dialect.name == "postgresql":
-                constraint_exists = connection.scalar(
-                    text(
-                        """
-                        select exists (
-                          select 1
-                          from pg_constraint
-                          where conrelid = to_regclass('public.idempotency_keys')
-                            and conname = :constraint_name
+                relations = {
+                    str(row["table_name"]): bool(row["rls_enabled"])
+                    for row in connection.execute(
+                        text(
+                            """
+                            select c.relname as table_name,
+                                   c.relrowsecurity as rls_enabled
+                            from pg_class c
+                            join pg_namespace n on n.oid = c.relnamespace
+                            where n.nspname = 'public'
+                              and c.relkind in ('r', 'p')
+                            """
                         )
-                        """
-                    ),
-                    {"constraint_name": IDEMPOTENCY_CAPABILITY_CONSTRAINT},
+                    ).mappings()
+                }
+                columns = {
+                    (str(row["table_name"]), str(row["column_name"]))
+                    for row in connection.execute(
+                        text(
+                            """
+                            select table_name, column_name
+                            from information_schema.columns
+                            where table_schema = 'public'
+                            """
+                        )
+                    ).mappings()
+                }
+                constraints = {
+                    (str(row["table_name"]), str(row["constraint_name"])): str(
+                        row["constraint_type"]
+                    )
+                    for row in connection.execute(
+                        text(
+                            """
+                            select c.relname as table_name,
+                                   p.conname as constraint_name,
+                                   p.contype as constraint_type
+                            from pg_constraint p
+                            join pg_class c on c.oid = p.conrelid
+                            join pg_namespace n on n.oid = c.relnamespace
+                            where n.nspname = 'public'
+                            """
+                        )
+                    ).mappings()
+                }
+                indexes = {
+                    (str(row["table_name"]), str(row["index_name"])): (
+                        bool(row["is_unique"]),
+                        bool(row["is_valid"]),
+                        bool(row["is_ready"]),
+                    )
+                    for row in connection.execute(
+                        text(
+                            """
+                            select tc.relname as table_name,
+                                   ic.relname as index_name,
+                                   i.indisunique as is_unique,
+                                   i.indisvalid as is_valid,
+                                   i.indisready as is_ready
+                            from pg_index i
+                            join pg_class tc on tc.oid = i.indrelid
+                            join pg_class ic on ic.oid = i.indexrelid
+                            join pg_namespace n on n.oid = tc.relnamespace
+                            where n.nspname = 'public'
+                            """
+                        )
+                    ).mappings()
+                }
+                triggers = {
+                    (str(row["table_name"]), str(row["trigger_name"])): (
+                        str(row["function_name"]),
+                        int(row["trigger_type"]),
+                        str(row["enabled"]),
+                    )
+                    for row in connection.execute(
+                        text(
+                            """
+                            select c.relname as table_name,
+                                   t.tgname as trigger_name,
+                                   p.proname as function_name,
+                                   t.tgtype as trigger_type,
+                                   t.tgenabled as enabled
+                            from pg_trigger t
+                            join pg_class c on c.oid = t.tgrelid
+                            join pg_namespace n on n.oid = c.relnamespace
+                            join pg_proc p on p.oid = t.tgfoid
+                            where n.nspname = 'public'
+                              and not t.tgisinternal
+                            """
+                        )
+                    ).mappings()
+                }
+                policies = {
+                    (str(row["table_name"]), str(row["policy_name"])): (
+                        str(row["command"]),
+                        bool(row["permissive"]),
+                        bool(row["authenticated_role"]),
+                        int(row["role_count"]),
+                        None if row["expression"] is None else str(row["expression"]),
+                    )
+                    for row in connection.execute(
+                        text(
+                            """
+                            select c.relname as table_name,
+                                   p.polname as policy_name,
+                                   p.polcmd as command,
+                                   p.polpermissive as permissive,
+                                   exists (
+                                     select 1
+                                     from pg_roles r
+                                     where r.rolname = 'authenticated'
+                                       and r.oid = any(p.polroles)
+                                   ) as authenticated_role,
+                                   cardinality(p.polroles) as role_count,
+                                   pg_get_expr(p.polqual, p.polrelid) as expression
+                            from pg_policy p
+                            join pg_class c on c.oid = p.polrelid
+                            join pg_namespace n on n.oid = c.relnamespace
+                            where n.nspname = 'public'
+                            """
+                        )
+                    ).mappings()
+                }
+                if not _postgres_surface_is_ready(
+                    relations=relations,
+                    columns=columns,
+                    constraints=constraints,
+                    indexes=indexes,
+                    triggers=triggers,
+                    policies=policies,
+                ):
+                    raise RepositoryError("EXPECTED_MIGRATION_SURFACE_MISSING")
+            elif self.engine.dialect.name == "sqlite":
+                actual_tables = set(
+                    connection.execute(
+                        text(
+                            """
+                            select name
+                            from sqlite_master
+                            where type = 'table' and name not like 'sqlite_%'
+                            """
+                        )
+                    ).scalars()
                 )
-                if not constraint_exists:
+                if not set(Base.metadata.tables).issubset(actual_tables):
                     raise RepositoryError("EXPECTED_MIGRATION_SURFACE_MISSING")
             else:
-                connection.execute(text("select 1 from idempotency_keys limit 0"))
+                for table_name in Base.metadata.tables:
+                    connection.execute(text(f'select 1 from "{table_name}" limit 0'))
 
     @contextmanager
     def session(self) -> Iterator[Session]:
@@ -612,6 +1086,94 @@ class Repository:
                     raise Conflict("SUBMISSION_INPUTS_FROZEN")
             session.add(row)
 
+    def reserve_artifact_upload(
+        self,
+        row: ArtifactRow,
+        *,
+        allowed_activity_statuses: set[str],
+    ) -> ArtifactRow:
+        """Create an upload slot or recycle a rejected/expired reservation."""
+
+        with self.session() as session:
+            activity_statement = select(ActivityRow).where(
+                ActivityRow.id == row.activity_id,
+                ActivityRow.tenant_id == row.tenant_id,
+            )
+            if self.engine.dialect.name == "postgresql":
+                activity_statement = activity_statement.with_for_update()
+            activity = session.scalar(activity_statement)
+            if activity is None:
+                raise NotFound("activity not found")
+            if row.submission_id is None:
+                if activity.status not in allowed_activity_statuses:
+                    raise Conflict("ACTIVITY_INPUTS_FROZEN")
+            else:
+                submission_statement = select(SubmissionRow).where(
+                    SubmissionRow.id == row.submission_id,
+                    SubmissionRow.tenant_id == row.tenant_id,
+                    SubmissionRow.activity_id == row.activity_id,
+                )
+                if self.engine.dialect.name == "postgresql":
+                    submission_statement = submission_statement.with_for_update()
+                submission = session.scalar(submission_statement)
+                if submission is None:
+                    raise NotFound("submission not found")
+                state = m.SubmissionProcessingState.model_validate(submission.state)
+                if (
+                    state.status != m.SubmissionProcessingStatus.UPLOADED
+                    or submission.active_job_id is not None
+                ):
+                    raise Conflict("SUBMISSION_INPUTS_FROZEN")
+
+            existing_statement = select(ArtifactRow).where(
+                ArtifactRow.tenant_id == row.tenant_id,
+                ArtifactRow.activity_id == row.activity_id,
+                ArtifactRow.scope_key == row.scope_key,
+                ArtifactRow.role == row.role,
+            )
+            if self.engine.dialect.name == "postgresql":
+                existing_statement = existing_statement.with_for_update()
+            existing = session.scalar(existing_statement)
+            if existing is None:
+                session.add(row)
+                session.flush()
+                return row
+
+            expires_at = existing.upload_expires_at
+            if expires_at.tzinfo is None:
+                expires_at = expires_at.replace(tzinfo=UTC)
+            reusable = existing.status == "REJECTED" or (
+                existing.status == "PENDING" and expires_at <= utc_now()
+            )
+            if not reusable:
+                raise Conflict("ARTIFACT_ALREADY_EXISTS")
+            if existing.id != row.id:
+                raise Conflict("ARTIFACT_RESERVATION_CHANGED")
+            existing.filename = row.filename
+            existing.object_key = row.object_key
+            existing.declared_media_type = row.declared_media_type
+            existing.expected_byte_size = row.expected_byte_size
+            existing.media_type = None
+            existing.byte_size = None
+            existing.sha256 = None
+            existing.status = "PENDING"
+            existing.upload_expires_at = row.upload_expires_at
+            return existing
+
+    def mark_artifact_rejected(self, artifact_id: str, tenant_id: str) -> None:
+        with self.session() as session:
+            statement = select(ArtifactRow).where(
+                ArtifactRow.id == artifact_id,
+                ArtifactRow.tenant_id == tenant_id,
+            )
+            if self.engine.dialect.name == "postgresql":
+                statement = statement.with_for_update()
+            row = session.scalar(statement)
+            if row is None:
+                raise NotFound("artifact not found")
+            if row.status == "PENDING":
+                row.status = "REJECTED"
+
     def policy_decisions(self, activity_id: str, tenant_id: str) -> list[PolicyDecisionRow]:
         with self.session() as session:
             return list(
@@ -631,14 +1193,79 @@ class Repository:
         except IntegrityError as exc:
             raise Conflict("POLICY_DECISION_ALREADY_EXISTS") from exc
 
-    def submission_for_activity(self, activity_id: str, tenant_id: str) -> SubmissionRow | None:
+    def create_submissions(self, rows: list[SubmissionRow]) -> list[SubmissionRow]:
+        """Persist a manual batch atomically within one tenant/activity.
+
+        The database uniqueness constraint is the final concurrency boundary;
+        the locked activity row gives PostgreSQL callers an early, stable
+        conflict and prevents a partial batch from being committed.
+        """
+
+        if not rows:
+            raise ValueError("at least one submission is required")
+        tenant_id = rows[0].tenant_id
+        activity_id = rows[0].activity_id
+        if any(
+            row.tenant_id != tenant_id or row.activity_id != activity_id
+            for row in rows
+        ):
+            raise ValueError("a submission batch must share tenant and activity")
+        subjects = [row.subject_ref for row in rows]
+        identifiers = [row.id for row in rows]
+        if len(subjects) != len(set(subjects)) or len(identifiers) != len(
+            set(identifiers)
+        ):
+            raise Conflict("SUBMISSION_BATCH_DUPLICATE")
+
+        try:
+            with self.session() as session:
+                activity_statement = select(ActivityRow).where(
+                    ActivityRow.id == activity_id,
+                    ActivityRow.tenant_id == tenant_id,
+                )
+                if self.engine.dialect.name == "postgresql":
+                    activity_statement = activity_statement.with_for_update()
+                if session.scalar(activity_statement) is None:
+                    raise NotFound("activity not found")
+                existing = session.scalar(
+                    select(SubmissionRow.id)
+                    .where(
+                        SubmissionRow.tenant_id == tenant_id,
+                        SubmissionRow.activity_id == activity_id,
+                        SubmissionRow.subject_ref.in_(subjects),
+                    )
+                    .limit(1)
+                )
+                if existing is not None:
+                    raise Conflict("SUBMISSION_SUBJECT_ALREADY_EXISTS")
+                session.add_all(rows)
+                session.flush()
+        except IntegrityError as exc:
+            raise Conflict("SUBMISSION_SUBJECT_ALREADY_EXISTS") from exc
+        return rows
+
+    def submissions_for_activity(
+        self, activity_id: str, tenant_id: str
+    ) -> list[SubmissionRow]:
         with self.session() as session:
-            return session.scalar(
-                select(SubmissionRow).where(
-                    SubmissionRow.activity_id == activity_id,
-                    SubmissionRow.tenant_id == tenant_id,
+            return list(
+                session.scalars(
+                    select(SubmissionRow)
+                    .where(
+                        SubmissionRow.activity_id == activity_id,
+                        SubmissionRow.tenant_id == tenant_id,
+                    )
+                    .order_by(SubmissionRow.created_at, SubmissionRow.id)
                 )
             )
+
+    def submission_for_activity(
+        self, activity_id: str, tenant_id: str
+    ) -> SubmissionRow | None:
+        """Compatibility lookup for E1 callers; deterministic under E2 batches."""
+
+        rows = self.submissions_for_activity(activity_id, tenant_id)
+        return rows[0] if rows else None
 
     def update_artifact_complete(
         self,
@@ -740,9 +1367,28 @@ class Repository:
             progress=status.progress,
             attempt=status.attempt,
             diagnostics=[item.model_dump(mode="json") for item in status.diagnostics],
+            control_state="ACTIVE",
+            max_attempts=MAX_JOB_ATTEMPTS,
             started_at=status.started_at,
             finished_at=status.finished_at,
         )
+
+    @staticmethod
+    def _cancel_diagnostic() -> dict[str, Any]:
+        return m.Diagnostic(
+            code="JOB_CANCELLED",
+            severity=m.Severity.ERROR,
+            message="The durable job was cancelled by an authorized actor.",
+            retryable=False,
+        ).model_dump(mode="json")
+
+    @staticmethod
+    def _append_diagnostic_once(
+        diagnostics: list[dict[str, Any]], item: dict[str, Any]
+    ) -> list[dict[str, Any]]:
+        if any(existing.get("code") == item.get("code") for existing in diagnostics):
+            return diagnostics
+        return [*diagnostics, item]
 
     def queue_activity_job(
         self,
@@ -827,6 +1473,75 @@ class Repository:
             row.active_job_id = state.active_job_id
             row.updated_at = utc_now()
 
+    def finalize_submission_assessment(
+        self,
+        *,
+        job_id: str,
+        tenant_id: str,
+        assessment: AssessmentRow,
+        guide: GuideRow,
+    ) -> bool:
+        """Atomically publish review output or acknowledge a winning cancellation."""
+
+        assessment_value = m.Assessment.model_validate(assessment.data)
+        guide_value = m.EvaluationGuide.model_validate(guide.data)
+        if any(
+            (
+                assessment.tenant_id != tenant_id,
+                guide.tenant_id != tenant_id,
+                assessment.submission_id != guide.submission_id,
+                assessment.assessment_id != guide.assessment_id,
+                assessment_value.submission_id != assessment.submission_id,
+                assessment_value.assessment_id != assessment.assessment_id,
+                assessment_value.status != m.WorkflowStatus.NEEDS_REVIEW,
+                guide_value.assessment_id != assessment.assessment_id,
+                guide_value.status != m.WorkflowStatus.READY,
+            )
+        ):
+            raise ValueError("assessment finalization references are inconsistent")
+
+        now = utc_now()
+        with self.session() as session:
+            job = self._lock_job(session, job_id, tenant_id, self.engine.dialect.name)
+            submission_statement = select(SubmissionRow).where(
+                SubmissionRow.id == assessment.submission_id,
+                SubmissionRow.tenant_id == tenant_id,
+            )
+            if self.engine.dialect.name == "postgresql":
+                submission_statement = submission_statement.with_for_update()
+            submission = session.scalar(submission_statement)
+            if submission is None:
+                raise NotFound("submission not found")
+
+            if job.control_state != "ACTIVE":
+                if job.control_state == "CANCEL_REQUESTED":
+                    self._complete_job_cancellation(session, job, now)
+                return False
+            if job.status != "RUNNING" or submission.active_job_id != job.id:
+                raise Conflict("SUBMISSION_FINALIZATION_STATE_CHANGED")
+
+            session.merge(assessment)
+            session.merge(guide)
+            submission.state = m.SubmissionProcessingState(
+                submission_id=submission.id,
+                activity_id=submission.activity_id,
+                status=m.SubmissionProcessingStatus.NEEDS_REVIEW,
+                current_stage="NEEDS_REVIEW",
+                progress=1.0,
+                active_job_id=job.id,
+                diagnostics=[],
+                updated_at=now,
+            ).model_dump(mode="json")
+            submission.active_job_id = job.id
+            submission.updated_at = now
+            job.stage = "ASSEMBLE"
+            job.status = "SUCCEEDED"
+            job.progress = 1.0
+            job.failure_class = None
+            job.next_attempt_at = None
+            job.finished_at = now
+            return True
+
     def evidence_for_submission(self, submission_id: str, tenant_id: str) -> list[EvidenceRow]:
         with self.session() as session:
             return list(
@@ -849,6 +1564,13 @@ class Repository:
                 row = self._job_row(status, kind)
                 session.add(row)
             else:
+                if row.tenant_id != status.tenant_id:
+                    raise NotFound("job not found")
+                if (
+                    row.control_state in {"CANCEL_REQUESTED", "CANCELLED"}
+                    and status.status == "SUCCEEDED"
+                ):
+                    raise Conflict("JOB_CANCEL_REQUESTED")
                 row.stage = status.stage
                 row.status = status.status
                 row.progress = status.progress
@@ -856,6 +1578,246 @@ class Repository:
                 row.diagnostics = [item.model_dump(mode="json") for item in status.diagnostics]
                 row.started_at = status.started_at
                 row.finished_at = status.finished_at
+                if status.status == "SUCCEEDED":
+                    row.failure_class = None
+                    row.next_attempt_at = None
+
+    def prepare_question_action_job(
+        self,
+        *,
+        status: m.JobStatus,
+        max_attempts: int,
+        descriptor_inputs: dict[str, Any],
+        descriptor_output: dict[str, Any],
+        descriptor_component_version: str,
+        descriptor_policy_hash: str,
+        actor_id: str,
+        audit_payload: dict[str, Any],
+        occurred_at: datetime,
+        create_job: bool,
+    ) -> tuple[JobRow, StageRunRow]:
+        """Durably prepare a localized action before any provider invocation.
+
+        The technical job, its content-minimizing audit event, and the reusable
+        action descriptor share one transaction.  Consequently a worker crash
+        or a later terminal-commit rollback can leave either no runnable job or
+        a job whose retry source is already reconstructible.
+        """
+
+        if any(
+            (
+                status.stage != "QUESTION_GENERATE",
+                status.status != "RUNNING",
+                status.attempt < 1,
+                not 1 <= max_attempts <= 10,
+            )
+        ):
+            raise ValueError("invalid question action preparation state")
+        input_hash = canonical_hash(descriptor_inputs)
+        stage_key = canonical_hash(
+            {
+                "tenant_id": status.tenant_id,
+                "stage": QUESTION_ACTION_DESCRIPTOR_STAGE,
+                "inputs": descriptor_inputs,
+                "policy_hash": descriptor_policy_hash,
+                "component_version": descriptor_component_version,
+            }
+        )
+        output_hash = canonical_hash(descriptor_output)
+        stage_id = stable_id(
+            "stage",
+            status.job_id,
+            QUESTION_ACTION_DESCRIPTOR_STAGE,
+            stage_key,
+            status.attempt,
+        )
+        action_id = str(audit_payload.get("action_id") or "")
+        if not action_id:
+            raise ValueError("question action audit requires action_id")
+        event_id = stable_id(
+            "evt",
+            status.tenant_id,
+            "question_action.executed",
+            status.job_id,
+            action_id,
+        )
+
+        try:
+            with self.session() as session:
+                job = session.get(JobRow, status.job_id)
+                if create_job:
+                    if job is not None:
+                        raise Conflict("QUESTION_ACTION_JOB_ALREADY_EXISTS")
+                    job = self._job_row(status, "QUESTION_ACTION")
+                    job.max_attempts = max_attempts
+                    session.add(job)
+                elif job is None or job.tenant_id != status.tenant_id:
+                    raise NotFound("job not found")
+                assert job is not None
+                if any(
+                    (
+                        job.tenant_id != status.tenant_id,
+                        job.kind != "QUESTION_ACTION",
+                        job.aggregate_id != status.aggregate_id,
+                        job.status != "RUNNING",
+                        job.attempt != status.attempt,
+                    )
+                ):
+                    raise Conflict("QUESTION_ACTION_JOB_STATE_CHANGED")
+
+                descriptor = session.get(StageRunRow, stage_id)
+                if descriptor is None:
+                    descriptor = StageRunRow(
+                        id=stage_id,
+                        job_id=status.job_id,
+                        tenant_id=status.tenant_id,
+                        stage=QUESTION_ACTION_DESCRIPTOR_STAGE,
+                        stage_key=stage_key,
+                        status="SUCCEEDED",
+                        attempt=status.attempt,
+                        input_hash=input_hash,
+                        policy_hash=descriptor_policy_hash,
+                        component_version=descriptor_component_version,
+                        output=descriptor_output,
+                        output_hash=output_hash,
+                        diagnostics=[],
+                        started_at=occurred_at,
+                        finished_at=occurred_at,
+                    )
+                    session.add(descriptor)
+                elif any(
+                    (
+                        descriptor.job_id != status.job_id,
+                        descriptor.tenant_id != status.tenant_id,
+                        descriptor.stage != QUESTION_ACTION_DESCRIPTOR_STAGE,
+                        descriptor.stage_key != stage_key,
+                        descriptor.status != "SUCCEEDED",
+                        descriptor.attempt != status.attempt,
+                        descriptor.input_hash != input_hash,
+                        descriptor.policy_hash != descriptor_policy_hash,
+                        descriptor.component_version != descriptor_component_version,
+                        descriptor.output_hash != output_hash,
+                        descriptor.output != descriptor_output,
+                    )
+                ):
+                    raise Conflict("QUESTION_ACTION_DESCRIPTOR_CONFLICT")
+
+                audit = session.get(AuditEventRow, event_id)
+                if audit is None:
+                    session.add(
+                        AuditEventRow(
+                            id=event_id,
+                            tenant_id=status.tenant_id,
+                            event_type="question_action.executed",
+                            aggregate_id=status.job_id,
+                            actor_id=actor_id,
+                            payload=audit_payload,
+                            occurred_at=occurred_at,
+                        )
+                    )
+                elif any(
+                    (
+                        audit.tenant_id != status.tenant_id,
+                        audit.event_type != "question_action.executed",
+                        audit.aggregate_id != status.job_id,
+                        audit.actor_id != actor_id,
+                        audit.payload != audit_payload,
+                    )
+                ):
+                    raise Conflict("QUESTION_ACTION_AUDIT_CONFLICT")
+                session.flush()
+                return job, descriptor
+        except IntegrityError as exc:
+            raise Conflict("QUESTION_ACTION_PREPARATION_CONFLICT") from exc
+
+    def question_action_descriptor(
+        self, *, job_id: str, tenant_id: str
+    ) -> StageRunRow | None:
+        """Return one hash-verified retry descriptor for a localized job."""
+
+        with self.session() as session:
+            rows = list(
+                session.scalars(
+                    select(StageRunRow)
+                    .where(
+                        StageRunRow.job_id == job_id,
+                        StageRunRow.tenant_id == tenant_id,
+                        StageRunRow.stage == QUESTION_ACTION_DESCRIPTOR_STAGE,
+                        StageRunRow.status == "SUCCEEDED",
+                        StageRunRow.output_hash.is_not(None),
+                    )
+                    .order_by(StageRunRow.attempt.desc(), StageRunRow.id.desc())
+                )
+            )
+            if not rows:
+                return None
+            if len(rows) != 1:
+                raise Conflict("QUESTION_ACTION_DESCRIPTOR_AMBIGUOUS")
+            row = rows[0]
+            if row.output is None or row.output_hash != canonical_hash(row.output):
+                raise Conflict("QUESTION_ACTION_DESCRIPTOR_HASH_MISMATCH")
+            return row
+
+    def fail_queued_dispatch(
+        self,
+        *,
+        job_id: str,
+        tenant_id: str,
+        failure: m.Diagnostic,
+        failure_class: m.FailureClass = m.FailureClass.TRANSIENT,
+    ) -> bool:
+        """Fail a dispatch only while the durable job is still unclaimed.
+
+        A timeout from the executor API is ambiguous: the executor may have
+        accepted and even completed the job before the caller loses its
+        response.  Locking and comparing ``QUEUED`` prevents that transport
+        ambiguity from overwriting RUNNING or terminal application state.
+        """
+
+        now = utc_now()
+        with self.session() as session:
+            row = self._lock_job(session, job_id, tenant_id, self.engine.dialect.name)
+            if row.status != "QUEUED" or row.control_state != "ACTIVE":
+                return False
+            row.status = "FAILED"
+            row.failure_class = failure_class.value
+            row.diagnostics = [failure.model_dump(mode="json")]
+            row.next_attempt_at = None
+            row.finished_at = now
+            if row.kind == "ACTIVITY":
+                statement = select(ActivityRow).where(
+                    ActivityRow.id == row.aggregate_id,
+                    ActivityRow.tenant_id == tenant_id,
+                )
+                if self.engine.dialect.name == "postgresql":
+                    statement = statement.with_for_update()
+                activity = session.scalar(statement)
+                if activity is not None:
+                    activity.status = "TECHNICAL_FAILURE"
+                    activity.updated_at = now
+            elif row.kind == "SUBMISSION":
+                statement = select(SubmissionRow).where(
+                    SubmissionRow.id == row.aggregate_id,
+                    SubmissionRow.tenant_id == tenant_id,
+                )
+                if self.engine.dialect.name == "postgresql":
+                    statement = statement.with_for_update()
+                submission = session.scalar(statement)
+                if submission is not None and submission.active_job_id == row.id:
+                    current = m.SubmissionProcessingState.model_validate(
+                        submission.state
+                    )
+                    submission.state = current.model_copy(
+                        update={
+                            "status": m.SubmissionProcessingStatus.TECHNICAL_FAILURE,
+                            "current_stage": row.stage,
+                            "active_job_id": row.id,
+                            "diagnostics": [failure],
+                            "updated_at": now,
+                        }
+                    ).model_dump(mode="json")
+                    submission.updated_at = now
+            return True
 
     def job_status(self, job_id: str, tenant_id: str) -> m.JobStatus:
         row = self.scoped(JobRow, job_id, tenant_id)
@@ -888,11 +1850,498 @@ class Repository:
             )
         return None if row is None else self.job_status(row.id, tenant_id)
 
-    def claim_next_job(self) -> JobRow | None:
+    def job_control(self, job_id: str, tenant_id: str) -> JobRow:
+        row = self.scoped(JobRow, job_id, tenant_id)
+        assert isinstance(row, JobRow)
+        return row
+
+    @staticmethod
+    def _lock_job(session: Session, job_id: str, tenant_id: str, dialect: str) -> JobRow:
+        statement = select(JobRow).where(
+            JobRow.id == job_id,
+            JobRow.tenant_id == tenant_id,
+        )
+        if dialect == "postgresql":
+            statement = statement.with_for_update()
+        row = session.scalar(statement)
+        if row is None:
+            raise NotFound("job not found")
+        return row
+
+    @staticmethod
+    def _add_job_control_record(
+        session: Session, record: m.JobControlRecord
+    ) -> JobControlRecordRow:
+        row = JobControlRecordRow(
+            id=record.control_id,
+            tenant_id=record.tenant_id,
+            job_id=record.job_id,
+            resulting_job_id=record.resulting_job_id,
+            aggregate_id=record.aggregate_id,
+            actor_id=record.actor_id,
+            action=record.action.value,
+            status=record.status.value,
+            source_attempt=record.source_attempt,
+            target_stage=record.target_stage,
+            failure_class=(
+                record.failure_class.value if record.failure_class is not None else None
+            ),
+            data=record.model_dump(mode="json"),
+            requested_at=record.requested_at,
+            decided_at=record.decided_at,
+        )
+        session.add(row)
+        return row
+
+    @staticmethod
+    def _has_applied_continuation(
+        session: Session, source: JobRow
+    ) -> bool:
+        return session.scalar(
+            select(JobControlRecordRow.id)
+            .where(
+                JobControlRecordRow.tenant_id == source.tenant_id,
+                JobControlRecordRow.job_id == source.id,
+                JobControlRecordRow.source_attempt == source.attempt,
+                JobControlRecordRow.action.in_(("RETRY", "RESUME")),
+                JobControlRecordRow.status == "APPLIED",
+            )
+            .limit(1)
+        ) is not None
+
+    def request_job_cancel(
+        self,
+        *,
+        job_id: str,
+        tenant_id: str,
+        actor_id: str,
+        requested_at: datetime | None = None,
+        control_id: str | None = None,
+        reason_code: str = "USER_REQUESTED_CANCELLATION",
+    ) -> JobRow:
+        """Request cooperative cancellation, or finish it before a queued claim."""
+
+        now = requested_at or utc_now()
+        with self.session() as session:
+            row = self._lock_job(session, job_id, tenant_id, self.engine.dialect.name)
+            if row.control_state == "CANCELLED":
+                return row
+            if row.control_state == "CANCEL_REQUESTED":
+                return row
+            if row.status not in {"QUEUED", "RUNNING"}:
+                raise Conflict("JOB_NOT_CANCELLABLE")
+            row.control_state = "CANCEL_REQUESTED"
+            row.cancel_requested_at = now
+            row.cancel_requested_by = actor_id
+            row.next_attempt_at = None
+            control = m.JobControlRecord(
+                control_id=control_id
+                or stable_id(
+                    "ctl", tenant_id, job_id, "CANCEL", actor_id, now.isoformat()
+                ),
+                tenant_id=tenant_id,
+                job_id=job_id,
+                aggregate_id=row.aggregate_id,
+                action=m.JobControlActionType.CANCEL,
+                status=m.JobControlStatus.APPLIED,
+                actor_id=actor_id,
+                source_attempt=row.attempt,
+                reason_code=reason_code,
+                requested_at=now,
+                decided_at=now,
+            )
+            self._add_job_control_record(session, control)
+            if row.status == "QUEUED":
+                self._complete_job_cancellation(session, row, now)
+            return row
+
+    def _complete_job_cancellation(
+        self, session: Session, row: JobRow, completed_at: datetime
+    ) -> None:
+        cancellation = self._cancel_diagnostic()
+        row.status = "FAILED"
+        row.control_state = "CANCELLED"
+        row.failure_class = "CANCELLATION"
+        row.finished_at = completed_at
+        row.cancelled_at = completed_at
+        row.next_attempt_at = None
+        row.diagnostics = self._append_diagnostic_once(row.diagnostics or [], cancellation)
+        if row.kind != "SUBMISSION":
+            return
+        submission_statement = select(SubmissionRow).where(
+            SubmissionRow.id == row.aggregate_id,
+            SubmissionRow.tenant_id == row.tenant_id,
+        )
+        if self.engine.dialect.name == "postgresql":
+            submission_statement = submission_statement.with_for_update()
+        submission = session.scalar(submission_statement)
+        if submission is None:
+            raise NotFound("submission not found")
+        current = m.SubmissionProcessingState.model_validate(submission.state)
+        cancelled = current.model_copy(
+            update={
+                "status": m.SubmissionProcessingStatus.CANCELLED,
+                "current_stage": row.stage,
+                "active_job_id": None,
+                "diagnostics": [*current.diagnostics, m.Diagnostic.model_validate(cancellation)],
+                "updated_at": completed_at,
+            }
+        )
+        submission.state = cancelled.model_dump(mode="json")
+        submission.active_job_id = None
+        submission.updated_at = completed_at
+
+    def complete_job_cancellation(
+        self,
+        *,
+        job_id: str,
+        tenant_id: str,
+        completed_at: datetime | None = None,
+    ) -> JobRow:
+        """Acknowledge cancellation at a worker stage boundary."""
+
+        now = completed_at or utc_now()
+        with self.session() as session:
+            row = self._lock_job(session, job_id, tenant_id, self.engine.dialect.name)
+            if row.control_state == "CANCELLED":
+                return row
+            if row.control_state != "CANCEL_REQUESTED":
+                raise Conflict("JOB_CANCEL_NOT_REQUESTED")
+            self._complete_job_cancellation(session, row, now)
+            return row
+
+    def job_cancel_requested(self, job_id: str, tenant_id: str) -> bool:
+        return self.job_control(job_id, tenant_id).control_state in {
+            "CANCEL_REQUESTED",
+            "CANCELLED",
+        }
+
+    def schedule_job_retry(
+        self,
+        *,
+        job_id: str,
+        tenant_id: str,
+        resulting_job_id: str,
+        control_id: str,
+        actor_id: str,
+        reason_code: str,
+        failure_class: str,
+        next_attempt_at: datetime,
+        resume_from_stage: str,
+        max_attempts: int | None = None,
+    ) -> JobRow:
+        """Create a distinct retry job and bind it to an append-only control record."""
+
+        if failure_class not in RETRYABLE_JOB_FAILURE_CLASSES:
+            raise Conflict("JOB_FAILURE_NOT_RETRYABLE")
+        if resulting_job_id == job_id:
+            raise Conflict("JOB_RETRY_REQUIRES_DISTINCT_JOB")
+        if max_attempts is not None and not 1 <= max_attempts <= 10:
+            raise ValueError("max_attempts must be between 1 and 10")
+        now = utc_now()
+        try:
+            with self.session() as session:
+                source = self._lock_job(
+                    session, job_id, tenant_id, self.engine.dialect.name
+                )
+                if source.control_state != "ACTIVE":
+                    raise Conflict("JOB_CANCEL_REQUESTED")
+                if source.status != "FAILED":
+                    raise Conflict("JOB_NOT_RETRYABLE")
+                if source.failure_class != failure_class:
+                    raise Conflict("JOB_FAILURE_CLASS_MISMATCH")
+                effective_max = max_attempts or source.max_attempts
+                if source.attempt >= effective_max:
+                    raise Conflict("JOB_RETRY_LIMIT_EXHAUSTED")
+                if self._has_applied_continuation(session, source):
+                    raise Conflict("JOB_CONTINUATION_ALREADY_SCHEDULED")
+                if failure_class == "PROVIDER" and not any(
+                    item.get("retryable") is True for item in source.diagnostics or []
+                ):
+                    raise Conflict("JOB_FAILURE_NOT_RETRYABLE")
+                if session.get(JobRow, resulting_job_id) is not None:
+                    raise Conflict("JOB_RESULT_ALREADY_EXISTS")
+                result = JobRow(
+                    id=resulting_job_id,
+                    tenant_id=source.tenant_id,
+                    kind=source.kind,
+                    aggregate_id=source.aggregate_id,
+                    stage=resume_from_stage,
+                    status="QUEUED",
+                    progress=source.progress,
+                    attempt=source.attempt,
+                    diagnostics=[],
+                    control_state="ACTIVE",
+                    max_attempts=effective_max,
+                    next_attempt_at=next_attempt_at,
+                    resume_from_stage=resume_from_stage,
+                    created_at=now,
+                )
+                session.add(result)
+                self._activate_resulting_submission_job(session, source, result, now)
+                failed_stage = session.scalar(
+                    select(StageRunRow)
+                    .where(
+                        StageRunRow.job_id == source.id,
+                        StageRunRow.tenant_id == source.tenant_id,
+                        StageRunRow.status == "FAILED",
+                        StageRunRow.stage == resume_from_stage,
+                    )
+                    .order_by(
+                        StageRunRow.attempt.desc(), StageRunRow.started_at.desc()
+                    )
+                    .limit(1)
+                )
+                if failed_stage is not None:
+                    failed_stage.failure_class = failure_class
+                    failed_stage.next_attempt_at = next_attempt_at
+                control = m.JobControlRecord(
+                    control_id=control_id,
+                    tenant_id=tenant_id,
+                    job_id=source.id,
+                    aggregate_id=source.aggregate_id,
+                    action=m.JobControlActionType.RETRY,
+                    status=m.JobControlStatus.APPLIED,
+                    actor_id=actor_id,
+                    source_attempt=source.attempt,
+                    reason_code=reason_code,
+                    target_stage=resume_from_stage,
+                    failure_class=m.FailureClass(failure_class),
+                    resulting_job_id=result.id,
+                    requested_at=now,
+                    decided_at=now,
+                )
+                self._add_job_control_record(session, control)
+                session.flush()
+                return result
+        except IntegrityError as exc:
+            raise Conflict("JOB_RETRY_ALREADY_SCHEDULED") from exc
+
+    def schedule_job_resume(
+        self,
+        *,
+        job_id: str,
+        tenant_id: str,
+        resulting_job_id: str,
+        control_id: str,
+        actor_id: str,
+        reason_code: str,
+        resume_from_stage: str,
+        next_attempt_at: datetime | None = None,
+    ) -> JobRow:
+        """Create a distinct continuation after a durable review/precondition gate."""
+
+        if resulting_job_id == job_id:
+            raise Conflict("JOB_RESUME_REQUIRES_DISTINCT_JOB")
+        now = utc_now()
+        try:
+            with self.session() as session:
+                source = self._lock_job(
+                    session, job_id, tenant_id, self.engine.dialect.name
+                )
+                if source.control_state != "ACTIVE":
+                    raise Conflict("JOB_CANCEL_REQUESTED")
+                if source.status not in {"FAILED", "NEEDS_REVIEW"}:
+                    raise Conflict("JOB_NOT_RESUMABLE")
+                if (
+                    source.status == "FAILED"
+                    and source.failure_class not in {"PRECONDITION", "VALIDATION"}
+                ):
+                    raise Conflict("JOB_NOT_RESUMABLE")
+                if source.attempt >= source.max_attempts:
+                    raise Conflict("JOB_RETRY_LIMIT_EXHAUSTED")
+                if self._has_applied_continuation(session, source):
+                    raise Conflict("JOB_CONTINUATION_ALREADY_SCHEDULED")
+                if session.get(JobRow, resulting_job_id) is not None:
+                    raise Conflict("JOB_RESULT_ALREADY_EXISTS")
+                result = JobRow(
+                    id=resulting_job_id,
+                    tenant_id=source.tenant_id,
+                    kind=source.kind,
+                    aggregate_id=source.aggregate_id,
+                    stage=resume_from_stage,
+                    status="QUEUED",
+                    progress=source.progress,
+                    attempt=source.attempt,
+                    diagnostics=[],
+                    control_state="ACTIVE",
+                    max_attempts=source.max_attempts,
+                    next_attempt_at=next_attempt_at,
+                    resume_from_stage=resume_from_stage,
+                    created_at=now,
+                )
+                session.add(result)
+                self._activate_resulting_submission_job(session, source, result, now)
+                control = m.JobControlRecord(
+                    control_id=control_id,
+                    tenant_id=tenant_id,
+                    job_id=source.id,
+                    aggregate_id=source.aggregate_id,
+                    action=m.JobControlActionType.RESUME,
+                    status=m.JobControlStatus.APPLIED,
+                    actor_id=actor_id,
+                    source_attempt=source.attempt,
+                    reason_code=reason_code,
+                    target_stage=resume_from_stage,
+                    resulting_job_id=result.id,
+                    requested_at=now,
+                    decided_at=now,
+                )
+                self._add_job_control_record(session, control)
+                session.flush()
+                return result
+        except IntegrityError as exc:
+            raise Conflict("JOB_RESUME_ALREADY_SCHEDULED") from exc
+
+    def _activate_resulting_submission_job(
+        self,
+        session: Session,
+        source: JobRow,
+        result: JobRow,
+        activated_at: datetime,
+    ) -> None:
+        if source.kind != "SUBMISSION":
+            return
+        statement = select(SubmissionRow).where(
+            SubmissionRow.id == source.aggregate_id,
+            SubmissionRow.tenant_id == source.tenant_id,
+        )
+        if self.engine.dialect.name == "postgresql":
+            statement = statement.with_for_update()
+        submission = session.scalar(statement)
+        if submission is None:
+            raise NotFound("submission not found")
+        current = m.SubmissionProcessingState.model_validate(submission.state)
+        resumed = current.model_copy(
+            update={
+                "current_stage": result.stage,
+                "active_job_id": result.id,
+                "updated_at": activated_at,
+            }
+        )
+        submission.state = resumed.model_dump(mode="json")
+        submission.active_job_id = result.id
+        submission.updated_at = activated_at
+
+    def job_control_records(
+        self,
+        *,
+        tenant_id: str,
+        job_id: str | None = None,
+        resulting_job_id: str | None = None,
+    ) -> list[JobControlRecordRow]:
+        with self.session() as session:
+            statement = select(JobControlRecordRow).where(
+                JobControlRecordRow.tenant_id == tenant_id
+            )
+            if job_id is not None:
+                statement = statement.where(JobControlRecordRow.job_id == job_id)
+            if resulting_job_id is not None:
+                statement = statement.where(
+                    JobControlRecordRow.resulting_job_id == resulting_job_id
+                )
+            return list(
+                session.scalars(
+                    statement.order_by(
+                        JobControlRecordRow.requested_at, JobControlRecordRow.id
+                    )
+                )
+            )
+
+    def reconcile_stale_jobs(
+        self,
+        *,
+        lease_seconds: int = 3900,
+        now: datetime | None = None,
+    ) -> int:
+        """Turn orphaned RUNNING rows into bounded, controllable state."""
+
+        if not 300 <= lease_seconds <= 7200:
+            raise ValueError("job lease must be between 300 and 7200 seconds")
+        reconciled_at = now or utc_now()
+        cutoff = reconciled_at - timedelta(seconds=lease_seconds)
         with self.session() as session:
             statement = (
                 select(JobRow)
-                .where(JobRow.status == "QUEUED")
+                .where(
+                    JobRow.status == "RUNNING",
+                    JobRow.started_at.is_not(None),
+                    JobRow.started_at <= cutoff,
+                )
+                .order_by(JobRow.started_at, JobRow.id)
+                .limit(100)
+            )
+            if self.engine.dialect.name == "postgresql":
+                statement = statement.with_for_update(skip_locked=True)
+            rows = list(session.scalars(statement))
+            for row in rows:
+                if row.control_state == "CANCEL_REQUESTED":
+                    self._complete_job_cancellation(session, row, reconciled_at)
+                    continue
+                if row.control_state != "ACTIVE":
+                    continue
+                failure = m.Diagnostic(
+                    code="JOB_LEASE_EXPIRED",
+                    severity=m.Severity.ERROR,
+                    message=(
+                        "The worker lease expired before a terminal state was "
+                        "persisted."
+                    ),
+                    retryable=True,
+                )
+                row.status = "FAILED"
+                row.failure_class = m.FailureClass.TRANSIENT.value
+                row.diagnostics = [failure.model_dump(mode="json")]
+                row.next_attempt_at = None
+                row.finished_at = reconciled_at
+                if row.kind == "ACTIVITY":
+                    activity = session.scalar(
+                        select(ActivityRow).where(
+                            ActivityRow.id == row.aggregate_id,
+                            ActivityRow.tenant_id == row.tenant_id,
+                        )
+                    )
+                    if activity is not None:
+                        activity.status = "TECHNICAL_FAILURE"
+                        activity.updated_at = reconciled_at
+                elif row.kind == "SUBMISSION":
+                    submission = session.scalar(
+                        select(SubmissionRow).where(
+                            SubmissionRow.id == row.aggregate_id,
+                            SubmissionRow.tenant_id == row.tenant_id,
+                        )
+                    )
+                    if submission is not None and submission.active_job_id == row.id:
+                        current = m.SubmissionProcessingState.model_validate(
+                            submission.state
+                        )
+                        submission.state = current.model_copy(
+                            update={
+                                "status": m.SubmissionProcessingStatus.TECHNICAL_FAILURE,
+                                "current_stage": row.stage,
+                                "active_job_id": row.id,
+                                "diagnostics": [failure],
+                                "updated_at": reconciled_at,
+                            }
+                        ).model_dump(mode="json")
+                        submission.updated_at = reconciled_at
+            return len(rows)
+
+    def claim_next_job(self, *, lease_seconds: int = 3900) -> JobRow | None:
+        self.reconcile_stale_jobs(lease_seconds=lease_seconds)
+        with self.session() as session:
+            now = utc_now()
+            statement = (
+                select(JobRow)
+                .where(
+                    JobRow.status == "QUEUED",
+                    JobRow.control_state == "ACTIVE",
+                    JobRow.attempt < JobRow.max_attempts,
+                    or_(
+                        JobRow.next_attempt_at.is_(None),
+                        JobRow.next_attempt_at <= now,
+                    ),
+                )
                 .order_by(JobRow.created_at, JobRow.id)
                 .limit(1)
             )
@@ -903,14 +2352,30 @@ class Repository:
                 return None
             row.status = "RUNNING"
             row.attempt += 1
-            row.started_at = utc_now()
+            row.started_at = now
+            row.finished_at = None
+            row.next_attempt_at = None
             return row
 
     def save_stage(
         self, *, job_id: str, tenant_id: str, stage: str, inputs: Any,
         component_version: str, policy_hash: str, output: dict[str, Any] | None,
         status: str = "SUCCEEDED", diagnostics: list[dict[str, Any]] | None = None,
+        failure_class: str | None = None,
+        next_attempt_at: datetime | None = None,
+        attempt: int | None = None,
+        resumed_from_stage_run_id: str | None = None,
     ) -> tuple[StageRunRow, bool]:
+        if failure_class is not None and failure_class not in JOB_FAILURE_CLASSES:
+            raise ValueError("unknown stage failure class")
+        if status == "SUCCEEDED" and (
+            failure_class is not None or next_attempt_at is not None
+        ):
+            raise ValueError("a succeeded stage cannot retain retry failure state")
+        if status == "SUCCEEDED" and output is None:
+            raise ValueError("a succeeded stage requires a reusable output")
+        if status != "SUCCEEDED" and output is not None:
+            raise ValueError("a non-succeeded stage cannot retain reusable output")
         input_hash = canonical_hash(inputs)
         stage_key = canonical_hash(
             {
@@ -921,26 +2386,119 @@ class Repository:
                 "component_version": component_version,
             }
         )
-        with self.session() as session:
-            existing = session.scalar(select(StageRunRow).where(StageRunRow.stage_key == stage_key))
-            if existing is not None:
-                return existing, True
+        output_hash = canonical_hash(output) if output is not None else None
+
+        def valid_success(row: StageRunRow) -> bool:
+            return all(
+                (
+                    row.tenant_id == tenant_id,
+                    row.stage == stage,
+                    row.stage_key == stage_key,
+                    row.status == "SUCCEEDED",
+                    row.input_hash == input_hash,
+                    row.policy_hash == policy_hash,
+                    row.component_version == component_version,
+                    row.output_hash == canonical_hash(row.output),
+                )
+            )
+
+        with self.sessions() as session:
+            existing_success = session.scalar(
+                select(StageRunRow).where(
+                    StageRunRow.tenant_id == tenant_id,
+                    StageRunRow.stage_key == stage_key,
+                    StageRunRow.status == "SUCCEEDED",
+                    StageRunRow.component_version == component_version,
+                    StageRunRow.output_hash.is_not(None),
+                )
+            )
+            if existing_success is not None:
+                if not valid_success(existing_success):
+                    raise Conflict("STAGE_REUSE_HASH_MISMATCH")
+                return existing_success, True
+            job = session.scalar(
+                select(JobRow).where(
+                    JobRow.id == job_id,
+                    JobRow.tenant_id == tenant_id,
+                )
+            )
+            stage_attempt = attempt or (job.attempt if job is not None else 1)
+            if stage_attempt < 1:
+                raise ValueError("stage attempt must be positive")
+            existing_attempt = session.scalar(
+                select(StageRunRow).where(
+                    StageRunRow.job_id == job_id,
+                    StageRunRow.stage_key == stage_key,
+                    StageRunRow.attempt == stage_attempt,
+                )
+            )
+            if existing_attempt is not None:
+                if existing_attempt.status == "SUCCEEDED":
+                    if not valid_success(existing_attempt):
+                        raise Conflict("STAGE_REUSE_HASH_MISMATCH")
+                    return existing_attempt, True
+                if any(
+                    (
+                        existing_attempt.tenant_id != tenant_id,
+                        existing_attempt.stage != stage,
+                        existing_attempt.input_hash != input_hash,
+                        existing_attempt.policy_hash != policy_hash,
+                        existing_attempt.component_version != component_version,
+                    )
+                ):
+                    raise Conflict("STAGE_ATTEMPT_CONFLICT")
+                existing_attempt.status = status
+                existing_attempt.output = output
+                existing_attempt.output_hash = output_hash
+                existing_attempt.failure_class = failure_class
+                existing_attempt.next_attempt_at = next_attempt_at
+                existing_attempt.diagnostics = diagnostics or []
+                existing_attempt.finished_at = utc_now()
+                session.commit()
+                return existing_attempt, False
+            executed_at = utc_now()
             row = StageRunRow(
-                id=stable_id("stage", job_id, stage, stage_key),
+                id=stable_id("stage", job_id, stage, stage_key, stage_attempt),
                 job_id=job_id,
                 tenant_id=tenant_id,
                 stage=stage,
                 stage_key=stage_key,
                 status=status,
-                attempt=1,
+                attempt=stage_attempt,
                 input_hash=input_hash,
                 policy_hash=policy_hash,
+                component_version=component_version,
                 output=output,
+                output_hash=output_hash,
+                failure_class=failure_class,
+                next_attempt_at=next_attempt_at,
+                resumed_from_stage_run_id=resumed_from_stage_run_id,
                 diagnostics=diagnostics or [],
-                finished_at=utc_now(),
+                # SQLAlchemy evaluates column defaults during INSERT.  Setting
+                # both timestamps explicitly prevents a sub-millisecond
+                # inversion where ``finished_at`` was captured first and the
+                # ``started_at`` default ran a moment later.
+                started_at=executed_at,
+                finished_at=executed_at,
             )
             session.add(row)
-            return row, False
+            try:
+                session.commit()
+                return row, False
+            except IntegrityError:
+                session.rollback()
+                winner = session.scalar(
+                    select(StageRunRow).where(
+                        StageRunRow.tenant_id == tenant_id,
+                        StageRunRow.stage_key == stage_key,
+                        StageRunRow.status == "SUCCEEDED",
+                        StageRunRow.component_version == component_version,
+                        StageRunRow.output_hash.is_not(None),
+                    )
+                )
+                if winner is not None and valid_success(winner):
+                    return winner, True
+                raise Conflict("STAGE_ATTEMPT_CONFLICT")
 
     def stage_by_key(
         self,
@@ -960,12 +2518,46 @@ class Repository:
                 "component_version": component_version,
             }
         )
+        input_hash = canonical_hash(inputs)
         with self.session() as session:
-            return session.scalar(
+            row = session.scalar(
                 select(StageRunRow).where(
                     StageRunRow.tenant_id == tenant_id,
                     StageRunRow.stage_key == stage_key,
                     StageRunRow.status == "SUCCEEDED",
+                    StageRunRow.component_version == component_version,
+                    StageRunRow.output_hash.is_not(None),
+                )
+            )
+            if row is None:
+                return None
+            expected_output_hash = canonical_hash(row.output)
+            if any(
+                (
+                    row.stage != stage,
+                    row.input_hash != input_hash,
+                    row.policy_hash != policy_hash,
+                    row.component_version != component_version,
+                    row.output_hash != expected_output_hash,
+                )
+            ):
+                return None
+            return row
+
+    def stage_runs_for_job(self, job_id: str, tenant_id: str) -> list[StageRunRow]:
+        with self.session() as session:
+            return list(
+                session.scalars(
+                    select(StageRunRow)
+                    .where(
+                        StageRunRow.job_id == job_id,
+                        StageRunRow.tenant_id == tenant_id,
+                    )
+                    .order_by(
+                        StageRunRow.attempt,
+                        StageRunRow.started_at,
+                        StageRunRow.id,
+                    )
                 )
             )
 
@@ -1018,6 +2610,95 @@ class Repository:
                 raise NotFound("assessment not found")
             return row
 
+    def approve_assessment_atomic(
+        self,
+        *,
+        expected_etag: str,
+        approved_row: AssessmentRow,
+        actor_id: str,
+    ) -> AssessmentRow:
+        """Commit approval version, submission projection, and audit together."""
+
+        approved = m.Assessment.model_validate(approved_row.data)
+        if approved.status != m.WorkflowStatus.APPROVED:
+            raise ValueError("approved_row must contain an APPROVED assessment")
+        if approved.approved_by != actor_id or approved.approved_at is None:
+            raise ValueError("approval actor metadata is inconsistent")
+        try:
+            with self.session() as session:
+                latest_statement = (
+                    select(AssessmentRow)
+                    .where(
+                        AssessmentRow.assessment_id == approved_row.assessment_id,
+                        AssessmentRow.tenant_id == approved_row.tenant_id,
+                    )
+                    .order_by(AssessmentRow.version.desc())
+                    .limit(1)
+                )
+                if self.engine.dialect.name == "postgresql":
+                    latest_statement = latest_statement.with_for_update()
+                latest = session.scalar(latest_statement)
+                if latest is None:
+                    raise NotFound("assessment not found")
+                if latest.etag != expected_etag:
+                    raise Conflict("ETAG_MISMATCH")
+                current = m.Assessment.model_validate(latest.data)
+                if current.status != m.WorkflowStatus.NEEDS_REVIEW:
+                    raise Conflict("ASSESSMENT_NOT_REVIEWABLE")
+                if any(
+                    (
+                        approved_row.version != latest.version + 1,
+                        approved_row.submission_id != latest.submission_id,
+                        approved.submission_id != latest.submission_id,
+                    )
+                ):
+                    raise Conflict("ASSESSMENT_VERSION_CONFLICT")
+
+                submission_statement = select(SubmissionRow).where(
+                    SubmissionRow.id == latest.submission_id,
+                    SubmissionRow.tenant_id == latest.tenant_id,
+                )
+                if self.engine.dialect.name == "postgresql":
+                    submission_statement = submission_statement.with_for_update()
+                submission = session.scalar(submission_statement)
+                if submission is None:
+                    raise NotFound("submission not found")
+                state = m.SubmissionProcessingState.model_validate(submission.state)
+                if state.status != m.SubmissionProcessingStatus.NEEDS_REVIEW:
+                    raise Conflict("ASSESSMENT_SUBMISSION_NOT_REVIEWABLE")
+
+                session.add(approved_row)
+                approved_at = approved.approved_at
+                submission.state = state.model_copy(
+                    update={
+                        "status": m.SubmissionProcessingStatus.APPROVED,
+                        "updated_at": approved_at,
+                    }
+                ).model_dump(mode="json")
+                submission.updated_at = approved_at
+                session.add(
+                    AuditEventRow(
+                        id=stable_id(
+                            "evt",
+                            approved_row.tenant_id,
+                            "assessment.approved",
+                            approved_row.assessment_id,
+                            actor_id,
+                            approved_row.version,
+                        ),
+                        tenant_id=approved_row.tenant_id,
+                        event_type="assessment.approved",
+                        aggregate_id=approved_row.assessment_id,
+                        actor_id=actor_id,
+                        payload={"assessment_version": approved_row.version},
+                        occurred_at=approved_at,
+                    )
+                )
+                session.flush()
+                return approved_row
+        except IntegrityError as exc:
+            raise Conflict("ASSESSMENT_VERSION_CONFLICT") from exc
+
     def guide_for_assessment(self, assessment_id: str, tenant_id: str) -> GuideRow:
         with self.session() as session:
             row = session.scalar(
@@ -1038,6 +2719,460 @@ class Repository:
                         QuestionReviewRow.submission_id == submission_id,
                         QuestionReviewRow.tenant_id == tenant_id,
                     )
+                )
+            )
+
+    def apply_question_review_action(
+        self,
+        record: m.QuestionReviewActionRecord,
+        resulting_assessment: AssessmentRow | None = None,
+        resulting_guide: GuideRow | None = None,
+        terminal_job: JobRow | None = None,
+        failure_class: m.FailureClass | None = None,
+    ) -> QuestionReviewActionRow:
+        """Apply a review record and any next immutable version atomically."""
+
+        try:
+            with self.session() as session:
+                latest_statement = (
+                    select(AssessmentRow)
+                    .where(
+                        AssessmentRow.assessment_id == record.assessment_id,
+                        AssessmentRow.tenant_id == record.tenant_id,
+                    )
+                    .order_by(AssessmentRow.version.desc())
+                    .limit(1)
+                )
+                if self.engine.dialect.name == "postgresql":
+                    latest_statement = latest_statement.with_for_update()
+                latest = session.scalar(latest_statement)
+                if latest is None:
+                    raise NotFound("assessment version not found")
+                if (
+                    latest.submission_id != record.submission_id
+                    or latest.version != record.assessment_version_before
+                ):
+                    raise Conflict("QUESTION_REVIEW_STALE_VERSION")
+                submission = session.scalar(
+                    select(SubmissionRow).where(
+                        SubmissionRow.id == record.submission_id,
+                        SubmissionRow.tenant_id == record.tenant_id,
+                        SubmissionRow.activity_id == record.activity_id,
+                    )
+                )
+                if submission is None:
+                    raise NotFound("submission not found")
+                current = m.Assessment.model_validate(latest.data)
+                persisted_question = next(
+                    (
+                        item
+                        for item in current.questions
+                        if item.question_id == record.action.question_id
+                    ),
+                    None,
+                )
+                if persisted_question is None:
+                    raise NotFound("question not found")
+                if persisted_question != record.before_question:
+                    raise Conflict("QUESTION_REVIEW_BEFORE_SNAPSHOT_MISMATCH")
+
+                action_type = record.action.action
+                mutates_version = (
+                    record.status == m.QuestionReviewRecordStatus.APPLIED
+                    and action_type != m.QuestionReviewActionType.ACCEPT
+                )
+                if mutates_version:
+                    if resulting_assessment is None:
+                        raise Conflict("QUESTION_REVIEW_RESULTING_VERSION_REQUIRED")
+                    if any(
+                        (
+                            resulting_assessment.tenant_id != record.tenant_id,
+                            resulting_assessment.submission_id != record.submission_id,
+                            resulting_assessment.assessment_id != record.assessment_id,
+                            resulting_assessment.version
+                            != record.assessment_version_after,
+                        )
+                    ):
+                        raise Conflict("QUESTION_REVIEW_RESULTING_VERSION_MISMATCH")
+                    m.Assessment.model_validate(resulting_assessment.data)
+                    session.add(resulting_assessment)
+                    if action_type in {
+                        m.QuestionReviewActionType.EDIT,
+                        m.QuestionReviewActionType.REGENERATE,
+                    }:
+                        if resulting_guide is not None:
+                            if any(
+                                (
+                                    resulting_guide.tenant_id != record.tenant_id,
+                                    resulting_guide.submission_id
+                                    != record.submission_id,
+                                    resulting_guide.assessment_id
+                                    != record.assessment_id,
+                                )
+                            ):
+                                raise Conflict("QUESTION_REVIEW_GUIDE_MISMATCH")
+                            # EvaluationGuide keeps a stable canonical guide_id across
+                            # assessment revisions.  Merge updates that durable row in
+                            # the same transaction instead of attempting a second insert
+                            # against its primary key.
+                            session.merge(resulting_guide)
+                    elif resulting_guide is not None:
+                        raise Conflict("QUESTION_REVIEW_GUIDE_NOT_ALLOWED")
+                elif resulting_assessment is not None or resulting_guide is not None:
+                    raise Conflict("QUESTION_REVIEW_UNEXPECTED_RESULTING_VERSION")
+
+                row = QuestionReviewActionRow(
+                    id=record.record_id,
+                    tenant_id=record.tenant_id,
+                    activity_id=record.activity_id,
+                    assessment_id=record.assessment_id,
+                    assessment_version_before=record.assessment_version_before,
+                    assessment_version_after=record.assessment_version_after,
+                    submission_id=record.submission_id,
+                    question_id=record.action.question_id,
+                    actor_id=record.action.actor_id,
+                    action=record.action.action.value,
+                    status=record.status.value,
+                    revalidation_status=record.revalidation_status.value,
+                    before_snapshot_hash=canonical_hash(
+                        record.before_question.model_dump(mode="json")
+                    ),
+                    after_snapshot_hash=(
+                        canonical_hash(record.after_question.model_dump(mode="json"))
+                        if record.after_question is not None
+                        else None
+                    ),
+                    data=record.model_dump(mode="json"),
+                    occurred_at=record.recorded_at,
+                )
+                session.add(row)
+                if terminal_job is not None:
+                    job = self._lock_job(
+                        session,
+                        terminal_job.id,
+                        record.tenant_id,
+                        self.engine.dialect.name,
+                    )
+                    if (
+                        job.kind != "QUESTION_ACTION"
+                        or job.aggregate_id != record.submission_id
+                    ):
+                        raise Conflict("QUESTION_REVIEW_JOB_MISMATCH")
+                    job.finished_at = record.recorded_at
+                    job.next_attempt_at = None
+                    if record.status == m.QuestionReviewRecordStatus.APPLIED:
+                        if failure_class is not None:
+                            raise ValueError("an applied action cannot fail its job")
+                        job.stage = "QUESTION_ACTION"
+                        job.status = "SUCCEEDED"
+                        job.progress = 1.0
+                        job.failure_class = None
+                        job.diagnostics = []
+                    else:
+                        if failure_class is None:
+                            raise ValueError("a failed action requires failure_class")
+                        job.status = "FAILED"
+                        job.failure_class = failure_class.value
+                        job.diagnostics = [
+                            item.model_dump(mode="json")
+                            for item in record.diagnostics
+                        ]
+                session.flush()
+        except IntegrityError as exc:
+            raise Conflict("QUESTION_REVIEW_ACTION_ALREADY_EXISTS") from exc
+        return row
+
+    def question_review_actions(
+        self,
+        *,
+        tenant_id: str,
+        assessment_id: str,
+        assessment_version: int | None = None,
+        question_id: str | None = None,
+    ) -> list[QuestionReviewActionRow]:
+        with self.session() as session:
+            statement = select(QuestionReviewActionRow).where(
+                QuestionReviewActionRow.tenant_id == tenant_id,
+                QuestionReviewActionRow.assessment_id == assessment_id,
+            )
+            if assessment_version is not None:
+                statement = statement.where(
+                    QuestionReviewActionRow.assessment_version_before
+                    == assessment_version
+                )
+            if question_id is not None:
+                statement = statement.where(
+                    QuestionReviewActionRow.question_id == question_id
+                )
+            return list(
+                session.scalars(
+                    statement.order_by(
+                        QuestionReviewActionRow.occurred_at,
+                        QuestionReviewActionRow.id,
+                    )
+                )
+            )
+
+    def add_feedback_event(
+        self, event: m.FeedbackEvent | FeedbackEventRow
+    ) -> FeedbackEventRow:
+        if isinstance(event, FeedbackEventRow):
+            event = m.FeedbackEvent.model_validate(event.data)
+        row = FeedbackEventRow(
+            id=event.feedback_id,
+            tenant_id=event.tenant_id,
+            actor_id=event.actor_id,
+            activity_id=event.activity_id,
+            assessment_id=event.assessment_id,
+            assessment_version=event.assessment_version,
+            question_id=event.question_id,
+            target_type=event.target_type.value,
+            target_id=event.question_id or event.assessment_id or event.activity_id,
+            rating=event.rating.value,
+            category=event.category.value,
+            data=event.model_dump(mode="json"),
+            occurred_at=event.created_at,
+        )
+        try:
+            with self.session() as session:
+                activity = session.scalar(
+                    select(ActivityRow).where(
+                        ActivityRow.id == event.activity_id,
+                        ActivityRow.tenant_id == event.tenant_id,
+                    )
+                )
+                if activity is None:
+                    raise NotFound("activity not found")
+                if event.assessment_id is not None:
+                    assessment = session.scalar(
+                        select(AssessmentRow).where(
+                            AssessmentRow.assessment_id == event.assessment_id,
+                            AssessmentRow.tenant_id == event.tenant_id,
+                            AssessmentRow.version == event.assessment_version,
+                        )
+                    )
+                    if assessment is None:
+                        raise NotFound("assessment version not found")
+                session.add(row)
+                session.flush()
+        except IntegrityError as exc:
+            raise Conflict("FEEDBACK_EVENT_ALREADY_EXISTS") from exc
+        return row
+
+    def feedback_events(
+        self,
+        *,
+        tenant_id: str,
+        target_type: str | None = None,
+        activity_id: str | None = None,
+        assessment_id: str | None = None,
+        question_id: str | None = None,
+    ) -> list[FeedbackEventRow]:
+        with self.session() as session:
+            statement = select(FeedbackEventRow).where(
+                FeedbackEventRow.tenant_id == tenant_id
+            )
+            if target_type is not None:
+                statement = statement.where(
+                    FeedbackEventRow.target_type == target_type
+                )
+            if activity_id is not None:
+                statement = statement.where(FeedbackEventRow.activity_id == activity_id)
+            if assessment_id is not None:
+                statement = statement.where(
+                    FeedbackEventRow.assessment_id == assessment_id
+                )
+            if question_id is not None:
+                statement = statement.where(FeedbackEventRow.question_id == question_id)
+            return list(
+                session.scalars(
+                    statement.order_by(
+                        FeedbackEventRow.occurred_at, FeedbackEventRow.id
+                    )
+                )
+            )
+
+    def add_bulk_approval_request(
+        self, request: m.BulkApprovalRequest
+    ) -> BulkApprovalRequestRow:
+        row = BulkApprovalRequestRow(
+            id=request.request_id,
+            tenant_id=request.tenant_id,
+            actor_id=request.actor_id,
+            target_count=len(request.targets),
+            data=request.model_dump(mode="json"),
+            requested_at=request.requested_at,
+        )
+        try:
+            self.add(row)
+        except IntegrityError as exc:
+            raise Conflict("BULK_APPROVAL_REQUEST_ALREADY_EXISTS") from exc
+        return row
+
+    def bulk_approval_requests(
+        self, *, tenant_id: str, actor_id: str | None = None
+    ) -> list[BulkApprovalRequestRow]:
+        with self.session() as session:
+            statement = select(BulkApprovalRequestRow).where(
+                BulkApprovalRequestRow.tenant_id == tenant_id
+            )
+            if actor_id is not None:
+                statement = statement.where(
+                    BulkApprovalRequestRow.actor_id == actor_id
+                )
+            return list(
+                session.scalars(
+                    statement.order_by(
+                        BulkApprovalRequestRow.requested_at,
+                        BulkApprovalRequestRow.id,
+                    )
+                )
+            )
+
+    def add_bulk_approval_record(
+        self, record: m.BulkApprovalRecord
+    ) -> BulkApprovalRecordRow:
+        try:
+            with self.session() as session:
+                request = session.scalar(
+                    select(BulkApprovalRequestRow).where(
+                        BulkApprovalRequestRow.id == record.request_id,
+                        BulkApprovalRequestRow.tenant_id == record.tenant_id,
+                    )
+                )
+                if request is None:
+                    raise NotFound("bulk approval request not found")
+                if request.actor_id != record.actor_id:
+                    raise Conflict("BULK_APPROVAL_ACTOR_MISMATCH")
+                row = BulkApprovalRecordRow(
+                    id=record.approval_id,
+                    tenant_id=record.tenant_id,
+                    request_id=record.request_id,
+                    actor_id=record.actor_id,
+                    approved_count=len(record.approved_targets),
+                    excluded_count=len(record.excluded_targets),
+                    data=record.model_dump(mode="json"),
+                    approved_at=record.approved_at,
+                )
+                session.add(row)
+                session.flush()
+        except IntegrityError as exc:
+            raise Conflict("BULK_APPROVAL_RECORD_ALREADY_EXISTS") from exc
+        return row
+
+    def bulk_approval_records(
+        self, *, tenant_id: str, request_id: str | None = None
+    ) -> list[BulkApprovalRecordRow]:
+        with self.session() as session:
+            statement = select(BulkApprovalRecordRow).where(
+                BulkApprovalRecordRow.tenant_id == tenant_id
+            )
+            if request_id is not None:
+                statement = statement.where(
+                    BulkApprovalRecordRow.request_id == request_id
+                )
+            return list(
+                session.scalars(
+                    statement.order_by(
+                        BulkApprovalRecordRow.approved_at,
+                        BulkApprovalRecordRow.id,
+                    )
+                )
+            )
+
+    def set_export_snapshot_metadata(
+        self,
+        *,
+        export_id: str,
+        tenant_id: str,
+        assessment_version: int,
+        snapshot_hash: str,
+        component_version: str,
+    ) -> ExportRow:
+        if re.fullmatch(r"sha256:[0-9a-f]{64}", snapshot_hash) is None:
+            raise ValueError("snapshot_hash must be a canonical sha256 hash")
+        with self.session() as session:
+            statement = select(ExportRow).where(
+                ExportRow.id == export_id,
+                ExportRow.tenant_id == tenant_id,
+            )
+            if self.engine.dialect.name == "postgresql":
+                statement = statement.with_for_update()
+            row = session.scalar(statement)
+            if row is None:
+                raise NotFound("export not found")
+            assessment = session.scalar(
+                select(AssessmentRow).where(
+                    AssessmentRow.assessment_id == row.assessment_id,
+                    AssessmentRow.tenant_id == tenant_id,
+                    AssessmentRow.version == assessment_version,
+                )
+            )
+            if assessment is None:
+                raise NotFound("assessment version not found")
+            expected = (assessment_version, snapshot_hash, component_version)
+            current = (
+                row.assessment_version,
+                row.assessment_snapshot_hash,
+                row.renderer_version,
+            )
+            if any(value is not None for value in current) and current != expected:
+                raise Conflict("EXPORT_SNAPSHOT_ALREADY_BOUND")
+            row.assessment_version = assessment_version
+            row.assessment_snapshot_hash = snapshot_hash
+            row.renderer_version = component_version
+            return row
+
+    def save_export_record(self, record: m.ExportRecord) -> ExportRow:
+        """Persist a capability-free canonical export snapshot for later reload."""
+
+        artifacts = {
+            item.kind.value: item.model_dump(mode="json") for item in record.artifacts
+        }
+        with self.session() as session:
+            statement = select(ExportRow).where(
+                ExportRow.id == record.export_id,
+                ExportRow.tenant_id == record.tenant_id,
+            )
+            if self.engine.dialect.name == "postgresql":
+                statement = statement.with_for_update()
+            row = session.scalar(statement)
+            if row is None:
+                row = ExportRow(
+                    id=record.export_id,
+                    tenant_id=record.tenant_id,
+                    assessment_id=record.assessment_id,
+                    status=record.status.value,
+                    artifacts=artifacts,
+                    created_at=record.requested_at,
+                )
+                session.add(row)
+            elif row.assessment_id != record.assessment_id:
+                raise Conflict("EXPORT_ASSESSMENT_MISMATCH")
+            row.activity_id = record.activity_id
+            row.assessment_version = record.assessment_version
+            row.assessment_snapshot_hash = record.assessment_snapshot_hash
+            row.renderer_version = record.renderer_version
+            row.requested_by = record.requested_by
+            row.requested_kinds = [item.value for item in record.requested_kinds]
+            row.guide_snapshot_hash = record.guide_snapshot_hash
+            row.coverage_snapshot_hash = record.coverage_snapshot_hash
+            row.completed_at = record.completed_at
+            row.data = record.model_dump(mode="json")
+            row.status = record.status.value
+            row.artifacts = artifacts
+            return row
+
+    def list_exports(self, assessment_id: str, tenant_id: str) -> list[ExportRow]:
+        with self.session() as session:
+            return list(
+                session.scalars(
+                    select(ExportRow)
+                    .where(
+                        ExportRow.assessment_id == assessment_id,
+                        ExportRow.tenant_id == tenant_id,
+                    )
+                    .order_by(ExportRow.created_at.desc(), ExportRow.id.desc())
                 )
             )
 
@@ -1070,7 +3205,7 @@ class Repository:
         *,
         tenant_id: str,
         event_type: str,
-        aggregate_id: str,
+        aggregate_id: str | None,
         actor_id: str | None = None,
     ) -> list[AuditEventRow]:
         """Return tenant-scoped audit evidence without inspecting payload text."""
@@ -1079,8 +3214,11 @@ class Repository:
             statement = select(AuditEventRow).where(
                 AuditEventRow.tenant_id == tenant_id,
                 AuditEventRow.event_type == event_type,
-                AuditEventRow.aggregate_id == aggregate_id,
             )
+            if aggregate_id is not None:
+                statement = statement.where(
+                    AuditEventRow.aggregate_id == aggregate_id
+                )
             if actor_id is not None:
                 statement = statement.where(AuditEventRow.actor_id == actor_id)
             return list(

@@ -1,18 +1,20 @@
-# Operación externa verificada de Etapa 1
+# Operación externa — Etapa 2
 
-Estado al 2026-08-07: el stack externo autorizado fue configurado y verificado
-con datos exclusivamente sintéticos. Este documento es el runbook operativo y
-el snapshot del candidato; ya no representa una tarea externa pendiente.
+Estado al 2026-08-07: el stack E1 autorizado está verificado y constituye el
+baseline desplegado. La migración, build y actualización runtime E2 todavía no
+se presentan como ejecutados. Este documento registra el target y la secuencia
+operativa E2; [deploy/README.md](../deploy/README.md) contiene los comandos
+detallados y los gates fail-closed.
 
-La evidencia exacta del último commit se genera fuera del repositorio porque
-FINAL_STAGE1_SHA, su build y su digest solo existen después del commit que
-contiene este documento.
+La evidencia exacta del candidato E2 se completa después de crear su SHA,
+obtener CI verde, construir por Cloud Build y resolver el digest inmutable.
+Hasta entonces, esos campos permanecen `NOT_VERIFIED`.
 
 ## Targets autorizados
 
 | Plataforma | Target |
 |---|---|
-| GitHub | WilJms/PruebasPersonalizadas, PR #1 |
+| GitHub | WilJms/PruebasPersonalizadas; rama `codex/stage2-experimental-mvp` |
 | GCP | cva-experimento-wiljms, us-east1 |
 | Cloud Run | Service cva-web y Job cva-worker |
 | Supabase | spkgkruotrpuctfqdfag |
@@ -21,6 +23,35 @@ contiene este documento.
 
 No operar sobre otro repositorio, proyecto, región, cuenta, bucket, base o
 tenant. El runtime debe mantener CVA_MODEL_MODE=mock y CVA_P10_ENABLED=false.
+
+## Secuencia autorizada para E2
+
+| Boundary | Estado inicial | Condición de salida |
+|---|---|---|
+| SHA/PR/CI | NOT_VERIFIED | Commit reproducible, PR draft y todos los jobs verdes sobre el head exacto |
+| PostgreSQL | NOT_VERIFIED | Backup restaurable, writers detenidos, migración `202608070003_stage2_experimental.sql`, readiness y RLS verificados |
+| Cloud Build | NOT_VERIFIED | Source SHA exacto, gates verdes, scan/SBOM/provenance revisados y digest del registry coincidente |
+| Terraform | NOT_VERIFIED | Plan guardado sin delete/replace/IAM/target/model/P10 inesperado y apply exclusivo del plan |
+| Runtime | NOT_VERIFIED | `cva-web` y `cva-worker` Ready en `us-east1`, mismo digest, Job 1/1/0, health/readiness 200 |
+| Producto cloud | NOT_VERIFIED | Recorrido E2 1–38 sintético, recovery de navegador, logs limpios y exports delta modelo 0 |
+| Convergencia | NOT_VERIFIED | Dos planes vivos consecutivos con detailed exit code 0 |
+
+Antes de cualquier write se revalida identidad y target de GitHub, gcloud/ADC,
+Supabase y Cloudflare sin imprimir secretos. La base E1 ya contiene 001 y 002;
+por tanto el upgrade live aplica únicamente 003. La recovery E2 no es un
+rollback rutinario: exige quiesce, backup y ausencia demostrada de hechos E2.
+
+Cloud Build construye y publica, pero no despliega. Terraform sigue siendo el
+único writer de Service/Job y solo acepta la imagen
+`us-east1-docker.pkg.dev/cva-experimento-wiljms/<repository>/application@sha256:…`
+del repositorio configurado en el mismo plan.
+
+La ejecución cloud usa exclusivamente fixtures sintéticos, modelo mock y P10
+apagado. No se solicitan credenciales de proveedor IA. Los valores PostgreSQL,
+R2, sesión y service-role permanecen en mecanismos oficiales/Secret Manager y
+nunca se copian a comandos, substitutions, logs, evidencia o Git.
+
+## Snapshot histórico verificado de E1
 
 ## Estado externo observado en el candidato
 
@@ -207,6 +238,8 @@ real del run PR y precedía al saneamiento live de idempotencia.
 
 ## Operación posterior
 
-El PR permanece draft. Este runbook no autoriza merge, tag ni Etapa 2. Si una
-sesión externa expira, se repite el login oficial interactivo y se verifica el
-target antes de continuar; nunca se solicita un secreto por chat.
+El prompt maestro del 2026-08-07 autoriza implementar y desplegar E2 únicamente
+en los targets indicados. No autoriza merge a `main`, tag, Etapa 3, modelos
+reales ni datos reales. Si una sesión externa expira, se repite el login
+oficial interactivo y se verifica el target antes de continuar; nunca se
+solicita un secreto por chat.

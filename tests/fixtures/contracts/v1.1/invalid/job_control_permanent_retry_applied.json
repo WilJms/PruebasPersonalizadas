@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.2.0",
+  "control_id": "control_fixture",
+  "tenant_id": "tenant_fixture",
+  "job_id": "job_fixture",
+  "aggregate_id": "submission_fixture",
+  "action": "RETRY",
+  "status": "APPLIED",
+  "actor_id": "teacher_fixture",
+  "source_attempt": 1,
+  "reason_code": "PERMANENT_FAILURE",
+  "target_stage": "ASSESSMENT_PLAN",
+  "failure_class": "PERMANENT",
+  "resulting_job_id": "job_retry_fixture",
+  "diagnostics": [],
+  "requested_at": "2026-08-07T12:01:00Z",
+  "decided_at": "2026-08-07T12:01:01Z"
+}

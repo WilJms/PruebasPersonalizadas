@@ -26,14 +26,13 @@ from .contracts import (
     CANONICAL_SCHEMA_PATH,
     CONTRACT_MODELS,
     REPOSITORY_ROOT,
-    SCHEMA_VERSION,
     embedded_model_by_name,
     models,
 )
 
 
 EXPECTED_SCHEMA_DIALECT = "https://json-schema.org/draft/2020-12/schema"
-EXPECTED_CONTRACT_ROOT_COUNT = 46
+EXPECTED_CONTRACT_ROOT_COUNT = 53
 EXPECTED_DOCUMENTED_FIXTURE_COUNT = 8
 
 _FIXTURE_TAG = re.compile(
@@ -222,11 +221,12 @@ def validate_schema_bundle(
     selected_bundle = load_schema_bundle() if bundle is None else dict(bundle)
     if selected_bundle.get("$schema") != EXPECTED_SCHEMA_DIALECT:
         raise ContractValidationError("Canonical schema is not Draft 2020-12")
-    if selected_bundle.get("version") != SCHEMA_VERSION:
+    contract_version = models.CONTRACT_VERSION
+    if selected_bundle.get("version") != contract_version:
         raise ContractValidationError("Canonical schema version does not match Pydantic")
     expected_id = (
         "https://schemas.evaluaciones-personalizadas.local/"
-        f"assessment-contracts/{SCHEMA_VERSION}"
+        f"assessment-contracts/{contract_version}"
     )
     if selected_bundle.get("$id") != expected_id:
         raise ContractValidationError("Canonical schema $id does not match its version")
@@ -245,7 +245,7 @@ def validate_schema_bundle(
     actual_names = tuple(roots)
     if len(expected_names) != EXPECTED_CONTRACT_ROOT_COUNT:
         raise ContractValidationError(
-            "CONTRACT_MODELS no longer contains the audited 46 v1.1 roots"
+            "CONTRACT_MODELS no longer contains the audited 53 v1.2 roots"
         )
     if actual_names != expected_names:
         raise ContractValidationError("Schema roots drifted from CONTRACT_MODELS")
@@ -483,7 +483,7 @@ def run_contract_validation_gate() -> ContractGateReport:
     schema_report = validate_schema_bundle(bundle)
     fixtures = validate_documented_contract_fixtures(bundle=bundle)
     return ContractGateReport(
-        schema_version=SCHEMA_VERSION,
+        schema_version=models.CONTRACT_VERSION,
         root_count=len(schema_report.root_names),
         definition_count=schema_report.definition_count,
         reference_count=schema_report.reference_count,

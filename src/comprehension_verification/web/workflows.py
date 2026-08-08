@@ -5,19 +5,36 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from collections.abc import Awaitable, Callable
 from typing import Any, TypeVar, cast
 
 from pydantic import BaseModel, TypeAdapter, ValidationError
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, OperationalError
 
 from ..canonical import canonical_hash, sha256_bytes, stable_id
 from ..contracts import models as m
 from ..diagnostics import diagnostic
 from ..exports import RENDERER_VERSION, render_views
-from ..model_gateway import GatewayConfig, GatewayMode, ModelGateway
+from ..model_gateway import (
+    GatewayConfig,
+    GatewayContextError,
+    GatewayMode,
+    GatewayProviderError,
+    GatewaySafetyBlock,
+    GatewayTimeout,
+    ModelGateway,
+    TransientProviderError,
+)
 from ..model_gateway.mock_factory import build_trusted_context
 from ..model_gateway.registry import PROMPT_VERSION
-from ..parsers import PARSER_VERSION, ParseRejected, ParsedArtifact, SafeParserService
+from ..parsers import (
+    DOCX_MEDIA_TYPE,
+    PARSER_VERSION,
+    ParseRejected,
+    ParsedArtifact,
+    SafeParserService,
+    parse_in_subprocess,
+)
 from ..planning import PLANNER_VERSION, build_assessment_plan
 from ..validation import (
     ContextValidationError,
@@ -51,17 +68,49 @@ from .repository import (
     QuestionReviewRow,
     Repository,
     RubricSpecRow,
+    StageRunRow,
     SubmissionRow,
     utc_now,
 )
 from .settings import Settings, WorkerSettings
 
 
-ALLOWED_MEDIA_TYPES = frozenset({"text/plain", "text/markdown", "application/pdf"})
+ALLOWED_MEDIA_TYPES = frozenset(
+    {"text/plain", "text/markdown", "application/pdf", DOCX_MEDIA_TYPE}
+)
 ACTIVITY_UPLOAD_OPEN_STATUSES = frozenset({"DRAFT"})
 ACTIVITY_PIPELINE_VERSION = "stage1-activity-pipeline/1.0.0"
 SUBMISSION_PIPELINE_VERSION = "stage1-submission-pipeline/1.0.0"
 ASSEMBLER_VERSION = "stage1-assembler/1.0.0"
+
+_ACTIVITY_RESUME_ORDER = {
+    "ACTIVITY_PARSE": 0,
+    "ACTIVITY_SPEC": 1,
+    "RUBRIC_NORMALIZE": 2,
+    "AMBIGUITY_TRIAGE": 3,
+    "BLUEPRINT_BUILD": 4,
+    "BLUEPRINT_REVIEW": 5,
+}
+_SUBMISSION_RESUME_ORDER = {
+    "SUBMISSION_PARSE": 0,
+    "EVIDENCE_MAP": 1,
+    "ASSESSMENT_PLAN": 2,
+    "QUESTION_GENERATE": 3,
+    "QUESTION_REVIEW": 4,
+    "GUIDE_BUILD": 5,
+    "ASSEMBLE": 6,
+}
+_PROMPT_APPLICATION_STAGE = {
+    "P01_ACTIVITY_SPEC_V1": "ACTIVITY_SPEC",
+    "P02_RUBRIC_NORMALIZE_V1": "RUBRIC_NORMALIZE",
+    "P03_AMBIGUITY_TRIAGE_V1": "AMBIGUITY_TRIAGE",
+    "P04_BLUEPRINT_BUILD_V1": "BLUEPRINT_BUILD",
+    "P05_BLUEPRINT_REVIEW_V1": "BLUEPRINT_REVIEW",
+    "P06_EVIDENCE_MAP_V1": "EVIDENCE_MAP",
+    "P07_QUESTION_BUILD_V1": "QUESTION_GENERATE",
+    "P08_QUESTION_REVIEW_V1": "QUESTION_REVIEW",
+    "P09_GUIDE_BUILD_V1": "GUIDE_BUILD",
+}
 
 T = TypeVar("T", bound=BaseModel)
 
@@ -73,10 +122,47 @@ class WorkflowError(RuntimeError):
         self.status_code = status_code
 
 
+class _CooperativeJobCancellation(RuntimeError):
+    """Internal control-flow sentinel after durable cancellation acknowledgement."""
+
+
+_SECURITY_FAILURE_CODES = frozenset(
+    {
+        "CROSS_SUBMISSION_EVIDENCE",
+        "INGEST_ENCRYPTED_FILE",
+        "IR_PROVENANCE_GAP",
+        "MODEL_CONTEXT_NOT_ALLOWLISTED",
+        "MODEL_SAFETY_BLOCK",
+        "REJECTED_SECURITY",
+    }
+)
+
+_PRECONDITION_FAILURE_CODES = frozenset(
+    {
+        "BLUEPRINT_NOT_APPROVED",
+        "POLICY_DECISION_INVALID",
+        "STAGE_RESUME_REUSE_MISSING",
+        "SUBMISSION_ARTIFACT_REQUIRED",
+        "SUBMISSION_FINALIZATION_STATE_CHANGED",
+        "QUESTION_ACTION_ACTOR_REVOKED",
+        "QUESTION_ACTION_RETRY_SOURCE_MISSING",
+        "QUESTION_ACTION_VERSION_CHANGED",
+    }
+)
+
+
 def build_blueprint_policy(config: m.ActivityConfig) -> m.BlueprintPolicy:
     selected_ids: list[str] = []
     if config.structured_justification_mode == m.StructuredJustificationMode.SELECTED:
-        selected_ids = [stable_id("opt", config.activity_id, "selected_justification")]
+        # A localized regeneration must be able to replace a selected
+        # justification question with a distinct reserve that carries the
+        # same blueprint-bound requirement.  Two templates are the minimum
+        # catalog surface that lets the deterministic planner keep one as a
+        # primary and one as a compatible reserve.
+        selected_ids = [
+            stable_id("opt", config.activity_id, "selected_justification", index)
+            for index in range(2)
+        ]
     planning_policy = m.AssessmentPlanningPolicy(
         policy_id=stable_id("policy", config.activity_id, "planning")
     )
@@ -167,11 +253,22 @@ class Stage1Service:
         self.settings = settings
         self.repository = repository
         self.object_store = object_store
-        self.parser = parser or SafeParserService()
+        self.parser = parser or SafeParserService(
+            require_libmagic=settings.require_libmagic
+        )
         self.job_runner = job_runner
+        self._resume_floor_reached: set[str] = set()
+        self._question_action_processor: (
+            Callable[[JobRow], Awaitable[None]] | None
+        ) = None
 
     def set_job_runner(self, runner: JobRunner) -> None:
         self.job_runner = runner
+
+    def set_question_action_processor(
+        self, processor: Callable[[JobRow], Awaitable[None]]
+    ) -> None:
+        self._question_action_processor = processor
 
     @staticmethod
     def _require_activity_teacher(actor: Actor) -> None:
@@ -182,6 +279,15 @@ class Stage1Service:
                 status_code=403,
             )
 
+    @staticmethod
+    def _require_submission_reviewer(actor: Actor) -> None:
+        if actor.role not in {"OWNER", "TEACHER", "ASSISTANT"}:
+            raise WorkflowError(
+                "ROLE_FORBIDDEN",
+                "Only an authorized reviewer may operate submission inputs.",
+                status_code=403,
+            )
+
     def create_activity(self, config: m.ActivityConfig, actor: Actor) -> ActivityRow:
         self._require_activity_teacher(actor)
         if config.tenant_id != actor.workspace_id:
@@ -189,7 +295,10 @@ class Stage1Service:
         if config.context_mode != m.ContextMode.CLOSED or config.course_source_ids:
             raise WorkflowError("P10_DISABLED", "Stage 1 supports CLOSED context only")
         if set(config.allowed_artifact_media_types) - ALLOWED_MEDIA_TYPES:
-            raise WorkflowError("INGEST_UNSUPPORTED_MEDIA", "Stage 1 enables only PDF digital, TXT and Markdown")
+            raise WorkflowError(
+                "INGEST_UNSUPPORTED_MEDIA",
+                "This environment enables digital PDF, structural DOCX, TXT and Markdown",
+            )
         policy = build_blueprint_policy(config)
         row = ActivityRow(
             id=config.activity_id,
@@ -237,7 +346,7 @@ class Stage1Service:
         if set(config.allowed_artifact_media_types) - ALLOWED_MEDIA_TYPES:
             raise WorkflowError(
                 "INGEST_UNSUPPORTED_MEDIA",
-                "Stage 1 enables only PDF digital, TXT and Markdown",
+                "This environment enables digital PDF, structural DOCX, TXT and Markdown",
             )
         try:
             row = self.repository.update_activity_config(
@@ -384,6 +493,7 @@ class Stage1Service:
         if role not in {m.ArtifactRole.ASSIGNMENT_PROMPT, m.ArtifactRole.RUBRIC, m.ArtifactRole.SUBMISSION}:
             raise WorkflowError("INGEST_ROLE_INVALID", "Artifact role is not accepted")
         if role == m.ArtifactRole.SUBMISSION:
+            self._require_submission_reviewer(actor)
             if not submission_id:
                 raise WorkflowError("IR_PROVENANCE_GAP", "Submission upload requires submission_id")
             submission = cast(
@@ -418,10 +528,35 @@ class Stage1Service:
             submission_id=submission_id,
             complete_only=False,
         )
-        if any(item.role == role.value for item in current):
-            raise WorkflowError("ARTIFACT_ALREADY_EXISTS", "Only one artifact of this role is allowed in Stage 1", status_code=409)
-        artifact_id = stable_id("art", actor.workspace_id, activity_id, submission_id or role.value, filename, utc_now())
-        object_key = f"raw/{actor.workspace_id}/{activity_id}/{artifact_id}/upload"
+        existing = next((item for item in current if item.role == role.value), None)
+        now = utc_now()
+        if existing is not None:
+            expires_at = existing.upload_expires_at
+            if expires_at.tzinfo is None:
+                expires_at = expires_at.replace(tzinfo=UTC)
+            if existing.status != "REJECTED" and not (
+                existing.status == "PENDING" and expires_at <= now
+            ):
+                raise WorkflowError(
+                    "ARTIFACT_ALREADY_EXISTS",
+                    "Only one artifact of this role may be active or completed.",
+                    status_code=409,
+                )
+            artifact_id = existing.id
+        else:
+            artifact_id = stable_id(
+                "art",
+                actor.workspace_id,
+                activity_id,
+                submission_id or role.value,
+                filename,
+                now,
+            )
+        upload_attempt_id = stable_id("upload", artifact_id, now)
+        object_key = (
+            f"raw/{actor.workspace_id}/{activity_id}/{artifact_id}/"
+            f"{upload_attempt_id}"
+        )
         signed = self.object_store.sign_put(
             object_key, media_type, expected_byte_size
         )
@@ -440,7 +575,7 @@ class Stage1Service:
             upload_expires_at=signed.expires_at,
         )
         try:
-            self.repository.add_artifact_if_inputs_open(
+            row = self.repository.reserve_artifact_upload(
                 row,
                 allowed_activity_statuses=set(ACTIVITY_UPLOAD_OPEN_STATUSES),
             )
@@ -475,7 +610,9 @@ class Stage1Service:
         claimed_media_type: str | None = None,
     ) -> m.ArtifactRef:
         artifact = cast(ArtifactRow, self.repository.scoped(ArtifactRow, artifact_id, actor.workspace_id))
-        if artifact.submission_id is None:
+        if artifact.role == m.ArtifactRole.SUBMISSION.value:
+            self._require_submission_reviewer(actor)
+        else:
             self._require_activity_teacher(actor)
         if artifact.status == "COMPLETE":
             self._assert_completion_claims(
@@ -523,7 +660,32 @@ class Stage1Service:
                 "UPLOAD_COMPLETION_MISMATCH",
                 "Completion metadata does not match the object",
             )
-        parsed = self._parse_bytes(artifact, data)
+        try:
+            parsed = self._parse_bytes(artifact, data)
+        except ParseRejected as exc:
+            # The rejection is observable and content-free.  The hostile
+            # object remains unsealed and cannot enter either pipeline.
+            self.repository.mark_artifact_rejected(
+                artifact.id, actor.workspace_id
+            )
+            self.repository.audit(
+                tenant_id=actor.workspace_id,
+                event_type="artifact.rejected",
+                aggregate_id=artifact.id,
+                actor_id=actor.user_id,
+                payload={
+                    "activity_id": artifact.activity_id,
+                    "submission_id": artifact.submission_id,
+                    "code": exc.code,
+                    "object_sha256": digest,
+                    "byte_size": len(data),
+                },
+            )
+            raise WorkflowError(
+                exc.code,
+                "The artifact was rejected at a safe parser boundary.",
+                status_code=422,
+            ) from exc
         sealed_key = self._sealed_object_key(artifact, digest)
         try:
             self.object_store.put_immutable(
@@ -756,11 +918,14 @@ class Stage1Service:
         try:
             await self.job_runner.dispatch(job.job_id)
         except Exception:
-            persisted = cast(JobRow, self.repository.get(JobRow, job.job_id))
-            self._fail_job(
-                persisted,
-                "JOB_DISPATCH_FAILED",
-                "The durable job could not be dispatched.",
+            self.repository.fail_queued_dispatch(
+                job_id=job.job_id,
+                tenant_id=actor.workspace_id,
+                failure=diagnostic(
+                    "JOB_DISPATCH_FAILED",
+                    "The durable job could not be dispatched.",
+                    retryable=True,
+                ),
             )
         return self.repository.job_status(job.job_id, actor.workspace_id)
 
@@ -804,6 +969,7 @@ class Stage1Service:
         return row, approved
 
     async def enqueue_submission_pipeline(self, submission_id: str, actor: Actor) -> m.JobStatus:
+        self._require_submission_reviewer(actor)
         submission = cast(
             SubmissionRow,
             self.repository.scoped(SubmissionRow, submission_id, actor.workspace_id),
@@ -865,35 +1031,58 @@ class Stage1Service:
         try:
             await self.job_runner.dispatch(job.job_id)
         except Exception:
-            persisted = cast(JobRow, self.repository.get(JobRow, job.job_id))
-            self._fail_job(
-                persisted,
-                "JOB_DISPATCH_FAILED",
-                "The durable job could not be dispatched.",
+            self.repository.fail_queued_dispatch(
+                job_id=job.job_id,
+                tenant_id=actor.workspace_id,
+                failure=diagnostic(
+                    "JOB_DISPATCH_FAILED",
+                    "The durable job could not be dispatched.",
+                    retryable=True,
+                ),
             )
         return self.repository.job_status(job.job_id, actor.workspace_id)
 
     async def process_job(self, job_id: str) -> None:
         job = cast(JobRow, self.repository.get(JobRow, job_id))
-        current = self.repository.job_status(job.id, job.tenant_id)
-        attempt = current.attempt if current.status == "RUNNING" and current.attempt else current.attempt + 1
-        running = current.model_copy(
-            update={"status": "RUNNING", "attempt": max(1, attempt), "started_at": current.started_at or utc_now()}
-        )
-        self.repository.save_job_status(running)
         try:
+            self._cancellation_checkpoint(job)
+            current = self.repository.job_status(job.id, job.tenant_id)
+            attempt = (
+                current.attempt
+                if current.status == "RUNNING" and current.attempt
+                else current.attempt + 1
+            )
+            running = current.model_copy(
+                update={
+                    "status": "RUNNING",
+                    "attempt": max(1, attempt),
+                    "started_at": current.started_at or utc_now(),
+                }
+            )
+            self.repository.save_job_status(running)
+            self._cancellation_checkpoint(job)
             if job.kind == "ACTIVITY":
                 await self._run_activity_pipeline(job)
             elif job.kind == "SUBMISSION":
                 await self._run_submission_pipeline(job)
+            elif job.kind == "QUESTION_ACTION" and self._question_action_processor:
+                await self._question_action_processor(job)
             else:
                 raise WorkflowError("JOB_KIND_INVALID", "Unknown job kind", status_code=500)
-        except (WorkflowError, ParseRejected, ContextValidationError) as exc:
-            code = getattr(exc, "code", "TECHNICAL_FAILURE")
-            self._fail_job(job, str(code), "The workflow stopped at a validated boundary.")
-        except Exception:
+        except _CooperativeJobCancellation:
+            return
+        except Exception as exc:
             # Never persist exception text because it may contain provider or input detail.
-            self._fail_job(job, "TECHNICAL_FAILURE", "The workflow failed without exposing content.")
+            failure_class, retryable, code = self._classify_failure(exc)
+            self._fail_job(
+                job,
+                code,
+                "The workflow failed at a content-minimizing boundary.",
+                failure_class=failure_class,
+                retryable=retryable,
+            )
+        finally:
+            self._resume_floor_reached.discard(job.id)
 
     async def _run_activity_pipeline(self, job: JobRow) -> None:
         activity = cast(ActivityRow, self.repository.scoped(ActivityRow, job.aggregate_id, job.tenant_id))
@@ -904,9 +1093,11 @@ class Stage1Service:
         )
         evidence_by_role: dict[str, list[m.EvidenceUnit]] = {}
         for artifact in artifacts:
+            self._cancellation_checkpoint(job)
             parsed = self._parse_bytes(
                 artifact, self._verified_artifact_bytes(artifact)
             )
+            self._cancellation_checkpoint(job)
             evidence_by_role[artifact.role] = list(parsed.evidence_units)
         prompt_evidence = evidence_by_role.get(m.ArtifactRole.ASSIGNMENT_PROMPT.value, [])
         self._set_job(job, "ACTIVITY_SPEC", 0.15)
@@ -1075,11 +1266,56 @@ class Stage1Service:
         )
         artifact = artifacts[0]
         self._set_submission(submission, job, m.SubmissionProcessingStatus.PARSING, "SUBMISSION_PARSE", 0.08)
-        parsed = self._parse_bytes(
-            artifact, self._verified_artifact_bytes(artifact)
+        parse_inputs = {
+            "artifact_id": artifact.id,
+            "artifact_sha256": artifact.sha256,
+            "artifact_byte_size": artifact.byte_size,
+            "declared_media_type": artifact.declared_media_type,
+            "media_type": artifact.media_type,
+        }
+        parse_policy_hash = self._stage_policy_hash(job)
+        cached_parse = self.repository.stage_by_key(
+            tenant_id=job.tenant_id,
+            stage="SUBMISSION_PARSE",
+            inputs=parse_inputs,
+            policy_hash=parse_policy_hash,
+            component_version=PARSER_VERSION,
         )
+        if cached_parse is not None and cached_parse.output is not None:
+            evidence_units = tuple(
+                TypeAdapter(list[m.EvidenceUnit]).validate_python(
+                    cached_parse.output.get("evidence_units", [])
+                )
+            )
+            if not evidence_units:
+                raise WorkflowError(
+                    "STAGE_RESUME_REUSE_MISSING",
+                    "The reusable parse stage has no verified evidence output.",
+                    status_code=409,
+                )
+            self._record_stage_reuse(job, cached_parse)
+        else:
+            self._assert_application_stage_may_execute(job, "SUBMISSION_PARSE")
+            parsed = self._parse_bytes(
+                artifact, self._verified_artifact_bytes(artifact)
+            )
+            evidence_units = tuple(parsed.evidence_units)
+            self.repository.save_stage(
+                job_id=job.id,
+                tenant_id=job.tenant_id,
+                stage="SUBMISSION_PARSE",
+                inputs=parse_inputs,
+                component_version=PARSER_VERSION,
+                policy_hash=parse_policy_hash,
+                output={
+                    "evidence_units": [
+                        item.model_dump(mode="json") for item in evidence_units
+                    ]
+                },
+            )
+        self._cancellation_checkpoint(job)
         with self.repository.session() as session:
-            for evidence in parsed.evidence_units:
+            for evidence in evidence_units:
                 session.merge(
                     EvidenceRow(
                         id=evidence.evidence_id,
@@ -1095,8 +1331,8 @@ class Stage1Service:
             activity_id=activity.id,
             submission_id=submission.id,
             context_mode=m.ContextMode.CLOSED,
-            allowed_evidence_ids=[item.evidence_id for item in parsed.evidence_units],
-            evidence_units=list(parsed.evidence_units),
+            allowed_evidence_ids=[item.evidence_id for item in evidence_units],
+            evidence_units=list(evidence_units),
             course_passages=[],
         )
         self._set_submission(submission, job, m.SubmissionProcessingStatus.EVIDENCE_READY, "EVIDENCE_MAP", 0.2)
@@ -1110,8 +1346,40 @@ class Stage1Service:
         with self.repository.session() as session:
             session.merge(EvidenceMapRow(submission_id=submission.id, tenant_id=job.tenant_id, data=mapping.model_dump(mode="json")))
         self._set_submission(submission, job, m.SubmissionProcessingStatus.PLANNING, "ASSESSMENT_PLAN", 0.32)
-        plan = build_assessment_plan(mapping=mapping, blueprint=blueprint, policy=policy.planning_policy)
+        plan_inputs = {
+            "mapping": mapping.model_dump(mode="json"),
+            "blueprint": blueprint.model_dump(mode="json"),
+            "planning_policy": policy.planning_policy.model_dump(mode="json"),
+        }
+        plan_policy_hash = self._stage_policy_hash(job)
+        cached_plan = self.repository.stage_by_key(
+            tenant_id=job.tenant_id,
+            stage="ASSESSMENT_PLAN",
+            inputs=plan_inputs,
+            policy_hash=plan_policy_hash,
+            component_version=PLANNER_VERSION,
+        )
+        if cached_plan is not None and cached_plan.output is not None:
+            plan = m.AssessmentPlan.model_validate(cached_plan.output)
+            self._record_stage_reuse(job, cached_plan)
+        else:
+            self._assert_application_stage_may_execute(job, "ASSESSMENT_PLAN")
+            plan = build_assessment_plan(
+                mapping=mapping,
+                blueprint=blueprint,
+                policy=policy.planning_policy,
+            )
+            self.repository.save_stage(
+                job_id=job.id,
+                tenant_id=job.tenant_id,
+                stage="ASSESSMENT_PLAN",
+                inputs=plan_inputs,
+                component_version=PLANNER_VERSION,
+                policy_hash=plan_policy_hash,
+                output=plan.model_dump(mode="json"),
+            )
         validate_assessment_plan(plan, mapping=mapping)
+        self._cancellation_checkpoint(job)
         with self.repository.session() as session:
             session.merge(AssessmentPlanRow(submission_id=submission.id, tenant_id=job.tenant_id, data=plan.model_dump(mode="json")))
         if plan.status != "READY":
@@ -1146,6 +1414,7 @@ class Stage1Service:
                 cache_suffix=opportunity_id,
             )
             validate_generation_result(generation, opportunity=opportunity, bundle=bundle)
+            self._cancellation_checkpoint(job)
             if generation.status != "READY" or generation.candidate is None:
                 if reserves:
                     primary_queue.append(reserves.pop(0))
@@ -1169,6 +1438,7 @@ class Stage1Service:
                 generation_result=generation,
                 validation_policy=validation_policy,
             )
+            self._cancellation_checkpoint(job)
             if review.status != "READY" or review.review is None or review.review.decision != m.ReviewDecision.ACCEPT:
                 if reserves:
                     primary_queue.append(reserves.pop(0))
@@ -1243,6 +1513,7 @@ class Stage1Service:
             m.EvaluationGuide,
         )
         validate_evaluation_guide(guide, assessment=assessment, bundle=bundle)
+        self._cancellation_checkpoint(job)
         if guide.status != "READY":
             if guide.status == "NEEDS_REVIEW":
                 self._terminal_domain_failure(
@@ -1269,21 +1540,24 @@ class Stage1Service:
             etag=_etag(assessment),
             data=assessment.model_dump(mode="json"),
         )
-        with self.repository.session() as session:
-            session.merge(assessment_row)
-            session.merge(
-                GuideRow(
-                    guide_id=guide.guide_id,
-                    assessment_id=assessment.assessment_id,
-                    tenant_id=job.tenant_id,
-                    submission_id=submission.id,
-                    data=guide.model_dump(mode="json"),
-                )
-            )
-        self._set_submission(submission, job, m.SubmissionProcessingStatus.NEEDS_REVIEW, "NEEDS_REVIEW", 1.0)
-        self._complete_job(job, "ASSEMBLE")
+        self._mark_resume_floor(job, "ASSEMBLE")
+        finalized = self.repository.finalize_submission_assessment(
+            job_id=job.id,
+            tenant_id=job.tenant_id,
+            assessment=assessment_row,
+            guide=GuideRow(
+                guide_id=guide.guide_id,
+                assessment_id=assessment.assessment_id,
+                tenant_id=job.tenant_id,
+                submission_id=submission.id,
+                data=guide.model_dump(mode="json"),
+            ),
+        )
+        if not finalized:
+            raise _CooperativeJobCancellation
 
     def create_submission(self, *, activity_id: str, subject_ref: str, actor: Actor) -> SubmissionRow:
+        self._require_submission_reviewer(actor)
         self.repository.scoped(ActivityRow, activity_id, actor.workspace_id)
         try:
             subject_ref = TypeAdapter(m.Id).validate_python(subject_ref)
@@ -1570,6 +1844,23 @@ class Stage1Service:
                 "Evidence verification is only available during assessment review",
                 status_code=409,
             )
+        assessment_submission = cast(
+            SubmissionRow,
+            self.repository.scoped(
+                SubmissionRow, assessment.submission_id, actor.workspace_id
+            ),
+        )
+        if (
+            m.SubmissionProcessingState.model_validate(
+                assessment_submission.state
+            ).status
+            != m.SubmissionProcessingStatus.NEEDS_REVIEW
+        ):
+            raise WorkflowError(
+                "ASSESSMENT_SUBMISSION_NOT_REVIEWABLE",
+                "The submission no longer permits assessment review.",
+                status_code=409,
+            )
         question = next(
             (item for item in assessment.questions if item.question_id == question_id),
             None,
@@ -1730,6 +2021,15 @@ class Stage1Service:
 
     def assessment_view(self, submission_id: str, actor: Actor) -> dict[str, Any]:
         submission = cast(SubmissionRow, self.repository.scoped(SubmissionRow, submission_id, actor.workspace_id))
+        if (
+            m.SubmissionProcessingState.model_validate(submission.state).status
+            == m.SubmissionProcessingStatus.CANCELLED
+        ):
+            raise WorkflowError(
+                "ASSESSMENT_SUBMISSION_CANCELLED",
+                "A cancelled submission has no reviewable assessment output.",
+                status_code=409,
+            )
         assessment_row = self.repository.latest_assessment(submission.id, actor.workspace_id)
         guide = self.repository.guide_for_assessment(assessment_row.assessment_id, actor.workspace_id)
         reviews = self.repository.review_rows(submission.id, actor.workspace_id)
@@ -1763,6 +2063,21 @@ class Stage1Service:
         assessment = m.Assessment.model_validate(current.data)
         if assessment.status != m.WorkflowStatus.NEEDS_REVIEW:
             raise WorkflowError("ASSESSMENT_NOT_REVIEWABLE", "Assessment is not awaiting review", status_code=409)
+        submission = cast(
+            SubmissionRow,
+            self.repository.scoped(
+                SubmissionRow, assessment.submission_id, actor.workspace_id
+            ),
+        )
+        if (
+            m.SubmissionProcessingState.model_validate(submission.state).status
+            != m.SubmissionProcessingStatus.NEEDS_REVIEW
+        ):
+            raise WorkflowError(
+                "ASSESSMENT_SUBMISSION_NOT_REVIEWABLE",
+                "The submission no longer permits assessment approval.",
+                status_code=409,
+            )
         guide = m.EvaluationGuide.model_validate(
             self.repository.guide_for_assessment(
                 assessment_id, actor.workspace_id
@@ -1796,25 +2111,19 @@ class Stage1Service:
             data=approved.model_dump(mode="json"),
         )
         try:
-            self.repository.add(row)
-        except IntegrityError as exc:
+            row = self.repository.approve_assessment_atomic(
+                expected_etag=if_match,
+                approved_row=row,
+                actor_id=actor.user_id,
+            )
+        except Conflict as exc:
+            code = str(exc)
+            status_code = 412 if code == "ETAG_MISMATCH" else 409
             raise WorkflowError(
-                "ASSESSMENT_VERSION_CONFLICT",
-                "Assessment version was changed concurrently",
-                status_code=409,
+                code if code.isupper() else "ASSESSMENT_VERSION_CONFLICT",
+                "Assessment approval state changed concurrently.",
+                status_code=status_code,
             ) from exc
-        submission = cast(SubmissionRow, self.repository.scoped(SubmissionRow, assessment.submission_id, actor.workspace_id))
-        state = m.SubmissionProcessingState.model_validate(submission.state).model_copy(
-            update={"status": m.SubmissionProcessingStatus.APPROVED, "updated_at": utc_now()}
-        )
-        self.repository.set_submission_state(state)
-        self.repository.audit(
-            tenant_id=actor.workspace_id,
-            event_type="assessment.approved",
-            aggregate_id=assessment_id,
-            actor_id=actor.user_id,
-            payload={"assessment_version": version},
-        )
         return row
 
     def create_export(self, assessment_id: str, actor: Actor) -> ExportRow:
@@ -1988,13 +2297,25 @@ class Stage1Service:
         with TemporaryDirectory(prefix="cva-parse-") as temp_dir:
             path = Path(temp_dir) / f"{artifact.id}{suffix}"
             path.write_bytes(data)
-            parsed = self.parser.parse(
-                path,
-                tenant_id=artifact.tenant_id,
-                source_role=m.ArtifactRole(artifact.role),
-                submission_id=artifact.submission_id,
-                declared_media_type=artifact.declared_media_type,
-            )
+            if self.settings.environment == "cloud":
+                parsed = parse_in_subprocess(
+                    path,
+                    parser=self.parser,
+                    tenant_id=artifact.tenant_id,
+                    source_role=m.ArtifactRole(artifact.role),
+                    submission_id=artifact.submission_id,
+                    declared_media_type=artifact.declared_media_type,
+                    timeout_seconds=self.settings.parser_timeout_seconds,
+                    require_isolation=True,
+                )
+            else:
+                parsed = self.parser.parse(
+                    path,
+                    tenant_id=artifact.tenant_id,
+                    source_role=m.ArtifactRole(artifact.role),
+                    submission_id=artifact.submission_id,
+                    declared_media_type=artifact.declared_media_type,
+                )
         # The parser's offline content ID is intentionally deterministic.  At
         # the web boundary, however, the durable upload row is authoritative.
         # Normalize every provenance reference before persistence or inference.
@@ -2087,6 +2408,7 @@ class Stage1Service:
     async def _gateway_stage(
         self, job: JobRow, prompt_id: str, request: BaseModel, output_model: type[T], *, cache_suffix: str = ""
     ) -> T:
+        self._cancellation_checkpoint(job)
         stage = f"{prompt_id}:{cache_suffix}" if cache_suffix else prompt_id
         inputs = request.model_dump(mode="json")
         policy_hash = self._stage_policy_hash(job)
@@ -2098,12 +2420,33 @@ class Stage1Service:
             component_version=PROMPT_VERSION,
         )
         if cached is not None and cached.output is not None:
-            return output_model.model_validate(cached.output)
-        trusted = build_trusted_context(request).model_copy(
-            update={"tenant_id": job.tenant_id}
-        )
-        result = await self._gateway(job.id).invoke(prompt_id, request, trusted)
-        output = output_model.model_validate(result.output.model_dump(mode="json"))
+            self._record_stage_reuse(job, cached)
+            output = output_model.model_validate(cached.output)
+            self._cancellation_checkpoint(job)
+            return output
+        self._assert_resume_may_execute(job, prompt_id)
+        try:
+            trusted = build_trusted_context(request).model_copy(
+                update={"tenant_id": job.tenant_id}
+            )
+            result = await self._gateway(job.id).invoke(prompt_id, request, trusted)
+            self._cancellation_checkpoint(job)
+            output = output_model.model_validate(
+                result.output.model_dump(mode="json")
+            )
+        except _CooperativeJobCancellation:
+            raise
+        except Exception as exc:
+            if self._complete_cancellation_if_requested(job):
+                raise _CooperativeJobCancellation from None
+            self._record_failed_stage(
+                job=job,
+                stage=stage,
+                inputs=inputs,
+                policy_hash=policy_hash,
+                exc=exc,
+            )
+            raise
         self.repository.save_stage(
             job_id=job.id,
             tenant_id=job.tenant_id,
@@ -2113,7 +2456,99 @@ class Stage1Service:
             policy_hash=policy_hash,
             output=output.model_dump(mode="json"),
         )
+        self._cancellation_checkpoint(job)
         return output
+
+    def _resume_order(self, job: JobRow) -> dict[str, int]:
+        if job.kind == "ACTIVITY":
+            return _ACTIVITY_RESUME_ORDER
+        if job.kind == "SUBMISSION":
+            return _SUBMISSION_RESUME_ORDER
+        if job.kind == "QUESTION_ACTION":
+            return _SUBMISSION_RESUME_ORDER
+        return {}
+
+    def _mark_resume_floor(self, job: JobRow, application_stage: str) -> None:
+        floor = job.resume_from_stage
+        if floor is None:
+            return
+        order = self._resume_order(job)
+        if floor not in order:
+            raise WorkflowError(
+                "STAGE_RESUME_TARGET_INVALID",
+                "The durable resume target is not part of this pipeline.",
+                status_code=409,
+            )
+        if order.get(application_stage, -1) >= order[floor]:
+            self._resume_floor_reached.add(job.id)
+
+    def _assert_application_stage_may_execute(
+        self, job: JobRow, application_stage: str
+    ) -> None:
+        floor = job.resume_from_stage
+        if floor is None or job.id in self._resume_floor_reached:
+            return
+        order = self._resume_order(job)
+        if floor not in order or application_stage not in order:
+            raise WorkflowError(
+                "STAGE_RESUME_TARGET_INVALID",
+                "The durable resume target is not part of this pipeline.",
+                status_code=409,
+            )
+        if order[application_stage] < order[floor]:
+            raise WorkflowError(
+                "STAGE_RESUME_REUSE_MISSING",
+                "A prerequisite application stage has no verified reusable output.",
+                status_code=409,
+            )
+        self._resume_floor_reached.add(job.id)
+
+    def _record_stage_reuse(self, job: JobRow, cached: StageRunRow) -> None:
+        if job.resume_from_stage is None:
+            return
+        if self.repository.has_audit_event(
+            tenant_id=job.tenant_id,
+            event_type="stage.reused",
+            aggregate_id=job.id,
+            payload_contains={"stage_run_id": cached.id},
+        ):
+            return
+        self.repository.audit(
+            tenant_id=job.tenant_id,
+            event_type="stage.reused",
+            aggregate_id=job.id,
+            actor_id="system_worker",
+            payload={
+                "stage_run_id": cached.id,
+                "source_job_id": cached.job_id,
+                "stage": cached.stage,
+                "stage_key": cached.stage_key,
+                "input_hash": cached.input_hash,
+                "policy_hash": cached.policy_hash,
+                "component_version": cached.component_version,
+                "output_hash": cached.output_hash,
+            },
+        )
+
+    def _assert_resume_may_execute(self, job: JobRow, prompt_id: str) -> None:
+        floor = job.resume_from_stage
+        if floor is None or job.id in self._resume_floor_reached:
+            return
+        order = self._resume_order(job)
+        application_stage = _PROMPT_APPLICATION_STAGE.get(prompt_id)
+        if floor not in order or application_stage not in order:
+            raise WorkflowError(
+                "STAGE_RESUME_TARGET_INVALID",
+                "The durable resume target is not part of this pipeline.",
+                status_code=409,
+            )
+        if order[application_stage] < order[floor]:
+            raise WorkflowError(
+                "STAGE_RESUME_REUSE_MISSING",
+                "A prerequisite stage cannot be re-executed because its verified reusable output is missing.",
+                status_code=409,
+            )
+        self._resume_floor_reached.add(job.id)
 
     def _stage_policy_hash(self, job: JobRow) -> str:
         if job.kind == "ACTIVITY":
@@ -2155,17 +2590,117 @@ class Stage1Service:
             review=review.model_dump(mode="json"),
         )
 
+    @staticmethod
+    def _caused_by(exc: BaseException, expected: type[BaseException]) -> bool:
+        current: BaseException | None = exc
+        visited: set[int] = set()
+        while current is not None and id(current) not in visited:
+            if isinstance(current, expected):
+                return True
+            visited.add(id(current))
+            current = current.__cause__ or current.__context__
+        return False
+
+    @classmethod
+    def _classify_failure(
+        cls, exc: BaseException
+    ) -> tuple[m.FailureClass, bool, str]:
+        """Map runtime failures to stable, content-free operational classes."""
+
+        code = str(getattr(exc, "code", "TECHNICAL_FAILURE"))
+        if isinstance(exc, (GatewaySafetyBlock, GatewayContextError)):
+            return m.FailureClass.SECURITY, False, code
+        if code in _SECURITY_FAILURE_CODES:
+            return m.FailureClass.SECURITY, False, code
+        if isinstance(exc, ParseRejected):
+            return m.FailureClass.VALIDATION, False, code
+        if isinstance(exc, (ContextValidationError, ValidationError)):
+            return m.FailureClass.VALIDATION, False, code
+        if isinstance(exc, WorkflowError) and code in _PRECONDITION_FAILURE_CODES:
+            return m.FailureClass.PRECONDITION, False, code
+        if isinstance(exc, GatewayTimeout):
+            return m.FailureClass.TRANSIENT, True, code
+        if isinstance(exc, GatewayProviderError):
+            if cls._caused_by(exc, TransientProviderError):
+                return m.FailureClass.PROVIDER, True, code
+            return m.FailureClass.PERMANENT, False, code
+        if isinstance(exc, (OperationalError, TimeoutError, ConnectionError)):
+            return m.FailureClass.TRANSIENT, True, "TRANSIENT_RUNTIME_FAILURE"
+        return m.FailureClass.PERMANENT, False, code
+
+    def _complete_cancellation_if_requested(self, job: JobRow) -> bool:
+        control = self.repository.job_control(job.id, job.tenant_id)
+        if control.control_state == "ACTIVE":
+            return False
+        if control.control_state == "CANCEL_REQUESTED":
+            self.repository.complete_job_cancellation(
+                job_id=job.id,
+                tenant_id=job.tenant_id,
+            )
+        return True
+
+    def _cancellation_checkpoint(self, job: JobRow) -> None:
+        if self._complete_cancellation_if_requested(job):
+            raise _CooperativeJobCancellation
+
+    def _record_failed_stage(
+        self,
+        *,
+        job: JobRow,
+        stage: str,
+        inputs: dict[str, Any],
+        policy_hash: str,
+        exc: BaseException,
+    ) -> None:
+        failure_class, retryable, code = self._classify_failure(exc)
+        failure = diagnostic(
+            code,
+            "The application stage failed without persisting provider or input detail.",
+            retryable=retryable,
+        )
+        row, reused = self.repository.save_stage(
+            job_id=job.id,
+            tenant_id=job.tenant_id,
+            stage=stage,
+            inputs=inputs,
+            component_version=PROMPT_VERSION,
+            policy_hash=policy_hash,
+            output=None,
+            status="FAILED",
+            diagnostics=[failure.model_dump(mode="json")],
+            failure_class=failure_class.value,
+        )
+        if reused:
+            return
+        # Repository compatibility: E1's save helper hashes every output,
+        # including None.  A failed StageRun must not expose an output hash.
+        with self.repository.session() as session:
+            persisted = session.get(StageRunRow, row.id)
+            if persisted is not None and persisted.status == "FAILED":
+                persisted.output = None
+                persisted.output_hash = None
+
     def _set_job(self, job: JobRow, stage: str, progress: float) -> None:
+        self._cancellation_checkpoint(job)
+        self._mark_resume_floor(job, stage)
         status = self.repository.job_status(job.id, job.tenant_id).model_copy(
             update={"stage": stage, "status": "RUNNING", "progress": progress, "started_at": utc_now()}
         )
         self.repository.save_job_status(status)
+        self._cancellation_checkpoint(job)
 
     def _complete_job(self, job: JobRow, stage: str) -> None:
+        self._cancellation_checkpoint(job)
         status = self.repository.job_status(job.id, job.tenant_id).model_copy(
             update={"stage": stage, "status": "SUCCEEDED", "progress": 1.0, "finished_at": utc_now()}
         )
-        self.repository.save_job_status(status)
+        try:
+            self.repository.save_job_status(status)
+        except Conflict as exc:
+            if str(exc) != "JOB_CANCEL_REQUESTED":
+                raise
+            self._cancellation_checkpoint(job)
+            raise
 
     def _needs_review_job(
         self,
@@ -2173,6 +2708,7 @@ class Stage1Service:
         code: str,
         diagnostics: list[m.Diagnostic] | None = None,
     ) -> None:
+        self._cancellation_checkpoint(job)
         status = self.repository.job_status(job.id, job.tenant_id).model_copy(
             update={
                 "status": "NEEDS_REVIEW",
@@ -2183,6 +2719,7 @@ class Stage1Service:
             }
         )
         self.repository.save_job_status(status)
+        self._cancellation_checkpoint(job)
 
     def _stop_activity_output(
         self,
@@ -2216,8 +2753,18 @@ class Stage1Service:
             "The activity pipeline stopped at a validated fail-closed boundary.",
         )
 
-    def _fail_job(self, job: JobRow, code: str, message: str) -> None:
-        failure = diagnostic(code, message)
+    def _fail_job(
+        self,
+        job: JobRow,
+        code: str,
+        message: str,
+        *,
+        failure_class: m.FailureClass = m.FailureClass.PERMANENT,
+        retryable: bool = False,
+    ) -> None:
+        if self._complete_cancellation_if_requested(job):
+            return
+        failure = diagnostic(code, message, retryable=retryable)
         status = self.repository.job_status(job.id, job.tenant_id).model_copy(
             update={
                 "status": "FAILED",
@@ -2226,6 +2773,14 @@ class Stage1Service:
             }
         )
         self.repository.save_job_status(status)
+        if self._complete_cancellation_if_requested(job):
+            return
+        with self.repository.session() as session:
+            persisted = session.get(JobRow, job.id)
+            if persisted is None or persisted.tenant_id != job.tenant_id:
+                raise NotFound("job not found")
+            persisted.failure_class = failure_class.value
+            persisted.next_attempt_at = None
         if job.kind == "ACTIVITY":
             self.repository.set_activity_status(job.aggregate_id, job.tenant_id, "TECHNICAL_FAILURE")
         elif job.kind == "SUBMISSION":
@@ -2251,6 +2806,7 @@ class Stage1Service:
         stage: str, progress: float
     ) -> None:
         self._set_job(job, stage, progress)
+        self._cancellation_checkpoint(job)
         self.repository.set_submission_state(
             m.SubmissionProcessingState(
                 submission_id=submission.id,
@@ -2263,6 +2819,7 @@ class Stage1Service:
                 updated_at=utc_now(),
             )
         )
+        self._cancellation_checkpoint(job)
 
     def _terminal_domain_failure(
         self,
@@ -2273,6 +2830,7 @@ class Stage1Service:
         *,
         stage: str = "ASSESSMENT_PLAN",
     ) -> None:
+        self._cancellation_checkpoint(job)
         self.repository.set_submission_state(
             m.SubmissionProcessingState(
                 submission_id=submission.id,
@@ -2289,6 +2847,7 @@ class Stage1Service:
             update={"status": "NEEDS_REVIEW", "progress": 1.0, "diagnostics": diagnostics, "finished_at": utc_now()}
         )
         self.repository.save_job_status(job_status)
+        self._cancellation_checkpoint(job)
 
     def _assemble_assessment(
         self, *, activity: ActivityRow, submission: SubmissionRow,
@@ -2313,7 +2872,17 @@ class Stage1Service:
             )
             for dimension in blueprint.dimensions
         ]
-        ledgers = self.repository.model_calls(tenant_id=job.tenant_id, job_id=job.id)
+        ledgers = [
+            ledger
+            for lineage_job_id in self._job_lineage_ids(job)
+            for ledger in self.repository.model_calls(
+                tenant_id=job.tenant_id, job_id=lineage_job_id
+            )
+            # Assessment assembly is the input to P09.  A later resume must
+            # reconstruct that same pre-P09 snapshot rather than feeding the
+            # guide call back into its own lineage and changing input_hash.
+            if ledger.get("prompt_id") != "P09_GUIDE_BUILD_V1"
+        ]
         snapshots = {
             item["prompt_id"]: item["route"]["model_snapshot"]
             for item in ledgers
@@ -2364,5 +2933,37 @@ class Stage1Service:
                 planner_version=PLANNER_VERSION,
                 renderer_version=RENDERER_VERSION,
             ),
-            created_at=utc_now(),
+            created_at=(
+                submission.created_at.replace(tzinfo=UTC)
+                if submission.created_at.tzinfo is None
+                else submission.created_at.astimezone(UTC)
+            ),
         )
+
+    def _job_lineage_ids(self, job: JobRow) -> list[str]:
+        """Return source-to-current job ids for a retry/resume chain."""
+
+        lineage = [job.id]
+        seen = {job.id}
+        current = job.id
+        while True:
+            records = self.repository.job_control_records(
+                tenant_id=job.tenant_id,
+                resulting_job_id=current,
+            )
+            source = next(
+                (
+                    record.job_id
+                    for record in records
+                    if record.action in {"RETRY", "RESUME"}
+                    and record.status == "APPLIED"
+                ),
+                None,
+            )
+            if source is None or source in seen:
+                break
+            lineage.append(source)
+            seen.add(source)
+            current = source
+        lineage.reverse()
+        return lineage

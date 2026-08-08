@@ -30,6 +30,24 @@ from comprehension_verification.contracts import (
 
 FIXTURE_ROOT = Path(__file__).parent / "fixtures" / "contracts" / "v1.1"
 
+STAGE2_VALID_FIXTURES = (
+    ("StageRun", "stage_run_succeeded.json"),
+    ("JobControlRecord", "job_control_retry_applied.json"),
+    ("CoverageReport", "coverage_report_submission.json"),
+    ("ExportRecord", "export_record_ready.json"),
+    ("ExperimentMetrics", "experiment_metrics.json"),
+    ("FeedbackEvent", "feedback_event_question.json"),
+    ("QuestionReviewActionRecord", "question_review_action_record_failed.json"),
+)
+
+STAGE2_INVALID_FIXTURES = (
+    ("StageRun", "stage_run_failed_without_class.json"),
+    ("JobControlRecord", "job_control_permanent_retry_applied.json"),
+    ("CoverageReport", "coverage_report_count_mismatch.json"),
+    ("ExportRecord", "export_record_with_capability.json"),
+    ("FeedbackEvent", "feedback_event_target_mismatch.json"),
+)
+
 
 def _fixture_bytes(kind: str, filename: str) -> bytes:
     return (FIXTURE_ROOT / kind / filename).read_bytes()
@@ -56,11 +74,34 @@ def test_schema_bundle_has_exact_roots_and_resolvable_refs() -> None:
     references = crawl_schema_references(bundle)
 
     assert report.root_names == tuple(model.__name__ for model in CONTRACT_MODELS)
-    assert len(report.root_names) == EXPECTED_CONTRACT_ROOT_COUNT == 46
-    assert report.definition_count == 112
-    assert report.reference_count == len(references) == 231
-    assert bundle["version"] == models.SCHEMA_VERSION == SCHEMA_VERSION
+    assert len(report.root_names) == EXPECTED_CONTRACT_ROOT_COUNT == 53
+    assert report.definition_count == 140
+    assert report.reference_count == len(references) == 274
+    assert bundle["version"] == models.CONTRACT_VERSION == "1.2.0"
+    assert models.SCHEMA_VERSION == SCHEMA_VERSION == "1.1.0"
     assert all(reference.startswith("#/$defs/") for _, reference in references)
+
+
+def test_v12_bundle_preserves_v11_root_payloads() -> None:
+    bundle = load_schema_bundle()
+
+    legacy = validate_json_boundary(
+        "AssessmentPlan",
+        _fixture_bytes("valid", "assessment_plan_ready.json"),
+    )
+
+    assert legacy.schema_version == "1.1.0"
+    assert bundle["$defs"]["AssessmentPlan"]["properties"]["schema_version"] == {
+        "const": "1.1.0",
+        "default": "1.1.0",
+        "title": "Schema Version",
+        "type": "string",
+    }
+    for root_name, _ in STAGE2_VALID_FIXTURES:
+        assert (
+            bundle["$defs"][root_name]["properties"]["schema_version"]["const"]
+            == "1.2.0"
+        )
 
 
 def test_reference_crawler_rejects_a_missing_target() -> None:
@@ -164,6 +205,51 @@ def test_strict_boundary_runs_pydantic_cross_field_validators() -> None:
 
     with pytest.raises(ContractValidationError, match="Pydantic contract"):
         validate_json_boundary("AssessmentPlan", raw)
+
+
+@pytest.mark.parametrize(("root_name", "filename"), STAGE2_VALID_FIXTURES)
+def test_stage2_roots_accept_valid_fixtures(root_name: str, filename: str) -> None:
+    result = validate_json_boundary(root_name, _fixture_bytes("valid", filename))
+
+    assert result.schema_version == "1.2.0"
+
+
+@pytest.mark.parametrize(("root_name", "filename"), STAGE2_INVALID_FIXTURES)
+def test_stage2_model_validators_reject_invalid_fixtures(
+    root_name: str, filename: str
+) -> None:
+    with pytest.raises(ContractValidationError, match="Pydantic contract"):
+        validate_json_boundary(root_name, _fixture_bytes("invalid", filename))
+
+
+def test_stage2_metrics_reject_duplicate_dimensions() -> None:
+    payload = json.loads(_fixture_bytes("valid", "experiment_metrics.json"))
+    payload["by_stage"].append(dict(payload["by_stage"][0]))
+
+    with pytest.raises(ContractValidationError, match="Pydantic contract"):
+        validate_json_boundary("ExperimentMetrics", json.dumps(payload))
+
+
+def test_stage2_review_record_rejects_failed_result_without_diagnostics() -> None:
+    payload = json.loads(
+        _fixture_bytes("valid", "question_review_action_record_failed.json")
+    )
+    payload["diagnostics"] = []
+
+    with pytest.raises(ContractValidationError, match="Pydantic contract"):
+        validate_json_boundary("QuestionReviewActionRecord", json.dumps(payload))
+
+
+def test_export_record_schema_has_no_capability_fields() -> None:
+    properties = load_schema_bundle()["$defs"]["ExportRecord"]["properties"]
+
+    assert not {
+        "download_url",
+        "signed_url",
+        "capability",
+        "access_token",
+        "expires_at",
+    }.intersection(properties)
 
 
 @pytest.mark.parametrize(

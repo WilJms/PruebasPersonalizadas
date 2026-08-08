@@ -9,8 +9,11 @@ from .settings import get_worker_settings
 
 
 async def run_once() -> int:
-    runtime = build_worker_runtime(get_worker_settings())
-    claimed = runtime.repository.claim_next_job()
+    settings = get_worker_settings()
+    runtime = build_worker_runtime(settings)
+    claimed = runtime.repository.claim_next_job(
+        lease_seconds=getattr(settings, "job_lease_seconds", 3900)
+    )
     if claimed is None:
         return 0
     await runtime.service.process_job(claimed.id)

@@ -1,3 +1,4 @@
+import { BULK_APPROVAL_CONFIRMATION } from "./types";
 import type {
   ActivityCreateInput,
   ActivityResource,
@@ -8,7 +9,6 @@ import type {
   AssessmentBundle,
   EvaluationGuide,
   ExportKind,
-  ExportResource,
   JobStatus,
   PolicyDecision,
   Session,
@@ -19,10 +19,23 @@ import type {
   EvidenceUnit,
   EvidenceVerification,
   CostEstimate,
+  BulkApprovalRecord,
+  BulkApprovalTarget,
+  CoverageReport,
+  ExperimentMetrics,
+  ExportRecord,
+  ExportCreateResult,
+  FeedbackEvent,
+  FeedbackInput,
+  JobControlView,
+  QuestionReviewActionInput,
+  QuestionReviewActionRecord,
+  Stage2Submission,
+  SubmissionBatchResult,
 } from "./types";
 
 const API_BASE = (import.meta.env.VITE_API_BASE_URL || "/api/v1").replace(/\/$/, "");
-const SHELL_CACHE_EPOCH = "stage1-v1";
+const SHELL_CACHE_EPOCH = "stage2-v1";
 
 type JsonObject = Record<string, unknown>;
 
@@ -386,6 +399,29 @@ export async function createSubmission(
   return pick<SubmissionResource>(result, "submission");
 }
 
+export async function createSubmissionBatch(
+  activityId: string,
+  subjectRefs: string[],
+): Promise<SubmissionBatchResult> {
+  return request<SubmissionBatchResult>(`/activities/${activityId}/submissions:batch`, {
+    method: "POST",
+    body: JSON.stringify({ subject_refs: subjectRefs }),
+  });
+}
+
+export async function listActivitySubmissions(
+  activityId: string,
+): Promise<Stage2Submission[]> {
+  const result = await request<unknown>(`/activities/${activityId}/submissions`);
+  const data = unwrap<unknown>(result);
+  if (Array.isArray(data)) return data as Stage2Submission[];
+  if (data && typeof data === "object") {
+    const body = data as JsonObject;
+    return (body.items ?? body.submissions ?? []) as Stage2Submission[];
+  }
+  return [];
+}
+
 export async function createSubmissionUpload(
   submissionId: string,
   file: File,
@@ -445,6 +481,28 @@ export async function getJob(jobId: string): Promise<JobStatus> {
   const result = await request<unknown>(`/jobs/${jobId}`);
   return pick<JobStatus>(result, "job");
 }
+
+export async function getJobControl(jobId: string): Promise<JobControlView> {
+  return request<JobControlView>(`/jobs/${jobId}/control`);
+}
+
+async function controlJob(
+  jobId: string,
+  action: "retry" | "cancel" | "resume",
+  reasonCode: string,
+): Promise<JobControlView> {
+  return request<JobControlView>(`/jobs/${jobId}:${action}`, {
+    method: "POST",
+    body: JSON.stringify({ reason_code: reasonCode }),
+  });
+}
+
+export const retryJob = (jobId: string) =>
+  controlJob(jobId, "retry", "TEACHER_REQUESTED_RETRY");
+export const cancelJob = (jobId: string) =>
+  controlJob(jobId, "cancel", "TEACHER_REQUESTED_CANCEL");
+export const resumeJob = (jobId: string) =>
+  controlJob(jobId, "resume", "TEACHER_REQUESTED_RESUME");
 
 export async function getEvidence(submissionId: string): Promise<EvidenceUnit[]> {
   const collected: EvidenceUnit[] = [];
@@ -540,15 +598,121 @@ export async function approveAssessment(
   throw new ApiError(500, "La respuesta de aprobación no tiene el contrato esperado.");
 }
 
+export async function reviewQuestion(
+  assessmentId: string,
+  questionId: string,
+  input: QuestionReviewActionInput,
+  etag: string,
+): Promise<{ record: QuestionReviewActionRecord; bundle?: AssessmentBundle; etag?: string }> {
+  const result = await requestWithMeta<unknown>(
+    `/assessments/${assessmentId}/questions/${questionId}/actions`,
+    {
+      method: "POST",
+      headers: { "If-Match": etag },
+      body: JSON.stringify(input),
+    },
+  );
+  const data = unwrap<unknown>(result.data);
+  if (data && typeof data === "object") {
+    const body = data as JsonObject;
+    return {
+      record: (body.action_record ?? body.record ?? body.action ?? data) as QuestionReviewActionRecord,
+      bundle: body.bundle as AssessmentBundle | undefined,
+      etag: result.etag,
+    };
+  }
+  throw new ApiError(500, "La acción de revisión no devolvió un registro auditable.");
+}
+
+export async function listQuestionActions(
+  assessmentId: string,
+  questionId: string,
+): Promise<QuestionReviewActionRecord[]> {
+  const result = await request<unknown>(
+    `/assessments/${assessmentId}/questions/${questionId}/actions`,
+  );
+  return pick<QuestionReviewActionRecord[]>(result, "items") ?? [];
+}
+
+export async function getSubmissionCoverage(submissionId: string): Promise<CoverageReport> {
+  const result = await request<unknown>(`/submissions/${submissionId}/coverage`);
+  return pick<CoverageReport>(result, "coverage");
+}
+
+export async function getActivityCoverage(activityId: string): Promise<CoverageReport> {
+  const result = await request<unknown>(`/activities/${activityId}/coverage`);
+  return pick<CoverageReport>(result, "coverage");
+}
+
+export async function getActivityMetrics(activityId: string): Promise<ExperimentMetrics> {
+  const result = await request<unknown>(`/activities/${activityId}/metrics`);
+  return pick<ExperimentMetrics>(result, "metrics");
+}
+
+export async function createFeedback(input: FeedbackInput): Promise<FeedbackEvent> {
+  const result = await request<unknown>("/feedback", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+  return pick<FeedbackEvent>(result, "feedback");
+}
+
+export async function listActivityFeedback(activityId: string): Promise<FeedbackEvent[]> {
+  const result = await request<unknown>(`/activities/${activityId}/feedback`);
+  const data = unwrap<unknown>(result);
+  if (Array.isArray(data)) return data as FeedbackEvent[];
+  if (data && typeof data === "object") {
+    const body = data as JsonObject;
+    return (body.items ?? body.feedback ?? []) as FeedbackEvent[];
+  }
+  return [];
+}
+
 export async function createExport(
   assessmentId: string,
   kind: ExportKind,
-): Promise<ExportResource> {
-  const result = await request<unknown>(`/assessments/${assessmentId}/exports`, {
+): Promise<ExportCreateResult> {
+  return request<ExportCreateResult>(`/assessments/${assessmentId}/exports`, {
     method: "POST",
     body: JSON.stringify({ kind }),
   });
-  return pick<ExportResource>(result, "export");
+}
+
+export async function listExports(assessmentId: string): Promise<ExportRecord[]> {
+  const result = await request<unknown>(`/assessments/${assessmentId}/exports`);
+  const data = unwrap<unknown>(result);
+  if (Array.isArray(data)) return data as ExportRecord[];
+  if (data && typeof data === "object") {
+    const body = data as JsonObject;
+    return (body.items ?? body.exports ?? []) as ExportRecord[];
+  }
+  return [];
+}
+
+export async function bulkApproveAssessments(
+  activityId: string,
+  targets: BulkApprovalTarget[],
+): Promise<BulkApprovalRecord> {
+  const result = await request<unknown>(`/activities/${activityId}/assessments:bulk-approve`, {
+    method: "POST",
+    body: JSON.stringify({
+      targets,
+      explicit_confirmation: BULK_APPROVAL_CONFIRMATION,
+    }),
+  });
+  const data = unwrap<unknown>(result);
+  if (data && typeof data === "object") {
+    const body = data as JsonObject;
+    return (body.bulk_approval ?? body.approval ?? data) as BulkApprovalRecord;
+  }
+  throw new ApiError(500, "La aprobación masiva no devolvió la partición auditable.");
+}
+
+export async function listBulkApprovalHistory(
+  activityId: string,
+): Promise<BulkApprovalRecord[]> {
+  const result = await request<unknown>(`/activities/${activityId}/bulk-approvals`);
+  return pick<BulkApprovalRecord[]>(result, "items") ?? [];
 }
 
 async function putSignedUpload(upload: UploadSession, file: File): Promise<void> {
@@ -570,6 +734,9 @@ function mediaTypeFor(file: File): string {
   if (file.type) return file.type;
   const lower = file.name.toLowerCase();
   if (lower.endsWith(".pdf")) return "application/pdf";
+  if (lower.endsWith(".docx")) {
+    return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+  }
   if (lower.endsWith(".md") || lower.endsWith(".markdown")) return "text/markdown";
   return "text/plain";
 }

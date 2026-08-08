@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://schemas.evaluaciones-personalizadas.local/assessment-contracts/1.1.0",
+  "$id": "https://schemas.evaluaciones-personalizadas.local/assessment-contracts/1.2.0",
   "title": "Comprehension Verification Assessment Contracts",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "roots": {
     "Diagnostic": {
       "$ref": "#/$defs/Diagnostic"
@@ -79,14 +79,29 @@
     "Assessment": {
       "$ref": "#/$defs/Assessment"
     },
+    "CoverageReport": {
+      "$ref": "#/$defs/CoverageReport"
+    },
     "QuestionReviewAction": {
       "$ref": "#/$defs/QuestionReviewAction"
+    },
+    "QuestionReviewActionRecord": {
+      "$ref": "#/$defs/QuestionReviewActionRecord"
     },
     "BulkApprovalRequest": {
       "$ref": "#/$defs/BulkApprovalRequest"
     },
     "BulkApprovalRecord": {
       "$ref": "#/$defs/BulkApprovalRecord"
+    },
+    "ExportRecord": {
+      "$ref": "#/$defs/ExportRecord"
+    },
+    "ExperimentMetrics": {
+      "$ref": "#/$defs/ExperimentMetrics"
+    },
+    "FeedbackEvent": {
+      "$ref": "#/$defs/FeedbackEvent"
     },
     "ModelRoute": {
       "$ref": "#/$defs/ModelRoute"
@@ -102,6 +117,12 @@
     },
     "JobStatus": {
       "$ref": "#/$defs/JobStatus"
+    },
+    "StageRun": {
+      "$ref": "#/$defs/StageRun"
+    },
+    "JobControlRecord": {
+      "$ref": "#/$defs/JobControlRecord"
     },
     "SubmissionProcessingState": {
       "$ref": "#/$defs/SubmissionProcessingState"
@@ -2197,6 +2218,316 @@
       "title": "CoverageItem",
       "type": "object"
     },
+    "CoverageOutcome": {
+      "enum": [
+        "PLANNED",
+        "GENERATED",
+        "REVIEWED",
+        "APPROVED",
+        "FAILED",
+        "EXCLUDED"
+      ],
+      "title": "CoverageOutcome",
+      "type": "string"
+    },
+    "CoveragePlanningRole": {
+      "enum": [
+        "PRIMARY",
+        "RESERVE",
+        "EXCLUDED"
+      ],
+      "title": "CoveragePlanningRole",
+      "type": "string"
+    },
+    "CoverageReport": {
+      "additionalProperties": false,
+      "description": "Traceable coverage snapshot for one submission or an activity aggregate.",
+      "properties": {
+        "schema_version": {
+          "const": "1.2.0",
+          "default": "1.2.0",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "report_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Report Id",
+          "type": "string"
+        },
+        "tenant_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Tenant Id",
+          "type": "string"
+        },
+        "activity_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Activity Id",
+          "type": "string"
+        },
+        "scope": {
+          "$ref": "#/$defs/CoverageScope"
+        },
+        "submission_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 3,
+              "pattern": "^[a-z][a-z0-9_-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Submission Id"
+        },
+        "assessment_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 3,
+              "pattern": "^[a-z][a-z0-9_-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Assessment Id"
+        },
+        "assessment_version": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Assessment Version"
+        },
+        "blueprint_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Blueprint Id",
+          "type": "string"
+        },
+        "blueprint_version": {
+          "minimum": 1,
+          "title": "Blueprint Version",
+          "type": "integer"
+        },
+        "source_snapshot_hash": {
+          "pattern": "^sha256:[a-f0-9]{64}$",
+          "title": "Source Snapshot Hash",
+          "type": "string"
+        },
+        "summary": {
+          "items": {
+            "$ref": "#/$defs/CoverageItem"
+          },
+          "maxItems": 500,
+          "minItems": 1,
+          "title": "Summary",
+          "type": "array"
+        },
+        "traces": {
+          "items": {
+            "$ref": "#/$defs/CoverageTraceItem"
+          },
+          "maxItems": 10000,
+          "title": "Traces",
+          "type": "array"
+        },
+        "diagnostics": {
+          "items": {
+            "$ref": "#/$defs/Diagnostic"
+          },
+          "maxItems": 500,
+          "title": "Diagnostics",
+          "type": "array"
+        },
+        "generated_at": {
+          "format": "date-time",
+          "title": "Generated At",
+          "type": "string"
+        }
+      },
+      "required": [
+        "report_id",
+        "tenant_id",
+        "activity_id",
+        "scope",
+        "blueprint_id",
+        "blueprint_version",
+        "source_snapshot_hash",
+        "summary",
+        "generated_at"
+      ],
+      "title": "CoverageReport",
+      "type": "object"
+    },
+    "CoverageScope": {
+      "enum": [
+        "SUBMISSION",
+        "ACTIVITY"
+      ],
+      "title": "CoverageScope",
+      "type": "string"
+    },
+    "CoverageTraceItem": {
+      "additionalProperties": false,
+      "properties": {
+        "submission_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Submission Id",
+          "type": "string"
+        },
+        "assessment_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 3,
+              "pattern": "^[a-z][a-z0-9_-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Assessment Id"
+        },
+        "assessment_version": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Assessment Version"
+        },
+        "dimension_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Dimension Id",
+          "type": "string"
+        },
+        "criterion_ids": {
+          "items": {
+            "maxLength": 128,
+            "minLength": 3,
+            "pattern": "^[a-z][a-z0-9_-]*$",
+            "type": "string"
+          },
+          "maxItems": 100,
+          "title": "Criterion Ids",
+          "type": "array"
+        },
+        "variant_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Variant Id",
+          "type": "string"
+        },
+        "opportunity_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Opportunity Id",
+          "type": "string"
+        },
+        "evidence_ids": {
+          "items": {
+            "maxLength": 128,
+            "minLength": 3,
+            "pattern": "^[a-z][a-z0-9_-]*$",
+            "type": "string"
+          },
+          "maxItems": 50,
+          "title": "Evidence Ids",
+          "type": "array"
+        },
+        "cognitive_operation": {
+          "$ref": "#/$defs/CognitiveOperation"
+        },
+        "planning_role": {
+          "$ref": "#/$defs/CoveragePlanningRole"
+        },
+        "outcome": {
+          "$ref": "#/$defs/CoverageOutcome"
+        },
+        "reused_variant": {
+          "default": false,
+          "title": "Reused Variant",
+          "type": "boolean"
+        },
+        "failure_code": {
+          "anyOf": [
+            {
+              "pattern": "^[A-Z][A-Z0-9_]{2,63}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Failure Code"
+        },
+        "exclusion_reason_code": {
+          "anyOf": [
+            {
+              "pattern": "^[A-Z][A-Z0-9_]{2,63}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Exclusion Reason Code"
+        },
+        "diagnostics": {
+          "items": {
+            "$ref": "#/$defs/Diagnostic"
+          },
+          "maxItems": 100,
+          "title": "Diagnostics",
+          "type": "array"
+        }
+      },
+      "required": [
+        "submission_id",
+        "dimension_id",
+        "variant_id",
+        "opportunity_id",
+        "cognitive_operation",
+        "planning_role",
+        "outcome"
+      ],
+      "title": "CoverageTraceItem",
+      "type": "object"
+    },
     "DecisionOption": {
       "additionalProperties": false,
       "properties": {
@@ -3305,6 +3636,511 @@
       "title": "EvidenceVariantMatch",
       "type": "object"
     },
+    "ExperimentMetrics": {
+      "additionalProperties": false,
+      "description": "Content-free aggregate metrics for one experimental activity window.",
+      "properties": {
+        "schema_version": {
+          "const": "1.2.0",
+          "default": "1.2.0",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "metrics_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Metrics Id",
+          "type": "string"
+        },
+        "tenant_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Tenant Id",
+          "type": "string"
+        },
+        "activity_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Activity Id",
+          "type": "string"
+        },
+        "technical": {
+          "$ref": "#/$defs/TechnicalMetricAggregate"
+        },
+        "quality": {
+          "$ref": "#/$defs/QualityMetricAggregate"
+        },
+        "human_review": {
+          "$ref": "#/$defs/HumanReviewMetricAggregate"
+        },
+        "by_stage": {
+          "items": {
+            "$ref": "#/$defs/StageMetricAggregate"
+          },
+          "maxItems": 100,
+          "title": "By Stage",
+          "type": "array"
+        },
+        "by_model": {
+          "items": {
+            "$ref": "#/$defs/ModelMetricAggregate"
+          },
+          "maxItems": 100,
+          "title": "By Model",
+          "type": "array"
+        },
+        "window_start": {
+          "format": "date-time",
+          "title": "Window Start",
+          "type": "string"
+        },
+        "window_end": {
+          "format": "date-time",
+          "title": "Window End",
+          "type": "string"
+        },
+        "generated_at": {
+          "format": "date-time",
+          "title": "Generated At",
+          "type": "string"
+        }
+      },
+      "required": [
+        "metrics_id",
+        "tenant_id",
+        "activity_id",
+        "technical",
+        "quality",
+        "human_review",
+        "window_start",
+        "window_end",
+        "generated_at"
+      ],
+      "title": "ExperimentMetrics",
+      "type": "object"
+    },
+    "ExportArtifact": {
+      "additionalProperties": false,
+      "properties": {
+        "export_artifact_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Export Artifact Id",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/ExportKind"
+        },
+        "media_type": {
+          "maxLength": 255,
+          "minLength": 3,
+          "title": "Media Type",
+          "type": "string"
+        },
+        "object_key": {
+          "maxLength": 1024,
+          "minLength": 1,
+          "title": "Object Key",
+          "type": "string"
+        },
+        "sha256": {
+          "pattern": "^sha256:[a-f0-9]{64}$",
+          "title": "Sha256",
+          "type": "string"
+        },
+        "byte_size": {
+          "minimum": 1,
+          "title": "Byte Size",
+          "type": "integer"
+        },
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        }
+      },
+      "required": [
+        "export_artifact_id",
+        "kind",
+        "media_type",
+        "object_key",
+        "sha256",
+        "byte_size",
+        "created_at"
+      ],
+      "title": "ExportArtifact",
+      "type": "object"
+    },
+    "ExportKind": {
+      "enum": [
+        "ASSESSMENT_PDF",
+        "ASSESSMENT_HTML",
+        "GUIDE_PDF",
+        "GUIDE_HTML",
+        "COVERAGE_CSV",
+        "COVERAGE_JSON",
+        "CANONICAL_JSON"
+      ],
+      "title": "ExportKind",
+      "type": "string"
+    },
+    "ExportRecord": {
+      "additionalProperties": false,
+      "description": "Durable export metadata; download capabilities are intentionally absent.",
+      "properties": {
+        "schema_version": {
+          "const": "1.2.0",
+          "default": "1.2.0",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "export_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Export Id",
+          "type": "string"
+        },
+        "tenant_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Tenant Id",
+          "type": "string"
+        },
+        "activity_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Activity Id",
+          "type": "string"
+        },
+        "assessment_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Assessment Id",
+          "type": "string"
+        },
+        "assessment_version": {
+          "minimum": 1,
+          "title": "Assessment Version",
+          "type": "integer"
+        },
+        "requested_by": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^([a-z][a-z0-9_-]*|[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12})$",
+          "title": "Requested By",
+          "type": "string"
+        },
+        "requested_kinds": {
+          "items": {
+            "$ref": "#/$defs/ExportKind"
+          },
+          "maxItems": 7,
+          "minItems": 1,
+          "title": "Requested Kinds",
+          "type": "array"
+        },
+        "status": {
+          "$ref": "#/$defs/ExportStatus"
+        },
+        "assessment_snapshot_hash": {
+          "pattern": "^sha256:[a-f0-9]{64}$",
+          "title": "Assessment Snapshot Hash",
+          "type": "string"
+        },
+        "guide_snapshot_hash": {
+          "anyOf": [
+            {
+              "pattern": "^sha256:[a-f0-9]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Guide Snapshot Hash"
+        },
+        "coverage_snapshot_hash": {
+          "anyOf": [
+            {
+              "pattern": "^sha256:[a-f0-9]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Coverage Snapshot Hash"
+        },
+        "renderer_version": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Renderer Version",
+          "type": "string"
+        },
+        "artifacts": {
+          "items": {
+            "$ref": "#/$defs/ExportArtifact"
+          },
+          "maxItems": 7,
+          "title": "Artifacts",
+          "type": "array"
+        },
+        "model_call_delta": {
+          "const": 0,
+          "default": 0,
+          "title": "Model Call Delta",
+          "type": "integer"
+        },
+        "diagnostics": {
+          "items": {
+            "$ref": "#/$defs/Diagnostic"
+          },
+          "maxItems": 100,
+          "title": "Diagnostics",
+          "type": "array"
+        },
+        "requested_at": {
+          "format": "date-time",
+          "title": "Requested At",
+          "type": "string"
+        },
+        "completed_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Completed At"
+        }
+      },
+      "required": [
+        "export_id",
+        "tenant_id",
+        "activity_id",
+        "assessment_id",
+        "assessment_version",
+        "requested_by",
+        "requested_kinds",
+        "status",
+        "assessment_snapshot_hash",
+        "renderer_version",
+        "requested_at"
+      ],
+      "title": "ExportRecord",
+      "type": "object"
+    },
+    "ExportStatus": {
+      "enum": [
+        "QUEUED",
+        "READY",
+        "FAILED"
+      ],
+      "title": "ExportStatus",
+      "type": "string"
+    },
+    "FailureClass": {
+      "enum": [
+        "TRANSIENT",
+        "PERMANENT",
+        "SECURITY",
+        "VALIDATION",
+        "PRECONDITION",
+        "PROVIDER",
+        "CANCELLATION"
+      ],
+      "title": "FailureClass",
+      "type": "string"
+    },
+    "FeedbackCategory": {
+      "enum": [
+        "GROUNDING",
+        "ANSWERABILITY",
+        "QUESTION_QUALITY",
+        "GUIDE_QUALITY",
+        "COVERAGE",
+        "WORKFLOW",
+        "EXPORT",
+        "OTHER"
+      ],
+      "title": "FeedbackCategory",
+      "type": "string"
+    },
+    "FeedbackEvent": {
+      "additionalProperties": false,
+      "description": "Governed teacher feedback; never authorizes training or academic action.",
+      "properties": {
+        "schema_version": {
+          "const": "1.2.0",
+          "default": "1.2.0",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "feedback_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Feedback Id",
+          "type": "string"
+        },
+        "tenant_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Tenant Id",
+          "type": "string"
+        },
+        "activity_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Activity Id",
+          "type": "string"
+        },
+        "assessment_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 3,
+              "pattern": "^[a-z][a-z0-9_-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Assessment Id"
+        },
+        "assessment_version": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Assessment Version"
+        },
+        "question_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 3,
+              "pattern": "^[a-z][a-z0-9_-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Question Id"
+        },
+        "target_type": {
+          "$ref": "#/$defs/FeedbackTargetType"
+        },
+        "actor_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^([a-z][a-z0-9_-]*|[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12})$",
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "category": {
+          "$ref": "#/$defs/FeedbackCategory"
+        },
+        "rating": {
+          "$ref": "#/$defs/FeedbackRating"
+        },
+        "comment": {
+          "anyOf": [
+            {
+              "maxLength": 2000,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Comment"
+        },
+        "training_use_allowed": {
+          "const": false,
+          "default": false,
+          "title": "Training Use Allowed",
+          "type": "boolean"
+        },
+        "public_dataset_use_allowed": {
+          "const": false,
+          "default": false,
+          "title": "Public Dataset Use Allowed",
+          "type": "boolean"
+        },
+        "academic_decision_use_allowed": {
+          "const": false,
+          "default": false,
+          "title": "Academic Decision Use Allowed",
+          "type": "boolean"
+        },
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        }
+      },
+      "required": [
+        "feedback_id",
+        "tenant_id",
+        "activity_id",
+        "target_type",
+        "actor_id",
+        "category",
+        "rating",
+        "created_at"
+      ],
+      "title": "FeedbackEvent",
+      "type": "object"
+    },
+    "FeedbackRating": {
+      "enum": [
+        "VERY_UNHELPFUL",
+        "UNHELPFUL",
+        "NEUTRAL",
+        "HELPFUL",
+        "VERY_HELPFUL"
+      ],
+      "title": "FeedbackRating",
+      "type": "string"
+    },
+    "FeedbackTargetType": {
+      "enum": [
+        "ACTIVITY",
+        "ASSESSMENT",
+        "QUESTION"
+      ],
+      "title": "FeedbackTargetType",
+      "type": "string"
+    },
     "GuideBuildRequest": {
       "additionalProperties": false,
       "properties": {
@@ -3432,6 +4268,51 @@
       "title": "GuideLevel",
       "type": "object"
     },
+    "HumanReviewMetricAggregate": {
+      "additionalProperties": false,
+      "properties": {
+        "reviewed_question_count": {
+          "minimum": 0,
+          "title": "Reviewed Question Count",
+          "type": "integer"
+        },
+        "accepted_count": {
+          "minimum": 0,
+          "title": "Accepted Count",
+          "type": "integer"
+        },
+        "edited_count": {
+          "minimum": 0,
+          "title": "Edited Count",
+          "type": "integer"
+        },
+        "rejected_count": {
+          "minimum": 0,
+          "title": "Rejected Count",
+          "type": "integer"
+        },
+        "regenerated_count": {
+          "minimum": 0,
+          "title": "Regenerated Count",
+          "type": "integer"
+        },
+        "review_seconds": {
+          "minimum": 0,
+          "title": "Review Seconds",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "reviewed_question_count",
+        "accepted_count",
+        "edited_count",
+        "rejected_count",
+        "regenerated_count",
+        "review_seconds"
+      ],
+      "title": "HumanReviewMetricAggregate",
+      "type": "object"
+    },
     "ImageLocator": {
       "additionalProperties": false,
       "properties": {
@@ -3472,6 +4353,169 @@
       ],
       "title": "ImageLocator",
       "type": "object"
+    },
+    "JobControlActionType": {
+      "enum": [
+        "RETRY",
+        "CANCEL",
+        "RESUME"
+      ],
+      "title": "JobControlActionType",
+      "type": "string"
+    },
+    "JobControlRecord": {
+      "additionalProperties": false,
+      "description": "Durable authorization and outcome for retry, cancel, or stage resume.",
+      "properties": {
+        "schema_version": {
+          "const": "1.2.0",
+          "default": "1.2.0",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "control_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Control Id",
+          "type": "string"
+        },
+        "tenant_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Tenant Id",
+          "type": "string"
+        },
+        "job_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Job Id",
+          "type": "string"
+        },
+        "aggregate_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Aggregate Id",
+          "type": "string"
+        },
+        "action": {
+          "$ref": "#/$defs/JobControlActionType"
+        },
+        "status": {
+          "$ref": "#/$defs/JobControlStatus"
+        },
+        "actor_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^([a-z][a-z0-9_-]*|[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12})$",
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "source_attempt": {
+          "maximum": 10,
+          "minimum": 0,
+          "title": "Source Attempt",
+          "type": "integer"
+        },
+        "reason_code": {
+          "pattern": "^[A-Z][A-Z0-9_]{2,63}$",
+          "title": "Reason Code",
+          "type": "string"
+        },
+        "target_stage": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 3,
+              "pattern": "^[A-Z][A-Z0-9_]{2,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Target Stage"
+        },
+        "failure_class": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FailureClass"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "resulting_job_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 3,
+              "pattern": "^[a-z][a-z0-9_-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Resulting Job Id"
+        },
+        "diagnostics": {
+          "items": {
+            "$ref": "#/$defs/Diagnostic"
+          },
+          "maxItems": 100,
+          "title": "Diagnostics",
+          "type": "array"
+        },
+        "requested_at": {
+          "format": "date-time",
+          "title": "Requested At",
+          "type": "string"
+        },
+        "decided_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Decided At"
+        }
+      },
+      "required": [
+        "control_id",
+        "tenant_id",
+        "job_id",
+        "aggregate_id",
+        "action",
+        "status",
+        "actor_id",
+        "source_attempt",
+        "reason_code",
+        "requested_at"
+      ],
+      "title": "JobControlRecord",
+      "type": "object"
+    },
+    "JobControlStatus": {
+      "enum": [
+        "REQUESTED",
+        "APPLIED",
+        "REJECTED"
+      ],
+      "title": "JobControlStatus",
+      "type": "string"
     },
     "JobStatus": {
       "additionalProperties": false,
@@ -3890,6 +4934,108 @@
       ],
       "title": "ModelInputModality",
       "type": "string"
+    },
+    "ModelMetricAggregate": {
+      "additionalProperties": false,
+      "properties": {
+        "route_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Route Id",
+          "type": "string"
+        },
+        "provider": {
+          "enum": [
+            "openai",
+            "anthropic",
+            "google",
+            "other"
+          ],
+          "title": "Provider",
+          "type": "string"
+        },
+        "model": {
+          "maxLength": 255,
+          "minLength": 1,
+          "title": "Model",
+          "type": "string"
+        },
+        "model_snapshot": {
+          "maxLength": 255,
+          "minLength": 1,
+          "title": "Model Snapshot",
+          "type": "string"
+        },
+        "call_count": {
+          "minimum": 0,
+          "title": "Call Count",
+          "type": "integer"
+        },
+        "schema_valid_count": {
+          "minimum": 0,
+          "title": "Schema Valid Count",
+          "type": "integer"
+        },
+        "error_count": {
+          "minimum": 0,
+          "title": "Error Count",
+          "type": "integer"
+        },
+        "input_tokens": {
+          "minimum": 0,
+          "title": "Input Tokens",
+          "type": "integer"
+        },
+        "cached_input_tokens": {
+          "minimum": 0,
+          "title": "Cached Input Tokens",
+          "type": "integer"
+        },
+        "output_tokens": {
+          "minimum": 0,
+          "title": "Output Tokens",
+          "type": "integer"
+        },
+        "latency_p50_ms": {
+          "minimum": 0,
+          "title": "Latency P50 Ms",
+          "type": "integer"
+        },
+        "latency_p95_ms": {
+          "minimum": 0,
+          "title": "Latency P95 Ms",
+          "type": "integer"
+        },
+        "estimated_cost_usd": {
+          "minimum": 0.0,
+          "title": "Estimated Cost Usd",
+          "type": "number"
+        },
+        "actual_cost_usd": {
+          "minimum": 0.0,
+          "title": "Actual Cost Usd",
+          "type": "number"
+        }
+      },
+      "required": [
+        "route_id",
+        "provider",
+        "model",
+        "model_snapshot",
+        "call_count",
+        "schema_valid_count",
+        "error_count",
+        "input_tokens",
+        "cached_input_tokens",
+        "output_tokens",
+        "latency_p50_ms",
+        "latency_p95_ms",
+        "estimated_cost_usd",
+        "actual_cost_usd"
+      ],
+      "title": "ModelMetricAggregate",
+      "type": "object"
     },
     "ModelOutputModality": {
       "enum": [
@@ -4454,6 +5600,45 @@
         "code"
       ],
       "title": "ProblemDetail",
+      "type": "object"
+    },
+    "QualityMetricAggregate": {
+      "additionalProperties": false,
+      "properties": {
+        "assessment_count": {
+          "minimum": 0,
+          "title": "Assessment Count",
+          "type": "integer"
+        },
+        "fail_closed_count": {
+          "minimum": 0,
+          "title": "Fail Closed Count",
+          "type": "integer"
+        },
+        "defect_count": {
+          "minimum": 0,
+          "title": "Defect Count",
+          "type": "integer"
+        },
+        "exact_plan_count": {
+          "minimum": 0,
+          "title": "Exact Plan Count",
+          "type": "integer"
+        },
+        "replacement_count": {
+          "minimum": 0,
+          "title": "Replacement Count",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "assessment_count",
+        "fail_closed_count",
+        "defect_count",
+        "exact_plan_count",
+        "replacement_count"
+      ],
+      "title": "QualityMetricAggregate",
       "type": "object"
     },
     "QuestionBuildRequest": {
@@ -5063,6 +6248,137 @@
       "title": "QuestionReviewAction",
       "type": "object"
     },
+    "QuestionReviewActionRecord": {
+      "additionalProperties": false,
+      "description": "Versioned outcome around the unchanged v1.1 QuestionReviewAction root.",
+      "properties": {
+        "schema_version": {
+          "const": "1.2.0",
+          "default": "1.2.0",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "record_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Record Id",
+          "type": "string"
+        },
+        "tenant_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Tenant Id",
+          "type": "string"
+        },
+        "activity_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Activity Id",
+          "type": "string"
+        },
+        "submission_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Submission Id",
+          "type": "string"
+        },
+        "assessment_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Assessment Id",
+          "type": "string"
+        },
+        "assessment_version_before": {
+          "minimum": 1,
+          "title": "Assessment Version Before",
+          "type": "integer"
+        },
+        "assessment_version_after": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Assessment Version After"
+        },
+        "action": {
+          "$ref": "#/$defs/QuestionReviewAction"
+        },
+        "status": {
+          "$ref": "#/$defs/QuestionReviewRecordStatus"
+        },
+        "revalidation_status": {
+          "$ref": "#/$defs/RevalidationStatus"
+        },
+        "before_question": {
+          "$ref": "#/$defs/SelectedQuestion"
+        },
+        "after_question": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SelectedQuestion"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "lineage_before": {
+          "$ref": "#/$defs/Lineage"
+        },
+        "lineage_after": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Lineage"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "diagnostics": {
+          "items": {
+            "$ref": "#/$defs/Diagnostic"
+          },
+          "maxItems": 100,
+          "title": "Diagnostics",
+          "type": "array"
+        },
+        "recorded_at": {
+          "format": "date-time",
+          "title": "Recorded At",
+          "type": "string"
+        }
+      },
+      "required": [
+        "record_id",
+        "tenant_id",
+        "activity_id",
+        "submission_id",
+        "assessment_id",
+        "assessment_version_before",
+        "action",
+        "status",
+        "revalidation_status",
+        "before_question",
+        "lineage_before",
+        "recorded_at"
+      ],
+      "title": "QuestionReviewActionRecord",
+      "type": "object"
+    },
     "QuestionReviewActionType": {
       "enum": [
         "ACCEPT",
@@ -5071,6 +6387,14 @@
         "REGENERATE"
       ],
       "title": "QuestionReviewActionType",
+      "type": "string"
+    },
+    "QuestionReviewRecordStatus": {
+      "enum": [
+        "APPLIED",
+        "FAILED"
+      ],
+      "title": "QuestionReviewRecordStatus",
       "type": "string"
     },
     "QuestionReviewRequest": {
@@ -5472,6 +6796,15 @@
         "ORAL_EQUIVALENT"
       ],
       "title": "ResponseFormat",
+      "type": "string"
+    },
+    "RevalidationStatus": {
+      "enum": [
+        "NOT_REQUIRED",
+        "PASSED",
+        "FAILED"
+      ],
+      "title": "RevalidationStatus",
       "type": "string"
     },
     "ReviewCheckStatus": {
@@ -6199,6 +7532,264 @@
       "title": "SourcedStatement",
       "type": "object"
     },
+    "StageMetricAggregate": {
+      "additionalProperties": false,
+      "properties": {
+        "stage": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[A-Z][A-Z0-9_]{2,127}$",
+          "title": "Stage",
+          "type": "string"
+        },
+        "runs": {
+          "minimum": 0,
+          "title": "Runs",
+          "type": "integer"
+        },
+        "succeeded": {
+          "minimum": 0,
+          "title": "Succeeded",
+          "type": "integer"
+        },
+        "failed": {
+          "minimum": 0,
+          "title": "Failed",
+          "type": "integer"
+        },
+        "cancelled": {
+          "minimum": 0,
+          "title": "Cancelled",
+          "type": "integer"
+        },
+        "retries": {
+          "minimum": 0,
+          "title": "Retries",
+          "type": "integer"
+        },
+        "latency_p50_ms": {
+          "minimum": 0,
+          "title": "Latency P50 Ms",
+          "type": "integer"
+        },
+        "latency_p95_ms": {
+          "minimum": 0,
+          "title": "Latency P95 Ms",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "stage",
+        "runs",
+        "succeeded",
+        "failed",
+        "cancelled",
+        "retries",
+        "latency_p50_ms",
+        "latency_p95_ms"
+      ],
+      "title": "StageMetricAggregate",
+      "type": "object"
+    },
+    "StageRun": {
+      "additionalProperties": false,
+      "description": "Durable, reusable execution of one deterministic application stage.",
+      "properties": {
+        "schema_version": {
+          "const": "1.2.0",
+          "default": "1.2.0",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "stage_run_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Stage Run Id",
+          "type": "string"
+        },
+        "tenant_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Tenant Id",
+          "type": "string"
+        },
+        "job_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Job Id",
+          "type": "string"
+        },
+        "aggregate_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Aggregate Id",
+          "type": "string"
+        },
+        "stage": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[A-Z][A-Z0-9_]{2,127}$",
+          "title": "Stage",
+          "type": "string"
+        },
+        "stage_key": {
+          "pattern": "^sha256:[a-f0-9]{64}$",
+          "title": "Stage Key",
+          "type": "string"
+        },
+        "input_hash": {
+          "pattern": "^sha256:[a-f0-9]{64}$",
+          "title": "Input Hash",
+          "type": "string"
+        },
+        "policy_hash": {
+          "pattern": "^sha256:[a-f0-9]{64}$",
+          "title": "Policy Hash",
+          "type": "string"
+        },
+        "component_version": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Component Version",
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/$defs/StageRunStatus"
+        },
+        "attempt": {
+          "maximum": 10,
+          "minimum": 1,
+          "title": "Attempt",
+          "type": "integer"
+        },
+        "retryable": {
+          "default": false,
+          "title": "Retryable",
+          "type": "boolean"
+        },
+        "failure_class": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FailureClass"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "output_ref": {
+          "anyOf": [
+            {
+              "maxLength": 1024,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Output Ref"
+        },
+        "output_hash": {
+          "anyOf": [
+            {
+              "pattern": "^sha256:[a-f0-9]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Output Hash"
+        },
+        "diagnostics": {
+          "items": {
+            "$ref": "#/$defs/Diagnostic"
+          },
+          "maxItems": 100,
+          "title": "Diagnostics",
+          "type": "array"
+        },
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        },
+        "started_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Started At"
+        },
+        "cancel_requested_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cancel Requested At"
+        },
+        "finished_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Finished At"
+        }
+      },
+      "required": [
+        "stage_run_id",
+        "tenant_id",
+        "job_id",
+        "aggregate_id",
+        "stage",
+        "stage_key",
+        "input_hash",
+        "policy_hash",
+        "component_version",
+        "status",
+        "attempt",
+        "created_at"
+      ],
+      "title": "StageRun",
+      "type": "object"
+    },
+    "StageRunStatus": {
+      "enum": [
+        "QUEUED",
+        "RUNNING",
+        "SUCCEEDED",
+        "FAILED",
+        "CANCELLED"
+      ],
+      "title": "StageRunStatus",
+      "type": "string"
+    },
     "StructuredJustificationMode": {
       "enum": [
         "NOT_REQUIRED",
@@ -6391,6 +7982,87 @@
         "rationale"
       ],
       "title": "SupportedOperation",
+      "type": "object"
+    },
+    "TechnicalMetricAggregate": {
+      "additionalProperties": false,
+      "properties": {
+        "job_count": {
+          "minimum": 0,
+          "title": "Job Count",
+          "type": "integer"
+        },
+        "succeeded_count": {
+          "minimum": 0,
+          "title": "Succeeded Count",
+          "type": "integer"
+        },
+        "failed_count": {
+          "minimum": 0,
+          "title": "Failed Count",
+          "type": "integer"
+        },
+        "cancelled_count": {
+          "minimum": 0,
+          "title": "Cancelled Count",
+          "type": "integer"
+        },
+        "retry_count": {
+          "minimum": 0,
+          "title": "Retry Count",
+          "type": "integer"
+        },
+        "latency_p50_ms": {
+          "minimum": 0,
+          "title": "Latency P50 Ms",
+          "type": "integer"
+        },
+        "latency_p95_ms": {
+          "minimum": 0,
+          "title": "Latency P95 Ms",
+          "type": "integer"
+        },
+        "input_tokens": {
+          "minimum": 0,
+          "title": "Input Tokens",
+          "type": "integer"
+        },
+        "cached_input_tokens": {
+          "minimum": 0,
+          "title": "Cached Input Tokens",
+          "type": "integer"
+        },
+        "output_tokens": {
+          "minimum": 0,
+          "title": "Output Tokens",
+          "type": "integer"
+        },
+        "estimated_cost_usd": {
+          "minimum": 0.0,
+          "title": "Estimated Cost Usd",
+          "type": "number"
+        },
+        "actual_cost_usd": {
+          "minimum": 0.0,
+          "title": "Actual Cost Usd",
+          "type": "number"
+        }
+      },
+      "required": [
+        "job_count",
+        "succeeded_count",
+        "failed_count",
+        "cancelled_count",
+        "retry_count",
+        "latency_p50_ms",
+        "latency_p95_ms",
+        "input_tokens",
+        "cached_input_tokens",
+        "output_tokens",
+        "estimated_cost_usd",
+        "actual_cost_usd"
+      ],
+      "title": "TechnicalMetricAggregate",
       "type": "object"
     },
     "TrustedPromptContext": {

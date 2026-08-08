@@ -68,8 +68,10 @@ test("critical Stage 1 journey survives browser restart and enforces evidence-fi
   await expect(page.getByText(/Dificultad derivada/).first()).toBeVisible();
   await expect(page.getByText("Revisión P05")).toBeVisible();
   await page.getByRole("button", { name: "Aprobar blueprint" }).click();
-  await expect(page.getByRole("button", { name: "Cargar entrega" })).toBeVisible();
-  await page.getByRole("button", { name: "Cargar entrega" }).click();
+  await expect(page.getByRole("button", { name: "Abrir lote de entregas" })).toBeVisible();
+  await page.getByRole("button", { name: "Abrir lote de entregas" }).click();
+  await expect(page.getByRole("heading", { name: "Lote de entregas" })).toBeVisible();
+  await page.getByRole("link", { name: "Alta individual" }).click();
 
   await page.getByLabel("Referencia seudónima").fill("synthetic_subject_001");
   await page.locator('input[name="submission_file"]').setInputFiles({

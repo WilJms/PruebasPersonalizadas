@@ -1,0 +1,83 @@
+{
+  "schema_version": "1.2.0",
+  "record_id": "review_record_fixture",
+  "tenant_id": "tenant_fixture",
+  "activity_id": "activity_fixture",
+  "submission_id": "submission_fixture",
+  "assessment_id": "assessment_fixture",
+  "assessment_version_before": 2,
+  "action": {
+    "schema_version": "1.1.0",
+    "action_id": "review_action_fixture",
+    "assessment_id": "assessment_fixture",
+    "question_id": "question_fixture",
+    "action": "REGENERATE",
+    "actor_id": "teacher_fixture",
+    "occurred_at": "2026-08-07T12:05:00Z",
+    "reason_code": "GROUNDING"
+  },
+  "status": "FAILED",
+  "revalidation_status": "FAILED",
+  "before_question": {
+    "question_id": "question_fixture",
+    "source_candidate_id": "candidate_fixture",
+    "opportunity_id": "opportunity_primary",
+    "opportunity_template_id": "template_fixture",
+    "dimension_id": "dimension_fixture",
+    "variant_id": "variant_fixture",
+    "cognitive_operation": "EXPLAIN_MECHANISM",
+    "response_format": "OPEN_SHORT",
+    "difficulty": "MEDIUM",
+    "estimated_minutes": 3,
+    "question_text": "Explica el mecanismo descrito en el fragmento.",
+    "anchor": {
+      "anchor_id": "anchor_fixture",
+      "structure": "SINGLE_FRAGMENT",
+      "fragments": [
+        {
+          "evidence_id": "evidence_fixture",
+          "display_text": "Fragmento sintético autorizado.",
+          "transformation": "LITERAL",
+          "locator": {
+            "kind": "DOCUMENT_PATH",
+            "paragraph_index": 0
+          }
+        }
+      ],
+      "self_containment_score": 0.9,
+      "answer_leakage_risk": 0.1
+    },
+    "evidence_ids": ["evidence_fixture"],
+    "course_source_ids": [],
+    "citations": [],
+    "choices": [],
+    "student_justification_required": false,
+    "preliminary_guide": {
+      "purpose": "Observar una explicación localizada del mecanismo."
+    },
+    "planning_score": 0.9
+  },
+  "lineage_before": {
+    "assignment_prompt_hashes": ["sha256:7777777777777777777777777777777777777777777777777777777777777777"],
+    "rubric_hashes": [],
+    "submission_hashes": ["sha256:8888888888888888888888888888888888888888888888888888888888888888"],
+    "blueprint_id": "blueprint_fixture",
+    "blueprint_version": 1,
+    "parser_versions": {"docx": "2.0.0"},
+    "prompt_versions": {"P07": "1.1.0"},
+    "schema_version": "1.1.0",
+    "model_snapshots": {"P07": "mock-model-2026-08-07"},
+    "policy_hash": "sha256:9999999999999999999999999999999999999999999999999999999999999999",
+    "planner_version": "planner-2.0.0",
+    "renderer_version": "renderer-2.0.0"
+  },
+  "diagnostics": [
+    {
+      "code": "REPLACEMENT_UNAVAILABLE",
+      "severity": "ERROR",
+      "message": "La reserva no produjo una pregunta válida.",
+      "retryable": false
+    }
+  ],
+  "recorded_at": "2026-08-07T12:05:01Z"
+}

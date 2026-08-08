@@ -17,7 +17,7 @@ locals {
   default_labels = {
     application = "comprehension-verification"
     environment = "experimental"
-    stage       = "1"
+    stage       = "2"
   }
   labels = merge(local.default_labels, var.labels)
 
@@ -35,6 +35,7 @@ locals {
     CVA_JOB_RUNNER_MODE          = "cloud_run"
     CVA_MODEL_MODE               = "mock"
     CVA_P10_ENABLED              = "false"
+    CVA_REQUIRE_LIBMAGIC         = "true"
     CVA_FRONTEND_DIST            = "/app/static"
     CVA_RENDERER_MODE            = "weasyprint"
     CVA_UPLOAD_URL_TTL_SECONDS   = tostring(var.upload_url_ttl_seconds)
@@ -55,6 +56,7 @@ locals {
     CVA_OBJECT_STORE_MODE        = "r2"
     CVA_MODEL_MODE               = "mock"
     CVA_P10_ENABLED              = "false"
+    CVA_REQUIRE_LIBMAGIC         = "true"
     CVA_RENDERER_MODE            = "weasyprint"
     CVA_UPLOAD_URL_TTL_SECONDS   = tostring(var.upload_url_ttl_seconds)
     CVA_DOWNLOAD_URL_TTL_SECONDS = tostring(var.download_url_ttl_seconds)
@@ -62,13 +64,22 @@ locals {
     CVA_R2_BUCKET                = var.r2_bucket_name
   }
 
-  authorized_github_repository = "https://github.com/WilJms/PruebasPersonalizadas.git"
+  authorized_github_repository    = "https://github.com/WilJms/PruebasPersonalizadas.git"
+  expected_container_image_prefix = "${var.region}-docker.pkg.dev/${var.project_id}/${var.repository_id}/application@sha256:"
 }
 
 resource "terraform_data" "runtime_preconditions" {
   input = var.enable_runtime_resources
 
   lifecycle {
+    precondition {
+      condition = trimspace(var.container_image) == "" || startswith(
+        var.container_image,
+        local.expected_container_image_prefix,
+      )
+      error_message = "container_image must come from this deployment's regional application repository."
+    }
+
     precondition {
       condition = !var.enable_runtime_resources || alltrue([
         trimspace(var.container_image) != "",
@@ -111,9 +122,13 @@ resource "google_artifact_registry_repository" "application" {
   project       = var.project_id
   location      = var.region
   repository_id = var.repository_id
-  description   = "Stage 1 application images"
+  description   = "Stage 2 experimental application images"
   format        = "DOCKER"
   labels        = local.labels
+
+  lifecycle {
+    prevent_destroy = true
+  }
 
   depends_on = [google_project_service.required["artifactregistry.googleapis.com"]]
 }
@@ -121,7 +136,7 @@ resource "google_artifact_registry_repository" "application" {
 resource "google_service_account" "web" {
   project      = var.project_id
   account_id   = "${var.name_prefix}-web"
-  display_name = "CVA Stage 1 web runtime"
+  display_name = "CVA Stage 2 web runtime"
 
   depends_on = [google_project_service.required["iam.googleapis.com"]]
 }
@@ -129,7 +144,7 @@ resource "google_service_account" "web" {
 resource "google_service_account" "worker" {
   project      = var.project_id
   account_id   = "${var.name_prefix}-worker"
-  display_name = "CVA Stage 1 job runtime"
+  display_name = "CVA Stage 2 job runtime"
 
   depends_on = [google_project_service.required["iam.googleapis.com"]]
 }
@@ -137,7 +152,7 @@ resource "google_service_account" "worker" {
 resource "google_service_account" "build" {
   project      = var.project_id
   account_id   = "${var.name_prefix}-cloudbuild"
-  display_name = "CVA Stage 1 Cloud Build publisher"
+  display_name = "CVA Stage 2 Cloud Build publisher"
 
   depends_on = [google_project_service.required["iam.googleapis.com"]]
 }
@@ -159,12 +174,17 @@ resource "google_project_iam_member" "build_roles" {
 resource "google_secret_manager_secret" "runtime" {
   for_each = local.secret_ids
 
-  project   = var.project_id
-  secret_id = each.value
-  labels    = local.labels
+  project             = var.project_id
+  secret_id           = each.value
+  labels              = local.labels
+  deletion_protection = true
 
   replication {
     auto {}
+  }
+
+  lifecycle {
+    prevent_destroy = true
   }
 
   depends_on = [google_project_service.required["secretmanager.googleapis.com"]]
@@ -208,7 +228,7 @@ resource "google_cloud_run_v2_service" "web" {
   name                = var.service_name
   location            = var.region
   ingress             = "INGRESS_TRAFFIC_ALL"
-  deletion_protection = false
+  deletion_protection = true
   labels              = local.labels
 
   # The Cloud Run API persists these zero values in the service-level scaling
@@ -320,6 +340,8 @@ resource "google_cloud_run_v2_service" "web" {
   }
 
   lifecycle {
+    prevent_destroy = true
+
     precondition {
       condition     = terraform_data.runtime_preconditions.output
       error_message = "Runtime preconditions were not satisfied."
@@ -338,7 +360,7 @@ resource "google_cloud_run_v2_job" "worker" {
   project             = var.project_id
   name                = var.job_name
   location            = var.region
-  deletion_protection = false
+  deletion_protection = true
   labels              = local.labels
 
   template {
@@ -406,6 +428,8 @@ resource "google_cloud_run_v2_job" "worker" {
   }
 
   lifecycle {
+    prevent_destroy = true
+
     precondition {
       condition     = terraform_data.runtime_preconditions.output
       error_message = "Runtime preconditions were not satisfied."
@@ -476,7 +500,7 @@ resource "google_cloudbuild_trigger" "github_push" {
   project     = var.project_id
   location    = var.region
   name        = "${var.name_prefix}-github-push"
-  description = "Build and verify Stage 1 from the authorized GitHub repository"
+  description = "Build and verify Stage 2 from the authorized GitHub repository"
   filename    = "deploy/cloudbuild.yaml"
   service_account = (
     "projects/${var.project_id}/serviceAccounts/${google_service_account.build.email}"
@@ -493,7 +517,7 @@ resource "google_cloudbuild_trigger" "github_push" {
     repository = google_cloudbuildv2_repository.github[0].id
 
     push {
-      branch = "^(main|fix/stage1-external-readiness)$"
+      branch = "^(main|fix/stage1-external-readiness|codex/stage2-experimental-mvp)$"
     }
   }
 
