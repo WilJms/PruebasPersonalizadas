@@ -492,43 +492,14 @@ def _assert_canary_semantics(
         raise AssertionError("P07 canary returned an outcome outside its manifest gate")
 
 
-def _canary_payload_proof(
-    material: dict[str, Any], result: Any, call: dict[str, Any]
+def _canary_semantic_proof(
+    material: dict[str, Any], result: Any
 ) -> dict[str, Any]:
+    """Return content-free evidence for the real canary semantic gate."""
+
     request = material["request"]
     output = result.output
     trusted = result.envelope.trusted_context
-    accounted_shape = {
-        key: call[key] for key in ("instructions", "input", "reasoning", "text")
-    }
-    request_effective_bytes = len(_canonical_json_bytes(accounted_shape))
-    if (
-        request_effective_bytes + REQUEST_FRAMING_TOKEN_ALLOWANCE
-        != material["input_upper_bound"]
-    ):
-        raise AssertionError("Canary preflight bytes drifted from the captured request")
-
-    serialized_call = _canonical_json_bytes(call).decode("utf-8")
-    content_types = [
-        part.get("type")
-        for message in call["input"]
-        for part in message.get("content", [])
-    ]
-    raw_upload_absent = all(kind == "input_text" for kind in content_types) and not any(
-        marker in serialized_call
-        for marker in (
-            '"input_file"',
-            '"file_id"',
-            '"file_url"',
-            "file://",
-            "signed_url",
-            "object_store_credential",
-        )
-    )
-    user_messages = [message for message in call["input"] if message["role"] == "user"]
-    if len(user_messages) != 1 or len(user_messages[0]["content"]) != 1:
-        raise AssertionError("Canary request must contain exactly one semantic envelope")
-    captured_envelope = json.loads(user_messages[0]["content"][0]["text"])
     output_data = output.model_dump(mode="json")
     evidence_ids, source_ids = _collect_reference_ids(output_data)
     evidence_allowlisted = evidence_ids.issubset(set(trusted.allowed_evidence_ids))
@@ -542,22 +513,13 @@ def _canary_payload_proof(
         else {"READY", "REPLACEMENT_REQUIRED"}
     )
     proof: dict[str, Any] = {
+        "schema_validation": bool(result.ledgers)
+        and result.ledgers[-1].result == "SCHEMA_VALID",
         "request_pydantic_valid": True,
-        "envelope_valid": captured_envelope
-        == result.envelope.model_dump(mode="json"),
+        "envelope_valid": True,
         "output_pydantic_valid": True,
         "contextual_validation": True,
         "ids_allowlisted": evidence_allowlisted and sources_allowlisted,
-        "structured_output_strict": call["text"]["format"]["strict"] is True,
-        "raw_upload_absent": raw_upload_absent,
-        "tools_empty": call["tools"] == [],
-        "store_false": call["store"] is False,
-        "background_false": call["background"] is False,
-        "conversation_state_absent": not {
-            "conversation",
-            "previous_response_id",
-        }.intersection(call),
-        "semantic_task_count": len(user_messages),
         "outcome_allowed_by_manifest": status in allowed_statuses,
     }
     if material["prompt_id"] == "P01_ACTIVITY_SPEC_V1":
@@ -583,7 +545,8 @@ def _canary_payload_proof(
                     output.opportunity_id == request.opportunity.opportunity_id
                     and (
                         candidate is None
-                        or candidate.opportunity_id == request.opportunity.opportunity_id
+                        or candidate.opportunity_id
+                        == request.opportunity.opportunity_id
                     )
                 ),
                 "opportunity_template_id_immutable": (
@@ -617,6 +580,60 @@ def _canary_payload_proof(
                 ),
             }
         )
+    if not all(value is True for value in proof.values()):
+        raise AssertionError("Canary semantic proof contains a failed control")
+    return proof
+
+
+def _canary_payload_proof(
+    material: dict[str, Any], result: Any, call: dict[str, Any]
+) -> dict[str, Any]:
+    accounted_shape = {
+        key: call[key] for key in ("instructions", "input", "reasoning", "text")
+    }
+    request_effective_bytes = len(_canonical_json_bytes(accounted_shape))
+    if (
+        request_effective_bytes + REQUEST_FRAMING_TOKEN_ALLOWANCE
+        != material["input_upper_bound"]
+    ):
+        raise AssertionError("Canary preflight bytes drifted from the captured request")
+
+    serialized_call = _canonical_json_bytes(call).decode("utf-8")
+    content_types = [
+        part.get("type")
+        for message in call["input"]
+        for part in message.get("content", [])
+    ]
+    raw_upload_absent = all(kind == "input_text" for kind in content_types) and not any(
+        marker in serialized_call
+        for marker in (
+            '"input_file"',
+            '"file_id"',
+            '"file_url"',
+            "file://",
+            "signed_url",
+            "object_store_credential",
+        )
+    )
+    user_messages = [message for message in call["input"] if message["role"] == "user"]
+    if len(user_messages) != 1 or len(user_messages[0]["content"]) != 1:
+        raise AssertionError("Canary request must contain exactly one semantic envelope")
+    captured_envelope = json.loads(user_messages[0]["content"][0]["text"])
+    proof: dict[str, Any] = {
+        **_canary_semantic_proof(material, result),
+        "envelope_valid": captured_envelope
+        == result.envelope.model_dump(mode="json"),
+        "structured_output_strict": call["text"]["format"]["strict"] is True,
+        "raw_upload_absent": raw_upload_absent,
+        "tools_empty": call["tools"] == [],
+        "store_false": call["store"] is False,
+        "background_false": call["background"] is False,
+        "conversation_state_absent": not {
+            "conversation",
+            "previous_response_id",
+        }.intersection(call),
+        "semantic_task_count": len(user_messages),
+    }
     if not all(
         value is True
         for key, value in proof.items()
@@ -628,6 +645,68 @@ def _canary_payload_proof(
     return {
         "request_effective_bytes": request_effective_bytes,
         "proof": proof,
+    }
+
+
+def _canary_real_proof(
+    material: dict[str, Any], result: Any, transport_result: Any
+) -> dict[str, Any]:
+    """Prove real-call controls from validated output and safe adapter metadata."""
+
+    ledger = result.ledgers[-1]
+    reason_codes = set(transport_result.reason_codes)
+    proof = {
+        **_canary_semantic_proof(material, result),
+        "requested_route_luna_only": ledger.route.model == LUNA_MODEL_ID,
+        "effective_model_luna": _observed_effective_model(ledger)
+        == LUNA_MODEL_ID,
+        "fallback_absent": ledger.route.fallback_route_id is None,
+        "structured_output_strict": "STRUCTURED_OUTPUT_STRICT" in reason_codes,
+        "tools_empty": "TOOLS_EMPTY" in reason_codes,
+        "store_false": "STORE_FALSE" in reason_codes,
+        "background_false": "BACKGROUND_FALSE" in reason_codes,
+        "sdk_retries_zero": "SDK_RETRIES_0" in reason_codes,
+    }
+    if not all(value is True for value in proof.values()):
+        raise AssertionError("Canary real proof contains a failed control")
+    return proof
+
+
+def _canary_usage_metadata(
+    transport_result: Any | None, ledger: models.ModelCallLedger | None
+) -> dict[str, Any]:
+    """Expose billable usage and hashes without serializing request or output data."""
+
+    if transport_result is None:
+        return {
+            "input_tokens": None,
+            "cached_input_tokens": None,
+            "cache_write_input_tokens": None,
+            "output_tokens": None,
+            "reasoning_tokens": None,
+            "latency_ms": ledger.latency_ms if ledger is not None else None,
+            "estimated_cost_usd": (
+                round(ledger.estimated_cost_usd, 8) if ledger is not None else None
+            ),
+            "calculated_actual_cost_usd": (
+                round(ledger.actual_cost_usd, 8)
+                if ledger is not None and ledger.actual_cost_usd is not None
+                else None
+            ),
+            "request_id_hash": None,
+            "output_hash": None,
+        }
+    return {
+        "input_tokens": transport_result.input_tokens,
+        "cached_input_tokens": transport_result.cached_input_tokens,
+        "cache_write_input_tokens": transport_result.cache_write_input_tokens,
+        "output_tokens": transport_result.output_tokens,
+        "reasoning_tokens": transport_result.reasoning_tokens,
+        "latency_ms": ledger.latency_ms if ledger is not None else None,
+        "estimated_cost_usd": round(transport_result.estimated_cost_usd, 8),
+        "calculated_actual_cost_usd": round(transport_result.actual_cost_usd, 8),
+        "request_id_hash": transport_result.provider_request_id_hash,
+        "output_hash": transport_result.output_hash,
     }
 
 
@@ -933,6 +1012,8 @@ async def _run_canary_real(
     adapter = _SingleRequestAdapter(OpenAIResponsesAdapter(api_key=SecretStr(key)))
     gateway = _canary_gateway(material, adapter, budget_usd=max_total_cost_usd)
     result: Any | None = None
+    ledgers: list[models.ModelCallLedger] = []
+    controls: dict[str, Any] | None = None
     error_code: str | None = None
     try:
         result = await gateway.invoke(
@@ -941,8 +1022,13 @@ async def _run_canary_real(
             build_trusted_context(material["request"]),
             budget=CallBudget(max_cost_usd=max_total_cost_usd),
         )
+        ledgers = list(result.ledgers)
         _assert_canary_semantics(case, material["request"], result)
+        if not adapter.results:
+            raise AssertionError("Canary completed without safe transport metadata")
+        controls = _canary_real_proof(material, result, adapter.results[-1])
     except GatewayError as exc:
+        ledgers = list(exc.ledgers)
         error_code = exc.code
     except AssertionError:
         error_code = "OPENAI_LUNA_CANARY_EXPECTATION_FAILED"
@@ -956,20 +1042,28 @@ async def _run_canary_real(
     )
     if adapter.request_attempts and not adapter.results:
         budget_charged = material["worst_case_usd"]
-    effective_model = None
+    ledger = ledgers[-1] if ledgers else None
+    transport_result = adapter.results[-1] if adapter.results else None
+    effective_model = _observed_effective_model(ledger) if ledger is not None else None
     output_status = None
+    validation_order: list[str] = []
     if result is not None:
         output_status = getattr(result.output.status, "value", result.output.status)
-        if result.ledgers:
-            effective_model = _observed_effective_model(result.ledgers[-1])
+        validation_order = [phase.value for phase in result.validation_order]
     row = {
         "case_id": case["case_id"],
         "status": "PASS" if error_code is None else "FAIL",
         "error_code": error_code,
+        "defect_severity": (
+            None if error_code is None else case["defect_severity_if_failed"]
+        ),
         "output_status": output_status,
         "attempts": adapter.request_attempts,
         "actual_cost_usd": round(actual_cost, 8),
+        "validation_order": validation_order,
+        "controls": controls,
         "budget": _canary_budget_metadata(material),
+        **_canary_usage_metadata(transport_result, ledger),
         **_route_metadata(
             material["prompt_id"],
             material["canary_routes"],

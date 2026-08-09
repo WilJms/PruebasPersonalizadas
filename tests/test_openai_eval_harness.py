@@ -356,6 +356,92 @@ def test_luna_canary_real_mode_stops_at_its_distinct_human_checkpoint() -> None:
     }
 
 
+@pytest.mark.parametrize(
+    ("case_id", "budget_usd"),
+    [
+        ("oa-p01-happy-txt", 0.07),
+        ("oa-p07-open-short-txt", 0.09),
+    ],
+)
+def test_luna_canary_real_reports_safe_usage_hashes_and_semantic_controls(
+    monkeypatch, case_id: str, budget_usd: float
+) -> None:
+    class SafeMetadataAdapter:
+        async def invoke(
+            self, *, prompt_id: str, request: object, **_kwargs: object
+        ) -> AdapterResult:
+            output = eval_harness.DeterministicMockFactory().output_for(
+                prompt_id, request, eval_harness.MockBehavior.HAPPY
+            )
+            return AdapterResult(
+                raw_output=output.model_dump(mode="json"),
+                input_tokens=101,
+                cached_input_tokens=11,
+                cache_write_input_tokens=7,
+                output_tokens=29,
+                reasoning_tokens=13,
+                estimated_cost_usd=0.005,
+                actual_cost_usd=0.001,
+                effective_model="gpt-5.6-luna",
+                output_hash="sha256:" + "1" * 64,
+                provider_request_id_hash="sha256:" + "2" * 64,
+                reason_codes=(
+                    "SDK_RETRIES_0",
+                    "STRUCTURED_OUTPUT_STRICT",
+                    "STORE_FALSE",
+                    "BACKGROUND_FALSE",
+                    "TOOLS_EMPTY",
+                ),
+            )
+
+    monkeypatch.setenv(
+        "CVA_OPENAI_LUNA_CANARY_APPROVAL", "OPENAI_LUNA_CANARIES_APPROVED"
+    )
+    monkeypatch.setenv(
+        "CVA_OPENAI_API_KEY", "sk-project-synthetic-placeholder-not-a-real-key"
+    )
+    monkeypatch.setattr(
+        eval_harness,
+        "OpenAIResponsesAdapter",
+        lambda **_kwargs: SafeMetadataAdapter(),
+    )
+    cases = [
+        case
+        for case in eval_harness._load_cases(eval_harness.DEFAULT_MANIFEST)
+        if case["case_id"] == case_id
+    ]
+
+    report = asyncio.run(
+        eval_harness._run_canary_real(cases, max_total_cost_usd=budget_usd)
+    )
+
+    assert report["network_calls"] == report["billable_calls"] == 1
+    assert report["gateway_retries"] == report["prompt_retries"] == 0
+    assert report["sdk_retries"] == 0
+    assert report["p10_calls"] == report["p11_calls"] == report["sol_calls"] == 0
+    row = report["cases"][0]
+    assert row["status"] == "PASS"
+    assert row["error_code"] is None
+    assert row["defect_severity"] is None
+    assert row["model"] == row["effective_model"] == "gpt-5.6-luna"
+    assert row["validation_order"] == ["request", "envelope", "output"]
+    assert row["input_tokens"] == 101
+    assert row["cached_input_tokens"] == 11
+    assert row["cache_write_input_tokens"] == 7
+    assert row["output_tokens"] == 29
+    assert row["reasoning_tokens"] == 13
+    assert row["estimated_cost_usd"] == 0.005
+    assert row["calculated_actual_cost_usd"] == 0.001
+    assert row["request_id_hash"] == "sha256:" + "2" * 64
+    assert row["output_hash"] == "sha256:" + "1" * 64
+    assert row["latency_ms"] >= 0
+    assert all(row["controls"].values())
+    if case_id == "oa-p07-open-short-txt":
+        assert row["controls"]["context_mode_closed"] is True
+        assert row["controls"]["evidence_ids_subset"] is True
+        assert row["controls"]["external_sources_absent"] is True
+
+
 def test_luna_canary_invalid_output_cannot_reach_p11_or_a_second_request(
     monkeypatch,
 ) -> None:
