@@ -38,14 +38,22 @@ Los schemas, prompts versionados, allowlists y validación posterior alcanzan
 en `OPENAI_SEMANTIC_EVAL_PENDING`; no se declara
 `OPENAI_SYNTHETIC_E2E_PASS` antes de ejecutar el recorrido real autorizado.
 
-El propietario confirmó un proyecto OpenAI dedicado, una clave de aplicación
-creada y USD 5.00 disponibles. La clave aún no se insertó en Secret Manager ni
-en ningún runtime; el saldo no autoriza gasto. No se creó un cliente en evals
-offline y no hubo llamadas de modelo reales, tokens facturables ni costo
-(`USD 0.00`). El siguiente cambio cloud permitido es solamente crear el
-contenedor vacío del secreto después de CI verde. El cloud
+El proyecto OpenAI dedicado `PruebasPersonalizadas`
+(`proj_te2wY3kbHAkFp8IgjglH063t`) quedó identificado y permite únicamente
+`gpt-5.6-luna`. El propietario insertó privadamente la clave de aplicación como
+la versión numérica `1` de `cva-openai-api-key`; Secret Manager la informa
+`enabled`. El agente no leyó el payload. La clave no está montada en ningún
+runtime, el secreto no tiene bindings IAM y CI no recibe la clave. No hubo
+llamadas de modelo reales, tokens facturables ni costo (`USD 0.00`). El cloud
 vigente no fue modificado: sigue en mock/P10 false. La temperatura deseada se
 conserva en la ruta canónica y se omite del request, con reason codes explícitos.
+
+Se alcanzó `OPENAI_BILLABLE_SMOKE_APPROVAL_REQUIRED`: el smoke P11 Luna-low
+queda limitado a una llamada, sin retries, con request efectivo de 7,003 bytes,
+upper bound de entrada de 8,027 tokens, salida máxima de 8,000 tokens, costo
+máximo calculado de USD 0.0112054 y presupuesto propuesto de USD 0.06. No se
+ejecutó. Platform muestra además `No spend limit set`; ese control debe
+resolverse antes de una futura llamada aun después de una autorización humana.
 
 La regresión local del gate queda en 456 passed/16 skips PostgreSQL explícitos,
 80% de cobertura, golden set 20/20 con 0 network/0 billable, PostgreSQL 16/17
