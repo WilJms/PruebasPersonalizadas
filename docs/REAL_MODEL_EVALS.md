@@ -47,6 +47,54 @@ python scripts/run_openai_evals.py \
   --case-id oa-p07-open-short-txt
 ```
 
+## Frontera canary Luna medium/high
+
+Los dos canaries aprobables reutilizan exclusivamente los casos existentes
+`oa-p01-happy-txt` y `oa-p07-open-short-txt`. El modo dry-run construye el
+adaptador OpenAI real con un cliente Responses fake versionado, captura el
+payload y atraviesa el `ModelGateway` auténtico sin leer una clave ni crear red:
+
+```bash
+python scripts/run_openai_evals.py --mode canary-dry-run \
+  --case-id oa-p01-happy-txt
+python scripts/run_openai_evals.py --mode canary-dry-run \
+  --case-id oa-p07-open-short-txt
+```
+
+Cada invocación exige exactamente un caso aprobado. Su mapa real contiene
+únicamente el prompt seleccionado, sin P10 ni P11; `max_retries=0` y un guard
+anterior al transporte bloquea una segunda invocación del adapter. El SDK
+conserva sus retries automáticos en cero. Por ello, incluso una salida
+estructural inválida falla cerrada después de una request como máximo y no
+puede disparar reparación P11. La política general de retries del worker y del
+golden set real no cambia.
+
+Los dry-runs del 2026-08-09 pasaron con Luna-medium para P01 y Luna-high para
+P07, Structured Output strict, Pydantic/contexto/IDs válidos, payload sólo
+`input_text`, `tools=[]`, `store=false`, `background=false`, sin estado de
+conversación, una llamada fake por caso y cero llamadas de red/facturables.
+P07 preservó submission, oportunidad, template, dimensión, variante,
+operación cognitiva y allowlist de evidencia bajo `context_mode=CLOSED`, sin
+fuentes externas.
+
+La futura ejecución real tiene un modo distinto y exige una autorización
+humana nueva mediante
+`CVA_OPENAI_LUNA_CANARY_APPROVAL=OPENAI_LUNA_CANARIES_APPROVED`, además de
+clave, `--allow-billable` y presupuesto suficiente. Estos comandos son sólo
+documentales hasta el checkpoint:
+
+```bash
+python scripts/run_openai_evals.py --mode canary-real --allow-billable \
+  --case-id oa-p01-happy-txt --max-total-cost-usd 0.02
+python scripts/run_openai_evals.py --mode canary-real --allow-billable \
+  --case-id oa-p07-open-short-txt --max-total-cost-usd 0.03
+```
+
+Los worst-cases respectivos son USD 0.0115264 y USD 0.0163734; el máximo
+combinado es USD 0.0278998 dentro de un presupuesto propuesto de USD 0.05.
+Cada comando conserva una request máxima, 0/0/0 retries, P11/P10/Sol en cero y
+se detiene ante cualquier resultado fuera de los outcomes del manifest.
+
 ## Gate real preparado, no autorizado
 
 La futura ejecución exige simultáneamente:

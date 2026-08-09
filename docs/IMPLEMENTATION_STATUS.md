@@ -62,9 +62,22 @@ en cero; `store=false`, `background=false`. Los request/output IDs se conservaro
 solo como hashes. Platform mostró antes del smoke spend limit USD 5.00, USD 3.77
 usado y `gpt-5.6-luna` como único modelo permitido. No hubo segunda request.
 
-La regresión local del gate queda en 457 passed/16 skips PostgreSQL explícitos,
-80% de cobertura, 40 tests focalizados CLI/adapter, golden set 20/20 con 0
-network/0 billable, PostgreSQL 16/17
+La preparación posterior de los dos canaries quedó cerrada offline y detenida
+en `OPENAI_LUNA_CANARY_APPROVAL_REQUIRED`. El harness versionado admite ahora
+un único caso P01 o P07 por ejecución bajo una frontera separada: ruta Luna
+seleccionada únicamente, P10/P11 ausentes, guard de una request y retries
+gateway/prompt/SDK 0/0/0, sin alterar `ModelGateway` ni la política del worker.
+P01 Luna-medium y P07 Luna-high pasaron contra el adapter real y transporte
+fake con schema/Pydantic/contexto/IDs válidos, 1 fake request cada uno, 0 red y
+0 billable. El worst-case combinado es USD 0.0278998 y el presupuesto propuesto
+es USD 0.05. Los precios Standard vigentes quedaron en Sol 5.00/0.50/30.00,
+Terra 2.00/0.20/12.00 y Luna 0.20/0.02/1.20 USD por millón de tokens de
+input/cached input/output. La regresión local terminó 464 passed/16 skips,
+contratos y secret scan PASS. El secreto no se leyó y cloud no se modificó.
+
+La regresión local previa al smoke quedó en 457 passed/16 skips PostgreSQL
+explícitos, 80% de cobertura, 40 tests focalizados CLI/adapter, golden set
+20/20 con 0 network/0 billable, PostgreSQL 16/17
 con 155/155 y doble matriz 1+7, frontend 32/32, Playwright 1+2, navegador
 integrado limpio, Docker runtime/audit, Stage 0 reproducible,
 contratos/OpenAPI sin drift, Terraform válido y secret scan limpio. La CI del

@@ -79,6 +79,35 @@ argumentos ni persistencia, y su environment quedó fuera de alcance al
 terminar. No hubo segunda request ni continuación hacia Luna-medium/high,
 canaries, golden set real, E2E, deploy, IAM, PR, merge o Etapa 3.
 
+## Preparación de canaries Luna medium/high — 2026-08-09
+
+Se añadió al harness versionado una frontera canary separada, sin cambiar
+`ModelGateway`, contratos ni la política global del worker. Cada ejecución
+acepta exactamente uno de los casos existentes, expone sólo su ruta Luna,
+excluye P10/P11, fija retries efectivos 0/0/0 y bloquea una segunda invocación
+antes del transporte. Un test adversarial devolvió un output estructural
+inválido: el resultado fue fail-closed con una sola llamada fake y P11 en cero.
+
+| Prueba o gate | Resultado observado |
+|---|---|
+| P01 `oa-p01-happy-txt` | PASS offline; Luna-medium; Structured Output/Pydantic/contexto/allowlist PASS; 1 fake, 0 red, 0 billable |
+| P07 `oa-p07-open-short-txt` | PASS offline; Luna-high/CLOSED; IDs e invariantes de oportunidad PASS; sin fuentes externas; 1 fake, 0 red, 0 billable |
+| Presupuesto P01 | 8,608 bytes; schema 3,111; input 9,632; output 8,000; worst-case USD 0.0115264; propuesto USD 0.02 |
+| Presupuesto P07 | 20,843 bytes; schema 13,671; input 21,867; output 10,000; worst-case USD 0.0163734; propuesto USD 0.03 |
+| Combinado | 2 Responses requests máximas; worst-case USD 0.0278998; presupuesto propuesto USD 0.05 |
+| Regresión focal | 123 passed: harness, CLI, adapter, routing, schemas, budgets, gateway y contratos |
+| Suite backend | 464 passed, 16 skips PostgreSQL explícitos, 1 warning P3 conocido |
+| Contratos | PASS: 53 roots, 140 definiciones, 274 referencias y 8 fixtures; sin cambios de contratos |
+| Secret scan | PASS: 290 archivos versionables; ningún secreto de alta confianza |
+
+Las tarifas Standard short-context verificadas en las páginas oficiales
+vigentes quedaron versionadas: Sol USD 5.00/0.50/30.00, Terra
+USD 2.00/0.20/12.00 y Luna USD 0.20/0.02/1.20 por millón de tokens de
+input/cached input/output. Terra refleja un descuento de 20%, Luna uno de 80%
+y Sol no cambió. Los dry-runs no leyeron la versión 1 del secreto. Cloud, IAM,
+billing, deployment y golden outcomes permanecieron sin cambios; los dos
+canaries reales siguen pendientes de autorización humana.
+
 ## Ejecución de auditoría final focalizada — 2026-08-08
 
 Esta ejecución es posterior al candidato runtime cloud y no sustituye su

@@ -1,19 +1,25 @@
 # Costos y presupuestos OpenAI
 
-Política estándar short-context observada el 2026-08-08 en las páginas
-oficiales vigentes. El perfil activo usa únicamente Luna; Sol se conserva como
-referencia histórica de una comparación futura no autorizada.
+Política Standard short-context observada el 2026-08-09 en las páginas
+oficiales vigentes. El perfil activo usa únicamente Luna; Terra y Sol se
+conservan como referencias de catálogo y no son rutas callable ni fallback.
 
-| Modelo | Input / 1M | Cached input / 1M | Output / 1M |
-|---|---:|---:|---:|
-| `gpt-5.6-sol` | USD 5.00 | USD 0.50 | USD 30.00 |
-| `gpt-5.6-luna` | USD 0.20 | USD 0.02 | USD 1.20 |
+| Modelo | Input / 1M | Cached input / 1M | Cache write / 1M | Output / 1M |
+|---|---:|---:|---:|---:|
+| `gpt-5.6-sol` | USD 5.00 | USD 0.50 | USD 6.25 | USD 30.00 |
+| `gpt-5.6-terra` | USD 2.00 | USD 0.20 | USD 2.50 | USD 12.00 |
+| `gpt-5.6-luna` | USD 0.20 | USD 0.02 | USD 0.25 | USD 1.20 |
 
-La página actual también publica cache write Luna a USD 0.25 y Batch
-short-context a USD 0.10/0.01/0.125/0.60; el gate usa Standard, `service_tier`
-default y no Batch. Fuente canónica operativa:
-[precios OpenAI](https://developers.openai.com/api/docs/pricing) y
-[modelo Luna](https://developers.openai.com/api/docs/models/gpt-5.6-luna).
+Frente a los precios anteriores, Terra bajó 20% desde
+USD 2.50/0.25/15.00 y Luna bajó 80% desde USD 1.00/0.10/6.00; Sol permanece
+en USD 5.00/0.50/30.00. Los snippets indexados que aún muestran los valores
+anteriores no son autoridad: estas cifras proceden de las páginas cargadas el
+2026-08-09. El gate usa Standard, `service_tier=default`, short context y no
+Batch/Flex/Fast. Fuentes canónicas operativas:
+[precios OpenAI](https://developers.openai.com/api/docs/pricing),
+[Sol](https://developers.openai.com/api/docs/models/gpt-5.6-sol),
+[Terra](https://developers.openai.com/api/docs/models/gpt-5.6-terra) y
+[Luna](https://developers.openai.com/api/docs/models/gpt-5.6-luna).
 
 La fórmula por llamada es:
 
@@ -60,3 +66,29 @@ presupuesto total independiente. Nunca
 hereda el saldo del smoke y exige `--allow-billable`, monto positivo, clave y
 la frase de aprobación exacta. Rate limits, hard limits y quota se traducen a
 fallos cerrados, no a cambio de modelo.
+
+## Canaries Luna medium/high propuestos
+
+Los dos dry-runs usan el adaptador Responses real contra el transporte fake
+versionado. La cuenta de bytes corresponde exactamente a instrucciones,
+mensajes, reasoning y `text.format` capturados; el upper bound añade 1,024
+tokens de framing. No se asume cache, cada caso admite una sola request y los
+retries efectivos de gateway/prompt/SDK son 0/0/0. P11 no tiene ruta dentro de
+esta frontera canary.
+
+| Campo | P01 `oa-p01-happy-txt` | P07 `oa-p07-open-short-txt` |
+|---|---:|---:|
+| Modelo / esfuerzo | Luna / medium | Luna / high |
+| Bytes efectivos | 8,608 | 20,843 |
+| Schema bytes | 3,111 | 13,671 |
+| Formato estructurado bytes | 3,189 | 13,761 |
+| Envelope bytes | 1,731 | 2,576 |
+| Input upper bound | 9,632 tokens | 21,867 tokens |
+| Max output, reasoning incluido | 8,000 tokens | 10,000 tokens |
+| Worst-case Standard | USD 0.0115264 | USD 0.0163734 |
+| Presupuesto propuesto | USD 0.02 | USD 0.03 |
+
+El worst-case combinado es **USD 0.0278998** y el presupuesto combinado
+propuesto es **USD 0.05**, con máximo dos Responses requests en total. Son
+presupuestos humanos separados del spend limit del proyecto. La preparación
+offline registró cero red, cero consumo facturable y no leyó el secreto.

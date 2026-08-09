@@ -1,8 +1,9 @@
 # Validación del proveedor OpenAI real
 
-Fecha de corte: 2026-08-08. Estado: implementación y pruebas offline completas;
-credenciales, smoke, calidad semántica y despliegue real pendientes de gates
-humanos. Llamadas de red/facturables ejecutadas: **0**.
+Fecha de corte: 2026-08-09. Estado: primer smoke P11 Luna-low aprobado y
+superado; canaries P01 Luna-medium y P07 Luna-high preparados y demostrados
+offline, pendientes de un gate humano nuevo. Llamadas reales históricas: **1**,
+exclusivamente P11; llamadas reales de estos canaries: **0**.
 
 ## Perfil vinculante `LUNA_BASELINE_V1`
 
@@ -72,9 +73,11 @@ payload, output, clave ni request-id en claro.
 |---|---|
 | Matriz, schemas, fake transport, fallos, retry, presupuesto y ledger | PASS offline |
 | Golden set sintético 20 casos | PASS offline; 0 network/0 billable |
-| Proyecto, USD 5.00 y clave privada creada | confirmado por el propietario; secreto aún no insertado |
+| Proyecto, spend limit y clave privada | proyecto verificado; secret versión 1 `enabled`, payload no inspeccionado |
 | Perfil Luna-only y regresión offline | PASS; 456 passed/16 skips PG explícitos, PG16/17, golden 20/20, frontend/browser/Docker/Terraform verdes |
-| Smoke P11 sintético, una llamada | pendiente de aprobación humana |
+| Smoke P11 sintético, una llamada | `OPENAI_REAL_SMOKE_PASS`; 1 request, retries 0/0/0 |
+| Canary P01 Luna-medium | PASS offline contra transporte fake; real pendiente de autorización |
+| Canary P07 Luna-high | PASS offline contra transporte fake; real pendiente de autorización |
 | Golden set real sintético | pendiente de aprobación y presupuesto separados |
 | Calidad/latencia/costo y P0/P1 | pendiente de evidencia real |
 | Build, digest y deploy real del worker | pendiente de gate posterior |
@@ -86,8 +89,10 @@ P05 explícita. Esta limitación funcional es P2 y no autoriza entregar un revie
 mock dentro de un recorrido declarado OpenAI.
 
 Fuentes oficiales: páginas de
-[`gpt-5.6-sol`](https://developers.openai.com/api/docs/models/gpt-5.6-sol) y
+[`gpt-5.6-sol`](https://developers.openai.com/api/docs/models/gpt-5.6-sol),
+[`gpt-5.6-terra`](https://developers.openai.com/api/docs/models/gpt-5.6-terra) y
 [`gpt-5.6-luna`](https://developers.openai.com/api/docs/models/gpt-5.6-luna),
+[precios](https://developers.openai.com/api/docs/pricing),
 [Responses](https://developers.openai.com/api/docs/guides/responses),
 [Structured Outputs](https://developers.openai.com/api/docs/guides/structured-outputs)
 y [manejo de errores](https://developers.openai.com/api/docs/guides/error-codes).
