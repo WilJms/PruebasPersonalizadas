@@ -1,9 +1,9 @@
 # Estado de implementación — Etapa 2
 
 Fecha de corte: 2026-08-07 (America/Santiago; evidencia externa hasta
-2026-08-08 UTC).
+2026-08-09 UTC).
 
-## Estado vigente — merge E2 y gate OpenAI (2026-08-08)
+## Estado vigente — merge E2 y gate OpenAI (2026-08-09)
 
 `STAGE2_MERGED_AND_VERIFIED` quedó registrado antes de iniciar este gate.
 
@@ -26,8 +26,9 @@ explícitos y auditoría focalizada P0=0/P1=0. El runtime histórico
 candidato corregido.
 
 Desde ese `main` verificado se creó `codex/openai-real-provider-gate`.
-El estado técnico alcanzado es `LUNA_BASELINE_V1_OFFLINE_VERIFIED`: SDK oficial
-`openai==2.53.0` fijado con hashes, Responses API, modelos explícitos,
+El estado técnico alcanzado es `OPENAI_REAL_SMOKE_PASS` sobre
+`LUNA_BASELINE_V1`: SDK oficial `openai==2.53.0` fijado con hashes, Responses
+API, modelos explícitos,
 Structured Outputs derivados de Pydantic, errores/retries/budget/ledger,
 Secret Manager/IAM worker-only, smoke gobernado y golden set sintético. P11 es
 efectivamente `gpt-5.6-luna` con `reasoning_effort=low`; P10 no tiene ruta.
@@ -41,26 +42,33 @@ en `OPENAI_SEMANTIC_EVAL_PENDING`; no se declara
 El proyecto OpenAI dedicado `PruebasPersonalizadas`
 (`proj_te2wY3kbHAkFp8IgjglH063t`) quedó identificado y permite únicamente
 `gpt-5.6-luna`. El propietario insertó privadamente la clave de aplicación como
-la versión numérica `1` de `cva-openai-api-key`; Secret Manager la informa
-`enabled`. El agente no leyó el payload. La clave no está montada en ningún
-runtime, el secreto no tiene bindings IAM y CI no recibe la clave. No hubo
-llamadas de modelo reales, tokens facturables ni costo (`USD 0.00`). El cloud
-vigente no fue modificado: sigue en mock/P10 false. La temperatura deseada se
-conserva en la ruta canónica y se omite del request, con reason codes explícitos.
+la versión numérica `1` de `cva-openai-api-key`; Secret Manager informa esa
+única versión `enabled`. El agente no inspeccionó el payload: el proceso aislado
+del smoke lo consumió solo en memoria y limpió su environment al terminar. La
+clave no está montada en ningún runtime, el secreto no tiene bindings IAM y CI
+no recibe la clave. El cloud vigente no fue modificado: sigue en mock/P10 false.
+La temperatura deseada se conserva en la ruta canónica y se omite del request,
+con reason codes explícitos.
 
-Se alcanzó `OPENAI_BILLABLE_SMOKE_APPROVAL_REQUIRED`: el smoke P11 Luna-low
-queda limitado a una llamada, sin retries, con request efectivo de 7,003 bytes,
-upper bound de entrada de 8,027 tokens, salida máxima de 8,000 tokens, costo
-máximo calculado de USD 0.0112054 y presupuesto propuesto de USD 0.06. No se
-ejecutó. Platform muestra además `No spend limit set`; ese control debe
-resolverse antes de una futura llamada aun después de una autorización humana.
+Tras un fallo local/pre-provider del harness efímero (`routes=`), con cero
+Responses requests y USD 0.00, se protegió el entrypoint versionado sin cambiar
+gateway, adapter, rutas ni contratos. El commit `e1f6714…` pasó la CI
+`31293361151` 7/7. La única llamada P11 Luna-low autorizada terminó
+`OPENAI_REAL_SMOKE_PASS`: 1 request/attempt, 1,365 input tokens, 0 cached, 257
+output, 57 reasoning, 3,832 ms, costo estimado post-usage USD 0.0099411 y costo
+real calculado USD 0.0006495. Modelo solicitado/efectivo Luna, validaciones
+schema/Pydantic/contextual PASS y cero retries. P10, Sol y tools permanecieron
+en cero; `store=false`, `background=false`. Los request/output IDs se conservaron
+solo como hashes. Platform mostró antes del smoke spend limit USD 5.00, USD 3.77
+usado y `gpt-5.6-luna` como único modelo permitido. No hubo segunda request.
 
-La regresión local del gate queda en 456 passed/16 skips PostgreSQL explícitos,
-80% de cobertura, golden set 20/20 con 0 network/0 billable, PostgreSQL 16/17
+La regresión local del gate queda en 457 passed/16 skips PostgreSQL explícitos,
+80% de cobertura, 40 tests focalizados CLI/adapter, golden set 20/20 con 0
+network/0 billable, PostgreSQL 16/17
 con 155/155 y doble matriz 1+7, frontend 32/32, Playwright 1+2, navegador
 integrado limpio, Docker runtime/audit, Stage 0 reproducible,
-contratos/OpenAPI sin drift, Terraform válido y secret scan limpio. La CI de la
-rama se registrará al publicar el commit.
+contratos/OpenAPI sin drift, Terraform válido y secret scan limpio. La CI del
+commit previo al gasto quedó 7/7 verde.
 
 | Severidad vigente | Abiertos |
 |---|---:|

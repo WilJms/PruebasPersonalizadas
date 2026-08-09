@@ -1,7 +1,7 @@
 # Resultados verificables — candidato Etapa 2
 
 Fecha de corte documental: 2026-08-07 (America/Santiago; ejecución cloud hasta
-2026-08-08 UTC).
+2026-08-09 UTC).
 
 Este archivo registra únicamente resultados observados. Las credenciales y
 capacidades no se registran. Todos los recorridos E2 usaron modelo mock, P10
@@ -36,11 +36,48 @@ efectivo, hashes, usage/costo, SDK retries 0, preflight con prompt+schema y
 ceiling de retries, saldo durable por job, secreto ausente del Service y
 bloqueo de invocación directa cuando el worker sea real.
 
-No se ejecutó smoke real, eval semántico, Cloud Build, deploy real ni Terraform
-apply para esta rama: CI y el plan/apply limitado al contenedor vacío de
-Secret Manager son los gates siguientes. El runtime cloud
-observado para esta ejecución continúa siendo el baseline E2 fusionado en mock
-con P10 false.
+En este corte offline todavía no se había ejecutado el smoke real. El runtime
+cloud observado continuó siendo el baseline E2 fusionado en mock con P10 false.
+
+## Primer smoke OpenAI real — 2026-08-09
+
+El fallo anterior `SMOKE_HARNESS_FAILURE` fue local/pre-provider: un harness
+efímero pasó `routes=` al constructor que exige `real_routes=`. Produjo cero
+Responses requests, cero retries, USD 0.00 y ninguna exposición del secreto.
+El sistema de producción no se amplió para aceptar ese argumento.
+
+Se añadió una regresión localizada del CLI versionado con `ModelGateway` real y
+cliente OpenAI falso. El dry-run pasó con una llamada fake a la frontera,
+`network_calls=0`, `billable_calls=0`, Luna-low, Structured Output,
+`tools=[]`, `store=false`, `background=false` y presupuesto válido. La suite
+local terminó 457 passed/16 skips; CLI+adapter 40 passed; contratos y secret
+scan PASS. El commit `e1f6714e6d8fd52f4404c8f9f16edc21f8320627`
+pasó la CI `31293361151` 7/7 antes del gasto.
+
+La comprobación read-only inmediatamente anterior observó el proyecto
+`PruebasPersonalizadas` (`proj_te2wY3kbHAkFp8IgjglH063t`), spend limit USD
+5.00 con USD 3.77 usado, y `gpt-5.6-luna` como único modelo permitido. Secret
+Manager contenía exclusivamente `cva-openai-api-key` versión 1 `ENABLED`; no se
+leyó ni imprimió su payload.
+
+| Metadata segura | Resultado observado |
+|---|---|
+| Resultado | `OPENAI_REAL_SMOKE_PASS` |
+| Ruta | `LUNA_BASELINE_V1`; P11 `1.1.1`; schema `1.1.0` |
+| Modelo / reasoning | solicitado y efectivo `gpt-5.6-luna`; `low` |
+| Requests / attempts / retries | 1 / 1 / 0 gateway, 0 prompt, 0 SDK |
+| Tokens | 1,365 input; 0 cached; 257 output; 57 reasoning |
+| Latencia | 3,832 ms |
+| Costo | estimado post-usage USD 0.0099411; real calculado USD 0.0006495 |
+| Validaciones | schema PASS; Pydantic PASS; contextual PASS |
+| Request ID hash | `sha256:e819a8b471de6f3092ea6495f23b2b57bd70df597e481dce1434bc49a6f94299` |
+| Output hash | `sha256:7a4cd0cf8103b85191a28d9e26c9b30f94cf9abf678184eb2e84bdcba3e89ede` |
+| Fronteras | sintético; P10 0; Sol 0; tools 0; `store=false`; `background=false` |
+
+La versión 1 se consumió dentro del único proceso, sin echo, archivos,
+argumentos ni persistencia, y su environment quedó fuera de alcance al
+terminar. No hubo segunda request ni continuación hacia Luna-medium/high,
+canaries, golden set real, E2E, deploy, IAM, PR, merge o Etapa 3.
 
 ## Ejecución de auditoría final focalizada — 2026-08-08
 

@@ -1,14 +1,16 @@
 # Setup gobernado del proveedor OpenAI
 
-Estado al 2026-08-08: el proyecto OpenAI dedicado `PruebasPersonalizadas`
+Estado al 2026-08-09: el proyecto OpenAI dedicado `PruebasPersonalizadas`
 (`proj_te2wY3kbHAkFp8IgjglH063t`) quedó identificado mediante una sesión
 autenticada de Platform. La clave de proyecto fue introducida manualmente por
 el propietario como la versión numérica `1` de
 `cva-openai-api-key`; Secret Manager informa esa única versión como `enabled`.
-El agente verificó exclusivamente metadata y nunca accedió al payload. La clave
-no existe en el repositorio, CI, Service web ni runtime cloud. El cloud vigente
-conserva `CVA_MODEL_MODE=mock` y `CVA_P10_ENABLED=false`. Ningún paso de este
-documento autoriza datos estudiantiles reales, Etapa 3 o P10.
+El agente verificó metadata sin inspeccionar el payload; el proceso aislado del
+primer smoke consumió esa versión únicamente en memoria y eliminó su environment
+al terminar. La clave no existe en el repositorio, CI, Service web ni runtime
+cloud. El cloud vigente conserva `CVA_MODEL_MODE=mock` y
+`CVA_P10_ENABLED=false`. Ningún paso de este documento autoriza datos
+estudiantiles reales, Etapa 3 o P10.
 
 ## Fronteras obligatorias
 
@@ -97,9 +99,9 @@ La clave se suministra por el canal privado acordado como
 `CVA_OPENAI_API_KEY`. El smoke hace como máximo una llamada P11 con datos
 sintéticos, `gpt-5.6-luna`, esfuerzo `low`, retries del gateway y SDK iguales a
 cero. Su upper bound vigente es USD 0.0112054 y el techo propuesto sigue siendo
-USD 0.06; el saldo de USD 5.00 informado originalmente no amplía esa
-autorización. El operador registra tokens, costo estimado/observado, modelo
-efectivo, latencia, resultado y hashes; nunca payload u output.
+USD 0.06; el spend limit del proyecto no amplía esa autorización. El operador
+registra tokens, costo estimado/observado, modelo efectivo, latencia, resultado
+y hashes; nunca payload u output.
 
 ## Checkpoint previo al primer gasto
 
@@ -125,11 +127,47 @@ Platform, no a una prueba de autenticación del payload secreto.
 | Cloud/CI | Web y Worker sin clave; ambos en mock/P10 false; IAM del secreto vacío; CI sin clave |
 | Consumo de este checkpoint | 0 inferencias, 0 tokens facturables, USD 0.00 |
 
-OpenAI Platform muestra actualmente `No spend limit set` para este proyecto.
-Conforme a las fronteras de este gate, debe configurarse un límite de gasto del
-proyecto antes de una futura llamada, aunque exista aprobación humana y aunque
-el CLI conserve su techo independiente de USD 0.06. Este checkpoint no cambia
-ningún ajuste de billing.
+Este fue un checkpoint histórico previo al gasto. Antes de la llamada del
+2026-08-09, OpenAI Platform mostró un spend limit activo de USD 5.00, USD 3.77
+usado, USD 1.23 disponible, reset en 23 días y alerta al 80% (USD 4.00). También
+mostró `gpt-5.6-luna` como único modelo permitido. Esos límites externos no
+ampliaron el techo independiente y humano de USD 0.06 para el smoke.
+
+## Resultado del primer smoke real — 2026-08-09
+
+`OPENAI_REAL_SMOKE_PASS` se alcanzó mediante el único entrypoint versionado,
+`cv-stage0 real-provider-smoke --budget-usd 0.06 --allow-billable`. El intento
+anterior del harness efímero había fallado localmente por usar `routes=` en vez
+de `real_routes=`: registró cero Responses requests, cero retries y USD 0.00.
+No se amplió la API de `ModelGateway` ni se cambiaron adapter, rutas o contratos.
+
+Antes del gasto, una regresión localizada ejecutó el CLI real con un cliente
+OpenAI falso y el `ModelGateway` auténtico, alcanzando la frontera de transporte
+con `network_calls=0` y `billable_calls=0`. La suite local quedó en 457 passed y
+16 skips PostgreSQL explícitos; los 40 tests focalizados de CLI/adapter pasaron.
+El commit `e1f6714e6d8fd52f4404c8f9f16edc21f8320627` quedó publicado y la CI
+`31293361151` terminó 7/7 verde antes de consumir el secreto.
+
+| Metadata segura | Resultado observado |
+|---|---|
+| Perfil / prompt / schema | `LUNA_BASELINE_V1`; `P11_SCHEMA_REPAIR_V1` `1.1.1`; schema `1.1.0` |
+| Modelo solicitado / efectivo | `gpt-5.6-luna` / `gpt-5.6-luna` |
+| Reasoning | `low` |
+| Responses requests / attempts | 1 / 1 |
+| Retries | gateway 0, prompt 0, SDK 0 |
+| Tokens | input 1,365; cached input 0; output 257; reasoning 57 |
+| Latencia | 3,832 ms |
+| Costo estimado post-usage / costo real calculado | USD 0.0099411 / USD 0.0006495 |
+| Validación | schema PASS; Pydantic PASS; contextual PASS |
+| Request ID hash | `sha256:e819a8b471de6f3092ea6495f23b2b57bd70df597e481dce1434bc49a6f94299` |
+| Output hash | `sha256:7a4cd0cf8103b85191a28d9e26c9b30f94cf9abf678184eb2e84bdcba3e89ede` |
+| Fronteras | fixture sintético; P10 0; Sol 0; tools 0; `store=false`; `background=false` |
+
+La versión `1` del secreto se entregó sin echo directamente al environment del
+proceso y quedó fuera de archivos, argumentos, Git, logs y documentación. El
+valor no fue inspeccionado ni expuesto. No se ejecutó una segunda request y no
+se continuó con Luna-medium/high, canaries, golden set real, E2E, deploy, IAM,
+PR, merge ni Etapa 3.
 
 Fuentes oficiales: [Responses API](https://developers.openai.com/api/docs/guides/responses),
 [Structured Outputs](https://developers.openai.com/api/docs/guides/structured-outputs),
