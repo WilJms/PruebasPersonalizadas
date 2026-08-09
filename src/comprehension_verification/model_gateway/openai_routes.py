@@ -1,8 +1,9 @@
-"""Explicit, non-heuristic OpenAI route matrix for P01-P09 and P11."""
+"""Explicit, non-heuristic OpenAI route profile for P01-P09 and P11."""
 
 from __future__ import annotations
 
 from collections.abc import Callable
+from dataclasses import dataclass
 import json
 from types import MappingProxyType
 from typing import Final, Mapping
@@ -22,20 +23,57 @@ from comprehension_verification.model_gateway.openai_schema import (
 
 SOL_MODEL_ID: Final = "gpt-5.6-sol"
 LUNA_MODEL_ID: Final = "gpt-5.6-luna"
+OPENAI_PROVIDER_ID: Final = "openai"
+OPENAI_ROUTE_PROFILE_ID: Final = "LUNA_BASELINE_V1"
 REQUEST_FRAMING_TOKEN_ALLOWANCE: Final = 1_024
 
+
+@dataclass(frozen=True, slots=True)
+class ApprovedOpenAIRoute:
+    """One immutable entry in the human-authorized experimental profile."""
+
+    model: str
+    reasoning_effort: models.ReasoningEffort
+
+
+OPENAI_ROUTE_PROFILE: Final[Mapping[str, ApprovedOpenAIRoute]] = MappingProxyType(
+    {
+        "P01_ACTIVITY_SPEC_V1": ApprovedOpenAIRoute(
+            LUNA_MODEL_ID, models.ReasoningEffort.MEDIUM
+        ),
+        "P02_RUBRIC_NORMALIZE_V1": ApprovedOpenAIRoute(
+            LUNA_MODEL_ID, models.ReasoningEffort.MEDIUM
+        ),
+        "P03_AMBIGUITY_TRIAGE_V1": ApprovedOpenAIRoute(
+            LUNA_MODEL_ID, models.ReasoningEffort.HIGH
+        ),
+        "P04_BLUEPRINT_BUILD_V1": ApprovedOpenAIRoute(
+            LUNA_MODEL_ID, models.ReasoningEffort.HIGH
+        ),
+        "P05_BLUEPRINT_REVIEW_V1": ApprovedOpenAIRoute(
+            LUNA_MODEL_ID, models.ReasoningEffort.HIGH
+        ),
+        "P06_EVIDENCE_MAP_V1": ApprovedOpenAIRoute(
+            LUNA_MODEL_ID, models.ReasoningEffort.HIGH
+        ),
+        "P07_QUESTION_BUILD_V1": ApprovedOpenAIRoute(
+            LUNA_MODEL_ID, models.ReasoningEffort.HIGH
+        ),
+        "P08_QUESTION_REVIEW_V1": ApprovedOpenAIRoute(
+            LUNA_MODEL_ID, models.ReasoningEffort.HIGH
+        ),
+        "P09_GUIDE_BUILD_V1": ApprovedOpenAIRoute(
+            LUNA_MODEL_ID, models.ReasoningEffort.HIGH
+        ),
+        "P11_SCHEMA_REPAIR_V1": ApprovedOpenAIRoute(
+            LUNA_MODEL_ID, models.ReasoningEffort.LOW
+        ),
+    }
+)
 OPENAI_MODEL_BY_PROMPT: Final[Mapping[str, str]] = MappingProxyType(
     {
-        "P01_ACTIVITY_SPEC_V1": SOL_MODEL_ID,
-        "P02_RUBRIC_NORMALIZE_V1": SOL_MODEL_ID,
-        "P03_AMBIGUITY_TRIAGE_V1": LUNA_MODEL_ID,
-        "P04_BLUEPRINT_BUILD_V1": SOL_MODEL_ID,
-        "P05_BLUEPRINT_REVIEW_V1": SOL_MODEL_ID,
-        "P06_EVIDENCE_MAP_V1": LUNA_MODEL_ID,
-        "P07_QUESTION_BUILD_V1": LUNA_MODEL_ID,
-        "P08_QUESTION_REVIEW_V1": LUNA_MODEL_ID,
-        "P09_GUIDE_BUILD_V1": LUNA_MODEL_ID,
-        "P11_SCHEMA_REPAIR_V1": LUNA_MODEL_ID,
+        prompt_id: approved.model
+        for prompt_id, approved in OPENAI_ROUTE_PROFILE.items()
     }
 )
 
@@ -43,6 +81,14 @@ OPENAI_MODEL_BY_PROMPT: Final[Mapping[str, str]] = MappingProxyType(
 def build_openai_routes(*, max_call_cost_usd: float) -> Mapping[str, models.ModelRoute]:
     if max_call_cost_usd <= 0:
         raise ValueError("max_call_cost_usd must be positive")
+    expected_prompt_ids = set(PROMPT_SPECS) - {"P10_ENRICHED_CONTEXT_V1"}
+    if set(OPENAI_ROUTE_PROFILE) != expected_prompt_ids:
+        raise AssertionError("LUNA_BASELINE_V1 must cover exactly P01-P09 and P11")
+    if any(
+        approved.model != LUNA_MODEL_ID
+        for approved in OPENAI_ROUTE_PROFILE.values()
+    ):
+        raise AssertionError("LUNA_BASELINE_V1 cannot route silently to another model")
     capabilities = models.ModelCapabilities(
         input_modalities=[
             models.ModelInputModality.TEXT,
@@ -62,17 +108,25 @@ def build_openai_routes(*, max_call_cost_usd: float) -> Mapping[str, models.Mode
         supported_regions=[],
     )
     routes: dict[str, models.ModelRoute] = {}
-    for prompt_id, model_id in OPENAI_MODEL_BY_PROMPT.items():
+    for prompt_id, approved in OPENAI_ROUTE_PROFILE.items():
         spec = PROMPT_SPECS[prompt_id]
+        if spec.reasoning_effort != approved.reasoning_effort:
+            raise AssertionError(
+                f"Prompt/profile reasoning drift for {prompt_id}: "
+                f"{spec.reasoning_effort} != {approved.reasoning_effort}"
+            )
         routes[prompt_id] = models.ModelRoute(
-            route_id=f"route_openai_{prompt_id.lower()}_v1",
+            route_id=(
+                f"route_openai_{OPENAI_ROUTE_PROFILE_ID.lower()}_"
+                f"{prompt_id.lower()}"
+            ),
             task=spec.task,
-            provider="openai",
-            model=model_id,
+            provider=OPENAI_PROVIDER_ID,
+            model=approved.model,
             # Official pages publish these explicit model IDs but no dated
             # snapshot ID. Record the observed callable ID without inventing one.
-            model_snapshot=model_id,
-            reasoning_effort=spec.reasoning_effort,
+            model_snapshot=approved.model,
+            reasoning_effort=approved.reasoning_effort,
             temperature=spec.temperature,
             capabilities=capabilities,
             retention_mode="DEFAULT",
@@ -83,8 +137,12 @@ def build_openai_routes(*, max_call_cost_usd: float) -> Mapping[str, models.Mode
             max_output_tokens=spec.max_output_tokens,
             fallback_route_id=None,
             reason_codes=[
+                f"ROUTE_PROFILE_{OPENAI_ROUTE_PROFILE_ID}",
+                "LUNA_ONLY_EXPERIMENTAL_BASELINE",
                 "EXPLICIT_APPROVED_MODEL_ID",
                 "NO_DYNAMIC_MODEL_SELECTION",
+                "NO_MODEL_FALLBACK",
+                "SOL_COMPARISON_REQUIRES_FUTURE_HUMAN_AUTHORIZATION",
                 "NO_DATED_SNAPSHOT_PUBLISHED_MODEL_ID_RECORDED",
                 "RESPONSES_API_STRUCTURED_OUTPUTS",
                 "STORE_FALSE_NOT_ZDR",

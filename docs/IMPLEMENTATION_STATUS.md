@@ -26,26 +26,33 @@ explícitos y auditoría focalizada P0=0/P1=0. El runtime histórico
 candidato corregido.
 
 Desde ese `main` verificado se creó `codex/openai-real-provider-gate`.
-El estado técnico alcanzado es `OPENAI_ADAPTER_IMPLEMENTED`: SDK oficial
+El estado técnico alcanzado es `LUNA_BASELINE_V1_OFFLINE_VERIFIED`: SDK oficial
 `openai==2.53.0` fijado con hashes, Responses API, modelos explícitos,
 Structured Outputs derivados de Pydantic, errores/retries/budget/ledger,
 Secret Manager/IAM worker-only, smoke gobernado y golden set sintético. P11 es
 efectivamente `gpt-5.6-luna` con `reasoning_effort=low`; P10 no tiene ruta.
+P01/P02 usan Luna-medium y P03-P09 Luna-high. La matriz Sol histórica no es
+callable ni fallback y el adapter la rechaza antes de crear transporte.
 Los schemas, prompts versionados, allowlists y validación posterior alcanzan
 `OPENAI_CONTRACT_BOUNDARIES_PASS` offline. La calidad del proveedor permanece
 en `OPENAI_SEMANTIC_EVAL_PENDING`; no se declara
 `OPENAI_SYNTHETIC_E2E_PASS` antes de ejecutar el recorrido real autorizado.
 
-El checkpoint actual es `OPENAI_CREDENTIALS_REQUIRED`. No se configuraron
-proyecto, billing ni clave; no se creó un cliente en evals offline y no hubo
-llamadas de modelo reales, tokens facturables ni costo (`USD 0.00`). El cloud
+El propietario confirmó un proyecto OpenAI dedicado, una clave de aplicación
+creada y USD 5.00 disponibles. La clave aún no se insertó en Secret Manager ni
+en ningún runtime; el saldo no autoriza gasto. No se creó un cliente en evals
+offline y no hubo llamadas de modelo reales, tokens facturables ni costo
+(`USD 0.00`). El siguiente cambio cloud permitido es solamente crear el
+contenedor vacío del secreto después de CI verde. El cloud
 vigente no fue modificado: sigue en mock/P10 false. La temperatura deseada se
 conserva en la ruta canónica y se omite del request, con reason codes explícitos.
 
-La regresión local del gate queda en 455 passed/16 skips PostgreSQL explícitos,
-80% de cobertura, golden set 20/20 con 0 network/0 billable, frontend 32/32,
+La regresión local del gate queda en 456 passed/16 skips PostgreSQL explícitos,
+80% de cobertura, golden set 20/20 con 0 network/0 billable, PostgreSQL 16/17
+con 155/155 y doble matriz 1+7, frontend 32/32, Playwright 1+2, navegador
+integrado limpio, Docker runtime/audit, Stage 0 reproducible,
 contratos/OpenAPI sin drift, Terraform válido y secret scan limpio. La CI de la
-rama se registra al publicar el commit.
+rama se registrará al publicar el commit.
 
 | Severidad vigente | Abiertos |
 |---|---:|

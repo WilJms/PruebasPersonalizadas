@@ -14,16 +14,15 @@ class TokenPrices:
     output_per_million: float
 
 
-# Observed 2026-08-08 on official OpenAI model/pricing surfaces. Luna had also
-# been observed on an official surface at a lower 0.20/0.02/1.20 rate during
-# bootstrap. The higher observation is deliberately used until credentials and
-# project-tier pricing can be checked at the later human gate.
+# Observed 2026-08-08 on the current official OpenAI pricing and model pages.
+# These are standard short-context rates. Batch and fast-mode prices are not
+# used by the real-provider gate.
 PRICING_OBSERVED_DATE: Final = "2026-08-08"
 PRICING_SOURCE_URL: Final = "https://developers.openai.com/api/docs/pricing"
 MODEL_PRICES: Final[Mapping[str, TokenPrices]] = MappingProxyType(
     {
         "gpt-5.6-sol": TokenPrices(5.00, 0.50, 30.00),
-        "gpt-5.6-luna": TokenPrices(1.00, 0.10, 6.00),
+        "gpt-5.6-luna": TokenPrices(0.20, 0.02, 1.20),
     }
 )
 LONG_CONTEXT_THRESHOLD: Final = 272_000

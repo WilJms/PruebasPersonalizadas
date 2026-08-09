@@ -47,9 +47,14 @@ from comprehension_verification.model_gateway.mock_factory import (
 )
 from comprehension_verification.model_gateway.openai_pricing import estimate_cost_usd
 from comprehension_verification.model_gateway.openai_adapter import OPENAI_SDK_VERSION
+from comprehension_verification.model_gateway.gateway import (
+    ModelUnavailableProviderError,
+)
 from comprehension_verification.model_gateway.openai_routes import (
     LUNA_MODEL_ID,
     OPENAI_MODEL_BY_PROMPT,
+    OPENAI_ROUTE_PROFILE,
+    OPENAI_ROUTE_PROFILE_ID,
     SOL_MODEL_ID,
 )
 from comprehension_verification.model_gateway.openai_schema import (
@@ -185,23 +190,58 @@ def _walk_schema(value: Any):
 def test_route_matrix_is_explicit_and_p10_has_no_route() -> None:
     routes = build_openai_routes(max_call_cost_usd=0.75)
     assert set(routes) == set(PROMPT_SPECS) - {"P10_ENRICHED_CONTEXT_V1"}
-    assert OPENAI_MODEL_BY_PROMPT == {
-        "P01_ACTIVITY_SPEC_V1": SOL_MODEL_ID,
-        "P02_RUBRIC_NORMALIZE_V1": SOL_MODEL_ID,
-        "P03_AMBIGUITY_TRIAGE_V1": LUNA_MODEL_ID,
-        "P04_BLUEPRINT_BUILD_V1": SOL_MODEL_ID,
-        "P05_BLUEPRINT_REVIEW_V1": SOL_MODEL_ID,
-        "P06_EVIDENCE_MAP_V1": LUNA_MODEL_ID,
-        "P07_QUESTION_BUILD_V1": LUNA_MODEL_ID,
-        "P08_QUESTION_REVIEW_V1": LUNA_MODEL_ID,
-        "P09_GUIDE_BUILD_V1": LUNA_MODEL_ID,
-        "P11_SCHEMA_REPAIR_V1": LUNA_MODEL_ID,
+    assert OPENAI_ROUTE_PROFILE_ID == "LUNA_BASELINE_V1"
+    assert set(OPENAI_MODEL_BY_PROMPT.values()) == {LUNA_MODEL_ID}
+    assert SOL_MODEL_ID not in OPENAI_MODEL_BY_PROMPT.values()
+    assert all(route.model == LUNA_MODEL_ID for route in routes.values())
+    assert all(route.provider == "openai" for route in routes.values())
+    assert all(
+        route.route_id.startswith("route_openai_luna_baseline_v1_")
+        for route in routes.values()
+    )
+    assert {
+        prompt_id: approved.reasoning_effort
+        for prompt_id, approved in OPENAI_ROUTE_PROFILE.items()
+    } == {
+        "P01_ACTIVITY_SPEC_V1": models.ReasoningEffort.MEDIUM,
+        "P02_RUBRIC_NORMALIZE_V1": models.ReasoningEffort.MEDIUM,
+        "P03_AMBIGUITY_TRIAGE_V1": models.ReasoningEffort.HIGH,
+        "P04_BLUEPRINT_BUILD_V1": models.ReasoningEffort.HIGH,
+        "P05_BLUEPRINT_REVIEW_V1": models.ReasoningEffort.HIGH,
+        "P06_EVIDENCE_MAP_V1": models.ReasoningEffort.HIGH,
+        "P07_QUESTION_BUILD_V1": models.ReasoningEffort.HIGH,
+        "P08_QUESTION_REVIEW_V1": models.ReasoningEffort.HIGH,
+        "P09_GUIDE_BUILD_V1": models.ReasoningEffort.HIGH,
+        "P11_SCHEMA_REPAIR_V1": models.ReasoningEffort.LOW,
     }
     assert routes["P11_SCHEMA_REPAIR_V1"].reasoning_effort == models.ReasoningEffort.LOW
     assert prompt_spec("P11_SCHEMA_REPAIR_V1").reasoning_effort == models.ReasoningEffort.LOW
     assert all(route.fallback_route_id is None for route in routes.values())
     assert all(route.retention_mode == "DEFAULT" for route in routes.values())
     assert all(not route.capabilities.supports_zero_data_retention for route in routes.values())
+
+
+def test_adapter_rejects_historical_sol_route_before_transport() -> None:
+    prompt_id = "P01_ACTIVITY_SPEC_V1"
+    request = build_mock_request(prompt_id)
+    fake = FakeClient([])
+    route = build_openai_routes(max_call_cost_usd=1.0)[prompt_id].model_copy(
+        update={"model": SOL_MODEL_ID}
+    )
+
+    with pytest.raises(ModelUnavailableProviderError, match="PROVIDER_ROUTE_NOT_APPROVED"):
+        asyncio.run(
+            OpenAIResponsesAdapter(client=fake).invoke(
+                prompt_id=prompt_id,
+                request=request,
+                envelope=_envelope(prompt_id, request),
+                route=route,
+                attempt=1,
+                behavior=MockBehavior.HAPPY,
+            )
+        )
+
+    assert fake.responses.calls == []
 
 
 @pytest.mark.parametrize(
@@ -327,7 +367,7 @@ def test_untrusted_evidence_is_serialized_only_in_the_user_envelope() -> None:
 
 def test_successful_gateway_call_records_effective_usage_hashes_and_cost() -> None:
     prompt_id = "P01_ACTIVITY_SPEC_V1"
-    fake = FakeClient([_response(_canonical_output(prompt_id), model=SOL_MODEL_ID)])
+    fake = FakeClient([_response(_canonical_output(prompt_id), model=LUNA_MODEL_ID)])
     request = build_mock_request(prompt_id)
     result = asyncio.run(
         _real_gateway(fake).invoke(prompt_id, request, build_trusted_context(request))
@@ -338,7 +378,7 @@ def test_successful_gateway_call_records_effective_usage_hashes_and_cost() -> No
     assert ledger.cached_input_tokens == 100
     assert ledger.output_tokens == 200
     assert ledger.actual_cost_usd == estimate_cost_usd(
-        model=SOL_MODEL_ID,
+        model=LUNA_MODEL_ID,
         input_tokens=1_000,
         cached_input_tokens=100,
         cache_write_tokens=50,
@@ -347,7 +387,8 @@ def test_successful_gateway_call_records_effective_usage_hashes_and_cost() -> No
     codes = ledger.route.reason_codes
     assert "CACHE_WRITE_INPUT_TOKENS_50" in codes
     assert "REASONING_TOKENS_25" in codes
-    assert "EFFECTIVE_MODEL_gpt-5.6-sol" in codes
+    assert "EFFECTIVE_MODEL_gpt-5.6-luna" in codes
+    assert "ROUTE_PROFILE_LUNA_BASELINE_V1" in codes
     assert any(code.startswith("OUTPUT_HASH_") for code in codes)
     assert any(code.startswith("PROVIDER_REQUEST_ID_HASH_") for code in codes)
     assert all("req_synthetic" not in code for code in codes)
@@ -356,7 +397,7 @@ def test_successful_gateway_call_records_effective_usage_hashes_and_cost() -> No
 def test_refusal_is_safety_block_without_retry_or_p11() -> None:
     prompt_id = "P01_ACTIVITY_SPEC_V1"
     fake = FakeClient(
-        [_response("refused", model=SOL_MODEL_ID, content_type="refusal")]
+        [_response("refused", model=LUNA_MODEL_ID, content_type="refusal")]
     )
     request = build_mock_request(prompt_id)
     with pytest.raises(GatewaySafetyBlock) as caught:
@@ -492,7 +533,7 @@ def test_structurally_invalid_output_gets_exactly_one_p11_luna_low_attempt() -> 
     repair = _canonical_output("P11_SCHEMA_REPAIR_V1")
     fake = FakeClient(
         [
-            _response(invalid, model=SOL_MODEL_ID),
+            _response(invalid, model=LUNA_MODEL_ID),
             _response(repair, model=LUNA_MODEL_ID),
         ]
     )
@@ -502,7 +543,7 @@ def test_structurally_invalid_output_gets_exactly_one_p11_luna_low_attempt() -> 
     )
     assert result.repaired is True
     assert [call["model"] for call in fake.responses.calls] == [
-        SOL_MODEL_ID,
+        LUNA_MODEL_ID,
         LUNA_MODEL_ID,
     ]
     assert fake.responses.calls[1]["reasoning"] == {"effort": "low"}
@@ -513,7 +554,7 @@ def test_malformed_json_is_data_for_exactly_one_p11_attempt() -> None:
     prompt_id = "P01_ACTIVITY_SPEC_V1"
     fake = FakeClient(
         [
-            _response("{not-json", model=SOL_MODEL_ID),
+            _response("{not-json", model=LUNA_MODEL_ID),
             _response(_canonical_output("P11_SCHEMA_REPAIR_V1"), model=LUNA_MODEL_ID),
         ]
     )
@@ -536,7 +577,7 @@ def test_malformed_json_is_data_for_exactly_one_p11_attempt() -> None:
 def test_incomplete_response_fails_closed_without_p11() -> None:
     prompt_id = "P01_ACTIVITY_SPEC_V1"
     fake = FakeClient(
-        [_response(_canonical_output(prompt_id), model=SOL_MODEL_ID, status="incomplete")]
+        [_response(_canonical_output(prompt_id), model=LUNA_MODEL_ID, status="incomplete")]
     )
     request = build_mock_request(prompt_id)
     with pytest.raises(GatewayProviderError):
@@ -600,7 +641,7 @@ def test_p11_preflight_has_one_attempt_and_luna_low_smoke_ceiling() -> None:
     routes = build_openai_routes(max_call_cost_usd=0.06)
     cost = build_openai_cost_estimator(routes)(spec, token_ceiling)
     assert token_ceiling == 8_027
-    assert cost == 0.056027
+    assert cost == 0.0112054
     assert spec.max_transient_retries == 0
 
 

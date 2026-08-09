@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+from collections.abc import Mapping
 import json
 import os
 from pathlib import Path
@@ -25,6 +26,7 @@ from comprehension_verification.model_gateway import (
     MockBehavior,
     ModelGateway,
     OpenAIResponsesAdapter,
+    OPENAI_ROUTE_PROFILE_ID,
     PROMPT_CONTRACTS,
     build_mock_request,
     build_openai_cost_estimator,
@@ -83,6 +85,12 @@ def _load_cases(path: Path) -> list[dict[str, Any]]:
     raw = json.loads(path.read_text(encoding="utf-8"))
     if raw.get("classification") != "SYNTHETIC_ONLY_NO_STUDENT_DATA":
         raise ValueError("Eval manifest must be explicitly synthetic-only")
+    if raw.get("route_profile") != OPENAI_ROUTE_PROFILE_ID:
+        raise ValueError("Eval manifest must pin LUNA_BASELINE_V1")
+    if raw.get("prompt_pack_version") != "1.1.1":
+        raise ValueError("Eval manifest prompt-pack version is unsupported")
+    if raw.get("schema_version") != SCHEMA_VERSION:
+        raise ValueError("Eval manifest schema version is unsupported")
     cases = raw.get("cases")
     if not isinstance(cases, list) or not 10 <= len(cases) <= 30:
         raise ValueError("Golden set must contain between 10 and 30 cases")
@@ -109,6 +117,42 @@ def _load_cases(path: Path) -> list[dict[str, Any]]:
     if len({case.get("cognitive_operation") for case in cases if case.get("cognitive_operation")}) < 3:
         raise ValueError("Golden set must cover at least three cognitive operations")
     return cases
+
+
+def _route_metadata(
+    prompt_id: str,
+    routes: Mapping[str, models.ModelRoute],
+    *,
+    effective_model: str | None = None,
+) -> dict[str, Any]:
+    """Return content-free, comparison-ready metadata for one eval case."""
+
+    spec = prompt_spec(prompt_id)
+    route = routes.get(prompt_id)
+    return {
+        "route_profile": OPENAI_ROUTE_PROFILE_ID,
+        "provider": route.provider if route is not None else None,
+        "model": route.model if route is not None else None,
+        "effective_model": effective_model,
+        "reasoning_effort": (
+            route.reasoning_effort.value if route is not None else None
+        ),
+        "fallback_route_id": (
+            route.fallback_route_id if route is not None else None
+        ),
+        "prompt_version": spec.prompt_version,
+        "schema_version": SCHEMA_VERSION,
+    }
+
+
+def _observed_effective_model(ledger: models.ModelCallLedger) -> str | None:
+    """Return a provider-reported model only when the ledger proves it."""
+
+    prefix = "EFFECTIVE_MODEL_"
+    for code in reversed(ledger.route.reason_codes):
+        if code.startswith(prefix):
+            return code.removeprefix(prefix)
+    return None
 
 
 def _walk_dicts(value: Any):
@@ -241,6 +285,7 @@ async def _run_offline(cases: list[dict[str, Any]]) -> dict[str, Any]:
                     "provider_calls": 0,
                     "source_format": case.get("source_format"),
                     "semantic_expectation": case.get("semantic_expectation"),
+                    **_route_metadata(prompt_id, routes),
                 }
             )
             continue
@@ -267,10 +312,12 @@ async def _run_offline(cases: list[dict[str, Any]]) -> dict[str, Any]:
                 "mock_attempts": len(result.ledgers),
                 "source_format": case.get("source_format"),
                 "semantic_expectation": case.get("semantic_expectation"),
+                **_route_metadata(prompt_id, routes),
             }
         )
     return {
         "mode": "offline",
+        "route_profile": OPENAI_ROUTE_PROFILE_ID,
         "classification": "SYNTHETIC_ONLY_NO_STUDENT_DATA",
         "network_calls": 0,
         "billable_calls": 0,
@@ -365,6 +412,15 @@ async def _run_real(
                     "status": "FAIL",
                     "error_code": exc.code,
                     "attempts": len(exc.ledgers),
+                    **_route_metadata(
+                        prompt_id,
+                        routes,
+                        effective_model=(
+                            _observed_effective_model(exc.ledgers[-1])
+                            if exc.ledgers
+                            else None
+                        ),
+                    ),
                 }
             )
             break
@@ -378,14 +434,17 @@ async def _run_real(
         try:
             _assert_case_outcome(case, request, result)
         except AssertionError:
+            effective_model = _observed_effective_model(result.ledgers[-1])
             rows.append(
                 {
                     "case_id": case["case_id"],
                     "status": "FAIL",
                     "error_code": "OPENAI_REAL_EVAL_EXPECTATION_FAILED",
                     "attempts": len(result.ledgers),
-                    "model": result.ledgers[-1].route.model,
                     "actual_cost_usd": round(cost, 8),
+                    **_route_metadata(
+                        prompt_id, routes, effective_model=effective_model
+                    ),
                 }
             )
             break
@@ -394,12 +453,17 @@ async def _run_real(
                 "case_id": case["case_id"],
                 "status": "PASS",
                 "attempts": len(result.ledgers),
-                "model": result.ledgers[-1].route.model,
                 "actual_cost_usd": round(cost, 8),
+                **_route_metadata(
+                    prompt_id,
+                    routes,
+                    effective_model=_observed_effective_model(result.ledgers[-1]),
+                ),
             }
         )
     return {
         "mode": "real",
+        "route_profile": OPENAI_ROUTE_PROFILE_ID,
         "classification": "SYNTHETIC_ONLY_NO_STUDENT_DATA",
         "estimated_ceiling_usd": round(estimated_ceiling, 8),
         "actual_cost_usd": round(actual_total, 8),

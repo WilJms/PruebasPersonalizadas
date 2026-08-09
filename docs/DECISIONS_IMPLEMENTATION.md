@@ -500,3 +500,16 @@
   reales. `store=false` se usa sin reclamar ZDR.
 - **Relación:** ADR-035, `OPENAI_PROVIDER_SETUP.md`,
   `OPENAI_REAL_MODEL_VALIDATION.md` y `OPENAI_COST_BUDGETS.md`.
+
+## D-046 - `LUNA_BASELINE_V1` separa routing de prompt y contrato
+
+- **Decisión:** la primera evaluación real usa Luna en P01-P09/P11 con los
+  esfuerzos autorizados (`medium`, `high`, `low`) y ninguna ruta P10, Sol,
+  fallback o selección heurística. El perfil se identifica en `route_id`,
+  reason codes y metadata de eval. La matriz mixta anterior queda documentada
+  únicamente como comparación futura no callable.
+- **Razón:** evaluar primero la alternativa de menor costo, manteniendo iguales
+  los esfuerzos, permite medir si Luna es suficiente sin convertir la hipótesis
+  en una decisión permanente de producto. Como no cambian instrucciones ni
+  roots Pydantic, `prompt-pack/1.1.1` y contratos conservan su versión.
+- **Relación:** ADR-036 y autorización humana del 2026-08-08.

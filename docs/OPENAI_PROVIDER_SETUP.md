@@ -1,8 +1,9 @@
 # Setup gobernado del proveedor OpenAI
 
-Estado al 2026-08-08: `OPENAI_CREDENTIALS_REQUIRED`. El adapter está preparado
-offline, pero no existe una clave en el repositorio, CI, Service web ni runtime
-cloud. El cloud vigente conserva `CVA_MODEL_MODE=mock` y
+Estado al 2026-08-08: el propietario confirmó proyecto OpenAI dedicado, API key
+de proyecto y USD 5.00 de saldo para pruebas iniciales. La clave aún no se ha
+introducido en Secret Manager y no existe en el repositorio, CI, Service web ni
+runtime cloud. El cloud vigente conserva `CVA_MODEL_MODE=mock` y
 `CVA_P10_ENABLED=false`. Ningún paso de este documento autoriza datos
 estudiantiles reales, Etapa 3 o P10.
 
@@ -11,7 +12,8 @@ estudiantiles reales, Etapa 3 o P10.
 1. Una persona autorizada crea o selecciona un proyecto OpenAI dedicado a este
    experimento, separado de uso personal o producción.
 2. Configura billing, un límite mensual y alertas compatibles con el presupuesto
-   aprobado. Confirma acceso del proyecto a `gpt-5.6-sol` y `gpt-5.6-luna`.
+   aprobado. Para `LUNA_BASELINE_V1` confirma acceso únicamente a
+   `gpt-5.6-luna`; Sol no se usa en este gate.
 3. Crea una clave de proyecto con el mínimo alcance disponible. La clave se
    copia directamente a Secret Manager; nunca se pega en Codex, chat, tickets,
    shell history, tfvars, logs, CI, Git o documentos.
@@ -44,8 +46,9 @@ gcloud secrets versions add cva-openai-api-key --data-file=- \
   --project=PROJECT_ID
 ```
 
-La entrada estándar debe provenir directamente del operador y no quedar en un
-archivo. No se debe enviar el valor a este agente para ejecutar el comando.
+La entrada estándar debe provenir directamente del teclado del operador y no
+quedar en un archivo, chat ni argumento visible. El agente puede abrir la PTY,
+pero nunca solicita, lee, imprime ni reenvía el valor.
 Revocar y crear una versión nueva es el rollback ante cualquier sospecha de
 exposición.
 
@@ -90,8 +93,10 @@ cv-stage0 real-provider-smoke --budget-usd 0.06 --allow-billable
 La clave se suministra por el canal privado acordado como
 `CVA_OPENAI_API_KEY`. El smoke hace como máximo una llamada P11 con datos
 sintéticos, `gpt-5.6-luna`, esfuerzo `low`, retries del gateway y SDK iguales a
-cero. El operador registra tokens, costo estimado/observado, modelo efectivo,
-latencia, resultado y hashes; nunca payload u output.
+cero. Su upper bound vigente es USD 0.0112054 y el techo propuesto sigue siendo
+USD 0.06; el saldo de USD 5.00 no amplía esa autorización. El operador registra
+tokens, costo estimado/observado, modelo efectivo, latencia, resultado y hashes;
+nunca payload u output.
 
 Fuentes oficiales: [Responses API](https://developers.openai.com/api/docs/guides/responses),
 [Structured Outputs](https://developers.openai.com/api/docs/guides/structured-outputs),

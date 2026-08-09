@@ -36,6 +36,7 @@ def test_openai_golden_set_runs_offline_without_network_or_cost() -> None:
     assert report["status"] == "PASS"
     assert report["mode"] == "offline"
     assert report["classification"] == "SYNTHETIC_ONLY_NO_STUDENT_DATA"
+    assert report["route_profile"] == "LUNA_BASELINE_V1"
     assert report["network_calls"] == 0
     assert report["billable_calls"] == 0
     assert len(report["cases"]) == 20
@@ -48,6 +49,19 @@ def test_openai_golden_set_runs_offline_without_network_or_cost() -> None:
     }
     assert len(report["human_review_dimensions"]) == 10
     assert all(case["status"] == "PASS" for case in report["cases"])
+    callable_cases = [case for case in report["cases"] if case["model"]]
+    assert {case["model"] for case in callable_cases} == {"gpt-5.6-luna"}
+    assert {case["provider"] for case in callable_cases} == {"openai"}
+    assert all(case["fallback_route_id"] is None for case in report["cases"])
+    assert all(
+        case["route_profile"] == "LUNA_BASELINE_V1" for case in report["cases"]
+    )
+    by_case = {case["case_id"]: case for case in report["cases"]}
+    assert by_case["oa-p01-happy-txt"]["reasoning_effort"] == "MEDIUM"
+    assert by_case["oa-p02-happy-pdf"]["reasoning_effort"] == "MEDIUM"
+    assert by_case["oa-p04-happy"]["reasoning_effort"] == "HIGH"
+    assert by_case["oa-p11-happy"]["reasoning_effort"] == "LOW"
+    assert by_case["oa-p10-disabled"]["model"] is None
 
 
 def test_openai_golden_set_real_mode_is_blocked_without_dual_opt_in() -> None:
@@ -137,7 +151,13 @@ def test_real_harness_fails_closed_on_case_expectation_drift(monkeypatch) -> Non
                     SimpleNamespace(
                         actual_cost_usd=0.01,
                         estimated_cost_usd=0.02,
-                        route=SimpleNamespace(model="gpt-5.6-sol"),
+                        route=SimpleNamespace(
+                            model="gpt-5.6-luna",
+                            provider="openai",
+                            reasoning_effort=SimpleNamespace(value="MEDIUM"),
+                            fallback_route_id=None,
+                            reason_codes=["EFFECTIVE_MODEL_gpt-5.6-luna"],
+                        ),
                     ),
                 ),
                 output=SimpleNamespace(),
@@ -170,8 +190,15 @@ def test_real_harness_fails_closed_on_case_expectation_drift(monkeypatch) -> Non
             "actual_cost_usd": 0.01,
             "attempts": 1,
             "case_id": case["case_id"],
+            "effective_model": "gpt-5.6-luna",
             "error_code": "OPENAI_REAL_EVAL_EXPECTATION_FAILED",
-            "model": "gpt-5.6-sol",
+            "fallback_route_id": None,
+            "model": "gpt-5.6-luna",
+            "prompt_version": "1.1.1",
+            "provider": "openai",
+            "reasoning_effort": "MEDIUM",
+            "route_profile": "LUNA_BASELINE_V1",
+            "schema_version": "1.1.0",
             "status": "FAIL",
         }
     ]

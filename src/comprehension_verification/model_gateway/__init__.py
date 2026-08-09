@@ -34,6 +34,8 @@ from .openai_adapter import OpenAIAdapterConfig, OpenAIResponsesAdapter
 from .openai_routes import (
     LUNA_MODEL_ID,
     OPENAI_MODEL_BY_PROMPT,
+    OPENAI_ROUTE_PROFILE,
+    OPENAI_ROUTE_PROFILE_ID,
     SOL_MODEL_ID,
     build_openai_cost_estimator,
     build_openai_routes,
@@ -94,6 +96,8 @@ __all__ = [
     "OpenAIAdapterConfig",
     "OpenAIResponsesAdapter",
     "OPENAI_MODEL_BY_PROMPT",
+    "OPENAI_ROUTE_PROFILE",
+    "OPENAI_ROUTE_PROFILE_ID",
     "SOL_MODEL_ID",
     "LUNA_MODEL_ID",
     "assert_registry_complete",

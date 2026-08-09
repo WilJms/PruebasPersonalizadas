@@ -41,6 +41,7 @@ from comprehension_verification.model_gateway.mock_factory import (
 )
 from comprehension_verification.model_gateway.openai_pricing import estimate_cost_usd
 from comprehension_verification.model_gateway.openai_routes import (
+    LUNA_MODEL_ID,
     openai_developer_instruction,
 )
 from comprehension_verification.model_gateway.openai_schema import (
@@ -133,10 +134,7 @@ class OpenAIResponsesAdapter:
     ) -> AdapterResult:
         del behavior
         spec = prompt_spec(prompt_id)
-        if route.provider != "openai" or route.model not in {
-            "gpt-5.6-sol",
-            "gpt-5.6-luna",
-        }:
+        if route.provider != "openai" or route.model != LUNA_MODEL_ID:
             raise ModelUnavailableProviderError("PROVIDER_ROUTE_NOT_APPROVED")
         if prompt_id == "P10_ENRICHED_CONTEXT_V1":
             raise AuthorizationProviderError("P10_DISABLED")

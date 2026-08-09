@@ -160,7 +160,7 @@ def test_web_uses_real_worker_route_profile_for_cost_authorization() -> None:
     assert estimate.estimated_model_calls == 4
     assert estimate.estimated_input_tokens == 640_000
     assert estimate.estimated_output_tokens == 176_000
-    assert estimate.upper_bound_cost_usd == pytest.approx(6.016)
+    assert estimate.upper_bound_cost_usd == pytest.approx(0.3392)
     assert estimate.within_limit is True
 
     submission = service._cost_estimate(
@@ -175,7 +175,7 @@ def test_web_uses_real_worker_route_profile_for_cost_authorization() -> None:
     assert submission.estimated_model_calls == 10
     assert submission.estimated_input_tokens == 1_600_000
     assert submission.estimated_output_tokens == 374_000
-    assert submission.upper_bound_cost_usd == pytest.approx(3.844)
+    assert submission.upper_bound_cost_usd == pytest.approx(0.7688)
     assert submission.within_limit is True
 
 

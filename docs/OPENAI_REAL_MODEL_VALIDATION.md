@@ -4,21 +4,24 @@ Fecha de corte: 2026-08-08. Estado: implementación y pruebas offline completas;
 credenciales, smoke, calidad semántica y despliegue real pendientes de gates
 humanos. Llamadas de red/facturables ejecutadas: **0**.
 
-## Matriz vinculante
+## Perfil vinculante `LUNA_BASELINE_V1`
 
 | Prompts | Modelo explícito | Esfuerzo |
 |---|---|---|
-| P01, P02 | `gpt-5.6-sol` | `medium` |
-| P03 | `gpt-5.6-luna` | `high` |
-| P04, P05 | `gpt-5.6-sol` | `high` |
-| P06, P07, P08, P09 | `gpt-5.6-luna` | `high` |
+| P01, P02 | `gpt-5.6-luna` | `medium` |
+| P03, P04, P05, P06, P07, P08, P09 | `gpt-5.6-luna` | `high` |
 | P10 | sin ruta; deshabilitado | n/a |
 | P11 | `gpt-5.6-luna` | `low` |
 
 Los IDs se envían literalmente. No hay chooser, alias propio, fallback,
 escalamiento silencioso ni snapshot fechado inventado. El ledger conserva el
 modelo solicitado y el modelo efectivo observado; una identidad efectiva
-incompatible falla cerrada. La decisión P11 está en ADR-035.
+incompatible falla cerrada. ADR-035 conserva la decisión P11 Luna-low y
+ADR-036 registra el baseline Luna-only.
+
+La matriz mixta anterior permanece como historia y candidato comparador futuro,
+pero no es callable ni fallback. Este experimento no afirma que Luna sea óptimo
+o que Sol sea innecesario; mide primero si Luna mantiene calidad suficiente.
 
 ## Boundary de request y output
 
@@ -69,7 +72,8 @@ payload, output, clave ni request-id en claro.
 |---|---|
 | Matriz, schemas, fake transport, fallos, retry, presupuesto y ledger | PASS offline |
 | Golden set sintético 20 casos | PASS offline; 0 network/0 billable |
-| Proyecto, billing, límites y clave privada | `OPENAI_CREDENTIALS_REQUIRED` |
+| Proyecto, USD 5.00 y clave privada creada | confirmado por el propietario; secreto aún no insertado |
+| Perfil Luna-only y regresión offline | PASS; 456 passed/16 skips PG explícitos, PG16/17, golden 20/20, frontend/browser/Docker/Terraform verdes |
 | Smoke P11 sintético, una llamada | pendiente de aprobación humana |
 | Golden set real sintético | pendiente de aprobación y presupuesto separados |
 | Calidad/latencia/costo y P0/P1 | pendiente de evidencia real |

@@ -4,7 +4,8 @@ El corpus inicial contiene 20 casos exclusivamente sintéticos en
 `tests/fixtures/openai_evals/v1/synthetic_cases.json`. No incluye nombres,
 entregas ni contenido estudiantil real. El rango gobernado es de 10 a 30 casos,
 con IDs únicos y clasificación obligatoria
-`SYNTHETIC_ONLY_NO_STUDENT_DATA`.
+`SYNTHETIC_ONLY_NO_STUDENT_DATA`. El manifest fija además
+`route_profile=LUNA_BASELINE_V1`, prompt pack `1.1.1` y schema `1.1.0`.
 
 ## Cobertura
 
@@ -30,7 +31,10 @@ python scripts/run_openai_evals.py
 ```
 
 Resultado observado el 2026-08-08: 20/20 PASS, `network_calls=0` y
-`billable_calls=0`. La suite automatizada también verifica que real mode sin
+`billable_calls=0`. Cada fila offline expone metadata reproducible de perfil,
+provider, modelo, esfuerzo, prompt/schema y fallback nulo, sin afirmar un
+modelo efectivo porque no existe transporte. La suite automatizada también
+verifica que real mode sin
 doble autorización o sin presupuesto suficiente —incluidos retries y P11— se
 bloquee antes del transporte.
 
@@ -59,12 +63,17 @@ python scripts/run_openai_evals.py --mode real --allow-billable \
   --max-total-cost-usd PRESUPUESTO_APROBADO
 ```
 
-La evaluación real debe registrar por caso schema/context validation, modelo
-efectivo, intentos, tokens, latencia y costo. La revisión humana puntúa además
-grounding, abstención, preservación de IDs, exactitud de citas, utilidad y
-ausencia de invención. Los criterios de salida son P0=0/P1=0, todos los casos
+La evaluación real debe registrar por caso route profile, modelo solicitado y
+efectivo, esfuerzo, prompt/schema, schema/context pass, grounding,
+answerability, abstention, preservación de IDs, latencia, tokens, costo,
+ratings humanos y severidad. Los expected outcomes no se cambian para hacer
+pasar Luna. Los criterios de salida son P0=0/P1=0, todos los casos
 estructural/contextualmente válidos, ningún dato sensible en logs y costos
-dentro del techo. Un fallo detiene el gate; no habilita fallback ni P10.
+dentro del techo. Un fallo detiene el gate; no habilita fallback, Sol ni P10.
+
+La matriz mixta Sol/Luna se conserva sólo como comparador histórico futuro.
+No se ejecutará ninguna comparación Sol antes de evidencia Luna y una nueva
+autorización humana con presupuesto propio.
 
 Los resultados reales se anexarán con fecha, commit, versión de prompt/schema,
 model ID observado y hash del manifest. Hasta entonces no se reclama calidad

@@ -1,18 +1,19 @@
 # Costos y presupuestos OpenAI
 
-Política observada el 2026-08-08, antes de credenciales. La calculadora usa el
-precio oficial más alto observado para fallar de forma conservadora; el precio
-efectivo del proyecto debe confirmarse en el checkpoint de billing.
+Política estándar short-context observada el 2026-08-08 en las páginas
+oficiales vigentes. El perfil activo usa únicamente Luna; Sol se conserva como
+referencia histórica de una comparación futura no autorizada.
 
 | Modelo | Input / 1M | Cached input / 1M | Output / 1M |
 |---|---:|---:|---:|
 | `gpt-5.6-sol` | USD 5.00 | USD 0.50 | USD 30.00 |
-| `gpt-5.6-luna` | USD 1.00 | USD 0.10 | USD 6.00 |
+| `gpt-5.6-luna` | USD 0.20 | USD 0.02 | USD 1.20 |
 
-Otra superficie oficial fue observada durante bootstrap con Luna a
-USD 0.20/0.02/1.20. Hasta resolver la discrepancia con acceso al proyecto se
-usa 1.00/0.10/6.00, nunca el valor menor. Fuente canónica operativa:
-[precios OpenAI](https://developers.openai.com/api/docs/pricing).
+La página actual también publica cache write Luna a USD 0.25 y Batch
+short-context a USD 0.10/0.01/0.125/0.60; el gate usa Standard, `service_tier`
+default y no Batch. Fuente canónica operativa:
+[precios OpenAI](https://developers.openai.com/api/docs/pricing) y
+[modelo Luna](https://developers.openai.com/api/docs/models/gpt-5.6-luna).
 
 La fórmula por llamada es:
 
@@ -39,7 +40,7 @@ crea transporte.
 | Retries gateway/SDK | 0 / 0 |
 | Input máximo preflight del fixture versionado | 8,027 tokens-equivalentes conservadores |
 | Output máximo P11 | 8,000 tokens, incluido reasoning |
-| Estimación conservadora | USD 0.056027 |
+| Estimación conservadora | USD 0.0112054 |
 | Presupuesto CLI propuesto | USD 0.06 |
 
 El preflight serializa instrucciones, envelope y schema estricto, cuenta un
@@ -48,7 +49,8 @@ más conservador que `chars/4`. El valor 8,027 está fijado por una prueba de re
 cambia el prompt/schema. Un presupuesto mayor requiere aprobación nueva. El resultado registra
 costo estimado y costo calculado desde usage; no afirma un cargo exacto de
 facturación. Costo acumulado real al cierre de este documento: **USD 0.00**,
-porque no se ejecutó ninguna llamada.
+porque no se ejecutó ninguna llamada. Los USD 5.00 disponibles son saldo, no un
+presupuesto autorizado; cada bloque mantiene un techo humano independiente.
 
 El runtime conserva además un techo agregado por job: antes de cada etapa resta
 el mayor costo estimado/observado de todos los ledgers persistidos de ese job.

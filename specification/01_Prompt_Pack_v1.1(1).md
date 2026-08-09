@@ -2,6 +2,7 @@
 
 **Versión del pack:** `prompt-pack/1.1.1`
 **Compatibilidad:** contratos `assessment-contracts/1.1.0`  
+**Perfil de ruta activo:** `LUNA_BASELINE_V1` (ADR-036)
 **Principio:** una tarea semántica por llamada; contenido estudiantil siempre no confiable; structured outputs obligatorios.
 
 Este pack es una especificación de producción. Los textos se almacenan en un registry inmutable con `prompt_id`, `version`, hash, modelo permitido, esquema de salida, parámetros y resultados de eval. Los placeholders `{{...}}` se resuelven en servidor. No se realiza interpolación libre: cada variable se serializa como JSON válido y se valida antes de llamar al proveedor.
@@ -89,7 +90,7 @@ El ejemplo anterior es un fixture válido del envelope, no una solicitud complet
 | Familia de tarea | Temperatura | Esfuerzo | Max output | Reintento |
 |---|---:|---|---:|---|
 | Extracción/normalización | baja | según ruta P01/P02 | según schema, usualmente 4-8 K | un retry técnico o una reparación estructural |
-| Blueprint/relaciones | baja | según ruta P03-P06 | 8-16 K | fallback solo si está aprobado para la tarea |
+| Blueprint/relaciones | baja | según ruta P03-P06 | 8-16 K | sin fallback en `LUNA_BASELINE_V1`; fallo cerrado |
 | Pregunta planificada | baja | high | 6-10 K | un reemplazo localizado desde reserva |
 | Validación | baja | high | 4-8 K | `NEEDS_REVIEW` ante ambigüedad real |
 | Guía | baja | high | 6-10 K | no reparar grounding; volver a validar |
@@ -109,13 +110,13 @@ La semilla, si el proveedor la admite, ayuda a repetir pero no garantiza determi
 
 ## 2. Inventario de prompts
 
-| ID | Input root | Output root | Productor anterior | Consumidor siguiente | Ruta provisional |
+| ID | Input root | Output root | Productor anterior | Consumidor siguiente | Ruta activa `LUNA_BASELINE_V1` |
 |---|---|---|---|---|---|
-| `P01_ACTIVITY_SPEC_V1` | `ActivitySpecRequest` | `ActivitySpec` | API + parser de consigna | P02/P03/P04 | GPT-5.6 Sol, medium |
-| `P02_RUBRIC_NORMALIZE_V1` | `RubricNormalizeRequest` | `RubricSpec` | P01 + parser de rúbrica | P03/P04 | GPT-5.6 Sol, medium |
+| `P01_ACTIVITY_SPEC_V1` | `ActivitySpecRequest` | `ActivitySpec` | API + parser de consigna | P02/P03/P04 | GPT-5.6 Luna, medium |
+| `P02_RUBRIC_NORMALIZE_V1` | `RubricNormalizeRequest` | `RubricSpec` | P01 + parser de rúbrica | P03/P04 | GPT-5.6 Luna, medium |
 | `P03_AMBIGUITY_TRIAGE_V1` | `AmbiguityTriageRequest` | `AmbiguityReport` | reglas + P01/P02 | UI docente | GPT-5.6 Luna, high |
-| `P04_BLUEPRINT_BUILD_V1` | `BlueprintBuildRequest` | `AssessmentBlueprint` | specs + decisiones docentes | P05 + reglas | GPT-5.6 Sol, high |
-| `P05_BLUEPRINT_REVIEW_V1` | `BlueprintReviewRequest` | `BlueprintReview` | P04 | UI/aprobación docente | GPT-5.6 Sol, high |
+| `P04_BLUEPRINT_BUILD_V1` | `BlueprintBuildRequest` | `AssessmentBlueprint` | specs + decisiones docentes | P05 + reglas | GPT-5.6 Luna, high |
+| `P05_BLUEPRINT_REVIEW_V1` | `BlueprintReviewRequest` | `BlueprintReview` | P04 | UI/aprobación docente | GPT-5.6 Luna, high |
 | `P06_EVIDENCE_MAP_V1` | `EvidenceMapRequest` | `EvidenceMapPatch` | parser + blueprint | planificador | GPT-5.6 Luna, high |
 | `P07_QUESTION_BUILD_V1` | `QuestionBuildRequest` | `QuestionGenerationResult` | plan + oportunidad primaria/reserva | reglas/P08 | GPT-5.6 Luna, high |
 | `P08_QUESTION_REVIEW_V1` | `QuestionReviewRequest` | `QuestionReviewResult` | P07 + reglas previas | ensamblador/reemplazo | GPT-5.6 Luna, high |
@@ -129,7 +130,20 @@ tiene rutas alternativas ni proveedores distintos de OpenAI. P10 permanece
 deshabilitado y cualquier evaluación futura de contexto enriquecido exige una
 nueva autorización fuera de este gate.
 
-### 2.1 Campos exactos de los request roots
+### 2.1 Historia y alcance del perfil de ruta
+
+La matriz mixta Sol/Luna de ADR-031/ADR-035 es historia y posible comparador
+futuro: P01/P02 usaban Sol-medium, P04/P05 Sol-high y las demás rutas activas
+Luna. No se elimina, pero no es callable, no actúa como fallback y no participa
+en `LUNA_BASELINE_V1`. La autorización humana del 2026-08-08 cambia únicamente
+el perfil experimental activo para evaluar primero el modelo de menor costo.
+No afirma que Luna sea óptimo ni que Sol sea innecesario.
+
+El texto ejecutable y los roots no cambiaron, por lo que el pack permanece en
+`1.1.1`; el cambio reproducible se identifica por el route profile. Todos los
+`fallback_route_id` activos son `null` y ninguna ruta activa usa Sol.
+
+### 2.2 Campos exactos de los request roots
 
 | Root | Campos propios requeridos; los defaults se consultan en el schema |
 |---|---|
@@ -146,7 +160,7 @@ nueva autorización fuera de este gate.
 
 Todos incorporan `schema_version=1.1.0`. No se permiten propiedades extra.
 
-Estas rutas se resuelven como configuraciones aprobadas (`provider + snapshot + model + reasoning_effort + temperature + output_limits`), no mediante una elección dinámica del “mejor” modelo. Antes de llamar se comprueban capacidades, modalidad, privacidad, región, retención, presupuesto, disponibilidad y fallback aprobado; la falta de una ruta compatible produce `NEEDS_REVIEW` o `BLOCKED`.
+Estas rutas se resuelven como configuraciones aprobadas (`provider + snapshot + model + reasoning_effort + temperature + output_limits`), no mediante una elección dinámica del “mejor” modelo. Antes de llamar se comprueban capacidades, modalidad, privacidad, región, retención, presupuesto y disponibilidad. `LUNA_BASELINE_V1` no admite fallback; la falta de una ruta compatible produce `NEEDS_REVIEW` o `BLOCKED`.
 
 ---
 
@@ -159,7 +173,7 @@ Convertir una consigna en requisitos explícitos sin inventar objetivos ni resol
 | Aspecto | Definición v1.1 |
 |---|---|
 | Input / output | `ActivitySpecRequest` -> `ActivitySpec` |
-| Modelo | GPT-5.6 Sol; `reasoning_effort=medium`; temperatura baja |
+| Modelo | GPT-5.6 Luna; `reasoning_effort=medium`; temperatura baja |
 | Abstención | `status=BLOCKED` o `NEEDS_REVIEW`, listas vacías y `diagnostics`; no completar ausencias |
 | Evidencia no confiable | solo `prompt_evidence`; sin herramientas y con allowlist |
 | Validación posterior | schema, roles/IDs, existencia de cada `evidence_ids`, contradicciones y verbos fuente |
@@ -206,7 +220,7 @@ Devuelve ActivitySpec.
 | Aspecto | Definición v1.1 |
 |---|---|
 | Input / output | `RubricNormalizeRequest` -> `RubricSpec` |
-| Modelo | GPT-5.6 Sol; `reasoning_effort=medium`; temperatura baja |
+| Modelo | GPT-5.6 Luna; `reasoning_effort=medium`; temperatura baja |
 | Abstención | `status=BLOCKED`/`NEEDS_REVIEW`, `criteria=[]` y diagnóstico completo |
 | Evidencia no confiable | únicamente `rubric_evidence`; `ActivitySpec` es contexto estructurado |
 | Validación posterior | IDs, fuentes, pesos, niveles, enum `verification_fit` y solapamientos |
@@ -297,7 +311,7 @@ El modelo solo explica/agrupa lo que las reglas y specs señalan.
 | Aspecto | Definición v1.1 |
 |---|---|
 | Input / output | `BlueprintBuildRequest` -> `AssessmentBlueprint` |
-| Modelo | GPT-5.6 Sol; `reasoning_effort=high`; temperatura baja |
+| Modelo | GPT-5.6 Luna; `reasoning_effort=high`; temperatura baja |
 | Abstención | `status=BLOCKED`, catálogo solo con dimensiones/variantes sustentadas y diagnóstico; no fabricar compatibilidad |
 | Evidencia no confiable | consume specs tipadas; las decisiones docentes y `BlueprintPolicy` son confiables |
 | Validación posterior | invariantes Pydantic + IDs, operaciones soportadas, unicidad de catálogo y formatos |
@@ -354,7 +368,7 @@ El objeto completo debe validar como `BlueprintBuildRequest`; el bloque es una p
 | Aspecto | Definición v1.1 |
 |---|---|
 | Input / output | `BlueprintReviewRequest` -> `BlueprintReview` |
-| Modelo | GPT-5.6 Sol; `reasoning_effort=high`; no debe ver texto libre del generador |
+| Modelo | GPT-5.6 Luna; `reasoning_effort=high`; no debe ver texto libre del generador |
 | Abstención | `status=NEEDS_REVIEW` o `TECHNICAL_FAILURE`, recomendación `null` y diagnóstico |
 | Evidencia no confiable | specs/blueprint tipados, con resolución de IDs posterior |
 | Validación posterior | checks, categorías, referencias y regla `critical FAIL -> REJECT` |
@@ -676,14 +690,15 @@ Eres un transformador JSON. No agregues, elimines ni corrijas contenido semánti
 Recibes `SchemaRepairRequest`. Devuelve `SchemaRepairResult`. Si reparas, incluye el objeto completo en `repaired_output` con cambios mínimos de estructura. Conserva todos los IDs y textos. No sustituyas IDs, no agregues evidencia, no resumas y no completes campos semánticos ausentes. Si un campo obligatorio falta y no puede derivarse literalmente, usa `UNREPAIRABLE`.
 ```
 
-Máximo un intento. Un segundo fallo produce `MODEL_SCHEMA_VIOLATION`; el resolvedor usa únicamente un fallback previamente aprobado o devuelve revisión/bloqueo.
+Máximo un intento. Un segundo fallo produce `MODEL_SCHEMA_VIOLATION` y devuelve
+revisión/bloqueo; `LUNA_BASELINE_V1` no tiene fallback.
 
-La ruta `low` reemplaza la intención histórica `minimal` por autorización humana
-vinculante del 2026-08-08 y queda registrada en ADR-035. El cambio afecta solo
-P11: no modifica P01-P09, no habilita P10 y no constituye evidencia de una
-llamada real. La temperatura deseada sigue siendo cero, pero no se envía hasta
-que exista compatibilidad oficial documentada para esta combinación de modelo
-y esfuerzo.
+La ruta `low` reemplazó primero la intención histórica `minimal` mediante
+ADR-035. La autorización posterior ADR-036 conserva P11 Luna-low y establece
+`LUNA_BASELINE_V1` también para P01-P09. Ninguna de las dos decisiones habilita
+P10 ni constituye evidencia de una llamada real. La temperatura deseada sigue
+siendo cero, pero no se envía hasta que exista compatibilidad oficial
+documentada para esta combinación de modelo y esfuerzo.
 
 ---
 

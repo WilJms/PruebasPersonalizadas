@@ -503,3 +503,38 @@ autoriza llamadas facturables ni datos reales.
 refusal/incomplete, retries acotados, presupuesto previo, sanitización de
 errores, aislamiento de secretos, golden set sintético y smoke real
 explícitamente aprobado.
+
+---
+
+## ADR-036 - Baseline experimental OpenAI Luna-only
+
+**Estado:** Accepted el 2026-08-08; sustituye únicamente la matriz activa
+inicial de ADR-031/ADR-035 durante las primeras evaluaciones reales.
+**Autorización:** decisión humana explícita posterior a
+`OPENAI_CREDENTIALS_REQUIRED`.
+
+**Decisión:** el perfil reproducible `LUNA_BASELINE_V1` usa exclusivamente
+`gpt-5.6-luna` con `reasoning_effort=medium` para P01/P02, `high` para
+P03-P09 y `low` para P11. P10 no tiene ruta. El proveedor es OpenAI,
+`fallback_route_id=null` para todas las rutas y no existe selector heurístico,
+escalamiento automático ni fallback Luna→Sol. P11 conserva exactamente una
+oportunidad estructural y la temperatura no se envía.
+
+La matriz mixta Sol/Luna de ADR-031/ADR-035 se conserva como decisión histórica
+y posible configuración comparadora futura, pero no es callable, fallback ni
+ruta activa. Sol sigue siendo solamente un candidato de comparación posterior
+que exige nueva autorización humana y presupuesto separado.
+
+**Contexto:** la hipótesis experimental es determinar si el modelo de menor
+costo mantiene calidad suficiente antes de pagar por modelos más caros. P01 y
+P02 conservan `medium` para aislar inicialmente la variable modelo; cualquier
+comparación Luna-medium/Luna-high o Luna/Sol pertenece a un gate posterior.
+
+**Consecuencias:** este baseline no demuestra que Luna sea óptimo ni que Sol sea
+innecesario. Los 20 casos sintéticos y sus resultados esperados se mantienen
+sin relajaciones y registran `route_profile=LUNA_BASELINE_V1`. El cambio
+versiona el perfil de routing, no el texto ejecutable ni los contratos: por eso
+`prompt-pack/1.1.1` y `assessment-contracts/1.1.0` permanecen sin incremento.
+Antes de cualquier llamada se exige precio vigente, presupuesto preflight,
+secreto privado y checkpoint humano de gasto. P10, Etapa 3 y datos reales
+continúan prohibidos.
