@@ -62,18 +62,29 @@ en cero; `store=false`, `background=false`. Los request/output IDs se conservaro
 solo como hashes. Platform mostró antes del smoke spend limit USD 5.00, USD 3.77
 usado y `gpt-5.6-luna` como único modelo permitido. No hubo segunda request.
 
-La preparación posterior de los dos canaries quedó cerrada offline y detenida
-en `OPENAI_LUNA_CANARY_APPROVAL_REQUIRED`. El harness versionado admite ahora
-un único caso P01 o P07 por ejecución bajo una frontera separada: ruta Luna
-seleccionada únicamente, P10/P11 ausentes, guard de una request y retries
-gateway/prompt/SDK 0/0/0, sin alterar `ModelGateway` ni la política del worker.
-P01 Luna-medium y P07 Luna-high pasaron contra el adapter real y transporte
-fake con schema/Pydantic/contexto/IDs válidos, 1 fake request cada uno, 0 red y
-0 billable. El worst-case combinado es USD 0.0278998 y el presupuesto propuesto
-es USD 0.05. Los precios Standard vigentes quedaron en Sol 5.00/0.50/30.00,
-Terra 2.00/0.20/12.00 y Luna 0.20/0.02/1.20 USD por millón de tokens de
-input/cached input/output. La regresión local terminó 464 passed/16 skips,
-contratos y secret scan PASS. El secreto no se leyó y cloud no se modificó.
+La preparación posterior de los dos canaries quedó cerrada offline en
+`OPENAI_LUNA_CANARY_APPROVAL_REQUIRED`. El harness versionado admite un único
+caso P01 o P07 por ejecución bajo una frontera separada: ruta Luna seleccionada
+únicamente, P10/P11 ausentes, guard de una request y retries
+gateway/prompt/SDK 0/0/0, sin alterar la política del worker. P01 Luna-medium y
+P07 Luna-high pasaron contra el adapter real y transporte fake con
+schema/Pydantic/contexto/IDs válidos. Los precios Standard vigentes permanecen
+en Sol 5.00/0.50/30.00, Terra 2.00/0.20/12.00 y Luna 0.20/0.02/1.20 USD por
+millón de tokens de input/cached input/output.
+
+La autorización humana posterior produjo `OPENAI_LUNA_CANARY_P07_FAILED` sobre
+el sucesor `9923097f7b511453af5306614fa62ae436c6c4b3`, cuya CI
+`31323517518` había terminado 7/7. P01 pasó con outcome `READY`, Luna efectiva,
+1 request, 1,712/858 tokens input/output, 516 reasoning, 9,030 ms y USD
+0.00145745 calculados. P07 consumió su única request y falló estructuralmente;
+P11 no tenía ruta y fue bloqueado antes de transporte, por lo que no hubo
+repair ni segunda request. P07 registró 3,839/1,930 tokens input/output, 1,034
+reasoning y USD 0.00327560 calculados; el outcome y las validaciones
+contextuales no se alcanzaron. La severidad manifest es P1. Total: 2 requests,
+USD 0.00473305; P10/P11/Sol/retries/exposición del secreto en cero. Platform no
+ofreció aún costo atribuible por llamada: conservó spend redondeado USD 3.77 y
+el desglose Luna histórico de 1,365 input tokens. Cloud no se modificó y sigue
+mock/P10 false.
 
 La regresión local previa al smoke quedó en 457 passed/16 skips PostgreSQL
 explícitos, 80% de cobertura, 40 tests focalizados CLI/adapter, golden set
@@ -86,16 +97,17 @@ commit previo al gasto quedó 7/7 verde.
 | Severidad vigente | Abiertos |
 |---|---:|
 | P0 | 0 |
-| P1 | 0 |
+| P1 | 1 |
 | P2 | 4 |
 | P3 | 1 |
 
-Los P2 históricos siguen siendo AV/compensación, corpus/política de privacidad
-y semántica real pendiente. El cuarto P2 es la re-revisión interactiva P05 del
-Service: queda bloqueada con `MODEL_EXECUTION_REQUIRES_WORKER` cuando el worker
-sea real hasta migrarla a un job durable, por lo que nunca mezcla silenciosamente
-mock con OpenAI. El P3 continúa siendo el warning deprecado Starlette/httpx del
-adaptador de tests.
+El P1 nuevo es el fallo estructural del canary P07 Luna-high; quedó fail-closed
+sin reparación ni continuación. Los P2 históricos siguen siendo
+AV/compensación, corpus/política de privacidad y semántica real pendiente. El
+cuarto P2 es la re-revisión interactiva P05 del Service: queda bloqueada con
+`MODEL_EXECUTION_REQUIRES_WORKER` cuando el worker sea real hasta migrarla a un
+job durable, por lo que nunca mezcla silenciosamente mock con OpenAI. El P3
+continúa siendo el warning deprecado Starlette/httpx del adaptador de tests.
 
 ## Identidad y gate
 
