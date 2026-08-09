@@ -14,6 +14,7 @@ from dataclasses import asdict, dataclass
 import json
 import os
 from pathlib import Path
+import re
 import sys
 from typing import Any
 
@@ -31,6 +32,7 @@ from .model_gateway import (
     GatewayError,
     GatewayMode,
     ModelGateway,
+    OPENAI_ROUTE_PROFILE_ID,
     OpenAIResponsesAdapter,
     build_mock_request,
     build_openai_cost_estimator,
@@ -833,6 +835,23 @@ def _real_provider_smoke(args: argparse.Namespace) -> int:
         )
         return 1
     ledger = result.ledgers[-1]
+    reason_codes = ledger.route.reason_codes
+
+    def hashed_reason(prefix: str) -> str | None:
+        for code in reason_codes:
+            if code.startswith(prefix):
+                digest = code.removeprefix(prefix)
+                if re.fullmatch(r"[0-9a-f]{64}", digest):
+                    return f"sha256:{digest}"
+        return None
+
+    reasoning_tokens = 0
+    for code in reason_codes:
+        if code.startswith("REASONING_TOKENS_"):
+            candidate = code.removeprefix("REASONING_TOKENS_")
+            if candidate.isdigit():
+                reasoning_tokens = int(candidate)
+            break
     print(
         _json_line(
             {
@@ -840,14 +859,26 @@ def _real_provider_smoke(args: argparse.Namespace) -> int:
                 "code": "OPENAI_REAL_SMOKE_PASS",
                 "network_call_attempted": True,
                 "prompt_id": ledger.prompt_id,
-                "model": ledger.route.model,
+                "prompt_version": ledger.prompt_version,
+                "schema_version": ledger.schema_version_used,
+                "route_profile": OPENAI_ROUTE_PROFILE_ID,
+                "requested_model": ledger.route.model,
+                "effective_model": ledger.route.model_snapshot,
                 "reasoning_effort": ledger.route.reasoning_effort,
+                "responses_requests": len(result.ledgers),
+                "attempts": len(result.ledgers),
                 "input_tokens": ledger.input_tokens,
                 "cached_input_tokens": ledger.cached_input_tokens,
                 "output_tokens": ledger.output_tokens,
+                "reasoning_tokens": reasoning_tokens,
                 "latency_ms": ledger.latency_ms,
-                "actual_cost_usd": ledger.actual_cost_usd,
-                "attempts": len(result.ledgers),
+                "estimated_cost_usd": ledger.estimated_cost_usd,
+                "calculated_actual_cost_usd": ledger.actual_cost_usd,
+                "schema_validation": ledger.result == "SCHEMA_VALID",
+                "pydantic_validation": isinstance(result.output, BaseModel),
+                "contextual_validation": True,
+                "request_id_hash": hashed_reason("PROVIDER_REQUEST_ID_HASH_"),
+                "output_hash": hashed_reason("OUTPUT_HASH_"),
             }
         )
     )
