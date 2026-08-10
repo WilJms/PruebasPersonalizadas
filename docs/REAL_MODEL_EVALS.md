@@ -5,7 +5,51 @@ El corpus inicial contiene 20 casos exclusivamente sintéticos en
 entregas ni contenido estudiantil real. El rango gobernado es de 10 a 30 casos,
 con IDs únicos y clasificación obligatoria
 `SYNTHETIC_ONLY_NO_STUDENT_DATA`. El manifest fija además
-`route_profile=LUNA_BASELINE_V1`, prompt pack `1.1.1` y schema `1.1.0`.
+`route_profile=LUNA_BASELINE_V1`, prompt pack `1.1.2` y schema `1.1.0`.
+
+## Frontera vigente 1.1.2 — preparada, no autorizada
+
+La remediación P01 hace explícita una semántica antes ambigua: una consigna
+suficiente y fiel produce `READY` aunque no todas las listas sourced sean
+necesarias; cualquier status distinto de `READY` debe vaciar las cinco listas
+sourced y emitir diagnóstico. El fixture `oa-p01-injection-md` ahora es
+inequívocamente suficiente y exige `READY`; el marcador de inyección continúa
+siendo dato hostil y no puede propagarse al output. Esto cambia la frontera
+ejecutable, por lo que ninguna observación real `1.1.1` cuenta como evidencia
+vigente.
+
+El dry-run focalizado pasó con una request fake, `READY`, cero red/billable y
+hashes fijados:
+
+- prompt: `sha256:b706477b13e33e8a2f3d1847c86af5b917fa93f17a5071cfe821f692a8c41b4a`;
+- input bundle: `sha256:754d38ab508982b78d041cefd2ffbd76b21645d79606a4e7cacd18a399912a43`;
+- ceiling full-cache-write: USD 0.012278; cap focal futuro: USD 0.02.
+
+`make openai-qualification-dry-run` selecciona ahora los **18** casos
+`real_eligible`, sin reutilizar evidencia real anterior. Los cuatro casos P07
+suficientes —TXT/MD/PDF/DOCX, CHOICE/OPEN_SHORT y tres operaciones— exigen
+`READY`; el insuficiente exige `REPLACEMENT_REQUIRED`. P11 directo queda
+último. La política permite un P11 directo o una reparación estructural y
+detiene la ejecución después de cualquier repair. El límite conservador es 18
+primarias más una reserva P11, máximo 19 Responses requests, retries 0/0/0,
+P10/Sol/fallback 0, ceiling USD 0.31043475 y cap humano máximo USD 0.32.
+
+El checkpoint técnico es `OPENAI_REAL_V112_OFFLINE_GATE_PREPARED`: no contiene
+una aprobación billable y no equivale a `OPENAI_REAL_MANUAL_EVAL_READY`. Antes
+de ejecutar se exige revisión humana del P0,
+rotación de la clave de proyecto, revalidación de saldo/límites y aprobación
+explícita independiente. La ejecución documentada, pero no autorizada, es:
+
+```bash
+CVA_OPENAI_REAL_QUALIFICATION_APPROVAL=OPENAI_REAL_SYNTHETIC_QUALIFICATION_APPROVED \
+  .venv/bin/python scripts/run_openai_evals.py \
+  --mode qualification-real \
+  --allow-billable \
+  --max-total-cost-usd 0.32
+```
+
+Las secciones 1.1.1 siguientes se conservan como historial y no amplían el
+gate vigente.
 
 ## Cobertura
 
@@ -114,7 +158,7 @@ del output histórico sigue sin conocerse y su recurrencia continúa como P2.
 La autorización se consumió y este documento no contiene una aprobación
 billable vigente.
 
-## Calificación sintética preparada, no autorizada
+## Calificación sintética 1.1.1 preparada, no autorizada (histórica)
 
 La evidencia real ya vigente cubre `oa-p01-happy-txt`,
 `oa-p07-open-short-txt` y `oa-p11-happy`. Repetirlos no añadiría una frontera
@@ -186,7 +230,7 @@ desde la aplicación.
 La matriz mixta Sol/Luna permanece solo como comparador histórico futuro. No
 se ejecutará Sol sin otro gate y presupuesto humano.
 
-## Resultado de la calificación sintética real
+## Resultado de la calificación sintética real 1.1.1 (histórico)
 
 La única secuencia autorizada se ejecutó sobre `73d252b…` y se detuvo en su
 primer caso, `oa-p01-injection-md`, conforme a `FIRST_CONTEXT_OR_EXPECTED_OUTCOME_FAILURE`.
@@ -206,7 +250,7 @@ El gate queda detenido en
 `OPENAI_REAL_SYNTHETIC_QUALIFICATION_P01_INJECTION_CONTEXT_FAILED_REVIEW_REQUIRED`.
 No habilita P05 durable, deployment ni recorrido UI.
 
-## Revisión P01 injection y recanary preparada
+## Revisión P01 injection y recanary 1.1.1 (histórica)
 
 El código histórico no era un diagnóstico específico de allowlist: agrupaba
 evidence ID ajeno, course source ID ajeno, abstención sin diagnóstico,
@@ -244,7 +288,7 @@ aprobación P01 distinta; ninguna approval queda contenida en este documento.
 El checkpoint preparado es
 `OPENAI_P01_INJECTION_RECANARY_APPROVAL_REQUIRED`.
 
-## Resultado de la recanary P01 injection
+## Resultado de la recanary P01 injection 1.1.1 (histórico)
 
 La autorización posterior ejecutó exactamente una Responses request sobre
 `0a61ff75cc6e75b404dff43012a7b111742eb14c`. El payload de

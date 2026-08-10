@@ -1,6 +1,6 @@
 # Setup gobernado del proveedor OpenAI
 
-Estado al 2026-08-09: el proyecto OpenAI dedicado `PruebasPersonalizadas`
+Estado al 2026-08-10: el proyecto OpenAI dedicado `PruebasPersonalizadas`
 (`proj_te2wY3kbHAkFp8IgjglH063t`) quedó identificado mediante una sesión
 autenticada de Platform. La clave de proyecto fue introducida manualmente por
 el propietario como la versión numérica `1` de
@@ -8,9 +8,32 @@ el propietario como la versión numérica `1` de
 El agente verificó metadata sin inspeccionar el payload; el proceso aislado del
 primer smoke consumió esa versión únicamente en memoria y eliminó su environment
 al terminar. La clave no existe en el repositorio, CI, Service web ni runtime
-cloud. El cloud vigente conserva `CVA_MODEL_MODE=mock` y
+cloud. Durante una operación histórica la clave pudo escribirse accidentalmente
+en un archivo local llamado `-`; ese archivo se eliminó sin leer su contenido,
+pero la versión `1` se considera no apta para uso futuro. Una persona autorizada
+debe rotarla y registrar sólo la nueva versión antes de cualquier llamada. El
+cloud vigente conserva `CVA_MODEL_MODE=mock` y
 `CVA_P10_ENABLED=false`. Ningún paso de este documento autoriza datos
 estudiantiles reales, Etapa 3 o P10.
+
+## Checkpoint previo a la evaluación manual 1.1.2
+
+La rama alcanza `OPENAI_REAL_V112_OFFLINE_GATE_PREPARED`: prompt pack 1.1.2,
+dry-run 18/18, P05 durable y cap USD 0.32. Esto no declara
+`OPENAI_REAL_MANUAL_EVAL_READY`. La verificación
+read-only más reciente mostró spend USD 3.78/5.00, USD 1.22 disponibles, alerta
+USD 4.00 y Luna como único modelo permitido. Antes de una request deben
+cumplirse, en este orden:
+
+1. revisión humana del P0 P01 y aceptación explícita de la remediación;
+2. rotación humana de la clave y verificación de la nueva versión sin leerla;
+3. revalidación read-only de proyecto, modelo, spend, alerta y rate limits;
+4. aprobación billable específica con cap máximo USD 0.32;
+5. ejecución única del entrypoint versionado, sólo con corpus sintético.
+
+Rotar secreto, cambiar IAM, billing/límites, cloud, deploy o Terraform siguen
+siendo mutaciones separadas que requieren autorización. La preparación actual
+no realizó ninguna de ellas.
 
 ## Fronteras obligatorias
 
@@ -73,10 +96,10 @@ La precondición impide real mode sin runtime, contenedor, versión fijada y tec
 agregado por job autorizado. IAM
 concede `roles/secretmanager.secretAccessor` solo a la cuenta del worker. El Job
 recibe `CVA_OPENAI_API_KEY`; el Service web no recibe clave ni modo real. El
-Service conoce solo el flag no secreto `CVA_WORKER_MODEL_MODE`: cuando es real,
-cualquier camino interactivo que intentara invocar el gateway directamente
-falla con `MODEL_EXECUTION_REQUIRES_WORKER`, evitando una mezcla silenciosa con
-mock. Service y Job reciben el mismo techo no secreto `CVA_MAX_JOB_COST_USD`
+Service conoce solo el flag no secreto `CVA_WORKER_MODEL_MODE`. La edición
+interactiva P05 persiste un job y descriptor antes del dispatch; no existe un
+camino directo al gateway en el proceso web. Service y Job reciben el mismo
+techo no secreto `CVA_MAX_JOB_COST_USD`
 para que la autorización previa y el saldo durable coincidan. P10 se inyecta
 siempre como `false`. El despliegue continúa usando Cloud Build, digest
 inmutable y Terraform; nunca `gcloud run ... update`.
@@ -163,10 +186,12 @@ El commit `e1f6714e6d8fd52f4404c8f9f16edc21f8320627` quedó publicado y la CI
 | Output hash | `sha256:7a4cd0cf8103b85191a28d9e26c9b30f94cf9abf678184eb2e84bdcba3e89ede` |
 | Fronteras | fixture sintético; P10 0; Sol 0; tools 0; `store=false`; `background=false` |
 
-La versión `1` del secreto se entregó sin echo directamente al environment del
-proceso y quedó fuera de archivos, argumentos, Git, logs y documentación. El
-valor no fue inspeccionado ni expuesto. No se ejecutó una segunda request y no
-se continuó con Luna-medium/high, canaries, golden set real, E2E, deploy, IAM,
+En ese checkpoint se registró que la versión `1` del secreto se entregó sin
+echo directamente al environment del proceso y quedó fuera de argumentos,
+Git, logs y documentación. La revisión local posterior descrita al inicio de
+este documento obliga a rotarla antes de reutilizarla. No se ejecutó una
+segunda request ni se continuó con Luna-medium/high, canaries, golden set real,
+E2E, deploy, IAM,
 PR, merge ni Etapa 3.
 
 Fuentes oficiales: [Responses API](https://developers.openai.com/api/docs/guides/responses),

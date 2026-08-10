@@ -513,3 +513,34 @@
   en una decisión permanente de producto. Como no cambian instrucciones ni
   roots Pydantic, `prompt-pack/1.1.1` y contratos conservan su versión.
 - **Relación:** ADR-036 y autorización humana del 2026-08-08.
+
+## D-047 - P01 1.1.2 separa extracción usable de diagnóstico
+
+- **Decisión:** una consigna sintética suficiente y fiel produce `READY` aun
+  cuando alguna lista sourced no sea necesaria. Todo status distinto de
+  `READY` vacía conjuntamente las cinco listas sourced y conserva únicamente
+  el diagnóstico estructurado. El fixture de inyección se hace
+  inequívocamente suficiente, exige `READY` y trata el marcador hostil sólo
+  como dato no propagable. Prompt e input quedan ligados a hashes nuevos y la
+  evidencia real 1.1.1 no se reutiliza para aceptar 1.1.2.
+- **Razón:** un output parcialmente extraído con status de abstención mezcla
+  dos contratos operativos incompatibles, mientras que reutilizar evidencia
+  de otra frontera ocultaría precisamente la regresión remediada.
+- **Relación:** P01, `REAL_MODEL_EVALS.md` y
+  `OPENAI_REAL_MODEL_VALIDATION.md`.
+
+## D-048 - La revisión P05 interactiva se ejecuta como job durable
+
+- **Decisión:** editar un blueprint valida el patch y persiste atómicamente un
+  Job `BLUEPRINT_REVIEW` con descriptor sin datos estudiantiles ligado por
+  hashes. Sólo el
+  worker invoca P05, vuelve a comprobar lineage, política, fuentes y versión,
+  y publica la nueva versión junto al terminal del job en una transacción.
+  Cancel restaura el estado original y retry reconstruye el descriptor desde
+  el ancestro. La API responde `202 JobEnvelope` y la UI espera éxito antes de
+  recuperar la versión publicada.
+- **Razón:** una llamada directa desde el proceso web eludía durabilidad,
+  presupuesto, control de reintentos y la separación web/worker exigida para
+  un proveedor real.
+- **Relación:** P05, D-037, D-038, ADR-032 y
+  `OPENAI_PROVIDER_SETUP.md`.

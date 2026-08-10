@@ -1,12 +1,34 @@
 # Resultados verificables — candidato Etapa 2
 
-Fecha de corte documental: 2026-08-07 (America/Santiago; ejecución cloud hasta
+Fecha de corte documental: 2026-08-10 (America/Santiago; ejecución cloud hasta
 2026-08-09 UTC).
 
 Este archivo registra únicamente resultados observados. Las credenciales y
 capacidades no se registran. Todos los recorridos E2 usaron modelo mock, P10
 deshabilitado y datos sintéticos. Los resultados históricos E1 se conservan al
 final y no se presentan como evidencia del candidato E2.
+
+## Preparación técnica 1.1.2 y P05 durable — 2026-08-10
+
+| Prueba o gate | Resultado observado |
+|---|---|
+| `make test` | 498 passed, 16 skips PostgreSQL explícitos, 1 warning deprecado conocido |
+| `make test-cov` | 498 passed, 16 skips, 1 warning; 80% global sobre 10,485 statements |
+| Contratos | PASS: 53 roots, 140 definiciones, 274 referencias, 8 fixtures; schema canónico sin edición manual |
+| Fixtures y OpenAPI | PASS; PATCH de blueprint regenerado como `202 JobEnvelope` |
+| Secret scan | PASS: 290 archivos versionables, cero secretos de alta confianza |
+| P01 injection 1.1.2 dry-run | PASS `READY`; 1 transporte fake, 0 red/billable, marker no propagado, hashes aprobables nuevos, ceiling full-cache-write USD 0.012278 |
+| Qualification 1.1.2 dry-run | 18/18 PASS, 18 transportes fake, 0 red/billable, evidencia real reutilizada `[]`, P11 directo último, máximo defensivo 19 requests, ceiling USD 0.31043475 |
+| P05 durable | API web en configuración real encola sin clave ni llamada; worker real con gateway fake publica atómicamente; cancel y retry cubiertos |
+| Frontend | typecheck PASS; 6 archivos/34 tests PASS; build 87 módulos PASS |
+| E2E Playwright | 1/1 PASS: recorrido Stage 1 completo, edición P05 por job, versión 2 antes de aprobar, reinicio de navegador y no-overflow a 320/390 px |
+| Navegador integrado | login→actividad→blueprint→edición P05→versión 2; desktop y 390 px sin overlay, warning ni error de consola tras corregir overflow |
+
+Los 16 skips locales corresponden únicamente a semántica PostgreSQL sin
+`CVA_TEST_DATABASE_URL`/`CVA_TEST_POSTGRES_URL`; no se presentan como pruebas
+ejecutadas. Los dry-runs eliminaron approvals y clave del environment, no
+leyeron secretos y mantuvieron P10, Sol, fallback y retries en cero. No hubo
+request OpenAI facturable ni cambio cloud.
 
 ## Gate OpenAI offline — 2026-08-08
 
@@ -241,7 +263,8 @@ raíz al output inválido ni afirmar una corrección del modelo. El fallo origin
 fue fail-closed; la pérdida reproducible de ledger/diagnóstico sí quedó
 corregida; prompt, schema, contrato y expected outcome permanecieron intactos;
 y la recanary pasó provider schema, Pydantic y contexto. La recurrencia P07
-continúa como P2 y lleva el conteo vigente a P0=0, P1=0, P2=5, P3=1.
+continuó como P2 y llevó el conteo de ese checkpoint a P0=0, P1=0, P2=5,
+P3=1.
 
 El nuevo modo `qualification-dry-run` seleccionó exactamente los 15 fixtures
 `real_eligible` que aún no tenían una observación real y reutiliza la evidencia
@@ -273,7 +296,7 @@ desconocidas ni secretos.
 Checkpoint preparado: `OPENAI_REAL_SYNTHETIC_QUALIFICATION_APPROVAL_REQUIRED`.
 Esta sección no contiene ni implica aprobación billable; costo nuevo USD 0.00.
 
-## Calificación sintética real — 2026-08-10
+## Calificación sintética real 1.1.1 (histórica) — 2026-08-10
 
 La autorización se consumió una sola vez sobre
 `73d252b399a414f51f21d2fc57f2093dbf154a00`, con local/upstream/remoto

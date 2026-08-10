@@ -1,6 +1,6 @@
 # Costos y presupuestos OpenAI
 
-Política Standard short-context observada y revalidada el 2026-08-09 en la página
+Política Standard short-context observada y revalidada el 2026-08-10 en la página
 oficial vigente. El perfil activo usa únicamente Luna; Terra y Sol se
 conservan como referencias de catálogo y no son rutas callable ni fallback.
 
@@ -35,6 +35,40 @@ aplica 2× a input y 1.5× a output. Las rutas normales se limitan a 250K tokens
 para quedar debajo de ese tier. Antes de llamar, el gateway calcula el peor
 caso usando el máximo output del prompt; si supera el presupuesto restante, no
 crea transporte.
+
+## Presupuesto vigente del prompt pack 1.1.2
+
+El cambio de instrucciones P01 invalida la reutilización de evidencia real
+1.1.1. La calificación vigente vuelve a incluir los 18 casos `real_eligible`,
+incluido P11 directo al final, y conserva una única reserva P11 estructural.
+El cálculo observado por el dry-run es:
+
+| Componente vigente | Sin cache | Todo input como cache-write |
+|---|---:|---:|
+| 18 primarias | USD 0.26801000 | USD 0.28101250 |
+| Reserva máxima P11 | USD 0.02545780 | USD 0.02942225 |
+| Ceiling agregado | **USD 0.29346780** | **USD 0.31043475** |
+
+El cap humano admisible es exactamente **USD 0.32**; el harness bloquea antes
+de credencial/transporte un cap menor al ceiling o mayor a USD 0.32. Conserva
+máximo 19 requests como límite presupuestario defensivo, aunque P11 directo
+está al final y cualquier reparación detiene la secuencia. No hay retries, P10,
+Sol ni fallback.
+
+La recanary focal P01 1.1.2 tiene 10,712 tokens de input upper-bound, 8,000 de
+output máximo, USD 0.01174240 sin cache y **USD 0.01227800** full-cache-write;
+su cap separado sería USD 0.02. Ejecutarla por separado no sustituye la
+calificación completa.
+
+La consulta read-only de Platform del 2026-08-10 mostró USD 3.78/5.00 de
+spend, USD 1.22 restantes, alerta al 80% (USD 4.00) y sólo
+`gpt-5.6-luna` permitido. El ceiling podría cruzar la alerta aunque no el
+límite; esa capacidad no es autorización. La clave existente debe rotarse
+antes de cualquier request nueva, por lo que no existe una credencial vigente
+autorizada para este gate.
+
+Las cifras de las secciones siguientes corresponden a ejecuciones 1.1.1
+históricas y no son el presupuesto de la frontera actual.
 
 ## Primer smoke ejecutado
 

@@ -1,9 +1,42 @@
 # Estado de implementación — Etapa 2
 
-Fecha de corte: 2026-08-07 (America/Santiago; evidencia externa hasta
-2026-08-09 UTC).
+Fecha de corte: 2026-08-10 (America/Santiago).
 
-## Estado vigente — merge E2 y gate OpenAI (2026-08-09)
+## Estado vigente — `OPENAI_REAL_V112_OFFLINE_GATE_PREPARED` (2026-08-10)
+
+La rama `codex/openai-real-provider-gate` remedia técnicamente el P0 P01 sin
+cerrarlo por autoridad propia. Prompt pack `1.1.2` define `READY` para una
+consigna suficiente y usable, y exige que todo status no `READY` vacíe sus
+cinco listas sourced. El fixture injection es ahora inequívocamente suficiente,
+espera `READY` y conserva el marcador como dato no propagable. Sus hashes
+nuevos impiden reutilizar las seis observaciones reales 1.1.1 como evidencia
+vigente.
+
+La qualification dry-run pasó los 18 casos `real_eligible`, sin evidencia
+reutilizada, con 18 transportes fake, cero red/billable, P11 directo al final,
+una reserva estructural, máximo conservador 19 requests y ceiling
+full-cache-write USD 0.31043475 frente a cap USD 0.32. P07 quedó cubierto por
+cuatro casos suficientes diversos más uno insuficiente; su P2 de recurrencia
+permanece abierto hasta evaluación real y revisión humana.
+
+P05 interactivo ya es un job durable: API `202 JobEnvelope`, descriptor
+hash-verificado, ejecución exclusiva en worker y publicación atómica de la
+nueva versión. Cancel y retry conservan/reconstruyen estado; la UI espera el
+job y recupera la versión final. El P2 funcional P05 queda cerrado. El conteo
+vigente es **P0=1, P1=0, P2=5, P3=1**.
+
+La revisión integrada pasó backend, frontend, OpenAPI, navegador y E2E local,
+incluida corrección del overflow móvil de la revisión P05. Cloud no cambió:
+continúa mock/P10 false. No hubo request facturable. La clave histórica debe
+rotarse antes de cualquier uso. El siguiente paso es exclusivamente humano:
+aceptar o rechazar la remediación P0 y, si se acepta, autorizar por separado
+rotación y una calificación real sintética con cap USD 0.32.
+
+Este estado no es `OPENAI_REAL_MANUAL_EVAL_READY`: todavía no hay aceptación
+humana del P0, credencial rotada, qualification 1.1.2 real, deployment real ni
+E2E sintético real de la aplicación.
+
+## Historial — merge E2 y gate OpenAI (2026-08-09)
 
 `STAGE2_MERGED_AND_VERIFIED` quedó registrado antes de iniciar este gate.
 
@@ -183,24 +216,24 @@ integrado limpio, Docker runtime/audit, Stage 0 reproducible,
 contratos/OpenAPI sin drift, Terraform válido y secret scan limpio. La CI del
 commit previo al gasto quedó 7/7 verde.
 
-| Severidad vigente | Abiertos |
+| Severidad de ese checkpoint | Abiertos |
 |---|---:|
 | P0 | 1 |
 | P1 | 0 |
 | P2 | 6 |
 | P3 | 1 |
 
-El P0 nuevo corresponde exclusivamente al fallo contextual P01 preclasificado
-por el manifest y requiere revisión antes de cualquier avance. No queda un P1
-abierto. Los P2 históricos siguen siendo
+El P0 nuevo de ese checkpoint correspondía exclusivamente al fallo contextual
+P01 preclasificado por el manifest y requería revisión antes de cualquier
+avance. No quedaba un P1 abierto. Los P2 históricos seguían siendo
 AV/compensación, corpus/política de privacidad y semántica real pendiente. El
-cuarto P2 es la re-revisión interactiva P05 del Service: queda bloqueada con
+cuarto P2 era la re-revisión interactiva P05 del Service: quedaba bloqueada con
 `MODEL_EXECUTION_REQUIRES_WORKER` cuando el worker sea real hasta migrarla a un
-job durable, por lo que nunca mezcla silenciosamente mock con OpenAI. El quinto
-P2 es la observación de confiabilidad P07: se cierra con evidencia de no
+job durable, por lo que nunca mezclaba silenciosamente mock con OpenAI. El
+quinto P2 era la observación de confiabilidad P07: se cerraría con evidencia de no
 recurrencia sobre los casos P07 diversos y la revisión humana posterior, o se
-reclasifica si reaparece una violación estructural/contextual. El sexto P2 es
-la cobertura limitada de detección de prompt injection: existen prevención,
+reclasificaría si reaparecía una violación estructural/contextual. El sexto P2
+era la cobertura limitada de detección de prompt injection: existían prevención,
 sentinelas sintéticos y rechazo de eco, pero no un detector general implementado
 como `PROMPT_INJECTION_SIGNAL`. El P3 continúa siendo el warning deprecado
 Starlette/httpx del adaptador de tests.

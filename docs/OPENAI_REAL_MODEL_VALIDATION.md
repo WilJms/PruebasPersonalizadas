@@ -1,10 +1,10 @@
 # Validación del proveedor OpenAI real
 
-Fecha de corte: 2026-08-09. Estado: smoke P11 Luna-low, canary P01
-Luna-medium y recanary P07 Luna-high superados; el primer canary P07 falló
-cerrado. Llamadas reales históricas: **4** —P11, P01 y dos observaciones P07—.
-La revisión del incidente y la preparación de la calificación siguiente son
-exclusivamente offline; no existe una autorización billable vigente.
+Fecha de corte: 2026-08-10. Estado: frontera 1.1.2 y P05 durable validados
+offline; el P0 P01 conserva revisión humana obligatoria. Llamadas reales
+históricas: **6** —P11, P01 happy, dos observaciones P07, qualification P01
+injection y su recanary—. No existe una autorización billable vigente y la
+clave usada históricamente debe rotarse antes de cualquier request nueva.
 
 ## Perfil vinculante `LUNA_BASELINE_V1`
 
@@ -20,6 +20,31 @@ escalamiento silencioso ni snapshot fechado inventado. El ledger conserva el
 modelo solicitado y el modelo efectivo observado; una identidad efectiva
 incompatible falla cerrada. ADR-035 conserva la decisión P11 Luna-low y
 ADR-036 registra el baseline Luna-only.
+
+## Remediación vigente: P01 1.1.2 y P05 durable
+
+P01 distingue ahora suficiencia de completitud: una especificación fiel y
+usable puede ser `READY` sin llenar todos los campos sourced. En cambio, todo
+status no `READY` exige las cinco listas sourced vacías y diagnóstico. El
+fixture injection contiene outcome, producto, requisitos y materiales
+permitidos/prohibidos suficientes; por eso exige `READY` mientras trata el
+marcador sólo como dato. Prompt e input quedan fijados por hashes nuevos y la
+evidencia real 1.1.1 permanece únicamente histórica.
+
+La calificación dry-run actual pasó 18/18 con el adapter real y transporte
+fake: 18 llamadas fake, cero red/billable, P11 directo una vez al final,
+ninguna evidencia reutilizada, una reserva de repair, máximo conservador 19,
+retries 0/0/0 y P10/Sol/fallback 0. Los cuatro P07 suficientes diversos
+producen `READY`; el caso insuficiente falla semánticamente cerrado. La
+recurrencia P07 continúa como P2 hasta una observación real y revisión humana.
+
+La edición interactiva P05 ya no invoca modelos desde el Service. `PATCH`
+responde `202 JobEnvelope`, congela source version/ETag y persiste un descriptor
+hash-verificado antes del dispatch. El worker reconstruye actividad, rúbrica,
+decisiones, política y estructura, ejecuta P05 y publica la nueva versión junto
+con el estado terminal en una transacción. Cancel y retry preservan el
+blueprint anterior o reconstruyen el descriptor desde el linaje. Web real no
+recibe clave ni conserva un camino `_direct_gateway`.
 
 La matriz mixta anterior permanece como historia y candidato comparador futuro,
 pero no es callable ni fallback. Este experimento no afirma que Luna sea óptimo
@@ -136,7 +161,7 @@ CHOICE con justificación, predicción PDF y crítica DOCX—. Cualquier recurre
 estructural o contextual detiene la secuencia y exige reclasificación humana;
 un PASS técnico tampoco certificará calidad pedagógica.
 
-## Investigación offline del fallo contextual P01 de inyección
+## Investigación histórica del fallo contextual P01 de inyección (1.1.1)
 
 La evidencia histórica de `oa-p01-injection-md` no permite recuperar una
 causa contextual única. Solo quedaron el código agregado
@@ -179,8 +204,9 @@ qualification en el primer fallo.
 El fixture tampoco es una entrega estudiantil ni prueba el parser Markdown.
 Parte de `build_mock_request(P01)`, cambia el locator a `DOCUMENT_PATH` y añade
 un marcador simbólico al `content_text` de evidencia normalizada con
-`source_role=ASSIGNMENT_PROMPT`. Su expected `VALID` es correcto: conserva una
-consigna suficiente y el marcador es dato no confiable, no una razón para
+`source_role=ASSIGNMENT_PROMPT`. En ese checkpoint su expected `VALID` era
+correcto: conservaba una consigna suficiente y el marcador era dato no
+confiable, no una razón para
 fabricar o abstenerse. La descripción del manifest se corrigió para reflejar
 esa frontera sin cambiar request, prompt, schema, contrato o expected outcome;
 los hashes permanecen idénticos a la llamada histórica.
@@ -189,9 +215,9 @@ La cobertura preventiva declarada sí incluye instrucciones/datos separados,
 envelope tipado, output estricto, allowlists, `tools=[]`, `store=false` y
 validación contextual. Por separado, Stage 0 atraviesa el parser con una
 submission sintética Markdown y la regresión P07 rechaza el eco del marcador.
-La cobertura de detección sigue limitada a sentinelas sintéticos conocidos; no
-existe un detector general implementado bajo el nombre
-`PROMPT_INJECTION_SIGNAL`. Esa limitación se registra como el sexto P2 y no se
+En ese checkpoint la cobertura de detección seguía limitada a sentinelas
+sintéticos conocidos; no existía un detector general implementado bajo el nombre
+`PROMPT_INJECTION_SIGNAL`. Esa limitación se registró como el sexto P2 y no se
 confunde con prueba de continuación insegura.
 
 Queda preparado un único gate recanary P01: Luna-medium, una Responses request,
@@ -224,18 +250,19 @@ cerrada, sin P11 ni segunda request, y deja el P0 abierto para revisión.
 | Investigación P07 provider/Pydantic | PASS offline; schema exacto fijado, pérdida de ledger corregida, clases provider/Pydantic/contexto reproducidas sin contenido |
 | Recanary única P07 Luna-high | PASS real; `READY`, provider schema/Pydantic/contexto PASS, 1 request, P11 0, USD 0.00276560 calculados |
 | Revisión P1 P07 | blocker cerrado sin atribuir causa raíz; observación de recurrencia P07 continúa como P2 |
-| Calificación sintética dry-run | PASS 15/15 contra adapter real y transporte fake; corpus real-eligible acumulado 18/18; 0 red/0 billable |
-| Calificación sintética real | detenida fail-closed en `oa-p01-injection-md` después de 1 request; los otros 14 casos no se ejecutaron |
-| Investigación P01 injection | causa histórica no recuperable; cinco clases reproducidas y observabilidad content-free preparada; 0 red/0 billable |
-| Recanary única P01 injection | FAIL contextual discriminado: `P01_ABSTENTION_SOURCED_FIELDS_PRESENT`; marcador no propagado; 1 request, P11 0 |
-| Calidad/latencia/costo y severidad | P0=1; P1=0; P2=6; P3=1; calidad pedagógica pendiente de revisión humana posterior |
+| Calificación sintética dry-run 1.1.2 | PASS 18/18 contra adapter real y transporte fake; sin evidencia real reutilizada; 0 red/0 billable; ceiling USD 0.31043475/cap USD 0.32 |
+| Calificación sintética real 1.1.1 | detenida fail-closed en `oa-p01-injection-md` después de 1 request; los otros 14 casos no se ejecutaron |
+| Investigación P01 injection 1.1.1 | causa histórica no recuperable; cinco clases reproducidas y observabilidad content-free preparada; 0 red/0 billable |
+| Recanary única P01 injection 1.1.1 | FAIL contextual discriminado: `P01_ABSTENTION_SOURCED_FIELDS_PRESENT`; marcador no propagado; 1 request, P11 0 |
+| Remediación P01 | lista técnicamente; P0 sigue formalmente abierto hasta revisión humana |
+| Edición P05 durable | PASS backend/API/frontend/E2E; P2 funcional cerrado |
+| Calidad/latencia/costo y severidad | P0=1; P1=0; P2=5; P3=1; calidad pedagógica pendiente de revisión humana posterior |
 | Build, digest y deploy real del worker | pendiente de gate posterior |
 
-El camino interactivo de re-revisión P05 que aún reside en el Service no se
-presenta como real: al anunciar un worker real queda bloqueado hasta migrar esa
-acción a un job durable. El pipeline worker y los evals aislados sí tienen ruta
-P05 explícita. Esta limitación funcional es P2 y no autoriza entregar un review
-mock dentro de un recorrido declarado OpenAI.
+El camino interactivo P05 está ya detrás del worker durable y no puede entregar
+un review mock dentro de un recorrido declarado OpenAI. Esto habilita la
+evaluación manual sólo después de los gates humanos de P0, rotación de clave y
+gasto; no autoriza deploy ni mutación cloud.
 
 Fuentes oficiales: páginas de
 [`gpt-5.6-sol`](https://developers.openai.com/api/docs/models/gpt-5.6-sol),
