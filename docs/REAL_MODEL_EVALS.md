@@ -27,8 +27,12 @@ La ejecución offline valida el manifest, contratos, schemas estrictos,
 Pydantic, ruta y comportamiento mock sin construir un cliente OpenAI:
 
 ```bash
-python scripts/run_openai_evals.py
+.venv/bin/python scripts/run_openai_evals.py
 ```
+
+El checkout usa layout `src/`: estos comandos deben ejecutarse con el
+intérprete preparado del repositorio después de `make install`, no con un
+`python` global que no tenga la instalación editable.
 
 Resultado observado el 2026-08-08: 20/20 PASS, `network_calls=0` y
 `billable_calls=0`. Cada fila offline expone metadata reproducible de perfil,
@@ -42,7 +46,7 @@ Un propietario puede seleccionar un caso por ID, o repetir la opción para
 comparar varios, sin habilitar red:
 
 ```bash
-python scripts/run_openai_evals.py \
+.venv/bin/python scripts/run_openai_evals.py \
   --case-id oa-p07-choice-justification \
   --case-id oa-p07-open-short-txt
 ```
@@ -55,11 +59,14 @@ adaptador OpenAI real con un cliente Responses fake versionado, captura el
 payload y atraviesa el `ModelGateway` auténtico sin leer una clave ni crear red:
 
 ```bash
-python scripts/run_openai_evals.py --mode canary-dry-run \
-  --case-id oa-p01-happy-txt
-python scripts/run_openai_evals.py --mode canary-dry-run \
-  --case-id oa-p07-open-short-txt
+make openai-canary-dry-run CASE_ID=oa-p01-happy-txt
+make openai-canary-dry-run CASE_ID=oa-p07-open-short-txt
 ```
+
+El target usa `PYTHON=.venv/bin/python` por defecto y elimina del proceso
+`CVA_OPENAI_API_KEY` y las dos approvals reales antes de invocar el harness.
+Puede validarse en un entorno limpio ya instalado pasando explícitamente
+`PYTHON=/ruta/al/python-preparado`.
 
 Cada invocación exige exactamente un caso aprobado. Su mapa real contiene
 únicamente el prompt seleccionado, sin P10 ni P11; `max_retries=0` y un guard
@@ -110,7 +117,7 @@ La futura ejecución exige simultáneamente:
 Ejemplo documental, que no debe ejecutarse antes del checkpoint:
 
 ```bash
-python scripts/run_openai_evals.py --mode real --allow-billable \
+.venv/bin/python scripts/run_openai_evals.py --mode real --allow-billable \
   --max-total-cost-usd PRESUPUESTO_APROBADO
 ```
 

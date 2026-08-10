@@ -331,6 +331,33 @@ def test_luna_canary_dry_run_exercises_real_adapter_with_one_fake_request(
     assert prompt_id == eval_harness.CANARY_CASE_PROMPTS[case_id]
 
 
+def test_make_target_runs_p07_canary_dry_run_with_configured_python() -> None:
+    completed = subprocess.run(
+        [
+            "make",
+            "openai-canary-dry-run",
+            f"PYTHON={sys.executable}",
+            "CASE_ID=oa-p07-open-short-txt",
+        ],
+        cwd=ROOT,
+        env=_safe_environment(),
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    report = json.loads(completed.stdout)
+    assert report["status"] == "PASS"
+    assert report["mode"] == "canary-dry-run"
+    assert report["network_calls"] == report["billable_calls"] == 0
+    assert report["max_responses_requests"] == 1
+    assert report["gateway_retries"] == report["prompt_retries"] == 0
+    assert report["sdk_retries"] == 0
+    assert report["p10_calls"] == report["p11_calls"] == report["sol_calls"] == 0
+    assert report["secret_read"] is False
+    assert report["cases"][0]["case_id"] == "oa-p07-open-short-txt"
+
+
 def test_luna_canary_real_mode_stops_at_its_distinct_human_checkpoint() -> None:
     completed = subprocess.run(
         [
