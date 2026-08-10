@@ -240,6 +240,68 @@ describe("Stage 1 blueprint review", () => {
     expect(screen.queryByRole("textbox", { name: /operación/i })).not.toBeInTheDocument();
   });
 
+  it("waits for the durable P05 job before presenting the edited blueprint version", async () => {
+    const user = userEvent.setup();
+    const reviewed = structuredClone(blueprintView);
+    reviewed.etag = '"sha256:blueprint-4"';
+    reviewed.version = 4;
+    reviewed.blueprint.blueprint_version = 4;
+    reviewed.blueprint.dimensions[0].name = "Comprensión causal revisada";
+    vi.mocked(getLatestBlueprint)
+      .mockReset()
+      .mockResolvedValueOnce(structuredClone(blueprintView))
+      .mockResolvedValueOnce(reviewed);
+    vi.mocked(updateBlueprint).mockResolvedValue({
+      ...failedTechnicalJob,
+      job_id: "job_blueprint_review",
+      aggregate_id: "activity_01",
+      stage: "BLUEPRINT_REVIEW",
+      status: "QUEUED",
+      progress: 0,
+      attempt: 1,
+      diagnostics: [],
+    });
+    vi.mocked(getJob).mockResolvedValue({
+      ...failedTechnicalJob,
+      job_id: "job_blueprint_review",
+      aggregate_id: "activity_01",
+      stage: "BLUEPRINT_REVIEW",
+      status: "SUCCEEDED",
+      progress: 1,
+      attempt: 1,
+      diagnostics: [],
+    });
+
+    render(
+      <MemoryRouter initialEntries={["/activities/activity_01/blueprint"]}>
+        <Route path="/activities/:activityId/blueprint"><BlueprintPage /></Route>
+      </MemoryRouter>,
+    );
+
+    await user.click(await screen.findByRole("button", { name: "Editar blueprint" }));
+    const name = screen.getByRole("textbox", { name: "Nombre de dimensión 1" });
+    await user.clear(name);
+    await user.type(name, "Comprensión causal revisada");
+    await user.click(screen.getByRole("button", { name: "Guardar nueva versión" }));
+
+    await waitFor(() =>
+      expect(updateBlueprint).toHaveBeenCalledWith(
+        "activity_01",
+        expect.objectContaining({
+          blueprint_version: 3,
+          dimensions: expect.arrayContaining([
+            expect.objectContaining({ name: "Comprensión causal revisada" }),
+          ]),
+        }),
+        blueprintView.etag,
+      ),
+    );
+    expect(await screen.findByRole("heading", { name: "Comprensión causal revisada" })).toBeInTheDocument();
+    expect(screen.getByText(/blueprint-4/)).toBeInTheDocument();
+    expect(getJob).toHaveBeenCalledWith("job_blueprint_review");
+    expect(getLatestBlueprint).toHaveBeenCalledTimes(2);
+  });
+
   it("continues an approved blueprint into the Stage 2 batch dashboard", async () => {
     const user = userEvent.setup();
     const approved = structuredClone(blueprintView);

@@ -2245,7 +2245,7 @@ class Stage2Service:
         target_stage: str | None = None,
     ) -> dict[str, Any]:
         source = self.repository.job_control(job_id, actor.workspace_id)
-        if source.kind == "ACTIVITY":
+        if source.kind in {"ACTIVITY", "BLUEPRINT_REVIEW"}:
             self._require_teacher(actor)
         else:
             self._require_reviewer(actor)
@@ -2300,6 +2300,7 @@ class Stage2Service:
                         "ASSEMBLE",
                     },
                     "QUESTION_ACTION": {"QUESTION_GENERATE"},
+                    "BLUEPRINT_REVIEW": {"BLUEPRINT_REVIEW"},
                 }
                 if resume_from not in allowed_stages.get(source.kind, set()):
                     raise WorkflowError(

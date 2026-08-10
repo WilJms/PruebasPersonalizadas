@@ -732,12 +732,27 @@ def test_stage1_single_submission_mock_e2e_survives_new_browser_session() -> Non
             headers=_mutating(headers, **{"If-Match": latest.headers["etag"]}),
             json=original,
         )
-        assert edited.status_code == 200, edited.text
-        dto.BlueprintEnvelope.model_validate(edited.json())
-        assert edited.json()["blueprint"]["blueprint_version"] == 2
+        assert edited.status_code == 202, edited.text
+        queued_edit = dto.JobEnvelope.model_validate(edited.json()).job
+        assert queued_edit.status == "SUCCEEDED"
+        assert queued_edit.stage == "BLUEPRINT_REVIEW"
+        edit_ledger = client.get(
+            f"/api/v1/jobs/{queued_edit.job_id}/model-calls"
+        ).json()["items"]
+        assert [item["prompt_id"] for item in edit_ledger] == [
+            "P05_BLUEPRINT_REVIEW_V1"
+        ]
+        reviewed_edit = client.get(
+            f"/api/v1/activities/{activity_id}/blueprints/latest"
+        )
+        assert reviewed_edit.status_code == 200, reviewed_edit.text
+        dto.BlueprintEnvelope.model_validate(reviewed_edit.json())
+        assert reviewed_edit.json()["blueprint"]["blueprint_version"] == 2
         approved = client.post(
             f"/api/v1/activities/{activity_id}/blueprints/2:approve",
-            headers=_mutating(headers, **{"If-Match": edited.headers["etag"]}),
+            headers=_mutating(
+                headers, **{"If-Match": reviewed_edit.headers["etag"]}
+            ),
             json={},
         )
         assert approved.status_code == 200, approved.text

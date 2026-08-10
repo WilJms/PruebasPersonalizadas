@@ -43,6 +43,7 @@ STAGE2_SUBMISSION_CONSTRAINT = "uq_submissions_tenant_activity_subject"
 STAGE2_JOB_CONTROL_CONSTRAINT = "ck_jobs_control_state"
 STAGE2_CONTINUATION_CONSTRAINT = "uq_job_control_records_source_attempt"
 QUESTION_ACTION_DESCRIPTOR_STAGE = "QUESTION_ACTION_DESCRIPTOR"
+BLUEPRINT_REVIEW_DESCRIPTOR_STAGE = "BLUEPRINT_REVIEW_DESCRIPTOR"
 
 JOB_CONTROL_STATES = frozenset({"ACTIVE", "CANCEL_REQUESTED", "CANCELLED"})
 JOB_FAILURE_CLASSES = frozenset(
@@ -1426,6 +1427,157 @@ class Repository:
             activity.updated_at = utc_now()
             session.add(self._job_row(status, "ACTIVITY"))
 
+    def prepare_blueprint_review_job(
+        self,
+        *,
+        status: m.JobStatus,
+        source_version: int,
+        source_etag: str,
+        descriptor_output: dict[str, Any],
+        descriptor_component_version: str,
+        descriptor_policy_hash: str,
+        actor_id: str,
+        occurred_at: datetime,
+    ) -> tuple[JobRow, StageRunRow]:
+        """Atomically freeze an editable blueprint and persist its worker input."""
+
+        review_request = m.BlueprintReviewRequest.model_validate(
+            descriptor_output.get("review_request")
+        )
+        target = review_request.blueprint
+        if any(
+            (
+                status.stage != "BLUEPRINT_REVIEW",
+                status.status != "QUEUED",
+                status.attempt != 0,
+                status.aggregate_id != target.activity_id,
+                target.blueprint_version != source_version + 1,
+                descriptor_output.get("source_blueprint_version") != source_version,
+                descriptor_output.get("source_etag") != source_etag,
+            )
+        ):
+            raise ValueError("invalid blueprint review preparation state")
+
+        descriptor_inputs = {
+            "job_id": status.job_id,
+            "source_blueprint_version": source_version,
+            "source_etag": source_etag,
+            "review_request": review_request.model_dump(mode="json"),
+        }
+        input_hash = canonical_hash(descriptor_inputs)
+        stage_key = canonical_hash(
+            {
+                "tenant_id": status.tenant_id,
+                "stage": BLUEPRINT_REVIEW_DESCRIPTOR_STAGE,
+                "inputs": descriptor_inputs,
+                "policy_hash": descriptor_policy_hash,
+                "component_version": descriptor_component_version,
+            }
+        )
+        output_hash = canonical_hash(descriptor_output)
+        descriptor_id = stable_id(
+            "stage",
+            status.job_id,
+            BLUEPRINT_REVIEW_DESCRIPTOR_STAGE,
+            stage_key,
+            1,
+        )
+        event_id = stable_id(
+            "evt",
+            status.tenant_id,
+            "blueprint.review_queued",
+            status.job_id,
+        )
+
+        try:
+            with self.session() as session:
+                activity_statement = select(ActivityRow).where(
+                    ActivityRow.id == status.aggregate_id,
+                    ActivityRow.tenant_id == status.tenant_id,
+                )
+                latest_statement = (
+                    select(BlueprintRow)
+                    .where(
+                        BlueprintRow.activity_id == status.aggregate_id,
+                        BlueprintRow.tenant_id == status.tenant_id,
+                    )
+                    .order_by(BlueprintRow.version.desc())
+                    .limit(1)
+                )
+                if self.engine.dialect.name == "postgresql":
+                    activity_statement = activity_statement.with_for_update()
+                    latest_statement = latest_statement.with_for_update()
+                activity = session.scalar(activity_statement)
+                latest = session.scalar(latest_statement)
+                if activity is None or latest is None:
+                    raise NotFound("blueprint not found")
+                if activity.status not in {"BLUEPRINT_READY", "NEEDS_REVIEW"}:
+                    raise Conflict("BLUEPRINT_EDIT_NOT_ALLOWED")
+                if latest.version != source_version:
+                    raise Conflict("BLUEPRINT_VERSION_CONFLICT")
+                if latest.etag != source_etag:
+                    raise Conflict("ETAG_MISMATCH")
+                source = m.AssessmentBlueprint.model_validate(latest.data)
+                if (
+                    source.status != m.WorkflowStatus.READY
+                    or source.approved_by is not None
+                    or source.approved_at is not None
+                ):
+                    raise Conflict("BLUEPRINT_FROZEN")
+                if (
+                    target.activity_id != source.activity_id
+                    or target.blueprint_id != source.blueprint_id
+                ):
+                    raise Conflict("BLUEPRINT_REFERENCE_MISMATCH")
+                if session.get(JobRow, status.job_id) is not None:
+                    raise Conflict("BLUEPRINT_REVIEW_JOB_ALREADY_EXISTS")
+
+                job = self._job_row(status, "BLUEPRINT_REVIEW")
+                descriptor = StageRunRow(
+                    id=descriptor_id,
+                    job_id=status.job_id,
+                    tenant_id=status.tenant_id,
+                    stage=BLUEPRINT_REVIEW_DESCRIPTOR_STAGE,
+                    stage_key=stage_key,
+                    status="SUCCEEDED",
+                    attempt=1,
+                    input_hash=input_hash,
+                    policy_hash=descriptor_policy_hash,
+                    component_version=descriptor_component_version,
+                    output=descriptor_output,
+                    output_hash=output_hash,
+                    diagnostics=[],
+                    started_at=occurred_at,
+                    finished_at=occurred_at,
+                )
+                session.add(job)
+                session.add(descriptor)
+                session.add(
+                    AuditEventRow(
+                        id=event_id,
+                        tenant_id=status.tenant_id,
+                        event_type="blueprint.review_queued",
+                        aggregate_id=status.aggregate_id,
+                        actor_id=actor_id,
+                        payload={
+                            "job_id": status.job_id,
+                            "source_blueprint_version": source_version,
+                            "target_blueprint_version": target.blueprint_version,
+                            "review_request_hash": canonical_hash(
+                                review_request.model_dump(mode="json")
+                            ),
+                            "prompt_version": descriptor_component_version,
+                        },
+                        occurred_at=occurred_at,
+                    )
+                )
+                activity.status = "BLUEPRINT_REVIEW_QUEUED"
+                activity.updated_at = occurred_at
+                session.flush()
+                return job, descriptor
+        except IntegrityError as exc:
+            raise Conflict("BLUEPRINT_REVIEW_PREPARATION_CONFLICT") from exc
+
     def queue_submission_job(
         self,
         status: m.JobStatus,
@@ -1758,6 +1910,167 @@ class Repository:
                 raise Conflict("QUESTION_ACTION_DESCRIPTOR_HASH_MISMATCH")
             return row
 
+    def blueprint_review_descriptor(
+        self, *, job_ids: list[str], tenant_id: str
+    ) -> StageRunRow | None:
+        """Return the single hash-verified P05 request across a retry lineage."""
+
+        if not job_ids:
+            return None
+        with self.session() as session:
+            rows = list(
+                session.scalars(
+                    select(StageRunRow)
+                    .where(
+                        StageRunRow.job_id.in_(job_ids),
+                        StageRunRow.tenant_id == tenant_id,
+                        StageRunRow.stage == BLUEPRINT_REVIEW_DESCRIPTOR_STAGE,
+                        StageRunRow.status == "SUCCEEDED",
+                        StageRunRow.output_hash.is_not(None),
+                    )
+                    .order_by(StageRunRow.started_at, StageRunRow.id)
+                )
+            )
+            if not rows:
+                return None
+            if len(rows) != 1:
+                raise Conflict("BLUEPRINT_REVIEW_DESCRIPTOR_AMBIGUOUS")
+            row = rows[0]
+            if row.output is None or row.output_hash != canonical_hash(row.output):
+                raise Conflict("BLUEPRINT_REVIEW_DESCRIPTOR_HASH_MISMATCH")
+            source_version = row.output.get("source_blueprint_version")
+            source_etag = row.output.get("source_etag")
+            source_status = row.output.get("source_activity_status")
+            try:
+                request = m.BlueprintReviewRequest.model_validate(
+                    row.output.get("review_request")
+                )
+            except Exception as exc:
+                raise Conflict("BLUEPRINT_REVIEW_DESCRIPTOR_INVALID") from exc
+            if any(
+                (
+                    not isinstance(source_version, int),
+                    not isinstance(source_etag, str),
+                    source_status not in {"BLUEPRINT_READY", "NEEDS_REVIEW"},
+                    request.blueprint.blueprint_version != source_version + 1,
+                )
+            ):
+                raise Conflict("BLUEPRINT_REVIEW_DESCRIPTOR_INVALID")
+            return row
+
+    def finalize_blueprint_review_job(
+        self,
+        *,
+        job_id: str,
+        tenant_id: str,
+        source_version: int,
+        source_etag: str,
+        blueprint: BlueprintRow,
+        actor_id: str,
+    ) -> bool:
+        """Atomically publish the next immutable blueprint and finish its job."""
+
+        value = m.AssessmentBlueprint.model_validate(blueprint.data)
+        review = m.BlueprintReview.model_validate(blueprint.review)
+        if any(
+            (
+                blueprint.tenant_id != tenant_id,
+                blueprint.activity_id != value.activity_id,
+                blueprint.blueprint_id != value.blueprint_id,
+                blueprint.version != source_version + 1,
+                value.blueprint_version != blueprint.version,
+                review.blueprint_id != value.blueprint_id,
+                review.blueprint_version != value.blueprint_version,
+                value.status != m.WorkflowStatus.READY,
+                value.approved_by is not None,
+                value.approved_at is not None,
+            )
+        ):
+            raise ValueError("blueprint review finalization references are inconsistent")
+
+        now = utc_now()
+        try:
+            with self.session() as session:
+                job = self._lock_job(
+                    session, job_id, tenant_id, self.engine.dialect.name
+                )
+                activity_statement = select(ActivityRow).where(
+                    ActivityRow.id == blueprint.activity_id,
+                    ActivityRow.tenant_id == tenant_id,
+                )
+                latest_statement = (
+                    select(BlueprintRow)
+                    .where(
+                        BlueprintRow.activity_id == blueprint.activity_id,
+                        BlueprintRow.tenant_id == tenant_id,
+                    )
+                    .order_by(BlueprintRow.version.desc())
+                    .limit(1)
+                )
+                if self.engine.dialect.name == "postgresql":
+                    activity_statement = activity_statement.with_for_update()
+                    latest_statement = latest_statement.with_for_update()
+                activity = session.scalar(activity_statement)
+                latest = session.scalar(latest_statement)
+                if activity is None or latest is None:
+                    raise NotFound("blueprint not found")
+                if job.kind != "BLUEPRINT_REVIEW" or job.aggregate_id != activity.id:
+                    raise Conflict("BLUEPRINT_REVIEW_JOB_MISMATCH")
+                if job.control_state != "ACTIVE":
+                    if job.control_state == "CANCEL_REQUESTED":
+                        self._complete_job_cancellation(session, job, now)
+                    return False
+                if job.status != "RUNNING":
+                    raise Conflict("BLUEPRINT_REVIEW_JOB_NOT_RUNNING")
+                if activity.status != "BLUEPRINT_REVIEW_QUEUED":
+                    raise Conflict("BLUEPRINT_REVIEW_ACTIVITY_STATE_CHANGED")
+                if latest.version != source_version or latest.etag != source_etag:
+                    raise Conflict("BLUEPRINT_REVIEW_SOURCE_CHANGED")
+
+                session.add(blueprint)
+                review_allows_approval = (
+                    review.status == "READY"
+                    and review.approval_recommendation
+                    != m.BlueprintApprovalRecommendation.REJECT
+                )
+                activity.status = (
+                    "BLUEPRINT_READY" if review_allows_approval else "NEEDS_REVIEW"
+                )
+                activity.updated_at = now
+                job.stage = "BLUEPRINT_REVIEW"
+                job.status = "SUCCEEDED"
+                job.progress = 1.0
+                job.failure_class = None
+                job.next_attempt_at = None
+                job.finished_at = now
+                session.add(
+                    AuditEventRow(
+                        id=stable_id(
+                            "evt",
+                            tenant_id,
+                            "blueprint.edited",
+                            blueprint.blueprint_id,
+                            blueprint.version,
+                        ),
+                        tenant_id=tenant_id,
+                        event_type="blueprint.edited",
+                        aggregate_id=blueprint.blueprint_id,
+                        actor_id=actor_id,
+                        payload={
+                            "source_blueprint_version": source_version,
+                            "blueprint_version": blueprint.version,
+                            "review_status": review.status,
+                            "approval_recommendation": review.approval_recommendation,
+                            "job_id": job.id,
+                        },
+                        occurred_at=now,
+                    )
+                )
+                session.flush()
+                return True
+        except IntegrityError as exc:
+            raise Conflict("BLUEPRINT_VERSION_CONFLICT") from exc
+
     def fail_queued_dispatch(
         self,
         *,
@@ -1784,7 +2097,7 @@ class Repository:
             row.diagnostics = [failure.model_dump(mode="json")]
             row.next_attempt_at = None
             row.finished_at = now
-            if row.kind == "ACTIVITY":
+            if row.kind in {"ACTIVITY", "BLUEPRINT_REVIEW"}:
                 statement = select(ActivityRow).where(
                     ActivityRow.id == row.aggregate_id,
                     ActivityRow.tenant_id == tenant_id,
@@ -1981,6 +2294,37 @@ class Repository:
             # StageRuns remain durable and a later explicit run may reuse only
             # hash/version-compatible outputs.
             activity.status = "DRAFT"
+            activity.updated_at = completed_at
+            return
+        if row.kind == "BLUEPRINT_REVIEW":
+            activity_statement = select(ActivityRow).where(
+                ActivityRow.id == row.aggregate_id,
+                ActivityRow.tenant_id == row.tenant_id,
+            )
+            latest_statement = (
+                select(BlueprintRow)
+                .where(
+                    BlueprintRow.activity_id == row.aggregate_id,
+                    BlueprintRow.tenant_id == row.tenant_id,
+                )
+                .order_by(BlueprintRow.version.desc())
+                .limit(1)
+            )
+            if self.engine.dialect.name == "postgresql":
+                activity_statement = activity_statement.with_for_update()
+                latest_statement = latest_statement.with_for_update()
+            activity = session.scalar(activity_statement)
+            latest = session.scalar(latest_statement)
+            if activity is None or latest is None:
+                raise NotFound("blueprint not found")
+            review = m.BlueprintReview.model_validate(latest.review)
+            activity.status = (
+                "BLUEPRINT_READY"
+                if review.status == "READY"
+                and review.approval_recommendation
+                != m.BlueprintApprovalRecommendation.REJECT
+                else "NEEDS_REVIEW"
+            )
             activity.updated_at = completed_at
             return
         if row.kind != "SUBMISSION":
@@ -2217,6 +2561,25 @@ class Repository:
         result: JobRow,
         activated_at: datetime,
     ) -> None:
+        if source.kind == "BLUEPRINT_REVIEW":
+            statement = select(ActivityRow).where(
+                ActivityRow.id == source.aggregate_id,
+                ActivityRow.tenant_id == source.tenant_id,
+            )
+            if self.engine.dialect.name == "postgresql":
+                statement = statement.with_for_update()
+            activity = session.scalar(statement)
+            if activity is None:
+                raise NotFound("activity not found")
+            if activity.status not in {
+                "TECHNICAL_FAILURE",
+                "NEEDS_REVIEW",
+                "BLUEPRINT_READY",
+            }:
+                raise Conflict("BLUEPRINT_REVIEW_CONTINUATION_NOT_ALLOWED")
+            activity.status = "BLUEPRINT_REVIEW_QUEUED"
+            activity.updated_at = activated_at
+            return
         if source.kind != "SUBMISSION":
             return
         statement = select(SubmissionRow).where(
@@ -2311,7 +2674,7 @@ class Repository:
                 row.diagnostics = [failure.model_dump(mode="json")]
                 row.next_attempt_at = None
                 row.finished_at = reconciled_at
-                if row.kind == "ACTIVITY":
+                if row.kind in {"ACTIVITY", "BLUEPRINT_REVIEW"}:
                     activity = session.scalar(
                         select(ActivityRow).where(
                             ActivityRow.id == row.aggregate_id,

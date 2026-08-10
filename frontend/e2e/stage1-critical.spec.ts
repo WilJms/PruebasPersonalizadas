@@ -67,6 +67,21 @@ test("critical Stage 1 journey survives browser restart and enforces evidence-fi
   ).toBeVisible();
   await expect(page.getByText(/Dificultad derivada/).first()).toBeVisible();
   await expect(page.getByText("Revisión P05")).toBeVisible();
+  await page.getByRole("button", { name: "Editar blueprint" }).click();
+  await page.getByRole("textbox", { name: "Nombre de dimensión 1" }).fill(
+    "Comprensión verificable revisada por job P05",
+  );
+  await page.getByRole("button", { name: "Guardar nueva versión" }).click();
+  await expect(
+    page.getByRole("heading", {
+      name: "Comprensión verificable revisada por job P05",
+      exact: true,
+    }),
+  ).toBeVisible();
+  await expect(page.getByText("Blueprint · versión 2")).toBeVisible();
+  await assertViewportDoesNotOverflow(page, 320);
+  await assertViewportDoesNotOverflow(page, 390);
+  await page.setViewportSize({ width: 1280, height: 900 });
   await page.getByRole("button", { name: "Aprobar blueprint" }).click();
   await expect(page.getByRole("button", { name: "Abrir lote de entregas" })).toBeVisible();
   await page.getByRole("button", { name: "Abrir lote de entregas" }).click();

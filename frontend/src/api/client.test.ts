@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { assessmentBundle } from "../test/fixtures";
+import { assessmentBundle, blueprintView } from "../test/fixtures";
 import {
   approveAssessment,
   createSubmissionBatch,
@@ -13,6 +13,7 @@ import {
   resumeJob,
   retryJob,
   reviewQuestion,
+  updateBlueprint,
 } from "./client";
 
 const session = {
@@ -142,6 +143,39 @@ describe("API client security defaults", () => {
     const headers = new Headers(init.headers);
     expect(headers.get("If-Match")).toBe('W/"assessment-1"');
     expect(headers.get("Idempotency-Key")).toMatch(/^[0-9a-f-]{36}$/i);
+  });
+
+  it("starts durable blueprint review with If-Match and returns the accepted job", async () => {
+    const job = {
+      schema_version: "1.1.0",
+      job_id: "job_blueprint_review_01",
+      tenant_id: "tenant_01",
+      aggregate_id: "activity_01",
+      stage: "BLUEPRINT_REVIEW",
+      status: "QUEUED",
+      progress: 0,
+      attempt: 1,
+      diagnostics: [],
+    };
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ job }), {
+        status: 202,
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(
+      updateBlueprint("activity_01", blueprintView.blueprint, blueprintView.etag),
+    ).resolves.toEqual(job);
+
+    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    const headers = new Headers(init.headers);
+    expect(url).toBe("/api/v1/activities/activity_01/blueprints/3");
+    expect(init.method).toBe("PATCH");
+    expect(headers.get("If-Match")).toBe(blueprintView.etag);
+    expect(headers.get("Idempotency-Key")).toMatch(/^[0-9a-f-]{36}$/i);
+    expect(JSON.parse(String(init.body))).toEqual(blueprintView.blueprint);
   });
 
   it("follows evidence cursors until every signed source is loaded", async () => {

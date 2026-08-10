@@ -360,8 +360,8 @@ export async function updateBlueprint(
   activityId: string,
   blueprint: AssessmentBlueprint,
   etag: string,
-): Promise<BlueprintView> {
-  const result = await requestWithMeta<unknown>(
+): Promise<JobStatus> {
+  const result = await request<unknown>(
     `/activities/${activityId}/blueprints/${blueprint.blueprint_version}`,
     {
       method: "PATCH",
@@ -369,7 +369,7 @@ export async function updateBlueprint(
       body: JSON.stringify(blueprint),
     },
   );
-  return normalizeBlueprintView(result.data, result.etag);
+  return pick<JobStatus>(result, "job");
 }
 
 export async function approveBlueprint(

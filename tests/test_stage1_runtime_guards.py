@@ -21,9 +21,19 @@ from pydantic import ValidationError
 from comprehension_verification.web import worker
 from comprehension_verification.web.app import create_app
 from comprehension_verification.web.object_store import MemoryObjectStore
-from comprehension_verification.web.repository import JobRow, Repository
+from comprehension_verification.web.repository import Conflict, JobRow, Repository
 from comprehension_verification.web.settings import Settings, WorkerSettings
 from comprehension_verification.web.workflows import Stage1Service, WorkflowError
+
+
+def test_blueprint_review_lineage_conflicts_are_precondition_failures() -> None:
+    failure_class, retryable, code = Stage1Service._classify_failure(
+        Conflict("BLUEPRINT_REVIEW_DESCRIPTOR_HASH_MISMATCH")
+    )
+
+    assert failure_class.value == "PRECONDITION"
+    assert retryable is False
+    assert code == "BLUEPRINT_REVIEW_DESCRIPTOR_HASH_MISMATCH"
 
 
 def _unused_local_port() -> int:
@@ -103,25 +113,13 @@ def test_cloud_accepts_only_complete_explicit_psycopg_configuration() -> None:
     assert settings.p10_enabled is False
 
 
-def test_web_with_real_worker_has_no_key_and_blocks_direct_model_execution() -> None:
+def test_web_with_real_worker_has_no_key_or_direct_model_execution_path() -> None:
     settings = Settings(**_cloud_settings(worker_model_mode="real"))
     assert settings.model_mode == "mock"
     assert settings.worker_model_mode == "real"
     assert settings.openai_api_key is None
 
-    service = object.__new__(Stage1Service)
-    service.settings = settings
-    with pytest.raises(WorkflowError, match="durable worker job") as caught:
-        asyncio.run(
-            service._direct_gateway(
-                "job_synthetic",
-                "tnt_synthetic",
-                "P05_BLUEPRINT_REVIEW_V1",
-                object(),  # type: ignore[arg-type]
-                object,  # type: ignore[arg-type]
-            )
-        )
-    assert caught.value.code == "MODEL_EXECUTION_REQUIRES_WORKER"
+    assert not hasattr(Stage1Service, "_direct_gateway")
 
 
 def test_job_budget_reconstructs_conservative_spend_from_persisted_ledgers() -> None:

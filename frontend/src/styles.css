@@ -2853,8 +2853,9 @@ button.source-link {
   .form-actions .button,
   .sticky-actions .button { width: 100%; }
   .sticky-actions > div:last-child { flex-direction: column; width: 100%; }
-  .review-banner { flex-direction: column; }
+  .review-banner { flex-direction: column; flex-wrap: nowrap; }
   .review-checks { justify-content: flex-start; }
+  .review-check-details { flex-basis: auto; width: 100%; }
   .dimension-card > header { grid-template-columns: auto minmax(0, 1fr); }
   .priority-meter { grid-column: 2; justify-items: start; }
   .opportunity-header { display: none; }

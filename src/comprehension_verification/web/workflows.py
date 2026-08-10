@@ -106,6 +106,7 @@ _SUBMISSION_RESUME_ORDER = {
     "GUIDE_BUILD": 5,
     "ASSEMBLE": 6,
 }
+_BLUEPRINT_REVIEW_RESUME_ORDER = {"BLUEPRINT_REVIEW": 0}
 _PROMPT_APPLICATION_STAGE = {
     "P01_ACTIVITY_SPEC_V1": "ACTIVITY_SPEC",
     "P02_RUBRIC_NORMALIZE_V1": "RUBRIC_NORMALIZE",
@@ -153,6 +154,11 @@ _PRECONDITION_FAILURE_CODES = frozenset(
         "QUESTION_ACTION_ACTOR_REVOKED",
         "QUESTION_ACTION_RETRY_SOURCE_MISSING",
         "QUESTION_ACTION_VERSION_CHANGED",
+        "BLUEPRINT_REVIEW_DESCRIPTOR_MISSING",
+        "BLUEPRINT_REVIEW_DESCRIPTOR_INVALID",
+        "BLUEPRINT_REVIEW_DESCRIPTOR_HASH_MISMATCH",
+        "BLUEPRINT_REVIEW_DESCRIPTOR_VERSION_MISMATCH",
+        "BLUEPRINT_REVIEW_SOURCE_CHANGED",
     }
 )
 
@@ -1142,6 +1148,8 @@ class Stage1Service:
                 await self._run_activity_pipeline(job)
             elif job.kind == "SUBMISSION":
                 await self._run_submission_pipeline(job)
+            elif job.kind == "BLUEPRINT_REVIEW":
+                await self._run_blueprint_review_job(job)
             elif job.kind == "QUESTION_ACTION" and self._question_action_processor:
                 await self._question_action_processor(job)
             else:
@@ -1322,6 +1330,122 @@ class Stage1Service:
             return
         self.repository.set_activity_status(activity.id, job.tenant_id, "BLUEPRINT_READY")
         self._complete_job(job, "BLUEPRINT_REVIEW")
+
+    async def _run_blueprint_review_job(self, job: JobRow) -> None:
+        """Review one teacher edit through the same durable P05 boundary."""
+
+        self._set_job(job, "BLUEPRINT_REVIEW", 0.25)
+        descriptor = self.repository.blueprint_review_descriptor(
+            job_ids=self._job_lineage_ids(job),
+            tenant_id=job.tenant_id,
+        )
+        if descriptor is None or descriptor.output is None:
+            raise WorkflowError(
+                "BLUEPRINT_REVIEW_DESCRIPTOR_MISSING",
+                "The durable blueprint review input is unavailable.",
+                status_code=409,
+            )
+        if (
+            descriptor.component_version != PROMPT_VERSION
+            or descriptor.policy_hash != self._stage_policy_hash(job)
+        ):
+            raise WorkflowError(
+                "BLUEPRINT_REVIEW_DESCRIPTOR_VERSION_MISMATCH",
+                "The durable blueprint review input no longer matches this worker.",
+                status_code=409,
+            )
+        try:
+            request = m.BlueprintReviewRequest.model_validate(
+                descriptor.output.get("review_request")
+            )
+            source_version = TypeAdapter(int).validate_python(
+                descriptor.output.get("source_blueprint_version")
+            )
+            source_etag = TypeAdapter(str).validate_python(
+                descriptor.output.get("source_etag")
+            )
+            actor_id = TypeAdapter(m.Id).validate_python(
+                descriptor.output.get("actor_id")
+            )
+        except ValidationError as exc:
+            raise WorkflowError(
+                "BLUEPRINT_REVIEW_DESCRIPTOR_INVALID",
+                "The durable blueprint review input is invalid.",
+                status_code=409,
+            ) from exc
+        if (
+            request.blueprint.activity_id != job.aggregate_id
+            or request.blueprint.blueprint_version != source_version + 1
+        ):
+            raise WorkflowError(
+                "BLUEPRINT_REVIEW_DESCRIPTOR_INVALID",
+                "The durable blueprint review references are inconsistent.",
+                status_code=409,
+            )
+
+        activity = cast(
+            ActivityRow,
+            self.repository.scoped(ActivityRow, job.aggregate_id, job.tenant_id),
+        )
+        latest = self.repository.latest_blueprint(job.aggregate_id, job.tenant_id)
+        original = m.AssessmentBlueprint.model_validate(latest.data)
+        persisted_activity_spec = m.ActivitySpec.model_validate(
+            cast(
+                ActivitySpecRow,
+                self.repository.scoped(
+                    ActivitySpecRow, job.aggregate_id, job.tenant_id
+                ),
+            ).data
+        )
+        try:
+            persisted_rubric = m.RubricSpec.model_validate(
+                cast(
+                    RubricSpecRow,
+                    self.repository.scoped(
+                        RubricSpecRow, job.aggregate_id, job.tenant_id
+                    ),
+                ).data
+            )
+        except NotFound:
+            persisted_rubric = None
+        if any(
+            (
+                latest.version != source_version,
+                latest.etag != source_etag,
+                request.activity_spec != persisted_activity_spec,
+                request.rubric_spec != persisted_rubric,
+                request.blueprint_policy
+                != m.BlueprintPolicy.model_validate(activity.blueprint_policy),
+                request.resolved_decisions
+                != self._resolved_policy_decisions(job.aggregate_id, job.tenant_id),
+                _blueprint_structure(request.blueprint)
+                != _blueprint_structure(original),
+            )
+        ):
+            raise WorkflowError(
+                "BLUEPRINT_REVIEW_SOURCE_CHANGED",
+                "The blueprint review source changed before worker execution.",
+                status_code=409,
+            )
+
+        review = await self._gateway_stage(
+            job,
+            "P05_BLUEPRINT_REVIEW_V1",
+            request,
+            m.BlueprintReview,
+        )
+        self._cancellation_checkpoint(job)
+        row = self._blueprint_row(job.tenant_id, request.blueprint, review)
+        finalized = self.repository.finalize_blueprint_review_job(
+            job_id=job.id,
+            tenant_id=job.tenant_id,
+            source_version=source_version,
+            source_etag=source_etag,
+            blueprint=row,
+            actor_id=actor_id,
+        )
+        if not finalized:
+            raise _CooperativeJobCancellation
 
     async def _run_submission_pipeline(self, job: JobRow) -> None:
         submission = cast(SubmissionRow, self.repository.scoped(SubmissionRow, job.aggregate_id, job.tenant_id))
@@ -1665,7 +1789,7 @@ class Stage1Service:
 
     async def edit_blueprint(
         self, *, activity_id: str, version: int, if_match: str, edited: m.AssessmentBlueprint, actor: Actor
-    ) -> BlueprintRow:
+    ) -> m.JobStatus:
         if actor.role not in {"OWNER", "TEACHER"}:
             raise WorkflowError("ROLE_FORBIDDEN", "Only teachers may edit blueprints", status_code=403)
         current = self.repository.blueprint_version(activity_id, version, actor.workspace_id)
@@ -1711,37 +1835,86 @@ class Stage1Service:
                 "Blueprint editing is not allowed in the current activity state",
                 status_code=409,
             )
-        activity_spec = m.ActivitySpec.model_validate(cast(ActivitySpecRow, self.repository.get(ActivitySpecRow, activity_id)).data)
+        activity_spec = m.ActivitySpec.model_validate(
+            cast(
+                ActivitySpecRow,
+                self.repository.scoped(
+                    ActivitySpecRow, activity_id, actor.workspace_id
+                ),
+            ).data
+        )
         try:
-            rubric_spec = m.RubricSpec.model_validate(cast(RubricSpecRow, self.repository.get(RubricSpecRow, activity_id)).data)
+            rubric_spec = m.RubricSpec.model_validate(
+                cast(
+                    RubricSpecRow,
+                    self.repository.scoped(
+                        RubricSpecRow, activity_id, actor.workspace_id
+                    ),
+                ).data
+            )
         except NotFound:
             rubric_spec = None
         resolved_decisions = self._resolved_policy_decisions(
             activity_id, actor.workspace_id
         )
-        review = await self._direct_gateway(
-            stable_id("job", activity_id, "blueprint_edit", updated.blueprint_version),
-            actor.workspace_id,
-            "P05_BLUEPRINT_REVIEW_V1",
-            m.BlueprintReviewRequest(
-                blueprint=updated,
-                activity_spec=activity_spec,
-                rubric_spec=rubric_spec,
-                resolved_decisions=resolved_decisions,
-                blueprint_policy=m.BlueprintPolicy.model_validate(activity.blueprint_policy),
+        review_request = m.BlueprintReviewRequest(
+            blueprint=updated,
+            activity_spec=activity_spec,
+            rubric_spec=rubric_spec,
+            resolved_decisions=resolved_decisions,
+            blueprint_policy=m.BlueprintPolicy.model_validate(
+                activity.blueprint_policy
             ),
-            m.BlueprintReview,
         )
-        row = self._blueprint_row(actor.workspace_id, updated, review)
+        queued = self._new_job(
+            actor.workspace_id,
+            activity_id,
+            "blueprint_review",
+            "BLUEPRINT_REVIEW",
+        )
+        queued_at = utc_now()
+        descriptor_output = {
+            "kind": "BLUEPRINT_REVIEW_DESCRIPTOR",
+            "source_blueprint_version": current.version,
+            "source_etag": current.etag,
+            "source_activity_status": activity.status,
+            "actor_id": actor.user_id,
+            "review_request": review_request.model_dump(mode="json"),
+        }
         try:
-            self.repository.add(row)
-        except IntegrityError as exc:
+            self.repository.prepare_blueprint_review_job(
+                status=queued,
+                source_version=current.version,
+                source_etag=current.etag,
+                descriptor_output=descriptor_output,
+                descriptor_component_version=PROMPT_VERSION,
+                descriptor_policy_hash=self._model_policy_hash(activity),
+                actor_id=actor.user_id,
+                occurred_at=queued_at,
+            )
+        except Conflict as exc:
+            code = str(exc)
+            status_code = 412 if code == "ETAG_MISMATCH" else 409
             raise WorkflowError(
-                "BLUEPRINT_VERSION_CONFLICT",
-                "Blueprint version was changed concurrently",
-                status_code=409,
+                code,
+                "The blueprint review could not be queued from this version.",
+                status_code=status_code,
             ) from exc
-        return row
+        if self.job_runner is None:
+            raise RuntimeError("JobRunner is not configured")
+        try:
+            await self.job_runner.dispatch(queued.job_id)
+        except Exception:
+            self.repository.fail_queued_dispatch(
+                job_id=queued.job_id,
+                tenant_id=actor.workspace_id,
+                failure=diagnostic(
+                    "JOB_DISPATCH_FAILED",
+                    "The durable blueprint review could not be dispatched.",
+                    retryable=True,
+                ),
+            )
+        return self.repository.job_status(queued.job_id, actor.workspace_id)
 
     def approve_blueprint(self, *, activity_id: str, version: int, if_match: str, actor: Actor) -> BlueprintRow:
         if actor.role not in {"OWNER", "TEACHER"}:
@@ -2490,28 +2663,6 @@ class Stage1Service:
         )
         return max(0.0, self.settings.max_job_cost_usd - spent)
 
-    async def _direct_gateway(self, job_id: str, tenant_id: str, prompt_id: str, request: BaseModel, output_model: type[T]) -> T:
-        if getattr(
-            self.settings, "worker_model_mode", self.settings.model_mode
-        ) == "real":
-            raise WorkflowError(
-                "MODEL_EXECUTION_REQUIRES_WORKER",
-                "Interactive model review is blocked until it is backed by a durable worker job",
-                status_code=409,
-            )
-        trusted = build_trusted_context(request).model_copy(
-            update={"tenant_id": tenant_id}
-        )
-        result = await self._gateway(job_id).invoke(
-            prompt_id,
-            request,
-            trusted,
-            budget=CallBudget(
-                max_cost_usd=self._remaining_model_budget_usd(job_id, tenant_id)
-            ),
-        )
-        return cast(T, output_model.model_validate(result.output.model_dump(mode="json")))
-
     async def _gateway_stage(
         self, job: JobRow, prompt_id: str, request: BaseModel, output_model: type[T], *, cache_suffix: str = ""
     ) -> T:
@@ -2578,6 +2729,8 @@ class Stage1Service:
     def _resume_order(self, job: JobRow) -> dict[str, int]:
         if job.kind == "ACTIVITY":
             return _ACTIVITY_RESUME_ORDER
+        if job.kind == "BLUEPRINT_REVIEW":
+            return _BLUEPRINT_REVIEW_RESUME_ORDER
         if job.kind == "SUBMISSION":
             return _SUBMISSION_RESUME_ORDER
         if job.kind == "QUESTION_ACTION":
@@ -2666,8 +2819,21 @@ class Stage1Service:
             )
         self._resume_floor_reached.add(job.id)
 
+    def _model_policy_hash(self, activity: ActivityRow) -> str:
+        return canonical_hash(
+            {
+                "blueprint_policy": activity.blueprint_policy,
+                "model_mode": getattr(
+                    self.settings,
+                    "worker_model_mode",
+                    self.settings.model_mode,
+                ),
+                "p10_enabled": False,
+            }
+        )
+
     def _stage_policy_hash(self, job: JobRow) -> str:
-        if job.kind == "ACTIVITY":
+        if job.kind in {"ACTIVITY", "BLUEPRINT_REVIEW"}:
             activity = cast(
                 ActivityRow,
                 self.repository.scoped(ActivityRow, job.aggregate_id, job.tenant_id),
@@ -2683,13 +2849,7 @@ class Stage1Service:
                     ActivityRow, submission.activity_id, job.tenant_id
                 ),
             )
-        return canonical_hash(
-            {
-                "blueprint_policy": activity.blueprint_policy,
-                "model_mode": self.settings.model_mode,
-                "p10_enabled": False,
-            }
-        )
+        return self._model_policy_hash(activity)
 
     @staticmethod
     def _blueprint_row(tenant_id: str, blueprint: m.AssessmentBlueprint, review: m.BlueprintReview) -> BlueprintRow:
@@ -2724,6 +2884,10 @@ class Stage1Service:
         """Map runtime failures to stable, content-free operational classes."""
 
         code = str(getattr(exc, "code", "TECHNICAL_FAILURE"))
+        if isinstance(exc, Conflict):
+            conflict_code = str(exc)
+            if conflict_code in _PRECONDITION_FAILURE_CODES:
+                code = conflict_code
         if isinstance(exc, (GatewaySafetyBlock, GatewayContextError)):
             return m.FailureClass.SECURITY, False, code
         if code in _SECURITY_FAILURE_CODES:
@@ -2732,7 +2896,7 @@ class Stage1Service:
             return m.FailureClass.VALIDATION, False, code
         if isinstance(exc, (ContextValidationError, ValidationError)):
             return m.FailureClass.VALIDATION, False, code
-        if isinstance(exc, WorkflowError) and code in _PRECONDITION_FAILURE_CODES:
+        if isinstance(exc, (WorkflowError, Conflict)) and code in _PRECONDITION_FAILURE_CODES:
             return m.FailureClass.PRECONDITION, False, code
         if isinstance(exc, GatewayTimeout):
             return m.FailureClass.TRANSIENT, True, code
@@ -2897,7 +3061,7 @@ class Stage1Service:
                 raise NotFound("job not found")
             persisted.failure_class = failure_class.value
             persisted.next_attempt_at = None
-        if job.kind == "ACTIVITY":
+        if job.kind in {"ACTIVITY", "BLUEPRINT_REVIEW"}:
             self.repository.set_activity_status(job.aggregate_id, job.tenant_id, "TECHNICAL_FAILURE")
         elif job.kind == "SUBMISSION":
             submission = cast(

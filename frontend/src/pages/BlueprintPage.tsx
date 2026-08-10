@@ -206,6 +206,12 @@ export function BlueprintPage() {
 
   useEffect(() => {
     let cancelled = false;
+    if (activeJobId) {
+      setLoading(false);
+      return () => {
+        cancelled = true;
+      };
+    }
     const initialLoad = async () => {
       setLoading(true);
       try {
@@ -294,7 +300,10 @@ export function BlueprintPage() {
         if (next.status === "FAILED") return;
         timer = window.setTimeout(() => void poll(), 1800);
       } catch (caught) {
-        if (!cancelled) setError(caught);
+        if (!cancelled) {
+          setError(caught);
+          timer = window.setTimeout(() => void poll(), 1800);
+        }
       }
     };
     void poll();
@@ -419,9 +428,12 @@ export function BlueprintPage() {
     setSaving(true);
     setError(null);
     try {
-      const updated = await updateBlueprint(activityId, draft, view.etag);
-      setView(updated);
-      setDraft(cloneBlueprint(updated.blueprint));
+      const started = await updateBlueprint(activityId, draft, view.etag);
+      setView(null);
+      setDraft(null);
+      setJob(started);
+      setActivityStatus("BLUEPRINT_REVIEW_QUEUED");
+      setActiveJobId(started.job_id);
       setEditing(false);
     } catch (caught) {
       setError(caught);

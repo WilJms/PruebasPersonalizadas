@@ -9822,11 +9822,11 @@
           "required": true
         },
         "responses": {
-          "200": {
+          "202": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/BlueprintEnvelope"
+                  "$ref": "#/components/schemas/JobEnvelope"
                 }
               }
             },

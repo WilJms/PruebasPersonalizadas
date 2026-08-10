@@ -1147,26 +1147,26 @@ def create_app(
 
     @app.patch(
         "/api/v1/activities/{activity_id}/blueprints/{version}",
-        response_model=dto.BlueprintEnvelope,
+        status_code=202,
+        response_model=dto.JobEnvelope,
     )
     async def edit_blueprint(
         activity_id: str,
         version: int,
         edited: m.AssessmentBlueprint,
-        response: Response,
         actor: Annotated[Actor, Depends(mutating_actor)],
         if_match: Annotated[str | None, Header(alias="If-Match")] = None,
-    ) -> dto.BlueprintEnvelope:
+    ) -> dict[str, Any]:
         if not if_match:
             raise WorkflowError("IF_MATCH_REQUIRED", "If-Match is required", status_code=428)
-        row = await runtime.service.edit_blueprint(
+        job = await runtime.service.edit_blueprint(
             activity_id=activity_id,
             version=version,
             if_match=if_match,
             edited=edited,
             actor=actor,
         )
-        return _blueprint_response(row, response)
+        return {"job": job.model_dump(mode="json")}
 
     @app.post(
         "/api/v1/activities/{activity_id}/blueprints/{version}:approve",
