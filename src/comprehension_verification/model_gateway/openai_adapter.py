@@ -46,6 +46,7 @@ from comprehension_verification.model_gateway.openai_routes import (
 )
 from comprehension_verification.model_gateway.openai_schema import (
     OpenAISchemaError,
+    provider_schema_validation_issues,
     structured_output_format,
 )
 from comprehension_verification.model_gateway.registry import prompt_spec
@@ -240,11 +241,20 @@ class OpenAIResponsesAdapter:
                 request_id_hash=_exception_request_hash(exc),
             ) from exc
 
-        return self._result_from_response(response, route=route, attempt=attempt)
+        return self._result_from_response(
+            response,
+            route=route,
+            attempt=attempt,
+            output_schema=output_format["schema"],
+        )
 
     @staticmethod
     def _result_from_response(
-        response: Any, *, route: models.ModelRoute, attempt: int
+        response: Any,
+        *,
+        route: models.ModelRoute,
+        attempt: int,
+        output_schema: dict[str, Any],
     ) -> AdapterResult:
         request_hash = _request_id_hash(
             _get(response, "_request_id") or _get(response, "request_id")
@@ -303,6 +313,10 @@ class OpenAIResponsesAdapter:
             # structural repair. It is never executed or logged.
             raw_output = output_text
 
+        provider_schema_issues = provider_schema_validation_issues(
+            output_schema, raw_output
+        )
+
         effective_model = str(_get(response, "model", "") or "")
         if not (
             effective_model == route.model
@@ -349,11 +363,18 @@ class OpenAIResponsesAdapter:
             effective_model=effective_model,
             output_hash=_sha256_text(output_text),
             provider_request_id_hash=request_hash,
+            provider_schema_valid=not provider_schema_issues,
+            provider_schema_issues=provider_schema_issues,
             reason_codes=(
                 "OPENAI_RESPONSES_API",
                 f"OPENAI_SDK_{OPENAI_SDK_VERSION.replace('.', '_')}",
                 "SDK_RETRIES_0",
                 "STRUCTURED_OUTPUT_STRICT",
+                (
+                    "PROVIDER_SCHEMA_VALID"
+                    if not provider_schema_issues
+                    else "PROVIDER_SCHEMA_INVALID"
+                ),
                 "STORE_FALSE",
                 "BACKGROUND_FALSE",
                 "TOOLS_EMPTY",

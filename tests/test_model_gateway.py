@@ -5,6 +5,7 @@ from dataclasses import FrozenInstanceError
 from datetime import UTC, datetime
 import json
 
+from pydantic import ValidationError
 import pytest
 
 from comprehension_verification.contracts import model_by_name, models
@@ -24,6 +25,7 @@ from comprehension_verification.model_gateway import (
     PROMPT_SPECS,
     ValidationPhase,
     build_mock_request,
+    build_openai_routes,
     build_trusted_context,
 )
 from comprehension_verification.model_gateway.mock_factory import (
@@ -276,6 +278,80 @@ def test_invalid_once_uses_one_p11_repair_and_revalidates_target() -> None:
         ("P11_SCHEMA_REPAIR_V1", "SCHEMA_VALID"),
     ]
     assert sum(ledger.prompt_id == "P11_SCHEMA_REPAIR_V1" for ledger in result.ledgers) == 1
+
+
+def test_blocked_p11_preserves_primary_p07_validation_failure_and_ledger() -> None:
+    prompt_id = "P07_QUESTION_BUILD_V1"
+    request = build_mock_request(prompt_id)
+    raw_output = DeterministicMockAdapter().factory.output_for(
+        prompt_id, request, MockBehavior.HAPPY
+    ).model_dump(mode="json")
+    raw_output["candidate"] = None
+
+    class OneInvalidP07Adapter:
+        calls = 0
+
+        async def invoke(self, **_kwargs) -> AdapterResult:  # type: ignore[no-untyped-def]
+            self.calls += 1
+            return AdapterResult(
+                raw_output=raw_output,
+                input_tokens=321,
+                cached_input_tokens=21,
+                output_tokens=45,
+                estimated_cost_usd=0.002,
+                actual_cost_usd=0.001,
+                cache_write_input_tokens=9,
+                reasoning_tokens=17,
+                effective_model="gpt-5.6-luna",
+                output_hash="sha256:" + "1" * 64,
+                provider_request_id_hash="sha256:" + "2" * 64,
+                provider_schema_valid=True,
+                provider_schema_issues=(),
+                reason_codes=("SDK_RETRIES_0", "STRUCTURED_OUTPUT_STRICT"),
+            )
+
+    adapter = OneInvalidP07Adapter()
+    all_routes = build_openai_routes(max_call_cost_usd=1.0)
+    gateway = ModelGateway(
+        GatewayConfig(mode=GatewayMode.REAL, max_retries=0),
+        real_routes={prompt_id: all_routes[prompt_id]},
+        adapters={"openai": adapter},
+    )
+
+    with pytest.raises(GatewaySchemaViolation) as captured:
+        asyncio.run(
+            gateway.invoke(prompt_id, request, build_trusted_context(request))
+        )
+
+    error = captured.value
+    assert error.code == "MODEL_OUTPUT_VALIDATION_FAILED"
+    assert error.repair_disposition == "BLOCKED_BY_ROUTE_POLICY"
+    assert error.resolution is not None
+    assert error.resolution.reason_codes == ["REAL_ROUTE_NOT_CONFIGURED"]
+    assert adapter.calls == 1
+    assert len(error.ledgers) == 1
+    ledger = error.ledgers[0]
+    assert ledger.prompt_id == prompt_id
+    assert ledger.result == "SCHEMA_INVALID"
+    assert ledger.input_tokens == 321
+    assert ledger.cached_input_tokens == 21
+    assert ledger.output_tokens == 45
+    assert ledger.actual_cost_usd == 0.001
+    assert ledger.route.model_snapshot == "gpt-5.6-luna"
+    assert "OUTPUT_PYDANTIC_VALIDATION_FAILED" in ledger.route.reason_codes
+    assert "PROVIDER_REQUEST_ID_HASH_" + "2" * 64 in ledger.route.reason_codes
+    assert "OUTPUT_HASH_" + "1" * 64 in ledger.route.reason_codes
+    primary = error.primary_failure
+    assert primary is not None
+    assert primary.phase == ValidationPhase.OUTPUT
+    assert primary.code == "OUTPUT_PYDANTIC_VALIDATION_FAILED"
+    assert primary.validation_engine == "PYDANTIC_MODEL_VALIDATE"
+    assert primary.provider_schema_valid is True
+    assert primary.provider_schema_issues == ()
+    assert [(issue.error_type, issue.path) for issue in primary.issues] == [
+        ("value_error", "/")
+    ]
+    assert not isinstance(error.__context__, ValidationError)
 
 
 def test_direct_p11_repair_is_structural_and_target_valid() -> None:

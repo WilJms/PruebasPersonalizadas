@@ -11,6 +11,9 @@ from types import SimpleNamespace
 import pytest
 
 from comprehension_verification.model_gateway import AdapterResult
+from comprehension_verification.model_gateway.openai_schema import (
+    provider_schema_validation_issues,
+)
 from scripts import run_openai_evals as eval_harness
 
 
@@ -442,29 +445,69 @@ def test_luna_canary_real_reports_safe_usage_hashes_and_semantic_controls(
         assert row["controls"]["external_sources_absent"] is True
 
 
-def test_luna_canary_invalid_output_cannot_reach_p11_or_a_second_request(
+@pytest.mark.parametrize(
+    ("invalid_kind", "provider_status", "pydantic_issue"),
+    [
+        ("missing_required", "INVALID", ("missing", "/submission_id")),
+        ("cross_field", "VALID", ("value_error", "/")),
+        ("unknown_extra", "INVALID", ("extra_forbidden", "/*")),
+    ],
+)
+def test_p07_invalid_output_preserves_safe_primary_failure_without_p11(
     monkeypatch,
+    invalid_kind: str,
+    provider_status: str,
+    pydantic_issue: tuple[str, str],
 ) -> None:
-    class InvalidAdapter:
+    class InvalidP07Adapter:
         def __init__(self) -> None:
             self.calls = 0
 
-        async def invoke(self, **_kwargs: object) -> AdapterResult:
+        async def invoke(
+            self, *, prompt_id: str, request: object, **_kwargs: object
+        ) -> AdapterResult:
             self.calls += 1
+            raw_output = (
+                eval_harness.DeterministicMockFactory()
+                .output_for(prompt_id, request, eval_harness.MockBehavior.HAPPY)
+                .model_dump(mode="json")
+            )
+            if invalid_kind == "missing_required":
+                raw_output.pop("submission_id")
+            elif invalid_kind == "cross_field":
+                raw_output["candidate"] = None
+            else:
+                raw_output["student_secret_field"] = "DO_NOT_LEAK_STUDENT_CONTENT"
+            schema = eval_harness.structured_output_format(
+                eval_harness.prompt_spec(prompt_id), request
+            )["schema"]
+            provider_issues = provider_schema_validation_issues(schema, raw_output)
             return AdapterResult(
-                raw_output={"schema_version": "1.1.0"},
+                raw_output=raw_output,
                 input_tokens=100,
                 cached_input_tokens=0,
+                cache_write_input_tokens=7,
                 output_tokens=10,
+                reasoning_tokens=3,
                 estimated_cost_usd=0.01,
                 actual_cost_usd=0.001,
                 effective_model="gpt-5.6-luna",
                 output_hash="sha256:" + "1" * 64,
                 provider_request_id_hash="sha256:" + "2" * 64,
-                reason_codes=("SDK_RETRIES_0",),
+                provider_schema_valid=not provider_issues,
+                provider_schema_issues=provider_issues,
+                reason_codes=(
+                    "SDK_RETRIES_0",
+                    "STRUCTURED_OUTPUT_STRICT",
+                    (
+                        "PROVIDER_SCHEMA_VALID"
+                        if not provider_issues
+                        else "PROVIDER_SCHEMA_INVALID"
+                    ),
+                ),
             )
 
-    invalid_adapter = InvalidAdapter()
+    invalid_adapter = InvalidP07Adapter()
     monkeypatch.setenv(
         "CVA_OPENAI_LUNA_CANARY_APPROVAL", "OPENAI_LUNA_CANARIES_APPROVED"
     )
@@ -479,11 +522,11 @@ def test_luna_canary_invalid_output_cannot_reach_p11_or_a_second_request(
     cases = [
         case
         for case in eval_harness._load_cases(eval_harness.DEFAULT_MANIFEST)
-        if case["case_id"] == "oa-p01-happy-txt"
+        if case["case_id"] == "oa-p07-open-short-txt"
     ]
 
     report = asyncio.run(
-        eval_harness._run_canary_real(cases, max_total_cost_usd=0.02)
+        eval_harness._run_canary_real(cases, max_total_cost_usd=0.09)
     )
 
     assert invalid_adapter.calls == 1
@@ -492,5 +535,102 @@ def test_luna_canary_invalid_output_cannot_reach_p11_or_a_second_request(
     assert report["gateway_retries"] == report["prompt_retries"] == 0
     assert report["sdk_retries"] == 0
     assert report["p10_calls"] == report["p11_calls"] == report["sol_calls"] == 0
-    assert report["cases"][0]["status"] == "FAIL"
-    assert report["cases"][0]["error_code"] == "MODEL_ROUTE_BLOCKED"
+    row = report["cases"][0]
+    assert row["status"] == "FAIL"
+    assert row["error_code"] == "MODEL_OUTPUT_VALIDATION_FAILED"
+    assert row["validation_order"] == ["request", "envelope", "output"]
+    assert row["repair_disposition"] == "BLOCKED_BY_CANARY_POLICY"
+    assert row["primary_ledger_result"] == "SCHEMA_INVALID"
+    assert row["effective_model"] == "gpt-5.6-luna"
+    assert row["input_tokens"] == 100
+    assert row["cache_write_input_tokens"] == 7
+    assert row["output_tokens"] == 10
+    assert row["reasoning_tokens"] == 3
+    assert row["latency_ms"] >= 0
+    assert row["request_id_hash"] == "sha256:" + "2" * 64
+    assert row["output_hash"] == "sha256:" + "1" * 64
+    primary = row["primary_failure"]
+    assert primary["phase"] == "output"
+    assert primary["code"] == "OUTPUT_PYDANTIC_VALIDATION_FAILED"
+    assert primary["validation_engine"] == "PYDANTIC_MODEL_VALIDATE"
+    assert primary["provider_schema_status"] == provider_status
+    assert bool(primary["provider_schema_issues"]) is (provider_status == "INVALID")
+    assert [
+        (issue["error_type"], issue["path"])
+        for issue in primary["pydantic_issues"]
+    ] == [pydantic_issue]
+    serialized = json.dumps(report, ensure_ascii=False, sort_keys=True)
+    assert "student_secret_field" not in serialized
+    assert "DO_NOT_LEAK_STUDENT_CONTENT" not in serialized
+    assert "question_text" not in serialized
+
+
+def test_p07_contextual_failure_stays_separate_and_never_reaches_p11(
+    monkeypatch,
+) -> None:
+    class ContextInvalidP07Adapter:
+        calls = 0
+
+        async def invoke(
+            self, *, prompt_id: str, request: object, **_kwargs: object
+        ) -> AdapterResult:
+            self.calls += 1
+            raw_output = (
+                eval_harness.DeterministicMockFactory()
+                .output_for(prompt_id, request, eval_harness.MockBehavior.HAPPY)
+                .model_dump(mode="json")
+            )
+            raw_output["submission_id"] = "sub_other"
+            raw_output["candidate"]["submission_id"] = "sub_other"
+            schema = eval_harness.structured_output_format(
+                eval_harness.prompt_spec(prompt_id), request
+            )["schema"]
+            assert not provider_schema_validation_issues(schema, raw_output)
+            return AdapterResult(
+                raw_output=raw_output,
+                input_tokens=100,
+                cached_input_tokens=0,
+                output_tokens=10,
+                estimated_cost_usd=0.01,
+                actual_cost_usd=0.001,
+                effective_model="gpt-5.6-luna",
+                output_hash="sha256:" + "3" * 64,
+                provider_request_id_hash="sha256:" + "4" * 64,
+                provider_schema_valid=True,
+                reason_codes=("SDK_RETRIES_0", "PROVIDER_SCHEMA_VALID"),
+            )
+
+    adapter = ContextInvalidP07Adapter()
+    monkeypatch.setenv(
+        "CVA_OPENAI_LUNA_CANARY_APPROVAL", "OPENAI_LUNA_CANARIES_APPROVED"
+    )
+    monkeypatch.setenv(
+        "CVA_OPENAI_API_KEY", "sk-project-synthetic-placeholder-not-a-real-key"
+    )
+    monkeypatch.setattr(
+        eval_harness,
+        "OpenAIResponsesAdapter",
+        lambda **_kwargs: adapter,
+    )
+    cases = [
+        case
+        for case in eval_harness._load_cases(eval_harness.DEFAULT_MANIFEST)
+        if case["case_id"] == "oa-p07-open-short-txt"
+    ]
+
+    report = asyncio.run(
+        eval_harness._run_canary_real(cases, max_total_cost_usd=0.09)
+    )
+
+    assert adapter.calls == 1
+    assert report["network_calls"] == report["billable_calls"] == 1
+    assert report["gateway_retries"] == report["prompt_retries"] == 0
+    assert report["sdk_retries"] == 0
+    assert report["p10_calls"] == report["p11_calls"] == report["sol_calls"] == 0
+    row = report["cases"][0]
+    assert row["status"] == "FAIL"
+    assert row["error_code"] == "MODEL_CONTEXT_NOT_ALLOWLISTED"
+    assert row["primary_failure"] is None
+    assert row["repair_disposition"] is None
+    assert row["primary_ledger_result"] == "SCHEMA_INVALID"
+    assert row["effective_model"] == "gpt-5.6-luna"

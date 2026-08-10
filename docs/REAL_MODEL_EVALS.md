@@ -49,7 +49,7 @@ python scripts/run_openai_evals.py \
 
 ## Frontera canary Luna medium/high
 
-Los dos canaries aprobables reutilizan exclusivamente los casos existentes
+Los dos canaries ejecutados una vez reutilizan exclusivamente los casos existentes
 `oa-p01-happy-txt` y `oa-p07-open-short-txt`. El modo dry-run construye el
 adaptador OpenAI real con un cliente Responses fake versionado, captura el
 payload y atraviesa el `ModelGateway` auténtico sin leer una clave ni crear red:
@@ -77,23 +77,26 @@ P07 preservó submission, oportunidad, template, dimensión, variante,
 operación cognitiva y allowlist de evidencia bajo `context_mode=CLOSED`, sin
 fuentes externas.
 
-La futura ejecución real tiene un modo distinto y exige una autorización
-humana nueva mediante
-`CVA_OPENAI_LUNA_CANARY_APPROVAL=OPENAI_LUNA_CANARIES_APPROVED`, además de
-clave, `--allow-billable` y presupuesto suficiente. Estos comandos son sólo
-documentales hasta el checkpoint:
+La ejecución real autorizada posterior terminó P01 en `READY` y P07 en fallo
+cerrado tras su única request. P07 llegó a
+`QuestionGenerationResult.model_validate()` y luego el intento de resolver P11
+fue bloqueado antes del transporte; no hubo P11 ni segunda request. El literal
+histórico `SCHEMA_INVALID` no permite distinguir si el objeto incumplía el JSON
+Schema del provider o solo un `model_validator`, porque esa clasificación no se
+retuvo y el output no se conserva.
 
-```bash
-python scripts/run_openai_evals.py --mode canary-real --allow-billable \
-  --case-id oa-p01-happy-txt --max-total-cost-usd 0.02
-python scripts/run_openai_evals.py --mode canary-real --allow-billable \
-  --case-id oa-p07-open-short-txt --max-total-cost-usd 0.03
-```
+La corrección offline valida ahora el objeto contra el mismo schema de
+`text.format` y conserva `provider_schema_status`, tipos/paths estructurales
+saneados, ledger primario y `repair_disposition` por separado. El schema P07
+exacto queda fijado en 13.671 bytes y SHA-256
+`80692d48637f0ae2d7a7e6f05ab4e9b0a5e2d8eff6f1b103fbd14f62c482639a`.
+Los tests reproducen campos requeridos ausentes, extras, invariantes Pydantic y
+fallos contextuales con una sola llamada fake, P11/P10/Sol/retries en cero y
+sin serializar contenido.
 
-Los worst-cases respectivos son USD 0.0115264 y USD 0.0163734; el máximo
-combinado es USD 0.0278998 dentro de un presupuesto propuesto de USD 0.05.
-Cada comando conserva una request máxima, 0/0/0 retries, P11/P10/Sol en cero y
-se detiene ante cualquier resultado fuera de los outcomes del manifest.
+Una eventual repetición real de P07 requiere una autorización humana nueva,
+separada y explícita. Este documento no contiene un comando ejecutable ni una
+aprobación billable vigente.
 
 ## Gate real preparado, no autorizado
 
@@ -123,9 +126,10 @@ La matriz mixta Sol/Luna se conserva sólo como comparador histórico futuro.
 No se ejecutará ninguna comparación Sol antes de evidencia Luna y una nueva
 autorización humana con presupuesto propio.
 
-Los resultados reales se anexarán con fecha, commit, versión de prompt/schema,
-model ID observado y hash del manifest. Hasta entonces no se reclama calidad
-semántica del proveedor.
+Los resultados reales P11/P01/P07 están anexados con fecha, commit,
+prompt/schema, modelo y metadata content-free en `TEST_RESULTS.md`. P07 no
+alcanzó validación contextual y no se reclama calidad semántica general del
+proveedor ni del golden set.
 
 ## Recorrido humano preparado
 

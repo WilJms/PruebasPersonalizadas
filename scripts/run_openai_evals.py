@@ -710,6 +710,40 @@ def _canary_usage_metadata(
     }
 
 
+def _canary_failure_metadata(error: GatewayError) -> tuple[dict[str, Any] | None, str | None]:
+    """Serialize only bounded structural metadata; never values or error messages."""
+
+    failure = getattr(error, "primary_failure", None)
+    disposition = getattr(error, "repair_disposition", None)
+    if disposition == "BLOCKED_BY_ROUTE_POLICY":
+        # The canary route map deliberately contains only its selected prompt.
+        disposition = "BLOCKED_BY_CANARY_POLICY"
+    if failure is None:
+        return None, disposition
+    provider_status = (
+        "NOT_EVALUATED"
+        if failure.provider_schema_valid is None
+        else "VALID" if failure.provider_schema_valid else "INVALID"
+    )
+    return (
+        {
+            "phase": failure.phase.value,
+            "code": failure.code,
+            "validation_engine": failure.validation_engine,
+            "pydantic_issues": [
+                {"error_type": issue.error_type, "path": issue.path}
+                for issue in failure.issues
+            ],
+            "provider_schema_status": provider_status,
+            "provider_schema_issues": [
+                {"error_type": issue.error_type, "path": issue.path}
+                for issue in failure.provider_schema_issues
+            ],
+        },
+        disposition,
+    )
+
+
 def _canary_budget_metadata(material: dict[str, Any]) -> dict[str, Any]:
     prices = MODEL_PRICES[LUNA_MODEL_ID]
     return {
@@ -1015,6 +1049,8 @@ async def _run_canary_real(
     ledgers: list[models.ModelCallLedger] = []
     controls: dict[str, Any] | None = None
     error_code: str | None = None
+    primary_failure: dict[str, Any] | None = None
+    repair_disposition: str | None = None
     try:
         result = await gateway.invoke(
             material["prompt_id"],
@@ -1030,6 +1066,7 @@ async def _run_canary_real(
     except GatewayError as exc:
         ledgers = list(exc.ledgers)
         error_code = exc.code
+        primary_failure, repair_disposition = _canary_failure_metadata(exc)
     except AssertionError:
         error_code = "OPENAI_LUNA_CANARY_EXPECTATION_FAILED"
 
@@ -1050,6 +1087,8 @@ async def _run_canary_real(
     if result is not None:
         output_status = getattr(result.output.status, "value", result.output.status)
         validation_order = [phase.value for phase in result.validation_order]
+    elif primary_failure is not None:
+        validation_order = ["request", "envelope", primary_failure["phase"]]
     row = {
         "case_id": case["case_id"],
         "status": "PASS" if error_code is None else "FAIL",
@@ -1062,6 +1101,9 @@ async def _run_canary_real(
         "actual_cost_usd": round(actual_cost, 8),
         "validation_order": validation_order,
         "controls": controls,
+        "primary_failure": primary_failure,
+        "repair_disposition": repair_disposition,
+        "primary_ledger_result": ledger.result if ledger is not None else None,
         "budget": _canary_budget_metadata(material),
         **_canary_usage_metadata(transport_result, ledger),
         **_route_metadata(

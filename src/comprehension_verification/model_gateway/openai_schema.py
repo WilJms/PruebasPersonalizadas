@@ -6,6 +6,8 @@ from copy import deepcopy
 import re
 from typing import Any
 
+from jsonschema import Draft202012Validator
+from jsonschema.exceptions import SchemaError
 from pydantic import BaseModel
 
 from comprehension_verification.contracts import model_by_name
@@ -14,6 +16,76 @@ from comprehension_verification.model_gateway.registry import PromptSpec
 
 class OpenAISchemaError(ValueError):
     """The canonical schema cannot be represented without semantic invention."""
+
+
+_MAX_SAFE_SCHEMA_ISSUES = 32
+_SAFE_ERROR_TYPE = re.compile(r"^[A-Za-z][A-Za-z0-9_.-]{0,95}$")
+
+
+def _schema_property_names(schema: dict[str, Any]) -> frozenset[str]:
+    """Return provider-controlled property names usable in content-free paths."""
+
+    names: set[str] = set()
+
+    def walk(value: Any) -> None:
+        if isinstance(value, list):
+            for child in value:
+                walk(child)
+            return
+        if not isinstance(value, dict):
+            return
+        properties = value.get("properties")
+        if isinstance(properties, dict):
+            names.update(str(name) for name in properties)
+        for child in value.values():
+            walk(child)
+
+    walk(schema)
+    return frozenset(names)
+
+
+def _safe_schema_path(parts: Any, *, allowed_names: frozenset[str]) -> str:
+    safe_parts: list[str] = []
+    for part in parts:
+        if isinstance(part, int) and 0 <= part <= 9_999:
+            safe_parts.append(str(part))
+        elif isinstance(part, str) and part in allowed_names:
+            safe_parts.append(part.replace("~", "~0").replace("/", "~1"))
+        else:
+            # Unknown keys may be model-generated content. Never retain them.
+            safe_parts.append("*")
+    return "/" + "/".join(safe_parts) if safe_parts else "/"
+
+
+def provider_schema_validation_issues(
+    schema: dict[str, Any], instance: Any
+) -> tuple[tuple[str, str], ...]:
+    """Return bounded ``(error_type, path)`` pairs without values or messages."""
+
+    allowed_names = _schema_property_names(schema)
+    validator = Draft202012Validator(schema)
+    errors = sorted(
+        validator.iter_errors(instance),
+        key=lambda error: (
+            tuple(str(part) for part in error.absolute_path),
+            str(error.validator),
+        ),
+    )
+    issues: list[tuple[str, str]] = []
+    for error in errors:
+        raw_type = str(error.validator or "schema_error")
+        error_type = (
+            raw_type if _SAFE_ERROR_TYPE.fullmatch(raw_type) else "schema_error"
+        )
+        issue = (
+            error_type,
+            _safe_schema_path(error.absolute_path, allowed_names=allowed_names),
+        )
+        if issue not in issues:
+            issues.append(issue)
+        if len(issues) >= _MAX_SAFE_SCHEMA_ISSUES:
+            break
+    return tuple(issues)
 
 
 def _merge_defs(target: dict[str, Any], source: dict[str, Any]) -> None:
@@ -185,6 +257,12 @@ def _validate_boundary_schema(schema: dict[str, Any]) -> None:
         raise OpenAISchemaError("Structured output schema strings exceed 120,000 characters")
     if enum_value_count > 1_000:
         raise OpenAISchemaError("Structured output has more than 1,000 enum values")
+    try:
+        Draft202012Validator.check_schema(schema)
+    except SchemaError as exc:
+        raise OpenAISchemaError(
+            "Generated provider boundary is not a valid JSON Schema"
+        ) from exc
 
 
 def structured_output_format(

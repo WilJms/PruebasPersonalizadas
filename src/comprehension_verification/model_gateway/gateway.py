@@ -45,6 +45,110 @@ class ValidationPhase(StrEnum):
     REPAIRED_OUTPUT = "repaired_output"
 
 
+@dataclass(frozen=True, slots=True)
+class SafeValidationIssue:
+    """Content-free structural failure metadata safe for reports and logs."""
+
+    error_type: str
+    path: str
+
+
+@dataclass(frozen=True, slots=True)
+class PrimaryOutputFailure:
+    """The primary output failure, separate from any later repair disposition."""
+
+    phase: ValidationPhase
+    code: str
+    validation_engine: str
+    issues: tuple[SafeValidationIssue, ...]
+    provider_schema_valid: bool | None = None
+    provider_schema_issues: tuple[SafeValidationIssue, ...] = ()
+
+
+_MAX_SAFE_VALIDATION_ISSUES = 32
+_SAFE_VALIDATION_ERROR_TYPE = re.compile(r"^[A-Za-z][A-Za-z0-9_.-]{0,95}$")
+
+
+def _canonical_property_names(model: type[BaseModel]) -> frozenset[str]:
+    names: set[str] = set()
+
+    def walk(value: Any) -> None:
+        if isinstance(value, list):
+            for child in value:
+                walk(child)
+            return
+        if not isinstance(value, dict):
+            return
+        properties = value.get("properties")
+        if isinstance(properties, dict):
+            names.update(str(name) for name in properties)
+        for child in value.values():
+            walk(child)
+
+    walk(model.model_json_schema(mode="validation"))
+    return frozenset(names)
+
+
+def _safe_validation_path(
+    parts: Sequence[Any], *, allowed_names: frozenset[str]
+) -> str:
+    safe_parts: list[str] = []
+    for part in parts:
+        if isinstance(part, int) and 0 <= part <= 9_999:
+            safe_parts.append(str(part))
+        elif isinstance(part, str) and part in allowed_names:
+            safe_parts.append(part.replace("~", "~0").replace("/", "~1"))
+        else:
+            safe_parts.append("*")
+    return "/" + "/".join(safe_parts) if safe_parts else "/"
+
+
+def _safe_pydantic_issues(
+    error: ValidationError, model: type[BaseModel]
+) -> tuple[SafeValidationIssue, ...]:
+    allowed_names = _canonical_property_names(model)
+    issues: list[SafeValidationIssue] = []
+    for item in error.errors(include_url=False, include_input=False, include_context=False):
+        raw_type = str(item.get("type", "validation_error"))
+        error_type = (
+            raw_type
+            if _SAFE_VALIDATION_ERROR_TYPE.fullmatch(raw_type)
+            else "validation_error"
+        )
+        issue = SafeValidationIssue(
+            error_type=error_type,
+            path=_safe_validation_path(
+                tuple(item.get("loc", ())), allowed_names=allowed_names
+            ),
+        )
+        if issue not in issues:
+            issues.append(issue)
+        if len(issues) >= _MAX_SAFE_VALIDATION_ISSUES:
+            break
+    return tuple(issues)
+
+
+def _primary_failure_with_provider_schema(
+    failure: PrimaryOutputFailure, result: AdapterResult
+) -> PrimaryOutputFailure:
+    provider_issues = tuple(
+        SafeValidationIssue(error_type=error_type, path=path)
+        for error_type, path in result.provider_schema_issues[
+            :_MAX_SAFE_VALIDATION_ISSUES
+        ]
+        if _SAFE_VALIDATION_ERROR_TYPE.fullmatch(error_type)
+        and re.fullmatch(r"/(?:[A-Za-z0-9_*.-]+/)*[A-Za-z0-9_*.-]*", path)
+    )
+    return PrimaryOutputFailure(
+        phase=failure.phase,
+        code=failure.code,
+        validation_engine=failure.validation_engine,
+        issues=failure.issues,
+        provider_schema_valid=result.provider_schema_valid,
+        provider_schema_issues=provider_issues,
+    )
+
+
 def _utc_now() -> datetime:
     return datetime.now(UTC)
 
@@ -118,8 +222,9 @@ class GatewayValidationError(GatewayError):
         *,
         phase: ValidationPhase,
         ledgers: Sequence[models.ModelCallLedger] = (),
+        resolution: models.ModelRouteResolution | None = None,
     ) -> None:
-        super().__init__(message, ledgers=ledgers)
+        super().__init__(message, ledgers=ledgers, resolution=resolution)
         self.phase = phase
 
 
@@ -148,7 +253,28 @@ class GatewaySafetyBlock(GatewayError):
 
 
 class GatewaySchemaViolation(GatewayValidationError):
-    code = "MODEL_SCHEMA_VIOLATION"
+    """Canonical output validation failed before contextual validation."""
+
+    code = "MODEL_OUTPUT_VALIDATION_FAILED"
+
+    def __init__(
+        self,
+        message: str,
+        *,
+        phase: ValidationPhase,
+        ledgers: Sequence[models.ModelCallLedger] = (),
+        resolution: models.ModelRouteResolution | None = None,
+        primary_failure: PrimaryOutputFailure | None = None,
+        repair_disposition: str | None = None,
+    ) -> None:
+        super().__init__(
+            message,
+            phase=phase,
+            ledgers=ledgers,
+            resolution=resolution,
+        )
+        self.primary_failure = primary_failure
+        self.repair_disposition = repair_disposition
 
 
 class ProviderAdapterError(RuntimeError):
@@ -696,6 +822,15 @@ class ModelGateway:
                 output = self._validate_output(spec, adapter_result.raw_output)
             except GatewaySchemaViolation as exc:
                 validation_order.append(ValidationPhase.OUTPUT)
+                primary_failure = exc.primary_failure or PrimaryOutputFailure(
+                    phase=ValidationPhase.OUTPUT,
+                    code="OUTPUT_PYDANTIC_VALIDATION_FAILED",
+                    validation_engine="PYDANTIC_MODEL_VALIDATE",
+                    issues=(),
+                )
+                primary_failure = _primary_failure_with_provider_schema(
+                    primary_failure, adapter_result
+                )
                 invalid_ledger = self._ledger(
                     spec=spec,
                     envelope=envelope,
@@ -709,6 +844,7 @@ class ModelGateway:
                     estimated_cost_usd=adapter_result.estimated_cost_usd,
                     actual_cost_usd=adapter_result.actual_cost_usd,
                     adapter_result=adapter_result,
+                    reason_codes=(primary_failure.code,),
                 )
                 self._record(invalid_ledger, ledgers)
                 if prompt_id == "P11_SCHEMA_REPAIR_V1":
@@ -716,18 +852,51 @@ class ModelGateway:
                         "P11 output was invalid; recursive repair is forbidden",
                         phase=ValidationPhase.OUTPUT,
                         ledgers=ledgers,
+                        primary_failure=primary_failure,
+                        repair_disposition="RECURSIVE_REPAIR_FORBIDDEN",
                     ) from exc
-                repaired, repair_ledgers, repair_order = await self._repair_once(
-                    target_spec=spec,
-                    invalid_output=adapter_result.raw_output,
-                    validation_error=exc,
-                    trusted_context=envelope.trusted_context,
-                    max_cost_usd=max(
-                        0.0,
-                        call_budget.max_cost_usd
-                        - sum(self._ledger_budget_charge(item) for item in ledgers),
-                    ),
-                )
+                try:
+                    repaired, repair_ledgers, repair_order = await self._repair_once(
+                        target_spec=spec,
+                        invalid_output=adapter_result.raw_output,
+                        validation_issues=primary_failure.issues,
+                        trusted_context=envelope.trusted_context,
+                        max_cost_usd=max(
+                            0.0,
+                            call_budget.max_cost_usd
+                            - sum(
+                                self._ledger_budget_charge(item) for item in ledgers
+                            ),
+                        ),
+                    )
+                except GatewayError as repair_error:
+                    if isinstance(repair_error, GatewayBudgetExceeded):
+                        repair_disposition = "BLOCKED_BY_BUDGET"
+                    elif isinstance(repair_error, GatewayRouteBlocked):
+                        repair_disposition = "BLOCKED_BY_ROUTE_POLICY"
+                    elif isinstance(repair_error, GatewayTimeout):
+                        repair_disposition = "FAILED_TIMEOUT"
+                    elif isinstance(repair_error, GatewaySafetyBlock):
+                        repair_disposition = "FAILED_SAFETY_BLOCK"
+                    elif isinstance(repair_error, GatewayProviderError):
+                        repair_disposition = "FAILED_PROVIDER"
+                    elif isinstance(repair_error, GatewayContextError):
+                        repair_disposition = "FAILED_CONTEXT_VALIDATION"
+                    elif isinstance(repair_error, GatewaySchemaViolation):
+                        repair_disposition = (
+                            repair_error.repair_disposition
+                            or "FAILED_OUTPUT_VALIDATION"
+                        )
+                    else:
+                        repair_disposition = "FAILED_GATEWAY"
+                    raise GatewaySchemaViolation(
+                        "Primary output validation failed and repair did not complete",
+                        phase=ValidationPhase.OUTPUT,
+                        ledgers=(*ledgers, *repair_error.ledgers),
+                        resolution=repair_error.resolution,
+                        primary_failure=primary_failure,
+                        repair_disposition=repair_disposition,
+                    ) from repair_error
                 ledgers.extend(repair_ledgers)
                 validation_order.append(ValidationPhase.REPAIRED_OUTPUT)
                 try:
@@ -863,11 +1032,19 @@ class ModelGateway:
         try:
             return output_model.model_validate(raw_output)
         except ValidationError as exc:
-            error = GatewaySchemaViolation(
-                "Output root validation failed", phase=ValidationPhase.OUTPUT
+            primary_failure = PrimaryOutputFailure(
+                phase=ValidationPhase.OUTPUT,
+                code="OUTPUT_PYDANTIC_VALIDATION_FAILED",
+                validation_engine="PYDANTIC_MODEL_VALIDATE",
+                issues=_safe_pydantic_issues(exc, output_model),
             )
-            error.validation_errors = tuple(exc.errors(include_url=False))
-            raise error from exc
+        # Raise outside the ``except`` block so the Pydantic exception (which
+        # retains invalid input internally) is not attached to the safe error.
+        raise GatewaySchemaViolation(
+            "Canonical output model validation failed",
+            phase=ValidationPhase.OUTPUT,
+            primary_failure=primary_failure,
+        )
 
     def _validate_context(
         self,
@@ -1160,19 +1337,18 @@ class ModelGateway:
         *,
         target_spec: PromptSpec,
         invalid_output: Any,
-        validation_error: GatewaySchemaViolation,
+        validation_issues: Sequence[SafeValidationIssue],
         trusted_context: models.TrustedPromptContext,
         max_cost_usd: float,
     ) -> tuple[BaseModel, tuple[models.ModelCallLedger, ...], tuple[ValidationPhase, ...]]:
         repair_spec = prompt_spec("P11_SCHEMA_REPAIR_V1")
         issues = []
-        for error in getattr(validation_error, "validation_errors", ())[:100]:
-            location = "/" + "/".join(str(part) for part in error.get("loc", ()))
+        for issue in validation_issues[:_MAX_SAFE_VALIDATION_ISSUES]:
             issues.append(
                 models.SchemaValidationIssue(
-                    path=location or "/",
-                    error_type=str(error.get("type", "schema_error"))[:200],
-                    message=str(error.get("msg", "schema validation failed"))[:1000],
+                    path=issue.path,
+                    error_type=issue.error_type,
+                    message="Canonical output model validation failed",
                 )
             )
         if not issues:
@@ -1331,6 +1507,15 @@ class ModelGateway:
         try:
             repair_output = self._validate_output(repair_spec, result.raw_output)
         except GatewaySchemaViolation as exc:
+            repair_primary_failure = exc.primary_failure or PrimaryOutputFailure(
+                phase=ValidationPhase.OUTPUT,
+                code="OUTPUT_PYDANTIC_VALIDATION_FAILED",
+                validation_engine="PYDANTIC_MODEL_VALIDATE",
+                issues=(),
+            )
+            repair_primary_failure = _primary_failure_with_provider_schema(
+                repair_primary_failure, result
+            )
             ledger = self._ledger(
                 spec=repair_spec,
                 envelope=repair_envelope,
@@ -1344,12 +1529,15 @@ class ModelGateway:
                 estimated_cost_usd=result.estimated_cost_usd,
                 actual_cost_usd=result.actual_cost_usd,
                 adapter_result=result,
+                reason_codes=(repair_primary_failure.code,),
             )
             self._record(ledger, repair_ledgers)
             raise GatewaySchemaViolation(
                 "P11 returned an invalid result; a second repair is forbidden",
                 phase=ValidationPhase.OUTPUT,
                 ledgers=repair_ledgers,
+                primary_failure=repair_primary_failure,
+                repair_disposition="RECURSIVE_REPAIR_FORBIDDEN",
             ) from exc
         order.append(ValidationPhase.OUTPUT)
         try:
@@ -1393,6 +1581,7 @@ class ModelGateway:
                 "P11 declared the output unrepairable",
                 phase=ValidationPhase.REPAIRED_OUTPUT,
                 ledgers=repair_ledgers,
+                repair_disposition="DECLARED_UNREPAIRABLE",
             )
         repaired = self._revalidate_repair_target(repair_output)
         order.append(ValidationPhase.REPAIRED_OUTPUT)
@@ -1407,10 +1596,18 @@ class ModelGateway:
         try:
             return target_model.model_validate(repair_output.repaired_output)
         except ValidationError as exc:
-            raise GatewaySchemaViolation(
-                "P11 repaired_output still violates the target root",
+            primary_failure = PrimaryOutputFailure(
                 phase=ValidationPhase.REPAIRED_OUTPUT,
-            ) from exc
+                code="REPAIRED_OUTPUT_PYDANTIC_VALIDATION_FAILED",
+                validation_engine="PYDANTIC_MODEL_VALIDATE",
+                issues=_safe_pydantic_issues(exc, target_model),
+            )
+        raise GatewaySchemaViolation(
+            "P11 repaired_output still violates the target root",
+            phase=ValidationPhase.REPAIRED_OUTPUT,
+            primary_failure=primary_failure,
+            repair_disposition="REPAIRED_OUTPUT_INVALID",
+        )
 
     def _adapter_for(self, route: models.ModelRoute) -> ModelAdapter:
         if self.config.mode == GatewayMode.MOCK:
@@ -1542,6 +1739,7 @@ class ModelGateway:
             estimated_cost_usd=result.estimated_cost_usd,
             actual_cost_usd=result.actual_cost_usd,
             adapter_result=result,
+            reason_codes=("OUTPUT_CONTEXT_VALIDATION_FAILED",),
         )
         self._record(ledger, ledgers)
 

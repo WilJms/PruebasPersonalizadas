@@ -1,9 +1,10 @@
 # Validación del proveedor OpenAI real
 
-Fecha de corte: 2026-08-09. Estado: primer smoke P11 Luna-low aprobado y
-superado; canaries P01 Luna-medium y P07 Luna-high preparados y demostrados
-offline, pendientes de un gate humano nuevo. Llamadas reales históricas: **1**,
-exclusivamente P11; llamadas reales de estos canaries: **0**.
+Fecha de corte: 2026-08-09. Estado: smoke P11 Luna-low y canary P01
+Luna-medium superados; canary P07 Luna-high fail-closed. Llamadas reales
+históricas: **3**, exactamente una para P11, una para P01 y una para P07. La
+investigación posterior de P07 es exclusivamente offline y no autoriza una
+repetición.
 
 ## Perfil vinculante `LUNA_BASELINE_V1`
 
@@ -49,6 +50,37 @@ estricto no admite mapas arbitrarios; `code`, mensaje e IDs permanecen
 tipados y el contrato canónico no se redefine. El resultado se valida primero contra su
 modelo Pydantic canónico y luego contra contexto, IDs, grounding y reglas.
 
+Para P07, el `text.format.schema` exacto generado offline tiene 13.671 bytes y
+SHA-256
+`80692d48637f0ae2d7a7e6f05ab4e9b0a5e2d8eff6f1b103fbd14f62c482639a`.
+El root obliga a incluir `schema_version`, `submission_id`, `opportunity_id`,
+`context_mode`, `status`, `candidate` y `diagnostics`; los campos nullable
+siguen siendo requeridos y usan `null`, como exige la documentación oficial de
+Structured Outputs.
+
+### Frontera exacta P07
+
+| Capa | Invariantes efectivamente comprobadas |
+|---|---|
+| JSON Schema enviado al provider | Root objeto; propiedades requeridas; tipos, enums y const; nullability; patrones y longitudes de IDs/textos; límites de listas/números; uniones de `SourceLocator`; `additionalProperties=false`; `Diagnostic.details={}` |
+| Solo Pydantic/model validators | `READY` exige candidate y todo status no-READY lo prohíbe; candidate pertenece a los IDs top-level; CLOSED prohíbe citations/course sources; fragmentos del anchor son subset de `candidate.evidence_ids`; reglas CHOICE/no-CHOICE; `course_source_ids` coincide exactamente con citations; orden de bbox/líneas |
+| Solo validación contextual/cross-root | P07 exige trusted `CLOSED`; IDs top-level preservan request; template/dimensión/variante/operación preservados; evidence/source IDs están allowlisted; abstención incluye diagnostic; ninguna fuente de otra submission; outcome limitado por el manifest a `READY` o `REPLACEMENT_REQUIRED` |
+
+El schema del provider es además más estricto en presencia que Pydantic: hace
+requeridos campos con default canónico. A la inversa, JSON Schema no representa
+los `model_validator` ni relaciones con el request/trusted context. Se demostró
+offline que un campo requerido ausente falla ambas capas; `READY` con
+`candidate=null` y un anchor fuera de `candidate.evidence_ids` cumplen el
+schema del provider pero fallan Pydantic; IDs internamente coherentes pero
+distintos del request pasan JSON Schema y Pydantic y fallan contexto.
+
+Por tanto, el literal histórico de ledger `SCHEMA_INVALID` es amplio. En la
+ruta estructural observada significa concretamente que
+`QuestionGenerationResult.model_validate(raw_output)` lanzó
+`ValidationError`; no demuestra que el JSON Schema estricto enviado al provider
+fuera incumplido. Los fallos contextuales también usan ese literal canónico,
+pero ahora quedan diferenciados mediante reason codes estables.
+
 P11 tiene una sola oportunidad y solo corrige JSON, tipos o enums. Nunca
 repara evidencia, fuente, IDs, grounding, seguridad, suficiencia o significado.
 Una segunda violación estructural queda bloqueada.
@@ -67,6 +99,16 @@ versión del SDK, esfuerzo, intento, latencia, tokens input/cache-write/cache-hi
 output/reasoning, costo estimado/observado y códigos de política. No conserva
 payload, output, clave ni request-id en claro.
 
+La investigación P07 demostró que el bloqueo de la ruta P11 reemplazaba la
+excepción primaria y emergía sin sus ledgers. La corrección conserva el ledger
+primario y emite `MODEL_OUTPUT_VALIDATION_FAILED` con dos campos separados:
+`primary_failure` (`OUTPUT_PYDANTIC_VALIDATION_FAILED`, fase, engine, tipos y
+paths saneados, más estado del schema provider) y `repair_disposition`
+(`BLOCKED_BY_CANARY_POLICY` en el harness). Los errores Pydantic se reducen a
+tipo/path, con máximo 32 entradas; no se conservan `input`, `ctx`, mensajes,
+valores, claves desconocidas ni texto generado. P11 continúa en cero en la
+frontera canary.
+
 ## Secuencia de aceptación
 
 | Gate | Estado |
@@ -76,10 +118,11 @@ payload, output, clave ni request-id en claro.
 | Proyecto, spend limit y clave privada | proyecto verificado; secret versión 1 `enabled`, payload no inspeccionado |
 | Perfil Luna-only y regresión offline | PASS; 456 passed/16 skips PG explícitos, PG16/17, golden 20/20, frontend/browser/Docker/Terraform verdes |
 | Smoke P11 sintético, una llamada | `OPENAI_REAL_SMOKE_PASS`; 1 request, retries 0/0/0 |
-| Canary P01 Luna-medium | PASS offline contra transporte fake; real pendiente de autorización |
-| Canary P07 Luna-high | PASS offline contra transporte fake; real pendiente de autorización |
+| Canary P01 Luna-medium | PASS real; `READY`, 1 request, USD 0.00145745 calculados |
+| Canary P07 Luna-high | FAIL real fail-closed; 1 request, output Pydantic inválido, P11 0, USD 0.00327560 calculados |
+| Investigación P07 provider/Pydantic | PASS offline; schema exacto fijado, pérdida de ledger corregida, clases provider/Pydantic/contexto reproducidas sin contenido |
 | Golden set real sintético | pendiente de aprobación y presupuesto separados |
-| Calidad/latencia/costo y P0/P1 | pendiente de evidencia real |
+| Calidad/latencia/costo y P0/P1 | P0=0; P1 histórico P07 permanece abierto hasta una eventual recanary autorizada |
 | Build, digest y deploy real del worker | pendiente de gate posterior |
 
 El camino interactivo de re-revisión P05 que aún reside en el Service no se

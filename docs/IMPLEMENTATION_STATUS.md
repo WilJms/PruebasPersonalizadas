@@ -86,6 +86,31 @@ ofreció aún costo atribuible por llamada: conservó spend redondeado USD 3.77 
 el desglose Luna histórico de 1,365 input tokens. Cloud no se modificó y sigue
 mock/P10 false.
 
+La investigación posterior queda en
+`OPENAI_LUNA_P07_ROOT_CAUSE_UNRESOLVED`. El fallo histórico demuestra que
+`QuestionGenerationResult.model_validate()` rechazó el output, pero la evidencia
+retenida no distingue incumplimiento del JSON Schema provider de una invariante
+Pydantic no representable en ese schema. Por ello no se cambió prompt, contrato
+ni expected outcome. El schema P07 exacto quedó fijado en 13.671 bytes y
+SHA-256 `80692d48637f0ae2d7a7e6f05ab4e9b0a5e2d8eff6f1b103fbd14f62c482639a`;
+la frontera provider/Pydantic/contexto está documentada y reproducida offline.
+
+Sí se cerró un defecto determinista de observabilidad: el bloqueo de P11
+enmascaraba el fallo primario y descartaba el ledger que ya contenía latencia,
+modelo efectivo, usage y hashes. El gateway conserva ahora ese ledger y separa
+`primary_failure=OUTPUT_PYDANTIC_VALIDATION_FAILED` de
+`repair_disposition=BLOCKED_BY_CANARY_POLICY`; el adapter clasifica localmente
+el objeto contra el mismo schema enviado. Solo se exponen tipos y paths
+saneados, nunca valores, mensajes, `input`/`ctx` Pydantic ni output. P11 sigue
+en cero dentro del canary.
+
+La validación posterior pasó 107 pruebas focalizadas, ambos canary dry-runs con
+cero red/facturación, 471 pruebas con cobertura (16 skips PostgreSQL
+explícitos), contratos 53/140/274 sin drift y secret scan de 290 archivos. La
+tarifa Standard oficial fue revalidada sin cambios y esta investigación añadió
+USD 0.00. P0 permanece en cero, no apareció un P1 nuevo y el P1 histórico P07
+continúa abierto hasta una eventual única recanary expresamente autorizada.
+
 La regresión local previa al smoke quedó en 457 passed/16 skips PostgreSQL
 explícitos, 80% de cobertura, 40 tests focalizados CLI/adapter, golden set
 20/20 con 0 network/0 billable, PostgreSQL 16/17

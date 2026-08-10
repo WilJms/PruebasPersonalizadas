@@ -128,14 +128,14 @@ al secreto OpenAI.
 | Tokens | 1,712 input; 0 cached; 1,709 cache-write; 858 output; 516 reasoning | 3,839 input; 0 cached; 3,836 cache-write; 1,930 output; 1,034 reasoning |
 | Latencia | 9,030 ms | no retenida por la excepción fail-closed; no se infiere del tiempo de proceso |
 | Estimado / real calculado | USD 0.01002785 / USD 0.00145745 | USD 0.01295960 / USD 0.00327560 |
-| Validación | schema, Pydantic, contexto, allowlist, modelo y manifest PASS | schema FAIL; Pydantic/contexto/allowlist de output no alcanzados; `MODEL_ROUTE_BLOCKED` al negar P11 |
+| Validación | schema provider, Pydantic, contexto, allowlist, modelo y manifest PASS | `QuestionGenerationResult.model_validate` FAIL; estado histórico del schema provider no retenido; contexto/allowlist no alcanzados; `MODEL_ROUTE_BLOCKED` enmascaró el primario al negar P11 |
 | Request ID hash | `sha256:bf45bcbb212b5c6d2502ad9d4d779ee2f3c2fe75260f28aca6be37898f86e5e1` | `sha256:d470fc174194551eda26cd20134bb6bf375e58a97c38eab3e8b117bc7ef32128` |
 | Output hash | `sha256:edd96d77fcdf4f825953b88722285102e365fa86859ac6e55250ef18f458571e` | `sha256:fd73f387e9e6be3ef3174e78a6e263e7cf4c515c24622d085ca41aee766c54e9` |
 
 La combinación segura observada en P07 —un resultado de transporte con usage y
 hashes, seguida de `MODEL_ROUTE_BLOCKED`, sin ledger final y con P11 en cero—
-corresponde en el flujo versionado a un output que falla validación estructural
-y cuya resolución de reparación P11 se bloquea antes del transporte. Esta
+corresponde en el flujo versionado a un output que falla `model_validate` y
+cuya resolución de reparación P11 se bloquea antes del transporte. Esta
 clasificación es una inferencia del control flow; no se conservó ni se volvió a
 leer el payload/output. No se hizo una request adicional para diagnosticarlo.
 
@@ -147,6 +147,57 @@ mostrando los 1,365 input tokens históricos del smoke y spend redondeado USD
 atribuir costo a estos canaries, por lo que no se afirma equivalencia con el
 cargo de facturación. Los precios operativos siguieron siendo los de Pricing
 Standard short-context observados el 2026-08-09, sin cambio de repositorio.
+
+## Investigación offline del fallo P07 — 2026-08-09
+
+Checkpoint: `OPENAI_LUNA_P07_ROOT_CAUSE_UNRESOLVED`. La evidencia histórica no
+conservó raw output ni la validación local contra el schema del provider, por lo
+que no permite determinar si aquel objeto incumplía el JSON Schema enviado o si
+lo cumplía y falló solo un validator Pydantic. No se modificaron prompt P07,
+contrato canónico, expected outcome, grounding ni allowlists.
+
+El schema exacto que `structured_output_format()` entrega para P07 fue generado
+desde `QuestionGenerationResult`: 13.671 bytes, `strict=true`, nombre
+`cva_QuestionGenerationResult_1_1_1` y SHA-256
+`80692d48637f0ae2d7a7e6f05ab4e9b0a5e2d8eff6f1b103fbd14f62c482639a`.
+
+| Reproducción sintética content-free | JSON Schema provider | Pydantic | Contexto |
+|---|---|---|---|
+| Falta `submission_id` | FAIL `required` | FAIL `missing` en `/submission_id` | no alcanzado |
+| Campo extra desconocido | FAIL `additionalProperties` | FAIL `extra_forbidden` en path saneado `/*` | no alcanzado |
+| `READY` con `candidate=null` | PASS | FAIL `value_error` en `/` | no alcanzado |
+| Anchor con evidence fuera de `candidate.evidence_ids` | PASS | FAIL `value_error` en `/candidate` | no alcanzado |
+| Submission internamente consistente pero distinta del request | PASS | PASS | FAIL cross-root |
+
+Se demostró un defecto independiente de observabilidad: el ledger primario
+`SCHEMA_INVALID` sí contenía usage, latencia, modelo efectivo y hashes, pero el
+bloqueo deliberado de P11 emergía como `MODEL_ROUTE_BLOCKED` sin adjuntarlo. La
+corrección emite `MODEL_OUTPUT_VALIDATION_FAILED`, preserva el ledger y separa
+`primary_failure=OUTPUT_PYDANTIC_VALIDATION_FAILED` de
+`repair_disposition=BLOCKED_BY_CANARY_POLICY`. El adapter registra además
+`PROVIDER_SCHEMA_VALID` o `PROVIDER_SCHEMA_INVALID` usando exactamente el
+schema enviado.
+
+La metadata estructural queda limitada a 32 pares tipo/path saneado. No se
+retienen mensajes, valores, claves desconocidas, `input`/`ctx` de Pydantic,
+request IDs claros ni output. Los tests demostraron una llamada fake máxima,
+P11/P10/Sol/retries en cero, fail-closed y conservación de usage, latencia,
+modelo y hashes.
+
+| Validación offline posterior | Resultado |
+|---|---|
+| Gateway/schema/adapter/harness/P07/validation/pricing | 107 passed |
+| Canary dry-run P01 y P07 | PASS ambos; 0 network, 0 billable, P10/P11/Sol/retries 0 |
+| Suite con cobertura | 471 passed, 16 skips PostgreSQL explícitos, 1 warning P3; 80% global |
+| Contratos | PASS: 53 roots, 140 definiciones, 274 referencias, 8 fixtures; cero drift |
+| Secret scan | PASS: 290 archivos versionables; ningún secreto de alta confianza |
+
+La página oficial general de Pricing se revalidó el 2026-08-09 y conserva
+Standard short-context Sol 5.00/0.50/6.25/30.00, Terra
+2.00/0.20/2.50/12.00 y Luna 0.20/0.02/0.25/1.20 USD por millón para
+input/cached/cache-write/output. `openai_pricing.py` no cambió. Esta
+investigación hizo cero llamadas de red/facturables, no leyó el secreto y sumó
+USD 0.00.
 
 ## Ejecución de auditoría final focalizada — 2026-08-08
 

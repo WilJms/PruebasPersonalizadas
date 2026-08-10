@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 from dataclasses import dataclass
+import hashlib
 import json
 from pathlib import Path
 from types import SimpleNamespace
@@ -19,7 +20,7 @@ from openai import (
     PermissionDeniedError,
     RateLimitError,
 )
-from pydantic import SecretStr
+from pydantic import SecretStr, ValidationError
 import pytest
 
 from comprehension_verification.contracts import SCHEMA_VERSION, models
@@ -58,6 +59,7 @@ from comprehension_verification.model_gateway.openai_routes import (
     SOL_MODEL_ID,
 )
 from comprehension_verification.model_gateway.openai_schema import (
+    provider_schema_validation_issues,
     structured_output_format,
 )
 from comprehension_verification.model_gateway.registry import PROMPT_SPECS, prompt_spec
@@ -263,6 +265,72 @@ def test_canonical_output_schemas_are_strict_provider_payloads(prompt_id: str) -
             assert set(item.get("required", [])) == set(item.get("properties", {}))
 
 
+def test_p07_exact_provider_schema_boundary_excludes_canonical_model_validators() -> None:
+    prompt_id = "P07_QUESTION_BUILD_V1"
+    request = build_mock_request(prompt_id)
+    formatted = structured_output_format(prompt_spec(prompt_id), request)
+    schema = formatted["schema"]
+    encoded = json.dumps(
+        schema,
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode("utf-8")
+
+    assert formatted["name"] == "cva_QuestionGenerationResult_1_1_1"
+    assert len(encoded) == 13_671
+    assert (
+        hashlib.sha256(encoded).hexdigest()
+        == "80692d48637f0ae2d7a7e6f05ab4e9b0a5e2d8eff6f1b103fbd14f62c482639a"
+    )
+    assert schema["required"] == [
+        "schema_version",
+        "submission_id",
+        "opportunity_id",
+        "context_mode",
+        "status",
+        "candidate",
+        "diagnostics",
+    ]
+
+    valid = DeterministicMockFactory().output_for(
+        prompt_id, request, MockBehavior.HAPPY
+    ).model_dump(mode="json")
+    provider_missing = json.loads(json.dumps(valid))
+    provider_missing.pop("submission_id")
+    assert provider_schema_validation_issues(schema, provider_missing) == (
+        ("required", "/"),
+    )
+
+    status_candidate_mismatch = json.loads(json.dumps(valid))
+    status_candidate_mismatch["candidate"] = None
+    assert not provider_schema_validation_issues(schema, status_candidate_mismatch)
+    with pytest.raises(ValidationError) as status_error:
+        models.QuestionGenerationResult.model_validate(status_candidate_mismatch)
+    assert {
+        (item["type"], item["loc"])
+        for item in status_error.value.errors(include_url=False)
+    } == {("value_error", ())}
+
+    anchor_subset_mismatch = json.loads(json.dumps(valid))
+    anchor_subset_mismatch["candidate"]["anchor"]["fragments"][0][
+        "evidence_id"
+    ] = "ev_other"
+    assert not provider_schema_validation_issues(schema, anchor_subset_mismatch)
+    with pytest.raises(ValidationError) as anchor_error:
+        models.QuestionGenerationResult.model_validate(anchor_subset_mismatch)
+    assert {
+        (item["type"], item["loc"])
+        for item in anchor_error.value.errors(include_url=False)
+    } == {("value_error", ("candidate",))}
+
+    contextual_only = json.loads(json.dumps(valid))
+    contextual_only["submission_id"] = "sub_other"
+    contextual_only["candidate"]["submission_id"] = "sub_other"
+    assert not provider_schema_validation_issues(schema, contextual_only)
+    assert models.QuestionGenerationResult.model_validate(contextual_only)
+
+
 def test_p11_schema_is_specialized_to_the_named_canonical_target() -> None:
     request = build_mock_request("P11_SCHEMA_REPAIR_V1").model_copy(
         update={"target_schema_name": "QuestionGenerationResult"}
@@ -313,6 +381,8 @@ def test_responses_payload_has_governed_state_tools_and_reasoning_controls() -> 
     )
 
     assert result.effective_model == LUNA_MODEL_ID
+    assert result.provider_schema_valid is True
+    assert result.provider_schema_issues == ()
     assert result.reasoning_tokens == 25
     call = fake.responses.calls[0]
     assert call["model"] == LUNA_MODEL_ID
@@ -548,6 +618,12 @@ def test_structurally_invalid_output_gets_exactly_one_p11_luna_low_attempt() -> 
     ]
     assert fake.responses.calls[1]["reasoning"] == {"effort": "low"}
     assert len(fake.responses.calls) == 2
+    assert "PROVIDER_SCHEMA_INVALID" in result.ledgers[0].route.reason_codes
+    assert (
+        "OUTPUT_PYDANTIC_VALIDATION_FAILED"
+        in result.ledgers[0].route.reason_codes
+    )
+    assert "PROVIDER_SCHEMA_VALID" in result.ledgers[1].route.reason_codes
 
 
 def test_malformed_json_is_data_for_exactly_one_p11_attempt() -> None:

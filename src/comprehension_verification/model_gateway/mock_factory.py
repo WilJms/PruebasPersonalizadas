@@ -47,6 +47,8 @@ class AdapterResult:
     effective_model: str | None = None
     output_hash: str | None = None
     provider_request_id_hash: str | None = None
+    provider_schema_valid: bool | None = None
+    provider_schema_issues: tuple[tuple[str, str], ...] = ()
     reason_codes: tuple[str, ...] = ()
 
 
