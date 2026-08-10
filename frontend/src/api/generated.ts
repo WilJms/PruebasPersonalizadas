@@ -4707,12 +4707,12 @@ export interface operations {
         };
         responses: {
             /** @description Successful Response */
-            200: {
+            202: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["BlueprintEnvelope"];
+                    "application/json": components["schemas"]["JobEnvelope"];
                 };
             };
             /** @description RFC 9457-style problem detail */
