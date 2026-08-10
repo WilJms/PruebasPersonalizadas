@@ -1,10 +1,10 @@
 # Validación del proveedor OpenAI real
 
-Fecha de corte: 2026-08-09. Estado: smoke P11 Luna-low y canary P01
-Luna-medium superados; canary P07 Luna-high fail-closed. Llamadas reales
-históricas: **3**, exactamente una para P11, una para P01 y una para P07. La
-investigación posterior de P07 es exclusivamente offline y no autoriza una
-repetición.
+Fecha de corte: 2026-08-09. Estado: smoke P11 Luna-low, canary P01
+Luna-medium y recanary P07 Luna-high superados; el primer canary P07 falló
+cerrado. Llamadas reales históricas: **4** —P11, P01 y dos observaciones P07—.
+La revisión del incidente y la preparación de la calificación siguiente son
+exclusivamente offline; no existe una autorización billable vigente.
 
 ## Perfil vinculante `LUNA_BASELINE_V1`
 
@@ -23,7 +23,8 @@ ADR-036 registra el baseline Luna-only.
 
 La matriz mixta anterior permanece como historia y candidato comparador futuro,
 pero no es callable ni fallback. Este experimento no afirma que Luna sea óptimo
-o que Sol sea innecesario; mide primero si Luna mantiene calidad suficiente.
+o que Sol sea innecesario; el gate siguiente mide solo operabilidad técnica de
+contratos/contexto. La calidad pedagógica se revisará después desde la UI.
 
 ## Boundary de request y output
 
@@ -109,6 +110,32 @@ tipo/path, con máximo 32 entradas; no se conservan `input`, `ctx`, mensajes,
 valores, claves desconocidas ni texto generado. P11 continúa en cero en la
 frontera canary.
 
+## Disposición del incidente histórico P07
+
+El P1 histórico se cierra como **blocker**, no como una afirmación de que el
+modelo haya sido corregido. La causa raíz del objeto inválido original sigue
+siendo desconocida: la evidencia retenida solo demuestra que
+`QuestionGenerationResult.model_validate()` falló y no permite reconstruir si
+también incumplía el schema del provider. Tampoco se conserva el output y no se
+lo releyó.
+
+El cierre del blocker se fundamenta en evidencia distinta y suficiente para la
+política de severidad del proyecto:
+
+- el fallo original fue fail-closed, sin P11, fallback ni continuación insegura;
+- el defecto determinista reproducible era la pérdida de observabilidad al
+  enmascarar el error primario, y quedó corregido con regresiones content-free;
+- prompt, schema, contrato y expected outcome P07 permanecieron sin relajar;
+- la recanary posterior pasó schema provider, Pydantic, contexto e invariantes
+  con esa misma frontera.
+
+No queda demostrado un defecto P1 actual que deba impedir el siguiente gate.
+Se abre, separadamente, una observación **P2 de confiabilidad P07**: la siguiente
+calificación incluye cuatro casos P07 distintos del ya observado —insuficiente,
+CHOICE con justificación, predicción PDF y crítica DOCX—. Cualquier recurrencia
+estructural o contextual detiene la secuencia y exige reclasificación humana;
+un PASS técnico tampoco certificará calidad pedagógica.
+
 ## Secuencia de aceptación
 
 | Gate | Estado |
@@ -122,8 +149,10 @@ frontera canary.
 | Canary P07 Luna-high | FAIL real fail-closed; 1 request, output Pydantic inválido, P11 0, USD 0.00327560 calculados |
 | Investigación P07 provider/Pydantic | PASS offline; schema exacto fijado, pérdida de ledger corregida, clases provider/Pydantic/contexto reproducidas sin contenido |
 | Recanary única P07 Luna-high | PASS real; `READY`, provider schema/Pydantic/contexto PASS, 1 request, P11 0, USD 0.00276560 calculados |
-| Golden set real sintético | pendiente de aprobación y presupuesto separados |
-| Calidad/latencia/costo y P0/P1 | P0=0; P1 histórico P07 permanece abierto para revisión humana tras una segunda observación PASS |
+| Revisión P1 P07 | blocker cerrado sin atribuir causa raíz; observación de recurrencia P07 continúa como P2 |
+| Calificación sintética dry-run | PASS 15/15 contra adapter real y transporte fake; corpus real-eligible acumulado 18/18; 0 red/0 billable |
+| Calificación sintética real | preparada; máximo 16 requests, ceiling cache-write USD 0.26877750, cap humano propuesto USD 0.30; pendiente de autorización separada |
+| Calidad/latencia/costo y severidad | P0=0; P1=0; P2=5; P3=1; calidad pedagógica pendiente de revisión humana posterior |
 | Build, digest y deploy real del worker | pendiente de gate posterior |
 
 El camino interactivo de re-revisión P05 que aún reside en el Service no se

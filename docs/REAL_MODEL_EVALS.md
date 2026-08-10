@@ -106,41 +106,84 @@ outcome `READY`, provider schema/Pydantic/contexto/IDs válidos, Luna-high
 solicitada y efectiva, una request, P11/P10/Sol/retries en cero y USD
 0.00276560 calculados. El checkpoint es
 `OPENAI_LUNA_P07_RECANARY_PASS_REVIEW_REQUIRED`: esta segunda observación no
-cierra automáticamente el P1 histórico. La autorización se consumió y este
-documento no contiene una aprobación billable vigente.
+cierra automáticamente el P1 histórico. La revisión posterior sí lo cierra
+como blocker por la combinación fail-closed, corrección del defecto
+determinista de observabilidad y recanary PASS sin relajar la frontera. La causa
+del output histórico sigue sin conocerse y su recurrencia continúa como P2.
+La autorización se consumió y este documento no contiene una aprobación
+billable vigente.
 
-## Gate real preparado, no autorizado
+## Calificación sintética preparada, no autorizada
 
-La futura ejecución exige simultáneamente:
+La evidencia real ya vigente cubre `oa-p01-happy-txt`,
+`oa-p07-open-short-txt` y `oa-p11-happy`. Repetirlos no añadiría una frontera
+nueva: desde esas llamadas no cambiaron contratos, prompt pack, rutas ni el
+schema generado; la modificación de `openai_schema.py` solo añadió validación
+diagnóstica local. La secuencia fija siguiente cubre los **15** casos
+`real_eligible` restantes, en orden risk-first:
 
-1. `--mode real --allow-billable`;
-2. `--max-total-cost-usd` positivo y suficiente para el techo preflight;
-3. `CVA_OPENAI_API_KEY` por canal privado;
-4. `CVA_OPENAI_REAL_EVALS_APPROVAL=OPENAI_REAL_EVALS_APPROVED`.
+| Orden | Casos | Cobertura nueva |
+|---:|---|---|
+| 1 | `oa-p01-injection-md` | inyección sintética y severidad P0 |
+| 2–5 | `oa-p07-insufficient`, `oa-p07-choice-justification`, `oa-p07-predict-pdf`, `oa-p07-critique-docx` | recurrencia P07; abstención, CHOICE/OPEN_SHORT, justificación, tres operaciones, TXT/MD/PDF/DOCX |
+| 6 | `oa-p01-insufficient` | fail-closed P01 |
+| 7–8 | `oa-p03-ambiguous`, `oa-p03-no-rubric` | abstención por ambigüedad y flujo sin rúbrica |
+| 9–15 | `oa-p02-happy-pdf`, `oa-p03-happy-with-rubric-md`, `oa-p04-happy`, `oa-p05-happy`, `oa-p06-happy-docx`, `oa-p08-happy-pdf`, `oa-p09-happy-docx` | spine P02–P06/P08/P09, con rúbrica y formatos normalizados |
 
-Ejemplo documental, que no debe ejecutarse antes del checkpoint:
+Junto con las tres observaciones reutilizadas, la cobertura acumulada queda en
+18/18 casos real-eligible y P01–P09/P11. P10 continúa comprobado offline sin
+ruta; el fixture de reparación controlada `oa-p01-structural-repair` sigue
+siendo mock-only y no se intenta inducir una salida inválida real.
+
+El procedimiento offline reproducible desde un checkout preparado es:
 
 ```bash
-.venv/bin/python scripts/run_openai_evals.py --mode real --allow-billable \
-  --max-total-cost-usd PRESUPUESTO_APROBADO
+make install
+make openai-qualification-dry-run
 ```
 
-La evaluación real debe registrar por caso route profile, modelo solicitado y
-efectivo, esfuerzo, prompt/schema, schema/context pass, grounding,
-answerability, abstention, preservación de IDs, latencia, tokens, costo,
-ratings humanos y severidad. Los expected outcomes no se cambian para hacer
-pasar Luna. Los criterios de salida son P0=0/P1=0, todos los casos
-estructural/contextualmente válidos, ningún dato sensible en logs y costos
-dentro del techo. Un fallo detiene el gate; no habilita fallback, Sol ni P10.
+El segundo comando elimina del environment la clave y todas las approvals,
+construye 15 payloads mediante el adapter OpenAI real y ejecuta un transporte
+Responses fake. El resultado fijado es 15/15 PASS, 0 red, 0 billable, 0
+P10/P11/Sol/fallback y retries gateway/prompt/SDK 0/0/0.
 
-La matriz mixta Sol/Luna se conserva sólo como comparador histórico futuro.
-No se ejecutará ninguna comparación Sol antes de evidencia Luna y una nueva
-autorización humana con presupuesto propio.
+La futura ejecución real usará exclusivamente
+`--mode qualification-real`, la approval distinta
+`CVA_OPENAI_REAL_QUALIFICATION_APPROVAL=OPENAI_REAL_SYNTHETIC_QUALIFICATION_APPROVED`,
+la clave por el canal privado y un cap CLI no mayor de USD 0.30. El modo bloquea
+selecciones `--case-id`, drift del manifest, presupuesto inferior al ceiling o
+superior al cap humano, y solo entonces comprueba approval/credencial y crea el
+adapter. Antes de cada transporte vuelve a estimar el request concreto como si
+todo su input fuese cache-write y bloquea si la reserva acumulada superaría el
+cap; esto también cubre el tamaño dinámico de un P11. El comando documental
+—no autorizado todavía— es:
 
-Los resultados reales P11/P01/P07 están anexados con fecha, commit,
-prompt/schema, modelo y metadata content-free en `TEST_RESULTS.md`. P07 no
-alcanzó validación contextual y no se reclama calidad semántica general del
-proveedor ni del golden set.
+```bash
+.venv/bin/python scripts/run_openai_evals.py \
+  --mode qualification-real \
+  --allow-billable \
+  --max-total-cost-usd 0.30
+```
+
+Hay 15 requests primarias programadas y una única reserva P11 global: máximo
+**16 Responses requests**. Gateway, prompt y SDK tienen retries cero. P11 solo
+puede aparecer automáticamente después de un output primario estructuralmente
+inválido; después de esa llamada el gate se detiene aunque la reparación pase.
+No se programa un P11 directo, no existe ruta P10/fallback/Sol y cualquier
+fallo de provider/transporte, schema provider, Pydantic, contexto, expected
+outcome, identidad de modelo, presupuesto o request boundary detiene la
+secuencia.
+
+La evidencia versionada conserva solo case/prompt/schema, ruta/esfuerzo,
+estados de validación, tipos/paths saneados, tokens, latencia, costos y hashes.
+No serializa payload, output, mensajes de error, request ID claro ni clave. Los
+expected outcomes no cambiaron y el manifest completo bloquea drift. Este gate
+demuestra operación técnica de contratos y contexto; no puntúa answerability,
+utilidad de guía ni calidad pedagógica, que requieren revisión humana posterior
+desde la aplicación.
+
+La matriz mixta Sol/Luna permanece solo como comparador histórico futuro. No
+se ejecutará Sol sin otro gate y presupuesto humano.
 
 ## Recorrido humano preparado
 

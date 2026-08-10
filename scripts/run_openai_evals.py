@@ -32,13 +32,17 @@ from comprehension_verification.model_gateway import (
     OPENAI_ROUTE_PROFILE_ID,
     PROMPT_CONTRACTS,
     PermanentProviderError,
+    ProviderBudgetError,
     build_mock_request,
     build_openai_cost_estimator,
     build_openai_routes,
     build_trusted_context,
     estimate_openai_input_tokens,
 )
-from comprehension_verification.model_gateway.openai_pricing import MODEL_PRICES
+from comprehension_verification.model_gateway.openai_pricing import (
+    MODEL_PRICES,
+    estimate_cost_usd,
+)
 from comprehension_verification.model_gateway.openai_routes import (
     LUNA_MODEL_ID,
     REQUEST_FRAMING_TOKEN_ALLOWANCE,
@@ -61,6 +65,42 @@ CANARY_CASE_PROMPTS = MappingProxyType(
     }
 )
 CANARY_ROUTE_CAP_USD = 1.0
+QUALIFICATION_APPROVAL_ENV = "CVA_OPENAI_REAL_QUALIFICATION_APPROVAL"
+QUALIFICATION_APPROVAL_VALUE = (
+    "OPENAI_REAL_SYNTHETIC_QUALIFICATION_APPROVED"
+)
+# These three fixtures already have content-free real evidence on the current
+# prompt/schema boundary.  The qualification spends only on the remaining
+# real-eligible corpus and evaluates the complete set cumulatively.
+QUALIFICATION_REUSED_REAL_CASE_IDS = (
+    "oa-p01-happy-txt",
+    "oa-p07-open-short-txt",
+    "oa-p11-happy",
+)
+# Risk-first order: exercise the P0 injection boundary and the open P07
+# reliability observation before spending on the remaining prompt spine.
+QUALIFICATION_CASE_IDS = (
+    "oa-p01-injection-md",
+    "oa-p07-insufficient",
+    "oa-p07-choice-justification",
+    "oa-p07-predict-pdf",
+    "oa-p07-critique-docx",
+    "oa-p01-insufficient",
+    "oa-p03-ambiguous",
+    "oa-p03-no-rubric",
+    "oa-p02-happy-pdf",
+    "oa-p03-happy-with-rubric-md",
+    "oa-p04-happy",
+    "oa-p05-happy",
+    "oa-p06-happy-docx",
+    "oa-p08-happy-pdf",
+    "oa-p09-happy-docx",
+)
+QUALIFICATION_MAX_P11_REQUESTS = 1
+QUALIFICATION_MAX_RESPONSES_REQUESTS = (
+    len(QUALIFICATION_CASE_IDS) + QUALIFICATION_MAX_P11_REQUESTS
+)
+QUALIFICATION_HUMAN_BUDGET_USD = 0.30
 REQUIRED_REVIEW_DIMENSIONS = frozenset(
     {
         "evidence_correctness",
@@ -101,12 +141,69 @@ class _SingleRequestAdapter:
 
 
 @dataclass(slots=True)
+class _QualificationRequestGuard:
+    """Bound the future qualification before each Responses transport."""
+
+    delegate: Any
+    max_total_cost_usd: float
+    request_attempts: int = 0
+    p11_attempts: int = 0
+    reserved_full_cache_write_ceiling_usd: float = 0.0
+    prompt_ids: list[str] = field(default_factory=list)
+    results: list[Any] = field(default_factory=list)
+
+    async def invoke(self, **kwargs: Any) -> Any:
+        prompt_id = str(kwargs.get("prompt_id", ""))
+        route = kwargs.get("route")
+        if prompt_id == "P10_ENRICHED_CONTEXT_V1":
+            raise PermanentProviderError("QUALIFICATION_P10_DISABLED")
+        if (
+            route is None
+            or route.model != LUNA_MODEL_ID
+            or route.fallback_route_id is not None
+        ):
+            raise PermanentProviderError("QUALIFICATION_ROUTE_NOT_LUNA_ONLY")
+        spec = prompt_spec(prompt_id)
+        request = kwargs.get("request")
+        envelope = kwargs.get("envelope")
+        if request is None or envelope is None:
+            raise PermanentProviderError("QUALIFICATION_REQUEST_METADATA_MISSING")
+        input_upper_bound = estimate_openai_input_tokens(
+            spec, request, envelope
+        )
+        call_ceiling = estimate_cost_usd(
+            model=LUNA_MODEL_ID,
+            input_tokens=input_upper_bound,
+            cache_write_tokens=input_upper_bound,
+            output_tokens=spec.max_output_tokens,
+        )
+        if (
+            self.reserved_full_cache_write_ceiling_usd + call_ceiling
+            > self.max_total_cost_usd
+        ):
+            raise ProviderBudgetError("QUALIFICATION_AGGREGATE_BUDGET_EXCEEDED")
+        if self.request_attempts >= QUALIFICATION_MAX_RESPONSES_REQUESTS:
+            raise PermanentProviderError("QUALIFICATION_REQUEST_LIMIT_EXCEEDED")
+        if prompt_id == "P11_SCHEMA_REPAIR_V1":
+            if self.p11_attempts >= QUALIFICATION_MAX_P11_REQUESTS:
+                raise PermanentProviderError("QUALIFICATION_P11_LIMIT_EXCEEDED")
+            self.p11_attempts += 1
+        self.reserved_full_cache_write_ceiling_usd += call_ceiling
+        self.request_attempts += 1
+        self.prompt_ids.append(prompt_id)
+        result = await self.delegate.invoke(**kwargs)
+        self.results.append(result)
+        return result
+
+
+@dataclass(slots=True)
 class _SyntheticCanaryResponses:
     """Versioned fake Responses transport; it never constructs a network client."""
 
     prompt_id: str
     request: Any
     input_tokens: int
+    behavior: MockBehavior = MockBehavior.HAPPY
     calls: list[dict[str, Any]] = field(default_factory=list)
 
     async def create(self, **kwargs: Any) -> Any:
@@ -114,7 +211,7 @@ class _SyntheticCanaryResponses:
             raise AssertionError("Canary fake transport received a second request")
         self.calls.append(kwargs)
         output = DeterministicMockFactory().output_for(
-            self.prompt_id, self.request, MockBehavior.HAPPY
+            self.prompt_id, self.request, self.behavior
         )
         output_text = json.dumps(
             output.model_dump(mode="json"),
@@ -243,6 +340,16 @@ def _observed_effective_model(ledger: models.ModelCallLedger) -> str | None:
     for code in reversed(ledger.route.reason_codes):
         if code.startswith(prefix):
             return code.removeprefix(prefix)
+    return None
+
+
+def _last_observed_effective_model(
+    ledgers: list[models.ModelCallLedger],
+) -> str | None:
+    for ledger in reversed(ledgers):
+        effective_model = _observed_effective_model(ledger)
+        if effective_model is not None:
+            return effective_model
     return None
 
 
@@ -410,6 +517,190 @@ def _selected_canary_case(cases: list[dict[str, Any]]) -> dict[str, Any]:
     ):
         raise OpenAIEvalBlocked("OPENAI_LUNA_CANARY_CASE_NOT_APPROVED")
     return case
+
+
+def _selected_qualification_cases(
+    cases: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    """Lock the future spend to the unobserved real-eligible corpus."""
+
+    by_id = {str(case.get("case_id", "")): case for case in cases}
+    expected_ids = set(QUALIFICATION_CASE_IDS) | set(
+        QUALIFICATION_REUSED_REAL_CASE_IDS
+    )
+    eligible_ids = {
+        str(case.get("case_id", ""))
+        for case in cases
+        if case.get("real_eligible")
+    }
+    if eligible_ids != expected_ids:
+        raise OpenAIEvalBlocked("OPENAI_QUALIFICATION_MANIFEST_DRIFT")
+    if any(case_id not in by_id for case_id in expected_ids):
+        raise OpenAIEvalBlocked("OPENAI_QUALIFICATION_CASE_MISSING")
+
+    reused_prompts = {
+        "oa-p01-happy-txt": "P01_ACTIVITY_SPEC_V1",
+        "oa-p07-open-short-txt": "P07_QUESTION_BUILD_V1",
+        "oa-p11-happy": "P11_SCHEMA_REPAIR_V1",
+    }
+    if any(
+        by_id[case_id].get("prompt_id") != prompt_id
+        or not by_id[case_id].get("real_eligible")
+        for case_id, prompt_id in reused_prompts.items()
+    ):
+        raise OpenAIEvalBlocked("OPENAI_QUALIFICATION_REUSED_EVIDENCE_DRIFT")
+
+    selected = [by_id[case_id] for case_id in QUALIFICATION_CASE_IDS]
+    if any(
+        not case.get("real_eligible")
+        or case.get("prompt_id")
+        in {"P10_ENRICHED_CONTEXT_V1", "P11_SCHEMA_REPAIR_V1"}
+        or case.get("behavior") in {"invalid_once", "route_blocked"}
+        for case in selected
+    ):
+        raise OpenAIEvalBlocked("OPENAI_QUALIFICATION_CASE_POLICY_DRIFT")
+    if len(selected) + QUALIFICATION_MAX_P11_REQUESTS != (
+        QUALIFICATION_MAX_RESPONSES_REQUESTS
+    ):
+        raise AssertionError("Qualification request boundary drifted")
+    return selected
+
+
+def _qualification_material(
+    cases: list[dict[str, Any]], *, route_cap_usd: float
+) -> dict[str, Any]:
+    """Build the exact fixed qualification and its conservative cost ceiling."""
+
+    selected = _selected_qualification_cases(cases)
+    routes = build_openai_routes(max_call_cost_usd=route_cap_usd)
+    estimator = build_openai_cost_estimator(routes)
+    prices = MODEL_PRICES[LUNA_MODEL_ID]
+    primary_materials: list[dict[str, Any]] = []
+    repair_reservations: list[dict[str, Any]] = []
+    for case in selected:
+        prompt_id = str(case["prompt_id"])
+        request = _request_for_case(case)
+        spec = prompt_spec(prompt_id)
+        envelope = _envelope_for(prompt_id, request)
+        output_format = structured_output_format(spec, request)
+        input_upper_bound = estimate_openai_input_tokens(spec, request, envelope)
+        route = routes[prompt_id]
+        if route.model != LUNA_MODEL_ID or route.fallback_route_id is not None:
+            raise AssertionError("Qualification route drifted from Luna-only")
+        no_cache_ceiling = estimator(spec, input_upper_bound)
+        full_cache_write_ceiling = estimate_cost_usd(
+            model=LUNA_MODEL_ID,
+            input_tokens=input_upper_bound,
+            cache_write_tokens=input_upper_bound,
+            output_tokens=spec.max_output_tokens,
+        )
+        primary_materials.append(
+            {
+                "case": case,
+                "prompt_id": prompt_id,
+                "request": request,
+                "spec": spec,
+                "envelope": envelope,
+                "output_format": output_format,
+                "input_upper_bound": input_upper_bound,
+                "request_effective_bytes": (
+                    input_upper_bound - REQUEST_FRAMING_TOKEN_ALLOWANCE
+                ),
+                "schema_bytes": len(_canonical_json_bytes(output_format["schema"])),
+                "no_cache_ceiling_usd": no_cache_ceiling,
+                "full_cache_write_ceiling_usd": full_cache_write_ceiling,
+            }
+        )
+
+        repair_spec = prompt_spec("P11_SCHEMA_REPAIR_V1")
+        repair_request = models.SchemaRepairRequest(
+            target_schema_name=spec.output_schema_name,
+            invalid_output="x" * (spec.max_output_tokens * 4),
+            validation_issues=[
+                models.SchemaValidationIssue(
+                    path="/",
+                    error_type="synthetic_preflight",
+                    message="Synthetic worst-case repair reservation",
+                )
+            ],
+        )
+        repair_envelope = _envelope_for(
+            repair_spec.prompt_id,
+            repair_request,
+            trusted_context=envelope.trusted_context,
+        )
+        repair_input_upper_bound = estimate_openai_input_tokens(
+            repair_spec, repair_request, repair_envelope
+        )
+        repair_reservations.append(
+            {
+                "source_case_id": case["case_id"],
+                "target_schema_name": spec.output_schema_name,
+                "input_upper_bound": repair_input_upper_bound,
+                "max_output_tokens": repair_spec.max_output_tokens,
+                "no_cache_ceiling_usd": estimator(
+                    repair_spec, repair_input_upper_bound
+                ),
+                "full_cache_write_ceiling_usd": estimate_cost_usd(
+                    model=LUNA_MODEL_ID,
+                    input_tokens=repair_input_upper_bound,
+                    cache_write_tokens=repair_input_upper_bound,
+                    output_tokens=repair_spec.max_output_tokens,
+                ),
+            }
+        )
+
+    no_cache_repair = max(
+        repair_reservations, key=lambda item: item["no_cache_ceiling_usd"]
+    )
+    full_cache_write_repair = max(
+        repair_reservations,
+        key=lambda item: item["full_cache_write_ceiling_usd"],
+    )
+    no_cache_ceiling = sum(
+        item["no_cache_ceiling_usd"] for item in primary_materials
+    ) + no_cache_repair["no_cache_ceiling_usd"]
+    full_cache_write_ceiling = sum(
+        item["full_cache_write_ceiling_usd"] for item in primary_materials
+    ) + full_cache_write_repair["full_cache_write_ceiling_usd"]
+    return {
+        "selected": selected,
+        "primary_materials": primary_materials,
+        "routes": routes,
+        "estimator": estimator,
+        "no_cache_repair": no_cache_repair,
+        "full_cache_write_repair": full_cache_write_repair,
+        "no_cache_ceiling_usd": round(no_cache_ceiling, 8),
+        "full_cache_write_ceiling_usd": round(full_cache_write_ceiling, 8),
+        "pricing_standard_short_context_usd_per_million": {
+            "input": prices.input_per_million,
+            "cached_input": prices.cached_input_per_million,
+            "cache_write": prices.input_per_million * 1.25,
+            "output": prices.output_per_million,
+        },
+    }
+
+
+def _qualification_gateway(
+    material: dict[str, Any],
+    qualification: dict[str, Any],
+    adapter: Any,
+    *,
+    budget_usd: float,
+) -> ModelGateway:
+    return ModelGateway(
+        GatewayConfig(
+            mode=GatewayMode.REAL,
+            timeout_seconds=125,
+            max_retries=0,
+            default_budget_usd=budget_usd,
+            job_id=f"job_{material['case']['case_id']}_qualification",
+        ),
+        real_routes=qualification["routes"],
+        adapters={"openai": adapter},
+        cost_estimator=qualification["estimator"],
+        input_token_estimator=estimate_openai_input_tokens,
+    )
 
 
 def _canary_material(
@@ -672,6 +963,240 @@ def _canary_real_proof(
     return proof
 
 
+def _qualification_semantic_proof(
+    material: dict[str, Any], result: Any, transport_result: Any
+) -> dict[str, Any]:
+    """Prove technical contract/context controls without rating pedagogy."""
+
+    _assert_case_outcome(material["case"], material["request"], result)
+    trusted = result.envelope.trusted_context
+    output_data = result.output.model_dump(mode="json")
+    evidence_ids, source_ids = _collect_reference_ids(output_data)
+    reason_codes = set(transport_result.reason_codes)
+    ledger = result.ledgers[-1]
+    proof = {
+        "provider_schema_valid": transport_result.provider_schema_valid is True,
+        "schema_validation": ledger.result == "SCHEMA_VALID",
+        "request_pydantic_valid": True,
+        "envelope_valid": True,
+        "output_pydantic_valid": True,
+        "contextual_validation": True,
+        "ids_allowlisted": evidence_ids.issubset(
+            set(trusted.allowed_evidence_ids)
+        )
+        and source_ids.issubset(set(trusted.allowed_course_source_ids)),
+        "expected_outcome_unchanged_and_met": True,
+        "repair_absent": result.repaired is False,
+        "requested_route_luna_only": ledger.route.model == LUNA_MODEL_ID,
+        "effective_model_luna": _observed_effective_model(ledger)
+        == LUNA_MODEL_ID,
+        "fallback_absent": ledger.route.fallback_route_id is None,
+        "structured_output_strict": "STRUCTURED_OUTPUT_STRICT" in reason_codes,
+        "tools_empty": "TOOLS_EMPTY" in reason_codes,
+        "store_false": "STORE_FALSE" in reason_codes,
+        "background_false": "BACKGROUND_FALSE" in reason_codes,
+        "sdk_retries_zero": "SDK_RETRIES_0" in reason_codes,
+    }
+    if not all(value is True for value in proof.values()):
+        raise AssertionError("Qualification proof contains a failed control")
+    return proof
+
+
+def _qualification_payload_proof(
+    material: dict[str, Any], result: Any, transport_result: Any, call: dict[str, Any]
+) -> dict[str, Any]:
+    """Match the fake captured payload to the same conservative preflight."""
+
+    accounted_shape = {
+        key: call[key] for key in ("instructions", "input", "reasoning", "text")
+    }
+    request_effective_bytes = len(_canonical_json_bytes(accounted_shape))
+    if request_effective_bytes != material["request_effective_bytes"]:
+        raise AssertionError("Qualification preflight bytes drifted from payload")
+    serialized_call = _canonical_json_bytes(call).decode("utf-8")
+    content_types = [
+        part.get("type")
+        for message in call["input"]
+        for part in message.get("content", [])
+    ]
+    raw_upload_absent = all(kind == "input_text" for kind in content_types) and not any(
+        marker in serialized_call
+        for marker in (
+            '"input_file"',
+            '"file_id"',
+            '"file_url"',
+            "file://",
+            "signed_url",
+            "object_store_credential",
+        )
+    )
+    user_messages = [message for message in call["input"] if message["role"] == "user"]
+    if len(user_messages) != 1 or len(user_messages[0]["content"]) != 1:
+        raise AssertionError("Qualification request must contain one semantic task")
+    captured_envelope = json.loads(user_messages[0]["content"][0]["text"])
+    proof = {
+        **_qualification_semantic_proof(material, result, transport_result),
+        "captured_envelope_exact": captured_envelope
+        == result.envelope.model_dump(mode="json"),
+        "raw_upload_absent": raw_upload_absent,
+        "conversation_state_absent": not {
+            "conversation",
+            "previous_response_id",
+        }.intersection(call),
+        "single_semantic_task": len(user_messages) == 1,
+        "temperature_omitted": "temperature" not in call,
+        "service_tier_default": call.get("service_tier") == "default",
+    }
+    if not all(value is True for value in proof.values()):
+        raise AssertionError("Qualification payload proof contains a failed control")
+    return proof
+
+
+def _qualification_budget_metadata(
+    qualification: dict[str, Any]
+) -> dict[str, Any]:
+    return {
+        "pricing_standard_short_context_usd_per_million": qualification[
+            "pricing_standard_short_context_usd_per_million"
+        ],
+        "billing_observation": (
+            "CANARIES_REPORTED_CACHE_WRITE_TOKENS; FULL_INPUT_CACHE_WRITE_RESERVED"
+        ),
+        "primary_request_count": len(qualification["primary_materials"]),
+        "p11_reserve_count": QUALIFICATION_MAX_P11_REQUESTS,
+        "max_responses_requests": QUALIFICATION_MAX_RESPONSES_REQUESTS,
+        "no_cache_ceiling_usd": qualification["no_cache_ceiling_usd"],
+        "full_cache_write_ceiling_usd": qualification[
+            "full_cache_write_ceiling_usd"
+        ],
+        "proposed_human_budget_usd": QUALIFICATION_HUMAN_BUDGET_USD,
+        "p11_full_cache_write_reserve": qualification[
+            "full_cache_write_repair"
+        ],
+        "primary_cases": [
+            {
+                "case_id": item["case"]["case_id"],
+                "prompt_id": item["prompt_id"],
+                "input_upper_bound_tokens": item["input_upper_bound"],
+                "max_output_tokens": item["spec"].max_output_tokens,
+                "no_cache_ceiling_usd": item["no_cache_ceiling_usd"],
+                "full_cache_write_ceiling_usd": item[
+                    "full_cache_write_ceiling_usd"
+                ],
+            }
+            for item in qualification["primary_materials"]
+        ],
+    }
+
+
+def _qualification_call_metadata(
+    prompt_ids: list[str], results: list[Any], ledgers: list[models.ModelCallLedger]
+) -> list[dict[str, Any]]:
+    """Serialize safe usage/hash metadata only, never request/output values."""
+
+    rows: list[dict[str, Any]] = []
+    for index, prompt_id in enumerate(prompt_ids):
+        transport_result = results[index] if index < len(results) else None
+        ledger = ledgers[index] if index < len(ledgers) else None
+        provider_schema_valid = (
+            transport_result.provider_schema_valid
+            if transport_result is not None
+            else None
+        )
+        rows.append(
+            {
+                "prompt_id": prompt_id,
+                "prompt_version": (
+                    ledger.prompt_version if ledger is not None else None
+                ),
+                "schema_version": (
+                    ledger.schema_version_used if ledger is not None else None
+                ),
+                "model": ledger.route.model if ledger is not None else None,
+                "effective_model": (
+                    transport_result.effective_model
+                    if transport_result is not None
+                    else (
+                        _observed_effective_model(ledger)
+                        if ledger is not None
+                        else None
+                    )
+                ),
+                "reasoning_effort": (
+                    ledger.route.reasoning_effort.value
+                    if ledger is not None
+                    else None
+                ),
+                "ledger_result": ledger.result if ledger is not None else None,
+                "provider_schema_status": (
+                    "NOT_EVALUATED"
+                    if provider_schema_valid is None
+                    else "PASS" if provider_schema_valid else "FAIL"
+                ),
+                "input_tokens": (
+                    transport_result.input_tokens
+                    if transport_result is not None
+                    else ledger.input_tokens if ledger is not None else None
+                ),
+                "cached_input_tokens": (
+                    transport_result.cached_input_tokens
+                    if transport_result is not None
+                    else ledger.cached_input_tokens if ledger is not None else None
+                ),
+                "cache_write_input_tokens": (
+                    transport_result.cache_write_input_tokens
+                    if transport_result is not None
+                    else None
+                ),
+                "output_tokens": (
+                    transport_result.output_tokens
+                    if transport_result is not None
+                    else ledger.output_tokens if ledger is not None else None
+                ),
+                "reasoning_tokens": (
+                    transport_result.reasoning_tokens
+                    if transport_result is not None
+                    else None
+                ),
+                "latency_ms": ledger.latency_ms if ledger is not None else None,
+                "estimated_cost_usd": (
+                    round(transport_result.estimated_cost_usd, 8)
+                    if transport_result is not None
+                    else (
+                        round(ledger.estimated_cost_usd, 8)
+                        if ledger is not None
+                        else None
+                    )
+                ),
+                "calculated_actual_cost_usd": (
+                    round(transport_result.actual_cost_usd, 8)
+                    if transport_result is not None
+                    else (
+                        round(ledger.actual_cost_usd, 8)
+                        if ledger is not None
+                        and ledger.actual_cost_usd is not None
+                        else None
+                    )
+                ),
+                "prompt_hash": ledger.prompt_hash if ledger is not None else None,
+                "input_bundle_hash": (
+                    ledger.input_bundle_hash if ledger is not None else None
+                ),
+                "request_id_hash": (
+                    transport_result.provider_request_id_hash
+                    if transport_result is not None
+                    else None
+                ),
+                "output_hash": (
+                    transport_result.output_hash
+                    if transport_result is not None
+                    else None
+                ),
+            }
+        )
+    return rows
+
+
 def _canary_usage_metadata(
     transport_result: Any | None, ledger: models.ModelCallLedger | None
 ) -> dict[str, Any]:
@@ -822,6 +1347,129 @@ async def _run_canary_dry_run(cases: list[dict[str, Any]]) -> dict[str, Any]:
         "sol_calls": 0,
         "secret_read": False,
         "cases": [row],
+    }
+
+
+async def _run_qualification_dry_run(
+    cases: list[dict[str, Any]],
+) -> dict[str, Any]:
+    """Exercise the fixed qualification through real code and fake transport."""
+
+    qualification = _qualification_material(
+        cases, route_cap_usd=QUALIFICATION_HUMAN_BUDGET_USD
+    )
+    if (
+        qualification["full_cache_write_ceiling_usd"]
+        > QUALIFICATION_HUMAN_BUDGET_USD
+    ):
+        raise OpenAIEvalBlocked("OPENAI_QUALIFICATION_HUMAN_BUDGET_TOO_LOW")
+    rows: list[dict[str, Any]] = []
+    fake_transport_calls = 0
+    for material in qualification["primary_materials"]:
+        case = material["case"]
+        fake_responses = _SyntheticCanaryResponses(
+            prompt_id=material["prompt_id"],
+            request=material["request"],
+            input_tokens=material["input_upper_bound"],
+            behavior=MockBehavior(case["behavior"]),
+        )
+        fake_client = _SyntheticCanaryClient(responses=fake_responses)
+        adapter = _SingleRequestAdapter(OpenAIResponsesAdapter(client=fake_client))
+        gateway = _qualification_gateway(
+            material,
+            qualification,
+            adapter,
+            budget_usd=QUALIFICATION_HUMAN_BUDGET_USD,
+        )
+        result = await gateway.invoke(
+            material["prompt_id"],
+            material["request"],
+            build_trusted_context(material["request"]),
+            budget=CallBudget(max_cost_usd=QUALIFICATION_HUMAN_BUDGET_USD),
+        )
+        if result.repaired:
+            raise AssertionError("Qualification dry-run unexpectedly used P11")
+        if (
+            adapter.request_attempts != 1
+            or adapter.prompt_ids != [material["prompt_id"]]
+            or len(adapter.results) != 1
+            or len(fake_responses.calls) != 1
+        ):
+            raise AssertionError("Qualification case did not use one fake request")
+        controls = _qualification_payload_proof(
+            material,
+            result,
+            adapter.results[0],
+            fake_responses.calls[0],
+        )
+        fake_transport_calls += 1
+        output_status = getattr(
+            getattr(result.output, "status", None),
+            "value",
+            getattr(result.output, "status", None),
+        )
+        rows.append(
+            {
+                "case_id": case["case_id"],
+                "status": "PASS",
+                "expected": case["expected"],
+                "output_status": output_status,
+                "source_format": case.get("source_format"),
+                "content_profile": case.get("content_profile"),
+                "semantic_expectation": case.get("semantic_expectation"),
+                "validation_order": [
+                    phase.value for phase in result.validation_order
+                ],
+                "fake_transport_calls": 1,
+                "controls": controls,
+                "input_upper_bound_tokens": material["input_upper_bound"],
+                "max_output_tokens": material["spec"].max_output_tokens,
+                "no_cache_ceiling_usd": material["no_cache_ceiling_usd"],
+                "full_cache_write_ceiling_usd": material[
+                    "full_cache_write_ceiling_usd"
+                ],
+                **_route_metadata(
+                    material["prompt_id"],
+                    qualification["routes"],
+                    effective_model=_observed_effective_model(result.ledgers[-1]),
+                ),
+            }
+        )
+    if fake_transport_calls != len(QUALIFICATION_CASE_IDS):
+        raise AssertionError("Qualification dry-run case count drifted")
+    return {
+        "mode": "qualification-dry-run",
+        "route_profile": OPENAI_ROUTE_PROFILE_ID,
+        "classification": "SYNTHETIC_ONLY_NO_STUDENT_DATA",
+        "scope": "TECHNICAL_CONTRACT_AND_CONTEXT_ONLY_NOT_PEDAGOGICAL_QUALITY",
+        "planned_case_ids": list(QUALIFICATION_CASE_IDS),
+        "reused_real_evidence_case_ids": list(
+            QUALIFICATION_REUSED_REAL_CASE_IDS
+        ),
+        "real_eligible_corpus_coverage": len(QUALIFICATION_CASE_IDS)
+        + len(QUALIFICATION_REUSED_REAL_CASE_IDS),
+        "network_calls": 0,
+        "billable_calls": 0,
+        "fake_transport_calls": fake_transport_calls,
+        "max_responses_requests": QUALIFICATION_MAX_RESPONSES_REQUESTS,
+        "gateway_retries": 0,
+        "prompt_retries": 0,
+        "sdk_retries": 0,
+        "p10_calls": 0,
+        "p11_calls": 0,
+        "p11_policy": "AT_MOST_ONE_ON_PRIMARY_STRUCTURAL_FAILURE_THEN_STOP",
+        "fallback_calls": 0,
+        "sol_calls": 0,
+        "secret_read": False,
+        "budget": _qualification_budget_metadata(qualification),
+        "stop_conditions": [
+            "FIRST_PROVIDER_OR_TRANSPORT_FAILURE",
+            "FIRST_PROVIDER_SCHEMA_OR_PYDANTIC_FAILURE",
+            "FIRST_CONTEXT_OR_EXPECTED_OUTCOME_FAILURE",
+            "FIRST_P11_USE_EVEN_IF_REPAIR_SUCCEEDS",
+            "REQUEST_OR_BUDGET_BOUNDARY",
+        ],
+        "cases": rows,
     }
 
 
@@ -1027,6 +1675,280 @@ async def _run_real(
     }
 
 
+async def _run_qualification_real(
+    cases: list[dict[str, Any]], *, max_total_cost_usd: float
+) -> dict[str, Any]:
+    """Run the fixed real qualification under one aggregate request guard."""
+
+    qualification = _qualification_material(
+        cases, route_cap_usd=QUALIFICATION_HUMAN_BUDGET_USD
+    )
+    if max_total_cost_usd > QUALIFICATION_HUMAN_BUDGET_USD:
+        raise OpenAIEvalBlocked("OPENAI_QUALIFICATION_HUMAN_CAP_EXCEEDED")
+    if (
+        qualification["full_cache_write_ceiling_usd"]
+        > max_total_cost_usd
+    ):
+        raise OpenAIEvalBlocked("OPENAI_QUALIFICATION_BUDGET_TOO_LOW")
+    if (
+        os.environ.get(QUALIFICATION_APPROVAL_ENV)
+        != QUALIFICATION_APPROVAL_VALUE
+    ):
+        raise OpenAIEvalBlocked("OPENAI_QUALIFICATION_APPROVAL_REQUIRED")
+    key = os.environ.get("CVA_OPENAI_API_KEY", "").strip()
+    if not key:
+        raise OpenAIEvalBlocked("OPENAI_CREDENTIALS_REQUIRED")
+
+    adapter = _QualificationRequestGuard(
+        OpenAIResponsesAdapter(api_key=SecretStr(key)),
+        max_total_cost_usd=max_total_cost_usd,
+    )
+    rows: list[dict[str, Any]] = []
+    actual_total = 0.0
+    budget_charged_total = 0.0
+    for material in qualification["primary_materials"]:
+        case = material["case"]
+        attempt_start = adapter.request_attempts
+        result_start = len(adapter.results)
+        remaining_budget = max(
+            0.0, max_total_cost_usd - budget_charged_total
+        )
+        gateway = _qualification_gateway(
+            material,
+            qualification,
+            adapter,
+            budget_usd=remaining_budget,
+        )
+        result: Any | None = None
+        error: GatewayError | None = None
+        try:
+            result = await gateway.invoke(
+                material["prompt_id"],
+                material["request"],
+                build_trusted_context(material["request"]),
+                budget=CallBudget(max_cost_usd=remaining_budget),
+            )
+            ledgers = list(result.ledgers)
+        except GatewayError as exc:
+            error = exc
+            ledgers = list(exc.ledgers)
+
+        case_prompt_ids = adapter.prompt_ids[
+            attempt_start : adapter.request_attempts
+        ]
+        case_results = adapter.results[result_start:]
+        case_actual_cost = sum(item.actual_cost_usd for item in case_results)
+        actual_total += case_actual_cost
+        case_budget_charge = sum(
+            max(item.estimated_cost_usd, item.actual_cost_usd)
+            for item in case_results
+        )
+        for missing_prompt in case_prompt_ids[len(case_results) :]:
+            case_budget_charge += (
+                qualification["full_cache_write_repair"][
+                    "full_cache_write_ceiling_usd"
+                ]
+                if missing_prompt == "P11_SCHEMA_REPAIR_V1"
+                else material["full_cache_write_ceiling_usd"]
+            )
+        budget_charged_total += case_budget_charge
+        call_metadata = _qualification_call_metadata(
+            case_prompt_ids, case_results, ledgers
+        )
+        effective_model = _last_observed_effective_model(ledgers)
+        base_row = {
+            "case_id": case["case_id"],
+            "expected": case["expected"],
+            "defect_severity_if_failed": case["defect_severity_if_failed"],
+            "attempts": len(case_prompt_ids),
+            "actual_cost_usd": round(case_actual_cost, 8),
+            "calls": call_metadata,
+            **_route_metadata(
+                material["prompt_id"],
+                qualification["routes"],
+                effective_model=effective_model,
+            ),
+        }
+
+        if error is not None:
+            primary_failure, repair_disposition = _canary_failure_metadata(error)
+            if repair_disposition == "BLOCKED_BY_CANARY_POLICY":
+                repair_disposition = "BLOCKED_BY_QUALIFICATION_POLICY"
+            if primary_failure is not None:
+                validation = {
+                    "provider_schema_status": primary_failure[
+                        "provider_schema_status"
+                    ],
+                    "pydantic_status": "FAIL",
+                    "context_status": "NOT_EVALUATED",
+                    "expected_outcome_status": "NOT_EVALUATED",
+                }
+            elif error.code == "MODEL_CONTEXT_NOT_ALLOWLISTED":
+                provider_pass = bool(case_results) and all(
+                    item.provider_schema_valid is True for item in case_results
+                )
+                validation = {
+                    "provider_schema_status": (
+                        "PASS" if provider_pass else "NOT_EVALUATED"
+                    ),
+                    "pydantic_status": "PASS",
+                    "context_status": "FAIL",
+                    "expected_outcome_status": "NOT_EVALUATED",
+                }
+            else:
+                validation = {
+                    "provider_schema_status": "NOT_EVALUATED",
+                    "pydantic_status": "NOT_EVALUATED",
+                    "context_status": "NOT_EVALUATED",
+                    "expected_outcome_status": "NOT_EVALUATED",
+                }
+            rows.append(
+                {
+                    **base_row,
+                    "status": "FAIL",
+                    "error_code": error.code,
+                    "validation": validation,
+                    "primary_failure": primary_failure,
+                    "repair_disposition": repair_disposition,
+                }
+            )
+            break
+
+        if result is None:
+            raise AssertionError("Qualification lost both result and error")
+        output_status = getattr(
+            getattr(result.output, "status", None),
+            "value",
+            getattr(result.output, "status", None),
+        )
+        if result.repaired:
+            primary_provider_status = (
+                "PASS"
+                if case_results
+                and case_results[0].provider_schema_valid is True
+                else "FAIL"
+                if case_results
+                and case_results[0].provider_schema_valid is False
+                else "NOT_EVALUATED"
+            )
+            rows.append(
+                {
+                    **base_row,
+                    "status": "FAIL",
+                    "error_code": (
+                        "OPENAI_QUALIFICATION_P11_USED_REVIEW_REQUIRED"
+                    ),
+                    "output_status": output_status,
+                    "validation_order": [
+                        phase.value for phase in result.validation_order
+                    ],
+                    "validation": {
+                        "provider_schema_status": primary_provider_status,
+                        "pydantic_status": "FAIL_PRIMARY_REPAIRED",
+                        "context_status": "PASS_REPAIRED_OUTPUT",
+                        "expected_outcome_status": "NOT_EVALUATED",
+                    },
+                    "primary_failure": None,
+                    "repair_disposition": "P11_USED_STOP_POLICY",
+                }
+            )
+            break
+
+        try:
+            if len(case_results) != 1:
+                raise AssertionError("Passing qualification case must use one request")
+            controls = _qualification_semantic_proof(
+                material, result, case_results[0]
+            )
+        except AssertionError:
+            provider_status = (
+                "PASS"
+                if case_results
+                and case_results[0].provider_schema_valid is True
+                else "FAIL"
+                if case_results
+                and case_results[0].provider_schema_valid is False
+                else "NOT_EVALUATED"
+            )
+            rows.append(
+                {
+                    **base_row,
+                    "status": "FAIL",
+                    "error_code": "OPENAI_QUALIFICATION_EXPECTATION_FAILED",
+                    "output_status": output_status,
+                    "validation_order": [
+                        phase.value for phase in result.validation_order
+                    ],
+                    "validation": {
+                        "provider_schema_status": provider_status,
+                        "pydantic_status": "PASS",
+                        "context_status": "PASS",
+                        "expected_outcome_status": "FAIL",
+                    },
+                    "primary_failure": None,
+                    "repair_disposition": None,
+                }
+            )
+            break
+        rows.append(
+            {
+                **base_row,
+                "status": "PASS",
+                "error_code": None,
+                "output_status": output_status,
+                "validation_order": [
+                    phase.value for phase in result.validation_order
+                ],
+                "validation": {
+                    "provider_schema_status": "PASS",
+                    "pydantic_status": "PASS",
+                    "context_status": "PASS",
+                    "expected_outcome_status": "PASS",
+                },
+                "controls": controls,
+                "primary_failure": None,
+                "repair_disposition": None,
+            }
+        )
+
+    if adapter.request_attempts > QUALIFICATION_MAX_RESPONSES_REQUESTS:
+        raise AssertionError("Qualification crossed its request boundary")
+    if adapter.p11_attempts > QUALIFICATION_MAX_P11_REQUESTS:
+        raise AssertionError("Qualification crossed its P11 boundary")
+    return {
+        "mode": "qualification-real",
+        "route_profile": OPENAI_ROUTE_PROFILE_ID,
+        "classification": "SYNTHETIC_ONLY_NO_STUDENT_DATA",
+        "scope": "TECHNICAL_CONTRACT_AND_CONTEXT_ONLY_NOT_PEDAGOGICAL_QUALITY",
+        "planned_case_ids": list(QUALIFICATION_CASE_IDS),
+        "reused_real_evidence_case_ids": list(
+            QUALIFICATION_REUSED_REAL_CASE_IDS
+        ),
+        "estimated_ceiling_usd": qualification[
+            "full_cache_write_ceiling_usd"
+        ],
+        "authorized_budget_usd": max_total_cost_usd,
+        "actual_cost_usd": round(actual_total, 8),
+        "budget_charged_usd": round(budget_charged_total, 8),
+        "transport_reserved_full_cache_write_ceiling_usd": round(
+            adapter.reserved_full_cache_write_ceiling_usd, 8
+        ),
+        "network_calls": adapter.request_attempts,
+        "billable_calls": adapter.request_attempts,
+        "max_responses_requests": QUALIFICATION_MAX_RESPONSES_REQUESTS,
+        "gateway_retries": 0,
+        "prompt_retries": 0,
+        "sdk_retries": 0,
+        "p10_calls": adapter.prompt_ids.count("P10_ENRICHED_CONTEXT_V1"),
+        "p11_calls": adapter.p11_attempts,
+        "p11_policy": "AT_MOST_ONE_ON_PRIMARY_STRUCTURAL_FAILURE_THEN_STOP",
+        "fallback_calls": 0,
+        "sol_calls": 0,
+        "budget": _qualification_budget_metadata(qualification),
+        "cases": rows,
+    }
+
+
 async def _run_canary_real(
     cases: list[dict[str, Any]], *, max_total_cost_usd: float
 ) -> dict[str, Any]:
@@ -1137,7 +2059,14 @@ def main() -> int:
     parser.add_argument("--manifest", type=Path, default=DEFAULT_MANIFEST)
     parser.add_argument(
         "--mode",
-        choices=("offline", "real", "canary-dry-run", "canary-real"),
+        choices=(
+            "offline",
+            "real",
+            "canary-dry-run",
+            "canary-real",
+            "qualification-dry-run",
+            "qualification-real",
+        ),
         default="offline",
     )
     parser.add_argument(
@@ -1150,6 +2079,8 @@ def main() -> int:
     parser.add_argument("--max-total-cost-usd", type=float, default=0.0)
     args = parser.parse_args()
     cases = _load_cases(args.manifest)
+    if args.mode in {"qualification-dry-run", "qualification-real"} and args.case_id:
+        parser.error("qualification modes use the fixed versioned case sequence")
     if args.case_id:
         selected_ids = set(args.case_id)
         known_ids = {str(case["case_id"]) for case in cases}
@@ -1157,14 +2088,15 @@ def main() -> int:
         if unknown:
             parser.error(f"unknown synthetic case id(s): {', '.join(unknown)}")
         cases = [case for case in cases if case["case_id"] in selected_ids]
-    if args.mode in {"real", "canary-real"} and (
+    if args.mode in {"real", "canary-real", "qualification-real"} and (
         not args.allow_billable or args.max_total_cost_usd <= 0
     ):
-        code = (
-            "OPENAI_LUNA_CANARY_APPROVAL_REQUIRED"
-            if args.mode == "canary-real"
-            else "OPENAI_REAL_EVALS_APPROVAL_REQUIRED"
-        )
+        if args.mode == "canary-real":
+            code = "OPENAI_LUNA_CANARY_APPROVAL_REQUIRED"
+        elif args.mode == "qualification-real":
+            code = "OPENAI_QUALIFICATION_APPROVAL_REQUIRED"
+        else:
+            code = "OPENAI_REAL_EVALS_APPROVAL_REQUIRED"
         print(
             json.dumps(
                 {
@@ -1183,6 +2115,12 @@ def main() -> int:
             coroutine = _run_canary_dry_run(cases)
         elif args.mode == "canary-real":
             coroutine = _run_canary_real(
+                cases, max_total_cost_usd=args.max_total_cost_usd
+            )
+        elif args.mode == "qualification-dry-run":
+            coroutine = _run_qualification_dry_run(cases)
+        elif args.mode == "qualification-real":
+            coroutine = _run_qualification_real(
                 cases, max_total_cost_usd=args.max_total_cost_usd
             )
         else:

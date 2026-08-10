@@ -26,6 +26,7 @@ def _safe_environment() -> dict[str, str]:
     environment.pop("CVA_OPENAI_API_KEY", None)
     environment.pop("CVA_OPENAI_REAL_EVALS_APPROVAL", None)
     environment.pop("CVA_OPENAI_LUNA_CANARY_APPROVAL", None)
+    environment.pop("CVA_OPENAI_REAL_QUALIFICATION_APPROVAL", None)
     return environment
 
 
@@ -356,6 +357,321 @@ def test_make_target_runs_p07_canary_dry_run_with_configured_python() -> None:
     assert report["p10_calls"] == report["p11_calls"] == report["sol_calls"] == 0
     assert report["secret_read"] is False
     assert report["cases"][0]["case_id"] == "oa-p07-open-short-txt"
+
+
+def test_real_synthetic_qualification_dry_run_is_fixed_and_non_billable() -> None:
+    completed = subprocess.run(
+        [
+            "make",
+            "openai-qualification-dry-run",
+            f"PYTHON={sys.executable}",
+        ],
+        cwd=ROOT,
+        env=_safe_environment(),
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    report = json.loads(completed.stdout)
+    assert report["status"] == "PASS"
+    assert report["mode"] == "qualification-dry-run"
+    assert report["scope"] == (
+        "TECHNICAL_CONTRACT_AND_CONTEXT_ONLY_NOT_PEDAGOGICAL_QUALITY"
+    )
+    assert report["planned_case_ids"] == list(
+        eval_harness.QUALIFICATION_CASE_IDS
+    )
+    assert report["reused_real_evidence_case_ids"] == list(
+        eval_harness.QUALIFICATION_REUSED_REAL_CASE_IDS
+    )
+    assert report["real_eligible_corpus_coverage"] == 18
+    assert report["network_calls"] == report["billable_calls"] == 0
+    assert report["fake_transport_calls"] == 15
+    assert report["max_responses_requests"] == 16
+    assert report["gateway_retries"] == report["prompt_retries"] == 0
+    assert report["sdk_retries"] == 0
+    assert report["p10_calls"] == report["p11_calls"] == 0
+    assert report["fallback_calls"] == report["sol_calls"] == 0
+    assert report["secret_read"] is False
+    budget = report["budget"]
+    assert budget["no_cache_ceiling_usd"] == 0.253902
+    assert budget["full_cache_write_ceiling_usd"] == 0.2687775
+    assert budget["proposed_human_budget_usd"] == 0.30
+    assert budget["primary_request_count"] == 15
+    assert budget["p11_reserve_count"] == 1
+    assert budget["pricing_standard_short_context_usd_per_million"] == {
+        "input": 0.20,
+        "cached_input": 0.02,
+        "cache_write": 0.25,
+        "output": 1.20,
+    }
+    assert budget["p11_full_cache_write_reserve"] == {
+        "source_case_id": "oa-p04-happy",
+        "target_schema_name": "AssessmentBlueprint",
+        "input_upper_bound": 79_289,
+        "max_output_tokens": 8_000,
+        "no_cache_ceiling_usd": 0.0254578,
+        "full_cache_write_ceiling_usd": 0.02942225,
+    }
+    assert [row["case_id"] for row in report["cases"]] == list(
+        eval_harness.QUALIFICATION_CASE_IDS
+    )
+    assert all(row["status"] == "PASS" for row in report["cases"])
+    assert all(row["model"] == "gpt-5.6-luna" for row in report["cases"])
+    assert all(row["fallback_route_id"] is None for row in report["cases"])
+    assert all(all(row["controls"].values()) for row in report["cases"])
+    serialized = json.dumps(report, ensure_ascii=False, sort_keys=True)
+    for forbidden in (
+        "content_text",
+        "question_text",
+        "invalid_output",
+        "CVA_OPENAI_API_KEY",
+    ):
+        assert forbidden not in serialized
+
+
+def test_real_synthetic_qualification_requires_its_distinct_human_gate() -> None:
+    completed = subprocess.run(
+        [sys.executable, str(SCRIPT), "--mode", "qualification-real"],
+        cwd=ROOT,
+        env=_safe_environment(),
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode == 2
+    assert json.loads(completed.stdout) == {
+        "code": "OPENAI_QUALIFICATION_APPROVAL_REQUIRED",
+        "network_calls": 0,
+        "status": "BLOCKED",
+    }
+
+
+def test_qualification_preflight_blocks_low_or_excess_budget_before_secret(
+    monkeypatch,
+) -> None:
+    cases = eval_harness._load_cases(eval_harness.DEFAULT_MANIFEST)
+    monkeypatch.delenv("CVA_OPENAI_API_KEY", raising=False)
+    monkeypatch.delenv(
+        "CVA_OPENAI_REAL_QUALIFICATION_APPROVAL", raising=False
+    )
+
+    with pytest.raises(
+        eval_harness.OpenAIEvalBlocked,
+        match="OPENAI_QUALIFICATION_BUDGET_TOO_LOW",
+    ):
+        asyncio.run(
+            eval_harness._run_qualification_real(
+                cases, max_total_cost_usd=0.268
+            )
+        )
+    with pytest.raises(
+        eval_harness.OpenAIEvalBlocked,
+        match="OPENAI_QUALIFICATION_HUMAN_CAP_EXCEEDED",
+    ):
+        asyncio.run(
+            eval_harness._run_qualification_real(
+                cases, max_total_cost_usd=0.31
+            )
+        )
+    with pytest.raises(
+        eval_harness.OpenAIEvalBlocked,
+        match="OPENAI_QUALIFICATION_APPROVAL_REQUIRED",
+    ):
+        asyncio.run(
+            eval_harness._run_qualification_real(
+                cases, max_total_cost_usd=0.30
+            )
+        )
+
+
+def test_qualification_stops_after_one_governed_p11_even_when_repair_succeeds(
+    monkeypatch,
+) -> None:
+    class RepairingAdapter:
+        async def invoke(
+            self, *, prompt_id: str, request: object, **_kwargs: object
+        ) -> AdapterResult:
+            raw_output = (
+                eval_harness.DeterministicMockFactory()
+                .output_for(prompt_id, request, eval_harness.MockBehavior.HAPPY)
+                .model_dump(mode="json")
+            )
+            if prompt_id != "P11_SCHEMA_REPAIR_V1":
+                raw_output["synthetic_extra"] = "content_must_not_escape"
+            schema = eval_harness.structured_output_format(
+                eval_harness.prompt_spec(prompt_id), request
+            )["schema"]
+            provider_issues = provider_schema_validation_issues(
+                schema, raw_output
+            )
+            return AdapterResult(
+                raw_output=raw_output,
+                input_tokens=100,
+                cached_input_tokens=0,
+                cache_write_input_tokens=100,
+                output_tokens=50,
+                reasoning_tokens=10,
+                estimated_cost_usd=0.001,
+                actual_cost_usd=0.0001,
+                effective_model="gpt-5.6-luna",
+                output_hash="sha256:" + "1" * 64,
+                provider_request_id_hash="sha256:" + "2" * 64,
+                provider_schema_valid=not provider_issues,
+                provider_schema_issues=provider_issues,
+                reason_codes=(
+                    "SDK_RETRIES_0",
+                    "STRUCTURED_OUTPUT_STRICT",
+                    "STORE_FALSE",
+                    "BACKGROUND_FALSE",
+                    "TOOLS_EMPTY",
+                    (
+                        "PROVIDER_SCHEMA_VALID"
+                        if not provider_issues
+                        else "PROVIDER_SCHEMA_INVALID"
+                    ),
+                ),
+            )
+
+    monkeypatch.setenv(
+        "CVA_OPENAI_REAL_QUALIFICATION_APPROVAL",
+        "OPENAI_REAL_SYNTHETIC_QUALIFICATION_APPROVED",
+    )
+    monkeypatch.setenv(
+        "CVA_OPENAI_API_KEY", "sk-project-synthetic-placeholder-not-a-real-key"
+    )
+    monkeypatch.setattr(
+        eval_harness,
+        "OpenAIResponsesAdapter",
+        lambda **_kwargs: RepairingAdapter(),
+    )
+    cases = eval_harness._load_cases(eval_harness.DEFAULT_MANIFEST)
+
+    report = asyncio.run(
+        eval_harness._run_qualification_real(
+            cases, max_total_cost_usd=0.30
+        )
+    )
+
+    assert report["network_calls"] == report["billable_calls"] == 2
+    assert report["p11_calls"] == 1
+    assert report["p10_calls"] == report["sol_calls"] == 0
+    assert report["fallback_calls"] == 0
+    assert report["gateway_retries"] == report["prompt_retries"] == 0
+    assert report["sdk_retries"] == 0
+    assert len(report["cases"]) == 1
+    row = report["cases"][0]
+    assert row["case_id"] == eval_harness.QUALIFICATION_CASE_IDS[0]
+    assert row["status"] == "FAIL"
+    assert row["error_code"] == (
+        "OPENAI_QUALIFICATION_P11_USED_REVIEW_REQUIRED"
+    )
+    assert row["repair_disposition"] == "P11_USED_STOP_POLICY"
+    assert [call["prompt_id"] for call in row["calls"]] == [
+        "P01_ACTIVITY_SPEC_V1",
+        "P11_SCHEMA_REPAIR_V1",
+    ]
+    serialized = json.dumps(report, ensure_ascii=False, sort_keys=True)
+    assert "synthetic_extra" not in serialized
+    assert "content_must_not_escape" not in serialized
+
+
+def test_qualification_blocks_oversized_dynamic_p11_before_transport(
+    monkeypatch,
+) -> None:
+    selected_cases = eval_harness._selected_qualification_cases(
+        eval_harness._load_cases(eval_harness.DEFAULT_MANIFEST)
+    )
+
+    class LateInvalidAdapter:
+        def __init__(self) -> None:
+            self.calls = 0
+
+        async def invoke(
+            self, *, prompt_id: str, request: object, **_kwargs: object
+        ) -> AdapterResult:
+            case = selected_cases[self.calls]
+            self.calls += 1
+            raw_output = (
+                eval_harness.DeterministicMockFactory()
+                .output_for(
+                    prompt_id,
+                    request,
+                    eval_harness.MockBehavior(case["behavior"]),
+                )
+                .model_dump(mode="json")
+            )
+            if self.calls == len(selected_cases):
+                raw_output["synthetic_extra"] = "x" * 220_000
+            schema = eval_harness.structured_output_format(
+                eval_harness.prompt_spec(prompt_id), request
+            )["schema"]
+            provider_issues = provider_schema_validation_issues(
+                schema, raw_output
+            )
+            return AdapterResult(
+                raw_output=raw_output,
+                input_tokens=100,
+                cached_input_tokens=0,
+                cache_write_input_tokens=100,
+                output_tokens=50,
+                reasoning_tokens=10,
+                estimated_cost_usd=0.001,
+                actual_cost_usd=0.0001,
+                effective_model="gpt-5.6-luna",
+                output_hash="sha256:" + "3" * 64,
+                provider_request_id_hash="sha256:" + "4" * 64,
+                provider_schema_valid=not provider_issues,
+                provider_schema_issues=provider_issues,
+                reason_codes=(
+                    "SDK_RETRIES_0",
+                    "STRUCTURED_OUTPUT_STRICT",
+                    "STORE_FALSE",
+                    "BACKGROUND_FALSE",
+                    "TOOLS_EMPTY",
+                ),
+            )
+
+    late_invalid_adapter = LateInvalidAdapter()
+    monkeypatch.setenv(
+        "CVA_OPENAI_REAL_QUALIFICATION_APPROVAL",
+        "OPENAI_REAL_SYNTHETIC_QUALIFICATION_APPROVED",
+    )
+    monkeypatch.setenv(
+        "CVA_OPENAI_API_KEY", "sk-project-synthetic-placeholder-not-a-real-key"
+    )
+    monkeypatch.setattr(
+        eval_harness,
+        "OpenAIResponsesAdapter",
+        lambda **_kwargs: late_invalid_adapter,
+    )
+
+    report = asyncio.run(
+        eval_harness._run_qualification_real(
+            eval_harness._load_cases(eval_harness.DEFAULT_MANIFEST),
+            max_total_cost_usd=0.30,
+        )
+    )
+
+    assert late_invalid_adapter.calls == len(selected_cases)
+    assert report["network_calls"] == report["billable_calls"] == 15
+    assert report["p11_calls"] == 0
+    assert report["transport_reserved_full_cache_write_ceiling_usd"] == (
+        0.23935525
+    )
+    assert len(report["cases"]) == 15
+    assert all(row["status"] == "PASS" for row in report["cases"][:-1])
+    row = report["cases"][-1]
+    assert row["case_id"] == "oa-p09-happy-docx"
+    assert row["status"] == "FAIL"
+    assert row["error_code"] == "MODEL_OUTPUT_VALIDATION_FAILED"
+    assert row["repair_disposition"] == "BLOCKED_BY_BUDGET"
+    assert row["primary_failure"]["provider_schema_status"] == "INVALID"
+    serialized = json.dumps(report, ensure_ascii=False, sort_keys=True)
+    assert "synthetic_extra" not in serialized
+    assert "x" * 100 not in serialized
 
 
 def test_luna_canary_real_mode_stops_at_its_distinct_human_checkpoint() -> None:

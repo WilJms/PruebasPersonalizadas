@@ -108,8 +108,9 @@ La validación posterior pasó 107 pruebas focalizadas, ambos canary dry-runs co
 cero red/facturación, 471 pruebas con cobertura (16 skips PostgreSQL
 explícitos), contratos 53/140/274 sin drift y secret scan de 290 archivos. La
 tarifa Standard oficial fue revalidada sin cambios y esta investigación añadió
-USD 0.00. P0 permanece en cero, no apareció un P1 nuevo y el P1 histórico P07
-quedó abierto hasta una eventual única recanary expresamente autorizada.
+USD 0.00. P0 permaneció en cero, no apareció otro P1 y el P1 histórico P07
+quedó entonces abierto hasta una eventual única recanary expresamente
+autorizada.
 
 Esa autorización se consumió sobre
 `97a6b2e8cd7cf852e9e3a6fefeb09c135793ac19`. La única recanary P07 terminó
@@ -118,8 +119,20 @@ solicitada y efectiva, provider schema/Pydantic/contexto/invariantes PASS, una
 request, retries 0/0/0 y P10/P11/Sol 0. Registró 3,839 input, 0 cached, 3,836
 cache-write, 1,505 output y 655 reasoning tokens, 12,666 ms y USD 0.00276560
 calculados frente al cap humano USD 0.03. No hubo cambios de producto, cloud o
-expected outcomes. El P1 histórico sigue abierto para revisión humana; una
-sola recanary exitosa no decide por sí misma su cierre.
+expected outcomes. La revisión humana posterior cierra el P1 como blocker sin
+atribuir una causa raíz ni afirmar que el modelo fue corregido: el incidente
+original fue fail-closed, la pérdida determinista de observabilidad sí quedó
+corregida y la frontera sin relajar produjo una recanary completamente válida.
+La posible recurrencia de outputs P07 inválidos continúa como P2 independiente.
+
+El gate siguiente queda preparado en un modo específico de calificación. Reusa
+las observaciones reales P01/P07/P11 y propone los otros 15 casos
+`real_eligible`, incluidos cuatro P07 diferentes, para completar 18/18 sin
+repetir gasto. El dry-run pasó 15/15 con adapter real/transporte fake y cero
+red/facturación. Hay 15 primarias, una reserva P11 global, máximo 16 requests,
+retries 0/0/0, P10/Sol/fallback deshabilitados, ceiling full-cache-write USD
+0.26877750 y cap humano propuesto USD 0.30. El alcance es técnico; no declara
+calidad pedagógica.
 
 La regresión local previa al smoke quedó en 457 passed/16 skips PostgreSQL
 explícitos, 80% de cobertura, 40 tests focalizados CLI/adapter, golden set
@@ -132,17 +145,19 @@ commit previo al gasto quedó 7/7 verde.
 | Severidad vigente | Abiertos |
 |---|---:|
 | P0 | 0 |
-| P1 | 1 |
-| P2 | 4 |
+| P1 | 0 |
+| P2 | 5 |
 | P3 | 1 |
 
-El P1 nuevo es el fallo estructural del canary P07 Luna-high; quedó fail-closed
-sin reparación ni continuación. Los P2 históricos siguen siendo
+No queda un P1 abierto. Los P2 históricos siguen siendo
 AV/compensación, corpus/política de privacidad y semántica real pendiente. El
 cuarto P2 es la re-revisión interactiva P05 del Service: queda bloqueada con
 `MODEL_EXECUTION_REQUIRES_WORKER` cuando el worker sea real hasta migrarla a un
-job durable, por lo que nunca mezcla silenciosamente mock con OpenAI. El P3
-continúa siendo el warning deprecado Starlette/httpx del adaptador de tests.
+job durable, por lo que nunca mezcla silenciosamente mock con OpenAI. El quinto
+P2 es la observación de confiabilidad P07: se cierra con evidencia de no
+recurrencia sobre los casos P07 diversos y la revisión humana posterior, o se
+reclasifica si reaparece una violación estructural/contextual. El P3 continúa
+siendo el warning deprecado Starlette/httpx del adaptador de tests.
 
 ## Identidad y gate
 

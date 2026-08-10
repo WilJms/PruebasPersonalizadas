@@ -234,6 +234,45 @@ originales y esta recanary es USD 0.00814815 en cuatro Responses requests. Este
 PASS es una segunda observación y no cierra automáticamente el P1 histórico:
 queda pendiente la revisión humana de severidad/promoción.
 
+## Revisión P07 y preparación de calificación — 2026-08-09
+
+La revisión posterior cerró el P1 histórico como blocker, sin asignar causa
+raíz al output inválido ni afirmar una corrección del modelo. El fallo original
+fue fail-closed; la pérdida reproducible de ledger/diagnóstico sí quedó
+corregida; prompt, schema, contrato y expected outcome permanecieron intactos;
+y la recanary pasó provider schema, Pydantic y contexto. La recurrencia P07
+continúa como P2 y lleva el conteo vigente a P0=0, P1=0, P2=5, P3=1.
+
+El nuevo modo `qualification-dry-run` seleccionó exactamente los 15 fixtures
+`real_eligible` que aún no tenían una observación real y reutiliza la evidencia
+vigente de `oa-p01-happy-txt`, `oa-p07-open-short-txt` y `oa-p11-happy`. No
+selecciona el repair mock-only ni P10.
+
+| Control offline | Resultado |
+|---|---|
+| Casos | 15/15 PASS; cobertura acumulada propuesta 18/18 real-eligible |
+| Rutas | Luna medium P01/P02; Luna high P03–P09; P11 low solo como reserva; fallback nulo |
+| Payload | adapter OpenAI real, 15 Responses fakes, Structured Output strict, solo `input_text`, sin conversación/tools/state |
+| Expected outcomes | manifest intacto; VALID/ABSTAINED, P07 formatos/justificación/operación e inyección comprobados |
+| Fronteras | red 0, billable 0, P10 0, P11 observado 0, Sol/fallback 0, retries 0/0/0, secreto no leído |
+| Request cap futuro | 15 primarias + un P11 eventual = 16 máximo; cualquier P11 detiene aunque repare |
+| Ceiling | USD 0.25390200 sin cache; USD 0.26877750 con todo input como cache-write; cap humano propuesto USD 0.30 |
+| Spend read-only | Platform: crédito USD 1.22; proyecto USD 3.78/5.00 y solo Luna permitido; sin cambios |
+| Regresión focal | `tests/test_openai_eval_harness.py`: 20 passed |
+| Regresión provider/contratos | 152 passed |
+| Suite backend / cobertura | 477 passed, 16 skips PostgreSQL explícitos; ejecución con `--cov` PASS |
+
+La prueba negativa fuerza una salida primaria estructuralmente inválida con
+transporte fake, permite exactamente un P11 válido y demuestra detención antes
+del segundo caso. Otras regresiones bloquean presupuestos bajo el ceiling o
+sobre el cap humano antes de credencial/transporte, y bloquean un P11 dinámico
+sobredimensionado antes de Responses cuando su reserva acumulada superaría USD
+0.30. La metadata resultante no contiene payload, output, mensajes, claves
+desconocidas ni secretos.
+
+Checkpoint preparado: `OPENAI_REAL_SYNTHETIC_QUALIFICATION_APPROVAL_REQUIRED`.
+Esta sección no contiene ni implica aprobación billable; costo nuevo USD 0.00.
+
 ## Ejecución de auditoría final focalizada — 2026-08-08
 
 Esta ejecución es posterior al candidato runtime cloud y no sustituye su

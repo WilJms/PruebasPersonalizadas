@@ -63,11 +63,10 @@ una autorización; cada bloque mantiene un techo humano independiente.
 El runtime conserva además un techo agregado por job: antes de cada etapa resta
 el mayor costo estimado/observado de todos los ledgers persistidos de ese job.
 La autorización por llamada incluye el ceiling completo de retries técnicos;
-P11 recibe solo el saldo restante. El golden set real posterior tiene
-presupuesto total independiente. Nunca
-hereda el saldo del smoke y exige `--allow-billable`, monto positivo, clave y
-la frase de aprobación exacta. Rate limits, hard limits y quota se traducen a
-fallos cerrados, no a cambio de modelo.
+P11 recibe solo el saldo restante. La calificación real posterior tiene
+presupuesto total y approval propios; nunca hereda el saldo del smoke o los
+canaries. Rate limits, hard limits y quota se traducen a fallos cerrados, no a
+cambio de modelo.
 
 ## Canaries Luna medium/high ejecutados
 
@@ -111,3 +110,38 @@ calculado desde usage USD 0.00276560. No hubo retries, P10, P11, Sol ni una
 segunda request. El costo calculado acumulado del smoke, los dos canaries
 originales y esta recanary es **USD 0.00814815** en cuatro Responses requests;
 no se afirma equivalencia con el cargo final de facturación.
+
+## Calificación sintética P01–P09/P11 preparada
+
+La secuencia nueva no repite los fixtures P01/P07/P11 que ya tienen evidencia
+real. Reserva 15 primarias para el resto del corpus `real_eligible` y un solo
+P11 eventual; si P11 se usa, la ejecución se detiene. No hay retries, P10, Sol
+ni fallback.
+
+| Componente | Sin cache | Todo input como cache-write |
+|---|---:|---:|
+| 15 requests primarias | USD 0.22844420 | USD 0.23935525 |
+| Reserva máxima P11 | USD 0.02545780 | USD 0.02942225 |
+| Ceiling agregado | **USD 0.25390200** | **USD 0.26877750** |
+
+La reserva P11 máxima corresponde al root `AssessmentBlueprint`: 79,289 tokens
+upper-bound de input y 8,000 de output. Cada input upper-bound sigue contando
+un token por byte más 1,024 de framing; cada output reserva el máximo completo,
+incluido reasoning. El segundo ceiling trata todo el input como cache-write a
+USD 0.25/M porque las ejecuciones previas reportaron casi todo su input bajo
+esa categoría. Es el ceiling vinculante aunque el caso sin cache sea menor.
+
+El presupuesto humano propuesto es **USD 0.30**. El harness bloquea antes de
+leer la clave si el cap CLI es menor de USD 0.26877750 o mayor de USD 0.30. La
+frontera recalcula además, antes de cada transporte, el ceiling full-cache-write
+del request real y reserva su suma acumulada; un P11 dinámico que hiciera
+superar USD 0.30 queda bloqueado antes de Responses aunque difiera de la
+aproximación preflight. La
+consulta read-only de Platform del 2026-08-09 mostró USD 1.22 de crédito, y el
+proyecto `PruebasPersonalizadas` mostró USD 3.78/5.00 de spend y solo
+`gpt-5.6-luna` permitido. Ambos saldos superan el cap propuesto; no se compró
+crédito ni se modificaron límites, alerts o modelos. Esa capacidad externa no
+es autorización y debe revalidarse antes de cualquier ejecución real.
+
+El dry-run versionado fijó estos valores con 15 transportes fake y cero
+Responses requests reales/facturables. Esta preparación añadió USD 0.00.
