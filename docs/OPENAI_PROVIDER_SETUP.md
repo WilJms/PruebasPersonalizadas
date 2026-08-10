@@ -31,6 +31,20 @@ cumplirse, en este orden:
 4. aprobación billable específica con cap máximo USD 0.32;
 5. ejecución única del entrypoint versionado, sólo con corpus sintético.
 
+El propietario completó el paso 1 y autorizó los pasos 2–5 con cap total USD
+0.32. La decisión no cierra aún el P0: `oa-p01-injection-md` debe pasar como
+primer caso real v1.1.2. La autorización de rotación/qualification permanece
+vigente y no consumida hasta ejecutar ese scope o alcanzar una condición de
+stop.
+
+El entrypoint materializa esa separación mediante
+`CVA_OPENAI_P01_V112_REMEDIATION_DECISION=OPENAI_P01_V112_REMEDIATION_ACCEPTED`
+y, por separado,
+`CVA_OPENAI_REAL_QUALIFICATION_APPROVAL=OPENAI_REAL_SYNTHETIC_QUALIFICATION_APPROVED`.
+La primera decisión sólo es válida para los hashes P01 1.1.2 documentados; el
+harness los recalcula y bloquea cualquier drift antes de leer
+`CVA_OPENAI_API_KEY`. La segunda variable no puede cerrar el P0 por sí sola.
+
 Rotar secreto, cambiar IAM, billing/límites, cloud, deploy o Terraform siguen
 siendo mutaciones separadas que requieren autorización. La preparación actual
 no realizó ninguna de ellas.

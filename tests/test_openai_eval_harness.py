@@ -28,6 +28,7 @@ def _safe_environment() -> dict[str, str]:
     environment.pop("CVA_OPENAI_LUNA_CANARY_APPROVAL", None)
     environment.pop("CVA_OPENAI_P01_INJECTION_RECANARY_APPROVAL", None)
     environment.pop("CVA_OPENAI_P01_INJECTION_V112_RECANARY_APPROVAL", None)
+    environment.pop("CVA_OPENAI_P01_V112_REMEDIATION_DECISION", None)
     environment.pop("CVA_OPENAI_REAL_QUALIFICATION_APPROVAL", None)
     return environment
 
@@ -613,6 +614,14 @@ def test_real_synthetic_qualification_dry_run_is_fixed_and_non_billable() -> Non
     assert report["p11_calls"] == 1
     assert report["fallback_calls"] == report["sol_calls"] == 0
     assert report["secret_read"] is False
+    assert report["p01_v112_remediation_decision"] == (
+        "NOT_ACCEPTED_DRY_RUN_ONLY"
+    )
+    assert report["p01_v112_boundary"] == {
+        "case_id": "oa-p01-injection-md",
+        "prompt_hash": eval_harness.P01_INJECTION_V112_PROMPT_HASH,
+        "input_bundle_hash": eval_harness.P01_INJECTION_V112_INPUT_BUNDLE_HASH,
+    }
     budget = report["budget"]
     assert budget["no_cache_ceiling_usd"] == 0.2934678
     assert budget["full_cache_write_ceiling_usd"] == 0.31043475
@@ -669,6 +678,25 @@ def test_real_synthetic_qualification_requires_its_distinct_human_gate() -> None
     }
 
 
+def test_qualification_p01_decision_is_bound_to_the_v112_hashes(
+    monkeypatch,
+) -> None:
+    monkeypatch.setattr(
+        eval_harness,
+        "P01_INJECTION_V112_PROMPT_HASH",
+        "sha256:" + "0" * 64,
+    )
+
+    with pytest.raises(
+        eval_harness.OpenAIEvalBlocked,
+        match="OPENAI_QUALIFICATION_P01_V112_BOUNDARY_DRIFT",
+    ):
+        eval_harness._qualification_material(
+            eval_harness._load_cases(eval_harness.DEFAULT_MANIFEST),
+            route_cap_usd=0.32,
+        )
+
+
 def test_qualification_preflight_blocks_low_or_excess_budget_before_secret(
     monkeypatch,
 ) -> None:
@@ -676,6 +704,9 @@ def test_qualification_preflight_blocks_low_or_excess_budget_before_secret(
     monkeypatch.delenv("CVA_OPENAI_API_KEY", raising=False)
     monkeypatch.delenv(
         "CVA_OPENAI_REAL_QUALIFICATION_APPROVAL", raising=False
+    )
+    monkeypatch.delenv(
+        "CVA_OPENAI_P01_V112_REMEDIATION_DECISION", raising=False
     )
 
     with pytest.raises(
@@ -698,7 +729,33 @@ def test_qualification_preflight_blocks_low_or_excess_budget_before_secret(
         )
     with pytest.raises(
         eval_harness.OpenAIEvalBlocked,
+        match="OPENAI_P01_V112_REMEDIATION_HUMAN_DECISION_REQUIRED",
+    ):
+        asyncio.run(
+            eval_harness._run_qualification_real(
+                cases, max_total_cost_usd=0.32
+            )
+        )
+    monkeypatch.setenv(
+        "CVA_OPENAI_P01_V112_REMEDIATION_DECISION",
+        "OPENAI_P01_V112_REMEDIATION_ACCEPTED",
+    )
+    with pytest.raises(
+        eval_harness.OpenAIEvalBlocked,
         match="OPENAI_QUALIFICATION_APPROVAL_REQUIRED",
+    ):
+        asyncio.run(
+            eval_harness._run_qualification_real(
+                cases, max_total_cost_usd=0.32
+            )
+        )
+    monkeypatch.setenv(
+        "CVA_OPENAI_REAL_QUALIFICATION_APPROVAL",
+        "OPENAI_REAL_SYNTHETIC_QUALIFICATION_APPROVED",
+    )
+    with pytest.raises(
+        eval_harness.OpenAIEvalBlocked,
+        match="OPENAI_CREDENTIALS_REQUIRED",
     ):
         asyncio.run(
             eval_harness._run_qualification_real(
@@ -756,6 +813,10 @@ def test_qualification_stops_after_one_governed_p11_even_when_repair_succeeds(
             )
 
     monkeypatch.setenv(
+        "CVA_OPENAI_P01_V112_REMEDIATION_DECISION",
+        "OPENAI_P01_V112_REMEDIATION_ACCEPTED",
+    )
+    monkeypatch.setenv(
         "CVA_OPENAI_REAL_QUALIFICATION_APPROVAL",
         "OPENAI_REAL_SYNTHETIC_QUALIFICATION_APPROVED",
     )
@@ -777,6 +838,7 @@ def test_qualification_stops_after_one_governed_p11_even_when_repair_succeeds(
 
     assert report["network_calls"] == report["billable_calls"] == 2
     assert report["p11_calls"] == 1
+    assert report["p01_v112_remediation_decision"] == "ACCEPTED_HASH_BOUND"
     assert report["p10_calls"] == report["sol_calls"] == 0
     assert report["fallback_calls"] == 0
     assert report["gateway_retries"] == report["prompt_retries"] == 0
@@ -855,6 +917,10 @@ def test_qualification_blocks_oversized_dynamic_p11_before_transport(
             )
 
     late_invalid_adapter = LateInvalidAdapter()
+    monkeypatch.setenv(
+        "CVA_OPENAI_P01_V112_REMEDIATION_DECISION",
+        "OPENAI_P01_V112_REMEDIATION_ACCEPTED",
+    )
     monkeypatch.setenv(
         "CVA_OPENAI_REAL_QUALIFICATION_APPROVAL",
         "OPENAI_REAL_SYNTHETIC_QUALIFICATION_APPROVED",
@@ -1420,6 +1486,10 @@ def test_qualification_context_failure_stops_after_first_case_without_p11(
             )
 
     adapter = FirstContextInvalidAdapter()
+    monkeypatch.setenv(
+        "CVA_OPENAI_P01_V112_REMEDIATION_DECISION",
+        "OPENAI_P01_V112_REMEDIATION_ACCEPTED",
+    )
     monkeypatch.setenv(
         "CVA_OPENAI_REAL_QUALIFICATION_APPROVAL",
         "OPENAI_REAL_SYNTHETIC_QUALIFICATION_APPROVED",

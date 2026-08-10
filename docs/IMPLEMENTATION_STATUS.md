@@ -4,8 +4,10 @@ Fecha de corte: 2026-08-10 (America/Santiago).
 
 ## Estado vigente — `OPENAI_REAL_V112_OFFLINE_GATE_PREPARED` (2026-08-10)
 
-La rama `codex/openai-real-provider-gate` remedia técnicamente el P0 P01 sin
-cerrarlo por autoridad propia. Prompt pack `1.1.2` define `READY` para una
+La rama `codex/openai-real-provider-gate` remedia técnicamente el P0 P01. El
+propietario aceptó la semántica normativa 1.1.2, pero ordenó conservar el P0
+como blocker empírico hasta que `oa-p01-injection-md` pase una observación real
+v1.1.2. Prompt pack `1.1.2` define `READY` para una
 consigna suficiente y usable, y exige que todo status no `READY` vacíe sus
 cinco listas sourced. El fixture injection es ahora inequívocamente suficiente,
 espera `READY` y conserva el marcador como dato no propagable. Sus hashes
@@ -19,6 +21,11 @@ full-cache-write USD 0.31043475 frente a cap USD 0.32. P07 quedó cubierto por
 cuatro casos suficientes diversos más uno insuficiente; su P2 de recurrencia
 permanece abierto hasta evaluación real y revisión humana.
 
+El entrypoint real exige ahora una decisión P01 y una aprobación billable como
+opt-ins distintos. La decisión queda ligada a los hashes exactos v1.1.2; un
+drift de prompt o input, un cap fuera de rango o la ausencia de cualquiera de
+los gates bloquea antes de leer la credencial o crear transporte.
+
 P05 interactivo ya es un job durable: API `202 JobEnvelope`, descriptor
 hash-verificado, ejecución exclusiva en worker y publicación atómica de la
 nueva versión. Cancel y retry conservan/reconstruyen estado; la UI espera el
@@ -28,12 +35,13 @@ vigente es **P0=1, P1=0, P2=5, P3=1**.
 La revisión integrada pasó backend, frontend, OpenAPI, navegador y E2E local,
 incluida corrección del overflow móvil de la revisión P05. Cloud no cambió:
 continúa mock/P10 false. No hubo request facturable. La clave histórica debe
-rotarse antes de cualquier uso. El siguiente paso es exclusivamente humano:
-aceptar o rechazar la remediación P0 y, si se acepta, autorizar por separado
-rotación y una calificación real sintética con cap USD 0.32.
+rotarse antes de cualquier uso. El propietario autorizó esa rotación y una
+única qualification sintética con cap USD 0.32; la autorización todavía no se
+consume. No incluye deploy, Terraform apply, IAM, billing, P10, Sol/fallback,
+datos reales ni merge.
 
-Este estado no es `OPENAI_REAL_MANUAL_EVAL_READY`: todavía no hay aceptación
-humana del P0, credencial rotada, qualification 1.1.2 real, deployment real ni
+Este estado no es `OPENAI_REAL_MANUAL_EVAL_READY`: todavía no hay credencial
+rotada, validación empírica/cierre del P0, qualification 1.1.2 real, deployment real ni
 E2E sintético real de la aplicación.
 
 ## Historial — merge E2 y gate OpenAI (2026-08-09)

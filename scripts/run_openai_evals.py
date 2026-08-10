@@ -94,6 +94,12 @@ QUALIFICATION_APPROVAL_ENV = "CVA_OPENAI_REAL_QUALIFICATION_APPROVAL"
 QUALIFICATION_APPROVAL_VALUE = (
     "OPENAI_REAL_SYNTHETIC_QUALIFICATION_APPROVED"
 )
+P01_V112_REMEDIATION_DECISION_ENV = (
+    "CVA_OPENAI_P01_V112_REMEDIATION_DECISION"
+)
+P01_V112_REMEDIATION_DECISION_VALUE = (
+    "OPENAI_P01_V112_REMEDIATION_ACCEPTED"
+)
 # Prompt-pack 1.1.2 changes the executable boundary, so no 1.1.1 observation is
 # reusable as current qualification evidence.
 QUALIFICATION_REUSED_REAL_CASE_IDS: tuple[str, ...] = ()
@@ -720,6 +726,14 @@ def _qualification_material(
             }
         )
 
+        if case["case_id"] == P01_INJECTION_RECANARY_CASE_ID and (
+            spec.prompt_hash != P01_INJECTION_V112_PROMPT_HASH
+            or _content_hash(envelope) != P01_INJECTION_V112_INPUT_BUNDLE_HASH
+        ):
+            raise OpenAIEvalBlocked(
+                "OPENAI_QUALIFICATION_P01_V112_BOUNDARY_DRIFT"
+            )
+
         # P11 is the structural repair boundary and can never recursively
         # repair its own output.
         if prompt_id == "P11_SCHEMA_REPAIR_V1":
@@ -789,6 +803,11 @@ def _qualification_material(
             "cached_input": prices.cached_input_per_million,
             "cache_write": prices.input_per_million * 1.25,
             "output": prices.output_per_million,
+        },
+        "p01_v112_boundary": {
+            "case_id": P01_INJECTION_RECANARY_CASE_ID,
+            "prompt_hash": P01_INJECTION_V112_PROMPT_HASH,
+            "input_bundle_hash": P01_INJECTION_V112_INPUT_BUNDLE_HASH,
         },
     }
 
@@ -1678,6 +1697,8 @@ async def _run_qualification_dry_run(
         "fallback_calls": 0,
         "sol_calls": 0,
         "secret_read": False,
+        "p01_v112_boundary": qualification["p01_v112_boundary"],
+        "p01_v112_remediation_decision": "NOT_ACCEPTED_DRY_RUN_ONLY",
         "budget": _qualification_budget_metadata(qualification),
         "stop_conditions": [
             "FIRST_PROVIDER_OR_TRANSPORT_FAILURE",
@@ -1907,6 +1928,13 @@ async def _run_qualification_real(
         > max_total_cost_usd
     ):
         raise OpenAIEvalBlocked("OPENAI_QUALIFICATION_BUDGET_TOO_LOW")
+    if (
+        os.environ.get(P01_V112_REMEDIATION_DECISION_ENV)
+        != P01_V112_REMEDIATION_DECISION_VALUE
+    ):
+        raise OpenAIEvalBlocked(
+            "OPENAI_P01_V112_REMEDIATION_HUMAN_DECISION_REQUIRED"
+        )
     if (
         os.environ.get(QUALIFICATION_APPROVAL_ENV)
         != QUALIFICATION_APPROVAL_VALUE
@@ -2147,6 +2175,8 @@ async def _run_qualification_real(
         "route_profile": OPENAI_ROUTE_PROFILE_ID,
         "classification": "SYNTHETIC_ONLY_NO_STUDENT_DATA",
         "scope": "TECHNICAL_CONTRACT_AND_CONTEXT_ONLY_NOT_PEDAGOGICAL_QUALITY",
+        "p01_v112_boundary": qualification["p01_v112_boundary"],
+        "p01_v112_remediation_decision": "ACCEPTED_HASH_BOUND",
         "planned_case_ids": list(QUALIFICATION_CASE_IDS),
         "reused_real_evidence_case_ids": list(
             QUALIFICATION_REUSED_REAL_CASE_IDS

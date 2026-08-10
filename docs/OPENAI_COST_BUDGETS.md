@@ -55,6 +55,11 @@ máximo 19 requests como límite presupuestario defensivo, aunque P11 directo
 está al final y cualquier reparación detiene la secuencia. No hay retries, P10,
 Sol ni fallback.
 
+El preflight también fija los hashes de `oa-p01-injection-md` y exige dos gates
+independientes: aceptación de la remediación P01 1.1.2 y autorización billable.
+Validar presupuesto o conceder uno de ellos nunca concede el otro; todos estos
+controles se resuelven antes de leer la clave.
+
 La recanary focal P01 1.1.2 tiene 10,712 tokens de input upper-bound, 8,000 de
 output máximo, USD 0.01174240 sin cache y **USD 0.01227800** full-cache-write;
 su cap separado sería USD 0.02. Ejecutarla por separado no sustituye la

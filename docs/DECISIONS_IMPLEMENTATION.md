@@ -544,3 +544,17 @@
   un proveedor real.
 - **Relación:** P05, D-037, D-038, ADR-032 y
   `OPENAI_PROVIDER_SETUP.md`.
+
+## D-049 - La decisión P01 y el gasto de qualification son gates distintos
+
+- **Decisión:** `qualification-real` exige primero la aceptación humana de la
+  remediación P01 1.1.2 y luego una approval billable independiente. La primera
+  queda ligada a los hashes exactos del prompt y del input injection; cualquier
+  drift, cap inválido o gate ausente bloquea antes de leer la clave o crear
+  transporte. El reporte conserva sólo la disposición hash-bound y los hashes.
+- **Razón:** aceptar pagar una observación no resuelve una decisión de
+  constructo, y aceptar el constructo tampoco autoriza gasto. Codificar esa
+  separación evita que una variable o un runbook ambiguo cierre ambos gates por
+  accidente.
+- **Relación:** D-045, D-047, P01, `REAL_MODEL_EVALS.md` y
+  `OPENAI_PROVIDER_SETUP.md`.

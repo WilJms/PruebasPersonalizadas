@@ -47,6 +47,7 @@ openai-p01-injection-recanary-dry-run:
 		-u CVA_OPENAI_LUNA_CANARY_APPROVAL \
 		-u CVA_OPENAI_P01_INJECTION_RECANARY_APPROVAL \
 		-u CVA_OPENAI_P01_INJECTION_V112_RECANARY_APPROVAL \
+		-u CVA_OPENAI_P01_V112_REMEDIATION_DECISION \
 		-u CVA_OPENAI_REAL_QUALIFICATION_APPROVAL \
 		$(PYTHON) scripts/run_openai_evals.py --mode canary-dry-run --case-id "oa-p01-injection-md"
 
@@ -56,6 +57,7 @@ openai-qualification-dry-run:
 		-u CVA_OPENAI_LUNA_CANARY_APPROVAL \
 		-u CVA_OPENAI_P01_INJECTION_RECANARY_APPROVAL \
 		-u CVA_OPENAI_P01_INJECTION_V112_RECANARY_APPROVAL \
+		-u CVA_OPENAI_P01_V112_REMEDIATION_DECISION \
 		-u CVA_OPENAI_REAL_QUALIFICATION_APPROVAL \
 		$(PYTHON) scripts/run_openai_evals.py --mode qualification-dry-run
 

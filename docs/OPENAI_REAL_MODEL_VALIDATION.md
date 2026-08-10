@@ -1,10 +1,13 @@
 # Validación del proveedor OpenAI real
 
 Fecha de corte: 2026-08-10. Estado: frontera 1.1.2 y P05 durable validados
-offline; el P0 P01 conserva revisión humana obligatoria. Llamadas reales
+offline; la semántica P01 fue aceptada por el propietario, pero el P0 continúa
+como blocker hasta que el primer caso real v1.1.2 pase. Llamadas reales
 históricas: **6** —P11, P01 happy, dos observaciones P07, qualification P01
 injection y su recanary—. No existe una autorización billable vigente y la
-clave usada históricamente debe rotarse antes de cualquier request nueva.
+clave usada históricamente debe rotarse antes de cualquier request nueva. La
+rotación y una única qualification con cap USD 0.32 están autorizadas, todavía
+sin consumir.
 
 ## Perfil vinculante `LUNA_BASELINE_V1`
 
@@ -37,6 +40,12 @@ ninguna evidencia reutilizada, una reserva de repair, máximo conservador 19,
 retries 0/0/0 y P10/Sol/fallback 0. Los cuatro P07 suficientes diversos
 producen `READY`; el caso insuficiente falla semánticamente cerrado. La
 recurrencia P07 continúa como P2 hasta una observación real y revisión humana.
+
+La aceptación humana de P01 y la autorización facturable no comparten opt-in.
+El harness liga la primera a los hashes P01 v1.1.2 de prompt/input y valida el
+cap antes de comprobar ambos gates; sólo después consulta la credencial. El
+reporte real conservará `ACCEPTED_HASH_BOUND` y los dos hashes, nunca el valor
+del secreto ni el contenido de la request/output.
 
 La edición interactiva P05 ya no invoca modelos desde el Service. `PATCH`
 responde `202 JobEnvelope`, congela source version/ETag y persiste un descriptor
@@ -251,10 +260,11 @@ cerrada, sin P11 ni segunda request, y deja el P0 abierto para revisión.
 | Recanary única P07 Luna-high | PASS real; `READY`, provider schema/Pydantic/contexto PASS, 1 request, P11 0, USD 0.00276560 calculados |
 | Revisión P1 P07 | blocker cerrado sin atribuir causa raíz; observación de recurrencia P07 continúa como P2 |
 | Calificación sintética dry-run 1.1.2 | PASS 18/18 contra adapter real y transporte fake; sin evidencia real reutilizada; 0 red/0 billable; ceiling USD 0.31043475/cap USD 0.32 |
+| Separación de gates P01/billable | PASS offline; decisión P01 hash-bound independiente, approval de gasto separada y credencial posterior |
 | Calificación sintética real 1.1.1 | detenida fail-closed en `oa-p01-injection-md` después de 1 request; los otros 14 casos no se ejecutaron |
 | Investigación P01 injection 1.1.1 | causa histórica no recuperable; cinco clases reproducidas y observabilidad content-free preparada; 0 red/0 billable |
 | Recanary única P01 injection 1.1.1 | FAIL contextual discriminado: `P01_ABSTENTION_SOURCED_FIELDS_PRESENT`; marcador no propagado; 1 request, P11 0 |
-| Remediación P01 | lista técnicamente; P0 sigue formalmente abierto hasta revisión humana |
+| Remediación P01 | semántica 1.1.2 aceptada; P0 permanece abierto por decisión humana hasta PASS real de `oa-p01-injection-md` |
 | Edición P05 durable | PASS backend/API/frontend/E2E; P2 funcional cerrado |
 | Calidad/latencia/costo y severidad | P0=1; P1=0; P2=5; P3=1; calidad pedagógica pendiente de revisión humana posterior |
 | Build, digest y deploy real del worker | pendiente de gate posterior |

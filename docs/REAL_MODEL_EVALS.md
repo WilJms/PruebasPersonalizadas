@@ -38,15 +38,28 @@ El checkpoint técnico es `OPENAI_REAL_V112_OFFLINE_GATE_PREPARED`: no contiene
 una aprobación billable y no equivale a `OPENAI_REAL_MANUAL_EVAL_READY`. Antes
 de ejecutar se exige revisión humana del P0,
 rotación de la clave de proyecto, revalidación de saldo/límites y aprobación
-explícita independiente. La ejecución documentada, pero no autorizada, es:
+explícita independiente. El entrypoint comprueba dos opt-ins distintos antes
+de leer la credencial: la decisión P01 queda ligada a los hashes exactos de
+prompt e input anteriores, mientras la approval de qualification autoriza sólo
+el gasto acotado. Un drift invalida la frontera antes del transporte. La
+ejecución documentada, pero no autorizada, es:
 
 ```bash
-CVA_OPENAI_REAL_QUALIFICATION_APPROVAL=OPENAI_REAL_SYNTHETIC_QUALIFICATION_APPROVED \
+CVA_OPENAI_P01_V112_REMEDIATION_DECISION=OPENAI_P01_V112_REMEDIATION_ACCEPTED \
+  CVA_OPENAI_REAL_QUALIFICATION_APPROVAL=OPENAI_REAL_SYNTHETIC_QUALIFICATION_APPROVED \
   .venv/bin/python scripts/run_openai_evals.py \
   --mode qualification-real \
   --allow-billable \
   --max-total-cost-usd 0.32
 ```
+
+El primer valor representa una decisión humana sobre el constructo; el segundo,
+una autorización de acción facturable. Ninguno implica al otro y ambos se
+consideraban ausentes hasta concesión explícita. El propietario aceptó la
+semántica P01 1.1.2 y autorizó rotación más una única qualification con cap USD
+0.32. Esos valores se inyectarán sólo en el proceso efímero después de rotar la
+clave; no se persisten en archivos ni CI. El P0 permanece abierto hasta que el
+primer caso real `oa-p01-injection-md` pase toda la frontera.
 
 Las secciones 1.1.1 siguientes se conservan como historial y no amplían el
 gate vigente.
