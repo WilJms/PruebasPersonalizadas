@@ -200,6 +200,16 @@ full-cache-write USD 0.01201925. El dry-run fija los hashes históricos de
 prompt e input y bloquea cualquier drift antes de aprobación/credencial.
 Durante esta investigación no se ejecutó ni autorizó esa request.
 
+La autorización posterior consumió exactamente esa request sobre `0a61ff75…`.
+Provider schema y Pydantic pasaron y la nueva observabilidad discriminó una
+única clase contextual: `P01_ABSTENTION_SOURCED_FIELDS_PRESENT`. Por definición
+del validator, el objeto no READY conservó al menos uno de los campos sourced
+P01 que deben quedar vacíos; las otras cuatro clases compatibles históricas no
+aparecieron. El marcador sintético no se propagó. Esta evidencia identifica la
+invariante violada en la recanary, pero no atribuye por qué el objeto adquirió
+esa forma ni recupera la causa del request histórico. La ejecución falló
+cerrada, sin P11 ni segunda request, y deja el P0 abierto para revisión.
+
 ## Secuencia de aceptación
 
 | Gate | Estado |
@@ -217,6 +227,7 @@ Durante esta investigación no se ejecutó ni autorizó esa request.
 | Calificación sintética dry-run | PASS 15/15 contra adapter real y transporte fake; corpus real-eligible acumulado 18/18; 0 red/0 billable |
 | Calificación sintética real | detenida fail-closed en `oa-p01-injection-md` después de 1 request; los otros 14 casos no se ejecutaron |
 | Investigación P01 injection | causa histórica no recuperable; cinco clases reproducidas y observabilidad content-free preparada; 0 red/0 billable |
+| Recanary única P01 injection | FAIL contextual discriminado: `P01_ABSTENTION_SOURCED_FIELDS_PRESENT`; marcador no propagado; 1 request, P11 0 |
 | Calidad/latencia/costo y severidad | P0=1; P1=0; P2=6; P3=1; calidad pedagógica pendiente de revisión humana posterior |
 | Build, digest y deploy real del worker | pendiente de gate posterior |
 

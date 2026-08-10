@@ -186,3 +186,19 @@ la ausencia de la aprobación distinta antes de crear el adapter. P11, retries,
 P10, Sol y fallback permanecen en cero. El dry-run versionado pasó con
 transport fake; esta preparación consumió **USD 0.00** y no consultó saldo ni
 secreto.
+
+## Recanary P01 injection consumida
+
+La recanary autorizada consumió una sola Responses request y se detuvo por el
+fallo contextual `P01_ABSTENTION_SOURCED_FIELDS_PRESENT`.
+
+| Magnitud | USD | Proporción del cap USD 0.02 |
+|---|---:|---:|
+| Costo calculado desde usage | 0.00147750 | 7.39% |
+| Charge conservador del harness | 0.01003110 | 50.16% |
+| Ceiling full-cache-write previamente autorizado | 0.01201925 | 60.10% |
+| Headroom frente al cap según costo calculado | 0.01852250 | 92.61% |
+
+El uso fue 1,725 input, 0 cached, 1,722 cache-write y 872 output tokens. No
+hubo retries, P10, P11, Sol, fallback ni una segunda request. La lectura de
+Secret Manager fue efímera y no modificó secreto, IAM, límites ni cloud.

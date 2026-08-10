@@ -162,6 +162,19 @@ red/billable, Luna-medium, P10/P11/Sol/fallback/retries 0, ceiling USD
 0.01201925 y cap humano propuesto USD 0.02. El checkpoint queda en
 `OPENAI_P01_INJECTION_RECANARY_APPROVAL_REQUIRED`; no se ejecutó la recanary.
 
+La autorización posterior ejecutó esa única recanary sobre `0a61ff75…`. La
+versión 1 del secreto `cva-openai-api-key` estaba `ENABLED` y se inyectó desde
+Secret Manager solo al environment efímero del proceso. Provider schema y
+Pydantic pasaron; el validator contextual falló con la única clase
+`P01_ABSTENTION_SOURCED_FIELDS_PRESENT`. Esto demuestra que el objeto no READY
+conservó al menos un campo sourced que la política exige vacío, pero no explica
+por qué se produjo esa forma ni demuestra seguimiento de la inyección. El
+marcador no reapareció en el output. Hubo 1 request, retries 0/0/0,
+P10/P11/Sol/fallback 0, 1,725 input, 0 cached, 1,722 cache-write, 872 output,
+516 reasoning, 9,779 ms y USD 0.00147750 calculados frente al cap USD 0.02.
+El P0 permanece abierto para revisión en
+`OPENAI_P01_INJECTION_RECANARY_P01_ABSTENTION_SOURCED_FIELDS_PRESENT_REVIEW_REQUIRED`.
+
 La regresión local previa al smoke quedó en 457 passed/16 skips PostgreSQL
 explícitos, 80% de cobertura, 40 tests focalizados CLI/adapter, golden set
 20/20 con 0 network/0 billable, PostgreSQL 16/17
