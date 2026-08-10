@@ -64,11 +64,13 @@ primer caso real `oa-p01-injection-md` pase toda la frontera.
 
 La rotación llegó hasta una clave restringida nueva, Secret Manager versión
 `2` `enabled` y autenticación no facturable con Luna visible. La clave
-histórica continuó autenticando después de cinco confirmaciones de revocación
-en Platform; la alternativa REST requiere Admin API key y rechazó la
-credencial de proyecto con `403`. En consecuencia, la versión `1` permanece
-`enabled` y la qualification no comenzó: cero Responses requests, cero consumo
-del cap y P0 todavía abierto.
+histórica continuó autenticando después de seis confirmaciones de revocación
+en Platform, incluida la vista organizacional; la alternativa REST requiere
+Admin API key y rechazó la credencial de proyecto con `403`. En consecuencia,
+la versión `1` permanece `enabled` y la qualification no comenzó: cero
+Responses requests, cero consumo del cap y P0 todavía abierto. El verificador
+versionado exige un 401 content-free sobre esa versión y confirma por separado
+Luna visible con la versión nueva.
 
 Las secciones 1.1.1 siguientes se conservan como historial y no amplían el
 gate vigente.

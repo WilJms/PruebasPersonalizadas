@@ -566,6 +566,9 @@
   histórica; sólo entonces se deshabilita su versión en Secret Manager. Un
   intento UI sin efecto o una respuesta administrativa `403` mantiene el gate
   cerrado, aunque la versión nueva esté `enabled` y vea el modelo autorizado.
+  La evidencia ejecutable usa una sola consulta `models.list`, retries cero,
+  clave sólo por stdin y PASS histórico exclusivamente ante 401; una
+  incertidumbre de red nunca equivale a revocación.
 - **Razón:** deshabilitar sólo la copia local no revoca una credencial todavía
   válida en el proveedor, y continuar con dos claves activas rompe la secuencia
   humana autorizada y la evidencia de contención.

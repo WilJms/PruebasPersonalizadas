@@ -42,15 +42,17 @@ directamente a `cva-openai-api-key` versión `2`, verificada como `enabled` e
 inyectada en memoria para un `models.list` no facturable. La autenticación pasó
 y el catálogo devolvió únicamente `gpt-5.6-luna`.
 
-La clave histórica no quedó revocada. Cinco confirmaciones sobre el target
-exacto en Platform no cambiaron su estado y una comprobación autenticada
-posterior todavía fue aceptada. El endpoint administrativo oficial respondió
-`403` a la credencial de proyecto, como corresponde a una operación que exige
-una Admin API key. No se creó ni solicitó esa autoridad adicional. Por ello la
-versión `1` permanece `enabled`, no se consumió la autorización de
-qualification y no se ejecutó el primer caso P01. El stop es fail-closed y no
-incluye deploy, Terraform apply, IAM, billing, P10, Sol/fallback, datos reales
-ni merge.
+La clave histórica no quedó revocada. Seis confirmaciones sobre el target
+exacto en Platform —la última desde la vista organizacional— no cambiaron su
+estado y una comprobación autenticada posterior todavía fue aceptada. El
+endpoint administrativo oficial respondió `403` a la credencial de proyecto,
+como corresponde a una operación que exige una Admin API key. No se creó ni
+solicitó esa autoridad adicional. Por ello la versión `1` permanece `enabled`,
+no se consumió la autorización de qualification y no se ejecutó el primer caso
+P01. El stop es fail-closed y no incluye deploy, Terraform apply, IAM, billing,
+P10, Sol/fallback, datos reales ni merge. Un verificador content-free queda
+versionado para exigir 401 sobre la clave histórica y Luna visible sobre la
+nueva antes de continuar.
 
 Este estado no es `OPENAI_REAL_MANUAL_EVAL_READY`: la credencial nueva está
 lista, pero la rotación no termina hasta observar rechazo de la clave anterior

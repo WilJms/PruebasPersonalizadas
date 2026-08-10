@@ -9,8 +9,9 @@ directamente a Secret Manager como versión `2` y verificó esa versión como
 `enabled` e inyectable sin registrar el payload. Un `models.list` no facturable
 autenticó correctamente y devolvió únicamente `gpt-5.6-luna`.
 
-La baja del proveedor continúa pendiente: Platform aceptó cinco veces la
-confirmación del target histórico, pero la clave anterior siguió autenticando.
+La baja del proveedor continúa pendiente: Platform aceptó seis veces la
+confirmación del target histórico —incluida la vista organizacional—, pero la
+clave anterior siguió autenticando.
 La API administrativa oficial respondió `403` a la credencial de proyecto y
 no se amplió autoridad mediante una Admin API key. Para preservar el orden
 autorizado, la versión `1` sigue `enabled` y no se inició la qualification. Las
@@ -54,6 +55,34 @@ La rotación descrita fue autorizada expresamente; su única mutación pendiente
 es revocar el target histórico y, sólo tras verificar su rechazo, deshabilitar
 Secret Manager versión `1`. Cambiar IAM, billing/límites, cloud, deploy o
 Terraform sigue siendo una mutación separada sin autorización.
+
+### Verificación content-free de la rotación
+
+`check_openai_key_state.py` acepta la credencial exclusivamente por stdin,
+desactiva retries del SDK, ejecuta un solo `models.list` no facturable y emite
+sólo estado, código, conteos y status HTTP seguro. Una desconexión, 403, 429 o
+cualquier resultado distinto de 401 nunca se interpreta como revocación.
+
+Antes de deshabilitar la versión histórica, se exige:
+
+```bash
+gcloud secrets versions access 1 \
+  --secret=cva-openai-api-key --project=cva-experimento-wiljms |
+  .venv/bin/python scripts/check_openai_key_state.py --expect revoked
+```
+
+La versión nueva se comprueba por separado:
+
+```bash
+gcloud secrets versions access 2 \
+  --secret=cva-openai-api-key --project=cva-experimento-wiljms |
+  .venv/bin/python scripts/check_openai_key_state.py \
+  --expect active --required-model gpt-5.6-luna
+```
+
+Ninguna de estas órdenes coloca el valor en argumentos, environment, archivos
+o salida. Sólo el primer PASS autoriza deshabilitar la versión `1`; ambos PASS
+son precondición de la qualification.
 
 ## Fronteras obligatorias
 

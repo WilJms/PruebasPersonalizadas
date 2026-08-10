@@ -13,15 +13,16 @@ final y no se presentan como evidencia del candidato E2.
 | Prueba o gate | Resultado observado |
 |---|---|
 | `make test` | 498 passed, 16 skips PostgreSQL explícitos, 1 warning deprecado conocido (corte anterior al dual gate) |
-| `make test-cov` | 499 passed, 16 skips, 1 warning; 80% global sobre 10,485 statements |
+| `make test-cov` | 506 passed, 16 skips, 1 warning; 80% global sobre 10,485 statements |
 | Contratos | PASS: 53 roots, 140 definiciones, 274 referencias, 8 fixtures; schema canónico sin edición manual |
 | Fixtures y OpenAPI | PASS; PATCH de blueprint regenerado como `202 JobEnvelope` |
-| Secret scan | PASS: 290 archivos versionables, cero secretos de alta confianza |
+| Secret scan | PASS: 292 archivos versionables, cero secretos de alta confianza |
 | P01 injection 1.1.2 dry-run | PASS `READY`; 1 transporte fake, 0 red/billable, marker no propagado, hashes aprobables nuevos, ceiling full-cache-write USD 0.012278 |
 | Qualification 1.1.2 dry-run | 18/18 PASS, 18 transportes fake, 0 red/billable, evidencia real reutilizada `[]`, P11 directo último, máximo defensivo 19 requests, ceiling USD 0.31043475 |
 | Dual gate P01/billable | PASS: hashes v1.1.2 fijados; decisión P01, approval facturable y credencial comprobadas en orden; 33 tests focalizados PASS |
 | Decisión/autorización humana | P01 1.1.2 aceptado normativamente; P0 conservado hasta primer PASS real; rotación + una qualification cap USD 0.32 autorizadas; qualification aún no consumida |
-| Rotación de credencial | PARCIAL/BLOCKED: clave restringida nueva → Secret Manager v2 `enabled`; autenticación no facturable PASS y sólo Luna visible; clave histórica aún aceptada tras cinco revocaciones UI; Admin API con credencial de proyecto `403`; v1 conservada `enabled` y 0 Responses requests |
+| Rotación de credencial | PARCIAL/BLOCKED: clave restringida nueva → Secret Manager v2 `enabled`; autenticación no facturable PASS y sólo Luna visible; clave histórica aún aceptada tras seis revocaciones UI —incluida vista organizacional—; Admin API con credencial de proyecto `403`; v1 conservada `enabled` y 0 Responses requests |
+| Verificador de rotación | 7/7 PASS; sólo stdin, retries SDK 0, ninguna respuesta del proveedor en output, 401 distinto de errores de red/status; v2 real `ACTIVE`+Luna PASS y v1 real `STILL_ACTIVE` FAIL esperado |
 | P05 durable | API web en configuración real encola sin clave ni llamada; worker real con gateway fake publica atómicamente; cancel y retry cubiertos |
 | Frontend | typecheck PASS; 6 archivos/34 tests PASS; build 87 módulos PASS |
 | E2E Playwright | 1/1 PASS: recorrido Stage 1 completo, edición P05 por job, versión 2 antes de aprobar, reinicio de navegador y no-overflow a 320/390 px |
