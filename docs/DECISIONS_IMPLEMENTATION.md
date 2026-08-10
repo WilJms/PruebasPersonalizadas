@@ -558,3 +558,16 @@
   accidente.
 - **Relación:** D-045, D-047, P01, `REAL_MODEL_EVALS.md` y
   `OPENAI_PROVIDER_SETUP.md`.
+
+## D-050 - La rotación termina sólo cuando la clave anterior es rechazada
+
+- **Decisión:** crear y autenticar una credencial nueva no completa la rotación.
+  Antes de la qualification debe observarse que OpenAI rechaza la clave
+  histórica; sólo entonces se deshabilita su versión en Secret Manager. Un
+  intento UI sin efecto o una respuesta administrativa `403` mantiene el gate
+  cerrado, aunque la versión nueva esté `enabled` y vea el modelo autorizado.
+- **Razón:** deshabilitar sólo la copia local no revoca una credencial todavía
+  válida en el proveedor, y continuar con dos claves activas rompe la secuencia
+  humana autorizada y la evidencia de contención.
+- **Relación:** D-045, D-049, `OPENAI_PROVIDER_SETUP.md` y
+  `REAL_MODEL_EVALS.md`.

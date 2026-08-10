@@ -2,17 +2,20 @@
 
 Estado al 2026-08-10: el proyecto OpenAI dedicado `PruebasPersonalizadas`
 (`proj_te2wY3kbHAkFp8IgjglH063t`) quedó identificado mediante una sesión
-autenticada de Platform. La clave de proyecto fue introducida manualmente por
-el propietario como la versión numérica `1` de
-`cva-openai-api-key`; Secret Manager informa esa única versión como `enabled`.
-El agente verificó metadata sin inspeccionar el payload; el proceso aislado del
-primer smoke consumió esa versión únicamente en memoria y eliminó su environment
-al terminar. La clave no existe en el repositorio, CI, Service web ni runtime
-cloud. Durante una operación histórica la clave pudo escribirse accidentalmente
-en un archivo local llamado `-`; ese archivo se eliminó sin leer su contenido,
-pero la versión `1` se considera no apta para uso futuro. Una persona autorizada
-debe rotarla y registrar sólo la nueva versión antes de cualquier llamada. El
-cloud vigente conserva `CVA_MODEL_MODE=mock` y
+autenticada de Platform. La clave histórica permanece en la versión numérica
+`1` de `cva-openai-api-key` y no es apta para uso futuro. La rotación autorizada
+creó la clave restringida `cva-stage2-qualification-20260810`, la transfirió
+directamente a Secret Manager como versión `2` y verificó esa versión como
+`enabled` e inyectable sin registrar el payload. Un `models.list` no facturable
+autenticó correctamente y devolvió únicamente `gpt-5.6-luna`.
+
+La baja del proveedor continúa pendiente: Platform aceptó cinco veces la
+confirmación del target histórico, pero la clave anterior siguió autenticando.
+La API administrativa oficial respondió `403` a la credencial de proyecto y
+no se amplió autoridad mediante una Admin API key. Para preservar el orden
+autorizado, la versión `1` sigue `enabled` y no se inició la qualification. Las
+claves no existen en el repositorio, CI, Service web ni runtime cloud. El cloud
+vigente conserva `CVA_MODEL_MODE=mock` y
 `CVA_P10_ENABLED=false`. Ningún paso de este documento autoriza datos
 estudiantiles reales, Etapa 3 o P10.
 
@@ -32,10 +35,12 @@ cumplirse, en este orden:
 5. ejecución única del entrypoint versionado, sólo con corpus sintético.
 
 El propietario completó el paso 1 y autorizó los pasos 2–5 con cap total USD
-0.32. La decisión no cierra aún el P0: `oa-p01-injection-md` debe pasar como
-primer caso real v1.1.2. La autorización de rotación/qualification permanece
-vigente y no consumida hasta ejecutar ese scope o alcanzar una condición de
-stop.
+0.32. El paso 2 está incompleto por la baja pendiente descrita arriba; la nueva
+versión ya pasó autenticación, pero la rotación exige además rechazo empírico
+de la clave anterior y deshabilitación posterior de la versión `1`. La decisión
+no cierra aún el P0: `oa-p01-injection-md` debe pasar como primer caso real
+v1.1.2. La autorización de qualification permanece intacta porque no se creó
+ninguna Responses request.
 
 El entrypoint materializa esa separación mediante
 `CVA_OPENAI_P01_V112_REMEDIATION_DECISION=OPENAI_P01_V112_REMEDIATION_ACCEPTED`
@@ -45,9 +50,10 @@ La primera decisión sólo es válida para los hashes P01 1.1.2 documentados; el
 harness los recalcula y bloquea cualquier drift antes de leer
 `CVA_OPENAI_API_KEY`. La segunda variable no puede cerrar el P0 por sí sola.
 
-Rotar secreto, cambiar IAM, billing/límites, cloud, deploy o Terraform siguen
-siendo mutaciones separadas que requieren autorización. La preparación actual
-no realizó ninguna de ellas.
+La rotación descrita fue autorizada expresamente; su única mutación pendiente
+es revocar el target histórico y, sólo tras verificar su rechazo, deshabilitar
+Secret Manager versión `1`. Cambiar IAM, billing/límites, cloud, deploy o
+Terraform sigue siendo una mutación separada sin autorización.
 
 ## Fronteras obligatorias
 

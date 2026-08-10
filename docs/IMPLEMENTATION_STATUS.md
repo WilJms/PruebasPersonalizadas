@@ -2,7 +2,7 @@
 
 Fecha de corte: 2026-08-10 (America/Santiago).
 
-## Estado vigente — `OPENAI_REAL_V112_OFFLINE_GATE_PREPARED` (2026-08-10)
+## Estado vigente — `OPENAI_REAL_V112_ROTATION_BLOCKED` (2026-08-10)
 
 La rama `codex/openai-real-provider-gate` remedia técnicamente el P0 P01. El
 propietario aceptó la semántica normativa 1.1.2, pero ordenó conservar el P0
@@ -34,15 +34,29 @@ vigente es **P0=1, P1=0, P2=5, P3=1**.
 
 La revisión integrada pasó backend, frontend, OpenAPI, navegador y E2E local,
 incluida corrección del overflow móvil de la revisión P05. Cloud no cambió:
-continúa mock/P10 false. No hubo request facturable. La clave histórica debe
-rotarse antes de cualquier uso. El propietario autorizó esa rotación y una
-única qualification sintética con cap USD 0.32; la autorización todavía no se
-consume. No incluye deploy, Terraform apply, IAM, billing, P10, Sol/fallback,
-datos reales ni merge.
+continúa mock/P10 false. No hubo request facturable. El propietario autorizó
+la rotación y una única qualification sintética con cap USD 0.32. La rotación
+quedó parcialmente ejecutada: la clave restringida
+`cva-stage2-qualification-20260810` fue creada en el mismo proyecto, copiada
+directamente a `cva-openai-api-key` versión `2`, verificada como `enabled` e
+inyectada en memoria para un `models.list` no facturable. La autenticación pasó
+y el catálogo devolvió únicamente `gpt-5.6-luna`.
 
-Este estado no es `OPENAI_REAL_MANUAL_EVAL_READY`: todavía no hay credencial
-rotada, validación empírica/cierre del P0, qualification 1.1.2 real, deployment real ni
-E2E sintético real de la aplicación.
+La clave histórica no quedó revocada. Cinco confirmaciones sobre el target
+exacto en Platform no cambiaron su estado y una comprobación autenticada
+posterior todavía fue aceptada. El endpoint administrativo oficial respondió
+`403` a la credencial de proyecto, como corresponde a una operación que exige
+una Admin API key. No se creó ni solicitó esa autoridad adicional. Por ello la
+versión `1` permanece `enabled`, no se consumió la autorización de
+qualification y no se ejecutó el primer caso P01. El stop es fail-closed y no
+incluye deploy, Terraform apply, IAM, billing, P10, Sol/fallback, datos reales
+ni merge.
+
+Este estado no es `OPENAI_REAL_MANUAL_EVAL_READY`: la credencial nueva está
+lista, pero la rotación no termina hasta observar rechazo de la clave anterior
+y deshabilitar la versión `1`. Todavía faltan validación empírica/cierre del
+P0, qualification 1.1.2 real, deployment real y E2E sintético real de la
+aplicación.
 
 ## Historial — merge E2 y gate OpenAI (2026-08-09)
 

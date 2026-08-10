@@ -7,7 +7,7 @@ con IDs únicos y clasificación obligatoria
 `SYNTHETIC_ONLY_NO_STUDENT_DATA`. El manifest fija además
 `route_profile=LUNA_BASELINE_V1`, prompt pack `1.1.2` y schema `1.1.0`.
 
-## Frontera vigente 1.1.2 — preparada, no autorizada
+## Frontera vigente 1.1.2 — autorizada, detenida por rotación
 
 La remediación P01 hace explícita una semántica antes ambigua: una consigna
 suficiente y fiel produce `READY` aunque no todas las listas sourced sean
@@ -37,12 +37,13 @@ P10/Sol/fallback 0, ceiling USD 0.31043475 y cap humano máximo USD 0.32.
 El checkpoint técnico es `OPENAI_REAL_V112_OFFLINE_GATE_PREPARED`: no contiene
 una aprobación billable y no equivale a `OPENAI_REAL_MANUAL_EVAL_READY`. Antes
 de ejecutar se exige revisión humana del P0,
-rotación de la clave de proyecto, revalidación de saldo/límites y aprobación
-explícita independiente. El entrypoint comprueba dos opt-ins distintos antes
+rotación completa de la clave de proyecto, revalidación de saldo/límites y
+aprobación explícita independiente. El entrypoint comprueba dos opt-ins
+distintos antes
 de leer la credencial: la decisión P01 queda ligada a los hashes exactos de
 prompt e input anteriores, mientras la approval de qualification autoriza sólo
 el gasto acotado. Un drift invalida la frontera antes del transporte. La
-ejecución documentada, pero no autorizada, es:
+ejecución autorizada una sola vez, pero aún bloqueada, es:
 
 ```bash
 CVA_OPENAI_P01_V112_REMEDIATION_DECISION=OPENAI_P01_V112_REMEDIATION_ACCEPTED \
@@ -60,6 +61,14 @@ semántica P01 1.1.2 y autorizó rotación más una única qualification con cap
 0.32. Esos valores se inyectarán sólo en el proceso efímero después de rotar la
 clave; no se persisten en archivos ni CI. El P0 permanece abierto hasta que el
 primer caso real `oa-p01-injection-md` pase toda la frontera.
+
+La rotación llegó hasta una clave restringida nueva, Secret Manager versión
+`2` `enabled` y autenticación no facturable con Luna visible. La clave
+histórica continuó autenticando después de cinco confirmaciones de revocación
+en Platform; la alternativa REST requiere Admin API key y rechazó la
+credencial de proyecto con `403`. En consecuencia, la versión `1` permanece
+`enabled` y la qualification no comenzó: cero Responses requests, cero consumo
+del cap y P0 todavía abierto.
 
 Las secciones 1.1.1 siguientes se conservan como historial y no amplían el
 gate vigente.

@@ -20,7 +20,8 @@ final y no se presentan como evidencia del candidato E2.
 | P01 injection 1.1.2 dry-run | PASS `READY`; 1 transporte fake, 0 red/billable, marker no propagado, hashes aprobables nuevos, ceiling full-cache-write USD 0.012278 |
 | Qualification 1.1.2 dry-run | 18/18 PASS, 18 transportes fake, 0 red/billable, evidencia real reutilizada `[]`, P11 directo último, máximo defensivo 19 requests, ceiling USD 0.31043475 |
 | Dual gate P01/billable | PASS: hashes v1.1.2 fijados; decisión P01, approval facturable y credencial comprobadas en orden; 33 tests focalizados PASS |
-| Decisión/autorización humana | P01 1.1.2 aceptado normativamente; P0 conservado hasta primer PASS real; rotación + una qualification cap USD 0.32 autorizadas y aún no consumidas |
+| Decisión/autorización humana | P01 1.1.2 aceptado normativamente; P0 conservado hasta primer PASS real; rotación + una qualification cap USD 0.32 autorizadas; qualification aún no consumida |
+| Rotación de credencial | PARCIAL/BLOCKED: clave restringida nueva → Secret Manager v2 `enabled`; autenticación no facturable PASS y sólo Luna visible; clave histórica aún aceptada tras cinco revocaciones UI; Admin API con credencial de proyecto `403`; v1 conservada `enabled` y 0 Responses requests |
 | P05 durable | API web en configuración real encola sin clave ni llamada; worker real con gateway fake publica atómicamente; cancel y retry cubiertos |
 | Frontend | typecheck PASS; 6 archivos/34 tests PASS; build 87 módulos PASS |
 | E2E Playwright | 1/1 PASS: recorrido Stage 1 completo, edición P05 por job, versión 2 antes de aprobar, reinicio de navegador y no-overflow a 320/390 px |
@@ -29,8 +30,9 @@ final y no se presentan como evidencia del candidato E2.
 Los 16 skips locales corresponden únicamente a semántica PostgreSQL sin
 `CVA_TEST_DATABASE_URL`/`CVA_TEST_POSTGRES_URL`; no se presentan como pruebas
 ejecutadas. Los dry-runs eliminaron approvals y clave del environment, no
-leyeron secretos y mantuvieron P10, Sol, fallback y retries en cero. No hubo
-request OpenAI facturable ni cambio cloud.
+leyeron secretos y mantuvieron P10, Sol, fallback y retries en cero. Las
+comprobaciones de credencial usaron sólo `models.list`; no hubo request OpenAI
+facturable ni cambio cloud.
 
 ## Gate OpenAI offline — 2026-08-08
 
