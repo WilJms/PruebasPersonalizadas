@@ -121,8 +121,9 @@ frontera canary.
 | Canary P01 Luna-medium | PASS real; `READY`, 1 request, USD 0.00145745 calculados |
 | Canary P07 Luna-high | FAIL real fail-closed; 1 request, output Pydantic inválido, P11 0, USD 0.00327560 calculados |
 | Investigación P07 provider/Pydantic | PASS offline; schema exacto fijado, pérdida de ledger corregida, clases provider/Pydantic/contexto reproducidas sin contenido |
+| Recanary única P07 Luna-high | PASS real; `READY`, provider schema/Pydantic/contexto PASS, 1 request, P11 0, USD 0.00276560 calculados |
 | Golden set real sintético | pendiente de aprobación y presupuesto separados |
-| Calidad/latencia/costo y P0/P1 | P0=0; P1 histórico P07 permanece abierto hasta una eventual recanary autorizada |
+| Calidad/latencia/costo y P0/P1 | P0=0; P1 histórico P07 permanece abierto para revisión humana tras una segunda observación PASS |
 | Build, digest y deploy real del worker | pendiente de gate posterior |
 
 El camino interactivo de re-revisión P05 que aún reside en el Service no se

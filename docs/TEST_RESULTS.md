@@ -199,6 +199,41 @@ input/cached/cache-write/output. `openai_pricing.py` no cambió. Esta
 investigación hizo cero llamadas de red/facturables, no leyó el secreto y sumó
 USD 0.00.
 
+## Recanary real única P07 — 2026-08-09
+
+Checkpoint: `OPENAI_LUNA_P07_RECANARY_PASS_REVIEW_REQUIRED`. La autorización
+humana se consumió una sola vez sobre
+`97a6b2e8cd7cf852e9e3a6fefeb09c135793ac19`, después de un dry-run PASS con
+cero red/facturación. El ceiling sin cache fue USD 0.0163734 y el caso
+conservador de todo el input como cache-write fue USD 0.01746675, ambos bajo el
+cap humano de USD 0.03. Platform confirmó antes de la llamada el proyecto
+`PruebasPersonalizadas`, Luna como único modelo permitido y USD 3.78/5.00 de
+spend; Secret Manager conservó la versión 1 `ENABLED` sin inspeccionar el
+payload.
+
+| Metadata segura | Resultado observado |
+|---|---|
+| Caso / resultado | P07 `oa-p07-open-short-txt`; PASS, outcome `READY` |
+| Prompt / schema | `P07_QUESTION_BUILD_V1` `1.1.1` / `1.1.0`; schema estricto 13.671 bytes |
+| Modelo solicitado / efectivo | `gpt-5.6-luna` / `gpt-5.6-luna`; reasoning `high` |
+| Provider schema / Pydantic / contexto | PASS / PASS / PASS; `SCHEMA_VALID`, sin issues |
+| Invariantes | CLOSED, IDs, evidencia, fuentes, allowlist y manifest PASS |
+| Repair | no solicitado; `repair_disposition=null`; P11 0 |
+| Requests / attempts / retries | 1 / 1 / gateway-prompt-SDK 0/0/0 |
+| Tokens | 3,839 input; 0 cached; 3,836 cache-write; 1,505 output; 655 reasoning |
+| Latencia | 12,666 ms |
+| Estimado post-usage / costo calculado | USD 0.01295960 / USD 0.00276560 |
+| Request ID hash | `sha256:f188166183bb04f88c55ec068adc5f393ddead2ae16d542db1991e4df9a1c7fe` |
+| Output hash | `sha256:c0e60898f237b372641334a79fef280311dec3f621726683cb4b9c6dc9a7948c` |
+
+No hubo segunda request, fallback, P10, P11, Sol ni retries. El secreto se
+entregó únicamente al environment del proceso desde el canal privado; no se
+imprimió, persistió ni expuso. Cloud/IAM/deployment permanecieron sin cambios y
+en mock/P10 false. El costo calculado acumulado del smoke, los dos canaries
+originales y esta recanary es USD 0.00814815 en cuatro Responses requests. Este
+PASS es una segunda observación y no cierra automáticamente el P1 histórico:
+queda pendiente la revisión humana de severidad/promoción.
+
 ## Ejecución de auditoría final focalizada — 2026-08-08
 
 Esta ejecución es posterior al candidato runtime cloud y no sustituye su

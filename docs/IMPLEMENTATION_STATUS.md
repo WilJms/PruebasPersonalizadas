@@ -109,7 +109,17 @@ cero red/facturación, 471 pruebas con cobertura (16 skips PostgreSQL
 explícitos), contratos 53/140/274 sin drift y secret scan de 290 archivos. La
 tarifa Standard oficial fue revalidada sin cambios y esta investigación añadió
 USD 0.00. P0 permanece en cero, no apareció un P1 nuevo y el P1 histórico P07
-continúa abierto hasta una eventual única recanary expresamente autorizada.
+quedó abierto hasta una eventual única recanary expresamente autorizada.
+
+Esa autorización se consumió sobre
+`97a6b2e8cd7cf852e9e3a6fefeb09c135793ac19`. La única recanary P07 terminó
+`OPENAI_LUNA_P07_RECANARY_PASS_REVIEW_REQUIRED`: outcome `READY`, Luna-high
+solicitada y efectiva, provider schema/Pydantic/contexto/invariantes PASS, una
+request, retries 0/0/0 y P10/P11/Sol 0. Registró 3,839 input, 0 cached, 3,836
+cache-write, 1,505 output y 655 reasoning tokens, 12,666 ms y USD 0.00276560
+calculados frente al cap humano USD 0.03. No hubo cambios de producto, cloud o
+expected outcomes. El P1 histórico sigue abierto para revisión humana; una
+sola recanary exitosa no decide por sí misma su cierre.
 
 La regresión local previa al smoke quedó en 457 passed/16 skips PostgreSQL
 explícitos, 80% de cobertura, 40 tests focalizados CLI/adapter, golden set

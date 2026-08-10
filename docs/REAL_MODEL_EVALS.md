@@ -101,9 +101,13 @@ Los tests reproducen campos requeridos ausentes, extras, invariantes Pydantic y
 fallos contextuales con una sola llamada fake, P11/P10/Sol/retries en cero y
 sin serializar contenido.
 
-Una eventual repetición real de P07 requiere una autorización humana nueva,
-separada y explícita. Este documento no contiene un comando ejecutable ni una
-aprobación billable vigente.
+La recanary real única autorizada después de esa corrección terminó PASS:
+outcome `READY`, provider schema/Pydantic/contexto/IDs válidos, Luna-high
+solicitada y efectiva, una request, P11/P10/Sol/retries en cero y USD
+0.00276560 calculados. El checkpoint es
+`OPENAI_LUNA_P07_RECANARY_PASS_REVIEW_REQUIRED`: esta segunda observación no
+cierra automáticamente el P1 histórico. La autorización se consumió y este
+documento no contiene una aprobación billable vigente.
 
 ## Gate real preparado, no autorizado
 

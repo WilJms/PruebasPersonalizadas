@@ -96,3 +96,18 @@ El worst-case combinado previo fue **USD 0.0278998** frente al cap humano
 autorizado de USD 0.16. El costo calculado observado fue **USD 0.00473305** con
 dos Responses requests. P10/P11/Sol/retries quedaron en cero. La investigación
 posterior del fallo P07 fue offline, no leyó el secreto y añadió USD 0.00.
+
+## Recanary P07 única
+
+La recanary autorizada sobre
+`97a6b2e8cd7cf852e9e3a6fefeb09c135793ac19` conservó el preflight P07 de
+21,867 input / 10,000 output: USD 0.0163734 sin cache y USD 0.01746675 si todo
+el input upper-bound se factura conservadoramente como cache-write. Ambos
+quedaron bajo el cap humano independiente de USD 0.03.
+
+La única request observó 3,839 input, 0 cached, 3,836 cache-write, 1,505 output
+y 655 reasoning tokens. El estimado post-usage fue USD 0.01295960 y el costo
+calculado desde usage USD 0.00276560. No hubo retries, P10, P11, Sol ni una
+segunda request. El costo calculado acumulado del smoke, los dos canaries
+originales y esta recanary es **USD 0.00814815** en cuatro Responses requests;
+no se afirma equivalencia con el cargo final de facturación.
