@@ -318,6 +318,57 @@ La preclasificación P0 procede del manifest intacto; no se atribuye aún causa
 raíz al modelo, prompt, corpus o validador contextual. Los otros 14 casos no se
 ejecutaron y la secuencia no se reinició.
 
+## Investigación offline P01 injection — 2026-08-10
+
+La causa específica histórica permanece **desconocida**. El output no fue
+retenido (`store=false`) y la evidencia versionada contiene solo su hash; el
+código agregado `MODEL_CONTEXT_NOT_ALLOWLISTED` no distingue por sí mismo una
+allowlist violada de otras invariantes contextuales ni prueba que Luna siguiera
+el marcador.
+
+Las regresiones construyen objetos que pasan el schema provider y Pydantic y
+demuestran cinco clases compatibles:
+
+| Clase content-free | Resultado offline |
+|---|---|
+| `EVIDENCE_ID_NOT_ALLOWLISTED` | FAIL contextual, fail-closed, P11 0 |
+| `COURSE_SOURCE_ID_NOT_ALLOWLISTED` | FAIL contextual, fail-closed, P11 0 |
+| `ABSTENTION_DIAGNOSTIC_MISSING` | FAIL contextual, fail-closed, P11 0 |
+| `P01_ABSTENTION_SOURCED_FIELDS_PRESENT` | FAIL contextual, fail-closed, P11 0 |
+| `P01_ACTIVITY_ID_MISMATCH` | FAIL contextual, fail-closed, P11 0 |
+
+El `CONTEXT_MODE_MISMATCH` general no pudo producir la observación histórica:
+la única ubicación P01 que Pydantic permitiría, `Diagnostic.details`, es
+rechazada por el schema provider estricto. El harness de qualification también
+se probó con un fallo contextual en su primer caso y emitió solo esa fila, una
+llamada fake y P11 0.
+
+Se corrigió la pérdida determinista del subtipo: gateway, ledger y harness
+conservan fase/lista ordenada de códigos/engine, incluso ante violaciones
+coexistentes, sin valores o mensajes. Se añadió observación por
+booleanos del marcador y regresión que prohíbe serializar marcador, contenido,
+IDs inventados o output. La descripción del fixture ahora dice correctamente
+que es una consigna `ASSIGNMENT_PROMPT` ya normalizada con locator
+`DOCUMENT_PATH`; no es una submission ni prueba el parser. Expected `VALID`,
+request, prompt, schema y contrato quedaron intactos.
+
+| Validación | Resultado |
+|---|---|
+| Gateway + harness focalizados | 78 passed |
+| Provider/pricing/validation/CLI/gateway/harness focalizados | 138 passed |
+| Suite backend completa | 495 passed, 16 skips PostgreSQL explícitos, 1 warning P3 conocido; 80% coverage |
+| Contratos | PASS; 53 roots, 140 definitions, 274 refs, 8 fixtures |
+| Stage 0 injection | PASS; fuente contiene marcador, preguntas no, tools/red 0 |
+| Secret scan | PASS; 290 archivos versionables, 0 secretos de alta confianza |
+| Recanary dry-run | PASS; 1 transporte fake, red/billable 0, P10/P11/Sol/fallback/retries 0 |
+
+El dry-run conserva prompt hash `c2848eef…` e input hash `ab8f6ffb…`; calcula
+USD 0.01153540 sin cache y USD 0.01201925 reservando todo input como
+cache-write. Se propone un cap humano de USD 0.02 para una única request futura.
+Esta tarea no leyó el secreto, no creó transporte real y añadió USD 0.00.
+P0/P1/P2/P3 abiertos: **1/0/6/1**. Checkpoint:
+`OPENAI_P01_INJECTION_RECANARY_APPROVAL_REQUIRED`.
+
 ## Ejecución de auditoría final focalizada — 2026-08-08
 
 Esta ejecución es posterior al candidato runtime cloud y no sustituye su

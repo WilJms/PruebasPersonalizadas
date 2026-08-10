@@ -11,6 +11,7 @@ import pytest
 from comprehension_verification.contracts import model_by_name, models
 from comprehension_verification.model_gateway import (
     CallBudget,
+    ContextFailureCode,
     GatewayBudgetExceeded,
     GatewayConfig,
     GatewayContextError,
@@ -32,6 +33,11 @@ from comprehension_verification.model_gateway.mock_factory import (
     AdapterResult,
     DeterministicMockAdapter,
 )
+from comprehension_verification.model_gateway.openai_schema import (
+    provider_schema_validation_issues,
+    structured_output_format,
+)
+from comprehension_verification.model_gateway.registry import prompt_spec
 
 
 EXPECTED_PROMPT_CONTRACTS = {
@@ -219,6 +225,173 @@ def test_context_invalid_provider_output_is_ledgered_as_invalid() -> None:
     assert len(captured.value.ledgers) == 1
     assert captured.value.ledgers[0].result == "SCHEMA_INVALID"
     assert sink == list(captured.value.ledgers)
+
+
+def _mutate_p01_context(raw: dict, scenario: str) -> None:
+    diagnostic = {
+        "code": "ASSIGNMENT_FIELD_MISSING",
+        "severity": "ERROR",
+        "message": "Diagnóstico sintético.",
+        "evidence_ids": [],
+        "source_ids": [],
+        "retryable": False,
+        "details": {},
+    }
+    if scenario == "evidence_id":
+        raw["learning_outcomes"][0]["evidence_ids"] = ["ctx_private_value"]
+    elif scenario == "source_id":
+        diagnostic["source_ids"] = ["ctx_private_value"]
+        raw["diagnostics"] = [diagnostic]
+    elif scenario == "diagnostic_missing":
+        raw.update(
+            {
+                "status": "NEEDS_REVIEW",
+                "learning_outcomes": [],
+                "expected_products": [],
+                "requirements": [],
+                "diagnostics": [],
+            }
+        )
+    elif scenario == "sourced_fields_on_abstention":
+        raw["status"] = "NEEDS_REVIEW"
+        raw["diagnostics"] = [diagnostic]
+    elif scenario == "activity_id":
+        raw["activity_id"] = "ctx_private_value"
+    elif scenario == "combined":
+        raw["learning_outcomes"][0]["evidence_ids"] = ["ctx_private_value"]
+        diagnostic["source_ids"] = ["ctx_private_value"]
+        raw["contradictions"] = [diagnostic]
+        raw["status"] = "NEEDS_REVIEW"
+        raw["diagnostics"] = []
+        raw["activity_id"] = "ctx_private_value"
+    else:  # pragma: no cover - guards the test table itself
+        raise AssertionError(f"Unknown P01 contextual scenario: {scenario}")
+
+
+@pytest.mark.parametrize(
+    ("scenario", "expected_code"),
+    (
+        ("evidence_id", ContextFailureCode.EVIDENCE_ID_NOT_ALLOWLISTED),
+        ("source_id", ContextFailureCode.COURSE_SOURCE_ID_NOT_ALLOWLISTED),
+        ("diagnostic_missing", ContextFailureCode.ABSTENTION_DIAGNOSTIC_MISSING),
+        (
+            "sourced_fields_on_abstention",
+            ContextFailureCode.P01_ABSTENTION_SOURCED_FIELDS_PRESENT,
+        ),
+        ("activity_id", ContextFailureCode.P01_ACTIVITY_ID_MISMATCH),
+    ),
+)
+def test_p01_contextual_failures_are_distinct_and_content_free(
+    scenario: str,
+    expected_code: ContextFailureCode,
+) -> None:
+    prompt_id = "P01_ACTIVITY_SPEC_V1"
+    request = build_mock_request(prompt_id)
+    raw = (
+        DeterministicMockAdapter()
+        .factory.output_for(prompt_id, request, MockBehavior.HAPPY)
+        .model_dump(mode="json")
+    )
+    _mutate_p01_context(raw, scenario)
+
+    provider_schema = structured_output_format(
+        prompt_spec(prompt_id), request
+    )["schema"]
+    assert not provider_schema_validation_issues(provider_schema, raw)
+    assert isinstance(models.ActivitySpec.model_validate(raw), models.ActivitySpec)
+
+    gateway = ModelGateway(
+        mock_adapter=ContextBreakingAdapter(
+            prompt_id,
+            lambda output: _mutate_p01_context(output, scenario),
+        )
+    )
+    with pytest.raises(GatewayContextError) as captured:
+        _invoke(prompt_id, gateway=gateway)
+
+    error = captured.value
+    assert error.code == "MODEL_CONTEXT_NOT_ALLOWLISTED"
+    assert error.failure.phase == ValidationPhase.OUTPUT
+    assert error.failure.code == expected_code
+    assert error.failure.codes == (expected_code,)
+    assert len(error.ledgers) == 1
+    ledger = error.ledgers[0]
+    assert ledger.prompt_id == prompt_id
+    assert ledger.result == "SCHEMA_INVALID"
+    assert "OUTPUT_CONTEXT_VALIDATION_FAILED" in ledger.route.reason_codes
+    assert (
+        f"CONTEXT_FAILURE_OUTPUT_{expected_code.value}"
+        in ledger.route.reason_codes
+    )
+    serialized = json.dumps(ledger.model_dump(mode="json"), sort_keys=True)
+    assert "ctx_private_value" not in serialized
+    assert "Diagnóstico sintético" not in serialized
+
+
+def test_p01_context_mode_cannot_match_the_historical_validation_boundary() -> None:
+    prompt_id = "P01_ACTIVITY_SPEC_V1"
+    request = build_mock_request(prompt_id)
+    raw = (
+        DeterministicMockAdapter()
+        .factory.output_for(prompt_id, request, MockBehavior.HAPPY)
+        .model_dump(mode="json")
+    )
+    raw["diagnostics"] = [
+        {
+            "code": "ASSIGNMENT_FIELD_MISSING",
+            "severity": "ERROR",
+            "message": "Diagnóstico sintético.",
+            "evidence_ids": [],
+            "source_ids": [],
+            "retryable": False,
+            "details": {"context_mode": "COURSE_ENRICHED"},
+        }
+    ]
+    provider_schema = structured_output_format(
+        prompt_spec(prompt_id), request
+    )["schema"]
+
+    assert provider_schema_validation_issues(provider_schema, raw)
+    assert isinstance(models.ActivitySpec.model_validate(raw), models.ActivitySpec)
+
+
+def test_p01_context_observability_reports_all_coexisting_classes() -> None:
+    prompt_id = "P01_ACTIVITY_SPEC_V1"
+    request = build_mock_request(prompt_id)
+    raw = (
+        DeterministicMockAdapter()
+        .factory.output_for(prompt_id, request, MockBehavior.HAPPY)
+        .model_dump(mode="json")
+    )
+    _mutate_p01_context(raw, "combined")
+    provider_schema = structured_output_format(
+        prompt_spec(prompt_id), request
+    )["schema"]
+    assert not provider_schema_validation_issues(provider_schema, raw)
+    assert isinstance(models.ActivitySpec.model_validate(raw), models.ActivitySpec)
+
+    gateway = ModelGateway(
+        mock_adapter=ContextBreakingAdapter(
+            prompt_id,
+            lambda output: _mutate_p01_context(output, "combined"),
+        )
+    )
+    with pytest.raises(GatewayContextError) as captured:
+        _invoke(prompt_id, gateway=gateway)
+
+    expected_codes = (
+        ContextFailureCode.EVIDENCE_ID_NOT_ALLOWLISTED,
+        ContextFailureCode.COURSE_SOURCE_ID_NOT_ALLOWLISTED,
+        ContextFailureCode.ABSTENTION_DIAGNOSTIC_MISSING,
+        ContextFailureCode.P01_ABSTENTION_SOURCED_FIELDS_PRESENT,
+        ContextFailureCode.P01_ACTIVITY_ID_MISMATCH,
+    )
+    assert captured.value.failure.codes == expected_codes
+    reason_codes = captured.value.ledgers[0].route.reason_codes
+    assert all(
+        f"CONTEXT_FAILURE_OUTPUT_{code.value}" in reason_codes
+        for code in expected_codes
+    )
 
 
 def test_p04_rejects_invented_source_ids_and_records_attempt() -> None:

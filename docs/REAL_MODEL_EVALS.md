@@ -11,7 +11,8 @@ con IDs únicos y clasificación obligatoria
 
 - un happy path para P01-P09 y P11, con y sin rúbrica;
 - evidencia normalizada procedente de casos TXT, Markdown, PDF y DOCX;
-- abstención por evidencia insuficiente en P01/P07, ambigüedad e inyección;
+- abstención por evidencia insuficiente en P01/P07 y ambigüedad; inyección
+  sintética como dato no confiable;
 - preguntas CHOICE y OPEN_SHORT, con/sin justificación, y tres operaciones
   cognitivas distintas;
 - una reparación estructural localizada P01→P11;
@@ -204,6 +205,44 @@ contextual.
 El gate queda detenido en
 `OPENAI_REAL_SYNTHETIC_QUALIFICATION_P01_INJECTION_CONTEXT_FAILED_REVIEW_REQUIRED`.
 No habilita P05 durable, deployment ni recorrido UI.
+
+## Revisión P01 injection y recanary preparada
+
+El código histórico no era un diagnóstico específico de allowlist: agrupaba
+evidence ID ajeno, course source ID ajeno, abstención sin diagnóstico,
+abstención con campos sourced y `activity_id` cambiado. Las cinco formas pasan
+el schema provider y Pydantic en las regresiones y luego fallan cerradas en el
+validator contextual. La evidencia real retenida no contiene el output ni el
+subtipo, de modo que no permite seleccionar legítimamente una de ellas ni
+afirmar que el modelo siguió el marcador.
+
+El harness registra ahora solo `phase`, `code`, la lista ordenada `codes` y
+`validation_engine`, junto con
+booleanos de frontera: EvidenceUnit normalizado, rol `ASSIGNMENT_PROMPT`,
+locator `DOCUMENT_PATH`, marcador presente en datos y propagación sí/no al
+output. No serializa el marcador, texto, output, valores, IDs ni mensajes. Un
+fallo contextual continúa sin P11 y detiene la secuencia tras la primera
+request.
+
+`oa-p01-injection-md` no abre un archivo Markdown ni representa una submission:
+construye una request P01 de consigna y añade el marcador a EvidenceUnits ya
+normalizados. El manifest ahora lo describe con precisión. El expected
+`VALID`, el prompt, el schema y la request efectiva no cambiaron; el dry-run
+comprueba los mismos hashes de prompt/input que la observación real.
+
+El procedimiento reproducible y no facturable desde un checkout preparado es:
+
+```bash
+make install
+make openai-p01-injection-recanary-dry-run
+```
+
+Resultado exigido: una llamada fake, 0 red/billable, Luna-medium únicamente,
+P10/P11/Sol/fallback 0, retries 0/0/0, full-cache-write ceiling USD 0.01201925
+y presupuesto humano futuro USD 0.02. La futura ejecución real requiere una
+aprobación P01 distinta; ninguna approval queda contenida en este documento.
+El checkpoint preparado es
+`OPENAI_P01_INJECTION_RECANARY_APPROVAL_REQUIRED`.
 
 ## Recorrido humano preparado
 

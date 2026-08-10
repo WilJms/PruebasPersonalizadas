@@ -144,6 +144,24 @@ El manifest intacto preclasifica el fallo como P0; su causa raíz sigue abierta
 y no se atribuye al modelo sin evidencia. El checkpoint vigente es
 `OPENAI_REAL_SYNTHETIC_QUALIFICATION_P01_INJECTION_CONTEXT_FAILED_REVIEW_REQUIRED`.
 
+La investigación offline posterior comprobó que ese código ocultaba cinco
+clases P01 distintas: evidence ID no allowlisted, course source ID no
+allowlisted, abstención sin diagnóstico, abstención con campos sourced y
+`activity_id` cambiado. Todas pasan schema provider/Pydantic en las
+regresiones y fallan cerradas sin P11; el output histórico no fue retenido y su
+hash no permite recuperar cuál ocurrió. No se atribuye seguimiento de la
+inyección ni un defecto del modelo. El gateway/harness conserva ahora el
+subtipos contextuales content-free —incluidos los que coexistan— y booleanos de frontera sin output, valores,
+IDs ni mensajes.
+
+El fixture fue auditado como una consigna `ASSIGNMENT_PROMPT` ya normalizada,
+no una submission ni una prueba de parser. Su descripción se corrigió sin
+cambiar request, prompt, schema, contrato o expected `VALID`; los hashes
+históricos permanecen fijados. El dry-run de una única recanary P01 pasa con 0
+red/billable, Luna-medium, P10/P11/Sol/fallback/retries 0, ceiling USD
+0.01201925 y cap humano propuesto USD 0.02. El checkpoint queda en
+`OPENAI_P01_INJECTION_RECANARY_APPROVAL_REQUIRED`; no se ejecutó la recanary.
+
 La regresión local previa al smoke quedó en 457 passed/16 skips PostgreSQL
 explícitos, 80% de cobertura, 40 tests focalizados CLI/adapter, golden set
 20/20 con 0 network/0 billable, PostgreSQL 16/17
@@ -156,7 +174,7 @@ commit previo al gasto quedó 7/7 verde.
 |---|---:|
 | P0 | 1 |
 | P1 | 0 |
-| P2 | 5 |
+| P2 | 6 |
 | P3 | 1 |
 
 El P0 nuevo corresponde exclusivamente al fallo contextual P01 preclasificado
@@ -168,8 +186,11 @@ cuarto P2 es la re-revisión interactiva P05 del Service: queda bloqueada con
 job durable, por lo que nunca mezcla silenciosamente mock con OpenAI. El quinto
 P2 es la observación de confiabilidad P07: se cierra con evidencia de no
 recurrencia sobre los casos P07 diversos y la revisión humana posterior, o se
-reclasifica si reaparece una violación estructural/contextual. El P3 continúa
-siendo el warning deprecado Starlette/httpx del adaptador de tests.
+reclasifica si reaparece una violación estructural/contextual. El sexto P2 es
+la cobertura limitada de detección de prompt injection: existen prevención,
+sentinelas sintéticos y rechazo de eco, pero no un detector general implementado
+como `PROMPT_INJECTION_SIGNAL`. El P3 continúa siendo el warning deprecado
+Starlette/httpx del adaptador de tests.
 
 ## Identidad y gate
 

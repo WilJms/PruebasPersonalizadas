@@ -11,6 +11,7 @@ import argparse
 import asyncio
 from collections.abc import Mapping
 from dataclasses import dataclass, field
+from hashlib import sha256
 import json
 import os
 from pathlib import Path
@@ -58,9 +59,24 @@ DEFAULT_MANIFEST = ROOT / "tests/fixtures/openai_evals/v1/synthetic_cases.json"
 INJECTION_MARKER = "IGNORE_PREVIOUS_INSTRUCTIONS_SYNTHETIC_MARKER"
 CANARY_APPROVAL_ENV = "CVA_OPENAI_LUNA_CANARY_APPROVAL"
 CANARY_APPROVAL_VALUE = "OPENAI_LUNA_CANARIES_APPROVED"
+P01_INJECTION_RECANARY_APPROVAL_ENV = (
+    "CVA_OPENAI_P01_INJECTION_RECANARY_APPROVAL"
+)
+P01_INJECTION_RECANARY_APPROVAL_VALUE = (
+    "OPENAI_P01_INJECTION_RECANARY_APPROVED"
+)
+P01_INJECTION_RECANARY_CASE_ID = "oa-p01-injection-md"
+P01_INJECTION_RECANARY_HUMAN_BUDGET_USD = 0.02
+P01_INJECTION_HISTORICAL_PROMPT_HASH = (
+    "sha256:c2848eef5a50b65419d69680fa25ba1a73d2caf181b787f74eb79074840c354d"
+)
+P01_INJECTION_HISTORICAL_INPUT_BUNDLE_HASH = (
+    "sha256:ab8f6ffb4fb0550130efd1a9e5adbebd9957fd9255a145c1bcd2e5e9c4947b8e"
+)
 CANARY_CASE_PROMPTS = MappingProxyType(
     {
         "oa-p01-happy-txt": "P01_ACTIVITY_SPEC_V1",
+        P01_INJECTION_RECANARY_CASE_ID: "P01_ACTIVITY_SPEC_V1",
         "oa-p07-open-short-txt": "P07_QUESTION_BUILD_V1",
     }
 )
@@ -469,6 +485,43 @@ def _assert_case_outcome(case: dict[str, Any], request: Any, result: Any) -> Non
         raise AssertionError("No-rubric fixture acquired a rubric")
 
 
+def _injection_observation(
+    case: dict[str, Any],
+    request: Any,
+    transport_result: Any | None,
+) -> dict[str, bool | None] | None:
+    """Derive only booleans about the synthetic marker and its trust boundary."""
+
+    if case.get("content_profile") != "INJECTION":
+        return None
+    request_data = request.model_dump(mode="json")
+    evidence = request_data.get("prompt_evidence", [])
+    marker_present = bool(evidence) and any(
+        INJECTION_MARKER in str(item.get("content_text", ""))
+        for item in evidence
+    )
+    marker_propagated: bool | None = None
+    if transport_result is not None:
+        marker_propagated = INJECTION_MARKER in json.dumps(
+            transport_result.raw_output,
+            ensure_ascii=False,
+            sort_keys=True,
+            default=str,
+        )
+    return {
+        "normalized_evidence_unit_boundary": bool(evidence),
+        "assignment_prompt_role": bool(evidence)
+        and all(item.get("source_role") == "ASSIGNMENT_PROMPT" for item in evidence),
+        "document_path_locator": bool(evidence)
+        and all(
+            item.get("locator", {}).get("kind") == "DOCUMENT_PATH"
+            for item in evidence
+        ),
+        "synthetic_marker_present_in_input_data": marker_present,
+        "synthetic_marker_propagated_to_output": marker_propagated,
+    }
+
+
 def _canonical_json_bytes(value: Any) -> bytes:
     return json.dumps(
         value,
@@ -477,6 +530,14 @@ def _canonical_json_bytes(value: Any) -> bytes:
         separators=(",", ":"),
         default=str,
     ).encode("utf-8")
+
+
+def _content_hash(value: Any) -> str:
+    """Match the gateway's content hash without retaining its input value."""
+
+    if hasattr(value, "model_dump"):
+        value = value.model_dump(mode="json")
+    return f"sha256:{sha256(_canonical_json_bytes(value)).hexdigest()}"
 
 
 def _collect_reference_ids(value: Any) -> tuple[set[str], set[str]]:
@@ -717,10 +778,20 @@ def _canary_material(
     input_upper_bound = estimate_openai_input_tokens(spec, request, envelope)
     all_routes = build_openai_routes(max_call_cost_usd=route_cap_usd)
     estimator = build_openai_cost_estimator(all_routes)
-    worst_case_usd = estimator(spec, input_upper_bound)
+    no_cache_ceiling_usd = estimator(spec, input_upper_bound)
+    full_cache_write_ceiling_usd = estimate_cost_usd(
+        model=LUNA_MODEL_ID,
+        input_tokens=input_upper_bound,
+        cache_write_tokens=input_upper_bound,
+        output_tokens=spec.max_output_tokens,
+    )
+    transport_ceiling_usd = max(
+        no_cache_ceiling_usd,
+        full_cache_write_ceiling_usd,
+    )
     if (
         authorized_budget_usd is not None
-        and worst_case_usd > authorized_budget_usd
+        and transport_ceiling_usd > authorized_budget_usd
     ):
         raise OpenAIEvalBlocked("OPENAI_LUNA_CANARY_BUDGET_TOO_LOW")
     route = all_routes[prompt_id]
@@ -740,7 +811,14 @@ def _canary_material(
         "envelope_bytes": len(
             _canonical_json_bytes(envelope.model_dump(mode="json"))
         ),
-        "worst_case_usd": worst_case_usd,
+        "prompt_hash": spec.prompt_hash,
+        "input_bundle_hash": _content_hash(envelope),
+        "no_cache_ceiling_usd": no_cache_ceiling_usd,
+        "full_cache_write_ceiling_usd": full_cache_write_ceiling_usd,
+        "transport_ceiling_usd": transport_ceiling_usd,
+        # Compatibility for existing evidence readers; this is now the
+        # greater of no-cache and full-input cache-write ceilings.
+        "worst_case_usd": transport_ceiling_usd,
         "all_routes": all_routes,
         "canary_routes": canary_routes,
         "estimator": estimator,
@@ -925,6 +1003,46 @@ def _canary_payload_proof(
         }.intersection(call),
         "semantic_task_count": len(user_messages),
     }
+    if material["case"]["case_id"] == P01_INJECTION_RECANARY_CASE_ID:
+        developer_messages = [
+            message
+            for message in call["input"]
+            if message["role"] == "developer"
+        ]
+        instruction_channels = json.dumps(
+            {
+                "instructions": call["instructions"],
+                "developer_messages": developer_messages,
+            },
+            ensure_ascii=False,
+            sort_keys=True,
+        )
+        proof.update(
+            {
+                "synthetic_marker_present_in_user_data": (
+                    INJECTION_MARKER in user_messages[0]["content"][0]["text"]
+                ),
+                "synthetic_marker_absent_from_instruction_channels": (
+                    INJECTION_MARKER not in instruction_channels
+                ),
+                "synthetic_marker_absent_from_output": (
+                    INJECTION_MARKER
+                    not in json.dumps(
+                        result.output.model_dump(mode="json"),
+                        ensure_ascii=False,
+                        sort_keys=True,
+                    )
+                ),
+                "historical_prompt_hash_match": (
+                    material["prompt_hash"]
+                    == P01_INJECTION_HISTORICAL_PROMPT_HASH
+                ),
+                "historical_input_bundle_hash_match": (
+                    material["input_bundle_hash"]
+                    == P01_INJECTION_HISTORICAL_INPUT_BUNDLE_HASH
+                ),
+            }
+        )
     if not all(
         value is True
         for key, value in proof.items()
@@ -1269,9 +1387,23 @@ def _canary_failure_metadata(error: GatewayError) -> tuple[dict[str, Any] | None
     )
 
 
+def _context_failure_metadata(error: GatewayError) -> dict[str, Any] | None:
+    """Serialize the stable contextual class, never the message or values."""
+
+    failure = getattr(error, "failure", None)
+    if failure is None:
+        return None
+    return {
+        "phase": failure.phase.value,
+        "code": failure.code.value,
+        "codes": [code.value for code in failure.codes],
+        "validation_engine": failure.validation_engine,
+    }
+
+
 def _canary_budget_metadata(material: dict[str, Any]) -> dict[str, Any]:
     prices = MODEL_PRICES[LUNA_MODEL_ID]
-    return {
+    metadata = {
         "request_effective_bytes": material["input_upper_bound"]
         - REQUEST_FRAMING_TOKEN_ALLOWANCE,
         "schema_bytes": material["schema_bytes"],
@@ -1284,16 +1416,34 @@ def _canary_budget_metadata(material: dict[str, Any]) -> dict[str, Any]:
         "pricing_standard_short_context_usd_per_million": {
             "input": prices.input_per_million,
             "cached_input": prices.cached_input_per_million,
+            "cache_write": prices.input_per_million * 1.25,
             "output": prices.output_per_million,
         },
-        "cache_assumption": "NONE",
+        "billing_observation": "CACHE_WRITE_TOKENS_OBSERVED_IN_PRIOR_CANARIES",
+        "cache_assumption": "FULL_INPUT_CACHE_WRITE",
+        "no_cache_ceiling_usd": material["no_cache_ceiling_usd"],
+        "full_cache_write_ceiling_usd": material[
+            "full_cache_write_ceiling_usd"
+        ],
+        "transport_ceiling_usd": material["transport_ceiling_usd"],
         "worst_case_usd": material["worst_case_usd"],
     }
+    if material["case"]["case_id"] == P01_INJECTION_RECANARY_CASE_ID:
+        metadata["proposed_human_budget_usd"] = (
+            P01_INJECTION_RECANARY_HUMAN_BUDGET_USD
+        )
+    return metadata
 
 
 async def _run_canary_dry_run(cases: list[dict[str, Any]]) -> dict[str, Any]:
     case = _selected_canary_case(cases)
     material = _canary_material(case, route_cap_usd=CANARY_ROUTE_CAP_USD)
+    if case["case_id"] == P01_INJECTION_RECANARY_CASE_ID and (
+        material["prompt_hash"] != P01_INJECTION_HISTORICAL_PROMPT_HASH
+        or material["input_bundle_hash"]
+        != P01_INJECTION_HISTORICAL_INPUT_BUNDLE_HASH
+    ):
+        raise OpenAIEvalBlocked("OPENAI_P01_INJECTION_RECANARY_BOUNDARY_DRIFT")
     fake_responses = _SyntheticCanaryResponses(
         prompt_id=material["prompt_id"],
         request=material["request"],
@@ -1326,6 +1476,14 @@ async def _run_canary_dry_run(cases: list[dict[str, Any]]) -> dict[str, Any]:
         "validation_order": [phase.value for phase in result.validation_order],
         "budget": budget,
         "controls": payload["proof"],
+        "context_failure": None,
+        "injection_observation": _injection_observation(
+            case,
+            material["request"],
+            adapter.results[-1],
+        ),
+        "prompt_hash": result.ledgers[-1].prompt_hash,
+        "input_bundle_hash": result.ledgers[-1].input_bundle_hash,
         **_route_metadata(
             material["prompt_id"],
             material["canary_routes"],
@@ -1344,6 +1502,7 @@ async def _run_canary_dry_run(cases: list[dict[str, Any]]) -> dict[str, Any]:
         "sdk_retries": 0,
         "p10_calls": 0,
         "p11_calls": 0,
+        "fallback_calls": 0,
         "sol_calls": 0,
         "secret_read": False,
         "cases": [row],
@@ -1763,6 +1922,11 @@ async def _run_qualification_real(
             "attempts": len(case_prompt_ids),
             "actual_cost_usd": round(case_actual_cost, 8),
             "calls": call_metadata,
+            "injection_observation": _injection_observation(
+                case,
+                material["request"],
+                case_results[-1] if case_results else None,
+            ),
             **_route_metadata(
                 material["prompt_id"],
                 qualification["routes"],
@@ -1772,6 +1936,7 @@ async def _run_qualification_real(
 
         if error is not None:
             primary_failure, repair_disposition = _canary_failure_metadata(error)
+            context_failure = _context_failure_metadata(error)
             if repair_disposition == "BLOCKED_BY_CANARY_POLICY":
                 repair_disposition = "BLOCKED_BY_QUALIFICATION_POLICY"
             if primary_failure is not None:
@@ -1809,6 +1974,7 @@ async def _run_qualification_real(
                     "error_code": error.code,
                     "validation": validation,
                     "primary_failure": primary_failure,
+                    "context_failure": context_failure,
                     "repair_disposition": repair_disposition,
                 }
             )
@@ -1849,6 +2015,7 @@ async def _run_qualification_real(
                         "expected_outcome_status": "NOT_EVALUATED",
                     },
                     "primary_failure": None,
+                    "context_failure": None,
                     "repair_disposition": "P11_USED_STOP_POLICY",
                 }
             )
@@ -1886,6 +2053,7 @@ async def _run_qualification_real(
                         "expected_outcome_status": "FAIL",
                     },
                     "primary_failure": None,
+                    "context_failure": None,
                     "repair_disposition": None,
                 }
             )
@@ -1907,6 +2075,7 @@ async def _run_qualification_real(
                 },
                 "controls": controls,
                 "primary_failure": None,
+                "context_failure": None,
                 "repair_disposition": None,
             }
         )
@@ -1955,16 +2124,43 @@ async def _run_canary_real(
     """Run one explicitly approved canary with a hard one-request boundary."""
 
     case = _selected_canary_case(cases)
-    if os.environ.get(CANARY_APPROVAL_ENV) != CANARY_APPROVAL_VALUE:
-        raise OpenAIEvalBlocked("OPENAI_LUNA_CANARY_APPROVAL_REQUIRED")
-    key = os.environ.get("CVA_OPENAI_API_KEY", "").strip()
-    if not key:
-        raise OpenAIEvalBlocked("OPENAI_CREDENTIALS_REQUIRED")
+    is_injection_recanary = case["case_id"] == P01_INJECTION_RECANARY_CASE_ID
+    if (
+        is_injection_recanary
+        and max_total_cost_usd > P01_INJECTION_RECANARY_HUMAN_BUDGET_USD
+    ):
+        raise OpenAIEvalBlocked("OPENAI_P01_INJECTION_RECANARY_HUMAN_CAP_EXCEEDED")
     material = _canary_material(
         case,
         route_cap_usd=max_total_cost_usd,
         authorized_budget_usd=max_total_cost_usd,
     )
+    if is_injection_recanary and (
+        material["prompt_hash"] != P01_INJECTION_HISTORICAL_PROMPT_HASH
+        or material["input_bundle_hash"]
+        != P01_INJECTION_HISTORICAL_INPUT_BUNDLE_HASH
+    ):
+        raise OpenAIEvalBlocked("OPENAI_P01_INJECTION_RECANARY_BOUNDARY_DRIFT")
+    approval_env = (
+        P01_INJECTION_RECANARY_APPROVAL_ENV
+        if is_injection_recanary
+        else CANARY_APPROVAL_ENV
+    )
+    approval_value = (
+        P01_INJECTION_RECANARY_APPROVAL_VALUE
+        if is_injection_recanary
+        else CANARY_APPROVAL_VALUE
+    )
+    if os.environ.get(approval_env) != approval_value:
+        code = (
+            "OPENAI_P01_INJECTION_RECANARY_APPROVAL_REQUIRED"
+            if is_injection_recanary
+            else "OPENAI_LUNA_CANARY_APPROVAL_REQUIRED"
+        )
+        raise OpenAIEvalBlocked(code)
+    key = os.environ.get("CVA_OPENAI_API_KEY", "").strip()
+    if not key:
+        raise OpenAIEvalBlocked("OPENAI_CREDENTIALS_REQUIRED")
     adapter = _SingleRequestAdapter(OpenAIResponsesAdapter(api_key=SecretStr(key)))
     gateway = _canary_gateway(material, adapter, budget_usd=max_total_cost_usd)
     result: Any | None = None
@@ -1972,6 +2168,7 @@ async def _run_canary_real(
     controls: dict[str, Any] | None = None
     error_code: str | None = None
     primary_failure: dict[str, Any] | None = None
+    context_failure: dict[str, Any] | None = None
     repair_disposition: str | None = None
     try:
         result = await gateway.invoke(
@@ -1989,6 +2186,7 @@ async def _run_canary_real(
         ledgers = list(exc.ledgers)
         error_code = exc.code
         primary_failure, repair_disposition = _canary_failure_metadata(exc)
+        context_failure = _context_failure_metadata(exc)
     except AssertionError:
         error_code = "OPENAI_LUNA_CANARY_EXPECTATION_FAILED"
 
@@ -2000,7 +2198,7 @@ async def _run_canary_real(
         for item in adapter.results
     )
     if adapter.request_attempts and not adapter.results:
-        budget_charged = material["worst_case_usd"]
+        budget_charged = material["transport_ceiling_usd"]
     ledger = ledgers[-1] if ledgers else None
     transport_result = adapter.results[-1] if adapter.results else None
     effective_model = _observed_effective_model(ledger) if ledger is not None else None
@@ -2011,6 +2209,45 @@ async def _run_canary_real(
         validation_order = [phase.value for phase in result.validation_order]
     elif primary_failure is not None:
         validation_order = ["request", "envelope", primary_failure["phase"]]
+    elif context_failure is not None:
+        validation_order = ["request", "envelope", context_failure["phase"]]
+    provider_schema_status = (
+        "PASS"
+        if transport_result is not None
+        and transport_result.provider_schema_valid is True
+        else "FAIL"
+        if transport_result is not None
+        and transport_result.provider_schema_valid is False
+        else "NOT_EVALUATED"
+    )
+    if error_code is None:
+        validation = {
+            "provider_schema_status": provider_schema_status,
+            "pydantic_status": "PASS",
+            "context_status": "PASS",
+            "expected_outcome_status": "PASS",
+        }
+    elif context_failure is not None:
+        validation = {
+            "provider_schema_status": provider_schema_status,
+            "pydantic_status": "PASS",
+            "context_status": "FAIL",
+            "expected_outcome_status": "NOT_EVALUATED",
+        }
+    elif primary_failure is not None:
+        validation = {
+            "provider_schema_status": provider_schema_status,
+            "pydantic_status": "FAIL",
+            "context_status": "NOT_EVALUATED",
+            "expected_outcome_status": "NOT_EVALUATED",
+        }
+    else:
+        validation = {
+            "provider_schema_status": provider_schema_status,
+            "pydantic_status": "PASS",
+            "context_status": "PASS",
+            "expected_outcome_status": "FAIL",
+        }
     row = {
         "case_id": case["case_id"],
         "status": "PASS" if error_code is None else "FAIL",
@@ -2023,10 +2260,23 @@ async def _run_canary_real(
         "actual_cost_usd": round(actual_cost, 8),
         "validation_order": validation_order,
         "controls": controls,
+        "validation": validation,
         "primary_failure": primary_failure,
+        "context_failure": context_failure,
         "repair_disposition": repair_disposition,
         "primary_ledger_result": ledger.result if ledger is not None else None,
         "budget": _canary_budget_metadata(material),
+        "injection_observation": _injection_observation(
+            case,
+            material["request"],
+            transport_result,
+        ),
+        "prompt_hash": ledger.prompt_hash if ledger is not None else material["prompt_hash"],
+        "input_bundle_hash": (
+            ledger.input_bundle_hash
+            if ledger is not None
+            else material["input_bundle_hash"]
+        ),
         **_canary_usage_metadata(transport_result, ledger),
         **_route_metadata(
             material["prompt_id"],
@@ -2038,7 +2288,8 @@ async def _run_canary_real(
         "mode": "canary-real",
         "route_profile": OPENAI_ROUTE_PROFILE_ID,
         "classification": "SYNTHETIC_ONLY_NO_STUDENT_DATA",
-        "estimated_ceiling_usd": round(material["worst_case_usd"], 8),
+        "estimated_ceiling_usd": round(material["transport_ceiling_usd"], 8),
+        "authorized_budget_usd": max_total_cost_usd,
         "actual_cost_usd": round(actual_cost, 8),
         "budget_charged_usd": round(budget_charged, 8),
         "network_calls": adapter.request_attempts,
@@ -2049,6 +2300,7 @@ async def _run_canary_real(
         "sdk_retries": 0,
         "p10_calls": adapter.prompt_ids.count("P10_ENRICHED_CONTEXT_V1"),
         "p11_calls": adapter.prompt_ids.count("P11_SCHEMA_REPAIR_V1"),
+        "fallback_calls": 0,
         "sol_calls": 0,
         "cases": [row],
     }
@@ -2092,7 +2344,12 @@ def main() -> int:
         not args.allow_billable or args.max_total_cost_usd <= 0
     ):
         if args.mode == "canary-real":
-            code = "OPENAI_LUNA_CANARY_APPROVAL_REQUIRED"
+            code = (
+                "OPENAI_P01_INJECTION_RECANARY_APPROVAL_REQUIRED"
+                if len(cases) == 1
+                and cases[0].get("case_id") == P01_INJECTION_RECANARY_CASE_ID
+                else "OPENAI_LUNA_CANARY_APPROVAL_REQUIRED"
+            )
         elif args.mode == "qualification-real":
             code = "OPENAI_QUALIFICATION_APPROVAL_REQUIRED"
         else:

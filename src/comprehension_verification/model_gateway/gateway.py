@@ -45,6 +45,40 @@ class ValidationPhase(StrEnum):
     REPAIRED_OUTPUT = "repaired_output"
 
 
+class ContextFailureCode(StrEnum):
+    """Stable, content-free contextual failure classes."""
+
+    CONTEXT_INVARIANT_FAILED = "CONTEXT_INVARIANT_FAILED"
+    EVIDENCE_ID_NOT_ALLOWLISTED = "EVIDENCE_ID_NOT_ALLOWLISTED"
+    COURSE_SOURCE_ID_NOT_ALLOWLISTED = "COURSE_SOURCE_ID_NOT_ALLOWLISTED"
+    CONTEXT_MODE_MISMATCH = "CONTEXT_MODE_MISMATCH"
+    REQUIRED_CONTEXT_MODE_MISMATCH = "REQUIRED_CONTEXT_MODE_MISMATCH"
+    ABSTENTION_DIAGNOSTIC_MISSING = "ABSTENTION_DIAGNOSTIC_MISSING"
+    P01_ABSTENTION_SOURCED_FIELDS_PRESENT = (
+        "P01_ABSTENTION_SOURCED_FIELDS_PRESENT"
+    )
+    P01_ACTIVITY_ID_MISMATCH = "P01_ACTIVITY_ID_MISMATCH"
+
+
+@dataclass(frozen=True, slots=True)
+class ContextFailure:
+    """Safe contextual diagnostics without output values or identifiers."""
+
+    phase: ValidationPhase
+    codes: tuple[ContextFailureCode, ...]
+    validation_engine: str = "GATEWAY_CONTEXT_VALIDATOR"
+
+    def __post_init__(self) -> None:
+        if not self.codes:
+            raise ValueError("ContextFailure requires at least one safe code")
+
+    @property
+    def code(self) -> ContextFailureCode:
+        """Primary stable code, preserving the validator's check order."""
+
+        return self.codes[0]
+
+
 @dataclass(frozen=True, slots=True)
 class SafeValidationIssue:
     """Content-free structural failure metadata safe for reports and logs."""
@@ -230,6 +264,24 @@ class GatewayValidationError(GatewayError):
 
 class GatewayContextError(GatewayError):
     code = "MODEL_CONTEXT_NOT_ALLOWLISTED"
+
+    def __init__(
+        self,
+        message: str,
+        *,
+        phase: ValidationPhase = ValidationPhase.OUTPUT,
+        failure_code: ContextFailureCode = (
+            ContextFailureCode.CONTEXT_INVARIANT_FAILED
+        ),
+        failure: ContextFailure | None = None,
+        ledgers: Sequence[models.ModelCallLedger] = (),
+        resolution: models.ModelRouteResolution | None = None,
+    ) -> None:
+        super().__init__(message, ledgers=ledgers, resolution=resolution)
+        self.failure = failure or ContextFailure(
+            phase=phase,
+            codes=(failure_code,),
+        )
 
 
 class GatewayRouteBlocked(GatewayError):
@@ -905,11 +957,19 @@ class ModelGateway:
                         envelope.trusted_context,
                         prompt_id=prompt_id,
                         output=True,
+                        phase=ValidationPhase.REPAIRED_OUTPUT,
+                        request=request,
                     )
-                    self._validate_output_relationship(prompt_id, request, repaired)
+                    self._validate_output_relationship(
+                        prompt_id,
+                        request,
+                        repaired,
+                        phase=ValidationPhase.REPAIRED_OUTPUT,
+                    )
                 except GatewayContextError as context_error:
                     raise GatewayContextError(
                         "Repaired output failed contextual validation",
+                        failure=context_error.failure,
                         ledgers=ledgers,
                     ) from context_error
                 return GatewayCallResult(
@@ -926,9 +986,19 @@ class ModelGateway:
             validation_order.append(ValidationPhase.OUTPUT)
             try:
                 self._validate_context(
-                    output, envelope.trusted_context, prompt_id=prompt_id, output=True
+                    output,
+                    envelope.trusted_context,
+                    prompt_id=prompt_id,
+                    output=True,
+                    phase=ValidationPhase.OUTPUT,
+                    request=request,
                 )
-                self._validate_output_relationship(prompt_id, request, output)
+                self._validate_output_relationship(
+                    prompt_id,
+                    request,
+                    output,
+                    phase=ValidationPhase.OUTPUT,
+                )
             except GatewayContextError as context_error:
                 self._record_invalid_output(
                     ledgers=ledgers,
@@ -938,9 +1008,11 @@ class ModelGateway:
                     attempt=attempt,
                     started=started,
                     result=adapter_result,
+                    failure=context_error.failure,
                 )
                 raise GatewayContextError(
                     "Model output failed contextual validation",
+                    failure=context_error.failure,
                     ledgers=ledgers,
                 ) from context_error
             if prompt_id == "P11_SCHEMA_REPAIR_V1":
@@ -1053,28 +1125,112 @@ class ModelGateway:
         *,
         prompt_id: str,
         output: bool = False,
+        phase: ValidationPhase | None = None,
+        request: BaseModel | None = None,
     ) -> None:
+        context_phase = phase or (
+            ValidationPhase.OUTPUT if output else ValidationPhase.REQUEST
+        )
         data = value.model_dump(mode="json")
         evidence_ids, source_ids = self._collect_authorized_ids(data)
-        if not evidence_ids.issubset(set(trusted.allowed_evidence_ids)):
-            raise GatewayContextError("Payload contains an evidence_id outside the allowlist")
-        if not source_ids.issubset(set(trusted.allowed_course_source_ids)):
-            raise GatewayContextError("Payload contains a source_id outside the allowlist")
-
+        evidence_invalid = not evidence_ids.issubset(
+            set(trusted.allowed_evidence_ids)
+        )
+        source_invalid = not source_ids.issubset(
+            set(trusted.allowed_course_source_ids)
+        )
         modes = {
             item.get("context_mode")
             for item in self._walk_dicts(data)
             if item.get("context_mode") is not None
         }
-        if modes and any(mode != trusted.context_mode.value for mode in modes):
-            raise GatewayContextError("Context mode differs from the trusted envelope")
+        context_mode_invalid = bool(modes) and any(
+            mode != trusted.context_mode.value for mode in modes
+        )
+
+        if (
+            output
+            and prompt_id == "P01_ACTIVITY_SPEC_V1"
+            and request is not None
+        ):
+            codes: list[ContextFailureCode] = []
+            if evidence_invalid:
+                codes.append(ContextFailureCode.EVIDENCE_ID_NOT_ALLOWLISTED)
+            if source_invalid:
+                codes.append(
+                    ContextFailureCode.COURSE_SOURCE_ID_NOT_ALLOWLISTED
+                )
+            if context_mode_invalid:
+                codes.append(ContextFailureCode.CONTEXT_MODE_MISMATCH)
+            if value.status != models.WorkflowStatus.READY:
+                if not value.diagnostics:
+                    codes.append(
+                        ContextFailureCode.ABSTENTION_DIAGNOSTIC_MISSING
+                    )
+                if any(
+                    (
+                        value.learning_outcomes,
+                        value.expected_products,
+                        value.requirements,
+                        value.allowed_materials,
+                        value.prohibited_materials,
+                    )
+                ):
+                    codes.append(
+                        ContextFailureCode.P01_ABSTENTION_SOURCED_FIELDS_PRESENT
+                    )
+            if value.activity_id != request.activity_config.activity_id:
+                codes.append(ContextFailureCode.P01_ACTIVITY_ID_MISMATCH)
+            if codes:
+                raise GatewayContextError(
+                    "P01 output failed contextual validation",
+                    failure=ContextFailure(
+                        phase=context_phase,
+                        codes=tuple(codes),
+                    ),
+                )
+            return
+
+        if evidence_invalid:
+            raise GatewayContextError(
+                "Payload contains an evidence_id outside the allowlist",
+                phase=context_phase,
+                failure_code=ContextFailureCode.EVIDENCE_ID_NOT_ALLOWLISTED,
+            )
+        if source_invalid:
+            raise GatewayContextError(
+                "Payload contains a source_id outside the allowlist",
+                phase=context_phase,
+                failure_code=(
+                    ContextFailureCode.COURSE_SOURCE_ID_NOT_ALLOWLISTED
+                ),
+            )
+
+        if context_mode_invalid:
+            raise GatewayContextError(
+                "Context mode differs from the trusted envelope",
+                phase=context_phase,
+                failure_code=ContextFailureCode.CONTEXT_MODE_MISMATCH,
+            )
         if prompt_id == "P07_QUESTION_BUILD_V1" and trusted.context_mode != models.ContextMode.CLOSED:
-            raise GatewayContextError("P07 requires CLOSED context")
+            raise GatewayContextError(
+                "P07 requires CLOSED context",
+                phase=context_phase,
+                failure_code=ContextFailureCode.REQUIRED_CONTEXT_MODE_MISMATCH,
+            )
         if prompt_id == "P10_ENRICHED_CONTEXT_V1" and trusted.context_mode != models.ContextMode.COURSE_ENRICHED:
-            raise GatewayContextError("P10 requires COURSE_ENRICHED context")
+            raise GatewayContextError(
+                "P10 requires COURSE_ENRICHED context",
+                phase=context_phase,
+                failure_code=ContextFailureCode.REQUIRED_CONTEXT_MODE_MISMATCH,
+            )
 
         if output:
-            self._validate_clean_abstention(prompt_id, value)
+            self._validate_clean_abstention(
+                prompt_id,
+                value,
+                phase=context_phase,
+            )
             if prompt_id == "P09_GUIDE_BUILD_V1" and value.status == "READY":
                 # A ready P09 output must cover the full input assessment.  The
                 # request-level relationship is checked in invoke's envelope.
@@ -1114,10 +1270,21 @@ class ModelGateway:
         return evidence_ids, source_ids
 
     @staticmethod
-    def _validate_clean_abstention(prompt_id: str, output: BaseModel) -> None:
+    def _validate_clean_abstention(
+        prompt_id: str,
+        output: BaseModel,
+        *,
+        phase: ValidationPhase = ValidationPhase.OUTPUT,
+    ) -> None:
         def require_diagnostic() -> None:
             if not getattr(output, "diagnostics", None):
-                raise GatewayContextError("Abstention requires a complete diagnostic")
+                raise GatewayContextError(
+                    "Abstention requires a complete diagnostic",
+                    phase=phase,
+                    failure_code=(
+                        ContextFailureCode.ABSTENTION_DIAGNOSTIC_MISSING
+                    ),
+                )
 
         if (
             prompt_id == "P01_ACTIVITY_SPEC_V1"
@@ -1133,7 +1300,13 @@ class ModelGateway:
                     output.prohibited_materials,
                 )
             ):
-                raise GatewayContextError("P01 abstention cannot fabricate sourced fields")
+                raise GatewayContextError(
+                    "P01 abstention cannot fabricate sourced fields",
+                    phase=phase,
+                    failure_code=(
+                        ContextFailureCode.P01_ABSTENTION_SOURCED_FIELDS_PRESENT
+                    ),
+                )
         elif (
             prompt_id == "P02_RUBRIC_NORMALIZE_V1"
             and output.status != models.WorkflowStatus.READY
@@ -1175,13 +1348,21 @@ class ModelGateway:
 
     @staticmethod
     def _validate_output_relationship(
-        prompt_id: str, request: BaseModel, output: BaseModel
+        prompt_id: str,
+        request: BaseModel,
+        output: BaseModel,
+        *,
+        phase: ValidationPhase = ValidationPhase.OUTPUT,
     ) -> None:
         """Check cross-root relationships that JSON Schema cannot express."""
 
         if prompt_id == "P01_ACTIVITY_SPEC_V1":
             if output.activity_id != request.activity_config.activity_id:
-                raise GatewayContextError("P01 output activity_id mismatch")
+                raise GatewayContextError(
+                    "P01 output activity_id mismatch",
+                    phase=phase,
+                    failure_code=ContextFailureCode.P01_ACTIVITY_ID_MISMATCH,
+                )
         elif prompt_id == "P02_RUBRIC_NORMALIZE_V1":
             if output.activity_id != request.activity_spec.activity_id:
                 raise GatewayContextError("P02 output activity_id mismatch")
@@ -1546,6 +1727,7 @@ class ModelGateway:
                 trusted_context,
                 prompt_id=repair_spec.prompt_id,
                 output=True,
+                phase=ValidationPhase.OUTPUT,
             )
         except GatewayContextError as context_error:
             self._record_invalid_output(
@@ -1556,9 +1738,11 @@ class ModelGateway:
                 attempt=1,
                 started=started,
                 result=result,
+                failure=context_error.failure,
             )
             raise GatewayContextError(
                 "P11 output failed contextual validation",
+                failure=context_error.failure,
                 ledgers=repair_ledgers,
             ) from context_error
         ledger = self._ledger(
@@ -1723,6 +1907,7 @@ class ModelGateway:
         attempt: int,
         started: float,
         result: AdapterResult,
+        failure: ContextFailure,
     ) -> None:
         """Record a structurally or contextually unusable provider output."""
 
@@ -1739,7 +1924,14 @@ class ModelGateway:
             estimated_cost_usd=result.estimated_cost_usd,
             actual_cost_usd=result.actual_cost_usd,
             adapter_result=result,
-            reason_codes=("OUTPUT_CONTEXT_VALIDATION_FAILED",),
+            reason_codes=(
+                "OUTPUT_CONTEXT_VALIDATION_FAILED",
+                *(
+                    f"CONTEXT_FAILURE_{failure.phase.value.upper()}_"
+                    f"{code.value}"
+                    for code in failure.codes
+                ),
+            ),
         )
         self._record(ledger, ledgers)
 

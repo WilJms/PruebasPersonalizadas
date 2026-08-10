@@ -2,6 +2,8 @@
 
 from .gateway import (
     CallBudget,
+    ContextFailure,
+    ContextFailureCode,
     GatewayBudgetExceeded,
     GatewayCallResult,
     GatewayConfig,
@@ -62,6 +64,8 @@ __all__ = [
     "AuthenticationProviderError",
     "AuthorizationProviderError",
     "CallBudget",
+    "ContextFailure",
+    "ContextFailureCode",
     "DeterministicMockAdapter",
     "DeterministicMockFactory",
     "GatewayBudgetExceeded",

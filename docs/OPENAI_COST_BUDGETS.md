@@ -163,3 +163,26 @@ El request observó 1,725 input, 0 cached, 1,722 cache-write, 943 output y
 516 reasoning tokens. La secuencia completa conservaba un ceiling previo de
 USD 0.26877750, pero al detenerse solo reservó el primer transporte. No hubo
 retries, P10, P11, Sol o fallback; no se realizó ni autorizó una repetición.
+
+## Presupuesto de una eventual recanary P01 injection
+
+La observación de cache-write del request histórico obliga a usar el mayor de
+dos ceilings, no solo el cálculo sin cache:
+
+| Frontera fijada | Valor |
+|---|---:|
+| Input upper-bound | 9,677 tokens |
+| Output máximo, reasoning incluido | 8,000 tokens |
+| Ceiling sin cache | USD 0.01153540 |
+| Ceiling con todo input como cache-write | **USD 0.01201925** |
+| Presupuesto humano propuesto | **USD 0.02** |
+| Máximo de Responses requests | 1 |
+
+El pricing oficial se revalidó el 2026-08-10 sin cambios. El pricing fijado es
+Luna Standard short-context: USD 0.20/M input, 0.02/M
+cached input, 0.25/M cache-write y 1.20/M output. El harness bloquea un cap
+superior a USD 0.02, uno inferior al ceiling, drift de los hashes históricos o
+la ausencia de la aprobación distinta antes de crear el adapter. P11, retries,
+P10, Sol y fallback permanecen en cero. El dry-run versionado pasó con
+transport fake; esta preparación consumió **USD 0.00** y no consultó saldo ni
+secreto.
