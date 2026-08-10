@@ -1,6 +1,6 @@
 # Anexo A - Prompt pack operacional
 
-**Versión del pack:** `prompt-pack/1.1.1`
+**Versión del pack:** `prompt-pack/1.1.2`
 **Compatibilidad:** contratos `assessment-contracts/1.1.0`  
 **Perfil de ruta activo:** `LUNA_BASELINE_V1` (ADR-036)
 **Principio:** una tarea semántica por llamada; contenido estudiantil siempre no confiable; structured outputs obligatorios.
@@ -68,7 +68,7 @@ Toda llamada se valida en dos capas: `ModelTaskEnvelope` valida metadatos, allow
 {
   "schema_version": "1.1.0",
   "prompt_id": "P01_ACTIVITY_SPEC_V1",
-  "prompt_version": "1.1.1",
+  "prompt_version": "1.1.2",
   "output_schema_name": "ActivitySpec",
   "output_schema_version": "1.1.0",
   "trusted_context": {
@@ -139,9 +139,17 @@ en `LUNA_BASELINE_V1`. La autorización humana del 2026-08-08 cambia únicamente
 el perfil experimental activo para evaluar primero el modelo de menor costo.
 No afirma que Luna sea óptimo ni que Sol sea innecesario.
 
-El texto ejecutable y los roots no cambiaron, por lo que el pack permanece en
-`1.1.1`; el cambio reproducible se identifica por el route profile. Todos los
-`fallback_route_id` activos son `null` y ninguna ruta activa usa Sol.
+En el checkpoint de cambio de routing, el texto ejecutable y los roots no
+cambiaron, por lo que el pack permaneció en `1.1.1`; ese cambio reproducible se
+identificó por el route profile. Todos los `fallback_route_id` activos son
+`null` y ninguna ruta activa usa Sol.
+
+El cierre técnico posterior del caso P0 `oa-p01-injection-md` sí cambia el
+texto ejecutable de P01 y eleva el pack a `1.1.2`. El cambio explicita que una
+salida no READY no puede conservar una especificación parcial utilizable; no
+cambia los roots, `assessment-contracts/1.1.0`, el constructo ni el perfil de
+ruta. La evidencia real observada sobre `1.1.1` permanece histórica y no se
+reutiliza como calificación del nuevo límite.
 
 ### 2.2 Campos exactos de los request roots
 
@@ -194,6 +202,8 @@ Debes:
 6. No usar la rúbrica ni el entregable del estudiante en esta etapa.
 
 Si no hay evidencia suficiente para un campo, usa lista vacía y agrega `Diagnostic` completo con código `ASSIGNMENT_FIELD_MISSING`. No uses `null` en campos que el contrato define como listas.
+Usa `status=READY` cuando la evidencia permita una especificación utilizable y fiel sin resolver contradicciones ni completar ausencias. Un campo ausente puede quedar vacío con su diagnóstico y no obliga por sí solo a abstenerse.
+Usa `status=NEEDS_REVIEW` o `BLOCKED` solo cuando una ausencia, contradicción o ambigüedad impida obtener una especificación utilizable. En cualquiera de esos estados no READY, deja vacías `learning_outcomes`, `expected_products`, `requirements`, `allowed_materials` y `prohibited_materials`, y agrega al menos un `Diagnostic` completo. No conserves una extracción parcial utilizable dentro de una abstención.
 Devuelve ActivitySpec.
 ```
 
@@ -730,7 +740,7 @@ Persistir sin contenido sensible innecesario:
   "job_id": "job_demo",
   "stage": "question_generation",
   "prompt_id": "P07_QUESTION_BUILD_V1",
-  "prompt_version": "1.1.1",
+  "prompt_version": "1.1.2",
   "prompt_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
   "input_bundle_hash": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
   "schema_name": "QuestionGenerationResult",

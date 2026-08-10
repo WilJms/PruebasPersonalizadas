@@ -1086,7 +1086,7 @@ def _assessment() -> models.Assessment:
             blueprint_id="blueprint_demo",
             blueprint_version=1,
             parser_versions={"text": "mock-parser/1"},
-            prompt_versions={"pack": "1.1.1"},
+            prompt_versions={"pack": "1.1.2"},
             model_snapshots={"mock": "deterministic-mock-v1"},
             policy_hash=HASH_D,
             planner_version="mock-planner/1",

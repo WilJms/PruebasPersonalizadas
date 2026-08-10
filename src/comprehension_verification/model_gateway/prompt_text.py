@@ -1,4 +1,4 @@
-"""Executable prompt-pack 1.1.1 text for the governed model boundary.
+"""Executable prompt-pack 1.1.2 text for the governed model boundary.
 
 Student-controlled strings remain JSON data inside the validated envelope;
 they are never interpolated into these instructions.
@@ -63,6 +63,8 @@ Debes:
 6. No usar la rúbrica ni el entregable del estudiante en esta etapa.
 
 Si no hay evidencia suficiente para un campo, usa lista vacía y agrega Diagnostic completo con código ASSIGNMENT_FIELD_MISSING. No uses null en campos que el contrato define como listas.
+Usa status=READY cuando la evidencia permita una especificación utilizable y fiel sin resolver contradicciones ni completar ausencias. Un campo ausente puede quedar vacío con su diagnóstico y no obliga por sí solo a abstenerse.
+Usa status=NEEDS_REVIEW o BLOCKED solo cuando una ausencia, contradicción o ambigüedad impida obtener una especificación utilizable. En cualquiera de esos estados no READY, deja vacías learning_outcomes, expected_products, requirements, allowed_materials y prohibited_materials, y agrega al menos un Diagnostic completo. No conserves una extracción parcial utilizable dentro de una abstención.
 Devuelve ActivitySpec.
 """,
         "P02_RUBRIC_NORMALIZE_V1": """Normaliza la rúbrica sin añadir criterios ni completar descriptores ausentes.

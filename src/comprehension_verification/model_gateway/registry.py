@@ -21,10 +21,10 @@ from comprehension_verification.model_gateway.prompt_text import (
 )
 
 
-PROMPT_VERSION: Final = "1.1.1"
+PROMPT_VERSION: Final = "1.1.2"
 SYSTEM_PROMPT_ID: Final = "SYS_EVIDENCE_BOUND_V1"
 P11_SYSTEM_PROMPT_ID: Final = "SYS_SCHEMA_REPAIR_V1"
-PROMPT_SCHEMA_COMPATIBILITY: Final = frozenset({("1.1.1", "1.1.0")})
+PROMPT_SCHEMA_COMPATIBILITY: Final = frozenset({("1.1.2", "1.1.0")})
 
 # This mapping is intentionally written out instead of inferred from prose.
 # It is the executable version of VALIDACION_CONTRATOS section 5.4.

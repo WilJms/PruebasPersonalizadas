@@ -277,7 +277,7 @@ def test_p07_exact_provider_schema_boundary_excludes_canonical_model_validators(
         separators=(",", ":"),
     ).encode("utf-8")
 
-    assert formatted["name"] == "cva_QuestionGenerationResult_1_1_1"
+    assert formatted["name"] == "cva_QuestionGenerationResult_1_1_2"
     assert len(encoded) == 13_671
     assert (
         hashlib.sha256(encoded).hexdigest()
