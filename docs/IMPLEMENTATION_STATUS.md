@@ -134,6 +134,16 @@ retries 0/0/0, P10/Sol/fallback deshabilitados, ceiling full-cache-write USD
 0.26877750 y cap humano propuesto USD 0.30. El alcance es técnico; no declara
 calidad pedagógica.
 
+La autorización posterior se consumió una sola vez sobre `73d252b…`. El gate
+se detuvo en la primera primaria, `oa-p01-injection-md`: provider schema y
+Pydantic PASS, contexto FAIL con `MODEL_CONTEXT_NOT_ALLOWLISTED`, expected
+outcome no evaluado y ningún repair/P11. Luna medium fue solicitada y efectiva;
+hubo 1 request, retries 0/0/0, P10/Sol/fallback 0, 10,345 ms y USD 0.00156270
+calculados. Los otros 14 casos no se ejecutaron ni se reinició la secuencia.
+El manifest intacto preclasifica el fallo como P0; su causa raíz sigue abierta
+y no se atribuye al modelo sin evidencia. El checkpoint vigente es
+`OPENAI_REAL_SYNTHETIC_QUALIFICATION_P01_INJECTION_CONTEXT_FAILED_REVIEW_REQUIRED`.
+
 La regresión local previa al smoke quedó en 457 passed/16 skips PostgreSQL
 explícitos, 80% de cobertura, 40 tests focalizados CLI/adapter, golden set
 20/20 con 0 network/0 billable, PostgreSQL 16/17
@@ -144,12 +154,14 @@ commit previo al gasto quedó 7/7 verde.
 
 | Severidad vigente | Abiertos |
 |---|---:|
-| P0 | 0 |
+| P0 | 1 |
 | P1 | 0 |
 | P2 | 5 |
 | P3 | 1 |
 
-No queda un P1 abierto. Los P2 históricos siguen siendo
+El P0 nuevo corresponde exclusivamente al fallo contextual P01 preclasificado
+por el manifest y requiere revisión antes de cualquier avance. No queda un P1
+abierto. Los P2 históricos siguen siendo
 AV/compensación, corpus/política de privacidad y semántica real pendiente. El
 cuarto P2 es la re-revisión interactiva P05 del Service: queda bloqueada con
 `MODEL_EXECUTION_REQUIRES_WORKER` cuando el worker sea real hasta migrarla a un

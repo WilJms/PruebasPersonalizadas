@@ -145,3 +145,21 @@ es autorización y debe revalidarse antes de cualquier ejecución real.
 
 El dry-run versionado fijó estos valores con 15 transportes fake y cero
 Responses requests reales/facturables. Esta preparación añadió USD 0.00.
+
+## Calificación sintética real detenida en P01
+
+La única secuencia autorizada sobre `73d252b…` consumió una Responses request
+y se detuvo en `oa-p01-injection-md` por fallo contextual. La primaria pasó
+schema provider y Pydantic; no usó P11 ni intentó un segundo caso.
+
+| Magnitud | USD | Proporción del cap USD 0.30 |
+|---|---:|---:|
+| Costo calculado desde usage | 0.00156270 | 0.52% |
+| Charge conservador del harness | 0.01003110 | 3.34% |
+| Reserva full-cache-write del transporte creado | 0.01201925 | 4.01% |
+| Headroom frente al cap según costo calculado | 0.29843730 | 99.48% |
+
+El request observó 1,725 input, 0 cached, 1,722 cache-write, 943 output y
+516 reasoning tokens. La secuencia completa conservaba un ceiling previo de
+USD 0.26877750, pero al detenerse solo reservó el primer transporte. No hubo
+retries, P10, P11, Sol o fallback; no se realizó ni autorizó una repetición.

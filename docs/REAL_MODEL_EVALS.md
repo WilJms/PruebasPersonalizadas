@@ -185,6 +185,26 @@ desde la aplicación.
 La matriz mixta Sol/Luna permanece solo como comparador histórico futuro. No
 se ejecutará Sol sin otro gate y presupuesto humano.
 
+## Resultado de la calificación sintética real
+
+La única secuencia autorizada se ejecutó sobre `73d252b…` y se detuvo en su
+primer caso, `oa-p01-injection-md`, conforme a `FIRST_CONTEXT_OR_EXPECTED_OUTCOME_FAILURE`.
+El Structured Output pasó el schema del proveedor y Pydantic; la allowlist
+contextual falló con `MODEL_CONTEXT_NOT_ALLOWLISTED`, antes de comprobar el
+expected outcome `VALID`. No hubo repair: P11 quedó en cero.
+
+La llamada usó Luna medium solicitada/efectiva y registró 1,725 input, 0
+cached, 1,722 cache-write, 943 output y 516 reasoning tokens, 10,345 ms y USD
+0.00156270 calculados. Hubo una sola Responses request, retries 0/0/0 y cero
+P10/Sol/fallback. Los otros 14 casos no se ejecutaron. El manifest intacto
+preclasifica este fallo como P0, pero esta evidencia content-free no determina
+si la causa reside en el modelo, el prompt, el corpus sintético o la validación
+contextual.
+
+El gate queda detenido en
+`OPENAI_REAL_SYNTHETIC_QUALIFICATION_P01_INJECTION_CONTEXT_FAILED_REVIEW_REQUIRED`.
+No habilita P05 durable, deployment ni recorrido UI.
+
 ## Recorrido humano preparado
 
 La selección `--case-id` cubre prompts aislados y devuelve únicamente metadata
