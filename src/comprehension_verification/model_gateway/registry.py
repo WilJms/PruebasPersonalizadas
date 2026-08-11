@@ -21,7 +21,7 @@ from comprehension_verification.model_gateway.prompt_text import (
 )
 
 
-PROMPT_VERSION: Final = "1.1.7"
+PROMPT_VERSION: Final = "1.1.8"
 SYSTEM_PROMPT_ID: Final = "SYS_EVIDENCE_BOUND_V1"
 P11_SYSTEM_PROMPT_ID: Final = "SYS_SCHEMA_REPAIR_V1"
 PROMPT_ENTRY_VERSIONS: Final[Mapping[str, str]] = MappingProxyType(
@@ -32,8 +32,10 @@ PROMPT_ENTRY_VERSIONS: Final[Mapping[str, str]] = MappingProxyType(
         # after the stopped 1.1.4 continuation exposed a contextual relationship
         # failure. P04/P05 advance after product E2E exposed a canonical
         # decision-snapshot gap and a catalog-versus-plan interpretation drift.
+        # P04 advances again after a real product E2E confused construction
+        # completion with the later server-side human approval gate.
         "P02_RUBRIC_NORMALIZE_V1": "1.1.3",
-        "P04_BLUEPRINT_BUILD_V1": "1.1.7",
+        "P04_BLUEPRINT_BUILD_V1": "1.1.8",
         "P05_BLUEPRINT_REVIEW_V1": "1.1.5",
         "P09_GUIDE_BUILD_V1": "1.1.5",
         "P11_SCHEMA_REPAIR_V1": "1.1.4",
@@ -47,6 +49,7 @@ PROMPT_SCHEMA_COMPATIBILITY: Final = frozenset(
         ("1.1.5", "1.1.0"),
         ("1.1.6", "1.1.0"),
         ("1.1.7", "1.1.0"),
+        ("1.1.8", "1.1.0"),
     }
 )
 

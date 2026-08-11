@@ -110,7 +110,7 @@ def test_registry_is_exact_complete_and_immutable() -> None:
 
     assert PROMPT_SPECS["P01_ACTIVITY_SPEC_V1"].prompt_version == "1.1.2"
     assert PROMPT_SPECS["P02_RUBRIC_NORMALIZE_V1"].prompt_version == "1.1.3"
-    assert PROMPT_SPECS["P04_BLUEPRINT_BUILD_V1"].prompt_version == "1.1.7"
+    assert PROMPT_SPECS["P04_BLUEPRINT_BUILD_V1"].prompt_version == "1.1.8"
     assert PROMPT_SPECS["P05_BLUEPRINT_REVIEW_V1"].prompt_version == "1.1.5"
     assert PROMPT_SPECS["P09_GUIDE_BUILD_V1"].prompt_version == "1.1.5"
     assert PROMPT_SPECS["P11_SCHEMA_REPAIR_V1"].prompt_version == "1.1.4"
@@ -137,7 +137,7 @@ def test_registry_is_exact_complete_and_immutable() -> None:
         PROMPT_SPECS["P01_ACTIVITY_SPEC_V1"].temperature = 1.0
 
 
-def test_p04_v117_makes_provider_invisible_invariants_explicit() -> None:
+def test_p04_v118_makes_provider_invisible_invariants_explicit() -> None:
     p04 = PROMPT_SPECS["P04_BLUEPRINT_BUILD_V1"].developer_instruction
     for exact_rule in (
         "cada decision_id de resolved_decisions exactamente una vez",
@@ -155,6 +155,11 @@ def test_p04_v117_makes_provider_invisible_invariants_explicit() -> None:
         "required_criterion_ids como única cobertura obligatoria",
         "ni exijas una oportunidad compuesta",
         "status=BLOCKED con Diagnostic completo",
+        "estado de finalización de la construcción del catálogo",
+        "approved_by=null y approved_at=null no implican status=NEEDS_REVIEW",
+        "usa status=READY aunque existan diagnósticos INFO/WARNING",
+        "severity=ERROR o CRITICAL",
+        "no emitas HUMAN_REVIEW_PENDING",
     ):
         assert exact_rule in p04
 
@@ -338,6 +343,37 @@ def test_p04_cannot_fabricate_human_approval_metadata() -> None:
         ModelGateway._validate_clean_abstention(
             "P04_BLUEPRINT_BUILD_V1", forged
         )
+
+
+def test_p04_nonready_requires_a_blocking_diagnostic() -> None:
+    def leave_only_nonblocking_diagnostics(raw: dict) -> None:
+        raw["status"] = "NEEDS_REVIEW"
+        raw["diagnostics"] = [
+            {
+                "code": "HUMAN_REVIEW_PENDING",
+                "severity": "WARNING",
+                "message": "La aprobación humana posterior sigue pendiente.",
+                "evidence_ids": [],
+                "source_ids": [],
+                "retryable": False,
+                "details": {},
+            }
+        ]
+
+    gateway = ModelGateway(
+        mock_adapter=ContextBreakingAdapter(
+            "P04_BLUEPRINT_BUILD_V1", leave_only_nonblocking_diagnostics
+        )
+    )
+
+    with pytest.raises(GatewayContextError) as captured:
+        _invoke("P04_BLUEPRINT_BUILD_V1", gateway=gateway)
+
+    assert captured.value.failure.phase == ValidationPhase.OUTPUT
+    assert captured.value.failure.codes == (
+        ContextFailureCode.P04_NONREADY_WITHOUT_BLOCKING_DIAGNOSTIC,
+    )
+    assert [item.result for item in captured.value.ledgers] == ["SCHEMA_INVALID"]
 
 
 def test_context_invalid_provider_output_is_ledgered_as_invalid() -> None:

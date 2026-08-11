@@ -1024,3 +1024,26 @@
 - **Relación:** D-060, D-061, D-062, D-068, ADR-033/ADR-034,
   `IMPLEMENTATION_STATUS.md`, `TEST_RESULTS.md`, `OPENAI_PROVIDER_SETUP.md` y
   `OPENAI_REAL_MODEL_VALIDATION.md`.
+
+## D-070 - P04 separa construcción terminada de aprobación humana posterior
+
+- **Fuente:** el E2E fresco `act_a2d0acdf5d948c365ca8` produjo en P04 un
+  catálogo utilizable, válido y ligado a seis decisiones, pero devolvió
+  `NEEDS_REVIEW` sólo porque `approved_by/approved_at` seguían null. P05 y la
+  aprobación humana ocurren después, por lo que esa condición creó un bucle
+  imposible de resolver mediante resume.
+- **Decisión normativa:** P04 1.1.8 interpreta `status` como finalización de la
+  construcción. Un catálogo completo usa `READY` aunque tenga INFO/WARNING o
+  aprobación posterior pendiente. `NEEDS_REVIEW/BLOCKED` requiere una decisión
+  académica concreta que impida un catálogo utilizable y al menos un diagnóstico
+  ERROR/CRITICAL. `HUMAN_REVIEW_PENDING` no se usa sólo para el gate posterior.
+- **Cierre determinista:** el gateway añade
+  `P04_NONREADY_WITHOUT_BLOCKING_DIAGNOSTIC`; una salida como la observada falla
+  cerrada y no puede reutilizarse como stage run válido.
+- **Evidencia y gate:** el cambio invalida P04 y el P05 derivado, dejando 16/18
+  fronteras vigentes. La nueva recanary P04 1.1.8→P05 1.1.5 está hash-bound,
+  reproduce seis decisiones/outcomes vacíos/niveles ausentes, limita a dos
+  Responses y USD 0.06, y se detiene al primer fallo sin rutas laterales. Su
+  dry-run pasa con ceiling USD 0.05020725; la observación real sigue pendiente.
+- **Relación:** D-068, D-069, ADR-030/ADR-034, `REAL_MODEL_EVALS.md`,
+  `OPENAI_REAL_MODEL_VALIDATION.md` y `OPENAI_COST_BUDGETS.md`.

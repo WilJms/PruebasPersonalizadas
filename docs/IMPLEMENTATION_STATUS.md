@@ -2,7 +2,24 @@
 
 Fecha de corte: 2026-08-11 (America/Santiago).
 
-## Estado vigente — `OPENAI_REAL_MANUAL_EVAL_PENDING` (2026-08-11)
+## Estado vigente — `OPENAI_REAL_P04_V118_RECANARY_PENDING` (2026-08-11)
+
+El E2E fresco sobre el digest desplegado se detuvo en P04 después de dos jobs,
+dos Cloud Run executions y cuatro Responses. P01-P03 pasaron y seis decisiones
+docentes sintéticas quedaron durables. P04 1.1.7 devolvió un catálogo válido,
+pero usó `NEEDS_REVIEW` sólo porque faltaba la aprobación humana que la
+arquitectura realiza después de P05. No se llamó P05 ni se creó blueprint o
+submission; costo real USD 0.02501760, con P10/P11/Sol/fallback/retries cero.
+
+La remediación local eleva P04 a 1.1.8, separa construcción de aprobación y
+rechaza toda salida P04 no `READY` que no tenga un diagnóstico bloqueante
+`ERROR`/`CRITICAL`. `CURRENT_REAL_EVIDENCE` queda en 16/18 mientras P04 y su
+P05 derivado esperan la nueva recanary. El dry-run gobernado reproduce seis
+decisiones/outcomes vacíos/niveles ausentes y pasa P04→P05 con 2 fake Responses,
+ceiling USD 0.05020725/cap USD 0.06 y rutas laterales cero. La suite local pasa
+556 pruebas, con 16 skips PostgreSQL explícitos y una advertencia conocida.
+
+## Historial — `OPENAI_REAL_MANUAL_EVAL_PENDING` (2026-08-11)
 
 El código candidato `88416b522414f316613bea96ad08687e8a335a38` fue construido
 una sola vez por Cloud Build
@@ -27,8 +44,8 @@ task/paralelismo 1/1 y `maxRetries=0`; el acceso al secreto pertenece sólo a
 respondieron 200 y `/api/v1/activities` anónimo respondió 401. Build, plan,
 apply y verificación ejecutaron 0 jobs, 0 E2E y 0 Responses.
 
-La evidencia real vigente continúa 18/18 y la regresión del SHA desplegado
-permanece verde. Falta únicamente un E2E fresco, exclusivamente sintético, con
+La evidencia real vigente en ese corte continuaba 18/18 y la regresión del SHA
+desplegado permanece verde. Falta únicamente un E2E fresco, exclusivamente sintético, con
 edición/re-review P05 durable y submission antes de declarar
 `OPENAI_REAL_MANUAL_EVAL_READY`.
 

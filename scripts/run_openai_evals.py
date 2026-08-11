@@ -234,6 +234,38 @@ BLUEPRINT_V117_V115_TARGET_REVIEW_CATEGORIES = frozenset(
         "COMPARABILITY",
     }
 )
+BLUEPRINT_V118_V115_REMEDIATION_DECISION_ENV = (
+    "CVA_OPENAI_BLUEPRINT_V118_V115_REMEDIATION_DECISION"
+)
+BLUEPRINT_V118_V115_REMEDIATION_DECISION_VALUE = (
+    "OPENAI_BLUEPRINT_V118_V115_REMEDIATION_ACCEPTED"
+)
+BLUEPRINT_V118_V115_RECANARY_APPROVAL_ENV = (
+    "CVA_OPENAI_BLUEPRINT_V118_V115_RECANARY_APPROVAL"
+)
+BLUEPRINT_V118_V115_RECANARY_APPROVAL_VALUE = (
+    "OPENAI_BLUEPRINT_V118_V115_RECANARY_APPROVED"
+)
+BLUEPRINT_V118_V115_RECANARY_HUMAN_BUDGET_USD = 0.06
+BLUEPRINT_V118_V115_MAX_RESPONSES_REQUESTS = 2
+# Fresh coupled gate for the P04 construction-status remediation. It is
+# intentionally separate from every consumed v1.1.7 observation.
+BLUEPRINT_V118_V115_RECANARY_CONSUMED = False
+P04_V118_PROMPT_HASH = (
+    "sha256:6e3eef1838c791c8ab6477632c11cd6ae23c2b2c8e4ed847e501ad0b60f893d9"
+)
+P04_V118_INPUT_BUNDLE_HASH = (
+    "sha256:60b026c56c4504df0f855bddc41dd7133f5fa5dcb55c2dacfaf4b7ad82e81cff"
+)
+BLUEPRINT_V118_V115_DRY_RUN_P04_OUTPUT_HASH = (
+    "sha256:68ec4c8bf3bea26dd27924fcda1360c8519cb1ba3c737ca7d37da3b373f578b0"
+)
+BLUEPRINT_V118_V115_DRY_RUN_P05_INPUT_BUNDLE_HASH = (
+    "sha256:27f006d025e2b15eb67931cac03afa0ad0aad5a06016048f18ecd18a6c489f68"
+)
+BLUEPRINT_V118_V115_TARGET_REVIEW_CATEGORIES = (
+    BLUEPRINT_V117_V115_TARGET_REVIEW_CATEGORIES
+)
 P06_V112_DECISION_LINEAGE_RECANARY_APPROVAL_ENV = (
     "CVA_OPENAI_P06_V112_DECISION_LINEAGE_RECANARY_APPROVAL"
 )
@@ -605,10 +637,10 @@ HISTORICAL_COMPLETE_REAL_EVIDENCE = MappingProxyType(
 HISTORICAL_COMPLETE_REAL_EVIDENCE_CASE_IDS = tuple(
     HISTORICAL_COMPLETE_REAL_EVIDENCE
 )
-# All eighteen boundaries are current. The timeout recovery passed the exact
-# P04 1.1.7 -> P05 1.1.5 chain; P05 is bound to the observed provider-derived
-# input hash because store=false intentionally retained no model content. P06
-# subsequently passed its separate decision-lineage gate.
+# Sixteen boundaries remain current. P04 1.1.8 invalidates the prior P04
+# observation and, transitively, the provider-derived P05 input. Those two
+# boundaries are omitted until the fresh coupled gate passes; their historical
+# records above remain immutable. P06 retains its separate current evidence.
 CURRENT_REAL_EVIDENCE = MappingProxyType(
     {
         **{
@@ -621,32 +653,6 @@ CURRENT_REAL_EVIDENCE = MappingProxyType(
                 "oa-p06-happy-docx",
             }
         },
-        P04_V116_RECANARY_CASE_ID: _ReusedRealEvidenceBoundary(
-            prompt_id="P04_BLUEPRINT_BUILD_V1",
-            prompt_version="1.1.7",
-            prompt_hash=P04_V117_PROMPT_HASH,
-            input_bundle_hash=P04_V117_INPUT_BUNDLE_HASH,
-            expected="VALID",
-            behavior="happy",
-            defect_severity_if_failed="P1",
-            source_checkpoint=(
-                "OPENAI_BLUEPRINT_V117_V115_COUPLED_P04_PASS"
-            ),
-        ),
-        P05_V114_RECANARY_CASE_ID: _ReusedRealEvidenceBoundary(
-            prompt_id="P05_BLUEPRINT_REVIEW_V1",
-            prompt_version="1.1.5",
-            prompt_hash=P05_V115_PROMPT_HASH,
-            input_bundle_hash=(
-                BLUEPRINT_V115_TIMEOUT_RECOVERY_P05_INPUT_BUNDLE_HASH
-            ),
-            expected="VALID",
-            behavior="happy",
-            defect_severity_if_failed="P1",
-            source_checkpoint=(
-                "OPENAI_BLUEPRINT_V117_V115_TIMEOUT_RECOVERY_PASS"
-            ),
-        ),
         P06_V112_DECISION_LINEAGE_RECANARY_CASE_ID: (
             _ReusedRealEvidenceBoundary(
                 prompt_id="P06_EVIDENCE_MAP_V1",
@@ -799,7 +805,7 @@ class _CoupledBlueprintRequestGuard:
             "P05_BLUEPRINT_REVIEW_V1",
         )
         prompt_id = str(kwargs.get("prompt_id", ""))
-        if self.request_attempts >= BLUEPRINT_V117_V115_MAX_RESPONSES_REQUESTS:
+        if self.request_attempts >= BLUEPRINT_V118_V115_MAX_RESPONSES_REQUESTS:
             raise PermanentProviderError(
                 "BLUEPRINT_RECANARY_REQUEST_LIMIT_EXCEEDED"
             )
@@ -921,7 +927,7 @@ class _SyntheticCoupledResponses:
 
     async def create(self, **kwargs: Any) -> Any:
         call_index = len(self.calls)
-        if call_index >= BLUEPRINT_V117_V115_MAX_RESPONSES_REQUESTS:
+        if call_index >= BLUEPRINT_V118_V115_MAX_RESPONSES_REQUESTS:
             raise AssertionError(
                 "Coupled fake transport received an extra request"
             )
@@ -1171,36 +1177,20 @@ def _request_for_case(case: dict[str, Any]) -> Any:
 
 
 def _blueprint_recanary_p04_request(case: dict[str, Any]) -> models.BlueprintBuildRequest:
-    """Build the fixed two-criterion, one-question remediation boundary."""
+    """Build the fixed six-decision boundary that exposed the P04 status drift."""
 
     base = _request_for_case(case)
     if not isinstance(base, models.BlueprintBuildRequest):
         raise OpenAIEvalBlocked(
-            "OPENAI_BLUEPRINT_V117_V115_P04_CASE_REQUIRED"
+            "OPENAI_BLUEPRINT_V118_V115_P04_CASE_REQUIRED"
         )
     if base.rubric_spec is None or not base.rubric_spec.criteria:
         raise OpenAIEvalBlocked(
-            "OPENAI_BLUEPRINT_V117_V115_RUBRIC_REQUIRED"
+            "OPENAI_BLUEPRINT_V118_V115_RUBRIC_REQUIRED"
         )
     source_criterion = base.rubric_spec.criteria[0]
-    levels = [
-        models.RubricLevel(
-            level_id=f"level_{ordinal}",
-            label=("Insuficiente", "Básico", "Suficiente", "Avanzado")[
-                ordinal
-            ],
-            ordinal=ordinal,
-            descriptor=(
-                "No presenta evidencia verificable."
-                if ordinal == 0
-                else f"Presenta evidencia verificable de nivel {ordinal}."
-            ),
-            evidence_ids=list(source_criterion.evidence_ids),
-        )
-        for ordinal in range(4)
-    ]
     criterion_one = source_criterion.model_copy(
-        update={"grading_weight": 0.5, "levels": levels},
+        update={"grading_weight": 0.5, "levels": []},
         deep=True,
     )
     criterion_two = source_criterion.model_copy(
@@ -1208,12 +1198,7 @@ def _blueprint_recanary_p04_request(case: dict[str, Any]) -> models.BlueprintBui
             "criterion_id": "criterion_2",
             "name": "Justificación localizada",
             "grading_weight": 0.5,
-            "levels": [
-                level.model_copy(
-                    update={"level_id": f"justification_level_{level.ordinal}"}
-                )
-                for level in levels
-            ],
+            "levels": [],
             "observables": [
                 "Justifica una consecuencia usando evidencia localizada."
             ],
@@ -1228,55 +1213,86 @@ def _blueprint_recanary_p04_request(case: dict[str, Any]) -> models.BlueprintBui
         },
         deep=True,
     )
-    first_outcome = base.activity_spec.learning_outcomes[0]
-    second_outcome = first_outcome.model_copy(
-        update={
-            "statement_id": "outcome_2",
-            "text": "Justificar una consecuencia localizada.",
-        },
-        deep=True,
-    )
     activity_spec = base.activity_spec.model_copy(
-        update={
-            "learning_outcomes": [first_outcome, second_outcome]
-        },
+        update={"learning_outcomes": []},
         deep=True,
     )
     base_decision = base.resolved_decisions[0]
-    scale_option = models.DecisionOption(
-        option_id="option_scale_four_levels",
-        label="Usar cuatro niveles de desempeño",
-        consequence="Normaliza la escala como 0-3 con cuatro niveles.",
-    )
-    weights_option = models.DecisionOption(
-        option_id="option_weights_equal",
-        label="Usar ponderaciones iguales",
-        consequence="Asigna 0.5 a cada uno de los dos criterios.",
-    )
-    decisions = [
-        base_decision,
-        models.PolicyDecision(
-            decision_id="decision_scale_four_levels",
-            issue_id="issue_scoring_model",
-            selected_option_id=scale_option.option_id,
-            selected_option=scale_option,
-            decided_by=base_decision.decided_by,
-            decided_at=base_decision.decided_at,
+    decision_specs = [
+        (
+            "decision_outcomes_proxy",
+            "issue_learning_outcomes_missing",
+            "option_requirements_as_proxy",
+            "Usar requisitos explícitos como proxy operativo",
+            "No añade resultados externos y limita el diseño a requisitos explícitos.",
         ),
-        models.PolicyDecision(
-            decision_id="decision_weights_equal",
-            issue_id="issue_criterion_weights",
-            selected_option_id=weights_option.option_id,
-            selected_option=weights_option,
-            decided_by=base_decision.decided_by,
-            decided_at=base_decision.decided_at,
+        (
+            "decision_closed_materials",
+            "issue_material_boundary",
+            "option_closed_materials",
+            "Usar únicamente el paquete autorizado",
+            "Restringe el diseño a consigna, rúbrica y submission; sin fuentes externas.",
+        ),
+        (
+            "decision_map_current_criteria",
+            "issue_criterion_mapping",
+            "option_map_two_criteria",
+            "Mapear requisitos a los dos criterios actuales",
+            "No crea criterios nuevos y conserva los dos criterios normalizados.",
+        ),
+        (
+            "decision_scale_convention",
+            "issue_scoring_model",
+            "option_ordinal_review_only",
+            "Usar la escala ordinal solo como convención de revisión",
+            "No inventa descriptores de nivel ausentes.",
+        ),
+        (
+            "decision_retain_observables",
+            "issue_missing_levels",
+            "option_retain_observables",
+            "Conservar los observables actuales",
+            "Los niveles ausentes siguen pendientes sin impedir un catálogo verificable.",
+        ),
+        (
+            "decision_weights_equal",
+            "issue_criterion_weights",
+            "option_weights_equal",
+            "Usar ponderaciones iguales",
+            "Asigna 0.5 a cada uno de los dos criterios.",
         ),
     ]
+    decisions = [
+        models.PolicyDecision(
+            decision_id=decision_id,
+            issue_id=issue_id,
+            selected_option_id=option_id,
+            selected_option=models.DecisionOption(
+                option_id=option_id,
+                label=label,
+                consequence=consequence,
+            ),
+            decided_by=base_decision.decided_by,
+            decided_at=base_decision.decided_at,
+            note="Decisión sintética docente persistida antes de P04.",
+        )
+        for decision_id, issue_id, option_id, label, consequence in decision_specs
+    ]
+    blueprint_policy = base.blueprint_policy.model_copy(
+        update={
+            "target_total_minutes": 10,
+            "allowed_response_formats": [
+                models.ResponseFormat.OPEN_SHORT,
+                models.ResponseFormat.STRUCTURED_BULLETS,
+            ],
+        },
+        deep=True,
+    )
     return models.BlueprintBuildRequest(
         activity_spec=activity_spec,
         rubric_spec=rubric,
         resolved_decisions=decisions,
-        blueprint_policy=base.blueprint_policy,
+        blueprint_policy=blueprint_policy,
     )
 
 
@@ -1428,7 +1444,7 @@ def _selected_blueprint_recanary_cases(
     selected_ids = {P04_V116_RECANARY_CASE_ID, P05_V114_RECANARY_CASE_ID}
     if not selected_ids.issubset(by_id):
         raise OpenAIEvalBlocked(
-            "OPENAI_BLUEPRINT_V117_V115_CASE_MISSING"
+            "OPENAI_BLUEPRINT_V118_V115_CASE_MISSING"
         )
     selected = (
         by_id[P04_V116_RECANARY_CASE_ID],
@@ -1448,7 +1464,7 @@ def _selected_blueprint_recanary_cases(
             or case.get("rubric_profile") != "WITH_RUBRIC"
         ):
             raise OpenAIEvalBlocked(
-                "OPENAI_BLUEPRINT_V117_V115_CASE_POLICY_DRIFT"
+                "OPENAI_BLUEPRINT_V118_V115_CASE_POLICY_DRIFT"
             )
     return selected
 
@@ -1981,7 +1997,7 @@ def _blueprint_recanary_gateway(
             job_id=(
                 "job_blueprint_v117_v115_timeout_recovery"
                 if timeout_recovery
-                else "job_blueprint_v117_v115_recanary"
+                else "job_blueprint_v118_v115_recanary"
             ),
         ),
         real_routes=coupled_routes,
@@ -2025,13 +2041,13 @@ def _coupled_blueprint_semantic_proof(
     p04_output_hash = _content_hash(p04_result.output)
     p05_blueprint_hash = _content_hash(p05_material["request"].blueprint)
     target_categories_present = (
-        BLUEPRINT_V117_V115_TARGET_REVIEW_CATEGORIES
+        BLUEPRINT_V118_V115_TARGET_REVIEW_CATEGORIES
         .issubset(category_statuses)
     )
     target_categories_no_fail = all(
         models.ReviewCheckStatus.FAIL
         not in category_statuses.get(category, [])
-        for category in BLUEPRINT_V117_V115_TARGET_REVIEW_CATEGORIES
+        for category in BLUEPRINT_V118_V115_TARGET_REVIEW_CATEGORIES
     )
     proof = {
         "p04_ready": _canary_output_status(p04_result.output) == "READY",
@@ -3202,12 +3218,12 @@ def _blueprint_recanary_p04_material(
         request_override=request,
     )
     if (
-        material["spec"].prompt_version != "1.1.7"
-        or material["prompt_hash"] != P04_V117_PROMPT_HASH
-        or material["input_bundle_hash"] != P04_V117_INPUT_BUNDLE_HASH
+        material["spec"].prompt_version != "1.1.8"
+        or material["prompt_hash"] != P04_V118_PROMPT_HASH
+        or material["input_bundle_hash"] != P04_V118_INPUT_BUNDLE_HASH
     ):
         raise OpenAIEvalBlocked(
-            "OPENAI_BLUEPRINT_V117_V115_P04_BOUNDARY_DRIFT"
+            "OPENAI_BLUEPRINT_V118_V115_P04_BOUNDARY_DRIFT"
         )
     return material
 
@@ -3233,7 +3249,7 @@ def _blueprint_recanary_p05_material(
         or _content_hash(request.blueprint) != _content_hash(p04_output)
     ):
         raise OpenAIEvalBlocked(
-            "OPENAI_BLUEPRINT_V117_V115_P05_BOUNDARY_DRIFT"
+            "OPENAI_BLUEPRINT_V118_V115_P05_BOUNDARY_DRIFT"
         )
     return material
 
@@ -3373,7 +3389,7 @@ def _blueprint_recanary_report(
         "evidence_gate": (
             "BLUEPRINT_V117_V115_TIMEOUT_RECOVERY"
             if timeout_recovery
-            else "BLUEPRINT_V117_V115_COUPLED_RECANARY"
+            else "BLUEPRINT_V118_V115_COUPLED_RECANARY"
         ),
         "prompt_pack_version": PROMPT_VERSION,
         "route_profile": OPENAI_ROUTE_PROFILE_ID,
@@ -3404,7 +3420,7 @@ def _blueprint_recanary_report(
         "fake_transport_calls": (
             guard.request_attempts if mode.endswith("dry-run") else 0
         ),
-        "max_responses_requests": BLUEPRINT_V117_V115_MAX_RESPONSES_REQUESTS,
+        "max_responses_requests": BLUEPRINT_V118_V115_MAX_RESPONSES_REQUESTS,
         "gateway_retries": 0,
         "prompt_retries": 0,
         "sdk_retries": 0,
@@ -3423,7 +3439,11 @@ async def _run_blueprint_recanary_dry_run(
     timeout_recovery: bool = False,
 ) -> dict[str, Any]:
     p04_case, p05_case = _selected_blueprint_recanary_cases(cases)
-    cap = BLUEPRINT_V117_V115_RECANARY_HUMAN_BUDGET_USD
+    if timeout_recovery:
+        raise OpenAIEvalBlocked(
+            "OPENAI_BLUEPRINT_V117_V115_TIMEOUT_RECOVERY_ALREADY_CONSUMED"
+        )
+    cap = BLUEPRINT_V118_V115_RECANARY_HUMAN_BUDGET_USD
     p04_material = _blueprint_recanary_p04_material(
         p04_case, route_cap_usd=cap
     )
@@ -3456,10 +3476,10 @@ async def _run_blueprint_recanary_dry_run(
         raise AssertionError("Coupled P04 dry-run must be READY")
     if (
         _content_hash(p04_result.output)
-        != BLUEPRINT_V117_V115_DRY_RUN_P04_OUTPUT_HASH
+        != BLUEPRINT_V118_V115_DRY_RUN_P04_OUTPUT_HASH
     ):
         raise OpenAIEvalBlocked(
-            "OPENAI_BLUEPRINT_V117_V115_DRY_RUN_P04_OUTPUT_DRIFT"
+            "OPENAI_BLUEPRINT_V118_V115_DRY_RUN_P04_OUTPUT_DRIFT"
         )
     p04_payload = _canary_payload_proof(
         p04_material, p04_result, fake_responses.calls[0]
@@ -3475,10 +3495,10 @@ async def _run_blueprint_recanary_dry_run(
     )
     if (
         p05_material["input_bundle_hash"]
-        != BLUEPRINT_V117_V115_DRY_RUN_P05_INPUT_BUNDLE_HASH
+        != BLUEPRINT_V118_V115_DRY_RUN_P05_INPUT_BUNDLE_HASH
     ):
         raise OpenAIEvalBlocked(
-            "OPENAI_BLUEPRINT_V117_V115_DRY_RUN_P05_INPUT_DRIFT"
+            "OPENAI_BLUEPRINT_V118_V115_DRY_RUN_P05_INPUT_DRIFT"
         )
     estimated_ceiling = (
         p04_material["transport_ceiling_usd"]
@@ -3486,7 +3506,7 @@ async def _run_blueprint_recanary_dry_run(
     )
     if estimated_ceiling > cap:
         raise OpenAIEvalBlocked(
-            "OPENAI_BLUEPRINT_V117_V115_PREFLIGHT_BUDGET_TOO_LOW"
+            "OPENAI_BLUEPRINT_V118_V115_PREFLIGHT_BUDGET_TOO_LOW"
         )
     fake_responses.enqueue(p05_material["prompt_id"], p05_material["request"])
     p05_result = await gateway.invoke(
@@ -3548,9 +3568,9 @@ async def _run_blueprint_recanary_real(
     max_total_cost_usd: float,
     timeout_recovery: bool = False,
 ) -> dict[str, Any]:
-    if max_total_cost_usd > BLUEPRINT_V117_V115_RECANARY_HUMAN_BUDGET_USD:
+    if max_total_cost_usd > BLUEPRINT_V118_V115_RECANARY_HUMAN_BUDGET_USD:
         raise OpenAIEvalBlocked(
-            "OPENAI_BLUEPRINT_V117_V115_RECANARY_HUMAN_CAP_EXCEEDED"
+            "OPENAI_BLUEPRINT_V118_V115_RECANARY_HUMAN_CAP_EXCEEDED"
         )
     if timeout_recovery:
         if not BLUEPRINT_V117_V115_RECANARY_CONSUMED:
@@ -3561,9 +3581,9 @@ async def _run_blueprint_recanary_real(
             raise OpenAIEvalBlocked(
                 "OPENAI_BLUEPRINT_V117_V115_TIMEOUT_RECOVERY_ALREADY_CONSUMED"
             )
-    elif BLUEPRINT_V117_V115_RECANARY_CONSUMED:
+    elif BLUEPRINT_V118_V115_RECANARY_CONSUMED:
         raise OpenAIEvalBlocked(
-            "OPENAI_BLUEPRINT_V117_V115_RECANARY_ALREADY_CONSUMED"
+            "OPENAI_BLUEPRINT_V118_V115_RECANARY_ALREADY_CONSUMED"
         )
     mode = (
         "blueprint-timeout-recovery-real"
@@ -3579,14 +3599,14 @@ async def _run_blueprint_recanary_real(
         > max_total_cost_usd
     ):
         raise OpenAIEvalBlocked(
-            "OPENAI_BLUEPRINT_V117_V115_PREFLIGHT_BUDGET_TOO_LOW"
+            "OPENAI_BLUEPRINT_V118_V115_PREFLIGHT_BUDGET_TOO_LOW"
         )
     if (
-        os.environ.get(BLUEPRINT_V117_V115_REMEDIATION_DECISION_ENV)
-        != BLUEPRINT_V117_V115_REMEDIATION_DECISION_VALUE
+        os.environ.get(BLUEPRINT_V118_V115_REMEDIATION_DECISION_ENV)
+        != BLUEPRINT_V118_V115_REMEDIATION_DECISION_VALUE
     ):
         raise OpenAIEvalBlocked(
-            "OPENAI_BLUEPRINT_V117_V115_REMEDIATION_HUMAN_DECISION_REQUIRED"
+            "OPENAI_BLUEPRINT_V118_V115_REMEDIATION_HUMAN_DECISION_REQUIRED"
         )
     if timeout_recovery:
         if (
@@ -3608,11 +3628,11 @@ async def _run_blueprint_recanary_real(
                 "OPENAI_BLUEPRINT_V117_V115_TIMEOUT_RECOVERY_APPROVAL_REQUIRED"
             )
     elif (
-        os.environ.get(BLUEPRINT_V117_V115_RECANARY_APPROVAL_ENV)
-        != BLUEPRINT_V117_V115_RECANARY_APPROVAL_VALUE
+        os.environ.get(BLUEPRINT_V118_V115_RECANARY_APPROVAL_ENV)
+        != BLUEPRINT_V118_V115_RECANARY_APPROVAL_VALUE
     ):
         raise OpenAIEvalBlocked(
-            "OPENAI_BLUEPRINT_V117_V115_RECANARY_APPROVAL_REQUIRED"
+            "OPENAI_BLUEPRINT_V118_V115_RECANARY_APPROVAL_REQUIRED"
         )
     key = os.environ.get("CVA_OPENAI_API_KEY", "").strip()
     if not key:
@@ -3676,7 +3696,7 @@ async def _run_blueprint_recanary_real(
             _blueprint_recanary_failure_row(
                 p04_material,
                 error_code=(
-                    "OPENAI_BLUEPRINT_V117_V115_P04_EXPECTATION_FAILED"
+                    "OPENAI_BLUEPRINT_V118_V115_P04_EXPECTATION_FAILED"
                 ),
                 result=locals().get("p04_result"),
                 transport_result=(
@@ -3719,7 +3739,7 @@ async def _run_blueprint_recanary_real(
             _blueprint_recanary_failure_row(
                 p05_material,
                 error_code=(
-                    "OPENAI_BLUEPRINT_V117_V115_PREFLIGHT_BUDGET_TOO_LOW"
+                    "OPENAI_BLUEPRINT_V118_V115_PREFLIGHT_BUDGET_TOO_LOW"
                 ),
             )
         )
@@ -3771,7 +3791,7 @@ async def _run_blueprint_recanary_real(
             _blueprint_recanary_failure_row(
                 p05_material,
                 error_code=(
-                    "OPENAI_BLUEPRINT_V117_V115_P05_EXPECTATION_FAILED"
+                    "OPENAI_BLUEPRINT_V118_V115_P05_EXPECTATION_FAILED"
                 ),
                 result=locals().get("p05_result"),
                 transport_result=(
@@ -3790,7 +3810,7 @@ async def _run_blueprint_recanary_real(
                 p05_controls,
             )
         )
-    if adapter.request_attempts > BLUEPRINT_V117_V115_MAX_RESPONSES_REQUESTS:
+    if adapter.request_attempts > BLUEPRINT_V118_V115_MAX_RESPONSES_REQUESTS:
         raise AssertionError("Blueprint recanary crossed its request boundary")
     return _blueprint_recanary_report(
         mode=mode,
@@ -4979,7 +4999,7 @@ def main() -> int:
             code = (
                 "OPENAI_BLUEPRINT_V117_V115_TIMEOUT_RECOVERY_APPROVAL_REQUIRED"
                 if args.mode == "blueprint-timeout-recovery-real"
-                else "OPENAI_BLUEPRINT_V117_V115_RECANARY_APPROVAL_REQUIRED"
+                else "OPENAI_BLUEPRINT_V118_V115_RECANARY_APPROVAL_REQUIRED"
             )
         elif args.mode == "qualification-real":
             code = (

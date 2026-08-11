@@ -11,7 +11,20 @@ deshabilitado en todos los casos. Los
 resultados históricos E1 se conservan al final y no se presentan como evidencia
 del candidato E2.
 
-## Candidato remediado construido y desplegado — 2026-08-11
+## Stop P04 fresco y remediación local v1.1.8 — 2026-08-11
+
+| Prueba o gate | Resultado observado |
+|---|---|
+| Actividad | `act_a2d0acdf5d948c365ca8`; sólo fixtures sintéticos autorizados |
+| Ejecución | 2 jobs/2 Cloud Run executions; P01-P03 y seis decisiones durables; reanudación sólo P04 |
+| Stop | P04 válido devolvió `NEEDS_REVIEW` por aprobación posterior; P05/blueprint/submission = 0 |
+| Uso | 4 Responses; USD 0.02501760 real; P10/P11/Sol/fallback/retries 0 |
+| Remediación | P04 1.1.8 separa construcción/aprobación; gateway exige diagnóstico ERROR/CRITICAL para P04 no READY |
+| Evidencia vigente | 16/18 hasta recanary nueva de P04 y P05 derivado |
+| Dry-run nuevo | PASS/PASS READY; 2 fake/0 red; ceiling USD 0.05020725/cap USD 0.06; seis decisiones, outcomes vacíos y niveles no inventados |
+| Regresión local | 556 passed, 16 skips PostgreSQL explícitos, 1 warning conocido; gateway+harness 127/127; contratos, secretos y diff PASS |
+
+## Historial — candidato remediado construido y desplegado — 2026-08-11
 
 | Prueba o gate | Resultado observado |
 |---|---|

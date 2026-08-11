@@ -70,6 +70,17 @@ cap USD 0.06; también está consumida.
 | P06 1.1.2 con decision lineage, consumida PASS | 1 | USD 0.02336100 | USD 0.03 |
 | Agregado máximo, sin transferencia entre gates | **3** | **USD 0.07483925** | **USD 0.09** |
 
+El E2E fresco posterior consumió cuatro Responses y USD 0.02501760 antes del
+stop P04. Ese gasto no amplía ningún gate. La remediación P04 1.1.8 tiene una
+recanary acoplada distinta y todavía no consumida:
+
+| Gate pendiente | Requests máximas | Ceiling full-cache-write | Cap |
+|---|---:|---:|---:|
+| P04 1.1.8 → P05 1.1.5 | 2 | USD 0.05020725 | USD 0.06 |
+
+El guard reserva el ceiling antes de cada transporte, usa retries cero y
+prohíbe P10/P11/Sol/fallback. Si P04 no termina `READY`, P05 no se ejecuta.
+
 P06 usó USD 0.00148525 real y USD 0.01992085 de charge conservador. El
 agregado de la recuperación más P06 fue USD 0.01794365 real y USD 0.06078605
 de charge, dentro de sus caps separados; ambos gates están cerrados.

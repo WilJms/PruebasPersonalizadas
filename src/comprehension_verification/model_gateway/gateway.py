@@ -65,6 +65,9 @@ class ContextFailureCode(StrEnum):
     P02_ACTIVITY_ID_MISMATCH = "P02_ACTIVITY_ID_MISMATCH"
     P04_SOURCE_COVERAGE_MISMATCH = "P04_SOURCE_COVERAGE_MISMATCH"
     P04_CATALOG_PLAN_INFEASIBLE = "P04_CATALOG_PLAN_INFEASIBLE"
+    P04_NONREADY_WITHOUT_BLOCKING_DIAGNOSTIC = (
+        "P04_NONREADY_WITHOUT_BLOCKING_DIAGNOSTIC"
+    )
     P09_GUIDE_ID_MISMATCH = "P09_GUIDE_ID_MISMATCH"
     P09_ASSESSMENT_ID_MISMATCH = "P09_ASSESSMENT_ID_MISMATCH"
     P09_SUBMISSION_ID_MISMATCH = "P09_SUBMISSION_ID_MISMATCH"
@@ -1389,6 +1392,18 @@ class ModelGateway:
                 )
             if output.status != models.WorkflowStatus.READY:
                 require_diagnostic()
+                if not any(
+                    diagnostic.severity
+                    in {models.Severity.ERROR, models.Severity.CRITICAL}
+                    for diagnostic in output.diagnostics
+                ):
+                    raise GatewayContextError(
+                        "Non-ready P04 requires a blocking diagnostic",
+                        phase=phase,
+                        failure_code=(
+                            ContextFailureCode.P04_NONREADY_WITHOUT_BLOCKING_DIAGNOSTIC
+                        ),
+                    )
         elif prompt_id == "P05_BLUEPRINT_REVIEW_V1" and output.status != "READY":
             require_diagnostic()
             if output.approval_recommendation is not None:

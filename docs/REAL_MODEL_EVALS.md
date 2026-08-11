@@ -5,12 +5,35 @@ El corpus inicial contiene 20 casos exclusivamente sintéticos en
 entregas ni contenido estudiantil real. El rango gobernado es de 10 a 30 casos,
 con IDs únicos y clasificación obligatoria
 `SYNTHETIC_ONLY_NO_STUDENT_DATA`. El manifest fija además
-`route_profile=LUNA_BASELINE_V1`, prompt pack candidato `1.1.7` y schema
+`route_profile=LUNA_BASELINE_V1`, prompt pack candidato `1.1.8` y schema
 `1.1.0`. P01, P03 y P06-P08 conservan su versión individual `1.1.2`; P02
 conserva `1.1.3`; P05 usa `1.1.5`; P11 usa `1.1.4`; P09 usa `1.1.5`; P04
-usa `1.1.7`.
+usa `1.1.8`.
 
-## Resultado vigente — candidato desplegado; E2E fresco pendiente
+## Resultado vigente — E2E detenido en P04; recanary v1.1.8 pendiente
+
+El E2E fresco del digest desplegado creó la actividad sintética
+`act_a2d0acdf5d948c365ca8`. P01-P03 y seis decisiones docentes durables pasaron;
+la reanudación ejecutó sólo P04. El catálogo recibido fue estructural y
+contextualmente válido, con las seis decisiones exactas, pero P04 1.1.7 devolvió
+`NEEDS_REVIEW` únicamente por la aprobación humana posterior. El workflow se
+detuvo correctamente antes de P05, blueprint y submission. Fueron dos jobs/dos
+executions, cuatro Responses, USD 0.02501760 real, P10/P11/Sol/fallback/retries
+cero.
+
+P04 1.1.8 explicita que `status` describe la construcción, no la aprobación, y
+el gateway rechaza un P04 no listo sin diagnóstico `ERROR`/`CRITICAL`. La
+evidencia vigente baja preventivamente a 16/18: P04 cambió y el input P05 es
+derivado. El nuevo gate P04→P05 reproduce seis decisiones, outcomes vacíos y
+niveles no inventados. Su dry-run pasa con 2 fake/0 red, ambos `READY`, ceiling
+USD 0.05020725/cap USD 0.06 y cero rutas laterales. La recanary real distinta
+es el siguiente gate; todavía no se autoriza build/deploy del nuevo SHA.
+
+```bash
+make openai-blueprint-v118-v115-recanary-dry-run
+```
+
+## Historial — candidato desplegado antes del stop P04
 
 El SHA `88416b522414f316613bea96ad08687e8a335a38`, que incorpora la
 remediación y conserva 18/18 fronteras reales vigentes, fue construido por el
@@ -60,7 +83,7 @@ su recuperación están consumidas; P06 también quedó consumido después de su
 única observación separada.
 
 ```bash
-make openai-blueprint-v117-v115-recanary-dry-run
+make openai-blueprint-v118-v115-recanary-dry-run
 make openai-blueprint-v117-v115-timeout-recovery-dry-run
 make openai-p06-v112-decision-lineage-recanary-dry-run
 ```

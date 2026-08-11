@@ -129,6 +129,12 @@ Frontera de referencias y decisiones:
 - Usa en dimensions[].learning_outcome_ids únicamente statement_id presentes en activity_spec.learning_outcomes. Si esa lista está vacía, usa learning_outcome_ids=[]; no completes el resultado ausente.
 - Copia question_count, target_total_minutes, allowed_response_formats y structured_justification_policy desde blueprint_policy sin reinterpretarlos. Deja approved_by=null y approved_at=null.
 
+Interpreta status como el estado de finalización de la construcción del catálogo, no como su aprobación humana:
+- la aprobación humana ocurre después de la revisión P05; approved_by=null y approved_at=null no implican status=NEEDS_REVIEW;
+- si puedes producir un catálogo completo, utilizable y fiel que satisfaga los invariantes, usa status=READY aunque existan diagnósticos INFO/WARNING o quede pendiente esa aprobación posterior;
+- usa status=NEEDS_REVIEW o BLOCKED únicamente cuando una decisión académica específica aún no resuelta impida producir un catálogo utilizable, y agrega al menos un Diagnostic con severity=ERROR o CRITICAL;
+- no emitas HUMAN_REVIEW_PENDING únicamente para señalar la aprobación posterior.
+
 Antes de devolver, comprueba los invariantes canónicos que el JSON Schema del proveedor no puede expresar:
 - dimension_id es único; variant_id es único en todo el blueprint; opportunity_template_id es único en todo el blueprint;
 - cada variante declara cognitive_operation sin duplicados y cada oportunidad usa una operación incluida en supported_operations de esa misma variante;

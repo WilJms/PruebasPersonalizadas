@@ -1,10 +1,28 @@
 # Validación del proveedor OpenAI real
 
-Fecha de corte: 2026-08-11. Estado: la recuperación acoplada P04 1.1.7→P05
-1.1.5 y la canary P06 decision-lineage pasaron completamente y quedaron
-consumidas. La evidencia vigente es **18/18**.
+Fecha de corte: 2026-08-11. Estado: el E2E fresco del candidato desplegado se
+detuvo en P04 por una nueva desalineación de `status`. P04 avanza a 1.1.8 y la
+evidencia vigente queda preventivamente en **16/18** hasta una recanary
+acoplada nueva.
 
-## Resultado vigente: 18/18 desplegado; E2E fresco pendiente
+## Resultado vigente: stop P04 y remediación v1.1.8 local
+
+La actividad sintética `act_a2d0acdf5d948c365ca8` ejecutó P01-P03, persistió
+seis decisiones y reanudó una vez. P04 produjo un catálogo utilizable y válido,
+pero devolvió `NEEDS_REVIEW` con diagnósticos sólo INFO/WARNING porque la
+aprobación humana posterior estaba pendiente. El workflow no llamó P05 ni
+persistió blueprint o submission. Dos jobs/dos executions consumieron cuatro
+Responses y USD 0.02501760; P10/P11/Sol/fallback/retries fueron cero.
+
+La remediación P04 1.1.8 obliga `READY` para una construcción completa aunque
+`approved_by/approved_at` sean null y añade el código contextual
+`P04_NONREADY_WITHOUT_BLOCKING_DIAGNOSTIC`. El gate nuevo reproduce exactamente
+la clase del caso: seis decisiones, outcomes vacíos, dos criterios sin niveles
+inventados, N=1, diez minutos y dos formatos. El dry-run P04→P05 termina
+PASS/PASS `READY`, 2 fake/0 red, ceiling USD 0.05020725 bajo cap USD 0.06, sin
+P10/P11/Sol/fallback/retries. La observación real aún no se ha consumido.
+
+## Historial: 18/18 desplegado antes del stop fresco
 
 El SHA `88416b522414f316613bea96ad08687e8a335a38` fue construido una sola
 vez por `441be72d-04ae-46e9-b150-6eec1032c8d6`, con estado

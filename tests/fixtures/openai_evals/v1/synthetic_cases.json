@@ -2,7 +2,7 @@
   "schema_version": "1.1.0",
   "classification": "SYNTHETIC_ONLY_NO_STUDENT_DATA",
   "route_profile": "LUNA_BASELINE_V1",
-  "prompt_pack_version": "1.1.7",
+  "prompt_pack_version": "1.1.8",
   "human_review_dimensions": [
     "evidence_correctness",
     "locator_correctness",
@@ -19,7 +19,7 @@
     {"case_id": "oa-p01-happy-txt", "prompt_id": "P01_ACTIVITY_SPEC_V1", "behavior": "happy", "expected": "VALID", "real_eligible": true, "source_format": "TXT", "rubric_profile": "NO_RUBRIC", "content_profile": "SUFFICIENT", "semantic_expectation": "READY_OR_NEEDS_REVIEW", "defect_severity_if_failed": "P1", "focus": "activity evidence extraction"},
     {"case_id": "oa-p02-happy-pdf", "prompt_id": "P02_RUBRIC_NORMALIZE_V1", "behavior": "happy", "expected": "VALID", "real_eligible": true, "source_format": "PDF", "rubric_profile": "WITH_RUBRIC", "content_profile": "SUFFICIENT", "semantic_expectation": "READY_OR_NEEDS_REVIEW", "defect_severity_if_failed": "P1", "focus": "rubric normalization"},
     {"case_id": "oa-p03-happy-with-rubric-md", "prompt_id": "P03_AMBIGUITY_TRIAGE_V1", "behavior": "happy", "expected": "VALID", "real_eligible": true, "source_format": "MD", "rubric_profile": "WITH_RUBRIC", "content_profile": "SUFFICIENT", "semantic_expectation": "READY_OR_NEEDS_REVIEW", "defect_severity_if_failed": "P1", "focus": "ambiguity triage with rubric"},
-    {"case_id": "oa-p04-happy", "prompt_id": "P04_BLUEPRINT_BUILD_V1", "behavior": "happy", "expected": "VALID", "real_eligible": true, "rubric_profile": "WITH_RUBRIC", "content_profile": "SUFFICIENT", "semantic_expectation": "READY_OR_NEEDS_REVIEW", "defect_severity_if_failed": "P1", "focus": "blueprint catalog"},
+    {"case_id": "oa-p04-happy", "prompt_id": "P04_BLUEPRINT_BUILD_V1", "behavior": "happy", "expected": "VALID", "real_eligible": true, "rubric_profile": "WITH_RUBRIC", "content_profile": "SUFFICIENT", "semantic_expectation": "READY_WITH_HUMAN_APPROVAL_STILL_PENDING", "defect_severity_if_failed": "P1", "focus": "blueprint catalog"},
     {"case_id": "oa-p05-happy", "prompt_id": "P05_BLUEPRINT_REVIEW_V1", "behavior": "happy", "expected": "VALID", "real_eligible": true, "rubric_profile": "WITH_RUBRIC", "content_profile": "SUFFICIENT", "semantic_expectation": "READY_OR_NEEDS_REVIEW", "defect_severity_if_failed": "P1", "focus": "blueprint review"},
     {"case_id": "oa-p06-happy-docx", "prompt_id": "P06_EVIDENCE_MAP_V1", "behavior": "happy", "expected": "VALID", "real_eligible": true, "source_format": "DOCX", "rubric_profile": "WITH_RUBRIC", "content_profile": "SUFFICIENT", "semantic_expectation": "READY_OR_NEEDS_REVIEW", "defect_severity_if_failed": "P1", "focus": "submission evidence map from normalized DOCX evidence"},
     {"case_id": "oa-p07-open-short-txt", "prompt_id": "P07_QUESTION_BUILD_V1", "behavior": "happy", "expected": "READY", "real_eligible": true, "source_format": "TXT", "rubric_profile": "WITH_RUBRIC", "content_profile": "SUFFICIENT", "response_format": "OPEN_SHORT", "justification_required": false, "cognitive_operation": "EXPLAIN_MECHANISM", "semantic_expectation": "READY", "defect_severity_if_failed": "P1", "focus": "one planned open question"},
