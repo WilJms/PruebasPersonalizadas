@@ -186,10 +186,9 @@ BLUEPRINT_V117_V115_TIMEOUT_RECOVERY_APPROVAL_ENV = (
 BLUEPRINT_V117_V115_TIMEOUT_RECOVERY_APPROVAL_VALUE = (
     "OPENAI_BLUEPRINT_V117_V115_TIMEOUT_RECOVERY_APPROVED"
 )
-# The recovery is a new coupled observation after a code/configuration change,
-# not a retry. It must reconstruct P05 from a fresh validated P04 output because
-# store=false intentionally made the timed-out request content unrecoverable.
-BLUEPRINT_V117_V115_TIMEOUT_RECOVERY_CONSUMED = False
+# The recovery was consumed on 2026-08-11 and passed both P04 and P05. No
+# decision or approval string may reopen either coupled transport.
+BLUEPRINT_V117_V115_TIMEOUT_RECOVERY_CONSUMED = True
 BLUEPRINT_V117_REAL_P04_VALIDATED_OUTPUT_HASH = (
     "sha256:66f577658a98873eb931e237d3692a8bceafe72823745dc0c2e41a1a693d6681"
 )
@@ -198,6 +197,15 @@ BLUEPRINT_V117_REAL_P05_INPUT_BUNDLE_HASH = (
 )
 BLUEPRINT_V117_V115_TIMEOUT_REPORT_SHA256 = (
     "d0d27500adeee0b4b234a5ee65e3e642f9b85929cd689fc6f86beb87eee2de14"
+)
+BLUEPRINT_V117_TIMEOUT_RECOVERY_P04_VALIDATED_OUTPUT_HASH = (
+    "sha256:22dd21e3ec02380892a7e56f704c97fcc4930ed8532800c7066233ee04639286"
+)
+BLUEPRINT_V115_TIMEOUT_RECOVERY_P05_INPUT_BUNDLE_HASH = (
+    "sha256:e8bd0e923660f9423bfc8c8e6b5a1aa0ad12bd65c1178a9bf3ab396c20ee9746"
+)
+BLUEPRINT_V117_V115_TIMEOUT_RECOVERY_REPORT_SHA256 = (
+    "3452b12bf89ea0cb59c29837b054d60db0ef46ceeb950802c680e20001a94df8"
 )
 P04_V117_PROMPT_HASH = (
     "sha256:48f9aa9962819a49661d917ee7b6f6fd37e31dc4ee4b11e446e76feb07108028"
@@ -588,11 +596,11 @@ HISTORICAL_COMPLETE_REAL_EVIDENCE = MappingProxyType(
 HISTORICAL_COMPLETE_REAL_EVIDENCE_CASE_IDS = tuple(
     HISTORICAL_COMPLETE_REAL_EVIDENCE
 )
-# Sixteen boundaries remain current. P04 1.1.7 passed before the coupled gate
-# stopped at the P05 adapter timeout. The timeout recovery is the only path that
-# can restore P05 qualification because the exact dynamic input was not stored.
-# P06 also changed because its blueprint fixture now carries decision lineage;
-# it requires its own later evidence and is not smuggled into either gate.
+# Seventeen boundaries are current. The timeout recovery passed the exact
+# P04 1.1.7 -> P05 1.1.5 chain; P05 is bound to the observed provider-derived
+# input hash because store=false intentionally retained no model content. P06
+# also changed because its blueprint fixture now carries decision lineage; it
+# requires its own later evidence and is not smuggled into the coupled gate.
 CURRENT_REAL_EVIDENCE = MappingProxyType(
     {
         **{
@@ -615,6 +623,20 @@ CURRENT_REAL_EVIDENCE = MappingProxyType(
             defect_severity_if_failed="P1",
             source_checkpoint=(
                 "OPENAI_BLUEPRINT_V117_V115_COUPLED_P04_PASS"
+            ),
+        ),
+        P05_V114_RECANARY_CASE_ID: _ReusedRealEvidenceBoundary(
+            prompt_id="P05_BLUEPRINT_REVIEW_V1",
+            prompt_version="1.1.5",
+            prompt_hash=P05_V115_PROMPT_HASH,
+            input_bundle_hash=(
+                BLUEPRINT_V115_TIMEOUT_RECOVERY_P05_INPUT_BUNDLE_HASH
+            ),
+            expected="VALID",
+            behavior="happy",
+            defect_severity_if_failed="P1",
+            source_checkpoint=(
+                "OPENAI_BLUEPRINT_V117_V115_TIMEOUT_RECOVERY_PASS"
             ),
         ),
     }
@@ -1419,17 +1441,45 @@ def _validated_reused_real_evidence(
     rows: list[dict[str, Any]] = []
     for case_id, boundary in boundaries.items():
         case = by_id[case_id]
-        request = (
-            _blueprint_recanary_p04_request(case)
-            if (
-                case_id == P04_V116_RECANARY_CASE_ID
-                and boundary.prompt_version == "1.1.7"
-            )
-            else _request_for_case(case)
+        is_provider_derived_p05 = (
+            case_id == P05_V114_RECANARY_CASE_ID
+            and boundary.prompt_version == "1.1.5"
+            and boundary.source_checkpoint
+            == "OPENAI_BLUEPRINT_V117_V115_TIMEOUT_RECOVERY_PASS"
         )
         spec = prompt_spec(str(case["prompt_id"]))
-        envelope = _envelope_for(str(case["prompt_id"]), request)
-        input_bundle_hash = _content_hash(envelope)
+        if is_provider_derived_p05:
+            # The real P05 request included a store=false provider output. Its
+            # content is intentionally unavailable; the content-free report
+            # records the exact envelope hash, while the current P04 boundary
+            # independently guards every reproducible upstream input.
+            p04_boundary = boundaries.get(P04_V116_RECANARY_CASE_ID)
+            if (
+                p04_boundary is None
+                or p04_boundary.prompt_version != "1.1.7"
+                or p04_boundary.prompt_hash != P04_V117_PROMPT_HASH
+                or p04_boundary.input_bundle_hash
+                != P04_V117_INPUT_BUNDLE_HASH
+                or boundary.input_bundle_hash
+                != BLUEPRINT_V115_TIMEOUT_RECOVERY_P05_INPUT_BUNDLE_HASH
+            ):
+                raise OpenAIEvalBlocked(
+                    "OPENAI_QUALIFICATION_P05_V115_CHAIN_BOUNDARY_DRIFT"
+                )
+            input_bundle_hash = (
+                BLUEPRINT_V115_TIMEOUT_RECOVERY_P05_INPUT_BUNDLE_HASH
+            )
+        else:
+            request = (
+                _blueprint_recanary_p04_request(case)
+                if (
+                    case_id == P04_V116_RECANARY_CASE_ID
+                    and boundary.prompt_version == "1.1.7"
+                )
+                else _request_for_case(case)
+            )
+            envelope = _envelope_for(str(case["prompt_id"]), request)
+            input_bundle_hash = _content_hash(envelope)
 
         if case_id == P01_INJECTION_RECANARY_CASE_ID and (
             spec.prompt_hash != P01_INJECTION_V112_PROMPT_HASH
@@ -1445,12 +1495,24 @@ def _validated_reused_real_evidence(
             raise OpenAIEvalBlocked(
                 "OPENAI_QUALIFICATION_P02_V113_BOUNDARY_DRIFT"
             )
-        if case_id == P05_V114_RECANARY_CASE_ID and (
-            spec.prompt_hash != P05_V114_PROMPT_HASH
-            or input_bundle_hash != P05_V114_INPUT_BUNDLE_HASH
+        if (
+            case_id == P05_V114_RECANARY_CASE_ID
+            and boundary.prompt_version == "1.1.4"
+            and (
+                spec.prompt_hash != P05_V114_PROMPT_HASH
+                or input_bundle_hash != P05_V114_INPUT_BUNDLE_HASH
+            )
         ):
             raise OpenAIEvalBlocked(
                 "OPENAI_QUALIFICATION_P05_V114_BOUNDARY_DRIFT"
+            )
+        if is_provider_derived_p05 and (
+            spec.prompt_hash != P05_V115_PROMPT_HASH
+            or input_bundle_hash
+            != BLUEPRINT_V115_TIMEOUT_RECOVERY_P05_INPUT_BUNDLE_HASH
+        ):
+            raise OpenAIEvalBlocked(
+                "OPENAI_QUALIFICATION_P05_V115_CHAIN_BOUNDARY_DRIFT"
             )
         if case_id == P04_V116_RECANARY_CASE_ID:
             if boundary.prompt_version == "1.1.6" and (

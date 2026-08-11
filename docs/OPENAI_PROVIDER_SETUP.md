@@ -1,6 +1,6 @@
 # Setup gobernado del proveedor OpenAI
 
-## Estado vigente — recuperación P04→P05 por timeout pendiente
+## Estado vigente — recuperación P04→P05 PASS; P06 pendiente
 
 Web permanece mock/sin clave y worker real sobre
 `sha256:9048f9da77fda2b5ab8d6a974d9b4b8b5a2b6a141062bcb36751b8516691e3ab`,
@@ -13,13 +13,18 @@ contextualmente válidos, P04 persistió blueprint `READY`, y P05 respondió
 Fueron cinco Responses y USD 0.03490275; P10/P11/Sol/fallback/retries cero.
 
 El nuevo contrato transporta `DecisionOption` autocontenido; P04 1.1.7 y P05
-1.1.5 aplican ADR-030 correctamente. Antes de leer la clave, los entrypoints
-exigen fronteras hash-bound, cap y opt-ins distintos:
+1.1.5 aplican ADR-030 correctamente. Los opt-ins acoplados siguientes ya están
+cerrados y no pueden volver a leer la clave ni crear transporte:
 
 ```text
 CVA_OPENAI_BLUEPRINT_V117_V115_REMEDIATION_DECISION
 CVA_OPENAI_BLUEPRINT_V117_V115_TIMEOUT_REMEDIATION_DECISION
 CVA_OPENAI_BLUEPRINT_V117_V115_TIMEOUT_RECOVERY_APPROVAL
+```
+
+El único opt-in focal pendiente es:
+
+```text
 CVA_OPENAI_P06_V112_DECISION_LINEAGE_RECANARY_APPROVAL
 ```
 
@@ -28,9 +33,10 @@ el antiguo timeout de 120 s. Se detuvo con 2/2 Responses, USD 0.05106550 de
 charge conservador bajo cap USD 0.06 y cero P10/P11/retries/fallback/Sol. Ese
 approval está cerrado permanentemente. El perfil remediado usa 240 s en SDK y
 245 s en gateway, y la recuperación exige los opt-ins distintos de arriba,
-máximo dos Responses y el mismo cap USD 0.06. P06 usa un gate independiente de
-una request/cap USD 0.03 y no se ejecuta antes del PASS acoplado. La evidencia
-vigente es 16/18.
+máximo dos Responses y el mismo cap USD 0.06. La recuperación terminó
+PASS/PASS `READY` con exactamente dos Responses, USD 0.01645840 actual, cero
+retries/P10/P11/Sol/fallback y quedó consumida. P06 usa un gate independiente
+de una request/cap USD 0.03. La evidencia vigente es 17/18.
 
 ## Historial — P04 v1.1.6 validado; redeploy pendiente
 

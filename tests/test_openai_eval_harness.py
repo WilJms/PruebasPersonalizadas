@@ -2281,7 +2281,7 @@ def test_blueprint_v117_v115_consumption_and_hash_drift_fail_closed(
         asyncio.run(eval_harness._run_blueprint_recanary_dry_run(cases))
 
 
-def test_current_real_evidence_is_explicitly_sixteen_of_eighteen() -> None:
+def test_current_real_evidence_is_explicitly_seventeen_of_eighteen() -> None:
     by_id = {
         case["case_id"]: case
         for case in eval_harness._load_cases(eval_harness.DEFAULT_MANIFEST)
@@ -2291,7 +2291,7 @@ def test_current_real_evidence_is_explicitly_sixteen_of_eighteen() -> None:
         boundaries=eval_harness.CURRENT_REAL_EVIDENCE,
     )
 
-    assert len(rows) == 16
+    assert len(rows) == 17
     assert tuple(row["case_id"] for row in rows) == (
         eval_harness.CURRENT_REAL_EVIDENCE_CASE_IDS
     )
@@ -2303,10 +2303,31 @@ def test_current_real_evidence_is_explicitly_sixteen_of_eighteen() -> None:
     assert p04["prompt_version"] == "1.1.7"
     assert p04["prompt_hash"] == eval_harness.P04_V117_PROMPT_HASH
     assert p04["input_bundle_hash"] == eval_harness.P04_V117_INPUT_BUNDLE_HASH
-    assert eval_harness.P05_V114_RECANARY_CASE_ID not in {
-        row["case_id"] for row in rows
-    }
+    p05 = next(
+        row
+        for row in rows
+        if row["case_id"] == eval_harness.P05_V114_RECANARY_CASE_ID
+    )
+    assert p05["prompt_version"] == "1.1.5"
+    assert p05["prompt_hash"] == eval_harness.P05_V115_PROMPT_HASH
+    assert p05["input_bundle_hash"] == (
+        eval_harness.BLUEPRINT_V115_TIMEOUT_RECOVERY_P05_INPUT_BUNDLE_HASH
+    )
+    assert p05["source_checkpoint"] == (
+        "OPENAI_BLUEPRINT_V117_V115_TIMEOUT_RECOVERY_PASS"
+    )
     assert "oa-p06-happy-docx" not in {row["case_id"] for row in rows}
+
+
+def test_blueprint_timeout_recovery_is_consumed_and_report_bound() -> None:
+    assert eval_harness.BLUEPRINT_V117_V115_TIMEOUT_RECOVERY_CONSUMED is True
+    assert eval_harness.BLUEPRINT_V117_V115_TIMEOUT_RECOVERY_REPORT_SHA256 == (
+        "3452b12bf89ea0cb59c29837b054d60db0ef46ceeb950802c680e20001a94df8"
+    )
+    assert (
+        eval_harness.BLUEPRINT_V117_TIMEOUT_RECOVERY_P04_VALIDATED_OUTPUT_HASH
+        == "sha256:22dd21e3ec02380892a7e56f704c97fcc4930ed8532800c7066233ee04639286"
+    )
 
 
 def test_p06_v112_decision_lineage_recanary_dry_run_is_pinned() -> None:

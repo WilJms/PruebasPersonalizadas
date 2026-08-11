@@ -951,3 +951,26 @@
 - **Relación:** D-053, D-064, D-065, ADR-005/ADR-034,
   `OPENAI_REAL_MODEL_VALIDATION.md`, `REAL_MODEL_EVALS.md` y
   `OPENAI_COST_BUDGETS.md`.
+
+## D-067 - La recuperación acoplada promueve P05 sin retener contenido
+
+- **Resultado:** el gate distinto P04 1.1.7→P05 1.1.5 con timeout SDK/gateway
+  240/245 s terminó PASS/PASS `READY`. Las dos salidas pasaron schema del
+  proveedor, Pydantic, contexto, outcome y controles semánticos de cadena. No
+  hubo retry, P10, P11, Sol ni fallback.
+- **Frontera:** consumió exactamente 2/2 Responses, USD 0.01645840 actual, USD
+  0.04086520 de charge conservador y USD 0.05147825 de ceiling bajo cap USD
+  0.06. El reporte content-free está ligado al SHA-256
+  `3452b12bf89ea0cb59c29837b054d60db0ef46ceeb950802c680e20001a94df8` y
+  el gate queda permanentemente consumido.
+- **Evidencia:** P04 conserva su input reproducible y output validado
+  `sha256:22dd21e3…`; P05 queda ligado al envelope dinámico
+  `sha256:e8bd0e92…`. Como `store=false` no retiene el contenido del output
+  P04, el mapa valida P05 como frontera provider-derived encadenada al límite
+  P04 actual, sin inventar ni persistir contenido.
+- **Alcance:** `CURRENT_REAL_EVIDENCE` sube a 17/18. P06 no se infiere desde
+  este PASS: requiere su propia observación decision-lineage de una Responses,
+  cap USD 0.03 y rutas laterales/retries cero.
+- **Relación:** D-065, D-066, ADR-005/ADR-030/ADR-034,
+  `OPENAI_REAL_MODEL_VALIDATION.md`, `REAL_MODEL_EVALS.md` y
+  `OPENAI_COST_BUDGETS.md`.

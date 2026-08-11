@@ -10,7 +10,7 @@ con IDs únicos y clasificación obligatoria
 conserva `1.1.3`; P05 usa `1.1.5`; P11 usa `1.1.4`; P09 usa `1.1.5`; P04
 usa `1.1.7`.
 
-## Resultado vigente — P04 PASS y recuperación P05 por timeout preparada
+## Resultado vigente — recuperación P04→P05 PASS; P06 pendiente
 
 El E2E desplegado sobre `dfd102d…` ejecutó P01-P05 en dos jobs. P03 requirió
 tres decisiones recomendadas; P04 persistió un blueprint `READY`; P05 devolvió
@@ -31,13 +31,14 @@ P05 por separado: usa el output validado de P04 como input exacto de P05.
 | P06 separado | PASS dry-run; una fake Response; ceiling USD 0.023361/cap USD 0.03 |
 | Gate real consumido | P04 PASS `READY`; P05 `MODEL_TIMEOUT` a 120,016 ms; 2/2 Responses; charge USD 0.05106550/cap USD 0.06 |
 | Timeout remediado | SDK 240 s, gateway 245 s, retries 0; recuperación con opt-ins/consumo distintos y la misma frontera máxima 2/USD 0.06 |
+| Recuperación consumida | P04/P05 PASS `READY`; schema/Pydantic/contexto/outcome/controles acoplados PASS; 2/2 Responses; actual USD 0.01645840, charge USD 0.04086520, ceiling USD 0.05147825/cap USD 0.06 |
+| Hashes de recuperación | P04 output validado `sha256:22dd21e3…`; P05 input dinámico `sha256:e8bd0e92…`; reporte `3452b12bf89ea0cb59c29837b054d60db0ef46ceeb950802c680e20001a94df8` |
 
-P04 1.1.7 pasa a `CURRENT_REAL_EVIDENCE`, que contiene 16/18 casos. P05 sigue
-pendiente y P06 continúa invalidado por el nuevo lineage; el mapa anterior de
-18/18 se conserva sólo como historia. La recanary original está consumida. El
-payload dinámico P05 no puede reconstruirse después de `store=false`, así que
-la única recuperación válida repite P04→P05 bajo un gate nuevo; P06 queda
-bloqueado hasta que esa cadena pase.
+P04 1.1.7 y P05 1.1.5 pasan a `CURRENT_REAL_EVIDENCE`, que contiene 17/18
+casos. P05 se liga al hash del envelope dinámico observado; no se retiene
+contenido del output P04 porque `store=false`. Tanto la recanary original como
+su recuperación están consumidas. P06 continúa invalidado por el nuevo lineage
+y exige su propio gate de una request/cap USD 0.03.
 
 ```bash
 make openai-blueprint-v117-v115-recanary-dry-run

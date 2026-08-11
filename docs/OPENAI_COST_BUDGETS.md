@@ -1,6 +1,6 @@
 # Costos y presupuestos OpenAI
 
-Política Standard short-context observada y revalidada el 2026-08-10 en la página
+Política Standard short-context observada y revalidada el 2026-08-11 en la página
 oficial vigente. El perfil activo usa únicamente Luna; Terra y Sol se
 conservan como referencias de catálogo y no son rutas callable ni fallback.
 
@@ -14,7 +14,7 @@ Frente a los precios anteriores, Terra bajó 20% desde
 USD 2.50/0.25/15.00 y Luna bajó 80% desde USD 1.00/0.10/6.00; Sol permanece
 en USD 5.00/0.50/30.00. Los snippets indexados que aún muestran los valores
 anteriores no son autoridad: estas cifras proceden de las páginas cargadas el
-2026-08-09. El gate usa Standard, `service_tier=default`, short context y no
+2026-08-11. El gate usa Standard, `service_tier=default`, short context y no
 Batch/Flex/Fast. Fuentes canónicas operativas:
 [precios OpenAI](https://developers.openai.com/api/docs/pricing),
 [Sol](https://developers.openai.com/api/docs/models/gpt-5.6-sol),
@@ -59,14 +59,16 @@ detiene la cadena si el segundo envelope no cabe en el remanente.
 La primera observación acoplada ya está consumida: P04 respondió y P05 agotó
 el timeout de 120 s. Usó 2/2 Responses, USD 0.00970075 de costo conocido y USD
 0.05106550 de charge conservador bajo cap USD 0.06; no habilita replay. La
-recuperación remediada conserva exactamente el mismo límite monetario y de
-requests, con timeout 240/245 s y retries cero.
+recuperación remediada conservó el mismo límite monetario y de requests, con
+timeout 240/245 s y retries cero. Terminó PASS/PASS con 2/2 Responses, USD
+0.01645840 actual, USD 0.04086520 de charge y USD 0.05147825 de ceiling bajo
+cap USD 0.06; también está consumida.
 
-| Gate pendiente | Requests máximas | Ceiling full-cache-write | Cap |
+| Gate | Requests máximas | Ceiling full-cache-write | Cap |
 |---|---:|---:|---:|
-| Recuperación P04 1.1.7 → P05 1.1.5 | 2 | USD 0.04988775 dry-run; reserva real dinámica ≤ cap | USD 0.06 |
-| P06 1.1.2 con decision lineage | 1 | USD 0.02336100 | USD 0.03 |
-| Agregado máximo, sin transferencia entre gates | **3** | **USD 0.07324875** | **USD 0.09** |
+| Recuperación P04 1.1.7 → P05 1.1.5, consumida PASS | 2 | USD 0.05147825 observado | USD 0.06 |
+| P06 1.1.2 con decision lineage, pendiente | 1 | USD 0.02336100 | USD 0.03 |
+| Agregado máximo, sin transferencia entre gates | **3** | **USD 0.07483925** | **USD 0.09** |
 
 Los dry-runs pasan con 0 red/0 billable, retries 0 y P10/P11/Sol/fallback 0.
 Los caps no son bolsas intercambiables: el ahorro o stop del gate consumido no

@@ -2,7 +2,7 @@
 
 Fecha de corte: 2026-08-11 (America/Santiago).
 
-## Estado vigente — `OPENAI_REAL_BLUEPRINT_TIMEOUT_RECOVERY_REQUIRED` (2026-08-11)
+## Estado vigente — `OPENAI_REAL_P06_DECISION_LINEAGE_RECANARY_REQUIRED` (2026-08-11)
 
 El candidato `dfd102d85816de30b3b082777268388061f83585` fue construido por
 Cloud Build `78a7c1f4-b857-472b-b210-9d56e638190a`, verificado y desplegado
@@ -46,19 +46,27 @@ interno de 120 s a los 120,016 ms y terminó `MODEL_TIMEOUT`. Fueron exactamente
 fue USD 0.05106550 bajo cap USD 0.06. El reporte content-free tiene SHA-256
 `d0d27500adeee0b4b234a5ee65e3e642f9b85929cd689fc6f86beb87eee2de14`.
 
-P04 eleva la evidencia vigente a 16/18; P05 y P06 siguen pendientes. Como
-`store=false` impide reconstruir el input dinámico de P05 desde contenido, no
-se permite un replay aislado. La remediación eleva el timeout SDK a 240 s y el
-gateway a 245 s, conserva retries cero y crea un gate acoplado de recuperación
-distinto, también de máximo dos Responses y cap USD 0.06. P06 permanece
-bloqueado hasta que esa cadena complete PASS.
+La recuperación distinta terminó PASS en el SHA `1125410…`: P04 y P05
+devolvieron `READY` y pasaron schema provider, Pydantic, contexto, outcome y
+los controles semánticos acoplados. Fueron exactamente 2/2 Responses, 0
+retries/P10/P11/Sol/fallback, 48,578 ms + 47,023 ms y USD 0.01645840 actual;
+el charge conservador fue USD 0.04086520 y el ceiling USD 0.05147825 bajo cap
+USD 0.06. P05 quedó ligado al input dinámico `sha256:e8bd0e92…`; el reporte
+content-free tiene SHA-256
+`3452b12bf89ea0cb59c29837b054d60db0ef46ceeb950802c680e20001a94df8`.
+El gate está consumido y no admite replay.
 
-La regresión local completa pasa con 551 pruebas backend, 16 skips
+P04/P05 elevan la evidencia vigente a 17/18; sólo P06 sigue pendiente. La
+remediación usa timeout SDK/gateway 240/245 s y retries cero. El PASS acoplado
+abre exclusivamente el gate P06 decision-lineage ya preparado: una Responses,
+cap USD 0.03 y P10/P11/Sol/fallback/retries cero.
+
+La regresión local completa pasa con 552 pruebas backend, 16 skips
 PostgreSQL explícitos, una advertencia conocida y 80% de cobertura; el CI del
-SHA `49e2d37…` terminó 7/7 verde. Este estado no es
-`OPENAI_REAL_MANUAL_EVAL_READY`. Faltan validar y publicar la remediación de
-timeout, completar la recuperación P04→P05 y P06 reales, construir/desplegar
-el nuevo SHA y ejecutar un E2E fresco con edición P05 durable y submission.
+SHA `1125410…` terminó 7/7 verde tanto en push como en PR. Este estado no es
+`OPENAI_REAL_MANUAL_EVAL_READY`. Faltan completar P06 real,
+construir/desplegar el nuevo SHA y ejecutar un E2E fresco con edición P05
+durable y submission.
 
 ## Historial — `OPENAI_REAL_P04_V116_REMEDIATION_DEPLOY_REQUIRED` (2026-08-11)
 
