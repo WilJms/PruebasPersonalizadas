@@ -1,6 +1,6 @@
 # Setup gobernado del proveedor OpenAI
 
-## Estado vigente — rotación completa y continuación 1.1.3 pendiente de gate
+## Estado vigente — continuación 1.1.3 consumida; P05 1.1.4 pendiente de gate
 
 La clave histórica fue revocada en Platform y la sonda content-free confirmó
 rechazo HTTP 401. Secret Manager versión `1` se deshabilitó después de esa
@@ -21,12 +21,15 @@ El entrypoint P02 real queda además bloqueado por
 `OPENAI_P02_V113_RECANARY_ALREADY_CONSUMED`, aun si se repiten los valores de
 approval históricos.
 
-La continuación preparada reutiliza once PASS reales sólo mientras sus hashes,
-expected outcomes, behaviors y severidades sigan idénticos. Ejecutaría los
-siete casos restantes con máximo defensivo ocho Responses requests, ceiling
-full-cache-write USD 0.15121050 y cap humano propuesto USD 0.16. Antes de leer
-la versión `2` requiere los dos opt-ins normativos ya aceptados y una approval
-facturable nueva:
+La continuación reutilizó once PASS reales después de recomprobar hashes,
+expected outcomes, behaviors y severidades. La autorización específica fijó
+máximo ocho Responses requests y cap USD 0.16. P03/P04 pasaron y P05 falló
+Pydantic; una única P11 no reparó el root. El proceso se detuvo tras cuatro
+requests, USD 0.02438310 calculados y retries/P10/Sol/fallback cero. P06/P08/P09
+y P11 directo no se ejecutaron.
+
+Los opt-ins históricos siguientes quedaron consumidos y se conservan sólo
+como trazabilidad:
 
 ```text
 CVA_OPENAI_P01_V112_REMEDIATION_DECISION=OPENAI_P01_V112_REMEDIATION_ACCEPTED
@@ -34,10 +37,22 @@ CVA_OPENAI_P02_V113_REMEDIATION_DECISION=OPENAI_P02_V113_REMEDIATION_ACCEPTED
 CVA_OPENAI_REAL_QUALIFICATION_V113_CONTINUATION_APPROVAL=OPENAI_REAL_SYNTHETIC_QUALIFICATION_V113_CONTINUATION_APPROVED
 ```
 
-El tercer valor no ha sido concedido. El nombre anterior
-`CVA_OPENAI_REAL_QUALIFICATION_V113_APPROVAL` no abre el nuevo gate. Cloud conserva
-`CVA_MODEL_MODE=mock`, `CVA_P10_ENABLED=false`; deploy, Terraform, IAM, gasto
-adicional, P10, datos reales y main siguen fuera de autorización.
+Repetir esos valores bloquea con
+`OPENAI_QUALIFICATION_V113_CONTINUATION_ALREADY_CONSUMED` antes de construir el
+adapter. No habilitan `prompt-pack/1.1.4`.
+
+La recanary P05 candidata es una frontera separada de una sola Responses
+request, P11 cero, ceiling USD 0.02252775 y cap máximo propuesto USD 0.03. Sólo
+podría abrirse con aceptación normativa P05/P11 y el opt-in facturable nuevo:
+
+```text
+CVA_OPENAI_P05_V114_REMEDIATION_DECISION=OPENAI_P05_V114_REMEDIATION_ACCEPTED
+CVA_OPENAI_P05_V114_RECANARY_APPROVAL=OPENAI_P05_V114_RECANARY_APPROVED
+```
+
+Esos valores documentan la interfaz y no constituyen autorización. Cloud
+conserva `CVA_MODEL_MODE=mock`, `CVA_P10_ENABLED=false`; deploy, Terraform,
+IAM, gasto adicional, P10, datos reales y main siguen fuera de autorización.
 
 ## Historial — preparación 1.1.2 y rotación
 

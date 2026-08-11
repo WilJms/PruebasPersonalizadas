@@ -9,7 +9,7 @@ P10 deshabilitado; las evaluaciones OpenAI dedicadas usaron exclusivamente
 fixtures sintéticos. Los resultados históricos E1 se conservan al final y no
 se presentan como evidencia del candidato E2.
 
-## Rotación, qualification 1.1.2, P02 1.1.3 y continuación — 2026-08-10
+## Rotación, qualification 1.1.2, P02 1.1.3 y stop P05 — 2026-08-10
 
 | Prueba o gate | Resultado observado |
 |---|---|
@@ -27,16 +27,23 @@ se presentan como evidencia del candidato E2.
 | Antirrepetición P02 | PASS offline: el entrypoint real bloquea `OPENAI_P02_V113_RECANARY_ALREADY_CONSUMED` antes de credencial/transporte |
 | Reuso de evidencia | 10 PASS 1.1.2 con pares prompt/input recomputados idénticos + P02 PASS 1.1.3; drift de hash/outcome/behavior/severidad bloquea |
 | Continuación 1.1.3 dry-run | 7/7 PASS, 11 evidencias reales reutilizadas, 7 fake, 0 red/billable, máximo 8, ceiling USD 0.15121050/cap propuesto USD 0.16 |
-| Regresión focal vigente | 91 gateway+harness PASS; harness aislado 39/39 |
-| `make test-cov` vigente | 517 passed, 16 skips PostgreSQL explícitos, 1 warning deprecado conocido; 80% global sobre 10,510 statements |
+| Continuación 1.1.3 real | FAIL gobernado: P03 PASS, P04 PASS, P05 FAIL; P06/P08/P09/P11 directo no ejecutados; 4 requests incluyendo una P11; stop al primer fallo |
+| Costo continuación | USD 0.02438310 calculado; USD 0.06006390 charge conservador; USD 0.07136750 reservado; cap USD 0.16 |
+| P05 observado | provider schema PASS; Pydantic FAIL `value_error` en `/`; contexto/outcome no evaluados; P11 wrapper PASS pero target Pydantic inválido (`REPAIRED_OUTPUT_INVALID`) |
+| Antirrepetición continuación | PASS offline: la approval consumida bloquea `OPENAI_QUALIFICATION_V113_CONTINUATION_ALREADY_CONSUMED` antes de adapter/credencial/transporte |
+| Remediación P05/P11 1.1.4 | P05 explicita tabla de estados/recomendación/critical FAIL; P11 usa `UNREPAIRABLE` ante root ambiguo; contratos/schema/ruta/fixture/outcome sin cambios |
+| Recanary P05 1.1.4 dry-run | PASS; 1 fake, 0 red/billable, P11 0; input upper-bound 13,311; ceiling USD 0.02252775; cap propuesto USD 0.03; hashes fijados |
+| Regresión focal P05/P11 | 98/98 PASS: gateway y harness |
+| Regresión focal vigente | 98/98 gateway+harness PASS, incluida abstención P11 ante root ambiguo y gates P05/antirrepetición |
+| `make test-cov` vigente | 524 passed, 16 skips PostgreSQL explícitos, 1 warning deprecado conocido; 80% global sobre 10,510 statements |
 | Contratos | PASS: 53 roots, 140 definiciones, 274 referencias y 8 fixtures; schema canónico sin edición manual |
 | Secret scan | PASS: 292 archivos versionables, cero secretos de alta confianza |
 | Artefactos de deploy | 11/11 PASS; ningún archivo de deploy fue modificado |
 | Frontend | typecheck PASS; 6 archivos/34 tests PASS; build 87 módulos PASS |
 
-No se ejecutó una segunda qualification ni otra llamada después de la recanary.
-La approval P02 quedó consumida. No autoriza la continuación, deploy, cloud
-real, P10, Sol, fallback, PR o merge.
+Se ejecutó una única continuación bajo la autorización específica y se detuvo
+en P05. Esa approval y la de P02 quedaron consumidas; ninguna autoriza una
+recanary P05, deploy, cloud real, P10, Sol, fallback, PR o merge.
 
 ## Historial — preparación técnica 1.1.2 y P05 durable — 2026-08-10
 

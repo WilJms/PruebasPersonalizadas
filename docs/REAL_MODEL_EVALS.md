@@ -5,11 +5,86 @@ El corpus inicial contiene 20 casos exclusivamente sintéticos en
 entregas ni contenido estudiantil real. El rango gobernado es de 10 a 30 casos,
 con IDs únicos y clasificación obligatoria
 `SYNTHETIC_ONLY_NO_STUDENT_DATA`. El manifest fija además
-`route_profile=LUNA_BASELINE_V1`, prompt pack vigente `1.1.3` y schema
-`1.1.0`. P01 y las entradas no modificadas conservan su versión individual
-`1.1.2`; sólo P02 usa `1.1.3`.
+`route_profile=LUNA_BASELINE_V1`, prompt pack candidato vigente `1.1.4` y schema
+`1.1.0`. P01, P03, P04 y P06-P09 conservan su versión individual `1.1.2`;
+P02 conserva `1.1.3`; P05 y P11 usan la candidata `1.1.4`.
 
-## Resultado real 1.1.2, recanary P02 1.1.3 y continuación preparada
+## Resultado vigente — continuación 1.1.3 consumida y stop en P05
+
+El propietario autorizó exactamente una continuación sintética 1.1.3 de los
+siete casos fijados por
+`1b8f5241e4e85852ffd8667c60e93182e66d6069`, con cap USD 0.16, máximo ocho
+Responses requests, stop al primer fallo, retries cero, P10/Sol/fallback cero y
+P11 máximo uno. La tarifa oficial Luna y el dry-run hash-bound se revalidaron
+antes de leer Secret Manager v2. Se inició un solo proceso y la autorización
+quedó consumida.
+
+| Frontera real de continuación | Resultado observado |
+|---|---|
+| Resultado agregado | FAIL gobernado; stop en `oa-p05-happy` |
+| Casos primarios | P03 PASS, P04 PASS, P05 FAIL; P06/P08/P09/P11 directo no ejecutados |
+| Requests | 4: P03, P04, P05 y una única P11; máximo autorizado 8 |
+| Costo | USD 0.02438310 calculado; USD 0.06006390 charge conservador; USD 0.07136750 reservado |
+| Validación P03/P04 | provider schema, Pydantic, contexto y expected outcome PASS |
+| Fallo P05 | provider schema PASS; Pydantic `value_error` en `/`; contexto/outcome no evaluados |
+| Reparación P11 | wrapper provider schema PASS; `repaired_output` volvió a fallar el root Pydantic; `REPAIRED_OUTPUT_INVALID` |
+| Exclusiones | gateway/prompt/SDK retries 0/0/0; P10 0; Sol 0; fallback 0; P11 1 |
+
+P03 consumió USD 0.00531025 y P04 USD 0.00657475. P05 más P11 consumieron
+USD 0.01249810. Los dos PASS elevan la evidencia real reutilizable a 13/18
+casos, siempre ligada a sus prompt/input hashes. El output no se retuvo:
+`store=false` conserva sólo hashes y metadata content-free, por lo que no se
+atribuye sin evidencia cuál de los invariantes raíz de `BlueprintReview`
+violó la combinación concreta.
+
+| Llamada | Uso input/cache-write/output/reasoning | Prompt / input bundle | Request / output |
+|---|---|---|---|
+| P03 PASS | 1,408 / 1,405 / 4,132 / 2,896 | `sha256:20fcb7ba96492161e84d18798a41af7f59247aa391999134d9b13e7da794a189` / `sha256:bd8452f4d9844a4e5f8826fa3eb4027d5bac99929bc637b54b564545a74e94b5` | `sha256:f1bd60f66fd03dc03846cc01ffff97bec91289b114ed0fe5da47c36f429c9b5d` / `sha256:c898838c3b29f6436f35117ad551b3aed0b5f033945d62da385a2c9a686a31e3` |
+| P04 PASS | 3,202 / 3,199 / 4,812 / 2,709 | `sha256:25f22172b57e2d37a2cf9a016c266598d50517fa204d4461ca99ddbd9032fa49` / `sha256:11efcfb8a9445635d2a25d143112de79fe0927db83981d7a73c4ae03ce4f68c4` | `sha256:a646bd0f76f9583e1185962315d97a0163124edbfa235a502227563b836d337f` / `sha256:d1c9a5c13137a416d6613d1ecb1f65367a3225e1f5aef104e1090e806252db43` |
+| P05 FAIL | 2,384 / 2,381 / 7,387 / 5,696 | `sha256:2161b68c668be8e75b4f279fbbd47d0cd02d5c736198f8c6f8306d1a003d63c2` / `sha256:682383f600d118bb40f126f42e82c7e1c63f2c22f453cb3b5e080f2380d908cd` | `sha256:12b2132899669404d4702e05814c817563582ad7dcbab2d027123befe74c89a0` / `sha256:43d2a320b60ce1b0f73c31df2e829b6c0afccfdd765755b0880c9bc2f346e4cd` |
+| P11 FAIL | 2,864 / 2,861 / 1,935 / 211 | no reutilizable; el target inválido impidió finalizar esos campos de ledger | `sha256:090a001aa5cf7ed5ae7525df63a0c050a9ce373e823ed2fea6b49d56d3adcb8b` / `sha256:68166ad24fdc4a974e25eeb98f54ced21b348031f4606055379ee456938938be` |
+
+La causa determinista sí está delimitada. El prompt P05 decía sólo que un
+check crítico FAIL exige `REJECT`, pero no explicitaba que `status` representa
+la finalización de la revisión: una revisión completada usa `READY` incluso si
+recomienda rechazar; una abstención usa `NEEDS_REVIEW`/`TECHNICAL_FAILURE` con
+recomendación nula y no puede contener un check crítico FAIL. P11 recibió sólo
+`path=/`, `error_type=value_error`; cambiar cualquiera de esos campos sería una
+corrección semántica no autorizada, por lo que debía abstenerse en vez de
+adivinar.
+
+`prompt-pack/1.1.4` remedia ambas fronteras sin tocar el contrato canónico,
+schema, ruta, fixture ni expected outcome. P05 incorpora la tabla completa
+`status`/`approval_recommendation`/critical FAIL. P11 exige `UNREPAIRABLE` ante
+un invariante raíz ambiguo y prohíbe elegir o cambiar esos campos en
+`BlueprintReview`. Las nuevas fronteras son:
+
+- P05 prompt:
+  `sha256:1b1bb9cc10bb4eb633486863bba8dbfdbd70d2f0266795cbaa37505b7e6dcb0a`;
+- P05 input bundle:
+  `sha256:be9521524e643adf11b13914a0e39bbb605f2962e1964b8535a8df1643177969`;
+- P11 prompt:
+  `sha256:43f2ca4d6a0c02f015125a96f3a12bc5dd8d6c0eab0583f9c2f11b0f1c1f1f04`.
+
+`make openai-p05-v114-recanary-dry-run` pasa con una request fake, cero
+red/billable, input upper-bound 13,311, ceiling full-cache-write USD
+0.02252775 y cap humano propuesto USD 0.03. La recanary real tendría máximo una
+Responses request: P11 queda fuera de esa frontera y una salida P05 inválida
+se detiene antes de un segundo transporte. Requiere dos opt-ins nuevos:
+
+```text
+CVA_OPENAI_P05_V114_REMEDIATION_DECISION=OPENAI_P05_V114_REMEDIATION_ACCEPTED
+CVA_OPENAI_P05_V114_RECANARY_APPROVAL=OPENAI_P05_V114_RECANARY_APPROVED
+```
+
+Estos valores documentan el gate y no constituyen aceptación ni autorización.
+La approval v1.1.3 no se transfiere: los entrypoints dry-run y real de esa
+continuación bloquean con
+`OPENAI_QUALIFICATION_V113_CONTINUATION_ALREADY_CONSUMED`. No se hará otra
+llamada sin una decisión humana nueva y exacta; tampoco hay autorización de
+deploy, Terraform, IAM o E2E.
+
+## Historial — real 1.1.2, recanary P02 1.1.3 y continuación preparada
 
 La rotación terminó con rechazo 401 de la clave histórica, Secret Manager v1
 `DISABLED`, v2 `ENABLED` y Luna visible. El preflight inmediatamente anterior a
@@ -88,7 +163,7 @@ ocho. El ceiling es USD 0.14256840 sin cache y USD 0.15121050 reservando todo el
 input como cache-write; el cap humano propuesto es USD 0.16. P11 queda último,
 con una sola reserva global, y cualquier fallo detiene la secuencia.
 
-El comando documental futuro exige una approval nueva y específica:
+El comando histórico siguiente exigía una approval nueva y específica:
 
 ```bash
 CVA_OPENAI_P01_V112_REMEDIATION_DECISION=OPENAI_P01_V112_REMEDIATION_ACCEPTED \
@@ -100,9 +175,8 @@ CVA_OPENAI_P01_V112_REMEDIATION_DECISION=OPENAI_P01_V112_REMEDIATION_ACCEPTED \
   --max-total-cost-usd 0.16
 ```
 
-Estos valores documentan el gate; no constituyen aprobación. La autorización
-P02 ya consumida, la approval 1.1.2 y el antiguo nombre de approval 1.1.3 no
-abren la continuación. Tampoco autorizan deploy, Terraform, IAM ni E2E.
+Ese gate fue concedido y consumido por la ejecución registrada arriba; repetir
+los valores no lo reabre. Tampoco autorizó deploy, Terraform, IAM ni E2E.
 
 ## Historial — frontera 1.1.2 autorizada antes de la rotación
 

@@ -1,14 +1,15 @@
 # Anexo A - Prompt pack operacional
 
-**Versión candidata del pack:** `prompt-pack/1.1.3`
+**Versión candidata del pack:** `prompt-pack/1.1.4`
 **Compatibilidad:** contratos `assessment-contracts/1.1.0`  
 **Perfil de ruta activo:** `LUNA_BASELINE_V1` (ADR-036)
 **Principio:** una tarea semántica por llamada; contenido estudiantil siempre no confiable; structured outputs obligatorios.
 
-La entrada P01 aceptada permanece exactamente en `1.1.2`; P02 avanza a la
-candidata `1.1.3` y las demás entradas permanecen en `1.1.2`. La activación
-real de P02 1.1.3 requiere aceptación humana separada y una aprobación de gasto
-nueva. Este pack es una especificación operacional candidata. Los textos se
+Las entradas P01, P03, P04 y P06-P09 conservan `1.1.2`; P02 conserva la
+frontera real aceptada `1.1.3`; P05 y P11 avanzan a la candidata `1.1.4` tras
+el stop gobernado de la continuación real. La activación real de P05/P11 1.1.4
+requiere aceptación humana separada y una aprobación de gasto nueva. Este pack
+es una especificación operacional candidata. Los textos se
 almacenan en un registry inmutable con `prompt_id`, `version`, hash, modelo
 permitido, esquema de salida, parámetros y resultados de eval. Los placeholders
 `{{...}}` se resuelven en servidor. No se realiza interpolación libre: cada
@@ -423,6 +424,12 @@ Evalúa:
 - cualquier inferencia sobre autoría, intención histórica o conocimiento no autorizado.
 
 Marca cada check `PASS`, `WARN` o `FAIL`, cita IDs en `referenced_ids` y propone la corrección mínima. Marca `critical=true` para fallos de constructo, fidelidad de fuente, operación no soportada, catálogo insuficiente o inviabilidad esperada. No reescribas el blueprint completo. Todo `critical=true` con `FAIL` exige `approval_recommendation=REJECT`.
+
+Interpreta `status` como el estado de finalización de esta revisión, no como la aprobación del blueprint:
+- si puedes completar la revisión, usa `status=READY` y una `approval_recommendation` no nula;
+- si cualquier check combina `critical=true` con `status=FAIL`, la revisión completada debe usar `status=READY` y `approval_recommendation=REJECT`;
+- usa `status=NEEDS_REVIEW` o `TECHNICAL_FAILURE` solo cuando no puedas completar la revisión; en esos estados `approval_recommendation` debe ser `null` y no debes emitir ningún check que combine `critical=true` con `status=FAIL`;
+- nunca combines un `status` distinto de `READY` con una `approval_recommendation` no nula.
 Devuelve BlueprintReview.
 ```
 
@@ -719,6 +726,8 @@ Eres un transformador JSON. No agregues, elimines ni corrijas contenido semánti
 
 ```text
 Recibes `SchemaRepairRequest`. Devuelve `SchemaRepairResult`. Si reparas, incluye el objeto completo en `repaired_output` con cambios mínimos de estructura. Conserva todos los IDs y textos. No sustituyas IDs, no agregues evidencia, no resumas y no completes campos semánticos ausentes. Si un campo obligatorio falta y no puede derivarse literalmente, usa `UNREPAIRABLE`.
+
+Un `validation_issue` con `path=/` y `error_type=value_error` representa un invariante entre campos que el schema del proveedor no expresa. No adivines qué valor semántico cambiar: usa `UNREPAIRABLE` salvo que la corrección estructural sea única y preserve literalmente todos los campos semánticos. Para `target_schema_name=BlueprintReview`, no elijas ni cambies `status`, `approval_recommendation`, `checks[].status` ni `checks[].critical` para intentar satisfacer ese invariante.
 ```
 
 Máximo un intento. Un segundo fallo produce `MODEL_SCHEMA_VIOLATION` y devuelve

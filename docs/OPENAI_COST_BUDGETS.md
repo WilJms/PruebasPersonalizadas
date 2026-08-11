@@ -261,7 +261,7 @@ en cero. El P01 inicial pasó y el P02 final pasó schema provider/Pydantic ante
 de fallar contexto. La ejecución añadida por este gate es únicamente USD
 0.03258029 calculados; ceilings y charges conservadores no son costo observado.
 
-## Recanary P02 1.1.3 consumida y continuación preparada
+## Recanary P02 1.1.3 y continuación consumidas
 
 La instrucción P02 candidata aumenta su input upper-bound de 10,507 a 11,323
 tokens. El schema, output máximo y ruta permanecen iguales.
@@ -300,5 +300,36 @@ y reserva sólo los siete aún no observados más una reserva P11 global:
 | Ceiling full-cache-write | **USD 0.15121050** |
 | Cap humano propuesto | **USD 0.16** |
 
-El cap USD 0.16 todavía no está autorizado. La aprobación P02 consumida y las
-approvals anteriores no se transfieren a esta continuación.
+El cap USD 0.16 fue autorizado una sola vez. El proceso se detuvo en P05 tras
+P03, P04, P05 y una única P11:
+
+| Magnitud observada | USD | Proporción del cap USD 0.16 |
+|---|---:|---:|
+| Costo calculado desde usage | 0.02438310 | 15.24% |
+| Charge conservador | 0.06006390 | 37.54% |
+| Reserva full-cache-write creada | 0.07136750 | 44.60% |
+| Ceiling preflight autorizado | 0.15121050 | 94.51% |
+| Headroom según costo calculado | 0.13561690 | 84.76% |
+
+Las cuatro requests usaron Luna Standard. P03/P04 pasaron; P05 falló Pydantic
+y P11 no produjo un target válido. P10/Sol/fallback y retries quedaron en cero.
+La autorización no se transfiere ni puede repetirse contra 1.1.4.
+
+## Recanary P05 1.1.4 preparada, no autorizada
+
+El prompt P05 candidato añade la tabla canónica de estado/recomendación. El
+schema, output máximo y ruta permanecen iguales. Su frontera hash-bound es:
+
+| Frontera fijada | Valor |
+|---|---:|
+| Input upper-bound | 13,311 tokens |
+| Output máximo, reasoning incluido | 16,000 tokens |
+| Ceiling sin cache | USD 0.02186220 |
+| Ceiling con todo input como cache-write | **USD 0.02252775** |
+| Cap humano propuesto | **USD 0.03** |
+| Máximo de Responses requests | 1 |
+
+El dry-run usa una llamada fake, cero red/billable y P11 cero. Si P05 vuelve a
+ser inválido, `_SingleRequestAdapter` bloquea la reparación antes de un segundo
+transporte. El cap USD 0.03 no está autorizado; requiere aceptación normativa
+P05/P11 y approval facturable específicas.

@@ -1,13 +1,13 @@
 # Validación del proveedor OpenAI real
 
-Fecha de corte: 2026-08-10. Estado: la rotación terminó y la única qualification
-1.1.2 autorizada consumió 11 Responses requests sintéticas antes de detenerse
-en P02. Los primeros diez casos pasaron; el PASS real de
-`oa-p01-injection-md` cerró P0. La remediación P02 1.1.3 fue aceptada y su única
-recanary autorizada pasó en una request, cerrando P1. Las llamadas reales
-acumuladas son **18**, todas con datos sintéticos. Los siete casos posteriores
-a P02 aún no tienen evidencia real; su continuación está preparada offline y
-requiere una autorización facturable nueva. No existe autorización de deploy.
+Fecha de corte: 2026-08-10. Estado: la rotación terminó; la qualification 1.1.2
+se detuvo en P02; la recanary P02 1.1.3 cerró ese P1; y la única continuación
+1.1.3 autorizada se ejecutó después sobre el SHA fijado. P03 y P04 pasaron, P05
+falló Pydantic y su única P11 produjo un `repaired_output` todavía inválido. El
+stop se activó tras cuatro requests, elevando el total documentado a **22**,
+todas con datos sintéticos. `prompt-pack/1.1.4` remedia P05/P11 offline y
+requiere aceptación más una recanary nueva; P06/P08/P09/P11 directo siguen sin
+evidencia real. No existe autorización de otra llamada ni de deploy.
 
 ## Perfil vinculante `LUNA_BASELINE_V1`
 
@@ -24,7 +24,7 @@ modelo solicitado y el modelo efectivo observado; una identidad efectiva
 incompatible falla cerrada. ADR-035 conserva la decisión P11 Luna-low y
 ADR-036 registra el baseline Luna-only.
 
-## Resultado vigente: P01 1.1.2, P02 candidata 1.1.3 y P05 durable
+## Resultado vigente: P01 1.1.2, P02 1.1.3 y P05/P11 candidatos 1.1.4
 
 P01 distingue suficiencia de completitud: una especificación fiel y usable
 puede ser `READY` sin llenar todos los campos sourced. En cambio, todo status
@@ -61,11 +61,27 @@ solicitada/efectiva; una request; retries/P10/P11/Sol/fallback cero. Registró
 7,579 ms y USD 0.00123210 calculados frente al cap USD 0.02. La autorización
 quedó consumida.
 
-La continuación reutiliza los diez PASS 1.1.2 y el PASS P02 sólo si sus
-fronteras hash-bound permanecen idénticas. Ejecuta los siete casos no
-observados con dry-run 7/7, máximo defensivo ocho requests, ceiling
-full-cache-write USD 0.15121050 y cap humano propuesto USD 0.16. Ninguna
-approval anterior abre ese gate.
+La continuación reutilizó los diez PASS 1.1.2 y el PASS P02 sólo después de
+recomprobar sus fronteras hash-bound. El bloque autorizado con cap USD 0.16
+ejecutó P03 PASS, P04 PASS y P05 FAIL más una P11, y se detuvo antes de
+P06/P08/P09/P11 directo. Hubo cuatro requests, USD 0.02438310 calculados, USD
+0.06006390 de charge conservador y USD 0.07136750 reservados; retries,
+P10/Sol/fallback quedaron en cero. La approval quedó consumida y el código
+rechaza su reutilización antes de credencial/transporte.
+
+P05 pasó el schema estricto del proveedor pero falló el `model_validator`
+canónico con `value_error` en `/`; contexto y outcome no se evaluaron. La
+única P11 pasó su wrapper estructurado, pero el objeto objetivo volvió a fallar
+Pydantic. El output no se retuvo, así que no se inventa una causa concreta. La
+omisión determinista del prompt era la tabla de estados del review, y P11 no
+tenía una orden explícita de abstenerse ante un invariante raíz ambiguo.
+
+La candidata 1.1.4 hace explícito que una revisión completada usa `READY` con
+recomendación no nula; critical FAIL fuerza `READY`+`REJECT`; y una abstención
+usa recomendación nula sin critical FAIL. P11 devuelve `UNREPAIRABLE` en vez de
+elegir campos semánticos ante ese error raíz. El dry-run P05 1.1.4 pasa con una
+request fake, P11 cero, ceiling USD 0.02252775 y cap humano propuesto USD 0.03.
+Ninguna approval anterior abre ese gate.
 
 Las aceptaciones normativas y las autorizaciones facturables no comparten
 opt-in. El harness liga cada decisión y cada evidencia reutilizada a su
@@ -296,16 +312,17 @@ cerrada, sin P11 ni segunda request, y deja el P0 abierto para revisión.
 | Remediación P01 | PASS real exacto en `oa-p01-injection-md`; P0 cerrado, marker no propagado y frontera 1.1.2 preservada |
 | Investigación P02 | fallo histórico fail-closed; provider schema/Pydantic PASS y contexto FAIL; subtipo no recuperable entre dos clases compatibles |
 | Remediación P02 1.1.3 | aceptada y PASS real: una recanary, `READY`, todas las validaciones PASS, USD 0.00123210; P1 cerrado |
-| Continuación 1.1.3 | PASS offline 7/7; reutiliza 11 PASS hash-bound, 7 fake, 0 red/billable, máximo 8, ceiling USD 0.15121050/cap propuesto USD 0.16; approval ausente |
+| Continuación 1.1.3 | FAIL gobernado real: P03/P04 PASS, P05 FAIL más una P11; stop tras 4 requests; P06/P08/P09/P11 directo no ejecutados; USD 0.02438310; approval consumida |
+| Remediación P05/P11 1.1.4 | PASS offline: invariantes explícitas, P11 abstiene root ambiguo, recanary P05 dry-run 1 fake/P11 0, ceiling USD 0.02252775/cap propuesto USD 0.03; aceptación/approval ausentes |
 | Edición P05 durable | PASS backend/API/frontend/E2E; P2 funcional cerrado |
-| Calidad/latencia/costo y severidad | P0=0; P1=0; P2=5; P3=1; calidad pedagógica pendiente de revisión humana posterior |
+| Calidad/latencia/costo y severidad | P0=0; P1=1; P2=5; P3=1; calidad pedagógica pendiente de revisión humana posterior |
 | Build, digest y deploy real del worker | pendiente de gate posterior |
 
 El camino interactivo P05 está ya detrás del worker durable y no puede entregar
 un review mock dentro de un recorrido declarado OpenAI. El estado todavía no
-es `OPENAI_REAL_MANUAL_EVAL_READY`: deben ejecutarse y pasar los siete casos
-restantes bajo una autorización nueva y luego completarse el gate separado de
-deploy/E2E. Nada de lo anterior autoriza deploy ni mutación cloud.
+es `OPENAI_REAL_MANUAL_EVAL_READY`: deben aceptarse y observarse P05 1.1.4,
+completarse P06/P08/P09/P11 directo bajo otro gate y luego ejecutarse el gate
+separado de deploy/E2E. Nada de lo anterior autoriza deploy ni mutación cloud.
 
 Fuentes oficiales: páginas de
 [`gpt-5.6-sol`](https://developers.openai.com/api/docs/models/gpt-5.6-sol),

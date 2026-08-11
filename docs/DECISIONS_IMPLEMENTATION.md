@@ -623,3 +623,27 @@
   cambiar silenciosamente el criterio de PASS.
 - **Relación:** D-049, D-051, D-052, `REAL_MODEL_EVALS.md` y
   `OPENAI_COST_BUDGETS.md`.
+
+## D-054 - P05 1.1.4 explicita el estado del review y P11 no adivina invariantes raíz
+
+- **Decisión observada:** la única continuación 1.1.3 autorizada consumió
+  cuatro Responses requests y se detuvo en P05. P03/P04 pasaron; P05 cumplió
+  el schema provider pero falló Pydantic con `value_error` en `/`; la única
+  P11 produjo un target todavía inválido. P06/P08/P09/P11 directo no se
+  ejecutaron. El gate queda consumido y un opt-in histórico no puede reabrirlo.
+- **Remediación:** `prompt-pack/1.1.4` mantiene el contrato canónico y avanza
+  sólo P05/P11. P05 define `status` como finalización del review: una revisión
+  completada usa `READY` y recomendación; critical FAIL exige
+  `READY`+`REJECT`; una abstención usa recomendación nula y ningún critical
+  FAIL. P11 devuelve `UNREPAIRABLE` ante un `value_error` raíz ambiguo y no
+  elige campos semánticos de `BlueprintReview`.
+- **Gate:** observar P05 1.1.4 requiere aceptación normativa P05/P11 y una
+  approval billable nuevas. La recanary queda hash-bound a una sola Responses
+  request, P11 cero y cap máximo USD 0.03; la approval consumida 1.1.3 no se
+  transfiere.
+- **Razón:** el schema del proveedor no expresa `model_validator` entre
+  campos. El prompt primario debe exponer la tabla canónica, mientras una
+  reparación estructural no puede escoger silenciosamente una interpretación
+  semántica para hacer válido el objeto.
+- **Relación:** D-049, D-052, D-053, P05/P11,
+  `specification/01_Prompt_Pack_v1.1(1).md` y `REAL_MODEL_EVALS.md`.

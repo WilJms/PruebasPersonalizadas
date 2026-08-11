@@ -103,11 +103,29 @@ P02_V113_PROMPT_HASH = (
 P02_V113_INPUT_BUNDLE_HASH = (
     "sha256:2def19568376c5f297333cf9cdab552a44a04dace43b696c8d0e85da093d559c"
 )
+P05_V114_REMEDIATION_DECISION_ENV = (
+    "CVA_OPENAI_P05_V114_REMEDIATION_DECISION"
+)
+P05_V114_REMEDIATION_DECISION_VALUE = (
+    "OPENAI_P05_V114_REMEDIATION_ACCEPTED"
+)
+P05_V114_RECANARY_APPROVAL_ENV = "CVA_OPENAI_P05_V114_RECANARY_APPROVAL"
+P05_V114_RECANARY_APPROVAL_VALUE = "OPENAI_P05_V114_RECANARY_APPROVED"
+P05_V114_RECANARY_CASE_ID = "oa-p05-happy"
+P05_V114_RECANARY_HUMAN_BUDGET_USD = 0.03
+P05_V114_RECANARY_CONSUMED = False
+P05_V114_PROMPT_HASH = (
+    "sha256:1b1bb9cc10bb4eb633486863bba8dbfdbd70d2f0266795cbaa37505b7e6dcb0a"
+)
+P05_V114_INPUT_BUNDLE_HASH = (
+    "sha256:be9521524e643adf11b13914a0e39bbb605f2962e1964b8535a8df1643177969"
+)
 CANARY_CASE_PROMPTS = MappingProxyType(
     {
         "oa-p01-happy-txt": "P01_ACTIVITY_SPEC_V1",
         P01_INJECTION_RECANARY_CASE_ID: "P01_ACTIVITY_SPEC_V1",
         P02_V113_RECANARY_CASE_ID: "P02_RUBRIC_NORMALIZE_V1",
+        P05_V114_RECANARY_CASE_ID: "P05_BLUEPRINT_REVIEW_V1",
         "oa-p07-open-short-txt": "P07_QUESTION_BUILD_V1",
     }
 )
@@ -121,6 +139,9 @@ QUALIFICATION_APPROVAL_VALUE = (
 QUALIFICATION_APPROVAL_REQUIRED_CODE = (
     "OPENAI_QUALIFICATION_V113_CONTINUATION_APPROVAL_REQUIRED"
 )
+# The one continuation authorized for 1.1.3 stopped after four requests at
+# P05. No prior approval string may reopen it against a later prompt pack.
+QUALIFICATION_V113_CONTINUATION_CONSUMED = True
 P01_V112_REMEDIATION_DECISION_ENV = (
     "CVA_OPENAI_P01_V112_REMEDIATION_DECISION"
 )
@@ -1198,6 +1219,12 @@ def _assert_canary_semantics(
         "BLOCKED",
     }:
         raise AssertionError("P02 canary returned an outcome outside its manifest gate")
+    if prompt_id == "P05_BLUEPRINT_REVIEW_V1" and status not in {
+        "READY",
+        "NEEDS_REVIEW",
+        "TECHNICAL_FAILURE",
+    }:
+        raise AssertionError("P05 canary returned an outcome outside its manifest gate")
     if prompt_id == "P07_QUESTION_BUILD_V1" and status not in {
         "READY",
         "REPLACEMENT_REQUIRED",
@@ -1224,6 +1251,8 @@ def _canary_semantic_proof(
         allowed_statuses = {"READY", "NEEDS_REVIEW"}
     elif material["prompt_id"] == "P02_RUBRIC_NORMALIZE_V1":
         allowed_statuses = {"READY", "NEEDS_REVIEW", "BLOCKED"}
+    elif material["prompt_id"] == "P05_BLUEPRINT_REVIEW_V1":
+        allowed_statuses = {"READY", "NEEDS_REVIEW", "TECHNICAL_FAILURE"}
     else:
         allowed_statuses = {"READY", "REPLACEMENT_REQUIRED"}
     proof: dict[str, Any] = {
@@ -1256,6 +1285,44 @@ def _canary_semantic_proof(
                 "abstention_is_clean": (
                     status == "READY"
                     or (not output.criteria and bool(output.diagnostics))
+                ),
+            }
+        )
+    elif material["prompt_id"] == "P05_BLUEPRINT_REVIEW_V1":
+        critical_fail = any(
+            check.critical and check.status == models.ReviewCheckStatus.FAIL
+            for check in output.checks
+        )
+        proof.update(
+            {
+                "activity_id_immutable": (
+                    output.activity_id == request.activity_spec.activity_id
+                ),
+                "blueprint_id_immutable": (
+                    output.blueprint_id == request.blueprint.blueprint_id
+                ),
+                "blueprint_version_immutable": (
+                    output.blueprint_version
+                    == request.blueprint.blueprint_version
+                ),
+                "ready_has_recommendation": (
+                    status != "READY"
+                    or output.approval_recommendation is not None
+                ),
+                "non_ready_has_no_recommendation": (
+                    status == "READY"
+                    or output.approval_recommendation is None
+                ),
+                "critical_fail_forces_ready_reject": (
+                    not critical_fail
+                    or (
+                        status == "READY"
+                        and output.approval_recommendation
+                        == models.BlueprintApprovalRecommendation.REJECT
+                    )
+                ),
+                "non_ready_has_no_critical_fail": (
+                    status == "READY" or not critical_fail
                 ),
             }
         )
@@ -1804,6 +1871,10 @@ def _canary_budget_metadata(material: dict[str, Any]) -> dict[str, Any]:
         metadata["proposed_human_budget_usd"] = (
             P02_V113_RECANARY_HUMAN_BUDGET_USD
         )
+    elif material["case"]["case_id"] == P05_V114_RECANARY_CASE_ID:
+        metadata["proposed_human_budget_usd"] = (
+            P05_V114_RECANARY_HUMAN_BUDGET_USD
+        )
     return metadata
 
 
@@ -1821,6 +1892,11 @@ async def _run_canary_dry_run(cases: list[dict[str, Any]]) -> dict[str, Any]:
         or material["input_bundle_hash"] != P02_V113_INPUT_BUNDLE_HASH
     ):
         raise OpenAIEvalBlocked("OPENAI_P02_V113_RECANARY_BOUNDARY_DRIFT")
+    if case["case_id"] == P05_V114_RECANARY_CASE_ID and (
+        material["prompt_hash"] != P05_V114_PROMPT_HASH
+        or material["input_bundle_hash"] != P05_V114_INPUT_BUNDLE_HASH
+    ):
+        raise OpenAIEvalBlocked("OPENAI_P05_V114_RECANARY_BOUNDARY_DRIFT")
     fake_responses = _SyntheticCanaryResponses(
         prompt_id=material["prompt_id"],
         request=material["request"],
@@ -1895,6 +1971,10 @@ async def _run_qualification_dry_run(
     qualification = _qualification_material(
         cases, route_cap_usd=QUALIFICATION_HUMAN_BUDGET_USD
     )
+    if QUALIFICATION_V113_CONTINUATION_CONSUMED:
+        raise OpenAIEvalBlocked(
+            "OPENAI_QUALIFICATION_V113_CONTINUATION_ALREADY_CONSUMED"
+        )
     if (
         qualification["full_cache_write_ceiling_usd"]
         > QUALIFICATION_HUMAN_BUDGET_USD
@@ -2232,6 +2312,10 @@ async def _run_qualification_real(
     qualification = _qualification_material(
         cases, route_cap_usd=QUALIFICATION_HUMAN_BUDGET_USD
     )
+    if QUALIFICATION_V113_CONTINUATION_CONSUMED:
+        raise OpenAIEvalBlocked(
+            "OPENAI_QUALIFICATION_V113_CONTINUATION_ALREADY_CONSUMED"
+        )
     if max_total_cost_usd > QUALIFICATION_HUMAN_BUDGET_USD:
         raise OpenAIEvalBlocked("OPENAI_QUALIFICATION_HUMAN_CAP_EXCEEDED")
     if (
@@ -2541,6 +2625,7 @@ async def _run_canary_real(
     case = _selected_canary_case(cases)
     is_injection_recanary = case["case_id"] == P01_INJECTION_RECANARY_CASE_ID
     is_p02_v113_recanary = case["case_id"] == P02_V113_RECANARY_CASE_ID
+    is_p05_v114_recanary = case["case_id"] == P05_V114_RECANARY_CASE_ID
     if (
         is_injection_recanary
         and max_total_cost_usd > P01_INJECTION_RECANARY_HUMAN_BUDGET_USD
@@ -2551,6 +2636,11 @@ async def _run_canary_real(
         and max_total_cost_usd > P02_V113_RECANARY_HUMAN_BUDGET_USD
     ):
         raise OpenAIEvalBlocked("OPENAI_P02_V113_RECANARY_HUMAN_CAP_EXCEEDED")
+    if (
+        is_p05_v114_recanary
+        and max_total_cost_usd > P05_V114_RECANARY_HUMAN_BUDGET_USD
+    ):
+        raise OpenAIEvalBlocked("OPENAI_P05_V114_RECANARY_HUMAN_CAP_EXCEEDED")
     material = _canary_material(
         case,
         route_cap_usd=max_total_cost_usd,
@@ -2569,12 +2659,26 @@ async def _run_canary_real(
         raise OpenAIEvalBlocked("OPENAI_P02_V113_RECANARY_BOUNDARY_DRIFT")
     if is_p02_v113_recanary and P02_V113_RECANARY_CONSUMED:
         raise OpenAIEvalBlocked("OPENAI_P02_V113_RECANARY_ALREADY_CONSUMED")
+    if is_p05_v114_recanary and (
+        material["prompt_hash"] != P05_V114_PROMPT_HASH
+        or material["input_bundle_hash"] != P05_V114_INPUT_BUNDLE_HASH
+    ):
+        raise OpenAIEvalBlocked("OPENAI_P05_V114_RECANARY_BOUNDARY_DRIFT")
+    if is_p05_v114_recanary and P05_V114_RECANARY_CONSUMED:
+        raise OpenAIEvalBlocked("OPENAI_P05_V114_RECANARY_ALREADY_CONSUMED")
     if is_p02_v113_recanary and (
         os.environ.get(P02_V113_REMEDIATION_DECISION_ENV)
         != P02_V113_REMEDIATION_DECISION_VALUE
     ):
         raise OpenAIEvalBlocked(
             "OPENAI_P02_V113_REMEDIATION_HUMAN_DECISION_REQUIRED"
+        )
+    if is_p05_v114_recanary and (
+        os.environ.get(P05_V114_REMEDIATION_DECISION_ENV)
+        != P05_V114_REMEDIATION_DECISION_VALUE
+    ):
+        raise OpenAIEvalBlocked(
+            "OPENAI_P05_V114_REMEDIATION_HUMAN_DECISION_REQUIRED"
         )
     if is_injection_recanary:
         approval_env = P01_INJECTION_RECANARY_APPROVAL_ENV
@@ -2586,6 +2690,10 @@ async def _run_canary_real(
         approval_env = P02_V113_RECANARY_APPROVAL_ENV
         approval_value = P02_V113_RECANARY_APPROVAL_VALUE
         approval_required_code = "OPENAI_P02_V113_RECANARY_APPROVAL_REQUIRED"
+    elif is_p05_v114_recanary:
+        approval_env = P05_V114_RECANARY_APPROVAL_ENV
+        approval_value = P05_V114_RECANARY_APPROVAL_VALUE
+        approval_required_code = "OPENAI_P05_V114_RECANARY_APPROVAL_REQUIRED"
     else:
         approval_env = CANARY_APPROVAL_ENV
         approval_value = CANARY_APPROVAL_VALUE
@@ -2784,6 +2892,8 @@ def main() -> int:
                 code = "OPENAI_P01_INJECTION_RECANARY_APPROVAL_REQUIRED"
             elif case_id == P02_V113_RECANARY_CASE_ID:
                 code = "OPENAI_P02_V113_RECANARY_APPROVAL_REQUIRED"
+            elif case_id == P05_V114_RECANARY_CASE_ID:
+                code = "OPENAI_P05_V114_RECANARY_APPROVAL_REQUIRED"
             else:
                 code = "OPENAI_LUNA_CANARY_APPROVAL_REQUIRED"
         elif args.mode == "qualification-real":

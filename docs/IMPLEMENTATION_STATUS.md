@@ -2,7 +2,7 @@
 
 Fecha de corte: 2026-08-10 (America/Santiago).
 
-## Estado vigente — `OPENAI_REAL_V113_CONTINUATION_APPROVAL_REQUIRED` (2026-08-10)
+## Estado vigente — `OPENAI_REAL_P05_V114_REMEDIATION_APPROVAL_REQUIRED` (2026-08-10)
 
 La rotación quedó cerrada en el orden autorizado. La credencial histórica fue
 rechazada por OpenAI con HTTP 401; sólo después se deshabilitó
@@ -63,22 +63,36 @@ e input
 El harness bloquea cualquier drift de prompt, input, expected outcome, behavior
 o severidad antes de leer una credencial.
 
-La continuación preparada ejecuta sólo los siete casos aún no observados:
-P03 con rúbrica, P04, P05, P06, P08, P09 y P11. Su dry-run pasó 7/7 con siete
-transportes fake, cero red/billable, máximo defensivo de ocho Responses
-requests, ceiling sin cache USD 0.14256840 y full-cache-write USD 0.15121050.
-El cap humano propuesto es USD 0.16; P11 queda último y comparte una única
-reserva global. La approval anterior no abre este gate y se exige el nuevo
-opt-in `CVA_OPENAI_REAL_QUALIFICATION_V113_CONTINUATION_APPROVAL`. Aún no existe
-autorización para esa continuación.
+El propietario autorizó exactamente la continuación de los siete casos fijados
+por `1b8f5241e4e85852ffd8667c60e93182e66d6069`, cap USD 0.16, máximo ocho
+Responses requests, stop al primer fallo, P11 máximo uno y sin
+retries/P10/Sol/fallback. P03 y P04 pasaron todas las capas. P05 pasó schema
+provider pero falló Pydantic con `value_error` en `/`; su única P11 devolvió un
+`repaired_output` que volvió a fallar el root. El proceso se detuvo tras cuatro
+requests, antes de P06/P08/P09/P11 directo. Costos: USD 0.02438310 calculados,
+USD 0.06006390 de charge conservador y USD 0.07136750 reservados. La approval
+quedó consumida y el entrypoint bloquea su repetición.
 
-La regresión vigente pasó 517 tests con 16 skips PostgreSQL explícitos y 80%
-de cobertura; contratos, regeneración de fixtures/OpenAPI, secret scan,
-artefactos de deploy y frontend quedaron verdes sin drift generado.
+El fallo P05 es P1. Como el output no se retuvo, no se atribuye una combinación
+concreta. Sí quedó probado un hueco normativo: P05 no explicaba que `status` es
+la finalización del review, y P11 no debía adivinar campos semánticos ante un
+invariante raíz. `prompt-pack/1.1.4` explicita la tabla
+`status`/`approval_recommendation`/critical FAIL y exige `UNREPAIRABLE` para el
+root ambiguo. P05/P11 cambian a 1.1.4; P02 conserva 1.1.3 y las demás entradas
+su frontera 1.1.2.
 
-El conteo vigente es **P0=0, P1=0, P2=5, P3=1**. Este estado aún no es
-`OPENAI_REAL_MANUAL_EVAL_READY`: falta obtener la evidencia real de los siete
-casos restantes bajo una autorización nueva y, después, solicitar por separado
+La recanary P05 candidata pasó offline con una request fake, cero
+red/billable, P11 cero, input upper-bound 13,311 y ceiling USD 0.02252775. Su
+cap humano propuesto es USD 0.03 y requiere aceptación normativa P05/P11 más
+una approval facturable nueva. Ningún gate consumido concede esa decisión.
+
+La regresión focal P05/P11 y harness pasa 98 tests. `make test-cov` pasa 524,
+con 16 skips PostgreSQL explícitos, un warning deprecado conocido y 80% global
+sobre 10,510 statements. Contratos canónicos no fueron modificados.
+
+El conteo vigente es **P0=0, P1=1, P2=5, P3=1**. Este estado aún no es
+`OPENAI_REAL_MANUAL_EVAL_READY`: falta aceptar y observar P05 1.1.4, completar
+P06/P08/P09/P11 bajo otro gate y, después, solicitar por separado
 deploy/Terraform y E2E sintético real. Cloud continúa
 `CVA_MODEL_MODE=mock`, `CVA_P10_ENABLED=false`; no hubo deploy, Terraform apply,
 IAM, P10, Sol/fallback, datos reales ni merge a main.

@@ -110,10 +110,17 @@ def test_registry_is_exact_complete_and_immutable() -> None:
 
     assert PROMPT_SPECS["P01_ACTIVITY_SPEC_V1"].prompt_version == "1.1.2"
     assert PROMPT_SPECS["P02_RUBRIC_NORMALIZE_V1"].prompt_version == "1.1.3"
+    assert PROMPT_SPECS["P05_BLUEPRINT_REVIEW_V1"].prompt_version == "1.1.4"
+    assert PROMPT_SPECS["P11_SCHEMA_REPAIR_V1"].prompt_version == "1.1.4"
     assert {
         spec.prompt_version
         for prompt_id, spec in PROMPT_SPECS.items()
-        if prompt_id != "P02_RUBRIC_NORMALIZE_V1"
+        if prompt_id
+        not in {
+            "P02_RUBRIC_NORMALIZE_V1",
+            "P05_BLUEPRINT_REVIEW_V1",
+            "P11_SCHEMA_REPAIR_V1",
+        }
     } == {"1.1.2"}
     assert (
         PROMPT_SPECS["P01_ACTIVITY_SPEC_V1"].prompt_hash
@@ -124,6 +131,26 @@ def test_registry_is_exact_complete_and_immutable() -> None:
         PROMPT_CONTRACTS["P12_NOT_ALLOWED"] = ("Diagnostic", "Diagnostic")
     with pytest.raises(FrozenInstanceError):
         PROMPT_SPECS["P01_ACTIVITY_SPEC_V1"].temperature = 1.0
+
+
+def test_p05_v114_and_p11_v114_make_root_invariant_handling_explicit() -> None:
+    p05 = PROMPT_SPECS["P05_BLUEPRINT_REVIEW_V1"].developer_instruction
+    assert "estado de finalización de esta revisión" in p05
+    assert "status=READY y approval_recommendation=REJECT" in p05
+    assert "approval_recommendation debe ser null" in p05
+    assert "critical=true con status=FAIL" in p05
+
+    p11 = PROMPT_SPECS["P11_SCHEMA_REPAIR_V1"].developer_instruction
+    assert "path=/ y error_type=value_error" in p11
+    assert "usa UNREPAIRABLE" in p11
+    assert "target_schema_name=BlueprintReview" in p11
+    for protected_field in (
+        "status",
+        "approval_recommendation",
+        "checks[].status",
+        "checks[].critical",
+    ):
+        assert protected_field in p11
 
 
 @pytest.mark.parametrize("prompt_id", tuple(EXPECTED_PROMPT_CONTRACTS))
@@ -666,6 +693,36 @@ def test_direct_p11_repair_is_structural_and_target_valid() -> None:
     )
     assert isinstance(repaired, models.ActivitySpec)
     assert "unexpected_field" not in result.output.repaired_output
+
+
+def test_p11_abstains_from_ambiguous_blueprint_review_root_invariant() -> None:
+    valid_review = _invoke("P05_BLUEPRINT_REVIEW_V1").output.model_dump(
+        mode="json"
+    )
+    valid_review["status"] = "NEEDS_REVIEW"
+    valid_review["approval_recommendation"] = "APPROVE"
+    request = models.SchemaRepairRequest(
+        target_schema_name="BlueprintReview",
+        invalid_output=valid_review,
+        validation_issues=[
+            models.SchemaValidationIssue(
+                path="/",
+                error_type="value_error",
+                message="Canonical output model validation failed",
+            )
+        ],
+    )
+
+    result = asyncio.run(
+        ModelGateway().invoke(
+            "P11_SCHEMA_REPAIR_V1",
+            request,
+            build_trusted_context(request),
+        )
+    )
+
+    assert result.output.repair_status == models.RepairStatus.UNREPAIRABLE
+    assert result.output.repaired_output is None
 
 
 def test_p11_never_repairs_its_own_invalid_output_recursively() -> None:

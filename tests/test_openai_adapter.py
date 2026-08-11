@@ -716,8 +716,8 @@ def test_p11_preflight_has_one_attempt_and_luna_low_smoke_ceiling() -> None:
     )
     routes = build_openai_routes(max_call_cost_usd=0.06)
     cost = build_openai_cost_estimator(routes)(spec, token_ceiling)
-    assert token_ceiling == 8_027
-    assert cost == 0.0112054
+    assert token_ceiling == 8_502
+    assert cost == 0.0113004
     assert spec.max_transient_retries == 0
 
 

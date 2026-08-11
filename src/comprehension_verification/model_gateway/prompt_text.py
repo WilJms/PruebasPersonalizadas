@@ -1,4 +1,4 @@
-"""Executable prompt-pack 1.1.2 text for the governed model boundary.
+"""Executable versioned prompt text for the governed model boundary.
 
 Student-controlled strings remain JSON data inside the validated envelope;
 they are never interpolated into these instructions.
@@ -137,6 +137,12 @@ Evalúa:
 - cualquier inferencia sobre autoría, intención histórica o conocimiento no autorizado.
 
 Marca cada check PASS, WARN o FAIL, cita IDs en referenced_ids y propone la corrección mínima. Marca critical=true para fallos de constructo, fidelidad de fuente, operación no soportada, catálogo insuficiente o inviabilidad esperada. No reescribas el blueprint completo. Todo critical=true con FAIL exige approval_recommendation=REJECT.
+
+Interpreta status como el estado de finalización de esta revisión, no como la aprobación del blueprint:
+- si puedes completar la revisión, usa status=READY y una approval_recommendation no nula;
+- si cualquier check combina critical=true con status=FAIL, la revisión completada debe usar status=READY y approval_recommendation=REJECT;
+- usa status=NEEDS_REVIEW o TECHNICAL_FAILURE solo cuando no puedas completar la revisión; en esos estados approval_recommendation debe ser null y no debes emitir ningún check que combine critical=true con status=FAIL;
+- nunca combines un status distinto de READY con una approval_recommendation no nula.
 Devuelve BlueprintReview.
 """,
         "P06_EVIDENCE_MAP_V1": """Anota un paquete de EvidenceUnits de UNA sola submission. No resumas todo el entregable.
@@ -211,7 +217,11 @@ Devuelve EvaluationGuide; cada EvaluationGuideItem.question_id debe existir en e
 """,
         "P10_ENRICHED_CONTEXT_V1": """P10 permanece deshabilitado y no tiene ruta callable en este gate. No uses corpus de curso, internet, grounding del proveedor ni File Search sin una nueva autorización explícita. Si esta instrucción se alcanza por error, abstente sin usar conocimiento paramétrico ni ampliar el contexto.
 """,
-        "P11_SCHEMA_REPAIR_V1": """Recibes SchemaRepairRequest. Devuelve SchemaRepairResult. Si reparas, incluye el objeto completo en repaired_output con cambios mínimos de estructura. Conserva todos los IDs y textos. No sustituyas IDs, no agregues evidencia, no resumas y no completes campos semánticos ausentes. Si un campo obligatorio falta y no puede derivarse literalmente, usa UNREPAIRABLE. Esta es la única oportunidad de reparación; no hagas retry semántico ni cambies de modelo.
+        "P11_SCHEMA_REPAIR_V1": """Recibes SchemaRepairRequest. Devuelve SchemaRepairResult. Si reparas, incluye el objeto completo en repaired_output con cambios mínimos de estructura. Conserva todos los IDs y textos. No sustituyas IDs, no agregues evidencia, no resumas y no completes campos semánticos ausentes. Si un campo obligatorio falta y no puede derivarse literalmente, usa UNREPAIRABLE.
+
+Un validation_issue con path=/ y error_type=value_error representa un invariante entre campos que el schema del proveedor no expresa. No adivines qué valor semántico cambiar: usa UNREPAIRABLE salvo que la corrección estructural sea única y preserve literalmente todos los campos semánticos. Para target_schema_name=BlueprintReview, no elijas ni cambies status, approval_recommendation, checks[].status ni checks[].critical para intentar satisfacer ese invariante.
+
+Esta es la única oportunidad de reparación; no hagas retry semántico ni cambies de modelo.
 """,
     }
 )
