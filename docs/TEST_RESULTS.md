@@ -11,7 +11,7 @@ deshabilitado en todos los casos. Los
 resultados históricos E1 se conservan al final y no se presentan como evidencia
 del candidato E2.
 
-## Stop P04 fresco y remediación local v1.1.8 — 2026-08-11
+## P04 v1.1.8→P05 v1.1.5 PASS — 2026-08-11
 
 | Prueba o gate | Resultado observado |
 |---|---|
@@ -20,9 +20,15 @@ del candidato E2.
 | Stop | P04 válido devolvió `NEEDS_REVIEW` por aprobación posterior; P05/blueprint/submission = 0 |
 | Uso | 4 Responses; USD 0.02501760 real; P10/P11/Sol/fallback/retries 0 |
 | Remediación | P04 1.1.8 separa construcción/aprobación; gateway exige diagnóstico ERROR/CRITICAL para P04 no READY |
-| Evidencia vigente | 16/18 hasta recanary nueva de P04 y P05 derivado |
+| Evidencia intermedia | 16/18 hasta recanary nueva de P04 y P05 derivado |
 | Dry-run nuevo | PASS/PASS READY; 2 fake/0 red; ceiling USD 0.05020725/cap USD 0.06; seis decisiones, outcomes vacíos y niveles no inventados |
-| Regresión local | 556 passed, 16 skips PostgreSQL explícitos, 1 warning conocido; gateway+harness 127/127; contratos, secretos y diff PASS |
+| Regresión local | 557 passed, 16 skips PostgreSQL explícitos, 1 warning conocido; gateway+harness 128/128; contratos, secretos y diff PASS |
+| CI de `6bf2e18…` | push 7/7 y PR 7/7 PASS |
+| Recanary real | PASS/PASS READY; 2/2 Responses; USD 0.01433335 real; charge USD 0.04082695; ceiling USD 0.05127050/cap USD 0.06 |
+| Uso | P04 4,713 input/4,710 cache-write/5,081 output/3,098 reasoning/35,225 ms/USD 0.00727530; P05 4,996/4,993/4,841/3,364/40,643 ms/USD 0.00705805 |
+| Validación | provider schema/Pydantic/contexto/outcome/controles acoplados PASS; retries/P10/P11/Sol/fallback 0 |
+| Evidencia sellada | P04 output `sha256:515d2f97…`; P05 input `sha256:99330c4e…`; P05 output `sha256:411be35d…`; reporte `173169216efb15a0ed797d7297d553c38196219bde60f689dd0ba2a694de8ada` |
+| Estado | gate consumido; evidencia vigente 18/18; build/deploy nuevo pendiente |
 
 ## Historial — candidato remediado construido y desplegado — 2026-08-11
 

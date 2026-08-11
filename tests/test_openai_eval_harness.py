@@ -2224,7 +2224,7 @@ def test_blueprint_v118_v115_consumption_and_hash_drift_fail_closed(
         asyncio.run(eval_harness._run_blueprint_recanary_dry_run(cases))
 
 
-def test_current_real_evidence_excludes_invalidated_p04_and_p05() -> None:
+def test_current_real_evidence_is_complete_after_v118_coupled_pass() -> None:
     by_id = {
         case["case_id"]: case
         for case in eval_harness._load_cases(eval_harness.DEFAULT_MANIFEST)
@@ -2234,16 +2234,34 @@ def test_current_real_evidence_excludes_invalidated_p04_and_p05() -> None:
         boundaries=eval_harness.CURRENT_REAL_EVIDENCE,
     )
 
-    assert len(rows) == 16
+    assert len(rows) == 18
     assert tuple(row["case_id"] for row in rows) == (
         eval_harness.CURRENT_REAL_EVIDENCE_CASE_IDS
     )
-    assert eval_harness.P04_V116_RECANARY_CASE_ID not in {
-        row["case_id"] for row in rows
-    }
-    assert eval_harness.P05_V114_RECANARY_CASE_ID not in {
-        row["case_id"] for row in rows
-    }
+    p04 = next(
+        row
+        for row in rows
+        if row["case_id"] == eval_harness.P04_V116_RECANARY_CASE_ID
+    )
+    assert p04["prompt_version"] == "1.1.8"
+    assert p04["prompt_hash"] == eval_harness.P04_V118_PROMPT_HASH
+    assert p04["input_bundle_hash"] == eval_harness.P04_V118_INPUT_BUNDLE_HASH
+    assert p04["source_checkpoint"] == (
+        "OPENAI_BLUEPRINT_V118_V115_COUPLED_P04_PASS"
+    )
+    p05 = next(
+        row
+        for row in rows
+        if row["case_id"] == eval_harness.P05_V114_RECANARY_CASE_ID
+    )
+    assert p05["prompt_version"] == "1.1.5"
+    assert p05["prompt_hash"] == eval_harness.P05_V115_PROMPT_HASH
+    assert p05["input_bundle_hash"] == (
+        eval_harness.BLUEPRINT_V118_REAL_P05_INPUT_BUNDLE_HASH
+    )
+    assert p05["source_checkpoint"] == (
+        "OPENAI_BLUEPRINT_V118_V115_COUPLED_PASS"
+    )
     p06 = next(
         row
         for row in rows
@@ -2258,6 +2276,41 @@ def test_current_real_evidence_excludes_invalidated_p04_and_p05() -> None:
     assert p06["source_checkpoint"] == (
         "OPENAI_P06_V112_DECISION_LINEAGE_RECANARY_PASS"
     )
+
+
+def test_blueprint_v118_real_gate_is_consumed_and_report_bound() -> None:
+    report_path = (
+        ROOT
+        / "reports/openai/blueprint_v118_v115_recanary_6bf2e18.json"
+    )
+    report_bytes = report_path.read_bytes()
+    report = json.loads(report_bytes)
+
+    assert eval_harness.BLUEPRINT_V118_V115_RECANARY_CONSUMED is True
+    assert eval_harness.BLUEPRINT_V118_V115_RECANARY_PASSED is True
+    assert eval_harness.sha256(report_bytes).hexdigest() == (
+        eval_harness.BLUEPRINT_V118_V115_RECANARY_REPORT_SHA256
+    )
+    assert report["status"] == "PASS"
+    assert report["network_calls"] == report["billable_calls"] == 2
+    assert report["actual_cost_usd"] == 0.01433335
+    assert report["budget_charged_usd"] == 0.04082695
+    assert report["estimated_ceiling_usd"] == 0.0512705
+    assert report["p10_calls"] == report["p11_calls"] == 0
+    assert report["fallback_calls"] == report["sol_calls"] == 0
+    p04, p05 = report["cases"]
+    assert p04["validated_output_hash"] == (
+        eval_harness.BLUEPRINT_V118_REAL_P04_VALIDATED_OUTPUT_HASH
+    )
+    assert p05["input_bundle_hash"] == (
+        eval_harness.BLUEPRINT_V118_REAL_P05_INPUT_BUNDLE_HASH
+    )
+    assert p05["validated_output_hash"] == (
+        eval_harness.BLUEPRINT_V115_V118_REAL_P05_VALIDATED_OUTPUT_HASH
+    )
+    assert all(case["status"] == "PASS" for case in report["cases"])
+    assert all(case["output_status"] == "READY" for case in report["cases"])
+    assert all(all(case["controls"].values()) for case in report["cases"])
 
 
 def test_blueprint_timeout_recovery_is_consumed_and_report_bound() -> None:

@@ -1040,10 +1040,13 @@
 - **Cierre determinista:** el gateway añade
   `P04_NONREADY_WITHOUT_BLOCKING_DIAGNOSTIC`; una salida como la observada falla
   cerrada y no puede reutilizarse como stage run válido.
-- **Evidencia y gate:** el cambio invalida P04 y el P05 derivado, dejando 16/18
-  fronteras vigentes. La nueva recanary P04 1.1.8→P05 1.1.5 está hash-bound,
-  reproduce seis decisiones/outcomes vacíos/niveles ausentes, limita a dos
-  Responses y USD 0.06, y se detiene al primer fallo sin rutas laterales. Su
-  dry-run pasa con ceiling USD 0.05020725; la observación real sigue pendiente.
+- **Evidencia y gate:** el cambio invalidó P04 y el P05 derivado, dejando 16/18
+  fronteras durante la remediación. La recanary P04 1.1.8→P05 1.1.5 reproduce
+  seis decisiones/outcomes vacíos/niveles ausentes y terminó PASS/PASS `READY`:
+  2/2 Responses, USD 0.01433335 real, charge USD 0.04082695 y ceiling USD
+  0.05127050 bajo cap USD 0.06, sin rutas laterales ni retries. El reporte
+  content-free queda ligado a
+  `173169216efb15a0ed797d7297d553c38196219bde60f689dd0ba2a694de8ada`; el gate
+  está consumido y la evidencia vigente vuelve a 18/18.
 - **Relación:** D-068, D-069, ADR-030/ADR-034, `REAL_MODEL_EVALS.md`,
   `OPENAI_REAL_MODEL_VALIDATION.md` y `OPENAI_COST_BUDGETS.md`.

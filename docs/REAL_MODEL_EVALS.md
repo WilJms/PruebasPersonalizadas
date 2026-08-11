@@ -10,7 +10,7 @@ con IDs únicos y clasificación obligatoria
 conserva `1.1.3`; P05 usa `1.1.5`; P11 usa `1.1.4`; P09 usa `1.1.5`; P04
 usa `1.1.8`.
 
-## Resultado vigente — E2E detenido en P04; recanary v1.1.8 pendiente
+## Resultado vigente — recanary v1.1.8 PASS; deploy pendiente
 
 El E2E fresco del digest desplegado creó la actividad sintética
 `act_a2d0acdf5d948c365ca8`. P01-P03 y seis decisiones docentes durables pasaron;
@@ -22,12 +22,15 @@ executions, cuatro Responses, USD 0.02501760 real, P10/P11/Sol/fallback/retries
 cero.
 
 P04 1.1.8 explicita que `status` describe la construcción, no la aprobación, y
-el gateway rechaza un P04 no listo sin diagnóstico `ERROR`/`CRITICAL`. La
-evidencia vigente baja preventivamente a 16/18: P04 cambió y el input P05 es
-derivado. El nuevo gate P04→P05 reproduce seis decisiones, outcomes vacíos y
-niveles no inventados. Su dry-run pasa con 2 fake/0 red, ambos `READY`, ceiling
-USD 0.05020725/cap USD 0.06 y cero rutas laterales. La recanary real distinta
-es el siguiente gate; todavía no se autoriza build/deploy del nuevo SHA.
+el gateway rechaza un P04 no listo sin diagnóstico `ERROR`/`CRITICAL`. El gate
+P04→P05 reproduce seis decisiones, outcomes vacíos y niveles no inventados. Su
+dry-run pasó con 2 fake/0 red. La única recanary real distinta también pasó:
+P04/P05 `READY`, exactamente 2/2 Responses, USD 0.01433335 real, charge USD
+0.04082695 y ceiling USD 0.05127050 bajo cap USD 0.06. Provider schema,
+Pydantic, contexto, outcome y controles acoplados pasaron; P10/P11/Sol/fallback
+y retries fueron cero. El gate queda consumido y la evidencia vigente vuelve a
+18/18. El siguiente paso es construir/desplegar el SHA que contenga la
+remediación; no se reutiliza el digest anterior.
 
 ```bash
 make openai-blueprint-v118-v115-recanary-dry-run

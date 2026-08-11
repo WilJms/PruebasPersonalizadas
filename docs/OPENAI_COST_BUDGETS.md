@@ -71,12 +71,12 @@ cap USD 0.06; también está consumida.
 | Agregado máximo, sin transferencia entre gates | **3** | **USD 0.07483925** | **USD 0.09** |
 
 El E2E fresco posterior consumió cuatro Responses y USD 0.02501760 antes del
-stop P04. Ese gasto no amplía ningún gate. La remediación P04 1.1.8 tiene una
-recanary acoplada distinta y todavía no consumida:
+stop P04. Ese gasto no amplía ningún gate. La remediación P04 1.1.8 tuvo una
+recanary acoplada distinta, ya consumida PASS:
 
-| Gate pendiente | Requests máximas | Ceiling full-cache-write | Cap |
+| Gate | Requests usadas/máximas | Costo real | Charge / ceiling / cap |
 |---|---:|---:|---:|
-| P04 1.1.8 → P05 1.1.5 | 2 | USD 0.05020725 | USD 0.06 |
+| P04 1.1.8 → P05 1.1.5, consumida PASS | 2/2 | USD 0.01433335 | USD 0.04082695 / USD 0.05127050 / USD 0.06 |
 
 El guard reserva el ceiling antes de cada transporte, usa retries cero y
 prohíbe P10/P11/Sol/fallback. Si P04 no termina `READY`, P05 no se ejecuta.

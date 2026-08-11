@@ -2,7 +2,7 @@
 
 Fecha de corte: 2026-08-11 (America/Santiago).
 
-## Estado vigente — `OPENAI_REAL_P04_V118_RECANARY_PENDING` (2026-08-11)
+## Estado vigente — `OPENAI_REAL_REMEDIATION_DEPLOY_REQUIRED` (2026-08-11)
 
 El E2E fresco sobre el digest desplegado se detuvo en P04 después de dos jobs,
 dos Cloud Run executions y cuatro Responses. P01-P03 pasaron y seis decisiones
@@ -13,11 +13,19 @@ submission; costo real USD 0.02501760, con P10/P11/Sol/fallback/retries cero.
 
 La remediación local eleva P04 a 1.1.8, separa construcción de aprobación y
 rechaza toda salida P04 no `READY` que no tenga un diagnóstico bloqueante
-`ERROR`/`CRITICAL`. `CURRENT_REAL_EVIDENCE` queda en 16/18 mientras P04 y su
-P05 derivado esperan la nueva recanary. El dry-run gobernado reproduce seis
-decisiones/outcomes vacíos/niveles ausentes y pasa P04→P05 con 2 fake Responses,
-ceiling USD 0.05020725/cap USD 0.06 y rutas laterales cero. La suite local pasa
-556 pruebas, con 16 skips PostgreSQL explícitos y una advertencia conocida.
+`ERROR`/`CRITICAL`. El dry-run gobernado reproduce seis decisiones/outcomes
+vacíos/niveles ausentes y pasa P04→P05 con 2 fake Responses.
+
+La recanary real distinta terminó PASS/PASS `READY`, exactamente 2/2 Responses,
+USD 0.01433335 real, charge USD 0.04082695 y ceiling USD 0.05127050 bajo cap
+USD 0.06. Provider schema/Pydantic/contexto/outcome y todos los controles
+acoplados pasaron; retries/P10/P11/Sol/fallback fueron cero. El reporte
+content-free está ligado a
+`173169216efb15a0ed797d7297d553c38196219bde60f689dd0ba2a694de8ada`; el gate
+queda consumido y `CURRENT_REAL_EVIDENCE` vuelve a 18/18. La suite local pasa
+557 pruebas, con 16 skips PostgreSQL explícitos y una advertencia conocida; CI
+del SHA `6bf2e18…` terminó 7/7 verde en push y 7/7 verde en PR. Falta
+construir/desplegar un digest nuevo antes de repetir el E2E.
 
 ## Historial — `OPENAI_REAL_MANUAL_EVAL_PENDING` (2026-08-11)
 

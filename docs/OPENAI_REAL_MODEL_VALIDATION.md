@@ -1,11 +1,10 @@
 # Validación del proveedor OpenAI real
 
-Fecha de corte: 2026-08-11. Estado: el E2E fresco del candidato desplegado se
-detuvo en P04 por una nueva desalineación de `status`. P04 avanza a 1.1.8 y la
-evidencia vigente queda preventivamente en **16/18** hasta una recanary
-acoplada nueva.
+Fecha de corte: 2026-08-11. Estado: P04 1.1.8 y su P05 derivado pasaron una
+recanary acoplada nueva. La evidencia vigente vuelve a **18/18** y el siguiente
+checkpoint es build/deploy.
 
-## Resultado vigente: stop P04 y remediación v1.1.8 local
+## Resultado vigente: P04 v1.1.8→P05 v1.1.5 PASS
 
 La actividad sintética `act_a2d0acdf5d948c365ca8` ejecutó P01-P03, persistió
 seis decisiones y reanudó una vez. P04 produjo un catálogo utilizable y válido,
@@ -18,9 +17,18 @@ La remediación P04 1.1.8 obliga `READY` para una construcción completa aunque
 `approved_by/approved_at` sean null y añade el código contextual
 `P04_NONREADY_WITHOUT_BLOCKING_DIAGNOSTIC`. El gate nuevo reproduce exactamente
 la clase del caso: seis decisiones, outcomes vacíos, dos criterios sin niveles
-inventados, N=1, diez minutos y dos formatos. El dry-run P04→P05 termina
-PASS/PASS `READY`, 2 fake/0 red, ceiling USD 0.05020725 bajo cap USD 0.06, sin
-P10/P11/Sol/fallback/retries. La observación real aún no se ha consumido.
+inventados, N=1, diez minutos y dos formatos.
+
+La observación real terminó PASS/PASS `READY`: exactamente 2/2 Responses, USD
+0.01433335 real, USD 0.04082695 de charge conservador y USD 0.05127050 de
+ceiling dinámico bajo cap USD 0.06. P04 usó 4,713 input/4,710 cache-write/5,081
+output/3,098 reasoning en 35,225 ms; P05 usó 4,996/4,993/4,841/3,364 en 40,643
+ms. Provider schema, Pydantic, contexto, outcome y todos los controles pasaron;
+P10/P11/Sol/fallback/retries quedaron en cero. P04 output validado
+`sha256:515d2f97…` encadenó el input P05 `sha256:99330c4e…`; el reporte
+content-free tiene SHA-256
+`173169216efb15a0ed797d7297d553c38196219bde60f689dd0ba2a694de8ada`.
+El gate está consumido y `CURRENT_REAL_EVIDENCE` vuelve a 18/18.
 
 ## Historial: 18/18 desplegado antes del stop fresco
 
