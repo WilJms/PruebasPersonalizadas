@@ -21,17 +21,19 @@ from comprehension_verification.model_gateway.prompt_text import (
 )
 
 
-PROMPT_VERSION: Final = "1.1.5"
+PROMPT_VERSION: Final = "1.1.6"
 SYSTEM_PROMPT_ID: Final = "SYS_EVIDENCE_BOUND_V1"
 P11_SYSTEM_PROMPT_ID: Final = "SYS_SCHEMA_REPAIR_V1"
 PROMPT_ENTRY_VERSIONS: Final[Mapping[str, str]] = MappingProxyType(
     {
         # Accepted entries retain their observed boundary. P05 and P11 advance
         # after the stopped 1.1.3 continuation exposed an ambiguous root-level
-        # BlueprintReview invariant and an unsafe repair guess. P09 alone
-        # advances after the stopped 1.1.4 continuation exposed a contextual
-        # relationship failure at an otherwise schema-valid boundary.
+        # BlueprintReview invariant and an unsafe repair guess. P09 advances
+        # after the stopped 1.1.4 continuation exposed a contextual relationship
+        # failure. P04 advances after the first product E2E exposed a canonical
+        # cross-field invariant that provider JSON Schema cannot express.
         "P02_RUBRIC_NORMALIZE_V1": "1.1.3",
+        "P04_BLUEPRINT_BUILD_V1": "1.1.6",
         "P05_BLUEPRINT_REVIEW_V1": "1.1.4",
         "P09_GUIDE_BUILD_V1": "1.1.5",
         "P11_SCHEMA_REPAIR_V1": "1.1.4",
@@ -43,6 +45,7 @@ PROMPT_SCHEMA_COMPATIBILITY: Final = frozenset(
         ("1.1.3", "1.1.0"),
         ("1.1.4", "1.1.0"),
         ("1.1.5", "1.1.0"),
+        ("1.1.6", "1.1.0"),
     }
 )
 

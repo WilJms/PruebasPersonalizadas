@@ -5,11 +5,46 @@ El corpus inicial contiene 20 casos exclusivamente sintéticos en
 entregas ni contenido estudiantil real. El rango gobernado es de 10 a 30 casos,
 con IDs únicos y clasificación obligatoria
 `SYNTHETIC_ONLY_NO_STUDENT_DATA`. El manifest fija además
-`route_profile=LUNA_BASELINE_V1`, prompt pack candidato `1.1.5` y schema
-`1.1.0`. P01, P03, P04 y P06-P08 conservan su versión individual `1.1.2`;
-P02 conserva `1.1.3`; P05/P11 usan `1.1.4`; P09 candidata usa `1.1.5`.
+`route_profile=LUNA_BASELINE_V1`, prompt pack candidato `1.1.6` y schema
+`1.1.0`. P01, P03 y P06-P08 conservan su versión individual `1.1.2`; P02
+conserva `1.1.3`; P05/P11 usan `1.1.4`; P09 usa `1.1.5`; P04 usa `1.1.6`.
 
-## Resultado vigente — E2E real detenido en P03 por decisión docente
+## Resultado vigente — P04 v1.1.6 PASS; deploy de remediación pendiente
+
+La decisión docente resolvió las seis ambigüedades P03 en la UI y el segundo
+job reutilizó P01-P03 sin transporte. P04 v1.1.2 devolvió schema provider PASS
+pero falló Pydantic; una P11 estructural fue `SCHEMA_VALID` sin satisfacer el
+contrato destino. El proceso se detuvo con job `FAILED` y actividad
+`TECHNICAL_FAILURE`, antes de P05/blueprint/submission.
+
+| Frontera de producto | Resultado observado |
+|---|---|
+| P03 durable | seis decisiones persistidas; un nuevo job y una ejecución; P01-P03 cache-hit de stage, 0 Responses |
+| P04 v1.1.2 | `SCHEMA_INVALID`; 4,662 input, 4,659 cache-write, 6,951 output, 2,463 reasoning; USD 0.00950655 |
+| P11 v1.1.4 | una reparación, `SCHEMA_VALID` pero target Pydantic inválido; 7,079 input, 7,076 cache-write, 194 output, 53 reasoning; USD 0.00200240 |
+| Agregado E2E | 5 Responses desde el inicio, USD 0.02453340; P10/Sol/fallback/retries 0 |
+| Stop | `job_38cda767879d8f37f1d2` `FAILED`/`PERMANENT`; `cva-worker-99fk7` exit 1; blueprint/submission/P05 0 |
+
+P04 v1.1.6 explicita las relaciones canónicas invisibles al JSON Schema. La
+primera recanary quedó inconclusa porque su reporte no fue retenido; `store=false`
+impidió recuperarlo y el gate se cerró. Una observación de recuperación
+separada sobre exactamente los mismos hashes terminó **PASS `READY`**:
+
+| Frontera real P04 v1.1.6 | Resultado observado |
+|---|---|
+| Requests | 1/1; gate de recuperación consumido; recanary original también consumida |
+| Validación | provider schema, Pydantic, contexto y expected outcome PASS; todos los controles semánticos PASS |
+| Uso | 3,554 input; 3,551 cached; 0 cache-write; 4,422 output; 2,588 reasoning |
+| Latencia | 35,515 ms |
+| Costo | USD 0.00537802 calculado; USD 0.01927162 charge; USD 0.02442225 ceiling; cap USD 0.03 |
+| Prompt/input | `sha256:95989468bf10f1d23d2090d7aeb378c24c073ea509dc1e9830396b2fba32b98b` / `sha256:7320de03d1d88dff8ba6442e2fb929d5e2a05532691a9fe40a08603e7f9b4091` |
+| Request/output | `sha256:cfb9adb89d8e820d78418098d932e48cd477c414deb510cabbff1b403e621dbd` / `sha256:1c04e1e0aa65614dc5c23d39bd0daafcf2b3adcd82af4c1b35899180c5f3fe70` |
+
+No se retuvo contenido del proveedor. El mapa real vuelve a cubrir 18/18
+fronteras actuales, pero el runtime desplegado aún usa P04 v1.1.2; falta
+construir y desplegar el candidato antes de repetir un E2E sintético desde cero.
+
+## Historial — E2E real detenido en P03 por decisión docente
 
 El primer E2E real autorizado atravesó la UI y ejecutó exclusivamente P01,
 P02 y P03 sobre el bundle sintético fijado. Las tres salidas pasaron schema y
@@ -609,7 +644,9 @@ actividad y submission, recorrió P01-P09 en nueve tareas semánticas, observó
 v1.1.4, la recanary P09 v1.1.5 y la canary P11 directa v1.1.4 quedaron
 consumidas; P11 terminó PASS y completó 18/18 fronteras reales. El gate de
 build/deploy posterior quedó PASS sobre `sha256:979600…aaeb`, sin ejecutar el
-Job; el E2E real conserva su gate billable separado.
+Job. El E2E real posterior se detuvo en P04 v1.1.2; la recuperación focal P04
+v1.1.6 terminó PASS y vuelve a completar 18/18 fronteras actuales. El digest
+existente no contiene esa remediación y el próximo E2E requiere redeploy.
 
 ## Recorrido humano preparado
 

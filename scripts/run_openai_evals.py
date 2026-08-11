@@ -104,6 +104,36 @@ P02_V113_PROMPT_HASH = (
 P02_V113_INPUT_BUNDLE_HASH = (
     "sha256:2def19568376c5f297333cf9cdab552a44a04dace43b696c8d0e85da093d559c"
 )
+P04_V116_REMEDIATION_DECISION_ENV = (
+    "CVA_OPENAI_P04_V116_REMEDIATION_DECISION"
+)
+P04_V116_REMEDIATION_DECISION_VALUE = (
+    "OPENAI_P04_V116_REMEDIATION_ACCEPTED"
+)
+P04_V116_RECANARY_APPROVAL_ENV = "CVA_OPENAI_P04_V116_RECANARY_APPROVAL"
+P04_V116_RECANARY_APPROVAL_VALUE = "OPENAI_P04_V116_RECANARY_APPROVED"
+P04_V116_RECANARY_CASE_ID = "oa-p04-happy"
+P04_V116_RECANARY_HUMAN_BUDGET_USD = 0.03
+# The single hash-bound observation was consumed on 2026-08-11. Its transport
+# report was not durably captured, so governance treats the result as
+# inconclusive while permanently preventing a replay.
+P04_V116_RECANARY_CONSUMED = True
+P04_V116_EVIDENCE_RECOVERY_APPROVAL_ENV = (
+    "CVA_OPENAI_P04_V116_EVIDENCE_RECOVERY_APPROVAL"
+)
+P04_V116_EVIDENCE_RECOVERY_APPROVAL_VALUE = (
+    "OPENAI_P04_V116_EVIDENCE_RECOVERY_APPROVED"
+)
+# The separate one-request recovery observation passed on 2026-08-11 after the
+# original report was lost outside the harness. Both gates are permanently
+# consumed; neither historical approval string can create another transport.
+P04_V116_EVIDENCE_RECOVERY_CONSUMED = True
+P04_V116_PROMPT_HASH = (
+    "sha256:95989468bf10f1d23d2090d7aeb378c24c073ea509dc1e9830396b2fba32b98b"
+)
+P04_V116_INPUT_BUNDLE_HASH = (
+    "sha256:7320de03d1d88dff8ba6442e2fb929d5e2a05532691a9fe40a08603e7f9b4091"
+)
 P05_V114_REMEDIATION_DECISION_ENV = (
     "CVA_OPENAI_P05_V114_REMEDIATION_DECISION"
 )
@@ -160,6 +190,7 @@ CANARY_CASE_PROMPTS = MappingProxyType(
         "oa-p01-happy-txt": "P01_ACTIVITY_SPEC_V1",
         P01_INJECTION_RECANARY_CASE_ID: "P01_ACTIVITY_SPEC_V1",
         P02_V113_RECANARY_CASE_ID: "P02_RUBRIC_NORMALIZE_V1",
+        P04_V116_RECANARY_CASE_ID: "P04_BLUEPRINT_BUILD_V1",
         P05_V114_RECANARY_CASE_ID: "P05_BLUEPRINT_REVIEW_V1",
         P09_V115_RECANARY_CASE_ID: "P09_GUIDE_BUILD_V1",
         P11_V114_DIRECT_CASE_ID: "P11_SCHEMA_REPAIR_V1",
@@ -210,7 +241,8 @@ class _ReusedRealEvidenceBoundary:
 
 
 # The stopped 1.1.2 qualification produced ten PASS rows before P02. Later
-# gates supplied P02, P03, P04, P05, P06 and P08. Reuse is allowed only while
+# gates supplied P02, P03, P04, P05, P06 and P08. P04 now binds to its 1.1.6
+# recanary; reuse is allowed only while
 # every executable and manifest boundary below remains byte-for-byte identical.
 QUALIFICATION_REUSED_REAL_EVIDENCE = MappingProxyType(
     {
@@ -372,21 +404,15 @@ QUALIFICATION_REUSED_REAL_EVIDENCE = MappingProxyType(
                 "OPENAI_REAL_QUALIFICATION_V113_CONTINUATION_CASE_PASS"
             ),
         ),
-        "oa-p04-happy": _ReusedRealEvidenceBoundary(
+        P04_V116_RECANARY_CASE_ID: _ReusedRealEvidenceBoundary(
             prompt_id="P04_BLUEPRINT_BUILD_V1",
-            prompt_version="1.1.2",
-            prompt_hash=(
-                "sha256:25f22172b57e2d37a2cf9a016c266598d50517fa204d4461ca99ddbd9032fa49"
-            ),
-            input_bundle_hash=(
-                "sha256:11efcfb8a9445635d2a25d143112de79fe0927db83981d7a73c4ae03ce4f68c4"
-            ),
+            prompt_version="1.1.6",
+            prompt_hash=P04_V116_PROMPT_HASH,
+            input_bundle_hash=P04_V116_INPUT_BUNDLE_HASH,
             expected="VALID",
             behavior="happy",
             defect_severity_if_failed="P1",
-            source_checkpoint=(
-                "OPENAI_REAL_QUALIFICATION_V113_CONTINUATION_CASE_PASS"
-            ),
+            source_checkpoint="OPENAI_P04_V116_EVIDENCE_RECOVERY_PASS",
         ),
         P05_V114_RECANARY_CASE_ID: _ReusedRealEvidenceBoundary(
             prompt_id="P05_BLUEPRINT_REVIEW_V1",
@@ -1010,6 +1036,13 @@ def _validated_reused_real_evidence(
             raise OpenAIEvalBlocked(
                 "OPENAI_QUALIFICATION_P05_V114_BOUNDARY_DRIFT"
             )
+        if case_id == P04_V116_RECANARY_CASE_ID and (
+            spec.prompt_hash != P04_V116_PROMPT_HASH
+            or input_bundle_hash != P04_V116_INPUT_BUNDLE_HASH
+        ):
+            raise OpenAIEvalBlocked(
+                "OPENAI_QUALIFICATION_P04_V116_BOUNDARY_DRIFT"
+            )
 
         observed_boundary = (
             case.get("prompt_id"),
@@ -1409,6 +1442,12 @@ def _assert_canary_semantics(
         "BLOCKED",
     }:
         raise AssertionError("P02 canary returned an outcome outside its manifest gate")
+    if prompt_id == "P04_BLUEPRINT_BUILD_V1" and status not in {
+        "READY",
+        "NEEDS_REVIEW",
+        "BLOCKED",
+    }:
+        raise AssertionError("P04 canary returned an outcome outside its manifest gate")
     if prompt_id == "P05_BLUEPRINT_REVIEW_V1" and status not in {
         "READY",
         "NEEDS_REVIEW",
@@ -1457,6 +1496,8 @@ def _canary_semantic_proof(
         allowed_statuses = {"READY", "NEEDS_REVIEW"}
     elif material["prompt_id"] == "P02_RUBRIC_NORMALIZE_V1":
         allowed_statuses = {"READY", "NEEDS_REVIEW", "BLOCKED"}
+    elif material["prompt_id"] == "P04_BLUEPRINT_BUILD_V1":
+        allowed_statuses = {"READY", "NEEDS_REVIEW", "BLOCKED"}
     elif material["prompt_id"] == "P05_BLUEPRINT_REVIEW_V1":
         allowed_statuses = {"READY", "NEEDS_REVIEW", "TECHNICAL_FAILURE"}
     elif material["prompt_id"] == "P09_GUIDE_BUILD_V1":
@@ -1495,6 +1536,107 @@ def _canary_semantic_proof(
                 "abstention_is_clean": (
                     status == "READY"
                     or (not output.criteria and bool(output.diagnostics))
+                ),
+            }
+        )
+    elif material["prompt_id"] == "P04_BLUEPRINT_BUILD_V1":
+        dimensions = output.dimensions
+        variants = [
+            variant
+            for dimension in dimensions
+            for variant in dimension.evidence_variants
+        ]
+        opportunities = [
+            opportunity
+            for variant in variants
+            for opportunity in variant.question_opportunities
+        ]
+        dimension_ids = [item.dimension_id for item in dimensions]
+        variant_ids = [item.variant_id for item in variants]
+        opportunity_ids = [
+            item.opportunity_template_id for item in opportunities
+        ]
+        rubric_ids = (
+            {item.criterion_id for item in request.rubric_spec.criteria}
+            if request.rubric_spec is not None
+            else {
+                item.statement_id
+                for collection in (
+                    request.activity_spec.learning_outcomes,
+                    request.activity_spec.expected_products,
+                    request.activity_spec.requirements,
+                )
+                for item in collection
+            }
+        )
+        learning_outcome_ids = {
+            item.statement_id for item in request.activity_spec.learning_outcomes
+        }
+        constraints = output.assessment_constraints
+        variant_operations_valid = all(
+            len(variant.supported_operations)
+            == len(
+                {
+                    item.cognitive_operation
+                    for item in variant.supported_operations
+                }
+            )
+            and all(
+                opportunity.cognitive_operation
+                in {
+                    item.cognitive_operation
+                    for item in variant.supported_operations
+                }
+                for opportunity in variant.question_opportunities
+            )
+            for variant in variants
+        )
+        proof.update(
+            {
+                "activity_id_immutable": (
+                    output.activity_id == request.activity_spec.activity_id
+                ),
+                "decision_ids_exact": (
+                    set(output.decision_ids)
+                    == {item.decision_id for item in request.resolved_decisions}
+                    and len(output.decision_ids)
+                    == len(request.resolved_decisions)
+                ),
+                "source_reference_ids_only": all(
+                    set(item.criterion_ids).issubset(rubric_ids)
+                    and set(item.learning_outcome_ids).issubset(
+                        learning_outcome_ids
+                    )
+                    for item in dimensions
+                ),
+                "trusted_constraints_exact": (
+                    constraints.question_count
+                    == request.blueprint_policy.question_count
+                    and constraints.target_total_minutes
+                    == request.blueprint_policy.target_total_minutes
+                    and set(constraints.allowed_response_formats)
+                    == set(request.blueprint_policy.allowed_response_formats)
+                    and constraints.structured_justification_policy
+                    == request.blueprint_policy.structured_justification_policy
+                ),
+                "catalog_ids_unique": (
+                    len(dimension_ids) == len(set(dimension_ids))
+                    and len(variant_ids) == len(set(variant_ids))
+                    and len(opportunity_ids) == len(set(opportunity_ids))
+                ),
+                "variant_operations_closed": variant_operations_valid,
+                "opportunity_formats_allowed": all(
+                    set(item.allowed_response_formats).issubset(
+                        set(constraints.allowed_response_formats)
+                    )
+                    for item in opportunities
+                ),
+                "justification_templates_exist": set(
+                    constraints.structured_justification_policy
+                    .selected_opportunity_template_ids
+                ).issubset(set(opportunity_ids)),
+                "human_approval_absent": (
+                    output.approved_by is None and output.approved_at is None
                 ),
             }
         )
@@ -2172,6 +2314,10 @@ def _canary_budget_metadata(material: dict[str, Any]) -> dict[str, Any]:
         metadata["proposed_human_budget_usd"] = (
             P02_V113_RECANARY_HUMAN_BUDGET_USD
         )
+    elif material["case"]["case_id"] == P04_V116_RECANARY_CASE_ID:
+        metadata["proposed_human_budget_usd"] = (
+            P04_V116_RECANARY_HUMAN_BUDGET_USD
+        )
     elif material["case"]["case_id"] == P05_V114_RECANARY_CASE_ID:
         metadata["proposed_human_budget_usd"] = (
             P05_V114_RECANARY_HUMAN_BUDGET_USD
@@ -2201,6 +2347,11 @@ async def _run_canary_dry_run(cases: list[dict[str, Any]]) -> dict[str, Any]:
         or material["input_bundle_hash"] != P02_V113_INPUT_BUNDLE_HASH
     ):
         raise OpenAIEvalBlocked("OPENAI_P02_V113_RECANARY_BOUNDARY_DRIFT")
+    if case["case_id"] == P04_V116_RECANARY_CASE_ID and (
+        material["prompt_hash"] != P04_V116_PROMPT_HASH
+        or material["input_bundle_hash"] != P04_V116_INPUT_BUNDLE_HASH
+    ):
+        raise OpenAIEvalBlocked("OPENAI_P04_V116_RECANARY_BOUNDARY_DRIFT")
     if case["case_id"] == P05_V114_RECANARY_CASE_ID and (
         material["prompt_hash"] != P05_V114_PROMPT_HASH
         or material["input_bundle_hash"] != P05_V114_INPUT_BUNDLE_HASH
@@ -2952,16 +3103,24 @@ async def _run_qualification_real(
 
 
 async def _run_canary_real(
-    cases: list[dict[str, Any]], *, max_total_cost_usd: float
+    cases: list[dict[str, Any]],
+    *,
+    max_total_cost_usd: float,
+    p04_evidence_recovery: bool = False,
 ) -> dict[str, Any]:
     """Run one explicitly approved canary with a hard one-request boundary."""
 
     case = _selected_canary_case(cases)
     is_injection_recanary = case["case_id"] == P01_INJECTION_RECANARY_CASE_ID
     is_p02_v113_recanary = case["case_id"] == P02_V113_RECANARY_CASE_ID
+    is_p04_v116_recanary = case["case_id"] == P04_V116_RECANARY_CASE_ID
     is_p05_v114_recanary = case["case_id"] == P05_V114_RECANARY_CASE_ID
     is_p09_v115_recanary = case["case_id"] == P09_V115_RECANARY_CASE_ID
     is_p11_v114_direct = case["case_id"] == P11_V114_DIRECT_CASE_ID
+    if p04_evidence_recovery and not is_p04_v116_recanary:
+        raise OpenAIEvalBlocked(
+            "OPENAI_P04_V116_EVIDENCE_RECOVERY_CASE_REQUIRED"
+        )
     if (
         is_injection_recanary
         and max_total_cost_usd > P01_INJECTION_RECANARY_HUMAN_BUDGET_USD
@@ -2972,6 +3131,19 @@ async def _run_canary_real(
         and max_total_cost_usd > P02_V113_RECANARY_HUMAN_BUDGET_USD
     ):
         raise OpenAIEvalBlocked("OPENAI_P02_V113_RECANARY_HUMAN_CAP_EXCEEDED")
+    if (
+        is_p04_v116_recanary
+        and not p04_evidence_recovery
+        and max_total_cost_usd > P04_V116_RECANARY_HUMAN_BUDGET_USD
+    ):
+        raise OpenAIEvalBlocked("OPENAI_P04_V116_RECANARY_HUMAN_CAP_EXCEEDED")
+    if (
+        p04_evidence_recovery
+        and max_total_cost_usd > P04_V116_RECANARY_HUMAN_BUDGET_USD
+    ):
+        raise OpenAIEvalBlocked(
+            "OPENAI_P04_V116_EVIDENCE_RECOVERY_HUMAN_CAP_EXCEEDED"
+        )
     if (
         is_p05_v114_recanary
         and max_total_cost_usd > P05_V114_RECANARY_HUMAN_BUDGET_USD
@@ -3005,6 +3177,30 @@ async def _run_canary_real(
         raise OpenAIEvalBlocked("OPENAI_P02_V113_RECANARY_BOUNDARY_DRIFT")
     if is_p02_v113_recanary and P02_V113_RECANARY_CONSUMED:
         raise OpenAIEvalBlocked("OPENAI_P02_V113_RECANARY_ALREADY_CONSUMED")
+    if is_p04_v116_recanary and (
+        material["prompt_hash"] != P04_V116_PROMPT_HASH
+        or material["input_bundle_hash"] != P04_V116_INPUT_BUNDLE_HASH
+    ):
+        code = (
+            "OPENAI_P04_V116_EVIDENCE_RECOVERY_BOUNDARY_DRIFT"
+            if p04_evidence_recovery
+            else "OPENAI_P04_V116_RECANARY_BOUNDARY_DRIFT"
+        )
+        raise OpenAIEvalBlocked(code)
+    if (
+        is_p04_v116_recanary
+        and not p04_evidence_recovery
+        and P04_V116_RECANARY_CONSUMED
+    ):
+        raise OpenAIEvalBlocked("OPENAI_P04_V116_RECANARY_ALREADY_CONSUMED")
+    if p04_evidence_recovery and not P04_V116_RECANARY_CONSUMED:
+        raise OpenAIEvalBlocked(
+            "OPENAI_P04_V116_EVIDENCE_RECOVERY_PRIOR_OBSERVATION_REQUIRED"
+        )
+    if p04_evidence_recovery and P04_V116_EVIDENCE_RECOVERY_CONSUMED:
+        raise OpenAIEvalBlocked(
+            "OPENAI_P04_V116_EVIDENCE_RECOVERY_ALREADY_CONSUMED"
+        )
     if is_p05_v114_recanary and (
         material["prompt_hash"] != P05_V114_PROMPT_HASH
         or material["input_bundle_hash"] != P05_V114_INPUT_BUNDLE_HASH
@@ -3033,6 +3229,13 @@ async def _run_canary_real(
         raise OpenAIEvalBlocked(
             "OPENAI_P02_V113_REMEDIATION_HUMAN_DECISION_REQUIRED"
         )
+    if is_p04_v116_recanary and (
+        os.environ.get(P04_V116_REMEDIATION_DECISION_ENV)
+        != P04_V116_REMEDIATION_DECISION_VALUE
+    ):
+        raise OpenAIEvalBlocked(
+            "OPENAI_P04_V116_REMEDIATION_HUMAN_DECISION_REQUIRED"
+        )
     if is_p05_v114_recanary and (
         os.environ.get(P05_V114_REMEDIATION_DECISION_ENV)
         != P05_V114_REMEDIATION_DECISION_VALUE
@@ -3057,6 +3260,16 @@ async def _run_canary_real(
         approval_env = P02_V113_RECANARY_APPROVAL_ENV
         approval_value = P02_V113_RECANARY_APPROVAL_VALUE
         approval_required_code = "OPENAI_P02_V113_RECANARY_APPROVAL_REQUIRED"
+    elif p04_evidence_recovery:
+        approval_env = P04_V116_EVIDENCE_RECOVERY_APPROVAL_ENV
+        approval_value = P04_V116_EVIDENCE_RECOVERY_APPROVAL_VALUE
+        approval_required_code = (
+            "OPENAI_P04_V116_EVIDENCE_RECOVERY_APPROVAL_REQUIRED"
+        )
+    elif is_p04_v116_recanary:
+        approval_env = P04_V116_RECANARY_APPROVAL_ENV
+        approval_value = P04_V116_RECANARY_APPROVAL_VALUE
+        approval_required_code = "OPENAI_P04_V116_RECANARY_APPROVAL_REQUIRED"
     elif is_p05_v114_recanary:
         approval_env = P05_V114_RECANARY_APPROVAL_ENV
         approval_value = P05_V114_RECANARY_APPROVAL_VALUE
@@ -3203,6 +3416,11 @@ async def _run_canary_real(
     }
     return {
         "mode": "canary-real",
+        "evidence_gate": (
+            "P04_V116_EVIDENCE_RECOVERY"
+            if p04_evidence_recovery
+            else "STANDARD_CANARY"
+        ),
         "prompt_pack_version": PROMPT_VERSION,
         "route_profile": OPENAI_ROUTE_PROFILE_ID,
         "classification": "SYNTHETIC_ONLY_NO_STUDENT_DATA",
@@ -3247,11 +3465,14 @@ def main() -> int:
     )
     parser.add_argument("--allow-billable", action="store_true")
     parser.add_argument("--max-total-cost-usd", type=float, default=0.0)
+    parser.add_argument("--p04-evidence-recovery", action="store_true")
     args = parser.parse_args()
     cases = _load_cases(args.manifest)
     manifest_cases = cases
     if args.mode in {"qualification-dry-run", "qualification-real"} and args.case_id:
         parser.error("qualification modes use the fixed versioned case sequence")
+    if args.p04_evidence_recovery and args.mode != "canary-real":
+        parser.error("P04 evidence recovery requires --mode canary-real")
     if args.case_id:
         selected_ids = set(args.case_id)
         known_ids = {str(case["case_id"]) for case in cases}
@@ -3280,6 +3501,12 @@ def main() -> int:
                 code = "OPENAI_P01_INJECTION_RECANARY_APPROVAL_REQUIRED"
             elif case_id == P02_V113_RECANARY_CASE_ID:
                 code = "OPENAI_P02_V113_RECANARY_APPROVAL_REQUIRED"
+            elif case_id == P04_V116_RECANARY_CASE_ID:
+                code = (
+                    "OPENAI_P04_V116_EVIDENCE_RECOVERY_APPROVAL_REQUIRED"
+                    if args.p04_evidence_recovery
+                    else "OPENAI_P04_V116_RECANARY_APPROVAL_REQUIRED"
+                )
             elif case_id == P05_V114_RECANARY_CASE_ID:
                 code = "OPENAI_P05_V114_RECANARY_APPROVAL_REQUIRED"
             elif case_id == P09_V115_RECANARY_CASE_ID:
@@ -3314,7 +3541,9 @@ def main() -> int:
             coroutine = _run_canary_dry_run(cases)
         elif args.mode == "canary-real":
             coroutine = _run_canary_real(
-                cases, max_total_cost_usd=args.max_total_cost_usd
+                cases,
+                max_total_cost_usd=args.max_total_cost_usd,
+                p04_evidence_recovery=args.p04_evidence_recovery,
             )
         elif args.mode == "qualification-dry-run":
             coroutine = _run_qualification_dry_run(cases)

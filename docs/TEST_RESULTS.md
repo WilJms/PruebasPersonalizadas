@@ -5,12 +5,36 @@ Fecha de corte documental: 2026-08-11 (America/Santiago; ejecución cloud hasta
 
 Este archivo registra únicamente resultados observados. Las credenciales y
 capacidades no se registran. Los recorridos cloud E2 históricos usaron mock; el
-primer E2E real del corte usa exclusivamente el fixture sintético autorizado y
-se detiene en P03. P10 permaneció deshabilitado en todos los casos. Los
+primer E2E real del corte usa exclusivamente el fixture sintético autorizado,
+se reanuda tras seis decisiones P03 y se detiene en el fallo P04. P10
+permaneció deshabilitado en todos los casos. Los
 resultados históricos E1 se conservan al final y no se presentan como evidencia
 del candidato E2.
 
-## E2E OpenAI real detenido correctamente en P03 — 2026-08-11
+## Continuación P03, fallo P04 y recuperación P04 v1.1.6 — 2026-08-11
+
+| Prueba o gate | Resultado observado |
+|---|---|
+| Decisiones P03 | seis recomendaciones seleccionadas y seis `PolicyDecision` durables; una acción `Guardar y reanudar blueprint` |
+| Job/ejecución | `job_38cda767879d8f37f1d2`, intento 1; `cva-worker-99fk7`, task 1/1, exit 1, `maxRetries=0`; P01-P03 reutilizados sin Responses |
+| Stop P04 v1.1.2 | provider schema PASS, Pydantic FAIL; P11 único `SCHEMA_VALID` sin reparar el target; job `FAILED`/`PERMANENT`, actividad `TECHNICAL_FAILURE` |
+| Responses P04/P11 | 2 nuevas; P04 4,662 input/4,659 cache-write/6,951 output/2,463 reasoning; P11 7,079/7,076/194/53 |
+| Costo P04/P11 | USD 0.00950655 + USD 0.00200240 = USD 0.01150895; E2E de producto acumulado USD 0.02453340 y 5 Responses |
+| Efectos excluidos | P05=0, blueprint=0, submission=0, P10/Sol/fallback/retry=0; ningún build, deploy, Terraform, IAM o secreto modificado |
+| Remediación P04 | prompt pack 1.1.6; invariantes cross-field y referencias allowlist explícitos; prompt/input `sha256:95989468…` / `sha256:7320de03…` |
+| Primera observación | una request consumida, reporte de transporte no archivado; Platform confirmó gasto pero `store=false` mostró 0 logs; resultado `INCONCLUSIVE`, sin replay |
+| Gate de recuperación | PASS `READY`, 1/1 Responses, schema/Pydantic/contexto/outcome PASS; 3,554 input, 3,551 cached, 4,422 output, 2,588 reasoning; 35,515 ms |
+| Costo recuperación | USD 0.00537802 calculado, USD 0.01927162 charge conservador, ceiling USD 0.02442225, cap USD 0.03 |
+| Controles recuperación | Luna-high; P10/P11/Sol/fallback/retries 0; request/output hashes seguros; ambos gates consumidos y antirrepetición activa |
+| Regresión local candidata | backend 556 passed/16 skips/1 warning conocido y 80% de cobertura; gateway+harness 127/127; frontend typecheck, 34/34 tests y build PASS; deploy 11/11; seguridad 2/2; Terraform fmt/validate, contratos, fixtures, OpenAPI, audit npm, secretos y diff PASS |
+
+El reporte durable de recuperación tiene SHA-256
+`c47db41ae010c38e3bfe4c3c461d04fac50f5e0d17774e884836b5c90bb9402a`;
+no contiene payload, output, clave ni request ID en claro. Esta evidencia cierra
+la frontera focal P04 v1.1.6, pero no autoriza implícitamente un build, deploy o
+segundo E2E.
+
+## Historial — E2E OpenAI real detenido correctamente en P03 — 2026-08-11
 
 | Prueba o gate | Resultado observado |
 |---|---|

@@ -1086,6 +1086,9 @@ def _assessment() -> models.Assessment:
             blueprint_id="blueprint_demo",
             blueprint_version=1,
             parser_versions={"text": "mock-parser/1"},
+            # This fixture lineage is part of previously observed real input
+            # bundles. Keep the historical pack marker stable when unrelated
+            # prompt entries advance.
             prompt_versions={"pack": "1.1.5"},
             model_snapshots={"mock": "deterministic-mock-v1"},
             policy_hash=HASH_D,

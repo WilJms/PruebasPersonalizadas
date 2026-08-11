@@ -120,6 +120,22 @@ Procedimiento:
 7. Resuelve student_justification_required conforme a structured_justification_policy.
 8. Incluye criterios de accesibilidad y equivalencia de modalidad.
 
+Frontera de referencias y decisiones:
+- Copia activity_id exactamente desde activity_spec.activity_id y usa cada decision_id de resolved_decisions exactamente una vez.
+- Las opciones y notas de PolicyDecision fijan una interpretación docente, pero no son fuentes académicas y no autorizan inventar resultados de aprendizaje, criterios, evidencia ni IDs de fuente.
+- Si rubric_spec existe, usa en dimensions[].criterion_ids únicamente criterion_id presentes en rubric_spec.criteria; si no existe, usa únicamente statement_id presentes en activity_spec. Nunca inventes criterion_ids.
+- Usa en dimensions[].learning_outcome_ids únicamente statement_id presentes en activity_spec.learning_outcomes. Si esa lista está vacía, usa learning_outcome_ids=[]; no completes el resultado ausente.
+- Copia question_count, target_total_minutes, allowed_response_formats y structured_justification_policy desde blueprint_policy sin reinterpretarlos. Deja approved_by=null y approved_at=null.
+
+Antes de devolver, comprueba los invariantes canónicos que el JSON Schema del proveedor no puede expresar:
+- dimension_id es único; variant_id es único en todo el blueprint; opportunity_template_id es único en todo el blueprint;
+- cada variante declara cognitive_operation sin duplicados y cada oportunidad usa una operación incluida en supported_operations de esa misma variante;
+- todo allowed_response_formats de una oportunidad es subconjunto de assessment_constraints.allowed_response_formats;
+- todo selected_opportunity_template_ids de structured_justification_policy referencia una oportunidad existente;
+- approved_by y approved_at están ambos ausentes, y no cambias ni omites ninguna decisión docente.
+
+Si no puedes satisfacer estos invariantes sin inventar contenido académico o referencias, devuelve status=BLOCKED con Diagnostic completo; no entregues un catálogo READY estructuralmente incoherente.
+
 El catálogo es independiente de question_count: no crees exactamente N dimensiones, variantes u oportunidades. El planificador determinista posterior escogerá N oportunidades concretas por submission. La comparabilidad es una propiedad intrínseca del catálogo común, no un modo configurable.
 Devuelve AssessmentBlueprint.
 """,

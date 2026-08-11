@@ -862,3 +862,30 @@
   único job de actividad.
 - **Relación:** D-062, ADR-030/ADR-034, `REAL_MODEL_EVALS.md`,
   `OPENAI_COST_BUDGETS.md` y `TEST_RESULTS.md`.
+
+## D-064 - P04 explicita invariantes no expresables y la evidencia perdida no se presume PASS
+
+- **Observación de producto:** seis decisiones P03 recomendadas se
+  persistieron y una sola reanudación reutilizó P01-P03. P04 v1.1.2 cumplió el
+  schema estricto del proveedor, pero falló un `model_validator` raíz de
+  `AssessmentBlueprint`; una P11 estructural no reparó el contrato destino.
+  Job y task terminaron FAIL y no se continuó a P05.
+- **Decisión normativa:** P04 v1.1.6 enumera las referencias allowlist y las
+  relaciones entre IDs únicos, operación soportada, formatos permitidos,
+  selección de justificación, decisiones exactas y campos de aprobación. Estas
+  reglas ya existían en el contrato canónico, pero JSON Schema no puede
+  expresar todas sus relaciones entre campos.
+- **Evidencia fail-closed:** la primera observación P04 v1.1.6 consumió una
+  request, pero su stdout quedó en una sesión de orquestación no archivada.
+  Como `store=false` produjo cero logs recuperables, el resultado se declaró
+  `INCONCLUSIVE`; no se infirió PASS ni se reabrió el gate original.
+- **Recuperación separada:** la autorización amplia posterior se materializó
+  como un gate distinto, fijado a los mismos hashes, una request, cap USD 0.03,
+  P11/retries/P10/Sol/fallback cero y reporte durable precreado. Terminó PASS
+  `READY` con schema/Pydantic/contexto/outcome PASS y USD 0.00537802. Ambos
+  gates quedan permanentemente consumidos.
+- **Alcance:** el PASS focal vuelve a cubrir 18/18 fronteras actuales, pero no
+  cambia el digest desplegado ni sustituye build, plan Terraform o E2E de
+  producto sobre P04 v1.1.6.
+- **Relación:** D-053, D-054, D-056, D-063, ADR-005/ADR-034,
+  `OPENAI_REAL_MODEL_VALIDATION.md` y `REAL_MODEL_EVALS.md`.

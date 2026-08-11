@@ -1,11 +1,44 @@
 # Validación del proveedor OpenAI real
 
-Fecha de corte: 2026-08-11. Estado: el primer E2E real se detuvo correctamente
-en P03 con `NEEDS_REVIEW`. El total documentado sube a **31** Responses
-requests, todas con fixtures sintéticos. La evidencia real hash-bound cubre
-18/18 casos y P0/P1 siguen cerrados; el producto conserva un gate humano P03.
+Fecha de corte: 2026-08-11. Estado: P03 fue resuelto de forma durable, el E2E
+se detuvo correctamente en P04 y la remediación focal P04 v1.1.6 terminó PASS.
+El total documentado es **35** Responses requests, todas con fixtures
+sintéticos: 33 con reporte completo, una observación P04 inconclusa cuyo gate
+quedó consumido y una recuperación P04 PASS. La evidencia hash-bound vuelve a
+cubrir 18/18 casos actuales; falta desplegar el prompt nuevo y repetir el E2E.
 
-## Resultado vigente: tres llamadas E2E válidas y parada P03
+## Resultado vigente: P04 v1.1.6 real PASS tras stop de producto
+
+Las seis interpretaciones recomendadas P03 se persistieron y la única acción
+de reanudación creó un job/una ejecución. P01-P03 se reutilizaron sin llamadas.
+P04 v1.1.2 pasó schema del proveedor pero falló Pydantic; la única P11
+permitida no reparó el contrato destino. P04 y P11 consumieron dos Responses y
+USD 0.01150895; el E2E acumula cinco Responses y USD 0.02453340. El job quedó
+`FAILED`/`PERMANENT`, Cloud Run exit 1 y no se ejecutó P05 ni se creó blueprint
+o submission.
+
+P04 v1.1.6 añade instrucciones explícitas para IDs únicos, operación soportada,
+formatos permitidos, referencias de justificación, allowlists de fuente,
+decisiones exactas y ausencia de aprobación humana. La primera observación
+aislada quedó `INCONCLUSIVE` porque el orquestador no archivó stdout; el
+transporte `store=false` dejó 0 logs recuperables y no se repitió ese gate.
+Una recuperación separada, con máximo una request y cap USD 0.03, terminó PASS
+`READY`:
+
+| Magnitud P04 v1.1.6 | Observado |
+|---|---|
+| Validaciones | provider schema PASS; Pydantic PASS; contexto PASS; expected outcome PASS |
+| Frontera | Luna-high; 1/1 Responses; P10/P11/Sol/fallback/retries 0 |
+| Uso | 3,554 input; 3,551 cached; 4,422 output; 2,588 reasoning; 35,515 ms |
+| Costo | USD 0.00537802 actual; USD 0.01927162 charge; USD 0.02442225 ceiling; cap USD 0.03 |
+| Prompt/input | `sha256:95989468…` / `sha256:7320de03…` |
+| Request/output | `sha256:cfb9adb8…` / `sha256:1c04e1e0…` |
+
+Ambos gates P04 están consumidos. Ninguna salida, request ID o clave se retuvo
+en claro; el reporte content-free tiene SHA-256
+`c47db41ae010c38e3bfe4c3c461d04fac50f5e0d17774e884836b5c90bb9402a`.
+
+## Historial: tres llamadas E2E válidas y parada P03
 
 Sobre el SHA/digest desplegado autorizado, P01, P02 y P03 usaron Luna y
 terminaron `SCHEMA_VALID`, intento 1. Sus tres stage runs quedaron
@@ -391,13 +424,16 @@ cerrada, sin P11 ni segunda request, y deja el P0 abierto para revisión.
 | Edición P05 durable | PASS backend/API/frontend/E2E; P2 funcional cerrado |
 | Calidad/latencia/costo y severidad | P0=0; P1=0; P2=5; P3=1; calidad pedagógica pendiente de revisión humana posterior |
 | Build, digest y deploy real del worker | PASS cloud: build `613270cf…` SUCCESS/VERIFIED; digest `sha256:979600…aaeb`; apply exacto 1/2/0; web mock sin clave y worker real v2; dos planes posteriores sin cambios |
+| Primer E2E real, tramo P01-P03 | PASS técnico y stop humano: 3 Responses; P03 `NEEDS_REVIEW`; USD 0.01302445 |
+| Reanudación P03 y stop P04 | seis decisiones durables; P01-P03 reutilizados; P04 + P11 fallan el target Pydantic; 2 Responses, USD 0.01150895; job/ejecución FAIL, sin P05/blueprint/submission |
+| P04 1.1.6 recuperación real | PASS `READY`: schema/Pydantic/contexto/outcome PASS, 1 request, USD 0.00537802, P10/P11/Sol/fallback/retries 0; recanary inconclusa y recuperación consumidas; corpus actual 18/18 |
 
 El camino interactivo P05 está ya detrás del worker durable y no puede entregar
-un review mock dentro de un recorrido declarado OpenAI. El candidato quedó
-construido y desplegado sin ejecutar el Job. El estado todavía no es
-`OPENAI_REAL_MANUAL_EVAL_READY`: falta ejecutar el E2E sintético real bajo una
-autorización billable separada. Nada de lo anterior autoriza gasto adicional,
-jobs, E2E o datos estudiantiles reales.
+un review mock dentro de un recorrido declarado OpenAI. El digest desplegado
+todavía contiene P04 v1.1.2; el estado no es `OPENAI_REAL_MANUAL_EVAL_READY`.
+Falta cerrar regresión/CI, construir y desplegar P04 v1.1.6 y ejecutar un E2E
+sintético nuevo. Los gates P04 ya consumidos no autorizan por sí solos otro
+build, job, E2E o datos estudiantiles reales.
 
 Fuentes oficiales: páginas de
 [`gpt-5.6-sol`](https://developers.openai.com/api/docs/models/gpt-5.6-sol),

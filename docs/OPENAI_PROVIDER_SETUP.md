@@ -1,6 +1,34 @@
 # Setup gobernado del proveedor OpenAI
 
-## Estado vigente — worker real desplegado; E2E detenido en P03
+## Estado vigente — P04 v1.1.6 validado; redeploy pendiente
+
+Web permanece mock y sin clave. Worker sigue real sobre el digest
+`sha256:97960034f6c4c6c3b2967d186035f0940e481f9e2c9bf9df24213cd30d31aaeb`,
+con clave v2, P10 false, USD 0.55, 1/1 y `maxRetries=0`; ese digest todavía
+contiene P04 v1.1.2.
+
+Después de seis decisiones P03 durables, una única reanudación reutilizó
+P01-P03 y ejecutó P04 más una P11. P04 pasó el schema del proveedor pero falló
+Pydantic; P11 no reparó el contrato destino. El job y la task terminaron FAIL
+y se detuvieron antes de P05, blueprint y submission. El E2E acumula cinco
+Responses y USD 0.02453340, sin P10/Sol/fallback/retries.
+
+P04 v1.1.6 explicita las invariantes cross-field que originaron el fallo. La
+primera observación quedó inconclusa por pérdida externa del reporte y se cerró
+sin replay; un gate de recuperación separado terminó PASS `READY` con una
+Responses, USD 0.00537802 y schema/Pydantic/contexto/outcome PASS. Los dos
+gates están consumidos:
+
+```text
+OPENAI_P04_V116_RECANARY_ALREADY_CONSUMED
+OPENAI_P04_V116_EVIDENCE_RECOVERY_ALREADY_CONSUMED
+```
+
+El siguiente paso es construir y desplegar un SHA nuevo mediante los gates
+Cloud Build/digest/Terraform; la evidencia focal no mutó cloud ni autoriza una
+ejecución adicional por sí sola.
+
+## Historial — worker real desplegado; E2E detenido en P03
 
 Web permanece en mock y sin clave. Worker está desplegado en modo real sobre
 el digest inmutable `sha256:97960034f6c4c6c3b2967d186035f0940e481f9e2c9bf9df24213cd30d31aaeb`,

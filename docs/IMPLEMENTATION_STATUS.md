@@ -2,7 +2,58 @@
 
 Fecha de corte: 2026-08-11 (America/Santiago).
 
-## Estado vigente — `OPENAI_REAL_SYNTHETIC_E2E_P03_DECISION_REQUIRED` (2026-08-11)
+## Estado vigente — `OPENAI_REAL_P04_V116_REMEDIATION_DEPLOY_REQUIRED` (2026-08-11)
+
+Las seis interpretaciones recomendadas de P03 fueron seleccionadas en la UI y
+persistidas como seis `PolicyDecision` distintas. `Guardar y reanudar
+blueprint` creó exactamente el job `job_38cda767879d8f37f1d2` y la ejecución
+Cloud Run `cva-worker-99fk7`; P01-P03 se reutilizaron desde sus `stage_runs`
+sin otra llamada. P04 v1.1.2 hizo una Responses y devolvió JSON válido para el
+schema del proveedor, pero inválido para un invariante Pydantic raíz. La única
+P11 permitida produjo `SCHEMA_VALID` sin corregir el contrato destino. El job
+quedó `FAILED`/`PERMANENT`, la actividad `TECHNICAL_FAILURE` y la task terminó
+exit 1 con `maxRetries=0`; se aplicó el stop antes de P05, blueprint y
+submission.
+
+La continuación consumió dos Responses: P04, 4,662 input, 4,659 cache-write,
+6,951 output, 2,463 reasoning, 58,165 ms y USD 0.00950655; P11, 7,079 input,
+7,076 cache-write, 194 output, 53 reasoning, 3,074 ms y USD 0.00200240. El E2E
+de producto acumula 5 Responses y USD 0.02453340. P10, Sol, fallback y retries
+permanecieron en cero; existen cero blueprints y cero submissions.
+
+La remediación normativa `prompt-pack/1.1.6` hace explícitas en P04 las
+referencias allowlist, decisiones exactas y relaciones entre IDs, operaciones,
+formatos, justificación y aprobación que JSON Schema no puede expresar. Su
+frontera queda fijada por prompt
+`sha256:95989468bf10f1d23d2090d7aeb378c24c073ea509dc1e9830396b2fba32b98b`
+e input
+`sha256:7320de03d1d88dff8ba6442e2fb929d5e2a05532691a9fe40a08603e7f9b4091`.
+
+La primera observación aislada consumió una request, pero el proceso de
+orquestación perdió su salida antes de archivarla. `store=false` dejó cero
+Responses recuperables en Platform; se clasificó `INCONCLUSIVE` y su gate se
+cerró sin replay. Bajo un gate de recuperación separado y también de una sola
+request, la misma frontera terminó **PASS `READY`**: provider schema,
+Pydantic, contexto y expected outcome PASS; 3,554 input, 3,551 cached, 4,422
+output, 2,588 reasoning, 35,515 ms y USD 0.00537802. El ceiling fue USD
+0.02442225, bajo el cap USD 0.03; P10/P11/Sol/fallback y retries fueron cero.
+El reporte content-free quedó ligado a request/output hashes y SHA-256 de
+reporte `c47db41ae010c38e3bfe4c3c461d04fac50f5e0d17774e884836b5c90bb9402a`.
+Ambos gates están consumidos y fallan cerrados.
+
+La regresión local candidata termina 556 PASS/16 skips backend, 127/127 en
+gateway+harness, 34/34 frontend, 11/11 deploy y 2/2 seguridad; typecheck,
+frontend build, npm audit, Terraform fmt/validate, contratos, fixtures,
+OpenAPI, secretos y `git diff --check` también pasan.
+
+El digest desplegado continúa siendo
+`sha256:97960034f6c4c6c3b2967d186035f0940e481f9e2c9bf9df24213cd30d31aaeb`;
+no se hizo build, deploy, Terraform, IAM, cambio de secreto ni job adicional.
+El candidato aún no es `OPENAI_REAL_MANUAL_EVAL_READY`: debe cerrar la suite
+local/CI, construir y desplegar un SHA nuevo bajo digest inmutable y completar
+un E2E sintético nuevo sobre P04 v1.1.6.
+
+## Historial — `OPENAI_REAL_SYNTHETIC_E2E_P03_DECISION_REQUIRED` (2026-08-11)
 
 La autorización del primer E2E real quedó consumida y se detuvo en su primer
 estado de dominio distinto de `SUCCEEDED`, tal como exigía el gate. La UI creó

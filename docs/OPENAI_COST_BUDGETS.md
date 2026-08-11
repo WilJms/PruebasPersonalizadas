@@ -37,27 +37,49 @@ envelope manual. Antes de llamar, el gateway calcula el peor caso usando el
 máximo output del prompt; si supera el presupuesto restante, no crea
 transporte.
 
-## Consumo del primer E2E real y remanente del gate
+## Consumo del E2E real y remediación P04 v1.1.6
 
-La ejecución autorizada se detuvo en P03 después de tres Responses. El ledger
-durable observó USD 0.01302445 de costo real calculado y USD 0.03096205
-estimado. Frente al cap agregado USD 0.90 quedan USD 0.88697555 no consumidos,
-pero ese remanente no constituye autorización transferible: la frontera de
-exactamente un job de actividad quedó consumida.
+El primer job se detuvo en P03 después de tres Responses y USD 0.01302445. La
+reanudación autorizada persistió seis decisiones, reutilizó P01-P03 sin costo y
+se detuvo en P04 después de una primaria más una P11, USD 0.01150895. El E2E de
+producto suma **5 Responses y USD 0.02453340**. El remanente del cap USD 0.90
+no es transferible: ambos jobs y sus fronteras quedaron consumidos.
 
 | Tramo | Responses | Costo real calculado |
 |---|---:|---:|
 | P01 actividad | 1 | USD 0.00185200 |
 | P02 rúbrica | 1 | USD 0.00187750 |
 | P03 ambigüedad | 1 | USD 0.00929495 |
-| Total ejecutado | **3/32** | **USD 0.01302445/0.90** |
+| P04 blueprint v1.1.2 | 1 | USD 0.00950655 |
+| P11 reparación | 1 | USD 0.00200240 |
+| Total E2E ejecutado | **5/32** | **USD 0.02453340/0.90** |
 
-No hubo P11, retry, fallback, Sol, P10, edición P05 ni submission. Un futuro
-`Guardar y reanudar blueprint` crea un job nuevo y debe recalcular su propio
-ceiling y recibir una autorización humana nueva; no reutiliza el remanente por
-implicación.
+No hubo retry, fallback, Sol, P10, edición P05 ni submission. P11 se usó una
+vez y el target siguió inválido, por lo que el recorrido paró.
 
-## Presupuesto vigente del prompt pack 1.1.2
+La remediación P04 v1.1.6 tuvo dos gates presupuestarios separados. La primera
+observación consumió una request bajo cap USD 0.03, pero su reporte no quedó
+durable; por `store=false` no se recuperó uso granular y se conserva sólo el
+bound **costo ≤ USD 0.03**. No se reabrió ese gate. La observación de
+recuperación también quedó limitada a una request y terminó PASS:
+
+| Frontera P04 v1.1.6 recuperación | Valor |
+|---|---:|
+| Input upper-bound | 20,889 tokens |
+| Ceiling sin cache | USD 0.02337780 |
+| Ceiling full-cache-write | **USD 0.02442225** |
+| Cap humano | **USD 0.03** |
+| Uso observado | 3,554 input; 3,551 cached; 4,422 output |
+| Costo calculado | **USD 0.00537802** |
+| Charge conservador | USD 0.01927162 |
+| P10/P11/Sol/fallback/retries | 0 |
+
+Por tanto, el costo nuevo conocido del E2E más la recuperación es USD
+0.02991142, además de la primera observación inconclusa acotada a USD 0.03.
+Platform mostró USD 3.90/USD 5.00 inmediatamente antes de la recuperación,
+dejando USD 1.10, muy por encima del cap. Esa capacidad no autoriza otro gasto.
+
+## Historial — presupuesto de qualification del prompt pack 1.1.2
 
 El cambio de instrucciones P01 invalida la reutilización de evidencia real
 1.1.1. La calificación vigente vuelve a incluir los 18 casos `real_eligible`,

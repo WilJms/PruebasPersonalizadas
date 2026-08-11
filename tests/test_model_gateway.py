@@ -110,6 +110,7 @@ def test_registry_is_exact_complete_and_immutable() -> None:
 
     assert PROMPT_SPECS["P01_ACTIVITY_SPEC_V1"].prompt_version == "1.1.2"
     assert PROMPT_SPECS["P02_RUBRIC_NORMALIZE_V1"].prompt_version == "1.1.3"
+    assert PROMPT_SPECS["P04_BLUEPRINT_BUILD_V1"].prompt_version == "1.1.6"
     assert PROMPT_SPECS["P05_BLUEPRINT_REVIEW_V1"].prompt_version == "1.1.4"
     assert PROMPT_SPECS["P09_GUIDE_BUILD_V1"].prompt_version == "1.1.5"
     assert PROMPT_SPECS["P11_SCHEMA_REPAIR_V1"].prompt_version == "1.1.4"
@@ -119,6 +120,7 @@ def test_registry_is_exact_complete_and_immutable() -> None:
         if prompt_id
         not in {
             "P02_RUBRIC_NORMALIZE_V1",
+            "P04_BLUEPRINT_BUILD_V1",
             "P05_BLUEPRINT_REVIEW_V1",
             "P09_GUIDE_BUILD_V1",
             "P11_SCHEMA_REPAIR_V1",
@@ -133,6 +135,24 @@ def test_registry_is_exact_complete_and_immutable() -> None:
         PROMPT_CONTRACTS["P12_NOT_ALLOWED"] = ("Diagnostic", "Diagnostic")
     with pytest.raises(FrozenInstanceError):
         PROMPT_SPECS["P01_ACTIVITY_SPEC_V1"].temperature = 1.0
+
+
+def test_p04_v116_makes_provider_invisible_invariants_explicit() -> None:
+    p04 = PROMPT_SPECS["P04_BLUEPRINT_BUILD_V1"].developer_instruction
+    for exact_rule in (
+        "cada decision_id de resolved_decisions exactamente una vez",
+        "no autorizan inventar resultados de aprendizaje",
+        "learning_outcome_ids=[]",
+        "dimension_id es único",
+        "variant_id es único en todo el blueprint",
+        "opportunity_template_id es único en todo el blueprint",
+        "incluida en supported_operations de esa misma variante",
+        "subconjunto de assessment_constraints.allowed_response_formats",
+        "selected_opportunity_template_ids",
+        "approved_by=null y approved_at=null",
+        "status=BLOCKED con Diagnostic completo",
+    ):
+        assert exact_rule in p04
 
 
 def test_p05_v114_and_p11_v114_make_root_invariant_handling_explicit() -> None:
