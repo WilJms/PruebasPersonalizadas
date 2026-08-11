@@ -9,6 +9,21 @@ P10 deshabilitado; las evaluaciones OpenAI dedicadas usaron exclusivamente
 fixtures sintéticos. Los resultados históricos E1 se conservan al final y no
 se presentan como evidencia del candidato E2.
 
+## Cloud Build detenido por `make` ausente y reproducción hermética — 2026-08-11
+
+| Prueba o gate | Resultado observado |
+|---|---|
+| Frontera autorizada | SHA `b8142f5`, un submit/build máximo, identidad `cva-cloudbuild`, timeout 3600 s, stop al primer fallo, 0 Responses y sin jobs/E2E |
+| Build único | `ccadfb3c-c645-4de4-879e-7dcaaa8cf8d8`; identidad, SHA, región y timeout exactos; `FAILURE` en paso 0 |
+| Resultado pytest cloud | 540 passed, 16 skipped y 8 failed; todos los fallos eran Make targets del harness con `FileNotFoundError: make` |
+| Stop y efectos | pasos Terraform/frontend/image/smoke no ejecutados; 0 retries, 0 imágenes/digest, 0 apply, 0 cambios IAM/runtime y 0 Responses |
+| Causa | la imagen Alpine instalaba `git libmagic`, pero no declaraba el ejecutable `make` que ya requería la suite versionada |
+| Remediación | `apk add --no-cache git libmagic make`; regresión estática obliga a conservar los tres ejecutables |
+| Reproducción exacta local | misma imagen Python fijada por digest y mismos 211 archivos de upload: contratos/fixtures/secrets PASS; 548 passed/16 skipped; deploy 11/11; seguridad 2/2 |
+
+La autorización quedó consumida y no se reutilizó para build o apply. Cloud Run
+permaneció sobre el digest histórico, web/worker en mock y P10 false.
+
 ## Cloud Build detenido antes de creación y remediación — 2026-08-11
 
 | Prueba o gate | Resultado observado |

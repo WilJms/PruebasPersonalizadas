@@ -226,6 +226,7 @@ def test_container_and_cloud_build_are_single_image_and_mock_safe() -> None:
         assert boundary in runtime_smoke
 
     python_gate = "\n".join(steps["verify-contracts-backend-deploy-security"]["args"])
+    assert "apk add --no-cache git libmagic make" in python_gate
     for command in (
         "python -m pip install --no-cache-dir --require-hashes -r requirements-dev.lock",
         "git init -q",

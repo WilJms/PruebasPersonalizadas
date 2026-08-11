@@ -792,3 +792,26 @@
   el siguiente build requiere una autorización exacta fijada al SHA remediado.
 - **Relación:** D-059, `deploy/README.md`, `TEST_RESULTS.md` y principio de
   mínimo privilegio de ADR-033/ADR-034.
+
+## D-061 - El gate Cloud Build declara los ejecutables requeridos por su suite
+
+- **Incidente observado:** el build único `ccadfb3c-c645-4de4-879e-7dcaaa8cf8d8`
+  sobre `b8142f5` usó correctamente `cva-cloudbuild`, pero terminó en el paso 0.
+  Pytest registró 540 PASS, 16 skips y ocho fallos del harness porque la imagen
+  Alpine no encontraba `make`. Los pasos posteriores no se ejecutaron y no se
+  produjo imagen, digest, apply, cambio de runtime/IAM, job, E2E o Responses.
+- **Causa:** los tests versionados invocan Make targets para probar gates
+  consumidos y dry-runs, mientras `deploy/cloudbuild.yaml` sólo instalaba
+  `git` y `libmagic`. CI y desarrollo tenían `make` preinstalado, por lo que no
+  cubrían esa diferencia del contenedor Cloud Build.
+- **Decisión:** el gate declara `git`, `libmagic` y `make` en una sola
+  instalación explícita. Una regresión lee el YAML parseado y rechaza la
+  omisión del comando exacto.
+- **Evidencia:** el paso 0 completo se reprodujo desde un contexto fresco de
+  211 archivos, con la misma imagen Python fijada por digest: contratos,
+  fixtures y secretos PASS; 548/16 pytest; 11/11 deploy; 2/2 seguridad.
+- **Gate:** esa reproducción cierra el defecto offline, pero no reabre el
+  build consumido. Cualquier verificación cloud o apply requiere autorización
+  nueva y exacta fijada al SHA remediado.
+- **Relación:** D-059, D-060, `deploy/cloudbuild.yaml`, `TEST_RESULTS.md` y
+  principio de gates herméticos de ADR-033/ADR-034.

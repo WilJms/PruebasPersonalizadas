@@ -4,7 +4,7 @@ Fecha de corte: 2026-08-11 (America/Santiago).
 
 ## Estado vigente — `OPENAI_REAL_CANDIDATE_BUILD_REAUTHORIZATION_REQUIRED` (2026-08-11)
 
-El único Cloud Build autorizado para `0a521d6` se detuvo en el primer fallo,
+El primer submit autorizado para `0a521d6` se detuvo en el primer fallo,
 antes de crear un recurso build o devolver build ID. La CLI cargó el archivo
 fuente, pero la resolución posterior usó la cuenta de cómputo predeterminada,
 que recibió `403 storage.objects.get`; el runbook manual omitía la identidad
@@ -18,6 +18,23 @@ estática. `cva-cloudbuild` conserva los permisos mínimos observados para leer 
 crear objetos y publicar en Artifact Registry. Un nuevo submit requiere un
 gate humano exacto fijado al nuevo SHA; el runtime continúa en mock sobre el
 digest histórico.
+
+El gate renovado para `b8142f5` sí creó exactamente un build con la identidad
+correcta: `ccadfb3c-c645-4de4-879e-7dcaaa8cf8d8`. Se detuvo en el paso 0 con
+540 PASS, 16 skips y ocho fallos del harness, todos por
+`FileNotFoundError: make`: la imagen Alpine declaraba `git` y `libmagic`, pero
+no el ejecutable usado por ocho Make targets versionados. No se ejecutaron los
+gates Terraform/frontend, build de imagen o smoke; el resultado no contiene
+imagen ni digest. Tampoco hubo apply, cambio de IAM/runtime, job, E2E o
+Responses request. El segundo gate quedó consumido sin retry.
+
+La remediación declara `make` como dependencia explícita del paso y su
+regresión estática lo hace obligatorio. Una reproducción desde cero sobre los
+211 archivos de upload, dentro de la misma imagen Alpine fijada por digest,
+terminó PASS: contratos/fixtures/secret scan, 548 tests con 16 skips, 11 tests
+de deploy y dos controles de seguridad. El P1 operativo queda corregido
+offline; un Cloud Build nuevo continúa requiriendo autorización exacta para
+probarlo en el entorno remoto.
 
 La única canary P11 directa v1.1.4 autorizada sobre `976aadc` quedó consumida y
 terminó **PASS** `REPAIRED`. Schema estricto del proveedor, Pydantic, contexto y
