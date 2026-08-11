@@ -96,14 +96,21 @@ CVA_STAGE2_PROJECT=cva-experimento-wiljms
 CVA_STAGE2_REGION=us-east1
 CVA_STAGE2_REPOSITORY=comprehension-verification
 CVA_STAGE2_SOURCE_SHA="$(git rev-parse HEAD)"
+CVA_STAGE2_BUILD_SERVICE_ACCOUNT="$(terraform -chdir=deploy/terraform output -raw cloud_build_service_account)"
+CVA_STAGE2_BUILD_SERVICE_ACCOUNT_RESOURCE="projects/$CVA_STAGE2_PROJECT/serviceAccounts/$CVA_STAGE2_BUILD_SERVICE_ACCOUNT"
 test -z "$(git status --porcelain=v1)"
+test "$CVA_STAGE2_BUILD_SERVICE_ACCOUNT" = \
+  "cva-cloudbuild@$CVA_STAGE2_PROJECT.iam.gserviceaccount.com"
 
 CVA_STAGE2_BUILD_ID="$(gcloud builds submit \
   --project="$CVA_STAGE2_PROJECT" \
   --region="$CVA_STAGE2_REGION" \
   --config=deploy/cloudbuild.yaml \
+  --service-account="$CVA_STAGE2_BUILD_SERVICE_ACCOUNT_RESOURCE" \
+  --timeout=3600s \
   --substitutions=COMMIT_SHA="$CVA_STAGE2_SOURCE_SHA",_REGION="$CVA_STAGE2_REGION",_REPOSITORY="$CVA_STAGE2_REPOSITORY",_IMAGE=application,_VITE_SUPABASE_URL=SUPABASE_URL,_VITE_SUPABASE_PUBLISHABLE_KEY=PUBLISHABLE_KEY \
   --async --format='value(id)')"
+test -n "$CVA_STAGE2_BUILD_ID"
 
 gcloud builds log --stream "$CVA_STAGE2_BUILD_ID" \
   --project="$CVA_STAGE2_PROJECT" --region="$CVA_STAGE2_REGION"
@@ -111,6 +118,13 @@ test "$(gcloud builds describe "$CVA_STAGE2_BUILD_ID" \
   --project="$CVA_STAGE2_PROJECT" --region="$CVA_STAGE2_REGION" \
   --format='value(status)')" = SUCCESS
 ```
+
+La identidad del build manual es obligatoria. Omitir `--service-account` hace
+que la CLI seleccione la cuenta predeterminada del proyecto, que no representa
+la frontera de mínimo privilegio declarada por Terraform y puede no leer el
+archivo fuente. Un submit que falla, incluso antes de devolver build ID, se
+detiene sin retry automático; cualquier repetición requiere un gate humano
+nuevo y exacto.
 
 Cloud Build publica la etiqueta `$BUILD_ID` solo si todos los pasos terminan
 bien. El digest se resuelve después de esa publicación desde Artifact Registry,

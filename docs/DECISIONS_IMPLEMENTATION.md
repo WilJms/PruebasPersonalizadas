@@ -772,3 +772,23 @@
   fijadas al SHA/digest y a sus respectivos límites de mutación y gasto.
 - **Relación:** D-054, D-056, D-058, P11, `REAL_MODEL_EVALS.md`,
   `OPENAI_COST_BUDGETS.md` y `OPENAI_REAL_MODEL_VALIDATION.md`.
+
+## D-060 - El build manual fija explícitamente la identidad de mínimo privilegio
+
+- **Incidente observado:** el único submit autorizado para `0a521d6` cargó el
+  archivo fuente y falló antes de crear build ID porque Cloud Build seleccionó
+  la cuenta de cómputo predeterminada, sin `storage.objects.get`. No hubo retry,
+  digest, apply, cambio de runtime/IAM, job, E2E ni Responses request; el gate
+  quedó consumido al primer fallo.
+- **Causa:** el trigger Terraform ya fijaba `cva-cloudbuild`, pero el comando
+  manual equivalente de `deploy/README.md` omitía `--service-account`. La CLI
+  documenta que, sin ese flag, usa la identidad predeterminada.
+- **Decisión:** todo submit manual obtiene `cloud_build_service_account` desde
+  el estado Terraform, construye su resource name completo y lo pasa de forma
+  obligatoria a la CLI. También fija 3600 segundos y rechaza un build ID vacío.
+  No se amplían los permisos de la cuenta predeterminada.
+- **Antirrepetición:** una regresión estática liga el runbook a la identidad,
+  timeout y stop sin retry. Un submit fallido no se repite con el mismo gate;
+  el siguiente build requiere una autorización exacta fijada al SHA remediado.
+- **Relación:** D-059, `deploy/README.md`, `TEST_RESULTS.md` y principio de
+  mínimo privilegio de ADR-033/ADR-034.

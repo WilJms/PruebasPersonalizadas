@@ -429,6 +429,17 @@ def test_stage2_deployment_runbook_has_real_digest_and_fail_closed_recovery() ->
     assert "/workspace/container-image.txt" not in readme
     assert 'COMMIT_SHA="$CVA_STAGE2_SOURCE_SHA"' in readme
     assert 'test -z "$(git status --porcelain=v1)"' in readme
+    assert "output -raw cloud_build_service_account" in readme
+    assert (
+        'CVA_STAGE2_BUILD_SERVICE_ACCOUNT_RESOURCE="projects/'
+        '$CVA_STAGE2_PROJECT/serviceAccounts/$CVA_STAGE2_BUILD_SERVICE_ACCOUNT"'
+        in readme
+    )
+    assert '"cva-cloudbuild@$CVA_STAGE2_PROJECT.iam.gserviceaccount.com"' in readme
+    assert '--service-account="$CVA_STAGE2_BUILD_SERVICE_ACCOUNT_RESOURCE"' in readme
+    assert "--timeout=3600s" in readme
+    assert 'test -n "$CVA_STAGE2_BUILD_ID"' in readme
+    assert "cualquier repetición requiere un gate humano" in readme
     assert readme.count("-detailed-exitcode") == 2
     assert "gcloud run services describe" in readme
     assert "gcloud run jobs describe" in readme

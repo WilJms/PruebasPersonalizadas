@@ -1,13 +1,29 @@
 # Resultados verificables — candidato Etapa 2
 
-Fecha de corte documental: 2026-08-10 (America/Santiago; ejecución cloud hasta
-2026-08-09 UTC).
+Fecha de corte documental: 2026-08-11 (America/Santiago; ejecución cloud hasta
+2026-08-11 UTC).
 
 Este archivo registra únicamente resultados observados. Las credenciales y
 capacidades no se registran. Todos los recorridos cloud E2 usaron modelo mock y
 P10 deshabilitado; las evaluaciones OpenAI dedicadas usaron exclusivamente
 fixtures sintéticos. Los resultados históricos E1 se conservan al final y no
 se presentan como evidencia del candidato E2.
+
+## Cloud Build detenido antes de creación y remediación — 2026-08-11
+
+| Prueba o gate | Resultado observado |
+|---|---|
+| Frontera autorizada | SHA `0a521d6`, un Cloud Build máximo, timeout 3600 s, stop al primer fallo, 0 Responses y sin jobs/E2E |
+| Submit único | FAIL antes de build ID: el archivo fuente se cargó, pero la cuenta de cómputo predeterminada recibió `403 storage.objects.get` al resolverlo |
+| Consumo y efectos | autorización consumida; 0 builds creados, 0 builds activos, 0 retries, 0 digest, 0 apply, 0 cambios IAM/runtime y 0 Responses |
+| Causa reproducida | `gcloud builds submit` usa la cuenta predeterminada si no se pasa `--service-account`; el runbook manual omitía el principal administrado por Terraform |
+| Principal previsto | `cva-cloudbuild`; `storage.objects.get/create/list`, Artifact Registry writer, logging writer y service usage consumer observados |
+| Remediación | submit manual fija el output Terraform como resource name, timeout 3600 s y build ID no vacío; cualquier repetición exige gate humano nuevo |
+| Regresión | 11/11 deploy PASS; 548 passed y 16 skips PostgreSQL explícitos; contratos/fixtures, Terraform validate/fmt, secretos y diff PASS; la prueba estática impide omitir identidad, timeout, build ID y semántica sin retry |
+
+El runtime permaneció sobre el digest histórico, web/worker en mock y P10
+false. El archivo fuente cargado no se eliminó: no era parte de la autorización
+y no contiene archivos fuera del manifest versionado del SHA exacto.
 
 ## Canary P11 directa v1.1.4 PASS — 2026-08-10
 

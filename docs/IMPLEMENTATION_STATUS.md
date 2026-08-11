@@ -1,8 +1,23 @@
 # Estado de implementación — Etapa 2
 
-Fecha de corte: 2026-08-10 (America/Santiago).
+Fecha de corte: 2026-08-11 (America/Santiago).
 
-## Estado vigente — `OPENAI_REAL_CANDIDATE_DEPLOY_APPROVAL_REQUIRED` (2026-08-10)
+## Estado vigente — `OPENAI_REAL_CANDIDATE_BUILD_REAUTHORIZATION_REQUIRED` (2026-08-11)
+
+El único Cloud Build autorizado para `0a521d6` se detuvo en el primer fallo,
+antes de crear un recurso build o devolver build ID. La CLI cargó el archivo
+fuente, pero la resolución posterior usó la cuenta de cómputo predeterminada,
+que recibió `403 storage.objects.get`; el runbook manual omitía la identidad
+`cva-cloudbuild` ya declarada para el trigger. No hubo retry, digest, Terraform
+apply, cambio de IAM/runtime, job, E2E ni Responses request. La autorización
+quedó consumida.
+
+La remediación hace obligatorio `--service-account` con el output canónico de
+Terraform, fija `--timeout=3600s`, exige build ID no vacío y añade una regresión
+estática. `cva-cloudbuild` conserva los permisos mínimos observados para leer y
+crear objetos y publicar en Artifact Registry. Un nuevo submit requiere un
+gate humano exacto fijado al nuevo SHA; el runtime continúa en mock sobre el
+digest histórico.
 
 La única canary P11 directa v1.1.4 autorizada sobre `976aadc` quedó consumida y
 terminó **PASS** `REPAIRED`. Schema estricto del proveedor, Pydantic, contexto y
@@ -29,9 +44,9 @@ queda sellado con `OPENAI_P11_V114_DIRECT_ALREADY_CONSUMED` antes del adapter.
 
 La evidencia real hash-bound cubre ahora **18/18** casos. P0/P1 permanecen
 cerrados y el conteo vigente es **P0=0, P1=0, P2=5, P3=1**. Cloud continúa en
-el digest histórico, `CVA_MODEL_MODE=mock` y `CVA_P10_ENABLED=false`; no hubo
-build, deploy, Terraform apply, IAM, datos estudiantiles reales ni merge a
-main. El siguiente gate es construir y desplegar el candidato inmutable y,
+el digest histórico, `CVA_MODEL_MODE=mock` y `CVA_P10_ENABLED=false`; no se creó
+un build ni hubo deploy, Terraform apply, IAM, datos estudiantiles reales o
+merge a main. El siguiente gate es construir y desplegar el candidato inmutable y,
 después, ejecutar el E2E sintético OpenAI real bajo una autorización separada.
 Este estado todavía no es `OPENAI_REAL_MANUAL_EVAL_READY`.
 
