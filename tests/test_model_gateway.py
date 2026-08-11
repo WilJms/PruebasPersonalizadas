@@ -108,6 +108,18 @@ def test_registry_is_exact_complete_and_immutable() -> None:
         assert model_by_name(request_root).__name__ == request_root
         assert model_by_name(output_root).__name__ == output_root
 
+    assert PROMPT_SPECS["P01_ACTIVITY_SPEC_V1"].prompt_version == "1.1.2"
+    assert PROMPT_SPECS["P02_RUBRIC_NORMALIZE_V1"].prompt_version == "1.1.3"
+    assert {
+        spec.prompt_version
+        for prompt_id, spec in PROMPT_SPECS.items()
+        if prompt_id != "P02_RUBRIC_NORMALIZE_V1"
+    } == {"1.1.2"}
+    assert (
+        PROMPT_SPECS["P01_ACTIVITY_SPEC_V1"].prompt_hash
+        == "sha256:b706477b13e33e8a2f3d1847c86af5b917fa93f17a5071cfe821f692a8c41b4a"
+    )
+
     with pytest.raises(TypeError):
         PROMPT_CONTRACTS["P12_NOT_ALLOWED"] = ("Diagnostic", "Diagnostic")
     with pytest.raises(FrozenInstanceError):
@@ -385,6 +397,123 @@ def test_p01_context_observability_reports_all_coexisting_classes() -> None:
         ContextFailureCode.ABSTENTION_DIAGNOSTIC_MISSING,
         ContextFailureCode.P01_ABSTENTION_SOURCED_FIELDS_PRESENT,
         ContextFailureCode.P01_ACTIVITY_ID_MISMATCH,
+    )
+    assert captured.value.failure.codes == expected_codes
+    reason_codes = captured.value.ledgers[0].route.reason_codes
+    assert all(
+        f"CONTEXT_FAILURE_OUTPUT_{code.value}" in reason_codes
+        for code in expected_codes
+    )
+
+
+def _mutate_p02_context(raw: dict, scenario: str) -> None:
+    diagnostic = {
+        "code": "RUBRIC_UNPARSABLE",
+        "severity": "ERROR",
+        "message": "Diagnóstico sintético.",
+        "evidence_ids": [],
+        "source_ids": [],
+        "retryable": False,
+        "details": {},
+    }
+    if scenario == "assignment_evidence_id":
+        raw["criteria"][0]["evidence_ids"] = ["ev_assignment_1"]
+    elif scenario == "diagnostic_missing":
+        raw.update(
+            {
+                "status": "NEEDS_REVIEW",
+                "criteria": [],
+                "diagnostics": [],
+            }
+        )
+    elif scenario == "criteria_on_abstention":
+        raw["status"] = "NEEDS_REVIEW"
+        raw["diagnostics"] = [diagnostic]
+    elif scenario == "activity_id":
+        raw["activity_id"] = "ctx_private_value"
+    elif scenario == "combined":
+        raw["criteria"][0]["evidence_ids"] = ["ev_assignment_1"]
+        raw["status"] = "NEEDS_REVIEW"
+        raw["diagnostics"] = []
+        raw["activity_id"] = "ctx_private_value"
+    else:  # pragma: no cover - guards the test table itself
+        raise AssertionError(f"Unknown P02 contextual scenario: {scenario}")
+
+
+@pytest.mark.parametrize(
+    ("scenario", "expected_code"),
+    (
+        (
+            "assignment_evidence_id",
+            ContextFailureCode.P02_RUBRIC_EVIDENCE_ID_NOT_ALLOWLISTED,
+        ),
+        (
+            "diagnostic_missing",
+            ContextFailureCode.ABSTENTION_DIAGNOSTIC_MISSING,
+        ),
+        (
+            "criteria_on_abstention",
+            ContextFailureCode.P02_ABSTENTION_CRITERIA_PRESENT,
+        ),
+        ("activity_id", ContextFailureCode.P02_ACTIVITY_ID_MISMATCH),
+    ),
+)
+def test_p02_contextual_failures_are_distinct_and_content_free(
+    scenario: str,
+    expected_code: ContextFailureCode,
+) -> None:
+    prompt_id = "P02_RUBRIC_NORMALIZE_V1"
+    request = build_mock_request(prompt_id)
+    raw = (
+        DeterministicMockAdapter()
+        .factory.output_for(prompt_id, request, MockBehavior.HAPPY)
+        .model_dump(mode="json")
+    )
+    _mutate_p02_context(raw, scenario)
+
+    provider_schema = structured_output_format(
+        prompt_spec(prompt_id), request
+    )["schema"]
+    assert not provider_schema_validation_issues(provider_schema, raw)
+    assert isinstance(models.RubricSpec.model_validate(raw), models.RubricSpec)
+
+    gateway = ModelGateway(
+        mock_adapter=ContextBreakingAdapter(
+            prompt_id,
+            lambda output: _mutate_p02_context(output, scenario),
+        )
+    )
+    with pytest.raises(GatewayContextError) as captured:
+        _invoke(prompt_id, gateway=gateway)
+
+    error = captured.value
+    assert error.failure.phase == ValidationPhase.OUTPUT
+    assert error.failure.codes == (expected_code,)
+    assert len(error.ledgers) == 1
+    reason_codes = error.ledgers[0].route.reason_codes
+    assert f"CONTEXT_FAILURE_OUTPUT_{expected_code.value}" in reason_codes
+    serialized = json.dumps(error.ledgers[0].model_dump(mode="json"))
+    assert "ctx_private_value" not in serialized
+    assert "Diagnóstico sintético" not in serialized
+
+
+def test_p02_context_observability_reports_all_coexisting_classes() -> None:
+    prompt_id = "P02_RUBRIC_NORMALIZE_V1"
+    gateway = ModelGateway(
+        mock_adapter=ContextBreakingAdapter(
+            prompt_id,
+            lambda output: _mutate_p02_context(output, "combined"),
+        )
+    )
+
+    with pytest.raises(GatewayContextError) as captured:
+        _invoke(prompt_id, gateway=gateway)
+
+    expected_codes = (
+        ContextFailureCode.P02_RUBRIC_EVIDENCE_ID_NOT_ALLOWLISTED,
+        ContextFailureCode.ABSTENTION_DIAGNOSTIC_MISSING,
+        ContextFailureCode.P02_ABSTENTION_CRITERIA_PRESENT,
+        ContextFailureCode.P02_ACTIVITY_ID_MISMATCH,
     )
     assert captured.value.failure.codes == expected_codes
     reason_codes = captured.value.ledgers[0].route.reason_codes

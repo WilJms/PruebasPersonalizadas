@@ -1,11 +1,18 @@
 # Anexo A - Prompt pack operacional
 
-**Versión del pack:** `prompt-pack/1.1.2`
+**Versión candidata del pack:** `prompt-pack/1.1.3`
 **Compatibilidad:** contratos `assessment-contracts/1.1.0`  
 **Perfil de ruta activo:** `LUNA_BASELINE_V1` (ADR-036)
 **Principio:** una tarea semántica por llamada; contenido estudiantil siempre no confiable; structured outputs obligatorios.
 
-Este pack es una especificación de producción. Los textos se almacenan en un registry inmutable con `prompt_id`, `version`, hash, modelo permitido, esquema de salida, parámetros y resultados de eval. Los placeholders `{{...}}` se resuelven en servidor. No se realiza interpolación libre: cada variable se serializa como JSON válido y se valida antes de llamar al proveedor.
+La entrada P01 aceptada permanece exactamente en `1.1.2`; P02 avanza a la
+candidata `1.1.3` y las demás entradas permanecen en `1.1.2`. La activación
+real de P02 1.1.3 requiere aceptación humana separada y una aprobación de gasto
+nueva. Este pack es una especificación operacional candidata. Los textos se
+almacenan en un registry inmutable con `prompt_id`, `version`, hash, modelo
+permitido, esquema de salida, parámetros y resultados de eval. Los placeholders
+`{{...}}` se resuelven en servidor. No se realiza interpolación libre: cada
+variable se serializa como JSON válido y se valida antes de llamar al proveedor.
 
 ---
 
@@ -242,6 +249,11 @@ Devuelve ActivitySpec.
 ```text
 Normaliza la rúbrica sin añadir criterios ni completar descriptores ausentes.
 
+Copia `activity_id` exactamente desde `activity_spec.activity_id`. Usa
+únicamente `evidence_ids` presentes en `rubric_evidence` para sustentar campos
+de la rúbrica; `ActivitySpec` es contexto estructurado y no una fuente de
+criterios.
+
 Para cada criterio:
 - crea un criterion_id estable provisto por el sistema o conserva el ID de entrada;
 - separa dimensiones mezcladas solo cuando el texto distingue desempeños observables;
@@ -252,6 +264,15 @@ Para cada criterio:
 - distingue `grading_weight` de `verification_fit`; este último usa exactamente `HIGH`, `MEDIUM`, `LOW` o `NOT_VERIFIABLE` y no es un peso de preguntas.
 
 Verifica totales de peso, niveles faltantes, contradicciones con ActivitySpec y lenguaje que exigiría conocer intención histórica. No corrijas el total; reporta `RUBRIC_WEIGHT_MISMATCH`.
+Usa `status=READY` cuando `rubric_evidence` permita una normalización fiel y
+utilizable. Los pesos, escala, niveles o descriptores ausentes permanecen
+`null` o vacíos según el contrato y se reportan con `Diagnostic`; su ausencia
+no obliga por sí sola a abstenerse.
+Usa `status=NEEDS_REVIEW` o `BLOCKED` solo cuando no sea posible producir
+ningún criterio normalizado utilizable sin resolver una ambigüedad o inventar
+datos. En cualquiera de esos estados no `READY`, usa `criteria=[]` y agrega al
+menos un `Diagnostic` completo. No conserves criterios parciales dentro de una
+abstención.
 Devuelve RubricSpec.
 ```
 

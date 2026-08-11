@@ -1,5 +1,36 @@
 # Setup gobernado del proveedor OpenAI
 
+## Estado vigente — rotación completa y P02 1.1.3 pendiente de gate
+
+La clave histórica fue revocada en Platform y la sonda content-free confirmó
+rechazo HTTP 401. Secret Manager versión `1` se deshabilitó después de esa
+prueba; versión `2` está `ENABLED`, autentica y ve exclusivamente
+`gpt-5.6-luna`. La credencial nueva no está montada en cloud, CI ni el Service.
+
+La qualification 1.1.2 autorizada consumió 11 requests y USD 0.03258029. P01
+injection pasó como primer caso y cerró P0. P02 falló contexto después de pasar
+schema provider/Pydantic, por lo que el gate se detuvo y dejó un P1 abierto. No
+se hizo una segunda ejecución.
+
+El candidato offline `prompt-pack/1.1.3` cambia sólo P02. Su recanary está
+ligada a hashes exactos y no puede leer la versión `2` sin estos dos valores,
+que todavía no han sido aceptados/autorizados:
+
+```text
+CVA_OPENAI_P02_V113_REMEDIATION_DECISION=OPENAI_P02_V113_REMEDIATION_ACCEPTED
+CVA_OPENAI_P02_V113_RECANARY_APPROVAL=OPENAI_P02_V113_RECANARY_APPROVED
+```
+
+El cap propuesto es USD 0.02, una única Responses request y ceiling USD
+0.01243075. La approval consumida de qualification 1.1.2 no es reutilizable.
+Una qualification futura 1.1.3 requiere además
+`CVA_OPENAI_REAL_QUALIFICATION_V113_APPROVAL=OPENAI_REAL_SYNTHETIC_QUALIFICATION_V113_APPROVED`;
+ese valor tampoco ha sido concedido. Cloud conserva
+`CVA_MODEL_MODE=mock`, `CVA_P10_ENABLED=false`; deploy, Terraform, IAM, billing,
+P10, datos reales y main siguen fuera de autorización.
+
+## Historial — preparación 1.1.2 y rotación
+
 Estado al 2026-08-10: el proyecto OpenAI dedicado `PruebasPersonalizadas`
 (`proj_te2wY3kbHAkFp8IgjglH063t`) quedó identificado mediante una sesión
 autenticada de Platform. La clave histórica permanece en la versión numérica

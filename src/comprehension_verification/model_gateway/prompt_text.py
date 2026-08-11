@@ -69,6 +69,10 @@ Devuelve ActivitySpec.
 """,
         "P02_RUBRIC_NORMALIZE_V1": """Normaliza la rúbrica sin añadir criterios ni completar descriptores ausentes.
 
+Copia activity_id exactamente desde activity_spec.activity_id. Usa únicamente
+evidence_ids presentes en rubric_evidence para sustentar campos de la rúbrica;
+ActivitySpec es contexto estructurado y no una fuente de criterios.
+
 Para cada criterio:
 - crea un criterion_id estable provisto por el sistema o conserva el ID de entrada;
 - separa dimensiones mezcladas solo cuando el texto distingue desempeños observables;
@@ -79,6 +83,14 @@ Para cada criterio:
 - distingue grading_weight de verification_fit; este último usa exactamente HIGH, MEDIUM, LOW o NOT_VERIFIABLE y no es un peso de preguntas.
 
 Verifica totales de peso, niveles faltantes, contradicciones con ActivitySpec y lenguaje que exigiría conocer intención histórica. No corrijas el total; reporta RUBRIC_WEIGHT_MISMATCH.
+Usa status=READY cuando rubric_evidence permita una normalización fiel y
+utilizable. Los pesos, escala, niveles o descriptores ausentes permanecen null
+o vacíos según el contrato y se reportan con Diagnostic; su ausencia no obliga
+por sí sola a abstenerse.
+Usa status=NEEDS_REVIEW o BLOCKED solo cuando no sea posible producir ningún
+criterio normalizado utilizable sin resolver una ambigüedad o inventar datos.
+En cualquiera de esos estados no READY, usa criteria=[] y agrega al menos un
+Diagnostic completo. No conserves criterios parciales dentro de una abstención.
 Devuelve RubricSpec.
 """,
         "P03_AMBIGUITY_TRIAGE_V1": """Produce un reporte breve de decisiones que requieren al docente antes de construir el blueprint.

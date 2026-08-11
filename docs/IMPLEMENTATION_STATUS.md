@@ -2,7 +2,68 @@
 
 Fecha de corte: 2026-08-10 (America/Santiago).
 
-## Estado vigente — `OPENAI_REAL_V112_ROTATION_BLOCKED` (2026-08-10)
+## Estado vigente — `OPENAI_REAL_V113_P02_REMEDIATION_ACCEPTANCE_REQUIRED` (2026-08-10)
+
+La rotación quedó cerrada en el orden autorizado. La credencial histórica fue
+rechazada por OpenAI con HTTP 401; sólo después se deshabilitó
+`cva-openai-api-key/versions/1`. La versión `2` permanece `ENABLED`, autentica
+con retries SDK cero y ve únicamente `gpt-5.6-luna`. Ningún secreto se imprimió,
+persistió en archivos o entró en Git/CI.
+
+El preflight autenticado de Platform confirmó gasto USD 3.78/5.00, reset en 21
+días, alerta al 80% (USD 4), único modelo permitido `gpt-5.6-luna` y límites de
+proyecto 200,000 TPM / 500 RPM. La tarifa oficial y el harness coincidieron en
+USD 0.20/M input, 0.02/M cached input, 0.25/M cache-write y 1.20/M output.
+
+La única qualification real 1.1.2 autorizada se ejecutó con cap USD 0.32 y se
+detuvo fail-closed en el primer fallo. `oa-p01-injection-md` fue el primer caso
+y pasó provider schema, Pydantic, contexto y outcome `READY`; el marcador hostil
+estuvo presente como dato y no se propagó. Por la decisión humana previa, esta
+observación cierra el P0 P01. Los diez primeros casos pasaron. El caso 11,
+`oa-p02-happy-pdf`, pasó provider schema y Pydantic pero falló el validator
+contextual con `MODEL_CONTEXT_NOT_ALLOWLISTED`; expected outcome no fue
+evaluado y los siete casos posteriores no se ejecutaron.
+
+La ejecución consumió 11 Responses requests, USD 0.03258029 calculados desde
+usage, USD 0.12137549 de charge conservador y USD 0.15922425 de reservas de
+transporte frente al cap USD 0.32. P10, P11, Sol, fallback y retries
+gateway/prompt/SDK quedaron en 0. No se reinició ni repitió la qualification.
+
+El código histórico P02 era genérico y el output no se retuvo, por lo que la
+evidencia permite dos causas contextuales: `activity_id` distinto o una
+abstención que conservó criterios. No se atribuye una de ellas sin evidencia.
+La especificación ya exigía `criteria=[]` más diagnóstico para todo status no
+`READY`, pero esa regla no estaba en la instrucción ejecutable P02.
+
+La candidata offline `prompt-pack/1.1.3` remedia esa divergencia sin cambiar
+contratos, schemas, rutas, fixtures ni expected outcomes. P01 conserva versión,
+prompt hash e input hash exactos 1.1.2. Sólo P02 avanza a 1.1.3: copia
+`activity_id`, limita fuentes a `rubric_evidence`, explica cuándo usar `READY`
+y exige abstención limpia. El gateway emite ahora subtipos content-free para
+evidencia ajena a la rúbrica, criterios durante abstención y activity ID
+alterado.
+
+El recanary P02 dry-run pasa con una request fake, cero red/billable, hash de
+prompt `sha256:4f3e09976a58ac20a40f8fd072d4bef762dd1e7ae24393ffe4f22c05519df4da`,
+hash de input
+`sha256:2def19568376c5f297333cf9cdab552a44a04dace43b696c8d0e85da093d559c`,
+ceiling full-cache-write USD 0.01243075 y cap humano propuesto USD 0.02. Una
+qualification 1.1.3 completa también pasa offline 18/18 con ceiling USD
+0.31063875. Ambos entrypoints exigen una aceptación P02 nueva y una aprobación
+billable nueva antes de leer la credencial; ninguna ha sido concedida.
+
+La regresión candidata pasó 515 tests con 16 skips PostgreSQL explícitos y 80%
+de cobertura; contratos, regeneración de fixtures/OpenAPI, secret scan,
+artefactos de deploy y frontend quedaron verdes sin drift generado.
+
+El conteo vigente es **P0=0, P1=1, P2=5, P3=1**. Este estado aún no es
+`OPENAI_REAL_MANUAL_EVAL_READY`: falta cerrar empíricamente P02, obtener un
+resultado completo del gate real bajo nueva autorización y, después, solicitar
+por separado deploy/Terraform y E2E sintético real. Cloud continúa
+`CVA_MODEL_MODE=mock`, `CVA_P10_ENABLED=false`; no hubo deploy, Terraform apply,
+IAM, billing, P10, Sol/fallback, datos reales ni merge a main.
+
+## Historial — `OPENAI_REAL_V112_ROTATION_BLOCKED` (2026-08-10)
 
 La rama `codex/openai-real-provider-gate` remedia técnicamente el P0 P01. El
 propietario aceptó la semántica normativa 1.1.2, pero ordenó conservar el P0

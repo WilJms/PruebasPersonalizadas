@@ -241,3 +241,42 @@ fallo contextual `P01_ABSTENTION_SOURCED_FIELDS_PRESENT`.
 El uso fue 1,725 input, 0 cached, 1,722 cache-write y 872 output tokens. No
 hubo retries, P10, P11, Sol, fallback ni una segunda request. La lectura de
 Secret Manager fue efímera y no modificó secreto, IAM, límites ni cloud.
+
+## Qualification 1.1.2 consumida y detenida en P02
+
+La rotación ya completa habilitó exactamente una qualification con cap USD
+0.32. El gate ejecutó 11 casos y se detuvo en el primer fallo contextual P02;
+no se reanudó ni se repitió.
+
+| Magnitud | USD | Proporción del cap USD 0.32 |
+|---|---:|---:|
+| Costo calculado desde usage | 0.03258029 | 10.18% |
+| Charge conservador acumulado | 0.12137549 | 37.93% |
+| Reserva full-cache-write de transportes creados | 0.15922425 | 49.76% |
+| Ceiling full-cache-write preflight completo | 0.31043475 | 97.01% |
+| Headroom según costo calculado | 0.28741971 | 89.82% |
+
+Las 11 llamadas fueron Luna Standard; P10/P11/Sol/fallback y retries quedaron
+en cero. El P01 inicial pasó y el P02 final pasó schema provider/Pydantic antes
+de fallar contexto. La ejecución añadida por este gate es únicamente USD
+0.03258029 calculados; ceilings y charges conservadores no son costo observado.
+
+## Presupuesto candidato de recanary P02 1.1.3
+
+La instrucción P02 candidata aumenta su input upper-bound de 10,507 a 11,323
+tokens. El schema, output máximo y ruta permanecen iguales.
+
+| Frontera fijada | Valor |
+|---|---:|
+| Input upper-bound | 11,323 tokens |
+| Output máximo, reasoning incluido | 8,000 tokens |
+| Ceiling sin cache | USD 0.01186460 |
+| Ceiling con todo input como cache-write | **USD 0.01243075** |
+| Presupuesto humano propuesto | **USD 0.02** |
+| Máximo de Responses requests | 1 |
+
+El dry-run usa una llamada fake, cero red/billable y hashes exactos P02 1.1.3.
+La qualification completa candidata conserva máximo 19 requests y eleva su
+ceiling full-cache-write sólo a USD 0.31063875, todavía bajo el cap técnico USD
+0.32. Ninguno de esos caps constituye aceptación normativa ni autorización de
+gasto; se requieren gates nuevos antes de acceder a Secret Manager.

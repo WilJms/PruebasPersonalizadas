@@ -3207,7 +3207,9 @@ class Stage1Service:
                 blueprint_id=blueprint.blueprint_id,
                 blueprint_version=blueprint.blueprint_version,
                 parser_versions={artifact.media_type or "unknown": PARSER_VERSION},
-                prompt_versions={key: PROMPT_VERSION for key in snapshots},
+                prompt_versions={
+                    key: prompt_spec(key).prompt_version for key in snapshots
+                },
                 model_snapshots=snapshots,
                 policy_hash=canonical_hash(activity.blueprint_policy),
                 planner_version=PLANNER_VERSION,

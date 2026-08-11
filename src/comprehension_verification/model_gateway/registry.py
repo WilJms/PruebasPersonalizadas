@@ -21,10 +21,19 @@ from comprehension_verification.model_gateway.prompt_text import (
 )
 
 
-PROMPT_VERSION: Final = "1.1.2"
+PROMPT_VERSION: Final = "1.1.3"
 SYSTEM_PROMPT_ID: Final = "SYS_EVIDENCE_BOUND_V1"
 P11_SYSTEM_PROMPT_ID: Final = "SYS_SCHEMA_REPAIR_V1"
-PROMPT_SCHEMA_COMPATIBILITY: Final = frozenset({("1.1.2", "1.1.0")})
+PROMPT_ENTRY_VERSIONS: Final[Mapping[str, str]] = MappingProxyType(
+    {
+        # P01 remains byte-for-byte and hash compatible with the accepted real
+        # 1.1.2 boundary. Only P02 advances in this pack.
+        "P02_RUBRIC_NORMALIZE_V1": "1.1.3",
+    }
+)
+PROMPT_SCHEMA_COMPATIBILITY: Final = frozenset(
+    {("1.1.2", "1.1.0"), ("1.1.3", "1.1.0")}
+)
 
 # This mapping is intentionally written out instead of inferred from prose.
 # It is the executable version of VALIDACION_CONTRATOS section 5.4.
@@ -91,7 +100,7 @@ def _spec(
     model_by_name(output_root)
     return PromptSpec(
         prompt_id=prompt_id,
-        prompt_version=PROMPT_VERSION,
+        prompt_version=PROMPT_ENTRY_VERSIONS.get(prompt_id, "1.1.2"),
         system_prompt_id=(
             P11_SYSTEM_PROMPT_ID
             if prompt_id == "P11_SCHEMA_REPAIR_V1"

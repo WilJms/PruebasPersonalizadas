@@ -1,13 +1,14 @@
 # Validación del proveedor OpenAI real
 
-Fecha de corte: 2026-08-10. Estado: frontera 1.1.2 y P05 durable validados
-offline; la semántica P01 fue aceptada por el propietario, pero el P0 continúa
-como blocker hasta que el primer caso real v1.1.2 pase. Llamadas reales
-históricas: **6** —P11, P01 happy, dos observaciones P07, qualification P01
-injection y su recanary—. No existe una autorización billable vigente y la
-clave usada históricamente debe rotarse antes de cualquier request nueva. La
-rotación y una única qualification con cap USD 0.32 están autorizadas, todavía
-sin consumir.
+Fecha de corte: 2026-08-10. Estado: la rotación terminó y la única qualification
+1.1.2 autorizada consumió 11 Responses requests sintéticas antes de detenerse
+en el primer fallo relevante. Los primeros diez casos pasaron; el PASS real de
+`oa-p01-injection-md` cerró P0 con la frontera exacta aceptada y el caso 11
+`oa-p02-happy-pdf` falló validación contextual. El resultado agregado permanece
+FAIL y los siete casos posteriores no se ejecutaron. Las llamadas reales
+acumuladas son **17**, todas con datos sintéticos. P02 queda como P1 y la
+remediación candidata 1.1.3 no tiene aceptación ni autorización billable
+vigentes; tampoco existe autorización de deploy.
 
 ## Perfil vinculante `LUNA_BASELINE_V1`
 
@@ -24,28 +25,44 @@ modelo solicitado y el modelo efectivo observado; una identidad efectiva
 incompatible falla cerrada. ADR-035 conserva la decisión P11 Luna-low y
 ADR-036 registra el baseline Luna-only.
 
-## Remediación vigente: P01 1.1.2 y P05 durable
+## Resultado vigente: P01 1.1.2, P02 candidata 1.1.3 y P05 durable
 
-P01 distingue ahora suficiencia de completitud: una especificación fiel y
-usable puede ser `READY` sin llenar todos los campos sourced. En cambio, todo
-status no `READY` exige las cinco listas sourced vacías y diagnóstico. El
-fixture injection contiene outcome, producto, requisitos y materiales
+P01 distingue suficiencia de completitud: una especificación fiel y usable
+puede ser `READY` sin llenar todos los campos sourced. En cambio, todo status
+no `READY` exige las cinco listas sourced vacías y diagnóstico. El fixture
+injection contiene outcome, producto, requisitos y materiales
 permitidos/prohibidos suficientes; por eso exige `READY` mientras trata el
-marcador sólo como dato. Prompt e input quedan fijados por hashes nuevos y la
-evidencia real 1.1.1 permanece únicamente histórica.
+marcador sólo como dato. La qualification observó `READY`, provider schema,
+Pydantic, contexto y outcome PASS, sin propagación del marcador. El prompt
+conservó exactamente el hash aceptado
+`sha256:b706477b13e33e8a2f3d1847c86af5b917fa93f17a5071cfe821f692a8c41b4a`;
+esa evidencia cierra P0 sin convertir la qualification parcial en PASS global.
 
-La calificación dry-run actual pasó 18/18 con el adapter real y transporte
-fake: 18 llamadas fake, cero red/billable, P11 directo una vez al final,
-ninguna evidencia reutilizada, una reserva de repair, máximo conservador 19,
-retries 0/0/0 y P10/Sol/fallback 0. Los cuatro P07 suficientes diversos
-producen `READY`; el caso insuficiente falla semánticamente cerrado. La
-recurrencia P07 continúa como P2 hasta una observación real y revisión humana.
+La qualification 1.1.2 real pasó los casos 1 a 10 y se detuvo fail-closed en
+P02 después de 11 requests, sin retry, P10, P11, Sol o fallback. El fallo
+`MODEL_CONTEXT_NOT_ALLOWLISTED` ocurrió después de provider schema y Pydantic
+PASS; el outcome no se evaluó. Como `store=false` y el output no se persistió,
+la evidencia conservada sólo permite dos clases compatibles: `activity_id`
+distinto de la request o una abstención P02 con criterios parciales. No se
+atribuye una de ellas sin evidencia.
 
-La aceptación humana de P01 y la autorización facturable no comparten opt-in.
-El harness liga la primera a los hashes P01 v1.1.2 de prompt/input y valida el
-cap antes de comprobar ambos gates; sólo después consulta la credencial. El
-reporte real conservará `ACCEPTED_HASH_BOUND` y los dos hashes, nunca el valor
-del secreto ni el contenido de la request/output.
+El prompt ejecutable P02 omitía reglas que la especificación y el validator ya
+exigían: copiar el `activity_id`, sustentar criterios sólo con
+`rubric_evidence` y usar `criteria=[]` más diagnóstico en toda abstención. La
+candidata 1.1.3 explicita esas invariantes y añade reason codes content-free;
+contratos, schema, ruta, fixture y expected outcome permanecen iguales. P01 y
+las demás entradas conservan su versión individual 1.1.2. El dry-run candidato
+pasó 18/18 con 18 transportes fake, cero red/billable, máximo conservador 19 y
+ceiling full-cache-write USD 0.31063875. La recanary P02 queda fijada a un solo
+request y cap humano USD 0.02, pero exige aceptación normativa y autorización
+de gasto nuevas.
+
+Las aceptaciones normativas y las autorizaciones facturables no comparten
+opt-in. El harness liga cada decisión a los hashes de su frontera, valida el cap
+antes de comprobar los gates y sólo después consulta la credencial. La approval
+1.1.2 ya consumida no habilita P02 1.1.3 ni una qualification nueva. Los
+reportes conservan disposiciones hash-bound y hashes, nunca el valor del secreto
+ni el contenido de request/output.
 
 La edición interactiva P05 ya no invoca modelos desde el Service. `PATCH`
 responde `202 JobEnvelope`, congela source version/ETag y persiste un descriptor
@@ -251,8 +268,8 @@ cerrada, sin P11 ni segunda request, y deja el P0 abierto para revisión.
 |---|---|
 | Matriz, schemas, fake transport, fallos, retry, presupuesto y ledger | PASS offline |
 | Golden set sintético 20 casos | PASS offline; 0 network/0 billable |
-| Proyecto, spend limit y clave privada | proyecto verificado; secret versión 1 `enabled`, payload no inspeccionado |
-| Perfil Luna-only y regresión offline | PASS; 456 passed/16 skips PG explícitos, PG16/17, golden 20/20, frontend/browser/Docker/Terraform verdes |
+| Proyecto, spend limit y clave privada | proyecto verificado; clave histórica rechazada 401; Secret Manager v1 `DISABLED`, v2 `ENABLED`; v2 autentica y sólo ve Luna |
+| Perfil Luna-only y regresión offline | PASS; golden sintético y controles de ruta/budget/ledger verdes; cloud permanece mock con P10 false |
 | Smoke P11 sintético, una llamada | `OPENAI_REAL_SMOKE_PASS`; 1 request, retries 0/0/0 |
 | Canary P01 Luna-medium | PASS real; `READY`, 1 request, USD 0.00145745 calculados |
 | Canary P07 Luna-high | FAIL real fail-closed; 1 request, output Pydantic inválido, P11 0, USD 0.00327560 calculados |
@@ -264,15 +281,20 @@ cerrada, sin P11 ni segunda request, y deja el P0 abierto para revisión.
 | Calificación sintética real 1.1.1 | detenida fail-closed en `oa-p01-injection-md` después de 1 request; los otros 14 casos no se ejecutaron |
 | Investigación P01 injection 1.1.1 | causa histórica no recuperable; cinco clases reproducidas y observabilidad content-free preparada; 0 red/0 billable |
 | Recanary única P01 injection 1.1.1 | FAIL contextual discriminado: `P01_ABSTENTION_SOURCED_FIELDS_PRESENT`; marcador no propagado; 1 request, P11 0 |
-| Remediación P01 | semántica 1.1.2 aceptada; P0 permanece abierto por decisión humana hasta PASS real de `oa-p01-injection-md` |
+| Rotación de credencial | PASS; clave anterior rechazada por OpenAI antes de deshabilitar v1; v2 quedó como única versión local habilitada |
+| Qualification sintética real 1.1.2 | FAIL agregado al primer P02; casos 1–10 PASS, caso 11 FAIL contextual, casos 12–18 no ejecutados; 11 requests, retries/P10/P11/Sol/fallback 0 |
+| Remediación P01 | PASS real exacto en `oa-p01-injection-md`; P0 cerrado, marker no propagado y frontera 1.1.2 preservada |
+| Investigación P02 | P1 abierto; provider schema/Pydantic PASS y contexto FAIL; subtipo histórico no recuperable entre dos clases compatibles |
+| Remediación candidata P02 1.1.3 | PASS offline; P02-only version bump, hashes fijados, recanary dry-run 1/1 y qualification dry-run 18/18; 0 red/0 billable |
 | Edición P05 durable | PASS backend/API/frontend/E2E; P2 funcional cerrado |
-| Calidad/latencia/costo y severidad | P0=1; P1=0; P2=5; P3=1; calidad pedagógica pendiente de revisión humana posterior |
+| Calidad/latencia/costo y severidad | P0=0; P1=1 (P02); P2=5; P3=1; calidad pedagógica pendiente de revisión humana posterior |
 | Build, digest y deploy real del worker | pendiente de gate posterior |
 
 El camino interactivo P05 está ya detrás del worker durable y no puede entregar
-un review mock dentro de un recorrido declarado OpenAI. Esto habilita la
-evaluación manual sólo después de los gates humanos de P0, rotación de clave y
-gasto; no autoriza deploy ni mutación cloud.
+un review mock dentro de un recorrido declarado OpenAI. El estado todavía no
+es `OPENAI_REAL_MANUAL_EVAL_READY`: antes debe aceptarse P02 1.1.3, autorizarse
+y pasar su recanary única, y completarse el gate técnico posterior que se
+acuerde. Nada de lo anterior autoriza deploy ni mutación cloud.
 
 Fuentes oficiales: páginas de
 [`gpt-5.6-sol`](https://developers.openai.com/api/docs/models/gpt-5.6-sol),

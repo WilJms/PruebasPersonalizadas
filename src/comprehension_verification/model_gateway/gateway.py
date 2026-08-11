@@ -58,6 +58,11 @@ class ContextFailureCode(StrEnum):
         "P01_ABSTENTION_SOURCED_FIELDS_PRESENT"
     )
     P01_ACTIVITY_ID_MISMATCH = "P01_ACTIVITY_ID_MISMATCH"
+    P02_RUBRIC_EVIDENCE_ID_NOT_ALLOWLISTED = (
+        "P02_RUBRIC_EVIDENCE_ID_NOT_ALLOWLISTED"
+    )
+    P02_ABSTENTION_CRITERIA_PRESENT = "P02_ABSTENTION_CRITERIA_PRESENT"
+    P02_ACTIVITY_ID_MISMATCH = "P02_ACTIVITY_ID_MISMATCH"
 
 
 @dataclass(frozen=True, slots=True)
@@ -1191,6 +1196,48 @@ class ModelGateway:
                 )
             return
 
+        if (
+            output
+            and prompt_id == "P02_RUBRIC_NORMALIZE_V1"
+            and request is not None
+        ):
+            codes: list[ContextFailureCode] = []
+            if evidence_invalid:
+                codes.append(ContextFailureCode.EVIDENCE_ID_NOT_ALLOWLISTED)
+            if source_invalid:
+                codes.append(
+                    ContextFailureCode.COURSE_SOURCE_ID_NOT_ALLOWLISTED
+                )
+            if context_mode_invalid:
+                codes.append(ContextFailureCode.CONTEXT_MODE_MISMATCH)
+            rubric_evidence_ids = {
+                item.evidence_id for item in request.rubric_evidence
+            }
+            if not evidence_ids.issubset(rubric_evidence_ids):
+                codes.append(
+                    ContextFailureCode.P02_RUBRIC_EVIDENCE_ID_NOT_ALLOWLISTED
+                )
+            if value.status != models.WorkflowStatus.READY:
+                if not value.diagnostics:
+                    codes.append(
+                        ContextFailureCode.ABSTENTION_DIAGNOSTIC_MISSING
+                    )
+                if value.criteria:
+                    codes.append(
+                        ContextFailureCode.P02_ABSTENTION_CRITERIA_PRESENT
+                    )
+            if value.activity_id != request.activity_spec.activity_id:
+                codes.append(ContextFailureCode.P02_ACTIVITY_ID_MISMATCH)
+            if codes:
+                raise GatewayContextError(
+                    "P02 output failed contextual validation",
+                    failure=ContextFailure(
+                        phase=context_phase,
+                        codes=tuple(codes),
+                    ),
+                )
+            return
+
         if evidence_invalid:
             raise GatewayContextError(
                 "Payload contains an evidence_id outside the allowlist",
@@ -1313,7 +1360,13 @@ class ModelGateway:
         ):
             require_diagnostic()
             if output.criteria:
-                raise GatewayContextError("P02 abstention cannot fabricate criteria")
+                raise GatewayContextError(
+                    "P02 abstention cannot fabricate criteria",
+                    phase=phase,
+                    failure_code=(
+                        ContextFailureCode.P02_ABSTENTION_CRITERIA_PRESENT
+                    ),
+                )
         elif prompt_id == "P03_AMBIGUITY_TRIAGE_V1" and output.blocked and not output.issues:
             raise GatewayContextError("Blocked P03 output requires an actionable issue")
         elif prompt_id == "P04_BLUEPRINT_BUILD_V1":
@@ -1365,7 +1418,11 @@ class ModelGateway:
                 )
         elif prompt_id == "P02_RUBRIC_NORMALIZE_V1":
             if output.activity_id != request.activity_spec.activity_id:
-                raise GatewayContextError("P02 output activity_id mismatch")
+                raise GatewayContextError(
+                    "P02 output activity_id mismatch",
+                    phase=phase,
+                    failure_code=ContextFailureCode.P02_ACTIVITY_ID_MISMATCH,
+                )
         elif prompt_id == "P03_AMBIGUITY_TRIAGE_V1":
             if output.activity_id != request.activity_spec.activity_id:
                 raise GatewayContextError("P03 output activity_id mismatch")

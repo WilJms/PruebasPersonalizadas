@@ -574,3 +574,34 @@
   humana autorizada y la evidencia de contención.
 - **Relación:** D-045, D-049, `OPENAI_PROVIDER_SETUP.md` y
   `REAL_MODEL_EVALS.md`.
+
+## D-051 - El PASS real P01 cierra P0 y el primer fallo P02 detiene el gate
+
+- **Decisión:** la qualification 1.1.2 conserva su evidencia aunque termine en
+  FAIL agregado. El PASS del primer caso `oa-p01-injection-md`, ligado a hashes
+  aceptados y con inyección no propagada, satisface el criterio humano para
+  cerrar P0. El fallo contextual del caso 11 `oa-p02-happy-pdf` se clasifica P1
+  y detiene la secuencia; no autoriza repetición, resume, P11 ni otro gasto.
+- **Razón:** descartar diez PASS por un fallo posterior perdería evidencia
+  observada, mientras continuar tras un blocker violaría el stop fail-closed.
+  Cerrar P01 no convierte un gate parcial en qualification completa.
+- **Relación:** D-047, D-049, P01/P02, `REAL_MODEL_EVALS.md` y
+  `OPENAI_COST_BUDGETS.md`.
+
+## D-052 - P02 1.1.3 alinea la abstención sin invalidar P01 1.1.2
+
+- **Decisión:** `prompt-pack/1.1.3` mantiene P01 y todas las entradas no
+  modificadas en versión individual 1.1.2; sólo P02 avanza a 1.1.3. P02 copia
+  `activity_id`, usa únicamente evidencia de rúbrica y hace explícito que todo
+  status no `READY` lleva `criteria=[]` más diagnóstico. El gateway conserva
+  subtipos contextuales content-free. Contratos, schema, ruta, fixture y
+  expected outcome no cambian.
+- **Gate:** una recanary real P02 requiere aceptación normativa hash-bound y
+  aprobación billable nuevas. La approval 1.1.2 consumida no sirve para 1.1.3;
+  ausencia de cualquiera de los gates bloquea antes de leer la credencial.
+- **Razón:** el prompt ejecutable omitía una regla que la especificación y el
+  validator ya exigían. Versionar sólo la entrada afectada conserva la prueba
+  real P01 exacta y evita presentar la corrección propuesta como aceptada o
+  observada antes del gate humano.
+- **Relación:** D-047, D-049, D-051, P02,
+  `specification/01_Prompt_Pack_v1.1(1).md` y `REAL_MODEL_EVALS.md`.
