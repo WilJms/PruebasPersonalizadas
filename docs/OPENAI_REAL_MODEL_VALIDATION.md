@@ -1,40 +1,30 @@
 # Validación del proveedor OpenAI real
 
-Fecha de corte: 2026-08-10. Estado: la recanary P09 v1.1.5 autorizada sobre
-`2ae0a0a` terminó PASS y quedó consumida. El total documentado sube a **27**
-Responses requests, todas con fixtures sintéticos. La evidencia real hash-bound
-cubre 17/18 casos; P0/P1 están cerrados y sólo P11 directo permanece sin una
-observación vigente.
+Fecha de corte: 2026-08-10. Estado: la canary P11 directa v1.1.4 autorizada
+sobre `976aadc` terminó PASS y quedó consumida. El total documentado sube a
+**28** Responses requests, todas con fixtures sintéticos. La evidencia real
+hash-bound cubre 18/18 casos y P0/P1 están cerrados.
 
-## Resultado vigente: P09 v1.1.5 PASS y P11 directo preparado
+## Resultado vigente: P11 directo PASS y corpus real completo
 
-P09 devolvió `READY` y pasó schema provider, Pydantic, contexto y expected
-outcome. Usó una request, retries gateway/prompt/SDK 0/0/0 y
-P10/P11/Sol/fallback cero. El costo calculado fue USD 0.00443985, el charge
-conservador USD 0.01271385 y el ceiling full-cache-write USD 0.01592350, bajo
-el cap USD 0.02. La approval no puede reutilizarse.
+P11 devolvió `REPAIRED` y pasó schema provider, Pydantic, contexto y expected
+outcome. Conservó el target e hizo exactamente el cambio estructural mínimo.
+Usó una request, P11 uno, retries gateway/prompt/SDK 0/0/0 y P10/Sol/fallback
+cero. El costo calculado fue USD 0.00070015, el charge conservador USD
+0.00996535 y el ceiling full-cache-write USD 0.01172550, bajo el cap USD 0.02.
 
-La observación registró 2,856 input, 0 cached, 2,853 cache-write, 3,105 output,
-2,500 reasoning y 25,826 ms. Prompt/input quedaron en
-`sha256:8d29a13a5ee56b39f6aa5545b602e23ca28b6d60d051852d75ecbc0c664179ff` /
-`sha256:d85b124990e457e096fbe4851633ee057b662efcbda3ac84837e8c8a78deacc7`.
-No se retuvo contenido; sólo hashes seguros de output y request ID. El
-entrypoint rechaza otra recanary con
-`OPENAI_P09_V115_RECANARY_ALREADY_CONSUMED` antes del adapter.
-
-P11 directo v1.1.4 es ahora la única frontera pendiente. El dry-run revalida
-las 17 evidencias anteriores y termina `REPAIRED` mediante una modificación
-estructural mínima; wrapper, objeto objetivo, contexto y target pasan. Usa una
-request fake, cero red/billable, Luna-low, input upper-bound 8,502, ceiling USD
-0.01172550 y cap propuesto USD 0.02. Prompt/input:
+La observación registró 1,462 input, 0 cached, 1,459 cache-write, 279 output, 34
+reasoning y 3,892 ms. Prompt/input quedaron en:
 
 ```text
 sha256:43f2ca4d6a0c02f015125a96f3a12bc5dd8d6c0eab0583f9c2f11b0f1c1f1f04
 sha256:f8c2a6058214a4958b83e8850780e2827e1269720251f25f1e21d062371fb185
 ```
 
-El gate exige una autorización facturable nueva ligada al SHA final, máximo
-una Responses request, retries 0, P10/Sol/fallback 0 y P11 exactamente uno.
+No se retuvo contenido; sólo hashes seguros de output y request ID. El
+entrypoint rechaza otra canary con `OPENAI_P11_V114_DIRECT_ALREADY_CONSUMED`
+antes del adapter. Las 18 fronteras real-eligible pueden recomprobarse offline
+sin una llamada adicional. Build/deploy y E2E conservan gates separados.
 
 ## Hardening presupuestario predeploy
 
@@ -382,6 +372,7 @@ cerrada, sin P11 ni segunda request, y deja el P0 abierto para revisión.
 | Continuación 1.1.4 real | FAIL gobernado en P09: P06/P08 PASS, P09 schema/Pydantic PASS y contexto FAIL, P11 directo no ejecutado; 3 requests; USD 0.00864505; approval consumida |
 | Recanary P09 1.1.5 | PASS real `READY`: schema/Pydantic/contexto/outcome PASS, 1 request, USD 0.00443985, P10/P11/Sol/fallback/retries 0; approval consumida |
 | P11 directo 1.1.4 dry-run | PASS `REPAIRED`: 17 evidencias previas revalidadas, 1 fake, 0 red/billable, ceiling USD 0.01172550/cap propuesto USD 0.02 |
+| P11 directo 1.1.4 real | PASS `REPAIRED`: schema/Pydantic/contexto/outcome PASS, target inmutable y cambio mínimo; 1 request, USD 0.00070015, P11 1, retries/P10/Sol/fallback 0; approval consumida; corpus 18/18 |
 | Hardening de presupuesto predeploy | PASS offline; full-cache-write antes de transporte, gateway/SDK retries 0/0, P11 máximo 80K, E2E fake P01-P09 `SUCCEEDED`; P1 cerrado |
 | Edición P05 durable | PASS backend/API/frontend/E2E; P2 funcional cerrado |
 | Calidad/latencia/costo y severidad | P0=0; P1=0; P2=5; P3=1; calidad pedagógica pendiente de revisión humana posterior |
@@ -389,9 +380,9 @@ cerrada, sin P11 ni segunda request, y deja el P0 abierto para revisión.
 
 El camino interactivo P05 está ya detrás del worker durable y no puede entregar
 un review mock dentro de un recorrido declarado OpenAI. El estado todavía no
-es `OPENAI_REAL_MANUAL_EVAL_READY`: falta calificar P11 directo bajo su gate
-separado y luego ejecutar los gates de deploy/E2E. Nada de lo anterior autoriza
-gasto adicional, deploy ni mutación cloud.
+es `OPENAI_REAL_MANUAL_EVAL_READY`: falta construir/desplegar el candidato y
+ejecutar el E2E sintético real bajo gates separados. Nada de lo anterior
+autoriza gasto adicional, deploy ni mutación cloud.
 
 Fuentes oficiales: páginas de
 [`gpt-5.6-sol`](https://developers.openai.com/api/docs/models/gpt-5.6-sol),

@@ -404,11 +404,11 @@ PASS en una request y consumió el gate:
 Usó 2,856 input, 0 cached, 2,853 cache-write, 3,105 output y 2,500 reasoning
 tokens. No hubo retries, P10, P11, Sol, fallback ni segunda request.
 
-## Gate candidato P11 directo v1.1.4
+## Canary P11 directa v1.1.4 consumida
 
-La siguiente compra admisible es exclusivamente `oa-p11-happy`; las 17
-evidencias reales previas se recomputan contra sus fronteras hash-bound antes
-del gate. P11 no puede repararse recursivamente:
+La compra autorizada fue exclusivamente `oa-p11-happy`; las 17 evidencias
+reales previas se recomputaron contra sus fronteras hash-bound antes del gate.
+P11 no se reparó recursivamente:
 
 | Frontera P11 directo v1.1.4 | Valor |
 |---|---:|
@@ -418,12 +418,21 @@ del gate. P11 no puede repararse recursivamente:
 | Input upper-bound | 8,502 tokens |
 | Ceiling sin cache | USD 0.01130040 |
 | Ceiling full-cache-write | **USD 0.01172550** |
-| Cap humano propuesto | **USD 0.02** |
+| Cap humano autorizado | **USD 0.02** |
 | P11/P10/Sol/fallback/retries | 1/0/0/0/0 |
 
-El dry-run usó una request fake y cero red/billable; terminó `REPAIRED` con
-wrapper y objeto objetivo válidos, target inmutable y modificación estructural
-mínima. Ningún remanente de P09 o de continuaciones anteriores se transfiere.
+La canary real terminó `REPAIRED` con wrapper y objeto objetivo válidos, target
+inmutable y modificación estructural mínima. Consumió una request: 1,462 input,
+0 cached, 1,459 cache-write, 279 output y 34 reasoning tokens.
+
+| Magnitud observada P11 | USD | Proporción del cap USD 0.02 |
+|---|---:|---:|
+| Costo calculado desde usage | 0.00070015 | 3.50% |
+| Charge conservador | 0.00996535 | 49.83% |
+| Ceiling full-cache-write | 0.01172550 | 58.63% |
+| Headroom según costo calculado | 0.01929985 | 96.50% |
+
+El gate quedó consumido y no transfiere remanente al build, deploy ni E2E.
 
 ## Envelope del primer E2E real sintético
 

@@ -148,7 +148,7 @@ P11_V114_DIRECT_CASE_ID = "oa-p11-happy"
 P11_V114_DIRECT_HUMAN_BUDGET_USD = 0.02
 # P11 1.1.4 was accepted normatively with P05, but its isolated direct
 # observation still requires a fresh spend gate bound to the hashes below.
-P11_V114_DIRECT_CONSUMED = False
+P11_V114_DIRECT_CONSUMED = True
 P11_V114_PROMPT_HASH = (
     "sha256:43f2ca4d6a0c02f015125a96f3a12bc5dd8d6c0eab0583f9c2f11b0f1c1f1f04"
 )
@@ -452,6 +452,26 @@ P11_DIRECT_PRIOR_REAL_EVIDENCE = MappingProxyType(
 P11_DIRECT_PRIOR_REAL_EVIDENCE_CASE_IDS = tuple(
     P11_DIRECT_PRIOR_REAL_EVIDENCE
 )
+# The single direct P11 observation completed the real-eligible corpus.  This
+# immutable map lets later offline/deploy gates prove that every one of the 18
+# observed executable boundaries is still byte-for-byte current without
+# retaining any provider payload or identifier in clear text.
+COMPLETE_REAL_EVIDENCE = MappingProxyType(
+    {
+        **P11_DIRECT_PRIOR_REAL_EVIDENCE,
+        P11_V114_DIRECT_CASE_ID: _ReusedRealEvidenceBoundary(
+            prompt_id="P11_SCHEMA_REPAIR_V1",
+            prompt_version="1.1.4",
+            prompt_hash=P11_V114_PROMPT_HASH,
+            input_bundle_hash=P11_V114_INPUT_BUNDLE_HASH,
+            expected="VALID",
+            behavior="happy",
+            defect_severity_if_failed="P1",
+            source_checkpoint="OPENAI_P11_V114_DIRECT_PASS",
+        ),
+    }
+)
+COMPLETE_REAL_EVIDENCE_CASE_IDS = tuple(COMPLETE_REAL_EVIDENCE)
 QUALIFICATION_REUSED_REAL_CASE_IDS = tuple(
     QUALIFICATION_REUSED_REAL_EVIDENCE
 )

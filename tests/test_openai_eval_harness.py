@@ -1772,6 +1772,17 @@ def test_p11_v114_direct_dry_run_is_hash_bound_and_non_billable() -> None:
     assert prior[-1]["case_id"] == eval_harness.P09_V115_RECANARY_CASE_ID
     assert prior[-1]["source_checkpoint"] == "OPENAI_P09_V115_RECANARY_PASS"
 
+    complete = eval_harness._validated_reused_real_evidence(
+        by_id,
+        boundaries=eval_harness.COMPLETE_REAL_EVIDENCE,
+    )
+    assert len(complete) == 18
+    assert tuple(row["case_id"] for row in complete) == (
+        eval_harness.COMPLETE_REAL_EVIDENCE_CASE_IDS
+    )
+    assert complete[-1]["case_id"] == eval_harness.P11_V114_DIRECT_CASE_ID
+    assert complete[-1]["source_checkpoint"] == "OPENAI_P11_V114_DIRECT_PASS"
+
 
 def test_p11_v114_direct_requires_fresh_spend_gate(monkeypatch) -> None:
     monkeypatch.setattr(eval_harness, "P11_V114_DIRECT_CONSUMED", False)
@@ -1887,8 +1898,8 @@ def test_p11_v114_direct_fake_transport_proves_governed_repair(
     assert all(row["controls"].values())
 
 
-def test_p11_v114_direct_is_fail_closed_after_consumption(monkeypatch) -> None:
-    monkeypatch.setattr(eval_harness, "P11_V114_DIRECT_CONSUMED", True)
+def test_p11_v114_direct_is_fail_closed_after_consumption() -> None:
+    assert eval_harness.P11_V114_DIRECT_CONSUMED is True
     cases = [
         case
         for case in eval_harness._load_cases(eval_harness.DEFAULT_MANIFEST)

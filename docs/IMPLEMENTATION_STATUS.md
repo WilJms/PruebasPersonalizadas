@@ -2,46 +2,38 @@
 
 Fecha de corte: 2026-08-10 (America/Santiago).
 
-## Estado vigente — `OPENAI_P11_V114_DIRECT_APPROVAL_REQUIRED` (2026-08-10)
+## Estado vigente — `OPENAI_REAL_CANDIDATE_DEPLOY_APPROVAL_REQUIRED` (2026-08-10)
 
-La remediación normativa P09 v1.1.5 y su única recanary autorizada sobre
-`2ae0a0a` quedaron consumidas. P09 terminó **PASS** `READY`: schema estricto del
-proveedor, Pydantic, contexto y expected outcome pasaron en una Responses
-request. Gateway/prompt/SDK retries fueron 0/0/0 y P10/P11/Sol/fallback
-permanecieron en cero. El costo calculado fue USD 0.00443985, el charge
-conservador USD 0.01271385 y el ceiling USD 0.01592350, bajo el cap USD 0.02.
+La única canary P11 directa v1.1.4 autorizada sobre `976aadc` quedó consumida y
+terminó **PASS** `REPAIRED`. Schema estricto del proveedor, Pydantic, contexto y
+expected outcome pasaron; la reparación conservó el target y fue exactamente
+la modificación estructural mínima autorizada. La ejecución usó una Responses
+request, P11 exactamente uno y retries gateway/prompt/SDK, P10, Sol y fallback
+en cero. El costo calculado fue USD 0.00070015, el charge conservador USD
+0.00996535 y el ceiling USD 0.01172550, bajo el cap USD 0.02.
 
-La observación usó 2,856 input, 0 cached, 2,853 cache-write, 3,105 output y
-2,500 reasoning tokens en 25,826 ms. Queda ligada a prompt/input
-`sha256:8d29a13a5ee56b39f6aa5545b602e23ca28b6d60d051852d75ecbc0c664179ff` /
-`sha256:d85b124990e457e096fbe4851633ee057b662efcbda3ac84837e8c8a78deacc7`.
-Sólo se conservan metadatos seguros: output hash
-`sha256:52625c3ed55669c210d6908e9ea98a750b293bd7bd356c726e69058fecfae85d`
-y request-ID hash
-`sha256:0e93e77e4ad81cef4c9dc82c0b609b218b6a7f9a7a3e4cd6af80182991c8a478`;
-no se retuvieron payload, output, clave ni request ID en claro. Repetir las
-approval históricas bloquea con `OPENAI_P09_V115_RECANARY_ALREADY_CONSUMED`
-antes del adapter.
-
-El PASS cierra el P1 P09 y eleva la evidencia real hash-bound a **17/18**. El
-único caso real-eligible aún no observado en su frontera vigente es P11 directo
-v1.1.4. Su gate aislado fija `oa-p11-happy`, Luna-low, una sola Responses
-request, retries 0, P10/Sol/fallback 0 y P11 exactamente uno. El dry-run pasa
-`REPAIRED` con reparación estructural mínima, una request fake, cero
-red/billable y las 17 fronteras previas revalidadas. Prompt/input:
+La observación usó 1,462 input, 0 cached, 1,459 cache-write, 279 output y 34
+reasoning tokens en 3,892 ms. Queda ligada a prompt/input:
 
 ```text
 sha256:43f2ca4d6a0c02f015125a96f3a12bc5dd8d6c0eab0583f9c2f11b0f1c1f1f04
 sha256:f8c2a6058214a4958b83e8850780e2827e1269720251f25f1e21d062371fb185
 ```
 
-El input upper-bound es 8,502, el ceiling full-cache-write USD 0.01172550 y el
-cap humano propuesto USD 0.02. Requiere una autorización facturable nueva,
-exacta y fijada al SHA final; ningún remanente anterior se transfiere. El
-conteo vigente es **P0=0, P1=0, P2=5, P3=1**. Cloud continúa en el digest
-histórico, `CVA_MODEL_MODE=mock` y `CVA_P10_ENABLED=false`; no hubo build,
-deploy, Terraform apply, IAM, datos estudiantiles reales ni merge a main. Este
-estado todavía no es `OPENAI_REAL_MANUAL_EVAL_READY`.
+Sólo se conservan metadatos seguros: output hash
+`sha256:8b12cf3f787b45200c8577a1d3ab1e5fadd406e6b0674f8ce71a1a6c8e998be6`
+y request-ID hash
+`sha256:f1c5229c5fb856cb545d686fbc9818e551e0b1b7b1ccf1bdab086c9fc48782b2`;
+no se retuvieron payload, output, clave ni request ID en claro. El entrypoint
+queda sellado con `OPENAI_P11_V114_DIRECT_ALREADY_CONSUMED` antes del adapter.
+
+La evidencia real hash-bound cubre ahora **18/18** casos. P0/P1 permanecen
+cerrados y el conteo vigente es **P0=0, P1=0, P2=5, P3=1**. Cloud continúa en
+el digest histórico, `CVA_MODEL_MODE=mock` y `CVA_P10_ENABLED=false`; no hubo
+build, deploy, Terraform apply, IAM, datos estudiantiles reales ni merge a
+main. El siguiente gate es construir y desplegar el candidato inmutable y,
+después, ejecutar el E2E sintético OpenAI real bajo una autorización separada.
+Este estado todavía no es `OPENAI_REAL_MANUAL_EVAL_READY`.
 
 ## Historial — `OPENAI_REAL_QUALIFICATION_V114_CONTINUATION_APPROVAL_REQUIRED` (2026-08-10)
 

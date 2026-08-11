@@ -9,26 +9,23 @@ P10 deshabilitado; las evaluaciones OpenAI dedicadas usaron exclusivamente
 fixtures sintéticos. Los resultados históricos E1 se conservan al final y no
 se presentan como evidencia del candidato E2.
 
-## Recanary P09 v1.1.5 PASS y gate P11 directo — 2026-08-10
+## Canary P11 directa v1.1.4 PASS — 2026-08-10
 
 | Prueba o gate | Resultado observado |
 |---|---|
-| Preflight P09 | HEAD/remote exactos en `2ae0a0a`; worktree limpio; Secret Manager v1 `DISABLED`, v2 `ENABLED`; tarifa oficial Luna revalidada |
-| Recanary P09 real | PASS `READY`; provider schema/Pydantic/contexto/outcome PASS; 1/1 Responses request |
-| Controles P09 | retries gateway/prompt/SDK 0/0/0; P10/P11/Sol/fallback 0; approval consumida |
-| Uso P09 | 2,856 input; 0 cached; 2,853 cache-write; 3,105 output; 2,500 reasoning; 25,826 ms |
-| Costo P09 | USD 0.00443985 calculado; USD 0.01271385 charge; USD 0.01592350 ceiling; bajo cap USD 0.02 |
-| Frontera P09 | prompt/input `sha256:8d29a13…` / `sha256:d85b124…`; request/output hashes `sha256:0e93e77e…` / `sha256:52625c3e…` |
-| Antirrepetición P09 | PASS offline: `OPENAI_P09_V115_RECANARY_ALREADY_CONSUMED` antes del adapter |
-| Evidencia reutilizable | 17/18 PASS hash-bound; P0=0, P1=0, P2=5, P3=1 |
-| P11 directo dry-run | PASS `REPAIRED`; wrapper/target/contexto válidos, target inmutable y cambio estructural mínimo; 1 fake, 0 red/billable |
-| Frontera P11 | prompt/input `sha256:43f2ca4d…` / `sha256:f8c2a605…`; Luna-low; input 8,502; ceiling USD 0.01172550; cap propuesto USD 0.02 |
-| Gate P11 negativo | PASS: falta de approval devuelve `OPENAI_P11_V114_DIRECT_APPROVAL_REQUIRED`, `network_calls=0` |
+| Preflight P11 | HEAD/remote exactos en `976aadc`; worktree limpio; 17 fronteras previas revalidadas; Secret Manager v1 `DISABLED`, v2 `ENABLED`; tarifa oficial Luna revalidada |
+| Canary P11 real | PASS `REPAIRED`; provider schema/Pydantic/contexto/outcome PASS; target inmutable y cambio estructural mínimo; 1/1 Responses request |
+| Controles P11 | Luna-low; retries gateway/prompt/SDK 0/0/0; P10/Sol/fallback 0; P11 1; approval consumida |
+| Uso P11 | 1,462 input; 0 cached; 1,459 cache-write; 279 output; 34 reasoning; 3,892 ms |
+| Costo P11 | USD 0.00070015 calculado; USD 0.00996535 charge; USD 0.01172550 ceiling; bajo cap USD 0.02 |
+| Frontera P11 | prompt/input `sha256:43f2ca4d…` / `sha256:f8c2a605…`; request/output hashes `sha256:f1c5229c…` / `sha256:8b12cf3f…` |
+| Antirrepetición P11 | PASS offline: `OPENAI_P11_V114_DIRECT_ALREADY_CONSUMED` antes del adapter |
+| Evidencia reutilizable | 18/18 PASS hash-bound; P0=0, P1=0, P2=5, P3=1 |
 | Regresión vigente | 548 passed, 16 skips PostgreSQL explícitos y 1 warning conocido; 57/57 harness PASS; contratos y `git diff --check` PASS |
 
-No se retuvieron payload, output, clave ni request ID en claro. P11 directo
-requiere una autorización facturable exacta nueva; nada de este checkpoint
-autoriza build, IAM, Terraform apply, deploy o E2E cloud.
+No se retuvieron payload, output, clave ni request ID en claro. La canary P11
+no autoriza build, IAM, Terraform apply, deploy ni E2E cloud; esas superficies
+conservan gates separados.
 
 ## Historial — continuación v1.1.4 real y remediación P09 v1.1.5
 

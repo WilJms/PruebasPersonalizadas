@@ -1,32 +1,20 @@
 # Setup gobernado del proveedor OpenAI
 
-## Estado vigente — P09 1.1.5 consumido; P11 directo requiere approval
+## Estado vigente — P11 directo consumido; corpus real 18/18
 
-La continuación v1.1.4 y la única recanary P09 v1.1.5 ya quedaron consumidas.
-P09 pasó `READY` con schema provider, Pydantic, contexto y outcome PASS en una
-Responses request, USD 0.00443985 calculados y retries/P10/P11/Sol/fallback
-cero. Repetir el opt-in P09 bloquea antes del adapter con:
-
-```text
-OPENAI_P09_V115_RECANARY_ALREADY_CONSUMED
-```
-
-La evidencia real vigente cubre 17/18 casos. El único pendiente es P11 directo
-v1.1.4, ya aceptado normativamente dentro de la remediación P05/P11. Su dry-run
-hash-bound devuelve `REPAIRED`, valida wrapper y objeto objetivo, conserva el
-target y prueba un cambio estructural mínimo. Usa una request fake, cero
-red/billable y fija ceiling USD 0.01172550 bajo cap propuesto USD 0.02. La
-interfaz del nuevo gate es:
+La canary P11 directa v1.1.4 autorizada sobre `976aadc` terminó PASS
+`REPAIRED`: schema provider, Pydantic, contexto y outcome PASS, target inmutable
+y reparación estructural mínima. Consumió exactamente una Responses request,
+USD 0.00070015 calculados, P11 uno y retries/P10/Sol/fallback cero. Repetir el
+opt-in bloquea antes del adapter con:
 
 ```text
-CVA_OPENAI_P11_V114_DIRECT_APPROVAL=OPENAI_P11_V114_DIRECT_APPROVED
+OPENAI_P11_V114_DIRECT_ALREADY_CONSUMED
 ```
 
-Este valor documenta la interfaz y no constituye autorización. La autorización
-exacta debe fijar además el SHA candidato, una sola Responses request, stop al
-primer fallo, retries 0, P10/Sol/fallback 0 y P11 exactamente uno. Una vez
-consumida, el entrypoint bloqueará
-`OPENAI_P11_V114_DIRECT_ALREADY_CONSUMED`.
+La evidencia real vigente cubre 18/18 casos hash-bound y no conserva contenido
+del proveedor. El paso siguiente requiere gates nuevos y separados para
+build/digest, IAM/Terraform deploy y E2E sintético OpenAI real.
 
 Cloud conserva `CVA_MODEL_MODE=mock`, `CVA_P10_ENABLED=false`; ninguna clave
 está montada en web/worker y no se autorizó deploy, Terraform apply, IAM, datos

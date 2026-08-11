@@ -751,3 +751,24 @@
   independiente fijado a SHA/digest y presupuesto.
 - **Relación:** D-049, D-054, D-056, D-057, P09/P11,
   `REAL_MODEL_EVALS.md` y `OPENAI_COST_BUDGETS.md`.
+
+## D-059 - P11 directo completa 18/18 y separa qualification de deploy/E2E
+
+- **Decisión observada:** la única canary P11 directa v1.1.4 autorizada sobre
+  `976aadc` terminó `REPAIRED` y pasó schema provider, Pydantic, contexto y
+  expected outcome. Conservó el target e hizo exactamente la eliminación
+  estructural mínima. Consumió una Responses request y USD 0.00070015, con
+  P11 uno y retries/P10/Sol/fallback cero.
+- **Antirrepetición:** `P11_V114_DIRECT_CONSUMED=True` bloquea cualquier nuevo
+  intento con `OPENAI_P11_V114_DIRECT_ALREADY_CONSUMED` antes de credencial y
+  adapter. Se conservan usage, latencia y hashes content-free; no payload,
+  output, clave ni request ID en claro.
+- **Evidencia:** las 17 fronteras anteriores se revalidaron antes de la llamada
+  y `COMPLETE_REAL_EVIDENCE` fija ahora los 18 casos real-eligible. La cobertura
+  es 18/18 y P0/P1 permanecen en cero.
+- **Separación de gates:** completar el corpus prueba qualification técnica del
+  proveedor, pero no autoriza ni prueba el runtime cloud. Build/digest,
+  IAM/Terraform deploy y E2E sintético real conservan autorizaciones separadas,
+  fijadas al SHA/digest y a sus respectivos límites de mutación y gasto.
+- **Relación:** D-054, D-056, D-058, P11, `REAL_MODEL_EVALS.md`,
+  `OPENAI_COST_BUDGETS.md` y `OPENAI_REAL_MODEL_VALIDATION.md`.

@@ -9,41 +9,29 @@ con IDs únicos y clasificación obligatoria
 `1.1.0`. P01, P03, P04 y P06-P08 conservan su versión individual `1.1.2`;
 P02 conserva `1.1.3`; P05/P11 usan `1.1.4`; P09 candidata usa `1.1.5`.
 
-## Resultado vigente — P09 v1.1.5 PASS; P11 directo preparado
+## Resultado vigente — P11 directo v1.1.4 PASS; corpus real 18/18
 
-La única recanary P09 v1.1.5 autorizada sobre `2ae0a0a` terminó **PASS**
-`READY`. Las capas provider schema, Pydantic, contexto y expected outcome
-pasaron; usó una Responses request, retries gateway/prompt/SDK 0/0/0 y
-P10/P11/Sol/fallback cero. La autorización quedó consumida y otra ejecución
-bloquea con `OPENAI_P09_V115_RECANARY_ALREADY_CONSUMED` antes del adapter.
+La única canary P11 directa v1.1.4 autorizada sobre `976aadc` terminó **PASS**
+`REPAIRED`. Provider schema, Pydantic, contexto y expected outcome pasaron; el
+target quedó inmutable y la reparación fue el cambio estructural mínimo. Usó
+una Responses request, P11 exactamente uno y retries gateway/prompt/SDK,
+P10/Sol/fallback en cero. La autorización quedó consumida y otra ejecución
+bloquea con `OPENAI_P11_V114_DIRECT_ALREADY_CONSUMED` antes del adapter.
 
-| Frontera real P09 v1.1.5 | Resultado observado |
+| Frontera real P11 v1.1.4 | Resultado observado |
 |---|---|
 | Requests | 1/1; autorización consumida |
-| Uso | 2,856 input; 0 cached; 2,853 cache-write; 3,105 output; 2,500 reasoning |
-| Latencia | 25,826 ms |
-| Costo | USD 0.00443985 calculado; USD 0.01271385 charge conservador; USD 0.01592350 ceiling; cap USD 0.02 |
-| Prompt/input | `sha256:8d29a13a5ee56b39f6aa5545b602e23ca28b6d60d051852d75ecbc0c664179ff` / `sha256:d85b124990e457e096fbe4851633ee057b662efcbda3ac84837e8c8a78deacc7` |
-| Request/output hashes | `sha256:0e93e77e4ad81cef4c9dc82c0b609b218b6a7f9a7a3e4cd6af80182991c8a478` / `sha256:52625c3ed55669c210d6908e9ea98a750b293bd7bd356c726e69058fecfae85d` |
+| Uso | 1,462 input; 0 cached; 1,459 cache-write; 279 output; 34 reasoning |
+| Latencia | 3,892 ms |
+| Costo | USD 0.00070015 calculado; USD 0.00996535 charge conservador; USD 0.01172550 ceiling; cap USD 0.02 |
+| Prompt/input | `sha256:43f2ca4d6a0c02f015125a96f3a12bc5dd8d6c0eab0583f9c2f11b0f1c1f1f04` / `sha256:f8c2a6058214a4958b83e8850780e2827e1269720251f25f1e21d062371fb185` |
+| Request/output hashes | `sha256:f1c5229c5fb856cb545d686fbc9818e551e0b1b7b1ccf1bdab086c9fc48782b2` / `sha256:8b12cf3f787b45200c8577a1d3ab1e5fadd406e6b0674f8ce71a1a6c8e998be6` |
 
-No se retuvieron payload, output, clave ni request ID en claro. Este PASS cierra
-el P1 P09 y eleva la evidencia real reutilizable a **17/18** casos.
-
-El único caso vigente sin observación es P11 directo v1.1.4. El nuevo dry-run
-revalida las 17 fronteras previas y ejecuta `oa-p11-happy` con una request fake:
-`REPAIRED`, wrapper/target/contexto válidos, target inmutable y cambio
-estructural mínimo. Usa cero red/billable, Luna-low, input upper-bound 8,502,
-ceiling full-cache-write USD 0.01172550 y cap propuesto USD 0.02. Está ligado a:
-
-```text
-sha256:43f2ca4d6a0c02f015125a96f3a12bc5dd8d6c0eab0583f9c2f11b0f1c1f1f04
-sha256:f8c2a6058214a4958b83e8850780e2827e1269720251f25f1e21d062371fb185
-```
-
-P11 requiere una autorización exacta nueva fijada al SHA candidato, máximo una
-Responses request, retries 0, P10/Sol/fallback 0 y P11 exactamente uno. El
-valor `CVA_OPENAI_P11_V114_DIRECT_APPROVAL=OPENAI_P11_V114_DIRECT_APPROVED`
-documenta la interfaz fail-closed y no constituye autorización.
+No se retuvieron payload, output, clave ni request ID en claro. Las 17
+fronteras anteriores fueron revalidadas antes de la llamada; el nuevo mapa
+inmutable de evidencia vuelve a comprobar **18/18** casos real-eligible. P0/P1
+están cerrados. Build/deploy y el E2E cloud sintético real siguen sujetos a
+gates humanos separados.
 
 ## Historial — P05 1.1.4 PASS y preparación de cuatro casos
 
