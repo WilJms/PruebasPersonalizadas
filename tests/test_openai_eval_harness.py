@@ -51,10 +51,10 @@ def _safe_environment() -> dict[str, str]:
         "CVA_OPENAI_BLUEPRINT_V117_V115_TIMEOUT_RECOVERY_APPROVAL", None
     )
     environment.pop(
-        "CVA_OPENAI_BLUEPRINT_V118_V115_REMEDIATION_DECISION", None
+        "CVA_OPENAI_BLUEPRINT_V119_V115_REMEDIATION_DECISION", None
     )
     environment.pop(
-        "CVA_OPENAI_BLUEPRINT_V118_V115_RECANARY_APPROVAL", None
+        "CVA_OPENAI_BLUEPRINT_V119_V115_RECANARY_APPROVAL", None
     )
     environment.pop(
         "CVA_OPENAI_P06_V112_DECISION_LINEAGE_RECANARY_APPROVAL", None
@@ -1193,7 +1193,7 @@ def test_p02_v113_recanary_dry_run_is_hash_bound_and_non_billable() -> None:
 
     report = json.loads(completed.stdout)
     assert report["status"] == "PASS"
-    assert report["prompt_pack_version"] == "1.1.8"
+    assert report["prompt_pack_version"] == "1.1.9"
     assert report["network_calls"] == report["billable_calls"] == 0
     assert report["secret_read"] is False
     assert report["p10_calls"] == report["p11_calls"] == 0
@@ -1877,12 +1877,12 @@ def _historical_p05_v114_recanary_is_fail_closed_after_consumption(
         )
 
 
-def test_blueprint_v118_v115_coupled_dry_run_is_hash_bound_and_non_billable(
+def test_blueprint_v119_v115_coupled_dry_run_is_hash_bound_and_non_billable(
 ) -> None:
     completed = subprocess.run(
         [
             "make",
-            "openai-blueprint-v118-v115-recanary-dry-run",
+            "openai-blueprint-v119-v115-recanary-dry-run",
             f"PYTHON={sys.executable}",
         ],
         cwd=ROOT,
@@ -1895,8 +1895,8 @@ def test_blueprint_v118_v115_coupled_dry_run_is_hash_bound_and_non_billable(
     report = json.loads(completed.stdout)
     assert report["status"] == "PASS"
     assert report["mode"] == "blueprint-recanary-dry-run"
-    assert report["prompt_pack_version"] == "1.1.8"
-    assert report["evidence_gate"] == "BLUEPRINT_V118_V115_COUPLED_RECANARY"
+    assert report["prompt_pack_version"] == "1.1.9"
+    assert report["evidence_gate"] == "BLUEPRINT_V119_V115_COUPLED_RECANARY"
     assert report["chain"] == [
         "P04_BLUEPRINT_BUILD_V1",
         "P05_BLUEPRINT_REVIEW_V1",
@@ -1909,23 +1909,23 @@ def test_blueprint_v118_v115_coupled_dry_run_is_hash_bound_and_non_billable(
     assert report["stop_on_first_failure"] is True
     assert report["request_timeout_seconds"] == 240.0
     assert report["gateway_timeout_seconds"] == 245.0
-    assert report["estimated_ceiling_usd"] == 0.05020725
+    assert report["estimated_ceiling_usd"] == 0.05046625
     assert report["authorized_budget_usd"] == 0.06
     assert report["p10_calls"] == report["p11_calls"] == 0
     assert report["fallback_calls"] == report["sol_calls"] == 0
     p04, p05 = report["cases"]
-    assert p04["prompt_version"] == "1.1.8"
-    assert p04["prompt_hash"] == eval_harness.P04_V118_PROMPT_HASH
-    assert p04["input_bundle_hash"] == eval_harness.P04_V118_INPUT_BUNDLE_HASH
+    assert p04["prompt_version"] == "1.1.9"
+    assert p04["prompt_hash"] == eval_harness.P04_V119_PROMPT_HASH
+    assert p04["input_bundle_hash"] == eval_harness.P04_V119_INPUT_BUNDLE_HASH
     assert (
         p04["validated_output_hash"]
-        == eval_harness.BLUEPRINT_V118_V115_DRY_RUN_P04_OUTPUT_HASH
+        == eval_harness.BLUEPRINT_V119_V115_DRY_RUN_P04_OUTPUT_HASH
     )
     assert p05["prompt_version"] == "1.1.5"
     assert p05["prompt_hash"] == eval_harness.P05_V115_PROMPT_HASH
     assert (
         p05["input_bundle_hash"]
-        == eval_harness.BLUEPRINT_V118_V115_DRY_RUN_P05_INPUT_BUNDLE_HASH
+        == eval_harness.BLUEPRINT_V119_V115_DRY_RUN_P05_INPUT_BUNDLE_HASH
     )
     assert all(
         value is True
@@ -1941,15 +1941,37 @@ def test_blueprint_v118_v115_coupled_dry_run_is_hash_bound_and_non_billable(
     assert p05["controls"]["semantic_task_count"] == 1
 
 
-def test_blueprint_v118_boundary_reproduces_the_six_decision_status_case() -> None:
+def test_blueprint_v119_boundary_reproduces_the_six_decision_status_case() -> None:
     cases = eval_harness._load_cases(eval_harness.DEFAULT_MANIFEST)
     p04_case, _ = eval_harness._selected_blueprint_recanary_cases(cases)
     request = eval_harness._blueprint_recanary_p04_request(p04_case)
 
     assert len(request.resolved_decisions) == 6
-    assert request.activity_spec.learning_outcomes == []
+    assert len(request.activity_spec.learning_outcomes) == 1
     assert len(request.rubric_spec.criteria) == 2
     assert all(not criterion.levels for criterion in request.rubric_spec.criteria)
+    assert all(
+        criterion.grading_weight is None
+        for criterion in request.rubric_spec.criteria
+    )
+    assert request.rubric_spec.scale_label is None
+    assert [
+        decision.selected_option.label
+        for decision in request.resolved_decisions
+    ] == [
+        "Paquete cerrado de materiales",
+        "Escala analítica de tres niveles con descriptores",
+        "Ponderación igual entre criterios",
+        "Incluir el escenario como observable explícito del criterio de coherencia",
+        "Añadir un observable explícito dentro del criterio de límites",
+        "Formato abierto con componentes obligatorios",
+    ]
+    trusted = eval_harness.build_trusted_context(request)
+    assert set(trusted.allowed_evidence_ids) == {
+        "ev_assignment_1",
+        "ev_rubric_1",
+    }
+    assert trusted.allowed_course_source_ids == []
     assert request.blueprint_policy.question_count == 1
     assert request.blueprint_policy.target_total_minutes == 10
     assert {item.value for item in request.blueprint_policy.allowed_response_formats} == {
@@ -1961,19 +1983,19 @@ def test_blueprint_v118_boundary_reproduces_the_six_decision_status_case() -> No
     )
 
 
-def test_blueprint_v118_v115_real_requires_decision_approval_and_key(
+def test_blueprint_v119_v115_real_requires_decision_approval_and_key(
     monkeypatch,
 ) -> None:
     cases = eval_harness._load_cases(eval_harness.DEFAULT_MANIFEST)
     monkeypatch.setattr(
-        eval_harness, "BLUEPRINT_V118_V115_RECANARY_CONSUMED", False
+        eval_harness, "BLUEPRINT_V119_V115_RECANARY_CONSUMED", False
     )
     monkeypatch.delenv(
-        eval_harness.BLUEPRINT_V118_V115_REMEDIATION_DECISION_ENV,
+        eval_harness.BLUEPRINT_V119_V115_REMEDIATION_DECISION_ENV,
         raising=False,
     )
     monkeypatch.delenv(
-        eval_harness.BLUEPRINT_V118_V115_RECANARY_APPROVAL_ENV,
+        eval_harness.BLUEPRINT_V119_V115_RECANARY_APPROVAL_ENV,
         raising=False,
     )
     monkeypatch.delenv("CVA_OPENAI_API_KEY", raising=False)
@@ -1981,7 +2003,7 @@ def test_blueprint_v118_v115_real_requires_decision_approval_and_key(
     with pytest.raises(
         eval_harness.OpenAIEvalBlocked,
         match=(
-            "OPENAI_BLUEPRINT_V118_V115_REMEDIATION_HUMAN_DECISION_REQUIRED"
+            "OPENAI_BLUEPRINT_V119_V115_REMEDIATION_HUMAN_DECISION_REQUIRED"
         ),
     ):
         asyncio.run(
@@ -1990,12 +2012,12 @@ def test_blueprint_v118_v115_real_requires_decision_approval_and_key(
             )
         )
     monkeypatch.setenv(
-        eval_harness.BLUEPRINT_V118_V115_REMEDIATION_DECISION_ENV,
-        eval_harness.BLUEPRINT_V118_V115_REMEDIATION_DECISION_VALUE,
+        eval_harness.BLUEPRINT_V119_V115_REMEDIATION_DECISION_ENV,
+        eval_harness.BLUEPRINT_V119_V115_REMEDIATION_DECISION_VALUE,
     )
     with pytest.raises(
         eval_harness.OpenAIEvalBlocked,
-        match="OPENAI_BLUEPRINT_V118_V115_RECANARY_APPROVAL_REQUIRED",
+        match="OPENAI_BLUEPRINT_V119_V115_RECANARY_APPROVAL_REQUIRED",
     ):
         asyncio.run(
             eval_harness._run_blueprint_recanary_real(
@@ -2003,8 +2025,8 @@ def test_blueprint_v118_v115_real_requires_decision_approval_and_key(
             )
         )
     monkeypatch.setenv(
-        eval_harness.BLUEPRINT_V118_V115_RECANARY_APPROVAL_ENV,
-        eval_harness.BLUEPRINT_V118_V115_RECANARY_APPROVAL_VALUE,
+        eval_harness.BLUEPRINT_V119_V115_RECANARY_APPROVAL_ENV,
+        eval_harness.BLUEPRINT_V119_V115_RECANARY_APPROVAL_VALUE,
     )
     with pytest.raises(
         eval_harness.OpenAIEvalBlocked,
@@ -2017,7 +2039,7 @@ def test_blueprint_v118_v115_real_requires_decision_approval_and_key(
         )
     with pytest.raises(
         eval_harness.OpenAIEvalBlocked,
-        match="OPENAI_BLUEPRINT_V118_V115_RECANARY_HUMAN_CAP_EXCEEDED",
+        match="OPENAI_BLUEPRINT_V119_V115_RECANARY_HUMAN_CAP_EXCEEDED",
     ):
         asyncio.run(
             eval_harness._run_blueprint_recanary_real(
@@ -2065,7 +2087,7 @@ def test_historical_blueprint_v117_v115_timeout_dry_run_is_closed() -> None:
     }
 
 
-def test_blueprint_v118_v115_fake_real_transport_proves_exact_chain(
+def test_blueprint_v119_v115_fake_real_transport_proves_exact_chain(
     monkeypatch,
 ) -> None:
     class SafeCoupledAdapter:
@@ -2104,15 +2126,15 @@ def test_blueprint_v118_v115_fake_real_transport_proves_exact_chain(
 
     safe_adapter = SafeCoupledAdapter()
     monkeypatch.setattr(
-        eval_harness, "BLUEPRINT_V118_V115_RECANARY_CONSUMED", False
+        eval_harness, "BLUEPRINT_V119_V115_RECANARY_CONSUMED", False
     )
     monkeypatch.setenv(
-        eval_harness.BLUEPRINT_V118_V115_REMEDIATION_DECISION_ENV,
-        eval_harness.BLUEPRINT_V118_V115_REMEDIATION_DECISION_VALUE,
+        eval_harness.BLUEPRINT_V119_V115_REMEDIATION_DECISION_ENV,
+        eval_harness.BLUEPRINT_V119_V115_REMEDIATION_DECISION_VALUE,
     )
     monkeypatch.setenv(
-        eval_harness.BLUEPRINT_V118_V115_RECANARY_APPROVAL_ENV,
-        eval_harness.BLUEPRINT_V118_V115_RECANARY_APPROVAL_VALUE,
+        eval_harness.BLUEPRINT_V119_V115_RECANARY_APPROVAL_ENV,
+        eval_harness.BLUEPRINT_V119_V115_RECANARY_APPROVAL_VALUE,
     )
     monkeypatch.setenv(
         "CVA_OPENAI_API_KEY", "sk-project-synthetic-placeholder-not-a-real-key"
@@ -2147,7 +2169,7 @@ def test_blueprint_v118_v115_fake_real_transport_proves_exact_chain(
     )
 
 
-def test_blueprint_v118_v115_stops_after_first_provider_failure(
+def test_blueprint_v119_v115_stops_after_first_provider_failure(
     monkeypatch,
 ) -> None:
     class FailingP04Adapter:
@@ -2161,15 +2183,15 @@ def test_blueprint_v118_v115_stops_after_first_provider_failure(
 
     failing_adapter = FailingP04Adapter()
     monkeypatch.setattr(
-        eval_harness, "BLUEPRINT_V118_V115_RECANARY_CONSUMED", False
+        eval_harness, "BLUEPRINT_V119_V115_RECANARY_CONSUMED", False
     )
     monkeypatch.setenv(
-        eval_harness.BLUEPRINT_V118_V115_REMEDIATION_DECISION_ENV,
-        eval_harness.BLUEPRINT_V118_V115_REMEDIATION_DECISION_VALUE,
+        eval_harness.BLUEPRINT_V119_V115_REMEDIATION_DECISION_ENV,
+        eval_harness.BLUEPRINT_V119_V115_REMEDIATION_DECISION_VALUE,
     )
     monkeypatch.setenv(
-        eval_harness.BLUEPRINT_V118_V115_RECANARY_APPROVAL_ENV,
-        eval_harness.BLUEPRINT_V118_V115_RECANARY_APPROVAL_VALUE,
+        eval_harness.BLUEPRINT_V119_V115_RECANARY_APPROVAL_ENV,
+        eval_harness.BLUEPRINT_V119_V115_RECANARY_APPROVAL_VALUE,
     )
     monkeypatch.setenv(
         "CVA_OPENAI_API_KEY", "sk-project-synthetic-placeholder-not-a-real-key"
@@ -2194,16 +2216,16 @@ def test_blueprint_v118_v115_stops_after_first_provider_failure(
     assert report["p10_calls"] == report["p11_calls"] == 0
 
 
-def test_blueprint_v118_v115_consumption_and_hash_drift_fail_closed(
+def test_blueprint_v119_v115_consumption_and_hash_drift_fail_closed(
     monkeypatch,
 ) -> None:
     cases = eval_harness._load_cases(eval_harness.DEFAULT_MANIFEST)
     monkeypatch.setattr(
-        eval_harness, "BLUEPRINT_V118_V115_RECANARY_CONSUMED", True
+        eval_harness, "BLUEPRINT_V119_V115_RECANARY_CONSUMED", True
     )
     with pytest.raises(
         eval_harness.OpenAIEvalBlocked,
-        match="OPENAI_BLUEPRINT_V118_V115_RECANARY_ALREADY_CONSUMED",
+        match="OPENAI_BLUEPRINT_V119_V115_RECANARY_ALREADY_CONSUMED",
     ):
         asyncio.run(
             eval_harness._run_blueprint_recanary_real(
@@ -2212,19 +2234,19 @@ def test_blueprint_v118_v115_consumption_and_hash_drift_fail_closed(
         )
 
     monkeypatch.setattr(
-        eval_harness, "BLUEPRINT_V118_V115_RECANARY_CONSUMED", False
+        eval_harness, "BLUEPRINT_V119_V115_RECANARY_CONSUMED", False
     )
     monkeypatch.setattr(
-        eval_harness, "P04_V118_PROMPT_HASH", "sha256:" + "0" * 64
+        eval_harness, "P04_V119_PROMPT_HASH", "sha256:" + "0" * 64
     )
     with pytest.raises(
         eval_harness.OpenAIEvalBlocked,
-        match="OPENAI_BLUEPRINT_V118_V115_P04_BOUNDARY_DRIFT",
+        match="OPENAI_BLUEPRINT_V119_V115_P04_BOUNDARY_DRIFT",
     ):
         asyncio.run(eval_harness._run_blueprint_recanary_dry_run(cases))
 
 
-def test_current_real_evidence_is_complete_after_v118_coupled_pass() -> None:
+def test_current_real_evidence_excludes_v119_chain_before_recanary() -> None:
     by_id = {
         case["case_id"]: case
         for case in eval_harness._load_cases(eval_harness.DEFAULT_MANIFEST)
@@ -2234,34 +2256,16 @@ def test_current_real_evidence_is_complete_after_v118_coupled_pass() -> None:
         boundaries=eval_harness.CURRENT_REAL_EVIDENCE,
     )
 
-    assert len(rows) == 18
+    assert len(rows) == 16
     assert tuple(row["case_id"] for row in rows) == (
         eval_harness.CURRENT_REAL_EVIDENCE_CASE_IDS
     )
-    p04 = next(
-        row
-        for row in rows
-        if row["case_id"] == eval_harness.P04_V116_RECANARY_CASE_ID
-    )
-    assert p04["prompt_version"] == "1.1.8"
-    assert p04["prompt_hash"] == eval_harness.P04_V118_PROMPT_HASH
-    assert p04["input_bundle_hash"] == eval_harness.P04_V118_INPUT_BUNDLE_HASH
-    assert p04["source_checkpoint"] == (
-        "OPENAI_BLUEPRINT_V118_V115_COUPLED_P04_PASS"
-    )
-    p05 = next(
-        row
-        for row in rows
-        if row["case_id"] == eval_harness.P05_V114_RECANARY_CASE_ID
-    )
-    assert p05["prompt_version"] == "1.1.5"
-    assert p05["prompt_hash"] == eval_harness.P05_V115_PROMPT_HASH
-    assert p05["input_bundle_hash"] == (
-        eval_harness.BLUEPRINT_V118_REAL_P05_INPUT_BUNDLE_HASH
-    )
-    assert p05["source_checkpoint"] == (
-        "OPENAI_BLUEPRINT_V118_V115_COUPLED_PASS"
-    )
+    assert eval_harness.P04_V116_RECANARY_CASE_ID not in {
+        row["case_id"] for row in rows
+    }
+    assert eval_harness.P05_V114_RECANARY_CASE_ID not in {
+        row["case_id"] for row in rows
+    }
     p06 = next(
         row
         for row in rows
@@ -2278,20 +2282,16 @@ def test_current_real_evidence_is_complete_after_v118_coupled_pass() -> None:
     )
 
 
-def test_blueprint_v118_real_gate_is_consumed_and_report_bound() -> None:
-    report_path = (
-        ROOT
-        / "reports/openai/blueprint_v118_v115_recanary_6bf2e18.json"
-    )
+def test_historical_blueprint_v118_real_report_remains_immutable() -> None:
+    report_path = ROOT / "reports/openai/blueprint_v118_v115_recanary_6bf2e18.json"
     report_bytes = report_path.read_bytes()
     report = json.loads(report_bytes)
 
-    assert eval_harness.BLUEPRINT_V118_V115_RECANARY_CONSUMED is True
-    assert eval_harness.BLUEPRINT_V118_V115_RECANARY_PASSED is True
     assert eval_harness.sha256(report_bytes).hexdigest() == (
-        eval_harness.BLUEPRINT_V118_V115_RECANARY_REPORT_SHA256
+        "173169216efb15a0ed797d7297d553c38196219bde60f689dd0ba2a694de8ada"
     )
     assert report["status"] == "PASS"
+    assert report["prompt_pack_version"] == "1.1.8"
     assert report["network_calls"] == report["billable_calls"] == 2
     assert report["actual_cost_usd"] == 0.01433335
     assert report["budget_charged_usd"] == 0.04082695
@@ -2299,18 +2299,20 @@ def test_blueprint_v118_real_gate_is_consumed_and_report_bound() -> None:
     assert report["p10_calls"] == report["p11_calls"] == 0
     assert report["fallback_calls"] == report["sol_calls"] == 0
     p04, p05 = report["cases"]
-    assert p04["validated_output_hash"] == (
-        eval_harness.BLUEPRINT_V118_REAL_P04_VALIDATED_OUTPUT_HASH
-    )
-    assert p05["input_bundle_hash"] == (
-        eval_harness.BLUEPRINT_V118_REAL_P05_INPUT_BUNDLE_HASH
-    )
-    assert p05["validated_output_hash"] == (
-        eval_harness.BLUEPRINT_V115_V118_REAL_P05_VALIDATED_OUTPUT_HASH
-    )
+    assert p04["prompt_version"] == "1.1.8"
+    assert p05["prompt_version"] == "1.1.5"
     assert all(case["status"] == "PASS" for case in report["cases"])
     assert all(case["output_status"] == "READY" for case in report["cases"])
     assert all(all(case["controls"].values()) for case in report["cases"])
+
+
+def test_blueprint_v119_real_gate_is_open_once_without_claiming_pass() -> None:
+    assert eval_harness.BLUEPRINT_V119_V115_RECANARY_CONSUMED is False
+    assert eval_harness.BLUEPRINT_V119_V115_RECANARY_PASSED is False
+    assert eval_harness.BLUEPRINT_V119_REAL_P04_VALIDATED_OUTPUT_HASH == ""
+    assert eval_harness.BLUEPRINT_V119_REAL_P05_INPUT_BUNDLE_HASH == ""
+    assert eval_harness.BLUEPRINT_V115_V119_REAL_P05_VALIDATED_OUTPUT_HASH == ""
+    assert eval_harness.BLUEPRINT_V119_V115_RECANARY_REPORT_SHA256 == ""
 
 
 def test_blueprint_timeout_recovery_is_consumed_and_report_bound() -> None:
@@ -2341,7 +2343,7 @@ def test_p06_v112_decision_lineage_recanary_dry_run_is_pinned() -> None:
 
     report = json.loads(completed.stdout)
     assert report["status"] == "PASS"
-    assert report["prompt_pack_version"] == "1.1.8"
+    assert report["prompt_pack_version"] == "1.1.9"
     assert report["network_calls"] == report["billable_calls"] == 0
     assert report["p10_calls"] == report["p11_calls"] == 0
     row = report["cases"][0]
@@ -2442,7 +2444,7 @@ def test_p09_v115_recanary_dry_run_is_hash_bound_and_non_billable() -> None:
 
     report = json.loads(completed.stdout)
     assert report["status"] == "PASS"
-    assert report["prompt_pack_version"] == "1.1.8"
+    assert report["prompt_pack_version"] == "1.1.9"
     assert report["network_calls"] == report["billable_calls"] == 0
     assert report["secret_read"] is False
     assert report["p10_calls"] == report["p11_calls"] == 0

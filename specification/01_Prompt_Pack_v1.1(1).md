@@ -1,19 +1,24 @@
 # Anexo A - Prompt pack operacional
 
-**Versión candidata del pack:** `prompt-pack/1.1.8`
+**Versión candidata del pack:** `prompt-pack/1.1.9`
 **Compatibilidad:** contratos `assessment-contracts/1.1.0`  
 **Perfil de ruta activo:** `LUNA_BASELINE_V1` (ADR-036)
 **Principio:** una tarea semántica por llamada; contenido estudiantil siempre no confiable; structured outputs obligatorios.
 
 Las entradas P01, P03 y P06-P08 conservan `1.1.2`; P02 conserva la frontera
 real aceptada `1.1.3`; P11 conserva la aceptada `1.1.4`; P09 conserva la
-aceptada `1.1.5`; P05 conserva `1.1.5` y P04 avanza a `1.1.8`. P04 1.1.7 y
+aceptada `1.1.5`; P05 conserva `1.1.5` y P04 avanza a `1.1.9`. P04 1.1.7 y
 P05 1.1.5 corrigieron el snapshot semántico docente y la confusión entre
 catálogo y plan N. Un E2E posterior mostró que P04 todavía confundía la
 construcción terminada con la aprobación humana posterior: produjo un catálogo
 utilizable, pero devolvió `NEEDS_REVIEW` sólo porque `approved_by/approved_at`
 seguían vacíos. P04 1.1.8 separa ambos estados y el gateway exige un diagnóstico
-`ERROR`/`CRITICAL` para aceptar cualquier P04 no `READY`. Este pack conserva
+`ERROR`/`CRITICAL` para aceptar cualquier P04 no `READY`. El primer E2E cloud
+de esa versión falló de forma segura porque un diagnóstico del modelo usó como
+`evidence_id` un identificador de otra clase. P04 1.1.9 hace explícitas las
+allowlists de `diagnostics[].evidence_ids` y `diagnostics[].source_ids`, incluida
+la lista vacía cuando no existe una referencia autorizada. No relaja el
+validador ni reescribe la salida. Este pack conserva
 ADR-030 y el constructo, y requiere validación offline y real antes de
 build/deploy. Los textos se
 almacenan en un registry inmutable con `prompt_id`, `version`, hash, modelo
@@ -380,6 +385,8 @@ Frontera de referencias y decisiones:
 - Las opciones y notas de `PolicyDecision` fijan una interpretación docente, pero no son fuentes académicas y no autorizan inventar resultados de aprendizaje, criterios, evidencia ni IDs de fuente.
 - Si `rubric_spec` existe, usa en `dimensions[].criterion_ids` únicamente `criterion_id` presentes en `rubric_spec.criteria`; si no existe, usa únicamente `statement_id` presentes en `activity_spec`. Nunca inventes `criterion_ids`.
 - Usa en `dimensions[].learning_outcome_ids` únicamente `statement_id` presentes en `activity_spec.learning_outcomes`. Si esa lista está vacía, usa `learning_outcome_ids=[]`; no completes el resultado ausente.
+- En `diagnostics[].evidence_ids` usa únicamente `evidence_id` exactos ya presentes en `activity_spec` o `rubric_spec`. Nunca escribas ahí `statement_id`, `criterion_id`, `decision_id`, `issue_id` ni `option_id`; si ningún `evidence_id` autorizado sustenta el diagnóstico, usa `evidence_ids=[]`.
+- En `diagnostics[].source_ids` usa únicamente `source_id` exactos autorizados por el contexto confiable. En `context_mode=CLOSED` sin fuentes de curso autorizadas, usa `source_ids=[]`.
 - Copia `question_count`, `target_total_minutes`, `allowed_response_formats` y `structured_justification_policy` desde `blueprint_policy` sin reinterpretarlos. Deja `approved_by=null` y `approved_at=null`.
 
 Interpreta `status` como el estado de finalización de la construcción del catálogo, no como su aprobación humana:
@@ -425,6 +432,7 @@ El objeto completo debe validar como `BlueprintBuildRequest`; el bloque es una p
 - no hay frases de autoría/fraude;
 - todas las variantes tienen requisitos y oportunidades;
 - todos los IDs de oportunidad son únicos y la política de justificación los referencia válidamente.
+- los IDs de evidencia/fuente de cada diagnóstico pertenecen a sus allowlists exactas; IDs de otras clases nunca se reinterpretan como evidencia.
 
 ---
 

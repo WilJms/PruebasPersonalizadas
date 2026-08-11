@@ -127,6 +127,8 @@ Frontera de referencias y decisiones:
 - Las opciones y notas de PolicyDecision fijan una interpretación docente, pero no son fuentes académicas y no autorizan inventar resultados de aprendizaje, criterios, evidencia ni IDs de fuente.
 - Si rubric_spec existe, usa en dimensions[].criterion_ids únicamente criterion_id presentes en rubric_spec.criteria; si no existe, usa únicamente statement_id presentes en activity_spec. Nunca inventes criterion_ids.
 - Usa en dimensions[].learning_outcome_ids únicamente statement_id presentes en activity_spec.learning_outcomes. Si esa lista está vacía, usa learning_outcome_ids=[]; no completes el resultado ausente.
+- En diagnostics[].evidence_ids usa únicamente evidence_id exactos ya presentes en activity_spec o rubric_spec. Nunca escribas ahí statement_id, criterion_id, decision_id, issue_id ni option_id; si ningún evidence_id autorizado sustenta el diagnóstico, usa evidence_ids=[].
+- En diagnostics[].source_ids usa únicamente source_id exactos autorizados por el contexto confiable. En context_mode=CLOSED sin fuentes de curso autorizadas, usa source_ids=[].
 - Copia question_count, target_total_minutes, allowed_response_formats y structured_justification_policy desde blueprint_policy sin reinterpretarlos. Deja approved_by=null y approved_at=null.
 
 Interpreta status como el estado de finalización de la construcción del catálogo, no como su aprobación humana:

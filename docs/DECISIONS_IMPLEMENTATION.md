@@ -1071,3 +1071,28 @@
   pertenecer a un SHA nuevo después de CI verde.
 - **Relación:** D-059, D-060, D-069, ADR-033/ADR-034, `deploy/cloudbuild.yaml`,
   `IMPLEMENTATION_STATUS.md` y `TEST_RESULTS.md`.
+
+## D-072 - Los IDs diagnósticos conservan su tipo y una salida insegura no se normaliza
+
+- **Observación:** el E2E del SHA `fefea94d25a974ddf05e71f7212616e625ee5303`
+  pasó P01-P03 y persistió seis decisiones. P04 1.1.8 cumplió el schema del
+  proveedor, pero colocó un ID de otra clase en
+  `diagnostics[].evidence_ids`. El gateway lo rechazó con
+  `CONTEXT_FAILURE_OUTPUT_EVIDENCE_ID_NOT_ALLOWLISTED`; job y execution
+  terminaron `FAILED/SECURITY`, sin retry ni P05.
+- **Decisión normativa:** P04 1.1.9 exige que `evidence_ids` contenga sólo IDs
+  exactos ya presentes en `ActivitySpec`/`RubricSpec`, y que `source_ids`
+  contenga sólo fuentes exactas autorizadas. IDs de statement, criterion,
+  decision, issue u option nunca cambian de tipo para llenar esos campos; si
+  no existe una referencia autorizada, la lista correcta es vacía.
+- **Fallo cerrado:** el adaptador no elimina, reemplaza ni corrige referencias
+  inválidas. La validación contextual sigue siendo una frontera de seguridad y
+  conserva la razón content-free exacta en el ledger.
+- **Gate:** el cambio invalida P04 y el P05 derivado, por lo que
+  `CURRENT_REAL_EVIDENCE` baja deliberadamente a 16/18. La recanary acoplada
+  reproduce la forma productiva, pasa dry-run con 2 fake Responses y ceiling
+  USD 0.05046625/cap USD 0.06, y sólo una observación real nueva puede volver a
+  promover ambas fronteras.
+- **Relación:** D-065, D-068, D-070, ADR-005/ADR-030/ADR-034,
+  `REAL_MODEL_EVALS.md`, `OPENAI_REAL_MODEL_VALIDATION.md` y
+  `OPENAI_COST_BUDGETS.md`.

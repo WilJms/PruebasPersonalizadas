@@ -1,43 +1,37 @@
 # Validación del proveedor OpenAI real
 
-Fecha de corte: 2026-08-11. Estado: P04 1.1.8 y su P05 derivado pasaron una
-recanary acoplada nueva. La evidencia vigente vuelve a **18/18**. El primer
-build posterior falló cerrado en un deadline de smoke ya remediado localmente;
-el siguiente checkpoint es validar un SHA nuevo y luego build/deploy.
+Fecha de corte: 2026-08-11. Estado: el E2E del digest `sha256:04032e44…`
+se detuvo en P04 1.1.8 por `EVIDENCE_ID_NOT_ALLOWLISTED`. P04 1.1.9 está
+remediado y ligado a un dry-run acoplado; la evidencia vigente queda en
+**16/18** hasta una recanary real nueva.
 
-## Resultado vigente: P04 v1.1.8→P05 v1.1.5 PASS
+## Resultado vigente: P04 v1.1.9→P05 v1.1.5 recanary pendiente
 
-La actividad sintética `act_a2d0acdf5d948c365ca8` ejecutó P01-P03, persistió
-seis decisiones y reanudó una vez. P04 produjo un catálogo utilizable y válido,
-pero devolvió `NEEDS_REVIEW` con diagnósticos sólo INFO/WARNING porque la
-aprobación humana posterior estaba pendiente. El workflow no llamó P05 ni
-persistió blueprint o submission. Dos jobs/dos executions consumieron cuatro
-Responses y USD 0.02501760; P10/P11/Sol/fallback/retries fueron cero.
+La actividad `act_8187dcc2159d5462d99a` usó exclusivamente
+`assignment.md`/`rubric.md` sintéticos. P01-P03 pasaron y seis decisiones
+recomendadas quedaron persistidas. La reanudación llamó sólo P04: el proveedor
+devolvió schema válido, pero `diagnostics[].evidence_ids` incluyó un ID no
+perteneciente a los dos `ev_*` autorizados. El gateway registró
+`CONTEXT_FAILURE_OUTPUT_EVIDENCE_ID_NOT_ALLOWLISTED`, stage
+`FAILED/SECURITY`, Cloud Run exit 1 y cero retries. El ledger conserva sólo
+metadatos content-free; P05 y toda mutación posterior quedaron en cero.
 
-La remediación P04 1.1.8 obliga `READY` para una construcción completa aunque
-`approved_by/approved_at` sean null y añade el código contextual
-`P04_NONREADY_WITHOUT_BLOCKING_DIAGNOSTIC`. El gate nuevo reproduce exactamente
-la clase del caso: seis decisiones, outcomes vacíos, dos criterios sin niveles
-inventados, N=1, diez minutos y dos formatos.
+El E2E suma 4 Responses y USD 0.02256005; P04 representa 1 request y
+USD 0.01308515. P10/P11/Sol/fallback/retries son cero. P04 1.1.9 no elimina ni
+normaliza el diagnóstico inválido: instruye que `evidence_ids` sólo acepte IDs
+exactos de `activity_spec/rubric_spec`, que IDs de otras clases nunca ocupen ese
+campo y que la lista quede vacía si no hay evidencia autorizada; `source_ids`
+queda análogamente vacío en CLOSED sin fuentes.
 
-La observación real terminó PASS/PASS `READY`: exactamente 2/2 Responses, USD
-0.01433335 real, USD 0.04082695 de charge conservador y USD 0.05127050 de
-ceiling dinámico bajo cap USD 0.06. P04 usó 4,713 input/4,710 cache-write/5,081
-output/3,098 reasoning en 35,225 ms; P05 usó 4,996/4,993/4,841/3,364 en 40,643
-ms. Provider schema, Pydantic, contexto, outcome y todos los controles pasaron;
-P10/P11/Sol/fallback/retries quedaron en cero. P04 output validado
-`sha256:515d2f97…` encadenó el input P05 `sha256:99330c4e…`; el reporte
-content-free tiene SHA-256
-`173169216efb15a0ed797d7297d553c38196219bde60f689dd0ba2a694de8ada`.
-El gate está consumido y `CURRENT_REAL_EVIDENCE` vuelve a 18/18.
-
-El SHA `523b2100c4190a8d7db0a7034e85cbd0b86eec81` pasó CI 7/7 en push y
-7/7 en PR. Su único Cloud Build,
-`9e74ef7a-072b-4094-8dec-3368c0d6afa9`, pasó backend/seguridad, Terraform,
-frontend y build local de imagen, pero el parser aislado del smoke agotó 5 s
-durante el arranque frío. Se detuvo sin retry, publicación, digest, plan,
-apply, jobs ni Responses. El smoke queda alineado al deadline productivo
-acotado de 30 s; la evidencia real 18/18 no cambia.
+El gate fijo reproduce un outcome, dos criterios sin niveles/pesos, seis
+decisiones exactas, N=1, diez minutos, OPEN_SHORT/STRUCTURED_BULLETS, dos
+evidence IDs y cero source IDs. El dry-run P04→P05 pasa schema/Pydantic/contexto
+y controles acoplados con 2 fake Responses, 0 red, P10/P11/Sol/fallback/retries
+0. P04 queda ligado a prompt/input
+`sha256:d34145db85d8f5dfed5e6f278e9c78f5e564e5eb589e1773534c8b02c819f5f8` /
+`sha256:0cacc7b7aa151c6910592949edae03d9d0e8e1250ba171227f76265322e14bc2`;
+ceiling agregado USD 0.05046625 bajo cap USD 0.06. El gate real permanece
+abierto una sola vez y sin afirmar PASS antes de observarlo.
 
 ## Historial: 18/18 desplegado antes del stop fresco
 

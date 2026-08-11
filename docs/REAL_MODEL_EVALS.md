@@ -5,42 +5,38 @@ El corpus inicial contiene 20 casos exclusivamente sintéticos en
 entregas ni contenido estudiantil real. El rango gobernado es de 10 a 30 casos,
 con IDs únicos y clasificación obligatoria
 `SYNTHETIC_ONLY_NO_STUDENT_DATA`. El manifest fija además
-`route_profile=LUNA_BASELINE_V1`, prompt pack candidato `1.1.8` y schema
+`route_profile=LUNA_BASELINE_V1`, prompt pack candidato `1.1.9` y schema
 `1.1.0`. P01, P03 y P06-P08 conservan su versión individual `1.1.2`; P02
 conserva `1.1.3`; P05 usa `1.1.5`; P11 usa `1.1.4`; P09 usa `1.1.5`; P04
-usa `1.1.8`.
+usa `1.1.9`.
 
-## Resultado vigente — recanary v1.1.8 PASS; smoke de build remediado
+## Resultado vigente — P04 v1.1.9 listo para recanary acoplada
 
-El E2E fresco del digest desplegado creó la actividad sintética
-`act_a2d0acdf5d948c365ca8`. P01-P03 y seis decisiones docentes durables pasaron;
-la reanudación ejecutó sólo P04. El catálogo recibido fue estructural y
-contextualmente válido, con las seis decisiones exactas, pero P04 1.1.7 devolvió
-`NEEDS_REVIEW` únicamente por la aprobación humana posterior. El workflow se
-detuvo correctamente antes de P05, blueprint y submission. Fueron dos jobs/dos
-executions, cuatro Responses, USD 0.02501760 real, P10/P11/Sol/fallback/retries
-cero.
+El E2E fresco sobre `fefea94`/`sha256:04032e44…` pasó P01-P03, persistió seis
+decisiones y se detuvo en la única reanudación P04. La salida fue válida para
+el schema del proveedor, pero un `Diagnostic.evidence_ids` contenía un ID que
+no estaba en la allowlist de dos evidence IDs. El ledger registró
+`CONTEXT_FAILURE_OUTPUT_EVIDENCE_ID_NOT_ALLOWLISTED`; job y stage quedaron
+`FAILED/SECURITY`, Cloud Run exit 1, intento 1, `maxRetries=0`. P05, blueprint,
+edición, aprobación y submission quedaron en cero.
 
-P04 1.1.8 explicita que `status` describe la construcción, no la aprobación, y
-el gateway rechaza un P04 no listo sin diagnóstico `ERROR`/`CRITICAL`. El gate
-P04→P05 reproduce seis decisiones, outcomes vacíos y niveles no inventados. Su
-dry-run pasó con 2 fake/0 red. La única recanary real distinta también pasó:
-P04/P05 `READY`, exactamente 2/2 Responses, USD 0.01433335 real, charge USD
-0.04082695 y ceiling USD 0.05127050 bajo cap USD 0.06. Provider schema,
-Pydantic, contexto, outcome y controles acoplados pasaron; P10/P11/Sol/fallback
-y retries fueron cero. El gate queda consumido y la evidencia vigente vuelve a
-18/18. El siguiente paso es construir/desplegar el SHA que contenga la
-remediación; no se reutiliza el digest anterior.
+Fueron exactamente 4 Responses y USD 0.02256005 desde el inicio del E2E;
+P04 consumió 1 request/USD 0.01308515. P10/P11/Sol/fallback/retries fueron
+cero. P04 1.1.9 conserva el validador fail-closed y sólo aclara que
+`diagnostics[].evidence_ids/source_ids` aceptan IDs exactos de sus allowlists,
+nunca IDs de statement/criterion/decision/issue/option, y pueden quedar vacíos.
 
-El primer SHA sellado con esa evidencia, `523b2100…`, tuvo CI 7/7 + 7/7 pero
-su único Cloud Build falló en el smoke final: el parser aislado agotó el límite
-de 5 s durante arranque frío. Los gates backend, Terraform, frontend e imagen
-habían pasado. El build no publicó digest ni abrió plan/apply y queda
-consumido. El smoke usa ahora el mismo deadline acotado de 30 s que producción;
-un SHA nuevo debe pasar regresión/CI antes de otro build.
+La recanary acoplada reproduce la frontera de producción: un outcome, dos
+criterios sin niveles ni pesos, seis decisiones exactas, N=1, 10 minutos, dos
+formatos, dos evidence IDs y cero course source IDs. El dry-run pasó con dos
+transportes fake, 0 red/0 billable, hashes P04
+`sha256:d34145db…`/`sha256:0cacc7b7…` y ceiling USD 0.05046625 bajo cap USD
+0.06. La evidencia vigente es 16/18 hasta una única observación real
+P04→P05; el gate no permite P10/P11/Sol/fallback/retries y detiene P05 si P04
+no queda `READY`.
 
 ```bash
-make openai-blueprint-v118-v115-recanary-dry-run
+make openai-blueprint-v119-v115-recanary-dry-run
 ```
 
 ## Historial — candidato desplegado antes del stop P04

@@ -2,40 +2,48 @@
 
 Fecha de corte: 2026-08-11 (America/Santiago).
 
-## Estado vigente — `OPENAI_REAL_BUILD_SMOKE_REMEDIATION_REQUIRED` (2026-08-11)
+## Estado vigente — `OPENAI_REAL_P04_V119_RECANARY_READY` (2026-08-11)
 
-El E2E fresco sobre el digest desplegado se detuvo en P04 después de dos jobs,
-dos Cloud Run executions y cuatro Responses. P01-P03 pasaron y seis decisiones
-docentes sintéticas quedaron durables. P04 1.1.7 devolvió un catálogo válido,
-pero usó `NEEDS_REVIEW` sólo porque faltaba la aprobación humana que la
-arquitectura realiza después de P05. No se llamó P05 ni se creó blueprint o
-submission; costo real USD 0.02501760, con P10/P11/Sol/fallback/retries cero.
+El SHA `fefea94d25a974ddf05e71f7212616e625ee5303` quedó construido y
+desplegado por el build `89cff4cb-3b8e-4abf-87e2-af82581ad078`,
+`SUCCESS/VERIFIED`, con digest coincidente y procedencia firmada
+`sha256:04032e44c4177318545ae15a1dc48a9a72b0b04411c86f92f30dfb87a4d6b95d`.
+El plan guardado `4adf5d8526efefdabe251c26ea12429b74971c35d825eaedaf8ad5eb220fc00e`
+tuvo exactamente dos updates in-place de imagen y su único apply terminó
+0/2/0. Web quedó mock/sin clave; worker real con secreto v2, USD 0.55, P10
+false, task/paralelismo 1/1 y `maxRetries=0`; health/readiness, IAM y dos planes
+`No changes` pasaron.
 
-La remediación local eleva P04 a 1.1.8, separa construcción de aprobación y
-rechaza toda salida P04 no `READY` que no tenga un diagnóstico bloqueante
-`ERROR`/`CRITICAL`. El dry-run gobernado reproduce seis decisiones/outcomes
-vacíos/niveles ausentes y pasa P04→P05 con 2 fake Responses.
+El E2E fresco `act_8187dcc2159d5462d99a` se detuvo correctamente en su segunda
+ejecución. `job_579409c52eb9459dc703` / `cva-worker-blj5v` terminó
+infraestructuralmente `SUCCEEDED` y en dominio `NEEDS_REVIEW`; P01-P03 fueron
+`SCHEMA_VALID` y seis decisiones P03 recomendadas quedaron durables. La única
+reanudación creó `job_d683a83a252b71fb45e2` / `cva-worker-m2mlr`, que terminó
+exit 1, `FAILED/SECURITY`, intento 1 y sin retry. P04 1.1.8 pasó el schema del
+proveedor, pero el validador rechazó
+`CONTEXT_FAILURE_OUTPUT_EVIDENCE_ID_NOT_ALLOWLISTED`: un diagnóstico usó como
+`evidence_id` un ID de otra clase. No se llamó P05, no hubo blueprint, edición,
+aprobación ni submission.
 
-La recanary real distinta terminó PASS/PASS `READY`, exactamente 2/2 Responses,
-USD 0.01433335 real, charge USD 0.04082695 y ceiling USD 0.05127050 bajo cap
-USD 0.06. Provider schema/Pydantic/contexto/outcome y todos los controles
-acoplados pasaron; retries/P10/P11/Sol/fallback fueron cero. El reporte
-content-free está ligado a
-`173169216efb15a0ed797d7297d553c38196219bde60f689dd0ba2a694de8ada`; el gate
-queda consumido y `CURRENT_REAL_EVIDENCE` vuelve a 18/18. La suite local pasa
-557 pruebas, con 16 skips PostgreSQL explícitos y una advertencia conocida; CI
-del SHA `523b2100c4190a8d7db0a7034e85cbd0b86eec81` terminó 7/7 verde en push y
-7/7 verde en PR.
+El tramo consumió exactamente cuatro Responses y USD 0.02256005: P01
+USD 0.00215155, P02 USD 0.00194855, P03 USD 0.00537480 y P04
+USD 0.01308515. P10/P11/Sol/fallback/retries fueron cero. El stop conserva el
+límite ampliado de cuatro executions: sólo se usaron dos y no se intentaron las
+dos restantes.
 
-El único Cloud Build de ese SHA,
-`9e74ef7a-072b-4094-8dec-3368c0d6afa9`, pasó contratos/backend/seguridad,
-Terraform, frontend y construcción local de imagen, pero falló cerrado en el
-smoke final: el parser aislado agotó los 5 s configurados mientras el
-intérprete/libmagic estaban fríos. La producción usa un límite acotado de 30 s;
-el smoke queda alineado a ese valor y una regresión impide volver a 5 s. La
-autorización/build quedó consumida, no se publicó tag/digest, no hubo plan ni
-apply, el contador de executions permaneció en 29 y Terraform confirmó
-`No changes`. Falta validar y construir un SHA nuevo antes de repetir el E2E.
+La remediación normativa P04 1.1.9 mantiene intacto el rechazo de seguridad y
+hace explícitas las allowlists de `diagnostics[].evidence_ids/source_ids`; los
+IDs de statement/criterion/decision/issue/option nunca se reinterpretan como
+evidencia. La recanary fija la misma forma productiva: un learning outcome, dos
+criterios sin pesos/niveles, seis decisiones, N=1, diez minutos, dos formatos,
+dos evidence IDs autorizados y cero fuentes de curso. Su dry-run pasa P04→P05
+con 2 fake/0 red, hashes P04
+`sha256:d34145db…`/`sha256:0cacc7b7…`, ceiling USD 0.05046625 y cap USD 0.06.
+La evidencia vigente queda deliberadamente en 16/18 hasta ejecutar y sellar
+exactamente una recanary real P04→P05; no se repetirá el E2E antes de ese gate.
+La regresión candidata pasa 558 pruebas backend con 16 skips PostgreSQL
+explícitos, frontend 34/34, deploy 11/11, seguridad 2/2, contratos,
+fixtures/OpenAPI, secretos, Terraform, audit npm, imagen y smoke aislado.
 
 ## Historial — `OPENAI_REAL_MANUAL_EVAL_PENDING` (2026-08-11)
 

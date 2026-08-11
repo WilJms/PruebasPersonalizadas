@@ -1,28 +1,40 @@
 # Setup gobernado del proveedor OpenAI
 
-## Estado vigente — evidencia 18/18 desplegada; E2E pendiente
+## Estado vigente — worker real desplegado; P04 v1.1.9 pendiente de recanary
 
 Web permanece mock y sin clave; worker real usa exclusivamente
 `cva-openai-api-key` v2. Ambos están Ready sobre el digest inmutable
-`sha256:d31899535c76b08ee79163479530b044783b73956c6fe228a01a3e603008893d`,
-construido desde `88416b522414f316613bea96ad08687e8a335a38` por Cloud Build
-`441be72d-04ae-46e9-b150-6eec1032c8d6` `SUCCESS/VERIFIED`. La imagen tiene
-procedencia SLSA 3 firmada.
+`sha256:04032e44c4177318545ae15a1dc48a9a72b0b04411c86f92f30dfb87a4d6b95d`,
+construido desde `fefea94d25a974ddf05e71f7212616e625ee5303` por Cloud Build
+`89cff4cb-3b8e-4abf-87e2-af82581ad078` `SUCCESS/VERIFIED`. Build, Artifact
+Registry y procedencia firmada coinciden.
 
 El único plan aplicado tenía SHA-256
-`64b200559044ecb2e0a44ea68a63f7c174088c12da1209f6624b77f388c1670e` y
+`4adf5d8526efefdabe251c26ea12429b74971c35d825eaedaf8ad5eb220fc00e` y
 dos updates in-place de imagen, sin create/delete/replace/adicional; el apply
 terminó 0/2/0. Worker conserva USD 0.55, P10 false, task/paralelismo 1/1 y
 `maxRetries=0`; IAM del secreto contiene sólo al worker. Health/readiness y la
 ruta privada anónima pasaron, y dos planes posteriores dieron `No changes`.
-No hubo jobs ni Responses durante el despliegue. La única frontera pendiente
-es el E2E sintético fresco con edición P05 durable y submission.
+No hubo jobs ni Responses durante el despliegue.
 
-El intento posterior de construir P04 1.1.8 desde `523b2100…` no modificó
-este estado. El build `9e74ef7a-072b-4094-8dec-3368c0d6afa9` falló en el smoke
-aislado antes de publicar, cuando el deadline de 5 s expiró con intérprete y
-libmagic fríos. No hubo digest, plan, apply, job ni Responses. El smoke queda
-alineado al timeout productivo acotado de 30 s y requiere un SHA nuevo.
+El E2E sintético sobre ese digest pasó P01-P03, persistió seis decisiones y se
+detuvo en P04 1.1.8: el schema provider fue válido, pero un diagnóstico usó un
+`evidence_id` no incluido en la allowlist de dos IDs. La ejecución terminó
+`FAILED/SECURITY`, sin retry ni P05. Fueron 4 Responses/USD 0.02256005 y cero
+P10/P11/Sol/fallback/retries.
+
+P04 1.1.9 aclara las allowlists tipadas de `diagnostics[].evidence_ids` y
+`source_ids` sin relajar el validador. El dry-run acoplado P04→P05 pasa con
+dos transportes fake, 0 red/billable y ceiling USD 0.05046625 bajo cap USD
+0.06. La evidencia vigente es 16/18 hasta una única recanary real y su reporte
+content-free; después harán falta un SHA nuevo, build/deploy y otro E2E fresco.
+
+## Historial — evidencia 18/18 desplegada antes del stop fresco
+
+El SHA `88416b522414f316613bea96ad08687e8a335a38` fue desplegado como
+`sha256:d31899535c76b08ee79163479530b044783b73956c6fe228a01a3e603008893d`
+por el build `441be72d-04ae-46e9-b150-6eec1032c8d6`. Ese checkpoint y su
+evidencia 18/18 quedaron sustituidos por la frontera vigente descrita arriba.
 
 ## Historial — evidencia 18/18; deploy pendiente
 

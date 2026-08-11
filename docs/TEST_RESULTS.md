@@ -6,13 +6,29 @@ Fecha de corte documental: 2026-08-11 (America/Santiago; ejecución cloud hasta
 Este archivo registra únicamente resultados observados. Las credenciales y
 capacidades no se registran. Los recorridos cloud E2 históricos usaron mock;
 los E2E reales del corte usan exclusivamente fixtures sintéticos autorizados.
-El recorrido de producto más reciente se detuvo en P04 1.1.7 y la recanary
-P04 1.1.8→P05 1.1.5 posterior pasó. P10 permaneció deshabilitado en todos los
-casos. Los
-resultados históricos E1 se conservan al final y no se presentan como evidencia
-del candidato E2.
+El recorrido de producto más reciente se detuvo en P04 1.1.8 por un
+`evidence_id` fuera de su allowlist. P04 1.1.9 está remediado y pasa dry-run,
+pero todavía no tiene observación real: la evidencia vigente es 16/18. P10
+permaneció deshabilitado en todos los casos. Los resultados anteriores se
+conservan como historia y no sustituyen la frontera vigente.
 
-## Cloud Build detenido por deadline inestable del smoke — 2026-08-11
+## Estado vigente — deploy `fefea94`, stop P04 y recanary v1.1.9 preparada — 2026-08-11
+
+| Prueba o gate | Resultado observado |
+|---|---|
+| Build/deploy | SHA `fefea94d25a974ddf05e71f7212616e625ee5303`; build único `89cff4cb-3b8e-4abf-87e2-af82581ad078` `SUCCESS/VERIFIED`; digest coincidente `sha256:04032e44c4177318545ae15a1dc48a9a72b0b04411c86f92f30dfb87a4d6b95d` |
+| Plan/apply | plan guardado SHA-256 `4adf5d8526efefdabe251c26ea12429b74971c35d825eaedaf8ad5eb220fc00e`; exactamente 2 updates in-place de imagen, 0 add/delete/replace/adicional; apply único 0/2/0 |
+| Runtime | web mock/sin clave; worker real con secreto v2, USD 0.55, P10 false, task/paralelismo 1/1 y `maxRetries=0`; IAM, health/readiness, 401 privado y dos planes `No changes` PASS |
+| E2E | actividad sintética `act_8187dcc2159d5462d99a`; P01-P03 `SCHEMA_VALID`; seis decisiones recomendadas durables; una reanudación P04 |
+| Stop | P04 1.1.8 pasó schema provider y falló contexto con `CONTEXT_FAILURE_OUTPUT_EVIDENCE_ID_NOT_ALLOWLISTED`; job `job_d683a83a252b71fb45e2` / execution `cva-worker-m2mlr` exit 1, `FAILED/SECURITY`, intento 1, retries 0 |
+| Uso | 4 Responses; USD 0.02256005: P01 0.00215155, P02 0.00194855, P03 0.00537480, P04 0.01308515; P10/P11/Sol/fallback/retries 0 |
+| Efectos excluidos | P05, blueprint, edición, aprobación y submission = 0; sólo 2 de las 4 executions máximas fueron usadas |
+| Remediación | P04 1.1.9 exige allowlists tipadas exactas para `diagnostics[].evidence_ids/source_ids`; no convierte IDs de statement/criterion/decision/issue/option y permite listas vacías |
+| Dry-run | P04→P05 PASS/PASS `READY`; 2 fake/0 red/0 billable; ceiling USD 0.05046625/cap USD 0.06; P10/P11/Sol/fallback/retries 0 |
+| Regresión local | backend 558 passed/16 skips PostgreSQL explícitos/1 warning conocido; frontend typecheck, 6 archivos/34 tests y build PASS; deploy 11/11; seguridad 2/2; contratos/fixtures/OpenAPI sin drift; secretos 293 archivos PASS; Terraform fmt/validate; npm audit 0; imagen y smoke aislado PASS |
+| Evidencia | 16/18 hasta exactamente una recanary real P04 1.1.9→P05 1.1.5 y su sellado content-free |
+
+## Historial — Cloud Build detenido por deadline inestable del smoke — 2026-08-11
 
 | Prueba o gate | Resultado observado |
 |---|---|
@@ -29,7 +45,7 @@ El build fallido queda permanentemente consumido y no cuenta como imagen
 verificada. Sólo un SHA nuevo, después de regresión y CI, puede volver a entrar
 al gate build/digest/plan.
 
-## P04 v1.1.8→P05 v1.1.5 PASS — 2026-08-11
+## Historial — P04 v1.1.8→P05 v1.1.5 PASS — 2026-08-11
 
 | Prueba o gate | Resultado observado |
 |---|---|

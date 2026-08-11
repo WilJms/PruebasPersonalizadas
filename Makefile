@@ -1,6 +1,6 @@
 PYTHON ?= .venv/bin/python
 
-.PHONY: install contracts openapi fixtures test test-cov stage0-demo stage0-fail stage0-injection real-smoke openai-canary-dry-run openai-p01-injection-recanary-dry-run openai-p02-v113-recanary-dry-run openai-p04-v116-recanary-dry-run openai-p05-v114-recanary-dry-run openai-blueprint-v118-v115-recanary-dry-run openai-blueprint-v117-v115-timeout-recovery-dry-run openai-p06-v112-decision-lineage-recanary-dry-run openai-p09-v115-recanary-dry-run openai-p11-v114-direct-dry-run openai-qualification-dry-run openai-qualification-v113-continuation-dry-run openai-qualification-v114-continuation-dry-run frontend-install frontend-typecheck frontend-test frontend-build postgres-prepare postgres-e2e postgres-sensitive postgres-stage2-recovery secrets-check
+.PHONY: install contracts openapi fixtures test test-cov stage0-demo stage0-fail stage0-injection real-smoke openai-canary-dry-run openai-p01-injection-recanary-dry-run openai-p02-v113-recanary-dry-run openai-p04-v116-recanary-dry-run openai-p05-v114-recanary-dry-run openai-blueprint-v119-v115-recanary-dry-run openai-blueprint-v117-v115-timeout-recovery-dry-run openai-p06-v112-decision-lineage-recanary-dry-run openai-p09-v115-recanary-dry-run openai-p11-v114-direct-dry-run openai-qualification-dry-run openai-qualification-v113-continuation-dry-run openai-qualification-v114-continuation-dry-run frontend-install frontend-typecheck frontend-test frontend-build postgres-prepare postgres-e2e postgres-sensitive postgres-stage2-recovery secrets-check
 
 install:
 	$(PYTHON) -m pip install -e '.[dev]'
@@ -144,10 +144,10 @@ openai-p04-v116-recanary-dry-run:
 		-u CVA_OPENAI_REAL_QUALIFICATION_V114_CONTINUATION_APPROVAL \
 		$(PYTHON) scripts/run_openai_evals.py --mode canary-dry-run --case-id "oa-p04-happy"
 
-openai-blueprint-v118-v115-recanary-dry-run:
+openai-blueprint-v119-v115-recanary-dry-run:
 	@env -u CVA_OPENAI_API_KEY \
-		-u CVA_OPENAI_BLUEPRINT_V118_V115_REMEDIATION_DECISION \
-		-u CVA_OPENAI_BLUEPRINT_V118_V115_RECANARY_APPROVAL \
+		-u CVA_OPENAI_BLUEPRINT_V119_V115_REMEDIATION_DECISION \
+		-u CVA_OPENAI_BLUEPRINT_V119_V115_RECANARY_APPROVAL \
 		$(PYTHON) scripts/run_openai_evals.py --mode blueprint-recanary-dry-run
 
 openai-blueprint-v117-v115-timeout-recovery-dry-run:

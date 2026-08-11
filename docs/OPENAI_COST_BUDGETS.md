@@ -37,7 +37,28 @@ envelope manual. Antes de llamar, el gateway calcula el peor caso usando el
 máximo output del prompt; si supera el presupuesto restante, no crea
 transporte.
 
-## Consumo E2E P01-P05, gate timeout y recuperación P04/P05/P06
+## Estado vigente — stop P04 1.1.8 y recanary P04 1.1.9→P05 1.1.5
+
+El E2E fresco sobre `fefea94` consumió exactamente cuatro Responses antes del
+stop de seguridad P04, por **USD 0.02256005**. No hubo P10, P11, Sol, fallback
+ni retry; P05 no fue llamado.
+
+| Tramo vigente | Responses | Costo calculado |
+|---|---:|---:|
+| P01 | 1 | USD 0.00215155 |
+| P02 | 1 | USD 0.00194855 |
+| P03 | 1 | USD 0.00537480 |
+| P04 1.1.8 | 1 | USD 0.01308515 |
+| Total | **4** | **USD 0.02256005** |
+
+La remediación P04 1.1.9 tiene un gate acoplado nuevo y no transferible. El
+dry-run reserva el peor caso full-cache-write antes de cada transporte y pasa
+P04→P05 con 2 fake Responses, cero red/billable y ceiling agregado
+**USD 0.05046625** bajo cap **USD 0.06**. El gate real permite como máximo dos
+Responses, retries/P10/P11/Sol/fallback cero y no crea P05 si P04 no termina
+`READY`. Todavía no se ha consumido ni se presume PASS.
+
+## Historial — consumo E2E P01-P05, gate timeout y recuperación P04/P05/P06
 
 El E2E más reciente consumió cinco Responses antes del stop P05, por un total
 calculado de **USD 0.03490275**. No hubo P10, P11, Sol, fallback ni retry.

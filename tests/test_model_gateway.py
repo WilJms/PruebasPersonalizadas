@@ -110,7 +110,7 @@ def test_registry_is_exact_complete_and_immutable() -> None:
 
     assert PROMPT_SPECS["P01_ACTIVITY_SPEC_V1"].prompt_version == "1.1.2"
     assert PROMPT_SPECS["P02_RUBRIC_NORMALIZE_V1"].prompt_version == "1.1.3"
-    assert PROMPT_SPECS["P04_BLUEPRINT_BUILD_V1"].prompt_version == "1.1.8"
+    assert PROMPT_SPECS["P04_BLUEPRINT_BUILD_V1"].prompt_version == "1.1.9"
     assert PROMPT_SPECS["P05_BLUEPRINT_REVIEW_V1"].prompt_version == "1.1.5"
     assert PROMPT_SPECS["P09_GUIDE_BUILD_V1"].prompt_version == "1.1.5"
     assert PROMPT_SPECS["P11_SCHEMA_REPAIR_V1"].prompt_version == "1.1.4"
@@ -137,7 +137,7 @@ def test_registry_is_exact_complete_and_immutable() -> None:
         PROMPT_SPECS["P01_ACTIVITY_SPEC_V1"].temperature = 1.0
 
 
-def test_p04_v118_makes_provider_invisible_invariants_explicit() -> None:
+def test_p04_v119_makes_provider_invisible_invariants_explicit() -> None:
     p04 = PROMPT_SPECS["P04_BLUEPRINT_BUILD_V1"].developer_instruction
     for exact_rule in (
         "cada decision_id de resolved_decisions exactamente una vez",
@@ -160,6 +160,11 @@ def test_p04_v118_makes_provider_invisible_invariants_explicit() -> None:
         "usa status=READY aunque existan diagnósticos INFO/WARNING",
         "severity=ERROR o CRITICAL",
         "no emitas HUMAN_REVIEW_PENDING",
+        "diagnostics[].evidence_ids usa únicamente evidence_id exactos",
+        "Nunca escribas ahí statement_id, criterion_id, decision_id, issue_id ni option_id",
+        "si ningún evidence_id autorizado sustenta el diagnóstico, usa evidence_ids=[]",
+        "diagnostics[].source_ids usa únicamente source_id exactos autorizados",
+        "En context_mode=CLOSED sin fuentes de curso autorizadas, usa source_ids=[]",
     ):
         assert exact_rule in p04
 
