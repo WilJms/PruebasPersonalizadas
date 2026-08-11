@@ -1108,7 +1108,7 @@ def test_qualification_blocks_oversized_dynamic_p11_before_transport(
     assert row["case_id"] == "oa-p09-happy-docx"
     assert row["status"] == "FAIL"
     assert row["error_code"] == "MODEL_OUTPUT_VALIDATION_FAILED"
-    assert row["repair_disposition"] == "BLOCKED_BY_BUDGET"
+    assert row["repair_disposition"] == "BLOCKED_BY_QUALIFICATION_POLICY"
     assert row["primary_failure"]["provider_schema_status"] == "INVALID"
     serialized = json.dumps(report, ensure_ascii=False, sort_keys=True)
     assert "synthetic_extra" not in serialized

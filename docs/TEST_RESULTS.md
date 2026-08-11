@@ -9,6 +9,27 @@ P10 deshabilitado; las evaluaciones OpenAI dedicadas usaron exclusivamente
 fixtures sintéticos. Los resultados históricos E1 se conservan al final y no
 se presentan como evidencia del candidato E2.
 
+## Hardening presupuestario y preflight de deploy — 2026-08-10
+
+| Prueba o inspección | Resultado observado |
+|---|---|
+| Reserva previa full-cache-write | PASS: el estimador del gateway y el preflight UI reservan todo el input a 1.25×; una regresión prueba que el cap de tarifa ordinaria bloquea antes de crear transporte |
+| Perfil worker real | PASS: retries automáticos gateway/SDK 0/0; P11 input máximo 80,000; P01-P09 250,000; P10/Sol/fallback ausentes |
+| P11 sobredimensionado | PASS fail-closed: el caso dinámico sobre 80,000 bloquea por política de ruta antes de P11/Responses y no retiene el output sintético |
+| E2E offline por ruta real/fake | PASS: actividad y submission `SUCCEEDED`; P01-P09, 9 tareas semánticas, máximo input preflight 27,330; 0 red/billable |
+| Preflight fixture manual | actividad con rúbrica USD 0.253571; submission 1 pregunta + 3 reservas USD 0.490573; ambas dentro de USD 0.55 por job |
+| Envelope E2E con edición P05 | ceiling agregado USD 0.855444; cap futuro propuesto USD 0.90; máximo defensivo 32 Responses requests; retries 0 |
+| Qualification v1.1.4 tras hardening | PASS 4/4 fake; 0 red/billable; ceiling y gate sin drift: USD 0.092706, máximo 5, P11 máximo 1 |
+| Suite backend vigente | 529 passed, 16 skips PostgreSQL explícitos, 1 warning P3 conocido; 80% global sobre 10,513 statements |
+| Deploy/Terraform/secrets | 11/11 deploy tests; `terraform validate/fmt -check` PASS; 292 archivos versionables sin secreto |
+| Cloud read-only | Service/Job mismo digest histórico, mock/P10 false; Job task/paralelismo 1/1 y `maxRetries=0`; health/readiness 200; privado anónimo 401 |
+| Plan real provisional | 2 updates in-place, 1 IAM worker-secret create, 36 no-op; `refresh=false`; no apply ni mutación |
+
+La auditoría reprodujo el sub-reservado previo como defecto P1 de control de
+gasto y lo cerró antes de red/deploy. P0/P1 abiertos permanecen 0/0. Estos
+resultados no consumen ni amplían el gate billable v1.1.4 y no autorizan build,
+IAM, Terraform apply, deploy o E2E cloud.
+
 ## Rotación y qualification real hasta P05 1.1.4 PASS — 2026-08-10
 
 | Prueba o gate | Resultado observado |
@@ -37,12 +58,12 @@ se presentan como evidencia del candidato E2.
 | Frontera P05 | charge USD 0.01982985; ceiling USD 0.02252775; cap USD 0.03; prompt/input ligados por hash; output no retenido; approval consumida y P1 cerrado |
 | Continuación 1.1.4 dry-run | 4/4 PASS, 14 evidencias reales reutilizadas, 4 fake, 0 red/billable, máximo 5, P11 máximo 1, ceiling USD 0.09270600/cap propuesto USD 0.10 |
 | Gate v1.1.4 | PASS offline: el opt-in histórico v1.1.3 no abre la continuación nueva; falta approval exacta y no hubo request adicional |
-| Regresión focal P05/P11 | 100/100 PASS: gateway y harness |
-| Regresión focal vigente | 100/100 gateway+harness PASS, incluida abstención P11 ante root ambiguo y gates v1.1.4/antirrepetición |
-| `make test-cov` vigente | 526 passed, 16 skips PostgreSQL explícitos, 1 warning deprecado conocido; 80% global sobre 10,510 statements |
+| Regresión focal en cierre P05/P11 | 100/100 PASS histórico: gateway y harness |
+| Regresión focal vigente | 111/111 gateway+harness+runtime guards PASS, incluida reserva full-cache-write, P11 80K, retry 0 y envelope E2E versionado |
+| `make test-cov` vigente | 529 passed, 16 skips PostgreSQL explícitos, 1 warning deprecado conocido; 80% global sobre 10,513 statements |
 | Contratos | PASS: 53 roots, 140 definiciones, 274 referencias y 8 fixtures; schema canónico sin edición manual |
 | Secret scan | PASS: 292 archivos versionables, cero secretos de alta confianza |
-| Artefactos de deploy | 11/11 PASS; ningún archivo de deploy fue modificado |
+| Artefactos de deploy | 11/11 PASS; ningún artefacto ejecutable de deploy fue modificado |
 | Frontend | typecheck PASS; 6 archivos/34 tests PASS; build 87 módulos PASS |
 
 La recanary P05 se ejecutó exactamente una vez y pasó. Sus approvals y todas

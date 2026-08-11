@@ -174,6 +174,15 @@ siendo propiedad exclusiva de Terraform y debe ser un digest construido desde
 el commit aprobado. Los pasos y dobles opt-ins están detallados en
 [`OPENAI_PROVIDER_SETUP.md`](../docs/OPENAI_PROVIDER_SETUP.md).
 
+Para el primer candidato manual-eval, el perfil de código fija retries
+gateway/SDK 0/0 y P11 a 80,000 tokens máximos de input. El estimate preventivo
+reserva full-cache-write. El tfvars autorizado debe fijar
+`openai_max_job_cost_usd = 0.55`; con una pregunta, actividad y submission
+quedan respectivamente en USD 0.253571 y USD 0.490573. El E2E completo con una
+edición P05 reserva USD 0.855444 y máximo 32 Responses bajo un cap humano
+separado de USD 0.90. Estos valores son propuesta reproducible, no autorización
+de apply o gasto.
+
 ## Recovery y rollback
 
 El rollback normal cambia únicamente `container_image` a un digest E2 conocido

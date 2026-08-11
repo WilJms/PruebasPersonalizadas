@@ -541,6 +541,29 @@ output y 516 reasoning tokens; latencia 9,779 ms; costo calculado USD
 0.00147750 frente al cap USD 0.02. El P0 permanece abierto y el gate queda en
 `OPENAI_P01_INJECTION_RECANARY_P01_ABSTENTION_SOURCED_FIELDS_PRESENT_REVIEW_REQUIRED`.
 
+## Preflight offline del recorrido UI real
+
+Antes de solicitar deploy se corrigió un P1 de presupuesto sin ejecutar red:
+la reserva previa trataba el input como ordinario, aunque las canaries habían
+observado cache-write casi completo. El gateway y los estimates UI reservan
+ahora full-cache-write. El perfil manual ejecuta retries gateway/SDK 0/0; los
+retries de aplicación continúan siendo acciones humanas durables. P11 limita su
+input a 80,000 tokens, por encima del peor caso calificado 76,482, y bloquea
+cualquier exceso antes de Responses.
+
+El recorrido recomendado usa `fixtures/stage0/activity_01_rubric`, una pregunta
+y tres reservas. Sus ceilings son USD 0.253571 para actividad, USD 0.111300
+para una edición/re-review P05 y USD 0.490573 para submission. El agregado es
+USD 0.855444, cap futuro propuesto USD 0.90 y máximo 32 Responses requests si
+cada tarea primaria necesitara su P11; no hay retries automáticos. La ruta feliz
+esperada usa diez requests.
+
+Una ejecución offline con el resolver real y transporte fake completó jobs de
+actividad y submission, recorrió P01-P09 en nueve tareas semánticas, observó
+27,330 tokens como máximo preflight y usó cero red/billable. El dry-run de la
+continuación v1.1.4 permanece 4/4, máximo 5 y USD 0.092706. La qualification,
+el build/deploy y el E2E real conservan gates separados.
+
 ## Recorrido humano preparado
 
 La selección `--case-id` cubre prompts aislados y devuelve únicamente metadata

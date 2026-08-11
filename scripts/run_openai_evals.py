@@ -31,6 +31,7 @@ from comprehension_verification.model_gateway import (
     MockBehavior,
     ModelGateway,
     OpenAIResponsesAdapter,
+    OPENAI_ROUTE_PROFILE_MAX_TRANSIENT_RETRIES,
     OPENAI_ROUTE_PROFILE_ID,
     PROMPT_CONTRACTS,
     PermanentProviderError,
@@ -1032,7 +1033,11 @@ def _qualification_material(
         route = routes[prompt_id]
         if route.model != LUNA_MODEL_ID or route.fallback_route_id is not None:
             raise AssertionError("Qualification route drifted from Luna-only")
-        no_cache_ceiling = estimator(spec, input_upper_bound)
+        no_cache_ceiling = estimate_cost_usd(
+            model=LUNA_MODEL_ID,
+            input_tokens=input_upper_bound,
+            output_tokens=spec.max_output_tokens,
+        )
         full_cache_write_ceiling = estimate_cost_usd(
             model=LUNA_MODEL_ID,
             input_tokens=input_upper_bound,
@@ -1109,8 +1114,10 @@ def _qualification_material(
                 "target_schema_name": spec.output_schema_name,
                 "input_upper_bound": repair_input_upper_bound,
                 "max_output_tokens": repair_spec.max_output_tokens,
-                "no_cache_ceiling_usd": estimator(
-                    repair_spec, repair_input_upper_bound
+                "no_cache_ceiling_usd": estimate_cost_usd(
+                    model=LUNA_MODEL_ID,
+                    input_tokens=repair_input_upper_bound,
+                    output_tokens=repair_spec.max_output_tokens,
                 ),
                 "full_cache_write_ceiling_usd": estimate_cost_usd(
                     model=LUNA_MODEL_ID,
@@ -1204,7 +1211,11 @@ def _canary_material(
     input_upper_bound = estimate_openai_input_tokens(spec, request, envelope)
     all_routes = build_openai_routes(max_call_cost_usd=route_cap_usd)
     estimator = build_openai_cost_estimator(all_routes)
-    no_cache_ceiling_usd = estimator(spec, input_upper_bound)
+    no_cache_ceiling_usd = estimate_cost_usd(
+        model=LUNA_MODEL_ID,
+        input_tokens=input_upper_bound,
+        output_tokens=spec.max_output_tokens,
+    )
     full_cache_write_ceiling_usd = estimate_cost_usd(
         model=LUNA_MODEL_ID,
         input_tokens=input_upper_bound,
@@ -2244,7 +2255,11 @@ async def _run_real(
         envelope = _envelope_for(case["prompt_id"], request)
         input_ceiling = estimate_openai_input_tokens(spec, request, envelope)
         estimated_ceiling += estimator(spec, input_ceiling) * (
-            min(2, spec.max_transient_retries) + 1
+            min(
+                OPENAI_ROUTE_PROFILE_MAX_TRANSIENT_RETRIES,
+                spec.max_transient_retries,
+            )
+            + 1
         )
         if spec.prompt_id != "P11_SCHEMA_REPAIR_V1":
             repair_spec = prompt_spec("P11_SCHEMA_REPAIR_V1")
@@ -2283,7 +2298,7 @@ async def _run_real(
             GatewayConfig(
                 mode=GatewayMode.REAL,
                 timeout_seconds=125,
-                max_retries=2,
+                max_retries=OPENAI_ROUTE_PROFILE_MAX_TRANSIENT_RETRIES,
                 default_budget_usd=remaining_budget,
                 job_id=f"job_{case['case_id']}",
             ),

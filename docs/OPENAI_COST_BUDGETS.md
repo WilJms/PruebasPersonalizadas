@@ -32,9 +32,10 @@ ordinary_input * input_price
 
 Todo se divide por un millón. Con más de 272K tokens de input, la política
 aplica 2× a input y 1.5× a output. Las rutas normales se limitan a 250K tokens
-para quedar debajo de ese tier. Antes de llamar, el gateway calcula el peor
-caso usando el máximo output del prompt; si supera el presupuesto restante, no
-crea transporte.
+para quedar debajo de ese tier; P11 usa el límite menor de 80K descrito en el
+envelope manual. Antes de llamar, el gateway calcula el peor caso usando el
+máximo output del prompt; si supera el presupuesto restante, no crea
+transporte.
 
 ## Presupuesto vigente del prompt pack 1.1.2
 
@@ -363,3 +364,42 @@ cache y USD 0.02872050 full-cache-write. El dry-run pasó 4/4 con cuatro
 transportes fake, cero red/billable, retries/P10/Sol/fallback cero y un P11
 directo. El cap USD 0.10 todavía no está autorizado; el gate v1.1.3 consumido
 no se transfiere.
+
+## Envelope del primer E2E real sintético
+
+La auditoría predeploy cerró una brecha P1: el resolvedor preventivo usaba la
+tarifa ordinaria antes de conocer la categoría de cache, aunque las canaries
+habían reportado casi todo el input como cache-write. El estimador callable y
+el preflight UI reservan ahora cada token de input a USD 0.25/M, más el output
+máximo. El ledger conserva después el mayor entre costo estimado y observado.
+
+El perfil manual inicial añade dos límites de gasto verificables:
+
+- retries automáticos gateway/SDK: 0/0; retry/resume durable sólo por acción
+  humana;
+- P11: máximo 80,000 tokens de input y USD 0.029600 por oportunidad a output
+  máximo; el peor caso qualification de 76,482 cabe y un input mayor bloquea
+  antes de Responses.
+
+Para `fixtures/stage0/activity_01_rubric`, configurado con una pregunta y tres
+reservas, el preflight determinista es:
+
+| Job/superficie | Tareas semánticas máximas | Responses máximas (primaria + P11) | Ceiling full-cache-write |
+|---|---:|---:|---:|
+| Actividad con rúbrica P01-P05 | 5 | 10 | USD 0.253571 |
+| Edición durable P05 | 1 | 2 | USD 0.111300 |
+| Submission P06, P07/P08 × 4, P09 | 10 | 20 | USD 0.490573 |
+| E2E completo | 16 | **32** | **USD 0.855444** |
+
+El límite de runtime propuesto es **USD 0.55 por job** y el cap humano para una
+única ejecución E2E completa es **USD 0.90**. La ruta feliz esperada usa diez
+Responses —cinco de actividad, una re-revisión P05 y cuatro de submission—,
+pero la autorización debe usar el máximo defensivo de 32. La corrida se detiene
+ante el primer job no exitoso y no repite automáticamente transportes.
+
+Un transporte fake por las rutas reales confirmó actividad y submission
+`SUCCEEDED`, nueve tareas semánticas sin la edición P05, input máximo 27,330 y
+cero red/billable. El plan de deploy y el E2E siguen sin autorización; antes de
+solicitar USD 0.90 se revalidan el saldo del proyecto, la qualification v1.1.4,
+el SHA/digest y la configuración efectiva. El cap USD 0.10 de qualification es
+separado y no se transfiere.

@@ -18,10 +18,18 @@ from sqlalchemy import text
 from fastapi.testclient import TestClient
 from pydantic import ValidationError
 
+from comprehension_verification.model_gateway import (
+    LUNA_MODEL_ID,
+    OPENAI_MAX_INPUT_TOKENS,
+    OPENAI_P11_MAX_INPUT_TOKENS,
+    prompt_spec,
+)
+from comprehension_verification.model_gateway.openai_pricing import estimate_cost_usd
 from comprehension_verification.web import worker
 from comprehension_verification.web.app import create_app
 from comprehension_verification.web.object_store import MemoryObjectStore
 from comprehension_verification.web.repository import Conflict, JobRow, Repository
+from comprehension_verification.web.runtime import build_worker_runtime
 from comprehension_verification.web.settings import Settings, WorkerSettings
 from comprehension_verification.web.workflows import Stage1Service, WorkflowError
 
@@ -156,9 +164,9 @@ def test_web_uses_real_worker_route_profile_for_cost_authorization() -> None:
 
     assert estimate.model_mode == "real"
     assert estimate.estimated_model_calls == 4
-    assert estimate.estimated_input_tokens == 640_000
-    assert estimate.estimated_output_tokens == 176_000
-    assert estimate.upper_bound_cost_usd == pytest.approx(0.3392)
+    assert estimate.estimated_input_tokens == 480_000
+    assert estimate.estimated_output_tokens == 80_000
+    assert estimate.upper_bound_cost_usd == pytest.approx(0.216)
     assert estimate.within_limit is True
 
     submission = service._cost_estimate(
@@ -171,10 +179,65 @@ def test_web_uses_real_worker_route_profile_for_cost_authorization() -> None:
     )
     assert submission.model_mode == "real"
     assert submission.estimated_model_calls == 10
-    assert submission.estimated_input_tokens == 1_600_000
-    assert submission.estimated_output_tokens == 374_000
-    assert submission.upper_bound_cost_usd == pytest.approx(0.7688)
+    assert submission.estimated_input_tokens == 1_200_000
+    assert submission.estimated_output_tokens == 178_000
+    assert submission.upper_bound_cost_usd == pytest.approx(0.5136)
     assert submission.within_limit is True
+
+
+def test_manual_eval_fixtures_fit_the_versioned_e2e_budget_envelope() -> None:
+    fixture = Path(__file__).parents[1] / "fixtures" / "stage0" / "activity_01_rubric"
+    assignment_bytes = (fixture / "assignment.md").stat().st_size
+    rubric_bytes = (fixture / "rubric.md").stat().st_size
+    submission_bytes = (fixture / "submission_sufficient.md").stat().st_size
+    assert (assignment_bytes, rubric_bytes, submission_bytes) == (394, 303, 789)
+
+    service = object.__new__(Stage1Service)
+    service.settings = SimpleNamespace(
+        model_mode="mock",
+        worker_model_mode="real",
+        max_job_cost_usd=0.55,
+    )
+    activity = service._cost_estimate(
+        phase="ACTIVITY_BLUEPRINT",
+        aggregate_id="act_manual_eval_fixture",
+        calls=5,
+        input_bytes=assignment_bytes + rubric_bytes,
+        fingerprint_source={"fixture": "activity_01_rubric"},
+    )
+    submission = service._cost_estimate(
+        phase="SUBMISSION_ASSESSMENT",
+        aggregate_id="sub_manual_eval_fixture",
+        calls=10,
+        input_bytes=submission_bytes,
+        fingerprint_source={"fixture": "submission_sufficient"},
+    )
+
+    assert activity.upper_bound_cost_usd == 0.253571
+    assert submission.upper_bound_cost_usd == 0.490573
+    assert activity.within_limit is submission.within_limit is True
+
+    p05_spec = prompt_spec("P05_BLUEPRINT_REVIEW_V1")
+    p11_spec = prompt_spec("P11_SCHEMA_REPAIR_V1")
+    edit_ceiling = estimate_cost_usd(
+        model=LUNA_MODEL_ID,
+        input_tokens=OPENAI_MAX_INPUT_TOKENS,
+        output_tokens=p05_spec.max_output_tokens,
+        cache_write_tokens=OPENAI_MAX_INPUT_TOKENS,
+    ) + estimate_cost_usd(
+        model=LUNA_MODEL_ID,
+        input_tokens=OPENAI_P11_MAX_INPUT_TOKENS,
+        output_tokens=p11_spec.max_output_tokens,
+        cache_write_tokens=OPENAI_P11_MAX_INPUT_TOKENS,
+    )
+    assert edit_ceiling == 0.1113
+    assert round(
+        activity.upper_bound_cost_usd
+        + edit_ceiling
+        + submission.upper_bound_cost_usd,
+        6,
+    ) == 0.855444
+    assert 2 * (activity.estimated_model_calls + 1 + submission.estimated_model_calls) == 32
 
 
 def test_spa_document_cannot_survive_a_rollout_in_browser_cache(tmp_path: Path) -> None:
@@ -261,6 +324,30 @@ def test_real_worker_requires_secret_and_mock_worker_rejects_it() -> None:
                 openai_api_key="sk-project-synthetic-placeholder-not-a-real-key"
             )
         )
+
+
+def test_real_worker_profile_has_no_automatic_transport_retry() -> None:
+    settings = WorkerSettings(
+        environment="test",
+        database_url="sqlite+pysqlite://",
+        model_mode="real",
+        openai_api_key="sk-project-synthetic-placeholder-not-a-real-key",
+        max_job_cost_usd=0.55,
+    )
+    runtime = build_worker_runtime(
+        settings,
+        repository=Repository("sqlite+pysqlite://"),
+        object_store=MemoryObjectStore(
+            secret="runtime-profile-test-secret-with-at-least-32-bytes"
+        ),
+    )
+
+    assert runtime.service.gateway_factory is not None
+    gateway = runtime.service.gateway_factory("job_synthetic")
+    assert gateway.config.max_retries == 0
+    assert gateway.resolver.real_routes[
+        "P11_SCHEMA_REPAIR_V1"
+    ].max_input_tokens == 80_000
 
 
 def test_upload_and_download_capabilities_use_separate_bounded_ttls() -> None:

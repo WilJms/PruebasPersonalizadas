@@ -44,6 +44,38 @@ el cap humano propuesto es USD 0.10. La frontera permite máximo cinco Responses
 requests, P11 máximo uno, stop al primer fallo y retries/P10/Sol/fallback cero.
 El opt-in histórico v1.1.3 no abre este gate.
 
+La auditoría offline de preparación del E2E encontró y cerró un P1 adicional
+sin consumir red ni autorización: el gateway calculaba la reserva previa con
+tarifa de input ordinario, aunque las ejecuciones reales habían clasificado
+casi todo el input como cache-write a 1.25×. El estimador preventivo usa ahora
+full-cache-write tanto para el resolvedor como para el preflight de la UI. El
+perfil manual Luna-only fija retries automáticos gateway/SDK en 0/0, conserva
+retry durable sólo como acción humana y limita P11 a 80,000 tokens de input;
+el peor caso calificado de P11 es 76,482 y un exceso falla antes de Responses.
+El hallazgo quedó cerrado y el conteo abierto continúa **P0=0, P1=0, P2=5,
+P3=1**.
+
+Con los fixtures versionados de `activity_01_rubric`, una actividad de una
+pregunta reserva USD 0.253571 y la submission con tres oportunidades de reserva
+USD 0.490573; ambas pasan un límite propuesto de USD 0.55 por job. Un recorrido
+offline por las rutas reales y transporte fake terminó ambos jobs en
+`SUCCEEDED`, ejecutó P01-P09 en nueve tareas semánticas, observó como máximo
+27,330 tokens de input preflight y creó cero llamadas de red/facturables. Si el
+E2E añade una edición durable P05, su techo route-max es USD 0.111300; el
+ceiling agregado actividad+edición+submission es USD 0.855444, cap humano
+propuesto USD 0.90 y máximo defensivo 32 Responses requests, sin retries.
+
+La inspección cloud read-only confirmó Service `cva-web` revisión
+`cva-web-00016-gml` y Job `cva-worker` en el digest histórico
+`sha256:0d8f29f28dc510bf2cb14f10252e42afe5a7ce05c14e67facccaa066d0065765`,
+ambos todavía mock/P10 false; el Job mantiene un task, paralelismo uno y
+`maxRetries=0`. Health/readiness respondieron 200 y una ruta privada 401. El
+secreto `cva-openai-api-key` conserva v2 `enabled`, v1 `disabled` y ninguna
+cuenta web/worker tiene todavía su IAM. Un plan Terraform no mutante,
+`refresh=false`, con el digest vigente y valores reales provisionales mostró
+exactamente dos updates in-place (Service/Job), una creación IAM para el worker
+y 36 recursos sin cambio; no se aplicó.
+
 Este estado aún no es `OPENAI_REAL_MANUAL_EVAL_READY`: primero hace falta una
 autorización billable exacta para esa continuación v1.1.4; después, bajo gates
 separados, deploy/Terraform y E2E sintético real. Cloud continúa

@@ -69,6 +69,24 @@ transporte. Cloud conserva `CVA_MODEL_MODE=mock`, `CVA_P10_ENABLED=false`;
 deploy, Terraform, IAM, gasto adicional, P10, datos reales y main siguen fuera
 de autorización.
 
+La preparación offline de deploy cerró además un P1 de presupuesto: el
+preflight del transporte usa ahora full-cache-write en vez de input ordinario.
+El perfil manual fija retries gateway/SDK 0/0 y P11 máximo 80,000 tokens de
+input; retry/resume durable requiere intervención humana. Con los fixtures
+sintéticos recomendados y una pregunta, el techo es USD 0.55 por job. El E2E
+actividad + edición P05 + submission reserva USD 0.855444, cap futuro USD 0.90
+y máximo 32 Responses requests. Esta frontera es distinta del cap USD 0.10 de
+qualification.
+
+La inspección read-only del runtime mostró el digest histórico aún en
+mock/P10 false, health/readiness 200, privado anónimo 401 y el secreto v2
+enabled/v1 disabled sin IAM para web o worker. Un plan Terraform provisional y
+no mutante mostró dos updates in-place —Service y Job— más la creación del único
+binding `secretAccessor` para el worker. La activación final cambiará ambos al
+nuevo digest, mantendrá Web en mock sin clave, pondrá sólo el worker en real y
+fijará `CVA_MAX_JOB_COST_USD=0.55`. Build, IAM, apply, deploy y E2E continúan
+pendientes de gate explícito.
+
 ## Historial — preparación 1.1.2 y rotación
 
 Estado al 2026-08-10: el proyecto OpenAI dedicado `PruebasPersonalizadas`

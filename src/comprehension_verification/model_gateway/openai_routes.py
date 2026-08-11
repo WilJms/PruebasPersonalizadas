@@ -26,6 +26,14 @@ LUNA_MODEL_ID: Final = "gpt-5.6-luna"
 OPENAI_PROVIDER_ID: Final = "openai"
 OPENAI_ROUTE_PROFILE_ID: Final = "LUNA_BASELINE_V1"
 REQUEST_FRAMING_TOKEN_ALLOWANCE: Final = 1_024
+OPENAI_MAX_INPUT_TOKENS: Final = 250_000
+# The first manual-evaluation profile buys no automatic transport retry. A
+# durable teacher retry remains available at the application boundary.
+OPENAI_ROUTE_PROFILE_MAX_TRANSIENT_RETRIES: Final = 0
+# Qualification v1.1.4 measured a 76,482-token P11 worst-case reservation.
+# Inputs above this explicit headroom fail before transport instead of turning
+# structural repair into an open-ended cost surface.
+OPENAI_P11_MAX_INPUT_TOKENS: Final = 80_000
 
 
 @dataclass(frozen=True, slots=True)
@@ -133,7 +141,11 @@ def build_openai_routes(*, max_call_cost_usd: float) -> Mapping[str, models.Mode
             region=None,
             max_cost_usd=max_call_cost_usd,
             # Keep normal calls below the documented long-context price tier.
-            max_input_tokens=250_000,
+            max_input_tokens=(
+                OPENAI_P11_MAX_INPUT_TOKENS
+                if prompt_id == "P11_SCHEMA_REPAIR_V1"
+                else OPENAI_MAX_INPUT_TOKENS
+            ),
             max_output_tokens=spec.max_output_tokens,
             fallback_route_id=None,
             reason_codes=[
@@ -142,6 +154,13 @@ def build_openai_routes(*, max_call_cost_usd: float) -> Mapping[str, models.Mode
                 "EXPLICIT_APPROVED_MODEL_ID",
                 "NO_DYNAMIC_MODEL_SELECTION",
                 "NO_MODEL_FALLBACK",
+                "GATEWAY_RETRIES_0_MANUAL_EVAL",
+                "FULL_CACHE_WRITE_BUDGET_RESERVATION",
+                *(
+                    ["P11_INPUT_LIMIT_80000"]
+                    if prompt_id == "P11_SCHEMA_REPAIR_V1"
+                    else []
+                ),
                 "SOL_COMPARISON_REQUIRES_FUTURE_HUMAN_AUTHORIZATION",
                 "NO_DATED_SNAPSHOT_PUBLISHED_MODEL_ID_RECORDED",
                 "RESPONSES_API_STRUCTURED_OUTPUTS",
@@ -161,7 +180,13 @@ def build_openai_routes(*, max_call_cost_usd: float) -> Mapping[str, models.Mode
 def build_openai_cost_estimator(
     routes: Mapping[str, models.ModelRoute],
 ) -> Callable[[PromptSpec, int], float]:
-    """Estimate against max output before routing; fail if a route is absent."""
+    """Reserve max output and full cache-write input before routing.
+
+    Observed Responses usage can classify almost the complete request input as
+    cache-write input, whose current price is 1.25 times ordinary input.  The
+    transport has not happened when this estimate is evaluated, so treating
+    every estimated input token as a cache write is the only fail-closed choice.
+    """
 
     def estimate(spec: PromptSpec, input_tokens: int) -> float:
         try:
@@ -172,6 +197,7 @@ def build_openai_cost_estimator(
             model=route.model,
             input_tokens=input_tokens,
             output_tokens=spec.max_output_tokens,
+            cache_write_tokens=input_tokens,
         )
 
     return estimate

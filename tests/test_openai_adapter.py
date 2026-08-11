@@ -53,7 +53,9 @@ from comprehension_verification.model_gateway.gateway import (
 )
 from comprehension_verification.model_gateway.openai_routes import (
     LUNA_MODEL_ID,
+    OPENAI_MAX_INPUT_TOKENS,
     OPENAI_MODEL_BY_PROMPT,
+    OPENAI_P11_MAX_INPUT_TOKENS,
     OPENAI_ROUTE_PROFILE,
     OPENAI_ROUTE_PROFILE_ID,
     SOL_MODEL_ID,
@@ -221,6 +223,24 @@ def test_route_matrix_is_explicit_and_p10_has_no_route() -> None:
     assert all(route.fallback_route_id is None for route in routes.values())
     assert all(route.retention_mode == "DEFAULT" for route in routes.values())
     assert all(not route.capabilities.supports_zero_data_retention for route in routes.values())
+    assert (
+        routes["P11_SCHEMA_REPAIR_V1"].max_input_tokens
+        == OPENAI_P11_MAX_INPUT_TOKENS
+        == 80_000
+    )
+    assert all(
+        route.max_input_tokens == OPENAI_MAX_INPUT_TOKENS == 250_000
+        for prompt_id, route in routes.items()
+        if prompt_id != "P11_SCHEMA_REPAIR_V1"
+    )
+    assert all(
+        "GATEWAY_RETRIES_0_MANUAL_EVAL" in route.reason_codes
+        and "FULL_CACHE_WRITE_BUDGET_RESERVATION" in route.reason_codes
+        for route in routes.values()
+    )
+    assert "P11_INPUT_LIMIT_80000" in routes[
+        "P11_SCHEMA_REPAIR_V1"
+    ].reason_codes
 
 
 def test_adapter_rejects_historical_sol_route_before_transport() -> None:
@@ -707,6 +727,44 @@ def test_preflight_counts_full_schema_prompt_and_retry_ceiling() -> None:
     assert fake.responses.calls == []
 
 
+def test_preflight_reserves_full_cache_write_before_transport() -> None:
+    prompt_id = "P01_ACTIVITY_SPEC_V1"
+    request = build_mock_request(prompt_id)
+    spec = prompt_spec(prompt_id)
+    envelope = _envelope(prompt_id, request)
+    token_ceiling = estimate_openai_input_tokens(spec, request, envelope)
+    routes = build_openai_routes(max_call_cost_usd=1.0)
+    ordinary_input_ceiling = estimate_cost_usd(
+        model=LUNA_MODEL_ID,
+        input_tokens=token_ceiling,
+        output_tokens=spec.max_output_tokens,
+    )
+    full_cache_write_ceiling = build_openai_cost_estimator(routes)(
+        spec, token_ceiling
+    )
+
+    assert full_cache_write_ceiling == estimate_cost_usd(
+        model=LUNA_MODEL_ID,
+        input_tokens=token_ceiling,
+        output_tokens=spec.max_output_tokens,
+        cache_write_tokens=token_ceiling,
+    )
+    assert full_cache_write_ceiling > ordinary_input_ceiling
+
+    fake = FakeClient([])
+    gateway = _real_gateway(fake)
+    with pytest.raises(GatewayBudgetExceeded):
+        asyncio.run(
+            gateway.invoke(
+                prompt_id,
+                request,
+                build_trusted_context(request),
+                budget=CallBudget(max_cost_usd=ordinary_input_ceiling * 3),
+            )
+        )
+    assert fake.responses.calls == []
+
+
 def test_p11_preflight_has_one_attempt_and_luna_low_smoke_ceiling() -> None:
     prompt_id = "P11_SCHEMA_REPAIR_V1"
     request = build_mock_request(prompt_id)
@@ -717,7 +775,7 @@ def test_p11_preflight_has_one_attempt_and_luna_low_smoke_ceiling() -> None:
     routes = build_openai_routes(max_call_cost_usd=0.06)
     cost = build_openai_cost_estimator(routes)(spec, token_ceiling)
     assert token_ceiling == 8_502
-    assert cost == 0.0113004
+    assert cost == 0.0117255
     assert spec.max_transient_retries == 0
 
 

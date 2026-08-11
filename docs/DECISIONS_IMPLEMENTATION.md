@@ -668,3 +668,29 @@
   histórica abra una frontera de prompt distinta.
 - **Relación:** D-049, D-053, D-054, P05/P11, `REAL_MODEL_EVALS.md` y
   `OPENAI_COST_BUDGETS.md`.
+
+## D-056 - El presupuesto preventivo reserva cache-write y el perfil manual no reintenta transportes
+
+- **Hallazgo y cierre:** la auditoría offline previa a deploy encontró que la
+  autorización del gateway tasaba el input como ordinario antes de Responses,
+  aunque las canaries observaron casi todo el input como cache-write a 1.25×.
+  El ledger posterior sí registraba esa categoría, pero una request podía
+  exceder el remanente autorizado antes de quedar persistida. Se clasificó P1
+  de control de gasto y se cerró antes de cualquier nueva request o deploy.
+- **Decisión:** todo input estimado se reserva preventivamente como
+  cache-write y el output al máximo del prompt. El perfil inicial de evaluación
+  manual usa cero retries automáticos de gateway y SDK; un retry durable exige
+  una acción humana explícita. P11 conserva una oportunidad por output inválido
+  y limita su input a 80,000 tokens: cubre la reserva calificada máxima de
+  76,482 y cualquier exceso bloquea antes de transporte.
+- **Evidencia offline:** la ruta real con transporte fake recorrió P01-P09 sobre
+  los fixtures sintéticos de cache con nueve tareas semánticas, jobs de actividad
+  y submission `SUCCEEDED`, máximo observado de input preflight 27,330 y cero
+  red/billable. Para una pregunta y tres reservas, los ceilings agregados son
+  USD 0.253571 por actividad y USD 0.490573 por submission, dentro de USD 0.55
+  por job. La qualification v1.1.4 permanece 4/4 fake y USD 0.092706.
+- **Gate:** esta remediación no autoriza la continuación v1.1.4, build cloud,
+  IAM, Terraform apply, deploy ni E2E facturable. Esas acciones deben fijar el
+  SHA nuevo y conservar sus caps humanos separados.
+- **Relación:** D-045, D-048, D-053, D-055, ADR-035/036,
+  `OPENAI_COST_BUDGETS.md` y `OPENAI_REAL_MODEL_VALIDATION.md`.

@@ -30,7 +30,10 @@ from ..model_gateway.mock_factory import build_trusted_context
 from ..model_gateway.openai_pricing import estimate_cost_usd
 from ..model_gateway.openai_routes import (
     LUNA_MODEL_ID,
+    OPENAI_MAX_INPUT_TOKENS,
+    OPENAI_P11_MAX_INPUT_TOKENS,
     OPENAI_MODEL_BY_PROMPT,
+    OPENAI_ROUTE_PROFILE_MAX_TRANSIENT_RETRIES,
 )
 from ..model_gateway.registry import PROMPT_VERSION, prompt_spec
 from ..parsers import (
@@ -792,24 +795,37 @@ class Stage1Service:
             # Thirty thousand tokens conservatively cover the largest current
             # strict schema, instructions, envelope metadata, and provider
             # framing before adding every native input byte as one token.
-            per_call_input_ceiling = min(250_000, input_bytes + 30_000)
+            per_call_input_ceiling = min(
+                OPENAI_MAX_INPUT_TOKENS, input_bytes + 30_000
+            )
             estimated_input_tokens = 0
             estimated_output_tokens = 0
             upper_bound_cost_usd = 0.0
             for prompt_id in prompt_ids:
                 spec = prompt_spec(prompt_id)
-                attempts = min(2, spec.max_transient_retries) + 1
-                estimated_input_tokens += per_call_input_ceiling * (attempts + 1)
+                attempts = (
+                    min(
+                        OPENAI_ROUTE_PROFILE_MAX_TRANSIENT_RETRIES,
+                        spec.max_transient_retries,
+                    )
+                    + 1
+                )
+                estimated_input_tokens += (
+                    per_call_input_ceiling * attempts
+                    + OPENAI_P11_MAX_INPUT_TOKENS
+                )
                 estimated_output_tokens += spec.max_output_tokens * attempts + 8_000
                 upper_bound_cost_usd += estimate_cost_usd(
                     model=OPENAI_MODEL_BY_PROMPT[prompt_id],
                     input_tokens=per_call_input_ceiling,
                     output_tokens=spec.max_output_tokens,
+                    cache_write_tokens=per_call_input_ceiling,
                 ) * attempts
                 upper_bound_cost_usd += estimate_cost_usd(
                     model=LUNA_MODEL_ID,
-                    input_tokens=per_call_input_ceiling,
+                    input_tokens=OPENAI_P11_MAX_INPUT_TOKENS,
                     output_tokens=8_000,
+                    cache_write_tokens=OPENAI_P11_MAX_INPUT_TOKENS,
                 )
             upper_bound_cost_usd = round(upper_bound_cost_usd, 6)
             estimated_cost_usd = upper_bound_cost_usd
@@ -831,9 +847,12 @@ class Stage1Service:
                 if execution_model_mode == "mock"
                 else "Provider pricing is an upper-bound estimate, not a quoted price.",
                 "P10 and course-enriched context remain disabled.",
-                "Real-mode upper bounds include the technical retry ceiling and one eligible P11 repair per semantic call."
+                "The Luna-only manual-evaluation profile has zero automatic transport retries and reserves one eligible bounded P11 repair per semantic call."
                 if execution_model_mode == "real"
                 else "The mock estimate covers one durable run and no billable retry.",
+                "Every real-mode input token is reserved at the full cache-write rate before transport."
+                if execution_model_mode == "real"
+                else "Mock mode never creates a billable provider transport.",
             ],
             input_fingerprint=input_fingerprint,
             generated_at=utc_now(),

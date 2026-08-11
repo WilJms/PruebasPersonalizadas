@@ -35,6 +35,9 @@ from .gateway import (
 from .openai_adapter import OpenAIAdapterConfig, OpenAIResponsesAdapter
 from .openai_routes import (
     LUNA_MODEL_ID,
+    OPENAI_MAX_INPUT_TOKENS,
+    OPENAI_P11_MAX_INPUT_TOKENS,
+    OPENAI_ROUTE_PROFILE_MAX_TRANSIENT_RETRIES,
     OPENAI_MODEL_BY_PROMPT,
     OPENAI_ROUTE_PROFILE,
     OPENAI_ROUTE_PROFILE_ID,
@@ -100,6 +103,9 @@ __all__ = [
     "OpenAIAdapterConfig",
     "OpenAIResponsesAdapter",
     "OPENAI_MODEL_BY_PROMPT",
+    "OPENAI_MAX_INPUT_TOKENS",
+    "OPENAI_P11_MAX_INPUT_TOKENS",
+    "OPENAI_ROUTE_PROFILE_MAX_TRANSIENT_RETRIES",
     "OPENAI_ROUTE_PROFILE",
     "OPENAI_ROUTE_PROFILE_ID",
     "SOL_MODEL_ID",

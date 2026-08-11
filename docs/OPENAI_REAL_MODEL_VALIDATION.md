@@ -8,6 +8,33 @@ observación real. El dry-run de esos cuatro casos pasa con ceiling USD
 0.09270600, cap propuesto USD 0.10 y máximo cinco requests. No existe todavía
 autorización exacta de esa continuación ni de deploy.
 
+## Hardening presupuestario predeploy
+
+Una auditoría offline posterior reprodujo una brecha P1 en la autorización de
+costo: antes del transporte el gateway tasaba el input como ordinario, mientras
+las llamadas observadas lo clasificaban casi íntegramente como cache-write a
+1.25×. El ledger posterior era correcto, pero no podía impedir que la request
+ya enviada sobrepasara el remanente. El estimador preventivo reserva ahora todo
+el input como cache-write, tanto en el resolvedor como en los estimates de UI;
+una prueba confirma el bloqueo antes de adapter/red con un cap que sólo cubriría
+la tarifa ordinaria.
+
+El perfil del primer manual eval ejecuta cero retries automáticos de gateway y
+SDK. Los controles retry/resume de Etapa 2 siguen disponibles como decisiones
+humanas durables y auditables. P11 conserva una oportunidad por salida
+estructural inválida, pero su ruta admite como máximo 80,000 tokens de input;
+la reserva calificada máxima es 76,482. El caso dinámico mayor falla por
+`INPUT_TOKEN_LIMIT_EXCEEDED` antes de crear el transporte P11.
+
+Con la actividad sintética de cache, una pregunta y tres reservas, el preflight
+queda en USD 0.253571 para actividad y USD 0.490573 para submission bajo USD
+0.55 por job. La ruta real con adapter fake terminó P01-P09 en jobs
+`SUCCEEDED`, nueve tareas semánticas, máximo input estimado 27,330 y cero
+red/billable. Sumando una edición durable P05, el E2E futuro reserva USD
+0.855444, cap propuesto USD 0.90 y máximo 32 Responses sin retries. El P1 queda
+cerrado y P0/P1 abiertos siguen 0/0; ninguna de estas pruebas autoriza gasto o
+deploy.
+
 ## Perfil vinculante `LUNA_BASELINE_V1`
 
 | Prompts | Modelo explícito | Esfuerzo |
@@ -120,9 +147,11 @@ Cada llamada representa una sola tarea semántica y usa Responses API con:
   truncation disabled y service tier default;
 - esfuerzo explícito; temperatura omitida por falta de compatibilidad oficial
   documentada con estas rutas de reasoning;
-- timeout entre 5 y 300 segundos y retries internos del SDK iguales a cero;
-- preflight que contabiliza prompt, envelope y schema completos, el techo de
-  retries y el saldo durable del presupuesto agregado por job.
+- timeout entre 5 y 300 segundos y retries gateway/SDK iguales a cero en el
+  perfil manual inicial;
+- preflight que contabiliza prompt, envelope y schema completos, full
+  cache-write, una oportunidad P11 por tarea y el saldo durable del presupuesto
+  agregado por job.
 
 La transformación de schema no redefine contratos: convierte `oneOf` a
 `anyOf`, quita defaults/discriminadores no admitidos, marca las propiedades del
@@ -170,8 +199,10 @@ Una segunda violación estructural queda bloqueada.
 
 ## Fallos y observabilidad
 
-Timeout, conexión, 408/409/5xx y rate limit transitorio pueden consumir como
-máximo los retries acotados del gateway. Auth, autorización, modelo ausente,
+El gateway genérico conserva soporte probado de hasta dos retries transitorios,
+pero el perfil manual activo fija su límite en cero: timeout, conexión,
+408/409/5xx o rate limit terminan el job y sólo una acción durable puede crear
+otro intento. Auth, autorización, modelo ausente,
 quota/budget, request permanente, refusal/safety, respuesta incompleta, tool
 output inesperado y modelo efectivo incompatible no se reintentan ciegamente.
 Todo mensaje externo se reduce a códigos estables; texto del proveedor o del
@@ -320,6 +351,7 @@ cerrada, sin P11 ni segunda request, y deja el P0 abierto para revisión.
 | Continuación 1.1.3 | FAIL gobernado real: P03/P04 PASS, P05 FAIL más una P11; stop tras 4 requests; P06/P08/P09/P11 directo no ejecutados; USD 0.02438310; approval consumida |
 | Remediación y recanary P05/P11 1.1.4 | PASS real: `READY`, schema/Pydantic/contexto/outcome PASS, 1 request, P11 0, USD 0.00936825; P1 cerrado y approval consumida |
 | Continuación 1.1.4 dry-run | 4/4 PASS, 14 evidencias reales hash-bound, 4 fake, 0 red/billable, máximo 5, ceiling USD 0.09270600/cap propuesto USD 0.10 |
+| Hardening de presupuesto predeploy | PASS offline; full-cache-write antes de transporte, gateway/SDK retries 0/0, P11 máximo 80K, E2E fake P01-P09 `SUCCEEDED`; P1 cerrado |
 | Edición P05 durable | PASS backend/API/frontend/E2E; P2 funcional cerrado |
 | Calidad/latencia/costo y severidad | P0=0; P1=0; P2=5; P3=1; calidad pedagógica pendiente de revisión humana posterior |
 | Build, digest y deploy real del worker | pendiente de gate posterior |
