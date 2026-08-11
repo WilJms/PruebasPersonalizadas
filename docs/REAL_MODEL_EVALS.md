@@ -5,15 +5,16 @@ El corpus inicial contiene 20 casos exclusivamente sintéticos en
 entregas ni contenido estudiantil real. El rango gobernado es de 10 a 30 casos,
 con IDs únicos y clasificación obligatoria
 `SYNTHETIC_ONLY_NO_STUDENT_DATA`. El manifest fija además
-`route_profile=LUNA_BASELINE_V1`, prompt pack candidato `1.1.3` y schema
+`route_profile=LUNA_BASELINE_V1`, prompt pack vigente `1.1.3` y schema
 `1.1.0`. P01 y las entradas no modificadas conservan su versión individual
 `1.1.2`; sólo P02 usa `1.1.3`.
 
-## Resultado real 1.1.2 y gate candidato P02 1.1.3
+## Resultado real 1.1.2, recanary P02 1.1.3 y continuación preparada
 
 La rotación terminó con rechazo 401 de la clave histórica, Secret Manager v1
-`DISABLED`, v2 `ENABLED` y Luna visible. El preflight confirmó USD 3.78/5.00 de
-spend, alerta al 80%, único modelo permitido Luna y 200,000 TPM / 500 RPM.
+`DISABLED`, v2 `ENABLED` y Luna visible. El preflight inmediatamente anterior a
+la recanary confirmó el proyecto `PruebasPersonalizadas`, USD 3.82/100.00 de
+spend organizacional y 200,000 TPM / 500 RPM para Luna.
 
 La única qualification 1.1.2 autorizada ejecutó 11 requests y se detuvo en el
 primer fallo. Los diez primeros casos pasaron. El primero,
@@ -34,38 +35,74 @@ usó y los siete casos restantes no se ejecutaron.
 | Retries | gateway/prompt/SDK 0/0/0 |
 | Stop | P02 `MODEL_CONTEXT_NOT_ALLOWLISTED`, provider/Pydantic PASS |
 
-El output P02 no se retuvo. El subtipo histórico genérico admite dos causas:
+El output P02 histórico no se retuvo. El subtipo genérico admite dos causas:
 una abstención con `criteria` no vacío o un `activity_id` distinto. La
-remediación candidata no adivina cuál ocurrió: hace observables ambas clases y
+remediación no adivina cuál ocurrió: hace observables ambas clases y
 alinea el prompt con la regla canónica que ya exigía abstención limpia.
 
 P02 1.1.3 copia `activity_spec.activity_id`, permite sólo evidence IDs de
 `rubric_evidence`, mantiene ausencias opcionales como null/listas vacías con
 diagnóstico y exige `criteria=[]` más diagnóstico cuando status no es `READY`.
 No cambia schema, contrato, ruta, fixture, expected outcome ni P01. El dry-run
-de su recanary pasa con una request fake, cero red/billable, ceiling USD
-0.01243075 y cap humano propuesto USD 0.02. La frontera exacta es:
+de su recanary pasó con una request fake, cero red/billable y ceiling USD
+0.01243075. La frontera exacta es:
 
 - prompt: `sha256:4f3e09976a58ac20a40f8fd072d4bef762dd1e7ae24393ffe4f22c05519df4da`;
 - input bundle: `sha256:2def19568376c5f297333cf9cdab552a44a04dace43b696c8d0e85da093d559c`.
 
-El entrypoint real exige dos gates nuevos y separados antes de leer la clave:
+El propietario aceptó la remediación y autorizó exactamente una recanary
+sintética con cap USD 0.02. El entrypoint se ejecutó una vez sobre
+`1aa704e607e66053fa57b4a91ed9d0f96520828b` y la autorización quedó consumida.
+
+| Evidencia content-free P02 | Resultado |
+|---|---|
+| Estado | PASS; `READY` |
+| Validación | provider schema, Pydantic, contexto y expected outcome PASS |
+| Requests | 1/1; gateway/prompt/SDK retries 0/0/0 |
+| Ruta | Luna medium solicitada y efectiva; P10/P11/Sol/fallback 0 |
+| Uso | 2,049 input; 0 cached; 2,046 cache-write; 600 output; 300 reasoning |
+| Latencia | 7,579 ms |
+| Costos | actual USD 0.00123210; charge USD 0.01011210; ceiling USD 0.01243075; cap USD 0.02 |
+| Request/output hashes | `sha256:1d692cffa970e501d87b59571e89fc243aafa220b37d34601c7253e917fcbb34` / `sha256:019066ada5357137a2c9f8f4bc22f3b3a714746a80b876914ff521ca48062a0f` |
+
+No se retuvieron payload, output, request ID claro ni clave. Esta observación
+cierra el P1 P02 sin convertir la qualification parcial anterior en PASS.
+
+Para evitar repetir evidencia suficiente, la continuación reutiliza de forma
+hash-bound los diez PASS 1.1.2 y este PASS P02 1.1.3. El snapshot ejecutado y la
+frontera actual producen los mismos diez pares prompt/input; además se fijan
+expected outcome, behavior y severidad. Cualquier drift bloquea antes de
+approval o credencial. Sólo quedan programados:
+
+1. `oa-p03-happy-with-rubric-md`;
+2. `oa-p04-happy`;
+3. `oa-p05-happy`;
+4. `oa-p06-happy-docx`;
+5. `oa-p08-happy-pdf`;
+6. `oa-p09-happy-docx`;
+7. `oa-p11-happy`.
+
+`make openai-qualification-v113-continuation-dry-run` pasó 7/7 con siete
+requests fake, cero red/billable, cobertura acumulable 18/18 y máximo defensivo
+ocho. El ceiling es USD 0.14256840 sin cache y USD 0.15121050 reservando todo el
+input como cache-write; el cap humano propuesto es USD 0.16. P11 queda último,
+con una sola reserva global, y cualquier fallo detiene la secuencia.
+
+El comando documental futuro exige una approval nueva y específica:
 
 ```bash
-CVA_OPENAI_P02_V113_REMEDIATION_DECISION=OPENAI_P02_V113_REMEDIATION_ACCEPTED \
-  CVA_OPENAI_P02_V113_RECANARY_APPROVAL=OPENAI_P02_V113_RECANARY_APPROVED \
+CVA_OPENAI_P01_V112_REMEDIATION_DECISION=OPENAI_P01_V112_REMEDIATION_ACCEPTED \
+  CVA_OPENAI_P02_V113_REMEDIATION_DECISION=OPENAI_P02_V113_REMEDIATION_ACCEPTED \
+  CVA_OPENAI_REAL_QUALIFICATION_V113_CONTINUATION_APPROVAL=OPENAI_REAL_SYNTHETIC_QUALIFICATION_V113_CONTINUATION_APPROVED \
   .venv/bin/python scripts/run_openai_evals.py \
-  --mode canary-real \
-  --case-id oa-p02-happy-pdf \
+  --mode qualification-real \
   --allow-billable \
-  --max-total-cost-usd 0.02
+  --max-total-cost-usd 0.16
 ```
 
-Estos valores son documentación del gate, no una aprobación existente. Una
-qualification completa candidata 1.1.3 pasa offline 18/18 con máximo 19
-requests, ceiling full-cache-write USD 0.31063875 y cero red/billable. Su
-eventual ejecución usa una approval versionada distinta; la approval 1.1.2 ya
-consumida no es reutilizable.
+Estos valores documentan el gate; no constituyen aprobación. La autorización
+P02 ya consumida, la approval 1.1.2 y el antiguo nombre de approval 1.1.3 no
+abren la continuación. Tampoco autorizan deploy, Terraform, IAM ni E2E.
 
 ## Historial — frontera 1.1.2 autorizada antes de la rotación
 

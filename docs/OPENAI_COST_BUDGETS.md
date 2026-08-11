@@ -261,7 +261,7 @@ en cero. El P01 inicial pasó y el P02 final pasó schema provider/Pydantic ante
 de fallar contexto. La ejecución añadida por este gate es únicamente USD
 0.03258029 calculados; ceilings y charges conservadores no son costo observado.
 
-## Presupuesto candidato de recanary P02 1.1.3
+## Recanary P02 1.1.3 consumida y continuación preparada
 
 La instrucción P02 candidata aumenta su input upper-bound de 10,507 a 11,323
 tokens. El schema, output máximo y ruta permanecen iguales.
@@ -272,11 +272,33 @@ tokens. El schema, output máximo y ruta permanecen iguales.
 | Output máximo, reasoning incluido | 8,000 tokens |
 | Ceiling sin cache | USD 0.01186460 |
 | Ceiling con todo input como cache-write | **USD 0.01243075** |
-| Presupuesto humano propuesto | **USD 0.02** |
+| Presupuesto humano autorizado | **USD 0.02** |
 | Máximo de Responses requests | 1 |
 
-El dry-run usa una llamada fake, cero red/billable y hashes exactos P02 1.1.3.
-La qualification completa candidata conserva máximo 19 requests y eleva su
-ceiling full-cache-write sólo a USD 0.31063875, todavía bajo el cap técnico USD
-0.32. Ninguno de esos caps constituye aceptación normativa ni autorización de
-gasto; se requieren gates nuevos antes de acceder a Secret Manager.
+El dry-run usó una llamada fake, cero red/billable y hashes exactos P02 1.1.3.
+La autorización posterior se consumió en una sola Responses request:
+
+| Magnitud observada | USD | Proporción del cap USD 0.02 |
+|---|---:|---:|
+| Costo calculado desde usage | 0.00123210 | 6.16% |
+| Charge conservador | 0.01011210 | 50.56% |
+| Ceiling full-cache-write | 0.01243075 | 62.15% |
+| Headroom según costo calculado | 0.01876790 | 93.84% |
+
+El uso fue 2,049 input, 0 cached, 2,046 cache-write, 600 output y 300 reasoning
+tokens. No hubo retries, P10, P11, Sol, fallback ni segunda request.
+
+La continuación evita volver a comprar los once casos con PASS real hash-bound
+y reserva sólo los siete aún no observados más una reserva P11 global:
+
+| Frontera de continuación | Valor |
+|---|---:|
+| Casos primarios nuevos | 7 |
+| Evidencia real reutilizada | 11 casos |
+| Máximo defensivo de Responses requests | 8 |
+| Ceiling sin cache | USD 0.14256840 |
+| Ceiling full-cache-write | **USD 0.15121050** |
+| Cap humano propuesto | **USD 0.16** |
+
+El cap USD 0.16 todavía no está autorizado. La aprobación P02 consumida y las
+approvals anteriores no se transfieren a esta continuación.

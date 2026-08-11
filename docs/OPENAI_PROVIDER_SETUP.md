@@ -1,6 +1,6 @@
 # Setup gobernado del proveedor OpenAI
 
-## Estado vigente — rotación completa y P02 1.1.3 pendiente de gate
+## Estado vigente — rotación completa y continuación 1.1.3 pendiente de gate
 
 La clave histórica fue revocada en Platform y la sonda content-free confirmó
 rechazo HTTP 401. Secret Manager versión `1` se deshabilitó después de esa
@@ -9,25 +9,35 @@ prueba; versión `2` está `ENABLED`, autentica y ve exclusivamente
 
 La qualification 1.1.2 autorizada consumió 11 requests y USD 0.03258029. P01
 injection pasó como primer caso y cerró P0. P02 falló contexto después de pasar
-schema provider/Pydantic, por lo que el gate se detuvo y dejó un P1 abierto. No
-se hizo una segunda ejecución.
+schema provider/Pydantic, por lo que el gate se detuvo. No se hizo una segunda
+qualification.
 
-El candidato offline `prompt-pack/1.1.3` cambia sólo P02. Su recanary está
-ligada a hashes exactos y no puede leer la versión `2` sin estos dos valores,
-que todavía no han sido aceptados/autorizados:
+El propietario aceptó `prompt-pack/1.1.3` para P02 y autorizó exactamente una
+recanary sintética con cap USD 0.02. La llamada consumió esa autorización y
+terminó PASS en una request: `READY`, todas las validaciones técnicas PASS,
+USD 0.00123210 calculados y retries/P10/P11/Sol/fallback cero. Esto cierra el P1
+P02; no autoriza una segunda llamada.
+El entrypoint P02 real queda además bloqueado por
+`OPENAI_P02_V113_RECANARY_ALREADY_CONSUMED`, aun si se repiten los valores de
+approval históricos.
+
+La continuación preparada reutiliza once PASS reales sólo mientras sus hashes,
+expected outcomes, behaviors y severidades sigan idénticos. Ejecutaría los
+siete casos restantes con máximo defensivo ocho Responses requests, ceiling
+full-cache-write USD 0.15121050 y cap humano propuesto USD 0.16. Antes de leer
+la versión `2` requiere los dos opt-ins normativos ya aceptados y una approval
+facturable nueva:
 
 ```text
+CVA_OPENAI_P01_V112_REMEDIATION_DECISION=OPENAI_P01_V112_REMEDIATION_ACCEPTED
 CVA_OPENAI_P02_V113_REMEDIATION_DECISION=OPENAI_P02_V113_REMEDIATION_ACCEPTED
-CVA_OPENAI_P02_V113_RECANARY_APPROVAL=OPENAI_P02_V113_RECANARY_APPROVED
+CVA_OPENAI_REAL_QUALIFICATION_V113_CONTINUATION_APPROVAL=OPENAI_REAL_SYNTHETIC_QUALIFICATION_V113_CONTINUATION_APPROVED
 ```
 
-El cap propuesto es USD 0.02, una única Responses request y ceiling USD
-0.01243075. La approval consumida de qualification 1.1.2 no es reutilizable.
-Una qualification futura 1.1.3 requiere además
-`CVA_OPENAI_REAL_QUALIFICATION_V113_APPROVAL=OPENAI_REAL_SYNTHETIC_QUALIFICATION_V113_APPROVED`;
-ese valor tampoco ha sido concedido. Cloud conserva
-`CVA_MODEL_MODE=mock`, `CVA_P10_ENABLED=false`; deploy, Terraform, IAM, billing,
-P10, datos reales y main siguen fuera de autorización.
+El tercer valor no ha sido concedido. El nombre anterior
+`CVA_OPENAI_REAL_QUALIFICATION_V113_APPROVAL` no abre el nuevo gate. Cloud conserva
+`CVA_MODEL_MODE=mock`, `CVA_P10_ENABLED=false`; deploy, Terraform, IAM, gasto
+adicional, P10, datos reales y main siguen fuera de autorización.
 
 ## Historial — preparación 1.1.2 y rotación
 

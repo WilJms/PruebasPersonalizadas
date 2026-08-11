@@ -2,7 +2,7 @@
 
 Fecha de corte: 2026-08-10 (America/Santiago).
 
-## Estado vigente — `OPENAI_REAL_V113_P02_REMEDIATION_ACCEPTANCE_REQUIRED` (2026-08-10)
+## Estado vigente — `OPENAI_REAL_V113_CONTINUATION_APPROVAL_REQUIRED` (2026-08-10)
 
 La rotación quedó cerrada en el orden autorizado. La credencial histórica fue
 rechazada por OpenAI con HTTP 401; sólo después se deshabilitó
@@ -10,10 +10,11 @@ rechazada por OpenAI con HTTP 401; sólo después se deshabilitó
 con retries SDK cero y ve únicamente `gpt-5.6-luna`. Ningún secreto se imprimió,
 persistió en archivos o entró en Git/CI.
 
-El preflight autenticado de Platform confirmó gasto USD 3.78/5.00, reset en 21
-días, alerta al 80% (USD 4), único modelo permitido `gpt-5.6-luna` y límites de
-proyecto 200,000 TPM / 500 RPM. La tarifa oficial y el harness coincidieron en
-USD 0.20/M input, 0.02/M cached input, 0.25/M cache-write y 1.20/M output.
+El preflight autenticado inmediatamente anterior a la recanary confirmó el
+proyecto `PruebasPersonalizadas`, gasto organizacional USD 3.82/100.00, reset
+en 21 días, `gpt-5.6-luna` visible y límites 200,000 TPM / 500 RPM. La tarifa
+oficial y el harness coincidieron en USD 0.20/M input, 0.02/M cached input,
+0.25/M cache-write y 1.20/M output. La inspección fue read-only.
 
 La única qualification real 1.1.2 autorizada se ejecutó con cap USD 0.32 y se
 detuvo fail-closed en el primer fallo. `oa-p01-injection-md` fue el primer caso
@@ -35,7 +36,7 @@ abstención que conservó criterios. No se atribuye una de ellas sin evidencia.
 La especificación ya exigía `criteria=[]` más diagnóstico para todo status no
 `READY`, pero esa regla no estaba en la instrucción ejecutable P02.
 
-La candidata offline `prompt-pack/1.1.3` remedia esa divergencia sin cambiar
+`prompt-pack/1.1.3` remedia esa divergencia sin cambiar
 contratos, schemas, rutas, fixtures ni expected outcomes. P01 conserva versión,
 prompt hash e input hash exactos 1.1.2. Sólo P02 avanza a 1.1.3: copia
 `activity_id`, limita fuentes a `rubric_evidence`, explica cuándo usar `READY`
@@ -43,25 +44,44 @@ y exige abstención limpia. El gateway emite ahora subtipos content-free para
 evidencia ajena a la rúbrica, criterios durante abstención y activity ID
 alterado.
 
-El recanary P02 dry-run pasa con una request fake, cero red/billable, hash de
-prompt `sha256:4f3e09976a58ac20a40f8fd072d4bef762dd1e7ae24393ffe4f22c05519df4da`,
-hash de input
-`sha256:2def19568376c5f297333cf9cdab552a44a04dace43b696c8d0e85da093d559c`,
-ceiling full-cache-write USD 0.01243075 y cap humano propuesto USD 0.02. Una
-qualification 1.1.3 completa también pasa offline 18/18 con ceiling USD
-0.31063875. Ambos entrypoints exigen una aceptación P02 nueva y una aprobación
-billable nueva antes de leer la credencial; ninguna ha sido concedida.
+El propietario aceptó P02 1.1.3 y autorizó exactamente una recanary sintética
+con cap USD 0.02. La llamada se ejecutó sobre
+`1aa704e607e66053fa57b4a91ed9d0f96520828b` y terminó **PASS**: una Responses
+request, `READY`, schema provider/Pydantic/contexto/expected outcome PASS y
+Luna-medium solicitado/efectivo. Consumió 2,049 input, 0 cached, 2,046
+cache-write, 600 output y 300 reasoning tokens en 7,579 ms. El costo calculado
+fue USD 0.00123210, el charge conservador USD 0.01011210 y el ceiling USD
+0.01243075. Gateway/prompt/SDK retries, P10, P11, Sol y fallback quedaron en
+cero. La autorización se consumió y no permite otra llamada.
 
-La regresión candidata pasó 515 tests con 16 skips PostgreSQL explícitos y 80%
+Los diez PASS anteriores y esta recanary cubren 11/18 casos con evidencia real.
+Los diez pares prompt/input 1.1.2 fueron recomputados desde el snapshot previo y
+coinciden exactamente con la frontera actual; P02 queda ligado a prompt
+`sha256:4f3e09976a58ac20a40f8fd072d4bef762dd1e7ae24393ffe4f22c05519df4da`
+e input
+`sha256:2def19568376c5f297333cf9cdab552a44a04dace43b696c8d0e85da093d559c`.
+El harness bloquea cualquier drift de prompt, input, expected outcome, behavior
+o severidad antes de leer una credencial.
+
+La continuación preparada ejecuta sólo los siete casos aún no observados:
+P03 con rúbrica, P04, P05, P06, P08, P09 y P11. Su dry-run pasó 7/7 con siete
+transportes fake, cero red/billable, máximo defensivo de ocho Responses
+requests, ceiling sin cache USD 0.14256840 y full-cache-write USD 0.15121050.
+El cap humano propuesto es USD 0.16; P11 queda último y comparte una única
+reserva global. La approval anterior no abre este gate y se exige el nuevo
+opt-in `CVA_OPENAI_REAL_QUALIFICATION_V113_CONTINUATION_APPROVAL`. Aún no existe
+autorización para esa continuación.
+
+La regresión vigente pasó 517 tests con 16 skips PostgreSQL explícitos y 80%
 de cobertura; contratos, regeneración de fixtures/OpenAPI, secret scan,
 artefactos de deploy y frontend quedaron verdes sin drift generado.
 
-El conteo vigente es **P0=0, P1=1, P2=5, P3=1**. Este estado aún no es
-`OPENAI_REAL_MANUAL_EVAL_READY`: falta cerrar empíricamente P02, obtener un
-resultado completo del gate real bajo nueva autorización y, después, solicitar
-por separado deploy/Terraform y E2E sintético real. Cloud continúa
+El conteo vigente es **P0=0, P1=0, P2=5, P3=1**. Este estado aún no es
+`OPENAI_REAL_MANUAL_EVAL_READY`: falta obtener la evidencia real de los siete
+casos restantes bajo una autorización nueva y, después, solicitar por separado
+deploy/Terraform y E2E sintético real. Cloud continúa
 `CVA_MODEL_MODE=mock`, `CVA_P10_ENABLED=false`; no hubo deploy, Terraform apply,
-IAM, billing, P10, Sol/fallback, datos reales ni merge a main.
+IAM, P10, Sol/fallback, datos reales ni merge a main.
 
 ## Historial — `OPENAI_REAL_V112_ROTATION_BLOCKED` (2026-08-10)
 

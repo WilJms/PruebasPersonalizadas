@@ -2,13 +2,12 @@
 
 Fecha de corte: 2026-08-10. Estado: la rotación terminó y la única qualification
 1.1.2 autorizada consumió 11 Responses requests sintéticas antes de detenerse
-en el primer fallo relevante. Los primeros diez casos pasaron; el PASS real de
-`oa-p01-injection-md` cerró P0 con la frontera exacta aceptada y el caso 11
-`oa-p02-happy-pdf` falló validación contextual. El resultado agregado permanece
-FAIL y los siete casos posteriores no se ejecutaron. Las llamadas reales
-acumuladas son **17**, todas con datos sintéticos. P02 queda como P1 y la
-remediación candidata 1.1.3 no tiene aceptación ni autorización billable
-vigentes; tampoco existe autorización de deploy.
+en P02. Los primeros diez casos pasaron; el PASS real de
+`oa-p01-injection-md` cerró P0. La remediación P02 1.1.3 fue aceptada y su única
+recanary autorizada pasó en una request, cerrando P1. Las llamadas reales
+acumuladas son **18**, todas con datos sintéticos. Los siete casos posteriores
+a P02 aún no tienen evidencia real; su continuación está preparada offline y
+requiere una autorización facturable nueva. No existe autorización de deploy.
 
 ## Perfil vinculante `LUNA_BASELINE_V1`
 
@@ -49,20 +48,31 @@ atribuye una de ellas sin evidencia.
 El prompt ejecutable P02 omitía reglas que la especificación y el validator ya
 exigían: copiar el `activity_id`, sustentar criterios sólo con
 `rubric_evidence` y usar `criteria=[]` más diagnóstico en toda abstención. La
-candidata 1.1.3 explicita esas invariantes y añade reason codes content-free;
+versión 1.1.3 explicita esas invariantes y añade reason codes content-free;
 contratos, schema, ruta, fixture y expected outcome permanecen iguales. P01 y
 las demás entradas conservan su versión individual 1.1.2. El dry-run candidato
 pasó 18/18 con 18 transportes fake, cero red/billable, máximo conservador 19 y
-ceiling full-cache-write USD 0.31063875. La recanary P02 queda fijada a un solo
-request y cap humano USD 0.02, pero exige aceptación normativa y autorización
-de gasto nuevas.
+ceiling full-cache-write USD 0.31063875.
+
+La recanary P02 se ejecutó sobre su frontera exacta y terminó PASS `READY`:
+provider schema, Pydantic, contexto y expected outcome PASS; Luna medium
+solicitada/efectiva; una request; retries/P10/P11/Sol/fallback cero. Registró
+2,049 input, 0 cached, 2,046 cache-write, 600 output y 300 reasoning tokens,
+7,579 ms y USD 0.00123210 calculados frente al cap USD 0.02. La autorización
+quedó consumida.
+
+La continuación reutiliza los diez PASS 1.1.2 y el PASS P02 sólo si sus
+fronteras hash-bound permanecen idénticas. Ejecuta los siete casos no
+observados con dry-run 7/7, máximo defensivo ocho requests, ceiling
+full-cache-write USD 0.15121050 y cap humano propuesto USD 0.16. Ninguna
+approval anterior abre ese gate.
 
 Las aceptaciones normativas y las autorizaciones facturables no comparten
-opt-in. El harness liga cada decisión a los hashes de su frontera, valida el cap
-antes de comprobar los gates y sólo después consulta la credencial. La approval
-1.1.2 ya consumida no habilita P02 1.1.3 ni una qualification nueva. Los
-reportes conservan disposiciones hash-bound y hashes, nunca el valor del secreto
-ni el contenido de request/output.
+opt-in. El harness liga cada decisión y cada evidencia reutilizada a su
+frontera, valida el cap antes de comprobar los gates y sólo después consulta la
+credencial. Las approvals consumidas no habilitan la continuación. Los reportes
+conservan disposiciones hash-bound y hashes, nunca el valor del secreto ni el
+contenido de request/output.
 
 La edición interactiva P05 ya no invoca modelos desde el Service. `PATCH`
 responde `202 JobEnvelope`, congela source version/ETag y persiste un descriptor
@@ -284,17 +294,18 @@ cerrada, sin P11 ni segunda request, y deja el P0 abierto para revisión.
 | Rotación de credencial | PASS; clave anterior rechazada por OpenAI antes de deshabilitar v1; v2 quedó como única versión local habilitada |
 | Qualification sintética real 1.1.2 | FAIL agregado al primer P02; casos 1–10 PASS, caso 11 FAIL contextual, casos 12–18 no ejecutados; 11 requests, retries/P10/P11/Sol/fallback 0 |
 | Remediación P01 | PASS real exacto en `oa-p01-injection-md`; P0 cerrado, marker no propagado y frontera 1.1.2 preservada |
-| Investigación P02 | P1 abierto; provider schema/Pydantic PASS y contexto FAIL; subtipo histórico no recuperable entre dos clases compatibles |
-| Remediación candidata P02 1.1.3 | PASS offline; P02-only version bump, hashes fijados, recanary dry-run 1/1 y qualification dry-run 18/18; 0 red/0 billable |
+| Investigación P02 | fallo histórico fail-closed; provider schema/Pydantic PASS y contexto FAIL; subtipo no recuperable entre dos clases compatibles |
+| Remediación P02 1.1.3 | aceptada y PASS real: una recanary, `READY`, todas las validaciones PASS, USD 0.00123210; P1 cerrado |
+| Continuación 1.1.3 | PASS offline 7/7; reutiliza 11 PASS hash-bound, 7 fake, 0 red/billable, máximo 8, ceiling USD 0.15121050/cap propuesto USD 0.16; approval ausente |
 | Edición P05 durable | PASS backend/API/frontend/E2E; P2 funcional cerrado |
-| Calidad/latencia/costo y severidad | P0=0; P1=1 (P02); P2=5; P3=1; calidad pedagógica pendiente de revisión humana posterior |
+| Calidad/latencia/costo y severidad | P0=0; P1=0; P2=5; P3=1; calidad pedagógica pendiente de revisión humana posterior |
 | Build, digest y deploy real del worker | pendiente de gate posterior |
 
 El camino interactivo P05 está ya detrás del worker durable y no puede entregar
 un review mock dentro de un recorrido declarado OpenAI. El estado todavía no
-es `OPENAI_REAL_MANUAL_EVAL_READY`: antes debe aceptarse P02 1.1.3, autorizarse
-y pasar su recanary única, y completarse el gate técnico posterior que se
-acuerde. Nada de lo anterior autoriza deploy ni mutación cloud.
+es `OPENAI_REAL_MANUAL_EVAL_READY`: deben ejecutarse y pasar los siete casos
+restantes bajo una autorización nueva y luego completarse el gate separado de
+deploy/E2E. Nada de lo anterior autoriza deploy ni mutación cloud.
 
 Fuentes oficiales: páginas de
 [`gpt-5.6-sol`](https://developers.openai.com/api/docs/models/gpt-5.6-sol),

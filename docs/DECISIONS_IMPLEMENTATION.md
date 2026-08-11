@@ -605,3 +605,21 @@
   observada antes del gate humano.
 - **Relación:** D-047, D-049, D-051, P02,
   `specification/01_Prompt_Pack_v1.1(1).md` y `REAL_MODEL_EVALS.md`.
+
+## D-053 - La continuación reutiliza sólo evidencia real hash-bound
+
+- **Decisión:** el PASS de la única recanary P02 1.1.3 cierra P1. La
+  qualification posterior no repite los diez PASS 1.1.2 ni P02: conserva esos
+  once casos como evidencia real reutilizada sólo mientras coincidan
+  `prompt_id`, versión, prompt hash, input bundle hash, expected outcome,
+  behavior y severidad. La secuencia billable queda reducida a los siete casos
+  no observados, con máximo defensivo ocho requests y cap propuesto USD 0.16.
+- **Gate:** la continuación usa una approval nueva y específica. La approval
+  1.1.2, la recanary P02 consumida y el nombre anterior de qualification 1.1.3
+  no conceden gasto ni acceso a la credencial. Cualquier drift bloquea antes de
+  esos gates.
+- **Razón:** repetir evidencia suficiente añade costo y exposición sin probar
+  una frontera nueva; reutilizarla sin fijar también el manifest permitiría
+  cambiar silenciosamente el criterio de PASS.
+- **Relación:** D-049, D-051, D-052, `REAL_MODEL_EVALS.md` y
+  `OPENAI_COST_BUDGETS.md`.

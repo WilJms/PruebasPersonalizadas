@@ -9,31 +9,34 @@ P10 deshabilitado; las evaluaciones OpenAI dedicadas usaron exclusivamente
 fixtures sintéticos. Los resultados históricos E1 se conservan al final y no
 se presentan como evidencia del candidato E2.
 
-## Rotación, qualification 1.1.2 y candidata P02 1.1.3 — 2026-08-10
+## Rotación, qualification 1.1.2, P02 1.1.3 y continuación — 2026-08-10
 
 | Prueba o gate | Resultado observado |
 |---|---|
 | Rechazo de clave histórica | PASS: `models.list` devolvió HTTP 401, 1 request no facturable, SDK retries 0; después Secret Manager v1 pasó a `DISABLED` |
 | Credencial vigente | PASS: Secret Manager v2 `ENABLED`, autenticación no facturable y `gpt-5.6-luna` como único modelo visible; ninguna clave se imprimió o persistió |
-| Preflight de proyecto | USD 3.78/USD 5.00 observados; alerta 80%; Luna 200,000 TPM y 500 RPM; inspección read-only, sin guardar cambios |
+| Preflight de recanary | proyecto `PruebasPersonalizadas`; USD 3.82/USD 100.00 organizacionales; reset 21 días; Luna 200,000 TPM y 500 RPM; inspección read-only |
 | Qualification 1.1.2 dry-run previo | 18/18 PASS, 18 fake, 0 red/billable, máximo defensivo 19, retries/P10/Sol/fallback 0, ceiling USD 0.31043475/cap USD 0.32 |
 | Qualification 1.1.2 real autorizada | FAIL agregado y stop al primer fallo relevante: casos 1–10 PASS, caso 11 `oa-p02-happy-pdf` FAIL contextual, casos 12–18 no ejecutados; 11 requests, retries/P10/P11/Sol/fallback 0 |
 | P01 real dentro de qualification | PASS `READY`; provider schema/Pydantic/contexto/outcome PASS; marker presente como dato y no propagado; prompt hash aceptado preservado; P0 cerrado |
-| P02 real dentro de qualification | provider schema y Pydantic PASS; contexto FAIL `MODEL_CONTEXT_NOT_ALLOWLISTED`; outcome no evaluado; sin P11 ni continuación; P1 abierto |
+| P02 real dentro de qualification | provider schema y Pydantic PASS; contexto FAIL `MODEL_CONTEXT_NOT_ALLOWLISTED`; outcome no evaluado; sin P11 ni continuación; abrió el P1 histórico luego cerrado por la recanary |
 | Costo qualification | costo real calculado USD 0.03258029; budget charged USD 0.12137549; reserva transport full-cache-write USD 0.15922425; todos bajo cap USD 0.32 |
-| Remediación candidata P02 1.1.3 | sólo P02 cambia; contratos/schema/ruta/fixture/outcome iguales; prompt `sha256:4f3e09976a58ac20a40f8fd072d4bef762dd1e7ae24393ffe4f22c05519df4da`, input `sha256:2def19568376c5f297333cf9cdab552a44a04dace43b696c8d0e85da093d559c` |
-| Recanary P02 dry-run | 1/1 PASS con transporte fake, 0 red/billable, ceiling full-cache-write USD 0.01243075, cap humano propuesto USD 0.02; decisión normativa y approval billable ausentes |
-| Qualification candidata 1.1.3 dry-run | 18/18 PASS, P01 individual 1.1.2 y P02 individual 1.1.3, 18 fake, 0 red/billable, ceiling USD 0.31063875/cap USD 0.32 |
-| Regresión focal candidata | 52 gateway + 37 harness PASS |
-| `make test-cov` candidato | 515 passed, 16 skips PostgreSQL explícitos, 1 warning deprecado conocido; 80% global sobre 10,510 statements |
+| Remediación P02 1.1.3 | aceptada; sólo P02 cambia; contratos/schema/ruta/fixture/outcome iguales; prompt `sha256:4f3e09976a58ac20a40f8fd072d4bef762dd1e7ae24393ffe4f22c05519df4da`, input `sha256:2def19568376c5f297333cf9cdab552a44a04dace43b696c8d0e85da093d559c` |
+| Recanary P02 real | PASS `READY`; provider schema/Pydantic/contexto/outcome PASS; 1/1 request; 2,049 input, 0 cached, 2,046 cache-write, 600 output, 300 reasoning; 7,579 ms; USD 0.00123210; retries/P10/P11/Sol/fallback 0 |
+| Frontera P02 | charge USD 0.01011210; ceiling USD 0.01243075; cap USD 0.02; request hash `sha256:1d692cffa970e501d87b59571e89fc243aafa220b37d34601c7253e917fcbb34`; output hash `sha256:019066ada5357137a2c9f8f4bc22f3b3a714746a80b876914ff521ca48062a0f` |
+| Antirrepetición P02 | PASS offline: el entrypoint real bloquea `OPENAI_P02_V113_RECANARY_ALREADY_CONSUMED` antes de credencial/transporte |
+| Reuso de evidencia | 10 PASS 1.1.2 con pares prompt/input recomputados idénticos + P02 PASS 1.1.3; drift de hash/outcome/behavior/severidad bloquea |
+| Continuación 1.1.3 dry-run | 7/7 PASS, 11 evidencias reales reutilizadas, 7 fake, 0 red/billable, máximo 8, ceiling USD 0.15121050/cap propuesto USD 0.16 |
+| Regresión focal vigente | 91 gateway+harness PASS; harness aislado 39/39 |
+| `make test-cov` vigente | 517 passed, 16 skips PostgreSQL explícitos, 1 warning deprecado conocido; 80% global sobre 10,510 statements |
 | Contratos | PASS: 53 roots, 140 definiciones, 274 referencias y 8 fixtures; schema canónico sin edición manual |
 | Secret scan | PASS: 292 archivos versionables, cero secretos de alta confianza |
 | Artefactos de deploy | 11/11 PASS; ningún archivo de deploy fue modificado |
 | Frontend | typecheck PASS; 6 archivos/34 tests PASS; build 87 módulos PASS |
 
-No se ejecutó una segunda qualification ni una recanary P02 real. La approval
-1.1.2 quedó consumida y no autoriza P02 1.1.3, deploy, cloud real, P10, Sol,
-fallback, PR o merge.
+No se ejecutó una segunda qualification ni otra llamada después de la recanary.
+La approval P02 quedó consumida. No autoriza la continuación, deploy, cloud
+real, P10, Sol, fallback, PR o merge.
 
 ## Historial — preparación técnica 1.1.2 y P05 durable — 2026-08-10
 

@@ -1,6 +1,6 @@
 PYTHON ?= .venv/bin/python
 
-.PHONY: install contracts openapi fixtures test test-cov stage0-demo stage0-fail stage0-injection real-smoke openai-canary-dry-run openai-p01-injection-recanary-dry-run openai-p02-v113-recanary-dry-run openai-qualification-dry-run frontend-install frontend-typecheck frontend-test frontend-build postgres-prepare postgres-e2e postgres-sensitive postgres-stage2-recovery secrets-check
+.PHONY: install contracts openapi fixtures test test-cov stage0-demo stage0-fail stage0-injection real-smoke openai-canary-dry-run openai-p01-injection-recanary-dry-run openai-p02-v113-recanary-dry-run openai-qualification-dry-run openai-qualification-v113-continuation-dry-run frontend-install frontend-typecheck frontend-test frontend-build postgres-prepare postgres-e2e postgres-sensitive postgres-stage2-recovery secrets-check
 
 install:
 	$(PYTHON) -m pip install -e '.[dev]'
@@ -44,6 +44,7 @@ openai-canary-dry-run:
 		-u CVA_OPENAI_P02_V113_RECANARY_APPROVAL \
 		-u CVA_OPENAI_REAL_QUALIFICATION_APPROVAL \
 		-u CVA_OPENAI_REAL_QUALIFICATION_V113_APPROVAL \
+		-u CVA_OPENAI_REAL_QUALIFICATION_V113_CONTINUATION_APPROVAL \
 		$(PYTHON) scripts/run_openai_evals.py --mode canary-dry-run --case-id "$(CASE_ID)"
 
 openai-p01-injection-recanary-dry-run:
@@ -57,6 +58,7 @@ openai-p01-injection-recanary-dry-run:
 		-u CVA_OPENAI_P02_V113_RECANARY_APPROVAL \
 		-u CVA_OPENAI_REAL_QUALIFICATION_APPROVAL \
 		-u CVA_OPENAI_REAL_QUALIFICATION_V113_APPROVAL \
+		-u CVA_OPENAI_REAL_QUALIFICATION_V113_CONTINUATION_APPROVAL \
 		$(PYTHON) scripts/run_openai_evals.py --mode canary-dry-run --case-id "oa-p01-injection-md"
 
 openai-p02-v113-recanary-dry-run:
@@ -70,9 +72,10 @@ openai-p02-v113-recanary-dry-run:
 		-u CVA_OPENAI_P02_V113_RECANARY_APPROVAL \
 		-u CVA_OPENAI_REAL_QUALIFICATION_APPROVAL \
 		-u CVA_OPENAI_REAL_QUALIFICATION_V113_APPROVAL \
+		-u CVA_OPENAI_REAL_QUALIFICATION_V113_CONTINUATION_APPROVAL \
 		$(PYTHON) scripts/run_openai_evals.py --mode canary-dry-run --case-id "oa-p02-happy-pdf"
 
-openai-qualification-dry-run:
+openai-qualification-dry-run openai-qualification-v113-continuation-dry-run:
 	@env -u CVA_OPENAI_API_KEY \
 		-u CVA_OPENAI_REAL_EVALS_APPROVAL \
 		-u CVA_OPENAI_LUNA_CANARY_APPROVAL \
@@ -83,6 +86,7 @@ openai-qualification-dry-run:
 		-u CVA_OPENAI_P02_V113_RECANARY_APPROVAL \
 		-u CVA_OPENAI_REAL_QUALIFICATION_APPROVAL \
 		-u CVA_OPENAI_REAL_QUALIFICATION_V113_APPROVAL \
+		-u CVA_OPENAI_REAL_QUALIFICATION_V113_CONTINUATION_APPROVAL \
 		$(PYTHON) scripts/run_openai_evals.py --mode qualification-dry-run
 
 frontend-install:

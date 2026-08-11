@@ -33,6 +33,9 @@ def _safe_environment() -> dict[str, str]:
     environment.pop("CVA_OPENAI_P02_V113_REMEDIATION_DECISION", None)
     environment.pop("CVA_OPENAI_P02_V113_RECANARY_APPROVAL", None)
     environment.pop("CVA_OPENAI_REAL_QUALIFICATION_V113_APPROVAL", None)
+    environment.pop(
+        "CVA_OPENAI_REAL_QUALIFICATION_V113_CONTINUATION_APPROVAL", None
+    )
     return environment
 
 
@@ -610,8 +613,8 @@ def test_real_synthetic_qualification_dry_run_is_fixed_and_non_billable() -> Non
     )
     assert report["real_eligible_corpus_coverage"] == 18
     assert report["network_calls"] == report["billable_calls"] == 0
-    assert report["fake_transport_calls"] == 18
-    assert report["max_responses_requests"] == 19
+    assert report["fake_transport_calls"] == 7
+    assert report["max_responses_requests"] == 8
     assert report["gateway_retries"] == report["prompt_retries"] == 0
     assert report["sdk_retries"] == 0
     assert report["p10_calls"] == 0
@@ -619,7 +622,7 @@ def test_real_synthetic_qualification_dry_run_is_fixed_and_non_billable() -> Non
     assert report["fallback_calls"] == report["sol_calls"] == 0
     assert report["secret_read"] is False
     assert report["p01_v112_remediation_decision"] == (
-        "NOT_ACCEPTED_DRY_RUN_ONLY"
+        "PRIOR_ACCEPTANCE_REUSED_HASH_BOUND"
     )
     assert report["p01_v112_boundary"] == {
         "case_id": "oa-p01-injection-md",
@@ -627,7 +630,7 @@ def test_real_synthetic_qualification_dry_run_is_fixed_and_non_billable() -> Non
         "input_bundle_hash": eval_harness.P01_INJECTION_V112_INPUT_BUNDLE_HASH,
     }
     assert report["p02_v113_remediation_decision"] == (
-        "NOT_ACCEPTED_DRY_RUN_ONLY"
+        "PRIOR_ACCEPTANCE_REUSED_HASH_BOUND"
     )
     assert report["p02_v113_boundary"] == {
         "case_id": "oa-p02-happy-pdf",
@@ -635,10 +638,10 @@ def test_real_synthetic_qualification_dry_run_is_fixed_and_non_billable() -> Non
         "input_bundle_hash": eval_harness.P02_V113_INPUT_BUNDLE_HASH,
     }
     budget = report["budget"]
-    assert budget["no_cache_ceiling_usd"] == 0.293631
-    assert budget["full_cache_write_ceiling_usd"] == 0.31063875
-    assert budget["proposed_human_budget_usd"] == 0.32
-    assert budget["primary_request_count"] == 18
+    assert budget["no_cache_ceiling_usd"] == 0.1425684
+    assert budget["full_cache_write_ceiling_usd"] == 0.1512105
+    assert budget["proposed_human_budget_usd"] == 0.16
+    assert budget["primary_request_count"] == 7
     assert budget["p11_reserve_count"] == 1
     assert budget["p11_direct_case_count"] == 1
     assert budget["pricing_standard_short_context_usd_per_million"] == {
@@ -658,9 +661,15 @@ def test_real_synthetic_qualification_dry_run_is_fixed_and_non_billable() -> Non
     assert [row["case_id"] for row in report["cases"]] == list(
         eval_harness.QUALIFICATION_CASE_IDS
     )
-    by_case = {row["case_id"]: row for row in report["cases"]}
-    assert by_case["oa-p01-injection-md"]["prompt_version"] == "1.1.2"
-    assert by_case["oa-p02-happy-pdf"]["prompt_version"] == "1.1.3"
+    reused = {row["case_id"]: row for row in report["reused_real_evidence"]}
+    assert len(reused) == 11
+    assert reused["oa-p01-injection-md"]["prompt_version"] == "1.1.2"
+    assert reused["oa-p02-happy-pdf"]["prompt_version"] == "1.1.3"
+    assert all(
+        row["evidence_disposition"] == "REUSED_HASH_BOUND"
+        and row["status"] == "PASS"
+        for row in reused.values()
+    )
     assert all(row["status"] == "PASS" for row in report["cases"])
     assert all(row["model"] == "gpt-5.6-luna" for row in report["cases"])
     assert all(row["fallback_route_id"] is None for row in report["cases"])
@@ -687,7 +696,7 @@ def test_real_synthetic_qualification_requires_its_distinct_human_gate() -> None
 
     assert completed.returncode == 2
     assert json.loads(completed.stdout) == {
-        "code": "OPENAI_QUALIFICATION_APPROVAL_REQUIRED",
+        "code": "OPENAI_QUALIFICATION_V113_CONTINUATION_APPROVAL_REQUIRED",
         "network_calls": 0,
         "status": "BLOCKED",
     }
@@ -708,7 +717,7 @@ def test_qualification_p01_decision_is_bound_to_the_v112_hashes(
     ):
         eval_harness._qualification_material(
             eval_harness._load_cases(eval_harness.DEFAULT_MANIFEST),
-            route_cap_usd=0.32,
+            route_cap_usd=0.16,
         )
 
 
@@ -727,8 +736,22 @@ def test_qualification_p02_decision_is_bound_to_the_v113_hashes(
     ):
         eval_harness._qualification_material(
             eval_harness._load_cases(eval_harness.DEFAULT_MANIFEST),
-            route_cap_usd=0.32,
+            route_cap_usd=0.16,
         )
+
+
+def test_qualification_reused_real_evidence_blocks_manifest_outcome_drift() -> None:
+    cases = eval_harness._load_cases(eval_harness.DEFAULT_MANIFEST)
+    reused_case = next(
+        case for case in cases if case["case_id"] == "oa-p01-injection-md"
+    )
+    reused_case["expected"] = "VALID"
+
+    with pytest.raises(
+        eval_harness.OpenAIEvalBlocked,
+        match="OPENAI_QUALIFICATION_REUSED_EVIDENCE_DRIFT",
+    ):
+        eval_harness._qualification_material(cases, route_cap_usd=0.16)
 
 
 def test_qualification_preflight_blocks_low_or_excess_budget_before_secret(
@@ -737,7 +760,8 @@ def test_qualification_preflight_blocks_low_or_excess_budget_before_secret(
     cases = eval_harness._load_cases(eval_harness.DEFAULT_MANIFEST)
     monkeypatch.delenv("CVA_OPENAI_API_KEY", raising=False)
     monkeypatch.delenv(
-        "CVA_OPENAI_REAL_QUALIFICATION_V113_APPROVAL", raising=False
+        "CVA_OPENAI_REAL_QUALIFICATION_V113_CONTINUATION_APPROVAL",
+        raising=False,
     )
     monkeypatch.delenv(
         "CVA_OPENAI_P01_V112_REMEDIATION_DECISION", raising=False
@@ -752,7 +776,7 @@ def test_qualification_preflight_blocks_low_or_excess_budget_before_secret(
     ):
         asyncio.run(
             eval_harness._run_qualification_real(
-                cases, max_total_cost_usd=0.310
+                cases, max_total_cost_usd=0.151
             )
         )
     with pytest.raises(
@@ -761,7 +785,7 @@ def test_qualification_preflight_blocks_low_or_excess_budget_before_secret(
     ):
         asyncio.run(
             eval_harness._run_qualification_real(
-                cases, max_total_cost_usd=0.321
+                cases, max_total_cost_usd=0.161
             )
         )
     with pytest.raises(
@@ -770,7 +794,7 @@ def test_qualification_preflight_blocks_low_or_excess_budget_before_secret(
     ):
         asyncio.run(
             eval_harness._run_qualification_real(
-                cases, max_total_cost_usd=0.32
+                cases, max_total_cost_usd=0.16
             )
         )
     monkeypatch.setenv(
@@ -783,25 +807,29 @@ def test_qualification_preflight_blocks_low_or_excess_budget_before_secret(
     ):
         asyncio.run(
             eval_harness._run_qualification_real(
-                cases, max_total_cost_usd=0.32
+                cases, max_total_cost_usd=0.16
             )
         )
     monkeypatch.setenv(
         "CVA_OPENAI_P02_V113_REMEDIATION_DECISION",
         "OPENAI_P02_V113_REMEDIATION_ACCEPTED",
     )
-    with pytest.raises(
-        eval_harness.OpenAIEvalBlocked,
-        match="OPENAI_QUALIFICATION_APPROVAL_REQUIRED",
-    ):
-        asyncio.run(
-            eval_harness._run_qualification_real(
-                cases, max_total_cost_usd=0.32
-            )
-        )
     monkeypatch.setenv(
         "CVA_OPENAI_REAL_QUALIFICATION_V113_APPROVAL",
         "OPENAI_REAL_SYNTHETIC_QUALIFICATION_V113_APPROVED",
+    )
+    with pytest.raises(
+        eval_harness.OpenAIEvalBlocked,
+        match="OPENAI_QUALIFICATION_V113_CONTINUATION_APPROVAL_REQUIRED",
+    ):
+        asyncio.run(
+            eval_harness._run_qualification_real(
+                cases, max_total_cost_usd=0.16
+            )
+        )
+    monkeypatch.setenv(
+        "CVA_OPENAI_REAL_QUALIFICATION_V113_CONTINUATION_APPROVAL",
+        "OPENAI_REAL_SYNTHETIC_QUALIFICATION_V113_CONTINUATION_APPROVED",
     )
     with pytest.raises(
         eval_harness.OpenAIEvalBlocked,
@@ -809,7 +837,7 @@ def test_qualification_preflight_blocks_low_or_excess_budget_before_secret(
     ):
         asyncio.run(
             eval_harness._run_qualification_real(
-                cases, max_total_cost_usd=0.32
+                cases, max_total_cost_usd=0.16
             )
         )
 
@@ -871,8 +899,8 @@ def test_qualification_stops_after_one_governed_p11_even_when_repair_succeeds(
         "OPENAI_P02_V113_REMEDIATION_ACCEPTED",
     )
     monkeypatch.setenv(
-        "CVA_OPENAI_REAL_QUALIFICATION_V113_APPROVAL",
-        "OPENAI_REAL_SYNTHETIC_QUALIFICATION_V113_APPROVED",
+        "CVA_OPENAI_REAL_QUALIFICATION_V113_CONTINUATION_APPROVAL",
+        "OPENAI_REAL_SYNTHETIC_QUALIFICATION_V113_CONTINUATION_APPROVED",
     )
     monkeypatch.setenv(
         "CVA_OPENAI_API_KEY", "sk-project-synthetic-placeholder-not-a-real-key"
@@ -886,7 +914,7 @@ def test_qualification_stops_after_one_governed_p11_even_when_repair_succeeds(
 
     report = asyncio.run(
         eval_harness._run_qualification_real(
-            cases, max_total_cost_usd=0.32
+            cases, max_total_cost_usd=0.16
         )
     )
 
@@ -906,7 +934,7 @@ def test_qualification_stops_after_one_governed_p11_even_when_repair_succeeds(
     )
     assert row["repair_disposition"] == "P11_USED_STOP_POLICY"
     assert [call["prompt_id"] for call in row["calls"]] == [
-        "P01_ACTIVITY_SPEC_V1",
+        "P03_AMBIGUITY_TRIAGE_V1",
         "P11_SCHEMA_REPAIR_V1",
     ]
     serialized = json.dumps(report, ensure_ascii=False, sort_keys=True)
@@ -980,8 +1008,8 @@ def test_qualification_blocks_oversized_dynamic_p11_before_transport(
         "OPENAI_P02_V113_REMEDIATION_ACCEPTED",
     )
     monkeypatch.setenv(
-        "CVA_OPENAI_REAL_QUALIFICATION_V113_APPROVAL",
-        "OPENAI_REAL_SYNTHETIC_QUALIFICATION_V113_APPROVED",
+        "CVA_OPENAI_REAL_QUALIFICATION_V113_CONTINUATION_APPROVAL",
+        "OPENAI_REAL_SYNTHETIC_QUALIFICATION_V113_CONTINUATION_APPROVED",
     )
     monkeypatch.setenv(
         "CVA_OPENAI_API_KEY", "sk-project-synthetic-placeholder-not-a-real-key"
@@ -995,15 +1023,15 @@ def test_qualification_blocks_oversized_dynamic_p11_before_transport(
     report = asyncio.run(
         eval_harness._run_qualification_real(
             eval_harness._load_cases(eval_harness.DEFAULT_MANIFEST),
-            max_total_cost_usd=0.32,
+            max_total_cost_usd=0.16,
         )
     )
 
     assert late_invalid_adapter.calls == len(selected_cases) - 1
-    assert report["network_calls"] == report["billable_calls"] == 17
+    assert report["network_calls"] == report["billable_calls"] == 6
     assert report["p11_calls"] == 0
-    assert 0 < report["transport_reserved_full_cache_write_ceiling_usd"] <= 0.32
-    assert len(report["cases"]) == 17
+    assert 0 < report["transport_reserved_full_cache_write_ceiling_usd"] <= 0.16
+    assert len(report["cases"]) == 6
     assert all(row["status"] == "PASS" for row in report["cases"][:-1])
     row = report["cases"][-1]
     assert row["case_id"] == "oa-p09-happy-docx"
@@ -1078,6 +1106,9 @@ def test_p02_v113_recanary_dry_run_is_hash_bound_and_non_billable() -> None:
 def test_p02_v113_recanary_requires_fresh_decision_and_spend_gate(
     monkeypatch,
 ) -> None:
+    monkeypatch.setattr(
+        eval_harness, "P02_V113_RECANARY_CONSUMED", False
+    )
     cases = [
         case
         for case in eval_harness._load_cases(eval_harness.DEFAULT_MANIFEST)
@@ -1132,6 +1163,10 @@ def test_p02_v113_recanary_requires_fresh_decision_and_spend_gate(
 def test_p02_v113_recanary_fake_transport_proves_remediated_boundary(
     monkeypatch,
 ) -> None:
+    monkeypatch.setattr(
+        eval_harness, "P02_V113_RECANARY_CONSUMED", False
+    )
+
     class SafeP02Adapter:
         async def invoke(
             self, *, prompt_id: str, request: object, **_kwargs: object
@@ -1203,6 +1238,22 @@ def test_p02_v113_recanary_fake_transport_proves_remediated_boundary(
         "expected_outcome_status": "PASS",
     }
     assert all(row["controls"].values())
+
+
+def test_p02_v113_recanary_is_fail_closed_after_authorization_consumption() -> None:
+    cases = [
+        case
+        for case in eval_harness._load_cases(eval_harness.DEFAULT_MANIFEST)
+        if case["case_id"] == eval_harness.P02_V113_RECANARY_CASE_ID
+    ]
+
+    with pytest.raises(
+        eval_harness.OpenAIEvalBlocked,
+        match="OPENAI_P02_V113_RECANARY_ALREADY_CONSUMED",
+    ):
+        asyncio.run(
+            eval_harness._run_canary_real(cases, max_total_cost_usd=0.02)
+        )
 
 
 @pytest.mark.parametrize(
@@ -1714,8 +1765,8 @@ def test_qualification_context_failure_stops_after_first_case_without_p11(
         "OPENAI_P02_V113_REMEDIATION_ACCEPTED",
     )
     monkeypatch.setenv(
-        "CVA_OPENAI_REAL_QUALIFICATION_V113_APPROVAL",
-        "OPENAI_REAL_SYNTHETIC_QUALIFICATION_V113_APPROVED",
+        "CVA_OPENAI_REAL_QUALIFICATION_V113_CONTINUATION_APPROVAL",
+        "OPENAI_REAL_SYNTHETIC_QUALIFICATION_V113_CONTINUATION_APPROVED",
     )
     monkeypatch.setenv(
         "CVA_OPENAI_API_KEY", "sk-project-synthetic-placeholder-not-a-real-key"
@@ -1729,7 +1780,7 @@ def test_qualification_context_failure_stops_after_first_case_without_p11(
     report = asyncio.run(
         eval_harness._run_qualification_real(
             eval_harness._load_cases(eval_harness.DEFAULT_MANIFEST),
-            max_total_cost_usd=0.32,
+            max_total_cost_usd=0.16,
         )
     )
 
@@ -1738,9 +1789,9 @@ def test_qualification_context_failure_stops_after_first_case_without_p11(
     assert report["p11_calls"] == 0
     assert len(report["cases"]) == 1
     row = report["cases"][0]
-    assert row["case_id"] == "oa-p01-injection-md"
+    assert row["case_id"] == "oa-p03-happy-with-rubric-md"
     assert row["error_code"] == "MODEL_CONTEXT_NOT_ALLOWLISTED"
-    assert row["context_failure"]["code"] == "P01_ACTIVITY_ID_MISMATCH"
+    assert row["context_failure"]["code"] == "CONTEXT_INVARIANT_FAILED"
     assert row["validation"]["context_status"] == "FAIL"
     serialized = json.dumps(report, ensure_ascii=False, sort_keys=True)
     assert "ctx_private_value" not in serialized
