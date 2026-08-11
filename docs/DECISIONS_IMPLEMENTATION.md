@@ -842,3 +842,23 @@
   fuera de alcance.
 - **Relación:** D-059, D-060, D-061, ADR-033/ADR-034,
   `IMPLEMENTATION_STATUS.md`, `TEST_RESULTS.md` y `OPENAI_COST_BUDGETS.md`.
+
+## D-063 - Una ambigüedad P03 válida consume el gate y exige una decisión humana nueva
+
+- **Observación:** el único job de actividad del primer E2E real ejecutó P01,
+  P02 y P03 con Luna; las tres salidas fueron `SCHEMA_VALID`. P03 persistió un
+  reporte `blocked=true` con seis issues, cuatro bloqueantes, y el job terminó
+  `NEEDS_REVIEW`/`ASSIGNMENT_AMBIGUOUS`.
+- **Decisión:** `NEEDS_REVIEW` no se reinterpretará como éxito aunque la task
+  Cloud Run termine `EXECUTION_SUCCEEDED`. La cláusula `stop al primer ... job
+  no SUCCEEDED` detiene el recorrido antes de cualquier decisión P03, P04/P05,
+  submission o ejecución adicional.
+- **Frontera consumida:** hubo una ejecución, intento 1, 3/32 Responses y USD
+  0.01302445/0.90; P10/P11/Sol/fallback/retries fueron cero. El remanente de
+  presupuesto no transfiere autoridad a una reanudación.
+- **Continuación:** la UI `Guardar y reanudar blueprint` crea un nuevo job de
+  actividad. Seleccionar interpretaciones y lanzar ese job requiere decisión
+  docente y autorización nuevas, porque excede la frontera consumida de un
+  único job de actividad.
+- **Relación:** D-062, ADR-030/ADR-034, `REAL_MODEL_EVALS.md`,
+  `OPENAI_COST_BUDGETS.md` y `TEST_RESULTS.md`.

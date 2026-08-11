@@ -9,7 +9,28 @@ con IDs únicos y clasificación obligatoria
 `1.1.0`. P01, P03, P04 y P06-P08 conservan su versión individual `1.1.2`;
 P02 conserva `1.1.3`; P05/P11 usan `1.1.4`; P09 candidata usa `1.1.5`.
 
-## Resultado vigente — P11 directo v1.1.4 PASS; corpus real 18/18
+## Resultado vigente — E2E real detenido en P03 por decisión docente
+
+El primer E2E real autorizado atravesó la UI y ejecutó exclusivamente P01,
+P02 y P03 sobre el bundle sintético fijado. Las tres salidas pasaron schema y
+validación estructural; P03 devolvió un reporte válido pero bloqueado con seis
+issues, cuatro de ellos bloqueantes. El job quedó `NEEDS_REVIEW` y la secuencia
+se detuvo antes de P04/P05, tal como exigía el gate.
+
+| Frontera E2E | Resultado observado |
+|---|---|
+| P01 | Luna medium; `SCHEMA_VALID`; 2,791 input, 962 output; USD 0.00185200 |
+| P02 | Luna medium; `SCHEMA_VALID`; 3,613 input, 812 output; USD 0.00187750 |
+| P03 | Luna high; `SCHEMA_VALID`; 2,246 input, 7,278 output; USD 0.00929495; reporte `blocked=true` |
+| Agregado | 3 Responses; 8,650 input; 0 cached; 9,052 output; USD 0.01302445 |
+| Controles | attempt máximo 1; P10/P11/Sol/fallback/retry 0; ningún output o request ID retenido en claro |
+
+No se tomaron decisiones pedagógicas automáticamente. La actividad conserva
+la pantalla P03 y cualquier reanudación requiere un gate nuevo porque crea
+otro job de actividad. El corpus real de qualification 18/18 permanece válido,
+pero no sustituye este checkpoint humano del producto.
+
+## Historial — P11 directo v1.1.4 PASS; corpus real 18/18
 
 La única canary P11 directa v1.1.4 autorizada sobre `976aadc` terminó **PASS**
 `REPAIRED`. Provider schema, Pydantic, contexto y expected outcome pasaron; el

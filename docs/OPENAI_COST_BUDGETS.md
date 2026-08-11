@@ -37,6 +37,26 @@ envelope manual. Antes de llamar, el gateway calcula el peor caso usando el
 máximo output del prompt; si supera el presupuesto restante, no crea
 transporte.
 
+## Consumo del primer E2E real y remanente del gate
+
+La ejecución autorizada se detuvo en P03 después de tres Responses. El ledger
+durable observó USD 0.01302445 de costo real calculado y USD 0.03096205
+estimado. Frente al cap agregado USD 0.90 quedan USD 0.88697555 no consumidos,
+pero ese remanente no constituye autorización transferible: la frontera de
+exactamente un job de actividad quedó consumida.
+
+| Tramo | Responses | Costo real calculado |
+|---|---:|---:|
+| P01 actividad | 1 | USD 0.00185200 |
+| P02 rúbrica | 1 | USD 0.00187750 |
+| P03 ambigüedad | 1 | USD 0.00929495 |
+| Total ejecutado | **3/32** | **USD 0.01302445/0.90** |
+
+No hubo P11, retry, fallback, Sol, P10, edición P05 ni submission. Un futuro
+`Guardar y reanudar blueprint` crea un job nuevo y debe recalcular su propio
+ceiling y recibir una autorización humana nueva; no reutiliza el remanente por
+implicación.
+
 ## Presupuesto vigente del prompt pack 1.1.2
 
 El cambio de instrucciones P01 invalida la reutilización de evidencia real

@@ -2,7 +2,33 @@
 
 Fecha de corte: 2026-08-11 (America/Santiago).
 
-## Estado vigente — `OPENAI_REAL_SYNTHETIC_E2E_APPROVAL_REQUIRED` (2026-08-11)
+## Estado vigente — `OPENAI_REAL_SYNTHETIC_E2E_P03_DECISION_REQUIRED` (2026-08-11)
+
+La autorización del primer E2E real quedó consumida y se detuvo en su primer
+estado de dominio distinto de `SUCCEEDED`, tal como exigía el gate. La UI creó
+únicamente la actividad `act_ea5ebf2189f790692730` con `question_count=1` y
+los hashes exactos de `assignment.md` y `rubric.md` del bundle autorizado. El
+único job de actividad, `job_5319932b9b5e2fcb0d0c`, produjo una sola ejecución
+Cloud Run, `cva-worker-tj99w`; la tarea de infraestructura terminó
+`EXECUTION_SUCCEEDED`, intento 1 y `maxRetries=0`, pero P03 persistió el job y
+la actividad como `NEEDS_REVIEW` con `ASSIGNMENT_AMBIGUOUS`.
+
+P01, P02 y P03 terminaron `SCHEMA_VALID` con Luna y stage runs `SUCCEEDED`.
+Se observaron 3/32 Responses, 8,650 input, 0 cached, 9,052 output y USD
+0.01302445 de costo real calculado frente al cap agregado USD 0.90. P10, P11,
+Sol, fallback y retries fueron cero. P03 devolvió seis ambigüedades, cuatro
+bloqueantes; la UI no seleccionó ninguna interpretación. No se crearon
+blueprint, decisiones docentes, edición P05, submission ni otro job. Después
+de la parada quedaron cero jobs `QUEUED`/`RUNNING`, 24 ejecuciones históricas
+y cero builds activos.
+
+El candidato no es todavía `OPENAI_REAL_MANUAL_EVAL_READY`. Resolver P03
+requiere una decisión docente explícita y una autorización nueva: la acción UI
+crearía otro job de actividad y otra ejecución, fuera de la frontera ya
+consumida de exactamente un job de actividad y máximo tres ejecuciones. No se
+hicieron cambios de build, Terraform, IAM, secretos, imagen ni configuración.
+
+## Historial — `OPENAI_REAL_SYNTHETIC_E2E_APPROVAL_REQUIRED` (2026-08-11)
 
 El único submit autorizado para `b4ec283ff4af7e50e1435a6588293a94a8de4de4`
 creó el build `613270cf-bdfb-4b18-a423-35f68198f471` con la cuenta dedicada

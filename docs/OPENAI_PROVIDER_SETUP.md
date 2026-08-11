@@ -1,6 +1,19 @@
 # Setup gobernado del proveedor OpenAI
 
-## Estado vigente — P11 directo consumido; corpus real 18/18
+## Estado vigente — worker real desplegado; E2E detenido en P03
+
+Web permanece en mock y sin clave. Worker está desplegado en modo real sobre
+el digest inmutable `sha256:97960034f6c4c6c3b2967d186035f0940e481f9e2c9bf9df24213cd30d31aaeb`,
+lee únicamente `cva-openai-api-key` v2 y conserva P10 false, máximo USD 0.55,
+task/paralelismo 1/1 y `maxRetries=0`.
+
+El primer E2E real consumió una ejecución Cloud Run y tres Responses Luna.
+P01-P03 fueron estructuralmente válidos, pero P03 dejó el job de dominio en
+`NEEDS_REVIEW`; se detuvo sin reanudar, sin P05/submission y sin tocar build,
+Terraform, IAM o secretos. El siguiente gate exige una decisión docente P03 y
+autorización separada para el nuevo job de actividad que crea la UI.
+
+## Historial — P11 directo consumido; corpus real 18/18
 
 La canary P11 directa v1.1.4 autorizada sobre `976aadc` terminó PASS
 `REPAIRED`: schema provider, Pydantic, contexto y outcome PASS, target inmutable
@@ -16,9 +29,9 @@ La evidencia real vigente cubre 18/18 casos hash-bound y no conserva contenido
 del proveedor. El paso siguiente requiere gates nuevos y separados para
 build/digest, IAM/Terraform deploy y E2E sintético OpenAI real.
 
-Cloud conserva `CVA_MODEL_MODE=mock`, `CVA_P10_ENABLED=false`; ninguna clave
-está montada en web/worker y no se autorizó deploy, Terraform apply, IAM, datos
-reales ni main.
+En ese corte histórico, cloud conservaba `CVA_MODEL_MODE=mock` y ninguna clave
+estaba montada. Ese estado fue sustituido por el despliegue segregado descrito
+arriba: web mock, worker real y clave sólo en worker.
 
 ## Historial — P05 1.1.4 PASS y preparación de continuación v1.1.4
 

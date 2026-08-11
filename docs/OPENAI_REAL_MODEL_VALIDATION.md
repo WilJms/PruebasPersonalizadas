@@ -1,11 +1,25 @@
 # Validación del proveedor OpenAI real
 
-Fecha de corte: 2026-08-10. Estado: la canary P11 directa v1.1.4 autorizada
-sobre `976aadc` terminó PASS y quedó consumida. El total documentado sube a
-**28** Responses requests, todas con fixtures sintéticos. La evidencia real
-hash-bound cubre 18/18 casos y P0/P1 están cerrados.
+Fecha de corte: 2026-08-11. Estado: el primer E2E real se detuvo correctamente
+en P03 con `NEEDS_REVIEW`. El total documentado sube a **31** Responses
+requests, todas con fixtures sintéticos. La evidencia real hash-bound cubre
+18/18 casos y P0/P1 siguen cerrados; el producto conserva un gate humano P03.
 
-## Resultado vigente: P11 directo PASS y corpus real completo
+## Resultado vigente: tres llamadas E2E válidas y parada P03
+
+Sobre el SHA/digest desplegado autorizado, P01, P02 y P03 usaron Luna y
+terminaron `SCHEMA_VALID`, intento 1. Sus tres stage runs quedaron
+`SUCCEEDED`, versionados y hash-bound. P03 produjo un `AmbiguityReport` válido
+con `blocked=true`, seis issues y cuatro bloqueantes, por lo que el job durable
+quedó `NEEDS_REVIEW` con `ASSIGNMENT_AMBIGUOUS`.
+
+El agregado fue 8,650 input, 0 cached, 9,052 output, 82,288 ms y USD
+0.01302445. P10, P11, Sol, fallback y retries fueron cero. Se detuvo antes de
+P04/P05; no hubo decisión docente, blueprint, submission ni segunda ejecución.
+El resultado demuestra fail-closed y revisión humana efectiva, pero todavía
+no prueba el recorrido manual completo.
+
+## Historial: P11 directo PASS y corpus real completo
 
 P11 devolvió `REPAIRED` y pasó schema provider, Pydantic, contexto y expected
 outcome. Conservó el target e hizo exactamente el cambio estructural mínimo.

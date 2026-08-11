@@ -4,10 +4,30 @@ Fecha de corte documental: 2026-08-11 (America/Santiago; ejecución cloud hasta
 2026-08-11 UTC).
 
 Este archivo registra únicamente resultados observados. Las credenciales y
-capacidades no se registran. Todos los recorridos cloud E2 usaron modelo mock y
-P10 deshabilitado; las evaluaciones OpenAI dedicadas usaron exclusivamente
-fixtures sintéticos. Los resultados históricos E1 se conservan al final y no
-se presentan como evidencia del candidato E2.
+capacidades no se registran. Los recorridos cloud E2 históricos usaron mock; el
+primer E2E real del corte usa exclusivamente el fixture sintético autorizado y
+se detiene en P03. P10 permaneció deshabilitado en todos los casos. Los
+resultados históricos E1 se conservan al final y no se presentan como evidencia
+del candidato E2.
+
+## E2E OpenAI real detenido correctamente en P03 — 2026-08-11
+
+| Prueba o gate | Resultado observado |
+|---|---|
+| Corpus y configuración | bundle `sha256:e1b1642723113f83ab4e54b184ca22518176ccdf5fd6e6507a4ec359f8ee55a3`; hashes exactos de assignment/rubric; `question_count=1`; sólo Markdown |
+| Actividad/job | `act_ea5ebf2189f790692730`; único job `job_5319932b9b5e2fcb0d0c`; intento 1 |
+| Cloud Run | única ejecución `cva-worker-tj99w`; una task `SUCCEEDED`; contador 23→24; `maxRetries=0` |
+| Frontera real | P01/P02/P03 `SCHEMA_VALID`; stage runs versionados y hash-bound `SUCCEEDED`; job de dominio `NEEDS_REVIEW` en `AMBIGUITY_TRIAGE` |
+| Motivo de parada | `ASSIGNMENT_AMBIGUOUS`; seis issues, cuatro bloqueantes; ninguna opción o decisión persistida |
+| Responses/rutas | 3/32; Luna medium/medium/high; P10=0, P11=0, Sol=0, fallback=0, max attempt=1 |
+| Uso/costo | 8,650 input; 0 cached; 9,052 output; 82,288 ms agregados; USD 0.01302445 real y USD 0.03096205 estimado; cap USD 0.90 |
+| Efectos excluidos | blueprint=0, policy decisions=0, submissions=0, edición P05=0, jobs adicionales=0; cero jobs `QUEUED`/`RUNNING` al cierre |
+| Inmutabilidad | digest desplegado sin cambio; worker 1/1 y retries 0; último build sigue siendo el único build autorizado `613270cf…`, sin builds activos |
+
+La task de infraestructura fue exitosa, pero el job de dominio no fue
+`SUCCEEDED`; se aplicó literalmente `stop al primer ... job no SUCCEEDED`.
+No se pulsó `Guardar y reanudar blueprint`, porque esa acción crea un nuevo job
+de actividad y excedería la autorización consumida.
 
 ## Candidato OpenAI real construido y desplegado — 2026-08-11
 
