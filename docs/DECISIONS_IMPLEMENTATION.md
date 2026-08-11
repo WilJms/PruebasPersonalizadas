@@ -1050,3 +1050,24 @@
   está consumido y la evidencia vigente vuelve a 18/18.
 - **Relación:** D-068, D-069, ADR-030/ADR-034, `REAL_MODEL_EVALS.md`,
   `OPENAI_REAL_MODEL_VALIDATION.md` y `OPENAI_COST_BUDGETS.md`.
+
+## D-071 - El smoke del parser usa el mismo deadline acotado que producción
+
+- **Fuente:** el único build del SHA `523b2100c4190a8d7db0a7034e85cbd0b86eec81`,
+  `9e74ef7a-072b-4094-8dec-3368c0d6afa9`, pasó cuatro pasos completos y falló
+  en el smoke final porque el parser aislado agotó 5 s durante el arranque frío
+  del intérprete/libmagic.
+- **Decisión:** el smoke conserva `require_isolation=True`, libmagic, imagen
+  read-only, capabilities retiradas y `no-new-privileges`, pero usa 30 s: el
+  mismo default productivo validado por `Settings`, aún bajo el máximo de 120 s
+  y el límite CPU interno de 20 s. El deadline de 5 s no representaba runtime y
+  convertía contención del builder en falso negativo.
+- **Regresión:** la prueba de artefactos exige literalmente
+  `timeout_seconds=30` y rechaza `timeout_seconds=5`; YAML, Terraform y las 11
+  pruebas de deploy pasan localmente.
+- **Consumo fail-closed:** el build fallido no se reintenta ni publica. No hubo
+  tag/digest, plan, apply, job, E2E o Responses; Cloud Run conserva el digest
+  anterior y el plan vivo terminó `No changes`. Cualquier build posterior debe
+  pertenecer a un SHA nuevo después de CI verde.
+- **Relación:** D-059, D-060, D-069, ADR-033/ADR-034, `deploy/cloudbuild.yaml`,
+  `IMPLEMENTATION_STATUS.md` y `TEST_RESULTS.md`.

@@ -1,8 +1,9 @@
 # Validación del proveedor OpenAI real
 
 Fecha de corte: 2026-08-11. Estado: P04 1.1.8 y su P05 derivado pasaron una
-recanary acoplada nueva. La evidencia vigente vuelve a **18/18** y el siguiente
-checkpoint es build/deploy.
+recanary acoplada nueva. La evidencia vigente vuelve a **18/18**. El primer
+build posterior falló cerrado en un deadline de smoke ya remediado localmente;
+el siguiente checkpoint es validar un SHA nuevo y luego build/deploy.
 
 ## Resultado vigente: P04 v1.1.8→P05 v1.1.5 PASS
 
@@ -29,6 +30,14 @@ P10/P11/Sol/fallback/retries quedaron en cero. P04 output validado
 content-free tiene SHA-256
 `173169216efb15a0ed797d7297d553c38196219bde60f689dd0ba2a694de8ada`.
 El gate está consumido y `CURRENT_REAL_EVIDENCE` vuelve a 18/18.
+
+El SHA `523b2100c4190a8d7db0a7034e85cbd0b86eec81` pasó CI 7/7 en push y
+7/7 en PR. Su único Cloud Build,
+`9e74ef7a-072b-4094-8dec-3368c0d6afa9`, pasó backend/seguridad, Terraform,
+frontend y build local de imagen, pero el parser aislado del smoke agotó 5 s
+durante el arranque frío. Se detuvo sin retry, publicación, digest, plan,
+apply, jobs ni Responses. El smoke queda alineado al deadline productivo
+acotado de 30 s; la evidencia real 18/18 no cambia.
 
 ## Historial: 18/18 desplegado antes del stop fresco
 

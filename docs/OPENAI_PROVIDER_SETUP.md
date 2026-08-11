@@ -18,6 +18,12 @@ ruta privada anónima pasaron, y dos planes posteriores dieron `No changes`.
 No hubo jobs ni Responses durante el despliegue. La única frontera pendiente
 es el E2E sintético fresco con edición P05 durable y submission.
 
+El intento posterior de construir P04 1.1.8 desde `523b2100…` no modificó
+este estado. El build `9e74ef7a-072b-4094-8dec-3368c0d6afa9` falló en el smoke
+aislado antes de publicar, cuando el deadline de 5 s expiró con intérprete y
+libmagic fríos. No hubo digest, plan, apply, job ni Responses. El smoke queda
+alineado al timeout productivo acotado de 30 s y requiere un SHA nuevo.
+
 ## Historial — evidencia 18/18; deploy pendiente
 
 Web permanece mock/sin clave y worker real sobre

@@ -6,10 +6,28 @@ Fecha de corte documental: 2026-08-11 (America/Santiago; ejecución cloud hasta
 Este archivo registra únicamente resultados observados. Las credenciales y
 capacidades no se registran. Los recorridos cloud E2 históricos usaron mock;
 los E2E reales del corte usan exclusivamente fixtures sintéticos autorizados.
-El recorrido más reciente se detuvo en P05 `READY/REJECT`. P10 permaneció
-deshabilitado en todos los casos. Los
+El recorrido de producto más reciente se detuvo en P04 1.1.7 y la recanary
+P04 1.1.8→P05 1.1.5 posterior pasó. P10 permaneció deshabilitado en todos los
+casos. Los
 resultados históricos E1 se conservan al final y no se presentan como evidencia
 del candidato E2.
+
+## Cloud Build detenido por deadline inestable del smoke — 2026-08-11
+
+| Prueba o gate | Resultado observado |
+|---|---|
+| Fuente | SHA exacto `523b2100c4190a8d7db0a7034e85cbd0b86eec81`; worktree/upstream limpios; CI push 7/7 y PR 7/7 |
+| Build único | `9e74ef7a-072b-4094-8dec-3368c0d6afa9`; cuenta dedicada `cva-cloudbuild`; región `us-east1`; timeout 3600 s; `requestedVerifyOption=VERIFIED`; 0 retries |
+| Gates previos | backend 557 passed/16 skipped; deploy 11/11; seguridad 2/2; Terraform PASS; frontend 6 archivos/34 tests y build PASS; imagen local construida |
+| Fallo | paso final `smoke-runtime-locally`: readiness ya había pasado, pero `parse_in_subprocess(... timeout_seconds=5, require_isolation=True)` terminó `INGEST_PARSER_TIMEOUT` |
+| Stop | build `FAILURE`; no segundo submit/build, no publicación en Artifact Registry, no digest, no plan/apply, no job/E2E/Responses |
+| Estado externo | executions de `cva-worker` 29 antes/después; runtime continúa en `sha256:d31899535c76b08ee79163479530b044783b73956c6fe228a01a3e603008893d`; plan vivo `No changes` |
+| Causa | el smoke usaba el mínimo de validación de 5 s, distinto del deadline productivo acotado de 30 s, insuficiente para intérprete y libmagic fríos bajo contención |
+| Remediación local | smoke alineado a 30 s sin retirar aislamiento/libmagic/límites; regresión exige `timeout_seconds=30` y prohíbe 5; deploy 11/11, YAML, Terraform y diff PASS |
+
+El build fallido queda permanentemente consumido y no cuenta como imagen
+verificada. Sólo un SHA nuevo, después de regresión y CI, puede volver a entrar
+al gate build/digest/plan.
 
 ## P04 v1.1.8→P05 v1.1.5 PASS — 2026-08-11
 

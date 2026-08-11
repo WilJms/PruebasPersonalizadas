@@ -10,7 +10,7 @@ con IDs únicos y clasificación obligatoria
 conserva `1.1.3`; P05 usa `1.1.5`; P11 usa `1.1.4`; P09 usa `1.1.5`; P04
 usa `1.1.8`.
 
-## Resultado vigente — recanary v1.1.8 PASS; deploy pendiente
+## Resultado vigente — recanary v1.1.8 PASS; smoke de build remediado
 
 El E2E fresco del digest desplegado creó la actividad sintética
 `act_a2d0acdf5d948c365ca8`. P01-P03 y seis decisiones docentes durables pasaron;
@@ -31,6 +31,13 @@ Pydantic, contexto, outcome y controles acoplados pasaron; P10/P11/Sol/fallback
 y retries fueron cero. El gate queda consumido y la evidencia vigente vuelve a
 18/18. El siguiente paso es construir/desplegar el SHA que contenga la
 remediación; no se reutiliza el digest anterior.
+
+El primer SHA sellado con esa evidencia, `523b2100…`, tuvo CI 7/7 + 7/7 pero
+su único Cloud Build falló en el smoke final: el parser aislado agotó el límite
+de 5 s durante arranque frío. Los gates backend, Terraform, frontend e imagen
+habían pasado. El build no publicó digest ni abrió plan/apply y queda
+consumido. El smoke usa ahora el mismo deadline acotado de 30 s que producción;
+un SHA nuevo debe pasar regresión/CI antes de otro build.
 
 ```bash
 make openai-blueprint-v118-v115-recanary-dry-run

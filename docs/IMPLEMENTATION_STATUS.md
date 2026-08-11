@@ -2,7 +2,7 @@
 
 Fecha de corte: 2026-08-11 (America/Santiago).
 
-## Estado vigente — `OPENAI_REAL_REMEDIATION_DEPLOY_REQUIRED` (2026-08-11)
+## Estado vigente — `OPENAI_REAL_BUILD_SMOKE_REMEDIATION_REQUIRED` (2026-08-11)
 
 El E2E fresco sobre el digest desplegado se detuvo en P04 después de dos jobs,
 dos Cloud Run executions y cuatro Responses. P01-P03 pasaron y seis decisiones
@@ -24,8 +24,18 @@ content-free está ligado a
 `173169216efb15a0ed797d7297d553c38196219bde60f689dd0ba2a694de8ada`; el gate
 queda consumido y `CURRENT_REAL_EVIDENCE` vuelve a 18/18. La suite local pasa
 557 pruebas, con 16 skips PostgreSQL explícitos y una advertencia conocida; CI
-del SHA `6bf2e18…` terminó 7/7 verde en push y 7/7 verde en PR. Falta
-construir/desplegar un digest nuevo antes de repetir el E2E.
+del SHA `523b2100c4190a8d7db0a7034e85cbd0b86eec81` terminó 7/7 verde en push y
+7/7 verde en PR.
+
+El único Cloud Build de ese SHA,
+`9e74ef7a-072b-4094-8dec-3368c0d6afa9`, pasó contratos/backend/seguridad,
+Terraform, frontend y construcción local de imagen, pero falló cerrado en el
+smoke final: el parser aislado agotó los 5 s configurados mientras el
+intérprete/libmagic estaban fríos. La producción usa un límite acotado de 30 s;
+el smoke queda alineado a ese valor y una regresión impide volver a 5 s. La
+autorización/build quedó consumida, no se publicó tag/digest, no hubo plan ni
+apply, el contador de executions permaneció en 29 y Terraform confirmó
+`No changes`. Falta validar y construir un SHA nuevo antes de repetir el E2E.
 
 ## Historial — `OPENAI_REAL_MANUAL_EVAL_PENDING` (2026-08-11)
 

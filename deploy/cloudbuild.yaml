@@ -123,8 +123,11 @@ steps:
           "import requests; r=requests.get('http://127.0.0.1:8080/api/health', timeout=2); r.raise_for_status(); assert r.json()['status'] == 'ok'"
         docker exec "$${container}" python -c \
           "import requests; r=requests.get('http://127.0.0.1:8080/api/readiness', timeout=2); r.raise_for_status(); assert r.json() == {'status': 'ready'}"
+        # Match the cloud runtime's bounded parser deadline. Five seconds is
+        # below the production default and can expire while the isolated
+        # interpreter and libmagic are cold on a contended build worker.
         docker exec "$${container}" python -c \
-          'from pathlib import Path; from tempfile import TemporaryDirectory; from comprehension_verification.contracts import models as m; from comprehension_verification.parsers import SafeParserService; from comprehension_verification.parsers.sandbox import parse_in_subprocess; d=TemporaryDirectory(dir="/tmp"); p=Path(d.name)/"synthetic.txt"; p.write_text("contenido sintetico suficientemente largo\n", encoding="utf-8"); parsed=parse_in_subprocess(p, parser=SafeParserService(require_libmagic=True), tenant_id="tnt_synthetic", source_role=m.ArtifactRole.SUBMISSION, submission_id="sub_synthetic", declared_media_type="text/plain", timeout_seconds=5, require_isolation=True); assert parsed.mime_detector == "libmagic"; assert parsed.libmagic_media_type == "text/plain"; assert {x.tenant_id for x in parsed.evidence_units} == {"tnt_synthetic"}; d.cleanup()'
+          'from pathlib import Path; from tempfile import TemporaryDirectory; from comprehension_verification.contracts import models as m; from comprehension_verification.parsers import SafeParserService; from comprehension_verification.parsers.sandbox import parse_in_subprocess; d=TemporaryDirectory(dir="/tmp"); p=Path(d.name)/"synthetic.txt"; p.write_text("contenido sintetico suficientemente largo\n", encoding="utf-8"); parsed=parse_in_subprocess(p, parser=SafeParserService(require_libmagic=True), tenant_id="tnt_synthetic", source_role=m.ArtifactRole.SUBMISSION, submission_id="sub_synthetic", declared_media_type="text/plain", timeout_seconds=30, require_isolation=True); assert parsed.mime_detector == "libmagic"; assert parsed.libmagic_media_type == "text/plain"; assert {x.tenant_id for x in parsed.evidence_units} == {"tnt_synthetic"}; d.cleanup()'
 
 images:
   # Cloud Build publishes this tag only after every verification and smoke step

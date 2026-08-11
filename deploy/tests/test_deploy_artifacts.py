@@ -10,6 +10,7 @@ import subprocess
 import yaml
 
 from comprehension_verification.web.repository import Base
+from comprehension_verification.web.settings import Settings, WorkerSettings
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -220,10 +221,14 @@ def test_container_and_cloud_build_are_single_image_and_mock_safe() -> None:
         "--cap-drop ALL",
         "--security-opt no-new-privileges",
         "SafeParserService(require_libmagic=True)",
+        "timeout_seconds=30",
         "require_isolation=True",
         "parsed.mime_detector == \"libmagic\"",
     ):
         assert boundary in runtime_smoke
+    assert "timeout_seconds=5" not in runtime_smoke
+    assert Settings.model_fields["parser_timeout_seconds"].default == 30
+    assert WorkerSettings.model_fields["parser_timeout_seconds"].default == 30
 
     python_gate = "\n".join(steps["verify-contracts-backend-deploy-security"]["args"])
     assert "apk add --no-cache git libmagic make" in python_gate
