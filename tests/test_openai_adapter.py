@@ -34,6 +34,8 @@ from comprehension_verification.model_gateway import (
     GatewayTimeout,
     GatewayValidationError,
     ModelGateway,
+    OPENAI_DEFAULT_REQUEST_TIMEOUT_SECONDS,
+    OPENAI_GATEWAY_TIMEOUT_GRACE_SECONDS,
     OpenAIAdapterConfig,
     OpenAIResponsesAdapter,
     build_mock_request,
@@ -788,6 +790,9 @@ def test_official_sdk_client_is_pinned_with_automatic_retries_disabled() -> None
     assert adapter.client.timeout == 30
     assert "synthetic-placeholder" not in repr(adapter.client)
     assert openai.__version__ == OPENAI_SDK_VERSION == "2.53.0"
+    assert OpenAIAdapterConfig().request_timeout_seconds == 240.0
+    assert OPENAI_DEFAULT_REQUEST_TIMEOUT_SECONDS == 240.0
+    assert OPENAI_GATEWAY_TIMEOUT_GRACE_SECONDS == 5.0
 
     root = Path(__file__).resolve().parents[1]
     assert '"openai==2.53.0"' in (root / "pyproject.toml").read_text()

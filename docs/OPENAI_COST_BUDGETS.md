@@ -37,7 +37,7 @@ envelope manual. Antes de llamar, el gateway calcula el peor caso usando el
 máximo output del prompt; si supera el presupuesto restante, no crea
 transporte.
 
-## Consumo E2E P01-P05 y gates preparados P04/P05/P06
+## Consumo E2E P01-P05, gate timeout y recuperación P04/P05/P06
 
 El E2E más reciente consumió cinco Responses antes del stop P05, por un total
 calculado de **USD 0.03490275**. No hubo P10, P11, Sol, fallback ni retry.
@@ -56,15 +56,21 @@ P11. P04 debe pasar primero; sólo entonces su output validado se convierte en
 el input P05. El guard reserva full-cache-write antes de cada transporte y
 detiene la cadena si el segundo envelope no cabe en el remanente.
 
+La primera observación acoplada ya está consumida: P04 respondió y P05 agotó
+el timeout de 120 s. Usó 2/2 Responses, USD 0.00970075 de costo conocido y USD
+0.05106550 de charge conservador bajo cap USD 0.06; no habilita replay. La
+recuperación remediada conserva exactamente el mismo límite monetario y de
+requests, con timeout 240/245 s y retries cero.
+
 | Gate pendiente | Requests máximas | Ceiling full-cache-write | Cap |
 |---|---:|---:|---:|
-| P04 1.1.7 → P05 1.1.5 | 2 | USD 0.04988775 | USD 0.06 |
+| Recuperación P04 1.1.7 → P05 1.1.5 | 2 | USD 0.04988775 dry-run; reserva real dinámica ≤ cap | USD 0.06 |
 | P06 1.1.2 con decision lineage | 1 | USD 0.02336100 | USD 0.03 |
 | Agregado máximo, sin transferencia entre gates | **3** | **USD 0.07324875** | **USD 0.09** |
 
-Ambos dry-runs pasaron con 0 red/0 billable, retries 0 y P10/P11/Sol/fallback
-0. Los caps no son bolsas intercambiables: un stop o ahorro en un gate no
-autoriza repetirlo ni ampliar el otro.
+Los dry-runs pasan con 0 red/0 billable, retries 0 y P10/P11/Sol/fallback 0.
+Los caps no son bolsas intercambiables: el ahorro o stop del gate consumido no
+autoriza repetirlo ni ampliar la recuperación o P06.
 
 ## Historial — consumo del E2E real y remediación P04 v1.1.6
 

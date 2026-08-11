@@ -32,7 +32,12 @@ from .gateway import (
     TransientProviderError,
     ValidationPhase,
 )
-from .openai_adapter import OpenAIAdapterConfig, OpenAIResponsesAdapter
+from .openai_adapter import (
+    OPENAI_DEFAULT_REQUEST_TIMEOUT_SECONDS,
+    OPENAI_GATEWAY_TIMEOUT_GRACE_SECONDS,
+    OpenAIAdapterConfig,
+    OpenAIResponsesAdapter,
+)
 from .openai_routes import (
     LUNA_MODEL_ID,
     OPENAI_MAX_INPUT_TOKENS,
@@ -102,6 +107,8 @@ __all__ = [
     "ValidationPhase",
     "OpenAIAdapterConfig",
     "OpenAIResponsesAdapter",
+    "OPENAI_DEFAULT_REQUEST_TIMEOUT_SECONDS",
+    "OPENAI_GATEWAY_TIMEOUT_GRACE_SECONDS",
     "OPENAI_MODEL_BY_PROMPT",
     "OPENAI_MAX_INPUT_TOKENS",
     "OPENAI_P11_MAX_INPUT_TOKENS",

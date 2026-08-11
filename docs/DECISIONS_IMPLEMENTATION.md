@@ -919,9 +919,35 @@
   transportes fake, ceiling full-cache-write USD 0.04988775, cap USD 0.06,
   retries/P10/P11/Sol/fallback cero y stop al primer fallo. Una recanary P06
   separada, de una request y cap USD 0.03, cubre el nuevo lineage de decisiones.
-- **Evidencia vigente:** los hashes invalidados son P04, P05 y P06; por tanto
-  sólo 15/18 observaciones siguen vigentes hasta ejecutar los gates reales. El
-  mapa de 18/18 de D-059/D-064 queda explícitamente histórico.
+- **Evidencia en ese checkpoint:** los hashes invalidados eran P04, P05 y P06;
+  por tanto 15/18 observaciones seguían vigentes antes del gate real. El mapa
+  de 18/18 de D-059/D-064 quedó explícitamente histórico.
 - **Relación:** D-059, D-062, D-063, D-064, ADR-030/ADR-034,
+  `OPENAI_REAL_MODEL_VALIDATION.md`, `REAL_MODEL_EVALS.md` y
+  `OPENAI_COST_BUDGETS.md`.
+
+## D-066 - Un timeout consumido exige remediación y recuperación nueva, no replay
+
+- **Observación:** la recanary acoplada P04 1.1.7→P05 1.1.5 ejecutó
+  exactamente dos Responses. P04 terminó PASS `READY` con schema provider,
+  Pydantic, contexto y outcome PASS. P05 recibió ese output validado como
+  input exacto y terminó `MODEL_TIMEOUT` a 120,016 ms, coincidente con el
+  antiguo timeout del adapter de 120 s. No hubo retry, P10, P11, Sol o
+  fallback; el charge conservador fue USD 0.05106550 bajo cap USD 0.06.
+- **Consumo fail-closed:** la autorización original queda permanentemente
+  consumida. Su reporte content-free está ligado al SHA-256
+  `d0d27500adeee0b4b234a5ee65e3e642f9b85929cd689fc6f86beb87eee2de14`.
+  P04 se promueve como frontera real 1.1.7 y la evidencia vigente sube a
+  16/18; P05 y P06 permanecen pendientes.
+- **Causa y remediación:** el fallo pertenece a la frontera temporal del
+  transporte, no al contrato del modelo. El timeout SDK pasa a 240 s y el
+  timeout exterior del gateway a 245 s, conservando retries automáticos cero
+  y el límite validado de 5–300 s.
+- **Recuperación:** `store=false` impide recuperar el contenido P04 y, por
+  tanto, reconstruir la request P05 sólo desde hashes. Una P05 aislada no
+  probaría acoplamiento. La única recuperación válida repite P04→P05 bajo
+  opt-ins y constante de consumo distintos, máximo dos Responses, cap USD
+  0.06 y stop al primer fallo. P06 sigue bloqueado hasta el PASS completo.
+- **Relación:** D-053, D-064, D-065, ADR-005/ADR-034,
   `OPENAI_REAL_MODEL_VALIDATION.md`, `REAL_MODEL_EVALS.md` y
   `OPENAI_COST_BUDGETS.md`.

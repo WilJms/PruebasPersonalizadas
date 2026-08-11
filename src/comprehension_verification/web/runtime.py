@@ -12,6 +12,7 @@ from ..model_gateway import (
     ModelGateway,
     OpenAIAdapterConfig,
     OpenAIResponsesAdapter,
+    OPENAI_GATEWAY_TIMEOUT_GRACE_SECONDS,
     OPENAI_ROUTE_PROFILE_MAX_TRANSIENT_RETRIES,
     build_openai_cost_estimator,
     build_openai_routes,
@@ -157,7 +158,10 @@ def build_worker_runtime(
                 GatewayConfig(
                     mode=GatewayMode.REAL,
                     job_id=job_id,
-                    timeout_seconds=settings.openai_request_timeout_seconds + 5.0,
+                    timeout_seconds=(
+                        settings.openai_request_timeout_seconds
+                        + OPENAI_GATEWAY_TIMEOUT_GRACE_SECONDS
+                    ),
                     max_retries=OPENAI_ROUTE_PROFILE_MAX_TRANSIENT_RETRIES,
                     default_budget_usd=settings.max_job_cost_usd,
                 ),

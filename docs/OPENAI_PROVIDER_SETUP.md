@@ -1,6 +1,6 @@
 # Setup gobernado del proveedor OpenAI
 
-## Estado vigente — P04 1.1.7/P05 1.1.5 pendientes de recanary real
+## Estado vigente — recuperación P04→P05 por timeout pendiente
 
 Web permanece mock/sin clave y worker real sobre
 `sha256:9048f9da77fda2b5ab8d6a974d9b4b8b5a2b6a141062bcb36751b8516691e3ab`,
@@ -18,14 +18,19 @@ exigen fronteras hash-bound, cap y opt-ins distintos:
 
 ```text
 CVA_OPENAI_BLUEPRINT_V117_V115_REMEDIATION_DECISION
-CVA_OPENAI_BLUEPRINT_V117_V115_RECANARY_APPROVAL
+CVA_OPENAI_BLUEPRINT_V117_V115_TIMEOUT_REMEDIATION_DECISION
+CVA_OPENAI_BLUEPRINT_V117_V115_TIMEOUT_RECOVERY_APPROVAL
 CVA_OPENAI_P06_V112_DECISION_LINEAGE_RECANARY_APPROVAL
 ```
 
-El gate acoplado admite exactamente P04→P05, máximo dos Responses, cap USD
-0.06 y cero P10/P11/retries/fallback/Sol. P06 usa un gate independiente de una
-request y cap USD 0.03. Los dry-runs pasan; los gates reales no están
-consumidos. La evidencia vigente es 15/18.
+El gate acoplado original consumió exactamente P04→P05: P04 pasó y P05 agotó
+el antiguo timeout de 120 s. Se detuvo con 2/2 Responses, USD 0.05106550 de
+charge conservador bajo cap USD 0.06 y cero P10/P11/retries/fallback/Sol. Ese
+approval está cerrado permanentemente. El perfil remediado usa 240 s en SDK y
+245 s en gateway, y la recuperación exige los opt-ins distintos de arriba,
+máximo dos Responses y el mismo cap USD 0.06. P06 usa un gate independiente de
+una request/cap USD 0.03 y no se ejecuta antes del PASS acoplado. La evidencia
+vigente es 16/18.
 
 ## Historial — P04 v1.1.6 validado; redeploy pendiente
 

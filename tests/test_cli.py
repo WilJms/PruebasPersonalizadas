@@ -168,6 +168,7 @@ def test_real_smoke_versioned_entrypoint_reaches_fake_transport_once(
     assert payload["tools"] == []
     assert payload["store"] is False
     assert payload["background"] is False
+    assert payload["timeout"] == 240.0
     assert output == {
         "status": "PASS",
         "code": "OPENAI_REAL_SMOKE_PASS",

@@ -32,7 +32,10 @@ from .model_gateway import (
     GatewayError,
     GatewayMode,
     ModelGateway,
+    OPENAI_DEFAULT_REQUEST_TIMEOUT_SECONDS,
+    OPENAI_GATEWAY_TIMEOUT_GRACE_SECONDS,
     OPENAI_ROUTE_PROFILE_ID,
+    OpenAIAdapterConfig,
     OpenAIResponsesAdapter,
     build_mock_request,
     build_openai_cost_estimator,
@@ -795,11 +798,19 @@ def _real_provider_smoke(args: argparse.Namespace) -> int:
 
     prompt_id = "P11_SCHEMA_REPAIR_V1"
     routes = build_openai_routes(max_call_cost_usd=args.budget_usd)
-    adapter = OpenAIResponsesAdapter(api_key=SecretStr(api_key))
+    adapter = OpenAIResponsesAdapter(
+        api_key=SecretStr(api_key),
+        config=OpenAIAdapterConfig(
+            request_timeout_seconds=OPENAI_DEFAULT_REQUEST_TIMEOUT_SECONDS
+        ),
+    )
     gateway = ModelGateway(
         GatewayConfig(
             mode=GatewayMode.REAL,
-            timeout_seconds=125.0,
+            timeout_seconds=(
+                OPENAI_DEFAULT_REQUEST_TIMEOUT_SECONDS
+                + OPENAI_GATEWAY_TIMEOUT_GRACE_SECONDS
+            ),
             max_retries=0,
             default_budget_usd=args.budget_usd,
             job_id="job_openai_low_smoke",

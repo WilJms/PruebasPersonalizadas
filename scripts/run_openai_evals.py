@@ -30,7 +30,10 @@ from comprehension_verification.model_gateway import (
     GatewayMode,
     MockBehavior,
     ModelGateway,
+    OPENAI_DEFAULT_REQUEST_TIMEOUT_SECONDS,
+    OPENAI_GATEWAY_TIMEOUT_GRACE_SECONDS,
     OpenAIResponsesAdapter,
+    OpenAIAdapterConfig,
     OPENAI_ROUTE_PROFILE_MAX_TRANSIENT_RETRIES,
     OPENAI_ROUTE_PROFILE_ID,
     PROMPT_CONTRACTS,
@@ -167,11 +170,35 @@ BLUEPRINT_V117_V115_RECANARY_APPROVAL_VALUE = (
 )
 BLUEPRINT_V117_V115_RECANARY_HUMAN_BUDGET_USD = 0.06
 BLUEPRINT_V117_V115_MAX_RESPONSES_REQUESTS = 2
-# This gate is intentionally fresh. It is a coupled observation: P04 must pass
-# first and its exact validated output becomes the P05 request. A successful
-# real observation must flip this constant and persist its hash-only evidence
-# before the same executable can be released.
-BLUEPRINT_V117_V115_RECANARY_CONSUMED = False
+# The original coupled observation was consumed on 2026-08-11. P04 passed, but
+# P05 reached the former 120-second adapter timeout. The gate stopped after its
+# second request with no retry and can never be reopened by its old approval.
+BLUEPRINT_V117_V115_RECANARY_CONSUMED = True
+BLUEPRINT_V117_V115_TIMEOUT_REMEDIATION_DECISION_ENV = (
+    "CVA_OPENAI_BLUEPRINT_V117_V115_TIMEOUT_REMEDIATION_DECISION"
+)
+BLUEPRINT_V117_V115_TIMEOUT_REMEDIATION_DECISION_VALUE = (
+    "OPENAI_BLUEPRINT_V117_V115_TIMEOUT_REMEDIATION_ACCEPTED"
+)
+BLUEPRINT_V117_V115_TIMEOUT_RECOVERY_APPROVAL_ENV = (
+    "CVA_OPENAI_BLUEPRINT_V117_V115_TIMEOUT_RECOVERY_APPROVAL"
+)
+BLUEPRINT_V117_V115_TIMEOUT_RECOVERY_APPROVAL_VALUE = (
+    "OPENAI_BLUEPRINT_V117_V115_TIMEOUT_RECOVERY_APPROVED"
+)
+# The recovery is a new coupled observation after a code/configuration change,
+# not a retry. It must reconstruct P05 from a fresh validated P04 output because
+# store=false intentionally made the timed-out request content unrecoverable.
+BLUEPRINT_V117_V115_TIMEOUT_RECOVERY_CONSUMED = False
+BLUEPRINT_V117_REAL_P04_VALIDATED_OUTPUT_HASH = (
+    "sha256:66f577658a98873eb931e237d3692a8bceafe72823745dc0c2e41a1a693d6681"
+)
+BLUEPRINT_V117_REAL_P05_INPUT_BUNDLE_HASH = (
+    "sha256:cf4aeb8b44812a3d751611e4ecb399fc49f9686d07b58b1358752bac7a63c9e5"
+)
+BLUEPRINT_V117_V115_TIMEOUT_REPORT_SHA256 = (
+    "d0d27500adeee0b4b234a5ee65e3e642f9b85929cd689fc6f86beb87eee2de14"
+)
 P04_V117_PROMPT_HASH = (
     "sha256:48f9aa9962819a49661d917ee7b6f6fd37e31dc4ee4b11e446e76feb07108028"
 )
@@ -561,20 +588,35 @@ HISTORICAL_COMPLETE_REAL_EVIDENCE = MappingProxyType(
 HISTORICAL_COMPLETE_REAL_EVIDENCE_CASE_IDS = tuple(
     HISTORICAL_COMPLETE_REAL_EVIDENCE
 )
-# Fifteen boundaries remain current. The coupled gate above is the only path
-# that can restore P04/P05 qualification for this executable. P06 also changed
-# because its blueprint fixture now carries decision lineage; it requires its
-# own later evidence and is not smuggled into this two-request authorization.
+# Sixteen boundaries remain current. P04 1.1.7 passed before the coupled gate
+# stopped at the P05 adapter timeout. The timeout recovery is the only path that
+# can restore P05 qualification because the exact dynamic input was not stored.
+# P06 also changed because its blueprint fixture now carries decision lineage;
+# it requires its own later evidence and is not smuggled into either gate.
 CURRENT_REAL_EVIDENCE = MappingProxyType(
     {
-        case_id: boundary
-        for case_id, boundary in HISTORICAL_COMPLETE_REAL_EVIDENCE.items()
-        if case_id
-        not in {
-            P04_V116_RECANARY_CASE_ID,
-            P05_V114_RECANARY_CASE_ID,
-            "oa-p06-happy-docx",
-        }
+        **{
+            case_id: boundary
+            for case_id, boundary in HISTORICAL_COMPLETE_REAL_EVIDENCE.items()
+            if case_id
+            not in {
+                P04_V116_RECANARY_CASE_ID,
+                P05_V114_RECANARY_CASE_ID,
+                "oa-p06-happy-docx",
+            }
+        },
+        P04_V116_RECANARY_CASE_ID: _ReusedRealEvidenceBoundary(
+            prompt_id="P04_BLUEPRINT_BUILD_V1",
+            prompt_version="1.1.7",
+            prompt_hash=P04_V117_PROMPT_HASH,
+            input_bundle_hash=P04_V117_INPUT_BUNDLE_HASH,
+            expected="VALID",
+            behavior="happy",
+            defect_severity_if_failed="P1",
+            source_checkpoint=(
+                "OPENAI_BLUEPRINT_V117_V115_COUPLED_P04_PASS"
+            ),
+        ),
     }
 )
 CURRENT_REAL_EVIDENCE_CASE_IDS = tuple(CURRENT_REAL_EVIDENCE)
@@ -1377,7 +1419,14 @@ def _validated_reused_real_evidence(
     rows: list[dict[str, Any]] = []
     for case_id, boundary in boundaries.items():
         case = by_id[case_id]
-        request = _request_for_case(case)
+        request = (
+            _blueprint_recanary_p04_request(case)
+            if (
+                case_id == P04_V116_RECANARY_CASE_ID
+                and boundary.prompt_version == "1.1.7"
+            )
+            else _request_for_case(case)
+        )
         spec = prompt_spec(str(case["prompt_id"]))
         envelope = _envelope_for(str(case["prompt_id"]), request)
         input_bundle_hash = _content_hash(envelope)
@@ -1403,13 +1452,21 @@ def _validated_reused_real_evidence(
             raise OpenAIEvalBlocked(
                 "OPENAI_QUALIFICATION_P05_V114_BOUNDARY_DRIFT"
             )
-        if case_id == P04_V116_RECANARY_CASE_ID and (
-            spec.prompt_hash != P04_V116_PROMPT_HASH
-            or input_bundle_hash != P04_V116_INPUT_BUNDLE_HASH
-        ):
-            raise OpenAIEvalBlocked(
-                "OPENAI_QUALIFICATION_P04_V116_BOUNDARY_DRIFT"
-            )
+        if case_id == P04_V116_RECANARY_CASE_ID:
+            if boundary.prompt_version == "1.1.6" and (
+                spec.prompt_hash != P04_V116_PROMPT_HASH
+                or input_bundle_hash != P04_V116_INPUT_BUNDLE_HASH
+            ):
+                raise OpenAIEvalBlocked(
+                    "OPENAI_QUALIFICATION_P04_V116_BOUNDARY_DRIFT"
+                )
+            if boundary.prompt_version == "1.1.7" and (
+                spec.prompt_hash != P04_V117_PROMPT_HASH
+                or input_bundle_hash != P04_V117_INPUT_BUNDLE_HASH
+            ):
+                raise OpenAIEvalBlocked(
+                    "OPENAI_QUALIFICATION_P04_V117_BOUNDARY_DRIFT"
+                )
 
         observed_boundary = (
             case.get("prompt_id"),
@@ -1697,7 +1754,10 @@ def _qualification_gateway(
     return ModelGateway(
         GatewayConfig(
             mode=GatewayMode.REAL,
-            timeout_seconds=125,
+            timeout_seconds=(
+                OPENAI_DEFAULT_REQUEST_TIMEOUT_SECONDS
+                + OPENAI_GATEWAY_TIMEOUT_GRACE_SECONDS
+            ),
             max_retries=0,
             default_budget_usd=budget_usd,
             job_id=f"job_{material['case']['case_id']}_qualification",
@@ -1785,7 +1845,10 @@ def _canary_gateway(
     return ModelGateway(
         GatewayConfig(
             mode=GatewayMode.REAL,
-            timeout_seconds=125,
+            timeout_seconds=(
+                OPENAI_DEFAULT_REQUEST_TIMEOUT_SECONDS
+                + OPENAI_GATEWAY_TIMEOUT_GRACE_SECONDS
+            ),
             max_retries=0,
             default_budget_usd=budget_usd,
             job_id=f"job_{material['case']['case_id']}_canary",
@@ -1801,6 +1864,7 @@ def _blueprint_recanary_gateway(
     adapter: _CoupledBlueprintRequestGuard,
     *,
     budget_usd: float,
+    timeout_recovery: bool = False,
 ) -> ModelGateway:
     routes = build_openai_routes(max_call_cost_usd=budget_usd)
     coupled_routes = MappingProxyType(
@@ -1822,10 +1886,17 @@ def _blueprint_recanary_gateway(
     return ModelGateway(
         GatewayConfig(
             mode=GatewayMode.REAL,
-            timeout_seconds=125,
+            timeout_seconds=(
+                OPENAI_DEFAULT_REQUEST_TIMEOUT_SECONDS
+                + OPENAI_GATEWAY_TIMEOUT_GRACE_SECONDS
+            ),
             max_retries=0,
             default_budget_usd=budget_usd,
-            job_id="job_blueprint_v117_v115_recanary",
+            job_id=(
+                "job_blueprint_v117_v115_timeout_recovery"
+                if timeout_recovery
+                else "job_blueprint_v117_v115_recanary"
+            ),
         ),
         real_routes=coupled_routes,
         adapters={"openai": adapter},
@@ -3195,6 +3266,7 @@ def _blueprint_recanary_report(
     authorized_budget_usd: float,
     estimated_ceiling_usd: float,
     secret_read: bool,
+    timeout_recovery: bool = False,
 ) -> dict[str, Any]:
     simulated_actual_cost = sum(
         item.actual_cost_usd or 0.0 for item in guard.results
@@ -3212,7 +3284,11 @@ def _blueprint_recanary_report(
     is_real = mode.endswith("real")
     return {
         "mode": mode,
-        "evidence_gate": "BLUEPRINT_V117_V115_COUPLED_RECANARY",
+        "evidence_gate": (
+            "BLUEPRINT_V117_V115_TIMEOUT_RECOVERY"
+            if timeout_recovery
+            else "BLUEPRINT_V117_V115_COUPLED_RECANARY"
+        ),
         "prompt_pack_version": PROMPT_VERSION,
         "route_profile": OPENAI_ROUTE_PROFILE_ID,
         "classification": "SYNTHETIC_ONLY_NO_STUDENT_DATA",
@@ -3221,6 +3297,11 @@ def _blueprint_recanary_report(
             "P05_BLUEPRINT_REVIEW_V1",
         ],
         "stop_on_first_failure": True,
+        "request_timeout_seconds": OPENAI_DEFAULT_REQUEST_TIMEOUT_SECONDS,
+        "gateway_timeout_seconds": (
+            OPENAI_DEFAULT_REQUEST_TIMEOUT_SECONDS
+            + OPENAI_GATEWAY_TIMEOUT_GRACE_SECONDS
+        ),
         "estimated_ceiling_usd": round(estimated_ceiling_usd, 8),
         "authorized_budget_usd": authorized_budget_usd,
         "actual_cost_usd": (
@@ -3252,6 +3333,8 @@ def _blueprint_recanary_report(
 
 async def _run_blueprint_recanary_dry_run(
     cases: list[dict[str, Any]],
+    *,
+    timeout_recovery: bool = False,
 ) -> dict[str, Any]:
     p04_case, p05_case = _selected_blueprint_recanary_cases(cases)
     cap = BLUEPRINT_V117_V115_RECANARY_HUMAN_BUDGET_USD
@@ -3262,11 +3345,18 @@ async def _run_blueprint_recanary_dry_run(
     fake_responses.enqueue(p04_material["prompt_id"], p04_material["request"])
     adapter = _CoupledBlueprintRequestGuard(
         OpenAIResponsesAdapter(
-            client=_SyntheticCoupledClient(responses=fake_responses)
+            client=_SyntheticCoupledClient(responses=fake_responses),
+            config=OpenAIAdapterConfig(
+                request_timeout_seconds=OPENAI_DEFAULT_REQUEST_TIMEOUT_SECONDS
+            ),
         ),
         max_total_cost_usd=cap,
     )
-    gateway = _blueprint_recanary_gateway(adapter, budget_usd=cap)
+    gateway = _blueprint_recanary_gateway(
+        adapter,
+        budget_usd=cap,
+        timeout_recovery=timeout_recovery,
+    )
     p04_result = await gateway.invoke(
         p04_material["prompt_id"],
         p04_material["request"],
@@ -3352,26 +3442,48 @@ async def _run_blueprint_recanary_dry_run(
         ),
     ]
     return _blueprint_recanary_report(
-        mode="blueprint-recanary-dry-run",
+        mode=(
+            "blueprint-timeout-recovery-dry-run"
+            if timeout_recovery
+            else "blueprint-recanary-dry-run"
+        ),
         rows=rows,
         guard=adapter,
         authorized_budget_usd=cap,
         estimated_ceiling_usd=estimated_ceiling,
         secret_read=False,
+        timeout_recovery=timeout_recovery,
     )
 
 
 async def _run_blueprint_recanary_real(
-    cases: list[dict[str, Any]], *, max_total_cost_usd: float
+    cases: list[dict[str, Any]],
+    *,
+    max_total_cost_usd: float,
+    timeout_recovery: bool = False,
 ) -> dict[str, Any]:
     if max_total_cost_usd > BLUEPRINT_V117_V115_RECANARY_HUMAN_BUDGET_USD:
         raise OpenAIEvalBlocked(
             "OPENAI_BLUEPRINT_V117_V115_RECANARY_HUMAN_CAP_EXCEEDED"
         )
-    if BLUEPRINT_V117_V115_RECANARY_CONSUMED:
+    if timeout_recovery:
+        if not BLUEPRINT_V117_V115_RECANARY_CONSUMED:
+            raise OpenAIEvalBlocked(
+                "OPENAI_BLUEPRINT_V117_V115_ORIGINAL_GATE_NOT_CONSUMED"
+            )
+        if BLUEPRINT_V117_V115_TIMEOUT_RECOVERY_CONSUMED:
+            raise OpenAIEvalBlocked(
+                "OPENAI_BLUEPRINT_V117_V115_TIMEOUT_RECOVERY_ALREADY_CONSUMED"
+            )
+    elif BLUEPRINT_V117_V115_RECANARY_CONSUMED:
         raise OpenAIEvalBlocked(
             "OPENAI_BLUEPRINT_V117_V115_RECANARY_ALREADY_CONSUMED"
         )
+    mode = (
+        "blueprint-timeout-recovery-real"
+        if timeout_recovery
+        else "blueprint-recanary-real"
+    )
     p04_case, p05_case = _selected_blueprint_recanary_cases(cases)
     p04_material = _blueprint_recanary_p04_material(
         p04_case, route_cap_usd=max_total_cost_usd
@@ -3390,7 +3502,26 @@ async def _run_blueprint_recanary_real(
         raise OpenAIEvalBlocked(
             "OPENAI_BLUEPRINT_V117_V115_REMEDIATION_HUMAN_DECISION_REQUIRED"
         )
-    if (
+    if timeout_recovery:
+        if (
+            os.environ.get(
+                BLUEPRINT_V117_V115_TIMEOUT_REMEDIATION_DECISION_ENV
+            )
+            != BLUEPRINT_V117_V115_TIMEOUT_REMEDIATION_DECISION_VALUE
+        ):
+            raise OpenAIEvalBlocked(
+                "OPENAI_BLUEPRINT_V117_V115_TIMEOUT_REMEDIATION_DECISION_REQUIRED"
+            )
+        if (
+            os.environ.get(
+                BLUEPRINT_V117_V115_TIMEOUT_RECOVERY_APPROVAL_ENV
+            )
+            != BLUEPRINT_V117_V115_TIMEOUT_RECOVERY_APPROVAL_VALUE
+        ):
+            raise OpenAIEvalBlocked(
+                "OPENAI_BLUEPRINT_V117_V115_TIMEOUT_RECOVERY_APPROVAL_REQUIRED"
+            )
+    elif (
         os.environ.get(BLUEPRINT_V117_V115_RECANARY_APPROVAL_ENV)
         != BLUEPRINT_V117_V115_RECANARY_APPROVAL_VALUE
     ):
@@ -3401,11 +3532,18 @@ async def _run_blueprint_recanary_real(
     if not key:
         raise OpenAIEvalBlocked("OPENAI_CREDENTIALS_REQUIRED")
     adapter = _CoupledBlueprintRequestGuard(
-        OpenAIResponsesAdapter(api_key=SecretStr(key)),
+        OpenAIResponsesAdapter(
+            api_key=SecretStr(key),
+            config=OpenAIAdapterConfig(
+                request_timeout_seconds=OPENAI_DEFAULT_REQUEST_TIMEOUT_SECONDS
+            ),
+        ),
         max_total_cost_usd=max_total_cost_usd,
     )
     gateway = _blueprint_recanary_gateway(
-        adapter, budget_usd=max_total_cost_usd
+        adapter,
+        budget_usd=max_total_cost_usd,
+        timeout_recovery=timeout_recovery,
     )
     rows: list[dict[str, Any]] = []
     try:
@@ -3437,7 +3575,7 @@ async def _run_blueprint_recanary_real(
             )
         )
         return _blueprint_recanary_report(
-            mode="blueprint-recanary-real",
+            mode=mode,
             rows=rows,
             guard=adapter,
             authorized_budget_usd=max_total_cost_usd,
@@ -3445,6 +3583,7 @@ async def _run_blueprint_recanary_real(
                 adapter.reserved_full_cache_write_ceiling_usd
             ),
             secret_read=True,
+            timeout_recovery=timeout_recovery,
         )
     except AssertionError:
         rows.append(
@@ -3460,7 +3599,7 @@ async def _run_blueprint_recanary_real(
             )
         )
         return _blueprint_recanary_report(
-            mode="blueprint-recanary-real",
+            mode=mode,
             rows=rows,
             guard=adapter,
             authorized_budget_usd=max_total_cost_usd,
@@ -3468,6 +3607,7 @@ async def _run_blueprint_recanary_real(
                 adapter.reserved_full_cache_write_ceiling_usd
             ),
             secret_read=True,
+            timeout_recovery=timeout_recovery,
         )
     rows.append(
         _blueprint_recanary_pass_row(
@@ -3498,12 +3638,13 @@ async def _run_blueprint_recanary_real(
             )
         )
         return _blueprint_recanary_report(
-            mode="blueprint-recanary-real",
+            mode=mode,
             rows=rows,
             guard=adapter,
             authorized_budget_usd=max_total_cost_usd,
             estimated_ceiling_usd=estimated_ceiling,
             secret_read=True,
+            timeout_recovery=timeout_recovery,
         )
     try:
         p05_result = await gateway.invoke(
@@ -3566,12 +3707,13 @@ async def _run_blueprint_recanary_real(
     if adapter.request_attempts > BLUEPRINT_V117_V115_MAX_RESPONSES_REQUESTS:
         raise AssertionError("Blueprint recanary crossed its request boundary")
     return _blueprint_recanary_report(
-        mode="blueprint-recanary-real",
+        mode=mode,
         rows=rows,
         guard=adapter,
         authorized_budget_usd=max_total_cost_usd,
         estimated_ceiling_usd=estimated_ceiling,
         secret_read=True,
+        timeout_recovery=timeout_recovery,
     )
 
 
@@ -3831,7 +3973,10 @@ async def _run_real(
         gateway = ModelGateway(
             GatewayConfig(
                 mode=GatewayMode.REAL,
-                timeout_seconds=125,
+                timeout_seconds=(
+                    OPENAI_DEFAULT_REQUEST_TIMEOUT_SECONDS
+                    + OPENAI_GATEWAY_TIMEOUT_GRACE_SECONDS
+                ),
                 max_retries=OPENAI_ROUTE_PROFILE_MAX_TRANSIENT_RETRIES,
                 default_budget_usd=remaining_budget,
                 job_id=f"job_{case['case_id']}",
@@ -4628,6 +4773,8 @@ def main() -> int:
             "canary-real",
             "blueprint-recanary-dry-run",
             "blueprint-recanary-real",
+            "blueprint-timeout-recovery-dry-run",
+            "blueprint-timeout-recovery-real",
             "qualification-dry-run",
             "qualification-real",
         ),
@@ -4648,6 +4795,8 @@ def main() -> int:
     if args.mode in {
         "blueprint-recanary-dry-run",
         "blueprint-recanary-real",
+        "blueprint-timeout-recovery-dry-run",
+        "blueprint-timeout-recovery-real",
         "qualification-dry-run",
         "qualification-real",
     } and args.case_id:
@@ -4690,6 +4839,7 @@ def main() -> int:
         "real",
         "canary-real",
         "blueprint-recanary-real",
+        "blueprint-timeout-recovery-real",
         "qualification-real",
     } and (
         not args.allow_billable or args.max_total_cost_usd <= 0
@@ -4718,8 +4868,15 @@ def main() -> int:
                 code = "OPENAI_P11_V114_DIRECT_APPROVAL_REQUIRED"
             else:
                 code = "OPENAI_LUNA_CANARY_APPROVAL_REQUIRED"
-        elif args.mode == "blueprint-recanary-real":
-            code = "OPENAI_BLUEPRINT_V117_V115_RECANARY_APPROVAL_REQUIRED"
+        elif args.mode in {
+            "blueprint-recanary-real",
+            "blueprint-timeout-recovery-real",
+        }:
+            code = (
+                "OPENAI_BLUEPRINT_V117_V115_TIMEOUT_RECOVERY_APPROVAL_REQUIRED"
+                if args.mode == "blueprint-timeout-recovery-real"
+                else "OPENAI_BLUEPRINT_V117_V115_RECANARY_APPROVAL_REQUIRED"
+            )
         elif args.mode == "qualification-real":
             code = (
                 "OPENAI_QUALIFICATION_V114_CONTINUATION_ALREADY_CONSUMED"
@@ -4755,6 +4912,16 @@ def main() -> int:
         elif args.mode == "blueprint-recanary-real":
             coroutine = _run_blueprint_recanary_real(
                 cases, max_total_cost_usd=args.max_total_cost_usd
+            )
+        elif args.mode == "blueprint-timeout-recovery-dry-run":
+            coroutine = _run_blueprint_recanary_dry_run(
+                cases, timeout_recovery=True
+            )
+        elif args.mode == "blueprint-timeout-recovery-real":
+            coroutine = _run_blueprint_recanary_real(
+                cases,
+                max_total_cost_usd=args.max_total_cost_usd,
+                timeout_recovery=True,
             )
         elif args.mode == "qualification-dry-run":
             coroutine = _run_qualification_dry_run(cases)

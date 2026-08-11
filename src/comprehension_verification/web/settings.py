@@ -10,6 +10,8 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 from sqlalchemy.engine import make_url
 from sqlalchemy.exc import ArgumentError
 
+from ..model_gateway import OPENAI_DEFAULT_REQUEST_TIMEOUT_SECONDS
+
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
@@ -152,7 +154,11 @@ class WorkerSettings(BaseSettings):
     model_mode: Literal["mock", "real"] = "mock"
     p10_enabled: bool = False
     openai_api_key: SecretStr | None = None
-    openai_request_timeout_seconds: float = Field(default=120.0, ge=5.0, le=300.0)
+    openai_request_timeout_seconds: float = Field(
+        default=OPENAI_DEFAULT_REQUEST_TIMEOUT_SECONDS,
+        ge=5.0,
+        le=300.0,
+    )
 
     r2_endpoint_url: str | None = None
     r2_bucket: str | None = None

@@ -53,11 +53,13 @@ from comprehension_verification.model_gateway.registry import prompt_spec
 
 
 OPENAI_SDK_VERSION = "2.53.0"
+OPENAI_DEFAULT_REQUEST_TIMEOUT_SECONDS = 240.0
+OPENAI_GATEWAY_TIMEOUT_GRACE_SECONDS = 5.0
 
 
 @dataclass(frozen=True, slots=True)
 class OpenAIAdapterConfig:
-    request_timeout_seconds: float = 120.0
+    request_timeout_seconds: float = OPENAI_DEFAULT_REQUEST_TIMEOUT_SECONDS
 
     def __post_init__(self) -> None:
         if not 5.0 <= self.request_timeout_seconds <= 300.0:

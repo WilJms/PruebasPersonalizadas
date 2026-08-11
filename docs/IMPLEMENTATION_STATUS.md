@@ -2,7 +2,7 @@
 
 Fecha de corte: 2026-08-11 (America/Santiago).
 
-## Estado vigente — `OPENAI_REAL_BLUEPRINT_V117_V115_RECANARY_REQUIRED` (2026-08-11)
+## Estado vigente — `OPENAI_REAL_BLUEPRINT_TIMEOUT_RECOVERY_REQUIRED` (2026-08-11)
 
 El candidato `dfd102d85816de30b3b082777268388061f83585` fue construido por
 Cloud Build `78a7c1f4-b857-472b-b210-9d56e638190a`, verificado y desplegado
@@ -34,15 +34,31 @@ P04→P05 dry-run pasa con dos transportes fake, hashes
 `sha256:48f9aa99…`/`sha256:e2f944b4…` para P04 y
 `sha256:d5f35e82…`/`sha256:022bcdd3…` para P05 derivado, ceiling USD
 0.04988775 y cap USD 0.06. P06 decision-lineage también pasa dry-run, una
-request, ceiling USD 0.023361 y cap USD 0.03. Ambos gates reales siguen sin
-consumir; la evidencia vigente es 15/18 (P04/P05/P06 pendientes).
+request, ceiling USD 0.023361 y cap USD 0.03.
 
-La regresión local completa pasa con 549 pruebas backend, 16 skips PostgreSQL
-explícitos, una advertencia conocida y 80% de cobertura; frontend, deploy,
-seguridad, Docker, Terraform, contratos, fixtures, OpenAPI y secretos también
-están verdes. Este estado no es `OPENAI_REAL_MANUAL_EVAL_READY`. Faltan CI, las
-dos recanaries reales gobernadas, build/deploy del nuevo SHA y un E2E fresco
-que complete una edición P05 durable y el pipeline de submission.
+La observación real acoplada quedó consumida y se detuvo correctamente en P05:
+P04 1.1.7 terminó PASS `READY` con schema provider/Pydantic/contexto/outcome
+PASS, 4,570 input, 4,567 cache-write, 7,132 output, 5,094 reasoning, 56,949 ms
+y USD 0.00970075. Su output validado quedó ligado a
+`sha256:66f57765…`. P05 recibió exactamente ese output, pero alcanzó el límite
+interno de 120 s a los 120,016 ms y terminó `MODEL_TIMEOUT`. Fueron exactamente
+2/2 Responses, sin retry/P10/P11/Sol/fallback; el charge conservador agregado
+fue USD 0.05106550 bajo cap USD 0.06. El reporte content-free tiene SHA-256
+`d0d27500adeee0b4b234a5ee65e3e642f9b85929cd689fc6f86beb87eee2de14`.
+
+P04 eleva la evidencia vigente a 16/18; P05 y P06 siguen pendientes. Como
+`store=false` impide reconstruir el input dinámico de P05 desde contenido, no
+se permite un replay aislado. La remediación eleva el timeout SDK a 240 s y el
+gateway a 245 s, conserva retries cero y crea un gate acoplado de recuperación
+distinto, también de máximo dos Responses y cap USD 0.06. P06 permanece
+bloqueado hasta que esa cadena complete PASS.
+
+La regresión local completa pasa con 551 pruebas backend, 16 skips
+PostgreSQL explícitos, una advertencia conocida y 80% de cobertura; el CI del
+SHA `49e2d37…` terminó 7/7 verde. Este estado no es
+`OPENAI_REAL_MANUAL_EVAL_READY`. Faltan validar y publicar la remediación de
+timeout, completar la recuperación P04→P05 y P06 reales, construir/desplegar
+el nuevo SHA y ejecutar un E2E fresco con edición P05 durable y submission.
 
 ## Historial — `OPENAI_REAL_P04_V116_REMEDIATION_DEPLOY_REQUIRED` (2026-08-11)
 

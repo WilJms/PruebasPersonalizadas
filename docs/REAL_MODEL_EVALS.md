@@ -10,7 +10,7 @@ con IDs únicos y clasificación obligatoria
 conserva `1.1.3`; P05 usa `1.1.5`; P11 usa `1.1.4`; P09 usa `1.1.5`; P04
 usa `1.1.7`.
 
-## Resultado vigente — recanary acoplada P04 1.1.7/P05 1.1.5 preparada
+## Resultado vigente — P04 PASS y recuperación P05 por timeout preparada
 
 El E2E desplegado sobre `dfd102d…` ejecutó P01-P05 en dos jobs. P03 requirió
 tres decisiones recomendadas; P04 persistió un blueprint `READY`; P05 devolvió
@@ -22,20 +22,26 @@ P04/P05 con el catálogo independiente de N de ADR-030 y añade validación de
 cobertura fuente y factibilidad exacta-N. La nueva compuerta no prueba P04 y
 P05 por separado: usa el output validado de P04 como input exacto de P05.
 
-| Preparación content-free | Resultado |
+| Preparación/evidencia content-free | Resultado |
 |---|---|
 | Dry-run P04→P05 | PASS; 2 fake/0 red/0 billable; ambos READY; P05 no REJECT, 0 critical FAIL |
 | Presupuesto | full-cache-write USD 0.04988775; cap USD 0.06; máximo 2 Responses |
 | Fronteras | P04 `sha256:48f9aa99…`/`sha256:e2f944b4…`; P05 `sha256:d5f35e82…`/input derivado `sha256:022bcdd3…` |
 | Controles | stop primer fallo; retries/P10/P11/Sol/fallback 0; decisiones autocontenidas, cobertura conceptual y exact-N |
 | P06 separado | PASS dry-run; una fake Response; ceiling USD 0.023361/cap USD 0.03 |
+| Gate real consumido | P04 PASS `READY`; P05 `MODEL_TIMEOUT` a 120,016 ms; 2/2 Responses; charge USD 0.05106550/cap USD 0.06 |
+| Timeout remediado | SDK 240 s, gateway 245 s, retries 0; recuperación con opt-ins/consumo distintos y la misma frontera máxima 2/USD 0.06 |
 
-El cambio de lineage invalida P06 además de P04/P05. Por ello
-`CURRENT_REAL_EVIDENCE` contiene 15/18 casos; el mapa anterior de 18/18 se
-conserva sólo como historia. Los dos gates reales permanecen sin consumir.
+P04 1.1.7 pasa a `CURRENT_REAL_EVIDENCE`, que contiene 16/18 casos. P05 sigue
+pendiente y P06 continúa invalidado por el nuevo lineage; el mapa anterior de
+18/18 se conserva sólo como historia. La recanary original está consumida. El
+payload dinámico P05 no puede reconstruirse después de `store=false`, así que
+la única recuperación válida repite P04→P05 bajo un gate nuevo; P06 queda
+bloqueado hasta que esa cadena pase.
 
 ```bash
 make openai-blueprint-v117-v115-recanary-dry-run
+make openai-blueprint-v117-v115-timeout-recovery-dry-run
 make openai-p06-v112-decision-lineage-recanary-dry-run
 ```
 

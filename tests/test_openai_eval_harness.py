@@ -44,6 +44,13 @@ def _safe_environment() -> dict[str, str]:
         "CVA_OPENAI_BLUEPRINT_V117_V115_RECANARY_APPROVAL", None
     )
     environment.pop(
+        "CVA_OPENAI_BLUEPRINT_V117_V115_TIMEOUT_REMEDIATION_DECISION",
+        None,
+    )
+    environment.pop(
+        "CVA_OPENAI_BLUEPRINT_V117_V115_TIMEOUT_RECOVERY_APPROVAL", None
+    )
+    environment.pop(
         "CVA_OPENAI_P06_V112_DECISION_LINEAGE_RECANARY_APPROVAL", None
     )
     environment.pop("CVA_OPENAI_P09_V115_REMEDIATION_DECISION", None)
@@ -1894,6 +1901,8 @@ def test_blueprint_v117_v115_coupled_dry_run_is_hash_bound_and_non_billable(
     assert report["secret_read"] is False
     assert report["max_responses_requests"] == 2
     assert report["stop_on_first_failure"] is True
+    assert report["request_timeout_seconds"] == 240.0
+    assert report["gateway_timeout_seconds"] == 245.0
     assert report["estimated_ceiling_usd"] == 0.04988775
     assert report["authorized_budget_usd"] == 0.06
     assert report["p10_calls"] == report["p11_calls"] == 0
@@ -1989,6 +1998,128 @@ def test_blueprint_v117_v115_real_requires_decision_approval_and_key(
                 cases, max_total_cost_usd=0.061
             )
         )
+
+
+def test_blueprint_v117_v115_timeout_recovery_is_distinct_and_fail_closed(
+    monkeypatch,
+) -> None:
+    cases = eval_harness._load_cases(eval_harness.DEFAULT_MANIFEST)
+    monkeypatch.setattr(
+        eval_harness, "BLUEPRINT_V117_V115_RECANARY_CONSUMED", False
+    )
+    monkeypatch.setattr(
+        eval_harness,
+        "BLUEPRINT_V117_V115_TIMEOUT_RECOVERY_CONSUMED",
+        False,
+    )
+    with pytest.raises(
+        eval_harness.OpenAIEvalBlocked,
+        match="OPENAI_BLUEPRINT_V117_V115_ORIGINAL_GATE_NOT_CONSUMED",
+    ):
+        asyncio.run(
+            eval_harness._run_blueprint_recanary_real(
+                cases,
+                max_total_cost_usd=0.06,
+                timeout_recovery=True,
+            )
+        )
+
+    monkeypatch.setattr(
+        eval_harness, "BLUEPRINT_V117_V115_RECANARY_CONSUMED", True
+    )
+    monkeypatch.setenv(
+        eval_harness.BLUEPRINT_V117_V115_REMEDIATION_DECISION_ENV,
+        eval_harness.BLUEPRINT_V117_V115_REMEDIATION_DECISION_VALUE,
+    )
+    with pytest.raises(
+        eval_harness.OpenAIEvalBlocked,
+        match=(
+            "OPENAI_BLUEPRINT_V117_V115_TIMEOUT_REMEDIATION_DECISION_REQUIRED"
+        ),
+    ):
+        asyncio.run(
+            eval_harness._run_blueprint_recanary_real(
+                cases,
+                max_total_cost_usd=0.06,
+                timeout_recovery=True,
+            )
+        )
+
+    monkeypatch.setenv(
+        eval_harness.BLUEPRINT_V117_V115_TIMEOUT_REMEDIATION_DECISION_ENV,
+        eval_harness.BLUEPRINT_V117_V115_TIMEOUT_REMEDIATION_DECISION_VALUE,
+    )
+    with pytest.raises(
+        eval_harness.OpenAIEvalBlocked,
+        match="OPENAI_BLUEPRINT_V117_V115_TIMEOUT_RECOVERY_APPROVAL_REQUIRED",
+    ):
+        asyncio.run(
+            eval_harness._run_blueprint_recanary_real(
+                cases,
+                max_total_cost_usd=0.06,
+                timeout_recovery=True,
+            )
+        )
+
+    monkeypatch.setenv(
+        eval_harness.BLUEPRINT_V117_V115_TIMEOUT_RECOVERY_APPROVAL_ENV,
+        eval_harness.BLUEPRINT_V117_V115_TIMEOUT_RECOVERY_APPROVAL_VALUE,
+    )
+    with pytest.raises(
+        eval_harness.OpenAIEvalBlocked,
+        match="OPENAI_CREDENTIALS_REQUIRED",
+    ):
+        asyncio.run(
+            eval_harness._run_blueprint_recanary_real(
+                cases,
+                max_total_cost_usd=0.06,
+                timeout_recovery=True,
+            )
+        )
+
+    monkeypatch.setattr(
+        eval_harness,
+        "BLUEPRINT_V117_V115_TIMEOUT_RECOVERY_CONSUMED",
+        True,
+    )
+    with pytest.raises(
+        eval_harness.OpenAIEvalBlocked,
+        match="OPENAI_BLUEPRINT_V117_V115_TIMEOUT_RECOVERY_ALREADY_CONSUMED",
+    ):
+        asyncio.run(
+            eval_harness._run_blueprint_recanary_real(
+                cases,
+                max_total_cost_usd=0.06,
+                timeout_recovery=True,
+            )
+        )
+
+
+def test_blueprint_v117_v115_timeout_recovery_dry_run_is_non_billable() -> None:
+    completed = subprocess.run(
+        [
+            "make",
+            "openai-blueprint-v117-v115-timeout-recovery-dry-run",
+            f"PYTHON={sys.executable}",
+        ],
+        cwd=ROOT,
+        env=_safe_environment(),
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    report = json.loads(completed.stdout)
+    assert report["status"] == "PASS"
+    assert report["mode"] == "blueprint-timeout-recovery-dry-run"
+    assert report["evidence_gate"] == "BLUEPRINT_V117_V115_TIMEOUT_RECOVERY"
+    assert report["request_timeout_seconds"] == 240.0
+    assert report["gateway_timeout_seconds"] == 245.0
+    assert report["network_calls"] == report["billable_calls"] == 0
+    assert report["fake_transport_calls"] == 2
+    assert report["max_responses_requests"] == 2
+    assert report["gateway_retries"] == report["sdk_retries"] == 0
+    assert [row["status"] for row in report["cases"]] == ["PASS", "PASS"]
 
 
 def test_blueprint_v117_v115_fake_real_transport_proves_exact_chain(
@@ -2150,7 +2281,7 @@ def test_blueprint_v117_v115_consumption_and_hash_drift_fail_closed(
         asyncio.run(eval_harness._run_blueprint_recanary_dry_run(cases))
 
 
-def test_current_real_evidence_is_explicitly_fifteen_of_eighteen() -> None:
+def test_current_real_evidence_is_explicitly_sixteen_of_eighteen() -> None:
     by_id = {
         case["case_id"]: case
         for case in eval_harness._load_cases(eval_harness.DEFAULT_MANIFEST)
@@ -2160,13 +2291,18 @@ def test_current_real_evidence_is_explicitly_fifteen_of_eighteen() -> None:
         boundaries=eval_harness.CURRENT_REAL_EVIDENCE,
     )
 
-    assert len(rows) == 15
+    assert len(rows) == 16
     assert tuple(row["case_id"] for row in rows) == (
         eval_harness.CURRENT_REAL_EVIDENCE_CASE_IDS
     )
-    assert eval_harness.P04_V116_RECANARY_CASE_ID not in {
-        row["case_id"] for row in rows
-    }
+    p04 = next(
+        row
+        for row in rows
+        if row["case_id"] == eval_harness.P04_V116_RECANARY_CASE_ID
+    )
+    assert p04["prompt_version"] == "1.1.7"
+    assert p04["prompt_hash"] == eval_harness.P04_V117_PROMPT_HASH
+    assert p04["input_bundle_hash"] == eval_harness.P04_V117_INPUT_BUNDLE_HASH
     assert eval_harness.P05_V114_RECANARY_CASE_ID not in {
         row["case_id"] for row in rows
     }

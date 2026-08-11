@@ -1,12 +1,11 @@
 # Validación del proveedor OpenAI real
 
-Fecha de corte: 2026-08-11. Estado: el E2E sobre `dfd102d…` atravesó P01-P05,
-persistió un blueprint `READY` y se detuvo correctamente ante P05
-`READY/REJECT`. La remediación P04 1.1.7/P05 1.1.5 está validada offline y
-pendiente de observación real. Las observaciones históricas P04/P05/P06 ya no
-se reutilizan: la evidencia vigente es **15/18**.
+Fecha de corte: 2026-08-11. Estado: la observación acoplada P04 1.1.7→P05
+1.1.5 quedó consumida. P04 pasó completamente; P05 recibió el output P04
+validado y alcanzó el antiguo timeout interno de 120 s. La evidencia vigente
+es **16/18**: P05 y P06 permanecen pendientes.
 
-## Resultado vigente: P04 1.1.7/P05 1.1.5 preparados tras stop P05
+## Resultado vigente: P04 PASS, P05 timeout y recuperación separada
 
 La actividad `act_aecd258c017c5b37c603` usó dos jobs y dos executions. P01,
 P02 y P03 terminaron `SCHEMA_VALID`; después de persistir tres decisiones
@@ -29,16 +28,25 @@ factibilidad exacta-N y acepta diversidad calibrada. El gateway rechaza
 cobertura fuente incompleta o un catálogo incapaz de formar N dentro del
 tiempo/calidad configurados.
 
-| Gate offline vigente | Resultado |
+| Gate o evidencia vigente | Resultado |
 |---|---|
 | P04→P05 acoplado | PASS; dos fake Responses; output P04 exacto como input P05; ambos READY; P05 no REJECT y sin critical FAIL |
 | Frontera/costo | P04 `sha256:48f9aa99…` + input `sha256:e2f944b4…`; P05 `sha256:d5f35e82…` + input derivado `sha256:022bcdd3…`; ceiling USD 0.04988775/cap USD 0.06 |
 | Controles | provider schema/Pydantic/contexto, IDs allowlist, decisiones autocontenidas, cobertura fuente, exact-N, categorías P05 objetivo; retries/P10/P11/Sol/fallback 0 |
 | P06 lineage | PASS dry-run separado; una fake Response; `sha256:3fcde330…`/`sha256:3cabdfaa…`; ceiling USD 0.023361/cap USD 0.03 |
+| P04 real | PASS `READY`; 4,570 input, 4,567 cache-write, 7,132 output, 5,094 reasoning; 56,949 ms; USD 0.00970075 |
+| P05 real | `MODEL_TIMEOUT` a 120,016 ms; input dinámico ligado a `sha256:cf4aeb8…`; sin metadata de usage porque no hubo respuesta |
+| Frontera consumida | 2/2 Responses; USD 0.05106550 charge conservador/cap USD 0.06; retries/P10/P11/Sol/fallback 0; stop al primer fallo |
 
-Los gates reales no se han ejecutado. El runtime desplegado todavía contiene
-la versión anterior, por lo que falta qualification real, build/deploy y un
-E2E fresco completo antes de `OPENAI_REAL_MANUAL_EVAL_READY`.
+El timeout fue el límite del adapter, no un fallo de contrato. El perfil real
+sube de 120/125 s a 240/245 s (SDK/gateway), dentro del máximo configurado de
+300 s y con retries cero. La aprobación anterior no puede abrir otra request:
+su constante está consumida. La recuperación tiene opt-ins y consumo propios,
+repite la cadena completa porque `store=false` no permite recuperar el payload
+P04 para una P05 aislada, y conserva máximo dos Responses/cap USD 0.06. P06 no
+se ejecuta hasta obtener P04→P05 PASS. El runtime desplegado todavía contiene
+la versión anterior; luego faltan P06, build/deploy y E2E fresco antes de
+`OPENAI_REAL_MANUAL_EVAL_READY`.
 
 ## Historial: P04 v1.1.6 real PASS tras stop de producto
 

@@ -20,6 +20,8 @@ from pydantic import ValidationError
 
 from comprehension_verification.model_gateway import (
     LUNA_MODEL_ID,
+    OPENAI_DEFAULT_REQUEST_TIMEOUT_SECONDS,
+    OPENAI_GATEWAY_TIMEOUT_GRACE_SECONDS,
     OPENAI_MAX_INPUT_TOKENS,
     OPENAI_P11_MAX_INPUT_TOKENS,
     prompt_spec,
@@ -345,6 +347,18 @@ def test_real_worker_profile_has_no_automatic_transport_retry() -> None:
     assert runtime.service.gateway_factory is not None
     gateway = runtime.service.gateway_factory("job_synthetic")
     assert gateway.config.max_retries == 0
+    assert settings.openai_request_timeout_seconds == 240.0
+    assert (
+        gateway.config.timeout_seconds
+        == OPENAI_DEFAULT_REQUEST_TIMEOUT_SECONDS
+        + OPENAI_GATEWAY_TIMEOUT_GRACE_SECONDS
+        == 245.0
+    )
+    assert (
+        gateway.adapters["openai"].config.request_timeout_seconds
+        == OPENAI_DEFAULT_REQUEST_TIMEOUT_SECONDS
+        == 240.0
+    )
     assert gateway.resolver.real_routes[
         "P11_SCHEMA_REPAIR_V1"
     ].max_input_tokens == 80_000
