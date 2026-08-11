@@ -189,6 +189,7 @@ BLUEPRINT_V117_V115_TIMEOUT_RECOVERY_APPROVAL_VALUE = (
 # The recovery was consumed on 2026-08-11 and passed both P04 and P05. No
 # decision or approval string may reopen either coupled transport.
 BLUEPRINT_V117_V115_TIMEOUT_RECOVERY_CONSUMED = True
+BLUEPRINT_V117_V115_TIMEOUT_RECOVERY_PASSED = True
 BLUEPRINT_V117_REAL_P04_VALIDATED_OUTPUT_HASH = (
     "sha256:66f577658a98873eb931e237d3692a8bceafe72823745dc0c2e41a1a693d6681"
 )
@@ -4576,6 +4577,24 @@ async def _run_canary_real(
         raise OpenAIEvalBlocked(
             "OPENAI_P06_V112_DECISION_LINEAGE_RECANARY_BOUNDARY_DRIFT"
         )
+    if is_p06_v112_decision_lineage_recanary:
+        recovered_p05 = CURRENT_REAL_EVIDENCE.get(
+            P05_V114_RECANARY_CASE_ID
+        )
+        if (
+            not BLUEPRINT_V117_V115_TIMEOUT_RECOVERY_CONSUMED
+            or not BLUEPRINT_V117_V115_TIMEOUT_RECOVERY_PASSED
+            or recovered_p05 is None
+            or recovered_p05.prompt_version != "1.1.5"
+            or recovered_p05.prompt_hash != P05_V115_PROMPT_HASH
+            or recovered_p05.input_bundle_hash
+            != BLUEPRINT_V115_TIMEOUT_RECOVERY_P05_INPUT_BUNDLE_HASH
+            or recovered_p05.source_checkpoint
+            != "OPENAI_BLUEPRINT_V117_V115_TIMEOUT_RECOVERY_PASS"
+        ):
+            raise OpenAIEvalBlocked(
+                "OPENAI_P06_V112_DECISION_LINEAGE_PRIOR_CHAIN_PASS_REQUIRED"
+            )
     if (
         is_p06_v112_decision_lineage_recanary
         and P06_V112_DECISION_LINEAGE_RECANARY_CONSUMED

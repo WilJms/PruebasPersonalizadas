@@ -970,7 +970,9 @@
   P04 actual, sin inventar ni persistir contenido.
 - **Alcance:** `CURRENT_REAL_EVIDENCE` sube a 17/18. P06 no se infiere desde
   este PASS: requiere su propia observación decision-lineage de una Responses,
-  cap USD 0.03 y rutas laterales/retries cero.
+  cap USD 0.03 y rutas laterales/retries cero. Su entrypoint real comprueba
+  además, antes de approval, clave o transporte, que la recuperación esté
+  consumida como PASS y que la frontera P05 1.1.5 siga presente e idéntica.
 - **Relación:** D-065, D-066, ADR-005/ADR-030/ADR-034,
   `OPENAI_REAL_MODEL_VALIDATION.md`, `REAL_MODEL_EVALS.md` y
   `OPENAI_COST_BUDGETS.md`.

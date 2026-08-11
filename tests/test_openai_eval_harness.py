@@ -2321,6 +2321,7 @@ def test_current_real_evidence_is_explicitly_seventeen_of_eighteen() -> None:
 
 def test_blueprint_timeout_recovery_is_consumed_and_report_bound() -> None:
     assert eval_harness.BLUEPRINT_V117_V115_TIMEOUT_RECOVERY_CONSUMED is True
+    assert eval_harness.BLUEPRINT_V117_V115_TIMEOUT_RECOVERY_PASSED is True
     assert eval_harness.BLUEPRINT_V117_V115_TIMEOUT_RECOVERY_REPORT_SHA256 == (
         "3452b12bf89ea0cb59c29837b054d60db0ef46ceeb950802c680e20001a94df8"
     )
@@ -2455,6 +2456,29 @@ def test_p06_v112_decision_lineage_recanary_is_governed_and_one_request(
     assert report["cases"][0]["controls"][
         "blueprint_decision_lineage_present"
     ] is True
+
+
+def test_p06_v112_real_gate_requires_prior_coupled_pass(monkeypatch) -> None:
+    cases = [
+        case
+        for case in eval_harness._load_cases(eval_harness.DEFAULT_MANIFEST)
+        if case["case_id"]
+        == eval_harness.P06_V112_DECISION_LINEAGE_RECANARY_CASE_ID
+    ]
+    monkeypatch.setattr(
+        eval_harness,
+        "BLUEPRINT_V117_V115_TIMEOUT_RECOVERY_PASSED",
+        False,
+    )
+    with pytest.raises(
+        eval_harness.OpenAIEvalBlocked,
+        match=(
+            "OPENAI_P06_V112_DECISION_LINEAGE_PRIOR_CHAIN_PASS_REQUIRED"
+        ),
+    ):
+        asyncio.run(
+            eval_harness._run_canary_real(cases, max_total_cost_usd=0.03)
+        )
 
 
 def test_p09_v115_recanary_dry_run_is_hash_bound_and_non_billable() -> None:

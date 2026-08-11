@@ -33,7 +33,7 @@ del candidato E2.
 | Uso/costo recovery | P04 4,570 input/4,567 cache-write/6,051 output/3,778 reasoning, 48,578 ms, USD 0.00840355; P05 5,292/5,289/5,610/3,610, 47,023 ms, USD 0.00805485; agregado USD 0.01645840; charge USD 0.04086520; ceiling USD 0.05147825/cap USD 0.06 |
 | Evidencia recovery | P04 output `sha256:22dd21e3…`; P05 input `sha256:e8bd0e92…`; reporte SHA-256 `3452b12bf89ea0cb59c29837b054d60db0ef46ceeb950802c680e20001a94df8`; gate consumido |
 | Evidencia real vigente | 17/18; sólo P06 pendiente; mapas históricos 18/18 no se presentan como actuales |
-| Regresión local remediada | backend 552 passed/16 skips PostgreSQL explícitos/1 warning conocido/80% cobertura; 158/158 pruebas focales timeout/gateway/harness; frontend typecheck + 34/34 + build; deploy 11/11; browser E1 1/1 y E2 2/2; Docker runtime/audit; Terraform fmt/validate; contratos, fixtures, OpenAPI, secretos y diff PASS |
+| Regresión local remediada | backend 553 passed/16 skips PostgreSQL explícitos/1 warning conocido/80% cobertura; 159/159 pruebas focales timeout/gateway/harness; frontend typecheck + 34/34 + build; deploy 11/11; browser E1 1/1 y E2 2/2; Docker runtime/audit; Terraform fmt/validate; contratos, fixtures, OpenAPI, secretos y diff PASS |
 
 P06 real, el build/deploy del SHA remediado y un E2E fresco completo
 permanecen pendientes; no se declara

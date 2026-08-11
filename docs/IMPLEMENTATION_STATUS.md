@@ -61,7 +61,7 @@ remediación usa timeout SDK/gateway 240/245 s y retries cero. El PASS acoplado
 abre exclusivamente el gate P06 decision-lineage ya preparado: una Responses,
 cap USD 0.03 y P10/P11/Sol/fallback/retries cero.
 
-La regresión local completa pasa con 552 pruebas backend, 16 skips
+La regresión local completa pasa con 553 pruebas backend, 16 skips
 PostgreSQL explícitos, una advertencia conocida y 80% de cobertura; el CI del
 SHA `1125410…` terminó 7/7 verde tanto en push como en PR. Este estado no es
 `OPENAI_REAL_MANUAL_EVAL_READY`. Faltan completar P06 real,
