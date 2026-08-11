@@ -2,7 +2,50 @@
 
 Fecha de corte: 2026-08-11 (America/Santiago).
 
-## Estado vigente — `OPENAI_REAL_CANDIDATE_BUILD_REAUTHORIZATION_REQUIRED` (2026-08-11)
+## Estado vigente — `OPENAI_REAL_SYNTHETIC_E2E_APPROVAL_REQUIRED` (2026-08-11)
+
+El único submit autorizado para `b4ec283ff4af7e50e1435a6588293a94a8de4de4`
+creó el build `613270cf-bdfb-4b18-a423-35f68198f471` con la cuenta dedicada
+`cva-cloudbuild`, región `us-east1` y timeout 3600 s. Terminó `SUCCESS`, con
+`requestedVerifyOption=VERIFIED`, y publicó
+`sha256:97960034f6c4c6c3b2967d186035f0940e481f9e2c9bf9df24213cd30d31aaeb`.
+Artifact Registry resolvió el tag del build al mismo digest, informó SLSA 3 y
+la configuración OCI fijó `org.opencontainers.image.revision` al SHA
+autorizado. No hubo retry ni un segundo build.
+
+El plan Terraform guardado
+`ad7ab59a5eae5823bf6ee6dac481d2b6fe4d9636a38341cedb02ed23d760a370`
+mostró 36 recursos sin cambio, exactamente dos updates in-place (`cva-web` y
+`cva-worker`), exactamente un create (`roles/secretmanager.secretAccessor`
+sólo para `cva-worker`) y cero delete/replace. Todas las precondiciones
+autorizadas pasaron antes de ejecutar exactamente un apply: web quedó en mock
+y sin clave; worker en real con `cva-openai-api-key` v2; costo máximo por job
+USD 0.55; P10 false; task/paralelismo 1/1 y `maxRetries=0`. El apply terminó
+`1 added, 2 changed, 0 destroyed`.
+
+La revisión web `cva-web-00017-vvp` está Ready, Service y Job usan el mismo
+digest inmutable, y el IAM del secreto contiene únicamente a `cva-worker`.
+Health/readiness respondieron 200 y una ruta privada anónima respondió 401.
+Dos planes consecutivos con refresh terminaron exit 0 y `No changes`. El Job
+conservó exactamente 23 ejecuciones; la última sigue siendo
+`cva-worker-w8q8x` del 8 de agosto. Esta fase ejecutó cero jobs, cero E2E y cero
+Responses requests.
+
+El candidato experimental ya está desplegado, pero todavía no es
+`OPENAI_REAL_MANUAL_EVAL_READY`. El único paso billable pendiente es un E2E
+sintético real bajo autorización separada: fixture versionado
+`activity_01_rubric`, ceiling agregado USD 0.855444, cap humano propuesto USD
+0.90, máximo defensivo 32 Responses, retries automáticos cero, stop al primer
+job no exitoso y P10/Sol/fallback cero. No se autoriza dato estudiantil real.
+
+El preflight read-only posterior al deploy revalidó la tarifa oficial Luna
+(USD 0.20/M input, 0.02/M cached, 0.25/M cache-write y 1.20/M output). El
+proyecto `PruebasPersonalizadas` conserva sólo `gpt-5.6-luna`, límites efectivos
+200,000 TPM / 500 RPM y gasto USD 3.87 de USD 5.00: quedan USD 1.13, superiores
+al cap propuesto USD 0.90. La vista de límites se cerró con Cancel; no hubo
+cambio de configuración ni request de modelo/Responses.
+
+## Historial — `OPENAI_REAL_CANDIDATE_BUILD_REAUTHORIZATION_REQUIRED` (2026-08-11)
 
 El primer submit autorizado para `0a521d6` se detuvo en el primer fallo,
 antes de crear un recurso build o devolver build ID. La CLI cargó el archivo

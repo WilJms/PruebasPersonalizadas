@@ -9,6 +9,28 @@ P10 deshabilitado; las evaluaciones OpenAI dedicadas usaron exclusivamente
 fixtures sintéticos. Los resultados históricos E1 se conservan al final y no
 se presentan como evidencia del candidato E2.
 
+## Candidato OpenAI real construido y desplegado — 2026-08-11
+
+| Prueba o gate | Resultado observado |
+|---|---|
+| Frontera autorizada | Un submit/build máximo del SHA `b4ec283`; cuenta `cva-cloudbuild`; timeout 3600 s; un apply sólo si plan exacto; 0 Responses y sin jobs/E2E |
+| Build único | `613270cf-bdfb-4b18-a423-35f68198f471`, `SUCCESS`, `requestedVerifyOption=VERIFIED`, identidad/SHA/región/timeout exactos; 0 retries |
+| Digest/procedencia | Cloud Build y Artifact Registry coinciden en `sha256:97960034f6c4c6c3b2967d186035f0940e481f9e2c9bf9df24213cd30d31aaeb`; SLSA 3; label OCI revision = SHA `b4ec283…` |
+| Plan guardado | SHA-256 `ad7ab59a5eae5823bf6ee6dac481d2b6fe4d9636a38341cedb02ed23d760a370`; 36 no-op, 2 updates in-place exactos, 1 create IAM worker-secret, 0 delete/replace/adicional |
+| Apply único | PASS: `1 added, 2 changed, 0 destroyed`; ningún segundo apply |
+| Web | revisión `cva-web-00017-vvp` Ready; digest exacto; `CVA_MODEL_MODE=mock`; worker mode real; costo 0.55; P10 false; sin env/ref del secreto OpenAI |
+| Worker | Ready; digest exacto; modelo real; secreto `cva-openai-api-key` v2; costo 0.55; P10 false; task/paralelismo 1/1; `maxRetries=0` |
+| IAM y secreto | v1 `DISABLED`, v2 `ENABLED`; `roles/secretmanager.secretAccessor` contiene únicamente a `cva-worker`, nunca a web |
+| Superficie HTTP | `/api/health` 200; `/api/readiness` 200; `/api/v1/activities` anónimo 401 |
+| Convergencia | dos planes consecutivos con refresh: exit 0, `No changes` |
+| No ejecución/facturación | ejecuciones del Job 23 antes y después; última `cva-worker-w8q8x` sin cambio; 0 jobs, 0 E2E y 0 Responses |
+| Preflight E2E posterior | tarifa oficial Luna sin drift; sólo Luna permitido; USD 3.87/USD 5.00, remanente USD 1.13; 200K TPM/500 RPM; inspección cancelada sin mutación |
+
+El despliegue cierra la compuerta build/digest/IAM/Terraform, pero no declara
+`OPENAI_REAL_MANUAL_EVAL_READY`. El E2E sintético OpenAI real conserva una
+autorización billable separada, con ceiling USD 0.855444, cap propuesto USD
+0.90 y máximo defensivo 32 Responses.
+
 ## Cloud Build detenido por `make` ausente y reproducción hermética — 2026-08-11
 
 | Prueba o gate | Resultado observado |

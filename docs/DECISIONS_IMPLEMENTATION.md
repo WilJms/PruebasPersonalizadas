@@ -815,3 +815,30 @@
   nueva y exacta fijada al SHA remediado.
 - **Relación:** D-059, D-060, `deploy/cloudbuild.yaml`, `TEST_RESULTS.md` y
   principio de gates herméticos de ADR-033/ADR-034.
+
+## D-062 - Web mock y worker real se despliegan mediante un único plan sellado
+
+- **Decisión observada:** el build único
+  `613270cf-bdfb-4b18-a423-35f68198f471` del SHA `b4ec283…` terminó
+  `SUCCESS/VERIFIED`. Su digest coincidió con Artifact Registry, conservó SLSA
+  3 y fijó el SHA autorizado como label OCI.
+- **Plan sellado:** antes de mutar cloud, el plan guardado y hash-verificado
+  mostró únicamente dos updates in-place —Service y Job— y un create IAM para
+  que sólo la cuenta worker lea `cva-openai-api-key`; 36 recursos quedaron
+  no-op y no hubo delete/replace. El apply de ese plan se ejecutó exactamente
+  una vez y terminó `1 added, 2 changed, 0 destroyed`.
+- **Separación de funciones:** web conserva `CVA_MODEL_MODE=mock` y ninguna
+  referencia a la clave. Worker usa modo real, versión 2 fijada, máximo USD
+  0.55 por job, P10 false, task/paralelismo 1/1 y retries de infraestructura
+  cero. Service y Job usan el mismo digest inmutable.
+- **Verificación:** la revisión web está Ready, health/readiness son 200, la
+  ruta privada anónima es 401, IAM contiene sólo al worker y dos planes
+  consecutivos terminan `No changes`. El conteo de ejecuciones del Job no
+  cambió y no hubo Responses.
+- **Gate restante:** desplegar capacidad no autoriza usarla. El E2E sintético
+  real conserva un gate humano billable independiente, limitado por ceiling
+  USD 0.855444, cap propuesto USD 0.90, máximo 32 Responses, retries cero y
+  stop al primer job no exitoso. Datos estudiantiles reales y P10 permanecen
+  fuera de alcance.
+- **Relación:** D-059, D-060, D-061, ADR-033/ADR-034,
+  `IMPLEMENTATION_STATUS.md`, `TEST_RESULTS.md` y `OPENAI_COST_BUDGETS.md`.

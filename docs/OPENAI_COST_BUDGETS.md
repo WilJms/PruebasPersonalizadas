@@ -468,7 +468,13 @@ ante el primer job no exitoso y no repite automáticamente transportes.
 
 Un transporte fake por las rutas reales confirmó actividad y submission
 `SUCCEEDED`, nueve tareas semánticas sin la edición P05, input máximo 27,330 y
-cero red/billable. El plan de deploy y el E2E siguen sin autorización; antes de
-solicitar USD 0.90 se revalidan el saldo del proyecto, la qualification v1.1.4,
-el SHA/digest y la configuración efectiva. El cap USD 0.10 de qualification es
-separado y no se transfiere.
+cero red/billable. El deploy autorizado quedó aplicado y convergente sobre
+`sha256:979600…aaeb`, sin ejecutar el Job; el E2E sigue sin autorización. Antes
+de solicitar USD 0.90 se revalidan el saldo del proyecto, la qualification
+vigente, el SHA/digest y la configuración efectiva. El cap USD 0.10 de
+qualification es separado y no se transfiere.
+
+La revalidación posterior al deploy confirmó las mismas tarifas oficiales,
+Luna como único modelo permitido, 200,000 TPM / 500 RPM y USD 3.87 consumidos
+de USD 5.00. El remanente USD 1.13 cubre el cap propuesto USD 0.90 con USD 0.23
+de margen. La inspección fue read-only y se canceló sin guardar cambios.

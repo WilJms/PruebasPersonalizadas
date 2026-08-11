@@ -98,14 +98,15 @@ actividad + edición P05 + submission reserva USD 0.855444, cap futuro USD 0.90
 y máximo 32 Responses requests. Esta frontera es distinta del cap USD 0.10 de
 qualification.
 
-La inspección read-only del runtime mostró el digest histórico aún en
-mock/P10 false, health/readiness 200, privado anónimo 401 y el secreto v2
-enabled/v1 disabled sin IAM para web o worker. Un plan Terraform provisional y
-no mutante mostró dos updates in-place —Service y Job— más la creación del único
-binding `secretAccessor` para el worker. La activación final cambiará ambos al
-nuevo digest, mantendrá Web en mock sin clave, pondrá sólo el worker en real y
-fijará `CVA_MAX_JOB_COST_USD=0.55`. Build, IAM, apply, deploy y E2E continúan
-pendientes de gate explícito.
+El gate posterior construyó el SHA `b4ec283…` en el build único `613270cf…`,
+`SUCCESS/VERIFIED`, y Artifact Registry confirmó el digest
+`sha256:979600…aaeb`. El plan sellado mostró y aplicó exactamente dos updates
+in-place —Service y Job— más el único binding `secretAccessor` para el worker,
+sin delete/replace. Web permanece mock sin clave; sólo worker quedó real con
+v2, `CVA_MAX_JOB_COST_USD=0.55`, P10 false y 1/1/0. Health/readiness son 200,
+privado anónimo 401 y dos planes posteriores no muestran cambios. El E2E
+sintético real continúa pendiente de un gate billable explícito; no se ejecutó
+ningún Job ni Responses request durante deploy.
 
 ## Historial — preparación 1.1.2 y rotación
 

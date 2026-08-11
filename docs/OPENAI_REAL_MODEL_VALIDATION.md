@@ -376,13 +376,14 @@ cerrada, sin P11 ni segunda request, y deja el P0 abierto para revisión.
 | Hardening de presupuesto predeploy | PASS offline; full-cache-write antes de transporte, gateway/SDK retries 0/0, P11 máximo 80K, E2E fake P01-P09 `SUCCEEDED`; P1 cerrado |
 | Edición P05 durable | PASS backend/API/frontend/E2E; P2 funcional cerrado |
 | Calidad/latencia/costo y severidad | P0=0; P1=0; P2=5; P3=1; calidad pedagógica pendiente de revisión humana posterior |
-| Build, digest y deploy real del worker | pendiente de gate posterior |
+| Build, digest y deploy real del worker | PASS cloud: build `613270cf…` SUCCESS/VERIFIED; digest `sha256:979600…aaeb`; apply exacto 1/2/0; web mock sin clave y worker real v2; dos planes posteriores sin cambios |
 
 El camino interactivo P05 está ya detrás del worker durable y no puede entregar
-un review mock dentro de un recorrido declarado OpenAI. El estado todavía no
-es `OPENAI_REAL_MANUAL_EVAL_READY`: falta construir/desplegar el candidato y
-ejecutar el E2E sintético real bajo gates separados. Nada de lo anterior
-autoriza gasto adicional, deploy ni mutación cloud.
+un review mock dentro de un recorrido declarado OpenAI. El candidato quedó
+construido y desplegado sin ejecutar el Job. El estado todavía no es
+`OPENAI_REAL_MANUAL_EVAL_READY`: falta ejecutar el E2E sintético real bajo una
+autorización billable separada. Nada de lo anterior autoriza gasto adicional,
+jobs, E2E o datos estudiantiles reales.
 
 Fuentes oficiales: páginas de
 [`gpt-5.6-sol`](https://developers.openai.com/api/docs/models/gpt-5.6-sol),

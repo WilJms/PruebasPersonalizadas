@@ -586,8 +586,9 @@ Una ejecución offline con el resolver real y transporte fake completó jobs de
 actividad y submission, recorrió P01-P09 en nueve tareas semánticas, observó
 27,330 tokens como máximo preflight y usó cero red/billable. La continuación
 v1.1.4, la recanary P09 v1.1.5 y la canary P11 directa v1.1.4 quedaron
-consumidas; P11 terminó PASS y completó 18/18 fronteras reales. Build/deploy y
-E2E real conservan gates separados.
+consumidas; P11 terminó PASS y completó 18/18 fronteras reales. El gate de
+build/deploy posterior quedó PASS sobre `sha256:979600…aaeb`, sin ejecutar el
+Job; el E2E real conserva su gate billable separado.
 
 ## Recorrido humano preparado
 
