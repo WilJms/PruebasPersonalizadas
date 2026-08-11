@@ -692,9 +692,32 @@ class PolicyDecision(StrictModel):
     decision_id: Id
     issue_id: Id
     selected_option_id: Id
+    selected_option: DecisionOption | None = None
     decided_by: PrincipalId
     decided_at: datetime
     note: str | None = Field(default=None, max_length=2000)
+
+    @model_validator(mode="after")
+    def selected_option_matches_id(self) -> "PolicyDecision":
+        if (
+            self.selected_option is not None
+            and self.selected_option.option_id != self.selected_option_id
+        ):
+            raise ValueError("selected_option must match selected_option_id")
+        return self
+
+
+def _resolved_decisions_are_self_contained(
+    decisions: list[PolicyDecision],
+) -> None:
+    decision_ids = [decision.decision_id for decision in decisions]
+    issue_ids = [decision.issue_id for decision in decisions]
+    if len(decision_ids) != len(set(decision_ids)):
+        raise ValueError("resolved decisions must have unique decision_ids")
+    if len(issue_ids) != len(set(issue_ids)):
+        raise ValueError("resolved decisions must have unique issue_ids")
+    if any(decision.selected_option is None for decision in decisions):
+        raise ValueError("resolved decisions require selected_option snapshots")
 
 
 class StructuredJustificationPolicy(StrictModel):
@@ -2394,6 +2417,11 @@ class BlueprintBuildRequest(StrictModel):
     resolved_decisions: list[PolicyDecision] = Field(default_factory=list, max_length=100)
     blueprint_policy: BlueprintPolicy
 
+    @model_validator(mode="after")
+    def decisions_are_self_contained(self) -> "BlueprintBuildRequest":
+        _resolved_decisions_are_self_contained(self.resolved_decisions)
+        return self
+
 
 class BlueprintReviewRequest(StrictModel):
     schema_version: SchemaVersion = LEGACY_SCHEMA_VERSION
@@ -2402,6 +2430,11 @@ class BlueprintReviewRequest(StrictModel):
     rubric_spec: RubricSpec | None = None
     resolved_decisions: list[PolicyDecision] = Field(default_factory=list, max_length=100)
     blueprint_policy: BlueprintPolicy
+
+    @model_validator(mode="after")
+    def decisions_are_self_contained(self) -> "BlueprintReviewRequest":
+        _resolved_decisions_are_self_contained(self.resolved_decisions)
+        return self
 
 
 class EvidenceMapRequest(StrictModel):

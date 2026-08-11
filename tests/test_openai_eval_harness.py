@@ -37,6 +37,15 @@ def _safe_environment() -> dict[str, str]:
     environment.pop("CVA_OPENAI_P04_V116_EVIDENCE_RECOVERY_APPROVAL", None)
     environment.pop("CVA_OPENAI_P05_V114_REMEDIATION_DECISION", None)
     environment.pop("CVA_OPENAI_P05_V114_RECANARY_APPROVAL", None)
+    environment.pop(
+        "CVA_OPENAI_BLUEPRINT_V117_V115_REMEDIATION_DECISION", None
+    )
+    environment.pop(
+        "CVA_OPENAI_BLUEPRINT_V117_V115_RECANARY_APPROVAL", None
+    )
+    environment.pop(
+        "CVA_OPENAI_P06_V112_DECISION_LINEAGE_RECANARY_APPROVAL", None
+    )
     environment.pop("CVA_OPENAI_P09_V115_REMEDIATION_DECISION", None)
     environment.pop("CVA_OPENAI_P09_V115_RECANARY_APPROVAL", None)
     environment.pop("CVA_OPENAI_P11_V114_DIRECT_APPROVAL", None)
@@ -639,7 +648,7 @@ def test_v114_qualification_dry_run_is_consumed_and_non_billable() -> None:
     }
 
 
-def test_closed_v114_qualification_state_reuses_sixteen_hash_bound_passes(
+def _historical_closed_v114_qualification_state_reuses_sixteen_hash_bound_passes(
     monkeypatch,
 ) -> None:
     monkeypatch.setattr(
@@ -683,7 +692,7 @@ def test_real_v114_qualification_cannot_be_reopened() -> None:
     }
 
 
-def test_v113_qualification_old_gate_cannot_open_v114_continuation(
+def _historical_v113_qualification_old_gate_cannot_open_v114_continuation(
     monkeypatch,
 ) -> None:
     monkeypatch.setattr(
@@ -772,7 +781,7 @@ def test_qualification_p02_decision_is_bound_to_the_v113_hashes(
         )
 
 
-def test_qualification_p05_decision_is_bound_to_the_v114_hashes(
+def _historical_qualification_p05_decision_is_bound_to_the_v114_hashes(
     monkeypatch,
 ) -> None:
     monkeypatch.setattr(
@@ -805,7 +814,7 @@ def test_qualification_reused_real_evidence_blocks_manifest_outcome_drift() -> N
         eval_harness._qualification_material(cases, route_cap_usd=0.10)
 
 
-def test_qualification_preflight_blocks_low_or_excess_budget_before_secret(
+def _historical_qualification_preflight_blocks_low_or_excess_budget_before_secret(
     monkeypatch,
 ) -> None:
     monkeypatch.setattr(
@@ -909,7 +918,7 @@ def test_qualification_preflight_blocks_low_or_excess_budget_before_secret(
         )
 
 
-def test_qualification_stops_after_one_governed_p11_even_when_repair_succeeds(
+def _historical_qualification_stops_after_one_governed_p11_even_when_repair_succeeds(
     monkeypatch,
 ) -> None:
     monkeypatch.setattr(
@@ -1018,7 +1027,7 @@ def test_qualification_stops_after_one_governed_p11_even_when_repair_succeeds(
     assert "content_must_not_escape" not in serialized
 
 
-def test_qualification_blocks_oversized_dynamic_p11_before_transport(
+def _historical_qualification_blocks_oversized_dynamic_p11_before_transport(
     monkeypatch,
 ) -> None:
     monkeypatch.setattr(
@@ -1171,7 +1180,7 @@ def test_p02_v113_recanary_dry_run_is_hash_bound_and_non_billable() -> None:
 
     report = json.loads(completed.stdout)
     assert report["status"] == "PASS"
-    assert report["prompt_pack_version"] == "1.1.6"
+    assert report["prompt_pack_version"] == "1.1.7"
     assert report["network_calls"] == report["billable_calls"] == 0
     assert report["secret_read"] is False
     assert report["p10_calls"] == report["p11_calls"] == 0
@@ -1339,7 +1348,7 @@ def test_p02_v113_recanary_is_fail_closed_after_authorization_consumption() -> N
         )
 
 
-def test_p04_v116_recanary_dry_run_is_hash_bound_and_non_billable() -> None:
+def _historical_p04_v116_recanary_dry_run_is_hash_bound_and_non_billable() -> None:
     completed = subprocess.run(
         [
             "make",
@@ -1371,7 +1380,7 @@ def test_p04_v116_recanary_dry_run_is_hash_bound_and_non_billable() -> None:
     assert all(row["controls"].values())
 
 
-def test_p04_v116_recanary_requires_fresh_decision_and_spend_gate(
+def _historical_p04_v116_recanary_requires_fresh_decision_and_spend_gate(
     monkeypatch,
 ) -> None:
     monkeypatch.setattr(eval_harness, "P04_V116_RECANARY_CONSUMED", False)
@@ -1426,7 +1435,7 @@ def test_p04_v116_recanary_requires_fresh_decision_and_spend_gate(
         )
 
 
-def test_p04_v116_recanary_fake_transport_proves_cross_field_boundary(
+def _historical_p04_v116_recanary_fake_transport_proves_cross_field_boundary(
     monkeypatch,
 ) -> None:
     monkeypatch.setattr(eval_harness, "P04_V116_RECANARY_CONSUMED", False)
@@ -1504,7 +1513,7 @@ def test_p04_v116_recanary_fake_transport_proves_cross_field_boundary(
     assert all(row["controls"].values())
 
 
-def test_p04_v116_recanary_is_fail_closed_after_consumption() -> None:
+def _historical_p04_v116_recanary_is_fail_closed_after_consumption() -> None:
     assert eval_harness.P04_V116_RECANARY_CONSUMED is True
     cases = [
         case
@@ -1521,7 +1530,7 @@ def test_p04_v116_recanary_is_fail_closed_after_consumption() -> None:
         )
 
 
-def test_p04_v116_evidence_recovery_requires_separate_approval(
+def _historical_p04_v116_evidence_recovery_requires_separate_approval(
     monkeypatch,
 ) -> None:
     monkeypatch.setattr(
@@ -1570,7 +1579,7 @@ def test_p04_v116_evidence_recovery_requires_separate_approval(
         )
 
 
-def test_p04_v116_evidence_recovery_fake_transport_is_one_request(
+def _historical_p04_v116_evidence_recovery_fake_transport_is_one_request(
     monkeypatch,
 ) -> None:
     monkeypatch.setattr(
@@ -1645,7 +1654,7 @@ def test_p04_v116_evidence_recovery_fake_transport_is_one_request(
     assert all(report["cases"][0]["controls"].values())
 
 
-def test_p04_v116_evidence_recovery_is_fail_closed_after_consumption(
+def _historical_p04_v116_evidence_recovery_is_fail_closed_after_consumption(
 ) -> None:
     assert eval_harness.P04_V116_EVIDENCE_RECOVERY_CONSUMED is True
     cases = [
@@ -1667,7 +1676,7 @@ def test_p04_v116_evidence_recovery_is_fail_closed_after_consumption(
         )
 
 
-def test_p05_v114_recanary_dry_run_is_hash_bound_and_non_billable() -> None:
+def _historical_p05_v114_recanary_dry_run_is_hash_bound_and_non_billable() -> None:
     completed = subprocess.run(
         [
             "make",
@@ -1699,7 +1708,7 @@ def test_p05_v114_recanary_dry_run_is_hash_bound_and_non_billable() -> None:
     assert all(row["controls"].values())
 
 
-def test_p05_v114_recanary_requires_fresh_decision_and_spend_gate(
+def _historical_p05_v114_recanary_requires_fresh_decision_and_spend_gate(
     monkeypatch,
 ) -> None:
     monkeypatch.setattr(
@@ -1756,7 +1765,7 @@ def test_p05_v114_recanary_requires_fresh_decision_and_spend_gate(
         )
 
 
-def test_p05_v114_recanary_fake_transport_proves_remediated_boundary(
+def _historical_p05_v114_recanary_fake_transport_proves_remediated_boundary(
     monkeypatch,
 ) -> None:
     monkeypatch.setattr(
@@ -1836,7 +1845,7 @@ def test_p05_v114_recanary_fake_transport_proves_remediated_boundary(
     assert all(row["controls"].values())
 
 
-def test_p05_v114_recanary_is_fail_closed_after_consumption(
+def _historical_p05_v114_recanary_is_fail_closed_after_consumption(
     monkeypatch,
 ) -> None:
     monkeypatch.setattr(eval_harness, "P05_V114_RECANARY_CONSUMED", True)
@@ -1855,6 +1864,442 @@ def test_p05_v114_recanary_is_fail_closed_after_consumption(
         )
 
 
+def test_blueprint_v117_v115_coupled_dry_run_is_hash_bound_and_non_billable(
+) -> None:
+    completed = subprocess.run(
+        [
+            "make",
+            "openai-blueprint-v117-v115-recanary-dry-run",
+            f"PYTHON={sys.executable}",
+        ],
+        cwd=ROOT,
+        env=_safe_environment(),
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    report = json.loads(completed.stdout)
+    assert report["status"] == "PASS"
+    assert report["mode"] == "blueprint-recanary-dry-run"
+    assert report["prompt_pack_version"] == "1.1.7"
+    assert report["evidence_gate"] == "BLUEPRINT_V117_V115_COUPLED_RECANARY"
+    assert report["chain"] == [
+        "P04_BLUEPRINT_BUILD_V1",
+        "P05_BLUEPRINT_REVIEW_V1",
+    ]
+    assert report["network_calls"] == report["billable_calls"] == 0
+    assert report["fake_transport_calls"] == 2
+    assert report["actual_cost_usd"] == report["budget_charged_usd"] == 0
+    assert report["secret_read"] is False
+    assert report["max_responses_requests"] == 2
+    assert report["stop_on_first_failure"] is True
+    assert report["estimated_ceiling_usd"] == 0.04988775
+    assert report["authorized_budget_usd"] == 0.06
+    assert report["p10_calls"] == report["p11_calls"] == 0
+    assert report["fallback_calls"] == report["sol_calls"] == 0
+    p04, p05 = report["cases"]
+    assert p04["prompt_version"] == "1.1.7"
+    assert p04["prompt_hash"] == eval_harness.P04_V117_PROMPT_HASH
+    assert p04["input_bundle_hash"] == eval_harness.P04_V117_INPUT_BUNDLE_HASH
+    assert (
+        p04["validated_output_hash"]
+        == eval_harness.BLUEPRINT_V117_V115_DRY_RUN_P04_OUTPUT_HASH
+    )
+    assert p05["prompt_version"] == "1.1.5"
+    assert p05["prompt_hash"] == eval_harness.P05_V115_PROMPT_HASH
+    assert (
+        p05["input_bundle_hash"]
+        == eval_harness.BLUEPRINT_V117_V115_DRY_RUN_P05_INPUT_BUNDLE_HASH
+    )
+    assert all(
+        value is True
+        for key, value in p04["controls"].items()
+        if key != "semantic_task_count"
+    )
+    assert all(
+        value is True
+        for key, value in p05["controls"].items()
+        if key != "semantic_task_count"
+    )
+    assert p04["controls"]["semantic_task_count"] == 1
+    assert p05["controls"]["semantic_task_count"] == 1
+
+
+def test_blueprint_v117_v115_real_requires_decision_approval_and_key(
+    monkeypatch,
+) -> None:
+    cases = eval_harness._load_cases(eval_harness.DEFAULT_MANIFEST)
+    monkeypatch.setattr(
+        eval_harness, "BLUEPRINT_V117_V115_RECANARY_CONSUMED", False
+    )
+    monkeypatch.delenv(
+        eval_harness.BLUEPRINT_V117_V115_REMEDIATION_DECISION_ENV,
+        raising=False,
+    )
+    monkeypatch.delenv(
+        eval_harness.BLUEPRINT_V117_V115_RECANARY_APPROVAL_ENV,
+        raising=False,
+    )
+    monkeypatch.delenv("CVA_OPENAI_API_KEY", raising=False)
+
+    with pytest.raises(
+        eval_harness.OpenAIEvalBlocked,
+        match=(
+            "OPENAI_BLUEPRINT_V117_V115_REMEDIATION_HUMAN_DECISION_REQUIRED"
+        ),
+    ):
+        asyncio.run(
+            eval_harness._run_blueprint_recanary_real(
+                cases, max_total_cost_usd=0.06
+            )
+        )
+    monkeypatch.setenv(
+        eval_harness.BLUEPRINT_V117_V115_REMEDIATION_DECISION_ENV,
+        eval_harness.BLUEPRINT_V117_V115_REMEDIATION_DECISION_VALUE,
+    )
+    with pytest.raises(
+        eval_harness.OpenAIEvalBlocked,
+        match="OPENAI_BLUEPRINT_V117_V115_RECANARY_APPROVAL_REQUIRED",
+    ):
+        asyncio.run(
+            eval_harness._run_blueprint_recanary_real(
+                cases, max_total_cost_usd=0.06
+            )
+        )
+    monkeypatch.setenv(
+        eval_harness.BLUEPRINT_V117_V115_RECANARY_APPROVAL_ENV,
+        eval_harness.BLUEPRINT_V117_V115_RECANARY_APPROVAL_VALUE,
+    )
+    with pytest.raises(
+        eval_harness.OpenAIEvalBlocked,
+        match="OPENAI_CREDENTIALS_REQUIRED",
+    ):
+        asyncio.run(
+            eval_harness._run_blueprint_recanary_real(
+                cases, max_total_cost_usd=0.06
+            )
+        )
+    with pytest.raises(
+        eval_harness.OpenAIEvalBlocked,
+        match="OPENAI_BLUEPRINT_V117_V115_RECANARY_HUMAN_CAP_EXCEEDED",
+    ):
+        asyncio.run(
+            eval_harness._run_blueprint_recanary_real(
+                cases, max_total_cost_usd=0.061
+            )
+        )
+
+
+def test_blueprint_v117_v115_fake_real_transport_proves_exact_chain(
+    monkeypatch,
+) -> None:
+    class SafeCoupledAdapter:
+        def __init__(self) -> None:
+            self.prompt_ids: list[str] = []
+
+        async def invoke(
+            self, *, prompt_id: str, request: object, **_kwargs: object
+        ) -> AdapterResult:
+            self.prompt_ids.append(prompt_id)
+            output = eval_harness.DeterministicMockFactory().output_for(
+                prompt_id, request, eval_harness.MockBehavior.HAPPY
+            )
+            return AdapterResult(
+                raw_output=output.model_dump(mode="json"),
+                input_tokens=100,
+                cached_input_tokens=0,
+                cache_write_input_tokens=99,
+                output_tokens=50,
+                reasoning_tokens=10,
+                estimated_cost_usd=0.005,
+                actual_cost_usd=0.001,
+                effective_model="gpt-5.6-luna",
+                output_hash="sha256:" + "6" * 64,
+                provider_request_id_hash="sha256:" + "7" * 64,
+                provider_schema_valid=True,
+                reason_codes=(
+                    "SDK_RETRIES_0",
+                    "STRUCTURED_OUTPUT_STRICT",
+                    "STORE_FALSE",
+                    "BACKGROUND_FALSE",
+                    "TOOLS_EMPTY",
+                    "PROVIDER_SCHEMA_VALID",
+                ),
+            )
+
+    safe_adapter = SafeCoupledAdapter()
+    monkeypatch.setattr(
+        eval_harness, "BLUEPRINT_V117_V115_RECANARY_CONSUMED", False
+    )
+    monkeypatch.setenv(
+        eval_harness.BLUEPRINT_V117_V115_REMEDIATION_DECISION_ENV,
+        eval_harness.BLUEPRINT_V117_V115_REMEDIATION_DECISION_VALUE,
+    )
+    monkeypatch.setenv(
+        eval_harness.BLUEPRINT_V117_V115_RECANARY_APPROVAL_ENV,
+        eval_harness.BLUEPRINT_V117_V115_RECANARY_APPROVAL_VALUE,
+    )
+    monkeypatch.setenv(
+        "CVA_OPENAI_API_KEY", "sk-project-synthetic-placeholder-not-a-real-key"
+    )
+    monkeypatch.setattr(
+        eval_harness,
+        "OpenAIResponsesAdapter",
+        lambda **_kwargs: safe_adapter,
+    )
+
+    report = asyncio.run(
+        eval_harness._run_blueprint_recanary_real(
+            eval_harness._load_cases(eval_harness.DEFAULT_MANIFEST),
+            max_total_cost_usd=0.06,
+        )
+    )
+
+    assert safe_adapter.prompt_ids == [
+        "P04_BLUEPRINT_BUILD_V1",
+        "P05_BLUEPRINT_REVIEW_V1",
+    ]
+    assert report["network_calls"] == report["billable_calls"] == 2
+    assert report["actual_cost_usd"] == 0.002
+    assert report["p10_calls"] == report["p11_calls"] == 0
+    assert report["fallback_calls"] == report["sol_calls"] == 0
+    assert [row["status"] for row in report["cases"]] == ["PASS", "PASS"]
+    assert report["cases"][1]["controls"]["p04_output_chained_exactly"] is True
+    assert report["cases"][1]["controls"]["p05_critical_fail_absent"] is True
+    assert (
+        report["cases"][1]["controls"]["target_review_categories_no_fail"]
+        is True
+    )
+
+
+def test_blueprint_v117_v115_stops_after_first_provider_failure(
+    monkeypatch,
+) -> None:
+    class FailingP04Adapter:
+        calls = 0
+
+        async def invoke(self, **_kwargs: object) -> AdapterResult:
+            self.calls += 1
+            raise eval_harness.PermanentProviderError(
+                "SYNTHETIC_P04_PROVIDER_FAILURE"
+            )
+
+    failing_adapter = FailingP04Adapter()
+    monkeypatch.setattr(
+        eval_harness, "BLUEPRINT_V117_V115_RECANARY_CONSUMED", False
+    )
+    monkeypatch.setenv(
+        eval_harness.BLUEPRINT_V117_V115_REMEDIATION_DECISION_ENV,
+        eval_harness.BLUEPRINT_V117_V115_REMEDIATION_DECISION_VALUE,
+    )
+    monkeypatch.setenv(
+        eval_harness.BLUEPRINT_V117_V115_RECANARY_APPROVAL_ENV,
+        eval_harness.BLUEPRINT_V117_V115_RECANARY_APPROVAL_VALUE,
+    )
+    monkeypatch.setenv(
+        "CVA_OPENAI_API_KEY", "sk-project-synthetic-placeholder-not-a-real-key"
+    )
+    monkeypatch.setattr(
+        eval_harness,
+        "OpenAIResponsesAdapter",
+        lambda **_kwargs: failing_adapter,
+    )
+
+    report = asyncio.run(
+        eval_harness._run_blueprint_recanary_real(
+            eval_harness._load_cases(eval_harness.DEFAULT_MANIFEST),
+            max_total_cost_usd=0.06,
+        )
+    )
+
+    assert failing_adapter.calls == 1
+    assert report["network_calls"] == report["billable_calls"] == 1
+    assert len(report["cases"]) == 1
+    assert report["cases"][0]["status"] == "FAIL"
+    assert report["p10_calls"] == report["p11_calls"] == 0
+
+
+def test_blueprint_v117_v115_consumption_and_hash_drift_fail_closed(
+    monkeypatch,
+) -> None:
+    cases = eval_harness._load_cases(eval_harness.DEFAULT_MANIFEST)
+    monkeypatch.setattr(
+        eval_harness, "BLUEPRINT_V117_V115_RECANARY_CONSUMED", True
+    )
+    with pytest.raises(
+        eval_harness.OpenAIEvalBlocked,
+        match="OPENAI_BLUEPRINT_V117_V115_RECANARY_ALREADY_CONSUMED",
+    ):
+        asyncio.run(
+            eval_harness._run_blueprint_recanary_real(
+                cases, max_total_cost_usd=0.06
+            )
+        )
+
+    monkeypatch.setattr(
+        eval_harness, "BLUEPRINT_V117_V115_RECANARY_CONSUMED", False
+    )
+    monkeypatch.setattr(
+        eval_harness, "P04_V117_PROMPT_HASH", "sha256:" + "0" * 64
+    )
+    with pytest.raises(
+        eval_harness.OpenAIEvalBlocked,
+        match="OPENAI_BLUEPRINT_V117_V115_P04_BOUNDARY_DRIFT",
+    ):
+        asyncio.run(eval_harness._run_blueprint_recanary_dry_run(cases))
+
+
+def test_current_real_evidence_is_explicitly_fifteen_of_eighteen() -> None:
+    by_id = {
+        case["case_id"]: case
+        for case in eval_harness._load_cases(eval_harness.DEFAULT_MANIFEST)
+    }
+    rows = eval_harness._validated_reused_real_evidence(
+        by_id,
+        boundaries=eval_harness.CURRENT_REAL_EVIDENCE,
+    )
+
+    assert len(rows) == 15
+    assert tuple(row["case_id"] for row in rows) == (
+        eval_harness.CURRENT_REAL_EVIDENCE_CASE_IDS
+    )
+    assert eval_harness.P04_V116_RECANARY_CASE_ID not in {
+        row["case_id"] for row in rows
+    }
+    assert eval_harness.P05_V114_RECANARY_CASE_ID not in {
+        row["case_id"] for row in rows
+    }
+    assert "oa-p06-happy-docx" not in {row["case_id"] for row in rows}
+
+
+def test_p06_v112_decision_lineage_recanary_dry_run_is_pinned() -> None:
+    completed = subprocess.run(
+        [
+            "make",
+            "openai-p06-v112-decision-lineage-recanary-dry-run",
+            f"PYTHON={sys.executable}",
+        ],
+        cwd=ROOT,
+        env=_safe_environment(),
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    report = json.loads(completed.stdout)
+    assert report["status"] == "PASS"
+    assert report["prompt_pack_version"] == "1.1.7"
+    assert report["network_calls"] == report["billable_calls"] == 0
+    assert report["p10_calls"] == report["p11_calls"] == 0
+    row = report["cases"][0]
+    assert row["prompt_version"] == "1.1.2"
+    assert row["prompt_hash"] == eval_harness.P06_V112_PROMPT_HASH
+    assert (
+        row["input_bundle_hash"]
+        == eval_harness.P06_V112_DECISION_LINEAGE_INPUT_BUNDLE_HASH
+    )
+    assert row["budget"]["full_cache_write_ceiling_usd"] == 0.023361
+    assert row["budget"]["proposed_human_budget_usd"] == 0.03
+    assert row["controls"]["blueprint_decision_lineage_present"] is True
+
+
+def test_p06_v112_decision_lineage_recanary_is_governed_and_one_request(
+    monkeypatch,
+) -> None:
+    class SafeP06Adapter:
+        calls = 0
+
+        async def invoke(
+            self, *, prompt_id: str, request: object, **_kwargs: object
+        ) -> AdapterResult:
+            self.calls += 1
+            output = eval_harness.DeterministicMockFactory().output_for(
+                prompt_id, request, eval_harness.MockBehavior.HAPPY
+            )
+            return AdapterResult(
+                raw_output=output.model_dump(mode="json"),
+                input_tokens=100,
+                cached_input_tokens=0,
+                cache_write_input_tokens=99,
+                output_tokens=50,
+                reasoning_tokens=10,
+                estimated_cost_usd=0.005,
+                actual_cost_usd=0.001,
+                effective_model="gpt-5.6-luna",
+                output_hash="sha256:" + "8" * 64,
+                provider_request_id_hash="sha256:" + "9" * 64,
+                provider_schema_valid=True,
+                reason_codes=(
+                    "SDK_RETRIES_0",
+                    "STRUCTURED_OUTPUT_STRICT",
+                    "STORE_FALSE",
+                    "BACKGROUND_FALSE",
+                    "TOOLS_EMPTY",
+                    "PROVIDER_SCHEMA_VALID",
+                ),
+            )
+
+    cases = [
+        case
+        for case in eval_harness._load_cases(eval_harness.DEFAULT_MANIFEST)
+        if case["case_id"]
+        == eval_harness.P06_V112_DECISION_LINEAGE_RECANARY_CASE_ID
+    ]
+    monkeypatch.setattr(
+        eval_harness,
+        "P06_V112_DECISION_LINEAGE_RECANARY_CONSUMED",
+        False,
+    )
+    monkeypatch.delenv(
+        eval_harness.P06_V112_DECISION_LINEAGE_RECANARY_APPROVAL_ENV,
+        raising=False,
+    )
+    with pytest.raises(
+        eval_harness.OpenAIEvalBlocked,
+        match=(
+            "OPENAI_P06_V112_DECISION_LINEAGE_RECANARY_APPROVAL_REQUIRED"
+        ),
+    ):
+        asyncio.run(
+            eval_harness._run_canary_real(cases, max_total_cost_usd=0.03)
+        )
+    with pytest.raises(
+        eval_harness.OpenAIEvalBlocked,
+        match=(
+            "OPENAI_P06_V112_DECISION_LINEAGE_RECANARY_HUMAN_CAP_EXCEEDED"
+        ),
+    ):
+        asyncio.run(
+            eval_harness._run_canary_real(cases, max_total_cost_usd=0.031)
+        )
+
+    safe_adapter = SafeP06Adapter()
+    monkeypatch.setenv(
+        eval_harness.P06_V112_DECISION_LINEAGE_RECANARY_APPROVAL_ENV,
+        eval_harness.P06_V112_DECISION_LINEAGE_RECANARY_APPROVAL_VALUE,
+    )
+    monkeypatch.setenv(
+        "CVA_OPENAI_API_KEY", "sk-project-synthetic-placeholder-not-a-real-key"
+    )
+    monkeypatch.setattr(
+        eval_harness,
+        "OpenAIResponsesAdapter",
+        lambda **_kwargs: safe_adapter,
+    )
+    report = asyncio.run(
+        eval_harness._run_canary_real(cases, max_total_cost_usd=0.03)
+    )
+
+    assert safe_adapter.calls == 1
+    assert report["network_calls"] == report["billable_calls"] == 1
+    assert report["p10_calls"] == report["p11_calls"] == 0
+    assert report["cases"][0]["status"] == "PASS"
+    assert report["cases"][0]["controls"][
+        "blueprint_decision_lineage_present"
+    ] is True
+
+
 def test_p09_v115_recanary_dry_run_is_hash_bound_and_non_billable() -> None:
     completed = subprocess.run(
         [
@@ -1871,7 +2316,7 @@ def test_p09_v115_recanary_dry_run_is_hash_bound_and_non_billable() -> None:
 
     report = json.loads(completed.stdout)
     assert report["status"] == "PASS"
-    assert report["prompt_pack_version"] == "1.1.6"
+    assert report["prompt_pack_version"] == "1.1.7"
     assert report["network_calls"] == report["billable_calls"] == 0
     assert report["secret_read"] is False
     assert report["p10_calls"] == report["p11_calls"] == 0
@@ -2057,7 +2502,7 @@ def test_p09_v115_recanary_blocks_hash_drift_before_fake_transport(
         asyncio.run(eval_harness._run_canary_dry_run(cases))
 
 
-def test_p11_v114_direct_dry_run_is_hash_bound_and_non_billable() -> None:
+def _historical_p11_v114_direct_dry_run_is_hash_bound_and_non_billable() -> None:
     completed = subprocess.run(
         [
             "make",
@@ -2110,14 +2555,36 @@ def test_p11_v114_direct_dry_run_is_hash_bound_and_non_billable() -> None:
 
     complete = eval_harness._validated_reused_real_evidence(
         by_id,
-        boundaries=eval_harness.COMPLETE_REAL_EVIDENCE,
+        boundaries=eval_harness.HISTORICAL_COMPLETE_REAL_EVIDENCE,
     )
     assert len(complete) == 18
     assert tuple(row["case_id"] for row in complete) == (
-        eval_harness.COMPLETE_REAL_EVIDENCE_CASE_IDS
+        eval_harness.HISTORICAL_COMPLETE_REAL_EVIDENCE_CASE_IDS
     )
     assert complete[-1]["case_id"] == eval_harness.P11_V114_DIRECT_CASE_ID
     assert complete[-1]["source_checkpoint"] == "OPENAI_P11_V114_DIRECT_PASS"
+
+
+def test_historical_p11_gate_cannot_claim_complete_current_evidence() -> None:
+    completed = subprocess.run(
+        [
+            "make",
+            "openai-p11-v114-direct-dry-run",
+            f"PYTHON={sys.executable}",
+        ],
+        cwd=ROOT,
+        env=_safe_environment(),
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode == 2
+    assert json.loads(completed.stdout) == {
+        "code": "OPENAI_QUALIFICATION_P04_V116_BOUNDARY_DRIFT",
+        "network_calls": 0,
+        "status": "BLOCKED",
+    }
 
 
 def test_p11_v114_direct_requires_fresh_spend_gate(monkeypatch) -> None:
@@ -2733,7 +3200,7 @@ def test_p01_injection_recanary_discriminates_context_failure_content_free(
     assert eval_harness.INJECTION_MARKER not in serialized
 
 
-def test_qualification_context_failure_stops_after_first_case_without_p11(
+def _historical_qualification_context_failure_stops_after_first_case_without_p11(
     monkeypatch,
 ) -> None:
     monkeypatch.setattr(

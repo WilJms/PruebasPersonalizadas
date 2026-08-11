@@ -23,6 +23,7 @@ from comprehension_verification.web.repository import (
     IdempotencyRow,
     JobRow,
     NotFound,
+    PolicyDecisionRow,
     Repository,
     WorkspaceRoleRow,
 )
@@ -609,7 +610,21 @@ def test_blocking_ambiguity_requires_durable_teacher_decision_before_blueprint()
             },
         )
         assert decision.status_code == 201, decision.text
+        assert decision.json()["decision"]["selected_option"] == {
+            "option_id": "option_keep",
+            "label": "Mantener alcance",
+            "consequence": "Conserva el alcance de la consigna.",
+        }
         decision_id = decision.json()["decision"]["decision_id"]
+        # Simulate a pre-1.1.7 JSON row: blueprint generation must rehydrate
+        # the selected option from the tenant-scoped ambiguity report without
+        # rewriting the historical record.
+        with app.state.runtime.repository.session() as session:
+            historical = session.get(PolicyDecisionRow, decision_id)
+            assert historical is not None
+            historical_data = dict(historical.data)
+            historical_data.pop("selected_option")
+            historical.data = historical_data
         resumed = client.post(
             f"/api/v1/activities/{activity_id}/blueprints:generate",
             headers=_mutating(csrf),
@@ -623,6 +638,10 @@ def test_blocking_ambiguity_requires_durable_teacher_decision_before_blueprint()
             f"/api/v1/activities/{activity_id}/blueprints/latest"
         ).json()["blueprint"]
         assert blueprint["decision_ids"] == [decision_id]
+        persisted = app.state.runtime.repository.get(
+            PolicyDecisionRow, decision_id
+        )
+        assert "selected_option" not in persisted.data
 
 
 def test_stage1_single_submission_mock_e2e_survives_new_browser_session() -> None:

@@ -5490,6 +5490,17 @@
           "title": "Selected Option Id",
           "type": "string"
         },
+        "selected_option": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DecisionOption"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
         "decided_by": {
           "maxLength": 128,
           "minLength": 3,

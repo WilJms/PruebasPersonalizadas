@@ -2,7 +2,49 @@
 
 Fecha de corte: 2026-08-11 (America/Santiago).
 
-## Estado vigente — `OPENAI_REAL_P04_V116_REMEDIATION_DEPLOY_REQUIRED` (2026-08-11)
+## Estado vigente — `OPENAI_REAL_BLUEPRINT_V117_V115_RECANARY_REQUIRED` (2026-08-11)
+
+El candidato `dfd102d85816de30b3b082777268388061f83585` fue construido por
+Cloud Build `78a7c1f4-b857-472b-b210-9d56e638190a`, verificado y desplegado
+con digest
+`sha256:9048f9da77fda2b5ab8d6a974d9b4b8b5a2b6a141062bcb36751b8516691e3ab`.
+Web permanece mock/sin clave y worker real con secreto v2, USD 0.55, P10
+false, task/paralelismo 1/1 y `maxRetries=0`; health/readiness y no-drift
+pasaron.
+
+El E2E sintético nuevo creó la actividad `act_aecd258c017c5b37c603`. El job
+`job_79990d0a59293ba1579e`/execution `cva-worker-mlrkw` terminó
+infraestructuralmente `SUCCEEDED` y dominio `NEEDS_REVIEW` en P03. Se
+persistieron exactamente las tres opciones recomendadas y una única
+reanudación creó `job_6d448be53c5080bd1c61`/`cva-worker-j2lkz`. P04 y P05
+pasaron schema/Pydantic/contexto, el blueprint quedó `READY`, pero P05 devolvió
+`READY/REJECT`. Se aplicó el stop antes de edición, aprobación, submission o
+tercera ejecución.
+
+El tramo consumió cinco Responses y USD 0.03490275: P01 USD 0.00189380,
+P02 USD 0.00198725, P03 USD 0.00714900, P04 USD 0.01014495 y P05 USD
+0.01372775. P10/P11/Sol/fallback/retries fueron cero. La causa es doble: P05
+confundió el catálogo ADR-030 con un plan exacto-N, y las decisiones P03 sólo
+transportaban option IDs opacos.
+
+La remediación local introduce `PolicyDecision.selected_option` autocontenido,
+rehidratación compatible de decisiones históricas, P04 1.1.7, P05 1.1.5 y
+validación determinista de cobertura fuente y factibilidad exacta-N. El gate
+P04→P05 dry-run pasa con dos transportes fake, hashes
+`sha256:48f9aa99…`/`sha256:e2f944b4…` para P04 y
+`sha256:d5f35e82…`/`sha256:022bcdd3…` para P05 derivado, ceiling USD
+0.04988775 y cap USD 0.06. P06 decision-lineage también pasa dry-run, una
+request, ceiling USD 0.023361 y cap USD 0.03. Ambos gates reales siguen sin
+consumir; la evidencia vigente es 15/18 (P04/P05/P06 pendientes).
+
+La regresión local completa pasa con 549 pruebas backend, 16 skips PostgreSQL
+explícitos, una advertencia conocida y 80% de cobertura; frontend, deploy,
+seguridad, Docker, Terraform, contratos, fixtures, OpenAPI y secretos también
+están verdes. Este estado no es `OPENAI_REAL_MANUAL_EVAL_READY`. Faltan CI, las
+dos recanaries reales gobernadas, build/deploy del nuevo SHA y un E2E fresco
+que complete una edición P05 durable y el pipeline de submission.
+
+## Historial — `OPENAI_REAL_P04_V116_REMEDIATION_DEPLOY_REQUIRED` (2026-08-11)
 
 Las seis interpretaciones recomendadas de P03 fueron seleccionadas en la UI y
 persistidas como seis `PolicyDecision` distintas. `Guardar y reanudar

@@ -218,6 +218,24 @@ def _blueprint_policy() -> models.BlueprintPolicy:
     )
 
 
+def _policy_decision() -> models.PolicyDecision:
+    selected_option = models.DecisionOption(
+        option_id="option_closed_materials",
+        label="Usar únicamente el paquete autorizado",
+        consequence=(
+            "Mantiene el contexto cerrado y prohíbe fuentes de curso externas."
+        ),
+    )
+    return models.PolicyDecision(
+        decision_id="decision_closed_materials",
+        issue_id="issue_material_boundary",
+        selected_option_id=selected_option.option_id,
+        selected_option=selected_option,
+        decided_by="usr_teacher",
+        decided_at=FIXED_TIME,
+    )
+
+
 def _opportunity_template() -> models.QuestionOpportunityTemplate:
     return models.QuestionOpportunityTemplate(
         opportunity_template_id="opt_explain_1",
@@ -289,6 +307,7 @@ def _blueprint(*, status: models.WorkflowStatus = models.WorkflowStatus.READY) -
                 mode=models.StructuredJustificationMode.NOT_REQUIRED
             ),
         ),
+        decision_ids=[_policy_decision().decision_id],
     )
 
 
@@ -1118,6 +1137,7 @@ def build_mock_request(prompt_id: str) -> BaseModel:
         return models.BlueprintBuildRequest(
             activity_spec=_activity_spec(),
             rubric_spec=_rubric_spec(),
+            resolved_decisions=[_policy_decision()],
             blueprint_policy=_blueprint_policy(),
         )
     if prompt_id == "P05_BLUEPRINT_REVIEW_V1":
@@ -1125,6 +1145,7 @@ def build_mock_request(prompt_id: str) -> BaseModel:
             blueprint=_blueprint(),
             activity_spec=_activity_spec(),
             rubric_spec=_rubric_spec(),
+            resolved_decisions=[_policy_decision()],
             blueprint_policy=_blueprint_policy(),
         )
     if prompt_id == "P06_EVIDENCE_MAP_V1":
@@ -1314,6 +1335,44 @@ class DeterministicMockFactory:
                         status="PASS",
                         message="El catálogo conserva la frontera de evidencia.",
                         referenced_ids=[blueprint.blueprint_id],
+                    ),
+                    models.BlueprintReviewCheck(
+                        check_code="BLUEPRINT_CONCEPTUAL_COVERAGE",
+                        category="COVERAGE",
+                        status="PASS",
+                        message=(
+                            "Las dimensiones cubren conceptualmente las fuentes; "
+                            "la selección exacta pertenece al planificador."
+                        ),
+                        referenced_ids=[blueprint.blueprint_id],
+                    ),
+                    models.BlueprintReviewCheck(
+                        check_code="BLUEPRINT_CATALOG_DIVERSITY",
+                        category="COMPARABILITY",
+                        status="PASS",
+                        message=(
+                            "La diversidad entre oportunidades conserva una "
+                            "calibración auditable."
+                        ),
+                        referenced_ids=[blueprint.blueprint_id],
+                    ),
+                    models.BlueprintReviewCheck(
+                        check_code="BLUEPRINT_OPPORTUNITY_CATALOG",
+                        category="OPPORTUNITY_CATALOG",
+                        status=("PASS" if catalog_sufficient else "FAIL"),
+                        message=(
+                            "El catálogo contiene suficientes oportunidades "
+                            "independientemente del número solicitado."
+                            if catalog_sufficient
+                            else "El catálogo no contiene suficientes oportunidades."
+                        ),
+                        referenced_ids=[blueprint.blueprint_id],
+                        correction=(
+                            None
+                            if catalog_sufficient
+                            else "Regenerar suficientes oportunidades elegibles."
+                        ),
+                        critical=not catalog_sufficient,
                     ),
                     models.BlueprintReviewCheck(
                         check_code="BLUEPRINT_PLAN_FEASIBILITY",

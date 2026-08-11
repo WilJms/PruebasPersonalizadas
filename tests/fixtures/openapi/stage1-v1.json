@@ -5529,6 +5529,16 @@
             "title": "Schema Version",
             "type": "string"
           },
+          "selected_option": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DecisionOption"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "selected_option_id": {
             "maxLength": 128,
             "minLength": 3,

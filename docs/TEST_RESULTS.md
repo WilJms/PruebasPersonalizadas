@@ -4,14 +4,34 @@ Fecha de corte documental: 2026-08-11 (America/Santiago; ejecución cloud hasta
 2026-08-11 UTC).
 
 Este archivo registra únicamente resultados observados. Las credenciales y
-capacidades no se registran. Los recorridos cloud E2 históricos usaron mock; el
-primer E2E real del corte usa exclusivamente el fixture sintético autorizado,
-se reanuda tras seis decisiones P03 y se detiene en el fallo P04. P10
-permaneció deshabilitado en todos los casos. Los
+capacidades no se registran. Los recorridos cloud E2 históricos usaron mock;
+los E2E reales del corte usan exclusivamente fixtures sintéticos autorizados.
+El recorrido más reciente se detuvo en P05 `READY/REJECT`. P10 permaneció
+deshabilitado en todos los casos. Los
 resultados históricos E1 se conservan al final y no se presentan como evidencia
 del candidato E2.
 
-## Continuación P03, fallo P04 y recuperación P04 v1.1.6 — 2026-08-11
+## E2E detenido en P05 y remediación P04 1.1.7/P05 1.1.5 — 2026-08-11
+
+| Prueba o gate | Resultado observado |
+|---|---|
+| Candidato desplegado | SHA `dfd102d…`; build `78a7c1f4-b857-472b-b210-9d56e638190a` SUCCESS/VERIFIED; digest `sha256:9048f9da…`; Terraform/no-drift/health/readiness PASS |
+| Actividad | `act_aecd258c017c5b37c603`; sólo assignment/rubric sintéticos; `question_count=1` |
+| Primer job | `job_79990d0a59293ba1579e` / `cva-worker-mlrkw`; infra SUCCEEDED, dominio NEEDS_REVIEW P03; P01-P03 SCHEMA_VALID |
+| Decisión/reanudación | tres opciones recomendadas persistidas; exactamente un resume; `job_6d448be53c5080bd1c61` / `cva-worker-j2lkz` |
+| Stop P05 | P04/P05 SCHEMA_VALID y stage runs SUCCEEDED; blueprint READY; P05 READY/REJECT; job de dominio NEEDS_REVIEW; no edición/aprobación/submission/tercera ejecución |
+| Uso/costo | 5 Responses; USD 0.03490275; P10/P11/Sol/fallback/retries 0 |
+| Causa | P05 confundió catálogo ADR-030 con plan N=1 y penalizó diversidad; `PolicyDecision` no transportaba label/consequence de la opción elegida |
+| Contrato/prompts | snapshot `selected_option`, rehidratación histórica tenant-scoped, P04 1.1.7, P05 1.1.5, coverage fuente y factibilidad exacta-N fail-closed |
+| Dry-run acoplado | PASS 2 fake/0 red/0 billable; P04 output exacto→P05 input; ambos READY; P05 no REJECT/critical FAIL; ceiling USD 0.04988775/cap USD 0.06 |
+| P06 lineage dry-run | PASS 1 fake/0 red/0 billable; ceiling USD 0.023361/cap USD 0.03 |
+| Evidencia real vigente | 15/18; P04/P05/P06 pendientes; mapas históricos 18/18 no se presentan como actuales |
+| Regresión local remediada | backend 549 passed/16 skips PostgreSQL explícitos/1 warning conocido/80% cobertura; frontend typecheck + 34/34 + build; deploy 11/11; browser E1 1/1 y E2 2/2; Docker runtime/audit; Terraform fmt/validate; contratos, fixtures, OpenAPI, secretos y diff PASS |
+
+Las recanaries reales, el build/deploy del SHA remediado y un E2E fresco
+completo permanecen pendientes; no se declara `OPENAI_REAL_MANUAL_EVAL_READY`.
+
+## Historial — continuación P03, fallo P04 y recuperación P04 v1.1.6 — 2026-08-11
 
 | Prueba o gate | Resultado observado |
 |---|---|

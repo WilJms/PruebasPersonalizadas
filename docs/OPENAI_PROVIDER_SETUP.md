@@ -1,6 +1,33 @@
 # Setup gobernado del proveedor OpenAI
 
-## Estado vigente — P04 v1.1.6 validado; redeploy pendiente
+## Estado vigente — P04 1.1.7/P05 1.1.5 pendientes de recanary real
+
+Web permanece mock/sin clave y worker real sobre
+`sha256:9048f9da77fda2b5ab8d6a974d9b4b8b5a2b6a141062bcb36751b8516691e3ab`,
+con secreto v2, P10 false, USD 0.55, 1/1 y `maxRetries=0`. Ese digest contiene
+el candidato `dfd102d…`, no la remediación local actual.
+
+El E2E más reciente llegó a P05 en dos jobs: P01-P05 fueron estructural y
+contextualmente válidos, P04 persistió blueprint `READY`, y P05 respondió
+`READY/REJECT`. El stop dejó edición, aprobación y submission sin ejecutar.
+Fueron cinco Responses y USD 0.03490275; P10/P11/Sol/fallback/retries cero.
+
+El nuevo contrato transporta `DecisionOption` autocontenido; P04 1.1.7 y P05
+1.1.5 aplican ADR-030 correctamente. Antes de leer la clave, los entrypoints
+exigen fronteras hash-bound, cap y opt-ins distintos:
+
+```text
+CVA_OPENAI_BLUEPRINT_V117_V115_REMEDIATION_DECISION
+CVA_OPENAI_BLUEPRINT_V117_V115_RECANARY_APPROVAL
+CVA_OPENAI_P06_V112_DECISION_LINEAGE_RECANARY_APPROVAL
+```
+
+El gate acoplado admite exactamente P04→P05, máximo dos Responses, cap USD
+0.06 y cero P10/P11/retries/fallback/Sol. P06 usa un gate independiente de una
+request y cap USD 0.03. Los dry-runs pasan; los gates reales no están
+consumidos. La evidencia vigente es 15/18.
+
+## Historial — P04 v1.1.6 validado; redeploy pendiente
 
 Web permanece mock y sin clave. Worker sigue real sobre el digest
 `sha256:97960034f6c4c6c3b2967d186035f0940e481f9e2c9bf9df24213cd30d31aaeb`,

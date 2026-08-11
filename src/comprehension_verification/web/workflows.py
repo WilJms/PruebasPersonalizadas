@@ -435,7 +435,15 @@ class Stage1Service:
         issue = next((item for item in report.issues if item.issue_id == issue_id), None)
         if issue is None:
             raise WorkflowError("INVENTED_ID", "Unknown ambiguity issue", status_code=404)
-        if selected_option_id not in {item.option_id for item in issue.options}:
+        selected_option = next(
+            (
+                item
+                for item in issue.options
+                if item.option_id == selected_option_id
+            ),
+            None,
+        )
+        if selected_option is None:
             raise WorkflowError(
                 "INVENTED_ID", "Selected option does not belong to the issue"
             )
@@ -445,6 +453,7 @@ class Stage1Service:
             ),
             issue_id=issue_id,
             selected_option_id=selected_option_id,
+            selected_option=selected_option,
             decided_by=actor.user_id,
             decided_at=utc_now(),
             note=note,
@@ -477,10 +486,52 @@ class Stage1Service:
     def _resolved_policy_decisions(
         self, activity_id: str, tenant_id: str
     ) -> list[m.PolicyDecision]:
-        return [
+        decisions = [
             m.PolicyDecision.model_validate(row.data)
             for row in self.repository.policy_decisions(activity_id, tenant_id)
         ]
+        if not any(decision.selected_option is None for decision in decisions):
+            return decisions
+
+        # Decisions persisted before the selected-option snapshot became
+        # canonical remain readable.  Rehydrate their immutable view from the
+        # tenant-scoped ambiguity report without mutating historical rows.
+        try:
+            report = m.AmbiguityReport.model_validate(
+                cast(
+                    AmbiguityRow,
+                    self.repository.scoped(
+                        AmbiguityRow, activity_id, tenant_id
+                    ),
+                ).data
+            )
+        except NotFound:
+            return decisions
+        issues_by_id = {issue.issue_id: issue for issue in report.issues}
+        enriched: list[m.PolicyDecision] = []
+        for decision in decisions:
+            if decision.selected_option is not None:
+                enriched.append(decision)
+                continue
+            issue = issues_by_id.get(decision.issue_id)
+            option = (
+                next(
+                    (
+                        item
+                        for item in issue.options
+                        if item.option_id == decision.selected_option_id
+                    ),
+                    None,
+                )
+                if issue is not None
+                else None
+            )
+            enriched.append(
+                decision.model_copy(update={"selected_option": option})
+                if option is not None
+                else decision
+            )
+        return enriched
 
     def create_upload(
         self,

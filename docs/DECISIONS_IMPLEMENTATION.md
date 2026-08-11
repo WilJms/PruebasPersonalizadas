@@ -763,9 +763,10 @@
   intento con `OPENAI_P11_V114_DIRECT_ALREADY_CONSUMED` antes de credencial y
   adapter. Se conservan usage, latencia y hashes content-free; no payload,
   output, clave ni request ID en claro.
-- **Evidencia:** las 17 fronteras anteriores se revalidaron antes de la llamada
-  y `COMPLETE_REAL_EVIDENCE` fija ahora los 18 casos real-eligible. La cobertura
-  es 18/18 y P0/P1 permanecen en cero.
+- **Evidencia histórica:** las 17 fronteras anteriores se revalidaron antes de
+  la llamada y el mapa hoy llamado `HISTORICAL_COMPLETE_REAL_EVIDENCE` fijó
+  entonces los 18 casos real-eligible. D-065 registra los límites que dejaron
+  de ser actuales tras cambios posteriores.
 - **Separación de gates:** completar el corpus prueba qualification técnica del
   proveedor, pero no autoriza ni prueba el runtime cloud. Build/digest,
   IAM/Terraform deploy y E2E sintético real conservan autorizaciones separadas,
@@ -889,3 +890,38 @@
   producto sobre P04 v1.1.6.
 - **Relación:** D-053, D-054, D-056, D-063, ADR-005/ADR-034,
   `OPENAI_REAL_MODEL_VALIDATION.md` y `REAL_MODEL_EVALS.md`.
+
+## D-065 - Las decisiones P03 viajan autocontenidas y P05 revisa un catálogo, no un plan
+
+- **Observación de producto:** sobre el SHA `dfd102d…` y digest
+  `sha256:9048f9da…`, el E2E nuevo ejecutó P01-P05 en dos Cloud Run
+  executions. P04 produjo y persistió un blueprint `READY`, pero P05 devolvió
+  `READY/REJECT` con fallos críticos de cobertura, catálogo y factibilidad. Se
+  respetó el stop: no hubo edición, aprobación, submission ni tercera
+  ejecución.
+- **Causa normativa:** P05 interpretó `question_count=1` como obligación de que
+  cada oportunidad cubriera todos los criterios y trató la diversidad entre
+  oportunidades como falta de comparabilidad. Eso contradice ADR-030: el
+  catálogo es independiente de N y el planificador selecciona después
+  exactamente N. Además, `PolicyDecision` conservaba sólo un option ID opaco;
+  P04/P05 no recibían la etiqueta y consecuencia elegidas por la persona.
+- **Contrato:** `PolicyDecision.selected_option` conserva ahora el snapshot
+  inmutable de `DecisionOption`. Las requests P04/P05 exigen decisiones
+  autocontenidas; workflows nuevos las persisten y las filas históricas se
+  rehidratan tenant-scoped desde su `AmbiguityReport` sin reescribir historia.
+- **Prompts y validación:** P04 avanza a 1.1.7 y P05 a 1.1.5. Separan cobertura
+  conceptual del catálogo, cobertura obligatoria por plan y factibilidad
+  exacta-N; no inventan oportunidades compuestas ni penalizan diversidad
+  válida. El gateway rechaza cobertura fuente incompleta y catálogos que no
+  pueden formar N dentro del tiempo/calidad configurados.
+- **Gate acoplado:** la recanary preparada ejecuta exactamente P04 y luego P05,
+  usando el output P04 validado como input P05. El dry-run pasó con dos
+  transportes fake, ceiling full-cache-write USD 0.04988775, cap USD 0.06,
+  retries/P10/P11/Sol/fallback cero y stop al primer fallo. Una recanary P06
+  separada, de una request y cap USD 0.03, cubre el nuevo lineage de decisiones.
+- **Evidencia vigente:** los hashes invalidados son P04, P05 y P06; por tanto
+  sólo 15/18 observaciones siguen vigentes hasta ejecutar los gates reales. El
+  mapa de 18/18 de D-059/D-064 queda explícitamente histórico.
+- **Relación:** D-059, D-062, D-063, D-064, ADR-030/ADR-034,
+  `OPENAI_REAL_MODEL_VALIDATION.md`, `REAL_MODEL_EVALS.md` y
+  `OPENAI_COST_BUDGETS.md`.

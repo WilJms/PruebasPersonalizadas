@@ -110,8 +110,8 @@ def test_registry_is_exact_complete_and_immutable() -> None:
 
     assert PROMPT_SPECS["P01_ACTIVITY_SPEC_V1"].prompt_version == "1.1.2"
     assert PROMPT_SPECS["P02_RUBRIC_NORMALIZE_V1"].prompt_version == "1.1.3"
-    assert PROMPT_SPECS["P04_BLUEPRINT_BUILD_V1"].prompt_version == "1.1.6"
-    assert PROMPT_SPECS["P05_BLUEPRINT_REVIEW_V1"].prompt_version == "1.1.4"
+    assert PROMPT_SPECS["P04_BLUEPRINT_BUILD_V1"].prompt_version == "1.1.7"
+    assert PROMPT_SPECS["P05_BLUEPRINT_REVIEW_V1"].prompt_version == "1.1.5"
     assert PROMPT_SPECS["P09_GUIDE_BUILD_V1"].prompt_version == "1.1.5"
     assert PROMPT_SPECS["P11_SCHEMA_REPAIR_V1"].prompt_version == "1.1.4"
     assert {
@@ -137,7 +137,7 @@ def test_registry_is_exact_complete_and_immutable() -> None:
         PROMPT_SPECS["P01_ACTIVITY_SPEC_V1"].temperature = 1.0
 
 
-def test_p04_v116_makes_provider_invisible_invariants_explicit() -> None:
+def test_p04_v117_makes_provider_invisible_invariants_explicit() -> None:
     p04 = PROMPT_SPECS["P04_BLUEPRINT_BUILD_V1"].developer_instruction
     for exact_rule in (
         "cada decision_id de resolved_decisions exactamente una vez",
@@ -150,17 +150,26 @@ def test_p04_v116_makes_provider_invisible_invariants_explicit() -> None:
         "subconjunto de assessment_constraints.allowed_response_formats",
         "selected_opportunity_template_ids",
         "approved_by=null y approved_at=null",
+        "selected_option inmutable",
+        "No infieras el significado de un ID opaco",
+        "required_criterion_ids como única cobertura obligatoria",
+        "ni exijas una oportunidad compuesta",
         "status=BLOCKED con Diagnostic completo",
     ):
         assert exact_rule in p04
 
 
-def test_p05_v114_and_p11_v114_make_root_invariant_handling_explicit() -> None:
+def test_p05_v115_and_p11_v114_make_root_invariant_handling_explicit() -> None:
     p05 = PROMPT_SPECS["P05_BLUEPRINT_REVIEW_V1"].developer_instruction
     assert "estado de finalización de esta revisión" in p05
     assert "status=READY y approval_recommendation=REJECT" in p05
     assert "approval_recommendation debe ser null" in p05
     assert "critical=true con status=FAIL" in p05
+    assert "catálogo independiente de question_count" in p05
+    assert "required_criterion_ids está vacío" in p05
+    assert "No rechaces un catálogo amplio" in p05
+    assert "no exijas identidad global" in p05
+    assert "selected_option snapshot" in p05
 
     p11 = PROMPT_SPECS["P11_SCHEMA_REPAIR_V1"].developer_instruction
     assert "path=/ y error_type=value_error" in p11
@@ -189,6 +198,49 @@ def test_p09_v115_makes_all_context_relationships_explicit() -> None:
         "NEEDS_REVIEW sin items parciales",
     ):
         assert exact_reference in p09
+
+
+def test_blueprint_requests_require_self_contained_teacher_decisions() -> None:
+    request = build_mock_request("P04_BLUEPRINT_BUILD_V1")
+    decision = request.resolved_decisions[0]
+    assert decision.selected_option is not None
+    assert decision.selected_option.option_id == decision.selected_option_id
+
+    raw = request.model_dump(mode="json")
+    raw["resolved_decisions"][0]["selected_option"] = None
+    with pytest.raises(
+        ValidationError,
+        match="resolved decisions require selected_option snapshots",
+    ):
+        models.BlueprintBuildRequest.model_validate(raw)
+
+    mismatched = decision.model_dump(mode="json")
+    mismatched["selected_option"]["option_id"] = "option_other"
+    with pytest.raises(
+        ValidationError,
+        match="selected_option must match selected_option_id",
+    ):
+        models.PolicyDecision.model_validate(mismatched)
+
+    duplicate_decision = decision.model_dump(mode="json")
+    duplicate_decision["selected_option_id"] = "option_duplicate"
+    duplicate_decision["selected_option"]["option_id"] = "option_duplicate"
+    raw = request.model_dump(mode="json")
+    raw["resolved_decisions"].append(duplicate_decision)
+    with pytest.raises(
+        ValidationError,
+        match="resolved decisions must have unique decision_ids",
+    ):
+        models.BlueprintBuildRequest.model_validate(raw)
+
+    duplicate_decision["decision_id"] = "decision_duplicate"
+    raw = request.model_dump(mode="json")
+    raw["resolved_decisions"].append(duplicate_decision)
+    with pytest.raises(
+        ValidationError,
+        match="resolved decisions must have unique issue_ids",
+    ):
+        models.BlueprintBuildRequest.model_validate(raw)
 
 
 @pytest.mark.parametrize("prompt_id", tuple(EXPECTED_PROMPT_CONTRACTS))
@@ -738,6 +790,68 @@ def test_p04_rejects_invented_source_ids_and_records_attempt() -> None:
         _invoke("P04_BLUEPRINT_BUILD_V1", gateway=gateway)
 
     assert [item.result for item in captured.value.ledgers] == ["SCHEMA_INVALID"]
+
+
+def test_p04_rejects_missing_verifiable_source_coverage() -> None:
+    prompt_id = "P04_BLUEPRINT_BUILD_V1"
+    request = build_mock_request(prompt_id)
+    first = request.rubric_spec.criteria[0]
+    request = request.model_copy(
+        update={
+            "rubric_spec": request.rubric_spec.model_copy(
+                update={
+                    "criteria": [
+                        first,
+                        first.model_copy(
+                            update={
+                                "criterion_id": "criterion_2",
+                                "name": "Límite",
+                            }
+                        ),
+                    ]
+                }
+            )
+        }
+    )
+
+    def omit_second_criterion(raw: dict) -> None:
+        raw["dimensions"][0]["criterion_ids"] = ["criterion_1"]
+
+    gateway = ModelGateway(
+        mock_adapter=ContextBreakingAdapter(prompt_id, omit_second_criterion)
+    )
+    with pytest.raises(GatewayContextError) as captured:
+        asyncio.run(
+            gateway.invoke(
+                prompt_id,
+                request,
+                build_trusted_context(request),
+            )
+        )
+
+    assert captured.value.failure.codes == (
+        ContextFailureCode.P04_SOURCE_COVERAGE_MISMATCH,
+    )
+
+
+def test_p04_rejects_catalog_without_an_exact_n_time_feasible_set() -> None:
+    def exceed_total_time(raw: dict) -> None:
+        for dimension in raw["dimensions"]:
+            for variant in dimension["evidence_variants"]:
+                for opportunity in variant["question_opportunities"]:
+                    opportunity["target_minutes"] = 6
+
+    gateway = ModelGateway(
+        mock_adapter=ContextBreakingAdapter(
+            "P04_BLUEPRINT_BUILD_V1", exceed_total_time
+        )
+    )
+    with pytest.raises(GatewayContextError) as captured:
+        _invoke("P04_BLUEPRINT_BUILD_V1", gateway=gateway)
+
+    assert captured.value.failure.codes == (
+        ContextFailureCode.P04_CATALOG_PLAN_INFEASIBLE,
+    )
 
 
 def test_p08_cannot_accept_below_trusted_validation_thresholds() -> None:

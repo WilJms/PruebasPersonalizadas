@@ -5,11 +5,41 @@ El corpus inicial contiene 20 casos exclusivamente sintéticos en
 entregas ni contenido estudiantil real. El rango gobernado es de 10 a 30 casos,
 con IDs únicos y clasificación obligatoria
 `SYNTHETIC_ONLY_NO_STUDENT_DATA`. El manifest fija además
-`route_profile=LUNA_BASELINE_V1`, prompt pack candidato `1.1.6` y schema
+`route_profile=LUNA_BASELINE_V1`, prompt pack candidato `1.1.7` y schema
 `1.1.0`. P01, P03 y P06-P08 conservan su versión individual `1.1.2`; P02
-conserva `1.1.3`; P05/P11 usan `1.1.4`; P09 usa `1.1.5`; P04 usa `1.1.6`.
+conserva `1.1.3`; P05 usa `1.1.5`; P11 usa `1.1.4`; P09 usa `1.1.5`; P04
+usa `1.1.7`.
 
-## Resultado vigente — P04 v1.1.6 PASS; deploy de remediación pendiente
+## Resultado vigente — recanary acoplada P04 1.1.7/P05 1.1.5 preparada
+
+El E2E desplegado sobre `dfd102d…` ejecutó P01-P05 en dos jobs. P03 requirió
+tres decisiones recomendadas; P04 persistió un blueprint `READY`; P05 devolvió
+`READY/REJECT`. El stop dejó edición, aprobación y submission en cero. Las
+cinco Responses costaron USD 0.03490275, sin P10/P11/Sol/fallback/retries.
+
+La remediación conserva el snapshot semántico de cada `DecisionOption`, alinea
+P04/P05 con el catálogo independiente de N de ADR-030 y añade validación de
+cobertura fuente y factibilidad exacta-N. La nueva compuerta no prueba P04 y
+P05 por separado: usa el output validado de P04 como input exacto de P05.
+
+| Preparación content-free | Resultado |
+|---|---|
+| Dry-run P04→P05 | PASS; 2 fake/0 red/0 billable; ambos READY; P05 no REJECT, 0 critical FAIL |
+| Presupuesto | full-cache-write USD 0.04988775; cap USD 0.06; máximo 2 Responses |
+| Fronteras | P04 `sha256:48f9aa99…`/`sha256:e2f944b4…`; P05 `sha256:d5f35e82…`/input derivado `sha256:022bcdd3…` |
+| Controles | stop primer fallo; retries/P10/P11/Sol/fallback 0; decisiones autocontenidas, cobertura conceptual y exact-N |
+| P06 separado | PASS dry-run; una fake Response; ceiling USD 0.023361/cap USD 0.03 |
+
+El cambio de lineage invalida P06 además de P04/P05. Por ello
+`CURRENT_REAL_EVIDENCE` contiene 15/18 casos; el mapa anterior de 18/18 se
+conserva sólo como historia. Los dos gates reales permanecen sin consumir.
+
+```bash
+make openai-blueprint-v117-v115-recanary-dry-run
+make openai-p06-v112-decision-lineage-recanary-dry-run
+```
+
+## Historial — P04 v1.1.6 PASS; deploy de remediación pendiente
 
 La decisión docente resolvió las seis ambigüedades P03 en la UI y el segundo
 job reutilizó P01-P03 sin transporte. P04 v1.1.2 devolvió schema provider PASS

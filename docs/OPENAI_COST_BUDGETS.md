@@ -37,7 +37,36 @@ envelope manual. Antes de llamar, el gateway calcula el peor caso usando el
 máximo output del prompt; si supera el presupuesto restante, no crea
 transporte.
 
-## Consumo del E2E real y remediación P04 v1.1.6
+## Consumo E2E P01-P05 y gates preparados P04/P05/P06
+
+El E2E más reciente consumió cinco Responses antes del stop P05, por un total
+calculado de **USD 0.03490275**. No hubo P10, P11, Sol, fallback ni retry.
+
+| Tramo reciente | Responses | Costo calculado |
+|---|---:|---:|
+| P01 | 1 | USD 0.00189380 |
+| P02 | 1 | USD 0.00198725 |
+| P03 | 1 | USD 0.00714900 |
+| P04 | 1 | USD 0.01014495 |
+| P05 | 1 | USD 0.01372775 |
+| Total | **5** | **USD 0.03490275** |
+
+La remediación se valida con dos envelopes facturables separados y sin reserva
+P11. P04 debe pasar primero; sólo entonces su output validado se convierte en
+el input P05. El guard reserva full-cache-write antes de cada transporte y
+detiene la cadena si el segundo envelope no cabe en el remanente.
+
+| Gate pendiente | Requests máximas | Ceiling full-cache-write | Cap |
+|---|---:|---:|---:|
+| P04 1.1.7 → P05 1.1.5 | 2 | USD 0.04988775 | USD 0.06 |
+| P06 1.1.2 con decision lineage | 1 | USD 0.02336100 | USD 0.03 |
+| Agregado máximo, sin transferencia entre gates | **3** | **USD 0.07324875** | **USD 0.09** |
+
+Ambos dry-runs pasaron con 0 red/0 billable, retries 0 y P10/P11/Sol/fallback
+0. Los caps no son bolsas intercambiables: un stop o ahorro en un gate no
+autoriza repetirlo ni ampliar el otro.
+
+## Historial — consumo del E2E real y remediación P04 v1.1.6
 
 El primer job se detuvo en P03 después de tres Responses y USD 0.01302445. La
 reanudación autorizada persistió seis decisiones, reutilizó P01-P03 sin costo y

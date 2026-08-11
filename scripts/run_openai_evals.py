@@ -153,6 +153,66 @@ P05_V114_PROMPT_HASH = (
 P05_V114_INPUT_BUNDLE_HASH = (
     "sha256:be9521524e643adf11b13914a0e39bbb605f2962e1964b8535a8df1643177969"
 )
+BLUEPRINT_V117_V115_REMEDIATION_DECISION_ENV = (
+    "CVA_OPENAI_BLUEPRINT_V117_V115_REMEDIATION_DECISION"
+)
+BLUEPRINT_V117_V115_REMEDIATION_DECISION_VALUE = (
+    "OPENAI_BLUEPRINT_V117_V115_REMEDIATION_ACCEPTED"
+)
+BLUEPRINT_V117_V115_RECANARY_APPROVAL_ENV = (
+    "CVA_OPENAI_BLUEPRINT_V117_V115_RECANARY_APPROVAL"
+)
+BLUEPRINT_V117_V115_RECANARY_APPROVAL_VALUE = (
+    "OPENAI_BLUEPRINT_V117_V115_RECANARY_APPROVED"
+)
+BLUEPRINT_V117_V115_RECANARY_HUMAN_BUDGET_USD = 0.06
+BLUEPRINT_V117_V115_MAX_RESPONSES_REQUESTS = 2
+# This gate is intentionally fresh. It is a coupled observation: P04 must pass
+# first and its exact validated output becomes the P05 request. A successful
+# real observation must flip this constant and persist its hash-only evidence
+# before the same executable can be released.
+BLUEPRINT_V117_V115_RECANARY_CONSUMED = False
+P04_V117_PROMPT_HASH = (
+    "sha256:48f9aa9962819a49661d917ee7b6f6fd37e31dc4ee4b11e446e76feb07108028"
+)
+P04_V117_INPUT_BUNDLE_HASH = (
+    "sha256:e2f944b4161aa99f1d474bd3fc41821727470fd31ddbc62b37eb2eeade8176c7"
+)
+P05_V115_PROMPT_HASH = (
+    "sha256:d5f35e82079837bc71693295d21c37cc0ee39b5aa085beb61912d56333f834e7"
+)
+# These two hashes bind the deterministic, non-billable chain used by CI. The
+# real P05 bundle is deliberately derived from (and therefore bound to) the
+# provider's validated P04 output and is recorded only after that first call.
+BLUEPRINT_V117_V115_DRY_RUN_P04_OUTPUT_HASH = (
+    "sha256:8cb2d6168bf848bd83e5d36bbb673a8b1cd7d87592581b1400319d010a877070"
+)
+BLUEPRINT_V117_V115_DRY_RUN_P05_INPUT_BUNDLE_HASH = (
+    "sha256:022bcdd3de5e404331277e3803b94788cd4a1aa5a63619d460dd6963b46abe43"
+)
+BLUEPRINT_V117_V115_TARGET_REVIEW_CATEGORIES = frozenset(
+    {
+        "COVERAGE",
+        "OPPORTUNITY_CATALOG",
+        "PLAN_FEASIBILITY",
+        "COMPARABILITY",
+    }
+)
+P06_V112_DECISION_LINEAGE_RECANARY_APPROVAL_ENV = (
+    "CVA_OPENAI_P06_V112_DECISION_LINEAGE_RECANARY_APPROVAL"
+)
+P06_V112_DECISION_LINEAGE_RECANARY_APPROVAL_VALUE = (
+    "OPENAI_P06_V112_DECISION_LINEAGE_RECANARY_APPROVED"
+)
+P06_V112_DECISION_LINEAGE_RECANARY_CASE_ID = "oa-p06-happy-docx"
+P06_V112_DECISION_LINEAGE_RECANARY_HUMAN_BUDGET_USD = 0.03
+P06_V112_DECISION_LINEAGE_RECANARY_CONSUMED = False
+P06_V112_PROMPT_HASH = (
+    "sha256:3fcde330e122adbf33a21021e89c5bf02eb746203c678c258478e6377519c91d"
+)
+P06_V112_DECISION_LINEAGE_INPUT_BUNDLE_HASH = (
+    "sha256:3cabdfaa9870b06aad390789037838966cc2cced3ecdf8f7b84336f6f0c492bc"
+)
 P09_V115_REMEDIATION_DECISION_ENV = (
     "CVA_OPENAI_P09_V115_REMEDIATION_DECISION"
 )
@@ -192,6 +252,7 @@ CANARY_CASE_PROMPTS = MappingProxyType(
         P02_V113_RECANARY_CASE_ID: "P02_RUBRIC_NORMALIZE_V1",
         P04_V116_RECANARY_CASE_ID: "P04_BLUEPRINT_BUILD_V1",
         P05_V114_RECANARY_CASE_ID: "P05_BLUEPRINT_REVIEW_V1",
+        P06_V112_DECISION_LINEAGE_RECANARY_CASE_ID: "P06_EVIDENCE_MAP_V1",
         P09_V115_RECANARY_CASE_ID: "P09_GUIDE_BUILD_V1",
         P11_V114_DIRECT_CASE_ID: "P11_SCHEMA_REPAIR_V1",
         "oa-p07-open-short-txt": "P07_QUESTION_BUILD_V1",
@@ -478,11 +539,11 @@ P11_DIRECT_PRIOR_REAL_EVIDENCE = MappingProxyType(
 P11_DIRECT_PRIOR_REAL_EVIDENCE_CASE_IDS = tuple(
     P11_DIRECT_PRIOR_REAL_EVIDENCE
 )
-# The single direct P11 observation completed the real-eligible corpus.  This
-# immutable map lets later offline/deploy gates prove that every one of the 18
-# observed executable boundaries is still byte-for-byte current without
-# retaining any provider payload or identifier in clear text.
-COMPLETE_REAL_EVIDENCE = MappingProxyType(
+# The single direct P11 observation completed the then-current real-eligible
+# corpus. P04 1.1.7 and P05 1.1.5 have since invalidated exactly those two
+# observations, so this map is historical audit evidence and must never be
+# interpreted as current qualification.
+HISTORICAL_COMPLETE_REAL_EVIDENCE = MappingProxyType(
     {
         **P11_DIRECT_PRIOR_REAL_EVIDENCE,
         P11_V114_DIRECT_CASE_ID: _ReusedRealEvidenceBoundary(
@@ -497,7 +558,26 @@ COMPLETE_REAL_EVIDENCE = MappingProxyType(
         ),
     }
 )
-COMPLETE_REAL_EVIDENCE_CASE_IDS = tuple(COMPLETE_REAL_EVIDENCE)
+HISTORICAL_COMPLETE_REAL_EVIDENCE_CASE_IDS = tuple(
+    HISTORICAL_COMPLETE_REAL_EVIDENCE
+)
+# Fifteen boundaries remain current. The coupled gate above is the only path
+# that can restore P04/P05 qualification for this executable. P06 also changed
+# because its blueprint fixture now carries decision lineage; it requires its
+# own later evidence and is not smuggled into this two-request authorization.
+CURRENT_REAL_EVIDENCE = MappingProxyType(
+    {
+        case_id: boundary
+        for case_id, boundary in HISTORICAL_COMPLETE_REAL_EVIDENCE.items()
+        if case_id
+        not in {
+            P04_V116_RECANARY_CASE_ID,
+            P05_V114_RECANARY_CASE_ID,
+            "oa-p06-happy-docx",
+        }
+    }
+)
+CURRENT_REAL_EVIDENCE_CASE_IDS = tuple(CURRENT_REAL_EVIDENCE)
 QUALIFICATION_REUSED_REAL_CASE_IDS = tuple(
     QUALIFICATION_REUSED_REAL_EVIDENCE
 )
@@ -615,6 +695,78 @@ class _QualificationRequestGuard:
 
 
 @dataclass(slots=True)
+class _CoupledBlueprintRequestGuard:
+    """Allow only the ordered P04 -> P05 remediation chain."""
+
+    delegate: Any
+    max_total_cost_usd: float
+    request_attempts: int = 0
+    reserved_full_cache_write_ceiling_usd: float = 0.0
+    prompt_ids: list[str] = field(default_factory=list)
+    results: list[Any] = field(default_factory=list)
+
+    async def invoke(self, **kwargs: Any) -> Any:
+        expected_order = (
+            "P04_BLUEPRINT_BUILD_V1",
+            "P05_BLUEPRINT_REVIEW_V1",
+        )
+        prompt_id = str(kwargs.get("prompt_id", ""))
+        if self.request_attempts >= BLUEPRINT_V117_V115_MAX_RESPONSES_REQUESTS:
+            raise PermanentProviderError(
+                "BLUEPRINT_RECANARY_REQUEST_LIMIT_EXCEEDED"
+            )
+        if prompt_id != expected_order[self.request_attempts]:
+            raise PermanentProviderError(
+                "BLUEPRINT_RECANARY_ORDER_VIOLATION"
+            )
+        if prompt_id in {
+            "P10_ENRICHED_CONTEXT_V1",
+            "P11_SCHEMA_REPAIR_V1",
+        }:
+            raise PermanentProviderError(
+                "BLUEPRINT_RECANARY_FORBIDDEN_PROMPT"
+            )
+        route = kwargs.get("route")
+        request = kwargs.get("request")
+        envelope = kwargs.get("envelope")
+        if (
+            route is None
+            or route.model != LUNA_MODEL_ID
+            or route.fallback_route_id is not None
+        ):
+            raise PermanentProviderError(
+                "BLUEPRINT_RECANARY_ROUTE_NOT_LUNA_ONLY"
+            )
+        if request is None or envelope is None:
+            raise PermanentProviderError(
+                "BLUEPRINT_RECANARY_REQUEST_METADATA_MISSING"
+            )
+        spec = prompt_spec(prompt_id)
+        input_upper_bound = estimate_openai_input_tokens(
+            spec, request, envelope
+        )
+        call_ceiling = estimate_cost_usd(
+            model=LUNA_MODEL_ID,
+            input_tokens=input_upper_bound,
+            cache_write_tokens=input_upper_bound,
+            output_tokens=spec.max_output_tokens,
+        )
+        if (
+            self.reserved_full_cache_write_ceiling_usd + call_ceiling
+            > self.max_total_cost_usd
+        ):
+            raise ProviderBudgetError(
+                "BLUEPRINT_RECANARY_AGGREGATE_BUDGET_EXCEEDED"
+            )
+        self.reserved_full_cache_write_ceiling_usd += call_ceiling
+        self.request_attempts += 1
+        self.prompt_ids.append(prompt_id)
+        result = await self.delegate.invoke(**kwargs)
+        self.results.append(result)
+        return result
+
+
+@dataclass(slots=True)
 class _SyntheticCanaryResponses:
     """Versioned fake Responses transport; it never constructs a network client."""
 
@@ -667,6 +819,77 @@ class _SyntheticCanaryResponses:
 @dataclass(slots=True)
 class _SyntheticCanaryClient:
     responses: _SyntheticCanaryResponses
+
+
+@dataclass(slots=True)
+class _SyntheticCoupledResponses:
+    """Queued fake transport for the dynamically chained P04 -> P05 run."""
+
+    queued: list[tuple[str, Any]] = field(default_factory=list)
+    calls: list[dict[str, Any]] = field(default_factory=list)
+
+    def enqueue(self, prompt_id: str, request: Any) -> None:
+        self.queued.append((prompt_id, request))
+
+    async def create(self, **kwargs: Any) -> Any:
+        call_index = len(self.calls)
+        if call_index >= BLUEPRINT_V117_V115_MAX_RESPONSES_REQUESTS:
+            raise AssertionError(
+                "Coupled fake transport received an extra request"
+            )
+        if call_index >= len(self.queued):
+            raise AssertionError(
+                "Coupled fake transport request was not derived in order"
+            )
+        prompt_id, request = self.queued[call_index]
+        self.calls.append(kwargs)
+        output = DeterministicMockFactory().output_for(
+            prompt_id, request, MockBehavior.HAPPY
+        )
+        output_text = json.dumps(
+            output.model_dump(mode="json"),
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+        )
+        output_tokens = min(
+            prompt_spec(prompt_id).max_output_tokens,
+            max(1, len(output_text.encode("utf-8"))),
+        )
+        return SimpleNamespace(
+            _request_id=f"req_synthetic_blueprint_{call_index + 1}",
+            error=None,
+            status="completed",
+            model=kwargs["model"],
+            output=[
+                SimpleNamespace(
+                    type="message",
+                    content=[
+                        SimpleNamespace(
+                            type="output_text", text=output_text
+                        )
+                    ],
+                )
+            ],
+            usage=SimpleNamespace(
+                input_tokens=estimate_openai_input_tokens(
+                    prompt_spec(prompt_id),
+                    request,
+                    _envelope_for(prompt_id, request),
+                ),
+                input_tokens_details=SimpleNamespace(
+                    cached_tokens=0,
+                    cache_write_tokens=0,
+                ),
+                output_tokens=output_tokens,
+                output_tokens_details=SimpleNamespace(reasoning_tokens=0),
+            ),
+        )
+
+
+@dataclass(slots=True)
+class _SyntheticCoupledClient:
+    responses: _SyntheticCoupledResponses
 
 
 def _envelope_for(
@@ -859,6 +1082,116 @@ def _request_for_case(case: dict[str, Any]) -> Any:
     return validated
 
 
+def _blueprint_recanary_p04_request(case: dict[str, Any]) -> models.BlueprintBuildRequest:
+    """Build the fixed two-criterion, one-question remediation boundary."""
+
+    base = _request_for_case(case)
+    if not isinstance(base, models.BlueprintBuildRequest):
+        raise OpenAIEvalBlocked(
+            "OPENAI_BLUEPRINT_V117_V115_P04_CASE_REQUIRED"
+        )
+    if base.rubric_spec is None or not base.rubric_spec.criteria:
+        raise OpenAIEvalBlocked(
+            "OPENAI_BLUEPRINT_V117_V115_RUBRIC_REQUIRED"
+        )
+    source_criterion = base.rubric_spec.criteria[0]
+    levels = [
+        models.RubricLevel(
+            level_id=f"level_{ordinal}",
+            label=("Insuficiente", "Básico", "Suficiente", "Avanzado")[
+                ordinal
+            ],
+            ordinal=ordinal,
+            descriptor=(
+                "No presenta evidencia verificable."
+                if ordinal == 0
+                else f"Presenta evidencia verificable de nivel {ordinal}."
+            ),
+            evidence_ids=list(source_criterion.evidence_ids),
+        )
+        for ordinal in range(4)
+    ]
+    criterion_one = source_criterion.model_copy(
+        update={"grading_weight": 0.5, "levels": levels},
+        deep=True,
+    )
+    criterion_two = source_criterion.model_copy(
+        update={
+            "criterion_id": "criterion_2",
+            "name": "Justificación localizada",
+            "grading_weight": 0.5,
+            "levels": [
+                level.model_copy(
+                    update={"level_id": f"justification_level_{level.ordinal}"}
+                )
+                for level in levels
+            ],
+            "observables": [
+                "Justifica una consecuencia usando evidencia localizada."
+            ],
+        },
+        deep=True,
+    )
+    rubric = base.rubric_spec.model_copy(
+        update={
+            "scale_label": "0-3",
+            "criteria": [criterion_one, criterion_two],
+            "reported_weight_total": 1.0,
+        },
+        deep=True,
+    )
+    first_outcome = base.activity_spec.learning_outcomes[0]
+    second_outcome = first_outcome.model_copy(
+        update={
+            "statement_id": "outcome_2",
+            "text": "Justificar una consecuencia localizada.",
+        },
+        deep=True,
+    )
+    activity_spec = base.activity_spec.model_copy(
+        update={
+            "learning_outcomes": [first_outcome, second_outcome]
+        },
+        deep=True,
+    )
+    base_decision = base.resolved_decisions[0]
+    scale_option = models.DecisionOption(
+        option_id="option_scale_four_levels",
+        label="Usar cuatro niveles de desempeño",
+        consequence="Normaliza la escala como 0-3 con cuatro niveles.",
+    )
+    weights_option = models.DecisionOption(
+        option_id="option_weights_equal",
+        label="Usar ponderaciones iguales",
+        consequence="Asigna 0.5 a cada uno de los dos criterios.",
+    )
+    decisions = [
+        base_decision,
+        models.PolicyDecision(
+            decision_id="decision_scale_four_levels",
+            issue_id="issue_scoring_model",
+            selected_option_id=scale_option.option_id,
+            selected_option=scale_option,
+            decided_by=base_decision.decided_by,
+            decided_at=base_decision.decided_at,
+        ),
+        models.PolicyDecision(
+            decision_id="decision_weights_equal",
+            issue_id="issue_criterion_weights",
+            selected_option_id=weights_option.option_id,
+            selected_option=weights_option,
+            decided_by=base_decision.decided_by,
+            decided_at=base_decision.decided_at,
+        ),
+    ]
+    return models.BlueprintBuildRequest(
+        activity_spec=activity_spec,
+        rubric_spec=rubric,
+        resolved_decisions=decisions,
+        blueprint_policy=base.blueprint_policy,
+    )
+
+
 def _is_abstention(output: Any) -> bool:
     if bool(getattr(output, "blocked", False)):
         return True
@@ -996,6 +1329,40 @@ def _selected_canary_case(cases: list[dict[str, Any]]) -> dict[str, Any]:
     ):
         raise OpenAIEvalBlocked("OPENAI_LUNA_CANARY_CASE_NOT_APPROVED")
     return case
+
+
+def _selected_blueprint_recanary_cases(
+    cases: list[dict[str, Any]],
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Select the fixed P04/P05 cases without permitting substitutions."""
+
+    by_id = {str(case.get("case_id", "")): case for case in cases}
+    selected_ids = {P04_V116_RECANARY_CASE_ID, P05_V114_RECANARY_CASE_ID}
+    if not selected_ids.issubset(by_id):
+        raise OpenAIEvalBlocked(
+            "OPENAI_BLUEPRINT_V117_V115_CASE_MISSING"
+        )
+    selected = (
+        by_id[P04_V116_RECANARY_CASE_ID],
+        by_id[P05_V114_RECANARY_CASE_ID],
+    )
+    expected_prompts = (
+        "P04_BLUEPRINT_BUILD_V1",
+        "P05_BLUEPRINT_REVIEW_V1",
+    )
+    for case, prompt_id in zip(selected, expected_prompts, strict=True):
+        if (
+            case.get("prompt_id") != prompt_id
+            or case.get("behavior") != "happy"
+            or case.get("expected") != "VALID"
+            or not case.get("real_eligible")
+            or case.get("content_profile") != "SUFFICIENT"
+            or case.get("rubric_profile") != "WITH_RUBRIC"
+        ):
+            raise OpenAIEvalBlocked(
+                "OPENAI_BLUEPRINT_V117_V115_CASE_POLICY_DRIFT"
+            )
+    return selected
 
 
 def _validated_reused_real_evidence(
@@ -1347,9 +1714,14 @@ def _canary_material(
     *,
     route_cap_usd: float,
     authorized_budget_usd: float | None = None,
+    request_override: Any | None = None,
 ) -> dict[str, Any]:
     prompt_id = str(case["prompt_id"])
-    request = _request_for_case(case)
+    request = (
+        _request_for_case(case)
+        if request_override is None
+        else request_override
+    )
     spec = prompt_spec(prompt_id)
     envelope = _envelope_for(prompt_id, request)
     output_format = structured_output_format(spec, request)
@@ -1425,6 +1797,124 @@ def _canary_gateway(
     )
 
 
+def _blueprint_recanary_gateway(
+    adapter: _CoupledBlueprintRequestGuard,
+    *,
+    budget_usd: float,
+) -> ModelGateway:
+    routes = build_openai_routes(max_call_cost_usd=budget_usd)
+    coupled_routes = MappingProxyType(
+        {
+            prompt_id: routes[prompt_id]
+            for prompt_id in (
+                "P04_BLUEPRINT_BUILD_V1",
+                "P05_BLUEPRINT_REVIEW_V1",
+            )
+        }
+    )
+    if any(
+        route.model != LUNA_MODEL_ID or route.fallback_route_id is not None
+        for route in coupled_routes.values()
+    ):
+        raise AssertionError(
+            "Blueprint recanary route drifted from Luna-only"
+        )
+    return ModelGateway(
+        GatewayConfig(
+            mode=GatewayMode.REAL,
+            timeout_seconds=125,
+            max_retries=0,
+            default_budget_usd=budget_usd,
+            job_id="job_blueprint_v117_v115_recanary",
+        ),
+        real_routes=coupled_routes,
+        adapters={"openai": adapter},
+        cost_estimator=build_openai_cost_estimator(routes),
+        input_token_estimator=estimate_openai_input_tokens,
+    )
+
+
+def _blueprint_review_request_from_p04(
+    request: models.BlueprintBuildRequest,
+    blueprint: models.AssessmentBlueprint,
+) -> models.BlueprintReviewRequest:
+    """Chain only the validated P04 output into the P05 request."""
+
+    return models.BlueprintReviewRequest(
+        blueprint=blueprint,
+        activity_spec=request.activity_spec,
+        rubric_spec=request.rubric_spec,
+        resolved_decisions=request.resolved_decisions,
+        blueprint_policy=request.blueprint_policy,
+    )
+
+
+def _coupled_blueprint_semantic_proof(
+    p04_material: dict[str, Any],
+    p04_result: Any,
+    p05_material: dict[str, Any],
+    p05_result: Any,
+) -> dict[str, bool]:
+    """Prove the specific P04/P05 normative remediation without content."""
+
+    review = p05_result.output
+    category_statuses: dict[str, list[models.ReviewCheckStatus]] = {}
+    for check in review.checks:
+        category_statuses.setdefault(check.category, []).append(check.status)
+    critical_fail = any(
+        check.critical and check.status == models.ReviewCheckStatus.FAIL
+        for check in review.checks
+    )
+    p04_output_hash = _content_hash(p04_result.output)
+    p05_blueprint_hash = _content_hash(p05_material["request"].blueprint)
+    target_categories_present = (
+        BLUEPRINT_V117_V115_TARGET_REVIEW_CATEGORIES
+        .issubset(category_statuses)
+    )
+    target_categories_no_fail = all(
+        models.ReviewCheckStatus.FAIL
+        not in category_statuses.get(category, [])
+        for category in BLUEPRINT_V117_V115_TARGET_REVIEW_CATEGORIES
+    )
+    proof = {
+        "p04_ready": _canary_output_status(p04_result.output) == "READY",
+        "p04_not_repaired": not p04_result.repaired,
+        "p05_ready": _canary_output_status(review) == "READY",
+        "p05_not_repaired": not p05_result.repaired,
+        "p04_output_chained_exactly": p04_output_hash == p05_blueprint_hash,
+        "p04_output_hash_recorded": bool(p04_output_hash),
+        "p05_input_hash_recorded": bool(p05_material["input_bundle_hash"]),
+        "source_roots_chained_exactly": (
+            p05_material["request"].activity_spec
+            == p04_material["request"].activity_spec
+            and p05_material["request"].rubric_spec
+            == p04_material["request"].rubric_spec
+            and p05_material["request"].resolved_decisions
+            == p04_material["request"].resolved_decisions
+            and p05_material["request"].blueprint_policy
+            == p04_material["request"].blueprint_policy
+        ),
+        "decision_snapshots_self_contained": all(
+            decision.selected_option is not None
+            and decision.selected_option.option_id
+            == decision.selected_option_id
+            for decision in p05_material["request"].resolved_decisions
+        ),
+        "p05_recommendation_not_reject": (
+            review.approval_recommendation
+            != models.BlueprintApprovalRecommendation.REJECT
+        ),
+        "p05_critical_fail_absent": not critical_fail,
+        "target_review_categories_present": target_categories_present,
+        "target_review_categories_no_fail": target_categories_no_fail,
+    }
+    if not all(proof.values()):
+        raise AssertionError(
+            "Coupled blueprint semantic proof contains a failed control"
+        )
+    return proof
+
+
 def _assert_canary_semantics(
     case: dict[str, Any], request: Any, result: Any
 ) -> None:
@@ -1454,6 +1944,8 @@ def _assert_canary_semantics(
         "TECHNICAL_FAILURE",
     }:
         raise AssertionError("P05 canary returned an outcome outside its manifest gate")
+    if prompt_id == "P06_EVIDENCE_MAP_V1" and status != "READY":
+        raise AssertionError("P06 decision-lineage recanary must return READY")
     if prompt_id == "P09_GUIDE_BUILD_V1" and status != "READY":
         raise AssertionError("P09 remediation canary must return a complete READY guide")
     if prompt_id == "P11_SCHEMA_REPAIR_V1" and status not in {
@@ -1500,6 +1992,8 @@ def _canary_semantic_proof(
         allowed_statuses = {"READY", "NEEDS_REVIEW", "BLOCKED"}
     elif material["prompt_id"] == "P05_BLUEPRINT_REVIEW_V1":
         allowed_statuses = {"READY", "NEEDS_REVIEW", "TECHNICAL_FAILURE"}
+    elif material["prompt_id"] == "P06_EVIDENCE_MAP_V1":
+        allowed_statuses = {"READY"}
     elif material["prompt_id"] == "P09_GUIDE_BUILD_V1":
         allowed_statuses = {"READY"}
     elif material["prompt_id"] == "P11_SCHEMA_REPAIR_V1":
@@ -1572,7 +2066,32 @@ def _canary_semantic_proof(
         learning_outcome_ids = {
             item.statement_id for item in request.activity_spec.learning_outcomes
         }
+        verifiable_rubric_ids = (
+            {
+                item.criterion_id
+                for item in request.rubric_spec.criteria
+                if item.verification_fit != "NOT_VERIFIABLE"
+            }
+            if request.rubric_spec is not None
+            else set()
+        )
+        covered_rubric_ids = {
+            criterion_id
+            for dimension in dimensions
+            for criterion_id in dimension.criterion_ids
+        }
+        covered_learning_outcome_ids = {
+            outcome_id
+            for dimension in dimensions
+            for outcome_id in dimension.learning_outcome_ids
+        }
         constraints = output.assessment_constraints
+        eligible_minutes = sorted(
+            opportunity.target_minutes
+            for opportunity in opportunities
+            if opportunity.minimum_quality
+            >= constraints.minimum_opportunity_quality
+        )
         variant_operations_valid = all(
             len(variant.supported_operations)
             == len(
@@ -1602,12 +2121,29 @@ def _canary_semantic_proof(
                     and len(output.decision_ids)
                     == len(request.resolved_decisions)
                 ),
+                "decision_snapshots_self_contained": all(
+                    decision.selected_option is not None
+                    and decision.selected_option.option_id
+                    == decision.selected_option_id
+                    for decision in request.resolved_decisions
+                ),
                 "source_reference_ids_only": all(
                     set(item.criterion_ids).issubset(rubric_ids)
                     and set(item.learning_outcome_ids).issubset(
                         learning_outcome_ids
                     )
                     for item in dimensions
+                ),
+                "source_conceptual_coverage_complete": (
+                    verifiable_rubric_ids.issubset(covered_rubric_ids)
+                    and learning_outcome_ids.issubset(
+                        covered_learning_outcome_ids
+                    )
+                ),
+                "exact_n_plan_feasible": (
+                    len(eligible_minutes) >= constraints.question_count
+                    and sum(eligible_minutes[: constraints.question_count])
+                    <= constraints.target_total_minutes
                 ),
                 "trusted_constraints_exact": (
                     constraints.question_count
@@ -1675,6 +2211,57 @@ def _canary_semantic_proof(
                 ),
                 "non_ready_has_no_critical_fail": (
                     status == "READY" or not critical_fail
+                ),
+            }
+        )
+    elif material["prompt_id"] == "P06_EVIDENCE_MAP_V1":
+        blueprint = request.blueprint
+        bundle = request.evidence_bundle
+        dimensions = {
+            dimension.dimension_id: dimension
+            for dimension in blueprint.dimensions
+        }
+        variant_ids = {
+            variant.variant_id
+            for dimension in blueprint.dimensions
+            for variant in dimension.evidence_variants
+        }
+        template_ids = {
+            opportunity.opportunity_template_id
+            for dimension in blueprint.dimensions
+            for variant in dimension.evidence_variants
+            for opportunity in variant.question_opportunities
+        }
+        opportunity_ids = [
+            opportunity.opportunity_id for opportunity in output.opportunities
+        ]
+        proof.update(
+            {
+                "submission_id_immutable": (
+                    output.submission_id == bundle.submission_id
+                ),
+                "blueprint_decision_lineage_present": bool(
+                    blueprint.decision_ids
+                ),
+                "opportunity_ids_unique": (
+                    len(opportunity_ids) == len(set(opportunity_ids))
+                ),
+                "ready_has_opportunities": bool(output.opportunities),
+                "opportunity_blueprint_ids_only": all(
+                    opportunity.dimension_id in dimensions
+                    and opportunity.variant_id in variant_ids
+                    and opportunity.opportunity_template_id in template_ids
+                    for opportunity in output.opportunities
+                ),
+                "opportunity_evidence_ids_only": all(
+                    set(opportunity.evidence_ids).issubset(
+                        set(bundle.allowed_evidence_ids)
+                    )
+                    for opportunity in output.opportunities
+                ),
+                "opportunity_submission_exact": all(
+                    opportunity.submission_id == bundle.submission_id
+                    for opportunity in output.opportunities
                 ),
             }
         )
@@ -2322,6 +2909,13 @@ def _canary_budget_metadata(material: dict[str, Any]) -> dict[str, Any]:
         metadata["proposed_human_budget_usd"] = (
             P05_V114_RECANARY_HUMAN_BUDGET_USD
         )
+    elif (
+        material["case"]["case_id"]
+        == P06_V112_DECISION_LINEAGE_RECANARY_CASE_ID
+    ):
+        metadata["proposed_human_budget_usd"] = (
+            P06_V112_DECISION_LINEAGE_RECANARY_HUMAN_BUDGET_USD
+        )
     elif material["case"]["case_id"] == P09_V115_RECANARY_CASE_ID:
         metadata["proposed_human_budget_usd"] = (
             P09_V115_RECANARY_HUMAN_BUDGET_USD
@@ -2357,6 +2951,14 @@ async def _run_canary_dry_run(cases: list[dict[str, Any]]) -> dict[str, Any]:
         or material["input_bundle_hash"] != P05_V114_INPUT_BUNDLE_HASH
     ):
         raise OpenAIEvalBlocked("OPENAI_P05_V114_RECANARY_BOUNDARY_DRIFT")
+    if case["case_id"] == P06_V112_DECISION_LINEAGE_RECANARY_CASE_ID and (
+        material["prompt_hash"] != P06_V112_PROMPT_HASH
+        or material["input_bundle_hash"]
+        != P06_V112_DECISION_LINEAGE_INPUT_BUNDLE_HASH
+    ):
+        raise OpenAIEvalBlocked(
+            "OPENAI_P06_V112_DECISION_LINEAGE_RECANARY_BOUNDARY_DRIFT"
+        )
     if case["case_id"] == P09_V115_RECANARY_CASE_ID and (
         material["prompt_hash"] != P09_V115_PROMPT_HASH
         or material["input_bundle_hash"] != P09_V115_INPUT_BUNDLE_HASH
@@ -2431,6 +3033,546 @@ async def _run_canary_dry_run(cases: list[dict[str, Any]]) -> dict[str, Any]:
         "secret_read": False,
         "cases": [row],
     }
+
+
+def _blueprint_recanary_p04_material(
+    case: dict[str, Any], *, route_cap_usd: float
+) -> dict[str, Any]:
+    request = _blueprint_recanary_p04_request(case)
+    material = _canary_material(
+        case,
+        route_cap_usd=route_cap_usd,
+        request_override=request,
+    )
+    if (
+        material["spec"].prompt_version != "1.1.7"
+        or material["prompt_hash"] != P04_V117_PROMPT_HASH
+        or material["input_bundle_hash"] != P04_V117_INPUT_BUNDLE_HASH
+    ):
+        raise OpenAIEvalBlocked(
+            "OPENAI_BLUEPRINT_V117_V115_P04_BOUNDARY_DRIFT"
+        )
+    return material
+
+
+def _blueprint_recanary_p05_material(
+    case: dict[str, Any],
+    *,
+    p04_material: dict[str, Any],
+    p04_output: models.AssessmentBlueprint,
+    route_cap_usd: float,
+) -> dict[str, Any]:
+    request = _blueprint_review_request_from_p04(
+        p04_material["request"], p04_output
+    )
+    material = _canary_material(
+        case,
+        route_cap_usd=route_cap_usd,
+        request_override=request,
+    )
+    if (
+        material["spec"].prompt_version != "1.1.5"
+        or material["prompt_hash"] != P05_V115_PROMPT_HASH
+        or _content_hash(request.blueprint) != _content_hash(p04_output)
+    ):
+        raise OpenAIEvalBlocked(
+            "OPENAI_BLUEPRINT_V117_V115_P05_BOUNDARY_DRIFT"
+        )
+    return material
+
+
+def _blueprint_recanary_pass_row(
+    material: dict[str, Any],
+    result: Any,
+    transport_result: Any,
+    controls: dict[str, Any],
+) -> dict[str, Any]:
+    ledger = result.ledgers[-1]
+    return {
+        "case_id": material["case"]["case_id"],
+        "status": "PASS",
+        "error_code": None,
+        "output_status": _canary_output_status(result.output),
+        "attempts": 1,
+        "validation_order": [
+            phase.value for phase in result.validation_order
+        ],
+        "validation": {
+            "provider_schema_status": (
+                "PASS"
+                if transport_result.provider_schema_valid is True
+                else "NOT_EVALUATED"
+            ),
+            "pydantic_status": "PASS",
+            "context_status": "PASS",
+            "expected_outcome_status": "PASS",
+        },
+        "controls": controls,
+        "context_failure": None,
+        "primary_failure": None,
+        "repair_disposition": None,
+        "primary_ledger_result": ledger.result,
+        "budget": _canary_budget_metadata(material),
+        "prompt_hash": ledger.prompt_hash,
+        "input_bundle_hash": ledger.input_bundle_hash,
+        "validated_output_hash": _content_hash(result.output),
+        **_canary_usage_metadata(transport_result, ledger),
+        **_route_metadata(
+            material["prompt_id"],
+            material["canary_routes"],
+            effective_model=_observed_effective_model(ledger),
+        ),
+    }
+
+
+def _blueprint_recanary_failure_row(
+    material: dict[str, Any],
+    *,
+    error_code: str,
+    error: GatewayError | None = None,
+    result: Any | None = None,
+    transport_result: Any | None = None,
+) -> dict[str, Any]:
+    ledgers = list(error.ledgers) if error is not None else []
+    if result is not None:
+        ledgers = list(result.ledgers)
+    ledger = ledgers[-1] if ledgers else None
+    primary_failure: dict[str, Any] | None = None
+    repair_disposition: str | None = None
+    context_failure: dict[str, Any] | None = None
+    if error is not None:
+        primary_failure, repair_disposition = _canary_failure_metadata(error)
+        context_failure = _context_failure_metadata(error)
+    validation_order = (
+        [phase.value for phase in result.validation_order]
+        if result is not None
+        else ["request", "envelope"]
+    )
+    return {
+        "case_id": material["case"]["case_id"],
+        "status": "FAIL",
+        "error_code": error_code,
+        "defect_severity": "P1",
+        "output_status": (
+            _canary_output_status(result.output)
+            if result is not None
+            else None
+        ),
+        "attempts": 1,
+        "validation_order": validation_order,
+        "controls": None,
+        "primary_failure": primary_failure,
+        "context_failure": context_failure,
+        "repair_disposition": repair_disposition,
+        "primary_ledger_result": ledger.result if ledger is not None else None,
+        "budget": _canary_budget_metadata(material),
+        "prompt_hash": (
+            ledger.prompt_hash if ledger is not None else material["prompt_hash"]
+        ),
+        "input_bundle_hash": (
+            ledger.input_bundle_hash
+            if ledger is not None
+            else material["input_bundle_hash"]
+        ),
+        **_canary_usage_metadata(transport_result, ledger),
+        **_route_metadata(
+            material["prompt_id"],
+            material["canary_routes"],
+            effective_model=(
+                _observed_effective_model(ledger)
+                if ledger is not None
+                else None
+            ),
+        ),
+    }
+
+
+def _blueprint_recanary_report(
+    *,
+    mode: str,
+    rows: list[dict[str, Any]],
+    guard: _CoupledBlueprintRequestGuard,
+    authorized_budget_usd: float,
+    estimated_ceiling_usd: float,
+    secret_read: bool,
+) -> dict[str, Any]:
+    simulated_actual_cost = sum(
+        item.actual_cost_usd or 0.0 for item in guard.results
+    )
+    simulated_budget_charged = sum(
+        max(item.estimated_cost_usd, item.actual_cost_usd or 0.0)
+        for item in guard.results
+    )
+    if guard.request_attempts > len(guard.results):
+        simulated_budget_charged += max(
+            0.0,
+            guard.reserved_full_cache_write_ceiling_usd
+            - simulated_budget_charged,
+        )
+    is_real = mode.endswith("real")
+    return {
+        "mode": mode,
+        "evidence_gate": "BLUEPRINT_V117_V115_COUPLED_RECANARY",
+        "prompt_pack_version": PROMPT_VERSION,
+        "route_profile": OPENAI_ROUTE_PROFILE_ID,
+        "classification": "SYNTHETIC_ONLY_NO_STUDENT_DATA",
+        "chain": [
+            "P04_BLUEPRINT_BUILD_V1",
+            "P05_BLUEPRINT_REVIEW_V1",
+        ],
+        "stop_on_first_failure": True,
+        "estimated_ceiling_usd": round(estimated_ceiling_usd, 8),
+        "authorized_budget_usd": authorized_budget_usd,
+        "actual_cost_usd": (
+            round(simulated_actual_cost, 8) if is_real else 0.0
+        ),
+        "budget_charged_usd": (
+            round(simulated_budget_charged, 8) if is_real else 0.0
+        ),
+        "simulated_actual_cost_usd": (
+            0.0 if is_real else round(simulated_actual_cost, 8)
+        ),
+        "network_calls": guard.request_attempts if is_real else 0,
+        "billable_calls": guard.request_attempts if is_real else 0,
+        "fake_transport_calls": (
+            guard.request_attempts if mode.endswith("dry-run") else 0
+        ),
+        "max_responses_requests": BLUEPRINT_V117_V115_MAX_RESPONSES_REQUESTS,
+        "gateway_retries": 0,
+        "prompt_retries": 0,
+        "sdk_retries": 0,
+        "p10_calls": guard.prompt_ids.count("P10_ENRICHED_CONTEXT_V1"),
+        "p11_calls": guard.prompt_ids.count("P11_SCHEMA_REPAIR_V1"),
+        "fallback_calls": 0,
+        "sol_calls": 0,
+        "secret_read": secret_read,
+        "cases": rows,
+    }
+
+
+async def _run_blueprint_recanary_dry_run(
+    cases: list[dict[str, Any]],
+) -> dict[str, Any]:
+    p04_case, p05_case = _selected_blueprint_recanary_cases(cases)
+    cap = BLUEPRINT_V117_V115_RECANARY_HUMAN_BUDGET_USD
+    p04_material = _blueprint_recanary_p04_material(
+        p04_case, route_cap_usd=cap
+    )
+    fake_responses = _SyntheticCoupledResponses()
+    fake_responses.enqueue(p04_material["prompt_id"], p04_material["request"])
+    adapter = _CoupledBlueprintRequestGuard(
+        OpenAIResponsesAdapter(
+            client=_SyntheticCoupledClient(responses=fake_responses)
+        ),
+        max_total_cost_usd=cap,
+    )
+    gateway = _blueprint_recanary_gateway(adapter, budget_usd=cap)
+    p04_result = await gateway.invoke(
+        p04_material["prompt_id"],
+        p04_material["request"],
+        build_trusted_context(p04_material["request"]),
+        budget=CallBudget(max_cost_usd=cap),
+    )
+    _assert_canary_semantics(
+        p04_case, p04_material["request"], p04_result
+    )
+    if _canary_output_status(p04_result.output) != "READY":
+        raise AssertionError("Coupled P04 dry-run must be READY")
+    if (
+        _content_hash(p04_result.output)
+        != BLUEPRINT_V117_V115_DRY_RUN_P04_OUTPUT_HASH
+    ):
+        raise OpenAIEvalBlocked(
+            "OPENAI_BLUEPRINT_V117_V115_DRY_RUN_P04_OUTPUT_DRIFT"
+        )
+    p04_payload = _canary_payload_proof(
+        p04_material, p04_result, fake_responses.calls[0]
+    )
+    if adapter.results[-1].provider_schema_valid is not True:
+        raise AssertionError("Coupled P04 provider-schema proof failed")
+
+    p05_material = _blueprint_recanary_p05_material(
+        p05_case,
+        p04_material=p04_material,
+        p04_output=p04_result.output,
+        route_cap_usd=cap,
+    )
+    if (
+        p05_material["input_bundle_hash"]
+        != BLUEPRINT_V117_V115_DRY_RUN_P05_INPUT_BUNDLE_HASH
+    ):
+        raise OpenAIEvalBlocked(
+            "OPENAI_BLUEPRINT_V117_V115_DRY_RUN_P05_INPUT_DRIFT"
+        )
+    estimated_ceiling = (
+        p04_material["transport_ceiling_usd"]
+        + p05_material["transport_ceiling_usd"]
+    )
+    if estimated_ceiling > cap:
+        raise OpenAIEvalBlocked(
+            "OPENAI_BLUEPRINT_V117_V115_PREFLIGHT_BUDGET_TOO_LOW"
+        )
+    fake_responses.enqueue(p05_material["prompt_id"], p05_material["request"])
+    p05_result = await gateway.invoke(
+        p05_material["prompt_id"],
+        p05_material["request"],
+        build_trusted_context(p05_material["request"]),
+        budget=CallBudget(max_cost_usd=cap),
+    )
+    _assert_canary_semantics(
+        p05_case, p05_material["request"], p05_result
+    )
+    chain_proof = _coupled_blueprint_semantic_proof(
+        p04_material, p04_result, p05_material, p05_result
+    )
+    p05_payload = _canary_payload_proof(
+        p05_material, p05_result, fake_responses.calls[1]
+    )
+    if adapter.results[-1].provider_schema_valid is not True:
+        raise AssertionError("Coupled P05 provider-schema proof failed")
+    if (
+        adapter.request_attempts != 2
+        or len(fake_responses.calls) != 2
+        or adapter.prompt_ids
+        != ["P04_BLUEPRINT_BUILD_V1", "P05_BLUEPRINT_REVIEW_V1"]
+    ):
+        raise AssertionError("Coupled dry-run crossed its two-request boundary")
+    rows = [
+        _blueprint_recanary_pass_row(
+            p04_material,
+            p04_result,
+            adapter.results[0],
+            p04_payload["proof"],
+        ),
+        _blueprint_recanary_pass_row(
+            p05_material,
+            p05_result,
+            adapter.results[1],
+            {**p05_payload["proof"], **chain_proof},
+        ),
+    ]
+    return _blueprint_recanary_report(
+        mode="blueprint-recanary-dry-run",
+        rows=rows,
+        guard=adapter,
+        authorized_budget_usd=cap,
+        estimated_ceiling_usd=estimated_ceiling,
+        secret_read=False,
+    )
+
+
+async def _run_blueprint_recanary_real(
+    cases: list[dict[str, Any]], *, max_total_cost_usd: float
+) -> dict[str, Any]:
+    if max_total_cost_usd > BLUEPRINT_V117_V115_RECANARY_HUMAN_BUDGET_USD:
+        raise OpenAIEvalBlocked(
+            "OPENAI_BLUEPRINT_V117_V115_RECANARY_HUMAN_CAP_EXCEEDED"
+        )
+    if BLUEPRINT_V117_V115_RECANARY_CONSUMED:
+        raise OpenAIEvalBlocked(
+            "OPENAI_BLUEPRINT_V117_V115_RECANARY_ALREADY_CONSUMED"
+        )
+    p04_case, p05_case = _selected_blueprint_recanary_cases(cases)
+    p04_material = _blueprint_recanary_p04_material(
+        p04_case, route_cap_usd=max_total_cost_usd
+    )
+    if (
+        p04_material["transport_ceiling_usd"]
+        > max_total_cost_usd
+    ):
+        raise OpenAIEvalBlocked(
+            "OPENAI_BLUEPRINT_V117_V115_PREFLIGHT_BUDGET_TOO_LOW"
+        )
+    if (
+        os.environ.get(BLUEPRINT_V117_V115_REMEDIATION_DECISION_ENV)
+        != BLUEPRINT_V117_V115_REMEDIATION_DECISION_VALUE
+    ):
+        raise OpenAIEvalBlocked(
+            "OPENAI_BLUEPRINT_V117_V115_REMEDIATION_HUMAN_DECISION_REQUIRED"
+        )
+    if (
+        os.environ.get(BLUEPRINT_V117_V115_RECANARY_APPROVAL_ENV)
+        != BLUEPRINT_V117_V115_RECANARY_APPROVAL_VALUE
+    ):
+        raise OpenAIEvalBlocked(
+            "OPENAI_BLUEPRINT_V117_V115_RECANARY_APPROVAL_REQUIRED"
+        )
+    key = os.environ.get("CVA_OPENAI_API_KEY", "").strip()
+    if not key:
+        raise OpenAIEvalBlocked("OPENAI_CREDENTIALS_REQUIRED")
+    adapter = _CoupledBlueprintRequestGuard(
+        OpenAIResponsesAdapter(api_key=SecretStr(key)),
+        max_total_cost_usd=max_total_cost_usd,
+    )
+    gateway = _blueprint_recanary_gateway(
+        adapter, budget_usd=max_total_cost_usd
+    )
+    rows: list[dict[str, Any]] = []
+    try:
+        p04_result = await gateway.invoke(
+            p04_material["prompt_id"],
+            p04_material["request"],
+            build_trusted_context(p04_material["request"]),
+            budget=CallBudget(max_cost_usd=max_total_cost_usd),
+        )
+        _assert_canary_semantics(
+            p04_case, p04_material["request"], p04_result
+        )
+        if _canary_output_status(p04_result.output) != "READY":
+            raise AssertionError("Coupled P04 real output was not READY")
+        if adapter.results[-1].provider_schema_valid is not True:
+            raise AssertionError("Coupled P04 provider-schema proof failed")
+        p04_controls = _canary_real_proof(
+            p04_material, p04_result, adapter.results[-1]
+        )
+    except GatewayError as exc:
+        rows.append(
+            _blueprint_recanary_failure_row(
+                p04_material,
+                error_code=exc.code,
+                error=exc,
+                transport_result=(
+                    adapter.results[-1] if adapter.results else None
+                ),
+            )
+        )
+        return _blueprint_recanary_report(
+            mode="blueprint-recanary-real",
+            rows=rows,
+            guard=adapter,
+            authorized_budget_usd=max_total_cost_usd,
+            estimated_ceiling_usd=(
+                adapter.reserved_full_cache_write_ceiling_usd
+            ),
+            secret_read=True,
+        )
+    except AssertionError:
+        rows.append(
+            _blueprint_recanary_failure_row(
+                p04_material,
+                error_code=(
+                    "OPENAI_BLUEPRINT_V117_V115_P04_EXPECTATION_FAILED"
+                ),
+                result=locals().get("p04_result"),
+                transport_result=(
+                    adapter.results[-1] if adapter.results else None
+                ),
+            )
+        )
+        return _blueprint_recanary_report(
+            mode="blueprint-recanary-real",
+            rows=rows,
+            guard=adapter,
+            authorized_budget_usd=max_total_cost_usd,
+            estimated_ceiling_usd=(
+                adapter.reserved_full_cache_write_ceiling_usd
+            ),
+            secret_read=True,
+        )
+    rows.append(
+        _blueprint_recanary_pass_row(
+            p04_material,
+            p04_result,
+            adapter.results[-1],
+            p04_controls,
+        )
+    )
+
+    p05_material = _blueprint_recanary_p05_material(
+        p05_case,
+        p04_material=p04_material,
+        p04_output=p04_result.output,
+        route_cap_usd=max_total_cost_usd,
+    )
+    estimated_ceiling = (
+        p04_material["transport_ceiling_usd"]
+        + p05_material["transport_ceiling_usd"]
+    )
+    if estimated_ceiling > max_total_cost_usd:
+        rows.append(
+            _blueprint_recanary_failure_row(
+                p05_material,
+                error_code=(
+                    "OPENAI_BLUEPRINT_V117_V115_PREFLIGHT_BUDGET_TOO_LOW"
+                ),
+            )
+        )
+        return _blueprint_recanary_report(
+            mode="blueprint-recanary-real",
+            rows=rows,
+            guard=adapter,
+            authorized_budget_usd=max_total_cost_usd,
+            estimated_ceiling_usd=estimated_ceiling,
+            secret_read=True,
+        )
+    try:
+        p05_result = await gateway.invoke(
+            p05_material["prompt_id"],
+            p05_material["request"],
+            build_trusted_context(p05_material["request"]),
+            budget=CallBudget(max_cost_usd=max_total_cost_usd),
+        )
+        _assert_canary_semantics(
+            p05_case, p05_material["request"], p05_result
+        )
+        chain_proof = _coupled_blueprint_semantic_proof(
+            p04_material, p04_result, p05_material, p05_result
+        )
+        if adapter.results[-1].provider_schema_valid is not True:
+            raise AssertionError("Coupled P05 provider-schema proof failed")
+        p05_controls = {
+            **_canary_real_proof(
+                p05_material, p05_result, adapter.results[-1]
+            ),
+            **chain_proof,
+        }
+    except GatewayError as exc:
+        rows.append(
+            _blueprint_recanary_failure_row(
+                p05_material,
+                error_code=exc.code,
+                error=exc,
+                transport_result=(
+                    adapter.results[-1]
+                    if len(adapter.results) > 1
+                    else None
+                ),
+            )
+        )
+    except AssertionError:
+        rows.append(
+            _blueprint_recanary_failure_row(
+                p05_material,
+                error_code=(
+                    "OPENAI_BLUEPRINT_V117_V115_P05_EXPECTATION_FAILED"
+                ),
+                result=locals().get("p05_result"),
+                transport_result=(
+                    adapter.results[-1]
+                    if len(adapter.results) > 1
+                    else None
+                ),
+            )
+        )
+    else:
+        rows.append(
+            _blueprint_recanary_pass_row(
+                p05_material,
+                p05_result,
+                adapter.results[-1],
+                p05_controls,
+            )
+        )
+    if adapter.request_attempts > BLUEPRINT_V117_V115_MAX_RESPONSES_REQUESTS:
+        raise AssertionError("Blueprint recanary crossed its request boundary")
+    return _blueprint_recanary_report(
+        mode="blueprint-recanary-real",
+        rows=rows,
+        guard=adapter,
+        authorized_budget_usd=max_total_cost_usd,
+        estimated_ceiling_usd=estimated_ceiling,
+        secret_read=True,
+    )
 
 
 async def _run_qualification_dry_run(
@@ -3115,6 +4257,9 @@ async def _run_canary_real(
     is_p02_v113_recanary = case["case_id"] == P02_V113_RECANARY_CASE_ID
     is_p04_v116_recanary = case["case_id"] == P04_V116_RECANARY_CASE_ID
     is_p05_v114_recanary = case["case_id"] == P05_V114_RECANARY_CASE_ID
+    is_p06_v112_decision_lineage_recanary = (
+        case["case_id"] == P06_V112_DECISION_LINEAGE_RECANARY_CASE_ID
+    )
     is_p09_v115_recanary = case["case_id"] == P09_V115_RECANARY_CASE_ID
     is_p11_v114_direct = case["case_id"] == P11_V114_DIRECT_CASE_ID
     if p04_evidence_recovery and not is_p04_v116_recanary:
@@ -3149,6 +4294,14 @@ async def _run_canary_real(
         and max_total_cost_usd > P05_V114_RECANARY_HUMAN_BUDGET_USD
     ):
         raise OpenAIEvalBlocked("OPENAI_P05_V114_RECANARY_HUMAN_CAP_EXCEEDED")
+    if (
+        is_p06_v112_decision_lineage_recanary
+        and max_total_cost_usd
+        > P06_V112_DECISION_LINEAGE_RECANARY_HUMAN_BUDGET_USD
+    ):
+        raise OpenAIEvalBlocked(
+            "OPENAI_P06_V112_DECISION_LINEAGE_RECANARY_HUMAN_CAP_EXCEEDED"
+        )
     if (
         is_p09_v115_recanary
         and max_total_cost_usd > P09_V115_RECANARY_HUMAN_BUDGET_USD
@@ -3208,6 +4361,21 @@ async def _run_canary_real(
         raise OpenAIEvalBlocked("OPENAI_P05_V114_RECANARY_BOUNDARY_DRIFT")
     if is_p05_v114_recanary and P05_V114_RECANARY_CONSUMED:
         raise OpenAIEvalBlocked("OPENAI_P05_V114_RECANARY_ALREADY_CONSUMED")
+    if is_p06_v112_decision_lineage_recanary and (
+        material["prompt_hash"] != P06_V112_PROMPT_HASH
+        or material["input_bundle_hash"]
+        != P06_V112_DECISION_LINEAGE_INPUT_BUNDLE_HASH
+    ):
+        raise OpenAIEvalBlocked(
+            "OPENAI_P06_V112_DECISION_LINEAGE_RECANARY_BOUNDARY_DRIFT"
+        )
+    if (
+        is_p06_v112_decision_lineage_recanary
+        and P06_V112_DECISION_LINEAGE_RECANARY_CONSUMED
+    ):
+        raise OpenAIEvalBlocked(
+            "OPENAI_P06_V112_DECISION_LINEAGE_RECANARY_ALREADY_CONSUMED"
+        )
     if is_p09_v115_recanary and (
         material["prompt_hash"] != P09_V115_PROMPT_HASH
         or material["input_bundle_hash"] != P09_V115_INPUT_BUNDLE_HASH
@@ -3274,6 +4442,12 @@ async def _run_canary_real(
         approval_env = P05_V114_RECANARY_APPROVAL_ENV
         approval_value = P05_V114_RECANARY_APPROVAL_VALUE
         approval_required_code = "OPENAI_P05_V114_RECANARY_APPROVAL_REQUIRED"
+    elif is_p06_v112_decision_lineage_recanary:
+        approval_env = P06_V112_DECISION_LINEAGE_RECANARY_APPROVAL_ENV
+        approval_value = P06_V112_DECISION_LINEAGE_RECANARY_APPROVAL_VALUE
+        approval_required_code = (
+            "OPENAI_P06_V112_DECISION_LINEAGE_RECANARY_APPROVAL_REQUIRED"
+        )
     elif is_p09_v115_recanary:
         approval_env = P09_V115_RECANARY_APPROVAL_ENV
         approval_value = P09_V115_RECANARY_APPROVAL_VALUE
@@ -3452,6 +4626,8 @@ def main() -> int:
             "real",
             "canary-dry-run",
             "canary-real",
+            "blueprint-recanary-dry-run",
+            "blueprint-recanary-real",
             "qualification-dry-run",
             "qualification-real",
         ),
@@ -3469,8 +4645,13 @@ def main() -> int:
     args = parser.parse_args()
     cases = _load_cases(args.manifest)
     manifest_cases = cases
-    if args.mode in {"qualification-dry-run", "qualification-real"} and args.case_id:
-        parser.error("qualification modes use the fixed versioned case sequence")
+    if args.mode in {
+        "blueprint-recanary-dry-run",
+        "blueprint-recanary-real",
+        "qualification-dry-run",
+        "qualification-real",
+    } and args.case_id:
+        parser.error("coupled modes use their fixed versioned case sequence")
     if args.p04_evidence_recovery and args.mode != "canary-real":
         parser.error("P04 evidence recovery requires --mode canary-real")
     if args.case_id:
@@ -3485,14 +4666,32 @@ def main() -> int:
         and cases[0].get("case_id") == P11_V114_DIRECT_CASE_ID
         and args.mode in {"canary-dry-run", "canary-real"}
     ):
-        _validated_reused_real_evidence(
-            {
-                str(case.get("case_id", "")): case
-                for case in manifest_cases
-            },
-            boundaries=P11_DIRECT_PRIOR_REAL_EVIDENCE,
-        )
-    if args.mode in {"real", "canary-real", "qualification-real"} and (
+        try:
+            _validated_reused_real_evidence(
+                {
+                    str(case.get("case_id", "")): case
+                    for case in manifest_cases
+                },
+                boundaries=P11_DIRECT_PRIOR_REAL_EVIDENCE,
+            )
+        except OpenAIEvalBlocked as exc:
+            print(
+                json.dumps(
+                    {
+                        "status": "BLOCKED",
+                        "code": str(exc),
+                        "network_calls": 0,
+                    },
+                    sort_keys=True,
+                )
+            )
+            return 2
+    if args.mode in {
+        "real",
+        "canary-real",
+        "blueprint-recanary-real",
+        "qualification-real",
+    } and (
         not args.allow_billable or args.max_total_cost_usd <= 0
     ):
         if args.mode == "canary-real":
@@ -3509,12 +4708,18 @@ def main() -> int:
                 )
             elif case_id == P05_V114_RECANARY_CASE_ID:
                 code = "OPENAI_P05_V114_RECANARY_APPROVAL_REQUIRED"
+            elif case_id == P06_V112_DECISION_LINEAGE_RECANARY_CASE_ID:
+                code = (
+                    "OPENAI_P06_V112_DECISION_LINEAGE_RECANARY_APPROVAL_REQUIRED"
+                )
             elif case_id == P09_V115_RECANARY_CASE_ID:
                 code = "OPENAI_P09_V115_RECANARY_APPROVAL_REQUIRED"
             elif case_id == P11_V114_DIRECT_CASE_ID:
                 code = "OPENAI_P11_V114_DIRECT_APPROVAL_REQUIRED"
             else:
                 code = "OPENAI_LUNA_CANARY_APPROVAL_REQUIRED"
+        elif args.mode == "blueprint-recanary-real":
+            code = "OPENAI_BLUEPRINT_V117_V115_RECANARY_APPROVAL_REQUIRED"
         elif args.mode == "qualification-real":
             code = (
                 "OPENAI_QUALIFICATION_V114_CONTINUATION_ALREADY_CONSUMED"
@@ -3544,6 +4749,12 @@ def main() -> int:
                 cases,
                 max_total_cost_usd=args.max_total_cost_usd,
                 p04_evidence_recovery=args.p04_evidence_recovery,
+            )
+        elif args.mode == "blueprint-recanary-dry-run":
+            coroutine = _run_blueprint_recanary_dry_run(cases)
+        elif args.mode == "blueprint-recanary-real":
+            coroutine = _run_blueprint_recanary_real(
+                cases, max_total_cost_usd=args.max_total_cost_usd
             )
         elif args.mode == "qualification-dry-run":
             coroutine = _run_qualification_dry_run(cases)

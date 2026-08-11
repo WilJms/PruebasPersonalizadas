@@ -2558,6 +2558,7 @@ export interface components {
              * @constant
              */
             schema_version: "1.1.0";
+            selected_option?: components["schemas"]["DecisionOption"] | null;
             /** Selected Option Id */
             selected_option_id: string;
         };

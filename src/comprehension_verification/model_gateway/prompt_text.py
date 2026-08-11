@@ -112,7 +112,7 @@ El blueprint debe medir comprensión actual del propio entregable. No debe medir
 
 Procedimiento:
 1. Define solo dimensiones relevantes y evaluables desde ActivitySpec y RubricSpec.
-2. Conserva grading_weight solo como metadato y calcula verification_priority.
+2. Conserva grading_weight como metadato separado de verification_priority. Si una decisión docente resuelve pesos ausentes, materializa literalmente esa decisión en grading_weight sin convertirla en prioridad.
 3. Para cada dimensión define variantes de evidencia que un entregable podría contener.
 4. Para cada variante declara requisitos y las operaciones cognitivas que realmente soporta; son operaciones permitidas, no preferencias ampliables.
 5. Crea un catálogo amplio de QuestionOpportunityTemplate, cada una con evidencia esperada, operación, foco y observable, más dificultad, tiempo, ancla, formatos y calidad mínima.
@@ -122,6 +122,8 @@ Procedimiento:
 
 Frontera de referencias y decisiones:
 - Copia activity_id exactamente desde activity_spec.activity_id y usa cada decision_id de resolved_decisions exactamente una vez.
+- Cada PolicyDecision resuelta incluye selected_option_id y un selected_option inmutable con el mismo option_id. Usa literalmente label y consequence de esa opción, junto con la nota docente si existe, como restricción de diseño. No infieras el significado de un ID opaco ni uses opciones no elegidas.
+- Materializa toda consecuencia que el contrato represente sin distorsión: pesos en grading_weight y fronteras de materiales en requisitos de evidencia y course_sources_allowed. Para escala u otra decisión sin campo dedicado, conserva su decision_id y explica su incidencia sólo en una justificación o diagnóstico pertinente; no inventes contenido académico ni fuerces un campo semánticamente distinto. Bloquea únicamente si esa limitación impide producir un catálogo usable y fiel.
 - Las opciones y notas de PolicyDecision fijan una interpretación docente, pero no son fuentes académicas y no autorizan inventar resultados de aprendizaje, criterios, evidencia ni IDs de fuente.
 - Si rubric_spec existe, usa en dimensions[].criterion_ids únicamente criterion_id presentes en rubric_spec.criteria; si no existe, usa únicamente statement_id presentes en activity_spec. Nunca inventes criterion_ids.
 - Usa en dimensions[].learning_outcome_ids únicamente statement_id presentes en activity_spec.learning_outcomes. Si esa lista está vacía, usa learning_outcome_ids=[]; no completes el resultado ausente.
@@ -133,10 +135,13 @@ Antes de devolver, comprueba los invariantes canónicos que el JSON Schema del p
 - todo allowed_response_formats de una oportunidad es subconjunto de assessment_constraints.allowed_response_formats;
 - todo selected_opportunity_template_ids de structured_justification_policy referencia una oportunidad existente;
 - approved_by y approved_at están ambos ausentes, y no cambias ni omites ninguna decisión docente.
+- cada criterio verificable de rubric_spec y cada learning outcome evaluable aparece al menos en una dimensión; no declares cobertura desde una oportunidad ajena a esa dimensión;
+- existe una combinación de al menos question_count oportunidades distintas, con minimum_quality suficiente, formatos permitidos y suma de target_minutes dentro del tiempo total. Usa required_criterion_ids como única cobertura obligatoria por plan; si está vacío, no inventes una obligación de cubrir todos los criterios en cada assessment;
+- calibra alternativas comparables mediante foco y observable equivalentes, bandas de dificultad, tiempo y umbral de calidad explícitos. La diversidad entre oportunidades distintas es válida y no obliga a hacerlas idénticas.
 
 Si no puedes satisfacer estos invariantes sin inventar contenido académico o referencias, devuelve status=BLOCKED con Diagnostic completo; no entregues un catálogo READY estructuralmente incoherente.
 
-El catálogo es independiente de question_count: no crees exactamente N dimensiones, variantes u oportunidades. El planificador determinista posterior escogerá N oportunidades concretas por submission. La comparabilidad es una propiedad intrínseca del catálogo común, no un modo configurable.
+El catálogo es independiente de question_count: no crees exactamente N dimensiones, variantes u oportunidades ni exijas una oportunidad compuesta solo porque el catálogo contiene más dimensiones que N. El planificador determinista posterior escogerá N oportunidades concretas por submission conforme a blueprint_policy. La comparabilidad es una propiedad intrínseca del catálogo común, no un modo configurable.
 Devuelve AssessmentBlueprint.
 """,
         "P05_BLUEPRINT_REVIEW_V1": """Actúa como revisor crítico del blueprint, no como su autor. Recibes el blueprint propuesto, las especificaciones fuente y las decisiones del docente.
@@ -151,6 +156,15 @@ Evalúa:
 - variantes, operaciones soportadas, calidad de oportunidades y factibilidad de plan;
 - accesibilidad y equivalencia;
 - cualquier inferencia sobre autoría, intención histórica o conocimiento no autorizado.
+
+Interpreta la arquitectura canónica antes de clasificar checks:
+- el blueprint es un catálogo independiente de question_count; N limita el plan posterior, no el número de dimensiones, variantes u oportunidades;
+- cobertura conceptual significa que cada criterio/resultado relevante aparece en alguna dimensión sustentada. Un plan futuro no tiene que cubrir todos los criterios cuando blueprint_policy.required_criterion_ids está vacío;
+- exige una oportunidad compuesta o cobertura simultánea únicamente si ActivitySpec, RubricSpec, una decisión docente seleccionada o required_criterion_ids lo exige de forma explícita;
+- factibilidad del plan significa que existe una combinación de N oportunidades distintas que supera calidad/formato/tiempo y las restricciones no relajables. No rechaces un catálogo amplio porque N sea menor;
+- operaciones o dificultades diferentes entre oportunidades distintas son diversidad permitida. Evalúa comparabilidad entre alternativas que pretenden medir el mismo foco/observable y acepta calibración explícita por dificultad, tiempo y calidad; no exijas identidad global;
+- una variante textual sustentada para los mismos criterios/resultados puede ser la alternativa accesible de una variante visual. No inventes un campo de texto alternativo que el contrato no posee;
+- verifica cada PolicyDecision contra su selected_option snapshot y comprueba que sus consecuencias representables estén materializadas. Si el contrato no tiene un campo dedicado pero la decisión está vinculada y su efecto no impide una verificación usable, registra WARN con corrección concreta, no un FAIL crítico inventado.
 
 Marca cada check PASS, WARN o FAIL, cita IDs en referenced_ids y propone la corrección mínima. Marca critical=true para fallos de constructo, fidelidad de fuente, operación no soportada, catálogo insuficiente o inviabilidad esperada. No reescribas el blueprint completo. Todo critical=true con FAIL exige approval_recommendation=REJECT.
 

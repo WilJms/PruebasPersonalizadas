@@ -63,6 +63,8 @@ class ContextFailureCode(StrEnum):
     )
     P02_ABSTENTION_CRITERIA_PRESENT = "P02_ABSTENTION_CRITERIA_PRESENT"
     P02_ACTIVITY_ID_MISMATCH = "P02_ACTIVITY_ID_MISMATCH"
+    P04_SOURCE_COVERAGE_MISMATCH = "P04_SOURCE_COVERAGE_MISMATCH"
+    P04_CATALOG_PLAN_INFEASIBLE = "P04_CATALOG_PLAN_INFEASIBLE"
     P09_GUIDE_ID_MISMATCH = "P09_GUIDE_ID_MISMATCH"
     P09_ASSESSMENT_ID_MISMATCH = "P09_ASSESSMENT_ID_MISMATCH"
     P09_SUBMISSION_ID_MISMATCH = "P09_SUBMISSION_ID_MISMATCH"
@@ -1472,6 +1474,7 @@ class ModelGateway:
             )
             allowed_criterion_ids = rubric_criterion_ids or source_statement_ids
             blueprint_criterion_ids: set[str] = set()
+            blueprint_learning_outcome_ids: set[str] = set()
             for dimension in output.dimensions:
                 if not set(dimension.learning_outcome_ids).issubset(
                     learning_outcome_ids
@@ -1484,6 +1487,33 @@ class ModelGateway:
                 ):
                     raise GatewayContextError("P04 output invented criterion IDs")
                 blueprint_criterion_ids.update(dimension.criterion_ids)
+                blueprint_learning_outcome_ids.update(
+                    dimension.learning_outcome_ids
+                )
+            verifiable_criterion_ids = (
+                {
+                    item.criterion_id
+                    for item in request.rubric_spec.criteria
+                    if item.verification_fit != "NOT_VERIFIABLE"
+                }
+                if request.rubric_spec is not None
+                else set()
+            )
+            if (
+                not verifiable_criterion_ids.issubset(
+                    blueprint_criterion_ids
+                )
+                or not learning_outcome_ids.issubset(
+                    blueprint_learning_outcome_ids
+                )
+            ):
+                raise GatewayContextError(
+                    "P04 output omitted source-bound conceptual coverage",
+                    phase=phase,
+                    failure_code=(
+                        ContextFailureCode.P04_SOURCE_COVERAGE_MISMATCH
+                    ),
+                )
             policy_criterion_ids = set(policy.priority_criterion_ids).union(
                 policy.required_criterion_ids
             )
@@ -1496,6 +1526,26 @@ class ModelGateway:
             ):
                 raise GatewayContextError(
                     "P04 output omitted a required trusted criterion"
+                )
+            eligible_minutes = sorted(
+                opportunity.target_minutes
+                for dimension in output.dimensions
+                for variant in dimension.evidence_variants
+                for opportunity in variant.question_opportunities
+                if opportunity.minimum_quality
+                >= constraints.minimum_opportunity_quality
+            )
+            if (
+                len(eligible_minutes) < constraints.question_count
+                or sum(eligible_minutes[: constraints.question_count])
+                > constraints.target_total_minutes
+            ):
+                raise GatewayContextError(
+                    "P04 catalog cannot form an exact-N plan within trusted limits",
+                    phase=phase,
+                    failure_code=(
+                        ContextFailureCode.P04_CATALOG_PLAN_INFEASIBLE
+                    ),
                 )
         elif prompt_id == "P05_BLUEPRINT_REVIEW_V1":
             expected = (

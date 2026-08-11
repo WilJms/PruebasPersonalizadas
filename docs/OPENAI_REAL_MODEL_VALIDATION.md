@@ -1,13 +1,46 @@
 # Validación del proveedor OpenAI real
 
-Fecha de corte: 2026-08-11. Estado: P03 fue resuelto de forma durable, el E2E
-se detuvo correctamente en P04 y la remediación focal P04 v1.1.6 terminó PASS.
-El total documentado es **35** Responses requests, todas con fixtures
-sintéticos: 33 con reporte completo, una observación P04 inconclusa cuyo gate
-quedó consumido y una recuperación P04 PASS. La evidencia hash-bound vuelve a
-cubrir 18/18 casos actuales; falta desplegar el prompt nuevo y repetir el E2E.
+Fecha de corte: 2026-08-11. Estado: el E2E sobre `dfd102d…` atravesó P01-P05,
+persistió un blueprint `READY` y se detuvo correctamente ante P05
+`READY/REJECT`. La remediación P04 1.1.7/P05 1.1.5 está validada offline y
+pendiente de observación real. Las observaciones históricas P04/P05/P06 ya no
+se reutilizan: la evidencia vigente es **15/18**.
 
-## Resultado vigente: P04 v1.1.6 real PASS tras stop de producto
+## Resultado vigente: P04 1.1.7/P05 1.1.5 preparados tras stop P05
+
+La actividad `act_aecd258c017c5b37c603` usó dos jobs y dos executions. P01,
+P02 y P03 terminaron `SCHEMA_VALID`; después de persistir tres decisiones
+recomendadas, P04 y P05 también terminaron `SCHEMA_VALID`. El job de dominio
+quedó `NEEDS_REVIEW` porque P05 recomendó `REJECT`, aunque el blueprint fue
+persistido `READY`. El agregado fue cinco Responses y USD 0.03490275, con
+P10/P11/Sol/fallback/retries cero. No hubo edición, aprobación ni submission.
+
+La revisión adversarial confirmó que los fallos críticos de P05 exigían que
+una sola oportunidad cubriera dos criterios porque `question_count=1`, y
+consideraban inválida la diversidad entre oportunidades. ADR-030 define lo
+contrario: P04 produce un catálogo conceptual y el planificador elige después
+exactamente N. También se comprobó que `PolicyDecision` no transportaba la
+semántica de la opción elegida.
+
+El contrato conserva ahora un snapshot `selected_option`; P04/P05 requieren
+decisiones autocontenidas. P04 1.1.7 materializa consecuencias representables
+y separa cobertura conceptual de cobertura por plan. P05 1.1.5 revisa
+factibilidad exacta-N y acepta diversidad calibrada. El gateway rechaza
+cobertura fuente incompleta o un catálogo incapaz de formar N dentro del
+tiempo/calidad configurados.
+
+| Gate offline vigente | Resultado |
+|---|---|
+| P04→P05 acoplado | PASS; dos fake Responses; output P04 exacto como input P05; ambos READY; P05 no REJECT y sin critical FAIL |
+| Frontera/costo | P04 `sha256:48f9aa99…` + input `sha256:e2f944b4…`; P05 `sha256:d5f35e82…` + input derivado `sha256:022bcdd3…`; ceiling USD 0.04988775/cap USD 0.06 |
+| Controles | provider schema/Pydantic/contexto, IDs allowlist, decisiones autocontenidas, cobertura fuente, exact-N, categorías P05 objetivo; retries/P10/P11/Sol/fallback 0 |
+| P06 lineage | PASS dry-run separado; una fake Response; `sha256:3fcde330…`/`sha256:3cabdfaa…`; ceiling USD 0.023361/cap USD 0.03 |
+
+Los gates reales no se han ejecutado. El runtime desplegado todavía contiene
+la versión anterior, por lo que falta qualification real, build/deploy y un
+E2E fresco completo antes de `OPENAI_REAL_MANUAL_EVAL_READY`.
+
+## Historial: P04 v1.1.6 real PASS tras stop de producto
 
 Las seis interpretaciones recomendadas P03 se persistieron y la única acción
 de reanudación creó un job/una ejecución. P01-P03 se reutilizaron sin llamadas.
