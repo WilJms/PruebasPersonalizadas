@@ -2,7 +2,56 @@
 
 Fecha de corte: 2026-08-10 (America/Santiago).
 
-## Estado vigente — `OPENAI_REAL_QUALIFICATION_V114_CONTINUATION_APPROVAL_REQUIRED` (2026-08-10)
+## Estado vigente — `OPENAI_P09_V115_REMEDIATION_DECISION_REQUIRED` (2026-08-10)
+
+La única continuación sintética OpenAI v1.1.4 autorizada sobre `abca7c5`, cap
+USD 0.10 y máximo cinco Responses requests, quedó consumida. Ejecutó P06 PASS,
+P08 PASS y P09 FAIL contextual, y se detuvo en el primer fallo antes de P11
+directo. Usó tres requests, P11/P10/Sol/fallback cero y retries de
+gateway/prompt/SDK 0/0/0. El costo calculado fue USD 0.00864505, el charge
+conservador USD 0.04284505 y la reserva transportada full-cache-write USD
+0.05226000, dentro del ceiling agregado autorizado USD 0.09270600. El
+entrypoint histórico bloquea ahora
+`OPENAI_QUALIFICATION_V114_CONTINUATION_ALREADY_CONSUMED` antes de material,
+credencial o transporte.
+
+P06 y P08 pasaron schema provider, Pydantic, contexto y expected outcome. Sus
+fronteras prompt/input quedaron fijadas respectivamente en
+`sha256:3fcde330e122adbf33a21021e89c5bf02eb746203c678c258478e6377519c91d` /
+`sha256:d404f46a26c542eb810551312ea3cea7c80adff17b866f5f5d34e18b7c59947d`
+y
+`sha256:06f48bb22cc1318c39efed17dcb77057f4a920450d3434b3557b5c078d9d84f5` /
+`sha256:5deaccfce36fbb2e79d7d17f0d671183bbb75a7c05035173be0ce69144fde130`.
+La evidencia real reutilizable cubre ahora **16/18** casos.
+
+P09 pasó schema estricto del proveedor y Pydantic, pero falló contexto con
+`MODEL_CONTEXT_NOT_ALLOWLISTED`; el outcome no se evaluó y P11 no corresponde
+a fallos contextuales. El código seguro histórico fue
+`CONTEXT_INVARIANT_FAILED`. Como `store=false` y no se retuvo el output, no se
+atribuye un campo concreto. La remediación v1.1.5 cubre toda la superficie
+compatible: copia literal de `guide_id`/`assessment_id`/`submission_id`,
+cobertura exacta de preguntas, evidencia limitada por pregunta y
+`source_ids=[]` en contexto cerrado. El gateway distingue siete códigos P09
+content-free sin registrar IDs ni texto.
+
+El dry-run P09 v1.1.5 pasa con una sola request fake, cero red/billable,
+P10/P11/Sol/fallback cero y todas las pruebas contextuales. Queda fijado a
+prompt
+`sha256:8d29a13a5ee56b39f6aa5545b602e23ca28b6d60d051852d75ecbc0c664179ff`
+e input
+`sha256:d85b124990e457e096fbe4851633ee057b662efcbda3ac84837e8c8a78deacc7`;
+su ceiling full-cache-write es USD 0.01592350 y el cap humano propuesto USD
+0.02, máximo una Responses request, retries 0 y P10/P11/Sol/fallback 0. La
+remediación normativa y el gasto requieren un gate exacto nuevo fijado al SHA
+final; ninguna aprobación previa se transfiere. Después de un PASS P09, P11
+directo tendrá su propio gate separado.
+
+El conteo vigente es **P0=0, P1=1, P2=5, P3=1**. Cloud continúa en el digest
+histórico, `CVA_MODEL_MODE=mock` y `CVA_P10_ENABLED=false`; no hubo build,
+deploy, Terraform apply, IAM, datos estudiantiles reales ni merge a main. Este
+estado todavía no es `OPENAI_REAL_MANUAL_EVAL_READY`.
+
+## Historial — `OPENAI_REAL_QUALIFICATION_V114_CONTINUATION_APPROVAL_REQUIRED` (2026-08-10)
 
 La rotación sigue cerrada: Secret Manager v1 está `DISABLED`; v2 está
 `ENABLED`, autentica con SDK retries cero y sólo ve `gpt-5.6-luna`. El preflight

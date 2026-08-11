@@ -9,6 +9,29 @@ P10 deshabilitado; las evaluaciones OpenAI dedicadas usaron exclusivamente
 fixtures sintéticos. Los resultados históricos E1 se conservan al final y no
 se presentan como evidencia del candidato E2.
 
+## Continuación v1.1.4 real y remediación P09 v1.1.5 — 2026-08-10
+
+| Prueba o gate | Resultado observado |
+|---|---|
+| Preflight inmediatamente anterior | Proyecto `PruebasPersonalizadas`; USD 3.85/USD 5.00; crédito organizacional USD 1.15; Luna 200K TPM/500 RPM; v2 activa y único modelo visible; inspección read-only |
+| Continuación v1.1.4 real | FAIL gobernado al primer fallo: P06 PASS, P08 PASS, P09 FAIL contexto; P11 directo no ejecutado |
+| Frontera de ejecución | 3/5 Responses requests; retries gateway/prompt/SDK 0/0/0; P10/P11/Sol/fallback 0; approval consumida |
+| Costo de continuación | USD 0.00864505 calculado; USD 0.04284505 charge conservador; USD 0.05226000 reserva transportada; bajo cap USD 0.10 |
+| P06 real | provider schema/Pydantic/contexto/outcome PASS; prompt/input `sha256:3fcde330…` / `sha256:d404f46a…` |
+| P08 real | provider schema/Pydantic/contexto/outcome PASS; prompt/input `sha256:06f48bb2…` / `sha256:5deaccfc…` |
+| P09 real | provider schema/Pydantic PASS; contexto FAIL `MODEL_CONTEXT_NOT_ALLOWLISTED` / `CONTEXT_INVARIANT_FAILED`; outcome no evaluado; output no retenido |
+| Antirrepetición v1.1.4 | PASS offline: `OPENAI_QUALIFICATION_V114_CONTINUATION_ALREADY_CONSUMED` antes de material, credencial y transporte |
+| Evidencia reutilizable | 16/18 PASS hash-bound; P09 no se promueve y P11 directo permanece no observado |
+| Remediación P09 v1.1.5 | IDs raíz, cobertura exacta, evidencia/fuentes por pregunta y CLOSED explícitos; siete códigos contextuales content-free; contratos/schema/ruta/fixture sin cambio |
+| Recanary P09 dry-run | PASS READY; 1 fake, 0 red/billable, P10/P11/Sol/fallback 0; input upper-bound 15,694; ceiling USD 0.01592350; cap propuesto USD 0.02 |
+| Frontera candidata P09 | prompt `sha256:8d29a13a5ee56b39f6aa5545b602e23ca28b6d60d051852d75ecbc0c664179ff`; input `sha256:d85b124990e457e096fbe4851633ee057b662efcbda3ac84837e8c8a78deacc7` |
+| Regresión focal vigente | 52/52 harness PASS y 9/9 pruebas focales registry/P09 PASS; ninguna llamada real adicional |
+
+El conteo abierto vigente es P0=0/P1=1/P2=5/P3=1. El P1 corresponde a P09;
+la causa de campo exacta no se inventa porque el output real no fue retenido.
+La recanary P09 y P11 directo requieren gates facturables distintos. Nada de
+esta remediación autoriza build, IAM, Terraform apply, deploy o E2E cloud.
+
 ## Hardening presupuestario y preflight de deploy — 2026-08-10
 
 | Prueba o inspección | Resultado observado |
@@ -20,15 +43,15 @@ se presentan como evidencia del candidato E2.
 | Preflight fixture manual | actividad con rúbrica USD 0.253571; submission 1 pregunta + 3 reservas USD 0.490573; ambas dentro de USD 0.55 por job |
 | Envelope E2E con edición P05 | ceiling agregado USD 0.855444; cap futuro propuesto USD 0.90; máximo defensivo 32 Responses requests; retries 0 |
 | Qualification v1.1.4 tras hardening | PASS 4/4 fake; 0 red/billable; ceiling y gate sin drift: USD 0.092706, máximo 5, P11 máximo 1 |
-| Suite backend vigente | 529 passed, 16 skips PostgreSQL explícitos, 1 warning P3 conocido; 80% global sobre 10,513 statements |
+| Suite backend vigente | 543 passed, 16 skips PostgreSQL explícitos, 1 warning P3 conocido; 80% global sobre 10,524 statements |
 | Deploy/Terraform/secrets | 11/11 deploy tests; `terraform validate/fmt -check` PASS; 292 archivos versionables sin secreto |
 | Cloud read-only | Service/Job mismo digest histórico, mock/P10 false; Job task/paralelismo 1/1 y `maxRetries=0`; health/readiness 200; privado anónimo 401 |
 | Plan real provisional | 2 updates in-place, 1 IAM worker-secret create, 36 no-op; `refresh=false`; no apply ni mutación |
 
 La auditoría reprodujo el sub-reservado previo como defecto P1 de control de
-gasto y lo cerró antes de red/deploy. P0/P1 abiertos permanecen 0/0. Estos
-resultados no consumen ni amplían el gate billable v1.1.4 y no autorizan build,
-IAM, Terraform apply, deploy o E2E cloud.
+gasto y lo cerró antes de red/deploy. Ese checkpoint quedó en P0/P1=0/0; el P1
+abierto posterior es P09. Estos resultados no consumieron ni ampliaron el gate
+billable v1.1.4 y no autorizan build, IAM, Terraform apply, deploy o E2E cloud.
 
 ## Rotación y qualification real hasta P05 1.1.4 PASS — 2026-08-10
 
@@ -60,16 +83,16 @@ IAM, Terraform apply, deploy o E2E cloud.
 | Gate v1.1.4 | PASS offline: el opt-in histórico v1.1.3 no abre la continuación nueva; falta approval exacta y no hubo request adicional |
 | Regresión focal en cierre P05/P11 | 100/100 PASS histórico: gateway y harness |
 | Regresión focal vigente | 111/111 gateway+harness+runtime guards PASS, incluida reserva full-cache-write, P11 80K, retry 0 y envelope E2E versionado |
-| `make test-cov` vigente | 529 passed, 16 skips PostgreSQL explícitos, 1 warning deprecado conocido; 80% global sobre 10,513 statements |
+| `make test-cov` vigente | 543 passed, 16 skips PostgreSQL explícitos, 1 warning deprecado conocido; 80% global sobre 10,524 statements |
 | Contratos | PASS: 53 roots, 140 definiciones, 274 referencias y 8 fixtures; schema canónico sin edición manual |
 | Secret scan | PASS: 292 archivos versionables, cero secretos de alta confianza |
 | Artefactos de deploy | 11/11 PASS; ningún artefacto ejecutable de deploy fue modificado |
 | Frontend | typecheck PASS; 6 archivos/34 tests PASS; build 87 módulos PASS |
 
 La recanary P05 se ejecutó exactamente una vez y pasó. Sus approvals y todas
-las anteriores quedaron consumidas. La evidencia real cubre 14/18 y el conteo
-vigente es P0=0/P1=0/P2=5/P3=1. Ningún gate consumido autoriza la continuación
-v1.1.4, deploy, cloud real, P10, Sol, fallback, PR o merge.
+las anteriores quedaron consumidas. En ese checkpoint la evidencia real cubría
+14/18 y el conteo era P0=0/P1=0/P2=5/P3=1. Esa evidencia histórica no autoriza
+deploy, cloud real, P10, Sol, fallback, PR o merge.
 
 ## Historial — preparación técnica 1.1.2 y P05 durable — 2026-08-10
 

@@ -63,6 +63,17 @@ class ContextFailureCode(StrEnum):
     )
     P02_ABSTENTION_CRITERIA_PRESENT = "P02_ABSTENTION_CRITERIA_PRESENT"
     P02_ACTIVITY_ID_MISMATCH = "P02_ACTIVITY_ID_MISMATCH"
+    P09_GUIDE_ID_MISMATCH = "P09_GUIDE_ID_MISMATCH"
+    P09_ASSESSMENT_ID_MISMATCH = "P09_ASSESSMENT_ID_MISMATCH"
+    P09_SUBMISSION_ID_MISMATCH = "P09_SUBMISSION_ID_MISMATCH"
+    P09_QUESTION_COVERAGE_MISMATCH = "P09_QUESTION_COVERAGE_MISMATCH"
+    P09_UNKNOWN_QUESTION_ID = "P09_UNKNOWN_QUESTION_ID"
+    P09_QUESTION_EVIDENCE_ID_NOT_ALLOWLISTED = (
+        "P09_QUESTION_EVIDENCE_ID_NOT_ALLOWLISTED"
+    )
+    P09_QUESTION_SOURCE_ID_NOT_ALLOWLISTED = (
+        "P09_QUESTION_SOURCE_ID_NOT_ALLOWLISTED"
+    )
 
 
 @dataclass(frozen=True, slots=True)
@@ -1546,26 +1557,60 @@ class ModelGateway:
                         "P08 accepted a question below trusted validation gates"
                     )
         elif prompt_id == "P09_GUIDE_BUILD_V1":
-            if (
-                output.guide_id != request.guide_id
-                or output.assessment_id != request.assessment.assessment_id
-                or output.submission_id != request.assessment.submission_id
-            ):
-                raise GatewayContextError("P09 output assessment reference mismatch")
+            if output.guide_id != request.guide_id:
+                raise GatewayContextError(
+                    "P09 output guide_id mismatch",
+                    phase=phase,
+                    failure_code=ContextFailureCode.P09_GUIDE_ID_MISMATCH,
+                )
+            if output.assessment_id != request.assessment.assessment_id:
+                raise GatewayContextError(
+                    "P09 output assessment_id mismatch",
+                    phase=phase,
+                    failure_code=ContextFailureCode.P09_ASSESSMENT_ID_MISMATCH,
+                )
+            if output.submission_id != request.assessment.submission_id:
+                raise GatewayContextError(
+                    "P09 output submission_id mismatch",
+                    phase=phase,
+                    failure_code=ContextFailureCode.P09_SUBMISSION_ID_MISMATCH,
+                )
             questions = {q.question_id: q for q in request.assessment.questions}
-            if output.status == "READY" and {item.question_id for item in output.items} != set(
-                questions
-            ):
-                raise GatewayContextError("READY guide must cover every assessment question")
             for item in output.items:
                 question = questions.get(item.question_id)
                 if question is None:
-                    raise GatewayContextError("Guide references an unknown question_id")
+                    raise GatewayContextError(
+                        "Guide references an unknown question_id",
+                        phase=phase,
+                        failure_code=ContextFailureCode.P09_UNKNOWN_QUESTION_ID,
+                    )
                 for element in item.guide.observable_elements:
                     if not set(element.evidence_ids).issubset(set(question.evidence_ids)):
-                        raise GatewayContextError("Guide invented evidence for a question")
+                        raise GatewayContextError(
+                            "Guide invented evidence for a question",
+                            phase=phase,
+                            failure_code=(
+                                ContextFailureCode.P09_QUESTION_EVIDENCE_ID_NOT_ALLOWLISTED
+                            ),
+                        )
                     if not set(element.source_ids).issubset(set(question.course_source_ids)):
-                        raise GatewayContextError("Guide invented a course source")
+                        raise GatewayContextError(
+                            "Guide invented a course source",
+                            phase=phase,
+                            failure_code=(
+                                ContextFailureCode.P09_QUESTION_SOURCE_ID_NOT_ALLOWLISTED
+                            ),
+                        )
+            if output.status == "READY" and {
+                item.question_id for item in output.items
+            } != set(questions):
+                raise GatewayContextError(
+                    "READY guide must cover every assessment question",
+                    phase=phase,
+                    failure_code=(
+                        ContextFailureCode.P09_QUESTION_COVERAGE_MISMATCH
+                    ),
+                )
         elif prompt_id == "P11_SCHEMA_REPAIR_V1":
             if output.target_schema_name != request.target_schema_name:
                 raise GatewayContextError("P11 changed target_schema_name")

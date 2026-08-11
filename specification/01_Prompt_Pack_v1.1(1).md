@@ -1,15 +1,16 @@
 # Anexo A - Prompt pack operacional
 
-**Versión candidata del pack:** `prompt-pack/1.1.4`
+**Versión candidata del pack:** `prompt-pack/1.1.5`
 **Compatibilidad:** contratos `assessment-contracts/1.1.0`  
 **Perfil de ruta activo:** `LUNA_BASELINE_V1` (ADR-036)
 **Principio:** una tarea semántica por llamada; contenido estudiantil siempre no confiable; structured outputs obligatorios.
 
-Las entradas P01, P03, P04 y P06-P09 conservan `1.1.2`; P02 conserva la
-frontera real aceptada `1.1.3`; P05 y P11 avanzan a la candidata `1.1.4` tras
-el stop gobernado de la continuación real. La activación real de P05/P11 1.1.4
-requiere aceptación humana separada y una aprobación de gasto nueva. Este pack
-es una especificación operacional candidata. Los textos se
+Las entradas P01, P03, P04 y P06-P08 conservan `1.1.2`; P02 conserva la
+frontera real aceptada `1.1.3`; P05 y P11 conservan la aceptada `1.1.4`; y P09
+avanza sola a la candidata `1.1.5` tras el stop contextual de la continuación
+real. La activación real de P09 1.1.5 requiere aceptación humana separada y una
+aprobación de gasto nueva. Este pack es una especificación operacional
+candidata. Los textos se
 almacenan en un registry inmutable con `prompt_id`, `version`, hash, modelo
 permitido, esquema de salida, parámetros y resultados de eval. Los placeholders
 `{{...}}` se resuelven en servidor. No se realiza interpolación libre: cada
@@ -633,7 +634,11 @@ Devuelve QuestionReviewResult.
 ### Prompt de desarrollador
 
 ```text
-Construye la guía estructurada para las preguntas de la evaluación COMPLETA. No cambies preguntas, anclas ni evidence_ids.
+Construye la guía estructurada para las preguntas de la evaluación COMPLETA. No cambies preguntas, anclas ni IDs.
+
+Copia literalmente `guide_id` desde `request.guide_id`, `assessment_id` desde `request.assessment.assessment_id` y `submission_id` desde `request.assessment.submission_id`. No crees, sustituyas ni reformatees esos IDs.
+
+Si devuelves `status=READY`, incluye exactamente un `EvaluationGuideItem` por cada pregunta de `request.assessment.questions`: sin omisiones, duplicados ni preguntas adicionales, y con exactamente el mismo conjunto de `question_id`.
 
 Para cada pregunta:
 - explica en una frase qué comprensión observable busca;
@@ -642,13 +647,14 @@ Para cada pregunta:
 - describe errores/concepciones observables sin diagnosticar a la persona;
 - produce niveles 0, 1, 2 y 3 usando la escala base;
 - declara límites específicos del ítem en `cannot_infer`, sin producir avisos generales de autoría, IA o proceso histórico;
-- cita evidence_ids/source_ids que sustentan cada elemento.
+- en cada `ObservableElement` usa uno o más `evidence_ids` tomados únicamente de `evidence_ids` de esa pregunta;
+- usa `source_ids` tomados únicamente de `course_source_ids` de esa pregunta. En `context_mode=CLOSED` o cuando `course_source_ids` esté vacío, usa `source_ids=[]`; nunca sustituyas una referencia de evidencia, procedencia o locator por un course source.
 
-Para preguntas de selección, conserva una respuesta defendible, su evidencia y la razón de cada distractor aunque el estudiante no deba justificar. La guía no es una respuesta modelo única ni una reconstrucción de lo que el estudiante “debió pensar”. No añadas conocimiento disciplinar externo. Si la evidencia no permite una guía observable completa, usa `NEEDS_REVIEW` y no inventes.
+Para preguntas de selección, conserva una respuesta defendible, su evidencia y la razón de cada distractor aunque el estudiante no deba justificar. La guía no es una respuesta modelo única ni una reconstrucción de lo que el estudiante “debió pensar”. No añadas conocimiento disciplinar externo. Si no puedes satisfacer literalmente todos los IDs, la cobertura completa y las referencias permitidas, usa `NEEDS_REVIEW` sin items parciales y no inventes.
 
 No redactes el aviso global “esto no determina autoría/uso de IA/historia”. Ese texto es un componente fijo de la UI y no pertenece a la salida del modelo ni a exportaciones generadas.
 
-Devuelve `EvaluationGuide`; cada `EvaluationGuideItem.question_id` debe existir en el Assessment de entrada. El objeto se persiste asociado a `assessment_id` y `submission_id` y se consulta en la plataforma; PDF/HTML es solo una vista opcional.
+Devuelve `EvaluationGuide`. El objeto se persiste asociado a `assessment_id` y `submission_id` y se consulta en la plataforma; PDF/HTML es solo una vista opcional.
 ```
 
 ### Validación cruzada
@@ -656,6 +662,9 @@ Devuelve `EvaluationGuide`; cada `EvaluationGuideItem.question_id` debe existir 
 Después de la llamada:
 
 - unión de IDs de guía debe ser subconjunto de fuentes de pregunta;
+- `guide_id`, `assessment_id` y `submission_id` coinciden literalmente con la request;
+- un resultado `READY` cubre exactamente el conjunto de preguntas, una vez cada una;
+- cada elemento limita evidencia/fuentes a su propia pregunta y `CLOSED` no admite `source_ids`;
 - niveles 0-3 completos y ordenados;
 - no hay avisos generales de “autor”, “IA”, “fraude” o proceso histórico producidos por el modelo;
 - un revisor semántico verifica que nivel 2 sea alcanzable en el tiempo previsto.

@@ -1,6 +1,39 @@
 # Setup gobernado del proveedor OpenAI
 
-## Estado vigente — P05 1.1.4 PASS; continuación v1.1.4 pendiente de gate
+## Estado vigente — P09 1.1.5 preparado; remediación y recanary pendientes
+
+La continuación v1.1.4 ya no está pendiente: se ejecutó una vez y quedó
+consumida. P06 y P08 pasaron; P09 falló contexto después de pasar schema y
+Pydantic; el stop al primer fallo impidió P11 directo. Fueron tres Responses
+requests, USD 0.00864505 calculados, retries 0 y P10/P11/Sol/fallback cero.
+Repetir el opt-in v1.1.4 bloquea antes de material/clave/transporte con:
+
+```text
+OPENAI_QUALIFICATION_V114_CONTINUATION_ALREADY_CONSUMED
+```
+
+La remediación P09 v1.1.5 no cambia contratos ni schema. El dry-run está
+hash-bound, devuelve READY, usa una request fake, cero red/billable y fija
+ceiling USD 0.01592350 bajo cap propuesto USD 0.02. La interfaz del gate futuro
+es:
+
+```text
+CVA_OPENAI_P09_V115_REMEDIATION_DECISION=OPENAI_P09_V115_REMEDIATION_ACCEPTED
+CVA_OPENAI_P09_V115_RECANARY_APPROVAL=OPENAI_P09_V115_RECANARY_APPROVED
+```
+
+Estos valores documentan la interfaz y no constituyen aceptación ni
+autorización. La autorización exacta debe fijar además el SHA candidato, una
+sola Responses request, stop al primer fallo, retries 0 y
+P10/P11/Sol/fallback 0. Una vez consumida, el entrypoint bloqueará
+`OPENAI_P09_V115_RECANARY_ALREADY_CONSUMED`. P11 directo requiere un gate
+posterior independiente.
+
+Cloud conserva `CVA_MODEL_MODE=mock`, `CVA_P10_ENABLED=false`; ninguna clave
+está montada en web/worker y no se autorizó deploy, Terraform apply, IAM, datos
+reales ni main.
+
+## Historial — P05 1.1.4 PASS y preparación de continuación v1.1.4
 
 La clave histórica fue revocada en Platform y la sonda content-free confirmó
 rechazo HTTP 401. Secret Manager versión `1` se deshabilitó después de esa
@@ -54,7 +87,7 @@ CVA_OPENAI_P05_V114_RECANARY_APPROVAL=OPENAI_P05_V114_RECANARY_APPROVED
 Repetirlos bloquea con `OPENAI_P05_V114_RECANARY_ALREADY_CONSUMED`. El PASS
 cierra el P1 P05 y deja 14/18 casos con evidencia real hash-bound.
 
-La continuación vigente contiene sólo P06/P08/P09/P11. El dry-run pasó 4/4,
+La continuación entonces candidata contenía sólo P06/P08/P09/P11. El dry-run pasó 4/4,
 cero red/billable, ceiling USD 0.09270600 y cap máximo propuesto USD 0.10. Su
 frontera es máximo cinco Responses requests, P11 máximo uno, stop al primer
 fallo y retries/P10/Sol/fallback cero. Requiere un opt-in distinto:

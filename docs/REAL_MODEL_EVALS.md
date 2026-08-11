@@ -5,11 +5,47 @@ El corpus inicial contiene 20 casos exclusivamente sintéticos en
 entregas ni contenido estudiantil real. El rango gobernado es de 10 a 30 casos,
 con IDs únicos y clasificación obligatoria
 `SYNTHETIC_ONLY_NO_STUDENT_DATA`. El manifest fija además
-`route_profile=LUNA_BASELINE_V1`, prompt pack vigente `1.1.4` y schema
-`1.1.0`. P01, P03, P04 y P06-P09 conservan su versión individual `1.1.2`;
-P02 conserva `1.1.3`; P05 y P11 usan `1.1.4`.
+`route_profile=LUNA_BASELINE_V1`, prompt pack candidato `1.1.5` y schema
+`1.1.0`. P01, P03, P04 y P06-P08 conservan su versión individual `1.1.2`;
+P02 conserva `1.1.3`; P05/P11 usan `1.1.4`; P09 candidata usa `1.1.5`.
 
-## Resultado vigente — P05 1.1.4 PASS y cuatro casos pendientes
+## Resultado vigente — continuación v1.1.4 consumida; P09 v1.1.5 preparada
+
+La continuación autorizada sobre `abca7c5` ejecutó P06 PASS, P08 PASS y P09
+FAIL contextual, y se detuvo antes de P11 directo. La autorización quedó
+consumida y el entrypoint histórico devuelve
+`OPENAI_QUALIFICATION_V114_CONTINUATION_ALREADY_CONSUMED` antes de material,
+credencial o transporte.
+
+| Frontera real v1.1.4 | Resultado observado |
+|---|---|
+| Casos | P06 PASS; P08 PASS; P09 FAIL contexto; P11 directo no ejecutado |
+| Requests | 3/5; stop al primer fallo |
+| Costo | USD 0.00864505 calculado; USD 0.04284505 charge conservador; USD 0.05226000 reservado |
+| Exclusiones | gateway/prompt/SDK retries 0/0/0; P10/P11/Sol/fallback 0 |
+| P09 | provider schema/Pydantic PASS; `MODEL_CONTEXT_NOT_ALLOWLISTED`; outcome no evaluado |
+
+P06 y P08 elevan la evidencia real hash-bound a **16/18**. P09 no se promueve
+a PASS y su output no se retuvo. El único subtipo histórico disponible es
+`CONTEXT_INVARIANT_FAILED`, por lo que no se atribuye un campo exacto.
+
+P09 v1.1.5 explicita los IDs raíz, la cobertura exacta de preguntas y las
+allowlists por pregunta, incluido `source_ids=[]` en contexto cerrado. El
+gateway discrimina siete códigos content-free. El dry-run pasa `READY` con una
+request fake, cero red/billable, ceiling USD 0.01592350 y cap propuesto USD
+0.02. Está ligado a prompt/input:
+
+```text
+sha256:8d29a13a5ee56b39f6aa5545b602e23ca28b6d60d051852d75ecbc0c664179ff
+sha256:d85b124990e457e096fbe4851633ee057b662efcbda3ac84837e8c8a78deacc7
+```
+
+La aceptación normativa y una autorización exacta nueva son obligatorias para
+la única recanary P09; máximo una Responses request, retries 0 y
+P10/P11/Sol/fallback 0. P11 directo queda para otro gate posterior. Los valores
+de entorno documentados por el harness no constituyen autorización.
+
+## Historial — P05 1.1.4 PASS y preparación de cuatro casos
 
 La recanary sintética P05 v1.1.4 autorizada sobre `35ecaf8` consumió exactamente
 una Responses request y terminó **PASS**. P05 devolvió `READY`; schema estricto
@@ -560,9 +596,10 @@ esperada usa diez requests.
 
 Una ejecución offline con el resolver real y transporte fake completó jobs de
 actividad y submission, recorrió P01-P09 en nueve tareas semánticas, observó
-27,330 tokens como máximo preflight y usó cero red/billable. El dry-run de la
-continuación v1.1.4 permanece 4/4, máximo 5 y USD 0.092706. La qualification,
-el build/deploy y el E2E real conservan gates separados.
+27,330 tokens como máximo preflight y usó cero red/billable. La continuación
+v1.1.4 quedó consumida; el dry-run vigente es la recanary P09 v1.1.5, una
+request y USD 0.01592350. P09, P11 directo, build/deploy y E2E real conservan
+gates separados.
 
 ## Recorrido humano preparado
 

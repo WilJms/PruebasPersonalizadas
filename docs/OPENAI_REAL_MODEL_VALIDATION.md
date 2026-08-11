@@ -1,12 +1,39 @@
 # Validación del proveedor OpenAI real
 
-Fecha de corte: 2026-08-10. Estado: la recanary P05 v1.1.4 autorizada sobre
-`35ecaf8` terminó PASS en una única Responses request y cerró el P1 P05. El
-total documentado sube a **23** requests, todas con fixtures sintéticos. La
-evidencia real hash-bound cubre 14/18 casos; P06/P08/P09/P11 directo siguen sin
-observación real. El dry-run de esos cuatro casos pasa con ceiling USD
-0.09270600, cap propuesto USD 0.10 y máximo cinco requests. No existe todavía
-autorización exacta de esa continuación ni de deploy.
+Fecha de corte: 2026-08-10. Estado: la continuación v1.1.4 autorizada sobre
+`abca7c5` quedó consumida al detenerse en P09 después de P06/P08 PASS. El total
+documentado sube a **26** Responses requests, todas con fixtures sintéticos.
+La evidencia real hash-bound cubre 16/18 casos; P09 sigue abierto y P11 directo
+no fue ejecutado. La remediación offline P09 v1.1.5 está preparada, pero aún
+requiere aceptación normativa y una autorización facturable exacta separada.
+
+## Resultado vigente: continuación v1.1.4 consumida y P09 v1.1.5 preparada
+
+La continuación usó tres de cinco requests permitidas y aplicó stop al primer
+fallo, retries de gateway/prompt/SDK 0/0/0 y P10/P11/Sol/fallback cero. P06 y
+P08 pasaron schema provider, Pydantic, contexto y outcome. P09 pasó schema y
+Pydantic, pero falló contexto con `MODEL_CONTEXT_NOT_ALLOWLISTED`; outcome no
+evaluado. El costo calculado fue USD 0.00864505, el charge conservador USD
+0.04284505 y la reserva transportada full-cache-write USD 0.05226000, bajo el
+ceiling autorizado USD 0.09270600. La approval no puede reutilizarse.
+
+El diagnóstico histórico sólo conserva el código content-free
+`CONTEXT_INVARIANT_FAILED`, hashes y métricas. No permite afirmar si el modelo
+cambió un ID raíz, omitió una pregunta o cruzó referencias. P09 v1.1.5 remedia
+las siete relaciones posibles sin cambiar contratos, schema, ruta, fixture ni
+expected outcome: IDs raíz literales, cobertura exacta de preguntas,
+`evidence_ids` y `source_ids` restringidos a cada pregunta, y `source_ids=[]`
+en `CLOSED`. El gateway emite un código seguro distinto por cada clase.
+
+El dry-run de la recanary P09 pasa READY con una request fake, cero red/costo,
+techo full-cache-write USD 0.01592350 y cap propuesto USD 0.02. La frontera es
+prompt
+`sha256:8d29a13a5ee56b39f6aa5545b602e23ca28b6d60d051852d75ecbc0c664179ff`
+e input
+`sha256:d85b124990e457e096fbe4851633ee057b662efcbda3ac84837e8c8a78deacc7`.
+Sólo una aceptación/remediación y approval nuevas, fijadas al SHA candidato,
+pueden permitir esa única request; P11 permanece en cero. P11 directo se
+calificará después bajo otro gate si P09 pasa.
 
 ## Hardening presupuestario predeploy
 
@@ -31,9 +58,9 @@ queda en USD 0.253571 para actividad y USD 0.490573 para submission bajo USD
 0.55 por job. La ruta real con adapter fake terminó P01-P09 en jobs
 `SUCCEEDED`, nueve tareas semánticas, máximo input estimado 27,330 y cero
 red/billable. Sumando una edición durable P05, el E2E futuro reserva USD
-0.855444, cap propuesto USD 0.90 y máximo 32 Responses sin retries. El P1 queda
-cerrado y P0/P1 abiertos siguen 0/0; ninguna de estas pruebas autoriza gasto o
-deploy.
+0.855444, cap propuesto USD 0.90 y máximo 32 Responses sin retries. Ese P1 de
+presupuesto quedó cerrado; el P1 abierto vigente es exclusivamente P09.
+Ninguna de estas pruebas autoriza gasto o deploy.
 
 ## Perfil vinculante `LUNA_BASELINE_V1`
 
@@ -111,7 +138,7 @@ PASS, P11 cero y USD 0.00936825 calculados frente al cap USD 0.03. Su approval
 quedó consumida.
 
 Los catorce PASS reales se reutilizan sólo bajo hashes exactos. El dry-run
-vigente programa P06/P08/P09/P11, pasa 4/4 sin red ni costo y fija ceiling USD
+entonces candidato programaba P06/P08/P09/P11, pasaba 4/4 sin red ni costo y fijaba ceiling USD
 0.09270600, cap propuesto USD 0.10, máximo cinco requests, P11 máximo uno y
 stop al primer fallo. Requiere una approval v1.1.4 distinta.
 
@@ -351,16 +378,19 @@ cerrada, sin P11 ni segunda request, y deja el P0 abierto para revisión.
 | Continuación 1.1.3 | FAIL gobernado real: P03/P04 PASS, P05 FAIL más una P11; stop tras 4 requests; P06/P08/P09/P11 directo no ejecutados; USD 0.02438310; approval consumida |
 | Remediación y recanary P05/P11 1.1.4 | PASS real: `READY`, schema/Pydantic/contexto/outcome PASS, 1 request, P11 0, USD 0.00936825; P1 cerrado y approval consumida |
 | Continuación 1.1.4 dry-run | 4/4 PASS, 14 evidencias reales hash-bound, 4 fake, 0 red/billable, máximo 5, ceiling USD 0.09270600/cap propuesto USD 0.10 |
+| Continuación 1.1.4 real | FAIL gobernado en P09: P06/P08 PASS, P09 schema/Pydantic PASS y contexto FAIL, P11 directo no ejecutado; 3 requests; USD 0.00864505; approval consumida |
+| Remediación P09 1.1.5 | PASS offline: siete relaciones P09 explícitas y códigos content-free; recanary dry-run READY, 1 fake, 0 red/billable, ceiling USD 0.01592350/cap propuesto USD 0.02 |
 | Hardening de presupuesto predeploy | PASS offline; full-cache-write antes de transporte, gateway/SDK retries 0/0, P11 máximo 80K, E2E fake P01-P09 `SUCCEEDED`; P1 cerrado |
 | Edición P05 durable | PASS backend/API/frontend/E2E; P2 funcional cerrado |
-| Calidad/latencia/costo y severidad | P0=0; P1=0; P2=5; P3=1; calidad pedagógica pendiente de revisión humana posterior |
+| Calidad/latencia/costo y severidad | P0=0; P1=1 (P09); P2=5; P3=1; calidad pedagógica pendiente de revisión humana posterior |
 | Build, digest y deploy real del worker | pendiente de gate posterior |
 
 El camino interactivo P05 está ya detrás del worker durable y no puede entregar
 un review mock dentro de un recorrido declarado OpenAI. El estado todavía no
-es `OPENAI_REAL_MANUAL_EVAL_READY`: falta completar P06/P08/P09/P11 directo
-bajo el gate v1.1.4 y luego ejecutar el gate separado de deploy/E2E. Nada de lo
-anterior autoriza deploy ni mutación cloud.
+es `OPENAI_REAL_MANUAL_EVAL_READY`: falta aceptar y observar P09 v1.1.5,
+calificar P11 directo bajo un gate separado y luego ejecutar los gates de
+deploy/E2E. Nada de lo anterior autoriza gasto adicional, deploy ni mutación
+cloud.
 
 Fuentes oficiales: páginas de
 [`gpt-5.6-sol`](https://developers.openai.com/api/docs/models/gpt-5.6-sol),

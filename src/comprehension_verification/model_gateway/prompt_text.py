@@ -198,7 +198,11 @@ Aplica FAIL crítico si:
 Estima dificultad y tiempo solo como bandas, con confianza. Devuelve decision ACCEPT, REJECT o ESCALATE. Usa ESCALATE únicamente si la evidencia es genuinamente ambigua o hay conflicto entre criterios, no para evitar decidir.
 Devuelve QuestionReviewResult.
 """,
-        "P09_GUIDE_BUILD_V1": """Construye la guía estructurada para las preguntas de la evaluación COMPLETA. No cambies preguntas, anclas ni evidence_ids.
+        "P09_GUIDE_BUILD_V1": """Construye la guía estructurada para las preguntas de la evaluación COMPLETA. No cambies preguntas, anclas ni IDs.
+
+Copia literalmente guide_id desde request.guide_id, assessment_id desde request.assessment.assessment_id y submission_id desde request.assessment.submission_id. No crees, sustituyas ni reformatees esos IDs.
+
+Si devuelves status=READY, incluye exactamente un EvaluationGuideItem por cada pregunta de request.assessment.questions: sin omisiones, duplicados ni preguntas adicionales, y con exactamente el mismo conjunto de question_id.
 
 Para cada pregunta:
 - explica en una frase qué comprensión observable busca;
@@ -207,13 +211,14 @@ Para cada pregunta:
 - describe errores o concepciones observables sin diagnosticar a la persona;
 - produce niveles 0, 1, 2 y 3 usando la escala base;
 - declara límites específicos del ítem en cannot_infer, sin producir avisos generales de autoría, IA o proceso histórico;
-- cita evidence_ids y source_ids que sustentan cada elemento.
+- en cada ObservableElement usa uno o más evidence_ids tomados únicamente de evidence_ids de esa pregunta;
+- usa source_ids tomados únicamente de course_source_ids de esa pregunta. En context_mode=CLOSED o cuando course_source_ids esté vacío, usa source_ids=[]; nunca sustituyas una referencia de evidencia, procedencia o locator por un course source.
 
-Para preguntas de selección, conserva una respuesta defendible, su evidencia y la razón de cada distractor aunque el estudiante no deba justificar. La guía no es una respuesta modelo única ni una reconstrucción de lo que el estudiante debió pensar. No añadas conocimiento disciplinar externo. Si la evidencia no permite una guía observable completa, usa NEEDS_REVIEW y no inventes.
+Para preguntas de selección, conserva una respuesta defendible, su evidencia y la razón de cada distractor aunque el estudiante no deba justificar. La guía no es una respuesta modelo única ni una reconstrucción de lo que el estudiante debió pensar. No añadas conocimiento disciplinar externo. Si no puedes satisfacer literalmente todos los IDs, la cobertura completa y las referencias permitidas, usa NEEDS_REVIEW sin items parciales y no inventes.
 
 No redactes el aviso global de que esto no determina autoría, uso de IA o historia. Ese texto es un componente fijo de la UI y no pertenece a la salida del modelo ni a exportaciones generadas.
 
-Devuelve EvaluationGuide; cada EvaluationGuideItem.question_id debe existir en el Assessment de entrada. El objeto se persiste asociado a assessment_id y submission_id y se consulta en la plataforma; PDF o HTML es solo una vista opcional.
+Devuelve EvaluationGuide. El objeto se persiste asociado a assessment_id y submission_id y se consulta en la plataforma; PDF o HTML es solo una vista opcional.
 """,
         "P10_ENRICHED_CONTEXT_V1": """P10 permanece deshabilitado y no tiene ruta callable en este gate. No uses corpus de curso, internet, grounding del proveedor ni File Search sin una nueva autorización explícita. Si esta instrucción se alcanza por error, abstente sin usar conocimiento paramétrico ni ampliar el contexto.
 """,

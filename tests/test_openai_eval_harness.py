@@ -34,6 +34,8 @@ def _safe_environment() -> dict[str, str]:
     environment.pop("CVA_OPENAI_P02_V113_RECANARY_APPROVAL", None)
     environment.pop("CVA_OPENAI_P05_V114_REMEDIATION_DECISION", None)
     environment.pop("CVA_OPENAI_P05_V114_RECANARY_APPROVAL", None)
+    environment.pop("CVA_OPENAI_P09_V115_REMEDIATION_DECISION", None)
+    environment.pop("CVA_OPENAI_P09_V115_RECANARY_APPROVAL", None)
     environment.pop("CVA_OPENAI_REAL_QUALIFICATION_V113_APPROVAL", None)
     environment.pop(
         "CVA_OPENAI_REAL_QUALIFICATION_V113_CONTINUATION_APPROVAL", None
@@ -611,7 +613,7 @@ def test_v113_qualification_dry_run_is_consumed_and_non_billable() -> None:
     }
 
 
-def test_v114_qualification_dry_run_fixes_four_unobserved_cases_without_cost() -> None:
+def test_v114_qualification_dry_run_is_consumed_and_non_billable() -> None:
     completed = subprocess.run(
         [
             "make",
@@ -620,43 +622,46 @@ def test_v114_qualification_dry_run_fixes_four_unobserved_cases_without_cost() -
         ],
         cwd=ROOT,
         env=_safe_environment(),
-        check=True,
+        check=False,
         capture_output=True,
         text=True,
     )
 
-    report = json.loads(completed.stdout)
-    assert report["status"] == "PASS"
-    assert report["mode"] == "qualification-dry-run"
-    assert report["prompt_pack_version"] == "1.1.4"
-    assert report["planned_case_ids"] == list(
-        eval_harness.QUALIFICATION_CASE_IDS
+    assert completed.returncode == 2
+    assert json.loads(completed.stdout) == {
+        "code": "OPENAI_QUALIFICATION_V114_CONTINUATION_ALREADY_CONSUMED",
+        "network_calls": 0,
+        "status": "BLOCKED",
+    }
+
+
+def test_closed_v114_qualification_state_reuses_sixteen_hash_bound_passes(
+    monkeypatch,
+) -> None:
+    monkeypatch.setattr(
+        eval_harness, "QUALIFICATION_V114_CONTINUATION_CONSUMED", False
     )
-    assert len(report["planned_case_ids"]) == 4
-    assert len(report["reused_real_evidence_case_ids"]) == 14
+    report = asyncio.run(
+        eval_harness._run_qualification_dry_run(
+            eval_harness._load_cases(eval_harness.DEFAULT_MANIFEST)
+        )
+    )
+
+    assert report["prompt_pack_version"] == "1.1.5"
+    assert report["planned_case_ids"] == [
+        "oa-p09-happy-docx",
+        "oa-p11-happy",
+    ]
+    assert len(report["reused_real_evidence_case_ids"]) == 16
     assert report["real_eligible_corpus_coverage"] == 18
     assert report["network_calls"] == report["billable_calls"] == 0
-    assert report["fake_transport_calls"] == 4
-    assert report["max_responses_requests"] == 5
-    assert report["p10_calls"] == report["sol_calls"] == 0
-    assert report["fallback_calls"] == 0
-    assert report["gateway_retries"] == report["prompt_retries"] == 0
-    assert report["sdk_retries"] == 0
-    assert report["p11_calls"] == 1
-    assert report["budget"]["proposed_human_budget_usd"] == 0.10
-    assert report["budget"]["full_cache_write_ceiling_usd"] == 0.092706
-    assert report["p05_v114_boundary"] == {
-        "case_id": eval_harness.P05_V114_RECANARY_CASE_ID,
-        "prompt_hash": eval_harness.P05_V114_PROMPT_HASH,
-        "input_bundle_hash": eval_harness.P05_V114_INPUT_BUNDLE_HASH,
-    }
-    assert report["p05_v114_remediation_decision"] == (
-        "PRIOR_ACCEPTANCE_REUSED_HASH_BOUND"
-    )
+    assert report["fake_transport_calls"] == 2
+    assert report["max_responses_requests"] == 3
+    assert report["budget"]["full_cache_write_ceiling_usd"] == 0.04953725
     assert all(row["status"] == "PASS" for row in report["cases"])
 
 
-def test_real_synthetic_qualification_requires_its_distinct_human_gate() -> None:
+def test_real_v114_qualification_cannot_be_reopened() -> None:
     completed = subprocess.run(
         [sys.executable, str(SCRIPT), "--mode", "qualification-real"],
         cwd=ROOT,
@@ -668,7 +673,7 @@ def test_real_synthetic_qualification_requires_its_distinct_human_gate() -> None
 
     assert completed.returncode == 2
     assert json.loads(completed.stdout) == {
-        "code": "OPENAI_QUALIFICATION_V114_CONTINUATION_APPROVAL_REQUIRED",
+        "code": "OPENAI_QUALIFICATION_V114_CONTINUATION_ALREADY_CONSUMED",
         "network_calls": 0,
         "status": "BLOCKED",
     }
@@ -677,6 +682,9 @@ def test_real_synthetic_qualification_requires_its_distinct_human_gate() -> None
 def test_v113_qualification_old_gate_cannot_open_v114_continuation(
     monkeypatch,
 ) -> None:
+    monkeypatch.setattr(
+        eval_harness, "QUALIFICATION_V114_CONTINUATION_CONSUMED", False
+    )
     constructed = 0
 
     def forbidden_adapter(**_kwargs: object) -> object:
@@ -818,7 +826,7 @@ def test_qualification_preflight_blocks_low_or_excess_budget_before_secret(
     ):
         asyncio.run(
             eval_harness._run_qualification_real(
-                cases, max_total_cost_usd=0.092
+                cases, max_total_cost_usd=0.049
             )
         )
     with pytest.raises(
@@ -998,7 +1006,7 @@ def test_qualification_stops_after_one_governed_p11_even_when_repair_succeeds(
     )
     assert row["repair_disposition"] == "P11_USED_STOP_POLICY"
     assert [call["prompt_id"] for call in row["calls"]] == [
-        "P06_EVIDENCE_MAP_V1",
+        "P09_GUIDE_BUILD_V1",
         "P11_SCHEMA_REPAIR_V1",
     ]
     serialized = json.dumps(report, ensure_ascii=False, sort_keys=True)
@@ -1099,10 +1107,10 @@ def test_qualification_blocks_oversized_dynamic_p11_before_transport(
     )
 
     assert late_invalid_adapter.calls == len(selected_cases) - 1
-    assert report["network_calls"] == report["billable_calls"] == 3
+    assert report["network_calls"] == report["billable_calls"] == 1
     assert report["p11_calls"] == 0
     assert 0 < report["transport_reserved_full_cache_write_ceiling_usd"] <= 0.10
-    assert len(report["cases"]) == 3
+    assert len(report["cases"]) == 1
     assert all(row["status"] == "PASS" for row in report["cases"][:-1])
     row = report["cases"][-1]
     assert row["case_id"] == "oa-p09-happy-docx"
@@ -1159,7 +1167,7 @@ def test_p02_v113_recanary_dry_run_is_hash_bound_and_non_billable() -> None:
 
     report = json.loads(completed.stdout)
     assert report["status"] == "PASS"
-    assert report["prompt_pack_version"] == "1.1.4"
+    assert report["prompt_pack_version"] == "1.1.5"
     assert report["network_calls"] == report["billable_calls"] == 0
     assert report["secret_read"] is False
     assert report["p10_calls"] == report["p11_calls"] == 0
@@ -1343,7 +1351,7 @@ def test_p05_v114_recanary_dry_run_is_hash_bound_and_non_billable() -> None:
 
     report = json.loads(completed.stdout)
     assert report["status"] == "PASS"
-    assert report["prompt_pack_version"] == "1.1.4"
+    assert report["prompt_pack_version"] == "1.1.5"
     assert report["network_calls"] == report["billable_calls"] == 0
     assert report["secret_read"] is False
     assert report["p10_calls"] == report["p11_calls"] == 0
@@ -1513,6 +1521,210 @@ def test_p05_v114_recanary_is_fail_closed_after_consumption(
         asyncio.run(
             eval_harness._run_canary_real(cases, max_total_cost_usd=0.03)
         )
+
+
+def test_p09_v115_recanary_dry_run_is_hash_bound_and_non_billable() -> None:
+    completed = subprocess.run(
+        [
+            "make",
+            "openai-p09-v115-recanary-dry-run",
+            f"PYTHON={sys.executable}",
+        ],
+        cwd=ROOT,
+        env=_safe_environment(),
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    report = json.loads(completed.stdout)
+    assert report["status"] == "PASS"
+    assert report["prompt_pack_version"] == "1.1.5"
+    assert report["network_calls"] == report["billable_calls"] == 0
+    assert report["secret_read"] is False
+    assert report["p10_calls"] == report["p11_calls"] == 0
+    assert report["fallback_calls"] == report["sol_calls"] == 0
+    row = report["cases"][0]
+    assert row["case_id"] == eval_harness.P09_V115_RECANARY_CASE_ID
+    assert row["prompt_version"] == "1.1.5"
+    assert row["prompt_hash"] == eval_harness.P09_V115_PROMPT_HASH
+    assert row["input_bundle_hash"] == eval_harness.P09_V115_INPUT_BUNDLE_HASH
+    assert row["output_status"] == "READY"
+    assert row["budget"]["input_upper_bound_tokens"] == 15_694
+    assert row["budget"]["full_cache_write_ceiling_usd"] == 0.0159235
+    assert row["budget"]["proposed_human_budget_usd"] == 0.02
+    assert all(row["controls"].values())
+
+
+def test_p09_v115_recanary_requires_fresh_decision_and_spend_gate(
+    monkeypatch,
+) -> None:
+    monkeypatch.setattr(eval_harness, "P09_V115_RECANARY_CONSUMED", False)
+    cases = [
+        case
+        for case in eval_harness._load_cases(eval_harness.DEFAULT_MANIFEST)
+        if case["case_id"] == eval_harness.P09_V115_RECANARY_CASE_ID
+    ]
+    monkeypatch.delenv("CVA_OPENAI_API_KEY", raising=False)
+    monkeypatch.delenv(
+        eval_harness.P09_V115_REMEDIATION_DECISION_ENV, raising=False
+    )
+    monkeypatch.delenv(
+        eval_harness.P09_V115_RECANARY_APPROVAL_ENV, raising=False
+    )
+
+    with pytest.raises(
+        eval_harness.OpenAIEvalBlocked,
+        match="OPENAI_P09_V115_REMEDIATION_HUMAN_DECISION_REQUIRED",
+    ):
+        asyncio.run(
+            eval_harness._run_canary_real(cases, max_total_cost_usd=0.02)
+        )
+    monkeypatch.setenv(
+        eval_harness.P09_V115_REMEDIATION_DECISION_ENV,
+        eval_harness.P09_V115_REMEDIATION_DECISION_VALUE,
+    )
+    with pytest.raises(
+        eval_harness.OpenAIEvalBlocked,
+        match="OPENAI_P09_V115_RECANARY_APPROVAL_REQUIRED",
+    ):
+        asyncio.run(
+            eval_harness._run_canary_real(cases, max_total_cost_usd=0.02)
+        )
+    monkeypatch.setenv(
+        eval_harness.P09_V115_RECANARY_APPROVAL_ENV,
+        eval_harness.P09_V115_RECANARY_APPROVAL_VALUE,
+    )
+    with pytest.raises(
+        eval_harness.OpenAIEvalBlocked,
+        match="OPENAI_CREDENTIALS_REQUIRED",
+    ):
+        asyncio.run(
+            eval_harness._run_canary_real(cases, max_total_cost_usd=0.02)
+        )
+    with pytest.raises(
+        eval_harness.OpenAIEvalBlocked,
+        match="OPENAI_P09_V115_RECANARY_HUMAN_CAP_EXCEEDED",
+    ):
+        asyncio.run(
+            eval_harness._run_canary_real(cases, max_total_cost_usd=0.021)
+        )
+
+
+def test_p09_v115_recanary_fake_transport_proves_remediated_boundary(
+    monkeypatch,
+) -> None:
+    monkeypatch.setattr(eval_harness, "P09_V115_RECANARY_CONSUMED", False)
+
+    class SafeP09Adapter:
+        async def invoke(
+            self, *, prompt_id: str, request: object, **_kwargs: object
+        ) -> AdapterResult:
+            output = eval_harness.DeterministicMockFactory().output_for(
+                prompt_id, request, eval_harness.MockBehavior.HAPPY
+            )
+            return AdapterResult(
+                raw_output=output.model_dump(mode="json"),
+                input_tokens=103,
+                cached_input_tokens=0,
+                cache_write_input_tokens=102,
+                output_tokens=31,
+                reasoning_tokens=11,
+                estimated_cost_usd=0.005,
+                actual_cost_usd=0.001,
+                effective_model="gpt-5.6-luna",
+                output_hash="sha256:" + "5" * 64,
+                provider_request_id_hash="sha256:" + "6" * 64,
+                provider_schema_valid=True,
+                reason_codes=(
+                    "SDK_RETRIES_0",
+                    "STRUCTURED_OUTPUT_STRICT",
+                    "STORE_FALSE",
+                    "BACKGROUND_FALSE",
+                    "TOOLS_EMPTY",
+                    "PROVIDER_SCHEMA_VALID",
+                ),
+            )
+
+    monkeypatch.setenv(
+        eval_harness.P09_V115_REMEDIATION_DECISION_ENV,
+        eval_harness.P09_V115_REMEDIATION_DECISION_VALUE,
+    )
+    monkeypatch.setenv(
+        eval_harness.P09_V115_RECANARY_APPROVAL_ENV,
+        eval_harness.P09_V115_RECANARY_APPROVAL_VALUE,
+    )
+    monkeypatch.setenv(
+        "CVA_OPENAI_API_KEY", "sk-project-synthetic-placeholder-not-a-real-key"
+    )
+    monkeypatch.setattr(
+        eval_harness,
+        "OpenAIResponsesAdapter",
+        lambda **_kwargs: SafeP09Adapter(),
+    )
+    cases = [
+        case
+        for case in eval_harness._load_cases(eval_harness.DEFAULT_MANIFEST)
+        if case["case_id"] == eval_harness.P09_V115_RECANARY_CASE_ID
+    ]
+
+    report = asyncio.run(
+        eval_harness._run_canary_real(cases, max_total_cost_usd=0.02)
+    )
+
+    assert report["network_calls"] == report["billable_calls"] == 1
+    assert report["p10_calls"] == report["p11_calls"] == 0
+    assert report["fallback_calls"] == report["sol_calls"] == 0
+    row = report["cases"][0]
+    assert row["status"] == "PASS"
+    assert row["prompt_hash"] == eval_harness.P09_V115_PROMPT_HASH
+    assert row["input_bundle_hash"] == eval_harness.P09_V115_INPUT_BUNDLE_HASH
+    assert row["prompt_version"] == "1.1.5"
+    assert row["validation"] == {
+        "provider_schema_status": "PASS",
+        "pydantic_status": "PASS",
+        "context_status": "PASS",
+        "expected_outcome_status": "PASS",
+    }
+    assert all(row["controls"].values())
+
+
+def test_p09_v115_recanary_is_fail_closed_after_consumption(
+    monkeypatch,
+) -> None:
+    monkeypatch.setattr(eval_harness, "P09_V115_RECANARY_CONSUMED", True)
+    cases = [
+        case
+        for case in eval_harness._load_cases(eval_harness.DEFAULT_MANIFEST)
+        if case["case_id"] == eval_harness.P09_V115_RECANARY_CASE_ID
+    ]
+
+    with pytest.raises(
+        eval_harness.OpenAIEvalBlocked,
+        match="OPENAI_P09_V115_RECANARY_ALREADY_CONSUMED",
+    ):
+        asyncio.run(
+            eval_harness._run_canary_real(cases, max_total_cost_usd=0.02)
+        )
+
+
+def test_p09_v115_recanary_blocks_hash_drift_before_fake_transport(
+    monkeypatch,
+) -> None:
+    monkeypatch.setattr(
+        eval_harness, "P09_V115_PROMPT_HASH", "sha256:" + "0" * 64
+    )
+    cases = [
+        case
+        for case in eval_harness._load_cases(eval_harness.DEFAULT_MANIFEST)
+        if case["case_id"] == eval_harness.P09_V115_RECANARY_CASE_ID
+    ]
+
+    with pytest.raises(
+        eval_harness.OpenAIEvalBlocked,
+        match="OPENAI_P09_V115_RECANARY_BOUNDARY_DRIFT",
+    ):
+        asyncio.run(eval_harness._run_canary_dry_run(cases))
 
 
 @pytest.mark.parametrize(
@@ -1998,8 +2210,6 @@ def test_qualification_context_failure_stops_after_first_case_without_p11(
                 .model_dump(mode="json")
             )
             raw_output["submission_id"] = "ctx_private_value"
-            for opportunity in raw_output["opportunities"]:
-                opportunity["submission_id"] = "ctx_private_value"
             schema = eval_harness.structured_output_format(
                 eval_harness.prompt_spec(prompt_id), request
             )["schema"]
@@ -2058,9 +2268,9 @@ def test_qualification_context_failure_stops_after_first_case_without_p11(
     assert report["p11_calls"] == 0
     assert len(report["cases"]) == 1
     row = report["cases"][0]
-    assert row["case_id"] == "oa-p06-happy-docx"
+    assert row["case_id"] == "oa-p09-happy-docx"
     assert row["error_code"] == "MODEL_CONTEXT_NOT_ALLOWLISTED"
-    assert row["context_failure"]["code"] == "CONTEXT_INVARIANT_FAILED"
+    assert row["context_failure"]["code"] == "P09_SUBMISSION_ID_MISMATCH"
     assert row["validation"]["context_status"] == "FAIL"
     serialized = json.dumps(report, ensure_ascii=False, sort_keys=True)
     assert "ctx_private_value" not in serialized

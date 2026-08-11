@@ -123,12 +123,31 @@ P05_V114_PROMPT_HASH = (
 P05_V114_INPUT_BUNDLE_HASH = (
     "sha256:be9521524e643adf11b13914a0e39bbb605f2962e1964b8535a8df1643177969"
 )
+P09_V115_REMEDIATION_DECISION_ENV = (
+    "CVA_OPENAI_P09_V115_REMEDIATION_DECISION"
+)
+P09_V115_REMEDIATION_DECISION_VALUE = (
+    "OPENAI_P09_V115_REMEDIATION_ACCEPTED"
+)
+P09_V115_RECANARY_APPROVAL_ENV = "CVA_OPENAI_P09_V115_RECANARY_APPROVAL"
+P09_V115_RECANARY_APPROVAL_VALUE = "OPENAI_P09_V115_RECANARY_APPROVED"
+P09_V115_RECANARY_CASE_ID = "oa-p09-happy-docx"
+P09_V115_RECANARY_HUMAN_BUDGET_USD = 0.02
+# The v1.1.5 boundary is prepared offline but has not reached transport.
+P09_V115_RECANARY_CONSUMED = False
+P09_V115_PROMPT_HASH = (
+    "sha256:8d29a13a5ee56b39f6aa5545b602e23ca28b6d60d051852d75ecbc0c664179ff"
+)
+P09_V115_INPUT_BUNDLE_HASH = (
+    "sha256:d85b124990e457e096fbe4851633ee057b662efcbda3ac84837e8c8a78deacc7"
+)
 CANARY_CASE_PROMPTS = MappingProxyType(
     {
         "oa-p01-happy-txt": "P01_ACTIVITY_SPEC_V1",
         P01_INJECTION_RECANARY_CASE_ID: "P01_ACTIVITY_SPEC_V1",
         P02_V113_RECANARY_CASE_ID: "P02_RUBRIC_NORMALIZE_V1",
         P05_V114_RECANARY_CASE_ID: "P05_BLUEPRINT_REVIEW_V1",
+        P09_V115_RECANARY_CASE_ID: "P09_GUIDE_BUILD_V1",
         "oa-p07-open-short-txt": "P07_QUESTION_BUILD_V1",
     }
 )
@@ -151,7 +170,10 @@ QUALIFICATION_APPROVAL_REQUIRED_CODE = (
 # The one continuation authorized for 1.1.3 stopped after four requests at
 # P05. No prior approval string may reopen it against a later prompt pack.
 QUALIFICATION_V113_CONTINUATION_CONSUMED = True
-QUALIFICATION_V114_CONTINUATION_CONSUMED = False
+# The authorized v1.1.4 continuation stopped at the first failure (P09) after
+# P06/P08 passed. It used three of five allowed Responses requests and no P11.
+# No historical approval string may reopen any part of that transport.
+QUALIFICATION_V114_CONTINUATION_CONSUMED = True
 P01_V112_REMEDIATION_DECISION_ENV = (
     "CVA_OPENAI_P01_V112_REMEDIATION_DECISION"
 )
@@ -172,9 +194,9 @@ class _ReusedRealEvidenceBoundary:
     source_checkpoint: str
 
 
-# The stopped 1.1.2 qualification produced ten PASS rows before P02. The P02
-# 1.1.3 recanary supplied the eleventh PASS. Reuse is allowed only while every
-# executable and manifest boundary below remains byte-for-byte identical.
+# The stopped 1.1.2 qualification produced ten PASS rows before P02. Later
+# gates supplied P02, P03, P04, P05, P06 and P08. Reuse is allowed only while
+# every executable and manifest boundary below remains byte-for-byte identical.
 QUALIFICATION_REUSED_REAL_EVIDENCE = MappingProxyType(
     {
         "oa-p01-injection-md": _ReusedRealEvidenceBoundary(
@@ -361,6 +383,38 @@ QUALIFICATION_REUSED_REAL_EVIDENCE = MappingProxyType(
             defect_severity_if_failed="P1",
             source_checkpoint="OPENAI_P05_V114_RECANARY_PASS",
         ),
+        "oa-p06-happy-docx": _ReusedRealEvidenceBoundary(
+            prompt_id="P06_EVIDENCE_MAP_V1",
+            prompt_version="1.1.2",
+            prompt_hash=(
+                "sha256:3fcde330e122adbf33a21021e89c5bf02eb746203c678c258478e6377519c91d"
+            ),
+            input_bundle_hash=(
+                "sha256:d404f46a26c542eb810551312ea3cea7c80adff17b866f5f5d34e18b7c59947d"
+            ),
+            expected="VALID",
+            behavior="happy",
+            defect_severity_if_failed="P1",
+            source_checkpoint=(
+                "OPENAI_REAL_QUALIFICATION_V114_CONTINUATION_CASE_PASS"
+            ),
+        ),
+        "oa-p08-happy-pdf": _ReusedRealEvidenceBoundary(
+            prompt_id="P08_QUESTION_REVIEW_V1",
+            prompt_version="1.1.2",
+            prompt_hash=(
+                "sha256:06f48bb22cc1318c39efed17dcb77057f4a920450d3434b3557b5c078d9d84f5"
+            ),
+            input_bundle_hash=(
+                "sha256:5deaccfce36fbb2e79d7d17f0d671183bbb75a7c05035173be0ce69144fde130"
+            ),
+            expected="VALID",
+            behavior="happy",
+            defect_severity_if_failed="P1",
+            source_checkpoint=(
+                "OPENAI_REAL_QUALIFICATION_V114_CONTINUATION_CASE_PASS"
+            ),
+        ),
     }
 )
 QUALIFICATION_REUSED_REAL_CASE_IDS = tuple(
@@ -372,11 +426,10 @@ P07_RELIABILITY_CASE_IDS = (
     "oa-p07-predict-pdf",
     "oa-p07-critique-docx",
 )
-# Only these four cases lack valid real evidence. P11 remains last so one
-# continuation can never use both a semantic repair and the direct P11 fixture.
+# P06 and P08 now have hash-bound PASS evidence from the consumed v1.1.4
+# continuation. P09 failed contextual validation and P11 was not reached.
+# This historical sequence is permanently closed; fresh gates are narrower.
 QUALIFICATION_CASE_IDS = (
-    "oa-p06-happy-docx",
-    "oa-p08-happy-pdf",
     "oa-p09-happy-docx",
     "oa-p11-happy",
 )
@@ -949,7 +1002,7 @@ def _validated_reused_real_evidence(
 def _selected_qualification_cases(
     cases: list[dict[str, Any]],
 ) -> list[dict[str, Any]]:
-    """Lock continuation spend to the four unobserved real-eligible cases."""
+    """Lock the closed historical continuation to its remaining boundaries."""
 
     by_id = {str(case.get("case_id", "")): case for case in cases}
     if set(QUALIFICATION_CASE_IDS).intersection(
@@ -1303,6 +1356,8 @@ def _assert_canary_semantics(
         "TECHNICAL_FAILURE",
     }:
         raise AssertionError("P05 canary returned an outcome outside its manifest gate")
+    if prompt_id == "P09_GUIDE_BUILD_V1" and status != "READY":
+        raise AssertionError("P09 remediation canary must return a complete READY guide")
     if prompt_id == "P07_QUESTION_BUILD_V1" and status not in {
         "READY",
         "REPLACEMENT_REQUIRED",
@@ -1331,6 +1386,8 @@ def _canary_semantic_proof(
         allowed_statuses = {"READY", "NEEDS_REVIEW", "BLOCKED"}
     elif material["prompt_id"] == "P05_BLUEPRINT_REVIEW_V1":
         allowed_statuses = {"READY", "NEEDS_REVIEW", "TECHNICAL_FAILURE"}
+    elif material["prompt_id"] == "P09_GUIDE_BUILD_V1":
+        allowed_statuses = {"READY"}
     else:
         allowed_statuses = {"READY", "REPLACEMENT_REQUIRED"}
     proof: dict[str, Any] = {
@@ -1401,6 +1458,54 @@ def _canary_semantic_proof(
                 ),
                 "non_ready_has_no_critical_fail": (
                     status == "READY" or not critical_fail
+                ),
+            }
+        )
+    elif material["prompt_id"] == "P09_GUIDE_BUILD_V1":
+        questions = {
+            question.question_id: question
+            for question in request.assessment.questions
+        }
+        item_question_ids = {item.question_id for item in output.items}
+        per_question_references = all(
+            item.question_id in questions
+            and all(
+                set(element.evidence_ids).issubset(
+                    set(questions[item.question_id].evidence_ids)
+                )
+                and set(element.source_ids).issubset(
+                    set(questions[item.question_id].course_source_ids)
+                )
+                for element in item.guide.observable_elements
+            )
+            for item in output.items
+        )
+        proof.update(
+            {
+                "guide_id_immutable": output.guide_id == request.guide_id,
+                "assessment_id_immutable": (
+                    output.assessment_id
+                    == request.assessment.assessment_id
+                ),
+                "submission_id_immutable": (
+                    output.submission_id
+                    == request.assessment.submission_id
+                ),
+                "exact_question_coverage": (
+                    item_question_ids == set(questions)
+                    and len(output.items) == len(questions)
+                ),
+                "per_question_references_allowlisted": (
+                    per_question_references
+                ),
+                "closed_context_has_no_course_sources": (
+                    request.assessment.context_mode
+                    != models.ContextMode.CLOSED
+                    or not any(
+                        element.source_ids
+                        for item in output.items
+                        for element in item.guide.observable_elements
+                    )
                 ),
             }
         )
@@ -1953,6 +2058,10 @@ def _canary_budget_metadata(material: dict[str, Any]) -> dict[str, Any]:
         metadata["proposed_human_budget_usd"] = (
             P05_V114_RECANARY_HUMAN_BUDGET_USD
         )
+    elif material["case"]["case_id"] == P09_V115_RECANARY_CASE_ID:
+        metadata["proposed_human_budget_usd"] = (
+            P09_V115_RECANARY_HUMAN_BUDGET_USD
+        )
     return metadata
 
 
@@ -1975,6 +2084,11 @@ async def _run_canary_dry_run(cases: list[dict[str, Any]]) -> dict[str, Any]:
         or material["input_bundle_hash"] != P05_V114_INPUT_BUNDLE_HASH
     ):
         raise OpenAIEvalBlocked("OPENAI_P05_V114_RECANARY_BOUNDARY_DRIFT")
+    if case["case_id"] == P09_V115_RECANARY_CASE_ID and (
+        material["prompt_hash"] != P09_V115_PROMPT_HASH
+        or material["input_bundle_hash"] != P09_V115_INPUT_BUNDLE_HASH
+    ):
+        raise OpenAIEvalBlocked("OPENAI_P09_V115_RECANARY_BOUNDARY_DRIFT")
     fake_responses = _SyntheticCanaryResponses(
         prompt_id=material["prompt_id"],
         request=material["request"],
@@ -2046,13 +2160,13 @@ async def _run_qualification_dry_run(
 ) -> dict[str, Any]:
     """Exercise the fixed qualification through real code and fake transport."""
 
-    qualification = _qualification_material(
-        cases, route_cap_usd=QUALIFICATION_HUMAN_BUDGET_USD
-    )
     if QUALIFICATION_V114_CONTINUATION_CONSUMED:
         raise OpenAIEvalBlocked(
             "OPENAI_QUALIFICATION_V114_CONTINUATION_ALREADY_CONSUMED"
         )
+    qualification = _qualification_material(
+        cases, route_cap_usd=QUALIFICATION_HUMAN_BUDGET_USD
+    )
     if (
         qualification["full_cache_write_ceiling_usd"]
         > QUALIFICATION_HUMAN_BUDGET_USD
@@ -2393,13 +2507,13 @@ async def _run_qualification_real(
 ) -> dict[str, Any]:
     """Run the fixed real continuation under one aggregate request guard."""
 
-    qualification = _qualification_material(
-        cases, route_cap_usd=QUALIFICATION_HUMAN_BUDGET_USD
-    )
     if QUALIFICATION_V114_CONTINUATION_CONSUMED:
         raise OpenAIEvalBlocked(
             "OPENAI_QUALIFICATION_V114_CONTINUATION_ALREADY_CONSUMED"
         )
+    qualification = _qualification_material(
+        cases, route_cap_usd=QUALIFICATION_HUMAN_BUDGET_USD
+    )
     if max_total_cost_usd > QUALIFICATION_HUMAN_BUDGET_USD:
         raise OpenAIEvalBlocked("OPENAI_QUALIFICATION_HUMAN_CAP_EXCEEDED")
     if (
@@ -2719,6 +2833,7 @@ async def _run_canary_real(
     is_injection_recanary = case["case_id"] == P01_INJECTION_RECANARY_CASE_ID
     is_p02_v113_recanary = case["case_id"] == P02_V113_RECANARY_CASE_ID
     is_p05_v114_recanary = case["case_id"] == P05_V114_RECANARY_CASE_ID
+    is_p09_v115_recanary = case["case_id"] == P09_V115_RECANARY_CASE_ID
     if (
         is_injection_recanary
         and max_total_cost_usd > P01_INJECTION_RECANARY_HUMAN_BUDGET_USD
@@ -2734,6 +2849,11 @@ async def _run_canary_real(
         and max_total_cost_usd > P05_V114_RECANARY_HUMAN_BUDGET_USD
     ):
         raise OpenAIEvalBlocked("OPENAI_P05_V114_RECANARY_HUMAN_CAP_EXCEEDED")
+    if (
+        is_p09_v115_recanary
+        and max_total_cost_usd > P09_V115_RECANARY_HUMAN_BUDGET_USD
+    ):
+        raise OpenAIEvalBlocked("OPENAI_P09_V115_RECANARY_HUMAN_CAP_EXCEEDED")
     material = _canary_material(
         case,
         route_cap_usd=max_total_cost_usd,
@@ -2759,6 +2879,13 @@ async def _run_canary_real(
         raise OpenAIEvalBlocked("OPENAI_P05_V114_RECANARY_BOUNDARY_DRIFT")
     if is_p05_v114_recanary and P05_V114_RECANARY_CONSUMED:
         raise OpenAIEvalBlocked("OPENAI_P05_V114_RECANARY_ALREADY_CONSUMED")
+    if is_p09_v115_recanary and (
+        material["prompt_hash"] != P09_V115_PROMPT_HASH
+        or material["input_bundle_hash"] != P09_V115_INPUT_BUNDLE_HASH
+    ):
+        raise OpenAIEvalBlocked("OPENAI_P09_V115_RECANARY_BOUNDARY_DRIFT")
+    if is_p09_v115_recanary and P09_V115_RECANARY_CONSUMED:
+        raise OpenAIEvalBlocked("OPENAI_P09_V115_RECANARY_ALREADY_CONSUMED")
     if is_p02_v113_recanary and (
         os.environ.get(P02_V113_REMEDIATION_DECISION_ENV)
         != P02_V113_REMEDIATION_DECISION_VALUE
@@ -2772,6 +2899,13 @@ async def _run_canary_real(
     ):
         raise OpenAIEvalBlocked(
             "OPENAI_P05_V114_REMEDIATION_HUMAN_DECISION_REQUIRED"
+        )
+    if is_p09_v115_recanary and (
+        os.environ.get(P09_V115_REMEDIATION_DECISION_ENV)
+        != P09_V115_REMEDIATION_DECISION_VALUE
+    ):
+        raise OpenAIEvalBlocked(
+            "OPENAI_P09_V115_REMEDIATION_HUMAN_DECISION_REQUIRED"
         )
     if is_injection_recanary:
         approval_env = P01_INJECTION_RECANARY_APPROVAL_ENV
@@ -2787,6 +2921,10 @@ async def _run_canary_real(
         approval_env = P05_V114_RECANARY_APPROVAL_ENV
         approval_value = P05_V114_RECANARY_APPROVAL_VALUE
         approval_required_code = "OPENAI_P05_V114_RECANARY_APPROVAL_REQUIRED"
+    elif is_p09_v115_recanary:
+        approval_env = P09_V115_RECANARY_APPROVAL_ENV
+        approval_value = P09_V115_RECANARY_APPROVAL_VALUE
+        approval_required_code = "OPENAI_P09_V115_RECANARY_APPROVAL_REQUIRED"
     else:
         approval_env = CANARY_APPROVAL_ENV
         approval_value = CANARY_APPROVAL_VALUE
@@ -2987,10 +3125,16 @@ def main() -> int:
                 code = "OPENAI_P02_V113_RECANARY_APPROVAL_REQUIRED"
             elif case_id == P05_V114_RECANARY_CASE_ID:
                 code = "OPENAI_P05_V114_RECANARY_APPROVAL_REQUIRED"
+            elif case_id == P09_V115_RECANARY_CASE_ID:
+                code = "OPENAI_P09_V115_RECANARY_APPROVAL_REQUIRED"
             else:
                 code = "OPENAI_LUNA_CANARY_APPROVAL_REQUIRED"
         elif args.mode == "qualification-real":
-            code = QUALIFICATION_APPROVAL_REQUIRED_CODE
+            code = (
+                "OPENAI_QUALIFICATION_V114_CONTINUATION_ALREADY_CONSUMED"
+                if QUALIFICATION_V114_CONTINUATION_CONSUMED
+                else QUALIFICATION_APPROVAL_REQUIRED_CODE
+            )
         else:
             code = "OPENAI_REAL_EVALS_APPROVAL_REQUIRED"
         print(

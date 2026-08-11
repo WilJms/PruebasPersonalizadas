@@ -694,3 +694,34 @@
   SHA nuevo y conservar sus caps humanos separados.
 - **Relación:** D-045, D-048, D-053, D-055, ADR-035/036,
   `OPENAI_COST_BUDGETS.md` y `OPENAI_REAL_MODEL_VALIDATION.md`.
+
+## D-057 - P09 1.1.5 explicita relaciones por pregunta y recibe un gate aislado
+
+- **Decisión observada:** la única continuación v1.1.4 autorizada sobre
+  `abca7c5` ejecutó P06/P08 PASS y se detuvo en P09. P09 pasó schema provider y
+  Pydantic, pero falló contexto; P11 directo no se ejecutó. Fueron tres
+  Responses requests, USD 0.00864505 calculados y cero retries/P10/P11/Sol/
+  fallback. La approval quedó consumida y P06/P08 elevan la evidencia
+  hash-bound a 16/18.
+- **Límite epistemológico:** el output no se retuvo. El código histórico
+  `CONTEXT_INVARIANT_FAILED` no identifica cuál relación falló; no se atribuye
+  una causa de campo concreta a partir de una inferencia.
+- **Remediación:** `prompt-pack/1.1.5` avanza sólo P09. Ordena copiar
+  literalmente `guide_id`, `assessment_id` y `submission_id`; cubrir
+  exactamente las preguntas; limitar evidencia y fuentes a cada pregunta; y
+  usar `source_ids=[]` en contexto cerrado. El gateway mantiene validación
+  contextual separada y añade siete códigos content-free. Contratos, schema,
+  ruta, fixture y expected outcome no cambian.
+- **Gate:** la recanary candidata contiene sólo `oa-p09-happy-docx`, máximo una
+  Responses request, P11/P10/Sol/fallback/retries cero, ceiling
+  full-cache-write USD 0.01592350 y cap propuesto USD 0.02. Requiere aceptación
+  normativa y approval facturable nuevas fijadas al SHA candidato. Ninguna
+  approval o remanente anterior se transfiere. P11 directo queda para un gate
+  posterior separado.
+- **Evidencia offline:** el dry-run termina `READY`, pasa schema/Pydantic/
+  contexto/outcome, verifica IDs raíz, cobertura y referencias por pregunta,
+  y usa una request fake con cero red/billable. La frontera prompt/input es
+  `sha256:8d29a13a5ee56b39f6aa5545b602e23ca28b6d60d051852d75ecbc0c664179ff`
+  / `sha256:d85b124990e457e096fbe4851633ee057b662efcbda3ac84837e8c8a78deacc7`.
+- **Relación:** D-049, D-053, D-055, D-056, P09,
+  `OPENAI_COST_BUDGETS.md` y `OPENAI_REAL_MODEL_VALIDATION.md`.

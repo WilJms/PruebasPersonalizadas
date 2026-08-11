@@ -111,6 +111,7 @@ def test_registry_is_exact_complete_and_immutable() -> None:
     assert PROMPT_SPECS["P01_ACTIVITY_SPEC_V1"].prompt_version == "1.1.2"
     assert PROMPT_SPECS["P02_RUBRIC_NORMALIZE_V1"].prompt_version == "1.1.3"
     assert PROMPT_SPECS["P05_BLUEPRINT_REVIEW_V1"].prompt_version == "1.1.4"
+    assert PROMPT_SPECS["P09_GUIDE_BUILD_V1"].prompt_version == "1.1.5"
     assert PROMPT_SPECS["P11_SCHEMA_REPAIR_V1"].prompt_version == "1.1.4"
     assert {
         spec.prompt_version
@@ -119,6 +120,7 @@ def test_registry_is_exact_complete_and_immutable() -> None:
         not in {
             "P02_RUBRIC_NORMALIZE_V1",
             "P05_BLUEPRINT_REVIEW_V1",
+            "P09_GUIDE_BUILD_V1",
             "P11_SCHEMA_REPAIR_V1",
         }
     } == {"1.1.2"}
@@ -151,6 +153,22 @@ def test_p05_v114_and_p11_v114_make_root_invariant_handling_explicit() -> None:
         "checks[].critical",
     ):
         assert protected_field in p11
+
+
+def test_p09_v115_makes_all_context_relationships_explicit() -> None:
+    p09 = PROMPT_SPECS["P09_GUIDE_BUILD_V1"].developer_instruction
+    for exact_reference in (
+        "guide_id desde request.guide_id",
+        "assessment_id desde request.assessment.assessment_id",
+        "submission_id desde request.assessment.submission_id",
+        "exactamente el mismo conjunto de question_id",
+        "evidence_ids de esa pregunta",
+        "course_source_ids de esa pregunta",
+        "context_mode=CLOSED",
+        "source_ids=[]",
+        "NEEDS_REVIEW sin items parciales",
+    ):
+        assert exact_reference in p09
 
 
 @pytest.mark.parametrize("prompt_id", tuple(EXPECTED_PROMPT_CONTRACTS))
@@ -548,6 +566,141 @@ def test_p02_context_observability_reports_all_coexisting_classes() -> None:
         f"CONTEXT_FAILURE_OUTPUT_{code.value}" in reason_codes
         for code in expected_codes
     )
+
+
+def _p09_context_case(scenario: str) -> tuple[models.GuideBuildRequest, dict]:
+    prompt_id = "P09_GUIDE_BUILD_V1"
+    request = build_mock_request(prompt_id)
+
+    if scenario == "question_coverage":
+        assessment_data = request.assessment.model_dump(mode="json")
+        second_question = json.loads(json.dumps(assessment_data["questions"][0]))
+        second_question["question_id"] = "question_demo_2"
+        assessment_data["question_count"] = 2
+        assessment_data["questions"].append(second_question)
+        request = request.model_copy(
+            update={"assessment": models.Assessment.model_validate(assessment_data)}
+        )
+    elif scenario == "question_evidence_id":
+        bundle_data = request.evidence_bundle.model_dump(mode="json")
+        extra_evidence = json.loads(json.dumps(bundle_data["evidence_units"][0]))
+        extra_evidence["evidence_id"] = "ev_context_authorized_not_question"
+        bundle_data["allowed_evidence_ids"].append(
+            "ev_context_authorized_not_question"
+        )
+        bundle_data["evidence_units"].append(extra_evidence)
+        request = request.model_copy(
+            update={
+                "evidence_bundle": models.EvidenceBundle.model_validate(bundle_data)
+            }
+        )
+    elif scenario == "question_source_id":
+        enriched_bundle = build_mock_request(
+            "P10_ENRICHED_CONTEXT_V1"
+        ).evidence_bundle
+        assessment_data = request.assessment.model_dump(mode="json")
+        assessment_data["context_mode"] = "COURSE_ENRICHED"
+        request = request.model_copy(
+            update={
+                "assessment": models.Assessment.model_validate(assessment_data),
+                "evidence_bundle": enriched_bundle,
+            }
+        )
+
+    raw = (
+        DeterministicMockAdapter()
+        .factory.output_for(prompt_id, request, MockBehavior.HAPPY)
+        .model_dump(mode="json")
+    )
+    if scenario == "guide_id":
+        raw["guide_id"] = "ctx_private_value"
+    elif scenario == "assessment_id":
+        raw["assessment_id"] = "ctx_private_value"
+    elif scenario == "submission_id":
+        raw["submission_id"] = "ctx_private_value"
+    elif scenario == "question_coverage":
+        raw["items"] = raw["items"][:1]
+    elif scenario == "unknown_question_id":
+        raw["items"][0]["question_id"] = "ctx_private_value"
+    elif scenario == "question_evidence_id":
+        raw["items"][0]["guide"]["observable_elements"][0][
+            "evidence_ids"
+        ] = ["ev_context_authorized_not_question"]
+    elif scenario == "question_source_id":
+        raw["items"][0]["guide"]["observable_elements"][0]["source_ids"] = [
+            "source_course_1"
+        ]
+    else:  # pragma: no cover - guards the test table itself
+        raise AssertionError(f"Unknown P09 contextual scenario: {scenario}")
+    return request, raw
+
+
+@pytest.mark.parametrize(
+    ("scenario", "expected_code"),
+    (
+        ("guide_id", ContextFailureCode.P09_GUIDE_ID_MISMATCH),
+        ("assessment_id", ContextFailureCode.P09_ASSESSMENT_ID_MISMATCH),
+        ("submission_id", ContextFailureCode.P09_SUBMISSION_ID_MISMATCH),
+        (
+            "question_coverage",
+            ContextFailureCode.P09_QUESTION_COVERAGE_MISMATCH,
+        ),
+        ("unknown_question_id", ContextFailureCode.P09_UNKNOWN_QUESTION_ID),
+        (
+            "question_evidence_id",
+            ContextFailureCode.P09_QUESTION_EVIDENCE_ID_NOT_ALLOWLISTED,
+        ),
+        (
+            "question_source_id",
+            ContextFailureCode.P09_QUESTION_SOURCE_ID_NOT_ALLOWLISTED,
+        ),
+    ),
+)
+def test_p09_contextual_failures_are_distinct_and_content_free(
+    scenario: str,
+    expected_code: ContextFailureCode,
+) -> None:
+    prompt_id = "P09_GUIDE_BUILD_V1"
+    request, raw = _p09_context_case(scenario)
+    provider_schema = structured_output_format(
+        prompt_spec(prompt_id), request
+    )["schema"]
+    assert not provider_schema_validation_issues(provider_schema, raw)
+    assert isinstance(models.EvaluationGuide.model_validate(raw), models.EvaluationGuide)
+
+    gateway = ModelGateway(
+        mock_adapter=ContextBreakingAdapter(
+            prompt_id,
+            lambda output: output.update(raw),
+        )
+    )
+    with pytest.raises(GatewayContextError) as captured:
+        asyncio.run(
+            gateway.invoke(
+                prompt_id,
+                request,
+                build_trusted_context(request),
+            )
+        )
+
+    error = captured.value
+    assert error.code == "MODEL_CONTEXT_NOT_ALLOWLISTED"
+    assert error.failure.phase == ValidationPhase.OUTPUT
+    assert error.failure.codes == (expected_code,)
+    assert len(error.ledgers) == 1
+    ledger = error.ledgers[0]
+    assert ledger.result == "SCHEMA_INVALID"
+    assert (
+        f"CONTEXT_FAILURE_OUTPUT_{expected_code.value}"
+        in ledger.route.reason_codes
+    )
+    serialized = json.dumps(ledger.model_dump(mode="json"), sort_keys=True)
+    for protected_value in (
+        "ctx_private_value",
+        "ev_context_authorized_not_question",
+        "source_course_1",
+    ):
+        assert protected_value not in serialized
 
 
 def test_p04_rejects_invented_source_ids_and_records_attempt() -> None:

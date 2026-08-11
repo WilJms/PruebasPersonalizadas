@@ -344,7 +344,7 @@ Usó 2,520 input, 0 cached, 2,517 cache-write, 7,282 output y 5,478
 reasoning tokens. No hubo retries, P10, P11, Sol, fallback ni segunda request.
 El gate quedó consumido.
 
-## Continuación v1.1.4 de los cuatro casos no observados
+## Historial — continuación v1.1.4 de los cuatro casos no observados
 
 P03, P04 y P05 se incorporan a las once evidencias reales ya reutilizadas. La
 secuencia futura compra sólo P06, P08, P09 y P11 directo, con una reserva P11
@@ -362,8 +362,40 @@ global conservadora:
 La reserva P11 peor caso proviene de P06: 76,482 tokens, USD 0.02489640 sin
 cache y USD 0.02872050 full-cache-write. El dry-run pasó 4/4 con cuatro
 transportes fake, cero red/billable, retries/P10/Sol/fallback cero y un P11
-directo. El cap USD 0.10 todavía no está autorizado; el gate v1.1.3 consumido
-no se transfiere.
+directo. El cap USD 0.10 fue autorizado después bajo un gate distinto y quedó
+consumido al detenerse en P09:
+
+| Magnitud observada v1.1.4 | Valor |
+|---|---:|
+| Casos PASS nuevos | P06, P08 |
+| Caso FAIL / stop | P09 contexto |
+| Responses requests | 3 de máximo 5 |
+| Costo calculado | USD 0.00864505 |
+| Charge conservador | USD 0.04284505 |
+| Reserva transportada full-cache-write | USD 0.05226000 |
+| P10/P11/Sol/fallback/retries | 0 |
+
+## Recanary candidata P09 v1.1.5
+
+La siguiente compra admisible es sólo P09, después de aceptar su remediación
+normativa y fijar el SHA candidato. P11 no se reserva ni se permite en esta
+recanary porque el fallo observado es contextual, no estructural:
+
+| Frontera P09 v1.1.5 | Valor |
+|---|---:|
+| Casos primarios | 1 (`oa-p09-happy-docx`) |
+| Evidencia real reutilizada | 16 casos |
+| Máximo de Responses requests | 1 |
+| Input upper-bound | 15,694 tokens |
+| Ceiling sin cache | USD 0.01513880 |
+| Ceiling full-cache-write | **USD 0.01592350** |
+| Cap humano propuesto | **USD 0.02** |
+| P10/P11/Sol/fallback/retries | 0 |
+
+El dry-run usó una request fake y cero red/billable. La aceptación normativa y
+el cap USD 0.02 todavía no están autorizados; ningún remanente del cap v1.1.4
+se transfiere. Tras un PASS P09, P11 directo tendrá un presupuesto y gate
+separados.
 
 ## Envelope del primer E2E real sintético
 
