@@ -4,7 +4,25 @@ Fecha de corte: 2026-08-11. Estado: la recuperación acoplada P04 1.1.7→P05
 1.1.5 y la canary P06 decision-lineage pasaron completamente y quedaron
 consumidas. La evidencia vigente es **18/18**.
 
-## Resultado vigente: P04→P05 y P06 PASS; deploy pendiente
+## Resultado vigente: 18/18 desplegado; E2E fresco pendiente
+
+El SHA `88416b522414f316613bea96ad08687e8a335a38` fue construido una sola
+vez por `441be72d-04ae-46e9-b150-6eec1032c8d6`, con estado
+`SUCCESS/VERIFIED`, y publicado/desplegado bajo
+`sha256:d31899535c76b08ee79163479530b044783b73956c6fe228a01a3e603008893d`.
+Artifact Registry coincidió con el digest del build y observó procedencia SLSA
+3 firmada. El plan guardado de SHA-256 `64b20055…` contenía sólo dos cambios de
+imagen in-place; su único apply terminó 0/2/0 y dos planes posteriores dieron
+`No changes`.
+
+Web continúa mock y sin clave; worker está real con secreto v2, USD 0.55, P10
+false, 1/1 y `maxRetries=0`. Service y Job están Ready sobre el mismo digest,
+IAM limita la clave al worker y health/readiness/401 privado pasaron. La fase
+de despliegue ejecutó cero jobs y cero Responses. Las fronteras reales siguen
+18/18; sólo falta el E2E sintético fresco de producto con edición P05 durable
+y submission.
+
+## Historial: P04→P05 y P06 PASS; deploy pendiente
 
 La actividad `act_aecd258c017c5b37c603` usó dos jobs y dos executions. P01,
 P02 y P03 terminaron `SCHEMA_VALID`; después de persistir tres decisiones

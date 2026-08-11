@@ -1,6 +1,24 @@
 # Setup gobernado del proveedor OpenAI
 
-## Estado vigente — evidencia 18/18; deploy pendiente
+## Estado vigente — evidencia 18/18 desplegada; E2E pendiente
+
+Web permanece mock y sin clave; worker real usa exclusivamente
+`cva-openai-api-key` v2. Ambos están Ready sobre el digest inmutable
+`sha256:d31899535c76b08ee79163479530b044783b73956c6fe228a01a3e603008893d`,
+construido desde `88416b522414f316613bea96ad08687e8a335a38` por Cloud Build
+`441be72d-04ae-46e9-b150-6eec1032c8d6` `SUCCESS/VERIFIED`. La imagen tiene
+procedencia SLSA 3 firmada.
+
+El único plan aplicado tenía SHA-256
+`64b200559044ecb2e0a44ea68a63f7c174088c12da1209f6624b77f388c1670e` y
+dos updates in-place de imagen, sin create/delete/replace/adicional; el apply
+terminó 0/2/0. Worker conserva USD 0.55, P10 false, task/paralelismo 1/1 y
+`maxRetries=0`; IAM del secreto contiene sólo al worker. Health/readiness y la
+ruta privada anónima pasaron, y dos planes posteriores dieron `No changes`.
+No hubo jobs ni Responses durante el despliegue. La única frontera pendiente
+es el E2E sintético fresco con edición P05 durable y submission.
+
+## Historial — evidencia 18/18; deploy pendiente
 
 Web permanece mock/sin clave y worker real sobre
 `sha256:9048f9da77fda2b5ab8d6a974d9b4b8b5a2b6a141062bcb36751b8516691e3ab`,

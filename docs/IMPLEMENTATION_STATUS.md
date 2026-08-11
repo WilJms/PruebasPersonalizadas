@@ -2,7 +2,37 @@
 
 Fecha de corte: 2026-08-11 (America/Santiago).
 
-## Estado vigente — `OPENAI_REAL_REMEDIATION_DEPLOY_REQUIRED` (2026-08-11)
+## Estado vigente — `OPENAI_REAL_MANUAL_EVAL_PENDING` (2026-08-11)
+
+El código candidato `88416b522414f316613bea96ad08687e8a335a38` fue construido
+una sola vez por Cloud Build
+`441be72d-04ae-46e9-b150-6eec1032c8d6`. El build terminó
+`SUCCESS/VERIFIED`; Cloud Build y Artifact Registry resolvieron exactamente el
+digest
+`sha256:d31899535c76b08ee79163479530b044783b73956c6fe228a01a3e603008893d`.
+La imagen expone procedencia SLSA 3 firmada, con predicate v1 y ese build/SHA
+como invocation y subject.
+
+El plan Terraform guardado tuvo SHA-256
+`64b200559044ecb2e0a44ea68a63f7c174088c12da1209f6624b77f388c1670e` y
+contenía únicamente dos updates in-place: imagen de `cva-web` e imagen de
+`cva-worker`; 0 create, 0 delete, 0 replace y 0 cambios adicionales. Su único
+apply terminó `0 added, 2 changed, 0 destroyed`. Dos planes vivos consecutivos
+posteriores terminaron exit 0 y `No changes`.
+
+Web quedó Ready en revisión `cva-web-00019-8s5`, mock y sin clave. Worker quedó
+Ready, real, con `cva-openai-api-key` v2, máximo USD 0.55 por job, P10 false,
+task/paralelismo 1/1 y `maxRetries=0`; el acceso al secreto pertenece sólo a
+`cva-worker`. Ambos usan el digest inmutable indicado. Health y readiness
+respondieron 200 y `/api/v1/activities` anónimo respondió 401. Build, plan,
+apply y verificación ejecutaron 0 jobs, 0 E2E y 0 Responses.
+
+La evidencia real vigente continúa 18/18 y la regresión del SHA desplegado
+permanece verde. Falta únicamente un E2E fresco, exclusivamente sintético, con
+edición/re-review P05 durable y submission antes de declarar
+`OPENAI_REAL_MANUAL_EVAL_READY`.
+
+## Historial — `OPENAI_REAL_REMEDIATION_DEPLOY_REQUIRED` (2026-08-11)
 
 El candidato `dfd102d85816de30b3b082777268388061f83585` fue construido por
 Cloud Build `78a7c1f4-b857-472b-b210-9d56e638190a`, verificado y desplegado

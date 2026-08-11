@@ -10,7 +10,23 @@ con IDs únicos y clasificación obligatoria
 conserva `1.1.3`; P05 usa `1.1.5`; P11 usa `1.1.4`; P09 usa `1.1.5`; P04
 usa `1.1.7`.
 
-## Resultado vigente — P04→P05 y P06 PASS; deploy pendiente
+## Resultado vigente — candidato desplegado; E2E fresco pendiente
+
+El SHA `88416b522414f316613bea96ad08687e8a335a38`, que incorpora la
+remediación y conserva 18/18 fronteras reales vigentes, fue construido por el
+único build `441be72d-04ae-46e9-b150-6eec1032c8d6` y desplegado como
+`sha256:d31899535c76b08ee79163479530b044783b73956c6fe228a01a3e603008893d`.
+Build y registry coincidieron; la imagen tiene procedencia SLSA 3 firmada. El
+plan sellado `64b200559044ecb2e0a44ea68a63f7c174088c12da1209f6624b77f388c1670e`
+actualizó únicamente web y worker in-place, y el único apply terminó 0/2/0.
+
+Web está Ready en mock y sin clave. Worker está Ready en real con secreto v2,
+USD 0.55, P10 false, 1/1 y `maxRetries=0`. IAM concede lectura de la clave sólo
+al worker; health/readiness, API privada anónima y dos planes de no-drift
+pasaron. Esta fase creó cero jobs y cero Responses. El paso pendiente es el
+E2E fresco sintético con edición/re-review P05 durable y submission.
+
+## Historial — P04→P05 y P06 PASS; deploy pendiente
 
 El E2E desplegado sobre `dfd102d…` ejecutó P01-P05 en dos jobs. P03 requirió
 tres decisiones recomendadas; P04 persistió un blueprint `READY`; P05 devolvió

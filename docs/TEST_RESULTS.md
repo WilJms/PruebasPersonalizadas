@@ -11,7 +11,28 @@ deshabilitado en todos los casos. Los
 resultados históricos E1 se conservan al final y no se presentan como evidencia
 del candidato E2.
 
-## P04→P05 y P06 PASS; deploy pendiente — 2026-08-11
+## Candidato remediado construido y desplegado — 2026-08-11
+
+| Prueba o gate | Resultado observado |
+|---|---|
+| SHA desplegado | `88416b522414f316613bea96ad08687e8a335a38` |
+| Build único | `441be72d-04ae-46e9-b150-6eec1032c8d6`; `SUCCESS/VERIFIED`; cuenta dedicada `cva-cloudbuild`; 0 retries |
+| Digest | Cloud Build y Artifact Registry coinciden en `sha256:d31899535c76b08ee79163479530b044783b73956c6fe228a01a3e603008893d` |
+| Procedencia | SLSA build level 3; in-toto Statement v1, predicate `https://slsa.dev/provenance/v1`, builder `GoogleHostedWorker`, firma verified-builder y subject ligado al digest/build |
+| Plan sellado | SHA-256 `64b200559044ecb2e0a44ea68a63f7c174088c12da1209f6624b77f388c1670e`; exactamente 0 add, 2 update in-place (`cva-web`, `cva-worker`), 0 delete/replace/adicional |
+| Apply único | `0 added, 2 changed, 0 destroyed`; no se repitió |
+| Web | Ready, revisión `cva-web-00019-8s5`, digest exacto, mock, P10 false y 0 referencias a clave OpenAI |
+| Worker | Ready, digest exacto, real, secreto `cva-openai-api-key` v2, USD 0.55, P10 false, task/paralelismo 1/1 y `maxRetries=0` |
+| IAM/secreto | v2 `ENABLED`; `secretAccessor` OpenAI sólo para `cva-worker` |
+| HTTP | health 200, readiness 200 y `/api/v1/activities` anónimo 401 `SESSION_REQUIRED` |
+| Convergencia | dos planes vivos consecutivos, ambos exit 0 y `No changes` |
+| Efectos excluidos | 0 jobs, 0 E2E y 0 Responses durante build/deploy/verificación |
+
+El binario desplegado contiene la remediación y la evidencia focal vigente es
+18/18. El E2E sintético fresco con edición P05 durable y submission permanece
+pendiente; todavía no se declara `OPENAI_REAL_MANUAL_EVAL_READY`.
+
+## Historial — P04→P05 y P06 PASS; deploy pendiente — 2026-08-11
 
 | Prueba o gate | Resultado observado |
 |---|---|

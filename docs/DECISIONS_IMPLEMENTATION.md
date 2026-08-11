@@ -998,3 +998,29 @@
 - **Relación:** D-065, D-066, D-067, ADR-005/ADR-030/ADR-034,
   `OPENAI_REAL_MODEL_VALIDATION.md`, `REAL_MODEL_EVALS.md` y
   `OPENAI_COST_BUDGETS.md`.
+
+## D-069 - El candidato remediado queda fijado por build, digest y plan sellado
+
+- **Fuente:** se construyó exactamente el SHA
+  `88416b522414f316613bea96ad08687e8a335a38` mediante el único Cloud Build
+  `441be72d-04ae-46e9-b150-6eec1032c8d6`, con cuenta dedicada, retries cero y
+  resultado `SUCCESS/VERIFIED`.
+- **Identidad de imagen:** Cloud Build y Artifact Registry coincidieron en
+  `sha256:d31899535c76b08ee79163479530b044783b73956c6fe228a01a3e603008893d`.
+  Artifact Analysis expone procedencia SLSA 3 firmada, Statement/predicate v1,
+  invocation ligada al build y subject ligado al digest.
+- **Mutación sellada:** el plan guardado de SHA-256
+  `64b200559044ecb2e0a44ea68a63f7c174088c12da1209f6624b77f388c1670e`
+  contenía sólo dos updates in-place de imagen para web y worker, 0 create, 0
+  delete/replace y 0 cambios adicionales. Su único apply terminó 0/2/0; dos
+  planes vivos posteriores terminaron exit 0 y `No changes`.
+- **Separación efectiva:** web quedó Ready en mock y sin clave; worker Ready en
+  real con secreto v2, USD 0.55, P10 false, 1/1 y `maxRetries=0`. Sólo la cuenta
+  worker tiene `secretAccessor`; Service y Job usan el mismo digest.
+- **No consumo implícito:** health/readiness y el 401 privado pasaron sin crear
+  jobs, E2E o Responses. El deploy no sustituye el E2E fresco sintético con
+  edición P05 durable y submission requerido para
+  `OPENAI_REAL_MANUAL_EVAL_READY`.
+- **Relación:** D-060, D-061, D-062, D-068, ADR-033/ADR-034,
+  `IMPLEMENTATION_STATUS.md`, `TEST_RESULTS.md`, `OPENAI_PROVIDER_SETUP.md` y
+  `OPENAI_REAL_MODEL_VALIDATION.md`.
