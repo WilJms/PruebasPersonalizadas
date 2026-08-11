@@ -585,9 +585,9 @@ esperada usa diez requests.
 Una ejecución offline con el resolver real y transporte fake completó jobs de
 actividad y submission, recorrió P01-P09 en nueve tareas semánticas, observó
 27,330 tokens como máximo preflight y usó cero red/billable. La continuación
-v1.1.4 y la recanary P09 v1.1.5 quedaron consumidas; el dry-run vigente es P11
-directo v1.1.4, una request y USD 0.01172550. P11, build/deploy y E2E real
-conservan gates separados.
+v1.1.4, la recanary P09 v1.1.5 y la canary P11 directa v1.1.4 quedaron
+consumidas; P11 terminó PASS y completó 18/18 fronteras reales. Build/deploy y
+E2E real conservan gates separados.
 
 ## Recorrido humano preparado
 
