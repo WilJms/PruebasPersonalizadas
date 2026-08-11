@@ -9,13 +9,13 @@ P10 deshabilitado; las evaluaciones OpenAI dedicadas usaron exclusivamente
 fixtures sintéticos. Los resultados históricos E1 se conservan al final y no
 se presentan como evidencia del candidato E2.
 
-## Rotación, qualification 1.1.2, P02 1.1.3 y stop P05 — 2026-08-10
+## Rotación y qualification real hasta P05 1.1.4 PASS — 2026-08-10
 
 | Prueba o gate | Resultado observado |
 |---|---|
 | Rechazo de clave histórica | PASS: `models.list` devolvió HTTP 401, 1 request no facturable, SDK retries 0; después Secret Manager v1 pasó a `DISABLED` |
 | Credencial vigente | PASS: Secret Manager v2 `ENABLED`, autenticación no facturable y `gpt-5.6-luna` como único modelo visible; ninguna clave se imprimió o persistió |
-| Preflight de recanary | proyecto `PruebasPersonalizadas`; USD 3.82/USD 100.00 organizacionales; reset 21 días; Luna 200,000 TPM y 500 RPM; inspección read-only |
+| Preflight de recanary P05 | proyecto `PruebasPersonalizadas`; USD 3.84/USD 5.00 del límite mensual del proyecto; reset 21 días; Luna 200,000 TPM y 500 RPM; inspección read-only |
 | Qualification 1.1.2 dry-run previo | 18/18 PASS, 18 fake, 0 red/billable, máximo defensivo 19, retries/P10/Sol/fallback 0, ceiling USD 0.31043475/cap USD 0.32 |
 | Qualification 1.1.2 real autorizada | FAIL agregado y stop al primer fallo relevante: casos 1–10 PASS, caso 11 `oa-p02-happy-pdf` FAIL contextual, casos 12–18 no ejecutados; 11 requests, retries/P10/P11/Sol/fallback 0 |
 | P01 real dentro de qualification | PASS `READY`; provider schema/Pydantic/contexto/outcome PASS; marker presente como dato y no propagado; prompt hash aceptado preservado; P0 cerrado |
@@ -33,17 +33,22 @@ se presentan como evidencia del candidato E2.
 | Antirrepetición continuación | PASS offline: la approval consumida bloquea `OPENAI_QUALIFICATION_V113_CONTINUATION_ALREADY_CONSUMED` antes de adapter/credencial/transporte |
 | Remediación P05/P11 1.1.4 | P05 explicita tabla de estados/recomendación/critical FAIL; P11 usa `UNREPAIRABLE` ante root ambiguo; contratos/schema/ruta/fixture/outcome sin cambios |
 | Recanary P05 1.1.4 dry-run | PASS; 1 fake, 0 red/billable, P11 0; input upper-bound 13,311; ceiling USD 0.02252775; cap propuesto USD 0.03; hashes fijados |
-| Regresión focal P05/P11 | 98/98 PASS: gateway y harness |
-| Regresión focal vigente | 98/98 gateway+harness PASS, incluida abstención P11 ante root ambiguo y gates P05/antirrepetición |
-| `make test-cov` vigente | 524 passed, 16 skips PostgreSQL explícitos, 1 warning deprecado conocido; 80% global sobre 10,510 statements |
+| Recanary P05 1.1.4 real | PASS `READY`; provider schema/Pydantic/contexto/outcome PASS; 1/1 request; 2,520 input, 0 cached, 2,517 cache-write, 7,282 output, 5,478 reasoning; 57,540 ms; USD 0.00936825; retries/P10/P11/Sol/fallback 0 |
+| Frontera P05 | charge USD 0.01982985; ceiling USD 0.02252775; cap USD 0.03; prompt/input ligados por hash; output no retenido; approval consumida y P1 cerrado |
+| Continuación 1.1.4 dry-run | 4/4 PASS, 14 evidencias reales reutilizadas, 4 fake, 0 red/billable, máximo 5, P11 máximo 1, ceiling USD 0.09270600/cap propuesto USD 0.10 |
+| Gate v1.1.4 | PASS offline: el opt-in histórico v1.1.3 no abre la continuación nueva; falta approval exacta y no hubo request adicional |
+| Regresión focal P05/P11 | 100/100 PASS: gateway y harness |
+| Regresión focal vigente | 100/100 gateway+harness PASS, incluida abstención P11 ante root ambiguo y gates v1.1.4/antirrepetición |
+| `make test-cov` vigente | 526 passed, 16 skips PostgreSQL explícitos, 1 warning deprecado conocido; 80% global sobre 10,510 statements |
 | Contratos | PASS: 53 roots, 140 definiciones, 274 referencias y 8 fixtures; schema canónico sin edición manual |
 | Secret scan | PASS: 292 archivos versionables, cero secretos de alta confianza |
 | Artefactos de deploy | 11/11 PASS; ningún archivo de deploy fue modificado |
 | Frontend | typecheck PASS; 6 archivos/34 tests PASS; build 87 módulos PASS |
 
-Se ejecutó una única continuación bajo la autorización específica y se detuvo
-en P05. Esa approval y la de P02 quedaron consumidas; ninguna autoriza una
-recanary P05, deploy, cloud real, P10, Sol, fallback, PR o merge.
+La recanary P05 se ejecutó exactamente una vez y pasó. Sus approvals y todas
+las anteriores quedaron consumidas. La evidencia real cubre 14/18 y el conteo
+vigente es P0=0/P1=0/P2=5/P3=1. Ningún gate consumido autoriza la continuación
+v1.1.4, deploy, cloud real, P10, Sol, fallback, PR o merge.
 
 ## Historial — preparación técnica 1.1.2 y P05 durable — 2026-08-10
 

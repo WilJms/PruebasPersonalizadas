@@ -1,6 +1,6 @@
 # Setup gobernado del proveedor OpenAI
 
-## Estado vigente — continuación 1.1.3 consumida; P05 1.1.4 pendiente de gate
+## Estado vigente — P05 1.1.4 PASS; continuación v1.1.4 pendiente de gate
 
 La clave histórica fue revocada en Platform y la sonda content-free confirmó
 rechazo HTTP 401. Secret Manager versión `1` se deshabilitó después de esa
@@ -41,18 +41,33 @@ Repetir esos valores bloquea con
 `OPENAI_QUALIFICATION_V113_CONTINUATION_ALREADY_CONSUMED` antes de construir el
 adapter. No habilitan `prompt-pack/1.1.4`.
 
-La recanary P05 candidata es una frontera separada de una sola Responses
-request, P11 cero, ceiling USD 0.02252775 y cap máximo propuesto USD 0.03. Sólo
-podría abrirse con aceptación normativa P05/P11 y el opt-in facturable nuevo:
+La remediación P05/P11 fue aceptada y la recanary P05 se ejecutó exactamente
+una vez con cap USD 0.03. Terminó PASS `READY` en una Responses request, todas
+las validaciones técnicas PASS, USD 0.00936825 calculados y
+retries/P10/P11/Sol/fallback cero. Los opt-ins siguientes quedaron consumidos:
 
 ```text
 CVA_OPENAI_P05_V114_REMEDIATION_DECISION=OPENAI_P05_V114_REMEDIATION_ACCEPTED
 CVA_OPENAI_P05_V114_RECANARY_APPROVAL=OPENAI_P05_V114_RECANARY_APPROVED
 ```
 
-Esos valores documentan la interfaz y no constituyen autorización. Cloud
-conserva `CVA_MODEL_MODE=mock`, `CVA_P10_ENABLED=false`; deploy, Terraform,
-IAM, gasto adicional, P10, datos reales y main siguen fuera de autorización.
+Repetirlos bloquea con `OPENAI_P05_V114_RECANARY_ALREADY_CONSUMED`. El PASS
+cierra el P1 P05 y deja 14/18 casos con evidencia real hash-bound.
+
+La continuación vigente contiene sólo P06/P08/P09/P11. El dry-run pasó 4/4,
+cero red/billable, ceiling USD 0.09270600 y cap máximo propuesto USD 0.10. Su
+frontera es máximo cinco Responses requests, P11 máximo uno, stop al primer
+fallo y retries/P10/Sol/fallback cero. Requiere un opt-in distinto:
+
+```text
+CVA_OPENAI_REAL_QUALIFICATION_V114_CONTINUATION_APPROVAL=OPENAI_REAL_SYNTHETIC_QUALIFICATION_V114_CONTINUATION_APPROVED
+```
+
+Este valor documenta la interfaz y no constituye autorización. También se
+revalidan las tres decisiones normativas P01/P02/P05 antes de credencial o
+transporte. Cloud conserva `CVA_MODEL_MODE=mock`, `CVA_P10_ENABLED=false`;
+deploy, Terraform, IAM, gasto adicional, P10, datos reales y main siguen fuera
+de autorización.
 
 ## Historial — preparación 1.1.2 y rotación
 

@@ -5,11 +5,53 @@ El corpus inicial contiene 20 casos exclusivamente sintéticos en
 entregas ni contenido estudiantil real. El rango gobernado es de 10 a 30 casos,
 con IDs únicos y clasificación obligatoria
 `SYNTHETIC_ONLY_NO_STUDENT_DATA`. El manifest fija además
-`route_profile=LUNA_BASELINE_V1`, prompt pack candidato vigente `1.1.4` y schema
+`route_profile=LUNA_BASELINE_V1`, prompt pack vigente `1.1.4` y schema
 `1.1.0`. P01, P03, P04 y P06-P09 conservan su versión individual `1.1.2`;
-P02 conserva `1.1.3`; P05 y P11 usan la candidata `1.1.4`.
+P02 conserva `1.1.3`; P05 y P11 usan `1.1.4`.
 
-## Resultado vigente — continuación 1.1.3 consumida y stop en P05
+## Resultado vigente — P05 1.1.4 PASS y cuatro casos pendientes
+
+La recanary sintética P05 v1.1.4 autorizada sobre `35ecaf8` consumió exactamente
+una Responses request y terminó **PASS**. P05 devolvió `READY`; schema estricto
+del proveedor, Pydantic, contexto y expected outcome pasaron. La ruta solicitada
+y efectiva fue `gpt-5.6-luna` con reasoning `high`; gateway, prompt y SDK
+tuvieron retries 0/0/0, y P10/P11/Sol/fallback permanecieron en cero.
+
+| Frontera real P05 v1.1.4 | Resultado observado |
+|---|---|
+| Requests | 1/1; autorización consumida |
+| Uso | 2,520 input; 0 cached; 2,517 cache-write; 7,282 output; 5,478 reasoning |
+| Latencia | 57,540 ms |
+| Costo | USD 0.00936825 calculado; USD 0.01982985 charge conservador; USD 0.02252775 ceiling; cap USD 0.03 |
+| Prompt/input | `sha256:1b1bb9cc10bb4eb633486863bba8dbfdbd70d2f0266795cbaa37505b7e6dcb0a` / `sha256:be9521524e643adf11b13914a0e39bbb605f2962e1964b8535a8df1643177969` |
+| Request/output | `sha256:2424db2aeb7f942aaf2d1c7e165b8be15e3ae3e89d403ce7360ff52231585ce2` / `sha256:eb02e93d9ee0f3adc7b8bd0158089e3239c69503564fba68ad02a75dec1a9bb9` |
+
+No se retuvieron payload, output, clave ni request ID en claro. Esta observación
+cierra el P1 P05 y eleva la evidencia real reutilizable a **14/18** casos.
+Repetir los opt-ins de la recanary bloquea antes del adapter con
+`OPENAI_P05_V114_RECANARY_ALREADY_CONSUMED`.
+
+`make openai-qualification-v114-continuation-dry-run` fija los cuatro casos aún
+no observados: P06, P08, P09 y P11 directo. Pasó 4/4 con cuatro requests fake,
+cero red/billable, catorce evidencias reales reutilizadas y cobertura 18/18. El
+ceiling es USD 0.08616480 sin cache y USD 0.09270600 full-cache-write; el cap
+humano propuesto es USD 0.10. La frontera conservadora permite máximo cinco
+Responses requests, P11 máximo uno, stop al primer fallo, retries 0/0/0 y
+P10/Sol/fallback cero.
+
+La continuación exige un opt-in billable nuevo y exacto:
+
+```text
+CVA_OPENAI_P01_V112_REMEDIATION_DECISION=OPENAI_P01_V112_REMEDIATION_ACCEPTED
+CVA_OPENAI_P02_V113_REMEDIATION_DECISION=OPENAI_P02_V113_REMEDIATION_ACCEPTED
+CVA_OPENAI_P05_V114_REMEDIATION_DECISION=OPENAI_P05_V114_REMEDIATION_ACCEPTED
+CVA_OPENAI_REAL_QUALIFICATION_V114_CONTINUATION_APPROVAL=OPENAI_REAL_SYNTHETIC_QUALIFICATION_V114_CONTINUATION_APPROVED
+```
+
+Estos valores describen la interfaz fail-closed; no constituyen autorización.
+Los gates v1.1.3 y de recanary P05 están consumidos y no se transfieren.
+
+## Historial — continuación 1.1.3 consumida y stop en P05
 
 El propietario autorizó exactamente una continuación sintética 1.1.3 de los
 siete casos fijados por

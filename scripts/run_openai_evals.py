@@ -113,7 +113,9 @@ P05_V114_RECANARY_APPROVAL_ENV = "CVA_OPENAI_P05_V114_RECANARY_APPROVAL"
 P05_V114_RECANARY_APPROVAL_VALUE = "OPENAI_P05_V114_RECANARY_APPROVED"
 P05_V114_RECANARY_CASE_ID = "oa-p05-happy"
 P05_V114_RECANARY_HUMAN_BUDGET_USD = 0.03
-P05_V114_RECANARY_CONSUMED = False
+# The one P05 1.1.4 recanary authorized for 35ecaf8 passed on 2026-08-10.
+# No historical decision or approval string may reopen this transport.
+P05_V114_RECANARY_CONSUMED = True
 P05_V114_PROMPT_HASH = (
     "sha256:1b1bb9cc10bb4eb633486863bba8dbfdbd70d2f0266795cbaa37505b7e6dcb0a"
 )
@@ -130,18 +132,25 @@ CANARY_CASE_PROMPTS = MappingProxyType(
     }
 )
 CANARY_ROUTE_CAP_USD = 1.0
-QUALIFICATION_APPROVAL_ENV = (
+QUALIFICATION_V113_APPROVAL_ENV = (
     "CVA_OPENAI_REAL_QUALIFICATION_V113_CONTINUATION_APPROVAL"
 )
-QUALIFICATION_APPROVAL_VALUE = (
+QUALIFICATION_V113_APPROVAL_VALUE = (
     "OPENAI_REAL_SYNTHETIC_QUALIFICATION_V113_CONTINUATION_APPROVED"
 )
+QUALIFICATION_APPROVAL_ENV = (
+    "CVA_OPENAI_REAL_QUALIFICATION_V114_CONTINUATION_APPROVAL"
+)
+QUALIFICATION_APPROVAL_VALUE = (
+    "OPENAI_REAL_SYNTHETIC_QUALIFICATION_V114_CONTINUATION_APPROVED"
+)
 QUALIFICATION_APPROVAL_REQUIRED_CODE = (
-    "OPENAI_QUALIFICATION_V113_CONTINUATION_APPROVAL_REQUIRED"
+    "OPENAI_QUALIFICATION_V114_CONTINUATION_APPROVAL_REQUIRED"
 )
 # The one continuation authorized for 1.1.3 stopped after four requests at
 # P05. No prior approval string may reopen it against a later prompt pack.
 QUALIFICATION_V113_CONTINUATION_CONSUMED = True
+QUALIFICATION_V114_CONTINUATION_CONSUMED = False
 P01_V112_REMEDIATION_DECISION_ENV = (
     "CVA_OPENAI_P01_V112_REMEDIATION_DECISION"
 )
@@ -309,6 +318,48 @@ QUALIFICATION_REUSED_REAL_EVIDENCE = MappingProxyType(
             defect_severity_if_failed="P1",
             source_checkpoint="OPENAI_P02_V113_RECANARY_PASS",
         ),
+        "oa-p03-happy-with-rubric-md": _ReusedRealEvidenceBoundary(
+            prompt_id="P03_AMBIGUITY_TRIAGE_V1",
+            prompt_version="1.1.2",
+            prompt_hash=(
+                "sha256:20fcb7ba96492161e84d18798a41af7f59247aa391999134d9b13e7da794a189"
+            ),
+            input_bundle_hash=(
+                "sha256:bd8452f4d9844a4e5f8826fa3eb4027d5bac99929bc637b54b564545a74e94b5"
+            ),
+            expected="VALID",
+            behavior="happy",
+            defect_severity_if_failed="P1",
+            source_checkpoint=(
+                "OPENAI_REAL_QUALIFICATION_V113_CONTINUATION_CASE_PASS"
+            ),
+        ),
+        "oa-p04-happy": _ReusedRealEvidenceBoundary(
+            prompt_id="P04_BLUEPRINT_BUILD_V1",
+            prompt_version="1.1.2",
+            prompt_hash=(
+                "sha256:25f22172b57e2d37a2cf9a016c266598d50517fa204d4461ca99ddbd9032fa49"
+            ),
+            input_bundle_hash=(
+                "sha256:11efcfb8a9445635d2a25d143112de79fe0927db83981d7a73c4ae03ce4f68c4"
+            ),
+            expected="VALID",
+            behavior="happy",
+            defect_severity_if_failed="P1",
+            source_checkpoint=(
+                "OPENAI_REAL_QUALIFICATION_V113_CONTINUATION_CASE_PASS"
+            ),
+        ),
+        P05_V114_RECANARY_CASE_ID: _ReusedRealEvidenceBoundary(
+            prompt_id="P05_BLUEPRINT_REVIEW_V1",
+            prompt_version="1.1.4",
+            prompt_hash=P05_V114_PROMPT_HASH,
+            input_bundle_hash=P05_V114_INPUT_BUNDLE_HASH,
+            expected="VALID",
+            behavior="happy",
+            defect_severity_if_failed="P1",
+            source_checkpoint="OPENAI_P05_V114_RECANARY_PASS",
+        ),
     }
 )
 QUALIFICATION_REUSED_REAL_CASE_IDS = tuple(
@@ -320,12 +371,9 @@ P07_RELIABILITY_CASE_IDS = (
     "oa-p07-predict-pdf",
     "oa-p07-critique-docx",
 )
-# Only these seven cases lack valid real evidence. P11 remains last so one
+# Only these four cases lack valid real evidence. P11 remains last so one
 # continuation can never use both a semantic repair and the direct P11 fixture.
 QUALIFICATION_CASE_IDS = (
-    "oa-p03-happy-with-rubric-md",
-    "oa-p04-happy",
-    "oa-p05-happy",
     "oa-p06-happy-docx",
     "oa-p08-happy-pdf",
     "oa-p09-happy-docx",
@@ -335,7 +383,7 @@ QUALIFICATION_MAX_P11_REQUESTS = 1
 QUALIFICATION_MAX_RESPONSES_REQUESTS = (
     len(QUALIFICATION_CASE_IDS) + QUALIFICATION_MAX_P11_REQUESTS
 )
-QUALIFICATION_HUMAN_BUDGET_USD = 0.16
+QUALIFICATION_HUMAN_BUDGET_USD = 0.10
 REQUIRED_REVIEW_DIMENSIONS = frozenset(
     {
         "evidence_correctness",
@@ -842,6 +890,13 @@ def _validated_reused_real_evidence(
             raise OpenAIEvalBlocked(
                 "OPENAI_QUALIFICATION_P02_V113_BOUNDARY_DRIFT"
             )
+        if case_id == P05_V114_RECANARY_CASE_ID and (
+            spec.prompt_hash != P05_V114_PROMPT_HASH
+            or input_bundle_hash != P05_V114_INPUT_BUNDLE_HASH
+        ):
+            raise OpenAIEvalBlocked(
+                "OPENAI_QUALIFICATION_P05_V114_BOUNDARY_DRIFT"
+            )
 
         observed_boundary = (
             case.get("prompt_id"),
@@ -893,7 +948,7 @@ def _validated_reused_real_evidence(
 def _selected_qualification_cases(
     cases: list[dict[str, Any]],
 ) -> list[dict[str, Any]]:
-    """Lock continuation spend to the seven unobserved real-eligible cases."""
+    """Lock continuation spend to the four unobserved real-eligible cases."""
 
     by_id = {str(case.get("case_id", "")): case for case in cases}
     if set(QUALIFICATION_CASE_IDS).intersection(
@@ -1016,6 +1071,13 @@ def _qualification_material(
             raise OpenAIEvalBlocked(
                 "OPENAI_QUALIFICATION_P02_V113_BOUNDARY_DRIFT"
             )
+        if case["case_id"] == P05_V114_RECANARY_CASE_ID and (
+            spec.prompt_hash != P05_V114_PROMPT_HASH
+            or _content_hash(envelope) != P05_V114_INPUT_BUNDLE_HASH
+        ):
+            raise OpenAIEvalBlocked(
+                "OPENAI_QUALIFICATION_P05_V114_BOUNDARY_DRIFT"
+            )
 
         # P11 is the structural repair boundary and can never recursively
         # repair its own output.
@@ -1097,6 +1159,11 @@ def _qualification_material(
             "case_id": P02_V113_RECANARY_CASE_ID,
             "prompt_hash": P02_V113_PROMPT_HASH,
             "input_bundle_hash": P02_V113_INPUT_BUNDLE_HASH,
+        },
+        "p05_v114_boundary": {
+            "case_id": P05_V114_RECANARY_CASE_ID,
+            "prompt_hash": P05_V114_PROMPT_HASH,
+            "input_bundle_hash": P05_V114_INPUT_BUNDLE_HASH,
         },
     }
 
@@ -1971,9 +2038,9 @@ async def _run_qualification_dry_run(
     qualification = _qualification_material(
         cases, route_cap_usd=QUALIFICATION_HUMAN_BUDGET_USD
     )
-    if QUALIFICATION_V113_CONTINUATION_CONSUMED:
+    if QUALIFICATION_V114_CONTINUATION_CONSUMED:
         raise OpenAIEvalBlocked(
-            "OPENAI_QUALIFICATION_V113_CONTINUATION_ALREADY_CONSUMED"
+            "OPENAI_QUALIFICATION_V114_CONTINUATION_ALREADY_CONSUMED"
         )
     if (
         qualification["full_cache_write_ceiling_usd"]
@@ -2090,6 +2157,8 @@ async def _run_qualification_dry_run(
         "p01_v112_remediation_decision": "PRIOR_ACCEPTANCE_REUSED_HASH_BOUND",
         "p02_v113_boundary": qualification["p02_v113_boundary"],
         "p02_v113_remediation_decision": "PRIOR_ACCEPTANCE_REUSED_HASH_BOUND",
+        "p05_v114_boundary": qualification["p05_v114_boundary"],
+        "p05_v114_remediation_decision": "PRIOR_ACCEPTANCE_REUSED_HASH_BOUND",
         "budget": _qualification_budget_metadata(qualification),
         "stop_conditions": [
             "FIRST_PROVIDER_OR_TRANSPORT_FAILURE",
@@ -2312,9 +2381,9 @@ async def _run_qualification_real(
     qualification = _qualification_material(
         cases, route_cap_usd=QUALIFICATION_HUMAN_BUDGET_USD
     )
-    if QUALIFICATION_V113_CONTINUATION_CONSUMED:
+    if QUALIFICATION_V114_CONTINUATION_CONSUMED:
         raise OpenAIEvalBlocked(
-            "OPENAI_QUALIFICATION_V113_CONTINUATION_ALREADY_CONSUMED"
+            "OPENAI_QUALIFICATION_V114_CONTINUATION_ALREADY_CONSUMED"
         )
     if max_total_cost_usd > QUALIFICATION_HUMAN_BUDGET_USD:
         raise OpenAIEvalBlocked("OPENAI_QUALIFICATION_HUMAN_CAP_EXCEEDED")
@@ -2336,6 +2405,13 @@ async def _run_qualification_real(
     ):
         raise OpenAIEvalBlocked(
             "OPENAI_P02_V113_REMEDIATION_HUMAN_DECISION_REQUIRED"
+        )
+    if (
+        os.environ.get(P05_V114_REMEDIATION_DECISION_ENV)
+        != P05_V114_REMEDIATION_DECISION_VALUE
+    ):
+        raise OpenAIEvalBlocked(
+            "OPENAI_P05_V114_REMEDIATION_HUMAN_DECISION_REQUIRED"
         )
     if (
         os.environ.get(QUALIFICATION_APPROVAL_ENV)
@@ -2585,6 +2661,8 @@ async def _run_qualification_real(
         "p01_v112_remediation_decision": "ACCEPTED_HASH_BOUND",
         "p02_v113_boundary": qualification["p02_v113_boundary"],
         "p02_v113_remediation_decision": "ACCEPTED_HASH_BOUND",
+        "p05_v114_boundary": qualification["p05_v114_boundary"],
+        "p05_v114_remediation_decision": "ACCEPTED_HASH_BOUND",
         "planned_case_ids": list(QUALIFICATION_CASE_IDS),
         "reused_real_evidence_case_ids": list(
             QUALIFICATION_REUSED_REAL_CASE_IDS

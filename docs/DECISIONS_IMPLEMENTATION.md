@@ -647,3 +647,24 @@
   semántica para hacer válido el objeto.
 - **Relación:** D-049, D-052, D-053, P05/P11,
   `specification/01_Prompt_Pack_v1.1(1).md` y `REAL_MODEL_EVALS.md`.
+
+## D-055 - El PASS P05 1.1.4 cierra P1 y reduce la continuación a cuatro casos
+
+- **Decisión observada:** la aceptación normativa y la única recanary P05
+  v1.1.4 autorizada sobre `35ecaf8` quedaron consumidas. P05 terminó `READY` y
+  pasó schema provider, Pydantic, contexto y expected outcome en una Responses
+  request, sin P11/retries/P10/Sol/fallback. El costo calculado fue USD
+  0.00936825 frente al cap USD 0.03. Esta evidencia cierra P1.
+- **Reuso:** los PASS P03/P04 de la continuación v1.1.3 y P05 v1.1.4 se suman
+  a los once casos ya fijados. Los catorce sólo son reutilizables mientras
+  coincidan prompt, versión, prompt hash, input bundle hash, expected outcome,
+  behavior y severidad.
+- **Gate siguiente:** la continuación v1.1.4 programa sólo P06/P08/P09/P11,
+  máximo defensivo cinco Responses requests, P11 máximo uno, stop al primer
+  fallo, retries/P10/Sol/fallback cero y cap propuesto USD 0.10. Exige una
+  approval v1.1.4 distinta; ninguna approval consumida se transfiere.
+- **Razón:** evitar recomprar evidencia real inmutable reduce costo y superficie
+  de exposición, mientras el nuevo nombre de gate impide que una autorización
+  histórica abra una frontera de prompt distinta.
+- **Relación:** D-049, D-053, D-054, P05/P11, `REAL_MODEL_EVALS.md` y
+  `OPENAI_COST_BUDGETS.md`.

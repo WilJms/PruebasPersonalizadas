@@ -315,7 +315,7 @@ Las cuatro requests usaron Luna Standard. P03/P04 pasaron; P05 falló Pydantic
 y P11 no produjo un target válido. P10/Sol/fallback y retries quedaron en cero.
 La autorización no se transfiere ni puede repetirse contra 1.1.4.
 
-## Recanary P05 1.1.4 preparada, no autorizada
+## Recanary P05 1.1.4 consumida y PASS
 
 El prompt P05 candidato añade la tabla canónica de estado/recomendación. El
 schema, output máximo y ruta permanecen iguales. Su frontera hash-bound es:
@@ -326,10 +326,40 @@ schema, output máximo y ruta permanecen iguales. Su frontera hash-bound es:
 | Output máximo, reasoning incluido | 16,000 tokens |
 | Ceiling sin cache | USD 0.02186220 |
 | Ceiling con todo input como cache-write | **USD 0.02252775** |
-| Cap humano propuesto | **USD 0.03** |
+| Cap humano autorizado | **USD 0.03** |
 | Máximo de Responses requests | 1 |
 
-El dry-run usa una llamada fake, cero red/billable y P11 cero. Si P05 vuelve a
-ser inválido, `_SingleRequestAdapter` bloquea la reparación antes de un segundo
-transporte. El cap USD 0.03 no está autorizado; requiere aceptación normativa
-P05/P11 y approval facturable específicas.
+El dry-run usó una llamada fake, cero red/billable y P11 cero. La autorización
+se consumió en una única Responses request y terminó PASS:
+
+| Magnitud observada | USD | Proporción del cap USD 0.03 |
+|---|---:|---:|
+| Costo calculado desde usage | 0.00936825 | 31.23% |
+| Charge conservador | 0.01982985 | 66.10% |
+| Ceiling full-cache-write | 0.02252775 | 75.09% |
+| Headroom según costo calculado | 0.02063175 | 68.77% |
+
+Usó 2,520 input, 0 cached, 2,517 cache-write, 7,282 output y 5,478
+reasoning tokens. No hubo retries, P10, P11, Sol, fallback ni segunda request.
+El gate quedó consumido.
+
+## Continuación v1.1.4 de los cuatro casos no observados
+
+P03, P04 y P05 se incorporan a las once evidencias reales ya reutilizadas. La
+secuencia futura compra sólo P06, P08, P09 y P11 directo, con una reserva P11
+global conservadora:
+
+| Frontera de continuación | Valor |
+|---|---:|
+| Casos primarios nuevos | 4 |
+| Evidencia real reutilizada | 14 casos |
+| Máximo defensivo de Responses requests | 5 |
+| Ceiling sin cache | USD 0.08616480 |
+| Ceiling full-cache-write | **USD 0.09270600** |
+| Cap humano propuesto | **USD 0.10** |
+
+La reserva P11 peor caso proviene de P06: 76,482 tokens, USD 0.02489640 sin
+cache y USD 0.02872050 full-cache-write. El dry-run pasó 4/4 con cuatro
+transportes fake, cero red/billable, retries/P10/Sol/fallback cero y un P11
+directo. El cap USD 0.10 todavía no está autorizado; el gate v1.1.3 consumido
+no se transfiere.

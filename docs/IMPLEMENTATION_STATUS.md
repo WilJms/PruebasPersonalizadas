@@ -2,100 +2,53 @@
 
 Fecha de corte: 2026-08-10 (America/Santiago).
 
-## Estado vigente — `OPENAI_REAL_P05_V114_REMEDIATION_APPROVAL_REQUIRED` (2026-08-10)
+## Estado vigente — `OPENAI_REAL_QUALIFICATION_V114_CONTINUATION_APPROVAL_REQUIRED` (2026-08-10)
 
-La rotación quedó cerrada en el orden autorizado. La credencial histórica fue
-rechazada por OpenAI con HTTP 401; sólo después se deshabilitó
-`cva-openai-api-key/versions/1`. La versión `2` permanece `ENABLED`, autentica
-con retries SDK cero y ve únicamente `gpt-5.6-luna`. Ningún secreto se imprimió,
-persistió en archivos o entró en Git/CI.
+La rotación sigue cerrada: Secret Manager v1 está `DISABLED`; v2 está
+`ENABLED`, autentica con SDK retries cero y sólo ve `gpt-5.6-luna`. El preflight
+inmediatamente anterior a la recanary confirmó el proyecto OpenAI
+`PruebasPersonalizadas` (`proj_te2wY3kbHAkFp8IgjglH063t`), USD 3.84 de USD 5.00
+en el límite mensual del proyecto, reset en 21 días, y capacidad Luna de
+200,000 TPM / 500 RPM. La tarifa oficial coincide con el harness: USD 0.20/M
+input, 0.02/M cached input, 0.25/M cache-write y 1.20/M output. La inspección
+fue read-only y no expuso secretos.
 
-El preflight autenticado inmediatamente anterior a la recanary confirmó el
-proyecto `PruebasPersonalizadas`, gasto organizacional USD 3.82/100.00, reset
-en 21 días, `gpt-5.6-luna` visible y límites 200,000 TPM / 500 RPM. La tarifa
-oficial y el harness coincidieron en USD 0.20/M input, 0.02/M cached input,
-0.25/M cache-write y 1.20/M output. La inspección fue read-only.
+El propietario aceptó la remediación normativa P05/P11 v1.1.4 y autorizó
+exactamente una recanary P05 fijada por `35ecaf8`, cap USD 0.03, máximo una
+Responses request, stop al primer fallo y retries/P10/P11/Sol/fallback cero.
+La llamada única terminó **PASS**: `READY`, schema provider, Pydantic, contexto
+y expected outcome PASS, con Luna-high solicitada y efectiva. Usó 2,520 input,
+0 cached, 2,517 cache-write, 7,282 output y 5,478 reasoning tokens en 57,540 ms.
+El costo calculado fue USD 0.00936825; el charge conservador USD 0.01982985 y
+el ceiling USD 0.02252775. No se retuvo output ni request ID en claro.
 
-La única qualification real 1.1.2 autorizada se ejecutó con cap USD 0.32 y se
-detuvo fail-closed en el primer fallo. `oa-p01-injection-md` fue el primer caso
-y pasó provider schema, Pydantic, contexto y outcome `READY`; el marcador hostil
-estuvo presente como dato y no se propagó. Por la decisión humana previa, esta
-observación cierra el P0 P01. Los diez primeros casos pasaron. El caso 11,
-`oa-p02-happy-pdf`, pasó provider schema y Pydantic pero falló el validator
-contextual con `MODEL_CONTEXT_NOT_ALLOWLISTED`; expected outcome no fue
-evaluado y los siete casos posteriores no se ejecutaron.
+La observación queda ligada a prompt
+`sha256:1b1bb9cc10bb4eb633486863bba8dbfdbd70d2f0266795cbaa37505b7e6dcb0a`
+e input bundle
+`sha256:be9521524e643adf11b13914a0e39bbb605f2962e1964b8535a8df1643177969`.
+La autorización quedó consumida y el entrypoint bloquea otra recanary con
+`OPENAI_P05_V114_RECANARY_ALREADY_CONSUMED`. El PASS cierra el P1 P05; el
+conteo vigente es **P0=0, P1=0, P2=5, P3=1**.
 
-La ejecución consumió 11 Responses requests, USD 0.03258029 calculados desde
-usage, USD 0.12137549 de charge conservador y USD 0.15922425 de reservas de
-transporte frente al cap USD 0.32. P10, P11, Sol, fallback y retries
-gateway/prompt/SDK quedaron en 0. No se reinició ni repitió la qualification.
+La evidencia real hash-bound cubre ahora **14/18** casos: diez PASS de la
+qualification 1.1.2, P02 1.1.3, P03/P04 de la continuación 1.1.3 y P05 1.1.4.
+Todo gate anterior queda consumido. El harness bloquea drift de prompt, input,
+expected outcome, behavior o severidad antes de credencial/transporte.
 
-El código histórico P02 era genérico y el output no se retuvo, por lo que la
-evidencia permite dos causas contextuales: `activity_id` distinto o una
-abstención que conservó criterios. No se atribuye una de ellas sin evidencia.
-La especificación ya exigía `criteria=[]` más diagnóstico para todo status no
-`READY`, pero esa regla no estaba en la instrucción ejecutable P02.
+El nuevo dry-run v1.1.4 fija sólo los cuatro casos aún no observados:
+`oa-p06-happy-docx`, `oa-p08-happy-pdf`, `oa-p09-happy-docx` y
+`oa-p11-happy`. Pasó 4/4 con cuatro transportes fake, cero red/billable, catorce
+evidencias reutilizadas y cobertura acumulable 18/18. Su ceiling es USD
+0.08616480 sin cache y USD 0.09270600 reservando todo input como cache-write;
+el cap humano propuesto es USD 0.10. La frontera permite máximo cinco Responses
+requests, P11 máximo uno, stop al primer fallo y retries/P10/Sol/fallback cero.
+El opt-in histórico v1.1.3 no abre este gate.
 
-`prompt-pack/1.1.3` remedia esa divergencia sin cambiar
-contratos, schemas, rutas, fixtures ni expected outcomes. P01 conserva versión,
-prompt hash e input hash exactos 1.1.2. Sólo P02 avanza a 1.1.3: copia
-`activity_id`, limita fuentes a `rubric_evidence`, explica cuándo usar `READY`
-y exige abstención limpia. El gateway emite ahora subtipos content-free para
-evidencia ajena a la rúbrica, criterios durante abstención y activity ID
-alterado.
-
-El propietario aceptó P02 1.1.3 y autorizó exactamente una recanary sintética
-con cap USD 0.02. La llamada se ejecutó sobre
-`1aa704e607e66053fa57b4a91ed9d0f96520828b` y terminó **PASS**: una Responses
-request, `READY`, schema provider/Pydantic/contexto/expected outcome PASS y
-Luna-medium solicitado/efectivo. Consumió 2,049 input, 0 cached, 2,046
-cache-write, 600 output y 300 reasoning tokens en 7,579 ms. El costo calculado
-fue USD 0.00123210, el charge conservador USD 0.01011210 y el ceiling USD
-0.01243075. Gateway/prompt/SDK retries, P10, P11, Sol y fallback quedaron en
-cero. La autorización se consumió y no permite otra llamada.
-
-Los diez PASS anteriores y esta recanary cubren 11/18 casos con evidencia real.
-Los diez pares prompt/input 1.1.2 fueron recomputados desde el snapshot previo y
-coinciden exactamente con la frontera actual; P02 queda ligado a prompt
-`sha256:4f3e09976a58ac20a40f8fd072d4bef762dd1e7ae24393ffe4f22c05519df4da`
-e input
-`sha256:2def19568376c5f297333cf9cdab552a44a04dace43b696c8d0e85da093d559c`.
-El harness bloquea cualquier drift de prompt, input, expected outcome, behavior
-o severidad antes de leer una credencial.
-
-El propietario autorizó exactamente la continuación de los siete casos fijados
-por `1b8f5241e4e85852ffd8667c60e93182e66d6069`, cap USD 0.16, máximo ocho
-Responses requests, stop al primer fallo, P11 máximo uno y sin
-retries/P10/Sol/fallback. P03 y P04 pasaron todas las capas. P05 pasó schema
-provider pero falló Pydantic con `value_error` en `/`; su única P11 devolvió un
-`repaired_output` que volvió a fallar el root. El proceso se detuvo tras cuatro
-requests, antes de P06/P08/P09/P11 directo. Costos: USD 0.02438310 calculados,
-USD 0.06006390 de charge conservador y USD 0.07136750 reservados. La approval
-quedó consumida y el entrypoint bloquea su repetición.
-
-El fallo P05 es P1. Como el output no se retuvo, no se atribuye una combinación
-concreta. Sí quedó probado un hueco normativo: P05 no explicaba que `status` es
-la finalización del review, y P11 no debía adivinar campos semánticos ante un
-invariante raíz. `prompt-pack/1.1.4` explicita la tabla
-`status`/`approval_recommendation`/critical FAIL y exige `UNREPAIRABLE` para el
-root ambiguo. P05/P11 cambian a 1.1.4; P02 conserva 1.1.3 y las demás entradas
-su frontera 1.1.2.
-
-La recanary P05 candidata pasó offline con una request fake, cero
-red/billable, P11 cero, input upper-bound 13,311 y ceiling USD 0.02252775. Su
-cap humano propuesto es USD 0.03 y requiere aceptación normativa P05/P11 más
-una approval facturable nueva. Ningún gate consumido concede esa decisión.
-
-La regresión focal P05/P11 y harness pasa 98 tests. `make test-cov` pasa 524,
-con 16 skips PostgreSQL explícitos, un warning deprecado conocido y 80% global
-sobre 10,510 statements. Contratos canónicos no fueron modificados.
-
-El conteo vigente es **P0=0, P1=1, P2=5, P3=1**. Este estado aún no es
-`OPENAI_REAL_MANUAL_EVAL_READY`: falta aceptar y observar P05 1.1.4, completar
-P06/P08/P09/P11 bajo otro gate y, después, solicitar por separado
-deploy/Terraform y E2E sintético real. Cloud continúa
+Este estado aún no es `OPENAI_REAL_MANUAL_EVAL_READY`: primero hace falta una
+autorización billable exacta para esa continuación v1.1.4; después, bajo gates
+separados, deploy/Terraform y E2E sintético real. Cloud continúa
 `CVA_MODEL_MODE=mock`, `CVA_P10_ENABLED=false`; no hubo deploy, Terraform apply,
-IAM, P10, Sol/fallback, datos reales ni merge a main.
+IAM, P10, Sol/fallback, datos estudiantiles reales ni merge a main.
 
 ## Historial — `OPENAI_REAL_V112_ROTATION_BLOCKED` (2026-08-10)
 
