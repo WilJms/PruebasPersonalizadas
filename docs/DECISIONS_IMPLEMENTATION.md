@@ -725,3 +725,29 @@
   / `sha256:d85b124990e457e096fbe4851633ee057b662efcbda3ac84837e8c8a78deacc7`.
 - **Relación:** D-049, D-053, D-055, D-056, P09,
   `OPENAI_COST_BUDGETS.md` y `OPENAI_REAL_MODEL_VALIDATION.md`.
+
+## D-058 - El PASS P09 cierra P1 y P11 directo recibe el último gate de corpus
+
+- **Decisión observada:** la remediación normativa y la única recanary P09
+  v1.1.5 autorizada sobre `2ae0a0a` quedaron consumidas. P09 terminó `READY` y
+  pasó schema provider, Pydantic, contexto y expected outcome en una Responses
+  request, sin retries/P10/P11/Sol/fallback. El costo calculado fue USD
+  0.00443985 frente al cap USD 0.02. Esta evidencia cierra el P1 y lleva la
+  cobertura real hash-bound a 17/18.
+- **Antirrepetición:** los valores históricos no reabren la recanary; el
+  entrypoint devuelve `OPENAI_P09_V115_RECANARY_ALREADY_CONSUMED` antes del
+  adapter. Sólo se conservan usage, latencia y hashes content-free.
+- **Gate siguiente:** P11 directo v1.1.4 se aísla en `oa-p11-happy`, Luna-low,
+  máximo una Responses request, P11 exactamente uno, retries/P10/Sol/fallback
+  cero, ceiling full-cache-write USD 0.01172550 y cap propuesto USD 0.02. Antes
+  del gate se recomputan las 17 fronteras reales anteriores.
+- **Evidencia offline:** el transporte fake termina `REPAIRED`, valida wrapper
+  y modelo objetivo, conserva `target_schema_name` y demuestra que la salida
+  equivale exactamente a eliminar el campo estructural extra. También acepta
+  sólo una abstención `UNREPAIRABLE` diagnóstica y sin `repaired_output`. Usa
+  una request fake y cero red/billable.
+- **Límites:** este checkpoint no autoriza P11 real, build, IAM, Terraform
+  apply, deploy, E2E, datos reales ni main. Cada superficie conserva un gate
+  independiente fijado a SHA/digest y presupuesto.
+- **Relación:** D-049, D-054, D-056, D-057, P09/P11,
+  `REAL_MODEL_EVALS.md` y `OPENAI_COST_BUDGETS.md`.

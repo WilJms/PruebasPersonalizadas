@@ -9,41 +9,41 @@ con IDs únicos y clasificación obligatoria
 `1.1.0`. P01, P03, P04 y P06-P08 conservan su versión individual `1.1.2`;
 P02 conserva `1.1.3`; P05/P11 usan `1.1.4`; P09 candidata usa `1.1.5`.
 
-## Resultado vigente — continuación v1.1.4 consumida; P09 v1.1.5 preparada
+## Resultado vigente — P09 v1.1.5 PASS; P11 directo preparado
 
-La continuación autorizada sobre `abca7c5` ejecutó P06 PASS, P08 PASS y P09
-FAIL contextual, y se detuvo antes de P11 directo. La autorización quedó
-consumida y el entrypoint histórico devuelve
-`OPENAI_QUALIFICATION_V114_CONTINUATION_ALREADY_CONSUMED` antes de material,
-credencial o transporte.
+La única recanary P09 v1.1.5 autorizada sobre `2ae0a0a` terminó **PASS**
+`READY`. Las capas provider schema, Pydantic, contexto y expected outcome
+pasaron; usó una Responses request, retries gateway/prompt/SDK 0/0/0 y
+P10/P11/Sol/fallback cero. La autorización quedó consumida y otra ejecución
+bloquea con `OPENAI_P09_V115_RECANARY_ALREADY_CONSUMED` antes del adapter.
 
-| Frontera real v1.1.4 | Resultado observado |
+| Frontera real P09 v1.1.5 | Resultado observado |
 |---|---|
-| Casos | P06 PASS; P08 PASS; P09 FAIL contexto; P11 directo no ejecutado |
-| Requests | 3/5; stop al primer fallo |
-| Costo | USD 0.00864505 calculado; USD 0.04284505 charge conservador; USD 0.05226000 reservado |
-| Exclusiones | gateway/prompt/SDK retries 0/0/0; P10/P11/Sol/fallback 0 |
-| P09 | provider schema/Pydantic PASS; `MODEL_CONTEXT_NOT_ALLOWLISTED`; outcome no evaluado |
+| Requests | 1/1; autorización consumida |
+| Uso | 2,856 input; 0 cached; 2,853 cache-write; 3,105 output; 2,500 reasoning |
+| Latencia | 25,826 ms |
+| Costo | USD 0.00443985 calculado; USD 0.01271385 charge conservador; USD 0.01592350 ceiling; cap USD 0.02 |
+| Prompt/input | `sha256:8d29a13a5ee56b39f6aa5545b602e23ca28b6d60d051852d75ecbc0c664179ff` / `sha256:d85b124990e457e096fbe4851633ee057b662efcbda3ac84837e8c8a78deacc7` |
+| Request/output hashes | `sha256:0e93e77e4ad81cef4c9dc82c0b609b218b6a7f9a7a3e4cd6af80182991c8a478` / `sha256:52625c3ed55669c210d6908e9ea98a750b293bd7bd356c726e69058fecfae85d` |
 
-P06 y P08 elevan la evidencia real hash-bound a **16/18**. P09 no se promueve
-a PASS y su output no se retuvo. El único subtipo histórico disponible es
-`CONTEXT_INVARIANT_FAILED`, por lo que no se atribuye un campo exacto.
+No se retuvieron payload, output, clave ni request ID en claro. Este PASS cierra
+el P1 P09 y eleva la evidencia real reutilizable a **17/18** casos.
 
-P09 v1.1.5 explicita los IDs raíz, la cobertura exacta de preguntas y las
-allowlists por pregunta, incluido `source_ids=[]` en contexto cerrado. El
-gateway discrimina siete códigos content-free. El dry-run pasa `READY` con una
-request fake, cero red/billable, ceiling USD 0.01592350 y cap propuesto USD
-0.02. Está ligado a prompt/input:
+El único caso vigente sin observación es P11 directo v1.1.4. El nuevo dry-run
+revalida las 17 fronteras previas y ejecuta `oa-p11-happy` con una request fake:
+`REPAIRED`, wrapper/target/contexto válidos, target inmutable y cambio
+estructural mínimo. Usa cero red/billable, Luna-low, input upper-bound 8,502,
+ceiling full-cache-write USD 0.01172550 y cap propuesto USD 0.02. Está ligado a:
 
 ```text
-sha256:8d29a13a5ee56b39f6aa5545b602e23ca28b6d60d051852d75ecbc0c664179ff
-sha256:d85b124990e457e096fbe4851633ee057b662efcbda3ac84837e8c8a78deacc7
+sha256:43f2ca4d6a0c02f015125a96f3a12bc5dd8d6c0eab0583f9c2f11b0f1c1f1f04
+sha256:f8c2a6058214a4958b83e8850780e2827e1269720251f25f1e21d062371fb185
 ```
 
-La aceptación normativa y una autorización exacta nueva son obligatorias para
-la única recanary P09; máximo una Responses request, retries 0 y
-P10/P11/Sol/fallback 0. P11 directo queda para otro gate posterior. Los valores
-de entorno documentados por el harness no constituyen autorización.
+P11 requiere una autorización exacta nueva fijada al SHA candidato, máximo una
+Responses request, retries 0, P10/Sol/fallback 0 y P11 exactamente uno. El
+valor `CVA_OPENAI_P11_V114_DIRECT_APPROVAL=OPENAI_P11_V114_DIRECT_APPROVED`
+documenta la interfaz fail-closed y no constituye autorización.
 
 ## Historial — P05 1.1.4 PASS y preparación de cuatro casos
 
@@ -597,9 +597,9 @@ esperada usa diez requests.
 Una ejecución offline con el resolver real y transporte fake completó jobs de
 actividad y submission, recorrió P01-P09 en nueve tareas semánticas, observó
 27,330 tokens como máximo preflight y usó cero red/billable. La continuación
-v1.1.4 quedó consumida; el dry-run vigente es la recanary P09 v1.1.5, una
-request y USD 0.01592350. P09, P11 directo, build/deploy y E2E real conservan
-gates separados.
+v1.1.4 y la recanary P09 v1.1.5 quedaron consumidas; el dry-run vigente es P11
+directo v1.1.4, una request y USD 0.01172550. P11, build/deploy y E2E real
+conservan gates separados.
 
 ## Recorrido humano preparado
 

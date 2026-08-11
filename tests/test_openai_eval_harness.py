@@ -36,6 +36,7 @@ def _safe_environment() -> dict[str, str]:
     environment.pop("CVA_OPENAI_P05_V114_RECANARY_APPROVAL", None)
     environment.pop("CVA_OPENAI_P09_V115_REMEDIATION_DECISION", None)
     environment.pop("CVA_OPENAI_P09_V115_RECANARY_APPROVAL", None)
+    environment.pop("CVA_OPENAI_P11_V114_DIRECT_APPROVAL", None)
     environment.pop("CVA_OPENAI_REAL_QUALIFICATION_V113_APPROVAL", None)
     environment.pop(
         "CVA_OPENAI_REAL_QUALIFICATION_V113_CONTINUATION_APPROVAL", None
@@ -1689,10 +1690,8 @@ def test_p09_v115_recanary_fake_transport_proves_remediated_boundary(
     assert all(row["controls"].values())
 
 
-def test_p09_v115_recanary_is_fail_closed_after_consumption(
-    monkeypatch,
-) -> None:
-    monkeypatch.setattr(eval_harness, "P09_V115_RECANARY_CONSUMED", True)
+def test_p09_v115_recanary_is_fail_closed_after_consumption() -> None:
+    assert eval_harness.P09_V115_RECANARY_CONSUMED is True
     cases = [
         case
         for case in eval_harness._load_cases(eval_harness.DEFAULT_MANIFEST)
@@ -1723,6 +1722,203 @@ def test_p09_v115_recanary_blocks_hash_drift_before_fake_transport(
     with pytest.raises(
         eval_harness.OpenAIEvalBlocked,
         match="OPENAI_P09_V115_RECANARY_BOUNDARY_DRIFT",
+    ):
+        asyncio.run(eval_harness._run_canary_dry_run(cases))
+
+
+def test_p11_v114_direct_dry_run_is_hash_bound_and_non_billable() -> None:
+    completed = subprocess.run(
+        [
+            "make",
+            "openai-p11-v114-direct-dry-run",
+            f"PYTHON={sys.executable}",
+        ],
+        cwd=ROOT,
+        env=_safe_environment(),
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    report = json.loads(completed.stdout)
+    assert report["status"] == "PASS"
+    assert report["prompt_pack_version"] == "1.1.5"
+    assert report["network_calls"] == report["billable_calls"] == 0
+    assert report["secret_read"] is False
+    assert report["p10_calls"] == 0
+    assert report["p11_calls"] == 1
+    assert report["fallback_calls"] == report["sol_calls"] == 0
+    row = report["cases"][0]
+    assert row["case_id"] == eval_harness.P11_V114_DIRECT_CASE_ID
+    assert row["prompt_version"] == "1.1.4"
+    assert row["prompt_hash"] == eval_harness.P11_V114_PROMPT_HASH
+    assert row["input_bundle_hash"] == eval_harness.P11_V114_INPUT_BUNDLE_HASH
+    assert row["output_status"] == "REPAIRED"
+    assert row["reasoning_effort"] == "LOW"
+    assert row["budget"]["input_upper_bound_tokens"] == 8_502
+    assert row["budget"]["full_cache_write_ceiling_usd"] == 0.0117255
+    assert row["budget"]["proposed_human_budget_usd"] == 0.02
+    assert all(row["controls"].values())
+
+    by_id = {
+        case["case_id"]: case
+        for case in eval_harness._load_cases(eval_harness.DEFAULT_MANIFEST)
+    }
+    prior = eval_harness._validated_reused_real_evidence(
+        by_id,
+        boundaries=eval_harness.P11_DIRECT_PRIOR_REAL_EVIDENCE,
+    )
+    assert len(prior) == 17
+    assert prior[-1]["case_id"] == eval_harness.P09_V115_RECANARY_CASE_ID
+    assert prior[-1]["source_checkpoint"] == "OPENAI_P09_V115_RECANARY_PASS"
+
+
+def test_p11_v114_direct_requires_fresh_spend_gate(monkeypatch) -> None:
+    monkeypatch.setattr(eval_harness, "P11_V114_DIRECT_CONSUMED", False)
+    cases = [
+        case
+        for case in eval_harness._load_cases(eval_harness.DEFAULT_MANIFEST)
+        if case["case_id"] == eval_harness.P11_V114_DIRECT_CASE_ID
+    ]
+    monkeypatch.delenv("CVA_OPENAI_API_KEY", raising=False)
+    monkeypatch.delenv(
+        eval_harness.P11_V114_DIRECT_APPROVAL_ENV, raising=False
+    )
+
+    with pytest.raises(
+        eval_harness.OpenAIEvalBlocked,
+        match="OPENAI_P11_V114_DIRECT_APPROVAL_REQUIRED",
+    ):
+        asyncio.run(
+            eval_harness._run_canary_real(cases, max_total_cost_usd=0.02)
+        )
+    monkeypatch.setenv(
+        eval_harness.P11_V114_DIRECT_APPROVAL_ENV,
+        eval_harness.P11_V114_DIRECT_APPROVAL_VALUE,
+    )
+    with pytest.raises(
+        eval_harness.OpenAIEvalBlocked,
+        match="OPENAI_CREDENTIALS_REQUIRED",
+    ):
+        asyncio.run(
+            eval_harness._run_canary_real(cases, max_total_cost_usd=0.02)
+        )
+    with pytest.raises(
+        eval_harness.OpenAIEvalBlocked,
+        match="OPENAI_P11_V114_DIRECT_HUMAN_CAP_EXCEEDED",
+    ):
+        asyncio.run(
+            eval_harness._run_canary_real(cases, max_total_cost_usd=0.021)
+        )
+
+
+def test_p11_v114_direct_fake_transport_proves_governed_repair(
+    monkeypatch,
+) -> None:
+    monkeypatch.setattr(eval_harness, "P11_V114_DIRECT_CONSUMED", False)
+
+    class SafeP11Adapter:
+        async def invoke(
+            self, *, prompt_id: str, request: object, **_kwargs: object
+        ) -> AdapterResult:
+            output = eval_harness.DeterministicMockFactory().output_for(
+                prompt_id, request, eval_harness.MockBehavior.HAPPY
+            )
+            return AdapterResult(
+                raw_output=output.model_dump(mode="json"),
+                input_tokens=97,
+                cached_input_tokens=0,
+                cache_write_input_tokens=96,
+                output_tokens=41,
+                reasoning_tokens=17,
+                estimated_cost_usd=0.005,
+                actual_cost_usd=0.001,
+                effective_model="gpt-5.6-luna",
+                output_hash="sha256:" + "7" * 64,
+                provider_request_id_hash="sha256:" + "8" * 64,
+                provider_schema_valid=True,
+                reason_codes=(
+                    "SDK_RETRIES_0",
+                    "STRUCTURED_OUTPUT_STRICT",
+                    "STORE_FALSE",
+                    "BACKGROUND_FALSE",
+                    "TOOLS_EMPTY",
+                    "PROVIDER_SCHEMA_VALID",
+                ),
+            )
+
+    monkeypatch.setenv(
+        eval_harness.P11_V114_DIRECT_APPROVAL_ENV,
+        eval_harness.P11_V114_DIRECT_APPROVAL_VALUE,
+    )
+    monkeypatch.setenv(
+        "CVA_OPENAI_API_KEY", "sk-project-synthetic-placeholder-not-a-real-key"
+    )
+    monkeypatch.setattr(
+        eval_harness,
+        "OpenAIResponsesAdapter",
+        lambda **_kwargs: SafeP11Adapter(),
+    )
+    cases = [
+        case
+        for case in eval_harness._load_cases(eval_harness.DEFAULT_MANIFEST)
+        if case["case_id"] == eval_harness.P11_V114_DIRECT_CASE_ID
+    ]
+
+    report = asyncio.run(
+        eval_harness._run_canary_real(cases, max_total_cost_usd=0.02)
+    )
+
+    assert report["network_calls"] == report["billable_calls"] == 1
+    assert report["p10_calls"] == 0
+    assert report["p11_calls"] == 1
+    assert report["fallback_calls"] == report["sol_calls"] == 0
+    row = report["cases"][0]
+    assert row["status"] == "PASS"
+    assert row["output_status"] == "REPAIRED"
+    assert row["prompt_hash"] == eval_harness.P11_V114_PROMPT_HASH
+    assert row["input_bundle_hash"] == eval_harness.P11_V114_INPUT_BUNDLE_HASH
+    assert row["validation"] == {
+        "provider_schema_status": "PASS",
+        "pydantic_status": "PASS",
+        "context_status": "PASS",
+        "expected_outcome_status": "PASS",
+    }
+    assert all(row["controls"].values())
+
+
+def test_p11_v114_direct_is_fail_closed_after_consumption(monkeypatch) -> None:
+    monkeypatch.setattr(eval_harness, "P11_V114_DIRECT_CONSUMED", True)
+    cases = [
+        case
+        for case in eval_harness._load_cases(eval_harness.DEFAULT_MANIFEST)
+        if case["case_id"] == eval_harness.P11_V114_DIRECT_CASE_ID
+    ]
+
+    with pytest.raises(
+        eval_harness.OpenAIEvalBlocked,
+        match="OPENAI_P11_V114_DIRECT_ALREADY_CONSUMED",
+    ):
+        asyncio.run(
+            eval_harness._run_canary_real(cases, max_total_cost_usd=0.02)
+        )
+
+
+def test_p11_v114_direct_blocks_hash_drift_before_fake_transport(
+    monkeypatch,
+) -> None:
+    monkeypatch.setattr(
+        eval_harness, "P11_V114_PROMPT_HASH", "sha256:" + "0" * 64
+    )
+    cases = [
+        case
+        for case in eval_harness._load_cases(eval_harness.DEFAULT_MANIFEST)
+        if case["case_id"] == eval_harness.P11_V114_DIRECT_CASE_ID
+    ]
+
+    with pytest.raises(
+        eval_harness.OpenAIEvalBlocked,
+        match="OPENAI_P11_V114_DIRECT_BOUNDARY_DRIFT",
     ):
         asyncio.run(eval_harness._run_canary_dry_run(cases))
 

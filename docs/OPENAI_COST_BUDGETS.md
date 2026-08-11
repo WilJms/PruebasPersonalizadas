@@ -375,11 +375,10 @@ consumido al detenerse en P09:
 | Reserva transportada full-cache-write | USD 0.05226000 |
 | P10/P11/Sol/fallback/retries | 0 |
 
-## Recanary candidata P09 v1.1.5
+## Recanary P09 v1.1.5 consumida
 
-La siguiente compra admisible es sólo P09, después de aceptar su remediación
-normativa y fijar el SHA candidato. P11 no se reserva ni se permite en esta
-recanary porque el fallo observado es contextual, no estructural:
+La única compra P09 autorizada se ejecutó sin P11 porque el fallo histórico era
+contextual, no estructural:
 
 | Frontera P09 v1.1.5 | Valor |
 |---|---:|
@@ -389,13 +388,42 @@ recanary porque el fallo observado es contextual, no estructural:
 | Input upper-bound | 15,694 tokens |
 | Ceiling sin cache | USD 0.01513880 |
 | Ceiling full-cache-write | **USD 0.01592350** |
-| Cap humano propuesto | **USD 0.02** |
+| Cap humano autorizado | **USD 0.02** |
 | P10/P11/Sol/fallback/retries | 0 |
 
-El dry-run usó una request fake y cero red/billable. La aceptación normativa y
-el cap USD 0.02 todavía no están autorizados; ningún remanente del cap v1.1.4
-se transfiere. Tras un PASS P09, P11 directo tendrá un presupuesto y gate
-separados.
+El dry-run usó una request fake y cero red/billable. La recanary real terminó
+PASS en una request y consumió el gate:
+
+| Magnitud observada P09 | USD | Proporción del cap USD 0.02 |
+|---|---:|---:|
+| Costo calculado desde usage | 0.00443985 | 22.20% |
+| Charge conservador | 0.01271385 | 63.57% |
+| Ceiling full-cache-write | 0.01592350 | 79.62% |
+| Headroom según costo calculado | 0.01556015 | 77.80% |
+
+Usó 2,856 input, 0 cached, 2,853 cache-write, 3,105 output y 2,500 reasoning
+tokens. No hubo retries, P10, P11, Sol, fallback ni segunda request.
+
+## Gate candidato P11 directo v1.1.4
+
+La siguiente compra admisible es exclusivamente `oa-p11-happy`; las 17
+evidencias reales previas se recomputan contra sus fronteras hash-bound antes
+del gate. P11 no puede repararse recursivamente:
+
+| Frontera P11 directo v1.1.4 | Valor |
+|---|---:|
+| Casos primarios | 1 (`oa-p11-happy`) |
+| Evidencia real previa | 17 casos |
+| Máximo de Responses requests | 1 |
+| Input upper-bound | 8,502 tokens |
+| Ceiling sin cache | USD 0.01130040 |
+| Ceiling full-cache-write | **USD 0.01172550** |
+| Cap humano propuesto | **USD 0.02** |
+| P11/P10/Sol/fallback/retries | 1/0/0/0/0 |
+
+El dry-run usó una request fake y cero red/billable; terminó `REPAIRED` con
+wrapper y objeto objetivo válidos, target inmutable y modificación estructural
+mínima. Ningún remanente de P09 o de continuaciones anteriores se transfiere.
 
 ## Envelope del primer E2E real sintético
 

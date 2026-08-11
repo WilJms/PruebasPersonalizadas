@@ -9,7 +9,28 @@ P10 deshabilitado; las evaluaciones OpenAI dedicadas usaron exclusivamente
 fixtures sintéticos. Los resultados históricos E1 se conservan al final y no
 se presentan como evidencia del candidato E2.
 
-## Continuación v1.1.4 real y remediación P09 v1.1.5 — 2026-08-10
+## Recanary P09 v1.1.5 PASS y gate P11 directo — 2026-08-10
+
+| Prueba o gate | Resultado observado |
+|---|---|
+| Preflight P09 | HEAD/remote exactos en `2ae0a0a`; worktree limpio; Secret Manager v1 `DISABLED`, v2 `ENABLED`; tarifa oficial Luna revalidada |
+| Recanary P09 real | PASS `READY`; provider schema/Pydantic/contexto/outcome PASS; 1/1 Responses request |
+| Controles P09 | retries gateway/prompt/SDK 0/0/0; P10/P11/Sol/fallback 0; approval consumida |
+| Uso P09 | 2,856 input; 0 cached; 2,853 cache-write; 3,105 output; 2,500 reasoning; 25,826 ms |
+| Costo P09 | USD 0.00443985 calculado; USD 0.01271385 charge; USD 0.01592350 ceiling; bajo cap USD 0.02 |
+| Frontera P09 | prompt/input `sha256:8d29a13…` / `sha256:d85b124…`; request/output hashes `sha256:0e93e77e…` / `sha256:52625c3e…` |
+| Antirrepetición P09 | PASS offline: `OPENAI_P09_V115_RECANARY_ALREADY_CONSUMED` antes del adapter |
+| Evidencia reutilizable | 17/18 PASS hash-bound; P0=0, P1=0, P2=5, P3=1 |
+| P11 directo dry-run | PASS `REPAIRED`; wrapper/target/contexto válidos, target inmutable y cambio estructural mínimo; 1 fake, 0 red/billable |
+| Frontera P11 | prompt/input `sha256:43f2ca4d…` / `sha256:f8c2a605…`; Luna-low; input 8,502; ceiling USD 0.01172550; cap propuesto USD 0.02 |
+| Gate P11 negativo | PASS: falta de approval devuelve `OPENAI_P11_V114_DIRECT_APPROVAL_REQUIRED`, `network_calls=0` |
+| Regresión vigente | 548 passed, 16 skips PostgreSQL explícitos y 1 warning conocido; 57/57 harness PASS; contratos y `git diff --check` PASS |
+
+No se retuvieron payload, output, clave ni request ID en claro. P11 directo
+requiere una autorización facturable exacta nueva; nada de este checkpoint
+autoriza build, IAM, Terraform apply, deploy o E2E cloud.
+
+## Historial — continuación v1.1.4 real y remediación P09 v1.1.5
 
 | Prueba o gate | Resultado observado |
 |---|---|
@@ -21,15 +42,15 @@ se presentan como evidencia del candidato E2.
 | P08 real | provider schema/Pydantic/contexto/outcome PASS; prompt/input `sha256:06f48bb2…` / `sha256:5deaccfc…` |
 | P09 real | provider schema/Pydantic PASS; contexto FAIL `MODEL_CONTEXT_NOT_ALLOWLISTED` / `CONTEXT_INVARIANT_FAILED`; outcome no evaluado; output no retenido |
 | Antirrepetición v1.1.4 | PASS offline: `OPENAI_QUALIFICATION_V114_CONTINUATION_ALREADY_CONSUMED` antes de material, credencial y transporte |
-| Evidencia reutilizable | 16/18 PASS hash-bound; P09 no se promueve y P11 directo permanece no observado |
+| Evidencia reutilizable en ese checkpoint | 16/18 PASS hash-bound; P09 no se promovió y P11 directo permaneció no observado |
 | Remediación P09 v1.1.5 | IDs raíz, cobertura exacta, evidencia/fuentes por pregunta y CLOSED explícitos; siete códigos contextuales content-free; contratos/schema/ruta/fixture sin cambio |
 | Recanary P09 dry-run | PASS READY; 1 fake, 0 red/billable, P10/P11/Sol/fallback 0; input upper-bound 15,694; ceiling USD 0.01592350; cap propuesto USD 0.02 |
 | Frontera candidata P09 | prompt `sha256:8d29a13a5ee56b39f6aa5545b602e23ca28b6d60d051852d75ecbc0c664179ff`; input `sha256:d85b124990e457e096fbe4851633ee057b662efcbda3ac84837e8c8a78deacc7` |
-| Regresión focal vigente | 52/52 harness PASS y 9/9 pruebas focales registry/P09 PASS; ninguna llamada real adicional |
+| Regresión focal vigente | 57/57 harness PASS y 9/9 pruebas focales registry/P09 PASS; ninguna llamada real adicional |
 
-El conteo abierto vigente es P0=0/P1=1/P2=5/P3=1. El P1 corresponde a P09;
+El conteo abierto en ese checkpoint era P0=0/P1=1/P2=5/P3=1. El P1 correspondía a P09;
 la causa de campo exacta no se inventa porque el output real no fue retenido.
-La recanary P09 y P11 directo requieren gates facturables distintos. Nada de
+La recanary P09 y P11 directo requerían gates facturables distintos. Nada de
 esta remediación autoriza build, IAM, Terraform apply, deploy o E2E cloud.
 
 ## Hardening presupuestario y preflight de deploy — 2026-08-10
@@ -43,7 +64,7 @@ esta remediación autoriza build, IAM, Terraform apply, deploy o E2E cloud.
 | Preflight fixture manual | actividad con rúbrica USD 0.253571; submission 1 pregunta + 3 reservas USD 0.490573; ambas dentro de USD 0.55 por job |
 | Envelope E2E con edición P05 | ceiling agregado USD 0.855444; cap futuro propuesto USD 0.90; máximo defensivo 32 Responses requests; retries 0 |
 | Qualification v1.1.4 tras hardening | PASS 4/4 fake; 0 red/billable; ceiling y gate sin drift: USD 0.092706, máximo 5, P11 máximo 1 |
-| Suite backend vigente | 543 passed, 16 skips PostgreSQL explícitos, 1 warning P3 conocido; 80% global sobre 10,524 statements |
+| Suite backend vigente | 548 passed, 16 skips PostgreSQL explícitos, 1 warning P3 conocido; 80% global sobre 10,524 statements |
 | Deploy/Terraform/secrets | 11/11 deploy tests; `terraform validate/fmt -check` PASS; 292 archivos versionables sin secreto |
 | Cloud read-only | Service/Job mismo digest histórico, mock/P10 false; Job task/paralelismo 1/1 y `maxRetries=0`; health/readiness 200; privado anónimo 401 |
 | Plan real provisional | 2 updates in-place, 1 IAM worker-secret create, 36 no-op; `refresh=false`; no apply ni mutación |
@@ -83,7 +104,7 @@ billable v1.1.4 y no autorizan build, IAM, Terraform apply, deploy o E2E cloud.
 | Gate v1.1.4 | PASS offline: el opt-in histórico v1.1.3 no abre la continuación nueva; falta approval exacta y no hubo request adicional |
 | Regresión focal en cierre P05/P11 | 100/100 PASS histórico: gateway y harness |
 | Regresión focal vigente | 111/111 gateway+harness+runtime guards PASS, incluida reserva full-cache-write, P11 80K, retry 0 y envelope E2E versionado |
-| `make test-cov` vigente | 543 passed, 16 skips PostgreSQL explícitos, 1 warning deprecado conocido; 80% global sobre 10,524 statements |
+| `make test-cov` vigente | 548 passed, 16 skips PostgreSQL explícitos, 1 warning deprecado conocido; 80% global sobre 10,524 statements |
 | Contratos | PASS: 53 roots, 140 definiciones, 274 referencias y 8 fixtures; schema canónico sin edición manual |
 | Secret scan | PASS: 292 archivos versionables, cero secretos de alta confianza |
 | Artefactos de deploy | 11/11 PASS; ningún artefacto ejecutable de deploy fue modificado |

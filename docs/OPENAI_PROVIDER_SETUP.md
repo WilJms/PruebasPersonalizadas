@@ -1,33 +1,32 @@
 # Setup gobernado del proveedor OpenAI
 
-## Estado vigente — P09 1.1.5 preparado; remediación y recanary pendientes
+## Estado vigente — P09 1.1.5 consumido; P11 directo requiere approval
 
-La continuación v1.1.4 ya no está pendiente: se ejecutó una vez y quedó
-consumida. P06 y P08 pasaron; P09 falló contexto después de pasar schema y
-Pydantic; el stop al primer fallo impidió P11 directo. Fueron tres Responses
-requests, USD 0.00864505 calculados, retries 0 y P10/P11/Sol/fallback cero.
-Repetir el opt-in v1.1.4 bloquea antes de material/clave/transporte con:
-
-```text
-OPENAI_QUALIFICATION_V114_CONTINUATION_ALREADY_CONSUMED
-```
-
-La remediación P09 v1.1.5 no cambia contratos ni schema. El dry-run está
-hash-bound, devuelve READY, usa una request fake, cero red/billable y fija
-ceiling USD 0.01592350 bajo cap propuesto USD 0.02. La interfaz del gate futuro
-es:
+La continuación v1.1.4 y la única recanary P09 v1.1.5 ya quedaron consumidas.
+P09 pasó `READY` con schema provider, Pydantic, contexto y outcome PASS en una
+Responses request, USD 0.00443985 calculados y retries/P10/P11/Sol/fallback
+cero. Repetir el opt-in P09 bloquea antes del adapter con:
 
 ```text
-CVA_OPENAI_P09_V115_REMEDIATION_DECISION=OPENAI_P09_V115_REMEDIATION_ACCEPTED
-CVA_OPENAI_P09_V115_RECANARY_APPROVAL=OPENAI_P09_V115_RECANARY_APPROVED
+OPENAI_P09_V115_RECANARY_ALREADY_CONSUMED
 ```
 
-Estos valores documentan la interfaz y no constituyen aceptación ni
-autorización. La autorización exacta debe fijar además el SHA candidato, una
-sola Responses request, stop al primer fallo, retries 0 y
-P10/P11/Sol/fallback 0. Una vez consumida, el entrypoint bloqueará
-`OPENAI_P09_V115_RECANARY_ALREADY_CONSUMED`. P11 directo requiere un gate
-posterior independiente.
+La evidencia real vigente cubre 17/18 casos. El único pendiente es P11 directo
+v1.1.4, ya aceptado normativamente dentro de la remediación P05/P11. Su dry-run
+hash-bound devuelve `REPAIRED`, valida wrapper y objeto objetivo, conserva el
+target y prueba un cambio estructural mínimo. Usa una request fake, cero
+red/billable y fija ceiling USD 0.01172550 bajo cap propuesto USD 0.02. La
+interfaz del nuevo gate es:
+
+```text
+CVA_OPENAI_P11_V114_DIRECT_APPROVAL=OPENAI_P11_V114_DIRECT_APPROVED
+```
+
+Este valor documenta la interfaz y no constituye autorización. La autorización
+exacta debe fijar además el SHA candidato, una sola Responses request, stop al
+primer fallo, retries 0, P10/Sol/fallback 0 y P11 exactamente uno. Una vez
+consumida, el entrypoint bloqueará
+`OPENAI_P11_V114_DIRECT_ALREADY_CONSUMED`.
 
 Cloud conserva `CVA_MODEL_MODE=mock`, `CVA_P10_ENABLED=false`; ninguna clave
 está montada en web/worker y no se autorizó deploy, Terraform apply, IAM, datos

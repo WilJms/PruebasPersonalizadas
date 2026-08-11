@@ -133,13 +133,27 @@ P09_V115_RECANARY_APPROVAL_ENV = "CVA_OPENAI_P09_V115_RECANARY_APPROVAL"
 P09_V115_RECANARY_APPROVAL_VALUE = "OPENAI_P09_V115_RECANARY_APPROVED"
 P09_V115_RECANARY_CASE_ID = "oa-p09-happy-docx"
 P09_V115_RECANARY_HUMAN_BUDGET_USD = 0.02
-# The v1.1.5 boundary is prepared offline but has not reached transport.
-P09_V115_RECANARY_CONSUMED = False
+# The one P09 1.1.5 recanary authorized for 2ae0a0a passed on 2026-08-10.
+# No historical decision or approval string may reopen this transport.
+P09_V115_RECANARY_CONSUMED = True
 P09_V115_PROMPT_HASH = (
     "sha256:8d29a13a5ee56b39f6aa5545b602e23ca28b6d60d051852d75ecbc0c664179ff"
 )
 P09_V115_INPUT_BUNDLE_HASH = (
     "sha256:d85b124990e457e096fbe4851633ee057b662efcbda3ac84837e8c8a78deacc7"
+)
+P11_V114_DIRECT_APPROVAL_ENV = "CVA_OPENAI_P11_V114_DIRECT_APPROVAL"
+P11_V114_DIRECT_APPROVAL_VALUE = "OPENAI_P11_V114_DIRECT_APPROVED"
+P11_V114_DIRECT_CASE_ID = "oa-p11-happy"
+P11_V114_DIRECT_HUMAN_BUDGET_USD = 0.02
+# P11 1.1.4 was accepted normatively with P05, but its isolated direct
+# observation still requires a fresh spend gate bound to the hashes below.
+P11_V114_DIRECT_CONSUMED = False
+P11_V114_PROMPT_HASH = (
+    "sha256:43f2ca4d6a0c02f015125a96f3a12bc5dd8d6c0eab0583f9c2f11b0f1c1f1f04"
+)
+P11_V114_INPUT_BUNDLE_HASH = (
+    "sha256:f8c2a6058214a4958b83e8850780e2827e1269720251f25f1e21d062371fb185"
 )
 CANARY_CASE_PROMPTS = MappingProxyType(
     {
@@ -148,6 +162,7 @@ CANARY_CASE_PROMPTS = MappingProxyType(
         P02_V113_RECANARY_CASE_ID: "P02_RUBRIC_NORMALIZE_V1",
         P05_V114_RECANARY_CASE_ID: "P05_BLUEPRINT_REVIEW_V1",
         P09_V115_RECANARY_CASE_ID: "P09_GUIDE_BUILD_V1",
+        P11_V114_DIRECT_CASE_ID: "P11_SCHEMA_REPAIR_V1",
         "oa-p07-open-short-txt": "P07_QUESTION_BUILD_V1",
     }
 )
@@ -416,6 +431,26 @@ QUALIFICATION_REUSED_REAL_EVIDENCE = MappingProxyType(
             ),
         ),
     }
+)
+# The isolated P11 gate is allowed to count the successful P09 1.1.5
+# recanary only while its complete executable boundary remains unchanged.
+P11_DIRECT_PRIOR_REAL_EVIDENCE = MappingProxyType(
+    {
+        **QUALIFICATION_REUSED_REAL_EVIDENCE,
+        P09_V115_RECANARY_CASE_ID: _ReusedRealEvidenceBoundary(
+            prompt_id="P09_GUIDE_BUILD_V1",
+            prompt_version="1.1.5",
+            prompt_hash=P09_V115_PROMPT_HASH,
+            input_bundle_hash=P09_V115_INPUT_BUNDLE_HASH,
+            expected="VALID",
+            behavior="happy",
+            defect_severity_if_failed="P1",
+            source_checkpoint="OPENAI_P09_V115_RECANARY_PASS",
+        ),
+    }
+)
+P11_DIRECT_PRIOR_REAL_EVIDENCE_CASE_IDS = tuple(
+    P11_DIRECT_PRIOR_REAL_EVIDENCE
 )
 QUALIFICATION_REUSED_REAL_CASE_IDS = tuple(
     QUALIFICATION_REUSED_REAL_EVIDENCE
@@ -919,11 +954,15 @@ def _selected_canary_case(cases: list[dict[str, Any]]) -> dict[str, Any]:
 
 def _validated_reused_real_evidence(
     by_id: Mapping[str, dict[str, Any]],
+    *,
+    boundaries: Mapping[
+        str, _ReusedRealEvidenceBoundary
+    ] = QUALIFICATION_REUSED_REAL_EVIDENCE,
 ) -> list[dict[str, Any]]:
     """Fail closed if any previously observed real boundary has drifted."""
 
     rows: list[dict[str, Any]] = []
-    for case_id, boundary in QUALIFICATION_REUSED_REAL_EVIDENCE.items():
+    for case_id, boundary in boundaries.items():
         case = by_id[case_id]
         request = _request_for_case(case)
         spec = prompt_spec(str(case["prompt_id"]))
@@ -1337,7 +1376,7 @@ def _assert_canary_semantics(
     case: dict[str, Any], request: Any, result: Any
 ) -> None:
     _assert_case_outcome(case, request, result)
-    status = getattr(result.output.status, "value", result.output.status)
+    status = _canary_output_status(result.output)
     prompt_id = str(case["prompt_id"])
     if prompt_id == "P01_ACTIVITY_SPEC_V1" and status not in {
         "READY",
@@ -1358,11 +1397,25 @@ def _assert_canary_semantics(
         raise AssertionError("P05 canary returned an outcome outside its manifest gate")
     if prompt_id == "P09_GUIDE_BUILD_V1" and status != "READY":
         raise AssertionError("P09 remediation canary must return a complete READY guide")
+    if prompt_id == "P11_SCHEMA_REPAIR_V1" and status not in {
+        "REPAIRED",
+        "UNREPAIRABLE",
+    }:
+        raise AssertionError("P11 direct canary returned an unsupported repair outcome")
     if prompt_id == "P07_QUESTION_BUILD_V1" and status not in {
         "READY",
         "REPLACEMENT_REQUIRED",
     }:
         raise AssertionError("P07 canary returned an outcome outside its manifest gate")
+
+
+def _canary_output_status(output: Any) -> str | None:
+    """Normalize workflow and direct P11 statuses without inspecting content."""
+
+    status = getattr(output, "status", None)
+    if status is None:
+        status = getattr(output, "repair_status", None)
+    return getattr(status, "value", status)
 
 
 def _canary_semantic_proof(
@@ -1379,7 +1432,7 @@ def _canary_semantic_proof(
     sources_allowlisted = source_ids.issubset(
         set(trusted.allowed_course_source_ids)
     )
-    status = getattr(output.status, "value", output.status)
+    status = _canary_output_status(output)
     if material["prompt_id"] == "P01_ACTIVITY_SPEC_V1":
         allowed_statuses = {"READY", "NEEDS_REVIEW"}
     elif material["prompt_id"] == "P02_RUBRIC_NORMALIZE_V1":
@@ -1388,6 +1441,8 @@ def _canary_semantic_proof(
         allowed_statuses = {"READY", "NEEDS_REVIEW", "TECHNICAL_FAILURE"}
     elif material["prompt_id"] == "P09_GUIDE_BUILD_V1":
         allowed_statuses = {"READY"}
+    elif material["prompt_id"] == "P11_SCHEMA_REPAIR_V1":
+        allowed_statuses = {"REPAIRED", "UNREPAIRABLE"}
     else:
         allowed_statuses = {"READY", "REPLACEMENT_REQUIRED"}
     proof: dict[str, Any] = {
@@ -1506,6 +1561,49 @@ def _canary_semantic_proof(
                         for item in output.items
                         for element in item.guide.observable_elements
                     )
+                ),
+            }
+        )
+    elif material["prompt_id"] == "P11_SCHEMA_REPAIR_V1":
+        repaired_output_valid = False
+        minimal_structural_change = False
+        if status == "REPAIRED" and output.repaired_output is not None:
+            target_model = model_by_name(request.target_schema_name)
+            validated_repair = target_model.model_validate(
+                output.repaired_output
+            ).model_dump(mode="json")
+            invalid_output = request.invalid_output
+            if isinstance(invalid_output, dict):
+                allowed_fields = set(target_model.model_fields)
+                structurally_filtered = {
+                    key: value
+                    for key, value in invalid_output.items()
+                    if key in allowed_fields
+                }
+                expected_repair = target_model.model_validate(
+                    structurally_filtered
+                ).model_dump(mode="json")
+                minimal_structural_change = validated_repair == expected_repair
+            repaired_output_valid = True
+        safe_unrepairable = (
+            status == "UNREPAIRABLE"
+            and output.repaired_output is None
+            and bool(output.diagnostics)
+        )
+        proof.update(
+            {
+                "target_schema_name_immutable": (
+                    output.target_schema_name == request.target_schema_name
+                ),
+                "repair_outcome_governed": (
+                    (repaired_output_valid and minimal_structural_change)
+                    or safe_unrepairable
+                ),
+                "repaired_output_target_valid_or_absent": (
+                    repaired_output_valid or safe_unrepairable
+                ),
+                "minimal_structural_change_or_safe_abstention": (
+                    minimal_structural_change or safe_unrepairable
                 ),
             }
         )
@@ -2062,6 +2160,10 @@ def _canary_budget_metadata(material: dict[str, Any]) -> dict[str, Any]:
         metadata["proposed_human_budget_usd"] = (
             P09_V115_RECANARY_HUMAN_BUDGET_USD
         )
+    elif material["case"]["case_id"] == P11_V114_DIRECT_CASE_ID:
+        metadata["proposed_human_budget_usd"] = (
+            P11_V114_DIRECT_HUMAN_BUDGET_USD
+        )
     return metadata
 
 
@@ -2089,6 +2191,11 @@ async def _run_canary_dry_run(cases: list[dict[str, Any]]) -> dict[str, Any]:
         or material["input_bundle_hash"] != P09_V115_INPUT_BUNDLE_HASH
     ):
         raise OpenAIEvalBlocked("OPENAI_P09_V115_RECANARY_BOUNDARY_DRIFT")
+    if case["case_id"] == P11_V114_DIRECT_CASE_ID and (
+        material["prompt_hash"] != P11_V114_PROMPT_HASH
+        or material["input_bundle_hash"] != P11_V114_INPUT_BUNDLE_HASH
+    ):
+        raise OpenAIEvalBlocked("OPENAI_P11_V114_DIRECT_BOUNDARY_DRIFT")
     fake_responses = _SyntheticCanaryResponses(
         prompt_id=material["prompt_id"],
         request=material["request"],
@@ -2112,7 +2219,7 @@ async def _run_canary_dry_run(cases: list[dict[str, Any]]) -> dict[str, Any]:
     budget = _canary_budget_metadata(material)
     if payload["request_effective_bytes"] != budget["request_effective_bytes"]:
         raise AssertionError("Canary budget bytes do not match the captured payload")
-    status = getattr(result.output.status, "value", result.output.status)
+    status = _canary_output_status(result.output)
     row = {
         "case_id": case["case_id"],
         "status": "PASS",
@@ -2147,7 +2254,7 @@ async def _run_canary_dry_run(cases: list[dict[str, Any]]) -> dict[str, Any]:
         "prompt_retries": 0,
         "sdk_retries": 0,
         "p10_calls": 0,
-        "p11_calls": 0,
+        "p11_calls": adapter.prompt_ids.count("P11_SCHEMA_REPAIR_V1"),
         "fallback_calls": 0,
         "sol_calls": 0,
         "secret_read": False,
@@ -2834,6 +2941,7 @@ async def _run_canary_real(
     is_p02_v113_recanary = case["case_id"] == P02_V113_RECANARY_CASE_ID
     is_p05_v114_recanary = case["case_id"] == P05_V114_RECANARY_CASE_ID
     is_p09_v115_recanary = case["case_id"] == P09_V115_RECANARY_CASE_ID
+    is_p11_v114_direct = case["case_id"] == P11_V114_DIRECT_CASE_ID
     if (
         is_injection_recanary
         and max_total_cost_usd > P01_INJECTION_RECANARY_HUMAN_BUDGET_USD
@@ -2854,6 +2962,11 @@ async def _run_canary_real(
         and max_total_cost_usd > P09_V115_RECANARY_HUMAN_BUDGET_USD
     ):
         raise OpenAIEvalBlocked("OPENAI_P09_V115_RECANARY_HUMAN_CAP_EXCEEDED")
+    if (
+        is_p11_v114_direct
+        and max_total_cost_usd > P11_V114_DIRECT_HUMAN_BUDGET_USD
+    ):
+        raise OpenAIEvalBlocked("OPENAI_P11_V114_DIRECT_HUMAN_CAP_EXCEEDED")
     material = _canary_material(
         case,
         route_cap_usd=max_total_cost_usd,
@@ -2886,6 +2999,13 @@ async def _run_canary_real(
         raise OpenAIEvalBlocked("OPENAI_P09_V115_RECANARY_BOUNDARY_DRIFT")
     if is_p09_v115_recanary and P09_V115_RECANARY_CONSUMED:
         raise OpenAIEvalBlocked("OPENAI_P09_V115_RECANARY_ALREADY_CONSUMED")
+    if is_p11_v114_direct and (
+        material["prompt_hash"] != P11_V114_PROMPT_HASH
+        or material["input_bundle_hash"] != P11_V114_INPUT_BUNDLE_HASH
+    ):
+        raise OpenAIEvalBlocked("OPENAI_P11_V114_DIRECT_BOUNDARY_DRIFT")
+    if is_p11_v114_direct and P11_V114_DIRECT_CONSUMED:
+        raise OpenAIEvalBlocked("OPENAI_P11_V114_DIRECT_ALREADY_CONSUMED")
     if is_p02_v113_recanary and (
         os.environ.get(P02_V113_REMEDIATION_DECISION_ENV)
         != P02_V113_REMEDIATION_DECISION_VALUE
@@ -2925,6 +3045,10 @@ async def _run_canary_real(
         approval_env = P09_V115_RECANARY_APPROVAL_ENV
         approval_value = P09_V115_RECANARY_APPROVAL_VALUE
         approval_required_code = "OPENAI_P09_V115_RECANARY_APPROVAL_REQUIRED"
+    elif is_p11_v114_direct:
+        approval_env = P11_V114_DIRECT_APPROVAL_ENV
+        approval_value = P11_V114_DIRECT_APPROVAL_VALUE
+        approval_required_code = "OPENAI_P11_V114_DIRECT_APPROVAL_REQUIRED"
     else:
         approval_env = CANARY_APPROVAL_ENV
         approval_value = CANARY_APPROVAL_VALUE
@@ -2978,7 +3102,7 @@ async def _run_canary_real(
     output_status = None
     validation_order: list[str] = []
     if result is not None:
-        output_status = getattr(result.output.status, "value", result.output.status)
+        output_status = _canary_output_status(result.output)
         validation_order = [phase.value for phase in result.validation_order]
     elif primary_failure is not None:
         validation_order = ["request", "envelope", primary_failure["phase"]]
@@ -3105,6 +3229,7 @@ def main() -> int:
     parser.add_argument("--max-total-cost-usd", type=float, default=0.0)
     args = parser.parse_args()
     cases = _load_cases(args.manifest)
+    manifest_cases = cases
     if args.mode in {"qualification-dry-run", "qualification-real"} and args.case_id:
         parser.error("qualification modes use the fixed versioned case sequence")
     if args.case_id:
@@ -3114,6 +3239,18 @@ def main() -> int:
         if unknown:
             parser.error(f"unknown synthetic case id(s): {', '.join(unknown)}")
         cases = [case for case in cases if case["case_id"] in selected_ids]
+    if (
+        len(cases) == 1
+        and cases[0].get("case_id") == P11_V114_DIRECT_CASE_ID
+        and args.mode in {"canary-dry-run", "canary-real"}
+    ):
+        _validated_reused_real_evidence(
+            {
+                str(case.get("case_id", "")): case
+                for case in manifest_cases
+            },
+            boundaries=P11_DIRECT_PRIOR_REAL_EVIDENCE,
+        )
     if args.mode in {"real", "canary-real", "qualification-real"} and (
         not args.allow_billable or args.max_total_cost_usd <= 0
     ):
@@ -3127,6 +3264,8 @@ def main() -> int:
                 code = "OPENAI_P05_V114_RECANARY_APPROVAL_REQUIRED"
             elif case_id == P09_V115_RECANARY_CASE_ID:
                 code = "OPENAI_P09_V115_RECANARY_APPROVAL_REQUIRED"
+            elif case_id == P11_V114_DIRECT_CASE_ID:
+                code = "OPENAI_P11_V114_DIRECT_APPROVAL_REQUIRED"
             else:
                 code = "OPENAI_LUNA_CANARY_APPROVAL_REQUIRED"
         elif args.mode == "qualification-real":
