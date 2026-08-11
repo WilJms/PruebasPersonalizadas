@@ -242,12 +242,20 @@ P06_V112_DECISION_LINEAGE_RECANARY_APPROVAL_VALUE = (
 )
 P06_V112_DECISION_LINEAGE_RECANARY_CASE_ID = "oa-p06-happy-docx"
 P06_V112_DECISION_LINEAGE_RECANARY_HUMAN_BUDGET_USD = 0.03
-P06_V112_DECISION_LINEAGE_RECANARY_CONSUMED = False
+# The one decision-lineage P06 observation passed on 2026-08-11. No approval
+# string may reopen this transport.
+P06_V112_DECISION_LINEAGE_RECANARY_CONSUMED = True
 P06_V112_PROMPT_HASH = (
     "sha256:3fcde330e122adbf33a21021e89c5bf02eb746203c678c258478e6377519c91d"
 )
 P06_V112_DECISION_LINEAGE_INPUT_BUNDLE_HASH = (
     "sha256:3cabdfaa9870b06aad390789037838966cc2cced3ecdf8f7b84336f6f0c492bc"
+)
+P06_V112_DECISION_LINEAGE_REAL_OUTPUT_HASH = (
+    "sha256:876c6be50f02272d7d7088cb183eb36bf178dd5b365b236333b4b8440666ec99"
+)
+P06_V112_DECISION_LINEAGE_REPORT_SHA256 = (
+    "5daf7774e0ffee1bbc6b9b834b09f2022a496cdf14daabed303467cd7087c5b3"
 )
 P09_V115_REMEDIATION_DECISION_ENV = (
     "CVA_OPENAI_P09_V115_REMEDIATION_DECISION"
@@ -597,11 +605,10 @@ HISTORICAL_COMPLETE_REAL_EVIDENCE = MappingProxyType(
 HISTORICAL_COMPLETE_REAL_EVIDENCE_CASE_IDS = tuple(
     HISTORICAL_COMPLETE_REAL_EVIDENCE
 )
-# Seventeen boundaries are current. The timeout recovery passed the exact
+# All eighteen boundaries are current. The timeout recovery passed the exact
 # P04 1.1.7 -> P05 1.1.5 chain; P05 is bound to the observed provider-derived
 # input hash because store=false intentionally retained no model content. P06
-# also changed because its blueprint fixture now carries decision lineage; it
-# requires its own later evidence and is not smuggled into the coupled gate.
+# subsequently passed its separate decision-lineage gate.
 CURRENT_REAL_EVIDENCE = MappingProxyType(
     {
         **{
@@ -639,6 +646,22 @@ CURRENT_REAL_EVIDENCE = MappingProxyType(
             source_checkpoint=(
                 "OPENAI_BLUEPRINT_V117_V115_TIMEOUT_RECOVERY_PASS"
             ),
+        ),
+        P06_V112_DECISION_LINEAGE_RECANARY_CASE_ID: (
+            _ReusedRealEvidenceBoundary(
+                prompt_id="P06_EVIDENCE_MAP_V1",
+                prompt_version="1.1.2",
+                prompt_hash=P06_V112_PROMPT_HASH,
+                input_bundle_hash=(
+                    P06_V112_DECISION_LINEAGE_INPUT_BUNDLE_HASH
+                ),
+                expected="VALID",
+                behavior="happy",
+                defect_severity_if_failed="P1",
+                source_checkpoint=(
+                    "OPENAI_P06_V112_DECISION_LINEAGE_RECANARY_PASS"
+                ),
+            )
         ),
     }
 )

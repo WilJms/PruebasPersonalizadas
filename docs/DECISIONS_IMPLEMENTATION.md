@@ -976,3 +976,25 @@
 - **Relación:** D-065, D-066, ADR-005/ADR-030/ADR-034,
   `OPENAI_REAL_MODEL_VALIDATION.md`, `REAL_MODEL_EVALS.md` y
   `OPENAI_COST_BUDGETS.md`.
+
+## D-068 - P06 decision-lineage completa la evidencia real vigente
+
+- **Precondición:** el entrypoint real comprobó antes de approval, clave y
+  transporte que la recuperación P04→P05 estaba consumida como PASS y que la
+  frontera P05 1.1.5 seguía presente e idéntica en la evidencia vigente.
+- **Resultado:** P06 1.1.2 terminó PASS `READY`; schema del proveedor,
+  Pydantic, contexto, outcome y todos los controles de decision lineage
+  pasaron. Consumió exactamente 1/1 Responses, 8,270 ms, USD 0.00148525 real,
+  USD 0.01992085 de charge y USD 0.023361 de ceiling bajo cap USD 0.03, con
+  retries/P10/P11/Sol/fallback cero.
+- **Evidencia:** prompt/input quedaron ligados a `sha256:3fcde330…` y
+  `sha256:3cabdfaa…`; el output content-free a `sha256:876c6be5…`; el reporte
+  tiene SHA-256
+  `5daf7774e0ffee1bbc6b9b834b09f2022a496cdf14daabed303467cd7087c5b3`.
+  El gate queda permanentemente consumido.
+- **Alcance:** `CURRENT_REAL_EVIDENCE` alcanza 18/18 sobre las fronteras
+  actuales. Esto habilita el checkpoint de build/deploy, pero no sustituye la
+  verificación Cloud Build/digest/Terraform ni el E2E fresco de producto.
+- **Relación:** D-065, D-066, D-067, ADR-005/ADR-030/ADR-034,
+  `OPENAI_REAL_MODEL_VALIDATION.md`, `REAL_MODEL_EVALS.md` y
+  `OPENAI_COST_BUDGETS.md`.

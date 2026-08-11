@@ -1,10 +1,10 @@
 # Validación del proveedor OpenAI real
 
 Fecha de corte: 2026-08-11. Estado: la recuperación acoplada P04 1.1.7→P05
-1.1.5 pasó completamente y quedó consumida. La evidencia vigente es **17/18**:
-sólo P06 decision-lineage permanece pendiente.
+1.1.5 y la canary P06 decision-lineage pasaron completamente y quedaron
+consumidas. La evidencia vigente es **18/18**.
 
-## Resultado vigente: recuperación P04→P05 PASS; P06 pendiente
+## Resultado vigente: P04→P05 y P06 PASS; deploy pendiente
 
 La actividad `act_aecd258c017c5b37c603` usó dos jobs y dos executions. P01,
 P02 y P03 terminaron `SCHEMA_VALID`; después de persistir tres decisiones
@@ -38,6 +38,8 @@ tiempo/calidad configurados.
 | Frontera consumida | 2/2 Responses; USD 0.05106550 charge conservador/cap USD 0.06; retries/P10/P11/Sol/fallback 0; stop al primer fallo |
 | Recuperación real | PASS/PASS `READY`; 2/2 Responses; P04 48,578 ms/USD 0.00840355 y P05 47,023 ms/USD 0.00805485; actual USD 0.01645840, charge USD 0.04086520, ceiling USD 0.05147825/cap USD 0.06 |
 | Evidencia recuperada | P04 output validado `sha256:22dd21e3…`; P05 input dinámico `sha256:e8bd0e92…`; reporte SHA-256 `3452b12bf89ea0cb59c29837b054d60db0ef46ceeb950802c680e20001a94df8` |
+| P06 real | PASS `READY`; provider/Pydantic/contexto/outcome/lineage PASS; 1/1 Responses; 2,884 input, 2,881 cache-write, 637 output, 224 reasoning; 8,270 ms; USD 0.00148525 actual, USD 0.01992085 charge, USD 0.023361 ceiling/cap USD 0.03 |
+| Evidencia P06 | `sha256:3fcde330…`/`sha256:3cabdfaa…`; output `sha256:876c6be5…`; reporte SHA-256 `5daf7774e0ffee1bbc6b9b834b09f2022a496cdf14daabed303467cd7087c5b3`; retries/P10/P11/Sol/fallback 0 |
 
 El timeout fue el límite del adapter, no un fallo de contrato. El perfil real
 sube de 120/125 s a 240/245 s (SDK/gateway), dentro del máximo configurado de
@@ -47,7 +49,7 @@ repite la cadena completa porque `store=false` no permite recuperar el payload
 P04 para una P05 aislada, y conserva máximo dos Responses/cap USD 0.06. Esa
 recuperación terminó PASS sin repair ni rutas laterales y su approval quedó
 consumido. El runtime desplegado todavía contiene la versión anterior; faltan
-P06, build/deploy y E2E fresco antes de `OPENAI_REAL_MANUAL_EVAL_READY`.
+build/deploy y E2E fresco antes de `OPENAI_REAL_MANUAL_EVAL_READY`.
 
 ## Historial: P04 v1.1.6 real PASS tras stop de producto
 

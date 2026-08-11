@@ -11,7 +11,7 @@ deshabilitado en todos los casos. Los
 resultados históricos E1 se conservan al final y no se presentan como evidencia
 del candidato E2.
 
-## Recuperación P04→P05 PASS; P06 pendiente — 2026-08-11
+## P04→P05 y P06 PASS; deploy pendiente — 2026-08-11
 
 | Prueba o gate | Resultado observado |
 |---|---|
@@ -32,11 +32,13 @@ del candidato E2.
 | Recuperación real | PASS/PASS `READY`; validación provider/Pydantic/contexto/outcome y cadena semántica PASS; 2/2 Responses; retries/P10/P11/Sol/fallback 0 |
 | Uso/costo recovery | P04 4,570 input/4,567 cache-write/6,051 output/3,778 reasoning, 48,578 ms, USD 0.00840355; P05 5,292/5,289/5,610/3,610, 47,023 ms, USD 0.00805485; agregado USD 0.01645840; charge USD 0.04086520; ceiling USD 0.05147825/cap USD 0.06 |
 | Evidencia recovery | P04 output `sha256:22dd21e3…`; P05 input `sha256:e8bd0e92…`; reporte SHA-256 `3452b12bf89ea0cb59c29837b054d60db0ef46ceeb950802c680e20001a94df8`; gate consumido |
-| Evidencia real vigente | 17/18; sólo P06 pendiente; mapas históricos 18/18 no se presentan como actuales |
-| Regresión local remediada | backend 553 passed/16 skips PostgreSQL explícitos/1 warning conocido/80% cobertura; 159/159 pruebas focales timeout/gateway/harness; frontend typecheck + 34/34 + build; deploy 11/11; browser E1 1/1 y E2 2/2; Docker runtime/audit; Terraform fmt/validate; contratos, fixtures, OpenAPI, secretos y diff PASS |
+| P06 real | PASS `READY`; provider/Pydantic/contexto/outcome/lineage PASS; 1/1 Responses; 2,884 input/2,881 cache-write/637 output/224 reasoning; 8,270 ms; USD 0.00148525 actual, USD 0.01992085 charge, USD 0.023361 ceiling/cap USD 0.03; retries/P10/P11/Sol/fallback 0 |
+| Evidencia P06 | prompt/input `sha256:3fcde330…`/`sha256:3cabdfaa…`; output `sha256:876c6be5…`; reporte SHA-256 `5daf7774e0ffee1bbc6b9b834b09f2022a496cdf14daabed303467cd7087c5b3`; gate consumido |
+| Evidencia real vigente | 18/18 hash-bound sobre fronteras actuales |
+| Regresión local remediada | backend 554 passed/16 skips PostgreSQL explícitos/1 warning conocido/80% cobertura; 160/160 pruebas focales timeout/gateway/harness; frontend typecheck + 34/34 + build; deploy 11/11; browser E1 1/1 y E2 2/2; Docker runtime/audit; Terraform fmt/validate; contratos, fixtures, OpenAPI, secretos y diff PASS |
 
-P06 real, el build/deploy del SHA remediado y un E2E fresco completo
-permanecen pendientes; no se declara
+El build/deploy del SHA remediado y un E2E fresco completo permanecen
+pendientes; no se declara
 `OPENAI_REAL_MANUAL_EVAL_READY`.
 
 ## Historial — continuación P03, fallo P04 y recuperación P04 v1.1.6 — 2026-08-11

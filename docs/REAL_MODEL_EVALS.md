@@ -10,7 +10,7 @@ con IDs únicos y clasificación obligatoria
 conserva `1.1.3`; P05 usa `1.1.5`; P11 usa `1.1.4`; P09 usa `1.1.5`; P04
 usa `1.1.7`.
 
-## Resultado vigente — recuperación P04→P05 PASS; P06 pendiente
+## Resultado vigente — P04→P05 y P06 PASS; deploy pendiente
 
 El E2E desplegado sobre `dfd102d…` ejecutó P01-P05 en dos jobs. P03 requirió
 tres decisiones recomendadas; P04 persistió un blueprint `READY`; P05 devolvió
@@ -33,12 +33,15 @@ P05 por separado: usa el output validado de P04 como input exacto de P05.
 | Timeout remediado | SDK 240 s, gateway 245 s, retries 0; recuperación con opt-ins/consumo distintos y la misma frontera máxima 2/USD 0.06 |
 | Recuperación consumida | P04/P05 PASS `READY`; schema/Pydantic/contexto/outcome/controles acoplados PASS; 2/2 Responses; actual USD 0.01645840, charge USD 0.04086520, ceiling USD 0.05147825/cap USD 0.06 |
 | Hashes de recuperación | P04 output validado `sha256:22dd21e3…`; P05 input dinámico `sha256:e8bd0e92…`; reporte `3452b12bf89ea0cb59c29837b054d60db0ef46ceeb950802c680e20001a94df8` |
+| P06 consumido | PASS `READY`; provider/Pydantic/contexto/outcome/lineage PASS; 1/1 Responses; USD 0.00148525 actual, USD 0.01992085 charge, ceiling USD 0.023361/cap USD 0.03; rutas laterales/retries 0 |
+| Hashes P06 | prompt/input `sha256:3fcde330…`/`sha256:3cabdfaa…`; output `sha256:876c6be5…`; reporte `5daf7774e0ffee1bbc6b9b834b09f2022a496cdf14daabed303467cd7087c5b3` |
 
-P04 1.1.7 y P05 1.1.5 pasan a `CURRENT_REAL_EVIDENCE`, que contiene 17/18
+P04 1.1.7, P05 1.1.5 y P06 decision-lineage pasan a
+`CURRENT_REAL_EVIDENCE`, que contiene 18/18
 casos. P05 se liga al hash del envelope dinámico observado; no se retiene
 contenido del output P04 porque `store=false`. Tanto la recanary original como
-su recuperación están consumidas. P06 continúa invalidado por el nuevo lineage
-y exige su propio gate de una request/cap USD 0.03.
+su recuperación están consumidas; P06 también quedó consumido después de su
+única observación separada.
 
 ```bash
 make openai-blueprint-v117-v115-recanary-dry-run

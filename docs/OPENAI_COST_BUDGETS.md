@@ -67,8 +67,12 @@ cap USD 0.06; también está consumida.
 | Gate | Requests máximas | Ceiling full-cache-write | Cap |
 |---|---:|---:|---:|
 | Recuperación P04 1.1.7 → P05 1.1.5, consumida PASS | 2 | USD 0.05147825 observado | USD 0.06 |
-| P06 1.1.2 con decision lineage, pendiente | 1 | USD 0.02336100 | USD 0.03 |
+| P06 1.1.2 con decision lineage, consumida PASS | 1 | USD 0.02336100 | USD 0.03 |
 | Agregado máximo, sin transferencia entre gates | **3** | **USD 0.07483925** | **USD 0.09** |
+
+P06 usó USD 0.00148525 real y USD 0.01992085 de charge conservador. El
+agregado de la recuperación más P06 fue USD 0.01794365 real y USD 0.06078605
+de charge, dentro de sus caps separados; ambos gates están cerrados.
 
 Los dry-runs pasan con 0 red/0 billable, retries 0 y P10/P11/Sol/fallback 0.
 Los caps no son bolsas intercambiables: el ahorro o stop del gate consumido no

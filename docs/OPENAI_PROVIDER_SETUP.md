@@ -1,6 +1,6 @@
 # Setup gobernado del proveedor OpenAI
 
-## Estado vigente — recuperación P04→P05 PASS; P06 pendiente
+## Estado vigente — evidencia 18/18; deploy pendiente
 
 Web permanece mock/sin clave y worker real sobre
 `sha256:9048f9da77fda2b5ab8d6a974d9b4b8b5a2b6a141062bcb36751b8516691e3ab`,
@@ -22,7 +22,7 @@ CVA_OPENAI_BLUEPRINT_V117_V115_TIMEOUT_REMEDIATION_DECISION
 CVA_OPENAI_BLUEPRINT_V117_V115_TIMEOUT_RECOVERY_APPROVAL
 ```
 
-El único opt-in focal pendiente es:
+El opt-in P06 también quedó cerrado después de su único PASS:
 
 ```text
 CVA_OPENAI_P06_V112_DECISION_LINEAGE_RECANARY_APPROVAL
@@ -36,7 +36,8 @@ approval está cerrado permanentemente. El perfil remediado usa 240 s en SDK y
 máximo dos Responses y el mismo cap USD 0.06. La recuperación terminó
 PASS/PASS `READY` con exactamente dos Responses, USD 0.01645840 actual, cero
 retries/P10/P11/Sol/fallback y quedó consumida. P06 usa un gate independiente
-de una request/cap USD 0.03. La evidencia vigente es 17/18.
+de una request/cap USD 0.03; terminó PASS `READY` en 1/1 Responses, USD
+0.00148525 y sin rutas laterales/retries. La evidencia vigente es 18/18.
 
 ## Historial — P04 v1.1.6 validado; redeploy pendiente
 

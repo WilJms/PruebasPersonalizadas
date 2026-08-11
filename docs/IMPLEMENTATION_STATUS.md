@@ -2,7 +2,7 @@
 
 Fecha de corte: 2026-08-11 (America/Santiago).
 
-## Estado vigente — `OPENAI_REAL_P06_DECISION_LINEAGE_RECANARY_REQUIRED` (2026-08-11)
+## Estado vigente — `OPENAI_REAL_REMEDIATION_DEPLOY_REQUIRED` (2026-08-11)
 
 El candidato `dfd102d85816de30b3b082777268388061f83585` fue construido por
 Cloud Build `78a7c1f4-b857-472b-b210-9d56e638190a`, verificado y desplegado
@@ -56,17 +56,23 @@ content-free tiene SHA-256
 `3452b12bf89ea0cb59c29837b054d60db0ef46ceeb950802c680e20001a94df8`.
 El gate está consumido y no admite replay.
 
-P04/P05 elevan la evidencia vigente a 17/18; sólo P06 sigue pendiente. La
-remediación usa timeout SDK/gateway 240/245 s y retries cero. El PASS acoplado
-abre exclusivamente el gate P06 decision-lineage ya preparado: una Responses,
-cap USD 0.03 y P10/P11/Sol/fallback/retries cero.
+P06 decision-lineage se ejecutó después del PASS acoplado y terminó PASS
+`READY` en 8,270 ms: schema provider/Pydantic/contexto/outcome y todos los
+controles de lineage pasaron. Consumió exactamente 1/1 Responses, 2,884 input,
+2,881 cache-write, 637 output y 224 reasoning; USD 0.00148525 actual, USD
+0.01992085 de charge y USD 0.023361 de ceiling bajo cap USD 0.03. P10, P11,
+Sol, fallback y retries fueron cero. El reporte content-free tiene SHA-256
+`5daf7774e0ffee1bbc6b9b834b09f2022a496cdf14daabed303467cd7087c5b3` y
+el gate quedó consumido.
 
-La regresión local completa pasa con 553 pruebas backend, 16 skips
+P04/P05/P06 elevan la evidencia vigente a 18/18. La remediación usa timeout
+SDK/gateway 240/245 s y retries cero; no quedan evals focales pendientes.
+
+La regresión local completa pasa con 554 pruebas backend, 16 skips
 PostgreSQL explícitos, una advertencia conocida y 80% de cobertura; el CI del
-SHA `1125410…` terminó 7/7 verde tanto en push como en PR. Este estado no es
-`OPENAI_REAL_MANUAL_EVAL_READY`. Faltan completar P06 real,
-construir/desplegar el nuevo SHA y ejecutar un E2E fresco con edición P05
-durable y submission.
+SHA `19f4b17…` terminó 7/7 verde tanto en push como en PR. Este estado no es
+todavía `OPENAI_REAL_MANUAL_EVAL_READY`: faltan construir/desplegar el nuevo
+SHA y ejecutar un E2E fresco con edición P05 durable y submission.
 
 ## Historial — `OPENAI_REAL_P04_V116_REMEDIATION_DEPLOY_REQUIRED` (2026-08-11)
 

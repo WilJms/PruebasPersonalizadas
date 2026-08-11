@@ -2281,7 +2281,7 @@ def test_blueprint_v117_v115_consumption_and_hash_drift_fail_closed(
         asyncio.run(eval_harness._run_blueprint_recanary_dry_run(cases))
 
 
-def test_current_real_evidence_is_explicitly_seventeen_of_eighteen() -> None:
+def test_current_real_evidence_is_complete_eighteen_of_eighteen() -> None:
     by_id = {
         case["case_id"]: case
         for case in eval_harness._load_cases(eval_harness.DEFAULT_MANIFEST)
@@ -2291,7 +2291,7 @@ def test_current_real_evidence_is_explicitly_seventeen_of_eighteen() -> None:
         boundaries=eval_harness.CURRENT_REAL_EVIDENCE,
     )
 
-    assert len(rows) == 17
+    assert len(rows) == 18
     assert tuple(row["case_id"] for row in rows) == (
         eval_harness.CURRENT_REAL_EVIDENCE_CASE_IDS
     )
@@ -2316,7 +2316,20 @@ def test_current_real_evidence_is_explicitly_seventeen_of_eighteen() -> None:
     assert p05["source_checkpoint"] == (
         "OPENAI_BLUEPRINT_V117_V115_TIMEOUT_RECOVERY_PASS"
     )
-    assert "oa-p06-happy-docx" not in {row["case_id"] for row in rows}
+    p06 = next(
+        row
+        for row in rows
+        if row["case_id"]
+        == eval_harness.P06_V112_DECISION_LINEAGE_RECANARY_CASE_ID
+    )
+    assert p06["prompt_version"] == "1.1.2"
+    assert p06["prompt_hash"] == eval_harness.P06_V112_PROMPT_HASH
+    assert p06["input_bundle_hash"] == (
+        eval_harness.P06_V112_DECISION_LINEAGE_INPUT_BUNDLE_HASH
+    )
+    assert p06["source_checkpoint"] == (
+        "OPENAI_P06_V112_DECISION_LINEAGE_RECANARY_PASS"
+    )
 
 
 def test_blueprint_timeout_recovery_is_consumed_and_report_bound() -> None:
@@ -2479,6 +2492,16 @@ def test_p06_v112_real_gate_requires_prior_coupled_pass(monkeypatch) -> None:
         asyncio.run(
             eval_harness._run_canary_real(cases, max_total_cost_usd=0.03)
         )
+
+
+def test_p06_v112_real_gate_is_consumed_and_report_bound() -> None:
+    assert eval_harness.P06_V112_DECISION_LINEAGE_RECANARY_CONSUMED is True
+    assert eval_harness.P06_V112_DECISION_LINEAGE_REPORT_SHA256 == (
+        "5daf7774e0ffee1bbc6b9b834b09f2022a496cdf14daabed303467cd7087c5b3"
+    )
+    assert eval_harness.P06_V112_DECISION_LINEAGE_REAL_OUTPUT_HASH == (
+        "sha256:876c6be50f02272d7d7088cb183eb36bf178dd5b365b236333b4b8440666ec99"
+    )
 
 
 def test_p09_v115_recanary_dry_run_is_hash_bound_and_non_billable() -> None:
