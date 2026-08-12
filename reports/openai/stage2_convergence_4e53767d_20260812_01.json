@@ -1,0 +1,553 @@
+{
+  "authorization_boundary_hash": "sha256:cae1eaf6c27c094cbdb0a4e20d9d99f65cf0aba84e29ea5789293591b734ef98",
+  "authorization_hash": "sha256:bd65fe864042fd60ffc50c3683fd2d52fea1ee42b0ef318ef16333576c355e82",
+  "boundary": {
+    "assembler_version": "stage1-assembler/2.0.0",
+    "checkpoints": {
+      "synthetic-choice-justification-v1": {
+        "assessment_valid": "sha256:d46ce6e1808f23568730e21427c12575d9f6d279055a642e69e5babc4845fb98",
+        "blueprint_valid": "sha256:2b63c0f0a9aaaa5d22d5d48c91015d339ebc4961e4c9207ef1bd19ad3b6f0544",
+        "mapping_planning_valid": "sha256:131ecca560ede6f095a05812bf70bc6e3d34190fb2c7ee18c36eba58696884c1",
+        "post_p03": "sha256:bb4e9b3508c866474e48a92591cdf512c0a7472a99e21ac1a0233c4c6a1feff0"
+      },
+      "synthetic-open-short-v1": {
+        "assessment_valid": "sha256:d46ce6e1808f23568730e21427c12575d9f6d279055a642e69e5babc4845fb98",
+        "blueprint_valid": "sha256:5c54e22a5745a5d5a64dd1bf5ced3f924795bf14bb1e19f9fc9df81dde53c2e7",
+        "mapping_planning_valid": "sha256:6e4dfe92a62a4a02e5e91c74a2375e0ed1562c9b5c60ad42d1a636d2e6224063",
+        "post_p03": "sha256:054ce14acf9120cbba9d56c5e031f211de9392c2f0212ec91ee8c075bdb72a2d"
+      }
+    },
+    "p05_golden": {
+      "fixture_hash": "sha256:b0b40365dfd369991e7689c788668a9e087475458b01dba38af333b217596a89",
+      "fixture_version": "stage2-p05-golden-checkpoints/1.0.0",
+      "negative_expected_critical_category": "PLAN_FEASIBILITY",
+      "negative_expected_recommendation": "REJECT",
+      "negative_input_hash": "sha256:430295f51b164a6b3ca671ae50180f97c8f1926f4e532eb45cea8cb5c53cf9ff",
+      "negative_output_hash": "sha256:d38c61ce937f3f5135080c2af99cbbf8a9c9f8e865418aea853b5a3757df2db6",
+      "positive_review_status": "SEMANTICALLY_REVIEWED_SYNTHETIC_FIXTURE"
+    },
+    "p10_enabled": false,
+    "planner_version": "stage2-planner/2.0.0",
+    "prompt_pack_version": "1.1.13",
+    "prompts": {
+      "P04_BLUEPRINT_BUILD_V1": {
+        "application_validator": null,
+        "hash": "sha256:f8c12331bacc676920095f353b8a3d7180f90ba2015c23aa3a378cbb505064e0",
+        "input_schema_hash": "sha256:f6153db281661de52271281ad4a1fbae912cee098789543f12b8aee0b02d4471",
+        "output_schema_hash": "sha256:cd58e2ed963d26afb7c5717c00721b3307aaabbd657337cce85faa63d3028aa4",
+        "relationship_validator": "relationship-p04/2.0.0",
+        "version": "1.1.11"
+      },
+      "P05_BLUEPRINT_REVIEW_V1": {
+        "application_validator": "application-validator-p05/2.1.0",
+        "hash": "sha256:4b38cf144dd44ce235399efdf6938f611bfac820aa3b31497859f5fd5e426bb4",
+        "input_schema_hash": "sha256:90ae4defbfacbf589948bdab373561878fd1474e959a62c1489c1ee410627f71",
+        "output_schema_hash": "sha256:45bd283cf3e318cf968102ae1b509033fcb3fb81f5870de206e9fb51e4e93ac9",
+        "relationship_validator": "relationship-p05/2.2.0",
+        "version": "1.1.8"
+      },
+      "P06_EVIDENCE_MAP_V1": {
+        "application_validator": "application-validator-p06/2.1.0",
+        "hash": "sha256:01bf8fabac2cf3c7aa235b4ecb0e16edf8844a57efe7be2aaac7ffa2948d2e26",
+        "input_schema_hash": "sha256:c6f91041a415f58309b72addfe2ba8bd2d9d919de667ee7c05e5dfc8ecf96f83",
+        "output_schema_hash": "sha256:e71eae83b54355ded8434dfa6364b075a747066e5b91cde2337d6bbd121714ed",
+        "relationship_validator": "relationship-p06/2.3.0",
+        "version": "1.1.5"
+      },
+      "P07_QUESTION_BUILD_V1": {
+        "application_validator": "application-validator-p07/2.0.0",
+        "hash": "sha256:db0f6d91ad0357bbd7984e2b7d8564944e969fa8f39c0b95ca88085157d24b6c",
+        "input_schema_hash": "sha256:13406eaefbad9c7e0ec8e064d778ce885ba6a0ac17b4f16bf1a5cd79b9578b9a",
+        "output_schema_hash": "sha256:5cd5d45e2e742de9a16cca6f15cfab876c6dab6aa4eff197178559ffd5cd8448",
+        "relationship_validator": "relationship-p07/2.1.0",
+        "version": "1.1.4"
+      },
+      "P08_QUESTION_REVIEW_V1": {
+        "application_validator": "application-validator-p08/2.0.0",
+        "hash": "sha256:0514112a43750f7891b47eaf2cff7bec8cc52d2b2763c0c588e115a48edf50fc",
+        "input_schema_hash": "sha256:3af65fdec7493a6eccc9d8eb636f989fcda5e1774a5dfad717b921be0a4db54d",
+        "output_schema_hash": "sha256:122c5e9fe03ab8e546e1dc36e6f7829184e1c8025167f60fbae3f07e041bdd8a",
+        "relationship_validator": "relationship-p08/2.1.0",
+        "version": "1.1.4"
+      },
+      "P09_GUIDE_BUILD_V1": {
+        "application_validator": "application-validator-p09/2.0.0",
+        "hash": "sha256:a7607fb64499efdbb377469d1078ae758cfd47d09828f35af1ac603b46b5f2d3",
+        "input_schema_hash": "sha256:93a01654dab803fb865c825d18c561b3ef280b7c82dcf91bfc099375abaee7f7",
+        "output_schema_hash": "sha256:6be4378c31897c852b09936e63f47d84005a93ce8064aadf387635ffad67cc83",
+        "relationship_validator": "relationship-p09/2.0.0",
+        "version": "1.1.6"
+      }
+    },
+    "rehearsal_version": "stage2-product-rehearsal/1.4.0"
+  },
+  "classification": "SYNTHETIC_ONLY_NO_STUDENT_DATA",
+  "controls": {
+    "actual_cost_usd": 0.08738144,
+    "budget_charged_usd": 0.32618144,
+    "expected_provider_requests": 24,
+    "fallback_calls": 0,
+    "gateway_retries": 0,
+    "max_call_cost_usd": 0.1,
+    "max_provider_requests": 24,
+    "max_total_cost_usd": 0.75,
+    "models": [
+      "gpt-5.6-luna"
+    ],
+    "network_calls": 20,
+    "p10_calls": 0,
+    "p11_calls": 0,
+    "provider_attempts": 20,
+    "sdk_retries": 0,
+    "semantic_retries": 0,
+    "store": false,
+    "tools_enabled": false,
+    "unpriced_attempts": 0
+  },
+  "deterministic_checks": [
+    {
+      "actual_recommendation": "REJECT",
+      "check_id": "P05_GOLDEN_NEGATIVE_OFFLINE",
+      "critical_categories": [
+        "FORMAT_FEASIBILITY",
+        "PLAN_FEASIBILITY",
+        "TIME"
+      ],
+      "expected_critical_category": "PLAN_FEASIBILITY",
+      "expected_failed_preflight_fields": [
+        "catalog_plan_feasible",
+        "policy_constraints_match"
+      ],
+      "expected_recommendation": "REJECT",
+      "failed_preflight_fields": [
+        "catalog_plan_feasible",
+        "policy_constraints_match"
+      ],
+      "input_hash": "sha256:430295f51b164a6b3ca671ae50180f97c8f1926f4e532eb45cea8cb5c53cf9ff",
+      "output_hash": "sha256:d38c61ce937f3f5135080c2af99cbbf8a9c9f8e865418aea853b5a3757df2db6",
+      "provider_requests": 0,
+      "status": "PASS"
+    }
+  ],
+  "executable_boundary_hash": "sha256:118da5dd9b9f18f41181b24fd7ecd39ed52f9afb77c60206a9cfa46ae81ea0ba",
+  "execution_id": "stage2-convergence-4e53767d-20260812-01",
+  "finished_at": "2026-08-12T20:39:14.973763Z",
+  "git_head": "4e53767d79555b27efc5c7d92344d6f10db1b221",
+  "harness_hash": "sha256:620d5f31ef16fab816c1fd8c7a5c372dfc7176ea925cd93bc80fbd202e7f9d37",
+  "manifest_hash": "sha256:07f06a0f872956b156ca5207f32352f708334984dcb6e9b5d8757a1f6a45980b",
+  "mode": "real-convergence",
+  "observations": [
+    {
+      "failure": {
+        "aggregated_failures": [
+          {
+            "codes": [
+              "UNAUTHORIZED_EVIDENCE"
+            ],
+            "issues": [],
+            "stage": "P08"
+          }
+        ]
+      },
+      "output_hash": null,
+      "run_id": "real-sweep-base",
+      "run_kind": "INDEPENDENT_SWEEP",
+      "scenario_id": "synthetic-open-short-v1",
+      "stages": [
+        {
+          "actual_cost_usd": 0.0079201,
+          "attempts": 1,
+          "fallback_route_id": null,
+          "input_hash": "sha256:05c9779a3f330633d61f220e8fce4cd629094c8a281562ecc353f9613a3d374c",
+          "model": "gpt-5.6-luna",
+          "output_hash": "sha256:81570c030a888edd4d3cc194506ece857838b50ac2d96a9854342adfe11e2cc3",
+          "prompt_id": "P04_BLUEPRINT_BUILD_V1",
+          "prompt_version": "1.1.11",
+          "reasoning_effort": "HIGH",
+          "repaired": false,
+          "status": "PASS"
+        },
+        {
+          "actual_cost_usd": 0.00743405,
+          "attempts": 1,
+          "fallback_route_id": null,
+          "input_hash": "sha256:cd6ac2ac5c2b74f810c7f0a3a665027c4c86c1941dca39899a7f200ba47d99af",
+          "model": "gpt-5.6-luna",
+          "output_hash": "sha256:ce836fe343a677573801b043547d37d309bf6da403333edbd899b54615c053e1",
+          "prompt_id": "P05_BLUEPRINT_REVIEW_V1",
+          "prompt_version": "1.1.8",
+          "reasoning_effort": "HIGH",
+          "repaired": false,
+          "status": "PASS"
+        },
+        {
+          "actual_cost_usd": 0.0038451,
+          "attempts": 1,
+          "fallback_route_id": null,
+          "input_hash": "sha256:5c54e22a5745a5d5a64dd1bf5ced3f924795bf14bb1e19f9fc9df81dde53c2e7",
+          "model": "gpt-5.6-luna",
+          "output_hash": "sha256:87acbcaa0a1d0b157599f38374265589e8e34748dfd10bf5a03215cd5755bed2",
+          "prompt_id": "P06_EVIDENCE_MAP_V1",
+          "prompt_version": "1.1.5",
+          "reasoning_effort": "HIGH",
+          "repaired": false,
+          "status": "PASS"
+        },
+        {
+          "actual_cost_usd": 0.00448425,
+          "attempts": 1,
+          "fallback_route_id": null,
+          "input_hash": "sha256:343d57a46f6a725a52344278d72ec54d86273811dec7ba56610b3facbd523071",
+          "model": "gpt-5.6-luna",
+          "output_hash": "sha256:de619398d6c88eec934a7ffb9bf11825612788546cec7c304bed1b8a5dc87351",
+          "prompt_id": "P07_QUESTION_BUILD_V1",
+          "prompt_version": "1.1.4",
+          "reasoning_effort": "HIGH",
+          "repaired": false,
+          "status": "PASS"
+        },
+        {
+          "actual_cost_usd": 0.00334325,
+          "attempts": 1,
+          "fallback_route_id": null,
+          "input_hash": "sha256:d46ce6e1808f23568730e21427c12575d9f6d279055a642e69e5babc4845fb98",
+          "model": "gpt-5.6-luna",
+          "output_hash": "sha256:75e628d6e627a5c81f85a5104647762608230c04c7e021c458b16edf7c5abc4f",
+          "prompt_id": "P09_GUIDE_BUILD_V1",
+          "prompt_version": "1.1.6",
+          "reasoning_effort": "HIGH",
+          "repaired": false,
+          "status": "PASS"
+        }
+      ],
+      "status": "FAIL"
+    },
+    {
+      "failure": {
+        "codes": [
+          "P05_REFERENCED_ID_NOT_ALLOWLISTED"
+        ],
+        "issues": [],
+        "stage": "P05"
+      },
+      "output_hash": null,
+      "run_id": "real-chain-base-1",
+      "run_kind": "INTEGRATED_CHAIN",
+      "scenario_id": "synthetic-open-short-v1",
+      "stages": [
+        {
+          "actual_cost_usd": 0.00446216,
+          "attempts": 1,
+          "fallback_route_id": null,
+          "input_hash": "sha256:05c9779a3f330633d61f220e8fce4cd629094c8a281562ecc353f9613a3d374c",
+          "model": "gpt-5.6-luna",
+          "output_hash": "sha256:61a079be0e4ec634c89ff3ba0263e5f263c6cfe6e21425b0cafe64b963308e92",
+          "prompt_id": "P04_BLUEPRINT_BUILD_V1",
+          "prompt_version": "1.1.11",
+          "reasoning_effort": "HIGH",
+          "repaired": false,
+          "status": "PASS"
+        }
+      ],
+      "status": "FAIL"
+    },
+    {
+      "failure": null,
+      "output_hash": "sha256:7e6dc658bd5c93178ce285ab1d40cd6dbc0f20cba0ba711fa146b4fa5b97f959",
+      "run_id": "real-chain-base-2",
+      "run_kind": "INTEGRATED_CHAIN",
+      "scenario_id": "synthetic-open-short-v1",
+      "stages": [
+        {
+          "actual_cost_usd": 0.00541976,
+          "attempts": 1,
+          "fallback_route_id": null,
+          "input_hash": "sha256:05c9779a3f330633d61f220e8fce4cd629094c8a281562ecc353f9613a3d374c",
+          "model": "gpt-5.6-luna",
+          "output_hash": "sha256:ad88488e27096511842efe45ee3d4eca8f72dcc367a5db0ade6453cd92eaefc2",
+          "prompt_id": "P04_BLUEPRINT_BUILD_V1",
+          "prompt_version": "1.1.11",
+          "reasoning_effort": "HIGH",
+          "repaired": false,
+          "status": "PASS"
+        },
+        {
+          "actual_cost_usd": 0.00434902,
+          "attempts": 1,
+          "fallback_route_id": null,
+          "input_hash": "sha256:4c6b5c51e4e7625bd53ec0cad79d94363cb686dea907628f2baaf352d7df3d4b",
+          "model": "gpt-5.6-luna",
+          "output_hash": "sha256:8575570d837c099fee1e540e6867eed2948f224303925dc7131fc189e1998e0a",
+          "prompt_id": "P05_BLUEPRINT_REVIEW_V1",
+          "prompt_version": "1.1.8",
+          "reasoning_effort": "HIGH",
+          "repaired": false,
+          "status": "PASS"
+        },
+        {
+          "actual_cost_usd": 0.00336665,
+          "attempts": 1,
+          "fallback_route_id": null,
+          "input_hash": "sha256:bc6063ae2e87aee7bd4121ba4cf1413361c7ea0843c74002f3d11ebc2cb60fcc",
+          "model": "gpt-5.6-luna",
+          "output_hash": "sha256:221de8d3a3fc33e848916844ffa51a46a0ab6c32d683a190f9d99615791f96c4",
+          "prompt_id": "P06_EVIDENCE_MAP_V1",
+          "prompt_version": "1.1.5",
+          "reasoning_effort": "HIGH",
+          "repaired": false,
+          "status": "PASS"
+        },
+        {
+          "input_hash": "sha256:3557e41058752aa1570af93cd7463bf9df53f39eb3b760348b10c271c3611758",
+          "output_hash": "sha256:d8fe52ac955e8eb29f8701d0847124a83ad5f675a9c83f13830b7a2a33d25d0c",
+          "stage": "PLANNER",
+          "status": "PASS",
+          "version": "stage2-planner/2.0.0"
+        },
+        {
+          "actual_cost_usd": 0.00377315,
+          "attempts": 1,
+          "fallback_route_id": null,
+          "input_hash": "sha256:f1dac658b52c013a6c68642ebf59e4d94a48e7c81dac5e07b69a8319eda61752",
+          "model": "gpt-5.6-luna",
+          "output_hash": "sha256:92f4549b3fed1da69b5a75fda3c01130fce0c6e280d04008a67175d6496c00ae",
+          "prompt_id": "P07_QUESTION_BUILD_V1",
+          "prompt_version": "1.1.4",
+          "reasoning_effort": "HIGH",
+          "repaired": false,
+          "status": "PASS"
+        },
+        {
+          "actual_cost_usd": 0.00168478,
+          "attempts": 1,
+          "decision_diagnostics": {
+            "critical_failure_count": 0,
+            "criticality": "NON_CRITICAL",
+            "decision": "ACCEPT",
+            "diagnostic_codes": [
+              "P08_DECISION_ACCEPT"
+            ],
+            "failure_categories": [],
+            "provider_critical_code_hashes": [],
+            "review_status": "READY",
+            "score_thresholds": {
+              "anchor_sufficiency": {
+                "relation": "AT_OR_ABOVE",
+                "score": 0.93,
+                "threshold": 0.8
+              },
+              "answerability": {
+                "relation": "AT_OR_ABOVE",
+                "score": 0.97,
+                "threshold": 0.85
+              },
+              "confidence": {
+                "relation": "AT_OR_ABOVE",
+                "score": 0.97,
+                "threshold": 0.65
+              },
+              "criterion_relevance": {
+                "relation": "AT_OR_ABOVE",
+                "score": 0.98,
+                "threshold": 0.8
+              },
+              "groundedness": {
+                "relation": "AT_OR_ABOVE",
+                "score": 0.98,
+                "threshold": 0.9
+              }
+            }
+          },
+          "fallback_route_id": null,
+          "input_hash": "sha256:34fd6b4f42567836f1fd8445ed314b52ade9a4ea31321a2e550522678ddfdd17",
+          "model": "gpt-5.6-luna",
+          "output_hash": "sha256:714cc510bf9254c6a4da7e3562bd9687f0048cfaf34d3df74c7df1887fe3605b",
+          "prompt_id": "P08_QUESTION_REVIEW_V1",
+          "prompt_version": "1.1.4",
+          "reasoning_effort": "HIGH",
+          "repaired": false,
+          "status": "PASS"
+        },
+        {
+          "input_hash": "sha256:54f14e4d2f659f0a9a3fddbc85f595377420cfb3df2bf6dbc84a6de9aa006f55",
+          "output_hash": "sha256:39f0a90a5dc29a0f8ba66c6d51d940a7d9bee5c56bc24608b64857496ad67183",
+          "stage": "ASSEMBLY",
+          "status": "PASS",
+          "version": "stage1-assembler/2.0.0"
+        },
+        {
+          "actual_cost_usd": 0.0029641,
+          "attempts": 1,
+          "fallback_route_id": null,
+          "input_hash": "sha256:0a323ea5297dfc669fec0564697c732e99b1c69b88a4fe2c5739ec6b6024903a",
+          "model": "gpt-5.6-luna",
+          "output_hash": "sha256:11124f80c88ad64dd53062b2d3362a41028ab1c4de0c05eb596c11e5c7d0d447",
+          "prompt_id": "P09_GUIDE_BUILD_V1",
+          "prompt_version": "1.1.6",
+          "reasoning_effort": "HIGH",
+          "repaired": false,
+          "status": "PASS"
+        }
+      ],
+      "status": "PASS"
+    },
+    {
+      "failure": null,
+      "output_hash": "sha256:63d4e26542a0f5961417aea018a2917960342d3f6558e75c0f6f1c7d07c2469d",
+      "run_id": "real-chain-choice-variant",
+      "run_kind": "INTEGRATED_CHAIN",
+      "scenario_id": "synthetic-choice-justification-v1",
+      "stages": [
+        {
+          "actual_cost_usd": 0.00596325,
+          "attempts": 1,
+          "fallback_route_id": null,
+          "input_hash": "sha256:84b0c019bbbd34c03a2c666f07a3fe75574326e82ab019aaa8cd26ce4fd9bb8d",
+          "model": "gpt-5.6-luna",
+          "output_hash": "sha256:0cb6012254d5c673b3f4563de7fba491e1cf57bc536e16f889e2fba12366fd9e",
+          "prompt_id": "P04_BLUEPRINT_BUILD_V1",
+          "prompt_version": "1.1.11",
+          "reasoning_effort": "HIGH",
+          "repaired": false,
+          "status": "PASS"
+        },
+        {
+          "actual_cost_usd": 0.00668562,
+          "attempts": 1,
+          "fallback_route_id": null,
+          "input_hash": "sha256:c655cbd134af3dc44592d477959cdd12a1d6ac61850f6e8e2dc441fd75e642ba",
+          "model": "gpt-5.6-luna",
+          "output_hash": "sha256:1aca1f03b29fef1650e7057837ad4e1c7edf3342c5dfb627da7d36e743412ae7",
+          "prompt_id": "P05_BLUEPRINT_REVIEW_V1",
+          "prompt_version": "1.1.8",
+          "reasoning_effort": "HIGH",
+          "repaired": false,
+          "status": "PASS"
+        },
+        {
+          "actual_cost_usd": 0.00274245,
+          "attempts": 1,
+          "fallback_route_id": null,
+          "input_hash": "sha256:c24481e1e312a6d4577e0097b323af321bcf781a2c6e38e7a5d77a52dc0eb3f5",
+          "model": "gpt-5.6-luna",
+          "output_hash": "sha256:9d4ad0c82d5163efa8323c4ab8a41de5374c203505c4c3d5741b91d8573ae653",
+          "prompt_id": "P06_EVIDENCE_MAP_V1",
+          "prompt_version": "1.1.5",
+          "reasoning_effort": "HIGH",
+          "repaired": false,
+          "status": "PASS"
+        },
+        {
+          "input_hash": "sha256:091f3b54689d8389177f5144c54d598766c4e22f9aca46efa15da55c6116cfa3",
+          "output_hash": "sha256:744f4cd6d4f62d0ccb4a5d8e12d14afe0ef83644d2c15e18eca06bb8b002894d",
+          "stage": "PLANNER",
+          "status": "PASS",
+          "version": "stage2-planner/2.0.0"
+        },
+        {
+          "actual_cost_usd": 0.0061431,
+          "attempts": 1,
+          "fallback_route_id": null,
+          "input_hash": "sha256:2f3b2c53e3288130e0789de039d195a472970092f2d10506a126d1b21e93010c",
+          "model": "gpt-5.6-luna",
+          "output_hash": "sha256:4119deb4a2a2d67edecaaf7abccba2bf2095c2f2528d56d4a9ff8af03e363cf7",
+          "prompt_id": "P07_QUESTION_BUILD_V1",
+          "prompt_version": "1.1.4",
+          "reasoning_effort": "HIGH",
+          "repaired": false,
+          "status": "PASS"
+        },
+        {
+          "actual_cost_usd": 0.00183738,
+          "attempts": 1,
+          "decision_diagnostics": {
+            "critical_failure_count": 0,
+            "criticality": "NON_CRITICAL",
+            "decision": "ACCEPT",
+            "diagnostic_codes": [
+              "P08_DECISION_ACCEPT"
+            ],
+            "failure_categories": [],
+            "provider_critical_code_hashes": [],
+            "review_status": "READY",
+            "score_thresholds": {
+              "anchor_sufficiency": {
+                "relation": "AT_OR_ABOVE",
+                "score": 0.94,
+                "threshold": 0.8
+              },
+              "answerability": {
+                "relation": "AT_OR_ABOVE",
+                "score": 0.98,
+                "threshold": 0.85
+              },
+              "confidence": {
+                "relation": "AT_OR_ABOVE",
+                "score": 0.96,
+                "threshold": 0.65
+              },
+              "criterion_relevance": {
+                "relation": "AT_OR_ABOVE",
+                "score": 0.98,
+                "threshold": 0.8
+              },
+              "groundedness": {
+                "relation": "AT_OR_ABOVE",
+                "score": 0.98,
+                "threshold": 0.9
+              }
+            }
+          },
+          "fallback_route_id": null,
+          "input_hash": "sha256:9c08aa64d4e33bf324f6d709c157c8f95d327ad81cfe0d9ba473ba5a83cd9494",
+          "model": "gpt-5.6-luna",
+          "output_hash": "sha256:0ffcf603d5343a9060e6641d8f4ef29c684139759f2a0f0d59ee5b7eb6475092",
+          "prompt_id": "P08_QUESTION_REVIEW_V1",
+          "prompt_version": "1.1.4",
+          "reasoning_effort": "HIGH",
+          "repaired": false,
+          "status": "PASS"
+        },
+        {
+          "input_hash": "sha256:4cb9f089a19bef466a36e701195e59ba6730ee7c92cda275f5e11b811269c508",
+          "output_hash": "sha256:446790d36a1a4c9afa790b8d78b5ec1185fca91fe8c15873109999c2f3710ad4",
+          "stage": "ASSEMBLY",
+          "status": "PASS",
+          "version": "stage1-assembler/2.0.0"
+        },
+        {
+          "actual_cost_usd": 0.00394025,
+          "attempts": 1,
+          "fallback_route_id": null,
+          "input_hash": "sha256:dd7ad4820861e1ca73c4c6e059e96756cbc80b10359640afd7690f7b5cbf0bed",
+          "model": "gpt-5.6-luna",
+          "output_hash": "sha256:a39344665e661b3483a623fc2af7efd5c84e7d1b5b17ca5f23f35ba2b3b73574",
+          "prompt_id": "P09_GUIDE_BUILD_V1",
+          "prompt_version": "1.1.6",
+          "reasoning_effort": "HIGH",
+          "repaired": false,
+          "status": "PASS"
+        }
+      ],
+      "status": "PASS"
+    }
+  ],
+  "organization_label_hash": "sha256:025b4e51904f75d324c98001827eba9acb333afed96802466e688247901bd391",
+  "project_label_hash": "sha256:025b4e51904f75d324c98001827eba9acb333afed96802466e688247901bd391",
+  "rehearsal_module_hash": "sha256:e7d70f52c93fb5bb544bfa3efa0b20c44dd68485697496b8f1fbd62330893025",
+  "rehearsal_version": "stage2-product-rehearsal/1.4.0",
+  "report_schema_version": "stage2-convergence-report/1.4.0",
+  "runtime_hashes": {
+    "specification/models_v1.1(1).py": "sha256:d9869d721afd83f2ab5a8bd4d14d527b47586e3e33b05e9564abbf68672f933e",
+    "src/comprehension_verification/model_gateway/gateway.py": "sha256:73cdafb136173b0c4091f7c924c00dfe2b3a9bc3c28f66d4a5561c92fc72230e",
+    "src/comprehension_verification/model_gateway/openai_adapter.py": "sha256:e264922f8d04f05493dfbe7987fa652467a70cadd945fc98424971421b5716b8",
+    "src/comprehension_verification/model_gateway/openai_routes.py": "sha256:4582609ef20ac128d2d96a8b44a23fb1803466295117bc733f67ae44d0822f8c",
+    "src/comprehension_verification/planning.py": "sha256:4872c2abf163e27135b0d266c4675b197534aa0f7c36c0f7960ebe5a575e8adb",
+    "src/comprehension_verification/validation.py": "sha256:82f6d253bb358a4eed1cbb8fa807a302e764436b4992b5102cc6f328e8a3fdea",
+    "src/comprehension_verification/web/workflows.py": "sha256:1ceb38188e615c844de9f8a8d76b5389c1aa54a8cb53062522015e6c435ebe8a"
+  },
+  "secret_version_label_hash": "sha256:942db3f685d8ad1af76a1a64e45f4f6d8bc5fe0fa677d984cc8841f450a92b7d",
+  "started_at": "2026-08-12T20:30:21.557042Z",
+  "status": "FAIL",
+  "unchanged_boundary_across_chains": true
+}

@@ -1,266 +1,208 @@
-# Handoff consolidado — Fase 2
+# Handoff consolidado — cierre focalizado de Fase 2
 
 Fecha de corte: 2026-08-12 (America/Santiago).
 
-Estado recomendado: **`CONVERGENCE_INCOMPLETE`**.
+Estado final: **`CONVERGENCE_INCOMPLETE`**.
 
-Este documento es el cierre operacional de la Fase 2 solicitada sobre el PR #3.
-No es una certificación independiente ni autoriza build, deploy, migración o E2E
-cloud. La documentación se consolida pese a no haberse alcanzado convergencia
-para preservar los resultados y permitir una continuación informada.
+Este documento consolida la única iteración solicitada después de la revisión
+Pro. No autoriza Fase 3/Fase 4 Ultra, datos estudiantiles reales, build/deploy,
+`terraform apply`, migraciones remotas ni E2E cloud.
 
-## 1. Frontera entregada
+## 1. Frontera exacta
 
 | Elemento | Valor |
 |---|---|
-| Repositorio | `WilJms/PruebasPersonalizadas` |
+| Repositorio / PR | `WilJms/PruebasPersonalizadas`, PR `#3` |
 | Branch | `codex/openai-real-provider-gate` |
-| PR | `#3`, draft |
-| Baseline auditado por Fase 1 | `a2be3c6e777c9832fe4e25bc3276c72eda1b46cb` |
-| Baseline de código de la última observación | `10d7622a9d278ed9a6d41d1317dd98b7a49c7721` |
-| Commit que preserva la última observación | `03dc0c121b18fae4fbc41aad34672d05ead643f6` |
-| Versión del rehearsal/reporte | `stage2-product-rehearsal/1.3.0` / `stage2-convergence-report/1.3.0` |
-| Frontera ejecutable | `sha256:be462b18e06f61d86d99831400ca3dc55072ddcf8df2e0150a146243f4996117` |
-| Harness | `sha256:f586ff9291c6ed3778537bf8094525a663a40c98f005dc5a09c716ff206b8980` |
-| Módulo rehearsal | `sha256:219bb030503ba1721fd271e3bd5ffdb504b7c9cd8881b49698a0f8feb0a2af76` |
-| Fixture product-shaped | `sha256:77ba47d46449e0fa8a109304f87b1f18ba9c4cb9b8020866cfe5b3eb99d81ff4` |
-| Modelo canónico | `sha256:d9869d721afd83f2ab5a8bd4d14d527b47586e3e33b05e9564abbf68672f933e` |
-| Schema generado | `sha256:a6f0657064aa1bd9673079db9c7ce043db43e4038a094482052df895807a93af` |
+| Candidato ejecutado | `4e53767d79555b27efc5c7d92344d6f10db1b221` |
+| Commit del candidato | `Close Stage 2 convergence review gaps` |
+| Baseline Stage 2 | `80dd57dbf38d56929c307eca956833c31e53bf33` |
+| Rehearsal / reporte | `stage2-product-rehearsal/1.4.0` / `stage2-convergence-report/1.4.0` |
+| Prompt pack | `1.1.13` |
+| Ruta / modelo | `LUNA_BASELINE_V1` / `gpt-5.6-luna` |
+| Frontera ejecutable | `sha256:118da5dd9b9f18f41181b24fd7ecd39ed52f9afb77c60206a9cfa46ae81ea0ba` |
+| Frontera de autorización | `sha256:cae1eaf6c27c094cbdb0a4e20d9d99f65cf0aba84e29ea5789293591b734ef98` |
+| Frontera productiva del provider | `sha256:be65de1bed684d1df8ecd53e2264acd3a0319d873370033b906bb365f957af71` |
+| Harness | `sha256:620d5f31ef16fab816c1fd8c7a5c372dfc7176ea925cd93bc80fbd202e7f9d37` |
+| Módulo rehearsal | `sha256:e7d70f52c93fb5bb544bfa3efa0b20c44dd68485697496b8f1fbd62330893025` |
+| Manifest | `sha256:07f06a0f872956b156ca5207f32352f708334984dcb6e9b5d8757a1f6a45980b` |
+| Execution ID | `stage2-convergence-4e53767d-20260812-01` |
+| Authorization hash | `sha256:bd65fe864042fd60ffc50c3683fd2d52fea1ee42b0ef318ef16333576c355e82` |
 
-El HEAD final publicado debe tomarse del PR: un documento versionado no puede
-incluir el hash de su propio commit. Los hashes anteriores fijan exactamente el
-código y los artefactos que consumió la última observación real.
+El commit que contiene este handoff y el reporte es evidencia posterior y no
+forma parte de la frontera ejecutada. El PR debe distinguir su HEAD documental
+del SHA candidato anterior; un documento versionado no puede contener el hash
+de su propio commit.
 
 ## 2. Veredicto ejecutivo
 
-La remediación determinista fue amplia y verificable: autoridad, aislamiento
-sintético, ownership de IDs, contratos, validadores, seguridad de texto,
-planner, cache/reuse, StageRuns, state machines, dispatch, idempotencia,
-autenticación y harness quedaron cubiertos por regresiones. Las suites locales,
-PostgreSQL, frontend, contratos, deploy estático, secretos y Terraform quedaron
-verdes. El rehearsal offline completó sweep y tres cadenas con 24 transportes
-fake.
+Los gaps deterministas solicitados quedaron cerrados: la capacidad real está
+aislada del producto ordinario; P05 tiene un positivo sintético concreto y un
+negativo conocido; P06 emite predicados estables; P08 registra diagnósticos
+content-free; y toda la regresión local/remota quedó verde sobre el candidato.
 
-La frontera real Luna llegó por primera vez a completar una cadena integrada
-P04→P09. Sin embargo, bajo la misma frontera congelada:
+La única matriz Luna autorizada no alcanzó convergencia. Bajo una frontera
+inmutable:
 
-- el sweep independiente rechazó en P05 su blueprint fijo por `CONSTRUCT`;
-- la segunda cadena base falló en P06 con `P06_REFERENCE_MISMATCH`;
-- la variante distinta llegó a P08, pero no fue aceptada.
+- el sweep independiente pasó P04, P05, P06, P07 y P09, pero P08 amplió los
+  `evidence_ids` del candidato y fue bloqueado con `UNAUTHORIZED_EVIDENCE`;
+- la cadena base 1 pasó P04 y luego P05 emitió `referenced_ids` fuera de los IDs
+  presentes en su request; el gateway la bloqueó con
+  `P05_REFERENCED_ID_NOT_ALLOWLISTED`;
+- la cadena base 2 completó P04→P09;
+- la variante choice completa también completó P04→P09;
+- el golden-negative P05 fue rechazado offline por la causa prevista, sin
+  consumir una request.
 
-Por ello no existen dos cadenas completas consecutivas ni una variante completa,
-y tampoco hay evidencia suficiente de confiabilidad residual. No se ejecutó una
-repetición automática, no se relajó ningún validator y no se cambió Luna.
+Los dos fallos son incumplimientos contractuales/contextuales de outputs del
+modelo, no fallos de schema, Pydantic, credenciales, red, runtime o
+infraestructura. Los validadores fallaron cerrado y conservaron el predicado
+exacto. Conforme al criterio acordado, Luna queda como **blocker de
+cualificación/confiabilidad para este candidato**. Las dos cadenas completas
+demuestran capacidad posible, no estabilidad suficiente ni incapacidad general.
 
-## 3. Findings de Fase 1
+No hubo retry, segunda matriz, cambio de prompt, relajación de validator,
+normalización semántica, fallback ni cambio de modelo después del resultado.
 
-Todos los gaps deterministas principales fueron confirmados. Ningún finding se
-refutó en bloque; en `PLAN-001`, `PLAN-002`, `INF-001` y `REL-001` se confirmó
-el gap y se acotó su impacto o fase de resolución.
+## 3. Autoridad y aislamiento del provider real
 
-### P0/P1
+La arquitectura resultante expresa una sola autoridad:
 
-| Finding | Estado | Resolución/evidencia |
-|---|---|---|
-| GOV-001 | CERRADO | `AGENTS.md` y ADR-035/036 separan producto cloud mock del gate real sintético, hash-bound y con caps. |
-| DATA-001 | CERRADO | Attestation/hash server-controlled para artefactos sintéticos; rechazo antes de resolver transporte real. |
-| EVAL-001 | CERRADO | Ledger SQLite durable, claim transaccional previo a red, consumo irreversible y pruebas de concurrencia/crash/replay. |
-| EVAL-002 | ABIERTO | P05 pasó dentro de cadenas, pero el sweep final devolvió `READY/REJECT` con un critical `CONSTRUCT`; no está cualificado de forma estable. |
-| OBS-001 | PARCIAL | Reporte versionado, timestamps, SHA, boundary, execution/authorization y controles content-free cerrados; P06/P08 aún no explican el predicado semántico exacto del último fallo. |
-| REL-001 | DIFERIDO | HEAD/artefactos locales están ligados; build/digest/plan/runtime del nuevo HEAD quedan para la fase cloud expresamente prohibida aquí. |
-| CACHE-001 | CERRADO | Fingerprint ejecutable incluye prompt, schemas, validators, route/model/reasoning/adapter y revalida hits con la frontera vigente. |
-| CACHE-002 | CERRADO | Identidad por etapa y dependency-aware; cambios locales invalidan consumidores afectados sin barrer etapas independientes. |
-| STAGE-001 | CERRADO | Parse, prompts, planner y assembly se materializan; `EXECUTED/REUSED`, fuente y fingerprint quedan append-only. |
-| JOB-001 | CERRADO | Retry/resume actualizan atómicamente la proyección y UI continúa observando el job nuevo. |
-| JOB-002 | CERRADO | Edición P05 usa la misma matriz terminal que generación inicial; no publica resultados no aprobables como éxito. |
-| JOB-003 | CERRADO | Dispatch transporta y reclama el `job_id` exacto; worker cloud falla cerrado sin claim explícito. |
-| CTX-001 | CERRADO | TrustedContext productivo se construye desde facts persistidos/tenant-scoped, no desde el request ni el helper sintético. |
-| ID-001 | CERRADO | `candidate_id` es preasignado por servidor y se comprueba; no hay `merge` model-controlled entre owners. |
-| ID-002 | CERRADO | Unicidad/ref cerradas en P01/P02/P03 y negativos canónicos. |
-| P03-001 | CERRADO | `blocked` equivale a la existencia de issues bloqueantes y cada issue requiere decisión coherente. |
-| P04-001 | CERRADO | Copia exacta de constraints, mínimos, reservas y política de justificación hasta planner/assembly. |
-| P04-002 | CERRADO | ID/version objetivo son server-owned, están acotados y deben coincidir. |
-| P05-001 | CERRADO DETERMINISTA | Matriz completa de checks/recommendation, referencias allowlisted y preflight determinista en el gateway productivo. EVAL-002 sigue abierto por confiabilidad. |
-| P06-001 | CERRADO | Calidad mínima efectiva es `max(global, template)`; herencia y elegibilidad del planner se comprueban. |
-| P07-001 | CERRADO | Visitor transversal distingue texto generado de anclas hostiles y cubre P07/P08/P09, choices, rationales, guides y diagnostics. |
-| P09-001 | CERRADO | Cardinalidad 2–5, unicidad y cobertura no vacua para observables. |
-| P11-001 | CERRADO | Reparación sólo estructural con diff allowlisted; cambios semánticos, de IDs, números o estados son rechazados. |
+1. Web y worker ordinario conservan `CVA_MODEL_MODE=mock`; settings no ofrecen
+   un flag productivo para construir `GatewayMode.REAL`.
+2. El worker ordinario no recibe clave, referencia al secreto ni IAM para leerlo.
+3. El job sintético de evaluación es una superficie distinta, con service
+   account propio. Sólo esa identidad puede leer la versión numérica fijada del
+   secreto; la clave nunca viaja como variable de entorno.
+4. La autorización durable queda ligada al job, artefactos sintéticos, SHA,
+   hashes de frontera, ruta/modelo, request cap y cost cap.
+5. El orden obligatorio es claim exacto `RUNNING` → consumo exactly-once de la
+   autorización → resolución del secreto → construcción del transporte.
+6. Job ordinario, attestation ausente, SHA/hash divergente, claim incorrecto o
+   autorización ya consumida terminan antes del resolver, transporte y primera
+   request. Las regresiones prueban los tres contadores en cero.
+7. P10 permanece deshabilitado en producto, cloud y evaluación. La matriz
+   además mantuvo P11, fallback, retries, tools y store en cero.
 
-### P2 y deuda
+Terraform mantiene service/job, imágenes y permisos separados. Esto fue
+validado de forma estática; no se aplicó infraestructura ni se afirma estado
+runtime cloud.
 
-| Finding | Estado | Resolución/aceptación |
-|---|---|---|
-| P06-002 | CERRADO | Fingerprints evitan oportunidades/reservas duplicadas y `avoid` se aplica a preguntas rechazadas. |
-| PLAN-001 | CERRADO | `required_criterion_ids` llega al planner y participa en factibilidad/cobertura. |
-| PLAN-002 | CERRADO | Selección exacta completa reemplaza la poda heurística que podía producir falsos `INFEASIBLE`. |
-| P08-001 | CERRADO | Igualdad estricta sólo para `ACCEPT`; `REJECT/ESCALATE` puede reportar estimación independiente coherente. |
-| API-001 | CERRADO | GET observa; reconciliación de stale jobs se mueve a una acción interna explícita. |
-| PRIV-001 | CERRADO PARA E2 | Descriptores de idempotencia minimizados y expiración durable añadida; datos reales siguen prohibidos. |
-| INF-001 | ACEPTADO/DEFERIDO | No bloquea rehearsal sintético local; TLS/red/backups/audit externo deben cerrarse antes de certificación fuerte o datos reales. |
-| AUTH-001 | CERRADO | Sesión Supabase temporal para exchange y limpieza posterior; regresiones de logout/persistencia. |
-| DEBT-001 | CERRADO | La ruta dejó de anunciar IMAGE mientras el adapter sólo transporte texto extraído. |
+## 4. Golden P05 y diagnósticos
 
-## 4. Cambios arquitectónicos durables
+### P05
 
-1. **Autoridad y datos:** producto/cloud permanecen mock; el único real permitido
-   es un gate sintético aislado con corpus hash-allowlisted, autorización durable,
-   presupuesto y cero datos estudiantiles reales.
-2. **Contratos/ownership:** targets e identidades que gobiernan persistencia son
-   server-minted; roots canónicos imponen unicidad, cross-root y state machines.
-3. **Trusted context:** facts tenant-scoped independientes del request alimentan
-   allowlists y lenguaje.
-4. **Seguridad transversal:** un visitor de texto generado cubre persistencia,
-   review y export; las anclas literales se mantienen como datos hostiles.
-5. **Planner:** selección exacta N, criterios requeridos, mínimos global/template,
-   reservas distintas y fallo atómico sin plan parcial.
-6. **Cache/reuse:** fingerprint por componente y dependencia, revalidación actual y
-   procedencia `EXECUTED/REUSED` para parse, modelos, planner y assembly.
-7. **Jobs:** transición dominio/job atómica, edición P05 coherente y dispatch/claim
-   exacto en lugar de reclamar el queued más antiguo.
-8. **Privacidad de control:** idempotencia mínima con TTL y sesión browser reducida.
-9. **Evaluación:** rehearsal product-shaped reutiliza registry, prompts, schemas,
-   gateway, validators y planner productivos; el ledger consume cada autorización
-   antes de la primera red y los reportes no retienen outputs.
+El positivo genérico del mock fue sustituido por
+`stage2-p05-golden-checkpoints/1.0.0`, un fixture sintético versionado que modela
+un constructo causal concreto de invalidación de caché, cinco rationales
+semánticos, alineación con fuentes, blueprint y oportunidades coherentes.
 
-## 5. Prompts, contratos y validators
+| Evidencia | Hash / resultado |
+|---|---|
+| Golden positivo | `sha256:b0b40365dfd369991e7689c788668a9e087475458b01dba38af333b217596a89` |
+| Estado de revisión | `SEMANTICALLY_REVIEWED_SYNTHETIC_FIXTURE` |
+| Input negativo | `sha256:430295f51b164a6b3ca671ae50180f97c8f1926f4e532eb45cea8cb5c53cf9ff` |
+| Output negativo | `sha256:d38c61ce937f3f5135080c2af99cbbf8a9c9f8e865418aea853b5a3757df2db6` |
+| Oráculo negativo | `REJECT`, categoría crítica `PLAN_FEASIBILITY`, campos `catalog_plan_feasible` y `policy_constraints_match` fallidos |
 
-La frontera final usa prompt pack `1.1.13`:
+El negativo obtuvo exactamente ese resultado offline. P05 no fue relajado.
 
-| Prompt | Versión | Relationship | Application |
-|---|---:|---|---|
-| P04 | 1.1.11 | `relationship-p04/2.0.0` | — |
-| P05 | 1.1.8 | `relationship-p05/2.2.0` | `application-validator-p05/2.1.0` |
-| P06 | 1.1.5 | `relationship-p06/2.2.0` | `application-validator-p06/2.1.0` |
-| P07 | 1.1.4 | `relationship-p07/2.1.0` | `application-validator-p07/2.0.0` |
-| P08 | 1.1.4 | `relationship-p08/2.1.0` | `application-validator-p08/2.0.0` |
-| P09 | 1.1.6 | `relationship-p09/2.0.0` | `application-validator-p09/2.0.0` |
+### P06
 
-Cambios relevantes: matriz P05 y preflight tipado; policy/floor del planner en
-P06; herencia completa de templates; IDs target explícitos; referencias exactas
-P07/P08; separación entre mensajes de seguridad del sistema y texto generado;
-P09 observable; P11 diff estructural. `EvidenceMapRequest` transporta ahora la
-misma `planning_policy` que ejecutará el planner. El schema JSON fue regenerado
-exclusivamente desde el modelo canónico y revisado antes de reemplazarlo.
+`relationship-p06/2.3.0` reemplaza el mismatch genérico por códigos
+deterministas por predicado: submission, conteo, elegibilidad, template,
+dimension/variant, operación cognitiva, foco, observable, dificultad, tiempo,
+anchors, formatos, justificación, prioridad, fit/scope de evidencia, calidad y
+ruta. Los códigos se agregan en orden estable y sin duplicados.
 
-## 6. Rehearsal product-shaped y findings EXEC
+### P08
 
-El fixture `product-rehearsal/1.2.0` aporta dos escenarios sintéticos:
-`synthetic-open-short-v1` y `synthetic-choice-justification-v1`. Cada uno fija
-checkpoints post-P03, blueprint, mapping/planning y assessment. La versión 1.3.0
-del runner observa P04, P05, P06, P07, P08 y P09 independientemente; el fallo de
-una frontera no oculta las demás.
+La observabilidad registra únicamente decisión `ACCEPT/REJECT/ESCALATE`,
+criticality/conteo, categorías y códigos seguros, hashes de códigos raw y la
+relación score/threshold de cada dimensión. No persiste texto del estudiante,
+anclas ni outputs del modelo. En las dos cadenas completas P08 emitió
+`ACCEPT`, `NON_CRITICAL`, cero fallos críticos y todos los scores en o sobre su
+threshold. El fallo del sweep ocurrió antes de aceptación por el predicado
+contextual exacto `UNAUTHORIZED_EVIDENCE`.
 
-| Finding | Evidencia | Estado |
-|---|---|---|
-| EXEC-001 | Rehearsal trataba sólo `APPROVE` como transición válida y ocultaba la matriz P05. | CERRADO |
-| EXEC-002 | Un `value_error` semántico activó P11 pese a ser sólo estructural. | CERRADO; P11 limitado a shape/schema. |
-| EXEC-003 | Luna duplicó IDs dentro de P04. | CERRADO con prompt + contrato de unicidad. |
-| EXEC-004 | P05 no distinguía identidades root de referencias allowlisted. | CERRADO con namespaces y checks agregados. |
-| EXEC-005 | P06 no READY omitía diagnostics suficientes. | CERRADO en contrato/prompt; códigos de mismatch READY aún pueden granularizarse. |
-| EXEC-006 | P05 reinterpretó factibilidad exacta-N. | CERRADO con preflight server-derived y checks vinculados. |
-| EXEC-007 | P06 modificaba constraints heredadas del template. | CERRADO con igualdad completa y validator de relación. |
-| EXEC-008 | El fixture inicial era demasiado delgado para representar producto. | CERRADO con bundle, policy, blueprint y variante ampliados. |
-| EXEC-009 | Sweep acoplaba P04→P05 y P07→P08, ocultando fronteras hermanas. | CERRADO con seis checkpoints independientes. |
-| EXEC-010 | P06 declaraba READY sin conocer el floor aplicado luego por planner. | CERRADO al transportar `planning_policy` y validar elegibilidad. |
-| EXEC-011 | P07/P08 colapsaban varias divergencias de IDs en un código genérico. | CERRADO con códigos agregados content-free. |
-| EXEC-012 | Un aviso global de seguridad terminaba dentro del texto generado y el visitor lo rechazaba. | CERRADO separando instrucción de sistema y contenido persistible. |
-| EXEC-013 | Sweep final P05: `REJECT`, critical `CONSTRUCT`; warnings `COGNITIVE_DEMAND` y `SOURCE_FIDELITY`. | ABIERTO; validar si el checkpoint fijo o el juicio es la causa. |
-| EXEC-014 | Cadena base 1 PASS; repetición congelada falla P06 `P06_REFERENCE_MISMATCH`. | ABIERTO; evidencia de inestabilidad, pero el subpredicado no quedó registrado. |
-| EXEC-015 | Variante completa hasta P07; P08 devuelve resultado no aceptado. | ABIERTO; faltan decision/scores/códigos content-free para discriminar rechazo correcto de variabilidad. |
-
-## 7. Validación ejecutada
+## 5. Regresión sobre el candidato congelado
 
 | Superficie | Resultado |
 |---|---|
-| Backend completo | `make test-cov`: 544 passed, 16 skipped sólo por ausencia explícita de URL PostgreSQL en esa invocación, 1 warning conocido, 80% coverage. |
-| PostgreSQL 17 temporal | migraciones/prepare PASS; E2E 1/1; sensitive 7/7; migration/recovery/readiness 158/158. |
-| Contratos | 53 roots, 141 `$defs`, 277 refs y 8 fixtures PASS; schema generado sin edición manual. |
-| Rehearsal offline | PASS; sweep 6/6, dos cadenas base 8/8 y variante 8/8; 24 fake, cero red/billable/P10/P11/fallback/retries. |
-| Frontend | typecheck PASS; Vitest 36/36; build PASS. |
-| Navegador | Flujo sintético renderizado completo y revisión responsive pasaron antes del freeze. |
-| Deploy estático | 11/11 PASS. |
-| Secret scan | PASS sobre 303 archivos versionables. |
-| Terraform | fmt, init `-backend=false` y validate PASS. |
+| Backend final | `make test`: 607 passed, 17 skipped esperados, 1 warning conocido |
+| Cobertura | `make test-cov`: 604 passed antes de tres casos adicionales; 80%. El `make test` final cubrió 607 y no hubo cambio productivo posterior. |
+| PostgreSQL 17 prepare | PASS; 31 tablas |
+| PostgreSQL E2E | 1/1 PASS |
+| PostgreSQL sensitive | 8/8 PASS, incluida autorización exactly-once y append-only |
+| PostgreSQL migration/recovery/readiness | 206/206 PASS |
+| Frontend | instalación limpia sin vulnerabilidades; typecheck PASS; 36/36 tests; build PASS |
+| Contratos | 53 roots, 141 `$defs`, 277 refs, 8 fixtures; hashes canónicos sin drift |
+| OpenAPI / fixtures | regeneración sin diff |
+| Rehearsal offline | PASS; 24 intentos fake, negativo P05 PASS/0 requests, P10/P11/fallback/retries 0 |
+| Secret scan | PASS sobre 310 archivos versionables |
+| Terraform | `fmt`, `init -backend=false`, `validate` PASS |
+| CI remoto candidato | run `31637415306`: 7/7 jobs PASS, incluidos PG16, PG17, frontend, browser E2E, Docker/audit, Terraform/static y backend/contracts |
 
-El contenedor PostgreSQL temporal se detuvo y eliminó. No se ejecutó build,
-deploy, apply, migración remota ni E2E cloud.
+El PostgreSQL temporal fue detenido y eliminado. No se ejecutó build/deploy,
+`terraform apply`, migración remota ni E2E cloud.
 
-## 8. Observaciones reales Luna
+## 6. Única matriz real decisiva
 
-Todas usaron exclusivamente `gpt-5.6-luna`, Structured Outputs, `store=false`,
-sin tools, máximo 30 requests, cap USD 0.75 por corrida y USD 0.10 por call.
+Inicio/fin UTC: `2026-08-12T20:30:21.557042Z` /
+`2026-08-12T20:39:14.973763Z`.
 
-| Boundary | Resultado | Attempts | Costo actual | Charge conservador | Señal principal |
-|---|---:|---:|---:|---:|---|
-| `400968b`, rehearsal 1.0.0 | FAIL | 12 | USD 0.06409709 | USD 0.20522789 | P04 IDs duplicados, P05/contexto y un único P11 estructural. |
-| `e5dcb6a`, rehearsal 1.1.0 | FAIL | 14 | USD 0.07006282 | USD 0.25122322 | Sweep 6/6; P06 diagnostics, P05 feasibility y P06 variant refs. |
-| `683d62c`, rehearsal 1.2.0 | FAIL | 14 | USD 0.07368182 | USD 0.25415702 | P07/P08 context, seguridad P07, P05 cognitive y planner variant. |
-| `10d7622`, rehearsal 1.3.0 | FAIL | 20 | USD 0.10237906 | USD 0.33254266 | Una cadena 8/8; sweep P05, repetición P06 y variante P08 abiertos. |
-| **Total** | — | **60** | **USD 0.31022079** | **USD 1.04315079** | El charge es reserva contable conservadora, no gasto real adicional. |
+| Observación | Requests | Resultado | Señal |
+|---|---:|---|---|
+| Sweep independiente P04–P09 | 6 | **FAIL** | P04/P05/P06/P07/P09 PASS; P08 `UNAUTHORIZED_EVIDENCE` |
+| Cadena base 1 P04→P09 | 2 | **FAIL** | P04 PASS; P05 `P05_REFERENCED_ID_NOT_ALLOWLISTED` |
+| Cadena base 2 P04→P09 | 6 | **PASS** | P04→P09 completos; P08 ACCEPT |
+| Variante choice P04→P09 | 6 | **PASS** | P04→P09 completos; P08 ACCEPT |
+| Golden-negative P05 | 0 | **PASS** | REJECT / `PLAN_FEASIBILITY` esperado |
 
-Reportes machine-readable y SHA-256:
+Controles sellados:
 
-- `stage2_convergence_400968b.json`: `5228ad37938a4e5d7ab91197e61f888b546c730f0040ff62431f4386b988eb65`;
-- `stage2_convergence_e5dcb6a.json`: `d3020f60209db3fb9b5714e6f70df92984d4210e52f6549716d70871463078e3`;
-- `stage2_convergence_683d62c.json`: `fe529b4ef20616673f35b1836a8185d73a8692a12692ee0ac2013a8c5a4e344e`;
-- `stage2_convergence_10d7622.json`: `8f213bc6beede28906727c989b158292536dedafd6f309eaf8e099bc50d2b1c8`.
+| Control | Resultado |
+|---|---|
+| Requests / cap | `20 / 24` |
+| Costo actual / cap | `USD 0.08738144 / USD 0.75` |
+| Charge conservador | `USD 0.32618144` |
+| Cap por llamada | `USD 0.10` |
+| Modelo | sólo `gpt-5.6-luna` |
+| Reasoning | `HIGH` en P04–P09 |
+| Boundary entre cadenas | `unchanged_boundary_across_chains=true` |
+| P10 / P11 / fallback | `0 / 0 / 0` |
+| Retry gateway / SDK / semántico | `0 / 0 / 0` |
+| Tools / store | `false / false` |
+| Attempts sin precio | `0` |
+| Estado del ledger | `FAILED`, autorización consumida exactly-once |
 
-En total hubo P10=0, fallback=0 y retries gateway/SDK/semánticos=0. Sólo la
-primera ronda usó P11=1; las tres fronteras posteriores y la última corrida de
-salida usaron P11=0.
+Reporte machine-readable:
+`reports/openai/stage2_convergence_4e53767d_20260812_01.json`, SHA-256
+`1b95209f429df7fdb7d19e3c5412a36ae932bd02835ceff2b54e552e61f9961c`.
 
-### Evaluación de Luna
+## 7. Matriz de convergencia
 
-Una cadena real completa demuestra que Luna puede satisfacer esta forma; no
-demuestra estabilidad. La segunda cadena bajo prompts, schemas, validators y
-routing idénticos falló antes de planner, y la variante no completó P08. Esto es
-compatible con variabilidad del modelo, pero no permite atribuirla de forma
-concluyente porque los códigos finales P06/P08 aún son demasiado gruesos y el
-reporte deliberadamente no retiene outputs.
+| Criterio | Estado | Evidencia |
+|---|---|---|
+| Positivos del sweep P04–P09 | **NO** | P08 amplió evidencia; código exacto `UNAUTHORIZED_EVIDENCE` |
+| Golden-negative P05 rechazado por causa esperada | **SÍ** | REJECT / `PLAN_FEASIBILITY`, 0 requests |
+| Cadena base 1 completa | **NO** | P05 referenció ID no allowlisted |
+| Cadena base 2 completa sin cambio de frontera | **SÍ** | P04→P09 PASS |
+| Variante choice completa | **SÍ** | P04→P09 PASS |
+| Cero fallos schema/Pydantic/context/security en positivas | **NO** | Dos outputs violaron controles contextuales; cero fallos schema/Pydantic/security |
+| Autoridad/settings/runtime/Terraform coherentes | **SÍ** | Producto mock; real sólo en job sintético autorizado |
+| Provider real imposible fuera del gate exacto | **SÍ, probado local/estáticamente** | Casos normal/missing/mismatch/wrong claim con resolver/transporte/requests = 0 |
+| Regresión y CI verdes | **SÍ** | Suites locales y run remoto 7/7 PASS |
+| Evidencia ligada al SHA candidato | **SÍ** | Reporte `git_head=4e53767d…` y hashes sellados |
+| Caps y controles conservados | **SÍ** | 20 requests, USD 0.08738144; todo fallback/retry/tool/store/P10/P11 en cero |
+| Luna cualificada para liberar el candidato | **NO** | Dos incumplimientos de output bajo frontera congelada |
+| REL-001 cloud | **DIFERIDO** | Cloud estaba expresamente fuera de alcance; no hay assertions de deploy/runtime |
 
-Clasificación: **`NEEDS_MORE_EVIDENCE`**, materialmente incompatible con READY.
-No se ocultó mediante retry, normalización, validator relajado, fallback o cambio
-de modelo.
+## 8. Decisión y siguiente autoridad
 
-## 9. Brechas abiertas y continuación segura
+**`CONVERGENCE_INCOMPLETE`**.
 
-1. Auditar offline el checkpoint fijo P05 contra el constructo y su preflight.
-   Si es inválido, corregir el fixture por razones de producto; si es válido,
-   conservarlo congelado.
-2. Dividir `P06_REFERENCE_MISMATCH` en subcódigos content-free y registrar en
-   P08 decisión, critical codes y umbrales/scores numéricos seguros. Esto mejora
-   diagnóstico sin relajar producción ni retener contenido.
-3. Tras tests locales, decidir explícitamente si se autoriza una única repetición
-   acotada bajo una nueva boundary/authorization. No reutilizar ninguna de las
-   cuatro autorizaciones consumidas.
-4. Sólo después de convergencia, resolver REL-001 con un único build del HEAD,
-   digest/provenance, plan sellado y E2E sintético en una fase posterior.
-5. Mantener INF-001 externo y privacidad/hardening residual como bloqueadores
-   antes de datos reales, que siguen fuera de alcance.
-
-## 10. Criterio de convergencia, punto por punto
-
-| # | Criterio | Estado | Evidencia |
-|---:|---|---|---|
-| 1 | P0/P1 relevantes cerrados/refutados | **NO** | Deterministas cerrados; EVAL-002, OBS-001 parcial y REL-001 siguen abiertos/deferidos. |
-| 2 | P2 de evaluación manual resueltos/aceptados | **SÍ** | P06/PLAN/P08/API/PRIV/AUTH/IMAGE cerrados; INF externo aceptado para sintético. |
-| 3 | Suite local completa verde | **SÍ** | Backend, PG17, frontend, browser, deploy y Terraform verdes. |
-| 4 | Contratos/fixtures/OpenAPI sin drift | **SÍ** | Gate canónico y fixtures PASS; schema regenerado. |
-| 5 | Sweeps product-shaped P04–P09 verdes | **NO** | 1.1.0 pasó 6/6, pero la frontera final 1.3.0 falló P05. |
-| 6 | Una cadena integrada real completa | **SÍ** | `real-chain-base-1`, 8/8, reporte `10d7622`. |
-| 7 | Segunda cadena consecutiva sin cambios | **NO** | `real-chain-base-2` falló P06. Boundary unchanged=true. |
-| 8 | Cadena completa sobre variante distinta | **NO** | Variante llegó a P08 y no fue aceptada. |
-| 9 | Cero schema/Pydantic/context/security en corridas de salida | **NO** | La primera cadena sí; no existe conjunto completo de corridas de salida. P06 falló contexto. |
-| 10 | P10 off | **SÍ** | 0 en las cuatro corridas. |
-| 11 | Sin fallback | **SÍ** | 0. |
-| 12 | Sin retries semánticos | **SÍ** | 0; gateway y SDK también 0. |
-| 13 | Evidencia suficiente de confiabilidad Luna | **NO** | Una cadena PASS seguida de P06/P08 FAIL; `NEEDS_MORE_EVIDENCE`. |
-| 14 | Sin findings abiertos incompatibles con READY | **NO** | EXEC-013/014/015 y EVAL-002 son materiales. |
-
-## 11. Recomendación
-
-**`CONVERGENCE_INCOMPLETE`**
-
-No hacer build/deploy/E2E cloud final. La próxima decisión debe concentrarse en
-diagnóstico content-free de P05/P06/P08 y, sólo con una autorización nueva,
-una repetición real congelada y acotada.
+El PR debe permanecer draft y el candidato no debe congelarse para Fase 4 Ultra.
+No corresponde otra matriz, retry ni ajuste oportunista dentro de esta
+autorización. Cualquier continuación requerirá una decisión humana posterior,
+un alcance nuevo y una autorización nueva; este cierre no la presupone.
