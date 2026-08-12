@@ -1885,10 +1885,19 @@ class Stage1Service:
         mapping = await self._gateway_stage(
             job,
             "P06_EVIDENCE_MAP_V1",
-            m.EvidenceMapRequest(blueprint=blueprint, evidence_bundle=bundle),
+            m.EvidenceMapRequest(
+                blueprint=blueprint,
+                planning_policy=policy.planning_policy,
+                evidence_bundle=bundle,
+            ),
             m.EvidenceMapPatch,
         )
-        validate_evidence_map(mapping, blueprint=blueprint, bundle=bundle)
+        validate_evidence_map(
+            mapping,
+            blueprint=blueprint,
+            bundle=bundle,
+            planning_policy=policy.planning_policy,
+        )
         with self.repository.session() as session:
             session.merge(EvidenceMapRow(submission_id=submission.id, tenant_id=job.tenant_id, data=mapping.model_dump(mode="json")))
         self._set_submission(submission, job, m.SubmissionProcessingStatus.PLANNING, "ASSESSMENT_PLAN", 0.32)

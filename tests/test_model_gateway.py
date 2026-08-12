@@ -121,9 +121,9 @@ def test_registry_is_exact_complete_and_immutable() -> None:
         "P03_AMBIGUITY_TRIAGE_V1": "1.1.3",
         "P04_BLUEPRINT_BUILD_V1": "1.1.11",
         "P05_BLUEPRINT_REVIEW_V1": "1.1.8",
-        "P06_EVIDENCE_MAP_V1": "1.1.4",
-        "P07_QUESTION_BUILD_V1": "1.1.3",
-        "P08_QUESTION_REVIEW_V1": "1.1.3",
+        "P06_EVIDENCE_MAP_V1": "1.1.5",
+        "P07_QUESTION_BUILD_V1": "1.1.4",
+        "P08_QUESTION_REVIEW_V1": "1.1.4",
         "P09_GUIDE_BUILD_V1": "1.1.6",
         "P10_ENRICHED_CONTEXT_V1": "1.1.3",
         "P11_SCHEMA_REPAIR_V1": "1.1.5",
@@ -207,9 +207,11 @@ def test_p05_v117_and_p11_v115_make_root_invariant_handling_explicit() -> None:
         assert protected_field in p11
 
 
-def test_p06_v114_makes_template_inheritance_and_abstention_exact() -> None:
+def test_p06_v115_makes_planner_eligibility_and_abstention_exact() -> None:
     p06 = PROMPT_SPECS["P06_EVIDENCE_MAP_V1"].developer_instruction
     for exact_rule in (
+        "planning_policy es una restricción confiable",
+        "planning_policy.minimum_evidence_fit",
         "no es necesario mapear todas sus dimensiones o variantes",
         "al menos assessment_constraints.question_count oportunidades",
         "copia literalmente desde ese template cognitive_operation",
@@ -220,6 +222,34 @@ def test_p06_v114_makes_template_inheritance_and_abstention_exact() -> None:
         "retryable=false",
     ):
         assert exact_rule in p06
+
+
+def test_p07_p08_v114_bind_identities_and_separate_global_notices() -> None:
+    p07 = PROMPT_SPECS["P07_QUESTION_BUILD_V1"].developer_instruction
+    p08 = PROMPT_SPECS["P08_QUESTION_REVIEW_V1"].developer_instruction
+    for exact_rule in (
+        "submission_id exactamente desde plan.submission_id",
+        "candidate.candidate_id exactamente desde target_candidate_id",
+        "No redactes avisos globales",
+    ):
+        assert exact_rule in p07
+    for exact_rule in (
+        "submission_id exactamente desde generation_result.submission_id",
+        "review.candidate_id exactamente desde generation_result.candidate.candidate_id",
+        "nunca inventes candidate_id",
+        "critical_failure_codes estables",
+    ):
+        assert exact_rule in p08
+
+
+def test_p06_request_binds_planning_policy_to_blueprint_constraints() -> None:
+    raw = build_mock_request("P06_EVIDENCE_MAP_V1").model_dump(mode="json")
+    raw["planning_policy"]["minimum_opportunity_quality"] = 0.5
+    with pytest.raises(
+        ValidationError,
+        match="planning policy must match",
+    ):
+        models.EvidenceMapRequest.model_validate(raw)
 
 
 def test_p09_v115_makes_all_context_relationships_explicit() -> None:
@@ -1069,6 +1099,43 @@ def test_p06_rejects_changed_template_inheritance() -> None:
     )
 
 
+def test_p06_ready_requires_the_planner_evidence_fit_floor() -> None:
+    def lower_fit(raw: dict) -> None:
+        for match in raw["variant_matches"]:
+            match["evidence_fit"] = 0.69
+        for opportunity in raw["opportunities"]:
+            opportunity["evidence_fit"] = 0.69
+
+    gateway = ModelGateway(
+        mock_adapter=ContextBreakingAdapter(
+            "P06_EVIDENCE_MAP_V1", lower_fit
+        )
+    )
+    with pytest.raises(GatewayContextError) as captured:
+        _invoke("P06_EVIDENCE_MAP_V1", gateway=gateway)
+    assert captured.value.failure.codes == (
+        ContextFailureCode.P06_READY_ELIGIBILITY_MISMATCH,
+    )
+
+
+def test_p07_relationship_failures_are_aggregated_content_free() -> None:
+    def change_candidate_roots(raw: dict) -> None:
+        raw["candidate"]["candidate_id"] = "candidate_other"
+        raw["candidate"]["dimension_id"] = "dimension_other"
+
+    gateway = ModelGateway(
+        mock_adapter=ContextBreakingAdapter(
+            "P07_QUESTION_BUILD_V1", change_candidate_roots
+        )
+    )
+    with pytest.raises(GatewayContextError) as captured:
+        _invoke("P07_QUESTION_BUILD_V1", gateway=gateway)
+    assert captured.value.failure.codes == (
+        ContextFailureCode.P07_CANDIDATE_ID_MISMATCH,
+        ContextFailureCode.P07_OPPORTUNITY_REFERENCE_MISMATCH,
+    )
+
+
 def test_p06_nonready_diagnostics_are_canonical_fail_closed() -> None:
     request = build_mock_request("P06_EVIDENCE_MAP_V1")
     raw = DeterministicMockAdapter().factory.output_for(
@@ -1094,6 +1161,9 @@ def test_p08_cannot_accept_below_trusted_validation_thresholds() -> None:
     with pytest.raises(GatewayContextError) as captured:
         _invoke("P08_QUESTION_REVIEW_V1", gateway=gateway)
 
+    assert captured.value.failure.codes == (
+        ContextFailureCode.P08_ACCEPTED_BELOW_POLICY,
+    )
     assert [item.result for item in captured.value.ledgers] == ["SCHEMA_INVALID"]
 
 

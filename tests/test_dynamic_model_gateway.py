@@ -198,10 +198,19 @@ def test_p06_maps_current_blueprint_catalog_to_current_evidence_and_exact_plan()
     bundle = _submission_bundle(blueprint.activity_id)
     mapping = _invoke(
         "P06_EVIDENCE_MAP_V1",
-        m.EvidenceMapRequest(blueprint=blueprint, evidence_bundle=bundle),
+        m.EvidenceMapRequest(
+            blueprint=blueprint,
+            planning_policy=policy.planning_policy,
+            evidence_bundle=bundle,
+        ),
     )
 
-    validate_evidence_map(mapping, blueprint=blueprint, bundle=bundle)
+    validate_evidence_map(
+        mapping,
+        blueprint=blueprint,
+        bundle=bundle,
+        planning_policy=policy.planning_policy,
+    )
     assert mapping.status == "READY"
     assert len(mapping.opportunities) == len(_catalog(blueprint)) == 5
     assert {item.opportunity_template_id for item in mapping.opportunities} == {
@@ -229,7 +238,11 @@ def test_p07_p08_and_p09_derive_ids_anchors_scores_and_guide_from_request() -> N
     bundle = _submission_bundle(blueprint.activity_id)
     mapping = _invoke(
         "P06_EVIDENCE_MAP_V1",
-        m.EvidenceMapRequest(blueprint=blueprint, evidence_bundle=bundle),
+        m.EvidenceMapRequest(
+            blueprint=blueprint,
+            planning_policy=policy.planning_policy,
+            evidence_bundle=bundle,
+        ),
     )
     plan = build_assessment_plan(
         mapping=mapping,

@@ -215,6 +215,8 @@ async def _invoke(
 
 def _deduplicate_planning_opportunities(
     mapping: m.EvidenceMapPatch,
+    *,
+    question_count: int,
 ) -> m.EvidenceMapPatch:
     """Collapse opportunities grounded in the exact same evidence set.
 
@@ -233,6 +235,32 @@ def _deduplicate_planning_opportunities(
             continue
         seen.add(signature)
         unique.append(opportunity)
+    if len(unique) < question_count:
+        return m.EvidenceMapPatch(
+            submission_id=mapping.submission_id,
+            status="INSUFFICIENT_DISTINCT_QUESTION_OPPORTUNITIES",
+            claims=[],
+            variant_matches=[],
+            opportunities=[],
+            diagnostics=[
+                diagnostic(
+                    "INSUFFICIENT_DISTINCT_QUESTION_OPPORTUNITIES",
+                    "La deduplicación no conservó oportunidades sustancialmente distintas suficientes.",
+                    evidence_ids=sorted(
+                        {
+                            evidence_id
+                            for opportunity in unique
+                            for evidence_id in opportunity.evidence_ids
+                        }
+                    ),
+                    retryable=False,
+                    details={
+                        "distinct_opportunity_count": len(unique),
+                        "required_question_count": question_count,
+                    },
+                )
+            ],
+        )
     return m.EvidenceMapPatch.model_validate(
         {
             **mapping.model_dump(mode="json"),
@@ -571,14 +599,31 @@ async def _run_synthetic(case: str, output: Path) -> int:
             await _invoke(
                 gateway,
                 "P06_EVIDENCE_MAP_V1",
-                m.EvidenceMapRequest(blueprint=blueprint, evidence_bundle=bundle),
+                m.EvidenceMapRequest(
+                    blueprint=blueprint,
+                    planning_policy=policy.planning_policy,
+                    evidence_bundle=bundle,
+                ),
                 fixture=fixture,
             )
         ).model_dump(mode="json")
     )
-    validate_evidence_map(model_mapping, blueprint=blueprint, bundle=bundle)
-    mapping = _deduplicate_planning_opportunities(model_mapping)
-    validate_evidence_map(mapping, blueprint=blueprint, bundle=bundle)
+    validate_evidence_map(
+        model_mapping,
+        blueprint=blueprint,
+        bundle=bundle,
+        planning_policy=policy.planning_policy,
+    )
+    mapping = _deduplicate_planning_opportunities(
+        model_mapping,
+        question_count=blueprint.assessment_constraints.question_count,
+    )
+    validate_evidence_map(
+        mapping,
+        blueprint=blueprint,
+        bundle=bundle,
+        planning_policy=policy.planning_policy,
+    )
     _write_stage(store, "model_evidence_map.json", model_mapping)
     _write_stage(store, "evidence_map.json", mapping)
 

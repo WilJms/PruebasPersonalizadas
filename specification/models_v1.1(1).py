@@ -2608,7 +2608,22 @@ class BlueprintReviewRequest(StrictModel):
 class EvidenceMapRequest(StrictModel):
     schema_version: SchemaVersion = LEGACY_SCHEMA_VERSION
     blueprint: AssessmentBlueprint
+    planning_policy: AssessmentPlanningPolicy
     evidence_bundle: EvidenceBundle
+
+    @model_validator(mode="after")
+    def planning_policy_matches_blueprint(self) -> "EvidenceMapRequest":
+        constraints = self.blueprint.assessment_constraints
+        if (
+            self.planning_policy.minimum_opportunity_quality
+            != constraints.minimum_opportunity_quality
+            or self.planning_policy.max_reserve_opportunities
+            != constraints.max_reserve_opportunities
+        ):
+            raise ValueError(
+                "P06 planning policy must match the approved blueprint constraints"
+            )
+        return self
 
 
 class QuestionBuildRequest(StrictModel):

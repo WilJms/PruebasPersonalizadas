@@ -1,5 +1,5 @@
 {
-  "schema_version": "stage2-product-rehearsal-fixture/1.1.0",
+  "schema_version": "stage2-product-rehearsal-fixture/1.2.0",
   "classification": "SYNTHETIC_ONLY_NO_STUDENT_DATA",
   "generator": "comprehension_verification.rehearsal.build_rehearsal_checkpoints",
   "checkpoints": {
@@ -32,5 +32,10 @@
     "tools": false,
     "fallback": false,
     "semantic_retries": false
+  },
+  "execution_discovery": {
+    "independent_sweep_stages": ["P04", "P05", "P06", "P07", "P08", "P09"],
+    "p06_receives_planning_policy": true,
+    "failures_are_content_free": true
   }
 }

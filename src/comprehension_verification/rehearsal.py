@@ -49,8 +49,8 @@ from .web.workflows import (
 )
 
 
-REHEARSAL_VERSION = "stage2-product-rehearsal/1.2.0"
-REHEARSAL_REPORT_VERSION = "stage2-convergence-report/1.2.0"
+REHEARSAL_VERSION = "stage2-product-rehearsal/1.3.0"
+REHEARSAL_REPORT_VERSION = "stage2-convergence-report/1.3.0"
 BASE_SCENARIO_ID = "synthetic-open-short-v1"
 VARIANT_SCENARIO_ID = "synthetic-choice-justification-v1"
 
@@ -59,6 +59,7 @@ VARIANT_SCENARIO_ID = "synthetic-choice-justification-v1"
 class RehearsalCheckpoints:
     scenario_id: str
     p04_request: m.BlueprintBuildRequest
+    p05_request: m.BlueprintReviewRequest
     p06_request: m.EvidenceMapRequest
     p07_request: m.QuestionBuildRequest
     p08_request: m.QuestionReviewRequest
@@ -68,7 +69,10 @@ class RehearsalCheckpoints:
     def hashes(self) -> dict[str, str]:
         return {
             "post_p03": canonical_hash(
-                self.p04_request.model_dump(mode="json")
+                {
+                    "p04": self.p04_request.model_dump(mode="json"),
+                    "p05": self.p05_request.model_dump(mode="json"),
+                }
             ),
             "blueprint_valid": canonical_hash(
                 self.p06_request.model_dump(mode="json")
@@ -192,11 +196,34 @@ def build_rehearsal_checkpoints(
             }
         )
 
+    generated_blueprint = m.AssessmentBlueprint.model_validate(
+        _validated_mock_output(
+            "P04_BLUEPRINT_BUILD_V1", p04
+        ).model_dump(mode="json")
+    )
+    p05 = m.BlueprintReviewRequest(
+        activity_spec=p04.activity_spec,
+        rubric_spec=p04.rubric_spec,
+        blueprint_policy=p04.blueprint_policy,
+        resolved_decisions=p04.resolved_decisions,
+        blueprint=generated_blueprint,
+        deterministic_preflight=build_blueprint_review_preflight(
+            blueprint=generated_blueprint,
+            activity_spec=p04.activity_spec,
+            rubric_spec=p04.rubric_spec,
+            blueprint_policy=p04.blueprint_policy,
+        ),
+    )
+
     p06 = m.EvidenceMapRequest.model_validate(
         build_mock_request("P06_EVIDENCE_MAP_V1").model_dump(mode="json")
     )
     p06 = p06.model_copy(
         update={
+            "blueprint": generated_blueprint.model_copy(
+                update={"status": m.WorkflowStatus.APPROVED}
+            ),
+            "planning_policy": p04.blueprint_policy.planning_policy,
             "evidence_bundle": _expanded_rehearsal_bundle(
                 p06.evidence_bundle
             )
@@ -211,6 +238,7 @@ def build_rehearsal_checkpoints(
         mapping,
         blueprint=p06.blueprint,
         bundle=p06.evidence_bundle,
+        planning_policy=p06.planning_policy,
     )
     plan = build_assessment_plan(
         mapping=mapping,
@@ -265,6 +293,7 @@ def build_rehearsal_checkpoints(
     return RehearsalCheckpoints(
         scenario_id=scenario_id,
         p04_request=p04,
+        p05_request=p05,
         p06_request=p06,
         p07_request=p07,
         p08_request=p08,
@@ -376,11 +405,21 @@ def blueprint_review_is_approvable(review: m.BlueprintReview) -> bool:
 class _BlueprintReviewNotApprovable(ContextValidationError):
     """Content-free rehearsal failure with enum-only review observability."""
 
-    def __init__(self, review: m.BlueprintReview) -> None:
+    def __init__(
+        self,
+        review: m.BlueprintReview,
+        blueprint: m.AssessmentBlueprint,
+    ) -> None:
         super().__init__(
             "P05_NOT_APPROVABLE",
             "P05 output does not permit the canonical product transition",
         )
+        templates = [
+            template
+            for dimension in blueprint.dimensions
+            for variant in dimension.evidence_variants
+            for template in variant.question_opportunities
+        ]
         self.safe_metadata = {
             "review_status": str(review.status),
             "approval_recommendation": (
@@ -405,6 +444,80 @@ class _BlueprintReviewNotApprovable(ContextValidationError):
                     for check in review.checks
                     if check.status == m.ReviewCheckStatus.WARN
                 }
+            ),
+            "blueprint_dimension_count": len(blueprint.dimensions),
+            "blueprint_variant_count": sum(
+                len(dimension.evidence_variants)
+                for dimension in blueprint.dimensions
+            ),
+            "blueprint_template_count": len(templates),
+            "blueprint_operation_counts": {
+                str(operation): sum(
+                    template.cognitive_operation == operation
+                    for template in templates
+                )
+                for operation in sorted(
+                    {template.cognitive_operation for template in templates},
+                    key=str,
+                )
+            },
+            "blueprint_difficulty_counts": {
+                str(difficulty): sum(
+                    template.difficulty == difficulty
+                    for template in templates
+                )
+                for difficulty in sorted(
+                    {template.difficulty for template in templates},
+                    key=str,
+                )
+            },
+        }
+
+
+class _AssessmentPlanNotReady(ContextValidationError):
+    """Content-free planner failure with threshold and shape observability."""
+
+    def __init__(
+        self,
+        plan: m.AssessmentPlan,
+        mapping: m.EvidenceMapPatch,
+        policy: m.AssessmentPlanningPolicy,
+    ) -> None:
+        super().__init__(
+            "ASSESSMENT_PLAN_INFEASIBLE",
+            "planner did not produce a complete plan",
+        )
+        evidence_fits = [
+            opportunity.evidence_fit for opportunity in mapping.opportunities
+        ]
+        qualities = [
+            opportunity.opportunity_quality
+            for opportunity in mapping.opportunities
+        ]
+        self.safe_metadata = {
+            "plan_status": str(plan.status),
+            "mapping_status": str(mapping.status),
+            "question_count": plan.question_count,
+            "opportunity_count": len(mapping.opportunities),
+            "minimum_evidence_fit": policy.minimum_evidence_fit,
+            "eligible_evidence_fit_count": sum(
+                value >= policy.minimum_evidence_fit
+                for value in evidence_fits
+            ),
+            "minimum_observed_evidence_fit": (
+                min(evidence_fits) if evidence_fits else None
+            ),
+            "maximum_observed_evidence_fit": (
+                max(evidence_fits) if evidence_fits else None
+            ),
+            "minimum_observed_opportunity_quality": (
+                min(qualities) if qualities else None
+            ),
+            "maximum_observed_opportunity_quality": (
+                max(qualities) if qualities else None
+            ),
+            "diagnostic_codes": sorted(
+                {diagnostic.code for diagnostic in plan.diagnostics}
             ),
         }
 
@@ -522,25 +635,17 @@ class ProductRehearsal:
             stages.append(
                 self._stage_row("P04_BLUEPRINT_BUILD_V1", p04, blueprint)
             )
-            p05 = m.BlueprintReviewRequest(
-                activity_spec=p04.activity_spec,
-                rubric_spec=p04.rubric_spec,
-                blueprint_policy=p04.blueprint_policy,
-                resolved_decisions=p04.resolved_decisions,
-                blueprint=blueprint,
-                deterministic_preflight=build_blueprint_review_preflight(
-                    blueprint=blueprint,
-                    activity_spec=p04.activity_spec,
-                    rubric_spec=p04.rubric_spec,
-                    blueprint_policy=p04.blueprint_policy,
-                ),
-            )
+
+        async def blueprint_review_checkpoint() -> None:
+            p05 = checkpoints.p05_request
             review = cast(
                 m.BlueprintReview,
                 await self._invoke("P05_BLUEPRINT_REVIEW_V1", p05),
             )
             if not blueprint_review_is_approvable(review):
-                raise _BlueprintReviewNotApprovable(review)
+                raise _BlueprintReviewNotApprovable(
+                    review, p05.blueprint
+                )
             stages.append(
                 self._stage_row("P05_BLUEPRINT_REVIEW_V1", p05, review)
             )
@@ -555,6 +660,7 @@ class ProductRehearsal:
                 mapping,
                 blueprint=request.blueprint,
                 bundle=request.evidence_bundle,
+                planning_policy=request.planning_policy,
             )
             stages.append(
                 self._stage_row("P06_EVIDENCE_MAP_V1", request, mapping)
@@ -574,16 +680,16 @@ class ProductRehearsal:
             stages.append(
                 self._stage_row("P07_QUESTION_BUILD_V1", p07, generation)
             )
-            p08 = checkpoints.p08_request.model_copy(
-                update={"generation_result": generation}
-            )
+
+        async def question_review_checkpoint() -> None:
+            p08 = checkpoints.p08_request
             review = cast(
                 m.QuestionReviewResult,
                 await self._invoke("P08_QUESTION_REVIEW_V1", p08),
             )
             validate_review_result(
                 review,
-                generation_result=generation,
+                generation_result=p08.generation_result,
                 validation_policy=p08.validation_policy,
             )
             stages.append(
@@ -605,9 +711,11 @@ class ProductRehearsal:
                 self._stage_row("P09_GUIDE_BUILD_V1", request, guide)
             )
 
-        await observe("P04_P05", blueprint_checkpoint)
+        await observe("P04", blueprint_checkpoint)
+        await observe("P05", blueprint_review_checkpoint)
         await observe("P06", evidence_checkpoint)
-        await observe("P07_P08", question_checkpoint)
+        await observe("P07", question_checkpoint)
+        await observe("P08", question_review_checkpoint)
         await observe("P09", guide_checkpoint)
         return RehearsalObservation(
             run_id=run_id,
@@ -663,7 +771,9 @@ class ProductRehearsal:
                 await self._invoke("P05_BLUEPRINT_REVIEW_V1", p05),
             )
             if not blueprint_review_is_approvable(blueprint_review):
-                raise _BlueprintReviewNotApprovable(blueprint_review)
+                raise _BlueprintReviewNotApprovable(
+                    blueprint_review, blueprint
+                )
             stages.append(
                 self._stage_row(
                     "P05_BLUEPRINT_REVIEW_V1", p05, blueprint_review
@@ -675,7 +785,10 @@ class ProductRehearsal:
 
             current_stage = "P06"
             p06 = checkpoints.p06_request.model_copy(
-                update={"blueprint": approved_blueprint}
+                update={
+                    "blueprint": approved_blueprint,
+                    "planning_policy": p04.blueprint_policy.planning_policy,
+                }
             )
             mapping = cast(
                 m.EvidenceMapPatch,
@@ -685,6 +798,7 @@ class ProductRehearsal:
                 mapping,
                 blueprint=approved_blueprint,
                 bundle=p06.evidence_bundle,
+                planning_policy=p06.planning_policy,
             )
             stages.append(
                 self._stage_row("P06_EVIDENCE_MAP_V1", p06, mapping)
@@ -694,13 +808,14 @@ class ProductRehearsal:
             plan = build_assessment_plan(
                 mapping=mapping,
                 blueprint=approved_blueprint,
-                policy=p04.blueprint_policy.planning_policy,
+                policy=p06.planning_policy,
             )
             validate_assessment_plan(plan, mapping=mapping)
             if plan.status != m.WorkflowStatus.READY:
-                raise ContextValidationError(
-                    "ASSESSMENT_PLAN_INFEASIBLE",
-                    "planner did not produce a complete plan",
+                raise _AssessmentPlanNotReady(
+                    plan,
+                    mapping,
+                    p06.planning_policy,
                 )
             stages.append(
                 {

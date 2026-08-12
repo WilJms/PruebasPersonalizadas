@@ -105,7 +105,7 @@ def test_historical_billable_gates_are_permanently_closed(mode: str) -> None:
 def test_product_rehearsal_fixture_is_synthetic_and_versioned() -> None:
     raw = json.loads(FIXTURE.read_text(encoding="utf-8"))
     assert raw["schema_version"] == (
-        "stage2-product-rehearsal-fixture/1.1.0"
+        "stage2-product-rehearsal-fixture/1.2.0"
     )
     assert raw["classification"] == "SYNTHETIC_ONLY_NO_STUDENT_DATA"
     assert set(raw["checkpoints"]) == {"A", "B", "C", "D"}
@@ -118,6 +118,18 @@ def test_product_rehearsal_fixture_is_synthetic_and_versioned() -> None:
         "evidence_units": 3,
         "artifacts": 2,
         "data_classification": "SYNTHETIC_ONLY_NO_STUDENT_DATA",
+    }
+    assert raw["execution_discovery"] == {
+        "independent_sweep_stages": [
+            "P04",
+            "P05",
+            "P06",
+            "P07",
+            "P08",
+            "P09",
+        ],
+        "p06_receives_planning_policy": True,
+        "failures_are_content_free": True,
     }
 
 
@@ -376,11 +388,28 @@ def test_real_convergence_accounts_for_context_invalid_billable_attempts(
         )
     )
     assert report["status"] == "FAIL"
-    assert report["controls"]["network_calls"] == 8
-    assert report["controls"]["provider_attempts"] == 8
-    assert report["controls"]["actual_cost_usd"] == 0.08
-    assert report["controls"]["budget_charged_usd"] == 0.096
+    # The independent sweep still observes P05-P09 after the P04 checkpoint
+    # fails; each of the three integrated chains then stops at its own P04.
+    assert report["controls"]["network_calls"] == 9
+    assert report["controls"]["provider_attempts"] == 9
+    assert report["controls"]["actual_cost_usd"] == 0.09
+    assert report["controls"]["budget_charged_usd"] == 0.108
     assert report["controls"]["unpriced_attempts"] == 0
+    sweep = report["observations"][0]
+    assert sweep["failure"]["aggregated_failures"] == [
+        {
+            "stage": "P04",
+            "codes": ["CONTEXT_INVARIANT_FAILED"],
+            "issues": [],
+        }
+    ]
+    assert [row["prompt_id"] for row in sweep["stages"]] == [
+        "P05_BLUEPRINT_REVIEW_V1",
+        "P06_EVIDENCE_MAP_V1",
+        "P07_QUESTION_BUILD_V1",
+        "P08_QUESTION_REVIEW_V1",
+        "P09_GUIDE_BUILD_V1",
+    ]
 
 
 def _real_cli_args(tmp_path: Path) -> argparse.Namespace:

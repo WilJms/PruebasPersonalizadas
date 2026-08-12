@@ -19,7 +19,7 @@ from .contracts import models as m
 PROMPT_APPLICATION_VALIDATOR_VERSIONS: Mapping[str, str] = MappingProxyType(
     {
         "P05_BLUEPRINT_REVIEW_V1": "application-validator-p05/2.1.0",
-        "P06_EVIDENCE_MAP_V1": "application-validator-p06/2.0.0",
+        "P06_EVIDENCE_MAP_V1": "application-validator-p06/2.1.0",
         "P07_QUESTION_BUILD_V1": "application-validator-p07/2.0.0",
         "P08_QUESTION_REVIEW_V1": "application-validator-p08/2.0.0",
         "P09_GUIDE_BUILD_V1": "application-validator-p09/2.0.0",
@@ -365,6 +365,7 @@ def validate_evidence_map(
     *,
     blueprint: m.AssessmentBlueprint,
     bundle: m.EvidenceBundle,
+    planning_policy: m.AssessmentPlanningPolicy,
 ) -> None:
     context = validate_evidence_context(bundle)
     validate_generated_output_safety(mapping)
@@ -612,6 +613,31 @@ def validate_evidence_map(
         code="DUPLICATE_QUESTION_OPPORTUNITY",
         label="semantic question opportunities",
     )
+    constraints = blueprint.assessment_constraints
+    if (
+        planning_policy.minimum_opportunity_quality
+        != constraints.minimum_opportunity_quality
+        or planning_policy.max_reserve_opportunities
+        != constraints.max_reserve_opportunities
+    ):
+        raise ContextValidationError(
+            "P06_PLANNING_POLICY_MISMATCH",
+            "planning policy differs from the approved blueprint constraints",
+        )
+    eligible_count = sum(
+        opportunity.evidence_fit >= planning_policy.minimum_evidence_fit
+        and bool(
+            set(opportunity.allowed_response_formats).intersection(
+                constraints.allowed_response_formats
+            )
+        )
+        for opportunity in mapping.opportunities
+    )
+    if eligible_count < constraints.question_count:
+        raise ContextValidationError(
+            "P06_READY_ELIGIBILITY_MISMATCH",
+            "READY mapping does not contain enough planner-eligible opportunities",
+        )
 
 
 def validate_assessment_plan(

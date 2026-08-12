@@ -46,9 +46,9 @@ PROMPT_RELATIONSHIP_VALIDATOR_VERSIONS: Mapping[str, str] = {
     "P03_AMBIGUITY_TRIAGE_V1": "relationship-p03/2.0.0",
     "P04_BLUEPRINT_BUILD_V1": "relationship-p04/2.0.0",
     "P05_BLUEPRINT_REVIEW_V1": "relationship-p05/2.2.0",
-    "P06_EVIDENCE_MAP_V1": "relationship-p06/2.1.0",
-    "P07_QUESTION_BUILD_V1": "relationship-p07/2.0.0",
-    "P08_QUESTION_REVIEW_V1": "relationship-p08/2.0.0",
+    "P06_EVIDENCE_MAP_V1": "relationship-p06/2.2.0",
+    "P07_QUESTION_BUILD_V1": "relationship-p07/2.1.0",
+    "P08_QUESTION_REVIEW_V1": "relationship-p08/2.1.0",
     "P09_GUIDE_BUILD_V1": "relationship-p09/2.0.0",
     "P10_ENRICHED_CONTEXT_V1": "relationship-p10/2.0.0",
     "P11_SCHEMA_REPAIR_V1": "relationship-p11/2.0.0",
@@ -102,6 +102,24 @@ class ContextFailureCode(StrEnum):
     P05_PREFLIGHT_MISMATCH = "P05_PREFLIGHT_MISMATCH"
     P05_PREFLIGHT_CHECK_MISMATCH = "P05_PREFLIGHT_CHECK_MISMATCH"
     P06_REFERENCE_MISMATCH = "P06_REFERENCE_MISMATCH"
+    P06_READY_ELIGIBILITY_MISMATCH = (
+        "P06_READY_ELIGIBILITY_MISMATCH"
+    )
+    P07_REQUEST_REFERENCE_MISMATCH = (
+        "P07_REQUEST_REFERENCE_MISMATCH"
+    )
+    P07_CANDIDATE_ID_MISMATCH = "P07_CANDIDATE_ID_MISMATCH"
+    P07_OPPORTUNITY_REFERENCE_MISMATCH = (
+        "P07_OPPORTUNITY_REFERENCE_MISMATCH"
+    )
+    P07_REJECTED_FINGERPRINT_REUSED = (
+        "P07_REJECTED_FINGERPRINT_REUSED"
+    )
+    P08_REQUEST_REFERENCE_MISMATCH = (
+        "P08_REQUEST_REFERENCE_MISMATCH"
+    )
+    P08_CANDIDATE_ID_MISMATCH = "P08_CANDIDATE_ID_MISMATCH"
+    P08_ACCEPTED_BELOW_POLICY = "P08_ACCEPTED_BELOW_POLICY"
     P09_GUIDE_ID_MISMATCH = "P09_GUIDE_ID_MISMATCH"
     P09_ASSESSMENT_ID_MISMATCH = "P09_ASSESSMENT_ID_MISMATCH"
     P09_SUBMISSION_ID_MISMATCH = "P09_SUBMISSION_ID_MISMATCH"
@@ -2049,6 +2067,23 @@ class ModelGateway:
                     phase=phase,
                     failure_code=ContextFailureCode.P06_REFERENCE_MISMATCH,
                 )
+            if output.status == "READY" and sum(
+                opportunity.evidence_fit
+                >= request.planning_policy.minimum_evidence_fit
+                and bool(
+                    set(opportunity.allowed_response_formats).intersection(
+                        request.blueprint.assessment_constraints.allowed_response_formats
+                    )
+                )
+                for opportunity in output.opportunities
+            ) < request.blueprint.assessment_constraints.question_count:
+                raise GatewayContextError(
+                    "P06 READY output lacks enough planner-eligible opportunities",
+                    phase=phase,
+                    failure_code=(
+                        ContextFailureCode.P06_READY_ELIGIBILITY_MISMATCH
+                    ),
+                )
             for opportunity in output.opportunities:
                 path = template_paths.get(
                     opportunity.opportunity_template_id
@@ -2105,17 +2140,22 @@ class ModelGateway:
                     failure_code=ContextFailureCode.P06_REFERENCE_MISMATCH,
                 )
         elif prompt_id in {"P07_QUESTION_BUILD_V1", "P10_ENRICHED_CONTEXT_V1"}:
+            codes: list[ContextFailureCode] = []
             if (
                 output.submission_id != request.plan.submission_id
                 or output.opportunity_id != request.opportunity.opportunity_id
                 or output.context_mode != request.evidence_bundle.context_mode
             ):
-                raise GatewayContextError("Question output does not match its authorized request")
+                codes.append(
+                    ContextFailureCode.P07_REQUEST_REFERENCE_MISMATCH
+                )
             if output.candidate is not None:
                 candidate = output.candidate
+                if candidate.candidate_id != request.target_candidate_id:
+                    codes.append(
+                        ContextFailureCode.P07_CANDIDATE_ID_MISMATCH
+                    )
                 if (
-                    candidate.candidate_id != request.target_candidate_id
-                    or
                     candidate.opportunity_template_id
                     != request.opportunity.opportunity_template_id
                     or candidate.dimension_id != request.opportunity.dimension_id
@@ -2123,30 +2163,41 @@ class ModelGateway:
                     or candidate.cognitive_operation
                     != request.opportunity.cognitive_operation
                 ):
-                    raise GatewayContextError("Question output changed its planned opportunity")
-                if not set(candidate.evidence_ids).issubset(
-                    set(request.evidence_bundle.allowed_evidence_ids)
-                ):
-                    raise GatewayContextError("Question output invented evidence_ids")
+                    codes.append(
+                        ContextFailureCode.P07_OPPORTUNITY_REFERENCE_MISMATCH
+                    )
                 normalized_question_hash = _hash(
                     re.sub(r"\s+", " ", candidate.question_text).strip().casefold()
                 )
                 if normalized_question_hash in {
                     item.normalized_question_hash for item in request.avoid
                 }:
-                    raise GatewayContextError(
-                        "Question output repeated a rejected question fingerprint"
+                    codes.append(
+                        ContextFailureCode.P07_REJECTED_FINGERPRINT_REUSED
                     )
+            if codes:
+                raise GatewayContextError(
+                    "P07 output failed authorized request relationships",
+                    failure=ContextFailure(
+                        phase=phase,
+                        codes=tuple(dict.fromkeys(codes)),
+                    ),
+                )
         elif prompt_id == "P08_QUESTION_REVIEW_V1":
+            codes = []
             if (
                 output.submission_id != request.evidence_bundle.submission_id
                 or output.opportunity_id != request.opportunity.opportunity_id
             ):
-                raise GatewayContextError("P08 output request reference mismatch")
+                codes.append(
+                    ContextFailureCode.P08_REQUEST_REFERENCE_MISMATCH
+                )
             if output.review is not None:
                 candidate = request.generation_result.candidate
                 if candidate is None or output.review.candidate_id != candidate.candidate_id:
-                    raise GatewayContextError("P08 reviewed a different candidate")
+                    codes.append(
+                        ContextFailureCode.P08_CANDIDATE_ID_MISMATCH
+                    )
                 review = output.review
                 policy = request.validation_policy
                 if review.decision == models.ReviewDecision.ACCEPT and (
@@ -2159,9 +2210,17 @@ class ModelGateway:
                     < policy.minimum_criterion_relevance
                     or review.scores.answerability < policy.minimum_answerability
                 ):
-                    raise GatewayContextError(
-                        "P08 accepted a question below trusted validation gates"
+                    codes.append(
+                        ContextFailureCode.P08_ACCEPTED_BELOW_POLICY
                     )
+            if codes:
+                raise GatewayContextError(
+                    "P08 output failed authorized request relationships",
+                    failure=ContextFailure(
+                        phase=phase,
+                        codes=tuple(dict.fromkeys(codes)),
+                    ),
+                )
         elif prompt_id == "P09_GUIDE_BUILD_V1":
             if output.guide_id != request.guide_id:
                 raise GatewayContextError(

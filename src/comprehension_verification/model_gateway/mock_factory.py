@@ -1174,7 +1174,9 @@ def build_mock_request(prompt_id: str) -> BaseModel:
         )
     if prompt_id == "P06_EVIDENCE_MAP_V1":
         return models.EvidenceMapRequest(
-            blueprint=_blueprint(), evidence_bundle=_evidence_bundle()
+            blueprint=_blueprint(),
+            planning_policy=_blueprint_policy().planning_policy,
+            evidence_bundle=_evidence_bundle(),
         )
     if prompt_id in {"P07_QUESTION_BUILD_V1", "P10_ENRICHED_CONTEXT_V1"}:
         enriched = prompt_id == "P10_ENRICHED_CONTEXT_V1"

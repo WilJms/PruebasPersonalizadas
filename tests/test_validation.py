@@ -92,7 +92,12 @@ def test_evidence_map_rejects_invented_evidence_id() -> None:
     mapping = evidence_map(bp, bundle)
     mapping.opportunities[0].evidence_ids = ["ev_invented"]
     with pytest.raises(ContextValidationError, match="unknown evidence"):
-        validate_evidence_map(mapping, blueprint=bp, bundle=bundle)
+        validate_evidence_map(
+            mapping,
+            blueprint=bp,
+            bundle=bundle,
+            planning_policy=planning_policy(),
+        )
 
 
 def test_evidence_map_rejects_cross_dimension_variant_alignment() -> None:
@@ -120,7 +125,12 @@ def test_evidence_map_rejects_cross_dimension_variant_alignment() -> None:
         )
     ]
     with pytest.raises(ContextValidationError, match="unknown dimension"):
-        validate_evidence_map(mapping, blueprint=bp, bundle=bundle)
+        validate_evidence_map(
+            mapping,
+            blueprint=bp,
+            bundle=bundle,
+            planning_policy=planning_policy(),
+        )
 
 
 def test_evidence_map_rejects_template_constraint_rewrite() -> None:
@@ -129,7 +139,12 @@ def test_evidence_map_rejects_template_constraint_rewrite() -> None:
     mapping = evidence_map(bp, bundle)
     mapping.opportunities[0].target_minutes += 1
     with pytest.raises(ContextValidationError, match="source-bound template"):
-        validate_evidence_map(mapping, blueprint=bp, bundle=bundle)
+        validate_evidence_map(
+            mapping,
+            blueprint=bp,
+            bundle=bundle,
+            planning_policy=planning_policy(),
+        )
 
 
 def test_evidence_map_enforces_variant_alignment_and_match_evidence() -> None:
@@ -138,12 +153,45 @@ def test_evidence_map_enforces_variant_alignment_and_match_evidence() -> None:
     uncertain = evidence_map(bp, bundle, opportunity_count=1)
     uncertain.variant_matches[0].mapping_confidence = 0.1
     with pytest.raises(ContextValidationError, match="alignment floor"):
-        validate_evidence_map(uncertain, blueprint=bp, bundle=bundle)
+        validate_evidence_map(
+            uncertain,
+            blueprint=bp,
+            bundle=bundle,
+            planning_policy=planning_policy(),
+        )
 
     widened = evidence_map(bp, bundle, opportunity_count=1)
     widened.opportunities[0].evidence_ids = [bundle.evidence_units[1].evidence_id]
     with pytest.raises(ContextValidationError, match="widens the evidence"):
-        validate_evidence_map(widened, blueprint=bp, bundle=bundle)
+        validate_evidence_map(
+            widened,
+            blueprint=bp,
+            bundle=bundle,
+            planning_policy=planning_policy(),
+        )
+
+
+def test_ready_evidence_map_requires_planner_eligible_opportunities() -> None:
+    bp = blueprint(question_count=2)
+    bundle = evidence_bundle()
+    policy = planning_policy(minimum_evidence_fit=0.7)
+    mapping = evidence_map(
+        bp,
+        bundle,
+        opportunity_count=2,
+        evidence_fit=0.69,
+    )
+
+    with pytest.raises(
+        ContextValidationError,
+        match="planner-eligible opportunities",
+    ):
+        validate_evidence_map(
+            mapping,
+            blueprint=bp,
+            bundle=bundle,
+            planning_policy=policy,
+        )
 
 
 def test_question_rejects_non_derivable_anchor() -> None:

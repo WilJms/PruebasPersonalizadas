@@ -3321,12 +3321,16 @@
         "blueprint": {
           "$ref": "#/$defs/AssessmentBlueprint"
         },
+        "planning_policy": {
+          "$ref": "#/$defs/AssessmentPlanningPolicy"
+        },
         "evidence_bundle": {
           "$ref": "#/$defs/EvidenceBundle"
         }
       },
       "required": [
         "blueprint",
+        "planning_policy",
         "evidence_bundle"
       ],
       "title": "EvidenceMapRequest",
