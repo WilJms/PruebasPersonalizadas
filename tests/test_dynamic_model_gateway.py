@@ -95,6 +95,8 @@ def _activity_pipeline_inputs() -> tuple[
     blueprint = _invoke(
         "P04_BLUEPRINT_BUILD_V1",
         m.BlueprintBuildRequest(
+            target_blueprint_id="bp_custom",
+            target_blueprint_version=1,
             activity_spec=activity_spec,
             blueprint_policy=blueprint_policy,
         ),
@@ -235,6 +237,7 @@ def test_p07_p08_and_p09_derive_ids_anchors_scores_and_guide_from_request() -> N
         generation = _invoke(
             "P07_QUESTION_BUILD_V1",
             m.QuestionBuildRequest(
+                target_candidate_id=f"candidate_custom_{index}",
                 plan=plan,
                 opportunity=opportunity,
                 evidence_bundle=bundle,

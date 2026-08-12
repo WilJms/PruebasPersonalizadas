@@ -4,6 +4,7 @@ from datetime import UTC, datetime
 import json
 import logging
 from pathlib import Path
+import re
 import secrets
 from time import monotonic
 from typing import Annotated, Any, cast
@@ -25,10 +26,14 @@ from .repository import (
     Conflict,
     ExportRow,
     EvidenceRow,
+    FeedbackEventRow,
     GuideRow,
     NotFound,
+    PolicyDecisionRow,
+    QuestionReviewActionRow,
     Repository,
     SubmissionRow,
+    BulkApprovalRecordRow,
 )
 from .rate_limit import FixedWindowRateLimiter
 from .runtime import Runtime, build_runtime
@@ -58,6 +63,40 @@ PROBLEM_RESPONSES = {
     for status in (401, 403, 404, 409, 410, 412, 422, 428, 429, 500)
 }
 
+# Every authenticated JSON mutation must have an explicit, content-minimal
+# replay recipe before its side effect is allowed to run. This makes a newly
+# added route fail closed instead of silently persisting its full response.
+_ID_PATH = r"[a-z][a-z0-9_-]{2,127}"
+IDEMPOTENT_MUTATION_ROUTES = (
+    ("POST", re.compile(r"^/api/v1/activities$"), "/api/v1/activities"),
+    ("PATCH", re.compile(rf"^/api/v1/activities/{_ID_PATH}$"), "/api/v1/activities/{activity_id}"),
+    ("POST", re.compile(rf"^/api/v1/activities/{_ID_PATH}/artifacts/uploads$"), "/api/v1/activities/{activity_id}/artifacts/uploads"),
+    ("POST", re.compile(rf"^/api/v1/submissions/{_ID_PATH}/artifacts/uploads$"), "/api/v1/submissions/{submission_id}/artifacts/uploads"),
+    ("POST", re.compile(rf"^/api/v1/activities/{_ID_PATH}/artifacts/{_ID_PATH}:complete$"), "/api/v1/activities/{activity_id}/artifacts/{artifact_id}:complete"),
+    ("POST", re.compile(rf"^/api/v1/submissions/{_ID_PATH}/artifacts/{_ID_PATH}:complete$"), "/api/v1/submissions/{submission_id}/artifacts/{artifact_id}:complete"),
+    ("POST", re.compile(rf"^/api/v1/activities/{_ID_PATH}/blueprints:generate$"), "/api/v1/activities/{activity_id}/blueprints:generate"),
+    ("POST", re.compile(rf"^/api/v1/activities/{_ID_PATH}/decisions$"), "/api/v1/activities/{activity_id}/decisions"),
+    ("PATCH", re.compile(rf"^/api/v1/activities/{_ID_PATH}/blueprints/[1-9][0-9]*$"), "/api/v1/activities/{activity_id}/blueprints/{version}"),
+    ("POST", re.compile(rf"^/api/v1/activities/{_ID_PATH}/blueprints/[1-9][0-9]*:approve$"), "/api/v1/activities/{activity_id}/blueprints/{version}:approve"),
+    ("POST", re.compile(rf"^/api/v1/activities/{_ID_PATH}/submissions$"), "/api/v1/activities/{activity_id}/submissions"),
+    ("POST", re.compile(rf"^/api/v1/activities/{_ID_PATH}/submissions:batch$"), "/api/v1/activities/{activity_id}/submissions:batch"),
+    ("POST", re.compile(rf"^/api/v1/submissions/{_ID_PATH}:run$"), "/api/v1/submissions/{submission_id}:run"),
+    ("POST", re.compile(rf"^/api/v1/jobs/{_ID_PATH}:(retry|cancel|resume)$"), "/api/v1/jobs/{job_id}:control"),
+    ("POST", re.compile(r"^/api/v1/feedback$"), "/api/v1/feedback"),
+    ("POST", re.compile(rf"^/api/v1/assessments/{_ID_PATH}/questions/{_ID_PATH}/actions$"), "/api/v1/assessments/{assessment_id}/questions/{question_id}/actions"),
+    ("POST", re.compile(rf"^/api/v1/assessments/{_ID_PATH}/evidence:verify$"), "/api/v1/assessments/{assessment_id}/evidence:verify"),
+    ("POST", re.compile(rf"^/api/v1/assessments/{_ID_PATH}:approve$"), "/api/v1/assessments/{assessment_id}:approve"),
+    ("POST", re.compile(rf"^/api/v1/assessments/{_ID_PATH}/exports$"), "/api/v1/assessments/{assessment_id}/exports"),
+    ("POST", re.compile(rf"^/api/v1/activities/{_ID_PATH}/assessments:bulk-approve$"), "/api/v1/activities/{activity_id}/assessments:bulk-approve"),
+)
+
+
+def _idempotent_mutation_template(method: str, path: str) -> str | None:
+    for expected_method, pattern, template in IDEMPOTENT_MUTATION_ROUTES:
+        if method == expected_method and pattern.fullmatch(path):
+            return template
+    return None
+
 
 def _safe_route_template(request: Request) -> str:
     """Return a framework route template, never a user-controlled URL/path."""
@@ -86,6 +125,11 @@ def _problem(status_code: int, code: str, detail: str, request: Request) -> JSON
     )
 
 
+def _utc_json_datetime(value: datetime) -> str:
+    normalized = value if value.tzinfo is not None else value.replace(tzinfo=UTC)
+    return normalized.astimezone(UTC).isoformat().replace("+00:00", "Z")
+
+
 def _activity_payload(row: ActivityRow, repository: Repository) -> dict[str, Any]:
     value = dict(row.config)
     blueprint = None
@@ -93,8 +137,8 @@ def _activity_payload(row: ActivityRow, repository: Repository) -> dict[str, Any
         {
             "activity_id": row.id,
             "status": row.status,
-            "created_at": row.created_at.isoformat(),
-            "updated_at": row.updated_at.isoformat(),
+            "created_at": _utc_json_datetime(row.created_at),
+            "updated_at": _utc_json_datetime(row.updated_at),
         }
     )
     try:
@@ -107,8 +151,19 @@ def _activity_payload(row: ActivityRow, repository: Repository) -> dict[str, Any
         value["latest_blueprint_version"] = None
         value["approved_blueprint_version"] = None
     submission = repository.submission_for_activity(row.id, row.tenant_id)
-    job = repository.latest_job_for_aggregate(
-        submission.id if submission is not None else row.id, row.tenant_id
+    activity_job = repository.latest_job_for_aggregate(row.id, row.tenant_id)
+    submission_job = (
+        repository.latest_job_for_aggregate(submission.id, row.tenant_id)
+        if submission is not None
+        else None
+    )
+    job = (
+        activity_job
+        if activity_job is not None
+        and activity_job.stage == "BLUEPRINT_REVIEW"
+        and activity_job.status
+        in {"QUEUED", "RUNNING", "FAILED", "NEEDS_REVIEW"}
+        else submission_job or activity_job
     )
     assessment_row = None
     if submission is not None:
@@ -356,6 +411,14 @@ def create_app(
         )
         return response
 
+    def current_assessment_bundle(submission_id: str, actor: Actor) -> dict[str, Any]:
+        value = runtime.stage2.assessment_review_view(submission_id, actor)
+        value["evidence"] = [
+            item["evidence"]
+            for item in runtime.service.evidence_view(submission_id, actor)
+        ]
+        return dto.AssessmentEnvelope.model_validate(value).model_dump(mode="json")
+
     def replay_response(
         descriptor: dict[str, Any], actor: Actor
     ) -> JSONResponse:
@@ -482,8 +545,156 @@ def create_app(
                     }
                 }
             ).model_dump(mode="json")
+        elif kind == "activity":
+            row = cast(
+                ActivityRow,
+                runtime.repository.scoped(
+                    ActivityRow, str(descriptor["activity_id"]), actor.workspace_id
+                ),
+            )
+            body = dto.ActivityEnvelope.model_validate(
+                {"activity": _activity_payload(row, runtime.repository)}
+            ).model_dump(mode="json")
+        elif kind == "artifact":
+            row = cast(
+                ArtifactRow,
+                runtime.repository.scoped(
+                    ArtifactRow, str(descriptor["artifact_id"]), actor.workspace_id
+                ),
+            )
+            body = dto.ArtifactEnvelope.model_validate(
+                {"artifact": _artifact_payload(row)}
+            ).model_dump(mode="json")
+        elif kind == "operation":
+            job_id = str(descriptor["job_id"])
+            body = dto.OperationEnvelope.model_validate(
+                {
+                    "job_id": job_id,
+                    "submission_id": descriptor.get("submission_id"),
+                    "operation": runtime.repository.job_status(
+                        job_id, actor.workspace_id
+                    ),
+                }
+            ).model_dump(mode="json")
+        elif kind == "policy_decision":
+            row = cast(
+                PolicyDecisionRow,
+                runtime.repository.scoped(
+                    PolicyDecisionRow,
+                    str(descriptor["decision_id"]),
+                    actor.workspace_id,
+                ),
+            )
+            body = dto.PolicyDecisionEnvelope.model_validate(
+                {"decision": row.data}
+            ).model_dump(mode="json")
+        elif kind == "job":
+            job_id = str(descriptor["job_id"])
+            body = dto.JobEnvelope.model_validate(
+                {"job": runtime.repository.job_status(job_id, actor.workspace_id)}
+            ).model_dump(mode="json")
+        elif kind == "blueprint":
+            row = runtime.repository.blueprint_version(
+                str(descriptor["activity_id"]),
+                int(descriptor["version"]),
+                actor.workspace_id,
+            )
+            body = dto.BlueprintEnvelope.model_validate(
+                {
+                    "blueprint": row.data,
+                    "review": row.review,
+                    "issues": (row.review or {}).get("diagnostics", []),
+                    "etag": row.etag,
+                    "version": row.version,
+                }
+            ).model_dump(mode="json")
+        elif kind == "submission":
+            row = cast(
+                SubmissionRow,
+                runtime.repository.scoped(
+                    SubmissionRow,
+                    str(descriptor["submission_id"]),
+                    actor.workspace_id,
+                ),
+            )
+            body = dto.SubmissionEnvelope.model_validate(
+                {"submission": _submission_payload(row, runtime.repository)}
+            ).model_dump(mode="json")
+        elif kind == "submission_batch":
+            rows = [
+                cast(
+                    SubmissionRow,
+                    runtime.repository.scoped(
+                        SubmissionRow, str(submission_id), actor.workspace_id
+                    ),
+                )
+                for submission_id in descriptor["submission_ids"]
+            ]
+            body = dto.SubmissionBatchEnvelope.model_validate(
+                {
+                    "submissions": [
+                        _submission_payload(row, runtime.repository) for row in rows
+                    ],
+                    "created_count": len(rows),
+                }
+            ).model_dump(mode="json")
+        elif kind == "job_control":
+            body = dto.JobControlEnvelope.model_validate(
+                runtime.stage2.job_control_view(
+                    str(descriptor["job_id"]), actor
+                )
+            ).model_dump(mode="json")
+        elif kind == "feedback":
+            row = cast(
+                FeedbackEventRow,
+                runtime.repository.scoped(
+                    FeedbackEventRow,
+                    str(descriptor["feedback_id"]),
+                    actor.workspace_id,
+                ),
+            )
+            body = dto.FeedbackEnvelope.model_validate(
+                {"feedback": row.data}
+            ).model_dump(mode="json")
+        elif kind == "question_action":
+            row = cast(
+                QuestionReviewActionRow,
+                runtime.repository.scoped(
+                    QuestionReviewActionRow,
+                    str(descriptor["record_id"]),
+                    actor.workspace_id,
+                ),
+            )
+            if row.submission_id != descriptor.get("submission_id"):
+                raise Conflict("IDEMPOTENCY_QUESTION_ACTION_CHANGED")
+            body = dto.QuestionReviewActionEnvelope.model_validate(
+                {
+                    "action_record": row.data,
+                    "bundle": current_assessment_bundle(row.submission_id, actor),
+                }
+            ).model_dump(mode="json")
+        elif kind == "assessment":
+            body = current_assessment_bundle(
+                str(descriptor["submission_id"]), actor
+            )
+            if body["assessment"]["assessment_id"] != descriptor.get(
+                "assessment_id"
+            ):
+                raise Conflict("IDEMPOTENCY_ASSESSMENT_CHANGED")
+        elif kind == "bulk_approval":
+            row = cast(
+                BulkApprovalRecordRow,
+                runtime.repository.scoped(
+                    BulkApprovalRecordRow,
+                    str(descriptor["approval_id"]),
+                    actor.workspace_id,
+                ),
+            )
+            body = dto.BulkApprovalEnvelope.model_validate(
+                {"bulk_approval": row.data}
+            ).model_dump(mode="json")
         else:
-            body = cast(dict[str, Any], descriptor["body"])
+            raise Conflict("IDEMPOTENCY_DESCRIPTOR_UNSUPPORTED")
         response = JSONResponse(body, status_code=int(descriptor["status_code"]))
         etag = cast(dict[str, Any], descriptor.get("headers", {})).get("etag")
         if isinstance(etag, str):
@@ -503,6 +714,19 @@ def create_app(
             "role": actor.role,
             "can_approve_assessments": actor.can_approve_assessments,
         }
+        route_template = _idempotent_mutation_template(
+            request.method, request.url.path
+        )
+        if route_template is None:
+            raise RuntimeError("IDEMPOTENCY_ROUTE_UNSUPPORTED")
+        base = {
+            "descriptor_version": "idempotency-reference/2.0.0",
+            "route": route_template,
+            "response_hash": canonical_hash(body),
+            "status_code": response.status_code,
+            "headers": headers,
+            "authorization": authorization,
+        }
         if response.headers.get("etag"):
             headers["etag"] = str(response.headers["etag"])
         if request.url.path.endswith("/artifacts/uploads"):
@@ -516,45 +740,122 @@ def create_app(
                 ),
             )
             return {
+                **base,
                 "kind": "upload",
                 "artifact_id": upload["artifact_id"],
                 # This is an address, not a capability. A replay uses it to
                 # mint a fresh short-lived URL for the exact disposable
                 # reservation even after the Artifact moves to a sealed key.
                 "upload_object_key": artifact.object_key,
-                "status_code": response.status_code,
-                "headers": headers,
-                "authorization": authorization,
             }
         if request.url.path.endswith("/exports"):
             exported = cast(dict[str, Any], body["export"])
             record = cast(dict[str, Any], body["record"])
             return {
+                **base,
                 "kind": "export",
                 "export_id": exported["export_id"],
                 "export_kinds": record["requested_kinds"],
-                "status_code": response.status_code,
-                "headers": headers,
-                "authorization": authorization,
             }
         if request.url.path.endswith("/evidence:verify"):
             verification = dto.EvidenceVerifyEnvelope.model_validate(
                 body
             ).verification
             return {
+                **base,
                 "kind": "evidence_verify",
                 "receipt": verification.receipt.model_dump(mode="json"),
-                "status_code": response.status_code,
-                "headers": headers,
-                "authorization": authorization,
             }
-        return {
-            "kind": "json",
-            "body": body,
-            "status_code": response.status_code,
-            "headers": headers,
-            "authorization": authorization,
-        }
+        if route_template in {
+            "/api/v1/activities",
+            "/api/v1/activities/{activity_id}",
+        }:
+            return {
+                **base,
+                "kind": "activity",
+                "activity_id": body["activity"]["activity_id"],
+            }
+        if route_template.endswith(":complete"):
+            return {
+                **base,
+                "kind": "artifact",
+                "artifact_id": body["artifact"]["artifact_id"],
+            }
+        if route_template in {
+            "/api/v1/activities/{activity_id}/blueprints:generate",
+            "/api/v1/submissions/{submission_id}:run",
+        }:
+            return {
+                **base,
+                "kind": "operation",
+                "job_id": body["job_id"],
+                "submission_id": body.get("submission_id"),
+            }
+        if route_template == "/api/v1/activities/{activity_id}/decisions":
+            return {
+                **base,
+                "kind": "policy_decision",
+                "decision_id": body["decision"]["decision_id"],
+            }
+        if (
+            route_template
+            == "/api/v1/activities/{activity_id}/blueprints/{version}"
+        ):
+            return {**base, "kind": "job", "job_id": body["job"]["job_id"]}
+        if route_template.endswith("/blueprints/{version}:approve"):
+            return {
+                **base,
+                "kind": "blueprint",
+                "activity_id": body["blueprint"]["activity_id"],
+                "version": body["version"],
+            }
+        if route_template == "/api/v1/activities/{activity_id}/submissions":
+            return {
+                **base,
+                "kind": "submission",
+                "submission_id": body["submission"]["submission_id"],
+            }
+        if route_template.endswith("/submissions:batch"):
+            return {
+                **base,
+                "kind": "submission_batch",
+                "submission_ids": [
+                    item["submission_id"] for item in body["submissions"]
+                ],
+            }
+        if route_template == "/api/v1/jobs/{job_id}:control":
+            return {
+                **base,
+                "kind": "job_control",
+                "job_id": body["job"]["job_id"],
+            }
+        if route_template == "/api/v1/feedback":
+            return {
+                **base,
+                "kind": "feedback",
+                "feedback_id": body["feedback"]["feedback_id"],
+            }
+        if route_template.endswith("/questions/{question_id}/actions"):
+            return {
+                **base,
+                "kind": "question_action",
+                "record_id": body["action_record"]["record_id"],
+                "submission_id": body["action_record"]["submission_id"],
+            }
+        if route_template == "/api/v1/assessments/{assessment_id}:approve":
+            return {
+                **base,
+                "kind": "assessment",
+                "assessment_id": body["assessment"]["assessment_id"],
+                "submission_id": body["assessment"]["submission_id"],
+            }
+        if route_template.endswith("/assessments:bulk-approve"):
+            return {
+                **base,
+                "kind": "bulk_approval",
+                "approval_id": body["bulk_approval"]["approval_id"],
+            }
+        raise RuntimeError("IDEMPOTENCY_DESCRIPTOR_UNSUPPORTED")
 
     @app.middleware("http")
     async def domain_idempotency(request: Request, call_next: Any) -> Response:
@@ -576,6 +877,13 @@ def create_app(
             # A cached success never bypasses the same CSRF boundary as the
             # first request. Let the dependency emit its canonical 403.
             return await call_next(request)
+        if _idempotent_mutation_template(request.method, request.url.path) is None:
+            return _problem(
+                500,
+                "IDEMPOTENCY_ROUTE_UNSUPPORTED",
+                "The mutation has no content-minimal replay descriptor.",
+                request,
+            )
         key = request.headers.get("Idempotency-Key", "")
         try:
             if len(key) > 128:
@@ -610,7 +918,10 @@ def create_app(
         )
         try:
             replay = runtime.repository.reserve_idempotency(
-                actor.workspace_id, key, fingerprint
+                actor.workspace_id,
+                key,
+                fingerprint,
+                ttl_seconds=selected.idempotency_ttl_seconds,
             )
         except Conflict as exc:
             code = str(exc) if str(exc).isupper() else "RESOURCE_CONFLICT"
@@ -646,7 +957,11 @@ def create_app(
                 raise RuntimeError("Mutable JSON responses must be objects")
             descriptor = replay_descriptor(request, response, parsed, actor)
             runtime.repository.complete_idempotency(
-                actor.workspace_id, key, fingerprint, descriptor
+                actor.workspace_id,
+                key,
+                fingerprint,
+                descriptor,
+                ttl_seconds=selected.idempotency_ttl_seconds,
             )
             rebuilt.headers["Idempotency-Replayed"] = "false"
             return rebuilt
@@ -1299,9 +1614,6 @@ def create_app(
         job_id: str,
         actor: Annotated[Actor, Depends(current_actor)],
     ) -> dict[str, Any]:
-        runtime.repository.reconcile_stale_jobs(
-            lease_seconds=runtime.settings.job_lease_seconds
-        )
         return {"job": runtime.repository.job_status(job_id, actor.workspace_id).model_dump(mode="json")}
 
     @app.get(

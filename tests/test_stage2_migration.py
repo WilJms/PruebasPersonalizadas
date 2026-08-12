@@ -25,6 +25,10 @@ FORWARD = (
     ROOT
     / "deploy/supabase/migrations/202608070003_stage2_experimental.sql"
 )
+CONVERGENCE = (
+    ROOT
+    / "deploy/supabase/migrations/202608120004_stage2_convergence.sql"
+)
 RECOVERY = (
     ROOT
     / "deploy/supabase/rollbacks/202608070003_stage2_experimental_recovery.sql"
@@ -175,6 +179,7 @@ def test_stage2_job_stage_and_export_columns_are_explicit_and_fail_closed() -> N
         "cancelled_at",
     }:
         assert re.search(rf"add column\s+{column}\b", sql)
+
     assert "ck_jobs_cancelled_projection" in sql
     assert "ix_jobs_claim_eligible" in sql
     assert "max_attempts between 1 and 10" in sql
@@ -207,6 +212,18 @@ def test_stage2_job_stage_and_export_columns_are_explicit_and_fail_closed() -> N
         "data",
     }:
         assert re.search(rf"add column\s+{column}\b", sql)
+
+
+def test_convergence_migration_bounds_idempotency_replay_retention() -> None:
+    sql = CONVERGENCE.read_text(encoding="utf-8").lower()
+    assert sql.startswith("begin;")
+    assert sql.rstrip().endswith("commit;")
+    assert "add column expires_at timestamptz" in sql
+    assert "alter column expires_at set not null" in sql
+    assert "interval '24 hours'" in sql
+    assert "ix_idempotency_keys_expires_at" in sql
+    assert "drop table" not in sql
+    assert "drop column" not in sql
 
 
 def test_recovery_refuses_loss_before_restoring_e1_constraints() -> None:

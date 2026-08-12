@@ -38,6 +38,9 @@ from comprehension_verification.model_gateway.openai_schema import (
     structured_output_format,
 )
 from comprehension_verification.model_gateway.registry import prompt_spec
+from comprehension_verification.model_gateway.gateway import (
+    PROMPT_RELATIONSHIP_VALIDATOR_VERSIONS,
+)
 
 
 EXPECTED_PROMPT_CONTRACTS = {
@@ -108,27 +111,24 @@ def test_registry_is_exact_complete_and_immutable() -> None:
         assert model_by_name(request_root).__name__ == request_root
         assert model_by_name(output_root).__name__ == output_root
 
-    assert PROMPT_SPECS["P01_ACTIVITY_SPEC_V1"].prompt_version == "1.1.2"
-    assert PROMPT_SPECS["P02_RUBRIC_NORMALIZE_V1"].prompt_version == "1.1.3"
-    assert PROMPT_SPECS["P04_BLUEPRINT_BUILD_V1"].prompt_version == "1.1.9"
-    assert PROMPT_SPECS["P05_BLUEPRINT_REVIEW_V1"].prompt_version == "1.1.5"
-    assert PROMPT_SPECS["P09_GUIDE_BUILD_V1"].prompt_version == "1.1.5"
-    assert PROMPT_SPECS["P11_SCHEMA_REPAIR_V1"].prompt_version == "1.1.4"
     assert {
-        spec.prompt_version
-        for prompt_id, spec in PROMPT_SPECS.items()
-        if prompt_id
-        not in {
-            "P02_RUBRIC_NORMALIZE_V1",
-            "P04_BLUEPRINT_BUILD_V1",
-            "P05_BLUEPRINT_REVIEW_V1",
-            "P09_GUIDE_BUILD_V1",
-            "P11_SCHEMA_REPAIR_V1",
-        }
-    } == {"1.1.2"}
+        prompt_id: spec.prompt_version for prompt_id, spec in PROMPT_SPECS.items()
+    } == {
+        "P01_ACTIVITY_SPEC_V1": "1.1.3",
+        "P02_RUBRIC_NORMALIZE_V1": "1.1.4",
+        "P03_AMBIGUITY_TRIAGE_V1": "1.1.3",
+        "P04_BLUEPRINT_BUILD_V1": "1.1.10",
+        "P05_BLUEPRINT_REVIEW_V1": "1.1.6",
+        "P06_EVIDENCE_MAP_V1": "1.1.3",
+        "P07_QUESTION_BUILD_V1": "1.1.3",
+        "P08_QUESTION_REVIEW_V1": "1.1.3",
+        "P09_GUIDE_BUILD_V1": "1.1.6",
+        "P10_ENRICHED_CONTEXT_V1": "1.1.3",
+        "P11_SCHEMA_REPAIR_V1": "1.1.5",
+    }
     assert (
         PROMPT_SPECS["P01_ACTIVITY_SPEC_V1"].prompt_hash
-        == "sha256:b706477b13e33e8a2f3d1847c86af5b917fa93f17a5071cfe821f692a8c41b4a"
+        == "sha256:e6406c13c06d52b3e2523166f48206c5cb0f892f26f8dc9258e311d8330d3d3e"
     )
 
     with pytest.raises(TypeError):
@@ -252,6 +252,19 @@ def test_blueprint_requests_require_self_contained_teacher_decisions() -> None:
     ):
         models.BlueprintBuildRequest.model_validate(raw)
 
+
+def test_source_contracts_reject_duplicate_statement_and_level_ids() -> None:
+    activity = _invoke("P01_ACTIVITY_SPEC_V1").output.model_dump(mode="json")
+    activity["requirements"].append(dict(activity["learning_outcomes"][0]))
+    with pytest.raises(ValidationError, match="ActivitySpec statement_ids must be unique"):
+        models.ActivitySpec.model_validate(activity)
+
+    rubric = _invoke("P02_RUBRIC_NORMALIZE_V1").output.model_dump(mode="json")
+    duplicate = json.loads(json.dumps(rubric["criteria"][0]))
+    duplicate["criterion_id"] = "criterion_duplicate"
+    rubric["criteria"].append(duplicate)
+    with pytest.raises(ValidationError, match="RubricSpec level_ids must be unique"):
+        models.RubricSpec.model_validate(rubric)
 
 @pytest.mark.parametrize("prompt_id", tuple(EXPECTED_PROMPT_CONTRACTS))
 def test_every_prompt_happy_path_is_canonical_and_deterministic(prompt_id: str) -> None:
@@ -847,6 +860,12 @@ def test_p04_rejects_missing_verifiable_source_coverage() -> None:
                             update={
                                 "criterion_id": "criterion_2",
                                 "name": "Límite",
+                                "levels": [
+                                    level.model_copy(
+                                        update={"level_id": "level_criterion_2"}
+                                    )
+                                    for level in first.levels
+                                ],
                             }
                         ),
                     ]
@@ -1009,6 +1028,92 @@ def test_blocked_p11_preserves_primary_p07_validation_failure_and_ledger() -> No
         ("value_error", "/")
     ]
     assert not isinstance(error.__context__, ValidationError)
+
+
+def test_real_attestation_is_verified_before_adapter_transport() -> None:
+    prompt_id = "P04_BLUEPRINT_BUILD_V1"
+    request = build_mock_request(prompt_id)
+
+    class CountingAdapter(DeterministicMockAdapter):
+        calls = 0
+
+        async def invoke(self, **kwargs) -> AdapterResult:  # type: ignore[no-untyped-def]
+            self.calls += 1
+            return await super().invoke(**kwargs)
+
+    adapter = CountingAdapter()
+    routes = build_openai_routes(max_call_cost_usd=1.0)
+    gateway = ModelGateway(
+        GatewayConfig(mode=GatewayMode.REAL, max_retries=0),
+        real_routes=routes,
+        adapters={"openai": adapter},
+    )
+    forged = build_trusted_context(request).model_copy(
+        update={"attested_input_hash": "sha256:" + "0" * 64}
+    )
+
+    with pytest.raises(GatewayContextError) as captured:
+        asyncio.run(gateway.invoke(prompt_id, request, forged))
+
+    assert captured.value.failure.codes == (
+        ContextFailureCode.SYNTHETIC_ATTESTATION_HASH_MISMATCH,
+    )
+    assert adapter.calls == 0
+    assert captured.value.ledgers == ()
+
+
+def test_execution_fingerprint_invalidates_only_affected_prompt(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    gateway = ModelGateway()
+    p04_before = gateway.execution_fingerprint("P04_BLUEPRINT_BUILD_V1")
+    p07_before = gateway.execution_fingerprint("P07_QUESTION_BUILD_V1")
+
+    monkeypatch.setitem(
+        PROMPT_RELATIONSHIP_VALIDATOR_VERSIONS,
+        "P04_BLUEPRINT_BUILD_V1",
+        "relationship-p04/test-local-change",
+    )
+
+    assert gateway.execution_fingerprint("P04_BLUEPRINT_BUILD_V1") != p04_before
+    assert gateway.execution_fingerprint("P07_QUESTION_BUILD_V1") == p07_before
+
+
+def test_cached_output_replays_context_and_relationship_validation() -> None:
+    prompt_id = "P07_QUESTION_BUILD_V1"
+    request = build_mock_request(prompt_id)
+    context = build_trusted_context(request)
+    output = _invoke(prompt_id).output.model_dump(mode="json")
+    output["candidate"]["candidate_id"] = "candidate_stale_other_scope"
+
+    with pytest.raises(GatewayContextError):
+        ModelGateway().validate_cached_output(
+            prompt_id,
+            request,
+            context,
+            output,
+        )
+
+
+def test_p11_rejects_semantic_mutation_even_when_target_shape_is_valid() -> None:
+    def mutate_semantics(raw: dict) -> None:
+        raw["repaired_output"]["learning_outcomes"][0]["text"] = (
+            "Invented semantic replacement"
+        )
+
+    gateway = ModelGateway(
+        mock_adapter=ContextBreakingAdapter(
+            "P11_SCHEMA_REPAIR_V1", mutate_semantics
+        )
+    )
+
+    with pytest.raises(
+        GatewayContextError,
+        match="failed contextual validation",
+    ) as exc_info:
+        _invoke("P11_SCHEMA_REPAIR_V1", gateway=gateway)
+    assert exc_info.value.__cause__ is not None
+    assert "semantic content" in str(exc_info.value.__cause__)
 
 
 def test_direct_p11_repair_is_structural_and_target_valid() -> None:

@@ -63,12 +63,8 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
   useEffect(() => {
     if (!cloudAuthEnabled) return undefined;
-    return subscribeToCloudSession((supabaseSession) => {
-      if (!supabaseSession?.access_token) {
-        setSession(null);
-        return;
-      }
-      void exchangeSession(supabaseSession.access_token)
+    return subscribeToCloudSession((accessToken) => {
+      void exchangeSession(accessToken)
         .then(setSession)
         .catch(() => setSession(null));
     });

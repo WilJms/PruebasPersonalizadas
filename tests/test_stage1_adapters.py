@@ -77,7 +77,7 @@ def test_r2_adapter_uses_bounded_private_signed_operations(monkeypatch) -> None:
     assert base64.b64decode(fake.puts[0]["ChecksumSHA256"])
 
 
-def test_cloud_run_dispatch_sends_no_job_or_subject_override(monkeypatch) -> None:
+def test_cloud_run_dispatch_binds_only_the_exact_opaque_job_id(monkeypatch) -> None:
     calls: list[tuple[str, dict, int]] = []
 
     class FakeResponse:
@@ -116,7 +116,21 @@ def test_cloud_run_dispatch_sends_no_job_or_subject_override(monkeypatch) -> Non
         (
             "https://run.googleapis.com/v2/projects/project-test/locations/"
             "us-central1/jobs/cva-worker:run",
-            {},
+            {
+                "overrides": {
+                    "taskCount": 1,
+                    "containerOverrides": [
+                        {
+                            "env": [
+                                {
+                                    "name": "CVA_CLAIM_JOB_ID",
+                                    "value": "job-secret-subject",
+                                }
+                            ]
+                        }
+                    ],
+                }
+            },
             20,
         )
     ]

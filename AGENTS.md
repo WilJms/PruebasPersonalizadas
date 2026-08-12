@@ -8,10 +8,13 @@
 - Etapa 0: cerrada y protegida por regresión.
 - Etapa 1: cerrada y protegida por regresión.
 - Etapa 2: activa exclusivamente para el entorno experimental usable descrito
-  en la especificación, el plan, el MVP y ADR-030 a ADR-034.
+  en la especificación, el plan, el MVP y ADR-030 a ADR-036.
 - Etapa 3: no autorizada.
-- IA real y datos estudiantiles reales: no autorizados; cloud conserva
+- Datos estudiantiles reales: no autorizados. El producto cloud conserva
   `CVA_MODEL_MODE=mock` y `CVA_P10_ENABLED=false`.
+- IA real sólo se autoriza en un gate de evaluación aislado, sintético,
+  explícitamente aprobado, con frontera hash-bound, ledger exactly-once y caps
+  de requests/costo según ADR-035/ADR-036. No habilita IA real en cloud.
 
 La apertura incluye múltiples submissions, ingestión DOCX segura,
 retry/cancel/resume funcional, acciones y regeneración localizada por pregunta,
@@ -24,7 +27,7 @@ historias de Etapa 3.
 1. `specification/models_v1.1(1).py` es la única fuente manual de contratos.
 2. `specification/contracts.schema_v1.1(1).json` es generado y nunca se edita a
    mano.
-3. Aplicar ADR aceptados; ADR-030 a ADR-034 sustituyen decisiones anteriores
+3. Aplicar ADR aceptados; ADR-030 a ADR-036 sustituyen decisiones anteriores
    según su texto.
 4. Plan/MVP mandan sobre el alcance inmediato.
 
@@ -45,7 +48,9 @@ No copie ni redefina modelos Pydantic. Importe `comprehension_verification.contr
 - E1 procesa exactamente una submission por actividad; E2 retira esa
   restricción mediante migración compatible y conserva aprobación humana de
   blueprint y assessment;
-- `CVA_MODEL_MODE=mock` es el modo de cierre; P10 sigue deshabilitado.
+- `CVA_MODEL_MODE=mock` es el modo de cierre del producto y cloud; P10 sigue
+  deshabilitado. El rehearsal real sintético es una superficie separada y
+  nunca cambia esa configuración.
 - en cloud, `CVA_DATABASE_URL` debe usar explícitamente
   `postgresql+psycopg://`; SQLite y drivers implícitos fallan antes del arranque;
 - `/api/health` es liveness sin dependencias y `/api/readiness` comprueba
@@ -71,6 +76,9 @@ make frontend-install
 make frontend-typecheck
 make frontend-test
 make frontend-build
+make openai-convergence-dry-run
+# Sólo con autorización humana, IDs únicos, ledger durable, reporte y caps:
+make openai-convergence-real EXECUTION_ID=... AUTHORIZATION_ID=... LEDGER=... REPORT=...
 make postgres-prepare CVA_TEST_POSTGRES_URL=postgresql://...
 make postgres-e2e CVA_TEST_POSTGRES_URL=postgresql://...
 make postgres-sensitive CVA_TEST_POSTGRES_URL=postgresql://...

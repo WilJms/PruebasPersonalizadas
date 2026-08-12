@@ -2,7 +2,10 @@ from __future__ import annotations
 
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
+from dataclasses import replace
+from datetime import UTC, datetime, timedelta
 from threading import Barrier
+from typing import cast
 
 import pytest
 from pydantic import ValidationError
@@ -11,6 +14,8 @@ from comprehension_verification.canonical import sha256_bytes
 from comprehension_verification.contracts import models as m
 from comprehension_verification.diagnostics import diagnostic
 from comprehension_verification.model_gateway import (
+    AdapterResult,
+    DeterministicMockAdapter,
     GatewayConfig,
     GatewayMode,
     ModelGateway,
@@ -349,6 +354,50 @@ def test_idempotency_reservation_is_fail_closed_until_completed() -> None:
     assert repo.reserve_idempotency("tnt_backend", unsafe_key, fingerprint) is None
 
 
+def test_completed_idempotency_expires_but_inflight_reservations_never_reclaim() -> None:
+    repo = Repository("sqlite+pysqlite://")
+    now = datetime(2026, 8, 12, 12, 0, tzinfo=UTC)
+    fingerprint = "sha256:" + "a" * 64
+    replacement = "sha256:" + "b" * 64
+    descriptor = {"kind": "activity", "activity_id": "act_reference"}
+
+    assert repo.reserve_idempotency(
+        "tnt_backend", "expiring-key", fingerprint, ttl_seconds=300, now=now
+    ) is None
+    repo.complete_idempotency(
+        "tnt_backend",
+        "expiring-key",
+        fingerprint,
+        descriptor,
+        ttl_seconds=300,
+        now=now,
+    )
+    assert repo.reserve_idempotency(
+        "tnt_backend",
+        "expiring-key",
+        fingerprint,
+        ttl_seconds=300,
+        now=now + timedelta(seconds=299),
+    ) == descriptor
+    assert repo.reserve_idempotency(
+        "tnt_backend",
+        "expiring-key",
+        replacement,
+        ttl_seconds=300,
+        now=now + timedelta(seconds=300),
+    ) is None
+
+    assert repo.reserve_idempotency(
+        "tnt_backend", "inflight-key", fingerprint, ttl_seconds=300, now=now
+    ) is None
+    with pytest.raises(Conflict, match="IDEMPOTENCY_REQUEST_IN_PROGRESS"):
+        repo.reserve_idempotency(
+            "tnt_backend",
+            "inflight-key",
+            fingerprint,
+            ttl_seconds=300,
+            now=now + timedelta(days=1),
+        )
 def test_activity_pipeline_stops_on_non_ready_p01_without_blueprint() -> None:
     repo = Repository("sqlite+pysqlite://")
     store = MemoryObjectStore(
@@ -770,10 +819,18 @@ def test_blueprint_edit_is_durable_before_p05_and_runs_in_real_worker_mode() -> 
     worker_service = Stage1Service(
         settings=WorkerSettings(
             environment="test",
-            database_url="sqlite+pysqlite://",
-            model_mode="real",
-            openai_api_key="sk-project-synthetic-placeholder-not-a-real-key",
-        ),
+                database_url="sqlite+pysqlite://",
+                model_mode="real",
+                openai_api_key="sk-project-synthetic-placeholder-not-a-real-key",
+                synthetic_artifact_sha256_allowlist=cast(
+                    str,
+                    repo.artifacts_for(
+                        activity_id="act_backend",
+                        tenant_id=actor.workspace_id,
+                        submission_id=None,
+                    )[0].sha256,
+                ),
+            ),
         repository=repo,
         object_store=store,
         gateway_factory=lambda job_id: ModelGateway(
@@ -886,6 +943,57 @@ def test_blueprint_edit_is_durable_before_p05_and_runs_in_real_worker_mode() -> 
             tenant_id=actor.workspace_id, job_id=retry.id
         )
     ] == ["P05_BLUEPRINT_REVIEW_V1"]
+
+    class RejectingP05Adapter(DeterministicMockAdapter):
+        async def invoke(self, **kwargs: object) -> AdapterResult:
+            result = await super().invoke(**kwargs)  # type: ignore[arg-type]
+            if kwargs["prompt_id"] != "P05_BLUEPRINT_REVIEW_V1":
+                return result
+            raw = dict(result.raw_output)
+            raw["approval_recommendation"] = "REJECT"
+            checks = [dict(item) for item in raw["checks"]]
+            checks[0]["status"] = "FAIL"
+            checks[0]["critical"] = True
+            raw["checks"] = checks
+            return replace(result, raw_output=raw)
+
+    rejected_edit = retried_value.model_copy(
+        update={
+            "dimensions": [
+                dimension.model_copy(
+                    update={"name": f"{dimension.name} rechazada"}
+                )
+                for dimension in retried_value.dimensions
+            ]
+        }
+    )
+    rejected_job = asyncio.run(
+        web_service.edit_blueprint(
+            activity_id="act_backend",
+            version=retried.version,
+            if_match=retried.etag,
+            edited=rejected_edit,
+            actor=actor,
+        )
+    )
+    worker_service.gateway_factory = lambda job_id: ModelGateway(
+        GatewayConfig(mode=GatewayMode.MOCK, job_id=job_id),
+        mock_adapter=RejectingP05Adapter(),
+        ledger_sink=repo.model_call_sink,
+    )
+    asyncio.run(worker_service.process_job(rejected_job.job_id))
+
+    assert repo.job_status(
+        rejected_job.job_id, actor.workspace_id
+    ).status == "NEEDS_REVIEW"
+    assert repo.latest_blueprint(
+        "act_backend", actor.workspace_id
+    ).version == retried.version
+    blocked_activity = repo.scoped(
+        ActivityRow, "act_backend", actor.workspace_id
+    )
+    assert isinstance(blocked_activity, ActivityRow)
+    assert blocked_activity.status == "NEEDS_REVIEW"
 
 
 def test_submission_job_is_bound_to_exact_approved_blueprint_version() -> None:

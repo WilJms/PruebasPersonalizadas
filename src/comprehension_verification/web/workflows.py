@@ -26,7 +26,6 @@ from ..model_gateway import (
     ModelGateway,
     TransientProviderError,
 )
-from ..model_gateway.mock_factory import build_trusted_context
 from ..model_gateway.openai_pricing import estimate_cost_usd
 from ..model_gateway.openai_routes import (
     LUNA_MODEL_ID,
@@ -35,7 +34,7 @@ from ..model_gateway.openai_routes import (
     OPENAI_MODEL_BY_PROMPT,
     OPENAI_ROUTE_PROFILE_MAX_TRANSIENT_RETRIES,
 )
-from ..model_gateway.registry import PROMPT_VERSION, prompt_spec
+from ..model_gateway.registry import prompt_spec
 from ..parsers import (
     DOCX_MEDIA_TYPE,
     PARSER_VERSION,
@@ -47,6 +46,7 @@ from ..parsers import (
 from ..planning import PLANNER_VERSION, build_assessment_plan
 from ..validation import (
     ContextValidationError,
+    PROMPT_APPLICATION_VALIDATOR_VERSIONS,
     validate_assessment_plan,
     validate_evaluation_guide,
     validate_evidence_map,
@@ -88,9 +88,216 @@ ALLOWED_MEDIA_TYPES = frozenset(
     {"text/plain", "text/markdown", "application/pdf", DOCX_MEDIA_TYPE}
 )
 ACTIVITY_UPLOAD_OPEN_STATUSES = frozenset({"DRAFT"})
-ACTIVITY_PIPELINE_VERSION = "stage1-activity-pipeline/1.0.0"
-SUBMISSION_PIPELINE_VERSION = "stage1-submission-pipeline/1.0.0"
-ASSEMBLER_VERSION = "stage1-assembler/1.0.0"
+ACTIVITY_PIPELINE_VERSION = "stage1-activity-pipeline/2.0.0"
+SUBMISSION_PIPELINE_VERSION = "stage1-submission-pipeline/2.0.0"
+ASSEMBLER_VERSION = "stage1-assembler/2.0.0"
+BLUEPRINT_REVIEW_DESCRIPTOR_VERSION = "blueprint-review-descriptor/2.0.0"
+
+
+def _blueprint_review_descriptor_component_version() -> str:
+    return (
+        "blueprint-review-descriptor/2:"
+        + canonical_hash(
+            {
+                "format": BLUEPRINT_REVIEW_DESCRIPTOR_VERSION,
+                "request_schema": m.BlueprintReviewRequest.model_json_schema(
+                    mode="validation"
+                ),
+            }
+        ).removeprefix("sha256:")
+    )
+
+
+def _component_fingerprint(prefix: str, material: Any) -> str:
+    return f"{prefix}:" + canonical_hash(material).removeprefix("sha256:")
+
+
+def _parser_component_version(*, require_libmagic: bool) -> str:
+    return _component_fingerprint(
+        "safe-parser-stage/2",
+        {
+            "parser_version": PARSER_VERSION,
+            "require_libmagic": require_libmagic,
+            "artifact_schema": m.ArtifactRef.model_json_schema(mode="validation"),
+            "evidence_schema": m.EvidenceUnit.model_json_schema(mode="validation"),
+        },
+    )
+
+
+def _planner_component_version() -> str:
+    return _component_fingerprint(
+        "assessment-planner-stage/2",
+        {
+            "planner_version": PLANNER_VERSION,
+            "mapping_schema": m.EvidenceMapPatch.model_json_schema(
+                mode="validation"
+            ),
+            "blueprint_schema": m.AssessmentBlueprint.model_json_schema(
+                mode="validation"
+            ),
+            "plan_schema": m.AssessmentPlan.model_json_schema(mode="validation"),
+        },
+    )
+
+
+def _assembler_component_version() -> str:
+    return _component_fingerprint(
+        "assessment-assembler-stage/2",
+        {
+            "assembler_version": ASSEMBLER_VERSION,
+            "assessment_schema": m.Assessment.model_json_schema(mode="validation"),
+        },
+    )
+
+
+def assemble_assessment_snapshot(
+    *,
+    tenant_id: str,
+    activity_id: str,
+    submission_id: str,
+    subject_ref: str,
+    created_at: datetime,
+    blueprint: m.AssessmentBlueprint,
+    plan: m.AssessmentPlan,
+    mapping: m.EvidenceMapPatch,
+    questions: list[m.SelectedQuestion],
+    assignment_prompt_hashes: list[str],
+    rubric_hashes: list[str],
+    submission_hashes: list[str],
+    submission_media_type: str,
+    prompt_versions: dict[str, str],
+    model_snapshots: dict[str, str],
+    policy_hash: str,
+) -> m.Assessment:
+    """Build the canonical Assessment used by both product and rehearsals.
+
+    Keeping this deterministic assembler as one production function prevents
+    the evaluation harness from manufacturing a friendlier P09 input shape.
+    """
+
+    required = [
+        question.question_id
+        for question in questions
+        if question.student_justification_required
+    ]
+    mode = blueprint.assessment_constraints.structured_justification_policy.mode
+    opportunity_by_dimension: dict[str, list[m.QuestionOpportunity]] = {}
+    for opportunity in mapping.opportunities:
+        opportunity_by_dimension.setdefault(
+            opportunity.dimension_id, []
+        ).append(opportunity)
+    coverage = [
+        m.CoverageItem(
+            dimension_id=dimension.dimension_id,
+            available_variant_count=len(dimension.evidence_variants),
+            available_opportunity_count=len(
+                opportunity_by_dimension.get(dimension.dimension_id, [])
+            ),
+            selected_opportunity_count=sum(
+                question.dimension_id == dimension.dimension_id
+                for question in questions
+            ),
+            reused_variant_count=0,
+            evidence_unit_count=len(
+                {
+                    evidence_id
+                    for opportunity in opportunity_by_dimension.get(
+                        dimension.dimension_id, []
+                    )
+                    for evidence_id in opportunity.evidence_ids
+                }
+            ),
+            diagnostics=[],
+        )
+        for dimension in blueprint.dimensions
+    ]
+    normalized_created_at = (
+        created_at.replace(tzinfo=UTC)
+        if created_at.tzinfo is None
+        else created_at.astimezone(UTC)
+    )
+
+    assessment_id = stable_id(
+        "assessment",
+        submission_id,
+        plan.plan_id,
+        [question.source_candidate_id for question in questions],
+    )
+    return m.Assessment(
+        assessment_id=assessment_id,
+        tenant_id=tenant_id,
+        activity_id=activity_id,
+        submission_id=submission_id,
+        subject_ref=subject_ref,
+        status=m.WorkflowStatus.NEEDS_REVIEW,
+        context_mode=m.ContextMode.CLOSED,
+        assessment_plan_id=plan.plan_id,
+        question_count=plan.question_count,
+        questions=questions,
+        coverage=coverage,
+        structured_justification=m.StructuredJustificationSummary(
+            mode=mode,
+            required_question_ids=required,
+            limited_evidence_notice_required=(
+                mode != m.StructuredJustificationMode.ALL
+            ),
+        ),
+        diagnostics=[],
+        lineage=m.Lineage(
+            assignment_prompt_hashes=assignment_prompt_hashes,
+            rubric_hashes=rubric_hashes,
+            submission_hashes=submission_hashes,
+            blueprint_id=blueprint.blueprint_id,
+            blueprint_version=blueprint.blueprint_version,
+            parser_versions={submission_media_type: PARSER_VERSION},
+            prompt_versions=prompt_versions,
+            model_snapshots=model_snapshots,
+            policy_hash=policy_hash,
+            planner_version=PLANNER_VERSION,
+            renderer_version=RENDERER_VERSION,
+        ),
+        created_at=normalized_created_at,
+    )
+
+
+def selected_question_from_candidate(
+    candidate: m.QuestionCandidate,
+    opportunity: m.QuestionOpportunity,
+    *,
+    submission_id: str,
+) -> m.SelectedQuestion:
+    """Apply the product's deterministic candidate-to-assessment projection."""
+
+    return m.SelectedQuestion(
+        question_id=stable_id(
+            "question", submission_id, candidate.candidate_id
+        ),
+        source_candidate_id=candidate.candidate_id,
+        opportunity_id=candidate.opportunity_id,
+        opportunity_template_id=candidate.opportunity_template_id,
+        dimension_id=candidate.dimension_id,
+        variant_id=candidate.variant_id,
+        cognitive_operation=candidate.cognitive_operation,
+        response_format=candidate.response_format,
+        difficulty=candidate.difficulty,
+        estimated_minutes=candidate.estimated_minutes,
+        question_text=candidate.question_text,
+        anchor=candidate.anchor,
+        evidence_ids=candidate.evidence_ids,
+        course_source_ids=candidate.course_source_ids,
+        citations=candidate.citations,
+        choices=candidate.choices,
+        student_justification_required=(
+            candidate.student_justification_required
+        ),
+        preliminary_guide=candidate.preliminary_guide,
+        planning_score=(
+            opportunity.activity_priority
+            + opportunity.evidence_fit
+            + opportunity.opportunity_quality
+        )
+        / 3,
+    )
 
 _ACTIVITY_RESUME_ORDER = {
     "ACTIVITY_PARSE": 0,
@@ -106,8 +313,8 @@ _SUBMISSION_RESUME_ORDER = {
     "ASSESSMENT_PLAN": 2,
     "QUESTION_GENERATE": 3,
     "QUESTION_REVIEW": 4,
-    "GUIDE_BUILD": 5,
-    "ASSEMBLE": 6,
+    "ASSEMBLE": 5,
+    "GUIDE_BUILD": 6,
 }
 _BLUEPRINT_REVIEW_RESUME_ORDER = {"BLUEPRINT_REVIEW": 0}
 _PROMPT_APPLICATION_STAGE = {
@@ -144,6 +351,8 @@ _SECURITY_FAILURE_CODES = frozenset(
         "MODEL_CONTEXT_NOT_ALLOWLISTED",
         "MODEL_SAFETY_BLOCK",
         "REJECTED_SECURITY",
+        "SYNTHETIC_ATTESTATION_REQUIRED",
+        "SYNTHETIC_ATTESTATION_SCOPE_MISMATCH",
     }
 )
 
@@ -1247,13 +1456,66 @@ class Stage1Service:
             activity_id=activity.id, tenant_id=job.tenant_id, submission_id=None
         )
         evidence_by_role: dict[str, list[m.EvidenceUnit]] = {}
+        self._set_job(job, "ACTIVITY_PARSE", 0.05)
         for artifact in artifacts:
             self._cancellation_checkpoint(job)
-            parsed = self._parse_bytes(
-                artifact, self._verified_artifact_bytes(artifact)
+            parse_inputs = {
+                "artifact_id": artifact.id,
+                "artifact_sha256": artifact.sha256,
+                "artifact_byte_size": artifact.byte_size,
+                "declared_media_type": artifact.declared_media_type,
+                "media_type": artifact.media_type,
+                "role": artifact.role,
+            }
+            parse_policy_hash = self._stage_policy_hash(job)
+            parse_component_version = _parser_component_version(
+                require_libmagic=self.settings.require_libmagic
             )
+            parse_stage = f"ACTIVITY_PARSE:{artifact.id}"
+            cached_parse = self.repository.stage_by_key(
+                tenant_id=job.tenant_id,
+                stage=parse_stage,
+                inputs=parse_inputs,
+                policy_hash=parse_policy_hash,
+                component_version=parse_component_version,
+            )
+            if cached_parse is not None and cached_parse.output is not None:
+                evidence_units = tuple(
+                    TypeAdapter(list[m.EvidenceUnit]).validate_python(
+                        cached_parse.output.get("evidence_units", [])
+                    )
+                )
+                if not evidence_units:
+                    raise WorkflowError(
+                        "STAGE_RESUME_REUSE_MISSING",
+                        "The reusable activity parse has no verified evidence output.",
+                        status_code=409,
+                    )
+                self._record_stage_reuse(job, cached_parse)
+            else:
+                self._assert_application_stage_may_execute(
+                    job, "ACTIVITY_PARSE"
+                )
+                parsed = self._parse_bytes(
+                    artifact, self._verified_artifact_bytes(artifact)
+                )
+                evidence_units = tuple(parsed.evidence_units)
+                self.repository.save_stage(
+                    job_id=job.id,
+                    tenant_id=job.tenant_id,
+                    stage=parse_stage,
+                    inputs=parse_inputs,
+                    component_version=parse_component_version,
+                    policy_hash=parse_policy_hash,
+                    output={
+                        "evidence_units": [
+                            item.model_dump(mode="json")
+                            for item in evidence_units
+                        ]
+                    },
+                )
             self._cancellation_checkpoint(job)
-            evidence_by_role[artifact.role] = list(parsed.evidence_units)
+            evidence_by_role[artifact.role] = list(evidence_units)
         prompt_evidence = evidence_by_role.get(m.ArtifactRole.ASSIGNMENT_PROMPT.value, [])
         self._set_job(job, "ACTIVITY_SPEC", 0.15)
         p01 = await self._gateway_stage(
@@ -1337,6 +1599,8 @@ class Stage1Service:
             job,
             "P04_BLUEPRINT_BUILD_V1",
             m.BlueprintBuildRequest(
+                target_blueprint_id=stable_id("blueprint", activity.id),
+                target_blueprint_version=1,
                 activity_spec=p01,
                 rubric_spec=rubric,
                 resolved_decisions=resolved_decisions,
@@ -1416,7 +1680,8 @@ class Stage1Service:
                 status_code=409,
             )
         if (
-            descriptor.component_version != PROMPT_VERSION
+            descriptor.component_version
+            != _blueprint_review_descriptor_component_version()
             or descriptor.policy_hash != self._stage_policy_hash(job)
         ):
             raise WorkflowError(
@@ -1545,12 +1810,15 @@ class Stage1Service:
             "media_type": artifact.media_type,
         }
         parse_policy_hash = self._stage_policy_hash(job)
+        parse_component_version = _parser_component_version(
+            require_libmagic=self.settings.require_libmagic
+        )
         cached_parse = self.repository.stage_by_key(
             tenant_id=job.tenant_id,
             stage="SUBMISSION_PARSE",
             inputs=parse_inputs,
             policy_hash=parse_policy_hash,
-            component_version=PARSER_VERSION,
+            component_version=parse_component_version,
         )
         if cached_parse is not None and cached_parse.output is not None:
             evidence_units = tuple(
@@ -1576,7 +1844,7 @@ class Stage1Service:
                 tenant_id=job.tenant_id,
                 stage="SUBMISSION_PARSE",
                 inputs=parse_inputs,
-                component_version=PARSER_VERSION,
+                component_version=parse_component_version,
                 policy_hash=parse_policy_hash,
                 output={
                     "evidence_units": [
@@ -1623,12 +1891,13 @@ class Stage1Service:
             "planning_policy": policy.planning_policy.model_dump(mode="json"),
         }
         plan_policy_hash = self._stage_policy_hash(job)
+        planner_component_version = _planner_component_version()
         cached_plan = self.repository.stage_by_key(
             tenant_id=job.tenant_id,
             stage="ASSESSMENT_PLAN",
             inputs=plan_inputs,
             policy_hash=plan_policy_hash,
-            component_version=PLANNER_VERSION,
+            component_version=planner_component_version,
         )
         if cached_plan is not None and cached_plan.output is not None:
             plan = m.AssessmentPlan.model_validate(cached_plan.output)
@@ -1645,7 +1914,7 @@ class Stage1Service:
                 tenant_id=job.tenant_id,
                 stage="ASSESSMENT_PLAN",
                 inputs=plan_inputs,
-                component_version=PLANNER_VERSION,
+                component_version=planner_component_version,
                 policy_hash=plan_policy_hash,
                 output=plan.model_dump(mode="json"),
             )
@@ -1675,6 +1944,13 @@ class Stage1Service:
                 job,
                 "P07_QUESTION_BUILD_V1",
                 m.QuestionBuildRequest(
+                    target_candidate_id=stable_id(
+                        "candidate",
+                        submission.id,
+                        plan.plan_id,
+                        opportunity.opportunity_id,
+                        "initial",
+                    ),
                     plan=plan,
                     opportunity=opportunity,
                     evidence_bundle=bundle,
@@ -1716,47 +1992,27 @@ class Stage1Service:
                     continue
                 break
             candidate = generation.candidate
-            question_id = stable_id("question", submission.id, candidate.candidate_id)
-            selected_question = m.SelectedQuestion(
-                question_id=question_id,
-                source_candidate_id=candidate.candidate_id,
-                opportunity_id=candidate.opportunity_id,
-                opportunity_template_id=candidate.opportunity_template_id,
-                dimension_id=candidate.dimension_id,
-                variant_id=candidate.variant_id,
-                cognitive_operation=candidate.cognitive_operation,
-                response_format=candidate.response_format,
-                difficulty=candidate.difficulty,
-                estimated_minutes=candidate.estimated_minutes,
-                question_text=candidate.question_text,
-                anchor=candidate.anchor,
-                evidence_ids=candidate.evidence_ids,
-                course_source_ids=candidate.course_source_ids,
-                citations=candidate.citations,
-                choices=candidate.choices,
-                student_justification_required=candidate.student_justification_required,
-                preliminary_guide=candidate.preliminary_guide,
-                planning_score=(opportunity.activity_priority + opportunity.evidence_fit + opportunity.opportunity_quality) / 3,
+            selected_question = selected_question_from_candidate(
+                candidate,
+                opportunity,
+                submission_id=submission.id,
             )
             selected.append(selected_question)
-            reviews[question_id] = review
-            with self.repository.session() as session:
-                session.merge(
-                    GeneratedQuestionRow(
-                        id=candidate.candidate_id,
-                        tenant_id=job.tenant_id,
-                        submission_id=submission.id,
-                        data=generation.model_dump(mode="json"),
-                    )
-                )
-                session.merge(
-                    QuestionReviewRow(
-                        question_id=question_id,
-                        tenant_id=job.tenant_id,
-                        submission_id=submission.id,
-                        data=review.model_dump(mode="json"),
-                    )
-                )
+            reviews[selected_question.question_id] = review
+            self.repository.save_generated_question_and_review(
+                question=GeneratedQuestionRow(
+                    id=candidate.candidate_id,
+                    tenant_id=job.tenant_id,
+                    submission_id=submission.id,
+                    data=generation.model_dump(mode="json"),
+                ),
+                review=QuestionReviewRow(
+                    question_id=selected_question.question_id,
+                    tenant_id=job.tenant_id,
+                    submission_id=submission.id,
+                    data=review.model_dump(mode="json"),
+                ),
+            )
         if len(selected) != plan.question_count:
             self._terminal_domain_failure(
                 submission,
@@ -1765,16 +2021,75 @@ class Stage1Service:
                 [diagnostic("ASSESSMENT_PLAN_INFEASIBLE", "No fue posible validar exactamente N preguntas tras usar la reserva.")],
             )
             return
-        assessment = self._assemble_assessment(
-            activity=activity,
-            submission=submission,
-            blueprint=blueprint,
-            plan=plan,
-            mapping=mapping,
-            questions=selected,
-            artifact=artifact,
-            job=job,
+        self._set_job(job, "ASSEMBLE", 0.72)
+        lineage_calls = [
+            {
+                "prompt_id": item.get("prompt_id"),
+                "model_snapshot": (item.get("route") or {}).get(
+                    "model_snapshot"
+                ),
+            }
+            for lineage_job_id in self._job_lineage_ids(job)
+            for item in self.repository.model_calls(
+                tenant_id=job.tenant_id, job_id=lineage_job_id
+            )
+            if item.get("prompt_id") != "P09_GUIDE_BUILD_V1"
+        ]
+        assembly_inputs = {
+            "activity_id": activity.id,
+            "activity_policy_hash": canonical_hash(activity.blueprint_policy),
+            "submission_id": submission.id,
+            "subject_ref": submission.subject_ref,
+            "submission_created_at": (
+                submission.created_at.replace(tzinfo=UTC)
+                if submission.created_at.tzinfo is None
+                else submission.created_at.astimezone(UTC)
+            ),
+            "blueprint": blueprint.model_dump(mode="json"),
+            "plan": plan.model_dump(mode="json"),
+            "mapping": mapping.model_dump(mode="json"),
+            "questions": [item.model_dump(mode="json") for item in selected],
+            "artifact_id": artifact.id,
+            "artifact_sha256": artifact.sha256,
+            "artifact_media_type": artifact.media_type,
+            "lineage_calls": lineage_calls,
+        }
+        assembly_policy_hash = self._stage_policy_hash(job)
+        assembler_component_version = _assembler_component_version()
+        cached_assembly = self.repository.stage_by_key(
+            tenant_id=job.tenant_id,
+            stage="ASSEMBLE",
+            inputs=assembly_inputs,
+            policy_hash=assembly_policy_hash,
+            component_version=assembler_component_version,
         )
+        if cached_assembly is not None and cached_assembly.output is not None:
+            assessment = m.Assessment.model_validate(
+                cached_assembly.output.get("assessment")
+            )
+            self._record_stage_reuse(job, cached_assembly)
+        else:
+            self._assert_application_stage_may_execute(job, "ASSEMBLE")
+            assessment = self._assemble_assessment(
+                activity=activity,
+                submission=submission,
+                blueprint=blueprint,
+                plan=plan,
+                mapping=mapping,
+                questions=selected,
+                artifact=artifact,
+                job=job,
+            )
+            self.repository.save_stage(
+                job_id=job.id,
+                tenant_id=job.tenant_id,
+                stage="ASSEMBLE",
+                inputs=assembly_inputs,
+                component_version=assembler_component_version,
+                policy_hash=assembly_policy_hash,
+                output={"assessment": assessment.model_dump(mode="json")},
+            )
+        self._cancellation_checkpoint(job)
         guide_id = stable_id("guide", assessment.assessment_id, submission.id)
         self._set_submission(submission, job, m.SubmissionProcessingStatus.GUIDE_READY, "GUIDE_BUILD", 0.82)
         guide = await self._gateway_stage(
@@ -1811,7 +2126,6 @@ class Stage1Service:
             etag=_etag(assessment),
             data=assessment.model_dump(mode="json"),
         )
-        self._mark_resume_floor(job, "ASSEMBLE")
         finalized = self.repository.finalize_submission_assessment(
             job_id=job.id,
             tenant_id=job.tenant_id,
@@ -1957,7 +2271,9 @@ class Stage1Service:
                 source_version=current.version,
                 source_etag=current.etag,
                 descriptor_output=descriptor_output,
-                descriptor_component_version=PROMPT_VERSION,
+                descriptor_component_version=(
+                    _blueprint_review_descriptor_component_version()
+                ),
                 descriptor_policy_hash=self._model_policy_hash(activity),
                 actor_id=actor.user_id,
                 occurred_at=queued_at,
@@ -2733,6 +3049,320 @@ class Stage1Service:
         )
         return max(0.0, self.settings.max_job_cost_usd - spent)
 
+    @staticmethod
+    def _walk_contract_dicts(value: Any):
+        if isinstance(value, dict):
+            yield value
+            for child in value.values():
+                yield from Stage1Service._walk_contract_dicts(child)
+        elif isinstance(value, list):
+            for child in value:
+                yield from Stage1Service._walk_contract_dicts(child)
+
+    @classmethod
+    def _evidence_references(cls, value: Any) -> set[str]:
+        references: set[str] = set()
+        for item in cls._walk_contract_dicts(value):
+            evidence_id = item.get("evidence_id")
+            if isinstance(evidence_id, str):
+                references.add(evidence_id)
+            references.update(
+                child
+                for child in item.get("evidence_ids", [])
+                if isinstance(child, str)
+            )
+        return references
+
+    def _trusted_prompt_context(
+        self,
+        *,
+        job: JobRow,
+        prompt_id: str,
+        request: BaseModel,
+    ) -> m.TrustedPromptContext:
+        """Build a product context exclusively from server-owned durable facts.
+
+        Unlike the synthetic mock helper, this boundary never promotes IDs,
+        language, classification, or artifact provenance merely because they
+        appeared in a request assembled for the provider.
+        """
+
+        submission: SubmissionRow | None = None
+        if job.kind in {"ACTIVITY", "BLUEPRINT_REVIEW"}:
+            activity = cast(
+                ActivityRow,
+                self.repository.scoped(
+                    ActivityRow, job.aggregate_id, job.tenant_id
+                ),
+            )
+        else:
+            submission = cast(
+                SubmissionRow,
+                self.repository.scoped(
+                    SubmissionRow, job.aggregate_id, job.tenant_id
+                ),
+            )
+            activity = cast(
+                ActivityRow,
+                self.repository.scoped(
+                    ActivityRow, submission.activity_id, job.tenant_id
+                ),
+            )
+        config = m.ActivityConfig.model_validate(activity.config)
+        if config.tenant_id != job.tenant_id:
+            raise WorkflowError(
+                "SYNTHETIC_ATTESTATION_SCOPE_MISMATCH",
+                "The durable activity does not match the worker tenant.",
+                status_code=409,
+            )
+
+        activity_artifacts = self.repository.artifacts_for(
+            activity_id=activity.id,
+            tenant_id=job.tenant_id,
+            submission_id=None,
+        )
+        submission_artifacts = (
+            self.repository.artifacts_for(
+                activity_id=activity.id,
+                tenant_id=job.tenant_id,
+                submission_id=submission.id,
+            )
+            if submission is not None
+            else []
+        )
+        artifacts = [*activity_artifacts, *submission_artifacts]
+        artifact_by_id = {artifact.id: artifact for artifact in artifacts}
+        if any(
+            artifact.sha256 is None
+            or artifact.byte_size is None
+            or artifact.media_type is None
+            for artifact in artifacts
+        ):
+            raise WorkflowError(
+                "SYNTHETIC_ATTESTATION_SCOPE_MISMATCH",
+                "Only sealed artifacts may enter a model context.",
+                status_code=409,
+            )
+
+        raw_request = request.model_dump(mode="json")
+        request_objects = list(self._walk_contract_dicts(raw_request))
+        embedded_evidence_ids: set[str] = set()
+        request_artifact_hashes: set[str] = set()
+        for item in request_objects:
+            artifact_hash = item.get("artifact_hash")
+            if artifact_hash is None and "sha256" in item:
+                artifact_hash = item.get("sha256")
+            if artifact_hash is None:
+                continue
+            artifact_id = item.get("artifact_id")
+            artifact = (
+                artifact_by_id.get(artifact_id)
+                if isinstance(artifact_id, str)
+                else None
+            )
+            if artifact is None or artifact.sha256 != artifact_hash:
+                raise WorkflowError(
+                    "SYNTHETIC_ATTESTATION_SCOPE_MISMATCH",
+                    "A model input artifact is outside the sealed job scope.",
+                    status_code=409,
+                )
+            if item.get("tenant_id") not in {None, job.tenant_id}:
+                raise WorkflowError(
+                    "SYNTHETIC_ATTESTATION_SCOPE_MISMATCH",
+                    "A model input artifact belongs to another tenant.",
+                    status_code=409,
+                )
+            item_submission_id = item.get("submission_id")
+            if item_submission_id is not None and (
+                submission is None
+                or item_submission_id != submission.id
+                or artifact.submission_id != submission.id
+            ):
+                raise WorkflowError(
+                    "SYNTHETIC_ATTESTATION_SCOPE_MISMATCH",
+                    "A model input artifact belongs to another submission.",
+                    status_code=409,
+                )
+            source_role = item.get("source_role", item.get("role"))
+            if source_role is not None and source_role != artifact.role:
+                raise WorkflowError(
+                    "SYNTHETIC_ATTESTATION_SCOPE_MISMATCH",
+                    "A model input artifact role differs from its sealed record.",
+                    status_code=409,
+                )
+            request_artifact_hashes.add(str(artifact_hash))
+            if isinstance(item.get("evidence_id"), str):
+                embedded_evidence_ids.add(item["evidence_id"])
+
+        allowed_evidence_ids: set[str] = set()
+        if prompt_id in {
+            "P06_EVIDENCE_MAP_V1",
+            "P07_QUESTION_BUILD_V1",
+            "P08_QUESTION_REVIEW_V1",
+            "P09_GUIDE_BUILD_V1",
+        }:
+            if submission is None:
+                raise WorkflowError(
+                    "SYNTHETIC_ATTESTATION_SCOPE_MISMATCH",
+                    "A submission prompt requires a durable submission scope.",
+                    status_code=409,
+                )
+            persisted_evidence = {
+                row.id: m.EvidenceUnit.model_validate(row.data)
+                for row in self.repository.evidence_for_submission(
+                    submission.id, job.tenant_id
+                )
+            }
+            bundle_ids: set[str] = set()
+            embedded_units: dict[str, m.EvidenceUnit] = {}
+            for item in request_objects:
+                if not {
+                    "bundle_id",
+                    "allowed_evidence_ids",
+                    "evidence_units",
+                }.issubset(item):
+                    continue
+                bundle_ids.update(
+                    value
+                    for value in item.get("allowed_evidence_ids", [])
+                    if isinstance(value, str)
+                )
+                for raw_unit in item.get("evidence_units", []):
+                    unit = m.EvidenceUnit.model_validate(raw_unit)
+                    embedded_units[unit.evidence_id] = unit
+            if (
+                not bundle_ids
+                or bundle_ids != set(embedded_units)
+                or not bundle_ids.issubset(set(persisted_evidence))
+                or any(
+                    persisted_evidence[evidence_id] != unit
+                    for evidence_id, unit in embedded_units.items()
+                )
+            ):
+                raise WorkflowError(
+                    "SYNTHETIC_ATTESTATION_SCOPE_MISMATCH",
+                    "The request evidence bundle differs from durable parser output.",
+                    status_code=409,
+                )
+            allowed_evidence_ids = bundle_ids
+        else:
+            allowed_evidence_ids.update(embedded_evidence_ids)
+            for row_type in (ActivitySpecRow, RubricSpecRow):
+                try:
+                    persisted = self.repository.scoped(
+                        row_type, activity.id, job.tenant_id
+                    )
+                except NotFound:
+                    continue
+                allowed_evidence_ids.update(
+                    self._evidence_references(persisted.data)
+                )
+
+        tenant_ids = {
+            item["tenant_id"]
+            for item in request_objects
+            if isinstance(item.get("tenant_id"), str)
+        }
+        activity_ids = {
+            item["activity_id"]
+            for item in request_objects
+            if isinstance(item.get("activity_id"), str)
+        }
+        submission_ids = {
+            item["submission_id"]
+            for item in request_objects
+            if isinstance(item.get("submission_id"), str)
+        }
+        if (
+            tenant_ids - {job.tenant_id}
+            or activity_ids - {activity.id}
+            or submission_ids
+            - ({submission.id} if submission is not None else set())
+        ):
+            raise WorkflowError(
+                "SYNTHETIC_ATTESTATION_SCOPE_MISMATCH",
+                "The request roots do not match the durable job scope.",
+                status_code=409,
+            )
+
+        blueprint_ids = {
+            item["blueprint_id"]
+            for item in request_objects
+            if isinstance(item.get("blueprint_id"), str)
+        }
+        blueprint_versions = {
+            item["blueprint_version"]
+            for item in request_objects
+            if isinstance(item.get("blueprint_version"), int)
+        }
+        target_blueprint_id = raw_request.get("target_blueprint_id")
+        target_blueprint_version = raw_request.get("target_blueprint_version")
+        if isinstance(target_blueprint_id, str):
+            blueprint_ids.add(target_blueprint_id)
+        if isinstance(target_blueprint_version, int):
+            blueprint_versions.add(target_blueprint_version)
+        if len(blueprint_ids) > 1 or len(blueprint_versions) > 1:
+            raise WorkflowError(
+                "SYNTHETIC_ATTESTATION_SCOPE_MISMATCH",
+                "The request contains conflicting blueprint identities.",
+                status_code=409,
+            )
+        blueprint_id = next(iter(blueprint_ids), None)
+        blueprint_version = next(iter(blueprint_versions), None)
+        if (blueprint_id is None) != (blueprint_version is None):
+            raise WorkflowError(
+                "SYNTHETIC_ATTESTATION_SCOPE_MISMATCH",
+                "The request blueprint identity is incomplete.",
+                status_code=409,
+            )
+
+        context_kwargs: dict[str, Any] = {}
+        if self.settings.model_mode == "real":
+            scope_hashes = {
+                cast(str, artifact.sha256) for artifact in artifacts
+            }
+            configured_hashes = getattr(
+                self.settings, "synthetic_artifact_hashes", frozenset()
+            )
+            if not scope_hashes or not scope_hashes.issubset(configured_hashes):
+                raise WorkflowError(
+                    "SYNTHETIC_ATTESTATION_REQUIRED",
+                    "Real provider work is restricted to the server-approved synthetic corpus.",
+                    status_code=409,
+                )
+            if not request_artifact_hashes.issubset(scope_hashes):
+                raise WorkflowError(
+                    "SYNTHETIC_ATTESTATION_SCOPE_MISMATCH",
+                    "The request is not covered by the synthetic corpus attestation.",
+                    status_code=409,
+                )
+            request_hash = canonical_hash(raw_request)
+            context_kwargs = {
+                "data_classification": "SYNTHETIC_ONLY_NO_STUDENT_DATA",
+                "attestation_id": stable_id(
+                    "attestation",
+                    job.id,
+                    prompt_id,
+                    request_hash,
+                    sorted(scope_hashes),
+                ),
+                "attested_input_hash": request_hash,
+                "attested_artifact_hashes": sorted(scope_hashes),
+            }
+
+        return m.TrustedPromptContext(
+            tenant_id=job.tenant_id,
+            activity_id=activity.id,
+            submission_id=submission.id if submission is not None else None,
+            blueprint_id=blueprint_id,
+            blueprint_version=blueprint_version,
+            allowed_evidence_ids=sorted(allowed_evidence_ids),
+            allowed_course_source_ids=[],
+            output_language=config.output_language,
+            context_mode=config.context_mode,
+            **context_kwargs,
+        )
+
     async def _gateway_stage(
         self, job: JobRow, prompt_id: str, request: BaseModel, output_model: type[T], *, cache_suffix: str = ""
     ) -> T:
@@ -2740,24 +3370,45 @@ class Stage1Service:
         stage = f"{prompt_id}:{cache_suffix}" if cache_suffix else prompt_id
         inputs = request.model_dump(mode="json")
         policy_hash = self._stage_policy_hash(job)
+        gateway = self._gateway(job.id)
+        trusted = self._trusted_prompt_context(
+            job=job,
+            prompt_id=prompt_id,
+            request=request,
+        )
+        application_validator_version = (
+            PROMPT_APPLICATION_VALIDATOR_VERSIONS.get(prompt_id)
+        )
+        component_version = gateway.execution_fingerprint(
+            prompt_id,
+            application_validator_hash=(
+                canonical_hash(application_validator_version)
+                if application_validator_version is not None
+                else None
+            ),
+        )
         cached = self.repository.stage_by_key(
             tenant_id=job.tenant_id,
             stage=stage,
             inputs=inputs,
             policy_hash=policy_hash,
-            component_version=PROMPT_VERSION,
+            component_version=component_version,
         )
         if cached is not None and cached.output is not None:
+            output = output_model.model_validate(
+                gateway.validate_cached_output(
+                    prompt_id,
+                    request,
+                    trusted,
+                    cached.output,
+                ).model_dump(mode="json")
+            )
             self._record_stage_reuse(job, cached)
-            output = output_model.model_validate(cached.output)
             self._cancellation_checkpoint(job)
             return output
         self._assert_resume_may_execute(job, prompt_id)
         try:
-            trusted = build_trusted_context(request).model_copy(
-                update={"tenant_id": job.tenant_id}
-            )
-            result = await self._gateway(job.id).invoke(
+            result = await gateway.invoke(
                 prompt_id,
                 request,
                 trusted,
@@ -2781,6 +3432,7 @@ class Stage1Service:
                 stage=stage,
                 inputs=inputs,
                 policy_hash=policy_hash,
+                component_version=component_version,
                 exc=exc,
             )
             raise
@@ -2789,7 +3441,7 @@ class Stage1Service:
             tenant_id=job.tenant_id,
             stage=stage,
             inputs=inputs,
-            component_version=PROMPT_VERSION,
+            component_version=component_version,
             policy_hash=policy_hash,
             output=output.model_dump(mode="json"),
         )
@@ -2843,8 +3495,6 @@ class Stage1Service:
         self._resume_floor_reached.add(job.id)
 
     def _record_stage_reuse(self, job: JobRow, cached: StageRunRow) -> None:
-        if job.resume_from_stage is None:
-            return
         if self.repository.has_audit_event(
             tenant_id=job.tenant_id,
             event_type="stage.reused",
@@ -3000,6 +3650,7 @@ class Stage1Service:
         stage: str,
         inputs: dict[str, Any],
         policy_hash: str,
+        component_version: str,
         exc: BaseException,
     ) -> None:
         failure_class, retryable, code = self._classify_failure(exc)
@@ -3013,7 +3664,7 @@ class Stage1Service:
             tenant_id=job.tenant_id,
             stage=stage,
             inputs=inputs,
-            component_version=PROMPT_VERSION,
+            component_version=component_version,
             policy_hash=policy_hash,
             output=None,
             status="FAILED",
@@ -3205,23 +3856,6 @@ class Stage1Service:
         mapping: m.EvidenceMapPatch, questions: list[m.SelectedQuestion],
         artifact: ArtifactRow, job: JobRow,
     ) -> m.Assessment:
-        required = [question.question_id for question in questions if question.student_justification_required]
-        mode = blueprint.assessment_constraints.structured_justification_policy.mode
-        opportunity_by_dimension: dict[str, list[m.QuestionOpportunity]] = {}
-        for opportunity in mapping.opportunities:
-            opportunity_by_dimension.setdefault(opportunity.dimension_id, []).append(opportunity)
-        coverage = [
-            m.CoverageItem(
-                dimension_id=dimension.dimension_id,
-                available_variant_count=len(dimension.evidence_variants),
-                available_opportunity_count=len(opportunity_by_dimension.get(dimension.dimension_id, [])),
-                selected_opportunity_count=sum(q.dimension_id == dimension.dimension_id for q in questions),
-                reused_variant_count=0,
-                evidence_unit_count=len({eid for o in opportunity_by_dimension.get(dimension.dimension_id, []) for eid in o.evidence_ids}),
-                diagnostics=[],
-            )
-            for dimension in blueprint.dimensions
-        ]
         ledgers = [
             ledger
             for lineage_job_id in self._job_lineage_ids(job)
@@ -3251,45 +3885,25 @@ class Stage1Service:
             )
             if row.role == m.ArtifactRole.RUBRIC.value and row.sha256
         ]
-        assessment_id = stable_id("assessment", submission.id, plan.plan_id, [q.source_candidate_id for q in questions])
-        return m.Assessment(
-            assessment_id=assessment_id,
+        return assemble_assessment_snapshot(
             tenant_id=job.tenant_id,
             activity_id=activity.id,
             submission_id=submission.id,
             subject_ref=submission.subject_ref,
-            status=m.WorkflowStatus.NEEDS_REVIEW,
-            context_mode=m.ContextMode.CLOSED,
-            assessment_plan_id=plan.plan_id,
-            question_count=plan.question_count,
+            created_at=submission.created_at,
+            blueprint=blueprint,
+            plan=plan,
+            mapping=mapping,
             questions=questions,
-            coverage=coverage,
-            structured_justification=m.StructuredJustificationSummary(
-                mode=mode,
-                required_question_ids=required,
-                limited_evidence_notice_required=mode != m.StructuredJustificationMode.ALL,
-            ),
-            diagnostics=[],
-            lineage=m.Lineage(
-                assignment_prompt_hashes=prompt_hashes,
-                rubric_hashes=rubric_hashes,
-                submission_hashes=[cast(str, artifact.sha256)],
-                blueprint_id=blueprint.blueprint_id,
-                blueprint_version=blueprint.blueprint_version,
-                parser_versions={artifact.media_type or "unknown": PARSER_VERSION},
-                prompt_versions={
-                    key: prompt_spec(key).prompt_version for key in snapshots
-                },
-                model_snapshots=snapshots,
-                policy_hash=canonical_hash(activity.blueprint_policy),
-                planner_version=PLANNER_VERSION,
-                renderer_version=RENDERER_VERSION,
-            ),
-            created_at=(
-                submission.created_at.replace(tzinfo=UTC)
-                if submission.created_at.tzinfo is None
-                else submission.created_at.astimezone(UTC)
-            ),
+            assignment_prompt_hashes=prompt_hashes,
+            rubric_hashes=rubric_hashes,
+            submission_hashes=[cast(str, artifact.sha256)],
+            submission_media_type=artifact.media_type or "unknown",
+            prompt_versions={
+                key: prompt_spec(key).prompt_version for key in snapshots
+            },
+            model_snapshots=snapshots,
+            policy_hash=canonical_hash(activity.blueprint_policy),
         )
 
     def _job_lineage_ids(self, job: JobRow) -> list[str]:

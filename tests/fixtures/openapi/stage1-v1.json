@@ -1182,11 +1182,33 @@
             "title": "Minimum Opportunity Quality",
             "type": "number"
           },
+          "priority_criterion_ids": {
+            "items": {
+              "maxLength": 128,
+              "minLength": 3,
+              "pattern": "^[a-z][a-z0-9_-]*$",
+              "type": "string"
+            },
+            "maxItems": 100,
+            "title": "Priority Criterion Ids",
+            "type": "array"
+          },
           "question_count": {
             "maximum": 20.0,
             "minimum": 1.0,
             "title": "Question Count",
             "type": "integer"
+          },
+          "required_criterion_ids": {
+            "items": {
+              "maxLength": 128,
+              "minLength": 3,
+              "pattern": "^[a-z][a-z0-9_-]*$",
+              "type": "string"
+            },
+            "maxItems": 100,
+            "title": "Required Criterion Ids",
+            "type": "array"
           },
           "structured_justification_policy": {
             "$ref": "#/components/schemas/StructuredJustificationPolicy"

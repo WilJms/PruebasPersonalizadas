@@ -72,6 +72,11 @@ def _require_private_reference(value: str, field_name: str) -> None:
         raise ValueError(f"{field_name} contains an unsafe path segment")
 
 
+def _require_unique(values: list[str], field_name: str) -> None:
+    if len(values) != len(set(values)):
+        raise ValueError(f"{field_name} must be unique")
+
+
 class ContextMode(StrEnum):
     CLOSED = "CLOSED"
     COURSE_ENRICHED = "COURSE_ENRICHED"
@@ -556,6 +561,10 @@ class TrustedPromptContext(StrictModel):
     allowed_course_source_ids: list[Id] = Field(default_factory=list, max_length=100)
     output_language: Annotated[str, Field(min_length=2, max_length=35)] = "es-CL"
     context_mode: ContextMode = ContextMode.CLOSED
+    data_classification: Literal["SYNTHETIC_ONLY_NO_STUDENT_DATA"] | None = None
+    attestation_id: Id | None = None
+    attested_input_hash: Hash | None = None
+    attested_artifact_hashes: list[Hash] = Field(default_factory=list, max_length=100)
 
     @model_validator(mode="after")
     def blueprint_ref_is_complete(self) -> "TrustedPromptContext":
@@ -563,6 +572,18 @@ class TrustedPromptContext(StrictModel):
             raise ValueError("blueprint_id and blueprint_version must both be set or absent")
         if self.context_mode == ContextMode.CLOSED and self.allowed_course_source_ids:
             raise ValueError("CLOSED context cannot authorize course sources")
+        attestation_fields = (
+            self.data_classification,
+            self.attestation_id,
+            self.attested_input_hash,
+        )
+        if any(value is not None for value in attestation_fields) and not all(
+            value is not None for value in attestation_fields
+        ):
+            raise ValueError("synthetic attestation fields must all be set or absent")
+        if self.attested_artifact_hashes and self.attestation_id is None:
+            raise ValueError("attested artifact hashes require an attestation")
+        _require_unique(self.attested_artifact_hashes, "attested_artifact_hashes")
         return self
 
 
@@ -626,6 +647,22 @@ class ActivitySpec(StrictModel):
     contradictions: list[Diagnostic] = Field(default_factory=list)
     diagnostics: list[Diagnostic] = Field(default_factory=list)
 
+    @model_validator(mode="after")
+    def statement_ids_are_unique(self) -> "ActivitySpec":
+        statement_ids = [
+            item.statement_id
+            for collection in (
+                self.learning_outcomes,
+                self.expected_products,
+                self.requirements,
+                self.allowed_materials,
+                self.prohibited_materials,
+            )
+            for item in collection
+        ]
+        _require_unique(statement_ids, "ActivitySpec statement_ids")
+        return self
+
 
 class RubricLevel(StrictModel):
     level_id: Id
@@ -656,6 +693,18 @@ class RubricSpec(StrictModel):
     reported_weight_total: float | None = Field(default=None, ge=0.0, le=100.0)
     diagnostics: list[Diagnostic] = Field(default_factory=list)
 
+    @model_validator(mode="after")
+    def rubric_ids_are_unique(self) -> "RubricSpec":
+        _require_unique(
+            [criterion.criterion_id for criterion in self.criteria],
+            "RubricSpec criterion_ids",
+        )
+        _require_unique(
+            [level.level_id for criterion in self.criteria for level in criterion.levels],
+            "RubricSpec level_ids",
+        )
+        return self
+
 
 class DecisionOption(StrictModel):
     option_id: Id
@@ -675,6 +724,10 @@ class AmbiguityIssue(StrictModel):
 
     @model_validator(mode="after")
     def recommendation_exists(self) -> "AmbiguityIssue":
+        _require_unique(
+            [option.option_id for option in self.options],
+            "AmbiguityIssue option_ids",
+        )
         if self.recommended_option_id not in {x.option_id for x in self.options}:
             raise ValueError("recommended_option_id must reference an option")
         return self
@@ -685,6 +738,20 @@ class AmbiguityReport(StrictModel):
     activity_id: Id
     issues: list[AmbiguityIssue] = Field(default_factory=list, max_length=8)
     blocked: bool
+
+    @model_validator(mode="after")
+    def issue_state_is_consistent(self) -> "AmbiguityReport":
+        _require_unique(
+            [issue.issue_id for issue in self.issues],
+            "AmbiguityReport issue_ids",
+        )
+        _require_unique(
+            [option.option_id for issue in self.issues for option in issue.options],
+            "AmbiguityReport option_ids",
+        )
+        if self.blocked != any(issue.blocking for issue in self.issues):
+            raise ValueError("blocked must exactly match the presence of blocking issues")
+        return self
 
 
 class PolicyDecision(StrictModel):
@@ -884,7 +951,15 @@ class AssessmentConstraints(StrictModel):
     ]
     minimum_opportunity_quality: Score = 0.75
     max_reserve_opportunities: int = Field(default=3, ge=0, le=10)
+    priority_criterion_ids: list[Id] = Field(default_factory=list, max_length=100)
+    required_criterion_ids: list[Id] = Field(default_factory=list, max_length=100)
     structured_justification_policy: StructuredJustificationPolicy
+
+    @model_validator(mode="after")
+    def criterion_ids_are_unique(self) -> "AssessmentConstraints":
+        _require_unique(self.priority_criterion_ids, "priority_criterion_ids")
+        _require_unique(self.required_criterion_ids, "required_criterion_ids")
+        return self
 
 
 class AssessmentBlueprint(StrictModel):
@@ -975,12 +1050,32 @@ class BlueprintReview(StrictModel):
 
     @model_validator(mode="after")
     def recommendation_matches_checks(self) -> "BlueprintReview":
+        required_categories = {
+            "CONSTRUCT",
+            "SOURCE_FIDELITY",
+            "COVERAGE",
+            "COMPARABILITY",
+            "COGNITIVE_DEMAND",
+            "TIME",
+            "FORMAT_FEASIBILITY",
+            "OPPORTUNITY_CATALOG",
+            "PLAN_FEASIBILITY",
+            "ACCESSIBILITY",
+        }
+        _require_unique(
+            [check.check_code for check in self.checks],
+            "BlueprintReview check_codes",
+        )
         critical_fail = any(
             check.critical and check.status == ReviewCheckStatus.FAIL
             for check in self.checks
         )
         if self.status == "READY" and self.approval_recommendation is None:
             raise ValueError("READY review requires approval_recommendation")
+        if self.status == "READY" and {
+            check.category for check in self.checks
+        } != required_categories:
+            raise ValueError("READY review requires every canonical review category")
         if self.status != "READY" and self.approval_recommendation is not None:
             raise ValueError("non-READY review cannot recommend approval")
         if critical_fail and (
@@ -1175,6 +1270,15 @@ class EvaluationGuide(StrictModel):
             raise ValueError("EvaluationGuide question_ids must be unique")
         if self.status == "READY" and not self.items:
             raise ValueError("READY guide requires items")
+        if self.status == "READY":
+            for item in self.items:
+                elements = item.guide.observable_elements
+                if not 2 <= len(elements) <= 5:
+                    raise ValueError("READY guide items require 2 to 5 observables")
+                _require_unique(
+                    [element.element_id for element in elements],
+                    "EvaluationGuide observable element_ids",
+                )
         return self
 
 
@@ -2412,6 +2516,8 @@ class AmbiguityTriageRequest(StrictModel):
 
 class BlueprintBuildRequest(StrictModel):
     schema_version: SchemaVersion = LEGACY_SCHEMA_VERSION
+    target_blueprint_id: Id
+    target_blueprint_version: PositiveInt
     activity_spec: ActivitySpec
     rubric_spec: RubricSpec | None = None
     resolved_decisions: list[PolicyDecision] = Field(default_factory=list, max_length=100)
@@ -2445,6 +2551,7 @@ class EvidenceMapRequest(StrictModel):
 
 class QuestionBuildRequest(StrictModel):
     schema_version: SchemaVersion = LEGACY_SCHEMA_VERSION
+    target_candidate_id: Id
     plan: AssessmentPlan
     opportunity: QuestionOpportunity
     evidence_bundle: EvidenceBundle

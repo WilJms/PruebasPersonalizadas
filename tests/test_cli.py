@@ -174,7 +174,7 @@ def test_real_smoke_versioned_entrypoint_reaches_fake_transport_once(
         "code": "OPENAI_REAL_SMOKE_PASS",
         "network_call_attempted": True,
         "prompt_id": "P11_SCHEMA_REPAIR_V1",
-        "prompt_version": "1.1.4",
+            "prompt_version": "1.1.5",
         "schema_version": "1.1.0",
         "route_profile": "LUNA_BASELINE_V1",
         "requested_model": LUNA_MODEL_ID,

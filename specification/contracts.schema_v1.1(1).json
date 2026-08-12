@@ -1068,6 +1068,28 @@
           "title": "Max Reserve Opportunities",
           "type": "integer"
         },
+        "priority_criterion_ids": {
+          "items": {
+            "maxLength": 128,
+            "minLength": 3,
+            "pattern": "^[a-z][a-z0-9_-]*$",
+            "type": "string"
+          },
+          "maxItems": 100,
+          "title": "Priority Criterion Ids",
+          "type": "array"
+        },
+        "required_criterion_ids": {
+          "items": {
+            "maxLength": 128,
+            "minLength": 3,
+            "pattern": "^[a-z][a-z0-9_-]*$",
+            "type": "string"
+          },
+          "maxItems": 100,
+          "title": "Required Criterion Ids",
+          "type": "array"
+        },
         "structured_justification_policy": {
           "$ref": "#/$defs/StructuredJustificationPolicy"
         }
@@ -1326,6 +1348,18 @@
           "title": "Schema Version",
           "type": "string"
         },
+        "target_blueprint_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Target Blueprint Id",
+          "type": "string"
+        },
+        "target_blueprint_version": {
+          "minimum": 1,
+          "title": "Target Blueprint Version",
+          "type": "integer"
+        },
         "activity_spec": {
           "$ref": "#/$defs/ActivitySpec"
         },
@@ -1353,6 +1387,8 @@
         }
       },
       "required": [
+        "target_blueprint_id",
+        "target_blueprint_version",
         "activity_spec",
         "blueprint_policy"
       ],
@@ -5661,6 +5697,13 @@
           "title": "Schema Version",
           "type": "string"
         },
+        "target_candidate_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Target Candidate Id",
+          "type": "string"
+        },
         "plan": {
           "$ref": "#/$defs/AssessmentPlan"
         },
@@ -5683,6 +5726,7 @@
         }
       },
       "required": [
+        "target_candidate_id",
         "plan",
         "opportunity",
         "evidence_bundle",
@@ -8168,6 +8212,56 @@
         "context_mode": {
           "$ref": "#/$defs/ContextMode",
           "default": "CLOSED"
+        },
+        "data_classification": {
+          "anyOf": [
+            {
+              "const": "SYNTHETIC_ONLY_NO_STUDENT_DATA",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Data Classification"
+        },
+        "attestation_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 3,
+              "pattern": "^[a-z][a-z0-9_-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Attestation Id"
+        },
+        "attested_input_hash": {
+          "anyOf": [
+            {
+              "pattern": "^sha256:[a-f0-9]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Attested Input Hash"
+        },
+        "attested_artifact_hashes": {
+          "items": {
+            "pattern": "^sha256:[a-f0-9]{64}$",
+            "type": "string"
+          },
+          "maxItems": 100,
+          "title": "Attested Artifact Hashes",
+          "type": "array"
         }
       },
       "required": [

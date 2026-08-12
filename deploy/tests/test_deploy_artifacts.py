@@ -20,6 +20,7 @@ IDEMPOTENCY_HYGIENE_MIGRATION = (
     MIGRATION_DIR / "202608070002_idempotency_capability_hygiene.sql"
 )
 STAGE2_MIGRATION = MIGRATION_DIR / "202608070003_stage2_experimental.sql"
+CONVERGENCE_MIGRATION = MIGRATION_DIR / "202608120004_stage2_convergence.sql"
 STAGE2_RECOVERY = (
     ROOT
     / "deploy/supabase/rollbacks/202608070003_stage2_experimental_recovery.sql"
@@ -55,6 +56,7 @@ def test_supabase_migration_matches_orm_table_and_column_surface() -> None:
         "question_review_actions",
     }
     stage2_columns = {
+        "idempotency_keys": {"expires_at"},
         "exports": {
             "activity_id", "assessment_version", "assessment_snapshot_hash",
             "renderer_version", "requested_by", "requested_kinds",
@@ -114,6 +116,7 @@ def test_idempotency_hygiene_migration_removes_and_blocks_capabilities() -> None
         "202607310001_stage1.sql",
         "202608070002_idempotency_capability_hygiene.sql",
         "202608070003_stage2_experimental.sql",
+        "202608120004_stage2_convergence.sql",
     ]
     sql = IDEMPOTENCY_HYGIENE_MIGRATION.read_text(encoding="utf-8").lower()
     assert sql.startswith("begin;")
@@ -125,6 +128,16 @@ def test_idempotency_hygiene_migration_removes_and_blocks_capabilities() -> None
     assert "ck_idempotency_keys_safe_response" in sql
     assert "jsonb_typeof(response) = 'object'" in sql
     assert "drop table" not in sql
+
+    convergence_sql = CONVERGENCE_MIGRATION.read_text(encoding="utf-8").lower()
+    assert convergence_sql.startswith("begin;")
+    assert convergence_sql.rstrip().endswith("commit;")
+    assert "add column expires_at timestamptz" in convergence_sql
+    assert "alter column expires_at set not null" in convergence_sql
+    assert "interval '24 hours'" in convergence_sql
+    assert "ix_idempotency_keys_expires_at" in convergence_sql
+    assert "drop table" not in convergence_sql
+    assert "drop column" not in convergence_sql
 
 
 def test_runtime_configuration_uses_exact_settings_names_and_safe_defaults() -> None:
@@ -417,6 +430,7 @@ def test_stage2_deployment_runbook_has_real_digest_and_fail_closed_recovery() ->
         "202607310001_stage1.sql",
         "202608070002_idempotency_capability_hygiene.sql",
         "202608070003_stage2_experimental.sql",
+        "202608120004_stage2_convergence.sql",
     ]
     positions = [readme.index(name) for name in migrations]
     assert positions == sorted(positions)

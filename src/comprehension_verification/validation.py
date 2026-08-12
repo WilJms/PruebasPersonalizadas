@@ -9,9 +9,21 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 from datetime import datetime, timezone
-from typing import Iterable, Mapping
+from types import MappingProxyType
+from typing import Any, Iterable, Mapping
 
+from .canonical import canonical_hash
 from .contracts import models as m
+
+
+PROMPT_APPLICATION_VALIDATOR_VERSIONS: Mapping[str, str] = MappingProxyType(
+    {
+        "P06_EVIDENCE_MAP_V1": "application-validator-p06/2.0.0",
+        "P07_QUESTION_BUILD_V1": "application-validator-p07/2.0.0",
+        "P08_QUESTION_REVIEW_V1": "application-validator-p08/2.0.0",
+        "P09_GUIDE_BUILD_V1": "application-validator-p09/2.0.0",
+    }
+)
 
 
 class ContextValidationError(ValueError):
@@ -118,6 +130,7 @@ def validate_evidence_map(
     bundle: m.EvidenceBundle,
 ) -> None:
     context = validate_evidence_context(bundle)
+    validate_generated_output_safety(mapping)
     if mapping.submission_id != bundle.submission_id:
         raise ContextValidationError(
             "CROSS_SUBMISSION_EVIDENCE", "mapping belongs to another submission"
@@ -242,6 +255,14 @@ def validate_evidence_map(
             raise ContextValidationError("INVENTED_ID", "opportunity references an unknown ID")
         if variant not in dimension.evidence_variants or template not in variant.question_opportunities:
             raise ContextValidationError("BLUEPRINT_REFERENCE_MISMATCH", "opportunity path is invalid")
+        if opportunity.opportunity_quality < max(
+            blueprint.assessment_constraints.minimum_opportunity_quality,
+            template.minimum_quality,
+        ):
+            raise ContextValidationError(
+                "OPPORTUNITY_QUALITY_BELOW_MINIMUM",
+                "opportunity quality is below its global or template minimum",
+            )
         if (
             variant_dimension_ids[opportunity.variant_id] != opportunity.dimension_id
             or template_variant_ids[opportunity.opportunity_template_id] != opportunity.variant_id
@@ -325,6 +346,35 @@ def validate_evidence_map(
                 "INSUFFICIENT_RELEVANT_EVIDENCE",
                 "opportunity requires evidence from distinct artifacts",
             )
+    semantic_fingerprints = [
+        canonical_hash(
+            {
+                "dimension_id": opportunity.dimension_id,
+                "variant_id": opportunity.variant_id,
+                "evidence_ids": sorted(opportunity.evidence_ids),
+                "cognitive_operation": opportunity.cognitive_operation,
+                "focus": _normalize_generated_text(opportunity.focus),
+                "observable": _normalize_generated_text(opportunity.observable),
+                "difficulty": opportunity.difficulty,
+                "target_minutes": opportunity.target_minutes,
+                "allowed_anchor_structures": sorted(
+                    opportunity.allowed_anchor_structures
+                ),
+                "allowed_response_formats": sorted(
+                    opportunity.allowed_response_formats
+                ),
+                "student_justification_required": (
+                    opportunity.student_justification_required
+                ),
+            }
+        )
+        for opportunity in mapping.opportunities
+    ]
+    _require_unique(
+        semantic_fingerprints,
+        code="DUPLICATE_QUESTION_OPPORTUNITY",
+        label="semantic question opportunities",
+    )
 
 
 def validate_assessment_plan(
@@ -369,12 +419,49 @@ _PROHIBITED_CLAIMS = re.compile(
 
 
 def _check_safe_generated_text(text: str) -> None:
-    if _PROHIBITED_CLAIMS.search(text):
+    claim_scan = re.sub(
+        r"\bno (?:permite|se puede|debe) inferir (?:la )?autor(?:ía)?\b",
+        "",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if _PROHIBITED_CLAIMS.search(claim_scan):
         raise ContextValidationError(
             "QUESTION_SECURITY_FAIL", "generated question contains a prohibited claim or instruction"
         )
     if any(pattern.search(text) for pattern in _SECRET_PATTERNS):
         raise ContextValidationError("QUESTION_PII", "generated question exposes PII or a secret")
+
+
+_TRUSTED_LITERAL_FIELDS = {"content_text", "display_text"}
+
+
+def _normalize_generated_text(text: str) -> str:
+    return re.sub(r"\s+", " ", text).strip().casefold()
+
+
+def _walk_generated_strings(
+    value: Any, *, field_name: str | None = None
+) -> Iterable[str]:
+    if field_name in _TRUSTED_LITERAL_FIELDS:
+        return
+    if isinstance(value, m.StrictModel):
+        value = value.model_dump(mode="python")
+    if isinstance(value, Mapping):
+        for key, child in value.items():
+            yield from _walk_generated_strings(child, field_name=str(key))
+    elif isinstance(value, (list, tuple)):
+        for child in value:
+            yield from _walk_generated_strings(child, field_name=field_name)
+    elif isinstance(value, str):
+        yield value
+
+
+def validate_generated_output_safety(value: Any) -> None:
+    """Reject generated PII/secrets/instructions while preserving literal anchors."""
+
+    for text in _walk_generated_strings(value):
+        _check_safe_generated_text(text)
 
 
 def validate_question_candidate(
@@ -434,7 +521,7 @@ def validate_question_candidate(
             raise ContextValidationError(
                 "UNAUTHORIZED_SOURCE", "candidate guide widens candidate sources"
             )
-    _check_safe_generated_text(candidate.question_text)
+    validate_generated_output_safety(candidate)
     for fragment in candidate.anchor.fragments:
         evidence = context.evidence_by_id.get(fragment.evidence_id)
         if evidence is None:
@@ -492,6 +579,7 @@ def validate_review_result(
     generation_result: m.QuestionGenerationResult,
     validation_policy: m.QuestionValidationPolicy,
 ) -> None:
+    validate_generated_output_safety(review_result)
     if review_result.status == "READY":
         if review_result.review is None or generation_result.candidate is None:
             raise ContextValidationError("MODEL_OUTPUT_INVALID", "ready review is incomplete")
@@ -511,7 +599,7 @@ def validate_review_result(
             raise ContextValidationError(
                 "UNAUTHORIZED_SOURCE", "review widens candidate sources"
             )
-        if (
+        if review_result.review.decision == m.ReviewDecision.ACCEPT and (
             review_result.review.estimated_difficulty != candidate.difficulty
             or review_result.review.estimated_minutes != candidate.estimated_minutes
         ):
@@ -555,6 +643,7 @@ def validate_evaluation_guide(
     assessment: m.Assessment,
     bundle: m.EvidenceBundle,
 ) -> None:
+    validate_generated_output_safety(guide)
     if guide.assessment_id != assessment.assessment_id:
         raise ContextValidationError("INVENTED_ID", "guide assessment mismatch")
     if guide.submission_id != assessment.submission_id or guide.submission_id != bundle.submission_id:
@@ -565,6 +654,15 @@ def validate_evaluation_guide(
             raise ContextValidationError("GUIDE_INCOMPLETE", "guide must cover every question exactly")
         for item in guide.items:
             question = assessment_questions[item.question_id]
+            if not 2 <= len(item.guide.observable_elements) <= 5:
+                raise ContextValidationError(
+                    "GUIDE_INCOMPLETE", "guide item must contain 2 to 5 observables"
+                )
+            _require_unique(
+                (element.element_id for element in item.guide.observable_elements),
+                code="DUPLICATE_ID",
+                label="guide observable element IDs",
+            )
             levels = [level.level for level in item.guide.levels]
             if levels != [0, 1, 2, 3]:
                 raise ContextValidationError("GUIDE_INCOMPLETE", "guide levels must be 0,1,2,3")
@@ -572,6 +670,17 @@ def validate_evaluation_guide(
             for level in item.guide.levels:
                 if not set(level.observable_element_ids).issubset(observable_ids):
                     raise ContextValidationError("INVENTED_ID", "guide level uses unknown element")
+            required_level_2 = {
+                element.element_id
+                for element in item.guide.observable_elements
+                if element.required_for_level_2
+            }
+            level_2 = next(level for level in item.guide.levels if level.level == 2)
+            if not required_level_2.issubset(level_2.observable_element_ids):
+                raise ContextValidationError(
+                    "GUIDE_INCOMPLETE",
+                    "level 2 omits an observable marked required for level 2",
+                )
             allowed_evidence = set(question.evidence_ids)
             allowed_sources = set(question.course_source_ids)
             for element in item.guide.observable_elements:

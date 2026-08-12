@@ -11,8 +11,14 @@ from .settings import get_worker_settings
 async def run_once() -> int:
     settings = get_worker_settings()
     runtime = build_worker_runtime(settings)
-    claimed = runtime.repository.claim_next_job(
-        lease_seconds=getattr(settings, "job_lease_seconds", 3900)
+    lease_seconds = getattr(settings, "job_lease_seconds", 3900)
+    claim_job_id = getattr(settings, "claim_job_id", None)
+    claimed = (
+        runtime.repository.claim_job(
+            claim_job_id, lease_seconds=lease_seconds
+        )
+        if claim_job_id is not None
+        else runtime.repository.claim_next_job(lease_seconds=lease_seconds)
     )
     if claimed is None:
         return 0

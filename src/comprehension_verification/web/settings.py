@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from functools import lru_cache
+import re
 from typing import Literal
 
 from pydantic import Field, SecretStr, model_validator
@@ -11,6 +12,18 @@ from sqlalchemy.engine import make_url
 from sqlalchemy.exc import ArgumentError
 
 from ..model_gateway import OPENAI_DEFAULT_REQUEST_TIMEOUT_SECONDS
+
+
+_SHA256 = re.compile(r"^sha256:[a-f0-9]{64}$")
+
+
+def _parse_synthetic_hash_allowlist(raw: str) -> frozenset[str]:
+    values = frozenset(item.strip() for item in raw.split(",") if item.strip())
+    if any(_SHA256.fullmatch(value) is None for value in values):
+        raise ValueError(
+            "synthetic artifact allowlist must contain canonical sha256 hashes"
+        )
+    return values
 
 
 class Settings(BaseSettings):
@@ -38,6 +51,11 @@ class Settings(BaseSettings):
     session_cookie_name: str = "cva_session"
     csrf_cookie_name: str = "cva_csrf"
     session_ttl_seconds: int = Field(default=3600, ge=300, le=86_400)
+    idempotency_ttl_seconds: int = Field(
+        default=86_400,
+        ge=300,
+        le=604_800,
+    )
     local_invited_emails: str = "teacher@example.test,assistant@example.test"
     local_workspace_id: str = "tnt_experimental"
 
@@ -154,6 +172,10 @@ class WorkerSettings(BaseSettings):
     model_mode: Literal["mock", "real"] = "mock"
     p10_enabled: bool = False
     openai_api_key: SecretStr | None = None
+    claim_job_id: str | None = Field(
+        default=None, pattern=r"^[a-z][a-z0-9_-]{2,127}$"
+    )
+    synthetic_artifact_sha256_allowlist: str = ""
     openai_request_timeout_seconds: float = Field(
         default=OPENAI_DEFAULT_REQUEST_TIMEOUT_SECONDS,
         ge=5.0,
@@ -173,6 +195,14 @@ class WorkerSettings(BaseSettings):
     require_libmagic: bool = False
     parser_timeout_seconds: int = Field(default=30, ge=5, le=120)
 
+    @property
+    def synthetic_artifact_hashes(self) -> frozenset[str]:
+        """Server-controlled corpus boundary for product-shaped real calls."""
+
+        return _parse_synthetic_hash_allowlist(
+            self.synthetic_artifact_sha256_allowlist
+        )
+
     @model_validator(mode="after")
     def experimental_worker_guards(self) -> "WorkerSettings":
         if self.p10_enabled:
@@ -185,7 +215,16 @@ class WorkerSettings(BaseSettings):
             raise ValueError("real worker mode requires a managed OpenAI project API key")
         if self.model_mode == "mock" and key_configured:
             raise ValueError("mock worker mode must not receive OPENAI_API_KEY")
+        synthetic_hashes = self.synthetic_artifact_hashes
+        if self.model_mode == "real" and not synthetic_hashes:
+            raise ValueError(
+                "real worker mode requires a server-controlled synthetic artifact allowlist"
+            )
         if self.environment == "cloud":
+            if self.claim_job_id is None:
+                raise ValueError(
+                    "cloud worker requires the exact dispatched claim job ID"
+                )
             if self.object_store_mode != "r2":
                 raise ValueError("cloud worker requires private R2 object storage")
             try:

@@ -13,6 +13,8 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from enum import StrEnum
 from hashlib import sha256
+from importlib import metadata as importlib_metadata
+import inspect
 import json
 import re
 from time import perf_counter
@@ -31,6 +33,26 @@ from comprehension_verification.model_gateway.registry import (
     PromptSpec,
     prompt_spec,
 )
+
+
+GATEWAY_CONTEXT_VALIDATOR_VERSION = "gateway-context/2.0.0"
+GATEWAY_REPAIR_VALIDATOR_VERSION = "gateway-repair/2.0.0"
+# Relationship versions are deliberately prompt-local.  A P04-only invariant
+# must not evict reusable P07/P08 outputs whose executable dependencies did not
+# change.  Tests assert that these values participate in the fingerprint.
+PROMPT_RELATIONSHIP_VALIDATOR_VERSIONS: Mapping[str, str] = {
+    "P01_ACTIVITY_SPEC_V1": "relationship-p01/2.0.0",
+    "P02_RUBRIC_NORMALIZE_V1": "relationship-p02/2.0.0",
+    "P03_AMBIGUITY_TRIAGE_V1": "relationship-p03/2.0.0",
+    "P04_BLUEPRINT_BUILD_V1": "relationship-p04/2.0.0",
+    "P05_BLUEPRINT_REVIEW_V1": "relationship-p05/2.0.0",
+    "P06_EVIDENCE_MAP_V1": "relationship-p06/2.0.0",
+    "P07_QUESTION_BUILD_V1": "relationship-p07/2.0.0",
+    "P08_QUESTION_REVIEW_V1": "relationship-p08/2.0.0",
+    "P09_GUIDE_BUILD_V1": "relationship-p09/2.0.0",
+    "P10_ENRICHED_CONTEXT_V1": "relationship-p10/2.0.0",
+    "P11_SCHEMA_REPAIR_V1": "relationship-p11/2.0.0",
+}
 
 
 class GatewayMode(StrEnum):
@@ -53,6 +75,11 @@ class ContextFailureCode(StrEnum):
     COURSE_SOURCE_ID_NOT_ALLOWLISTED = "COURSE_SOURCE_ID_NOT_ALLOWLISTED"
     CONTEXT_MODE_MISMATCH = "CONTEXT_MODE_MISMATCH"
     REQUIRED_CONTEXT_MODE_MISMATCH = "REQUIRED_CONTEXT_MODE_MISMATCH"
+    SYNTHETIC_ATTESTATION_REQUIRED = "SYNTHETIC_ATTESTATION_REQUIRED"
+    SYNTHETIC_ATTESTATION_HASH_MISMATCH = "SYNTHETIC_ATTESTATION_HASH_MISMATCH"
+    SYNTHETIC_ATTESTATION_ARTIFACT_MISMATCH = (
+        "SYNTHETIC_ATTESTATION_ARTIFACT_MISMATCH"
+    )
     ABSTENTION_DIAGNOSTIC_MISSING = "ABSTENTION_DIAGNOSTIC_MISSING"
     P01_ABSTENTION_SOURCED_FIELDS_PRESENT = (
         "P01_ABSTENTION_SOURCED_FIELDS_PRESENT"
@@ -468,11 +495,7 @@ def _mock_route(spec: PromptSpec) -> models.ModelRoute:
         reasoning_effort=spec.reasoning_effort,
         temperature=spec.temperature,
         capabilities=models.ModelCapabilities(
-            input_modalities=[
-                models.ModelInputModality.TEXT,
-                models.ModelInputModality.IMAGE,
-                models.ModelInputModality.PDF,
-            ],
+            input_modalities=[models.ModelInputModality.TEXT],
             output_modalities=[models.ModelOutputModality.STRUCTURED_JSON],
             structured_outputs=True,
             max_context_tokens=250_000,
@@ -664,6 +687,172 @@ class ModelGateway:
             available_providers=tuple(self.adapters),
         )
 
+    @staticmethod
+    def _implementation_hash(value: Any) -> str:
+        try:
+            source = inspect.getsource(value)
+        except (OSError, TypeError):
+            source = f"{getattr(value, '__module__', '')}:{getattr(value, '__qualname__', repr(value))}"
+        return _hash(source)
+
+    def execution_fingerprint(
+        self,
+        prompt_id: str,
+        *,
+        application_validator_hash: str | None = None,
+    ) -> str:
+        """Fingerprint every executable dependency relevant to stage reuse."""
+
+        spec = prompt_spec(prompt_id)
+        input_model = model_by_name(spec.input_schema_name)
+        output_model = model_by_name(spec.output_schema_name)
+        route = (
+            _mock_route(spec)
+            if self.config.mode == GatewayMode.MOCK
+            else self.resolver.real_routes.get(prompt_id)
+        )
+        repair_spec = prompt_spec("P11_SCHEMA_REPAIR_V1")
+        repair_route = (
+            _mock_route(repair_spec)
+            if self.config.mode == GatewayMode.MOCK
+            else self.resolver.real_routes.get("P11_SCHEMA_REPAIR_V1")
+        )
+        if self.config.mode == GatewayMode.MOCK:
+            adapter: Any = self.mock_adapter
+        elif route is not None:
+            adapter = self.adapters.get(route.provider)
+        else:
+            adapter = None
+        try:
+            openai_sdk_version = importlib_metadata.version("openai")
+        except importlib_metadata.PackageNotFoundError:
+            openai_sdk_version = None
+        adapter_material: dict[str, Any] | None = None
+        if adapter is not None:
+            adapter_material = {
+                "class": (
+                    f"{type(adapter).__module__}.{type(adapter).__qualname__}"
+                ),
+                "implementation_hash": self._implementation_hash(type(adapter)),
+            }
+            factory = getattr(adapter, "factory", None)
+            if factory is not None:
+                adapter_material["factory_class"] = (
+                    f"{type(factory).__module__}.{type(factory).__qualname__}"
+                )
+                adapter_material["factory_implementation_hash"] = (
+                    self._implementation_hash(type(factory))
+                )
+        material = {
+            "fingerprint_format": "model-stage-execution/2.0.0",
+            "mode": self.config.mode.value,
+            "prompt_id": prompt_id,
+            "prompt_hash": spec.prompt_hash,
+            "input_schema_hash": _hash(
+                input_model.model_json_schema(mode="validation")
+            ),
+            "output_schema_hash": _hash(
+                output_model.model_json_schema(mode="validation")
+            ),
+            "context_validator": GATEWAY_CONTEXT_VALIDATOR_VERSION,
+            "context_implementation_hash": self._implementation_hash(
+                ModelGateway._validate_context
+            ),
+            "relationship_validator": (
+                PROMPT_RELATIONSHIP_VALIDATOR_VERSIONS[prompt_id]
+            ),
+            "repair_validator": GATEWAY_REPAIR_VALIDATOR_VERSION,
+            "repair_prompt_hash": (
+                prompt_spec("P11_SCHEMA_REPAIR_V1").prompt_hash
+                if prompt_id != "P11_SCHEMA_REPAIR_V1"
+                else None
+            ),
+            "repair_input_schema_hash": (
+                _hash(
+                    model_by_name("SchemaRepairRequest").model_json_schema(
+                        mode="validation"
+                    )
+                )
+                if prompt_id != "P11_SCHEMA_REPAIR_V1"
+                else None
+            ),
+            "repair_output_schema_hash": (
+                _hash(
+                    model_by_name("SchemaRepairResult").model_json_schema(
+                        mode="validation"
+                    )
+                )
+                if prompt_id != "P11_SCHEMA_REPAIR_V1"
+                else None
+            ),
+            "repair_relationship_validator": (
+                PROMPT_RELATIONSHIP_VALIDATOR_VERSIONS[
+                    "P11_SCHEMA_REPAIR_V1"
+                ]
+                if prompt_id != "P11_SCHEMA_REPAIR_V1"
+                else None
+            ),
+            "route": (
+                route.model_dump(mode="json") if route is not None else None
+            ),
+            "repair_route": (
+                repair_route.model_dump(mode="json")
+                if prompt_id != "P11_SCHEMA_REPAIR_V1"
+                and repair_route is not None
+                else None
+            ),
+            "adapter": adapter_material,
+            "openai_sdk_version": (
+                openai_sdk_version
+                if self.config.mode == GatewayMode.REAL
+                else None
+            ),
+            "application_validator_hash": application_validator_hash,
+        }
+        return f"model-stage-execution/2:{_hash(material).removeprefix('sha256:')}"
+
+    def validate_cached_output(
+        self,
+        prompt_id: str,
+        payload: BaseModel | Mapping[str, Any],
+        trusted_context: models.TrustedPromptContext | Mapping[str, Any],
+        raw_output: Any,
+    ) -> BaseModel:
+        """Apply the current request, envelope, context and relationship gates.
+
+        Cache hits deliberately skip transport and ledger creation, but never
+        skip any deterministic acceptance boundary that a fresh output faces.
+        """
+
+        spec = prompt_spec(prompt_id)
+        request = self._validate_request(spec, payload)
+        envelope = self._validate_envelope(spec, request, trusted_context)
+        self._validate_context(
+            request, envelope.trusted_context, prompt_id=prompt_id
+        )
+        if self.config.mode == GatewayMode.REAL:
+            self._validate_real_input_attestation(
+                request, envelope.trusted_context
+            )
+        output = self._validate_output(spec, raw_output)
+        self._validate_context(
+            output,
+            envelope.trusted_context,
+            prompt_id=prompt_id,
+            output=True,
+            phase=ValidationPhase.OUTPUT,
+            request=request,
+        )
+        self._validate_output_relationship(
+            prompt_id,
+            request,
+            output,
+            phase=ValidationPhase.OUTPUT,
+        )
+        if prompt_id == "P11_SCHEMA_REPAIR_V1":
+            self._revalidate_repair_target(output)
+        return output
+
     async def invoke(
         self,
         prompt_id: str,
@@ -692,6 +881,8 @@ class ModelGateway:
         envelope = self._validate_envelope(spec, request, trusted_context)
         validation_order.append(ValidationPhase.ENVELOPE)
         self._validate_context(request, envelope.trusted_context, prompt_id=prompt_id)
+        if self.config.mode == GatewayMode.REAL:
+            self._validate_real_input_attestation(request, envelope.trusted_context)
 
         encoded_request = _canonical_json(request)
         input_token_estimate = (
@@ -1139,6 +1330,41 @@ class ModelGateway:
             primary_failure=primary_failure,
         )
 
+    @staticmethod
+    def _validate_real_input_attestation(
+        request: BaseModel,
+        trusted: models.TrustedPromptContext,
+    ) -> None:
+        if (
+            trusted.data_classification != "SYNTHETIC_ONLY_NO_STUDENT_DATA"
+            or trusted.attestation_id is None
+            or trusted.attested_input_hash is None
+        ):
+            raise GatewayContextError(
+                "Real provider calls require a server-issued synthetic-data attestation",
+                phase=ValidationPhase.REQUEST,
+                failure_code=ContextFailureCode.SYNTHETIC_ATTESTATION_REQUIRED,
+            )
+        if trusted.attested_input_hash != _hash(request):
+            raise GatewayContextError(
+                "The synthetic-data attestation is not bound to this exact request",
+                phase=ValidationPhase.REQUEST,
+                failure_code=ContextFailureCode.SYNTHETIC_ATTESTATION_HASH_MISMATCH,
+            )
+        request_artifact_hashes = ModelGateway._collect_artifact_hashes(
+            request.model_dump(mode="json")
+        )
+        if not request_artifact_hashes.issubset(
+            set(trusted.attested_artifact_hashes)
+        ):
+            raise GatewayContextError(
+                "The synthetic-data attestation does not cover every input artifact",
+                phase=ValidationPhase.REQUEST,
+                failure_code=(
+                    ContextFailureCode.SYNTHETIC_ATTESTATION_ARTIFACT_MISMATCH
+                ),
+            )
+
     def _validate_context(
         self,
         value: BaseModel,
@@ -1167,6 +1393,83 @@ class ModelGateway:
         }
         context_mode_invalid = bool(modes) and any(
             mode != trusted.context_mode.value for mode in modes
+        )
+        tenant_ids = {
+            item["tenant_id"]
+            for item in self._walk_dicts(data)
+            if isinstance(item.get("tenant_id"), str)
+        }
+        activity_ids = {
+            item["activity_id"]
+            for item in self._walk_dicts(data)
+            if isinstance(item.get("activity_id"), str)
+        }
+        submission_ids = {
+            item["submission_id"]
+            for item in self._walk_dicts(data)
+            if isinstance(item.get("submission_id"), str)
+        }
+        blueprint_ids = {
+            item["blueprint_id"]
+            for item in self._walk_dicts(data)
+            if isinstance(item.get("blueprint_id"), str)
+        }
+        blueprint_versions = {
+            item["blueprint_version"]
+            for item in self._walk_dicts(data)
+            if isinstance(item.get("blueprint_version"), int)
+        }
+        output_languages = {
+            item["output_language"]
+            for item in self._walk_dicts(data)
+            if isinstance(item.get("output_language"), str)
+        }
+        tenant_scope_invalid = bool(tenant_ids - {trusted.tenant_id})
+        activity_scope_invalid = bool(activity_ids - {trusted.activity_id})
+        submission_scope_invalid = bool(
+            submission_ids
+            - (
+                {trusted.submission_id}
+                if trusted.submission_id is not None
+                else set()
+            )
+        )
+        blueprint_scope_invalid = bool(
+            blueprint_ids
+            - (
+                {trusted.blueprint_id}
+                if trusted.blueprint_id is not None
+                else set()
+            )
+            or blueprint_versions
+            - (
+                {trusted.blueprint_version}
+                if trusted.blueprint_version is not None
+                else set()
+            )
+        )
+        # Root identities with dedicated prompt-specific failure codes are
+        # validated by the relationship phase below. Masking them here keeps
+        # observability precise while tenant and nested scope remain generic.
+        if output and prompt_id in {"P01_ACTIVITY_SPEC_V1", "P02_RUBRIC_NORMALIZE_V1"}:
+            activity_scope_invalid = False
+        if output and prompt_id in {"P04_BLUEPRINT_BUILD_V1", "P05_BLUEPRINT_REVIEW_V1"}:
+            activity_scope_invalid = False
+            blueprint_scope_invalid = False
+        if output and prompt_id in {
+            "P06_EVIDENCE_MAP_V1",
+            "P07_QUESTION_BUILD_V1",
+            "P08_QUESTION_REVIEW_V1",
+            "P09_GUIDE_BUILD_V1",
+            "P10_ENRICHED_CONTEXT_V1",
+        }:
+            submission_scope_invalid = False
+        scope_invalid = bool(
+            tenant_scope_invalid
+            or activity_scope_invalid
+            or submission_scope_invalid
+            or blueprint_scope_invalid
+            or output_languages - {trusted.output_language}
         )
 
         if (
@@ -1275,6 +1578,12 @@ class ModelGateway:
                 phase=context_phase,
                 failure_code=ContextFailureCode.CONTEXT_MODE_MISMATCH,
             )
+        if scope_invalid:
+            raise GatewayContextError(
+                "Payload identity or output language differs from the trusted scope",
+                phase=context_phase,
+                failure_code=ContextFailureCode.CONTEXT_INVARIANT_FAILED,
+            )
         if prompt_id == "P07_QUESTION_BUILD_V1" and trusted.context_mode != models.ContextMode.CLOSED:
             raise GatewayContextError(
                 "P07 requires CLOSED context",
@@ -1331,6 +1640,32 @@ class ModelGateway:
                 if isinstance(value, str)
             )
         return evidence_ids, source_ids
+
+    @classmethod
+    def _collect_reference_ids(cls, data: Any) -> set[str]:
+        references: set[str] = set()
+        for item in cls._walk_dicts(data):
+            for key, value in item.items():
+                if key.endswith("_id") and isinstance(value, str):
+                    references.add(value)
+                elif key.endswith("_ids") and isinstance(value, list):
+                    references.update(
+                        child for child in value if isinstance(child, str)
+                    )
+        return references
+
+    @classmethod
+    def _collect_artifact_hashes(cls, data: Any) -> set[str]:
+        hashes: set[str] = set()
+        for item in cls._walk_dicts(data):
+            for key in ("artifact_hash", "sha256"):
+                value = item.get(key)
+                if (
+                    isinstance(value, str)
+                    and re.fullmatch(r"sha256:[a-f0-9]{64}", value)
+                ):
+                    hashes.add(value)
+        return hashes
 
     @staticmethod
     def _validate_clean_abstention(
@@ -1455,7 +1790,11 @@ class ModelGateway:
             if output.activity_id != request.activity_spec.activity_id:
                 raise GatewayContextError("P03 output activity_id mismatch")
         elif prompt_id == "P04_BLUEPRINT_BUILD_V1":
-            if output.activity_id != request.activity_spec.activity_id:
+            if (
+                output.activity_id != request.activity_spec.activity_id
+                or output.blueprint_id != request.target_blueprint_id
+                or output.blueprint_version != request.target_blueprint_version
+            ):
                 raise GatewayContextError("P04 output activity_id mismatch")
             constraints = output.assessment_constraints
             policy = request.blueprint_policy
@@ -1464,6 +1803,16 @@ class ModelGateway:
                 or constraints.target_total_minutes != policy.target_total_minutes
                 or set(constraints.allowed_response_formats)
                 != set(policy.allowed_response_formats)
+                or constraints.minimum_opportunity_quality
+                != policy.planning_policy.minimum_opportunity_quality
+                or constraints.max_reserve_opportunities
+                != policy.planning_policy.max_reserve_opportunities
+                or set(constraints.priority_criterion_ids)
+                != set(policy.priority_criterion_ids)
+                or set(constraints.required_criterion_ids)
+                != set(policy.required_criterion_ids)
+                or constraints.structured_justification_policy
+                != policy.structured_justification_policy
             ):
                 raise GatewayContextError("P04 output changed trusted blueprint constraints")
             if set(output.decision_ids) != {
@@ -1562,6 +1911,32 @@ class ModelGateway:
                         ContextFailureCode.P04_CATALOG_PLAN_INFEASIBLE
                     ),
                 )
+            templates = [
+                opportunity
+                for dimension in output.dimensions
+                for variant in dimension.evidence_variants
+                for opportunity in variant.question_opportunities
+            ]
+            required_templates = {
+                template.opportunity_template_id
+                for template in templates
+                if template.student_justification_required
+            }
+            justification = policy.structured_justification_policy
+            if justification.mode == models.StructuredJustificationMode.ALL:
+                expected_templates = {
+                    template.opportunity_template_id for template in templates
+                }
+            elif justification.mode == models.StructuredJustificationMode.SELECTED:
+                expected_templates = set(
+                    justification.selected_opportunity_template_ids
+                )
+            else:
+                expected_templates = set()
+            if required_templates != expected_templates:
+                raise GatewayContextError(
+                    "P04 output changed the trusted structured-justification matrix"
+                )
         elif prompt_id == "P05_BLUEPRINT_REVIEW_V1":
             expected = (
                 request.blueprint.blueprint_id,
@@ -1571,9 +1946,36 @@ class ModelGateway:
             actual = (output.blueprint_id, output.blueprint_version, output.activity_id)
             if actual != expected:
                 raise GatewayContextError("P05 output blueprint reference mismatch")
+            allowed_references = ModelGateway._collect_reference_ids(
+                request.model_dump(mode="json")
+            )
+            if any(
+                not set(check.referenced_ids).issubset(allowed_references)
+                for check in output.checks
+            ):
+                raise GatewayContextError(
+                    "P05 review check referenced an ID outside the reviewed roots"
+                )
         elif prompt_id == "P06_EVIDENCE_MAP_V1":
             if output.submission_id != request.evidence_bundle.submission_id:
                 raise GatewayContextError("P06 output submission_id mismatch")
+            templates = {
+                template.opportunity_template_id: template
+                for dimension in request.blueprint.dimensions
+                for variant in dimension.evidence_variants
+                for template in variant.question_opportunities
+            }
+            global_minimum = (
+                request.blueprint.assessment_constraints.minimum_opportunity_quality
+            )
+            for opportunity in output.opportunities:
+                template = templates.get(opportunity.opportunity_template_id)
+                if template is None or opportunity.opportunity_quality < max(
+                    global_minimum, template.minimum_quality
+                ):
+                    raise GatewayContextError(
+                        "P06 opportunity lowered a trusted quality threshold"
+                    )
         elif prompt_id in {"P07_QUESTION_BUILD_V1", "P10_ENRICHED_CONTEXT_V1"}:
             if (
                 output.submission_id != request.plan.submission_id
@@ -1584,6 +1986,8 @@ class ModelGateway:
             if output.candidate is not None:
                 candidate = output.candidate
                 if (
+                    candidate.candidate_id != request.target_candidate_id
+                    or
                     candidate.opportunity_template_id
                     != request.opportunity.opportunity_template_id
                     or candidate.dimension_id != request.opportunity.dimension_id
@@ -1596,6 +2000,15 @@ class ModelGateway:
                     set(request.evidence_bundle.allowed_evidence_ids)
                 ):
                     raise GatewayContextError("Question output invented evidence_ids")
+                normalized_question_hash = _hash(
+                    re.sub(r"\s+", " ", candidate.question_text).strip().casefold()
+                )
+                if normalized_question_hash in {
+                    item.normalized_question_hash for item in request.avoid
+                }:
+                    raise GatewayContextError(
+                        "Question output repeated a rejected question fingerprint"
+                    )
         elif prompt_id == "P08_QUESTION_REVIEW_V1":
             if (
                 output.submission_id != request.evidence_bundle.submission_id
@@ -1679,6 +2092,43 @@ class ModelGateway:
         elif prompt_id == "P11_SCHEMA_REPAIR_V1":
             if output.target_schema_name != request.target_schema_name:
                 raise GatewayContextError("P11 changed target_schema_name")
+            if (
+                output.repair_status == models.RepairStatus.REPAIRED
+                and not ModelGateway._is_structural_repair(
+                    request.invalid_output, output.repaired_output
+                )
+            ):
+                raise GatewayContextError(
+                    "P11 changed semantic content instead of structure"
+                )
+
+    @classmethod
+    def _is_structural_repair(cls, original: Any, repaired: Any) -> bool:
+        """Allow shape-only cleanup while preserving every existing semantic leaf."""
+
+        if isinstance(original, dict):
+            if not isinstance(repaired, dict):
+                return False
+            for key in set(original).intersection(repaired):
+                if not cls._is_structural_repair(original[key], repaired[key]):
+                    return False
+            # Unknown fields may be removed. Newly materialized defaults may be
+            # null/empty only; a missing semantic value cannot be invented.
+            return all(
+                value is None or value == [] or value == {}
+                for key, value in repaired.items()
+                if key not in original
+            )
+        if isinstance(original, list):
+            return (
+                isinstance(repaired, list)
+                and len(original) == len(repaired)
+                and all(
+                    cls._is_structural_repair(left, right)
+                    for left, right in zip(original, repaired, strict=True)
+                )
+            )
+        return type(original) is type(repaired) and original == repaired
 
     async def _repair_once(
         self,
@@ -1894,6 +2344,12 @@ class ModelGateway:
                 trusted_context,
                 prompt_id=repair_spec.prompt_id,
                 output=True,
+                phase=ValidationPhase.OUTPUT,
+            )
+            self._validate_output_relationship(
+                repair_spec.prompt_id,
+                repair_request,
+                repair_output,
                 phase=ValidationPhase.OUTPUT,
             )
         except GatewayContextError as context_error:

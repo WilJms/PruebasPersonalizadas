@@ -98,10 +98,10 @@ def build_openai_routes(*, max_call_cost_usd: float) -> Mapping[str, models.Mode
     ):
         raise AssertionError("LUNA_BASELINE_V1 cannot route silently to another model")
     capabilities = models.ModelCapabilities(
-        input_modalities=[
-            models.ModelInputModality.TEXT,
-            models.ModelInputModality.IMAGE,
-        ],
+        # Every document is parsed and normalized before the gateway. The
+        # adapter serializes only the validated envelope; it does not send
+        # provider-native images or PDFs.
+        input_modalities=[models.ModelInputModality.TEXT],
         output_modalities=[models.ModelOutputModality.STRUCTURED_JSON],
         structured_outputs=True,
         max_context_tokens=1_050_000,
@@ -164,6 +164,7 @@ def build_openai_routes(*, max_call_cost_usd: float) -> Mapping[str, models.Mode
                 "SOL_COMPARISON_REQUIRES_FUTURE_HUMAN_AUTHORIZATION",
                 "NO_DATED_SNAPSHOT_PUBLISHED_MODEL_ID_RECORDED",
                 "RESPONSES_API_STRUCTURED_OUTPUTS",
+                "PARSED_TEXT_ONLY_NO_PROVIDER_IMAGE_OR_PDF",
                 "STORE_FALSE_NOT_ZDR",
                 "BACKGROUND_FALSE",
                 "TOOLS_EMPTY",

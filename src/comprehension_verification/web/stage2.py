@@ -1570,6 +1570,12 @@ class Stage2Service:
                     job,
                     "P07_QUESTION_BUILD_V1",
                     m.QuestionBuildRequest(
+                        target_candidate_id=stable_id(
+                            "candidate",
+                            assessment.submission_id,
+                            logical_action_id,
+                            opportunity.opportunity_id,
+                        ),
                         plan=plan,
                         opportunity=opportunity,
                         evidence_bundle=bundle,
@@ -2166,9 +2172,6 @@ class Stage2Service:
         )
 
     def job_control_view(self, job_id: str, actor: Actor) -> dict[str, Any]:
-        self.repository.reconcile_stale_jobs(
-            lease_seconds=self.settings.job_lease_seconds
-        )
         job = self.repository.job_control(job_id, actor.workspace_id)
         runs = [
             self._stage_run_contract(row, job)

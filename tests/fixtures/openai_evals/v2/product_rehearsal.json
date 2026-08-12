@@ -1,0 +1,31 @@
+{
+  "schema_version": "stage2-product-rehearsal-fixture/1.0.0",
+  "classification": "SYNTHETIC_ONLY_NO_STUDENT_DATA",
+  "generator": "comprehension_verification.rehearsal.build_rehearsal_checkpoints",
+  "checkpoints": {
+    "A": "post-P03 -> P04/P05",
+    "B": "approved blueprint + EvidenceBundle -> P06",
+    "C": "validated mapping + production planner -> P07/P08",
+    "D": "assembled Assessment + EvidenceBundle -> P09"
+  },
+  "scenarios": [
+    {
+      "scenario_id": "synthetic-open-short-v1",
+      "response_format": "OPEN_SHORT",
+      "structured_justification_mode": "NOT_REQUIRED"
+    },
+    {
+      "scenario_id": "synthetic-choice-justification-v1",
+      "response_format": "CHOICE",
+      "structured_justification_mode": "ALL"
+    }
+  ],
+  "invariants": {
+    "p10_enabled": false,
+    "student_data": false,
+    "provider_native_documents": false,
+    "tools": false,
+    "fallback": false,
+    "semantic_retries": false
+  }
+}

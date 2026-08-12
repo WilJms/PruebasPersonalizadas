@@ -521,7 +521,10 @@ class AuditEventRow(Base):
 
 class IdempotencyRow(Base):
     __tablename__ = "idempotency_keys"
-    __table_args__ = (UniqueConstraint("tenant_id", "key"),)
+    __table_args__ = (
+        UniqueConstraint("tenant_id", "key"),
+        Index("ix_idempotency_keys_expires_at", "expires_at"),
+    )
     id: Mapped[str] = mapped_column(String(128), primary_key=True)
     tenant_id: Mapped[str] = mapped_column(String(128), index=True)
     key: Mapped[str] = mapped_column(String(128))
@@ -533,6 +536,10 @@ class IdempotencyRow(Base):
         JSON(none_as_null=True), nullable=True
     )
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
+    expires_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: utc_now() + timedelta(days=1),
+    )
 
 
 _STAGE2_APPEND_ONLY_TABLES = (
@@ -571,6 +578,7 @@ _POSTGRES_REQUIRED_COLUMNS = frozenset(
         ("exports", "coverage_snapshot_hash"),
         ("exports", "completed_at"),
         ("exports", "data"),
+        ("idempotency_keys", "expires_at"),
     }
     | {
         (table_name, column.name)
@@ -599,6 +607,7 @@ _POSTGRES_REQUIRED_CONSTRAINTS = {
 _POSTGRES_REQUIRED_INDEXES = {
     ("jobs", "ix_jobs_claim_eligible"): False,
     ("stage_runs", "uq_stage_runs_succeeded_stage_key"): True,
+    ("idempotency_keys", "ix_idempotency_keys_expires_at"): False,
 }
 
 _POSTGRES_POLICY_QUAL = "cva_is_workspace_member((tenant_id)::text)"
@@ -1707,6 +1716,49 @@ class Repository:
                 )
             )
 
+    def save_generated_question_and_review(
+        self,
+        *,
+        question: GeneratedQuestionRow,
+        review: QuestionReviewRow,
+    ) -> None:
+        """Persist immutable server-scoped model artifacts without ``merge``.
+
+        Candidate IDs are global primary keys for backward compatibility.  A
+        model-supplied collision must therefore fail rather than overwrite a
+        row owned by another tenant/submission (or mutate an observed output).
+        """
+
+        if (
+            question.tenant_id != review.tenant_id
+            or question.submission_id != review.submission_id
+        ):
+            raise ValueError("question and review scopes must match")
+        with self.session() as session:
+            existing_question = session.get(GeneratedQuestionRow, question.id)
+            if existing_question is None:
+                session.add(question)
+            elif any(
+                (
+                    existing_question.tenant_id != question.tenant_id,
+                    existing_question.submission_id != question.submission_id,
+                    existing_question.data != question.data,
+                )
+            ):
+                raise Conflict("GENERATED_QUESTION_ID_COLLISION")
+
+            existing_review = session.get(QuestionReviewRow, review.question_id)
+            if existing_review is None:
+                session.add(review)
+            elif any(
+                (
+                    existing_review.tenant_id != review.tenant_id,
+                    existing_review.submission_id != review.submission_id,
+                    existing_review.data != review.data,
+                )
+            ):
+                raise Conflict("QUESTION_REVIEW_ID_COLLISION")
+
     def save_job_status(self, status: m.JobStatus, *, kind: str | None = None) -> None:
         with self.session() as session:
             row = session.get(JobRow, status.job_id)
@@ -2027,20 +2079,45 @@ class Repository:
                 if latest.version != source_version or latest.etag != source_etag:
                     raise Conflict("BLUEPRINT_REVIEW_SOURCE_CHANGED")
 
-                session.add(blueprint)
                 review_allows_approval = (
                     review.status == "READY"
                     and review.approval_recommendation
                     != m.BlueprintApprovalRecommendation.REJECT
                 )
-                activity.status = (
-                    "BLUEPRINT_READY" if review_allows_approval else "NEEDS_REVIEW"
-                )
+                if review_allows_approval:
+                    session.add(blueprint)
+                    activity.status = "BLUEPRINT_READY"
+                    job.status = "SUCCEEDED"
+                    job.failure_class = None
+                    job.diagnostics = []
+                elif review.status == "TECHNICAL_FAILURE":
+                    activity.status = "TECHNICAL_FAILURE"
+                    job.status = "FAILED"
+                    job.failure_class = m.FailureClass.VALIDATION.value
+                    job.diagnostics = [
+                        item.model_dump(mode="json")
+                        for item in review.diagnostics
+                    ] or [
+                        m.Diagnostic(
+                            code="BLUEPRINT_REVIEW_TECHNICAL_FAILURE",
+                            severity=m.Severity.ERROR,
+                            message=(
+                                "The edited blueprint failed its validated review boundary."
+                            ),
+                            retryable=False,
+                        ).model_dump(mode="json")
+                    ]
+                else:
+                    activity.status = "NEEDS_REVIEW"
+                    job.status = "NEEDS_REVIEW"
+                    job.failure_class = None
+                    job.diagnostics = [
+                        item.model_dump(mode="json")
+                        for item in review.diagnostics
+                    ]
                 activity.updated_at = now
                 job.stage = "BLUEPRINT_REVIEW"
-                job.status = "SUCCEEDED"
                 job.progress = 1.0
-                job.failure_class = None
                 job.next_attempt_at = None
                 job.finished_at = now
                 session.add(
@@ -2048,12 +2125,20 @@ class Repository:
                         id=stable_id(
                             "evt",
                             tenant_id,
-                            "blueprint.edited",
+                            (
+                                "blueprint.edited"
+                                if review_allows_approval
+                                else "blueprint.review_blocked"
+                            ),
                             blueprint.blueprint_id,
-                            blueprint.version,
+                            job.id,
                         ),
                         tenant_id=tenant_id,
-                        event_type="blueprint.edited",
+                        event_type=(
+                            "blueprint.edited"
+                            if review_allows_approval
+                            else "blueprint.review_blocked"
+                        ),
                         aggregate_id=blueprint.blueprint_id,
                         actor_id=actor_id,
                         payload={
@@ -2561,6 +2646,37 @@ class Repository:
         result: JobRow,
         activated_at: datetime,
     ) -> None:
+        stage_progress = {
+            "ACTIVITY_PARSE": 0.05,
+            "ACTIVITY_SPEC": 0.15,
+            "RUBRIC_NORMALIZE": 0.30,
+            "AMBIGUITY_TRIAGE": 0.45,
+            "BLUEPRINT_BUILD": 0.65,
+            "BLUEPRINT_REVIEW": 0.82,
+            "SUBMISSION_PARSE": 0.08,
+            "EVIDENCE_MAP": 0.20,
+            "ASSESSMENT_PLAN": 0.32,
+            "QUESTION_GENERATE": 0.40,
+            "QUESTION_REVIEW": 0.55,
+            "ASSEMBLE": 0.72,
+            "GUIDE_BUILD": 0.82,
+        }
+        result.progress = stage_progress.get(result.stage, 0.0)
+        if source.kind == "ACTIVITY":
+            statement = select(ActivityRow).where(
+                ActivityRow.id == source.aggregate_id,
+                ActivityRow.tenant_id == source.tenant_id,
+            )
+            if self.engine.dialect.name == "postgresql":
+                statement = statement.with_for_update()
+            activity = session.scalar(statement)
+            if activity is None:
+                raise NotFound("activity not found")
+            if activity.status not in {"TECHNICAL_FAILURE", "NEEDS_REVIEW"}:
+                raise Conflict("ACTIVITY_CONTINUATION_NOT_ALLOWED")
+            activity.status = "QUEUED"
+            activity.updated_at = activated_at
+            return
         if source.kind == "BLUEPRINT_REVIEW":
             statement = select(ActivityRow).where(
                 ActivityRow.id == source.aggregate_id,
@@ -2592,10 +2708,24 @@ class Repository:
         if submission is None:
             raise NotFound("submission not found")
         current = m.SubmissionProcessingState.model_validate(submission.state)
+        domain_status = {
+            "SUBMISSION_PARSE": m.SubmissionProcessingStatus.PARSING,
+            "EVIDENCE_MAP": m.SubmissionProcessingStatus.MAPPING_OPPORTUNITIES,
+            "ASSESSMENT_PLAN": m.SubmissionProcessingStatus.PLANNING,
+            "QUESTION_GENERATE": m.SubmissionProcessingStatus.GENERATING,
+            "QUESTION_REVIEW": (
+                m.SubmissionProcessingStatus.VALIDATING_QUESTIONS
+            ),
+            "ASSEMBLE": m.SubmissionProcessingStatus.VALIDATING_QUESTIONS,
+            "GUIDE_BUILD": m.SubmissionProcessingStatus.VALIDATING_QUESTIONS,
+        }.get(result.stage, m.SubmissionProcessingStatus.PARSING)
         resumed = current.model_copy(
             update={
+                "status": domain_status,
                 "current_stage": result.stage,
+                "progress": result.progress,
                 "active_job_id": result.id,
+                "diagnostics": [],
                 "updated_at": activated_at,
             }
         )
@@ -2724,6 +2854,37 @@ class Repository:
                 )
                 .order_by(JobRow.created_at, JobRow.id)
                 .limit(1)
+            )
+            if self.engine.dialect.name == "postgresql":
+                statement = statement.with_for_update(skip_locked=True)
+            row = session.scalar(statement)
+            if row is None:
+                return None
+            row.status = "RUNNING"
+            row.attempt += 1
+            row.started_at = now
+            row.finished_at = None
+            row.next_attempt_at = None
+            return row
+
+    def claim_job(
+        self, job_id: str, *, lease_seconds: int = 3900
+    ) -> JobRow | None:
+        """Atomically claim only the content-free ID dispatched to this worker."""
+
+        if not 300 <= lease_seconds <= 7200:
+            raise ValueError("job lease must be between 300 and 7200 seconds")
+        with self.session() as session:
+            now = utc_now()
+            statement = select(JobRow).where(
+                JobRow.id == job_id,
+                JobRow.status == "QUEUED",
+                JobRow.control_state == "ACTIVE",
+                JobRow.attempt < JobRow.max_attempts,
+                or_(
+                    JobRow.next_attempt_at.is_(None),
+                    JobRow.next_attempt_at <= now,
+                ),
             )
             if self.engine.dialect.name == "postgresql":
                 statement = statement.with_for_update(skip_locked=True)
@@ -3643,7 +3804,13 @@ class Repository:
         )
 
     def reserve_idempotency(
-        self, tenant_id: str, key: str, fingerprint: str
+        self,
+        tenant_id: str,
+        key: str,
+        fingerprint: str,
+        *,
+        ttl_seconds: int = 86_400,
+        now: datetime | None = None,
     ) -> dict[str, Any] | None:
         """Reserve a key atomically, returning its completed replay descriptor.
 
@@ -3651,6 +3818,11 @@ class Repository:
         is deliberately a conflict instead of permitting duplicate side
         effects while the winning request is still running.
         """
+
+        if not 300 <= ttl_seconds <= 604_800:
+            raise ValueError("idempotency ttl must be between 300 and 604800 seconds")
+        reference_time = now or utc_now()
+        expires_at = reference_time + timedelta(seconds=ttl_seconds)
 
         def inspect(session: Session) -> dict[str, Any] | None:
             row = session.scalar(
@@ -3668,6 +3840,18 @@ class Repository:
             return dict(row.response)
 
         with self.sessions() as session:
+            # Expiration applies only to completed replay descriptors. An
+            # in-flight reservation remains a conflict: reclaiming it could
+            # execute the same domain mutation twice after a process crash.
+            session.execute(
+                delete(IdempotencyRow).where(
+                    IdempotencyRow.tenant_id == tenant_id,
+                    IdempotencyRow.key == key,
+                    IdempotencyRow.response.is_not(None),
+                    IdempotencyRow.expires_at <= reference_time,
+                )
+            )
+            session.flush()
             existing = session.scalar(
                 select(IdempotencyRow).where(
                     IdempotencyRow.tenant_id == tenant_id,
@@ -3683,6 +3867,7 @@ class Repository:
                     key=key,
                     fingerprint=fingerprint,
                     response=None,
+                    expires_at=expires_at,
                 )
             )
             try:
@@ -3698,7 +3883,12 @@ class Repository:
         key: str,
         fingerprint: str,
         response: dict[str, Any],
+        *,
+        ttl_seconds: int = 86_400,
+        now: datetime | None = None,
     ) -> None:
+        if not 300 <= ttl_seconds <= 604_800:
+            raise ValueError("idempotency ttl must be between 300 and 604800 seconds")
         if _contains_transient_capability(response):
             raise ValueError("IDEMPOTENCY_RESPONSE_CONTAINS_TRANSIENT_CAPABILITY")
         with self.session() as session:
@@ -3713,6 +3903,7 @@ class Repository:
             if row.response is not None and row.response != response:
                 raise Conflict("IDEMPOTENCY_RESPONSE_CONFLICT")
             row.response = response
+            row.expires_at = (now or utc_now()) + timedelta(seconds=ttl_seconds)
 
     def release_idempotency(self, tenant_id: str, key: str, fingerprint: str) -> None:
         with self.session() as session:

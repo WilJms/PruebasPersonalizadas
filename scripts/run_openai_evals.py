@@ -16,6 +16,7 @@ from hashlib import sha256
 import json
 import os
 from pathlib import Path
+import subprocess
 from types import MappingProxyType, SimpleNamespace
 from typing import Any
 
@@ -59,6 +60,17 @@ from comprehension_verification.model_gateway.openai_schema import (
 from comprehension_verification.model_gateway.registry import (
     PROMPT_VERSION,
     prompt_spec,
+)
+from comprehension_verification.canonical import canonical_hash
+from comprehension_verification.evaluation_gate import (
+    EvaluationAuthorizationConsumed,
+    EvaluationAuthorizationLedger,
+)
+from comprehension_verification.rehearsal import (
+    REHEARSAL_REPORT_VERSION,
+    rehearsal_boundary_material,
+    run_offline_convergence,
+    run_real_convergence,
 )
 
 
@@ -1331,6 +1343,8 @@ def _blueprint_recanary_p04_request(case: dict[str, Any]) -> models.BlueprintBui
         deep=True,
     )
     return models.BlueprintBuildRequest(
+        target_blueprint_id=base.target_blueprint_id,
+        target_blueprint_version=base.target_blueprint_version,
         activity_spec=activity_spec,
         rubric_spec=rubric,
         resolved_decisions=decisions,
@@ -4950,6 +4964,195 @@ async def _run_canary_real(
     }
 
 
+def _content_hash(path: Path) -> str:
+    return "sha256:" + sha256(path.read_bytes()).hexdigest()
+
+
+def _git_head() -> str:
+    completed = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    return completed.stdout.strip()
+
+
+def _hashed_optional_label(value: str | None) -> str:
+    normalized = (value or "UNSET").strip() or "UNSET"
+    return "sha256:" + sha256(normalized.encode("utf-8")).hexdigest()
+
+
+def _convergence_authorization_boundary(args: argparse.Namespace) -> dict[str, Any]:
+    material = rehearsal_boundary_material()
+    return {
+        "boundary_format": "openai-stage2-convergence-authorization/1.0.0",
+        "git_head": _git_head(),
+        "harness_hash": _content_hash(Path(__file__).resolve()),
+        "rehearsal_module_hash": _content_hash(
+            ROOT
+            / "src/comprehension_verification/rehearsal.py"
+        ),
+        "manifest_hash": _content_hash(args.manifest.resolve()),
+        "executable_boundary": material,
+        "route_profile": OPENAI_ROUTE_PROFILE_ID,
+        "execution_plan": [
+            "independent-sweep:P04-P09",
+            "integrated-chain:base:1",
+            "integrated-chain:base:2:unchanged-boundary",
+            "integrated-chain:choice-justification-variant",
+        ],
+        "max_provider_requests": args.max_provider_requests,
+        "max_total_cost_usd": args.max_total_cost_usd,
+        "max_call_cost_usd": args.max_call_cost_usd,
+        "project_label_hash": _hashed_optional_label(
+            os.environ.get("CVA_OPENAI_PROJECT_ID")
+        ),
+        "organization_label_hash": _hashed_optional_label(
+            os.environ.get("CVA_OPENAI_ORGANIZATION_ID")
+        ),
+        "secret_version_label_hash": _hashed_optional_label(
+            os.environ.get("CVA_OPENAI_SECRET_VERSION")
+        ),
+        "synthetic_only": True,
+        "p10_enabled": False,
+        "fallback_enabled": False,
+        "semantic_retries": 0,
+    }
+
+
+def _write_json_atomic(path: Path, value: dict[str, Any]) -> str:
+    path = path.resolve()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    encoded = (
+        json.dumps(
+            value,
+            ensure_ascii=False,
+            sort_keys=True,
+            indent=2,
+        )
+        + "\n"
+    ).encode("utf-8")
+    temporary = path.with_suffix(path.suffix + ".tmp")
+    temporary.write_bytes(encoded)
+    temporary.replace(path)
+    return "sha256:" + sha256(encoded).hexdigest()
+
+
+async def _run_current_convergence_real(
+    args: argparse.Namespace,
+) -> dict[str, Any]:
+    key = os.environ.get("CVA_OPENAI_API_KEY", "").strip()
+    if not key:
+        raise OpenAIEvalBlocked("OPENAI_CONVERGENCE_API_KEY_REQUIRED")
+    return await run_real_convergence(
+        api_key=SecretStr(key),
+        max_total_cost_usd=args.max_total_cost_usd,
+        max_call_cost_usd=args.max_call_cost_usd,
+        max_provider_requests=args.max_provider_requests,
+    )
+
+
+def _run_convergence_cli(args: argparse.Namespace) -> int:
+    if args.case_id:
+        raise OpenAIEvalBlocked("OPENAI_CONVERGENCE_FIXED_MATRIX_REQUIRED")
+    if args.mode == "convergence-dry-run":
+        result = asyncio.run(run_offline_convergence())
+        print(json.dumps(result, sort_keys=True))
+        return 0 if result["status"] == "PASS" else 1
+    if any(
+        (
+            not args.allow_billable,
+            args.max_total_cost_usd <= 0,
+            args.max_total_cost_usd > 1.0,
+            args.max_call_cost_usd <= 0,
+            args.max_call_cost_usd > 0.15,
+            args.max_call_cost_usd > args.max_total_cost_usd,
+            not 24 <= args.max_provider_requests <= 30,
+            args.ledger is None,
+            args.report_path is None,
+            not args.execution_id,
+            not args.authorization_id,
+        )
+    ):
+        raise OpenAIEvalBlocked("OPENAI_CONVERGENCE_EXPLICIT_CAPS_REQUIRED")
+
+    boundary = _convergence_authorization_boundary(args)
+    ledger = EvaluationAuthorizationLedger(args.ledger)
+    try:
+        reservation = ledger.reserve(
+            execution_id=args.execution_id,
+            authorization_id=args.authorization_id,
+            boundary=boundary,
+        )
+    except EvaluationAuthorizationConsumed as exc:
+        raise OpenAIEvalBlocked(str(exc)) from exc
+
+    try:
+        result = asyncio.run(_run_current_convergence_real(args))
+        result.update(
+            {
+                "execution_id": args.execution_id,
+                "authorization_hash": reservation.authorization_hash,
+                "authorization_boundary_hash": reservation.boundary_hash,
+                "git_head": boundary["git_head"],
+                "harness_hash": boundary["harness_hash"],
+                "rehearsal_module_hash": boundary["rehearsal_module_hash"],
+                "manifest_hash": boundary["manifest_hash"],
+                "project_label_hash": boundary["project_label_hash"],
+                "organization_label_hash": boundary[
+                    "organization_label_hash"
+                ],
+                "secret_version_label_hash": boundary[
+                    "secret_version_label_hash"
+                ],
+            }
+        )
+        report_hash = _write_json_atomic(args.report_path, result)
+        ledger.finish(
+            reservation=reservation,
+            status=(
+                "COMPLETED" if result["status"] == "PASS" else "FAILED"
+            ),
+            report_hash=report_hash,
+            failure_code=(
+                None
+                if result["status"] == "PASS"
+                else "OPENAI_CONVERGENCE_FAILED"
+            ),
+        )
+    except BaseException as exc:
+        failure_code = (
+            str(exc)
+            if isinstance(exc, OpenAIEvalBlocked)
+            and str(exc).startswith("OPENAI_")
+            else "OPENAI_CONVERGENCE_EXECUTION_FAILED"
+        )
+        failure_report = {
+            "report_schema_version": REHEARSAL_REPORT_VERSION,
+            "mode": "real-convergence",
+            "classification": "SYNTHETIC_ONLY_NO_STUDENT_DATA",
+            "status": "FAIL",
+            "execution_id": args.execution_id,
+            "authorization_hash": reservation.authorization_hash,
+            "authorization_boundary_hash": reservation.boundary_hash,
+            "git_head": boundary["git_head"],
+            "harness_hash": boundary["harness_hash"],
+            "failure": {"codes": [failure_code]},
+        }
+        report_hash = _write_json_atomic(args.report_path, failure_report)
+        ledger.finish(
+            reservation=reservation,
+            status="FAILED",
+            report_hash=report_hash,
+            failure_code=failure_code,
+        )
+        raise
+    print(json.dumps(result, sort_keys=True))
+    return 0 if result["status"] == "PASS" else 1
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--manifest", type=Path, default=DEFAULT_MANIFEST)
@@ -4966,6 +5169,8 @@ def main() -> int:
             "blueprint-timeout-recovery-real",
             "qualification-dry-run",
             "qualification-real",
+            "convergence-dry-run",
+            "convergence-real",
         ),
         default="offline",
     )
@@ -4977,10 +5182,49 @@ def main() -> int:
     )
     parser.add_argument("--allow-billable", action="store_true")
     parser.add_argument("--max-total-cost-usd", type=float, default=0.0)
+    parser.add_argument("--max-call-cost-usd", type=float, default=0.10)
+    parser.add_argument("--max-provider-requests", type=int, default=30)
+    parser.add_argument("--execution-id")
+    parser.add_argument("--authorization-id")
+    parser.add_argument("--ledger", type=Path)
+    parser.add_argument("--report-path", type=Path)
     parser.add_argument("--p04-evidence-recovery", action="store_true")
     args = parser.parse_args()
+    if args.mode in {"convergence-dry-run", "convergence-real"}:
+        try:
+            return _run_convergence_cli(args)
+        except OpenAIEvalBlocked as exc:
+            print(
+                json.dumps(
+                    {
+                        "status": "BLOCKED",
+                        "code": str(exc),
+                        "network_calls": 0,
+                    },
+                    sort_keys=True,
+                )
+            )
+            return 2
     cases = _load_cases(args.manifest)
     manifest_cases = cases
+    if args.mode in {
+        "real",
+        "canary-real",
+        "blueprint-recanary-real",
+        "blueprint-timeout-recovery-real",
+        "qualification-real",
+    }:
+        print(
+            json.dumps(
+                {
+                    "status": "BLOCKED",
+                    "code": "OPENAI_HISTORICAL_EVAL_GATE_CLOSED",
+                    "network_calls": 0,
+                },
+                sort_keys=True,
+            )
+        )
+        return 2
     if args.mode in {
         "blueprint-recanary-dry-run",
         "blueprint-recanary-real",

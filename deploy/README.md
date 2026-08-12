@@ -51,14 +51,15 @@ terraform -chdir=deploy/terraform apply \
 Este boundary habilita APIs y crea Artifact Registry, identidades y
 contenedores vacíos de Secret Manager. No crea todavía Service ni Job.
 
-## Boundary 2: migraciones PostgreSQL 001 -> 002 -> 003
+## Boundary 2: migraciones PostgreSQL 001 -> 002 -> 003 -> 004
 
 Antes de migrar se debe detener todo writer, capturar un backup restaurable y
 registrar su identificador fuera de Git. En una base vacía, el orden único es:
 
 1. `deploy/supabase/migrations/202607310001_stage1.sql`;
 2. `deploy/supabase/migrations/202608070002_idempotency_capability_hygiene.sql`;
-3. `deploy/supabase/migrations/202608070003_stage2_experimental.sql`.
+3. `deploy/supabase/migrations/202608070003_stage2_experimental.sql`;
+4. `deploy/supabase/migrations/202608120004_stage2_convergence.sql`.
 
 Cada archivo contiene su propia transacción y debe ejecutarse con fallo cerrado:
 
@@ -69,11 +70,14 @@ PGSERVICE=cva-stage2-admin psql -X --set=ON_ERROR_STOP=1 \
   --file=deploy/supabase/migrations/202608070002_idempotency_capability_hygiene.sql
 PGSERVICE=cva-stage2-admin psql -X --set=ON_ERROR_STOP=1 \
   --file=deploy/supabase/migrations/202608070003_stage2_experimental.sql
+PGSERVICE=cva-stage2-admin psql -X --set=ON_ERROR_STOP=1 \
+  --file=deploy/supabase/migrations/202608120004_stage2_convergence.sql
 ```
 
-Una base E1 que ya tenga 001 y 002 verificadas aplica únicamente 003; no se
-reproducen migraciones ya registradas. Después se comprueban RLS, grants,
-triggers append-only, constraints y `/api/readiness` antes de habilitar tráfico.
+Una base E1 que ya tenga 001 y 002 verificadas aplica 003 y luego 004; una base
+E2 con 003 verificada aplica únicamente 004. No se reproducen migraciones ya
+registradas. Después se comprueban RLS, grants, triggers append-only,
+constraints, expiración de idempotencia y `/api/readiness` antes de habilitar tráfico.
 La URL o credencial PostgreSQL vive en un `PGSERVICE` externo, nunca en el
 comando, logs, tfvars o Git.
 

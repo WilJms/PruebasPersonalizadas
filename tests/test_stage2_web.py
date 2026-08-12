@@ -105,6 +105,37 @@ def _other_workspace_client(app: Any) -> tuple[TestClient, dict[str, str]]:
     return client, {"X-CSRF-Token": csrf}
 
 
+def test_get_job_is_read_only_and_does_not_reconcile_stale_worker_state() -> None:
+    app = _app()
+    repository: Repository = app.state.runtime.repository
+    repository.add(
+        JobRow(
+            id="job_stale_read_only",
+            tenant_id=TENANT_ID,
+            kind="ACTIVITY",
+            aggregate_id="act_stale_read_only",
+            stage="BLUEPRINT_BUILD",
+            status="RUNNING",
+            progress=0.5,
+            attempt=1,
+            diagnostics=[],
+            started_at=utc_now() - timedelta(hours=3),
+        )
+    )
+
+    with TestClient(app) as client:
+        _login(client)
+        response = client.get("/api/v1/jobs/job_stale_read_only")
+
+    assert response.status_code == 200
+    assert response.json()["job"]["status"] == "RUNNING"
+    persisted = repository.job_control(
+        "job_stale_read_only", TENANT_ID
+    )
+    assert persisted.status == "RUNNING"
+    assert persisted.failure_class is None
+
+
 def _create_activity(
     client: TestClient,
     headers: dict[str, str],
@@ -245,6 +276,66 @@ def test_upload_idempotency_replay_reissues_exact_disposable_reservation() -> No
         serialized = json.dumps(descriptor, sort_keys=True)
         assert "upload_url" not in serialized
         assert "/api/v1/object-uploads/" not in serialized
+
+
+def test_question_action_idempotency_stores_only_reference_metadata() -> None:
+    app = _app()
+    with TestClient(app) as client:
+        headers = _login(client)
+        fixture = _processed_submission(client, headers)
+        question_id = fixture["review"]["assessment"]["questions"][0][
+            "question_id"
+        ]
+        key = str(uuid4())
+        path = (
+            f"/api/v1/assessments/{fixture['assessment_id']}/questions/"
+            f"{question_id}/actions"
+        )
+        first = client.post(
+            path,
+            headers=_mutating(
+                headers,
+                idempotency_key=key,
+                **{"If-Match": fixture["etag"]},
+            ),
+            json={"action": "ACCEPT"},
+        )
+        assert first.status_code == 200, first.text
+        replayed = client.post(
+            path,
+            headers=_mutating(
+                headers,
+                idempotency_key=key,
+                **{"If-Match": fixture["etag"]},
+            ),
+            json={"action": "ACCEPT"},
+        )
+        assert replayed.status_code == 200, replayed.text
+        assert replayed.headers["Idempotency-Replayed"] == "true"
+
+        repository: Repository = app.state.runtime.repository
+        row = repository.scoped(
+            IdempotencyRow,
+            stable_id("idem", TENANT_ID, key),
+            TENANT_ID,
+        )
+        descriptor = row.response
+        assert descriptor is not None
+        assert descriptor["kind"] == "question_action"
+        assert descriptor["record_id"] == first.json()["action_record"]["record_id"]
+        assert row.expires_at > row.created_at
+        serialized = json.dumps(descriptor, sort_keys=True)
+        for forbidden in (
+            "assessment",
+            "guide",
+            "question_text",
+            "display_text",
+            "content_text",
+            "anchor",
+            "evidence",
+            "body",
+        ):
+            assert f'"{forbidden}"' not in serialized
 
 
 def _approve_blueprint(

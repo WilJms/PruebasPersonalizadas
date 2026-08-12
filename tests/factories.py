@@ -233,7 +233,12 @@ def assessment_and_guide() -> tuple[m.Assessment, m.EvaluationGuide]:
                 element_id="element_export",
                 description="Explica la consecuencia de la decisión local.",
                 evidence_ids=[evidence.evidence_id],
-            )
+            ),
+            m.ObservableElement(
+                element_id="element_export_boundary",
+                description="Distingue la evidencia observable de una inferencia externa.",
+                evidence_ids=[evidence.evidence_id],
+            ),
         ],
         acceptable_alternatives=["Una formulación causal equivalente."],
         misconceptions=["Confunde causa y consecuencia."],
@@ -242,7 +247,11 @@ def assessment_and_guide() -> tuple[m.Assessment, m.EvaluationGuide]:
                 level=level,
                 label=f"Nivel {level}",
                 descriptor=f"Descriptor observable {level}.",
-                observable_element_ids=[] if level == 0 else ["element_export"],
+                observable_element_ids=(
+                    []
+                    if level == 0
+                    else ["element_export", "element_export_boundary"]
+                ),
             )
             for level in range(4)
         ],
@@ -355,4 +364,3 @@ def assessment_and_guide() -> tuple[m.Assessment, m.EvaluationGuide]:
         created_at=NOW,
     )
     return assessment, guide
-

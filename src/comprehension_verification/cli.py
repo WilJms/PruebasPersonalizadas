@@ -487,6 +487,10 @@ async def _run_synthetic(case: str, output: Path) -> int:
                 gateway,
                 "P04_BLUEPRINT_BUILD_V1",
                 m.BlueprintBuildRequest(
+                    target_blueprint_id=stable_id(
+                        "blueprint", fixture.config.activity_id
+                    ),
+                    target_blueprint_version=1,
                     activity_spec=activity_spec,
                     rubric_spec=rubric_spec,
                     blueprint_policy=policy,
@@ -606,6 +610,13 @@ async def _run_synthetic(case: str, output: Path) -> int:
                     gateway,
                     "P07_QUESTION_BUILD_V1",
                     m.QuestionBuildRequest(
+                        target_candidate_id=stable_id(
+                            "candidate",
+                            fixture.submission_id,
+                            plan.plan_id,
+                            opportunity.opportunity_id,
+                            "initial",
+                        ),
                         plan=plan,
                         opportunity=opportunity,
                         evidence_bundle=bundle,

@@ -10,7 +10,7 @@ from .contracts import models as m
 from .diagnostics import diagnostic
 
 
-PLANNER_VERSION = "stage0-planner/1.0.0"
+PLANNER_VERSION = "stage2-planner/2.0.0"
 
 
 @dataclass(frozen=True)
@@ -141,10 +141,21 @@ def _valid_candidates(
     policy: m.AssessmentPlanningPolicy,
 ) -> list[ScoredOpportunity]:
     allowed_formats = set(blueprint.assessment_constraints.allowed_response_formats)
+    template_minimums = {
+        template.opportunity_template_id: template.minimum_quality
+        for dimension in blueprint.dimensions
+        for variant in dimension.evidence_variants
+        for template in variant.question_opportunities
+    }
     candidates = [
         opportunity
         for opportunity in mapping.opportunities
-        if opportunity.opportunity_quality >= policy.minimum_opportunity_quality
+        if opportunity.opportunity_quality
+        >= max(
+            policy.minimum_opportunity_quality,
+            blueprint.assessment_constraints.minimum_opportunity_quality,
+            template_minimums.get(opportunity.opportunity_template_id, 1.0),
+        )
         and opportunity.evidence_fit >= policy.minimum_evidence_fit
         and bool(set(opportunity.allowed_response_formats) & allowed_formats)
     ]
@@ -159,6 +170,8 @@ def _select_exact(
     max_minutes: int,
     policy: m.AssessmentPlanningPolicy,
     justification_mode: m.StructuredJustificationMode,
+    required_criterion_ids: frozenset[str],
+    criterion_ids_by_dimension: dict[str, frozenset[str]],
     beam_width: int = 512,
 ) -> _State | None:
     states = [_State(selected=(), score=0.0, minutes=0)]
@@ -186,7 +199,15 @@ def _select_exact(
                     )
                 )
         if not next_states:
-            return None
+            return _find_feasible_exact(
+                scored,
+                count=count,
+                max_minutes=max_minutes,
+                policy=policy,
+                justification_mode=justification_mode,
+                required_criterion_ids=required_criterion_ids,
+                criterion_ids_by_dimension=criterion_ids_by_dimension,
+            )
         next_states.sort(
             key=lambda state: (
                 -state.score,
@@ -198,31 +219,119 @@ def _select_exact(
     if not states:
         return None
 
-    if justification_mode != m.StructuredJustificationMode.SELECTED:
-        return states[0]
-
-    # SELECTED must choose at least one justification question.  When the
-    # policy permits reserves, every requirement represented in the primary
-    # set must also remain available outside it.  This makes localized
-    # replacement exact and prevents silently changing assessment-level
-    # justification semantics.
     for state in states:
-        primary_flags = {
-            scored[index].opportunity.student_justification_required
-            for index in state.selected
-        }
-        if True not in primary_flags:
-            continue
-        remaining_flags = {
-            item.opportunity.student_justification_required
-            for index, item in enumerate(scored)
-            if index not in state.selected
-        }
-        if policy.max_reserve_opportunities == 0 or primary_flags.issubset(
-            remaining_flags
+        if _selection_satisfies(
+            state.selected,
+            scored=scored,
+            policy=policy,
+            justification_mode=justification_mode,
+            required_criterion_ids=required_criterion_ids,
+            criterion_ids_by_dimension=criterion_ids_by_dimension,
         ):
             return state
-    return None
+    return _find_feasible_exact(
+        scored,
+        count=count,
+        max_minutes=max_minutes,
+        policy=policy,
+        justification_mode=justification_mode,
+        required_criterion_ids=required_criterion_ids,
+        criterion_ids_by_dimension=criterion_ids_by_dimension,
+    )
+
+
+def _selection_satisfies(
+    selected: tuple[int, ...],
+    *,
+    scored: list[ScoredOpportunity],
+    policy: m.AssessmentPlanningPolicy,
+    justification_mode: m.StructuredJustificationMode,
+    required_criterion_ids: frozenset[str],
+    criterion_ids_by_dimension: dict[str, frozenset[str]],
+) -> bool:
+    covered = set().union(
+        *(
+            criterion_ids_by_dimension.get(
+                scored[index].opportunity.dimension_id, frozenset()
+            )
+            for index in selected
+        ),
+        set(),
+    )
+    if not required_criterion_ids.issubset(covered):
+        return False
+    if justification_mode != m.StructuredJustificationMode.SELECTED:
+        return True
+    primary_flags = {
+        scored[index].opportunity.student_justification_required
+        for index in selected
+    }
+    if True not in primary_flags:
+        return False
+    remaining_flags = {
+        item.opportunity.student_justification_required
+        for index, item in enumerate(scored)
+        if index not in selected
+    }
+    return policy.max_reserve_opportunities == 0 or primary_flags.issubset(
+        remaining_flags
+    )
+
+
+def _find_feasible_exact(
+    scored: list[ScoredOpportunity],
+    *,
+    count: int,
+    max_minutes: int,
+    policy: m.AssessmentPlanningPolicy,
+    justification_mode: m.StructuredJustificationMode,
+    required_criterion_ids: frozenset[str],
+    criterion_ids_by_dimension: dict[str, frozenset[str]],
+) -> _State | None:
+    """Complete fallback: beam ranking may optimize, never prove infeasibility."""
+
+    def visit(
+        start: int,
+        selected: tuple[int, ...],
+        minutes: int,
+        score: float,
+    ) -> _State | None:
+        remaining = count - len(selected)
+        if remaining == 0:
+            if _selection_satisfies(
+                selected,
+                scored=scored,
+                policy=policy,
+                justification_mode=justification_mode,
+                required_criterion_ids=required_criterion_ids,
+                criterion_ids_by_dimension=criterion_ids_by_dimension,
+            ):
+                return _State(selected=selected, score=score, minutes=minutes)
+            return None
+        if len(scored) - start < remaining:
+            return None
+        selected_items = [scored[index].opportunity for index in selected]
+        for index in range(start, len(scored)):
+            candidate = scored[index].opportunity
+            next_minutes = minutes + candidate.target_minutes
+            if next_minutes > max_minutes:
+                continue
+            if any(
+                evidence_overlap(candidate, prior) > policy.maximum_evidence_overlap
+                for prior in selected_items
+            ):
+                continue
+            result = visit(
+                index + 1,
+                selected + (index,),
+                next_minutes,
+                score + _marginal_score(candidate, selected_items, policy),
+            )
+            if result is not None:
+                return result
+        return None
+
+    return visit(0, (), 0, 0.0)
 
 
 def build_assessment_plan(
@@ -273,6 +382,13 @@ def build_assessment_plan(
         justification_mode=(
             blueprint.assessment_constraints.structured_justification_policy.mode
         ),
+        required_criterion_ids=frozenset(
+            blueprint.assessment_constraints.required_criterion_ids
+        ),
+        criterion_ids_by_dimension={
+            dimension.dimension_id: frozenset(dimension.criterion_ids)
+            for dimension in blueprint.dimensions
+        },
     )
     if state is None:
         return _complete_failure(

@@ -215,24 +215,31 @@ export function BlueprintPage() {
     const initialLoad = async () => {
       setLoading(true);
       try {
-        await loadBlueprint();
-      } catch (caught) {
-        if (!activeJobId && !cancelled) {
-          try {
-            const activity = await getActivity(activityId);
-            setActivityStatus(activity.status);
-            if (activity.status === "NEEDS_REVIEW") {
-              await loadAmbiguity();
-            } else if (["QUEUED", "RUNNING"].includes(activity.status)) {
-              setRecoveringActivity(true);
-              setError(null);
-            } else {
-              setError(caught);
-            }
-          } catch (recoveryError) {
-            if (!cancelled) setError(recoveryError);
+        const activity = await getActivity(activityId);
+        if (cancelled) return;
+        setActivityStatus(activity.status);
+        const journeyJob = activity.journey.job;
+        if (
+          journeyJob &&
+          journeyJob.stage === "BLUEPRINT_REVIEW" &&
+          ["QUEUED", "RUNNING", "FAILED", "NEEDS_REVIEW"].includes(journeyJob.status)
+        ) {
+          setActiveJobId(journeyJob.job_id);
+        }
+        try {
+          await loadBlueprint();
+        } catch (caught) {
+          if (activity.status === "NEEDS_REVIEW") {
+            await loadAmbiguity();
+          } else if (["QUEUED", "RUNNING", "BLUEPRINT_REVIEW_QUEUED"].includes(activity.status)) {
+            setRecoveringActivity(true);
+            setError(null);
+          } else {
+            setError(caught);
           }
         }
+      } catch (recoveryError) {
+        if (!cancelled) setError(recoveryError);
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -281,7 +288,7 @@ export function BlueprintPage() {
   }, [activeJobId, activityId, ambiguity, loadAmbiguity, loadBlueprint, recoveringActivity, view]);
 
   useEffect(() => {
-    if (!activeJobId || view || ambiguity) return;
+    if (!activeJobId) return;
     let cancelled = false;
     let timer: number | undefined;
     const poll = async () => {
@@ -294,10 +301,25 @@ export function BlueprintPage() {
           return;
         }
         if (next.status === "NEEDS_REVIEW") {
-          await loadAmbiguity();
+          if (next.stage === "AMBIGUITY_TRIAGE") {
+            await loadAmbiguity();
+          } else {
+            try {
+              await loadBlueprint();
+            } catch {
+              // The rejected edited candidate is intentionally not published.
+            }
+          }
           return;
         }
-        if (next.status === "FAILED") return;
+        if (next.status === "FAILED") {
+          try {
+            await loadBlueprint();
+          } catch {
+            // A first-run failure can legitimately have no blueprint yet.
+          }
+          return;
+        }
         timer = window.setTimeout(() => void poll(), 1800);
       } catch (caught) {
         if (!cancelled) {
@@ -311,7 +333,7 @@ export function BlueprintPage() {
       cancelled = true;
       if (timer) window.clearTimeout(timer);
     };
-  }, [activeJobId, ambiguity, loadAmbiguity, loadBlueprint, view]);
+  }, [activeJobId, loadAmbiguity, loadBlueprint]);
 
   const resolveAmbiguity = async (
     selections: Record<string, string>,
@@ -470,7 +492,7 @@ export function BlueprintPage() {
     );
   }
 
-  if (loading || recoveringActivity || (!view && job && !["FAILED", "NEEDS_REVIEW"].includes(job.status))) {
+  if (loading || recoveringActivity || (job && ["QUEUED", "RUNNING"].includes(job.status))) {
     return (
       <div className="content-stack">
         <header className="page-heading">
@@ -782,6 +804,18 @@ export function BlueprintPage() {
       </div>
 
       <ErrorNotice error={error} />
+      {job && ["FAILED", "NEEDS_REVIEW"].includes(job.status) && (
+        <section className="content-stack" aria-label="Resultado del último job de revisión">
+          <Diagnostics items={job.diagnostics} />
+          <JobControlPanel
+            jobId={job.job_id}
+            onChange={(next) => {
+              setJob(next.job);
+              setActiveJobId(next.job.job_id);
+            }}
+          />
+        </section>
+      )}
       <footer className="sticky-actions">
         <div>
           <strong>{approved ? "Blueprint congelado" : editing ? "Edición en curso" : "Versión revisable"}</strong>

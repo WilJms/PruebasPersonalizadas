@@ -11,6 +11,7 @@ from comprehension_verification.model_gateway import (
     GatewayTimeout,
     PermanentProviderError,
     TransientProviderError,
+    build_trusted_context,
 )
 from comprehension_verification.parsers import DOCX_MEDIA_TYPE, ParseRejected
 from comprehension_verification.web.auth import Actor
@@ -299,11 +300,18 @@ def test_gateway_failure_persists_failed_stage_without_reusable_output() -> None
     service = _service(repo)
 
     class FailingGateway:
+        @staticmethod
+        def execution_fingerprint(*_args: object, **_kwargs: object) -> str:
+            return "test-failing-gateway/1.0.0"
+
         async def invoke(self, *_args: object, **_kwargs: object) -> object:
             raise GatewayTimeout("provider timeout detail")
 
     service._gateway = (  # type: ignore[method-assign,return-value]
         lambda _job_id: FailingGateway()
+    )
+    service._trusted_prompt_context = (  # type: ignore[method-assign]
+        lambda *, request, **_kwargs: build_trusted_context(request)
     )
 
     async def fail_gateway_stage(running_job: JobRow) -> None:
@@ -349,6 +357,10 @@ def test_cancellation_during_gateway_discards_uncommitted_stage_output() -> None
     service = _service(repo)
 
     class CancellingGateway:
+        @staticmethod
+        def execution_fingerprint(*_args: object, **_kwargs: object) -> str:
+            return "test-cancelling-gateway/1.0.0"
+
         async def invoke(self, *_args: object, **_kwargs: object) -> object:
             repo.request_job_cancel(
                 job_id=job.id,
@@ -360,6 +372,9 @@ def test_cancellation_during_gateway_discards_uncommitted_stage_output() -> None
 
     service._gateway = (  # type: ignore[method-assign,return-value]
         lambda _job_id: CancellingGateway()
+    )
+    service._trusted_prompt_context = (  # type: ignore[method-assign]
+        lambda *, request, **_kwargs: build_trusted_context(request)
     )
 
     async def cancel_gateway_stage(running_job: JobRow) -> None:

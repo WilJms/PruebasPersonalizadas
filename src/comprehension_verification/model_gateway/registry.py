@@ -21,7 +21,7 @@ from comprehension_verification.model_gateway.prompt_text import (
 )
 
 
-PROMPT_VERSION: Final = "1.1.9"
+PROMPT_VERSION: Final = "1.1.10"
 SYSTEM_PROMPT_ID: Final = "SYS_EVIDENCE_BOUND_V1"
 P11_SYSTEM_PROMPT_ID: Final = "SYS_SCHEMA_REPAIR_V1"
 PROMPT_ENTRY_VERSIONS: Final[Mapping[str, str]] = MappingProxyType(
@@ -36,11 +36,17 @@ PROMPT_ENTRY_VERSIONS: Final[Mapping[str, str]] = MappingProxyType(
         # completion with the later server-side human approval gate. P04 1.1.9
         # then makes Diagnostic evidence/source allowlists explicit after the
         # first fresh cloud E2E rejected a cross-kind diagnostic reference.
-        "P02_RUBRIC_NORMALIZE_V1": "1.1.3",
-        "P04_BLUEPRINT_BUILD_V1": "1.1.9",
-        "P05_BLUEPRINT_REVIEW_V1": "1.1.5",
-        "P09_GUIDE_BUILD_V1": "1.1.5",
-        "P11_SCHEMA_REPAIR_V1": "1.1.4",
+        "P01_ACTIVITY_SPEC_V1": "1.1.3",
+        "P02_RUBRIC_NORMALIZE_V1": "1.1.4",
+        "P03_AMBIGUITY_TRIAGE_V1": "1.1.3",
+        "P04_BLUEPRINT_BUILD_V1": "1.1.10",
+        "P05_BLUEPRINT_REVIEW_V1": "1.1.6",
+        "P06_EVIDENCE_MAP_V1": "1.1.3",
+        "P07_QUESTION_BUILD_V1": "1.1.3",
+        "P08_QUESTION_REVIEW_V1": "1.1.3",
+        "P09_GUIDE_BUILD_V1": "1.1.6",
+        "P10_ENRICHED_CONTEXT_V1": "1.1.3",
+        "P11_SCHEMA_REPAIR_V1": "1.1.5",
     }
 )
 PROMPT_SCHEMA_COMPATIBILITY: Final = frozenset(
@@ -53,6 +59,7 @@ PROMPT_SCHEMA_COMPATIBILITY: Final = frozenset(
         ("1.1.7", "1.1.0"),
         ("1.1.8", "1.1.0"),
         ("1.1.9", "1.1.0"),
+        ("1.1.10", "1.1.0"),
     }
 )
 

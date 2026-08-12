@@ -16,7 +16,7 @@ from typing import Any
 
 from pydantic import BaseModel, ValidationError
 
-from comprehension_verification.canonical import stable_id
+from comprehension_verification.canonical import canonical_hash, stable_id
 from comprehension_verification.contracts import model_by_name, models
 
 
@@ -377,6 +377,7 @@ def _plan() -> models.AssessmentPlan:
 
 
 def _guide_draft() -> models.GuideDraft:
+    element_ids = ["observable_1", "observable_2"]
     return models.GuideDraft(
         purpose="Observar una explicación localizada del mecanismo.",
         observable_elements=[
@@ -384,7 +385,12 @@ def _guide_draft() -> models.GuideDraft:
                 element_id="observable_1",
                 description="Relaciona consulta e invalidación.",
                 evidence_ids=["ev_submission_1"],
-            )
+            ),
+            models.ObservableElement(
+                element_id="observable_2",
+                description="Delimita la consecuencia observable del cambio.",
+                evidence_ids=["ev_submission_1"],
+            ),
         ],
         acceptable_alternatives=["Puede describir la relación en orden inverso."],
         misconceptions=["Confunde invalidación con cálculo inicial."],
@@ -397,7 +403,7 @@ def _guide_draft() -> models.GuideDraft:
                     if level == 0
                     else "Explica el mecanismo con precisión creciente."
                 ),
-                observable_element_ids=[] if level == 0 else ["observable_1"],
+                observable_element_ids=[] if level == 0 else element_ids,
             )
             for level in range(4)
         ],
@@ -582,18 +588,10 @@ def _dynamic_blueprint(
     learning_outcome_ids = [
         outcome.statement_id for outcome in request.activity_spec.learning_outcomes
     ]
-    blueprint_id = stable_id(
-        "blueprint",
-        activity_id,
-        policy.policy_id,
-        policy.question_count,
-        policy.target_total_minutes,
-        [item.value for item in policy.allowed_response_formats],
-        [decision.decision_id for decision in request.resolved_decisions],
-    )
+    blueprint_id = request.target_blueprint_id
     return models.AssessmentBlueprint(
         blueprint_id=blueprint_id,
-        blueprint_version=1,
+        blueprint_version=request.target_blueprint_version,
         activity_id=activity_id,
         status=models.WorkflowStatus.READY,
         context_mode=models.ContextMode.CLOSED,
@@ -629,6 +627,8 @@ def _dynamic_blueprint(
             max_reserve_opportunities=(
                 policy.planning_policy.max_reserve_opportunities
             ),
+            priority_criterion_ids=list(policy.priority_criterion_ids),
+            required_criterion_ids=list(policy.required_criterion_ids),
             structured_justification_policy=(
                 policy.structured_justification_policy.model_copy(deep=True)
             ),
@@ -855,19 +855,30 @@ def _guide_for_question(
     *,
     source_ids: list[str] | None = None,
 ) -> models.GuideDraft:
-    element_id = stable_id("observable", question_key, evidence_ids, source_ids or [])
+    element_ids = [
+        stable_id("observable", question_key, evidence_ids, source_ids or [], index)
+        for index in range(2)
+    ]
     return models.GuideDraft(
         purpose="Observar una explicación acotada a la evidencia señalada.",
         observable_elements=[
             models.ObservableElement(
-                element_id=element_id,
+                element_id=element_ids[0],
                 description=(
                     "Relaciona el fragmento localizado con la respuesta sin "
                     "añadir supuestos externos."
                 ),
                 evidence_ids=list(evidence_ids),
                 source_ids=list(source_ids or []),
-            )
+            ),
+            models.ObservableElement(
+                element_id=element_ids[1],
+                description=(
+                    "Delimita qué conclusión es observable y cuál excede la evidencia."
+                ),
+                evidence_ids=list(evidence_ids),
+                source_ids=list(source_ids or []),
+            ),
         ],
         acceptable_alternatives=[
             "Puede expresar la misma relación con una formulación equivalente."
@@ -884,7 +895,7 @@ def _guide_for_question(
                     if level == 0
                     else "Establece la relación con precisión creciente y evidencia localizada."
                 ),
-                observable_element_ids=[] if level == 0 else [element_id],
+                observable_element_ids=[] if level == 0 else element_ids,
             )
             for level in range(4)
         ],
@@ -931,13 +942,7 @@ def _dynamic_candidate(
         anchor_evidence = anchor_evidence[:1]
 
     response_format = opportunity.allowed_response_formats[0]
-    candidate_id = stable_id(
-        "candidate",
-        request.plan.plan_id,
-        opportunity.opportunity_id,
-        evidence_ids,
-        [fingerprint.fingerprint_id for fingerprint in request.avoid],
-    )
+    candidate_id = request.target_candidate_id
     choices: list[models.ChoiceOption] = []
     if response_format == models.ResponseFormat.CHOICE:
         choices = [
@@ -979,7 +984,7 @@ def _dynamic_candidate(
         for passage in course_passages[:1]
     ]
     source_ids = [citation.source_id for citation in citations]
-    question_text = {
+    question_stem = {
         models.ResponseFormat.CHOICE: (
             "¿Qué interpretación está mejor respaldada por el fragmento señalado?"
         ),
@@ -996,6 +1001,9 @@ def _dynamic_candidate(
             "Explica la relación observable indicada en el fragmento señalado."
         ),
     }[response_format]
+    question_text = (
+        f"{question_stem} Enfoca tu respuesta en: {opportunity.focus[:500]}"
+    )
     return models.QuestionCandidate(
         candidate_id=candidate_id,
         submission_id=request.plan.submission_id,
@@ -1135,6 +1143,8 @@ def build_mock_request(prompt_id: str) -> BaseModel:
         )
     if prompt_id == "P04_BLUEPRINT_BUILD_V1":
         return models.BlueprintBuildRequest(
+            target_blueprint_id="blueprint_demo",
+            target_blueprint_version=1,
             activity_spec=_activity_spec(),
             rubric_spec=_rubric_spec(),
             resolved_decisions=[_policy_decision()],
@@ -1155,6 +1165,7 @@ def build_mock_request(prompt_id: str) -> BaseModel:
     if prompt_id in {"P07_QUESTION_BUILD_V1", "P10_ENRICHED_CONTEXT_V1"}:
         enriched = prompt_id == "P10_ENRICHED_CONTEXT_V1"
         return models.QuestionBuildRequest(
+            target_candidate_id="candidate_demo_1",
             plan=_plan(),
             opportunity=_opportunity(),
             evidence_bundle=_evidence_bundle(enriched=enriched),
@@ -1233,12 +1244,27 @@ def build_trusted_context(request: BaseModel) -> models.TrustedPromptContext:
         tenant_id=first("tenant_id", "tnt_demo"),
         activity_id=first("activity_id", "act_demo"),
         submission_id=first("submission_id"),
-        blueprint_id=first("blueprint_id"),
-        blueprint_version=first("blueprint_version"),
+        blueprint_id=first("blueprint_id", first("target_blueprint_id")),
+        blueprint_version=first(
+            "blueprint_version", first("target_blueprint_version")
+        ),
         allowed_evidence_ids=sorted(evidence_ids),
         allowed_course_source_ids=sorted(source_ids) if mode == "COURSE_ENRICHED" else [],
-        output_language="es-CL",
+        output_language=first("output_language", "es-CL"),
         context_mode=mode,
+        data_classification="SYNTHETIC_ONLY_NO_STUDENT_DATA",
+        attestation_id=stable_id("attestation", canonical_hash(data)),
+        attested_input_hash=canonical_hash(data),
+        attested_artifact_hashes=sorted(
+            {
+                value
+                for obj in objects
+                for key, value in obj.items()
+                if key in {"artifact_hash", "sha256"}
+                and isinstance(value, str)
+                and value.startswith("sha256:")
+            }
+        ),
     )
 
 
@@ -1317,6 +1343,16 @@ class DeterministicMockFactory:
                 == request.blueprint_policy.target_total_minutes
                 and set(blueprint.assessment_constraints.allowed_response_formats)
                 == set(request.blueprint_policy.allowed_response_formats)
+                and blueprint.assessment_constraints.minimum_opportunity_quality
+                == request.blueprint_policy.planning_policy.minimum_opportunity_quality
+                and blueprint.assessment_constraints.max_reserve_opportunities
+                == request.blueprint_policy.planning_policy.max_reserve_opportunities
+                and blueprint.assessment_constraints.priority_criterion_ids
+                == request.blueprint_policy.priority_criterion_ids
+                and blueprint.assessment_constraints.required_criterion_ids
+                == request.blueprint_policy.required_criterion_ids
+                and blueprint.assessment_constraints.structured_justification_policy
+                == request.blueprint_policy.structured_justification_policy
             )
             catalog_sufficient = (
                 catalog_size >= blueprint.assessment_constraints.question_count
@@ -1329,6 +1365,13 @@ class DeterministicMockFactory:
                 status="READY",
                 approval_recommendation=("APPROVE" if approved else "REJECT"),
                 checks=[
+                    models.BlueprintReviewCheck(
+                        check_code="BLUEPRINT_CONSTRUCT",
+                        category="CONSTRUCT",
+                        status="PASS",
+                        message="El catálogo representa el constructo declarado.",
+                        referenced_ids=[blueprint.blueprint_id],
+                    ),
                     models.BlueprintReviewCheck(
                         check_code="BLUEPRINT_SOURCE_FIDELITY",
                         category="SOURCE_FIDELITY",
@@ -1355,6 +1398,29 @@ class DeterministicMockFactory:
                             "calibración auditable."
                         ),
                         referenced_ids=[blueprint.blueprint_id],
+                    ),
+                    models.BlueprintReviewCheck(
+                        check_code="BLUEPRINT_COGNITIVE_DEMAND",
+                        category="COGNITIVE_DEMAND",
+                        status="PASS",
+                        message="Las operaciones declaran una demanda cognitiva verificable.",
+                        referenced_ids=[blueprint.blueprint_id],
+                    ),
+                    models.BlueprintReviewCheck(
+                        check_code="BLUEPRINT_TIME",
+                        category="TIME",
+                        status=("PASS" if approved else "FAIL"),
+                        message="El catálogo conserva el límite temporal confiable.",
+                        referenced_ids=[blueprint.blueprint_id],
+                        critical=not approved,
+                    ),
+                    models.BlueprintReviewCheck(
+                        check_code="BLUEPRINT_FORMAT_FEASIBILITY",
+                        category="FORMAT_FEASIBILITY",
+                        status=("PASS" if constraints_match else "FAIL"),
+                        message="Los formatos pertenecen a la política confiable.",
+                        referenced_ids=[blueprint.blueprint_id],
+                        critical=not constraints_match,
                     ),
                     models.BlueprintReviewCheck(
                         check_code="BLUEPRINT_OPPORTUNITY_CATALOG",
@@ -1391,6 +1457,13 @@ class DeterministicMockFactory:
                             else "Regenerar el catálogo desde la política vigente."
                         ),
                         critical=not approved,
+                    ),
+                    models.BlueprintReviewCheck(
+                        check_code="BLUEPRINT_ACCESSIBILITY",
+                        category="ACCESSIBILITY",
+                        status="PASS",
+                        message="Las alternativas del catálogo conservan una forma accesible.",
+                        referenced_ids=[blueprint.blueprint_id],
                     ),
                 ],
             )

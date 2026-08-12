@@ -31,6 +31,7 @@ from comprehension_verification.model_gateway import (
     GatewayMode,
     GatewayProviderError,
     GatewaySafetyBlock,
+    GatewaySchemaViolation,
     GatewayTimeout,
     GatewayValidationError,
     ModelGateway,
@@ -299,7 +300,7 @@ def test_p07_exact_provider_schema_boundary_excludes_canonical_model_validators(
         separators=(",", ":"),
     ).encode("utf-8")
 
-    assert formatted["name"] == "cva_QuestionGenerationResult_1_1_2"
+    assert formatted["name"] == "cva_QuestionGenerationResult_1_1_3"
     assert len(encoded) == 13_671
     assert (
         hashlib.sha256(encoded).hexdigest()
@@ -622,7 +623,13 @@ def test_structurally_invalid_output_gets_exactly_one_p11_luna_low_attempt() -> 
     prompt_id = "P01_ACTIVITY_SPEC_V1"
     invalid = _canonical_output(prompt_id)
     invalid["unexpected_field"] = "untrusted data"
-    repair = _canonical_output("P11_SCHEMA_REPAIR_V1")
+    repair = {
+        "schema_version": "1.1.0",
+        "target_schema_name": "ActivitySpec",
+        "repair_status": "REPAIRED",
+        "repaired_output": _canonical_output(prompt_id),
+        "diagnostics": [],
+    }
     fake = FakeClient(
         [
             _response(invalid, model=LUNA_MODEL_ID),
@@ -653,18 +660,38 @@ def test_malformed_json_is_data_for_exactly_one_p11_attempt() -> None:
     fake = FakeClient(
         [
             _response("{not-json", model=LUNA_MODEL_ID),
-            _response(_canonical_output("P11_SCHEMA_REPAIR_V1"), model=LUNA_MODEL_ID),
+            _response(
+                {
+                    "schema_version": "1.1.0",
+                    "target_schema_name": "ActivitySpec",
+                    "repair_status": "UNREPAIRABLE",
+                    "repaired_output": None,
+                    "diagnostics": [
+                        {
+                            "code": "MALFORMED_JSON_UNREPAIRABLE",
+                            "severity": "ERROR",
+                            "message": "Malformed JSON has no structural repair boundary.",
+                            "evidence_ids": [],
+                            "source_ids": [],
+                            "retryable": False,
+                            "details": {},
+                        }
+                    ],
+                },
+                model=LUNA_MODEL_ID,
+            ),
         ]
     )
     request = build_mock_request(prompt_id)
 
-    result = asyncio.run(
-        _real_gateway(fake).invoke(
-            prompt_id, request, build_trusted_context(request)
+    with pytest.raises(GatewaySchemaViolation) as captured:
+        asyncio.run(
+            _real_gateway(fake).invoke(
+                prompt_id, request, build_trusted_context(request)
+            )
         )
-    )
 
-    assert result.repaired is True
+    assert captured.value.repair_disposition == "DECLARED_UNREPAIRABLE"
     assert len(fake.responses.calls) == 2
     repair_envelope = json.loads(
         fake.responses.calls[1]["input"][1]["content"][0]["text"]
@@ -776,8 +803,8 @@ def test_p11_preflight_has_one_attempt_and_luna_low_smoke_ceiling() -> None:
     )
     routes = build_openai_routes(max_call_cost_usd=0.06)
     cost = build_openai_cost_estimator(routes)(spec, token_ceiling)
-    assert token_ceiling == 8_502
-    assert cost == 0.0117255
+    assert token_ceiling == 8_943
+    assert cost == 0.01183575
     assert spec.max_transient_retries == 0
 
 

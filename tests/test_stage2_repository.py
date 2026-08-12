@@ -13,10 +13,12 @@ from comprehension_verification.web.repository import (
     Conflict,
     ExportRow,
     FeedbackEventRow,
+    GeneratedQuestionRow,
     GuideRow,
     JobRow,
     NotFound,
     Repository,
+    QuestionReviewRow,
     SubmissionRow,
     utc_now,
 )
@@ -161,11 +163,38 @@ def test_retry_creates_distinct_job_control_record_and_claims_only_when_due() ->
     assert isinstance(submission, SubmissionRow)
     assert submission.active_job_id == "job_retry_2"
     assert submission.state["active_job_id"] == "job_retry_2"
+    assert submission.state["status"] == "PARSING"
+    assert submission.state["diagnostics"] == []
 
     claimed = repo.claim_next_job()
     assert claimed is not None
     assert claimed.id == "job_retry_2"
     assert claimed.attempt == 2
+
+
+def test_worker_claims_exact_dispatched_job_not_oldest_queue_entry() -> None:
+    repo = Repository("sqlite+pysqlite://")
+    for job_id in ("job_oldest", "job_dispatched"):
+        repo.add(
+            JobRow(
+                id=job_id,
+                tenant_id="tnt_stage2",
+                kind="ACTIVITY",
+                aggregate_id=f"act_{job_id}",
+                stage="ACTIVITY_PARSE",
+                status="QUEUED",
+                progress=0.0,
+                attempt=0,
+                diagnostics=[],
+            )
+        )
+
+    claimed = repo.claim_job("job_dispatched")
+
+    assert claimed is not None
+    assert claimed.id == "job_dispatched"
+    assert claimed.status == "RUNNING"
+    assert repo.job_control("job_oldest", "tnt_stage2").status == "QUEUED"
 
 
 def test_cancel_is_durable_but_job_status_remains_v11_compatible() -> None:
@@ -255,6 +284,51 @@ def test_stage_reuse_requires_all_hashes_and_component_version() -> None:
         component_version="mapper/1.2.1",
         policy_hash="sha256:" + "b" * 64,
     ) is None
+
+
+def test_generated_candidate_id_collision_cannot_cross_submission_scope() -> None:
+    repo = Repository("sqlite+pysqlite://")
+    first = GeneratedQuestionRow(
+        id="candidate_global_collision",
+        tenant_id="tnt_stage2",
+        submission_id="sub_first",
+        data={"status": "READY", "synthetic": "first"},
+    )
+    first_review = QuestionReviewRow(
+        question_id="question_first",
+        tenant_id="tnt_stage2",
+        submission_id="sub_first",
+        data={"status": "READY"},
+    )
+    repo.save_generated_question_and_review(
+        question=first,
+        review=first_review,
+    )
+
+    with pytest.raises(Conflict, match="GENERATED_QUESTION_ID_COLLISION"):
+        repo.save_generated_question_and_review(
+            question=GeneratedQuestionRow(
+                id="candidate_global_collision",
+                tenant_id="tnt_other",
+                submission_id="sub_other",
+                data={"status": "READY", "synthetic": "other"},
+            ),
+            review=QuestionReviewRow(
+                question_id="question_other",
+                tenant_id="tnt_other",
+                submission_id="sub_other",
+                data={"status": "READY"},
+            ),
+        )
+
+    with repo.session() as session:
+        persisted = session.get(
+            GeneratedQuestionRow, "candidate_global_collision"
+        )
+        assert persisted is not None
+        assert persisted.tenant_id == "tnt_stage2"
+        assert persisted.submission_id == "sub_first"
+        assert persisted.data["synthetic"] == "first"
 
 
 def test_cancel_wins_atomically_before_assessment_publication() -> None:

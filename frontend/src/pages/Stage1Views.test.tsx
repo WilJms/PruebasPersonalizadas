@@ -212,7 +212,21 @@ describe("Stage 1 blueprint review", () => {
       control_state: "ACTIVE",
       failure_class: "PERMANENT",
     });
-    vi.mocked(getActivity).mockReset();
+    vi.mocked(getActivity).mockReset().mockResolvedValue(
+      activityResource({
+        activity_id: "activity_01",
+        title: "Actividad con blueprint",
+        status: "BLUEPRINT_REVIEW",
+        journey: {
+          continue_path: "/activities/activity_01/blueprint",
+          next_action: "REVIEW_BLUEPRINT",
+          blueprint: { version: 3, status: "READY", etag: '"sha256:blueprint-3"' },
+          submission: null,
+          job: null,
+          assessment: null,
+        },
+      }),
+    );
     vi.mocked(getActivityAmbiguity).mockReset();
     vi.mocked(createPolicyDecision).mockReset();
     vi.mocked(generateBlueprint).mockReset();

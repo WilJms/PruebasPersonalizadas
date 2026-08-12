@@ -75,6 +75,7 @@ def _cloud_settings(**overrides: object) -> dict[str, object]:
         "gcp_project_id": "project-stage1",
         "gcp_region": "us-central1",
         "cloud_run_job_name": "cva-worker",
+        "claim_job_id": "job_cloud_exact_claim",
         "require_libmagic": True,
     }
     values.update(overrides)
@@ -314,6 +315,7 @@ def test_real_worker_requires_secret_and_mock_worker_rejects_it() -> None:
         **_cloud_settings(
             model_mode="real",
             openai_api_key="sk-project-synthetic-placeholder-not-a-real-key",
+            synthetic_artifact_sha256_allowlist="sha256:" + "a" * 64,
         )
     )
     assert real.model_mode == "real"
@@ -334,6 +336,7 @@ def test_real_worker_profile_has_no_automatic_transport_retry() -> None:
         database_url="sqlite+pysqlite://",
         model_mode="real",
         openai_api_key="sk-project-synthetic-placeholder-not-a-real-key",
+        synthetic_artifact_sha256_allowlist="sha256:" + "a" * 64,
         max_job_cost_usd=0.55,
     )
     runtime = build_worker_runtime(

@@ -1102,8 +1102,12 @@ export interface components {
              * @default 0.75
              */
             minimum_opportunity_quality: number;
+            /** Priority Criterion Ids */
+            priority_criterion_ids?: string[];
             /** Question Count */
             question_count: number;
+            /** Required Criterion Ids */
+            required_criterion_ids?: string[];
             structured_justification_policy: components["schemas"]["StructuredJustificationPolicy"];
             /** Target Total Minutes */
             target_total_minutes: number;
