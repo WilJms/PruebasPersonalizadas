@@ -4986,6 +4986,15 @@ def _hashed_optional_label(value: str | None) -> str:
 
 def _convergence_authorization_boundary(args: argparse.Namespace) -> dict[str, Any]:
     material = rehearsal_boundary_material()
+    runtime_paths = (
+        ROOT / "specification/models_v1.1(1).py",
+        ROOT / "src/comprehension_verification/model_gateway/gateway.py",
+        ROOT / "src/comprehension_verification/model_gateway/openai_adapter.py",
+        ROOT / "src/comprehension_verification/model_gateway/openai_routes.py",
+        ROOT / "src/comprehension_verification/planning.py",
+        ROOT / "src/comprehension_verification/validation.py",
+        ROOT / "src/comprehension_verification/web/workflows.py",
+    )
     return {
         "boundary_format": "openai-stage2-convergence-authorization/1.0.0",
         "git_head": _git_head(),
@@ -4995,6 +5004,10 @@ def _convergence_authorization_boundary(args: argparse.Namespace) -> dict[str, A
             / "src/comprehension_verification/rehearsal.py"
         ),
         "manifest_hash": _content_hash(args.manifest.resolve()),
+        "runtime_hashes": {
+            str(path.relative_to(ROOT)): _content_hash(path)
+            for path in runtime_paths
+        },
         "executable_boundary": material,
         "route_profile": OPENAI_ROUTE_PROFILE_ID,
         "execution_plan": [
@@ -5100,6 +5113,7 @@ def _run_convergence_cli(args: argparse.Namespace) -> int:
                 "harness_hash": boundary["harness_hash"],
                 "rehearsal_module_hash": boundary["rehearsal_module_hash"],
                 "manifest_hash": boundary["manifest_hash"],
+                "runtime_hashes": boundary["runtime_hashes"],
                 "project_label_hash": boundary["project_label_hash"],
                 "organization_label_hash": boundary[
                     "organization_label_hash"
@@ -5139,6 +5153,16 @@ def _run_convergence_cli(args: argparse.Namespace) -> int:
             "authorization_boundary_hash": reservation.boundary_hash,
             "git_head": boundary["git_head"],
             "harness_hash": boundary["harness_hash"],
+            "rehearsal_module_hash": boundary["rehearsal_module_hash"],
+            "manifest_hash": boundary["manifest_hash"],
+            "runtime_hashes": boundary["runtime_hashes"],
+            "project_label_hash": boundary["project_label_hash"],
+            "organization_label_hash": boundary[
+                "organization_label_hash"
+            ],
+            "secret_version_label_hash": boundary[
+                "secret_version_label_hash"
+            ],
             "failure": {"codes": [failure_code]},
         }
         report_hash = _write_json_atomic(args.report_path, failure_report)

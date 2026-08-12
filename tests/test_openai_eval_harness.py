@@ -3,6 +3,8 @@ from __future__ import annotations
 import argparse
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
+from copy import deepcopy
+from dataclasses import replace
 import json
 import os
 from pathlib import Path
@@ -170,6 +172,8 @@ def test_offline_convergence_executes_sweep_two_chains_and_variant() -> None:
         "semantic_retries": 0,
         "provider_attempts": 24,
         "actual_cost_usd": 0.0,
+        "budget_charged_usd": 0.0,
+        "unpriced_attempts": 0,
         "models": [
             "deterministic-mock-p04_blueprint_build_v1",
             "deterministic-mock-p05_blueprint_review_v1",
@@ -319,10 +323,49 @@ def test_real_convergence_code_path_uses_real_routes_without_network(
     assert report["status"] == "PASS"
     assert report["unchanged_boundary_across_chains"] is True
     assert report["controls"]["network_calls"] == 24
+    assert report["controls"]["provider_attempts"] == 24
+    assert report["controls"]["unpriced_attempts"] == 0
+    assert report["controls"]["budget_charged_usd"] <= 0.75
     assert report["controls"]["models"] == ["gpt-5.6-luna"]
     assert report["controls"]["p10_calls"] == 0
     assert report["controls"]["p11_calls"] == 0
     assert report["controls"]["fallback_calls"] == 0
+
+
+def test_real_convergence_accounts_for_context_invalid_billable_attempts(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class CostedContextInvalidAdapter(DeterministicMockAdapter):
+        async def invoke(self, **kwargs: object):  # type: ignore[no-untyped-def]
+            result = await super().invoke(**kwargs)  # type: ignore[arg-type]
+            raw = deepcopy(result.raw_output)
+            if kwargs["prompt_id"] == "P04_BLUEPRINT_BUILD_V1":
+                raw["blueprint_id"] = "blueprint_outside_target_scope"
+            return replace(
+                result,
+                raw_output=raw,
+                estimated_cost_usd=0.012,
+                actual_cost_usd=0.01,
+            )
+
+    monkeypatch.setattr(
+        "comprehension_verification.rehearsal.OpenAIResponsesAdapter",
+        lambda **_kwargs: CostedContextInvalidAdapter(),
+    )
+    report = asyncio.run(
+        run_real_convergence(
+            api_key=SecretStr("sk-project-synthetic-placeholder-not-real"),
+            max_total_cost_usd=0.75,
+            max_call_cost_usd=0.10,
+            max_provider_requests=30,
+        )
+    )
+    assert report["status"] == "FAIL"
+    assert report["controls"]["network_calls"] == 8
+    assert report["controls"]["provider_attempts"] == 8
+    assert report["controls"]["actual_cost_usd"] == 0.08
+    assert report["controls"]["budget_charged_usd"] == 0.096
+    assert report["controls"]["unpriced_attempts"] == 0
 
 
 def _real_cli_args(tmp_path: Path) -> argparse.Namespace:
@@ -399,6 +442,11 @@ def test_real_cli_persists_provenance_and_completes_once(
     assert report["git_head"]
     assert report["harness_hash"].startswith("sha256:")
     assert report["manifest_hash"].startswith("sha256:")
+    assert report["runtime_hashes"]
+    assert all(
+        value.startswith("sha256:")
+        for value in report["runtime_hashes"].values()
+    )
     assert report["authorization_hash"].startswith("sha256:")
     assert "synthetic-test-key" not in json.dumps(report)
     record = EvaluationAuthorizationLedger(args.ledger).record(

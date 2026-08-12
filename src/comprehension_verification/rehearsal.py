@@ -309,22 +309,36 @@ class ProductRehearsal:
         *,
         max_call_cost_usd: float,
         max_total_cost_usd: float | None = None,
+        ledger_records: list[m.ModelCallLedger] | None = None,
     ) -> None:
         self.gateway = gateway
         self.max_call_cost_usd = max_call_cost_usd
         self.max_total_cost_usd = max_total_cost_usd
         self.results: list[GatewayCallResult] = []
+        self.ledger_records = ledger_records
+
+    def _ledgers(self) -> list[m.ModelCallLedger]:
+        if self.ledger_records is not None:
+            return self.ledger_records
+        return [
+            ledger
+            for result in self.results
+            for ledger in result.ledgers
+        ]
+
+    @staticmethod
+    def _budget_charge(ledger: m.ModelCallLedger) -> float:
+        return max(
+            ledger.estimated_cost_usd,
+            ledger.actual_cost_usd or 0.0,
+        )
 
     async def _invoke(
         self,
         prompt_id: str,
         request: BaseModel,
     ) -> BaseModel:
-        spent = sum(
-            ledger.actual_cost_usd
-            for result in self.results
-            for ledger in result.ledgers
-        )
+        spent = sum(self._budget_charge(ledger) for ledger in self._ledgers())
         remaining = (
             self.max_call_cost_usd
             if self.max_total_cost_usd is None
@@ -786,11 +800,7 @@ class ProductRehearsal:
         )
 
     def controls(self) -> dict[str, Any]:
-        ledgers = [
-            ledger
-            for result in self.results
-            for ledger in result.ledgers
-        ]
+        ledgers = self._ledgers()
         return {
             "p10_calls": sum(
                 ledger.prompt_id == "P10_ENRICHED_CONTEXT_V1"
@@ -807,7 +817,13 @@ class ProductRehearsal:
             "semantic_retries": 0,
             "provider_attempts": len(ledgers),
             "actual_cost_usd": round(
-                sum(ledger.actual_cost_usd for ledger in ledgers), 10
+                sum(ledger.actual_cost_usd or 0.0 for ledger in ledgers), 10
+            ),
+            "budget_charged_usd": round(
+                sum(self._budget_charge(ledger) for ledger in ledgers), 10
+            ),
+            "unpriced_attempts": sum(
+                ledger.actual_cost_usd is None for ledger in ledgers
             ),
             "models": sorted({ledger.route.model for ledger in ledgers}),
         }
@@ -897,6 +913,7 @@ async def run_real_convergence(
 ) -> dict[str, Any]:
     """Run the same convergence matrix with Luna and strict transport caps."""
 
+    started_at = datetime.now(UTC).isoformat().replace("+00:00", "Z")
     if max_total_cost_usd <= 0 or max_call_cost_usd <= 0:
         raise ValueError("positive real-evaluation cost caps are required")
     if max_call_cost_usd > max_total_cost_usd:
@@ -909,6 +926,7 @@ async def run_real_convergence(
         ),
         max_requests=max_provider_requests,
     )
+    ledger_records: list[m.ModelCallLedger] = []
     gateway = ModelGateway(
         GatewayConfig(
             mode=GatewayMode.REAL,
@@ -919,6 +937,7 @@ async def run_real_convergence(
         ),
         real_routes=routes,
         adapters={"openai": capped_adapter},
+        ledger_sink=ledger_records.append,
         cost_estimator=build_openai_cost_estimator(routes),
         input_token_estimator=estimate_openai_input_tokens,
     )
@@ -926,6 +945,7 @@ async def run_real_convergence(
         gateway,
         max_call_cost_usd=max_call_cost_usd,
         max_total_cost_usd=max_total_cost_usd,
+        ledger_records=ledger_records,
     )
     executable_boundary_hash = canonical_hash(rehearsal_boundary_material())
     observations = [
@@ -941,6 +961,7 @@ async def run_real_convergence(
     controls.update(
         {
             "network_calls": capped_adapter.calls,
+            "expected_provider_requests": 24,
             "max_provider_requests": max_provider_requests,
             "max_total_cost_usd": max_total_cost_usd,
             "max_call_cost_usd": max_call_cost_usd,
@@ -959,8 +980,12 @@ async def run_real_convergence(
         and controls["p11_calls"] == 0
         and controls["fallback_calls"] == 0
         and controls["semantic_retries"] == 0
+        and controls["provider_attempts"] == 24
+        and controls["network_calls"] == 24
+        and controls["unpriced_attempts"] == 0
         and unchanged_boundary
         and controls["actual_cost_usd"] <= max_total_cost_usd
+        and controls["budget_charged_usd"] <= max_total_cost_usd
         else "FAIL"
     )
     return {
@@ -969,7 +994,8 @@ async def run_real_convergence(
         "mode": "real-convergence",
         "classification": "SYNTHETIC_ONLY_NO_STUDENT_DATA",
         "status": status,
-        "started_at": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
+        "started_at": started_at,
+        "finished_at": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
         "executable_boundary_hash": executable_boundary_hash,
         "unchanged_boundary_across_chains": unchanged_boundary,
         "boundary": rehearsal_boundary_material(),
