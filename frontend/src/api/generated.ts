@@ -2761,7 +2761,10 @@ export interface components {
             estimated_difficulty: components["schemas"]["DifficultyBand"];
             /** Estimated Minutes */
             estimated_minutes: number;
-            /** Evidence Ids */
+            /**
+             * Evidence Ids
+             * @description Only IDs from generation_result.candidate.evidence_ids are authorized; IDs present only elsewhere in the request are forbidden. Use [] when no evidence ID is needed.
+             */
             evidence_ids?: string[];
             /** Justifications */
             justifications?: string[];
@@ -2770,7 +2773,10 @@ export interface components {
             /** Question Id */
             question_id: string;
             scores: components["schemas"]["QuestionScores"];
-            /** Source Ids */
+            /**
+             * Source Ids
+             * @description Only IDs from generation_result.candidate.course_source_ids are authorized; IDs present only elsewhere in the request are forbidden. Use [] when no source ID is needed.
+             */
             source_ids?: string[];
         };
         /** QuestionScores */
