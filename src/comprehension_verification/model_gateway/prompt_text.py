@@ -143,7 +143,9 @@ Interpreta status como el estado de finalización de la construcción del catál
 - no emitas HUMAN_REVIEW_PENDING únicamente para señalar la aprobación posterior.
 
 Antes de devolver, comprueba los invariantes canónicos que el JSON Schema del proveedor no puede expresar:
-- dimension_id es único; variant_id es único en todo el blueprint; opportunity_template_id es único en todo el blueprint;
+- genera cada dimension_id, variant_id y opportunity_template_id una sola vez: no clones, recicles ni reutilices IDs aunque dos elementos sean parecidos;
+- dimension_id es único; variant_id es único en todo el blueprint; opportunity_template_id es único en todo el blueprint. Antes de devolver, enumera mentalmente cada lista aplanada y comprueba que su longitud sea igual a la cantidad de IDs distintos;
+- si dos variantes u oportunidades son semánticamente duplicadas, fusiónalas o conserva solo una; cambiar únicamente el ID, score o redacción no las vuelve distintas;
 - cada variante declara cognitive_operation sin duplicados y cada oportunidad usa una operación incluida en supported_operations de esa misma variante;
 - todo allowed_response_formats de una oportunidad es subconjunto de assessment_constraints.allowed_response_formats;
 - todo selected_opportunity_template_ids de structured_justification_policy referencia una oportunidad existente;
@@ -179,14 +181,26 @@ Interpreta la arquitectura canónica antes de clasificar checks:
 - una variante textual sustentada para los mismos criterios/resultados puede ser la alternativa accesible de una variante visual. No inventes un campo de texto alternativo que el contrato no posee;
 - verifica cada PolicyDecision contra su selected_option snapshot y comprueba que sus consecuencias representables estén materializadas. Si el contrato no tiene un campo dedicado pero la decisión está vinculada y su efecto no impide una verificación usable, registra WARN con corrección concreta, no un FAIL crítico inventado.
 
-Marca cada check PASS, WARN o FAIL, cita IDs en referenced_ids y propone la corrección mínima. Marca critical=true para fallos de constructo, fidelidad de fuente, operación no soportada, catálogo insuficiente o inviabilidad esperada. No reescribas el blueprint completo. Todo critical=true con FAIL exige approval_recommendation=REJECT.
-Una revisión READY incluye al menos un check para cada categoría canónica del contrato, sin categorías omitidas ni check_code duplicados. referenced_ids solo puede contener IDs presentes literalmente en los roots recibidos; si una observación general no necesita ID, usa [].
+Frontera de identidad y referencias:
+- copia activity_id exactamente desde activity_spec.activity_id, blueprint_id exactamente desde blueprint.blueprint_id y blueprint_version exactamente desde blueprint.blueprint_version;
+- referenced_ids solo puede contener IDs presentes literalmente en activity_spec, rubric_spec, blueprint_policy, resolved_decisions o blueprint; si una observación general no necesita ID, usa [];
+- no uses en referenced_ids etiquetas, categorías, texto libre ni IDs inventados.
+
+Marca cada check PASS, WARN o FAIL, cita IDs en referenced_ids y propone la corrección mínima. Marca critical=true para fallos de constructo, fidelidad de fuente, operación no soportada, catálogo insuficiente o inviabilidad esperada. No reescribas el blueprint completo.
+Una revisión READY contiene exactamente 10 checks: uno y solo uno para cada categoría canónica CONSTRUCT, SOURCE_FIDELITY, COVERAGE, COMPARABILITY, COGNITIVE_DEMAND, TIME, FORMAT_FEASIBILITY, OPPORTUNITY_CATALOG, PLAN_FEASIBILITY y ACCESSIBILITY. No omitas ni repitas categorías y no dupliques check_code.
+
+Aplica esta matriz exacta, sin elegir otra recomendación:
+- si cualquier check combina critical=true con status=FAIL, usa approval_recommendation=REJECT;
+- si todos los checks tienen status=PASS, usa approval_recommendation=APPROVE;
+- si no existe ningún FAIL crítico y al menos un check tiene status=WARN o un FAIL no crítico, usa approval_recommendation=APPROVE_WITH_CHANGES;
+- nunca uses REJECT sin un FAIL crítico y nunca uses APPROVE si existe WARN o FAIL.
 
 Interpreta status como el estado de finalización de esta revisión, no como la aprobación del blueprint:
 - si puedes completar la revisión, usa status=READY y una approval_recommendation no nula;
 - si cualquier check combina critical=true con status=FAIL, la revisión completada debe usar status=READY y approval_recommendation=REJECT;
 - usa status=NEEDS_REVIEW o TECHNICAL_FAILURE solo cuando no puedas completar la revisión; en esos estados approval_recommendation debe ser null y no debes emitir ningún check que combine critical=true con status=FAIL;
 - nunca combines un status distinto de READY con una approval_recommendation no nula.
+- cuando status=READY, usa diagnostics=[]; expresa PASS, WARN, FAIL y sus correcciones únicamente en checks.
 Devuelve BlueprintReview.
 """,
         "P06_EVIDENCE_MAP_V1": """Anota un paquete de EvidenceUnits de UNA sola submission. No resumas todo el entregable.

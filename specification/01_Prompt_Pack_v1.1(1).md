@@ -1,26 +1,20 @@
 # Anexo A - Prompt pack operacional
 
-**Versión candidata del pack:** `prompt-pack/1.1.9`
+**Versión candidata del pack:** `prompt-pack/1.1.11`
 **Compatibilidad:** contratos `assessment-contracts/1.1.0`  
 **Perfil de ruta activo:** `LUNA_BASELINE_V1` (ADR-036)
 **Principio:** una tarea semántica por llamada; contenido estudiantil siempre no confiable; structured outputs obligatorios.
 
-Las entradas P01, P03 y P06-P08 conservan `1.1.2`; P02 conserva la frontera
-real aceptada `1.1.3`; P11 conserva la aceptada `1.1.4`; P09 conserva la
-aceptada `1.1.5`; P05 conserva `1.1.5` y P04 avanza a `1.1.9`. P04 1.1.7 y
-P05 1.1.5 corrigieron el snapshot semántico docente y la confusión entre
-catálogo y plan N. Un E2E posterior mostró que P04 todavía confundía la
-construcción terminada con la aprobación humana posterior: produjo un catálogo
-utilizable, pero devolvió `NEEDS_REVIEW` sólo porque `approved_by/approved_at`
-seguían vacíos. P04 1.1.8 separa ambos estados y el gateway exige un diagnóstico
-`ERROR`/`CRITICAL` para aceptar cualquier P04 no `READY`. El primer E2E cloud
-de esa versión falló de forma segura porque un diagnóstico del modelo usó como
-`evidence_id` un identificador de otra clase. P04 1.1.9 hace explícitas las
-allowlists de `diagnostics[].evidence_ids` y `diagnostics[].source_ids`, incluida
-la lista vacía cuando no existe una referencia autorizada. No relaja el
-validador ni reescribe la salida. Este pack conserva
-ADR-030 y el constructo, y requiere validación offline y real antes de
-build/deploy. Los textos se
+Las entradas vigentes son P01 `1.1.3`, P02 `1.1.4`, P03 `1.1.3`, P04
+`1.1.11`, P05 `1.1.7`, P06-P08 `1.1.3`, P09 `1.1.6`, P10 `1.1.3` y P11
+`1.1.5`. P04 `1.1.11` refuerza la unicidad global y prohíbe duplicados
+semánticos disfrazados con IDs distintos. P05 `1.1.7` copia las identidades
+del request, limita `referenced_ids` a los roots recibidos y fija una matriz
+total: PASS puro implica `APPROVE`, WARN o FAIL no crítico implica
+`APPROVE_WITH_CHANGES`, y solo un FAIL crítico implica `REJECT`. P11 queda
+reservado a defectos estructurales eliminables sin inventar semántica. Este
+pack conserva ADR-030 y el constructo, y requiere validación offline y real
+antes de build/deploy. Los textos se
 almacenan en un registry inmutable con `prompt_id`, `version`, hash, modelo
 permitido, esquema de salida, parámetros y resultados de eval. Los placeholders
 `{{...}}` se resuelven en servidor. No se realiza interpolación libre: cada
@@ -380,6 +374,7 @@ Procedimiento:
 
 Frontera de referencias y decisiones:
 - Copia `activity_id` exactamente desde `activity_spec.activity_id` y usa cada `decision_id` de `resolved_decisions` exactamente una vez.
+- Copia `blueprint_id` exactamente desde `target_blueprint_id` y `blueprint_version` exactamente desde `target_blueprint_version`; nunca los elijas ni incrementes.
 - Cada `PolicyDecision` resuelta incluye `selected_option_id` y un `selected_option` inmutable con el mismo `option_id`. Usa literalmente `label` y `consequence` de esa opción, junto con la nota docente si existe, como restricción de diseño. No infieras el significado de un ID opaco ni uses opciones no elegidas.
 - Materializa toda consecuencia que el contrato represente sin distorsión: pesos en `grading_weight` y fronteras de materiales en requisitos de evidencia y `course_sources_allowed`. Para escala u otra decisión sin campo dedicado, conserva su `decision_id` y explica su incidencia sólo en una justificación o diagnóstico pertinente; no inventes contenido académico ni fuerces un campo semánticamente distinto. Bloquea únicamente si esa limitación impide producir un catálogo usable y fiel.
 - Las opciones y notas de `PolicyDecision` fijan una interpretación docente, pero no son fuentes académicas y no autorizan inventar resultados de aprendizaje, criterios, evidencia ni IDs de fuente.
@@ -387,7 +382,7 @@ Frontera de referencias y decisiones:
 - Usa en `dimensions[].learning_outcome_ids` únicamente `statement_id` presentes en `activity_spec.learning_outcomes`. Si esa lista está vacía, usa `learning_outcome_ids=[]`; no completes el resultado ausente.
 - En `diagnostics[].evidence_ids` usa únicamente `evidence_id` exactos ya presentes en `activity_spec` o `rubric_spec`. Nunca escribas ahí `statement_id`, `criterion_id`, `decision_id`, `issue_id` ni `option_id`; si ningún `evidence_id` autorizado sustenta el diagnóstico, usa `evidence_ids=[]`.
 - En `diagnostics[].source_ids` usa únicamente `source_id` exactos autorizados por el contexto confiable. En `context_mode=CLOSED` sin fuentes de curso autorizadas, usa `source_ids=[]`.
-- Copia `question_count`, `target_total_minutes`, `allowed_response_formats` y `structured_justification_policy` desde `blueprint_policy` sin reinterpretarlos. Deja `approved_by=null` y `approved_at=null`.
+- Copia `question_count`, `target_total_minutes`, `allowed_response_formats`, `priority_criterion_ids`, `required_criterion_ids`, `minimum_opportunity_quality`, `max_reserve_opportunities` y `structured_justification_policy` desde `blueprint_policy` sin reinterpretarlos. Deja `approved_by=null` y `approved_at=null`.
 
 Interpreta `status` como el estado de finalización de la construcción del catálogo, no como su aprobación humana:
 - la aprobación humana ocurre después de la revisión P05; `approved_by=null` y `approved_at=null` no implican `status=NEEDS_REVIEW`;
@@ -396,7 +391,9 @@ Interpreta `status` como el estado de finalización de la construcción del cat�
 - no emitas `HUMAN_REVIEW_PENDING` únicamente para señalar la aprobación posterior.
 
 Antes de devolver, comprueba los invariantes canónicos que el JSON Schema del proveedor no puede expresar:
-- `dimension_id` es único; `variant_id` es único en todo el blueprint; `opportunity_template_id` es único en todo el blueprint;
+- genera cada `dimension_id`, `variant_id` y `opportunity_template_id` una sola vez: no clones, recicles ni reutilices IDs aunque dos elementos sean parecidos;
+- `dimension_id` es único; `variant_id` es único en todo el blueprint; `opportunity_template_id` es único en todo el blueprint. Comprueba que cada lista aplanada tenga la misma longitud que su conjunto de IDs;
+- si dos variantes u oportunidades son semánticamente duplicadas, fusiónalas o conserva solo una; cambiar únicamente el ID, score o redacción no las vuelve distintas;
 - cada variante declara `cognitive_operation` sin duplicados y cada oportunidad usa una operación incluida en `supported_operations` de esa misma variante;
 - todo `allowed_response_formats` de una oportunidad es subconjunto de `assessment_constraints.allowed_response_formats`;
 - todo `selected_opportunity_template_ids` de `structured_justification_policy` referencia una oportunidad existente;
@@ -418,7 +415,9 @@ Devuelve AssessmentBlueprint.
   "activity_spec": "{{ActivitySpec}}",
   "rubric_spec": "{{RubricSpec o null}}",
   "resolved_decisions": "{{PolicyDecision[]}}",
-  "blueprint_policy": "{{BlueprintPolicy}}"
+  "blueprint_policy": "{{BlueprintPolicy}}",
+  "target_blueprint_id": "{{Id}}",
+  "target_blueprint_version": "{{PositiveInt}}"
 }
 ```
 
@@ -444,8 +443,8 @@ El objeto completo debe validar como `BlueprintBuildRequest`; el bloque es una p
 | Modelo | GPT-5.6 Luna; `reasoning_effort=high`; no debe ver texto libre del generador |
 | Abstención | `status=NEEDS_REVIEW` o `TECHNICAL_FAILURE`, recomendación `null` y diagnóstico |
 | Evidencia no confiable | specs/blueprint tipados, con resolución de IDs posterior |
-| Validación posterior | checks, categorías, referencias y regla `critical FAIL -> REJECT` |
-| Retry | P11 por estructura; corrección semántica vuelve a P04 con el check concreto |
+| Validación posterior | exactamente una categoría canónica por check, referencias allowlisted y matriz total recomendación/estados |
+| Retry | P11 solo elimina campos extra; corrección semántica vuelve a P04 con el check concreto |
 | Límite determinista | count, tiempo, enums, unicidad y referencias se revisan antes; P05 no los recalcula |
 
 ### Prompt de desarrollador
@@ -473,13 +472,27 @@ Interpreta la arquitectura canónica antes de clasificar checks:
 - una variante textual sustentada para los mismos criterios/resultados puede ser la alternativa accesible de una variante visual. No inventes un campo de texto alternativo que el contrato no posee;
 - verifica cada `PolicyDecision` contra su snapshot `selected_option` y comprueba que sus consecuencias representables estén materializadas. Si el contrato no tiene un campo dedicado pero la decisión está vinculada y su efecto no impide una verificación usable, registra `WARN` con corrección concreta, no un `FAIL` crítico inventado.
 
-Marca cada check `PASS`, `WARN` o `FAIL`, cita IDs en `referenced_ids` y propone la corrección mínima. Marca `critical=true` para fallos de constructo, fidelidad de fuente, operación no soportada, catálogo insuficiente o inviabilidad esperada. No reescribas el blueprint completo. Todo `critical=true` con `FAIL` exige `approval_recommendation=REJECT`.
+Frontera de identidad y referencias:
+- copia `activity_id` exactamente desde `activity_spec.activity_id`, `blueprint_id` exactamente desde `blueprint.blueprint_id` y `blueprint_version` exactamente desde `blueprint.blueprint_version`;
+- `referenced_ids` solo puede contener IDs presentes literalmente en `activity_spec`, `rubric_spec`, `blueprint_policy`, `resolved_decisions` o `blueprint`; si una observación general no necesita ID, usa `[]`;
+- no uses en `referenced_ids` etiquetas, categorías, texto libre ni IDs inventados.
+
+Marca cada check `PASS`, `WARN` o `FAIL`, cita IDs en `referenced_ids` y propone la corrección mínima. Marca `critical=true` para fallos de constructo, fidelidad de fuente, operación no soportada, catálogo insuficiente o inviabilidad esperada. No reescribas el blueprint completo.
+
+Una revisión `READY` contiene exactamente 10 checks: uno y solo uno para cada categoría canónica `CONSTRUCT`, `SOURCE_FIDELITY`, `COVERAGE`, `COMPARABILITY`, `COGNITIVE_DEMAND`, `TIME`, `FORMAT_FEASIBILITY`, `OPPORTUNITY_CATALOG`, `PLAN_FEASIBILITY` y `ACCESSIBILITY`. No omitas ni repitas categorías y no dupliques `check_code`.
+
+Aplica esta matriz exacta:
+- cualquier `critical=true` con `status=FAIL` implica `approval_recommendation=REJECT`;
+- todos los checks `PASS` implican `approval_recommendation=APPROVE`;
+- sin FAIL crítico, cualquier `WARN` o FAIL no crítico implica `approval_recommendation=APPROVE_WITH_CHANGES`;
+- nunca uses `REJECT` sin FAIL crítico ni `APPROVE` si existe WARN o FAIL.
 
 Interpreta `status` como el estado de finalización de esta revisión, no como la aprobación del blueprint:
 - si puedes completar la revisión, usa `status=READY` y una `approval_recommendation` no nula;
 - si cualquier check combina `critical=true` con `status=FAIL`, la revisión completada debe usar `status=READY` y `approval_recommendation=REJECT`;
 - usa `status=NEEDS_REVIEW` o `TECHNICAL_FAILURE` solo cuando no puedas completar la revisión; en esos estados `approval_recommendation` debe ser `null` y no debes emitir ningún check que combine `critical=true` con `status=FAIL`;
 - nunca combines un `status` distinto de `READY` con una `approval_recommendation` no nula.
+- cuando `status=READY`, usa `diagnostics=[]`; expresa los hallazgos y correcciones únicamente en `checks`.
 Devuelve BlueprintReview.
 ```
 

@@ -41,6 +41,7 @@ from comprehension_verification.model_gateway.registry import prompt_spec
 from comprehension_verification.model_gateway.gateway import (
     PROMPT_RELATIONSHIP_VALIDATOR_VERSIONS,
 )
+from comprehension_verification.rehearsal import blueprint_review_is_approvable
 
 
 EXPECTED_PROMPT_CONTRACTS = {
@@ -117,8 +118,8 @@ def test_registry_is_exact_complete_and_immutable() -> None:
         "P01_ACTIVITY_SPEC_V1": "1.1.3",
         "P02_RUBRIC_NORMALIZE_V1": "1.1.4",
         "P03_AMBIGUITY_TRIAGE_V1": "1.1.3",
-        "P04_BLUEPRINT_BUILD_V1": "1.1.10",
-        "P05_BLUEPRINT_REVIEW_V1": "1.1.6",
+        "P04_BLUEPRINT_BUILD_V1": "1.1.11",
+        "P05_BLUEPRINT_REVIEW_V1": "1.1.7",
         "P06_EVIDENCE_MAP_V1": "1.1.3",
         "P07_QUESTION_BUILD_V1": "1.1.3",
         "P08_QUESTION_REVIEW_V1": "1.1.3",
@@ -137,7 +138,7 @@ def test_registry_is_exact_complete_and_immutable() -> None:
         PROMPT_SPECS["P01_ACTIVITY_SPEC_V1"].temperature = 1.0
 
 
-def test_p04_v119_makes_provider_invisible_invariants_explicit() -> None:
+def test_p04_v111_makes_provider_invisible_invariants_explicit() -> None:
     p04 = PROMPT_SPECS["P04_BLUEPRINT_BUILD_V1"].developer_instruction
     for exact_rule in (
         "cada decision_id de resolved_decisions exactamente una vez",
@@ -165,11 +166,14 @@ def test_p04_v119_makes_provider_invisible_invariants_explicit() -> None:
         "si ningún evidence_id autorizado sustenta el diagnóstico, usa evidence_ids=[]",
         "diagnostics[].source_ids usa únicamente source_id exactos autorizados",
         "En context_mode=CLOSED sin fuentes de curso autorizadas, usa source_ids=[]",
+        "no clones, recicles ni reutilices IDs",
+        "cantidad de IDs distintos",
+        "semánticamente duplicadas, fusiónalas",
     ):
         assert exact_rule in p04
 
 
-def test_p05_v115_and_p11_v114_make_root_invariant_handling_explicit() -> None:
+def test_p05_v117_and_p11_v115_make_root_invariant_handling_explicit() -> None:
     p05 = PROMPT_SPECS["P05_BLUEPRINT_REVIEW_V1"].developer_instruction
     assert "estado de finalización de esta revisión" in p05
     assert "status=READY y approval_recommendation=REJECT" in p05
@@ -180,6 +184,11 @@ def test_p05_v115_and_p11_v114_make_root_invariant_handling_explicit() -> None:
     assert "No rechaces un catálogo amplio" in p05
     assert "no exijas identidad global" in p05
     assert "selected_option snapshot" in p05
+    assert "exactamente 10 checks" in p05
+    assert "APPROVE_WITH_CHANGES" in p05
+    assert "nunca uses REJECT sin un FAIL crítico" in p05
+    assert "activity_id exactamente desde activity_spec.activity_id" in p05
+    assert "cuando status=READY, usa diagnostics=[]" in p05
 
     p11 = PROMPT_SPECS["P11_SCHEMA_REPAIR_V1"].developer_instruction
     assert "path=/ y error_type=value_error" in p11
@@ -914,6 +923,69 @@ def test_p04_rejects_catalog_without_an_exact_n_time_feasible_set() -> None:
     )
 
 
+@pytest.mark.parametrize(
+    ("mutation", "expected_code"),
+    (
+        (
+            lambda raw: raw.update({"activity_id": "act_outside_review"}),
+            ContextFailureCode.P05_REFERENCE_MISMATCH,
+        ),
+        (
+            lambda raw: raw["checks"][0].update(
+                {"referenced_ids": ["id_outside_review_roots"]}
+            ),
+            ContextFailureCode.P05_REFERENCED_ID_NOT_ALLOWLISTED,
+        ),
+    ),
+)
+def test_p05_reference_failures_have_prompt_local_codes(
+    mutation,
+    expected_code: ContextFailureCode,
+) -> None:  # type: ignore[no-untyped-def]
+    gateway = ModelGateway(
+        mock_adapter=ContextBreakingAdapter(
+            "P05_BLUEPRINT_REVIEW_V1", mutation
+        )
+    )
+
+    with pytest.raises(GatewayContextError) as captured:
+        _invoke("P05_BLUEPRINT_REVIEW_V1", gateway=gateway)
+
+    assert captured.value.failure.codes == (expected_code,)
+
+
+def test_blueprint_review_matrix_is_exact_and_matches_product_transition() -> None:
+    valid = _invoke("P05_BLUEPRINT_REVIEW_V1").output
+    raw = valid.model_dump(mode="json")
+
+    raw["checks"][0]["status"] = "WARN"
+    with pytest.raises(ValidationError):
+        models.BlueprintReview.model_validate(raw)
+    raw["approval_recommendation"] = "APPROVE_WITH_CHANGES"
+    warning_review = models.BlueprintReview.model_validate(raw)
+    assert blueprint_review_is_approvable(warning_review) is True
+
+    duplicate_category = valid.model_dump(mode="json")
+    duplicate_category["checks"][-1]["category"] = (
+        duplicate_category["checks"][0]["category"]
+    )
+    with pytest.raises(ValidationError):
+        models.BlueprintReview.model_validate(duplicate_category)
+
+    unjustified_reject = valid.model_dump(mode="json")
+    unjustified_reject["approval_recommendation"] = "REJECT"
+    with pytest.raises(ValidationError):
+        models.BlueprintReview.model_validate(unjustified_reject)
+
+    critical_reject = valid.model_dump(mode="json")
+    critical_reject["checks"][0].update(
+        {"status": "FAIL", "critical": True}
+    )
+    critical_reject["approval_recommendation"] = "REJECT"
+    rejected_review = models.BlueprintReview.model_validate(critical_reject)
+    assert blueprint_review_is_approvable(rejected_review) is False
+
+
 def test_p08_cannot_accept_below_trusted_validation_thresholds() -> None:
     def lower_scores(raw: dict) -> None:
         raw["review"]["scores"]["groundedness"] = 0.0
@@ -956,7 +1028,7 @@ def test_invalid_once_uses_one_p11_repair_and_revalidates_target() -> None:
     assert sum(ledger.prompt_id == "P11_SCHEMA_REPAIR_V1" for ledger in result.ledgers) == 1
 
 
-def test_blocked_p11_preserves_primary_p07_validation_failure_and_ledger() -> None:
+def test_value_error_skips_p11_and_preserves_primary_failure_and_ledger() -> None:
     prompt_id = "P07_QUESTION_BUILD_V1"
     request = build_mock_request(prompt_id)
     raw_output = DeterministicMockAdapter().factory.output_for(
@@ -1001,9 +1073,8 @@ def test_blocked_p11_preserves_primary_p07_validation_failure_and_ledger() -> No
 
     error = captured.value
     assert error.code == "MODEL_OUTPUT_VALIDATION_FAILED"
-    assert error.repair_disposition == "BLOCKED_BY_ROUTE_POLICY"
-    assert error.resolution is not None
-    assert error.resolution.reason_codes == ["REAL_ROUTE_NOT_CONFIGURED"]
+    assert error.repair_disposition == "NOT_STRUCTURALLY_REPAIRABLE"
+    assert error.resolution is None
     assert adapter.calls == 1
     assert len(error.ledgers) == 1
     ledger = error.ledgers[0]

@@ -48,8 +48,8 @@ from .web.workflows import (
 )
 
 
-REHEARSAL_VERSION = "stage2-product-rehearsal/1.0.0"
-REHEARSAL_REPORT_VERSION = "stage2-convergence-report/1.0.0"
+REHEARSAL_VERSION = "stage2-product-rehearsal/1.1.0"
+REHEARSAL_REPORT_VERSION = "stage2-convergence-report/1.1.0"
 BASE_SCENARIO_ID = "synthetic-open-short-v1"
 VARIANT_SCENARIO_ID = "synthetic-choice-justification-v1"
 
@@ -288,7 +288,7 @@ def _safe_failure(error: Exception, *, stage: str) -> dict[str, Any]:
         codes.append(error.code)
     else:
         codes.append(type(error).__name__.upper())
-    return {
+    failure: dict[str, Any] = {
         "stage": stage,
         "codes": list(dict.fromkeys(codes)),
         "issues": list(
@@ -298,6 +298,56 @@ def _safe_failure(error: Exception, *, stage: str) -> dict[str, Any]:
             }.values()
         ),
     }
+    safe_metadata = getattr(error, "safe_metadata", None)
+    if isinstance(safe_metadata, dict):
+        failure["metadata"] = safe_metadata
+    return failure
+
+
+def blueprint_review_is_approvable(review: m.BlueprintReview) -> bool:
+    """Mirror the product transition: only a completed REJECT blocks approval."""
+
+    return (
+        review.status == m.WorkflowStatus.READY
+        and review.approval_recommendation
+        != m.BlueprintApprovalRecommendation.REJECT
+    )
+
+
+class _BlueprintReviewNotApprovable(ContextValidationError):
+    """Content-free rehearsal failure with enum-only review observability."""
+
+    def __init__(self, review: m.BlueprintReview) -> None:
+        super().__init__(
+            "P05_NOT_APPROVABLE",
+            "P05 output does not permit the canonical product transition",
+        )
+        self.safe_metadata = {
+            "review_status": str(review.status),
+            "approval_recommendation": (
+                str(review.approval_recommendation)
+                if review.approval_recommendation is not None
+                else "NONE"
+            ),
+            "critical_fail_count": sum(
+                check.critical and check.status == m.ReviewCheckStatus.FAIL
+                for check in review.checks
+            ),
+            "fail_categories": sorted(
+                {
+                    check.category
+                    for check in review.checks
+                    if check.status == m.ReviewCheckStatus.FAIL
+                }
+            ),
+            "warn_categories": sorted(
+                {
+                    check.category
+                    for check in review.checks
+                    if check.status == m.ReviewCheckStatus.WARN
+                }
+            ),
+        }
 
 
 class ProductRehearsal:
@@ -424,15 +474,8 @@ class ProductRehearsal:
                 m.BlueprintReview,
                 await self._invoke("P05_BLUEPRINT_REVIEW_V1", p05),
             )
-            if (
-                review.status != m.WorkflowStatus.READY
-                or review.approval_recommendation
-                != m.BlueprintApprovalRecommendation.APPROVE
-            ):
-                raise ContextValidationError(
-                    "P05_NOT_APPROVABLE",
-                    "P05 checkpoint did not produce an approvable review",
-                )
+            if not blueprint_review_is_approvable(review):
+                raise _BlueprintReviewNotApprovable(review)
             stages.append(
                 self._stage_row("P05_BLUEPRINT_REVIEW_V1", p05, review)
             )
@@ -548,15 +591,8 @@ class ProductRehearsal:
                 m.BlueprintReview,
                 await self._invoke("P05_BLUEPRINT_REVIEW_V1", p05),
             )
-            if (
-                blueprint_review.status != m.WorkflowStatus.READY
-                or blueprint_review.approval_recommendation
-                != m.BlueprintApprovalRecommendation.APPROVE
-            ):
-                raise ContextValidationError(
-                    "P05_NOT_APPROVABLE",
-                    "P05 chain output is not approvable",
-                )
+            if not blueprint_review_is_approvable(blueprint_review):
+                raise _BlueprintReviewNotApprovable(blueprint_review)
             stages.append(
                 self._stage_row(
                     "P05_BLUEPRINT_REVIEW_V1", p05, blueprint_review

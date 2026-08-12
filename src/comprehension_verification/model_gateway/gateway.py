@@ -36,7 +36,7 @@ from comprehension_verification.model_gateway.registry import (
 
 
 GATEWAY_CONTEXT_VALIDATOR_VERSION = "gateway-context/2.0.0"
-GATEWAY_REPAIR_VALIDATOR_VERSION = "gateway-repair/2.0.0"
+GATEWAY_REPAIR_VALIDATOR_VERSION = "gateway-repair/2.1.0"
 # Relationship versions are deliberately prompt-local.  A P04-only invariant
 # must not evict reusable P07/P08 outputs whose executable dependencies did not
 # change.  Tests assert that these values participate in the fingerprint.
@@ -45,7 +45,7 @@ PROMPT_RELATIONSHIP_VALIDATOR_VERSIONS: Mapping[str, str] = {
     "P02_RUBRIC_NORMALIZE_V1": "relationship-p02/2.0.0",
     "P03_AMBIGUITY_TRIAGE_V1": "relationship-p03/2.0.0",
     "P04_BLUEPRINT_BUILD_V1": "relationship-p04/2.0.0",
-    "P05_BLUEPRINT_REVIEW_V1": "relationship-p05/2.0.0",
+    "P05_BLUEPRINT_REVIEW_V1": "relationship-p05/2.1.0",
     "P06_EVIDENCE_MAP_V1": "relationship-p06/2.0.0",
     "P07_QUESTION_BUILD_V1": "relationship-p07/2.0.0",
     "P08_QUESTION_REVIEW_V1": "relationship-p08/2.0.0",
@@ -94,6 +94,10 @@ class ContextFailureCode(StrEnum):
     P04_CATALOG_PLAN_INFEASIBLE = "P04_CATALOG_PLAN_INFEASIBLE"
     P04_NONREADY_WITHOUT_BLOCKING_DIAGNOSTIC = (
         "P04_NONREADY_WITHOUT_BLOCKING_DIAGNOSTIC"
+    )
+    P05_REFERENCE_MISMATCH = "P05_REFERENCE_MISMATCH"
+    P05_REFERENCED_ID_NOT_ALLOWLISTED = (
+        "P05_REFERENCED_ID_NOT_ALLOWLISTED"
     )
     P09_GUIDE_ID_MISMATCH = "P09_GUIDE_ID_MISMATCH"
     P09_ASSESSMENT_ID_MISMATCH = "P09_ASSESSMENT_ID_MISMATCH"
@@ -1119,6 +1123,16 @@ class ModelGateway:
                         primary_failure=primary_failure,
                         repair_disposition="RECURSIVE_REPAIR_FORBIDDEN",
                     ) from exc
+                if not self._is_structural_repair_eligible(
+                    primary_failure.issues
+                ):
+                    raise GatewaySchemaViolation(
+                        "Primary output is not eligible for structural repair",
+                        phase=ValidationPhase.OUTPUT,
+                        ledgers=ledgers,
+                        primary_failure=primary_failure,
+                        repair_disposition="NOT_STRUCTURALLY_REPAIRABLE",
+                    ) from exc
                 try:
                     repaired, repair_ledgers, repair_order = await self._repair_once(
                         target_spec=spec,
@@ -1945,7 +1959,11 @@ class ModelGateway:
             )
             actual = (output.blueprint_id, output.blueprint_version, output.activity_id)
             if actual != expected:
-                raise GatewayContextError("P05 output blueprint reference mismatch")
+                raise GatewayContextError(
+                    "P05 output blueprint reference mismatch",
+                    phase=phase,
+                    failure_code=ContextFailureCode.P05_REFERENCE_MISMATCH,
+                )
             allowed_references = ModelGateway._collect_reference_ids(
                 request.model_dump(mode="json")
             )
@@ -1954,7 +1972,11 @@ class ModelGateway:
                 for check in output.checks
             ):
                 raise GatewayContextError(
-                    "P05 review check referenced an ID outside the reviewed roots"
+                    "P05 review check referenced an ID outside the reviewed roots",
+                    phase=phase,
+                    failure_code=(
+                        ContextFailureCode.P05_REFERENCED_ID_NOT_ALLOWLISTED
+                    ),
                 )
         elif prompt_id == "P06_EVIDENCE_MAP_V1":
             if output.submission_id != request.evidence_bundle.submission_id:
@@ -2129,6 +2151,16 @@ class ModelGateway:
                 )
             )
         return type(original) is type(repaired) and original == repaired
+
+    @staticmethod
+    def _is_structural_repair_eligible(
+        issues: Sequence[SafeValidationIssue],
+    ) -> bool:
+        """Permit P11 only when deleting unknown fields can fix the output."""
+
+        return bool(issues) and all(
+            issue.error_type == "extra_forbidden" for issue in issues
+        )
 
     async def _repair_once(
         self,

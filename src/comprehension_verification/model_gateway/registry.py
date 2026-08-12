@@ -21,7 +21,7 @@ from comprehension_verification.model_gateway.prompt_text import (
 )
 
 
-PROMPT_VERSION: Final = "1.1.10"
+PROMPT_VERSION: Final = "1.1.11"
 SYSTEM_PROMPT_ID: Final = "SYS_EVIDENCE_BOUND_V1"
 P11_SYSTEM_PROMPT_ID: Final = "SYS_SCHEMA_REPAIR_V1"
 PROMPT_ENTRY_VERSIONS: Final[Mapping[str, str]] = MappingProxyType(
@@ -36,11 +36,13 @@ PROMPT_ENTRY_VERSIONS: Final[Mapping[str, str]] = MappingProxyType(
         # completion with the later server-side human approval gate. P04 1.1.9
         # then makes Diagnostic evidence/source allowlists explicit after the
         # first fresh cloud E2E rejected a cross-kind diagnostic reference.
+        # Convergence advances P04/P05 once more to enforce global catalog ID
+        # uniqueness and the product's exact review/recommendation matrix.
         "P01_ACTIVITY_SPEC_V1": "1.1.3",
         "P02_RUBRIC_NORMALIZE_V1": "1.1.4",
         "P03_AMBIGUITY_TRIAGE_V1": "1.1.3",
-        "P04_BLUEPRINT_BUILD_V1": "1.1.10",
-        "P05_BLUEPRINT_REVIEW_V1": "1.1.6",
+        "P04_BLUEPRINT_BUILD_V1": "1.1.11",
+        "P05_BLUEPRINT_REVIEW_V1": "1.1.7",
         "P06_EVIDENCE_MAP_V1": "1.1.3",
         "P07_QUESTION_BUILD_V1": "1.1.3",
         "P08_QUESTION_REVIEW_V1": "1.1.3",
@@ -60,6 +62,7 @@ PROMPT_SCHEMA_COMPATIBILITY: Final = frozenset(
         ("1.1.8", "1.1.0"),
         ("1.1.9", "1.1.0"),
         ("1.1.10", "1.1.0"),
+        ("1.1.11", "1.1.0"),
     }
 )
 

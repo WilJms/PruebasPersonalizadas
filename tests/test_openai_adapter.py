@@ -655,31 +655,11 @@ def test_structurally_invalid_output_gets_exactly_one_p11_luna_low_attempt() -> 
     assert "PROVIDER_SCHEMA_VALID" in result.ledgers[1].route.reason_codes
 
 
-def test_malformed_json_is_data_for_exactly_one_p11_attempt() -> None:
+def test_malformed_json_fails_without_semantic_p11_repair() -> None:
     prompt_id = "P01_ACTIVITY_SPEC_V1"
     fake = FakeClient(
         [
             _response("{not-json", model=LUNA_MODEL_ID),
-            _response(
-                {
-                    "schema_version": "1.1.0",
-                    "target_schema_name": "ActivitySpec",
-                    "repair_status": "UNREPAIRABLE",
-                    "repaired_output": None,
-                    "diagnostics": [
-                        {
-                            "code": "MALFORMED_JSON_UNREPAIRABLE",
-                            "severity": "ERROR",
-                            "message": "Malformed JSON has no structural repair boundary.",
-                            "evidence_ids": [],
-                            "source_ids": [],
-                            "retryable": False,
-                            "details": {},
-                        }
-                    ],
-                },
-                model=LUNA_MODEL_ID,
-            ),
         ]
     )
     request = build_mock_request(prompt_id)
@@ -691,12 +671,17 @@ def test_malformed_json_is_data_for_exactly_one_p11_attempt() -> None:
             )
         )
 
-    assert captured.value.repair_disposition == "DECLARED_UNREPAIRABLE"
-    assert len(fake.responses.calls) == 2
-    repair_envelope = json.loads(
-        fake.responses.calls[1]["input"][1]["content"][0]["text"]
-    )
-    assert repair_envelope["payload"]["invalid_output"] == "{not-json"
+    assert captured.value.repair_disposition == "NOT_STRUCTURALLY_REPAIRABLE"
+    assert len(fake.responses.calls) == 1
+    assert [ledger.prompt_id for ledger in captured.value.ledgers] == [
+        prompt_id
+    ]
+    assert captured.value.primary_failure is not None
+    assert [
+        issue.error_type for issue in captured.value.primary_failure.issues
+    ] == [
+        "model_type"
+    ]
 
 
 def test_incomplete_response_fails_closed_without_p11() -> None:

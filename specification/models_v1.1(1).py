@@ -1066,22 +1066,42 @@ class BlueprintReview(StrictModel):
             [check.check_code for check in self.checks],
             "BlueprintReview check_codes",
         )
+        categories = [check.category for check in self.checks]
         critical_fail = any(
             check.critical and check.status == ReviewCheckStatus.FAIL
             for check in self.checks
         )
-        if self.status == "READY" and self.approval_recommendation is None:
-            raise ValueError("READY review requires approval_recommendation")
-        if self.status == "READY" and {
-            check.category for check in self.checks
-        } != required_categories:
-            raise ValueError("READY review requires every canonical review category")
-        if self.status != "READY" and self.approval_recommendation is not None:
-            raise ValueError("non-READY review cannot recommend approval")
-        if critical_fail and (
-            self.approval_recommendation != BlueprintApprovalRecommendation.REJECT
-        ):
-            raise ValueError("critical FAIL requires REJECT")
+        if self.status == "READY":
+            if self.approval_recommendation is None:
+                raise ValueError("READY review requires approval_recommendation")
+            if (
+                len(categories) != len(required_categories)
+                or set(categories) != required_categories
+            ):
+                raise ValueError(
+                    "READY review requires exactly one check per canonical category"
+                )
+            if critical_fail:
+                expected_recommendation = BlueprintApprovalRecommendation.REJECT
+            elif all(
+                check.status == ReviewCheckStatus.PASS for check in self.checks
+            ):
+                expected_recommendation = BlueprintApprovalRecommendation.APPROVE
+            else:
+                expected_recommendation = (
+                    BlueprintApprovalRecommendation.APPROVE_WITH_CHANGES
+                )
+            if self.approval_recommendation != expected_recommendation:
+                raise ValueError(
+                    "READY review recommendation must match the canonical check matrix"
+                )
+        else:
+            if self.approval_recommendation is not None:
+                raise ValueError("non-READY review cannot recommend approval")
+            if critical_fail:
+                raise ValueError(
+                    "non-READY review cannot contain a critical FAIL check"
+                )
         return self
 
 
