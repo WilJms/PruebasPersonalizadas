@@ -1,5 +1,5 @@
 {
-  "schema_version": "stage2-product-rehearsal-fixture/1.0.0",
+  "schema_version": "stage2-product-rehearsal-fixture/1.1.0",
   "classification": "SYNTHETIC_ONLY_NO_STUDENT_DATA",
   "generator": "comprehension_verification.rehearsal.build_rehearsal_checkpoints",
   "checkpoints": {
@@ -20,6 +20,11 @@
       "structured_justification_mode": "ALL"
     }
   ],
+  "integrated_submission_shape": {
+    "evidence_units": 3,
+    "artifacts": 2,
+    "data_classification": "SYNTHETIC_ONLY_NO_STUDENT_DATA"
+  },
   "invariants": {
     "p10_enabled": false,
     "student_data": false,

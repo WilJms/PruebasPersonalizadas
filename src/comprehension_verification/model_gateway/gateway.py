@@ -45,8 +45,8 @@ PROMPT_RELATIONSHIP_VALIDATOR_VERSIONS: Mapping[str, str] = {
     "P02_RUBRIC_NORMALIZE_V1": "relationship-p02/2.0.0",
     "P03_AMBIGUITY_TRIAGE_V1": "relationship-p03/2.0.0",
     "P04_BLUEPRINT_BUILD_V1": "relationship-p04/2.0.0",
-    "P05_BLUEPRINT_REVIEW_V1": "relationship-p05/2.1.0",
-    "P06_EVIDENCE_MAP_V1": "relationship-p06/2.0.0",
+    "P05_BLUEPRINT_REVIEW_V1": "relationship-p05/2.2.0",
+    "P06_EVIDENCE_MAP_V1": "relationship-p06/2.1.0",
     "P07_QUESTION_BUILD_V1": "relationship-p07/2.0.0",
     "P08_QUESTION_REVIEW_V1": "relationship-p08/2.0.0",
     "P09_GUIDE_BUILD_V1": "relationship-p09/2.0.0",
@@ -99,6 +99,9 @@ class ContextFailureCode(StrEnum):
     P05_REFERENCED_ID_NOT_ALLOWLISTED = (
         "P05_REFERENCED_ID_NOT_ALLOWLISTED"
     )
+    P05_PREFLIGHT_MISMATCH = "P05_PREFLIGHT_MISMATCH"
+    P05_PREFLIGHT_CHECK_MISMATCH = "P05_PREFLIGHT_CHECK_MISMATCH"
+    P06_REFERENCE_MISMATCH = "P06_REFERENCE_MISMATCH"
     P09_GUIDE_ID_MISMATCH = "P09_GUIDE_ID_MISMATCH"
     P09_ASSESSMENT_ID_MISMATCH = "P09_ASSESSMENT_ID_MISMATCH"
     P09_SUBMISSION_ID_MISMATCH = "P09_SUBMISSION_ID_MISMATCH"
@@ -1952,6 +1955,12 @@ class ModelGateway:
                     "P04 output changed the trusted structured-justification matrix"
                 )
         elif prompt_id == "P05_BLUEPRINT_REVIEW_V1":
+            from comprehension_verification.validation import (
+                ContextValidationError,
+                build_blueprint_review_preflight,
+                validate_blueprint_review_preflight_checks,
+            )
+
             expected = (
                 request.blueprint.blueprint_id,
                 request.blueprint.blueprint_version,
@@ -1978,26 +1987,123 @@ class ModelGateway:
                         ContextFailureCode.P05_REFERENCED_ID_NOT_ALLOWLISTED
                     ),
                 )
+            expected_preflight = build_blueprint_review_preflight(
+                blueprint=request.blueprint,
+                activity_spec=request.activity_spec,
+                rubric_spec=request.rubric_spec,
+                blueprint_policy=request.blueprint_policy,
+            )
+            if request.deterministic_preflight != expected_preflight:
+                raise GatewayContextError(
+                    "P05 request preflight differs from server-derived facts",
+                    phase=phase,
+                    failure_code=ContextFailureCode.P05_PREFLIGHT_MISMATCH,
+                )
+            if output.status == "READY":
+                try:
+                    validate_blueprint_review_preflight_checks(
+                        output, expected_preflight
+                    )
+                except ContextValidationError as exc:
+                    raise GatewayContextError(
+                        "P05 output contradicted deterministic preflight facts",
+                        phase=phase,
+                        failure_code=(
+                            ContextFailureCode.P05_PREFLIGHT_CHECK_MISMATCH
+                        ),
+                    ) from exc
         elif prompt_id == "P06_EVIDENCE_MAP_V1":
             if output.submission_id != request.evidence_bundle.submission_id:
-                raise GatewayContextError("P06 output submission_id mismatch")
-            templates = {
-                template.opportunity_template_id: template
+                raise GatewayContextError(
+                    "P06 output submission_id mismatch",
+                    phase=phase,
+                    failure_code=ContextFailureCode.P06_REFERENCE_MISMATCH,
+                )
+            template_paths = {
+                template.opportunity_template_id: (
+                    dimension,
+                    variant,
+                    template,
+                )
                 for dimension in request.blueprint.dimensions
                 for variant in dimension.evidence_variants
                 for template in variant.question_opportunities
             }
+            variant_paths = {
+                variant.variant_id: dimension.dimension_id
+                for dimension in request.blueprint.dimensions
+                for variant in dimension.evidence_variants
+            }
+            matches = {
+                (match.dimension_id, match.variant_id): match
+                for match in output.variant_matches
+            }
             global_minimum = (
                 request.blueprint.assessment_constraints.minimum_opportunity_quality
             )
+            if output.status == "READY" and len(output.opportunities) < (
+                request.blueprint.assessment_constraints.question_count
+            ):
+                raise GatewayContextError(
+                    "P06 READY output cannot supply the configured question count",
+                    phase=phase,
+                    failure_code=ContextFailureCode.P06_REFERENCE_MISMATCH,
+                )
             for opportunity in output.opportunities:
-                template = templates.get(opportunity.opportunity_template_id)
-                if template is None or opportunity.opportunity_quality < max(
+                path = template_paths.get(
+                    opportunity.opportunity_template_id
+                )
+                if path is None:
+                    raise GatewayContextError(
+                        "P06 referenced an unknown opportunity template",
+                        phase=phase,
+                        failure_code=ContextFailureCode.P06_REFERENCE_MISMATCH,
+                    )
+                dimension, variant, template = path
+                match = matches.get(
+                    (dimension.dimension_id, variant.variant_id)
+                )
+                inherited = (
+                    opportunity.dimension_id == dimension.dimension_id
+                    and opportunity.variant_id == variant.variant_id
+                    and opportunity.cognitive_operation
+                    == template.cognitive_operation
+                    and opportunity.focus == template.focus
+                    and opportunity.observable == template.observable
+                    and opportunity.difficulty == template.difficulty
+                    and opportunity.target_minutes == template.target_minutes
+                    and opportunity.allowed_anchor_structures
+                    == template.allowed_anchor_structures
+                    and opportunity.allowed_response_formats
+                    == template.allowed_response_formats
+                    and opportunity.student_justification_required
+                    == template.student_justification_required
+                    and opportunity.activity_priority
+                    == dimension.verification_priority
+                    and match is not None
+                    and opportunity.evidence_fit == match.evidence_fit
+                    and set(opportunity.evidence_ids).issubset(
+                        set(match.evidence_ids)
+                    )
+                )
+                if not inherited or opportunity.opportunity_quality < max(
                     global_minimum, template.minimum_quality
                 ):
                     raise GatewayContextError(
-                        "P06 opportunity lowered a trusted quality threshold"
+                        "P06 changed an inherited blueprint constraint",
+                        phase=phase,
+                        failure_code=ContextFailureCode.P06_REFERENCE_MISMATCH,
                     )
+            if any(
+                match.dimension_id
+                != variant_paths.get(match.variant_id)
+                for match in output.variant_matches
+            ):
+                raise GatewayContextError(
+                    "P06 variant match changed its blueprint path",
+                    phase=phase,
+                    failure_code=ContextFailureCode.P06_REFERENCE_MISMATCH,
+                )
         elif prompt_id in {"P07_QUESTION_BUILD_V1", "P10_ENRICHED_CONTEXT_V1"}:
             if (
                 output.submission_id != request.plan.submission_id

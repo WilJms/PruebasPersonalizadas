@@ -1151,12 +1151,26 @@ def build_mock_request(prompt_id: str) -> BaseModel:
             blueprint_policy=_blueprint_policy(),
         )
     if prompt_id == "P05_BLUEPRINT_REVIEW_V1":
+        from comprehension_verification.validation import (
+            build_blueprint_review_preflight,
+        )
+
+        blueprint = _blueprint()
+        activity_spec = _activity_spec()
+        rubric_spec = _rubric_spec()
+        blueprint_policy = _blueprint_policy()
         return models.BlueprintReviewRequest(
-            blueprint=_blueprint(),
-            activity_spec=_activity_spec(),
-            rubric_spec=_rubric_spec(),
+            blueprint=blueprint,
+            activity_spec=activity_spec,
+            rubric_spec=rubric_spec,
             resolved_decisions=[_policy_decision()],
-            blueprint_policy=_blueprint_policy(),
+            blueprint_policy=blueprint_policy,
+            deterministic_preflight=build_blueprint_review_preflight(
+                blueprint=blueprint,
+                activity_spec=activity_spec,
+                rubric_spec=rubric_spec,
+                blueprint_policy=blueprint_policy,
+            ),
         )
     if prompt_id == "P06_EVIDENCE_MAP_V1":
         return models.EvidenceMapRequest(

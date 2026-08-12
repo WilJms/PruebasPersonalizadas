@@ -1,8 +1,9 @@
 """Canonical contracts for comprehension-verification assessments.
 
 Pydantic v2.13+. Student content is data only; these models do not execute or
-dereference artifacts. The 1.2 bundle preserves legacy 1.1 roots and adds
-independent Stage 2 roots. All persisted domain objects include schema_version.
+dereference artifacts. The experimental 1.2 bundle retains the legacy runtime
+schema marker while adding Stage 2 roots and governed request invariants. All
+persisted domain objects include schema_version.
 """
 
 from __future__ import annotations
@@ -17,8 +18,9 @@ from pydantic import BaseModel, ConfigDict, Field, HttpUrl, model_validator
 LEGACY_SCHEMA_VERSION = "1.1.0"
 CONTRACT_VERSION = "1.2.0"
 
-# Runtime prompt contracts remain on 1.1.0.  The bundle advances to 1.2.0 only
-# because Stage 2 adds independent roots without changing any existing root.
+# Runtime prompt contracts retain their 1.1.0 wire marker during experimental
+# convergence. Exact compatibility is governed by schema/prompt/validator
+# fingerprints; the 1.2 bundle is not declared final until independent review.
 SCHEMA_VERSION = LEGACY_SCHEMA_VERSION
 SchemaVersion = Literal[LEGACY_SCHEMA_VERSION]
 Stage2SchemaVersion = Literal[CONTRACT_VERSION]
@@ -1017,6 +1019,21 @@ class AssessmentBlueprint(StrictModel):
         return self
 
 
+class BlueprintReviewPreflight(StrictModel):
+    """Server-derived facts that P05 must not ask the model to recompute."""
+
+    schema_version: SchemaVersion = LEGACY_SCHEMA_VERSION
+    blueprint_id: Id
+    blueprint_version: PositiveInt
+    policy_constraints_match: bool
+    source_coverage_complete: bool
+    catalog_size_sufficient: bool
+    time_feasible: bool
+    format_feasible: bool
+    justification_matrix_valid: bool
+    catalog_plan_feasible: bool
+
+
 class BlueprintReviewCheck(StrictModel):
     check_code: Annotated[str, Field(pattern=r"^[A-Z][A-Z0-9_]{2,63}$")]
     category: Literal[
@@ -1185,8 +1202,25 @@ class EvidenceMapPatch(StrictModel):
             raise ValueError("opportunity_ids must be unique")
         if any(x.submission_id != self.submission_id for x in self.opportunities):
             raise ValueError("opportunities must belong to the mapped submission")
-        if self.status != "READY" and self.opportunities:
-            raise ValueError("non-READY mapping cannot expose usable opportunities")
+        if self.status != "READY":
+            if self.opportunities or self.claims or self.variant_matches:
+                raise ValueError(
+                    "non-READY mapping cannot expose partial usable annotations"
+                )
+            if not self.diagnostics:
+                raise ValueError("non-READY mapping requires diagnostics")
+            if not any(item.code == self.status for item in self.diagnostics):
+                raise ValueError(
+                    "non-READY mapping requires a diagnostic matching its status"
+                )
+            if any(
+                item.severity not in {Severity.ERROR, Severity.CRITICAL}
+                or item.retryable
+                for item in self.diagnostics
+            ):
+                raise ValueError(
+                    "non-READY mapping diagnostics must be blocking and non-retryable"
+                )
         return self
 
 
@@ -2556,10 +2590,18 @@ class BlueprintReviewRequest(StrictModel):
     rubric_spec: RubricSpec | None = None
     resolved_decisions: list[PolicyDecision] = Field(default_factory=list, max_length=100)
     blueprint_policy: BlueprintPolicy
+    deterministic_preflight: BlueprintReviewPreflight
 
     @model_validator(mode="after")
     def decisions_are_self_contained(self) -> "BlueprintReviewRequest":
         _resolved_decisions_are_self_contained(self.resolved_decisions)
+        if (
+            self.deterministic_preflight.blueprint_id
+            != self.blueprint.blueprint_id
+            or self.deterministic_preflight.blueprint_version
+            != self.blueprint.blueprint_version
+        ):
+            raise ValueError("P05 preflight must identify the reviewed blueprint")
         return self
 
 

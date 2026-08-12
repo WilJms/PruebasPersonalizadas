@@ -9,7 +9,7 @@ from typing import Any, cast
 
 from pydantic import BaseModel, SecretStr
 
-from .canonical import canonical_hash, stable_id
+from .canonical import canonical_hash, sha256_text, stable_id
 from .contracts import model_by_name, models as m
 from .model_gateway import (
     CallBudget,
@@ -35,6 +35,7 @@ from .planning import PLANNER_VERSION, build_assessment_plan
 from .validation import (
     ContextValidationError,
     PROMPT_APPLICATION_VALIDATOR_VERSIONS,
+    build_blueprint_review_preflight,
     validate_assessment_plan,
     validate_evaluation_guide,
     validate_evidence_map,
@@ -48,8 +49,8 @@ from .web.workflows import (
 )
 
 
-REHEARSAL_VERSION = "stage2-product-rehearsal/1.1.0"
-REHEARSAL_REPORT_VERSION = "stage2-convergence-report/1.1.0"
+REHEARSAL_VERSION = "stage2-product-rehearsal/1.2.0"
+REHEARSAL_REPORT_VERSION = "stage2-convergence-report/1.2.0"
 BASE_SCENARIO_ID = "synthetic-open-short-v1"
 VARIANT_SCENARIO_ID = "synthetic-choice-justification-v1"
 
@@ -111,6 +112,57 @@ def _base_p04_request() -> m.BlueprintBuildRequest:
     )
 
 
+def _expanded_rehearsal_bundle(
+    bundle: m.EvidenceBundle,
+) -> m.EvidenceBundle:
+    """Represent a sufficient product-shaped submission with multiple units."""
+
+    base = bundle.evidence_units[0]
+    additions = []
+    for index, (evidence_id, artifact_id, content_text) in enumerate(
+        (
+            (
+                "ev_submission_2",
+                "art_submission",
+                "Cuando la fuente cambia, la entrada previa se invalida para evitar devolver un resultado obsoleto.",
+            ),
+            (
+                "ev_submission_3",
+                "art_submission_test",
+                "Una prueba sintética modifica la fuente, repite la consulta y verifica que el valor se recalcula.",
+            ),
+        ),
+        start=1,
+    ):
+        additions.append(
+            base.model_copy(
+                update={
+                    "evidence_id": evidence_id,
+                    "artifact_id": artifact_id,
+                    "artifact_hash": canonical_hash(
+                        {"synthetic_artifact_id": artifact_id}
+                    ),
+                    "locator": m.DocumentLocator(
+                        paragraph_index=index,
+                        heading_path=["Sección sintética"],
+                    ),
+                    "content_text": content_text,
+                    "normalized_hash": sha256_text(content_text),
+                }
+            )
+        )
+    evidence_units = [base, *additions]
+    return bundle.model_copy(
+        update={
+            "bundle_id": "bundle_stage2_rehearsal_v2",
+            "allowed_evidence_ids": [
+                item.evidence_id for item in evidence_units
+            ],
+            "evidence_units": evidence_units,
+        }
+    )
+
+
 def build_rehearsal_checkpoints(
     scenario_id: str = BASE_SCENARIO_ID,
 ) -> RehearsalCheckpoints:
@@ -142,6 +194,13 @@ def build_rehearsal_checkpoints(
 
     p06 = m.EvidenceMapRequest.model_validate(
         build_mock_request("P06_EVIDENCE_MAP_V1").model_dump(mode="json")
+    )
+    p06 = p06.model_copy(
+        update={
+            "evidence_bundle": _expanded_rehearsal_bundle(
+                p06.evidence_bundle
+            )
+        }
     )
     mapping = m.EvidenceMapPatch.model_validate(
         _validated_mock_output("P06_EVIDENCE_MAP_V1", p06).model_dump(
@@ -469,6 +528,12 @@ class ProductRehearsal:
                 blueprint_policy=p04.blueprint_policy,
                 resolved_decisions=p04.resolved_decisions,
                 blueprint=blueprint,
+                deterministic_preflight=build_blueprint_review_preflight(
+                    blueprint=blueprint,
+                    activity_spec=p04.activity_spec,
+                    rubric_spec=p04.rubric_spec,
+                    blueprint_policy=p04.blueprint_policy,
+                ),
             )
             review = cast(
                 m.BlueprintReview,
@@ -586,6 +651,12 @@ class ProductRehearsal:
                 blueprint_policy=p04.blueprint_policy,
                 resolved_decisions=p04.resolved_decisions,
                 blueprint=blueprint,
+                deterministic_preflight=build_blueprint_review_preflight(
+                    blueprint=blueprint,
+                    activity_spec=p04.activity_spec,
+                    rubric_spec=p04.rubric_spec,
+                    blueprint_policy=p04.blueprint_policy,
+                ),
             )
             blueprint_review = cast(
                 m.BlueprintReview,

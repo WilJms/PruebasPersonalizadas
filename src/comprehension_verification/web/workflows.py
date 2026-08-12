@@ -47,6 +47,7 @@ from ..planning import PLANNER_VERSION, build_assessment_plan
 from ..validation import (
     ContextValidationError,
     PROMPT_APPLICATION_VALIDATOR_VERSIONS,
+    build_blueprint_review_preflight,
     validate_assessment_plan,
     validate_evaluation_guide,
     validate_evidence_map,
@@ -1630,6 +1631,12 @@ class Stage1Service:
                 rubric_spec=rubric,
                 resolved_decisions=resolved_decisions,
                 blueprint_policy=policy,
+                deterministic_preflight=build_blueprint_review_preflight(
+                    blueprint=blueprint,
+                    activity_spec=p01,
+                    rubric_spec=rubric,
+                    blueprint_policy=policy,
+                ),
             ),
             m.BlueprintReview,
         )
@@ -2241,13 +2248,20 @@ class Stage1Service:
         resolved_decisions = self._resolved_policy_decisions(
             activity_id, actor.workspace_id
         )
+        blueprint_policy = m.BlueprintPolicy.model_validate(
+            activity.blueprint_policy
+        )
         review_request = m.BlueprintReviewRequest(
             blueprint=updated,
             activity_spec=activity_spec,
             rubric_spec=rubric_spec,
             resolved_decisions=resolved_decisions,
-            blueprint_policy=m.BlueprintPolicy.model_validate(
-                activity.blueprint_policy
+            blueprint_policy=blueprint_policy,
+            deterministic_preflight=build_blueprint_review_preflight(
+                blueprint=updated,
+                activity_spec=activity_spec,
+                rubric_spec=rubric_spec,
+                blueprint_policy=blueprint_policy,
             ),
         )
         queued = self._new_job(

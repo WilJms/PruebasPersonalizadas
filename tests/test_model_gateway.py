@@ -42,6 +42,7 @@ from comprehension_verification.model_gateway.gateway import (
     PROMPT_RELATIONSHIP_VALIDATOR_VERSIONS,
 )
 from comprehension_verification.rehearsal import blueprint_review_is_approvable
+from comprehension_verification.validation import build_blueprint_review_preflight
 
 
 EXPECTED_PROMPT_CONTRACTS = {
@@ -119,8 +120,8 @@ def test_registry_is_exact_complete_and_immutable() -> None:
         "P02_RUBRIC_NORMALIZE_V1": "1.1.4",
         "P03_AMBIGUITY_TRIAGE_V1": "1.1.3",
         "P04_BLUEPRINT_BUILD_V1": "1.1.11",
-        "P05_BLUEPRINT_REVIEW_V1": "1.1.7",
-        "P06_EVIDENCE_MAP_V1": "1.1.3",
+        "P05_BLUEPRINT_REVIEW_V1": "1.1.8",
+        "P06_EVIDENCE_MAP_V1": "1.1.4",
         "P07_QUESTION_BUILD_V1": "1.1.3",
         "P08_QUESTION_REVIEW_V1": "1.1.3",
         "P09_GUIDE_BUILD_V1": "1.1.6",
@@ -189,6 +190,9 @@ def test_p05_v117_and_p11_v115_make_root_invariant_handling_explicit() -> None:
     assert "nunca uses REJECT sin un FAIL crítico" in p05
     assert "activity_id exactamente desde activity_spec.activity_id" in p05
     assert "cuando status=READY, usa diagnostics=[]" in p05
+    assert "deterministic_preflight" in p05
+    assert "PLAN_FEASIBILITY debe ser PASS" in p05
+    assert "no recalcules ni contradigas sus booleanos" in p05
 
     p11 = PROMPT_SPECS["P11_SCHEMA_REPAIR_V1"].developer_instruction
     assert "path=/ y error_type=value_error" in p11
@@ -201,6 +205,21 @@ def test_p05_v117_and_p11_v115_make_root_invariant_handling_explicit() -> None:
         "checks[].critical",
     ):
         assert protected_field in p11
+
+
+def test_p06_v114_makes_template_inheritance_and_abstention_exact() -> None:
+    p06 = PROMPT_SPECS["P06_EVIDENCE_MAP_V1"].developer_instruction
+    for exact_rule in (
+        "no es necesario mapear todas sus dimensiones o variantes",
+        "al menos assessment_constraints.question_count oportunidades",
+        "copia literalmente desde ese template cognitive_operation",
+        "activity_priority desde la dimensión padre",
+        "mismo evidence_fit del EvidenceVariantMatch",
+        "claims=[], variant_matches=[] y opportunities=[]",
+        "code sea exactamente igual al status",
+        "retryable=false",
+    ):
+        assert exact_rule in p06
 
 
 def test_p09_v115_makes_all_context_relationships_explicit() -> None:
@@ -954,6 +973,54 @@ def test_p05_reference_failures_have_prompt_local_codes(
     assert captured.value.failure.codes == (expected_code,)
 
 
+def test_p05_rejects_untrusted_preflight_and_output_disagreement() -> None:
+    prompt_id = "P05_BLUEPRINT_REVIEW_V1"
+    request = build_mock_request(prompt_id)
+    assert request.deterministic_preflight == build_blueprint_review_preflight(
+        blueprint=request.blueprint,
+        activity_spec=request.activity_spec,
+        rubric_spec=request.rubric_spec,
+        blueprint_policy=request.blueprint_policy,
+    )
+    forged = request.model_copy(
+        update={
+            "deterministic_preflight": (
+                request.deterministic_preflight.model_copy(
+                    update={"catalog_plan_feasible": False}
+                )
+            )
+        }
+    )
+    with pytest.raises(GatewayContextError) as forged_error:
+        asyncio.run(
+            ModelGateway().invoke(
+                prompt_id,
+                forged,
+                build_trusted_context(forged),
+            )
+        )
+    assert forged_error.value.failure.codes == (
+        ContextFailureCode.P05_PREFLIGHT_MISMATCH,
+    )
+
+    def contradict_preflight(raw: dict) -> None:
+        for check in raw["checks"]:
+            if check["category"] == "PLAN_FEASIBILITY":
+                check.update({"status": "FAIL", "critical": True})
+        raw["approval_recommendation"] = "REJECT"
+
+    gateway = ModelGateway(
+        mock_adapter=ContextBreakingAdapter(
+            prompt_id, contradict_preflight
+        )
+    )
+    with pytest.raises(GatewayContextError) as output_error:
+        _invoke(prompt_id, gateway=gateway)
+    assert output_error.value.failure.codes == (
+        ContextFailureCode.P05_PREFLIGHT_CHECK_MISMATCH,
+    )
+
+
 def test_blueprint_review_matrix_is_exact_and_matches_product_transition() -> None:
     valid = _invoke("P05_BLUEPRINT_REVIEW_V1").output
     raw = valid.model_dump(mode="json")
@@ -984,6 +1051,32 @@ def test_blueprint_review_matrix_is_exact_and_matches_product_transition() -> No
     critical_reject["approval_recommendation"] = "REJECT"
     rejected_review = models.BlueprintReview.model_validate(critical_reject)
     assert blueprint_review_is_approvable(rejected_review) is False
+
+
+def test_p06_rejects_changed_template_inheritance() -> None:
+    def change_inherited_focus(raw: dict) -> None:
+        raw["opportunities"][0]["focus"] = "Foco distinto"
+
+    gateway = ModelGateway(
+        mock_adapter=ContextBreakingAdapter(
+            "P06_EVIDENCE_MAP_V1", change_inherited_focus
+        )
+    )
+    with pytest.raises(GatewayContextError) as captured:
+        _invoke("P06_EVIDENCE_MAP_V1", gateway=gateway)
+    assert captured.value.failure.codes == (
+        ContextFailureCode.P06_REFERENCE_MISMATCH,
+    )
+
+
+def test_p06_nonready_diagnostics_are_canonical_fail_closed() -> None:
+    request = build_mock_request("P06_EVIDENCE_MAP_V1")
+    raw = DeterministicMockAdapter().factory.output_for(
+        "P06_EVIDENCE_MAP_V1", request, MockBehavior.ABSTAIN
+    ).model_dump(mode="json")
+    raw["diagnostics"][0]["retryable"] = True
+    with pytest.raises(ValidationError):
+        models.EvidenceMapPatch.model_validate(raw)
 
 
 def test_p08_cannot_accept_below_trusted_validation_thresholds() -> None:

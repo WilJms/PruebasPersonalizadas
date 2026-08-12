@@ -75,8 +75,8 @@ def test_schema_bundle_has_exact_roots_and_resolvable_refs() -> None:
 
     assert report.root_names == tuple(model.__name__ for model in CONTRACT_MODELS)
     assert len(report.root_names) == EXPECTED_CONTRACT_ROOT_COUNT == 53
-    assert report.definition_count == 140
-    assert report.reference_count == len(references) == 275
+    assert report.definition_count == 141
+    assert report.reference_count == len(references) == 276
     assert bundle["version"] == models.CONTRACT_VERSION == "1.2.0"
     assert models.SCHEMA_VERSION == SCHEMA_VERSION == "1.1.0"
     assert all(reference.startswith("#/$defs/") for _, reference in references)

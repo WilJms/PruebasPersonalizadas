@@ -12,6 +12,7 @@ from comprehension_verification.model_gateway import (
 )
 from comprehension_verification.planning import build_assessment_plan
 from comprehension_verification.validation import (
+    build_blueprint_review_preflight,
     validate_evaluation_guide,
     validate_evidence_map,
     validate_generation_result,
@@ -178,6 +179,12 @@ def test_p04_and_p05_preserve_non_demo_e1_configuration() -> None:
             blueprint=blueprint,
             activity_spec=activity_spec,
             blueprint_policy=policy,
+            deterministic_preflight=build_blueprint_review_preflight(
+                blueprint=blueprint,
+                activity_spec=activity_spec,
+                rubric_spec=None,
+                blueprint_policy=policy,
+            ),
         ),
     )
     assert review.blueprint_id == blueprint.blueprint_id

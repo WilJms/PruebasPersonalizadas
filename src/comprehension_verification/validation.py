@@ -18,12 +18,14 @@ from .contracts import models as m
 
 PROMPT_APPLICATION_VALIDATOR_VERSIONS: Mapping[str, str] = MappingProxyType(
     {
+        "P05_BLUEPRINT_REVIEW_V1": "application-validator-p05/2.1.0",
         "P06_EVIDENCE_MAP_V1": "application-validator-p06/2.0.0",
         "P07_QUESTION_BUILD_V1": "application-validator-p07/2.0.0",
         "P08_QUESTION_REVIEW_V1": "application-validator-p08/2.0.0",
         "P09_GUIDE_BUILD_V1": "application-validator-p09/2.0.0",
     }
 )
+_MAX_BLUEPRINT_PREFLIGHT_STATES = 50_000
 
 
 class ContextValidationError(ValueError):
@@ -121,6 +123,241 @@ def _blueprint_index(
             for template in variant.question_opportunities:
                 templates[template.opportunity_template_id] = template
     return dimensions, variants, templates
+
+
+def build_blueprint_review_preflight(
+    *,
+    blueprint: m.AssessmentBlueprint,
+    activity_spec: m.ActivitySpec,
+    rubric_spec: m.RubricSpec | None,
+    blueprint_policy: m.BlueprintPolicy,
+) -> m.BlueprintReviewPreflight:
+    """Derive the non-semantic P05 facts once, on the trusted server side."""
+
+    constraints = blueprint.assessment_constraints
+    policy_constraints_match = (
+        blueprint.activity_id == activity_spec.activity_id
+        and blueprint_policy.activity_id == activity_spec.activity_id
+        and constraints.question_count == blueprint_policy.question_count
+        and constraints.target_total_minutes
+        == blueprint_policy.target_total_minutes
+        and set(constraints.allowed_response_formats)
+        == set(blueprint_policy.allowed_response_formats)
+        and constraints.minimum_opportunity_quality
+        == blueprint_policy.planning_policy.minimum_opportunity_quality
+        and constraints.max_reserve_opportunities
+        == blueprint_policy.planning_policy.max_reserve_opportunities
+        and set(constraints.priority_criterion_ids)
+        == set(blueprint_policy.priority_criterion_ids)
+        and set(constraints.required_criterion_ids)
+        == set(blueprint_policy.required_criterion_ids)
+        and constraints.structured_justification_policy
+        == blueprint_policy.structured_justification_policy
+    )
+
+    learning_outcome_ids = {
+        item.statement_id for item in activity_spec.learning_outcomes
+    }
+    source_statement_ids = {
+        item.statement_id
+        for collection in (
+            activity_spec.learning_outcomes,
+            activity_spec.expected_products,
+            activity_spec.requirements,
+        )
+        for item in collection
+    }
+    rubric_criterion_ids = (
+        {item.criterion_id for item in rubric_spec.criteria}
+        if rubric_spec is not None
+        else set()
+    )
+    allowed_criterion_ids = rubric_criterion_ids or source_statement_ids
+    verifiable_criterion_ids = (
+        {
+            item.criterion_id
+            for item in rubric_spec.criteria
+            if item.verification_fit != "NOT_VERIFIABLE"
+        }
+        if rubric_spec is not None
+        else set()
+    )
+    blueprint_criterion_ids = {
+        criterion_id
+        for dimension in blueprint.dimensions
+        for criterion_id in dimension.criterion_ids
+    }
+    blueprint_learning_outcome_ids = {
+        outcome_id
+        for dimension in blueprint.dimensions
+        for outcome_id in dimension.learning_outcome_ids
+    }
+    references_are_source_bound = all(
+        set(dimension.criterion_ids).issubset(allowed_criterion_ids)
+        and set(dimension.learning_outcome_ids).issubset(
+            learning_outcome_ids
+        )
+        for dimension in blueprint.dimensions
+    )
+    source_coverage_complete = (
+        references_are_source_bound
+        and verifiable_criterion_ids.issubset(blueprint_criterion_ids)
+        and learning_outcome_ids.issubset(
+            blueprint_learning_outcome_ids
+        )
+        and set(blueprint_policy.required_criterion_ids).issubset(
+            blueprint_criterion_ids
+        )
+        and set(blueprint_policy.priority_criterion_ids).union(
+            blueprint_policy.required_criterion_ids
+        ).issubset(allowed_criterion_ids)
+    )
+
+    catalog = [
+        (dimension, template)
+        for dimension in blueprint.dimensions
+        for variant in dimension.evidence_variants
+        for template in variant.question_opportunities
+    ]
+    allowed_formats = set(constraints.allowed_response_formats)
+    format_feasible = all(
+        set(template.allowed_response_formats).issubset(allowed_formats)
+        for _, template in catalog
+    )
+    eligible = [
+        (dimension, template)
+        for dimension, template in catalog
+        if template.minimum_quality
+        >= constraints.minimum_opportunity_quality
+        and set(template.allowed_response_formats).issubset(allowed_formats)
+    ]
+    catalog_size_sufficient = len(eligible) >= constraints.question_count
+    time_feasible = catalog_size_sufficient and (
+        sum(
+            sorted(template.target_minutes for _, template in eligible)[
+                : constraints.question_count
+            ]
+        )
+        <= constraints.target_total_minutes
+    )
+
+    justification = constraints.structured_justification_policy
+    required_justification_templates = {
+        template.opportunity_template_id
+        for _, template in catalog
+        if template.student_justification_required
+    }
+    if justification.mode == m.StructuredJustificationMode.ALL:
+        expected_justification_templates = {
+            template.opportunity_template_id for _, template in catalog
+        }
+    elif justification.mode == m.StructuredJustificationMode.SELECTED:
+        expected_justification_templates = set(
+            justification.selected_opportunity_template_ids
+        )
+    else:
+        expected_justification_templates = set()
+    justification_matrix_valid = (
+        required_justification_templates
+        == expected_justification_templates
+    )
+
+    required_criterion_ids = set(constraints.required_criterion_ids)
+    required_coverage_feasible = not required_criterion_ids
+    if required_criterion_ids and catalog_size_sufficient:
+        states: dict[tuple[int, frozenset[str]], int] = {
+            (0, frozenset()): 0
+        }
+        for dimension, template in eligible:
+            additions: dict[tuple[int, frozenset[str]], int] = {}
+            covered_here = frozenset(dimension.criterion_ids).intersection(
+                required_criterion_ids
+            )
+            for (count, covered), minutes in tuple(states.items()):
+                if count >= constraints.question_count:
+                    continue
+                key = (count + 1, covered.union(covered_here))
+                candidate_minutes = minutes + template.target_minutes
+                if candidate_minutes <= constraints.target_total_minutes:
+                    additions[key] = min(
+                        candidate_minutes,
+                        additions.get(key, candidate_minutes),
+                        states.get(key, candidate_minutes),
+                    )
+            if len(states) + len(additions) > (
+                _MAX_BLUEPRINT_PREFLIGHT_STATES
+            ):
+                states = {}
+                break
+            states.update(additions)
+        required_coverage_feasible = any(
+            count == constraints.question_count
+            and required_criterion_ids.issubset(covered)
+            for count, covered in states
+        )
+
+    catalog_plan_feasible = all(
+        (
+            policy_constraints_match,
+            source_coverage_complete,
+            catalog_size_sufficient,
+            time_feasible,
+            format_feasible,
+            justification_matrix_valid,
+            required_coverage_feasible,
+        )
+    )
+    return m.BlueprintReviewPreflight(
+        blueprint_id=blueprint.blueprint_id,
+        blueprint_version=blueprint.blueprint_version,
+        policy_constraints_match=policy_constraints_match,
+        source_coverage_complete=source_coverage_complete,
+        catalog_size_sufficient=catalog_size_sufficient,
+        time_feasible=time_feasible,
+        format_feasible=format_feasible,
+        justification_matrix_valid=justification_matrix_valid,
+        catalog_plan_feasible=catalog_plan_feasible,
+    )
+
+
+def validate_blueprint_review_preflight_checks(
+    review: m.BlueprintReview,
+    preflight: m.BlueprintReviewPreflight,
+) -> None:
+    """Keep deterministic P05 categories aligned with their server facts."""
+
+    checks = {check.category: check for check in review.checks}
+    deterministic_results = {
+        "COVERAGE": preflight.source_coverage_complete,
+        "TIME": preflight.time_feasible,
+        "FORMAT_FEASIBILITY": preflight.format_feasible,
+        "OPPORTUNITY_CATALOG": (
+            preflight.catalog_size_sufficient
+            and preflight.justification_matrix_valid
+        ),
+        "PLAN_FEASIBILITY": preflight.catalog_plan_feasible,
+    }
+    for category, passed in deterministic_results.items():
+        check = checks.get(category)
+        if check is None:
+            raise ContextValidationError(
+                "BLUEPRINT_REVIEW_PREFLIGHT_MISMATCH",
+                "P05 omitted a deterministic review category",
+            )
+        expected_status = (
+            m.ReviewCheckStatus.PASS
+            if passed
+            else m.ReviewCheckStatus.FAIL
+        )
+        expected_critical = not passed
+        if (
+            check.status != expected_status
+            or check.critical != expected_critical
+        ):
+            raise ContextValidationError(
+                "BLUEPRINT_REVIEW_PREFLIGHT_MISMATCH",
+                "P05 contradicted a deterministic preflight fact",
+            )
 
 
 def validate_evidence_map(

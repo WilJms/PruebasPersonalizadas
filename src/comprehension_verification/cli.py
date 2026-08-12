@@ -48,6 +48,7 @@ from .parsers import PARSER_VERSION, ParsedArtifact, SafeParserService
 from .planning import PLANNER_VERSION, build_assessment_plan
 from .storage import LocalArtifactStore
 from .validation import (
+    build_blueprint_review_preflight,
     validate_assessment_plan,
     validate_evaluation_guide,
     validate_evidence_map,
@@ -509,6 +510,14 @@ async def _run_synthetic(case: str, output: Path) -> int:
                     activity_spec=activity_spec,
                     rubric_spec=rubric_spec,
                     blueprint_policy=policy,
+                    deterministic_preflight=(
+                        build_blueprint_review_preflight(
+                            blueprint=blueprint,
+                            activity_spec=activity_spec,
+                            rubric_spec=rubric_spec,
+                            blueprint_policy=policy,
+                        )
+                    ),
                 ),
                 fixture=fixture,
             )

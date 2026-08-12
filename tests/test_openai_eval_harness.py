@@ -104,6 +104,9 @@ def test_historical_billable_gates_are_permanently_closed(mode: str) -> None:
 
 def test_product_rehearsal_fixture_is_synthetic_and_versioned() -> None:
     raw = json.loads(FIXTURE.read_text(encoding="utf-8"))
+    assert raw["schema_version"] == (
+        "stage2-product-rehearsal-fixture/1.1.0"
+    )
     assert raw["classification"] == "SYNTHETIC_ONLY_NO_STUDENT_DATA"
     assert set(raw["checkpoints"]) == {"A", "B", "C", "D"}
     assert [item["scenario_id"] for item in raw["scenarios"]] == [
@@ -111,6 +114,11 @@ def test_product_rehearsal_fixture_is_synthetic_and_versioned() -> None:
         VARIANT_SCENARIO_ID,
     ]
     assert all(value is False for value in raw["invariants"].values())
+    assert raw["integrated_submission_shape"] == {
+        "evidence_units": 3,
+        "artifacts": 2,
+        "data_classification": "SYNTHETIC_ONLY_NO_STUDENT_DATA",
+    }
 
 
 @pytest.mark.parametrize(
@@ -125,6 +133,13 @@ def test_product_checkpoints_validate_as_canonical_roots(
     assert m.QuestionBuildRequest.model_validate(checkpoints.p07_request)
     assert m.QuestionReviewRequest.model_validate(checkpoints.p08_request)
     assert m.GuideBuildRequest.model_validate(checkpoints.p09_request)
+    assert len(checkpoints.p06_request.evidence_bundle.evidence_units) == 3
+    assert len(
+        {
+            item.artifact_id
+            for item in checkpoints.p06_request.evidence_bundle.evidence_units
+        }
+    ) == 2
     assert set(checkpoints.hashes) == {
         "post_p03",
         "blueprint_valid",

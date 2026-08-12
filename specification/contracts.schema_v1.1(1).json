@@ -1726,6 +1726,71 @@
       "title": "BlueprintReviewCheck",
       "type": "object"
     },
+    "BlueprintReviewPreflight": {
+      "additionalProperties": false,
+      "description": "Server-derived facts that P05 must not ask the model to recompute.",
+      "properties": {
+        "schema_version": {
+          "const": "1.1.0",
+          "default": "1.1.0",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "blueprint_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Blueprint Id",
+          "type": "string"
+        },
+        "blueprint_version": {
+          "minimum": 1,
+          "title": "Blueprint Version",
+          "type": "integer"
+        },
+        "policy_constraints_match": {
+          "title": "Policy Constraints Match",
+          "type": "boolean"
+        },
+        "source_coverage_complete": {
+          "title": "Source Coverage Complete",
+          "type": "boolean"
+        },
+        "catalog_size_sufficient": {
+          "title": "Catalog Size Sufficient",
+          "type": "boolean"
+        },
+        "time_feasible": {
+          "title": "Time Feasible",
+          "type": "boolean"
+        },
+        "format_feasible": {
+          "title": "Format Feasible",
+          "type": "boolean"
+        },
+        "justification_matrix_valid": {
+          "title": "Justification Matrix Valid",
+          "type": "boolean"
+        },
+        "catalog_plan_feasible": {
+          "title": "Catalog Plan Feasible",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "blueprint_id",
+        "blueprint_version",
+        "policy_constraints_match",
+        "source_coverage_complete",
+        "catalog_size_sufficient",
+        "time_feasible",
+        "format_feasible",
+        "justification_matrix_valid",
+        "catalog_plan_feasible"
+      ],
+      "title": "BlueprintReviewPreflight",
+      "type": "object"
+    },
     "BlueprintReviewRequest": {
       "additionalProperties": false,
       "properties": {
@@ -1762,12 +1827,16 @@
         },
         "blueprint_policy": {
           "$ref": "#/$defs/BlueprintPolicy"
+        },
+        "deterministic_preflight": {
+          "$ref": "#/$defs/BlueprintReviewPreflight"
         }
       },
       "required": [
         "blueprint",
         "activity_spec",
-        "blueprint_policy"
+        "blueprint_policy",
+        "deterministic_preflight"
       ],
       "title": "BlueprintReviewRequest",
       "type": "object"
