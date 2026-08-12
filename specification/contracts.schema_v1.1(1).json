@@ -6741,6 +6741,7 @@
           "type": "array"
         },
         "evidence_ids": {
+          "description": "Only IDs from generation_result.candidate.evidence_ids are authorized; IDs present only elsewhere in the request are forbidden. Use [] when no evidence ID is needed.",
           "items": {
             "maxLength": 128,
             "minLength": 3,
@@ -6752,6 +6753,7 @@
           "type": "array"
         },
         "source_ids": {
+          "description": "Only IDs from generation_result.candidate.course_source_ids are authorized; IDs present only elsewhere in the request are forbidden. Use [] when no source ID is needed.",
           "items": {
             "maxLength": 128,
             "minLength": 3,

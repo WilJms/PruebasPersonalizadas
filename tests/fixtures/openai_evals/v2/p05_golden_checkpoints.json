@@ -1,9 +1,9 @@
 {
-  "schema_version": "stage2-p05-golden-checkpoints/1.0.0",
+  "schema_version": "stage2-p05-golden-checkpoints/1.1.0",
   "classification": "SYNTHETIC_ONLY_NO_STUDENT_DATA",
   "construct": "Comprensión causal y verificable del mecanismo de invalidación de caché cuando cambia la fuente.",
   "golden_positive": {
-    "expected_recommendation": "APPROVE",
+    "expected_transition": "APPROVABLE",
     "semantic_review": {
       "status": "SEMANTICALLY_REVIEWED_SYNTHETIC_FIXTURE",
       "reviewed_on": "2026-08-12",
@@ -166,7 +166,14 @@
   },
   "golden_negative": {
     "expected_recommendation": "REJECT",
-    "expected_critical_category": "PLAN_FEASIBILITY",
+    "expected_critical_categories": ["PLAN_FEASIBILITY"],
+    "expected_deterministic_checks": {
+      "COVERAGE": {"status": "PASS", "critical": false},
+      "TIME": {"status": "PASS", "critical": false},
+      "FORMAT_FEASIBILITY": {"status": "PASS", "critical": false},
+      "OPPORTUNITY_CATALOG": {"status": "PASS", "critical": false},
+      "PLAN_FEASIBILITY": {"status": "FAIL", "critical": true}
+    },
     "expected_failed_preflight_fields": [
       "policy_constraints_match",
       "catalog_plan_feasible"

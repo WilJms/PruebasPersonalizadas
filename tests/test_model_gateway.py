@@ -123,7 +123,7 @@ def test_registry_is_exact_complete_and_immutable() -> None:
         "P05_BLUEPRINT_REVIEW_V1": "1.1.8",
         "P06_EVIDENCE_MAP_V1": "1.1.5",
         "P07_QUESTION_BUILD_V1": "1.1.4",
-        "P08_QUESTION_REVIEW_V1": "1.1.4",
+        "P08_QUESTION_REVIEW_V1": "1.1.5",
         "P09_GUIDE_BUILD_V1": "1.1.6",
         "P10_ENRICHED_CONTEXT_V1": "1.1.3",
         "P11_SCHEMA_REPAIR_V1": "1.1.5",
@@ -224,7 +224,7 @@ def test_p06_v115_makes_planner_eligibility_and_abstention_exact() -> None:
         assert exact_rule in p06
 
 
-def test_p07_p08_v114_bind_identities_and_separate_global_notices() -> None:
+def test_p07_v114_p08_v115_bind_candidate_boundary() -> None:
     p07 = PROMPT_SPECS["P07_QUESTION_BUILD_V1"].developer_instruction
     p08 = PROMPT_SPECS["P08_QUESTION_REVIEW_V1"].developer_instruction
     for exact_rule in (
@@ -238,8 +238,31 @@ def test_p07_p08_v114_bind_identities_and_separate_global_notices() -> None:
         "review.candidate_id exactamente desde generation_result.candidate.candidate_id",
         "nunca inventes candidate_id",
         "critical_failure_codes estables",
+        "review.evidence_ids debe ser un subconjunto de generation_result.candidate.evidence_ids",
+        "review.source_ids debe ser un subconjunto de generation_result.candidate.course_source_ids",
+        "aparezca solo en evidence_bundle u opportunity no lo autoriza",
+        "usa [] en el campo correspondiente",
+        "nunca amplía su frontera",
     ):
         assert exact_rule in p08
+
+
+def test_p08_schema_describes_candidate_only_review_references() -> None:
+    properties = models.QuestionSemanticReview.model_json_schema()["properties"]
+    evidence_description = properties["evidence_ids"]["description"]
+    source_description = properties["source_ids"]["description"]
+    assert "generation_result.candidate.evidence_ids" in evidence_description
+    assert "present only elsewhere in the request are forbidden" in (
+        evidence_description
+    )
+    assert "Use []" in evidence_description
+    assert "generation_result.candidate.course_source_ids" in (
+        source_description
+    )
+    assert "present only elsewhere in the request are forbidden" in (
+        source_description
+    )
+    assert "Use []" in source_description
 
 
 def test_p06_request_binds_planning_policy_to_blueprint_constraints() -> None:

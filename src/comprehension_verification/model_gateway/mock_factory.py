@@ -1347,33 +1347,36 @@ class DeterministicMockFactory:
             return _dynamic_blueprint(request)
         if prompt_id == "P05_BLUEPRINT_REVIEW_V1":
             blueprint = request.blueprint
-            catalog_size = sum(
-                len(variant.question_opportunities)
-                for dimension in blueprint.dimensions
-                for variant in dimension.evidence_variants
+            from comprehension_verification.validation import (
+                blueprint_review_preflight_expected_checks,
             )
-            constraints_match = (
-                blueprint.assessment_constraints.question_count
-                == request.blueprint_policy.question_count
-                and blueprint.assessment_constraints.target_total_minutes
-                == request.blueprint_policy.target_total_minutes
-                and set(blueprint.assessment_constraints.allowed_response_formats)
-                == set(request.blueprint_policy.allowed_response_formats)
-                and blueprint.assessment_constraints.minimum_opportunity_quality
-                == request.blueprint_policy.planning_policy.minimum_opportunity_quality
-                and blueprint.assessment_constraints.max_reserve_opportunities
-                == request.blueprint_policy.planning_policy.max_reserve_opportunities
-                and blueprint.assessment_constraints.priority_criterion_ids
-                == request.blueprint_policy.priority_criterion_ids
-                and blueprint.assessment_constraints.required_criterion_ids
-                == request.blueprint_policy.required_criterion_ids
-                and blueprint.assessment_constraints.structured_justification_policy
-                == request.blueprint_policy.structured_justification_policy
+
+            deterministic_checks = blueprint_review_preflight_expected_checks(
+                request.deterministic_preflight
             )
-            catalog_sufficient = (
-                catalog_size >= blueprint.assessment_constraints.question_count
+            approved = not any(
+                critical
+                for _status, critical in deterministic_checks.values()
             )
-            approved = constraints_match and catalog_sufficient
+
+            def deterministic_check(
+                category: str,
+            ) -> tuple[models.ReviewCheckStatus, bool]:
+                return deterministic_checks[category]
+
+            time_status, time_critical = deterministic_check("TIME")
+            format_status, format_critical = deterministic_check(
+                "FORMAT_FEASIBILITY"
+            )
+            catalog_status, catalog_critical = deterministic_check(
+                "OPPORTUNITY_CATALOG"
+            )
+            plan_status, plan_critical = deterministic_check(
+                "PLAN_FEASIBILITY"
+            )
+            coverage_status, coverage_critical = deterministic_check(
+                "COVERAGE"
+            )
             return models.BlueprintReview(
                 activity_id=request.activity_spec.activity_id,
                 blueprint_id=blueprint.blueprint_id,
@@ -1398,12 +1401,13 @@ class DeterministicMockFactory:
                     models.BlueprintReviewCheck(
                         check_code="BLUEPRINT_CONCEPTUAL_COVERAGE",
                         category="COVERAGE",
-                        status="PASS",
+                        status=coverage_status,
                         message=(
                             "Las dimensiones cubren conceptualmente las fuentes; "
                             "la selección exacta pertenece al planificador."
                         ),
                         referenced_ids=[blueprint.blueprint_id],
+                        critical=coverage_critical,
                     ),
                     models.BlueprintReviewCheck(
                         check_code="BLUEPRINT_CATALOG_DIVERSITY",
@@ -1425,54 +1429,54 @@ class DeterministicMockFactory:
                     models.BlueprintReviewCheck(
                         check_code="BLUEPRINT_TIME",
                         category="TIME",
-                        status=("PASS" if approved else "FAIL"),
+                        status=time_status,
                         message="El catálogo conserva el límite temporal confiable.",
                         referenced_ids=[blueprint.blueprint_id],
-                        critical=not approved,
+                        critical=time_critical,
                     ),
                     models.BlueprintReviewCheck(
                         check_code="BLUEPRINT_FORMAT_FEASIBILITY",
                         category="FORMAT_FEASIBILITY",
-                        status=("PASS" if constraints_match else "FAIL"),
+                        status=format_status,
                         message="Los formatos pertenecen a la política confiable.",
                         referenced_ids=[blueprint.blueprint_id],
-                        critical=not constraints_match,
+                        critical=format_critical,
                     ),
                     models.BlueprintReviewCheck(
                         check_code="BLUEPRINT_OPPORTUNITY_CATALOG",
                         category="OPPORTUNITY_CATALOG",
-                        status=("PASS" if catalog_sufficient else "FAIL"),
+                        status=catalog_status,
                         message=(
                             "El catálogo contiene suficientes oportunidades "
                             "independientemente del número solicitado."
-                            if catalog_sufficient
+                            if catalog_status == models.ReviewCheckStatus.PASS
                             else "El catálogo no contiene suficientes oportunidades."
                         ),
                         referenced_ids=[blueprint.blueprint_id],
                         correction=(
                             None
-                            if catalog_sufficient
+                            if catalog_status == models.ReviewCheckStatus.PASS
                             else "Regenerar suficientes oportunidades elegibles."
                         ),
-                        critical=not catalog_sufficient,
+                        critical=catalog_critical,
                     ),
                     models.BlueprintReviewCheck(
                         check_code="BLUEPRINT_PLAN_FEASIBILITY",
                         category="PLAN_FEASIBILITY",
-                        status=("PASS" if approved else "FAIL"),
+                        status=plan_status,
                         message=(
                             "El catálogo contiene suficientes oportunidades y "
                             "conserva las restricciones configuradas."
-                            if approved
+                            if plan_status == models.ReviewCheckStatus.PASS
                             else "El catálogo o sus restricciones no permiten el plan solicitado."
                         ),
                         referenced_ids=[blueprint.blueprint_id],
                         correction=(
                             None
-                            if approved
+                            if plan_status == models.ReviewCheckStatus.PASS
                             else "Regenerar el catálogo desde la política vigente."
                         ),
-                        critical=not approved,
+                        critical=plan_critical,
                     ),
                     models.BlueprintReviewCheck(
                         check_code="BLUEPRINT_ACCESSIBILITY",

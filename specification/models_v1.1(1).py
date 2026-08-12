@@ -1444,8 +1444,24 @@ class QuestionSemanticReview(StrictModel):
     estimated_minutes: int = Field(ge=1, le=60)
     confidence: Score
     justifications: list[str] = Field(default_factory=list, max_length=20)
-    evidence_ids: list[Id] = Field(default_factory=list, max_length=50)
-    source_ids: list[Id] = Field(default_factory=list, max_length=50)
+    evidence_ids: list[Id] = Field(
+        default_factory=list,
+        max_length=50,
+        description=(
+            "Only IDs from generation_result.candidate.evidence_ids are "
+            "authorized; IDs present only elsewhere in the request are "
+            "forbidden. Use [] when no evidence ID is needed."
+        ),
+    )
+    source_ids: list[Id] = Field(
+        default_factory=list,
+        max_length=50,
+        description=(
+            "Only IDs from generation_result.candidate.course_source_ids are "
+            "authorized; IDs present only elsewhere in the request are "
+            "forbidden. Use [] when no source ID is needed."
+        ),
+    )
     diagnostics: list[Diagnostic] = Field(default_factory=list)
 
 

@@ -21,7 +21,7 @@ from comprehension_verification.model_gateway.prompt_text import (
 )
 
 
-PROMPT_VERSION: Final = "1.1.13"
+PROMPT_VERSION: Final = "1.1.14"
 SYSTEM_PROMPT_ID: Final = "SYS_EVIDENCE_BOUND_V1"
 P11_SYSTEM_PROMPT_ID: Final = "SYS_SCHEMA_REPAIR_V1"
 PROMPT_ENTRY_VERSIONS: Final[Mapping[str, str]] = MappingProxyType(
@@ -42,7 +42,9 @@ PROMPT_ENTRY_VERSIONS: Final[Mapping[str, str]] = MappingProxyType(
         # facts become typed input and template inheritance becomes exhaustive.
         # Execution discovery advances P06-P08 together: P06 receives the
         # planner eligibility floor, while P07/P08 bind every root identity and
-        # keep global security notices out of generated free text.
+        # keep global security notices out of generated free text. The final
+        # P08 closure makes its candidate-only evidence/source subsets explicit
+        # without changing the existing fail-closed relationship validator.
         "P01_ACTIVITY_SPEC_V1": "1.1.3",
         "P02_RUBRIC_NORMALIZE_V1": "1.1.4",
         "P03_AMBIGUITY_TRIAGE_V1": "1.1.3",
@@ -50,7 +52,7 @@ PROMPT_ENTRY_VERSIONS: Final[Mapping[str, str]] = MappingProxyType(
         "P05_BLUEPRINT_REVIEW_V1": "1.1.8",
         "P06_EVIDENCE_MAP_V1": "1.1.5",
         "P07_QUESTION_BUILD_V1": "1.1.4",
-        "P08_QUESTION_REVIEW_V1": "1.1.4",
+        "P08_QUESTION_REVIEW_V1": "1.1.5",
         "P09_GUIDE_BUILD_V1": "1.1.6",
         "P10_ENRICHED_CONTEXT_V1": "1.1.3",
         "P11_SCHEMA_REPAIR_V1": "1.1.5",
@@ -70,6 +72,7 @@ PROMPT_SCHEMA_COMPATIBILITY: Final = frozenset(
         ("1.1.11", "1.1.0"),
         ("1.1.12", "1.1.0"),
         ("1.1.13", "1.1.0"),
+        ("1.1.14", "1.1.0"),
     }
 )
 

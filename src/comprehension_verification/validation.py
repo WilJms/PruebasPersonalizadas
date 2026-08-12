@@ -18,7 +18,7 @@ from .contracts import models as m
 
 PROMPT_APPLICATION_VALIDATOR_VERSIONS: Mapping[str, str] = MappingProxyType(
     {
-        "P05_BLUEPRINT_REVIEW_V1": "application-validator-p05/2.1.0",
+        "P05_BLUEPRINT_REVIEW_V1": "application-validator-p05/2.2.0",
         "P06_EVIDENCE_MAP_V1": "application-validator-p06/2.1.0",
         "P07_QUESTION_BUILD_V1": "application-validator-p07/2.0.0",
         "P08_QUESTION_REVIEW_V1": "application-validator-p08/2.0.0",
@@ -327,6 +327,30 @@ def validate_blueprint_review_preflight_checks(
     """Keep deterministic P05 categories aligned with their server facts."""
 
     checks = {check.category: check for check in review.checks}
+    for category, (expected_status, expected_critical) in (
+        blueprint_review_preflight_expected_checks(preflight).items()
+    ):
+        check = checks.get(category)
+        if check is None:
+            raise ContextValidationError(
+                "BLUEPRINT_REVIEW_PREFLIGHT_MISMATCH",
+                "P05 omitted a deterministic review category",
+            )
+        if (
+            check.status != expected_status
+            or check.critical != expected_critical
+        ):
+            raise ContextValidationError(
+                "BLUEPRINT_REVIEW_PREFLIGHT_MISMATCH",
+                "P05 contradicted a deterministic preflight fact",
+            )
+
+
+def blueprint_review_preflight_expected_checks(
+    preflight: m.BlueprintReviewPreflight,
+) -> dict[str, tuple[m.ReviewCheckStatus, bool]]:
+    """Return the product-owned status and criticality for P05 facts."""
+
     deterministic_results = {
         "COVERAGE": preflight.source_coverage_complete,
         "TIME": preflight.time_feasible,
@@ -337,27 +361,15 @@ def validate_blueprint_review_preflight_checks(
         ),
         "PLAN_FEASIBILITY": preflight.catalog_plan_feasible,
     }
-    for category, passed in deterministic_results.items():
-        check = checks.get(category)
-        if check is None:
-            raise ContextValidationError(
-                "BLUEPRINT_REVIEW_PREFLIGHT_MISMATCH",
-                "P05 omitted a deterministic review category",
-            )
-        expected_status = (
+    return {
+        category: (
             m.ReviewCheckStatus.PASS
             if passed
-            else m.ReviewCheckStatus.FAIL
+            else m.ReviewCheckStatus.FAIL,
+            not passed,
         )
-        expected_critical = not passed
-        if (
-            check.status != expected_status
-            or check.critical != expected_critical
-        ):
-            raise ContextValidationError(
-                "BLUEPRINT_REVIEW_PREFLIGHT_MISMATCH",
-                "P05 contradicted a deterministic preflight fact",
-            )
+        for category, passed in deterministic_results.items()
+    }
 
 
 def validate_evidence_map(

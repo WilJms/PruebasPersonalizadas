@@ -1,5 +1,5 @@
 {
-  "schema_version": "stage2-product-rehearsal-fixture/1.3.0",
+  "schema_version": "stage2-product-rehearsal-fixture/1.4.0",
   "classification": "SYNTHETIC_ONLY_NO_STUDENT_DATA",
   "generator": "comprehension_verification.rehearsal.build_rehearsal_checkpoints",
   "p05_golden_fixture": "tests/fixtures/openai_evals/v2/p05_golden_checkpoints.json",

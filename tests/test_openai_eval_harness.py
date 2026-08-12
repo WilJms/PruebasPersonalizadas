@@ -32,6 +32,7 @@ from comprehension_verification.rehearsal import (
     build_p05_golden_negative_request,
     build_rehearsal_checkpoints,
     evaluate_p05_golden_negative,
+    evaluate_p05_golden_positive,
     p08_decision_diagnostics,
     rehearsal_boundary_material,
     run_offline_convergence,
@@ -112,7 +113,7 @@ def test_historical_billable_gates_are_permanently_closed(mode: str) -> None:
 def test_product_rehearsal_fixture_is_synthetic_and_versioned() -> None:
     raw = json.loads(FIXTURE.read_text(encoding="utf-8"))
     assert raw["schema_version"] == (
-        "stage2-product-rehearsal-fixture/1.3.0"
+        "stage2-product-rehearsal-fixture/1.4.0"
     )
     assert raw["classification"] == "SYNTHETIC_ONLY_NO_STUDENT_DATA"
     assert raw["p05_golden_fixture"] == (
@@ -145,7 +146,7 @@ def test_product_rehearsal_fixture_is_synthetic_and_versioned() -> None:
 
 def test_p05_golden_positive_is_semantically_qualified_and_negative_is_known() -> None:
     raw = json.loads(P05_GOLDEN_FIXTURE_PATH.read_text(encoding="utf-8"))
-    assert raw["schema_version"] == "stage2-p05-golden-checkpoints/1.0.0"
+    assert raw["schema_version"] == "stage2-p05-golden-checkpoints/1.1.0"
     assert raw["classification"] == "SYNTHETIC_ONLY_NO_STUDENT_DATA"
     semantic_review = raw["golden_positive"]["semantic_review"]
     assert semantic_review["status"] == (
@@ -165,6 +166,15 @@ def test_p05_golden_positive_is_semantically_qualified_and_negative_is_known() -
     assert positive.blueprint.dimensions[0].name == (
         "Explicación causal de la invalidación de caché"
     )
+    positive_result = evaluate_p05_golden_positive()
+    assert positive_result["status"] == "PASS"
+    assert positive_result["expected_transition"] == "APPROVABLE"
+    assert positive_result["actual_transition"] == "APPROVABLE"
+    assert positive_result["actual_status"] == "READY"
+    assert positive_result["critical_categories"] == []
+    assert positive_result["actual_recommendation"] != "REJECT"
+    assert positive_result["product_validator_status"] == "PASS"
+    assert positive_result["provider_requests"] == 0
 
     negative = build_p05_golden_negative_request()
     assert negative.deterministic_preflight.policy_constraints_match is False
@@ -172,6 +182,20 @@ def test_p05_golden_positive_is_semantically_qualified_and_negative_is_known() -
     result = evaluate_p05_golden_negative()
     assert result["status"] == "PASS"
     assert result["actual_recommendation"] == "REJECT"
+    assert result["critical_categories"] == ["PLAN_FEASIBILITY"]
+    assert result["actual_deterministic_checks"] == {
+        "COVERAGE": {"status": "PASS", "critical": False},
+        "TIME": {"status": "PASS", "critical": False},
+        "FORMAT_FEASIBILITY": {"status": "PASS", "critical": False},
+        "OPPORTUNITY_CATALOG": {"status": "PASS", "critical": False},
+        "PLAN_FEASIBILITY": {"status": "FAIL", "critical": True},
+    }
+    assert (
+        result["actual_deterministic_checks"]
+        == result["expected_deterministic_checks"]
+        == result["product_expected_deterministic_checks"]
+    )
+    assert result["product_validator_status"] == "PASS"
     assert result["provider_requests"] == 0
 
 

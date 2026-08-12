@@ -262,6 +262,8 @@ Devuelve QuestionGenerationResult con context_mode=CLOSED.
 
 Copia submission_id exactamente desde generation_result.submission_id y opportunity_id exactamente desde opportunity.opportunity_id. Si generation_result.candidate existe, copia review.candidate_id exactamente desde generation_result.candidate.candidate_id. Si candidate es null, devuelve NEEDS_REVIEW con review=null y un Diagnostic completo; nunca inventes candidate_id. No crees ni reformatees IDs.
 
+P08 revisa únicamente generation_result.candidate y nunca amplía su frontera. review.evidence_ids debe ser un subconjunto de generation_result.candidate.evidence_ids y review.source_ids debe ser un subconjunto de generation_result.candidate.course_source_ids. Que un ID aparezca solo en evidence_bundle u opportunity no lo autoriza para el review. Si no necesitas citar evidencia o fuentes en el review, usa [] en el campo correspondiente.
+
 Puntúa 0-1 y justifica brevemente con IDs: groundedness, anchor_sufficiency, criterion_relevance, answerability desde fuentes autorizadas, cognitive_demand, submission_specificity, clarity, accessibility, discriminative_potential y guide_observability.
 
 Aplica FAIL crítico si:

@@ -38,8 +38,10 @@ from .observability import p08_decision_diagnostics
 from .validation import (
     ContextValidationError,
     PROMPT_APPLICATION_VALIDATOR_VERSIONS,
+    blueprint_review_preflight_expected_checks,
     build_blueprint_review_preflight,
     validate_assessment_plan,
+    validate_blueprint_review_preflight_checks,
     validate_evaluation_guide,
     validate_evidence_map,
     validate_generation_result,
@@ -52,8 +54,8 @@ from .web.workflows import (
 )
 
 
-REHEARSAL_VERSION = "stage2-product-rehearsal/1.4.0"
-REHEARSAL_REPORT_VERSION = "stage2-convergence-report/1.4.0"
+REHEARSAL_VERSION = "stage2-product-rehearsal/1.5.0"
+REHEARSAL_REPORT_VERSION = "stage2-convergence-report/1.5.0"
 BASE_SCENARIO_ID = "synthetic-open-short-v1"
 VARIANT_SCENARIO_ID = "synthetic-choice-justification-v1"
 P05_GOLDEN_FIXTURE_PATH = (
@@ -201,7 +203,7 @@ def _base_p04_request() -> m.BlueprintBuildRequest:
 def _p05_golden_fixture() -> dict[str, Any]:
     raw = json.loads(P05_GOLDEN_FIXTURE_PATH.read_text(encoding="utf-8"))
     if (
-        raw.get("schema_version") != "stage2-p05-golden-checkpoints/1.0.0"
+        raw.get("schema_version") != "stage2-p05-golden-checkpoints/1.1.0"
         or raw.get("classification") != "SYNTHETIC_ONLY_NO_STUDENT_DATA"
     ):
         raise ValueError("P05 golden fixture metadata is not approved")
@@ -489,6 +491,98 @@ def build_p05_golden_negative_request() -> m.BlueprintReviewRequest:
     )
 
 
+def _p05_expected_check_matrix(
+    preflight: m.BlueprintReviewPreflight,
+) -> dict[str, dict[str, Any]]:
+    return {
+        category: {
+            "status": status.value,
+            "critical": critical,
+        }
+        for category, (status, critical) in (
+            blueprint_review_preflight_expected_checks(preflight).items()
+        )
+    }
+
+
+def _p05_actual_check_matrix(
+    review: m.BlueprintReview,
+    preflight: m.BlueprintReviewPreflight,
+) -> dict[str, dict[str, Any]]:
+    checks = {check.category: check for check in review.checks}
+    return {
+        category: {
+            "status": checks[category].status.value,
+            "critical": checks[category].critical,
+        }
+        for category in blueprint_review_preflight_expected_checks(preflight)
+        if category in checks
+    }
+
+
+def evaluate_p05_golden_positive() -> dict[str, Any]:
+    """Prove the positive product transition without requiring APPROVE."""
+
+    fixture = _p05_golden_fixture()
+    expected = fixture["golden_positive"]
+    request = build_rehearsal_checkpoints(BASE_SCENARIO_ID).p05_request
+    review = m.BlueprintReview.model_validate(
+        _validated_mock_output(
+            "P05_BLUEPRINT_REVIEW_V1", request
+        ).model_dump(mode="json")
+    )
+    derived_preflight = build_blueprint_review_preflight(
+        blueprint=request.blueprint,
+        activity_spec=request.activity_spec,
+        rubric_spec=request.rubric_spec,
+        blueprint_policy=request.blueprint_policy,
+    )
+    validator_status = "PASS"
+    try:
+        validate_blueprint_review_preflight_checks(review, derived_preflight)
+    except ContextValidationError:
+        validator_status = "FAIL"
+    critical_categories = sorted(
+        {
+            str(check.category)
+            for check in review.checks
+            if check.critical and check.status == m.ReviewCheckStatus.FAIL
+        }
+    )
+    actual_transition = (
+        "APPROVABLE"
+        if blueprint_review_is_approvable(review)
+        else "NOT_APPROVABLE"
+    )
+    status = (
+        "PASS"
+        if request.deterministic_preflight == derived_preflight
+        and validator_status == "PASS"
+        and actual_transition == expected["expected_transition"]
+        and review.status == m.WorkflowStatus.READY
+        and not critical_categories
+        and review.approval_recommendation
+        != m.BlueprintApprovalRecommendation.REJECT
+        else "FAIL"
+    )
+    return {
+        "check_id": "P05_GOLDEN_POSITIVE_OFFLINE",
+        "status": status,
+        "expected_transition": expected["expected_transition"],
+        "actual_transition": actual_transition,
+        "actual_status": str(review.status),
+        "actual_recommendation": str(review.approval_recommendation),
+        "critical_categories": critical_categories,
+        "product_validator_status": validator_status,
+        "deterministic_checks": _p05_actual_check_matrix(
+            review, derived_preflight
+        ),
+        "input_hash": canonical_hash(request.model_dump(mode="json")),
+        "output_hash": canonical_hash(review.model_dump(mode="json")),
+        "provider_requests": 0,
+    }
+
+
 def evaluate_p05_golden_negative() -> dict[str, Any]:
     """Evaluate the negative offline and return only reproducible metadata."""
 
@@ -500,6 +594,17 @@ def evaluate_p05_golden_negative() -> dict[str, Any]:
             "P05_BLUEPRINT_REVIEW_V1", request
         ).model_dump(mode="json")
     )
+    derived_preflight = build_blueprint_review_preflight(
+        blueprint=request.blueprint,
+        activity_spec=request.activity_spec,
+        rubric_spec=request.rubric_spec,
+        blueprint_policy=request.blueprint_policy,
+    )
+    validator_status = "PASS"
+    try:
+        validate_blueprint_review_preflight_checks(review, derived_preflight)
+    except ContextValidationError:
+        validator_status = "FAIL"
     preflight = request.deterministic_preflight.model_dump(mode="json")
     failed_preflight_fields = sorted(
         key
@@ -513,14 +618,22 @@ def evaluate_p05_golden_negative() -> dict[str, Any]:
             if check.critical and check.status == m.ReviewCheckStatus.FAIL
         }
     )
+    expected_checks = expected["expected_deterministic_checks"]
+    product_expected_checks = _p05_expected_check_matrix(derived_preflight)
+    actual_checks = _p05_actual_check_matrix(review, derived_preflight)
     status = (
         "PASS"
-        if review.approval_recommendation
-        == m.BlueprintApprovalRecommendation.REJECT
+        if request.deterministic_preflight == derived_preflight
+        and validator_status == "PASS"
+        and review.status == m.WorkflowStatus.READY
+        and review.approval_recommendation.value
+        == expected["expected_recommendation"]
         and not blueprint_review_is_approvable(review)
         and failed_preflight_fields
         == sorted(expected["expected_failed_preflight_fields"])
-        and expected["expected_critical_category"] in critical_categories
+        and critical_categories
+        == sorted(expected["expected_critical_categories"])
+        and actual_checks == expected_checks == product_expected_checks
         else "FAIL"
     )
     return {
@@ -528,8 +641,14 @@ def evaluate_p05_golden_negative() -> dict[str, Any]:
         "status": status,
         "expected_recommendation": expected["expected_recommendation"],
         "actual_recommendation": str(review.approval_recommendation),
-        "expected_critical_category": expected["expected_critical_category"],
+        "expected_critical_categories": sorted(
+            expected["expected_critical_categories"]
+        ),
         "critical_categories": critical_categories,
+        "expected_deterministic_checks": expected_checks,
+        "product_expected_deterministic_checks": product_expected_checks,
+        "actual_deterministic_checks": actual_checks,
+        "product_validator_status": validator_status,
         "expected_failed_preflight_fields": sorted(
             expected["expected_failed_preflight_fields"]
         ),
@@ -542,6 +661,7 @@ def evaluate_p05_golden_negative() -> dict[str, Any]:
 
 def rehearsal_boundary_material() -> dict[str, Any]:
     golden_fixture = _p05_golden_fixture()
+    golden_positive = evaluate_p05_golden_positive()
     golden_negative = evaluate_p05_golden_negative()
     checkpoints = {
         scenario: build_rehearsal_checkpoints(scenario).hashes
@@ -589,13 +709,18 @@ def rehearsal_boundary_material() -> dict[str, Any]:
             "positive_review_status": golden_fixture["golden_positive"][
                 "semantic_review"
             ]["status"],
+            "positive_expected_transition": golden_positive[
+                "expected_transition"
+            ],
+            "positive_input_hash": golden_positive["input_hash"],
+            "positive_output_hash": golden_positive["output_hash"],
             "negative_input_hash": golden_negative["input_hash"],
             "negative_output_hash": golden_negative["output_hash"],
             "negative_expected_recommendation": golden_negative[
                 "expected_recommendation"
             ],
-            "negative_expected_critical_category": golden_negative[
-                "expected_critical_category"
+            "negative_expected_critical_categories": golden_negative[
+                "expected_critical_categories"
             ],
         },
         "prompts": prompt_material,
@@ -649,10 +774,14 @@ def _safe_failure(error: Exception, *, stage: str) -> dict[str, Any]:
 
 
 def blueprint_review_is_approvable(review: m.BlueprintReview) -> bool:
-    """Mirror the product transition: only a completed REJECT blocks approval."""
+    """Mirror the product transition without overfitting to APPROVE."""
 
     return (
         review.status == m.WorkflowStatus.READY
+        and not any(
+            check.critical and check.status == m.ReviewCheckStatus.FAIL
+            for check in review.checks
+        )
         and review.approval_recommendation
         != m.BlueprintApprovalRecommendation.REJECT
     )
@@ -1364,7 +1493,10 @@ async def run_offline_convergence() -> dict[str, Any]:
         ),
     ]
     controls = rehearsal.controls()
-    deterministic_checks = [evaluate_p05_golden_negative()]
+    deterministic_checks = [
+        evaluate_p05_golden_positive(),
+        evaluate_p05_golden_negative(),
+    ]
     status = (
         "PASS"
         if all(item.status == "PASS" for item in observations)
@@ -1456,7 +1588,10 @@ async def run_real_convergence(
         ),
     ]
     controls = rehearsal.controls()
-    deterministic_checks = [evaluate_p05_golden_negative()]
+    deterministic_checks = [
+        evaluate_p05_golden_positive(),
+        evaluate_p05_golden_negative(),
+    ]
     controls.update(
         {
             "network_calls": capped_adapter.calls,

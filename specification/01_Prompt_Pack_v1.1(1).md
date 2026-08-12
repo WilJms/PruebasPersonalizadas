@@ -1,12 +1,12 @@
 # Anexo A - Prompt pack operacional
 
-**Versión candidata del pack:** `prompt-pack/1.1.13`
+**Versión candidata del pack:** `prompt-pack/1.1.14`
 **Compatibilidad:** contratos `assessment-contracts/1.1.0`  
 **Perfil de ruta activo:** `LUNA_BASELINE_V1` (ADR-036)
 **Principio:** una tarea semántica por llamada; contenido estudiantil siempre no confiable; structured outputs obligatorios.
 
 Las entradas vigentes son P01 `1.1.3`, P02 `1.1.4`, P03 `1.1.3`, P04
-`1.1.11`, P05 `1.1.8`, P06 `1.1.5`, P07-P08 `1.1.4`, P09 `1.1.6`, P10 `1.1.3` y P11
+`1.1.11`, P05 `1.1.8`, P06 `1.1.5`, P07 `1.1.4`, P08 `1.1.5`, P09 `1.1.6`, P10 `1.1.3` y P11
 `1.1.5`. P04 `1.1.11` refuerza la unicidad global y prohíbe duplicados
 semánticos disfrazados con IDs distintos. P05 `1.1.7` copia las identidades
 del request, limita `referenced_ids` a los roots recibidos y fija una matriz
@@ -14,9 +14,11 @@ total: PASS puro implica `APPROVE`, WARN o FAIL no crítico implica
 `APPROVE_WITH_CHANGES`, y solo un FAIL crítico implica `REJECT`. P11 queda
 reservado a defectos estructurales eliminables sin inventar semántica. Este
 P05 `1.1.8` consume hechos deterministas tipados en vez de recalcularlos;
-P06 `1.1.5` recibe el umbral real de elegibilidad del planner; y P07-P08
-`1.1.4` ligan todas sus identidades y separan los avisos globales de seguridad
-del texto generado.
+P06 `1.1.5` recibe el umbral real de elegibilidad del planner; P07 `1.1.4`
+liga sus identidades y separa los avisos globales de seguridad del texto
+generado; y P08 `1.1.5` limita de forma explícita las referencias del review a
+los `evidence_ids` y `course_source_ids` de la candidata, nunca a IDs presentes
+solamente en el bundle o la oportunidad.
 Este pack conserva ADR-030 y el constructo, y requiere validación offline y real
 antes de build/deploy. Los textos se
 almacenan en un registry inmutable con `prompt_id`, `version`, hash, modelo
@@ -663,6 +665,14 @@ SÍ: “En el fragmento se aplica X antes de Y. ¿Qué función cumple ese orden
 Revisa la pregunta de forma independiente. No mejores ni reescribas una pregunta defectuosa; evalúala.
 
 Copia `submission_id` exactamente desde `generation_result.submission_id` y `opportunity_id` exactamente desde `opportunity.opportunity_id`. Si `generation_result.candidate` existe, copia `review.candidate_id` exactamente desde `generation_result.candidate.candidate_id`. Si `candidate` es `null`, devuelve `NEEDS_REVIEW` con `review=null` y un `Diagnostic` completo; nunca inventes `candidate_id`. No crees ni reformatees IDs.
+
+P08 revisa únicamente `generation_result.candidate` y nunca amplía su frontera.
+Debe cumplirse
+`review.evidence_ids ⊆ generation_result.candidate.evidence_ids` y
+`review.source_ids ⊆ generation_result.candidate.course_source_ids`. Que un ID
+aparezca solamente en `evidence_bundle` u `opportunity` no lo autoriza para el
+review. Si no hace falta citar evidencia o fuentes, usa `[]` en el campo
+correspondiente.
 
 Puntúa 0-1 y justifica brevemente con IDs:
 - groundedness;

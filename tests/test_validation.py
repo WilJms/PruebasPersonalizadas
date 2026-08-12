@@ -301,6 +301,46 @@ def test_review_rejects_widened_evidence_and_changed_estimate() -> None:
         )
 
 
+def test_review_rejects_source_present_outside_candidate() -> None:
+    generation, _, _ = _generation_result()
+    assert generation.candidate is not None
+    candidate = generation.candidate
+    review = m.QuestionReviewResult(
+        submission_id=generation.submission_id,
+        opportunity_id=generation.opportunity_id,
+        status="READY",
+        review=m.QuestionSemanticReview(
+            candidate_id=candidate.candidate_id,
+            decision=m.ReviewDecision.ACCEPT,
+            scores=m.QuestionScores(
+                groundedness=0.95,
+                anchor_sufficiency=0.95,
+                criterion_relevance=0.95,
+                answerability=0.95,
+                cognitive_demand=0.9,
+                submission_specificity=0.9,
+                clarity=0.9,
+                accessibility=0.9,
+                discriminative_potential=0.9,
+                guide_observability=0.9,
+            ),
+            estimated_difficulty=candidate.difficulty,
+            estimated_minutes=candidate.estimated_minutes,
+            confidence=0.95,
+            evidence_ids=list(candidate.evidence_ids),
+            source_ids=["source_only_elsewhere_in_request"],
+        ),
+    )
+    with pytest.raises(ContextValidationError, match="widens candidate sources"):
+        validate_review_result(
+            review,
+            generation_result=generation,
+            validation_policy=m.QuestionValidationPolicy(
+                policy_id="validation_policy_test"
+            ),
+        )
+
+
 def test_review_cannot_accept_below_policy_or_with_critical_failure() -> None:
     generation, _, _ = _generation_result()
     assert generation.candidate is not None
