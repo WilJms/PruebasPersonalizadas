@@ -1,22 +1,36 @@
 # Evals del modelo real
 
-## Resultado vigente — convergencia Fase 2 incompleta (2026-08-12)
+## Resultado vigente — cualificación Luna/high fallida (2026-08-12)
 
-La frontera product-shaped final usa rehearsal/reporte 1.3.0, prompt pack
-1.1.13 y únicamente `gpt-5.6-luna`. El offline pasó sweep P04-P09, dos cadenas
-base y una variante completa con 24 transportes fake. La observación real sobre
-`10d7622a9d278ed9a6d41d1317dd98b7a49c7721` terminó FAIL controlado: sweep P05
-no aprobable, una cadena integrada 8/8, repetición P06
-`P06_REFERENCE_MISMATCH` y variante detenida en P08 no aceptado. Usó 20
-requests, USD 0.10237906, P10/P11/fallback/retries cero, `store=false` y sin
-tools.
+La última remediación focal cerró exclusivamente P08 y el oráculo P05. P08
+`1.1.5` comunica y describe los subconjuntos de evidencia/fuentes de la
+candidata sin relajar `relationship-p08/2.1.0` ni
+`application-validator-p08/2.0.0`. El golden P05
+`stage2-p05-golden-checkpoints/1.1.0` espera `APPROVABLE` en el positivo y usa
+el validator de producto más una matriz exacta en el negativo; ambos pasan
+offline con 0 requests. Rehearsal/reporte son 1.5.0 y el prompt pack es 1.1.14.
 
-Las cuatro rondas reales de convergencia consumieron 60 requests y USD
-0.31022079 calculados. El único P11 ocurrió en la primera ronda y no reapareció
-en las tres fronteras posteriores. No hay dos cadenas reales consecutivas ni
-variante completa, por lo que Luna queda `NEEDS_MORE_EVIDENCE` y el estado es
-**`CONVERGENCE_INCOMPLETE`**. No se ejecutó build/deploy/E2E cloud. Detalle,
-hashes y criterios: `docs/audits/STAGE2_CONVERGENCE_HANDOFF.md`.
+La única matriz real final sobre
+`93da59414fb49bd4df5c21af193a0226b4bc5fdb` terminó FAIL gobernado:
+
+- sweep: P07 `UNAUTHORIZED_EVIDENCE` y P08 `REJECT`;
+- cadena base 1: P08 `REJECT` después de P04/P05/P06/planner/P07 PASS;
+- cadena base 2: P05 `P05_REFERENCED_ID_NOT_ALLOWLISTED`;
+- variante choice: P06 `UNSUPPORTED_COGNITIVE_OPERATION`.
+
+Fueron 16/24 requests y USD 0.07123828 bajo cap USD 0.75, únicamente
+`gpt-5.6-luna`/high. P10/P11/fallback/retries/tools/store quedaron en cero y la
+frontera fue inmutable. No hubo fallo de credencial, red, schema, Pydantic,
+runtime o ledger. El resultado terminal es **`LUNA_HIGH_QUALIFICATION_FAILED`**
+y **`CONVERGENCE_INCOMPLETE`**; no corresponde retry, tuning, XHIGH ni otra
+matriz bajo esta autorización.
+
+El corpus completo de seis reportes de convergencia suma 96 requests y USD
+0.46884051 calculados. El reporte final es
+`reports/openai/stage2_convergence_93da594_20260812_final_01.json`, SHA-256
+`30a422dc79a2098ff6e7066a39cb2517e959d2d1d8a169f287c68101c2dc519e`.
+No se ejecutó build/deploy/E2E cloud. Detalle, hashes y criterios:
+`docs/audits/STAGE2_CONVERGENCE_HANDOFF.md`.
 
 El corpus inicial contiene 20 casos exclusivamente sintéticos en
 `tests/fixtures/openai_evals/v1/synthetic_cases.json`. No incluye nombres,

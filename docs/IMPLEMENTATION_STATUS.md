@@ -2,28 +2,37 @@
 
 Fecha de corte: 2026-08-12 (America/Santiago).
 
-## Estado vigente — `CONVERGENCE_INCOMPLETE` (2026-08-12)
+## Estado vigente — `LUNA_HIGH_QUALIFICATION_FAILED` / `CONVERGENCE_INCOMPLETE` (2026-08-12)
 
-La remediación consolidada de Fase 2 cerró las clases deterministas de
-autoridad/aislamiento sintético, contratos e IDs, trusted context, seguridad de
-texto, planner, cache/reuse, StageRuns, jobs/dispatch, idempotencia y harness.
-La regresión quedó verde: backend 544 passed/16 skips PostgreSQL explícitos,
-PostgreSQL 1+7+158 casos, frontend 36/36, deploy 11/11, contratos, secretos y
-Terraform. El rehearsal offline product-shaped completó sweep P04-P09, dos
-cadenas base y una variante con 24 transportes fake.
+El candidato congelado `93da59414fb49bd4df5c21af193a0226b4bc5fdb`
+cerró la remediación focalizada de P08 y el oráculo determinista de P05. P08
+explicita que sólo revisa al candidato y no puede ampliar sus `evidence_ids` ni
+`source_ids`; P05 clasifica el positivo como `APPROVABLE` y exige la matriz
+exacta de categorías, estados y criticidad, con una única falla crítica
+`PLAN_FEASIBILITY` en la mutación. Ambos golden checks pasaron sin requests al
+proveedor.
 
-La observación real final sobre el código `10d7622a9d278ed9a6d41d1317dd98b7a49c7721`
-completó una cadena integrada P04→P09, sin P10/P11/fallback/retries. La segunda
-cadena congelada falló P06 `P06_REFERENCE_MISMATCH`; la variante llegó a P08
-pero no fue aceptada; el sweep independiente falló P05 con un critical
-`CONSTRUCT`. Fueron 20 requests y USD 0.10237906. Las cuatro rondas de
-convergencia totalizaron 60 requests y USD 0.31022079 de costo calculado.
+La regresión del candidato quedó verde: backend 609 passed/17 skips PostgreSQL
+explícitos, PostgreSQL 1+8+206 casos, frontend 36/36, contratos, OpenAPI,
+seguridad, cache/reuse, exactly-once y Terraform. Los workflows de push y PR
+del candidato pasaron 7/7 jobs cada uno. No se ejecutó build, deploy, apply,
+migración remota ni E2E cloud.
 
-No se cumplen dos cadenas consecutivas ni la variante completa. No se realizó
-repetición automática, build, deploy ni E2E cloud. El handoff, la matriz de
-findings y los 14 criterios están en
-`docs/audits/STAGE2_CONVERGENCE_HANDOFF.md`; la recomendación vigente es
-**`CONVERGENCE_INCOMPLETE`**.
+La única matriz real final autorizada usó exclusivamente `gpt-5.6-luna` con
+reasoning HIGH. Terminó `FAIL` tras 16/24 requests: P07 produjo
+`UNAUTHORIZED_EVIDENCE`, P08 rechazó las dos rutas que lo alcanzaron, P05
+produjo `P05_REFERENCED_ID_NOT_ALLOWLISTED` y P06 produjo
+`UNSUPPORTED_COGNITIVE_OPERATION`. Fueron fallas semánticas atribuibles al
+modelo, sin falla de credenciales, red, schema, runtime, infraestructura ni
+ledger. Consumió USD 0.07123828 reales y USD 0.27835468 conservadores, dentro
+de caps USD 0.75/0.10; P10/P11, tools, store, fallback y retries fueron cero.
+
+Conforme al stop contractual, no hubo tuning, repetición, XHIGH ni cambio de
+modelo. El resultado terminal es **`LUNA_HIGH_QUALIFICATION_FAILED`** y
+**`CONVERGENCE_INCOMPLETE`**; el candidato no pasa a Fase 4 Ultra. El handoff
+consolidado y la matriz final están en
+`docs/audits/STAGE2_CONVERGENCE_HANDOFF.md` y
+`reports/openai/stage2_convergence_93da594_20260812_final_01.json`.
 
 ## Historial — `OPENAI_REAL_P04_V119_RECANARY_READY` (2026-08-11)
 

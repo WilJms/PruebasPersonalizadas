@@ -3,23 +3,26 @@
 Fecha de corte documental: 2026-08-12 (America/Santiago; ejecución cloud hasta
 2026-08-11 UTC; Fase 2 posterior exclusivamente local/real sintética aislada).
 
-## Estado vigente — Fase 2 local verde, convergencia real incompleta — 2026-08-12
+## Estado vigente — local/CI verde; Luna/high no cualificada — 2026-08-12
 
 | Prueba o gate | Resultado observado |
 |---|---|
-| Backend | `make test-cov`: 544 passed, 16 skipped por URL PostgreSQL ausente en esa invocación, 1 warning conocido, 80% coverage |
-| PostgreSQL 17 temporal | prepare/migraciones PASS; E2E 1/1; sensitive 7/7; migration/recovery/readiness 158/158; contenedor eliminado |
-| Contratos | 53 roots, 141 `$defs`, 277 refs, 8 fixtures; modelo/schema `d9869d72…`/`a6f06570…` |
-| Frontend/UI | typecheck PASS; Vitest 36/36; build PASS; recorrido sintético renderizado y responsive PASS |
-| Deploy/seguridad/IaC | deploy 11/11; secret scan 303 archivos PASS; Terraform fmt/init sin backend/validate PASS |
-| Rehearsal offline | PASS; sweep 6/6, cadenas base 8/8 + 8/8, variante 8/8; 24 fake, 0 red/billable/P10/P11/fallback/retries |
-| Rehearsal real final | FAIL; sweep P05, cadena base 1 PASS 8/8, cadena base 2 P06 FAIL, variante P08 no aceptada; 20 requests/USD 0.10237906 |
-| Agregado real Fase 2 | 4 rondas, 60 requests, USD 0.31022079 actual; P10/fallback/retries 0; un P11 sólo en primera ronda |
+| Backend | `make test-cov`: 609 passed, 17 skips PostgreSQL cubiertos por su matriz, 1 warning conocido, 80% coverage |
+| Focal P05/P08 | 156/156 PASS; subconjunto inicial 124/124 PASS |
+| PostgreSQL 17 temporal | prepare 31 tablas; E2E 1/1; sensitive 8/8; migration/recovery/readiness 206/206; contenedor eliminado |
+| Contratos | 53 roots, 141 `$defs`, 277 refs, 8 fixtures; modelo/schema `1abd49c3…`/`d2375484…` |
+| Frontend/UI | instalación limpia/0 vulnerabilidades; OpenAPI client sin drift; typecheck, Vitest 36/36 y build PASS |
+| Seguridad/IaC | secret scan 312 archivos PASS; Terraform fmt/init sin backend/validate PASS |
+| Exactly-once/cache/reuse | 8/8 focal PASS; autorización real final durable y consumida una vez |
+| Rehearsal offline | PASS; sweep, dos cadenas base y variante; 24 fake; golden positivo/negativo 0 requests; P10/P11/fallback/retries 0 |
+| CI candidato | push `31649989407` y PR `31649992484`: 7/7 jobs PASS cada uno |
+| Rehearsal real final | FAIL gobernado: sweep P07/P08; base 1 P08; base 2 P05; choice P06; 16/24 requests, USD 0.07123828 |
+| Controles reales | sólo Luna/high; frontera inmutable; P10/P11/fallback/retries/tools/store 0; sin fallo técnico/no-Luna |
 | Efectos excluidos | ningún build, deploy, apply, migración remota o E2E cloud |
 
 La matriz completa se conserva en
 `docs/audits/STAGE2_CONVERGENCE_HANDOFF.md`. Resultado:
-**`CONVERGENCE_INCOMPLETE`**.
+**`LUNA_HIGH_QUALIFICATION_FAILED`** y **`CONVERGENCE_INCOMPLETE`**.
 
 Este archivo registra únicamente resultados observados. Las credenciales y
 capacidades no se registran. Los recorridos cloud E2 históricos usaron mock;
