@@ -1,8 +1,31 @@
 # Estado de implementación — Etapa 2
 
-Fecha de corte: 2026-08-11 (America/Santiago).
+Fecha de corte: 2026-08-12 (America/Santiago).
 
-## Estado vigente — `OPENAI_REAL_P04_V119_RECANARY_READY` (2026-08-11)
+## Estado vigente — `CONVERGENCE_INCOMPLETE` (2026-08-12)
+
+La remediación consolidada de Fase 2 cerró las clases deterministas de
+autoridad/aislamiento sintético, contratos e IDs, trusted context, seguridad de
+texto, planner, cache/reuse, StageRuns, jobs/dispatch, idempotencia y harness.
+La regresión quedó verde: backend 544 passed/16 skips PostgreSQL explícitos,
+PostgreSQL 1+7+158 casos, frontend 36/36, deploy 11/11, contratos, secretos y
+Terraform. El rehearsal offline product-shaped completó sweep P04-P09, dos
+cadenas base y una variante con 24 transportes fake.
+
+La observación real final sobre el código `10d7622a9d278ed9a6d41d1317dd98b7a49c7721`
+completó una cadena integrada P04→P09, sin P10/P11/fallback/retries. La segunda
+cadena congelada falló P06 `P06_REFERENCE_MISMATCH`; la variante llegó a P08
+pero no fue aceptada; el sweep independiente falló P05 con un critical
+`CONSTRUCT`. Fueron 20 requests y USD 0.10237906. Las cuatro rondas de
+convergencia totalizaron 60 requests y USD 0.31022079 de costo calculado.
+
+No se cumplen dos cadenas consecutivas ni la variante completa. No se realizó
+repetición automática, build, deploy ni E2E cloud. El handoff, la matriz de
+findings y los 14 criterios están en
+`docs/audits/STAGE2_CONVERGENCE_HANDOFF.md`; la recomendación vigente es
+**`CONVERGENCE_INCOMPLETE`**.
+
+## Historial — `OPENAI_REAL_P04_V119_RECANARY_READY` (2026-08-11)
 
 El SHA `fefea94d25a974ddf05e71f7212616e625ee5303` quedó construido y
 desplegado por el build `89cff4cb-3b8e-4abf-87e2-af82581ad078`,

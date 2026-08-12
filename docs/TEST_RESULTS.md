@@ -1,18 +1,33 @@
 # Resultados verificables — candidato Etapa 2
 
-Fecha de corte documental: 2026-08-11 (America/Santiago; ejecución cloud hasta
-2026-08-11 UTC).
+Fecha de corte documental: 2026-08-12 (America/Santiago; ejecución cloud hasta
+2026-08-11 UTC; Fase 2 posterior exclusivamente local/real sintética aislada).
+
+## Estado vigente — Fase 2 local verde, convergencia real incompleta — 2026-08-12
+
+| Prueba o gate | Resultado observado |
+|---|---|
+| Backend | `make test-cov`: 544 passed, 16 skipped por URL PostgreSQL ausente en esa invocación, 1 warning conocido, 80% coverage |
+| PostgreSQL 17 temporal | prepare/migraciones PASS; E2E 1/1; sensitive 7/7; migration/recovery/readiness 158/158; contenedor eliminado |
+| Contratos | 53 roots, 141 `$defs`, 277 refs, 8 fixtures; modelo/schema `d9869d72…`/`a6f06570…` |
+| Frontend/UI | typecheck PASS; Vitest 36/36; build PASS; recorrido sintético renderizado y responsive PASS |
+| Deploy/seguridad/IaC | deploy 11/11; secret scan 303 archivos PASS; Terraform fmt/init sin backend/validate PASS |
+| Rehearsal offline | PASS; sweep 6/6, cadenas base 8/8 + 8/8, variante 8/8; 24 fake, 0 red/billable/P10/P11/fallback/retries |
+| Rehearsal real final | FAIL; sweep P05, cadena base 1 PASS 8/8, cadena base 2 P06 FAIL, variante P08 no aceptada; 20 requests/USD 0.10237906 |
+| Agregado real Fase 2 | 4 rondas, 60 requests, USD 0.31022079 actual; P10/fallback/retries 0; un P11 sólo en primera ronda |
+| Efectos excluidos | ningún build, deploy, apply, migración remota o E2E cloud |
+
+La matriz completa se conserva en
+`docs/audits/STAGE2_CONVERGENCE_HANDOFF.md`. Resultado:
+**`CONVERGENCE_INCOMPLETE`**.
 
 Este archivo registra únicamente resultados observados. Las credenciales y
 capacidades no se registran. Los recorridos cloud E2 históricos usaron mock;
-los E2E reales del corte usan exclusivamente fixtures sintéticos autorizados.
-El recorrido de producto más reciente se detuvo en P04 1.1.8 por un
-`evidence_id` fuera de su allowlist. P04 1.1.9 está remediado y pasa dry-run,
-pero todavía no tiene observación real: la evidencia vigente es 16/18. P10
-permaneció deshabilitado en todos los casos. Los resultados anteriores se
-conservan como historia y no sustituyen la frontera vigente.
+los E2E reales usaron exclusivamente fixtures sintéticos autorizados. Las
+secciones desde el corte 2026-08-11 se conservan como historia y no sustituyen
+la frontera vigente de Fase 2. P10 permaneció deshabilitado en todos los casos.
 
-## Estado vigente — deploy `fefea94`, stop P04 y recanary v1.1.9 preparada — 2026-08-11
+## Historial — deploy `fefea94`, stop P04 y recanary v1.1.9 preparada — 2026-08-11
 
 | Prueba o gate | Resultado observado |
 |---|---|

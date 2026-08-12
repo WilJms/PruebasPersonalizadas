@@ -1,5 +1,23 @@
 # Evals del modelo real
 
+## Resultado vigente — convergencia Fase 2 incompleta (2026-08-12)
+
+La frontera product-shaped final usa rehearsal/reporte 1.3.0, prompt pack
+1.1.13 y únicamente `gpt-5.6-luna`. El offline pasó sweep P04-P09, dos cadenas
+base y una variante completa con 24 transportes fake. La observación real sobre
+`10d7622a9d278ed9a6d41d1317dd98b7a49c7721` terminó FAIL controlado: sweep P05
+no aprobable, una cadena integrada 8/8, repetición P06
+`P06_REFERENCE_MISMATCH` y variante detenida en P08 no aceptado. Usó 20
+requests, USD 0.10237906, P10/P11/fallback/retries cero, `store=false` y sin
+tools.
+
+Las cuatro rondas reales de convergencia consumieron 60 requests y USD
+0.31022079 calculados. El único P11 ocurrió en la primera ronda y no reapareció
+en las tres fronteras posteriores. No hay dos cadenas reales consecutivas ni
+variante completa, por lo que Luna queda `NEEDS_MORE_EVIDENCE` y el estado es
+**`CONVERGENCE_INCOMPLETE`**. No se ejecutó build/deploy/E2E cloud. Detalle,
+hashes y criterios: `docs/audits/STAGE2_CONVERGENCE_HANDOFF.md`.
+
 El corpus inicial contiene 20 casos exclusivamente sintéticos en
 `tests/fixtures/openai_evals/v1/synthetic_cases.json`. No incluye nombres,
 entregas ni contenido estudiantil real. El rango gobernado es de 10 a 30 casos,
@@ -10,7 +28,7 @@ con IDs únicos y clasificación obligatoria
 conserva `1.1.3`; P05 usa `1.1.5`; P11 usa `1.1.4`; P09 usa `1.1.5`; P04
 usa `1.1.9`.
 
-## Resultado vigente — P04 v1.1.9 listo para recanary acoplada
+## Historial — P04 v1.1.9 listo para recanary acoplada
 
 El E2E fresco sobre `fefea94`/`sha256:04032e44…` pasó P01-P03, persistió seis
 decisiones y se detuvo en la única reanudación P04. La salida fue válida para
