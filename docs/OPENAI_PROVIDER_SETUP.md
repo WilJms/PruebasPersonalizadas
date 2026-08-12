@@ -1,6 +1,46 @@
 # Setup gobernado del proveedor OpenAI
 
-## Estado vigente — worker real desplegado; P04 v1.1.9 pendiente de recanary
+## Autoridad vigente — capacidad sintética post-claim, no modo real general
+
+El producto y el Service web permanecen mock y no reciben clave. P10 y datos
+estudiantiles reales siguen prohibidos. El worker ordinario también permanece
+mock y su service account no puede leer la clave. Terraform sólo puede crear un
+Job/SA eval-only separado mediante `enable_synthetic_evaluation_provider`,
+desactivado por defecto; el Service web no recibe permiso para invocarlo. Esa
+superficie recibe referencia de versión numérica de Secret Manager, SHA
+candidato y ceilings de requests/costo. No monta `CVA_OPENAI_API_KEY`.
+
+Esa configuración no autoriza transporte. El worker eval-only primero reclama el
+`CVA_CLAIM_JOB_ID` exacto. Luego, dentro de PostgreSQL, consume una
+`synthetic_provider_authorization` append-only ligada a tenant, kind,
+aggregate, attempt, hashes exactos de todos los artefactos sellados, SHA,
+boundary hash de prompts/schemas/validators/routing, Luna, versión de secreto,
+expiración y caps. La inserción única en `synthetic_provider_claims` consume la
+autorización exactly-once. Sólo después se consulta Secret Manager y se crea el
+adapter con request cap; cualquier divergencia falla `SECURITY` con cero
+resolver, cero construcción de transporte y cero request.
+
+La autorización se crea server-side para un job ya durable y no existe endpoint
+web que la fabrique. Retry/resume requiere otro job y otra autorización. El
+estado cloud vivo histórico descrito debajo no se usa como prueba del candidato
+actual: esta iteración no ejecuta build, deploy, apply ni E2E cloud.
+
+El control-plane versionado es explícito y no despacha ni lee secretos:
+
+```bash
+python scripts/authorize_synthetic_provider_job.py \
+  --job-id JOB_ID \
+  --authorization-id AUTHORIZATION_ID \
+  --candidate-sha EXACT_40_HEX_SHA \
+  --secret-version-resource projects/PROJECT/secrets/SECRET/versions/N \
+  --max-requests N --max-cost-usd USD \
+  --created-by OPERATOR_ID
+```
+
+Requiere `CVA_DATABASE_URL=postgresql+psycopg://...` fuera del historial de
+shell. La salida sólo contiene IDs, hashes, caps y conteos.
+
+## Historial — worker real desplegado; P04 v1.1.9 pendiente de recanary
 
 Web permanece mock y sin clave; worker real usa exclusivamente
 `cva-openai-api-key` v2. Ambos están Ready sobre el digest inmutable

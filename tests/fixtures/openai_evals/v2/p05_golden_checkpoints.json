@@ -1,0 +1,179 @@
+{
+  "schema_version": "stage2-p05-golden-checkpoints/1.0.0",
+  "classification": "SYNTHETIC_ONLY_NO_STUDENT_DATA",
+  "construct": "Comprensión causal y verificable del mecanismo de invalidación de caché cuando cambia la fuente.",
+  "golden_positive": {
+    "expected_recommendation": "APPROVE",
+    "semantic_review": {
+      "status": "SEMANTICALLY_REVIEWED_SYNTHETIC_FIXTURE",
+      "reviewed_on": "2026-08-12",
+      "rationale": [
+        "La dimensión enlaza literalmente el resultado outcome_1 y el criterio criterion_1 con un mecanismo concreto, no con un aspecto genérico del entregable.",
+        "Las cuatro oportunidades separan decisión, mecanismo, razonamiento y conexión interna sobre la misma relación causal fuente-invalidación-reconsulta-recálculo.",
+        "Cada foco declara qué relación debe explicar la persona y cada observable declara qué vínculo debe aparecer en una respuesta defendible.",
+        "El catálogo conserva el contexto cerrado, el formato y los cinco minutos autorizados, y permite seleccionar exactamente una pregunta sin rebajar calidad.",
+        "La evidencia sintética del escenario contiene el cambio de fuente, la invalidación, la reconsulta y la comprobación de recálculo que exigen los observables."
+      ],
+      "source_alignment": {
+        "learning_outcome_ids": ["outcome_1"],
+        "criterion_ids": ["criterion_1"],
+        "requirement_ids": ["requirement_1"],
+        "decision_ids": ["decision_closed_materials"]
+      }
+    },
+    "blueprint": {
+      "schema_version": "1.1.0",
+      "blueprint_id": "blueprint_cache_invalidation_golden",
+      "blueprint_version": 1,
+      "activity_id": "act_demo",
+      "status": "READY",
+      "context_mode": "CLOSED",
+      "dimensions": [
+        {
+          "dimension_id": "dimension_cache_invalidation",
+          "name": "Explicación causal de la invalidación de caché",
+          "criterion_ids": ["criterion_1"],
+          "learning_outcome_ids": ["outcome_1"],
+          "grading_weight": null,
+          "verification_priority": 0.95,
+          "factors": {
+            "learning_relevance": 0.95,
+            "centrality": 0.95,
+            "expected_evidence": 0.9,
+            "discriminative_potential": 0.85,
+            "auditability": 1.0,
+            "short_response_observability": 0.9
+          },
+          "justification": "El criterio exige explicar el núcleo del mecanismo y el outcome exige localizarlo; la relación causal entre cambio de fuente, invalidación y recálculo permite verificar ambos con evidencia del entregable.",
+          "evidence_variants": [
+            {
+              "variant_id": "variant_source_change_trace",
+              "name": "Traza cambio de fuente–invalidación–recálculo",
+              "description": "Fragmentos que muestran el cambio de la fuente, la invalidación de la entrada previa y una reconsulta que obtiene un valor recalculado.",
+              "evidence_requirement": {
+                "allowed_modalities": ["PARAGRAPH", "LIST", "OTHER"],
+                "min_distinct_units": 1,
+                "min_extraction_confidence": 0.0,
+                "min_alignment": 0.0,
+                "cross_artifact_required": false,
+                "course_sources_allowed": false
+              },
+              "verification_potential": 0.95,
+              "supported_operations": [
+                {
+                  "cognitive_operation": "JUSTIFY_DECISION",
+                  "support_strength": 0.95,
+                  "rationale": "La evidencia permite justificar por qué conservar la entrada previa devolvería un valor obsoleto."
+                },
+                {
+                  "cognitive_operation": "EXPLAIN_MECHANISM",
+                  "support_strength": 0.95,
+                  "rationale": "La evidencia contiene una secuencia causal observable desde la mutación hasta el recálculo."
+                },
+                {
+                  "cognitive_operation": "RECONSTRUCT_REASONING",
+                  "support_strength": 0.9,
+                  "rationale": "La prueba sintética permite reconstruir la inferencia que conecta el resultado actualizado con la invalidación."
+                },
+                {
+                  "cognitive_operation": "CONNECT_INTERNAL",
+                  "support_strength": 0.9,
+                  "rationale": "La regla de invalidación puede conectarse con el comportamiento de consulta y con la prueba que observa el recálculo."
+                }
+              ],
+              "question_opportunities": [
+                {
+                  "opportunity_template_id": "oppt_justify_cache_invalidation",
+                  "cognitive_operation": "JUSTIFY_DECISION",
+                  "focus": "Justificar por qué la entrada almacenada debe invalidarse cuando cambia la fuente de la que fue derivada.",
+                  "observable": "Vincula el cambio de fuente con el riesgo de devolver un resultado obsoleto y explica por qué invalidar evita ese riesgo.",
+                  "difficulty": "LOW",
+                  "target_minutes": 5,
+                  "allowed_anchor_structures": ["SINGLE_FRAGMENT"],
+                  "allowed_response_formats": ["OPEN_SHORT"],
+                  "verification_potential": 0.95,
+                  "minimum_quality": 0.75,
+                  "student_justification_required": false
+                },
+                {
+                  "opportunity_template_id": "oppt_explain_invalidation_sequence",
+                  "cognitive_operation": "EXPLAIN_MECHANISM",
+                  "focus": "Explicar la secuencia cambio de fuente, invalidación de la entrada, nueva consulta y recálculo del valor.",
+                  "observable": "Ordena los cuatro pasos y atribuye a la invalidación la eliminación de la entrada que ya no representa la fuente actual.",
+                  "difficulty": "MEDIUM",
+                  "target_minutes": 5,
+                  "allowed_anchor_structures": ["SINGLE_FRAGMENT"],
+                  "allowed_response_formats": ["OPEN_SHORT"],
+                  "verification_potential": 0.95,
+                  "minimum_quality": 0.75,
+                  "student_justification_required": false
+                },
+                {
+                  "opportunity_template_id": "oppt_reconstruct_recalculation_evidence",
+                  "cognitive_operation": "RECONSTRUCT_REASONING",
+                  "focus": "Reconstruir cómo la prueba que modifica la fuente y vuelve a consultar sustenta que el valor fue recalculado.",
+                  "observable": "Parte de la mutación y del resultado posterior, descarta la reutilización de la entrada previa y concluye que ocurrió un recálculo.",
+                  "difficulty": "HIGH",
+                  "target_minutes": 5,
+                  "allowed_anchor_structures": ["SINGLE_FRAGMENT"],
+                  "allowed_response_formats": ["OPEN_SHORT"],
+                  "verification_potential": 0.9,
+                  "minimum_quality": 0.75,
+                  "student_justification_required": false
+                },
+                {
+                  "opportunity_template_id": "oppt_connect_rule_and_test",
+                  "cognitive_operation": "CONNECT_INTERNAL",
+                  "focus": "Conectar la regla de invalidación con la reconsulta de la prueba y con el valor actualizado que esta observa.",
+                  "observable": "Explica cómo la regla habilita que la reconsulta use la fuente modificada y por qué el resultado de la prueba es evidencia de esa conexión.",
+                  "difficulty": "MEDIUM",
+                  "target_minutes": 5,
+                  "allowed_anchor_structures": ["SINGLE_FRAGMENT"],
+                  "allowed_response_formats": ["OPEN_SHORT"],
+                  "verification_potential": 0.9,
+                  "minimum_quality": 0.75,
+                  "student_justification_required": false
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "assessment_constraints": {
+        "question_count": 1,
+        "target_total_minutes": 5,
+        "allowed_response_formats": ["OPEN_SHORT"],
+        "minimum_opportunity_quality": 0.75,
+        "max_reserve_opportunities": 3,
+        "priority_criterion_ids": [],
+        "required_criterion_ids": [],
+        "structured_justification_policy": {
+          "mode": "NOT_REQUIRED",
+          "selected_opportunity_template_ids": []
+        }
+      },
+      "decision_ids": ["decision_closed_materials"],
+      "diagnostics": [],
+      "approved_by": null,
+      "approved_at": null
+    },
+    "choice_variant": {
+      "blueprint_id": "blueprint_cache_invalidation_choice_golden",
+      "allowed_response_formats": ["CHOICE"],
+      "structured_justification_mode": "ALL",
+      "student_justification_required": true
+    }
+  },
+  "golden_negative": {
+    "expected_recommendation": "REJECT",
+    "expected_critical_category": "PLAN_FEASIBILITY",
+    "expected_failed_preflight_fields": [
+      "policy_constraints_match",
+      "catalog_plan_feasible"
+    ],
+    "known_cause": "El blueprint cambia todo el catálogo a CHOICE mientras la política autorizada del escenario base exige OPEN_SHORT.",
+    "mutation": {
+      "allowed_response_formats": ["CHOICE"]
+    }
+  }
+}

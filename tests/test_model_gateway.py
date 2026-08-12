@@ -1095,7 +1095,77 @@ def test_p06_rejects_changed_template_inheritance() -> None:
     with pytest.raises(GatewayContextError) as captured:
         _invoke("P06_EVIDENCE_MAP_V1", gateway=gateway)
     assert captured.value.failure.codes == (
-        ContextFailureCode.P06_REFERENCE_MISMATCH,
+        ContextFailureCode.P06_FOCUS_MISMATCH,
+    )
+
+
+def test_p06_relationship_diagnostics_identify_each_failed_predicate() -> None:
+    def change_multiple_relationships(raw: dict) -> None:
+        opportunity = raw["opportunities"][0]
+        opportunity["observable"] = "Observable distinto"
+        opportunity["target_minutes"] += 1
+        opportunity["evidence_fit"] = 0.81
+
+    gateway = ModelGateway(
+        mock_adapter=ContextBreakingAdapter(
+            "P06_EVIDENCE_MAP_V1", change_multiple_relationships
+        )
+    )
+    with pytest.raises(GatewayContextError) as captured:
+        _invoke("P06_EVIDENCE_MAP_V1", gateway=gateway)
+
+    assert captured.value.failure.codes == (
+        ContextFailureCode.P06_OBSERVABLE_MISMATCH,
+        ContextFailureCode.P06_TARGET_MINUTES_MISMATCH,
+        ContextFailureCode.P06_EVIDENCE_FIT_MISMATCH,
+    )
+
+
+def test_p06_relationship_diagnostic_identifies_widened_evidence_scope() -> None:
+    request = build_mock_request("P06_EVIDENCE_MAP_V1")
+    base = request.evidence_bundle.evidence_units[0]
+    extra = base.model_copy(
+        update={
+            "evidence_id": "ev_submission_2",
+            "artifact_id": "art_submission_2",
+            "artifact_hash": "sha256:" + "d" * 64,
+            "normalized_hash": "sha256:" + "e" * 64,
+        }
+    )
+    request = request.model_copy(
+        update={
+            "evidence_bundle": request.evidence_bundle.model_copy(
+                update={
+                    "allowed_evidence_ids": [
+                        "ev_submission_1",
+                        "ev_submission_2",
+                    ],
+                    "evidence_units": [base, extra],
+                }
+            )
+        }
+    )
+
+    def widen_scope(raw: dict) -> None:
+        raw["variant_matches"][0]["evidence_ids"] = ["ev_submission_1"]
+        raw["opportunities"][0]["evidence_ids"] = ["ev_submission_2"]
+
+    gateway = ModelGateway(
+        mock_adapter=ContextBreakingAdapter(
+            "P06_EVIDENCE_MAP_V1", widen_scope
+        )
+    )
+    with pytest.raises(GatewayContextError) as captured:
+        asyncio.run(
+            gateway.invoke(
+                "P06_EVIDENCE_MAP_V1",
+                request,
+                build_trusted_context(request),
+            )
+        )
+
+    assert captured.value.failure.codes == (
+        ContextFailureCode.P06_EVIDENCE_SCOPE_WIDENED,
     )
 
 

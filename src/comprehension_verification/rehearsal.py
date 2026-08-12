@@ -5,6 +5,8 @@ from __future__ import annotations
 import asyncio
 from dataclasses import dataclass
 from datetime import UTC, datetime
+import json
+from pathlib import Path
 from typing import Any, cast
 
 from pydantic import BaseModel, SecretStr
@@ -22,7 +24,7 @@ from .model_gateway import (
     ModelGateway,
     OpenAIAdapterConfig,
     OpenAIResponsesAdapter,
-    ProviderBudgetError,
+    RequestCappedAdapter,
     build_openai_cost_estimator,
     build_openai_routes,
     build_mock_request,
@@ -32,6 +34,7 @@ from .model_gateway import (
 from .model_gateway.registry import PROMPT_VERSION, prompt_spec
 from .model_gateway.gateway import PROMPT_RELATIONSHIP_VALIDATOR_VERSIONS
 from .planning import PLANNER_VERSION, build_assessment_plan
+from .observability import p08_decision_diagnostics
 from .validation import (
     ContextValidationError,
     PROMPT_APPLICATION_VALIDATOR_VERSIONS,
@@ -49,10 +52,14 @@ from .web.workflows import (
 )
 
 
-REHEARSAL_VERSION = "stage2-product-rehearsal/1.3.0"
-REHEARSAL_REPORT_VERSION = "stage2-convergence-report/1.3.0"
+REHEARSAL_VERSION = "stage2-product-rehearsal/1.4.0"
+REHEARSAL_REPORT_VERSION = "stage2-convergence-report/1.4.0"
 BASE_SCENARIO_ID = "synthetic-open-short-v1"
 VARIANT_SCENARIO_ID = "synthetic-choice-justification-v1"
+P05_GOLDEN_FIXTURE_PATH = (
+    Path(__file__).resolve().parents[2]
+    / "tests/fixtures/openai_evals/v2/p05_golden_checkpoints.json"
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -111,8 +118,143 @@ def _validated_mock_output(prompt_id: str, request: BaseModel) -> BaseModel:
 
 
 def _base_p04_request() -> m.BlueprintBuildRequest:
-    return m.BlueprintBuildRequest.model_validate(
+    request = m.BlueprintBuildRequest.model_validate(
         build_mock_request("P04_BLUEPRINT_BUILD_V1").model_dump(mode="json")
+    )
+    activity_spec = request.activity_spec.model_copy(
+        update={
+            "learning_outcomes": [
+                item.model_copy(
+                    update={
+                        "text": (
+                            "Explicar cómo un cambio en la fuente invalida la "
+                            "entrada almacenada y fuerza un recálculo verificable."
+                        )
+                    }
+                )
+                for item in request.activity_spec.learning_outcomes
+            ],
+            "expected_products": [
+                item.model_copy(
+                    update={
+                        "text": (
+                            "Un entregable explicativo que conecte la mutación "
+                            "de la fuente, la invalidación y la nueva consulta."
+                        )
+                    }
+                )
+                for item in request.activity_spec.expected_products
+            ],
+            "requirements": [
+                item.model_copy(
+                    update={
+                        "text": (
+                            "Justificar por qué reutilizar la entrada previa "
+                            "produciría un valor obsoleto."
+                        )
+                    }
+                )
+                for item in request.activity_spec.requirements
+            ],
+        }
+    )
+    rubric_spec = request.rubric_spec.model_copy(
+        update={
+            "criteria": [
+                criterion.model_copy(
+                    update={
+                        "name": "Explicación causal de invalidación de caché",
+                        "description": (
+                            "Relaciona cambio de fuente, invalidación, reconsulta "
+                            "y recálculo sin atribuir el resultado a la entrada previa."
+                        ),
+                        "observables": [
+                            "Ordena la secuencia causal completa.",
+                            "Vincula la invalidación con la prevención de resultados obsoletos.",
+                        ],
+                        "levels": [
+                            level.model_copy(
+                                update={
+                                    "descriptor": (
+                                        "Explica la relación causal entre el cambio "
+                                        "de fuente, la invalidación y el recálculo."
+                                    )
+                                }
+                            )
+                            for level in criterion.levels
+                        ],
+                    }
+                )
+                for criterion in request.rubric_spec.criteria
+            ]
+        }
+    )
+    return request.model_copy(
+        update={
+            "target_blueprint_id": "blueprint_cache_invalidation_golden",
+            "activity_spec": activity_spec,
+            "rubric_spec": rubric_spec,
+        }
+    )
+
+
+def _p05_golden_fixture() -> dict[str, Any]:
+    raw = json.loads(P05_GOLDEN_FIXTURE_PATH.read_text(encoding="utf-8"))
+    if (
+        raw.get("schema_version") != "stage2-p05-golden-checkpoints/1.0.0"
+        or raw.get("classification") != "SYNTHETIC_ONLY_NO_STUDENT_DATA"
+    ):
+        raise ValueError("P05 golden fixture metadata is not approved")
+    return cast(dict[str, Any], raw)
+
+
+def _golden_blueprint(scenario_id: str) -> m.AssessmentBlueprint:
+    fixture = _p05_golden_fixture()
+    blueprint = m.AssessmentBlueprint.model_validate(
+        fixture["golden_positive"]["blueprint"]
+    )
+    if scenario_id == BASE_SCENARIO_ID:
+        return blueprint
+    choice = fixture["golden_positive"]["choice_variant"]
+    choice_formats = [m.ResponseFormat.CHOICE]
+    dimensions = []
+    for dimension in blueprint.dimensions:
+        variants = []
+        for variant in dimension.evidence_variants:
+            variants.append(
+                variant.model_copy(
+                    update={
+                        "question_opportunities": [
+                            opportunity.model_copy(
+                                update={
+                                    "allowed_response_formats": choice_formats,
+                                    "student_justification_required": True,
+                                }
+                            )
+                            for opportunity in variant.question_opportunities
+                        ]
+                    }
+                )
+            )
+        dimensions.append(
+            dimension.model_copy(update={"evidence_variants": variants})
+        )
+    return blueprint.model_copy(
+        update={
+            "blueprint_id": choice["blueprint_id"],
+            "dimensions": dimensions,
+            "assessment_constraints": blueprint.assessment_constraints.model_copy(
+                update={
+                    "allowed_response_formats": choice_formats,
+                    "structured_justification_policy": (
+                        m.StructuredJustificationPolicy(
+                            mode=m.StructuredJustificationMode.ALL,
+                            selected_opportunity_template_ids=[],
+                        )
+                    ),
+                }
+            ),
+        }
     )
 
 
@@ -196,11 +338,7 @@ def build_rehearsal_checkpoints(
             }
         )
 
-    generated_blueprint = m.AssessmentBlueprint.model_validate(
-        _validated_mock_output(
-            "P04_BLUEPRINT_BUILD_V1", p04
-        ).model_dump(mode="json")
-    )
+    generated_blueprint = _golden_blueprint(scenario_id)
     p05 = m.BlueprintReviewRequest(
         activity_spec=p04.activity_spec,
         rubric_spec=p04.rubric_spec,
@@ -301,7 +439,110 @@ def build_rehearsal_checkpoints(
     )
 
 
+def build_p05_golden_negative_request() -> m.BlueprintReviewRequest:
+    """Build the versioned known-negative without weakening the P05 boundary."""
+
+    p04 = _base_p04_request()
+    blueprint = _golden_blueprint(BASE_SCENARIO_ID)
+    choice_formats = [m.ResponseFormat.CHOICE]
+    dimensions = []
+    for dimension in blueprint.dimensions:
+        variants = []
+        for variant in dimension.evidence_variants:
+            variants.append(
+                variant.model_copy(
+                    update={
+                        "question_opportunities": [
+                            opportunity.model_copy(
+                                update={
+                                    "allowed_response_formats": choice_formats
+                                }
+                            )
+                            for opportunity in variant.question_opportunities
+                        ]
+                    }
+                )
+            )
+        dimensions.append(
+            dimension.model_copy(update={"evidence_variants": variants})
+        )
+    negative = blueprint.model_copy(
+        update={
+            "dimensions": dimensions,
+            "assessment_constraints": blueprint.assessment_constraints.model_copy(
+                update={"allowed_response_formats": choice_formats}
+            ),
+        }
+    )
+    return m.BlueprintReviewRequest(
+        activity_spec=p04.activity_spec,
+        rubric_spec=p04.rubric_spec,
+        blueprint_policy=p04.blueprint_policy,
+        resolved_decisions=p04.resolved_decisions,
+        blueprint=negative,
+        deterministic_preflight=build_blueprint_review_preflight(
+            blueprint=negative,
+            activity_spec=p04.activity_spec,
+            rubric_spec=p04.rubric_spec,
+            blueprint_policy=p04.blueprint_policy,
+        ),
+    )
+
+
+def evaluate_p05_golden_negative() -> dict[str, Any]:
+    """Evaluate the negative offline and return only reproducible metadata."""
+
+    fixture = _p05_golden_fixture()
+    expected = fixture["golden_negative"]
+    request = build_p05_golden_negative_request()
+    review = m.BlueprintReview.model_validate(
+        _validated_mock_output(
+            "P05_BLUEPRINT_REVIEW_V1", request
+        ).model_dump(mode="json")
+    )
+    preflight = request.deterministic_preflight.model_dump(mode="json")
+    failed_preflight_fields = sorted(
+        key
+        for key, value in preflight.items()
+        if isinstance(value, bool) and value is False
+    )
+    critical_categories = sorted(
+        {
+            str(check.category)
+            for check in review.checks
+            if check.critical and check.status == m.ReviewCheckStatus.FAIL
+        }
+    )
+    status = (
+        "PASS"
+        if review.approval_recommendation
+        == m.BlueprintApprovalRecommendation.REJECT
+        and not blueprint_review_is_approvable(review)
+        and failed_preflight_fields
+        == sorted(expected["expected_failed_preflight_fields"])
+        and expected["expected_critical_category"] in critical_categories
+        else "FAIL"
+    )
+    return {
+        "check_id": "P05_GOLDEN_NEGATIVE_OFFLINE",
+        "status": status,
+        "expected_recommendation": expected["expected_recommendation"],
+        "actual_recommendation": str(review.approval_recommendation),
+        "expected_critical_category": expected["expected_critical_category"],
+        "critical_categories": critical_categories,
+        "expected_failed_preflight_fields": sorted(
+            expected["expected_failed_preflight_fields"]
+        ),
+        "failed_preflight_fields": failed_preflight_fields,
+        "input_hash": canonical_hash(request.model_dump(mode="json")),
+        "output_hash": canonical_hash(review.model_dump(mode="json")),
+        "provider_requests": 0,
+    }
+
+
 def rehearsal_boundary_material() -> dict[str, Any]:
+    golden_fixture = _p05_golden_fixture()
+    golden_negative = evaluate_p05_golden_negative()
     checkpoints = {
         scenario: build_rehearsal_checkpoints(scenario).hashes
         for scenario in (BASE_SCENARIO_ID, VARIANT_SCENARIO_ID)
@@ -342,6 +583,21 @@ def rehearsal_boundary_material() -> dict[str, Any]:
         "planner_version": PLANNER_VERSION,
         "assembler_version": ASSEMBLER_VERSION,
         "checkpoints": checkpoints,
+        "p05_golden": {
+            "fixture_version": golden_fixture["schema_version"],
+            "fixture_hash": canonical_hash(golden_fixture),
+            "positive_review_status": golden_fixture["golden_positive"][
+                "semantic_review"
+            ]["status"],
+            "negative_input_hash": golden_negative["input_hash"],
+            "negative_output_hash": golden_negative["output_hash"],
+            "negative_expected_recommendation": golden_negative[
+                "expected_recommendation"
+            ],
+            "negative_expected_critical_category": golden_negative[
+                "expected_critical_category"
+            ],
+        },
         "prompts": prompt_material,
         "p10_enabled": False,
     }
@@ -522,6 +778,24 @@ class _AssessmentPlanNotReady(ContextValidationError):
         }
 
 
+class _QuestionReviewNotAccepted(ContextValidationError):
+    """Content-free P08 decision failure with reproducible thresholds."""
+
+    def __init__(
+        self,
+        review_result: m.QuestionReviewResult,
+        validation_policy: m.QuestionValidationPolicy,
+    ) -> None:
+        self.safe_metadata = p08_decision_diagnostics(
+            review_result, validation_policy
+        )
+        decision_code = self.safe_metadata["diagnostic_codes"][0]
+        super().__init__(
+            decision_code,
+            "P08 output does not permit the positive product transition",
+        )
+
+
 class ProductRehearsal:
     """Execute independent sweeps and integrated chains through one gateway."""
 
@@ -586,7 +860,7 @@ class ProductRehearsal:
     ) -> dict[str, Any]:
         result = self.results[-1]
         ledger = result.ledgers[-1]
-        return {
+        row = {
             "prompt_id": prompt_id,
             "prompt_version": prompt_spec(prompt_id).prompt_version,
             "input_hash": canonical_hash(request.model_dump(mode="json")),
@@ -601,6 +875,15 @@ class ProductRehearsal:
                 sum(item.actual_cost_usd for item in result.ledgers), 10
             ),
         }
+        if (
+            prompt_id == "P08_QUESTION_REVIEW_V1"
+            and isinstance(output, m.QuestionReviewResult)
+            and isinstance(request, m.QuestionReviewRequest)
+        ):
+            row["decision_diagnostics"] = p08_decision_diagnostics(
+                output, request.validation_policy
+            )
+        return row
 
     async def run_sweep(
         self,
@@ -692,6 +975,13 @@ class ProductRehearsal:
                 generation_result=p08.generation_result,
                 validation_policy=p08.validation_policy,
             )
+            if (
+                review.review is None
+                or review.review.decision != m.ReviewDecision.ACCEPT
+            ):
+                raise _QuestionReviewNotAccepted(
+                    review, p08.validation_policy
+                )
             stages.append(
                 self._stage_row("P08_QUESTION_REVIEW_V1", p08, review)
             )
@@ -910,9 +1200,9 @@ class ProductRehearsal:
                     or question_review.review.decision
                     != m.ReviewDecision.ACCEPT
                 ):
-                    raise ContextValidationError(
-                        "P08_NOT_ACCEPTED",
-                        "P08 chain output is not accepted",
+                    raise _QuestionReviewNotAccepted(
+                        question_review,
+                        p08.validation_policy,
                     )
                 stages.append(
                     self._stage_row(
@@ -1074,9 +1364,11 @@ async def run_offline_convergence() -> dict[str, Any]:
         ),
     ]
     controls = rehearsal.controls()
+    deterministic_checks = [evaluate_p05_golden_negative()]
     status = (
         "PASS"
         if all(item.status == "PASS" for item in observations)
+        and all(item["status"] == "PASS" for item in deterministic_checks)
         and controls["p10_calls"] == 0
         and controls["p11_calls"] == 0
         and controls["fallback_calls"] == 0
@@ -1101,29 +1393,13 @@ async def run_offline_convergence() -> dict[str, Any]:
             }
             for item in observations
         ],
+        "deterministic_checks": deterministic_checks,
         "controls": controls,
     }
 
 
 def run_offline_convergence_sync() -> dict[str, Any]:
     return asyncio.run(run_offline_convergence())
-
-
-class RequestCappedAdapter:
-    """Enforce the execution-wide provider-request ceiling before transport."""
-
-    def __init__(self, inner: OpenAIResponsesAdapter, *, max_requests: int) -> None:
-        if max_requests < 1:
-            raise ValueError("max_requests must be positive")
-        self.inner = inner
-        self.max_requests = max_requests
-        self.calls = 0
-
-    async def invoke(self, **kwargs: Any) -> Any:
-        if self.calls >= self.max_requests:
-            raise ProviderBudgetError("EVALUATION_REQUEST_CAP_EXCEEDED")
-        self.calls += 1
-        return await self.inner.invoke(**kwargs)
 
 
 async def run_real_convergence(
@@ -1180,6 +1456,7 @@ async def run_real_convergence(
         ),
     ]
     controls = rehearsal.controls()
+    deterministic_checks = [evaluate_p05_golden_negative()]
     controls.update(
         {
             "network_calls": capped_adapter.calls,
@@ -1198,6 +1475,7 @@ async def run_real_convergence(
     status = (
         "PASS"
         if all(item.status == "PASS" for item in observations)
+        and all(item["status"] == "PASS" for item in deterministic_checks)
         and controls["p10_calls"] == 0
         and controls["p11_calls"] == 0
         and controls["fallback_calls"] == 0
@@ -1233,5 +1511,6 @@ async def run_real_convergence(
             }
             for item in observations
         ],
+        "deterministic_checks": deterministic_checks,
         "controls": controls,
     }

@@ -10,11 +10,15 @@
 - Etapa 2: activa exclusivamente para el entorno experimental usable descrito
   en la especificación, el plan, el MVP y ADR-030 a ADR-036.
 - Etapa 3: no autorizada.
-- Datos estudiantiles reales: no autorizados. El producto cloud conserva
-  `CVA_MODEL_MODE=mock` y `CVA_P10_ENABLED=false`.
+- Datos estudiantiles reales: no autorizados. El Service web y todo workload
+  ordinario del producto cloud conservan `CVA_MODEL_MODE=mock` y
+  `CVA_P10_ENABLED=false`.
 - IA real sólo se autoriza en un gate de evaluación aislado, sintético,
   explícitamente aprobado, con frontera hash-bound, ledger exactly-once y caps
-  de requests/costo según ADR-035/ADR-036. No habilita IA real en cloud.
+  de requests/costo según ADR-035/ADR-036. Un Cloud Run Job y una service
+  account eval-only, separados del worker ordinario, no autorizan por sí mismos
+  una llamada: exigen claim exacto y una attestation durable específica del job
+  antes de resolver la clave o construir transporte.
 
 La apertura incluye múltiples submissions, ingestión DOCX segura,
 retry/cancel/resume funcional, acciones y regeneración localizada por pregunta,
@@ -48,9 +52,15 @@ No copie ni redefina modelos Pydantic. Importe `comprehension_verification.contr
 - E1 procesa exactamente una submission por actividad; E2 retira esa
   restricción mediante migración compatible y conserva aprobación humana de
   blueprint y assessment;
-- `CVA_MODEL_MODE=mock` es el modo de cierre del producto y cloud; P10 sigue
-  deshabilitado. El rehearsal real sintético es una superficie separada y
-  nunca cambia esa configuración.
+- `CVA_MODEL_MODE=mock` es el modo de cierre del producto, del Service web y
+  del worker ordinario; P10 sigue deshabilitado. Una evaluación cloud sintética
+  puede aprovisionar un Job/SA eval-only separado, no invocable por el Service
+  web. El flag de infraestructura sólo entrega a esa superficie una referencia
+  no secreta y caps. El worker eval-only debe reclamar el job exacto, consumir
+  una autorización append-only ligada a
+  tenant/kind/aggregate/attempt, SHA candidato, boundary hash, hashes exactos de
+  artefactos, ruta/modelo, expiración y caps; recién entonces resuelve la clave
+  y construye el adapter. Sin esa secuencia el proveedor es inalcanzable.
 - en cloud, `CVA_DATABASE_URL` debe usar explícitamente
   `postgresql+psycopg://`; SQLite y drivers implícitos fallan antes del arranque;
 - `/api/health` es liveness sin dependencias y `/api/readiness` comprueba
@@ -78,7 +88,7 @@ make frontend-test
 make frontend-build
 make openai-convergence-dry-run
 # Sólo con autorización humana, IDs únicos, ledger durable, reporte y caps:
-make openai-convergence-real EXECUTION_ID=... AUTHORIZATION_ID=... LEDGER=... REPORT=...
+make openai-convergence-real EXECUTION_ID=... AUTHORIZATION_ID=... LEDGER=... REPORT=... SECRET_VERSION_RESOURCE=projects/.../versions/N
 make postgres-prepare CVA_TEST_POSTGRES_URL=postgresql://...
 make postgres-e2e CVA_TEST_POSTGRES_URL=postgresql://...
 make postgres-sensitive CVA_TEST_POSTGRES_URL=postgresql://...

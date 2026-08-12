@@ -39,6 +39,8 @@ from comprehension_verification.model_gateway import (
     OPENAI_GATEWAY_TIMEOUT_GRACE_SECONDS,
     OpenAIAdapterConfig,
     OpenAIResponsesAdapter,
+    ProviderBudgetError,
+    RequestCappedAdapter,
     build_mock_request,
     build_openai_cost_estimator,
     build_openai_routes,
@@ -813,3 +815,27 @@ def test_official_sdk_client_is_pinned_with_automatic_retries_disabled() -> None
         assert "openai==2.53.0 \\" in lock
         openai_block = lock.split("openai==2.53.0 \\", 1)[1].split("\n\n", 1)[0]
         assert "--hash=sha256:" in openai_block
+
+
+def test_authorization_request_cap_blocks_before_inner_transport() -> None:
+    class FakeInner:
+        config = OpenAIAdapterConfig(request_timeout_seconds=30)
+
+        def __init__(self) -> None:
+            self.calls = 0
+
+        async def invoke(self, **_kwargs: Any) -> Any:
+            self.calls += 1
+            return SimpleNamespace(status="ok")
+
+    inner = FakeInner()
+    capped = RequestCappedAdapter(inner, max_requests=1)  # type: ignore[arg-type]
+
+    assert asyncio.run(capped.invoke()).status == "ok"
+    with pytest.raises(
+        ProviderBudgetError,
+        match="SYNTHETIC_PROVIDER_REQUEST_CAP_EXCEEDED",
+    ):
+        asyncio.run(capped.invoke())
+    assert inner.calls == 1
+    assert capped.calls == 1

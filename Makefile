@@ -41,16 +41,18 @@ openai-convergence-real:
 	@test -n "$(AUTHORIZATION_ID)" || { echo "AUTHORIZATION_ID is required" >&2; exit 2; }
 	@test -n "$(LEDGER)" || { echo "LEDGER is required" >&2; exit 2; }
 	@test -n "$(REPORT)" || { echo "REPORT is required" >&2; exit 2; }
-	@$(PYTHON) scripts/run_openai_evals.py \
+	@test -n "$(SECRET_VERSION_RESOURCE)" || { echo "SECRET_VERSION_RESOURCE is required" >&2; exit 2; }
+	@env -u CVA_OPENAI_API_KEY $(PYTHON) scripts/run_openai_evals.py \
 		--mode convergence-real \
 		--allow-billable \
 		--execution-id "$(EXECUTION_ID)" \
 		--authorization-id "$(AUTHORIZATION_ID)" \
 		--ledger "$(LEDGER)" \
 		--report-path "$(REPORT)" \
+		--secret-version-resource "$(SECRET_VERSION_RESOURCE)" \
 		--max-total-cost-usd "$${CVA_OPENAI_CONVERGENCE_MAX_TOTAL_USD:-0.75}" \
 		--max-call-cost-usd "$${CVA_OPENAI_CONVERGENCE_MAX_CALL_USD:-0.10}" \
-		--max-provider-requests 30
+		--max-provider-requests 24
 
 openai-canary-dry-run:
 	@test -n "$(CASE_ID)" || { echo "CASE_ID is required" >&2; exit 2; }

@@ -21,11 +21,18 @@ from comprehension_verification.evaluation_gate import (
     EvaluationAuthorizationConsumed,
     EvaluationAuthorizationLedger,
 )
-from comprehension_verification.model_gateway import DeterministicMockAdapter
+from comprehension_verification.model_gateway import (
+    DeterministicMockAdapter,
+    MockBehavior,
+)
 from comprehension_verification.rehearsal import (
     BASE_SCENARIO_ID,
+    P05_GOLDEN_FIXTURE_PATH,
     VARIANT_SCENARIO_ID,
+    build_p05_golden_negative_request,
     build_rehearsal_checkpoints,
+    evaluate_p05_golden_negative,
+    p08_decision_diagnostics,
     rehearsal_boundary_material,
     run_offline_convergence,
     run_real_convergence,
@@ -105,9 +112,12 @@ def test_historical_billable_gates_are_permanently_closed(mode: str) -> None:
 def test_product_rehearsal_fixture_is_synthetic_and_versioned() -> None:
     raw = json.loads(FIXTURE.read_text(encoding="utf-8"))
     assert raw["schema_version"] == (
-        "stage2-product-rehearsal-fixture/1.2.0"
+        "stage2-product-rehearsal-fixture/1.3.0"
     )
     assert raw["classification"] == "SYNTHETIC_ONLY_NO_STUDENT_DATA"
+    assert raw["p05_golden_fixture"] == (
+        "tests/fixtures/openai_evals/v2/p05_golden_checkpoints.json"
+    )
     assert set(raw["checkpoints"]) == {"A", "B", "C", "D"}
     assert [item["scenario_id"] for item in raw["scenarios"]] == [
         BASE_SCENARIO_ID,
@@ -131,6 +141,38 @@ def test_product_rehearsal_fixture_is_synthetic_and_versioned() -> None:
         "p06_receives_planning_policy": True,
         "failures_are_content_free": True,
     }
+
+
+def test_p05_golden_positive_is_semantically_qualified_and_negative_is_known() -> None:
+    raw = json.loads(P05_GOLDEN_FIXTURE_PATH.read_text(encoding="utf-8"))
+    assert raw["schema_version"] == "stage2-p05-golden-checkpoints/1.0.0"
+    assert raw["classification"] == "SYNTHETIC_ONLY_NO_STUDENT_DATA"
+    semantic_review = raw["golden_positive"]["semantic_review"]
+    assert semantic_review["status"] == (
+        "SEMANTICALLY_REVIEWED_SYNTHETIC_FIXTURE"
+    )
+    assert len(semantic_review["rationale"]) >= 5
+
+    positive = build_rehearsal_checkpoints(BASE_SCENARIO_ID).p05_request
+    assert m.AssessmentBlueprint.model_validate(positive.blueprint)
+    assert all(
+        value is not False
+        for key, value in positive.deterministic_preflight.model_dump(
+            mode="json"
+        ).items()
+        if key not in {"blueprint_id", "blueprint_version", "schema_version"}
+    )
+    assert positive.blueprint.dimensions[0].name == (
+        "Explicación causal de la invalidación de caché"
+    )
+
+    negative = build_p05_golden_negative_request()
+    assert negative.deterministic_preflight.policy_constraints_match is False
+    assert negative.deterministic_preflight.catalog_plan_feasible is False
+    result = evaluate_p05_golden_negative()
+    assert result["status"] == "PASS"
+    assert result["actual_recommendation"] == "REJECT"
+    assert result["provider_requests"] == 0
 
 
 @pytest.mark.parametrize(
@@ -174,6 +216,74 @@ def test_relevant_variant_changes_the_checkpoint_boundary() -> None:
         variant.p04_request.blueprint_policy.structured_justification_policy.mode
         == m.StructuredJustificationMode.ALL
     )
+
+
+def test_p08_decision_diagnostics_are_content_free_and_reproducible() -> None:
+    checkpoint = build_rehearsal_checkpoints(BASE_SCENARIO_ID)
+    adapter = DeterministicMockAdapter()
+    accepted = m.QuestionReviewResult.model_validate(
+        adapter.factory.output_for(
+            "P08_QUESTION_REVIEW_V1",
+            checkpoint.p08_request,
+            MockBehavior.HAPPY,
+        ).model_dump(mode="json")
+    )
+    accepted_metadata = p08_decision_diagnostics(
+        accepted, checkpoint.p08_request.validation_policy
+    )
+    assert accepted_metadata["decision"] == "ACCEPT"
+    assert accepted_metadata["criticality"] == "NON_CRITICAL"
+    assert accepted_metadata["diagnostic_codes"] == [
+        "P08_DECISION_ACCEPT"
+    ]
+    assert all(
+        item["relation"] == "AT_OR_ABOVE"
+        for item in accepted_metadata["score_thresholds"].values()
+    )
+
+    rejected_raw = accepted.model_dump(mode="json")
+    rejected_raw["review"]["decision"] = "REJECT"
+    rejected_raw["review"]["critical_failure_codes"] = ["UNGROUNDED"]
+    rejected_raw["review"]["scores"]["groundedness"] = 0.4
+    rejected_raw["review"]["confidence"] = 0.5
+    rejected = m.QuestionReviewResult.model_validate(rejected_raw)
+    rejected_metadata = p08_decision_diagnostics(
+        rejected, checkpoint.p08_request.validation_policy
+    )
+    serialized = json.dumps(rejected_metadata, sort_keys=True)
+    assert rejected_metadata["decision"] == "REJECT"
+    assert rejected_metadata["criticality"] == "CRITICAL"
+    assert rejected_metadata["score_thresholds"]["groundedness"] == {
+        "score": 0.4,
+        "threshold": 0.9,
+        "relation": "BELOW",
+    }
+    assert rejected_metadata["failure_categories"] == [
+        "GROUNDEDNESS_BELOW_THRESHOLD",
+        "CONFIDENCE_BELOW_THRESHOLD",
+        "MODEL_DECLARED_CRITICAL_FAILURE",
+    ]
+    assert "UNGROUNDED" not in serialized
+    assert rejected_metadata["provider_critical_code_hashes"][0].startswith(
+        "sha256:"
+    )
+
+    escalated_raw = accepted.model_dump(mode="json")
+    escalated_raw["review"]["decision"] = "ESCALATE"
+    escalated_raw["review"]["confidence"] = 0.5
+    escalated = m.QuestionReviewResult.model_validate(escalated_raw)
+    escalated_metadata = p08_decision_diagnostics(
+        escalated, checkpoint.p08_request.validation_policy
+    )
+    assert escalated_metadata["decision"] == "ESCALATE"
+    assert escalated_metadata["criticality"] == "NON_CRITICAL"
+    assert escalated_metadata["failure_categories"] == [
+        "CONFIDENCE_BELOW_THRESHOLD"
+    ]
+    assert escalated_metadata["diagnostic_codes"] == [
+        "P08_DECISION_ESCALATE",
+        "P08_CONFIDENCE_BELOW_THRESHOLD",
+    ]
 
 
 def test_offline_convergence_executes_sweep_two_chains_and_variant() -> None:
@@ -420,11 +530,14 @@ def _real_cli_args(tmp_path: Path) -> argparse.Namespace:
         allow_billable=True,
         max_total_cost_usd=0.75,
         max_call_cost_usd=0.10,
-        max_provider_requests=30,
+        max_provider_requests=24,
         execution_id="phase2-test-execution",
         authorization_id="phase2-test-authorization",
         ledger=tmp_path / "authorization.sqlite3",
         report_path=tmp_path / "report.json",
+        secret_version_resource=(
+            "projects/test-project/secrets/openai-key/versions/1"
+        ),
         p04_evidence_recovery=False,
     )
 
@@ -435,19 +548,31 @@ def test_real_cli_reserves_before_key_read_and_consumes_failed_gate(
 ) -> None:
     args = _real_cli_args(tmp_path)
     monkeypatch.delenv("CVA_OPENAI_API_KEY", raising=False)
+
+    def unavailable(resource: str) -> SecretStr:
+        assert resource == args.secret_version_resource
+        record = EvaluationAuthorizationLedger(args.ledger).record(
+            args.execution_id
+        )
+        assert record["status"] == "RESERVED"
+        raise eval_harness.ProviderCredentialUnavailable
+
+    monkeypatch.setattr(eval_harness, "resolve_openai_api_key", unavailable)
     with pytest.raises(
         eval_harness.OpenAIEvalBlocked,
-        match="OPENAI_CONVERGENCE_API_KEY_REQUIRED",
+        match="OPENAI_CONVERGENCE_CREDENTIAL_UNAVAILABLE",
     ):
         eval_harness._run_convergence_cli(args)
     record = EvaluationAuthorizationLedger(args.ledger).record(
         args.execution_id
     )
     assert record["status"] == "FAILED"
-    assert record["failure_code"] == "OPENAI_CONVERGENCE_API_KEY_REQUIRED"
+    assert record["failure_code"] == (
+        "OPENAI_CONVERGENCE_CREDENTIAL_UNAVAILABLE"
+    )
     report = json.loads(args.report_path.read_text(encoding="utf-8"))
     assert report["failure"]["codes"] == [
-        "OPENAI_CONVERGENCE_API_KEY_REQUIRED"
+        "OPENAI_CONVERGENCE_CREDENTIAL_UNAVAILABLE"
     ]
     with pytest.raises(
         eval_harness.OpenAIEvalBlocked,

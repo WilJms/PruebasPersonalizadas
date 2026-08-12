@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import base64
 from datetime import UTC, datetime, timedelta
 import os
 from pathlib import Path
@@ -17,6 +18,7 @@ import pytest
 from sqlalchemy import text
 from fastapi.testclient import TestClient
 from pydantic import ValidationError
+from pydantic import SecretStr
 
 from comprehension_verification.model_gateway import (
     LUNA_MODEL_ID,
@@ -27,7 +29,11 @@ from comprehension_verification.model_gateway import (
     prompt_spec,
 )
 from comprehension_verification.model_gateway.openai_pricing import estimate_cost_usd
-from comprehension_verification.web import worker
+from comprehension_verification.provider_authorization import (
+    SyntheticProviderGrant,
+    synthetic_provider_boundary_hash,
+)
+from comprehension_verification.web import provider_secrets, worker
 from comprehension_verification.web.app import create_app
 from comprehension_verification.web.object_store import MemoryObjectStore
 from comprehension_verification.web.repository import Conflict, JobRow, Repository
@@ -95,6 +101,7 @@ def _cloud_settings(**overrides: object) -> dict[str, object]:
         ({"object_store_mode": "memory"}, "private R2"),
         ({"job_runner_mode": "inline"}, "Cloud Run Jobs"),
         ({"model_mode": "real"}, "mock model gateway"),
+        ({"worker_model_mode": "real"}, "Input should be 'mock'"),
         (
             {"openai_api_key": "sk-project-synthetic-placeholder-not-a-real-key"},
             "web runtime must not receive",
@@ -124,10 +131,10 @@ def test_cloud_accepts_only_complete_explicit_psycopg_configuration() -> None:
     assert settings.p10_enabled is False
 
 
-def test_web_with_real_worker_has_no_key_or_direct_model_execution_path() -> None:
-    settings = Settings(**_cloud_settings(worker_model_mode="real"))
+def test_web_and_ordinary_worker_have_no_key_or_real_execution_path() -> None:
+    settings = Settings(**_cloud_settings())
     assert settings.model_mode == "mock"
-    assert settings.worker_model_mode == "real"
+    assert settings.worker_model_mode == "mock"
     assert settings.openai_api_key is None
 
     assert not hasattr(Stage1Service, "_direct_gateway")
@@ -307,27 +314,123 @@ def test_cloud_worker_settings_exclude_web_auth_and_session_secrets() -> None:
     assert "job_runner_mode" not in WorkerSettings.model_fields
 
 
-def test_real_worker_requires_secret_and_mock_worker_rejects_it() -> None:
-    with pytest.raises(ValidationError, match="managed OpenAI project API key"):
+def _synthetic_worker_capability() -> dict[str, object]:
+    return {
+        "openai_secret_version_resource": (
+            "projects/project-stage1/secrets/cva-openai-api-key/versions/2"
+        ),
+        "synthetic_evaluation_candidate_sha": "a" * 40,
+        "synthetic_evaluation_max_requests": 24,
+    }
+
+
+def _synthetic_provider_grant(job_id: str) -> SyntheticProviderGrant:
+    capability = _synthetic_worker_capability()
+    return SyntheticProviderGrant(
+        authorization_id="authorization_runtime_profile",
+        authorization_hash="sha256:" + "b" * 64,
+        tenant_id="tnt_synthetic",
+        job_id=job_id,
+        job_kind="ACTIVITY",
+        aggregate_id="act_synthetic",
+        claim_attempt=1,
+        artifact_hashes=frozenset({"sha256:" + "c" * 64}),
+        candidate_sha=str(capability["synthetic_evaluation_candidate_sha"]),
+        boundary_hash=synthetic_provider_boundary_hash(),
+        route_profile="LUNA_BASELINE_V1",
+        model="gpt-5.6-luna",
+        secret_version_resource=str(
+            capability["openai_secret_version_resource"]
+        ),
+        max_requests=24,
+        max_cost_usd=0.50,
+    )
+
+
+def test_real_worker_requires_capability_metadata_and_never_accepts_a_key() -> None:
+    with pytest.raises(ValidationError, match="pinned secret resource"):
         WorkerSettings(**_cloud_settings(model_mode="real"))
 
     real = WorkerSettings(
         **_cloud_settings(
             model_mode="real",
-            openai_api_key="sk-project-synthetic-placeholder-not-a-real-key",
-            synthetic_artifact_sha256_allowlist="sha256:" + "a" * 64,
+            **_synthetic_worker_capability(),
         )
     )
     assert real.model_mode == "real"
-    assert real.openai_api_key is not None
-    assert "synthetic-placeholder" not in repr(real)
+    assert "openai_api_key" not in WorkerSettings.model_fields
+    assert "OPENAI_API_KEY" not in repr(real)
 
-    with pytest.raises(ValidationError, match="mock worker mode must not receive"):
+    with pytest.raises(
+        ValidationError,
+        match="mock worker mode must not receive synthetic provider capability",
+    ):
         WorkerSettings(
             **_cloud_settings(
-                openai_api_key="sk-project-synthetic-placeholder-not-a-real-key"
+                **_synthetic_worker_capability(),
             )
         )
+
+
+def test_provider_secret_resolver_requires_a_pinned_version_before_auth(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def forbidden_default(**_kwargs: object) -> tuple[object, None]:
+        raise AssertionError("credential discovery must not run")
+
+    monkeypatch.setattr(provider_secrets.google.auth, "default", forbidden_default)
+    with pytest.raises(ValueError, match="pinned numeric version"):
+        provider_secrets.resolve_openai_api_key(
+            "projects/test-project/secrets/openai-key/versions/latest"
+        )
+
+
+def test_provider_secret_resolver_returns_secretstr_and_sanitizes_failures(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    resource = "projects/test-project/secrets/openai-key/versions/1"
+    encoded = base64.b64encode(b"synthetic-secret-value").decode("ascii")
+    responses = [
+        SimpleNamespace(
+            status_code=200,
+            json=lambda: {"payload": {"data": encoded}},
+        ),
+        SimpleNamespace(
+            status_code=403,
+            json=lambda: {"detail": "sensitive"},
+        ),
+    ]
+    closed: list[bool] = []
+
+    class FakeSession:
+        def __init__(self, _credentials: object) -> None:
+            pass
+
+        def get(self, url: str, *, timeout: int) -> object:
+            assert url.endswith(f"/{resource}:access")
+            assert timeout == 15
+            return responses.pop(0)
+
+        def close(self) -> None:
+            closed.append(True)
+
+    monkeypatch.setattr(
+        provider_secrets.google.auth,
+        "default",
+        lambda **_kwargs: (object(), "test-project"),
+    )
+    monkeypatch.setattr(provider_secrets, "AuthorizedSession", FakeSession)
+
+    value = provider_secrets.resolve_openai_api_key(resource)
+    assert isinstance(value, SecretStr)
+    assert value.get_secret_value() == "synthetic-secret-value"
+    with pytest.raises(
+        provider_secrets.ProviderCredentialUnavailable
+    ) as captured:
+        provider_secrets.resolve_openai_api_key(resource)
+    assert captured.value.code == "SYNTHETIC_PROVIDER_CREDENTIAL_UNAVAILABLE"
+    assert "sensitive" not in str(captured.value)
+    assert closed == [True, True]
 
 
 def test_real_worker_profile_has_no_automatic_transport_retry() -> None:
@@ -335,16 +438,19 @@ def test_real_worker_profile_has_no_automatic_transport_retry() -> None:
         environment="test",
         database_url="sqlite+pysqlite://",
         model_mode="real",
-        openai_api_key="sk-project-synthetic-placeholder-not-a-real-key",
-        synthetic_artifact_sha256_allowlist="sha256:" + "a" * 64,
+        claim_job_id="job_synthetic",
+        **_synthetic_worker_capability(),
         max_job_cost_usd=0.55,
     )
+    grant = _synthetic_provider_grant("job_synthetic")
     runtime = build_worker_runtime(
         settings,
         repository=Repository("sqlite+pysqlite://"),
         object_store=MemoryObjectStore(
             secret="runtime-profile-test-secret-with-at-least-32-bytes"
         ),
+        provider_grant=grant,
+        api_key=SecretStr("sk-project-synthetic-placeholder-not-a-real-key"),
     )
 
     assert runtime.service.gateway_factory is not None
@@ -618,8 +724,24 @@ def test_worker_execution_claims_at_most_one_job_and_persists_failure(
         ),
     )
     runtime = SimpleNamespace(repository=repository, service=service)
-    monkeypatch.setattr(worker, "get_worker_settings", lambda: object())
-    monkeypatch.setattr(worker, "build_worker_runtime", lambda _settings: runtime)
+    settings = WorkerSettings(
+        environment="test",
+        database_url="sqlite+pysqlite://",
+    )
+    monkeypatch.setattr(worker, "get_worker_settings", lambda: settings)
+    monkeypatch.setattr(
+        worker,
+        "build_worker_bootstrap_runtime",
+        lambda _settings: SimpleNamespace(
+            repository=repository,
+            object_store=service.object_store,
+        ),
+    )
+    monkeypatch.setattr(
+        worker,
+        "build_worker_runtime",
+        lambda _settings, **_kwargs: runtime,
+    )
 
     assert asyncio.run(worker.run_once()) == 1
     failed = repository.job_status("job_first", "tnt_worker")

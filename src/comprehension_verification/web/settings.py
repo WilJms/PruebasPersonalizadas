@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from functools import lru_cache
-import re
 from typing import Literal
 
 from pydantic import Field, SecretStr, model_validator
@@ -12,18 +11,7 @@ from sqlalchemy.engine import make_url
 from sqlalchemy.exc import ArgumentError
 
 from ..model_gateway import OPENAI_DEFAULT_REQUEST_TIMEOUT_SECONDS
-
-
-_SHA256 = re.compile(r"^sha256:[a-f0-9]{64}$")
-
-
-def _parse_synthetic_hash_allowlist(raw: str) -> frozenset[str]:
-    values = frozenset(item.strip() for item in raw.split(",") if item.strip())
-    if any(_SHA256.fullmatch(value) is None for value in values):
-        raise ValueError(
-            "synthetic artifact allowlist must contain canonical sha256 hashes"
-        )
-    return values
+from ..provider_authorization import validate_pinned_secret_resource
 
 
 class Settings(BaseSettings):
@@ -41,7 +29,7 @@ class Settings(BaseSettings):
     object_store_mode: Literal["memory", "r2"] = "memory"
     job_runner_mode: Literal["inline", "cloud_run"] = "inline"
     model_mode: Literal["mock", "real"] = "mock"
-    worker_model_mode: Literal["mock", "real"] = "mock"
+    worker_model_mode: Literal["mock"] = "mock"
     p10_enabled: bool = False
     openai_api_key: SecretStr | None = None
 
@@ -171,11 +159,15 @@ class WorkerSettings(BaseSettings):
     object_store_mode: Literal["memory", "r2"] = "memory"
     model_mode: Literal["mock", "real"] = "mock"
     p10_enabled: bool = False
-    openai_api_key: SecretStr | None = None
     claim_job_id: str | None = Field(
         default=None, pattern=r"^[a-z][a-z0-9_-]{2,127}$"
     )
-    synthetic_artifact_sha256_allowlist: str = ""
+    openai_secret_version_resource: str | None = None
+    synthetic_evaluation_candidate_sha: str | None = Field(
+        default=None,
+        pattern=r"^[a-f0-9]{40}$",
+    )
+    synthetic_evaluation_max_requests: int = Field(default=32, ge=1, le=64)
     openai_request_timeout_seconds: float = Field(
         default=OPENAI_DEFAULT_REQUEST_TIMEOUT_SECONDS,
         ge=5.0,
@@ -195,30 +187,33 @@ class WorkerSettings(BaseSettings):
     require_libmagic: bool = False
     parser_timeout_seconds: int = Field(default=30, ge=5, le=120)
 
-    @property
-    def synthetic_artifact_hashes(self) -> frozenset[str]:
-        """Server-controlled corpus boundary for product-shaped real calls."""
-
-        return _parse_synthetic_hash_allowlist(
-            self.synthetic_artifact_sha256_allowlist
-        )
-
     @model_validator(mode="after")
     def experimental_worker_guards(self) -> "WorkerSettings":
         if self.p10_enabled:
             raise ValueError("P10 is disabled throughout the experimental environment")
-        key_configured = bool(
-            self.openai_api_key
-            and self.openai_api_key.get_secret_value().strip()
-        )
-        if self.model_mode == "real" and not key_configured:
-            raise ValueError("real worker mode requires a managed OpenAI project API key")
-        if self.model_mode == "mock" and key_configured:
-            raise ValueError("mock worker mode must not receive OPENAI_API_KEY")
-        synthetic_hashes = self.synthetic_artifact_hashes
-        if self.model_mode == "real" and not synthetic_hashes:
+        if self.model_mode == "real":
+            if self.claim_job_id is None:
+                raise ValueError(
+                    "synthetic evaluation mode requires the exact dispatched claim job ID"
+                )
+            if self.openai_secret_version_resource is None:
+                raise ValueError(
+                    "synthetic evaluation mode requires a pinned secret resource"
+                )
+            validate_pinned_secret_resource(self.openai_secret_version_resource)
+            if self.synthetic_evaluation_candidate_sha is None:
+                raise ValueError(
+                    "synthetic evaluation mode requires an exact candidate SHA"
+                )
+        elif any(
+            value is not None
+            for value in (
+                self.openai_secret_version_resource,
+                self.synthetic_evaluation_candidate_sha,
+            )
+        ):
             raise ValueError(
-                "real worker mode requires a server-controlled synthetic artifact allowlist"
+                "mock worker mode must not receive synthetic provider capability metadata"
             )
         if self.environment == "cloud":
             if self.claim_job_id is None:

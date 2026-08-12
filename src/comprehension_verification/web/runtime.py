@@ -4,6 +4,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Callable
+
+from pydantic import SecretStr
 
 from .auth import AuthService
 from ..model_gateway import (
@@ -12,11 +15,16 @@ from ..model_gateway import (
     ModelGateway,
     OpenAIAdapterConfig,
     OpenAIResponsesAdapter,
+    RequestCappedAdapter,
     OPENAI_GATEWAY_TIMEOUT_GRACE_SECONDS,
     OPENAI_ROUTE_PROFILE_MAX_TRANSIENT_RETRIES,
     build_openai_cost_estimator,
     build_openai_routes,
     estimate_openai_input_tokens,
+)
+from ..provider_authorization import (
+    SyntheticProviderGrant,
+    synthetic_provider_boundary_hash,
 )
 from ..parsers import harden_parent_process
 from .jobs import CloudRunJobRunner, InlineJobRunner, JobRunner
@@ -44,6 +52,15 @@ class WorkerRuntime:
     repository: Repository
     object_store: ObjectStore
     service: Stage1Service
+
+
+@dataclass(frozen=True, slots=True)
+class WorkerBootstrapRuntime:
+    """Credential-free foundation used to claim and attest one exact job."""
+
+    settings: WorkerSettings
+    repository: Repository
+    object_store: ObjectStore
 
 
 def _prepare_local_database(settings: Settings | WorkerSettings) -> None:
@@ -112,13 +129,13 @@ def build_runtime(
     )
 
 
-def build_worker_runtime(
+def build_worker_bootstrap_runtime(
     settings: WorkerSettings,
     *,
     repository: Repository | None = None,
     object_store: ObjectStore | None = None,
-) -> WorkerRuntime:
-    """Build only the adapters required to claim and process one durable job."""
+) -> WorkerBootstrapRuntime:
+    """Build storage only; this path cannot resolve or construct a provider."""
 
     _prepare_local_database(settings)
     if settings.environment == "cloud":
@@ -141,19 +158,74 @@ def build_worker_runtime(
             upload_ttl_seconds=settings.upload_url_ttl_seconds,
             download_ttl_seconds=settings.download_url_ttl_seconds,
         )
+    return WorkerBootstrapRuntime(
+        settings=settings,
+        repository=repo,
+        object_store=store,
+    )
+
+
+def build_worker_runtime(
+    settings: WorkerSettings,
+    *,
+    repository: Repository | None = None,
+    object_store: ObjectStore | None = None,
+    provider_grant: SyntheticProviderGrant | None = None,
+    api_key: SecretStr | None = None,
+    openai_adapter_factory: Callable[..., OpenAIResponsesAdapter] = (
+        OpenAIResponsesAdapter
+    ),
+) -> WorkerRuntime:
+    """Build processing adapters after the synthetic claim gate, if required."""
+
+    foundation = build_worker_bootstrap_runtime(
+        settings,
+        repository=repository,
+        object_store=object_store,
+    )
+    repo = foundation.repository
+    store = foundation.object_store
+    effective_settings = settings
 
     gateway_factory = None
     if settings.model_mode == "real":
-        routes = build_openai_routes(max_call_cost_usd=settings.max_job_cost_usd)
-        adapter = OpenAIResponsesAdapter(
-            api_key=settings.openai_api_key,
-            config=OpenAIAdapterConfig(
-                request_timeout_seconds=settings.openai_request_timeout_seconds
+        if provider_grant is None or api_key is None:
+            raise ValueError(
+                "real provider construction requires a consumed synthetic job grant"
+            )
+        if (
+            settings.claim_job_id is None
+            or settings.openai_secret_version_resource is None
+            or settings.synthetic_evaluation_candidate_sha is None
+            or provider_grant.job_id != settings.claim_job_id
+            or provider_grant.candidate_sha
+            != settings.synthetic_evaluation_candidate_sha
+            or provider_grant.boundary_hash != synthetic_provider_boundary_hash()
+            or provider_grant.secret_version_resource
+            != settings.openai_secret_version_resource
+            or provider_grant.max_requests
+            > settings.synthetic_evaluation_max_requests
+            or provider_grant.max_cost_usd > settings.max_job_cost_usd
+        ):
+            raise ValueError("synthetic provider grant does not match worker boundary")
+        effective_settings = settings.model_copy(
+            update={"max_job_cost_usd": provider_grant.max_cost_usd}
+        )
+        routes = build_openai_routes(max_call_cost_usd=provider_grant.max_cost_usd)
+        adapter = RequestCappedAdapter(
+            openai_adapter_factory(
+                api_key=api_key,
+                config=OpenAIAdapterConfig(
+                    request_timeout_seconds=settings.openai_request_timeout_seconds
+                ),
             ),
+            max_requests=provider_grant.max_requests,
         )
         cost_estimator = build_openai_cost_estimator(routes)
 
         def real_gateway(job_id: str) -> ModelGateway:
+            if job_id != provider_grant.job_id:
+                raise ValueError("synthetic provider grant cannot cross job scope")
             return ModelGateway(
                 GatewayConfig(
                     mode=GatewayMode.REAL,
@@ -163,7 +235,7 @@ def build_worker_runtime(
                         + OPENAI_GATEWAY_TIMEOUT_GRACE_SECONDS
                     ),
                     max_retries=OPENAI_ROUTE_PROFILE_MAX_TRANSIENT_RETRIES,
-                    default_budget_usd=settings.max_job_cost_usd,
+                    default_budget_usd=provider_grant.max_cost_usd,
                 ),
                 real_routes=routes,
                 adapters={"openai": adapter},
@@ -175,15 +247,16 @@ def build_worker_runtime(
         gateway_factory = real_gateway
 
     service = Stage1Service(
-        settings=settings,
+        settings=effective_settings,
         repository=repo,
         object_store=store,
         gateway_factory=gateway_factory,
+        provider_grant=provider_grant,
     )
     stage2 = Stage2Service(service)
     service.set_question_action_processor(stage2.process_question_action_retry)
     return WorkerRuntime(
-        settings=settings,
+        settings=effective_settings,
         repository=repo,
         object_store=store,
         service=service,

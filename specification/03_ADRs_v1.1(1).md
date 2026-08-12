@@ -477,11 +477,25 @@ se envía mientras no exista compatibilidad oficial documentada para esa
 combinación. No hay selección dinámica, fallback silencioso, estado de
 conversación ni reintentos internos del SDK.
 
-La clave se monta solo en el Cloud Run Job worker desde una versión explícita
-de Secret Manager. El Service web no recibe la clave. Terraform conserva por
-defecto `CVA_MODEL_MODE=mock`, `CVA_P10_ENABLED=false` y ningún contenedor de
-secreto; habilitar el proveedor real exige un cambio posterior, explícito y
-revisable. CI y pruebas offline nunca necesitan una clave.
+El Service web y el worker ordinario no reciben la clave y siempre conservan
+`CVA_MODEL_MODE=mock`. El opt-in posterior de evaluación sintética crea un
+Cloud Run Job y una service account eval-only separados; el Service web no
+puede invocar ese Job y la cuenta del worker ordinario no puede leer OpenAI. La
+superficie eval-only recibe una referencia no secreta a una versión numérica
+fijada de Secret Manager, SHA candidato y ceilings; nunca monta
+`CVA_OPENAI_API_KEY` en el entorno. Sólo su service account posee IAM para leer
+esa versión.
+
+Incluso con ese opt-in, el proceso debe primero reclamar el `job_id` exacto y
+consumir transaccionalmente una autorización server-side append-only. La
+autorización liga tenant, kind, aggregate, claim attempt, conjunto exacto de
+hashes de artefactos sellados, SHA candidato, hash de prompts/schemas/
+validators/routing, modelo Luna, versión de secreto, expiración y caps de
+requests/costo. Un segundo registro append-only, único por authorization y
+job, materializa el consumo exactly-once. Sólo después de ambas operaciones se
+permite resolver el secreto y construir el transporte. Un flag, un allowlist
+global o una clave de entorno nunca sustituyen esta attestation. CI y pruebas
+offline nunca necesitan una clave.
 
 **Contexto:** la documentación oficial observada publica esfuerzos
 `low`/`medium`/`high` para GPT-5.6 Luna, pero no acredita `minimal` ni snapshots
@@ -498,6 +512,11 @@ es reversible retornando P11 a mock o sustituyendo la ruta mediante una nueva
 decisión autorizada. La aceptación semántica y el despliegue real requieren
 credenciales, presupuesto y checkpoints humanos posteriores; esta ADR no
 autoriza llamadas facturables ni datos reales.
+
+El modo real es por-job y eval-only, no un modo general del producto. Un job
+ordinario, un claim distinto, attestation ausente/consumida/expirada, hash de
+artefacto divergente o boundary/SHA/cap distinto falla como `SECURITY` antes
+del resolver, del adapter y de cualquier request.
 
 **Evidencia requerida:** pruebas de matriz y payload, schemas estrictos,
 refusal/incomplete, retries acotados, presupuesto previo, sanitización de

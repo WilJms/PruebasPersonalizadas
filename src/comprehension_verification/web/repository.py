@@ -36,6 +36,12 @@ from sqlalchemy.pool import StaticPool
 
 from ..canonical import canonical_hash, stable_id
 from ..contracts import models as m
+from ..provider_authorization import (
+    SYNTHETIC_PROVIDER_AUTHORIZATION_VERSION,
+    SYNTHETIC_PROVIDER_CLAIM_VERSION,
+    SyntheticProviderAuthorizationSpec,
+    SyntheticProviderGrant,
+)
 
 
 IDEMPOTENCY_CAPABILITY_CONSTRAINT = "ck_idempotency_keys_safe_response"
@@ -325,6 +331,81 @@ class JobRow(Base):
     finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
 
+class SyntheticProviderAuthorizationRow(Base):
+    """Append-only server attestation for one exact synthetic job claim."""
+
+    __tablename__ = "synthetic_provider_authorizations"
+    __table_args__ = (
+        UniqueConstraint("job_id", name="uq_synthetic_provider_authorization_job"),
+        UniqueConstraint(
+            "authorization_hash",
+            name="uq_synthetic_provider_authorization_hash",
+        ),
+        CheckConstraint(
+            "expected_claim_attempt between 1 and 10",
+            name="ck_synthetic_provider_authorization_attempt",
+        ),
+        CheckConstraint(
+            "max_requests between 1 and 64",
+            name="ck_synthetic_provider_authorization_requests",
+        ),
+        CheckConstraint(
+            "max_cost_usd between 0.01 and 10.0",
+            name="ck_synthetic_provider_authorization_cost",
+        ),
+        CheckConstraint(
+            "classification = 'SYNTHETIC_ONLY_NO_STUDENT_DATA'",
+            name="ck_synthetic_provider_authorization_classification",
+        ),
+    )
+    id: Mapped[str] = mapped_column(String(128), primary_key=True)
+    tenant_id: Mapped[str] = mapped_column(String(128), index=True)
+    job_id: Mapped[str] = mapped_column(String(128), index=True)
+    job_kind: Mapped[str] = mapped_column(String(32))
+    aggregate_id: Mapped[str] = mapped_column(String(128), index=True)
+    expected_claim_attempt: Mapped[int] = mapped_column(Integer)
+    artifact_hashes: Mapped[list[str]] = mapped_column(JSON)
+    candidate_sha: Mapped[str] = mapped_column(String(40))
+    boundary_hash: Mapped[str] = mapped_column(String(71))
+    route_profile: Mapped[str] = mapped_column(String(128))
+    model: Mapped[str] = mapped_column(String(128))
+    secret_version_resource: Mapped[str] = mapped_column(String(512))
+    max_requests: Mapped[int] = mapped_column(Integer)
+    max_cost_usd: Mapped[float] = mapped_column(Float)
+    classification: Mapped[str] = mapped_column(String(64))
+    schema_version: Mapped[str] = mapped_column(String(128))
+    authorization_hash: Mapped[str] = mapped_column(String(71))
+    created_by: Mapped[str] = mapped_column(String(128))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class SyntheticProviderClaimRow(Base):
+    """Append-only exactly-once consumption fact for an authorization."""
+
+    __tablename__ = "synthetic_provider_claims"
+    __table_args__ = (
+        UniqueConstraint(
+            "authorization_id", name="uq_synthetic_provider_claim_authorization"
+        ),
+        UniqueConstraint("job_id", name="uq_synthetic_provider_claim_job"),
+        CheckConstraint(
+            "claim_attempt between 1 and 10",
+            name="ck_synthetic_provider_claim_attempt",
+        ),
+    )
+    id: Mapped[str] = mapped_column(String(128), primary_key=True)
+    authorization_id: Mapped[str] = mapped_column(String(128), index=True)
+    authorization_hash: Mapped[str] = mapped_column(String(71))
+    tenant_id: Mapped[str] = mapped_column(String(128), index=True)
+    job_id: Mapped[str] = mapped_column(String(128), index=True)
+    claim_attempt: Mapped[int] = mapped_column(Integer)
+    candidate_sha: Mapped[str] = mapped_column(String(40))
+    boundary_hash: Mapped[str] = mapped_column(String(71))
+    schema_version: Mapped[str] = mapped_column(String(128))
+    claimed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
+
+
 class StageRunRow(Base):
     __tablename__ = "stage_runs"
     __table_args__ = (
@@ -548,6 +629,8 @@ _STAGE2_APPEND_ONLY_TABLES = (
     "feedback_events",
     "bulk_approval_requests",
     "bulk_approval_records",
+    "synthetic_provider_authorizations",
+    "synthetic_provider_claims",
 )
 
 _POSTGRES_REQUIRED_COLUMNS = frozenset(
@@ -601,6 +684,36 @@ _POSTGRES_REQUIRED_CONSTRAINTS = {
     ("bulk_approval_requests", "ck_bulk_request_count"): "c",
     ("bulk_approval_records", "uq_bulk_record_request"): "u",
     ("bulk_approval_records", "ck_bulk_record_counts"): "c",
+    (
+        "synthetic_provider_authorizations",
+        "uq_synthetic_provider_authorization_job",
+    ): "u",
+    (
+        "synthetic_provider_authorizations",
+        "uq_synthetic_provider_authorization_hash",
+    ): "u",
+    (
+        "synthetic_provider_authorizations",
+        "ck_synthetic_provider_authorization_attempt",
+    ): "c",
+    (
+        "synthetic_provider_authorizations",
+        "ck_synthetic_provider_authorization_requests",
+    ): "c",
+    (
+        "synthetic_provider_authorizations",
+        "ck_synthetic_provider_authorization_cost",
+    ): "c",
+    (
+        "synthetic_provider_authorizations",
+        "ck_synthetic_provider_authorization_classification",
+    ): "c",
+    (
+        "synthetic_provider_claims",
+        "uq_synthetic_provider_claim_authorization",
+    ): "u",
+    ("synthetic_provider_claims", "uq_synthetic_provider_claim_job"): "u",
+    ("synthetic_provider_claims", "ck_synthetic_provider_claim_attempt"): "c",
 }
 
 # These indexes participate in claim ordering and verified cross-job reuse.
@@ -2897,6 +3010,346 @@ class Repository:
             row.finished_at = None
             row.next_attempt_at = None
             return row
+
+    @staticmethod
+    def _synthetic_artifact_scope(
+        session: Session,
+        job: JobRow,
+    ) -> tuple[str, list[ArtifactRow]]:
+        """Resolve the exact sealed artifact scope from durable job ownership."""
+
+        submission_id: str | None = None
+        if job.kind in {"ACTIVITY", "BLUEPRINT_REVIEW"}:
+            activity_id = job.aggregate_id
+            activity = session.scalar(
+                select(ActivityRow).where(
+                    ActivityRow.id == activity_id,
+                    ActivityRow.tenant_id == job.tenant_id,
+                )
+            )
+            if activity is None:
+                raise Conflict("SYNTHETIC_AUTHORIZATION_SCOPE_MISMATCH")
+        elif job.kind in {"SUBMISSION", "QUESTION_ACTION"}:
+            submission = session.scalar(
+                select(SubmissionRow).where(
+                    SubmissionRow.id == job.aggregate_id,
+                    SubmissionRow.tenant_id == job.tenant_id,
+                )
+            )
+            if submission is None:
+                raise Conflict("SYNTHETIC_AUTHORIZATION_SCOPE_MISMATCH")
+            activity_id = submission.activity_id
+            submission_id = submission.id
+        else:
+            raise Conflict("SYNTHETIC_AUTHORIZATION_JOB_KIND_FORBIDDEN")
+
+        artifact_scope = (
+            ArtifactRow.submission_id.is_(None)
+            if submission_id is None
+            else or_(
+                ArtifactRow.submission_id.is_(None),
+                ArtifactRow.submission_id == submission_id,
+            )
+        )
+        artifacts = list(
+            session.scalars(
+                select(ArtifactRow)
+                .where(
+                    ArtifactRow.tenant_id == job.tenant_id,
+                    ArtifactRow.activity_id == activity_id,
+                    artifact_scope,
+                )
+                .order_by(ArtifactRow.id)
+            )
+        )
+        if not artifacts or any(
+            artifact.status != "COMPLETE"
+            or artifact.sha256 is None
+            or artifact.byte_size is None
+            or artifact.media_type is None
+            for artifact in artifacts
+        ):
+            raise Conflict("SYNTHETIC_AUTHORIZATION_ARTIFACTS_NOT_SEALED")
+        return activity_id, artifacts
+
+    def synthetic_artifact_hashes_for_job(self, job_id: str) -> tuple[str, ...]:
+        """Return only hashes, never artifact content, for operator attestation."""
+
+        with self.session() as session:
+            job = session.get(JobRow, job_id)
+            if job is None:
+                raise NotFound("job not found")
+            _activity_id, artifacts = self._synthetic_artifact_scope(session, job)
+            return tuple(sorted({str(artifact.sha256) for artifact in artifacts}))
+
+    def authorize_synthetic_provider_job(
+        self,
+        spec: SyntheticProviderAuthorizationSpec,
+    ) -> SyntheticProviderAuthorizationRow:
+        """Persist one immutable authorization before its exact job is claimed."""
+
+        now = utc_now()
+        if spec.expires_at <= now:
+            raise Conflict("SYNTHETIC_AUTHORIZATION_EXPIRED")
+        try:
+            with self.session() as session:
+                statement = select(JobRow).where(JobRow.id == spec.job_id)
+                if self.engine.dialect.name == "postgresql":
+                    statement = statement.with_for_update()
+                job = session.scalar(statement)
+                if job is None:
+                    raise NotFound("job not found")
+                if any(
+                    (
+                        job.tenant_id != spec.tenant_id,
+                        job.kind != spec.job_kind,
+                        job.aggregate_id != spec.aggregate_id,
+                        job.status != "QUEUED",
+                        job.control_state != "ACTIVE",
+                        job.attempt + 1 != spec.expected_claim_attempt,
+                    )
+                ):
+                    raise Conflict("SYNTHETIC_AUTHORIZATION_JOB_MISMATCH")
+                _activity_id, artifacts = self._synthetic_artifact_scope(session, job)
+                actual_hashes = tuple(
+                    sorted({str(artifact.sha256) for artifact in artifacts})
+                )
+                if actual_hashes != spec.artifact_hashes:
+                    raise Conflict("SYNTHETIC_AUTHORIZATION_ARTIFACT_HASH_MISMATCH")
+                row = SyntheticProviderAuthorizationRow(
+                    id=spec.authorization_id,
+                    tenant_id=spec.tenant_id,
+                    job_id=spec.job_id,
+                    job_kind=spec.job_kind,
+                    aggregate_id=spec.aggregate_id,
+                    expected_claim_attempt=spec.expected_claim_attempt,
+                    artifact_hashes=list(spec.artifact_hashes),
+                    candidate_sha=spec.candidate_sha,
+                    boundary_hash=spec.boundary_hash,
+                    route_profile=spec.route_profile,
+                    model=spec.model,
+                    secret_version_resource=spec.secret_version_resource,
+                    max_requests=spec.max_requests,
+                    max_cost_usd=spec.max_cost_usd,
+                    classification=spec.classification,
+                    schema_version=spec.schema_version,
+                    authorization_hash=spec.authorization_hash,
+                    created_by=spec.created_by,
+                    created_at=now,
+                    expires_at=spec.expires_at,
+                )
+                session.add(row)
+                session.flush()
+                return row
+        except IntegrityError as exc:
+            raise Conflict("SYNTHETIC_AUTHORIZATION_ALREADY_EXISTS") from exc
+
+    @staticmethod
+    def _authorization_spec_from_row(
+        row: SyntheticProviderAuthorizationRow,
+    ) -> SyntheticProviderAuthorizationSpec:
+        expires_at = row.expires_at
+        if expires_at.tzinfo is None:
+            expires_at = expires_at.replace(tzinfo=UTC)
+        return SyntheticProviderAuthorizationSpec(
+            authorization_id=row.id,
+            tenant_id=row.tenant_id,
+            job_id=row.job_id,
+            job_kind=row.job_kind,
+            aggregate_id=row.aggregate_id,
+            expected_claim_attempt=row.expected_claim_attempt,
+            artifact_hashes=tuple(row.artifact_hashes),
+            candidate_sha=row.candidate_sha,
+            boundary_hash=row.boundary_hash,
+            route_profile=row.route_profile,
+            model=row.model,
+            secret_version_resource=row.secret_version_resource,
+            max_requests=row.max_requests,
+            max_cost_usd=row.max_cost_usd,
+            classification=row.classification,
+            schema_version=row.schema_version,
+            expires_at=expires_at,
+            created_by=row.created_by,
+        )
+
+    def consume_synthetic_provider_authorization(
+        self,
+        *,
+        job_id: str,
+        candidate_sha: str,
+        boundary_hash: str,
+        route_profile: str,
+        model: str,
+        secret_version_resource: str,
+        maximum_requests: int,
+        maximum_cost_usd: float,
+    ) -> SyntheticProviderGrant:
+        """Atomically consume the exact attestation after an exact job claim."""
+
+        try:
+            with self.session() as session:
+                job_statement = select(JobRow).where(JobRow.id == job_id)
+                auth_statement = select(SyntheticProviderAuthorizationRow).where(
+                    SyntheticProviderAuthorizationRow.job_id == job_id
+                )
+                if self.engine.dialect.name == "postgresql":
+                    job_statement = job_statement.with_for_update()
+                    auth_statement = auth_statement.with_for_update()
+                job = session.scalar(job_statement)
+                if job is None or job.status != "RUNNING":
+                    raise Conflict("SYNTHETIC_AUTHORIZATION_EXACT_CLAIM_REQUIRED")
+                authorization = session.scalar(auth_statement)
+                if authorization is None:
+                    raise Conflict("SYNTHETIC_AUTHORIZATION_REQUIRED")
+                if session.scalar(
+                    select(SyntheticProviderClaimRow).where(
+                        SyntheticProviderClaimRow.authorization_id
+                        == authorization.id
+                    )
+                ) is not None:
+                    raise Conflict("SYNTHETIC_AUTHORIZATION_ALREADY_CONSUMED")
+
+                spec = self._authorization_spec_from_row(authorization)
+                now = utc_now()
+                if spec.expires_at <= now:
+                    raise Conflict("SYNTHETIC_AUTHORIZATION_EXPIRED")
+                if authorization.authorization_hash != spec.authorization_hash:
+                    raise Conflict("SYNTHETIC_AUTHORIZATION_HASH_MISMATCH")
+                if any(
+                    (
+                        job.tenant_id != spec.tenant_id,
+                        job.kind != spec.job_kind,
+                        job.aggregate_id != spec.aggregate_id,
+                        job.attempt != spec.expected_claim_attempt,
+                        candidate_sha != spec.candidate_sha,
+                        boundary_hash != spec.boundary_hash,
+                        route_profile != spec.route_profile,
+                        model != spec.model,
+                        secret_version_resource != spec.secret_version_resource,
+                        spec.max_requests > maximum_requests,
+                        spec.max_cost_usd > maximum_cost_usd,
+                    )
+                ):
+                    raise Conflict("SYNTHETIC_AUTHORIZATION_BOUNDARY_MISMATCH")
+                _activity_id, artifacts = self._synthetic_artifact_scope(session, job)
+                actual_hashes = tuple(
+                    sorted({str(artifact.sha256) for artifact in artifacts})
+                )
+                if actual_hashes != spec.artifact_hashes:
+                    raise Conflict("SYNTHETIC_AUTHORIZATION_ARTIFACT_HASH_MISMATCH")
+
+                claim = SyntheticProviderClaimRow(
+                    id=stable_id(
+                        "syntheticclaim",
+                        authorization.id,
+                        authorization.authorization_hash,
+                        job.id,
+                        job.attempt,
+                    ),
+                    authorization_id=authorization.id,
+                    authorization_hash=authorization.authorization_hash,
+                    tenant_id=job.tenant_id,
+                    job_id=job.id,
+                    claim_attempt=job.attempt,
+                    candidate_sha=candidate_sha,
+                    boundary_hash=boundary_hash,
+                    schema_version=SYNTHETIC_PROVIDER_CLAIM_VERSION,
+                    claimed_at=now,
+                )
+                session.add(claim)
+                session.flush()
+                return SyntheticProviderGrant(
+                    authorization_id=authorization.id,
+                    authorization_hash=authorization.authorization_hash,
+                    tenant_id=job.tenant_id,
+                    job_id=job.id,
+                    job_kind=job.kind,
+                    aggregate_id=job.aggregate_id,
+                    claim_attempt=job.attempt,
+                    artifact_hashes=frozenset(spec.artifact_hashes),
+                    candidate_sha=candidate_sha,
+                    boundary_hash=boundary_hash,
+                    route_profile=route_profile,
+                    model=model,
+                    secret_version_resource=secret_version_resource,
+                    max_requests=spec.max_requests,
+                    max_cost_usd=spec.max_cost_usd,
+                    classification=spec.classification,
+                )
+        except IntegrityError as exc:
+            raise Conflict("SYNTHETIC_AUTHORIZATION_ALREADY_CONSUMED") from exc
+
+    def fail_claimed_job_security(self, *, job_id: str, code: str) -> None:
+        """Fail a claimed job without preserving exception, artifact, or provider data."""
+
+        allowed_codes = {
+            "SYNTHETIC_AUTHORIZATION_REQUIRED",
+            "SYNTHETIC_AUTHORIZATION_EXACT_CLAIM_REQUIRED",
+            "SYNTHETIC_AUTHORIZATION_ALREADY_CONSUMED",
+            "SYNTHETIC_AUTHORIZATION_EXPIRED",
+            "SYNTHETIC_AUTHORIZATION_HASH_MISMATCH",
+            "SYNTHETIC_AUTHORIZATION_BOUNDARY_MISMATCH",
+            "SYNTHETIC_AUTHORIZATION_ARTIFACT_HASH_MISMATCH",
+            "SYNTHETIC_AUTHORIZATION_SCOPE_MISMATCH",
+            "SYNTHETIC_AUTHORIZATION_ARTIFACTS_NOT_SEALED",
+            "SYNTHETIC_AUTHORIZATION_JOB_KIND_FORBIDDEN",
+            "SYNTHETIC_PROVIDER_CREDENTIAL_UNAVAILABLE",
+        }
+        safe_code = code if code in allowed_codes else "SYNTHETIC_AUTHORIZATION_REJECTED"
+        now = utc_now()
+        failure = m.Diagnostic(
+            code=safe_code,
+            severity=m.Severity.ERROR,
+            message="The synthetic provider boundary rejected the claimed job.",
+            retryable=False,
+        )
+        with self.session() as session:
+            row = session.get(JobRow, job_id)
+            if row is None:
+                raise NotFound("job not found")
+            if row.status != "RUNNING":
+                raise Conflict("SYNTHETIC_AUTHORIZATION_EXACT_CLAIM_REQUIRED")
+            row.status = "FAILED"
+            row.failure_class = m.FailureClass.SECURITY.value
+            row.diagnostics = [failure.model_dump(mode="json")]
+            row.next_attempt_at = None
+            row.finished_at = now
+            if row.kind in {"ACTIVITY", "BLUEPRINT_REVIEW"}:
+                activity = session.scalar(
+                    select(ActivityRow).where(
+                        ActivityRow.id == row.aggregate_id,
+                        ActivityRow.tenant_id == row.tenant_id,
+                    )
+                )
+                if activity is not None:
+                    activity.status = "TECHNICAL_FAILURE"
+                    activity.updated_at = now
+            elif row.kind == "SUBMISSION":
+                submission = session.scalar(
+                    select(SubmissionRow).where(
+                        SubmissionRow.id == row.aggregate_id,
+                        SubmissionRow.tenant_id == row.tenant_id,
+                    )
+                )
+                if (
+                    submission is not None
+                    and submission.active_job_id == row.id
+                ):
+                    current = m.SubmissionProcessingState.model_validate(
+                        submission.state
+                    )
+                    submission.state = current.model_copy(
+                        update={
+                            "status": (
+                                m.SubmissionProcessingStatus.TECHNICAL_FAILURE
+                            ),
+                            "current_stage": row.stage,
+                            "active_job_id": row.id,
+                            "diagnostics": [failure],
+                            "updated_at": now,
+                        }
+                    ).model_dump(mode="json")
+                    submission.updated_at = now
 
     def save_stage(
         self, *, job_id: str, tenant_id: str, stage: str, inputs: Any,

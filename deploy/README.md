@@ -3,10 +3,11 @@
 Este directorio contiene el runbook y la infraestructura declarativa de E2.
 Ningún comando de esta guía se ejecuta automáticamente al validar el
 repositorio: crear cuentas, cargar secretos, migrar la base y aplicar Terraform
-siguen siendo acciones externas, explícitas y revisadas. El entorno conserva
-`CVA_MODEL_MODE=mock`, `CVA_P10_ENABLED=false` y
-`CVA_REQUIRE_LIBMAGIC=true`; no se autorizan IA real ni datos estudiantiles
-reales.
+siguen siendo acciones externas, explícitas y revisadas. El producto y el
+Service web conservan `CVA_MODEL_MODE=mock`; P10 y datos estudiantiles reales
+no se autorizan. La única excepción posible es un Job y una service account
+eval-only separados para evaluación sintética por-job bajo ADR-035/036; su flag
+no autoriza llamadas y el Service web no puede invocar ese Job.
 
 ## Invariantes operativos
 
@@ -167,27 +168,34 @@ Los dos planes consecutivos posteriores al apply deben terminar con exit 0.
 Exit 2 indica drift o cambios pendientes y debe investigarse; no se aplica a
 ciegas.
 
-## Boundary OpenAI posterior (no aplicado)
+## Boundary OpenAI sintético posterior (no aplicado)
 
 El baseline E2 se despliega y verifica primero en mock. Crear el adapter no
 cambia ese runtime: los defaults permanecen
 `enable_openai_secret_container=false`,
-`enable_openai_real_provider=false` y
-`openai_api_key_secret_version=null`; el presupuesto humano
-`openai_max_job_cost_usd` también permanece `null`.
+`enable_synthetic_evaluation_provider=false` y
+`openai_api_key_secret_version=null`; SHA y ceilings sintéticos también
+permanecen `null`.
 
 La apertura posterior se divide en planes revisables. El primero puede crear
 solo el contenedor vacío protegido del secreto. Una persona carga la clave del
 proyecto dedicado fuera de Git y Terraform; el valor nunca se escribe en
 tfvars. Solo después de los checkpoints de credenciales, smoke, evals y gasto
-se puede fijar una versión numérica, un techo agregado por job y habilitar real
-mode. La precondición rechaza cualquier combinación incompleta.
+se puede fijar una versión numérica, el SHA candidato, requests/cost ceilings y
+habilitar la capacidad eval-only. La precondición rechaza cualquier combinación
+incompleta.
 
-La cuenta del worker es la única que obtiene acceso a ese secreto y el Job es
-el único recurso que recibe `CVA_OPENAI_API_KEY`. El Service web continúa en
-mock y sin clave; recibe solo `CVA_WORKER_MODEL_MODE` para bloquear de forma
-explícita cualquier invocación directa cuando el worker sea real. P10 permanece
-`false` en ambos recursos. La imagen sigue
+El worker ordinario permanece mock y su cuenta no obtiene acceso OpenAI. Un
+segundo Cloud Run Job con una service account eval-only es la única superficie
+que obtiene `secretAccessor`; no existe grant `web -> eval job` y el Job no
+recibe `CVA_OPENAI_API_KEY`, sólo el nombre de recurso numérico fijado. Después
+de reclamar el `CVA_CLAIM_JOB_ID` exacto, el código debe consumir una
+autorización append-only que coincida en job/tenant/kind/aggregate/attempt,
+SHA/boundary, hashes exactos de artefactos, ruta/modelo, secreto, expiración y
+caps. Sólo entonces consulta Secret Manager y construye el adapter. Ausencia,
+reuso o divergencia termina como `SECURITY` con cero resolver/adapter/request.
+El Service web y el worker ordinario continúan en mock y sin clave. P10
+permanece `false` en todas las superficies. La imagen sigue
 siendo propiedad exclusiva de Terraform y debe ser un digest construido desde
 el commit aprobado. Los pasos y dobles opt-ins están detallados en
 [`OPENAI_PROVIDER_SETUP.md`](../docs/OPENAI_PROVIDER_SETUP.md).
@@ -195,7 +203,7 @@ el commit aprobado. Los pasos y dobles opt-ins están detallados en
 Para el primer candidato manual-eval, el perfil de código fija retries
 gateway/SDK 0/0 y P11 a 80,000 tokens máximos de input. El estimate preventivo
 reserva full-cache-write. El tfvars autorizado debe fijar
-`openai_max_job_cost_usd = 0.55`; con una pregunta, actividad y submission
+`synthetic_evaluation_max_job_cost_usd = 0.55`; con una pregunta, actividad y submission
 quedan respectivamente en USD 0.253571 y USD 0.490573. El E2E completo con una
 edición P05 reserva USD 0.855444 y máximo 32 Responses bajo un cap humano
 separado de USD 0.90. Estos valores son propuesta reproducible, no autorización

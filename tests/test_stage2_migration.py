@@ -29,6 +29,10 @@ CONVERGENCE = (
     ROOT
     / "deploy/supabase/migrations/202608120004_stage2_convergence.sql"
 )
+SYNTHETIC_PROVIDER_GATE = (
+    ROOT
+    / "deploy/supabase/migrations/202608120005_stage2_synthetic_provider_gate.sql"
+)
 RECOVERY = (
     ROOT
     / "deploy/supabase/rollbacks/202608070003_stage2_experimental_recovery.sql"
@@ -226,6 +230,32 @@ def test_convergence_migration_bounds_idempotency_replay_retention() -> None:
     assert "drop column" not in sql
 
 
+def test_synthetic_provider_gate_migration_matches_orm_and_is_append_only() -> None:
+    sql = SYNTHETIC_PROVIDER_GATE.read_text(encoding="utf-8")
+    lowered = sql.lower()
+    assert lowered.startswith("begin;")
+    assert lowered.rstrip().endswith("commit;")
+    assert "drop table" not in lowered
+    assert "drop column" not in lowered
+    table_names = {
+        "synthetic_provider_authorizations",
+        "synthetic_provider_claims",
+    }
+    created = _created_table_columns(sql)
+    expected = {
+        table.name: {column.name for column in table.columns}
+        for table in Base.metadata.sorted_tables
+        if table.name in table_names
+    }
+    assert created == expected
+    for table_name in table_names:
+        assert f"alter table public.{table_name} enable row level security;" in lowered
+        assert f"{table_name}_tenant_read" in lowered
+        assert f"{table_name}_are_append_only" in lowered
+        assert f"revoke all on public.{table_name} from anon, authenticated;" in lowered
+        assert f"grant all on public.{table_name} to service_role;" in lowered
+
+
 def test_recovery_refuses_loss_before_restoring_e1_constraints() -> None:
     sql = RECOVERY.read_text(encoding="utf-8").lower()
     assert sql.startswith("begin;")
@@ -239,6 +269,8 @@ def test_recovery_refuses_loss_before_restoring_e1_constraints() -> None:
     assert "append-only e2 evidence must be retained" in sql
     assert "public.job_control_records," in sql
     assert "public.bulk_approval_records" in sql
+    assert "public.synthetic_provider_authorizations" in sql
+    assert "public.synthetic_provider_claims" in sql
     assert "in access exclusive mode;" in sql
     assert "add constraint submissions_activity_id_key unique (activity_id)" in sql
     assert "add constraint stage_runs_stage_key_key unique (stage_key)" in sql
@@ -274,6 +306,7 @@ def test_real_postgres_upgrade_when_explicit_loopback_database_is_available() ->
 def test_real_postgres_recovery_is_reversible_fail_closed_and_writer_safe() -> None:
     recovery_sql = RECOVERY.read_text(encoding="utf-8")
     forward_sql = FORWARD.read_text(encoding="utf-8")
+    provider_gate_sql = SYNTHETIC_PROVIDER_GATE.read_text(encoding="utf-8")
     with _temporary_database() as database_url:
         _apply_all_migrations(database_url)
 
@@ -294,6 +327,7 @@ def test_real_postgres_recovery_is_reversible_fail_closed_and_writer_safe() -> N
                 """
             ).fetchone()[0]
             connection.execute(forward_sql, prepare=False)
+            connection.execute(provider_gate_sql, prepare=False)
             assert connection.execute(
                 "select to_regclass('public.feedback_events') is not null"
             ).fetchone()[0]

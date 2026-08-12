@@ -18,7 +18,16 @@ from comprehension_verification.model_gateway import (
     DeterministicMockAdapter,
     GatewayConfig,
     GatewayMode,
+    MockBehavior,
     ModelGateway,
+)
+from comprehension_verification.provider_authorization import (
+    SyntheticProviderGrant,
+    synthetic_provider_boundary_hash,
+)
+from comprehension_verification.rehearsal import (
+    BASE_SCENARIO_ID,
+    build_rehearsal_checkpoints,
 )
 from comprehension_verification.web.auth import Actor
 from comprehension_verification.web.jobs import RecordingJobRunner
@@ -142,6 +151,60 @@ def test_signed_memory_object_capability_enforces_method_and_content_type() -> N
     data, media_type = store.get_signed(download.url.rsplit("/", 1)[-1])
     assert data == b"content"
     assert media_type == "text/plain"
+
+
+def test_product_p08_audit_is_idempotent_and_content_free() -> None:
+    repo = Repository("sqlite+pysqlite://")
+    service = Stage1Service(
+        settings=_settings(),
+        repository=repo,
+        object_store=MemoryObjectStore(
+            secret="object-test-secret-with-at-least-thirty-two-bytes"
+        ),
+        job_runner=RecordingJobRunner(),
+    )
+    checkpoint = build_rehearsal_checkpoints(BASE_SCENARIO_ID)
+    output = DeterministicMockAdapter().factory.output_for(
+        "P08_QUESTION_REVIEW_V1",
+        checkpoint.p08_request,
+        MockBehavior.HAPPY,
+    )
+    job = JobRow(
+        id="job_p08_audit",
+        tenant_id="tnt_backend",
+        kind="SUBMISSION",
+        aggregate_id="sub_p08_audit",
+        stage="P08_QUESTION_REVIEW_V1",
+        status="RUNNING",
+    )
+
+    for _ in range(2):
+        service._record_p08_observability(
+            job=job,
+            stage="P08_QUESTION_REVIEW_V1:question_1",
+            request=checkpoint.p08_request,
+            output=output,
+        )
+
+    events = repo.audit_events(
+        tenant_id=job.tenant_id,
+        event_type="question.review.decision_observed",
+        aggregate_id=job.id,
+    )
+    assert len(events) == 1
+    payload = events[0].payload
+    diagnostics = payload["decision_diagnostics"]
+    assert diagnostics["decision"] == "ACCEPT"
+    assert diagnostics["diagnostic_codes"] == ["P08_DECISION_ACCEPT"]
+    assert diagnostics["score_thresholds"]["groundedness"] == {
+        "score": 0.98,
+        "threshold": 0.9,
+        "relation": "AT_OR_ABOVE",
+    }
+    serialized = str(payload)
+    assert "question_text" not in serialized
+    assert "content_text" not in serialized
+    assert "critical_failure_codes" not in serialized
 
 
 def test_job_is_durable_before_dispatch_and_cross_workspace_is_hidden() -> None:
@@ -743,7 +806,7 @@ def test_activity_config_repository_cas_rechecks_etag_under_lock() -> None:
         )
 
 
-def test_blueprint_edit_is_durable_before_p05_and_runs_in_real_worker_mode() -> None:
+def test_blueprint_edit_is_durable_before_p05_and_runs_in_attested_eval_worker() -> None:
     repo = Repository("sqlite+pysqlite://")
     store = MemoryObjectStore(
         secret="object-test-secret-with-at-least-thirty-two-bytes"
@@ -783,7 +846,7 @@ def test_blueprint_edit_is_durable_before_p05_and_runs_in_real_worker_mode() -> 
     )
 
     web_service = Stage1Service(
-        settings=_settings(worker_model_mode="real"),
+        settings=_settings(),
         repository=repo,
         object_store=store,
         job_runner=runner,
@@ -816,32 +879,66 @@ def test_blueprint_edit_is_durable_before_p05_and_runs_in_real_worker_mode() -> 
     assert isinstance(activity, ActivityRow)
     assert activity.status == "BLUEPRINT_REVIEW_QUEUED"
 
-    worker_service = Stage1Service(
-        settings=WorkerSettings(
-            environment="test",
+    artifact_hash = cast(
+        str,
+        repo.artifacts_for(
+            activity_id="act_backend",
+            tenant_id=actor.workspace_id,
+            submission_id=None,
+        )[0].sha256,
+    )
+    def attested_worker(
+        job_id: str,
+        *,
+        mock_adapter: DeterministicMockAdapter | None = None,
+    ) -> Stage1Service:
+        claimed = repo.claim_job(job_id)
+        assert claimed is not None
+        provider_grant = SyntheticProviderGrant(
+            authorization_id=f"authorization_{job_id}",
+            authorization_hash="sha256:" + "a" * 64,
+            tenant_id=actor.workspace_id,
+            job_id=job_id,
+            job_kind=claimed.kind,
+            aggregate_id=claimed.aggregate_id,
+            claim_attempt=claimed.attempt,
+            artifact_hashes=frozenset({artifact_hash}),
+            candidate_sha="b" * 40,
+            boundary_hash=synthetic_provider_boundary_hash(),
+            route_profile="LUNA_BASELINE_V1",
+            model="gpt-5.6-luna",
+            secret_version_resource=(
+                "projects/project-stage1/secrets/cva-openai-api-key/versions/2"
+            ),
+            max_requests=1,
+            max_cost_usd=0.50,
+        )
+        return Stage1Service(
+            settings=WorkerSettings(
+                environment="test",
                 database_url="sqlite+pysqlite://",
                 model_mode="real",
-                openai_api_key="sk-project-synthetic-placeholder-not-a-real-key",
-                synthetic_artifact_sha256_allowlist=cast(
-                    str,
-                    repo.artifacts_for(
-                        activity_id="act_backend",
-                        tenant_id=actor.workspace_id,
-                        submission_id=None,
-                    )[0].sha256,
+                claim_job_id=job_id,
+                openai_secret_version_resource=(
+                    "projects/project-stage1/secrets/cva-openai-api-key/versions/2"
                 ),
+                synthetic_evaluation_candidate_sha="b" * 40,
             ),
-        repository=repo,
-        object_store=store,
-        gateway_factory=lambda job_id: ModelGateway(
-            GatewayConfig(mode=GatewayMode.MOCK, job_id=job_id),
-            ledger_sink=repo.model_call_sink,
-        ),
-    )
+            repository=repo,
+            object_store=store,
+            gateway_factory=lambda requested_job_id: ModelGateway(
+                GatewayConfig(mode=GatewayMode.MOCK, job_id=requested_job_id),
+                mock_adapter=mock_adapter,
+                ledger_sink=repo.model_call_sink,
+            ),
+            provider_grant=provider_grant,
+        )
+
+    worker_service = attested_worker(queued.job_id)
     asyncio.run(worker_service.process_job(queued.job_id))
 
     terminal = repo.job_status(queued.job_id, actor.workspace_id)
-    assert terminal.status == "SUCCEEDED"
+    assert terminal.status == "SUCCEEDED", terminal.diagnostics
     assert terminal.stage == "BLUEPRINT_REVIEW"
     reviewed = repo.latest_blueprint("act_backend", actor.workspace_id)
     assert reviewed.version == 2
@@ -927,7 +1024,7 @@ def test_blueprint_edit_is_durable_before_p05_and_runs_in_real_worker_mode() -> 
     )
     assert retry.kind == "BLUEPRINT_REVIEW"
     assert retry.status == "QUEUED"
-    asyncio.run(worker_service.process_job(retry.id))
+    asyncio.run(attested_worker(retry.id).process_job(retry.id))
 
     assert repo.job_status(retry.id, actor.workspace_id).status == "SUCCEEDED"
     retried = repo.latest_blueprint("act_backend", actor.workspace_id)
@@ -976,12 +1073,11 @@ def test_blueprint_edit_is_durable_before_p05_and_runs_in_real_worker_mode() -> 
             actor=actor,
         )
     )
-    worker_service.gateway_factory = lambda job_id: ModelGateway(
-        GatewayConfig(mode=GatewayMode.MOCK, job_id=job_id),
+    rejecting_worker = attested_worker(
+        rejected_job.job_id,
         mock_adapter=RejectingP05Adapter(),
-        ledger_sink=repo.model_call_sink,
     )
-    asyncio.run(worker_service.process_job(rejected_job.job_id))
+    asyncio.run(rejecting_worker.process_job(rejected_job.job_id))
 
     assert repo.job_status(
         rejected_job.job_id, actor.workspace_id

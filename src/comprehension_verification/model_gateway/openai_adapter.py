@@ -386,3 +386,21 @@ class OpenAIResponsesAdapter:
                 f"PROVIDER_ATTEMPT_{attempt}",
             ),
         )
+
+
+class RequestCappedAdapter:
+    """Enforce one authorization-wide request cap before provider transport."""
+
+    def __init__(self, inner: OpenAIResponsesAdapter, *, max_requests: int) -> None:
+        if not 1 <= max_requests <= 64:
+            raise ValueError("provider request cap must be between 1 and 64")
+        self.inner = inner
+        self.config = getattr(inner, "config", None)
+        self.max_requests = max_requests
+        self.calls = 0
+
+    async def invoke(self, **kwargs: Any) -> AdapterResult:
+        if self.calls >= self.max_requests:
+            raise ProviderBudgetError("SYNTHETIC_PROVIDER_REQUEST_CAP_EXCEEDED")
+        self.calls += 1
+        return await self.inner.invoke(**kwargs)

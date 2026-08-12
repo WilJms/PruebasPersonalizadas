@@ -14,7 +14,9 @@ lock table
   public.question_review_actions,
   public.feedback_events,
   public.bulk_approval_requests,
-  public.bulk_approval_records
+  public.bulk_approval_records,
+  public.synthetic_provider_authorizations,
+  public.synthetic_provider_claims
 in access exclusive mode;
 
 do $$
@@ -87,13 +89,17 @@ begin
      or exists (select 1 from public.question_review_actions)
      or exists (select 1 from public.feedback_events)
      or exists (select 1 from public.bulk_approval_requests)
-     or exists (select 1 from public.bulk_approval_records) then
+     or exists (select 1 from public.bulk_approval_records)
+     or exists (select 1 from public.synthetic_provider_authorizations)
+     or exists (select 1 from public.synthetic_provider_claims) then
     raise exception
       'E2 recovery refused: append-only E2 evidence must be retained';
   end if;
 end;
 $$;
 
+drop table public.synthetic_provider_claims;
+drop table public.synthetic_provider_authorizations;
 drop table public.bulk_approval_records;
 drop table public.bulk_approval_requests;
 drop table public.feedback_events;

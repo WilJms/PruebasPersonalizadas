@@ -37,6 +37,7 @@ from .openai_adapter import (
     OPENAI_GATEWAY_TIMEOUT_GRACE_SECONDS,
     OpenAIAdapterConfig,
     OpenAIResponsesAdapter,
+    RequestCappedAdapter,
 )
 from .openai_routes import (
     LUNA_MODEL_ID,
@@ -107,6 +108,7 @@ __all__ = [
     "ValidationPhase",
     "OpenAIAdapterConfig",
     "OpenAIResponsesAdapter",
+    "RequestCappedAdapter",
     "OPENAI_DEFAULT_REQUEST_TIMEOUT_SECONDS",
     "OPENAI_GATEWAY_TIMEOUT_GRACE_SECONDS",
     "OPENAI_MODEL_BY_PROMPT",

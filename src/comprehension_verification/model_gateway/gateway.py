@@ -46,7 +46,7 @@ PROMPT_RELATIONSHIP_VALIDATOR_VERSIONS: Mapping[str, str] = {
     "P03_AMBIGUITY_TRIAGE_V1": "relationship-p03/2.0.0",
     "P04_BLUEPRINT_BUILD_V1": "relationship-p04/2.0.0",
     "P05_BLUEPRINT_REVIEW_V1": "relationship-p05/2.2.0",
-    "P06_EVIDENCE_MAP_V1": "relationship-p06/2.2.0",
+    "P06_EVIDENCE_MAP_V1": "relationship-p06/2.3.0",
     "P07_QUESTION_BUILD_V1": "relationship-p07/2.1.0",
     "P08_QUESTION_REVIEW_V1": "relationship-p08/2.1.0",
     "P09_GUIDE_BUILD_V1": "relationship-p09/2.0.0",
@@ -101,10 +101,36 @@ class ContextFailureCode(StrEnum):
     )
     P05_PREFLIGHT_MISMATCH = "P05_PREFLIGHT_MISMATCH"
     P05_PREFLIGHT_CHECK_MISMATCH = "P05_PREFLIGHT_CHECK_MISMATCH"
-    P06_REFERENCE_MISMATCH = "P06_REFERENCE_MISMATCH"
+    P06_SUBMISSION_ID_MISMATCH = "P06_SUBMISSION_ID_MISMATCH"
+    P06_READY_OPPORTUNITY_COUNT_INSUFFICIENT = (
+        "P06_READY_OPPORTUNITY_COUNT_INSUFFICIENT"
+    )
     P06_READY_ELIGIBILITY_MISMATCH = (
         "P06_READY_ELIGIBILITY_MISMATCH"
     )
+    P06_UNKNOWN_OPPORTUNITY_TEMPLATE = "P06_UNKNOWN_OPPORTUNITY_TEMPLATE"
+    P06_DIMENSION_ID_MISMATCH = "P06_DIMENSION_ID_MISMATCH"
+    P06_VARIANT_ID_MISMATCH = "P06_VARIANT_ID_MISMATCH"
+    P06_COGNITIVE_OPERATION_MISMATCH = (
+        "P06_COGNITIVE_OPERATION_MISMATCH"
+    )
+    P06_FOCUS_MISMATCH = "P06_FOCUS_MISMATCH"
+    P06_OBSERVABLE_MISMATCH = "P06_OBSERVABLE_MISMATCH"
+    P06_DIFFICULTY_MISMATCH = "P06_DIFFICULTY_MISMATCH"
+    P06_TARGET_MINUTES_MISMATCH = "P06_TARGET_MINUTES_MISMATCH"
+    P06_ANCHOR_STRUCTURES_MISMATCH = "P06_ANCHOR_STRUCTURES_MISMATCH"
+    P06_RESPONSE_FORMATS_MISMATCH = "P06_RESPONSE_FORMATS_MISMATCH"
+    P06_JUSTIFICATION_REQUIREMENT_MISMATCH = (
+        "P06_JUSTIFICATION_REQUIREMENT_MISMATCH"
+    )
+    P06_ACTIVITY_PRIORITY_MISMATCH = "P06_ACTIVITY_PRIORITY_MISMATCH"
+    P06_VARIANT_MATCH_MISSING = "P06_VARIANT_MATCH_MISSING"
+    P06_EVIDENCE_FIT_MISMATCH = "P06_EVIDENCE_FIT_MISMATCH"
+    P06_EVIDENCE_SCOPE_WIDENED = "P06_EVIDENCE_SCOPE_WIDENED"
+    P06_OPPORTUNITY_QUALITY_BELOW_MINIMUM = (
+        "P06_OPPORTUNITY_QUALITY_BELOW_MINIMUM"
+    )
+    P06_VARIANT_PATH_MISMATCH = "P06_VARIANT_PATH_MISMATCH"
     P07_REQUEST_REFERENCE_MISMATCH = (
         "P07_REQUEST_REFERENCE_MISMATCH"
     )
@@ -2031,11 +2057,10 @@ class ModelGateway:
                         ),
                     ) from exc
         elif prompt_id == "P06_EVIDENCE_MAP_V1":
+            codes: list[ContextFailureCode] = []
             if output.submission_id != request.evidence_bundle.submission_id:
-                raise GatewayContextError(
-                    "P06 output submission_id mismatch",
-                    phase=phase,
-                    failure_code=ContextFailureCode.P06_REFERENCE_MISMATCH,
+                codes.append(
+                    ContextFailureCode.P06_SUBMISSION_ID_MISMATCH
                 )
             template_paths = {
                 template.opportunity_template_id: (
@@ -2062,10 +2087,8 @@ class ModelGateway:
             if output.status == "READY" and len(output.opportunities) < (
                 request.blueprint.assessment_constraints.question_count
             ):
-                raise GatewayContextError(
-                    "P06 READY output cannot supply the configured question count",
-                    phase=phase,
-                    failure_code=ContextFailureCode.P06_REFERENCE_MISMATCH,
+                codes.append(
+                    ContextFailureCode.P06_READY_OPPORTUNITY_COUNT_INSUFFICIENT
                 )
             if output.status == "READY" and sum(
                 opportunity.evidence_fit
@@ -2077,67 +2100,108 @@ class ModelGateway:
                 )
                 for opportunity in output.opportunities
             ) < request.blueprint.assessment_constraints.question_count:
-                raise GatewayContextError(
-                    "P06 READY output lacks enough planner-eligible opportunities",
-                    phase=phase,
-                    failure_code=(
-                        ContextFailureCode.P06_READY_ELIGIBILITY_MISMATCH
-                    ),
+                codes.append(
+                    ContextFailureCode.P06_READY_ELIGIBILITY_MISMATCH
                 )
             for opportunity in output.opportunities:
                 path = template_paths.get(
                     opportunity.opportunity_template_id
                 )
                 if path is None:
-                    raise GatewayContextError(
-                        "P06 referenced an unknown opportunity template",
-                        phase=phase,
-                        failure_code=ContextFailureCode.P06_REFERENCE_MISMATCH,
+                    codes.append(
+                        ContextFailureCode.P06_UNKNOWN_OPPORTUNITY_TEMPLATE
                     )
+                    continue
                 dimension, variant, template = path
                 match = matches.get(
                     (dimension.dimension_id, variant.variant_id)
                 )
-                inherited = (
-                    opportunity.dimension_id == dimension.dimension_id
-                    and opportunity.variant_id == variant.variant_id
-                    and opportunity.cognitive_operation
-                    == template.cognitive_operation
-                    and opportunity.focus == template.focus
-                    and opportunity.observable == template.observable
-                    and opportunity.difficulty == template.difficulty
-                    and opportunity.target_minutes == template.target_minutes
-                    and opportunity.allowed_anchor_structures
-                    == template.allowed_anchor_structures
-                    and opportunity.allowed_response_formats
-                    == template.allowed_response_formats
-                    and opportunity.student_justification_required
-                    == template.student_justification_required
-                    and opportunity.activity_priority
-                    == dimension.verification_priority
-                    and match is not None
-                    and opportunity.evidence_fit == match.evidence_fit
-                    and set(opportunity.evidence_ids).issubset(
-                        set(match.evidence_ids)
-                    )
+                predicate_codes = (
+                    (
+                        opportunity.dimension_id == dimension.dimension_id,
+                        ContextFailureCode.P06_DIMENSION_ID_MISMATCH,
+                    ),
+                    (
+                        opportunity.variant_id == variant.variant_id,
+                        ContextFailureCode.P06_VARIANT_ID_MISMATCH,
+                    ),
+                    (
+                        opportunity.cognitive_operation
+                        == template.cognitive_operation,
+                        ContextFailureCode.P06_COGNITIVE_OPERATION_MISMATCH,
+                    ),
+                    (
+                        opportunity.focus == template.focus,
+                        ContextFailureCode.P06_FOCUS_MISMATCH,
+                    ),
+                    (
+                        opportunity.observable == template.observable,
+                        ContextFailureCode.P06_OBSERVABLE_MISMATCH,
+                    ),
+                    (
+                        opportunity.difficulty == template.difficulty,
+                        ContextFailureCode.P06_DIFFICULTY_MISMATCH,
+                    ),
+                    (
+                        opportunity.target_minutes == template.target_minutes,
+                        ContextFailureCode.P06_TARGET_MINUTES_MISMATCH,
+                    ),
+                    (
+                        opportunity.allowed_anchor_structures
+                        == template.allowed_anchor_structures,
+                        ContextFailureCode.P06_ANCHOR_STRUCTURES_MISMATCH,
+                    ),
+                    (
+                        opportunity.allowed_response_formats
+                        == template.allowed_response_formats,
+                        ContextFailureCode.P06_RESPONSE_FORMATS_MISMATCH,
+                    ),
+                    (
+                        opportunity.student_justification_required
+                        == template.student_justification_required,
+                        ContextFailureCode.P06_JUSTIFICATION_REQUIREMENT_MISMATCH,
+                    ),
+                    (
+                        opportunity.activity_priority
+                        == dimension.verification_priority,
+                        ContextFailureCode.P06_ACTIVITY_PRIORITY_MISMATCH,
+                    ),
                 )
-                if not inherited or opportunity.opportunity_quality < max(
+                codes.extend(
+                    code for passed, code in predicate_codes if not passed
+                )
+                if match is None:
+                    codes.append(ContextFailureCode.P06_VARIANT_MATCH_MISSING)
+                else:
+                    if opportunity.evidence_fit != match.evidence_fit:
+                        codes.append(
+                            ContextFailureCode.P06_EVIDENCE_FIT_MISMATCH
+                        )
+                    if not set(opportunity.evidence_ids).issubset(
+                        set(match.evidence_ids)
+                    ):
+                        codes.append(
+                            ContextFailureCode.P06_EVIDENCE_SCOPE_WIDENED
+                        )
+                if opportunity.opportunity_quality < max(
                     global_minimum, template.minimum_quality
                 ):
-                    raise GatewayContextError(
-                        "P06 changed an inherited blueprint constraint",
-                        phase=phase,
-                        failure_code=ContextFailureCode.P06_REFERENCE_MISMATCH,
+                    codes.append(
+                        ContextFailureCode.P06_OPPORTUNITY_QUALITY_BELOW_MINIMUM
                     )
             if any(
                 match.dimension_id
                 != variant_paths.get(match.variant_id)
                 for match in output.variant_matches
             ):
+                codes.append(ContextFailureCode.P06_VARIANT_PATH_MISMATCH)
+            if codes:
                 raise GatewayContextError(
-                    "P06 variant match changed its blueprint path",
-                    phase=phase,
-                    failure_code=ContextFailureCode.P06_REFERENCE_MISMATCH,
+                    "P06 output failed authorized blueprint relationships",
+                    failure=ContextFailure(
+                        phase=phase,
+                        codes=tuple(dict.fromkeys(codes)),
+                    ),
                 )
         elif prompt_id in {"P07_QUESTION_BUILD_V1", "P10_ENRICHED_CONTEXT_V1"}:
             codes: list[ContextFailureCode] = []

@@ -1096,3 +1096,35 @@
 - **Relación:** D-065, D-068, D-070, ADR-005/ADR-030/ADR-034,
   `REAL_MODEL_EVALS.md`, `OPENAI_REAL_MODEL_VALIDATION.md` y
   `OPENAI_COST_BUDGETS.md`.
+
+## D-073 - El proveedor eval-only exige Job/SA separados y autorización exacta post-claim
+
+- **Autoridad única:** el Service web y el worker ordinario permanecen mock,
+  sin clave y con P10 deshabilitado. Terraform puede aprovisionar un Cloud Run
+  Job y una service account eval-only separados, pero no concede a la web
+  permiso para invocarlo ni a la cuenta ordinaria permiso para leer OpenAI.
+- **Orden de capacidades:** el worker eval-only crea primero sólo repositorio y
+  object store, reclama el `job_id` exacto y consume en PostgreSQL una
+  autorización append-only única. Esa autorización liga tenant, kind,
+  aggregate, attempt, conjunto exacto de hashes sellados, SHA candidato,
+  boundary ejecutable, Luna/ruta, versión numérica del secreto, expiración y
+  caps. Sólo después puede resolver Secret Manager y construir el adapter
+  request-capped. Cualquier ausencia, reuso o divergencia produce `SECURITY`
+  con cero resolver, cero transporte y cero request.
+- **Fixture P05:** el positivo deja de proceder del mock genérico. El golden
+  versionado verifica un constructo causal concreto de invalidación de caché y
+  documenta alineación y cinco razones semánticas inspeccionables. Un negativo
+  separado cambia el catálogo a `CHOICE` contra una política `OPEN_SHORT` y
+  debe resultar `REJECT/PLAN_FEASIBILITY` offline, sin request real.
+- **Observabilidad:** P06 2.3.0 conserva subcódigos estables por cada relación
+  fallida. P08 registra ACCEPT/REJECT/ESCALATE, criticality, categorías,
+  hashes de códigos críticos y cada relación score/threshold; el runtime
+  persiste sólo esa proyección content-free, no prompts ni outputs.
+- **Gate experimental:** el harness final consume una autorización durable
+  antes de resolver una versión numérica de Secret Manager, fija exactamente
+  24 requests y conserva cero P10/P11/fallback/retries/tools/store. Esta
+  decisión prepara una única matriz congelada; no autoriza una segunda matriz
+  ni una mutación de prompts/validators ante fallo.
+- **Relación:** ADR-035/ADR-036, `AGENTS.md`,
+  `OPENAI_PROVIDER_SETUP.md`, `STAGE2_CONVERGENCE_HANDOFF.md` y migración
+  `202608120005_stage2_synthetic_provider_gate.sql`.

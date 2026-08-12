@@ -72,6 +72,13 @@ from comprehension_verification.rehearsal import (
     run_offline_convergence,
     run_real_convergence,
 )
+from comprehension_verification.provider_authorization import (
+    validate_pinned_secret_resource,
+)
+from comprehension_verification.web.provider_secrets import (
+    ProviderCredentialUnavailable,
+    resolve_openai_api_key,
+)
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -5026,8 +5033,9 @@ def _convergence_authorization_boundary(args: argparse.Namespace) -> dict[str, A
             os.environ.get("CVA_OPENAI_ORGANIZATION_ID")
         ),
         "secret_version_label_hash": _hashed_optional_label(
-            os.environ.get("CVA_OPENAI_SECRET_VERSION")
+            args.secret_version_resource
         ),
+        "credential_source": "gcp-secret-manager-pinned-version",
         "synthetic_only": True,
         "p10_enabled": False,
         "fallback_enabled": False,
@@ -5056,11 +5064,14 @@ def _write_json_atomic(path: Path, value: dict[str, Any]) -> str:
 async def _run_current_convergence_real(
     args: argparse.Namespace,
 ) -> dict[str, Any]:
-    key = os.environ.get("CVA_OPENAI_API_KEY", "").strip()
-    if not key:
-        raise OpenAIEvalBlocked("OPENAI_CONVERGENCE_API_KEY_REQUIRED")
+    try:
+        key = resolve_openai_api_key(args.secret_version_resource)
+    except ProviderCredentialUnavailable as exc:
+        raise OpenAIEvalBlocked(
+            "OPENAI_CONVERGENCE_CREDENTIAL_UNAVAILABLE"
+        ) from exc
     return await run_real_convergence(
-        api_key=SecretStr(key),
+        api_key=key,
         max_total_cost_usd=args.max_total_cost_usd,
         max_call_cost_usd=args.max_call_cost_usd,
         max_provider_requests=args.max_provider_requests,
@@ -5082,14 +5093,21 @@ def _run_convergence_cli(args: argparse.Namespace) -> int:
             args.max_call_cost_usd <= 0,
             args.max_call_cost_usd > 0.15,
             args.max_call_cost_usd > args.max_total_cost_usd,
-            not 24 <= args.max_provider_requests <= 30,
+            args.max_provider_requests != 24,
             args.ledger is None,
             args.report_path is None,
             not args.execution_id,
             not args.authorization_id,
+            not args.secret_version_resource,
         )
     ):
         raise OpenAIEvalBlocked("OPENAI_CONVERGENCE_EXPLICIT_CAPS_REQUIRED")
+    try:
+        validate_pinned_secret_resource(args.secret_version_resource)
+    except ValueError as exc:
+        raise OpenAIEvalBlocked(
+            "OPENAI_CONVERGENCE_PINNED_SECRET_REQUIRED"
+        ) from exc
 
     boundary = _convergence_authorization_boundary(args)
     ledger = EvaluationAuthorizationLedger(args.ledger)
@@ -5212,6 +5230,7 @@ def main() -> int:
     parser.add_argument("--authorization-id")
     parser.add_argument("--ledger", type=Path)
     parser.add_argument("--report-path", type=Path)
+    parser.add_argument("--secret-version-resource")
     parser.add_argument("--p04-evidence-recovery", action="store_true")
     args = parser.parse_args()
     if args.mode in {"convergence-dry-run", "convergence-real"}:

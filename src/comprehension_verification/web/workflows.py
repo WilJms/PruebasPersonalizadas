@@ -44,6 +44,8 @@ from ..parsers import (
     parse_in_subprocess,
 )
 from ..planning import PLANNER_VERSION, build_assessment_plan
+from ..provider_authorization import SyntheticProviderGrant
+from ..observability import p08_decision_diagnostics
 from ..validation import (
     ContextValidationError,
     PROMPT_APPLICATION_VALIDATOR_VERSIONS,
@@ -92,12 +94,12 @@ ACTIVITY_UPLOAD_OPEN_STATUSES = frozenset({"DRAFT"})
 ACTIVITY_PIPELINE_VERSION = "stage1-activity-pipeline/2.0.0"
 SUBMISSION_PIPELINE_VERSION = "stage1-submission-pipeline/2.0.0"
 ASSEMBLER_VERSION = "stage1-assembler/2.0.0"
-BLUEPRINT_REVIEW_DESCRIPTOR_VERSION = "blueprint-review-descriptor/2.0.0"
+BLUEPRINT_REVIEW_DESCRIPTOR_VERSION = "blueprint-review-descriptor/3.0.0"
 
 
 def _blueprint_review_descriptor_component_version() -> str:
     return (
-        "blueprint-review-descriptor/2:"
+        "blueprint-review-descriptor/3:"
         + canonical_hash(
             {
                 "format": BLUEPRINT_REVIEW_DESCRIPTOR_VERSION,
@@ -106,6 +108,22 @@ def _blueprint_review_descriptor_component_version() -> str:
                 ),
             }
         ).removeprefix("sha256:")
+    )
+
+
+def _blueprint_review_descriptor_policy_hash(
+    request: m.BlueprintReviewRequest,
+) -> str:
+    """Bind immutable review inputs without binding them to a worker mode."""
+
+    return canonical_hash(
+        {
+            "format": BLUEPRINT_REVIEW_DESCRIPTOR_VERSION,
+            "blueprint_policy": request.blueprint_policy.model_dump(
+                mode="json"
+            ),
+            "p10_enabled": False,
+        }
     )
 
 
@@ -475,7 +493,16 @@ class Stage1Service:
         parser: SafeParserService | None = None,
         job_runner: JobRunner | None = None,
         gateway_factory: Callable[[str], ModelGateway] | None = None,
+        provider_grant: SyntheticProviderGrant | None = None,
     ) -> None:
+        if settings.model_mode == "real" and (
+            provider_grant is None or gateway_factory is None
+        ):
+            raise ValueError(
+                "real workflow construction requires a consumed synthetic job grant"
+            )
+        if settings.model_mode == "mock" and provider_grant is not None:
+            raise ValueError("mock workflow cannot receive a provider grant")
         self.settings = settings
         self.repository = repository
         self.object_store = object_store
@@ -484,6 +511,7 @@ class Stage1Service:
         )
         self.job_runner = job_runner
         self.gateway_factory = gateway_factory
+        self.provider_grant = provider_grant
         self._resume_floor_reached: set[str] = set()
         self._question_action_processor: (
             Callable[[JobRow], Awaitable[None]] | None
@@ -1686,10 +1714,8 @@ class Stage1Service:
                 "The durable blueprint review input is unavailable.",
                 status_code=409,
             )
-        if (
-            descriptor.component_version
-            != _blueprint_review_descriptor_component_version()
-            or descriptor.policy_hash != self._stage_policy_hash(job)
+        if descriptor.component_version != (
+            _blueprint_review_descriptor_component_version()
         ):
             raise WorkflowError(
                 "BLUEPRINT_REVIEW_DESCRIPTOR_VERSION_MISMATCH",
@@ -1715,6 +1741,14 @@ class Stage1Service:
                 "The durable blueprint review input is invalid.",
                 status_code=409,
             ) from exc
+        if descriptor.policy_hash != (
+            _blueprint_review_descriptor_policy_hash(request)
+        ):
+            raise WorkflowError(
+                "BLUEPRINT_REVIEW_DESCRIPTOR_VERSION_MISMATCH",
+                "The durable blueprint review input no longer matches this worker.",
+                status_code=409,
+            )
         if (
             request.blueprint.activity_id != job.aggregate_id
             or request.blueprint.blueprint_version != source_version + 1
@@ -2297,7 +2331,9 @@ class Stage1Service:
                 descriptor_component_version=(
                     _blueprint_review_descriptor_component_version()
                 ),
-                descriptor_policy_hash=self._model_policy_hash(activity),
+                descriptor_policy_hash=(
+                    _blueprint_review_descriptor_policy_hash(review_request)
+                ),
                 actor_id=actor.user_id,
                 occurred_at=queued_at,
             )
@@ -3341,13 +3377,25 @@ class Stage1Service:
 
         context_kwargs: dict[str, Any] = {}
         if self.settings.model_mode == "real":
+            grant = self.provider_grant
+            if grant is None or any(
+                (
+                    grant.job_id != job.id,
+                    grant.tenant_id != job.tenant_id,
+                    grant.job_kind != job.kind,
+                    grant.aggregate_id != job.aggregate_id,
+                    grant.claim_attempt != job.attempt,
+                )
+            ):
+                raise WorkflowError(
+                    "SYNTHETIC_ATTESTATION_REQUIRED",
+                    "The claimed job has no exact synthetic provider grant.",
+                    status_code=409,
+                )
             scope_hashes = {
                 cast(str, artifact.sha256) for artifact in artifacts
             }
-            configured_hashes = getattr(
-                self.settings, "synthetic_artifact_hashes", frozenset()
-            )
-            if not scope_hashes or not scope_hashes.issubset(configured_hashes):
+            if not scope_hashes or scope_hashes != grant.artifact_hashes:
                 raise WorkflowError(
                     "SYNTHETIC_ATTESTATION_REQUIRED",
                     "Real provider work is restricted to the server-approved synthetic corpus.",
@@ -3362,13 +3410,7 @@ class Stage1Service:
             request_hash = canonical_hash(raw_request)
             context_kwargs = {
                 "data_classification": "SYNTHETIC_ONLY_NO_STUDENT_DATA",
-                "attestation_id": stable_id(
-                    "attestation",
-                    job.id,
-                    prompt_id,
-                    request_hash,
-                    sorted(scope_hashes),
-                ),
+                "attestation_id": grant.authorization_id,
                 "attested_input_hash": request_hash,
                 "attested_artifact_hashes": sorted(scope_hashes),
             }
@@ -3427,6 +3469,12 @@ class Stage1Service:
                 ).model_dump(mode="json")
             )
             self._record_stage_reuse(job, cached)
+            self._record_p08_observability(
+                job=job,
+                stage=stage,
+                request=request,
+                output=output,
+            )
             self._cancellation_checkpoint(job)
             return output
         self._assert_resume_may_execute(job, prompt_id)
@@ -3459,6 +3507,12 @@ class Stage1Service:
                 exc=exc,
             )
             raise
+        self._record_p08_observability(
+            job=job,
+            stage=stage,
+            request=request,
+            output=output,
+        )
         self.repository.save_stage(
             job_id=job.id,
             tenant_id=job.tenant_id,
@@ -3470,6 +3524,44 @@ class Stage1Service:
         )
         self._cancellation_checkpoint(job)
         return output
+
+    def _record_p08_observability(
+        self,
+        *,
+        job: JobRow,
+        stage: str,
+        request: BaseModel,
+        output: BaseModel,
+    ) -> None:
+        """Persist P08 cause metadata without prompts, output text, or raw codes."""
+
+        if not (
+            isinstance(request, m.QuestionReviewRequest)
+            and isinstance(output, m.QuestionReviewResult)
+        ):
+            return
+        output_hash = canonical_hash(output.model_dump(mode="json"))
+        if self.repository.has_audit_event(
+            tenant_id=job.tenant_id,
+            event_type="question.review.decision_observed",
+            aggregate_id=job.id,
+            payload_contains={"review_output_hash": output_hash},
+        ):
+            return
+        self.repository.audit(
+            tenant_id=job.tenant_id,
+            event_type="question.review.decision_observed",
+            aggregate_id=job.id,
+            actor_id="system_worker",
+            payload={
+                "prompt_id": "P08_QUESTION_REVIEW_V1",
+                "stage_scope_hash": canonical_hash(stage),
+                "review_output_hash": output_hash,
+                "decision_diagnostics": p08_decision_diagnostics(
+                    output, request.validation_policy
+                ),
+            },
+        )
 
     def _resume_order(self, job: JobRow) -> dict[str, int]:
         if job.kind == "ACTIVITY":

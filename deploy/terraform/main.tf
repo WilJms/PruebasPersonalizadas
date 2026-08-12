@@ -34,8 +34,8 @@ locals {
     CVA_OBJECT_STORE_MODE        = "r2"
     CVA_JOB_RUNNER_MODE          = "cloud_run"
     CVA_MODEL_MODE               = "mock"
-    CVA_WORKER_MODEL_MODE        = var.enable_openai_real_provider ? "real" : "mock"
-    CVA_MAX_JOB_COST_USD         = tostring(coalesce(var.openai_max_job_cost_usd, 0.50))
+    CVA_WORKER_MODEL_MODE        = "mock"
+    CVA_MAX_JOB_COST_USD         = "0.50"
     CVA_P10_ENABLED              = "false"
     CVA_REQUIRE_LIBMAGIC         = "true"
     CVA_FRONTEND_DIST            = "/app/static"
@@ -56,8 +56,8 @@ locals {
   worker_environment = {
     CVA_ENVIRONMENT              = "cloud"
     CVA_OBJECT_STORE_MODE        = "r2"
-    CVA_MODEL_MODE               = var.enable_openai_real_provider ? "real" : "mock"
-    CVA_MAX_JOB_COST_USD         = tostring(coalesce(var.openai_max_job_cost_usd, 0.50))
+    CVA_MODEL_MODE               = "mock"
+    CVA_MAX_JOB_COST_USD         = "0.50"
     CVA_P10_ENABLED              = "false"
     CVA_REQUIRE_LIBMAGIC         = "true"
     CVA_RENDERER_MODE            = "weasyprint"
@@ -66,6 +66,24 @@ locals {
     CVA_R2_ENDPOINT_URL          = var.r2_endpoint_url
     CVA_R2_BUCKET                = var.r2_bucket_name
   }
+  synthetic_evaluation_worker_environment = (
+    var.enable_synthetic_evaluation_provider ? {
+      CVA_ENVIRONMENT                        = "cloud"
+      CVA_OBJECT_STORE_MODE                  = "r2"
+      CVA_MODEL_MODE                         = "real"
+      CVA_MAX_JOB_COST_USD                   = tostring(var.synthetic_evaluation_max_job_cost_usd)
+      CVA_P10_ENABLED                        = "false"
+      CVA_REQUIRE_LIBMAGIC                   = "true"
+      CVA_RENDERER_MODE                      = "weasyprint"
+      CVA_UPLOAD_URL_TTL_SECONDS             = tostring(var.upload_url_ttl_seconds)
+      CVA_DOWNLOAD_URL_TTL_SECONDS           = tostring(var.download_url_ttl_seconds)
+      CVA_R2_ENDPOINT_URL                    = var.r2_endpoint_url
+      CVA_R2_BUCKET                          = var.r2_bucket_name
+      CVA_OPENAI_SECRET_VERSION_RESOURCE     = "projects/${var.project_id}/secrets/${var.name_prefix}-openai-api-key/versions/${var.openai_api_key_secret_version}"
+      CVA_SYNTHETIC_EVALUATION_CANDIDATE_SHA = var.synthetic_evaluation_candidate_sha
+      CVA_SYNTHETIC_EVALUATION_MAX_REQUESTS  = tostring(var.synthetic_evaluation_max_requests)
+    } : {}
+  )
 
   authorized_github_repository    = "https://github.com/WilJms/PruebasPersonalizadas.git"
   expected_container_image_prefix = "${var.region}-docker.pkg.dev/${var.project_id}/${var.repository_id}/application@sha256:"
@@ -95,13 +113,15 @@ resource "terraform_data" "runtime_preconditions" {
     }
 
     precondition {
-      condition = !var.enable_openai_real_provider || alltrue([
+      condition = !var.enable_synthetic_evaluation_provider || alltrue([
         var.enable_runtime_resources,
         var.enable_openai_secret_container,
         var.openai_api_key_secret_version != null,
-        var.openai_max_job_cost_usd != null,
+        var.synthetic_evaluation_candidate_sha != null,
+        var.synthetic_evaluation_max_requests != null,
+        var.synthetic_evaluation_max_job_cost_usd != null,
       ])
-      error_message = "Real OpenAI worker mode requires runtime resources, the separately managed secret container, a pinned secret version, and an explicit job-cost ceiling."
+      error_message = "Synthetic evaluation capability requires runtime resources, the separately managed secret container, a pinned secret version, an exact candidate SHA, and explicit request/cost ceilings. A durable job authorization is still required at runtime."
     }
   }
 }
@@ -158,6 +178,16 @@ resource "google_service_account" "worker" {
   project      = var.project_id
   account_id   = "${var.name_prefix}-worker"
   display_name = "CVA Stage 2 job runtime"
+
+  depends_on = [google_project_service.required["iam.googleapis.com"]]
+}
+
+resource "google_service_account" "synthetic_evaluation_worker" {
+  count = var.enable_synthetic_evaluation_provider ? 1 : 0
+
+  project      = var.project_id
+  account_id   = "${var.name_prefix}-synthetic-eval"
+  display_name = "CVA Stage 2 synthetic evaluation runtime"
 
   depends_on = [google_project_service.required["iam.googleapis.com"]]
 }
@@ -223,12 +253,12 @@ resource "google_secret_manager_secret" "openai_api_key" {
 }
 
 resource "google_secret_manager_secret_iam_member" "openai_worker_access" {
-  count = var.enable_openai_real_provider ? 1 : 0
+  count = var.enable_synthetic_evaluation_provider ? 1 : 0
 
   project   = var.project_id
   secret_id = google_secret_manager_secret.openai_api_key[0].secret_id
   role      = "roles/secretmanager.secretAccessor"
-  member    = "serviceAccount:${google_service_account.worker.email}"
+  member    = "serviceAccount:${google_service_account.synthetic_evaluation_worker[0].email}"
 }
 
 locals {
@@ -250,6 +280,16 @@ locals {
         member     = google_service_account.worker.email
       }
     },
+    var.enable_synthetic_evaluation_provider ? {
+      for secret_key in setsubtract(
+        toset(keys(google_secret_manager_secret.runtime)),
+        toset(["session_secret"]),
+      ) :
+      "${secret_key}|${google_service_account.synthetic_evaluation_worker[0].email}" => {
+        secret_key = secret_key
+        member     = google_service_account.synthetic_evaluation_worker[0].email
+      }
+    } : {},
   )
 }
 
@@ -411,8 +451,8 @@ resource "google_cloud_run_v2_job" "worker" {
     template {
       service_account = google_service_account.worker.email
       timeout         = "3600s"
-      # Dispatch carries no job id; an infrastructure retry could otherwise
-      # claim a different durable QUEUED row after the first row failed.
+      # Every dispatch carries one exact job id. Infrastructure replay is still
+      # disabled; retry/cancel/resume belongs to durable application state.
       max_retries = 0
 
       containers {
@@ -464,20 +504,91 @@ resource "google_cloud_run_v2_job" "worker" {
           }
         }
 
-        dynamic "env" {
-          for_each = var.enable_openai_real_provider ? [1] : []
+      }
+    }
+  }
 
+  lifecycle {
+    prevent_destroy = true
+
+    precondition {
+      condition     = terraform_data.runtime_preconditions.output
+      error_message = "Runtime preconditions were not satisfied."
+    }
+  }
+
+  depends_on = [
+    google_project_service.required["run.googleapis.com"],
+    google_secret_manager_secret_iam_member.runtime_access,
+  ]
+}
+
+resource "google_cloud_run_v2_job" "synthetic_evaluation_worker" {
+  count = var.enable_synthetic_evaluation_provider ? 1 : 0
+
+  project             = var.project_id
+  name                = var.synthetic_evaluation_job_name
+  location            = var.region
+  deletion_protection = true
+  labels              = merge(local.labels, { workload = "synthetic-evaluation" })
+
+  template {
+    task_count  = 1
+    parallelism = 1
+
+    template {
+      service_account = google_service_account.synthetic_evaluation_worker[0].email
+      timeout         = "3600s"
+      max_retries     = 0
+
+      containers {
+        image = var.container_image
+        args  = ["worker"]
+
+        resources {
+          limits = {
+            cpu    = "1"
+            memory = "2Gi"
+          }
+        }
+
+        dynamic "env" {
+          for_each = local.synthetic_evaluation_worker_environment
           content {
-            name = "CVA_OPENAI_API_KEY"
-            value_source {
-              secret_key_ref {
-                secret  = google_secret_manager_secret.openai_api_key[0].secret_id
-                version = var.openai_api_key_secret_version
-              }
+            name  = env.key
+            value = env.value
+          }
+        }
+
+        env {
+          name = "CVA_DATABASE_URL"
+          value_source {
+            secret_key_ref {
+              secret  = google_secret_manager_secret.runtime["database_url"].secret_id
+              version = var.secret_version
             }
           }
         }
 
+        env {
+          name = "CVA_R2_ACCESS_KEY_ID"
+          value_source {
+            secret_key_ref {
+              secret  = google_secret_manager_secret.runtime["r2_access_key_id"].secret_id
+              version = var.secret_version
+            }
+          }
+        }
+
+        env {
+          name = "CVA_R2_SECRET_ACCESS_KEY"
+          value_source {
+            secret_key_ref {
+              secret  = google_secret_manager_secret.runtime["r2_secret_access_key"].secret_id
+              version = var.secret_version
+            }
+          }
+        }
       }
     }
   }
@@ -517,6 +628,10 @@ resource "google_cloud_run_v2_job_iam_member" "web_can_execute_worker" {
   role     = "roles/run.invoker"
   member   = "serviceAccount:${google_service_account.web.email}"
 }
+
+# Intentionally no web -> synthetic_evaluation_worker run.invoker grant. The
+# eval-only job is started out-of-band only after its durable authorization is
+# written and with an exact CVA_CLAIM_JOB_ID execution override.
 
 resource "google_cloudbuildv2_connection" "github" {
   count = var.enable_cloud_build_connection ? 1 : 0

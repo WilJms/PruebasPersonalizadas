@@ -21,6 +21,9 @@ IDEMPOTENCY_HYGIENE_MIGRATION = (
 )
 STAGE2_MIGRATION = MIGRATION_DIR / "202608070003_stage2_experimental.sql"
 CONVERGENCE_MIGRATION = MIGRATION_DIR / "202608120004_stage2_convergence.sql"
+SYNTHETIC_PROVIDER_MIGRATION = (
+    MIGRATION_DIR / "202608120005_stage2_synthetic_provider_gate.sql"
+)
 STAGE2_RECOVERY = (
     ROOT
     / "deploy/supabase/rollbacks/202608070003_stage2_experimental_recovery.sql"
@@ -54,6 +57,8 @@ def test_supabase_migration_matches_orm_table_and_column_surface() -> None:
         "feedback_events",
         "job_control_records",
         "question_review_actions",
+        "synthetic_provider_authorizations",
+        "synthetic_provider_claims",
     }
     stage2_columns = {
         "idempotency_keys": {"expires_at"},
@@ -117,6 +122,7 @@ def test_idempotency_hygiene_migration_removes_and_blocks_capabilities() -> None
         "202608070002_idempotency_capability_hygiene.sql",
         "202608070003_stage2_experimental.sql",
         "202608120004_stage2_convergence.sql",
+        "202608120005_stage2_synthetic_provider_gate.sql",
     ]
     sql = IDEMPOTENCY_HYGIENE_MIGRATION.read_text(encoding="utf-8").lower()
     assert sql.startswith("begin;")
@@ -138,6 +144,17 @@ def test_idempotency_hygiene_migration_removes_and_blocks_capabilities() -> None
     assert "ix_idempotency_keys_expires_at" in convergence_sql
     assert "drop table" not in convergence_sql
     assert "drop column" not in convergence_sql
+
+    provider_sql = SYNTHETIC_PROVIDER_MIGRATION.read_text(
+        encoding="utf-8"
+    ).lower()
+    assert provider_sql.startswith("begin;")
+    assert provider_sql.rstrip().endswith("commit;")
+    assert "synthetic_provider_authorizations_are_append_only" in provider_sql
+    assert "synthetic_provider_claims_are_append_only" in provider_sql
+    assert "synthetic_only_no_student_data" in provider_sql
+    assert "drop table" not in provider_sql
+    assert "drop column" not in provider_sql
 
 
 def test_runtime_configuration_uses_exact_settings_names_and_safe_defaults() -> None:
@@ -168,11 +185,26 @@ def test_runtime_configuration_uses_exact_settings_names_and_safe_defaults() -> 
         "CVA_RENDERER_MODE",
         "CVA_UPLOAD_URL_TTL_SECONDS",
         "CVA_DOWNLOAD_URL_TTL_SECONDS",
+        "CVA_OPENAI_SECRET_VERSION_RESOURCE",
+        "CVA_SYNTHETIC_EVALUATION_CANDIDATE_SHA",
+        "CVA_SYNTHETIC_EVALUATION_MAX_REQUESTS",
     }
 
     assert not {name for name in required if name not in combined}
     assert re.search(r'CVA_MODEL_MODE\s*=\s*"mock"', terraform)
-    assert 'var.enable_openai_real_provider ? "real" : "mock"' in terraform
+    assert re.search(r'CVA_WORKER_MODEL_MODE\s*=\s*"mock"', terraform)
+    assert re.search(
+        r"worker_environment\s*=\s*\{.*?"
+        r'CVA_MODEL_MODE\s*=\s*"mock"',
+        terraform,
+        re.DOTALL,
+    )
+    assert re.search(
+        r"synthetic_evaluation_worker_environment\s*=.*?"
+        r'CVA_MODEL_MODE\s*=\s*"real"',
+        terraform,
+        re.DOTALL,
+    )
     assert re.search(r'CVA_P10_ENABLED\s*=\s*"false"', terraform)
     assert "CVA_ENV=" not in combined
     assert "CVA_OBJECT_STORE=" not in combined
@@ -333,6 +365,10 @@ def test_terraform_declares_service_job_secrets_and_job_invocation() -> None:
 
     assert 'resource "google_cloud_run_v2_service" "web"' in terraform
     assert 'resource "google_cloud_run_v2_job" "worker"' in terraform
+    assert (
+        'resource "google_cloud_run_v2_job" "synthetic_evaluation_worker"'
+        in terraform
+    )
     assert 'resource "google_secret_manager_secret" "runtime"' in terraform
     assert 'resource "google_cloud_run_v2_job_iam_member" "web_can_execute_worker"' in terraform
     assert 'role     = "roles/run.invoker"' in terraform
@@ -345,12 +381,17 @@ def test_terraform_declares_service_job_secrets_and_job_invocation() -> None:
     worker = terraform.split(
         'resource "google_cloud_run_v2_job" "worker"', 1
     )[1].split(
+        'resource "google_cloud_run_v2_job" "synthetic_evaluation_worker"', 1
+    )[0]
+    evaluation_worker = terraform.split(
+        'resource "google_cloud_run_v2_job" "synthetic_evaluation_worker"', 1
+    )[1].split(
         'resource "google_cloud_run_v2_service_iam_member" "public_login"', 1
     )[0]
     assert "CVA_SESSION_SECRET" not in worker
     assert 'toset(["session_secret"])' in terraform
     assert re.search(r"max_retries\s*=\s*0", terraform)
-    assert terraform.count("image = var.container_image") == 2
+    assert terraform.count("image = var.container_image") == 3
     assert (
         "${var.region}-docker\\\\.pkg\\\\.dev/${var.project_id}/"
         "${var.repository_id}/application@sha256:[0-9a-f]{64}"
@@ -359,10 +400,11 @@ def test_terraform_declares_service_job_secrets_and_job_invocation() -> None:
     assert "local.expected_container_image_prefix" in terraform
     assert "/application@sha256:" in terraform
     assert "deletion_protection = false" not in terraform
-    assert terraform.count("deletion_protection = true") == 4
-    assert terraform.count("prevent_destroy = true") == 5
+    assert terraform.count("deletion_protection = true") == 5
+    assert terraform.count("prevent_destroy = true") == 6
     assert 'output "service_name"' in outputs
     assert 'output "job_name"' in outputs
+    assert 'output "synthetic_evaluation_job_name"' in outputs
     assert 'output "runtime_container_image"' in outputs
     assert '"roles/run.admin"' not in terraform
     assert "build_can_use_web_identity" not in terraform
@@ -380,9 +422,9 @@ def test_terraform_declares_service_job_secrets_and_job_invocation() -> None:
         'branch = "^(main|fix/stage1-external-readiness|codex/stage2-experimental-mvp)$"'
         in terraform
     )
-    assert terraform.count('CVA_REQUIRE_LIBMAGIC         = "true"') == 2
-    assert terraform.count('name = "CVA_OPENAI_API_KEY"') == 1
-    assert terraform.count("CVA_MAX_JOB_COST_USD") == 2
+    assert terraform.count('CVA_REQUIRE_LIBMAGIC') == 3
+    assert 'name = "CVA_OPENAI_API_KEY"' not in terraform
+    assert terraform.count("CVA_MAX_JOB_COST_USD") == 3
     assert 'resource "google_secret_manager_secret" "openai_api_key"' in terraform
     assert (
         'resource "google_secret_manager_secret_iam_member" "openai_worker_access"'
@@ -392,15 +434,31 @@ def test_terraform_declares_service_job_secrets_and_job_invocation() -> None:
         'resource "google_cloud_run_v2_service" "web"', 1
     )[1].split('resource "google_cloud_run_v2_job" "worker"', 1)[0]
     assert "CVA_OPENAI_API_KEY" not in web
+    assert "CVA_OPENAI_API_KEY" not in worker
+    assert "CVA_OPENAI_API_KEY" not in evaluation_worker
+    assert "CVA_OPENAI_SECRET_VERSION_RESOURCE" not in worker
+    assert "local.worker_environment" in worker
+    assert "local.synthetic_evaluation_worker_environment" in evaluation_worker
     openai_iam = terraform.split(
         'resource "google_secret_manager_secret_iam_member" "openai_worker_access"', 1
     )[1].split("\n}\n\nlocals", 1)[0]
-    assert "google_service_account.worker.email" in openai_iam
+    assert "google_service_account.synthetic_evaluation_worker[0].email" in openai_iam
+    assert "google_service_account.worker.email" not in openai_iam
     assert "google_service_account.web.email" not in openai_iam
-    assert 'version = var.openai_api_key_secret_version' in worker
+    web_invoker = terraform.split(
+        'resource "google_cloud_run_v2_job_iam_member" "web_can_execute_worker"',
+        1,
+    )[1].split("# Intentionally no web", 1)[0]
+    assert "google_cloud_run_v2_job.worker[0].name" in web_invoker
+    assert "synthetic_evaluation_worker" not in web_invoker
+    assert "CVA_OPENAI_SECRET_VERSION_RESOURCE" in terraform
+    assert "CVA_SYNTHETIC_EVALUATION_CANDIDATE_SHA" in terraform
+    assert "CVA_SYNTHETIC_EVALUATION_MAX_REQUESTS" in terraform
     assert "CVA_MAX_JOB_COST_USD" in terraform
-    assert "var.openai_max_job_cost_usd != null" in terraform
-    assert "openai_max_job_cost_usd         = null" in (
+    assert "var.synthetic_evaluation_max_job_cost_usd != null" in terraform
+    assert "var.synthetic_evaluation_max_requests != null" in terraform
+    assert "var.synthetic_evaluation_candidate_sha != null" in terraform
+    assert "synthetic_evaluation_max_job_cost_usd" in (
         ROOT / "deploy/terraform/terraform.tfvars.example"
     ).read_text(encoding="utf-8")
     assert "OPENAI_API_KEY" not in (ROOT / "deploy/cloudbuild.yaml").read_text(
