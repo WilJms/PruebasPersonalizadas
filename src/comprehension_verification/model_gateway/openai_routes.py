@@ -22,7 +22,11 @@ from comprehension_verification.model_gateway.openai_schema import (
 
 
 SOL_MODEL_ID: Final = "gpt-5.6-sol"
+TERRA_MODEL_ID: Final = "gpt-5.6-terra"
 LUNA_MODEL_ID: Final = "gpt-5.6-luna"
+OPENAI_APPROVED_MODEL_IDS: Final = frozenset(
+    {LUNA_MODEL_ID, TERRA_MODEL_ID}
+)
 OPENAI_PROVIDER_ID: Final = "openai"
 OPENAI_ROUTE_PROFILE_ID: Final = "LUNA_BASELINE_V1"
 OPENAI_XHIGH_ROUTE_PROFILE_ID: Final = "LUNA_XHIGH_V1"
@@ -38,6 +42,8 @@ OPENAI_XHIGH_PROMPT_IDS: Final = frozenset(
 )
 OPENAI_MAX_ROUTE_PROFILE_ID: Final = "LUNA_MAX_V1"
 OPENAI_MAX_PROMPT_IDS: Final = OPENAI_XHIGH_PROMPT_IDS
+OPENAI_TERRA_MEDIUM_ROUTE_PROFILE_ID: Final = "TERRA_MEDIUM_V1"
+OPENAI_TERRA_MEDIUM_PROMPT_IDS: Final = OPENAI_XHIGH_PROMPT_IDS
 REQUEST_FRAMING_TOKEN_ALLOWANCE: Final = 1_024
 OPENAI_MAX_INPUT_TOKENS: Final = 250_000
 # The first manual-evaluation profile buys no automatic transport retry. A
@@ -121,6 +127,21 @@ OPENAI_MAX_ROUTE_PROFILE: Final[Mapping[str, ApprovedOpenAIRoute]] = (
         }
     )
 )
+OPENAI_TERRA_MEDIUM_ROUTE_PROFILE: Final[
+    Mapping[str, ApprovedOpenAIRoute]
+] = MappingProxyType(
+    {
+        prompt_id: ApprovedOpenAIRoute(
+            TERRA_MODEL_ID,
+            (
+                models.ReasoningEffort.MEDIUM
+                if prompt_id in OPENAI_TERRA_MEDIUM_PROMPT_IDS
+                else approved.reasoning_effort
+            ),
+        )
+        for prompt_id, approved in OPENAI_ROUTE_PROFILE.items()
+    }
+)
 OPENAI_ROUTE_PROFILES: Final[
     Mapping[str, Mapping[str, ApprovedOpenAIRoute]]
 ] = MappingProxyType(
@@ -128,6 +149,9 @@ OPENAI_ROUTE_PROFILES: Final[
         OPENAI_ROUTE_PROFILE_ID: OPENAI_ROUTE_PROFILE,
         OPENAI_XHIGH_ROUTE_PROFILE_ID: OPENAI_XHIGH_ROUTE_PROFILE,
         OPENAI_MAX_ROUTE_PROFILE_ID: OPENAI_MAX_ROUTE_PROFILE,
+        OPENAI_TERRA_MEDIUM_ROUTE_PROFILE_ID: (
+            OPENAI_TERRA_MEDIUM_ROUTE_PROFILE
+        ),
     }
 )
 OPENAI_MODEL_BY_PROMPT: Final[Mapping[str, str]] = MappingProxyType(
@@ -148,9 +172,9 @@ def openai_route_matches_profile(
 ) -> bool:
     """Accept only an exact, explicitly named profile entry.
 
-    The XHIGH and MAX qualifications deliberately leave the canonical prompt
-    registry at HIGH so its executable prompt hashes remain unchanged. These
-    profile checks are the sole authorized reasoning-routing exceptions.
+    The XHIGH, MAX, and Terra MEDIUM qualifications deliberately leave the
+    canonical prompt registry at HIGH so its executable prompt hashes remain
+    unchanged. These profile checks are the sole authorized routing exceptions.
     """
 
     spec = PROMPT_SPECS.get(prompt_id)
@@ -197,10 +221,12 @@ def build_openai_routes(
         raise AssertionError(
             f"{route_profile_id} must cover exactly P01-P09 and P11"
         )
-    if any(
-        approved.model != LUNA_MODEL_ID
-        for approved in route_profile.values()
-    ):
+    expected_model = (
+        TERRA_MODEL_ID
+        if route_profile_id == OPENAI_TERRA_MEDIUM_ROUTE_PROFILE_ID
+        else LUNA_MODEL_ID
+    )
+    if any(approved.model != expected_model for approved in route_profile.values()):
         raise AssertionError(
             f"{route_profile_id} cannot route silently to another model"
         )
@@ -233,6 +259,24 @@ def build_openai_routes(
         raise AssertionError(
             f"Unexpected MAX route surface for {route_profile_id}: "
             f"{sorted(actual_max_prompts)}"
+        )
+    actual_terra_medium_prompts = frozenset(
+        prompt_id
+        for prompt_id, approved in route_profile.items()
+        if (
+            prompt_id in OPENAI_TERRA_MEDIUM_PROMPT_IDS
+            and approved.reasoning_effort == models.ReasoningEffort.MEDIUM
+        )
+    )
+    expected_terra_medium_prompts = (
+        OPENAI_TERRA_MEDIUM_PROMPT_IDS
+        if route_profile_id == OPENAI_TERRA_MEDIUM_ROUTE_PROFILE_ID
+        else frozenset()
+    )
+    if actual_terra_medium_prompts != expected_terra_medium_prompts:
+        raise AssertionError(
+            f"Unexpected Terra MEDIUM route surface for {route_profile_id}: "
+            f"{sorted(actual_terra_medium_prompts)}"
         )
     capabilities = models.ModelCapabilities(
         # Every document is parsed and normalized before the gateway. The
@@ -269,10 +313,17 @@ def build_openai_routes(
             and spec.reasoning_effort == models.ReasoningEffort.HIGH
             and approved.reasoning_effort == models.ReasoningEffort.MAX
         )
+        is_authorized_terra_medium_override = (
+            route_profile_id == OPENAI_TERRA_MEDIUM_ROUTE_PROFILE_ID
+            and prompt_id in OPENAI_TERRA_MEDIUM_PROMPT_IDS
+            and spec.reasoning_effort == models.ReasoningEffort.HIGH
+            and approved.reasoning_effort == models.ReasoningEffort.MEDIUM
+        )
         if (
             spec.reasoning_effort != approved.reasoning_effort
             and not is_authorized_xhigh_override
             and not is_authorized_max_override
+            and not is_authorized_terra_medium_override
         ):
             raise AssertionError(
                 f"Prompt/profile reasoning drift for {prompt_id}: "
@@ -303,12 +354,18 @@ def build_openai_routes(
             reason_codes=[
                 f"ROUTE_PROFILE_{route_profile_id}",
                 (
-                    "LUNA_ONLY_EXPERIMENTAL_MAX_QUALIFICATION"
-                    if route_profile_id == OPENAI_MAX_ROUTE_PROFILE_ID
+                    "TERRA_ONLY_EXPERIMENTAL_MEDIUM_QUALIFICATION"
+                    if route_profile_id
+                    == OPENAI_TERRA_MEDIUM_ROUTE_PROFILE_ID
                     else (
-                        "LUNA_ONLY_EXPERIMENTAL_XHIGH_QUALIFICATION"
-                        if route_profile_id == OPENAI_XHIGH_ROUTE_PROFILE_ID
-                        else "LUNA_ONLY_EXPERIMENTAL_BASELINE"
+                        "LUNA_ONLY_EXPERIMENTAL_MAX_QUALIFICATION"
+                        if route_profile_id == OPENAI_MAX_ROUTE_PROFILE_ID
+                        else (
+                            "LUNA_ONLY_EXPERIMENTAL_XHIGH_QUALIFICATION"
+                            if route_profile_id
+                            == OPENAI_XHIGH_ROUTE_PROFILE_ID
+                            else "LUNA_ONLY_EXPERIMENTAL_BASELINE"
+                        )
                     )
                 ),
                 *(
@@ -319,6 +376,11 @@ def build_openai_routes(
                 *(
                     ["REASONING_EFFORT_OVERRIDE_HIGH_TO_MAX"]
                     if is_authorized_max_override
+                    else []
+                ),
+                *(
+                    ["REASONING_EFFORT_OVERRIDE_HIGH_TO_MEDIUM"]
+                    if is_authorized_terra_medium_override
                     else []
                 ),
                 "EXPLICIT_APPROVED_MODEL_ID",

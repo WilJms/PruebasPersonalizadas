@@ -10,7 +10,7 @@ from comprehension_verification.model_gateway.openai_pricing import (
 
 
 def test_gpt_5_6_standard_short_context_prices_match_current_openai_table() -> None:
-    assert PRICING_OBSERVED_DATE == "2026-08-10"
+    assert PRICING_OBSERVED_DATE == "2026-08-13"
     assert PRICING_SOURCE_URL == "https://developers.openai.com/api/docs/pricing"
     assert dict(MODEL_PRICES) == {
         "gpt-5.6-sol": TokenPrices(5.00, 0.50, 30.00),

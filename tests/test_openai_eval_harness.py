@@ -28,6 +28,8 @@ from comprehension_verification.model_gateway import (
     OPENAI_MAX_PROMPT_IDS,
     OPENAI_MAX_ROUTE_PROFILE_ID,
     OPENAI_ROUTE_PROFILE_ID,
+    OPENAI_TERRA_MEDIUM_PROMPT_IDS,
+    OPENAI_TERRA_MEDIUM_ROUTE_PROFILE_ID,
     OPENAI_XHIGH_PROMPT_IDS,
     OPENAI_XHIGH_ROUTE_PROFILE_ID,
 )
@@ -766,6 +768,233 @@ def test_max_authorization_boundary_seals_xhigh_sdk_and_caps(
     )
 
 
+def test_terra_medium_offline_qualification_is_exact_and_non_billable() -> None:
+    report = asyncio.run(
+        run_offline_convergence(
+            route_profile_id=OPENAI_TERRA_MEDIUM_ROUTE_PROFILE_ID,
+            max_total_cost_usd=eval_harness.TERRA_MEDIUM_MAX_TOTAL_COST_USD,
+            max_call_cost_usd=eval_harness.TERRA_MEDIUM_MAX_CALL_COST_USD,
+            max_provider_requests=(
+                eval_harness.TERRA_MEDIUM_MAX_PROVIDER_REQUESTS
+            ),
+        )
+    )
+    controls = report["controls"]
+    assert report["status"] == "PASS"
+    assert report["mode"] == "offline-terra-medium-qualification"
+    assert report["route_profile"] == "TERRA_MEDIUM_V1"
+    assert report["execution_sequence"] == [
+        "independent-sweep:P04-P09",
+        "offline-golden-positive:P05",
+        "offline-golden-negative:P05",
+        "integrated-chain:base:1:P04-P09",
+        "integrated-chain:base:2:P04-P09",
+        "integrated-chain:choice-variant:P04-P09",
+    ]
+    assert [item["status"] for item in report["observations"]] == [
+        "PASS",
+        "PASS",
+        "PASS",
+        "PASS",
+    ]
+    assert all(
+        check["status"] == "PASS" and check["provider_requests"] == 0
+        for check in report["deterministic_checks"]
+    )
+    assert controls["network_calls"] == 0
+    assert controls["provider_attempts"] == 24
+    assert controls["simulated_provider_attempts"] == 24
+    assert controls["models"] == ["gpt-5.6-terra"]
+    assert controls["reasoning_efforts_by_prompt"] == {
+        prompt_id: ["MEDIUM"]
+        for prompt_id in sorted(OPENAI_TERRA_MEDIUM_PROMPT_IDS)
+    }
+    assert controls["p10_calls"] == 0
+    assert controls["p11_calls"] == 0
+    assert controls["fallback_calls"] == 0
+    assert controls["gateway_retries"] == 0
+    assert controls["sdk_retries"] == 0
+    assert controls["semantic_retries"] == 0
+    assert controls["tools_enabled"] is False
+    assert controls["store"] is False
+    assert controls["budget_charged_usd"] == pytest.approx(5.0054075)
+    assert controls["max_observed_budget_charge_usd"] == pytest.approx(
+        0.25831
+    )
+    assert controls["budget_charged_usd"] <= controls[
+        "max_total_cost_usd"
+    ]
+    assert controls["max_observed_budget_charge_usd"] <= controls[
+        "max_call_cost_usd"
+    ]
+
+
+def test_terra_medium_cli_dry_run_has_zero_network_and_no_secret_surface() -> None:
+    completed = subprocess.run(
+        [
+            sys.executable,
+            str(SCRIPT),
+            "--mode",
+            "terra-medium-qualification-dry-run",
+            "--max-total-cost-usd",
+            "5.10",
+            "--max-call-cost-usd",
+            "0.27",
+            "--max-provider-requests",
+            "24",
+        ],
+        cwd=ROOT,
+        env=_safe_environment(),
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    report = json.loads(completed.stdout)
+    serialized = json.dumps(report, sort_keys=True)
+    assert report["status"] == "PASS"
+    assert report["route_profile"] == "TERRA_MEDIUM_V1"
+    assert report["controls"]["network_calls"] == 0
+    assert "OPENAI_API_KEY" not in serialized
+    assert "content_text" not in serialized
+    assert "question_text" not in serialized
+
+
+def test_terra_medium_boundary_freezes_new_ladder_without_semantic_drift() -> None:
+    max_report = json.loads(
+        eval_harness.TERRA_MEDIUM_QUALIFICATION_BASELINE_RAW_REPORT.read_text(
+            encoding="utf-8"
+        )
+    )
+    maximum = max_report["boundary"]
+    terra = rehearsal_boundary_material(
+        OPENAI_TERRA_MEDIUM_ROUTE_PROFILE_ID,
+        max_call_cost_usd=eval_harness.TERRA_MEDIUM_MAX_CALL_COST_USD,
+    )
+    for field in (
+        "prompt_pack_version",
+        "planner_version",
+        "assembler_version",
+        "checkpoints",
+        "p05_golden",
+    ):
+        assert terra[field] == maximum[field]
+    semantic_prompt_fields = {
+        "version",
+        "hash",
+        "input_schema_hash",
+        "output_schema_hash",
+        "relationship_validator",
+        "application_validator",
+    }
+    for prompt_id in sorted(OPENAI_TERRA_MEDIUM_PROMPT_IDS):
+        assert {
+            key: value
+            for key, value in terra["prompts"][prompt_id].items()
+            if key in semantic_prompt_fields
+        } == {
+            key: value
+            for key, value in maximum["prompts"][prompt_id].items()
+            if key in semantic_prompt_fields
+        }
+        assert terra["prompts"][prompt_id][
+            "registry_reasoning_effort"
+        ] == "HIGH"
+        assert terra["prompts"][prompt_id][
+            "route_reasoning_effort"
+        ] == "MEDIUM"
+
+    delta = terra["route_delta_from_luna_max"]
+    expected_all_prompts = sorted(
+        {
+            "P01_ACTIVITY_SPEC_V1",
+            "P02_RUBRIC_NORMALIZE_V1",
+            "P03_AMBIGUITY_TRIAGE_V1",
+            *OPENAI_TERRA_MEDIUM_PROMPT_IDS,
+            "P11_SCHEMA_REPAIR_V1",
+        }
+    )
+    assert delta["baseline_route_profile"] == OPENAI_MAX_ROUTE_PROFILE_ID
+    assert delta["selected_route_profile"] == (
+        OPENAI_TERRA_MEDIUM_ROUTE_PROFILE_ID
+    )
+    assert delta["route_identity_changed_prompt_ids"] == expected_all_prompts
+    assert delta["reasoning_effort_changes"] == {
+        prompt_id: {"from": "MAX", "to": "MEDIUM"}
+        for prompt_id in sorted(OPENAI_TERRA_MEDIUM_PROMPT_IDS)
+    }
+    assert delta["other_route_field_changes"] == {
+        "model": expected_all_prompts,
+        "model_snapshot": expected_all_prompts,
+    }
+    for unchanged_surface in (
+        "prompt_registry_changes",
+        "schema_changes",
+        "validator_changes",
+        "fixture_changes",
+        "planner_changes",
+        "assembler_changes",
+    ):
+        assert delta[unchanged_surface] == []
+    route_boundary = terra["openai_route_boundary"]
+    assert route_boundary["model_ids"] == ["gpt-5.6-terra"]
+    assert route_boundary["route_profile"] == "TERRA_MEDIUM_V1"
+    assert route_boundary["adapter"] == "OpenAIResponsesAdapter"
+    assert route_boundary["openai_sdk_version"] == "2.53.0"
+
+
+def test_terra_medium_authorization_seals_max_receipts_sdk_and_caps(
+    tmp_path: Path,
+) -> None:
+    args = _real_cli_args(tmp_path)
+    args.mode = "terra-medium-qualification-real"
+    args.max_total_cost_usd = eval_harness.TERRA_MEDIUM_MAX_TOTAL_COST_USD
+    args.max_call_cost_usd = eval_harness.TERRA_MEDIUM_MAX_CALL_COST_USD
+    boundary = eval_harness._convergence_authorization_boundary(args)
+    assert boundary["boundary_format"] == (
+        "openai-stage2-convergence-authorization/1.3.0"
+    )
+    assert boundary["route_profile"] == "TERRA_MEDIUM_V1"
+    assert boundary["model_ids"] == ["gpt-5.6-terra"]
+    assert boundary["qualified_reasoning_effort"] == {
+        prompt_id: "MEDIUM"
+        for prompt_id in sorted(OPENAI_TERRA_MEDIUM_PROMPT_IDS)
+    }
+    assert boundary["max_provider_requests"] == 24
+    assert boundary["max_total_cost_usd"] == 5.10
+    assert boundary["max_call_cost_usd"] == 0.27
+    assert boundary["p10_enabled"] is False
+    assert boundary["p11_enabled_during_qualification"] is False
+    assert boundary["fallback_enabled"] is False
+    assert boundary["tools_enabled"] is False
+    assert boundary["store"] is False
+    assert boundary["gateway_retries"] == 0
+    assert boundary["sdk_retries"] == 0
+    assert boundary["semantic_retries"] == 0
+    baseline = boundary["terra_medium_qualification_baseline"]
+    assert baseline["candidate_sha"] == (
+        eval_harness.TERRA_MEDIUM_QUALIFICATION_BASELINE_SHA
+    )
+    assert baseline["evidence_sha"] == (
+        eval_harness.TERRA_MEDIUM_QUALIFICATION_EVIDENCE_SHA
+    )
+    assert baseline["raw_report_hash"] == (
+        "sha256:"
+        + hashlib.sha256(
+            eval_harness.TERRA_MEDIUM_QUALIFICATION_BASELINE_RAW_REPORT.read_bytes()
+        ).hexdigest()
+    )
+    assert baseline["consolidated_report_hash"] == (
+        "sha256:"
+        + hashlib.sha256(
+            eval_harness.TERRA_MEDIUM_QUALIFICATION_BASELINE_CONSOLIDATED_REPORT.read_bytes()
+        ).hexdigest()
+    )
+    assert baseline["route_profile"] == "LUNA_MAX_V1"
+    assert baseline["model"] == "gpt-5.6-luna"
+    assert baseline["reasoning_effort"] == "MAX"
+    assert boundary["univariate_comparison"] is False
+
+
 def _reservation_boundary() -> dict[str, object]:
     return {
         "git_head": "a" * 40,
@@ -952,6 +1181,42 @@ def test_max_real_code_path_uses_exact_routes_without_network(
     assert report["controls"]["reasoning_efforts_by_prompt"] == {
         prompt_id: ["MAX"]
         for prompt_id in sorted(OPENAI_MAX_PROMPT_IDS)
+    }
+    assert report["controls"]["p10_calls"] == 0
+    assert report["controls"]["p11_calls"] == 0
+    assert report["controls"]["fallback_calls"] == 0
+
+
+def test_terra_medium_real_code_path_uses_exact_routes_without_network(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        "comprehension_verification.rehearsal.OpenAIResponsesAdapter",
+        lambda **_kwargs: DeterministicMockAdapter(),
+    )
+    report = asyncio.run(
+        run_real_convergence(
+            api_key=SecretStr("sk-project-synthetic-placeholder-not-real"),
+            max_total_cost_usd=(
+                eval_harness.TERRA_MEDIUM_MAX_TOTAL_COST_USD
+            ),
+            max_call_cost_usd=(
+                eval_harness.TERRA_MEDIUM_MAX_CALL_COST_USD
+            ),
+            max_provider_requests=24,
+            route_profile_id=OPENAI_TERRA_MEDIUM_ROUTE_PROFILE_ID,
+        )
+    )
+    assert report["status"] == "PASS"
+    assert report["mode"] == "real-terra-medium-qualification"
+    assert report["route_profile"] == "TERRA_MEDIUM_V1"
+    assert report["unchanged_boundary_across_chains"] is True
+    assert report["controls"]["network_calls"] == 24
+    assert report["controls"]["provider_attempts"] == 24
+    assert report["controls"]["models"] == ["gpt-5.6-terra"]
+    assert report["controls"]["reasoning_efforts_by_prompt"] == {
+        prompt_id: ["MEDIUM"]
+        for prompt_id in sorted(OPENAI_TERRA_MEDIUM_PROMPT_IDS)
     }
     assert report["controls"]["p10_calls"] == 0
     assert report["controls"]["p11_calls"] == 0
@@ -1282,6 +1547,151 @@ def test_max_outcome_is_terminal_for_model_failure_and_inconclusive_for_transpor
             "HUMAN_REVIEW_OF_LUNA_EXHAUSTION_NO_AUTOMATIC_MODEL_CHANGE"
         ),
     }
+
+
+def test_terra_medium_cli_persists_pass_and_consumes_authorization_once(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    args = _real_cli_args(tmp_path)
+    args.mode = "terra-medium-qualification-real"
+    args.max_total_cost_usd = eval_harness.TERRA_MEDIUM_MAX_TOTAL_COST_USD
+    args.max_call_cost_usd = eval_harness.TERRA_MEDIUM_MAX_CALL_COST_USD
+
+    async def fake_run(_args: argparse.Namespace) -> dict[str, object]:
+        return {
+            "report_schema_version": "stage2-convergence-report/1.8.0",
+            "status": "PASS",
+            "mode": "real-terra-medium-qualification",
+            "classification": "SYNTHETIC_ONLY_NO_STUDENT_DATA",
+            "route_profile": "TERRA_MEDIUM_V1",
+            "observations": [],
+            "controls": {
+                "network_calls": 24,
+                "provider_attempts": 24,
+                "input_tokens": 100,
+                "output_tokens": 200,
+                "reasoning_tokens": 150,
+                "actual_cost_usd": 0.01,
+                "budget_charged_usd": 5.0054075,
+                "gateway_retries": 0,
+                "sdk_retries": 0,
+                "semantic_retries": 0,
+                "fallback_calls": 0,
+                "p10_calls": 0,
+                "p11_calls": 0,
+            },
+        }
+
+    monkeypatch.setattr(
+        eval_harness, "_run_current_convergence_real", fake_run
+    )
+    assert eval_harness._run_convergence_cli(args) == 0
+    capsys.readouterr()
+    report = json.loads(args.report_path.read_text(encoding="utf-8"))
+    assert report["qualification_outcome"] == (
+        "TERRA_MEDIUM_QUALIFICATION_PASSED"
+    )
+    assert report["convergence_outcome"] == (
+        "READY_FOR_INDEPENDENT_REVIEW"
+    )
+    assert report["baseline_luna_max_candidate"] == (
+        eval_harness.TERRA_MEDIUM_QUALIFICATION_BASELINE_SHA
+    )
+    assert report["univariate_comparison"] is False
+    record = EvaluationAuthorizationLedger(args.ledger).record(
+        args.execution_id
+    )
+    assert record["status"] == "COMPLETED"
+    with pytest.raises(
+        eval_harness.OpenAIEvalBlocked,
+        match="EVALUATION_AUTHORIZATION_ALREADY_CONSUMED",
+    ):
+        eval_harness._run_convergence_cli(args)
+
+
+def test_terra_medium_exact_caps_fail_closed_before_authorization(
+    tmp_path: Path,
+) -> None:
+    args = _real_cli_args(tmp_path)
+    args.mode = "terra-medium-qualification-real"
+    args.max_total_cost_usd = eval_harness.TERRA_MEDIUM_MAX_TOTAL_COST_USD
+    args.max_call_cost_usd = 0.26
+    with pytest.raises(
+        eval_harness.OpenAIEvalBlocked,
+        match="OPENAI_TERRA_MEDIUM_QUALIFICATION_EXACT_CAPS_REQUIRED",
+    ):
+        eval_harness._run_convergence_cli(args)
+    assert not args.ledger.exists()
+    assert not args.report_path.exists()
+
+
+def test_terra_medium_outcome_preserves_model_owned_precedence() -> None:
+    assert eval_harness._terra_medium_qualification_outcome(
+        {
+            "status": "FAIL",
+            "observations": [
+                {
+                    "failure": {
+                        "codes": [
+                            "MODEL_OUTPUT_VALIDATION_FAILED",
+                            "OUTPUT_PYDANTIC_VALIDATION_FAILED",
+                        ]
+                    }
+                }
+            ],
+        }
+    )["qualification_outcome"] == "TERRA_MEDIUM_QUALIFICATION_FAILED"
+    assert eval_harness._terra_medium_qualification_outcome(
+        {
+            "status": "FAIL",
+            "observations": [
+                {"failure": {"codes": ["MODEL_PROVIDER_ERROR"]}}
+            ],
+        }
+    ) == {
+        "qualification_outcome": "TERRA_MEDIUM_QUALIFICATION_INCONCLUSIVE",
+        "convergence_outcome": "CONVERGENCE_INCOMPLETE",
+        "causal_classification": (
+            "TECHNICAL_TERRA_MEDIUM_SUPPORT_OR_EXECUTION_FAILURE"
+        ),
+        "recommended_next_authority": (
+            "TECHNICAL_REVIEW_ONLY_NO_RERUN_WITHOUT_NEW_AUTHORITY"
+        ),
+    }
+    assert eval_harness._terra_medium_qualification_outcome(
+        {
+            "status": "FAIL",
+            "observations": [
+                {
+                    "failure": {
+                        "aggregated_failures": [
+                            {"codes": ["MODEL_PROVIDER_ERROR"]},
+                            {
+                                "codes": [
+                                    "MODEL_OUTPUT_VALIDATION_FAILED",
+                                    "OUTPUT_PYDANTIC_VALIDATION_FAILED",
+                                ]
+                            },
+                        ]
+                    }
+                }
+            ],
+        }
+    ) == {
+        "qualification_outcome": "TERRA_MEDIUM_QUALIFICATION_FAILED",
+        "convergence_outcome": "CONVERGENCE_INCOMPLETE",
+        "causal_classification": (
+            "MODEL_OWNED_QUALIFICATION_FAILURE_WITH_TECHNICAL_FAILURES"
+        ),
+        "recommended_next_authority": (
+            "INDEPENDENT_REVIEW_BEFORE_ANY_TERRA_HIGH_AUTHORITY"
+        ),
+    }
+
+
+def test_max_outcome_additional_contract_and_mixed_cases() -> None:
     assert eval_harness._max_qualification_outcome(
         {
             "status": "FAIL",

@@ -71,10 +71,14 @@ from comprehension_verification.model_gateway.openai_routes import (
     OPENAI_P11_MAX_INPUT_TOKENS,
     OPENAI_ROUTE_PROFILE,
     OPENAI_ROUTE_PROFILE_ID,
+    OPENAI_TERRA_MEDIUM_PROMPT_IDS,
+    OPENAI_TERRA_MEDIUM_ROUTE_PROFILE,
+    OPENAI_TERRA_MEDIUM_ROUTE_PROFILE_ID,
     OPENAI_XHIGH_PROMPT_IDS,
     OPENAI_XHIGH_ROUTE_PROFILE,
     OPENAI_XHIGH_ROUTE_PROFILE_ID,
     SOL_MODEL_ID,
+    TERRA_MODEL_ID,
 )
 from comprehension_verification.model_gateway.openai_schema import (
     provider_schema_validation_issues,
@@ -377,6 +381,68 @@ def test_max_route_profile_changes_only_xhigh_effort_and_identity() -> None:
     )
 
 
+def test_terra_medium_profile_changes_model_and_qualified_effort_only() -> None:
+    assert OPENAI_TERRA_MEDIUM_ROUTE_PROFILE_ID == "TERRA_MEDIUM_V1"
+    assert OPENAI_TERRA_MEDIUM_PROMPT_IDS == OPENAI_MAX_PROMPT_IDS
+    assert {
+        prompt_id
+        for prompt_id, approved in OPENAI_TERRA_MEDIUM_ROUTE_PROFILE.items()
+        if (
+            prompt_id in OPENAI_TERRA_MEDIUM_PROMPT_IDS
+            and approved.reasoning_effort == models.ReasoningEffort.MEDIUM
+        )
+    } == set(OPENAI_TERRA_MEDIUM_PROMPT_IDS)
+
+    maximum = build_openai_routes(
+        max_call_cost_usd=0.27,
+        route_profile_id=OPENAI_MAX_ROUTE_PROFILE_ID,
+    )
+    terra = build_openai_routes(
+        max_call_cost_usd=0.27,
+        route_profile_id=OPENAI_TERRA_MEDIUM_ROUTE_PROFILE_ID,
+    )
+    assert set(maximum) == set(terra)
+    assert all(route.model == TERRA_MODEL_ID for route in terra.values())
+    assert all(route.fallback_route_id is None for route in terra.values())
+
+    reasoning_changes: set[str] = set()
+    for prompt_id in maximum:
+        if (
+            maximum[prompt_id].reasoning_effort
+            != terra[prompt_id].reasoning_effort
+        ):
+            reasoning_changes.add(prompt_id)
+        max_material = maximum[prompt_id].model_dump(mode="json")
+        terra_material = terra[prompt_id].model_dump(mode="json")
+        for material in (max_material, terra_material):
+            material.pop("route_id")
+            material.pop("model")
+            material.pop("model_snapshot")
+            material.pop("reasoning_effort")
+            material.pop("reason_codes")
+        assert max_material == terra_material
+        assert terra[prompt_id].route_id.startswith(
+            "route_openai_terra_medium_v1_"
+        )
+    assert reasoning_changes == set(OPENAI_TERRA_MEDIUM_PROMPT_IDS)
+    assert all(
+        terra[prompt_id].reasoning_effort == models.ReasoningEffort.MEDIUM
+        for prompt_id in OPENAI_TERRA_MEDIUM_PROMPT_IDS
+    )
+    assert terra["P01_ACTIVITY_SPEC_V1"].reasoning_effort == (
+        models.ReasoningEffort.MEDIUM
+    )
+    assert terra["P02_RUBRIC_NORMALIZE_V1"].reasoning_effort == (
+        models.ReasoningEffort.MEDIUM
+    )
+    assert terra["P03_AMBIGUITY_TRIAGE_V1"].reasoning_effort == (
+        models.ReasoningEffort.HIGH
+    )
+    assert terra["P11_SCHEMA_REPAIR_V1"].reasoning_effort == (
+        models.ReasoningEffort.LOW
+    )
+
+
 def test_xhigh_adapter_payload_changes_only_effective_reasoning() -> None:
     prompt_id = "P04_BLUEPRINT_BUILD_V1"
     request = build_mock_request(prompt_id)
@@ -485,6 +551,76 @@ def test_max_adapter_payload_changes_only_xhigh_reasoning() -> None:
         spec, request, envelope
     )
     assert max_tokens == xhigh_tokens - 2
+
+
+def test_terra_medium_adapter_changes_only_model_and_effective_reasoning() -> None:
+    prompt_id = "P04_BLUEPRINT_BUILD_V1"
+    request = build_mock_request(prompt_id)
+    max_fake = FakeClient(
+        [_response(_canonical_output(prompt_id), model=LUNA_MODEL_ID)]
+    )
+    terra_fake = FakeClient(
+        [_response(_canonical_output(prompt_id), model=TERRA_MODEL_ID)]
+    )
+    max_route = build_openai_routes(
+        max_call_cost_usd=0.27,
+        route_profile_id=OPENAI_MAX_ROUTE_PROFILE_ID,
+    )[prompt_id]
+    terra_route = build_openai_routes(
+        max_call_cost_usd=0.27,
+        route_profile_id=OPENAI_TERRA_MEDIUM_ROUTE_PROFILE_ID,
+    )[prompt_id]
+
+    for fake, route in ((max_fake, max_route), (terra_fake, terra_route)):
+        asyncio.run(
+            OpenAIResponsesAdapter(client=fake).invoke(
+                prompt_id=prompt_id,
+                request=request,
+                envelope=_envelope(prompt_id, request),
+                route=route,
+                attempt=1,
+                behavior=MockBehavior.HAPPY,
+            )
+        )
+
+    max_payload = max_fake.responses.calls[0]
+    terra_payload = terra_fake.responses.calls[0]
+    assert terra_payload["model"] == TERRA_MODEL_ID
+    assert terra_payload["reasoning"] == {"effort": "medium"}
+    assert {
+        key: value
+        for key, value in max_payload.items()
+        if key not in {"model", "reasoning"}
+    } == {
+        key: value
+        for key, value in terra_payload.items()
+        if key not in {"model", "reasoning"}
+    }
+
+
+def test_terra_model_requires_the_exact_profile_before_transport() -> None:
+    prompt_id = "P04_BLUEPRINT_BUILD_V1"
+    request = build_mock_request(prompt_id)
+    fake = FakeClient([])
+    forged = build_openai_routes(max_call_cost_usd=0.27)[
+        prompt_id
+    ].model_copy(update={"model": TERRA_MODEL_ID})
+
+    with pytest.raises(
+        PermanentProviderError,
+        match="PROVIDER_REASONING_ROUTE_MISMATCH",
+    ):
+        asyncio.run(
+            OpenAIResponsesAdapter(client=fake).invoke(
+                prompt_id=prompt_id,
+                request=request,
+                envelope=_envelope(prompt_id, request),
+                route=forged,
+                attempt=1,
+                behavior=MockBehavior.HAPPY,
+            )
+        )
+    assert fake.responses.calls == []
 
 
 def test_max_reasoning_requires_the_exact_profile_before_transport() -> None:

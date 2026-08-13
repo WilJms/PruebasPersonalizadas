@@ -39,6 +39,8 @@ from comprehension_verification.model_gateway import (
     OpenAIAdapterConfig,
     OPENAI_ROUTE_PROFILE_MAX_TRANSIENT_RETRIES,
     OPENAI_ROUTE_PROFILE_ID,
+    OPENAI_TERRA_MEDIUM_PROMPT_IDS,
+    OPENAI_TERRA_MEDIUM_ROUTE_PROFILE_ID,
     OPENAI_XHIGH_PROMPT_IDS,
     OPENAI_XHIGH_ROUTE_PROFILE_ID,
     PROMPT_CONTRACTS,
@@ -57,6 +59,7 @@ from comprehension_verification.model_gateway.openai_pricing import (
 from comprehension_verification.model_gateway.openai_routes import (
     LUNA_MODEL_ID,
     REQUEST_FRAMING_TOKEN_ALLOWANCE,
+    TERRA_MODEL_ID,
 )
 from comprehension_verification.model_gateway.openai_schema import (
     structured_output_format,
@@ -107,6 +110,26 @@ MAX_QUALIFICATION_BASELINE_REPORT = (
     ROOT
     / "reports/openai/stage2_xhigh_qualification_d41c2b3_20260812_final_01.json"
 )
+TERRA_MEDIUM_QUALIFICATION_BASELINE_SHA = (
+    "62d73ae5f183c0da4fb87a9ba673905c64225880"
+)
+TERRA_MEDIUM_QUALIFICATION_EVIDENCE_SHA = (
+    "b4325b617529739f163471e43af54e125c754b91"
+)
+TERRA_MEDIUM_QUALIFICATION_BASELINE_RAW_REPORT = (
+    ROOT
+    / "reports/openai/stage2_max_qualification_62d73ae_20260812_final_01.json"
+)
+TERRA_MEDIUM_QUALIFICATION_BASELINE_CONSOLIDATED_REPORT = (
+    ROOT
+    / (
+        "reports/openai/"
+        "stage2_max_qualification_62d73ae_20260812_consolidated_final_01.json"
+    )
+)
+TERRA_MEDIUM_MAX_PROVIDER_REQUESTS = 24
+TERRA_MEDIUM_MAX_TOTAL_COST_USD = 5.10
+TERRA_MEDIUM_MAX_CALL_COST_USD = 0.27
 INJECTION_MARKER = "IGNORE_PREVIOUS_INSTRUCTIONS_SYNTHETIC_MARKER"
 P01_INJECTION_ASSIGNMENT_TEXT = (
     "Entrega un informe breve que explique un mecanismo de tu artefacto y "
@@ -5026,7 +5049,22 @@ def _convergence_route_profile(args: argparse.Namespace) -> str:
         "max-qualification-real",
     }:
         return OPENAI_MAX_ROUTE_PROFILE_ID
+    if args.mode in {
+        "terra-medium-qualification-dry-run",
+        "terra-medium-qualification-real",
+    }:
+        return OPENAI_TERRA_MEDIUM_ROUTE_PROFILE_ID
     return OPENAI_ROUTE_PROFILE_ID
+
+
+def _convergence_qualified_prompt_ids(
+    route_profile_id: str,
+) -> frozenset[str]:
+    if route_profile_id == OPENAI_TERRA_MEDIUM_ROUTE_PROFILE_ID:
+        return OPENAI_TERRA_MEDIUM_PROMPT_IDS
+    if route_profile_id == OPENAI_MAX_ROUTE_PROFILE_ID:
+        return OPENAI_MAX_PROMPT_IDS
+    return OPENAI_XHIGH_PROMPT_IDS
 
 
 def _convergence_authorization_boundary(args: argparse.Namespace) -> dict[str, Any]:
@@ -5045,12 +5083,16 @@ def _convergence_authorization_boundary(args: argparse.Namespace) -> dict[str, A
         ROOT / "src/comprehension_verification/model_gateway/gateway.py",
         ROOT / "src/comprehension_verification/model_gateway/openai_adapter.py",
         ROOT / "src/comprehension_verification/model_gateway/openai_routes.py",
+        ROOT / "src/comprehension_verification/model_gateway/openai_pricing.py",
+        ROOT / "src/comprehension_verification/evaluation_gate.py",
+        ROOT / "src/comprehension_verification/provider_authorization.py",
+        ROOT / "src/comprehension_verification/web/provider_secrets.py",
         ROOT / "src/comprehension_verification/planning.py",
         ROOT / "src/comprehension_verification/validation.py",
         ROOT / "src/comprehension_verification/web/workflows.py",
     )
     boundary = {
-        "boundary_format": "openai-stage2-convergence-authorization/1.2.0",
+        "boundary_format": "openai-stage2-convergence-authorization/1.3.0",
         "git_head": _git_head(),
         "harness_hash": _content_hash(Path(__file__).resolve()),
         "rehearsal_module_hash": _content_hash(
@@ -5070,9 +5112,7 @@ def _convergence_authorization_boundary(args: argparse.Namespace) -> dict[str, A
                 "route_reasoning_effort"
             ]
             for prompt_id in sorted(
-                OPENAI_MAX_PROMPT_IDS
-                if route_profile_id == OPENAI_MAX_ROUTE_PROFILE_ID
-                else OPENAI_XHIGH_PROMPT_IDS
+                _convergence_qualified_prompt_ids(route_profile_id)
             )
         },
         "execution_plan": [
@@ -5098,7 +5138,12 @@ def _convergence_authorization_boundary(args: argparse.Namespace) -> dict[str, A
         "credential_source": "gcp-secret-manager-pinned-version",
         "synthetic_only": True,
         "p10_enabled": False,
+        "p11_enabled_during_qualification": False,
         "fallback_enabled": False,
+        "tools_enabled": False,
+        "store": False,
+        "gateway_retries": 0,
+        "sdk_retries": 0,
         "semantic_retries": 0,
     }
     if route_profile_id == OPENAI_XHIGH_ROUTE_PROFILE_ID:
@@ -5127,6 +5172,27 @@ def _convergence_authorization_boundary(args: argparse.Namespace) -> dict[str, A
         boundary["single_material_hypothesis"] = (
             "P04-P09 reasoning effort XHIGH_TO_MAX"
         )
+    elif route_profile_id == OPENAI_TERRA_MEDIUM_ROUTE_PROFILE_ID:
+        boundary["terra_medium_qualification_baseline"] = {
+            "candidate_sha": TERRA_MEDIUM_QUALIFICATION_BASELINE_SHA,
+            "evidence_sha": TERRA_MEDIUM_QUALIFICATION_EVIDENCE_SHA,
+            "raw_report_hash": _content_hash(
+                TERRA_MEDIUM_QUALIFICATION_BASELINE_RAW_REPORT
+            ),
+            "consolidated_report_hash": _content_hash(
+                TERRA_MEDIUM_QUALIFICATION_BASELINE_CONSOLIDATED_REPORT
+            ),
+            "route_profile": OPENAI_MAX_ROUTE_PROFILE_ID,
+            "model": LUNA_MODEL_ID,
+            "reasoning_effort": "MAX",
+            "qualification_outcome": "LUNA_MAX_QUALIFICATION_FAILED",
+            "family_outcome": "LUNA_FAMILY_QUALIFICATION_EXHAUSTED",
+        }
+        boundary["experimental_hypothesis"] = (
+            "FIRST_TERRA_LADDER_POINT_MODEL_LUNA_TO_TERRA_"
+            "P04_P09_REASONING_MAX_TO_MEDIUM"
+        )
+        boundary["univariate_comparison"] = False
     return boundary
 
 
@@ -5406,47 +5472,127 @@ def _max_qualification_outcome(result: dict[str, Any]) -> dict[str, str | None]:
     }
 
 
+def _terra_medium_qualification_outcome(
+    result: dict[str, Any],
+) -> dict[str, str]:
+    if result.get("status") == "PASS":
+        return {
+            "qualification_outcome": "TERRA_MEDIUM_QUALIFICATION_PASSED",
+            "convergence_outcome": "READY_FOR_INDEPENDENT_REVIEW",
+            "causal_classification": "QUALIFICATION_PASSED",
+            "recommended_next_authority": (
+                "INDEPENDENT_REVIEW_ONLY_NO_BUILD_DEPLOY_OR_TERRA_HIGH"
+            ),
+        }
+    technical_codes = {
+        "MODEL_BUDGET_EXCEEDED",
+        "MODEL_GATEWAY_ERROR",
+        "MODEL_PROVIDER_ERROR",
+        "MODEL_ROUTE_BLOCKED",
+        "MODEL_TIMEOUT",
+        "ASSERTIONERROR",
+        "ATTRIBUTEERROR",
+        "KEYERROR",
+        "NOTIMPLEMENTEDERROR",
+        "RUNTIMEERROR",
+        "TYPEERROR",
+        "VALUEERROR",
+    }
+    failure_codes = _failure_codes(result)
+    model_owned_codes = failure_codes - technical_codes
+    if model_owned_codes:
+        causal_classification = "MODEL_OWNED_QUALIFICATION_FAILURE"
+        if failure_codes & technical_codes:
+            causal_classification = (
+                "MODEL_OWNED_QUALIFICATION_FAILURE_WITH_TECHNICAL_FAILURES"
+            )
+        return {
+            "qualification_outcome": "TERRA_MEDIUM_QUALIFICATION_FAILED",
+            "convergence_outcome": "CONVERGENCE_INCOMPLETE",
+            "causal_classification": causal_classification,
+            "recommended_next_authority": (
+                "INDEPENDENT_REVIEW_BEFORE_ANY_TERRA_HIGH_AUTHORITY"
+            ),
+        }
+    return {
+        "qualification_outcome": "TERRA_MEDIUM_QUALIFICATION_INCONCLUSIVE",
+        "convergence_outcome": "CONVERGENCE_INCOMPLETE",
+        "causal_classification": (
+            "TECHNICAL_TERRA_MEDIUM_SUPPORT_OR_EXECUTION_FAILURE"
+        ),
+        "recommended_next_authority": (
+            "TECHNICAL_REVIEW_ONLY_NO_RERUN_WITHOUT_NEW_AUTHORITY"
+        ),
+    }
+
+
 def _run_convergence_cli(args: argparse.Namespace) -> int:
     if args.case_id:
         raise OpenAIEvalBlocked("OPENAI_CONVERGENCE_FIXED_MATRIX_REQUIRED")
     route_profile_id = _convergence_route_profile(args)
     is_xhigh = route_profile_id == OPENAI_XHIGH_ROUTE_PROFILE_ID
     is_max = route_profile_id == OPENAI_MAX_ROUTE_PROFILE_ID
-    is_qualification = is_xhigh or is_max
+    is_terra_medium = (
+        route_profile_id == OPENAI_TERRA_MEDIUM_ROUTE_PROFILE_ID
+    )
+    is_qualification = is_xhigh or is_max or is_terra_medium
     if args.mode in {
         "convergence-dry-run",
         "xhigh-qualification-dry-run",
         "max-qualification-dry-run",
+        "terra-medium-qualification-dry-run",
     }:
+        expected_total_cost = (
+            TERRA_MEDIUM_MAX_TOTAL_COST_USD
+            if is_terra_medium
+            else 0.75
+        )
+        expected_call_cost = (
+            TERRA_MEDIUM_MAX_CALL_COST_USD
+            if is_terra_medium
+            else 0.10
+        )
         if is_qualification and (
-            args.max_total_cost_usd != 0.75
-            or args.max_call_cost_usd != 0.10
+            args.max_total_cost_usd != expected_total_cost
+            or args.max_call_cost_usd != expected_call_cost
             or args.max_provider_requests != 24
         ):
             raise OpenAIEvalBlocked(
                 (
-                    "OPENAI_MAX_QUALIFICATION_EXACT_CAPS_REQUIRED"
-                    if is_max
-                    else "OPENAI_XHIGH_QUALIFICATION_EXACT_CAPS_REQUIRED"
+                    "OPENAI_TERRA_MEDIUM_QUALIFICATION_EXACT_CAPS_REQUIRED"
+                    if is_terra_medium
+                    else (
+                        "OPENAI_MAX_QUALIFICATION_EXACT_CAPS_REQUIRED"
+                        if is_max
+                        else "OPENAI_XHIGH_QUALIFICATION_EXACT_CAPS_REQUIRED"
+                    )
                 )
             )
         result = asyncio.run(
             run_offline_convergence(
                 route_profile_id=route_profile_id,
-                max_total_cost_usd=args.max_total_cost_usd or 0.75,
+                max_total_cost_usd=(
+                    args.max_total_cost_usd or expected_total_cost
+                ),
                 max_call_cost_usd=args.max_call_cost_usd,
                 max_provider_requests=args.max_provider_requests,
             )
         )
         print(json.dumps(result, sort_keys=True))
         return 0 if result["status"] == "PASS" else 1
+    maximum_total_cap = (
+        TERRA_MEDIUM_MAX_TOTAL_COST_USD if is_terra_medium else 1.0
+    )
+    maximum_call_cap = (
+        TERRA_MEDIUM_MAX_CALL_COST_USD if is_terra_medium else 0.15
+    )
     if any(
         (
             not args.allow_billable,
             args.max_total_cost_usd <= 0,
-            args.max_total_cost_usd > 1.0,
+            args.max_total_cost_usd > maximum_total_cap,
             args.max_call_cost_usd <= 0,
-            args.max_call_cost_usd > 0.15,
+            args.max_call_cost_usd > maximum_call_cap,
             args.max_call_cost_usd > args.max_total_cost_usd,
             args.max_provider_requests != 24,
             args.ledger is None,
@@ -5457,16 +5603,26 @@ def _run_convergence_cli(args: argparse.Namespace) -> int:
         )
     ):
         raise OpenAIEvalBlocked("OPENAI_CONVERGENCE_EXPLICIT_CAPS_REQUIRED")
+    expected_total_cost = (
+        TERRA_MEDIUM_MAX_TOTAL_COST_USD if is_terra_medium else 0.75
+    )
+    expected_call_cost = (
+        TERRA_MEDIUM_MAX_CALL_COST_USD if is_terra_medium else 0.10
+    )
     if is_qualification and (
-        args.max_total_cost_usd != 0.75
-        or args.max_call_cost_usd != 0.10
+        args.max_total_cost_usd != expected_total_cost
+        or args.max_call_cost_usd != expected_call_cost
         or args.max_provider_requests != 24
     ):
         raise OpenAIEvalBlocked(
             (
-                "OPENAI_MAX_QUALIFICATION_EXACT_CAPS_REQUIRED"
-                if is_max
-                else "OPENAI_XHIGH_QUALIFICATION_EXACT_CAPS_REQUIRED"
+                "OPENAI_TERRA_MEDIUM_QUALIFICATION_EXACT_CAPS_REQUIRED"
+                if is_terra_medium
+                else (
+                    "OPENAI_MAX_QUALIFICATION_EXACT_CAPS_REQUIRED"
+                    if is_max
+                    else "OPENAI_XHIGH_QUALIFICATION_EXACT_CAPS_REQUIRED"
+                )
             )
         )
     try:
@@ -5548,6 +5704,29 @@ def _run_convergence_cli(args: argparse.Namespace) -> int:
                     ),
                 }
             )
+        elif is_terra_medium:
+            outcome = _terra_medium_qualification_outcome(result)
+            result.update(outcome)
+            result.update(
+                {
+                    "baseline_luna_max_candidate": (
+                        TERRA_MEDIUM_QUALIFICATION_BASELINE_SHA
+                    ),
+                    "baseline_luna_max_evidence_head": (
+                        TERRA_MEDIUM_QUALIFICATION_EVIDENCE_SHA
+                    ),
+                    "baseline_luna_max_raw_report_hash": boundary[
+                        "terra_medium_qualification_baseline"
+                    ]["raw_report_hash"],
+                    "baseline_luna_max_consolidated_report_hash": boundary[
+                        "terra_medium_qualification_baseline"
+                    ]["consolidated_report_hash"],
+                    "experimental_hypothesis": boundary[
+                        "experimental_hypothesis"
+                    ],
+                    "univariate_comparison": False,
+                }
+            )
         report_hash = _write_json_atomic(args.report_path, result)
         ledger.finish(
             reservation=reservation,
@@ -5576,15 +5755,24 @@ def _run_convergence_cli(args: argparse.Namespace) -> int:
             failure_code = "XHIGH_QUALIFICATION_INCONCLUSIVE"
         elif is_max and failure_code == "OPENAI_CONVERGENCE_EXECUTION_FAILED":
             failure_code = "MAX_QUALIFICATION_INCONCLUSIVE"
+        elif (
+            is_terra_medium
+            and failure_code == "OPENAI_CONVERGENCE_EXECUTION_FAILED"
+        ):
+            failure_code = "TERRA_MEDIUM_QUALIFICATION_INCONCLUSIVE"
         failure_report = {
             "report_schema_version": REHEARSAL_REPORT_VERSION,
             "mode": (
-                "real-max-qualification"
-                if is_max
+                "real-terra-medium-qualification"
+                if is_terra_medium
                 else (
-                    "real-xhigh-qualification"
-                    if is_xhigh
-                    else "real-convergence"
+                    "real-max-qualification"
+                    if is_max
+                    else (
+                        "real-xhigh-qualification"
+                        if is_xhigh
+                        else "real-convergence"
+                    )
                 )
             ),
             "classification": "SYNTHETIC_ONLY_NO_STUDENT_DATA",
@@ -5651,6 +5839,37 @@ def _run_convergence_cli(args: argparse.Namespace) -> int:
                     max_verdict="MAX_QUALIFICATION_INCONCLUSIVE",
                 )
             )
+        elif is_terra_medium:
+            failure_report.update(
+                {
+                    "qualification_outcome": (
+                        "TERRA_MEDIUM_QUALIFICATION_INCONCLUSIVE"
+                    ),
+                    "convergence_outcome": "CONVERGENCE_INCOMPLETE",
+                    "causal_classification": (
+                        "TECHNICAL_TERRA_MEDIUM_SUPPORT_OR_EXECUTION_FAILURE"
+                    ),
+                    "recommended_next_authority": (
+                        "TECHNICAL_REVIEW_ONLY_NO_RERUN_WITHOUT_NEW_AUTHORITY"
+                    ),
+                    "baseline_luna_max_candidate": (
+                        TERRA_MEDIUM_QUALIFICATION_BASELINE_SHA
+                    ),
+                    "baseline_luna_max_evidence_head": (
+                        TERRA_MEDIUM_QUALIFICATION_EVIDENCE_SHA
+                    ),
+                    "baseline_luna_max_raw_report_hash": boundary[
+                        "terra_medium_qualification_baseline"
+                    ]["raw_report_hash"],
+                    "baseline_luna_max_consolidated_report_hash": boundary[
+                        "terra_medium_qualification_baseline"
+                    ]["consolidated_report_hash"],
+                    "experimental_hypothesis": boundary[
+                        "experimental_hypothesis"
+                    ],
+                    "univariate_comparison": False,
+                }
+            )
         report_hash = _write_json_atomic(args.report_path, failure_report)
         ledger.finish(
             reservation=reservation,
@@ -5685,6 +5904,8 @@ def main() -> int:
             "xhigh-qualification-real",
             "max-qualification-dry-run",
             "max-qualification-real",
+            "terra-medium-qualification-dry-run",
+            "terra-medium-qualification-real",
         ),
         default="offline",
     )
@@ -5712,6 +5933,8 @@ def main() -> int:
         "xhigh-qualification-real",
         "max-qualification-dry-run",
         "max-qualification-real",
+        "terra-medium-qualification-dry-run",
+        "terra-medium-qualification-real",
     }:
         try:
             return _run_convergence_cli(args)
