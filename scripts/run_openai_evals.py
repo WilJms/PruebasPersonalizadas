@@ -31,6 +31,8 @@ from comprehension_verification.model_gateway import (
     GatewayMode,
     MockBehavior,
     ModelGateway,
+    OPENAI_MAX_PROMPT_IDS,
+    OPENAI_MAX_ROUTE_PROFILE_ID,
     OPENAI_DEFAULT_REQUEST_TIMEOUT_SECONDS,
     OPENAI_GATEWAY_TIMEOUT_GRACE_SECONDS,
     OpenAIResponsesAdapter,
@@ -94,6 +96,16 @@ XHIGH_QUALIFICATION_EVIDENCE_SHA = (
 XHIGH_QUALIFICATION_BASELINE_REPORT = (
     ROOT
     / "reports/openai/stage2_convergence_93da594_20260812_final_01.json"
+)
+MAX_QUALIFICATION_BASELINE_SHA = (
+    "d41c2b3e6584ae2f202c3fceda0ec7d1a585242e"
+)
+MAX_QUALIFICATION_EVIDENCE_SHA = (
+    "23a16668c3cdd325919acfb5c871db30aefa0dc2"
+)
+MAX_QUALIFICATION_BASELINE_REPORT = (
+    ROOT
+    / "reports/openai/stage2_xhigh_qualification_d41c2b3_20260812_final_01.json"
 )
 INJECTION_MARKER = "IGNORE_PREVIOUS_INSTRUCTIONS_SYNTHETIC_MARKER"
 P01_INJECTION_ASSIGNMENT_TEXT = (
@@ -5004,15 +5016,17 @@ def _hashed_optional_label(value: str | None) -> str:
 
 
 def _convergence_route_profile(args: argparse.Namespace) -> str:
-    return (
-        OPENAI_XHIGH_ROUTE_PROFILE_ID
-        if args.mode
-        in {
-            "xhigh-qualification-dry-run",
-            "xhigh-qualification-real",
-        }
-        else OPENAI_ROUTE_PROFILE_ID
-    )
+    if args.mode in {
+        "xhigh-qualification-dry-run",
+        "xhigh-qualification-real",
+    }:
+        return OPENAI_XHIGH_ROUTE_PROFILE_ID
+    if args.mode in {
+        "max-qualification-dry-run",
+        "max-qualification-real",
+    }:
+        return OPENAI_MAX_ROUTE_PROFILE_ID
+    return OPENAI_ROUTE_PROFILE_ID
 
 
 def _convergence_authorization_boundary(args: argparse.Namespace) -> dict[str, Any]:
@@ -5036,7 +5050,7 @@ def _convergence_authorization_boundary(args: argparse.Namespace) -> dict[str, A
         ROOT / "src/comprehension_verification/web/workflows.py",
     )
     boundary = {
-        "boundary_format": "openai-stage2-convergence-authorization/1.1.0",
+        "boundary_format": "openai-stage2-convergence-authorization/1.2.0",
         "git_head": _git_head(),
         "harness_hash": _content_hash(Path(__file__).resolve()),
         "rehearsal_module_hash": _content_hash(
@@ -5055,7 +5069,11 @@ def _convergence_authorization_boundary(args: argparse.Namespace) -> dict[str, A
             prompt_id: material["prompts"][prompt_id][
                 "route_reasoning_effort"
             ]
-            for prompt_id in sorted(OPENAI_XHIGH_PROMPT_IDS)
+            for prompt_id in sorted(
+                OPENAI_MAX_PROMPT_IDS
+                if route_profile_id == OPENAI_MAX_ROUTE_PROFILE_ID
+                else OPENAI_XHIGH_PROMPT_IDS
+            )
         },
         "execution_plan": [
             "independent-sweep:P04-P09",
@@ -5096,6 +5114,18 @@ def _convergence_authorization_boundary(args: argparse.Namespace) -> dict[str, A
         }
         boundary["single_material_hypothesis"] = (
             "P04-P09 reasoning effort HIGH_TO_XHIGH"
+        )
+    elif route_profile_id == OPENAI_MAX_ROUTE_PROFILE_ID:
+        boundary["max_qualification_baseline"] = {
+            "candidate_sha": MAX_QUALIFICATION_BASELINE_SHA,
+            "evidence_sha": MAX_QUALIFICATION_EVIDENCE_SHA,
+            "report_hash": _content_hash(MAX_QUALIFICATION_BASELINE_REPORT),
+            "route_profile": OPENAI_XHIGH_ROUTE_PROFILE_ID,
+            "model": LUNA_MODEL_ID,
+            "reasoning_effort": "XHIGH",
+        }
+        boundary["single_material_hypothesis"] = (
+            "P04-P09 reasoning effort XHIGH_TO_MAX"
         )
     return boundary
 
@@ -5146,6 +5176,146 @@ def _failure_codes(result: dict[str, Any]) -> set[str]:
     return codes
 
 
+def _observation_failure_rows(result: dict[str, Any]) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    for observation in result.get("observations", []):
+        failure = observation.get("failure") or {}
+        failures = failure.get("aggregated_failures") or (
+            [failure] if failure else []
+        )
+        rows.append(
+            {
+                "run_id": observation.get("run_id"),
+                "status": observation.get("status"),
+                "completed_stages": [
+                    stage.get("prompt_id") or stage.get("stage")
+                    for stage in observation.get("stages", [])
+                ],
+                "failures": [
+                    {
+                        "stage": item.get("stage"),
+                        "codes": sorted(item.get("codes", [])),
+                    }
+                    for item in failures
+                ],
+            }
+        )
+    return rows
+
+
+def _p08_outcomes(result: dict[str, Any]) -> list[dict[str, Any]]:
+    outcomes: list[dict[str, Any]] = []
+    for observation in result.get("observations", []):
+        for stage in observation.get("stages", []):
+            if stage.get("prompt_id") != "P08_QUESTION_REVIEW_V1":
+                continue
+            diagnostics = stage.get("decision_diagnostics") or {}
+            outcomes.append(
+                {
+                    "run_id": observation.get("run_id"),
+                    "decision": diagnostics.get("decision", "PASS_NO_DECISION_RECORDED"),
+                    "status": stage.get("status"),
+                }
+            )
+        failure = observation.get("failure") or {}
+        failures = failure.get("aggregated_failures") or (
+            [failure] if failure else []
+        )
+        for item in failures:
+            if item.get("stage") != "P08":
+                continue
+            metadata = item.get("metadata") or {}
+            outcomes.append(
+                {
+                    "run_id": observation.get("run_id"),
+                    "decision": metadata.get("decision", "FAILED_BEFORE_DECISION_CAPTURE"),
+                    "status": "FAIL",
+                }
+            )
+    return outcomes
+
+
+def _configuration_summary(
+    result: dict[str, Any],
+    *,
+    candidate_sha: str,
+    reasoning_effort: str,
+    qualification_verdict: str,
+) -> dict[str, Any]:
+    controls = result.get("controls", {})
+    token_fields = ("input_tokens", "output_tokens", "reasoning_tokens")
+    token_usage = {field: controls.get(field) for field in token_fields}
+    return {
+        "candidate_sha": candidate_sha,
+        "reasoning_effort": reasoning_effort,
+        "runs_completed": [
+            observation.get("run_id")
+            for observation in result.get("observations", [])
+            if observation.get("status") == "PASS"
+        ],
+        "run_results": _observation_failure_rows(result),
+        "provider_requests": controls.get("provider_attempts"),
+        "token_usage": token_usage,
+        "token_usage_availability": (
+            "RECORDED"
+            if all(token_usage[field] is not None for field in token_fields)
+            else "NOT_RECORDED_IN_SOURCE_REPORT"
+        ),
+        "actual_cost_usd": controls.get("actual_cost_usd"),
+        "conservative_cost_usd": controls.get("budget_charged_usd"),
+        "p08_outcomes": _p08_outcomes(result),
+        "gateway_retries": controls.get("gateway_retries"),
+        "sdk_retries": controls.get("sdk_retries"),
+        "semantic_retries": controls.get("semantic_retries"),
+        "fallback_calls": controls.get("fallback_calls"),
+        "p10_calls": controls.get("p10_calls"),
+        "p11_calls": controls.get("p11_calls"),
+        "qualification_verdict": qualification_verdict,
+    }
+
+
+def _high_xhigh_max_comparison(
+    max_result: dict[str, Any],
+    *,
+    max_candidate_sha: str,
+    max_verdict: str,
+) -> dict[str, Any]:
+    high = json.loads(
+        XHIGH_QUALIFICATION_BASELINE_REPORT.read_text(encoding="utf-8")
+    )
+    xhigh = json.loads(
+        MAX_QUALIFICATION_BASELINE_REPORT.read_text(encoding="utf-8")
+    )
+    return {
+        "interpretation": "DESCRIPTIVE_SINGLE_MATRIX_PER_CONFIGURATION",
+        "statistical_significance_claimed": False,
+        "general_model_superiority_claimed": False,
+        "configurations": [
+            _configuration_summary(
+                high,
+                candidate_sha=XHIGH_QUALIFICATION_BASELINE_SHA,
+                reasoning_effort="HIGH",
+                qualification_verdict="LUNA_HIGH_QUALIFICATION_FAILED",
+            ),
+            _configuration_summary(
+                xhigh,
+                candidate_sha=MAX_QUALIFICATION_BASELINE_SHA,
+                reasoning_effort="XHIGH",
+                qualification_verdict=(
+                    xhigh.get("qualification_outcome")
+                    or "LUNA_XHIGH_QUALIFICATION_FAILED"
+                ),
+            ),
+            _configuration_summary(
+                max_result,
+                candidate_sha=max_candidate_sha,
+                reasoning_effort="MAX",
+                qualification_verdict=max_verdict,
+            ),
+        ],
+    }
+
+
 def _xhigh_qualification_outcome(result: dict[str, Any]) -> tuple[str, str]:
     if result.get("status") == "PASS":
         return (
@@ -5171,22 +5341,77 @@ def _xhigh_qualification_outcome(result: dict[str, Any]) -> tuple[str, str]:
     )
 
 
+def _max_qualification_outcome(result: dict[str, Any]) -> dict[str, str | None]:
+    if result.get("status") == "PASS":
+        return {
+            "qualification_outcome": "LUNA_MAX_QUALIFICATION_PASSED",
+            "family_outcome": None,
+            "convergence_outcome": "READY_FOR_INDEPENDENT_REVIEW",
+            "causal_classification": "QUALIFICATION_PASSED",
+            "recommended_next_authority": (
+                "INDEPENDENT_REVIEW_ONLY_NO_BUILD_DEPLOY"
+            ),
+        }
+    technical_codes = {
+        "MODEL_BUDGET_EXCEEDED",
+        "MODEL_GATEWAY_ERROR",
+        "MODEL_PROVIDER_ERROR",
+        "MODEL_ROUTE_BLOCKED",
+        "MODEL_TIMEOUT",
+        "ASSERTIONERROR",
+        "ATTRIBUTEERROR",
+        "KEYERROR",
+        "NOTIMPLEMENTEDERROR",
+        "RUNTIMEERROR",
+        "TYPEERROR",
+        "VALUEERROR",
+    }
+    if _failure_codes(result) & technical_codes:
+        return {
+            "qualification_outcome": "MAX_QUALIFICATION_INCONCLUSIVE",
+            "family_outcome": None,
+            "convergence_outcome": "CONVERGENCE_INCOMPLETE",
+            "causal_classification": (
+                "TECHNICAL_MAX_SUPPORT_OR_EXECUTION_FAILURE"
+            ),
+            "recommended_next_authority": (
+                "TECHNICAL_REVIEW_ONLY_NO_RERUN_WITHOUT_NEW_AUTHORITY"
+            ),
+        }
+    return {
+        "qualification_outcome": "LUNA_MAX_QUALIFICATION_FAILED",
+        "family_outcome": "LUNA_FAMILY_QUALIFICATION_EXHAUSTED",
+        "convergence_outcome": "CONVERGENCE_INCOMPLETE",
+        "causal_classification": "MODEL_OWNED_QUALIFICATION_FAILURE",
+        "recommended_next_authority": (
+            "HUMAN_REVIEW_OF_LUNA_EXHAUSTION_NO_AUTOMATIC_MODEL_CHANGE"
+        ),
+    }
+
+
 def _run_convergence_cli(args: argparse.Namespace) -> int:
     if args.case_id:
         raise OpenAIEvalBlocked("OPENAI_CONVERGENCE_FIXED_MATRIX_REQUIRED")
     route_profile_id = _convergence_route_profile(args)
     is_xhigh = route_profile_id == OPENAI_XHIGH_ROUTE_PROFILE_ID
+    is_max = route_profile_id == OPENAI_MAX_ROUTE_PROFILE_ID
+    is_qualification = is_xhigh or is_max
     if args.mode in {
         "convergence-dry-run",
         "xhigh-qualification-dry-run",
+        "max-qualification-dry-run",
     }:
-        if is_xhigh and (
+        if is_qualification and (
             args.max_total_cost_usd != 0.75
             or args.max_call_cost_usd != 0.10
             or args.max_provider_requests != 24
         ):
             raise OpenAIEvalBlocked(
-                "OPENAI_XHIGH_QUALIFICATION_EXACT_CAPS_REQUIRED"
+                (
+                    "OPENAI_MAX_QUALIFICATION_EXACT_CAPS_REQUIRED"
+                    if is_max
+                    else "OPENAI_XHIGH_QUALIFICATION_EXACT_CAPS_REQUIRED"
+                )
             )
         result = asyncio.run(
             run_offline_convergence(
@@ -5215,13 +5440,17 @@ def _run_convergence_cli(args: argparse.Namespace) -> int:
         )
     ):
         raise OpenAIEvalBlocked("OPENAI_CONVERGENCE_EXPLICIT_CAPS_REQUIRED")
-    if is_xhigh and (
+    if is_qualification and (
         args.max_total_cost_usd != 0.75
         or args.max_call_cost_usd != 0.10
         or args.max_provider_requests != 24
     ):
         raise OpenAIEvalBlocked(
-            "OPENAI_XHIGH_QUALIFICATION_EXACT_CAPS_REQUIRED"
+            (
+                "OPENAI_MAX_QUALIFICATION_EXACT_CAPS_REQUIRED"
+                if is_max
+                else "OPENAI_XHIGH_QUALIFICATION_EXACT_CAPS_REQUIRED"
+            )
         )
     try:
         validate_pinned_secret_resource(args.secret_version_resource)
@@ -5281,6 +5510,27 @@ def _run_convergence_cli(args: argparse.Namespace) -> int:
                     ]["report_hash"],
                 }
             )
+        elif is_max:
+            outcome = _max_qualification_outcome(result)
+            result.update(outcome)
+            result.update(
+                {
+                    "baseline_xhigh_candidate": (
+                        MAX_QUALIFICATION_BASELINE_SHA
+                    ),
+                    "baseline_xhigh_evidence_head": (
+                        MAX_QUALIFICATION_EVIDENCE_SHA
+                    ),
+                    "baseline_xhigh_report_hash": boundary[
+                        "max_qualification_baseline"
+                    ]["report_hash"],
+                    "configuration_comparison": _high_xhigh_max_comparison(
+                        result,
+                        max_candidate_sha=boundary["git_head"],
+                        max_verdict=str(outcome["qualification_outcome"]),
+                    ),
+                }
+            )
         report_hash = _write_json_atomic(args.report_path, result)
         ledger.finish(
             reservation=reservation,
@@ -5293,7 +5543,7 @@ def _run_convergence_cli(args: argparse.Namespace) -> int:
                 if result["status"] == "PASS"
                 else (
                     result.get("qualification_outcome")
-                    if is_xhigh
+                    if is_qualification
                     else "OPENAI_CONVERGENCE_FAILED"
                 )
             ),
@@ -5307,12 +5557,18 @@ def _run_convergence_cli(args: argparse.Namespace) -> int:
         )
         if is_xhigh and failure_code == "OPENAI_CONVERGENCE_EXECUTION_FAILED":
             failure_code = "XHIGH_QUALIFICATION_INCONCLUSIVE"
+        elif is_max and failure_code == "OPENAI_CONVERGENCE_EXECUTION_FAILED":
+            failure_code = "MAX_QUALIFICATION_INCONCLUSIVE"
         failure_report = {
             "report_schema_version": REHEARSAL_REPORT_VERSION,
             "mode": (
-                "real-xhigh-qualification"
-                if is_xhigh
-                else "real-convergence"
+                "real-max-qualification"
+                if is_max
+                else (
+                    "real-xhigh-qualification"
+                    if is_xhigh
+                    else "real-convergence"
+                )
             ),
             "classification": "SYNTHETIC_ONLY_NO_STUDENT_DATA",
             "status": "FAIL",
@@ -5349,6 +5605,35 @@ def _run_convergence_cli(args: argparse.Namespace) -> int:
                     ),
                 }
             )
+        elif is_max:
+            failure_report.update(
+                {
+                    "qualification_outcome": (
+                        "MAX_QUALIFICATION_INCONCLUSIVE"
+                    ),
+                    "family_outcome": None,
+                    "convergence_outcome": "CONVERGENCE_INCOMPLETE",
+                    "causal_classification": (
+                        "TECHNICAL_MAX_SUPPORT_OR_EXECUTION_FAILURE"
+                    ),
+                    "recommended_next_authority": (
+                        "TECHNICAL_REVIEW_ONLY_NO_RERUN_WITHOUT_NEW_AUTHORITY"
+                    ),
+                    "baseline_xhigh_candidate": (
+                        MAX_QUALIFICATION_BASELINE_SHA
+                    ),
+                    "baseline_xhigh_evidence_head": (
+                        MAX_QUALIFICATION_EVIDENCE_SHA
+                    ),
+                }
+            )
+            failure_report["configuration_comparison"] = (
+                _high_xhigh_max_comparison(
+                    failure_report,
+                    max_candidate_sha=boundary["git_head"],
+                    max_verdict="MAX_QUALIFICATION_INCONCLUSIVE",
+                )
+            )
         report_hash = _write_json_atomic(args.report_path, failure_report)
         ledger.finish(
             reservation=reservation,
@@ -5381,6 +5666,8 @@ def main() -> int:
             "convergence-real",
             "xhigh-qualification-dry-run",
             "xhigh-qualification-real",
+            "max-qualification-dry-run",
+            "max-qualification-real",
         ),
         default="offline",
     )
@@ -5406,6 +5693,8 @@ def main() -> int:
         "convergence-real",
         "xhigh-qualification-dry-run",
         "xhigh-qualification-real",
+        "max-qualification-dry-run",
+        "max-qualification-real",
     }:
         try:
             return _run_convergence_cli(args)

@@ -23,6 +23,8 @@ from .model_gateway import (
     GatewayMode,
     GatewaySchemaViolation,
     ModelGateway,
+    OPENAI_MAX_PROMPT_IDS,
+    OPENAI_MAX_ROUTE_PROFILE_ID,
     OPENAI_ROUTE_PROFILE_ID,
     OPENAI_XHIGH_PROMPT_IDS,
     OPENAI_XHIGH_ROUTE_PROFILE_ID,
@@ -61,8 +63,8 @@ from .web.workflows import (
 )
 
 
-REHEARSAL_VERSION = "stage2-product-rehearsal/1.6.0"
-REHEARSAL_REPORT_VERSION = "stage2-convergence-report/1.6.0"
+REHEARSAL_VERSION = "stage2-product-rehearsal/1.7.0"
+REHEARSAL_REPORT_VERSION = "stage2-convergence-report/1.7.0"
 BASE_SCENARIO_ID = "synthetic-open-short-v1"
 VARIANT_SCENARIO_ID = "synthetic-choice-justification-v1"
 P05_GOLDEN_FIXTURE_PATH = (
@@ -670,10 +672,11 @@ def _route_profile_delta_material(
     route_profile_id: str,
     *,
     max_call_cost_usd: float,
+    reference_route_profile_id: str = OPENAI_ROUTE_PROFILE_ID,
 ) -> dict[str, Any]:
-    baseline_routes = build_openai_routes(
+    reference_routes = build_openai_routes(
         max_call_cost_usd=max_call_cost_usd,
-        route_profile_id=OPENAI_ROUTE_PROFILE_ID,
+        route_profile_id=reference_route_profile_id,
     )
     selected_routes = build_openai_routes(
         max_call_cost_usd=max_call_cost_usd,
@@ -692,35 +695,35 @@ def _route_profile_delta_material(
         "fallback_route_id",
     )
     return {
-        "baseline_route_profile": OPENAI_ROUTE_PROFILE_ID,
+        "baseline_route_profile": reference_route_profile_id,
         "selected_route_profile": route_profile_id,
         "route_identity_changed_prompt_ids": sorted(
             prompt_id
-            for prompt_id in baseline_routes
-            if baseline_routes[prompt_id].route_id
+            for prompt_id in reference_routes
+            if reference_routes[prompt_id].route_id
             != selected_routes[prompt_id].route_id
         ),
         "reasoning_effort_changes": {
             prompt_id: {
-                "from": baseline_routes[prompt_id].reasoning_effort.value,
+                "from": reference_routes[prompt_id].reasoning_effort.value,
                 "to": selected_routes[prompt_id].reasoning_effort.value,
             }
-            for prompt_id in baseline_routes
-            if baseline_routes[prompt_id].reasoning_effort
+            for prompt_id in reference_routes
+            if reference_routes[prompt_id].reasoning_effort
             != selected_routes[prompt_id].reasoning_effort
         },
         "other_route_field_changes": {
             field: sorted(
                 prompt_id
-                for prompt_id in baseline_routes
-                if getattr(baseline_routes[prompt_id], field)
+                for prompt_id in reference_routes
+                if getattr(reference_routes[prompt_id], field)
                 != getattr(selected_routes[prompt_id], field)
             )
             for field in route_fields
             if any(
-                getattr(baseline_routes[prompt_id], field)
+                getattr(reference_routes[prompt_id], field)
                 != getattr(selected_routes[prompt_id], field)
-                for prompt_id in baseline_routes
+                for prompt_id in reference_routes
             )
         },
         "prompt_registry_changes": [],
@@ -782,7 +785,7 @@ def rehearsal_boundary_material(
             "P09_GUIDE_BUILD_V1",
         )
     }
-    return {
+    material = {
         "rehearsal_version": REHEARSAL_VERSION,
         "prompt_pack_version": PROMPT_VERSION,
         "planner_version": PLANNER_VERSION,
@@ -815,6 +818,7 @@ def rehearsal_boundary_material(
             "xhigh_qualification_prompt_ids": sorted(
                 OPENAI_XHIGH_PROMPT_IDS
             ),
+            "max_qualification_prompt_ids": sorted(OPENAI_MAX_PROMPT_IDS),
             "routes": {
                 prompt_id: {
                     "route_id": route.route_id,
@@ -844,6 +848,15 @@ def rehearsal_boundary_material(
         ),
         "p10_enabled": False,
     }
+    if route_profile_id == OPENAI_MAX_ROUTE_PROFILE_ID:
+        material["route_delta_from_luna_xhigh"] = (
+            _route_profile_delta_material(
+                route_profile_id,
+                max_call_cost_usd=max_call_cost_usd,
+                reference_route_profile_id=OPENAI_XHIGH_ROUTE_PROFILE_ID,
+            )
+        )
+    return material
 
 
 def _safe_failure(error: Exception, *, stage: str) -> dict[str, Any]:
@@ -1789,9 +1802,12 @@ async def run_offline_convergence(
         )
         rehearsal = ProductRehearsal(gateway, max_call_cost_usd=1.0)
         run_id_prefix = ""
-    elif route_profile_id == OPENAI_XHIGH_ROUTE_PROFILE_ID:
+    elif route_profile_id in {
+        OPENAI_XHIGH_ROUTE_PROFILE_ID,
+        OPENAI_MAX_ROUTE_PROFILE_ID,
+    }:
         if max_total_cost_usd <= 0 or max_call_cost_usd <= 0:
-            raise ValueError("positive XHIGH preflight cost caps are required")
+            raise ValueError("positive qualification preflight cost caps are required")
         routes = build_openai_routes(
             max_call_cost_usd=max_call_cost_usd,
             route_profile_id=route_profile_id,
@@ -1806,7 +1822,11 @@ async def run_offline_convergence(
                 mode=GatewayMode.REAL,
                 max_retries=0,
                 default_budget_usd=max_call_cost_usd,
-                job_id="job_stage2_xhigh_offline_preflight",
+                job_id=(
+                    "job_stage2_max_offline_preflight"
+                    if route_profile_id == OPENAI_MAX_ROUTE_PROFILE_ID
+                    else "job_stage2_xhigh_offline_preflight"
+                ),
             ),
             real_routes=routes,
             adapters={"openai": preflight_adapter},
@@ -1820,7 +1840,11 @@ async def run_offline_convergence(
             max_total_cost_usd=max_total_cost_usd,
             ledger_records=ledger_records,
         )
-        run_id_prefix = "xhigh-offline-"
+        run_id_prefix = (
+            "max-offline-"
+            if route_profile_id == OPENAI_MAX_ROUTE_PROFILE_ID
+            else "xhigh-offline-"
+        )
     else:
         raise ValueError(f"Unknown OpenAI route profile: {route_profile_id}")
 
@@ -1852,12 +1876,22 @@ async def run_offline_convergence(
                 "validator_changes": 0,
             }
         )
-    xhigh_efforts_are_exact = (
-        route_profile_id != OPENAI_XHIGH_ROUTE_PROFILE_ID
+    qualified_effort = (
+        m.ReasoningEffort.MAX
+        if route_profile_id == OPENAI_MAX_ROUTE_PROFILE_ID
+        else m.ReasoningEffort.XHIGH
+    )
+    qualified_prompt_ids = (
+        OPENAI_MAX_PROMPT_IDS
+        if route_profile_id == OPENAI_MAX_ROUTE_PROFILE_ID
+        else OPENAI_XHIGH_PROMPT_IDS
+    )
+    qualification_efforts_are_exact = (
+        route_profile_id == OPENAI_ROUTE_PROFILE_ID
         or controls.get("reasoning_efforts_by_prompt")
         == {
-            prompt_id: [m.ReasoningEffort.XHIGH.value]
-            for prompt_id in sorted(OPENAI_XHIGH_PROMPT_IDS)
+            prompt_id: [qualified_effort.value]
+            for prompt_id in sorted(qualified_prompt_ids)
         }
     )
     status = (
@@ -1867,9 +1901,9 @@ async def run_offline_convergence(
         and controls["p10_calls"] == 0
         and controls["p11_calls"] == 0
         and controls["fallback_calls"] == 0
-        and xhigh_efforts_are_exact
+        and qualification_efforts_are_exact
         and (
-            route_profile_id != OPENAI_XHIGH_ROUTE_PROFILE_ID
+            route_profile_id == OPENAI_ROUTE_PROFILE_ID
             or (
                 controls["provider_attempts"] == 24
                 and controls["simulated_provider_attempts"] == 24
@@ -1890,9 +1924,13 @@ async def run_offline_convergence(
         "report_schema_version": REHEARSAL_REPORT_VERSION,
         "rehearsal_version": REHEARSAL_VERSION,
         "mode": (
-            "offline-xhigh-qualification"
-            if route_profile_id == OPENAI_XHIGH_ROUTE_PROFILE_ID
-            else "offline-convergence"
+            "offline-max-qualification"
+            if route_profile_id == OPENAI_MAX_ROUTE_PROFILE_ID
+            else (
+                "offline-xhigh-qualification"
+                if route_profile_id == OPENAI_XHIGH_ROUTE_PROFILE_ID
+                else "offline-convergence"
+            )
         ),
         "classification": "SYNTHETIC_ONLY_NO_STUDENT_DATA",
         "status": status,
@@ -1944,9 +1982,13 @@ async def run_real_convergence(
             max_retries=0,
             default_budget_usd=max_call_cost_usd,
             job_id=(
-                "job_stage2_xhigh_real_qualification"
-                if route_profile_id == OPENAI_XHIGH_ROUTE_PROFILE_ID
-                else "job_stage2_real_convergence"
+                "job_stage2_max_real_qualification"
+                if route_profile_id == OPENAI_MAX_ROUTE_PROFILE_ID
+                else (
+                    "job_stage2_xhigh_real_qualification"
+                    if route_profile_id == OPENAI_XHIGH_ROUTE_PROFILE_ID
+                    else "job_stage2_real_convergence"
+                )
             ),
         ),
         real_routes=routes,
@@ -1999,12 +2041,22 @@ async def run_real_convergence(
         )
     )
     unchanged_boundary = executable_boundary_hash == boundary_after_hash
-    xhigh_efforts_are_exact = (
-        route_profile_id != OPENAI_XHIGH_ROUTE_PROFILE_ID
+    qualified_effort = (
+        m.ReasoningEffort.MAX
+        if route_profile_id == OPENAI_MAX_ROUTE_PROFILE_ID
+        else m.ReasoningEffort.XHIGH
+    )
+    qualified_prompt_ids = (
+        OPENAI_MAX_PROMPT_IDS
+        if route_profile_id == OPENAI_MAX_ROUTE_PROFILE_ID
+        else OPENAI_XHIGH_PROMPT_IDS
+    )
+    qualification_efforts_are_exact = (
+        route_profile_id == OPENAI_ROUTE_PROFILE_ID
         or controls["reasoning_efforts_by_prompt"]
         == {
-            prompt_id: [m.ReasoningEffort.XHIGH.value]
-            for prompt_id in sorted(OPENAI_XHIGH_PROMPT_IDS)
+            prompt_id: [qualified_effort.value]
+            for prompt_id in sorted(qualified_prompt_ids)
         }
     )
     status = (
@@ -2019,7 +2071,7 @@ async def run_real_convergence(
         and controls["network_calls"] == 24
         and controls["unpriced_attempts"] == 0
         and controls["models"] == ["gpt-5.6-luna"]
-        and xhigh_efforts_are_exact
+        and qualification_efforts_are_exact
         and unchanged_boundary
         and controls["actual_cost_usd"] <= max_total_cost_usd
         and controls["budget_charged_usd"] <= max_total_cost_usd
@@ -2033,9 +2085,13 @@ async def run_real_convergence(
         "report_schema_version": REHEARSAL_REPORT_VERSION,
         "rehearsal_version": REHEARSAL_VERSION,
         "mode": (
-            "real-xhigh-qualification"
-            if route_profile_id == OPENAI_XHIGH_ROUTE_PROFILE_ID
-            else "real-convergence"
+            "real-max-qualification"
+            if route_profile_id == OPENAI_MAX_ROUTE_PROFILE_ID
+            else (
+                "real-xhigh-qualification"
+                if route_profile_id == OPENAI_XHIGH_ROUTE_PROFILE_ID
+                else "real-convergence"
+            )
         ),
         "classification": "SYNTHETIC_ONLY_NO_STUDENT_DATA",
         "status": status,

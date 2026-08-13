@@ -36,6 +36,8 @@ OPENAI_XHIGH_PROMPT_IDS: Final = frozenset(
         "P09_GUIDE_BUILD_V1",
     }
 )
+OPENAI_MAX_ROUTE_PROFILE_ID: Final = "LUNA_MAX_V1"
+OPENAI_MAX_PROMPT_IDS: Final = OPENAI_XHIGH_PROMPT_IDS
 REQUEST_FRAMING_TOKEN_ALLOWANCE: Final = 1_024
 OPENAI_MAX_INPUT_TOKENS: Final = 250_000
 # The first manual-evaluation profile buys no automatic transport retry. A
@@ -104,12 +106,28 @@ OPENAI_XHIGH_ROUTE_PROFILE: Final[Mapping[str, ApprovedOpenAIRoute]] = (
         }
     )
 )
+OPENAI_MAX_ROUTE_PROFILE: Final[Mapping[str, ApprovedOpenAIRoute]] = (
+    MappingProxyType(
+        {
+            prompt_id: ApprovedOpenAIRoute(
+                approved.model,
+                (
+                    models.ReasoningEffort.MAX
+                    if prompt_id in OPENAI_MAX_PROMPT_IDS
+                    else approved.reasoning_effort
+                ),
+            )
+            for prompt_id, approved in OPENAI_ROUTE_PROFILE.items()
+        }
+    )
+)
 OPENAI_ROUTE_PROFILES: Final[
     Mapping[str, Mapping[str, ApprovedOpenAIRoute]]
 ] = MappingProxyType(
     {
         OPENAI_ROUTE_PROFILE_ID: OPENAI_ROUTE_PROFILE,
         OPENAI_XHIGH_ROUTE_PROFILE_ID: OPENAI_XHIGH_ROUTE_PROFILE,
+        OPENAI_MAX_ROUTE_PROFILE_ID: OPENAI_MAX_ROUTE_PROFILE,
     }
 )
 OPENAI_MODEL_BY_PROMPT: Final[Mapping[str, str]] = MappingProxyType(
@@ -130,9 +148,9 @@ def openai_route_matches_profile(
 ) -> bool:
     """Accept only an exact, explicitly named profile entry.
 
-    The XHIGH qualification deliberately leaves the canonical prompt registry
-    at HIGH so its executable prompt hashes remain unchanged.  This profile
-    check is the sole authorized HIGH-to-XHIGH routing exception.
+    The XHIGH and MAX qualifications deliberately leave the canonical prompt
+    registry at HIGH so its executable prompt hashes remain unchanged. These
+    profile checks are the sole authorized reasoning-routing exceptions.
     """
 
     spec = PROMPT_SPECS.get(prompt_id)
@@ -201,6 +219,21 @@ def build_openai_routes(
             f"Unexpected XHIGH route surface for {route_profile_id}: "
             f"{sorted(actual_xhigh_prompts)}"
         )
+    expected_max_prompts = (
+        OPENAI_MAX_PROMPT_IDS
+        if route_profile_id == OPENAI_MAX_ROUTE_PROFILE_ID
+        else frozenset()
+    )
+    actual_max_prompts = frozenset(
+        prompt_id
+        for prompt_id, approved in route_profile.items()
+        if approved.reasoning_effort == models.ReasoningEffort.MAX
+    )
+    if actual_max_prompts != expected_max_prompts:
+        raise AssertionError(
+            f"Unexpected MAX route surface for {route_profile_id}: "
+            f"{sorted(actual_max_prompts)}"
+        )
     capabilities = models.ModelCapabilities(
         # Every document is parsed and normalized before the gateway. The
         # adapter serializes only the validated envelope; it does not send
@@ -214,6 +247,7 @@ def build_openai_routes(
             models.ReasoningEffort.MEDIUM,
             models.ReasoningEffort.HIGH,
             models.ReasoningEffort.XHIGH,
+            models.ReasoningEffort.MAX,
         ],
         # No project-level ZDR approval has been verified. store=false is not
         # represented as ZDR and the route therefore remains DEFAULT retention.
@@ -229,9 +263,16 @@ def build_openai_routes(
             and spec.reasoning_effort == models.ReasoningEffort.HIGH
             and approved.reasoning_effort == models.ReasoningEffort.XHIGH
         )
+        is_authorized_max_override = (
+            route_profile_id == OPENAI_MAX_ROUTE_PROFILE_ID
+            and prompt_id in OPENAI_MAX_PROMPT_IDS
+            and spec.reasoning_effort == models.ReasoningEffort.HIGH
+            and approved.reasoning_effort == models.ReasoningEffort.MAX
+        )
         if (
             spec.reasoning_effort != approved.reasoning_effort
             and not is_authorized_xhigh_override
+            and not is_authorized_max_override
         ):
             raise AssertionError(
                 f"Prompt/profile reasoning drift for {prompt_id}: "
@@ -262,13 +303,22 @@ def build_openai_routes(
             reason_codes=[
                 f"ROUTE_PROFILE_{route_profile_id}",
                 (
-                    "LUNA_ONLY_EXPERIMENTAL_XHIGH_QUALIFICATION"
-                    if route_profile_id == OPENAI_XHIGH_ROUTE_PROFILE_ID
-                    else "LUNA_ONLY_EXPERIMENTAL_BASELINE"
+                    "LUNA_ONLY_EXPERIMENTAL_MAX_QUALIFICATION"
+                    if route_profile_id == OPENAI_MAX_ROUTE_PROFILE_ID
+                    else (
+                        "LUNA_ONLY_EXPERIMENTAL_XHIGH_QUALIFICATION"
+                        if route_profile_id == OPENAI_XHIGH_ROUTE_PROFILE_ID
+                        else "LUNA_ONLY_EXPERIMENTAL_BASELINE"
+                    )
                 ),
                 *(
                     ["REASONING_EFFORT_OVERRIDE_HIGH_TO_XHIGH"]
                     if is_authorized_xhigh_override
+                    else []
+                ),
+                *(
+                    ["REASONING_EFFORT_OVERRIDE_HIGH_TO_MAX"]
+                    if is_authorized_max_override
                     else []
                 ),
                 "EXPLICIT_APPROVED_MODEL_ID",

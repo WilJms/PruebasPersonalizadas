@@ -6855,7 +6855,8 @@
         "LOW",
         "MEDIUM",
         "HIGH",
-        "XHIGH"
+        "XHIGH",
+        "MAX"
       ],
       "title": "ReasoningEffort",
       "type": "string"

@@ -25,6 +25,8 @@ from comprehension_verification.evaluation_gate import (
 from comprehension_verification.model_gateway import (
     DeterministicMockAdapter,
     MockBehavior,
+    OPENAI_MAX_PROMPT_IDS,
+    OPENAI_MAX_ROUTE_PROFILE_ID,
     OPENAI_ROUTE_PROFILE_ID,
     OPENAI_XHIGH_PROMPT_IDS,
     OPENAI_XHIGH_ROUTE_PROFILE_ID,
@@ -567,6 +569,203 @@ def test_xhigh_authorization_boundary_seals_baseline_route_sdk_and_caps(
     }
 
 
+def test_max_offline_qualification_is_exact_and_non_billable() -> None:
+    report = asyncio.run(
+        run_offline_convergence(
+            route_profile_id=OPENAI_MAX_ROUTE_PROFILE_ID,
+            max_total_cost_usd=0.75,
+            max_call_cost_usd=0.10,
+            max_provider_requests=24,
+        )
+    )
+    controls = report["controls"]
+    assert report["status"] == "PASS"
+    assert report["mode"] == "offline-max-qualification"
+    assert report["route_profile"] == "LUNA_MAX_V1"
+    assert [item["status"] for item in report["observations"]] == [
+        "PASS",
+        "PASS",
+        "PASS",
+        "PASS",
+    ]
+    assert [len(item["stages"]) for item in report["observations"]] == [
+        6,
+        8,
+        8,
+        8,
+    ]
+    assert all(
+        check["status"] == "PASS" and check["provider_requests"] == 0
+        for check in report["deterministic_checks"]
+    )
+    assert controls["network_calls"] == 0
+    assert controls["provider_attempts"] == 24
+    assert controls["simulated_provider_attempts"] == 24
+    assert controls["models"] == ["gpt-5.6-luna"]
+    assert controls["reasoning_efforts_by_prompt"] == {
+        prompt_id: ["MAX"]
+        for prompt_id in sorted(OPENAI_MAX_PROMPT_IDS)
+    }
+    assert controls["p10_calls"] == 0
+    assert controls["p11_calls"] == 0
+    assert controls["fallback_calls"] == 0
+    assert controls["gateway_retries"] == 0
+    assert controls["sdk_retries"] == 0
+    assert controls["semantic_retries"] == 0
+    assert controls["tools_enabled"] is False
+    assert controls["store"] is False
+    assert controls["semantic_normalizations"] == 0
+    assert controls["fixture_changes"] == 0
+    assert controls["prompt_changes"] == 0
+    assert controls["validator_changes"] == 0
+    assert controls["budget_charged_usd"] == pytest.approx(0.500519)
+    assert controls["max_observed_budget_charge_usd"] == pytest.approx(
+        0.02583025
+    )
+    assert controls["budget_charged_usd"] <= 0.75
+    assert controls["max_observed_budget_charge_usd"] <= 0.10
+
+
+def test_max_cli_dry_run_has_zero_network_and_no_secret_surface() -> None:
+    completed = subprocess.run(
+        [
+            sys.executable,
+            str(SCRIPT),
+            "--mode",
+            "max-qualification-dry-run",
+            "--max-total-cost-usd",
+            "0.75",
+            "--max-call-cost-usd",
+            "0.10",
+            "--max-provider-requests",
+            "24",
+        ],
+        cwd=ROOT,
+        env=_safe_environment(),
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    report = json.loads(completed.stdout)
+    serialized = json.dumps(report, sort_keys=True)
+    assert report["status"] == "PASS"
+    assert report["route_profile"] == "LUNA_MAX_V1"
+    assert report["controls"]["network_calls"] == 0
+    assert "OPENAI_API_KEY" not in serialized
+    assert "content_text" not in serialized
+    assert "question_text" not in serialized
+
+
+def test_max_boundary_matches_xhigh_semantics_and_changes_only_effort() -> None:
+    baseline_report = json.loads(
+        eval_harness.MAX_QUALIFICATION_BASELINE_REPORT.read_text(
+            encoding="utf-8"
+        )
+    )
+    xhigh = baseline_report["boundary"]
+    maximum = rehearsal_boundary_material(
+        OPENAI_MAX_ROUTE_PROFILE_ID,
+        max_call_cost_usd=0.10,
+    )
+    for field in (
+        "prompt_pack_version",
+        "planner_version",
+        "assembler_version",
+        "checkpoints",
+        "p05_golden",
+    ):
+        assert maximum[field] == xhigh[field]
+    semantic_prompt_fields = {
+        "version",
+        "hash",
+        "input_schema_hash",
+        "output_schema_hash",
+        "relationship_validator",
+        "application_validator",
+    }
+    for prompt_id in sorted(OPENAI_MAX_PROMPT_IDS):
+        assert {
+            key: value
+            for key, value in maximum["prompts"][prompt_id].items()
+            if key in semantic_prompt_fields
+        } == {
+            key: value
+            for key, value in xhigh["prompts"][prompt_id].items()
+            if key in semantic_prompt_fields
+        }
+        assert maximum["prompts"][prompt_id][
+            "registry_reasoning_effort"
+        ] == "HIGH"
+        assert maximum["prompts"][prompt_id][
+            "route_reasoning_effort"
+        ] == "MAX"
+
+    delta = maximum["route_delta_from_luna_xhigh"]
+    assert delta["baseline_route_profile"] == OPENAI_XHIGH_ROUTE_PROFILE_ID
+    assert delta["selected_route_profile"] == OPENAI_MAX_ROUTE_PROFILE_ID
+    assert delta["reasoning_effort_changes"] == {
+        prompt_id: {"from": "XHIGH", "to": "MAX"}
+        for prompt_id in sorted(OPENAI_MAX_PROMPT_IDS)
+    }
+    assert delta["other_route_field_changes"] == {}
+    for unchanged_surface in (
+        "prompt_registry_changes",
+        "schema_changes",
+        "validator_changes",
+        "fixture_changes",
+        "planner_changes",
+        "assembler_changes",
+    ):
+        assert delta[unchanged_surface] == []
+    route_boundary = maximum["openai_route_boundary"]
+    assert route_boundary["model_ids"] == ["gpt-5.6-luna"]
+    assert route_boundary["route_profile"] == "LUNA_MAX_V1"
+    assert route_boundary["adapter"] == "OpenAIResponsesAdapter"
+    assert route_boundary["openai_sdk_version"] == "2.53.0"
+    assert {
+        prompt_id: route_boundary["routes"][prompt_id]["reasoning_effort"]
+        for prompt_id in sorted(OPENAI_MAX_PROMPT_IDS)
+    } == {
+        prompt_id: "MAX" for prompt_id in sorted(OPENAI_MAX_PROMPT_IDS)
+    }
+
+
+def test_max_authorization_boundary_seals_xhigh_sdk_and_caps(
+    tmp_path: Path,
+) -> None:
+    args = _real_cli_args(tmp_path)
+    args.mode = "max-qualification-real"
+    boundary = eval_harness._convergence_authorization_boundary(args)
+    assert boundary["git_head"]
+    assert boundary["route_profile"] == "LUNA_MAX_V1"
+    assert boundary["model_ids"] == ["gpt-5.6-luna"]
+    assert boundary["qualified_reasoning_effort"] == {
+        prompt_id: "MAX" for prompt_id in sorted(OPENAI_MAX_PROMPT_IDS)
+    }
+    assert boundary["max_provider_requests"] == 24
+    assert boundary["max_total_cost_usd"] == 0.75
+    assert boundary["max_call_cost_usd"] == 0.10
+    assert boundary["executable_boundary"]["openai_route_boundary"][
+        "openai_sdk_version"
+    ] == "2.53.0"
+    assert boundary["max_qualification_baseline"] == {
+        "candidate_sha": eval_harness.MAX_QUALIFICATION_BASELINE_SHA,
+        "evidence_sha": eval_harness.MAX_QUALIFICATION_EVIDENCE_SHA,
+        "report_hash": (
+            "sha256:"
+            + hashlib.sha256(
+                eval_harness.MAX_QUALIFICATION_BASELINE_REPORT.read_bytes()
+            ).hexdigest()
+        ),
+        "route_profile": "LUNA_XHIGH_V1",
+        "model": "gpt-5.6-luna",
+        "reasoning_effort": "XHIGH",
+    }
+    assert boundary["single_material_hypothesis"] == (
+        "P04-P09 reasoning effort XHIGH_TO_MAX"
+    )
+
+
 def _reservation_boundary() -> dict[str, object]:
     return {
         "git_head": "a" * 40,
@@ -721,6 +920,38 @@ def test_xhigh_real_code_path_uses_exact_routes_without_network(
     assert report["controls"]["reasoning_efforts_by_prompt"] == {
         prompt_id: ["XHIGH"]
         for prompt_id in sorted(OPENAI_XHIGH_PROMPT_IDS)
+    }
+    assert report["controls"]["p10_calls"] == 0
+    assert report["controls"]["p11_calls"] == 0
+    assert report["controls"]["fallback_calls"] == 0
+
+
+def test_max_real_code_path_uses_exact_routes_without_network(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        "comprehension_verification.rehearsal.OpenAIResponsesAdapter",
+        lambda **_kwargs: DeterministicMockAdapter(),
+    )
+    report = asyncio.run(
+        run_real_convergence(
+            api_key=SecretStr("sk-project-synthetic-placeholder-not-real"),
+            max_total_cost_usd=0.75,
+            max_call_cost_usd=0.10,
+            max_provider_requests=24,
+            route_profile_id=OPENAI_MAX_ROUTE_PROFILE_ID,
+        )
+    )
+    assert report["status"] == "PASS"
+    assert report["mode"] == "real-max-qualification"
+    assert report["route_profile"] == "LUNA_MAX_V1"
+    assert report["unchanged_boundary_across_chains"] is True
+    assert report["controls"]["network_calls"] == 24
+    assert report["controls"]["provider_attempts"] == 24
+    assert report["controls"]["models"] == ["gpt-5.6-luna"]
+    assert report["controls"]["reasoning_efforts_by_prompt"] == {
+        prompt_id: ["MAX"]
+        for prompt_id in sorted(OPENAI_MAX_PROMPT_IDS)
     }
     assert report["controls"]["p10_calls"] == 0
     assert report["controls"]["p11_calls"] == 0
@@ -955,6 +1186,140 @@ def test_xhigh_outcome_distinguishes_model_failure_from_implementation() -> None
         "XHIGH_QUALIFICATION_INCONCLUSIVE",
         "CONVERGENCE_INCOMPLETE",
     )
+
+
+def test_max_cli_persists_pass_and_three_way_comparison_once(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    args = _real_cli_args(tmp_path)
+    args.mode = "max-qualification-real"
+
+    async def fake_run(_args: argparse.Namespace) -> dict[str, object]:
+        return {
+            "report_schema_version": "stage2-convergence-report/1.7.0",
+            "status": "PASS",
+            "mode": "real-max-qualification",
+            "classification": "SYNTHETIC_ONLY_NO_STUDENT_DATA",
+            "route_profile": "LUNA_MAX_V1",
+            "observations": [],
+            "controls": {
+                "network_calls": 24,
+                "provider_attempts": 24,
+                "input_tokens": 100,
+                "output_tokens": 200,
+                "reasoning_tokens": 150,
+                "actual_cost_usd": 0.01,
+                "budget_charged_usd": 0.02,
+                "gateway_retries": 0,
+                "sdk_retries": 0,
+                "semantic_retries": 0,
+                "fallback_calls": 0,
+                "p10_calls": 0,
+                "p11_calls": 0,
+            },
+        }
+
+    monkeypatch.setattr(
+        eval_harness, "_run_current_convergence_real", fake_run
+    )
+    assert eval_harness._run_convergence_cli(args) == 0
+    capsys.readouterr()
+    report = json.loads(args.report_path.read_text(encoding="utf-8"))
+    assert report["qualification_outcome"] == (
+        "LUNA_MAX_QUALIFICATION_PASSED"
+    )
+    assert report["family_outcome"] is None
+    assert report["convergence_outcome"] == (
+        "READY_FOR_INDEPENDENT_REVIEW"
+    )
+    assert report["causal_classification"] == "QUALIFICATION_PASSED"
+    assert report["recommended_next_authority"] == (
+        "INDEPENDENT_REVIEW_ONLY_NO_BUILD_DEPLOY"
+    )
+    assert report["baseline_xhigh_candidate"] == (
+        eval_harness.MAX_QUALIFICATION_BASELINE_SHA
+    )
+    comparison = report["configuration_comparison"]
+    assert comparison["statistical_significance_claimed"] is False
+    assert [
+        item["reasoning_effort"] for item in comparison["configurations"]
+    ] == ["HIGH", "XHIGH", "MAX"]
+    assert comparison["configurations"][0][
+        "token_usage_availability"
+    ] == "NOT_RECORDED_IN_SOURCE_REPORT"
+    assert comparison["configurations"][2]["token_usage"] == {
+        "input_tokens": 100,
+        "output_tokens": 200,
+        "reasoning_tokens": 150,
+    }
+    record = EvaluationAuthorizationLedger(args.ledger).record(
+        args.execution_id
+    )
+    assert record["status"] == "COMPLETED"
+    with pytest.raises(
+        eval_harness.OpenAIEvalBlocked,
+        match="EVALUATION_AUTHORIZATION_ALREADY_CONSUMED",
+    ):
+        eval_harness._run_convergence_cli(args)
+
+
+def test_max_outcome_is_terminal_for_model_failure_and_inconclusive_for_transport() -> None:
+    assert eval_harness._max_qualification_outcome(
+        {
+            "status": "FAIL",
+            "observations": [
+                {"failure": {"codes": ["UNAUTHORIZED_EVIDENCE"]}}
+            ],
+        }
+    ) == {
+        "qualification_outcome": "LUNA_MAX_QUALIFICATION_FAILED",
+        "family_outcome": "LUNA_FAMILY_QUALIFICATION_EXHAUSTED",
+        "convergence_outcome": "CONVERGENCE_INCOMPLETE",
+        "causal_classification": "MODEL_OWNED_QUALIFICATION_FAILURE",
+        "recommended_next_authority": (
+            "HUMAN_REVIEW_OF_LUNA_EXHAUSTION_NO_AUTOMATIC_MODEL_CHANGE"
+        ),
+    }
+    assert eval_harness._max_qualification_outcome(
+        {
+            "status": "FAIL",
+            "observations": [
+                {
+                    "failure": {
+                        "codes": ["MODEL_CONTRACT_VALIDATION_FAILED"]
+                    }
+                }
+            ],
+        }
+    )["qualification_outcome"] == "LUNA_MAX_QUALIFICATION_FAILED"
+    assert eval_harness._max_qualification_outcome(
+        {
+            "status": "FAIL",
+            "observations": [
+                {"failure": {"codes": ["MODEL_PROVIDER_ERROR"]}}
+            ],
+        }
+    ) == {
+        "qualification_outcome": "MAX_QUALIFICATION_INCONCLUSIVE",
+        "family_outcome": None,
+        "convergence_outcome": "CONVERGENCE_INCOMPLETE",
+        "causal_classification": (
+            "TECHNICAL_MAX_SUPPORT_OR_EXECUTION_FAILURE"
+        ),
+        "recommended_next_authority": (
+            "TECHNICAL_REVIEW_ONLY_NO_RERUN_WITHOUT_NEW_AUTHORITY"
+        ),
+    }
+    assert eval_harness._max_qualification_outcome(
+        {
+            "status": "FAIL",
+            "observations": [
+                {"failure": {"codes": ["TYPEERROR"]}}
+            ],
+        }
+    )["qualification_outcome"] == "MAX_QUALIFICATION_INCONCLUSIVE"
 
 
 def test_authorization_boundary_binds_prompts_schemas_validators_and_inputs() -> None:
