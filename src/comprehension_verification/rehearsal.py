@@ -48,6 +48,15 @@ from .model_gateway.registry import PROMPT_VERSION, prompt_spec
 from .model_gateway.gateway import PROMPT_RELATIONSHIP_VALIDATOR_VERSIONS
 from .planning import PLANNER_VERSION, build_assessment_plan
 from .observability import p08_decision_diagnostics
+from .qualification_semantics import (
+    CheckpointAssessment,
+    CheckpointClass,
+    ContractualAdherence,
+    OracleValidity,
+    SemanticInterpretation,
+    aggregate_causal_classification,
+    classify_checkpoint,
+)
 from .validation import (
     ContextValidationError,
     PROMPT_APPLICATION_VALIDATOR_VERSIONS,
@@ -67,13 +76,22 @@ from .web.workflows import (
 )
 
 
-REHEARSAL_VERSION = "stage2-product-rehearsal/1.8.0"
-REHEARSAL_REPORT_VERSION = "stage2-convergence-report/1.8.0"
+REHEARSAL_VERSION = "stage2-product-rehearsal/1.9.0"
+REHEARSAL_REPORT_VERSION = "stage2-convergence-report/1.9.0"
+QUALIFICATION_EXPECTED_PROVIDER_REQUESTS = 21
 BASE_SCENARIO_ID = "synthetic-open-short-v1"
 VARIANT_SCENARIO_ID = "synthetic-choice-justification-v1"
 P05_GOLDEN_FIXTURE_PATH = (
     Path(__file__).resolve().parents[2]
     / "tests/fixtures/openai_evals/v2/p05_golden_checkpoints.json"
+)
+PRODUCT_REHEARSAL_FIXTURE_PATH = (
+    Path(__file__).resolve().parents[2]
+    / "tests/fixtures/openai_evals/v2/product_rehearsal.json"
+)
+SEMANTIC_QUALIFICATION_FIXTURE_PATH = (
+    Path(__file__).resolve().parents[2]
+    / "tests/fixtures/openai_evals/v3/semantic_qualification_pack.json"
 )
 
 
@@ -120,6 +138,7 @@ class RehearsalObservation:
     stages: tuple[dict[str, Any], ...]
     failure: dict[str, Any] | None
     output_hash: str | None
+    checkpoint_assessments: tuple[dict[str, Any], ...] = ()
 
 
 def _validated_mock_output(prompt_id: str, request: BaseModel) -> BaseModel:
@@ -216,11 +235,53 @@ def _base_p04_request() -> m.BlueprintBuildRequest:
 def _p05_golden_fixture() -> dict[str, Any]:
     raw = json.loads(P05_GOLDEN_FIXTURE_PATH.read_text(encoding="utf-8"))
     if (
-        raw.get("schema_version") != "stage2-p05-golden-checkpoints/1.1.0"
+        raw.get("schema_version") != "stage2-p05-golden-checkpoints/1.2.0"
         or raw.get("classification") != "SYNTHETIC_ONLY_NO_STUDENT_DATA"
     ):
         raise ValueError("P05 golden fixture metadata is not approved")
     return cast(dict[str, Any], raw)
+
+
+def _semantic_instrument_metadata() -> dict[str, Any]:
+    legacy = json.loads(
+        PRODUCT_REHEARSAL_FIXTURE_PATH.read_text(encoding="utf-8")
+    )
+    replacement = json.loads(
+        SEMANTIC_QUALIFICATION_FIXTURE_PATH.read_text(encoding="utf-8")
+    )
+    if legacy.get("schema_version") != "stage2-product-rehearsal-fixture/1.5.0":
+        raise ValueError("legacy rehearsal classification is not approved")
+    if replacement.get("schema_version") != (
+        "stage2-semantic-qualification-pack/1.0.0"
+    ):
+        raise ValueError("replacement semantic fixture is not approved")
+    return {
+        "legacy_sweep_status": legacy["instrument_semantic_status"],
+        "legacy_semantic_quality_conclusions_allowed": legacy[
+            "execution_discovery"
+        ]["semantic_quality_conclusions_allowed"],
+        "replacement_fixture": legacy["replacement_fixture"],
+        "replacement_fixture_hash": canonical_hash(replacement),
+        "replacement_review_set_id": replacement["review_set_id"],
+        "replacement_review_version": replacement["review_version"],
+        "source_artifact_hashes": {
+            artifact["artifact_key"]: artifact["sha256"]
+            for artifact in replacement["artifacts"]
+        },
+        "semantic_sweep_checkpoint_ids": [
+            "P04_CANONICAL_POSITIVE",
+            "P05_CANONICAL_POSITIVE",
+            "P05_PLAN_FEASIBILITY_NEGATIVE",
+            "P06_CANONICAL_POSITIVE",
+            "P07_CANONICAL_POSITIVE",
+            "P07_INSUFFICIENT_NEGATIVE",
+            "P08_CANONICAL_POSITIVE",
+            "P08_UNANSWERABLE_NEGATIVE",
+            "P09_CANONICAL_POSITIVE",
+        ],
+        "expected_provider_requests": QUALIFICATION_EXPECTED_PROVIDER_REQUESTS,
+        "replacement_status": "READY_FOR_INDEPENDENT_HARNESS_REVIEW",
+    }
 
 
 def _golden_blueprint(scenario_id: str) -> m.AssessmentBlueprint:
@@ -533,16 +594,77 @@ def _p05_actual_check_matrix(
     }
 
 
+_P05_CHECK_CODES = {
+    "CONSTRUCT": "BLUEPRINT_CONSTRUCT",
+    "SOURCE_FIDELITY": "BLUEPRINT_SOURCE_FIDELITY",
+    "COVERAGE": "BLUEPRINT_CONCEPTUAL_COVERAGE",
+    "COMPARABILITY": "BLUEPRINT_CATALOG_DIVERSITY",
+    "COGNITIVE_DEMAND": "BLUEPRINT_COGNITIVE_DEMAND",
+    "TIME": "BLUEPRINT_TIME",
+    "FORMAT_FEASIBILITY": "BLUEPRINT_FORMAT_FEASIBILITY",
+    "OPPORTUNITY_CATALOG": "BLUEPRINT_OPPORTUNITY_CATALOG",
+    "PLAN_FEASIBILITY": "BLUEPRINT_PLAN_FEASIBILITY",
+    "ACCESSIBILITY": "BLUEPRINT_ACCESSIBILITY",
+}
+
+
+def _p05_review_from_versioned_semantic_fixture(
+    request: m.BlueprintReviewRequest,
+    *,
+    negative: bool,
+) -> m.BlueprintReview:
+    """Materialize the reviewed oracle without consulting a mock or provider."""
+
+    fixture = _p05_golden_fixture()
+    categories = fixture["golden_positive"]["semantic_review"][
+        "category_reviews"
+    ]
+    checks: list[m.BlueprintReviewCheck] = []
+    for category, check_code in _P05_CHECK_CODES.items():
+        reviewed = categories[category]
+        status = reviewed["status"]
+        critical = reviewed["critical"]
+        message = reviewed["rationale"]
+        correction = None
+        if negative and category == "PLAN_FEASIBILITY":
+            status = "FAIL"
+            critical = True
+            message = (
+                "El catálogo mutado sólo permite CHOICE, mientras la política "
+                "vigente exige OPEN_SHORT; no existe un plan autorizado."
+            )
+            correction = "Regenerar el catálogo desde la política vigente."
+        checks.append(
+            m.BlueprintReviewCheck(
+                check_code=check_code,
+                category=category,
+                status=status,
+                message=message,
+                referenced_ids=reviewed["referenced_ids"],
+                correction=correction,
+                critical=critical,
+            )
+        )
+    return m.BlueprintReview(
+        activity_id=request.activity_spec.activity_id,
+        blueprint_id=request.blueprint.blueprint_id,
+        blueprint_version=request.blueprint.blueprint_version,
+        status="READY",
+        approval_recommendation=("REJECT" if negative else "APPROVE"),
+        checks=checks,
+        diagnostics=[],
+    )
+
+
 def evaluate_p05_golden_positive() -> dict[str, Any]:
     """Prove the positive product transition without requiring APPROVE."""
 
     fixture = _p05_golden_fixture()
     expected = fixture["golden_positive"]
     request = build_rehearsal_checkpoints(BASE_SCENARIO_ID).p05_request
-    review = m.BlueprintReview.model_validate(
-        _validated_mock_output(
-            "P05_BLUEPRINT_REVIEW_V1", request
-        ).model_dump(mode="json")
+    review = _p05_review_from_versioned_semantic_fixture(
+        request,
+        negative=False,
     )
     derived_preflight = build_blueprint_review_preflight(
         blueprint=request.blueprint,
@@ -602,10 +724,9 @@ def evaluate_p05_golden_negative() -> dict[str, Any]:
     fixture = _p05_golden_fixture()
     expected = fixture["golden_negative"]
     request = build_p05_golden_negative_request()
-    review = m.BlueprintReview.model_validate(
-        _validated_mock_output(
-            "P05_BLUEPRINT_REVIEW_V1", request
-        ).model_dump(mode="json")
+    review = _p05_review_from_versioned_semantic_fixture(
+        request,
+        negative=True,
     )
     derived_preflight = build_blueprint_review_preflight(
         blueprint=request.blueprint,
@@ -854,6 +975,7 @@ def rehearsal_boundary_material(
             max_call_cost_usd=max_call_cost_usd,
         ),
         "p10_enabled": False,
+        "semantic_instrument": _semantic_instrument_metadata(),
     }
     if route_profile_id == OPENAI_MAX_ROUTE_PROFILE_ID:
         material["route_delta_from_luna_xhigh"] = (
@@ -941,6 +1063,8 @@ class _BlueprintReviewNotApprovable(ContextValidationError):
         review: m.BlueprintReview,
         blueprint: m.AssessmentBlueprint,
     ) -> None:
+        self.semantic_interpretation = SemanticInterpretation.INCORRECT
+        self.contractual_adherence = ContractualAdherence.PASS
         super().__init__(
             "P05_NOT_APPROVABLE",
             "P05 output does not permit the canonical product transition",
@@ -1071,6 +1195,331 @@ class _QuestionReviewNotAccepted(ContextValidationError):
         )
 
 
+class _SemanticCheckpointMismatch(ContextValidationError):
+    """Content-free mismatch against a versioned semantic oracle."""
+
+    def __init__(
+        self,
+        code: str,
+        message: str,
+        *,
+        semantic_interpretation: SemanticInterpretation,
+        contractual_adherence: ContractualAdherence,
+        safe_metadata: dict[str, Any] | None = None,
+    ) -> None:
+        super().__init__(code, message)
+        self.semantic_interpretation = semantic_interpretation
+        self.contractual_adherence = contractual_adherence
+        self.safe_metadata = safe_metadata or {}
+
+
+def _semantic_checkpoint_provenance() -> tuple[
+    Any,
+    dict[str, dict[str, Any]],
+]:
+    """Load reviewed checkpoints lazily to avoid a module import cycle."""
+
+    from .semantic_harness import (
+        build_checkpoint_provenance,
+        build_semantic_checkpoints,
+        semantic_checkpoint_requests,
+        validate_checkpoint_provenance,
+    )
+
+    checkpoints = build_semantic_checkpoints()
+    provenance_rows = build_checkpoint_provenance(checkpoints)
+    validate_checkpoint_provenance(provenance_rows)
+    provenance = {
+        row["checkpoint_id"]: row
+        for row in provenance_rows
+        if row["checkpoint_class"]
+        != CheckpointClass.STRUCTURAL_ORCHESTRATION_CHECKPOINT_ONLY.value
+    }
+    return checkpoints, {
+        checkpoint_id: {
+            "prompt_id": prompt_id,
+            "request": request,
+            "provenance": provenance[checkpoint_id],
+        }
+        for checkpoint_id, prompt_id, request in semantic_checkpoint_requests(
+            checkpoints
+        )
+    }
+
+
+def _semantic_checkpoint_expected(
+    checkpoints: Any,
+    checkpoint_id: str,
+) -> BaseModel:
+    expected = {
+        "P04_CANONICAL_POSITIVE": checkpoints.blueprint,
+        "P05_CANONICAL_POSITIVE": checkpoints.p05_review,
+        "P05_PLAN_FEASIBILITY_NEGATIVE": checkpoints.p05_negative_review,
+        "P06_CANONICAL_POSITIVE": checkpoints.mapping,
+        "P07_CANONICAL_POSITIVE": checkpoints.p07_positive_result,
+        "P07_INSUFFICIENT_NEGATIVE": checkpoints.p07_negative_result,
+        "P08_CANONICAL_POSITIVE": checkpoints.p08_positive_result,
+        "P08_UNANSWERABLE_NEGATIVE": checkpoints.p08_negative_result,
+        "P09_CANONICAL_POSITIVE": checkpoints.p09_guide,
+    }
+    return cast(BaseModel, expected[checkpoint_id])
+
+
+def _semantic_checkpoint_verdict(
+    *,
+    checkpoint_id: str,
+    request: BaseModel,
+    output: BaseModel,
+    expected: BaseModel,
+) -> tuple[SemanticInterpretation, ContractualAdherence]:
+    """Apply the frozen product validators and the reviewed expected decision."""
+
+    if checkpoint_id == "P04_CANONICAL_POSITIVE":
+        actual = cast(m.AssessmentBlueprint, output)
+        target = cast(m.AssessmentBlueprint, expected)
+        if actual.status != m.WorkflowStatus.READY:
+            raise _SemanticCheckpointMismatch(
+                "P04_POSITIVE_NOT_READY",
+                "P04 did not produce the reviewed positive transition",
+                semantic_interpretation=SemanticInterpretation.INCORRECT,
+                contractual_adherence=ContractualAdherence.PASS,
+            )
+        if (
+            actual.dimensions[0].grading_weight
+            != target.dimensions[0].grading_weight
+        ):
+            raise _SemanticCheckpointMismatch(
+                "P04_SOURCE_FIDELITY_MISMATCH",
+                "P04 did not preserve the reviewed grading weight",
+                semantic_interpretation=SemanticInterpretation.INCORRECT,
+                contractual_adherence=ContractualAdherence.PASS,
+            )
+    elif checkpoint_id.startswith("P05_"):
+        actual = cast(m.BlueprintReview, output)
+        review_request = cast(m.BlueprintReviewRequest, request)
+        validate_blueprint_review_preflight_checks(
+            actual,
+            review_request.deterministic_preflight,
+        )
+        expected_categories = {
+            "CONSTRUCT",
+            "SOURCE_FIDELITY",
+            "COVERAGE",
+            "COMPARABILITY",
+            "COGNITIVE_DEMAND",
+            "TIME",
+            "FORMAT_FEASIBILITY",
+            "OPPORTUNITY_CATALOG",
+            "PLAN_FEASIBILITY",
+            "ACCESSIBILITY",
+        }
+        actual_categories = {str(check.category) for check in actual.checks}
+        if actual_categories != expected_categories:
+            raise _SemanticCheckpointMismatch(
+                "P05_SEMANTIC_CATEGORY_SET_MISMATCH",
+                "P05 did not review the ten canonical categories",
+                semantic_interpretation=SemanticInterpretation.INCORRECT,
+                contractual_adherence=ContractualAdherence.PASS,
+                safe_metadata={
+                    "missing_categories": sorted(
+                        expected_categories - actual_categories
+                    ),
+                    "unexpected_categories": sorted(
+                        actual_categories - expected_categories
+                    ),
+                },
+            )
+        expected_reject = checkpoint_id.endswith("NEGATIVE")
+        if expected_reject:
+            critical = {
+                str(check.category)
+                for check in actual.checks
+                if check.critical and check.status == m.ReviewCheckStatus.FAIL
+            }
+            if (
+                actual.approval_recommendation
+                != m.BlueprintApprovalRecommendation.REJECT
+                or critical != {"PLAN_FEASIBILITY"}
+            ):
+                raise _SemanticCheckpointMismatch(
+                    "P05_NEGATIVE_NOT_REJECTED",
+                    "P05 did not reject the reviewed PLAN_FEASIBILITY negative",
+                    semantic_interpretation=SemanticInterpretation.INCORRECT,
+                    contractual_adherence=ContractualAdherence.PASS,
+                    safe_metadata={"critical_categories": sorted(critical)},
+                )
+        else:
+            semantic_failures = {
+                str(check.category)
+                for check in actual.checks
+                if check.status == m.ReviewCheckStatus.FAIL
+            }
+            if semantic_failures:
+                raise _SemanticCheckpointMismatch(
+                    "P05_POSITIVE_SEMANTIC_FAILURE",
+                    "P05 failed a reviewed category on the canonical positive",
+                    semantic_interpretation=SemanticInterpretation.INCORRECT,
+                    contractual_adherence=ContractualAdherence.PASS,
+                    safe_metadata={
+                        "failed_categories": sorted(semantic_failures)
+                    },
+                )
+            if not blueprint_review_is_approvable(actual):
+                raise _BlueprintReviewNotApprovable(
+                    actual,
+                    review_request.blueprint,
+                )
+    elif checkpoint_id == "P06_CANONICAL_POSITIVE":
+        mapping = cast(m.EvidenceMapPatch, output)
+        map_request = cast(m.EvidenceMapRequest, request)
+        validate_evidence_map(
+            mapping,
+            blueprint=map_request.blueprint,
+            bundle=map_request.evidence_bundle,
+            planning_policy=map_request.planning_policy,
+        )
+        if (
+            mapping.status != m.WorkflowStatus.READY
+            or not mapping.opportunities
+        ):
+            raise _SemanticCheckpointMismatch(
+                "P06_POSITIVE_NOT_READY",
+                "P06 did not map the reviewed positive opportunity",
+                semantic_interpretation=SemanticInterpretation.INCORRECT,
+                contractual_adherence=ContractualAdherence.PASS,
+            )
+    elif checkpoint_id.startswith("P07_"):
+        generation = cast(m.QuestionGenerationResult, output)
+        generation_request = cast(m.QuestionBuildRequest, request)
+        try:
+            validate_generation_result(
+                generation,
+                opportunity=generation_request.opportunity,
+                bundle=generation_request.evidence_bundle,
+            )
+        except ContextValidationError as exc:
+            if (
+                checkpoint_id == "P07_INSUFFICIENT_NEGATIVE"
+                and generation.status == "REPLACEMENT_REQUIRED"
+                and generation.candidate is None
+            ):
+                raise _SemanticCheckpointMismatch(
+                    exc.code,
+                    "P07 made a defensible abstention but violated its contract",
+                    semantic_interpretation=SemanticInterpretation.DEFENDIBLE,
+                    contractual_adherence=ContractualAdherence.FAIL,
+                ) from exc
+            raise
+        if checkpoint_id == "P07_INSUFFICIENT_NEGATIVE":
+            if (
+                generation.status != "REPLACEMENT_REQUIRED"
+                or generation.candidate is not None
+            ):
+                raise _SemanticCheckpointMismatch(
+                    "P07_NEGATIVE_NOT_ABSTAINED",
+                    "P07 generated a candidate from insufficient evidence",
+                    semantic_interpretation=SemanticInterpretation.INCORRECT,
+                    contractual_adherence=ContractualAdherence.PASS,
+                )
+        elif generation.status != "READY" or generation.candidate is None:
+            raise _SemanticCheckpointMismatch(
+                "P07_POSITIVE_NOT_READY",
+                "P07 abstained from the reviewed positive",
+                semantic_interpretation=SemanticInterpretation.INCORRECT,
+                contractual_adherence=ContractualAdherence.PASS,
+            )
+        else:
+            reviewed_generation = cast(m.QuestionGenerationResult, expected)
+            reviewed_candidate = reviewed_generation.candidate
+            if (
+                reviewed_candidate is None
+                or generation.candidate.model_dump(mode="json")
+                != reviewed_candidate.model_dump(mode="json")
+            ):
+                raise _SemanticCheckpointMismatch(
+                    "P07_POSITIVE_REQUIRES_INDEPENDENT_SEMANTIC_REVIEW",
+                    (
+                        "P07 produced a structurally valid alternative that has "
+                        "not received the versioned semantic review"
+                    ),
+                    semantic_interpretation=(
+                        SemanticInterpretation.INDETERMINATE
+                    ),
+                    contractual_adherence=ContractualAdherence.PASS,
+                    safe_metadata={"reviewed_golden_match": False},
+                )
+    elif checkpoint_id.startswith("P08_"):
+        review = cast(m.QuestionReviewResult, output)
+        review_request = cast(m.QuestionReviewRequest, request)
+        validate_review_result(
+            review,
+            generation_result=review_request.generation_result,
+            validation_policy=review_request.validation_policy,
+        )
+        expected_decision = (
+            m.ReviewDecision.REJECT
+            if checkpoint_id == "P08_UNANSWERABLE_NEGATIVE"
+            else m.ReviewDecision.ACCEPT
+        )
+        if review.review is None or review.review.decision != expected_decision:
+            raise _SemanticCheckpointMismatch(
+                (
+                    "P08_NEGATIVE_NOT_REJECTED"
+                    if expected_decision == m.ReviewDecision.REJECT
+                    else "P08_POSITIVE_NOT_ACCEPTED"
+                ),
+                "P08 did not make the independently reviewed decision",
+                semantic_interpretation=SemanticInterpretation.INCORRECT,
+                contractual_adherence=ContractualAdherence.PASS,
+                safe_metadata=p08_decision_diagnostics(
+                    review,
+                    review_request.validation_policy,
+                ),
+            )
+    elif checkpoint_id == "P09_CANONICAL_POSITIVE":
+        guide = cast(m.EvaluationGuide, output)
+        guide_request = cast(m.GuideBuildRequest, request)
+        validate_evaluation_guide(
+            guide,
+            assessment=guide_request.assessment,
+            bundle=guide_request.evidence_bundle,
+        )
+        if guide.status != m.WorkflowStatus.READY:
+            raise _SemanticCheckpointMismatch(
+                "P09_POSITIVE_NOT_READY",
+                "P09 did not produce the reviewed positive guide",
+                semantic_interpretation=SemanticInterpretation.INCORRECT,
+                contractual_adherence=ContractualAdherence.PASS,
+            )
+    else:  # pragma: no cover - fixed reviewed matrix
+        raise ValueError(f"unknown semantic checkpoint: {checkpoint_id}")
+    return SemanticInterpretation.CORRECT, ContractualAdherence.PASS
+
+
+def _mark_structural_orchestration_rows(
+    stages: list[dict[str, Any]],
+) -> tuple[dict[str, Any], ...]:
+    """Make the non-semantic role of legacy chain rows explicit."""
+
+    for stage in stages:
+        stage.update(
+            {
+                "checkpoint_class": (
+                    CheckpointClass.STRUCTURAL_ORCHESTRATION_CHECKPOINT_ONLY.value
+                ),
+                "oracle_validity": OracleValidity.NOT_APPLICABLE.value,
+                "semantic_interpretation": (
+                    SemanticInterpretation.NOT_EVALUATED.value
+                ),
+                "contractual_adherence": (
+                    ContractualAdherence.NOT_EVALUATED.value
+                ),
+                "semantic_quality_conclusion_allowed": False,
+            }
+        )
+    return tuple(stages)
+
+
 class ProductRehearsal:
     """Execute independent sweeps and integrated chains through one gateway."""
 
@@ -1187,125 +1636,167 @@ class ProductRehearsal:
         run_id: str,
         scenario_id: str = BASE_SCENARIO_ID,
     ) -> RehearsalObservation:
-        checkpoints = build_rehearsal_checkpoints(scenario_id)
+        if scenario_id != BASE_SCENARIO_ID:
+            raise ValueError("the semantic sweep has one reviewed canonical case")
+        checkpoints, semantic_matrix = _semantic_checkpoint_provenance()
         stages: list[dict[str, Any]] = []
         failures: list[dict[str, Any]] = []
+        assessments: list[CheckpointAssessment] = []
 
-        async def observe(
-            stage: str,
-            callback: Any,
-        ) -> Any | None:
+        async def observe(checkpoint_id: str) -> None:
+            material = semantic_matrix[checkpoint_id]
+            prompt_id = str(material["prompt_id"])
+            request = cast(BaseModel, material["request"])
+            provenance = cast(dict[str, Any], material["provenance"])
+            checkpoint_class = CheckpointClass(provenance["checkpoint_class"])
             try:
-                return await callback()
+                output = cast(
+                    BaseModel,
+                    await self._invoke(prompt_id, request),
+                )
+                semantic_interpretation, contractual_adherence = (
+                    _semantic_checkpoint_verdict(
+                        checkpoint_id=checkpoint_id,
+                        request=request,
+                        output=output,
+                        expected=_semantic_checkpoint_expected(
+                            checkpoints,
+                            checkpoint_id,
+                        ),
+                    )
+                )
+                assessment = classify_checkpoint(
+                    checkpoint_id=checkpoint_id,
+                    checkpoint_class=checkpoint_class,
+                    oracle_validity=OracleValidity.VALID,
+                    semantic_interpretation=semantic_interpretation,
+                    contractual_adherence=contractual_adherence,
+                    semantic_review_id=provenance["semantic_review_id"],
+                    semantic_review_version=provenance["review_version"],
+                    semantic_review_hash=provenance["review_hash"],
+                )
+                row = self._stage_row(prompt_id, request, output)
+                row.update(
+                    {
+                        "checkpoint_id": checkpoint_id,
+                        "checkpoint_class": checkpoint_class.value,
+                        "semantic_review_id": provenance["semantic_review_id"],
+                        "review_version": provenance["review_version"],
+                        "review_hash": provenance["review_hash"],
+                        "fixture_hash": provenance["fixture_hash"],
+                        "golden_hash": provenance["golden_hash"],
+                        "source_artifact_hashes": provenance[
+                            "source_artifact_hashes"
+                        ],
+                        "expected_outcome": provenance["expected_outcome"],
+                        "operational_outcome": (
+                            assessment.operational_outcome.value
+                        ),
+                        "semantic_interpretation": (
+                            assessment.semantic_interpretation.value
+                        ),
+                        "contractual_adherence": (
+                            assessment.contractual_adherence.value
+                        ),
+                        "causal_attribution": (
+                            assessment.causal_attribution.value
+                        ),
+                        "causal_confidence": assessment.causal_confidence.value,
+                    }
+                )
+                stages.append(row)
+                assessments.append(assessment)
             except Exception as exc:  # content-free aggregation boundary
-                failures.append(_safe_failure(exc, stage=stage))
-                return None
-
-        async def blueprint_checkpoint() -> None:
-            p04 = checkpoints.p04_request
-            blueprint = cast(
-                m.AssessmentBlueprint,
-                await self._invoke("P04_BLUEPRINT_BUILD_V1", p04),
-            )
-            if blueprint.status != m.WorkflowStatus.READY:
-                raise ContextValidationError(
-                    "P04_NOT_READY", "P04 checkpoint did not produce READY"
+                failure = _safe_failure(
+                    exc,
+                    stage=prompt_id.removesuffix("_V1"),
                 )
-            stages.append(
-                self._stage_row("P04_BLUEPRINT_BUILD_V1", p04, blueprint)
-            )
-
-        async def blueprint_review_checkpoint() -> None:
-            p05 = checkpoints.p05_request
-            review = cast(
-                m.BlueprintReview,
-                await self._invoke("P05_BLUEPRINT_REVIEW_V1", p05),
-            )
-            if not blueprint_review_is_approvable(review):
-                raise _BlueprintReviewNotApprovable(
-                    review, p05.blueprint
+                contract_failure = isinstance(
+                    exc,
+                    (
+                        ContextValidationError,
+                        GatewayContextError,
+                        GatewaySchemaViolation,
+                    ),
                 )
-            stages.append(
-                self._stage_row("P05_BLUEPRINT_REVIEW_V1", p05, review)
-            )
-
-        async def evidence_checkpoint() -> None:
-            request = checkpoints.p06_request
-            mapping = cast(
-                m.EvidenceMapPatch,
-                await self._invoke("P06_EVIDENCE_MAP_V1", request),
-            )
-            validate_evidence_map(
-                mapping,
-                blueprint=request.blueprint,
-                bundle=request.evidence_bundle,
-                planning_policy=request.planning_policy,
-            )
-            stages.append(
-                self._stage_row("P06_EVIDENCE_MAP_V1", request, mapping)
-            )
-
-        async def question_checkpoint() -> None:
-            p07 = checkpoints.p07_request
-            generation = cast(
-                m.QuestionGenerationResult,
-                await self._invoke("P07_QUESTION_BUILD_V1", p07),
-            )
-            validate_generation_result(
-                generation,
-                opportunity=p07.opportunity,
-                bundle=p07.evidence_bundle,
-            )
-            stages.append(
-                self._stage_row("P07_QUESTION_BUILD_V1", p07, generation)
-            )
-
-        async def question_review_checkpoint() -> None:
-            p08 = checkpoints.p08_request
-            review = cast(
-                m.QuestionReviewResult,
-                await self._invoke("P08_QUESTION_REVIEW_V1", p08),
-            )
-            validate_review_result(
-                review,
-                generation_result=p08.generation_result,
-                validation_policy=p08.validation_policy,
-            )
-            if (
-                review.review is None
-                or review.review.decision != m.ReviewDecision.ACCEPT
-            ):
-                raise _QuestionReviewNotAccepted(
-                    review, p08.validation_policy
+                technical_failure = not contract_failure
+                semantic_interpretation = getattr(
+                    exc,
+                    "semantic_interpretation",
+                    (
+                        SemanticInterpretation.NOT_EVALUATED
+                        if technical_failure
+                        else SemanticInterpretation.NOT_EVALUATED
+                    ),
                 )
-            stages.append(
-                self._stage_row("P08_QUESTION_REVIEW_V1", p08, review)
-            )
+                contractual_adherence = getattr(
+                    exc,
+                    "contractual_adherence",
+                    (
+                        ContractualAdherence.NOT_EVALUATED
+                        if technical_failure
+                        else ContractualAdherence.FAIL
+                    ),
+                )
+                if (
+                    checkpoint_id == "P07_INSUFFICIENT_NEGATIVE"
+                    and {
+                        "DIAGNOSTIC_INCOMPLETE",
+                        "ABSTENTION_DIAGNOSTIC_MISSING",
+                    }.intersection(failure["codes"])
+                ):
+                    semantic_interpretation = SemanticInterpretation.DEFENDIBLE
+                    contractual_adherence = ContractualAdherence.FAIL
+                assessment = classify_checkpoint(
+                    checkpoint_id=checkpoint_id,
+                    checkpoint_class=checkpoint_class,
+                    oracle_validity=OracleValidity.VALID,
+                    semantic_interpretation=semantic_interpretation,
+                    contractual_adherence=contractual_adherence,
+                    technical_failure=technical_failure,
+                    semantic_review_id=provenance["semantic_review_id"],
+                    semantic_review_version=provenance["review_version"],
+                    semantic_review_hash=provenance["review_hash"],
+                    reason_codes=tuple(failure["codes"]),
+                )
+                failure.update(
+                    {
+                        "checkpoint_id": checkpoint_id,
+                        "checkpoint_class": checkpoint_class.value,
+                        "semantic_review_id": provenance[
+                            "semantic_review_id"
+                        ],
+                        "review_version": provenance["review_version"],
+                        "review_hash": provenance["review_hash"],
+                        "fixture_hash": provenance["fixture_hash"],
+                        "golden_hash": provenance["golden_hash"],
+                        "source_artifact_hashes": provenance[
+                            "source_artifact_hashes"
+                        ],
+                        "expected_outcome": provenance["expected_outcome"],
+                        "operational_outcome": (
+                            assessment.operational_outcome.value
+                        ),
+                        "semantic_interpretation": (
+                            assessment.semantic_interpretation.value
+                        ),
+                        "contractual_adherence": (
+                            assessment.contractual_adherence.value
+                        ),
+                        "causal_attribution": (
+                            assessment.causal_attribution.value
+                        ),
+                        "causal_confidence": assessment.causal_confidence.value,
+                    }
+                )
+                failures.append(failure)
+                assessments.append(assessment)
 
-        async def guide_checkpoint() -> None:
-            request = checkpoints.p09_request
-            guide = cast(
-                m.EvaluationGuide,
-                await self._invoke("P09_GUIDE_BUILD_V1", request),
-            )
-            validate_evaluation_guide(
-                guide,
-                assessment=request.assessment,
-                bundle=request.evidence_bundle,
-            )
-            stages.append(
-                self._stage_row("P09_GUIDE_BUILD_V1", request, guide)
-            )
-
-        await observe("P04", blueprint_checkpoint)
-        await observe("P05", blueprint_review_checkpoint)
-        await observe("P06", evidence_checkpoint)
-        await observe("P07", question_checkpoint)
-        await observe("P08", question_review_checkpoint)
-        await observe("P09", guide_checkpoint)
+        for checkpoint_id in semantic_matrix:
+            await observe(checkpoint_id)
         return RehearsalObservation(
             run_id=run_id,
-            run_kind="INDEPENDENT_SWEEP",
+            run_kind="SEMANTIC_QUALIFICATION_SWEEP",
             scenario_id=scenario_id,
             status="PASS" if not failures else "FAIL",
             stages=tuple(stages),
@@ -1313,6 +1804,9 @@ class ProductRehearsal:
                 {"aggregated_failures": failures} if failures else None
             ),
             output_hash=(canonical_hash(stages) if not failures else None),
+            checkpoint_assessments=tuple(
+                item.model_dump() for item in assessments
+            ),
         )
 
     async def run_chain(
@@ -1588,23 +2082,25 @@ class ProductRehearsal:
                 self._stage_row("P09_GUIDE_BUILD_V1", p09, guide)
             )
         except Exception as exc:
+            structural_stages = _mark_structural_orchestration_rows(stages)
             return RehearsalObservation(
                 run_id=run_id,
                 run_kind="INTEGRATED_CHAIN",
                 scenario_id=scenario_id,
                 status="FAIL",
-                stages=tuple(stages),
+                stages=structural_stages,
                 failure=_safe_failure(exc, stage=current_stage),
                 output_hash=None,
             )
+        structural_stages = _mark_structural_orchestration_rows(stages)
         return RehearsalObservation(
             run_id=run_id,
             run_kind="INTEGRATED_CHAIN",
             scenario_id=scenario_id,
             status="PASS",
-            stages=tuple(stages),
+            stages=structural_stages,
             failure=None,
-            output_hash=canonical_hash(stages),
+            output_hash=canonical_hash(structural_stages),
         )
 
     def controls(self) -> dict[str, Any]:
@@ -1755,9 +2251,6 @@ async def _execute_convergence_matrix(
                 run_id=f"{run_id_prefix}chain-base-1"
             ),
             await rehearsal.run_chain(
-                run_id=f"{run_id_prefix}chain-base-2"
-            ),
-            await rehearsal.run_chain(
                 run_id=f"{run_id_prefix}chain-choice-variant",
                 scenario_id=VARIANT_SCENARIO_ID,
             ),
@@ -1767,11 +2260,10 @@ async def _execute_convergence_matrix(
         observations,
         deterministic_checks,
         [
-            "independent-sweep:P04-P09",
+            "semantic-sweep:P04-P09:versioned-positive-and-negative",
             "offline-golden-positive:P05",
             "offline-golden-negative:P05",
             "integrated-chain:base:1:P04-P09",
-            "integrated-chain:base:2:P04-P09",
             "integrated-chain:choice-variant:P04-P09",
         ],
     )
@@ -1789,8 +2281,20 @@ def _observation_rows(
             "stages": list(item.stages),
             "failure": item.failure,
             "output_hash": item.output_hash,
+            "checkpoint_assessments": list(item.checkpoint_assessments),
         }
         for item in observations
+    ]
+
+
+def _qualification_checkpoint_assessments(
+    observations: list[RehearsalObservation],
+) -> list[CheckpointAssessment]:
+    return [
+        CheckpointAssessment.model_validate(raw)
+        for observation in observations
+        if observation.run_kind == "SEMANTIC_QUALIFICATION_SWEEP"
+        for raw in observation.checkpoint_assessments
     ]
 
 
@@ -1801,19 +2305,23 @@ async def run_offline_convergence(
     max_call_cost_usd: float = 0.10,
     max_provider_requests: int = 24,
 ) -> dict[str, Any]:
-    """Run sweep, two unchanged chains and one distinct variant with mocks."""
+    """Run the semantic sweep and two structural integrated chains offline."""
 
     from .model_gateway import GatewayConfig, GatewayMode
 
     ledger_records: list[m.ModelCallLedger] | None = None
     preflight_adapter: _ConservativeNoNetworkAdapter | None = None
     if route_profile_id == OPENAI_ROUTE_PROFILE_ID:
+        from .semantic_harness import build_reviewed_semantic_adapter
+
+        reviewed_adapter = build_reviewed_semantic_adapter()
         gateway = ModelGateway(
             GatewayConfig(
                 mode=GatewayMode.MOCK,
                 max_retries=0,
                 job_id="job_stage2_offline_convergence",
-            )
+            ),
+            mock_adapter=reviewed_adapter,
         )
         rehearsal = ProductRehearsal(gateway, max_call_cost_usd=1.0)
         run_id_prefix = ""
@@ -1824,6 +2332,8 @@ async def run_offline_convergence(
     }:
         if max_total_cost_usd <= 0 or max_call_cost_usd <= 0:
             raise ValueError("positive qualification preflight cost caps are required")
+        from .semantic_harness import build_reviewed_semantic_adapter
+
         routes = build_openai_routes(
             max_call_cost_usd=max_call_cost_usd,
             route_profile_id=route_profile_id,
@@ -1833,6 +2343,7 @@ async def run_offline_convergence(
             routes,
             max_requests=max_provider_requests,
         )
+        preflight_adapter.inner = build_reviewed_semantic_adapter()
         gateway = ModelGateway(
             GatewayConfig(
                 mode=GatewayMode.REAL,
@@ -1875,6 +2386,9 @@ async def run_offline_convergence(
             run_id_prefix=run_id_prefix,
         )
     )
+    checkpoint_assessments = _qualification_checkpoint_assessments(
+        observations
+    )
     controls = rehearsal.controls()
     if ledger_records is not None and preflight_adapter is not None:
         controls.update(_provider_usage_controls(ledger_records))
@@ -1883,7 +2397,7 @@ async def run_offline_convergence(
                 "route_profile": route_profile_id,
                 "network_calls": 0,
                 "simulated_provider_attempts": preflight_adapter.calls,
-                "expected_provider_requests": 24,
+                "expected_provider_requests": QUALIFICATION_EXPECTED_PROVIDER_REQUESTS,
                 "max_provider_requests": max_provider_requests,
                 "max_total_cost_usd": max_total_cost_usd,
                 "max_call_cost_usd": max_call_cost_usd,
@@ -1932,11 +2446,15 @@ async def run_offline_convergence(
         and controls["p11_calls"] == 0
         and controls["fallback_calls"] == 0
         and qualification_efforts_are_exact
+        and aggregate_causal_classification(checkpoint_assessments)
+        == "QUALIFICATION_PASSED"
         and (
             route_profile_id == OPENAI_ROUTE_PROFILE_ID
             or (
-                controls["provider_attempts"] == 24
-                and controls["simulated_provider_attempts"] == 24
+                controls["provider_attempts"]
+                == QUALIFICATION_EXPECTED_PROVIDER_REQUESTS
+                and controls["simulated_provider_attempts"]
+                == QUALIFICATION_EXPECTED_PROVIDER_REQUESTS
                 and controls["network_calls"] == 0
                 and controls["models"] == [expected_model]
                 and controls["budget_charged_usd"] <= max_total_cost_usd
@@ -1974,6 +2492,12 @@ async def run_offline_convergence(
         "execution_sequence": execution_sequence,
         "observations": _observation_rows(observations),
         "deterministic_checks": deterministic_checks,
+        "checkpoint_assessments": [
+            item.model_dump() for item in checkpoint_assessments
+        ],
+        "causal_classification": aggregate_causal_classification(
+            checkpoint_assessments
+        ),
         "controls": controls,
     }
 
@@ -2052,13 +2576,16 @@ async def run_real_convergence(
             run_id_prefix="real-",
         )
     )
+    checkpoint_assessments = _qualification_checkpoint_assessments(
+        observations
+    )
     controls = rehearsal.controls()
     controls.update(_provider_usage_controls(ledger_records))
     controls.update(
         {
             "route_profile": route_profile_id,
             "network_calls": capped_adapter.calls,
-            "expected_provider_requests": 24,
+            "expected_provider_requests": QUALIFICATION_EXPECTED_PROVIDER_REQUESTS,
             "max_provider_requests": max_provider_requests,
             "max_total_cost_usd": max_total_cost_usd,
             "max_call_cost_usd": max_call_cost_usd,
@@ -2114,11 +2641,15 @@ async def run_real_convergence(
         and controls["p11_calls"] == 0
         and controls["fallback_calls"] == 0
         and controls["semantic_retries"] == 0
-        and controls["provider_attempts"] == 24
-        and controls["network_calls"] == 24
+        and controls["provider_attempts"]
+        == QUALIFICATION_EXPECTED_PROVIDER_REQUESTS
+        and controls["network_calls"]
+        == QUALIFICATION_EXPECTED_PROVIDER_REQUESTS
         and controls["unpriced_attempts"] == 0
         and controls["models"] == [expected_model]
         and qualification_efforts_are_exact
+        and aggregate_causal_classification(checkpoint_assessments)
+        == "QUALIFICATION_PASSED"
         and unchanged_boundary
         and controls["actual_cost_usd"] <= max_total_cost_usd
         and controls["budget_charged_usd"] <= max_total_cost_usd
@@ -2155,5 +2686,11 @@ async def run_real_convergence(
         "execution_sequence": execution_sequence,
         "observations": _observation_rows(observations),
         "deterministic_checks": deterministic_checks,
+        "checkpoint_assessments": [
+            item.model_dump() for item in checkpoint_assessments
+        ],
+        "causal_classification": aggregate_causal_classification(
+            checkpoint_assessments
+        ),
         "controls": controls,
     }

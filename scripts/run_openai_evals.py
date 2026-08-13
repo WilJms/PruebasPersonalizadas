@@ -82,6 +82,10 @@ from comprehension_verification.rehearsal import (
 from comprehension_verification.provider_authorization import (
     validate_pinned_secret_resource,
 )
+from comprehension_verification.qualification_semantics import (
+    CheckpointAssessment,
+    aggregate_causal_classification,
+)
 from comprehension_verification.web.provider_secrets import (
     ProviderCredentialUnavailable,
     resolve_openai_api_key,
@@ -5086,13 +5090,27 @@ def _convergence_authorization_boundary(args: argparse.Namespace) -> dict[str, A
         ROOT / "src/comprehension_verification/model_gateway/openai_pricing.py",
         ROOT / "src/comprehension_verification/evaluation_gate.py",
         ROOT / "src/comprehension_verification/provider_authorization.py",
+        ROOT / "src/comprehension_verification/qualification_semantics.py",
+        ROOT / "src/comprehension_verification/semantic_harness.py",
         ROOT / "src/comprehension_verification/web/provider_secrets.py",
         ROOT / "src/comprehension_verification/planning.py",
         ROOT / "src/comprehension_verification/validation.py",
         ROOT / "src/comprehension_verification/web/workflows.py",
+        ROOT / "tests/fixtures/openai_evals/v2/p05_golden_checkpoints.json",
+        ROOT / "tests/fixtures/openai_evals/v2/product_rehearsal.json",
+        ROOT / "tests/fixtures/openai_evals/v3/frozen_product_boundary.json",
+        ROOT / "tests/fixtures/openai_evals/v3/semantic_qualification_pack.json",
+        ROOT
+        / "tests/fixtures/openai_evals/v3/document_shaped_cache_case/official_assignment.docx",
+        ROOT
+        / "tests/fixtures/openai_evals/v3/document_shaped_cache_case/official_rubric.docx",
+        ROOT
+        / "tests/fixtures/openai_evals/v3/document_shaped_cache_case/submission_sufficient.docx",
+        ROOT
+        / "tests/fixtures/openai_evals/v3/document_shaped_cache_case/submission_insufficient.docx",
     )
     boundary = {
-        "boundary_format": "openai-stage2-convergence-authorization/1.3.0",
+        "boundary_format": "openai-stage2-convergence-authorization/1.4.0",
         "git_head": _git_head(),
         "harness_hash": _content_hash(Path(__file__).resolve()),
         "rehearsal_module_hash": _content_hash(
@@ -5116,11 +5134,10 @@ def _convergence_authorization_boundary(args: argparse.Namespace) -> dict[str, A
             )
         },
         "execution_plan": [
-            "independent-sweep:P04-P09",
+            "semantic-sweep:P04-P09:versioned-positive-and-negative",
             "offline-golden-positive:P05:0-requests",
             "offline-golden-negative:P05:0-requests",
             "integrated-chain:base:1",
-            "integrated-chain:base:2:unchanged-boundary",
             "integrated-chain:choice-justification-variant",
         ],
         "max_provider_requests": args.max_provider_requests,
@@ -5499,19 +5516,64 @@ def _terra_medium_qualification_outcome(
         "VALUEERROR",
     }
     failure_codes = _failure_codes(result)
-    model_owned_codes = failure_codes - technical_codes
-    if model_owned_codes:
-        causal_classification = "MODEL_OWNED_QUALIFICATION_FAILURE"
-        if failure_codes & technical_codes:
-            causal_classification = (
-                "MODEL_OWNED_QUALIFICATION_FAILURE_WITH_TECHNICAL_FAILURES"
+    technical_failures = failure_codes & technical_codes
+    nontechnical_failures = failure_codes - technical_codes
+    raw_assessments = result.get("checkpoint_assessments")
+    if isinstance(raw_assessments, list) and raw_assessments:
+        try:
+            assessments = [
+                CheckpointAssessment.model_validate(item)
+                for item in raw_assessments
+                if isinstance(item, dict)
+            ]
+            causal_classification = aggregate_causal_classification(
+                assessments
             )
+            assessed_failure_codes = {
+                code
+                for assessment in assessments
+                for code in assessment.reason_codes
+            }
+            unresolved_failures = (
+                nontechnical_failures - assessed_failure_codes
+            )
+        except (KeyError, TypeError, ValueError):
+            causal_classification = "CAUSE_INDETERMINATE"
+            unresolved_failures = nontechnical_failures
+        if unresolved_failures:
+            causal_classification = (
+                "CAUSE_INDETERMINATE"
+                if causal_classification == "QUALIFICATION_PASSED"
+                else causal_classification + "_WITH_INDETERMINATE_FAILURES"
+            )
+        if technical_failures:
+            if causal_classification == "QUALIFICATION_PASSED":
+                causal_classification = "TECHNICAL_QUALIFICATION_FAILURE"
+            elif (
+                causal_classification != "TECHNICAL_QUALIFICATION_FAILURE"
+                and not causal_classification.endswith(
+                    "_WITH_TECHNICAL_FAILURES"
+                )
+            ):
+                causal_classification += "_WITH_TECHNICAL_FAILURES"
+    elif nontechnical_failures:
+        # Historical reports did not bind failures to reviewed oracle
+        # provenance. Preserve their operational FAIL, but do not infer blame.
+        causal_classification = "ORACLE_VALIDITY_UNESTABLISHED"
+        if technical_failures:
+            causal_classification += "_WITH_TECHNICAL_FAILURES"
+    elif technical_failures:
+        causal_classification = "TECHNICAL_QUALIFICATION_FAILURE"
+    else:
+        causal_classification = "CAUSE_INDETERMINATE"
+
+    if causal_classification != "TECHNICAL_QUALIFICATION_FAILURE":
         return {
             "qualification_outcome": "TERRA_MEDIUM_QUALIFICATION_FAILED",
             "convergence_outcome": "CONVERGENCE_INCOMPLETE",
             "causal_classification": causal_classification,
             "recommended_next_authority": (
-                "INDEPENDENT_REVIEW_BEFORE_ANY_TERRA_HIGH_AUTHORITY"
+                "INDEPENDENT_HARNESS_REVIEW_BEFORE_ANY_TERRA_HIGH_AUTHORITY"
             ),
         }
     return {

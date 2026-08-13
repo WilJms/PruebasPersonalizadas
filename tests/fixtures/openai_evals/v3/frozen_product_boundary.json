@@ -1,0 +1,53 @@
+{
+  "schema_version": "stage2-harness-frozen-product-boundary/1.0.0",
+  "baseline_git_sha": "9dbce36d21ba6b28b32b051862cf8b305ded61e8",
+  "classification": "SYNTHETIC_ONLY_NO_STUDENT_DATA",
+  "source_file_sha256": {
+    "specification/models_v1.1(1).py": "3f1a42102b10a558f42885a14034d5d41944f7c23f597d257baa6dd21d2cee0f",
+    "src/comprehension_verification/model_gateway/prompt_text.py": "afa1feb5b3db898d62641b739803f014ba7c67474f3b9626522b272904abf7e1",
+    "src/comprehension_verification/model_gateway/registry.py": "0260a33fe066fbb5c268eb8b4f6cb0894886ee5a9147344910c26fc29aa27680",
+    "src/comprehension_verification/model_gateway/openai_adapter.py": "245bdb5c4f60fab97bfa746b38ed6ea0043c65eb08d45960c54031d8bf6184f1",
+    "src/comprehension_verification/model_gateway/openai_routes.py": "3d6d680abbebdafacacab726b90424b327b4c5e0be66dfba772ae07ef27831dc",
+    "src/comprehension_verification/validation.py": "a5ad1f04205aa701fff5b0e9d65d78394dc01cb37c40242fe861be86f751ed50",
+    "src/comprehension_verification/planning.py": "4872c2abf163e27135b0d266c4675b197534aa0f7c36c0f7960ebe5a575e8adb",
+    "src/comprehension_verification/web/workflows.py": "1ceb38188e615c844de9f8a8d76b5389c1aa54a8cb53062522015e6c435ebe8a"
+  },
+  "prompts": {
+    "P04_BLUEPRINT_BUILD_V1": {
+      "version": "1.1.11",
+      "hash": "sha256:f8c12331bacc676920095f353b8a3d7180f90ba2015c23aa3a378cbb505064e0"
+    },
+    "P05_BLUEPRINT_REVIEW_V1": {
+      "version": "1.1.8",
+      "hash": "sha256:4b38cf144dd44ce235399efdf6938f611bfac820aa3b31497859f5fd5e426bb4"
+    },
+    "P06_EVIDENCE_MAP_V1": {
+      "version": "1.1.5",
+      "hash": "sha256:01bf8fabac2cf3c7aa235b4ecb0e16edf8844a57efe7be2aaac7ffa2948d2e26"
+    },
+    "P07_QUESTION_BUILD_V1": {
+      "version": "1.1.4",
+      "hash": "sha256:db0f6d91ad0357bbd7984e2b7d8564944e969fa8f39c0b95ca88085157d24b6c"
+    },
+    "P08_QUESTION_REVIEW_V1": {
+      "version": "1.1.5",
+      "hash": "sha256:f63230dde5dadbbba78b24ae229fefc61a6b7d072a9c3d7c1ea9044be2463949"
+    },
+    "P09_GUIDE_BUILD_V1": {
+      "version": "1.1.6",
+      "hash": "sha256:a7607fb64499efdbb377469d1078ae758cfd47d09828f35af1ac603b46b5f2d3"
+    }
+  },
+  "question_validation_thresholds": {
+    "minimum_groundedness": 0.9,
+    "minimum_anchor_sufficiency": 0.8,
+    "minimum_answerability": 0.85,
+    "minimum_criterion_relevance": 0.8,
+    "escalate_below_confidence": 0.65
+  },
+  "component_versions": {
+    "parser": "stage2-parser/2.0.0",
+    "planner": "stage2-planner/2.0.0",
+    "assembler": "stage1-assembler/2.0.0"
+  }
+}

@@ -1,6 +1,6 @@
 PYTHON ?= .venv/bin/python
 
-.PHONY: install contracts openapi fixtures test test-cov stage0-demo stage0-fail stage0-injection real-smoke openai-convergence-dry-run openai-convergence-real openai-xhigh-qualification-dry-run openai-xhigh-qualification-real openai-max-qualification-dry-run openai-max-qualification-real openai-terra-medium-qualification-dry-run openai-terra-medium-qualification-real openai-canary-dry-run openai-p01-injection-recanary-dry-run openai-p02-v113-recanary-dry-run openai-p04-v116-recanary-dry-run openai-p05-v114-recanary-dry-run openai-blueprint-v119-v115-recanary-dry-run openai-blueprint-v117-v115-timeout-recovery-dry-run openai-p06-v112-decision-lineage-recanary-dry-run openai-p09-v115-recanary-dry-run openai-p11-v114-direct-dry-run openai-qualification-dry-run openai-qualification-v113-continuation-dry-run openai-qualification-v114-continuation-dry-run frontend-install frontend-typecheck frontend-test frontend-build postgres-prepare postgres-e2e postgres-sensitive postgres-stage2-recovery secrets-check
+.PHONY: install contracts openapi fixtures test test-cov stage0-demo stage0-fail stage0-injection real-smoke harness-semantic-documents harness-semantic-rehearsal openai-convergence-dry-run openai-convergence-real openai-xhigh-qualification-dry-run openai-xhigh-qualification-real openai-max-qualification-dry-run openai-max-qualification-real openai-terra-medium-qualification-dry-run openai-terra-medium-qualification-real openai-canary-dry-run openai-p01-injection-recanary-dry-run openai-p02-v113-recanary-dry-run openai-p04-v116-recanary-dry-run openai-p05-v114-recanary-dry-run openai-blueprint-v119-v115-recanary-dry-run openai-blueprint-v117-v115-timeout-recovery-dry-run openai-p06-v112-decision-lineage-recanary-dry-run openai-p09-v115-recanary-dry-run openai-p11-v114-direct-dry-run openai-qualification-dry-run openai-qualification-v113-continuation-dry-run openai-qualification-v114-continuation-dry-run frontend-install frontend-typecheck frontend-test frontend-build postgres-prepare postgres-e2e postgres-sensitive postgres-stage2-recovery secrets-check
 
 install:
 	$(PYTHON) -m pip install -e '.[dev]'
@@ -31,6 +31,14 @@ stage0-injection:
 
 real-smoke:
 	$(PYTHON) -m comprehension_verification.cli real-provider-smoke --budget-usd "$${CVA_REAL_SMOKE_BUDGET_USD:-0}"
+
+harness-semantic-documents:
+	$(PYTHON) scripts/build_semantic_harness_documents.py
+
+harness-semantic-rehearsal:
+	@env -u CVA_OPENAI_API_KEY -u OPENAI_API_KEY \
+		CVA_MODEL_MODE=mock CVA_P10_ENABLED=false $(PYTHON) \
+		scripts/run_semantic_harness.py
 
 openai-convergence-dry-run:
 	@env -u CVA_OPENAI_API_KEY $(PYTHON) scripts/run_openai_evals.py \

@@ -1,8 +1,10 @@
 {
-  "schema_version": "stage2-product-rehearsal-fixture/1.4.0",
+  "schema_version": "stage2-product-rehearsal-fixture/1.5.0",
   "classification": "SYNTHETIC_ONLY_NO_STUDENT_DATA",
   "generator": "comprehension_verification.rehearsal.build_rehearsal_checkpoints",
   "p05_golden_fixture": "tests/fixtures/openai_evals/v2/p05_golden_checkpoints.json",
+  "instrument_semantic_status": "LEGACY_INVALIDATED_NOT_AUTHORIZED_FOR_SEMANTIC_QUALIFICATION",
+  "replacement_fixture": "tests/fixtures/openai_evals/v3/semantic_qualification_pack.json",
   "checkpoints": {
     "A": "post-P03 -> P04/P05",
     "B": "approved blueprint + EvidenceBundle -> P06",
@@ -35,8 +37,34 @@
     "semantic_retries": false
   },
   "execution_discovery": {
-    "independent_sweep_stages": ["P04", "P05", "P06", "P07", "P08", "P09"],
+    "independent_sweep_stages": [
+      {
+        "stage": "P04",
+        "checkpoint_class": "STRUCTURAL_ORCHESTRATION_CHECKPOINT_ONLY"
+      },
+      {
+        "stage": "P05",
+        "checkpoint_class": "STRUCTURAL_ORCHESTRATION_CHECKPOINT_ONLY"
+      },
+      {
+        "stage": "P06",
+        "checkpoint_class": "STRUCTURAL_ORCHESTRATION_CHECKPOINT_ONLY"
+      },
+      {
+        "stage": "P07",
+        "checkpoint_class": "STRUCTURAL_ORCHESTRATION_CHECKPOINT_ONLY"
+      },
+      {
+        "stage": "P08",
+        "checkpoint_class": "STRUCTURAL_ORCHESTRATION_CHECKPOINT_ONLY"
+      },
+      {
+        "stage": "P09",
+        "checkpoint_class": "STRUCTURAL_ORCHESTRATION_CHECKPOINT_ONLY"
+      }
+    ],
     "p06_receives_planning_policy": true,
-    "failures_are_content_free": true
+    "failures_are_content_free": true,
+    "semantic_quality_conclusions_allowed": false
   }
 }

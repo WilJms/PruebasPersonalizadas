@@ -36,6 +36,7 @@ from comprehension_verification.model_gateway import (
 from comprehension_verification.rehearsal import (
     BASE_SCENARIO_ID,
     P05_GOLDEN_FIXTURE_PATH,
+    QUALIFICATION_EXPECTED_PROVIDER_REQUESTS,
     VARIANT_SCENARIO_ID,
     build_p05_golden_negative_request,
     build_rehearsal_checkpoints,
@@ -45,6 +46,9 @@ from comprehension_verification.rehearsal import (
     rehearsal_boundary_material,
     run_offline_convergence,
     run_real_convergence,
+)
+from comprehension_verification.semantic_harness import (
+    build_reviewed_semantic_adapter,
 )
 from scripts import run_openai_evals as eval_harness
 
@@ -121,11 +125,17 @@ def test_historical_billable_gates_are_permanently_closed(mode: str) -> None:
 def test_product_rehearsal_fixture_is_synthetic_and_versioned() -> None:
     raw = json.loads(FIXTURE.read_text(encoding="utf-8"))
     assert raw["schema_version"] == (
-        "stage2-product-rehearsal-fixture/1.4.0"
+        "stage2-product-rehearsal-fixture/1.5.0"
     )
     assert raw["classification"] == "SYNTHETIC_ONLY_NO_STUDENT_DATA"
     assert raw["p05_golden_fixture"] == (
         "tests/fixtures/openai_evals/v2/p05_golden_checkpoints.json"
+    )
+    assert raw["instrument_semantic_status"] == (
+        "LEGACY_INVALIDATED_NOT_AUTHORIZED_FOR_SEMANTIC_QUALIFICATION"
+    )
+    assert raw["replacement_fixture"] == (
+        "tests/fixtures/openai_evals/v3/semantic_qualification_pack.json"
     )
     assert set(raw["checkpoints"]) == {"A", "B", "C", "D"}
     assert [item["scenario_id"] for item in raw["scenarios"]] == [
@@ -140,26 +150,39 @@ def test_product_rehearsal_fixture_is_synthetic_and_versioned() -> None:
     }
     assert raw["execution_discovery"] == {
         "independent_sweep_stages": [
-            "P04",
-            "P05",
-            "P06",
-            "P07",
-            "P08",
-            "P09",
+            {
+                "stage": stage,
+                "checkpoint_class": (
+                    "STRUCTURAL_ORCHESTRATION_CHECKPOINT_ONLY"
+                ),
+            }
+            for stage in ("P04", "P05", "P06", "P07", "P08", "P09")
         ],
         "p06_receives_planning_policy": True,
         "failures_are_content_free": True,
+        "semantic_quality_conclusions_allowed": False,
     }
 
 
 def test_p05_golden_positive_is_semantically_qualified_and_negative_is_known() -> None:
     raw = json.loads(P05_GOLDEN_FIXTURE_PATH.read_text(encoding="utf-8"))
-    assert raw["schema_version"] == "stage2-p05-golden-checkpoints/1.1.0"
+    assert raw["schema_version"] == "stage2-p05-golden-checkpoints/1.2.0"
     assert raw["classification"] == "SYNTHETIC_ONLY_NO_STUDENT_DATA"
     semantic_review = raw["golden_positive"]["semantic_review"]
-    assert semantic_review["status"] == (
-        "SEMANTICALLY_REVIEWED_SYNTHETIC_FIXTURE"
-    )
+    assert semantic_review["status"] == "SEMANTICALLY_QUALIFIED_POSITIVE"
+    assert semantic_review["independent_of_provider_response"] is True
+    assert set(semantic_review["category_reviews"]) == {
+        "CONSTRUCT",
+        "SOURCE_FIDELITY",
+        "COVERAGE",
+        "COMPARABILITY",
+        "COGNITIVE_DEMAND",
+        "TIME",
+        "FORMAT_FEASIBILITY",
+        "OPPORTUNITY_CATALOG",
+        "PLAN_FEASIBILITY",
+        "ACCESSIBILITY",
+    }
     assert len(semantic_review["rationale"]) >= 5
 
     positive = build_rehearsal_checkpoints(BASE_SCENARIO_ID).p05_request
@@ -174,6 +197,9 @@ def test_p05_golden_positive_is_semantically_qualified_and_negative_is_known() -
     assert positive.blueprint.dimensions[0].name == (
         "Explicación causal de la invalidación de caché"
     )
+    assert positive.rubric_spec is not None
+    assert positive.rubric_spec.criteria[0].grading_weight == 1.0
+    assert positive.blueprint.dimensions[0].grading_weight == 1.0
     positive_result = evaluate_p05_golden_positive()
     assert positive_result["status"] == "PASS"
     assert positive_result["expected_transition"] == "APPROVABLE"
@@ -318,19 +344,29 @@ def test_p08_decision_diagnostics_are_content_free_and_reproducible() -> None:
     ]
 
 
-def test_offline_convergence_executes_sweep_two_chains_and_variant() -> None:
+def test_offline_convergence_executes_semantic_sweep_and_two_chains() -> None:
     report = asyncio.run(run_offline_convergence())
     assert report["status"] == "PASS"
     assert [item["run_id"] for item in report["observations"]] == [
         "sweep-base",
         "chain-base-1",
-        "chain-base-2",
         "chain-choice-variant",
     ]
     assert all(item["status"] == "PASS" for item in report["observations"])
+    semantic_sweep = report["observations"][0]
+    assert semantic_sweep["run_kind"] == "SEMANTIC_QUALIFICATION_SWEEP"
+    assert len(semantic_sweep["checkpoint_assessments"]) == 9
+    assert report["causal_classification"] == "QUALIFICATION_PASSED"
+    for stage in semantic_sweep["stages"]:
+        assert stage["checkpoint_class"].startswith("SEMANTICALLY_QUALIFIED_")
+        assert stage["review_hash"].startswith("sha256:")
+        assert stage["fixture_hash"].startswith("sha256:")
+        assert stage["golden_hash"].startswith("sha256:")
+        assert stage["operational_outcome"] == "PASS"
+        assert stage["semantic_interpretation"] == "CORRECT"
+        assert stage["contractual_adherence"] == "PASS"
     assert [len(item["stages"]) for item in report["observations"]] == [
-        6,
-        8,
+        9,
         8,
         8,
     ]
@@ -339,7 +375,7 @@ def test_offline_convergence_executes_sweep_two_chains_and_variant() -> None:
         "p11_calls": 0,
         "fallback_calls": 0,
         "semantic_retries": 0,
-        "provider_attempts": 24,
+        "provider_attempts": QUALIFICATION_EXPECTED_PROVIDER_REQUESTS,
         "actual_cost_usd": 0.0,
         "budget_charged_usd": 0.0,
         "unpriced_attempts": 0,
@@ -386,22 +422,19 @@ def test_xhigh_offline_qualification_is_exact_and_non_billable() -> None:
     assert report["status"] == "PASS"
     assert report["route_profile"] == "LUNA_XHIGH_V1"
     assert report["execution_sequence"] == [
-        "independent-sweep:P04-P09",
+        "semantic-sweep:P04-P09:versioned-positive-and-negative",
         "offline-golden-positive:P05",
         "offline-golden-negative:P05",
         "integrated-chain:base:1:P04-P09",
-        "integrated-chain:base:2:P04-P09",
         "integrated-chain:choice-variant:P04-P09",
     ]
     assert [item["status"] for item in report["observations"]] == [
         "PASS",
         "PASS",
         "PASS",
-        "PASS",
     ]
     assert [len(item["stages"]) for item in report["observations"]] == [
-        6,
-        8,
+        9,
         8,
         8,
     ]
@@ -410,8 +443,10 @@ def test_xhigh_offline_qualification_is_exact_and_non_billable() -> None:
         for check in report["deterministic_checks"]
     )
     assert controls["network_calls"] == 0
-    assert controls["provider_attempts"] == 24
-    assert controls["simulated_provider_attempts"] == 24
+    assert controls["provider_attempts"] == QUALIFICATION_EXPECTED_PROVIDER_REQUESTS
+    assert controls["simulated_provider_attempts"] == (
+        QUALIFICATION_EXPECTED_PROVIDER_REQUESTS
+    )
     assert controls["models"] == ["gpt-5.6-luna"]
     assert controls["reasoning_efforts_by_prompt"] == {
         prompt_id: ["XHIGH"]
@@ -429,9 +464,9 @@ def test_xhigh_offline_qualification_is_exact_and_non_billable() -> None:
     assert controls["fixture_changes"] == 0
     assert controls["prompt_changes"] == 0
     assert controls["validator_changes"] == 0
-    assert controls["budget_charged_usd"] == pytest.approx(0.500531)
+    assert controls["budget_charged_usd"] == pytest.approx(0.443419)
     assert controls["max_observed_budget_charge_usd"] == pytest.approx(
-        0.02583075
+        0.02693475
     )
     assert controls["budget_charged_usd"] <= controls["max_total_cost_usd"]
     assert controls["max_observed_budget_charge_usd"] <= (
@@ -469,7 +504,7 @@ def test_xhigh_cli_dry_run_has_zero_network_and_no_secret_surface() -> None:
     assert "question_text" not in serialized
 
 
-def test_xhigh_boundary_matches_high_semantics_and_changes_only_route_effort() -> None:
+def test_xhigh_boundary_preserves_product_semantics_and_records_harness_delta() -> None:
     baseline_report = json.loads(
         eval_harness.XHIGH_QUALIFICATION_BASELINE_REPORT.read_text(
             encoding="utf-8"
@@ -483,8 +518,25 @@ def test_xhigh_boundary_matches_high_semantics_and_changes_only_route_effort() -
     assert xhigh["prompt_pack_version"] == high["prompt_pack_version"]
     assert xhigh["planner_version"] == high["planner_version"]
     assert xhigh["assembler_version"] == high["assembler_version"]
-    assert xhigh["checkpoints"] == high["checkpoints"]
-    assert xhigh["p05_golden"] == high["p05_golden"]
+    assert high["p05_golden"]["fixture_version"] == (
+        "stage2-p05-golden-checkpoints/1.1.0"
+    )
+    assert xhigh["p05_golden"]["fixture_version"] == (
+        "stage2-p05-golden-checkpoints/1.2.0"
+    )
+    assert xhigh["p05_golden"]["negative_expected_recommendation"] == (
+        high["p05_golden"]["negative_expected_recommendation"]
+    )
+    assert xhigh["p05_golden"]["negative_expected_critical_categories"] == (
+        high["p05_golden"]["negative_expected_critical_categories"]
+    )
+    for scenario_id in high["checkpoints"]:
+        assert {
+            key
+            for key in high["checkpoints"][scenario_id]
+            if high["checkpoints"][scenario_id][key]
+            != xhigh["checkpoints"][scenario_id][key]
+        } == {"post_p03", "blueprint_valid"}
     semantic_prompt_fields = {
         "version",
         "hash",
@@ -588,11 +640,9 @@ def test_max_offline_qualification_is_exact_and_non_billable() -> None:
         "PASS",
         "PASS",
         "PASS",
-        "PASS",
     ]
     assert [len(item["stages"]) for item in report["observations"]] == [
-        6,
-        8,
+        9,
         8,
         8,
     ]
@@ -601,8 +651,10 @@ def test_max_offline_qualification_is_exact_and_non_billable() -> None:
         for check in report["deterministic_checks"]
     )
     assert controls["network_calls"] == 0
-    assert controls["provider_attempts"] == 24
-    assert controls["simulated_provider_attempts"] == 24
+    assert controls["provider_attempts"] == QUALIFICATION_EXPECTED_PROVIDER_REQUESTS
+    assert controls["simulated_provider_attempts"] == (
+        QUALIFICATION_EXPECTED_PROVIDER_REQUESTS
+    )
     assert controls["models"] == ["gpt-5.6-luna"]
     assert controls["reasoning_efforts_by_prompt"] == {
         prompt_id: ["MAX"]
@@ -620,9 +672,9 @@ def test_max_offline_qualification_is_exact_and_non_billable() -> None:
     assert controls["fixture_changes"] == 0
     assert controls["prompt_changes"] == 0
     assert controls["validator_changes"] == 0
-    assert controls["budget_charged_usd"] == pytest.approx(0.500519)
+    assert controls["budget_charged_usd"] == pytest.approx(0.4434085)
     assert controls["max_observed_budget_charge_usd"] == pytest.approx(
-        0.02583025
+        0.02693425
     )
     assert controls["budget_charged_usd"] <= 0.75
     assert controls["max_observed_budget_charge_usd"] <= 0.10
@@ -658,7 +710,7 @@ def test_max_cli_dry_run_has_zero_network_and_no_secret_surface() -> None:
     assert "question_text" not in serialized
 
 
-def test_max_boundary_matches_xhigh_semantics_and_changes_only_effort() -> None:
+def test_max_boundary_preserves_product_semantics_and_records_harness_delta() -> None:
     baseline_report = json.loads(
         eval_harness.MAX_QUALIFICATION_BASELINE_REPORT.read_text(
             encoding="utf-8"
@@ -673,10 +725,24 @@ def test_max_boundary_matches_xhigh_semantics_and_changes_only_effort() -> None:
         "prompt_pack_version",
         "planner_version",
         "assembler_version",
-        "checkpoints",
-        "p05_golden",
     ):
         assert maximum[field] == xhigh[field]
+    assert maximum["p05_golden"]["fixture_version"] == (
+        "stage2-p05-golden-checkpoints/1.2.0"
+    )
+    assert xhigh["p05_golden"]["fixture_version"] == (
+        "stage2-p05-golden-checkpoints/1.1.0"
+    )
+    assert maximum["p05_golden"]["negative_expected_recommendation"] == (
+        xhigh["p05_golden"]["negative_expected_recommendation"]
+    )
+    for scenario_id in xhigh["checkpoints"]:
+        assert {
+            key
+            for key in xhigh["checkpoints"][scenario_id]
+            if xhigh["checkpoints"][scenario_id][key]
+            != maximum["checkpoints"][scenario_id][key]
+        } == {"post_p03", "blueprint_valid"}
     semantic_prompt_fields = {
         "version",
         "hash",
@@ -784,15 +850,13 @@ def test_terra_medium_offline_qualification_is_exact_and_non_billable() -> None:
     assert report["mode"] == "offline-terra-medium-qualification"
     assert report["route_profile"] == "TERRA_MEDIUM_V1"
     assert report["execution_sequence"] == [
-        "independent-sweep:P04-P09",
+        "semantic-sweep:P04-P09:versioned-positive-and-negative",
         "offline-golden-positive:P05",
         "offline-golden-negative:P05",
         "integrated-chain:base:1:P04-P09",
-        "integrated-chain:base:2:P04-P09",
         "integrated-chain:choice-variant:P04-P09",
     ]
     assert [item["status"] for item in report["observations"]] == [
-        "PASS",
         "PASS",
         "PASS",
         "PASS",
@@ -802,8 +866,10 @@ def test_terra_medium_offline_qualification_is_exact_and_non_billable() -> None:
         for check in report["deterministic_checks"]
     )
     assert controls["network_calls"] == 0
-    assert controls["provider_attempts"] == 24
-    assert controls["simulated_provider_attempts"] == 24
+    assert controls["provider_attempts"] == QUALIFICATION_EXPECTED_PROVIDER_REQUESTS
+    assert controls["simulated_provider_attempts"] == (
+        QUALIFICATION_EXPECTED_PROVIDER_REQUESTS
+    )
     assert controls["models"] == ["gpt-5.6-terra"]
     assert controls["reasoning_efforts_by_prompt"] == {
         prompt_id: ["MEDIUM"]
@@ -817,9 +883,9 @@ def test_terra_medium_offline_qualification_is_exact_and_non_billable() -> None:
     assert controls["semantic_retries"] == 0
     assert controls["tools_enabled"] is False
     assert controls["store"] is False
-    assert controls["budget_charged_usd"] == pytest.approx(5.0054075)
+    assert controls["budget_charged_usd"] == pytest.approx(4.4342675)
     assert controls["max_observed_budget_charge_usd"] == pytest.approx(
-        0.25831
+        0.26935
     )
     assert controls["budget_charged_usd"] <= controls[
         "max_total_cost_usd"
@@ -859,7 +925,7 @@ def test_terra_medium_cli_dry_run_has_zero_network_and_no_secret_surface() -> No
     assert "question_text" not in serialized
 
 
-def test_terra_medium_boundary_freezes_new_ladder_without_semantic_drift() -> None:
+def test_terra_medium_boundary_preserves_product_and_records_harness_delta() -> None:
     max_report = json.loads(
         eval_harness.TERRA_MEDIUM_QUALIFICATION_BASELINE_RAW_REPORT.read_text(
             encoding="utf-8"
@@ -874,10 +940,24 @@ def test_terra_medium_boundary_freezes_new_ladder_without_semantic_drift() -> No
         "prompt_pack_version",
         "planner_version",
         "assembler_version",
-        "checkpoints",
-        "p05_golden",
     ):
         assert terra[field] == maximum[field]
+    assert terra["p05_golden"]["fixture_version"] == (
+        "stage2-p05-golden-checkpoints/1.2.0"
+    )
+    assert maximum["p05_golden"]["fixture_version"] == (
+        "stage2-p05-golden-checkpoints/1.1.0"
+    )
+    assert terra["p05_golden"]["negative_expected_recommendation"] == (
+        maximum["p05_golden"]["negative_expected_recommendation"]
+    )
+    for scenario_id in maximum["checkpoints"]:
+        assert {
+            key
+            for key in maximum["checkpoints"][scenario_id]
+            if maximum["checkpoints"][scenario_id][key]
+            != terra["checkpoints"][scenario_id][key]
+        } == {"post_p03", "blueprint_valid"}
     semantic_prompt_fields = {
         "version",
         "hash",
@@ -951,8 +1031,32 @@ def test_terra_medium_authorization_seals_max_receipts_sdk_and_caps(
     args.max_call_cost_usd = eval_harness.TERRA_MEDIUM_MAX_CALL_COST_USD
     boundary = eval_harness._convergence_authorization_boundary(args)
     assert boundary["boundary_format"] == (
-        "openai-stage2-convergence-authorization/1.3.0"
+        "openai-stage2-convergence-authorization/1.4.0"
     )
+    assert {
+        "src/comprehension_verification/qualification_semantics.py",
+        "src/comprehension_verification/semantic_harness.py",
+        "tests/fixtures/openai_evals/v2/p05_golden_checkpoints.json",
+        "tests/fixtures/openai_evals/v2/product_rehearsal.json",
+        "tests/fixtures/openai_evals/v3/frozen_product_boundary.json",
+        "tests/fixtures/openai_evals/v3/semantic_qualification_pack.json",
+        (
+            "tests/fixtures/openai_evals/v3/document_shaped_cache_case/"
+            "official_assignment.docx"
+        ),
+        (
+            "tests/fixtures/openai_evals/v3/document_shaped_cache_case/"
+            "official_rubric.docx"
+        ),
+        (
+            "tests/fixtures/openai_evals/v3/document_shaped_cache_case/"
+            "submission_sufficient.docx"
+        ),
+        (
+            "tests/fixtures/openai_evals/v3/document_shaped_cache_case/"
+            "submission_insufficient.docx"
+        ),
+    }.issubset(boundary["runtime_hashes"])
     assert boundary["route_profile"] == "TERRA_MEDIUM_V1"
     assert boundary["model_ids"] == ["gpt-5.6-terra"]
     assert boundary["qualified_reasoning_effort"] == {
@@ -1101,7 +1205,7 @@ def test_real_convergence_code_path_uses_real_routes_without_network(
 ) -> None:
     monkeypatch.setattr(
         "comprehension_verification.rehearsal.OpenAIResponsesAdapter",
-        lambda **_kwargs: DeterministicMockAdapter(),
+        lambda **_kwargs: build_reviewed_semantic_adapter(),
     )
     report = asyncio.run(
         run_real_convergence(
@@ -1113,8 +1217,12 @@ def test_real_convergence_code_path_uses_real_routes_without_network(
     )
     assert report["status"] == "PASS"
     assert report["unchanged_boundary_across_chains"] is True
-    assert report["controls"]["network_calls"] == 24
-    assert report["controls"]["provider_attempts"] == 24
+    assert report["controls"]["network_calls"] == (
+        QUALIFICATION_EXPECTED_PROVIDER_REQUESTS
+    )
+    assert report["controls"]["provider_attempts"] == (
+        QUALIFICATION_EXPECTED_PROVIDER_REQUESTS
+    )
     assert report["controls"]["unpriced_attempts"] == 0
     assert report["controls"]["budget_charged_usd"] <= 0.75
     assert report["controls"]["models"] == ["gpt-5.6-luna"]
@@ -1128,7 +1236,7 @@ def test_xhigh_real_code_path_uses_exact_routes_without_network(
 ) -> None:
     monkeypatch.setattr(
         "comprehension_verification.rehearsal.OpenAIResponsesAdapter",
-        lambda **_kwargs: DeterministicMockAdapter(),
+        lambda **_kwargs: build_reviewed_semantic_adapter(),
     )
     report = asyncio.run(
         run_real_convergence(
@@ -1143,8 +1251,12 @@ def test_xhigh_real_code_path_uses_exact_routes_without_network(
     assert report["mode"] == "real-xhigh-qualification"
     assert report["route_profile"] == "LUNA_XHIGH_V1"
     assert report["unchanged_boundary_across_chains"] is True
-    assert report["controls"]["network_calls"] == 24
-    assert report["controls"]["provider_attempts"] == 24
+    assert report["controls"]["network_calls"] == (
+        QUALIFICATION_EXPECTED_PROVIDER_REQUESTS
+    )
+    assert report["controls"]["provider_attempts"] == (
+        QUALIFICATION_EXPECTED_PROVIDER_REQUESTS
+    )
     assert report["controls"]["models"] == ["gpt-5.6-luna"]
     assert report["controls"]["reasoning_efforts_by_prompt"] == {
         prompt_id: ["XHIGH"]
@@ -1160,7 +1272,7 @@ def test_max_real_code_path_uses_exact_routes_without_network(
 ) -> None:
     monkeypatch.setattr(
         "comprehension_verification.rehearsal.OpenAIResponsesAdapter",
-        lambda **_kwargs: DeterministicMockAdapter(),
+        lambda **_kwargs: build_reviewed_semantic_adapter(),
     )
     report = asyncio.run(
         run_real_convergence(
@@ -1175,8 +1287,12 @@ def test_max_real_code_path_uses_exact_routes_without_network(
     assert report["mode"] == "real-max-qualification"
     assert report["route_profile"] == "LUNA_MAX_V1"
     assert report["unchanged_boundary_across_chains"] is True
-    assert report["controls"]["network_calls"] == 24
-    assert report["controls"]["provider_attempts"] == 24
+    assert report["controls"]["network_calls"] == (
+        QUALIFICATION_EXPECTED_PROVIDER_REQUESTS
+    )
+    assert report["controls"]["provider_attempts"] == (
+        QUALIFICATION_EXPECTED_PROVIDER_REQUESTS
+    )
     assert report["controls"]["models"] == ["gpt-5.6-luna"]
     assert report["controls"]["reasoning_efforts_by_prompt"] == {
         prompt_id: ["MAX"]
@@ -1192,7 +1308,7 @@ def test_terra_medium_real_code_path_uses_exact_routes_without_network(
 ) -> None:
     monkeypatch.setattr(
         "comprehension_verification.rehearsal.OpenAIResponsesAdapter",
-        lambda **_kwargs: DeterministicMockAdapter(),
+        lambda **_kwargs: build_reviewed_semantic_adapter(),
     )
     report = asyncio.run(
         run_real_convergence(
@@ -1211,8 +1327,12 @@ def test_terra_medium_real_code_path_uses_exact_routes_without_network(
     assert report["mode"] == "real-terra-medium-qualification"
     assert report["route_profile"] == "TERRA_MEDIUM_V1"
     assert report["unchanged_boundary_across_chains"] is True
-    assert report["controls"]["network_calls"] == 24
-    assert report["controls"]["provider_attempts"] == 24
+    assert report["controls"]["network_calls"] == (
+        QUALIFICATION_EXPECTED_PROVIDER_REQUESTS
+    )
+    assert report["controls"]["provider_attempts"] == (
+        QUALIFICATION_EXPECTED_PROVIDER_REQUESTS
+    )
     assert report["controls"]["models"] == ["gpt-5.6-terra"]
     assert report["controls"]["reasoning_efforts_by_prompt"] == {
         prompt_id: ["MEDIUM"]
@@ -1226,9 +1346,12 @@ def test_terra_medium_real_code_path_uses_exact_routes_without_network(
 def test_real_convergence_accounts_for_context_invalid_billable_attempts(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    class CostedContextInvalidAdapter(DeterministicMockAdapter):
+    class CostedContextInvalidAdapter:
+        def __init__(self) -> None:
+            self.inner = build_reviewed_semantic_adapter()
+
         async def invoke(self, **kwargs: object):  # type: ignore[no-untyped-def]
-            result = await super().invoke(**kwargs)  # type: ignore[arg-type]
+            result = await self.inner.invoke(**kwargs)
             raw = deepcopy(result.raw_output)
             if kwargs["prompt_id"] == "P04_BLUEPRINT_BUILD_V1":
                 raw["blueprint_id"] = "blueprint_outside_target_scope"
@@ -1252,27 +1375,33 @@ def test_real_convergence_accounts_for_context_invalid_billable_attempts(
         )
     )
     assert report["status"] == "FAIL"
-    # The independent sweep still observes P05-P09 after the P04 checkpoint
-    # fails; each of the three integrated chains then stops at its own P04.
-    assert report["controls"]["network_calls"] == 9
-    assert report["controls"]["provider_attempts"] == 9
-    assert report["controls"]["actual_cost_usd"] == 0.09
-    assert report["controls"]["budget_charged_usd"] == 0.108
+    # The semantic sweep observes all nine reviewed checkpoints after P04
+    # fails; each of the two structural chains then stops at its own P04.
+    assert report["controls"]["network_calls"] == 11
+    assert report["controls"]["provider_attempts"] == 11
+    assert report["controls"]["actual_cost_usd"] == 0.11
+    assert report["controls"]["budget_charged_usd"] == 0.132
     assert report["controls"]["unpriced_attempts"] == 0
     sweep = report["observations"][0]
-    assert sweep["failure"]["aggregated_failures"] == [
-        {
-            "stage": "P04",
-            "codes": ["CONTEXT_INVARIANT_FAILED"],
-            "issues": [],
-        }
-    ]
-    assert [row["prompt_id"] for row in sweep["stages"]] == [
-        "P05_BLUEPRINT_REVIEW_V1",
-        "P06_EVIDENCE_MAP_V1",
-        "P07_QUESTION_BUILD_V1",
-        "P08_QUESTION_REVIEW_V1",
-        "P09_GUIDE_BUILD_V1",
+    failures = sweep["failure"]["aggregated_failures"]
+    assert len(failures) == 1
+    assert failures[0]["stage"] == "P04_BLUEPRINT_BUILD"
+    assert failures[0]["codes"] == ["CONTEXT_INVARIANT_FAILED"]
+    assert failures[0]["checkpoint_id"] == "P04_CANONICAL_POSITIVE"
+    assert failures[0]["checkpoint_class"] == (
+        "SEMANTICALLY_QUALIFIED_POSITIVE"
+    )
+    assert failures[0]["contractual_adherence"] == "FAIL"
+    assert failures[0]["semantic_interpretation"] == "NOT_EVALUATED"
+    assert [row["checkpoint_id"] for row in sweep["stages"]] == [
+        "P05_CANONICAL_POSITIVE",
+        "P05_PLAN_FEASIBILITY_NEGATIVE",
+        "P06_CANONICAL_POSITIVE",
+        "P07_CANONICAL_POSITIVE",
+        "P07_INSUFFICIENT_NEGATIVE",
+        "P08_CANONICAL_POSITIVE",
+        "P08_UNANSWERABLE_NEGATIVE",
+        "P09_CANONICAL_POSITIVE",
     ]
 
 
@@ -1627,8 +1756,8 @@ def test_terra_medium_exact_caps_fail_closed_before_authorization(
     assert not args.report_path.exists()
 
 
-def test_terra_medium_outcome_preserves_model_owned_precedence() -> None:
-    assert eval_harness._terra_medium_qualification_outcome(
+def test_terra_medium_outcome_requires_semantic_provenance_for_causality() -> None:
+    unprovenanced = eval_harness._terra_medium_qualification_outcome(
         {
             "status": "FAIL",
             "observations": [
@@ -1642,7 +1771,13 @@ def test_terra_medium_outcome_preserves_model_owned_precedence() -> None:
                 }
             ],
         }
-    )["qualification_outcome"] == "TERRA_MEDIUM_QUALIFICATION_FAILED"
+    )
+    assert unprovenanced["qualification_outcome"] == (
+        "TERRA_MEDIUM_QUALIFICATION_FAILED"
+    )
+    assert unprovenanced["causal_classification"] == (
+        "ORACLE_VALIDITY_UNESTABLISHED"
+    )
     assert eval_harness._terra_medium_qualification_outcome(
         {
             "status": "FAIL",
@@ -1683,10 +1818,10 @@ def test_terra_medium_outcome_preserves_model_owned_precedence() -> None:
         "qualification_outcome": "TERRA_MEDIUM_QUALIFICATION_FAILED",
         "convergence_outcome": "CONVERGENCE_INCOMPLETE",
         "causal_classification": (
-            "MODEL_OWNED_QUALIFICATION_FAILURE_WITH_TECHNICAL_FAILURES"
+            "ORACLE_VALIDITY_UNESTABLISHED_WITH_TECHNICAL_FAILURES"
         ),
         "recommended_next_authority": (
-            "INDEPENDENT_REVIEW_BEFORE_ANY_TERRA_HIGH_AUTHORITY"
+            "INDEPENDENT_HARNESS_REVIEW_BEFORE_ANY_TERRA_HIGH_AUTHORITY"
         ),
     }
 

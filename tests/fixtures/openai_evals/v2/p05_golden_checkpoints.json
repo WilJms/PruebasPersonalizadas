@@ -1,12 +1,16 @@
 {
-  "schema_version": "stage2-p05-golden-checkpoints/1.1.0",
+  "schema_version": "stage2-p05-golden-checkpoints/1.2.0",
   "classification": "SYNTHETIC_ONLY_NO_STUDENT_DATA",
   "construct": "Comprensión causal y verificable del mecanismo de invalidación de caché cuando cambia la fuente.",
   "golden_positive": {
     "expected_transition": "APPROVABLE",
     "semantic_review": {
-      "status": "SEMANTICALLY_REVIEWED_SYNTHETIC_FIXTURE",
-      "reviewed_on": "2026-08-12",
+      "review_id": "SR-P05-CACHE-BLUEPRINT-001",
+      "review_version": "1.0.0",
+      "status": "SEMANTICALLY_QUALIFIED_POSITIVE",
+      "reviewed_on": "2026-08-13",
+      "review_basis": "INDEPENDENT_HUMAN_SOURCE_REVIEW",
+      "independent_of_provider_response": true,
       "rationale": [
         "La dimensión enlaza literalmente el resultado outcome_1 y el criterio criterion_1 con un mecanismo concreto, no con un aspecto genérico del entregable.",
         "Las cuatro oportunidades separan decisión, mecanismo, razonamiento y conexión interna sobre la misma relación causal fuente-invalidación-reconsulta-recálculo.",
@@ -19,6 +23,68 @@
         "criterion_ids": ["criterion_1"],
         "requirement_ids": ["requirement_1"],
         "decision_ids": ["decision_closed_materials"]
+      },
+      "category_reviews": {
+        "CONSTRUCT": {
+          "status": "PASS",
+          "critical": false,
+          "rationale": "La dimensión evalúa la comprensión causal declarada: cambio de fuente, invalidación, nueva consulta y recálculo; no sustituye el constructo por sintaxis o recuerdo aislado.",
+          "referenced_ids": ["dimension_cache_invalidation", "outcome_1", "criterion_1"]
+        },
+        "SOURCE_FIDELITY": {
+          "status": "PASS",
+          "critical": false,
+          "rationale": "La dimensión conserva literalmente criterion_1, outcome_1, requirement_1, el contexto CLOSED y grading_weight=1.0; no agrega fuentes ni redistribuye el peso.",
+          "referenced_ids": ["dimension_cache_invalidation", "outcome_1", "criterion_1", "requirement_1", "decision_closed_materials"]
+        },
+        "COVERAGE": {
+          "status": "PASS",
+          "critical": false,
+          "rationale": "La única dimensión cubre el único outcome y el único criterio de la actividad; el catálogo ofrece rutas observables sobre el mecanismo completo.",
+          "referenced_ids": ["dimension_cache_invalidation", "outcome_1", "criterion_1"]
+        },
+        "COMPARABILITY": {
+          "status": "PASS",
+          "critical": false,
+          "rationale": "Las oportunidades comparten la misma frontera de evidencia y cinco minutos, pero distinguen justificar, explicar, reconstruir y conectar sin cambiar el criterio evaluado.",
+          "referenced_ids": ["oppt_justify_cache_invalidation", "oppt_explain_invalidation_sequence", "oppt_reconstruct_recalculation_evidence", "oppt_connect_rule_and_test"]
+        },
+        "COGNITIVE_DEMAND": {
+          "status": "PASS",
+          "critical": false,
+          "rationale": "Cada operación exige relacionar evidencia y mecanismo; ninguna oportunidad puede resolverse sólo copiando una etiqueta o identificador.",
+          "referenced_ids": ["variant_source_change_trace"]
+        },
+        "TIME": {
+          "status": "PASS",
+          "critical": false,
+          "rationale": "Una respuesta abierta breve sobre una relación localizada es realizable en los cinco minutos autorizados y el plan selecciona una sola pregunta.",
+          "referenced_ids": ["blueprint_cache_invalidation_golden"]
+        },
+        "FORMAT_FEASIBILITY": {
+          "status": "PASS",
+          "critical": false,
+          "rationale": "Todas las oportunidades usan OPEN_SHORT, formato permitido por la política y suficiente para observar la explicación causal solicitada.",
+          "referenced_ids": ["blueprint_cache_invalidation_golden"]
+        },
+        "OPPORTUNITY_CATALOG": {
+          "status": "PASS",
+          "critical": false,
+          "rationale": "Las cuatro oportunidades son distinguibles, están ligadas a una variante verificable y superan la calidad mínima sin depender de conocimiento externo.",
+          "referenced_ids": ["variant_source_change_trace"]
+        },
+        "PLAN_FEASIBILITY": {
+          "status": "PASS",
+          "critical": false,
+          "rationale": "El catálogo contiene más oportunidades elegibles que la pregunta requerida, respeta formato, tiempo y calidad mínima, y permite una selección determinista.",
+          "referenced_ids": ["blueprint_cache_invalidation_golden"]
+        },
+        "ACCESSIBILITY": {
+          "status": "PASS",
+          "critical": false,
+          "rationale": "El foco usa terminología definida por la actividad, una respuesta breve y anclajes textuales; no exige modalidad visual, herramienta ni fuente externa.",
+          "referenced_ids": ["variant_source_change_trace"]
+        }
       }
     },
     "blueprint": {
@@ -34,7 +100,7 @@
           "name": "Explicación causal de la invalidación de caché",
           "criterion_ids": ["criterion_1"],
           "learning_outcome_ids": ["outcome_1"],
-          "grading_weight": null,
+          "grading_weight": 1.0,
           "verification_priority": 0.95,
           "factors": {
             "learning_relevance": 0.95,

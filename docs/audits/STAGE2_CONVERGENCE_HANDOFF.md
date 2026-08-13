@@ -1,17 +1,235 @@
-# Handoff consolidado — qualification controlada Terra/MEDIUM de Fase 2
+# Handoff consolidado — remediación semántica del harness de Fase 2
 
 Fecha de corte actual: 2026-08-13 (America/Santiago).
 
-Veredicto actual: **`TERRA_MEDIUM_QUALIFICATION_FAILED`**.<br>
-Convergencia: **`CONVERGENCE_INCOMPLETE`**.<br>
-Clasificación causal: **`MODEL_OWNED_QUALIFICATION_FAILURE`**.
+Fase: **`HARNESS_SEMANTIC_REMEDIATION`**.<br>
+Conclusión independiente gobernante: **`B — HARNESS_SEMANTIC_REMEDIATION_REQUIRED`**.<br>
+Estado de qualification real: **no ejecutada en esta fase**.<br>
+Autoridad siguiente: **revisión independiente del harness; no Terra/HIGH**.
 
-La única matriz `GPT-5.6 Terra / MEDIUM` autorizada se ejecutó una vez sobre
-datos exclusivamente sintéticos y no superó la qualification congelada. La
-autorización terminó. No corresponde retry, segunda matriz MEDIUM, Terra/HIGH,
-prompt tuning, cambio de validator, build ni deploy. El paso siguiente queda
-limitado a revisión independiente antes de decidir si se autoriza una nueva
-fase experimental.
+El resultado durable de la única ejecución Terra/MEDIUM se conserva sin
+modificar: **`TERRA_MEDIUM_QUALIFICATION_FAILED`** y
+**`CONVERGENCE_INCOMPLETE`**. Su campo histórico
+`MODEL_OWNED_QUALIFICATION_FAILURE` ya no se interpreta como una conclusión
+causal limpia: P05, P07 y P08 contenían defectos de oracle/input y P09 mezclaba
+plumbing con calidad. La ejecución sí dejó una infracción contractual real en
+P07 (`DIAGNOSTIC_INCOMPLETE`), pero la decisión semántica de abstenerse era
+defendible. Las cadenas integradas también demostraron capacidad end-to-end.
+El planner de la cadena base 2 falló cerrado correctamente; su causa upstream
+permanece indeterminada.
+
+Por ello, la qualification Terra/MEDIUM anterior queda explícitamente
+**metodológicamente contaminada** como medición de confiabilidad semántica. Su
+outcome machine-readable continúa siendo evidencia operacional histórica; su
+clasificación causal anterior no es evidencia limpia de fallo model-owned.
+
+Esta fase corrige sólo el instrumento. No cambia producto, prompts, schemas,
+validators, thresholds, planner, assembler, rutas, payload, modelo ni
+reasoning. No consume ni reutiliza una autorización, no resuelve el secreto y
+no construye transporte real.
+
+## 0. Reanclaje y estado real observado
+
+| Elemento | Valor observado antes de editar |
+|---|---|
+| Repositorio | `WilJms/PruebasPersonalizadas` (privado) |
+| Checkout | `/Users/wiljms/Documents/PruebasPersonalizadasCodex` |
+| Branch local/remota | `codex/openai-real-provider-gate` |
+| HEAD local / remoto / GitHub | `9dbce36d21ba6b28b32b051862cf8b305ded61e8` |
+| Candidato Terra ejecutado | `9185dbaccc36cd2150f723525b13e00bf86c3842` |
+| PR | `#3`, `OPEN`, `DRAFT`, `MERGEABLE` |
+| CI candidato | push `31716336517`, PR `31716341310`, ambos 7/7 PASS |
+| CI documental | push `31717845766`, PR `31717849698`, ambos 7/7 PASS |
+| Árbol inicial | limpio salvo `reports/openai/blueprint_v119_v115_recanary_a2be3c6.json`, untracked preexistente y no incorporado |
+
+Se verificaron acceso de escritura al checkout, Git/GitHub/PR/Actions, Python,
+Node/frontend, PostgreSQL local, Docker, Terraform, generadores de contratos,
+OpenAPI y cliente, parser DOCX, LibreOffice headless y secret scan. No se pidió
+información recuperable del repositorio y no se reveló ninguna credencial.
+
+## 1. Diagnóstico metodológico confirmado
+
+| Checkpoint | Defecto del instrumento anterior | Corrección | Superficie congelada |
+|---|---|---|---|
+| P05 | `RubricSpec.criteria[criterion_1].grading_weight=1.0`, pero el blueprint positive tenía `grading_weight=null`; el supuesto positive no era source-faithful. | El golden conserva `1.0` y su revisión manual/versionada cubre las diez categorías canónicas; el negative `PLAN_FEASIBILITY` conserva la misma mutación y resultado. | Prompt P05, preflight, validator y criterio de aprobación. |
+| P07 | `oppt_justify_cache_invalidation` autorizaba sólo evidencia que decía **cuándo** invalidar, no **por qué**; abstenerse era defendible. | Positive con condición, riesgo de obsolescencia y recálculo en la allowlist; negative legítimamente insuficiente con `REPLACEMENT_REQUIRED`, `candidate=null` y Diagnostic completo. | Prompt P07, validator, allowlists y forma fail-closed. |
+| P08 | El candidate provenía de `DeterministicMockFactory` y pedía causalidad no suficientemente sustentada por el anchor. | Candidate positive revisado con scores sobre thresholds y candidate negative estructuralmente válido pero no respondible, cuyo resultado correcto es `REJECT`. | Prompt P08, validator, scores mínimos y thresholds. |
+| P09 | Un Assessment estático con candidates mock servía simultáneamente como plumbing y supuesto oracle pedagógico. | El Assessment positive se deriva del P08 positive mediante `selected_question_from_candidate` y `assemble_assessment_snapshot`; la guía se valida contra ese snapshot. | Prompt P09, assembler y validator. |
+
+Los checkpoints históricos P05/P07/P08 quedan invalidados como medición
+semántica limpia; el P09 histórico queda clasificado sólo como plumbing. El
+fixture v2 completo declara ahora
+`LEGACY_INVALIDATED_NOT_AUTHORIZED_FOR_SEMANTIC_QUALIFICATION`, y todas sus
+filas mock son `STRUCTURAL_ORCHESTRATION_CHECKPOINT_ONLY`.
+
+## 2. Goldens y revisiones semánticas versionadas
+
+Fuente principal:
+`tests/fixtures/openai_evals/v3/semantic_qualification_pack.json`, versión
+`stage2-semantic-qualification-pack/1.0.0`, canonical hash
+`sha256:6ea22a27b96d7f2932b75e0302d1cef20a70f30a7c282c96ad46cec33f9fd8b9`.
+
+| Checkpoint / golden | Clase / expected | Semantic review | Review hash | Golden hash |
+|---|---|---|---|---|
+| `GOLDEN-P04-CACHE-POS-001` v1.0.0 | positive / `READY` | `SR-P04-CACHE-POS-001` v1.0.0 | `sha256:63aabc66a4664d9d4393ab0d4708ff383ce2d17bd21e2be969319e04024b0bf2` | `sha256:6ecf88f553fdf0323f027be16f39b1105c2b434d7b671eb77fcb8ec63235015b` |
+| `GOLDEN-P05-CACHE-POS-001` v1.0.0 | positive / `APPROVABLE` | `SR-P05-CACHE-BLUEPRINT-001` v1.0.0 | `sha256:2f3baf9c64931487f53fcfc6c3d4557e4f634cb776a0a4dd65918f2ffddb42b1` | `sha256:e52fbe61c01d25d91010a91ff120f3df741c2400516a90586320e02329e20262` |
+| `GOLDEN-P05-CACHE-NEG-001` v1.0.0 | negative / `REJECT` | `SR-P05-CACHE-PLAN-NEG-001` v1.0.0 | `sha256:9d1bba041da78a78600a7645d40cb62aba8294c90e6c1c976e796b4e8490e808` | `sha256:1e304e40a62e41aa5acb368e667e69bc6dacb02b03dd7d664bffaa2a413e6fbf` |
+| `GOLDEN-P06-CACHE-POS-001` v1.0.0 | positive / `READY` | `SR-P06-CACHE-MAP-POS-001` v1.0.0 | `sha256:8cdfd4dcc53decab54e1167c20625573fb00b5e511ab92eb141b5975b08634d4` | `sha256:5579e89a6542cab0d2d9e6e25767bd9070e486ea7d25bb5ec0e32177b6ee4292` |
+| `GOLDEN-P07-CACHE-POS-001` v1.0.0 | positive / `READY` | `SR-P07-CACHE-POS-001` v1.0.0 | `sha256:fc20c9360a36707762a91d76d2ce9f9d3c167bc8bcb088d1f94d6e8397e084f1` | `sha256:6baffa267001e9f26478243593b03183e305727edd227089cd67c9d9845eb3e7` |
+| `GOLDEN-P07-CACHE-NEG-001` v1.0.0 | negative / `REPLACEMENT_REQUIRED` | `SR-P07-CACHE-NEG-001` v1.0.0 | `sha256:3a8c665373a3aad141571d8aced682410d5c7d3a8747eac2f91f2f12122006c2` | `sha256:0d8b149bdbcff5c0d540cff0214d21b6fdd2516137b462dfdb293de7db3b14c3` |
+| `GOLDEN-P08-CACHE-POS-001` v1.0.0 | positive / `ACCEPT` | `SR-P08-CACHE-POS-001` v1.0.0 | `sha256:e28976bdc1ad874d4fad0bc465a73eec899354b3edcdebaefc631167d4e36493` | `sha256:a63efd2c1dad0a0165a4ddf7354412529538ed32209a60bd19df7d81ae32f28e` |
+| `GOLDEN-P08-CACHE-NEG-001` v1.0.0 | negative / `REJECT` | `SR-P08-CACHE-NEG-001` v1.0.0 | `sha256:a1094aefabd40a9396bda991679f36332adab024e33e667906fc3b2f8d75ef24` | `sha256:703cb5251121c64d09c575dfbc838eb77df4fffd0cb5c13d4d65ae776260c6d9` |
+| `GOLDEN-P09-CACHE-POS-001` v1.0.0 | positive / `READY` | `SR-P09-CACHE-POS-001` v1.0.0 | `sha256:515ea95c840e9b8fb430ab744c3c9863fcfe5064c4c222afd32f50c9639710f4` | `sha256:75fb4de34312937534365727943e577f46647456313eebcb672173ddce76b3c7` |
+
+Cada row registra fixture hash, hashes de fuentes, obligación positiva o
+condición negativa exacta, razones legítimas de abstención, evidencia de
+revisión y outcome. Ningún output de `DeterministicMockFactory` aparece como
+`SEMANTICALLY_QUALIFIED_POSITIVE`.
+
+## 3. Canonical document-shaped pack
+
+| Artefacto sintético | Rol / contenido | SHA-256 |
+|---|---|---|
+| `official_assignment.docx` | consigna oficial, outcome, formato, tiempo y límite inferencial | `ac8ade8c3dc529d06d439dcbc3af0b866c6e1deaa3ebaa0552963f7a93d54025` |
+| `official_rubric.docx` | rúbrica oficial, criterio único, `grading_weight=1.0`, observables y niveles 0–3 | `71c8101a6d1c50acb81c2f04e8479540e9c90a35974819f46af497a81f5361f7` |
+| `submission_sufficient.docx` | condición, riesgo de resultado obsoleto, nueva consulta, recálculo y traza textual | `d4983ba075c625f4c58858db8ec02a603f57b71145517e7160afd29df32be49a` |
+| `submission_insufficient.docx` | regla de cuándo invalidar, sin sustento causal ni resultado de segunda consulta | `67d3ebaff85dfa269c65a8df23d3cc0e18631c6b2a51613c82fadeb2098f8204` |
+
+Los cuatro DOCX son deterministas, inertes y totalmente sintéticos. Se
+derivan mediante `SafeParserService` / `stage2-docx-structural`, con preflight
+OOXML, detección de tipo y `stage2-parser/2.0.0`; el bundle usa la misma frontera
+parser→EvidenceUnit→EvidenceBundle del workflow. La ruta completa validada es:
+
+`documentos → parser productivo → EvidenceUnit → ActivitySpec/RubricSpec → P04/P05 → EvidenceMapPatch → planner → P07/P08 → assembly productivo → P09`.
+
+El harness no construye manualmente el `EvidenceBundle` final. Invoca
+`Stage1Service._parse_bytes`, que aplica la normalización productiva de IDs y
+provenance, y luego ejecuta la rama de resume de
+`Stage1Service._run_submission_pipeline` hasta capturar el request P06 exacto
+que contiene el bundle creado por el workflow. La ejecución se detiene en esa
+frontera antes del gateway; no construye adapter de proveedor ni hace red. El
+hash congelado de `web/workflows.py` impide que esta derivación diverja sin que
+el rehearsal falle.
+
+La evidencia suficiente autoriza `JUSTIFY_DECISION` y no autoriza inferir
+lenguaje, rendimiento, concurrencia o causa externa. La insuficiente prueba
+que una abstención semánticamente correcta es PASS del instrumento; una
+abstención sin Diagnostic completo es un fallo separado de adherence.
+LibreOffice headless renderizó los cuatro documentos en una página cada uno;
+la revisión `DOCX-QA-CACHE-001` v1.0.0 comprobó tablas, jerarquía, clipping,
+headers/footers, clasificación visible y ausencia de páginas vacías.
+
+## 4. Provenance y clasificador post-ejecución
+
+El modelo causal nuevo vive en
+`src/comprehension_verification/qualification_semantics.py` y conserva cinco
+ejes independientes:
+
+1. outcome operacional;
+2. validez del oracle;
+3. interpretación semántica (`CORRECT`, `DEFENDIBLE`, `INCORRECT`,
+   `INDETERMINATE`);
+4. adherence contractual;
+5. atribución y confianza causal.
+
+Las ramas probadas son: positive válido incumplido; abstención defendible con
+adherence incorrecta; rechazo correcto; oracle inválido; causa indeterminada;
+y fallo técnico. La regla anterior «todo código no técnico → model-owned» se
+elimina para Terra: un reporte sin provenance versionada queda
+`ORACLE_VALIDITY_UNESTABLISHED`, aunque su outcome operacional siga siendo
+FAIL. Esto actualiza interpretación futura, no el receipt ya persistido.
+
+El sweep ejecutable futuro consume directamente los nueve requests goldens
+versionados: P04/P05/P06/P07/P08/P09 positives y P05/P07/P08 negatives. Cada
+fila del receipt lleva clase, semantic review/version/hash, fixture/golden y
+source hashes, outcome operacional, interpretación semántica, adherence,
+atribución y confianza. Las dos cadenas integradas restantes se rotulan
+`STRUCTURAL_ORCHESTRATION_CHECKPOINT_ONLY` y se excluyen de conclusiones de
+calidad. Así, un `REJECT` correcto o una abstención correcta son PASS, y una
+abstención defendible con Diagnostic inválido conserva `DEFENDIBLE` junto con
+`contractual_adherence=FAIL`.
+
+## 5. Freeze verificable y rehearsal offline
+
+`frozen_product_boundary.json` liga al HEAD inicial `9dbce36…` los hashes de
+modelos canónicos, prompts, registry, adapter, rutas, validators, planner y
+assembler. También fija los seis prompt hashes y los thresholds P08. El
+rehearsal falla si cualquiera cambia.
+
+Reporte reproducible:
+`reports/openai/harness_semantic_remediation_offline.json`, SHA-256
+`b2d3bc075b4599729d1ef82fc3aaf5207f83bb92bafffc3bd4ae15acc2bd579b`.
+
+| Control offline | Resultado |
+|---|---|
+| Product boundary frozen | PASS |
+| DOCX parser / cuatro artefactos | PASS |
+| P05 `1.0 → 1.0`, diez categorías, `APPROVABLE` | PASS |
+| P07 positive / negative | `READY` / `REPLACEMENT_REQUIRED` PASS |
+| P08 positive / negative | `ACCEPT` / `REJECT` PASS |
+| P09 production assembly / guide | PASS |
+| Provenance | 13 filas explícitas PASS |
+| Revisión adversarial | 8/8 preguntas PASS |
+| QA visual | 4/4 documentos PASS |
+| Clasificador | 6/6 ramas PASS |
+| Sweep/receipt remediado | 9/9 semantic checkpoints PASS; 2 cadenas structural-only PASS |
+| Calls simuladas / provider real / billable / Terra | `21 / 0 / 0 / 0` |
+
+El rehearsal conserva el cap configurado de 24 requests pero espera
+21 invocaciones (nueve en el sweep y doce en dos cadenas); su charge
+conservador es USD `4.4342675`, con máximo USD `0.26935`, dentro de los caps
+congelados USD `5.10` / `0.27`. No se ejecutó ese perfil contra red: el reporte
+de esta fase usa exclusivamente el adapter offline de goldens revisados y el
+mock structural.
+
+La authorization boundary futura sube a
+`openai-stage2-convergence-authorization/1.4.0`: además del producto congelado,
+liga por hash los módulos del clasificador/harness, los fixtures v2/v3 y los
+cuatro DOCX. Esta fase no crea, consume ni reutiliza una autorización.
+
+## 6. Receipts históricos preservados y autoridad
+
+El receipt Terra/MEDIUM permanece bitwise idéntico:
+`reports/openai/stage2_terra_medium_qualification_9185dba_20260813_final_01.json`,
+SHA-256 `af56425a8d00fc1bbcee06c6e088f590cff68c9938c2b23190c1b5a72fdd776c`.
+También se preservan los receipts HIGH, XHIGH y MAX con sus hashes históricos.
+No se reescribe `TERRA_MEDIUM_QUALIFICATION_FAILED`; se corrige únicamente la
+lectura causal en este handoff y en el clasificador del instrumento.
+
+No existe autoridad para Terra/HIGH, otra qualification real, retry, build,
+deploy, `terraform apply`, migración remota ni cloud E2E. El PR permanece
+draft. El único paso autorizado al cerrar esta fase es revisión independiente
+del harness.
+
+## 7. Regresión offline de cierre
+
+Todos los comandos se ejecutaron con `CVA_MODEL_MODE=mock`, P10 deshabilitado
+y `CVA_OPENAI_API_KEY` / `OPENAI_API_KEY` eliminadas del entorno.
+
+| Superficie | Resultado local |
+|---|---|
+| Harness semántico + eval harness | 58/58 PASS |
+| Backend completo | 654 PASS, 17 skipped sólo por matriz PostgreSQL separada, coverage 81 % |
+| PostgreSQL 16 y 17 efímeros | prepare/migrations PASS; recovery/readiness 206/206; E2E 1/1 y sensitive 8/8, matriz repetida; contenedores eliminados |
+| Contratos / schema / OpenAPI / client | contratos 1.2 con 141 definiciones y 8 fixtures PASS; regeneración idempotente, sin diff |
+| Frontend | `npm ci`, typecheck, 36/36 unit tests, build y audit 0 vulnerabilidades PASS |
+| Browser / Playwright | smoke login→activities sin logs; Stage 1 1/1 y Stage 2 2/2 PASS |
+| Infra / deploy artifacts | `terraform fmt`, init sin backend y validate PASS; deploy artifacts 11/11; YAML y shell syntax PASS |
+| Seguridad | secret scan PASS sobre 329 archivos versionables; cero secretos resueltos |
+| DOCX | build determinista y render visual 4/4 PASS, una página por artefacto |
+| Rehearsal offline | 13/13 checks; 9/9 checkpoints semánticos y 2/2 cadenas structural-only PASS |
+
+El guardrail adversarial adicional demuestra que un output P07 distinto del
+golden, aunque sea estructuralmente válido, queda `INDETERMINATE` y exige
+revisión semántica independiente; no se convierte automáticamente en PASS ni
+en fallo model-owned.
+
+Controles de cierre locales: provider attempts `0`; billable requests `0`;
+network calls to OpenAI `0`; Terra/Luna/Sol executions `0/0/0`; prompts,
+validators, thresholds, planner, assembler y product workflow cambiados
+`0/0/0/0/0/0`; deploys `0`.
+
+## Anexo 1 — ejecución Terra/MEDIUM histórica (inmutable)
 
 ## A. Estado GitHub y linaje Terra
 
@@ -131,10 +349,12 @@ Inicio/fin UTC: `2026-08-13T15:44:36.508812Z` /
 | Cadena base 2 P04→P09 | 3 | **FAIL** | P04/P05/P06 completaron; planner fail-closed con `ASSESSMENT_PLAN_INFEASIBLE` / `EVIDENCE_MAPPING_UNCERTAIN`, sin oportunidades elegibles. |
 | Variante choice P04→P09 | 6 | **PASS** | P04–P09 y planner/assembly PASS. |
 
-No hubo error técnico del provider, timeout ni receipt sin precio. Los fallos
-positivos son model-owned respecto de obligaciones semánticas/grounding ya
-congeladas. El clasificador corregido dio precedencia terminal a esos fallos;
-ninguna señal técnica ocultó la evidencia model-owned.
+No hubo error técnico del provider, timeout ni receipt sin precio. El harness
+histórico trató esos fallos como model-owned, pero esta remediación determina
+que esa atribución conjunta no es una medición semántica limpia: P05 tenía una
+inconsistencia de fuente, P07 autorizaba evidencia insuficiente y P08 usaba un
+candidate mock no calificado. Sólo `DIAGNOSTIC_INCOMPLETE` queda demostrado
+como infracción contractual model-owned independiente de la decisión semántica.
 
 ## F. Requests, tokens, costo y controles Terra
 
@@ -165,13 +385,19 @@ SHA-256 `af56425a8d00fc1bbcee06c6e088f590cff68c9938c2b23190c1b5a72fdd776c`.
 El ledger conserva exactamente la misma frontera y report hash, con estado
 terminal `FAILED` y código `TERRA_MEDIUM_QUALIFICATION_FAILED`. No se reescribió
 ni consolidó el receipt. El PR debe permanecer draft; no se autoriza deploy ni
-otra matriz. La única autoridad recomendada registrada es
-`INDEPENDENT_REVIEW_BEFORE_ANY_TERRA_HIGH_AUTHORITY`.
+otra matriz. La autoridad histórica registrada fue
+`INDEPENDENT_REVIEW_BEFORE_ANY_TERRA_HIGH_AUTHORITY`; la interpretación actual
+la estrecha a `INDEPENDENT_HARNESS_REVIEW_BEFORE_ANY_TERRA_HIGH_AUTHORITY`.
 
 `TERRA_MEDIUM_QUALIFICATION_FAILED`<br>
 `CONVERGENCE_INCOMPLETE`
 
 ## Anexo histórico Luna/MAX preservado
+
+Nota metodológica posterior: las etiquetas causales model-owned de este anexo
+se preservan como historia de sus instrumentos originales. Esta fase no las
+recalifica retroactivamente ni las usa como evidencia semántica limpia sin
+provenance versionada por checkpoint.
 
 Fecha de corte: 2026-08-12 (America/Santiago).
 
