@@ -6,6 +6,7 @@ import asyncio
 from collections.abc import Mapping
 from dataclasses import dataclass, replace
 from datetime import UTC, datetime
+from decimal import Decimal, ROUND_CEILING
 import json
 from pathlib import Path
 import re
@@ -46,6 +47,14 @@ from .model_gateway import (
 )
 from .model_gateway.openai_adapter import OPENAI_SDK_VERSION
 from .model_gateway.mock_factory import DeterministicMockAdapter
+from .model_gateway.openai_pricing import (
+    LONG_CONTEXT_THRESHOLD,
+    MODEL_PRICES,
+    PRICING_OBSERVED_DATE,
+    PRICING_SOURCE_URL,
+    estimate_cost_usd,
+)
+from .model_gateway.openai_routes import REQUEST_FRAMING_TOKEN_ALLOWANCE
 from .model_gateway.registry import PROMPT_VERSION, prompt_spec
 from .model_gateway.gateway import PROMPT_RELATIONSHIP_VALIDATOR_VERSIONS
 from .planning import PLANNER_VERSION, build_assessment_plan
@@ -78,8 +87,8 @@ from .web.workflows import (
 )
 
 
-REHEARSAL_VERSION = "stage2-product-rehearsal/1.10.0"
-REHEARSAL_REPORT_VERSION = "stage2-convergence-report/1.10.0"
+REHEARSAL_VERSION = "stage2-product-rehearsal/1.11.0"
+REHEARSAL_REPORT_VERSION = "stage2-convergence-report/1.11.0"
 BASE_SCENARIO_ID = "synthetic-open-short-v1"
 VARIANT_SCENARIO_ID = "synthetic-choice-justification-v1"
 CANONICAL_DOCUMENT_SCENARIO_ID = "canonical-document-cache-sufficient-v1"
@@ -161,11 +170,133 @@ QUALIFICATION_EXPECTED_PROVIDER_REQUESTS = sum(
     row.max_provider_calls for row in QUALIFICATION_MATRIX_ROWS
 )
 
+# The semantic sweep calls P05, P07 and P08 twice to exercise one reviewed
+# positive and one reviewed negative. Each integrated row calls P04-P09 once.
+# Keeping this plan next to the matrix makes the monetary cap derivable from
+# the exact provider-call surface instead of from an expected spend.
+QUALIFICATION_SEMANTIC_SWEEP_CALLS_BY_PROMPT = {
+    "P04_BLUEPRINT_BUILD_V1": 1,
+    "P05_BLUEPRINT_REVIEW_V1": 2,
+    "P06_EVIDENCE_MAP_V1": 1,
+    "P07_QUESTION_BUILD_V1": 2,
+    "P08_QUESTION_REVIEW_V1": 2,
+    "P09_GUIDE_BUILD_V1": 1,
+}
+QUALIFICATION_INTEGRATED_CHAIN_COUNT = sum(
+    row.check_kind == "INTEGRATED_COMPOSITIONAL_CHECK"
+    for row in QUALIFICATION_MATRIX_ROWS
+)
+QUALIFICATION_PROVIDER_CALLS_BY_PROMPT = {
+    prompt_id: semantic_calls + QUALIFICATION_INTEGRATED_CHAIN_COUNT
+    for prompt_id, semantic_calls in (
+        QUALIFICATION_SEMANTIC_SWEEP_CALLS_BY_PROMPT.items()
+    )
+}
+if sum(QUALIFICATION_PROVIDER_CALLS_BY_PROMPT.values()) != (
+    QUALIFICATION_EXPECTED_PROVIDER_REQUESTS
+):
+    raise AssertionError("qualification prompt counts must match the matrix")
+
 
 def qualification_matrix_rows() -> list[dict[str, Any]]:
     """Return the evidence-first matrix from which the request cap is derived."""
 
     return [row.model_dump() for row in QUALIFICATION_MATRIX_ROWS]
+
+
+def _ceil_usd(value: Decimal, increment: Decimal) -> float:
+    units = (value / increment).to_integral_value(rounding=ROUND_CEILING)
+    return float(units * increment)
+
+
+def terra_medium_budget_derivation() -> dict[str, Any]:
+    """Derive exact Terra caps from the frozen matrix and route ceilings."""
+
+    routes = build_openai_routes(
+        max_call_cost_usd=1.0,
+        route_profile_id=OPENAI_TERRA_MEDIUM_ROUTE_PROFILE_ID,
+    )
+    prices = MODEL_PRICES[TERRA_MODEL_ID]
+    per_prompt: dict[str, dict[str, Any]] = {}
+    worst_case_total = Decimal("0")
+    maximum_call = Decimal("0")
+    for prompt_id, call_count in QUALIFICATION_PROVIDER_CALLS_BY_PROMPT.items():
+        route = routes[prompt_id]
+        if route.model != TERRA_MODEL_ID:
+            raise AssertionError("Terra budget cannot include another model")
+        input_ceiling = route.max_input_tokens
+        output_ceiling = route.max_output_tokens
+        call_cost = Decimal(
+            str(
+                estimate_cost_usd(
+                    model=TERRA_MODEL_ID,
+                    input_tokens=input_ceiling,
+                    cache_write_tokens=input_ceiling,
+                    output_tokens=output_ceiling,
+                )
+            )
+        )
+        subtotal = call_cost * call_count
+        maximum_call = max(maximum_call, call_cost)
+        worst_case_total += subtotal
+        per_prompt[prompt_id] = {
+            "provider_calls": call_count,
+            "route_input_token_ceiling": input_ceiling,
+            "route_output_token_ceiling": output_ceiling,
+            "request_framing_token_allowance": (
+                REQUEST_FRAMING_TOKEN_ALLOWANCE
+            ),
+            "long_context_pricing_applies": (
+                input_ceiling > LONG_CONTEXT_THRESHOLD
+            ),
+            "conservative_input_class": "FULL_CACHE_WRITE",
+            "conservative_call_cost_usd": float(call_cost),
+            "conservative_subtotal_usd": float(subtotal),
+        }
+
+    cap_increment = Decimal("0.01")
+    pricing_policy = {
+        "observed_date": PRICING_OBSERVED_DATE,
+        "source_url": PRICING_SOURCE_URL,
+        "model": TERRA_MODEL_ID,
+        "standard_short_context_usd_per_million": {
+            "input": prices.input_per_million,
+            "cached_input": prices.cached_input_per_million,
+            "cache_write": prices.input_per_million * 1.25,
+            "output": prices.output_per_million,
+        },
+        "cache_write_multiplier": 1.25,
+        "long_context_threshold_tokens_exclusive": (
+            LONG_CONTEXT_THRESHOLD
+        ),
+        "long_context_multipliers": {"input": 2.0, "output": 1.5},
+        "reservation_policy": (
+            "ROUTE_INPUT_CEILING_AS_FULL_CACHE_WRITE_PLUS_ROUTE_OUTPUT_CEILING"
+        ),
+        "cap_rounding": "CEILING_TO_USD_0.01",
+    }
+    return {
+        "schema_version": "terra-medium-budget-derivation/1.0.0",
+        "route_profile": OPENAI_TERRA_MEDIUM_ROUTE_PROFILE_ID,
+        "model": TERRA_MODEL_ID,
+        "pricing_policy": pricing_policy,
+        "pricing_policy_hash": canonical_hash(pricing_policy),
+        "matrix_hash": canonical_hash(qualification_matrix_rows()),
+        "matrix_provider_calls": QUALIFICATION_EXPECTED_PROVIDER_REQUESTS,
+        "max_provider_requests": QUALIFICATION_EXPECTED_PROVIDER_REQUESTS,
+        "integrated_chain_count": QUALIFICATION_INTEGRATED_CHAIN_COUNT,
+        "provider_calls_by_prompt": dict(
+            QUALIFICATION_PROVIDER_CALLS_BY_PROMPT
+        ),
+        "per_prompt": per_prompt,
+        "maximum_conservative_call_cost_usd": float(maximum_call),
+        "worst_case_conservative_total_cost_usd": float(worst_case_total),
+        "cap_rounding_increment_usd": float(cap_increment),
+        "max_call_cost_usd": _ceil_usd(maximum_call, cap_increment),
+        "max_total_cost_usd": _ceil_usd(
+            worst_case_total, cap_increment
+        ),
+    }
 
 
 @dataclass(frozen=True, slots=True)
@@ -1066,6 +1197,9 @@ def rehearsal_boundary_material(
                 reference_route_profile_id=OPENAI_MAX_ROUTE_PROFILE_ID,
             )
         )
+        material["terra_medium_budget_derivation"] = (
+            terra_medium_budget_derivation()
+        )
     return material
 
 
@@ -1907,6 +2041,7 @@ class ProductRehearsal:
         self.max_total_cost_usd = max_total_cost_usd
         self.results: list[GatewayCallResult] = []
         self.ledger_records = ledger_records
+        self.provider_call_contexts: list[dict[str, Any]] = []
 
     def _ledgers(self) -> list[m.ModelCallLedger]:
         if self.ledger_records is not None:
@@ -1928,6 +2063,10 @@ class ProductRehearsal:
         self,
         prompt_id: str,
         request: BaseModel,
+        *,
+        run_id: str,
+        run_kind: str,
+        checkpoint_id: str | None = None,
     ) -> BaseModel:
         spent = sum(self._budget_charge(ledger) for ledger in self._ledgers())
         remaining = (
@@ -1938,12 +2077,26 @@ class ProductRehearsal:
                 max(0.0, self.max_total_cost_usd - spent),
             )
         )
-        result = await self.gateway.invoke(
-            prompt_id,
-            request,
-            build_trusted_context(request),
-            budget=CallBudget(max_cost_usd=remaining),
-        )
+        ledger_count_before = len(self._ledgers())
+        try:
+            result = await self.gateway.invoke(
+                prompt_id,
+                request,
+                build_trusted_context(request),
+                budget=CallBudget(max_cost_usd=remaining),
+            )
+        finally:
+            new_ledgers = self._ledgers()[ledger_count_before:]
+            self.provider_call_contexts.extend(
+                {
+                    "run_id": run_id,
+                    "run_kind": run_kind,
+                    "checkpoint_id": checkpoint_id
+                    or f"{run_id}:{prompt_id}",
+                    "prompt_id": prompt_id,
+                }
+                for _ledger in new_ledgers
+            )
         self.results.append(result)
         return result.output
 
@@ -1981,6 +2134,10 @@ class ProductRehearsal:
             "reasoning_effort": ledger.route.reasoning_effort.value,
             "fallback_route_id": ledger.route.fallback_route_id,
             "attempts": len(result.ledgers),
+            "provider_attempts": len(result.ledgers),
+            "gateway_retries": 0,
+            "sdk_retries": 0,
+            "semantic_retries": 0,
             "repaired": result.repaired,
             "input_tokens": ledger.input_tokens,
             "cached_input_tokens": ledger.cached_input_tokens,
@@ -1989,6 +2146,10 @@ class ProductRehearsal:
             "reasoning_tokens": reasoning_tokens,
             "actual_cost_usd": round(
                 sum(item.actual_cost_usd for item in result.ledgers), 10
+            ),
+            "conservative_budget_charge_usd": round(
+                sum(self._budget_charge(item) for item in result.ledgers),
+                10,
             ),
         }
         if (
@@ -2023,7 +2184,13 @@ class ProductRehearsal:
             try:
                 output = cast(
                     BaseModel,
-                    await self._invoke(prompt_id, request),
+                    await self._invoke(
+                        prompt_id,
+                        request,
+                        run_id=run_id,
+                        run_kind="SEMANTIC_QUALIFICATION_SWEEP",
+                        checkpoint_id=checkpoint_id,
+                    ),
                 )
                 semantic_interpretation, contractual_adherence = (
                     _semantic_checkpoint_verdict(
@@ -2208,7 +2375,12 @@ class ProductRehearsal:
         try:
             blueprint = cast(
                 m.AssessmentBlueprint,
-                await self._invoke("P04_BLUEPRINT_BUILD_V1", p04),
+                await self._invoke(
+                    "P04_BLUEPRINT_BUILD_V1",
+                    p04,
+                    run_id=run_id,
+                    run_kind="INTEGRATED_CHAIN",
+                ),
             )
             if blueprint.status != m.WorkflowStatus.READY:
                 raise ContextValidationError(
@@ -2246,7 +2418,12 @@ class ProductRehearsal:
             )
             blueprint_review = cast(
                 m.BlueprintReview,
-                await self._invoke("P05_BLUEPRINT_REVIEW_V1", p05),
+                await self._invoke(
+                    "P05_BLUEPRINT_REVIEW_V1",
+                    p05,
+                    run_id=run_id,
+                    run_kind="INTEGRATED_CHAIN",
+                ),
             )
             if not blueprint_review_is_approvable(blueprint_review):
                 raise _BlueprintReviewNotApprovable(
@@ -2287,7 +2464,12 @@ class ProductRehearsal:
                 )
             mapping = cast(
                 m.EvidenceMapPatch,
-                await self._invoke("P06_EVIDENCE_MAP_V1", p06),
+                await self._invoke(
+                    "P06_EVIDENCE_MAP_V1",
+                    p06,
+                    run_id=run_id,
+                    run_kind="INTEGRATED_CHAIN",
+                ),
             )
             validate_evidence_map(
                 mapping,
@@ -2379,7 +2561,12 @@ class ProductRehearsal:
                 )
                 generation = cast(
                     m.QuestionGenerationResult,
-                    await self._invoke("P07_QUESTION_BUILD_V1", p07),
+                    await self._invoke(
+                        "P07_QUESTION_BUILD_V1",
+                        p07,
+                        run_id=run_id,
+                        run_kind="INTEGRATED_CHAIN",
+                    ),
                 )
                 validate_generation_result(
                     generation,
@@ -2424,7 +2611,12 @@ class ProductRehearsal:
                 )
                 question_review = cast(
                     m.QuestionReviewResult,
-                    await self._invoke("P08_QUESTION_REVIEW_V1", p08),
+                    await self._invoke(
+                        "P08_QUESTION_REVIEW_V1",
+                        p08,
+                        run_id=run_id,
+                        run_kind="INTEGRATED_CHAIN",
+                    ),
                 )
                 validate_review_result(
                     question_review,
@@ -2527,7 +2719,12 @@ class ProductRehearsal:
             )
             guide = cast(
                 m.EvaluationGuide,
-                await self._invoke("P09_GUIDE_BUILD_V1", p09),
+                await self._invoke(
+                    "P09_GUIDE_BUILD_V1",
+                    p09,
+                    run_id=run_id,
+                    run_kind="INTEGRATED_CHAIN",
+                ),
             )
             validate_evaluation_guide(
                 guide,
@@ -2671,6 +2868,89 @@ def _provider_usage_controls(
     }
 
 
+def _provider_call_receipts(
+    ledgers: list[m.ModelCallLedger],
+    contexts: list[dict[str, Any]],
+    *,
+    provider_transport: bool,
+) -> list[dict[str, Any]]:
+    """Serialize every billable attempt without retaining prompt content."""
+
+    if len(ledgers) != len(contexts):
+        raise AssertionError(
+            "every provider ledger must have one execution context"
+        )
+
+    def reason_integer(ledger: m.ModelCallLedger, prefix: str) -> int:
+        return next(
+            (
+                int(code.removeprefix(prefix))
+                for code in reversed(ledger.route.reason_codes)
+                if code.startswith(prefix)
+            ),
+            0,
+        )
+
+    def reason_hash(
+        ledger: m.ModelCallLedger, prefix: str
+    ) -> str | None:
+        return next(
+            (
+                "sha256:" + code.removeprefix(prefix)
+                for code in reversed(ledger.route.reason_codes)
+                if code.startswith(prefix)
+            ),
+            None,
+        )
+
+    return [
+        {
+            "provider_call_index": index,
+            "run_id": context["run_id"],
+            "run_kind": context["run_kind"],
+            "checkpoint_id": context["checkpoint_id"],
+            "stage": ledger.stage,
+            "prompt_id": ledger.prompt_id,
+            "prompt_version": ledger.prompt_version,
+            "prompt_hash": ledger.prompt_hash,
+            "model": ledger.route.model,
+            "effective_model": ledger.route.model_snapshot,
+            "reasoning_effort": ledger.route.reasoning_effort.value,
+            "input_tokens": ledger.input_tokens,
+            "cached_input_tokens": ledger.cached_input_tokens,
+            "cache_write_input_tokens": reason_integer(
+                ledger, "CACHE_WRITE_INPUT_TOKENS_"
+            ),
+            "output_tokens": ledger.output_tokens,
+            "reasoning_tokens": reason_integer(
+                ledger, "REASONING_TOKENS_"
+            ),
+            "actual_provider_cost_usd": ledger.actual_cost_usd,
+            "conservative_budget_charge_usd": max(
+                ledger.estimated_cost_usd,
+                ledger.actual_cost_usd or 0.0,
+            ),
+            "attempt": ledger.attempt,
+            "gateway_retries": max(0, ledger.attempt - 1),
+            "sdk_retries": 0,
+            "semantic_retries": 0,
+            "fallback": ledger.route.fallback_route_id is not None,
+            "repaired": False,
+            "result": ledger.result,
+            "input_hash": ledger.input_bundle_hash,
+            "output_hash": reason_hash(ledger, "OUTPUT_HASH_"),
+            "provider_request_id_hash": reason_hash(
+                ledger, "PROVIDER_REQUEST_ID_HASH_"
+            ),
+            "provider_transport": provider_transport,
+        }
+        for index, (ledger, context) in enumerate(
+            zip(ledgers, contexts, strict=True),
+            start=1,
+        )
+    ]
+
+
 class _ConservativeNoNetworkAdapter:
     """Exercise REAL routing while replacing transport with deterministic data."""
 
@@ -2704,6 +2984,7 @@ class _ConservativeNoNetworkAdapter:
             estimated_cost_usd=self.cost_estimator(spec, input_tokens),
             actual_cost_usd=0.0,
             cache_write_input_tokens=input_tokens,
+            output_hash=canonical_hash(result.raw_output),
             reason_codes=(
                 "NO_NETWORK_DETERMINISTIC_PREFLIGHT",
                 "CONSERVATIVE_BUDGET_RESERVATION",
@@ -2886,6 +3167,7 @@ async def run_offline_convergence(
                 "sdk_retries": 0,
                 "tools_enabled": False,
                 "store": False,
+                "background": False,
                 "semantic_normalizations": 0,
                 "fixture_changes": 0,
                 "prompt_changes": 0,
@@ -2994,6 +3276,11 @@ async def run_offline_convergence(
             QUALIFICATION_EXPECTED_PROVIDER_REQUESTS
         ),
         "transport_provenance": transport_provenance,
+        "provider_call_receipts": _provider_call_receipts(
+            ledger_records or [],
+            rehearsal.provider_call_contexts,
+            provider_transport=False,
+        ),
         "observations": _observation_rows(observations),
         "deterministic_checks": deterministic_checks,
         "checkpoint_assessments": [
@@ -3097,6 +3384,7 @@ async def run_real_convergence(
             "sdk_retries": 0,
             "tools_enabled": False,
             "store": False,
+            "background": False,
             "semantic_normalizations": 0,
             "fixture_changes": 0,
             "prompt_changes": 0,
@@ -3191,6 +3479,11 @@ async def run_real_convergence(
         "qualification_matrix": qualification_matrix_rows(),
         "derived_max_provider_requests": (
             QUALIFICATION_EXPECTED_PROVIDER_REQUESTS
+        ),
+        "provider_call_receipts": _provider_call_receipts(
+            ledger_records,
+            rehearsal.provider_call_contexts,
+            provider_transport=True,
         ),
         "observations": _observation_rows(observations),
         "deterministic_checks": deterministic_checks,

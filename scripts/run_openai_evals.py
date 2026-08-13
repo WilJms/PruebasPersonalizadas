@@ -80,6 +80,7 @@ from comprehension_verification.rehearsal import (
     rehearsal_boundary_material,
     run_offline_convergence,
     run_real_convergence,
+    terra_medium_budget_derivation,
 )
 from comprehension_verification.provider_authorization import (
     validate_pinned_secret_resource,
@@ -141,11 +142,22 @@ TERRA_MEDIUM_QUALIFICATION_BASELINE_CONSOLIDATED_REPORT = (
 TERRA_MEDIUM_MAX_PROVIDER_REQUESTS = QUALIFICATION_EXPECTED_PROVIDER_REQUESTS
 TERRA_MEDIUM_HISTORICAL_MAX_TOTAL_COST_USD = 5.10
 TERRA_MEDIUM_HISTORICAL_MAX_CALL_COST_USD = 0.27
-TERRA_MEDIUM_OFFLINE_REHEARSAL_MAX_TOTAL_COST_USD = 20.0
-TERRA_MEDIUM_OFFLINE_REHEARSAL_MAX_CALL_COST_USD = 0.27
-TERRA_MEDIUM_MONETARY_BUDGET_RECALCULATION_REQUIRED = True
+TERRA_MEDIUM_BUDGET_DERIVATION = terra_medium_budget_derivation()
+TERRA_MEDIUM_MAX_TOTAL_COST_USD = TERRA_MEDIUM_BUDGET_DERIVATION[
+    "max_total_cost_usd"
+]
+TERRA_MEDIUM_MAX_CALL_COST_USD = TERRA_MEDIUM_BUDGET_DERIVATION[
+    "max_call_cost_usd"
+]
+TERRA_MEDIUM_OFFLINE_REHEARSAL_MAX_TOTAL_COST_USD = (
+    TERRA_MEDIUM_MAX_TOTAL_COST_USD
+)
+TERRA_MEDIUM_OFFLINE_REHEARSAL_MAX_CALL_COST_USD = (
+    TERRA_MEDIUM_MAX_CALL_COST_USD
+)
+TERRA_MEDIUM_MONETARY_BUDGET_RECALCULATION_REQUIRED = False
 TERRA_MEDIUM_MONETARY_BUDGET_STATUS = (
-    "RECALCULATION_FROM_CURRENT_OFFICIAL_PRICES_REQUIRED"
+    "DERIVED_FROM_CURRENT_OFFICIAL_PRICES_AND_FROZEN"
 )
 INJECTION_MARKER = "IGNORE_PREVIOUS_INSTRUCTIONS_SYNTHETIC_MARKER"
 P01_INJECTION_ASSIGNMENT_TEXT = (
@@ -5123,7 +5135,7 @@ def _convergence_authorization_boundary(args: argparse.Namespace) -> dict[str, A
         / "tests/fixtures/openai_evals/v3/document_shaped_cache_case/submission_insufficient.docx",
     )
     boundary = {
-        "boundary_format": "openai-stage2-convergence-authorization/1.5.0",
+        "boundary_format": "openai-stage2-convergence-authorization/1.6.0",
         "git_head": _git_head(),
         "harness_hash": _content_hash(Path(__file__).resolve()),
         "rehearsal_module_hash": _content_hash(
@@ -5204,6 +5216,7 @@ def _convergence_authorization_boundary(args: argparse.Namespace) -> dict[str, A
             "P04-P09 reasoning effort XHIGH_TO_MAX"
         )
     elif route_profile_id == OPENAI_TERRA_MEDIUM_ROUTE_PROFILE_ID:
+        budget_derivation = TERRA_MEDIUM_BUDGET_DERIVATION
         boundary["terra_medium_qualification_baseline"] = {
             "candidate_sha": TERRA_MEDIUM_QUALIFICATION_BASELINE_SHA,
             "evidence_sha": TERRA_MEDIUM_QUALIFICATION_EVIDENCE_SHA,
@@ -5224,23 +5237,27 @@ def _convergence_authorization_boundary(args: argparse.Namespace) -> dict[str, A
             "P04_P09_REASONING_MAX_TO_MEDIUM"
         )
         boundary["univariate_comparison"] = False
+        boundary["pricing_policy_hash"] = budget_derivation[
+            "pricing_policy_hash"
+        ]
+        boundary["qualification_matrix_hash"] = budget_derivation[
+            "matrix_hash"
+        ]
         boundary["monetary_budget"] = {
             "status": TERRA_MEDIUM_MONETARY_BUDGET_STATUS,
-            "future_real_execution_authorized": False,
+            "future_real_execution_authorized": True,
+            "derivation": budget_derivation,
+            "enforced_caps": {
+                "max_provider_requests": TERRA_MEDIUM_MAX_PROVIDER_REQUESTS,
+                "max_total_cost_usd": TERRA_MEDIUM_MAX_TOTAL_COST_USD,
+                "max_call_cost_usd": TERRA_MEDIUM_MAX_CALL_COST_USD,
+            },
             "historical_caps_not_reusable": {
                 "max_total_cost_usd": (
                     TERRA_MEDIUM_HISTORICAL_MAX_TOTAL_COST_USD
                 ),
                 "max_call_cost_usd": (
                     TERRA_MEDIUM_HISTORICAL_MAX_CALL_COST_USD
-                ),
-            },
-            "offline_rehearsal_caps_not_an_authorization": {
-                "max_total_cost_usd": (
-                    TERRA_MEDIUM_OFFLINE_REHEARSAL_MAX_TOTAL_COST_USD
-                ),
-                "max_call_cost_usd": (
-                    TERRA_MEDIUM_OFFLINE_REHEARSAL_MAX_CALL_COST_USD
                 ),
             },
         }
@@ -5707,15 +5724,18 @@ def _run_convergence_cli(args: argparse.Namespace) -> int:
         is_terra_medium
         and TERRA_MEDIUM_MONETARY_BUDGET_RECALCULATION_REQUIRED
     ):
-        # The 33-call matrix invalidates the historical monetary authority.
-        # Fail before validating a secret resource, reserving a ledger row, or
-        # constructing transport. A later explicit authority must recalculate
-        # both caps from then-current official prices and update this gate.
+        # Preserve a fail-closed switch if a future pricing or matrix change
+        # invalidates the frozen derivation. It runs before secret validation,
+        # authorization reservation, or transport construction.
         raise OpenAIEvalBlocked(
             "OPENAI_TERRA_MEDIUM_MONETARY_BUDGET_RECALCULATION_REQUIRED"
         )
-    maximum_total_cap = 1.0
-    maximum_call_cap = 0.15
+    maximum_total_cap = (
+        TERRA_MEDIUM_MAX_TOTAL_COST_USD if is_terra_medium else 1.0
+    )
+    maximum_call_cap = (
+        TERRA_MEDIUM_MAX_CALL_COST_USD if is_terra_medium else 0.15
+    )
     if any(
         (
             not args.allow_billable,
@@ -5734,8 +5754,12 @@ def _run_convergence_cli(args: argparse.Namespace) -> int:
         )
     ):
         raise OpenAIEvalBlocked("OPENAI_CONVERGENCE_EXPLICIT_CAPS_REQUIRED")
-    expected_total_cost = 0.75
-    expected_call_cost = 0.10
+    expected_total_cost = (
+        TERRA_MEDIUM_MAX_TOTAL_COST_USD if is_terra_medium else 0.75
+    )
+    expected_call_cost = (
+        TERRA_MEDIUM_MAX_CALL_COST_USD if is_terra_medium else 0.10
+    )
     if is_qualification and (
         args.max_total_cost_usd != expected_total_cost
         or args.max_call_cost_usd != expected_call_cost
@@ -5776,6 +5800,7 @@ def _run_convergence_cli(args: argparse.Namespace) -> int:
         result.update(
             {
                 "execution_id": args.execution_id,
+                "authorization_id": args.authorization_id,
                 "authorization_hash": reservation.authorization_hash,
                 "authorization_boundary_hash": reservation.boundary_hash,
                 "git_head": boundary["git_head"],
@@ -5853,6 +5878,15 @@ def _run_convergence_cli(args: argparse.Namespace) -> int:
                         "experimental_hypothesis"
                     ],
                     "univariate_comparison": False,
+                    "pricing_policy_hash": boundary[
+                        "pricing_policy_hash"
+                    ],
+                    "qualification_matrix_hash": boundary[
+                        "qualification_matrix_hash"
+                    ],
+                    "budget_derivation": boundary["monetary_budget"][
+                        "derivation"
+                    ],
                 }
             )
         report_hash = _write_json_atomic(args.report_path, result)
@@ -5907,6 +5941,7 @@ def _run_convergence_cli(args: argparse.Namespace) -> int:
             "status": "FAIL",
             "route_profile": route_profile_id,
             "execution_id": args.execution_id,
+            "authorization_id": args.authorization_id,
             "authorization_hash": reservation.authorization_hash,
             "authorization_boundary_hash": reservation.boundary_hash,
             "git_head": boundary["git_head"],
@@ -5996,6 +6031,15 @@ def _run_convergence_cli(args: argparse.Namespace) -> int:
                         "experimental_hypothesis"
                     ],
                     "univariate_comparison": False,
+                    "pricing_policy_hash": boundary[
+                        "pricing_policy_hash"
+                    ],
+                    "qualification_matrix_hash": boundary[
+                        "qualification_matrix_hash"
+                    ],
+                    "budget_derivation": boundary["monetary_budget"][
+                        "derivation"
+                    ],
                 }
             )
         report_hash = _write_json_atomic(args.report_path, failure_report)

@@ -46,6 +46,7 @@ from comprehension_verification.rehearsal import (
     rehearsal_boundary_material,
     run_offline_convergence,
     run_real_convergence,
+    terra_medium_budget_derivation,
 )
 from comprehension_verification.qualification_semantics import (
     CheckpointClass,
@@ -926,6 +927,7 @@ def test_terra_medium_offline_qualification_is_exact_and_non_billable() -> None:
     assert controls["semantic_retries"] == 0
     assert controls["tools_enabled"] is False
     assert controls["store"] is False
+    assert controls["background"] is False
     assert controls["budget_charged_usd"] == pytest.approx(7.00521)
     assert controls["max_observed_budget_charge_usd"] == pytest.approx(
         0.26935
@@ -936,6 +938,37 @@ def test_terra_medium_offline_qualification_is_exact_and_non_billable() -> None:
     assert controls["max_observed_budget_charge_usd"] <= controls[
         "max_call_cost_usd"
     ]
+    call_receipts = report["provider_call_receipts"]
+    assert len(call_receipts) == QUALIFICATION_EXPECTED_PROVIDER_REQUESTS
+    assert [row["provider_call_index"] for row in call_receipts] == list(
+        range(1, QUALIFICATION_EXPECTED_PROVIDER_REQUESTS + 1)
+    )
+    assert [row["checkpoint_id"] for row in call_receipts[:9]] == [
+        "P04_CANONICAL_POSITIVE",
+        "P05_CANONICAL_POSITIVE",
+        "P05_PLAN_FEASIBILITY_NEGATIVE",
+        "P06_CANONICAL_POSITIVE",
+        "P07_CANONICAL_POSITIVE",
+        "P07_INSUFFICIENT_NEGATIVE",
+        "P08_CANONICAL_POSITIVE",
+        "P08_UNANSWERABLE_NEGATIVE",
+        "P09_CANONICAL_POSITIVE",
+    ]
+    assert all(
+        isinstance(row["checkpoint_id"], str) and row["checkpoint_id"]
+        for row in call_receipts
+    )
+    assert all(
+        row["provider_transport"] is False
+        and row["actual_provider_cost_usd"] == 0.0
+        and row["input_hash"].startswith("sha256:")
+        and row["output_hash"].startswith("sha256:")
+        and row["gateway_retries"] == 0
+        and row["sdk_retries"] == 0
+        and row["semantic_retries"] == 0
+        and row["fallback"] is False
+        for row in call_receipts
+    )
 
 
 def test_terra_medium_cli_dry_run_has_zero_network_and_no_secret_surface() -> None:
@@ -946,9 +979,9 @@ def test_terra_medium_cli_dry_run_has_zero_network_and_no_secret_surface() -> No
             "--mode",
             "terra-medium-qualification-dry-run",
             "--max-total-cost-usd",
-            "20.0",
+            "25.60",
             "--max-call-cost-usd",
-            "0.27",
+            "0.82",
             "--max-provider-requests",
             "33",
         ],
@@ -978,10 +1011,41 @@ def test_terra_medium_make_real_target_is_fail_closed_without_secret_inputs() ->
         text=True,
     )
     assert completed.returncode != 0
-    assert "OPENAI_TERRA_MEDIUM_MONETARY_BUDGET_RECALCULATION_REQUIRED" in (
-        completed.stderr
-    )
+    assert "EXECUTION_ID is required" in completed.stderr
     assert "SECRET_VERSION_RESOURCE is required" not in completed.stderr
+
+
+def test_terra_medium_budget_is_derived_from_matrix_and_route_ceilings() -> None:
+    budget = terra_medium_budget_derivation()
+    assert budget["matrix_provider_calls"] == 33
+    assert budget["provider_calls_by_prompt"] == {
+        "P04_BLUEPRINT_BUILD_V1": 5,
+        "P05_BLUEPRINT_REVIEW_V1": 6,
+        "P06_EVIDENCE_MAP_V1": 5,
+        "P07_QUESTION_BUILD_V1": 6,
+        "P08_QUESTION_REVIEW_V1": 6,
+        "P09_GUIDE_BUILD_V1": 5,
+    }
+    assert budget["maximum_conservative_call_cost_usd"] == 0.817
+    assert budget["worst_case_conservative_total_cost_usd"] == 25.593
+    assert budget["max_call_cost_usd"] == 0.82
+    assert budget["max_total_cost_usd"] == 25.60
+    assert budget["pricing_policy"]["standard_short_context_usd_per_million"] == {
+        "input": 2.0,
+        "cached_input": 0.2,
+        "cache_write": 2.5,
+        "output": 12.0,
+    }
+    assert budget["pricing_policy"][
+        "long_context_threshold_tokens_exclusive"
+    ] == 272_000
+    assert all(
+        row["route_input_token_ceiling"] == 250_000
+        and row["request_framing_token_allowance"] == 1_024
+        and row["long_context_pricing_applies"] is False
+        and row["conservative_input_class"] == "FULL_CACHE_WRITE"
+        for row in budget["per_prompt"].values()
+    )
 
 
 def test_terra_medium_boundary_preserves_product_and_records_harness_delta() -> None:
@@ -1083,20 +1147,16 @@ def test_terra_medium_boundary_preserves_product_and_records_harness_delta() -> 
     assert route_boundary["openai_sdk_version"] == "2.53.0"
 
 
-def test_terra_medium_boundary_seals_matrix_and_marks_budget_unavailable(
+def test_terra_medium_boundary_seals_matrix_and_derived_budget(
     tmp_path: Path,
 ) -> None:
     args = _real_cli_args(tmp_path)
     args.mode = "terra-medium-qualification-real"
-    args.max_total_cost_usd = (
-        eval_harness.TERRA_MEDIUM_HISTORICAL_MAX_TOTAL_COST_USD
-    )
-    args.max_call_cost_usd = (
-        eval_harness.TERRA_MEDIUM_HISTORICAL_MAX_CALL_COST_USD
-    )
+    args.max_total_cost_usd = eval_harness.TERRA_MEDIUM_MAX_TOTAL_COST_USD
+    args.max_call_cost_usd = eval_harness.TERRA_MEDIUM_MAX_CALL_COST_USD
     boundary = eval_harness._convergence_authorization_boundary(args)
     assert boundary["boundary_format"] == (
-        "openai-stage2-convergence-authorization/1.5.0"
+        "openai-stage2-convergence-authorization/1.6.0"
     )
     assert {
         "src/comprehension_verification/qualification_semantics.py",
@@ -1131,8 +1191,8 @@ def test_terra_medium_boundary_seals_matrix_and_marks_budget_unavailable(
     assert boundary["max_provider_requests"] == (
         QUALIFICATION_EXPECTED_PROVIDER_REQUESTS
     )
-    assert boundary["max_total_cost_usd"] == 5.10
-    assert boundary["max_call_cost_usd"] == 0.27
+    assert boundary["max_total_cost_usd"] == 25.60
+    assert boundary["max_call_cost_usd"] == 0.82
     assert sum(
         row["max_provider_calls"]
         for row in boundary["provider_request_cap_derivation"]["matrix_rows"]
@@ -1144,18 +1204,27 @@ def test_terra_medium_boundary_seals_matrix_and_marks_budget_unavailable(
         "worst_case_total": QUALIFICATION_EXPECTED_PROVIDER_REQUESTS,
         "cap_is_derived_from_matrix": True,
     }
-    assert boundary["monetary_budget"] == {
-        "status": "RECALCULATION_FROM_CURRENT_OFFICIAL_PRICES_REQUIRED",
-        "future_real_execution_authorized": False,
-        "historical_caps_not_reusable": {
-            "max_total_cost_usd": 5.10,
-            "max_call_cost_usd": 0.27,
-        },
-        "offline_rehearsal_caps_not_an_authorization": {
-            "max_total_cost_usd": 20.0,
-            "max_call_cost_usd": 0.27,
-        },
+    monetary_budget = boundary["monetary_budget"]
+    assert monetary_budget["status"] == (
+        "DERIVED_FROM_CURRENT_OFFICIAL_PRICES_AND_FROZEN"
+    )
+    assert monetary_budget["future_real_execution_authorized"] is True
+    assert monetary_budget["historical_caps_not_reusable"] == {
+        "max_total_cost_usd": 5.10,
+        "max_call_cost_usd": 0.27,
     }
+    assert monetary_budget["enforced_caps"] == {
+        "max_provider_requests": 33,
+        "max_total_cost_usd": 25.60,
+        "max_call_cost_usd": 0.82,
+    }
+    assert monetary_budget["derivation"] == terra_medium_budget_derivation()
+    assert boundary["pricing_policy_hash"] == monetary_budget["derivation"][
+        "pricing_policy_hash"
+    ]
+    assert boundary["qualification_matrix_hash"] == monetary_budget[
+        "derivation"
+    ]["matrix_hash"]
     assert boundary["p10_enabled"] is False
     assert boundary["p11_enabled_during_qualification"] is False
     assert boundary["fallback_enabled"] is False
@@ -1472,6 +1541,12 @@ def test_real_convergence_accounts_for_context_invalid_billable_attempts(
     assert report["controls"]["actual_cost_usd"] == 0.13
     assert report["controls"]["budget_charged_usd"] == 0.156
     assert report["controls"]["unpriced_attempts"] == 0
+    assert len(report["provider_call_receipts"]) == 13
+    assert report["provider_call_receipts"][0]["checkpoint_id"] == (
+        "P04_CANONICAL_POSITIVE"
+    )
+    assert report["provider_call_receipts"][0]["result"] == "SCHEMA_INVALID"
+    assert report["provider_call_receipts"][0]["provider_transport"] is True
     sweep = report["observations"][0]
     failures = sweep["failure"]["aggregated_failures"]
     assert len(failures) == 1
@@ -1794,11 +1869,70 @@ def test_terra_medium_real_cli_is_budget_blocked_before_secret_or_authorization(
     )
     with pytest.raises(
         eval_harness.OpenAIEvalBlocked,
-        match="OPENAI_TERRA_MEDIUM_MONETARY_BUDGET_RECALCULATION_REQUIRED",
+        match="OPENAI_TERRA_MEDIUM_QUALIFICATION_EXACT_CAPS_REQUIRED",
     ):
         eval_harness._run_convergence_cli(args)
     assert not args.ledger.exists()
     assert not args.report_path.exists()
+
+
+def test_terra_medium_cli_reserves_exact_budget_and_completes_once(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    args = _real_cli_args(tmp_path)
+    args.mode = "terra-medium-qualification-real"
+    args.max_total_cost_usd = eval_harness.TERRA_MEDIUM_MAX_TOTAL_COST_USD
+    args.max_call_cost_usd = eval_harness.TERRA_MEDIUM_MAX_CALL_COST_USD
+
+    async def fake_run(_args: argparse.Namespace) -> dict[str, object]:
+        record = EvaluationAuthorizationLedger(args.ledger).record(
+            args.execution_id
+        )
+        assert record["status"] == "RESERVED"
+        return {
+            "report_schema_version": "stage2-convergence-report/1.11.0",
+            "status": "PASS",
+            "mode": "real-terra-medium-qualification",
+            "classification": "SYNTHETIC_ONLY_NO_STUDENT_DATA",
+            "route_profile": "TERRA_MEDIUM_V1",
+            "observations": [],
+            "controls": {
+                "network_calls": QUALIFICATION_EXPECTED_PROVIDER_REQUESTS,
+                "provider_attempts": QUALIFICATION_EXPECTED_PROVIDER_REQUESTS,
+                "actual_cost_usd": 0.01,
+                "budget_charged_usd": 0.02,
+            },
+        }
+
+    monkeypatch.setattr(
+        eval_harness, "_run_current_convergence_real", fake_run
+    )
+    assert eval_harness._run_convergence_cli(args) == 0
+    capsys.readouterr()
+    report = json.loads(args.report_path.read_text(encoding="utf-8"))
+    assert report["qualification_outcome"] == (
+        "TERRA_MEDIUM_QUALIFICATION_PASSED"
+    )
+    assert report["convergence_outcome"] == "READY_FOR_INDEPENDENT_REVIEW"
+    assert report["pricing_policy_hash"] == (
+        eval_harness.TERRA_MEDIUM_BUDGET_DERIVATION["pricing_policy_hash"]
+    )
+    assert report["budget_derivation"]["matrix_provider_calls"] == 33
+    assert report["budget_derivation"]["max_provider_requests"] == 33
+    assert report["budget_derivation"]["max_call_cost_usd"] == 0.82
+    assert report["budget_derivation"]["max_total_cost_usd"] == 25.60
+    assert report["authorization_id"] == args.authorization_id
+    record = EvaluationAuthorizationLedger(args.ledger).record(
+        args.execution_id
+    )
+    assert record["status"] == "COMPLETED"
+    with pytest.raises(
+        eval_harness.OpenAIEvalBlocked,
+        match="EVALUATION_AUTHORIZATION_ALREADY_CONSUMED",
+    ):
+        eval_harness._run_convergence_cli(args)
 
 
 def test_terra_medium_pass_outcome_is_machine_readable() -> None:
