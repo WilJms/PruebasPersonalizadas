@@ -1,4 +1,177 @@
-# Handoff consolidado — qualification final Luna/MAX de Fase 2
+# Handoff consolidado — qualification controlada Terra/MEDIUM de Fase 2
+
+Fecha de corte actual: 2026-08-13 (America/Santiago).
+
+Veredicto actual: **`TERRA_MEDIUM_QUALIFICATION_FAILED`**.<br>
+Convergencia: **`CONVERGENCE_INCOMPLETE`**.<br>
+Clasificación causal: **`MODEL_OWNED_QUALIFICATION_FAILURE`**.
+
+La única matriz `GPT-5.6 Terra / MEDIUM` autorizada se ejecutó una vez sobre
+datos exclusivamente sintéticos y no superó la qualification congelada. La
+autorización terminó. No corresponde retry, segunda matriz MEDIUM, Terra/HIGH,
+prompt tuning, cambio de validator, build ni deploy. El paso siguiente queda
+limitado a revisión independiente antes de decidir si se autoriza una nueva
+fase experimental.
+
+## A. Estado GitHub y linaje Terra
+
+| Elemento | Valor |
+|---|---|
+| Repositorio / PR | `WilJms/PruebasPersonalizadas`, PR `#3` (open, draft, mergeable antes de publicar este handoff) |
+| Branch | `codex/openai-real-provider-gate` |
+| Baseline Stage 2 | `80dd57dbf38d56929c307eca956833c31e53bf33` |
+| Candidato / evidencia Luna/MAX preservados | `62d73ae5f183c0da4fb87a9ba673905c64225880` / `b4325b617529739f163471e43af54e125c754b91` |
+| Candidato Terra/MEDIUM congelado y ejecutado | `9185dbaccc36cd2150f723525b13e00bf86c3842` |
+| HEAD documental posterior | commit Git que contiene este handoff y el receipt; el SHA exacto se publica en el PR y en la entrega final para evitar autorreferencia hash imposible |
+| CI candidato push / PR | runs `31716336517` / `31716341310`, 7/7 jobs PASS en ambos |
+| Ruta / modelo / reasoning calificado | `TERRA_MEDIUM_V1` / `gpt-5.6-terra` / `MEDIUM` en P04–P09 |
+| Rehearsal / reporte | `stage2-product-rehearsal/1.8.0` / `stage2-convergence-report/1.8.0` |
+| SDK / API / adapter | OpenAI SDK `2.53.0`; Responses API; `OpenAIResponsesAdapter` |
+
+El estado conocido se reancló directamente contra GitHub antes de editar:
+Luna/MAX seguía en `LUNA_MAX_QUALIFICATION_FAILED`, la familia Luna en
+`LUNA_FAMILY_QUALIFICATION_EXHAUSTED` y la convergencia en
+`CONVERGENCE_INCOMPLETE`. El remoto no había avanzado después de `b4325b6…`.
+
+## B. Delta mecánico Terra/MEDIUM
+
+El commit candidato añade una identidad canónica nueva, `TERRA_MEDIUM_V1`, sin
+reutilizar ni sobrescribir rutas Luna históricas. Para mantener coherencia de
+perfil, todas las rutas del perfil usan exclusivamente `gpt-5.6-terra`; los
+esfuerzos congelados quedan P01/P02 `MEDIUM`, P03 `HIGH`, P04–P09 `MEDIUM` y
+P11 `LOW`. P10 continúa sin ruta.
+
+Archivos del candidato:
+
+- `Makefile`;
+- `scripts/run_openai_evals.py`;
+- `src/comprehension_verification/model_gateway/__init__.py`;
+- `src/comprehension_verification/model_gateway/openai_adapter.py`;
+- `src/comprehension_verification/model_gateway/openai_pricing.py`;
+- `src/comprehension_verification/model_gateway/openai_routes.py`;
+- `src/comprehension_verification/rehearsal.py`;
+- `tests/test_openai_adapter.py`;
+- `tests/test_openai_eval_harness.py`;
+- `tests/test_openai_pricing.py`.
+
+El adapter sólo amplía su guard fail-closed para aceptar los dos IDs exactos
+aprobados, Luna y Terra. El payload permanece congelado: Structured Outputs,
+`store=false`, `background=false`, `tools=[]`, paralelismo deshabilitado,
+truncation disabled, service tier default, sin temperature, timeout idéntico y
+retry SDK cero. No se cambió el SDK.
+
+No hubo cambios de prompts, prompt registry, fixtures, goldens P05, schemas
+funcionales, contratos, OpenAPI, cliente generado, validators, allowlists,
+thresholds, planner, assembler, grounding, P11, fallback ni criterios
+PASS/FAIL. El delta ejecutable registrado declara `prompt_registry_changes=[]`,
+`fixture_changes=[]`, `schema_changes=[]`, `validator_changes=[]`,
+`planner_changes=[]` y `assembler_changes=[]`.
+
+## C. API oficial, regresión y rehearsal pre-red
+
+La documentación oficial vigente de OpenAI confirmó antes de implementar que
+`gpt-5.6-terra`, `reasoning.effort=medium`, Responses API y Structured Outputs
+seguían soportados por la ruta congelada. No se detectó incompatibilidad de SDK
+o parámetros y no se actualizó ninguna dependencia.
+
+| Superficie | Resultado antes de red |
+|---|---|
+| Tests focales profile/routing/adapter/harness | 95 PASS |
+| Backend completo con cobertura | 642 PASS, 17 skips PostgreSQL cubiertos aparte, 81% coverage |
+| PostgreSQL 17 local efímero | prepare/migrations PASS; recovery/readiness 206 PASS; E2E 1 PASS y sensitive 8 PASS, matriz repetida; contenedor eliminado |
+| Contratos/schema/OpenAPI/client | PASS e idempotentes, sin diff; modelo `3f1a4210…`, schema `318f1dce…` |
+| Frontend | typecheck, 36/36 tests, build y audit con 0 vulnerabilidades |
+| Terraform/static/deploy | fmt, init backend=false y validate PASS; deploy artifacts 11/11 PASS; YAML y shell válidos |
+| Secret scan | PASS sobre 316 archivos versionables |
+| Rehearsal Terra/MEDIUM | PASS, 24 intentos simulados, 0 red; matriz exacta y ambos goldens PASS |
+| CI candidato push / PR | runs `31716336517` / `31716341310`: 7/7 jobs PASS cada uno |
+
+El rehearsal fijó la secuencia exacta: sweep P04–P09; golden P05 positivo y
+negativo offline; cadena base 1; cadena base 2; variante choice. Los goldens
+consumieron cero requests. El peor caso conservador fue USD `5.0054075` total
+y USD `0.25831` por llamada, dentro de caps fail-closed de `24` requests, USD
+`5.10` total y USD `0.27` por llamada.
+
+## D. Freeze y autorización exactly-once
+
+| Identidad | Valor |
+|---|---|
+| Execution ID | `stage2-terra-medium-9185dba-20260813-01` |
+| Authorization hash | `sha256:9c8031b2a9407ab20b38f645073d72fd9eb0942fa823fef34999ba5351b60fc6` |
+| Authorization boundary | `sha256:6c3aa08aea04fbc2f12e32899c7426282e4e8eb846019062512ffcbea9891926` |
+| Executable boundary | `sha256:d0fcb2889827ed0fd1c6ca57bd7664aa587bf82152db4b9168da3fee35f2800b` |
+| Harness | `sha256:fa90edcfeec075081387cc1b63ec55ce4d438e26faba6894b729eefdd744ac66` |
+| Rehearsal module | `sha256:b4cd168904e150fe38263e39eac8a39de53a45500511548ba453134e4fb305b5` |
+| Manifest | `sha256:d5991a48253eead5a4ba87653323177144fb67a4ae455ec9e2595a3e153ffb11` |
+| P05 golden fixture | `sha256:9f6849dfc8ff2aceee569d1c44122e589ace1c519fc171c50f3fdf4a05e9e9b0` |
+| Planner / assembler | `stage2-planner/2.0.0` / `stage1-assembler/2.0.0` |
+
+Prompt hashes congelados: P04 `f8c12331…`, P05 `4b38cf14…`, P06
+`01bf8fab…`, P07 `db0f6d91…`, P08 `f63230dd…` y P09 `a7607fb6…`.
+Relationship validators: P04 `2.0.0`, P05 `2.2.0`, P06 `2.3.0`, P07/P08
+`2.1.0`, P09 `2.0.0`; application validators: P05 `2.2.0`, P06 `2.1.0` y
+P07/P08/P09 `2.0.0`.
+
+Antes de red se verificaron candidate/remote SHA exactos, ambos CI verdes, PR
+draft/open/mergeable, secreto numérico fijado y habilitado sin revelar su
+valor, ledger íntegro, IDs inéditos, reporte ausente y caps exactos. La reserva
+se creó antes de resolver el secreto y quedó consumida exactamente una vez.
+
+## E. Única matriz real Terra/MEDIUM
+
+Inicio/fin UTC: `2026-08-13T15:44:36.508812Z` /
+`2026-08-13T15:49:59.166328Z`.
+
+| Fila | Attempts | Resultado | Evidencia content-free |
+|---|---:|---|---|
+| Sweep independiente P04–P09 | 6 | **FAIL** | P04/P06/P09 PASS. P05 `P05_NOT_APPROVABLE` por `SOURCE_FIDELITY`; P07 `DIAGNOSTIC_INCOMPLETE`; P08 `P08_DECISION_REJECT`, con groundedness, anchor sufficiency, criterion relevance y answerability bajo los thresholds congelados. |
+| Golden-positive P05 offline | 0 | **PASS** | `APPROVABLE`, `READY`, `APPROVE`; validator PASS. |
+| Golden-negative P05 offline | 0 | **PASS** | `REJECT` exacto; `PLAN_FEASIBILITY=FAIL/critical`; validator PASS. |
+| Cadena base 1 P04→P09 | 6 | **PASS** | P04–P09 y planner/assembly PASS. |
+| Cadena base 2 P04→P09 | 3 | **FAIL** | P04/P05/P06 completaron; planner fail-closed con `ASSESSMENT_PLAN_INFEASIBLE` / `EVIDENCE_MAPPING_UNCERTAIN`, sin oportunidades elegibles. |
+| Variante choice P04→P09 | 6 | **PASS** | P04–P09 y planner/assembly PASS. |
+
+No hubo error técnico del provider, timeout ni receipt sin precio. Los fallos
+positivos son model-owned respecto de obligaciones semánticas/grounding ya
+congeladas. El clasificador corregido dio precedencia terminal a esos fallos;
+ninguna señal técnica ocultó la evidencia model-owned.
+
+## F. Requests, tokens, costo y controles Terra
+
+| Control | Resultado |
+|---|---|
+| Provider attempts / cap | `21 / 24` |
+| Input tokens | `96,559` |
+| Cached input / cache-write input | `40,684 / 55,812` |
+| Output tokens | `26,639` |
+| Reasoning tokens | `8,567`, subconjunto del output |
+| Costo actual / cap | USD `0.4674608 / 5.10` |
+| Charge conservador observado | USD `3.4597928` |
+| Máximo actual / cap por llamada | USD `0.034957 / 0.27` |
+| Máximo charge conservador por llamada | USD `0.203811` |
+| Attempts sin precio / errores técnicos | `0 / 0` |
+| P10 / P11 / fallback | `0 / 0 / 0` |
+| Retry gateway / SDK / semántico | `0 / 0 / 0` |
+| Normalizaciones / prompt / fixture / validator changes | `0 / 0 / 0 / 0` |
+| Tools / store | `false / false` |
+| Boundary entre cadenas | `unchanged_boundary_across_chains=true` |
+
+## G. Receipt, veredicto y autoridad siguiente
+
+Receipt crudo e inmutable:
+`reports/openai/stage2_terra_medium_qualification_9185dba_20260813_final_01.json`,
+SHA-256 `af56425a8d00fc1bbcee06c6e088f590cff68c9938c2b23190c1b5a72fdd776c`.
+
+El ledger conserva exactamente la misma frontera y report hash, con estado
+terminal `FAILED` y código `TERRA_MEDIUM_QUALIFICATION_FAILED`. No se reescribió
+ni consolidó el receipt. El PR debe permanecer draft; no se autoriza deploy ni
+otra matriz. La única autoridad recomendada registrada es
+`INDEPENDENT_REVIEW_BEFORE_ANY_TERRA_HIGH_AUTHORITY`.
+
+`TERRA_MEDIUM_QUALIFICATION_FAILED`<br>
+`CONVERGENCE_INCOMPLETE`
+
+## Anexo histórico Luna/MAX preservado
 
 Fecha de corte: 2026-08-12 (America/Santiago).
 
