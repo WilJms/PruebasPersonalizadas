@@ -5366,7 +5366,24 @@ def _max_qualification_outcome(result: dict[str, Any]) -> dict[str, str | None]:
         "TYPEERROR",
         "VALUEERROR",
     }
-    if _failure_codes(result) & technical_codes:
+    failure_codes = _failure_codes(result)
+    model_owned_codes = failure_codes - technical_codes
+    if model_owned_codes:
+        causal_classification = "MODEL_OWNED_QUALIFICATION_FAILURE"
+        if failure_codes & technical_codes:
+            causal_classification = (
+                "MODEL_OWNED_QUALIFICATION_FAILURE_WITH_TECHNICAL_FAILURES"
+            )
+        return {
+            "qualification_outcome": "LUNA_MAX_QUALIFICATION_FAILED",
+            "family_outcome": "LUNA_FAMILY_QUALIFICATION_EXHAUSTED",
+            "convergence_outcome": "CONVERGENCE_INCOMPLETE",
+            "causal_classification": causal_classification,
+            "recommended_next_authority": (
+                "HUMAN_REVIEW_OF_LUNA_EXHAUSTION_NO_AUTOMATIC_MODEL_CHANGE"
+            ),
+        }
+    if failure_codes & technical_codes:
         return {
             "qualification_outcome": "MAX_QUALIFICATION_INCONCLUSIVE",
             "family_outcome": None,

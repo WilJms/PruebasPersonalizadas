@@ -1320,6 +1320,36 @@ def test_max_outcome_is_terminal_for_model_failure_and_inconclusive_for_transpor
             ],
         }
     )["qualification_outcome"] == "MAX_QUALIFICATION_INCONCLUSIVE"
+    assert eval_harness._max_qualification_outcome(
+        {
+            "status": "FAIL",
+            "observations": [
+                {
+                    "failure": {
+                        "aggregated_failures": [
+                            {"codes": ["MODEL_PROVIDER_ERROR"]},
+                            {
+                                "codes": [
+                                    "MODEL_OUTPUT_VALIDATION_FAILED",
+                                    "OUTPUT_PYDANTIC_VALIDATION_FAILED",
+                                ]
+                            },
+                        ]
+                    }
+                }
+            ],
+        }
+    ) == {
+        "qualification_outcome": "LUNA_MAX_QUALIFICATION_FAILED",
+        "family_outcome": "LUNA_FAMILY_QUALIFICATION_EXHAUSTED",
+        "convergence_outcome": "CONVERGENCE_INCOMPLETE",
+        "causal_classification": (
+            "MODEL_OWNED_QUALIFICATION_FAILURE_WITH_TECHNICAL_FAILURES"
+        ),
+        "recommended_next_authority": (
+            "HUMAN_REVIEW_OF_LUNA_EXHAUSTION_NO_AUTOMATIC_MODEL_CHANGE"
+        ),
+    }
 
 
 def test_authorization_boundary_binds_prompts_schemas_validators_and_inputs() -> None:
