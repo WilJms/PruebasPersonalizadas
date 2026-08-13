@@ -2,11 +2,35 @@
   "schema_version": "stage2-semantic-qualification-pack/1.0.0",
   "pack_id": "canonical-document-cache-invalidation-v1",
   "classification": "SYNTHETIC_ONLY_NO_STUDENT_DATA",
-  "phase": "HARNESS_SEMANTIC_REMEDIATION",
+  "phase": "HARNESS_FINAL_SEMANTIC_HARDENING",
   "review_set_id": "SR-SET-CACHE-001",
   "review_version": "1.0.0",
   "reviewed_on": "2026-08-13",
-  "review_basis": "INDEPENDENT_MANUAL_SOURCE_REVIEW",
+  "review_basis": "CODEX_AUTHORED_SEMANTIC_REVIEW",
+  "review_authorship": {
+    "authoring_class": "CODEX_AUTHORED_SEMANTIC_REVIEW",
+    "independent_review_status": "USER_SUPPLIED_INDEPENDENT_REVIEW_FINDINGS",
+    "human_ratification": null,
+    "provider_response_used_as_target": false
+  },
+  "provenance_amendment": {
+    "amendment_id": "SR-PROVENANCE-AMENDMENT-001",
+    "amendment_version": "1.0.0",
+    "reason": "Corrige la atribución de autoría sin alterar el contenido semántico, los review IDs, las versiones ni los hashes previamente registrados.",
+    "preserve_prior_review_hashes": true,
+    "provider_response_used_as_target": false
+  },
+  "prior_review_hashes": {
+    "SR-P04-CACHE-POS-001": "sha256:63aabc66a4664d9d4393ab0d4708ff383ce2d17bd21e2be969319e04024b0bf2",
+    "SR-P05-CACHE-BLUEPRINT-001": "sha256:2f3baf9c64931487f53fcfc6c3d4557e4f634cb776a0a4dd65918f2ffddb42b1",
+    "SR-P05-CACHE-PLAN-NEG-001": "sha256:9d1bba041da78a78600a7645d40cb62aba8294c90e6c1c976e796b4e8490e808",
+    "SR-P06-CACHE-MAP-POS-001": "sha256:8cdfd4dcc53decab54e1167c20625573fb00b5e511ab92eb141b5975b08634d4",
+    "SR-P07-CACHE-POS-001": "sha256:fc20c9360a36707762a91d76d2ce9f9d3c167bc8bcb088d1f94d6e8397e084f1",
+    "SR-P07-CACHE-NEG-001": "sha256:3a8c665373a3aad141571d8aced682410d5c7d3a8747eac2f91f2f12122006c2",
+    "SR-P08-CACHE-POS-001": "sha256:e28976bdc1ad874d4fad0bc465a73eec899354b3edcdebaefc631167d4e36493",
+    "SR-P08-CACHE-NEG-001": "sha256:a1094aefabd40a9396bda991679f36332adab024e33e667906fc3b2f8d75ef24",
+    "SR-P09-CACHE-POS-001": "sha256:515ea95c840e9b8fb430ab744c3c9863fcfe5064c4c222afd32f50c9639710f4"
+  },
   "provider_response_used_as_target": false,
   "construct": "Comprensión causal localizada del mecanismo cambio de fuente → invalidación → nueva consulta → recálculo, sin ampliar la evidencia.",
   "artifacts": [
@@ -298,10 +322,21 @@
       "hidden_contradiction_absent": "PASS: consigna, rúbrica y submission usan la misma secuencia y el mismo límite de fuentes.",
       "legitimate_positive_abstention": "PASS: las únicas razones legítimas registradas son fallas de provenance, allowlist o deriva contractual, no una carencia del fixture limpio.",
       "anchor_is_sufficient": "PASS: un único fragmento autosuficiente cubre los tres elementos observables.",
-      "not_overfit_to_one_wording": "PASS: la guía admite sinónimos de invalidar/descartar y obsoleto/desactualizado.",
+      "not_overfit_to_one_wording": "PASS: el oracle P07 evalúa invariantes y acepta wording alternativo; el golden es ejemplo, no igualdad obligatoria.",
       "external_knowledge_absent": "PASS: las inferencias autorizadas se limitan a las fuentes del pack.",
       "fixture_represents_defensible_task": "PASS: el documento ofrece consigna, rúbrica, mecanismo y traza coherentes.",
-      "mock_is_not_quality_oracle": "PASS: ningún positive del pack se deriva de DeterministicMockFactory."
+      "mock_is_not_quality_oracle": "PASS: ningún positive del pack se deriva de DeterministicMockFactory.",
+      "p07_bad_candidate_fails": "PASS: conocimiento externo y anchor insuficiente producen failure semántico; vaguedad no decidible produce INDETERMINATE.",
+      "p06_equivalent_mapping_passes": "PASS: IDs y redacción alternativos pasan si conservan path, evidencia causal, mínimos y elegibilidad del planner.",
+      "p06_wrong_evidence_fails": "PASS: una oportunidad sobre evidencia sin la secuencia causal completa falla semánticamente.",
+      "indeterminate_is_inconclusive": "PASS: CAUSE_INDETERMINATE nunca agrega TERRA_MEDIUM_QUALIFICATION_FAILED.",
+      "technical_only_is_inconclusive": "PASS: technical-only conserva causalidad técnica y outcome INCONCLUSIVE.",
+      "clean_model_owned_is_failed": "PASS: sólo failures model-owned de alta confianza sobre oracle válido agregan FAILED.",
+      "base2_restored": "PASS: base1 y base2 poseen run IDs, llamadas y output hashes independientes.",
+      "canonical_chain_uses_current_outputs": "PASS: cada request downstream consume hashes de outputs producidos dentro del mismo run.",
+      "canonical_chain_has_zero_golden_injection": "PASS: el adapter offline usa DeterministicMockAdapter sólo como transport substitute para la cadena integrada.",
+      "request_cap_is_matrix_derived": "PASS: siete filas suman explícitamente 33 provider calls worst-case.",
+      "review_provenance_is_truthful": "PASS: las reviews declaran CODEX_AUTHORED_SEMANTIC_REVIEW y human_ratification=null."
     }
   },
   "document_visual_qa": {

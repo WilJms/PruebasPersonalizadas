@@ -1,4 +1,223 @@
-# Handoff consolidado — remediación semántica del harness de Fase 2
+# Handoff consolidado — hardening semántico final del harness de Fase 2
+
+Fecha de corte actual: 2026-08-13 (America/Santiago).
+
+Fase: **`HARNESS_FINAL_SEMANTIC_HARDENING`**.<br>
+Estado local: **completo y pendiente únicamente de CI del commit publicado**.<br>
+Siguiente autoridad posible: **revisión independiente final del harness**.<br>
+Qualification real autorizada por este handoff: **ninguna**.
+
+Esta fase corrige exclusivamente los cuatro defectos metodológicos restantes:
+el oracle generativo de P07, la agregación causal global, la ausencia de la
+segunda cadena base y la falta de una cadena integrada document-shaped. No
+modifica el producto ni reinterpreta receipts históricos. El resultado durable
+de Terra/MEDIUM continúa siendo `TERRA_MEDIUM_QUALIFICATION_FAILED`, pero su
+qualification sigue metodológicamente contaminada y su causalidad histórica no
+constituye evidencia limpia de fallo model-owned.
+
+## 0. Reanclaje de esta fase
+
+| Elemento | Estado observado antes de editar |
+|---|---|
+| Repositorio | `WilJms/PruebasPersonalizadas` (privado) |
+| Checkout | `/Users/wiljms/Documents/PruebasPersonalizadasCodex` |
+| Branch local/remota | `codex/openai-real-provider-gate` |
+| HEAD local / remoto / GitHub | `29a69d5da9c9d56e977eb21f3a39ed63d59a5e7d` |
+| Commit de entrada | `Remediate qualification harness semantics` |
+| PR | `#3`, `OPEN`, `DRAFT`, `MERGEABLE` |
+| CI de entrada | push `31741903012` y PR `31741907761`, 14/14 jobs PASS agregados |
+| Árbol inicial | sólo `coverage.xml` y `reports/openai/blueprint_v119_v115_recanary_a2be3c6.json` untracked preexistentes; no se incorporan |
+
+Se contrastaron checkout, remoto, PR, commits, checks, body, receipts, fixtures,
+boundary congelada, DOCX y reporte offline. También se verificaron las
+herramientas locales de Python, frontend, PostgreSQL 16/17, Docker, Terraform,
+contratos/OpenAPI/client, parser DOCX, LibreOffice y GitHub. No se obtuvo ni se
+intentó resolver ningún secreto de provider.
+
+El SHA final y los run IDs de CI se publican en el PR y en la entrega final: no
+se incrustan en el mismo commit para evitar una autorreferencia imposible.
+
+## 1. Cambios finales del instrumento
+
+### P06 — equivalencia semántica, no igualdad de mapping
+
+El positive exige `READY`, contexto cerrado, operación `JUSTIFY_DECISION`,
+dimension/variant correctas, IDs y allowlist válidos, evidencia causal que
+cubra cambio de fuente, invalidación, riesgo de obsolescencia y nueva
+consulta/recálculo, métricas sobre los mínimos congelados y al menos una
+oportunidad elegible por el planner productivo. Claims, IDs alternativos y
+redacción pueden variar. Un mapping equivalente pasa; evidencia equivocada o
+incompleta no pasa.
+
+### P07 — oracle por invariantes
+
+El golden `GOLDEN-P07-CACHE-POS-001` queda como ejemplo revisado, no como única
+respuesta permitida. El oracle ya no compara `candidate.model_dump()` completo.
+Evalúa determinísticamente status/candidate, IDs, contexto cerrado, allowlist,
+template/dimension/variant/operación, formato, dificultad, tiempo, suficiencia
+del anchor, límites inferenciales, guía preliminar, PII/leakage y validators
+congelados. Una pregunta con wording distinto y los mismos invariantes pasa;
+una que exige implementación, concurrencia o conocimiento externo falla; una
+salida genuinamente no decidible queda `INDETERMINATE`.
+
+### Outcome global — incertidumbre no es FAIL
+
+`_terra_medium_qualification_outcome()` sólo emite
+`TERRA_MEDIUM_QUALIFICATION_FAILED` cuando existe un checkpoint semánticamente
+calificado, oracle válido, failure model-owned limpio y confianza `HIGH` en
+semántica, adherence o ambas. `CAUSE_INDETERMINATE`, oracle inválido/no
+establecido y technical-only producen
+`TERRA_MEDIUM_QUALIFICATION_INCONCLUSIVE`; la clasificación causal específica
+se conserva aparte. Todos los obligatorios PASS producen
+`TERRA_MEDIUM_QUALIFICATION_PASSED`.
+
+### Base 2 — composición independiente restaurada
+
+`integrated-chain:base:2:P04-P09` vuelve a la matriz con run ID, seis
+invocaciones y outputs independientes de base 1. No hay replay, retries ni
+fallback. Como todas las cadenas integradas, mide composición/estabilidad y no
+autoriza por sí sola atribución stage-local. Un stop propagado por el planner
+se conserva como chain incomplete y `CAUSE_INDETERMINATE` si no puede aislarse
+la causa upstream.
+
+### Canonical document-shaped chain
+
+Se añadió `integrated-chain:canonical-document-sufficient:P04-P09`:
+
+`DOCX → parser productivo → EvidenceUnit/EvidenceBundle → P04 → P05 → P06 → planner → P07 → P08 → assembler productivo → P09`.
+
+La entrada se deriva de los cuatro artefactos `SYNTHETIC_ONLY_NO_STUDENT_DATA`.
+Cada request downstream consume outputs producidos dentro del mismo run; las
+ocho filas de dataflow registran hashes de entrada/salida y
+`intermediate_golden_injected=false`. Los goldens sólo evalúan el semantic
+sweep; nunca alimentan esta cadena. En offline, `DeterministicMockAdapter`
+actúa exclusivamente como `STRUCTURAL_TRANSPORT_SUBSTITUTE`, no como oracle de
+calidad. La futura ejecución provider usaría la misma frontera congelada, sin
+retries, fallback, P10 ni P11.
+
+### Provenance de reviews
+
+El pack declara verazmente:
+
+- `authoring_class=CODEX_AUTHORED_SEMANTIC_REVIEW`;
+- `independent_review_status=USER_SUPPLIED_INDEPENDENT_REVIEW_FINDINGS`;
+- `human_ratification=null`;
+- `provider_response_used_as_target=false`.
+
+`SR-PROVENANCE-AMENDMENT-001` v1.0.0 corrige sólo la atribución de autoría. Los
+nueve review IDs/versiones y hashes registrados previamente se preservan en
+`prior_review_hashes`; el material actual y el amendment poseen hashes
+separados, por lo que no se fabrica una ratificación humana ni se rompe el
+linaje.
+
+## 2. Matriz futura evidence-first y request cap derivado
+
+| Row | Clase | Provider calls máximas |
+|---|---|---:|
+| `semantic-sweep:P04-P09:versioned-positive-and-negative` | atribución semántica stage-local: P04, P05+/−, P06, P07+/−, P08+/−, P09 | 9 |
+| `offline-golden-positive:P05` | oracle determinista offline | 0 |
+| `offline-golden-negative:P05` | oracle determinista offline | 0 |
+| `integrated-chain:base:1:P04-P09` | composición end-to-end | 6 |
+| `integrated-chain:base:2:P04-P09` | composición end-to-end independiente | 6 |
+| `integrated-chain:choice-variant:P04-P09` | composición end-to-end variante | 6 |
+| `integrated-chain:canonical-document-sufficient:P04-P09` | composición desde frontera DOCX | 6 |
+| **Worst case derivado** | **7 rows** | **33** |
+
+El cap `33` se calcula como suma de la matriz y es compartido por rehearsal,
+authorization plan y CLI; no se diseñó la evidencia alrededor del antiguo cap
+24. El sweep usa `REVIEWED_SEMANTIC_ORACLE` en nueve invocaciones. Las cuatro
+cadenas usan 24 `STRUCTURAL_TRANSPORT_SUBSTITUTE` y declaran
+`semantic_quality_conclusion_allowed=false`.
+
+Los caps monetarios históricos USD `5.10`/`0.27` no se reutilizan. El estado
+queda `RECALCULATION_FROM_CURRENT_OFFICIAL_PRICES_REQUIRED`. El target real de
+Terra/MEDIUM falla cerrado con
+`OPENAI_TERRA_MEDIUM_MONETARY_BUDGET_RECALCULATION_REQUIRED` antes de pedir o
+resolver secreto, abrir ledger o construir transporte. Una eventual nueva
+qualification requiere revisión independiente, precios oficiales vigentes y
+una autorización humana nueva.
+
+## 3. Evidencia reproducible y revisión adversarial
+
+Reporte: `reports/openai/harness_semantic_remediation_offline.json`.<br>
+Schema/rehearsal: `stage2-semantic-harness-report/1.1.0` /
+`stage2-semantic-harness-rehearsal/1.1.0`.<br>
+SHA-256: `36ef8051ef2d21c303d2bb08175ea68db1dacc91d7c6965f05a85371bc41914e`.<br>
+Fixture: `stage2-semantic-qualification-pack/1.0.0`, canonical hash
+`sha256:4a5cd49f86256839befc19cfd9aa9c803726929d5124e4c38d8ac3a82a999b12`.
+
+Los 18 checks del reporte están en PASS. La revisión adversarial registra 19
+preguntas PASS y demuestra específicamente: P06/P07 equivalentes válidos pasan;
+malos anchors/evidence/knowledge externo fallan; casos no decidibles quedan
+`INDETERMINATE`; indeterminate y technical-only agregan INCONCLUSIVE;
+model-owned limpio agrega FAILED; base2 existe; la cadena documental usa
+outputs del run y cero goldens intermedios; el cap suma 33; y la autoría de
+reviews es veraz.
+
+Los DOCX fueron regenerados a un directorio efímero y comparados byte a byte
+con los fixtures. LibreOfficeDev 26.8 + `render_docx.py` produjo exactamente
+una página por documento; se inspeccionaron visualmente las cuatro páginas sin
+clipping, overflow, superposición, tabla rota, sustitución visible de fuente ni
+página vacía. Los hashes permanecen:
+
+| Documento | SHA-256 |
+|---|---|
+| `official_assignment.docx` | `ac8ade8c3dc529d06d439dcbc3af0b866c6e1deaa3ebaa0552963f7a93d54025` |
+| `official_rubric.docx` | `71c8101a6d1c50acb81c2f04e8479540e9c90a35974819f46af497a81f5361f7` |
+| `submission_sufficient.docx` | `d4983ba075c625f4c58858db8ec02a603f57b71145517e7160afd29df32be49a` |
+| `submission_insufficient.docx` | `67d3ebaff85dfa269c65a8df23d3cc0e18631c6b2a51613c82fadeb2098f8204` |
+
+El insufficient sigue siendo negative semántico: abstención correcta no es
+failure semántico; una abstención con Diagnostic inválido sí es failure de
+adherence independiente.
+
+## 4. Regresión offline de esta fase
+
+| Superficie | Resultado |
+|---|---|
+| Harness semántico + eval/outcome/matrix | 72/72 PASS |
+| Backend completo | 668 PASS, 17 skipped sólo por PostgreSQL separado; coverage 81 % |
+| PostgreSQL 16 y 17 efímeros | prepare/migrations PASS; recovery/readiness 206/206; E2E 1/1 y sensitive 8/8 repetidos; contenedores eliminados |
+| Contratos/schema/fixtures | contratos 1.2, 141 definiciones, 8 fixtures PASS; regeneración idempotente |
+| OpenAPI/client | regenerados desde fuente canónica, idempotentes y sin diff |
+| Frontend | `npm ci`, typecheck, 36/36 tests, build y audit 0 vulnerabilidades PASS |
+| Browser/Playwright | login→activities sin warnings/errors ni overflow a 320 px; Stage 1 1/1 y Stage 2 2/2 PASS |
+| Terraform/static/deploy artifacts | fmt, init sin backend y validate PASS; artifacts 11/11; YAML y shell syntax PASS |
+| Seguridad | secret scan PASS sobre 329 archivos versionables |
+| DOCX | build determinista 4/4; render e inspección visual 4/4 PASS |
+| Rehearsal final | 18/18 checks; 33 invocaciones offline; 9 reviewed oracles + 24 transport substitutes; PASS |
+
+El CI final pertenece al commit que publica esta sección y se registra en el
+PR #3 y en la entrega final. El PR debe permanecer `OPEN` y `DRAFT`; no se hace
+merge ni se marca ready.
+
+## 5. Freeze, controles y receipts históricos
+
+El diff de esta fase está limitado a harness, CLI/eval runner, fixtures de
+evaluación, tests, reporte offline y este handoff. La boundary congelada pasa y
+confirma cero cambios en prompts P04–P09, system/developer text, contratos,
+Pydantic, validators, thresholds, planner, assembler, product workflows,
+routing/model/reasoning, retry/fallback, P10/P11, persistence y UI.
+
+Controles finales del reporte: provider attempts reales `0`; billable requests
+`0`; network calls to OpenAI `0`; provider adapter constructed `false`; provider
+secret resolved `false`; Terra/Luna/Sol executions `0/0/0`; P10/P11 calls
+`0/0`; deploys `0`.
+
+Todos los receipts permanecen byte-inmutables:
+
+| Receipt | SHA-256 preservado |
+|---|---|
+| Luna/HIGH | `30a422dc79a2098ff6e7066a39cb2517e959d2d1d8a169f287c68101c2dc519e` |
+| Luna/XHIGH | `1b62c99b19781d923df9eda4082b8e73de64de2c4a4253b65d555e7d70e8db1a` |
+| Luna/MAX raw | `532ba5e19537c039f9746c177ae3ed17cf9fbc3d6fdb9bf34c5f07f32a6eda0e` |
+| Luna/MAX consolidado | `74fc1323da3925a9805b4c957bbd597b342909f4b77855fcce706db6afbb17fd` |
+| Terra/MEDIUM | `af56425a8d00fc1bbcee06c6e088f590cff68c9938c2b23190c1b5a72fdd776c` |
+
+No se ejecutó Terra/MEDIUM después de esta validación. El instrumento queda
+detenido para revisión independiente final.
+
+## Anexo 0 — remediación semántica anterior (estado previo)
 
 Fecha de corte actual: 2026-08-13 (America/Santiago).
 

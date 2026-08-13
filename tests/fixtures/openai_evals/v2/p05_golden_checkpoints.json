@@ -9,7 +9,14 @@
       "review_version": "1.0.0",
       "status": "SEMANTICALLY_QUALIFIED_POSITIVE",
       "reviewed_on": "2026-08-13",
-      "review_basis": "INDEPENDENT_HUMAN_SOURCE_REVIEW",
+      "review_basis": "CODEX_AUTHORED_SEMANTIC_REVIEW",
+      "review_authorship": {
+        "authoring_class": "CODEX_AUTHORED_SEMANTIC_REVIEW",
+        "independent_review_status": "USER_SUPPLIED_INDEPENDENT_REVIEW_FINDINGS",
+        "human_ratification": null
+      },
+      "provenance_amendment_id": "SR-PROVENANCE-AMENDMENT-001",
+      "prior_review_hash": "sha256:2f3baf9c64931487f53fcfc6c3d4557e4f634cb776a0a4dd65918f2ffddb42b1",
       "independent_of_provider_response": true,
       "rationale": [
         "La dimensión enlaza literalmente el resultado outcome_1 y el criterio criterion_1 con un mecanismo concreto, no con un aspecto genérico del entregable.",

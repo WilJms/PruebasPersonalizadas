@@ -60,14 +60,14 @@ openai-convergence-real:
 		--secret-version-resource "$(SECRET_VERSION_RESOURCE)" \
 		--max-total-cost-usd "$${CVA_OPENAI_CONVERGENCE_MAX_TOTAL_USD:-0.75}" \
 		--max-call-cost-usd "$${CVA_OPENAI_CONVERGENCE_MAX_CALL_USD:-0.10}" \
-		--max-provider-requests 24
+		--max-provider-requests 33
 
 openai-xhigh-qualification-dry-run:
 	@env -u CVA_OPENAI_API_KEY $(PYTHON) scripts/run_openai_evals.py \
 		--mode xhigh-qualification-dry-run \
 		--max-total-cost-usd 0.75 \
 		--max-call-cost-usd 0.10 \
-		--max-provider-requests 24
+		--max-provider-requests 33
 
 openai-xhigh-qualification-real:
 	@test -n "$(EXECUTION_ID)" || { echo "EXECUTION_ID is required" >&2; exit 2; }
@@ -85,14 +85,14 @@ openai-xhigh-qualification-real:
 		--secret-version-resource "$(SECRET_VERSION_RESOURCE)" \
 		--max-total-cost-usd 0.75 \
 		--max-call-cost-usd 0.10 \
-		--max-provider-requests 24
+		--max-provider-requests 33
 
 openai-max-qualification-dry-run:
 	@env -u CVA_OPENAI_API_KEY $(PYTHON) scripts/run_openai_evals.py \
 		--mode max-qualification-dry-run \
 		--max-total-cost-usd 0.75 \
 		--max-call-cost-usd 0.10 \
-		--max-provider-requests 24
+		--max-provider-requests 33
 
 openai-max-qualification-real:
 	@test -n "$(EXECUTION_ID)" || { echo "EXECUTION_ID is required" >&2; exit 2; }
@@ -110,32 +110,18 @@ openai-max-qualification-real:
 		--secret-version-resource "$(SECRET_VERSION_RESOURCE)" \
 		--max-total-cost-usd 0.75 \
 		--max-call-cost-usd 0.10 \
-		--max-provider-requests 24
+		--max-provider-requests 33
 
 openai-terra-medium-qualification-dry-run:
 	@env -u CVA_OPENAI_API_KEY $(PYTHON) scripts/run_openai_evals.py \
 		--mode terra-medium-qualification-dry-run \
-		--max-total-cost-usd 5.10 \
+		--max-total-cost-usd 20.0 \
 		--max-call-cost-usd 0.27 \
-		--max-provider-requests 24
+		--max-provider-requests 33
 
 openai-terra-medium-qualification-real:
-	@test -n "$(EXECUTION_ID)" || { echo "EXECUTION_ID is required" >&2; exit 2; }
-	@test -n "$(AUTHORIZATION_ID)" || { echo "AUTHORIZATION_ID is required" >&2; exit 2; }
-	@test -n "$(LEDGER)" || { echo "LEDGER is required" >&2; exit 2; }
-	@test -n "$(REPORT)" || { echo "REPORT is required" >&2; exit 2; }
-	@test -n "$(SECRET_VERSION_RESOURCE)" || { echo "SECRET_VERSION_RESOURCE is required" >&2; exit 2; }
-	@env -u CVA_OPENAI_API_KEY $(PYTHON) scripts/run_openai_evals.py \
-		--mode terra-medium-qualification-real \
-		--allow-billable \
-		--execution-id "$(EXECUTION_ID)" \
-		--authorization-id "$(AUTHORIZATION_ID)" \
-		--ledger "$(LEDGER)" \
-		--report-path "$(REPORT)" \
-		--secret-version-resource "$(SECRET_VERSION_RESOURCE)" \
-		--max-total-cost-usd 5.10 \
-		--max-call-cost-usd 0.27 \
-		--max-provider-requests 24
+	@echo "OPENAI_TERRA_MEDIUM_MONETARY_BUDGET_RECALCULATION_REQUIRED" >&2
+	@exit 2
 
 openai-canary-dry-run:
 	@test -n "$(CASE_ID)" || { echo "CASE_ID is required" >&2; exit 2; }

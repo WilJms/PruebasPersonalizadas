@@ -8,7 +8,9 @@ from dataclasses import dataclass, replace
 from datetime import UTC, datetime
 import json
 from pathlib import Path
+import re
 from typing import Any, cast
+import unicodedata
 
 from pydantic import BaseModel, SecretStr
 
@@ -76,11 +78,11 @@ from .web.workflows import (
 )
 
 
-REHEARSAL_VERSION = "stage2-product-rehearsal/1.9.0"
-REHEARSAL_REPORT_VERSION = "stage2-convergence-report/1.9.0"
-QUALIFICATION_EXPECTED_PROVIDER_REQUESTS = 21
+REHEARSAL_VERSION = "stage2-product-rehearsal/1.10.0"
+REHEARSAL_REPORT_VERSION = "stage2-convergence-report/1.10.0"
 BASE_SCENARIO_ID = "synthetic-open-short-v1"
 VARIANT_SCENARIO_ID = "synthetic-choice-justification-v1"
+CANONICAL_DOCUMENT_SCENARIO_ID = "canonical-document-cache-sufficient-v1"
 P05_GOLDEN_FIXTURE_PATH = (
     Path(__file__).resolve().parents[2]
     / "tests/fixtures/openai_evals/v2/p05_golden_checkpoints.json"
@@ -93,6 +95,77 @@ SEMANTIC_QUALIFICATION_FIXTURE_PATH = (
     Path(__file__).resolve().parents[2]
     / "tests/fixtures/openai_evals/v3/semantic_qualification_pack.json"
 )
+
+
+@dataclass(frozen=True, slots=True)
+class QualificationMatrixRow:
+    row_id: str
+    check_kind: str
+    max_provider_calls: int
+    stage_scope: str
+
+    def model_dump(self) -> dict[str, Any]:
+        return {
+            "row_id": self.row_id,
+            "check_kind": self.check_kind,
+            "max_provider_calls": self.max_provider_calls,
+            "stage_scope": self.stage_scope,
+        }
+
+
+QUALIFICATION_MATRIX_ROWS = (
+    QualificationMatrixRow(
+        "semantic-sweep:P04-P09:versioned-positive-and-negative",
+        "SEMANTIC_STAGE_LOCAL_ATTRIBUTION",
+        9,
+        "P04,P05+,P05-,P06,P07+,P07-,P08+,P08-,P09",
+    ),
+    QualificationMatrixRow(
+        "offline-golden-positive:P05",
+        "DETERMINISTIC_OFFLINE_ORACLE_CHECK",
+        0,
+        "P05+",
+    ),
+    QualificationMatrixRow(
+        "offline-golden-negative:P05",
+        "DETERMINISTIC_OFFLINE_ORACLE_CHECK",
+        0,
+        "P05-",
+    ),
+    QualificationMatrixRow(
+        "integrated-chain:base:1:P04-P09",
+        "INTEGRATED_COMPOSITIONAL_CHECK",
+        6,
+        "P04-P09 plus planner/assembly",
+    ),
+    QualificationMatrixRow(
+        "integrated-chain:base:2:P04-P09",
+        "INTEGRATED_COMPOSITIONAL_CHECK",
+        6,
+        "P04-P09 plus planner/assembly",
+    ),
+    QualificationMatrixRow(
+        "integrated-chain:choice-variant:P04-P09",
+        "INTEGRATED_COMPOSITIONAL_CHECK",
+        6,
+        "P04-P09 plus planner/assembly",
+    ),
+    QualificationMatrixRow(
+        "integrated-chain:canonical-document-sufficient:P04-P09",
+        "INTEGRATED_COMPOSITIONAL_CHECK",
+        6,
+        "DOCX parser boundary through P09 plus planner/assembly",
+    ),
+)
+QUALIFICATION_EXPECTED_PROVIDER_REQUESTS = sum(
+    row.max_provider_calls for row in QUALIFICATION_MATRIX_ROWS
+)
+
+
+def qualification_matrix_rows() -> list[dict[str, Any]]:
+    """Return the evidence-first matrix from which the request cap is derived."""
+
+    return [row.model_dump() for row in QUALIFICATION_MATRIX_ROWS]
 
 
 @dataclass(frozen=True, slots=True)
@@ -1265,6 +1338,330 @@ def _semantic_checkpoint_expected(
     return cast(BaseModel, expected[checkpoint_id])
 
 
+_REQUIRED_CACHE_CONCEPTS = frozenset(
+    {"source_change", "invalidation", "stale_risk", "recalculation"}
+)
+_CACHE_CONCEPT_PATTERNS: dict[str, tuple[str, ...]] = {
+    "source_change": (
+        r"\b(?:fuente|origen|insumo|source)\b.{0,80}\b(?:cambia|cambio|cambiar|modifica|actualiza|changes?|changed|updates?|updated)\b",
+        r"\b(?:cambia|cambio|cambiar|modifica|actualiza|changes?|changed|updates?|updated)\b.{0,80}\b(?:fuente|origen|insumo|source)\b",
+    ),
+    "invalidation": (
+        r"\b(?:invalida|invalidar|invalidacion|descarta|descartar|retira|retirar)\w*\b",
+        r"\b(?:elimina|eliminar)\w*\b.{0,40}\b(?:entrada|cache)\b",
+    ),
+    "stale_risk": (
+        r"\b(?:obsolet|desactualiz|stale)\w*\b",
+        r"\b(?:resultado|valor|version|entrada)\b.{0,50}\b(?:previa|previo|anterior|antigua|antiguo)\b",
+    ),
+    "recalculation": (
+        r"\b(?:recalcul|recomput|vuelve a calcular)\w*\b",
+        r"\b(?:nueva|siguiente|posterior)\b.{0,35}\b(?:consulta|query)\b",
+        r"\b(?:consulta|query)\b.{0,35}\b(?:nueva|siguiente|posterior|repite)\b",
+    ),
+}
+_JUSTIFICATION_PATTERNS = (
+    r"\bjustific\w*\b",
+    r"\bexplic\w*\b",
+    r"\bfundament\w*\b",
+    r"\brelacion\w*\b",
+    r"\bpor que\b",
+    r"\bwhy\b",
+    r"\bjustify\w*\b",
+    r"\bexplain\w*\b",
+)
+_EXTERNAL_REQUIREMENT_PATTERNS = (
+    r"\b(?:mutex|semaforo|lock|thread|hilo|concurr|race condition)\w*\b",
+    r"\b(?:implementa|implementar|programa|programar)\w*\b",
+    r"\b(?:escribe|propone|disena)\w*\b.{0,35}\b(?:codigo|algoritmo)\w*\b",
+    r"\b(?:framework|lenguaje de programacion)\w*\b",
+    r"\b(?:detector|latencia|rendimiento|complejidad)\w*\b",
+    r"\b(?:consulta|busca|investiga)\w*\b.{0,45}\b(?:internet|extern|documentacion)\w*\b",
+    r"\bpor que\s+(?:cambia|cambio)\s+(?:la\s+)?fuente\b",
+    r"\bcausa\s+del\s+cambio\s+de\s+(?:la\s+)?fuente\b",
+)
+_ANSWER_LEAKAGE_PATTERNS = (
+    r"\bla respuesta correcta es\b",
+    r"\bdebes responder\b",
+    r"\bnivel\s+[0-3]\s+si\b",
+    r"\b(?:puntaje|rubrica|se calificara)\b",
+)
+
+
+def _semantic_text(value: str) -> str:
+    decomposed = unicodedata.normalize("NFKD", value.casefold())
+    without_accents = "".join(
+        character
+        for character in decomposed
+        if not unicodedata.combining(character)
+    )
+    return re.sub(r"\s+", " ", without_accents).strip()
+
+
+def _matches_any(text: str, patterns: tuple[str, ...]) -> bool:
+    normalized = _semantic_text(text)
+    return any(re.search(pattern, normalized) for pattern in patterns)
+
+
+def _cache_concepts(text: str) -> set[str]:
+    normalized = _semantic_text(text)
+    return {
+        concept
+        for concept, patterns in _CACHE_CONCEPT_PATTERNS.items()
+        if any(re.search(pattern, normalized) for pattern in patterns)
+    }
+
+
+def _guide_semantic_text(guide: m.GuideDraft) -> str:
+    return " ".join(
+        [
+            guide.purpose,
+            *(item.description for item in guide.observable_elements),
+            *guide.acceptable_alternatives,
+            *guide.misconceptions,
+            *(item.descriptor for item in guide.levels),
+        ]
+    )
+
+
+def _semantic_mismatch(
+    code: str,
+    message: str,
+    *,
+    interpretation: SemanticInterpretation = SemanticInterpretation.INCORRECT,
+    metadata: dict[str, Any] | None = None,
+) -> None:
+    raise _SemanticCheckpointMismatch(
+        code,
+        message,
+        semantic_interpretation=interpretation,
+        contractual_adherence=ContractualAdherence.PASS,
+        safe_metadata=metadata,
+    )
+
+
+def _validate_p06_positive_invariants(
+    *,
+    request: m.EvidenceMapRequest,
+    mapping: m.EvidenceMapPatch,
+    reviewed_example: m.EvidenceMapPatch,
+) -> None:
+    """Qualify a P06 mapping by reviewed invariants, never full equality."""
+
+    validate_evidence_map(
+        mapping,
+        blueprint=request.blueprint,
+        bundle=request.evidence_bundle,
+        planning_policy=request.planning_policy,
+    )
+    if mapping.status != m.WorkflowStatus.READY:
+        _semantic_mismatch(
+            "P06_POSITIVE_NOT_READY",
+            "P06 did not produce the reviewed positive transition",
+        )
+    reviewed_target = next(
+        opportunity
+        for opportunity in reviewed_example.opportunities
+        if opportunity.opportunity_template_id
+        == "oppt_justify_cache_invalidation"
+    )
+    targets = [
+        opportunity
+        for opportunity in mapping.opportunities
+        if opportunity.opportunity_template_id
+        == reviewed_target.opportunity_template_id
+        and opportunity.dimension_id == reviewed_target.dimension_id
+        and opportunity.variant_id == reviewed_target.variant_id
+        and opportunity.cognitive_operation
+        == m.CognitiveOperation.JUSTIFY_DECISION
+    ]
+    if not targets:
+        _semantic_mismatch(
+            "P06_CANONICAL_OPPORTUNITY_MISSING",
+            "P06 omitted the reviewed cache-invalidation opportunity path",
+        )
+    bundle = request.evidence_bundle
+    if bundle.context_mode != m.ContextMode.CLOSED or bundle.course_passages:
+        _semantic_mismatch(
+            "P06_CANONICAL_CONTEXT_WIDENED",
+            "P06 canonical positive must remain closed without course sources",
+        )
+    evidence_by_id = {item.evidence_id: item for item in bundle.evidence_units}
+    allowed_ids = set(bundle.allowed_evidence_ids)
+    target_ids = {
+        evidence_id
+        for opportunity in targets
+        for evidence_id in opportunity.evidence_ids
+    }
+    if not target_ids or not target_ids.issubset(allowed_ids):
+        _semantic_mismatch(
+            "P06_CANONICAL_ALLOWLIST_WIDENED",
+            "P06 canonical opportunity uses evidence outside the allowlist",
+        )
+    evidence_text = " ".join(
+        evidence_by_id[evidence_id].content_text or ""
+        for evidence_id in sorted(target_ids)
+    )
+    concepts = _cache_concepts(evidence_text)
+    if not _REQUIRED_CACHE_CONCEPTS.issubset(concepts):
+        _semantic_mismatch(
+            "P06_CANONICAL_EVIDENCE_SEMANTICALLY_INSUFFICIENT",
+            "P06 opportunity evidence does not contain the complete causal sequence",
+            metadata={"detected_concepts": sorted(concepts)},
+        )
+    templates = {
+        item.opportunity_template_id: item
+        for dimension in request.blueprint.dimensions
+        for variant in dimension.evidence_variants
+        for item in variant.question_opportunities
+    }
+    for opportunity in targets:
+        template = templates[opportunity.opportunity_template_id]
+        if opportunity.evidence_fit < request.planning_policy.minimum_evidence_fit:
+            _semantic_mismatch(
+                "P06_CANONICAL_EVIDENCE_FIT_BELOW_POLICY",
+                "P06 canonical opportunity falls below the frozen evidence-fit policy",
+            )
+        if opportunity.opportunity_quality < max(
+            request.planning_policy.minimum_opportunity_quality,
+            template.minimum_quality,
+        ):
+            _semantic_mismatch(
+                "P06_CANONICAL_QUALITY_BELOW_POLICY",
+                "P06 canonical opportunity falls below the frozen quality policy",
+            )
+    plan = build_assessment_plan(
+        mapping=mapping,
+        blueprint=request.blueprint,
+        policy=request.planning_policy,
+    )
+    validate_assessment_plan(plan, mapping=mapping)
+    eligible_target_ids = {item.opportunity_id for item in targets}
+    planned_ids = set(
+        plan.selected_opportunity_ids + plan.reserve_opportunity_ids
+    )
+    if (
+        plan.status != m.WorkflowStatus.READY
+        or not eligible_target_ids.intersection(planned_ids)
+    ):
+        _semantic_mismatch(
+            "P06_CANONICAL_PLANNER_INELIGIBLE",
+            "The product planner cannot select the canonical opportunity",
+        )
+
+
+def _validate_p07_positive_invariants(
+    *,
+    request: m.QuestionBuildRequest,
+    generation: m.QuestionGenerationResult,
+) -> None:
+    """Qualify generative P07 alternatives without enforcing one wording."""
+
+    validate_generation_result(
+        generation,
+        opportunity=request.opportunity,
+        bundle=request.evidence_bundle,
+    )
+    candidate = generation.candidate
+    if generation.status != m.WorkflowStatus.READY or candidate is None:
+        _semantic_mismatch(
+            "P07_POSITIVE_NOT_READY",
+            "P07 abstained from the reviewed positive",
+        )
+    if (
+        generation.context_mode != m.ContextMode.CLOSED
+        or request.evidence_bundle.context_mode != m.ContextMode.CLOSED
+        or candidate.course_source_ids
+        or candidate.citations
+    ):
+        _semantic_mismatch(
+            "P07_POSITIVE_CONTEXT_WIDENED",
+            "P07 canonical positive must remain closed without external sources",
+        )
+    opportunity = request.opportunity
+    expected_path = (
+        "oppt_justify_cache_invalidation",
+        "dimension_cache_invalidation",
+        "variant_source_change_trace",
+        m.CognitiveOperation.JUSTIFY_DECISION,
+    )
+    actual_path = (
+        candidate.opportunity_template_id,
+        candidate.dimension_id,
+        candidate.variant_id,
+        candidate.cognitive_operation,
+    )
+    if actual_path != expected_path:
+        _semantic_mismatch(
+            "P07_POSITIVE_PATH_MISMATCH",
+            "P07 changed the reviewed operation, dimension, variant, or template",
+        )
+    if (
+        candidate.response_format not in opportunity.allowed_response_formats
+        or candidate.difficulty != opportunity.difficulty
+        or candidate.estimated_minutes != opportunity.target_minutes
+    ):
+        _semantic_mismatch(
+            "P07_POSITIVE_FEASIBILITY_MISMATCH",
+            "P07 changed the reviewed format, difficulty, or time boundary",
+        )
+    allowed_ids = set(request.evidence_bundle.allowed_evidence_ids)
+    anchor_ids = {item.evidence_id for item in candidate.anchor.fragments}
+    if (
+        not anchor_ids
+        or not anchor_ids.issubset(allowed_ids)
+        or not anchor_ids.issubset(set(candidate.evidence_ids))
+        or len(candidate.anchor.fragments)
+        > request.generation_policy.max_anchor_fragments
+    ):
+        _semantic_mismatch(
+            "P07_POSITIVE_ANCHOR_ALLOWLIST_MISMATCH",
+            "P07 anchor is not limited to the authorized evidence",
+        )
+    anchor_text = " ".join(
+        fragment.display_text or "" for fragment in candidate.anchor.fragments
+    )
+    anchor_concepts = _cache_concepts(anchor_text)
+    if not _REQUIRED_CACHE_CONCEPTS.issubset(anchor_concepts):
+        _semantic_mismatch(
+            "P07_POSITIVE_ANCHOR_INSUFFICIENT",
+            "P07 anchor omits material required by the reviewed operation",
+            metadata={"detected_anchor_concepts": sorted(anchor_concepts)},
+        )
+    question_text = candidate.question_text
+    guide_text = _guide_semantic_text(candidate.preliminary_guide)
+    if _matches_any(question_text, _EXTERNAL_REQUIREMENT_PATTERNS) or _matches_any(
+        guide_text, _EXTERNAL_REQUIREMENT_PATTERNS
+    ):
+        _semantic_mismatch(
+            "P07_POSITIVE_REQUIRES_EXTERNAL_KNOWLEDGE",
+            "P07 requires implementation, concurrency, or other unauthorized knowledge",
+        )
+    if _matches_any(question_text, _ANSWER_LEAKAGE_PATTERNS):
+        _semantic_mismatch(
+            "P07_POSITIVE_ANSWER_LEAKAGE",
+            "P07 question exposes a prohibited answer or scoring cue",
+        )
+    guide_concepts = _cache_concepts(guide_text)
+    if not _REQUIRED_CACHE_CONCEPTS.issubset(guide_concepts):
+        _semantic_mismatch(
+            "P07_POSITIVE_GUIDE_UNSUPPORTED",
+            "P07 preliminary guide does not remain observable from the same evidence",
+            metadata={"detected_guide_concepts": sorted(guide_concepts)},
+        )
+    question_concepts = _cache_concepts(question_text)
+    if (
+        not _matches_any(question_text, _JUSTIFICATION_PATTERNS)
+        or len(question_concepts) < 2
+    ):
+        _semantic_mismatch(
+            "P07_POSITIVE_OBJECTIVE_INVARIANTS_INSUFFICIENT",
+            "P07 wording is structurally valid but too underspecified for a deterministic semantic judgment",
+            interpretation=SemanticInterpretation.INDETERMINATE,
+            metadata={"detected_question_concepts": sorted(question_concepts)},
+        )
+
+
 def _semantic_checkpoint_verdict(
     *,
     checkpoint_id: str,
@@ -1372,22 +1769,11 @@ def _semantic_checkpoint_verdict(
     elif checkpoint_id == "P06_CANONICAL_POSITIVE":
         mapping = cast(m.EvidenceMapPatch, output)
         map_request = cast(m.EvidenceMapRequest, request)
-        validate_evidence_map(
-            mapping,
-            blueprint=map_request.blueprint,
-            bundle=map_request.evidence_bundle,
-            planning_policy=map_request.planning_policy,
+        _validate_p06_positive_invariants(
+            request=map_request,
+            mapping=mapping,
+            reviewed_example=cast(m.EvidenceMapPatch, expected),
         )
-        if (
-            mapping.status != m.WorkflowStatus.READY
-            or not mapping.opportunities
-        ):
-            raise _SemanticCheckpointMismatch(
-                "P06_POSITIVE_NOT_READY",
-                "P06 did not map the reviewed positive opportunity",
-                semantic_interpretation=SemanticInterpretation.INCORRECT,
-                contractual_adherence=ContractualAdherence.PASS,
-            )
     elif checkpoint_id.startswith("P07_"):
         generation = cast(m.QuestionGenerationResult, output)
         generation_request = cast(m.QuestionBuildRequest, request)
@@ -1429,25 +1815,10 @@ def _semantic_checkpoint_verdict(
                 contractual_adherence=ContractualAdherence.PASS,
             )
         else:
-            reviewed_generation = cast(m.QuestionGenerationResult, expected)
-            reviewed_candidate = reviewed_generation.candidate
-            if (
-                reviewed_candidate is None
-                or generation.candidate.model_dump(mode="json")
-                != reviewed_candidate.model_dump(mode="json")
-            ):
-                raise _SemanticCheckpointMismatch(
-                    "P07_POSITIVE_REQUIRES_INDEPENDENT_SEMANTIC_REVIEW",
-                    (
-                        "P07 produced a structurally valid alternative that has "
-                        "not received the versioned semantic review"
-                    ),
-                    semantic_interpretation=(
-                        SemanticInterpretation.INDETERMINATE
-                    ),
-                    contractual_adherence=ContractualAdherence.PASS,
-                    safe_metadata={"reviewed_golden_match": False},
-                )
+            _validate_p07_positive_invariants(
+                request=generation_request,
+                generation=generation,
+            )
     elif checkpoint_id.startswith("P08_"):
         review = cast(m.QuestionReviewResult, output)
         review_request = cast(m.QuestionReviewRequest, request)
@@ -1468,7 +1839,7 @@ def _semantic_checkpoint_verdict(
                     if expected_decision == m.ReviewDecision.REJECT
                     else "P08_POSITIVE_NOT_ACCEPTED"
                 ),
-                "P08 did not make the independently reviewed decision",
+                "P08 did not make the versioned reviewed decision",
                 semantic_interpretation=SemanticInterpretation.INCORRECT,
                 contractual_adherence=ContractualAdherence.PASS,
                 safe_metadata=p08_decision_diagnostics(
@@ -1815,11 +2186,26 @@ class ProductRehearsal:
         run_id: str,
         scenario_id: str = BASE_SCENARIO_ID,
     ) -> RehearsalObservation:
-        checkpoints = build_rehearsal_checkpoints(scenario_id)
+        canonical_inputs: Any | None = None
+        if scenario_id == CANONICAL_DOCUMENT_SCENARIO_ID:
+            from .semantic_harness import build_canonical_document_chain_inputs
+
+            canonical_inputs = build_canonical_document_chain_inputs()
+            p04 = canonical_inputs.p04_request
+            source_artifact_hashes = canonical_inputs.source_artifact_hashes
+            submission_media_type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        else:
+            checkpoints = build_rehearsal_checkpoints(scenario_id)
+            p04 = checkpoints.p04_request
+            source_artifact_hashes = {
+                "assignment": "sha256:" + "a" * 64,
+                "rubric": "sha256:" + "b" * 64,
+                "submission": "sha256:" + "c" * 64,
+            }
+            submission_media_type = "text/markdown"
         stages: list[dict[str, Any]] = []
         current_stage = "P04"
         try:
-            p04 = checkpoints.p04_request
             blueprint = cast(
                 m.AssessmentBlueprint,
                 await self._invoke("P04_BLUEPRINT_BUILD_V1", p04),
@@ -1828,9 +2214,21 @@ class ProductRehearsal:
                 raise ContextValidationError(
                     "P04_NOT_READY", "P04 chain output is not READY"
                 )
-            stages.append(
-                self._stage_row("P04_BLUEPRINT_BUILD_V1", p04, blueprint)
+            p04_row = self._stage_row(
+                "P04_BLUEPRINT_BUILD_V1", p04, blueprint
             )
+            p04_row.update(
+                {
+                    "chain_output_role": "CURRENT_RUN_MODEL_OUTPUT",
+                    "input_origin": (
+                        "PRODUCT_DERIVED_DOCUMENT_BOUNDARY"
+                        if canonical_inputs is not None
+                        else "VERSIONED_SYNTHETIC_CHAIN_INPUT"
+                    ),
+                    "source_artifact_hashes": source_artifact_hashes,
+                }
+            )
+            stages.append(p04_row)
 
             current_stage = "P05"
             p05 = m.BlueprintReviewRequest(
@@ -1854,22 +2252,39 @@ class ProductRehearsal:
                 raise _BlueprintReviewNotApprovable(
                     blueprint_review, blueprint
                 )
-            stages.append(
-                self._stage_row(
-                    "P05_BLUEPRINT_REVIEW_V1", p05, blueprint_review
-                )
+            p05_row = self._stage_row(
+                "P05_BLUEPRINT_REVIEW_V1", p05, blueprint_review
             )
+            p05_row.update(
+                {
+                    "chain_output_role": "CURRENT_RUN_MODEL_OUTPUT",
+                    "dataflow_input_from": "P04_CURRENT_RUN_OUTPUT",
+                    "upstream_output_hash": p04_row["output_hash"],
+                    "consumed_blueprint_hash": canonical_hash(
+                        p05.blueprint.model_dump(mode="json")
+                    ),
+                }
+            )
+            stages.append(p05_row)
             approved_blueprint = blueprint.model_copy(
                 update={"status": m.WorkflowStatus.APPROVED}
             )
 
             current_stage = "P06"
-            p06 = checkpoints.p06_request.model_copy(
-                update={
-                    "blueprint": approved_blueprint,
-                    "planning_policy": p04.blueprint_policy.planning_policy,
-                }
-            )
+            if canonical_inputs is not None:
+                from .semantic_harness import build_canonical_document_p06_request
+
+                p06 = build_canonical_document_p06_request(
+                    canonical_inputs,
+                    approved_blueprint=approved_blueprint,
+                )
+            else:
+                p06 = checkpoints.p06_request.model_copy(
+                    update={
+                        "blueprint": approved_blueprint,
+                        "planning_policy": p04.blueprint_policy.planning_policy,
+                    }
+                )
             mapping = cast(
                 m.EvidenceMapPatch,
                 await self._invoke("P06_EVIDENCE_MAP_V1", p06),
@@ -1880,9 +2295,23 @@ class ProductRehearsal:
                 bundle=p06.evidence_bundle,
                 planning_policy=p06.planning_policy,
             )
-            stages.append(
-                self._stage_row("P06_EVIDENCE_MAP_V1", p06, mapping)
+            p06_row = self._stage_row(
+                "P06_EVIDENCE_MAP_V1", p06, mapping
             )
+            p06_row.update(
+                {
+                    "chain_output_role": "CURRENT_RUN_MODEL_OUTPUT",
+                    "dataflow_input_from": (
+                        "P04_CURRENT_RUN_OUTPUT_WITH_DETERMINISTIC_APPROVAL_TRANSITION"
+                    ),
+                    "source_p04_output_hash": p04_row["output_hash"],
+                    "consumed_blueprint_hash": canonical_hash(
+                        p06.blueprint.model_dump(mode="json")
+                    ),
+                    "intermediate_golden_injected": False,
+                }
+            )
+            stages.append(p06_row)
 
             current_stage = "PLANNER"
             plan = build_assessment_plan(
@@ -1916,6 +2345,9 @@ class ProductRehearsal:
                         plan.model_dump(mode="json")
                     ),
                     "status": "PASS",
+                    "dataflow_input_from": "P06_CURRENT_RUN_OUTPUT",
+                    "consumed_mapping_hash": p06_row["output_hash"],
+                    "intermediate_golden_injected": False,
                 }
             )
             opportunity_by_id = {
@@ -1959,11 +2391,25 @@ class ProductRehearsal:
                         "P07_NO_CANDIDATE",
                         "P07 chain output has no candidate",
                     )
-                stages.append(
-                    self._stage_row(
-                        "P07_QUESTION_BUILD_V1", p07, generation
-                    )
+                p07_row = self._stage_row(
+                    "P07_QUESTION_BUILD_V1", p07, generation
                 )
+                p07_row.update(
+                    {
+                        "chain_output_role": "CURRENT_RUN_MODEL_OUTPUT",
+                        "dataflow_input_from": (
+                            "P06_CURRENT_RUN_OUTPUT_AND_PRODUCT_PLANNER"
+                        ),
+                        "consumed_plan_hash": canonical_hash(
+                            p07.plan.model_dump(mode="json")
+                        ),
+                        "consumed_opportunity_hash": canonical_hash(
+                            p07.opportunity.model_dump(mode="json")
+                        ),
+                        "intermediate_golden_injected": False,
+                    }
+                )
+                stages.append(p07_row)
 
                 current_stage = "P08"
                 p08 = m.QuestionReviewRequest(
@@ -1994,11 +2440,21 @@ class ProductRehearsal:
                         question_review,
                         p08.validation_policy,
                     )
-                stages.append(
-                    self._stage_row(
-                        "P08_QUESTION_REVIEW_V1", p08, question_review
-                    )
+                p08_row = self._stage_row(
+                    "P08_QUESTION_REVIEW_V1", p08, question_review
                 )
+                p08_row.update(
+                    {
+                        "chain_output_role": "CURRENT_RUN_MODEL_OUTPUT",
+                        "dataflow_input_from": "P07_CURRENT_RUN_OUTPUT",
+                        "upstream_output_hash": p07_row["output_hash"],
+                        "consumed_generation_hash": canonical_hash(
+                            p08.generation_result.model_dump(mode="json")
+                        ),
+                        "intermediate_golden_injected": False,
+                    }
+                )
+                stages.append(p08_row)
                 selected.append(
                     selected_question_from_candidate(
                         generation.candidate,
@@ -2028,10 +2484,10 @@ class ProductRehearsal:
                 plan=plan,
                 mapping=mapping,
                 questions=selected,
-                assignment_prompt_hashes=["sha256:" + "a" * 64],
-                rubric_hashes=["sha256:" + "b" * 64],
-                submission_hashes=["sha256:" + "c" * 64],
-                submission_media_type="text/markdown",
+                assignment_prompt_hashes=[source_artifact_hashes["assignment"]],
+                rubric_hashes=[source_artifact_hashes["rubric"]],
+                submission_hashes=[source_artifact_hashes["submission"]],
+                submission_media_type=submission_media_type,
                 prompt_versions=prompt_versions,
                 model_snapshots=model_snapshots,
                 policy_hash=canonical_hash(
@@ -2056,6 +2512,10 @@ class ProductRehearsal:
                         assessment.model_dump(mode="json")
                     ),
                     "status": "PASS",
+                    "dataflow_input_from": (
+                        "P04_P06_PLANNER_P07_CURRENT_RUN_OUTPUTS"
+                    ),
+                    "intermediate_golden_injected": False,
                 }
             )
 
@@ -2078,18 +2538,36 @@ class ProductRehearsal:
                 raise ContextValidationError(
                     "P09_NOT_READY", "P09 chain output is not READY"
                 )
-            stages.append(
-                self._stage_row("P09_GUIDE_BUILD_V1", p09, guide)
+            p09_row = self._stage_row("P09_GUIDE_BUILD_V1", p09, guide)
+            p09_row.update(
+                {
+                    "chain_output_role": "CURRENT_RUN_MODEL_OUTPUT",
+                    "dataflow_input_from": "ASSEMBLY_CURRENT_RUN_OUTPUT",
+                    "consumed_assessment_hash": canonical_hash(
+                        p09.assessment.model_dump(mode="json")
+                    ),
+                    "intermediate_golden_injected": False,
+                }
             )
+            stages.append(p09_row)
         except Exception as exc:
             structural_stages = _mark_structural_orchestration_rows(stages)
+            failure = _safe_failure(exc, stage=current_stage)
+            failure.update(
+                {
+                    "operational_outcome": "INCOMPLETE",
+                    "causal_attribution": "CAUSE_INDETERMINATE",
+                    "causal_confidence": "LOW",
+                    "stage_local_semantic_attribution_allowed": False,
+                }
+            )
             return RehearsalObservation(
                 run_id=run_id,
                 run_kind="INTEGRATED_CHAIN",
                 scenario_id=scenario_id,
                 status="FAIL",
                 stages=structural_stages,
-                failure=_safe_failure(exc, stage=current_stage),
+                failure=failure,
                 output_hash=None,
             )
         structural_stages = _mark_structural_orchestration_rows(stages)
@@ -2251,21 +2729,22 @@ async def _execute_convergence_matrix(
                 run_id=f"{run_id_prefix}chain-base-1"
             ),
             await rehearsal.run_chain(
+                run_id=f"{run_id_prefix}chain-base-2"
+            ),
+            await rehearsal.run_chain(
                 run_id=f"{run_id_prefix}chain-choice-variant",
                 scenario_id=VARIANT_SCENARIO_ID,
+            ),
+            await rehearsal.run_chain(
+                run_id=f"{run_id_prefix}chain-canonical-document-sufficient",
+                scenario_id=CANONICAL_DOCUMENT_SCENARIO_ID,
             ),
         ]
     )
     return (
         observations,
         deterministic_checks,
-        [
-            "semantic-sweep:P04-P09:versioned-positive-and-negative",
-            "offline-golden-positive:P05",
-            "offline-golden-negative:P05",
-            "integrated-chain:base:1:P04-P09",
-            "integrated-chain:choice-variant:P04-P09",
-        ],
+        [row.row_id for row in QUALIFICATION_MATRIX_ROWS],
     )
 
 
@@ -2303,25 +2782,26 @@ async def run_offline_convergence(
     route_profile_id: str = OPENAI_ROUTE_PROFILE_ID,
     max_total_cost_usd: float = 0.75,
     max_call_cost_usd: float = 0.10,
-    max_provider_requests: int = 24,
+    max_provider_requests: int = QUALIFICATION_EXPECTED_PROVIDER_REQUESTS,
 ) -> dict[str, Any]:
-    """Run the semantic sweep and two structural integrated chains offline."""
+    """Run the semantic sweep and four structural integrated chains offline."""
 
     from .model_gateway import GatewayConfig, GatewayMode
 
     ledger_records: list[m.ModelCallLedger] | None = None
     preflight_adapter: _ConservativeNoNetworkAdapter | None = None
+    reviewed_semantic_adapter: Any | None = None
     if route_profile_id == OPENAI_ROUTE_PROFILE_ID:
         from .semantic_harness import build_reviewed_semantic_adapter
 
-        reviewed_adapter = build_reviewed_semantic_adapter()
+        reviewed_semantic_adapter = build_reviewed_semantic_adapter()
         gateway = ModelGateway(
             GatewayConfig(
                 mode=GatewayMode.MOCK,
                 max_retries=0,
                 job_id="job_stage2_offline_convergence",
             ),
-            mock_adapter=reviewed_adapter,
+            mock_adapter=reviewed_semantic_adapter,
         )
         rehearsal = ProductRehearsal(gateway, max_call_cost_usd=1.0)
         run_id_prefix = ""
@@ -2343,7 +2823,8 @@ async def run_offline_convergence(
             routes,
             max_requests=max_provider_requests,
         )
-        preflight_adapter.inner = build_reviewed_semantic_adapter()
+        reviewed_semantic_adapter = build_reviewed_semantic_adapter()
+        preflight_adapter.inner = reviewed_semantic_adapter
         gateway = ModelGateway(
             GatewayConfig(
                 mode=GatewayMode.REAL,
@@ -2411,6 +2892,24 @@ async def run_offline_convergence(
                 "validator_changes": 0,
             }
         )
+    invocation_origins = [
+        row["response_origin"]
+        for row in getattr(reviewed_semantic_adapter, "invocations", [])
+    ]
+    transport_provenance = {
+        "provider_transport_constructed": False,
+        "reviewed_semantic_oracle_invocations": invocation_origins.count(
+            "REVIEWED_SEMANTIC_ORACLE"
+        ),
+        "structural_transport_substitute_invocations": invocation_origins.count(
+            "STRUCTURAL_TRANSPORT_SUBSTITUTE"
+        ),
+        "semantic_sweep_response_origin": "REVIEWED_SEMANTIC_ORACLE",
+        "integrated_chain_response_origin": (
+            "STRUCTURAL_TRANSPORT_SUBSTITUTE"
+        ),
+        "integrated_chain_semantic_quality_conclusion_allowed": False,
+    }
     qualified_effort = (
         m.ReasoningEffort.MEDIUM
         if route_profile_id == OPENAI_TERRA_MEDIUM_ROUTE_PROFILE_ID
@@ -2490,6 +2989,11 @@ async def run_offline_convergence(
         "executable_boundary_hash": canonical_hash(boundary),
         "boundary": boundary,
         "execution_sequence": execution_sequence,
+        "qualification_matrix": qualification_matrix_rows(),
+        "derived_max_provider_requests": (
+            QUALIFICATION_EXPECTED_PROVIDER_REQUESTS
+        ),
+        "transport_provenance": transport_provenance,
         "observations": _observation_rows(observations),
         "deterministic_checks": deterministic_checks,
         "checkpoint_assessments": [
@@ -2684,6 +3188,10 @@ async def run_real_convergence(
         "unchanged_boundary_across_chains": unchanged_boundary,
         "boundary": boundary,
         "execution_sequence": execution_sequence,
+        "qualification_matrix": qualification_matrix_rows(),
+        "derived_max_provider_requests": (
+            QUALIFICATION_EXPECTED_PROVIDER_REQUESTS
+        ),
         "observations": _observation_rows(observations),
         "deterministic_checks": deterministic_checks,
         "checkpoint_assessments": [

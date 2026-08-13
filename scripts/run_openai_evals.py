@@ -74,7 +74,9 @@ from comprehension_verification.evaluation_gate import (
     EvaluationAuthorizationLedger,
 )
 from comprehension_verification.rehearsal import (
+    QUALIFICATION_EXPECTED_PROVIDER_REQUESTS,
     REHEARSAL_REPORT_VERSION,
+    qualification_matrix_rows,
     rehearsal_boundary_material,
     run_offline_convergence,
     run_real_convergence,
@@ -83,7 +85,12 @@ from comprehension_verification.provider_authorization import (
     validate_pinned_secret_resource,
 )
 from comprehension_verification.qualification_semantics import (
+    CausalAttribution,
+    CausalConfidence,
     CheckpointAssessment,
+    CheckpointClass,
+    OperationalOutcome,
+    OracleValidity,
     aggregate_causal_classification,
 )
 from comprehension_verification.web.provider_secrets import (
@@ -131,9 +138,15 @@ TERRA_MEDIUM_QUALIFICATION_BASELINE_CONSOLIDATED_REPORT = (
         "stage2_max_qualification_62d73ae_20260812_consolidated_final_01.json"
     )
 )
-TERRA_MEDIUM_MAX_PROVIDER_REQUESTS = 24
-TERRA_MEDIUM_MAX_TOTAL_COST_USD = 5.10
-TERRA_MEDIUM_MAX_CALL_COST_USD = 0.27
+TERRA_MEDIUM_MAX_PROVIDER_REQUESTS = QUALIFICATION_EXPECTED_PROVIDER_REQUESTS
+TERRA_MEDIUM_HISTORICAL_MAX_TOTAL_COST_USD = 5.10
+TERRA_MEDIUM_HISTORICAL_MAX_CALL_COST_USD = 0.27
+TERRA_MEDIUM_OFFLINE_REHEARSAL_MAX_TOTAL_COST_USD = 20.0
+TERRA_MEDIUM_OFFLINE_REHEARSAL_MAX_CALL_COST_USD = 0.27
+TERRA_MEDIUM_MONETARY_BUDGET_RECALCULATION_REQUIRED = True
+TERRA_MEDIUM_MONETARY_BUDGET_STATUS = (
+    "RECALCULATION_FROM_CURRENT_OFFICIAL_PRICES_REQUIRED"
+)
 INJECTION_MARKER = "IGNORE_PREVIOUS_INSTRUCTIONS_SYNTHETIC_MARKER"
 P01_INJECTION_ASSIGNMENT_TEXT = (
     "Entrega un informe breve que explique un mecanismo de tu artefacto y "
@@ -5110,7 +5123,7 @@ def _convergence_authorization_boundary(args: argparse.Namespace) -> dict[str, A
         / "tests/fixtures/openai_evals/v3/document_shaped_cache_case/submission_insufficient.docx",
     )
     boundary = {
-        "boundary_format": "openai-stage2-convergence-authorization/1.4.0",
+        "boundary_format": "openai-stage2-convergence-authorization/1.5.0",
         "git_head": _git_head(),
         "harness_hash": _content_hash(Path(__file__).resolve()),
         "rehearsal_module_hash": _content_hash(
@@ -5134,12 +5147,13 @@ def _convergence_authorization_boundary(args: argparse.Namespace) -> dict[str, A
             )
         },
         "execution_plan": [
-            "semantic-sweep:P04-P09:versioned-positive-and-negative",
-            "offline-golden-positive:P05:0-requests",
-            "offline-golden-negative:P05:0-requests",
-            "integrated-chain:base:1",
-            "integrated-chain:choice-justification-variant",
+            row["row_id"] for row in qualification_matrix_rows()
         ],
+        "provider_request_cap_derivation": {
+            "matrix_rows": qualification_matrix_rows(),
+            "worst_case_total": QUALIFICATION_EXPECTED_PROVIDER_REQUESTS,
+            "cap_is_derived_from_matrix": True,
+        },
         "max_provider_requests": args.max_provider_requests,
         "max_total_cost_usd": args.max_total_cost_usd,
         "max_call_cost_usd": args.max_call_cost_usd,
@@ -5210,6 +5224,26 @@ def _convergence_authorization_boundary(args: argparse.Namespace) -> dict[str, A
             "P04_P09_REASONING_MAX_TO_MEDIUM"
         )
         boundary["univariate_comparison"] = False
+        boundary["monetary_budget"] = {
+            "status": TERRA_MEDIUM_MONETARY_BUDGET_STATUS,
+            "future_real_execution_authorized": False,
+            "historical_caps_not_reusable": {
+                "max_total_cost_usd": (
+                    TERRA_MEDIUM_HISTORICAL_MAX_TOTAL_COST_USD
+                ),
+                "max_call_cost_usd": (
+                    TERRA_MEDIUM_HISTORICAL_MAX_CALL_COST_USD
+                ),
+            },
+            "offline_rehearsal_caps_not_an_authorization": {
+                "max_total_cost_usd": (
+                    TERRA_MEDIUM_OFFLINE_REHEARSAL_MAX_TOTAL_COST_USD
+                ),
+                "max_call_cost_usd": (
+                    TERRA_MEDIUM_OFFLINE_REHEARSAL_MAX_CALL_COST_USD
+                ),
+            },
+        }
     return boundary
 
 
@@ -5519,6 +5553,8 @@ def _terra_medium_qualification_outcome(
     technical_failures = failure_codes & technical_codes
     nontechnical_failures = failure_codes - technical_codes
     raw_assessments = result.get("checkpoint_assessments")
+    assessments: list[CheckpointAssessment] = []
+    clean_model_owned_failure = False
     if isinstance(raw_assessments, list) and raw_assessments:
         try:
             assessments = [
@@ -5536,6 +5572,24 @@ def _terra_medium_qualification_outcome(
             }
             unresolved_failures = (
                 nontechnical_failures - assessed_failure_codes
+            )
+            clean_model_owned_failure = any(
+                assessment.oracle_validity == OracleValidity.VALID
+                and assessment.checkpoint_class
+                in {
+                    CheckpointClass.SEMANTICALLY_QUALIFIED_POSITIVE,
+                    CheckpointClass.SEMANTICALLY_QUALIFIED_NEGATIVE,
+                }
+                and assessment.operational_outcome
+                == OperationalOutcome.FAIL
+                and assessment.causal_confidence == CausalConfidence.HIGH
+                and assessment.causal_attribution
+                in {
+                    CausalAttribution.MODEL_OWNED_SEMANTIC_FAILURE,
+                    CausalAttribution.MODEL_OWNED_CONTRACTUAL_ADHERENCE_FAILURE,
+                    CausalAttribution.MODEL_OWNED_SEMANTIC_AND_ADHERENCE_FAILURE,
+                }
+                for assessment in assessments
             )
         except (KeyError, TypeError, ValueError):
             causal_classification = "CAUSE_INDETERMINATE"
@@ -5567,7 +5621,7 @@ def _terra_medium_qualification_outcome(
     else:
         causal_classification = "CAUSE_INDETERMINATE"
 
-    if causal_classification != "TECHNICAL_QUALIFICATION_FAILURE":
+    if clean_model_owned_failure:
         return {
             "qualification_outcome": "TERRA_MEDIUM_QUALIFICATION_FAILED",
             "convergence_outcome": "CONVERGENCE_INCOMPLETE",
@@ -5576,14 +5630,20 @@ def _terra_medium_qualification_outcome(
                 "INDEPENDENT_HARNESS_REVIEW_BEFORE_ANY_TERRA_HIGH_AUTHORITY"
             ),
         }
+    if causal_classification == "QUALIFICATION_PASSED":
+        causal_classification = "CAUSE_INDETERMINATE"
+    technical_only = (
+        causal_classification == "TECHNICAL_QUALIFICATION_FAILURE"
+        or causal_classification.startswith("TECHNICAL_")
+    )
     return {
         "qualification_outcome": "TERRA_MEDIUM_QUALIFICATION_INCONCLUSIVE",
         "convergence_outcome": "CONVERGENCE_INCOMPLETE",
-        "causal_classification": (
-            "TECHNICAL_TERRA_MEDIUM_SUPPORT_OR_EXECUTION_FAILURE"
-        ),
+        "causal_classification": causal_classification,
         "recommended_next_authority": (
             "TECHNICAL_REVIEW_ONLY_NO_RERUN_WITHOUT_NEW_AUTHORITY"
+            if technical_only
+            else "INDEPENDENT_HARNESS_REVIEW_BEFORE_ANY_TERRA_HIGH_AUTHORITY"
         ),
     }
 
@@ -5605,19 +5665,20 @@ def _run_convergence_cli(args: argparse.Namespace) -> int:
         "terra-medium-qualification-dry-run",
     }:
         expected_total_cost = (
-            TERRA_MEDIUM_MAX_TOTAL_COST_USD
+            TERRA_MEDIUM_OFFLINE_REHEARSAL_MAX_TOTAL_COST_USD
             if is_terra_medium
             else 0.75
         )
         expected_call_cost = (
-            TERRA_MEDIUM_MAX_CALL_COST_USD
+            TERRA_MEDIUM_OFFLINE_REHEARSAL_MAX_CALL_COST_USD
             if is_terra_medium
             else 0.10
         )
         if is_qualification and (
             args.max_total_cost_usd != expected_total_cost
             or args.max_call_cost_usd != expected_call_cost
-            or args.max_provider_requests != 24
+            or args.max_provider_requests
+            != QUALIFICATION_EXPECTED_PROVIDER_REQUESTS
         ):
             raise OpenAIEvalBlocked(
                 (
@@ -5642,12 +5703,19 @@ def _run_convergence_cli(args: argparse.Namespace) -> int:
         )
         print(json.dumps(result, sort_keys=True))
         return 0 if result["status"] == "PASS" else 1
-    maximum_total_cap = (
-        TERRA_MEDIUM_MAX_TOTAL_COST_USD if is_terra_medium else 1.0
-    )
-    maximum_call_cap = (
-        TERRA_MEDIUM_MAX_CALL_COST_USD if is_terra_medium else 0.15
-    )
+    if (
+        is_terra_medium
+        and TERRA_MEDIUM_MONETARY_BUDGET_RECALCULATION_REQUIRED
+    ):
+        # The 33-call matrix invalidates the historical monetary authority.
+        # Fail before validating a secret resource, reserving a ledger row, or
+        # constructing transport. A later explicit authority must recalculate
+        # both caps from then-current official prices and update this gate.
+        raise OpenAIEvalBlocked(
+            "OPENAI_TERRA_MEDIUM_MONETARY_BUDGET_RECALCULATION_REQUIRED"
+        )
+    maximum_total_cap = 1.0
+    maximum_call_cap = 0.15
     if any(
         (
             not args.allow_billable,
@@ -5656,7 +5724,8 @@ def _run_convergence_cli(args: argparse.Namespace) -> int:
             args.max_call_cost_usd <= 0,
             args.max_call_cost_usd > maximum_call_cap,
             args.max_call_cost_usd > args.max_total_cost_usd,
-            args.max_provider_requests != 24,
+            args.max_provider_requests
+            != QUALIFICATION_EXPECTED_PROVIDER_REQUESTS,
             args.ledger is None,
             args.report_path is None,
             not args.execution_id,
@@ -5665,16 +5734,13 @@ def _run_convergence_cli(args: argparse.Namespace) -> int:
         )
     ):
         raise OpenAIEvalBlocked("OPENAI_CONVERGENCE_EXPLICIT_CAPS_REQUIRED")
-    expected_total_cost = (
-        TERRA_MEDIUM_MAX_TOTAL_COST_USD if is_terra_medium else 0.75
-    )
-    expected_call_cost = (
-        TERRA_MEDIUM_MAX_CALL_COST_USD if is_terra_medium else 0.10
-    )
+    expected_total_cost = 0.75
+    expected_call_cost = 0.10
     if is_qualification and (
         args.max_total_cost_usd != expected_total_cost
         or args.max_call_cost_usd != expected_call_cost
-        or args.max_provider_requests != 24
+        or args.max_provider_requests
+        != QUALIFICATION_EXPECTED_PROVIDER_REQUESTS
     ):
         raise OpenAIEvalBlocked(
             (
@@ -5980,7 +6046,11 @@ def main() -> int:
     parser.add_argument("--allow-billable", action="store_true")
     parser.add_argument("--max-total-cost-usd", type=float, default=0.0)
     parser.add_argument("--max-call-cost-usd", type=float, default=0.10)
-    parser.add_argument("--max-provider-requests", type=int, default=30)
+    parser.add_argument(
+        "--max-provider-requests",
+        type=int,
+        default=QUALIFICATION_EXPECTED_PROVIDER_REQUESTS,
+    )
     parser.add_argument("--execution-id")
     parser.add_argument("--authorization-id")
     parser.add_argument("--ledger", type=Path)

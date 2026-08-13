@@ -60,8 +60,8 @@ SEMANTIC_FIXTURE_PATH = (
 FROZEN_PRODUCT_BOUNDARY_PATH = (
     ROOT / "tests/fixtures/openai_evals/v3/frozen_product_boundary.json"
 )
-SEMANTIC_REHEARSAL_VERSION = "stage2-semantic-harness-rehearsal/1.0.0"
-SEMANTIC_REPORT_VERSION = "stage2-semantic-harness-report/1.0.0"
+SEMANTIC_REHEARSAL_VERSION = "stage2-semantic-harness-rehearsal/1.1.0"
+SEMANTIC_REPORT_VERSION = "stage2-semantic-harness-report/1.1.0"
 TENANT_ID = "tenant_semantic_harness"
 ACTIVITY_ID = "act_demo"
 SUFFICIENT_SUBMISSION_ID = "submission_cache_sufficient"
@@ -111,6 +111,23 @@ class SemanticCheckpoints:
     negative_mapping: m.EvidenceMapPatch
     negative_plan: m.AssessmentPlan
     artifacts: CanonicalArtifacts
+
+
+@dataclass(frozen=True, slots=True)
+class CanonicalDocumentChainInputs:
+    """Product-derived inputs allowed before the first integrated LLM stage."""
+
+    p04_request: m.BlueprintBuildRequest
+    policy: m.BlueprintPolicy
+    artifacts: CanonicalArtifacts
+
+    @property
+    def source_artifact_hashes(self) -> dict[str, str]:
+        return {
+            "assignment": self.artifacts.assignment.artifact.sha256,
+            "rubric": self.artifacts.rubric.artifact.sha256,
+            "submission": self.artifacts.sufficient.artifact.sha256,
+        }
 
 
 def semantic_checkpoint_requests(
@@ -175,6 +192,22 @@ def load_semantic_fixture() -> dict[str, Any]:
         raise ValueError("semantic fixture must be synthetic-only")
     if raw.get("provider_response_used_as_target") is not False:
         raise ValueError("semantic fixture cannot target a provider response")
+    authorship = raw.get("review_authorship") or {}
+    if (
+        authorship.get("authoring_class")
+        != "CODEX_AUTHORED_SEMANTIC_REVIEW"
+        or authorship.get("independent_review_status")
+        != "USER_SUPPLIED_INDEPENDENT_REVIEW_FINDINGS"
+        or authorship.get("human_ratification") is not None
+    ):
+        raise ValueError("semantic review provenance is not truthful")
+    amendment = raw.get("provenance_amendment") or {}
+    if (
+        amendment.get("amendment_id")
+        != "SR-PROVENANCE-AMENDMENT-001"
+        or amendment.get("preserve_prior_review_hashes") is not True
+    ):
+        raise ValueError("semantic review provenance amendment is missing")
     return cast(dict[str, Any], raw)
 
 
@@ -541,6 +574,48 @@ def _source_models(
     return activity, rubric
 
 
+def build_canonical_document_chain_inputs() -> CanonicalDocumentChainInputs:
+    """Derive the integrated-chain sources from DOCX through product parsing."""
+
+    fixture = load_semantic_fixture()
+    artifacts = _parse_artifacts(fixture)
+    activity, rubric = _source_models(fixture, artifacts)
+    policy = _policy()
+    p04 = m.BlueprintBuildRequest(
+        target_blueprint_id="blueprint_canonical_document_integrated",
+        target_blueprint_version=1,
+        activity_spec=activity,
+        rubric_spec=rubric,
+        resolved_decisions=[_decision()],
+        blueprint_policy=policy,
+    )
+    return CanonicalDocumentChainInputs(
+        p04_request=p04,
+        policy=policy,
+        artifacts=artifacts,
+    )
+
+
+def build_canonical_document_p06_request(
+    inputs: CanonicalDocumentChainInputs,
+    *,
+    approved_blueprint: m.AssessmentBlueprint,
+) -> m.EvidenceMapRequest:
+    """Continue from the actual P04 output; no intermediate golden is accepted."""
+
+    bundle = _bundle_from_product_submission_boundary(
+        inputs.artifacts.sufficient,
+        submission_id=SUFFICIENT_SUBMISSION_ID,
+        blueprint=approved_blueprint,
+        policy=inputs.policy,
+    )
+    return m.EvidenceMapRequest(
+        blueprint=approved_blueprint,
+        planning_policy=inputs.policy.planning_policy,
+        evidence_bundle=bundle,
+    )
+
+
 def _policy() -> m.BlueprintPolicy:
     return m.BlueprintPolicy(
         policy_id="blueprint_policy_1",
@@ -896,6 +971,7 @@ class ReviewedSemanticAdapter:
         self._adapter_result_type = AdapterResult
         self._structural_fallback = DeterministicMockAdapter()
         self.calls: list[str] = []
+        self.invocations: list[dict[str, str]] = []
         self._responses = {
             (
                 prompt_id,
@@ -913,8 +989,22 @@ class ReviewedSemanticAdapter:
             canonical_hash(request.model_dump(mode="json")),
         )
         if key not in self._responses:
+            self.invocations.append(
+                {
+                    "prompt_id": key[0],
+                    "request_hash": key[1],
+                    "response_origin": "STRUCTURAL_TRANSPORT_SUBSTITUTE",
+                }
+            )
             return await self._structural_fallback.invoke(**kwargs)
         self.calls.append(key[0])
+        self.invocations.append(
+            {
+                "prompt_id": key[0],
+                "request_hash": key[1],
+                "response_origin": "REVIEWED_SEMANTIC_ORACLE",
+            }
+        )
         raw = self._responses[key].model_dump(mode="json")
         encoded = json.dumps(raw, ensure_ascii=False, sort_keys=True).encode(
             "utf-8"
@@ -1370,13 +1460,26 @@ def build_checkpoint_provenance(
     )
     for checkpoint_id, prompt_id, key, checkpoint_class, hashes, golden in definitions:
         review = fixture[key]
+        preserved_review_hash = fixture["prior_review_hashes"][
+            review["semantic_review_id"]
+        ]
+        current_review_material_hash = _semantic_review_hash(fixture, key)
+        provenance_amendment_hash = canonical_hash(
+            {
+                "amendment": fixture["provenance_amendment"],
+                "authorship": fixture["review_authorship"],
+                "preserved_review_hash": preserved_review_hash,
+            }
+        )
         row: dict[str, Any] = {
             "checkpoint_id": checkpoint_id,
             "prompt_id": prompt_id,
             "checkpoint_class": checkpoint_class.value,
             "semantic_review_id": review["semantic_review_id"],
             "review_version": review["semantic_review_version"],
-            "review_hash": _semantic_review_hash(fixture, key),
+            "review_hash": preserved_review_hash,
+            "current_review_material_hash": current_review_material_hash,
+            "provenance_amendment_hash": provenance_amendment_hash,
             "fixture_hash": fixture_hash,
             "source_artifact_hashes": sorted(hashes),
             "review_evidence": review["review_evidence"],
@@ -1388,7 +1491,14 @@ def build_checkpoint_provenance(
                 if isinstance(golden, m.StrictModel)
                 else golden
             ),
-            "oracle_origin": "INDEPENDENT_VERSIONED_SEMANTIC_REVIEW",
+            "oracle_origin": fixture["review_authorship"]["authoring_class"],
+            "independent_review_status": fixture["review_authorship"][
+                "independent_review_status"
+            ],
+            "human_ratification": fixture["review_authorship"][
+                "human_ratification"
+            ],
+            "prior_review_hash": preserved_review_hash,
         }
         if checkpoint_class == CheckpointClass.SEMANTICALLY_QUALIFIED_POSITIVE:
             row["positive_obligation"] = review.get(
@@ -1439,12 +1549,23 @@ def validate_checkpoint_provenance(rows: list[dict[str, Any]]) -> None:
                     row.get("semantic_review_id"),
                     row.get("review_version"),
                     str(row.get("review_hash", "")).startswith("sha256:"),
+                    str(
+                        row.get("current_review_material_hash", "")
+                    ).startswith("sha256:"),
+                    str(row.get("provenance_amendment_hash", "")).startswith(
+                        "sha256:"
+                    ),
                     str(row.get("golden_hash", "")).startswith("sha256:"),
                     row.get("source_artifact_hashes"),
                     row.get("review_evidence"),
+                    row.get("oracle_origin")
+                    == "CODEX_AUTHORED_SEMANTIC_REVIEW",
+                    "human_ratification" in row,
                 )
             ):
                 raise ValueError("semantic checkpoint lacks provenance")
+            if row["review_hash"] != row["prior_review_hash"]:
+                raise ValueError("semantic review hash lineage is not preserved")
         if checkpoint_class == CheckpointClass.SEMANTICALLY_QUALIFIED_POSITIVE:
             if not row.get("positive_obligation"):
                 raise ValueError("positive checkpoint lacks a concrete obligation")
@@ -1579,6 +1700,83 @@ def run_semantic_harness_rehearsal() -> dict[str, Any]:
     classifier_proof = classifier_branch_proof()
     qualification_rehearsal = run_offline_convergence_sync()
     semantic_sweep = qualification_rehearsal["observations"][0]
+    observations_by_run = {
+        observation["run_id"]: observation
+        for observation in qualification_rehearsal["observations"]
+    }
+    base_1 = observations_by_run["chain-base-1"]
+    base_2 = observations_by_run["chain-base-2"]
+    canonical_chain = observations_by_run[
+        "chain-canonical-document-sufficient"
+    ]
+    matrix_rows = qualification_rehearsal["qualification_matrix"]
+    matrix_request_total = sum(
+        row["max_provider_calls"] for row in matrix_rows
+    )
+    base_2_is_independent = (
+        base_1["status"] == base_2["status"] == "PASS"
+        and base_1["run_id"] != base_2["run_id"]
+        and base_1["output_hash"] != base_2["output_hash"]
+        and [stage["output_hash"] for stage in base_1["stages"]]
+        != [stage["output_hash"] for stage in base_2["stages"]]
+    )
+    canonical_stages = canonical_chain["stages"]
+    canonical_stage_by_name = {
+        stage.get("prompt_id", stage.get("stage")): stage
+        for stage in canonical_stages
+    }
+    canonical_chain_has_current_run_dataflow = (
+        canonical_chain["status"] == "PASS"
+        and canonical_stage_by_name["P04_BLUEPRINT_BUILD_V1"].get(
+            "input_origin"
+        )
+        == "PRODUCT_DERIVED_DOCUMENT_BOUNDARY"
+        and canonical_stage_by_name["P05_BLUEPRINT_REVIEW_V1"].get(
+            "dataflow_input_from"
+        )
+        == "P04_CURRENT_RUN_OUTPUT"
+        and canonical_stage_by_name["P06_EVIDENCE_MAP_V1"].get(
+            "dataflow_input_from"
+        )
+        == "P04_CURRENT_RUN_OUTPUT_WITH_DETERMINISTIC_APPROVAL_TRANSITION"
+        and canonical_stage_by_name["PLANNER"].get("dataflow_input_from")
+        == "P06_CURRENT_RUN_OUTPUT"
+        and canonical_stage_by_name["P07_QUESTION_BUILD_V1"].get(
+            "dataflow_input_from"
+        )
+        == "P06_CURRENT_RUN_OUTPUT_AND_PRODUCT_PLANNER"
+        and canonical_stage_by_name["P08_QUESTION_REVIEW_V1"].get(
+            "dataflow_input_from"
+        )
+        == "P07_CURRENT_RUN_OUTPUT"
+        and canonical_stage_by_name["ASSEMBLY"].get("dataflow_input_from")
+        == "P04_P06_PLANNER_P07_CURRENT_RUN_OUTPUTS"
+        and canonical_stage_by_name["P09_GUIDE_BUILD_V1"].get(
+            "dataflow_input_from"
+        )
+        == "ASSEMBLY_CURRENT_RUN_OUTPUT"
+        and all(
+            stage.get("intermediate_golden_injected") is False
+            for stage in canonical_stages
+            if "intermediate_golden_injected" in stage
+        )
+    )
+    transport_provenance = qualification_rehearsal[
+        "transport_provenance"
+    ]
+    truthful_review_provenance = all(
+        row.get("oracle_origin") == "CODEX_AUTHORED_SEMANTIC_REVIEW"
+        and row.get("independent_review_status")
+        == "USER_SUPPLIED_INDEPENDENT_REVIEW_FINDINGS"
+        and row.get("human_ratification") is None
+        and str(row.get("prior_review_hash", "")).startswith("sha256:")
+        for row in provenance
+        if row["checkpoint_class"]
+        in {
+            CheckpointClass.SEMANTICALLY_QUALIFIED_POSITIVE.value,
+            CheckpointClass.SEMANTICALLY_QUALIFIED_NEGATIVE.value,
+        }
+    )
     sweep_axes_complete = (
         qualification_rehearsal["status"] == "PASS"
         and qualification_rehearsal["causal_classification"]
@@ -1762,12 +1960,74 @@ def run_semantic_harness_rehearsal() -> dict[str, Any]:
             "real_provider_attempts": 0,
             "network_calls_to_openai": 0,
         },
+        {
+            "check_id": "QUALIFICATION_MATRIX_DERIVED_CAP",
+            "status": (
+                "PASS"
+                if matrix_request_total
+                == qualification_rehearsal["derived_max_provider_requests"]
+                == QUALIFICATION_EXPECTED_PROVIDER_REQUESTS
+                and len(matrix_rows) == 7
+                else "FAIL"
+            ),
+            "matrix_row_count": len(matrix_rows),
+            "derived_max_provider_requests": matrix_request_total,
+            "monetary_budget_status": (
+                "RECALCULATION_FROM_CURRENT_OFFICIAL_PRICES_REQUIRED"
+            ),
+        },
+        {
+            "check_id": "BASE_CHAIN_2_INDEPENDENT_COMPOSITION",
+            "status": "PASS" if base_2_is_independent else "FAIL",
+            "base_1_output_hash": base_1["output_hash"],
+            "base_2_output_hash": base_2["output_hash"],
+            "semantic_quality_conclusion_allowed": False,
+        },
+        {
+            "check_id": "CANONICAL_DOCUMENT_INTEGRATED_CHAIN",
+            "status": (
+                "PASS" if canonical_chain_has_current_run_dataflow else "FAIL"
+            ),
+            "stage_count": len(canonical_stages),
+            "intermediate_golden_injections": sum(
+                stage.get("intermediate_golden_injected") is True
+                for stage in canonical_stages
+            ),
+            "semantic_quality_conclusion_allowed": False,
+        },
+        {
+            "check_id": "TRANSPORT_PROVENANCE_SEPARATION",
+            "status": (
+                "PASS"
+                if transport_provenance[
+                    "reviewed_semantic_oracle_invocations"
+                ]
+                == 9
+                and transport_provenance[
+                    "structural_transport_substitute_invocations"
+                ]
+                == 24
+                and transport_provenance["provider_transport_constructed"]
+                is False
+                else "FAIL"
+            ),
+            **transport_provenance,
+        },
+        {
+            "check_id": "TRUTHFUL_REVIEW_PROVENANCE",
+            "status": "PASS" if truthful_review_provenance else "FAIL",
+            "authoring_class": "CODEX_AUTHORED_SEMANTIC_REVIEW",
+            "independent_review_status": (
+                "USER_SUPPLIED_INDEPENDENT_REVIEW_FINDINGS"
+            ),
+            "human_ratification": None,
+        },
     ]
     status = "PASS" if all(item["status"] == "PASS" for item in checks) else "FAIL"
     return {
         "report_schema_version": SEMANTIC_REPORT_VERSION,
         "rehearsal_version": SEMANTIC_REHEARSAL_VERSION,
-        "phase": "HARNESS_SEMANTIC_REMEDIATION",
+        "phase": "HARNESS_FINAL_SEMANTIC_HARDENING",
         "classification": "SYNTHETIC_ONLY_NO_STUDENT_DATA",
         "status": status,
         "fixture_version": fixture["schema_version"],
@@ -1818,6 +2078,23 @@ def run_semantic_harness_rehearsal() -> dict[str, Any]:
             ),
             "network_calls_to_openai": 0,
             "billable_requests": 0,
+            "qualification_matrix": matrix_rows,
+            "derived_max_provider_requests": matrix_request_total,
+            "transport_provenance": transport_provenance,
+            "base_chain_2": {
+                "status": base_2["status"],
+                "independent_output": base_2_is_independent,
+                "output_hash": base_2["output_hash"],
+            },
+            "canonical_document_chain": {
+                "status": canonical_chain["status"],
+                "stage_count": len(canonical_stages),
+                "current_run_dataflow": (
+                    canonical_chain_has_current_run_dataflow
+                ),
+                "intermediate_golden_injections": 0,
+                "semantic_quality_conclusion_allowed": False,
+            },
         },
         "adversarial_review": fixture["adversarial_review"],
         "document_visual_qa": fixture["document_visual_qa"],
