@@ -25,6 +25,17 @@ SOL_MODEL_ID: Final = "gpt-5.6-sol"
 LUNA_MODEL_ID: Final = "gpt-5.6-luna"
 OPENAI_PROVIDER_ID: Final = "openai"
 OPENAI_ROUTE_PROFILE_ID: Final = "LUNA_BASELINE_V1"
+OPENAI_XHIGH_ROUTE_PROFILE_ID: Final = "LUNA_XHIGH_V1"
+OPENAI_XHIGH_PROMPT_IDS: Final = frozenset(
+    {
+        "P04_BLUEPRINT_BUILD_V1",
+        "P05_BLUEPRINT_REVIEW_V1",
+        "P06_EVIDENCE_MAP_V1",
+        "P07_QUESTION_BUILD_V1",
+        "P08_QUESTION_REVIEW_V1",
+        "P09_GUIDE_BUILD_V1",
+    }
+)
 REQUEST_FRAMING_TOKEN_ALLOWANCE: Final = 1_024
 OPENAI_MAX_INPUT_TOKENS: Final = 250_000
 # The first manual-evaluation profile buys no automatic transport retry. A
@@ -78,6 +89,29 @@ OPENAI_ROUTE_PROFILE: Final[Mapping[str, ApprovedOpenAIRoute]] = MappingProxyTyp
         ),
     }
 )
+OPENAI_XHIGH_ROUTE_PROFILE: Final[Mapping[str, ApprovedOpenAIRoute]] = (
+    MappingProxyType(
+        {
+            prompt_id: ApprovedOpenAIRoute(
+                approved.model,
+                (
+                    models.ReasoningEffort.XHIGH
+                    if prompt_id in OPENAI_XHIGH_PROMPT_IDS
+                    else approved.reasoning_effort
+                ),
+            )
+            for prompt_id, approved in OPENAI_ROUTE_PROFILE.items()
+        }
+    )
+)
+OPENAI_ROUTE_PROFILES: Final[
+    Mapping[str, Mapping[str, ApprovedOpenAIRoute]]
+] = MappingProxyType(
+    {
+        OPENAI_ROUTE_PROFILE_ID: OPENAI_ROUTE_PROFILE,
+        OPENAI_XHIGH_ROUTE_PROFILE_ID: OPENAI_XHIGH_ROUTE_PROFILE,
+    }
+)
 OPENAI_MODEL_BY_PROMPT: Final[Mapping[str, str]] = MappingProxyType(
     {
         prompt_id: approved.model
@@ -86,17 +120,87 @@ OPENAI_MODEL_BY_PROMPT: Final[Mapping[str, str]] = MappingProxyType(
 )
 
 
-def build_openai_routes(*, max_call_cost_usd: float) -> Mapping[str, models.ModelRoute]:
+def _route_id(route_profile_id: str, prompt_id: str) -> str:
+    return f"route_openai_{route_profile_id.lower()}_{prompt_id.lower()}"
+
+
+def openai_route_matches_profile(
+    prompt_id: str,
+    route: models.ModelRoute,
+) -> bool:
+    """Accept only an exact, explicitly named profile entry.
+
+    The XHIGH qualification deliberately leaves the canonical prompt registry
+    at HIGH so its executable prompt hashes remain unchanged.  This profile
+    check is the sole authorized HIGH-to-XHIGH routing exception.
+    """
+
+    spec = PROMPT_SPECS.get(prompt_id)
+    if spec is None:
+        return False
+    profile_codes = {
+        code
+        for code in route.reason_codes
+        if code.startswith("ROUTE_PROFILE_")
+    }
+    for route_profile_id, profile in OPENAI_ROUTE_PROFILES.items():
+        approved = profile.get(prompt_id)
+        if approved is None:
+            continue
+        if (
+            route.route_id == _route_id(route_profile_id, prompt_id)
+            and profile_codes == {f"ROUTE_PROFILE_{route_profile_id}"}
+            and route.provider == OPENAI_PROVIDER_ID
+            and route.model == approved.model
+            and route.model_snapshot == approved.model
+            and route.reasoning_effort == approved.reasoning_effort
+            and route.task == spec.task
+            and route.temperature == spec.temperature
+            and route.max_output_tokens == spec.max_output_tokens
+            and route.fallback_route_id is None
+        ):
+            return True
+    return False
+
+
+def build_openai_routes(
+    *,
+    max_call_cost_usd: float,
+    route_profile_id: str = OPENAI_ROUTE_PROFILE_ID,
+) -> Mapping[str, models.ModelRoute]:
     if max_call_cost_usd <= 0:
         raise ValueError("max_call_cost_usd must be positive")
+    try:
+        route_profile = OPENAI_ROUTE_PROFILES[route_profile_id]
+    except KeyError as exc:
+        raise ValueError(f"Unknown OpenAI route profile: {route_profile_id}") from exc
     expected_prompt_ids = set(PROMPT_SPECS) - {"P10_ENRICHED_CONTEXT_V1"}
-    if set(OPENAI_ROUTE_PROFILE) != expected_prompt_ids:
-        raise AssertionError("LUNA_BASELINE_V1 must cover exactly P01-P09 and P11")
+    if set(route_profile) != expected_prompt_ids:
+        raise AssertionError(
+            f"{route_profile_id} must cover exactly P01-P09 and P11"
+        )
     if any(
         approved.model != LUNA_MODEL_ID
-        for approved in OPENAI_ROUTE_PROFILE.values()
+        for approved in route_profile.values()
     ):
-        raise AssertionError("LUNA_BASELINE_V1 cannot route silently to another model")
+        raise AssertionError(
+            f"{route_profile_id} cannot route silently to another model"
+        )
+    expected_xhigh_prompts = (
+        OPENAI_XHIGH_PROMPT_IDS
+        if route_profile_id == OPENAI_XHIGH_ROUTE_PROFILE_ID
+        else frozenset()
+    )
+    actual_xhigh_prompts = frozenset(
+        prompt_id
+        for prompt_id, approved in route_profile.items()
+        if approved.reasoning_effort == models.ReasoningEffort.XHIGH
+    )
+    if actual_xhigh_prompts != expected_xhigh_prompts:
+        raise AssertionError(
+            f"Unexpected XHIGH route surface for {route_profile_id}: "
+            f"{sorted(actual_xhigh_prompts)}"
+        )
     capabilities = models.ModelCapabilities(
         # Every document is parsed and normalized before the gateway. The
         # adapter serializes only the validated envelope; it does not send
@@ -109,6 +213,7 @@ def build_openai_routes(*, max_call_cost_usd: float) -> Mapping[str, models.Mode
             models.ReasoningEffort.LOW,
             models.ReasoningEffort.MEDIUM,
             models.ReasoningEffort.HIGH,
+            models.ReasoningEffort.XHIGH,
         ],
         # No project-level ZDR approval has been verified. store=false is not
         # represented as ZDR and the route therefore remains DEFAULT retention.
@@ -116,18 +221,24 @@ def build_openai_routes(*, max_call_cost_usd: float) -> Mapping[str, models.Mode
         supported_regions=[],
     )
     routes: dict[str, models.ModelRoute] = {}
-    for prompt_id, approved in OPENAI_ROUTE_PROFILE.items():
+    for prompt_id, approved in route_profile.items():
         spec = PROMPT_SPECS[prompt_id]
-        if spec.reasoning_effort != approved.reasoning_effort:
+        is_authorized_xhigh_override = (
+            route_profile_id == OPENAI_XHIGH_ROUTE_PROFILE_ID
+            and prompt_id in OPENAI_XHIGH_PROMPT_IDS
+            and spec.reasoning_effort == models.ReasoningEffort.HIGH
+            and approved.reasoning_effort == models.ReasoningEffort.XHIGH
+        )
+        if (
+            spec.reasoning_effort != approved.reasoning_effort
+            and not is_authorized_xhigh_override
+        ):
             raise AssertionError(
                 f"Prompt/profile reasoning drift for {prompt_id}: "
                 f"{spec.reasoning_effort} != {approved.reasoning_effort}"
             )
         routes[prompt_id] = models.ModelRoute(
-            route_id=(
-                f"route_openai_{OPENAI_ROUTE_PROFILE_ID.lower()}_"
-                f"{prompt_id.lower()}"
-            ),
+            route_id=_route_id(route_profile_id, prompt_id),
             task=spec.task,
             provider=OPENAI_PROVIDER_ID,
             model=approved.model,
@@ -149,8 +260,17 @@ def build_openai_routes(*, max_call_cost_usd: float) -> Mapping[str, models.Mode
             max_output_tokens=spec.max_output_tokens,
             fallback_route_id=None,
             reason_codes=[
-                f"ROUTE_PROFILE_{OPENAI_ROUTE_PROFILE_ID}",
-                "LUNA_ONLY_EXPERIMENTAL_BASELINE",
+                f"ROUTE_PROFILE_{route_profile_id}",
+                (
+                    "LUNA_ONLY_EXPERIMENTAL_XHIGH_QUALIFICATION"
+                    if route_profile_id == OPENAI_XHIGH_ROUTE_PROFILE_ID
+                    else "LUNA_ONLY_EXPERIMENTAL_BASELINE"
+                ),
+                *(
+                    ["REASONING_EFFORT_OVERRIDE_HIGH_TO_XHIGH"]
+                    if is_authorized_xhigh_override
+                    else []
+                ),
                 "EXPLICIT_APPROVED_MODEL_ID",
                 "NO_DYNAMIC_MODEL_SELECTION",
                 "NO_MODEL_FALLBACK",
@@ -237,6 +357,8 @@ def estimate_openai_input_tokens(
     spec: PromptSpec,
     request: BaseModel,
     envelope: models.ModelTaskEnvelope,
+    *,
+    reasoning_effort: models.ReasoningEffort | None = None,
 ) -> int:
     """Conservatively account for instructions, envelope, and strict schema."""
 
@@ -267,7 +389,9 @@ def estimate_openai_input_tokens(
                 ],
             },
         ],
-        "reasoning": {"effort": spec.reasoning_effort.value.lower()},
+        "reasoning": {
+            "effort": (reasoning_effort or spec.reasoning_effort).value.lower()
+        },
         "text": {"format": structured_output_format(spec, request)},
     }
     serialized = json.dumps(
@@ -280,3 +404,27 @@ def estimate_openai_input_tokens(
     # chars/4 estimate. The fixed allowance covers provider message framing
     # that is not represented by the JSON serialization.
     return max(1, len(serialized) + REQUEST_FRAMING_TOKEN_ALLOWANCE)
+
+
+def build_openai_input_token_estimator(
+    routes: Mapping[str, models.ModelRoute],
+) -> Callable[[PromptSpec, BaseModel, models.ModelTaskEnvelope], int]:
+    """Bind conservative request serialization to the effective route effort."""
+
+    def estimate(
+        spec: PromptSpec,
+        request: BaseModel,
+        envelope: models.ModelTaskEnvelope,
+    ) -> int:
+        try:
+            route = routes[spec.prompt_id]
+        except KeyError as exc:
+            raise ValueError(f"No approved real route for {spec.prompt_id}") from exc
+        return estimate_openai_input_tokens(
+            spec,
+            request,
+            envelope,
+            reasoning_effort=route.reasoning_effort,
+        )
+
+    return estimate

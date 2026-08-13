@@ -6350,7 +6350,8 @@
           "MINIMAL",
           "LOW",
           "MEDIUM",
-          "HIGH"
+          "HIGH",
+          "XHIGH"
         ],
         "title": "ReasoningEffort",
         "type": "string"

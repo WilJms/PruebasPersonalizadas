@@ -555,6 +555,7 @@ def _mock_route(spec: PromptSpec) -> models.ModelRoute:
                 models.ReasoningEffort.LOW,
                 models.ReasoningEffort.MEDIUM,
                 models.ReasoningEffort.HIGH,
+                models.ReasoningEffort.XHIGH,
             ],
             supports_zero_data_retention=True,
             supported_regions=["local-offline"],

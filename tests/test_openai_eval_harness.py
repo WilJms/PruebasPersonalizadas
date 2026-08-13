@@ -5,6 +5,7 @@ import asyncio
 from concurrent.futures import ThreadPoolExecutor
 from copy import deepcopy
 from dataclasses import replace
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -24,6 +25,9 @@ from comprehension_verification.evaluation_gate import (
 from comprehension_verification.model_gateway import (
     DeterministicMockAdapter,
     MockBehavior,
+    OPENAI_ROUTE_PROFILE_ID,
+    OPENAI_XHIGH_PROMPT_IDS,
+    OPENAI_XHIGH_ROUTE_PROFILE_ID,
 )
 from comprehension_verification.rehearsal import (
     BASE_SCENARIO_ID,
@@ -365,6 +369,204 @@ def test_convergence_cli_dry_run_is_content_free_and_non_billable() -> None:
     assert "question_text" not in serialized
 
 
+def test_xhigh_offline_qualification_is_exact_and_non_billable() -> None:
+    report = asyncio.run(
+        run_offline_convergence(
+            route_profile_id=OPENAI_XHIGH_ROUTE_PROFILE_ID,
+            max_total_cost_usd=0.75,
+            max_call_cost_usd=0.10,
+            max_provider_requests=24,
+        )
+    )
+    controls = report["controls"]
+    assert report["status"] == "PASS"
+    assert report["route_profile"] == "LUNA_XHIGH_V1"
+    assert report["execution_sequence"] == [
+        "independent-sweep:P04-P09",
+        "offline-golden-positive:P05",
+        "offline-golden-negative:P05",
+        "integrated-chain:base:1:P04-P09",
+        "integrated-chain:base:2:P04-P09",
+        "integrated-chain:choice-variant:P04-P09",
+    ]
+    assert [item["status"] for item in report["observations"]] == [
+        "PASS",
+        "PASS",
+        "PASS",
+        "PASS",
+    ]
+    assert [len(item["stages"]) for item in report["observations"]] == [
+        6,
+        8,
+        8,
+        8,
+    ]
+    assert all(
+        check["status"] == "PASS" and check["provider_requests"] == 0
+        for check in report["deterministic_checks"]
+    )
+    assert controls["network_calls"] == 0
+    assert controls["provider_attempts"] == 24
+    assert controls["simulated_provider_attempts"] == 24
+    assert controls["models"] == ["gpt-5.6-luna"]
+    assert controls["reasoning_efforts_by_prompt"] == {
+        prompt_id: ["XHIGH"]
+        for prompt_id in sorted(OPENAI_XHIGH_PROMPT_IDS)
+    }
+    assert controls["p10_calls"] == 0
+    assert controls["p11_calls"] == 0
+    assert controls["fallback_calls"] == 0
+    assert controls["gateway_retries"] == 0
+    assert controls["sdk_retries"] == 0
+    assert controls["semantic_retries"] == 0
+    assert controls["tools_enabled"] is False
+    assert controls["store"] is False
+    assert controls["semantic_normalizations"] == 0
+    assert controls["fixture_changes"] == 0
+    assert controls["prompt_changes"] == 0
+    assert controls["validator_changes"] == 0
+    assert controls["budget_charged_usd"] == pytest.approx(0.500531)
+    assert controls["max_observed_budget_charge_usd"] == pytest.approx(
+        0.02583075
+    )
+    assert controls["budget_charged_usd"] <= controls["max_total_cost_usd"]
+    assert controls["max_observed_budget_charge_usd"] <= (
+        controls["max_call_cost_usd"]
+    )
+
+
+def test_xhigh_cli_dry_run_has_zero_network_and_no_secret_surface() -> None:
+    completed = subprocess.run(
+        [
+            sys.executable,
+            str(SCRIPT),
+            "--mode",
+            "xhigh-qualification-dry-run",
+            "--max-total-cost-usd",
+            "0.75",
+            "--max-call-cost-usd",
+            "0.10",
+            "--max-provider-requests",
+            "24",
+        ],
+        cwd=ROOT,
+        env=_safe_environment(),
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    report = json.loads(completed.stdout)
+    serialized = json.dumps(report, sort_keys=True)
+    assert report["status"] == "PASS"
+    assert report["route_profile"] == "LUNA_XHIGH_V1"
+    assert report["controls"]["network_calls"] == 0
+    assert "OPENAI_API_KEY" not in serialized
+    assert "content_text" not in serialized
+    assert "question_text" not in serialized
+
+
+def test_xhigh_boundary_matches_high_semantics_and_changes_only_route_effort() -> None:
+    baseline_report = json.loads(
+        eval_harness.XHIGH_QUALIFICATION_BASELINE_REPORT.read_text(
+            encoding="utf-8"
+        )
+    )
+    high = baseline_report["boundary"]
+    xhigh = rehearsal_boundary_material(
+        OPENAI_XHIGH_ROUTE_PROFILE_ID,
+        max_call_cost_usd=0.10,
+    )
+    assert xhigh["prompt_pack_version"] == high["prompt_pack_version"]
+    assert xhigh["planner_version"] == high["planner_version"]
+    assert xhigh["assembler_version"] == high["assembler_version"]
+    assert xhigh["checkpoints"] == high["checkpoints"]
+    assert xhigh["p05_golden"] == high["p05_golden"]
+    semantic_prompt_fields = {
+        "version",
+        "hash",
+        "input_schema_hash",
+        "output_schema_hash",
+        "relationship_validator",
+        "application_validator",
+    }
+    for prompt_id in sorted(OPENAI_XHIGH_PROMPT_IDS):
+        assert {
+            key: value
+            for key, value in xhigh["prompts"][prompt_id].items()
+            if key in semantic_prompt_fields
+        } == high["prompts"][prompt_id]
+        assert xhigh["prompts"][prompt_id][
+            "registry_reasoning_effort"
+        ] == "HIGH"
+        assert xhigh["prompts"][prompt_id][
+            "route_reasoning_effort"
+        ] == "XHIGH"
+
+    delta = xhigh["route_delta_from_luna_baseline"]
+    assert delta["baseline_route_profile"] == OPENAI_ROUTE_PROFILE_ID
+    assert delta["selected_route_profile"] == OPENAI_XHIGH_ROUTE_PROFILE_ID
+    assert delta["reasoning_effort_changes"] == {
+        prompt_id: {"from": "HIGH", "to": "XHIGH"}
+        for prompt_id in sorted(OPENAI_XHIGH_PROMPT_IDS)
+    }
+    assert delta["other_route_field_changes"] == {}
+    for unchanged_surface in (
+        "prompt_registry_changes",
+        "schema_changes",
+        "validator_changes",
+        "fixture_changes",
+        "planner_changes",
+        "assembler_changes",
+    ):
+        assert delta[unchanged_surface] == []
+    route_boundary = xhigh["openai_route_boundary"]
+    assert route_boundary["model_ids"] == ["gpt-5.6-luna"]
+    assert route_boundary["route_profile"] == "LUNA_XHIGH_V1"
+    assert {
+        prompt_id: route_boundary["routes"][prompt_id][
+            "reasoning_effort"
+        ]
+        for prompt_id in sorted(OPENAI_XHIGH_PROMPT_IDS)
+    } == {
+        prompt_id: "XHIGH"
+        for prompt_id in sorted(OPENAI_XHIGH_PROMPT_IDS)
+    }
+
+
+def test_xhigh_authorization_boundary_seals_baseline_route_sdk_and_caps(
+    tmp_path: Path,
+) -> None:
+    args = _real_cli_args(tmp_path)
+    args.mode = "xhigh-qualification-real"
+    boundary = eval_harness._convergence_authorization_boundary(args)
+    assert boundary["git_head"]
+    assert boundary["route_profile"] == "LUNA_XHIGH_V1"
+    assert boundary["model_ids"] == ["gpt-5.6-luna"]
+    assert boundary["qualified_reasoning_effort"] == {
+        prompt_id: "XHIGH"
+        for prompt_id in sorted(OPENAI_XHIGH_PROMPT_IDS)
+    }
+    assert boundary["max_provider_requests"] == 24
+    assert boundary["max_total_cost_usd"] == 0.75
+    assert boundary["max_call_cost_usd"] == 0.10
+    assert boundary["executable_boundary"]["openai_route_boundary"][
+        "openai_sdk_version"
+    ] == "2.53.0"
+    assert boundary["xhigh_qualification_baseline"] == {
+        "candidate_sha": eval_harness.XHIGH_QUALIFICATION_BASELINE_SHA,
+        "evidence_sha": eval_harness.XHIGH_QUALIFICATION_EVIDENCE_SHA,
+        "report_hash": (
+            "sha256:"
+            + hashlib.sha256(
+                eval_harness.XHIGH_QUALIFICATION_BASELINE_REPORT.read_bytes()
+            ).hexdigest()
+        ),
+        "route_profile": "LUNA_BASELINE_V1",
+        "model": "gpt-5.6-luna",
+        "reasoning_effort": "HIGH",
+    }
+
+
 def _reservation_boundary() -> dict[str, object]:
     return {
         "git_head": "a" * 40,
@@ -488,6 +690,38 @@ def test_real_convergence_code_path_uses_real_routes_without_network(
     assert report["controls"]["unpriced_attempts"] == 0
     assert report["controls"]["budget_charged_usd"] <= 0.75
     assert report["controls"]["models"] == ["gpt-5.6-luna"]
+    assert report["controls"]["p10_calls"] == 0
+    assert report["controls"]["p11_calls"] == 0
+    assert report["controls"]["fallback_calls"] == 0
+
+
+def test_xhigh_real_code_path_uses_exact_routes_without_network(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        "comprehension_verification.rehearsal.OpenAIResponsesAdapter",
+        lambda **_kwargs: DeterministicMockAdapter(),
+    )
+    report = asyncio.run(
+        run_real_convergence(
+            api_key=SecretStr("sk-project-synthetic-placeholder-not-real"),
+            max_total_cost_usd=0.75,
+            max_call_cost_usd=0.10,
+            max_provider_requests=24,
+            route_profile_id=OPENAI_XHIGH_ROUTE_PROFILE_ID,
+        )
+    )
+    assert report["status"] == "PASS"
+    assert report["mode"] == "real-xhigh-qualification"
+    assert report["route_profile"] == "LUNA_XHIGH_V1"
+    assert report["unchanged_boundary_across_chains"] is True
+    assert report["controls"]["network_calls"] == 24
+    assert report["controls"]["provider_attempts"] == 24
+    assert report["controls"]["models"] == ["gpt-5.6-luna"]
+    assert report["controls"]["reasoning_efforts_by_prompt"] == {
+        prompt_id: ["XHIGH"]
+        for prompt_id in sorted(OPENAI_XHIGH_PROMPT_IDS)
+    }
     assert report["controls"]["p10_calls"] == 0
     assert report["controls"]["p11_calls"] == 0
     assert report["controls"]["fallback_calls"] == 0
@@ -647,6 +881,80 @@ def test_real_cli_persists_provenance_and_completes_once(
     )
     assert record["status"] == "COMPLETED"
     assert record["report_hash"].startswith("sha256:")
+
+
+def test_xhigh_cli_persists_pass_verdict_and_consumes_authorization_once(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    args = _real_cli_args(tmp_path)
+    args.mode = "xhigh-qualification-real"
+
+    async def fake_run(_args: argparse.Namespace) -> dict[str, object]:
+        return {
+            "report_schema_version": "stage2-convergence-report/1.6.0",
+            "status": "PASS",
+            "mode": "real-xhigh-qualification",
+            "classification": "SYNTHETIC_ONLY_NO_STUDENT_DATA",
+            "route_profile": "LUNA_XHIGH_V1",
+            "observations": [],
+            "controls": {
+                "network_calls": 24,
+                "provider_attempts": 24,
+                "actual_cost_usd": 0.01,
+            },
+        }
+
+    monkeypatch.setattr(
+        eval_harness, "_run_current_convergence_real", fake_run
+    )
+    assert eval_harness._run_convergence_cli(args) == 0
+    capsys.readouterr()
+    report = json.loads(args.report_path.read_text(encoding="utf-8"))
+    assert report["qualification_outcome"] == (
+        "LUNA_XHIGH_QUALIFICATION_PASSED"
+    )
+    assert report["convergence_outcome"] == (
+        "READY_FOR_INDEPENDENT_REVIEW"
+    )
+    assert report["baseline_high_candidate"] == (
+        eval_harness.XHIGH_QUALIFICATION_BASELINE_SHA
+    )
+    record = EvaluationAuthorizationLedger(args.ledger).record(
+        args.execution_id
+    )
+    assert record["status"] == "COMPLETED"
+    with pytest.raises(
+        eval_harness.OpenAIEvalBlocked,
+        match="EVALUATION_AUTHORIZATION_ALREADY_CONSUMED",
+    ):
+        eval_harness._run_convergence_cli(args)
+
+
+def test_xhigh_outcome_distinguishes_model_failure_from_implementation() -> None:
+    assert eval_harness._xhigh_qualification_outcome(
+        {
+            "status": "FAIL",
+            "observations": [
+                {"failure": {"codes": ["UNAUTHORIZED_EVIDENCE"]}}
+            ],
+        }
+    ) == (
+        "LUNA_XHIGH_QUALIFICATION_FAILED",
+        "CONVERGENCE_INCOMPLETE",
+    )
+    assert eval_harness._xhigh_qualification_outcome(
+        {
+            "status": "FAIL",
+            "observations": [
+                {"failure": {"codes": ["MODEL_PROVIDER_ERROR"]}}
+            ],
+        }
+    ) == (
+        "XHIGH_QUALIFICATION_INCONCLUSIVE",
+        "CONVERGENCE_INCOMPLETE",
+    )
 
 
 def test_authorization_boundary_binds_prompts_schemas_validators_and_inputs() -> None:

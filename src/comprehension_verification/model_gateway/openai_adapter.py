@@ -43,6 +43,7 @@ from comprehension_verification.model_gateway.openai_pricing import estimate_cos
 from comprehension_verification.model_gateway.openai_routes import (
     LUNA_MODEL_ID,
     openai_developer_instruction,
+    openai_route_matches_profile,
 )
 from comprehension_verification.model_gateway.openai_schema import (
     OpenAISchemaError,
@@ -141,7 +142,7 @@ class OpenAIResponsesAdapter:
             raise ModelUnavailableProviderError("PROVIDER_ROUTE_NOT_APPROVED")
         if prompt_id == "P10_ENRICHED_CONTEXT_V1":
             raise AuthorizationProviderError("P10_DISABLED")
-        if spec.reasoning_effort != route.reasoning_effort:
+        if not openai_route_matches_profile(prompt_id, route):
             raise PermanentProviderError("PROVIDER_REASONING_ROUTE_MISMATCH")
         try:
             output_format = structured_output_format(spec, request)

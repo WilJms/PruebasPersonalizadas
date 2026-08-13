@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 import asyncio
-from dataclasses import dataclass
+from collections.abc import Mapping
+from dataclasses import dataclass, replace
 from datetime import UTC, datetime
 import json
 from pathlib import Path
@@ -22,15 +23,21 @@ from .model_gateway import (
     GatewayMode,
     GatewaySchemaViolation,
     ModelGateway,
+    OPENAI_ROUTE_PROFILE_ID,
+    OPENAI_XHIGH_PROMPT_IDS,
+    OPENAI_XHIGH_ROUTE_PROFILE_ID,
     OpenAIAdapterConfig,
     OpenAIResponsesAdapter,
+    ProviderBudgetError,
     RequestCappedAdapter,
     build_openai_cost_estimator,
+    build_openai_input_token_estimator,
     build_openai_routes,
     build_mock_request,
     build_trusted_context,
-    estimate_openai_input_tokens,
 )
+from .model_gateway.openai_adapter import OPENAI_SDK_VERSION
+from .model_gateway.mock_factory import DeterministicMockAdapter
 from .model_gateway.registry import PROMPT_VERSION, prompt_spec
 from .model_gateway.gateway import PROMPT_RELATIONSHIP_VALIDATOR_VERSIONS
 from .planning import PLANNER_VERSION, build_assessment_plan
@@ -54,8 +61,8 @@ from .web.workflows import (
 )
 
 
-REHEARSAL_VERSION = "stage2-product-rehearsal/1.5.0"
-REHEARSAL_REPORT_VERSION = "stage2-convergence-report/1.5.0"
+REHEARSAL_VERSION = "stage2-product-rehearsal/1.6.0"
+REHEARSAL_REPORT_VERSION = "stage2-convergence-report/1.6.0"
 BASE_SCENARIO_ID = "synthetic-open-short-v1"
 VARIANT_SCENARIO_ID = "synthetic-choice-justification-v1"
 P05_GOLDEN_FIXTURE_PATH = (
@@ -659,7 +666,81 @@ def evaluate_p05_golden_negative() -> dict[str, Any]:
     }
 
 
-def rehearsal_boundary_material() -> dict[str, Any]:
+def _route_profile_delta_material(
+    route_profile_id: str,
+    *,
+    max_call_cost_usd: float,
+) -> dict[str, Any]:
+    baseline_routes = build_openai_routes(
+        max_call_cost_usd=max_call_cost_usd,
+        route_profile_id=OPENAI_ROUTE_PROFILE_ID,
+    )
+    selected_routes = build_openai_routes(
+        max_call_cost_usd=max_call_cost_usd,
+        route_profile_id=route_profile_id,
+    )
+    route_fields = (
+        "provider",
+        "model",
+        "model_snapshot",
+        "temperature",
+        "retention_mode",
+        "region",
+        "max_cost_usd",
+        "max_input_tokens",
+        "max_output_tokens",
+        "fallback_route_id",
+    )
+    return {
+        "baseline_route_profile": OPENAI_ROUTE_PROFILE_ID,
+        "selected_route_profile": route_profile_id,
+        "route_identity_changed_prompt_ids": sorted(
+            prompt_id
+            for prompt_id in baseline_routes
+            if baseline_routes[prompt_id].route_id
+            != selected_routes[prompt_id].route_id
+        ),
+        "reasoning_effort_changes": {
+            prompt_id: {
+                "from": baseline_routes[prompt_id].reasoning_effort.value,
+                "to": selected_routes[prompt_id].reasoning_effort.value,
+            }
+            for prompt_id in baseline_routes
+            if baseline_routes[prompt_id].reasoning_effort
+            != selected_routes[prompt_id].reasoning_effort
+        },
+        "other_route_field_changes": {
+            field: sorted(
+                prompt_id
+                for prompt_id in baseline_routes
+                if getattr(baseline_routes[prompt_id], field)
+                != getattr(selected_routes[prompt_id], field)
+            )
+            for field in route_fields
+            if any(
+                getattr(baseline_routes[prompt_id], field)
+                != getattr(selected_routes[prompt_id], field)
+                for prompt_id in baseline_routes
+            )
+        },
+        "prompt_registry_changes": [],
+        "schema_changes": [],
+        "validator_changes": [],
+        "fixture_changes": [],
+        "planner_changes": [],
+        "assembler_changes": [],
+    }
+
+
+def rehearsal_boundary_material(
+    route_profile_id: str = OPENAI_ROUTE_PROFILE_ID,
+    *,
+    max_call_cost_usd: float = 0.10,
+) -> dict[str, Any]:
+    routes = build_openai_routes(
+        max_call_cost_usd=max_call_cost_usd,
+        route_profile_id=route_profile_id,
+    )
     golden_fixture = _p05_golden_fixture()
     golden_positive = evaluate_p05_golden_positive()
     golden_negative = evaluate_p05_golden_negative()
@@ -687,6 +768,10 @@ def rehearsal_boundary_material() -> dict[str, Any]:
             "application_validator": (
                 PROMPT_APPLICATION_VALIDATOR_VERSIONS.get(prompt_id)
             ),
+            "registry_reasoning_effort": prompt_spec(
+                prompt_id
+            ).reasoning_effort.value,
+            "route_reasoning_effort": routes[prompt_id].reasoning_effort.value,
         }
         for prompt_id in (
             "P04_BLUEPRINT_BUILD_V1",
@@ -724,6 +809,39 @@ def rehearsal_boundary_material() -> dict[str, Any]:
             ],
         },
         "prompts": prompt_material,
+        "openai_route_boundary": {
+            "route_profile": route_profile_id,
+            "model_ids": sorted({route.model for route in routes.values()}),
+            "xhigh_qualification_prompt_ids": sorted(
+                OPENAI_XHIGH_PROMPT_IDS
+            ),
+            "routes": {
+                prompt_id: {
+                    "route_id": route.route_id,
+                    "model": route.model,
+                    "model_snapshot": route.model_snapshot,
+                    "reasoning_effort": route.reasoning_effort.value,
+                    "max_input_tokens": route.max_input_tokens,
+                    "max_output_tokens": route.max_output_tokens,
+                    "max_cost_usd": route.max_cost_usd,
+                    "fallback_route_id": route.fallback_route_id,
+                    "reason_codes": route.reason_codes,
+                }
+                for prompt_id, route in routes.items()
+            },
+            "adapter": "OpenAIResponsesAdapter",
+            "api": "Responses",
+            "openai_sdk_version": OPENAI_SDK_VERSION,
+            "gateway_retries": 0,
+            "sdk_retries": 0,
+            "semantic_retries": 0,
+            "tools_enabled": False,
+            "store": False,
+        },
+        "route_delta_from_luna_baseline": _route_profile_delta_material(
+            route_profile_id,
+            max_call_cost_usd=max_call_cost_usd,
+        ),
         "p10_enabled": False,
     }
 
@@ -989,6 +1107,22 @@ class ProductRehearsal:
     ) -> dict[str, Any]:
         result = self.results[-1]
         ledger = result.ledgers[-1]
+        reasoning_tokens = next(
+            (
+                int(code.removeprefix("REASONING_TOKENS_"))
+                for code in reversed(ledger.route.reason_codes)
+                if code.startswith("REASONING_TOKENS_")
+            ),
+            0,
+        )
+        cache_write_input_tokens = next(
+            (
+                int(code.removeprefix("CACHE_WRITE_INPUT_TOKENS_"))
+                for code in reversed(ledger.route.reason_codes)
+                if code.startswith("CACHE_WRITE_INPUT_TOKENS_")
+            ),
+            0,
+        )
         row = {
             "prompt_id": prompt_id,
             "prompt_version": prompt_spec(prompt_id).prompt_version,
@@ -1000,6 +1134,11 @@ class ProductRehearsal:
             "fallback_route_id": ledger.route.fallback_route_id,
             "attempts": len(result.ledgers),
             "repaired": result.repaired,
+            "input_tokens": ledger.input_tokens,
+            "cached_input_tokens": ledger.cached_input_tokens,
+            "cache_write_input_tokens": cache_write_input_tokens,
+            "output_tokens": ledger.output_tokens,
+            "reasoning_tokens": reasoning_tokens,
             "actual_cost_usd": round(
                 sum(item.actual_cost_usd for item in result.ledgers), 10
             ),
@@ -1470,33 +1609,257 @@ class ProductRehearsal:
         }
 
 
-async def run_offline_convergence() -> dict[str, Any]:
-    """Run sweep, two unchanged chains and one distinct variant with mocks."""
-
-    from .model_gateway import GatewayConfig, GatewayMode
-
-    gateway = ModelGateway(
-        GatewayConfig(
-            mode=GatewayMode.MOCK,
-            max_retries=0,
-            job_id="job_stage2_offline_convergence",
+def _provider_usage_controls(
+    ledgers: list[m.ModelCallLedger],
+) -> dict[str, Any]:
+    def reason_code_total(prefix: str) -> int:
+        return sum(
+            next(
+                (
+                    int(code.removeprefix(prefix))
+                    for code in reversed(ledger.route.reason_codes)
+                    if code.startswith(prefix)
+                ),
+                0,
+            )
+            for ledger in ledgers
         )
-    )
-    rehearsal = ProductRehearsal(gateway, max_call_cost_usd=1.0)
-    observations = [
-        await rehearsal.run_sweep(run_id="sweep-base"),
-        await rehearsal.run_chain(run_id="chain-base-1"),
-        await rehearsal.run_chain(run_id="chain-base-2"),
-        await rehearsal.run_chain(
-            run_id="chain-choice-variant",
-            scenario_id=VARIANT_SCENARIO_ID,
+
+    reasoning_efforts_by_prompt = {
+        prompt_id: sorted(
+            {
+                ledger.route.reasoning_effort.value
+                for ledger in ledgers
+                if ledger.prompt_id == prompt_id
+            }
+        )
+        for prompt_id in sorted({ledger.prompt_id for ledger in ledgers})
+    }
+    return {
+        "input_tokens": sum(ledger.input_tokens for ledger in ledgers),
+        "cached_input_tokens": sum(
+            ledger.cached_input_tokens for ledger in ledgers
         ),
+        "cache_write_input_tokens": reason_code_total(
+            "CACHE_WRITE_INPUT_TOKENS_"
+        ),
+        "output_tokens": sum(ledger.output_tokens for ledger in ledgers),
+        "reasoning_tokens": reason_code_total("REASONING_TOKENS_"),
+        "reasoning_efforts_by_prompt": reasoning_efforts_by_prompt,
+        "max_observed_actual_call_cost_usd": round(
+            max(
+                (ledger.actual_cost_usd or 0.0 for ledger in ledgers),
+                default=0.0,
+            ),
+            10,
+        ),
+        "max_observed_budget_charge_usd": round(
+            max(
+                (
+                    max(
+                        ledger.estimated_cost_usd,
+                        ledger.actual_cost_usd or 0.0,
+                    )
+                    for ledger in ledgers
+                ),
+                default=0.0,
+            ),
+            10,
+        ),
+    }
+
+
+class _ConservativeNoNetworkAdapter:
+    """Exercise REAL routing while replacing transport with deterministic data."""
+
+    def __init__(
+        self,
+        routes: Mapping[str, m.ModelRoute],
+        *,
+        max_requests: int,
+    ) -> None:
+        self.routes = routes
+        self.max_requests = max_requests
+        self.calls = 0
+        self.inner = DeterministicMockAdapter()
+        self.cost_estimator = build_openai_cost_estimator(routes)
+        self.input_token_estimator = build_openai_input_token_estimator(routes)
+
+    async def invoke(self, **kwargs: Any) -> Any:
+        if self.calls >= self.max_requests:
+            raise ProviderBudgetError("SYNTHETIC_PROVIDER_REQUEST_CAP_EXCEEDED")
+        self.calls += 1
+        spec = prompt_spec(kwargs["prompt_id"])
+        input_tokens = self.input_token_estimator(
+            spec,
+            kwargs["request"],
+            kwargs["envelope"],
+        )
+        result = await self.inner.invoke(**kwargs)
+        return replace(
+            result,
+            input_tokens=input_tokens,
+            estimated_cost_usd=self.cost_estimator(spec, input_tokens),
+            actual_cost_usd=0.0,
+            cache_write_input_tokens=input_tokens,
+            reason_codes=(
+                "NO_NETWORK_DETERMINISTIC_PREFLIGHT",
+                "CONSERVATIVE_BUDGET_RESERVATION",
+            ),
+        )
+
+
+async def _execute_convergence_matrix(
+    rehearsal: ProductRehearsal,
+    *,
+    run_id_prefix: str,
+) -> tuple[list[RehearsalObservation], list[dict[str, Any]], list[str]]:
+    observations = [
+        await rehearsal.run_sweep(run_id=f"{run_id_prefix}sweep-base")
     ]
-    controls = rehearsal.controls()
     deterministic_checks = [
         evaluate_p05_golden_positive(),
         evaluate_p05_golden_negative(),
     ]
+    observations.extend(
+        [
+            await rehearsal.run_chain(
+                run_id=f"{run_id_prefix}chain-base-1"
+            ),
+            await rehearsal.run_chain(
+                run_id=f"{run_id_prefix}chain-base-2"
+            ),
+            await rehearsal.run_chain(
+                run_id=f"{run_id_prefix}chain-choice-variant",
+                scenario_id=VARIANT_SCENARIO_ID,
+            ),
+        ]
+    )
+    return (
+        observations,
+        deterministic_checks,
+        [
+            "independent-sweep:P04-P09",
+            "offline-golden-positive:P05",
+            "offline-golden-negative:P05",
+            "integrated-chain:base:1:P04-P09",
+            "integrated-chain:base:2:P04-P09",
+            "integrated-chain:choice-variant:P04-P09",
+        ],
+    )
+
+
+def _observation_rows(
+    observations: list[RehearsalObservation],
+) -> list[dict[str, Any]]:
+    return [
+        {
+            "run_id": item.run_id,
+            "run_kind": item.run_kind,
+            "scenario_id": item.scenario_id,
+            "status": item.status,
+            "stages": list(item.stages),
+            "failure": item.failure,
+            "output_hash": item.output_hash,
+        }
+        for item in observations
+    ]
+
+
+async def run_offline_convergence(
+    *,
+    route_profile_id: str = OPENAI_ROUTE_PROFILE_ID,
+    max_total_cost_usd: float = 0.75,
+    max_call_cost_usd: float = 0.10,
+    max_provider_requests: int = 24,
+) -> dict[str, Any]:
+    """Run sweep, two unchanged chains and one distinct variant with mocks."""
+
+    from .model_gateway import GatewayConfig, GatewayMode
+
+    ledger_records: list[m.ModelCallLedger] | None = None
+    preflight_adapter: _ConservativeNoNetworkAdapter | None = None
+    if route_profile_id == OPENAI_ROUTE_PROFILE_ID:
+        gateway = ModelGateway(
+            GatewayConfig(
+                mode=GatewayMode.MOCK,
+                max_retries=0,
+                job_id="job_stage2_offline_convergence",
+            )
+        )
+        rehearsal = ProductRehearsal(gateway, max_call_cost_usd=1.0)
+        run_id_prefix = ""
+    elif route_profile_id == OPENAI_XHIGH_ROUTE_PROFILE_ID:
+        if max_total_cost_usd <= 0 or max_call_cost_usd <= 0:
+            raise ValueError("positive XHIGH preflight cost caps are required")
+        routes = build_openai_routes(
+            max_call_cost_usd=max_call_cost_usd,
+            route_profile_id=route_profile_id,
+        )
+        ledger_records = []
+        preflight_adapter = _ConservativeNoNetworkAdapter(
+            routes,
+            max_requests=max_provider_requests,
+        )
+        gateway = ModelGateway(
+            GatewayConfig(
+                mode=GatewayMode.REAL,
+                max_retries=0,
+                default_budget_usd=max_call_cost_usd,
+                job_id="job_stage2_xhigh_offline_preflight",
+            ),
+            real_routes=routes,
+            adapters={"openai": preflight_adapter},
+            ledger_sink=ledger_records.append,
+            cost_estimator=build_openai_cost_estimator(routes),
+            input_token_estimator=build_openai_input_token_estimator(routes),
+        )
+        rehearsal = ProductRehearsal(
+            gateway,
+            max_call_cost_usd=max_call_cost_usd,
+            max_total_cost_usd=max_total_cost_usd,
+            ledger_records=ledger_records,
+        )
+        run_id_prefix = "xhigh-offline-"
+    else:
+        raise ValueError(f"Unknown OpenAI route profile: {route_profile_id}")
+
+    observations, deterministic_checks, execution_sequence = (
+        await _execute_convergence_matrix(
+            rehearsal,
+            run_id_prefix=run_id_prefix,
+        )
+    )
+    controls = rehearsal.controls()
+    if ledger_records is not None and preflight_adapter is not None:
+        controls.update(_provider_usage_controls(ledger_records))
+        controls.update(
+            {
+                "route_profile": route_profile_id,
+                "network_calls": 0,
+                "simulated_provider_attempts": preflight_adapter.calls,
+                "expected_provider_requests": 24,
+                "max_provider_requests": max_provider_requests,
+                "max_total_cost_usd": max_total_cost_usd,
+                "max_call_cost_usd": max_call_cost_usd,
+                "gateway_retries": 0,
+                "sdk_retries": 0,
+                "tools_enabled": False,
+                "store": False,
+                "semantic_normalizations": 0,
+                "fixture_changes": 0,
+                "prompt_changes": 0,
+                "validator_changes": 0,
+            }
+        )
+    xhigh_efforts_are_exact = (
+        route_profile_id != OPENAI_XHIGH_ROUTE_PROFILE_ID
+        or controls.get("reasoning_efforts_by_prompt")
+        == {
+            prompt_id: [m.ReasoningEffort.XHIGH.value]
+            for prompt_id in sorted(OPENAI_XHIGH_PROMPT_IDS)
+        }
+    )
     status = (
         "PASS"
         if all(item.status == "PASS" for item in observations)
@@ -1504,27 +1867,40 @@ async def run_offline_convergence() -> dict[str, Any]:
         and controls["p10_calls"] == 0
         and controls["p11_calls"] == 0
         and controls["fallback_calls"] == 0
+        and xhigh_efforts_are_exact
+        and (
+            route_profile_id != OPENAI_XHIGH_ROUTE_PROFILE_ID
+            or (
+                controls["provider_attempts"] == 24
+                and controls["simulated_provider_attempts"] == 24
+                and controls["network_calls"] == 0
+                and controls["models"] == ["gpt-5.6-luna"]
+                and controls["budget_charged_usd"] <= max_total_cost_usd
+                and controls["max_observed_budget_charge_usd"]
+                <= max_call_cost_usd
+            )
+        )
         else "FAIL"
+    )
+    boundary = rehearsal_boundary_material(
+        route_profile_id,
+        max_call_cost_usd=max_call_cost_usd,
     )
     return {
         "report_schema_version": REHEARSAL_REPORT_VERSION,
         "rehearsal_version": REHEARSAL_VERSION,
-        "mode": "offline-convergence",
+        "mode": (
+            "offline-xhigh-qualification"
+            if route_profile_id == OPENAI_XHIGH_ROUTE_PROFILE_ID
+            else "offline-convergence"
+        ),
         "classification": "SYNTHETIC_ONLY_NO_STUDENT_DATA",
         "status": status,
-        "boundary": rehearsal_boundary_material(),
-        "observations": [
-            {
-                "run_id": item.run_id,
-                "run_kind": item.run_kind,
-                "scenario_id": item.scenario_id,
-                "status": item.status,
-                "stages": list(item.stages),
-                "failure": item.failure,
-                "output_hash": item.output_hash,
-            }
-            for item in observations
-        ],
+        "route_profile": route_profile_id,
+        "executable_boundary_hash": canonical_hash(boundary),
+        "boundary": boundary,
+        "execution_sequence": execution_sequence,
+        "observations": _observation_rows(observations),
         "deterministic_checks": deterministic_checks,
         "controls": controls,
     }
@@ -1540,6 +1916,7 @@ async def run_real_convergence(
     max_total_cost_usd: float,
     max_call_cost_usd: float,
     max_provider_requests: int,
+    route_profile_id: str = OPENAI_ROUTE_PROFILE_ID,
 ) -> dict[str, Any]:
     """Run the same convergence matrix with Luna and strict transport caps."""
 
@@ -1548,7 +1925,10 @@ async def run_real_convergence(
         raise ValueError("positive real-evaluation cost caps are required")
     if max_call_cost_usd > max_total_cost_usd:
         raise ValueError("per-call cost cap cannot exceed total cost cap")
-    routes = build_openai_routes(max_call_cost_usd=max_call_cost_usd)
+    routes = build_openai_routes(
+        max_call_cost_usd=max_call_cost_usd,
+        route_profile_id=route_profile_id,
+    )
     capped_adapter = RequestCappedAdapter(
         OpenAIResponsesAdapter(
             api_key=api_key,
@@ -1563,13 +1943,17 @@ async def run_real_convergence(
             timeout_seconds=305.0,
             max_retries=0,
             default_budget_usd=max_call_cost_usd,
-            job_id="job_stage2_real_convergence",
+            job_id=(
+                "job_stage2_xhigh_real_qualification"
+                if route_profile_id == OPENAI_XHIGH_ROUTE_PROFILE_ID
+                else "job_stage2_real_convergence"
+            ),
         ),
         real_routes=routes,
         adapters={"openai": capped_adapter},
         ledger_sink=ledger_records.append,
         cost_estimator=build_openai_cost_estimator(routes),
-        input_token_estimator=estimate_openai_input_tokens,
+        input_token_estimator=build_openai_input_token_estimator(routes),
     )
     rehearsal = ProductRehearsal(
         gateway,
@@ -1577,23 +1961,22 @@ async def run_real_convergence(
         max_total_cost_usd=max_total_cost_usd,
         ledger_records=ledger_records,
     )
-    executable_boundary_hash = canonical_hash(rehearsal_boundary_material())
-    observations = [
-        await rehearsal.run_sweep(run_id="real-sweep-base"),
-        await rehearsal.run_chain(run_id="real-chain-base-1"),
-        await rehearsal.run_chain(run_id="real-chain-base-2"),
-        await rehearsal.run_chain(
-            run_id="real-chain-choice-variant",
-            scenario_id=VARIANT_SCENARIO_ID,
-        ),
-    ]
+    boundary = rehearsal_boundary_material(
+        route_profile_id,
+        max_call_cost_usd=max_call_cost_usd,
+    )
+    executable_boundary_hash = canonical_hash(boundary)
+    observations, deterministic_checks, execution_sequence = (
+        await _execute_convergence_matrix(
+            rehearsal,
+            run_id_prefix="real-",
+        )
+    )
     controls = rehearsal.controls()
-    deterministic_checks = [
-        evaluate_p05_golden_positive(),
-        evaluate_p05_golden_negative(),
-    ]
+    controls.update(_provider_usage_controls(ledger_records))
     controls.update(
         {
+            "route_profile": route_profile_id,
             "network_calls": capped_adapter.calls,
             "expected_provider_requests": 24,
             "max_provider_requests": max_provider_requests,
@@ -1603,10 +1986,27 @@ async def run_real_convergence(
             "sdk_retries": 0,
             "tools_enabled": False,
             "store": False,
+            "semantic_normalizations": 0,
+            "fixture_changes": 0,
+            "prompt_changes": 0,
+            "validator_changes": 0,
         }
     )
-    boundary_after_hash = canonical_hash(rehearsal_boundary_material())
+    boundary_after_hash = canonical_hash(
+        rehearsal_boundary_material(
+            route_profile_id,
+            max_call_cost_usd=max_call_cost_usd,
+        )
+    )
     unchanged_boundary = executable_boundary_hash == boundary_after_hash
+    xhigh_efforts_are_exact = (
+        route_profile_id != OPENAI_XHIGH_ROUTE_PROFILE_ID
+        or controls["reasoning_efforts_by_prompt"]
+        == {
+            prompt_id: [m.ReasoningEffort.XHIGH.value]
+            for prompt_id in sorted(OPENAI_XHIGH_PROMPT_IDS)
+        }
+    )
     status = (
         "PASS"
         if all(item.status == "PASS" for item in observations)
@@ -1618,34 +2018,35 @@ async def run_real_convergence(
         and controls["provider_attempts"] == 24
         and controls["network_calls"] == 24
         and controls["unpriced_attempts"] == 0
+        and controls["models"] == ["gpt-5.6-luna"]
+        and xhigh_efforts_are_exact
         and unchanged_boundary
         and controls["actual_cost_usd"] <= max_total_cost_usd
         and controls["budget_charged_usd"] <= max_total_cost_usd
+        and controls["max_observed_actual_call_cost_usd"]
+        <= max_call_cost_usd
+        and controls["max_observed_budget_charge_usd"]
+        <= max_call_cost_usd
         else "FAIL"
     )
     return {
         "report_schema_version": REHEARSAL_REPORT_VERSION,
         "rehearsal_version": REHEARSAL_VERSION,
-        "mode": "real-convergence",
+        "mode": (
+            "real-xhigh-qualification"
+            if route_profile_id == OPENAI_XHIGH_ROUTE_PROFILE_ID
+            else "real-convergence"
+        ),
         "classification": "SYNTHETIC_ONLY_NO_STUDENT_DATA",
         "status": status,
+        "route_profile": route_profile_id,
         "started_at": started_at,
         "finished_at": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
         "executable_boundary_hash": executable_boundary_hash,
         "unchanged_boundary_across_chains": unchanged_boundary,
-        "boundary": rehearsal_boundary_material(),
-        "observations": [
-            {
-                "run_id": item.run_id,
-                "run_kind": item.run_kind,
-                "scenario_id": item.scenario_id,
-                "status": item.status,
-                "stages": list(item.stages),
-                "failure": item.failure,
-                "output_hash": item.output_hash,
-            }
-            for item in observations
-        ],
+        "boundary": boundary,
+        "execution_sequence": execution_sequence,
+        "observations": _observation_rows(observations),
         "deterministic_checks": deterministic_checks,
         "controls": controls,
     }

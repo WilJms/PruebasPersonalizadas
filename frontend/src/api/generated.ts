@@ -2814,7 +2814,7 @@ export interface components {
          * ReasoningEffort
          * @enum {string}
          */
-        ReasoningEffort: "MINIMAL" | "LOW" | "MEDIUM" | "HIGH";
+        ReasoningEffort: "MINIMAL" | "LOW" | "MEDIUM" | "HIGH" | "XHIGH";
         /**
          * ResponseFormat
          * @enum {string}

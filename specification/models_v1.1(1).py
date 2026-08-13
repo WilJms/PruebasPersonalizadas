@@ -170,6 +170,7 @@ class ReasoningEffort(StrEnum):
     LOW = "LOW"
     MEDIUM = "MEDIUM"
     HIGH = "HIGH"
+    XHIGH = "XHIGH"
 
 
 class ModelInputModality(StrEnum):

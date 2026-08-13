@@ -6,7 +6,7 @@ import hashlib
 import json
 from pathlib import Path
 from types import SimpleNamespace
-from typing import Any
+from typing import Any, get_args
 
 import httpx
 import openai
@@ -19,6 +19,9 @@ from openai import (
     NotFoundError,
     PermissionDeniedError,
     RateLimitError,
+)
+from openai.types.shared_params.reasoning_effort import (
+    ReasoningEffort as OpenAIReasoningEffort,
 )
 from pydantic import SecretStr, ValidationError
 import pytest
@@ -39,10 +42,12 @@ from comprehension_verification.model_gateway import (
     OPENAI_GATEWAY_TIMEOUT_GRACE_SECONDS,
     OpenAIAdapterConfig,
     OpenAIResponsesAdapter,
+    PermanentProviderError,
     ProviderBudgetError,
     RequestCappedAdapter,
     build_mock_request,
     build_openai_cost_estimator,
+    build_openai_input_token_estimator,
     build_openai_routes,
     build_trusted_context,
     estimate_openai_input_tokens,
@@ -63,6 +68,9 @@ from comprehension_verification.model_gateway.openai_routes import (
     OPENAI_P11_MAX_INPUT_TOKENS,
     OPENAI_ROUTE_PROFILE,
     OPENAI_ROUTE_PROFILE_ID,
+    OPENAI_XHIGH_PROMPT_IDS,
+    OPENAI_XHIGH_ROUTE_PROFILE,
+    OPENAI_XHIGH_ROUTE_PROFILE_ID,
     SOL_MODEL_ID,
 )
 from comprehension_verification.model_gateway.openai_schema import (
@@ -246,6 +254,171 @@ def test_route_matrix_is_explicit_and_p10_has_no_route() -> None:
     assert "P11_INPUT_LIMIT_80000" in routes[
         "P11_SCHEMA_REPAIR_V1"
     ].reason_codes
+
+
+def test_xhigh_contract_and_route_profile_have_one_material_delta() -> None:
+    assert [effort.value for effort in models.ReasoningEffort] == [
+        "MINIMAL",
+        "LOW",
+        "MEDIUM",
+        "HIGH",
+        "XHIGH",
+    ]
+    assert not hasattr(models.ReasoningEffort, "MAX")
+    assert OPENAI_XHIGH_ROUTE_PROFILE_ID == "LUNA_XHIGH_V1"
+    assert {
+        prompt_id
+        for prompt_id, approved in OPENAI_XHIGH_ROUTE_PROFILE.items()
+        if approved.reasoning_effort == models.ReasoningEffort.XHIGH
+    } == set(OPENAI_XHIGH_PROMPT_IDS)
+
+    baseline = build_openai_routes(max_call_cost_usd=0.10)
+    xhigh = build_openai_routes(
+        max_call_cost_usd=0.10,
+        route_profile_id=OPENAI_XHIGH_ROUTE_PROFILE_ID,
+    )
+    assert set(baseline) == set(xhigh)
+    assert set(xhigh) == set(PROMPT_SPECS) - {"P10_ENRICHED_CONTEXT_V1"}
+    assert all(route.model == LUNA_MODEL_ID for route in xhigh.values())
+    assert all(route.fallback_route_id is None for route in xhigh.values())
+    assert all(
+        models.ReasoningEffort.XHIGH
+        in route.capabilities.supported_reasoning_efforts
+        for route in xhigh.values()
+    )
+
+    reasoning_changes: set[str] = set()
+    for prompt_id in baseline:
+        baseline_material = baseline[prompt_id].model_dump(mode="json")
+        xhigh_material = xhigh[prompt_id].model_dump(mode="json")
+        if (
+            baseline[prompt_id].reasoning_effort
+            != xhigh[prompt_id].reasoning_effort
+        ):
+            reasoning_changes.add(prompt_id)
+        for material in (baseline_material, xhigh_material):
+            material.pop("route_id")
+            material.pop("reasoning_effort")
+            material.pop("reason_codes")
+        assert baseline_material == xhigh_material
+        assert xhigh[prompt_id].route_id.startswith(
+            "route_openai_luna_xhigh_v1_"
+        )
+    assert reasoning_changes == set(OPENAI_XHIGH_PROMPT_IDS)
+    assert all(
+        PROMPT_SPECS[prompt_id].reasoning_effort
+        == models.ReasoningEffort.HIGH
+        for prompt_id in OPENAI_XHIGH_PROMPT_IDS
+    )
+    assert xhigh["P03_AMBIGUITY_TRIAGE_V1"].reasoning_effort == (
+        models.ReasoningEffort.HIGH
+    )
+    assert xhigh["P11_SCHEMA_REPAIR_V1"].reasoning_effort == (
+        models.ReasoningEffort.LOW
+    )
+
+
+def test_xhigh_adapter_payload_changes_only_effective_reasoning() -> None:
+    prompt_id = "P04_BLUEPRINT_BUILD_V1"
+    request = build_mock_request(prompt_id)
+    baseline_fake = FakeClient(
+        [_response(_canonical_output(prompt_id), model=LUNA_MODEL_ID)]
+    )
+    xhigh_fake = FakeClient(
+        [_response(_canonical_output(prompt_id), model=LUNA_MODEL_ID)]
+    )
+    baseline_route = build_openai_routes(max_call_cost_usd=0.10)[prompt_id]
+    xhigh_routes = build_openai_routes(
+        max_call_cost_usd=0.10,
+        route_profile_id=OPENAI_XHIGH_ROUTE_PROFILE_ID,
+    )
+    xhigh_route = xhigh_routes[prompt_id]
+
+    for fake, route in (
+        (baseline_fake, baseline_route),
+        (xhigh_fake, xhigh_route),
+    ):
+        asyncio.run(
+            OpenAIResponsesAdapter(client=fake).invoke(
+                prompt_id=prompt_id,
+                request=request,
+                envelope=_envelope(prompt_id, request),
+                route=route,
+                attempt=1,
+                behavior=MockBehavior.HAPPY,
+            )
+        )
+
+    baseline_payload = baseline_fake.responses.calls[0]
+    xhigh_payload = xhigh_fake.responses.calls[0]
+    assert baseline_payload["reasoning"] == {"effort": "high"}
+    assert xhigh_payload["reasoning"] == {"effort": "xhigh"}
+    assert {
+        key: value
+        for key, value in baseline_payload.items()
+        if key != "reasoning"
+    } == {
+        key: value
+        for key, value in xhigh_payload.items()
+        if key != "reasoning"
+    }
+
+    spec = prompt_spec(prompt_id)
+    envelope = _envelope(prompt_id, request)
+    baseline_tokens = build_openai_input_token_estimator(
+        {prompt_id: baseline_route}
+    )(spec, request, envelope)
+    xhigh_tokens = build_openai_input_token_estimator(xhigh_routes)(
+        spec, request, envelope
+    )
+    assert xhigh_tokens == baseline_tokens + 1
+
+
+def test_xhigh_reasoning_requires_the_exact_profile_before_transport() -> None:
+    prompt_id = "P04_BLUEPRINT_BUILD_V1"
+    request = build_mock_request(prompt_id)
+    fake = FakeClient([])
+    forged = build_openai_routes(max_call_cost_usd=0.10)[prompt_id].model_copy(
+        update={"reasoning_effort": models.ReasoningEffort.XHIGH}
+    )
+
+    with pytest.raises(
+        PermanentProviderError,
+        match="PROVIDER_REASONING_ROUTE_MISMATCH",
+    ):
+        asyncio.run(
+            OpenAIResponsesAdapter(client=fake).invoke(
+                prompt_id=prompt_id,
+                request=request,
+                envelope=_envelope(prompt_id, request),
+                route=forged,
+                attempt=1,
+                behavior=MockBehavior.HAPPY,
+            )
+        )
+    assert fake.responses.calls == []
+
+
+def test_xhigh_route_identity_changes_execution_fingerprint() -> None:
+    baseline_routes = build_openai_routes(max_call_cost_usd=0.10)
+    xhigh_routes = build_openai_routes(
+        max_call_cost_usd=0.10,
+        route_profile_id=OPENAI_XHIGH_ROUTE_PROFILE_ID,
+    )
+    baseline_gateway = ModelGateway(
+        GatewayConfig(mode=GatewayMode.REAL, max_retries=0),
+        real_routes=baseline_routes,
+        adapters={"openai": OpenAIResponsesAdapter(client=FakeClient([]))},
+    )
+    xhigh_gateway = ModelGateway(
+        GatewayConfig(mode=GatewayMode.REAL, max_retries=0),
+        real_routes=xhigh_routes,
+        adapters={"openai": OpenAIResponsesAdapter(client=FakeClient([]))},
+    )
+    for prompt_id in sorted(OPENAI_XHIGH_PROMPT_IDS):
+        assert baseline_gateway.execution_fingerprint(prompt_id) != (
+            xhigh_gateway.execution_fingerprint(prompt_id)
+        )
 
 
 def test_adapter_rejects_historical_sol_route_before_transport() -> None:
@@ -807,6 +980,8 @@ def test_official_sdk_client_is_pinned_with_automatic_retries_disabled() -> None
     assert OpenAIAdapterConfig().request_timeout_seconds == 240.0
     assert OPENAI_DEFAULT_REQUEST_TIMEOUT_SECONDS == 240.0
     assert OPENAI_GATEWAY_TIMEOUT_GRACE_SECONDS == 5.0
+    sdk_effort_literal = get_args(OpenAIReasoningEffort)[0]
+    assert "xhigh" in get_args(sdk_effort_literal)
 
     root = Path(__file__).resolve().parents[1]
     assert '"openai==2.53.0"' in (root / "pyproject.toml").read_text()

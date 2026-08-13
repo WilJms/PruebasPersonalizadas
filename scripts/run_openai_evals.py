@@ -37,6 +37,8 @@ from comprehension_verification.model_gateway import (
     OpenAIAdapterConfig,
     OPENAI_ROUTE_PROFILE_MAX_TRANSIENT_RETRIES,
     OPENAI_ROUTE_PROFILE_ID,
+    OPENAI_XHIGH_PROMPT_IDS,
+    OPENAI_XHIGH_ROUTE_PROFILE_ID,
     PROMPT_CONTRACTS,
     PermanentProviderError,
     ProviderBudgetError,
@@ -83,6 +85,16 @@ from comprehension_verification.web.provider_secrets import (
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_MANIFEST = ROOT / "tests/fixtures/openai_evals/v1/synthetic_cases.json"
+XHIGH_QUALIFICATION_BASELINE_SHA = (
+    "93da59414fb49bd4df5c21af193a0226b4bc5fdb"
+)
+XHIGH_QUALIFICATION_EVIDENCE_SHA = (
+    "6c69e0359a1a0a327c49a6ce70d3959c384be779"
+)
+XHIGH_QUALIFICATION_BASELINE_REPORT = (
+    ROOT
+    / "reports/openai/stage2_convergence_93da594_20260812_final_01.json"
+)
 INJECTION_MARKER = "IGNORE_PREVIOUS_INSTRUCTIONS_SYNTHETIC_MARKER"
 P01_INJECTION_ASSIGNMENT_TEXT = (
     "Entrega un informe breve que explique un mecanismo de tu artefacto y "
@@ -4991,10 +5003,31 @@ def _hashed_optional_label(value: str | None) -> str:
     return "sha256:" + sha256(normalized.encode("utf-8")).hexdigest()
 
 
+def _convergence_route_profile(args: argparse.Namespace) -> str:
+    return (
+        OPENAI_XHIGH_ROUTE_PROFILE_ID
+        if args.mode
+        in {
+            "xhigh-qualification-dry-run",
+            "xhigh-qualification-real",
+        }
+        else OPENAI_ROUTE_PROFILE_ID
+    )
+
+
 def _convergence_authorization_boundary(args: argparse.Namespace) -> dict[str, Any]:
-    material = rehearsal_boundary_material()
+    route_profile_id = _convergence_route_profile(args)
+    material = rehearsal_boundary_material(
+        route_profile_id,
+        max_call_cost_usd=args.max_call_cost_usd,
+    )
     runtime_paths = (
+        ROOT / "pyproject.toml",
+        ROOT / "requirements.lock",
         ROOT / "specification/models_v1.1(1).py",
+        ROOT / "specification/contracts.schema_v1.1(1).json",
+        ROOT / "tests/fixtures/openapi/stage1-v1.json",
+        ROOT / "frontend/src/api/generated.ts",
         ROOT / "src/comprehension_verification/model_gateway/gateway.py",
         ROOT / "src/comprehension_verification/model_gateway/openai_adapter.py",
         ROOT / "src/comprehension_verification/model_gateway/openai_routes.py",
@@ -5002,8 +5035,8 @@ def _convergence_authorization_boundary(args: argparse.Namespace) -> dict[str, A
         ROOT / "src/comprehension_verification/validation.py",
         ROOT / "src/comprehension_verification/web/workflows.py",
     )
-    return {
-        "boundary_format": "openai-stage2-convergence-authorization/1.0.0",
+    boundary = {
+        "boundary_format": "openai-stage2-convergence-authorization/1.1.0",
         "git_head": _git_head(),
         "harness_hash": _content_hash(Path(__file__).resolve()),
         "rehearsal_module_hash": _content_hash(
@@ -5016,9 +5049,18 @@ def _convergence_authorization_boundary(args: argparse.Namespace) -> dict[str, A
             for path in runtime_paths
         },
         "executable_boundary": material,
-        "route_profile": OPENAI_ROUTE_PROFILE_ID,
+        "route_profile": route_profile_id,
+        "model_ids": material["openai_route_boundary"]["model_ids"],
+        "qualified_reasoning_effort": {
+            prompt_id: material["prompts"][prompt_id][
+                "route_reasoning_effort"
+            ]
+            for prompt_id in sorted(OPENAI_XHIGH_PROMPT_IDS)
+        },
         "execution_plan": [
             "independent-sweep:P04-P09",
+            "offline-golden-positive:P05:0-requests",
+            "offline-golden-negative:P05:0-requests",
             "integrated-chain:base:1",
             "integrated-chain:base:2:unchanged-boundary",
             "integrated-chain:choice-justification-variant",
@@ -5041,6 +5083,21 @@ def _convergence_authorization_boundary(args: argparse.Namespace) -> dict[str, A
         "fallback_enabled": False,
         "semantic_retries": 0,
     }
+    if route_profile_id == OPENAI_XHIGH_ROUTE_PROFILE_ID:
+        boundary["xhigh_qualification_baseline"] = {
+            "candidate_sha": XHIGH_QUALIFICATION_BASELINE_SHA,
+            "evidence_sha": XHIGH_QUALIFICATION_EVIDENCE_SHA,
+            "report_hash": _content_hash(
+                XHIGH_QUALIFICATION_BASELINE_REPORT
+            ),
+            "route_profile": OPENAI_ROUTE_PROFILE_ID,
+            "model": LUNA_MODEL_ID,
+            "reasoning_effort": "HIGH",
+        }
+        boundary["single_material_hypothesis"] = (
+            "P04-P09 reasoning effort HIGH_TO_XHIGH"
+        )
+    return boundary
 
 
 def _write_json_atomic(path: Path, value: dict[str, Any]) -> str:
@@ -5075,14 +5132,70 @@ async def _run_current_convergence_real(
         max_total_cost_usd=args.max_total_cost_usd,
         max_call_cost_usd=args.max_call_cost_usd,
         max_provider_requests=args.max_provider_requests,
+        route_profile_id=_convergence_route_profile(args),
+    )
+
+
+def _failure_codes(result: dict[str, Any]) -> set[str]:
+    codes: set[str] = set()
+    for observation in result.get("observations", []):
+        failure = observation.get("failure") or {}
+        codes.update(failure.get("codes", []))
+        for aggregated in failure.get("aggregated_failures", []):
+            codes.update(aggregated.get("codes", []))
+    return codes
+
+
+def _xhigh_qualification_outcome(result: dict[str, Any]) -> tuple[str, str]:
+    if result.get("status") == "PASS":
+        return (
+            "LUNA_XHIGH_QUALIFICATION_PASSED",
+            "READY_FOR_INDEPENDENT_REVIEW",
+        )
+    technical_codes = {
+        "MODEL_BUDGET_EXCEEDED",
+        "MODEL_CONTRACT_VALIDATION_FAILED",
+        "MODEL_GATEWAY_ERROR",
+        "MODEL_PROVIDER_ERROR",
+        "MODEL_ROUTE_BLOCKED",
+        "MODEL_TIMEOUT",
+    }
+    if _failure_codes(result) & technical_codes:
+        return (
+            "XHIGH_QUALIFICATION_INCONCLUSIVE",
+            "CONVERGENCE_INCOMPLETE",
+        )
+    return (
+        "LUNA_XHIGH_QUALIFICATION_FAILED",
+        "CONVERGENCE_INCOMPLETE",
     )
 
 
 def _run_convergence_cli(args: argparse.Namespace) -> int:
     if args.case_id:
         raise OpenAIEvalBlocked("OPENAI_CONVERGENCE_FIXED_MATRIX_REQUIRED")
-    if args.mode == "convergence-dry-run":
-        result = asyncio.run(run_offline_convergence())
+    route_profile_id = _convergence_route_profile(args)
+    is_xhigh = route_profile_id == OPENAI_XHIGH_ROUTE_PROFILE_ID
+    if args.mode in {
+        "convergence-dry-run",
+        "xhigh-qualification-dry-run",
+    }:
+        if is_xhigh and (
+            args.max_total_cost_usd != 0.75
+            or args.max_call_cost_usd != 0.10
+            or args.max_provider_requests != 24
+        ):
+            raise OpenAIEvalBlocked(
+                "OPENAI_XHIGH_QUALIFICATION_EXACT_CAPS_REQUIRED"
+            )
+        result = asyncio.run(
+            run_offline_convergence(
+                route_profile_id=route_profile_id,
+                max_total_cost_usd=args.max_total_cost_usd or 0.75,
+                max_call_cost_usd=args.max_call_cost_usd,
+                max_provider_requests=args.max_provider_requests,
+            )
+        )
         print(json.dumps(result, sort_keys=True))
         return 0 if result["status"] == "PASS" else 1
     if any(
@@ -5102,6 +5215,14 @@ def _run_convergence_cli(args: argparse.Namespace) -> int:
         )
     ):
         raise OpenAIEvalBlocked("OPENAI_CONVERGENCE_EXPLICIT_CAPS_REQUIRED")
+    if is_xhigh and (
+        args.max_total_cost_usd != 0.75
+        or args.max_call_cost_usd != 0.10
+        or args.max_provider_requests != 24
+    ):
+        raise OpenAIEvalBlocked(
+            "OPENAI_XHIGH_QUALIFICATION_EXACT_CAPS_REQUIRED"
+        )
     try:
         validate_pinned_secret_resource(args.secret_version_resource)
     except ValueError as exc:
@@ -5141,6 +5262,25 @@ def _run_convergence_cli(args: argparse.Namespace) -> int:
                 ],
             }
         )
+        if is_xhigh:
+            qualification_outcome, convergence_outcome = (
+                _xhigh_qualification_outcome(result)
+            )
+            result.update(
+                {
+                    "qualification_outcome": qualification_outcome,
+                    "convergence_outcome": convergence_outcome,
+                    "baseline_high_candidate": (
+                        XHIGH_QUALIFICATION_BASELINE_SHA
+                    ),
+                    "baseline_high_evidence_head": (
+                        XHIGH_QUALIFICATION_EVIDENCE_SHA
+                    ),
+                    "baseline_high_report_hash": boundary[
+                        "xhigh_qualification_baseline"
+                    ]["report_hash"],
+                }
+            )
         report_hash = _write_json_atomic(args.report_path, result)
         ledger.finish(
             reservation=reservation,
@@ -5151,7 +5291,11 @@ def _run_convergence_cli(args: argparse.Namespace) -> int:
             failure_code=(
                 None
                 if result["status"] == "PASS"
-                else "OPENAI_CONVERGENCE_FAILED"
+                else (
+                    result.get("qualification_outcome")
+                    if is_xhigh
+                    else "OPENAI_CONVERGENCE_FAILED"
+                )
             ),
         )
     except BaseException as exc:
@@ -5161,11 +5305,18 @@ def _run_convergence_cli(args: argparse.Namespace) -> int:
             and str(exc).startswith("OPENAI_")
             else "OPENAI_CONVERGENCE_EXECUTION_FAILED"
         )
+        if is_xhigh and failure_code == "OPENAI_CONVERGENCE_EXECUTION_FAILED":
+            failure_code = "XHIGH_QUALIFICATION_INCONCLUSIVE"
         failure_report = {
             "report_schema_version": REHEARSAL_REPORT_VERSION,
-            "mode": "real-convergence",
+            "mode": (
+                "real-xhigh-qualification"
+                if is_xhigh
+                else "real-convergence"
+            ),
             "classification": "SYNTHETIC_ONLY_NO_STUDENT_DATA",
             "status": "FAIL",
+            "route_profile": route_profile_id,
             "execution_id": args.execution_id,
             "authorization_hash": reservation.authorization_hash,
             "authorization_boundary_hash": reservation.boundary_hash,
@@ -5183,6 +5334,21 @@ def _run_convergence_cli(args: argparse.Namespace) -> int:
             ],
             "failure": {"codes": [failure_code]},
         }
+        if is_xhigh:
+            failure_report.update(
+                {
+                    "qualification_outcome": (
+                        "XHIGH_QUALIFICATION_INCONCLUSIVE"
+                    ),
+                    "convergence_outcome": "CONVERGENCE_INCOMPLETE",
+                    "baseline_high_candidate": (
+                        XHIGH_QUALIFICATION_BASELINE_SHA
+                    ),
+                    "baseline_high_evidence_head": (
+                        XHIGH_QUALIFICATION_EVIDENCE_SHA
+                    ),
+                }
+            )
         report_hash = _write_json_atomic(args.report_path, failure_report)
         ledger.finish(
             reservation=reservation,
@@ -5213,6 +5379,8 @@ def main() -> int:
             "qualification-real",
             "convergence-dry-run",
             "convergence-real",
+            "xhigh-qualification-dry-run",
+            "xhigh-qualification-real",
         ),
         default="offline",
     )
@@ -5233,7 +5401,12 @@ def main() -> int:
     parser.add_argument("--secret-version-resource")
     parser.add_argument("--p04-evidence-recovery", action="store_true")
     args = parser.parse_args()
-    if args.mode in {"convergence-dry-run", "convergence-real"}:
+    if args.mode in {
+        "convergence-dry-run",
+        "convergence-real",
+        "xhigh-qualification-dry-run",
+        "xhigh-qualification-real",
+    }:
         try:
             return _run_convergence_cli(args)
         except OpenAIEvalBlocked as exc:

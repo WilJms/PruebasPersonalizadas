@@ -1,6 +1,6 @@
 PYTHON ?= .venv/bin/python
 
-.PHONY: install contracts openapi fixtures test test-cov stage0-demo stage0-fail stage0-injection real-smoke openai-convergence-dry-run openai-convergence-real openai-canary-dry-run openai-p01-injection-recanary-dry-run openai-p02-v113-recanary-dry-run openai-p04-v116-recanary-dry-run openai-p05-v114-recanary-dry-run openai-blueprint-v119-v115-recanary-dry-run openai-blueprint-v117-v115-timeout-recovery-dry-run openai-p06-v112-decision-lineage-recanary-dry-run openai-p09-v115-recanary-dry-run openai-p11-v114-direct-dry-run openai-qualification-dry-run openai-qualification-v113-continuation-dry-run openai-qualification-v114-continuation-dry-run frontend-install frontend-typecheck frontend-test frontend-build postgres-prepare postgres-e2e postgres-sensitive postgres-stage2-recovery secrets-check
+.PHONY: install contracts openapi fixtures test test-cov stage0-demo stage0-fail stage0-injection real-smoke openai-convergence-dry-run openai-convergence-real openai-xhigh-qualification-dry-run openai-xhigh-qualification-real openai-canary-dry-run openai-p01-injection-recanary-dry-run openai-p02-v113-recanary-dry-run openai-p04-v116-recanary-dry-run openai-p05-v114-recanary-dry-run openai-blueprint-v119-v115-recanary-dry-run openai-blueprint-v117-v115-timeout-recovery-dry-run openai-p06-v112-decision-lineage-recanary-dry-run openai-p09-v115-recanary-dry-run openai-p11-v114-direct-dry-run openai-qualification-dry-run openai-qualification-v113-continuation-dry-run openai-qualification-v114-continuation-dry-run frontend-install frontend-typecheck frontend-test frontend-build postgres-prepare postgres-e2e postgres-sensitive postgres-stage2-recovery secrets-check
 
 install:
 	$(PYTHON) -m pip install -e '.[dev]'
@@ -52,6 +52,31 @@ openai-convergence-real:
 		--secret-version-resource "$(SECRET_VERSION_RESOURCE)" \
 		--max-total-cost-usd "$${CVA_OPENAI_CONVERGENCE_MAX_TOTAL_USD:-0.75}" \
 		--max-call-cost-usd "$${CVA_OPENAI_CONVERGENCE_MAX_CALL_USD:-0.10}" \
+		--max-provider-requests 24
+
+openai-xhigh-qualification-dry-run:
+	@env -u CVA_OPENAI_API_KEY $(PYTHON) scripts/run_openai_evals.py \
+		--mode xhigh-qualification-dry-run \
+		--max-total-cost-usd 0.75 \
+		--max-call-cost-usd 0.10 \
+		--max-provider-requests 24
+
+openai-xhigh-qualification-real:
+	@test -n "$(EXECUTION_ID)" || { echo "EXECUTION_ID is required" >&2; exit 2; }
+	@test -n "$(AUTHORIZATION_ID)" || { echo "AUTHORIZATION_ID is required" >&2; exit 2; }
+	@test -n "$(LEDGER)" || { echo "LEDGER is required" >&2; exit 2; }
+	@test -n "$(REPORT)" || { echo "REPORT is required" >&2; exit 2; }
+	@test -n "$(SECRET_VERSION_RESOURCE)" || { echo "SECRET_VERSION_RESOURCE is required" >&2; exit 2; }
+	@env -u CVA_OPENAI_API_KEY $(PYTHON) scripts/run_openai_evals.py \
+		--mode xhigh-qualification-real \
+		--allow-billable \
+		--execution-id "$(EXECUTION_ID)" \
+		--authorization-id "$(AUTHORIZATION_ID)" \
+		--ledger "$(LEDGER)" \
+		--report-path "$(REPORT)" \
+		--secret-version-resource "$(SECRET_VERSION_RESOURCE)" \
+		--max-total-cost-usd 0.75 \
+		--max-call-cost-usd 0.10 \
 		--max-provider-requests 24
 
 openai-canary-dry-run:
