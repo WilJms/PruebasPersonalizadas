@@ -28,6 +28,12 @@ from comprehension_verification.model_gateway import (
     OPENAI_MAX_PROMPT_IDS,
     OPENAI_MAX_ROUTE_PROFILE_ID,
     OPENAI_ROUTE_PROFILE_ID,
+    OPENAI_SOL_HIGH_PROMPT_IDS,
+    OPENAI_SOL_HIGH_ROUTE_PROFILE_ID,
+    OPENAI_SOL_MEDIUM_PROMPT_IDS,
+    OPENAI_SOL_MEDIUM_ROUTE_PROFILE_ID,
+    OPENAI_SOL_XHIGH_PROMPT_IDS,
+    OPENAI_SOL_XHIGH_ROUTE_PROFILE_ID,
     OPENAI_TERRA_HIGH_PROMPT_IDS,
     OPENAI_TERRA_HIGH_ROUTE_PROFILE_ID,
     OPENAI_TERRA_XHIGH_PROMPT_IDS,
@@ -50,6 +56,9 @@ from comprehension_verification.rehearsal import (
     rehearsal_boundary_material,
     run_offline_convergence,
     run_real_convergence,
+    sol_high_budget_derivation,
+    sol_medium_budget_derivation,
+    sol_xhigh_budget_derivation,
     terra_high_budget_derivation,
     terra_medium_budget_derivation,
     terra_xhigh_budget_derivation,
@@ -1633,6 +1642,248 @@ def test_terra_xhigh_authorization_boundary_seals_high_budget_and_freeze(
     )
 
 
+@pytest.mark.parametrize(
+    ("profile_id", "budget_factory", "schema_version"),
+    [
+        (
+            OPENAI_SOL_MEDIUM_ROUTE_PROFILE_ID,
+            sol_medium_budget_derivation,
+            "sol-medium-budget-derivation/1.0.0",
+        ),
+        (
+            OPENAI_SOL_HIGH_ROUTE_PROFILE_ID,
+            sol_high_budget_derivation,
+            "sol-high-budget-derivation/1.0.0",
+        ),
+        (
+            OPENAI_SOL_XHIGH_ROUTE_PROFILE_ID,
+            sol_xhigh_budget_derivation,
+            "sol-xhigh-budget-derivation/1.0.0",
+        ),
+    ],
+)
+def test_sol_budgets_are_derived_from_the_same_frozen_matrix(
+    profile_id: str,
+    budget_factory: object,
+    schema_version: str,
+) -> None:
+    budget = budget_factory()  # type: ignore[operator]
+    assert budget["schema_version"] == schema_version
+    assert budget["route_profile"] == profile_id
+    assert budget["model"] == "gpt-5.6-sol"
+    assert budget["matrix_provider_calls"] == 33
+    assert budget["maximum_conservative_call_cost_usd"] == 2.0425
+    assert budget["worst_case_conservative_total_cost_usd"] == 63.9825
+    assert budget["max_call_cost_usd"] == 2.05
+    assert budget["max_total_cost_usd"] == 63.99
+    assert budget["matrix_hash"] == (
+        "sha256:94fbd798732b057f3ba051144a0f0de5533ce6ffb85b103d766c6abeb660ea49"
+    )
+    assert budget["pricing_policy"][
+        "standard_short_context_usd_per_million"
+    ] == {
+        "input": 5.0,
+        "cached_input": 0.5,
+        "cache_write": 6.25,
+        "output": 30.0,
+    }
+    assert budget["pricing_policy"]["observed_at"] == (
+        "2026-08-14T14:50:29Z"
+    )
+    assert budget["pricing_policy_hash"].startswith("sha256:")
+    assert all(
+        row["request_framing_token_allowance"] == 1_024
+        and row["route_input_token_ceiling"] == 250_000
+        and row["long_context_pricing_applies"] is False
+        for row in budget["per_prompt"].values()
+    )
+    assert eval_harness.SOL_LADDER_ABSOLUTE_MAX_PROVIDER_REQUESTS == 99
+    assert eval_harness.SOL_LADDER_ABSOLUTE_MAX_COST_USD == 191.97
+
+
+@pytest.mark.parametrize(
+    ("profile_id", "effort", "mode"),
+    [
+        (
+            OPENAI_SOL_MEDIUM_ROUTE_PROFILE_ID,
+            "MEDIUM",
+            "offline-sol-medium-qualification",
+        ),
+        (
+            OPENAI_SOL_HIGH_ROUTE_PROFILE_ID,
+            "HIGH",
+            "offline-sol-high-qualification",
+        ),
+        (
+            OPENAI_SOL_XHIGH_ROUTE_PROFILE_ID,
+            "XHIGH",
+            "offline-sol-xhigh-qualification",
+        ),
+    ],
+)
+def test_each_sol_profile_rehearses_33_calls_completely_offline(
+    profile_id: str,
+    effort: str,
+    mode: str,
+) -> None:
+    report = asyncio.run(
+        run_offline_convergence(
+            route_profile_id=profile_id,
+            max_total_cost_usd=eval_harness.SOL_PER_RUNG_MAX_TOTAL_COST_USD,
+            max_call_cost_usd=eval_harness.SOL_PER_RUNG_MAX_CALL_COST_USD,
+            max_provider_requests=(
+                eval_harness.SOL_PER_RUNG_MAX_PROVIDER_REQUESTS
+            ),
+        )
+    )
+    controls = report["controls"]
+    assert report["status"] == "PASS"
+    assert report["mode"] == mode
+    assert report["route_profile"] == profile_id
+    assert [row["status"] for row in report["observations"]] == [
+        "PASS",
+        "PASS",
+        "PASS",
+        "PASS",
+        "PASS",
+    ]
+    assert [row["status"] for row in report["deterministic_checks"]] == [
+        "PASS",
+        "PASS",
+    ]
+    assert controls["provider_attempts"] == 33
+    assert controls["simulated_provider_attempts"] == 33
+    assert controls["network_calls"] == controls["openai_network_calls"] == 0
+    assert controls["billable_requests"] == controls["secret_resolutions"] == 0
+    assert controls["actual_cost_usd"] == 0.0
+    assert controls["models"] == ["gpt-5.6-sol"]
+    qualified_ids = {
+        "MEDIUM": OPENAI_SOL_MEDIUM_PROMPT_IDS,
+        "HIGH": OPENAI_SOL_HIGH_PROMPT_IDS,
+        "XHIGH": OPENAI_SOL_XHIGH_PROMPT_IDS,
+    }[effort]
+    assert controls["reasoning_efforts_by_prompt"] == {
+        prompt_id: [effort] for prompt_id in sorted(qualified_ids)
+    }
+    assert controls["p10_calls"] == controls["p11_calls"] == 0
+    assert controls["fallback_calls"] == 0
+    assert controls["gateway_retries"] == controls["sdk_retries"] == 0
+    assert controls["semantic_retries"] == 0
+    assert controls["integrated_golden_injection"] is False
+    assert controls["tools_enabled"] is False
+    assert controls["store"] is False
+    assert controls["background"] is False
+    assert report["transport_provenance"] == {
+        "provider_transport_constructed": False,
+        "reviewed_semantic_oracle_invocations": 9,
+        "structural_transport_substitute_invocations": 24,
+        "semantic_sweep_response_origin": "REVIEWED_SEMANTIC_ORACLE",
+        "integrated_chain_response_origin": "STRUCTURAL_TRANSPORT_SUBSTITUTE",
+        "integrated_chain_semantic_quality_conclusion_allowed": False,
+    }
+    assert report["boundary"]["forbidden_delta"] == []
+    freeze = report["boundary"]["terra_ladder_harness_freeze"]
+    assert freeze["material_hash"] == (
+        "sha256:0984337116a6146da91545d7527669e074658a8bc5e537cd1801dd619e973db9"
+    )
+
+
+@pytest.mark.parametrize(
+    ("mode", "profile_id", "effort", "previous_profile"),
+    [
+        (
+            "sol-medium-qualification-real",
+            OPENAI_SOL_MEDIUM_ROUTE_PROFILE_ID,
+            "MEDIUM",
+            None,
+        ),
+        (
+            "sol-high-qualification-real",
+            OPENAI_SOL_HIGH_ROUTE_PROFILE_ID,
+            "HIGH",
+            OPENAI_SOL_MEDIUM_ROUTE_PROFILE_ID,
+        ),
+        (
+            "sol-xhigh-qualification-real",
+            OPENAI_SOL_XHIGH_ROUTE_PROFILE_ID,
+            "XHIGH",
+            OPENAI_SOL_HIGH_ROUTE_PROFILE_ID,
+        ),
+    ],
+)
+def test_sol_authorization_boundaries_are_distinct_and_frozen(
+    tmp_path: Path,
+    mode: str,
+    profile_id: str,
+    effort: str,
+    previous_profile: str | None,
+) -> None:
+    args = _real_cli_args(tmp_path)
+    args.mode = mode
+    args.max_total_cost_usd = eval_harness.SOL_PER_RUNG_MAX_TOTAL_COST_USD
+    args.max_call_cost_usd = eval_harness.SOL_PER_RUNG_MAX_CALL_COST_USD
+    boundary = eval_harness._convergence_authorization_boundary(args)
+    assert boundary["boundary_format"] == (
+        "openai-stage2-convergence-authorization/1.9.0"
+    )
+    assert boundary["route_profile"] == profile_id
+    assert boundary["model_ids"] == ["gpt-5.6-sol"]
+    assert boundary["qualified_reasoning_effort"] == {
+        prompt_id: effort
+        for prompt_id in sorted(OPENAI_SOL_MEDIUM_PROMPT_IDS)
+    }
+    assert boundary["cross_family_baseline_univariate"] is False
+    assert boundary["intra_sol_reasoning_comparison_univariate"] is (
+        previous_profile is not None
+    )
+    assert boundary["previous_sol_route_profile"] == previous_profile
+    assert boundary["candidate_delta"]["forbidden_delta"] == []
+    assert set(boundary["candidate_delta"]["observed_delta"]) <= (
+        eval_harness.SOL_ALLOWED_DELTA_PATHS
+    )
+    assert boundary["official_capability_verification"]["model_id"] == (
+        "gpt-5.6-sol"
+    )
+    assert boundary["official_capability_verification"]["responses_api"] is True
+    assert boundary["official_capability_verification"][
+        "structured_outputs"
+    ] is True
+    assert boundary["monetary_budget"]["enforced_caps"] == {
+        "max_provider_requests": 33,
+        "max_total_cost_usd": 63.99,
+        "max_call_cost_usd": 2.05,
+    }
+    assert boundary["sol_ladder"]["absolute_max_provider_requests"] == 99
+    assert boundary["sol_ladder"]["absolute_max_cost_usd"] == 191.97
+    baseline = boundary["terra_xhigh_evidence_baseline"]
+    assert baseline["candidate_sha"] == (
+        eval_harness.SOL_LADDER_TERRA_XHIGH_CANDIDATE_SHA
+    )
+    assert baseline["evidence_sha"] == eval_harness.SOL_LADDER_BASELINE_SHA
+    assert baseline["receipt_is_historical_and_immutable"] is True
+    freeze = boundary["executable_boundary"]["terra_ladder_harness_freeze"]
+    assert freeze["material_hash"] == (
+        "sha256:0984337116a6146da91545d7527669e074658a8bc5e537cd1801dd619e973db9"
+    )
+
+
+def test_sol_profile_authorization_hashes_are_pairwise_distinct(
+    tmp_path: Path,
+) -> None:
+    hashes: set[str] = set()
+    for mode in (
+        "sol-medium-qualification-real",
+        "sol-high-qualification-real",
+        "sol-xhigh-qualification-real",
+    ):
+        args = _real_cli_args(tmp_path)
+        args.mode = mode
+        args.max_total_cost_usd = eval_harness.SOL_PER_RUNG_MAX_TOTAL_COST_USD
+        args.max_call_cost_usd = eval_harness.SOL_PER_RUNG_MAX_CALL_COST_USD
+        hashes.add(canonical_hash(eval_harness._convergence_authorization_boundary(args)))
+    assert len(hashes) == 3
+
+
 def _reservation_boundary() -> dict[str, object]:
     return {
         "git_head": "a" * 40,
@@ -1939,6 +2190,62 @@ def test_terra_xhigh_route_uses_offline_substitute_without_network(
     assert report["controls"]["p10_calls"] == 0
     assert report["controls"]["p11_calls"] == 0
     assert report["controls"]["fallback_calls"] == 0
+
+
+@pytest.mark.parametrize(
+    ("profile_id", "effort", "mode"),
+    [
+        (
+            OPENAI_SOL_MEDIUM_ROUTE_PROFILE_ID,
+            "MEDIUM",
+            "real-sol-medium-qualification",
+        ),
+        (
+            OPENAI_SOL_HIGH_ROUTE_PROFILE_ID,
+            "HIGH",
+            "real-sol-high-qualification",
+        ),
+        (
+            OPENAI_SOL_XHIGH_ROUTE_PROFILE_ID,
+            "XHIGH",
+            "real-sol-xhigh-qualification",
+        ),
+    ],
+)
+def test_sol_real_code_paths_use_exact_routes_with_offline_substitute(
+    monkeypatch: pytest.MonkeyPatch,
+    profile_id: str,
+    effort: str,
+    mode: str,
+) -> None:
+    monkeypatch.setattr(
+        "comprehension_verification.rehearsal.OpenAIResponsesAdapter",
+        lambda **_kwargs: build_reviewed_semantic_adapter(),
+    )
+    report = asyncio.run(
+        run_real_convergence(
+            api_key=SecretStr("sk-project-synthetic-placeholder-not-real"),
+            max_total_cost_usd=eval_harness.SOL_PER_RUNG_MAX_TOTAL_COST_USD,
+            max_call_cost_usd=eval_harness.SOL_PER_RUNG_MAX_CALL_COST_USD,
+            max_provider_requests=QUALIFICATION_EXPECTED_PROVIDER_REQUESTS,
+            route_profile_id=profile_id,
+        )
+    )
+    assert report["status"] == "PASS"
+    assert report["mode"] == mode
+    assert report["route_profile"] == profile_id
+    assert report["unchanged_boundary_across_chains"] is True
+    assert report["controls"]["network_calls"] == 33
+    assert report["controls"]["provider_attempts"] == 33
+    assert report["controls"]["models"] == ["gpt-5.6-sol"]
+    assert report["controls"]["reasoning_efforts_by_prompt"] == {
+        prompt_id: [effort]
+        for prompt_id in sorted(OPENAI_SOL_MEDIUM_PROMPT_IDS)
+    }
+    assert report["controls"]["p10_calls"] == 0
+    assert report["controls"]["p11_calls"] == 0
+    assert report["controls"]["fallback_calls"] == 0
+    assert report["controls"]["integrated_golden_injection"] is False
 
 
 def test_real_convergence_accounts_for_context_invalid_billable_attempts(
@@ -2834,6 +3141,233 @@ def test_terra_xhigh_outcomes_enforce_terminal_family_policy() -> None:
     )
     assert failed["causal_classification"] == "MODEL_OWNED_SEMANTIC_FAILURE"
     assert "NO_TERRA_MAX" in failed["recommended_next_authority"]
+
+
+@pytest.mark.parametrize(
+    "mode",
+    [
+        "sol-medium-qualification-real",
+        "sol-high-qualification-real",
+        "sol-xhigh-qualification-real",
+    ],
+)
+def test_sol_real_cli_blocks_inexact_caps_before_secret_or_ledger(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    mode: str,
+) -> None:
+    args = _real_cli_args(tmp_path)
+    args.mode = mode
+    args.max_total_cost_usd = 63.98
+    args.max_call_cost_usd = eval_harness.SOL_PER_RUNG_MAX_CALL_COST_USD
+
+    def forbidden_secret_resolution(_resource: str) -> SecretStr:
+        raise AssertionError("provider secret must remain unresolved")
+
+    monkeypatch.setattr(
+        eval_harness, "resolve_openai_api_key", forbidden_secret_resolution
+    )
+    rung = mode.split("-")[1].upper()
+    with pytest.raises(
+        eval_harness.OpenAIEvalBlocked,
+        match=f"OPENAI_SOL_{rung}_QUALIFICATION_EXACT_CAPS_REQUIRED",
+    ):
+        eval_harness._run_convergence_cli(args)
+    assert not args.ledger.exists()
+    assert not args.report_path.exists()
+
+
+def test_sol_forbidden_delta_blocks_before_secret_or_ledger(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    args = _real_cli_args(tmp_path)
+    args.mode = "sol-medium-qualification-real"
+    args.max_total_cost_usd = eval_harness.SOL_PER_RUNG_MAX_TOTAL_COST_USD
+    args.max_call_cost_usd = eval_harness.SOL_PER_RUNG_MAX_CALL_COST_USD
+    monkeypatch.setattr(
+        eval_harness,
+        "_sol_candidate_delta_proof",
+        lambda: {
+            "allowed_delta": [],
+            "forbidden_delta": ["src/product_workflow.py"],
+        },
+    )
+
+    def forbidden_secret_resolution(_resource: str) -> SecretStr:
+        raise AssertionError("provider secret must remain unresolved")
+
+    monkeypatch.setattr(
+        eval_harness, "resolve_openai_api_key", forbidden_secret_resolution
+    )
+    with pytest.raises(
+        eval_harness.OpenAIEvalBlocked,
+        match="SOL_LADDER_PRECONDITIONS_FAILED",
+    ):
+        eval_harness._run_convergence_cli(args)
+    assert not args.ledger.exists()
+    assert not args.report_path.exists()
+
+
+@pytest.mark.parametrize(
+    ("mode", "profile_id", "rung"),
+    [
+        (
+            "sol-medium-qualification-real",
+            OPENAI_SOL_MEDIUM_ROUTE_PROFILE_ID,
+            "MEDIUM",
+        ),
+        (
+            "sol-high-qualification-real",
+            OPENAI_SOL_HIGH_ROUTE_PROFILE_ID,
+            "HIGH",
+        ),
+        (
+            "sol-xhigh-qualification-real",
+            OPENAI_SOL_XHIGH_ROUTE_PROFILE_ID,
+            "XHIGH",
+        ),
+    ],
+)
+def test_each_sol_rung_reserves_its_own_authorization_exactly_once(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+    mode: str,
+    profile_id: str,
+    rung: str,
+) -> None:
+    args = _real_cli_args(tmp_path)
+    args.mode = mode
+    args.execution_id = f"sol-{rung.lower()}-test-execution"
+    args.authorization_id = f"sol-{rung.lower()}-test-authorization"
+    args.max_total_cost_usd = eval_harness.SOL_PER_RUNG_MAX_TOTAL_COST_USD
+    args.max_call_cost_usd = eval_harness.SOL_PER_RUNG_MAX_CALL_COST_USD
+
+    async def fake_run(_args: argparse.Namespace) -> dict[str, object]:
+        record = EvaluationAuthorizationLedger(args.ledger).record(
+            args.execution_id
+        )
+        assert record["status"] == "RESERVED"
+        return {
+            "report_schema_version": "stage2-convergence-report/1.12.0",
+            "status": "PASS",
+            "mode": f"real-sol-{rung.lower()}-qualification",
+            "classification": "SYNTHETIC_ONLY_NO_STUDENT_DATA",
+            "route_profile": profile_id,
+            "observations": [],
+            "provider_call_receipts": [{}],
+            "controls": {
+                "network_calls": 33,
+                "provider_attempts": 33,
+                "actual_cost_usd": 0.01,
+                "budget_charged_usd": 0.02,
+            },
+        }
+
+    monkeypatch.setattr(
+        eval_harness, "_run_current_convergence_real", fake_run
+    )
+    assert eval_harness._run_convergence_cli(args) == 0
+    capsys.readouterr()
+    report = json.loads(args.report_path.read_text(encoding="utf-8"))
+    assert report["qualification_outcome"] == (
+        f"SOL_{rung}_QUALIFICATION_PASSED"
+    )
+    assert report["ladder_outcome"] == "SOL_LADDER_STOPPED_ON_PASS"
+    assert report["ladder_decision"] == "STOP_ON_FIRST_PASS"
+    assert report["convergence_outcome"] == "READY_FOR_INDEPENDENT_REVIEW"
+    assert report["route_profile"] == profile_id
+    assert report["provider_call_receipts"] == [
+        {"route_profile": profile_id, "rung": rung}
+    ]
+    assert report["budget_derivation"] == eval_harness._sol_profile_budget(
+        profile_id
+    )
+    assert report["frozen_semantic_harness"]["material_hash"] == (
+        "sha256:0984337116a6146da91545d7527669e074658a8bc5e537cd1801dd619e973db9"
+    )
+    assert report["candidate_delta"]["forbidden_delta"] == []
+    record = EvaluationAuthorizationLedger(args.ledger).record(
+        args.execution_id
+    )
+    assert record["status"] == "COMPLETED"
+    with pytest.raises(
+        eval_harness.OpenAIEvalBlocked,
+        match="EVALUATION_AUTHORIZATION_ALREADY_CONSUMED",
+    ):
+        eval_harness._run_convergence_cli(args)
+
+
+def test_sol_adaptive_outcomes_stop_or_advance_exactly_as_authorized() -> None:
+    for rung in ("MEDIUM", "HIGH", "XHIGH"):
+        passed = eval_harness._sol_qualification_outcome(
+            {"status": "PASS", "observations": []},
+            rung=rung,
+        )
+        assert passed["qualification_outcome"] == (
+            f"SOL_{rung}_QUALIFICATION_PASSED"
+        )
+        assert passed["ladder_outcome"] == "SOL_LADDER_STOPPED_ON_PASS"
+        assert passed["ladder_decision"] == "STOP_ON_FIRST_PASS"
+
+        technical = eval_harness._sol_qualification_outcome(
+            {
+                "status": "FAIL",
+                "observations": [
+                    {"failure": {"codes": ["MODEL_PROVIDER_ERROR"]}}
+                ],
+            },
+            rung=rung,
+        )
+        assert technical["qualification_outcome"] == (
+            f"SOL_{rung}_QUALIFICATION_INCONCLUSIVE"
+        )
+        assert technical["ladder_outcome"] == (
+            "SOL_LADDER_STOPPED_INCONCLUSIVE"
+        )
+        assert technical["ladder_decision"] == "STOP_ON_INCONCLUSIVE"
+
+    clean_failure = classify_checkpoint(
+        checkpoint_id="sol-ladder-semantic-failure",
+        checkpoint_class=CheckpointClass.SEMANTICALLY_QUALIFIED_NEGATIVE,
+        oracle_validity=OracleValidity.VALID,
+        semantic_interpretation=SemanticInterpretation.INCORRECT,
+        contractual_adherence=ContractualAdherence.PASS,
+        semantic_review_id="SR-SOL-FROZEN",
+        semantic_review_version="1.0.0",
+        semantic_review_hash="sha256:" + "6" * 64,
+        reason_codes=["SEMANTIC_MISMATCH"],
+    ).model_dump()
+    failed_result = {
+        "status": "FAIL",
+        "observations": [
+            {"failure": {"codes": ["SEMANTIC_MISMATCH"]}}
+        ],
+        "checkpoint_assessments": [clean_failure],
+    }
+    medium = eval_harness._sol_qualification_outcome(
+        failed_result,
+        rung="MEDIUM",
+    )
+    high = eval_harness._sol_qualification_outcome(
+        failed_result,
+        rung="HIGH",
+    )
+    xhigh = eval_harness._sol_qualification_outcome(
+        failed_result,
+        rung="XHIGH",
+    )
+    assert medium["qualification_outcome"] == "SOL_MEDIUM_QUALIFICATION_FAILED"
+    assert medium["ladder_decision"] == "ADVANCE_TO_SOL_HIGH"
+    assert high["qualification_outcome"] == "SOL_HIGH_QUALIFICATION_FAILED"
+    assert high["ladder_decision"] == "ADVANCE_TO_SOL_XHIGH"
+    assert xhigh["qualification_outcome"] == "SOL_XHIGH_QUALIFICATION_FAILED"
+    assert xhigh["ladder_outcome"] == "SOL_REASONING_LADDER_EXHAUSTED"
+    assert xhigh["ladder_decision"] == "STOP_AFTER_XHIGH"
+    assert xhigh["causal_classification"] == "MODEL_OWNED_SEMANTIC_FAILURE"
+    with pytest.raises(ValueError, match="unknown Sol ladder rung"):
+        eval_harness._sol_qualification_outcome(failed_result, rung="MAX")
 
 
 def test_max_outcome_additional_contract_and_mixed_cases() -> None:

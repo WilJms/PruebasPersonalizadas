@@ -39,6 +39,12 @@ from comprehension_verification.model_gateway import (
     OpenAIAdapterConfig,
     OPENAI_ROUTE_PROFILE_MAX_TRANSIENT_RETRIES,
     OPENAI_ROUTE_PROFILE_ID,
+    OPENAI_SOL_HIGH_PROMPT_IDS,
+    OPENAI_SOL_HIGH_ROUTE_PROFILE_ID,
+    OPENAI_SOL_MEDIUM_PROMPT_IDS,
+    OPENAI_SOL_MEDIUM_ROUTE_PROFILE_ID,
+    OPENAI_SOL_XHIGH_PROMPT_IDS,
+    OPENAI_SOL_XHIGH_ROUTE_PROFILE_ID,
     OPENAI_TERRA_MEDIUM_PROMPT_IDS,
     OPENAI_TERRA_MEDIUM_ROUTE_PROFILE_ID,
     OPENAI_TERRA_HIGH_PROMPT_IDS,
@@ -63,6 +69,7 @@ from comprehension_verification.model_gateway.openai_pricing import (
 from comprehension_verification.model_gateway.openai_routes import (
     LUNA_MODEL_ID,
     REQUEST_FRAMING_TOKEN_ALLOWANCE,
+    SOL_MODEL_ID,
     TERRA_MODEL_ID,
 )
 from comprehension_verification.model_gateway.openai_schema import (
@@ -84,6 +91,9 @@ from comprehension_verification.rehearsal import (
     rehearsal_boundary_material,
     run_offline_convergence,
     run_real_convergence,
+    sol_high_budget_derivation,
+    sol_medium_budget_derivation,
+    sol_xhigh_budget_derivation,
     terra_high_budget_derivation,
     terra_medium_budget_derivation,
     terra_xhigh_budget_derivation,
@@ -228,6 +238,58 @@ TERRA_XHIGH_MONETARY_BUDGET_STATUS = (
     "DERIVED_FROM_CURRENT_OFFICIAL_PRICES_AND_FROZEN"
 )
 TERRA_XHIGH_OFFICIAL_CAPABILITY_OBSERVED_AT = "2026-08-14T02:29:25Z"
+SOL_LADDER_BASELINE_SHA = "dd139e1f40b6d37c95ccb43366e795e902eccf44"
+SOL_LADDER_TERRA_XHIGH_CANDIDATE_SHA = (
+    "22f011a2924008350fab6863992469c49736ed33"
+)
+SOL_LADDER_TERRA_XHIGH_EVIDENCE_SHA = SOL_LADDER_BASELINE_SHA
+SOL_LADDER_TERRA_XHIGH_REPORT = (
+    ROOT
+    / (
+        "reports/openai/"
+        "stage2_terra_xhigh_qualification_22f011a_20260813_final_01.json"
+    )
+)
+SOL_MEDIUM_BUDGET_DERIVATION = sol_medium_budget_derivation()
+SOL_HIGH_BUDGET_DERIVATION = sol_high_budget_derivation()
+SOL_XHIGH_BUDGET_DERIVATION = sol_xhigh_budget_derivation()
+SOL_PER_RUNG_MAX_PROVIDER_REQUESTS = QUALIFICATION_EXPECTED_PROVIDER_REQUESTS
+SOL_PER_RUNG_MAX_CALL_COST_USD = SOL_MEDIUM_BUDGET_DERIVATION[
+    "max_call_cost_usd"
+]
+SOL_PER_RUNG_MAX_TOTAL_COST_USD = SOL_MEDIUM_BUDGET_DERIVATION[
+    "max_total_cost_usd"
+]
+SOL_LADDER_ABSOLUTE_MAX_PROVIDER_REQUESTS = (
+    3 * SOL_PER_RUNG_MAX_PROVIDER_REQUESTS
+)
+SOL_LADDER_ABSOLUTE_MAX_COST_USD = round(
+    3 * SOL_PER_RUNG_MAX_TOTAL_COST_USD,
+    2,
+)
+SOL_MONETARY_BUDGET_RECALCULATION_REQUIRED = not (
+    SOL_MEDIUM_BUDGET_DERIVATION["max_call_cost_usd"]
+    == SOL_HIGH_BUDGET_DERIVATION["max_call_cost_usd"]
+    == SOL_XHIGH_BUDGET_DERIVATION["max_call_cost_usd"]
+    == SOL_PER_RUNG_MAX_CALL_COST_USD
+    and SOL_MEDIUM_BUDGET_DERIVATION["max_total_cost_usd"]
+    == SOL_HIGH_BUDGET_DERIVATION["max_total_cost_usd"]
+    == SOL_XHIGH_BUDGET_DERIVATION["max_total_cost_usd"]
+    == SOL_PER_RUNG_MAX_TOTAL_COST_USD
+)
+SOL_MONETARY_BUDGET_STATUS = "DERIVED_FROM_CURRENT_OFFICIAL_PRICES_AND_FROZEN"
+SOL_OFFICIAL_CAPABILITY_OBSERVED_AT = "2026-08-14T14:50:29Z"
+SOL_ALLOWED_DELTA_PATHS = frozenset(
+    {
+        "Makefile",
+        "scripts/run_openai_evals.py",
+        "src/comprehension_verification/model_gateway/__init__.py",
+        "src/comprehension_verification/model_gateway/openai_routes.py",
+        "src/comprehension_verification/rehearsal.py",
+        "tests/test_openai_adapter.py",
+        "tests/test_openai_eval_harness.py",
+    }
+)
 INJECTION_MARKER = "IGNORE_PREVIOUS_INSTRUCTIONS_SYNTHETIC_MARKER"
 P01_INJECTION_ASSIGNMENT_TEXT = (
     "Entrega un informe breve que explique un mecanismo de tu artefacto y "
@@ -5131,6 +5193,95 @@ def _git_head() -> str:
     return completed.stdout.strip()
 
 
+def _sol_candidate_delta_proof() -> dict[str, Any]:
+    completed = subprocess.run(
+        [
+            "git",
+            "diff",
+            "--name-only",
+            SOL_LADDER_BASELINE_SHA,
+            "--",
+        ],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    observed_paths = {
+        line.strip() for line in completed.stdout.splitlines() if line.strip()
+    }
+    return {
+        "baseline_sha": SOL_LADDER_BASELINE_SHA,
+        "observed_delta": sorted(observed_paths),
+        "allowed_delta": sorted(observed_paths & SOL_ALLOWED_DELTA_PATHS),
+        "forbidden_delta": sorted(observed_paths - SOL_ALLOWED_DELTA_PATHS),
+        "allowed_paths": sorted(SOL_ALLOWED_DELTA_PATHS),
+    }
+
+
+def _sol_official_capability_verification() -> dict[str, Any]:
+    return {
+        "observed_at": SOL_OFFICIAL_CAPABILITY_OBSERVED_AT,
+        "model_url": (
+            "https://developers.openai.com/api/docs/models/gpt-5.6-sol"
+        ),
+        "pricing_url": "https://developers.openai.com/api/docs/pricing",
+        "model_id": SOL_MODEL_ID,
+        "available": True,
+        "responses_api": True,
+        "structured_outputs": True,
+        "reasoning_efforts": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max",
+        ],
+        "context_window_tokens": 1_050_000,
+        "max_output_tokens": 128_000,
+        "standard_short_context_usd_per_million": {
+            "input": 5.0,
+            "cached_input": 0.5,
+            "cache_write": 6.25,
+            "output": 30.0,
+        },
+        "standard_long_context_usd_per_million": {
+            "input": 10.0,
+            "cached_input": 1.0,
+            "cache_write": 12.5,
+            "output": 45.0,
+        },
+        "long_context_threshold_tokens_exclusive": 272_000,
+        "cache_write_multiplier": 1.25,
+        "long_context_multipliers": {"input": 2.0, "output": 1.5},
+    }
+
+
+def _sol_profile_budget(route_profile_id: str) -> dict[str, Any]:
+    budgets = {
+        OPENAI_SOL_MEDIUM_ROUTE_PROFILE_ID: SOL_MEDIUM_BUDGET_DERIVATION,
+        OPENAI_SOL_HIGH_ROUTE_PROFILE_ID: SOL_HIGH_BUDGET_DERIVATION,
+        OPENAI_SOL_XHIGH_ROUTE_PROFILE_ID: SOL_XHIGH_BUDGET_DERIVATION,
+    }
+    try:
+        return budgets[route_profile_id]
+    except KeyError as exc:
+        raise ValueError("route profile is not part of the Sol ladder") from exc
+
+
+def _sol_profile_rung(route_profile_id: str) -> str:
+    rungs = {
+        OPENAI_SOL_MEDIUM_ROUTE_PROFILE_ID: "MEDIUM",
+        OPENAI_SOL_HIGH_ROUTE_PROFILE_ID: "HIGH",
+        OPENAI_SOL_XHIGH_ROUTE_PROFILE_ID: "XHIGH",
+    }
+    try:
+        return rungs[route_profile_id]
+    except KeyError as exc:
+        raise ValueError("route profile is not part of the Sol ladder") from exc
+
+
 def _hashed_optional_label(value: str | None) -> str:
     normalized = (value or "UNSET").strip() or "UNSET"
     return "sha256:" + sha256(normalized.encode("utf-8")).hexdigest()
@@ -5162,6 +5313,21 @@ def _convergence_route_profile(args: argparse.Namespace) -> str:
         "terra-xhigh-qualification-real",
     }:
         return OPENAI_TERRA_XHIGH_ROUTE_PROFILE_ID
+    if args.mode in {
+        "sol-medium-qualification-dry-run",
+        "sol-medium-qualification-real",
+    }:
+        return OPENAI_SOL_MEDIUM_ROUTE_PROFILE_ID
+    if args.mode in {
+        "sol-high-qualification-dry-run",
+        "sol-high-qualification-real",
+    }:
+        return OPENAI_SOL_HIGH_ROUTE_PROFILE_ID
+    if args.mode in {
+        "sol-xhigh-qualification-dry-run",
+        "sol-xhigh-qualification-real",
+    }:
+        return OPENAI_SOL_XHIGH_ROUTE_PROFILE_ID
     return OPENAI_ROUTE_PROFILE_ID
 
 
@@ -5174,6 +5340,12 @@ def _convergence_qualified_prompt_ids(
         return OPENAI_TERRA_HIGH_PROMPT_IDS
     if route_profile_id == OPENAI_TERRA_XHIGH_ROUTE_PROFILE_ID:
         return OPENAI_TERRA_XHIGH_PROMPT_IDS
+    if route_profile_id == OPENAI_SOL_MEDIUM_ROUTE_PROFILE_ID:
+        return OPENAI_SOL_MEDIUM_PROMPT_IDS
+    if route_profile_id == OPENAI_SOL_HIGH_ROUTE_PROFILE_ID:
+        return OPENAI_SOL_HIGH_PROMPT_IDS
+    if route_profile_id == OPENAI_SOL_XHIGH_ROUTE_PROFILE_ID:
+        return OPENAI_SOL_XHIGH_PROMPT_IDS
     if route_profile_id == OPENAI_MAX_ROUTE_PROFILE_ID:
         return OPENAI_MAX_PROMPT_IDS
     return OPENAI_XHIGH_PROMPT_IDS
@@ -5181,6 +5353,11 @@ def _convergence_qualified_prompt_ids(
 
 def _convergence_authorization_boundary(args: argparse.Namespace) -> dict[str, Any]:
     route_profile_id = _convergence_route_profile(args)
+    is_sol_profile = route_profile_id in {
+        OPENAI_SOL_MEDIUM_ROUTE_PROFILE_ID,
+        OPENAI_SOL_HIGH_ROUTE_PROFILE_ID,
+        OPENAI_SOL_XHIGH_ROUTE_PROFILE_ID,
+    }
     material = rehearsal_boundary_material(
         route_profile_id,
         max_call_cost_usd=args.max_call_cost_usd,
@@ -5219,7 +5396,9 @@ def _convergence_authorization_boundary(args: argparse.Namespace) -> dict[str, A
     )
     boundary = {
         "boundary_format": (
-            "openai-stage2-convergence-authorization/1.8.0"
+            "openai-stage2-convergence-authorization/1.9.0"
+            if is_sol_profile
+            else "openai-stage2-convergence-authorization/1.8.0"
             if route_profile_id == OPENAI_TERRA_XHIGH_ROUTE_PROFILE_ID
             else "openai-stage2-convergence-authorization/1.7.0"
         ),
@@ -5472,6 +5651,104 @@ def _convergence_authorization_boundary(args: argparse.Namespace) -> dict[str, A
                 "max_provider_requests": TERRA_XHIGH_MAX_PROVIDER_REQUESTS,
                 "max_total_cost_usd": TERRA_XHIGH_MAX_TOTAL_COST_USD,
                 "max_call_cost_usd": TERRA_XHIGH_MAX_CALL_COST_USD,
+            },
+            "prior_authorizations_reusable": False,
+        }
+    elif is_sol_profile:
+        budget_derivation = _sol_profile_budget(route_profile_id)
+        rung = _sol_profile_rung(route_profile_id)
+        official_capability_verification = (
+            _sol_official_capability_verification()
+        )
+        candidate_delta = _sol_candidate_delta_proof()
+        previous_profile = {
+            "MEDIUM": None,
+            "HIGH": OPENAI_SOL_MEDIUM_ROUTE_PROFILE_ID,
+            "XHIGH": OPENAI_SOL_HIGH_ROUTE_PROFILE_ID,
+        }[rung]
+        next_profile_on_clean_failure = {
+            "MEDIUM": OPENAI_SOL_HIGH_ROUTE_PROFILE_ID,
+            "HIGH": OPENAI_SOL_XHIGH_ROUTE_PROFILE_ID,
+            "XHIGH": None,
+        }[rung]
+        boundary["terra_xhigh_evidence_baseline"] = {
+            "candidate_sha": SOL_LADDER_TERRA_XHIGH_CANDIDATE_SHA,
+            "evidence_sha": SOL_LADDER_TERRA_XHIGH_EVIDENCE_SHA,
+            "report_hash": _content_hash(SOL_LADDER_TERRA_XHIGH_REPORT),
+            "route_profile": OPENAI_TERRA_XHIGH_ROUTE_PROFILE_ID,
+            "model": TERRA_MODEL_ID,
+            "reasoning_effort": "XHIGH",
+            "qualification_outcome": "TERRA_XHIGH_QUALIFICATION_FAILED",
+            "family_outcome": "TERRA_FAMILY_QUALIFICATION_EXHAUSTED",
+            "convergence_outcome": "CONVERGENCE_INCOMPLETE",
+            "receipt_is_historical_and_immutable": True,
+        }
+        boundary["experimental_hypothesis"] = (
+            "NEW_SOL_FAMILY_BASELINE_ON_ABSOLUTELY_FROZEN_HARNESS"
+            if rung == "MEDIUM"
+            else f"SAME_SOL_MODEL_P04_P09_REASONING_{previous_profile.split('_')[1]}_TO_{rung}"
+        )
+        boundary["cross_family_baseline_univariate"] = False
+        boundary["intra_sol_reasoning_comparison_univariate"] = (
+            previous_profile is not None
+        )
+        boundary["previous_sol_route_profile"] = previous_profile
+        boundary["next_profile_on_clean_model_owned_failure"] = (
+            next_profile_on_clean_failure
+        )
+        boundary["sol_ladder"] = {
+            "rung": rung,
+            "profiles_frozen_in_candidate": [
+                OPENAI_SOL_MEDIUM_ROUTE_PROFILE_ID,
+                OPENAI_SOL_HIGH_ROUTE_PROFILE_ID,
+                OPENAI_SOL_XHIGH_ROUTE_PROFILE_ID,
+            ],
+            "per_rung_max_provider_requests": (
+                SOL_PER_RUNG_MAX_PROVIDER_REQUESTS
+            ),
+            "per_rung_max_call_cost_usd": (
+                SOL_PER_RUNG_MAX_CALL_COST_USD
+            ),
+            "per_rung_max_total_cost_usd": (
+                SOL_PER_RUNG_MAX_TOTAL_COST_USD
+            ),
+            "absolute_max_provider_requests": (
+                SOL_LADDER_ABSOLUTE_MAX_PROVIDER_REQUESTS
+            ),
+            "absolute_max_cost_usd": SOL_LADDER_ABSOLUTE_MAX_COST_USD,
+            "separate_authorization_and_ledger_per_rung": True,
+            "stop_on_first_pass": True,
+            "stop_on_inconclusive": True,
+            "max_rung": "XHIGH",
+        }
+        boundary["candidate_delta"] = candidate_delta
+        boundary["statistical_significance_claimed"] = False
+        boundary["official_capability_verification"] = (
+            official_capability_verification
+        )
+        boundary["official_capability_verification_hash"] = canonical_hash(
+            official_capability_verification
+        )
+        boundary["pricing_policy_hash"] = budget_derivation[
+            "pricing_policy_hash"
+        ]
+        boundary["qualification_matrix_hash"] = budget_derivation[
+            "matrix_hash"
+        ]
+        boundary["monetary_budget"] = {
+            "status": SOL_MONETARY_BUDGET_STATUS,
+            "future_real_execution_authorized": True,
+            "derivation": budget_derivation,
+            "enforced_caps": {
+                "max_provider_requests": SOL_PER_RUNG_MAX_PROVIDER_REQUESTS,
+                "max_total_cost_usd": SOL_PER_RUNG_MAX_TOTAL_COST_USD,
+                "max_call_cost_usd": SOL_PER_RUNG_MAX_CALL_COST_USD,
+            },
+            "absolute_conditional_ladder_cap": {
+                "max_provider_requests": (
+                    SOL_LADDER_ABSOLUTE_MAX_PROVIDER_REQUESTS
+                ),
+                "max_cost_usd": SOL_LADDER_ABSOLUTE_MAX_COST_USD,
             },
             "prior_authorizations_reusable": False,
         }
@@ -5959,6 +6236,61 @@ def _terra_xhigh_qualification_outcome(
     return outcome
 
 
+def _sol_qualification_outcome(
+    result: dict[str, Any],
+    *,
+    rung: str,
+) -> dict[str, Any]:
+    """Apply the frozen causal classifier and adaptive Sol stop policy."""
+
+    if rung not in {"MEDIUM", "HIGH", "XHIGH"}:
+        raise ValueError("unknown Sol ladder rung")
+    classified = _terra_medium_qualification_outcome(result)
+    classified_outcome = classified["qualification_outcome"]
+    if classified_outcome == "TERRA_MEDIUM_QUALIFICATION_PASSED":
+        return {
+            **classified,
+            "qualification_outcome": f"SOL_{rung}_QUALIFICATION_PASSED",
+            "ladder_outcome": "SOL_LADDER_STOPPED_ON_PASS",
+            "ladder_decision": "STOP_ON_FIRST_PASS",
+            "convergence_outcome": "READY_FOR_INDEPENDENT_REVIEW",
+            "recommended_next_authority": "INDEPENDENT_REVIEW_ONLY_NO_MAX",
+        }
+    if classified_outcome == "TERRA_MEDIUM_QUALIFICATION_FAILED":
+        if rung == "XHIGH":
+            return {
+                **classified,
+                "qualification_outcome": "SOL_XHIGH_QUALIFICATION_FAILED",
+                "ladder_outcome": "SOL_REASONING_LADDER_EXHAUSTED",
+                "ladder_decision": "STOP_AFTER_XHIGH",
+                "convergence_outcome": "CONVERGENCE_INCOMPLETE",
+                "recommended_next_authority": (
+                    "INDEPENDENT_MODEL_ROUTING_OR_RESPONSIBILITY_REVIEW_"
+                    "ONLY_NO_SOL_MAX"
+                ),
+            }
+        next_rung = "HIGH" if rung == "MEDIUM" else "XHIGH"
+        return {
+            **classified,
+            "qualification_outcome": f"SOL_{rung}_QUALIFICATION_FAILED",
+            "ladder_decision": f"ADVANCE_TO_SOL_{next_rung}",
+            "convergence_outcome": "CONVERGENCE_INCOMPLETE",
+            "recommended_next_authority": (
+                f"AUTOMATIC_SOL_{next_rung}_RUNG_ALREADY_AUTHORIZED"
+            ),
+        }
+    return {
+        **classified,
+        "qualification_outcome": f"SOL_{rung}_QUALIFICATION_INCONCLUSIVE",
+        "ladder_outcome": "SOL_LADDER_STOPPED_INCONCLUSIVE",
+        "ladder_decision": "STOP_ON_INCONCLUSIVE",
+        "convergence_outcome": "CONVERGENCE_INCOMPLETE",
+        "recommended_next_authority": (
+            "INDEPENDENT_OR_TECHNICAL_REVIEW_ONLY_NO_RERUN_OR_MAX"
+        ),
+    }
+
+
 def _run_convergence_cli(args: argparse.Namespace) -> int:
     if args.case_id:
         raise OpenAIEvalBlocked("OPENAI_CONVERGENCE_FIXED_MATRIX_REQUIRED")
@@ -5972,13 +6304,22 @@ def _run_convergence_cli(args: argparse.Namespace) -> int:
     is_terra_xhigh = (
         route_profile_id == OPENAI_TERRA_XHIGH_ROUTE_PROFILE_ID
     )
+    is_sol_medium = route_profile_id == OPENAI_SOL_MEDIUM_ROUTE_PROFILE_ID
+    is_sol_high = route_profile_id == OPENAI_SOL_HIGH_ROUTE_PROFILE_ID
+    is_sol_xhigh = route_profile_id == OPENAI_SOL_XHIGH_ROUTE_PROFILE_ID
+    is_sol = is_sol_medium or is_sol_high or is_sol_xhigh
     is_qualification = (
         is_xhigh
         or is_max
         or is_terra_medium
         or is_terra_high
         or is_terra_xhigh
+        or is_sol
     )
+    if is_sol:
+        delta_proof = _sol_candidate_delta_proof()
+        if delta_proof["forbidden_delta"]:
+            raise OpenAIEvalBlocked("SOL_LADDER_PRECONDITIONS_FAILED")
     if args.mode in {
         "convergence-dry-run",
         "xhigh-qualification-dry-run",
@@ -5986,9 +6327,14 @@ def _run_convergence_cli(args: argparse.Namespace) -> int:
         "terra-medium-qualification-dry-run",
         "terra-high-qualification-dry-run",
         "terra-xhigh-qualification-dry-run",
+        "sol-medium-qualification-dry-run",
+        "sol-high-qualification-dry-run",
+        "sol-xhigh-qualification-dry-run",
     }:
         expected_total_cost = (
-            TERRA_XHIGH_OFFLINE_REHEARSAL_MAX_TOTAL_COST_USD
+            SOL_PER_RUNG_MAX_TOTAL_COST_USD
+            if is_sol
+            else TERRA_XHIGH_OFFLINE_REHEARSAL_MAX_TOTAL_COST_USD
             if is_terra_xhigh
             else TERRA_HIGH_OFFLINE_REHEARSAL_MAX_TOTAL_COST_USD
             if is_terra_high
@@ -5997,7 +6343,9 @@ def _run_convergence_cli(args: argparse.Namespace) -> int:
             else 0.75
         )
         expected_call_cost = (
-            TERRA_XHIGH_OFFLINE_REHEARSAL_MAX_CALL_COST_USD
+            SOL_PER_RUNG_MAX_CALL_COST_USD
+            if is_sol
+            else TERRA_XHIGH_OFFLINE_REHEARSAL_MAX_CALL_COST_USD
             if is_terra_xhigh
             else TERRA_HIGH_OFFLINE_REHEARSAL_MAX_CALL_COST_USD
             if is_terra_high
@@ -6013,7 +6361,10 @@ def _run_convergence_cli(args: argparse.Namespace) -> int:
         ):
             raise OpenAIEvalBlocked(
                 (
-                    "OPENAI_TERRA_XHIGH_QUALIFICATION_EXACT_CAPS_REQUIRED"
+                    f"OPENAI_SOL_{_sol_profile_rung(route_profile_id)}_"
+                    "QUALIFICATION_EXACT_CAPS_REQUIRED"
+                    if is_sol
+                    else "OPENAI_TERRA_XHIGH_QUALIFICATION_EXACT_CAPS_REQUIRED"
                     if is_terra_xhigh
                     else "OPENAI_TERRA_HIGH_QUALIFICATION_EXACT_CAPS_REQUIRED"
                     if is_terra_high
@@ -6062,8 +6413,14 @@ def _run_convergence_cli(args: argparse.Namespace) -> int:
         raise OpenAIEvalBlocked(
             "OPENAI_TERRA_XHIGH_MONETARY_BUDGET_RECALCULATION_REQUIRED"
         )
+    if is_sol and SOL_MONETARY_BUDGET_RECALCULATION_REQUIRED:
+        raise OpenAIEvalBlocked(
+            "OPENAI_SOL_MONETARY_BUDGET_RECALCULATION_REQUIRED"
+        )
     maximum_total_cap = (
-        TERRA_XHIGH_MAX_TOTAL_COST_USD
+        SOL_PER_RUNG_MAX_TOTAL_COST_USD
+        if is_sol
+        else TERRA_XHIGH_MAX_TOTAL_COST_USD
         if is_terra_xhigh
         else TERRA_HIGH_MAX_TOTAL_COST_USD
         if is_terra_high
@@ -6072,7 +6429,9 @@ def _run_convergence_cli(args: argparse.Namespace) -> int:
         else 1.0
     )
     maximum_call_cap = (
-        TERRA_XHIGH_MAX_CALL_COST_USD
+        SOL_PER_RUNG_MAX_CALL_COST_USD
+        if is_sol
+        else TERRA_XHIGH_MAX_CALL_COST_USD
         if is_terra_xhigh
         else TERRA_HIGH_MAX_CALL_COST_USD
         if is_terra_high
@@ -6099,7 +6458,9 @@ def _run_convergence_cli(args: argparse.Namespace) -> int:
     ):
         raise OpenAIEvalBlocked("OPENAI_CONVERGENCE_EXPLICIT_CAPS_REQUIRED")
     expected_total_cost = (
-        TERRA_XHIGH_MAX_TOTAL_COST_USD
+        SOL_PER_RUNG_MAX_TOTAL_COST_USD
+        if is_sol
+        else TERRA_XHIGH_MAX_TOTAL_COST_USD
         if is_terra_xhigh
         else TERRA_HIGH_MAX_TOTAL_COST_USD
         if is_terra_high
@@ -6108,7 +6469,9 @@ def _run_convergence_cli(args: argparse.Namespace) -> int:
         else 0.75
     )
     expected_call_cost = (
-        TERRA_XHIGH_MAX_CALL_COST_USD
+        SOL_PER_RUNG_MAX_CALL_COST_USD
+        if is_sol
+        else TERRA_XHIGH_MAX_CALL_COST_USD
         if is_terra_xhigh
         else TERRA_HIGH_MAX_CALL_COST_USD
         if is_terra_high
@@ -6124,7 +6487,10 @@ def _run_convergence_cli(args: argparse.Namespace) -> int:
     ):
         raise OpenAIEvalBlocked(
             (
-                "OPENAI_TERRA_XHIGH_QUALIFICATION_EXACT_CAPS_REQUIRED"
+                f"OPENAI_SOL_{_sol_profile_rung(route_profile_id)}_"
+                "QUALIFICATION_EXACT_CAPS_REQUIRED"
+                if is_sol
+                else "OPENAI_TERRA_XHIGH_QUALIFICATION_EXACT_CAPS_REQUIRED"
                 if is_terra_xhigh
                 else "OPENAI_TERRA_HIGH_QUALIFICATION_EXACT_CAPS_REQUIRED"
                 if is_terra_high
@@ -6215,6 +6581,58 @@ def _run_convergence_cli(args: argparse.Namespace) -> int:
                         max_candidate_sha=boundary["git_head"],
                         max_verdict=str(outcome["qualification_outcome"]),
                     ),
+                }
+            )
+        elif is_sol:
+            rung = _sol_profile_rung(route_profile_id)
+            for call_receipt in result.get("provider_call_receipts", []):
+                call_receipt["rung"] = rung
+                call_receipt["route_profile"] = route_profile_id
+            outcome = _sol_qualification_outcome(result, rung=rung)
+            result.update(outcome)
+            result.update(
+                {
+                    "rung": rung,
+                    "baseline_terra_xhigh_candidate": (
+                        SOL_LADDER_TERRA_XHIGH_CANDIDATE_SHA
+                    ),
+                    "baseline_terra_xhigh_evidence_head": (
+                        SOL_LADDER_TERRA_XHIGH_EVIDENCE_SHA
+                    ),
+                    "baseline_terra_xhigh_report_hash": boundary[
+                        "terra_xhigh_evidence_baseline"
+                    ]["report_hash"],
+                    "experimental_hypothesis": boundary[
+                        "experimental_hypothesis"
+                    ],
+                    "cross_family_baseline_univariate": False,
+                    "intra_sol_reasoning_comparison_univariate": boundary[
+                        "intra_sol_reasoning_comparison_univariate"
+                    ],
+                    "previous_sol_route_profile": boundary[
+                        "previous_sol_route_profile"
+                    ],
+                    "statistical_significance_claimed": False,
+                    "official_capability_verification": boundary[
+                        "official_capability_verification"
+                    ],
+                    "official_capability_verification_hash": boundary[
+                        "official_capability_verification_hash"
+                    ],
+                    "pricing_policy_hash": boundary[
+                        "pricing_policy_hash"
+                    ],
+                    "qualification_matrix_hash": boundary[
+                        "qualification_matrix_hash"
+                    ],
+                    "budget_derivation": boundary["monetary_budget"][
+                        "derivation"
+                    ],
+                    "sol_ladder": boundary["sol_ladder"],
+                    "candidate_delta": boundary["candidate_delta"],
+                    "frozen_semantic_harness": boundary[
+                        "executable_boundary"
+                    ]["terra_ladder_harness_freeze"],
                 }
             )
         elif is_terra_xhigh:
@@ -6365,10 +6783,18 @@ def _run_convergence_cli(args: argparse.Namespace) -> int:
             and failure_code == "OPENAI_CONVERGENCE_EXECUTION_FAILED"
         ):
             failure_code = "TERRA_XHIGH_QUALIFICATION_INCONCLUSIVE"
+        elif is_sol and failure_code == "OPENAI_CONVERGENCE_EXECUTION_FAILED":
+            failure_code = (
+                f"SOL_{_sol_profile_rung(route_profile_id)}_"
+                "QUALIFICATION_INCONCLUSIVE"
+            )
         failure_report = {
             "report_schema_version": REHEARSAL_REPORT_VERSION,
             "mode": (
-                "real-terra-xhigh-qualification"
+                f"real-sol-{_sol_profile_rung(route_profile_id).lower()}-"
+                "qualification"
+                if is_sol
+                else "real-terra-xhigh-qualification"
                 if is_terra_xhigh
                 else "real-terra-high-qualification"
                 if is_terra_high
@@ -6448,6 +6874,66 @@ def _run_convergence_cli(args: argparse.Namespace) -> int:
                     max_candidate_sha=boundary["git_head"],
                     max_verdict="MAX_QUALIFICATION_INCONCLUSIVE",
                 )
+            )
+        elif is_sol:
+            rung = _sol_profile_rung(route_profile_id)
+            failure_report.update(
+                {
+                    "rung": rung,
+                    "qualification_outcome": (
+                        f"SOL_{rung}_QUALIFICATION_INCONCLUSIVE"
+                    ),
+                    "ladder_outcome": "SOL_LADDER_STOPPED_INCONCLUSIVE",
+                    "ladder_decision": "STOP_ON_INCONCLUSIVE",
+                    "convergence_outcome": "CONVERGENCE_INCOMPLETE",
+                    "causal_classification": (
+                        f"TECHNICAL_SOL_{rung}_SUPPORT_OR_EXECUTION_FAILURE"
+                    ),
+                    "recommended_next_authority": (
+                        "INDEPENDENT_OR_TECHNICAL_REVIEW_ONLY_"
+                        "NO_RERUN_OR_MAX"
+                    ),
+                    "baseline_terra_xhigh_candidate": (
+                        SOL_LADDER_TERRA_XHIGH_CANDIDATE_SHA
+                    ),
+                    "baseline_terra_xhigh_evidence_head": (
+                        SOL_LADDER_TERRA_XHIGH_EVIDENCE_SHA
+                    ),
+                    "baseline_terra_xhigh_report_hash": boundary[
+                        "terra_xhigh_evidence_baseline"
+                    ]["report_hash"],
+                    "experimental_hypothesis": boundary[
+                        "experimental_hypothesis"
+                    ],
+                    "cross_family_baseline_univariate": False,
+                    "intra_sol_reasoning_comparison_univariate": boundary[
+                        "intra_sol_reasoning_comparison_univariate"
+                    ],
+                    "previous_sol_route_profile": boundary[
+                        "previous_sol_route_profile"
+                    ],
+                    "statistical_significance_claimed": False,
+                    "official_capability_verification": boundary[
+                        "official_capability_verification"
+                    ],
+                    "official_capability_verification_hash": boundary[
+                        "official_capability_verification_hash"
+                    ],
+                    "pricing_policy_hash": boundary[
+                        "pricing_policy_hash"
+                    ],
+                    "qualification_matrix_hash": boundary[
+                        "qualification_matrix_hash"
+                    ],
+                    "budget_derivation": boundary["monetary_budget"][
+                        "derivation"
+                    ],
+                    "sol_ladder": boundary["sol_ladder"],
+                    "candidate_delta": boundary["candidate_delta"],
+                    "frozen_semantic_harness": boundary[
+                        "executable_boundary"
+                    ]["terra_ladder_harness_freeze"],
+                }
             )
         elif is_terra_xhigh:
             failure_report.update(
@@ -6619,6 +7105,12 @@ def main() -> int:
             "terra-high-qualification-real",
             "terra-xhigh-qualification-dry-run",
             "terra-xhigh-qualification-real",
+            "sol-medium-qualification-dry-run",
+            "sol-medium-qualification-real",
+            "sol-high-qualification-dry-run",
+            "sol-high-qualification-real",
+            "sol-xhigh-qualification-dry-run",
+            "sol-xhigh-qualification-real",
         ),
         default="offline",
     )
@@ -6656,6 +7148,12 @@ def main() -> int:
         "terra-high-qualification-real",
         "terra-xhigh-qualification-dry-run",
         "terra-xhigh-qualification-real",
+        "sol-medium-qualification-dry-run",
+        "sol-medium-qualification-real",
+        "sol-high-qualification-dry-run",
+        "sol-high-qualification-real",
+        "sol-xhigh-qualification-dry-run",
+        "sol-xhigh-qualification-real",
     }:
         try:
             return _run_convergence_cli(args)

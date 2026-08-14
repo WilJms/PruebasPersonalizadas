@@ -71,6 +71,15 @@ from comprehension_verification.model_gateway.openai_routes import (
     OPENAI_P11_MAX_INPUT_TOKENS,
     OPENAI_ROUTE_PROFILE,
     OPENAI_ROUTE_PROFILE_ID,
+    OPENAI_SOL_HIGH_PROMPT_IDS,
+    OPENAI_SOL_HIGH_ROUTE_PROFILE,
+    OPENAI_SOL_HIGH_ROUTE_PROFILE_ID,
+    OPENAI_SOL_MEDIUM_PROMPT_IDS,
+    OPENAI_SOL_MEDIUM_ROUTE_PROFILE,
+    OPENAI_SOL_MEDIUM_ROUTE_PROFILE_ID,
+    OPENAI_SOL_XHIGH_PROMPT_IDS,
+    OPENAI_SOL_XHIGH_ROUTE_PROFILE,
+    OPENAI_SOL_XHIGH_ROUTE_PROFILE_ID,
     OPENAI_TERRA_MEDIUM_PROMPT_IDS,
     OPENAI_TERRA_MEDIUM_ROUTE_PROFILE,
     OPENAI_TERRA_MEDIUM_ROUTE_PROFILE_ID,
@@ -553,6 +562,148 @@ def test_terra_xhigh_profile_changes_only_p04_p09_effort_from_terra_high() -> No
     )
 
 
+@pytest.mark.parametrize(
+    ("profile_id", "profile", "qualified_prompt_ids", "qualified_effort"),
+    [
+        (
+            OPENAI_SOL_MEDIUM_ROUTE_PROFILE_ID,
+            OPENAI_SOL_MEDIUM_ROUTE_PROFILE,
+            OPENAI_SOL_MEDIUM_PROMPT_IDS,
+            models.ReasoningEffort.MEDIUM,
+        ),
+        (
+            OPENAI_SOL_HIGH_ROUTE_PROFILE_ID,
+            OPENAI_SOL_HIGH_ROUTE_PROFILE,
+            OPENAI_SOL_HIGH_PROMPT_IDS,
+            models.ReasoningEffort.HIGH,
+        ),
+        (
+            OPENAI_SOL_XHIGH_ROUTE_PROFILE_ID,
+            OPENAI_SOL_XHIGH_ROUTE_PROFILE,
+            OPENAI_SOL_XHIGH_PROMPT_IDS,
+            models.ReasoningEffort.XHIGH,
+        ),
+    ],
+)
+def test_sol_ladder_profiles_are_exact_and_exclusive(
+    profile_id: str,
+    profile: Any,
+    qualified_prompt_ids: frozenset[str],
+    qualified_effort: models.ReasoningEffort,
+) -> None:
+    routes = build_openai_routes(
+        max_call_cost_usd=2.05,
+        route_profile_id=profile_id,
+    )
+    assert set(routes) == set(PROMPT_SPECS) - {"P10_ENRICHED_CONTEXT_V1"}
+    assert all(route.model == SOL_MODEL_ID for route in routes.values())
+    assert all(route.model_snapshot == SOL_MODEL_ID for route in routes.values())
+    assert all(route.fallback_route_id is None for route in routes.values())
+    assert all(
+        route.route_id.startswith(f"route_openai_{profile_id.lower()}_")
+        for route in routes.values()
+    )
+    assert {
+        prompt_id
+        for prompt_id, approved in profile.items()
+        if (
+            prompt_id in qualified_prompt_ids
+            and approved.reasoning_effort == qualified_effort
+        )
+    } == set(qualified_prompt_ids)
+    assert routes["P01_ACTIVITY_SPEC_V1"].reasoning_effort == (
+        models.ReasoningEffort.MEDIUM
+    )
+    assert routes["P02_RUBRIC_NORMALIZE_V1"].reasoning_effort == (
+        models.ReasoningEffort.MEDIUM
+    )
+    assert routes["P03_AMBIGUITY_TRIAGE_V1"].reasoning_effort == (
+        models.ReasoningEffort.HIGH
+    )
+    assert all(
+        routes[prompt_id].reasoning_effort == qualified_effort
+        for prompt_id in qualified_prompt_ids
+    )
+    assert routes["P11_SCHEMA_REPAIR_V1"].reasoning_effort == (
+        models.ReasoningEffort.LOW
+    )
+    assert all(
+        "SOL_ADAPTIVE_REASONING_LADDER_AUTHORIZED" in route.reason_codes
+        for route in routes.values()
+    )
+
+
+def test_sol_ladder_changes_only_reasoning_within_family() -> None:
+    medium = build_openai_routes(
+        max_call_cost_usd=2.05,
+        route_profile_id=OPENAI_SOL_MEDIUM_ROUTE_PROFILE_ID,
+    )
+    high = build_openai_routes(
+        max_call_cost_usd=2.05,
+        route_profile_id=OPENAI_SOL_HIGH_ROUTE_PROFILE_ID,
+    )
+    xhigh = build_openai_routes(
+        max_call_cost_usd=2.05,
+        route_profile_id=OPENAI_SOL_XHIGH_ROUTE_PROFILE_ID,
+    )
+    for prompt_id in medium:
+        for routes in (medium, high, xhigh):
+            assert routes[prompt_id].model == SOL_MODEL_ID
+        if prompt_id in OPENAI_SOL_MEDIUM_PROMPT_IDS:
+            assert [
+                medium[prompt_id].reasoning_effort,
+                high[prompt_id].reasoning_effort,
+                xhigh[prompt_id].reasoning_effort,
+            ] == [
+                models.ReasoningEffort.MEDIUM,
+                models.ReasoningEffort.HIGH,
+                models.ReasoningEffort.XHIGH,
+            ]
+        else:
+            assert medium[prompt_id].reasoning_effort == (
+                high[prompt_id].reasoning_effort
+            ) == xhigh[prompt_id].reasoning_effort
+        normalized = []
+        for routes in (medium, high, xhigh):
+            material = routes[prompt_id].model_dump(mode="json")
+            material.pop("route_id")
+            material.pop("reasoning_effort")
+            material.pop("reason_codes")
+            normalized.append(material)
+        assert normalized[0] == normalized[1] == normalized[2]
+
+
+def test_sol_profile_adapter_sends_exact_model_effort_and_controls() -> None:
+    prompt_id = "P04_BLUEPRINT_BUILD_V1"
+    request = build_mock_request(prompt_id)
+    fake = FakeClient(
+        [_response(_canonical_output(prompt_id), model=SOL_MODEL_ID)]
+    )
+    route = build_openai_routes(
+        max_call_cost_usd=2.05,
+        route_profile_id=OPENAI_SOL_MEDIUM_ROUTE_PROFILE_ID,
+    )[prompt_id]
+    result = asyncio.run(
+        OpenAIResponsesAdapter(client=fake).invoke(
+            prompt_id=prompt_id,
+            request=request,
+            envelope=_envelope(prompt_id, request),
+            route=route,
+            attempt=1,
+            behavior=MockBehavior.HAPPY,
+        )
+    )
+    assert result.raw_output is not None
+    assert len(fake.responses.calls) == 1
+    payload = fake.responses.calls[0]
+    assert payload["model"] == SOL_MODEL_ID
+    assert payload["reasoning"] == {"effort": "medium"}
+    assert payload["tools"] == []
+    assert payload["store"] is False
+    assert payload["background"] is False
+    assert payload["truncation"] == "disabled"
+
+
 def test_xhigh_adapter_payload_changes_only_effective_reasoning() -> None:
     prompt_id = "P04_BLUEPRINT_BUILD_V1"
     request = build_mock_request(prompt_id)
@@ -808,7 +959,7 @@ def test_xhigh_route_identity_changes_execution_fingerprint() -> None:
         )
 
 
-def test_adapter_rejects_historical_sol_route_before_transport() -> None:
+def test_adapter_rejects_forged_sol_route_before_transport() -> None:
     prompt_id = "P01_ACTIVITY_SPEC_V1"
     request = build_mock_request(prompt_id)
     fake = FakeClient([])
@@ -816,7 +967,10 @@ def test_adapter_rejects_historical_sol_route_before_transport() -> None:
         update={"model": SOL_MODEL_ID}
     )
 
-    with pytest.raises(ModelUnavailableProviderError, match="PROVIDER_ROUTE_NOT_APPROVED"):
+    with pytest.raises(
+        PermanentProviderError,
+        match="PROVIDER_REASONING_ROUTE_MISMATCH",
+    ):
         asyncio.run(
             OpenAIResponsesAdapter(client=fake).invoke(
                 prompt_id=prompt_id,
