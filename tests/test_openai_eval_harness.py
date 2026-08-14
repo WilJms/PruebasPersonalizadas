@@ -84,6 +84,30 @@ FIXTURE = (
 )
 
 
+def _reviewed_sol_candidate_delta_proof() -> dict[str, object]:
+    observed = sorted(eval_harness.SOL_ALLOWED_DELTA_PATHS)
+    return {
+        "baseline_sha": eval_harness.SOL_LADDER_BASELINE_SHA,
+        "observed_delta": observed,
+        "allowed_delta": observed,
+        "forbidden_delta": [],
+        "allowed_paths": observed,
+    }
+
+
+@pytest.fixture
+def reviewed_sol_candidate_delta(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Keep unit tests independent from the checkout's Git history depth."""
+
+    monkeypatch.setattr(
+        eval_harness,
+        "_sol_candidate_delta_proof",
+        _reviewed_sol_candidate_delta_proof,
+    )
+
+
 def _safe_environment() -> dict[str, str]:
     environment = os.environ.copy()
     for name in tuple(environment):
@@ -1813,6 +1837,7 @@ def test_each_sol_profile_rehearses_33_calls_completely_offline(
 )
 def test_sol_authorization_boundaries_are_distinct_and_frozen(
     tmp_path: Path,
+    reviewed_sol_candidate_delta: None,
     mode: str,
     profile_id: str,
     effort: str,
@@ -1869,6 +1894,7 @@ def test_sol_authorization_boundaries_are_distinct_and_frozen(
 
 def test_sol_profile_authorization_hashes_are_pairwise_distinct(
     tmp_path: Path,
+    reviewed_sol_candidate_delta: None,
 ) -> None:
     hashes: set[str] = set()
     for mode in (
@@ -3154,6 +3180,7 @@ def test_terra_xhigh_outcomes_enforce_terminal_family_policy() -> None:
 def test_sol_real_cli_blocks_inexact_caps_before_secret_or_ledger(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
+    reviewed_sol_candidate_delta: None,
     mode: str,
 ) -> None:
     args = _real_cli_args(tmp_path)
@@ -3209,6 +3236,26 @@ def test_sol_forbidden_delta_blocks_before_secret_or_ledger(
     assert not args.report_path.exists()
 
 
+def test_sol_candidate_delta_proof_fails_closed_without_baseline_object(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        eval_harness.subprocess,
+        "run",
+        lambda *_args, **_kwargs: subprocess.CompletedProcess(
+            args=["git", "diff"],
+            returncode=128,
+            stdout="",
+            stderr="fatal: bad object synthetic-baseline",
+        ),
+    )
+    with pytest.raises(
+        eval_harness.OpenAIEvalBlocked,
+        match="SOL_LADDER_PRECONDITIONS_FAILED",
+    ):
+        eval_harness._sol_candidate_delta_proof()
+
+
 @pytest.mark.parametrize(
     ("mode", "profile_id", "rung"),
     [
@@ -3233,6 +3280,7 @@ def test_each_sol_rung_reserves_its_own_authorization_exactly_once(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
+    reviewed_sol_candidate_delta: None,
     mode: str,
     profile_id: str,
     rung: str,

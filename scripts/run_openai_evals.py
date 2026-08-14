@@ -5203,10 +5203,15 @@ def _sol_candidate_delta_proof() -> dict[str, Any]:
             "--",
         ],
         cwd=ROOT,
-        check=True,
+        check=False,
         capture_output=True,
         text=True,
     )
+    if completed.returncode != 0:
+        # GitHub Actions checks out a shallow candidate by default. Never infer
+        # an empty/allowed delta when the pinned baseline object is unavailable:
+        # real execution must fail closed before secret resolution or ledger use.
+        raise OpenAIEvalBlocked("SOL_LADDER_PRECONDITIONS_FAILED")
     observed_paths = {
         line.strip() for line in completed.stdout.splitlines() if line.strip()
     }
