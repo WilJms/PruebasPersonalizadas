@@ -77,6 +77,9 @@ from comprehension_verification.model_gateway.openai_routes import (
     OPENAI_TERRA_HIGH_PROMPT_IDS,
     OPENAI_TERRA_HIGH_ROUTE_PROFILE,
     OPENAI_TERRA_HIGH_ROUTE_PROFILE_ID,
+    OPENAI_TERRA_XHIGH_PROMPT_IDS,
+    OPENAI_TERRA_XHIGH_ROUTE_PROFILE,
+    OPENAI_TERRA_XHIGH_ROUTE_PROFILE_ID,
     OPENAI_XHIGH_PROMPT_IDS,
     OPENAI_XHIGH_ROUTE_PROFILE,
     OPENAI_XHIGH_ROUTE_PROFILE_ID,
@@ -495,6 +498,57 @@ def test_terra_high_profile_changes_only_model_from_luna_baseline() -> None:
         for prompt_id in OPENAI_TERRA_HIGH_PROMPT_IDS
     )
     assert terra["P11_SCHEMA_REPAIR_V1"].reasoning_effort == (
+        models.ReasoningEffort.LOW
+    )
+
+
+def test_terra_xhigh_profile_changes_only_p04_p09_effort_from_terra_high() -> None:
+    assert OPENAI_TERRA_XHIGH_ROUTE_PROFILE_ID == "TERRA_XHIGH_V1"
+    assert OPENAI_TERRA_XHIGH_PROMPT_IDS == OPENAI_TERRA_HIGH_PROMPT_IDS
+    assert {
+        prompt_id
+        for prompt_id, approved in OPENAI_TERRA_XHIGH_ROUTE_PROFILE.items()
+        if approved.reasoning_effort == models.ReasoningEffort.XHIGH
+    } == set(OPENAI_TERRA_XHIGH_PROMPT_IDS)
+
+    high = build_openai_routes(
+        max_call_cost_usd=0.82,
+        route_profile_id=OPENAI_TERRA_HIGH_ROUTE_PROFILE_ID,
+    )
+    xhigh = build_openai_routes(
+        max_call_cost_usd=0.82,
+        route_profile_id=OPENAI_TERRA_XHIGH_ROUTE_PROFILE_ID,
+    )
+    assert set(high) == set(xhigh)
+    assert all(route.model == TERRA_MODEL_ID for route in xhigh.values())
+    assert all(route.fallback_route_id is None for route in xhigh.values())
+    for prompt_id in high:
+        expected_effort = (
+            models.ReasoningEffort.XHIGH
+            if prompt_id in OPENAI_TERRA_XHIGH_PROMPT_IDS
+            else high[prompt_id].reasoning_effort
+        )
+        assert xhigh[prompt_id].reasoning_effort == expected_effort
+        high_material = high[prompt_id].model_dump(mode="json")
+        xhigh_material = xhigh[prompt_id].model_dump(mode="json")
+        for material in (high_material, xhigh_material):
+            material.pop("route_id")
+            material.pop("reasoning_effort")
+            material.pop("reason_codes")
+        assert high_material == xhigh_material
+        assert xhigh[prompt_id].route_id.startswith(
+            "route_openai_terra_xhigh_v1_"
+        )
+    assert xhigh["P01_ACTIVITY_SPEC_V1"].reasoning_effort == (
+        models.ReasoningEffort.MEDIUM
+    )
+    assert xhigh["P02_RUBRIC_NORMALIZE_V1"].reasoning_effort == (
+        models.ReasoningEffort.MEDIUM
+    )
+    assert xhigh["P03_AMBIGUITY_TRIAGE_V1"].reasoning_effort == (
+        models.ReasoningEffort.HIGH
+    )
+    assert xhigh["P11_SCHEMA_REPAIR_V1"].reasoning_effort == (
         models.ReasoningEffort.LOW
     )
 

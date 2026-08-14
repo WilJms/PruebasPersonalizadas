@@ -46,6 +46,8 @@ OPENAI_TERRA_MEDIUM_ROUTE_PROFILE_ID: Final = "TERRA_MEDIUM_V1"
 OPENAI_TERRA_MEDIUM_PROMPT_IDS: Final = OPENAI_XHIGH_PROMPT_IDS
 OPENAI_TERRA_HIGH_ROUTE_PROFILE_ID: Final = "TERRA_HIGH_V1"
 OPENAI_TERRA_HIGH_PROMPT_IDS: Final = OPENAI_XHIGH_PROMPT_IDS
+OPENAI_TERRA_XHIGH_ROUTE_PROFILE_ID: Final = "TERRA_XHIGH_V1"
+OPENAI_TERRA_XHIGH_PROMPT_IDS: Final = OPENAI_XHIGH_PROMPT_IDS
 REQUEST_FRAMING_TOKEN_ALLOWANCE: Final = 1_024
 OPENAI_MAX_INPUT_TOKENS: Final = 250_000
 # The first manual-evaluation profile buys no automatic transport retry. A
@@ -159,6 +161,21 @@ OPENAI_TERRA_HIGH_ROUTE_PROFILE: Final[
         for prompt_id, approved in OPENAI_ROUTE_PROFILE.items()
     }
 )
+OPENAI_TERRA_XHIGH_ROUTE_PROFILE: Final[
+    Mapping[str, ApprovedOpenAIRoute]
+] = MappingProxyType(
+    {
+        prompt_id: ApprovedOpenAIRoute(
+            TERRA_MODEL_ID,
+            (
+                models.ReasoningEffort.XHIGH
+                if prompt_id in OPENAI_TERRA_XHIGH_PROMPT_IDS
+                else approved.reasoning_effort
+            ),
+        )
+        for prompt_id, approved in OPENAI_ROUTE_PROFILE.items()
+    }
+)
 OPENAI_ROUTE_PROFILES: Final[
     Mapping[str, Mapping[str, ApprovedOpenAIRoute]]
 ] = MappingProxyType(
@@ -170,6 +187,9 @@ OPENAI_ROUTE_PROFILES: Final[
             OPENAI_TERRA_MEDIUM_ROUTE_PROFILE
         ),
         OPENAI_TERRA_HIGH_ROUTE_PROFILE_ID: OPENAI_TERRA_HIGH_ROUTE_PROFILE,
+        OPENAI_TERRA_XHIGH_ROUTE_PROFILE_ID: (
+            OPENAI_TERRA_XHIGH_ROUTE_PROFILE
+        ),
     }
 )
 OPENAI_MODEL_BY_PROMPT: Final[Mapping[str, str]] = MappingProxyType(
@@ -190,9 +210,10 @@ def openai_route_matches_profile(
 ) -> bool:
     """Accept only an exact, explicitly named profile entry.
 
-    The XHIGH, MAX, Terra MEDIUM, and Terra HIGH qualifications deliberately leave the
-    canonical prompt registry at HIGH so its executable prompt hashes remain
-    unchanged. These profile checks are the sole authorized routing exceptions.
+    The XHIGH, MAX, Terra MEDIUM, Terra HIGH, and Terra XHIGH qualifications
+    deliberately leave the canonical prompt registry at HIGH so its executable
+    prompt hashes remain unchanged. These profile checks are the sole authorized
+    routing exceptions.
     """
 
     spec = PROMPT_SPECS.get(prompt_id)
@@ -245,6 +266,7 @@ def build_openai_routes(
         in {
             OPENAI_TERRA_MEDIUM_ROUTE_PROFILE_ID,
             OPENAI_TERRA_HIGH_ROUTE_PROFILE_ID,
+            OPENAI_TERRA_XHIGH_ROUTE_PROFILE_ID,
         }
         else LUNA_MODEL_ID
     )
@@ -254,7 +276,11 @@ def build_openai_routes(
         )
     expected_xhigh_prompts = (
         OPENAI_XHIGH_PROMPT_IDS
-        if route_profile_id == OPENAI_XHIGH_ROUTE_PROFILE_ID
+        if route_profile_id
+        in {
+            OPENAI_XHIGH_ROUTE_PROFILE_ID,
+            OPENAI_TERRA_XHIGH_ROUTE_PROFILE_ID,
+        }
         else frozenset()
     )
     actual_xhigh_prompts = frozenset(
@@ -319,6 +345,25 @@ def build_openai_routes(
             f"Unexpected Terra HIGH route surface for {route_profile_id}: "
             f"{sorted(actual_terra_high_prompts)}"
         )
+    actual_terra_xhigh_prompts = frozenset(
+        prompt_id
+        for prompt_id, approved in route_profile.items()
+        if (
+            prompt_id in OPENAI_TERRA_XHIGH_PROMPT_IDS
+            and approved.model == TERRA_MODEL_ID
+            and approved.reasoning_effort == models.ReasoningEffort.XHIGH
+        )
+    )
+    expected_terra_xhigh_prompts = (
+        OPENAI_TERRA_XHIGH_PROMPT_IDS
+        if route_profile_id == OPENAI_TERRA_XHIGH_ROUTE_PROFILE_ID
+        else frozenset()
+    )
+    if actual_terra_xhigh_prompts != expected_terra_xhigh_prompts:
+        raise AssertionError(
+            f"Unexpected Terra XHIGH route surface for {route_profile_id}: "
+            f"{sorted(actual_terra_xhigh_prompts)}"
+        )
     capabilities = models.ModelCapabilities(
         # Every document is parsed and normalized before the gateway. The
         # adapter serializes only the validated envelope; it does not send
@@ -343,7 +388,11 @@ def build_openai_routes(
     for prompt_id, approved in route_profile.items():
         spec = PROMPT_SPECS[prompt_id]
         is_authorized_xhigh_override = (
-            route_profile_id == OPENAI_XHIGH_ROUTE_PROFILE_ID
+            route_profile_id
+            in {
+                OPENAI_XHIGH_ROUTE_PROFILE_ID,
+                OPENAI_TERRA_XHIGH_ROUTE_PROFILE_ID,
+            }
             and prompt_id in OPENAI_XHIGH_PROMPT_IDS
             and spec.reasoning_effort == models.ReasoningEffort.HIGH
             and approved.reasoning_effort == models.ReasoningEffort.XHIGH
@@ -395,22 +444,29 @@ def build_openai_routes(
             reason_codes=[
                 f"ROUTE_PROFILE_{route_profile_id}",
                 (
-                    "TERRA_ONLY_EXPERIMENTAL_HIGH_QUALIFICATION"
-                    if route_profile_id == OPENAI_TERRA_HIGH_ROUTE_PROFILE_ID
-                    else (
-                        "TERRA_ONLY_EXPERIMENTAL_MEDIUM_QUALIFICATION"
+                    "TERRA_ONLY_EXPERIMENTAL_XHIGH_QUALIFICATION"
                     if route_profile_id
-                    == OPENAI_TERRA_MEDIUM_ROUTE_PROFILE_ID
+                    == OPENAI_TERRA_XHIGH_ROUTE_PROFILE_ID
                     else (
-                        "LUNA_ONLY_EXPERIMENTAL_MAX_QUALIFICATION"
-                        if route_profile_id == OPENAI_MAX_ROUTE_PROFILE_ID
+                        "TERRA_ONLY_EXPERIMENTAL_HIGH_QUALIFICATION"
+                        if route_profile_id
+                        == OPENAI_TERRA_HIGH_ROUTE_PROFILE_ID
                         else (
-                            "LUNA_ONLY_EXPERIMENTAL_XHIGH_QUALIFICATION"
+                            "TERRA_ONLY_EXPERIMENTAL_MEDIUM_QUALIFICATION"
                             if route_profile_id
-                            == OPENAI_XHIGH_ROUTE_PROFILE_ID
-                            else "LUNA_ONLY_EXPERIMENTAL_BASELINE"
+                            == OPENAI_TERRA_MEDIUM_ROUTE_PROFILE_ID
+                            else (
+                                "LUNA_ONLY_EXPERIMENTAL_MAX_QUALIFICATION"
+                                if route_profile_id
+                                == OPENAI_MAX_ROUTE_PROFILE_ID
+                                else (
+                                    "LUNA_ONLY_EXPERIMENTAL_XHIGH_QUALIFICATION"
+                                    if route_profile_id
+                                    == OPENAI_XHIGH_ROUTE_PROFILE_ID
+                                    else "LUNA_ONLY_EXPERIMENTAL_BASELINE"
+                                )
+                            )
                         )
-                    )
                     )
                 ),
                 *(

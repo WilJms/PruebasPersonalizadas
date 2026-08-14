@@ -34,6 +34,8 @@ from .model_gateway import (
     OPENAI_TERRA_MEDIUM_ROUTE_PROFILE_ID,
     OPENAI_TERRA_HIGH_PROMPT_IDS,
     OPENAI_TERRA_HIGH_ROUTE_PROFILE_ID,
+    OPENAI_TERRA_XHIGH_PROMPT_IDS,
+    OPENAI_TERRA_XHIGH_ROUTE_PROFILE_ID,
     OPENAI_XHIGH_PROMPT_IDS,
     OPENAI_XHIGH_ROUTE_PROFILE_ID,
     OpenAIAdapterConfig,
@@ -316,6 +318,13 @@ def terra_high_budget_derivation() -> dict[str, Any]:
     return _terra_budget_derivation(
         route_profile_id=OPENAI_TERRA_HIGH_ROUTE_PROFILE_ID,
         schema_version="terra-high-budget-derivation/1.0.0",
+    )
+
+
+def terra_xhigh_budget_derivation() -> dict[str, Any]:
+    return _terra_budget_derivation(
+        route_profile_id=OPENAI_TERRA_XHIGH_ROUTE_PROFILE_ID,
+        schema_version="terra-xhigh-budget-derivation/1.0.0",
     )
 
 
@@ -1176,6 +1185,9 @@ def rehearsal_boundary_material(
             "terra_high_qualification_prompt_ids": sorted(
                 OPENAI_TERRA_HIGH_PROMPT_IDS
             ),
+            "terra_xhigh_qualification_prompt_ids": sorted(
+                OPENAI_TERRA_XHIGH_PROMPT_IDS
+            ),
             "routes": {
                 prompt_id: {
                     "route_id": route.route_id,
@@ -1238,6 +1250,19 @@ def rehearsal_boundary_material(
         )
         material["terra_high_budget_derivation"] = (
             terra_high_budget_derivation()
+        )
+    elif route_profile_id == OPENAI_TERRA_XHIGH_ROUTE_PROFILE_ID:
+        material["route_delta_from_terra_high"] = (
+            _route_profile_delta_material(
+                route_profile_id,
+                max_call_cost_usd=max_call_cost_usd,
+                reference_route_profile_id=(
+                    OPENAI_TERRA_HIGH_ROUTE_PROFILE_ID
+                ),
+            )
+        )
+        material["terra_xhigh_budget_derivation"] = (
+            terra_xhigh_budget_derivation()
         )
     return material
 
@@ -3142,6 +3167,7 @@ async def run_offline_convergence(
         OPENAI_MAX_ROUTE_PROFILE_ID,
         OPENAI_TERRA_MEDIUM_ROUTE_PROFILE_ID,
         OPENAI_TERRA_HIGH_ROUTE_PROFILE_ID,
+        OPENAI_TERRA_XHIGH_ROUTE_PROFILE_ID,
     }:
         if max_total_cost_usd <= 0 or max_call_cost_usd <= 0:
             raise ValueError("positive qualification preflight cost caps are required")
@@ -3164,7 +3190,10 @@ async def run_offline_convergence(
                 max_retries=0,
                 default_budget_usd=max_call_cost_usd,
                 job_id=(
-                    "job_stage2_terra_high_offline_preflight"
+                    "job_stage2_terra_xhigh_offline_preflight"
+                    if route_profile_id
+                    == OPENAI_TERRA_XHIGH_ROUTE_PROFILE_ID
+                    else "job_stage2_terra_high_offline_preflight"
                     if route_profile_id
                     == OPENAI_TERRA_HIGH_ROUTE_PROFILE_ID
                     else "job_stage2_terra_medium_offline_preflight"
@@ -3188,7 +3217,9 @@ async def run_offline_convergence(
             ledger_records=ledger_records,
         )
         run_id_prefix = (
-            "terra-high-offline-"
+            "terra-xhigh-offline-"
+            if route_profile_id == OPENAI_TERRA_XHIGH_ROUTE_PROFILE_ID
+            else "terra-high-offline-"
             if route_profile_id == OPENAI_TERRA_HIGH_ROUTE_PROFILE_ID
             else "terra-medium-offline-"
             if route_profile_id == OPENAI_TERRA_MEDIUM_ROUTE_PROFILE_ID
@@ -3250,7 +3281,9 @@ async def run_offline_convergence(
         "integrated_chain_semantic_quality_conclusion_allowed": False,
     }
     qualified_effort = (
-        m.ReasoningEffort.HIGH
+        m.ReasoningEffort.XHIGH
+        if route_profile_id == OPENAI_TERRA_XHIGH_ROUTE_PROFILE_ID
+        else m.ReasoningEffort.HIGH
         if route_profile_id == OPENAI_TERRA_HIGH_ROUTE_PROFILE_ID
         else m.ReasoningEffort.MEDIUM
         if route_profile_id == OPENAI_TERRA_MEDIUM_ROUTE_PROFILE_ID
@@ -3259,7 +3292,9 @@ async def run_offline_convergence(
         else m.ReasoningEffort.XHIGH
     )
     qualified_prompt_ids = (
-        OPENAI_TERRA_HIGH_PROMPT_IDS
+        OPENAI_TERRA_XHIGH_PROMPT_IDS
+        if route_profile_id == OPENAI_TERRA_XHIGH_ROUTE_PROFILE_ID
+        else OPENAI_TERRA_HIGH_PROMPT_IDS
         if route_profile_id == OPENAI_TERRA_HIGH_ROUTE_PROFILE_ID
         else OPENAI_TERRA_MEDIUM_PROMPT_IDS
         if route_profile_id == OPENAI_TERRA_MEDIUM_ROUTE_PROFILE_ID
@@ -3273,6 +3308,7 @@ async def run_offline_convergence(
         in {
             OPENAI_TERRA_MEDIUM_ROUTE_PROFILE_ID,
             OPENAI_TERRA_HIGH_ROUTE_PROFILE_ID,
+            OPENAI_TERRA_XHIGH_ROUTE_PROFILE_ID,
         }
         else LUNA_MODEL_ID
     )
@@ -3318,7 +3354,9 @@ async def run_offline_convergence(
         "report_schema_version": REHEARSAL_REPORT_VERSION,
         "rehearsal_version": REHEARSAL_VERSION,
         "mode": (
-            "offline-terra-high-qualification"
+            "offline-terra-xhigh-qualification"
+            if route_profile_id == OPENAI_TERRA_XHIGH_ROUTE_PROFILE_ID
+            else "offline-terra-high-qualification"
             if route_profile_id == OPENAI_TERRA_HIGH_ROUTE_PROFILE_ID
             else "offline-terra-medium-qualification"
             if route_profile_id == OPENAI_TERRA_MEDIUM_ROUTE_PROFILE_ID
@@ -3398,7 +3436,9 @@ async def run_real_convergence(
             max_retries=0,
             default_budget_usd=max_call_cost_usd,
             job_id=(
-                "job_stage2_terra_high_real_qualification"
+                "job_stage2_terra_xhigh_real_qualification"
+                if route_profile_id == OPENAI_TERRA_XHIGH_ROUTE_PROFILE_ID
+                else "job_stage2_terra_high_real_qualification"
                 if route_profile_id == OPENAI_TERRA_HIGH_ROUTE_PROFILE_ID
                 else "job_stage2_terra_medium_real_qualification"
                 if route_profile_id == OPENAI_TERRA_MEDIUM_ROUTE_PROFILE_ID
@@ -3468,7 +3508,9 @@ async def run_real_convergence(
     )
     unchanged_boundary = executable_boundary_hash == boundary_after_hash
     qualified_effort = (
-        m.ReasoningEffort.HIGH
+        m.ReasoningEffort.XHIGH
+        if route_profile_id == OPENAI_TERRA_XHIGH_ROUTE_PROFILE_ID
+        else m.ReasoningEffort.HIGH
         if route_profile_id == OPENAI_TERRA_HIGH_ROUTE_PROFILE_ID
         else m.ReasoningEffort.MEDIUM
         if route_profile_id == OPENAI_TERRA_MEDIUM_ROUTE_PROFILE_ID
@@ -3477,7 +3519,9 @@ async def run_real_convergence(
         else m.ReasoningEffort.XHIGH
     )
     qualified_prompt_ids = (
-        OPENAI_TERRA_HIGH_PROMPT_IDS
+        OPENAI_TERRA_XHIGH_PROMPT_IDS
+        if route_profile_id == OPENAI_TERRA_XHIGH_ROUTE_PROFILE_ID
+        else OPENAI_TERRA_HIGH_PROMPT_IDS
         if route_profile_id == OPENAI_TERRA_HIGH_ROUTE_PROFILE_ID
         else OPENAI_TERRA_MEDIUM_PROMPT_IDS
         if route_profile_id == OPENAI_TERRA_MEDIUM_ROUTE_PROFILE_ID
@@ -3491,6 +3535,7 @@ async def run_real_convergence(
         in {
             OPENAI_TERRA_MEDIUM_ROUTE_PROFILE_ID,
             OPENAI_TERRA_HIGH_ROUTE_PROFILE_ID,
+            OPENAI_TERRA_XHIGH_ROUTE_PROFILE_ID,
         }
         else LUNA_MODEL_ID
     )
@@ -3532,7 +3577,9 @@ async def run_real_convergence(
         "report_schema_version": REHEARSAL_REPORT_VERSION,
         "rehearsal_version": REHEARSAL_VERSION,
         "mode": (
-            "real-terra-high-qualification"
+            "real-terra-xhigh-qualification"
+            if route_profile_id == OPENAI_TERRA_XHIGH_ROUTE_PROFILE_ID
+            else "real-terra-high-qualification"
             if route_profile_id == OPENAI_TERRA_HIGH_ROUTE_PROFILE_ID
             else "real-terra-medium-qualification"
             if route_profile_id == OPENAI_TERRA_MEDIUM_ROUTE_PROFILE_ID

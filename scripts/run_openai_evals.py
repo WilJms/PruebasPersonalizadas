@@ -43,6 +43,8 @@ from comprehension_verification.model_gateway import (
     OPENAI_TERRA_MEDIUM_ROUTE_PROFILE_ID,
     OPENAI_TERRA_HIGH_PROMPT_IDS,
     OPENAI_TERRA_HIGH_ROUTE_PROFILE_ID,
+    OPENAI_TERRA_XHIGH_PROMPT_IDS,
+    OPENAI_TERRA_XHIGH_ROUTE_PROFILE_ID,
     OPENAI_XHIGH_PROMPT_IDS,
     OPENAI_XHIGH_ROUTE_PROFILE_ID,
     PROMPT_CONTRACTS,
@@ -84,6 +86,7 @@ from comprehension_verification.rehearsal import (
     run_real_convergence,
     terra_high_budget_derivation,
     terra_medium_budget_derivation,
+    terra_xhigh_budget_derivation,
 )
 from comprehension_verification.provider_authorization import (
     validate_pinned_secret_resource,
@@ -193,6 +196,38 @@ TERRA_HIGH_MONETARY_BUDGET_RECALCULATION_REQUIRED = False
 TERRA_HIGH_MONETARY_BUDGET_STATUS = (
     "DERIVED_FROM_CURRENT_OFFICIAL_PRICES_AND_FROZEN"
 )
+TERRA_XHIGH_QUALIFICATION_BASELINE_SHA = (
+    "dbd6ba1b508963664533dc4aead9ed2d6b8dc82f"
+)
+TERRA_XHIGH_QUALIFICATION_EVIDENCE_SHA = (
+    "545ec361745797306dded5bbbb50fccb71197981"
+)
+TERRA_XHIGH_QUALIFICATION_BASELINE_REPORT = (
+    ROOT
+    / (
+        "reports/openai/"
+        "stage2_terra_high_qualification_dbd6ba1_20260813_final_01.json"
+    )
+)
+TERRA_XHIGH_MAX_PROVIDER_REQUESTS = QUALIFICATION_EXPECTED_PROVIDER_REQUESTS
+TERRA_XHIGH_BUDGET_DERIVATION = terra_xhigh_budget_derivation()
+TERRA_XHIGH_MAX_TOTAL_COST_USD = TERRA_XHIGH_BUDGET_DERIVATION[
+    "max_total_cost_usd"
+]
+TERRA_XHIGH_MAX_CALL_COST_USD = TERRA_XHIGH_BUDGET_DERIVATION[
+    "max_call_cost_usd"
+]
+TERRA_XHIGH_OFFLINE_REHEARSAL_MAX_TOTAL_COST_USD = (
+    TERRA_XHIGH_MAX_TOTAL_COST_USD
+)
+TERRA_XHIGH_OFFLINE_REHEARSAL_MAX_CALL_COST_USD = (
+    TERRA_XHIGH_MAX_CALL_COST_USD
+)
+TERRA_XHIGH_MONETARY_BUDGET_RECALCULATION_REQUIRED = False
+TERRA_XHIGH_MONETARY_BUDGET_STATUS = (
+    "DERIVED_FROM_CURRENT_OFFICIAL_PRICES_AND_FROZEN"
+)
+TERRA_XHIGH_OFFICIAL_CAPABILITY_OBSERVED_AT = "2026-08-14T02:29:25Z"
 INJECTION_MARKER = "IGNORE_PREVIOUS_INSTRUCTIONS_SYNTHETIC_MARKER"
 P01_INJECTION_ASSIGNMENT_TEXT = (
     "Entrega un informe breve que explique un mecanismo de tu artefacto y "
@@ -5122,6 +5157,11 @@ def _convergence_route_profile(args: argparse.Namespace) -> str:
         "terra-high-qualification-real",
     }:
         return OPENAI_TERRA_HIGH_ROUTE_PROFILE_ID
+    if args.mode in {
+        "terra-xhigh-qualification-dry-run",
+        "terra-xhigh-qualification-real",
+    }:
+        return OPENAI_TERRA_XHIGH_ROUTE_PROFILE_ID
     return OPENAI_ROUTE_PROFILE_ID
 
 
@@ -5132,6 +5172,8 @@ def _convergence_qualified_prompt_ids(
         return OPENAI_TERRA_MEDIUM_PROMPT_IDS
     if route_profile_id == OPENAI_TERRA_HIGH_ROUTE_PROFILE_ID:
         return OPENAI_TERRA_HIGH_PROMPT_IDS
+    if route_profile_id == OPENAI_TERRA_XHIGH_ROUTE_PROFILE_ID:
+        return OPENAI_TERRA_XHIGH_PROMPT_IDS
     if route_profile_id == OPENAI_MAX_ROUTE_PROFILE_ID:
         return OPENAI_MAX_PROMPT_IDS
     return OPENAI_XHIGH_PROMPT_IDS
@@ -5176,7 +5218,11 @@ def _convergence_authorization_boundary(args: argparse.Namespace) -> dict[str, A
         / "tests/fixtures/openai_evals/v3/document_shaped_cache_case/submission_insufficient.docx",
     )
     boundary = {
-        "boundary_format": "openai-stage2-convergence-authorization/1.7.0",
+        "boundary_format": (
+            "openai-stage2-convergence-authorization/1.8.0"
+            if route_profile_id == OPENAI_TERRA_XHIGH_ROUTE_PROFILE_ID
+            else "openai-stage2-convergence-authorization/1.7.0"
+        ),
         "git_head": _git_head(),
         "harness_hash": _content_hash(Path(__file__).resolve()),
         "rehearsal_module_hash": _content_hash(
@@ -5345,6 +5391,87 @@ def _convergence_authorization_boundary(args: argparse.Namespace) -> dict[str, A
                 "max_provider_requests": TERRA_HIGH_MAX_PROVIDER_REQUESTS,
                 "max_total_cost_usd": TERRA_HIGH_MAX_TOTAL_COST_USD,
                 "max_call_cost_usd": TERRA_HIGH_MAX_CALL_COST_USD,
+            },
+            "prior_authorizations_reusable": False,
+        }
+    elif route_profile_id == OPENAI_TERRA_XHIGH_ROUTE_PROFILE_ID:
+        budget_derivation = TERRA_XHIGH_BUDGET_DERIVATION
+        official_capability_verification = {
+            "observed_at": TERRA_XHIGH_OFFICIAL_CAPABILITY_OBSERVED_AT,
+            "model_url": (
+                "https://developers.openai.com/api/docs/models/"
+                "gpt-5.6-terra"
+            ),
+            "pricing_url": "https://developers.openai.com/api/docs/pricing",
+            "model_id": TERRA_MODEL_ID,
+            "available": True,
+            "responses_api": True,
+            "structured_outputs": True,
+            "reasoning_efforts": [
+                "none",
+                "low",
+                "medium",
+                "high",
+                "xhigh",
+                "max",
+            ],
+            "context_window_tokens": 1_050_000,
+            "max_output_tokens": 128_000,
+            "standard_short_context_usd_per_million": {
+                "input": 2.0,
+                "cached_input": 0.2,
+                "cache_write": 2.5,
+                "output": 12.0,
+            },
+            "standard_long_context_usd_per_million": {
+                "input": 4.0,
+                "cached_input": 0.4,
+                "cache_write": 5.0,
+                "output": 18.0,
+            },
+            "long_context_threshold_tokens_exclusive": 272_000,
+            "cache_write_multiplier": 1.25,
+            "long_context_multipliers": {"input": 2.0, "output": 1.5},
+        }
+        boundary["terra_xhigh_qualification_baseline"] = {
+            "candidate_sha": TERRA_XHIGH_QUALIFICATION_BASELINE_SHA,
+            "evidence_sha": TERRA_XHIGH_QUALIFICATION_EVIDENCE_SHA,
+            "report_hash": _content_hash(
+                TERRA_XHIGH_QUALIFICATION_BASELINE_REPORT
+            ),
+            "route_profile": OPENAI_TERRA_HIGH_ROUTE_PROFILE_ID,
+            "model": TERRA_MODEL_ID,
+            "reasoning_effort": "HIGH",
+            "qualification_outcome": "TERRA_HIGH_QUALIFICATION_FAILED",
+            "convergence_outcome": "CONVERGENCE_INCOMPLETE",
+            "receipt_is_historical_and_immutable": True,
+        }
+        boundary["experimental_hypothesis"] = (
+            "SAME_TERRA_MODEL_P04_P09_REASONING_HIGH_TO_XHIGH_"
+            "ON_ABSOLUTELY_FROZEN_HARNESS"
+        )
+        boundary["univariate_runtime_profile_delta"] = True
+        boundary["statistical_significance_claimed"] = False
+        boundary["official_capability_verification"] = (
+            official_capability_verification
+        )
+        boundary["official_capability_verification_hash"] = canonical_hash(
+            official_capability_verification
+        )
+        boundary["pricing_policy_hash"] = budget_derivation[
+            "pricing_policy_hash"
+        ]
+        boundary["qualification_matrix_hash"] = budget_derivation[
+            "matrix_hash"
+        ]
+        boundary["monetary_budget"] = {
+            "status": TERRA_XHIGH_MONETARY_BUDGET_STATUS,
+            "future_real_execution_authorized": True,
+            "derivation": budget_derivation,
+            "enforced_caps": {
+                "max_provider_requests": TERRA_XHIGH_MAX_PROVIDER_REQUESTS,
+                "max_total_cost_usd": TERRA_XHIGH_MAX_TOTAL_COST_USD,
+                "max_call_cost_usd": TERRA_XHIGH_MAX_CALL_COST_USD,
             },
             "prior_authorizations_reusable": False,
         }
@@ -5791,6 +5918,47 @@ def _terra_high_qualification_outcome(
     return outcome
 
 
+def _terra_xhigh_qualification_outcome(
+    result: dict[str, Any],
+) -> dict[str, Any]:
+    """Apply the frozen classifier and terminal Terra-family policy."""
+
+    outcome: dict[str, Any] = _terra_medium_qualification_outcome(result)
+    medium_outcome = outcome["qualification_outcome"]
+    if medium_outcome == "TERRA_MEDIUM_QUALIFICATION_PASSED":
+        outcome.update(
+            {
+                "qualification_outcome": "TERRA_XHIGH_QUALIFICATION_PASSED",
+                "recommended_next_authority": (
+                    "INDEPENDENT_REVIEW_ONLY_NO_RERUN_MAX_BUILD_OR_DEPLOY"
+                ),
+            }
+        )
+    elif medium_outcome == "TERRA_MEDIUM_QUALIFICATION_FAILED":
+        outcome.update(
+            {
+                "qualification_outcome": "TERRA_XHIGH_QUALIFICATION_FAILED",
+                "family_outcome": "TERRA_FAMILY_QUALIFICATION_EXHAUSTED",
+                "recommended_next_authority": (
+                    "INDEPENDENT_MODEL_ROUTING_OR_RESPONSIBILITY_REVIEW_"
+                    "ONLY_NO_TERRA_MAX"
+                ),
+            }
+        )
+    else:
+        outcome.update(
+            {
+                "qualification_outcome": (
+                    "TERRA_XHIGH_QUALIFICATION_INCONCLUSIVE"
+                ),
+                "recommended_next_authority": (
+                    "INDEPENDENT_OR_TECHNICAL_REVIEW_ONLY_NO_RERUN_OR_MAX"
+                ),
+            }
+        )
+    return outcome
+
+
 def _run_convergence_cli(args: argparse.Namespace) -> int:
     if args.case_id:
         raise OpenAIEvalBlocked("OPENAI_CONVERGENCE_FIXED_MATRIX_REQUIRED")
@@ -5801,23 +5969,37 @@ def _run_convergence_cli(args: argparse.Namespace) -> int:
         route_profile_id == OPENAI_TERRA_MEDIUM_ROUTE_PROFILE_ID
     )
     is_terra_high = route_profile_id == OPENAI_TERRA_HIGH_ROUTE_PROFILE_ID
-    is_qualification = is_xhigh or is_max or is_terra_medium or is_terra_high
+    is_terra_xhigh = (
+        route_profile_id == OPENAI_TERRA_XHIGH_ROUTE_PROFILE_ID
+    )
+    is_qualification = (
+        is_xhigh
+        or is_max
+        or is_terra_medium
+        or is_terra_high
+        or is_terra_xhigh
+    )
     if args.mode in {
         "convergence-dry-run",
         "xhigh-qualification-dry-run",
         "max-qualification-dry-run",
         "terra-medium-qualification-dry-run",
         "terra-high-qualification-dry-run",
+        "terra-xhigh-qualification-dry-run",
     }:
         expected_total_cost = (
-            TERRA_HIGH_OFFLINE_REHEARSAL_MAX_TOTAL_COST_USD
+            TERRA_XHIGH_OFFLINE_REHEARSAL_MAX_TOTAL_COST_USD
+            if is_terra_xhigh
+            else TERRA_HIGH_OFFLINE_REHEARSAL_MAX_TOTAL_COST_USD
             if is_terra_high
             else TERRA_MEDIUM_OFFLINE_REHEARSAL_MAX_TOTAL_COST_USD
             if is_terra_medium
             else 0.75
         )
         expected_call_cost = (
-            TERRA_HIGH_OFFLINE_REHEARSAL_MAX_CALL_COST_USD
+            TERRA_XHIGH_OFFLINE_REHEARSAL_MAX_CALL_COST_USD
+            if is_terra_xhigh
+            else TERRA_HIGH_OFFLINE_REHEARSAL_MAX_CALL_COST_USD
             if is_terra_high
             else TERRA_MEDIUM_OFFLINE_REHEARSAL_MAX_CALL_COST_USD
             if is_terra_medium
@@ -5831,7 +6013,9 @@ def _run_convergence_cli(args: argparse.Namespace) -> int:
         ):
             raise OpenAIEvalBlocked(
                 (
-                    "OPENAI_TERRA_HIGH_QUALIFICATION_EXACT_CAPS_REQUIRED"
+                    "OPENAI_TERRA_XHIGH_QUALIFICATION_EXACT_CAPS_REQUIRED"
+                    if is_terra_xhigh
+                    else "OPENAI_TERRA_HIGH_QUALIFICATION_EXACT_CAPS_REQUIRED"
                     if is_terra_high
                     else "OPENAI_TERRA_MEDIUM_QUALIFICATION_EXACT_CAPS_REQUIRED"
                     if is_terra_medium
@@ -5871,15 +6055,26 @@ def _run_convergence_cli(args: argparse.Namespace) -> int:
         raise OpenAIEvalBlocked(
             "OPENAI_TERRA_HIGH_MONETARY_BUDGET_RECALCULATION_REQUIRED"
         )
+    if (
+        is_terra_xhigh
+        and TERRA_XHIGH_MONETARY_BUDGET_RECALCULATION_REQUIRED
+    ):
+        raise OpenAIEvalBlocked(
+            "OPENAI_TERRA_XHIGH_MONETARY_BUDGET_RECALCULATION_REQUIRED"
+        )
     maximum_total_cap = (
-        TERRA_HIGH_MAX_TOTAL_COST_USD
+        TERRA_XHIGH_MAX_TOTAL_COST_USD
+        if is_terra_xhigh
+        else TERRA_HIGH_MAX_TOTAL_COST_USD
         if is_terra_high
         else TERRA_MEDIUM_MAX_TOTAL_COST_USD
         if is_terra_medium
         else 1.0
     )
     maximum_call_cap = (
-        TERRA_HIGH_MAX_CALL_COST_USD
+        TERRA_XHIGH_MAX_CALL_COST_USD
+        if is_terra_xhigh
+        else TERRA_HIGH_MAX_CALL_COST_USD
         if is_terra_high
         else TERRA_MEDIUM_MAX_CALL_COST_USD
         if is_terra_medium
@@ -5904,14 +6099,18 @@ def _run_convergence_cli(args: argparse.Namespace) -> int:
     ):
         raise OpenAIEvalBlocked("OPENAI_CONVERGENCE_EXPLICIT_CAPS_REQUIRED")
     expected_total_cost = (
-        TERRA_HIGH_MAX_TOTAL_COST_USD
+        TERRA_XHIGH_MAX_TOTAL_COST_USD
+        if is_terra_xhigh
+        else TERRA_HIGH_MAX_TOTAL_COST_USD
         if is_terra_high
         else TERRA_MEDIUM_MAX_TOTAL_COST_USD
         if is_terra_medium
         else 0.75
     )
     expected_call_cost = (
-        TERRA_HIGH_MAX_CALL_COST_USD
+        TERRA_XHIGH_MAX_CALL_COST_USD
+        if is_terra_xhigh
+        else TERRA_HIGH_MAX_CALL_COST_USD
         if is_terra_high
         else TERRA_MEDIUM_MAX_CALL_COST_USD
         if is_terra_medium
@@ -5925,7 +6124,9 @@ def _run_convergence_cli(args: argparse.Namespace) -> int:
     ):
         raise OpenAIEvalBlocked(
             (
-                "OPENAI_TERRA_HIGH_QUALIFICATION_EXACT_CAPS_REQUIRED"
+                "OPENAI_TERRA_XHIGH_QUALIFICATION_EXACT_CAPS_REQUIRED"
+                if is_terra_xhigh
+                else "OPENAI_TERRA_HIGH_QUALIFICATION_EXACT_CAPS_REQUIRED"
                 if is_terra_high
                 else "OPENAI_TERRA_MEDIUM_QUALIFICATION_EXACT_CAPS_REQUIRED"
                 if is_terra_medium
@@ -6014,6 +6215,44 @@ def _run_convergence_cli(args: argparse.Namespace) -> int:
                         max_candidate_sha=boundary["git_head"],
                         max_verdict=str(outcome["qualification_outcome"]),
                     ),
+                }
+            )
+        elif is_terra_xhigh:
+            outcome = _terra_xhigh_qualification_outcome(result)
+            result.update(outcome)
+            result.update(
+                {
+                    "baseline_terra_high_candidate": (
+                        TERRA_XHIGH_QUALIFICATION_BASELINE_SHA
+                    ),
+                    "baseline_terra_high_evidence_head": (
+                        TERRA_XHIGH_QUALIFICATION_EVIDENCE_SHA
+                    ),
+                    "baseline_terra_high_report_hash": boundary[
+                        "terra_xhigh_qualification_baseline"
+                    ]["report_hash"],
+                    "experimental_hypothesis": boundary[
+                        "experimental_hypothesis"
+                    ],
+                    "statistical_significance_claimed": False,
+                    "official_capability_verification": boundary[
+                        "official_capability_verification"
+                    ],
+                    "official_capability_verification_hash": boundary[
+                        "official_capability_verification_hash"
+                    ],
+                    "pricing_policy_hash": boundary[
+                        "pricing_policy_hash"
+                    ],
+                    "qualification_matrix_hash": boundary[
+                        "qualification_matrix_hash"
+                    ],
+                    "budget_derivation": boundary["monetary_budget"][
+                        "derivation"
+                    ],
+                    "terra_ladder_harness_freeze": boundary[
+                        "executable_boundary"
+                    ]["terra_ladder_harness_freeze"],
                 }
             )
         elif is_terra_high:
@@ -6121,10 +6360,17 @@ def _run_convergence_cli(args: argparse.Namespace) -> int:
             and failure_code == "OPENAI_CONVERGENCE_EXECUTION_FAILED"
         ):
             failure_code = "TERRA_HIGH_QUALIFICATION_INCONCLUSIVE"
+        elif (
+            is_terra_xhigh
+            and failure_code == "OPENAI_CONVERGENCE_EXECUTION_FAILED"
+        ):
+            failure_code = "TERRA_XHIGH_QUALIFICATION_INCONCLUSIVE"
         failure_report = {
             "report_schema_version": REHEARSAL_REPORT_VERSION,
             "mode": (
-                "real-terra-high-qualification"
+                "real-terra-xhigh-qualification"
+                if is_terra_xhigh
+                else "real-terra-high-qualification"
                 if is_terra_high
                 else "real-terra-medium-qualification"
                 if is_terra_medium
@@ -6202,6 +6448,53 @@ def _run_convergence_cli(args: argparse.Namespace) -> int:
                     max_candidate_sha=boundary["git_head"],
                     max_verdict="MAX_QUALIFICATION_INCONCLUSIVE",
                 )
+            )
+        elif is_terra_xhigh:
+            failure_report.update(
+                {
+                    "qualification_outcome": (
+                        "TERRA_XHIGH_QUALIFICATION_INCONCLUSIVE"
+                    ),
+                    "convergence_outcome": "CONVERGENCE_INCOMPLETE",
+                    "causal_classification": (
+                        "TECHNICAL_TERRA_XHIGH_SUPPORT_OR_EXECUTION_FAILURE"
+                    ),
+                    "recommended_next_authority": (
+                        "INDEPENDENT_OR_TECHNICAL_REVIEW_ONLY_"
+                        "NO_RERUN_OR_TERRA_MAX"
+                    ),
+                    "baseline_terra_high_candidate": (
+                        TERRA_XHIGH_QUALIFICATION_BASELINE_SHA
+                    ),
+                    "baseline_terra_high_evidence_head": (
+                        TERRA_XHIGH_QUALIFICATION_EVIDENCE_SHA
+                    ),
+                    "baseline_terra_high_report_hash": boundary[
+                        "terra_xhigh_qualification_baseline"
+                    ]["report_hash"],
+                    "experimental_hypothesis": boundary[
+                        "experimental_hypothesis"
+                    ],
+                    "statistical_significance_claimed": False,
+                    "official_capability_verification": boundary[
+                        "official_capability_verification"
+                    ],
+                    "official_capability_verification_hash": boundary[
+                        "official_capability_verification_hash"
+                    ],
+                    "pricing_policy_hash": boundary[
+                        "pricing_policy_hash"
+                    ],
+                    "qualification_matrix_hash": boundary[
+                        "qualification_matrix_hash"
+                    ],
+                    "budget_derivation": boundary["monetary_budget"][
+                        "derivation"
+                    ],
+                    "terra_ladder_harness_freeze": boundary[
+                        "executable_boundary"
+                    ]["terra_ladder_harness_freeze"],
+                }
             )
         elif is_terra_high:
             failure_report.update(
@@ -6324,6 +6617,8 @@ def main() -> int:
             "terra-medium-qualification-real",
             "terra-high-qualification-dry-run",
             "terra-high-qualification-real",
+            "terra-xhigh-qualification-dry-run",
+            "terra-xhigh-qualification-real",
         ),
         default="offline",
     )
@@ -6359,6 +6654,8 @@ def main() -> int:
         "terra-medium-qualification-real",
         "terra-high-qualification-dry-run",
         "terra-high-qualification-real",
+        "terra-xhigh-qualification-dry-run",
+        "terra-xhigh-qualification-real",
     }:
         try:
             return _run_convergence_cli(args)

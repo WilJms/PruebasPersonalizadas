@@ -30,6 +30,8 @@ from comprehension_verification.model_gateway import (
     OPENAI_ROUTE_PROFILE_ID,
     OPENAI_TERRA_HIGH_PROMPT_IDS,
     OPENAI_TERRA_HIGH_ROUTE_PROFILE_ID,
+    OPENAI_TERRA_XHIGH_PROMPT_IDS,
+    OPENAI_TERRA_XHIGH_ROUTE_PROFILE_ID,
     OPENAI_TERRA_MEDIUM_PROMPT_IDS,
     OPENAI_TERRA_MEDIUM_ROUTE_PROFILE_ID,
     OPENAI_XHIGH_PROMPT_IDS,
@@ -50,6 +52,7 @@ from comprehension_verification.rehearsal import (
     run_real_convergence,
     terra_high_budget_derivation,
     terra_medium_budget_derivation,
+    terra_xhigh_budget_derivation,
 )
 from comprehension_verification.qualification_semantics import (
     CheckpointClass,
@@ -1431,6 +1434,205 @@ def test_terra_high_authorization_boundary_seals_baseline_budget_and_freeze(
     )
 
 
+def test_terra_xhigh_profile_is_the_frozen_high_boundary_plus_xhigh() -> None:
+    boundary = rehearsal_boundary_material(
+        OPENAI_TERRA_XHIGH_ROUTE_PROFILE_ID,
+        max_call_cost_usd=eval_harness.TERRA_XHIGH_MAX_CALL_COST_USD,
+    )
+    delta = boundary["route_delta_from_terra_high"]
+    expected_all_prompts = sorted(
+        {
+            "P01_ACTIVITY_SPEC_V1",
+            "P02_RUBRIC_NORMALIZE_V1",
+            "P03_AMBIGUITY_TRIAGE_V1",
+            *OPENAI_TERRA_XHIGH_PROMPT_IDS,
+            "P11_SCHEMA_REPAIR_V1",
+        }
+    )
+    assert delta["baseline_route_profile"] == (
+        OPENAI_TERRA_HIGH_ROUTE_PROFILE_ID
+    )
+    assert delta["selected_route_profile"] == (
+        OPENAI_TERRA_XHIGH_ROUTE_PROFILE_ID
+    )
+    assert delta["route_identity_changed_prompt_ids"] == expected_all_prompts
+    assert delta["reasoning_effort_changes"] == {
+        prompt_id: {"from": "HIGH", "to": "XHIGH"}
+        for prompt_id in sorted(OPENAI_TERRA_XHIGH_PROMPT_IDS)
+    }
+    assert delta["other_route_field_changes"] == {}
+    for unchanged_surface in (
+        "prompt_registry_changes",
+        "schema_changes",
+        "validator_changes",
+        "fixture_changes",
+        "planner_changes",
+        "assembler_changes",
+    ):
+        assert delta[unchanged_surface] == []
+    routes = boundary["openai_route_boundary"]["routes"]
+    assert routes["P01_ACTIVITY_SPEC_V1"]["reasoning_effort"] == "MEDIUM"
+    assert routes["P02_RUBRIC_NORMALIZE_V1"]["reasoning_effort"] == "MEDIUM"
+    assert routes["P03_AMBIGUITY_TRIAGE_V1"]["reasoning_effort"] == "HIGH"
+    assert routes["P11_SCHEMA_REPAIR_V1"]["reasoning_effort"] == "LOW"
+    assert all(
+        routes[prompt_id]["reasoning_effort"] == "XHIGH"
+        and routes[prompt_id]["model"] == "gpt-5.6-terra"
+        for prompt_id in OPENAI_TERRA_XHIGH_PROMPT_IDS
+    )
+
+
+def test_terra_xhigh_budget_is_rederived_from_current_prices_and_matrix() -> None:
+    budget = terra_xhigh_budget_derivation()
+    assert budget["schema_version"] == "terra-xhigh-budget-derivation/1.0.0"
+    assert budget["route_profile"] == "TERRA_XHIGH_V1"
+    assert budget["matrix_provider_calls"] == 33
+    assert budget["maximum_conservative_call_cost_usd"] == 0.817
+    assert budget["worst_case_conservative_total_cost_usd"] == 25.593
+    assert budget["max_call_cost_usd"] == 0.82
+    assert budget["max_total_cost_usd"] == 25.60
+    assert budget["pricing_policy_hash"] == (
+        "sha256:1043f12f6cce4be87f0a27af1062a30d7cab835dca12ab50ec9a6286a770c5ba"
+    )
+    assert budget["matrix_hash"] == (
+        "sha256:94fbd798732b057f3ba051144a0f0de5533ce6ffb85b103d766c6abeb660ea49"
+    )
+
+
+def test_terra_xhigh_offline_qualification_is_exact_and_non_billable() -> None:
+    report = asyncio.run(
+        run_offline_convergence(
+            route_profile_id=OPENAI_TERRA_XHIGH_ROUTE_PROFILE_ID,
+            max_total_cost_usd=eval_harness.TERRA_XHIGH_MAX_TOTAL_COST_USD,
+            max_call_cost_usd=eval_harness.TERRA_XHIGH_MAX_CALL_COST_USD,
+            max_provider_requests=eval_harness.TERRA_XHIGH_MAX_PROVIDER_REQUESTS,
+        )
+    )
+    controls = report["controls"]
+    assert report["status"] == "PASS"
+    assert report["mode"] == "offline-terra-xhigh-qualification"
+    assert report["route_profile"] == "TERRA_XHIGH_V1"
+    assert [item["status"] for item in report["observations"]] == [
+        "PASS",
+        "PASS",
+        "PASS",
+        "PASS",
+        "PASS",
+    ]
+    assert controls["network_calls"] == 0
+    assert controls["provider_attempts"] == 33
+    assert controls["simulated_provider_attempts"] == 33
+    assert controls["models"] == ["gpt-5.6-terra"]
+    assert controls["reasoning_efforts_by_prompt"] == {
+        prompt_id: ["XHIGH"]
+        for prompt_id in sorted(OPENAI_TERRA_XHIGH_PROMPT_IDS)
+    }
+    assert controls["p10_calls"] == controls["p11_calls"] == 0
+    assert controls["fallback_calls"] == 0
+    assert controls["gateway_retries"] == controls["sdk_retries"] == 0
+    assert controls["semantic_retries"] == 0
+    assert controls["tools_enabled"] is False
+    assert controls["store"] is False
+    assert controls["background"] is False
+    assert len(report["provider_call_receipts"]) == 33
+    assert all(
+        row["provider_transport"] is False
+        and row["actual_provider_cost_usd"] == 0.0
+        for row in report["provider_call_receipts"]
+    )
+    assert report["boundary"]["terra_ladder_harness_freeze"][
+        "material_hash"
+    ] == (
+        "sha256:0984337116a6146da91545d7527669e074658a8bc5e537cd1801dd619e973db9"
+    )
+
+
+def test_terra_xhigh_authorization_boundary_seals_high_budget_and_freeze(
+    tmp_path: Path,
+) -> None:
+    args = _real_cli_args(tmp_path)
+    args.mode = "terra-xhigh-qualification-real"
+    args.max_total_cost_usd = eval_harness.TERRA_XHIGH_MAX_TOTAL_COST_USD
+    args.max_call_cost_usd = eval_harness.TERRA_XHIGH_MAX_CALL_COST_USD
+    boundary = eval_harness._convergence_authorization_boundary(args)
+    assert boundary["boundary_format"] == (
+        "openai-stage2-convergence-authorization/1.8.0"
+    )
+    assert boundary["route_profile"] == "TERRA_XHIGH_V1"
+    assert boundary["model_ids"] == ["gpt-5.6-terra"]
+    assert boundary["qualified_reasoning_effort"] == {
+        prompt_id: "XHIGH"
+        for prompt_id in sorted(OPENAI_TERRA_XHIGH_PROMPT_IDS)
+    }
+    assert boundary["max_provider_requests"] == 33
+    assert boundary["max_total_cost_usd"] == 25.60
+    assert boundary["max_call_cost_usd"] == 0.82
+    assert boundary["statistical_significance_claimed"] is False
+    assert boundary["official_capability_verification"] == {
+        "observed_at": "2026-08-14T02:29:25Z",
+        "model_url": (
+            "https://developers.openai.com/api/docs/models/gpt-5.6-terra"
+        ),
+        "pricing_url": "https://developers.openai.com/api/docs/pricing",
+        "model_id": "gpt-5.6-terra",
+        "available": True,
+        "responses_api": True,
+        "structured_outputs": True,
+        "reasoning_efforts": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max",
+        ],
+        "context_window_tokens": 1_050_000,
+        "max_output_tokens": 128_000,
+        "standard_short_context_usd_per_million": {
+            "input": 2.0,
+            "cached_input": 0.2,
+            "cache_write": 2.5,
+            "output": 12.0,
+        },
+        "standard_long_context_usd_per_million": {
+            "input": 4.0,
+            "cached_input": 0.4,
+            "cache_write": 5.0,
+            "output": 18.0,
+        },
+        "long_context_threshold_tokens_exclusive": 272_000,
+        "cache_write_multiplier": 1.25,
+        "long_context_multipliers": {"input": 2.0, "output": 1.5},
+    }
+    assert boundary["official_capability_verification_hash"].startswith(
+        "sha256:"
+    )
+    assert boundary["monetary_budget"]["derivation"] == (
+        terra_xhigh_budget_derivation()
+    )
+    assert boundary["monetary_budget"]["prior_authorizations_reusable"] is False
+    baseline = boundary["terra_xhigh_qualification_baseline"]
+    assert baseline["candidate_sha"] == (
+        eval_harness.TERRA_XHIGH_QUALIFICATION_BASELINE_SHA
+    )
+    assert baseline["evidence_sha"] == (
+        eval_harness.TERRA_XHIGH_QUALIFICATION_EVIDENCE_SHA
+    )
+    assert baseline["report_hash"] == (
+        "sha256:"
+        + hashlib.sha256(
+            eval_harness.TERRA_XHIGH_QUALIFICATION_BASELINE_REPORT.read_bytes()
+        ).hexdigest()
+    )
+    freeze = boundary["executable_boundary"]["terra_ladder_harness_freeze"]
+    assert freeze["material_hash"] == (
+        "sha256:0984337116a6146da91545d7527669e074658a8bc5e537cd1801dd619e973db9"
+    )
+    assert freeze["matrix"]["hash"] == (
+        "sha256:94fbd798732b057f3ba051144a0f0de5533ce6ffb85b103d766c6abeb660ea49"
+    )
+
+
 def _reservation_boundary() -> dict[str, object]:
     return {
         "git_head": "a" * 40,
@@ -1701,6 +1903,38 @@ def test_terra_high_route_uses_offline_substitute_without_network(
     assert report["controls"]["reasoning_efforts_by_prompt"] == {
         prompt_id: ["HIGH"]
         for prompt_id in sorted(OPENAI_TERRA_HIGH_PROMPT_IDS)
+    }
+    assert report["controls"]["p10_calls"] == 0
+    assert report["controls"]["p11_calls"] == 0
+    assert report["controls"]["fallback_calls"] == 0
+
+
+def test_terra_xhigh_route_uses_offline_substitute_without_network(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        "comprehension_verification.rehearsal.OpenAIResponsesAdapter",
+        lambda **_kwargs: build_reviewed_semantic_adapter(),
+    )
+    report = asyncio.run(
+        run_real_convergence(
+            api_key=SecretStr("sk-project-synthetic-placeholder-not-real"),
+            max_total_cost_usd=eval_harness.TERRA_XHIGH_MAX_TOTAL_COST_USD,
+            max_call_cost_usd=eval_harness.TERRA_XHIGH_MAX_CALL_COST_USD,
+            max_provider_requests=QUALIFICATION_EXPECTED_PROVIDER_REQUESTS,
+            route_profile_id=OPENAI_TERRA_XHIGH_ROUTE_PROFILE_ID,
+        )
+    )
+    assert report["status"] == "PASS"
+    assert report["mode"] == "real-terra-xhigh-qualification"
+    assert report["route_profile"] == "TERRA_XHIGH_V1"
+    assert report["unchanged_boundary_across_chains"] is True
+    assert report["controls"]["network_calls"] == 33
+    assert report["controls"]["provider_attempts"] == 33
+    assert report["controls"]["models"] == ["gpt-5.6-terra"]
+    assert report["controls"]["reasoning_efforts_by_prompt"] == {
+        prompt_id: ["XHIGH"]
+        for prompt_id in sorted(OPENAI_TERRA_XHIGH_PROMPT_IDS)
     }
     assert report["controls"]["p10_calls"] == 0
     assert report["controls"]["p11_calls"] == 0
@@ -2456,6 +2690,150 @@ def test_terra_high_outcomes_obey_the_final_decision_policy() -> None:
         technical,
         failed,
     ))
+
+
+@pytest.mark.parametrize(
+    ("max_total_cost_usd", "max_call_cost_usd"),
+    [(20.0, 0.82), (25.60, 0.81)],
+)
+def test_terra_xhigh_real_cli_rejects_nonexact_caps_before_secret_or_ledger(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    max_total_cost_usd: float,
+    max_call_cost_usd: float,
+) -> None:
+    args = _real_cli_args(tmp_path)
+    args.mode = "terra-xhigh-qualification-real"
+    args.max_total_cost_usd = max_total_cost_usd
+    args.max_call_cost_usd = max_call_cost_usd
+
+    def forbidden_secret_resolution(_resource: str) -> SecretStr:
+        raise AssertionError("provider secret must remain unresolved")
+
+    monkeypatch.setattr(
+        eval_harness, "resolve_openai_api_key", forbidden_secret_resolution
+    )
+    with pytest.raises(
+        eval_harness.OpenAIEvalBlocked,
+        match="OPENAI_TERRA_XHIGH_QUALIFICATION_EXACT_CAPS_REQUIRED",
+    ):
+        eval_harness._run_convergence_cli(args)
+    assert not args.ledger.exists()
+    assert not args.report_path.exists()
+
+
+def test_terra_xhigh_cli_reserves_exactly_once_and_records_pass(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    args = _real_cli_args(tmp_path)
+    args.mode = "terra-xhigh-qualification-real"
+    args.max_total_cost_usd = eval_harness.TERRA_XHIGH_MAX_TOTAL_COST_USD
+    args.max_call_cost_usd = eval_harness.TERRA_XHIGH_MAX_CALL_COST_USD
+
+    async def fake_run(_args: argparse.Namespace) -> dict[str, object]:
+        record = EvaluationAuthorizationLedger(args.ledger).record(
+            args.execution_id
+        )
+        assert record["status"] == "RESERVED"
+        return {
+            "report_schema_version": "stage2-convergence-report/1.12.0",
+            "status": "PASS",
+            "mode": "real-terra-xhigh-qualification",
+            "classification": "SYNTHETIC_ONLY_NO_STUDENT_DATA",
+            "route_profile": "TERRA_XHIGH_V1",
+            "observations": [],
+            "controls": {
+                "network_calls": 33,
+                "provider_attempts": 33,
+                "actual_cost_usd": 0.01,
+                "budget_charged_usd": 0.02,
+            },
+        }
+
+    monkeypatch.setattr(
+        eval_harness, "_run_current_convergence_real", fake_run
+    )
+    assert eval_harness._run_convergence_cli(args) == 0
+    capsys.readouterr()
+    report = json.loads(args.report_path.read_text(encoding="utf-8"))
+    assert report["qualification_outcome"] == (
+        "TERRA_XHIGH_QUALIFICATION_PASSED"
+    )
+    assert report["convergence_outcome"] == "READY_FOR_INDEPENDENT_REVIEW"
+    assert report["baseline_terra_high_candidate"] == (
+        eval_harness.TERRA_XHIGH_QUALIFICATION_BASELINE_SHA
+    )
+    assert report["budget_derivation"] == terra_xhigh_budget_derivation()
+    assert report["terra_ladder_harness_freeze"]["status"] == (
+        "TERRA_LADDER_HARNESS_FROZEN"
+    )
+    assert report["statistical_significance_claimed"] is False
+    record = EvaluationAuthorizationLedger(args.ledger).record(
+        args.execution_id
+    )
+    assert record["status"] == "COMPLETED"
+    with pytest.raises(
+        eval_harness.OpenAIEvalBlocked,
+        match="EVALUATION_AUTHORIZATION_ALREADY_CONSUMED",
+    ):
+        eval_harness._run_convergence_cli(args)
+
+
+def test_terra_xhigh_outcomes_enforce_terminal_family_policy() -> None:
+    assert eval_harness._terra_xhigh_qualification_outcome(
+        {"status": "PASS", "observations": []}
+    ) == {
+        "qualification_outcome": "TERRA_XHIGH_QUALIFICATION_PASSED",
+        "convergence_outcome": "READY_FOR_INDEPENDENT_REVIEW",
+        "causal_classification": "QUALIFICATION_PASSED",
+        "recommended_next_authority": (
+            "INDEPENDENT_REVIEW_ONLY_NO_RERUN_MAX_BUILD_OR_DEPLOY"
+        ),
+    }
+    technical = eval_harness._terra_xhigh_qualification_outcome(
+        {
+            "status": "FAIL",
+            "observations": [
+                {"failure": {"codes": ["MODEL_PROVIDER_ERROR"]}}
+            ],
+        }
+    )
+    assert technical["qualification_outcome"] == (
+        "TERRA_XHIGH_QUALIFICATION_INCONCLUSIVE"
+    )
+    assert technical["causal_classification"] == (
+        "TECHNICAL_QUALIFICATION_FAILURE"
+    )
+    clean_failure = classify_checkpoint(
+        checkpoint_id="terra-xhigh-semantic-failure",
+        checkpoint_class=CheckpointClass.SEMANTICALLY_QUALIFIED_POSITIVE,
+        oracle_validity=OracleValidity.VALID,
+        semantic_interpretation=SemanticInterpretation.INCORRECT,
+        contractual_adherence=ContractualAdherence.PASS,
+        semantic_review_id="SR-TERRA-XHIGH-FROZEN",
+        semantic_review_version="1.0.0",
+        semantic_review_hash="sha256:" + "5" * 64,
+        reason_codes=["SEMANTIC_MISMATCH"],
+    ).model_dump()
+    failed = eval_harness._terra_xhigh_qualification_outcome(
+        {
+            "status": "FAIL",
+            "observations": [
+                {"failure": {"codes": ["SEMANTIC_MISMATCH"]}}
+            ],
+            "checkpoint_assessments": [clean_failure],
+        }
+    )
+    assert failed["qualification_outcome"] == (
+        "TERRA_XHIGH_QUALIFICATION_FAILED"
+    )
+    assert failed["family_outcome"] == (
+        "TERRA_FAMILY_QUALIFICATION_EXHAUSTED"
+    )
+    assert failed["causal_classification"] == "MODEL_OWNED_SEMANTIC_FAILURE"
+    assert "NO_TERRA_MAX" in failed["recommended_next_authority"]
 
 
 def test_max_outcome_additional_contract_and_mixed_cases() -> None:
