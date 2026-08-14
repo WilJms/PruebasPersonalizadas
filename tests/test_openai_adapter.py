@@ -74,6 +74,9 @@ from comprehension_verification.model_gateway.openai_routes import (
     OPENAI_TERRA_MEDIUM_PROMPT_IDS,
     OPENAI_TERRA_MEDIUM_ROUTE_PROFILE,
     OPENAI_TERRA_MEDIUM_ROUTE_PROFILE_ID,
+    OPENAI_TERRA_HIGH_PROMPT_IDS,
+    OPENAI_TERRA_HIGH_ROUTE_PROFILE,
+    OPENAI_TERRA_HIGH_ROUTE_PROFILE_ID,
     OPENAI_XHIGH_PROMPT_IDS,
     OPENAI_XHIGH_ROUTE_PROFILE,
     OPENAI_XHIGH_ROUTE_PROFILE_ID,
@@ -437,6 +440,59 @@ def test_terra_medium_profile_changes_model_and_qualified_effort_only() -> None:
     )
     assert terra["P03_AMBIGUITY_TRIAGE_V1"].reasoning_effort == (
         models.ReasoningEffort.HIGH
+    )
+    assert terra["P11_SCHEMA_REPAIR_V1"].reasoning_effort == (
+        models.ReasoningEffort.LOW
+    )
+
+
+def test_terra_high_profile_changes_only_model_from_luna_baseline() -> None:
+    assert OPENAI_TERRA_HIGH_ROUTE_PROFILE_ID == "TERRA_HIGH_V1"
+    assert OPENAI_TERRA_HIGH_PROMPT_IDS == OPENAI_MAX_PROMPT_IDS
+    assert {
+        prompt_id
+        for prompt_id, approved in OPENAI_TERRA_HIGH_ROUTE_PROFILE.items()
+        if (
+            prompt_id in OPENAI_TERRA_HIGH_PROMPT_IDS
+            and approved.reasoning_effort == models.ReasoningEffort.HIGH
+        )
+    } == set(OPENAI_TERRA_HIGH_PROMPT_IDS)
+
+    luna = build_openai_routes(max_call_cost_usd=0.82)
+    terra = build_openai_routes(
+        max_call_cost_usd=0.82,
+        route_profile_id=OPENAI_TERRA_HIGH_ROUTE_PROFILE_ID,
+    )
+    assert set(luna) == set(terra)
+    assert all(route.model == TERRA_MODEL_ID for route in terra.values())
+    assert all(route.fallback_route_id is None for route in terra.values())
+    for prompt_id in luna:
+        assert terra[prompt_id].reasoning_effort == (
+            luna[prompt_id].reasoning_effort
+        )
+        luna_material = luna[prompt_id].model_dump(mode="json")
+        terra_material = terra[prompt_id].model_dump(mode="json")
+        for material in (luna_material, terra_material):
+            material.pop("route_id")
+            material.pop("model")
+            material.pop("model_snapshot")
+            material.pop("reason_codes")
+        assert luna_material == terra_material
+        assert terra[prompt_id].route_id.startswith(
+            "route_openai_terra_high_v1_"
+        )
+    assert terra["P01_ACTIVITY_SPEC_V1"].reasoning_effort == (
+        models.ReasoningEffort.MEDIUM
+    )
+    assert terra["P02_RUBRIC_NORMALIZE_V1"].reasoning_effort == (
+        models.ReasoningEffort.MEDIUM
+    )
+    assert terra["P03_AMBIGUITY_TRIAGE_V1"].reasoning_effort == (
+        models.ReasoningEffort.HIGH
+    )
+    assert all(
+        terra[prompt_id].reasoning_effort == models.ReasoningEffort.HIGH
+        for prompt_id in OPENAI_TERRA_HIGH_PROMPT_IDS
     )
     assert terra["P11_SCHEMA_REPAIR_V1"].reasoning_effort == (
         models.ReasoningEffort.LOW

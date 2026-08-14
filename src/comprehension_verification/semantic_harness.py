@@ -10,6 +10,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from hashlib import sha256
+import inspect
 import json
 from pathlib import Path
 from types import SimpleNamespace
@@ -18,6 +19,8 @@ from typing import Any, cast
 from .canonical import canonical_hash, stable_id
 from .contracts import models as m
 from .model_gateway.registry import prompt_spec
+from .model_gateway.gateway import PROMPT_RELATIONSHIP_VALIDATOR_VERSIONS
+from .model_gateway.openai_routes import OPENAI_ROUTE_PROFILES
 from .parsers.service import DOCX_MEDIA_TYPE, PARSER_VERSION, ParsedArtifact, SafeParserService
 from .planning import PLANNER_VERSION, build_assessment_plan
 from .qualification_semantics import (
@@ -33,10 +36,15 @@ from .rehearsal import (
     P05_GOLDEN_FIXTURE_PATH,
     QUALIFICATION_EXPECTED_PROVIDER_REQUESTS,
     _p05_review_from_versioned_semantic_fixture,
+    _semantic_checkpoint_verdict,
+    _validate_p06_positive_invariants,
+    _validate_p07_positive_invariants,
     blueprint_review_is_approvable,
+    qualification_matrix_rows,
     run_offline_convergence_sync,
 )
 from .validation import (
+    PROMPT_APPLICATION_VALIDATOR_VERSIONS,
     build_blueprint_review_preflight,
     validate_assessment_plan,
     validate_blueprint_review_preflight_checks,
@@ -186,12 +194,14 @@ def semantic_checkpoint_requests(
 
 def load_semantic_fixture() -> dict[str, Any]:
     raw = json.loads(SEMANTIC_FIXTURE_PATH.read_text(encoding="utf-8"))
-    if raw.get("schema_version") != "stage2-semantic-qualification-pack/1.0.0":
+    if raw.get("schema_version") != "stage2-semantic-qualification-pack/1.1.0":
         raise ValueError("semantic fixture version is not approved")
     if raw.get("classification") != "SYNTHETIC_ONLY_NO_STUDENT_DATA":
         raise ValueError("semantic fixture must be synthetic-only")
     if raw.get("provider_response_used_as_target") is not False:
         raise ValueError("semantic fixture cannot target a provider response")
+    if raw.get("ladder_harness_status") != "TERRA_LADDER_HARNESS_FROZEN":
+        raise ValueError("Terra ladder harness is not frozen")
     authorship = raw.get("review_authorship") or {}
     if (
         authorship.get("authoring_class")
@@ -221,6 +231,22 @@ def frozen_product_boundary_proof() -> dict[str, Any]:
     }
     if actual_files != frozen["source_file_sha256"]:
         raise ValueError("frozen product source boundary changed")
+    actual_route_profile_hashes = {
+        profile_id: canonical_hash(
+            {
+                prompt_id: {
+                    "model": approved.model,
+                    "reasoning_effort": approved.reasoning_effort.value,
+                }
+                for prompt_id, approved in sorted(
+                    OPENAI_ROUTE_PROFILES[profile_id].items()
+                )
+            }
+        )
+        for profile_id in frozen["route_profile_material_hashes"]
+    }
+    if actual_route_profile_hashes != frozen["route_profile_material_hashes"]:
+        raise ValueError("frozen existing route profile boundary changed")
     actual_prompts = {
         prompt_id: {
             "version": prompt_spec(prompt_id).prompt_version,
@@ -241,9 +267,140 @@ def frozen_product_boundary_proof() -> dict[str, Any]:
         "baseline_git_sha": frozen["baseline_git_sha"],
         "manifest_hash": canonical_hash(frozen),
         "source_file_sha256": actual_files,
+        "route_profile_material_hashes": actual_route_profile_hashes,
         "prompts": actual_prompts,
         "question_validation_thresholds": actual_thresholds,
         "component_versions": frozen["component_versions"],
+    }
+
+
+def _source_object_hash(value: object) -> str:
+    return "sha256:" + sha256(
+        inspect.getsource(value).encode("utf-8")
+    ).hexdigest()
+
+
+def _source_file_hash(relative_path: str) -> str:
+    return "sha256:" + sha256((ROOT / relative_path).read_bytes()).hexdigest()
+
+
+def terra_ladder_harness_freeze_proof(
+    *,
+    fixture: dict[str, Any] | None = None,
+    checkpoints: SemanticCheckpoints | None = None,
+    frozen_boundary: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Return the hash-bound semantic instrument frozen for the Terra ladder."""
+
+    fixture = fixture or load_semantic_fixture()
+    if fixture["ladder_harness_status"] != "TERRA_LADDER_HARNESS_FROZEN":
+        raise ValueError("Terra ladder harness freeze declaration is missing")
+    checkpoints = checkpoints or build_semantic_checkpoints()
+    frozen_boundary = frozen_boundary or frozen_product_boundary_proof()
+    provenance = build_checkpoint_provenance(checkpoints)
+    validate_checkpoint_provenance(provenance)
+    semantic_reviews = {
+        row["semantic_review_id"]: {
+            "version": row["review_version"],
+            "preserved_review_hash": row["review_hash"],
+            "current_review_material_hash": row[
+                "current_review_material_hash"
+            ],
+        }
+        for row in provenance
+        if row["checkpoint_class"]
+        != CheckpointClass.STRUCTURAL_ORCHESTRATION_CHECKPOINT_ONLY.value
+    }
+    validator_material = {
+        "relationship_versions": {
+            prompt_id: PROMPT_RELATIONSHIP_VALIDATOR_VERSIONS[prompt_id]
+            for prompt_id in P04_P09_PROMPT_IDS
+        },
+        "application_versions": {
+            prompt_id: PROMPT_APPLICATION_VALIDATOR_VERSIONS.get(prompt_id)
+            for prompt_id in P04_P09_PROMPT_IDS
+        },
+        "relationship_source_hash": _source_file_hash(
+            "src/comprehension_verification/model_gateway/gateway.py"
+        ),
+        "application_source_hash": _source_file_hash(
+            "src/comprehension_verification/validation.py"
+        ),
+    }
+    docx_hashes = _source_hashes(checkpoints)
+    material = {
+        "semantic_fixture": {
+            "version": fixture["schema_version"],
+            "hash": canonical_hash(fixture),
+        },
+        "semantic_reviews": {
+            "hash": canonical_hash(semantic_reviews),
+            "items": semantic_reviews,
+        },
+        "oracles": {
+            "p06_hash": _source_object_hash(
+                _validate_p06_positive_invariants
+            ),
+            "p07_hash": _source_object_hash(
+                _validate_p07_positive_invariants
+            ),
+            "semantic_dispatch_hash": _source_object_hash(
+                _semantic_checkpoint_verdict
+            ),
+        },
+        "classifier": {
+            "hash": _source_file_hash(
+                "src/comprehension_verification/qualification_semantics.py"
+            )
+        },
+        "matrix": {
+            "hash": canonical_hash(qualification_matrix_rows()),
+            "rows": qualification_matrix_rows(),
+        },
+        "prompts": {
+            "hash": canonical_hash(frozen_boundary["prompts"]),
+            "items": frozen_boundary["prompts"],
+        },
+        "validators": {
+            "hash": canonical_hash(validator_material),
+            **validator_material,
+        },
+        "thresholds": {
+            "hash": canonical_hash(
+                frozen_boundary["question_validation_thresholds"]
+            ),
+            "items": frozen_boundary["question_validation_thresholds"],
+        },
+        "planner": {
+            "version": PLANNER_VERSION,
+            "hash": _source_file_hash(
+                "src/comprehension_verification/planning.py"
+            ),
+        },
+        "assembler": {
+            "version": ASSEMBLER_VERSION,
+            "hash": _source_file_hash(
+                "src/comprehension_verification/web/workflows.py"
+            ),
+        },
+        "docx": {
+            "hash": canonical_hash(docx_hashes),
+            "artifacts": docx_hashes,
+        },
+        "parser_boundary": {
+            "version": PARSER_VERSION,
+            "hash": _source_file_hash(
+                "src/comprehension_verification/parsers/service.py"
+            ),
+        },
+    }
+    return {
+        "status": "TERRA_LADDER_HARNESS_FROZEN",
+        "freeze_version": fixture["ladder_harness_freeze_version"],
+        "frozen_on": fixture["reviewed_on"],
+        "classification": fixture["classification"],
+        "material_hash": canonical_hash(material),
+        **material,
     }
 
 
@@ -1697,6 +1854,11 @@ def run_semantic_harness_rehearsal() -> dict[str, Any]:
 
     provenance = build_checkpoint_provenance(checkpoints)
     validate_checkpoint_provenance(provenance)
+    harness_freeze = terra_ladder_harness_freeze_proof(
+        fixture=fixture,
+        checkpoints=checkpoints,
+        frozen_boundary=frozen_boundary,
+    )
     classifier_proof = classifier_branch_proof()
     qualification_rehearsal = run_offline_convergence_sync()
     semantic_sweep = qualification_rehearsal["observations"][0]
@@ -1828,6 +1990,16 @@ def run_semantic_harness_rehearsal() -> dict[str, Any]:
         for row in provenance
     ]
     checks = [
+        {
+            "check_id": "TERRA_LADDER_HARNESS_FROZEN",
+            "status": (
+                "PASS"
+                if harness_freeze["status"]
+                == "TERRA_LADDER_HARNESS_FROZEN"
+                else "FAIL"
+            ),
+            "material_hash": harness_freeze["material_hash"],
+        },
         {
             "check_id": "PRODUCT_BOUNDARY_FROZEN",
             "status": "PASS",
@@ -2027,7 +2199,7 @@ def run_semantic_harness_rehearsal() -> dict[str, Any]:
     return {
         "report_schema_version": SEMANTIC_REPORT_VERSION,
         "rehearsal_version": SEMANTIC_REHEARSAL_VERSION,
-        "phase": "HARNESS_FINAL_SEMANTIC_HARDENING",
+        "phase": fixture["phase"],
         "classification": "SYNTHETIC_ONLY_NO_STUDENT_DATA",
         "status": status,
         "fixture_version": fixture["schema_version"],
@@ -2099,6 +2271,7 @@ def run_semantic_harness_rehearsal() -> dict[str, Any]:
         "adversarial_review": fixture["adversarial_review"],
         "document_visual_qa": fixture["document_visual_qa"],
         "frozen_product_boundary": frozen_boundary,
+        "terra_ladder_harness_freeze": harness_freeze,
         "controls": {
             "provider_attempts": 0,
             "mock_gateway_invocations": qualification_rehearsal["controls"][

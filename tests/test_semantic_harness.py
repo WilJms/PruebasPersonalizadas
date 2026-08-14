@@ -41,6 +41,7 @@ from comprehension_verification.rehearsal import (
     CANONICAL_DOCUMENT_SCENARIO_ID,
     QUALIFICATION_EXPECTED_PROVIDER_REQUESTS,
     ProductRehearsal,
+    _semantic_checkpoint_verdict,
     qualification_matrix_rows,
     run_offline_convergence_sync,
 )
@@ -346,6 +347,93 @@ def test_p05_positive_cannot_hide_a_semantic_failure_as_approvable() -> None:
     assert assessment["causal_attribution"] == "MODEL_OWNED_SEMANTIC_FAILURE"
 
 
+def test_p05_negative_distinguishes_non_rejection_from_wrong_critical_set() -> None:
+    checkpoints = build_semantic_checkpoints()
+    not_rejected = checkpoints.p05_negative_review.model_copy(
+        update={
+            "approval_recommendation": (
+                m.BlueprintApprovalRecommendation.APPROVE
+            )
+        }
+    )
+    with pytest.raises(ContextValidationError) as not_rejected_error:
+        _semantic_checkpoint_verdict(
+            checkpoint_id="P05_PLAN_FEASIBILITY_NEGATIVE",
+            request=checkpoints.p05_negative_request,
+            output=not_rejected,
+            expected=checkpoints.p05_negative_review,
+        )
+    assert not_rejected_error.value.code == "P05_NEGATIVE_NOT_REJECTED"
+
+    wrong_critical = checkpoints.p05_negative_review.model_copy(
+        update={
+            "checks": [
+                check.model_copy(
+                    update={
+                        "status": m.ReviewCheckStatus.FAIL,
+                        "critical": True,
+                    }
+                )
+                if check.category == "CONSTRUCT"
+                else check
+                for check in checkpoints.p05_negative_review.checks
+            ]
+        }
+    )
+    with pytest.raises(ContextValidationError) as critical_error:
+        _semantic_checkpoint_verdict(
+            checkpoint_id="P05_PLAN_FEASIBILITY_NEGATIVE",
+            request=checkpoints.p05_negative_request,
+            output=wrong_critical,
+            expected=checkpoints.p05_negative_review,
+        )
+    assert critical_error.value.code == (
+        "P05_NEGATIVE_CRITICAL_CATEGORY_MISMATCH"
+    )
+
+
+def test_p05_negative_receipt_exposes_wrong_critical_category_code() -> None:
+    class WrongCriticalCategoryAdapter:
+        def __init__(self) -> None:
+            self.inner = build_reviewed_semantic_adapter()
+
+        async def invoke(self, **kwargs: object):  # type: ignore[no-untyped-def]
+            result = await self.inner.invoke(**kwargs)
+            request = kwargs["request"]
+            raw = deepcopy(result.raw_output)
+            if (
+                kwargs["prompt_id"] == "P05_BLUEPRINT_REVIEW_V1"
+                and isinstance(request, m.BlueprintReviewRequest)
+                and request.deterministic_preflight.catalog_plan_feasible is False
+            ):
+                for check in raw["checks"]:
+                    if check["category"] == "CONSTRUCT":
+                        check["status"] = "FAIL"
+                        check["critical"] = True
+            return replace(result, raw_output=raw)
+
+    gateway = ModelGateway(
+        GatewayConfig(mode=GatewayMode.MOCK, max_retries=0),
+        mock_adapter=WrongCriticalCategoryAdapter(),
+    )
+    observation = asyncio.run(
+        ProductRehearsal(gateway, max_call_cost_usd=1.0).run_sweep(
+            run_id="semantic-p05-critical-category-proof"
+        )
+    )
+    assessment = next(
+        row
+        for row in observation.checkpoint_assessments
+        if row["checkpoint_id"] == "P05_PLAN_FEASIBILITY_NEGATIVE"
+    )
+    assert observation.status == "FAIL"
+    assert "P05_NEGATIVE_CRITICAL_CATEGORY_MISMATCH" in assessment[
+        "reason_codes"
+    ]
+    assert assessment["semantic_interpretation"] == "INCORRECT"
+    assert assessment["contractual_adherence"] == "FAIL"
+
+
 def test_p07_semantically_equivalent_alternative_passes_without_exact_equality() -> None:
     class StructurallyValidAlternativeAdapter:
         def __init__(self) -> None:
@@ -524,6 +612,69 @@ def test_p06_semantically_equivalent_mapping_passes_without_exact_equality() -> 
     assert assessment["semantic_interpretation"] == "CORRECT"
 
 
+def test_p06_alternate_valid_catalog_opportunity_passes() -> None:
+    class AlternateCatalogOpportunityAdapter:
+        def __init__(self) -> None:
+            self.inner = build_reviewed_semantic_adapter()
+
+        async def invoke(self, **kwargs: object):  # type: ignore[no-untyped-def]
+            result = await self.inner.invoke(**kwargs)
+            request = kwargs["request"]
+            raw = deepcopy(result.raw_output)
+            if (
+                kwargs["prompt_id"] == "P06_EVIDENCE_MAP_V1"
+                and isinstance(request, m.EvidenceMapRequest)
+                and request.evidence_bundle.submission_id
+                == "submission_cache_sufficient"
+            ):
+                template = next(
+                    item
+                    for dimension in request.blueprint.dimensions
+                    for variant in dimension.evidence_variants
+                    for item in variant.question_opportunities
+                    if item.opportunity_template_id
+                    == "oppt_explain_invalidation_sequence"
+                ).model_dump(mode="json")
+                opportunity = raw["opportunities"][0]
+                for field in (
+                    "opportunity_template_id",
+                    "cognitive_operation",
+                    "focus",
+                    "observable",
+                    "difficulty",
+                    "target_minutes",
+                    "allowed_anchor_structures",
+                    "allowed_response_formats",
+                    "student_justification_required",
+                ):
+                    opportunity[field] = template[field]
+                opportunity["opportunity_id"] = (
+                    "opportunity_explain_sequence_alternative"
+                )
+                raw["claims"][0]["supported_operations"] = [
+                    "EXPLAIN_MECHANISM"
+                ]
+            return replace(result, raw_output=raw)
+
+    gateway = ModelGateway(
+        GatewayConfig(mode=GatewayMode.MOCK, max_retries=0),
+        mock_adapter=AlternateCatalogOpportunityAdapter(),
+    )
+    observation = asyncio.run(
+        ProductRehearsal(gateway, max_call_cost_usd=1.0).run_sweep(
+            run_id="semantic-p06-alternate-catalog-proof"
+        )
+    )
+    assessment = next(
+        row
+        for row in observation.checkpoint_assessments
+        if row["checkpoint_id"] == "P06_CANONICAL_POSITIVE"
+    )
+    assert observation.status == "PASS"
+    assert assessment["operational_outcome"] == "PASS"
+    assert assessment["semantic_interpretation"] == "CORRECT"
+
+
 def test_p06_mapping_with_wrong_evidence_fails_semantically() -> None:
     class WrongEvidenceP06Adapter:
         def __init__(self) -> None:
@@ -567,6 +718,106 @@ def test_p06_mapping_with_wrong_evidence_fails_semantically() -> None:
     assert assessment["semantic_interpretation"] == "INCORRECT"
     assert assessment["contractual_adherence"] == "PASS"
     assert assessment["causal_attribution"] == "MODEL_OWNED_SEMANTIC_FAILURE"
+
+
+def test_p06_invented_opportunity_path_fails_contractual_adherence() -> None:
+    class InventedOpportunityAdapter:
+        def __init__(self) -> None:
+            self.inner = build_reviewed_semantic_adapter()
+
+        async def invoke(self, **kwargs: object):  # type: ignore[no-untyped-def]
+            result = await self.inner.invoke(**kwargs)
+            request = kwargs["request"]
+            raw = deepcopy(result.raw_output)
+            if (
+                kwargs["prompt_id"] == "P06_EVIDENCE_MAP_V1"
+                and isinstance(request, m.EvidenceMapRequest)
+                and request.evidence_bundle.submission_id
+                == "submission_cache_sufficient"
+            ):
+                raw["opportunities"][0]["opportunity_template_id"] = (
+                    "oppt_invented_semantic_path"
+                )
+            return replace(result, raw_output=raw)
+
+    gateway = ModelGateway(
+        GatewayConfig(mode=GatewayMode.MOCK, max_retries=0),
+        mock_adapter=InventedOpportunityAdapter(),
+    )
+    observation = asyncio.run(
+        ProductRehearsal(gateway, max_call_cost_usd=1.0).run_sweep(
+            run_id="semantic-p06-invented-path-proof"
+        )
+    )
+    assessment = next(
+        row
+        for row in observation.checkpoint_assessments
+        if row["checkpoint_id"] == "P06_CANONICAL_POSITIVE"
+    )
+    assert observation.status == "FAIL"
+    assert assessment["semantic_interpretation"] == "NOT_EVALUATED"
+    assert assessment["contractual_adherence"] == "FAIL"
+    assert assessment["causal_attribution"] == (
+        "MODEL_OWNED_CONTRACTUAL_ADHERENCE_FAILURE"
+    )
+
+
+def test_p06_positive_with_no_eligible_opportunity_fails_semantically() -> None:
+    class NoEligibleOpportunityAdapter:
+        def __init__(self) -> None:
+            self.inner = build_reviewed_semantic_adapter()
+
+        async def invoke(self, **kwargs: object):  # type: ignore[no-untyped-def]
+            result = await self.inner.invoke(**kwargs)
+            request = kwargs["request"]
+            raw = deepcopy(result.raw_output)
+            if (
+                kwargs["prompt_id"] == "P06_EVIDENCE_MAP_V1"
+                and isinstance(request, m.EvidenceMapRequest)
+                and request.evidence_bundle.submission_id
+                == "submission_cache_sufficient"
+            ):
+                raw.update(
+                    {
+                        "status": "INSUFFICIENT_RELEVANT_EVIDENCE",
+                        "claims": [],
+                        "variant_matches": [],
+                        "opportunities": [],
+                        "diagnostics": [
+                            {
+                                "code": "INSUFFICIENT_RELEVANT_EVIDENCE",
+                                "severity": "ERROR",
+                                "message": (
+                                    "No hay una oportunidad elegible sustentada."
+                                ),
+                                "evidence_ids": [],
+                                "source_ids": [],
+                                "retryable": False,
+                                "details": {},
+                            }
+                        ],
+                    }
+                )
+            return replace(result, raw_output=raw)
+
+    gateway = ModelGateway(
+        GatewayConfig(mode=GatewayMode.MOCK, max_retries=0),
+        mock_adapter=NoEligibleOpportunityAdapter(),
+    )
+    observation = asyncio.run(
+        ProductRehearsal(gateway, max_call_cost_usd=1.0).run_sweep(
+            run_id="semantic-p06-no-eligible-proof"
+        )
+    )
+    assessment = next(
+        row
+        for row in observation.checkpoint_assessments
+        if row["checkpoint_id"] == "P06_CANONICAL_POSITIVE"
+    )
+    assert observation.status == "FAIL"
+    assert assessment["semantic_interpretation"] == "INCORRECT"
+    assert assessment["contractual_adherence"] == "PASS"
+    assert assessment["reason_codes"] == ["P06_POSITIVE_NOT_READY"]
 
 
 def test_every_checkpoint_has_explicit_provenance_and_mocks_are_structural() -> None:
@@ -687,7 +938,13 @@ def test_offline_rehearsal_has_zero_provider_activity_and_valid_goldens() -> Non
         "product_workflow_changes": 0,
         "deploys": 0,
     }
-    assert report["phase"] == "HARNESS_FINAL_SEMANTIC_HARDENING"
+    assert report["phase"] == "TERRA_HIGH_FINAL_DECISION_GATE"
+    assert report["terra_ladder_harness_freeze"]["status"] == (
+        "TERRA_LADDER_HARNESS_FROZEN"
+    )
+    assert report["terra_ladder_harness_freeze"]["material_hash"].startswith(
+        "sha256:"
+    )
     assert report["canonical_pack"]["document_shaped"] is True
     assert report["canonical_pack"]["artifact_count"] == 4
     rehearsal = report["offline_qualification_rehearsal"]
@@ -719,6 +976,9 @@ def test_frozen_product_boundary_matches_initial_head() -> None:
         "9dbce36d21ba6b28b32b051862cf8b305ded61e8"
     )
     assert proof["source_file_sha256"] == manifest["source_file_sha256"]
+    assert proof["route_profile_material_hashes"] == (
+        manifest["route_profile_material_hashes"]
+    )
     assert proof["prompts"] == manifest["prompts"]
     assert proof["question_validation_thresholds"] == (
         manifest["question_validation_thresholds"]
@@ -727,7 +987,7 @@ def test_frozen_product_boundary_matches_initial_head() -> None:
 
 def test_semantic_fixture_and_historical_receipts_are_versioned_and_immutable() -> None:
     fixture = load_semantic_fixture()
-    assert fixture["schema_version"] == "stage2-semantic-qualification-pack/1.0.0"
+    assert fixture["schema_version"] == "stage2-semantic-qualification-pack/1.1.0"
     assert fixture["provider_response_used_as_target"] is False
     assert fixture["classification"] == "SYNTHETIC_ONLY_NO_STUDENT_DATA"
     assert SEMANTIC_FIXTURE_PATH.is_file()

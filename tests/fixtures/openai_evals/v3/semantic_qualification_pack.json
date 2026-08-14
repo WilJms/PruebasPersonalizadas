@@ -1,12 +1,14 @@
 {
-  "schema_version": "stage2-semantic-qualification-pack/1.0.0",
+  "schema_version": "stage2-semantic-qualification-pack/1.1.0",
   "pack_id": "canonical-document-cache-invalidation-v1",
   "classification": "SYNTHETIC_ONLY_NO_STUDENT_DATA",
-  "phase": "HARNESS_FINAL_SEMANTIC_HARDENING",
-  "review_set_id": "SR-SET-CACHE-001",
-  "review_version": "1.0.0",
+  "phase": "TERRA_HIGH_FINAL_DECISION_GATE",
+  "review_set_id": "SR-SET-CACHE-002",
+  "review_version": "1.1.0",
   "reviewed_on": "2026-08-13",
   "review_basis": "CODEX_AUTHORED_SEMANTIC_REVIEW",
+  "ladder_harness_status": "TERRA_LADDER_HARNESS_FROZEN",
+  "ladder_harness_freeze_version": "1.0.0",
   "review_authorship": {
     "authoring_class": "CODEX_AUTHORED_SEMANTIC_REVIEW",
     "independent_review_status": "USER_SUPPLIED_INDEPENDENT_REVIEW_FINDINGS",
@@ -25,6 +27,7 @@
     "SR-P05-CACHE-BLUEPRINT-001": "sha256:2f3baf9c64931487f53fcfc6c3d4557e4f634cb776a0a4dd65918f2ffddb42b1",
     "SR-P05-CACHE-PLAN-NEG-001": "sha256:9d1bba041da78a78600a7645d40cb62aba8294c90e6c1c976e796b4e8490e808",
     "SR-P06-CACHE-MAP-POS-001": "sha256:8cdfd4dcc53decab54e1167c20625573fb00b5e511ab92eb141b5975b08634d4",
+    "SR-P06-CACHE-MAP-POS-002": "sha256:43bd2c99778bb0360b3edb1bf93b1f90b9cb33e1f4e9a0517417cabf059f5367",
     "SR-P07-CACHE-POS-001": "sha256:fc20c9360a36707762a91d76d2ce9f9d3c167bc8bcb088d1f94d6e8397e084f1",
     "SR-P07-CACHE-NEG-001": "sha256:3a8c665373a3aad141571d8aced682410d5c7d3a8747eac2f91f2f12122006c2",
     "SR-P08-CACHE-POS-001": "sha256:e28976bdc1ad874d4fad0bc465a73eec899354b3edcdebaefc631167d4e36493",
@@ -130,16 +133,39 @@
     ]
   },
   "p06_positive": {
-    "golden_id": "GOLDEN-P06-CACHE-POS-001",
-    "golden_version": "1.0.0",
-    "semantic_review_id": "SR-P06-CACHE-MAP-POS-001",
-    "semantic_review_version": "1.0.0",
+    "golden_id": "GOLDEN-P06-CACHE-POS-002",
+    "golden_version": "2.0.0",
+    "semantic_review_id": "SR-P06-CACHE-MAP-POS-002",
+    "semantic_review_version": "2.0.0",
     "expected_outcome": "READY",
-    "positive_obligation": "Mapear la oportunidad JUSTIFY_DECISION únicamente al fragmento que contiene condición, riesgo de obsolescencia y recálculo.",
+    "positive_obligation": "Producir al menos una oportunidad perteneciente al catálogo del blueprint, sustentada por evidencia suficiente para su propio focus y observable, y seleccionable o reservable por el planner; no se exige un opportunity_template_id concreto.",
+    "reviewed_catalog_paths": [
+      {
+        "opportunity_template_id": "oppt_justify_cache_invalidation",
+        "cognitive_operation": "JUSTIFY_DECISION",
+        "minimum_evidence": ["sufficient_mechanism"]
+      },
+      {
+        "opportunity_template_id": "oppt_explain_invalidation_sequence",
+        "cognitive_operation": "EXPLAIN_MECHANISM",
+        "minimum_evidence": ["sufficient_mechanism"]
+      },
+      {
+        "opportunity_template_id": "oppt_reconstruct_recalculation_evidence",
+        "cognitive_operation": "RECONSTRUCT_REASONING",
+        "minimum_evidence": ["sufficient_mechanism", "sufficient_test"]
+      },
+      {
+        "opportunity_template_id": "oppt_connect_rule_and_test",
+        "cognitive_operation": "CONNECT_INTERNAL",
+        "minimum_evidence": ["sufficient_mechanism", "sufficient_test"]
+      }
+    ],
     "review_evidence": [
-      "El fragmento suficiente satisface focus, observable y operación cognitiva sin otra fuente.",
+      "Las cuatro rutas del catálogo son defendibles cuando reciben la evidencia mínima documentada; JUSTIFY_DECISION es sólo el ejemplo golden, no el único resultado aceptable.",
+      "El fragmento suficiente satisface focus y observable de JUSTIFY_DECISION y EXPLAIN_MECHANISM sin otra fuente; las rutas que razonan sobre la prueba requieren además la traza suficiente.",
       "El EvidenceUnit se deriva del DOCX por SafeParserService y sus IDs no se fabrican manualmente.",
-      "La política y el planner encuentran exactamente una oportunidad primaria elegible."
+      "La legitimidad estructural se decide con el validator congelado; la suficiencia semántica se contrasta con el focus y observable de la ruta; la elegibilidad se decide con el planner productivo congelado."
     ],
     "legitimate_abstention_reasons": [
       "El fragmento causal no está en el bundle o no pertenece a la submission.",
@@ -315,8 +341,8 @@
     ]
   },
   "adversarial_review": {
-    "review_id": "SR-ADVERSARIAL-CACHE-001",
-    "review_version": "1.0.0",
+    "review_id": "SR-ADVERSARIAL-CACHE-002",
+    "review_version": "2.0.0",
     "questions": {
       "evidence_is_sufficient": "PASS: condición, riesgo y recálculo aparecen literalmente en el positive.",
       "hidden_contradiction_absent": "PASS: consigna, rúbrica y submission usan la misma secuencia y el mismo límite de fuentes.",
@@ -327,8 +353,12 @@
       "fixture_represents_defensible_task": "PASS: el documento ofrece consigna, rúbrica, mecanismo y traza coherentes.",
       "mock_is_not_quality_oracle": "PASS: ningún positive del pack se deriva de DeterministicMockFactory.",
       "p07_bad_candidate_fails": "PASS: conocimiento externo y anchor insuficiente producen failure semántico; vaguedad no decidible produce INDETERMINATE.",
-      "p06_equivalent_mapping_passes": "PASS: IDs y redacción alternativos pasan si conservan path, evidencia causal, mínimos y elegibilidad del planner.",
-      "p06_wrong_evidence_fails": "PASS: una oportunidad sobre evidencia sin la secuencia causal completa falla semánticamente.",
+      "p06_justify_mapping_passes": "PASS: JUSTIFY_DECISION pasa si conserva su path, evidencia causal, mínimos y elegibilidad del planner.",
+      "p06_alternate_catalog_mapping_passes": "PASS: EXPLAIN_MECHANISM también pasa con su path literal y evidencia suficiente; el oracle no exige un template concreto.",
+      "p06_wrong_evidence_fails": "PASS: una oportunidad estructural sobre evidencia insuficiente para su propio focus y observable falla semánticamente.",
+      "p06_invented_path_fails_adherence": "PASS: un opportunity_template_id ajeno al blueprint falla contractual adherence antes de la calificación semántica.",
+      "p06_no_eligible_opportunity_fails_positive": "PASS: una abstención contractualmente válida falla semánticamente cuando el fixture positive sí ofrece rutas elegibles.",
+      "p05_negative_codes_are_distinct": "PASS: NOT_REJECTED y CRITICAL_CATEGORY_MISMATCH poseen códigos separados; el segundo conserva semantic INCORRECT y adherence FAIL.",
       "indeterminate_is_inconclusive": "PASS: CAUSE_INDETERMINATE nunca agrega TERRA_MEDIUM_QUALIFICATION_FAILED.",
       "technical_only_is_inconclusive": "PASS: technical-only conserva causalidad técnica y outcome INCONCLUSIVE.",
       "clean_model_owned_is_failed": "PASS: sólo failures model-owned de alta confianza sobre oracle válido agregan FAILED.",

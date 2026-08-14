@@ -7,10 +7,15 @@
     "src/comprehension_verification/model_gateway/prompt_text.py": "afa1feb5b3db898d62641b739803f014ba7c67474f3b9626522b272904abf7e1",
     "src/comprehension_verification/model_gateway/registry.py": "0260a33fe066fbb5c268eb8b4f6cb0894886ee5a9147344910c26fc29aa27680",
     "src/comprehension_verification/model_gateway/openai_adapter.py": "245bdb5c4f60fab97bfa746b38ed6ea0043c65eb08d45960c54031d8bf6184f1",
-    "src/comprehension_verification/model_gateway/openai_routes.py": "3d6d680abbebdafacacab726b90424b327b4c5e0be66dfba772ae07ef27831dc",
     "src/comprehension_verification/validation.py": "a5ad1f04205aa701fff5b0e9d65d78394dc01cb37c40242fe861be86f751ed50",
     "src/comprehension_verification/planning.py": "4872c2abf163e27135b0d266c4675b197534aa0f7c36c0f7960ebe5a575e8adb",
     "src/comprehension_verification/web/workflows.py": "1ceb38188e615c844de9f8a8d76b5389c1aa54a8cb53062522015e6c435ebe8a"
+  },
+  "route_profile_material_hashes": {
+    "LUNA_BASELINE_V1": "sha256:78bfe07f895774811126d8a0e32787a0cb942a168b0f7da3d6fed131ea50574d",
+    "LUNA_XHIGH_V1": "sha256:fb5b178f297d82d3a21c038adc89f6e6d4d41aac5c95c9c40200dd03822ecbd4",
+    "LUNA_MAX_V1": "sha256:f79e5f500ee3c2a55ab0e1d5b0955596e9f686e5b52dedb8f467e2122d681871",
+    "TERRA_MEDIUM_V1": "sha256:23e40ed78bed08e34190e8b850bda030fac44af28b71fba889e153d5f77ebc9f"
   },
   "prompts": {
     "P04_BLUEPRINT_BUILD_V1": {

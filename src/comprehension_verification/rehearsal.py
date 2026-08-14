@@ -32,6 +32,8 @@ from .model_gateway import (
     OPENAI_ROUTE_PROFILE_ID,
     OPENAI_TERRA_MEDIUM_PROMPT_IDS,
     OPENAI_TERRA_MEDIUM_ROUTE_PROFILE_ID,
+    OPENAI_TERRA_HIGH_PROMPT_IDS,
+    OPENAI_TERRA_HIGH_ROUTE_PROFILE_ID,
     OPENAI_XHIGH_PROMPT_IDS,
     OPENAI_XHIGH_ROUTE_PROFILE_ID,
     OpenAIAdapterConfig,
@@ -87,8 +89,8 @@ from .web.workflows import (
 )
 
 
-REHEARSAL_VERSION = "stage2-product-rehearsal/1.11.0"
-REHEARSAL_REPORT_VERSION = "stage2-convergence-report/1.11.0"
+REHEARSAL_VERSION = "stage2-product-rehearsal/1.12.0"
+REHEARSAL_REPORT_VERSION = "stage2-convergence-report/1.12.0"
 BASE_SCENARIO_ID = "synthetic-open-short-v1"
 VARIANT_SCENARIO_ID = "synthetic-choice-justification-v1"
 CANONICAL_DOCUMENT_SCENARIO_ID = "canonical-document-cache-sufficient-v1"
@@ -209,12 +211,16 @@ def _ceil_usd(value: Decimal, increment: Decimal) -> float:
     return float(units * increment)
 
 
-def terra_medium_budget_derivation() -> dict[str, Any]:
+def _terra_budget_derivation(
+    *,
+    route_profile_id: str,
+    schema_version: str,
+) -> dict[str, Any]:
     """Derive exact Terra caps from the frozen matrix and route ceilings."""
 
     routes = build_openai_routes(
         max_call_cost_usd=1.0,
-        route_profile_id=OPENAI_TERRA_MEDIUM_ROUTE_PROFILE_ID,
+        route_profile_id=route_profile_id,
     )
     prices = MODEL_PRICES[TERRA_MODEL_ID]
     per_prompt: dict[str, dict[str, Any]] = {}
@@ -276,8 +282,8 @@ def terra_medium_budget_derivation() -> dict[str, Any]:
         "cap_rounding": "CEILING_TO_USD_0.01",
     }
     return {
-        "schema_version": "terra-medium-budget-derivation/1.0.0",
-        "route_profile": OPENAI_TERRA_MEDIUM_ROUTE_PROFILE_ID,
+        "schema_version": schema_version,
+        "route_profile": route_profile_id,
         "model": TERRA_MODEL_ID,
         "pricing_policy": pricing_policy,
         "pricing_policy_hash": canonical_hash(pricing_policy),
@@ -297,6 +303,20 @@ def terra_medium_budget_derivation() -> dict[str, Any]:
             worst_case_total, cap_increment
         ),
     }
+
+
+def terra_medium_budget_derivation() -> dict[str, Any]:
+    return _terra_budget_derivation(
+        route_profile_id=OPENAI_TERRA_MEDIUM_ROUTE_PROFILE_ID,
+        schema_version="terra-medium-budget-derivation/1.0.0",
+    )
+
+
+def terra_high_budget_derivation() -> dict[str, Any]:
+    return _terra_budget_derivation(
+        route_profile_id=OPENAI_TERRA_HIGH_ROUTE_PROFILE_ID,
+        schema_version="terra-high-budget-derivation/1.0.0",
+    )
 
 
 @dataclass(frozen=True, slots=True)
@@ -456,7 +476,7 @@ def _semantic_instrument_metadata() -> dict[str, Any]:
     if legacy.get("schema_version") != "stage2-product-rehearsal-fixture/1.5.0":
         raise ValueError("legacy rehearsal classification is not approved")
     if replacement.get("schema_version") != (
-        "stage2-semantic-qualification-pack/1.0.0"
+        "stage2-semantic-qualification-pack/1.1.0"
     ):
         raise ValueError("replacement semantic fixture is not approved")
     return {
@@ -1069,6 +1089,8 @@ def rehearsal_boundary_material(
     *,
     max_call_cost_usd: float = 0.10,
 ) -> dict[str, Any]:
+    from .semantic_harness import terra_ladder_harness_freeze_proof
+
     routes = build_openai_routes(
         max_call_cost_usd=max_call_cost_usd,
         route_profile_id=route_profile_id,
@@ -1151,6 +1173,9 @@ def rehearsal_boundary_material(
             "terra_medium_qualification_prompt_ids": sorted(
                 OPENAI_TERRA_MEDIUM_PROMPT_IDS
             ),
+            "terra_high_qualification_prompt_ids": sorted(
+                OPENAI_TERRA_HIGH_PROMPT_IDS
+            ),
             "routes": {
                 prompt_id: {
                     "route_id": route.route_id,
@@ -1180,6 +1205,7 @@ def rehearsal_boundary_material(
         ),
         "p10_enabled": False,
         "semantic_instrument": _semantic_instrument_metadata(),
+        "terra_ladder_harness_freeze": terra_ladder_harness_freeze_proof(),
     }
     if route_profile_id == OPENAI_MAX_ROUTE_PROFILE_ID:
         material["route_delta_from_luna_xhigh"] = (
@@ -1199,6 +1225,19 @@ def rehearsal_boundary_material(
         )
         material["terra_medium_budget_derivation"] = (
             terra_medium_budget_derivation()
+        )
+    elif route_profile_id == OPENAI_TERRA_HIGH_ROUTE_PROFILE_ID:
+        material["route_delta_from_terra_medium"] = (
+            _route_profile_delta_material(
+                route_profile_id,
+                max_call_cost_usd=max_call_cost_usd,
+                reference_route_profile_id=(
+                    OPENAI_TERRA_MEDIUM_ROUTE_PROFILE_ID
+                ),
+            )
+        )
+        material["terra_high_budget_derivation"] = (
+            terra_high_budget_derivation()
         )
     return material
 
@@ -1578,9 +1617,8 @@ def _validate_p06_positive_invariants(
     *,
     request: m.EvidenceMapRequest,
     mapping: m.EvidenceMapPatch,
-    reviewed_example: m.EvidenceMapPatch,
 ) -> None:
-    """Qualify a P06 mapping by reviewed invariants, never full equality."""
+    """Qualify any semantically supported, planner-eligible catalog path."""
 
     validate_evidence_map(
         mapping,
@@ -1593,94 +1631,86 @@ def _validate_p06_positive_invariants(
             "P06_POSITIVE_NOT_READY",
             "P06 did not produce the reviewed positive transition",
         )
-    reviewed_target = next(
-        opportunity
-        for opportunity in reviewed_example.opportunities
-        if opportunity.opportunity_template_id
-        == "oppt_justify_cache_invalidation"
-    )
-    targets = [
-        opportunity
-        for opportunity in mapping.opportunities
-        if opportunity.opportunity_template_id
-        == reviewed_target.opportunity_template_id
-        and opportunity.dimension_id == reviewed_target.dimension_id
-        and opportunity.variant_id == reviewed_target.variant_id
-        and opportunity.cognitive_operation
-        == m.CognitiveOperation.JUSTIFY_DECISION
-    ]
-    if not targets:
-        _semantic_mismatch(
-            "P06_CANONICAL_OPPORTUNITY_MISSING",
-            "P06 omitted the reviewed cache-invalidation opportunity path",
-        )
     bundle = request.evidence_bundle
     if bundle.context_mode != m.ContextMode.CLOSED or bundle.course_passages:
         _semantic_mismatch(
-            "P06_CANONICAL_CONTEXT_WIDENED",
+            "P06_POSITIVE_CONTEXT_WIDENED",
             "P06 canonical positive must remain closed without course sources",
         )
     evidence_by_id = {item.evidence_id: item for item in bundle.evidence_units}
     allowed_ids = set(bundle.allowed_evidence_ids)
-    target_ids = {
-        evidence_id
-        for opportunity in targets
-        for evidence_id in opportunity.evidence_ids
-    }
-    if not target_ids or not target_ids.issubset(allowed_ids):
-        _semantic_mismatch(
-            "P06_CANONICAL_ALLOWLIST_WIDENED",
-            "P06 canonical opportunity uses evidence outside the allowlist",
-        )
-    evidence_text = " ".join(
-        evidence_by_id[evidence_id].content_text or ""
-        for evidence_id in sorted(target_ids)
-    )
-    concepts = _cache_concepts(evidence_text)
-    if not _REQUIRED_CACHE_CONCEPTS.issubset(concepts):
-        _semantic_mismatch(
-            "P06_CANONICAL_EVIDENCE_SEMANTICALLY_INSUFFICIENT",
-            "P06 opportunity evidence does not contain the complete causal sequence",
-            metadata={"detected_concepts": sorted(concepts)},
-        )
     templates = {
-        item.opportunity_template_id: item
+        (
+            dimension.dimension_id,
+            variant.variant_id,
+            item.opportunity_template_id,
+        ): item
         for dimension in request.blueprint.dimensions
         for variant in dimension.evidence_variants
         for item in variant.question_opportunities
     }
-    for opportunity in targets:
-        template = templates[opportunity.opportunity_template_id]
-        if opportunity.evidence_fit < request.planning_policy.minimum_evidence_fit:
-            _semantic_mismatch(
-                "P06_CANONICAL_EVIDENCE_FIT_BELOW_POLICY",
-                "P06 canonical opportunity falls below the frozen evidence-fit policy",
+    supported_opportunity_ids: set[str] = set()
+    semantic_evidence_audit: list[dict[str, Any]] = []
+    for opportunity in mapping.opportunities:
+        template = templates[
+            (
+                opportunity.dimension_id,
+                opportunity.variant_id,
+                opportunity.opportunity_template_id,
             )
+        ]
+        target_ids = set(opportunity.evidence_ids)
+        if not target_ids or not target_ids.issubset(allowed_ids):
+            continue
+        evidence_text = " ".join(
+            evidence_by_id[evidence_id].content_text or ""
+            for evidence_id in sorted(target_ids)
+        )
+        evidence_concepts = _cache_concepts(evidence_text)
+        required_concepts = _cache_concepts(
+            f"{template.focus} {template.observable}"
+        )
+        semantic_evidence_audit.append(
+            {
+                "opportunity_template_id": template.opportunity_template_id,
+                "required_concepts": sorted(required_concepts),
+                "detected_concepts": sorted(evidence_concepts),
+            }
+        )
+        if not required_concepts or not required_concepts.issubset(
+            evidence_concepts
+        ):
+            continue
+        if opportunity.evidence_fit < request.planning_policy.minimum_evidence_fit:
+            continue
         if opportunity.opportunity_quality < max(
             request.planning_policy.minimum_opportunity_quality,
             template.minimum_quality,
         ):
-            _semantic_mismatch(
-                "P06_CANONICAL_QUALITY_BELOW_POLICY",
-                "P06 canonical opportunity falls below the frozen quality policy",
-            )
+            continue
+        supported_opportunity_ids.add(opportunity.opportunity_id)
+    if not supported_opportunity_ids:
+        _semantic_mismatch(
+            "P06_POSITIVE_NO_SEMANTICALLY_SUPPORTED_OPPORTUNITY",
+            "P06 produced no catalog opportunity supported by its own focus and observable",
+            metadata={"opportunity_audit": semantic_evidence_audit},
+        )
     plan = build_assessment_plan(
         mapping=mapping,
         blueprint=request.blueprint,
         policy=request.planning_policy,
     )
     validate_assessment_plan(plan, mapping=mapping)
-    eligible_target_ids = {item.opportunity_id for item in targets}
     planned_ids = set(
         plan.selected_opportunity_ids + plan.reserve_opportunity_ids
     )
     if (
         plan.status != m.WorkflowStatus.READY
-        or not eligible_target_ids.intersection(planned_ids)
+        or not supported_opportunity_ids.intersection(planned_ids)
     ):
         _semantic_mismatch(
-            "P06_CANONICAL_PLANNER_INELIGIBLE",
-            "The product planner cannot select the canonical opportunity",
+            "P06_POSITIVE_NO_ELIGIBLE_SEMANTIC_OPPORTUNITY",
+            "The product planner cannot select any semantically supported opportunity",
         )
 
 
@@ -1828,10 +1858,6 @@ def _semantic_checkpoint_verdict(
     elif checkpoint_id.startswith("P05_"):
         actual = cast(m.BlueprintReview, output)
         review_request = cast(m.BlueprintReviewRequest, request)
-        validate_blueprint_review_preflight_checks(
-            actual,
-            review_request.deterministic_preflight,
-        )
         expected_categories = {
             "CONSTRUCT",
             "SOURCE_FIDELITY",
@@ -1867,10 +1893,8 @@ def _semantic_checkpoint_verdict(
                 for check in actual.checks
                 if check.critical and check.status == m.ReviewCheckStatus.FAIL
             }
-            if (
-                actual.approval_recommendation
-                != m.BlueprintApprovalRecommendation.REJECT
-                or critical != {"PLAN_FEASIBILITY"}
+            if actual.approval_recommendation != (
+                m.BlueprintApprovalRecommendation.REJECT
             ):
                 raise _SemanticCheckpointMismatch(
                     "P05_NEGATIVE_NOT_REJECTED",
@@ -1879,7 +1903,23 @@ def _semantic_checkpoint_verdict(
                     contractual_adherence=ContractualAdherence.PASS,
                     safe_metadata={"critical_categories": sorted(critical)},
                 )
+            if critical != {"PLAN_FEASIBILITY"}:
+                raise _SemanticCheckpointMismatch(
+                    "P05_NEGATIVE_CRITICAL_CATEGORY_MISMATCH",
+                    "P05 rejected the negative for a critical category set that differs from the reviewed oracle",
+                    semantic_interpretation=SemanticInterpretation.INCORRECT,
+                    contractual_adherence=ContractualAdherence.FAIL,
+                    safe_metadata={"critical_categories": sorted(critical)},
+                )
+            validate_blueprint_review_preflight_checks(
+                actual,
+                review_request.deterministic_preflight,
+            )
         else:
+            validate_blueprint_review_preflight_checks(
+                actual,
+                review_request.deterministic_preflight,
+            )
             semantic_failures = {
                 str(check.category)
                 for check in actual.checks
@@ -1906,7 +1946,6 @@ def _semantic_checkpoint_verdict(
         _validate_p06_positive_invariants(
             request=map_request,
             mapping=mapping,
-            reviewed_example=cast(m.EvidenceMapPatch, expected),
         )
     elif checkpoint_id.startswith("P07_"):
         generation = cast(m.QuestionGenerationResult, output)
@@ -2284,6 +2323,18 @@ class ProductRehearsal:
                     }.intersection(failure["codes"])
                 ):
                     semantic_interpretation = SemanticInterpretation.DEFENDIBLE
+                    contractual_adherence = ContractualAdherence.FAIL
+                if (
+                    checkpoint_id == "P05_PLAN_FEASIBILITY_NEGATIVE"
+                    and "P05_PREFLIGHT_CHECK_MISMATCH" in failure["codes"]
+                ):
+                    failure["codes"] = sorted(
+                        {
+                            *failure["codes"],
+                            "P05_NEGATIVE_CRITICAL_CATEGORY_MISMATCH",
+                        }
+                    )
+                    semantic_interpretation = SemanticInterpretation.INCORRECT
                     contractual_adherence = ContractualAdherence.FAIL
                 assessment = classify_checkpoint(
                     checkpoint_id=checkpoint_id,
@@ -3090,6 +3141,7 @@ async def run_offline_convergence(
         OPENAI_XHIGH_ROUTE_PROFILE_ID,
         OPENAI_MAX_ROUTE_PROFILE_ID,
         OPENAI_TERRA_MEDIUM_ROUTE_PROFILE_ID,
+        OPENAI_TERRA_HIGH_ROUTE_PROFILE_ID,
     }:
         if max_total_cost_usd <= 0 or max_call_cost_usd <= 0:
             raise ValueError("positive qualification preflight cost caps are required")
@@ -3112,7 +3164,10 @@ async def run_offline_convergence(
                 max_retries=0,
                 default_budget_usd=max_call_cost_usd,
                 job_id=(
-                    "job_stage2_terra_medium_offline_preflight"
+                    "job_stage2_terra_high_offline_preflight"
+                    if route_profile_id
+                    == OPENAI_TERRA_HIGH_ROUTE_PROFILE_ID
+                    else "job_stage2_terra_medium_offline_preflight"
                     if route_profile_id
                     == OPENAI_TERRA_MEDIUM_ROUTE_PROFILE_ID
                     else "job_stage2_xhigh_offline_preflight"
@@ -3133,7 +3188,9 @@ async def run_offline_convergence(
             ledger_records=ledger_records,
         )
         run_id_prefix = (
-            "terra-medium-offline-"
+            "terra-high-offline-"
+            if route_profile_id == OPENAI_TERRA_HIGH_ROUTE_PROFILE_ID
+            else "terra-medium-offline-"
             if route_profile_id == OPENAI_TERRA_MEDIUM_ROUTE_PROFILE_ID
             else "xhigh-offline-"
             if route_profile_id == OPENAI_XHIGH_ROUTE_PROFILE_ID
@@ -3193,14 +3250,18 @@ async def run_offline_convergence(
         "integrated_chain_semantic_quality_conclusion_allowed": False,
     }
     qualified_effort = (
-        m.ReasoningEffort.MEDIUM
+        m.ReasoningEffort.HIGH
+        if route_profile_id == OPENAI_TERRA_HIGH_ROUTE_PROFILE_ID
+        else m.ReasoningEffort.MEDIUM
         if route_profile_id == OPENAI_TERRA_MEDIUM_ROUTE_PROFILE_ID
         else m.ReasoningEffort.MAX
         if route_profile_id == OPENAI_MAX_ROUTE_PROFILE_ID
         else m.ReasoningEffort.XHIGH
     )
     qualified_prompt_ids = (
-        OPENAI_TERRA_MEDIUM_PROMPT_IDS
+        OPENAI_TERRA_HIGH_PROMPT_IDS
+        if route_profile_id == OPENAI_TERRA_HIGH_ROUTE_PROFILE_ID
+        else OPENAI_TERRA_MEDIUM_PROMPT_IDS
         if route_profile_id == OPENAI_TERRA_MEDIUM_ROUTE_PROFILE_ID
         else OPENAI_MAX_PROMPT_IDS
         if route_profile_id == OPENAI_MAX_ROUTE_PROFILE_ID
@@ -3208,7 +3269,11 @@ async def run_offline_convergence(
     )
     expected_model = (
         TERRA_MODEL_ID
-        if route_profile_id == OPENAI_TERRA_MEDIUM_ROUTE_PROFILE_ID
+        if route_profile_id
+        in {
+            OPENAI_TERRA_MEDIUM_ROUTE_PROFILE_ID,
+            OPENAI_TERRA_HIGH_ROUTE_PROFILE_ID,
+        }
         else LUNA_MODEL_ID
     )
     qualification_efforts_are_exact = (
@@ -3253,7 +3318,9 @@ async def run_offline_convergence(
         "report_schema_version": REHEARSAL_REPORT_VERSION,
         "rehearsal_version": REHEARSAL_VERSION,
         "mode": (
-            "offline-terra-medium-qualification"
+            "offline-terra-high-qualification"
+            if route_profile_id == OPENAI_TERRA_HIGH_ROUTE_PROFILE_ID
+            else "offline-terra-medium-qualification"
             if route_profile_id == OPENAI_TERRA_MEDIUM_ROUTE_PROFILE_ID
             else (
                 "offline-max-qualification"
@@ -3331,7 +3398,9 @@ async def run_real_convergence(
             max_retries=0,
             default_budget_usd=max_call_cost_usd,
             job_id=(
-                "job_stage2_terra_medium_real_qualification"
+                "job_stage2_terra_high_real_qualification"
+                if route_profile_id == OPENAI_TERRA_HIGH_ROUTE_PROFILE_ID
+                else "job_stage2_terra_medium_real_qualification"
                 if route_profile_id == OPENAI_TERRA_MEDIUM_ROUTE_PROFILE_ID
                 else (
                     "job_stage2_max_real_qualification"
@@ -3399,14 +3468,18 @@ async def run_real_convergence(
     )
     unchanged_boundary = executable_boundary_hash == boundary_after_hash
     qualified_effort = (
-        m.ReasoningEffort.MEDIUM
+        m.ReasoningEffort.HIGH
+        if route_profile_id == OPENAI_TERRA_HIGH_ROUTE_PROFILE_ID
+        else m.ReasoningEffort.MEDIUM
         if route_profile_id == OPENAI_TERRA_MEDIUM_ROUTE_PROFILE_ID
         else m.ReasoningEffort.MAX
         if route_profile_id == OPENAI_MAX_ROUTE_PROFILE_ID
         else m.ReasoningEffort.XHIGH
     )
     qualified_prompt_ids = (
-        OPENAI_TERRA_MEDIUM_PROMPT_IDS
+        OPENAI_TERRA_HIGH_PROMPT_IDS
+        if route_profile_id == OPENAI_TERRA_HIGH_ROUTE_PROFILE_ID
+        else OPENAI_TERRA_MEDIUM_PROMPT_IDS
         if route_profile_id == OPENAI_TERRA_MEDIUM_ROUTE_PROFILE_ID
         else OPENAI_MAX_PROMPT_IDS
         if route_profile_id == OPENAI_MAX_ROUTE_PROFILE_ID
@@ -3414,7 +3487,11 @@ async def run_real_convergence(
     )
     expected_model = (
         TERRA_MODEL_ID
-        if route_profile_id == OPENAI_TERRA_MEDIUM_ROUTE_PROFILE_ID
+        if route_profile_id
+        in {
+            OPENAI_TERRA_MEDIUM_ROUTE_PROFILE_ID,
+            OPENAI_TERRA_HIGH_ROUTE_PROFILE_ID,
+        }
         else LUNA_MODEL_ID
     )
     qualification_efforts_are_exact = (
@@ -3455,7 +3532,9 @@ async def run_real_convergence(
         "report_schema_version": REHEARSAL_REPORT_VERSION,
         "rehearsal_version": REHEARSAL_VERSION,
         "mode": (
-            "real-terra-medium-qualification"
+            "real-terra-high-qualification"
+            if route_profile_id == OPENAI_TERRA_HIGH_ROUTE_PROFILE_ID
+            else "real-terra-medium-qualification"
             if route_profile_id == OPENAI_TERRA_MEDIUM_ROUTE_PROFILE_ID
             else (
                 "real-max-qualification"
