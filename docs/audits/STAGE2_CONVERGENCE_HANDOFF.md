@@ -1,4 +1,292 @@
-# Handoff final — Terra/XHIGH final Terra gate
+# Handoff final — Sol adaptive reasoning ladder final gate
+
+Fecha de corte: 2026-08-14 (America/Santiago).
+
+Fase: **`SOL_ADAPTIVE_REASONING_LADDER_FINAL_GATE`**.<br>
+Ruta ejecutada: **`MEDIUM FAIL → HIGH FAIL → XHIGH FAIL → EXHAUSTED`**.<br>
+Veredicto: **`SOL_XHIGH_QUALIFICATION_FAILED`**.<br>
+Escalera: **`SOL_REASONING_LADDER_EXHAUSTED`**.<br>
+Convergencia: **`CONVERGENCE_INCOMPLETE`**.<br>
+Autoridad siguiente:
+**`INDEPENDENT_MODEL_ROUTING_OR_RESPONSIBILITY_REVIEW_ONLY_NO_SOL_MAX`**.
+
+Los tres rungs se ejecutaron una sola vez, secuencialmente y sobre el mismo
+candidate. MEDIUM y HIGH conservaron al menos un failure semántico model-owned
+limpio, con oracle y provenance válidos y confidence `HIGH`, por lo que la
+autoridad adaptativa avanzó. XHIGH volvió a clean-fail y agotó la escalera. No
+se ejecutó Sol/MAX, otro modelo, un rerun, retry, fallback, P10 ni P11.
+
+## 0. GitHub y linaje ejecutado
+
+| Elemento | Valor |
+|---|---|
+| Repositorio / checkout | `WilJms/PruebasPersonalizadas` / `/Users/wiljms/Documents/PruebasPersonalizadasCodex` |
+| Branch | `codex/openai-real-provider-gate` |
+| PR | `#3`, conservada `OPEN`, `DRAFT`, `UNMERGED` |
+| HEAD inicial observado | `dd139e1f40b6d37c95ccb43366e795e902eccf44` |
+| Terra/XHIGH histórico | candidate `22f011a2924008350fab6863992469c49736ed33`; receipt `sha256:a5c6086458c9433112a748493cadcc77dbf913addc810ea1a959c224eadd1491` |
+| Candidate único Sol | `d16a0a34482c13a261aa7c8a411fa3ec7be29ad7` |
+| Commits del candidate | `20fa5a121bd6187f82f9f87e4b7ac052f0d3a0ef`, `d16a0a34482c13a261aa7c8a411fa3ec7be29ad7` |
+| CI candidate push / PR | runs `31815696643` / `31815701220`; 7/7 PASS cada uno |
+| HEAD documental | único commit posterior que contiene este handoff y los tres receipts; SHA exacto publicado en la PR y en la entrega final |
+| Árbol al ejecutar | tracked tree e index limpios; sólo `coverage.xml` y `reports/openai/blueprint_v119_v115_recanary_a2be3c6.json` eran untracked preexistentes |
+
+El candidate contiene simultáneamente `SOL_MEDIUM_V1`, `SOL_HIGH_V1` y
+`SOL_XHIGH_V1`. El delta observado frente a `dd139e1…` coincide exactamente
+con los siete paths permitidos y registra `forbidden_delta=[]`. Desde el primer
+provider request no hubo cambios ejecutables; este cierre es documental.
+
+## 1. Verificación oficial OpenAI
+
+La capacidad y el pricing se verificaron en documentación oficial el
+`2026-08-14T14:50:29Z` y se reverificaron inmediatamente antes del preflight
+final el `2026-08-14T15:51:43Z`:
+
+- model ID exacto `gpt-5.6-sol`;
+- Responses API y Structured Outputs soportados;
+- reasoning `none`, `low`, `medium`, `high`, `xhigh` y `max` soportado;
+- contexto `1,050,000` y máximo output `128,000` tokens;
+- Standard short-context por millón: input `$5.00`, cached input `$0.50`,
+  cache write `$6.25` y output `$30.00`;
+- por encima de `272,000` input tokens: multiplicador `2×` para input y
+  `1.5×` para output.
+
+Fuentes: [GPT-5.6 Sol](https://developers.openai.com/api/docs/models/gpt-5.6-sol)
+y [API pricing](https://developers.openai.com/api/docs/pricing). Snapshot de
+capability: `sha256:6435fa54d52e31db33a4a8d40f109f190680dceb9eaa2b2cd69e9bb206aa3dd4`;
+pricing policy:
+`sha256:0ae66607627dd9de13e937a6e1b2f6db5a8bf215bc1635fe670fede359d346b0`.
+
+## 2. Frontera congelada
+
+| Superficie | Hash / versión ejecutada |
+|---|---|
+| Estado / material del harness | `TERRA_LADDER_HARNESS_FROZEN` / `sha256:0984337116a6146da91545d7527669e074658a8bc5e537cd1801dd619e973db9` |
+| Harness ejecutable | `sha256:343fd73f93cccb3d0e3d2f8c2d20ba4df3337daa116ef6f5e7f8a78b2d05c8c9` |
+| Rehearsal | `stage2-product-rehearsal/1.12.0`; `sha256:b8194f2ac7554aa14ae1c413f634b184a9e9bb7aeaec2e65fdacbd4c647db5ae` |
+| Matrix | `sha256:94fbd798732b057f3ba051144a0f0de5533ce6ffb85b103d766c6abeb660ea49`; 9 sweep + 2 offline + 4×6 integrated |
+| Fixture semántico | `stage2-semantic-qualification-pack/1.1.0`; `sha256:4cd112377efbb095edd588636b9ca83ab39be2a75b9756c0b9162c1fcd8eb148` |
+| Oracle P06 | `sha256:d559af8784d553a4df56166d27ab309c48064e577438c3e372213f175a857048` |
+| Oracle P07 | `sha256:25df80e7ee502f95692d800697760dfed10e8ade69488ab84f67bc0d7aa6daeb` |
+| Classifier | `sha256:17f71575b3b6c7351272baa50c7d02804e975fcc62962f814cb08731707e2db4` |
+| Prompts P04–P09 | `sha256:13ccb328e02d83631e1b361c96926b839b322993a2a930cd382d40bb540a47bc` |
+| Validators | `sha256:2ee35412b3e19dac77a1941a7fdb67b4b047c075d509dd3e0156784eded2e250` |
+| Thresholds | `sha256:2097ef510501f007378fa84ee4c90e1618f2a6f10c9f8ba0b16a071b01c2a419` |
+| Planner | `stage2-planner/2.0.0`; `sha256:4872c2abf163e27135b0d266c4675b197534aa0f7c36c0f7960ebe5a575e8adb` |
+| Assembler | `stage1-assembler/2.0.0`; `sha256:1ceb38188e615c844de9f8a8d76b5389c1aa54a8cb53062522015e6c435ebe8a` |
+| DOCX pack | `sha256:31be36973d565e0e56747c0f6b4aed62480edc082f211efb835df9a9b56afb99` |
+| Parser boundary | `stage2-parser/2.0.0`; `sha256:e9996dd42cba91ad0e01895acdc843b5570ab6e5fca0547d3efe4d377a02a347` |
+| Product workflow | `sha256:1ceb38188e615c844de9f8a8d76b5389c1aa54a8cb53062522015e6c435ebe8a` |
+
+Los tres receipts registran los mismos hashes de matriz, fixture, oracles,
+classifier, prompts, validators, thresholds, planner, assembler, DOCX y parser.
+No hubo golden injection ni datos estudiantiles reales.
+
+## 3. Profiles Sol y budget
+
+| Stage | `SOL_MEDIUM_V1` | `SOL_HIGH_V1` | `SOL_XHIGH_V1` | Qualification |
+|---|---|---|---|---|
+| P01 / P02 | MEDIUM | MEDIUM | MEDIUM | no call |
+| P03 | HIGH | HIGH | HIGH | no call |
+| P04–P09 | MEDIUM | HIGH | XHIGH | sí |
+| P10 | sin ruta | sin ruta | sin ruta | 0 calls |
+| P11 | LOW | LOW | LOW | 0 calls |
+
+Los tres profiles usan exclusivamente `gpt-5.6-sol`, Responses, Structured
+Outputs, `tools=[]`, `store=false`, `background=false`, sin fallback y con
+retries en cero. Terra/XHIGH → Sol/MEDIUM no es una comparación univariada:
+`cross_family_baseline_univariate=false`. MEDIUM → HIGH → XHIGH sí conserva
+modelo, harness y matriz y sólo cambia reasoning en P04–P09.
+
+La matriz deriva 33 calls por rung. Por ruta se reserva el ceiling de input
+como full cache write, el ceiling de output y 1,024 tokens de framing. El peor
+call matemático es `$2.0425`; el peor rung es `$63.9825`. Caps redondeados:
+
+- por call: `$2.05`;
+- por rung: `33` calls / `$63.99`;
+- escalera condicional absoluta: `99` calls / `$191.97`.
+
+La cota absoluta nunca fue un ledger compartido: cada rung tuvo authorization,
+ledger, boundary y receipt propios.
+
+## 4. Validación offline y candidate pre-network
+
+Los tres dry-runs se ejecutaron antes de resolver el secreto o abrir red al
+provider. Cada uno simuló `33/33` calls y obtuvo PASS en sweep, ambos checks
+P05 offline y las cuatro cadenas, con provider/network/secret/billable `0`,
+sin golden injection, retry, fallback, P10/P11, tools, store ni background.
+
+| Superficie | Resultado pre-network |
+|---|---|
+| Focal profiles / adapter / harness | 148 PASS en el candidate final |
+| Backend completo local | 721 PASS, 17 skips; 0 failures/errors |
+| PostgreSQL 16 y 17 | prepare/migrations PASS; recovery/readiness 206 PASS por versión; E2E y sensitive completos PASS; contenedores eliminados |
+| Contratos / schemas | 53 roots, 141 `$defs`, 277 refs y fixtures PASS; regeneración idempotente |
+| OpenAPI / generated client | regeneración idempotente, sin drift |
+| Frontend | instalación limpia; 36 tests, typecheck, build y audit 0 vulnerabilidades |
+| Browser / Playwright | Stage 1 critical PASS; Stage 2/accessibility 2 PASS; QA manual sin errores de consola |
+| DOCX pack | rebuild determinista; cuatro documentos de una página renderizados e inspeccionados sin clipping/overlap |
+| Terraform / deploy artifacts | fmt/init backend=false/validate PASS; 11 tests PASS; YAML/shell válidos |
+| Docker / runtime audit | imágenes construidas; liveness/readiness/parser isolation y Stage 0 PASS |
+| Secret scan | PASS antes de red; cierre documental PASS sobre 335 archivos versionables |
+| Candidate CI | push `31815696643` y PR `31815701220`: 7/7 jobs PASS cada uno |
+
+El primer commit del candidate expuso únicamente que un test de delta asumía
+un objeto Git ausente en shallow checkout. `d16a0a3…` lo hizo fail-closed y
+shallow-safe; se repitieron los checks y el CI quedó verde antes de toda llamada
+real. No se ejecutó provider sobre un candidate con CI rojo.
+
+## 5. Ruta y resultados de qualification
+
+Ruta efectiva:
+
+**`MEDIUM FAIL → HIGH FAIL → XHIGH FAIL → EXHAUSTED`**
+
+| Checkpoint | MEDIUM | HIGH | XHIGH |
+|---|---|---|---|
+| P04+ | PASS | PASS | PASS |
+| P05+ | PASS | PASS | PASS |
+| P05− | **FAIL**: category mismatch; semantic + adherence | TECHNICAL: `MODEL_PROVIDER_ERROR` | **FAIL**: category mismatch; semantic + adherence |
+| P06+ | PASS | TECHNICAL: `MODEL_TIMEOUT` | PASS |
+| P07+ | PASS | PASS | **FAIL**: `P07_POSITIVE_ANCHOR_INSUFFICIENT` |
+| P07− | **FAIL**: `P07_NEGATIVE_NOT_ABSTAINED` | PASS | PASS |
+| P08+ | **FAIL**: `P08_POSITIVE_NOT_ACCEPTED` | **FAIL**: `P08_POSITIVE_NOT_ACCEPTED` | **FAIL**: `P08_POSITIVE_NOT_ACCEPTED` |
+| P08− | PASS | PASS | PASS |
+| P09+ | PASS | PASS | PASS |
+| P05 offline + / − | PASS / PASS; 0 calls | PASS / PASS; 0 calls | PASS / PASS; 0 calls |
+| base 1 | PASS | INCOMPLETE P08: `P08_DECISION_REJECT` | INCOMPLETE P08: `ABSTENTION_DIAGNOSTIC_MISSING` |
+| base 2 | PASS | PASS | PASS |
+| choice | INCOMPLETE P07: `DIAGNOSTIC_INCOMPLETE` | INCOMPLETE P07: `DIAGNOSTIC_INCOMPLETE` | INCOMPLETE P07: `ANCHOR_NOT_DERIVABLE` |
+| canonical DOCX | INCOMPLETE P07: `UNAUTHORIZED_EVIDENCE` | PASS | INCOMPLETE P07: `UNAUTHORIZED_EVIDENCE` |
+
+Todos los failures stage-local señalados como model-owned tienen oracle
+`VALID`, provenance versionada y confidence `HIGH`. Los fallos integrated se
+mantienen `CAUSE_INDETERMINATE`, confidence `LOW`, sin convertirlos en culpa
+stage-local. HIGH fue una ejecución mixta: coexistieron dos technical failures
+con el clean model-owned `P08_POSITIVE_NOT_ACCEPTED`; este último satisfizo la
+regla explícita para avanzar a XHIGH. No se usó el aumento de reasoning para
+compensar una ejecución meramente inconclusa.
+
+## 6. Controles por rung
+
+| Control | MEDIUM | HIGH | XHIGH |
+|---|---:|---:|---:|
+| Provider attempts / cap | `29 / 33` | `30 / 33` | `28 / 33` |
+| Input tokens | `153,473` | `209,023` | `157,932` |
+| Cached input | `62,148` | `61,772` | `60,443` |
+| Cache-write input | `91,238` | `93,275` | `97,405` |
+| Output tokens | `53,370` | `78,401` | `136,580` |
+| Reasoning tokens | `21,830` | `45,836` | `98,423` |
+| Costo real | `$2.20284650` | `$2.96630475` | `$4.73682275` |
+| Charge conservador | `$11.94174650` | `$12.53109975` | `$11.67942275` |
+| Máximo real / cap por call | `$0.15554875 / $2.05` | `$0.23017125 / $2.05` | `$0.35327625 / $2.05` |
+| Máximo charge conservador | `$0.52087125` | `$0.67336250` | `$0.52422125` |
+| Technical / unpriced | `0 / 0` | `2 / 2` | `0 / 0` |
+| Gateway / SDK / semantic retries | `0 / 0 / 0` | `0 / 0 / 0` | `0 / 0 / 0` |
+| Fallback / P10 / P11 | `0 / 0 / 0` | `0 / 0 / 0` | `0 / 0 / 0` |
+| Tools / store / background | `false / false / false` | `false / false / false` | `false / false / false` |
+
+Totales reales de la escalera: `87` provider attempts, input `520,428`,
+cached input `184,363`, cache-write input `281,918`, output `268,351`,
+reasoning `166,089`, costo real `$9.90597400` y charge conservador
+`$36.15226900`. No se alcanzó ningún cap.
+
+## 7. Comparación descriptiva intra-Sol
+
+`statistical_significance_claimed=false`: existe una sola matriz por profile y
+no se afirma significancia ni superioridad general.
+
+| Señal | MEDIUM | HIGH | XHIGH | Lectura descriptiva |
+|---|---|---|---|---|
+| P07− | FAIL | PASS | PASS | mejora al subir a HIGH y estabilidad en XHIGH |
+| P08+ | FAIL | FAIL | FAIL | failure estable en los tres rungs |
+| P05− | FAIL | technical | FAIL | sin evidencia de mejora estable |
+| P07+ | PASS | PASS | FAIL | regresión en XHIGH |
+| Integrated completos | base 1, base 2 | base 2, canonical | base 2 | capacidad end-to-end parcial, no convergencia |
+| Technical errors | 0 | 2 | 0 | episodio sólo en HIGH |
+| Requests | 29 | 30 | 28 | descriptivo |
+| Output / reasoning | `53,370 / 21,830` | `78,401 / 45,836` | `136,580 / 98,423` | crece con reasoning |
+| Costo real | `$2.20284650` | `$2.96630475` | `$4.73682275` | descriptivo |
+
+El baseline cruzado Terra/XHIGH → Sol/MEDIUM no se presenta como causal ni
+univariado porque cambian familia y reasoning.
+
+## 8. Evidencia durable exactly-once
+
+### MEDIUM
+
+- receipt:
+  `reports/openai/stage2_sol_medium_qualification_d16a0a3_20260814_final_01.json`;
+- SHA-256:
+  `sha256:ef9c76024c565e753b9f11b02f1e9ea84b56b112f7a9c7bb6752cbebc5a904e2`;
+- execution / authorization:
+  `stage2-sol-medium-qualification-d16a0a3-20260814-final-01` /
+  `authorization-stage2-sol-medium-qualification-d16a0a3-20260814-final-01`;
+- authorization / boundary hash:
+  `sha256:bcfa59921794f75c31ec13543af16b7f7e1a9683e058a3a4be7b4d4f39d8cdde` /
+  `sha256:478e96e50a44e361ee7d92a8db6f129fb60c2a11c474c04a9950727508927f1d`;
+- ledger terminal `FAILED`, `2026-08-14T15:54:20.781033Z` →
+  `2026-08-14T16:09:14.391569Z`, código
+  `SOL_MEDIUM_QUALIFICATION_FAILED`; report hash coincidente.
+
+### HIGH
+
+- receipt:
+  `reports/openai/stage2_sol_high_qualification_d16a0a3_20260814_final_01.json`;
+- SHA-256:
+  `sha256:0220067c9da8739515687053ccd9c30d04e6fc02a09f2e39140763c3f85237d6`;
+- execution / authorization:
+  `stage2-sol-high-qualification-d16a0a3-20260814-final-01` /
+  `authorization-stage2-sol-high-qualification-d16a0a3-20260814-final-01`;
+- authorization / boundary hash:
+  `sha256:9bb20d87e38480f53037b6af117bd1e27b1e0374b24c7e028f13b0e5a04af5c9` /
+  `sha256:5a8a984f2ec9ad2d3093d5ae401086e5e4f8f7da894224d62ff3ad23d850cbfe`;
+- ledger terminal `FAILED`, `2026-08-14T16:10:15.390328Z` →
+  `2026-08-14T16:46:54.949460Z`, código
+  `SOL_HIGH_QUALIFICATION_FAILED`; report hash coincidente.
+
+### XHIGH
+
+- receipt:
+  `reports/openai/stage2_sol_xhigh_qualification_d16a0a3_20260814_final_01.json`;
+- SHA-256:
+  `sha256:3bab75082836f16cba79a3e9c154625c7a21e0283e8779a08b8cfd63d9316b60`;
+- execution / authorization:
+  `stage2-sol-xhigh-qualification-d16a0a3-20260814-final-01` /
+  `authorization-stage2-sol-xhigh-qualification-d16a0a3-20260814-final-01`;
+- authorization / boundary hash:
+  `sha256:05dc34a362d07dcfbf3132826662b951503cddbade5cdab4fe75bdd572355380` /
+  `sha256:8097ccbd77cbb72285d64fcf5e0c7033214b9e729d5f616ecfcaaf16b4b269e2`;
+- ledger terminal `FAILED`, `2026-08-14T17:58:58.030602Z` →
+  `2026-08-14T18:34:04.204063Z`, código
+  `SOL_XHIGH_QUALIFICATION_FAILED`; report hash coincidente.
+
+Los tres ledgers son archivos locales separados bajo
+`/Users/wiljms/.codex/evaluation-ledgers/PruebasPersonalizadas/`; no se
+reutilizó ninguna authorization ni se reescribió ningún receipt.
+
+## 9. Outcome y hard stop
+
+La fase termina exactamente en:
+
+**`SOL_XHIGH_QUALIFICATION_FAILED`**<br>
+**`SOL_REASONING_LADDER_EXHAUSTED`**<br>
+**`CONVERGENCE_INCOMPLETE`**
+
+No corresponde Sol/MAX, otra XHIGH, rerun MEDIUM/HIGH, Terra, otra familia
+automática, prompt tuning ni remediación del harness. La autoridad siguiente es
+únicamente revisión independiente de routing o distribución de
+responsabilidades.
+
+Confirmaciones: cada rung se ejecutó exactamente una vez y en orden; no se
+saltó ningún rung; no apareció PASS ni outcome inconcluso que exigiera detener
+antes; Sol/MAX `0`; Terra `0`; cambios post-freeze en harness/prompts/
+validators/thresholds/planner/assembler/fixture/oracles/classifier/DOCX/
+product workflow `0`; retry/fallback `0`; P10/P11 `0`; deploy/Cloud Build/
+`terraform apply`/migración remota/cloud E2E/datos reales `0`. El PR permanece
+`OPEN`, `DRAFT`, `UNMERGED`.
+
+# Anexo histórico — Terra/XHIGH final Terra gate
 
 Fecha de corte: 2026-08-13 (America/Santiago); ejecución terminada
 2026-08-14 UTC.
