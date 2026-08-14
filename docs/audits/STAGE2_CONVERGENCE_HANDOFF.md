@@ -1,4 +1,263 @@
-# Handoff consolidado — hardening semántico final del harness de Fase 2
+# Handoff final — Terra/MEDIUM requalification con pricing vigente
+
+Fecha de corte: 2026-08-13 (America/Santiago).
+
+Fase: **`TERRA_MEDIUM_PRENETWORK_PRICE_REFRESH_AND_CONTROLLED_REQUALIFICATION`**.<br>
+Veredicto: **`TERRA_MEDIUM_QUALIFICATION_FAILED`**.<br>
+Convergencia: **`CONVERGENCE_INCOMPLETE`**.<br>
+Clasificación causal:
+**`MODEL_OWNED_SEMANTIC_AND_ADHERENCE_FAILURE_WITH_INDETERMINATE_FAILURES`**.<br>
+Autoridad siguiente:
+**`INDEPENDENT_HARNESS_REVIEW_BEFORE_ANY_TERRA_HIGH_AUTHORITY`**.
+
+Se ejecutó exactamente una nueva matriz real, sintética y billable con
+`gpt-5.6-terra` y `reasoning.effort=medium`. No hubo segunda matriz, retry,
+fallback, P10, P11, tuning, cambio de producto, deploy ni datos estudiantiles
+reales. El receipt crudo se conserva byte-inmutable y el candidato ejecutado
+no se modificó después del primer request.
+
+## 0. GitHub y candidato ejecutado
+
+| Elemento | Valor |
+|---|---|
+| Repositorio / checkout | `WilJms/PruebasPersonalizadas` / `/Users/wiljms/Documents/PruebasPersonalizadasCodex` |
+| Branch | `codex/openai-real-provider-gate` |
+| PR | `#3`, `OPEN`, `DRAFT`, `MERGEABLE` |
+| HEAD inicial contrastado | `2fec84c012ad3aaf2be30763ddb927c6d4bb8049` — `Harden qualification harness semantics` |
+| Commit pricing/budget y candidato | `0dbf6142e80f3d3e2aaae9076fe7d8eb3b0280ef` — `Freeze Terra MEDIUM qualification budget` |
+| Parent del candidato | `2fec84c012ad3aaf2be30763ddb927c6d4bb8049` |
+| CI candidato | push `31754665685`, attempt 2, 7/7 PASS; PR `31754668491`, 7/7 PASS |
+| Árbol al ejecutar | tracked tree e index limpios; sólo `coverage.xml` y `reports/openai/blueprint_v119_v115_recanary_a2be3c6.json` untracked preexistentes |
+
+El primer attempt del job backend del run push encontró una carrera
+preexistente de SQLite al activar WAL en
+`test_exactly_once_ledger_is_atomic_under_concurrency`; el mismo test pasó
+aislado, en el run PR sobre el mismo SHA y en el único rerun del job CI. No se
+cambió código ni candidato para ocultar el flake. El SHA documental posterior
+y su CI se publican en el PR y en la entrega final para evitar autorreferencia
+del propio commit.
+
+## 1. Pricing oficial y budget congelado
+
+Se reverificaron inmediatamente antes del gate las páginas oficiales de
+pricing y del modelo. La referencia de la autoridad —USD `2.50` input,
+`0.25` cached y `15.00` output— estaba desactualizada. Los precios Standard
+short-context vigentes y usados son:
+
+| Modelo | Input / 1M | Cached / 1M | Cache write / 1M | Output / 1M |
+|---|---:|---:|---:|---:|
+| `gpt-5.6-sol` | USD 5.00 | USD 0.50 | USD 6.25 | USD 30.00 |
+| `gpt-5.6-terra` | USD 2.00 | USD 0.20 | USD 2.50 | USD 12.00 |
+| `gpt-5.6-luna` | USD 0.20 | USD 0.02 | USD 0.25 | USD 1.20 |
+
+Fuente: `https://developers.openai.com/api/docs/pricing`; observed date
+`2026-08-13`. El modelo exacto soporta Responses, Structured Outputs y
+`medium`. Cache writes cuestan `1.25 ×` el input no cacheado. Requests con
+más de `272,000` input tokens cuestan `2 ×` input y `1.5 ×` output para la
+request completa. Las rutas calificadas tienen ceiling de input `250,000`,
+incluyendo allowance de framing `1,024`, por lo que el multiplicador long
+context no aplica.
+
+`openai_pricing.py` ya contenía exactamente estos valores al reanclar, por lo
+que no se fabricó un diff de pricing. El delta permitido quedó limitado a la
+derivación auditable, caps, authorization metadata, receipts por llamada,
+Make/CLI y tests del harness.
+
+La reserva worst-case trata todo el input como cache write y todo el output
+como consumido:
+
+| Prompt | Calls | Input/output ceilings | Coste por call | Subtotal |
+|---|---:|---:|---:|---:|
+| P04 | 5 | 250,000 / 16,000 | USD 0.817 | USD 4.085 |
+| P05 | 6 | 250,000 / 16,000 | USD 0.817 | USD 4.902 |
+| P06 | 5 | 250,000 / 16,000 | USD 0.817 | USD 4.085 |
+| P07 | 6 | 250,000 / 10,000 | USD 0.745 | USD 4.470 |
+| P08 | 6 | 250,000 / 8,000 | USD 0.721 | USD 4.326 |
+| P09 | 5 | 250,000 / 10,000 | USD 0.745 | USD 3.725 |
+| **Total** | **33** | — | **máximo USD 0.817** | **USD 25.593** |
+
+Ceiling fail-closed a centavos: request cap `33`, max-call cap USD `0.82` y
+total cap USD `25.60`. Pricing policy hash
+`sha256:1043f12f6cce4be87f0a27af1062a30d7cab835dca12ab50ec9a6286a770c5ba`;
+matrix hash
+`sha256:94fbd798732b057f3ba051144a0f0de5533ce6ffb85b103d766c6abeb660ea49`.
+Los caps históricos USD `5.10`/`0.27` permanecen registrados sólo como
+historia y no fueron reutilizados.
+
+## 2. Regresión y dry-run pre-network
+
+| Superficie | Resultado |
+|---|---|
+| Pricing/harness/semantic/classifier | 77/77 focales PASS; matrix y ramas causales cubiertas |
+| Backend completo | 670 PASS, 17 skips sólo de PostgreSQL cubierto aparte, coverage 81 % |
+| PostgreSQL 16 / 17 | migrations, readiness, recovery y suites: 215/215 PASS en cada versión |
+| Contratos/schema/OpenAPI/client | contratos 1.2, 141 definiciones, 8 fixtures; 40 tests focales; regeneración idempotente |
+| Frontend | `npm ci`, typecheck, 36/36 tests, build y audit 0 PASS |
+| Browser/Playwright | QA desktop/mobile sin errores ni overflow; Stage 1 1/1 y Stage 2 2/2 PASS |
+| Terraform/static/deploy | fmt/init sin backend/validate PASS; deploy artifacts 11/11; YAML/shell PASS |
+| Docker | runtime/audit images, health/readiness y Stage 0 audit PASS |
+| Seguridad | secret scan PASS sobre 329 archivos versionables |
+| DOCX | rebuild byte-idéntico 4/4; render de una página e inspección visual 4/4 PASS |
+| Rehearsal Terra/MEDIUM | 33/33 simulados, 9 reviewed oracles + 24 transport substitutes, PASS, red 0 y secret resolution 0 |
+
+El dry-run confirmó modelo único `gpt-5.6-terra`, MEDIUM P04–P09, P05
+offline ± PASS, base1/base2/choice/canonical PASS, cero golden intermedio en
+canonical, P10/P11/retry/fallback `0`, tools/store/background `false` y caps
+exactos USD `25.60`/`0.82`/`33`.
+
+## 3. Frontera congelada
+
+| Material | Identidad |
+|---|---|
+| Route/model/effort | `TERRA_MEDIUM_V1` / `gpt-5.6-terra` / MEDIUM P04–P09 |
+| SDK / adapter | OpenAI Python `2.53.0` / `OpenAIResponsesAdapter`, Responses API |
+| Planner / assembler | `stage2-planner/2.0.0` / `stage1-assembler/2.0.0` |
+| Semantic fixture | `sha256:4a5cd49f86256839befc19cfd9aa9c803726929d5124e4c38d8ac3a82a999b12` |
+| Executable boundary | `sha256:0977efb472f6a39b971b79cfc868cf3a45dd68a79be515a80542a998d7a2dbd7` |
+| Authorization boundary | `sha256:75ab8e7f8f80de07a1be07b276a3aee5aeba92ef635f19f8b21ad08407ac8c3f` |
+| Authorization hash | `sha256:124562d092475f589c541d76cede7177ea2a4f09793d38b6cd6e5b1c42bc9ea4` |
+| Harness / rehearsal module | `sha256:1f5c663d133bd823f1fa97bce843573fb534ca8ae28c844d2495eb326aae141c` / `sha256:adf9a6c1ae88e07f9053751744147e18b761a9f2233c624b0cdcdcfc7060ac10` |
+| Manifest | `sha256:d5991a48253eead5a4ba87653323177144fb67a4ae455ec9e2595a3e153ffb11` |
+| Contract / schema / OpenAPI / client | `3f1a42102b10a558f42885a14034d5d41944f7c23f597d257baa6dd21d2cee0f` / `318f1dceee27f919934aa11eab81cfab703bfd5791e7b72c6d3e636f36304e8d` / `83cd3dbcc728c613460533fb9841df335524fc44c28242d80b5482d8afafd0a2` / `2ee42d9587897ddc1546308b0541e6aa196b03cb9f5c8bb8ed839af7cfddb303` |
+
+Prompts congelados:
+
+| Prompt | Versión | Hash |
+|---|---|---|
+| P04 | 1.1.11 | `sha256:f8c12331bacc676920095f353b8a3d7180f90ba2015c23aa3a378cbb505064e0` |
+| P05 | 1.1.8 | `sha256:4b38cf144dd44ce235399efdf6938f611bfac820aa3b31497859f5fd5e426bb4` |
+| P06 | 1.1.5 | `sha256:01bf8fabac2cf3c7aa235b4ecb0e16edf8844a57efe7be2aaac7ffa2948d2e26` |
+| P07 | 1.1.4 | `sha256:db0f6d91ad0357bbd7984e2b7d8564944e969fa8f39c0b95ca88085157d24b6c` |
+| P08 | 1.1.5 | `sha256:f63230dde5dadbbba78b24ae229fefc61a6b7d072a9c3d7c1ea9044be2463949` |
+| P09 | 1.1.6 | `sha256:a7607fb64499efdbb377469d1078ae758cfd47d09828f35af1ac603b46b5f2d3` |
+
+Relationship/application validators permanecieron, respectivamente:
+P04 `2.0.0`/none; P05 `2.2.0`/`2.2.0`; P06 `2.3.0`/`2.1.0`; P07
+`2.1.0`/`2.0.0`; P08 `2.1.0`/`2.0.0`; P09 `2.0.0`/`2.0.0`.
+Thresholds P08: groundedness `0.90`, anchor sufficiency `0.80`, answerability
+`0.85`, criterion relevance `0.80`, escalate below confidence `0.65`.
+
+Los cuatro DOCX preservaron sus hashes: assignment
+`ac8ade8c3dc529d06d439dcbc3af0b866c6e1deaa3ebaa0552963f7a93d54025`, rubric
+`71c8101a6d1c50acb81c2f04e8479540e9c90a35974819f46af497a81f5361f7`, sufficient
+`d4983ba075c625f4c58858db8ec02a603f57b71145517e7160afd29df32be49a` e insufficient
+`67d3ebaff85dfa269c65a8df23d3cc0e18631c6b2a51613c82fadeb2098f8204`. No cambió
+prompt, schema funcional, validator, threshold, planner, assembler, model
+payload, routing effort, retry/fallback ni product workflow.
+
+## 4. Única qualification real
+
+Execution ID:
+`stage2-terra-medium-requalification-0dbf614-20260813-final-01`.<br>
+Authorization ID:
+`authorization-stage2-terra-medium-requalification-0dbf614-20260813-final-01`.<br>
+Inicio/fin UTC: `2026-08-13T23:59:52.856279Z` /
+`2026-08-14T00:05:33.219281Z`.
+
+La autorización se reservó durablemente antes de resolver el secreto pinneado.
+El ledger quedó terminal `FAILED`; la autorización no es recuperable ni
+reutilizable.
+
+### Semantic sweep — 9/9 provider calls realizadas
+
+| Checkpoint | Review v1.0.0 | Resultado | Interpretación / causalidad |
+|---|---|---|---|
+| `P04_CANONICAL_POSITIVE` | `SR-P04-CACHE-POS-001` / `63aabc66a4664d9d4393ab0d4708ff383ce2d17bd21e2be969319e04024b0bf2` | PASS | semantic CORRECT; adherence PASS |
+| `P05_CANONICAL_POSITIVE` | `SR-P05-CACHE-BLUEPRINT-001` / `2f3baf9c64931487f53fcfc6c3d4557e4f634cb776a0a4dd65918f2ffddb42b1` | FAIL | `BLUEPRINT_REVIEW_PREFLIGHT_MISMATCH`; adherence FAIL, HIGH model-owned |
+| `P05_PLAN_FEASIBILITY_NEGATIVE` | `SR-P05-CACHE-PLAN-NEG-001` / `9d1bba041da78a78600a7645d40cb62aba8294c90e6c1c976e796b4e8490e808` | FAIL | no rechazó el negative; semantic INCORRECT, HIGH model-owned |
+| `P06_CANONICAL_POSITIVE` | `SR-P06-CACHE-MAP-POS-001` / `8cdfd4dcc53decab54e1167c20625573fb00b5e511ab92eb141b5975b08634d4` | FAIL | oportunidad canónica ausente; semantic INCORRECT, HIGH model-owned |
+| `P07_CANONICAL_POSITIVE` | `SR-P07-CACHE-POS-001` / `fc20c9360a36707762a91d76d2ce9f9d3c167bc8bcb088d1f94d6e8397e084f1` | FAIL | `ANCHOR_NOT_DERIVABLE`; adherence FAIL, HIGH model-owned |
+| `P07_INSUFFICIENT_NEGATIVE` | `SR-P07-CACHE-NEG-001` / `3a8c665373a3aad141571d8aced682410d5c7d3a8747eac2f91f2f12122006c2` | FAIL | no se abstuvo; semantic INCORRECT, HIGH model-owned |
+| `P08_CANONICAL_POSITIVE` | `SR-P08-CACHE-POS-001` / `e28976bdc1ad874d4fad0bc465a73eec899354b3edcdebaefc631167d4e36493` | PASS | semantic CORRECT; adherence PASS |
+| `P08_UNANSWERABLE_NEGATIVE` | `SR-P08-CACHE-NEG-001` / `a1094aefabd40a9396bda991679f36332adab024e33e667906fc3b2f8d75ef24` | PASS | rechazo correcto; semantic CORRECT, HIGH |
+| `P09_CANONICAL_POSITIVE` | `SR-P09-CACHE-POS-001` / `515ea95c840e9b8fb430ab744c3c9863fcfe5064c4c222afd32f50c9639710f4` | PASS | semantic CORRECT; adherence PASS |
+
+Todos los oracles del sweep constan `VALID`. Los cinco failures model-owned
+poseen confianza `HIGH`; por ello cumplen la regla humana de clean
+model-owned failure aunque coexistan fallos indeterminados en cadenas
+integradas.
+
+### Deterministic checks e integrated chains
+
+| Fila | Calls | Resultado | Clasificación |
+|---|---:|---|---|
+| P05 positive offline | 0 | PASS | `APPROVABLE`, `READY`, `APPROVE` |
+| P05 negative offline | 0 | PASS | `REJECT`, sólo `PLAN_FEASIBILITY` crítico |
+| Base 1 | 3 | INCOMPLETE | planner fail-closed `ASSESSMENT_PLAN_INFEASIBLE`; `CAUSE_INDETERMINATE`, LOW |
+| Base 2 | 6 | PASS | P04→P09 completo |
+| Choice variant | 6 | PASS | P04→P09 completo |
+| Canonical DOCX sufficient | 2 | INCOMPLETE | P05 `REJECT` por `CONSTRUCT`; `CAUSE_INDETERMINATE`, LOW |
+
+Las cadenas miden composición y no se usaron como jueces stage-local. Las
+paradas fail-closed explican `26` requests efectivas frente al cap worst-case
+`33`; no se redujo ni alteró la matriz.
+
+## 5. Provider controls, tokens y costo
+
+| Control | Resultado |
+|---|---|
+| Requests reales / cap | `26 / 33` |
+| Input tokens | `131,539` |
+| Cached input / cache-write input | `52,948 / 78,513` |
+| Output / reasoning tokens | `34,970 / 10,995` |
+| Costo real / cap | USD `0.6266681 / 25.60` |
+| Charge conservador / cap | USD `4.3110281 / 25.60` |
+| Máximo costo real / cap por call | USD `0.0456955 / 0.82` |
+| Máximo charge conservador / cap por call | USD `0.2083485 / 0.82` |
+| Attempts sin precio / errores técnicos | `0 / 0` |
+| Gateway / SDK / semantic retries | `0 / 0 / 0` |
+| Fallback / repaired | `0 / 0` |
+| P10 / P11 | `0 / 0` |
+| Tools / store / background | `false / false / false` |
+| Modelo / effort | sólo `gpt-5.6-terra` / sólo MEDIUM en P04–P09 |
+| Provider hashes | input/output/request-id presentes en 26/26 calls; contenido no persistido |
+| Boundary | `unchanged_boundary_across_chains=true` |
+
+No hubo provider error, timeout, schema-invalid ledger result ni causa
+technical-only. Todas las 26 invocaciones tuvieron attempt `1`, transport
+real, hashes completos y cero retry/fallback.
+
+## 6. Receipt, ledger y veredicto
+
+Receipt crudo e inmutable:
+`reports/openai/stage2_terra_medium_requalification_0dbf614_20260813_final_01.json`.<br>
+SHA-256:
+`8971d8ce0c07cfcb0574f909f24a6db79b83daaa2334124db65a64d0e5e4f17d`.
+
+Ledger durable fuera del repo:
+`/Users/wiljms/.codex/evaluation-ledgers/PruebasPersonalizadas/stage2-terra-medium-requalification-0dbf614-20260813-final-01.sqlite3`.
+Estado `FAILED`, failure code `TERRA_MEDIUM_QUALIFICATION_FAILED`, boundary
+hash y report hash coincidentes con el receipt. El receipt no se consolidó,
+reescribió ni reinterpretó retroactivamente.
+
+`TERRA_MEDIUM_QUALIFICATION_FAILED`<br>
+`CONVERGENCE_INCOMPLETE`
+
+## 7. Controles de salida
+
+- Segunda matriz Terra/MEDIUM: `0`.
+- Terra/HIGH, XHIGH o MAX: `0`.
+- Luna o Sol: `0`.
+- Prompt/model tuning: `0`.
+- Cambios de validators/thresholds/planner/assembler/product workflow: `0`.
+- P10/P11, retry y fallback: `0`.
+- Cloud Build, deploy, `terraform apply`, migración remota y cloud E2E: `0`.
+- Datos estudiantiles reales: `0`; clasificación
+  `SYNTHETIC_ONLY_NO_STUDENT_DATA`.
+- Merge o mark-ready: `0`; PR continúa draft.
+
+Los receipts históricos Luna/HIGH, Luna/XHIGH, Luna/MAX raw/consolidado y
+Terra/MEDIUM anterior mantienen, respectivamente, SHA-256 `30a422dc…`,
+`1b62c99b…`, `532ba5e1…`, `74fc1323…` y `af56425a…`. La qualification anterior
+sigue metodológicamente contaminada; este nuevo receipt no reescribe su
+historia.
+
+La operación queda detenida para revisión independiente. No se autoriza HIGH,
+otra matrix ni fase posterior.
+
+---
+
+# Anexo histórico — hardening semántico final del harness de Fase 2
 
 Fecha de corte actual: 2026-08-13 (America/Santiago).
 
