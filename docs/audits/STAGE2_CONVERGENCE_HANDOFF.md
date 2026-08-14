@@ -1,4 +1,240 @@
-# Handoff final — Terra/HIGH final decision gate
+# Handoff final — Terra/XHIGH final Terra gate
+
+Fecha de corte: 2026-08-13 (America/Santiago); ejecución terminada
+2026-08-14 UTC.
+
+Fase: **`TERRA_XHIGH_FINAL_TERRA_GATE`**.<br>
+Veredicto: **`TERRA_XHIGH_QUALIFICATION_FAILED`**.<br>
+Familia: **`TERRA_FAMILY_QUALIFICATION_EXHAUSTED`**.<br>
+Convergencia: **`CONVERGENCE_INCOMPLETE`**.<br>
+Clasificación causal: **`MODEL_OWNED_SEMANTIC_FAILURE`**.<br>
+Autoridad siguiente:
+**`INDEPENDENT_MODEL_ROUTING_OR_RESPONSIBILITY_REVIEW_ONLY_NO_TERRA_MAX`**.
+
+Se ejecutó exactamente una matriz real, sintética y billable con
+`gpt-5.6-terra` y `reasoning.effort=xhigh` en P04–P09 sobre el harness
+semántico congelado. XHIGH corrigió P05− y completó la cadena base 1, pero
+conservó dos fallos stage-local con oracle `VALID`, provenance válida y
+confianza `HIGH`: P07− no se abstuvo ante evidencia insuficiente y P08+
+rechazó el positive canónico pese a puntuarlo por encima de todos los
+thresholds. No hubo segunda XHIGH, Terra/MAX, rerun MEDIUM/HIGH, tuning,
+cambio del harness después del freeze, deploy ni datos estudiantiles reales.
+
+## 0. GitHub y linaje ejecutado
+
+| Elemento | Valor |
+|---|---|
+| Repositorio / checkout | `WilJms/PruebasPersonalizadas` / `/Users/wiljms/Documents/PruebasPersonalizadasCodex` |
+| Branch | `codex/openai-real-provider-gate` |
+| PR | `#3`, conservada `OPEN`, `DRAFT`, `UNMERGED` |
+| HEAD inicial observado | `545ec361745797306dded5bbbb50fccb71197981` |
+| Candidate Terra/HIGH de referencia | `dbd6ba1b508963664533dc4aead9ed2d6b8dc82f` |
+| Receipt HIGH | `sha256:022d745a8f6a0ac262405f7c04c026463b5adcbfe942e16c56934bc94d629759` |
+| Candidate Terra/XHIGH ejecutado | `22f011a2924008350fab6863992469c49736ed33` — parent `545ec361745797306dded5bbbb50fccb71197981` |
+| CI candidate push | run `31764734045`, 7/7 PASS |
+| CI candidate PR | run `31764737307`, 7/7 PASS |
+| HEAD documental | commit que contiene este handoff y el receipt; SHA exacto registrado en el body de la PR tras publicarlo |
+| Árbol al ejecutar | tracked tree e index limpios; sólo `coverage.xml` y `reports/openai/blueprint_v119_v115_recanary_a2be3c6.json` untracked preexistentes |
+
+El candidate se publicó y ambos CI terminaron verdes antes de reservar la
+autorización exactly-once. Desde el primer provider request no se modificó
+ninguna superficie ejecutable; el único cambio posterior permitido es este
+cierre documental con el raw receipt inmutable.
+
+## 1. Freeze absoluto
+
+| Superficie | Hash / versión ejecutada |
+|---|---|
+| Estado / material del harness | `TERRA_LADDER_HARNESS_FROZEN` / `sha256:0984337116a6146da91545d7527669e074658a8bc5e537cd1801dd619e973db9` |
+| Matriz | `sha256:94fbd798732b057f3ba051144a0f0de5533ce6ffb85b103d766c6abeb660ea49`; 9 sweep + 2 offline + 4×6 integrated |
+| Fixture semántico | `stage2-semantic-qualification-pack/1.1.0`; `sha256:4cd112377efbb095edd588636b9ca83ab39be2a75b9756c0b9162c1fcd8eb148` |
+| Oracle P06 | `sha256:d559af8784d553a4df56166d27ab309c48064e577438c3e372213f175a857048` |
+| Oracle P07 | `sha256:25df80e7ee502f95692d800697760dfed10e8ade69488ab84f67bc0d7aa6daeb` |
+| Classifier | `sha256:17f71575b3b6c7351272baa50c7d02804e975fcc62962f814cb08731707e2db4` |
+| Prompts P04–P09 | `sha256:13ccb328e02d83631e1b361c96926b839b322993a2a930cd382d40bb540a47bc` |
+| Validators | `sha256:2ee35412b3e19dac77a1941a7fdb67b4b047c075d509dd3e0156784eded2e250` |
+| Thresholds | `sha256:2097ef510501f007378fa84ee4c90e1618f2a6f10c9f8ba0b16a071b01c2a419` |
+| Planner | `stage2-planner/2.0.0`; `sha256:4872c2abf163e27135b0d266c4675b197534aa0f7c36c0f7960ebe5a575e8adb` |
+| Assembler | `stage1-assembler/2.0.0`; `sha256:1ceb38188e615c844de9f8a8d76b5389c1aa54a8cb53062522015e6c435ebe8a` |
+| DOCX pack | `sha256:31be36973d565e0e56747c0f6b4aed62480edc082f211efb835df9a9b56afb99` |
+| Parser boundary | `stage2-parser/2.0.0`; `sha256:e9996dd42cba91ad0e01895acdc843b5570ab6e5fca0547d3efe4d377a02a347` |
+
+La comparación exacta HIGH→XHIGH registró como único delta experimental
+sustantivo `HIGH → XHIGH` en P04–P09, además de identidad del profile,
+pricing/budget, autorización y plumbing mecánico. `forbidden_delta=[]`:
+prompts, schemas, validators, thresholds, fixture semántico, oracles,
+classifier, matriz, planner, assembler, DOCX, parser y product workflow
+permanecieron idénticos.
+
+## 2. Profile XHIGH, capacidad oficial y budget
+
+La capacidad y el pricing se verificaron en documentación oficial el
+`2026-08-14T02:29:25Z`:
+
+- modelo `gpt-5.6-terra`, Responses API, Structured Outputs y
+  `reasoning.effort=xhigh` soportados;
+- contexto `1,050,000` tokens y máximo output `128,000` tokens;
+- Standard short-context por millón: input `$2.00`, cached input `$0.20`,
+  cache write `$2.50` y output `$12.00`;
+- por encima de `272,000` tokens: input `$4.00`, cached `$0.40`, cache write
+  `$5.00` y output `$18.00` por millón.
+
+Fuentes: [GPT-5.6 Terra](https://developers.openai.com/api/docs/models/gpt-5.6-terra)
+y [API pricing](https://developers.openai.com/api/docs/pricing). Capability
+snapshot: `sha256:a7ed5ebb5efc964701c7af526e693cac8f8747c1ff3936bf1001facc85146474`;
+pricing policy: `sha256:1043f12f6cce4be87f0a27af1062a30d7cab835dca12ab50ec9a6286a770c5ba`.
+
+Profile exclusivo `TERRA_XHIGH_V1`:
+
+| Stage | Modelo | Reasoning | Callable en qualification |
+|---|---|---|---|
+| P01 | `gpt-5.6-terra` | MEDIUM | No |
+| P02 | `gpt-5.6-terra` | MEDIUM | No |
+| P03 | `gpt-5.6-terra` | HIGH | No |
+| P04–P09 | `gpt-5.6-terra` | XHIGH | Sí |
+| P10 | sin ruta | DISABLED | No |
+| P11 | `gpt-5.6-terra` | LOW | No |
+
+La matriz deriva un máximo de `33` provider calls. La reserva conservadora
+usa por ruta el ceiling de input como full cache write, el ceiling de output y
+`1,024` tokens de framing. El peor caso matemático es `$25.593`; caps
+redondeados: `$0.82` por call y `$25.60` total. Ninguna request cruzó el
+threshold de long context.
+
+## 3. Qualification fila por fila
+
+### Semantic sweep y checks offline
+
+| Fila | Resultado | Interpretación / adherence |
+|---|---|---|
+| P04+ | PASS | semantic `CORRECT`; adherence PASS |
+| P05+ | PASS | semantic `CORRECT`; adherence PASS |
+| P05− | PASS | rechazó correctamente sólo por `PLAN_FEASIBILITY`; adherence PASS |
+| P06+ | PASS | semantic `CORRECT`; adherence PASS |
+| P07+ | PASS | semantic `CORRECT`; adherence PASS |
+| P07− | **FAIL** | `P07_NEGATIVE_NOT_ABSTAINED`: produjo candidate cuando la evidencia insuficiente exigía `REPLACEMENT_REQUIRED`; semantic `INCORRECT`, adherence PASS, oracle `VALID`, confidence HIGH |
+| P08+ | **FAIL** | `P08_POSITIVE_NOT_ACCEPTED`: REJECT de golden positive válido; semantic `INCORRECT`, adherence PASS, oracle `VALID`, confidence HIGH |
+| P08− | PASS | REJECT correcto del candidate no answerable; adherence PASS |
+| P09+ | PASS | semantic `CORRECT`; adherence PASS |
+| P05 offline + | PASS | `APPROVE` / `APPROVABLE`; 0 provider calls |
+| P05 offline − | PASS | `REJECT`, única categoría crítica `PLAN_FEASIBILITY`; 0 provider calls |
+
+En P08+ el propio output asignó groundedness `1.00`, anchor sufficiency
+`1.00`, criterion relevance `0.99`, answerability `1.00` y confidence `0.99`,
+todos por encima de sus thresholds, pero declaró un critical failure y decidió
+`REJECT`. El receipt conserva sólo el hash del código crítico del provider, no
+razonamiento interno.
+
+### Integrated chains
+
+| Cadena | Calls | Resultado | Alcance de la conclusión |
+|---|---:|---|---|
+| base 1 | 6 | PASS | composición end-to-end; no atribución stage-local |
+| base 2 | 6 | PASS | composición end-to-end; no atribución stage-local |
+| choice | 6 | PASS | composición end-to-end; no atribución stage-local |
+| canonical DOCX | 6 | PASS | parser/product boundary → P09; no atribución stage-local |
+
+Las cadenas integradas no inyectaron goldens intermedios y conservaron la
+frontera. Sus PASS demuestran capacidad integrada, pero no anulan los dos
+fallos stage-local del semantic sweep.
+
+## 4. Comparación descriptiva HIGH → XHIGH
+
+`statistical_significance_claimed=false`. La comparación usa una ejecución
+por profile y no afirma significancia estadística.
+
+| Punto | HIGH | XHIGH | Clasificación del cambio |
+|---|---|---|---|
+| P04+ | PASS | PASS | unchanged |
+| P05+ | PASS | PASS | unchanged |
+| P05− | FAIL: category mismatch | PASS | mejora |
+| P06+ | PASS | PASS | unchanged |
+| P07+ | PASS | PASS | unchanged |
+| P07− | FAIL: no abstention | FAIL: no abstention | unchanged failure |
+| P08+ | FAIL: positive rejected | FAIL: positive rejected | unchanged failure |
+| P08− | PASS | PASS | unchanged |
+| P09+ | PASS | PASS | unchanged |
+| P05 offline ± | PASS / PASS | PASS / PASS | unchanged |
+| base 1 | INCOMPLETE en P08 | PASS | mejora composicional |
+| base 2 | PASS | PASS | unchanged |
+| choice | PASS | PASS | unchanged |
+| canonical DOCX | PASS | PASS | unchanged |
+| Technical errors | 0 | 0 | unchanged |
+
+| Uso | HIGH | XHIGH | Delta descriptivo |
+|---|---:|---:|---:|
+| Provider requests | 32 | 33 | +1 |
+| Input tokens | 166,760 | 174,270 | +7,510 |
+| Cached input tokens | 67,443 | 69,148 | +1,705 |
+| Cache-write input tokens | 99,221 | 105,023 | +5,802 |
+| Output tokens | 51,082 | 99,327 | +48,245 |
+| Reasoning tokens | 20,527 | 65,449 | +44,922 |
+| Costo real | `$0.8747171` | `$1.4685091` | `+$0.5937920` |
+| Charge conservador | `$5.1097331` | `$5.2445851` | `+$0.1348520` |
+
+## 5. Controles de provider y costo
+
+| Control | Resultado XHIGH |
+|---|---|
+| Requests / cap | `33 / 33` provider attempts y network calls |
+| Tokens | input `174,270`; cached `69,148`; cache-write `105,023`; output `99,327`; reasoning `65,449` |
+| Costo | real `$1.4685091`; charge conservador `$5.2445851` |
+| Máximo observado | real `$0.1099915`; charge conservador `$0.2083485` |
+| Technical / unpriced | `0 / 0` |
+| Gateway / SDK / semantic retries | `0 / 0 / 0` |
+| Fallback / repairs / semantic normalizations | `0 / 0 / 0` |
+| P10 / P11 | `0 / 0` |
+| Tools / store / background | `false / false / false` |
+| Modelo observado | sólo `gpt-5.6-terra` |
+| Reasoning observado P04–P09 | sólo `XHIGH` |
+| Datos | `SYNTHETIC_ONLY_NO_STUDENT_DATA` |
+
+## 6. Evidencia durable
+
+- Raw receipt inmutable:
+  `reports/openai/stage2_terra_xhigh_qualification_22f011a_20260813_final_01.json`.
+- Receipt SHA-256:
+  `sha256:a5c6086458c9433112a748493cadcc77dbf913addc810ea1a959c224eadd1491`.
+- Candidate ejecutado: `22f011a2924008350fab6863992469c49736ed33`.
+- Execution ID:
+  `stage2-terra-xhigh-qualification-22f011a-20260813-final-01`.
+- Authorization ID:
+  `authorization-stage2-terra-xhigh-qualification-22f011a-20260813-final-01`.
+- Authorization hash:
+  `sha256:388812e8f2a6e0408166f3b6bbccfea36f78bebaaf9bfd0a6c45ae159cc36e5f`.
+- Authorization boundary:
+  `sha256:d9aa9da956352ba1312aa7f80fb5153c95c3a16d94ea9d662399f25423665df0`.
+- Ledger local exactly-once:
+  `/Users/wiljms/.codex/evaluation-ledgers/PruebasPersonalizadas/stage2-terra-xhigh-qualification-22f011a-20260813-final-01.sqlite3`.
+- Ledger terminal: `FAILED`, reservado
+  `2026-08-14T02:58:20.757629Z`, finalizado
+  `2026-08-14T03:15:17.044605Z`, failure code
+  `TERRA_XHIGH_QUALIFICATION_FAILED`; el report hash coincide.
+- El SHA del único commit documental posterior se registra en el body de la PR
+  y en la entrega final, porque un commit no puede contener su propio SHA.
+
+## 7. Outcome y hard stop
+
+La matriz termina exactamente en:
+
+**`TERRA_XHIGH_QUALIFICATION_FAILED`**<br>
+**`TERRA_FAMILY_QUALIFICATION_EXHAUSTED`**<br>
+**`CONVERGENCE_INCOMPLETE`**
+
+P07− y P08+ satisfacen el criterio de clean model-owned failure: checkpoint
+semánticamente calificado, oracle `VALID`, provenance válida y confidence
+`HIGH`. En consecuencia no existe autoridad para `TERRA_MAX_V1`, otra XHIGH,
+rerun MEDIUM/HIGH, prompt tuning ni remediación del harness. La siguiente
+decisión pertenece exclusivamente a revisión independiente entre modelo más
+fuerte para stages críticos, routing heterogéneo o redistribución de
+responsabilidades.
+
+Controles finales: segunda XHIGH `0`; Terra/MAX `0`; rerun MEDIUM/HIGH `0`;
+prompts/validators/thresholds/planner/assembler/fixture/DOCX/product workflow
+cambiados después del freeze `0`; deploy/cloud/datos reales `0`. El PR queda
+`OPEN`, `DRAFT`, `UNMERGED`. La operación se detiene aquí.
+
+# Anexo histórico — Terra/HIGH final decision gate
 
 Fecha de corte: 2026-08-13 (America/Santiago); ejecución terminada
 2026-08-14 UTC.
