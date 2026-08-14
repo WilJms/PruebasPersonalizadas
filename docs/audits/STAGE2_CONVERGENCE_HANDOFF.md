@@ -1,4 +1,262 @@
-# Handoff final — Terra/MEDIUM requalification con pricing vigente
+# Handoff final — Terra/HIGH final decision gate
+
+Fecha de corte: 2026-08-13 (America/Santiago); ejecución terminada
+2026-08-14 UTC.
+
+Fase: **`TERRA_HIGH_FINAL_DECISION_GATE`**.<br>
+Veredicto: **`TERRA_HIGH_QUALIFICATION_FAILED`**.<br>
+Convergencia: **`CONVERGENCE_INCOMPLETE`**.<br>
+Clasificación causal:
+**`MODEL_OWNED_SEMANTIC_AND_ADHERENCE_FAILURE_WITH_INDETERMINATE_FAILURES`**.<br>
+Autoridad siguiente: **`INDEPENDENT_REVIEW_ONLY_NO_RERUN_OR_XHIGH`**.
+
+Se ejecutó exactamente una matriz real, sintética y billable con
+`gpt-5.6-terra` y `reasoning.effort=high` en P04–P09. El resultado contiene
+tres fallos stage-local con oracle válido, provenance válida y confianza HIGH;
+por ello es un clean model-owned fail aunque una cadena integrada conserve
+causalidad indeterminada. No hubo segunda matriz, rerun, retry, fallback,
+Terra/MEDIUM, XHIGH, tuning, cambio del harness después del primer request,
+deploy ni datos estudiantiles reales.
+
+## 0. GitHub y candidate ejecutado
+
+| Elemento | Valor |
+|---|---|
+| Repositorio / checkout | `WilJms/PruebasPersonalizadas` / `/Users/wiljms/Documents/PruebasPersonalizadasCodex` |
+| Branch | `codex/openai-real-provider-gate` |
+| PR | `#3`, `OPEN`, `DRAFT`, `MERGEABLE` |
+| HEAD inicial y remoto contrastado | `d3b7584280e398be5b4dbe84a07ef4c980d171a2` |
+| Candidate HIGH | `dbd6ba1b508963664533dc4aead9ed2d6b8dc82f` — `Freeze Terra harness and add HIGH decision gate` |
+| Parent del candidate | `d3b7584280e398be5b4dbe84a07ef4c980d171a2` |
+| CI candidate push | run `31761085930`, 7/7 PASS |
+| CI candidate PR | run `31761088637`, 7/7 PASS |
+| Árbol al ejecutar | tracked tree e index limpios; sólo `coverage.xml` y `reports/openai/blueprint_v119_v115_recanary_a2be3c6.json` untracked preexistentes |
+
+El candidate se publicó y su CI terminó verde antes de reservar la nueva
+autorización. Después del primer request no se modificó ningún archivo del
+candidate. El commit posterior se limita al receipt crudo, este handoff y el
+body del PR; su SHA y CI se registran en el PR y en la entrega final para
+evitar autorreferencia.
+
+## 1. Microcorrección y freeze definitivo del harness
+
+La única corrección P06 elimina la exigencia artificial de
+`oppt_justify_cache_invalidation`: el positive acepta cualquier path literal
+del blueprint que preserve dimension/variant/template/operation, use sólo IDs
+autorizados, esté materialmente sustentado, cumpla evidence-fit y quality, y
+sea elegible para el planner productivo. Los tests cubren el path de
+cache-invalidation, otro path válido, evidencia insuficiente, path inventado y
+ausencia de oportunidad elegible.
+
+La observabilidad P05 negative distingue ahora:
+
+- `P05_NEGATIVE_NOT_REJECTED`, cuando no rechaza;
+- `P05_NEGATIVE_CRITICAL_CATEGORY_MISMATCH`, cuando rechaza pero el conjunto
+  crítico difiere del oracle `PLAN_FEASIBILITY`.
+
+Ningún receipt MEDIUM histórico fue reescrito. Terminadas estas dos
+correcciones, el estado durable del instrumento es
+**`TERRA_LADDER_HARNESS_FROZEN`** y no volverá a adaptarse al comportamiento de
+HIGH.
+
+| Superficie congelada | Hash |
+|---|---|
+| Freeze material | `sha256:0984337116a6146da91545d7527669e074658a8bc5e537cd1801dd619e973db9` |
+| Semantic fixture v1.1.0 | `sha256:4cd112377efbb095edd588636b9ca83ab39be2a75b9756c0b9162c1fcd8eb148` |
+| Semantic reviews | `sha256:732fc6b7781ef3abd0c7608de0c9fcc49a2be724390ae3039243bc2524156e52` |
+| P06 oracle / review v2.0.0 | `sha256:d559af8784d553a4df56166d27ab309c48064e577438c3e372213f175a857048` / `sha256:43bd2c99778bb0360b3edb1bf93b1f90b9cb33e1f4e9a0517417cabf059f5367` |
+| P07 oracle | `sha256:25df80e7ee502f95692d800697760dfed10e8ade69488ab84f67bc0d7aa6daeb` |
+| Semantic dispatch | `sha256:7bc4f5a002f697b3596bc89ce6c7e3d3fa6b81cd826ca2429b24e4fca1b738d7` |
+| Classifier | `sha256:17f71575b3b6c7351272baa50c7d02804e975fcc62962f814cb08731707e2db4` |
+| Matrix | `sha256:94fbd798732b057f3ba051144a0f0de5533ce6ffb85b103d766c6abeb660ea49` |
+| Prompts P04–P09 | `sha256:13ccb328e02d83631e1b361c96926b839b322993a2a930cd382d40bb540a47bc` |
+| Validators | `sha256:2ee35412b3e19dac77a1941a7fdb67b4b047c075d509dd3e0156784eded2e250` |
+| Thresholds | `sha256:2097ef510501f007378fa84ee4c90e1618f2a6f10c9f8ba0b16a071b01c2a419` |
+| Planner / assembler | `sha256:4872c2abf163e27135b0d266c4675b197534aa0f7c36c0f7960ebe5a575e8adb` / `sha256:1ceb38188e615c844de9f8a8d76b5389c1aa54a8cb53062522015e6c435ebe8a` |
+| DOCX pack / parser boundary | `sha256:31be36973d565e0e56747c0f6b4aed62480edc082f211efb835df9a9b56afb99` / `sha256:e9996dd42cba91ad0e01895acdc843b5570ab6e5fca0547d3efe4d377a02a347` |
+
+La rehearsal semántica offline quedó PASS, SHA-256 de archivo
+`357206c6852095915f2281ca9965a0a83b6584895562d8ea933510f77577f805`,
+con provider attempts `0`, red OpenAI `0`, billable `0`, secret resolution
+`false` y 33 invocaciones mock.
+
+## 2. Profile Terra/HIGH y documentación oficial
+
+El delta mecánico crea `TERRA_HIGH_V1` sin sobrescribir
+`TERRA_MEDIUM_V1`:
+
+| Prompt | Modelo | Effort |
+|---|---|---|
+| P01/P02 | `gpt-5.6-terra` | MEDIUM |
+| P03 | `gpt-5.6-terra` | HIGH |
+| P04–P09 | `gpt-5.6-terra` | HIGH |
+| P11 | `gpt-5.6-terra` | LOW, fuera de qualification |
+| P10 | sin ruta | disabled |
+
+La comparación programática MEDIUM→HIGH registra cero cambios de model,
+snapshot, prompt registry, schema, validator, fixture, planner o assembler;
+sólo cambia la identidad de ruta y MEDIUM→HIGH en P04–P09. Continúan
+fallback `null`, gateway/SDK/semantic retries `0`, Responses API,
+Structured Outputs, tools vacías, `store=false`, `background=false` y adapter
+`OpenAIResponsesAdapter` con SDK `2.53.0`.
+
+Antes de implementar se verificaron las páginas oficiales vigentes:
+
+- `https://developers.openai.com/api/docs/models/gpt-5.6-terra`: model ID
+  exacto, disponibilidad, Responses, Structured Outputs y reasoning `high`;
+- `https://developers.openai.com/api/docs/pricing`: precios Standard,
+  cache-write y reglas long-context.
+
+Pricing observado `2026-08-13`: input USD `2.00`/M, cached input USD
+`0.20`/M, cache write USD `2.50`/M y output USD `12.00`/M. Cache write es
+`1.25×` input; sobre `272,000` input tokens se aplica `2×` input y `1.5×`
+output. Las rutas tienen ceiling `250,000`, incluido framing allowance
+`1,024`, por lo que el tier largo no se reserva en esta matriz.
+
+## 3. Matriz, budget y preflight
+
+| Fila | Calls máximas |
+|---|---:|
+| Semantic sweep P04, P05+, P05−, P06, P07+, P07−, P08+, P08−, P09 | 9 |
+| P05 positive/negative deterministic offline | 0 + 0 |
+| Integrated base1 | 6 |
+| Integrated base2 | 6 |
+| Choice variant | 6 |
+| Canonical DOCX sufficient | 6 |
+| **Worst case** | **33** |
+
+La reserva usa ceilings contractuales, full cache-write worst case y output
+completo. Derivó máximo conservador por call USD `0.817`, total USD `25.593`
+y caps exactos fail-closed USD `0.82` / USD `25.60` / `33`. Pricing policy
+hash `sha256:1043f12f6cce4be87f0a27af1062a30d7cab835dca12ab50ec9a6286a770c5ba`;
+matrix hash `sha256:94fbd798732b057f3ba051144a0f0de5533ce6ffb85b103d766c6abeb660ea49`.
+
+El dry-run final pasó 33/33 con cinco observaciones PASS, modelo único Terra,
+HIGH exacto en P04–P09, red `0`, transportes reales `0`, P10/P11 `0`,
+retry/fallback `0`, freeze intacto y sin resolver el secreto. La regresión
+local cerró con 135/135 tests del gate/harness y 685 PASS + 17 skips del
+backend; PostgreSQL, frontend/browser, Terraform/static, Docker, security y
+DOCX quedaron cubiertos localmente y por las 14 ejecuciones verdes del CI del
+candidate.
+
+Frontera del candidate:
+
+| Material | Hash |
+|---|---|
+| Authorization boundary | `sha256:215d4f9ca58e19aaff741b4308f06954130e628342c45c7869028f344a8a56cd` |
+| Authorization hash | `sha256:d229767d28b02852e314c1fd79438b06017436b8196d0547321b73ae9d4819c2` |
+| Executable boundary | `sha256:edf32ced10983ca78175dbe3197eca47cae39d9465237390dcd03b19d1429360` |
+| Harness / rehearsal module | `sha256:9c15c25e3b08c999a9628af6361e5e42269b61d33955a19491b47d8e44e8761c` / `sha256:4a46831fea9007158f6537f73a973e9b32e0ec4005d68d79d31c06745560886c` |
+
+## 4. Única qualification real Terra/HIGH
+
+Execution ID:
+`stage2-terra-high-qualification-dbd6ba1-20260813-final-01`.<br>
+Authorization ID:
+`authorization-stage2-terra-high-qualification-dbd6ba1-20260813-final-01`.<br>
+Inicio/fin UTC: `2026-08-14T01:44:40.747837Z` /
+`2026-08-14T01:52:47.725050Z`.
+
+La autorización nueva se reservó durablemente antes de resolver el secreto
+pinneado. El ledger quedó terminal `FAILED`; no es recuperable ni reutilizable.
+
+### Semantic sweep — 9/9 calls
+
+| Checkpoint | Resultado | Interpretación / causalidad |
+|---|---|---|
+| `P04_CANONICAL_POSITIVE` | PASS | semantic CORRECT; adherence PASS |
+| `P05_CANONICAL_POSITIVE` | PASS | semantic CORRECT; adherence PASS |
+| `P05_PLAN_FEASIBILITY_NEGATIVE` | FAIL | `P05_NEGATIVE_CRITICAL_CATEGORY_MISMATCH`; semantic INCORRECT, adherence FAIL, HIGH model-owned |
+| `P06_CANONICAL_POSITIVE` | PASS | cualquier path válido quedó aceptado; semantic CORRECT |
+| `P07_CANONICAL_POSITIVE` | PASS | semantic CORRECT; adherence PASS |
+| `P07_INSUFFICIENT_NEGATIVE` | FAIL | `P07_NEGATIVE_NOT_ABSTAINED`; semantic INCORRECT, adherence PASS, HIGH model-owned |
+| `P08_CANONICAL_POSITIVE` | FAIL | `P08_POSITIVE_NOT_ACCEPTED`; semantic INCORRECT, adherence PASS, HIGH model-owned |
+| `P08_UNANSWERABLE_NEGATIVE` | PASS | rechazo correcto; semantic CORRECT, HIGH |
+| `P09_CANONICAL_POSITIVE` | PASS | semantic CORRECT; adherence PASS |
+
+Los tres failures poseen checkpoint semánticamente calificado, oracle
+`VALID`, semantic review versionada y causal confidence `HIGH`. P05 negative
+es un fallo combinado semántico/adherence; P07 negative y P08 positive son
+fallos semánticos. P06 pasó bajo el oracle corregido y congelado: no se adaptó
+el benchmark a la respuesta HIGH.
+
+### Deterministic checks e integrated chains
+
+| Fila | Calls reales | Resultado | Clasificación |
+|---|---:|---|---|
+| P05 positive offline | 0 | PASS | `APPROVABLE`, `READY`, `APPROVE` |
+| P05 negative offline | 0 | PASS | `REJECT`, sólo `PLAN_FEASIBILITY` crítico |
+| Base 1 | 5 | INCOMPLETE | P08 `REJECT`; integrated causality `CAUSE_INDETERMINATE`, sin atribución stage-local |
+| Base 2 | 6 | PASS | P04→P09, planner y assembly completos |
+| Choice variant | 6 | PASS | P04→P09, planner y assembly completos |
+| Canonical DOCX sufficient | 6 | PASS | parser/product boundary→P09, planner y assembly completos |
+
+La parada fail-closed de base1 explica 32 requests efectivas frente al cap
+worst-case 33. No se eliminó ni añadió ningún caso.
+
+## 5. Provider controls, tokens y costo
+
+| Control | Resultado |
+|---|---|
+| Requests reales / cap | `32 / 33` |
+| Input tokens | `166,760` |
+| Cached input / cache-write input | `67,443 / 99,221` |
+| Output / reasoning tokens | `51,082 / 20,527` |
+| Costo real / cap | USD `0.8747171 / 25.60` |
+| Charge conservador / cap | USD `5.1097331 / 25.60` |
+| Máximo costo real / cap por call | USD `0.0621715 / 0.82` |
+| Máximo charge conservador / cap por call | USD `0.2083485 / 0.82` |
+| Attempts sin precio / errores técnicos | `0 / 0` |
+| Gateway / SDK / semantic retries | `0 / 0 / 0` |
+| Fallback / semantic normalizations | `0 / 0` |
+| P10 / P11 | `0 / 0` |
+| Tools / store / background | `false / false / false` |
+| Modelo / effort | sólo `gpt-5.6-terra` / sólo HIGH en P04–P09 |
+| Provider receipts | 32/32 attempt `1`, transport real, request/input/output hashes presentes |
+| Boundary | `unchanged_boundary_across_chains=true` |
+
+No hubo provider error, timeout, invalid schema ledger result ni causa
+technical-only. Prompt, fixture y validator changes registrados: `0 / 0 / 0`.
+
+## 6. Receipt, ledger y veredicto
+
+Receipt crudo e inmutable:
+`reports/openai/stage2_terra_high_qualification_dbd6ba1_20260813_final_01.json`.<br>
+SHA-256:
+`022d745a8f6a0ac262405f7c04c026463b5adcbfe942e16c56934bc94d629759`.
+
+Ledger durable fuera del repo:
+`/Users/wiljms/.codex/evaluation-ledgers/PruebasPersonalizadas/stage2-terra-high-qualification-dbd6ba1-20260813-final-01.sqlite3`.
+Estado `FAILED`, failure code `TERRA_HIGH_QUALIFICATION_FAILED`; boundary,
+authorization y report hashes coinciden con el receipt.
+
+Los receipts MEDIUM permanecen byte-inmutables: requalification
+`8971d8ce0c07cfcb0574f909f24a6db79b83daaa2334124db65a64d0e5e4f17d` y
+qualification histórica
+`af56425a8d00fc1bbcee06c6e088f590cff68c9938c2b23190c1b5a72fdd776c`.
+
+**`TERRA_HIGH_QUALIFICATION_FAILED`**<br>
+**`CONVERGENCE_INCOMPLETE`**
+
+## 7. Controles de salida y hard stop
+
+- Segunda matriz Terra/HIGH: `0`.
+- Rerun Terra/MEDIUM: `0`.
+- Terra/XHIGH, Luna o Sol: `0`.
+- Prompt tuning o cambios post-request del harness: `0`.
+- Cambios de validator, threshold, planner, assembler o product workflow: `0`.
+- Retry, fallback, P10 o P11: `0`.
+- Cloud Build, deploy, `terraform apply`, migración remota o cloud E2E: `0`.
+- Datos estudiantiles reales: `0`; clasificación
+  `SYNTHETIC_ONLY_NO_STUDENT_DATA`.
+- Merge o mark-ready: `0`; PR continúa draft.
+
+La fase queda detenida para revisión independiente. No existe autorización
+para una segunda HIGH, XHIGH, tuning ni otra remediación del harness.
+
+---
+
+# Anexo histórico — Terra/MEDIUM requalification con pricing vigente
 
 Fecha de corte: 2026-08-13 (America/Santiago).
 
