@@ -1,20 +1,22 @@
 # Autoridad del pipeline simplificado
 
-**Estado:** norma aceptada; cutover P05 y frontera semántica P06 completados el
+**Estado:** norma aceptada; cutover P05 y fronteras semánticas P06/P07 completados el
 2026-08-15
 
 **Versión ejecutable:** `pipeline-authority/1.0.0`
 
-**Estado operativo:** `P06_SEMANTIC_MAPPING_BOUNDARY_COMPLETE_P08_PENDING`
+**Estado operativo:** `P07_QUESTION_GENERATION_BOUNDARY_COMPLETE_P08_PENDING`
 
 Esta decisión simplifica la asignación de autoridad sin rediseñar la
 arquitectura conceptual ni cambiar routing histórico. P04 conserva
 `AssessmentBlueprint` como output canónico de etapa, pero su frontera de
 inferencia se restringe a `BlueprintModelDraft`; un compilador determinista
 materializa identidad, policy y estado antes del preflight. P06, P07 y P09 no
-se retiran: Fase 4 restringe P06 al mapping semántico local y entrega al
-planner toda autoridad sobre N y factibilidad global. P07 y P09 conservan su
-semántica. La fuente ejecutable de esta norma es
+se retiran: P06 queda reducido al mapping semántico local y entrega al planner
+toda autoridad sobre N; P07 redacta sólo el contenido semántico de una pregunta
+ya planificada y el servidor materializa identidad, metadata, support evidence
+y anchor visible. P08 sigue activo temporalmente y P09 conserva su orden. La
+fuente ejecutable de esta norma es
 `src/comprehension_verification/pipeline_authority.py`.
 
 ## 1. Pipelines objetivo
@@ -131,6 +133,33 @@ válido de N.
   histórico sigue siendo legible por contrato, pero no se reutiliza como
   output actual si no prueba esa igualdad. Draft y patch nunca son
   intercambiables ni comparten la frontera provider/canónica.
+
+### Frontera de inferencia, materialización y cache P07
+
+- La request canónica sigue siendo `QuestionBuildRequest`, pero el proveedor
+  recibe `QuestionAliasEnvelope` (`p07-alias-envelope/1.0.0`) con una
+  oportunidad confiable, constraints y support evidence `E*`/artefactos `A*`
+  locales. No recibe IDs canónicos ni locators.
+- El proveedor devuelve sólo `QuestionModelDraft`: redacción, aliases del
+  visible anchor, observables ligados a support aliases, alternativas,
+  misconceptions, choices/rationales e incertidumbre o reemplazo. No devuelve
+  identidad, operación, formato, dificultad, tiempo, lineage, texto de anchor
+  ni metadata de workflow.
+- `QuestionCandidate.evidence_ids` conserva toda la support evidence de la
+  oportunidad. `candidate.anchor.fragments` es un subconjunto visible; el
+  servidor resuelve sus aliases y copia literalmente contenido, modalidad y
+  locator desde los `EvidenceUnit`. Por construcción,
+  `visible_anchor ⊆ support_evidence = opportunity.evidence_ids`.
+- `p07-question-materializer/1.0.0` crea IDs y campos confiables, deriva la
+  estructura/transformación del anchor, aplica leakage literal/overlap
+  conservador y nunca mejora texto, inventa observables o convierte un
+  reemplazo en pregunta. P08 permanece activo y evalúa answerability contra
+  support evidence, no exige que toda ella sea visible.
+- StageRun persiste exclusivamente `QuestionGenerationResult`. El fingerprint
+  liga prompt/root/schema wire, envelope, opportunity, bundle/support,
+  generation policy, scope, validators y materializer. En replay se proyecta
+  el objeto canónico, se recompila y se exige igualdad exacta; draft y resultado
+  canónico nunca son intercambiables.
 
 ## 3. Autoridad del modelo
 
@@ -252,13 +281,22 @@ P06 ya participa con su frontera reducida:
 - el resumen durable cuenta relaciones suficientes, parciales, insuficientes e
   inciertas, y el planner produce el fallo global si corresponde.
 
-## 7. Límites después de Fase 4
+P07 ya participa con su frontera reducida:
 
-Fase 4 cambia únicamente la frontera ejecutable de P06 y el consumo mínimo del
-planner/workflow. No cambia provider routing, modelo, reasoning, parser,
-seguridad, tenancy, auth, storage, exports, P07/P08/P09 ni infraestructura. P08
-sigue activo y P09 conserva el orden actual del runtime. No autoriza despliegue,
-datos estudiantiles reales, un corpus nuevo ni llamadas billables. La única
-siguiente fase funcional es simplificar P07 separando support evidence de
-visible anchor mediante un provider DTO propio; no se inicia aquí. P10
-permanece deshabilitado.
+- una oportunidad primaria o reserva produce un solo draft alias-only por
+  llamada y el servidor persiste exclusivamente el resultado canónico;
+- support evidence completa puede ser mayor que el anchor visible sin perder
+  answerability, ownership ni lineage;
+- reemplazo, reservas, regeneración localizada, retry/resume y cache conservan
+  sus transiciones y presupuestos previos;
+- P08 sigue siendo llamado en el runtime y P09 sigue en su orden anterior.
+
+## 7. Límites después de Fase 5
+
+Fase 5 cambia únicamente la frontera ejecutable P07 y la adaptación mecánica
+P08 para distinguir support evidence de visible anchor. No cambia routing,
+modelo, reasoning, parser, tenancy, auth, storage, exports, los diez scores ni
+la decisión de P08, el orden/semántica de P09 o infraestructura. No autoriza
+despliegue, datos estudiantiles reales, corpus nuevo ni llamadas billables. La
+única siguiente modificación funcional es retirar P08 del runtime activo; P09
+no se mueve todavía y P10 permanece deshabilitado.

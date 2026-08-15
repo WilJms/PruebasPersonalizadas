@@ -265,7 +265,7 @@ def test_negative_abstention_semantics_and_contract_adherence_are_separate() -> 
 
 
 def test_semantic_sweep_receipt_preserves_defendible_abstention_on_bad_adherence() -> None:
-    class IncompleteNegativeDiagnosticAdapter:
+    class IncompleteReplacementReasonAdapter:
         def __init__(self) -> None:
             self.inner = build_reviewed_semantic_adapter()
 
@@ -279,12 +279,12 @@ def test_semantic_sweep_receipt_preserves_defendible_abstention_on_bad_adherence
                 and request.evidence_bundle.submission_id
                 == "submission_cache_insufficient"
             ):
-                raw["diagnostics"] = []
+                raw["replacement_reason"] = None
             return replace(result, raw_output=raw)
 
     gateway = ModelGateway(
         GatewayConfig(mode=GatewayMode.MOCK, max_retries=0),
-        mock_adapter=IncompleteNegativeDiagnosticAdapter(),
+        mock_adapter=IncompleteReplacementReasonAdapter(),
     )
     observation = asyncio.run(
         ProductRehearsal(gateway, max_call_cost_usd=1.0).run_sweep(
@@ -298,7 +298,7 @@ def test_semantic_sweep_receipt_preserves_defendible_abstention_on_bad_adherence
     assessment = by_id["P07_INSUFFICIENT_NEGATIVE"]
     assert observation.status == "FAIL"
     assert assessment["operational_outcome"] == "FAIL"
-    assert assessment["semantic_interpretation"] == "DEFENDIBLE"
+    assert assessment["semantic_interpretation"] == "NOT_EVALUATED"
     assert assessment["contractual_adherence"] == "FAIL"
     assert assessment["causal_attribution"] == (
         "MODEL_OWNED_CONTRACTUAL_ADHERENCE_FAILURE"
@@ -449,7 +449,7 @@ def test_p07_semantically_equivalent_alternative_passes_without_exact_equality()
                 and request.evidence_bundle.submission_id
                 == "submission_cache_sufficient"
             ):
-                raw["candidate"]["question_text"] = (
+                raw["question_text"] = (
                     "Explica la relación entre el cambio de fuente, la "
                     "invalidación y la consulta posterior usando el fragmento."
                 )
@@ -486,7 +486,7 @@ def test_p07_semantically_equivalent_alternative_passes_without_exact_equality()
             "MODEL_OWNED_SEMANTIC_FAILURE",
         ),
         (
-            "insufficient_anchor",
+            "objective_leakage",
             "INCORRECT",
             "FAIL",
             "MODEL_OWNED_SEMANTIC_FAILURE",
@@ -520,25 +520,16 @@ def test_p07_invariant_oracle_distinguishes_bad_and_indeterminate_candidates(
                 == "submission_cache_sufficient"
             ):
                 if mutation == "external":
-                    raw["candidate"]["question_text"] = (
+                    raw["question_text"] = (
                         "Explica cómo implementar la invalidación con un mutex "
                         "y coordinar hilos concurrentes cuando cambia la fuente."
                     )
-                elif mutation == "insufficient_anchor":
-                    source = next(
-                        unit.content_text
-                        for unit in request.evidence_bundle.evidence_units
-                        if unit.evidence_id
-                        == raw["candidate"]["anchor"]["fragments"][0][
-                            "evidence_id"
-                        ]
-                    )
-                    assert source is not None
-                    raw["candidate"]["anchor"]["fragments"][0][
-                        "display_text"
-                    ] = source.split(".", maxsplit=1)[0] + "."
+                elif mutation == "objective_leakage":
+                    raw["question_text"] = raw["expected_observables"][0][
+                        "description"
+                    ]
                 else:
-                    raw["candidate"]["question_text"] = (
+                    raw["question_text"] = (
                         "Comenta la decisión descrita en el fragmento."
                     )
             return replace(result, raw_output=raw)

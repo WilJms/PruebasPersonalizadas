@@ -4,14 +4,16 @@
 **Estrategia:** recorridos verticales, revisión humana 100%, un proveedor principal, contexto cerrado  
 **Estado:** plan inmediato; la preparación institucional permanece condicionada a evidencia del piloto
 
-**Aclaración ADR-037 (2026-08-14):** el objetivo formal es
+**Aclaración ADR-037 / Fase 5 (2026-08-15):** el objetivo formal es
 P01→P02→P03→P04→preflight determinista→aprobación docente y, por submission,
 P06→planner→P07→validaciones deterministas→revisión/aprobación docente→P09.
 P05/P08 son inactivos en el objetivo y P10 sigue deshabilitado. Fase 3 ya
 retiró P05 del runtime activo con preflight/recovery compatible. Fase 4
 conserva P06 como mapping semántico categórico sobre aliases, lo materializa en
-servidor y hace al planner única autoridad sobre N/factibilidad. P07 no cambia;
-P08 sigue activo y P09 conserva su orden actual hasta historias posteriores.
+servidor y hace al planner única autoridad sobre N/factibilidad. Fase 5 reduce
+P07 a redacción semántica y selección de visible anchor por aliases; el servidor
+conserva support evidence completa, identidad y anchor canónico. P08 sigue
+activo y P09 conserva su orden actual hasta historias posteriores.
 Las filas cerradas de Etapas
 0/1 se conservan como historia y regresión, no como autoridad para reactivar
 esas etapas.
@@ -172,6 +174,7 @@ Una persona completa el recorrido solicitado en cloud con una actividad y una en
 | E2-17 | Evaluación histórica y oracle explícito | harness/qualifications legados no seleccionan modelo; `ORACLE_SUSPECT` nunca produce `MODEL_OWNED_*`; reportes sintéticos enumeran códigos content-free |
 | E2-18 | Cutover runtime P05 | P04→preflight durable→docente; edición, aprobación, costo y recovery legacy producen cero llamadas P05 y conservan lectura histórica |
 | E2-19 | Frontera semántica P06 | provider DTO alias-only y categórico → materializador → patch canónico; mapping 0..N completa, planner decide N, cache/recovery seguro y una sola llamada |
+| E2-20 | Frontera semántica P07 | provider DTO alias-only → materializador server-side; support evidence completa se separa del visible anchor, metadata/locator/texto canónico quedan en backend, cache/replay son hash-bound y P08 continúa activo |
 
 ## Dependencias
 
@@ -179,10 +182,10 @@ Una persona completa el recorrido solicitado en cloud con una actividad y una en
 - política provisional de datos/retención para el entorno controlado;
 - conjunto de archivos DOCX/PDF representativos y autorizados.
 - `pipeline-authority/1.0.0` como fuente del objetivo; P05 quedó retirado por
-  E2-18 y P06 quedó simplificado por E2-19. La única siguiente fase funcional
-  es P07 support evidence/visible anchor + provider DTO; el retiro operativo de
-  P08 y el orden de P09 siguen requiriendo historias posteriores separadas con
-  migración compatible de jobs/estado.
+  E2-18, P06 quedó simplificado por E2-19 y P07 por E2-20. La única siguiente
+  modificación funcional es retirar P08 del runtime activo en Fase 6. El orden
+  de P09 permanece intacto hasta una Fase 7 separada, con migración compatible
+  de jobs/estado.
 
 ## Riesgos y mitigaciones
 

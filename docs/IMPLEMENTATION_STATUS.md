@@ -2,7 +2,80 @@
 
 Fecha de corte: 2026-08-15 (America/Santiago).
 
-## Estado vigente — frontera semántica P06 completa (2026-08-15)
+## Estado vigente — frontera de generación P07 completa (2026-08-15)
+
+Fase 5 conserva `P07_QUESTION_BUILD_V1` y sus objetos canónicos, pero reduce la
+inferencia a `QuestionModelDraft`. El proveedor recibe
+`QuestionAliasEnvelope` con scope local, oportunidad confiable, constraints y
+support evidence allowlisted como `E*`/`A*`; devuelve redacción, selección de
+visible anchor por alias, observables, alternativas, misconceptions,
+choices/rationales e incertidumbre o reemplazo. Ya no devuelve IDs, metadata,
+operación, formato, dificultad, tiempo, lineage, locators ni texto de anchor.
+Prompt pack/P07 avanzan a `1.1.16`/`1.1.5`.
+
+`p07-question-materializer/1.0.0` conserva
+`QuestionCandidate.evidence_ids` como support evidence completa de la
+oportunidad y reconstruye `AnchorFragment` literalmente desde cada
+`EvidenceUnit` seleccionado. Por tanto el anchor visible puede ser un
+subconjunto estricto sin perder answerability:
+`anchor evidence ⊆ candidate evidence = opportunity evidence`. Identidad,
+path del blueprint, operation, response format, difficulty, time,
+justification, option/observable IDs y campos canónicos son server-owned. Un
+draft incompatible falla cerrado o materializa `REPLACEMENT_REQUIRED`; nunca
+se mejora semántica ni se amplía evidencia.
+
+La frontera liga `p07-alias-envelope/1.0.0`, schema estricto provider,
+request/opportunity/support/bundle/policy/scope y
+`p07-materializer-boundary/1.0.0`. StageRun persiste sólo
+`QuestionGenerationResult`; un hit proyecta el draft y exige recompilación
+idéntica. Un draft no se interpreta como resultado canónico ni un resultado
+histórico como provider DTO nuevo. Cambio de support, oportunidad, scope,
+schema o materializador invalida reuse.
+
+La frontera publicada queda fijada por materializer source
+`sha256:341316e1272477c4032595e542c7df60d63de505c315011423175aa1835762e8`
+y boundary
+`sha256:9173f3dad548ca5da11ffa18a57c07c6badd89affaf99073e3005873def2617b`.
+El schema de aliases es
+`sha256:b8fc6e07c93b71d9530c1481f9f3112299128bfb2a23d9ca4f8050f4fccc40dc`
+y su boundary
+`sha256:214c6dbcdc5e92f8c6a5db5a16c48799473b31043911017a10d4ab3c451fe418`.
+
+La detección `p07-answer-leakage/1.0.0` bloquea sólo copia literal o cobertura
+4-gram ≥90% de observables/respuesta en anchor o pregunta; 65–90% queda como
+warning. No pretende decidir equivalencia semántica, suficiencia pedagógica,
+calidad general ni conocimiento externo. PII, secretos y claims/instrucciones
+prohibidos fallan antes de materializar; los literales reconstruidos del
+EvidenceUnit no se confunden con texto generado.
+
+La superficie provider baja de 13.671 a 2.822 bytes (-79,36%), de 100 a 17
+ocurrencias de propiedades y de 7 a 10 campos root pequeños; el payload de
+input canónico/alias baja de 2.294 a 914 bytes y el output provider de 3.051 a
+837 bytes. En mock, input/output baja de 573/750 a 416/216 tokens. Las llamadas
+P07 siguen en una por oportunidad, más sólo reservas/regeneraciones ya
+gobernadas; no cambiaron modelo, route ni reasoning.
+
+P08 sigue activo, con los mismos diez scores, decisión y routing; ahora entiende
+support evidence y visible anchor por separado. P09 conserva orden y semántica,
+y P10 sigue deshabilitado. Reservas, regeneración localizada, teacher edit,
+avoid fingerprints, retry/resume y lineage conservan el comportamiento previo.
+La próxima modificación funcional, no iniciada, es retirar P08 del runtime; P09
+no se mueve en esa fase.
+
+Validación local final: 19/19 tests directos P07 y `make test`/`make test-cov`
+con 809 passed, 17 skips PostgreSQL explícitos, una warning Starlette conocida
+y 81% de cobertura sobre 14.495 statements. El gate de contratos pasó con 58
+roots/163 defs/319 refs/8 fixtures y hashes schema/model
+`ffb955e42d23724a754d1a5a74c30db7b25398016a8f435312732870cd625da0`/
+`a36a4a8d262349ed87fbf0674b267e362704925588bae6193e7d5c11d714aa07`.
+Typecheck, 36 tests frontend, build, Playwright 1+2, OpenAPI no-drift,
+Terraform, 11 deploy tests, fixtures, compileall, secret scan y convergence
+dry-run pasaron. Toda ejecución usó keys removidas, mock y P10 false; red del
+proveedor, secretos resueltos y requests billables fueron cero. PostgreSQL y el
+daemon Docker no estaban disponibles localmente y corresponden al CI del SHA
+publicado.
+
+## Historial — frontera semántica P06 completa (2026-08-15)
 
 Fase 4 conserva P06, pero reduce su pregunta a qué evidencia autorizada de una
 submission sustenta qué ruta semántica del blueprint. El payload del proveedor
@@ -40,10 +113,9 @@ payload bajó de 3.413 a 1.325 bytes; la estimación offline pasó de 853/392 a
 ledger P06 por ejecución no reutilizada; retry/resume no los duplica. No se
 cambió modelo, route ni reasoning y no hubo red, secreto o llamada billable.
 
-P07 conserva su `QuestionOpportunity` canónico y no fue simplificado; P08
-sigue activo en el runtime actual; P09 conserva su orden actual; P10 permanece
-deshabilitado. La siguiente fase funcional, no iniciada, es P07 support
-evidence/visible anchor con provider DTO reducido.
+En ese corte P07 conservaba su frontera anterior; Fase 5 la sustituyó por la
+separación support evidence/visible anchor descrita arriba. P08 seguía activo,
+P09 conservaba su orden y P10 permanecía deshabilitado.
 
 Validación local final: focal ampliado 308 passed; `make test` y
 `make test-cov` 790 passed/17 skips PostgreSQL, 81% coverage; contratos 56

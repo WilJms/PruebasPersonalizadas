@@ -6,13 +6,13 @@
 **Artefacto generado:** `contracts.schema_v1.1.json` (JSON Schema Draft 2020-12)  
 **Regla:** el JSON Schema no se edita manualmente; se regenera desde Pydantic y CI compara bytes canónicos.
 
-**Estado ADR-037 / Fase 4:** `EvidenceMapPatch` sigue siendo el contrato
-canónico P06 y se añaden dos roots de frontera, `EvidenceMappingAliasEnvelope`
-y `EvidenceMappingModelDraft`. El bundle generado contiene 56 roots, 155
-`$defs`, 306 refs y 8 fixtures. P05/P08 permanecen para lectura histórica;
-P05 no es alcanzable en ejecuciones nuevas y P08 sigue activo hasta su cutover.
-P10 permanece deshabilitado. La presencia de un root no confiere autoridad ni
-autoriza invocación.
+**Estado ADR-037 / Fase 5:** `QuestionGenerationResult` sigue siendo el
+contrato canónico P07/P10 y se añaden dos roots de frontera,
+`QuestionAliasEnvelope` y `QuestionModelDraft`. El bundle generado contiene 58
+roots, 163 `$defs`, 319 refs y 8 fixtures. P05/P08 permanecen legibles; P05 no
+es alcanzable en ejecuciones nuevas y P08 sigue activo temporalmente hasta su
+cutover de Fase 6. P09 conserva su orden actual y P10 permanece deshabilitado.
+La presencia de un root no confiere autoridad ni autoriza invocación.
 
 ---
 
@@ -56,6 +56,8 @@ autoriza invocación.
 | `AssessmentPlan` | planificador determinista | P07/assembler | exactamente \(N\) oportunidades primarias y reserva disjunta |
 | `QuestionGenerationPolicy` | config | P07/P10 | límites de una generación localizada |
 | `QuestionValidationPolicy` | config | validaciones/P08 histórico | umbrales retenidos |
+| `QuestionAliasEnvelope` | compilador de input P07 | proveedor P07 | scope, oportunidad y support evidence sobre aliases locales `E*`/`A*`/`F*`; sin IDs ni anchor canónico de salida |
+| `QuestionModelDraft` | proveedor P07 | materializador P07 | redacción semántica, observables y selección del visible anchor por alias; sin identidad, metadata, locator ni texto de anchor canónico |
 | `QuestionGenerationResult` | P07/P10 | validaciones/revisión docente | una pregunta generada o solicitud de reemplazo |
 | `QuestionReviewResult` | P08 histórico | lectura/compatibilidad | scores, decisión o abstención legados |
 | `EvaluationGuide` | P09 posterior a aprobación | plataforma/evaluador | guía estructurada asociada a assessment/submission |
@@ -82,20 +84,25 @@ autoriza invocación.
 | `BlueprintBuildRequest` | P04 | `BlueprintModelDraft` | `AssessmentBlueprint` compilado y con preflight determinista |
 | `BlueprintReviewRequest` | P05 | `BlueprintReview` | `BlueprintReview` |
 | `EvidenceMapRequest` | P06 | `EvidenceMappingModelDraft` sobre payload `EvidenceMappingAliasEnvelope` | `EvidenceMapPatch` materializado |
-| `QuestionBuildRequest` | P07/P10 | `QuestionGenerationResult` | `QuestionGenerationResult` |
+| `QuestionBuildRequest` | P07 | `QuestionModelDraft` sobre payload `QuestionAliasEnvelope` | `QuestionGenerationResult` materializado |
+| `QuestionBuildRequest` | P10 deshabilitado | `QuestionGenerationResult` | `QuestionGenerationResult` |
 | `QuestionReviewRequest` | P08 | `QuestionReviewResult` | `QuestionReviewResult` |
 | `GuideBuildRequest` | P09 | `EvaluationGuide` | `EvaluationGuide` |
 | `SchemaRepairRequest` | P11 | `SchemaRepairResult` | `SchemaRepairResult` |
 
 `ModelTaskEnvelope` envuelve una llamada y `TrustedPromptContext` declara las
-allowlists. Para P01-P05/P07-P11, `payload` se vuelve a validar contra el input
-root de la fila. P04 proyecta `BlueprintBuildRequest` a su draft boundary; P06
-proyecta `EvidenceMapRequest` al root alias-only
-`EvidenceMappingAliasEnvelope`. En P04,
+allowlists. Para las fronteras no proyectadas, `payload` se vuelve a validar
+contra el input root de la fila. P04 proyecta `BlueprintBuildRequest` a su
+draft boundary; P06 proyecta `EvidenceMapRequest` a
+`EvidenceMappingAliasEnvelope`; P07 proyecta `QuestionBuildRequest` a
+`QuestionAliasEnvelope`. En P04,
 `provider_output_schema_name=BlueprintModelDraft` limita la inferencia y
 `output_schema_name=AssessmentBlueprint` conserva el objeto canónico. En P06,
 `provider_output_schema_name=EvidenceMappingModelDraft` y
-`output_schema_name=EvidenceMapPatch` separan igualmente wire y etapa.
+`output_schema_name=EvidenceMapPatch` separan igualmente wire y etapa. En P07,
+`provider_output_schema_name=QuestionModelDraft` y
+`output_schema_name=QuestionGenerationResult` impiden usar el draft como cache
+canónico.
 
 La identidad P06 liga prompt, schema wire exacto, versión/hash del alias
 envelope, `p06-evidence-materializer/1.0.0`, blueprint/policy/evidence hashes y
@@ -113,6 +120,16 @@ snapshots 1.1. El materializador 1.0 no pide al proveedor recrearlos: emite
 `support_description`, `support_type`, `semantic_uncertainty` y
 `abstention_reason`.
 
+La identidad P07 liga prompt y schema wire exactos, versión/hash del alias
+envelope, oportunidad, support evidence, bundle, policy, scope de submission,
+validators y `p07-question-materializer/1.0.0`. El materializador conserva
+`QuestionCandidate.evidence_ids` como support evidence completa y resuelve la
+selección `visible_anchor_aliases` a IDs, texto y locators exactos del
+`EvidenceBundle`. El proveedor no puede devolver IDs canónicos, metadata,
+operación, formato, dificultad, tiempo, lineage, locator ni texto del anchor.
+El anchor visible puede ser un subconjunto estricto de la evidencia que
+sustenta internamente la pregunta.
+
 `BlueprintPolicy.max_variants_per_dimension=6` y
 `max_templates_per_variant=12` son defaults operacionales provisionales,
 configurables y server-owned. No son invariantes pedagógicos universales. La
@@ -120,9 +137,10 @@ policy conserva `schema_version`/`policy_id` y su valor completo participa en el
 input y hash de reuse; el proveedor sólo debe respetar el cap recibido y nunca
 devolverlo como decisión propia.
 
-Las filas P05/P08 de esta frontera documentan contratos retenidos. La frontera
-activa ya salta de P04 a preflight/aprobación docente. El salto P07 a
-validaciones/revisión docente y la ubicación final de P09 siguen pendientes.
+Las filas P05/P08 documentan contratos retenidos. La frontera activa ya salta
+de P04 a preflight/aprobación docente; después de P07 ejecuta validaciones
+deterministas y todavía P08. Retirar P08 corresponde a Fase 6 y mover P09 a
+Fase 7.
 
 ## 3. Invariantes críticas
 
@@ -152,11 +170,22 @@ validaciones/revisión docente y la ubicación final de P09 siguen pendientes.
 - las operaciones soportadas por variante son permitidas, no preferencias ampliables;
 - un `AssessmentPlan READY` contiene exactamente `question_count` primarias, sin duplicados, y una reserva disjunta pequeña;
 - cualquiera de los cuatro fallos de planificación deja primarias/reserva vacías: no existe evaluación parcial;
-- los evidence IDs del ancla son subconjunto de los IDs de la pregunta;
+- `QuestionCandidate.evidence_ids` coincide con la support evidence completa de
+  la oportunidad; el proveedor no puede ampliarla ni reducirla;
+- los evidence IDs del anchor visible son un subconjunto no vacío de esa
+  support evidence y pueden ser un subconjunto estricto;
+- aliases de visible anchor, support y scope se resuelven sólo dentro del
+  envelope local hash-bound; un alias desconocido o cross-submission falla;
 - selección solo existe con `CHOICE`, al menos tres opciones y una mejor respuesta;
 - toda opción conserva `evaluator_rationale` y todo distractor una `misconception` defendible;
 - `student_justification_required` se resuelve desde la política `NOT_REQUIRED`, `SELECTED` o `ALL`;
-- pertenencia de IDs y literalidad/transformación del ancla se validan fuera de Pydantic contra el evidence store;
+- pertenencia de IDs y literalidad/transformación del anchor se materializan y
+  validan fuera de Pydantic contra el evidence store; texto y locator son
+  server-owned y no aceptan paráfrasis del proveedor;
+- operación, formato, dificultad, tiempo, justificación, path de blueprint,
+  identidad y lineage de P07 se copian desde la oportunidad/request confiable;
+- leakage bloquea únicamente copia literal o overlap objetivo alto y conserva
+  los casos ambiguos como warning; no sustituye la revisión semántica P08;
 - una pregunta con fallo crítico no puede llegar a revisión/aprobación docente; se intenta sólo un reemplazo localizado desde reserva;
 - `QuestionGenerationResult.context_mode=CLOSED` prohíbe `course_source_ids` y `citations`;
 - en contexto enriquecido, la pregunta mantiene igualdad exacta entre `course_source_ids` y los `source_id` citados.
@@ -432,6 +461,6 @@ Comando canónico desde el directorio de entregables:
 python models_v1.1.py --schema contracts.schema_v1.1.json
 ```
 
-La generación usa `pydantic.json_schema.models_json_schema` sobre `CONTRACT_MODELS`. El bundle agrega únicamente metadatos (`$schema`, `$id`, `version`, `roots`) y las `$defs` emitidas por Pydantic. `context_mode` en `QuestionGenerationResult` tiene default `CLOSED`; un consumidor enriquecido debe exigir explícitamente `COURSE_ENRICHED` y validar sus citas. La corrección del blueprint/plan elimina slots, batches masivos y salidas parciales antes de implementación productiva, por lo que no se migran objetos aprobados como si fueran equivalentes: se regeneran desde sus fuentes versionadas.
+La generación usa `pydantic.json_schema.models_json_schema` sobre `CONTRACT_MODELS`. El bundle agrega únicamente metadatos (`$schema`, `$id`, `version`, `roots`) y las `$defs` emitidas por Pydantic. `context_mode` en `QuestionGenerationResult` tiene default `CLOSED`; un consumidor enriquecido debe exigir explícitamente `COURSE_ENRICHED` y validar sus citas. Los roots provider P04/P06/P07 son fronteras de inferencia, no snapshots de dominio ni substitutos de sus outputs canónicos. La corrección del blueprint/plan elimina slots, batches masivos y salidas parciales antes de implementación productiva, por lo que no se migran objetos aprobados como si fueran equivalentes: se regeneran desde sus fuentes versionadas.
 
 La guía ejecutable completa, comandos de CI y fixtures se encuentran en `VALIDACION_CONTRATOS.md`.

@@ -23,10 +23,11 @@
 | `EvidenceMappingModelDraft` | output provider P06: relaciones y soporte categórico | root exportado; sin fields server-owned ni floats gate | transitorio; nunca cache canónico | consistente |
 | `EvidenceMapPatch` | materializador P06 | patch canónico con 0..N relaciones, cuatro estados y resumen; READY=mapping completado | StageRun/evidence matches/opportunities; parciales durables | consistente |
 | `AssessmentPlan` | planificador determinista sin LLM | exactamente \(N\) primarias + reserva disjunta o diagnóstico específico | assessment_plans | consistente |
-| `QuestionBuildRequest` -> `QuestionGenerationResult` | P07 Luna-high; una pregunta por oportunidad | root request/output; CLOSED por default | generated_questions | consistente |
-| `QuestionReviewRequest` -> `QuestionReviewResult` | P08 inactivo objetivo, aún activo en runtime actual | contrato retenido | question_reviews activos/legibles | cutover pendiente; sin cambio Fase 4 |
+| `QuestionAliasEnvelope`, `QuestionModelDraft` | P07 alias-only: redacción/observables/visible E*, sin IDs ni anchor text | roots exportados; provider DTO separado del canónico | transitorios; hash boundary, nunca stage cache | consistente |
+| `QuestionBuildRequest` -> `QuestionGenerationResult` | P07 Luna-high; servidor materializa metadata/support/anchor por oportunidad | support completa y anchor visible subset; CLOSED | generated_questions/StageRun canónico | consistente |
+| `QuestionReviewRequest` -> `QuestionReviewResult` | P08 inactivo objetivo, aún activo en runtime actual | support y anchor visible separados; contrato retenido | question_reviews activos/legibles | cutover pendiente; adaptación mecánica Fase 5 |
 | `ChoiceOption` y justificación | respuesta/rationale de cada opción; misconception por distractor | `CHOICE`; `student_justification_required` | assessment_questions/guides | consistente |
-| `GuideBuildRequest` -> `EvaluationGuide` | P09 objetivo después de aprobación; Fase 4 conserva el orden runtime actual | guía completa por assessment/submission | GET assessment guide | cutover pendiente; sin cambio Fase 4 |
+| `GuideBuildRequest` -> `EvaluationGuide` | P09 objetivo después de aprobación; Fase 5 conserva el orden runtime actual | guía completa por assessment/submission | GET assessment guide | cutover pendiente; sin cambio Fase 5 |
 | P10 enriquecido | deshabilitado | contrato retenido, no callable | sin activación | consistente |
 | `SchemaRepairRequest` -> `SchemaRepairResult` | P11 Luna-minimal, temperatura 0 | repair estructural único | ledger/result | consistente |
 | `Assessment` | exactamente \(N\), lineage y resumen de justificación | root + invariantes atómicas | GET/review/approve/export | consistente |
@@ -71,6 +72,10 @@
 22. `EvidenceMapPatch.READY` afirma mapping completado, no plan factible. Sólo oportunidades `SUFFICIENT` son elegibles y sólo el planner decide exactamente N, cobertura global, tiempo, diversidad, primarias y reservas.
 23. `evidence_fit`, `mapping_confidence` y `opportunity_quality` de P06 son `DERIVED_COMPATIBILITY`; ninguna referencia activa en planner/validator/workflow los usa como hard gate o ranking.
 24. Provider draft y patch canónico P06 no son intercambiables; scope/blueprint/policy/evidence/alias schema/materializador participan en reuse y bloquean poisoning cross-submission.
+25. P07 no devuelve IDs, locators, anchor text, operation, format, difficulty ni time; `QuestionModelDraft` contiene sólo semántica y aliases locales.
+26. `QuestionCandidate.evidence_ids` conserva support evidence completa y el anchor visible es un subconjunto reconstruido literalmente por el servidor.
+27. Draft y resultado canónico P07 no son intercambiables; support, oportunidad, bundle, policy, scope, schema y materializador invalidan reuse y replay exige igualdad exacta.
+28. P08 sigue activo temporalmente y revisa answerability contra support completa sin exigir que sea idéntica al anchor visible; P09 no se mueve y P10 sigue disabled.
 
 ## 3. Decisiones cerradas y abiertas
 

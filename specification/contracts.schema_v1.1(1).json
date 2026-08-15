@@ -58,6 +58,12 @@
     "EvidenceMappingModelDraft": {
       "$ref": "#/$defs/EvidenceMappingModelDraft"
     },
+    "QuestionAliasEnvelope": {
+      "$ref": "#/$defs/QuestionAliasEnvelope"
+    },
+    "QuestionModelDraft": {
+      "$ref": "#/$defs/QuestionModelDraft"
+    },
     "QuestionGenerationPolicy": {
       "$ref": "#/$defs/QuestionGenerationPolicy"
     },
@@ -6408,6 +6414,74 @@
       "title": "QualityMetricAggregate",
       "type": "object"
     },
+    "QuestionAliasEnvelope": {
+      "additionalProperties": false,
+      "description": "Exact call-local P07 input projected from one canonical request.",
+      "properties": {
+        "alias_schema_version": {
+          "const": "p07-alias-envelope/1.0.0",
+          "default": "p07-alias-envelope/1.0.0",
+          "title": "Alias Schema Version",
+          "type": "string"
+        },
+        "scope_alias": {
+          "pattern": "^S[a-f0-9]{24}$",
+          "title": "Scope Alias",
+          "type": "string"
+        },
+        "source_scope_hash": {
+          "pattern": "^sha256:[a-f0-9]{64}$",
+          "title": "Source Scope Hash",
+          "type": "string"
+        },
+        "opportunity": {
+          "$ref": "#/$defs/QuestionOpportunityContext"
+        },
+        "support_evidence": {
+          "items": {
+            "$ref": "#/$defs/QuestionEvidenceContext"
+          },
+          "maxItems": 50,
+          "minItems": 1,
+          "title": "Support Evidence",
+          "type": "array"
+        },
+        "generation_constraints": {
+          "$ref": "#/$defs/QuestionGenerationConstraints"
+        }
+      },
+      "required": [
+        "scope_alias",
+        "source_scope_hash",
+        "opportunity",
+        "support_evidence",
+        "generation_constraints"
+      ],
+      "title": "QuestionAliasEnvelope",
+      "type": "object"
+    },
+    "QuestionAvoidFingerprintContext": {
+      "additionalProperties": false,
+      "description": "Content-free wording fingerprint retained inside one P07 scope.",
+      "properties": {
+        "fingerprint_alias": {
+          "pattern": "^F[1-9][0-9]{0,2}$",
+          "title": "Fingerprint Alias",
+          "type": "string"
+        },
+        "normalized_question_hash": {
+          "pattern": "^sha256:[a-f0-9]{64}$",
+          "title": "Normalized Question Hash",
+          "type": "string"
+        }
+      },
+      "required": [
+        "fingerprint_alias",
+        "normalized_question_hash"
+      ],
+      "title": "QuestionAvoidFingerprintContext",
+      "type": "object"
+    },
     "QuestionBuildRequest": {
       "additionalProperties": false,
       "properties": {
@@ -6599,6 +6673,150 @@
       "title": "QuestionCandidate",
       "type": "object"
     },
+    "QuestionChoiceDraft": {
+      "additionalProperties": false,
+      "description": "Semantic choice content; the server creates the canonical option ID.",
+      "properties": {
+        "text": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "title": "Text",
+          "type": "string"
+        },
+        "is_best_answer": {
+          "title": "Is Best Answer",
+          "type": "boolean"
+        },
+        "evaluator_rationale": {
+          "maxLength": 1500,
+          "minLength": 1,
+          "title": "Evaluator Rationale",
+          "type": "string"
+        },
+        "misconception": {
+          "anyOf": [
+            {
+              "maxLength": 1000,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Misconception"
+        }
+      },
+      "required": [
+        "text",
+        "is_best_answer",
+        "evaluator_rationale"
+      ],
+      "title": "QuestionChoiceDraft",
+      "type": "object"
+    },
+    "QuestionEvidenceContext": {
+      "additionalProperties": false,
+      "description": "One support unit exposed to P07 only through a call-local alias.",
+      "properties": {
+        "evidence_alias": {
+          "pattern": "^E[1-9][0-9]{0,2}$",
+          "title": "Evidence Alias",
+          "type": "string"
+        },
+        "artifact_alias": {
+          "pattern": "^A[1-9][0-9]{0,2}$",
+          "title": "Artifact Alias",
+          "type": "string"
+        },
+        "modality": {
+          "$ref": "#/$defs/EvidenceModality"
+        },
+        "content_text": {
+          "anyOf": [
+            {
+              "maxLength": 100000,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Content Text"
+        },
+        "structured_content": {
+          "anyOf": [
+            {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Structured Content"
+        },
+        "language": {
+          "anyOf": [
+            {
+              "maxLength": 35,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Language"
+        },
+        "extraction_confidence": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Extraction Confidence",
+          "type": "number"
+        }
+      },
+      "required": [
+        "evidence_alias",
+        "artifact_alias",
+        "modality",
+        "extraction_confidence"
+      ],
+      "title": "QuestionEvidenceContext",
+      "type": "object"
+    },
+    "QuestionGenerationConstraints": {
+      "additionalProperties": false,
+      "description": "Server-owned P07 constraints visible to the model but never returned.",
+      "properties": {
+        "max_visible_anchor_fragments": {
+          "maximum": 8,
+          "minimum": 1,
+          "title": "Max Visible Anchor Fragments",
+          "type": "integer"
+        },
+        "require_accessible_alternative": {
+          "title": "Require Accessible Alternative",
+          "type": "boolean"
+        },
+        "avoid_fingerprints": {
+          "items": {
+            "$ref": "#/$defs/QuestionAvoidFingerprintContext"
+          },
+          "maxItems": 100,
+          "title": "Avoid Fingerprints",
+          "type": "array"
+        }
+      },
+      "required": [
+        "max_visible_anchor_fragments",
+        "require_accessible_alternative"
+      ],
+      "title": "QuestionGenerationConstraints",
+      "type": "object"
+    },
     "QuestionGenerationPolicy": {
       "additionalProperties": false,
       "properties": {
@@ -6709,6 +6927,147 @@
         "status"
       ],
       "title": "QuestionGenerationResult",
+      "type": "object"
+    },
+    "QuestionModelDraft": {
+      "additionalProperties": false,
+      "description": "Reduced P07 provider output materialized into QuestionGenerationResult.",
+      "properties": {
+        "scope_alias": {
+          "pattern": "^S[a-f0-9]{24}$",
+          "title": "Scope Alias",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "READY",
+            "REPLACEMENT_REQUIRED"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "question_text": {
+          "anyOf": [
+            {
+              "maxLength": 4000,
+              "minLength": 5,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Question Text"
+        },
+        "visible_anchor_aliases": {
+          "items": {
+            "pattern": "^E[1-9][0-9]{0,2}$",
+            "type": "string"
+          },
+          "maxItems": 8,
+          "title": "Visible Anchor Aliases",
+          "type": "array"
+        },
+        "expected_observables": {
+          "items": {
+            "$ref": "#/$defs/QuestionObservableDraft"
+          },
+          "maxItems": 5,
+          "title": "Expected Observables",
+          "type": "array"
+        },
+        "acceptable_alternatives": {
+          "items": {
+            "maxLength": 1000,
+            "minLength": 1,
+            "type": "string"
+          },
+          "maxItems": 20,
+          "title": "Acceptable Alternatives",
+          "type": "array"
+        },
+        "misconceptions": {
+          "items": {
+            "maxLength": 1000,
+            "minLength": 1,
+            "type": "string"
+          },
+          "maxItems": 20,
+          "title": "Misconceptions",
+          "type": "array"
+        },
+        "choices": {
+          "items": {
+            "$ref": "#/$defs/QuestionChoiceDraft"
+          },
+          "maxItems": 8,
+          "title": "Choices",
+          "type": "array"
+        },
+        "semantic_uncertainties": {
+          "items": {
+            "maxLength": 1000,
+            "minLength": 1,
+            "type": "string"
+          },
+          "maxItems": 20,
+          "title": "Semantic Uncertainties",
+          "type": "array"
+        },
+        "replacement_reason": {
+          "anyOf": [
+            {
+              "maxLength": 800,
+              "minLength": 3,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Replacement Reason"
+        }
+      },
+      "required": [
+        "scope_alias",
+        "status"
+      ],
+      "title": "QuestionModelDraft",
+      "type": "object"
+    },
+    "QuestionObservableDraft": {
+      "additionalProperties": false,
+      "description": "One semantic expected observable linked only through evidence aliases.",
+      "properties": {
+        "description": {
+          "maxLength": 1000,
+          "minLength": 3,
+          "title": "Description",
+          "type": "string"
+        },
+        "support_evidence_aliases": {
+          "items": {
+            "pattern": "^E[1-9][0-9]{0,2}$",
+            "type": "string"
+          },
+          "maxItems": 50,
+          "minItems": 1,
+          "title": "Support Evidence Aliases",
+          "type": "array"
+        },
+        "required_for_level_2": {
+          "default": true,
+          "title": "Required For Level 2",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "description",
+        "support_evidence_aliases"
+      ],
+      "title": "QuestionObservableDraft",
       "type": "object"
     },
     "QuestionOpportunity": {
@@ -6898,6 +7257,64 @@
         "opportunity_quality"
       ],
       "title": "QuestionOpportunity",
+      "type": "object"
+    },
+    "QuestionOpportunityContext": {
+      "additionalProperties": false,
+      "description": "Trusted P07 semantics and constraints without canonical identity.",
+      "properties": {
+        "cognitive_operation": {
+          "$ref": "#/$defs/CognitiveOperation"
+        },
+        "focus": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "title": "Focus",
+          "type": "string"
+        },
+        "observable": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "title": "Observable",
+          "type": "string"
+        },
+        "response_format": {
+          "$ref": "#/$defs/ResponseFormat"
+        },
+        "difficulty": {
+          "$ref": "#/$defs/DifficultyBand"
+        },
+        "target_minutes": {
+          "maximum": 60,
+          "minimum": 1,
+          "title": "Target Minutes",
+          "type": "integer"
+        },
+        "allowed_anchor_structures": {
+          "items": {
+            "$ref": "#/$defs/AnchorStructure"
+          },
+          "maxItems": 7,
+          "minItems": 1,
+          "title": "Allowed Anchor Structures",
+          "type": "array"
+        },
+        "student_justification_required": {
+          "title": "Student Justification Required",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "cognitive_operation",
+        "focus",
+        "observable",
+        "response_format",
+        "difficulty",
+        "target_minutes",
+        "allowed_anchor_structures",
+        "student_justification_required"
+      ],
+      "title": "QuestionOpportunityContext",
       "type": "object"
     },
     "QuestionOpportunityTemplate": {

@@ -32,7 +32,7 @@ from .contracts import (
 
 
 EXPECTED_SCHEMA_DIALECT = "https://json-schema.org/draft/2020-12/schema"
-EXPECTED_CONTRACT_ROOT_COUNT = 56
+EXPECTED_CONTRACT_ROOT_COUNT = 58
 EXPECTED_DOCUMENTED_FIXTURE_COUNT = 8
 
 _FIXTURE_TAG = re.compile(

@@ -20,6 +20,7 @@ from .canonical import canonical_hash, stable_id
 from .contracts import models as m
 from .evaluation_reporting import prepare_historical_harness_report
 from .evidence_mapping import build_evidence_mapping_alias_envelope
+from .question_generation import build_question_alias_envelope
 from .model_gateway.registry import prompt_spec
 from .model_gateway.openai_routes import OPENAI_ROUTE_PROFILES
 from .parsers.service import DOCX_MEDIA_TYPE, PARSER_VERSION, ParsedArtifact, SafeParserService
@@ -89,7 +90,7 @@ _HISTORICAL_PRODUCT_SOURCE_PATHS = frozenset(
         # Phase 3 changed product routing while the archived Phase 1 ladder
         # remained immutable evidence.
         "src/comprehension_verification/web/workflows.py",
-        # Phase 4 changes only the active P06 DTO/materializer/planner boundary.
+        # Phases 4/5 change the active P06/P07 DTO/materializer boundaries.
         # These archived hashes remain evidence, never current-runtime oracles.
         "specification/models_v1.1(1).py",
         "src/comprehension_verification/model_gateway/gateway.py",
@@ -99,7 +100,13 @@ _HISTORICAL_PRODUCT_SOURCE_PATHS = frozenset(
         "src/comprehension_verification/planning.py",
     }
 )
-_HISTORICAL_CHANGED_PROMPT_IDS = frozenset({"P06_EVIDENCE_MAP_V1"})
+_HISTORICAL_CHANGED_PROMPT_IDS = frozenset(
+    {
+        "P06_EVIDENCE_MAP_V1",
+        "P07_QUESTION_BUILD_V1",
+        "P08_QUESTION_REVIEW_V1",
+    }
+)
 _FROZEN_RELATIONSHIP_VERSIONS = {
     "P04_BLUEPRINT_BUILD_V1": "relationship-p04/3.0.0",
     "P05_BLUEPRINT_REVIEW_V1": "relationship-p05/2.2.0",
@@ -277,10 +284,13 @@ def frozen_product_boundary_proof() -> dict[str, Any]:
     }
     if changed_paths - _HISTORICAL_PRODUCT_SOURCE_PATHS:
         raise ValueError("frozen product source boundary changed")
-    if changed_paths and PIPELINE_CUTOVER_STATUS != (
-        "P06_SEMANTIC_MAPPING_BOUNDARY_COMPLETE_P08_PENDING"
-    ):
-        raise ValueError("historical runtime drift requires the Phase 4 boundary")
+    if changed_paths and PIPELINE_CUTOVER_STATUS not in {
+        "P06_SEMANTIC_MAPPING_BOUNDARY_COMPLETE_P08_PENDING",
+        "P07_QUESTION_GENERATION_BOUNDARY_COMPLETE_P08_PENDING",
+    }:
+        raise ValueError(
+            "historical runtime drift requires a declared P06/P07 boundary"
+        )
     actual_route_profile_hashes = {
         profile_id: canonical_hash(
             {
@@ -1242,8 +1252,14 @@ def _semantic_checkpoint_expected_output(
             checkpoints.mapping,
             checkpoints.p06_request,
         ),
-        "P07_CANONICAL_POSITIVE": checkpoints.p07_positive_result,
-        "P07_INSUFFICIENT_NEGATIVE": checkpoints.p07_negative_result,
+        "P07_CANONICAL_POSITIVE": _provider_draft_from_reviewed_question(
+            checkpoints.p07_positive_result,
+            checkpoints.p07_positive_request,
+        ),
+        "P07_INSUFFICIENT_NEGATIVE": _provider_draft_from_reviewed_question(
+            checkpoints.p07_negative_result,
+            checkpoints.p07_negative_request,
+        ),
         "P08_CANONICAL_POSITIVE": checkpoints.p08_positive_result,
         "P08_UNANSWERABLE_NEGATIVE": checkpoints.p08_negative_result,
         "P09_CANONICAL_POSITIVE": checkpoints.p09_guide,
@@ -1394,6 +1410,71 @@ def _provider_draft_from_reviewed_mapping(
             )
             for opportunity in mapping.opportunities
         ],
+    )
+
+
+def _provider_draft_from_reviewed_question(
+    result: m.QuestionGenerationResult,
+    request: m.QuestionBuildRequest,
+) -> m.QuestionModelDraft:
+    """Project an archived P07 golden onto the active alias-only boundary."""
+
+    envelope = build_question_alias_envelope(request)
+    alias_by_id = {
+        evidence_id: context.evidence_alias
+        for evidence_id, context in zip(
+            request.opportunity.evidence_ids,
+            envelope.support_evidence,
+            strict=True,
+        )
+    }
+    if result.status != "READY" or result.candidate is None:
+        reason = (
+            result.diagnostics[0].message
+            if result.diagnostics
+            else "La oportunidad histórica requiere reemplazo."
+        )
+        return m.QuestionModelDraft(
+            scope_alias=envelope.scope_alias,
+            status="REPLACEMENT_REQUIRED",
+            semantic_uncertainties=[],
+            replacement_reason=reason,
+        )
+    candidate = result.candidate
+    return m.QuestionModelDraft(
+        scope_alias=envelope.scope_alias,
+        status="READY",
+        question_text=candidate.question_text,
+        visible_anchor_aliases=[
+            alias_by_id[item.evidence_id]
+            for item in candidate.anchor.fragments
+        ],
+        expected_observables=[
+            m.QuestionObservableDraft(
+                description=item.description,
+                support_evidence_aliases=[
+                    alias_by_id[evidence_id]
+                    for evidence_id in item.evidence_ids
+                ],
+                required_for_level_2=item.required_for_level_2,
+            )
+            for item in candidate.preliminary_guide.observable_elements
+        ],
+        acceptable_alternatives=list(
+            candidate.preliminary_guide.acceptable_alternatives
+        ),
+        misconceptions=list(candidate.preliminary_guide.misconceptions),
+        choices=[
+            m.QuestionChoiceDraft(
+                text=item.text,
+                is_best_answer=item.is_best_answer,
+                evaluator_rationale=item.evaluator_rationale,
+                misconception=item.misconception,
+            )
+            for item in candidate.choices
+        ],
+        semantic_uncertainties=list(candidate.uncertainties),
+        replacement_reason=None,
     )
 
 

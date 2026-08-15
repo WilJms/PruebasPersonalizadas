@@ -12,6 +12,14 @@ sin cambiar modelo/ruta/reasoning ni abrir una recanary. Hubo cero requests,
 resoluciones de secreto, transporte o costo; todas las cifras y receipts reales
 inferiores permanecen históricos e inalterados.
 
+**Estado Fase 5 (2026-08-15):** P07 `1.1.5` usa ahora
+`QuestionAliasEnvelope`/`QuestionModelDraft`; support evidence, identidad,
+locator y texto del anchor canónico son server-owned. Se validó exclusivamente
+con mock y dry-runs offline: cero requests, resolución de secreto, transporte o
+costo. El schema P07 de 13.671 bytes y las observaciones reales descritas más
+abajo pertenecen a la frontera histórica `QuestionGenerationResult` y no se
+reinterpretan como evidencia de la frontera actual.
+
 Fecha de corte: 2026-08-11. Estado: el E2E del digest `sha256:04032e44…`
 se detuvo en P04 1.1.8 por `EVIDENCE_ID_NOT_ALLOWLISTED`. P04 1.1.9 está
 remediado y ligado a un dry-run acoplado; en ese corte histórico la evidencia

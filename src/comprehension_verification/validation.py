@@ -14,13 +14,20 @@ from typing import Any, Iterable, Mapping
 
 from .canonical import canonical_hash
 from .contracts import models as m
+from .question_generation import (
+    QuestionGenerationCompilationError,
+    anchor_fragment_for_evidence,
+    assess_answer_leakage,
+    derive_anchor_structure,
+    generated_text_safety_code,
+)
 
 
 PROMPT_APPLICATION_VALIDATOR_VERSIONS: Mapping[str, str] = MappingProxyType(
     {
         "P05_BLUEPRINT_REVIEW_V1": "application-validator-p05/2.2.0",
         "P06_EVIDENCE_MAP_V1": "application-validator-p06/3.0.0",
-        "P07_QUESTION_BUILD_V1": "application-validator-p07/2.0.0",
+        "P07_QUESTION_BUILD_V1": "application-validator-p07/3.0.0",
         "P08_QUESTION_REVIEW_V1": "application-validator-p08/2.0.0",
         "P09_GUIDE_BUILD_V1": "application-validator-p09/2.0.0",
     }
@@ -633,29 +640,13 @@ def validate_assessment_plan(
         validate_complete_diagnostics(plan.diagnostics, status=plan.status)
 
 
-_SECRET_PATTERNS = [
-    re.compile(r"\bAKIA[0-9A-Z]{16}\b"),
-    re.compile(r"\bsk-[A-Za-z0-9_-]{16,}\b"),
-    re.compile(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b"),
-]
-_PROHIBITED_CLAIMS = re.compile(
-    r"\b(detector de ia|hecho por ia|autor(?:ía)?|fraude|culpable|otro estudiante|system prompt|ignore (?:all |previous )?instructions)\b",
-    flags=re.IGNORECASE,
-)
-
-
 def _check_safe_generated_text(text: str) -> None:
-    claim_scan = re.sub(
-        r"\bno (?:permite|se puede|debe) inferir (?:la )?autor(?:ía)?\b",
-        "",
-        text,
-        flags=re.IGNORECASE,
-    )
-    if _PROHIBITED_CLAIMS.search(claim_scan):
+    code = generated_text_safety_code(text)
+    if code == "QUESTION_SECURITY_FAIL":
         raise ContextValidationError(
             "QUESTION_SECURITY_FAIL", "generated question contains a prohibited claim or instruction"
         )
-    if any(pattern.search(text) for pattern in _SECRET_PATTERNS):
+    if code == "QUESTION_PII":
         raise ContextValidationError("QUESTION_PII", "generated question exposes PII or a secret")
 
 
@@ -715,9 +706,10 @@ def validate_question_candidate(
         raise ContextValidationError(
             "UNSUPPORTED_COGNITIVE_OPERATION", "candidate changes the planned operation"
         )
-    if candidate.response_format not in opportunity.allowed_response_formats:
+    if candidate.response_format != opportunity.allowed_response_formats[0]:
         raise ContextValidationError(
-            "RESPONSE_FORMAT_NOT_ALLOWED", "candidate uses a response format outside the opportunity"
+            "RESPONSE_FORMAT_NOT_ALLOWED",
+            "candidate changes the server-selected response format",
         )
     if (
         candidate.difficulty != opportunity.difficulty
@@ -728,16 +720,26 @@ def validate_question_candidate(
         raise ContextValidationError(
             "BLUEPRINT_REFERENCE_MISMATCH", "candidate changes planned difficulty, time or justification"
         )
-    if candidate.anchor.structure not in opportunity.allowed_anchor_structures:
+    if candidate.evidence_ids != opportunity.evidence_ids:
         raise ContextValidationError(
-            "ANCHOR_STRUCTURE_NOT_ALLOWED", "candidate uses an anchor structure outside the opportunity"
-        )
-    if set(candidate.evidence_ids) - set(opportunity.evidence_ids):
-        raise ContextValidationError(
-            "UNAUTHORIZED_EVIDENCE", "candidate widens the opportunity evidence"
+            "UNAUTHORIZED_EVIDENCE",
+            "candidate support evidence must exactly match opportunity evidence",
         )
     if set(candidate.evidence_ids) - set(context.evidence_by_id):
         raise ContextValidationError("INVENTED_EVIDENCE_ID", "candidate uses unknown evidence")
+    if not 1 <= len(candidate.preliminary_guide.observable_elements) <= 5:
+        raise ContextValidationError(
+            "QUESTION_OBSERVABLES_INVALID",
+            "candidate requires one to five expected observables",
+        )
+    _require_unique(
+        (
+            element.element_id
+            for element in candidate.preliminary_guide.observable_elements
+        ),
+        code="DUPLICATE_ID",
+        label="candidate observable element IDs",
+    )
     for element in candidate.preliminary_guide.observable_elements:
         if not set(element.evidence_ids).issubset(set(candidate.evidence_ids)):
             raise ContextValidationError(
@@ -748,25 +750,65 @@ def validate_question_candidate(
                 "UNAUTHORIZED_SOURCE", "candidate guide widens candidate sources"
             )
     validate_generated_output_safety(candidate)
+    anchor_evidence: list[m.EvidenceUnit] = []
+    _require_unique(
+        (fragment.evidence_id for fragment in candidate.anchor.fragments),
+        code="DUPLICATE_ID",
+        label="visible anchor evidence IDs",
+    )
     for fragment in candidate.anchor.fragments:
         evidence = context.evidence_by_id.get(fragment.evidence_id)
         if evidence is None:
             raise ContextValidationError("INVENTED_EVIDENCE_ID", "anchor uses unknown evidence")
-        if fragment.locator.model_dump(mode="json") != evidence.locator.model_dump(mode="json"):
-            raise ContextValidationError("ANCHOR_NOT_DERIVABLE", "anchor locator does not match evidence")
-        if fragment.display_text is None:
-            raise ContextValidationError("ANCHOR_NOT_DERIVABLE", "Stage 0 anchor requires display text")
-        source_text = evidence.content_text or ""
-        if fragment.transformation in {"LITERAL", "CROP", "CODE_CONTEXT", "ALT_TEXT"}:
-            if fragment.display_text not in source_text:
-                raise ContextValidationError(
-                    "ANCHOR_NOT_DERIVABLE", "anchor text is not derivable from evidence"
-                )
-        elif fragment.transformation == "TABLE_SLICE":
-            if evidence.structured_content is None:
-                raise ContextValidationError(
-                    "ANCHOR_NOT_DERIVABLE", "table slice has no structured evidence"
-                )
+        if fragment.evidence_id not in candidate.evidence_ids:
+            raise ContextValidationError(
+                "UNAUTHORIZED_EVIDENCE",
+                "visible anchor is outside candidate support evidence",
+            )
+        if fragment != anchor_fragment_for_evidence(evidence):
+            raise ContextValidationError(
+                "ANCHOR_NOT_DERIVABLE",
+                "anchor fragment is not derivable from the exact server reconstruction",
+            )
+        anchor_evidence.append(evidence)
+    try:
+        expected_structure = derive_anchor_structure(
+            anchor_evidence, list(opportunity.allowed_anchor_structures)
+        )
+    except QuestionGenerationCompilationError as exc:
+        raise ContextValidationError(
+            "ANCHOR_STRUCTURE_NOT_ALLOWED",
+            "visible evidence cannot form an allowed anchor structure",
+        ) from exc
+    if candidate.anchor.structure != expected_structure:
+        raise ContextValidationError(
+            "ANCHOR_STRUCTURE_NOT_ALLOWED",
+            "candidate changes the server-derived anchor structure",
+        )
+    leakage = assess_answer_leakage(
+        visible_anchor_text="\n".join(
+            fragment.display_text or "" for fragment in candidate.anchor.fragments
+        ),
+        question_text=candidate.question_text,
+        expected_observables=[
+            item.description
+            for item in candidate.preliminary_guide.observable_elements
+        ],
+        choices=[
+            m.QuestionChoiceDraft(
+                text=item.text,
+                is_best_answer=item.is_best_answer,
+                evaluator_rationale=item.evaluator_rationale,
+                misconception=item.misconception,
+            )
+            for item in candidate.choices
+        ],
+    )
+    if leakage.blocked:
+        raise ContextValidationError(
+            "QUESTION_ANSWER_LEAKAGE",
+            "question or visible anchor contains an objectively recoverable answer",
+        )
     if bundle.context_mode == m.ContextMode.CLOSED:
         if candidate.course_source_ids or candidate.citations:
             raise ContextValidationError("UNAUTHORIZED_SOURCE", "closed question cites course sources")
@@ -783,6 +825,17 @@ def validate_generation_result(
     opportunity: m.QuestionOpportunity,
     bundle: m.EvidenceBundle,
 ) -> None:
+    validate_generated_output_safety(result)
+    if (
+        result.submission_id != bundle.submission_id
+        or result.submission_id != opportunity.submission_id
+        or result.opportunity_id != opportunity.opportunity_id
+        or result.context_mode != bundle.context_mode
+    ):
+        raise ContextValidationError(
+            "CROSS_SUBMISSION_EVIDENCE",
+            "generation result does not match the requested opportunity scope",
+        )
     if result.status == "READY":
         if result.candidate is None:
             raise ContextValidationError("MODEL_OUTPUT_INVALID", "ready generation has no candidate")

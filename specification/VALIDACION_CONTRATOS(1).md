@@ -16,12 +16,12 @@
 
 La documentación explica invariantes contextuales, pero no redefine tipos, enums ni obligatoriedad.
 
-Fase 4 implementa ADR-037 con un cambio contractual mínimo y regenerado: añade
-`EvidenceMappingAliasEnvelope` y `EvidenceMappingModelDraft`, conserva
-`EvidenceMapPatch` como output canónico y agrega campos categóricos/de resumen
-compatibles. El bundle esperado tiene 56 roots, 155 `$defs`, 306 refs y 8
-fixtures. Los roots/fixtures P05/P08 continúan obligatorios por compatibilidad
-histórica y P10 como contrato deshabilitado; ninguno prueba reachability.
+Fases 4/5 implementan ADR-037 con cambios contractuales mínimos y regenerados:
+añaden los envelopes/drafts provider de P06 y P07, mientras
+`EvidenceMapPatch` y `QuestionGenerationResult` siguen siendo outputs canónicos.
+El bundle esperado tiene 58 roots, 163 `$defs`, 319 refs y 8 fixtures. Los
+roots/fixtures P05/P08 continúan obligatorios por compatibilidad histórica y
+P10 como contrato deshabilitado; ninguno prueba reachability.
 
 ---
 
@@ -105,6 +105,10 @@ Crear `tests/fixtures/contracts/v1.1/{valid,invalid}` durante la implementación
   menos de N que completa antes del fallo del planner;
 - plan `READY` con exactamente \(N\), reserva disjunta y los cuatro fallos sin parcial;
 - P07 closed sin citas y `REPLACEMENT_REQUIRED` sin candidate;
+- P07 provider DTO pequeño, aliases E* válidos/inventados, support completa,
+  visible subset, reconstrucción exacta de texto/locator, hidden support,
+  multi-span/multi-artefacto, leakage objetivo, choice, cache/replay y
+  cross-submission;
 - P10 enriched con igualdad exacta entre `course_source_ids` y citations;
 - P08 `NEEDS_REVIEW` sin scores fabricados;
 - P09 ready completo y `NEEDS_REVIEW` sin items fabricados;
@@ -184,19 +188,20 @@ PROVIDER_OUTPUT_CONTRACTS = {
     **{prompt_id: output for prompt_id, (_, output) in PROMPT_CONTRACTS.items()},
     "P04_BLUEPRINT_BUILD_V1": "BlueprintModelDraft",
     "P06_EVIDENCE_MAP_V1": "EvidenceMappingModelDraft",
+    "P07_QUESTION_BUILD_V1": "QuestionModelDraft",
 }
 ```
 
 `PROMPT_CONTRACTS` conserva el output canónico de etapa para compatibilidad. El
 schema estructurado que ve el proveedor se toma de
-`PROVIDER_OUTPUT_CONTRACTS`; P04 y P06 difieren. El gateway compila el draft
-P04 antes de devolver `AssessmentBlueprint` y materializa el draft P06 antes
-de devolver `EvidenceMapPatch`. Para P06, además proyecta el request canónico a
-`EvidenceMappingAliasEnvelope`; ese payload wire también es un root exportado
-y validado, pero no reemplaza `EvidenceMapRequest` como input de etapa.
+`PROVIDER_OUTPUT_CONTRACTS`; P04, P06 y P07 difieren. El gateway compila P04 y
+materializa P06/P07 antes de devolver sus outputs canónicos. P06/P07 proyectan
+los requests a `EvidenceMappingAliasEnvelope`/`QuestionAliasEnvelope`; esos
+payloads wire son roots exportados y validados, pero no reemplazan los input
+roots de etapa.
 
 El test exige que los 22 nombres distintos de request/stage/provider existan en
-`roots`, además del root de envelope alias P06; que el registry use versión
+`roots`, además de los roots de envelope alias P06/P07; que el registry use versión
 1.1.0; y que la llamada valide request, payload/envelope, output provider,
 compilación/materialización y contexto en ese orden.
 
@@ -206,6 +211,13 @@ asigne una única autoridad a cada decisión. La presencia de una ruta en el
 registry es compatibilidad histórica, no reachability. Para P05 el cutover ya
 está completo y ninguna ejecución nueva consulta su ruta; P08 sigue pendiente
 de retiro operativo.
+
+Para P07, tests separados exigen que el provider draft no contenga IDs,
+metadata, locators ni anchor text; que
+`anchor evidence ⊆ candidate.evidence_ids = opportunity.evidence_ids`; que el
+materializador recupere literalmente `display_text`/locator; y que un cache
+canónico recompilado sea idéntico. P08 debe seguir llamado y recibir support
+completa y anchor visible como fronteras distintas.
 
 ---
 

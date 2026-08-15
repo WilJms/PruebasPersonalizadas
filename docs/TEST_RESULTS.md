@@ -3,6 +3,29 @@
 Fecha de corte documental: 2026-08-15 (America/Santiago; ejecución cloud hasta
 2026-08-11 UTC; toda la validación ADR-037 fue local, offline y mock).
 
+## Estado vigente — Fase 5, frontera P07 support/visible — 2026-08-15
+
+| Prueba o gate | Resultado observado |
+|---|---|
+| P07 directo | 19/19 PASS; DTO/schema, aliases, hidden support, reconstrucción exacta, multi-span/multi-artifact, leakage, PII/secrets y replay/materializer boundary |
+| Backend completo | `make test`: 809 passed, 17 skips PostgreSQL explícitos y 1 warning Starlette conocida |
+| Cobertura | `make test-cov`: mismos 809 passed/17 skips; 81% global sobre 14.495 statements; datos redirigidos a `/tmp` y `coverage.xml` preexistente intacto |
+| Contratos | 58 roots, 163 `$defs`, 319 refs y 8 fixtures PASS; schema generado desde temporal y no-drift PASS; hashes schema/model `ffb955e42d23724a754d1a5a74c30db7b25398016a8f435312732870cd625da0`/`a36a4a8d262349ed87fbf0674b267e362704925588bae6193e7d5c11d714aa07` |
+| Provider DTO | `QuestionModelDraft` estricto: 2.822 bytes, 17 ocurrencias/17 nombres de propiedad y 10 campos root; sin IDs, locator, display text, operation, format, difficulty o time canónicos |
+| Alias/materializer | `QuestionAliasEnvelope` sólo expone aliases locales; support completa puede exceder anchor visible; source/boundary `341316e12724…`/`9173f3dad548…`, alias schema/boundary `b8fc6e07c93b…`/`214c6dbcdc5e…` |
+| Leakage/seguridad | literal y 4-gram conservador PASS; pregunta/anchor con respuesta completa se reemplazan; premisas visibles válidas no se bloquean; PII/secrets/claims fallan antes de materializar |
+| Cache/replay | draft/canónico no intercambiables; cambio de support, oportunidad, candidate/scope o policy cambia boundary; anchor canónico alterado no recompila |
+| Runtime | reserves, localized regeneration, cancellation, stale lease y retries durable PASS; P08 sigue llamado y P09 mantiene el orden previo; P10 calls = 0 |
+| Frontend/browser | typecheck PASS; Vitest 6/6 archivos y 36/36 tests; build PASS; Playwright Stage 1 1/1 y Stage 2 2/2 PASS; npm audit 0 vulnerabilidades |
+| Rehearsal/higiene | convergence dry-run PASS con `provider_call_receipts=[]` y transporte no construido; OpenAPI no-drift, fixtures, compileall, secret scan 347 archivos y `git diff --check` PASS |
+| Deploy local | Terraform fmt/init sin backend/validate PASS y 11/11 tests de artefactos PASS |
+| PostgreSQL/Docker | `pg_isready` y `docker info` no disponibles localmente; los 17 skips, PG16/PG17 y builds/audits corresponden a push/PR CI |
+| Red/costo | `CVA_MODEL_MODE=mock`, `CVA_P10_ENABLED=false`, ambas API keys removidas; provider network, secreto resuelto y requests billables = 0 |
+
+Los reportes/receipts reales históricos no fueron regenerados ni reescritos.
+El resultado de push/PR CI se registra en el CURRENT STATE de PR #3 y en el
+informe final del SHA publicado.
+
 ## Estado vigente — Fase 4, frontera semántica P06 — 2026-08-15
 
 | Prueba o gate | Resultado observado |

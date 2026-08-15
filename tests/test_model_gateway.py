@@ -110,6 +110,9 @@ def test_registry_is_exact_complete_and_immutable() -> None:
     assert PROVIDER_OUTPUT_CONTRACTS["P06_EVIDENCE_MAP_V1"] == (
         "EvidenceMappingModelDraft"
     )
+    assert PROVIDER_OUTPUT_CONTRACTS["P07_QUESTION_BUILD_V1"] == (
+        "QuestionModelDraft"
+    )
     assert set(PROMPT_SPECS) == set(EXPECTED_PROMPT_CONTRACTS)
     for prompt_id, (request_root, output_root) in EXPECTED_PROMPT_CONTRACTS.items():
         spec = PROMPT_SPECS[prompt_id]
@@ -124,6 +127,8 @@ def test_registry_is_exact_complete_and_immutable() -> None:
             if prompt_id == "P04_BLUEPRINT_BUILD_V1"
             else "EvidenceMappingModelDraft"
             if prompt_id == "P06_EVIDENCE_MAP_V1"
+            else "QuestionModelDraft"
+            if prompt_id == "P07_QUESTION_BUILD_V1"
             else output_root
         )
 
@@ -136,7 +141,7 @@ def test_registry_is_exact_complete_and_immutable() -> None:
         "P04_BLUEPRINT_BUILD_V1": "1.1.12",
         "P05_BLUEPRINT_REVIEW_V1": "1.1.8",
         "P06_EVIDENCE_MAP_V1": "1.1.6",
-        "P07_QUESTION_BUILD_V1": "1.1.4",
+        "P07_QUESTION_BUILD_V1": "1.1.5",
         "P08_QUESTION_REVIEW_V1": "1.1.5",
         "P09_GUIDE_BUILD_V1": "1.1.6",
         "P10_ENRICHED_CONTEXT_V1": "1.1.3",
@@ -223,19 +228,24 @@ def test_p06_v116_limits_the_provider_to_local_semantic_mapping() -> None:
         assert exact_rule in p06
 
 
-def test_p07_v114_p08_v115_bind_candidate_boundary() -> None:
+def test_p07_v115_p08_v115_separate_support_from_visible_anchor() -> None:
     p07 = PROMPT_SPECS["P07_QUESTION_BUILD_V1"].developer_instruction
     p08 = PROMPT_SPECS["P08_QUESTION_REVIEW_V1"].developer_instruction
     for exact_rule in (
-        "submission_id exactamente desde plan.submission_id",
-        "candidate.candidate_id exactamente desde target_candidate_id",
-        "No redactes avisos globales",
+        "QuestionAliasEnvelope cerrado",
+        "visible_anchor_aliases ⊆ support evidence aliases",
+        "Devuelve únicamente QuestionModelDraft",
+        "No devuelvas IDs canónicos",
+        "El servidor resuelve aliases",
     ):
         assert exact_rule in p07
     for exact_rule in (
         "submission_id exactamente desde generation_result.submission_id",
         "review.candidate_id exactamente desde generation_result.candidate.candidate_id",
         "nunca inventes candidate_id",
+        "candidate.evidence_ids representa support evidence completa",
+        "candidate.anchor representa por separado el visible anchor",
+        "Evalúa answerability contra support evidence",
         "critical_failure_codes estables",
         "review.evidence_ids debe ser un subconjunto de generation_result.candidate.evidence_ids",
         "review.source_ids debe ser un subconjunto de generation_result.candidate.course_source_ids",
@@ -1198,21 +1208,19 @@ def test_p06_partial_mapping_is_materialized_without_global_rejection() -> None:
     )
 
 
-def test_p07_relationship_failures_are_aggregated_content_free() -> None:
-    def change_candidate_roots(raw: dict) -> None:
-        raw["candidate"]["candidate_id"] = "candidate_other"
-        raw["candidate"]["dimension_id"] = "dimension_other"
+def test_p07_unknown_alias_failure_is_content_free() -> None:
+    def invent_visible_anchor_alias(raw: dict) -> None:
+        raw["visible_anchor_aliases"] = ["E999"]
 
     gateway = ModelGateway(
         mock_adapter=ContextBreakingAdapter(
-            "P07_QUESTION_BUILD_V1", change_candidate_roots
+            "P07_QUESTION_BUILD_V1", invent_visible_anchor_alias
         )
     )
     with pytest.raises(GatewayContextError) as captured:
         _invoke("P07_QUESTION_BUILD_V1", gateway=gateway)
     assert captured.value.failure.codes == (
-        ContextFailureCode.P07_CANDIDATE_ID_MISMATCH,
-        ContextFailureCode.P07_OPPORTUNITY_REFERENCE_MISMATCH,
+        ContextFailureCode.P07_ALIAS_REFERENCE_UNKNOWN,
     )
 
 
@@ -1275,7 +1283,7 @@ def test_value_error_skips_p11_and_preserves_primary_failure_and_ledger() -> Non
     raw_output = DeterministicMockAdapter().factory.output_for(
         prompt_id, request, MockBehavior.HAPPY
     ).model_dump(mode="json")
-    raw_output["candidate"] = None
+    raw_output["question_text"] = None
 
     class OneInvalidP07Adapter:
         calls = 0

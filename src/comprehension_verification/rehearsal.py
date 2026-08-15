@@ -20,6 +20,7 @@ from .canonical import canonical_hash, sha256_text, stable_id
 from .contracts import model_by_name, models as m
 from .evaluation_reporting import prepare_historical_harness_report
 from .evidence_mapping import materialize_evidence_mapping_draft
+from .question_generation import materialize_question_draft
 from .model_gateway import (
     CallBudget,
     GatewayCallResult,
@@ -439,6 +440,15 @@ def _validated_mock_output(prompt_id: str, request: BaseModel) -> BaseModel:
         ):
             raise TypeError("P06 rehearsal boundary received an unexpected contract")
         return materialize_evidence_mapping_draft(
+            draft=provider_output,
+            request=request,
+        )
+    if prompt_id == "P07_QUESTION_BUILD_V1":
+        if not isinstance(request, m.QuestionBuildRequest) or not isinstance(
+            provider_output, m.QuestionModelDraft
+        ):
+            raise TypeError("P07 rehearsal boundary received an unexpected contract")
+        return materialize_question_draft(
             draft=provider_output,
             request=request,
         )

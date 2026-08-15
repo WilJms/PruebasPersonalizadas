@@ -21,6 +21,9 @@ from comprehension_verification.contracts import model_by_name, models
 from comprehension_verification.evidence_mapping import (
     build_evidence_mapping_alias_envelope,
 )
+from comprehension_verification.question_generation import (
+    build_question_alias_envelope,
+)
 
 
 FIXED_TIME = datetime(2026, 7, 30, 12, 0, tzinfo=UTC)
@@ -934,6 +937,108 @@ def _dynamic_candidate(
     )
 
 
+def _dynamic_question_draft(
+    request: models.QuestionBuildRequest,
+) -> models.QuestionModelDraft:
+    envelope = build_question_alias_envelope(request)
+    support_aliases = [
+        item.evidence_alias for item in envelope.support_evidence
+    ]
+    allowed = set(envelope.opportunity.allowed_anchor_structures)
+    visible_count = 1
+    if not allowed.intersection(
+        {
+            models.AnchorStructure.SINGLE_FRAGMENT,
+            models.AnchorStructure.TABLE_OR_RANGE,
+            models.AnchorStructure.CODE_CONTEXT,
+            models.AnchorStructure.FIGURE_WITH_CONTEXT,
+        }
+    ):
+        visible_count = min(2, len(support_aliases))
+    response_format = envelope.opportunity.response_format
+    question_text = {
+        models.ResponseFormat.CHOICE: (
+            "¿Qué interpretación está mejor respaldada por la evidencia señalada?"
+        ),
+        models.ResponseFormat.STRUCTURED_BULLETS: (
+            "Explica en puntos qué función cumple la decisión localizada."
+        ),
+        models.ResponseFormat.ANNOTATION_OR_DIAGRAM: (
+            "Representa y explica cómo funciona la decisión localizada."
+        ),
+        models.ResponseFormat.ORAL_EQUIVALENT: (
+            "Explica oralmente qué función cumple la decisión localizada."
+        ),
+        models.ResponseFormat.OPEN_SHORT: (
+            "Explica qué función cumple la decisión localizada y fundamenta tu respuesta."
+        ),
+    }[response_format]
+    question_text = (
+        f"{question_text} Enfoca tu respuesta en: "
+        f"{envelope.opportunity.focus[:500]}"
+    )
+    choices: list[models.QuestionChoiceDraft] = []
+    if response_format == models.ResponseFormat.CHOICE:
+        choices = [
+            models.QuestionChoiceDraft(
+                text=text,
+                is_best_answer=index == 0,
+                evaluator_rationale=rationale,
+                misconception=None if index == 0 else misconception,
+            )
+            for index, (text, rationale, misconception) in enumerate(
+                [
+                    (
+                        "Limita el resultado a la versión vigente de la fuente.",
+                        "La evidencia de soporte describe esa relación localizada.",
+                        None,
+                    ),
+                    (
+                        "Conserva cualquier resultado anterior sin volver a consultarlo.",
+                        "Contradice la relación observable de la evidencia.",
+                        "Confunde reutilización con validez de una versión anterior.",
+                    ),
+                    (
+                        "Elimina la necesidad de mantener una fuente actualizada.",
+                        "Añade una conclusión que el soporte no autoriza.",
+                        "Generaliza una consecuencia local a todo el sistema.",
+                    ),
+                ]
+            )
+        ]
+    return models.QuestionModelDraft(
+        scope_alias=envelope.scope_alias,
+        status="READY",
+        question_text=question_text,
+        visible_anchor_aliases=support_aliases[:visible_count],
+        expected_observables=[
+            models.QuestionObservableDraft(
+                description=(
+                    "Relaciona la decisión localizada con la vigencia del resultado."
+                ),
+                support_evidence_aliases=support_aliases,
+                required_for_level_2=True,
+            ),
+            models.QuestionObservableDraft(
+                description=(
+                    "Delimita la consecuencia defendible sin agregar conocimiento externo."
+                ),
+                support_evidence_aliases=support_aliases,
+                required_for_level_2=True,
+            ),
+        ],
+        acceptable_alternatives=[
+            "Puede expresar la misma relación con una formulación equivalente."
+        ],
+        misconceptions=[
+            "Generaliza el efecto local más allá de la evidencia autorizada."
+        ],
+        choices=choices,
+        semantic_uncertainties=[],
+        replacement_reason=None,
+    )
+
+
 def _generation_result(*, enriched: bool = False) -> models.QuestionGenerationResult:
     return models.QuestionGenerationResult(
         submission_id="sub_demo",
@@ -1379,7 +1484,9 @@ class DeterministicMockFactory:
             )
         if prompt_id == "P06_EVIDENCE_MAP_V1":
             return _dynamic_evidence_map(request)
-        if prompt_id in {"P07_QUESTION_BUILD_V1", "P10_ENRICHED_CONTEXT_V1"}:
+        if prompt_id == "P07_QUESTION_BUILD_V1":
+            return _dynamic_question_draft(request)
+        if prompt_id == "P10_ENRICHED_CONTEXT_V1":
             candidate = _dynamic_candidate(request)
             return models.QuestionGenerationResult(
                 submission_id=request.plan.submission_id,
@@ -1578,7 +1685,19 @@ class DeterministicMockFactory:
                     )
                 ],
             )
-        if prompt_id in {"P07_QUESTION_BUILD_V1", "P10_ENRICHED_CONTEXT_V1"}:
+        if prompt_id == "P07_QUESTION_BUILD_V1":
+            envelope = build_question_alias_envelope(request)
+            return models.QuestionModelDraft(
+                scope_alias=envelope.scope_alias,
+                status="REPLACEMENT_REQUIRED",
+                semantic_uncertainties=[
+                    "La evidencia no permite resolver el observable con fidelidad."
+                ],
+                replacement_reason=(
+                    "La oportunidad no admite una pregunta grounded dentro del soporte autorizado."
+                ),
+            )
+        if prompt_id == "P10_ENRICHED_CONTEXT_V1":
             return models.QuestionGenerationResult(
                 submission_id=request.plan.submission_id,
                 opportunity_id=request.opportunity.opportunity_id,
@@ -1686,12 +1805,15 @@ class DeterministicMockAdapter:
             raw = deepcopy(raw)
             raw["unexpected_field"] = "structural-only"
         encoded = json.dumps(raw, ensure_ascii=False, sort_keys=True).encode("utf-8")
-        # Preserve historical mock accounting for unchanged prompts. P06 must
-        # count its reduced alias-only wire envelope because that is now the
-        # payload actually sent to the provider boundary.
+        # Preserve historical mock accounting for unchanged prompts. P06/P07
+        # count their reduced alias-only wire envelopes because those are now
+        # the payloads actually sent to the provider boundary.
         request_bytes = (
             envelope.model_dump_json().encode("utf-8")
-            if prompt_id == "P06_EVIDENCE_MAP_V1"
+            if prompt_id in {
+                "P06_EVIDENCE_MAP_V1",
+                "P07_QUESTION_BUILD_V1",
+            }
             else request.model_dump_json().encode("utf-8")
         )
         return AdapterResult(

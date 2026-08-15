@@ -361,14 +361,26 @@ Nunca se pierde el original. La normalización no “corrige” silenciosamente 
 
 ## 6.3 Ancla
 
-Un `Anchor` es una vista autocontenida de una o más unidades. Debe cumplir:
+P07 distingue dos fronteras. **Support evidence** es toda la evidencia
+server-owned de la `QuestionOpportunity` que sustenta operación, foco,
+observable, answerability y observables esperados. El **visible anchor** es el
+subconjunto que se presenta al estudiante para localizar la pregunta y aportar
+sus premisas. Debe cumplirse
+`anchor evidence ⊆ candidate.evidence_ids = opportunity.evidence_ids`.
+
+Un `Anchor` es la vista canónica autocontenida de una o más unidades visibles.
+P07 selecciona exclusivamente aliases `E*`; el backend recupera texto,
+modalidad y locator desde `EvidenceUnit` y deriva una transformación permitida.
+El modelo no redacta `display_text`, no copia locators y no convierte una
+paráfrasis en evidencia. El anchor debe cumplir:
 
 1. fidelidad literal o transformación declarada;
 2. localizador reproducible;
 3. contexto suficiente para entender la pregunta;
 4. longitud mínima compatible con lo anterior;
 5. ausencia de información no autorizada;
-6. no revelar directamente la respuesta esperada;
+6. no contener ya la conclusión completa exigida por los observables mediante
+   copia o paráfrasis trivial, sin ocultar premisas necesarias;
 7. presentación accesible para su modalidad.
 
 Ejemplos:
@@ -628,7 +640,19 @@ variante cuando los constraints de solapamiento, foco y observable lo permiten.
 
 ## 10.2 Generación de preguntas
 
-Para cada oportunidad primaria se envía un paquete pequeño: fragmentos y localizadores exactos, operación permitida, foco, observable, restricciones, fuentes autorizadas si aplican e IDs opacos. El modelo genera una sola pregunta por oportunidad; el sistema no usa `candidate_multiplier` ni produce 3-5 candidatos por slot.
+Para cada oportunidad primaria, el servidor proyecta un
+`QuestionAliasEnvelope`: operación, foco, observable, formato seleccionado,
+dificultad, tiempo, idioma, justificación, estructuras permitidas, constraints y
+support evidence textual/estructurada mediante aliases locales. IDs canónicos,
+locators, lineage y workflow state no forman parte del output provider.
+
+El modelo genera un `QuestionModelDraft` con una sola pregunta, aliases del
+visible anchor, observables ligados a support aliases, alternativas,
+misconceptions, choices/rationales e incertidumbre o reemplazo. Un
+materializador determinista crea `QuestionGenerationResult`/`QuestionCandidate`,
+copia todos los campos confiables y reconstruye el anchor exacto. No mejora la
+redacción ni cambia la oportunidad. El sistema no usa `candidate_multiplier`
+ni produce 3-5 candidatos por slot.
 
 ## 10.3 Validaciones deterministas
 
@@ -636,11 +660,14 @@ Para cada oportunidad primaria se envía un paquete pequeño: fragmentos y local
 - todos los IDs existen y pertenecen al tenant/entrega;
 - hash y localizadores coinciden;
 - ancla es substring o transformación explícita de evidencia;
+- support evidence coincide con la oportunidad y el anchor visible es su
+  subconjunto server-reconstructed;
 - límites de longitud, idioma y caracteres;
 - ausencia de PII no requerida y secretos detectables;
 - no contiene instrucciones del sistema, claves o texto de otros estudiantes;
 - no usa fuentes no autorizadas;
-- pregunta no es vacía, duplicada o respuesta literal del ancla;
+- pregunta no es vacía, duplicada ni enuncia literalmente/casi literalmente
+  todos sus observables; el anchor tampoco contiene la respuesta completa;
 - tiempo y formato admitidos;
 - solapamiento de anclas por debajo del máximo;
 - selección, si existe, tiene una respuesta defendible y cada distractor conserva evidencia fuente, razón y confusión plausible;
@@ -664,8 +691,10 @@ acepta o rechaza considerando:
 - observabilidad de la guía.
 
 La salida estructurada no garantiza corrección. P08 ya no es un gate activo en
-el pipeline objetivo: sus oracles y resultados se retienen como historia, no
-como sustituto de la autoridad docente. Los invariantes verificables de la
+el pipeline objetivo, pero en el runtime de Fase 5 sigue llamado temporalmente
+con sus diez scores/decisión intactos. Recibe support evidence completa y anchor
+visible por separado y no puede exigir que ambos conjuntos sean idénticos. Sus
+oracles y resultados no sustituyen la autoridad docente. Los invariantes verificables de la
 lista anterior que puedan expresarse mecánicamente deben promoverse a
 validaciones deterministas versionadas; los demás permanecen bajo revisión
 docente.
@@ -1273,7 +1302,8 @@ No incluye LMS/LTI, nota automática, uso sumativo, internet abierto, facturaci�
 ## 24.1 Recorrido objetivo del entorno experimental
 
 Este recorrido es el objetivo formal. Fase 3 retiró las dependencias activas
-P05 mediante preflight durable y recovery compatible. El runtime conserva
+P05 mediante preflight durable y recovery compatible; Fase 5 redujo P07 a
+redacción semántica alias-only y materialización server-side. El runtime conserva
 temporalmente P08 y el orden legado de P09; esos cutovers se ejecutarán en
 fases posteriores independientes.
 
@@ -1286,7 +1316,10 @@ fases posteriores independientes.
    valida scope/rutas/evidencia y materializa oportunidades canónicas sin
    decidir N.
 7. El planificador determinista selecciona exactamente \(N\) primarias y una reserva pequeña, o emite un diagnóstico específico sin generar.
-8. P07 genera una pregunta por oportunidad primaria y el backend ejecuta validaciones deterministas, con reemplazo localizado desde reserva cuando corresponda.
+8. P07 devuelve un `QuestionModelDraft` por oportunidad primaria; el backend
+   conserva support completa, reconstruye el visible anchor y ejecuta
+   validaciones deterministas, con reemplazo localizado desde reserva cuando
+   corresponda. En el runtime actual P08 continúa después de esas validaciones.
 9. Docente inspecciona fuentes y acepta, edita, rechaza o regenera por oportunidad; su decisión es la autoridad académica final.
 10. P09 crea la guía estructurada para las preguntas aprobadas; validación cruzada ensambla `Assessment` y `EvaluationGuide`.
 11. Aprobación individual o masiva explícita congela versiones; renderer opcional genera evaluación/guía/cobertura/JSON.
@@ -1324,10 +1357,14 @@ La secuencia siguiente conserva la versión institucional completa de v1.0. Los 
 22. El planificador crea exactamente \(N\) oportunidades primarias y una reserva pequeña; si no puede, emite el diagnóstico preciso y no genera ninguna pregunta.
 23. Para cada primaria recupera evidencia específica con contexto mínimo y fuentes autorizadas.
 24. El resolvedor comprueba capacidades, privacidad, región, retención, presupuesto, disponibilidad y fallbacks aprobados; registra códigos de razón estables.
-25. P07 con Luna-high genera una pregunta estructurada por oportunidad, sin herramientas ni acceso a otros estudiantes.
-26. Se valida JSON, IDs, pertenencia al tenant, localizadores, literalidad/transformación de ancla, PII, longitud, formato y política de justificación.
+25. P07 con Luna-high recibe una oportunidad y support evidence por aliases;
+    devuelve sólo redacción, visible aliases, observables y semántica asociada,
+    sin herramientas ni acceso a otros estudiantes.
+26. El servidor materializa IDs/metadata y el anchor literal; valida JSON,
+    pertenencia, support/visible subset, localizadores, transformación, PII,
+    leakage, longitud, formato y política de justificación.
 27. Preguntas que fallan grounding, procedencia, autorización o seguridad se descartan sin reparación semántica.
-28. El backend aplica validaciones deterministas y el docente revisa suficiencia, alineación, answerability, demanda, neutralidad y observables; P08 no es una etapa activa.
+28. El backend aplica validaciones deterministas y el docente revisa suficiencia, alineación, answerability, demanda, neutralidad y observables; P08 no es una etapa activa objetivo, aunque Fase 5 la conserva temporalmente en runtime.
 29. Si una pregunta falla validación o es rechazada, se genera sólo un reemplazo localizado desde reserva; no hay cascada ilimitada ni lote de candidatos.
 30. Si no se conservan exactamente \(N\), el plan queda `ASSESSMENT_PLAN_INFEASIBLE`.
 31. Tras la aprobación docente se genera con P09 la guía estructurada 0-3 con elementos observables, alternativas y límites de inferencia.

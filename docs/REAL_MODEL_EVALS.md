@@ -16,6 +16,13 @@ secreto, transporte o costo billable. Los reportes de abajo continúan ligados a
 sus versiones históricas —incluido `1.1.14`— y no se regeneran, reinterpretan
 ni convierten en gate canónico.
 
+**Estado Fase 5 (2026-08-15):** el prompt pack ejecutable avanza a `1.1.16` y
+P07 a `1.1.5` con `QuestionAliasEnvelope`/`QuestionModelDraft`, support evidence
+server-owned y anchor canónico reconstruido. La validación fue sólo mock/offline:
+cero requests, secretos, transporte o costo. Los schemas, resultados y
+veredictos P07/P08 históricos inferiores permanecen ligados a sus fronteras
+originales y no se reescriben ni gobiernan el producto.
+
 ## Historial — cualificación Luna/high fallida (2026-08-12)
 
 La última remediación focal cerró exclusivamente P08 y el oráculo P05. P08

@@ -53,6 +53,9 @@ No copie ni redefina modelos Pydantic. Importe `comprehension_verification.contr
   el servidor lo materializa como `EvidenceMapPatch` y sólo el planner decide
   suficiencia global, selección y factibilidad de exactamente N; los scores
   continuos legacy de P06 son proyecciones de compatibilidad sin autoridad;
+  P07 devuelve un `QuestionModelDraft` sobre aliases `E*`: el servidor conserva
+  support evidence completa, crea identidad/metadata y reconstruye el anchor
+  visible literal como un subconjunto, sin aceptar texto ni locators del modelo;
   el cutover de P08 y el orden objetivo de P09 permanecen pendientes;
 - Assessment y EvaluationGuide JSON separados; HTML/PDF son vistas derivadas;
 - artefactos locales son solo desarrollo/fixtures, no operación productiva.

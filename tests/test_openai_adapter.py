@@ -1016,58 +1016,56 @@ def test_p07_exact_provider_schema_boundary_excludes_canonical_model_validators(
         separators=(",", ":"),
     ).encode("utf-8")
 
-    assert formatted["name"] == "cva_QuestionGenerationResult_1_1_4"
-    assert len(encoded) == 13_671
+    assert formatted["name"] == "cva_QuestionModelDraft_1_1_5"
+    assert len(encoded) == 2_822
     assert (
         hashlib.sha256(encoded).hexdigest()
-        == "80692d48637f0ae2d7a7e6f05ab4e9b0a5e2d8eff6f1b103fbd14f62c482639a"
+        == "c4a3f2bbb32d3e2e26272346abb26c68c6c76ba6f42cfe3ab73526a0aea52a07"
     )
     assert schema["required"] == [
-        "schema_version",
-        "submission_id",
-        "opportunity_id",
-        "context_mode",
+        "scope_alias",
         "status",
-        "candidate",
-        "diagnostics",
+        "question_text",
+        "visible_anchor_aliases",
+        "expected_observables",
+        "acceptable_alternatives",
+        "misconceptions",
+        "choices",
+        "semantic_uncertainties",
+        "replacement_reason",
     ]
 
     valid = DeterministicMockFactory().output_for(
         prompt_id, request, MockBehavior.HAPPY
     ).model_dump(mode="json")
     provider_missing = json.loads(json.dumps(valid))
-    provider_missing.pop("submission_id")
+    provider_missing.pop("scope_alias")
     assert provider_schema_validation_issues(schema, provider_missing) == (
         ("required", "/"),
     )
 
-    status_candidate_mismatch = json.loads(json.dumps(valid))
-    status_candidate_mismatch["candidate"] = None
-    assert not provider_schema_validation_issues(schema, status_candidate_mismatch)
+    ready_without_question = json.loads(json.dumps(valid))
+    ready_without_question["question_text"] = None
+    assert not provider_schema_validation_issues(schema, ready_without_question)
     with pytest.raises(ValidationError) as status_error:
-        models.QuestionGenerationResult.model_validate(status_candidate_mismatch)
+        models.QuestionModelDraft.model_validate(ready_without_question)
     assert {
         (item["type"], item["loc"])
         for item in status_error.value.errors(include_url=False)
     } == {("value_error", ())}
 
-    anchor_subset_mismatch = json.loads(json.dumps(valid))
-    anchor_subset_mismatch["candidate"]["anchor"]["fragments"][0][
-        "evidence_id"
-    ] = "ev_other"
-    assert not provider_schema_validation_issues(schema, anchor_subset_mismatch)
-    with pytest.raises(ValidationError) as anchor_error:
-        models.QuestionGenerationResult.model_validate(anchor_subset_mismatch)
-    assert {
-        (item["type"], item["loc"])
-        for item in anchor_error.value.errors(include_url=False)
-    } == {("value_error", ("candidate",))}
-
-    contextual_only = json.loads(json.dumps(valid))
-    contextual_only["submission_id"] = "sub_other"
-    contextual_only["candidate"]["submission_id"] = "sub_other"
-    assert not provider_schema_validation_issues(schema, contextual_only)
-    assert models.QuestionGenerationResult.model_validate(contextual_only)
+    canonical_fields = {
+        "submission_id",
+        "opportunity_id",
+        "candidate_id",
+        "evidence_ids",
+        "anchor",
+        "display_text",
+        "locator",
+        "preliminary_guide",
+        "diagnostics",
+    }
+    assert canonical_fields.isdisjoint(schema["properties"])
 
 
 def test_p11_schema_is_specialized_to_the_named_canonical_target() -> None:

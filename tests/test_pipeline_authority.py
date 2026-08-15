@@ -62,6 +62,8 @@ def test_every_governed_decision_has_one_authority() -> None:
         "states",
         "lineage",
         "evidence_membership",
+        "support_evidence",
+        "canonical_visible_anchor",
         "allowlists",
         "formats",
         "count",
@@ -79,6 +81,7 @@ def test_every_governed_decision_has_one_authority() -> None:
         "wording",
         "observables",
         "semantic_alternatives",
+        "visible_anchor_selection_within_support",
     }
     assert set(TEACHER_DECISIONS) == {
         "academic_ambiguity_resolution",
@@ -93,12 +96,12 @@ def test_every_governed_decision_has_one_authority() -> None:
         authority_for("model_selection")
 
 
-def test_manifest_marks_p06_boundary_complete_and_harness_historical() -> None:
+def test_manifest_marks_p07_boundary_complete_and_harness_historical() -> None:
     manifest = pipeline_authority_manifest()
     assert manifest["version"] == PIPELINE_AUTHORITY_VERSION
     assert manifest["cutover_status"] == PIPELINE_CUTOVER_STATUS
     assert PIPELINE_CUTOVER_STATUS == (
-        "P06_SEMANTIC_MAPPING_BOUNDARY_COMPLETE_P08_PENDING"
+        "P07_QUESTION_GENERATION_BOUNDARY_COMPLETE_P08_PENDING"
     )
     assert manifest["historical_semantic_harness"] == {
         "evidence_status": HISTORICAL_HARNESS_EVIDENCE_STATUS,

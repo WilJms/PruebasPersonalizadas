@@ -37,6 +37,14 @@ from comprehension_verification.evidence_mapping import (
     p06_alias_envelope_schema_boundary,
     validate_materialized_evidence_mapping,
 )
+from comprehension_verification.question_generation import (
+    QuestionGenerationCompilationError,
+    build_question_alias_envelope,
+    materialize_question_draft,
+    p07_alias_envelope_schema_boundary,
+    question_generation_materializer_boundary,
+    validate_materialized_question_result,
+)
 from comprehension_verification.model_gateway.mock_factory import (
     AdapterResult,
     DeterministicMockAdapter,
@@ -63,7 +71,7 @@ PROMPT_RELATIONSHIP_VALIDATOR_VERSIONS: Mapping[str, str] = {
     "P04_BLUEPRINT_BUILD_V1": "relationship-p04/3.0.0",
     "P05_BLUEPRINT_REVIEW_V1": "relationship-p05/2.2.0",
     "P06_EVIDENCE_MAP_V1": "relationship-p06/3.0.0",
-    "P07_QUESTION_BUILD_V1": "relationship-p07/2.1.0",
+    "P07_QUESTION_BUILD_V1": "relationship-p07/3.0.0",
     "P08_QUESTION_REVIEW_V1": "relationship-p08/2.1.0",
     "P09_GUIDE_BUILD_V1": "relationship-p09/2.0.0",
     "P10_ENRICHED_CONTEXT_V1": "relationship-p10/2.0.0",
@@ -162,6 +170,12 @@ class ContextFailureCode(StrEnum):
     P07_REJECTED_FINGERPRINT_REUSED = (
         "P07_REJECTED_FINGERPRINT_REUSED"
     )
+    P07_DRAFT_MATERIALIZATION_FAILED = (
+        "P07_DRAFT_MATERIALIZATION_FAILED"
+    )
+    P07_ALIAS_REFERENCE_UNKNOWN = "P07_ALIAS_REFERENCE_UNKNOWN"
+    P07_SCOPE_ALIAS_MISMATCH = "P07_SCOPE_ALIAS_MISMATCH"
+    P07_CANONICAL_REPLAY_FAILED = "P07_CANONICAL_REPLAY_FAILED"
     P08_REQUEST_REFERENCE_MISMATCH = (
         "P08_REQUEST_REFERENCE_MISMATCH"
     )
@@ -896,6 +910,13 @@ class ModelGateway:
             material["evidence_mapping_materializer"] = (
                 evidence_mapping_materializer_boundary()
             )
+        elif prompt_id == "P07_QUESTION_BUILD_V1":
+            material["alias_envelope_schema"] = (
+                p07_alias_envelope_schema_boundary()
+            )
+            material["question_generation_materializer"] = (
+                question_generation_materializer_boundary()
+            )
         return f"model-stage-execution/2:{_hash(material).removeprefix('sha256:')}"
 
     def validate_cached_output(
@@ -924,6 +945,7 @@ class ModelGateway:
         if prompt_id in {
             "P04_BLUEPRINT_BUILD_V1",
             "P06_EVIDENCE_MAP_V1",
+            "P07_QUESTION_BUILD_V1",
         }:
             output = self._validate_stage_output(spec, raw_output)
         else:
@@ -1426,6 +1448,15 @@ class ModelGateway:
             provider_payload = build_evidence_mapping_alias_envelope(
                 request
             ).model_dump(mode="json")
+        elif spec.prompt_id == "P07_QUESTION_BUILD_V1":
+            if not isinstance(request, models.QuestionBuildRequest):
+                raise GatewayValidationError(
+                    "P07 alias boundary received an unexpected request root",
+                    phase=ValidationPhase.ENVELOPE,
+                )
+            provider_payload = build_question_alias_envelope(
+                request
+            ).model_dump(mode="json")
         raw = {
             "schema_version": SCHEMA_VERSION,
             "prompt_id": spec.prompt_id,
@@ -1491,6 +1522,7 @@ class ModelGateway:
         if prompt_id not in {
             "P04_BLUEPRINT_BUILD_V1",
             "P06_EVIDENCE_MAP_V1",
+            "P07_QUESTION_BUILD_V1",
         }:
             return output
         if prompt_id == "P04_BLUEPRINT_BUILD_V1":
@@ -1519,34 +1551,64 @@ class ModelGateway:
                     phase=phase,
                     failure_code=failure_code,
                 ) from exc
-        if not isinstance(request, models.EvidenceMapRequest) or not isinstance(
-            output, models.EvidenceMappingModelDraft
+        if prompt_id == "P06_EVIDENCE_MAP_V1":
+            if not isinstance(request, models.EvidenceMapRequest) or not isinstance(
+                output, models.EvidenceMappingModelDraft
+            ):
+                raise GatewayContextError(
+                    "P06 provider boundary used an unexpected contract",
+                    phase=phase,
+                    failure_code=(
+                        ContextFailureCode.P06_DRAFT_MATERIALIZATION_FAILED
+                    ),
+                )
+            try:
+                return materialize_evidence_mapping_draft(
+                    draft=output, request=request
+                )
+            except EvidenceMappingCompilationError as exc:
+                failure_code = {
+                    "P06_ALIAS_REFERENCE_UNKNOWN": (
+                        ContextFailureCode.P06_ALIAS_REFERENCE_UNKNOWN
+                    ),
+                    "P06_SCOPE_ALIAS_MISMATCH": (
+                        ContextFailureCode.P06_SCOPE_ALIAS_MISMATCH
+                    ),
+                }.get(
+                    exc.code,
+                    ContextFailureCode.P06_DRAFT_MATERIALIZATION_FAILED,
+                )
+                raise GatewayContextError(
+                    "P06 semantic draft failed deterministic materialization",
+                    phase=phase,
+                    failure_code=failure_code,
+                ) from exc
+        if not isinstance(request, models.QuestionBuildRequest) or not isinstance(
+            output, models.QuestionModelDraft
         ):
             raise GatewayContextError(
-                "P06 provider boundary used an unexpected contract",
+                "P07 provider boundary used an unexpected contract",
                 phase=phase,
                 failure_code=(
-                    ContextFailureCode.P06_DRAFT_MATERIALIZATION_FAILED
+                    ContextFailureCode.P07_DRAFT_MATERIALIZATION_FAILED
                 ),
             )
         try:
-            return materialize_evidence_mapping_draft(
-                draft=output, request=request
-            )
-        except EvidenceMappingCompilationError as exc:
+            return materialize_question_draft(draft=output, request=request)
+        except QuestionGenerationCompilationError as exc:
             failure_code = {
-                "P06_ALIAS_REFERENCE_UNKNOWN": (
-                    ContextFailureCode.P06_ALIAS_REFERENCE_UNKNOWN
+                "P07_ALIAS_REFERENCE_UNKNOWN": (
+                    ContextFailureCode.P07_ALIAS_REFERENCE_UNKNOWN
                 ),
-                "P06_SCOPE_ALIAS_MISMATCH": (
-                    ContextFailureCode.P06_SCOPE_ALIAS_MISMATCH
+                "P07_SCOPE_ALIAS_MISMATCH": (
+                    ContextFailureCode.P07_SCOPE_ALIAS_MISMATCH
                 ),
             }.get(
                 exc.code,
-                ContextFailureCode.P06_DRAFT_MATERIALIZATION_FAILED,
+                ContextFailureCode.P07_DRAFT_MATERIALIZATION_FAILED,
             )
             raise GatewayContextError(
-                "P06 semantic draft failed deterministic materialization",
+                "P07 semantic draft failed deterministic materialization",
                 phase=phase,
                 failure_code=failure_code,
             ) from exc
@@ -1971,7 +2033,16 @@ class ModelGateway:
                 return
             if output.status != "READY":
                 require_diagnostic()
-        elif prompt_id in {"P07_QUESTION_BUILD_V1", "P10_ENRICHED_CONTEXT_V1"} and output.status != "READY":
+        elif prompt_id == "P07_QUESTION_BUILD_V1":
+            if isinstance(output, models.QuestionModelDraft):
+                return
+            if output.status != "READY":
+                require_diagnostic()
+                if output.candidate is not None:
+                    raise GatewayContextError(
+                        "Failed question generation cannot expose a candidate"
+                    )
+        elif prompt_id == "P10_ENRICHED_CONTEXT_V1" and output.status != "READY":
             require_diagnostic()
             if output.candidate is not None:
                 raise GatewayContextError("Failed question generation cannot expose a candidate")
@@ -2119,7 +2190,33 @@ class ModelGateway:
                     phase=phase,
                     failure_code=failure_code,
                 ) from exc
-        elif prompt_id in {"P07_QUESTION_BUILD_V1", "P10_ENRICHED_CONTEXT_V1"}:
+        elif prompt_id == "P07_QUESTION_BUILD_V1":
+            if not isinstance(request, models.QuestionBuildRequest) or not isinstance(
+                output, models.QuestionGenerationResult
+            ):
+                raise GatewayContextError(
+                    "P07 stage boundary used an unexpected contract",
+                    phase=phase,
+                    failure_code=(
+                        ContextFailureCode.P07_DRAFT_MATERIALIZATION_FAILED
+                    ),
+                )
+            try:
+                validate_materialized_question_result(
+                    result=output, request=request
+                )
+            except QuestionGenerationCompilationError as exc:
+                failure_code = (
+                    ContextFailureCode.P07_CANONICAL_REPLAY_FAILED
+                    if exc.code == "P07_CANONICAL_REPLAY_MISMATCH"
+                    else ContextFailureCode.P07_DRAFT_MATERIALIZATION_FAILED
+                )
+                raise GatewayContextError(
+                    "P07 canonical result failed deterministic replay",
+                    phase=phase,
+                    failure_code=failure_code,
+                ) from exc
+        elif prompt_id == "P10_ENRICHED_CONTEXT_V1":
             codes: list[ContextFailureCode] = []
             if (
                 output.submission_id != request.plan.submission_id
@@ -2636,6 +2733,17 @@ class ModelGateway:
                     p06_alias_envelope_schema_boundary()
                 ),
                 "materializer": evidence_mapping_materializer_boundary(),
+            }
+        elif spec.prompt_id == "P07_QUESTION_BUILD_V1":
+            input_material = {
+                "envelope": envelope.model_dump(mode="json"),
+                "provider_output_schema": provider_output_schema_boundary(
+                    spec.prompt_id
+                ),
+                "alias_envelope_schema": (
+                    p07_alias_envelope_schema_boundary()
+                ),
+                "materializer": question_generation_materializer_boundary(),
             }
         input_hash = _hash(input_material)
         created = self.config.clock()

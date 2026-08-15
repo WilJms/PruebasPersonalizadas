@@ -28,7 +28,8 @@ Stage2SchemaVersion = Literal[CONTRACT_VERSION]
 Id = Annotated[str, Field(min_length=3, max_length=128, pattern=r"^[a-z][a-z0-9_-]*$")]
 
 # Provider-local aliases are deliberately not canonical IDs.  They exist only
-# inside one P04/P06 inference boundary and are resolved by a server compiler.
+# inside one P04/P06/P07 inference boundary and are resolved by a server
+# compiler/materializer.
 DimensionAlias = Annotated[str, Field(pattern=r"^D[1-9][0-9]{0,2}$")]
 VariantAlias = Annotated[str, Field(pattern=r"^V[1-9][0-9]{0,2}$")]
 OpportunityTemplateAlias = Annotated[
@@ -36,6 +37,7 @@ OpportunityTemplateAlias = Annotated[
 ]
 EvidenceAlias = Annotated[str, Field(pattern=r"^E[1-9][0-9]{0,2}$")]
 ArtifactAlias = Annotated[str, Field(pattern=r"^A[1-9][0-9]{0,2}$")]
+FingerprintAlias = Annotated[str, Field(pattern=r"^F[1-9][0-9]{0,2}$")]
 MappingScopeAlias = Annotated[str, Field(pattern=r"^S[a-f0-9]{24}$")]
 
 PrincipalId = Annotated[
@@ -1152,6 +1154,164 @@ class EvidenceMappingModelDraft(StrictModel):
     mappings: list[EvidenceMappingRelationDraft] = Field(
         default_factory=list, max_length=2000
     )
+
+
+class QuestionOpportunityContext(StrictModel):
+    """Trusted P07 semantics and constraints without canonical identity."""
+
+    cognitive_operation: CognitiveOperation
+    focus: Annotated[str, Field(min_length=1, max_length=1000)]
+    observable: Annotated[str, Field(min_length=1, max_length=1000)]
+    response_format: ResponseFormat
+    difficulty: DifficultyBand
+    target_minutes: int = Field(ge=1, le=60)
+    allowed_anchor_structures: Annotated[
+        list[AnchorStructure], Field(min_length=1, max_length=7)
+    ]
+    student_justification_required: bool
+
+
+class QuestionEvidenceContext(StrictModel):
+    """One support unit exposed to P07 only through a call-local alias."""
+
+    evidence_alias: EvidenceAlias
+    artifact_alias: ArtifactAlias
+    modality: EvidenceModality
+    content_text: str | None = Field(default=None, max_length=100_000)
+    structured_content: dict[str, Any] | None = None
+    language: str | None = Field(default=None, max_length=35)
+    extraction_confidence: Score
+
+    @model_validator(mode="after")
+    def has_content(self) -> "QuestionEvidenceContext":
+        if not self.content_text and not self.structured_content:
+            raise ValueError("question support evidence must contain content")
+        return self
+
+
+class QuestionAvoidFingerprintContext(StrictModel):
+    """Content-free wording fingerprint retained inside one P07 scope."""
+
+    fingerprint_alias: FingerprintAlias
+    normalized_question_hash: Hash
+
+
+class QuestionGenerationConstraints(StrictModel):
+    """Server-owned P07 constraints visible to the model but never returned."""
+
+    max_visible_anchor_fragments: int = Field(ge=1, le=8)
+    require_accessible_alternative: bool
+    avoid_fingerprints: list[QuestionAvoidFingerprintContext] = Field(
+        default_factory=list, max_length=100
+    )
+
+
+class QuestionAliasEnvelope(StrictModel):
+    """Exact call-local P07 input projected from one canonical request."""
+
+    alias_schema_version: Literal["p07-alias-envelope/1.0.0"] = (
+        "p07-alias-envelope/1.0.0"
+    )
+    scope_alias: MappingScopeAlias
+    source_scope_hash: Hash
+    opportunity: QuestionOpportunityContext
+    support_evidence: Annotated[
+        list[QuestionEvidenceContext], Field(min_length=1, max_length=50)
+    ]
+    generation_constraints: QuestionGenerationConstraints
+
+
+class QuestionObservableDraft(StrictModel):
+    """One semantic expected observable linked only through evidence aliases."""
+
+    description: Annotated[str, Field(min_length=3, max_length=1000)]
+    support_evidence_aliases: Annotated[
+        list[EvidenceAlias], Field(min_length=1, max_length=50)
+    ]
+    required_for_level_2: bool = True
+
+    @model_validator(mode="after")
+    def aliases_are_unique(self) -> "QuestionObservableDraft":
+        _require_unique(
+            self.support_evidence_aliases, "support_evidence_aliases"
+        )
+        return self
+
+
+class QuestionChoiceDraft(StrictModel):
+    """Semantic choice content; the server creates the canonical option ID."""
+
+    text: Annotated[str, Field(min_length=1, max_length=1000)]
+    is_best_answer: bool
+    evaluator_rationale: Annotated[str, Field(min_length=1, max_length=1500)]
+    misconception: str | None = Field(default=None, max_length=1000)
+
+
+class QuestionModelDraft(StrictModel):
+    """Reduced P07 provider output materialized into QuestionGenerationResult."""
+
+    scope_alias: MappingScopeAlias
+    status: Literal["READY", "REPLACEMENT_REQUIRED"]
+    question_text: Annotated[str, Field(min_length=5, max_length=4000)] | None = None
+    visible_anchor_aliases: list[EvidenceAlias] = Field(
+        default_factory=list, max_length=8
+    )
+    expected_observables: list[QuestionObservableDraft] = Field(
+        default_factory=list, max_length=5
+    )
+    acceptable_alternatives: list[
+        Annotated[str, Field(min_length=1, max_length=1000)]
+    ] = Field(default_factory=list, max_length=20)
+    misconceptions: list[
+        Annotated[str, Field(min_length=1, max_length=1000)]
+    ] = Field(default_factory=list, max_length=20)
+    choices: list[QuestionChoiceDraft] = Field(default_factory=list, max_length=8)
+    semantic_uncertainties: list[
+        Annotated[str, Field(min_length=1, max_length=1000)]
+    ] = Field(default_factory=list, max_length=20)
+    replacement_reason: Annotated[str, Field(min_length=3, max_length=800)] | None = None
+
+    @model_validator(mode="after")
+    def status_is_complete_and_clean(self) -> "QuestionModelDraft":
+        _require_unique(self.visible_anchor_aliases, "visible_anchor_aliases")
+        if self.choices:
+            if len(self.choices) < 3 or sum(
+                item.is_best_answer for item in self.choices
+            ) != 1:
+                raise ValueError(
+                    "choice draft requires at least three options and one best answer"
+                )
+            if any(
+                not item.is_best_answer and not item.misconception
+                for item in self.choices
+            ):
+                raise ValueError("every choice distractor requires a misconception")
+        if self.status == "READY":
+            if self.question_text is None:
+                raise ValueError("READY question draft requires question_text")
+            if not self.visible_anchor_aliases:
+                raise ValueError("READY question draft requires a visible anchor")
+            if not self.expected_observables:
+                raise ValueError("READY question draft requires expected observables")
+            if self.replacement_reason is not None:
+                raise ValueError("READY question draft cannot include replacement_reason")
+        else:
+            if self.replacement_reason is None:
+                raise ValueError("REPLACEMENT_REQUIRED requires replacement_reason")
+            if any(
+                (
+                    self.question_text is not None,
+                    bool(self.visible_anchor_aliases),
+                    bool(self.expected_observables),
+                    bool(self.acceptable_alternatives),
+                    bool(self.misconceptions),
+                    bool(self.choices),
+                )
+            ):
+                raise ValueError(
+                    "REPLACEMENT_REQUIRED cannot expose a partial question"
+                )
+        return self
 
 
 class AssessmentConstraints(StrictModel):
@@ -2922,6 +3082,22 @@ class QuestionBuildRequest(StrictModel):
             raise ValueError("opportunity and plan submissions do not match")
         if self.evidence_bundle.submission_id != self.plan.submission_id:
             raise ValueError("evidence bundle and plan submissions do not match")
+        support_ids = self.opportunity.evidence_ids
+        if len(support_ids) != len(set(support_ids)):
+            raise ValueError("opportunity support evidence must be unique")
+        if not set(support_ids).issubset(
+            set(self.evidence_bundle.allowed_evidence_ids)
+        ):
+            raise ValueError(
+                "opportunity support evidence is outside the evidence bundle"
+            )
+        if any(
+            not set(item.evidence_ids).issubset(
+                set(self.evidence_bundle.allowed_evidence_ids)
+            )
+            for item in self.avoid
+        ):
+            raise ValueError("avoid fingerprint evidence is outside the submission")
         return self
 
 
@@ -2936,6 +3112,20 @@ class QuestionReviewRequest(StrictModel):
     def review_matches_opportunity(self) -> "QuestionReviewRequest":
         if self.generation_result.opportunity_id != self.opportunity.opportunity_id:
             raise ValueError("generation result and opportunity do not match")
+        if (
+            self.generation_result.submission_id
+            != self.evidence_bundle.submission_id
+            or self.opportunity.submission_id
+            != self.evidence_bundle.submission_id
+        ):
+            raise ValueError("P08 roots must belong to the same submission")
+        candidate = self.generation_result.candidate
+        if candidate is not None and (
+            candidate.evidence_ids != self.opportunity.evidence_ids
+        ):
+            raise ValueError(
+                "P08 candidate evidence must preserve complete support evidence"
+            )
         return self
 
 
@@ -2994,6 +3184,8 @@ CONTRACT_MODELS: tuple[type[BaseModel], ...] = (
     BlueprintModelDraft,
     EvidenceMappingAliasEnvelope,
     EvidenceMappingModelDraft,
+    QuestionAliasEnvelope,
+    QuestionModelDraft,
     QuestionGenerationPolicy,
     QuestionValidationPolicy,
     AssessmentBlueprint,

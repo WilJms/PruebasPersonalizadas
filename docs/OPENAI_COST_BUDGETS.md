@@ -5,6 +5,39 @@
 > activa, un gate de selección de modelo ni autorización de gasto. Cualquier
 > precio o budget futuro debe revalidarse bajo un instrumento nuevo.
 
+## Estado activo después de la frontera P07 de Fase 5
+
+P07 mantiene exactamente **una** llamada y **un** ledger por oportunidad no
+reutilizada; no añade clasificadores, tools, reparaciones semánticas ni llamadas
+auxiliares. Reservas y regeneraciones localizadas conservan sus caps previos.
+Modelo, ruta y `reasoning_effort=high` no cambian; StageRun reuse/resume no
+llaman cuando la frontera exacta coincide.
+
+Medición offline sobre el mismo fixture mock del baseline Fase 4:
+
+| Métrica P07 | Antes | Fase 5 | Cambio |
+|---|---:|---:|---:|
+| schema provider canónico | 13.671 bytes | 2.822 bytes | -10.849 / -79,36% |
+| ocurrencias de propiedades | 100 | 17 | -83 |
+| nombres de propiedad únicos | 85 | 17 | -68 |
+| campos root provider | 7 | 10 | +3, ahora sólo semánticos/aliases |
+| payload input canónico/alias | 2.294 bytes | 914 bytes | -1.380 / -60,16% |
+| payload output provider | 3.051 bytes | 837 bytes | -2.214 / -72,57% |
+| tokens mock input | 573 | 416 | -157 |
+| tokens mock output | 750 | 216 | -534 |
+| calls / ledgers por oportunidad | 1 / 1 | 1 / 1 | sin aumento |
+
+Las cifras son instrumentación offline, no una nueva cotización ni una
+autorización. La fase ejecutó cero requests reales/billables, no resolvió
+secretos y mantuvo P10 deshabilitado. Las tablas históricas de precios y
+receipts más abajo no se reescriben.
+
+Con las mismas rutas/caps históricas, el estimador offline actual baja a USD
+0.648857 total / USD 0.02496675 máximo por call en Luna XHIGH, USD 0.6488405 /
+USD 0.02496625 en Luna MAX y USD 6.4887025 / USD 0.24967 en Terra medium. Son
+ceiling conservadores del harness no canónico: no cambian routing ni constituyen
+autorización de gasto.
+
 ## Estado activo después de la frontera P06 de Fase 4
 
 P06 mantiene exactamente **una** llamada y **un** ledger por ejecución no

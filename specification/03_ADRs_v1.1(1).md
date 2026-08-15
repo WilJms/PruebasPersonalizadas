@@ -635,3 +635,16 @@ proyecciones legacy derivadas y no como gates. P07 no fue rediseñado, P08
 continúa activo en el runtime actual, P09 conserva su orden actual y P10 sigue
 deshabilitado. No cambian routing/modelo/reasoning y no se autoriza proveedor
 real ni gasto.
+
+**Nota de implementación — Fase 5, 2026-08-15:** la frontera P07 conserva la
+etapa y los contratos canónicos, pero el proveedor recibe un namespace local
+`QuestionAliasEnvelope` y devuelve `QuestionModelDraft`. Support evidence es
+server-owned y coincide con la evidencia de la oportunidad planificada; el
+visible anchor es un subconjunto seleccionado por aliases. El servidor crea
+identidad/metadata y reconstruye texto, transformación y locator exactos desde
+`EvidenceUnit`, sin permitir anchor libre ni evidencia adicional. Los
+observables y la redacción siguen siendo semánticos. Leakage objetivo, scope,
+membership y replay se validan determinísticamente. P08 continúa activo de
+forma temporal sin cambiar scores, decisión o routing; P09 no se mueve y P10
+sigue deshabilitado. La siguiente modificación funcional es retirar P08 del
+runtime. No cambian modelo/reasoning ni se autoriza proveedor real o gasto.

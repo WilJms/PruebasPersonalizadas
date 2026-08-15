@@ -1277,3 +1277,46 @@
   será exclusivamente P07 support evidence/visible anchor + provider DTO.
 - **Relación:** ADR-037, D-074/D-075/D-076,
   `pipeline-authority/1.0.0`, `PIPELINE_AUTHORITY.md`.
+
+## D-078 - P07 redacta la pregunta y el servidor materializa soporte, identidad y anchor
+
+- **Frontera:** `P07_QUESTION_BUILD_V1` sigue activo. La request canónica es
+  `QuestionBuildRequest`, el payload wire es `QuestionAliasEnvelope`, el output
+  provider es `QuestionModelDraft` y el output de etapa permanece
+  `QuestionGenerationResult`/`QuestionCandidate`.
+- **Dos evidencias:** support evidence es server-owned y coincide exactamente
+  con `QuestionOpportunity.evidence_ids`; sustenta operación, foco, observable,
+  answerability y observables esperados. El visible anchor es el subconjunto
+  `E*` elegido para orientar al estudiante. No se exige que toda support
+  evidence sea visible.
+- **Autoridad del modelo:** texto de pregunta, aliases visibles, observables y
+  sus support aliases, alternativas, misconceptions, choices/rationales,
+  incertidumbre semántica o razón de reemplazo. No produce scores 0–1 ni copia
+  identidad, metadata, policy, operation, format, difficulty, time o lineage.
+- **Autoridad del servidor:** `p07-question-materializer/1.0.0` resuelve aliases,
+  crea IDs de candidate/anchor/option/observable, copia el path y constraints de
+  la oportunidad y reconstruye `display_text`, `transformation` y `locator`
+  desde el `EvidenceUnit`. El modelo no puede escribir un anchor canónico,
+  inventar evidence IDs/locators ni ampliar support.
+- **Validación:** scope y ownership de submission, support exacta, subset
+  visible, aliases, campos inmutables, reconstrucción exacta, choices,
+  PII/secrets y leakage literal/near-literal se prueban determinísticamente. La
+  heurística versionada sólo bloquea evidencia objetiva; la equivalencia
+  semántica, calidad pedagógica y conocimiento externo no se convierten en
+  regex ni en un P08 oculto.
+- **Cache/recovery:** provider draft y stage output no son intercambiables. El
+  fingerprint liga prompt/root/schema, envelope, oportunidad, support/bundle,
+  generation policy, scope, validators y materializador. Replay recompila y
+  exige igualdad exacta; retry/resume, reservas, regeneración y teacher edit
+  conservan exactly-once, lineage y evidence allowlists.
+- **Compatibilidad temporal:** P08 sigue activo sin cambiar scores, decisión,
+  route o rol; revisa answerability contra support completa y anchor visible
+  por separado. P09 no se mueve ni se rediseña. P10 sigue disabled. El harness
+  proyecta goldens históricos sin volverlos autoridad ni cambiar veredictos.
+- **Costo/seguridad:** no cambian modelo, route, reasoning ni número gobernado
+  de llamadas. La superficie provider se reduce y toda validación fue
+  offline/mock, sin secretos resueltos ni requests billables.
+- **Siguiente cambio funcional:** retirar P08 del runtime activo. No mover P09
+  ni iniciar Fase 6 dentro de esta decisión.
+- **Relación:** ADR-037, D-074/D-075/D-076/D-077,
+  `pipeline-authority/1.0.0`, `PIPELINE_AUTHORITY.md`.
