@@ -1013,11 +1013,11 @@ def test_offline_rehearsal_has_zero_provider_activity_and_valid_goldens() -> Non
     }
 
 
-def test_frozen_product_boundary_matches_initial_head() -> None:
+def test_frozen_product_boundary_matches_phase1_predecessor() -> None:
     manifest = json.loads(FROZEN_PRODUCT_BOUNDARY_PATH.read_text(encoding="utf-8"))
     proof = frozen_product_boundary_proof()
     assert proof["baseline_git_sha"] == (
-        "9dbce36d21ba6b28b32b051862cf8b305ded61e8"
+        "5698be185355dff48f25b5e791150d232d70eb9f"
     )
     assert proof["source_file_sha256"] == manifest["source_file_sha256"]
     assert proof["route_profile_material_hashes"] == (

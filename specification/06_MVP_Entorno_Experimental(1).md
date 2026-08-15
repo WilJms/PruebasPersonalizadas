@@ -328,7 +328,7 @@ Los blobs nunca se guardan en PostgreSQL. Los JSONB completos son fuente del sna
 | P01 | actividad | ActivitySpecRequest | ActivitySpec | evidence IDs/roles |
 | P02 | actividad, si hay rúbrica | RubricNormalizeRequest | RubricSpec | pesos/criteria/verification_fit |
 | P03 | actividad | AmbiguityTriageRequest | AmbiguityReport | issue/options/blocking |
-| P04 | actividad | BlueprintBuildRequest | AssessmentBlueprint | catálogo propuesto; preflight backend + docente |
+| P04 | actividad | BlueprintBuildRequest | BlueprintModelDraft -> AssessmentBlueprint compilado | catálogo semántico propuesto; IDs/policy/estado y preflight en backend + docente |
 | P05 | histórico | BlueprintReviewRequest | BlueprintReview | INACTIVE_TARGET; lectura compatible |
 | P06 | submission | EvidenceMapRequest | EvidenceMapPatch | matches/oportunidades/operaciones permitidas |
 | P07 | oportunidad cerrada | QuestionBuildRequest | QuestionGenerationResult | validaciones backend + revisión docente |

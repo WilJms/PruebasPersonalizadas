@@ -461,115 +461,33 @@ def _candidate(*, enriched: bool = False) -> models.QuestionCandidate:
     )
 
 
-def _dynamic_blueprint(
+def _dynamic_blueprint_draft(
     request: models.BlueprintBuildRequest,
-) -> models.AssessmentBlueprint:
-    """Build a deterministic catalog from the trusted E1 blueprint policy.
+) -> models.BlueprintModelDraft:
+    """Build a deterministic semantic draft from the trusted P04 inputs.
 
-    The static fixtures above remain useful for isolated contract tests.  Web
-    requests, however, may legitimately select any accepted question count,
-    time budget, response formats, and justification policy.  The mock must
-    preserve those constraints instead of silently replacing them with the
-    one-question demo defaults.
+    Canonical IDs, constraints, status and approval metadata are deliberately
+    absent; the production compiler owns those fields in mock and real modes.
     """
 
     policy = request.blueprint_policy
-    activity_id = request.activity_spec.activity_id
-    selected_template_ids = list(
-        dict.fromkeys(
-            policy.structured_justification_policy.selected_opportunity_template_ids
-        )
+    selected_count = len(
+        policy.structured_justification_policy.selected_opportunity_template_ids
     )
-    catalog_size = max(
+    requested_catalog_size = max(
         policy.question_count + policy.planning_policy.max_reserve_opportunities,
-        len(selected_template_ids),
+        selected_count,
     )
-    template_ids = list(selected_template_ids)
-    generated_index = 0
-    while len(template_ids) < catalog_size:
-        candidate_id = stable_id(
-            "oppt", activity_id, policy.policy_id, generated_index
-        )
-        generated_index += 1
-        if candidate_id not in template_ids:
-            template_ids.append(candidate_id)
-
+    catalog_size = min(
+        requested_catalog_size,
+        policy.max_variants_per_dimension * policy.max_templates_per_variant,
+    )
     operations = list(models.CognitiveOperation)
     difficulties = list(models.DifficultyBand)
     target_minutes = min(
         60,
         max(1, policy.target_total_minutes // policy.question_count),
     )
-    justification_mode = policy.structured_justification_policy.mode
-    templates: list[models.QuestionOpportunityTemplate] = []
-    for index, template_id in enumerate(template_ids):
-        operation = operations[index % len(operations)]
-        justification_required = (
-            justification_mode == models.StructuredJustificationMode.ALL
-            or template_id in selected_template_ids
-        )
-        templates.append(
-            models.QuestionOpportunityTemplate(
-                opportunity_template_id=template_id,
-                cognitive_operation=operation,
-                focus=f"Aspecto verificable {index + 1} del entregable.",
-                observable=(
-                    "Relaciona una afirmación localizada con una consecuencia "
-                    "observable en la evidencia."
-                ),
-                difficulty=difficulties[index % len(difficulties)],
-                target_minutes=target_minutes,
-                allowed_anchor_structures=[models.AnchorStructure.SINGLE_FRAGMENT],
-                allowed_response_formats=list(policy.allowed_response_formats),
-                verification_potential=0.95,
-                minimum_quality=policy.planning_policy.minimum_opportunity_quality,
-                student_justification_required=justification_required,
-            )
-        )
-
-    variants: list[models.EvidenceVariant] = []
-    for chunk_index, start in enumerate(range(0, len(templates), 100)):
-        chunk = templates[start : start + 100]
-        chunk_operations = list(
-            dict.fromkeys(item.cognitive_operation for item in chunk)
-        )
-        variants.append(
-            models.EvidenceVariant(
-                variant_id=stable_id(
-                    "variant", activity_id, policy.policy_id, chunk_index
-                ),
-                name=f"Evidencia localizada {chunk_index + 1}",
-                description=(
-                    "Fragmentos textuales localizables que permiten una "
-                    "verificación acotada."
-                ),
-                evidence_requirement=models.EvidenceRequirement(
-                    allowed_modalities=[
-                        models.EvidenceModality.HEADING,
-                        models.EvidenceModality.PARAGRAPH,
-                        models.EvidenceModality.LIST,
-                        models.EvidenceModality.OTHER,
-                    ],
-                    min_distinct_units=1,
-                    min_extraction_confidence=0.0,
-                    min_alignment=0.0,
-                ),
-                verification_potential=0.95,
-                supported_operations=[
-                    models.SupportedOperation(
-                        cognitive_operation=operation,
-                        support_strength=0.95,
-                        rationale=(
-                            "La operación se deriva del catálogo y se valida "
-                            "contra evidencia localizada."
-                        ),
-                    )
-                    for operation in chunk_operations
-                ],
-                question_opportunities=chunk,
-            )
-        )
-
     rubric_criterion_ids = (
         [criterion.criterion_id for criterion in request.rubric_spec.criteria]
         if request.rubric_spec is not None
@@ -588,52 +506,105 @@ def _dynamic_blueprint(
     learning_outcome_ids = [
         outcome.statement_id for outcome in request.activity_spec.learning_outcomes
     ]
-    blueprint_id = request.target_blueprint_id
-    return models.AssessmentBlueprint(
-        blueprint_id=blueprint_id,
-        blueprint_version=request.target_blueprint_version,
-        activity_id=activity_id,
-        status=models.WorkflowStatus.READY,
-        context_mode=models.ContextMode.CLOSED,
-        dimensions=[
-            models.BlueprintDimension(
-                dimension_id=stable_id("dimension", blueprint_id, 0),
-                name="Comprensión verificable del entregable",
-                criterion_ids=criterion_ids,
-                learning_outcome_ids=learning_outcome_ids,
-                verification_priority=0.95,
-                factors=models.VerificationFactors(
-                    learning_relevance=0.95,
-                    centrality=0.9,
-                    expected_evidence=0.9,
-                    discriminative_potential=0.85,
-                    auditability=1.0,
-                    short_response_observability=0.9,
-                ),
-                justification=(
-                    "Dimensión sintética derivada de requisitos y evidencia "
-                    "autorizados para probar la orquestación."
-                ),
-                evidence_variants=variants,
-            )
-        ],
-        assessment_constraints=models.AssessmentConstraints(
-            question_count=policy.question_count,
-            target_total_minutes=policy.target_total_minutes,
-            allowed_response_formats=list(policy.allowed_response_formats),
-            minimum_opportunity_quality=(
-                policy.planning_policy.minimum_opportunity_quality
-            ),
-            max_reserve_opportunities=(
-                policy.planning_policy.max_reserve_opportunities
-            ),
-            priority_criterion_ids=list(policy.priority_criterion_ids),
-            required_criterion_ids=list(policy.required_criterion_ids),
-            structured_justification_policy=(
-                policy.structured_justification_policy.model_copy(deep=True)
-            ),
+    dimension = models.BlueprintDimensionDraft(
+        dimension_alias="D1",
+        name="Comprensión verificable del entregable",
+        criterion_ids=criterion_ids,
+        learning_outcome_ids=learning_outcome_ids,
+        verification_priority=0.95,
+        factors=models.VerificationFactors(
+            learning_relevance=0.95,
+            centrality=0.9,
+            expected_evidence=0.9,
+            discriminative_potential=0.85,
+            auditability=1.0,
+            short_response_observability=0.9,
         ),
-        decision_ids=[decision.decision_id for decision in request.resolved_decisions],
+        justification=(
+            "Dimensión sintética derivada de requisitos y evidencia "
+            "autorizados para probar la orquestación."
+        ),
+    )
+
+    variants: list[models.EvidenceVariantDraft] = []
+    templates: list[models.QuestionOpportunityTemplateDraft] = []
+    for chunk_index, start in enumerate(
+        range(0, catalog_size, policy.max_templates_per_variant)
+    ):
+        variant_alias = f"V{chunk_index + 1}"
+        stop = min(start + policy.max_templates_per_variant, catalog_size)
+        chunk_operations = list(
+            dict.fromkeys(
+                operations[index % len(operations)]
+                for index in range(start, stop)
+            )
+        )
+        variants.append(
+            models.EvidenceVariantDraft(
+                variant_alias=variant_alias,
+                dimension_alias="D1",
+                name=f"Evidencia localizada {chunk_index + 1}",
+                description=(
+                    "Fragmentos textuales localizables que permiten una "
+                    f"verificación acotada en la variante {chunk_index + 1}."
+                ),
+                evidence_requirement=models.EvidenceRequirement(
+                    allowed_modalities=[
+                        models.EvidenceModality.HEADING,
+                        models.EvidenceModality.PARAGRAPH,
+                        models.EvidenceModality.LIST,
+                        models.EvidenceModality.OTHER,
+                    ],
+                    min_distinct_units=1,
+                    min_extraction_confidence=0.0,
+                    min_alignment=0.0,
+                ),
+                verification_potential=0.95,
+                supported_operations=[
+                    models.SupportedOperation(
+                        cognitive_operation=operation,
+                        support_strength=0.95,
+                        rationale=(
+                            "La evidencia localizada sustenta la operación "
+                            f"{operation.value.lower()}."
+                        ),
+                    )
+                    for operation in chunk_operations
+                ],
+            )
+        )
+        for index in range(start, stop):
+            templates.append(
+                models.QuestionOpportunityTemplateDraft(
+                    template_alias=f"T{index + 1}",
+                    variant_alias=variant_alias,
+                    cognitive_operation=operations[index % len(operations)],
+                    focus=f"Aspecto verificable {index + 1} del entregable.",
+                    observable=(
+                        "Relaciona la afirmación localizada "
+                        f"{index + 1} con una consecuencia observable."
+                    ),
+                    difficulty=difficulties[index % len(difficulties)],
+                    target_minutes=target_minutes,
+                    allowed_anchor_structures=[
+                        models.AnchorStructure.SINGLE_FRAGMENT
+                    ],
+                    allowed_response_formats=list(policy.allowed_response_formats),
+                    verification_potential=0.95,
+                    justification_required=(
+                        policy.structured_justification_policy.mode
+                        == models.StructuredJustificationMode.SELECTED
+                        and index < selected_count
+                    ),
+                )
+            )
+
+    return models.BlueprintModelDraft(
+        dimensions=[
+            dimension,
+        ],
+        evidence_variants=variants,
+        question_opportunities=templates,
     )
 
 
@@ -1344,7 +1315,7 @@ class DeterministicMockFactory:
                 activity_id=request.activity_spec.activity_id, issues=[], blocked=False
             )
         if prompt_id == "P04_BLUEPRINT_BUILD_V1":
-            return _dynamic_blueprint(request)
+            return _dynamic_blueprint_draft(request)
         if prompt_id == "P05_BLUEPRINT_REVIEW_V1":
             blueprint = request.blueprint
             from comprehension_verification.validation import (
@@ -1640,15 +1611,13 @@ class DeterministicMockFactory:
                 ],
             )
         if prompt_id == "P04_BLUEPRINT_BUILD_V1":
-            return _dynamic_blueprint(request).model_copy(
+            draft = _dynamic_blueprint_draft(request)
+            return draft.model_copy(
                 update={
-                    "status": models.WorkflowStatus.BLOCKED,
-                    "diagnostics": [
-                        _diagnostic(
-                            "ASSIGNMENT_AMBIGUOUS",
-                            "El blueprint requiere una decisión docente antes de aprobarse.",
-                        )
-                    ],
+                    "question_opportunities": [
+                        item.model_copy(update={"target_minutes": 60})
+                        for item in draft.question_opportunities
+                    ]
                 }
             )
         if prompt_id == "P05_BLUEPRINT_REVIEW_V1":

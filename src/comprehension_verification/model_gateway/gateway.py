@@ -22,6 +22,12 @@ from typing import Any, Protocol, runtime_checkable
 
 from pydantic import BaseModel, ValidationError
 
+from comprehension_verification.blueprint_compiler import (
+    BlueprintCompilationError,
+    blueprint_compiler_boundary,
+    compile_and_preflight_blueprint,
+    validate_compiled_blueprint,
+)
 from comprehension_verification.contracts import SCHEMA_VERSION, model_by_name, models
 from comprehension_verification.model_gateway.mock_factory import (
     AdapterResult,
@@ -30,7 +36,9 @@ from comprehension_verification.model_gateway.mock_factory import (
 )
 from comprehension_verification.model_gateway.registry import (
     PROMPT_CONTRACTS,
+    PROVIDER_OUTPUT_CONTRACTS,
     PromptSpec,
+    provider_output_schema_boundary,
     prompt_spec,
 )
 
@@ -44,7 +52,7 @@ PROMPT_RELATIONSHIP_VALIDATOR_VERSIONS: Mapping[str, str] = {
     "P01_ACTIVITY_SPEC_V1": "relationship-p01/2.0.0",
     "P02_RUBRIC_NORMALIZE_V1": "relationship-p02/2.0.0",
     "P03_AMBIGUITY_TRIAGE_V1": "relationship-p03/2.0.0",
-    "P04_BLUEPRINT_BUILD_V1": "relationship-p04/2.0.0",
+    "P04_BLUEPRINT_BUILD_V1": "relationship-p04/3.0.0",
     "P05_BLUEPRINT_REVIEW_V1": "relationship-p05/2.2.0",
     "P06_EVIDENCE_MAP_V1": "relationship-p06/2.3.0",
     "P07_QUESTION_BUILD_V1": "relationship-p07/2.1.0",
@@ -95,6 +103,7 @@ class ContextFailureCode(StrEnum):
     P04_NONREADY_WITHOUT_BLOCKING_DIAGNOSTIC = (
         "P04_NONREADY_WITHOUT_BLOCKING_DIAGNOSTIC"
     )
+    P04_DRAFT_COMPILATION_FAILED = "P04_DRAFT_COMPILATION_FAILED"
     P05_REFERENCE_MISMATCH = "P05_REFERENCE_MISMATCH"
     P05_REFERENCED_ID_NOT_ALLOWLISTED = (
         "P05_REFERENCED_ID_NOT_ALLOWLISTED"
@@ -862,6 +871,11 @@ class ModelGateway:
             ),
             "application_validator_hash": application_validator_hash,
         }
+        if prompt_id == "P04_BLUEPRINT_BUILD_V1":
+            material["provider_output_schema"] = provider_output_schema_boundary(
+                prompt_id
+            )
+            material["blueprint_compiler"] = blueprint_compiler_boundary()
         return f"model-stage-execution/2:{_hash(material).removeprefix('sha256:')}"
 
     def validate_cached_output(
@@ -887,7 +901,16 @@ class ModelGateway:
             self._validate_real_input_attestation(
                 request, envelope.trusted_context
             )
-        output = self._validate_output(spec, raw_output)
+        if prompt_id == "P04_BLUEPRINT_BUILD_V1":
+            output = self._validate_stage_output(spec, raw_output)
+        else:
+            provider_output = self._validate_output(spec, raw_output)
+            output = self._materialize_provider_output(
+                prompt_id,
+                request,
+                provider_output,
+                phase=ValidationPhase.OUTPUT,
+            )
         self._validate_context(
             output,
             envelope.trusted_context,
@@ -1235,10 +1258,16 @@ class ModelGateway:
                         phase=ValidationPhase.REPAIRED_OUTPUT,
                         request=request,
                     )
-                    self._validate_output_relationship(
+                    materialized = self._materialize_provider_output(
                         prompt_id,
                         request,
                         repaired,
+                        phase=ValidationPhase.REPAIRED_OUTPUT,
+                    )
+                    self._validate_output_relationship(
+                        prompt_id,
+                        request,
+                        materialized,
                         phase=ValidationPhase.REPAIRED_OUTPUT,
                     )
                 except GatewayContextError as context_error:
@@ -1249,7 +1278,7 @@ class ModelGateway:
                     ) from context_error
                 return GatewayCallResult(
                     prompt_id=prompt_id,
-                    output=repaired,
+                    output=materialized,
                     envelope=envelope,
                     route_resolution=resolution,
                     ledgers=tuple(ledgers),
@@ -1268,10 +1297,16 @@ class ModelGateway:
                     phase=ValidationPhase.OUTPUT,
                     request=request,
                 )
-                self._validate_output_relationship(
+                materialized = self._materialize_provider_output(
                     prompt_id,
                     request,
                     output,
+                    phase=ValidationPhase.OUTPUT,
+                )
+                self._validate_output_relationship(
+                    prompt_id,
+                    request,
+                    materialized,
                     phase=ValidationPhase.OUTPUT,
                 )
             except GatewayContextError as context_error:
@@ -1291,8 +1326,8 @@ class ModelGateway:
                     ledgers=ledgers,
                 ) from context_error
             if prompt_id == "P11_SCHEMA_REPAIR_V1":
-                self._revalidate_repair_target(output)
-                if output.repair_status == models.RepairStatus.REPAIRED:
+                self._revalidate_repair_target(materialized)
+                if materialized.repair_status == models.RepairStatus.REPAIRED:
                     validation_order.append(ValidationPhase.REPAIRED_OUTPUT)
             valid_ledger = self._ledger(
                 spec=spec,
@@ -1311,7 +1346,7 @@ class ModelGateway:
             self._record(valid_ledger, ledgers)
             return GatewayCallResult(
                 prompt_id=prompt_id,
-                output=output,
+                output=materialized,
                 envelope=envelope,
                 route_resolution=resolution,
                 ledgers=tuple(ledgers),
@@ -1333,8 +1368,8 @@ class ModelGateway:
             ) from exc
         if spec.prompt_id == "P11_SCHEMA_REPAIR_V1":
             repairable_roots = {
-                output_root
-                for prompt_id, (_input_root, output_root) in PROMPT_CONTRACTS.items()
+                PROVIDER_OUTPUT_CONTRACTS[prompt_id]
+                for prompt_id in PROMPT_CONTRACTS
                 if prompt_id not in {
                     "P10_ENRICHED_CONTEXT_V1",
                     "P11_SCHEMA_REPAIR_V1",
@@ -1362,7 +1397,7 @@ class ModelGateway:
             "schema_version": SCHEMA_VERSION,
             "prompt_id": spec.prompt_id,
             "prompt_version": spec.prompt_version,
-            "output_schema_name": spec.output_schema_name,
+            "output_schema_name": spec.provider_output_schema_name,
             "output_schema_version": SCHEMA_VERSION,
             "trusted_context": raw_context,
             "payload": request.model_dump(mode="json"),
@@ -1375,7 +1410,7 @@ class ModelGateway:
             ) from exc
 
     def _validate_output(self, spec: PromptSpec, raw_output: Any) -> BaseModel:
-        output_model = model_by_name(spec.output_schema_name)
+        output_model = model_by_name(spec.provider_output_schema_name)
         try:
             return output_model.model_validate(raw_output)
         except ValidationError as exc:
@@ -1392,6 +1427,57 @@ class ModelGateway:
             phase=ValidationPhase.OUTPUT,
             primary_failure=primary_failure,
         )
+
+    def _validate_stage_output(self, spec: PromptSpec, raw_output: Any) -> BaseModel:
+        """Validate a cached canonical result rather than its provider draft."""
+
+        output_model = model_by_name(spec.output_schema_name)
+        try:
+            return output_model.model_validate(raw_output)
+        except ValidationError as exc:
+            primary_failure = PrimaryOutputFailure(
+                phase=ValidationPhase.OUTPUT,
+                code="OUTPUT_PYDANTIC_VALIDATION_FAILED",
+                validation_engine="PYDANTIC_MODEL_VALIDATE",
+                issues=_safe_pydantic_issues(exc, output_model),
+            )
+        raise GatewaySchemaViolation(
+            "Canonical stage output model validation failed",
+            phase=ValidationPhase.OUTPUT,
+            primary_failure=primary_failure,
+        )
+
+    @staticmethod
+    def _materialize_provider_output(
+        prompt_id: str,
+        request: BaseModel,
+        output: BaseModel,
+        *,
+        phase: ValidationPhase,
+    ) -> BaseModel:
+        if prompt_id != "P04_BLUEPRINT_BUILD_V1":
+            return output
+        if not isinstance(request, models.BlueprintBuildRequest) or not isinstance(
+            output, models.BlueprintModelDraft
+        ):
+            raise GatewayContextError(
+                "P04 provider boundary used an unexpected contract",
+                phase=phase,
+                failure_code=ContextFailureCode.P04_DRAFT_COMPILATION_FAILED,
+            )
+        try:
+            return compile_and_preflight_blueprint(draft=output, request=request)
+        except BlueprintCompilationError as exc:
+            failure_code = (
+                ContextFailureCode.P04_SOURCE_COVERAGE_MISMATCH
+                if exc.code == "BLUEPRINT_SOURCE_COVERAGE_INCOMPLETE"
+                else ContextFailureCode.P04_DRAFT_COMPILATION_FAILED
+            )
+            raise GatewayContextError(
+                "P04 semantic draft failed deterministic compilation",
+                phase=phase,
+                failure_code=failure_code,
+            ) from exc
 
     @staticmethod
     def _validate_real_input_attestation(
@@ -1784,6 +1870,8 @@ class ModelGateway:
         elif prompt_id == "P03_AMBIGUITY_TRIAGE_V1" and output.blocked and not output.issues:
             raise GatewayContextError("Blocked P03 output requires an actionable issue")
         elif prompt_id == "P04_BLUEPRINT_BUILD_V1":
+            if isinstance(output, models.BlueprintModelDraft):
+                return
             if output.approved_by is not None or output.approved_at is not None:
                 raise GatewayContextError(
                     "P04 cannot fabricate server-side human approval metadata"
@@ -1853,153 +1941,27 @@ class ModelGateway:
             if output.activity_id != request.activity_spec.activity_id:
                 raise GatewayContextError("P03 output activity_id mismatch")
         elif prompt_id == "P04_BLUEPRINT_BUILD_V1":
-            if (
-                output.activity_id != request.activity_spec.activity_id
-                or output.blueprint_id != request.target_blueprint_id
-                or output.blueprint_version != request.target_blueprint_version
-            ):
-                raise GatewayContextError("P04 output activity_id mismatch")
-            constraints = output.assessment_constraints
-            policy = request.blueprint_policy
-            if (
-                constraints.question_count != policy.question_count
-                or constraints.target_total_minutes != policy.target_total_minutes
-                or set(constraints.allowed_response_formats)
-                != set(policy.allowed_response_formats)
-                or constraints.minimum_opportunity_quality
-                != policy.planning_policy.minimum_opportunity_quality
-                or constraints.max_reserve_opportunities
-                != policy.planning_policy.max_reserve_opportunities
-                or set(constraints.priority_criterion_ids)
-                != set(policy.priority_criterion_ids)
-                or set(constraints.required_criterion_ids)
-                != set(policy.required_criterion_ids)
-                or constraints.structured_justification_policy
-                != policy.structured_justification_policy
-            ):
-                raise GatewayContextError("P04 output changed trusted blueprint constraints")
-            if set(output.decision_ids) != {
-                decision.decision_id for decision in request.resolved_decisions
-            }:
-                raise GatewayContextError("P04 output changed trusted policy decisions")
-            learning_outcome_ids = {
-                item.statement_id for item in request.activity_spec.learning_outcomes
-            }
-            source_statement_ids = {
-                item.statement_id
-                for collection in (
-                    request.activity_spec.learning_outcomes,
-                    request.activity_spec.expected_products,
-                    request.activity_spec.requirements,
-                )
-                for item in collection
-            }
-            rubric_criterion_ids = (
-                {item.criterion_id for item in request.rubric_spec.criteria}
-                if request.rubric_spec is not None
-                else set()
-            )
-            allowed_criterion_ids = rubric_criterion_ids or source_statement_ids
-            blueprint_criterion_ids: set[str] = set()
-            blueprint_learning_outcome_ids: set[str] = set()
-            for dimension in output.dimensions:
-                if not set(dimension.learning_outcome_ids).issubset(
-                    learning_outcome_ids
-                ):
-                    raise GatewayContextError(
-                        "P04 output invented learning outcome IDs"
-                    )
-                if not set(dimension.criterion_ids).issubset(
-                    allowed_criterion_ids
-                ):
-                    raise GatewayContextError("P04 output invented criterion IDs")
-                blueprint_criterion_ids.update(dimension.criterion_ids)
-                blueprint_learning_outcome_ids.update(
-                    dimension.learning_outcome_ids
-                )
-            verifiable_criterion_ids = (
-                {
-                    item.criterion_id
-                    for item in request.rubric_spec.criteria
-                    if item.verification_fit != "NOT_VERIFIABLE"
-                }
-                if request.rubric_spec is not None
-                else set()
-            )
-            if (
-                not verifiable_criterion_ids.issubset(
-                    blueprint_criterion_ids
-                )
-                or not learning_outcome_ids.issubset(
-                    blueprint_learning_outcome_ids
-                )
+            if not isinstance(request, models.BlueprintBuildRequest) or not isinstance(
+                output, models.AssessmentBlueprint
             ):
                 raise GatewayContextError(
-                    "P04 output omitted source-bound conceptual coverage",
+                    "P04 stage boundary used an unexpected contract",
                     phase=phase,
-                    failure_code=(
-                        ContextFailureCode.P04_SOURCE_COVERAGE_MISMATCH
-                    ),
+                    failure_code=ContextFailureCode.P04_DRAFT_COMPILATION_FAILED,
                 )
-            policy_criterion_ids = set(policy.priority_criterion_ids).union(
-                policy.required_criterion_ids
-            )
-            if not policy_criterion_ids.issubset(allowed_criterion_ids):
-                raise GatewayContextError(
-                    "P04 policy references criteria absent from normalized sources"
+            try:
+                validate_compiled_blueprint(blueprint=output, request=request)
+            except BlueprintCompilationError as exc:
+                failure_code = (
+                    ContextFailureCode.P04_SOURCE_COVERAGE_MISMATCH
+                    if exc.code == "BLUEPRINT_SOURCE_COVERAGE_INCOMPLETE"
+                    else ContextFailureCode.P04_DRAFT_COMPILATION_FAILED
                 )
-            if not set(policy.required_criterion_ids).issubset(
-                blueprint_criterion_ids
-            ):
                 raise GatewayContextError(
-                    "P04 output omitted a required trusted criterion"
-                )
-            eligible_minutes = sorted(
-                opportunity.target_minutes
-                for dimension in output.dimensions
-                for variant in dimension.evidence_variants
-                for opportunity in variant.question_opportunities
-                if opportunity.minimum_quality
-                >= constraints.minimum_opportunity_quality
-            )
-            if (
-                len(eligible_minutes) < constraints.question_count
-                or sum(eligible_minutes[: constraints.question_count])
-                > constraints.target_total_minutes
-            ):
-                raise GatewayContextError(
-                    "P04 catalog cannot form an exact-N plan within trusted limits",
+                    "P04 canonical result failed deterministic validation",
                     phase=phase,
-                    failure_code=(
-                        ContextFailureCode.P04_CATALOG_PLAN_INFEASIBLE
-                    ),
-                )
-            templates = [
-                opportunity
-                for dimension in output.dimensions
-                for variant in dimension.evidence_variants
-                for opportunity in variant.question_opportunities
-            ]
-            required_templates = {
-                template.opportunity_template_id
-                for template in templates
-                if template.student_justification_required
-            }
-            justification = policy.structured_justification_policy
-            if justification.mode == models.StructuredJustificationMode.ALL:
-                expected_templates = {
-                    template.opportunity_template_id for template in templates
-                }
-            elif justification.mode == models.StructuredJustificationMode.SELECTED:
-                expected_templates = set(
-                    justification.selected_opportunity_template_ids
-                )
-            else:
-                expected_templates = set()
-            if required_templates != expected_templates:
-                raise GatewayContextError(
-                    "P04 output changed the trusted structured-justification matrix"
-                )
+                    failure_code=failure_code,
+                ) from exc
         elif prompt_id == "P05_BLUEPRINT_REVIEW_V1":
             from comprehension_verification.validation import (
                 ContextValidationError,
@@ -2419,7 +2381,7 @@ class ModelGateway:
                 )
             ]
         repair_request = models.SchemaRepairRequest(
-            target_schema_name=target_spec.output_schema_name,
+            target_schema_name=target_spec.provider_output_schema_name,
             invalid_output=invalid_output,
             validation_issues=issues,
         )
@@ -2704,7 +2666,15 @@ class ModelGateway:
         adapter_result: AdapterResult | None = None,
         reason_codes: Sequence[str] = (),
     ) -> models.ModelCallLedger:
-        input_hash = _hash(envelope)
+        input_material: Any = envelope
+        if spec.prompt_id == "P04_BLUEPRINT_BUILD_V1":
+            input_material = {
+                "envelope": envelope.model_dump(mode="json"),
+                "provider_output_schema": provider_output_schema_boundary(
+                    spec.prompt_id
+                ),
+            }
+        input_hash = _hash(input_material)
         created = self.config.clock()
         if created.tzinfo is None:
             created = created.replace(tzinfo=UTC)
@@ -2729,7 +2699,7 @@ class ModelGateway:
             prompt_version=spec.prompt_version,
             prompt_hash=spec.prompt_hash,
             input_bundle_hash=input_hash,
-            schema_name=spec.output_schema_name,
+            schema_name=spec.provider_output_schema_name,
             schema_version_used=SCHEMA_VERSION,
             route=ledger_route,
             input_tokens=max(0, input_tokens),

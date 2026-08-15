@@ -15,7 +15,10 @@ from comprehension_verification.model_gateway.openai_pricing import (
     PRICING_OBSERVED_DATE,
     estimate_cost_usd,
 )
-from comprehension_verification.model_gateway.registry import PROMPT_SPECS, PromptSpec
+from comprehension_verification.model_gateway.registry import (
+    PROMPT_SPECS,
+    PromptSpec,
+)
 from comprehension_verification.model_gateway.openai_schema import (
     structured_output_format,
 )
@@ -680,7 +683,7 @@ def openai_developer_instruction(
         "task_name": spec.task,
         "output_language": envelope.trusted_context.output_language,
         "context_mode": envelope.trusted_context.context_mode,
-        "schema_name": spec.output_schema_name,
+        "schema_name": spec.provider_output_schema_name,
         "schema_version": envelope.output_schema_version,
         "prompt_id": spec.prompt_id,
         "prompt_version": spec.prompt_version,

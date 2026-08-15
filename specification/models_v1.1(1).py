@@ -27,6 +27,14 @@ Stage2SchemaVersion = Literal[CONTRACT_VERSION]
 
 Id = Annotated[str, Field(min_length=3, max_length=128, pattern=r"^[a-z][a-z0-9_-]*$")]
 
+# Provider-local aliases are deliberately not canonical IDs.  They exist only
+# inside one P04 inference result and are resolved by the server compiler.
+DimensionAlias = Annotated[str, Field(pattern=r"^D[1-9][0-9]{0,2}$")]
+VariantAlias = Annotated[str, Field(pattern=r"^V[1-9][0-9]{0,2}$")]
+OpportunityTemplateAlias = Annotated[
+    str, Field(pattern=r"^T[1-9][0-9]{0,3}$")
+]
+
 PrincipalId = Annotated[
     str,
     Field(
@@ -799,6 +807,10 @@ class StructuredJustificationPolicy(StrictModel):
 
     @model_validator(mode="after")
     def selected_ids_match_mode(self) -> "StructuredJustificationPolicy":
+        _require_unique(
+            self.selected_opportunity_template_ids,
+            "selected_opportunity_template_ids",
+        )
         if self.mode == StructuredJustificationMode.SELECTED:
             if not self.selected_opportunity_template_ids:
                 raise ValueError("SELECTED mode requires opportunity template ids")
@@ -830,6 +842,7 @@ class BlueprintPolicy(StrictModel):
     schema_version: SchemaVersion = LEGACY_SCHEMA_VERSION
     policy_id: Id
     activity_id: Id
+    context_mode: ContextMode = ContextMode.CLOSED
     question_count: int = Field(ge=1, le=20)
     target_total_minutes: int = Field(ge=3, le=120)
     allowed_response_formats: Annotated[
@@ -839,6 +852,10 @@ class BlueprintPolicy(StrictModel):
     required_criterion_ids: list[Id] = Field(default_factory=list, max_length=100)
     structured_justification_policy: StructuredJustificationPolicy
     planning_policy: AssessmentPlanningPolicy
+    # Operational provisional guardrails, configurable by trusted server
+    # policy; they are not universal pedagogical limits.
+    max_variants_per_dimension: int = Field(default=6, ge=1, le=20)
+    max_templates_per_variant: int = Field(default=12, ge=1, le=100)
     max_local_regenerations: int = Field(default=1, ge=0, le=3)
     human_review_required: Literal[True] = True
 
@@ -945,6 +962,65 @@ class BlueprintDimension(StrictModel):
     factors: VerificationFactors
     justification: Annotated[str, Field(min_length=1, max_length=1000)]
     evidence_variants: Annotated[list[EvidenceVariant], Field(min_length=1)]
+
+
+class BlueprintDimensionDraft(StrictModel):
+    """Semantic P04 dimension without canonical identity or workflow data."""
+
+    dimension_alias: DimensionAlias
+    name: Annotated[str, Field(min_length=1, max_length=300)]
+    criterion_ids: Annotated[list[Id], Field(min_length=1, max_length=100)]
+    learning_outcome_ids: list[Id] = Field(default_factory=list, max_length=100)
+    grading_weight: float | None = Field(default=None, ge=0.0, le=1.0)
+    verification_priority: Score
+    factors: VerificationFactors
+    justification: Annotated[str, Field(min_length=1, max_length=1000)]
+
+
+class EvidenceVariantDraft(StrictModel):
+    """Semantic evidence variant linked only through inference-local aliases."""
+
+    variant_alias: VariantAlias
+    dimension_alias: DimensionAlias
+    name: Annotated[str, Field(min_length=1, max_length=300)]
+    description: Annotated[str, Field(min_length=1, max_length=1200)]
+    evidence_requirement: EvidenceRequirement
+    verification_potential: Score
+    supported_operations: Annotated[
+        list[SupportedOperation], Field(min_length=1, max_length=9)
+    ]
+
+
+class QuestionOpportunityTemplateDraft(StrictModel):
+    """Semantic question opportunity without a canonical template ID."""
+
+    template_alias: OpportunityTemplateAlias
+    variant_alias: VariantAlias
+    cognitive_operation: CognitiveOperation
+    focus: Annotated[str, Field(min_length=1, max_length=1000)]
+    observable: Annotated[str, Field(min_length=1, max_length=1000)]
+    difficulty: DifficultyBand
+    target_minutes: int = Field(ge=1, le=60)
+    allowed_anchor_structures: Annotated[
+        list[AnchorStructure], Field(min_length=1, max_length=7)
+    ]
+    allowed_response_formats: Annotated[
+        list[ResponseFormat], Field(min_length=1, max_length=5)
+    ]
+    verification_potential: Score
+    justification_required: bool = False
+
+
+class BlueprintModelDraft(StrictModel):
+    """P04 provider output; the server compiles it into AssessmentBlueprint."""
+
+    dimensions: Annotated[list[BlueprintDimensionDraft], Field(min_length=1, max_length=50)]
+    evidence_variants: Annotated[
+        list[EvidenceVariantDraft], Field(min_length=1, max_length=400)
+    ]
+    question_opportunities: Annotated[
+        list[QuestionOpportunityTemplateDraft], Field(min_length=1, max_length=2000)
+    ]
 
 
 class AssessmentConstraints(StrictModel):
@@ -2735,6 +2811,7 @@ CONTRACT_MODELS: tuple[type[BaseModel], ...] = (
     PolicyDecision,
     AssessmentPlanningPolicy,
     BlueprintPolicy,
+    BlueprintModelDraft,
     QuestionGenerationPolicy,
     QuestionValidationPolicy,
     AssessmentBlueprint,

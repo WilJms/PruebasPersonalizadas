@@ -183,7 +183,7 @@ def _envelope(prompt_id: str, request: Any) -> models.ModelTaskEnvelope:
         schema_version=SCHEMA_VERSION,
         prompt_id=prompt_id,
         prompt_version=spec.prompt_version,
-        output_schema_name=spec.output_schema_name,
+        output_schema_name=spec.provider_output_schema_name,
         output_schema_version=SCHEMA_VERSION,
         trusted_context=build_trusted_context(request),
         payload=request.model_dump(mode="json"),
@@ -1146,6 +1146,33 @@ def test_responses_payload_has_governed_state_tools_and_reasoning_controls() -> 
     envelope_json = json.loads(call["input"][1]["content"][0]["text"])
     assert envelope_json["prompt_id"] == prompt_id
     assert envelope_json["trusted_context"]["tenant_id"] == "tnt_demo"
+
+
+def test_p04_call_controls_bind_the_provider_draft_schema_not_canonical_output() -> None:
+    prompt_id = "P04_BLUEPRINT_BUILD_V1"
+    request = build_mock_request(prompt_id)
+    fake = FakeClient([_response(_canonical_output(prompt_id), model=LUNA_MODEL_ID)])
+    adapter = OpenAIResponsesAdapter(client=fake)
+
+    asyncio.run(
+        adapter.invoke(
+            prompt_id=prompt_id,
+            request=request,
+            envelope=_envelope(prompt_id, request),
+            route=build_openai_routes(max_call_cost_usd=1.0)[prompt_id],
+            attempt=1,
+            behavior=MockBehavior.HAPPY,
+        )
+    )
+
+    developer_text = fake.responses.calls[0]["input"][0]["content"][0]["text"]
+    controls = json.loads(
+        developer_text.split(
+            "CALL_CONTROLS_JSON (trusted metadata, not student content):\n",
+            maxsplit=1,
+        )[1].split("\nResolve only this task.", maxsplit=1)[0]
+    )
+    assert controls["schema_name"] == "BlueprintModelDraft"
 
 
 def test_untrusted_evidence_is_serialized_only_in_the_user_envelope() -> None:

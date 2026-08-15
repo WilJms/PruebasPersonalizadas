@@ -49,6 +49,9 @@
     "BlueprintPolicy": {
       "$ref": "#/$defs/BlueprintPolicy"
     },
+    "BlueprintModelDraft": {
+      "$ref": "#/$defs/BlueprintModelDraft"
+    },
     "QuestionGenerationPolicy": {
       "$ref": "#/$defs/QuestionGenerationPolicy"
     },
@@ -1482,6 +1485,125 @@
       "title": "BlueprintDimension",
       "type": "object"
     },
+    "BlueprintDimensionDraft": {
+      "additionalProperties": false,
+      "description": "Semantic P04 dimension without canonical identity or workflow data.",
+      "properties": {
+        "dimension_alias": {
+          "pattern": "^D[1-9][0-9]{0,2}$",
+          "title": "Dimension Alias",
+          "type": "string"
+        },
+        "name": {
+          "maxLength": 300,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "criterion_ids": {
+          "items": {
+            "maxLength": 128,
+            "minLength": 3,
+            "pattern": "^[a-z][a-z0-9_-]*$",
+            "type": "string"
+          },
+          "maxItems": 100,
+          "minItems": 1,
+          "title": "Criterion Ids",
+          "type": "array"
+        },
+        "learning_outcome_ids": {
+          "items": {
+            "maxLength": 128,
+            "minLength": 3,
+            "pattern": "^[a-z][a-z0-9_-]*$",
+            "type": "string"
+          },
+          "maxItems": 100,
+          "title": "Learning Outcome Ids",
+          "type": "array"
+        },
+        "grading_weight": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Grading Weight"
+        },
+        "verification_priority": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Verification Priority",
+          "type": "number"
+        },
+        "factors": {
+          "$ref": "#/$defs/VerificationFactors"
+        },
+        "justification": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "title": "Justification",
+          "type": "string"
+        }
+      },
+      "required": [
+        "dimension_alias",
+        "name",
+        "criterion_ids",
+        "verification_priority",
+        "factors",
+        "justification"
+      ],
+      "title": "BlueprintDimensionDraft",
+      "type": "object"
+    },
+    "BlueprintModelDraft": {
+      "additionalProperties": false,
+      "description": "P04 provider output; the server compiles it into AssessmentBlueprint.",
+      "properties": {
+        "dimensions": {
+          "items": {
+            "$ref": "#/$defs/BlueprintDimensionDraft"
+          },
+          "maxItems": 50,
+          "minItems": 1,
+          "title": "Dimensions",
+          "type": "array"
+        },
+        "evidence_variants": {
+          "items": {
+            "$ref": "#/$defs/EvidenceVariantDraft"
+          },
+          "maxItems": 400,
+          "minItems": 1,
+          "title": "Evidence Variants",
+          "type": "array"
+        },
+        "question_opportunities": {
+          "items": {
+            "$ref": "#/$defs/QuestionOpportunityTemplateDraft"
+          },
+          "maxItems": 2000,
+          "minItems": 1,
+          "title": "Question Opportunities",
+          "type": "array"
+        }
+      },
+      "required": [
+        "dimensions",
+        "evidence_variants",
+        "question_opportunities"
+      ],
+      "title": "BlueprintModelDraft",
+      "type": "object"
+    },
     "BlueprintPolicy": {
       "additionalProperties": false,
       "description": "Trusted constraints used by P04; depth is derived rather than selected.",
@@ -1505,6 +1627,10 @@
           "pattern": "^[a-z][a-z0-9_-]*$",
           "title": "Activity Id",
           "type": "string"
+        },
+        "context_mode": {
+          "$ref": "#/$defs/ContextMode",
+          "default": "CLOSED"
         },
         "question_count": {
           "maximum": 20,
@@ -1554,6 +1680,20 @@
         },
         "planning_policy": {
           "$ref": "#/$defs/AssessmentPlanningPolicy"
+        },
+        "max_variants_per_dimension": {
+          "default": 6,
+          "maximum": 20,
+          "minimum": 1,
+          "title": "Max Variants Per Dimension",
+          "type": "integer"
+        },
+        "max_templates_per_variant": {
+          "default": 12,
+          "maximum": 100,
+          "minimum": 1,
+          "title": "Max Templates Per Variant",
+          "type": "integer"
         },
         "max_local_regenerations": {
           "default": 1,
@@ -3684,6 +3824,63 @@
         "question_opportunities"
       ],
       "title": "EvidenceVariant",
+      "type": "object"
+    },
+    "EvidenceVariantDraft": {
+      "additionalProperties": false,
+      "description": "Semantic evidence variant linked only through inference-local aliases.",
+      "properties": {
+        "variant_alias": {
+          "pattern": "^V[1-9][0-9]{0,2}$",
+          "title": "Variant Alias",
+          "type": "string"
+        },
+        "dimension_alias": {
+          "pattern": "^D[1-9][0-9]{0,2}$",
+          "title": "Dimension Alias",
+          "type": "string"
+        },
+        "name": {
+          "maxLength": 300,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "description": {
+          "maxLength": 1200,
+          "minLength": 1,
+          "title": "Description",
+          "type": "string"
+        },
+        "evidence_requirement": {
+          "$ref": "#/$defs/EvidenceRequirement"
+        },
+        "verification_potential": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Verification Potential",
+          "type": "number"
+        },
+        "supported_operations": {
+          "items": {
+            "$ref": "#/$defs/SupportedOperation"
+          },
+          "maxItems": 9,
+          "minItems": 1,
+          "title": "Supported Operations",
+          "type": "array"
+        }
+      },
+      "required": [
+        "variant_alias",
+        "dimension_alias",
+        "name",
+        "description",
+        "evidence_requirement",
+        "verification_potential",
+        "supported_operations"
+      ],
+      "title": "EvidenceVariantDraft",
       "type": "object"
     },
     "EvidenceVariantMatch": {
@@ -6280,6 +6477,89 @@
         "verification_potential"
       ],
       "title": "QuestionOpportunityTemplate",
+      "type": "object"
+    },
+    "QuestionOpportunityTemplateDraft": {
+      "additionalProperties": false,
+      "description": "Semantic question opportunity without a canonical template ID.",
+      "properties": {
+        "template_alias": {
+          "pattern": "^T[1-9][0-9]{0,3}$",
+          "title": "Template Alias",
+          "type": "string"
+        },
+        "variant_alias": {
+          "pattern": "^V[1-9][0-9]{0,2}$",
+          "title": "Variant Alias",
+          "type": "string"
+        },
+        "cognitive_operation": {
+          "$ref": "#/$defs/CognitiveOperation"
+        },
+        "focus": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "title": "Focus",
+          "type": "string"
+        },
+        "observable": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "title": "Observable",
+          "type": "string"
+        },
+        "difficulty": {
+          "$ref": "#/$defs/DifficultyBand"
+        },
+        "target_minutes": {
+          "maximum": 60,
+          "minimum": 1,
+          "title": "Target Minutes",
+          "type": "integer"
+        },
+        "allowed_anchor_structures": {
+          "items": {
+            "$ref": "#/$defs/AnchorStructure"
+          },
+          "maxItems": 7,
+          "minItems": 1,
+          "title": "Allowed Anchor Structures",
+          "type": "array"
+        },
+        "allowed_response_formats": {
+          "items": {
+            "$ref": "#/$defs/ResponseFormat"
+          },
+          "maxItems": 5,
+          "minItems": 1,
+          "title": "Allowed Response Formats",
+          "type": "array"
+        },
+        "verification_potential": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Verification Potential",
+          "type": "number"
+        },
+        "justification_required": {
+          "default": false,
+          "title": "Justification Required",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "template_alias",
+        "variant_alias",
+        "cognitive_operation",
+        "focus",
+        "observable",
+        "difficulty",
+        "target_minutes",
+        "allowed_anchor_structures",
+        "allowed_response_formats",
+        "verification_potential"
+      ],
+      "title": "QuestionOpportunityTemplateDraft",
       "type": "object"
     },
     "QuestionReviewAction": {

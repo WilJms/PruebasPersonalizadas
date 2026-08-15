@@ -43,7 +43,8 @@ ni autoriza invocación. P10 permanece deshabilitado.
 | `PolicyDecision` | UI/docente | P04/P05/auditoría | resolución versionada |
 | `BlueprintPolicy` | UI/reglas | P04/P05 | restricciones confiables del blueprint |
 | `AssessmentPlanningPolicy` | config | planificador | función de score, penalizaciones y tamaño de reserva |
-| `AssessmentBlueprint` | P04 + reglas | preflight/aprobación docente/student workflows | catálogo comparable de dimensiones, variantes y oportunidades |
+| `BlueprintModelDraft` | proveedor P04 | compilador P04 | propuesta semántica plana con aliases locales D/V/T; sin identidad, workflow ni policy materializada |
+| `AssessmentBlueprint` | compilador P04 | preflight/aprobación docente/student workflows | catálogo canónico comparable de dimensiones, variantes y oportunidades |
 | `BlueprintReview` | P05 histórico | lectura/UI de compatibilidad | checks y recomendación legados |
 | `EvidenceMapPatch` | P06 | evidence service/planificador | claims, matches de variante y oportunidades concretas |
 | `AssessmentPlan` | planificador determinista | P07/assembler | exactamente \(N\) oportunidades primarias y reserva disjunta |
@@ -67,20 +68,27 @@ ni autoriza invocación. P10 permanece deshabilitado.
 
 ### 2.2 Frontera código-modelo
 
-| Root | Prompt | Output root |
-|---|---|---|
-| `ActivitySpecRequest` | P01 | `ActivitySpec` |
-| `RubricNormalizeRequest` | P02 | `RubricSpec` |
-| `AmbiguityTriageRequest` | P03 | `AmbiguityReport` |
-| `BlueprintBuildRequest` | P04 | `AssessmentBlueprint` |
-| `BlueprintReviewRequest` | P05 | `BlueprintReview` |
-| `EvidenceMapRequest` | P06 | `EvidenceMapPatch` |
-| `QuestionBuildRequest` | P07/P10 | `QuestionGenerationResult` |
-| `QuestionReviewRequest` | P08 | `QuestionReviewResult` |
-| `GuideBuildRequest` | P09 | `EvaluationGuide` |
-| `SchemaRepairRequest` | P11 | `SchemaRepairResult` |
+| Root | Prompt | Output del proveedor | Output de etapa |
+|---|---|---|---|
+| `ActivitySpecRequest` | P01 | `ActivitySpec` | `ActivitySpec` |
+| `RubricNormalizeRequest` | P02 | `RubricSpec` | `RubricSpec` |
+| `AmbiguityTriageRequest` | P03 | `AmbiguityReport` | `AmbiguityReport` |
+| `BlueprintBuildRequest` | P04 | `BlueprintModelDraft` | `AssessmentBlueprint` compilado y con preflight determinista |
+| `BlueprintReviewRequest` | P05 | `BlueprintReview` | `BlueprintReview` |
+| `EvidenceMapRequest` | P06 | `EvidenceMapPatch` | `EvidenceMapPatch` |
+| `QuestionBuildRequest` | P07/P10 | `QuestionGenerationResult` | `QuestionGenerationResult` |
+| `QuestionReviewRequest` | P08 | `QuestionReviewResult` | `QuestionReviewResult` |
+| `GuideBuildRequest` | P09 | `EvaluationGuide` | `EvaluationGuide` |
+| `SchemaRepairRequest` | P11 | `SchemaRepairResult` | `SchemaRepairResult` |
 
-`ModelTaskEnvelope` envuelve una llamada y `TrustedPromptContext` declara las allowlists; su `payload` se vuelve a validar contra el request root de la fila. Esta doble validación evita que un diccionario genérico se convierta en contrato implícito.
+`ModelTaskEnvelope` envuelve una llamada y `TrustedPromptContext` declara las allowlists; su `payload` se vuelve a validar contra el request root de la fila. Esta doble validación evita que un diccionario genérico se convierta en contrato implícito. En P04, `provider_output_schema_name=BlueprintModelDraft` limita la inferencia; `output_schema_name=AssessmentBlueprint` conserva sin cambios la frontera canónica consumida por el resto del producto.
+
+`BlueprintPolicy.max_variants_per_dimension=6` y
+`max_templates_per_variant=12` son defaults operacionales provisionales,
+configurables y server-owned. No son invariantes pedagógicos universales. La
+policy conserva `schema_version`/`policy_id` y su valor completo participa en el
+input y hash de reuse; el proveedor sólo debe respetar el cap recibido y nunca
+devolverlo como decisión propia.
 
 Las filas P05/P08 de esta frontera documentan contratos retenidos. La frontera
 activa objetivo salta de P04 a preflight/aprobación docente y de P07 a

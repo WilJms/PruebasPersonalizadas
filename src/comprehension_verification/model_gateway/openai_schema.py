@@ -265,19 +265,32 @@ def _validate_boundary_schema(schema: dict[str, Any]) -> None:
         ) from exc
 
 
+def provider_output_json_schema(
+    spec: PromptSpec, request: BaseModel | None = None
+) -> dict[str, Any]:
+    """Return the exact strict JSON Schema sent to the provider."""
+
+    output_model = model_by_name(spec.provider_output_schema_name)
+    raw_schema = output_model.model_json_schema(mode="validation")
+    if spec.prompt_id == "P11_SCHEMA_REPAIR_V1":
+        if request is None:
+            raise OpenAISchemaError("P11 provider schema requires its repair request")
+        raw_schema = _specialize_schema_repair(raw_schema, request)
+    schema = _strict_transform(deepcopy(raw_schema))
+    _validate_boundary_schema(schema)
+    return schema
+
+
 def structured_output_format(
     spec: PromptSpec, request: BaseModel
 ) -> dict[str, Any]:
     """Return the Responses API ``text.format`` payload for one prompt call."""
 
-    output_model = model_by_name(spec.output_schema_name)
-    raw_schema = output_model.model_json_schema(mode="validation")
-    if spec.prompt_id == "P11_SCHEMA_REPAIR_V1":
-        raw_schema = _specialize_schema_repair(raw_schema, request)
-    schema = _strict_transform(deepcopy(raw_schema))
-    _validate_boundary_schema(schema)
+    schema = provider_output_json_schema(spec, request)
     name = re.sub(
-        r"[^A-Za-z0-9_-]", "_", f"cva_{spec.output_schema_name}_{spec.prompt_version}"
+        r"[^A-Za-z0-9_-]",
+        "_",
+        f"cva_{spec.provider_output_schema_name}_{spec.prompt_version}",
     )[:64]
     return {
         "type": "json_schema",

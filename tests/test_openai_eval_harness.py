@@ -83,6 +83,61 @@ FIXTURE = (
     / "tests/fixtures/openai_evals/v2/product_rehearsal.json"
 )
 
+_SEMANTIC_PROMPT_FIELDS = {
+    "version",
+    "hash",
+    "input_schema_hash",
+    "output_schema_hash",
+    "provider_output_schema_version",
+    "provider_output_schema_hash",
+    "relationship_validator",
+    "application_validator",
+}
+_P04_INTENTIONAL_BOUNDARY_DELTA = {
+    "version",
+    "hash",
+    "input_schema_hash",
+    "provider_output_schema_version",
+    "provider_output_schema_hash",
+    "relationship_validator",
+}
+
+
+def _assert_p04_contract_boundary_delta(
+    *,
+    current: dict[str, object],
+    historical: dict[str, object],
+    prompt_ids: set[str] | frozenset[str],
+) -> None:
+    for prompt_id in sorted(prompt_ids):
+        current_row = current[prompt_id]
+        historical_row = historical[prompt_id]
+        assert isinstance(current_row, dict)
+        assert isinstance(historical_row, dict)
+        changed = {
+            key
+            for key in _SEMANTIC_PROMPT_FIELDS
+            if current_row.get(key) != historical_row.get(key)
+        }
+        if prompt_id == "P04_BLUEPRINT_BUILD_V1":
+            assert changed == _P04_INTENTIONAL_BOUNDARY_DELTA
+            assert current_row["version"] == "1.1.12"
+            assert current_row["relationship_validator"] == (
+                "relationship-p04/3.0.0"
+            )
+            assert current_row["provider_output_schema_version"] == (
+                m.SCHEMA_VERSION
+            )
+            assert str(current_row["provider_output_schema_hash"]).startswith(
+                "sha256:"
+            )
+        elif prompt_id == "P05_BLUEPRINT_REVIEW_V1":
+            # P05 is inactive but its retained request embeds BlueprintPolicy,
+            # whose new catalog caps are backward-compatible defaults.
+            assert changed == {"input_schema_hash"}
+        else:
+            assert changed == set()
+
 
 def _reviewed_sol_candidate_delta_proof() -> dict[str, object]:
     observed = sorted(eval_harness.SOL_ALLOWED_DELTA_PATHS)
@@ -531,7 +586,7 @@ def test_xhigh_offline_qualification_is_exact_and_non_billable() -> None:
     assert controls["fixture_changes"] == 0
     assert controls["prompt_changes"] == 0
     assert controls["validator_changes"] == 0
-    assert controls["budget_charged_usd"] == pytest.approx(0.70050775)
+    assert controls["budget_charged_usd"] == pytest.approx(0.690397)
     assert controls["max_observed_budget_charge_usd"] == pytest.approx(
         0.02693475
     )
@@ -604,20 +659,12 @@ def test_xhigh_boundary_preserves_product_semantics_and_records_harness_delta() 
             if high["checkpoints"][scenario_id][key]
             != xhigh["checkpoints"][scenario_id][key]
         } == {"post_p03", "blueprint_valid"}
-    semantic_prompt_fields = {
-        "version",
-        "hash",
-        "input_schema_hash",
-        "output_schema_hash",
-        "relationship_validator",
-        "application_validator",
-    }
+    _assert_p04_contract_boundary_delta(
+        current=xhigh["prompts"],
+        historical=high["prompts"],
+        prompt_ids=OPENAI_XHIGH_PROMPT_IDS,
+    )
     for prompt_id in sorted(OPENAI_XHIGH_PROMPT_IDS):
-        assert {
-            key: value
-            for key, value in xhigh["prompts"][prompt_id].items()
-            if key in semantic_prompt_fields
-        } == high["prompts"][prompt_id]
         assert xhigh["prompts"][prompt_id][
             "registry_reasoning_effort"
         ] == "HIGH"
@@ -745,7 +792,7 @@ def test_max_offline_qualification_is_exact_and_non_billable() -> None:
     assert controls["fixture_changes"] == 0
     assert controls["prompt_changes"] == 0
     assert controls["validator_changes"] == 0
-    assert controls["budget_charged_usd"] == pytest.approx(0.70049125)
+    assert controls["budget_charged_usd"] == pytest.approx(0.6903805)
     assert controls["max_observed_budget_charge_usd"] == pytest.approx(
         0.02693425
     )
@@ -816,24 +863,12 @@ def test_max_boundary_preserves_product_semantics_and_records_harness_delta() ->
             if xhigh["checkpoints"][scenario_id][key]
             != maximum["checkpoints"][scenario_id][key]
         } == {"post_p03", "blueprint_valid"}
-    semantic_prompt_fields = {
-        "version",
-        "hash",
-        "input_schema_hash",
-        "output_schema_hash",
-        "relationship_validator",
-        "application_validator",
-    }
+    _assert_p04_contract_boundary_delta(
+        current=maximum["prompts"],
+        historical=xhigh["prompts"],
+        prompt_ids=OPENAI_MAX_PROMPT_IDS,
+    )
     for prompt_id in sorted(OPENAI_MAX_PROMPT_IDS):
-        assert {
-            key: value
-            for key, value in maximum["prompts"][prompt_id].items()
-            if key in semantic_prompt_fields
-        } == {
-            key: value
-            for key, value in xhigh["prompts"][prompt_id].items()
-            if key in semantic_prompt_fields
-        }
         assert maximum["prompts"][prompt_id][
             "registry_reasoning_effort"
         ] == "HIGH"
@@ -967,7 +1002,7 @@ def test_terra_medium_offline_qualification_is_exact_and_non_billable() -> None:
     assert controls["tools_enabled"] is False
     assert controls["store"] is False
     assert controls["background"] is False
-    assert controls["budget_charged_usd"] == pytest.approx(7.00521)
+    assert controls["budget_charged_usd"] == pytest.approx(6.9041025)
     assert controls["max_observed_budget_charge_usd"] == pytest.approx(
         0.26935
     )
@@ -1122,24 +1157,12 @@ def test_terra_medium_boundary_preserves_product_and_records_harness_delta() -> 
             if maximum["checkpoints"][scenario_id][key]
             != terra["checkpoints"][scenario_id][key]
         } == {"post_p03", "blueprint_valid"}
-    semantic_prompt_fields = {
-        "version",
-        "hash",
-        "input_schema_hash",
-        "output_schema_hash",
-        "relationship_validator",
-        "application_validator",
-    }
+    _assert_p04_contract_boundary_delta(
+        current=terra["prompts"],
+        historical=maximum["prompts"],
+        prompt_ids=OPENAI_TERRA_MEDIUM_PROMPT_IDS,
+    )
     for prompt_id in sorted(OPENAI_TERRA_MEDIUM_PROMPT_IDS):
-        assert {
-            key: value
-            for key, value in terra["prompts"][prompt_id].items()
-            if key in semantic_prompt_fields
-        } == {
-            key: value
-            for key, value in maximum["prompts"][prompt_id].items()
-            if key in semantic_prompt_fields
-        }
         assert terra["prompts"][prompt_id][
             "registry_reasoning_effort"
         ] == "HIGH"
@@ -1413,7 +1436,7 @@ def test_terra_high_offline_qualification_is_exact_and_non_billable() -> None:
     assert report["boundary"]["terra_ladder_harness_freeze"][
         "material_hash"
     ] == (
-        "sha256:102f8ca2ea11c4ce0fb3c7a18f326d9e1989554d7af709d8b1cd63f1115a1ba6"
+        "sha256:1b37e8d6b0a68b4e7e88fc2dc873fa87ba490a743fd3c3ba9497d5b337fd8566"
     )
 
 
@@ -1457,7 +1480,7 @@ def test_terra_high_authorization_boundary_seals_baseline_budget_and_freeze(
     freeze = boundary["executable_boundary"]["terra_ladder_harness_freeze"]
     assert freeze["status"] == "TERRA_LADDER_HARNESS_FROZEN"
     assert freeze["material_hash"] == (
-        "sha256:102f8ca2ea11c4ce0fb3c7a18f326d9e1989554d7af709d8b1cd63f1115a1ba6"
+        "sha256:1b37e8d6b0a68b4e7e88fc2dc873fa87ba490a743fd3c3ba9497d5b337fd8566"
     )
     assert freeze["oracles"]["p06_hash"] == (
         "sha256:d559af8784d553a4df56166d27ab309c48064e577438c3e372213f175a857048"
@@ -1576,7 +1599,7 @@ def test_terra_xhigh_offline_qualification_is_exact_and_non_billable() -> None:
     assert report["boundary"]["terra_ladder_harness_freeze"][
         "material_hash"
     ] == (
-        "sha256:102f8ca2ea11c4ce0fb3c7a18f326d9e1989554d7af709d8b1cd63f1115a1ba6"
+        "sha256:1b37e8d6b0a68b4e7e88fc2dc873fa87ba490a743fd3c3ba9497d5b337fd8566"
     )
 
 
@@ -1659,7 +1682,7 @@ def test_terra_xhigh_authorization_boundary_seals_high_budget_and_freeze(
     )
     freeze = boundary["executable_boundary"]["terra_ladder_harness_freeze"]
     assert freeze["material_hash"] == (
-        "sha256:102f8ca2ea11c4ce0fb3c7a18f326d9e1989554d7af709d8b1cd63f1115a1ba6"
+        "sha256:1b37e8d6b0a68b4e7e88fc2dc873fa87ba490a743fd3c3ba9497d5b337fd8566"
     )
     assert freeze["matrix"]["hash"] == (
         "sha256:94fbd798732b057f3ba051144a0f0de5533ce6ffb85b103d766c6abeb660ea49"
@@ -1808,7 +1831,7 @@ def test_each_sol_profile_rehearses_33_calls_completely_offline(
     assert report["boundary"]["forbidden_delta"] == []
     freeze = report["boundary"]["terra_ladder_harness_freeze"]
     assert freeze["material_hash"] == (
-        "sha256:102f8ca2ea11c4ce0fb3c7a18f326d9e1989554d7af709d8b1cd63f1115a1ba6"
+        "sha256:1b37e8d6b0a68b4e7e88fc2dc873fa87ba490a743fd3c3ba9497d5b337fd8566"
     )
 
 
@@ -1888,7 +1911,7 @@ def test_sol_authorization_boundaries_are_distinct_and_frozen(
     assert baseline["receipt_is_historical_and_immutable"] is True
     freeze = boundary["executable_boundary"]["terra_ladder_harness_freeze"]
     assert freeze["material_hash"] == (
-        "sha256:102f8ca2ea11c4ce0fb3c7a18f326d9e1989554d7af709d8b1cd63f1115a1ba6"
+        "sha256:1b37e8d6b0a68b4e7e88fc2dc873fa87ba490a743fd3c3ba9497d5b337fd8566"
     )
 
 
@@ -2285,7 +2308,7 @@ def test_real_convergence_accounts_for_context_invalid_billable_attempts(
             result = await self.inner.invoke(**kwargs)
             raw = deepcopy(result.raw_output)
             if kwargs["prompt_id"] == "P04_BLUEPRINT_BUILD_V1":
-                raw["blueprint_id"] = "blueprint_outside_target_scope"
+                raw["evidence_variants"][0]["dimension_alias"] = "D999"
             return replace(
                 result,
                 raw_output=raw,
@@ -2323,7 +2346,7 @@ def test_real_convergence_accounts_for_context_invalid_billable_attempts(
     failures = sweep["failure"]["aggregated_failures"]
     assert len(failures) == 1
     assert failures[0]["stage"] == "P04_BLUEPRINT_BUILD"
-    assert failures[0]["codes"] == ["CONTEXT_INVARIANT_FAILED"]
+    assert failures[0]["codes"] == ["P04_DRAFT_COMPILATION_FAILED"]
     assert failures[0]["checkpoint_id"] == "P04_CANONICAL_POSITIVE"
     assert failures[0]["checkpoint_class"] == (
         "SEMANTICALLY_QUALIFIED_POSITIVE"
@@ -3372,7 +3395,7 @@ def test_each_sol_rung_reserves_its_own_authorization_exactly_once(
         profile_id
     )
     assert report["frozen_semantic_harness"]["material_hash"] == (
-        "sha256:102f8ca2ea11c4ce0fb3c7a18f326d9e1989554d7af709d8b1cd63f1115a1ba6"
+        "sha256:1b37e8d6b0a68b4e7e88fc2dc873fa87ba490a743fd3c3ba9497d5b337fd8566"
     )
     assert report["candidate_delta"]["forbidden_delta"] == []
     record = EvaluationAuthorizationLedger(args.ledger).record(

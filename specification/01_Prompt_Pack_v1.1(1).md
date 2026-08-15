@@ -9,12 +9,14 @@
 compatibilidad e historia. En el pipeline objetivo P05/P08 son inactivos y P10
 continúa deshabilitado. El pack no es por sí mismo autoridad de activación ni
 gate canónico para seleccionar modelo; esta iteración no cambia prompts
-ejecutables ni provider routing.
+ejecutables fuera de P04 ni provider routing.
 
 Las versiones retenidas son P01 `1.1.3`, P02 `1.1.4`, P03 `1.1.3`, P04
-`1.1.11`, P05 `1.1.8`, P06 `1.1.5`, P07 `1.1.4`, P08 `1.1.5`, P09 `1.1.6`, P10 `1.1.3` y P11
+`1.1.12`, P05 `1.1.8`, P06 `1.1.5`, P07 `1.1.4`, P08 `1.1.5`, P09 `1.1.6`, P10 `1.1.3` y P11
 `1.1.5`. P04 `1.1.11` refuerza la unicidad global y prohíbe duplicados
-semánticos disfrazados con IDs distintos. P05 `1.1.7` copia las identidades
+semánticos disfrazados con IDs distintos; P04 `1.1.12` restringe el output del
+proveedor a `BlueprintModelDraft` y traslada identidad, policy, workflow y
+factibilidad al compilador/preflight determinista. P05 `1.1.7` copia las identidades
 del request, limita `referenced_ids` a los roots recibidos y fija una matriz
 total: PASS puro implica `APPROVE`, WARN o FAIL no crítico implica
 `APPROVE_WITH_CHANGES`, y solo un FAIL crítico implica `REJECT`. P11 queda
@@ -146,7 +148,7 @@ artefactos históricos.
 | `P01_ACTIVITY_SPEC_V1` | `ActivitySpecRequest` | `ActivitySpec` | API + parser de consigna | P02/P03/P04 | GPT-5.6 Luna, medium |
 | `P02_RUBRIC_NORMALIZE_V1` | `RubricNormalizeRequest` | `RubricSpec` | P01 + parser de rúbrica | P03/P04 | GPT-5.6 Luna, medium |
 | `P03_AMBIGUITY_TRIAGE_V1` | `AmbiguityTriageRequest` | `AmbiguityReport` | reglas + P01/P02 | UI docente | GPT-5.6 Luna, high |
-| `P04_BLUEPRINT_BUILD_V1` | `BlueprintBuildRequest` | `AssessmentBlueprint` | specs + decisiones docentes | preflight + aprobación docente | GPT-5.6 Luna, high |
+| `P04_BLUEPRINT_BUILD_V1` | `BlueprintBuildRequest` | `BlueprintModelDraft` -> `AssessmentBlueprint` compilado | specs + decisiones docentes | preflight + aprobación docente | GPT-5.6 Luna, high |
 | `P05_BLUEPRINT_REVIEW_V1` | `BlueprintReviewRequest` | `BlueprintReview` | P04 | histórico/compatibilidad | INACTIVE_TARGET; ruta histórica retenida |
 | `P06_EVIDENCE_MAP_V1` | `EvidenceMapRequest` | `EvidenceMapPatch` | parser + blueprint | planificador | GPT-5.6 Luna, high |
 | `P07_QUESTION_BUILD_V1` | `QuestionBuildRequest` | `QuestionGenerationResult` | plan + oportunidad primaria/reserva | validaciones + revisión docente | GPT-5.6 Luna, high |
@@ -365,65 +367,60 @@ El modelo solo explica/agrupa lo que las reglas y specs señalan.
 
 | Aspecto | Definición v1.1 |
 |---|---|
-| Input / output | `BlueprintBuildRequest` -> `AssessmentBlueprint` |
+| Input / output | `BlueprintBuildRequest` -> `BlueprintModelDraft` (proveedor) -> compilador determinista -> `AssessmentBlueprint` |
 | Modelo | GPT-5.6 Luna; `reasoning_effort=high`; temperatura baja |
-| Abstención | `status=BLOCKED`, catálogo solo con dimensiones/variantes sustentadas y diagnóstico; no fabricar compatibilidad |
+| Abstención | una salida semántica no compilable falla cerrada; la inviabilidad del catálogo se expresa después mediante diagnóstico determinista, nunca mediante `status` generado por el modelo |
 | Evidencia no confiable | consume specs tipadas; las decisiones docentes y `BlueprintPolicy` son confiables |
-| Validación posterior | invariantes Pydantic + IDs, operaciones soportadas, unicidad de catálogo y formatos |
+| Validación posterior | resolución de aliases, allowlists, duplicados evidentes, límites, operaciones y formatos; luego preflight/planner determinista |
 | Retry | una reconstrucción solo después de corrección concreta de P05 o de una decisión docente |
-| Límite determinista | conteos, tiempos, allowed enums y restricciones se verifican/normalizan en código |
+| Límite determinista | identidad, policy, estado, cardinalidades, pertenencia, factibilidad exacta y restricciones se materializan/verifican en código |
 
 ### Prompt de desarrollador
 
 ```text
-Construye un blueprint de verificación comparable para la actividad aprobada.
+Propón un catálogo pedagógico rico para verificar comprensión actual del entregable aprobado.
 
-El blueprint debe medir comprensión actual del propio entregable. No debe medir autoría, estilo, memoria de detalles arbitrarios ni conocimiento externo no autorizado.
+Devuelve exclusivamente `BlueprintModelDraft`. No devuelvas `AssessmentBlueprint` ni intentes materializar identidad, estado o policy del servidor.
 
-Procedimiento:
-1. Define solo dimensiones relevantes y evaluables desde ActivitySpec y RubricSpec.
-2. Conserva `grading_weight` como metadato separado de `verification_priority`. Si una decisión docente resuelve pesos ausentes, materializa literalmente esa decisión en `grading_weight` sin convertirla en prioridad.
-3. Para cada dimensión define variantes de evidencia que un entregable podría contener.
-4. Para cada variante declara requisitos y las operaciones cognitivas que realmente soporta; son operaciones permitidas, no preferencias ampliables.
-5. Crea un catálogo amplio de `QuestionOpportunityTemplate`, cada una con evidencia esperada, operación, foco y observable, más dificultad, tiempo, ancla, formatos y calidad mínima.
-6. Aplica profundidad por defecto cuando la evidencia permita explicación, justificación, conexión, consecuencia o límite. No leas ni produzcas un selector de “profundidad”.
-7. Resuelve `student_justification_required` conforme a `structured_justification_policy`.
-8. Incluye criterios de accesibilidad y equivalencia de modalidad.
+Decisiones semánticas:
+1. Define dimensiones verificables y su relación con `criterion_ids` y `learning_outcome_ids` existentes en `ActivitySpec`/`RubricSpec`.
+2. Separa `grading_weight` de `verification_priority` y respeta literalmente las decisiones docentes seleccionadas.
+3. Propón variantes razonables de evidencia, sus requisitos semánticos y las operaciones cognitivas realmente soportadas.
+4. Propón oportunidades con foco, observable, dificultad aproximada, tiempo objetivo, estructuras de anchor, formatos apropiados y potencial de verificación.
+5. Mantén diversidad, comparabilidad, accesibilidad y equivalencia de modalidad. No midas autoría, estilo, memoria arbitraria ni conocimiento externo no autorizado.
+6. Usa profundidad cuando la evidencia permita explicación, justificación, conexión, consecuencia o límite; no produzcas un selector de profundidad.
 
-Frontera de referencias y decisiones:
-- Copia `activity_id` exactamente desde `activity_spec.activity_id` y usa cada `decision_id` de `resolved_decisions` exactamente una vez.
-- Copia `blueprint_id` exactamente desde `target_blueprint_id` y `blueprint_version` exactamente desde `target_blueprint_version`; nunca los elijas ni incrementes.
-- Cada `PolicyDecision` resuelta incluye `selected_option_id` y un `selected_option` inmutable con el mismo `option_id`. Usa literalmente `label` y `consequence` de esa opción, junto con la nota docente si existe, como restricción de diseño. No infieras el significado de un ID opaco ni uses opciones no elegidas.
-- Materializa toda consecuencia que el contrato represente sin distorsión: pesos en `grading_weight` y fronteras de materiales en requisitos de evidencia y `course_sources_allowed`. Para escala u otra decisión sin campo dedicado, conserva su `decision_id` y explica su incidencia sólo en una justificación o diagnóstico pertinente; no inventes contenido académico ni fuerces un campo semánticamente distinto. Bloquea únicamente si esa limitación impide producir un catálogo usable y fiel.
-- Las opciones y notas de `PolicyDecision` fijan una interpretación docente, pero no son fuentes académicas y no autorizan inventar resultados de aprendizaje, criterios, evidencia ni IDs de fuente.
-- Si `rubric_spec` existe, usa en `dimensions[].criterion_ids` únicamente `criterion_id` presentes en `rubric_spec.criteria`; si no existe, usa únicamente `statement_id` presentes en `activity_spec`. Nunca inventes `criterion_ids`.
-- Usa en `dimensions[].learning_outcome_ids` únicamente `statement_id` presentes en `activity_spec.learning_outcomes`. Si esa lista está vacía, usa `learning_outcome_ids=[]`; no completes el resultado ausente.
-- En `diagnostics[].evidence_ids` usa únicamente `evidence_id` exactos ya presentes en `activity_spec` o `rubric_spec`. Nunca escribas ahí `statement_id`, `criterion_id`, `decision_id`, `issue_id` ni `option_id`; si ningún `evidence_id` autorizado sustenta el diagnóstico, usa `evidence_ids=[]`.
-- En `diagnostics[].source_ids` usa únicamente `source_id` exactos autorizados por el contexto confiable. En `context_mode=CLOSED` sin fuentes de curso autorizadas, usa `source_ids=[]`.
-- Copia `question_count`, `target_total_minutes`, `allowed_response_formats`, `priority_criterion_ids`, `required_criterion_ids`, `minimum_opportunity_quality`, `max_reserve_opportunities` y `structured_justification_policy` desde `blueprint_policy` sin reinterpretarlos. Deja `approved_by=null` y `approved_at=null`.
+Aliases locales cerrados:
+- `dimensions` usa `D1`, `D2`, ... en `dimension_alias`;
+- `evidence_variants` usa `V1`, `V2`, ... en `variant_alias` y enlaza una `dimension_alias` existente;
+- `question_opportunities` usa `T1`, `T2`, ... en `template_alias` y enlaza una `variant_alias` existente;
+- los aliases existen sólo dentro de esta respuesta. No son IDs canónicos ni deben parecerse a ellos.
 
-Interpreta `status` como el estado de finalización de la construcción del catálogo, no como su aprobación humana:
-- la aprobación humana ocurre después de la revisión P05; `approved_by=null` y `approved_at=null` no implican `status=NEEDS_REVIEW`;
-- si puedes producir un catálogo completo, utilizable y fiel que satisfaga los invariantes, usa `status=READY` aunque existan diagnósticos `INFO/WARNING` o quede pendiente esa aprobación posterior;
-- usa `status=NEEDS_REVIEW` o `BLOCKED` únicamente cuando una decisión académica específica aún no resuelta impida producir un catálogo utilizable, y agrega al menos un `Diagnostic` con `severity=ERROR` o `CRITICAL`;
-- no emitas `HUMAN_REVIEW_PENDING` únicamente para señalar la aprobación posterior.
+Referencias académicas:
+- si `rubric_spec` contiene criterios, `criterion_ids` sólo puede referenciar `criterion_id` allí presentes; de otro modo usa `statement_id` existentes de `activity_spec`;
+- `learning_outcome_ids` sólo puede referenciar `statement_id` presentes en `activity_spec.learning_outcomes`;
+- cubre cada criterio verificable y cada learning outcome evaluable en al menos una dimensión;
+- no infieras significado desde IDs opacos ni uses una `PolicyDecision` como fuente académica.
 
-Antes de devolver, comprueba los invariantes canónicos que el JSON Schema del proveedor no puede expresar:
-- genera cada `dimension_id`, `variant_id` y `opportunity_template_id` una sola vez: no clones, recicles ni reutilices IDs aunque dos elementos sean parecidos;
-- `dimension_id` es único; `variant_id` es único en todo el blueprint; `opportunity_template_id` es único en todo el blueprint. Comprueba que cada lista aplanada tenga la misma longitud que su conjunto de IDs;
-- si dos variantes u oportunidades son semánticamente duplicadas, fusiónalas o conserva solo una; cambiar únicamente el ID, score o redacción no las vuelve distintas;
-- cada variante declara `cognitive_operation` sin duplicados y cada oportunidad usa una operación incluida en `supported_operations` de esa misma variante;
-- todo `allowed_response_formats` de una oportunidad es subconjunto de `assessment_constraints.allowed_response_formats`;
-- todo `selected_opportunity_template_ids` de `structured_justification_policy` referencia una oportunidad existente;
-- `approved_by` y `approved_at` están ambos ausentes, y no cambias ni omites ninguna decisión docente.
-- cada criterio verificable de `rubric_spec` y cada learning outcome evaluable aparece al menos en una dimensión; no declares cobertura desde una oportunidad ajena a esa dimensión;
-- existe una combinación de al menos `question_count` oportunidades distintas, con `minimum_quality` suficiente, formatos permitidos y suma de `target_minutes` dentro del tiempo total. Usa `required_criterion_ids` como única cobertura obligatoria por plan; si está vacío, no inventes una obligación de cubrir todos los criterios en cada assessment;
-- calibra alternativas comparables mediante foco y observable equivalentes, bandas de dificultad, tiempo y umbral de calidad explícitos. La diversidad entre oportunidades distintas es válida y no obliga a hacerlas idénticas.
+Catálogo:
+- no excedas `blueprint_policy.max_variants_per_dimension` ni `blueprint_policy.max_templates_per_variant`;
+- no clones variantes u oportunidades cuya diferencia sea sólo alias, score, mayúsculas, puntuación o redacción cosmética;
+- cada oportunidad debe usar una operación declarada por su variante;
+- `allowed_response_formats` expresa una elección pedagógica y debe permanecer dentro de `blueprint_policy.allowed_response_formats`;
+- `evidence_requirement.course_sources_allowed` no puede ampliar `blueprint_policy.context_mode`: usa `false` en `CLOSED`;
+- `justification_required` expresa necesidad semántica. En modo `SELECTED` marca exactamente tantas oportunidades como IDs seleccionados fija la policy; en `ALL`/`NOT_REQUIRED` el servidor impondrá la matriz final;
+- no fijes `minimum_quality`: el servidor materializa el umbral desde `planning_policy`.
 
-Si no puedes satisfacer estos invariantes sin inventar contenido académico o referencias, devuelve `status=BLOCKED` con `Diagnostic` completo; no entregues un catálogo `READY` estructuralmente incoherente.
+Los defaults actuales de esos caps (`6` variantes por dimensión y `12`
+templates por variante) son guardrails operacionales provisionales y
+configurables de `BlueprintPolicy`; no expresan una verdad pedagógica universal
+ni pertenecen al output del modelo.
 
-El catálogo es independiente de `question_count`: no crees exactamente \(N\) dimensiones, variantes u oportunidades ni exijas una oportunidad compuesta solo porque el catálogo contiene más dimensiones que \(N\). El planificador determinista posterior escogerá \(N\) oportunidades concretas por submission conforme a `blueprint_policy`. La comparabilidad es una propiedad intrínseca del catálogo común, no un modo configurable.
-Devuelve AssessmentBlueprint.
+No produzcas ni reproduzcas `schema_version`, `blueprint_id`, `blueprint_version`, `activity_id`, `context_mode`, `status`, `assessment_constraints`, `decision_ids`, `diagnostics`, `approved_by`, `approved_at`, timestamps, hashes, lineage, ownership ni IDs de dimensiones/variantes/templates. El servidor crea y valida todo eso.
+
+No demuestres ni declares que existe un plan de \(N\) preguntas. Diseña un catálogo amplio y útil, pero deja conteos exactos, tiempo conjunto, cobertura obligatoria y factibilidad al planner/preflight determinista posterior. No copies su resultado ni fabriques un diagnóstico de workflow.
+
+Devuelve `BlueprintModelDraft`.
 ```
 
 ### Inputs

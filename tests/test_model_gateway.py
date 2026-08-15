@@ -23,6 +23,7 @@ from comprehension_verification.model_gateway import (
     MockBehavior,
     ModelGateway,
     PROMPT_CONTRACTS,
+    PROVIDER_OUTPUT_CONTRACTS,
     PROMPT_SPECS,
     ValidationPhase,
     build_mock_request,
@@ -103,6 +104,9 @@ class ContextBreakingAdapter(DeterministicMockAdapter):
 
 def test_registry_is_exact_complete_and_immutable() -> None:
     assert dict(PROMPT_CONTRACTS) == EXPECTED_PROMPT_CONTRACTS
+    assert PROVIDER_OUTPUT_CONTRACTS["P04_BLUEPRINT_BUILD_V1"] == (
+        "BlueprintModelDraft"
+    )
     assert set(PROMPT_SPECS) == set(EXPECTED_PROMPT_CONTRACTS)
     for prompt_id, (request_root, output_root) in EXPECTED_PROMPT_CONTRACTS.items():
         spec = PROMPT_SPECS[prompt_id]
@@ -112,6 +116,11 @@ def test_registry_is_exact_complete_and_immutable() -> None:
         )
         assert model_by_name(request_root).__name__ == request_root
         assert model_by_name(output_root).__name__ == output_root
+        assert spec.provider_output_schema_name == (
+            "BlueprintModelDraft"
+            if prompt_id == "P04_BLUEPRINT_BUILD_V1"
+            else output_root
+        )
 
     assert {
         prompt_id: spec.prompt_version for prompt_id, spec in PROMPT_SPECS.items()
@@ -119,7 +128,7 @@ def test_registry_is_exact_complete_and_immutable() -> None:
         "P01_ACTIVITY_SPEC_V1": "1.1.3",
         "P02_RUBRIC_NORMALIZE_V1": "1.1.4",
         "P03_AMBIGUITY_TRIAGE_V1": "1.1.3",
-        "P04_BLUEPRINT_BUILD_V1": "1.1.11",
+        "P04_BLUEPRINT_BUILD_V1": "1.1.12",
         "P05_BLUEPRINT_REVIEW_V1": "1.1.8",
         "P06_EVIDENCE_MAP_V1": "1.1.5",
         "P07_QUESTION_BUILD_V1": "1.1.4",
@@ -139,39 +148,25 @@ def test_registry_is_exact_complete_and_immutable() -> None:
         PROMPT_SPECS["P01_ACTIVITY_SPEC_V1"].temperature = 1.0
 
 
-def test_p04_v111_makes_provider_invisible_invariants_explicit() -> None:
+def test_p04_v112_keeps_only_semantic_work_at_the_provider_boundary() -> None:
     p04 = PROMPT_SPECS["P04_BLUEPRINT_BUILD_V1"].developer_instruction
     for exact_rule in (
-        "cada decision_id de resolved_decisions exactamente una vez",
-        "no autorizan inventar resultados de aprendizaje",
-        "learning_outcome_ids=[]",
-        "dimension_id es único",
-        "variant_id es único en todo el blueprint",
-        "opportunity_template_id es único en todo el blueprint",
-        "incluida en supported_operations de esa misma variante",
-        "subconjunto de assessment_constraints.allowed_response_formats",
-        "selected_opportunity_template_ids",
-        "approved_by=null y approved_at=null",
-        "selected_option inmutable",
-        "No infieras el significado de un ID opaco",
-        "required_criterion_ids como única cobertura obligatoria",
-        "ni exijas una oportunidad compuesta",
-        "status=BLOCKED con Diagnostic completo",
-        "estado de finalización de la construcción del catálogo",
-        "approved_by=null y approved_at=null no implican status=NEEDS_REVIEW",
-        "usa status=READY aunque existan diagnósticos INFO/WARNING",
-        "severity=ERROR o CRITICAL",
-        "no emitas HUMAN_REVIEW_PENDING",
-        "diagnostics[].evidence_ids usa únicamente evidence_id exactos",
-        "Nunca escribas ahí statement_id, criterion_id, decision_id, issue_id ni option_id",
-        "si ningún evidence_id autorizado sustenta el diagnóstico, usa evidence_ids=[]",
-        "diagnostics[].source_ids usa únicamente source_id exactos autorizados",
-        "En context_mode=CLOSED sin fuentes de curso autorizadas, usa source_ids=[]",
-        "no clones, recicles ni reutilices IDs",
-        "cantidad de IDs distintos",
-        "semánticamente duplicadas, fusiónalas",
+        "Devuelve exclusivamente BlueprintModelDraft",
+        "dimensiones verificables",
+        "variantes razonables de evidencia",
+        "foco, observable, dificultad aproximada",
+        "dimensions usa D1, D2",
+        "evidence_variants usa V1, V2",
+        "question_opportunities usa T1, T2",
+        "no excedas blueprint_policy.max_variants_per_dimension",
+        "no clones variantes u oportunidades",
+        "No produzcas ni reproduzcas schema_version",
+        "El servidor crea y valida todo eso",
+        "No demuestres ni declares que existe un plan de N preguntas",
+        "deja conteos exactos, tiempo conjunto, cobertura obligatoria y factibilidad al planner/preflight determinista posterior",
     ):
         assert exact_rule in p04
+    assert "Devuelve AssessmentBlueprint" not in p04
 
 
 def test_p05_v117_and_p11_v115_make_root_invariant_handling_explicit() -> None:
@@ -444,35 +439,26 @@ def test_p04_cannot_fabricate_human_approval_metadata() -> None:
         )
 
 
-def test_p04_nonready_requires_a_blocking_diagnostic() -> None:
-    def leave_only_nonblocking_diagnostics(raw: dict) -> None:
-        raw["status"] = "NEEDS_REVIEW"
-        raw["diagnostics"] = [
-            {
-                "code": "HUMAN_REVIEW_PENDING",
-                "severity": "WARNING",
-                "message": "La aprobación humana posterior sigue pendiente.",
-                "evidence_ids": [],
-                "source_ids": [],
-                "retryable": False,
-                "details": {},
-            }
-        ]
-
-    gateway = ModelGateway(
-        mock_adapter=ContextBreakingAdapter(
-            "P04_BLUEPRINT_BUILD_V1", leave_only_nonblocking_diagnostics
-        )
-    )
-
-    with pytest.raises(GatewayContextError) as captured:
-        _invoke("P04_BLUEPRINT_BUILD_V1", gateway=gateway)
-
-    assert captured.value.failure.phase == ValidationPhase.OUTPUT
-    assert captured.value.failure.codes == (
-        ContextFailureCode.P04_NONREADY_WITHOUT_BLOCKING_DIAGNOSTIC,
-    )
-    assert [item.result for item in captured.value.ledgers] == ["SCHEMA_INVALID"]
+def test_p04_provider_schema_has_no_workflow_or_approval_fields() -> None:
+    spec = prompt_spec("P04_BLUEPRINT_BUILD_V1")
+    schema = structured_output_format(spec, build_mock_request(spec.prompt_id))[
+        "schema"
+    ]
+    assert set(schema["properties"]) == {
+        "dimensions",
+        "evidence_variants",
+        "question_opportunities",
+    }
+    serialized = json.dumps(schema, sort_keys=True)
+    for forbidden in (
+        "blueprint_id",
+        "blueprint_version",
+        "status",
+        "assessment_constraints",
+        "approved_by",
+        "approved_at",
+    ):
+        assert forbidden not in serialized
 
 
 def test_context_invalid_provider_output_is_ledgered_as_invalid() -> None:
@@ -975,24 +961,23 @@ def test_p04_rejects_missing_verifiable_source_coverage() -> None:
     )
 
 
-def test_p04_rejects_catalog_without_an_exact_n_time_feasible_set() -> None:
+def test_p04_preflight_reports_catalog_without_an_exact_n_time_feasible_set() -> None:
     def exceed_total_time(raw: dict) -> None:
-        for dimension in raw["dimensions"]:
-            for variant in dimension["evidence_variants"]:
-                for opportunity in variant["question_opportunities"]:
-                    opportunity["target_minutes"] = 6
+        for opportunity in raw["question_opportunities"]:
+            opportunity["target_minutes"] = 6
 
     gateway = ModelGateway(
         mock_adapter=ContextBreakingAdapter(
             "P04_BLUEPRINT_BUILD_V1", exceed_total_time
         )
     )
-    with pytest.raises(GatewayContextError) as captured:
-        _invoke("P04_BLUEPRINT_BUILD_V1", gateway=gateway)
+    result = _invoke("P04_BLUEPRINT_BUILD_V1", gateway=gateway)
 
-    assert captured.value.failure.codes == (
-        ContextFailureCode.P04_CATALOG_PLAN_INFEASIBLE,
-    )
+    assert result.output.status == models.WorkflowStatus.NEEDS_REVIEW
+    assert [item.code for item in result.output.diagnostics] == [
+        "P04_CATALOG_TIME_INFEASIBLE"
+    ]
+    assert result.ledgers[-1].result == "SCHEMA_VALID"
 
 
 @pytest.mark.parametrize(

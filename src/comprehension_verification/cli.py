@@ -148,6 +148,7 @@ def _blueprint_policy(config: m.ActivityConfig) -> m.BlueprintPolicy:
     return m.BlueprintPolicy(
         policy_id=stable_id("policy", config.activity_id, "blueprint"),
         activity_id=config.activity_id,
+        context_mode=config.context_mode,
         question_count=config.question_count,
         target_total_minutes=config.target_total_minutes,
         allowed_response_formats=list(config.allowed_response_formats),

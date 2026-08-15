@@ -91,6 +91,7 @@ from .mock_factory import (
 )
 from .registry import (
     PROMPT_CONTRACTS,
+    PROVIDER_OUTPUT_CONTRACTS,
     PROMPT_SPECS,
     PromptSpec,
     assert_registry_complete,
@@ -125,6 +126,7 @@ __all__ = [
     "ModelGateway",
     "ModelRouteResolver",
     "PROMPT_CONTRACTS",
+    "PROVIDER_OUTPUT_CONTRACTS",
     "PROMPT_SPECS",
     "ProviderAdapterError",
     "ProviderBudgetError",

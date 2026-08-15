@@ -1181,7 +1181,9 @@ def _semantic_checkpoint_expected_output(
     checkpoint_id: str,
 ) -> m.StrictModel:
     expected: dict[str, m.StrictModel] = {
-        "P04_CANONICAL_POSITIVE": checkpoints.blueprint,
+        "P04_CANONICAL_POSITIVE": _provider_draft_from_reviewed_blueprint(
+            checkpoints.blueprint
+        ),
         "P05_CANONICAL_POSITIVE": checkpoints.p05_review,
         "P05_PLAN_FEASIBILITY_NEGATIVE": checkpoints.p05_negative_review,
         "P06_CANONICAL_POSITIVE": checkpoints.mapping,
@@ -1192,6 +1194,90 @@ def _semantic_checkpoint_expected_output(
         "P09_CANONICAL_POSITIVE": checkpoints.p09_guide,
     }
     return expected[checkpoint_id]
+
+
+def _provider_draft_from_reviewed_blueprint(
+    blueprint: m.AssessmentBlueprint,
+) -> m.BlueprintModelDraft:
+    """Project the historical semantic golden onto the current P04 boundary."""
+
+    dimension_aliases = {
+        dimension.dimension_id: f"D{index}"
+        for index, dimension in enumerate(blueprint.dimensions, start=1)
+    }
+    variants = [
+        (dimension, variant)
+        for dimension in blueprint.dimensions
+        for variant in dimension.evidence_variants
+    ]
+    variant_aliases = {
+        variant.variant_id: f"V{index}"
+        for index, (_dimension, variant) in enumerate(variants, start=1)
+    }
+    selected_ids = set(
+        blueprint.assessment_constraints.structured_justification_policy
+        .selected_opportunity_template_ids
+    )
+    return m.BlueprintModelDraft(
+        dimensions=[
+            m.BlueprintDimensionDraft(
+                dimension_alias=dimension_aliases[dimension.dimension_id],
+                name=dimension.name,
+                criterion_ids=list(dimension.criterion_ids),
+                learning_outcome_ids=list(dimension.learning_outcome_ids),
+                grading_weight=dimension.grading_weight,
+                verification_priority=dimension.verification_priority,
+                factors=dimension.factors.model_copy(deep=True),
+                justification=dimension.justification,
+            )
+            for dimension in blueprint.dimensions
+        ],
+        evidence_variants=[
+            m.EvidenceVariantDraft(
+                variant_alias=variant_aliases[variant.variant_id],
+                dimension_alias=dimension_aliases[dimension.dimension_id],
+                name=variant.name,
+                description=variant.description,
+                evidence_requirement=variant.evidence_requirement.model_copy(
+                    deep=True
+                ),
+                verification_potential=variant.verification_potential,
+                supported_operations=[
+                    operation.model_copy(deep=True)
+                    for operation in variant.supported_operations
+                ],
+            )
+            for dimension, variant in variants
+        ],
+        question_opportunities=[
+            m.QuestionOpportunityTemplateDraft(
+                template_alias=f"T{index}",
+                variant_alias=variant_aliases[variant.variant_id],
+                cognitive_operation=template.cognitive_operation,
+                focus=template.focus,
+                observable=template.observable,
+                difficulty=template.difficulty,
+                target_minutes=template.target_minutes,
+                allowed_anchor_structures=list(
+                    template.allowed_anchor_structures
+                ),
+                allowed_response_formats=list(template.allowed_response_formats),
+                verification_potential=template.verification_potential,
+                justification_required=(
+                    template.student_justification_required
+                    or template.opportunity_template_id in selected_ids
+                ),
+            )
+            for index, (_dimension, variant, template) in enumerate(
+                (
+                    (dimension, variant, template)
+                    for dimension, variant in variants
+                    for template in variant.question_opportunities
+                ),
+                start=1,
+            )
+        ],
+    )
 
 
 def build_reviewed_semantic_adapter() -> ReviewedSemanticAdapter:

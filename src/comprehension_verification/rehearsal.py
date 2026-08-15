@@ -15,6 +15,7 @@ import unicodedata
 
 from pydantic import BaseModel, SecretStr
 
+from .blueprint_compiler import blueprint_compiler_boundary
 from .canonical import canonical_hash, sha256_text, stable_id
 from .contracts import model_by_name, models as m
 from .evaluation_reporting import prepare_historical_harness_report
@@ -67,7 +68,11 @@ from .model_gateway.openai_pricing import (
     estimate_cost_usd,
 )
 from .model_gateway.openai_routes import REQUEST_FRAMING_TOKEN_ALLOWANCE
-from .model_gateway.registry import PROMPT_VERSION, prompt_spec
+from .model_gateway.registry import (
+    PROMPT_VERSION,
+    prompt_spec,
+    provider_output_schema_boundary,
+)
 from .model_gateway.gateway import PROMPT_RELATIONSHIP_VALIDATOR_VERSIONS
 from .planning import PLANNER_VERSION, build_assessment_plan
 from .observability import p08_decision_diagnostics
@@ -1156,19 +1161,28 @@ def rehearsal_boundary_material(
         scenario: build_rehearsal_checkpoints(scenario).hashes
         for scenario in (BASE_SCENARIO_ID, VARIANT_SCENARIO_ID)
     }
-    prompt_material = {
-        prompt_id: {
-            "version": prompt_spec(prompt_id).prompt_version,
-            "hash": prompt_spec(prompt_id).prompt_hash,
+    prompt_material: dict[str, dict[str, Any]] = {}
+    for prompt_id in (
+        "P04_BLUEPRINT_BUILD_V1",
+        "P05_BLUEPRINT_REVIEW_V1",
+        "P06_EVIDENCE_MAP_V1",
+        "P07_QUESTION_BUILD_V1",
+        "P08_QUESTION_REVIEW_V1",
+        "P09_GUIDE_BUILD_V1",
+    ):
+        spec = prompt_spec(prompt_id)
+        prompt_row = {
+            "version": spec.prompt_version,
+            "hash": spec.prompt_hash,
             "input_schema_hash": canonical_hash(
-                model_by_name(
-                    prompt_spec(prompt_id).input_schema_name
-                ).model_json_schema(mode="validation")
+                model_by_name(spec.input_schema_name).model_json_schema(
+                    mode="validation"
+                )
             ),
             "output_schema_hash": canonical_hash(
-                model_by_name(
-                    prompt_spec(prompt_id).output_schema_name
-                ).model_json_schema(mode="validation")
+                model_by_name(spec.output_schema_name).model_json_schema(
+                    mode="validation"
+                )
             ),
             "relationship_validator": (
                 PROMPT_RELATIONSHIP_VALIDATOR_VERSIONS[prompt_id]
@@ -1176,25 +1190,24 @@ def rehearsal_boundary_material(
             "application_validator": (
                 PROMPT_APPLICATION_VALIDATOR_VERSIONS.get(prompt_id)
             ),
-            "registry_reasoning_effort": prompt_spec(
-                prompt_id
-            ).reasoning_effort.value,
+            "registry_reasoning_effort": spec.reasoning_effort.value,
             "route_reasoning_effort": routes[prompt_id].reasoning_effort.value,
         }
-        for prompt_id in (
-            "P04_BLUEPRINT_BUILD_V1",
-            "P05_BLUEPRINT_REVIEW_V1",
-            "P06_EVIDENCE_MAP_V1",
-            "P07_QUESTION_BUILD_V1",
-            "P08_QUESTION_REVIEW_V1",
-            "P09_GUIDE_BUILD_V1",
-        )
-    }
+        if spec.provider_output_schema_name != spec.output_schema_name:
+            provider_boundary = provider_output_schema_boundary(prompt_id)
+            prompt_row["provider_output_schema_version"] = provider_boundary[
+                "wire_schema_version"
+            ]
+            prompt_row["provider_output_schema_hash"] = provider_boundary[
+                "schema_hash"
+            ]
+        prompt_material[prompt_id] = prompt_row
     material = {
         "rehearsal_version": REHEARSAL_VERSION,
         "prompt_pack_version": PROMPT_VERSION,
         "planner_version": PLANNER_VERSION,
         "assembler_version": ASSEMBLER_VERSION,
+        "p04_compiler": blueprint_compiler_boundary(),
         "checkpoints": checkpoints,
         "p05_golden": {
             "fixture_version": golden_fixture["schema_version"],

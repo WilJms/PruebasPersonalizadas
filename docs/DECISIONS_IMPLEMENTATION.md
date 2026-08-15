@@ -1161,3 +1161,37 @@
   posterior compatible.
 - **Relación:** ADR-037, `PIPELINE_AUTHORITY.md`, `pipeline_authority.py` y
   `qualification_semantics.py`.
+
+## D-075 - P04 propone semántica y el servidor compila el blueprint canónico
+
+- **Frontera:** `P04_BLUEPRINT_BUILD_V1` conserva
+  `AssessmentBlueprint` como output de etapa, pero el proveedor devuelve sólo
+  `BlueprintModelDraft`. Sus aliases `D*`, `V*` y `T*` son locales a una
+  inferencia y no pueden transportar IDs canónicos.
+- **Autoridad del modelo:** dimensiones, relación con criterios/outcomes,
+  variantes y requisitos de evidencia, operaciones soportadas, oportunidades,
+  foco, observable, dificultad, tiempo, anchors, formatos, justificación,
+  diversidad, comparabilidad y accesibilidad.
+- **Autoridad del servidor:** un compilador determinista valida el grafo y las
+  allowlists, rechaza duplicados evidentes/operaciones/formatos/límites
+  inválidos, crea todos los IDs y copia identidad, policy, decisiones,
+  aprobación y estado. `AssessmentBlueprint` no se reemplaza.
+- **Factibilidad:** P04 ya no declara ni demuestra un plan exacto de \(N\).
+  Después de compilar, el preflight/planner existente produce `READY` o un
+  diagnóstico determinista con `correction_scope=P04_BLUEPRINT_BUILD` que
+  permite una futura corrección localizada.
+- **Catálogo y compatibilidad:** `BlueprintPolicy` añade defaults compatibles
+  para `max_variants_per_dimension=6` y
+  `max_templates_per_variant=12`. Son guardrails operacionales provisionales,
+  configurables y server-owned; no límites pedagógicos universales.
+- **Cache:** el draft provider sólo vive dentro de la llamada. El cache de
+  etapa conserva exclusivamente `AssessmentBlueprint`, ligado a request,
+  policy hash, provider-schema boundary y compiler boundary. En replay se
+  recompila su proyección semántica y se exige igualdad canónica exacta. Los
+  snapshots históricos siguen siendo legibles como `AssessmentBlueprint`,
+  pero una frontera anterior no se reinterpreta ni comparte component key.
+- **Evaluación:** no se llamó a ningún proveedor. La frontera hash-bound liga
+  `provider-output-schema-boundary/1.0.0` y
+  `blueprint-compiler-boundary/1.0.0`; los receipts históricos no se
+  reescriben y siguen siendo evidencia no canónica conforme ADR-037.
+- **Relación:** D-074, ADR-037 y `pipeline-authority/1.0.0`.

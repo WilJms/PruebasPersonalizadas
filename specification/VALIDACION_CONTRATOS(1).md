@@ -8,7 +8,7 @@
 - `build_schema_bundle()` usa `pydantic.json_schema.models_json_schema`.
 - `contracts.schema_v1.1.json` es un artefacto generado; no se edita manualmente.
 - OpenAPI debe importar los mismos modelos Pydantic o DTOs que los compongan.
-- Prompt registry guarda `input_schema_name`, `output_schema_name` y `schema_version=1.1.0`; no acepta nombres no presentes en `roots`.
+- Prompt registry guarda `input_schema_name`, `output_schema_name`, `provider_output_schema_name` y `schema_version=1.1.0`; no acepta nombres no presentes en `roots`.
 
 La documentación explica invariantes contextuales, pero no redefine tipos, enums ni obligatoriedad.
 
@@ -171,9 +171,19 @@ PROMPT_CONTRACTS = {
     "P10_ENRICHED_CONTEXT_V1": ("QuestionBuildRequest", "QuestionGenerationResult"),
     "P11_SCHEMA_REPAIR_V1": ("SchemaRepairRequest", "SchemaRepairResult"),
 }
+
+PROVIDER_OUTPUT_CONTRACTS = {
+    **{prompt_id: output for prompt_id, (_, output) in PROMPT_CONTRACTS.items()},
+    "P04_BLUEPRINT_BUILD_V1": "BlueprintModelDraft",
+}
 ```
 
-El test exige que los 20 nombres existan en `roots`, que el registry use versión 1.1.0 y que la llamada valide request, envelope, output y validaciones contextuales en ese orden.
+`PROMPT_CONTRACTS` conserva el output canónico de etapa para compatibilidad. El
+schema estructurado que ve el proveedor se toma de
+`PROVIDER_OUTPUT_CONTRACTS`; sólo P04 difiere y el gateway compila su draft
+antes de devolver `AssessmentBlueprint`.
+
+El test exige que los 21 nombres distintos existan en `roots`, que el registry use versión 1.1.0 y que la llamada valide request, envelope, output del proveedor, compilación y validaciones contextuales en ese orden.
 
 Un test independiente exige que el pipeline objetivo incluya sólo P01-P04,
 P06/P07/P09 como etapas de modelo, marque P05/P08 `inactive`, P10 `disabled` y

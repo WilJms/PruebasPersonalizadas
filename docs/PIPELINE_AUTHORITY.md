@@ -7,8 +7,11 @@
 **Estado operativo:** `FORMALIZED_RUNTIME_CUTOVER_PENDING`
 
 Esta decisión simplifica la asignación de autoridad sin rediseñar la
-arquitectura conceptual, cambiar routing ni modificar todavía de forma
-sustancial P04, P06, P07 o P09. La fuente ejecutable de esta norma es
+arquitectura conceptual ni cambiar routing. P04 conserva
+`AssessmentBlueprint` como output canónico de etapa, pero su frontera de
+inferencia se restringe a `BlueprintModelDraft`; un compilador determinista
+materializa identidad, policy y estado antes del preflight. P06, P07 y P09 no
+cambian. La fuente ejecutable de esta norma es
 `src/comprehension_verification/pipeline_authority.py`.
 
 ## 1. Pipelines objetivo
@@ -51,6 +54,44 @@ El modelo puede proponer material que use esos valores, pero no crearlos,
 reinterpretarlos, normalizarlos ni declarar que una restricción se cumple. Una
 salida incompatible falla cerrada o vuelve a revisión según la transición
 determinista aplicable.
+
+En P04, los aliases `D*`, `V*` y `T*` sólo expresan relaciones internas dentro
+de una inferencia. El backend valida el grafo y las allowlists, crea todos los
+IDs canónicos, copia los campos confiables de policy y ejecuta el
+planner/preflight. Su diagnóstico de inviabilidad puede alimentar una futura
+corrección localizada, pero no se pide al modelo que lo reproduzca.
+
+Los defaults `max_variants_per_dimension=6` y
+`max_templates_per_variant=12` son guardrails operacionales provisionales, no
+verdades pedagógicas universales. Son configurables en la `BlueprintPolicy`
+server-owned, quedan ligados a `schema_version`/`policy_id`, al hash de policy y
+al input exacto de la etapa, y por tanto cualquier cambio invalida el reuse y
+obliga a recompilar o rechazar bajo la nueva policy.
+
+### Frontera de inferencia y cache P04
+
+- La respuesta del proveedor es sólo un `BlueprintModelDraft` transitorio. El
+  producto no mantiene un cache de outputs provider: el `cached_input_tokens`
+  del ledger describe cache de prefijo/input del transporte, no replay de una
+  respuesta.
+- La identidad de inferencia/reuse incorpora
+  `provider-output-schema-boundary/1.0.0`, con prompt version, wire schema
+  version, nombre de root y hash exacto del schema estricto de
+  `BlueprintModelDraft` enviado al proveedor.
+- El draft se compila dentro de la llamada bajo
+  `blueprint-compiler/1.0.0` y
+  `blueprint-compiler-boundary/1.0.0`. Esta última liga por hash el módulo
+  completo, los contratos canónicos, IDs estables, preflight y diagnósticos.
+- Sólo el `AssessmentBlueprint` compilado y preflighted se guarda en
+  `StageRunRow.output`. Su key liga tenant, stage, request exacto —incluida la
+  policy—, hash de policy y fingerprint ejecutable. En un hit, el gateway lo
+  valida como output canónico y recompila su proyección semántica; IDs, campos
+  server-owned, estado y diagnóstico deben coincidir exactamente.
+- Un `AssessmentBlueprint` histórico presentado en la frontera provider falla
+  contra `BlueprintModelDraft`; un draft presentado como cache canónico falla
+  contra `AssessmentBlueprint`. Los component fingerprints anteriores no
+  colisionan con esta frontera, por lo que no hay reinterpretación silenciosa
+  ni poisoning entre niveles.
 
 ## 3. Autoridad del modelo
 

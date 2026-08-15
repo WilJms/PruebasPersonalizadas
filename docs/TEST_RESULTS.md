@@ -1,7 +1,27 @@
 # Resultados verificables — candidato Etapa 2
 
-Fecha de corte documental: 2026-08-14 (America/Santiago; ejecución cloud hasta
+Fecha de corte documental: 2026-08-15 (America/Santiago; ejecución cloud hasta
 2026-08-11 UTC; toda la validación ADR-037 fue local, offline y mock).
+
+## Estado vigente — P04 draft/compilador determinista — 2026-08-15
+
+| Prueba o gate | Resultado observado |
+|---|---|
+| Focal P04 + gateway | 120 passed; aliases, allowlists, caps, ownership, determinismo, preflight posterior, regeneración y cache replay |
+| Backend completo | `make test`: 766 passed, 17 skips PostgreSQL explícitos, 1 warning Starlette conocido |
+| Contratos | 54 roots, 145 `$defs`, 289 refs y 8 fixtures PASS; schema regenerado desde temporal, sin drift |
+| Schema provider P04 | 11.475 -> 7.373 bytes; 71 -> 44 ocurrencias de campos, 67 -> 39 nombres únicos y 12 -> 3 campos root |
+| Cache/boundary | provider draft y stage output no son intercambiables; el hash liga el schema wire estricto exacto; schema provider, ledger, policy y compilador cambian la identidad; replay canónico exige recompilación exacta |
+| Caps operacionales | bajo/exacto/sobre `6`/`12` y policy alternativa PASS; defaults documentados como provisionales y no pedagógicos |
+| Frontera semántica | foco/observable/operación/dificultad/tiempo/evidencia se preservan; ausencias o incompatibilidades diagnostican y nunca se reparan |
+| Harness P04-P09 | 123 passed offline; frontera rehash ligada a `BlueprintModelDraft` y compilador; cero red |
+| Rehearsal completo | `make openai-convergence-dry-run` PASS con `CVA_OPENAI_API_KEY` removida del proceso; 0 transporte real/billable |
+| Compiler boundary | `blueprint-compiler/1.0.0`; boundary `sha256:3473adf8d2b8c2e4203a6a0f441ae7d45a387a2f6629e5a60cec8e2dc36bdfe5`; source `sha256:fc3c1d45f428d1d1308b319a49840effb40f1b5aea71eeb00bf93c6a2b71a7de` |
+| Higiene | `py_compile` y `git diff --check` PASS |
+
+La suite backend completa se ejecuta sin URLs PostgreSQL locales; sus 17 skips
+siguen limitados a las suites PostgreSQL explícitas y no cubren código P04.
+Los receipts reales históricos no se regeneraron ni se reescribieron.
 
 ## Estado vigente — autoridad ADR-037 y reporting histórico — 2026-08-14
 

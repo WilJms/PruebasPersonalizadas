@@ -32,7 +32,7 @@ from .contracts import (
 
 
 EXPECTED_SCHEMA_DIALECT = "https://json-schema.org/draft/2020-12/schema"
-EXPECTED_CONTRACT_ROOT_COUNT = 53
+EXPECTED_CONTRACT_ROOT_COUNT = 54
 EXPECTED_DOCUMENTED_FIXTURE_COUNT = 8
 
 _FIXTURE_TAG = re.compile(
@@ -245,7 +245,7 @@ def validate_schema_bundle(
     actual_names = tuple(roots)
     if len(expected_names) != EXPECTED_CONTRACT_ROOT_COUNT:
         raise ContractValidationError(
-            "CONTRACT_MODELS no longer contains the audited 53 v1.2 roots"
+            "CONTRACT_MODELS no longer contains the audited 54 v1.2 roots"
         )
     if actual_names != expected_names:
         raise ContractValidationError("Schema roots drifted from CONTRACT_MODELS")

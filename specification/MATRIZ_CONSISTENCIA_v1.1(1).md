@@ -16,7 +16,8 @@
 | `RubricNormalizeRequest` -> `RubricSpec` | P02 Sol-medium | roots exportados | snapshot de rúbrica | consistente |
 | `AmbiguityTriageRequest` -> `AmbiguityReport` | P03 Luna-high | roots exportados | decisiones/UI | consistente |
 | `BlueprintPolicy`, `AssessmentPlanningPolicy` | restricciones confiables y función de plan | roots exportados | policy snapshots | consistente |
-| `AssessmentBlueprint` | P04; catálogo independiente de \(N\) -> preflight -> docente | dimensiones, variantes, operaciones soportadas y templates | blueprints + ETag/approve | objetivo formalizado; cutover pendiente |
+| `BlueprintModelDraft` | output de inferencia P04 con aliases D/V/T locales | dimensiones, variantes, operaciones soportadas y templates sin bookkeeping | sólo frontera provider/compilador | consistente |
+| `AssessmentBlueprint` | compilador P04; catálogo independiente de \(N\) -> preflight -> docente | IDs/policy/estado server-owned + semántica compilada | blueprints + ETag/approve | objetivo formalizado; cutover pendiente |
 | `BlueprintReview` | P05 histórico/inactivo objetivo | contrato retenido | review snapshot legible | compatibilidad legacy |
 | `EvidenceMapPatch` | P06 Luna-high | claims + variant matches + oportunidades; sin parcial utilizable | evidence claims/matches/opportunities | consistente |
 | `AssessmentPlan` | planificador determinista sin LLM | exactamente \(N\) primarias + reserva disjunta o diagnóstico específico | assessment_plans | consistente |
@@ -63,6 +64,7 @@
 17. P05/P08 no son etapas activas objetivo y P10 está deshabilitado; contratos/receipts históricos no implican activación.
 18. `ORACLE_SUSPECT` hace inconclusa la atribución y prevalece sobre `MODEL_OWNED_*`.
 19. Sólo `SYNTHETIC_ONLY_NO_STUDENT_DATA` enumera códigos diagnósticos en claro con hash; la política de datos reales no cambia.
+20. P04 no devuelve identidad, workflow, policy materializada ni prueba de factibilidad: el servidor compila `BlueprintModelDraft`, crea los IDs canónicos y ejecuta el preflight/planner exacto después.
 
 ## 3. Decisiones cerradas y abiertas
 

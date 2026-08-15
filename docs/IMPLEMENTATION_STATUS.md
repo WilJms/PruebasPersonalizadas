@@ -1,6 +1,42 @@
 # Estado de implementación — Etapa 2
 
-Fecha de corte: 2026-08-14 (America/Santiago).
+Fecha de corte: 2026-08-15 (America/Santiago).
+
+## Estado vigente — frontera semántica P04 compilada en servidor (2026-08-15)
+
+Sobre el baseline de Fase 1
+`5698be185355dff48f25b5e791150d232d70eb9f`, P04 conserva
+`AssessmentBlueprint`, sus dimensiones, variantes,
+`QuestionOpportunityTemplate` y el catálogo común. La llamada al proveedor ya
+no devuelve ese root completo: devuelve `BlueprintModelDraft`, con aliases
+locales D/V/T y sólo decisiones pedagógicas. El gateway compila el draft de
+forma determinista, crea IDs canónicos, copia identidad/policy/decisiones,
+deriva workflow y ejecuta el preflight exacto existente.
+
+El compilador rechaza aliases o referencias inexistentes, duplicados
+semánticos evidentes, operaciones no soportadas, formatos/contexto fuera de
+allowlist, estructuras imposibles y los límites server-owned del catálogo.
+`BlueprintPolicy` añade defaults compatibles de seis variantes por dimensión y
+doce templates por variante: son guardrails operacionales provisionales,
+configurables y server-owned, no límites pedagógicos universales. Si el
+catálogo compilado no admite un plan de \(N\), el servidor devuelve un diagnóstico concreto y
+`correction_scope=P04_BLUEPRINT_BUILD`; el modelo no reproduce ese cálculo.
+
+La frontera estructurada del proveedor bajó de 11.475 a 7.373 bytes canónicos,
+de 71 a 44 definiciones de propiedad y de 12 a 3 campos root. Los invariantes
+retirados del modelo quedaron en compilador/preflight. No hubo llamadas reales,
+build, deploy, cambio de routing, datos reales ni habilitación de P10. El
+provider output queda ligado a `provider-output-schema-boundary/1.0.0`, schema
+wire estricto hash `sha256:f7cd09db3f22db8dc1d7a48f2ad383935f524479004ec9695ff1c61ef4dd7ab0`.
+El compilador `blueprint-compiler/1.0.0` queda ligado por
+`blueprint-compiler-boundary/1.0.0`, boundary hash
+`sha256:3473adf8d2b8c2e4203a6a0f441ae7d45a387a2f6629e5a60cec8e2dc36bdfe5`.
+El cache de etapa persiste sólo el `AssessmentBlueprint`; su replay recompila
+la proyección semántica y exige igualdad canónica. Los receipts históricos
+permanecen sin reescritura. La regresión final fue
+`766 passed, 17 skipped` por PostgreSQL local ausente y un warning Starlette
+conocido; el gate contractual quedó en 54 roots, 145 definiciones, 289
+referencias y 8 fixtures.
 
 ## Estado vigente — `PIPELINE_AUTHORITY_FORMALIZED` / `RUNTIME_CUTOVER_PENDING` (2026-08-14)
 
