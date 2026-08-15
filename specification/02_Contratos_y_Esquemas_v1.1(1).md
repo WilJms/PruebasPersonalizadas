@@ -5,6 +5,11 @@
 **Artefacto generado:** `contracts.schema_v1.1.json` (JSON Schema Draft 2020-12)  
 **Regla:** el JSON Schema no se edita manualmente; se regenera desde Pydantic y CI compara bytes canónicos.
 
+**Estado ADR-037:** no hay cambio de schema en esta iteración. Los roots P05 y
+P08 se conservan para lectura histórica y migración, pero no son etapas activas
+del pipeline objetivo. Su presencia en `CONTRACT_MODELS` no confiere autoridad
+ni autoriza invocación. P10 permanece deshabilitado.
+
 ---
 
 ## 1. Reglas de compatibilidad
@@ -38,15 +43,15 @@
 | `PolicyDecision` | UI/docente | P04/P05/auditoría | resolución versionada |
 | `BlueprintPolicy` | UI/reglas | P04/P05 | restricciones confiables del blueprint |
 | `AssessmentPlanningPolicy` | config | planificador | función de score, penalizaciones y tamaño de reserva |
-| `AssessmentBlueprint` | P04 + reglas | P05/student workflows | catálogo comparable de dimensiones, variantes y oportunidades |
-| `BlueprintReview` | P05 | UI/aprobación | checks y recomendación representables |
+| `AssessmentBlueprint` | P04 + reglas | preflight/aprobación docente/student workflows | catálogo comparable de dimensiones, variantes y oportunidades |
+| `BlueprintReview` | P05 histórico | lectura/UI de compatibilidad | checks y recomendación legados |
 | `EvidenceMapPatch` | P06 | evidence service/planificador | claims, matches de variante y oportunidades concretas |
 | `AssessmentPlan` | planificador determinista | P07/assembler | exactamente \(N\) oportunidades primarias y reserva disjunta |
 | `QuestionGenerationPolicy` | config | P07/P10 | límites de una generación localizada |
-| `QuestionValidationPolicy` | config | P08 | umbrales del revisor |
-| `QuestionGenerationResult` | P07/P10 | reglas/P08 | una pregunta generada o solicitud de reemplazo |
-| `QuestionReviewResult` | P08 | assembler/reemplazo | scores, decisión o abstención |
-| `EvaluationGuide` | P09 | plataforma/evaluador | guía estructurada asociada a assessment/submission |
+| `QuestionValidationPolicy` | config | validaciones/P08 histórico | umbrales retenidos |
+| `QuestionGenerationResult` | P07/P10 | validaciones/revisión docente | una pregunta generada o solicitud de reemplazo |
+| `QuestionReviewResult` | P08 histórico | lectura/compatibilidad | scores, decisión o abstención legados |
+| `EvaluationGuide` | P09 posterior a aprobación | plataforma/evaluador | guía estructurada asociada a assessment/submission |
 | `Assessment` | planificador/generador/guide | review/export | objeto canónico de salida, siempre con exactamente \(N\) preguntas cuando es utilizable |
 | `QuestionReviewAction` | UI docente | revision service/auditoría | aceptar, editar, rechazar o regenerar |
 | `BulkApprovalRequest` | UI autorizada | approval service | selección y confirmación explícita |
@@ -77,6 +82,11 @@
 
 `ModelTaskEnvelope` envuelve una llamada y `TrustedPromptContext` declara las allowlists; su `payload` se vuelve a validar contra el request root de la fila. Esta doble validación evita que un diccionario genérico se convierta en contrato implícito.
 
+Las filas P05/P08 de esta frontera documentan contratos retenidos. La frontera
+activa objetivo salta de P04 a preflight/aprobación docente y de P07 a
+validaciones/revisión docente. P09 recibe únicamente preguntas aprobadas cuando
+se complete el cutover operativo.
+
 ## 3. Invariantes críticas
 
 ### Evidencia
@@ -96,7 +106,8 @@
 - la política `SELECTED` de justificación referencia únicamente templates existentes;
 - `approved_by` y `approved_at` aparecen juntos.
 - aprobar requiere ETag/`If-Match` para evitar edición concurrente.
-- `BlueprintReview` no puede recomendar aprobación si se abstiene; todo check crítico `FAIL` exige `REJECT`.
+- el preflight determinista debe pasar antes de ofrecer aprobación docente;
+- `BlueprintReview` conserva sus invariantes para artefactos históricos, pero su recomendación no es autoridad canónica.
 
 ### Mapeo, plan y pregunta
 
@@ -109,13 +120,13 @@
 - toda opción conserva `evaluator_rationale` y todo distractor una `misconception` defendible;
 - `student_justification_required` se resuelve desde la política `NOT_REQUIRED`, `SELECTED` o `ALL`;
 - pertenencia de IDs y literalidad/transformación del ancla se validan fuera de Pydantic contra el evidence store;
-- una pregunta con fallo crítico no puede llegar al `Assessment`; se intenta solo un reemplazo desde reserva;
+- una pregunta con fallo crítico no puede llegar a revisión/aprobación docente; se intenta sólo un reemplazo localizado desde reserva;
 - `QuestionGenerationResult.context_mode=CLOSED` prohíbe `course_source_ids` y `citations`;
 - en contexto enriquecido, la pregunta mantiene igualdad exacta entre `course_source_ids` y los `source_id` citados.
 
 ### Guía y reparación
 
-- `EvaluationGuide` referencia preguntas existentes, no reescribe pregunta/ancla y no duplica IDs;
+- `EvaluationGuide` referencia preguntas aprobadas, no reescribe pregunta/ancla y no duplica IDs;
 - la guía se persiste con `guide_id`, `assessment_id` y `submission_id`; PDF/HTML es vista opcional;
 - los avisos globales de autoría/IA/proceso histórico pertenecen a UI fija, no a P09 ni al objeto generado;
 - `SchemaRepairResult.REPAIRED` exige `repaired_output`, que luego valida contra el root objetivo;
@@ -299,6 +310,10 @@ stage_key = sha256(stage_name + canonical_inputs + policy_hash + component_versi
 
 Se permite JSONB para snapshots contractuales y columnas relacionales solo para búsquedas/joins críticos. Los datos estructurados y estados de job viven en Supabase PostgreSQL; archivos brutos, JSON grandes y exportaciones viven en Cloudflare R2 privado. `tenant_id` se conserva desde el primer prototipo, pero membresías complejas y despliegues dedicados no son requisitos del experimento.
 
+`question_reviews` y los snapshots `BlueprintReview` existentes no se eliminan
+durante el cutover: pasan a lectura histórica/compatibilidad. Cambiar su
+escritura o las transiciones asociadas requiere una migración posterior.
+
 ### Arquitectura institucional futura
 
 Añade `memberships`, políticas por tenant, `assessment_revisions` completas, `retention_actions`, outbox/event bus, `lms_installations`, `lms_cursors`, `external_mappings`, RLS exhaustiva y aislamiento avanzado. Estas tablas no deben anticiparse si no tienen un consumidor experimental.
@@ -333,6 +348,9 @@ En el entorno experimental, `audit_events` puede ser una tabla transaccional y C
 
 ## 12. Validaciones que no pertenecen a JSON Schema
 
+Estas comprobaciones son autoridad del backend. Un output de modelo o una
+decisión académica no puede declarar que se cumplen sin ejecución server-side.
+
 Se ejecutan con acceso a repositorios/políticas:
 
 - pertenencia a tenant y autorización del actor;
@@ -348,6 +366,12 @@ Se ejecutan con acceso a repositorios/políticas:
 - borrado/retención y legal hold.
 
 Separar validación estructural de validación contextual evita dar falsa seguridad a partir de un JSON bien formado.
+
+Los juicios del harness usan los estados ejecutables `VALID`,
+`ORACLE_SUSPECT`, `INVALID` y `NOT_APPLICABLE`. Esta taxonomía pertenece al
+instrumento de evaluación, no se incorpora al bundle contractual del producto
+en esta iteración. `ORACLE_SUSPECT` bloquea cualquier atribución automática
+`MODEL_OWNED_*`.
 
 ## 13. Pruebas de contrato
 

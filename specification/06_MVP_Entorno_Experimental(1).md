@@ -5,6 +5,12 @@
 **Equipo:** dos desarrolladores  
 **Principio:** laboratorio para validar el pipeline; no SaaS institucional terminado
 
+**Aclaración ADR-037 (2026-08-14):** la autoridad objetivo queda formalizada
+sin cutover operativo en esta iteración. P05/P08 permanecen legibles como
+contratos/artefactos históricos, pero no son etapas activas objetivo; P10 sigue
+deshabilitado. El runtime actual conserva dependencias legacy que deben
+migrarse de forma compatible antes de declarar esta simplificación desplegada.
+
 ---
 
 ## 1. Objetivo
@@ -59,8 +65,8 @@ No existe rol estudiante en esta versión. Las evaluaciones se descargan para se
 - carga de múltiples entregables;
 - jobs asíncronos con progreso, retry controlado y diagnóstico;
 - IR con evidencia/localizadores;
-- P01-P11 detrás de contratos v1.1;
-- mapeo de variantes/oportunidades, plan determinista exacto de \(N\), generación y review semántica;
+- P01-P04/P06/P07/P09 detrás de contratos v1.1; P05/P08 retenidos para compatibilidad y P10 deshabilitado;
+- mapeo de variantes/oportunidades, plan determinista exacto de \(N\), generación, validaciones deterministas y revisión docente;
 - fail-closed atómico: nunca una evaluación parcial;
 - revisión evidence-first y acciones por pregunta;
 - reemplazo localizado desde una oportunidad de reserva;
@@ -190,7 +196,7 @@ Prefijo `/api/v1`. Todos los mutables usan `Idempotency-Key`; ediciones versiona
 | GET/PATCH | `/activities/{activity_id}` | lee/edita mientras no haya blueprint aprobado |
 | POST | `/activities/{activity_id}/artifacts/uploads` | crea upload session para consigna/rúbrica |
 | POST | `/activities/{activity_id}/artifacts/{artifact_id}:complete` | verifica hash/MIME y registra |
-| POST | `/activities/{activity_id}/blueprints:generate` | job P01-P05 |
+| POST | `/activities/{activity_id}/blueprints:generate` | endpoint estable; job legacy P01-P05, target P01-P04 + preflight |
 | GET | `/activities/{activity_id}/blueprints/{version}` | blueprint + review + issues |
 | PATCH | `/activities/{activity_id}/blueprints/{version}` | edición con ETag |
 | POST | `/activities/{activity_id}/decisions` | guarda `PolicyDecision` |
@@ -236,18 +242,24 @@ Prefijo `/api/v1`. Todos los mutables usan `Idempotency-Key`; ediciones versiona
 
 ## 10. Jobs
 
+La tabla describe el runtime legado que debe seguir siendo legible durante la
+migración. El objetivo reemplaza la ejecución activa de
+`BLUEPRINT_BUILD_REVIEW`/`QUESTION_REVIEW` por preflight/validaciones
+deterministas y decisiones docentes; no se cambian jobs ni estados en esta
+iteración.
+
 | Job/stage | Input | Output | Retry |
 |---|---|---|---|
 | `ACTIVITY_PARSE` | artifacts de consigna/rúbrica | EvidenceUnits fuente | un fallback de parser |
 | `ACTIVITY_SPEC` | `ActivitySpecRequest` | `ActivitySpec` | técnico/P11 |
 | `RUBRIC_NORMALIZE` | request P02 | `RubricSpec` | técnico/P11 |
-| `BLUEPRINT_BUILD_REVIEW` | P03-P05 | blueprint/review/issues | tras decisión/corrección concreta |
+| `BLUEPRINT_BUILD_REVIEW` | P03-P05 | blueprint/review/issues | LEGACY; cutover a P04 + preflight + docente pendiente |
 | `SUBMISSION_PARSE` | artifacts submission | EvidenceUnits | un fallback aprobado |
 | `EVIDENCE_MAP` | request P06 | claims, variant matches y oportunidades | bundle corregido |
 | `ASSESSMENT_PLAN` | oportunidades + policy | exactamente \(N\) primarias + reserva o diagnóstico | no retry sin input/policy nuevo |
 | `QUESTION_GENERATE` | request P07/P10 por oportunidad | `QuestionGenerationResult` | reemplazo desde reserva |
-| `QUESTION_REVIEW` | request P08 | `QuestionReviewResult` | revisión humana si corresponde |
-| `GUIDE_BUILD` | request P09 | `EvaluationGuide` | no reparación semántica |
+| `QUESTION_REVIEW` | request P08 | `QuestionReviewResult` | LEGACY; cutover a validadores + docente pendiente |
+| `GUIDE_BUILD` | request P09 | `EvaluationGuide` | objetivo: después de preguntas aprobadas; no reparación semántica |
 | `ASSEMBLE` | plan + preguntas + guía + lineage | Assessment | determinista y atómico |
 | `RENDER_EXPORT` | Assessment | archivos derivados | retry sin LLM |
 
@@ -268,6 +280,10 @@ Se separan dos ejes para no confundir ejecución y resultado.
 `UPLOADED -> VALIDATING -> PARSING -> EVIDENCE_READY -> MAPPING_OPPORTUNITIES -> PLANNING -> GENERATING -> VALIDATING_QUESTIONS -> GUIDE_READY -> NEEDS_REVIEW -> APPROVED`.
 
 Terminales para una versión: `INSUFFICIENT_RELEVANT_EVIDENCE`, `INSUFFICIENT_DISTINCT_QUESTION_OPPORTUNITIES`, `EVIDENCE_MAPPING_UNCERTAIN`, `ASSESSMENT_PLAN_INFEASIBLE`, `TECHNICAL_FAILURE`, `REJECTED_SECURITY`, `CANCELLED`. Un retry o archivo corregido crea nueva ejecución; no muta el historial.
+
+La posición actual de `GUIDE_READY` es legacy. El cutover posterior debe
+introducir una transición durable de revisión/aprobación de preguntas antes de
+P09 sin reusar estados de manera ambigua.
 
 ### Assessment
 
@@ -312,18 +328,23 @@ Los blobs nunca se guardan en PostgreSQL. Los JSONB completos son fuente del sna
 | P01 | actividad | ActivitySpecRequest | ActivitySpec | evidence IDs/roles |
 | P02 | actividad, si hay rúbrica | RubricNormalizeRequest | RubricSpec | pesos/criteria/verification_fit |
 | P03 | actividad | AmbiguityTriageRequest | AmbiguityReport | issue/options/blocking |
-| P04 | actividad | BlueprintBuildRequest | AssessmentBlueprint | catálogo/variantes/operaciones/IDs |
-| P05 | actividad | BlueprintReviewRequest | BlueprintReview | critical FAIL -> REJECT |
+| P04 | actividad | BlueprintBuildRequest | AssessmentBlueprint | catálogo propuesto; preflight backend + docente |
+| P05 | histórico | BlueprintReviewRequest | BlueprintReview | INACTIVE_TARGET; lectura compatible |
 | P06 | submission | EvidenceMapRequest | EvidenceMapPatch | matches/oportunidades/operaciones permitidas |
-| P07 | oportunidad cerrada | QuestionBuildRequest | QuestionGenerationResult | grounding/ancla/citas vacías/justificación |
-| P08 | pregunta | QuestionReviewRequest | QuestionReviewResult | vetos/thresholds |
-| P09 | assessment completo | GuideBuildRequest | EvaluationGuide | question/source/levels; sin aviso global generado |
+| P07 | oportunidad cerrada | QuestionBuildRequest | QuestionGenerationResult | validaciones backend + revisión docente |
+| P08 | histórico | QuestionReviewRequest | QuestionReviewResult | INACTIVE_TARGET; lectura compatible |
+| P09 | preguntas aprobadas | GuideBuildRequest | EvaluationGuide | question/source/levels; sin aviso global generado |
 | P10 | oportunidad enriquecida posterior | QuestionBuildRequest | QuestionGenerationResult | citations/source IDs |
 | P11 | fallo estructural | SchemaRepairRequest | SchemaRepairResult | revalidar schema objetivo |
 
-En el primer prototipo se habilita `CLOSED`; P10 queda implementable por contrato pero detrás de feature flag hasta contar con corpus autorizado.
+En el primer prototipo se habilita `CLOSED`; P10 permanece deshabilitado aunque
+su contrato siga siendo legible. Habilitarlo exige decisión nueva y corpus
+autorizado.
 
-Rutas iniciales: P01/P02 GPT-5.6 Sol-medium; P03 Luna-high; P04/P05 Sol-high; P06/P07/P08/P09 Luna-high; P10 bake-off abierto; P11 Luna-minimal con temperatura 0. Terra solo es alternativa si demuestra ventaja medible frente a Luna-high. P10 compara OpenAI, Claude Sonnet y Gemini 3.6 Flash priorizando grounding, citas y abstención.
+Las rutas iniciales se conservan como historia/configuración compatible y no se
+modifican aquí. P05/P08 no son activas en el objetivo y el harness actual no es
+un gate canónico para escoger modelo. Cualquier comparación futura requiere un
+instrumento nuevo gobernado; no se implementa en este MVP change.
 
 `ModelGateway` no elige dinámicamente. Resuelve una unidad `provider + snapshot + model + reasoning_effort + temperature + output_limits`, comprueba modalidades/capabilities, privacidad, región, retención, presupuesto, disponibilidad y fallback aprobado, y guarda reason codes estables. Una imagen no cambia de proveedor por sí sola; se envía solo el crop sanitizado. Gemini puede aprobarse para PDF/audio/video nativos o ventaja medida, nunca como fallback genérico. Sin ruta compatible: `NEEDS_REVIEW` o `BLOCKED`.
 
@@ -465,6 +486,8 @@ El costo fijo esperado es cercano a USD 0 mientras el uso permanezca dentro de c
 | E2E | actividad, blueprint, 2 submissions, una insuficiente, review, regen, export |
 | Security | cross-workspace/submission, unsigned upload, PII/log, injection, budget |
 | Golden | grounding, answerability, anchor, guide y abstention |
+| Eval policy | cuatro estados de oracle; sospecha bloquea `MODEL_OWNED_*`; harness histórico no selecciona modelo |
+| Reporting | códigos claros + hash sólo en reportes sintéticos; sin cambio content-free de datos reales |
 | Visual/accessibility | pantallas críticas, teclado, foco y PDFs sin clipping/leakage |
 
 El CI no llama modelos reales. Los smoke/evals reales son jobs manuales con presupuesto y dataset autorizados.
@@ -496,7 +519,7 @@ El entorno experimental usable termina cuando:
 
 | Decisión | Provisional | Falta | Cierre |
 |---|---|---|---|
-| proveedor/modelo | matriz P01-P11; Terra solo con ventaja; P10 abierto | bake-off propio | recalibrar Etapa 3 |
+| proveedor/modelo | sin selección nueva; P10 deshabilitado | corpus y gate independientes del harness histórico | recalibrar Etapa 3 |
 | cloud | Cloud Run Service/Jobs + Supabase + R2 | región y cuotas concretas | ratificar antes de datos reales |
 | orquestación futura | Cloud Run Jobs + tablas, sin Redis | duración/volumen reales | reevaluar Etapa 3/4 |
 | identidad | Supabase Auth invite-only | políticas finales | ratificar antes de datos reales |

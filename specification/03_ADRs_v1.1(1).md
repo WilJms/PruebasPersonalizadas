@@ -402,6 +402,10 @@ La v1.1 conserva las decisiones no sustituidas. ADR-030 a ADR-034 reemplazan exp
 ## ADR-031 - Resolvedor determinista de rutas y matriz P01-P11
 
 **Estado:** Accepted; sustituye ADR-015 y precisa ADR-014  
+**Vigencia tras ADR-037:** la matriz queda retenida como configuración
+histórica, no como autoridad de selección o activación. P05/P08 son inactivos
+en el objetivo y P10 está deshabilitado.
+
 **Decisión:** El router no elige dinámicamente el “mejor modelo”. Resuelve una configuración aprobada `provider + snapshot + model + reasoning_effort + temperature + output_limits`, después de comprobar capacidades/modalidades, privacidad, región, retención, presupuesto, disponibilidad y fallback autorizado. La matriz inicial es: P01/P02 Sol-medium; P03 Luna-high; P04/P05 Sol-high; P06-P09 Luna-high; P10 bake-off abierto; P11 Luna-minimal, temperatura 0.
 
 **Contexto:** Un router heurístico por “dificultad” es difícil de reproducir y puede cruzar proveedor o región sin autorización. Imágenes aisladas tampoco justifican cambiar de proveedor: Sol/Terra/Luna aceptan entrada visual por API.
@@ -465,6 +469,10 @@ este gate están registrados en
 
 **Estado:** Accepted el 2026-08-08; sustituye únicamente la selección
 `minimal` de P11 en ADR-031.
+**Vigencia tras ADR-037:** conserva sus controles fail-closed y configuración
+de routing como defensa en profundidad; su harness y qualifications ya no son
+un gate canónico de selección ni autorización actual.
+
 **Autorización:** decisión humana vinculante del prompt de apertura del gate
 OpenAI posterior a `STAGE2_MERGED_AND_VERIFIED`.
 
@@ -529,6 +537,10 @@ explícitamente aprobado.
 
 **Estado:** Accepted el 2026-08-08; sustituye únicamente la matriz activa
 inicial de ADR-031/ADR-035 durante las primeras evaluaciones reales.
+**Vigencia tras ADR-037:** `LUNA_BASELINE_V1` queda retenido para
+compatibilidad/reproducción histórica y no selecciona modelo ni activa P05,
+P08 o P10 en el pipeline objetivo.
+
 **Autorización:** decisión humana explícita posterior a
 `OPENAI_CREDENTIALS_REQUIRED`.
 
@@ -557,3 +569,52 @@ versiona el perfil de routing, no el texto ejecutable ni los contratos: por eso
 Antes de cualquier llamada se exige precio vigente, presupuesto preflight,
 secreto privado y checkpoint humano de gasto. P10, Etapa 3 y datos reales
 continúan prohibidos.
+
+---
+
+## ADR-037 - Autoridad explícita y simplificación preparada del pipeline
+
+**Estado:** Accepted el 2026-08-14; precisa ADR-002/ADR-030/ADR-034, sustituye
+desde esta fecha cualquier autoridad canónica de selección atribuida al
+harness de ADR-035/ADR-036 y no modifica su configuración de routing retenida.
+
+**Decisión:** el pipeline objetivo de actividad es
+`P01 -> P02 -> P03 -> P04 -> preflight determinista -> aprobación docente`.
+El pipeline objetivo por submission es
+`P06 -> planner determinista -> P07 -> validaciones deterministas -> revisión/aprobación docente -> P09`.
+P05 y P08 dejan de tener autoridad como etapas activas de modelo; P10 permanece
+deshabilitado. Sus contratos, rutas, artefactos y receipts existentes se
+retienen por compatibilidad e historia y no constituyen activación.
+
+El backend es autoridad exclusiva sobre identidad, versiones, hashes, estado,
+lineage, pertenencia de evidencia, allowlists, formatos, conteo, presupuestos
+de tiempo, restricciones, factibilidad del planner, almacenamiento,
+transiciones y validaciones deterministas. El modelo sólo propone
+interpretación semántica, estructura pedagógica, relación
+evidencia/constructo, redacción, observables y alternativas defendibles. El
+docente resuelve ambigüedad académica, aprueba el blueprint, aprueba/edita/
+rechaza preguntas y conserva autoridad académica final, sin poder declarar
+válida una inconsistencia mecánica rechazada por backend.
+
+El harness semántico existente al adoptar esta ADR y sus qualifications se
+clasifican como evidencia histórica no canónica para selección de modelo.
+Reports y receipts se
+preservan. Todo juicio causal nuevo declara `VALID`, `ORACLE_SUSPECT`,
+`INVALID` o `NOT_APPLICABLE`; un oracle sospechoso siempre produce resultado
+inconcluso y tiene precedencia sobre cualquier atribución `MODEL_OWNED_*`.
+Sólo reportes marcados `SYNTHETIC_ONLY_NO_STUDENT_DATA` enumeran códigos
+diagnósticos estructurados en claro, junto a su hash de integridad. La política
+content-free para contenido estudiantil real no cambia.
+
+**Contexto:** la evidencia histórica mostró que P05/P08 mezclaban juicio
+semántico con invariantes que ya pertenecen a preflight, planner, validadores y
+revisión humana. Una discrepancia sistemática con el instrumento no demuestra
+por sí sola un fallo del modelo y no debe impulsar selección de modelo.
+
+**Consecuencias:** la autoridad objetivo queda ejecutable mediante
+`pipeline-authority/1.0.0`, pero el cutover operativo permanece pendiente. Esta
+iteración no cambia P04/P06/P07/P09, provider routing, prompts ejecutables,
+workflows, jobs, persistencia ni despliegue. Una fase posterior debe retirar
+las invocaciones activas P05/P08 conservando lectura histórica, idempotencia,
+lineage, edición/regeneración localizada y ubicar P09 después de la aprobación
+docente. No se autoriza un corpus nuevo, llamadas billables ni datos reales.

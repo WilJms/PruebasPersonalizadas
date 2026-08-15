@@ -4,6 +4,14 @@
 **Estrategia:** recorridos verticales, revisión humana 100%, un proveedor principal, contexto cerrado  
 **Estado:** plan inmediato; la preparación institucional permanece condicionada a evidencia del piloto
 
+**Aclaración ADR-037 (2026-08-14):** el objetivo formal es
+P01→P02→P03→P04→preflight determinista→aprobación docente y, por submission,
+P06→planner→P07→validaciones deterministas→revisión/aprobación docente→P09.
+P05/P08 son inactivos en el objetivo, P10 sigue deshabilitado y el cutover del
+runtime legado queda para una historia posterior. Las filas cerradas de Etapas
+0/1 se conservan como historia y regresión, no como autoridad para reactivar
+esas etapas.
+
 ---
 
 ## 1. Resultado que se busca
@@ -155,12 +163,16 @@ Una persona completa el recorrido solicitado en cloud con una actividad y una en
 | E2-13 | Justificación configurable | `NOT_REQUIRED`/`SELECTED`/`ALL`; cada opción conserva rationale y distractor; reporte muestra alcance limitado cuando no es total |
 | E2-14 | Aprobación masiva | docente o evaluator autorizado confirma una selección; elegibles se aprueban y excepciones quedan excluidas/auditadas para revisión individual |
 | E2-15 | Aviso fijo de producto | footer/callout visible informa límites sobre autoría/IA/historia; no proviene de P09 ni aparece en documentos generados |
+| E2-16 | Autoridad del pipeline formalizada | manifiesto versionado asigna una sola autoridad a cada decisión, marca P05/P08 inactivos y P10 deshabilitado sin cambiar routing/workflows |
+| E2-17 | Evaluación histórica y oracle explícito | harness/qualifications legados no seleccionan modelo; `ORACLE_SUSPECT` nunca produce `MODEL_OWNED_*`; reportes sintéticos enumeran códigos content-free |
 
 ## Dependencias
 
 - observabilidad y datos de Etapa 1;
 - política provisional de datos/retención para el entorno controlado;
 - conjunto de archivos DOCX/PDF representativos y autorizados.
+- `pipeline-authority/1.0.0` como fuente del objetivo; el retiro operativo de
+  P05/P08 exige una historia separada con migración compatible de jobs/estado.
 
 ## Riesgos y mitigaciones
 
@@ -281,6 +293,10 @@ flowchart TB
 - property/fuzz: IDs, locators, Unicode, longitudes, archives cuando se habiliten;
 - integración: Supabase, R2, Cloud Run Service/Jobs, proveedor mock/real y renderer;
 - golden/eval: grounding, answerability, ancla, guía, abstención y seguridad;
+- causalidad de eval: estados `VALID`/`ORACLE_SUSPECT`/`INVALID`/
+  `NOT_APPLICABLE`, precedence conservadora y compatibilidad de receipts;
+- reporting: códigos estructurados en claro sólo para
+  `SYNTHETIC_ONLY_NO_STUDENT_DATA`, con hash de integridad;
 - E2E: actividad -> blueprint -> submission -> review -> export -> borrado;
 - accesibilidad: axe, teclado y revisión manual de PDFs;
 - seguridad: MIME, malware/injection, PII, cross-submission, rate/cost limits.
@@ -302,7 +318,7 @@ Una historia no termina con una pantalla o una respuesta del modelo. Debe inclui
 
 | Decisión | Recomendación provisional | Información faltante | Cierre |
 |---|---|---|---|
-| Proveedor/modelos | matriz P01-P11; Terra solo con ventaja; P10 abierto | calidad/costo/privacidad propios | recalibrar Etapa 3 |
+| Proveedor/modelos | routing retenido sin selección nueva; P10 deshabilitado | corpus/gate nuevo independiente; el harness actual es histórico | recalibrar Etapa 3 |
 | Nube | Cloud Run Service/Jobs + Supabase + R2 | región y cuotas concretas | ratificar antes de datos reales |
 | Jobs | Cloud Run Jobs + tablas PostgreSQL, sin Redis | duración/fallos/volumen | reevaluar E3/E4 |
 | Formatos posteriores | por frecuencia y valor | corpus real | durante E3 |

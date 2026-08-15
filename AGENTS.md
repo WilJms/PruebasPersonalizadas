@@ -8,7 +8,7 @@
 - Etapa 0: cerrada y protegida por regresión.
 - Etapa 1: cerrada y protegida por regresión.
 - Etapa 2: activa exclusivamente para el entorno experimental usable descrito
-  en la especificación, el plan, el MVP y ADR-030 a ADR-036.
+  en la especificación, el plan, el MVP y ADR-030 a ADR-037.
 - Etapa 3: no autorizada.
 - Datos estudiantiles reales: no autorizados. El Service web y todo workload
   ordinario del producto cloud conservan `CVA_MODEL_MODE=mock` y
@@ -31,7 +31,7 @@ historias de Etapa 3.
 1. `specification/models_v1.1(1).py` es la única fuente manual de contratos.
 2. `specification/contracts.schema_v1.1(1).json` es generado y nunca se edita a
    mano.
-3. Aplicar ADR aceptados; ADR-030 a ADR-036 sustituyen decisiones anteriores
+3. Aplicar ADR aceptados; ADR-030 a ADR-037 sustituyen decisiones anteriores
    según su texto.
 4. Plan/MVP mandan sobre el alcance inmediato.
 
@@ -44,6 +44,11 @@ No copie ni redefina modelos Pydantic. Importe `comprehension_verification.contr
 - registry P01-P11 -> ModelGateway -> proveedor mock/real;
 - validación estructural y contextual separada;
 - planificador determinista antes de generación;
+- autoridad objetivo formalizada por `pipeline-authority/1.0.0`: actividad
+  P01→P02→P03→P04→preflight determinista→aprobación docente; por submission
+  P06→planner determinista→P07→validaciones deterministas→revisión/aprobación
+  docente→P09. P05/P08 son inactivos en el objetivo y P10 sigue deshabilitado;
+  el cutover runtime de dependencias legacy P05/P08 permanece pendiente;
 - Assessment y EvaluationGuide JSON separados; HTML/PDF son vistas derivadas;
 - artefactos locales son solo desarrollo/fixtures, no operación productiva.
 - shell E1 privado y tenant-scoped; Supabase se usa para Auth y PostgreSQL;

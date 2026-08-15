@@ -1,6 +1,15 @@
 # Evals del modelo real
 
-## Resultado vigente — cualificación Luna/high fallida (2026-08-12)
+> **Estado ADR-037 (2026-08-14):** el harness, corpus y todas las
+> qualifications documentadas aquí son
+> `HISTORICAL_NON_CANONICAL_EVIDENCE`. Reports/receipts no se borran ni se
+> reescriben, pero ningún PASS/FAIL histórico es un gate vigente para elegir
+> modelo. Un instrumento futuro requiere autoridad y corpus propios.
+> Todo presente temporal usado más abajo —“vigente”, “abre”, “permanece” o
+> “autoridad siguiente”— se refiere exclusivamente al checkpoint fechado de
+> esa sección y no expresa autoridad posterior a ADR-037.
+
+## Historial — cualificación Luna/high fallida (2026-08-12)
 
 La última remediación focal cerró exclusivamente P08 y el oráculo P05. P08
 `1.1.5` comunica y describe los subconjuntos de evidencia/fuentes de la
@@ -435,7 +444,7 @@ hashes fijados:
 - input bundle: `sha256:754d38ab508982b78d041cefd2ffbd76b21645d79606a4e7cacd18a399912a43`;
 - ceiling full-cache-write: USD 0.012278; cap focal futuro: USD 0.02.
 
-`make openai-qualification-dry-run` selecciona ahora los **18** casos
+En ese checkpoint, `make openai-qualification-dry-run` seleccionaba los **18** casos
 `real_eligible`, sin reutilizar evidencia real anterior. Los cuatro casos P07
 suficientes —TXT/MD/PDF/DOCX, CHOICE/OPEN_SHORT y tres operaciones— exigen
 `READY`; el insuficiente exige `REPLACEMENT_REQUIRED`. P11 directo queda
@@ -482,8 +491,8 @@ Responses requests, cero consumo del cap y P0 todavía abierto. El verificador
 versionado exige un 401 content-free sobre esa versión y confirma por separado
 Luna visible con la versión nueva.
 
-Las secciones 1.1.1 siguientes se conservan como historial y no amplían el
-gate vigente.
+Las secciones 1.1.1 siguientes se conservan como historial y no ampliaban el
+gate de ese corte, hoy no canónico.
 
 ## Cobertura
 

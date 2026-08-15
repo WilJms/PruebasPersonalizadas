@@ -2,10 +2,16 @@
 
 **Versión candidata del pack:** `prompt-pack/1.1.14`
 **Compatibilidad:** contratos `assessment-contracts/1.1.0`  
-**Perfil de ruta activo:** `LUNA_BASELINE_V1` (ADR-036)
+**Perfil de ruta retenido (no autoridad de selección):** `LUNA_BASELINE_V1` (ADR-036)
 **Principio:** una tarea semántica por llamada; contenido estudiantil siempre no confiable; structured outputs obligatorios.
 
-Las entradas vigentes son P01 `1.1.3`, P02 `1.1.4`, P03 `1.1.3`, P04
+**Estado ADR-037:** este inventario conserva texto, contratos y routing para
+compatibilidad e historia. En el pipeline objetivo P05/P08 son inactivos y P10
+continúa deshabilitado. El pack no es por sí mismo autoridad de activación ni
+gate canónico para seleccionar modelo; esta iteración no cambia prompts
+ejecutables ni provider routing.
+
+Las versiones retenidas son P01 `1.1.3`, P02 `1.1.4`, P03 `1.1.3`, P04
 `1.1.11`, P05 `1.1.8`, P06 `1.1.5`, P07 `1.1.4`, P08 `1.1.5`, P09 `1.1.6`, P10 `1.1.3` y P11
 `1.1.5`. P04 `1.1.11` refuerza la unicidad global y prohíbe duplicados
 semánticos disfrazados con IDs distintos. P05 `1.1.7` copia las identidades
@@ -19,8 +25,9 @@ liga sus identidades y separa los avisos globales de seguridad del texto
 generado; y P08 `1.1.5` limita de forma explícita las referencias del review a
 los `evidence_ids` y `course_source_ids` de la candidata, nunca a IDs presentes
 solamente en el bundle o la oportunidad.
-Este pack conserva ADR-030 y el constructo, y requiere validación offline y real
-antes de build/deploy. Los textos se
+Este pack conserva ADR-030 y el constructo. Las qualifications ejecutadas con
+el harness actual son evidencia histórica; cualquier gate futuro exige un
+instrumento y autoridad vigentes antes de build/deploy. Los textos se
 almacenan en un registry inmutable con `prompt_id`, `version`, hash, modelo
 permitido, esquema de salida, parámetros y resultados de eval. Los placeholders
 `{{...}}` se resuelven en servidor. No se realiza interpolación libre: cada
@@ -129,23 +136,28 @@ La semilla, si el proveedor la admite, ayuda a repetir pero no garantiza determi
 
 ## 2. Inventario de prompts
 
-| ID | Input root | Output root | Productor anterior | Consumidor siguiente | Ruta activa `LUNA_BASELINE_V1` |
+La columna de ruta documenta la configuración retenida, no actividad objetivo.
+Los consumidores objetivo de P04 y P07 son ahora controles deterministas y
+revisión docente; las filas P05/P08 se mantienen para poder interpretar
+artefactos históricos.
+
+| ID | Input root | Output root | Productor anterior | Consumidor siguiente | Ruta retenida `LUNA_BASELINE_V1` |
 |---|---|---|---|---|---|
 | `P01_ACTIVITY_SPEC_V1` | `ActivitySpecRequest` | `ActivitySpec` | API + parser de consigna | P02/P03/P04 | GPT-5.6 Luna, medium |
 | `P02_RUBRIC_NORMALIZE_V1` | `RubricNormalizeRequest` | `RubricSpec` | P01 + parser de rúbrica | P03/P04 | GPT-5.6 Luna, medium |
 | `P03_AMBIGUITY_TRIAGE_V1` | `AmbiguityTriageRequest` | `AmbiguityReport` | reglas + P01/P02 | UI docente | GPT-5.6 Luna, high |
-| `P04_BLUEPRINT_BUILD_V1` | `BlueprintBuildRequest` | `AssessmentBlueprint` | specs + decisiones docentes | P05 + reglas | GPT-5.6 Luna, high |
-| `P05_BLUEPRINT_REVIEW_V1` | `BlueprintReviewRequest` | `BlueprintReview` | P04 | UI/aprobación docente | GPT-5.6 Luna, high |
+| `P04_BLUEPRINT_BUILD_V1` | `BlueprintBuildRequest` | `AssessmentBlueprint` | specs + decisiones docentes | preflight + aprobación docente | GPT-5.6 Luna, high |
+| `P05_BLUEPRINT_REVIEW_V1` | `BlueprintReviewRequest` | `BlueprintReview` | P04 | histórico/compatibilidad | INACTIVE_TARGET; ruta histórica retenida |
 | `P06_EVIDENCE_MAP_V1` | `EvidenceMapRequest` | `EvidenceMapPatch` | parser + blueprint | planificador | GPT-5.6 Luna, high |
-| `P07_QUESTION_BUILD_V1` | `QuestionBuildRequest` | `QuestionGenerationResult` | plan + oportunidad primaria/reserva | reglas/P08 | GPT-5.6 Luna, high |
-| `P08_QUESTION_REVIEW_V1` | `QuestionReviewRequest` | `QuestionReviewResult` | P07 + reglas previas | ensamblador/reemplazo | GPT-5.6 Luna, high |
-| `P09_GUIDE_BUILD_V1` | `GuideBuildRequest` | `EvaluationGuide` | evaluación completa | plataforma/evaluador | GPT-5.6 Luna, high |
+| `P07_QUESTION_BUILD_V1` | `QuestionBuildRequest` | `QuestionGenerationResult` | plan + oportunidad primaria/reserva | validaciones + revisión docente | GPT-5.6 Luna, high |
+| `P08_QUESTION_REVIEW_V1` | `QuestionReviewRequest` | `QuestionReviewResult` | P07 + reglas previas | histórico/compatibilidad | INACTIVE_TARGET; ruta histórica retenida |
+| `P09_GUIDE_BUILD_V1` | `GuideBuildRequest` | `EvaluationGuide` | preguntas aprobadas | plataforma/evaluador | GPT-5.6 Luna, high |
 | `P10_ENRICHED_CONTEXT_V1` | `QuestionBuildRequest` (`COURSE_ENRICHED`) | `QuestionGenerationResult` | retrieval autorizado + plan | reglas/P08 | DISABLED; sin ruta callable |
 | `P11_SCHEMA_REPAIR_V1` | `SchemaRepairRequest` | `SchemaRepairResult` | validador JSON | validador del root objetivo | GPT-5.6 Luna, low; temperatura no enviada |
 
 Diagnósticos técnicos, planificación exacta de \(N\), scoring numérico,
 autorización, validación de IDs/localizadores y render no usan LLM. Este gate no
-tiene rutas alternativas ni proveedores distintos de OpenAI. P10 permanece
+tenía rutas alternativas ni proveedores distintos de OpenAI. P10 permanece
 deshabilitado y cualquier evaluación futura de contexto enriquecido exige una
 nueva autorización fuera de este gate.
 
@@ -187,7 +199,7 @@ reutiliza como calificación del nuevo límite.
 
 Todos incorporan `schema_version=1.1.0`. No se permiten propiedades extra.
 
-Estas rutas se resuelven como configuraciones aprobadas (`provider + snapshot + model + reasoning_effort + temperature + output_limits`), no mediante una elección dinámica del “mejor” modelo. Antes de llamar se comprueban capacidades, modalidad, privacidad, región, retención, presupuesto y disponibilidad. `LUNA_BASELINE_V1` no admite fallback; la falta de una ruta compatible produce `NEEDS_REVIEW` o `BLOCKED`.
+Las rutas retenidas se resuelven como configuraciones aprobadas (`provider + snapshot + model + reasoning_effort + temperature + output_limits`), no mediante una elección dinámica del “mejor” modelo. Antes de llamar se comprueban capacidades, modalidad, privacidad, región, retención, presupuesto y disponibilidad. `LUNA_BASELINE_V1` no admite fallback; la falta de una ruta compatible produce `NEEDS_REVIEW` o `BLOCKED`. La resolución de una ruta histórica P05/P08 no autoriza invocarla en el pipeline objetivo.
 
 ---
 
@@ -797,7 +809,7 @@ Devuelve `QuestionGenerationResult.context_mode=COURSE_ENRICHED`. En la pregunta
 La recuperación es híbrida (filtros + léxica + embeddings), pero el pasaje textual y su localizador siempre entran a la llamada y se validan después.
 
 Este texto conserva el contrato semántico histórico para una decisión futura,
-pero el gate vigente no decide ni prueba una ruta P10. No se ejecuta retrieval,
+pero la autoridad ADR-037 no decide ni prueba una ruta P10. No se ejecuta retrieval,
 no se habilita un proveedor y toda invocación queda bloqueada antes del
 transporte. Una apertura futura requerirá autorización, ADR y evaluación
 independientes.

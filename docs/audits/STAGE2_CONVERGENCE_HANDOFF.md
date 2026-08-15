@@ -1,13 +1,24 @@
 # Handoff final — Sol adaptive reasoning ladder final gate
 
+> **Clasificación vigente desde ADR-037 (2026-08-14):** todo este documento,
+> sus matrices, qualifications, hashes, reports y receipts son evidencia
+> `HISTORICAL_NON_CANONICAL_EVIDENCE`. Se preservan sin reescritura, pero no
+> constituyen un gate canónico para seleccionar modelo ni autorizan rerun,
+> gasto, routing o despliegue. Las atribuciones históricas se leen en su
+> contexto original; cualquier oracle puesto en revisión se clasifica ahora
+> `ORACLE_SUSPECT` y no puede producir automáticamente `MODEL_OWNED_*`.
+> Toda “autoridad siguiente” o formulación en presente que aparece debajo
+> pertenece al corte histórico que la acompaña y queda sin efecto como
+> autorización actual.
+
 Fecha de corte: 2026-08-14 (America/Santiago).
 
-Fase: **`SOL_ADAPTIVE_REASONING_LADDER_FINAL_GATE`**.<br>
+Fase histórica: **`SOL_ADAPTIVE_REASONING_LADDER_FINAL_GATE`**.<br>
 Ruta ejecutada: **`MEDIUM FAIL → HIGH FAIL → XHIGH FAIL → EXHAUSTED`**.<br>
 Veredicto: **`SOL_XHIGH_QUALIFICATION_FAILED`**.<br>
 Escalera: **`SOL_REASONING_LADDER_EXHAUSTED`**.<br>
 Convergencia: **`CONVERGENCE_INCOMPLETE`**.<br>
-Autoridad siguiente:
+Autoridad siguiente en el corte original:
 **`INDEPENDENT_MODEL_ROUTING_OR_RESPONSIBILITY_REVIEW_ONLY_NO_SOL_MAX`**.
 
 Los tres rungs se ejecutaron una sola vez, secuencialmente y sobre el mismo
@@ -1395,12 +1406,15 @@ ejes independientes:
 Las ramas probadas son: positive válido incumplido; abstención defendible con
 adherence incorrecta; rechazo correcto; oracle inválido; causa indeterminada;
 y fallo técnico. La regla anterior «todo código no técnico → model-owned» se
-elimina para Terra: un reporte sin provenance versionada queda
-`ORACLE_VALIDITY_UNESTABLISHED`, aunque su outcome operacional siga siendo
-FAIL. Esto actualiza interpretación futura, no el receipt ya persistido.
+eliminaba para Terra: el documento histórico llamó
+`ORACLE_VALIDITY_UNESTABLISHED` a un reporte sin provenance versionada. Al
+leerlo bajo ADR-037, ese label legado se normaliza a `ORACLE_SUSPECT`; nunca se
+emite de nuevo y no puede transformarse en `MODEL_OWNED_*`. El receipt ya
+persistido no se reescribe.
 
-El sweep ejecutable futuro consume directamente los nueve requests goldens
-versionados: P04/P05/P06/P07/P08/P09 positives y P05/P07/P08 negatives. Cada
+El diseño de sweep previsto en ese corte consumía directamente los nueve
+requests goldens versionados: P04/P05/P06/P07/P08/P09 positives y
+P05/P07/P08 negatives. Cada
 fila del receipt lleva clase, semantic review/version/hash, fixture/golden y
 source hashes, outcome operacional, interpretación semántica, adherence,
 atribución y confianza. Las dos cadenas integradas restantes se rotulan

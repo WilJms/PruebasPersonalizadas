@@ -1,8 +1,28 @@
 # Estado de implementación — Etapa 2
 
-Fecha de corte: 2026-08-12 (America/Santiago).
+Fecha de corte: 2026-08-14 (America/Santiago).
 
-## Estado vigente — `LUNA_HIGH_QUALIFICATION_FAILED` / `CONVERGENCE_INCOMPLETE` (2026-08-12)
+## Estado vigente — `PIPELINE_AUTHORITY_FORMALIZED` / `RUNTIME_CUTOVER_PENDING` (2026-08-14)
+
+ADR-037 y `pipeline-authority/1.0.0` fijan el objetivo sin rediseñar la
+arquitectura: P01→P02→P03→P04→preflight→docente y, por submission,
+P06→planner→P07→validaciones→docente→P09. P05/P08 son inactivos en el objetivo
+y P10 continúa deshabilitado. El runtime no se declara migrado: todavía existen
+dependencias legacy P05/P08 en workflows, jobs, persistencia, estados y UI.
+
+El harness semántico y todas las qualifications Luna/Terra/Sol quedan como
+`HISTORICAL_NON_CANONICAL_EVIDENCE`; reports y receipts se preservan y ya no
+seleccionan modelo. El clasificador distingue `VALID`, `ORACLE_SUSPECT`,
+`INVALID` y `NOT_APPLICABLE`; la sospecha prevalece sobre `MODEL_OWNED_*`.
+Sólo reportes `SYNTHETIC_ONLY_NO_STUDENT_DATA` enumeran códigos estructurados
+en claro con hash. No hubo llamadas billables, build, deploy, cambio de routing
+ni habilitación de datos reales en esta iteración.
+
+## Historial — `LUNA_HIGH_QUALIFICATION_FAILED` / `CONVERGENCE_INCOMPLETE` (2026-08-12)
+
+Desde este encabezado, “vigente”, “abierto” y “autoridad siguiente” significan
+únicamente “en el corte histórico de la subsección”. No describen autoridad
+actual ni reabren un gate de selección de modelo.
 
 El candidato congelado `93da59414fb49bd4df5c21af193a0226b4bc5fdb`
 cerró la remediación focalizada de P08 y el oráculo determinista de P05. P08

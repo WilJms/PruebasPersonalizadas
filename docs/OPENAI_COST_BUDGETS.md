@@ -1,7 +1,12 @@
 # Costos y presupuestos OpenAI
 
+> **Estado ADR-037 (2026-08-14):** esta tabla y los ceilings se conservan como
+> evidencia histórica y controles de seguridad de referencia. No son una ruta
+> activa, un gate de selección de modelo ni autorización de gasto. Cualquier
+> precio o budget futuro debe revalidarse bajo un instrumento nuevo.
+
 Política Standard short-context observada y revalidada el 2026-08-11 en la página
-oficial vigente. El perfil activo usa únicamente Luna; Terra y Sol se
+oficial de ese corte. El perfil histórico usaba únicamente Luna; Terra y Sol se
 conservan como referencias de catálogo y no son rutas callable ni fallback.
 
 | Modelo | Input / 1M | Cached input / 1M | Cache write / 1M | Output / 1M |
@@ -14,7 +19,7 @@ Frente a los precios anteriores, Terra bajó 20% desde
 USD 2.50/0.25/15.00 y Luna bajó 80% desde USD 1.00/0.10/6.00; Sol permanece
 en USD 5.00/0.50/30.00. Los snippets indexados que aún muestran los valores
 anteriores no son autoridad: estas cifras proceden de las páginas cargadas el
-2026-08-11. El gate usa Standard, `service_tier=default`, short context y no
+2026-08-11. El gate histórico usaba Standard, `service_tier=default`, short context y no
 Batch/Flex/Fast. Fuentes canónicas operativas:
 [precios OpenAI](https://developers.openai.com/api/docs/pricing),
 [Sol](https://developers.openai.com/api/docs/models/gpt-5.6-sol),
@@ -37,13 +42,13 @@ envelope manual. Antes de llamar, el gateway calcula el peor caso usando el
 máximo output del prompt; si supera el presupuesto restante, no crea
 transporte.
 
-## Estado vigente — stop P04 1.1.8 y recanary P04 1.1.9→P05 1.1.5
+## Historial — stop P04 1.1.8 y recanary P04 1.1.9→P05 1.1.5
 
 El E2E fresco sobre `fefea94` consumió exactamente cuatro Responses antes del
 stop de seguridad P04, por **USD 0.02256005**. No hubo P10, P11, Sol, fallback
 ni retry; P05 no fue llamado.
 
-| Tramo vigente | Responses | Costo calculado |
+| Tramo en ese corte histórico | Responses | Costo calculado |
 |---|---:|---:|
 | P01 | 1 | USD 0.00215155 |
 | P02 | 1 | USD 0.00194855 |

@@ -84,6 +84,9 @@ from comprehension_verification.evaluation_gate import (
     EvaluationAuthorizationConsumed,
     EvaluationAuthorizationLedger,
 )
+from comprehension_verification.evaluation_reporting import (
+    prepare_historical_harness_report,
+)
 from comprehension_verification.rehearsal import (
     QUALIFICATION_EXPECTED_PROVIDER_REQUESTS,
     REHEARSAL_REPORT_VERSION,
@@ -5763,6 +5766,7 @@ def _convergence_authorization_boundary(args: argparse.Namespace) -> dict[str, A
 def _write_json_atomic(path: Path, value: dict[str, Any]) -> str:
     path = path.resolve()
     path.parent.mkdir(parents=True, exist_ok=True)
+    value = prepare_historical_harness_report(value)
     encoded = (
         json.dumps(
             value,
@@ -6126,7 +6130,7 @@ def _terra_medium_qualification_outcome(
     elif nontechnical_failures:
         # Historical reports did not bind failures to reviewed oracle
         # provenance. Preserve their operational FAIL, but do not infer blame.
-        causal_classification = "ORACLE_VALIDITY_UNESTABLISHED"
+        causal_classification = "ORACLE_STATUS_MISSING"
         if technical_failures:
             causal_classification += "_WITH_TECHNICAL_FAILURES"
     elif technical_failures:

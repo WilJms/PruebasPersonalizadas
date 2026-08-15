@@ -1,6 +1,12 @@
 # Setup gobernado del proveedor OpenAI
 
-## Autoridad vigente — capacidad sintética post-claim, no modo real general
+> **Estado ADR-037 (2026-08-14):** esta superficie se conserva como control
+> fail-closed y documentación histórica. No existe autorización vigente para
+> usar el harness legado como gate, seleccionar modelo, resolver un secreto o
+> ejecutar requests. La disponibilidad técnica nunca sustituye una autoridad
+> futura exacta y separada.
+
+## Superficie técnica retenida — capacidad sintética post-claim, no autorización actual
 
 El producto y el Service web permanecen mock y no reciben clave. P10 y datos
 estudiantiles reales siguen prohibidos. El worker ordinario también permanece
@@ -66,8 +72,8 @@ P10/P11/Sol/fallback/retries.
 P04 1.1.9 aclara las allowlists tipadas de `diagnostics[].evidence_ids` y
 `source_ids` sin relajar el validador. El dry-run acoplado P04→P05 pasa con
 dos transportes fake, 0 red/billable y ceiling USD 0.05046625 bajo cap USD
-0.06. La evidencia vigente es 16/18 hasta una única recanary real y su reporte
-content-free; después harán falta un SHA nuevo, build/deploy y otro E2E fresco.
+0.06. En ese checkpoint la evidencia era 16/18 hasta una única recanary real y
+su reporte content-free; esa secuencia ya no constituye autoridad actual.
 
 ## Historial — evidencia 18/18 desplegada antes del stop fresco
 

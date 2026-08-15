@@ -17,6 +17,7 @@ from pydantic import BaseModel, SecretStr
 
 from .canonical import canonical_hash, sha256_text, stable_id
 from .contracts import model_by_name, models as m
+from .evaluation_reporting import prepare_historical_harness_report
 from .model_gateway import (
     CallBudget,
     GatewayCallResult,
@@ -3489,7 +3490,7 @@ async def run_offline_convergence(
         route_profile_id,
         max_call_cost_usd=max_call_cost_usd,
     )
-    return {
+    return prepare_historical_harness_report({
         "report_schema_version": REHEARSAL_REPORT_VERSION,
         "rehearsal_version": REHEARSAL_VERSION,
         "mode": (
@@ -3540,7 +3541,7 @@ async def run_offline_convergence(
             checkpoint_assessments
         ),
         "controls": controls,
-    }
+    })
 
 
 def run_offline_convergence_sync() -> dict[str, Any]:
@@ -3744,7 +3745,7 @@ async def run_real_convergence(
         <= max_call_cost_usd
         else "FAIL"
     )
-    return {
+    return prepare_historical_harness_report({
         "report_schema_version": REHEARSAL_REPORT_VERSION,
         "rehearsal_version": REHEARSAL_VERSION,
         "mode": (
@@ -3797,4 +3798,4 @@ async def run_real_convergence(
             checkpoint_assessments
         ),
         "controls": controls,
-    }
+    })

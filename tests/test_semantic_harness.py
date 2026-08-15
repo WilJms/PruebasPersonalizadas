@@ -859,12 +859,13 @@ def test_every_checkpoint_has_explicit_provenance_and_mocks_are_structural() -> 
 
 def test_classifier_covers_semantics_adherence_oracle_uncertainty_and_technical() -> None:
     proof = classifier_branch_proof()
-    assert len(proof) == 6
+    assert len(proof) == 7
     assert all(item["status"] == "PASS" for item in proof)
     assert {item["expected_causal_attribution"] for item in proof} == {
         "MODEL_OWNED_SEMANTIC_FAILURE",
         "MODEL_OWNED_CONTRACTUAL_ADHERENCE_FAILURE",
         "CORRECT_NEGATIVE_DECISION",
+        "ORACLE_SUSPECT",
         "ORACLE_OR_CHECKPOINT_INVALID",
         "CAUSE_INDETERMINATE",
         "TECHNICAL_FAILURE",
@@ -882,6 +883,45 @@ def test_classifier_covers_semantics_adherence_oracle_uncertainty_and_technical(
         )
     ]
     assert aggregate_causal_classification(assessments) == "QUALIFICATION_PASSED"
+
+
+def test_suspect_oracle_cannot_become_model_owned() -> None:
+    assert {status.value for status in OracleValidity} == {
+        "VALID",
+        "ORACLE_SUSPECT",
+        "INVALID",
+        "NOT_APPLICABLE",
+    }
+    suspect = classify_checkpoint(
+        checkpoint_id="systematic-disagreement",
+        checkpoint_class=CheckpointClass.SEMANTICALLY_QUALIFIED_POSITIVE,
+        oracle_validity=OracleValidity.ORACLE_SUSPECT,
+        semantic_interpretation=SemanticInterpretation.INCORRECT,
+        contractual_adherence=ContractualAdherence.FAIL,
+        reason_codes=["SYSTEMATIC_ORACLE_DISAGREEMENT"],
+    )
+    assert suspect.operational_outcome.value == "INCONCLUSIVE"
+    assert suspect.causal_attribution.value == "ORACLE_SUSPECT"
+    assert suspect.causal_confidence.value == "LOW"
+    assert "MODEL_OWNED" not in suspect.causal_attribution.value
+
+    valid_model_failure = classify_checkpoint(
+        checkpoint_id="valid-model-failure",
+        checkpoint_class=CheckpointClass.SEMANTICALLY_QUALIFIED_POSITIVE,
+        oracle_validity=OracleValidity.VALID,
+        semantic_interpretation=SemanticInterpretation.INCORRECT,
+        contractual_adherence=ContractualAdherence.PASS,
+        semantic_review_id="SR-VALID",
+        semantic_review_version="1.0.0",
+        semantic_review_hash="sha256:" + "4" * 64,
+    )
+    assert aggregate_causal_classification(
+        [valid_model_failure, suspect]
+    ) == "ORACLE_SUSPECT"
+
+
+def test_historical_unestablished_status_reads_as_oracle_suspect() -> None:
+    assert OracleValidity("UNESTABLISHED") == OracleValidity.ORACLE_SUSPECT
 
 
 def test_terra_outcome_uses_versioned_checkpoint_assessments() -> None:
@@ -917,6 +957,10 @@ def test_offline_rehearsal_has_zero_provider_activity_and_valid_goldens() -> Non
     report = run_semantic_harness_rehearsal()
     assert report["status"] == "PASS"
     assert report["causal_classification"] == "QUALIFICATION_PASSED"
+    assert report["evidence_status"] == "HISTORICAL_NON_CANONICAL_EVIDENCE"
+    assert report["model_selection_gate"] is False
+    assert report["pipeline_authority_version"] == "pipeline-authority/1.0.0"
+    assert report["diagnostic_codes_hash"].startswith("sha256:")
     assert all(item["status"] == "PASS" for item in report["checks"])
     assert report["controls"] == {
         "provider_attempts": 0,

@@ -1,5 +1,11 @@
 # Decisiones menores de implementación
 
+> **Precedencia ADR-037 (2026-08-14):** estas decisiones son un registro
+> temporal. D-074 gobierna la autoridad actual; cualquier mención anterior a
+> evidencia “vigente”, gates abiertos o una autoridad siguiente describe sólo
+> su checkpoint histórico y no convierte el harness legado en gate canónico de
+> selección de modelo.
+
 ## D-001 - Cargar el modelo canónico en su ubicación original
 
 - **Decisión:** `src/comprehension_verification/contracts.py` carga
@@ -1128,3 +1134,30 @@
 - **Relación:** ADR-035/ADR-036, `AGENTS.md`,
   `OPENAI_PROVIDER_SETUP.md`, `STAGE2_CONVERGENCE_HANDOFF.md` y migración
   `202608120005_stage2_synthetic_provider_gate.sql`.
+
+## D-074 - La simplificación separa autoridad antes del cutover operativo
+
+- **Objetivo:** actividad
+  P01→P02→P03→P04→preflight determinista→aprobación docente; submission
+  P06→planner→P07→validaciones deterministas→revisión/aprobación docente→P09.
+  P05/P08 quedan inactivos en el objetivo y P10 continúa deshabilitado.
+- **Autoridad:** backend decide identidad, versions/hashes, estado, lineage,
+  pertenencia, allowlists, formatos, conteo, tiempo, restricciones,
+  factibilidad, almacenamiento, transiciones y validación determinista. El
+  modelo propone semántica, estructura pedagógica, relación evidencia/
+  constructo, redacción, observables y alternativas. El docente resuelve
+  ambigüedad y tiene autoridad académica final sobre blueprint y preguntas.
+- **Causalidad:** los únicos estados de oracle nuevos son `VALID`,
+  `ORACLE_SUSPECT`, `INVALID` y `NOT_APPLICABLE`. Un oracle sospechoso vuelve
+  la evidencia inconclusa y prevalece sobre `MODEL_OWNED_*`; receipts con
+  `UNESTABLISHED` sólo se leen por compatibilidad.
+- **Historia/reporting:** el harness y las qualifications existentes no son un
+  gate canónico de selección de modelo y se preservan. Sólo un reporte
+  `SYNTHETIC_ONLY_NO_STUDENT_DATA` enumera códigos diagnósticos estructurados y
+  su hash; no se extrae texto libre ni cambia la política de datos reales.
+- **Frontera:** no se cambian routing, prompts ejecutables, workflows, jobs,
+  persistencia, P04/P06/P07/P09 ni infraestructura. Retirar invocaciones y
+  estados P05/P08, y mover P09 detrás de aprobación docente, requiere una fase
+  posterior compatible.
+- **Relación:** ADR-037, `PIPELINE_AUTHORITY.md`, `pipeline_authority.py` y
+  `qualification_semantics.py`.

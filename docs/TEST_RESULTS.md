@@ -1,9 +1,31 @@
 # Resultados verificables — candidato Etapa 2
 
-Fecha de corte documental: 2026-08-12 (America/Santiago; ejecución cloud hasta
-2026-08-11 UTC; Fase 2 posterior exclusivamente local/real sintética aislada).
+Fecha de corte documental: 2026-08-14 (America/Santiago; ejecución cloud hasta
+2026-08-11 UTC; toda la validación ADR-037 fue local, offline y mock).
 
-## Estado vigente — local/CI verde; Luna/high no cualificada — 2026-08-12
+## Estado vigente — autoridad ADR-037 y reporting histórico — 2026-08-14
+
+| Prueba o gate | Resultado observado |
+|---|---|
+| Focal autoridad/harness/reporting | 128 passed |
+| Backend completo | `make test`: 731 passed, 17 skips explícitos por URL PostgreSQL local ausente, 1 warning Starlette conocido |
+| Contratos | 53 roots, 141 `$defs`, 277 refs y 8 fixtures PASS; sin cambio de schema |
+| Rehearsal semántico | PASS temporal; `HISTORICAL_NON_CANONICAL_EVIDENCE`, `model_selection_gate=false`, código `SYSTEMATIC_ORACLE_DISAGREEMENT` + hash, red/billable/secreto/P10 = 0 |
+| Convergence dry-run | PASS offline sobre mock; reporte con política histórica; sin transporte o llamada billable |
+| Seguridad estática | 340 archivos versionables; cero secretos de alta confianza |
+| Higiene | `py_compile` y `git diff --check` PASS |
+| Efectos excluidos | cero provider real, build, deploy, apply, routing, corpus, datos estudiantiles reales, migración o cambio frontend |
+
+Los 17 skips cubren sólo suites que exigen
+`CVA_TEST_DATABASE_URL`/`CVA_TEST_POSTGRES_URL`; esta iteración no cambia base,
+storage, jobs ni migraciones. El Docker daemon local no estaba disponible y no
+era requisito del cambio. Reports y receipts históricos no se regeneraron.
+
+## Historial — local/CI verde; Luna/high no cualificada — 2026-08-12
+
+Todo uso posterior de “vigente”, “gate” o “frontera actual” pertenece al corte
+fechado de la fila o sección histórica. Ningún resultado de este historial
+selecciona modelo ni autoriza una ejecución después de ADR-037.
 
 | Prueba o gate | Resultado observado |
 |---|---|

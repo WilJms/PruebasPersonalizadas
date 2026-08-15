@@ -22,9 +22,17 @@ class CheckpointClass(StrEnum):
 
 class OracleValidity(StrEnum):
     VALID = "VALID"
+    ORACLE_SUSPECT = "ORACLE_SUSPECT"
     INVALID = "INVALID"
-    UNESTABLISHED = "UNESTABLISHED"
     NOT_APPLICABLE = "NOT_APPLICABLE"
+
+    @classmethod
+    def _missing_(cls, value: object) -> "OracleValidity | None":
+        # Historical receipts used UNESTABLISHED.  They remain readable, but
+        # every newly serialized assessment uses the explicit review state.
+        if value == "UNESTABLISHED":
+            return cls.ORACLE_SUSPECT
+        return None
 
 
 class OperationalOutcome(StrEnum):
@@ -58,6 +66,7 @@ class CausalAttribution(StrEnum):
         "MODEL_OWNED_SEMANTIC_AND_ADHERENCE_FAILURE"
     )
     CORRECT_NEGATIVE_DECISION = "CORRECT_NEGATIVE_DECISION"
+    ORACLE_SUSPECT = "ORACLE_SUSPECT"
     ORACLE_OR_CHECKPOINT_INVALID = "ORACLE_OR_CHECKPOINT_INVALID"
     CAUSE_INDETERMINATE = "CAUSE_INDETERMINATE"
     TECHNICAL_FAILURE = "TECHNICAL_FAILURE"
@@ -144,6 +153,10 @@ def classify_checkpoint(
             raise ValueError(
                 "a valid semantic checkpoint requires versioned review provenance"
             )
+    if semantic_class and oracle_validity == OracleValidity.NOT_APPLICABLE:
+        raise ValueError(
+            "semantic checkpoints require an applicable oracle status"
+        )
     if (
         checkpoint_class
         == CheckpointClass.STRUCTURAL_ORCHESTRATION_CHECKPOINT_ONLY
@@ -156,14 +169,14 @@ def classify_checkpoint(
         operational = OperationalOutcome.TECHNICAL_FAILURE
         causal = CausalAttribution.TECHNICAL_FAILURE
         confidence = CausalConfidence.HIGH
+    elif oracle_validity == OracleValidity.ORACLE_SUSPECT:
+        operational = OperationalOutcome.INCONCLUSIVE
+        causal = CausalAttribution.ORACLE_SUSPECT
+        confidence = CausalConfidence.LOW
     elif oracle_validity == OracleValidity.INVALID:
         operational = OperationalOutcome.INCONCLUSIVE
         causal = CausalAttribution.ORACLE_OR_CHECKPOINT_INVALID
         confidence = CausalConfidence.HIGH
-    elif oracle_validity == OracleValidity.UNESTABLISHED:
-        operational = OperationalOutcome.INCONCLUSIVE
-        causal = CausalAttribution.CAUSE_INDETERMINATE
-        confidence = CausalConfidence.LOW
     elif semantic_interpretation == SemanticInterpretation.INDETERMINATE:
         operational = OperationalOutcome.INCONCLUSIVE
         causal = CausalAttribution.CAUSE_INDETERMINATE
@@ -230,8 +243,9 @@ def aggregate_causal_classification(
     """Aggregate explicit evidence while preserving uncertainty and invalid oracles."""
 
     if not assessments:
-        return "ORACLE_VALIDITY_UNESTABLISHED"
+        return "ORACLE_STATUS_MISSING"
     causes = {item.causal_attribution for item in assessments}
+    oracle_statuses = {item.oracle_validity for item in assessments}
     technical = CausalAttribution.TECHNICAL_FAILURE in causes
     semantic_and_adherence = (
         CausalAttribution.MODEL_OWNED_SEMANTIC_AND_ADHERENCE_FAILURE in causes
@@ -240,14 +254,16 @@ def aggregate_causal_classification(
     adherence = (
         CausalAttribution.MODEL_OWNED_CONTRACTUAL_ADHERENCE_FAILURE in causes
     )
-    if semantic_and_adherence or (semantic and adherence):
+    if OracleValidity.ORACLE_SUSPECT in oracle_statuses:
+        base = "ORACLE_SUSPECT"
+    elif OracleValidity.INVALID in oracle_statuses:
+        base = "ORACLE_OR_CHECKPOINT_INVALID"
+    elif semantic_and_adherence or (semantic and adherence):
         base = "MODEL_OWNED_SEMANTIC_AND_ADHERENCE_FAILURE"
     elif semantic:
         base = "MODEL_OWNED_SEMANTIC_FAILURE"
     elif adherence:
         base = "MODEL_OWNED_CONTRACTUAL_ADHERENCE_FAILURE"
-    elif CausalAttribution.ORACLE_OR_CHECKPOINT_INVALID in causes:
-        base = "ORACLE_OR_CHECKPOINT_INVALID"
     elif CausalAttribution.CAUSE_INDETERMINATE in causes:
         base = "CAUSE_INDETERMINATE"
     elif technical:

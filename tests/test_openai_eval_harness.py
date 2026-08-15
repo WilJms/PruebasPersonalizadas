@@ -1413,7 +1413,7 @@ def test_terra_high_offline_qualification_is_exact_and_non_billable() -> None:
     assert report["boundary"]["terra_ladder_harness_freeze"][
         "material_hash"
     ] == (
-        "sha256:0984337116a6146da91545d7527669e074658a8bc5e537cd1801dd619e973db9"
+        "sha256:102f8ca2ea11c4ce0fb3c7a18f326d9e1989554d7af709d8b1cd63f1115a1ba6"
     )
 
 
@@ -1457,7 +1457,7 @@ def test_terra_high_authorization_boundary_seals_baseline_budget_and_freeze(
     freeze = boundary["executable_boundary"]["terra_ladder_harness_freeze"]
     assert freeze["status"] == "TERRA_LADDER_HARNESS_FROZEN"
     assert freeze["material_hash"] == (
-        "sha256:0984337116a6146da91545d7527669e074658a8bc5e537cd1801dd619e973db9"
+        "sha256:102f8ca2ea11c4ce0fb3c7a18f326d9e1989554d7af709d8b1cd63f1115a1ba6"
     )
     assert freeze["oracles"]["p06_hash"] == (
         "sha256:d559af8784d553a4df56166d27ab309c48064e577438c3e372213f175a857048"
@@ -1576,7 +1576,7 @@ def test_terra_xhigh_offline_qualification_is_exact_and_non_billable() -> None:
     assert report["boundary"]["terra_ladder_harness_freeze"][
         "material_hash"
     ] == (
-        "sha256:0984337116a6146da91545d7527669e074658a8bc5e537cd1801dd619e973db9"
+        "sha256:102f8ca2ea11c4ce0fb3c7a18f326d9e1989554d7af709d8b1cd63f1115a1ba6"
     )
 
 
@@ -1659,7 +1659,7 @@ def test_terra_xhigh_authorization_boundary_seals_high_budget_and_freeze(
     )
     freeze = boundary["executable_boundary"]["terra_ladder_harness_freeze"]
     assert freeze["material_hash"] == (
-        "sha256:0984337116a6146da91545d7527669e074658a8bc5e537cd1801dd619e973db9"
+        "sha256:102f8ca2ea11c4ce0fb3c7a18f326d9e1989554d7af709d8b1cd63f1115a1ba6"
     )
     assert freeze["matrix"]["hash"] == (
         "sha256:94fbd798732b057f3ba051144a0f0de5533ce6ffb85b103d766c6abeb660ea49"
@@ -1808,7 +1808,7 @@ def test_each_sol_profile_rehearses_33_calls_completely_offline(
     assert report["boundary"]["forbidden_delta"] == []
     freeze = report["boundary"]["terra_ladder_harness_freeze"]
     assert freeze["material_hash"] == (
-        "sha256:0984337116a6146da91545d7527669e074658a8bc5e537cd1801dd619e973db9"
+        "sha256:102f8ca2ea11c4ce0fb3c7a18f326d9e1989554d7af709d8b1cd63f1115a1ba6"
     )
 
 
@@ -1888,7 +1888,7 @@ def test_sol_authorization_boundaries_are_distinct_and_frozen(
     assert baseline["receipt_is_historical_and_immutable"] is True
     freeze = boundary["executable_boundary"]["terra_ladder_harness_freeze"]
     assert freeze["material_hash"] == (
-        "sha256:0984337116a6146da91545d7527669e074658a8bc5e537cd1801dd619e973db9"
+        "sha256:102f8ca2ea11c4ce0fb3c7a18f326d9e1989554d7af709d8b1cd63f1115a1ba6"
     )
 
 
@@ -2720,6 +2720,33 @@ def test_terra_medium_pass_outcome_is_machine_readable() -> None:
     }
 
 
+def test_report_writer_enumerates_codes_only_for_synthetic_data(
+    tmp_path: Path,
+) -> None:
+    path = tmp_path / "synthetic-report.json"
+    report_hash = eval_harness._write_json_atomic(
+        path,
+        {
+            "classification": "SYNTHETIC_ONLY_NO_STUDENT_DATA",
+            "checkpoint_assessments": [
+                {"reason_codes": ["SYSTEMATIC_ORACLE_DISAGREEMENT"]}
+            ],
+            "failure": {"codes": ["MODEL_OUTPUT_VALIDATION_FAILED"]},
+        },
+    )
+    written = json.loads(path.read_text(encoding="utf-8"))
+    assert report_hash.startswith("sha256:")
+    assert written["diagnostic_codes"] == [
+        "MODEL_OUTPUT_VALIDATION_FAILED",
+        "SYSTEMATIC_ORACLE_DISAGREEMENT",
+    ]
+    assert written["diagnostic_codes_hash"].startswith("sha256:")
+    assert written["evidence_status"] == (
+        "HISTORICAL_NON_CANONICAL_EVIDENCE"
+    )
+    assert written["model_selection_gate"] is False
+
+
 def test_terra_medium_outcome_requires_semantic_provenance_for_causality() -> None:
     unprovenanced = eval_harness._terra_medium_qualification_outcome(
         {
@@ -2740,7 +2767,7 @@ def test_terra_medium_outcome_requires_semantic_provenance_for_causality() -> No
         "TERRA_MEDIUM_QUALIFICATION_INCONCLUSIVE"
     )
     assert unprovenanced["causal_classification"] == (
-        "ORACLE_VALIDITY_UNESTABLISHED"
+        "ORACLE_STATUS_MISSING"
     )
     assert eval_harness._terra_medium_qualification_outcome(
         {
@@ -2780,7 +2807,7 @@ def test_terra_medium_outcome_requires_semantic_provenance_for_causality() -> No
         "qualification_outcome": "TERRA_MEDIUM_QUALIFICATION_INCONCLUSIVE",
         "convergence_outcome": "CONVERGENCE_INCOMPLETE",
         "causal_classification": (
-            "ORACLE_VALIDITY_UNESTABLISHED_WITH_TECHNICAL_FAILURES"
+            "ORACLE_STATUS_MISSING_WITH_TECHNICAL_FAILURES"
         ),
         "recommended_next_authority": (
             "INDEPENDENT_HARNESS_REVIEW_BEFORE_ANY_TERRA_HIGH_AUTHORITY"
@@ -2835,6 +2862,18 @@ def test_terra_medium_outcome_requires_semantic_provenance_for_causality() -> No
             ),
             "TERRA_MEDIUM_QUALIFICATION_INCONCLUSIVE",
             "CAUSE_INDETERMINATE",
+        ),
+        (
+            classify_checkpoint(
+                checkpoint_id="suspect-oracle",
+                checkpoint_class=CheckpointClass.SEMANTICALLY_QUALIFIED_POSITIVE,
+                oracle_validity=OracleValidity.ORACLE_SUSPECT,
+                semantic_interpretation=SemanticInterpretation.INCORRECT,
+                contractual_adherence=ContractualAdherence.FAIL,
+                reason_codes=["SYSTEMATIC_ORACLE_DISAGREEMENT"],
+            ),
+            "TERRA_MEDIUM_QUALIFICATION_INCONCLUSIVE",
+            "ORACLE_SUSPECT",
         ),
         (
             classify_checkpoint(
@@ -3333,7 +3372,7 @@ def test_each_sol_rung_reserves_its_own_authorization_exactly_once(
         profile_id
     )
     assert report["frozen_semantic_harness"]["material_hash"] == (
-        "sha256:0984337116a6146da91545d7527669e074658a8bc5e537cd1801dd619e973db9"
+        "sha256:102f8ca2ea11c4ce0fb3c7a18f326d9e1989554d7af709d8b1cd63f1115a1ba6"
     )
     assert report["candidate_delta"]["forbidden_delta"] == []
     record = EvaluationAuthorizationLedger(args.ledger).record(

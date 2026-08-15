@@ -1,8 +1,8 @@
 # Matriz de consistencia v1.1
 
 **Auditoría:** arquitectura, P01-P11, contratos, Pydantic, JSON Schema, persistencia/API y plan  
-**Fecha:** 30-07-2026  
-**Criterio:** cada fila describe el diseño vigente después de aplicar las correcciones del texto de revisión.
+**Fecha:** 14-08-2026
+**Criterio:** cada fila distingue el objetivo ADR-037 de los contratos y estados legacy retenidos durante el cutover.
 
 ## 1. Matriz sistemática
 
@@ -16,22 +16,24 @@
 | `RubricNormalizeRequest` -> `RubricSpec` | P02 Sol-medium | roots exportados | snapshot de rúbrica | consistente |
 | `AmbiguityTriageRequest` -> `AmbiguityReport` | P03 Luna-high | roots exportados | decisiones/UI | consistente |
 | `BlueprintPolicy`, `AssessmentPlanningPolicy` | restricciones confiables y función de plan | roots exportados | policy snapshots | consistente |
-| `AssessmentBlueprint` | P04 Sol-high; catálogo independiente de \(N\) | dimensiones, variantes, operaciones soportadas y templates | blueprints + ETag/approve | consistente |
-| `BlueprintReview` | P05 Sol-high | critical FAIL -> REJECT | review snapshot | consistente |
+| `AssessmentBlueprint` | P04; catálogo independiente de \(N\) -> preflight -> docente | dimensiones, variantes, operaciones soportadas y templates | blueprints + ETag/approve | objetivo formalizado; cutover pendiente |
+| `BlueprintReview` | P05 histórico/inactivo objetivo | contrato retenido | review snapshot legible | compatibilidad legacy |
 | `EvidenceMapPatch` | P06 Luna-high | claims + variant matches + oportunidades; sin parcial utilizable | evidence claims/matches/opportunities | consistente |
 | `AssessmentPlan` | planificador determinista sin LLM | exactamente \(N\) primarias + reserva disjunta o diagnóstico específico | assessment_plans | consistente |
 | `QuestionBuildRequest` -> `QuestionGenerationResult` | P07 Luna-high; una pregunta por oportunidad | root request/output; CLOSED por default | generated_questions | consistente |
-| `QuestionReviewRequest` -> `QuestionReviewResult` | P08 Luna-high | scores/vetos; una review | question_reviews | consistente |
+| `QuestionReviewRequest` -> `QuestionReviewResult` | P08 histórico/inactivo objetivo | contrato retenido | question_reviews legibles | compatibilidad legacy |
 | `ChoiceOption` y justificación | respuesta/rationale de cada opción; misconception por distractor | `CHOICE`; `student_justification_required` | assessment_questions/guides | consistente |
-| `GuideBuildRequest` -> `EvaluationGuide` | P09 Luna-high; sin aviso global generado | guía completa por assessment/submission | GET assessment guide | consistente |
-| P10 enriquecido | bake-off OpenAI/Claude Sonnet/Gemini 3.6 Flash | mismo request/result que P07 + citas exactas | feature flag/corpus autorizado | consistente |
+| `GuideBuildRequest` -> `EvaluationGuide` | P09 después de preguntas aprobadas; sin aviso global generado | guía completa por assessment/submission | GET assessment guide | objetivo formalizado; cutover pendiente |
+| P10 enriquecido | deshabilitado | contrato retenido, no callable | sin activación | consistente |
 | `SchemaRepairRequest` -> `SchemaRepairResult` | P11 Luna-minimal, temperatura 0 | repair estructural único | ledger/result | consistente |
 | `Assessment` | exactamente \(N\), lineage y resumen de justificación | root + invariantes atómicas | GET/review/approve/export | consistente |
 | `QuestionReviewAction` | edición/reemplazo localizado | replacement conserva question ID | actions/audit | consistente |
 | `BulkApprovalRequest`, `BulkApprovalRecord` | confirmación explícita, scope/versiones y exclusiones | roots + partición exacta de targets | POST `/assessments:bulk-approve` | consistente |
 | `EvaluationGuide` | representación principal en plataforma | root independiente | `evaluation_guides`; PDF/HTML opcional | consistente |
 | aviso de autoría/IA/historia | footer/callout fijo de producto | deliberadamente fuera de outputs LLM | componente UI, no export generado | consistente |
-| `SubmissionProcessingState` | mapeo -> plan -> generación -> validación -> guía | cuatro terminales pedagógicos específicos | GET submission | consistente |
+| `SubmissionProcessingState` | mapeo -> plan -> generación -> validación -> docente -> guía | cuatro terminales pedagógicos específicos | GET submission | target; migración de estados pendiente |
+| `pipeline-authority/1.0.0` | pipelines y autoridad backend/modelo/docente | manifiesto Python inmutable | no muta persistencia | consistente |
+| oracle de qualification | `VALID`/`ORACLE_SUSPECT`/`INVALID`/`NOT_APPLICABLE` | clasificador causal | reportes históricos/sintéticos | consistente |
 | `JobStatus` | Cloud Run Jobs | root técnico separado | jobs/stage_runs | consistente |
 | `ModelRoute` | config aprobada completa | provider/model/snapshot/effort/temp/capabilities/limits | catálogo + ledger | consistente |
 | `ModelRouteResolution` | resolvedor determinista | `RESOLVED`, `NEEDS_REVIEW` o `BLOCKED` | reason codes auditables | consistente |
@@ -56,6 +58,11 @@
 12. Una ruta solo se llama si satisface modalidad, capacidades, privacidad, región, retención, presupuesto, disponibilidad y fallback aprobado.
 13. Sol/Terra/Luna pueden recibir imágenes; una imagen sola no cambia proveedor. Gemini 3.6 Flash requiere aprobación por tarea/modalidad/datos o ventaja medida.
 14. La API persiste el job antes de disparar Cloud Run Jobs; cerrar el navegador no cancela el trabajo.
+15. Backend decide identidad, versiones, hashes, estado, lineage, pertenencia, restricciones, factibilidad, almacenamiento, transiciones y validaciones deterministas.
+16. Modelo propone semántica/estructura/redacción/observables; docente resuelve ambigüedad y conserva autoridad académica final.
+17. P05/P08 no son etapas activas objetivo y P10 está deshabilitado; contratos/receipts históricos no implican activación.
+18. `ORACLE_SUSPECT` hace inconclusa la atribución y prevalece sobre `MODEL_OWNED_*`.
+19. Sólo `SYNTHETIC_ONLY_NO_STUDENT_DATA` enumera códigos diagnósticos en claro con hash; la política de datos reales no cambia.
 
 ## 3. Decisiones cerradas y abiertas
 
@@ -63,9 +70,10 @@
 |---|---|---|
 | stack MVP | Cloud Run Service/Jobs + Supabase + R2; sin Redis | revisar solo si telemetría/quotas lo exigen |
 | frontend | React/TypeScript/Vite en mismo servicio inicialmente | Vercel Pro opcional si aporta valor |
-| rutas P01-P09/P11 | matriz Sol/Luna explícita | evals pueden promover snapshot o Terra |
-| Terra | no default | ventaja medida frente a Luna-high |
-| P10 | bake-off abierto | grounding, citas, abstención, costo y política |
+| rutas retenidas | configuración existente sin cambio; P05/P08 inactivos objetivo | cualquier selección futura exige gate/corpus nuevo |
+| harness/qualifications actuales | evidencia histórica no canónica | instrumento futuro independiente |
+| Terra | no promovido por la evidencia histórica | decisión humana sobre evidencia nueva gobernada |
+| P10 | deshabilitado | ADR, corpus y autorización futuros |
 | Gemini 3.6 Flash | alternativa multimodal específica | tarea/modalidad/tenant/datos aprobados |
 | formatos posteriores | feature flags por demanda | corpus, parser, viewer y seguridad |
 | LMS/uso sumativo | fuera del MVP | piloto, validez y gobernanza |
@@ -73,4 +81,4 @@
 
 ## 4. Fuente ejecutable
 
-`models_v1.1.py` es la fuente primaria y `contracts.schema_v1.1.json` se regeneró desde `CONTRACT_MODELS`. Los nombres P01-P11 del Prompt Pack coinciden con los request/output roots exportados. Los fixtures documentales deben validarse en CI junto con las invariantes contextuales descritas en `VALIDACION_CONTRATOS.md`.
+`models_v1.1.py` es la fuente primaria contractual y `contracts.schema_v1.1.json` se regenera desde `CONTRACT_MODELS`. `src/comprehension_verification/pipeline_authority.py` es la fuente ejecutable de autoridad y orden objetivo, sin sustituir contratos. Los nombres P01-P11 del Prompt Pack coinciden con los request/output roots exportados; P05/P08 se retienen como historia y P10 como contrato deshabilitado. Los fixtures documentales deben validarse en CI junto con las invariantes contextuales descritas en `VALIDACION_CONTRATOS.md`.

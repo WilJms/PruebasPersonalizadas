@@ -12,6 +12,11 @@
 
 La documentación explica invariantes contextuales, pero no redefine tipos, enums ni obligatoriedad.
 
+ADR-037 no cambia contratos ni exige regenerar el bundle. La autoridad y el
+orden objetivo se validan aparte contra `pipeline-authority/1.0.0`. Los roots y
+fixtures P05/P08 continúan obligatorios como compatibilidad histórica, y P10
+como contrato deshabilitado; ninguno prueba que la etapa esté activa.
+
 ---
 
 ## 2. Generación del JSON Schema
@@ -101,6 +106,9 @@ Crear `tests/fixtures/contracts/v1.1/{valid,invalid}` durante la implementación
 - ModelRoute/Resolution con modalidad compatible e incompatible;
 - evento válido y rechazo de versión/ID/tipo inválido.
 
+Los casos P05/P08 anteriores son regresión de lectura/contrato histórico, no
+un corpus nuevo ni un gate de selección de modelo.
+
 ---
 
 ## 5. Pruebas obligatorias
@@ -167,6 +175,11 @@ PROMPT_CONTRACTS = {
 
 El test exige que los 20 nombres existan en `roots`, que el registry use versión 1.1.0 y que la llamada valide request, envelope, output y validaciones contextuales en ese orden.
 
+Un test independiente exige que el pipeline objetivo incluya sólo P01-P04,
+P06/P07/P09 como etapas de modelo, marque P05/P08 `inactive`, P10 `disabled` y
+asigne una única autoridad a cada decisión. La presencia de una ruta en el
+registry se interpreta como compatibilidad hasta completar el cutover.
+
 ---
 
 ## 6. Validaciones fuera de JSON Schema
@@ -185,6 +198,11 @@ Pydantic/JSON Schema no pueden comprobar por sí solos:
 - seguridad de archivos y borrado real.
 
 Estas reglas viven en servicios/validators con códigos estables. P11 nunca las repara.
+
+El clasificador de qualification prueba además los estados `VALID`,
+`ORACLE_SUSPECT`, `INVALID` y `NOT_APPLICABLE`; la sospecha debe producir
+`INCONCLUSIVE` aun ante desacuerdo sistemático. El reporting prueba que sólo la
+clasificación sintética enumera códigos estructurados y su hash.
 
 ---
 

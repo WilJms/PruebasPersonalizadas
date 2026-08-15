@@ -1,11 +1,17 @@
 # Validación del proveedor OpenAI real
 
+> **Estado ADR-037 (2026-08-14):** las validaciones, recanaries y gates
+> descritos debajo son evidencia histórica no canónica. Se conservan con sus
+> hashes y resultados originales, pero no seleccionan modelo, no mantienen una
+> recanary abierta y no autorizan provider, build o deploy. El objetivo actual
+> está en `PIPELINE_AUTHORITY.md`.
+
 Fecha de corte: 2026-08-11. Estado: el E2E del digest `sha256:04032e44…`
 se detuvo en P04 1.1.8 por `EVIDENCE_ID_NOT_ALLOWLISTED`. P04 1.1.9 está
-remediado y ligado a un dry-run acoplado; la evidencia vigente queda en
-**16/18** hasta una recanary real nueva.
+remediado y ligado a un dry-run acoplado; en ese corte histórico la evidencia
+quedó en **16/18** hasta una recanary real nueva.
 
-## Resultado vigente: P04 v1.1.9→P05 v1.1.5 recanary pendiente
+## Historial: P04 v1.1.9→P05 v1.1.5 recanary pendiente en su gate original
 
 La actividad `act_8187dcc2159d5462d99a` usó exclusivamente
 `assignment.md`/`rubric.md` sintéticos. P01-P03 pasaron y seis decisiones
@@ -74,7 +80,7 @@ factibilidad exacta-N y acepta diversidad calibrada. El gateway rechaza
 cobertura fuente incompleta o un catálogo incapaz de formar N dentro del
 tiempo/calidad configurados.
 
-| Gate o evidencia vigente | Resultado |
+| Gate o evidencia histórica en ese corte | Resultado |
 |---|---|
 | P04→P05 acoplado | PASS; dos fake Responses; output P04 exacto como input P05; ambos READY; P05 no REJECT y sin critical FAIL |
 | Frontera/costo | P04 `sha256:48f9aa99…` + input `sha256:e2f944b4…`; P05 `sha256:d5f35e82…` + input derivado `sha256:022bcdd3…`; ceiling USD 0.04988775/cap USD 0.06 |
@@ -206,7 +212,7 @@ modelo solicitado y el modelo efectivo observado; una identidad efectiva
 incompatible falla cerrada. ADR-035 conserva la decisión P11 Luna-low y
 ADR-036 registra el baseline Luna-only.
 
-## Resultado vigente: P01 1.1.2, P02 1.1.3 y P05/P11 1.1.4 aceptados
+## Historial: P01 1.1.2, P02 1.1.3 y P05/P11 1.1.4 aceptados en su corte
 
 P01 distingue suficiencia de completitud: una especificación fiel y usable
 puede ser `READY` sin llenar todos los campos sourced. En cambio, todo status

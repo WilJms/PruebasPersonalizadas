@@ -18,6 +18,7 @@ from typing import Any, cast
 
 from .canonical import canonical_hash, stable_id
 from .contracts import models as m
+from .evaluation_reporting import prepare_historical_harness_report
 from .model_gateway.registry import prompt_spec
 from .model_gateway.gateway import PROMPT_RELATIONSHIP_VALIDATOR_VERSIONS
 from .model_gateway.openai_routes import OPENAI_ROUTE_PROFILES
@@ -1784,6 +1785,18 @@ def classifier_branch_proof() -> list[dict[str, Any]]:
             "CORRECT_NEGATIVE_DECISION",
         ),
         (
+            "suspect-oracle-systematic-disagreement",
+            classify_checkpoint(
+                checkpoint_id="proof-suspect-oracle",
+                checkpoint_class=CheckpointClass.SEMANTICALLY_QUALIFIED_POSITIVE,
+                oracle_validity=OracleValidity.ORACLE_SUSPECT,
+                semantic_interpretation=SemanticInterpretation.INCORRECT,
+                contractual_adherence=ContractualAdherence.FAIL,
+                reason_codes=("SYSTEMATIC_ORACLE_DISAGREEMENT",),
+            ),
+            "ORACLE_SUSPECT",
+        ),
+        (
             "invalid-oracle",
             classify_checkpoint(
                 checkpoint_id="proof-invalid-oracle",
@@ -2196,7 +2209,7 @@ def run_semantic_harness_rehearsal() -> dict[str, Any]:
         },
     ]
     status = "PASS" if all(item["status"] == "PASS" for item in checks) else "FAIL"
-    return {
+    return prepare_historical_harness_report({
         "report_schema_version": SEMANTIC_REPORT_VERSION,
         "rehearsal_version": SEMANTIC_REHEARSAL_VERSION,
         "phase": fixture["phase"],
@@ -2294,4 +2307,4 @@ def run_semantic_harness_rehearsal() -> dict[str, Any]:
             "product_workflow_changes": 0,
             "deploys": 0,
         },
-    }
+    })
