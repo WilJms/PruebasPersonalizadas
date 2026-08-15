@@ -579,17 +579,10 @@ def test_p06_semantically_equivalent_mapping_passes_without_exact_equality() -> 
                 and request.evidence_bundle.submission_id
                 == "submission_cache_sufficient"
             ):
-                raw["claims"][0]["claim_id"] = "claim_cache_equivalent_alternative"
-                raw["claims"][0]["text"] = (
+                raw["mappings"][0]["support_description"] = (
                     "La fuente actualizada deja sin validez la entrada previa; "
                     "la consulta posterior vuelve a calcular y evita un valor "
                     "desactualizado."
-                )
-                raw["variant_matches"][0]["justification"] = (
-                    "La misma secuencia causal está localizada en la evidencia."
-                )
-                raw["opportunities"][0]["opportunity_id"] = (
-                    "opportunity_cache_equivalent_alternative"
                 )
             return replace(result, raw_output=raw)
 
@@ -627,33 +620,10 @@ def test_p06_alternate_valid_catalog_opportunity_passes() -> None:
                 and request.evidence_bundle.submission_id
                 == "submission_cache_sufficient"
             ):
-                template = next(
-                    item
-                    for dimension in request.blueprint.dimensions
-                    for variant in dimension.evidence_variants
-                    for item in variant.question_opportunities
-                    if item.opportunity_template_id
-                    == "oppt_explain_invalidation_sequence"
-                ).model_dump(mode="json")
-                opportunity = raw["opportunities"][0]
-                for field in (
-                    "opportunity_template_id",
-                    "cognitive_operation",
-                    "focus",
-                    "observable",
-                    "difficulty",
-                    "target_minutes",
-                    "allowed_anchor_structures",
-                    "allowed_response_formats",
-                    "student_justification_required",
-                ):
-                    opportunity[field] = template[field]
-                opportunity["opportunity_id"] = (
-                    "opportunity_explain_sequence_alternative"
+                raw["mappings"][0]["template_alias"] = "T2"
+                raw["mappings"][0]["support_description"] = (
+                    "La evidencia sustenta la secuencia de invalidación y recálculo."
                 )
-                raw["claims"][0]["supported_operations"] = [
-                    "EXPLAIN_MECHANISM"
-                ]
             return replace(result, raw_output=raw)
 
     gateway = ModelGateway(
@@ -690,14 +660,17 @@ def test_p06_mapping_with_wrong_evidence_fails_semantically() -> None:
                 and request.evidence_bundle.submission_id
                 == "submission_cache_sufficient"
             ):
-                wrong_evidence = next(
-                    unit.evidence_id
-                    for unit in request.evidence_bundle.evidence_units
+                wrong_evidence_alias = next(
+                    f"E{index}"
+                    for index, unit in enumerate(
+                        request.evidence_bundle.evidence_units, start=1
+                    )
                     if unit.modality == m.EvidenceModality.PARAGRAPH
                     and "Informe técnico breve" == unit.content_text
                 )
-                raw["variant_matches"][0]["evidence_ids"] = [wrong_evidence]
-                raw["opportunities"][0]["evidence_ids"] = [wrong_evidence]
+                raw["mappings"][0]["evidence_aliases"] = [
+                    wrong_evidence_alias
+                ]
             return replace(result, raw_output=raw)
 
     gateway = ModelGateway(
@@ -735,9 +708,7 @@ def test_p06_invented_opportunity_path_fails_contractual_adherence() -> None:
                 and request.evidence_bundle.submission_id
                 == "submission_cache_sufficient"
             ):
-                raw["opportunities"][0]["opportunity_template_id"] = (
-                    "oppt_invented_semantic_path"
-                )
+                raw["mappings"][0]["template_alias"] = "T999"
             return replace(result, raw_output=raw)
 
     gateway = ModelGateway(
@@ -777,26 +748,9 @@ def test_p06_positive_with_no_eligible_opportunity_fails_semantically() -> None:
                 and request.evidence_bundle.submission_id
                 == "submission_cache_sufficient"
             ):
-                raw.update(
-                    {
-                        "status": "INSUFFICIENT_RELEVANT_EVIDENCE",
-                        "claims": [],
-                        "variant_matches": [],
-                        "opportunities": [],
-                        "diagnostics": [
-                            {
-                                "code": "INSUFFICIENT_RELEVANT_EVIDENCE",
-                                "severity": "ERROR",
-                                "message": (
-                                    "No hay una oportunidad elegible sustentada."
-                                ),
-                                "evidence_ids": [],
-                                "source_ids": [],
-                                "retryable": False,
-                                "details": {},
-                            }
-                        ],
-                    }
+                raw["mappings"][0]["support_status"] = "PARTIAL"
+                raw["mappings"][0]["support_description"] = (
+                    "Existe una relación local, pero no completa el observable."
                 )
             return replace(result, raw_output=raw)
 
@@ -817,7 +771,9 @@ def test_p06_positive_with_no_eligible_opportunity_fails_semantically() -> None:
     assert observation.status == "FAIL"
     assert assessment["semantic_interpretation"] == "INCORRECT"
     assert assessment["contractual_adherence"] == "PASS"
-    assert assessment["reason_codes"] == ["P06_POSITIVE_NOT_READY"]
+    assert assessment["reason_codes"] == [
+        "P06_POSITIVE_NO_SEMANTICALLY_SUPPORTED_OPPORTUNITY"
+    ]
 
 
 def test_every_checkpoint_has_explicit_provenance_and_mocks_are_structural() -> None:

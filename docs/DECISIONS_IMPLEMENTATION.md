@@ -1233,3 +1233,47 @@
 - **Relación:** D-074, D-075, ADR-037,
   `pipeline-authority/1.0.0` y migración
   `202608150006_phase3_p05_runtime_cutover.sql`.
+
+## D-077 - P06 mapea soporte local y el planner decide la suficiencia global
+
+- **Frontera:** `P06_EVIDENCE_MAP_V1` conserva `EvidenceMapPatch` como output
+  canónico de etapa. El proveedor recibe `EvidenceMappingAliasEnvelope` y
+  devuelve `EvidenceMappingModelDraft`; los aliases de scope, evidencia,
+  dimensión, variante, template y artefacto sólo existen dentro de una llamada.
+- **Autoridad del modelo:** escoger relaciones materiales entre rutas del
+  blueprint y evidence units autorizadas; declarar `SUFFICIENT`, `PARTIAL`,
+  `INSUFFICIENT` o `UNCERTAIN`, tipo/descripción de soporte, incertidumbre y
+  abstención local. No copia IDs, policy, operación, foco, observable,
+  dificultad, tiempo, formatos, anchors, justificación o prioridad.
+- **Autoridad del servidor:** `p06-evidence-materializer/1.0.0` valida scope,
+  membership, template/variant/operation y evidence subset; crea IDs y copia el
+  catálogo aprobado. No inventa relaciones ni eleva categorías. Para
+  `SUFFICIENT` verifica unidades distintas, modalidad, extracción y requisito
+  cross-artifact. El resumen categórico se persiste aunque el Assessment no sea
+  factible.
+- **Planner:** `stage2-planner/3.0.0` es la única autoridad sobre elegibilidad
+  global, cobertura, tiempo, diversidad, N, primarias/reservas y prueba exacta
+  de factibilidad. Sólo `SUFFICIENT` es elegible. P06 puede terminar con cero o
+  menos de N suficientes; el fallo global pertenece al planner.
+- **Scores:** `evidence_fit`, `mapping_confidence` y `opportunity_quality` se
+  retienen en el IR histórico, derivados desde categoría/template únicamente
+  para compatibilidad. No son input del proveedor ni hard gates/ranking activo;
+  no se introdujo un float equivalente.
+- **Claims:** el provider nuevo no crea claim IDs, relationship IDs ni metadata
+  duplicada. El materializador actual escribe `claims=[]` y conserva el valor
+  semántico local en `support_description`/tipo/incertidumbre de cada relación.
+  Claims de patches históricos siguen siendo legibles y no se reescriben.
+- **Cache/recovery:** prompt/schema wire, alias envelope, materializador,
+  blueprint, policy, bundle y submission scope participan en la frontera. El
+  draft provider y el patch canónico no son intercambiables. Replay exige
+  recompilación idéntica; StageRun reuse, retry y resume conservan exactly-once
+  sin duplicar llamada, ledger, stage u oportunidad.
+- **Costo y seguridad:** schema provider 7.789→1.862 bytes, payload mock
+  3.413→1.325 bytes y tokens mock 853/392→520/89; llamadas P06 permanecen 1.
+  No cambian route/modelo/reasoning, no se añadió transporte y hubo cero calls
+  reales/billables.
+- **Fuera de alcance:** P07 conserva semántica/contrato canónico, P08 sigue
+  activo, P09 no se mueve y P10 sigue disabled. La siguiente fase funcional
+  será exclusivamente P07 support evidence/visible anchor + provider DTO.
+- **Relación:** ADR-037, D-074/D-075/D-076,
+  `pipeline-authority/1.0.0`, `PIPELINE_AUTHORITY.md`.

@@ -52,6 +52,12 @@
     "BlueprintModelDraft": {
       "$ref": "#/$defs/BlueprintModelDraft"
     },
+    "EvidenceMappingAliasEnvelope": {
+      "$ref": "#/$defs/EvidenceMappingAliasEnvelope"
+    },
+    "EvidenceMappingModelDraft": {
+      "$ref": "#/$defs/EvidenceMappingModelDraft"
+    },
     "QuestionGenerationPolicy": {
       "$ref": "#/$defs/QuestionGenerationPolicy"
     },
@@ -3434,6 +3440,17 @@
           "title": "Opportunities",
           "type": "array"
         },
+        "mapping_summary": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EvidenceMappingSummary"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
         "diagnostics": {
           "items": {
             "$ref": "#/$defs/Diagnostic"
@@ -3474,6 +3491,415 @@
         "evidence_bundle"
       ],
       "title": "EvidenceMapRequest",
+      "type": "object"
+    },
+    "EvidenceMappingAliasEnvelope": {
+      "additionalProperties": false,
+      "description": "Exact call-local P06 input materialized from one canonical request.",
+      "properties": {
+        "alias_schema_version": {
+          "const": "p06-alias-envelope/1.0.0",
+          "default": "p06-alias-envelope/1.0.0",
+          "title": "Alias Schema Version",
+          "type": "string"
+        },
+        "scope_alias": {
+          "pattern": "^S[a-f0-9]{24}$",
+          "title": "Scope Alias",
+          "type": "string"
+        },
+        "source_scope_hash": {
+          "pattern": "^sha256:[a-f0-9]{64}$",
+          "title": "Source Scope Hash",
+          "type": "string"
+        },
+        "dimensions": {
+          "items": {
+            "$ref": "#/$defs/EvidenceMappingDimensionContext"
+          },
+          "maxItems": 50,
+          "minItems": 1,
+          "title": "Dimensions",
+          "type": "array"
+        },
+        "variants": {
+          "items": {
+            "$ref": "#/$defs/EvidenceMappingVariantContext"
+          },
+          "maxItems": 400,
+          "minItems": 1,
+          "title": "Variants",
+          "type": "array"
+        },
+        "templates": {
+          "items": {
+            "$ref": "#/$defs/EvidenceMappingTemplateContext"
+          },
+          "maxItems": 2000,
+          "minItems": 1,
+          "title": "Templates",
+          "type": "array"
+        },
+        "evidence_units": {
+          "items": {
+            "$ref": "#/$defs/EvidenceMappingEvidenceContext"
+          },
+          "maxItems": 500,
+          "minItems": 1,
+          "title": "Evidence Units",
+          "type": "array"
+        }
+      },
+      "required": [
+        "scope_alias",
+        "source_scope_hash",
+        "dimensions",
+        "variants",
+        "templates",
+        "evidence_units"
+      ],
+      "title": "EvidenceMappingAliasEnvelope",
+      "type": "object"
+    },
+    "EvidenceMappingDimensionContext": {
+      "additionalProperties": false,
+      "description": "P06 semantic dimension exposed only through a call-local alias.",
+      "properties": {
+        "dimension_alias": {
+          "pattern": "^D[1-9][0-9]{0,2}$",
+          "title": "Dimension Alias",
+          "type": "string"
+        },
+        "name": {
+          "maxLength": 300,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "justification": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "title": "Justification",
+          "type": "string"
+        }
+      },
+      "required": [
+        "dimension_alias",
+        "name",
+        "justification"
+      ],
+      "title": "EvidenceMappingDimensionContext",
+      "type": "object"
+    },
+    "EvidenceMappingEvidenceContext": {
+      "additionalProperties": false,
+      "description": "One submission evidence unit with only inference-local identity.",
+      "properties": {
+        "evidence_alias": {
+          "pattern": "^E[1-9][0-9]{0,2}$",
+          "title": "Evidence Alias",
+          "type": "string"
+        },
+        "artifact_alias": {
+          "pattern": "^A[1-9][0-9]{0,2}$",
+          "title": "Artifact Alias",
+          "type": "string"
+        },
+        "modality": {
+          "$ref": "#/$defs/EvidenceModality"
+        },
+        "content_text": {
+          "anyOf": [
+            {
+              "maxLength": 100000,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Content Text"
+        },
+        "structured_content": {
+          "anyOf": [
+            {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Structured Content"
+        },
+        "language": {
+          "anyOf": [
+            {
+              "maxLength": 35,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Language"
+        },
+        "extraction_confidence": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Extraction Confidence",
+          "type": "number"
+        }
+      },
+      "required": [
+        "evidence_alias",
+        "artifact_alias",
+        "modality",
+        "extraction_confidence"
+      ],
+      "title": "EvidenceMappingEvidenceContext",
+      "type": "object"
+    },
+    "EvidenceMappingModelDraft": {
+      "additionalProperties": false,
+      "description": "Reduced P06 provider output compiled into an EvidenceMapPatch.",
+      "properties": {
+        "scope_alias": {
+          "pattern": "^S[a-f0-9]{24}$",
+          "title": "Scope Alias",
+          "type": "string"
+        },
+        "mappings": {
+          "items": {
+            "$ref": "#/$defs/EvidenceMappingRelationDraft"
+          },
+          "maxItems": 2000,
+          "title": "Mappings",
+          "type": "array"
+        }
+      },
+      "required": [
+        "scope_alias"
+      ],
+      "title": "EvidenceMappingModelDraft",
+      "type": "object"
+    },
+    "EvidenceMappingRelationDraft": {
+      "additionalProperties": false,
+      "description": "One semantic P06 relation; aliases are resolved only by the server.",
+      "properties": {
+        "variant_alias": {
+          "pattern": "^V[1-9][0-9]{0,2}$",
+          "title": "Variant Alias",
+          "type": "string"
+        },
+        "template_alias": {
+          "pattern": "^T[1-9][0-9]{0,3}$",
+          "title": "Template Alias",
+          "type": "string"
+        },
+        "evidence_aliases": {
+          "items": {
+            "pattern": "^E[1-9][0-9]{0,2}$",
+            "type": "string"
+          },
+          "maxItems": 50,
+          "minItems": 1,
+          "title": "Evidence Aliases",
+          "type": "array"
+        },
+        "support_status": {
+          "$ref": "#/$defs/EvidenceSupportStatus"
+        },
+        "support_type": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EvidenceSupportType"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "support_description": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "title": "Support Description",
+          "type": "string"
+        },
+        "semantic_uncertainty": {
+          "anyOf": [
+            {
+              "maxLength": 800,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Semantic Uncertainty"
+        },
+        "abstention_reason": {
+          "anyOf": [
+            {
+              "maxLength": 800,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Abstention Reason"
+        }
+      },
+      "required": [
+        "variant_alias",
+        "template_alias",
+        "evidence_aliases",
+        "support_status",
+        "support_description"
+      ],
+      "title": "EvidenceMappingRelationDraft",
+      "type": "object"
+    },
+    "EvidenceMappingSummary": {
+      "additionalProperties": false,
+      "properties": {
+        "mapped_relation_count": {
+          "maximum": 2000,
+          "minimum": 0,
+          "title": "Mapped Relation Count",
+          "type": "integer"
+        },
+        "sufficient_count": {
+          "maximum": 2000,
+          "minimum": 0,
+          "title": "Sufficient Count",
+          "type": "integer"
+        },
+        "partial_count": {
+          "maximum": 2000,
+          "minimum": 0,
+          "title": "Partial Count",
+          "type": "integer"
+        },
+        "insufficient_count": {
+          "maximum": 2000,
+          "minimum": 0,
+          "title": "Insufficient Count",
+          "type": "integer"
+        },
+        "uncertain_count": {
+          "maximum": 2000,
+          "minimum": 0,
+          "title": "Uncertain Count",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "mapped_relation_count",
+        "sufficient_count",
+        "partial_count",
+        "insufficient_count",
+        "uncertain_count"
+      ],
+      "title": "EvidenceMappingSummary",
+      "type": "object"
+    },
+    "EvidenceMappingTemplateContext": {
+      "additionalProperties": false,
+      "description": "P06 opportunity semantics; all mechanical fields remain server-owned.",
+      "properties": {
+        "template_alias": {
+          "pattern": "^T[1-9][0-9]{0,3}$",
+          "title": "Template Alias",
+          "type": "string"
+        },
+        "variant_alias": {
+          "pattern": "^V[1-9][0-9]{0,2}$",
+          "title": "Variant Alias",
+          "type": "string"
+        },
+        "cognitive_operation": {
+          "$ref": "#/$defs/CognitiveOperation"
+        },
+        "focus": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "title": "Focus",
+          "type": "string"
+        },
+        "observable": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "title": "Observable",
+          "type": "string"
+        }
+      },
+      "required": [
+        "template_alias",
+        "variant_alias",
+        "cognitive_operation",
+        "focus",
+        "observable"
+      ],
+      "title": "EvidenceMappingTemplateContext",
+      "type": "object"
+    },
+    "EvidenceMappingVariantContext": {
+      "additionalProperties": false,
+      "description": "P06 semantic route without canonical dimension or variant identity.",
+      "properties": {
+        "variant_alias": {
+          "pattern": "^V[1-9][0-9]{0,2}$",
+          "title": "Variant Alias",
+          "type": "string"
+        },
+        "dimension_alias": {
+          "pattern": "^D[1-9][0-9]{0,2}$",
+          "title": "Dimension Alias",
+          "type": "string"
+        },
+        "name": {
+          "maxLength": 300,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "description": {
+          "maxLength": 1200,
+          "minLength": 1,
+          "title": "Description",
+          "type": "string"
+        },
+        "evidence_requirement": {
+          "$ref": "#/$defs/EvidenceRequirement"
+        },
+        "supported_operations": {
+          "items": {
+            "$ref": "#/$defs/SupportedOperation"
+          },
+          "maxItems": 9,
+          "minItems": 1,
+          "title": "Supported Operations",
+          "type": "array"
+        }
+      },
+      "required": [
+        "variant_alias",
+        "dimension_alias",
+        "name",
+        "description",
+        "evidence_requirement",
+        "supported_operations"
+      ],
+      "title": "EvidenceMappingVariantContext",
       "type": "object"
     },
     "EvidenceModality": {
@@ -3583,6 +4009,26 @@
       ],
       "title": "EvidenceRequirement",
       "type": "object"
+    },
+    "EvidenceSupportStatus": {
+      "enum": [
+        "SUFFICIENT",
+        "PARTIAL",
+        "INSUFFICIENT",
+        "UNCERTAIN"
+      ],
+      "title": "EvidenceSupportStatus",
+      "type": "string"
+    },
+    "EvidenceSupportType": {
+      "enum": [
+        "DIRECT",
+        "COMPOSITE",
+        "CORROBORATING",
+        "CONTRADICTORY"
+      ],
+      "title": "EvidenceSupportType",
+      "type": "string"
     },
     "EvidenceUnit": {
       "additionalProperties": false,
@@ -3929,6 +4375,10 @@
           "minLength": 1,
           "title": "Justification",
           "type": "string"
+        },
+        "support_status": {
+          "$ref": "#/$defs/EvidenceSupportStatus",
+          "default": "SUFFICIENT"
         }
       },
       "required": [
@@ -6373,6 +6823,60 @@
           "default": false,
           "title": "Student Justification Required",
           "type": "boolean"
+        },
+        "support_status": {
+          "$ref": "#/$defs/EvidenceSupportStatus",
+          "default": "SUFFICIENT"
+        },
+        "support_type": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EvidenceSupportType"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "support_description": {
+          "anyOf": [
+            {
+              "maxLength": 1000,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Support Description"
+        },
+        "semantic_uncertainty": {
+          "anyOf": [
+            {
+              "maxLength": 800,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Semantic Uncertainty"
+        },
+        "abstention_reason": {
+          "anyOf": [
+            {
+              "maxLength": 800,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Abstention Reason"
         }
       },
       "required": [

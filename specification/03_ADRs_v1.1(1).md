@@ -620,3 +620,18 @@ prompts ejecutables ni despliegue. Fases posteriores deben retirar P08 y ubicar
 P09 después de la aprobación docente conservando lectura histórica,
 idempotencia, lineage y regeneración localizada. No se autoriza un corpus
 nuevo, llamadas billables ni datos reales.
+
+**Nota de implementación — Fase 4, 2026-08-15:** la frase anterior “no cambian
+P06” describe el corte de adopción de ADR-037 y no congela una implementación
+contraria a su reparto de autoridad. Fase 4 ejecuta ese reparto sin cambiar el
+orden del pipeline: el proveedor P06 emite `EvidenceMappingModelDraft` sobre
+aliases locales y estados `SUFFICIENT`, `PARTIAL`, `INSUFFICIENT` o
+`UNCERTAIN`; un materializador determinista crea el `EvidenceMapPatch`
+canónico con identidad y restricciones server-owned. P06 termina correctamente
+con cualquier cantidad de relaciones, preserva estados locales y no decide N.
+El planner es la única autoridad de elegibilidad global, selección y
+factibilidad exacta; `evidence_fit` y `opportunity_quality` quedan sólo como
+proyecciones legacy derivadas y no como gates. P07 no fue rediseñado, P08
+continúa activo en el runtime actual, P09 conserva su orden actual y P10 sigue
+deshabilitado. No cambian routing/modelo/reasoning y no se autoriza proveedor
+real ni gasto.

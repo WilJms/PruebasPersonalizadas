@@ -19,6 +19,7 @@ from .blueprint_compiler import blueprint_compiler_boundary
 from .canonical import canonical_hash, sha256_text, stable_id
 from .contracts import model_by_name, models as m
 from .evaluation_reporting import prepare_historical_harness_report
+from .evidence_mapping import materialize_evidence_mapping_draft
 from .model_gateway import (
     CallBudget,
     GatewayCallResult,
@@ -429,9 +430,19 @@ def _validated_mock_output(prompt_id: str, request: BaseModel) -> BaseModel:
 
     from .model_gateway import DeterministicMockFactory, MockBehavior
 
-    return DeterministicMockFactory().output_for(
+    provider_output = DeterministicMockFactory().output_for(
         prompt_id, request, MockBehavior.HAPPY
     )
+    if prompt_id == "P06_EVIDENCE_MAP_V1":
+        if not isinstance(request, m.EvidenceMapRequest) or not isinstance(
+            provider_output, m.EvidenceMappingModelDraft
+        ):
+            raise TypeError("P06 rehearsal boundary received an unexpected contract")
+        return materialize_evidence_mapping_draft(
+            draft=provider_output,
+            request=request,
+        )
+    return provider_output
 
 
 def _base_p04_request() -> m.BlueprintBuildRequest:
@@ -1516,7 +1527,7 @@ class _BlueprintReviewNotApprovable(ContextValidationError):
 
 
 class _AssessmentPlanNotReady(ContextValidationError):
-    """Content-free planner failure with threshold and shape observability."""
+    """Content-free planner failure with categorical shape observability."""
 
     def __init__(
         self,
@@ -1528,35 +1539,22 @@ class _AssessmentPlanNotReady(ContextValidationError):
             "ASSESSMENT_PLAN_INFEASIBLE",
             "planner did not produce a complete plan",
         )
-        evidence_fits = [
-            opportunity.evidence_fit for opportunity in mapping.opportunities
-        ]
-        qualities = [
-            opportunity.opportunity_quality
-            for opportunity in mapping.opportunities
-        ]
+        del policy  # Retained in the call signature for harness compatibility.
+        support_counts = {
+            status.value: sum(
+                opportunity.support_status == status
+                for opportunity in mapping.opportunities
+            )
+            for status in m.EvidenceSupportStatus
+        }
         self.safe_metadata = {
             "plan_status": str(plan.status),
             "mapping_status": str(mapping.status),
             "question_count": plan.question_count,
             "opportunity_count": len(mapping.opportunities),
-            "minimum_evidence_fit": policy.minimum_evidence_fit,
-            "eligible_evidence_fit_count": sum(
-                value >= policy.minimum_evidence_fit
-                for value in evidence_fits
-            ),
-            "minimum_observed_evidence_fit": (
-                min(evidence_fits) if evidence_fits else None
-            ),
-            "maximum_observed_evidence_fit": (
-                max(evidence_fits) if evidence_fits else None
-            ),
-            "minimum_observed_opportunity_quality": (
-                min(qualities) if qualities else None
-            ),
-            "maximum_observed_opportunity_quality": (
-                max(qualities) if qualities else None
-            ),
+            "mapping_completed": mapping.status == "READY",
+            "support_counts": support_counts,
+            "sufficient_opportunity_count": support_counts["SUFFICIENT"],
             "diagnostic_codes": sorted(
                 {diagnostic.code for diagnostic in plan.diagnostics}
             ),

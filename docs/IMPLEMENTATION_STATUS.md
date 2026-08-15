@@ -2,6 +2,55 @@
 
 Fecha de corte: 2026-08-15 (America/Santiago).
 
+## Estado vigente — frontera semántica P06 completa (2026-08-15)
+
+Fase 4 conserva P06, pero reduce su pregunta a qué evidencia autorizada de una
+submission sustenta qué ruta semántica del blueprint. El payload del proveedor
+es `EvidenceMappingAliasEnvelope`; no contiene IDs canónicos, N ni campos
+mecánicos de oportunidad. El output wire es `EvidenceMappingModelDraft` con
+aliases `V*`/`T*`/`E*`, estado categórico, tipo/descripción de soporte,
+incertidumbre y abstención local. Prompt pack/P06 avanzan a `1.1.15`/`1.1.6`.
+
+`p06-evidence-materializer/1.0.0` resuelve el namespace cerrado, valida scope,
+membership, rutas y requisitos deterministas, crea IDs estables y copia los
+campos confiables del blueprint a un `EvidenceMapPatch` canónico. Su boundary
+`p06-materializer-boundary/1.0.0` es
+`sha256:34953efe2f54ed24a672bb9908f51c2edfa61d718409f05b612ba45a57c3f1af`;
+el schema de aliases queda ligado por
+`sha256:d4fafd899f10f33d39d99f296c79acabec0b5e5e08768a7c970dbcff23057f76`.
+El cache de StageRun guarda sólo el patch canónico y exige replay materializado
+idéntico. Snapshots históricos continúan legibles, pero no se reinterpretan
+como drafts ni se reutilizan bajo la frontera actual si no recompilan igual.
+
+`READY` en P06 ahora significa mapping completado aunque existan 0..N
+relaciones `SUFFICIENT`; conserva también `PARTIAL`, `INSUFFICIENT` y
+`UNCERTAIN`, con conteos durables en `mapping_summary`. Sólo el planner
+`stage2-planner/3.0.0` filtra `SUFFICIENT`, aplica constraints server-owned,
+selecciona exactamente N y prueba factibilidad. Si hay 3 suficientes para N=5,
+P06 termina y el planner devuelve `ASSESSMENT_PLAN_INFEASIBLE` con
+`mapping_completed=true`. `evidence_fit`, `mapping_confidence` y
+`opportunity_quality` permanecen únicamente para lectura/compatibilidad y se
+derivan en servidor; ningún validator, planner o workflow activo los usa como
+gate o ranking semántico.
+
+La superficie provider P06 bajó de 7.789 a 1.862 bytes (-76,09%), de 52 a 10
+ocurrencias de propiedades y de 7 a 2 campos root. En el fixture mock, el
+payload bajó de 3.413 a 1.325 bytes; la estimación offline pasó de 853/392 a
+520/89 tokens input/output. Sigue existiendo exactamente una llamada y un
+ledger P06 por ejecución no reutilizada; retry/resume no los duplica. No se
+cambió modelo, route ni reasoning y no hubo red, secreto o llamada billable.
+
+P07 conserva su `QuestionOpportunity` canónico y no fue simplificado; P08
+sigue activo en el runtime actual; P09 conserva su orden actual; P10 permanece
+deshabilitado. La siguiente fase funcional, no iniciada, es P07 support
+evidence/visible anchor con provider DTO reducido.
+
+Validación local final: focal ampliado 308 passed; `make test` y
+`make test-cov` 790 passed/17 skips PostgreSQL, 81% coverage; contratos 56
+roots/155 defs/306 refs/8 fixtures; convergence dry-run y secret scan PASS.
+Frontend no fue modificado. PostgreSQL/Docker no estaban disponibles localmente
+y quedan cubiertos por las matrices CI del SHA final.
+
 ## Estado vigente — cutover runtime P05 completo (2026-08-15)
 
 Fase 3 implementa `P05_RUNTIME_CUTOVER_COMPLETE_P08_PENDING`. El pipeline de

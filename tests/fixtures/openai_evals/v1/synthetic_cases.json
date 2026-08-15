@@ -2,7 +2,7 @@
   "schema_version": "1.1.0",
   "classification": "SYNTHETIC_ONLY_NO_STUDENT_DATA",
   "route_profile": "LUNA_BASELINE_V1",
-  "prompt_pack_version": "1.1.14",
+  "prompt_pack_version": "1.1.15",
   "human_review_dimensions": [
     "evidence_correctness",
     "locator_correctness",

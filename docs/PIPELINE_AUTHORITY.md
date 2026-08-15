@@ -1,17 +1,20 @@
 # Autoridad del pipeline simplificado
 
-**Estado:** norma aceptada; cutover P05 completado el 2026-08-15
+**Estado:** norma aceptada; cutover P05 y frontera semántica P06 completados el
+2026-08-15
 
 **Versión ejecutable:** `pipeline-authority/1.0.0`
 
-**Estado operativo:** `P05_RUNTIME_CUTOVER_COMPLETE_P08_PENDING`
+**Estado operativo:** `P06_SEMANTIC_MAPPING_BOUNDARY_COMPLETE_P08_PENDING`
 
 Esta decisión simplifica la asignación de autoridad sin rediseñar la
 arquitectura conceptual ni cambiar routing histórico. P04 conserva
 `AssessmentBlueprint` como output canónico de etapa, pero su frontera de
 inferencia se restringe a `BlueprintModelDraft`; un compilador determinista
 materializa identidad, policy y estado antes del preflight. P06, P07 y P09 no
-cambian. La fuente ejecutable de esta norma es
+se retiran: Fase 4 restringe P06 al mapping semántico local y entrega al
+planner toda autoridad sobre N y factibilidad global. P07 y P09 conservan su
+semántica. La fuente ejecutable de esta norma es
 `src/comprehension_verification/pipeline_authority.py`.
 
 ## 1. Pipelines objetivo
@@ -71,6 +74,16 @@ server-owned, quedan ligados a `schema_version`/`policy_id`, al hash de policy y
 al input exacto de la etapa, y por tanto cualquier cambio invalida el reuse y
 obliga a recompilar o rechazar bajo la nueva policy.
 
+En P06, el proveedor sólo relaciona rutas `V*`/`T*` con evidencia `E*` dentro
+del `scope_alias` de una llamada y declara soporte categórico. No recibe IDs
+canónicos, `question_count`, selección global, campos mecánicos de la
+oportunidad ni thresholds continuos de elegibilidad. El servidor resuelve los
+aliases, valida ownership/membership y copia operación, foco, observable,
+formato, tiempo, dificultad, anchors, justificación y prioridad desde el
+blueprint confiable. Un mapping completado puede contener cero o más estados
+locales; sólo el planner filtra `SUFFICIENT` y decide si existe un conjunto
+válido de N.
+
 ### Frontera de inferencia y cache P04
 
 - La respuesta del proveedor es sólo un `BlueprintModelDraft` transitorio. El
@@ -95,6 +108,29 @@ obliga a recompilar o rechazar bajo la nueva policy.
   contra `AssessmentBlueprint`. Los component fingerprints anteriores no
   colisionan con esta frontera, por lo que no hay reinterpretación silenciosa
   ni poisoning entre niveles.
+
+### Frontera de inferencia, materialización y cache P06
+
+- El payload del proveedor es `EvidenceMappingAliasEnvelope` y su respuesta es
+  sólo `EvidenceMappingModelDraft`; ambos son transitorios. El output de etapa
+  y único objeto reutilizable sigue siendo `EvidenceMapPatch`.
+- `p06-alias-envelope/1.0.0` liga schema/hash del envelope, scope de
+  tenant/actividad/submission, request exacto y hashes de blueprint, policy y
+  bundle. Aliases inexistentes, rutas template/variant cruzadas o evidencia de
+  otra submission fallan determinísticamente.
+- `p06-evidence-materializer/1.0.0`, ligado por
+  `p06-materializer-boundary/1.0.0`, crea IDs estables, copia todos los campos
+  server-owned y conserva sin elevar `PARTIAL`, `INSUFFICIENT` o `UNCERTAIN`.
+  Un `SUFFICIENT` además debe satisfacer requisitos mecánicos de unidades,
+  modalidad, extracción y artefactos cruzados.
+- El fingerprint del gateway incorpora prompt, root/schema wire exacto,
+  envelope y materializador. Cambiar schema de aliases, materializador,
+  blueprint, policy, evidence bundle o scope invalida reuse.
+- En un hit de StageRun el gateway valida `EvidenceMapPatch`, reconstruye sólo
+  una proyección del draft y exige recompilación canónica idéntica. Un patch
+  histórico sigue siendo legible por contrato, pero no se reutiliza como
+  output actual si no prueba esa igualdad. Draft y patch nunca son
+  intercambiables ni comparten la frontera provider/canónica.
 
 ## 3. Autoridad del modelo
 
@@ -132,11 +168,14 @@ presente palabras como “vigente”, “gate”, “autoridad siguiente” o �
 expresiones sólo describen el checkpoint fechado donde fueron registradas; no
 confieren autoridad después de ADR-037.
 
-El `frozen_product_boundary.json` conserva el hash de `web/workflows.py` de su
-baseline Phase 1. Desde Fase 3 ese hash es deliberadamente archivado: el proof
-continúa verificando byte a byte las demás fuentes congeladas y devuelve el
-manifest histórico, pero no exige que el runtime activo mantenga el antiguo
-gate P05. Así se preserva evidencia sin canonizarla ni reescribirla.
+El `frozen_product_boundary.json` conserva el hash de `web/workflows.py` y las
+implementaciones P06 de su baseline Phase 1. Desde Fases 3/4 esos hashes son
+deliberadamente archivados: el proof verifica byte a byte la fuente congelada
+correspondiente y devuelve el mismo manifest/material hash histórico, pero no
+exige que el runtime activo mantenga el antiguo gate P05 ni la antigua
+autoridad de scores/cuota P06. El adapter semántico del harness proyecta sus
+goldens archivados a la frontera actual sin modificar receipts ni convertirlos
+en gate canónico.
 
 El runner local `cv-stage0 run-synthetic`, el rehearsal, el harness, los mocks
 y las pruebas directas del gateway que todavía materializan P05 se clasifican
@@ -204,10 +243,22 @@ P09 para que ocurra después de la revisión/aprobación docente, sin perder
 exactly-once, acciones localizadas ni lineage. Ese cambio toca workflows, jobs
 y persistencia y queda expresamente fuera de esta iteración.
 
-## 7. Límites después de Fase 3
+P06 ya participa con su frontera reducida:
 
-Fase 3 no cambia provider routing histórico, prompts ejecutables, parser,
-seguridad, tenancy, auth, storage, exports, P06/P07/P08/P09 ni infraestructura.
-No autoriza despliegue, datos estudiantiles reales, un corpus nuevo ni llamadas
-billables. La siguiente fase deberá tratar P08 y luego el orden de P09 con su
-propia migración compatible; P10 permanece deshabilitado.
+- un job nuevo ejecuta una sola llamada P06 y persiste sólo el patch canónico;
+- StageRun reuse/retry/resume recompila y valida la salida sin duplicar llamada,
+  stage, ledger ni oportunidades;
+- `READY` significa mapping completado, no Assessment factible;
+- el resumen durable cuenta relaciones suficientes, parciales, insuficientes e
+  inciertas, y el planner produce el fallo global si corresponde.
+
+## 7. Límites después de Fase 4
+
+Fase 4 cambia únicamente la frontera ejecutable de P06 y el consumo mínimo del
+planner/workflow. No cambia provider routing, modelo, reasoning, parser,
+seguridad, tenancy, auth, storage, exports, P07/P08/P09 ni infraestructura. P08
+sigue activo y P09 conserva el orden actual del runtime. No autoriza despliegue,
+datos estudiantiles reales, un corpus nuevo ni llamadas billables. La única
+siguiente fase funcional es simplificar P07 separando support evidence de
+visible anchor mediante un provider DTO propio; no se inicia aquí. P10
+permanece deshabilitado.

@@ -27,11 +27,12 @@ El modelo de IA nunca recibe herramientas, red, shell ni capacidad para ejecutar
 
 Para el MVP se recomienda un monolito modular en Python/FastAPI desplegado como Cloud Run Service, PostgreSQL y Auth de Supabase, objetos privados en Cloudflare R2 y trabajos largos en Cloud Run Jobs con estado durable en PostgreSQL, sin Redis inicial. La interfaz React/TypeScript/Vite se sirve al comienzo desde el mismo contenedor. El gateway conserva configuraciones históricas aprobadas —proveedor, snapshot, modelo, `reasoning_effort`, temperatura y límites—, pero ADR-037 no cambia ni usa esa matriz para seleccionar modelo. El pipeline objetivo mantiene P01-P04, P06/P07/P09, deja P05/P08 inactivos y P10 deshabilitado. Cualquier comparación futura requiere un instrumento nuevo y autoridad humana separada.
 
-**Estado operativo Fase 3 (2026-08-15):** P05 ya fue retirado del runtime
-activo. El flujo de actividad persiste el preflight determinista y pasa
-directamente a edición/aprobación docente. Contratos y evidencia P05 siguen
-disponibles para historia/replay; P08 y el orden objetivo de P09 continúan
-pendientes y P10 permanece deshabilitado.
+**Estado operativo Fase 4 (2026-08-15):** P05 ya fue retirado del runtime
+activo. P06 conserva su etapa, pero el proveedor sólo entrega mapping semántico
+categórico sobre aliases locales; el servidor materializa el
+`EvidenceMapPatch` y el planner decide en exclusiva N/factibilidad global. P07
+no fue rediseñado, P08 sigue activo en el runtime actual, P09 conserva su orden
+actual y P10 permanece deshabilitado.
 
 El alcance inmediato es todavía más estrecho que el MVP institucional descrito en v1.0: una aplicación web experimental, carga manual, contexto cerrado, un proveedor principal, revisión humana obligatoria y un primer anillo de PDF digital, DOCX, TXT y Markdown. OCR, presentaciones, hojas de cálculo y código se añaden solo después de comprobar el recorrido principal. LTI y conectores Canvas/Moodle/Blackboard permanecen en la arquitectura futura.
 
@@ -523,9 +524,9 @@ semántica final de cada pregunta pertenece al docente.
 ```mermaid
 flowchart TB
     A["Cuarentena e ingesta"] --> B["IR con procedencia"]
-    B --> C["Mapa de evidencia\ny cobertura"]
-    C --> D["Mapear variantes y\nconstruir oportunidades"]
-    D --> E{¿Plan exacto de N?}
+    B --> C["P06: relaciones locales\ny soporte categórico"]
+    C --> D["Materializador: aliases a\nEvidenceMapPatch canónico"]
+    D --> E{¿Planner construye\nplan exacto de N?}
     E -->|No| X["Diagnóstico específico\nsin evaluación parcial"]
     E -->|Sí| F["Generar N preguntas"]
     F --> G["Validaciones deterministas"]
@@ -535,30 +536,37 @@ flowchart TB
     I --> J["P09: guía estructurada + vistas"]
 ```
 
-## 9.1 Cobertura y suficiencia
+## 9.1 Mapping local y suficiencia global
 
-Para cada dimensión y variante del blueprint se calcula:
+P06 evalúa cada relación material entre una ruta del blueprint y evidencia de
+una sola submission. Su resultado local es `SUFFICIENT`, `PARTIAL`,
+`INSUFFICIENT` o `UNCERTAIN`, junto con tipo/descripción de soporte y abstención
+si corresponde. El provider no recibe N ni produce cobertura global, selección
+o scores continuos para cruzar thresholds. El servidor valida unidades
+distintas, modalidad, extracción, artefactos cruzados, pertenencia y ruta antes
+de aceptar un `SUFFICIENT`.
 
-- número de unidades distintas;
-- calidad media/mínima de extracción;
-- fuerza de alineación con criterio;
-- especificidad del fragmento;
-- diversidad de artefactos;
-- oportunidades de pregunta no redundantes;
-- riesgo de ambigüedad o de revelar respuesta.
+Un `EvidenceMapPatch.status=READY` significa que el mapping terminó, incluso si
+su resumen contiene cero o menos de N relaciones suficientes. Se preservan las
+relaciones parciales, insuficientes e inciertas como diagnóstico durable; no se
+publican preguntas a partir de ellas.
 
-Resultados de planificación:
+Después, el planner determinista es la única autoridad de factibilidad global:
 
-- `READY`: existe un plan con exactamente \(N\) oportunidades primarias y, como máximo, una reserva pequeña;
-- `INSUFFICIENT_RELEVANT_EVIDENCE`: no hay evidencia pertinente suficiente para los criterios de la actividad;
-- `INSUFFICIENT_DISTINCT_QUESTION_OPPORTUNITIES`: existe evidencia, pero no permite \(N\) preguntas sustancialmente distintas;
-- `EVIDENCE_MAPPING_UNCERTAIN`: la correspondencia dimensión-variante-evidencia no alcanza la confianza exigida;
-- `ASSESSMENT_PLAN_INFEASIBLE`: las oportunidades válidas no satisfacen conjuntamente tiempo, calidad u otras restricciones no relajables;
-- `TECHNICAL_FAILURE` o `REJECTED_SECURITY`: el procesamiento no fue confiable o violó una política.
+- `READY`: existe un plan con exactamente \(N\) oportunidades primarias y, como
+  máximo, la reserva permitida;
+- `INSUFFICIENT_RELEVANT_EVIDENCE`: no existe ninguna oportunidad suficiente;
+- `INSUFFICIENT_DISTINCT_QUESTION_OPPORTUNITIES` o
+  `EVIDENCE_MAPPING_UNCERTAIN`: se conservan sólo al leer un patch P06 histórico
+  que terminó con esos estados;
+- `ASSESSMENT_PLAN_INFEASIBLE`: las oportunidades `SUFFICIENT` no alcanzan N o
+  no satisfacen conjuntamente cobertura, tiempo, formato, justificación,
+  diversidad y solapamiento;
+- `TECHNICAL_FAILURE` o `REJECTED_SECURITY`: el procesamiento no fue confiable
+  o violó una política.
 
-Los cuatro primeros códigos son diagnósticos precisos y mutuamente interpretables; no existe `READY_WITH_GAPS`. Si el plan no puede tener exactamente \(N\), no se genera ninguna pregunta de esa evaluación.
-
-No se confunde un archivo corto con una falla técnica. Tampoco se penaliza automáticamente un entregable que, por diseño de la actividad, no contiene evidencia de una dimensión: esa es una señal para revisar el blueprint o la tarea.
+No existe `READY_WITH_GAPS`. Si el planner no puede construir exactamente N,
+no se genera ninguna pregunta, aunque el mapping local válido se conserve.
 
 ## 9.2 Operaciones cognitivas
 
@@ -583,8 +591,9 @@ sequenceDiagram
     A->>W: Inicia jobs idempotentes
     W->>P: Extrae IR en sandbox
     P-->>W: Evidencia + procedencia
-    W->>M: Mapea variantes y oportunidades
-    M-->>W: JSON estructurado
+    W->>M: Envelope P06 con aliases locales
+    M-->>W: Draft con soporte categórico
+    W->>W: Materializa patch canónico
     W->>W: Planifica exactamente N
     W->>M: Genera N preguntas con P07
     W->>W: Aplica validaciones deterministas
@@ -599,13 +608,23 @@ sequenceDiagram
 
 ## 10.1 Planificación determinista de oportunidades
 
-P06 mapea `dimension -> variant -> evidence_ids` y construye oportunidades concretas antes de redactar. El planificador elige exactamente \(N=\texttt{question_count}\) oportunidades primarias de alta calidad y unas pocas reservas. El puntaje base es:
+P06 mapea `variant/template -> evidence_ids` y soporte categórico. El servidor
+construye las oportunidades canónicas desde el blueprint antes de redactar. El
+planificador filtra exclusivamente `support_status=SUFFICIENT`, aplica todas
+las restricciones confiables y elige exactamente
+\(N=\texttt{question_count}\) oportunidades primarias más la reserva permitida.
+El ranking base es:
 
 \[
-P_o = w_a A_o + w_e E_o + w_q Q_o - \Pi_{\text{dimensión}} - \Pi_{\text{variante}} - \Pi_{\text{redundancia}}
+P_o = w_a A_o - \Pi_{\text{dimensión}} - \Pi_{\text{variante}} - \Pi_{\text{solapamiento}}
 \]
 
-donde \(A_o\) es la prioridad de actividad, \(E_o\) el ajuste a la evidencia de la submission y \(Q_o\) la calidad intrínseca de la oportunidad. Se prefiere diversidad de dimensiones y variantes, pero no de manera rígida si obliga a escoger una oportunidad más débil. Solo se reutiliza evidencia o una variante cuando el foco y el observable son sustancialmente distintos.
+donde \(A_o\) es la prioridad server-owned de la dimensión. Los campos legacy
+`evidence_fit` y `opportunity_quality` no participan en elegibilidad ni ranking:
+se derivan sólo para compatibilidad histórica. Las penalizaciones y el search
+exhaustivo son deterministas; la heurística puede ordenar candidatos, pero
+nunca declarar por sí sola inviabilidad. Sólo se reutiliza evidencia o una
+variante cuando los constraints de solapamiento, foco y observable lo permiten.
 
 ## 10.2 Generación de preguntas
 
@@ -1263,7 +1282,9 @@ fases posteriores independientes.
 3. P01-P04 producen specs, issues y catálogo de blueprint; el backend ejecuta el preflight determinista y el docente aprueba.
 4. Carga submissions seudónimas; cada una obtiene job/estado independiente.
 5. Parser produce EvidenceUnits; fallos técnicos/seguridad se detienen.
-6. P06 mapea dimensiones/variantes, evidencia y oportunidades; código verifica confianza.
+6. P06 devuelve relaciones categóricas sobre aliases locales; el servidor
+   valida scope/rutas/evidencia y materializa oportunidades canónicas sin
+   decidir N.
 7. El planificador determinista selecciona exactamente \(N\) primarias y una reserva pequeña, o emite un diagnóstico específico sin generar.
 8. P07 genera una pregunta por oportunidad primaria y el backend ejecuta validaciones deterministas, con reemplazo localizado desde reserva cuando corresponda.
 9. Docente inspecciona fuentes y acepta, edita, rechaza o regenera por oportunidad; su decisión es la autoridad académica final.
@@ -1294,8 +1315,12 @@ La secuencia siguiente conserva la versión institucional completa de v1.0. Los 
 17. Identidad del estudiante se transforma a `subject_ref`; nombre/matrícula no ingresan al model gateway.
 18. Cada entrega repite cuarentena y parsing en un workflow independiente; archivos idénticos pueden reutilizar derivados por hash dentro del mismo tenant/política.
 19. Un indexador determinista crea secciones, relaciones, símbolos, tablas y localizadores.
-20. P06 con Luna-high anota claims y mapea cada dimensión a variantes/evidencia; cualquier claim sin evidencia se elimina.
-21. El motor instancia oportunidades permitidas y puntúa prioridad de actividad, ajuste a evidencia y calidad, con penalizaciones de reutilización/redundancia.
+20. P06 con Luna-high relaciona aliases de variante/template con aliases de
+    evidencia y declara soporte local; no copia identidad ni constraints y no
+    decide factibilidad global.
+21. El materializador instancia oportunidades permitidas desde el blueprint y
+    el planner ordena por prioridad server-owned con penalizaciones de
+    reutilización/solapamiento; los scores continuos P06 no son autoridad.
 22. El planificador crea exactamente \(N\) oportunidades primarias y una reserva pequeña; si no puede, emite el diagnóstico preciso y no genera ninguna pregunta.
 23. Para cada primaria recupera evidencia específica con contexto mínimo y fuentes autorizadas.
 24. El resolvedor comprueba capacidades, privacidad, región, retención, presupuesto, disponibilidad y fallbacks aprobados; registra códigos de razón estables.

@@ -24,6 +24,15 @@ def test_ready_plan_has_exact_n_and_disjoint_reserve_and_is_deterministic() -> N
 def test_insufficient_relevant_evidence_has_no_partial_plan() -> None:
     bp = blueprint()
     mapping = evidence_map(bp, evidence_bundle(), quality=0.2, evidence_fit=0.2)
+    mapping.opportunities = [
+        opportunity.model_copy(
+            update={
+                "support_status": m.EvidenceSupportStatus.INSUFFICIENT,
+                "abstention_reason": "La evidencia no sustenta esta oportunidad.",
+            }
+        )
+        for opportunity in mapping.opportunities
+    ]
     plan = build_assessment_plan(mapping=mapping, blueprint=bp, policy=planning_policy())
     assert plan.status == "INSUFFICIENT_RELEVANT_EVIDENCE"
     assert not plan.selected_opportunity_ids
@@ -35,7 +44,7 @@ def test_insufficient_distinct_opportunities_has_no_partial_plan() -> None:
     bp = blueprint(question_count=3)
     mapping = evidence_map(bp, evidence_bundle(), opportunity_count=2)
     plan = build_assessment_plan(mapping=mapping, blueprint=bp, policy=planning_policy())
-    assert plan.status == "INSUFFICIENT_DISTINCT_QUESTION_OPPORTUNITIES"
+    assert plan.status == "ASSESSMENT_PLAN_INFEASIBLE"
     assert plan.selected_opportunity_ids == []
     assert plan.reserve_opportunity_ids == []
 

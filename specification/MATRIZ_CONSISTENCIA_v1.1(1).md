@@ -15,16 +15,18 @@
 | `ActivitySpecRequest` -> `ActivitySpec` | P01 Sol-medium | roots exportados | snapshot de actividad | consistente |
 | `RubricNormalizeRequest` -> `RubricSpec` | P02 Sol-medium | roots exportados | snapshot de rúbrica | consistente |
 | `AmbiguityTriageRequest` -> `AmbiguityReport` | P03 Luna-high | roots exportados | decisiones/UI | consistente |
-| `BlueprintPolicy`, `AssessmentPlanningPolicy` | restricciones confiables y función de plan | roots exportados | policy snapshots | consistente |
+| `BlueprintPolicy`, `AssessmentPlanningPolicy` | restricciones confiables y función de plan; thresholds P06 continuos son legacy | roots exportados | policy snapshots | consistente |
 | `BlueprintModelDraft` | output de inferencia P04 con aliases D/V/T locales | dimensiones, variantes, operaciones soportadas y templates sin bookkeeping | sólo frontera provider/compilador | consistente |
 | `AssessmentBlueprint` | compilador P04; catálogo independiente de \(N\) -> preflight -> docente | IDs/policy/estado server-owned + semántica compilada | blueprints + preflight + ETag/approve | cutover P05 completo |
 | `BlueprintReview` | P05 histórico/inactivo | contrato retenido | review snapshot nullable y legible; no se escribe en flujos nuevos | compatibilidad legacy |
-| `EvidenceMapPatch` | P06 Luna-high | claims + variant matches + oportunidades; sin parcial utilizable | evidence claims/matches/opportunities | consistente |
+| `EvidenceMappingAliasEnvelope` | payload P06 alias-only, scope local, sin N/IDs canónicos | root exportado; D/V/T/E/A allowlisted | sólo frontera de llamada/hash | consistente |
+| `EvidenceMappingModelDraft` | output provider P06: relaciones y soporte categórico | root exportado; sin fields server-owned ni floats gate | transitorio; nunca cache canónico | consistente |
+| `EvidenceMapPatch` | materializador P06 | patch canónico con 0..N relaciones, cuatro estados y resumen; READY=mapping completado | StageRun/evidence matches/opportunities; parciales durables | consistente |
 | `AssessmentPlan` | planificador determinista sin LLM | exactamente \(N\) primarias + reserva disjunta o diagnóstico específico | assessment_plans | consistente |
 | `QuestionBuildRequest` -> `QuestionGenerationResult` | P07 Luna-high; una pregunta por oportunidad | root request/output; CLOSED por default | generated_questions | consistente |
-| `QuestionReviewRequest` -> `QuestionReviewResult` | P08 histórico/inactivo objetivo | contrato retenido | question_reviews legibles | compatibilidad legacy |
+| `QuestionReviewRequest` -> `QuestionReviewResult` | P08 inactivo objetivo, aún activo en runtime actual | contrato retenido | question_reviews activos/legibles | cutover pendiente; sin cambio Fase 4 |
 | `ChoiceOption` y justificación | respuesta/rationale de cada opción; misconception por distractor | `CHOICE`; `student_justification_required` | assessment_questions/guides | consistente |
-| `GuideBuildRequest` -> `EvaluationGuide` | P09 después de preguntas aprobadas; sin aviso global generado | guía completa por assessment/submission | GET assessment guide | objetivo formalizado; cutover pendiente |
+| `GuideBuildRequest` -> `EvaluationGuide` | P09 objetivo después de aprobación; Fase 4 conserva el orden runtime actual | guía completa por assessment/submission | GET assessment guide | cutover pendiente; sin cambio Fase 4 |
 | P10 enriquecido | deshabilitado | contrato retenido, no callable | sin activación | consistente |
 | `SchemaRepairRequest` -> `SchemaRepairResult` | P11 Luna-minimal, temperatura 0 | repair estructural único | ledger/result | consistente |
 | `Assessment` | exactamente \(N\), lineage y resumen de justificación | root + invariantes atómicas | GET/review/approve/export | consistente |
@@ -65,6 +67,10 @@
 18. `ORACLE_SUSPECT` hace inconclusa la atribución y prevalece sobre `MODEL_OWNED_*`.
 19. Sólo `SYNTHETIC_ONLY_NO_STUDENT_DATA` enumera códigos diagnósticos en claro con hash; la política de datos reales no cambia.
 20. P04 no devuelve identidad, workflow, policy materializada ni prueba de factibilidad: el servidor compila `BlueprintModelDraft`, crea los IDs canónicos y ejecuta el preflight/planner exacto después.
+21. P06 no devuelve IDs, N, fields de template ni scores continuos: el servidor materializa `EvidenceMappingModelDraft`, conserva las cuatro categorías y crea el patch canónico.
+22. `EvidenceMapPatch.READY` afirma mapping completado, no plan factible. Sólo oportunidades `SUFFICIENT` son elegibles y sólo el planner decide exactamente N, cobertura global, tiempo, diversidad, primarias y reservas.
+23. `evidence_fit`, `mapping_confidence` y `opportunity_quality` de P06 son `DERIVED_COMPATIBILITY`; ninguna referencia activa en planner/validator/workflow los usa como hard gate o ranking.
+24. Provider draft y patch canónico P06 no son intercambiables; scope/blueprint/policy/evidence/alias schema/materializador participan en reuse y bloquean poisoning cross-submission.
 
 ## 3. Decisiones cerradas y abiertas
 

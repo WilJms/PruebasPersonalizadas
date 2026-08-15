@@ -10,7 +10,7 @@ from .contracts import models as m
 from .diagnostics import diagnostic
 
 
-PLANNER_VERSION = "stage2-planner/2.0.0"
+PLANNER_VERSION = "stage2-planner/3.0.0"
 
 
 @dataclass(frozen=True)
@@ -37,11 +37,10 @@ def _base_score(
     opportunity: m.QuestionOpportunity,
     policy: m.AssessmentPlanningPolicy,
 ) -> float:
-    return (
-        opportunity.activity_priority * policy.activity_priority_weight
-        + opportunity.evidence_fit * policy.evidence_fit_weight
-        + opportunity.opportunity_quality * policy.opportunity_quality_weight
-    )
+    # P06 continuous scores are historical compatibility fields, not active
+    # planning authority. Ranking uses only trusted activity priority; exact
+    # feasibility is decided by the deterministic constraints below.
+    return opportunity.activity_priority * policy.activity_priority_weight
 
 
 def _marginal_score(
@@ -141,22 +140,10 @@ def _valid_candidates(
     policy: m.AssessmentPlanningPolicy,
 ) -> list[ScoredOpportunity]:
     allowed_formats = set(blueprint.assessment_constraints.allowed_response_formats)
-    template_minimums = {
-        template.opportunity_template_id: template.minimum_quality
-        for dimension in blueprint.dimensions
-        for variant in dimension.evidence_variants
-        for template in variant.question_opportunities
-    }
     candidates = [
         opportunity
         for opportunity in mapping.opportunities
-        if opportunity.opportunity_quality
-        >= max(
-            policy.minimum_opportunity_quality,
-            blueprint.assessment_constraints.minimum_opportunity_quality,
-            template_minimums.get(opportunity.opportunity_template_id, 1.0),
-        )
-        and opportunity.evidence_fit >= policy.minimum_evidence_fit
+        if opportunity.support_status == m.EvidenceSupportStatus.SUFFICIENT
         and bool(set(opportunity.allowed_response_formats) & allowed_formats)
     ]
     scored = [ScoredOpportunity(item, _base_score(item, policy)) for item in candidates]
@@ -363,14 +350,15 @@ def build_assessment_plan(
         )
     if len(scored) < question_count:
         return _complete_failure(
-            status="INSUFFICIENT_DISTINCT_QUESTION_OPPORTUNITIES",
+            status="ASSESSMENT_PLAN_INFEASIBLE",
             submission_id=mapping.submission_id,
             blueprint=blueprint,
             question_count=question_count,
             evidence_ids=all_evidence_ids,
             details={
-                "distinct_opportunity_count": len(scored),
+                "sufficient_opportunity_count": len(scored),
                 "required_question_count": question_count,
+                "mapping_completed": True,
             },
         )
 

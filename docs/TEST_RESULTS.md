@@ -3,6 +3,30 @@
 Fecha de corte documental: 2026-08-15 (America/Santiago; ejecución cloud hasta
 2026-08-11 UTC; toda la validación ADR-037 fue local, offline y mock).
 
+## Estado vigente — Fase 4, frontera semántica P06 — 2026-08-15
+
+| Prueba o gate | Resultado observado |
+|---|---|
+| Focal ampliado | 308 passed; aliases/materializador/categorías, planner, gateway, cache, StageRun/replay/resume, web/workflow, contratos, autoridad y harness histórico |
+| Backend completo | `make test`: 790 passed, 17 skips PostgreSQL explícitos, 1 warning Starlette conocido |
+| Cobertura | `make test-cov`: mismos 790 passed/17 skips; 81% global sobre 14.048 statements; datos de coverage redirigidos a `/tmp` para no tocar el `coverage.xml` preexistente |
+| Contratos | 56 roots, 155 `$defs`, 306 refs y 8 fixtures PASS; bundle 1.2/runtime wire 1.1; hashes schema/model `c73672dbbe55…`/`583d00d7d7b9…` |
+| P06 directo | 15/15 PASS: aliases válidos/desconocidos/cross-submission; `SUFFICIENT`/`PARTIAL`/`INSUFFICIENT`/`UNCERTAIN`; 0/<N/>N; multi-span, cross-artifact, duplicados y fronteras provider/cache |
+| Menos de N | P06 persiste `READY` + resumen categórico; controlled pilot y planner devuelven después `ASSESSMENT_PLAN_INFEASIBLE` con `mapping_completed=true` y sin preguntas parciales |
+| Replay/resume | patch canónico recompila idéntico; segunda ejecución reutiliza un StageRun, una llamada/ledger total y emite `stage.reused`, sin duplicar opportunities |
+| P07/P08/P09 | regresión dinámica PASS: P07 recibe `QuestionOpportunity` canónico sin redesign; P08 sigue ejecutándose; P09 conserva orden/semántica actuales |
+| Frontera | alias schema boundary `d4fafd899f10…`; materializer `p06-evidence-materializer/1.0.0`, boundary `34953efe2f54…`; draft/patch no intercambiables |
+| Coste offline | schema provider 7.789→1.862 bytes; payload 3.413→1.325; tokens mock 853/392→520/89; calls/ledgers 1/1→1/1 |
+| Rehearsal | `make openai-convergence-dry-run` PASS; prompt pack 1.1.15/P06 1.1.6/planner 3.0.0; `provider_call_receipts=[]`, transporte no construido y material hash histórico `1b37e8d6…` preservado |
+| Seguridad/higiene | secret scan 345 archivos PASS; `compileall`, schema no-drift y `git diff --check` PASS; keys removidas, mock/P10 false, cero red/real/billable |
+| Frontend/browser | no hay archivos frontend ni contrato OpenAPI modificados; validación de regresión completa corresponde a CI del SHA final |
+| PostgreSQL/Docker | URL PostgreSQL local ausente y daemon Docker local no disponible; 17 skips locales y matrices PG16/PG17/build deben cubrirse en CI del SHA final |
+
+P06 sigue existiendo y el patch canónico se conserva. Las relaciones
+`PARTIAL`, `INSUFFICIENT` y `UNCERTAIN` ya no se borran por inviabilidad global;
+ningún score continuo P06 participa como autoridad activa. No se modificó ni
+reescribió un report/receipt histórico y no se autorizó una llamada real.
+
 ## Estado vigente — Fase 3, P05 fuera del runtime activo — 2026-08-15
 
 | Prueba o gate | Resultado observado |

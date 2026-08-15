@@ -49,6 +49,10 @@ No copie ni redefina modelos Pydantic. Importe `comprehension_verification.contr
   P06→planner determinista→P07→validaciones deterministas→revisión/aprobación
   docente→P09. P05/P08 son inactivos en el objetivo y P10 sigue deshabilitado;
   el cutover runtime de P05 está completo con lectura/recovery histórico;
+  P06 devuelve un `EvidenceMappingModelDraft` categórico sobre aliases locales,
+  el servidor lo materializa como `EvidenceMapPatch` y sólo el planner decide
+  suficiencia global, selección y factibilidad de exactamente N; los scores
+  continuos legacy de P06 son proyecciones de compatibilidad sin autoridad;
   el cutover de P08 y el orden objetivo de P09 permanecen pendientes;
 - Assessment y EvaluationGuide JSON separados; HTML/PDF son vistas derivadas;
 - artefactos locales son solo desarrollo/fixtures, no operación productiva.

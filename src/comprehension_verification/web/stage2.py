@@ -1010,12 +1010,7 @@ class Stage2Service:
             choices=candidate.choices,
             student_justification_required=candidate.student_justification_required,
             preliminary_guide=candidate.preliminary_guide,
-            planning_score=(
-                opportunity.activity_priority
-                + opportunity.evidence_fit
-                + opportunity.opportunity_quality
-            )
-            / 3,
+            planning_score=opportunity.activity_priority,
         )
 
     def _question_action_job(

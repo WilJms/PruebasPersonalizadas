@@ -6,6 +6,12 @@
 > recanary abierta y no autorizan provider, build o deploy. El objetivo actual
 > está en `PIPELINE_AUTHORITY.md`.
 
+**Estado Fase 4 (2026-08-15):** P06 `1.1.6` se validó únicamente con adapter
+mock y dry-runs offline. Su provider root pasó a `EvidenceMappingModelDraft`,
+sin cambiar modelo/ruta/reasoning ni abrir una recanary. Hubo cero requests,
+resoluciones de secreto, transporte o costo; todas las cifras y receipts reales
+inferiores permanecen históricos e inalterados.
+
 Fecha de corte: 2026-08-11. Estado: el E2E del digest `sha256:04032e44…`
 se detuvo en P04 1.1.8 por `EVIDENCE_ID_NOT_ALLOWLISTED`. P04 1.1.9 está
 remediado y ligado a un dry-run acoplado; en ese corte histórico la evidencia

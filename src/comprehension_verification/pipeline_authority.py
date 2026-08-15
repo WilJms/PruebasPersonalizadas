@@ -1,7 +1,8 @@
 """Normative target authority for the Stage 2 pipeline simplification.
 
-P05 has been removed from active product routing while its historical evidence
-remains readable.  The independent P08 cutover is still pending.
+P05 has been removed from active product routing and P06 now uses a reduced
+semantic mapping boundary while historical evidence remains readable.  The
+independent P08 cutover is still pending.
 """
 
 from __future__ import annotations
@@ -13,7 +14,7 @@ from typing import Any
 
 
 PIPELINE_AUTHORITY_VERSION = "pipeline-authority/1.0.0"
-PIPELINE_CUTOVER_STATUS = "P05_RUNTIME_CUTOVER_COMPLETE_P08_PENDING"
+PIPELINE_CUTOVER_STATUS = "P06_SEMANTIC_MAPPING_BOUNDARY_COMPLETE_P08_PENDING"
 HISTORICAL_HARNESS_EVIDENCE_STATUS = "HISTORICAL_NON_CANONICAL_EVIDENCE"
 
 TARGET_ACTIVITY_PIPELINE = (

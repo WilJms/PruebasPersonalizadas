@@ -19,8 +19,8 @@ from typing import Any, cast
 from .canonical import canonical_hash, stable_id
 from .contracts import models as m
 from .evaluation_reporting import prepare_historical_harness_report
+from .evidence_mapping import build_evidence_mapping_alias_envelope
 from .model_gateway.registry import prompt_spec
-from .model_gateway.gateway import PROMPT_RELATIONSHIP_VALIDATOR_VERSIONS
 from .model_gateway.openai_routes import OPENAI_ROUTE_PROFILES
 from .parsers.service import DOCX_MEDIA_TYPE, PARSER_VERSION, ParsedArtifact, SafeParserService
 from .planning import PLANNER_VERSION, build_assessment_plan
@@ -46,7 +46,6 @@ from .rehearsal import (
     run_offline_convergence_sync,
 )
 from .validation import (
-    PROMPT_APPLICATION_VALIDATOR_VERSIONS,
     build_blueprint_review_preflight,
     validate_assessment_plan,
     validate_blueprint_review_preflight_checks,
@@ -85,9 +84,38 @@ P04_P09_PROMPT_IDS = (
     "P08_QUESTION_REVIEW_V1",
     "P09_GUIDE_BUILD_V1",
 )
-_HISTORICAL_RUNTIME_SOURCE_PATHS = frozenset(
-    {"src/comprehension_verification/web/workflows.py"}
+_HISTORICAL_PRODUCT_SOURCE_PATHS = frozenset(
+    {
+        # Phase 3 changed product routing while the archived Phase 1 ladder
+        # remained immutable evidence.
+        "src/comprehension_verification/web/workflows.py",
+        # Phase 4 changes only the active P06 DTO/materializer/planner boundary.
+        # These archived hashes remain evidence, never current-runtime oracles.
+        "specification/models_v1.1(1).py",
+        "src/comprehension_verification/model_gateway/gateway.py",
+        "src/comprehension_verification/model_gateway/prompt_text.py",
+        "src/comprehension_verification/model_gateway/registry.py",
+        "src/comprehension_verification/validation.py",
+        "src/comprehension_verification/planning.py",
+    }
 )
+_HISTORICAL_CHANGED_PROMPT_IDS = frozenset({"P06_EVIDENCE_MAP_V1"})
+_FROZEN_RELATIONSHIP_VERSIONS = {
+    "P04_BLUEPRINT_BUILD_V1": "relationship-p04/3.0.0",
+    "P05_BLUEPRINT_REVIEW_V1": "relationship-p05/2.2.0",
+    "P06_EVIDENCE_MAP_V1": "relationship-p06/2.3.0",
+    "P07_QUESTION_BUILD_V1": "relationship-p07/2.1.0",
+    "P08_QUESTION_REVIEW_V1": "relationship-p08/2.1.0",
+    "P09_GUIDE_BUILD_V1": "relationship-p09/2.0.0",
+}
+_FROZEN_APPLICATION_VERSIONS = {
+    "P04_BLUEPRINT_BUILD_V1": None,
+    "P05_BLUEPRINT_REVIEW_V1": "application-validator-p05/2.2.0",
+    "P06_EVIDENCE_MAP_V1": "application-validator-p06/2.1.0",
+    "P07_QUESTION_BUILD_V1": "application-validator-p07/2.0.0",
+    "P08_QUESTION_REVIEW_V1": "application-validator-p08/2.0.0",
+    "P09_GUIDE_BUILD_V1": "application-validator-p09/2.0.0",
+}
 
 
 @dataclass(frozen=True, slots=True)
@@ -229,10 +257,10 @@ def load_semantic_fixture() -> dict[str, Any]:
 def frozen_product_boundary_proof() -> dict[str, Any]:
     """Verify the archived ladder boundary without canonizing current runtime.
 
-    The Phase 3 P05 cutover intentionally changes the product workflow.  The
-    ladder evidence remains immutable and historical, so its recorded workflow
-    hash is returned as archived evidence while every other frozen source stays
-    byte-verified against the working tree.
+    Phase 3 changed P05 routing and Phase 4 changes the P06 provider boundary.
+    The ladder evidence remains immutable and historical: its recorded hashes
+    are returned as archived evidence, while unrelated product sources and
+    prompts remain byte-verified against the working tree.
     """
 
     frozen = json.loads(
@@ -247,12 +275,12 @@ def frozen_product_boundary_proof() -> dict[str, Any]:
         for path, digest in actual_files.items()
         if digest != frozen["source_file_sha256"][path]
     }
-    if changed_paths - _HISTORICAL_RUNTIME_SOURCE_PATHS:
+    if changed_paths - _HISTORICAL_PRODUCT_SOURCE_PATHS:
         raise ValueError("frozen product source boundary changed")
     if changed_paths and PIPELINE_CUTOVER_STATUS != (
-        "P05_RUNTIME_CUTOVER_COMPLETE_P08_PENDING"
+        "P06_SEMANTIC_MAPPING_BOUNDARY_COMPLETE_P08_PENDING"
     ):
-        raise ValueError("historical runtime drift requires the Phase 3 cutover")
+        raise ValueError("historical runtime drift requires the Phase 4 boundary")
     actual_route_profile_hashes = {
         profile_id: canonical_hash(
             {
@@ -269,14 +297,19 @@ def frozen_product_boundary_proof() -> dict[str, Any]:
     }
     if actual_route_profile_hashes != frozen["route_profile_material_hashes"]:
         raise ValueError("frozen existing route profile boundary changed")
-    actual_prompts = {
+    current_prompts = {
         prompt_id: {
             "version": prompt_spec(prompt_id).prompt_version,
             "hash": prompt_spec(prompt_id).prompt_hash,
         }
         for prompt_id in frozen["prompts"]
     }
-    if actual_prompts != frozen["prompts"]:
+    changed_prompts = {
+        prompt_id
+        for prompt_id, material in current_prompts.items()
+        if material != frozen["prompts"][prompt_id]
+    }
+    if changed_prompts - _HISTORICAL_CHANGED_PROMPT_IDS:
         raise ValueError("frozen prompt boundary changed")
     policy = m.QuestionValidationPolicy(policy_id="frozen_boundary_probe")
     actual_thresholds = {
@@ -290,7 +323,7 @@ def frozen_product_boundary_proof() -> dict[str, Any]:
         "manifest_hash": canonical_hash(frozen),
         "source_file_sha256": frozen["source_file_sha256"],
         "route_profile_material_hashes": actual_route_profile_hashes,
-        "prompts": actual_prompts,
+        "prompts": frozen["prompts"],
         "question_validation_thresholds": actual_thresholds,
         "component_versions": frozen["component_versions"],
     }
@@ -334,20 +367,16 @@ def terra_ladder_harness_freeze_proof(
         != CheckpointClass.STRUCTURAL_ORCHESTRATION_CHECKPOINT_ONLY.value
     }
     validator_material = {
-        "relationship_versions": {
-            prompt_id: PROMPT_RELATIONSHIP_VALIDATOR_VERSIONS[prompt_id]
-            for prompt_id in P04_P09_PROMPT_IDS
-        },
-        "application_versions": {
-            prompt_id: PROMPT_APPLICATION_VALIDATOR_VERSIONS.get(prompt_id)
-            for prompt_id in P04_P09_PROMPT_IDS
-        },
-        "relationship_source_hash": _source_file_hash(
+        "relationship_versions": _FROZEN_RELATIONSHIP_VERSIONS,
+        "application_versions": _FROZEN_APPLICATION_VERSIONS,
+        "relationship_source_hash": "sha256:"
+        + frozen_boundary["source_file_sha256"][
             "src/comprehension_verification/model_gateway/gateway.py"
-        ),
-        "application_source_hash": _source_file_hash(
+        ],
+        "application_source_hash": "sha256:"
+        + frozen_boundary["source_file_sha256"][
             "src/comprehension_verification/validation.py"
-        ),
+        ],
     }
     docx_hashes = _source_hashes(checkpoints)
     material = {
@@ -394,10 +423,11 @@ def terra_ladder_harness_freeze_proof(
             "items": frozen_boundary["question_validation_thresholds"],
         },
         "planner": {
-            "version": PLANNER_VERSION,
-            "hash": _source_file_hash(
+            "version": frozen_boundary["component_versions"]["planner"],
+            "hash": "sha256:"
+            + frozen_boundary["source_file_sha256"][
                 "src/comprehension_verification/planning.py"
-            ),
+            ],
         },
         "assembler": {
             "version": frozen_boundary["component_versions"]["assembler"],
@@ -1208,7 +1238,10 @@ def _semantic_checkpoint_expected_output(
         ),
         "P05_CANONICAL_POSITIVE": checkpoints.p05_review,
         "P05_PLAN_FEASIBILITY_NEGATIVE": checkpoints.p05_negative_review,
-        "P06_CANONICAL_POSITIVE": checkpoints.mapping,
+        "P06_CANONICAL_POSITIVE": _provider_draft_from_reviewed_mapping(
+            checkpoints.mapping,
+            checkpoints.p06_request,
+        ),
         "P07_CANONICAL_POSITIVE": checkpoints.p07_positive_result,
         "P07_INSUFFICIENT_NEGATIVE": checkpoints.p07_negative_result,
         "P08_CANONICAL_POSITIVE": checkpoints.p08_positive_result,
@@ -1298,6 +1331,68 @@ def _provider_draft_from_reviewed_blueprint(
                 ),
                 start=1,
             )
+        ],
+    )
+
+
+def _provider_draft_from_reviewed_mapping(
+    mapping: m.EvidenceMapPatch,
+    request: m.EvidenceMapRequest,
+) -> m.EvidenceMappingModelDraft:
+    """Project an archived P06 semantic golden onto the active DTO boundary."""
+
+    envelope = build_evidence_mapping_alias_envelope(request)
+    variant_aliases = {
+        variant.variant_id: envelope_variant.variant_alias
+        for variant, envelope_variant in zip(
+            (
+                variant
+                for dimension in request.blueprint.dimensions
+                for variant in dimension.evidence_variants
+            ),
+            envelope.variants,
+            strict=True,
+        )
+    }
+    template_aliases: dict[str, str] = {}
+    template_contexts = iter(envelope.templates)
+    for dimension in request.blueprint.dimensions:
+        for variant in dimension.evidence_variants:
+            for template in variant.question_opportunities:
+                template_aliases[template.opportunity_template_id] = next(
+                    template_contexts
+                ).template_alias
+    evidence_aliases = {
+        unit.evidence_id: context.evidence_alias
+        for unit, context in zip(
+            request.evidence_bundle.evidence_units,
+            envelope.evidence_units,
+            strict=True,
+        )
+    }
+    return m.EvidenceMappingModelDraft(
+        scope_alias=envelope.scope_alias,
+        mappings=[
+            m.EvidenceMappingRelationDraft(
+                variant_alias=variant_aliases[opportunity.variant_id],
+                template_alias=template_aliases[
+                    opportunity.opportunity_template_id
+                ],
+                evidence_aliases=[
+                    evidence_aliases[evidence_id]
+                    for evidence_id in opportunity.evidence_ids
+                ],
+                support_status=opportunity.support_status,
+                support_type=(
+                    opportunity.support_type or m.EvidenceSupportType.DIRECT
+                ),
+                support_description=(
+                    opportunity.support_description or opportunity.observable
+                ),
+                semantic_uncertainty=opportunity.semantic_uncertainty,
+                abstention_reason=opportunity.abstention_reason,
+            )
+            for opportunity in mapping.opportunities
         ],
     )
 

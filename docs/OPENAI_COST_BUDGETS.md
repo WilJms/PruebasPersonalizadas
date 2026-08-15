@@ -5,6 +5,34 @@
 > activa, un gate de selección de modelo ni autorización de gasto. Cualquier
 > precio o budget futuro debe revalidarse bajo un instrumento nuevo.
 
+## Estado activo después de la frontera P06 de Fase 4
+
+P06 mantiene exactamente **una** llamada y **un** ledger por ejecución no
+reutilizada; no se añadió clasificación, reparación ni llamada auxiliar. El
+modelo, ruta y `reasoning_effort=high` retenidos no cambian. StageRun reuse y
+resume producen cero llamadas adicionales cuando la frontera exacta coincide.
+
+Medición offline sobre el mismo fixture mock, comparando el baseline Fase 3 con
+`EvidenceMappingModelDraft`:
+
+| Métrica P06 | Antes | Fase 4 | Cambio |
+|---|---:|---:|---:|
+| schema provider canónico | 7.789 bytes | 1.862 bytes | -5.927 / -76,09% |
+| ocurrencias de propiedades | 52 | 10 | -42 |
+| campos root provider | 7 | 2 | -5 |
+| payload mock | 3.413 bytes | 1.325 bytes | -2.088 / -61,18% |
+| tokens mock input | 853 | 520 | -333 |
+| tokens mock output | 392 | 89 | -303 |
+| calls / ledgers P06 | 1 / 1 | 1 / 1 | sin aumento |
+
+La estimación conservadora del rehearsal con las mismas caps baja a USD
+0.67478175 total / USD 0.02496675 máximo por call en Luna XHIGH, USD
+0.67476525 / USD 0.02496625 en Luna MAX y USD 6.74795 / USD 0.24967 en Terra
+medium. Estas cifras no cambian routing ni constituyen autorización: son sólo
+el resultado del estimador offline; requests, red, secreto resuelto y costo real
+de Fase 4 permanecen en cero. Las tablas fechadas más abajo conservan sus wire
+contracts y receipts históricos originales.
+
 ## Estado activo después del cutover P05
 
 Fase 3 elimina P05 de toda estimación futura del producto. Una actividad nueva

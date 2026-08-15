@@ -18,6 +18,9 @@ from pydantic import BaseModel, ValidationError
 
 from comprehension_verification.canonical import canonical_hash, stable_id
 from comprehension_verification.contracts import model_by_name, models
+from comprehension_verification.evidence_mapping import (
+    build_evidence_mapping_alias_envelope,
+)
 
 
 FIXED_TIME = datetime(2026, 7, 30, 12, 0, tzinfo=UTC)
@@ -630,158 +633,74 @@ def _eligible_evidence(
 
 def _dynamic_evidence_map(
     request: models.EvidenceMapRequest,
-) -> models.EvidenceMapPatch:
-    bundle = request.evidence_bundle
-    opportunities: list[models.QuestionOpportunity] = []
-    variant_matches: list[models.EvidenceVariantMatch] = []
-    evidence_alignments: dict[
-        str, list[tuple[str, str, models.CognitiveOperation]]
-    ] = {}
+) -> models.EvidenceMappingModelDraft:
+    """Produce semantic aliases only; the gateway materializes canonical IR."""
 
+    envelope = build_evidence_mapping_alias_envelope(request)
+    evidence_alias_by_id = {
+        evidence.evidence_id: context.evidence_alias
+        for evidence, context in zip(
+            request.evidence_bundle.evidence_units,
+            envelope.evidence_units,
+            strict=True,
+        )
+    }
+    variant_alias_by_id = {
+        variant.variant_id: context.variant_alias
+        for variant, context in zip(
+            (
+                variant
+                for dimension in request.blueprint.dimensions
+                for variant in dimension.evidence_variants
+            ),
+            envelope.variants,
+            strict=True,
+        )
+    }
+    template_contexts = iter(envelope.templates)
+    mappings: list[models.EvidenceMappingRelationDraft] = []
     for dimension in request.blueprint.dimensions:
         for variant in dimension.evidence_variants:
-            eligible = _eligible_evidence(variant, bundle)
-            if not eligible:
-                continue
-            matched_ids = [
-                evidence.evidence_id
-                for evidence in eligible[:50]
-            ]
-            variant_matches.append(
-                models.EvidenceVariantMatch(
-                    dimension_id=dimension.dimension_id,
-                    variant_id=variant.variant_id,
-                    evidence_ids=matched_ids,
-                    evidence_fit=0.95,
-                    mapping_confidence=0.95,
-                    justification=(
-                        "La evidencia cumple modalidad, confianza y procedencia "
-                        "exigidas por la variante."
-                    ),
-                )
+            eligible = _eligible_evidence(
+                variant, request.evidence_bundle
             )
-            minimum_units = variant.evidence_requirement.min_distinct_units
-            for template_index, template in enumerate(
+            for template_index, _template in enumerate(
                 variant.question_opportunities
             ):
+                template_context = next(template_contexts)
+                if not eligible:
+                    continue
+                minimum_units = variant.evidence_requirement.min_distinct_units
                 selected = [
                     eligible[(template_index + offset) % len(eligible)]
                     for offset in range(minimum_units)
                 ]
-                selected_ids = list(
-                    dict.fromkeys(evidence.evidence_id for evidence in selected)
+                selected_aliases = list(
+                    dict.fromkeys(
+                        evidence_alias_by_id[item.evidence_id]
+                        for item in selected
+                    )
                 )
-                opportunity_id = stable_id(
-                    "opp",
-                    bundle.submission_id,
-                    request.blueprint.blueprint_id,
-                    request.blueprint.blueprint_version,
-                    template.opportunity_template_id,
-                    selected_ids,
-                )
-                opportunities.append(
-                    models.QuestionOpportunity(
-                        opportunity_id=opportunity_id,
-                        opportunity_template_id=template.opportunity_template_id,
-                        submission_id=bundle.submission_id,
-                        dimension_id=dimension.dimension_id,
-                        variant_id=variant.variant_id,
-                        evidence_ids=selected_ids,
-                        cognitive_operation=template.cognitive_operation,
-                        focus=template.focus,
-                        observable=template.observable,
-                        difficulty=template.difficulty,
-                        target_minutes=template.target_minutes,
-                        allowed_anchor_structures=list(
-                            template.allowed_anchor_structures
+                mappings.append(
+                    models.EvidenceMappingRelationDraft(
+                        variant_alias=variant_alias_by_id[variant.variant_id],
+                        template_alias=template_context.template_alias,
+                        evidence_aliases=selected_aliases,
+                        support_status=models.EvidenceSupportStatus.SUFFICIENT,
+                        support_type=(
+                            models.EvidenceSupportType.COMPOSITE
+                            if len(selected_aliases) > 1
+                            else models.EvidenceSupportType.DIRECT
                         ),
-                        allowed_response_formats=list(
-                            template.allowed_response_formats
-                        ),
-                        activity_priority=dimension.verification_priority,
-                        evidence_fit=0.95,
-                        opportunity_quality=max(
-                            template.minimum_quality,
-                            template.verification_potential,
-                        ),
-                        student_justification_required=(
-                            template.student_justification_required
+                        support_description=(
+                            "La evidencia localizada sustenta el aspecto "
+                            "observable de esta ruta sintética."
                         ),
                     )
                 )
-                for evidence_id in selected_ids:
-                    evidence_alignments.setdefault(evidence_id, []).append(
-                        (
-                            dimension.dimension_id,
-                            variant.variant_id,
-                            template.cognitive_operation,
-                        )
-                    )
-
-    if not opportunities:
-        return models.EvidenceMapPatch(
-            submission_id=bundle.submission_id,
-            status="INSUFFICIENT_RELEVANT_EVIDENCE",
-            diagnostics=[
-                _diagnostic(
-                    "INSUFFICIENT_RELEVANT_EVIDENCE",
-                    "La evidencia no satisface ninguna variante del blueprint.",
-                    evidence_ids=list(bundle.allowed_evidence_ids),
-                )
-            ],
-        )
-
-    evidence_by_id = {
-        evidence.evidence_id: evidence for evidence in bundle.evidence_units
-    }
-    claims: list[models.EvidenceClaim] = []
-    for claim_index, evidence_id in enumerate(sorted(evidence_alignments)):
-        evidence = evidence_by_id[evidence_id]
-        alignments = evidence_alignments[evidence_id]
-        unique_paths = list(
-            dict.fromkeys((dimension_id, variant_id) for dimension_id, variant_id, _ in alignments)
-        )
-        supported_operations = list(
-            dict.fromkeys(operation for _, _, operation in alignments)
-        )
-        source_text = (evidence.content_text or "").strip()
-        claims.append(
-            models.EvidenceClaim(
-                claim_id=stable_id(
-                    "claim", bundle.submission_id, evidence_id, claim_index
-                ),
-                text=(
-                    source_text[:1500]
-                    if source_text
-                    else "Evidencia estructurada localizada en el entregable."
-                ),
-                evidence_ids=[evidence_id],
-                alignments=[
-                    models.EvidenceAlignment(
-                        dimension_id=dimension_id,
-                        variant_ids=[variant_id],
-                        strength=0.95,
-                        justification=(
-                            "El fragmento satisface la variante sintética "
-                            "seleccionada."
-                        ),
-                    )
-                    for dimension_id, variant_id in unique_paths
-                ],
-                supported_operations=supported_operations,
-                specificity=0.95,
-                auditability=1.0,
-                self_containment=0.9,
-                ambiguity_risk=0.1,
-            )
-        )
-
-    return models.EvidenceMapPatch(
-        submission_id=bundle.submission_id,
-        status="READY",
-        claims=claims,
-        variant_matches=variant_matches,
-        opportunities=opportunities,
+    return models.EvidenceMappingModelDraft(
+        scope_alias=envelope.scope_alias,
+        mappings=mappings,
     )
 
 
@@ -1635,15 +1554,27 @@ class DeterministicMockFactory:
                 ],
             )
         if prompt_id == "P06_EVIDENCE_MAP_V1":
-            return models.EvidenceMapPatch(
-                submission_id=request.evidence_bundle.submission_id,
-                status="INSUFFICIENT_RELEVANT_EVIDENCE",
-                opportunities=[],
-                diagnostics=[
-                    _diagnostic(
-                        "INSUFFICIENT_RELEVANT_EVIDENCE",
-                        "No hay evidencia pertinente suficiente para mapear oportunidades.",
-                        evidence_ids=list(request.evidence_bundle.allowed_evidence_ids),
+            envelope = build_evidence_mapping_alias_envelope(request)
+            return models.EvidenceMappingModelDraft(
+                scope_alias=envelope.scope_alias,
+                mappings=[
+                    models.EvidenceMappingRelationDraft(
+                        variant_alias=envelope.variants[0].variant_alias,
+                        template_alias=envelope.templates[0].template_alias,
+                        evidence_aliases=[
+                            envelope.evidence_units[0].evidence_alias
+                        ],
+                        support_status=models.EvidenceSupportStatus.UNCERTAIN,
+                        support_type=None,
+                        support_description=(
+                            "La relación sintética no puede resolverse con fidelidad."
+                        ),
+                        semantic_uncertainty=(
+                            "La evidencia admite más de una interpretación local."
+                        ),
+                        abstention_reason=(
+                            "No existe base suficiente para declarar soporte."
+                        ),
                     )
                 ],
             )
@@ -1745,7 +1676,7 @@ class DeterministicMockAdapter:
         attempt: int,
         behavior: MockBehavior,
     ) -> AdapterResult:
-        del envelope, route  # Explicitly unused: mocks never inspect transport secrets.
+        del route  # Mocks never inspect provider transport secrets.
         if behavior == MockBehavior.TIMEOUT:
             # Cancellation by asyncio.timeout/wait_for is the expected exit.
             await asyncio.sleep(3_600)
@@ -1755,7 +1686,14 @@ class DeterministicMockAdapter:
             raw = deepcopy(raw)
             raw["unexpected_field"] = "structural-only"
         encoded = json.dumps(raw, ensure_ascii=False, sort_keys=True).encode("utf-8")
-        request_bytes = request.model_dump_json().encode("utf-8")
+        # Preserve historical mock accounting for unchanged prompts. P06 must
+        # count its reduced alias-only wire envelope because that is now the
+        # payload actually sent to the provider boundary.
+        request_bytes = (
+            envelope.model_dump_json().encode("utf-8")
+            if prompt_id == "P06_EVIDENCE_MAP_V1"
+            else request.model_dump_json().encode("utf-8")
+        )
         return AdapterResult(
             raw_output=raw,
             input_tokens=max(1, len(request_bytes) // 4),

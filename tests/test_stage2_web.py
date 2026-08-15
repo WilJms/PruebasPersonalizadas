@@ -11,11 +11,16 @@ from fastapi.testclient import TestClient
 
 from comprehension_verification.canonical import sha256_bytes, stable_id
 from comprehension_verification.contracts import models as m
+from comprehension_verification.evidence_mapping import (
+    build_evidence_mapping_alias_envelope,
+    materialize_evidence_mapping_draft,
+)
 from comprehension_verification.web import dto
 from comprehension_verification.web.app import create_app
 from comprehension_verification.web.jobs import RecordingJobRunner
 from comprehension_verification.web.repository import (
     ActivityRow,
+    EvidenceMapRow,
     ExportRow,
     IdempotencyRow,
     JobControlRecordRow,
@@ -1794,19 +1799,28 @@ def test_stage2_controlled_pilot_e2e(tmp_path: Path) -> None:
                 job.aggregate_id == insufficient_id
                 and prompt_id == "P06_EVIDENCE_MAP_V1"
             ):
-                return m.EvidenceMapPatch(
-                    submission_id=insufficient_id,
-                    status="INSUFFICIENT_RELEVANT_EVIDENCE",
-                    diagnostics=[
-                        m.Diagnostic(
-                            code="INSUFFICIENT_RELEVANT_EVIDENCE",
-                            severity="ERROR",
-                            message=(
-                                "The authorized synthetic submission does not meet "
-                                "the evidence floor."
-                            ),
-                        )
-                    ],
+                assert isinstance(request, m.EvidenceMapRequest)
+                envelope = build_evidence_mapping_alias_envelope(request)
+                return materialize_evidence_mapping_draft(
+                    draft=m.EvidenceMappingModelDraft(
+                        scope_alias=envelope.scope_alias,
+                        mappings=[
+                            m.EvidenceMappingRelationDraft(
+                                variant_alias=envelope.variants[0].variant_alias,
+                                template_alias=envelope.templates[0].template_alias,
+                                evidence_aliases=[
+                                    envelope.evidence_units[0].evidence_alias
+                                ],
+                                support_status=m.EvidenceSupportStatus.PARTIAL,
+                                support_type=m.EvidenceSupportType.DIRECT,
+                                support_description=(
+                                    "La evidencia tiene una relación local, pero no "
+                                    "completa el observable del template."
+                                ),
+                            )
+                        ],
+                    ),
+                    request=request,
                 )
             return await original_gateway_stage(
                 job,
@@ -1830,6 +1844,17 @@ def test_stage2_controlled_pilot_e2e(tmp_path: Path) -> None:
         assert insufficient_job.json()["job"]["diagnostics"][0]["code"] == (
             "INSUFFICIENT_RELEVANT_EVIDENCE"
         )
+        durable_mapping = repository.scoped(
+            EvidenceMapRow, insufficient_id, TENANT_ID
+        ).data
+        assert durable_mapping["status"] == "READY"
+        assert durable_mapping["mapping_summary"] == {
+            "mapped_relation_count": 1,
+            "sufficient_count": 0,
+            "partial_count": 1,
+            "insufficient_count": 0,
+            "uncertain_count": 0,
+        }
         no_partial_assessment = client.get(
             f"/api/v1/submissions/{insufficient_id}/assessment"
         )

@@ -107,6 +107,9 @@ def test_registry_is_exact_complete_and_immutable() -> None:
     assert PROVIDER_OUTPUT_CONTRACTS["P04_BLUEPRINT_BUILD_V1"] == (
         "BlueprintModelDraft"
     )
+    assert PROVIDER_OUTPUT_CONTRACTS["P06_EVIDENCE_MAP_V1"] == (
+        "EvidenceMappingModelDraft"
+    )
     assert set(PROMPT_SPECS) == set(EXPECTED_PROMPT_CONTRACTS)
     for prompt_id, (request_root, output_root) in EXPECTED_PROMPT_CONTRACTS.items():
         spec = PROMPT_SPECS[prompt_id]
@@ -119,6 +122,8 @@ def test_registry_is_exact_complete_and_immutable() -> None:
         assert spec.provider_output_schema_name == (
             "BlueprintModelDraft"
             if prompt_id == "P04_BLUEPRINT_BUILD_V1"
+            else "EvidenceMappingModelDraft"
+            if prompt_id == "P06_EVIDENCE_MAP_V1"
             else output_root
         )
 
@@ -130,7 +135,7 @@ def test_registry_is_exact_complete_and_immutable() -> None:
         "P03_AMBIGUITY_TRIAGE_V1": "1.1.3",
         "P04_BLUEPRINT_BUILD_V1": "1.1.12",
         "P05_BLUEPRINT_REVIEW_V1": "1.1.8",
-        "P06_EVIDENCE_MAP_V1": "1.1.5",
+        "P06_EVIDENCE_MAP_V1": "1.1.6",
         "P07_QUESTION_BUILD_V1": "1.1.4",
         "P08_QUESTION_REVIEW_V1": "1.1.5",
         "P09_GUIDE_BUILD_V1": "1.1.6",
@@ -202,19 +207,18 @@ def test_p05_v117_and_p11_v115_make_root_invariant_handling_explicit() -> None:
         assert protected_field in p11
 
 
-def test_p06_v115_makes_planner_eligibility_and_abstention_exact() -> None:
+def test_p06_v116_limits_the_provider_to_local_semantic_mapping() -> None:
     p06 = PROMPT_SPECS["P06_EVIDENCE_MAP_V1"].developer_instruction
     for exact_rule in (
-        "planning_policy es una restricción confiable",
-        "planning_policy.minimum_evidence_fit",
-        "no es necesario mapear todas sus dimensiones o variantes",
-        "al menos assessment_constraints.question_count oportunidades",
-        "copia literalmente desde ese template cognitive_operation",
-        "activity_priority desde la dimensión padre",
-        "mismo evidence_fit del EvidenceVariantMatch",
-        "claims=[], variant_matches=[] y opportunities=[]",
-        "code sea exactamente igual al status",
-        "retryable=false",
+        "EvidenceMappingAliasEnvelope cerrado",
+        "aliases locales de esta llamada",
+        "support_status categórico",
+        "No selecciones preguntas finales, reservas ni un conjunto de N",
+        "No declares factibilidad global",
+        "No copies IDs canónicos",
+        "No produzcas evidence_fit, opportunity_quality, confidence, strength",
+        "Devuelve EvidenceMappingModelDraft",
+        "el planner determinista posterior es la única autoridad",
     ):
         assert exact_rule in p06
 
@@ -418,6 +422,11 @@ def test_every_prompt_has_contract_valid_abstention(prompt_id: str) -> None:
         assert output.status == "NEEDS_REVIEW"
         assert output.items == []
         assert output.diagnostics
+    elif prompt_id == "P06_EVIDENCE_MAP_V1":
+        assert output.status == "READY"
+        assert output.mapping_summary is not None
+        assert output.mapping_summary.uncertain_count == 1
+        assert output.opportunities[0].abstention_reason
     else:
         assert output.status != "READY"
         if hasattr(output, "diagnostics"):
@@ -1091,45 +1100,40 @@ def test_blueprint_review_matrix_is_exact_and_matches_product_transition() -> No
     assert blueprint_review_is_approvable(rejected_review) is False
 
 
-def test_p06_rejects_changed_template_inheritance() -> None:
-    def change_inherited_focus(raw: dict) -> None:
-        raw["opportunities"][0]["focus"] = "Foco distinto"
+def test_p06_rejects_unknown_template_alias() -> None:
+    def change_template_alias(raw: dict) -> None:
+        raw["mappings"][0]["template_alias"] = "T999"
 
     gateway = ModelGateway(
         mock_adapter=ContextBreakingAdapter(
-            "P06_EVIDENCE_MAP_V1", change_inherited_focus
+            "P06_EVIDENCE_MAP_V1", change_template_alias
         )
     )
     with pytest.raises(GatewayContextError) as captured:
         _invoke("P06_EVIDENCE_MAP_V1", gateway=gateway)
     assert captured.value.failure.codes == (
-        ContextFailureCode.P06_FOCUS_MISMATCH,
+        ContextFailureCode.P06_ALIAS_REFERENCE_UNKNOWN,
     )
 
 
-def test_p06_relationship_diagnostics_identify_each_failed_predicate() -> None:
-    def change_multiple_relationships(raw: dict) -> None:
-        opportunity = raw["opportunities"][0]
-        opportunity["observable"] = "Observable distinto"
-        opportunity["target_minutes"] += 1
-        opportunity["evidence_fit"] = 0.81
+def test_p06_rejects_scope_alias_from_another_call() -> None:
+    def change_scope_alias(raw: dict) -> None:
+        raw["scope_alias"] = "S" + "f" * 24
 
     gateway = ModelGateway(
         mock_adapter=ContextBreakingAdapter(
-            "P06_EVIDENCE_MAP_V1", change_multiple_relationships
+            "P06_EVIDENCE_MAP_V1", change_scope_alias
         )
     )
     with pytest.raises(GatewayContextError) as captured:
         _invoke("P06_EVIDENCE_MAP_V1", gateway=gateway)
 
     assert captured.value.failure.codes == (
-        ContextFailureCode.P06_OBSERVABLE_MISMATCH,
-        ContextFailureCode.P06_TARGET_MINUTES_MISMATCH,
-        ContextFailureCode.P06_EVIDENCE_FIT_MISMATCH,
+        ContextFailureCode.P06_SCOPE_ALIAS_MISMATCH,
     )
 
 
-def test_p06_relationship_diagnostic_identifies_widened_evidence_scope() -> None:
+def test_p06_relationship_diagnostic_identifies_unknown_evidence_alias() -> None:
     request = build_mock_request("P06_EVIDENCE_MAP_V1")
     base = request.evidence_bundle.evidence_units[0]
     extra = base.model_copy(
@@ -1155,8 +1159,7 @@ def test_p06_relationship_diagnostic_identifies_widened_evidence_scope() -> None
     )
 
     def widen_scope(raw: dict) -> None:
-        raw["variant_matches"][0]["evidence_ids"] = ["ev_submission_1"]
-        raw["opportunities"][0]["evidence_ids"] = ["ev_submission_2"]
+        raw["mappings"][0]["evidence_aliases"] = ["E999"]
 
     gateway = ModelGateway(
         mock_adapter=ContextBreakingAdapter(
@@ -1173,26 +1176,25 @@ def test_p06_relationship_diagnostic_identifies_widened_evidence_scope() -> None
         )
 
     assert captured.value.failure.codes == (
-        ContextFailureCode.P06_EVIDENCE_SCOPE_WIDENED,
+        ContextFailureCode.P06_ALIAS_REFERENCE_UNKNOWN,
     )
 
 
-def test_p06_ready_requires_the_planner_evidence_fit_floor() -> None:
-    def lower_fit(raw: dict) -> None:
-        for match in raw["variant_matches"]:
-            match["evidence_fit"] = 0.69
-        for opportunity in raw["opportunities"]:
-            opportunity["evidence_fit"] = 0.69
+def test_p06_partial_mapping_is_materialized_without_global_rejection() -> None:
+    def make_partial(raw: dict) -> None:
+        for mapping in raw["mappings"]:
+            mapping["support_status"] = "PARTIAL"
 
     gateway = ModelGateway(
         mock_adapter=ContextBreakingAdapter(
-            "P06_EVIDENCE_MAP_V1", lower_fit
+            "P06_EVIDENCE_MAP_V1", make_partial
         )
     )
-    with pytest.raises(GatewayContextError) as captured:
-        _invoke("P06_EVIDENCE_MAP_V1", gateway=gateway)
-    assert captured.value.failure.codes == (
-        ContextFailureCode.P06_READY_ELIGIBILITY_MISMATCH,
+    result = _invoke("P06_EVIDENCE_MAP_V1", gateway=gateway)
+    assert result.output.status == "READY"
+    assert all(
+        item.support_status == models.EvidenceSupportStatus.PARTIAL
+        for item in result.output.opportunities
     )
 
 
@@ -1214,14 +1216,12 @@ def test_p07_relationship_failures_are_aggregated_content_free() -> None:
     )
 
 
-def test_p06_nonready_diagnostics_are_canonical_fail_closed() -> None:
-    request = build_mock_request("P06_EVIDENCE_MAP_V1")
-    raw = DeterministicMockAdapter().factory.output_for(
-        "P06_EVIDENCE_MAP_V1", request, MockBehavior.ABSTAIN
-    ).model_dump(mode="json")
-    raw["diagnostics"][0]["retryable"] = True
-    with pytest.raises(ValidationError):
-        models.EvidenceMapPatch.model_validate(raw)
+def test_p06_local_abstention_materializes_as_uncertain_mapping() -> None:
+    result = _invoke("P06_EVIDENCE_MAP_V1", behavior=MockBehavior.ABSTAIN)
+    assert result.output.status == "READY"
+    assert result.output.mapping_summary is not None
+    assert result.output.mapping_summary.uncertain_count == 1
+    assert result.output.opportunities[0].abstention_reason
 
 
 def test_p08_cannot_accept_below_trusted_validation_thresholds() -> None:

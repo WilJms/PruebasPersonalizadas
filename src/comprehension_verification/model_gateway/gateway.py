@@ -29,6 +29,14 @@ from comprehension_verification.blueprint_compiler import (
     validate_compiled_blueprint,
 )
 from comprehension_verification.contracts import SCHEMA_VERSION, model_by_name, models
+from comprehension_verification.evidence_mapping import (
+    EvidenceMappingCompilationError,
+    build_evidence_mapping_alias_envelope,
+    evidence_mapping_materializer_boundary,
+    materialize_evidence_mapping_draft,
+    p06_alias_envelope_schema_boundary,
+    validate_materialized_evidence_mapping,
+)
 from comprehension_verification.model_gateway.mock_factory import (
     AdapterResult,
     DeterministicMockAdapter,
@@ -54,7 +62,7 @@ PROMPT_RELATIONSHIP_VALIDATOR_VERSIONS: Mapping[str, str] = {
     "P03_AMBIGUITY_TRIAGE_V1": "relationship-p03/2.0.0",
     "P04_BLUEPRINT_BUILD_V1": "relationship-p04/3.0.0",
     "P05_BLUEPRINT_REVIEW_V1": "relationship-p05/2.2.0",
-    "P06_EVIDENCE_MAP_V1": "relationship-p06/2.3.0",
+    "P06_EVIDENCE_MAP_V1": "relationship-p06/3.0.0",
     "P07_QUESTION_BUILD_V1": "relationship-p07/2.1.0",
     "P08_QUESTION_REVIEW_V1": "relationship-p08/2.1.0",
     "P09_GUIDE_BUILD_V1": "relationship-p09/2.0.0",
@@ -111,6 +119,10 @@ class ContextFailureCode(StrEnum):
     P05_PREFLIGHT_MISMATCH = "P05_PREFLIGHT_MISMATCH"
     P05_PREFLIGHT_CHECK_MISMATCH = "P05_PREFLIGHT_CHECK_MISMATCH"
     P06_SUBMISSION_ID_MISMATCH = "P06_SUBMISSION_ID_MISMATCH"
+    P06_DRAFT_MATERIALIZATION_FAILED = "P06_DRAFT_MATERIALIZATION_FAILED"
+    P06_ALIAS_REFERENCE_UNKNOWN = "P06_ALIAS_REFERENCE_UNKNOWN"
+    P06_SCOPE_ALIAS_MISMATCH = "P06_SCOPE_ALIAS_MISMATCH"
+    P06_CANONICAL_REPLAY_FAILED = "P06_CANONICAL_REPLAY_FAILED"
     P06_READY_OPPORTUNITY_COUNT_INSUFFICIENT = (
         "P06_READY_OPPORTUNITY_COUNT_INSUFFICIENT"
     )
@@ -871,11 +883,19 @@ class ModelGateway:
             ),
             "application_validator_hash": application_validator_hash,
         }
-        if prompt_id == "P04_BLUEPRINT_BUILD_V1":
+        if spec.provider_output_schema_name != spec.output_schema_name:
             material["provider_output_schema"] = provider_output_schema_boundary(
                 prompt_id
             )
+        if prompt_id == "P04_BLUEPRINT_BUILD_V1":
             material["blueprint_compiler"] = blueprint_compiler_boundary()
+        elif prompt_id == "P06_EVIDENCE_MAP_V1":
+            material["alias_envelope_schema"] = (
+                p06_alias_envelope_schema_boundary()
+            )
+            material["evidence_mapping_materializer"] = (
+                evidence_mapping_materializer_boundary()
+            )
         return f"model-stage-execution/2:{_hash(material).removeprefix('sha256:')}"
 
     def validate_cached_output(
@@ -901,7 +921,10 @@ class ModelGateway:
             self._validate_real_input_attestation(
                 request, envelope.trusted_context
             )
-        if prompt_id == "P04_BLUEPRINT_BUILD_V1":
+        if prompt_id in {
+            "P04_BLUEPRINT_BUILD_V1",
+            "P06_EVIDENCE_MAP_V1",
+        }:
             output = self._validate_stage_output(spec, raw_output)
         else:
             provider_output = self._validate_output(spec, raw_output)
@@ -1393,6 +1416,16 @@ class ModelGateway:
             if isinstance(trusted_context, BaseModel)
             else trusted_context
         )
+        provider_payload = request.model_dump(mode="json")
+        if spec.prompt_id == "P06_EVIDENCE_MAP_V1":
+            if not isinstance(request, models.EvidenceMapRequest):
+                raise GatewayValidationError(
+                    "P06 alias boundary received an unexpected request root",
+                    phase=ValidationPhase.ENVELOPE,
+                )
+            provider_payload = build_evidence_mapping_alias_envelope(
+                request
+            ).model_dump(mode="json")
         raw = {
             "schema_version": SCHEMA_VERSION,
             "prompt_id": spec.prompt_id,
@@ -1400,7 +1433,7 @@ class ModelGateway:
             "output_schema_name": spec.provider_output_schema_name,
             "output_schema_version": SCHEMA_VERSION,
             "trusted_context": raw_context,
-            "payload": request.model_dump(mode="json"),
+            "payload": provider_payload,
         }
         try:
             return models.ModelTaskEnvelope.model_validate(raw)
@@ -1455,26 +1488,65 @@ class ModelGateway:
         *,
         phase: ValidationPhase,
     ) -> BaseModel:
-        if prompt_id != "P04_BLUEPRINT_BUILD_V1":
+        if prompt_id not in {
+            "P04_BLUEPRINT_BUILD_V1",
+            "P06_EVIDENCE_MAP_V1",
+        }:
             return output
-        if not isinstance(request, models.BlueprintBuildRequest) or not isinstance(
-            output, models.BlueprintModelDraft
+        if prompt_id == "P04_BLUEPRINT_BUILD_V1":
+            if not isinstance(
+                request, models.BlueprintBuildRequest
+            ) or not isinstance(output, models.BlueprintModelDraft):
+                raise GatewayContextError(
+                    "P04 provider boundary used an unexpected contract",
+                    phase=phase,
+                    failure_code=(
+                        ContextFailureCode.P04_DRAFT_COMPILATION_FAILED
+                    ),
+                )
+            try:
+                return compile_and_preflight_blueprint(
+                    draft=output, request=request
+                )
+            except BlueprintCompilationError as exc:
+                failure_code = (
+                    ContextFailureCode.P04_SOURCE_COVERAGE_MISMATCH
+                    if exc.code == "BLUEPRINT_SOURCE_COVERAGE_INCOMPLETE"
+                    else ContextFailureCode.P04_DRAFT_COMPILATION_FAILED
+                )
+                raise GatewayContextError(
+                    "P04 semantic draft failed deterministic compilation",
+                    phase=phase,
+                    failure_code=failure_code,
+                ) from exc
+        if not isinstance(request, models.EvidenceMapRequest) or not isinstance(
+            output, models.EvidenceMappingModelDraft
         ):
             raise GatewayContextError(
-                "P04 provider boundary used an unexpected contract",
+                "P06 provider boundary used an unexpected contract",
                 phase=phase,
-                failure_code=ContextFailureCode.P04_DRAFT_COMPILATION_FAILED,
+                failure_code=(
+                    ContextFailureCode.P06_DRAFT_MATERIALIZATION_FAILED
+                ),
             )
         try:
-            return compile_and_preflight_blueprint(draft=output, request=request)
-        except BlueprintCompilationError as exc:
-            failure_code = (
-                ContextFailureCode.P04_SOURCE_COVERAGE_MISMATCH
-                if exc.code == "BLUEPRINT_SOURCE_COVERAGE_INCOMPLETE"
-                else ContextFailureCode.P04_DRAFT_COMPILATION_FAILED
+            return materialize_evidence_mapping_draft(
+                draft=output, request=request
+            )
+        except EvidenceMappingCompilationError as exc:
+            failure_code = {
+                "P06_ALIAS_REFERENCE_UNKNOWN": (
+                    ContextFailureCode.P06_ALIAS_REFERENCE_UNKNOWN
+                ),
+                "P06_SCOPE_ALIAS_MISMATCH": (
+                    ContextFailureCode.P06_SCOPE_ALIAS_MISMATCH
+                ),
+            }.get(
+                exc.code,
+                ContextFailureCode.P06_DRAFT_MATERIALIZATION_FAILED,
             )
             raise GatewayContextError(
-                "P04 semantic draft failed deterministic compilation",
+                "P06 semantic draft failed deterministic materialization",
                 phase=phase,
                 failure_code=failure_code,
             ) from exc
@@ -1894,10 +1966,11 @@ class ModelGateway:
             require_diagnostic()
             if output.approval_recommendation is not None:
                 raise GatewayContextError("Non-ready P05 output cannot recommend approval")
-        elif prompt_id == "P06_EVIDENCE_MAP_V1" and output.status != "READY":
-            require_diagnostic()
-            if output.opportunities:
-                raise GatewayContextError("Failed P06 output cannot expose opportunities")
+        elif prompt_id == "P06_EVIDENCE_MAP_V1":
+            if isinstance(output, models.EvidenceMappingModelDraft):
+                return
+            if output.status != "READY":
+                require_diagnostic()
         elif prompt_id in {"P07_QUESTION_BUILD_V1", "P10_ENRICHED_CONTEXT_V1"} and output.status != "READY":
             require_diagnostic()
             if output.candidate is not None:
@@ -2021,152 +2094,31 @@ class ModelGateway:
                         ),
                     ) from exc
         elif prompt_id == "P06_EVIDENCE_MAP_V1":
-            codes: list[ContextFailureCode] = []
-            if output.submission_id != request.evidence_bundle.submission_id:
-                codes.append(
-                    ContextFailureCode.P06_SUBMISSION_ID_MISMATCH
-                )
-            template_paths = {
-                template.opportunity_template_id: (
-                    dimension,
-                    variant,
-                    template,
-                )
-                for dimension in request.blueprint.dimensions
-                for variant in dimension.evidence_variants
-                for template in variant.question_opportunities
-            }
-            variant_paths = {
-                variant.variant_id: dimension.dimension_id
-                for dimension in request.blueprint.dimensions
-                for variant in dimension.evidence_variants
-            }
-            matches = {
-                (match.dimension_id, match.variant_id): match
-                for match in output.variant_matches
-            }
-            global_minimum = (
-                request.blueprint.assessment_constraints.minimum_opportunity_quality
-            )
-            if output.status == "READY" and len(output.opportunities) < (
-                request.blueprint.assessment_constraints.question_count
+            if not isinstance(request, models.EvidenceMapRequest) or not isinstance(
+                output, models.EvidenceMapPatch
             ):
-                codes.append(
-                    ContextFailureCode.P06_READY_OPPORTUNITY_COUNT_INSUFFICIENT
-                )
-            if output.status == "READY" and sum(
-                opportunity.evidence_fit
-                >= request.planning_policy.minimum_evidence_fit
-                and bool(
-                    set(opportunity.allowed_response_formats).intersection(
-                        request.blueprint.assessment_constraints.allowed_response_formats
-                    )
-                )
-                for opportunity in output.opportunities
-            ) < request.blueprint.assessment_constraints.question_count:
-                codes.append(
-                    ContextFailureCode.P06_READY_ELIGIBILITY_MISMATCH
-                )
-            for opportunity in output.opportunities:
-                path = template_paths.get(
-                    opportunity.opportunity_template_id
-                )
-                if path is None:
-                    codes.append(
-                        ContextFailureCode.P06_UNKNOWN_OPPORTUNITY_TEMPLATE
-                    )
-                    continue
-                dimension, variant, template = path
-                match = matches.get(
-                    (dimension.dimension_id, variant.variant_id)
-                )
-                predicate_codes = (
-                    (
-                        opportunity.dimension_id == dimension.dimension_id,
-                        ContextFailureCode.P06_DIMENSION_ID_MISMATCH,
-                    ),
-                    (
-                        opportunity.variant_id == variant.variant_id,
-                        ContextFailureCode.P06_VARIANT_ID_MISMATCH,
-                    ),
-                    (
-                        opportunity.cognitive_operation
-                        == template.cognitive_operation,
-                        ContextFailureCode.P06_COGNITIVE_OPERATION_MISMATCH,
-                    ),
-                    (
-                        opportunity.focus == template.focus,
-                        ContextFailureCode.P06_FOCUS_MISMATCH,
-                    ),
-                    (
-                        opportunity.observable == template.observable,
-                        ContextFailureCode.P06_OBSERVABLE_MISMATCH,
-                    ),
-                    (
-                        opportunity.difficulty == template.difficulty,
-                        ContextFailureCode.P06_DIFFICULTY_MISMATCH,
-                    ),
-                    (
-                        opportunity.target_minutes == template.target_minutes,
-                        ContextFailureCode.P06_TARGET_MINUTES_MISMATCH,
-                    ),
-                    (
-                        opportunity.allowed_anchor_structures
-                        == template.allowed_anchor_structures,
-                        ContextFailureCode.P06_ANCHOR_STRUCTURES_MISMATCH,
-                    ),
-                    (
-                        opportunity.allowed_response_formats
-                        == template.allowed_response_formats,
-                        ContextFailureCode.P06_RESPONSE_FORMATS_MISMATCH,
-                    ),
-                    (
-                        opportunity.student_justification_required
-                        == template.student_justification_required,
-                        ContextFailureCode.P06_JUSTIFICATION_REQUIREMENT_MISMATCH,
-                    ),
-                    (
-                        opportunity.activity_priority
-                        == dimension.verification_priority,
-                        ContextFailureCode.P06_ACTIVITY_PRIORITY_MISMATCH,
-                    ),
-                )
-                codes.extend(
-                    code for passed, code in predicate_codes if not passed
-                )
-                if match is None:
-                    codes.append(ContextFailureCode.P06_VARIANT_MATCH_MISSING)
-                else:
-                    if opportunity.evidence_fit != match.evidence_fit:
-                        codes.append(
-                            ContextFailureCode.P06_EVIDENCE_FIT_MISMATCH
-                        )
-                    if not set(opportunity.evidence_ids).issubset(
-                        set(match.evidence_ids)
-                    ):
-                        codes.append(
-                            ContextFailureCode.P06_EVIDENCE_SCOPE_WIDENED
-                        )
-                if opportunity.opportunity_quality < max(
-                    global_minimum, template.minimum_quality
-                ):
-                    codes.append(
-                        ContextFailureCode.P06_OPPORTUNITY_QUALITY_BELOW_MINIMUM
-                    )
-            if any(
-                match.dimension_id
-                != variant_paths.get(match.variant_id)
-                for match in output.variant_matches
-            ):
-                codes.append(ContextFailureCode.P06_VARIANT_PATH_MISMATCH)
-            if codes:
                 raise GatewayContextError(
-                    "P06 output failed authorized blueprint relationships",
-                    failure=ContextFailure(
-                        phase=phase,
-                        codes=tuple(dict.fromkeys(codes)),
+                    "P06 stage boundary used an unexpected contract",
+                    phase=phase,
+                    failure_code=(
+                        ContextFailureCode.P06_DRAFT_MATERIALIZATION_FAILED
                     ),
                 )
+            try:
+                validate_materialized_evidence_mapping(
+                    mapping=output, request=request
+                )
+            except EvidenceMappingCompilationError as exc:
+                failure_code = (
+                    ContextFailureCode.P06_CANONICAL_REPLAY_FAILED
+                    if exc.code == "P06_CANONICAL_REPLAY_MISMATCH"
+                    else ContextFailureCode.P06_DRAFT_MATERIALIZATION_FAILED
+                )
+                raise GatewayContextError(
+                    "P06 canonical result failed deterministic replay",
+                    phase=phase,
+                    failure_code=failure_code,
+                ) from exc
         elif prompt_id in {"P07_QUESTION_BUILD_V1", "P10_ENRICHED_CONTEXT_V1"}:
             codes: list[ContextFailureCode] = []
             if (
@@ -2673,6 +2625,17 @@ class ModelGateway:
                 "provider_output_schema": provider_output_schema_boundary(
                     spec.prompt_id
                 ),
+            }
+        elif spec.prompt_id == "P06_EVIDENCE_MAP_V1":
+            input_material = {
+                "envelope": envelope.model_dump(mode="json"),
+                "provider_output_schema": provider_output_schema_boundary(
+                    spec.prompt_id
+                ),
+                "alias_envelope_schema": (
+                    p06_alias_envelope_schema_boundary()
+                ),
+                "materializer": evidence_mapping_materializer_boundary(),
             }
         input_hash = _hash(input_material)
         created = self.config.clock()

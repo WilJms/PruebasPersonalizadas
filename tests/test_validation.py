@@ -147,18 +147,17 @@ def test_evidence_map_rejects_template_constraint_rewrite() -> None:
         )
 
 
-def test_evidence_map_enforces_variant_alignment_and_match_evidence() -> None:
+def test_evidence_map_ignores_legacy_alignment_score_but_enforces_match_evidence() -> None:
     bp = blueprint()
     bundle = evidence_bundle()
     uncertain = evidence_map(bp, bundle, opportunity_count=1)
     uncertain.variant_matches[0].mapping_confidence = 0.1
-    with pytest.raises(ContextValidationError, match="alignment floor"):
-        validate_evidence_map(
-            uncertain,
-            blueprint=bp,
-            bundle=bundle,
-            planning_policy=planning_policy(),
-        )
+    validate_evidence_map(
+        uncertain,
+        blueprint=bp,
+        bundle=bundle,
+        planning_policy=planning_policy(),
+    )
 
     widened = evidence_map(bp, bundle, opportunity_count=1)
     widened.opportunities[0].evidence_ids = [bundle.evidence_units[1].evidence_id]
@@ -171,7 +170,7 @@ def test_evidence_map_enforces_variant_alignment_and_match_evidence() -> None:
         )
 
 
-def test_ready_evidence_map_requires_planner_eligible_opportunities() -> None:
+def test_ready_evidence_map_leaves_global_sufficiency_to_planner() -> None:
     bp = blueprint(question_count=2)
     bundle = evidence_bundle()
     policy = planning_policy(minimum_evidence_fit=0.7)
@@ -182,16 +181,12 @@ def test_ready_evidence_map_requires_planner_eligible_opportunities() -> None:
         evidence_fit=0.69,
     )
 
-    with pytest.raises(
-        ContextValidationError,
-        match="planner-eligible opportunities",
-    ):
-        validate_evidence_map(
-            mapping,
-            blueprint=bp,
-            bundle=bundle,
-            planning_policy=policy,
-        )
+    validate_evidence_map(
+        mapping,
+        blueprint=bp,
+        bundle=bundle,
+        planning_policy=policy,
+    )
 
 
 def test_question_rejects_non_derivable_anchor() -> None:

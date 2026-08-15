@@ -28,12 +28,15 @@ Stage2SchemaVersion = Literal[CONTRACT_VERSION]
 Id = Annotated[str, Field(min_length=3, max_length=128, pattern=r"^[a-z][a-z0-9_-]*$")]
 
 # Provider-local aliases are deliberately not canonical IDs.  They exist only
-# inside one P04 inference result and are resolved by the server compiler.
+# inside one P04/P06 inference boundary and are resolved by a server compiler.
 DimensionAlias = Annotated[str, Field(pattern=r"^D[1-9][0-9]{0,2}$")]
 VariantAlias = Annotated[str, Field(pattern=r"^V[1-9][0-9]{0,2}$")]
 OpportunityTemplateAlias = Annotated[
     str, Field(pattern=r"^T[1-9][0-9]{0,3}$")
 ]
+EvidenceAlias = Annotated[str, Field(pattern=r"^E[1-9][0-9]{0,2}$")]
+ArtifactAlias = Annotated[str, Field(pattern=r"^A[1-9][0-9]{0,2}$")]
+MappingScopeAlias = Annotated[str, Field(pattern=r"^S[a-f0-9]{24}$")]
 
 PrincipalId = Annotated[
     str,
@@ -171,6 +174,20 @@ class StructuredJustificationMode(StrEnum):
     NOT_REQUIRED = "NOT_REQUIRED"
     SELECTED = "SELECTED"
     ALL = "ALL"
+
+
+class EvidenceSupportStatus(StrEnum):
+    SUFFICIENT = "SUFFICIENT"
+    PARTIAL = "PARTIAL"
+    INSUFFICIENT = "INSUFFICIENT"
+    UNCERTAIN = "UNCERTAIN"
+
+
+class EvidenceSupportType(StrEnum):
+    DIRECT = "DIRECT"
+    COMPOSITE = "COMPOSITE"
+    CORROBORATING = "CORROBORATING"
+    CONTRADICTORY = "CONTRADICTORY"
 
 
 class ReasoningEffort(StrEnum):
@@ -1023,6 +1040,120 @@ class BlueprintModelDraft(StrictModel):
     ]
 
 
+class EvidenceMappingDimensionContext(StrictModel):
+    """P06 semantic dimension exposed only through a call-local alias."""
+
+    dimension_alias: DimensionAlias
+    name: Annotated[str, Field(min_length=1, max_length=300)]
+    justification: Annotated[str, Field(min_length=1, max_length=1000)]
+
+
+class EvidenceMappingVariantContext(StrictModel):
+    """P06 semantic route without canonical dimension or variant identity."""
+
+    variant_alias: VariantAlias
+    dimension_alias: DimensionAlias
+    name: Annotated[str, Field(min_length=1, max_length=300)]
+    description: Annotated[str, Field(min_length=1, max_length=1200)]
+    evidence_requirement: EvidenceRequirement
+    supported_operations: Annotated[
+        list[SupportedOperation], Field(min_length=1, max_length=9)
+    ]
+
+
+class EvidenceMappingTemplateContext(StrictModel):
+    """P06 opportunity semantics; all mechanical fields remain server-owned."""
+
+    template_alias: OpportunityTemplateAlias
+    variant_alias: VariantAlias
+    cognitive_operation: CognitiveOperation
+    focus: Annotated[str, Field(min_length=1, max_length=1000)]
+    observable: Annotated[str, Field(min_length=1, max_length=1000)]
+
+
+class EvidenceMappingEvidenceContext(StrictModel):
+    """One submission evidence unit with only inference-local identity."""
+
+    evidence_alias: EvidenceAlias
+    artifact_alias: ArtifactAlias
+    modality: EvidenceModality
+    content_text: str | None = Field(default=None, max_length=100_000)
+    structured_content: dict[str, Any] | None = None
+    language: str | None = Field(default=None, max_length=35)
+    extraction_confidence: Score
+
+    @model_validator(mode="after")
+    def has_content(self) -> "EvidenceMappingEvidenceContext":
+        if not self.content_text and not self.structured_content:
+            raise ValueError("mapping evidence must contain text or structured_content")
+        return self
+
+
+class EvidenceMappingAliasEnvelope(StrictModel):
+    """Exact call-local P06 input materialized from one canonical request."""
+
+    alias_schema_version: Literal["p06-alias-envelope/1.0.0"] = (
+        "p06-alias-envelope/1.0.0"
+    )
+    scope_alias: MappingScopeAlias
+    source_scope_hash: Hash
+    dimensions: Annotated[
+        list[EvidenceMappingDimensionContext], Field(min_length=1, max_length=50)
+    ]
+    variants: Annotated[
+        list[EvidenceMappingVariantContext], Field(min_length=1, max_length=400)
+    ]
+    templates: Annotated[
+        list[EvidenceMappingTemplateContext], Field(min_length=1, max_length=2000)
+    ]
+    evidence_units: Annotated[
+        list[EvidenceMappingEvidenceContext], Field(min_length=1, max_length=500)
+    ]
+
+
+class EvidenceMappingRelationDraft(StrictModel):
+    """One semantic P06 relation; aliases are resolved only by the server."""
+
+    variant_alias: VariantAlias
+    template_alias: OpportunityTemplateAlias
+    evidence_aliases: Annotated[list[EvidenceAlias], Field(min_length=1, max_length=50)]
+    support_status: EvidenceSupportStatus
+    support_type: EvidenceSupportType | None = None
+    support_description: Annotated[str, Field(min_length=1, max_length=1000)]
+    semantic_uncertainty: str | None = Field(default=None, max_length=800)
+    abstention_reason: str | None = Field(default=None, max_length=800)
+
+    @model_validator(mode="after")
+    def support_state_is_local_and_explicit(self) -> "EvidenceMappingRelationDraft":
+        _require_unique(self.evidence_aliases, "evidence_aliases")
+        if (
+            self.support_status == EvidenceSupportStatus.SUFFICIENT
+            and self.abstention_reason is not None
+        ):
+            raise ValueError("SUFFICIENT mapping cannot include an abstention reason")
+        if (
+            self.support_status == EvidenceSupportStatus.INSUFFICIENT
+            and self.abstention_reason is None
+        ):
+            raise ValueError("INSUFFICIENT mapping requires a local abstention reason")
+        if (
+            self.support_status == EvidenceSupportStatus.UNCERTAIN
+            and self.semantic_uncertainty is None
+            and self.abstention_reason is None
+        ):
+            raise ValueError("UNCERTAIN mapping requires uncertainty or abstention detail")
+        return self
+
+
+class EvidenceMappingModelDraft(StrictModel):
+    """Reduced P06 provider output compiled into an EvidenceMapPatch."""
+
+    scope_alias: MappingScopeAlias
+    mappings: list[EvidenceMappingRelationDraft] = Field(
+        default_factory=list, max_length=2000
+    )
+
+
 class AssessmentConstraints(StrictModel):
     question_count: int = Field(ge=1, le=20)
     target_total_minutes: int = Field(ge=3, le=120)
@@ -1225,9 +1356,12 @@ class EvidenceVariantMatch(StrictModel):
     dimension_id: Id
     variant_id: Id
     evidence_ids: Annotated[list[Id], Field(min_length=1, max_length=50)]
+    # Retained for historical EvidenceMapPatch reads. New P06 outputs derive
+    # these values server-side and no active planner/validator gates on them.
     evidence_fit: Score
     mapping_confidence: Score
     justification: Annotated[str, Field(min_length=1, max_length=1000)]
+    support_status: EvidenceSupportStatus = EvidenceSupportStatus.SUFFICIENT
 
 
 class QuestionOpportunity(StrictModel):
@@ -1245,9 +1379,35 @@ class QuestionOpportunity(StrictModel):
     allowed_anchor_structures: Annotated[list[AnchorStructure], Field(min_length=1)]
     allowed_response_formats: Annotated[list[ResponseFormat], Field(min_length=1)]
     activity_priority: Score
+    # Compatibility-only projections for historical P06 payloads. The active
+    # planner consumes support_status and trusted blueprint constraints.
     evidence_fit: Score
     opportunity_quality: Score
     student_justification_required: bool = False
+    support_status: EvidenceSupportStatus = EvidenceSupportStatus.SUFFICIENT
+    support_type: EvidenceSupportType | None = None
+    support_description: str | None = Field(default=None, max_length=1000)
+    semantic_uncertainty: str | None = Field(default=None, max_length=800)
+    abstention_reason: str | None = Field(default=None, max_length=800)
+
+
+class EvidenceMappingSummary(StrictModel):
+    mapped_relation_count: int = Field(ge=0, le=2000)
+    sufficient_count: int = Field(ge=0, le=2000)
+    partial_count: int = Field(ge=0, le=2000)
+    insufficient_count: int = Field(ge=0, le=2000)
+    uncertain_count: int = Field(ge=0, le=2000)
+
+    @model_validator(mode="after")
+    def counts_are_complete(self) -> "EvidenceMappingSummary":
+        if self.mapped_relation_count != (
+            self.sufficient_count
+            + self.partial_count
+            + self.insufficient_count
+            + self.uncertain_count
+        ):
+            raise ValueError("mapping summary counts must cover every relation")
+        return self
 
 
 PlanningFailure = Literal[
@@ -1271,6 +1431,7 @@ class EvidenceMapPatch(StrictModel):
     claims: list[EvidenceClaim] = Field(default_factory=list)
     variant_matches: list[EvidenceVariantMatch] = Field(default_factory=list)
     opportunities: list[QuestionOpportunity] = Field(default_factory=list)
+    mapping_summary: EvidenceMappingSummary | None = None
     diagnostics: list[Diagnostic] = Field(default_factory=list)
 
     @model_validator(mode="after")
@@ -1280,11 +1441,26 @@ class EvidenceMapPatch(StrictModel):
             raise ValueError("opportunity_ids must be unique")
         if any(x.submission_id != self.submission_id for x in self.opportunities):
             raise ValueError("opportunities must belong to the mapped submission")
-        if self.status != "READY":
-            if self.opportunities or self.claims or self.variant_matches:
-                raise ValueError(
-                    "non-READY mapping cannot expose partial usable annotations"
+        if self.mapping_summary is not None:
+            counts = {
+                status: sum(
+                    item.support_status == status for item in self.opportunities
                 )
+                for status in EvidenceSupportStatus
+            }
+            if (
+                self.mapping_summary.mapped_relation_count != len(self.opportunities)
+                or self.mapping_summary.sufficient_count
+                != counts[EvidenceSupportStatus.SUFFICIENT]
+                or self.mapping_summary.partial_count
+                != counts[EvidenceSupportStatus.PARTIAL]
+                or self.mapping_summary.insufficient_count
+                != counts[EvidenceSupportStatus.INSUFFICIENT]
+                or self.mapping_summary.uncertain_count
+                != counts[EvidenceSupportStatus.UNCERTAIN]
+            ):
+                raise ValueError("mapping summary must match opportunity support states")
+        if self.status != "READY":
             if not self.diagnostics:
                 raise ValueError("non-READY mapping requires diagnostics")
             if not any(item.code == self.status for item in self.diagnostics):
@@ -2717,6 +2893,10 @@ class EvidenceMapRequest(StrictModel):
             raise ValueError(
                 "P06 planning policy must match the approved blueprint constraints"
             )
+        if self.blueprint.activity_id != self.evidence_bundle.activity_id:
+            raise ValueError("P06 blueprint and evidence bundle activity must match")
+        if self.blueprint.context_mode != self.evidence_bundle.context_mode:
+            raise ValueError("P06 blueprint and evidence bundle context must match")
         return self
 
 
@@ -2812,6 +2992,8 @@ CONTRACT_MODELS: tuple[type[BaseModel], ...] = (
     AssessmentPlanningPolicy,
     BlueprintPolicy,
     BlueprintModelDraft,
+    EvidenceMappingAliasEnvelope,
+    EvidenceMappingModelDraft,
     QuestionGenerationPolicy,
     QuestionValidationPolicy,
     AssessmentBlueprint,

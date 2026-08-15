@@ -21,7 +21,7 @@ from comprehension_verification.model_gateway.prompt_text import (
 )
 
 
-PROMPT_VERSION: Final = "1.1.14"
+PROMPT_VERSION: Final = "1.1.15"
 SYSTEM_PROMPT_ID: Final = "SYS_EVIDENCE_BOUND_V1"
 P11_SYSTEM_PROMPT_ID: Final = "SYS_SCHEMA_REPAIR_V1"
 PROMPT_ENTRY_VERSIONS: Final[Mapping[str, str]] = MappingProxyType(
@@ -50,7 +50,7 @@ PROMPT_ENTRY_VERSIONS: Final[Mapping[str, str]] = MappingProxyType(
         "P03_AMBIGUITY_TRIAGE_V1": "1.1.3",
         "P04_BLUEPRINT_BUILD_V1": "1.1.12",
         "P05_BLUEPRINT_REVIEW_V1": "1.1.8",
-        "P06_EVIDENCE_MAP_V1": "1.1.5",
+        "P06_EVIDENCE_MAP_V1": "1.1.6",
         "P07_QUESTION_BUILD_V1": "1.1.4",
         "P08_QUESTION_REVIEW_V1": "1.1.5",
         "P09_GUIDE_BUILD_V1": "1.1.6",
@@ -73,6 +73,7 @@ PROMPT_SCHEMA_COMPATIBILITY: Final = frozenset(
         ("1.1.12", "1.1.0"),
         ("1.1.13", "1.1.0"),
         ("1.1.14", "1.1.0"),
+        ("1.1.15", "1.1.0"),
     }
 )
 
@@ -94,16 +95,14 @@ PROMPT_CONTRACTS: Final[Mapping[str, tuple[str, str]]] = MappingProxyType(
     }
 )
 
-# Stage outputs remain canonical domain roots.  P04 is the only current prompt
-# whose provider output is intentionally narrower: the gateway compiles its
-# semantic draft into the canonical AssessmentBlueprint before returning.
+# Stage outputs remain canonical domain roots. P04 and P06 use narrower
+# provider drafts that the gateway compiles/materializes before returning.
 PROVIDER_OUTPUT_CONTRACTS: Final[Mapping[str, str]] = MappingProxyType(
     {
-        prompt_id: (
-            "BlueprintModelDraft"
-            if prompt_id == "P04_BLUEPRINT_BUILD_V1"
-            else output_root
-        )
+        prompt_id: {
+            "P04_BLUEPRINT_BUILD_V1": "BlueprintModelDraft",
+            "P06_EVIDENCE_MAP_V1": "EvidenceMappingModelDraft",
+        }.get(prompt_id, output_root)
         for prompt_id, (_input_root, output_root) in PROMPT_CONTRACTS.items()
     }
 )

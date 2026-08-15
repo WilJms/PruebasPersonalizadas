@@ -1,16 +1,18 @@
 # Anexo B - Contratos, schemas e invariantes
 
-**Versión:** `assessment-contracts/1.1.0`  
+**Versión de bundle:** `assessment-contracts/1.2.0`
+**Marker wire runtime retenido:** `schema_version=1.1.0`
 **Fuente primaria:** `models_v1.1.py` (Pydantic v2.13+)  
 **Artefacto generado:** `contracts.schema_v1.1.json` (JSON Schema Draft 2020-12)  
 **Regla:** el JSON Schema no se edita manualmente; se regenera desde Pydantic y CI compara bytes canónicos.
 
-**Estado ADR-037 / Fase 3:** no cambia el schema contractual canónico. Los roots
-P05 y P08 se conservan para lectura histórica y migración. P05 ya no es
-alcanzable en ejecuciones nuevas; P08 sigue pendiente. Su presencia en
-`CONTRACT_MODELS` no confiere autoridad ni autoriza invocación. P10 permanece
-deshabilitado. La API añade `BlueprintEnvelope.preflight` desde el contrato
-existente `BlueprintReviewPreflight`; `review` queda nullable/legacy.
+**Estado ADR-037 / Fase 4:** `EvidenceMapPatch` sigue siendo el contrato
+canónico P06 y se añaden dos roots de frontera, `EvidenceMappingAliasEnvelope`
+y `EvidenceMappingModelDraft`. El bundle generado contiene 56 roots, 155
+`$defs`, 306 refs y 8 fixtures. P05/P08 permanecen para lectura histórica;
+P05 no es alcanzable en ejecuciones nuevas y P08 sigue activo hasta su cutover.
+P10 permanece deshabilitado. La presencia de un root no confiere autoridad ni
+autoriza invocación.
 
 ---
 
@@ -23,7 +25,7 @@ existente `BlueprintReviewPreflight`; `review` queda nullable/legacy.
 5. IDs son opacos, locales al dominio y nunca contienen nombres, correos o matrícula.
 6. Hashes usan `sha256:<64 hex>` sobre bytes originales o representación canónica declarada.
 7. Fechas se serializan ISO 8601 UTC.
-8. Scores 0-1 expresan una señal/umbral, no una probabilidad calibrada salvo documentación explícita.
+8. Scores 0-1 expresan una señal/umbral, no una probabilidad calibrada salvo documentación explícita. Los scores legacy materializados en P06 no son señales activas: son proyecciones derivadas de compatibilidad y no gobiernan elegibilidad o ranking.
 9. `extra="forbid"`: un campo desconocido falla, evitando aceptar silenciosamente cambios de modelos.
 10. Ningún contrato implica ejecutar o dereferenciar contenido. Un `path` o `locator` es dato validado por el servicio propietario.
 
@@ -44,11 +46,13 @@ existente `BlueprintReviewPreflight`; `review` queda nullable/legacy.
 | `AmbiguityReport` | P03 | UI/docente | decisiones pendientes |
 | `PolicyDecision` | UI/docente | P04/P05/auditoría | resolución versionada |
 | `BlueprintPolicy` | UI/reglas | P04/P05 | restricciones confiables del blueprint |
-| `AssessmentPlanningPolicy` | config | planificador | función de score, penalizaciones y tamaño de reserva |
+| `AssessmentPlanningPolicy` | config | planificador | prioridad/penalizaciones server-owned, constraints y tamaño de reserva; mínimos continuos legacy no consumen scores P06 |
 | `BlueprintModelDraft` | proveedor P04 | compilador P04 | propuesta semántica plana con aliases locales D/V/T; sin identidad, workflow ni policy materializada |
 | `AssessmentBlueprint` | compilador P04 | preflight/aprobación docente/student workflows | catálogo canónico comparable de dimensiones, variantes y oportunidades |
 | `BlueprintReview` | P05 histórico | lectura/UI de compatibilidad | checks y recomendación legados |
-| `EvidenceMapPatch` | P06 | evidence service/planificador | claims, matches de variante y oportunidades concretas |
+| `EvidenceMappingAliasEnvelope` | compilador de input P06 | proveedor P06 | namespace cerrado D/V/T/E/A, semántica mínima de rutas/evidencia y scope hash; sin IDs canónicos ni N |
+| `EvidenceMappingModelDraft` | proveedor P06 | materializador P06 | relaciones locales con soporte categórico y abstención; sin fields server-owned |
+| `EvidenceMapPatch` | materializador P06 | evidence service/planificador | mapping canónico, estados locales y resumen durable; `READY` significa mapping completado, no plan factible |
 | `AssessmentPlan` | planificador determinista | P07/assembler | exactamente \(N\) oportunidades primarias y reserva disjunta |
 | `QuestionGenerationPolicy` | config | P07/P10 | límites de una generación localizada |
 | `QuestionValidationPolicy` | config | validaciones/P08 histórico | umbrales retenidos |
@@ -77,13 +81,37 @@ existente `BlueprintReviewPreflight`; `review` queda nullable/legacy.
 | `AmbiguityTriageRequest` | P03 | `AmbiguityReport` | `AmbiguityReport` |
 | `BlueprintBuildRequest` | P04 | `BlueprintModelDraft` | `AssessmentBlueprint` compilado y con preflight determinista |
 | `BlueprintReviewRequest` | P05 | `BlueprintReview` | `BlueprintReview` |
-| `EvidenceMapRequest` | P06 | `EvidenceMapPatch` | `EvidenceMapPatch` |
+| `EvidenceMapRequest` | P06 | `EvidenceMappingModelDraft` sobre payload `EvidenceMappingAliasEnvelope` | `EvidenceMapPatch` materializado |
 | `QuestionBuildRequest` | P07/P10 | `QuestionGenerationResult` | `QuestionGenerationResult` |
 | `QuestionReviewRequest` | P08 | `QuestionReviewResult` | `QuestionReviewResult` |
 | `GuideBuildRequest` | P09 | `EvaluationGuide` | `EvaluationGuide` |
 | `SchemaRepairRequest` | P11 | `SchemaRepairResult` | `SchemaRepairResult` |
 
-`ModelTaskEnvelope` envuelve una llamada y `TrustedPromptContext` declara las allowlists; su `payload` se vuelve a validar contra el request root de la fila. Esta doble validación evita que un diccionario genérico se convierta en contrato implícito. En P04, `provider_output_schema_name=BlueprintModelDraft` limita la inferencia; `output_schema_name=AssessmentBlueprint` conserva sin cambios la frontera canónica consumida por el resto del producto.
+`ModelTaskEnvelope` envuelve una llamada y `TrustedPromptContext` declara las
+allowlists. Para P01-P05/P07-P11, `payload` se vuelve a validar contra el input
+root de la fila. P04 proyecta `BlueprintBuildRequest` a su draft boundary; P06
+proyecta `EvidenceMapRequest` al root alias-only
+`EvidenceMappingAliasEnvelope`. En P04,
+`provider_output_schema_name=BlueprintModelDraft` limita la inferencia y
+`output_schema_name=AssessmentBlueprint` conserva el objeto canónico. En P06,
+`provider_output_schema_name=EvidenceMappingModelDraft` y
+`output_schema_name=EvidenceMapPatch` separan igualmente wire y etapa.
+
+La identidad P06 liga prompt, schema wire exacto, versión/hash del alias
+envelope, `p06-evidence-materializer/1.0.0`, blueprint/policy/evidence hashes y
+scope de submission. El materializador resuelve aliases y copia desde el
+blueprint identidad, operación, foco, observable, dificultad, minutos,
+formatos, anchors, justificación y prioridad. Los estados
+`SUFFICIENT`/`PARTIAL`/`INSUFFICIENT`/`UNCERTAIN` y el resumen se preservan.
+Los floats `evidence_fit`, `mapping_confidence` y `opportunity_quality` siguen
+en el IR para lectura histórica, pero nuevos patches los derivan server-side y
+ningún gate activo los consume.
+
+Los campos `claims` y sus IDs permanecen en `EvidenceMapPatch` para lectura de
+snapshots 1.1. El materializador 1.0 no pide al proveedor recrearlos: emite
+`claims=[]` y conserva grounding/diagnóstico útil por relación en
+`support_description`, `support_type`, `semantic_uncertainty` y
+`abstention_reason`.
 
 `BlueprintPolicy.max_variants_per_dimension=6` y
 `max_templates_per_variant=12` son defaults operacionales provisionales,

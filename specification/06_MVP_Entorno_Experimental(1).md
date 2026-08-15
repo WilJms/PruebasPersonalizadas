@@ -5,10 +5,12 @@
 **Equipo:** dos desarrolladores  
 **Principio:** laboratorio para validar el pipeline; no SaaS institucional terminado
 
-**Aclaración ADR-037 / Fase 3 (2026-08-15):** P05/P08 permanecen legibles como
-contratos/artefactos históricos, pero no son etapas activas objetivo. El
-runtime ya retiró P05 mediante preflight durable y recovery compatible; P08 y
-el orden objetivo de P09 siguen pendientes. P10 continúa deshabilitado.
+**Aclaración ADR-037 / Fase 4 (2026-08-15):** P05/P08 permanecen legibles como
+contratos/artefactos históricos y no son etapas activas objetivo. El runtime ya
+retiró P05. P06 usa un provider DTO alias-only/categórico, materialización
+server-side y planner como única autoridad de N/factibilidad. P07 no cambia;
+P08 continúa activo en el runtime actual y P09 conserva su orden actual hasta
+sus cutovers posteriores. P10 continúa deshabilitado.
 
 ---
 
@@ -64,8 +66,8 @@ No existe rol estudiante en esta versión. Las evaluaciones se descargan para se
 - carga de múltiples entregables;
 - jobs asíncronos con progreso, retry controlado y diagnóstico;
 - IR con evidencia/localizadores;
-- P01-P04/P06/P07/P09 detrás de contratos v1.1; P05/P08 retenidos para compatibilidad y P10 deshabilitado;
-- mapeo de variantes/oportunidades, plan determinista exacto de \(N\), generación, validaciones deterministas y revisión docente;
+- P01-P04/P06/P07/P09 detrás de contratos v1.1; P05/P08 retenidos para compatibilidad, P08 aún activo en runtime y P10 deshabilitado;
+- P06 categórico sobre aliases locales, materialización canónica, resumen durable 0..N y plan determinista exacto de \(N\), seguido de generación, validaciones y revisión;
 - fail-closed atómico: nunca una evaluación parcial;
 - revisión evidence-first y acciones por pregunta;
 - reemplazo localizado desde una oportunidad de reserva;
@@ -173,7 +175,7 @@ No se comparten tablas directamente desde el frontend. Los módulos se llaman me
 | Ambigüedades/blueprint | specs fuente, issues, dimensiones, variantes, operaciones soportadas, oportunidades, edit/approve/version |
 | Entregables | carga múltiple, subject refs, estados, filtros, retry/cancel |
 | Detalle de submission | timeline, artifacts, evidence units, matches, oportunidades, plan, coverage y diagnostics |
-| Revisión de Assessment | pregunta, ancla, fuente, oportunidad/variante, scores, guía estructurada y acciones |
+| Revisión de Assessment | pregunta, ancla, fuente, oportunidad/variante, soporte categórico, diagnostics legacy, guía estructurada y acciones |
 | Revisión masiva | selección, elegibilidad, versiones, confirmación, aprobados y excepciones |
 | Exportaciones | vistas opcionales de evaluación/guía, cobertura, JSON, estado/expiración |
 | Métricas experimentales | aceptación, ediciones, fallos, latencia, tokens, costo y review time |
@@ -254,11 +256,11 @@ su job/estado activo hasta una fase posterior.
 | `BLUEPRINT_PREFLIGHT` | blueprint + spec/rubric/policy/decisiones | blueprint READY/NEEDS_REVIEW + preflight | determinista; reuse hash-bound |
 | `BLUEPRINT_REVIEW` | descriptor P05 anterior al corte | reconciliación por preflight, sin provider | LEGACY/HISTORICAL; retry/resume compatible |
 | `SUBMISSION_PARSE` | artifacts submission | EvidenceUnits | un fallback aprobado |
-| `EVIDENCE_MAP` | request P06 | claims, variant matches y oportunidades | bundle corregido |
+| `EVIDENCE_MAP` | request P06 -> envelope de aliases | draft categórico -> `EvidenceMapPatch` con resumen 0..N | bundle/policy/blueprint nuevo; reuse exacto si frontera coincide |
 | `ASSESSMENT_PLAN` | oportunidades + policy | exactamente \(N\) primarias + reserva o diagnóstico | no retry sin input/policy nuevo |
 | `QUESTION_GENERATE` | request P07/P10 por oportunidad | `QuestionGenerationResult` | reemplazo desde reserva |
-| `QUESTION_REVIEW` | request P08 | `QuestionReviewResult` | LEGACY; cutover a validadores + docente pendiente |
-| `GUIDE_BUILD` | request P09 | `EvaluationGuide` | objetivo: después de preguntas aprobadas; no reparación semántica |
+| `QUESTION_REVIEW` | request P08 | `QuestionReviewResult` | ACTIVE_CURRENT; target inactivo, cutover pendiente |
+| `GUIDE_BUILD` | request P09 | `EvaluationGuide` | orden runtime actual sin cambios; objetivo posterior diferido |
 | `ASSEMBLE` | plan + preguntas + guía + lineage | Assessment | determinista y atómico |
 | `RENDER_EXPORT` | Assessment | archivos derivados | retry sin LLM |
 
@@ -329,10 +331,10 @@ Los blobs nunca se guardan en PostgreSQL. Los JSONB completos son fuente del sna
 | P03 | actividad | AmbiguityTriageRequest | AmbiguityReport | issue/options/blocking |
 | P04 | actividad | BlueprintBuildRequest | BlueprintModelDraft -> AssessmentBlueprint compilado | catálogo semántico propuesto; IDs/policy/estado y preflight en backend + docente |
 | P05 | histórico | BlueprintReviewRequest | BlueprintReview | INACTIVE_TARGET; lectura compatible |
-| P06 | submission | EvidenceMapRequest | EvidenceMapPatch | matches/oportunidades/operaciones permitidas |
+| P06 | submission | EvidenceMapRequest -> EvidenceMappingAliasEnvelope | EvidenceMappingModelDraft -> EvidenceMapPatch | aliases/scope, soporte categórico, materializador; planner decide N |
 | P07 | oportunidad cerrada | QuestionBuildRequest | QuestionGenerationResult | validaciones backend + revisión docente |
-| P08 | histórico | QuestionReviewRequest | QuestionReviewResult | INACTIVE_TARGET; lectura compatible |
-| P09 | preguntas aprobadas | GuideBuildRequest | EvaluationGuide | question/source/levels; sin aviso global generado |
+| P08 | runtime actual / histórico objetivo | QuestionReviewRequest | QuestionReviewResult | ACTIVE_CURRENT; INACTIVE_TARGET pendiente |
+| P09 | orden runtime actual | GuideBuildRequest | EvaluationGuide | sin cambio en Fase 4; orden objetivo posterior pendiente |
 | P10 | oportunidad enriquecida posterior | QuestionBuildRequest | QuestionGenerationResult | citations/source IDs |
 | P11 | fallo estructural | SchemaRepairRequest | SchemaRepairResult | revalidar schema objetivo |
 
@@ -342,7 +344,8 @@ autorizado.
 
 Las rutas iniciales se conservan como historia/configuración compatible y no se
 modifican aquí. P05 ya no es alcanzable por ejecuciones nuevas; P08 no es activa
-en el objetivo pero su cutover está pendiente. El harness actual no es
+en el objetivo, pero sigue activa en el runtime hasta su cutover. P09 tampoco se
+mueve en esta fase. El harness actual no es
 un gate canónico para escoger modelo. Cualquier comparación futura requiere un
 instrumento nuevo gobernado; no se implementa en este MVP change.
 
@@ -479,7 +482,7 @@ El costo fijo esperado es cercano a USD 0 mientras el uso permanezca dentro de c
 
 | Nivel | Casos obligatorios |
 |---|---|
-| Unit | validators, states, idempotency, score/plan/reserva, rutas, permisos/bulk approval y costos |
+| Unit | validators, states, idempotency, soporte categórico/plan/reserva, rutas, permisos/bulk approval y costos |
 | Contract | cada root, schema generation, extra fields, enums, P01-P11 fixtures |
 | Parser | PDF/DOCX/TXT/MD normales, vacíos, corruptos, injection y tamaños límite |
 | Integration | Supabase/R2/Cloud Run Jobs/provider mock/renderer |

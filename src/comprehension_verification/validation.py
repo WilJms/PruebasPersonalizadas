@@ -19,7 +19,7 @@ from .contracts import models as m
 PROMPT_APPLICATION_VALIDATOR_VERSIONS: Mapping[str, str] = MappingProxyType(
     {
         "P05_BLUEPRINT_REVIEW_V1": "application-validator-p05/2.2.0",
-        "P06_EVIDENCE_MAP_V1": "application-validator-p06/2.1.0",
+        "P06_EVIDENCE_MAP_V1": "application-validator-p06/3.0.0",
         "P07_QUESTION_BUILD_V1": "application-validator-p07/2.0.0",
         "P08_QUESTION_REVIEW_V1": "application-validator-p08/2.0.0",
         "P09_GUIDE_BUILD_V1": "application-validator-p09/2.0.0",
@@ -386,12 +386,7 @@ def validate_evidence_map(
             "CROSS_SUBMISSION_EVIDENCE", "mapping belongs to another submission"
         )
     if mapping.status != "READY":
-        if mapping.opportunities or mapping.claims or mapping.variant_matches:
-            raise ContextValidationError(
-                "PARTIAL_ASSESSMENT_FORBIDDEN", "failed mapping cannot expose usable annotations"
-            )
         validate_complete_diagnostics(mapping.diagnostics, status=mapping.status)
-        return
     dimensions, variants, templates = _blueprint_index(blueprint)
     variant_dimension_ids = {
         variant.variant_id: dimension.dimension_id
@@ -459,36 +454,11 @@ def validate_evidence_map(
             )
         if any(evidence_id not in context.evidence_by_id for evidence_id in match.evidence_ids):
             raise ContextValidationError("INVENTED_EVIDENCE_ID", "mapping references unknown evidence")
-        variant = variants[match.variant_id]
         _require_unique(
             match.evidence_ids,
             code="DUPLICATE_ID",
             label="variant match evidence IDs",
         )
-        selected = [context.evidence_by_id[evidence_id] for evidence_id in match.evidence_ids]
-        requirement = variant.evidence_requirement
-        if match.mapping_confidence < requirement.min_alignment:
-            raise ContextValidationError(
-                "EVIDENCE_MAPPING_UNCERTAIN",
-                "variant match confidence is below the blueprint alignment floor",
-            )
-        if len(set(match.evidence_ids)) < requirement.min_distinct_units:
-            raise ContextValidationError(
-                "INSUFFICIENT_RELEVANT_EVIDENCE",
-                "variant match does not satisfy the minimum distinct evidence units",
-            )
-        if any(item.modality not in requirement.allowed_modalities for item in selected):
-            raise ContextValidationError(
-                "EVIDENCE_MODALITY_MISMATCH", "variant match uses a disallowed modality"
-            )
-        if any(item.extraction_confidence < requirement.min_extraction_confidence for item in selected):
-            raise ContextValidationError(
-                "EVIDENCE_CONFIDENCE_LOW", "variant match uses evidence below the confidence floor"
-            )
-        if requirement.cross_artifact_required and len({item.artifact_id for item in selected}) < 2:
-            raise ContextValidationError(
-                "INSUFFICIENT_RELEVANT_EVIDENCE", "variant match requires distinct artifacts"
-            )
     matches_by_path = {
         (match.dimension_id, match.variant_id): match
         for match in mapping.variant_matches
@@ -505,14 +475,6 @@ def validate_evidence_map(
             raise ContextValidationError("INVENTED_ID", "opportunity references an unknown ID")
         if variant not in dimension.evidence_variants or template not in variant.question_opportunities:
             raise ContextValidationError("BLUEPRINT_REFERENCE_MISMATCH", "opportunity path is invalid")
-        if opportunity.opportunity_quality < max(
-            blueprint.assessment_constraints.minimum_opportunity_quality,
-            template.minimum_quality,
-        ):
-            raise ContextValidationError(
-                "OPPORTUNITY_QUALITY_BELOW_MINIMUM",
-                "opportunity quality is below its global or template minimum",
-            )
         if (
             variant_dimension_ids[opportunity.variant_id] != opportunity.dimension_id
             or template_variant_ids[opportunity.opportunity_template_id] != opportunity.variant_id
@@ -536,11 +498,6 @@ def validate_evidence_map(
             raise ContextValidationError(
                 "UNAUTHORIZED_EVIDENCE",
                 "opportunity widens the evidence of its variant match",
-            )
-        if opportunity.evidence_fit != match.evidence_fit:
-            raise ContextValidationError(
-                "BLUEPRINT_REFERENCE_MISMATCH",
-                "opportunity changes the evidence fit of its variant match",
             )
         supported = {item.cognitive_operation for item in variant.supported_operations}
         if opportunity.cognitive_operation not in supported:
@@ -578,24 +535,32 @@ def validate_evidence_map(
             label="opportunity evidence IDs",
         )
         selected = [context.evidence_by_id[evidence_id] for evidence_id in opportunity.evidence_ids]
-        if len(set(opportunity.evidence_ids)) < requirement.min_distinct_units:
-            raise ContextValidationError(
-                "INSUFFICIENT_RELEVANT_EVIDENCE",
-                "opportunity does not satisfy the variant evidence requirement",
-            )
-        if any(item.modality not in requirement.allowed_modalities for item in selected):
-            raise ContextValidationError(
-                "EVIDENCE_MODALITY_MISMATCH", "opportunity uses a disallowed modality"
-            )
-        if any(item.extraction_confidence < requirement.min_extraction_confidence for item in selected):
-            raise ContextValidationError(
-                "EVIDENCE_CONFIDENCE_LOW", "opportunity uses evidence below the confidence floor"
-            )
-        if requirement.cross_artifact_required and len({item.artifact_id for item in selected}) < 2:
-            raise ContextValidationError(
-                "INSUFFICIENT_RELEVANT_EVIDENCE",
-                "opportunity requires evidence from distinct artifacts",
-            )
+        if opportunity.support_status == m.EvidenceSupportStatus.SUFFICIENT:
+            if len(set(opportunity.evidence_ids)) < requirement.min_distinct_units:
+                raise ContextValidationError(
+                    "INSUFFICIENT_RELEVANT_EVIDENCE",
+                    "sufficient opportunity does not satisfy the evidence requirement",
+                )
+            if any(item.modality not in requirement.allowed_modalities for item in selected):
+                raise ContextValidationError(
+                    "EVIDENCE_MODALITY_MISMATCH",
+                    "sufficient opportunity uses a disallowed modality",
+                )
+            if any(
+                item.extraction_confidence < requirement.min_extraction_confidence
+                for item in selected
+            ):
+                raise ContextValidationError(
+                    "EVIDENCE_CONFIDENCE_LOW",
+                    "sufficient opportunity uses evidence below the extraction floor",
+                )
+            if requirement.cross_artifact_required and len(
+                {item.artifact_id for item in selected}
+            ) < 2:
+                raise ContextValidationError(
+                    "INSUFFICIENT_RELEVANT_EVIDENCE",
+                    "sufficient opportunity requires evidence from distinct artifacts",
+                )
     semantic_fingerprints = [
         canonical_hash(
             {
@@ -635,20 +600,6 @@ def validate_evidence_map(
         raise ContextValidationError(
             "P06_PLANNING_POLICY_MISMATCH",
             "planning policy differs from the approved blueprint constraints",
-        )
-    eligible_count = sum(
-        opportunity.evidence_fit >= planning_policy.minimum_evidence_fit
-        and bool(
-            set(opportunity.allowed_response_formats).intersection(
-                constraints.allowed_response_formats
-            )
-        )
-        for opportunity in mapping.opportunities
-    )
-    if eligible_count < constraints.question_count:
-        raise ContextValidationError(
-            "P06_READY_ELIGIBILITY_MISMATCH",
-            "READY mapping does not contain enough planner-eligible opportunities",
         )
 
 

@@ -295,15 +295,7 @@ def _selected_question(
         choices=list(candidate.choices),
         student_justification_required=candidate.student_justification_required,
         preliminary_guide=candidate.preliminary_guide,
-        planning_score=min(
-            1.0,
-            (
-                opportunity.activity_priority
-                + opportunity.evidence_fit
-                + opportunity.opportunity_quality
-            )
-            / 3,
-        ),
+        planning_score=opportunity.activity_priority,
     )
 
 

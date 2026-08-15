@@ -9,6 +9,13 @@
 > “autoridad siguiente”— se refiere exclusivamente al checkpoint fechado de
 > esa sección y no expresa autoridad posterior a ADR-037.
 
+**Estado Fase 4 (2026-08-15):** el prompt pack ejecutable avanza a `1.1.15` y
+P06 a `1.1.6` por su DTO alias-only/categórico y materialización server-side.
+La validación de esta fase fue exclusivamente mock/offline: cero requests,
+secreto, transporte o costo billable. Los reportes de abajo continúan ligados a
+sus versiones históricas —incluido `1.1.14`— y no se regeneran, reinterpretan
+ni convierten en gate canónico.
+
 ## Historial — cualificación Luna/high fallida (2026-08-12)
 
 La última remediación focal cerró exclusivamente P08 y el oráculo P05. P08
