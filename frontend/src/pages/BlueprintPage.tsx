@@ -221,7 +221,7 @@ export function BlueprintPage() {
         const journeyJob = activity.journey.job;
         if (
           journeyJob &&
-          journeyJob.stage === "BLUEPRINT_REVIEW" &&
+          ["BLUEPRINT_PREFLIGHT", "BLUEPRINT_REVIEW"].includes(journeyJob.stage) &&
           ["QUEUED", "RUNNING", "FAILED", "NEEDS_REVIEW"].includes(journeyJob.status)
         ) {
           setActiveJobId(journeyJob.job_id);
@@ -231,7 +231,7 @@ export function BlueprintPage() {
         } catch (caught) {
           if (activity.status === "NEEDS_REVIEW") {
             await loadAmbiguity();
-          } else if (["QUEUED", "RUNNING", "BLUEPRINT_REVIEW_QUEUED"].includes(activity.status)) {
+          } else if (["QUEUED", "RUNNING", "BLUEPRINT_PREFLIGHT_QUEUED", "BLUEPRINT_REVIEW_QUEUED"].includes(activity.status)) {
             setRecoveringActivity(true);
             setError(null);
           } else {
@@ -367,11 +367,6 @@ export function BlueprintPage() {
     }
   };
 
-  const criticalFailure = useMemo(
-    () => view?.review?.checks?.some((check) => check.critical && check.status === "FAIL") ?? false,
-    [view],
-  );
-
   const updateDimension = (dimensionId: string, field: "name" | "justification", value: string) => {
     setDraft((current) =>
       current
@@ -454,7 +449,7 @@ export function BlueprintPage() {
       setView(null);
       setDraft(null);
       setJob(started);
-      setActivityStatus("BLUEPRINT_REVIEW_QUEUED");
+      setActivityStatus("BLUEPRINT_PREFLIGHT_QUEUED");
       setActiveJobId(started.job_id);
       setEditing(false);
     } catch (caught) {
@@ -499,7 +494,7 @@ export function BlueprintPage() {
           <div>
             <span className="eyebrow">Pipeline de actividad</span>
             <h1>Construyendo el blueprint</h1>
-            <p>P01–P05 están normalizando fuentes y revisando el catálogo común.</p>
+            <p>P01–P04 construyen el catálogo y el backend ejecuta su preflight determinista.</p>
           </div>
           <StatusBadge status={job?.status ?? "RUNNING"} />
         </header>
@@ -554,7 +549,7 @@ export function BlueprintPage() {
 
   const blueprint = editing ? draft : view.blueprint;
   const approved = blueprint.status === "APPROVED";
-  const reviewReady = !view.review || view.review.status === "READY";
+  const preflightPassed = view.preflight?.catalog_plan_feasible === true;
 
   return (
     <div className="content-stack">
@@ -611,33 +606,32 @@ export function BlueprintPage() {
         <div className="reference-list"><span className="mini-label">Decisiones docentes vinculadas</span>{(blueprint.decision_ids ?? []).length ? <div className="chip-row">{(blueprint.decision_ids ?? []).map((id) => <code key={id}>{id}</code>)}</div> : <p className="muted">Sin decisiones adicionales.</p>}</div>
       </section>
 
-      {view.review && (
+      {view.preflight && (
         <section className="review-banner">
           <div>
-            <span className="eyebrow">Revisión P05</span>
-            <h2>{view.review.approval_recommendation?.replaceAll("_", " ") ?? "Requiere revisión"}</h2>
+            <span className="eyebrow">Preflight determinista</span>
+            <h2>{preflightPassed ? "Catálogo factible" : "Requiere corrección"}</h2>
           </div>
           <div className="review-checks">
-            {(view.review.checks ?? []).map((check) => (
-              <span className={`review-check check-${check.status.toLowerCase()}`} key={check.check_code}>
-                {check.status} · {check.category.replaceAll("_", " ")}
+            {(
+              [
+                ["Política", view.preflight.policy_constraints_match],
+                ["Tamaño de catálogo", view.preflight.catalog_size_sufficient],
+                ["Tiempo", view.preflight.time_feasible],
+                ["Formatos", view.preflight.format_feasible],
+                ["Matriz de justificación", view.preflight.justification_matrix_valid],
+                ["Cobertura de fuentes", view.preflight.source_coverage_complete],
+              ] as const
+            ).map(([label, passed]) => (
+              <span className={`review-check check-${passed ? "pass" : "fail"}`} key={label}>
+                {passed ? "PASS" : "FAIL"} · {label}
               </span>
-            ))}
-          </div>
-          <div className="review-check-details">
-            {(view.review.checks ?? []).map((check) => (
-              <article key={check.check_code}>
-                <header><code>{check.check_code}</code><StatusBadge status={check.status === "FAIL" ? "ERROR" : check.status === "WARN" ? "WARNING" : "READY"} label={check.status} />{check.critical && <strong>Crítico</strong>}</header>
-                <p>{check.message}</p>
-                {(check.referenced_ids ?? []).length > 0 && <div className="chip-row">{(check.referenced_ids ?? []).map((id) => <code key={id}>{id}</code>)}</div>}
-                {check.correction && <p><strong>Corrección:</strong> {check.correction}</p>}
-              </article>
             ))}
           </div>
         </section>
       )}
 
-      <Diagnostics items={[...(view.issues ?? []), ...(blueprint.diagnostics ?? []), ...(view.review?.diagnostics ?? [])]} />
+      <Diagnostics items={view.issues ?? blueprint.diagnostics ?? []} />
 
       <div className="blueprint-list">
         {blueprint.dimensions.map((dimension, dimensionIndex) => (
@@ -851,7 +845,7 @@ export function BlueprintPage() {
           {!approved && !editing && (
             <button
               className="button button-primary"
-              disabled={saving || criticalFailure || !reviewReady}
+              disabled={saving || !preflightPassed}
               onClick={() => void approve()}
               type="button"
             >

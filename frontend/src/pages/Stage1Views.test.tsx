@@ -200,7 +200,7 @@ describe("Stage 1 durable landing", () => {
   });
 });
 
-describe("Stage 1 blueprint review", () => {
+describe("Stage 1 blueprint preflight", () => {
   beforeEach(() => {
     vi.mocked(getLatestBlueprint).mockReset().mockResolvedValue(structuredClone(blueprintView));
     vi.mocked(getJob).mockReset();
@@ -216,7 +216,7 @@ describe("Stage 1 blueprint review", () => {
       activityResource({
         activity_id: "activity_01",
         title: "Actividad con blueprint",
-        status: "BLUEPRINT_REVIEW",
+        status: "BLUEPRINT_READY",
         journey: {
           continue_path: "/activities/activity_01/blueprint",
           next_action: "REVIEW_BLUEPRINT",
@@ -247,6 +247,10 @@ describe("Stage 1 blueprint review", () => {
     expect(screen.getAllByText("EXPLAIN MECHANISM").length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText("Efecto de la decisión principal")).toBeInTheDocument();
     expect(screen.getByText(/blueprint-3/)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Catálogo factible" })).toBeInTheDocument();
+    expect(screen.getByText("PASS · Política")).toBeInTheDocument();
+    expect(screen.queryByText("Revisión P05")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Aprobar blueprint" })).toBeEnabled();
 
     await user.click(screen.getByRole("button", { name: "Editar blueprint" }));
     expect(screen.getByRole("textbox", { name: "Nombre de dimensión 1" })).toBeInTheDocument();
@@ -254,7 +258,7 @@ describe("Stage 1 blueprint review", () => {
     expect(screen.queryByRole("textbox", { name: /operación/i })).not.toBeInTheDocument();
   });
 
-  it("waits for the durable P05 job before presenting the edited blueprint version", async () => {
+  it("waits for the durable preflight job before presenting the edited blueprint version", async () => {
     const user = userEvent.setup();
     const reviewed = structuredClone(blueprintView);
     reviewed.etag = '"sha256:blueprint-4"';
@@ -267,9 +271,9 @@ describe("Stage 1 blueprint review", () => {
       .mockResolvedValueOnce(reviewed);
     vi.mocked(updateBlueprint).mockResolvedValue({
       ...failedTechnicalJob,
-      job_id: "job_blueprint_review",
+      job_id: "job_blueprint_preflight",
       aggregate_id: "activity_01",
-      stage: "BLUEPRINT_REVIEW",
+      stage: "BLUEPRINT_PREFLIGHT",
       status: "QUEUED",
       progress: 0,
       attempt: 1,
@@ -277,9 +281,9 @@ describe("Stage 1 blueprint review", () => {
     });
     vi.mocked(getJob).mockResolvedValue({
       ...failedTechnicalJob,
-      job_id: "job_blueprint_review",
+      job_id: "job_blueprint_preflight",
       aggregate_id: "activity_01",
-      stage: "BLUEPRINT_REVIEW",
+      stage: "BLUEPRINT_PREFLIGHT",
       status: "SUCCEEDED",
       progress: 1,
       attempt: 1,
@@ -312,7 +316,7 @@ describe("Stage 1 blueprint review", () => {
     );
     expect(await screen.findByRole("heading", { name: "Comprensión causal revisada" })).toBeInTheDocument();
     expect(screen.getByText(/blueprint-4/)).toBeInTheDocument();
-    expect(getJob).toHaveBeenCalledWith("job_blueprint_review");
+    expect(getJob).toHaveBeenCalledWith("job_blueprint_preflight");
     expect(getLatestBlueprint).toHaveBeenCalledTimes(2);
   });
 
@@ -361,7 +365,7 @@ describe("Stage 1 blueprint review", () => {
         ...failedTechnicalJob,
         job_id: "job_resumed",
         aggregate_id: "activity_01",
-        stage: "BLUEPRINT_REVIEW",
+        stage: "BLUEPRINT_PREFLIGHT",
         status: "SUCCEEDED",
         progress: 1,
         attempt: 1,

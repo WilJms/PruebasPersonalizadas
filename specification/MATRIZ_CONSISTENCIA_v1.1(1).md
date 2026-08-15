@@ -1,7 +1,7 @@
 # Matriz de consistencia v1.1
 
 **Auditoría:** arquitectura, P01-P11, contratos, Pydantic, JSON Schema, persistencia/API y plan  
-**Fecha:** 14-08-2026
+**Fecha:** 15-08-2026
 **Criterio:** cada fila distingue el objetivo ADR-037 de los contratos y estados legacy retenidos durante el cutover.
 
 ## 1. Matriz sistemática
@@ -17,8 +17,8 @@
 | `AmbiguityTriageRequest` -> `AmbiguityReport` | P03 Luna-high | roots exportados | decisiones/UI | consistente |
 | `BlueprintPolicy`, `AssessmentPlanningPolicy` | restricciones confiables y función de plan | roots exportados | policy snapshots | consistente |
 | `BlueprintModelDraft` | output de inferencia P04 con aliases D/V/T locales | dimensiones, variantes, operaciones soportadas y templates sin bookkeeping | sólo frontera provider/compilador | consistente |
-| `AssessmentBlueprint` | compilador P04; catálogo independiente de \(N\) -> preflight -> docente | IDs/policy/estado server-owned + semántica compilada | blueprints + ETag/approve | objetivo formalizado; cutover pendiente |
-| `BlueprintReview` | P05 histórico/inactivo objetivo | contrato retenido | review snapshot legible | compatibilidad legacy |
+| `AssessmentBlueprint` | compilador P04; catálogo independiente de \(N\) -> preflight -> docente | IDs/policy/estado server-owned + semántica compilada | blueprints + preflight + ETag/approve | cutover P05 completo |
+| `BlueprintReview` | P05 histórico/inactivo | contrato retenido | review snapshot nullable y legible; no se escribe en flujos nuevos | compatibilidad legacy |
 | `EvidenceMapPatch` | P06 Luna-high | claims + variant matches + oportunidades; sin parcial utilizable | evidence claims/matches/opportunities | consistente |
 | `AssessmentPlan` | planificador determinista sin LLM | exactamente \(N\) primarias + reserva disjunta o diagnóstico específico | assessment_plans | consistente |
 | `QuestionBuildRequest` -> `QuestionGenerationResult` | P07 Luna-high; una pregunta por oportunidad | root request/output; CLOSED por default | generated_questions | consistente |
@@ -33,7 +33,7 @@
 | `EvaluationGuide` | representación principal en plataforma | root independiente | `evaluation_guides`; PDF/HTML opcional | consistente |
 | aviso de autoría/IA/historia | footer/callout fijo de producto | deliberadamente fuera de outputs LLM | componente UI, no export generado | consistente |
 | `SubmissionProcessingState` | mapeo -> plan -> generación -> validación -> docente -> guía | cuatro terminales pedagógicos específicos | GET submission | target; migración de estados pendiente |
-| `pipeline-authority/1.0.0` | pipelines y autoridad backend/modelo/docente | manifiesto Python inmutable | no muta persistencia | consistente |
+| `pipeline-authority/1.0.0` | pipelines y autoridad backend/modelo/docente | manifiesto Python inmutable | P05 cutover completo; P08 pendiente | consistente |
 | oracle de qualification | `VALID`/`ORACLE_SUSPECT`/`INVALID`/`NOT_APPLICABLE` | clasificador causal | reportes históricos/sintéticos | consistente |
 | `JobStatus` | Cloud Run Jobs | root técnico separado | jobs/stage_runs | consistente |
 | `ModelRoute` | config aprobada completa | provider/model/snapshot/effort/temp/capabilities/limits | catálogo + ledger | consistente |
@@ -61,7 +61,7 @@
 14. La API persiste el job antes de disparar Cloud Run Jobs; cerrar el navegador no cancela el trabajo.
 15. Backend decide identidad, versiones, hashes, estado, lineage, pertenencia, restricciones, factibilidad, almacenamiento, transiciones y validaciones deterministas.
 16. Modelo propone semántica/estructura/redacción/observables; docente resuelve ambigüedad y conserva autoridad académica final.
-17. P05/P08 no son etapas activas objetivo y P10 está deshabilitado; contratos/receipts históricos no implican activación.
+17. P05 no es etapa activa y P08 no es etapa activa objetivo; P10 está deshabilitado. Contratos/receipts históricos no implican activación.
 18. `ORACLE_SUSPECT` hace inconclusa la atribución y prevalece sobre `MODEL_OWNED_*`.
 19. Sólo `SYNTHETIC_ONLY_NO_STUDENT_DATA` enumera códigos diagnósticos en claro con hash; la política de datos reales no cambia.
 20. P04 no devuelve identidad, workflow, policy materializada ni prueba de factibilidad: el servidor compila `BlueprintModelDraft`, crea los IDs canónicos y ejecuta el preflight/planner exacto después.

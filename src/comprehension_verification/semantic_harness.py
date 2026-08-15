@@ -24,6 +24,7 @@ from .model_gateway.gateway import PROMPT_RELATIONSHIP_VALIDATOR_VERSIONS
 from .model_gateway.openai_routes import OPENAI_ROUTE_PROFILES
 from .parsers.service import DOCX_MEDIA_TYPE, PARSER_VERSION, ParsedArtifact, SafeParserService
 from .planning import PLANNER_VERSION, build_assessment_plan
+from .pipeline_authority import PIPELINE_CUTOVER_STATUS
 from .qualification_semantics import (
     CheckpointAssessment,
     CheckpointClass,
@@ -83,6 +84,9 @@ P04_P09_PROMPT_IDS = (
     "P07_QUESTION_BUILD_V1",
     "P08_QUESTION_REVIEW_V1",
     "P09_GUIDE_BUILD_V1",
+)
+_HISTORICAL_RUNTIME_SOURCE_PATHS = frozenset(
+    {"src/comprehension_verification/web/workflows.py"}
 )
 
 
@@ -223,6 +227,14 @@ def load_semantic_fixture() -> dict[str, Any]:
 
 
 def frozen_product_boundary_proof() -> dict[str, Any]:
+    """Verify the archived ladder boundary without canonizing current runtime.
+
+    The Phase 3 P05 cutover intentionally changes the product workflow.  The
+    ladder evidence remains immutable and historical, so its recorded workflow
+    hash is returned as archived evidence while every other frozen source stays
+    byte-verified against the working tree.
+    """
+
     frozen = json.loads(
         FROZEN_PRODUCT_BOUNDARY_PATH.read_text(encoding="utf-8")
     )
@@ -230,8 +242,17 @@ def frozen_product_boundary_proof() -> dict[str, Any]:
         path: sha256((ROOT / path).read_bytes()).hexdigest()
         for path in frozen["source_file_sha256"]
     }
-    if actual_files != frozen["source_file_sha256"]:
+    changed_paths = {
+        path
+        for path, digest in actual_files.items()
+        if digest != frozen["source_file_sha256"][path]
+    }
+    if changed_paths - _HISTORICAL_RUNTIME_SOURCE_PATHS:
         raise ValueError("frozen product source boundary changed")
+    if changed_paths and PIPELINE_CUTOVER_STATUS != (
+        "P05_RUNTIME_CUTOVER_COMPLETE_P08_PENDING"
+    ):
+        raise ValueError("historical runtime drift requires the Phase 3 cutover")
     actual_route_profile_hashes = {
         profile_id: canonical_hash(
             {
@@ -267,7 +288,7 @@ def frozen_product_boundary_proof() -> dict[str, Any]:
     return {
         "baseline_git_sha": frozen["baseline_git_sha"],
         "manifest_hash": canonical_hash(frozen),
-        "source_file_sha256": actual_files,
+        "source_file_sha256": frozen["source_file_sha256"],
         "route_profile_material_hashes": actual_route_profile_hashes,
         "prompts": actual_prompts,
         "question_validation_thresholds": actual_thresholds,
@@ -379,10 +400,11 @@ def terra_ladder_harness_freeze_proof(
             ),
         },
         "assembler": {
-            "version": ASSEMBLER_VERSION,
-            "hash": _source_file_hash(
+            "version": frozen_boundary["component_versions"]["assembler"],
+            "hash": "sha256:"
+            + frozen_boundary["source_file_sha256"][
                 "src/comprehension_verification/web/workflows.py"
-            ),
+            ],
         },
         "docx": {
             "hash": canonical_hash(docx_hashes),

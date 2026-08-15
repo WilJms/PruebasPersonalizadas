@@ -48,7 +48,8 @@ No copie ni redefina modelos Pydantic. Importe `comprehension_verification.contr
   P01→P02→P03→P04→preflight determinista→aprobación docente; por submission
   P06→planner determinista→P07→validaciones deterministas→revisión/aprobación
   docente→P09. P05/P08 son inactivos en el objetivo y P10 sigue deshabilitado;
-  el cutover runtime de dependencias legacy P05/P08 permanece pendiente;
+  el cutover runtime de P05 está completo con lectura/recovery histórico;
+  el cutover de P08 y el orden objetivo de P09 permanecen pendientes;
 - Assessment y EvaluationGuide JSON separados; HTML/PDF son vistas derivadas;
 - artefactos locales son solo desarrollo/fixtures, no operación productiva.
 - shell E1 privado y tenant-scoped; Supabase se usa para Auth y PostgreSQL;

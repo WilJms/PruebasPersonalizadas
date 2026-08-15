@@ -19,6 +19,7 @@ from comprehension_verification.web.jobs import RecordingJobRunner
 from comprehension_verification.web.object_store import MemoryObjectStore
 from comprehension_verification.web.repository import (
     ArtifactRow,
+    BlueprintRow,
     EvidenceRow,
     IdempotencyRow,
     JobRow,
@@ -415,7 +416,7 @@ def test_activity_configuration_uses_etag_and_locks_after_pipeline_start() -> No
         assert initial_estimate_response.status_code == 200
         initial_estimate = initial_estimate_response.json()["estimate"]
         assert initial_estimate["phase"] == "ACTIVITY_BLUEPRINT"
-        assert initial_estimate["estimated_model_calls"] == 4
+        assert initial_estimate["estimated_model_calls"] == 3
         assert initial_estimate["within_limit"] is True
         edited = client.patch(
             f"/api/v1/activities/{activity_id}",
@@ -711,7 +712,6 @@ def test_stage1_single_submission_mock_e2e_survives_new_browser_session() -> Non
             "P02_RUBRIC_NORMALIZE_V1",
             "P03_AMBIGUITY_TRIAGE_V1",
             "P04_BLUEPRINT_BUILD_V1",
-            "P05_BLUEPRINT_REVIEW_V1",
         }
 
         latest = client.get(f"/api/v1/activities/{activity_id}/blueprints/latest")
@@ -723,6 +723,31 @@ def test_stage1_single_submission_mock_e2e_survives_new_browser_session() -> Non
             ).json()
         )
         original = latest.json()["blueprint"]
+        assert latest.json()["preflight"]["catalog_plan_feasible"] is True
+        assert latest.json()["review"] is None
+        persisted_blueprint = app.state.runtime.repository.latest_blueprint(
+            activity_id, "tnt_experimental"
+        )
+        with app.state.runtime.repository.session() as session:
+            historical = session.get(BlueprintRow, persisted_blueprint.row_id)
+            assert historical is not None
+            historical.preflight = None
+            historical.review = m.BlueprintReview(
+                activity_id=activity_id,
+                blueprint_id=original["blueprint_id"],
+                blueprint_version=original["blueprint_version"],
+                status="TECHNICAL_FAILURE",
+            ).model_dump(mode="json")
+        legacy_projection = client.get(
+            f"/api/v1/activities/{activity_id}/blueprints/latest"
+        )
+        assert legacy_projection.status_code == 200, legacy_projection.text
+        assert legacy_projection.json()["review"]["status"] == (
+            "TECHNICAL_FAILURE"
+        )
+        assert legacy_projection.json()["preflight"][
+            "catalog_plan_feasible"
+        ] is True
         assert original["assessment_constraints"]["question_count"] == 2
         assert len(
             [
@@ -754,13 +779,11 @@ def test_stage1_single_submission_mock_e2e_survives_new_browser_session() -> Non
         assert edited.status_code == 202, edited.text
         queued_edit = dto.JobEnvelope.model_validate(edited.json()).job
         assert queued_edit.status == "SUCCEEDED"
-        assert queued_edit.stage == "BLUEPRINT_REVIEW"
+        assert queued_edit.stage == "BLUEPRINT_PREFLIGHT"
         edit_ledger = client.get(
             f"/api/v1/jobs/{queued_edit.job_id}/model-calls"
         ).json()["items"]
-        assert [item["prompt_id"] for item in edit_ledger] == [
-            "P05_BLUEPRINT_REVIEW_V1"
-        ]
+        assert edit_ledger == []
         reviewed_edit = client.get(
             f"/api/v1/activities/{activity_id}/blueprints/latest"
         )
@@ -778,6 +801,24 @@ def test_stage1_single_submission_mock_e2e_survives_new_browser_session() -> Non
         dto.BlueprintEnvelope.model_validate(approved.json())
         assert approved.json()["blueprint"]["status"] == "APPROVED"
         assert approved.json()["blueprint"]["blueprint_version"] == 3
+        activity_metrics = m.ExperimentMetrics.model_validate(
+            client.get(
+                f"/api/v1/activities/{activity_id}/metrics"
+            ).json()["metrics"]
+        )
+        assert "BLUEPRINT_PREFLIGHT" in {
+            item.stage for item in activity_metrics.by_stage
+        }
+        assert not any(
+            "p05_blueprint_review" in item.route_id
+            for item in activity_metrics.by_model
+        )
+        assert app.state.runtime.repository.has_audit_event(
+            tenant_id="tnt_experimental",
+            event_type="blueprint.approved",
+            aggregate_id=approved.json()["blueprint"]["blueprint_id"],
+            payload_contains={"blueprint_version": 3},
+        )
 
         submission_response = client.post(
             f"/api/v1/activities/{activity_id}/submissions",

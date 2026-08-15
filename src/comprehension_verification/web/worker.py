@@ -14,6 +14,11 @@ from .runtime import build_worker_bootstrap_runtime, build_worker_runtime
 from .settings import get_worker_settings
 
 
+_PROVIDER_FREE_JOB_KINDS = frozenset(
+    {"BLUEPRINT_PREFLIGHT", "BLUEPRINT_REVIEW"}
+)
+
+
 async def run_once() -> int:
     settings = get_worker_settings()
     bootstrap = build_worker_bootstrap_runtime(settings)
@@ -30,7 +35,17 @@ async def run_once() -> int:
         return 0
     provider_grant = None
     api_key = None
-    if settings.model_mode == "real":
+    runtime_settings = settings
+    if settings.model_mode == "real" and claimed.kind in _PROVIDER_FREE_JOB_KINDS:
+        runtime_settings = type(settings).model_validate(
+            {
+                **settings.model_dump(),
+                "model_mode": "mock",
+                "openai_secret_version_resource": None,
+                "synthetic_evaluation_candidate_sha": None,
+            }
+        )
+    elif settings.model_mode == "real":
         assert settings.synthetic_evaluation_candidate_sha is not None
         assert settings.openai_secret_version_resource is not None
         try:
@@ -67,7 +82,7 @@ async def run_once() -> int:
             )
             return 1
     runtime = build_worker_runtime(
-        settings,
+        runtime_settings,
         repository=bootstrap.repository,
         object_store=bootstrap.object_store,
         provider_grant=provider_grant,

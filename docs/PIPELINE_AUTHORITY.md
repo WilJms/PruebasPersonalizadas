@@ -1,13 +1,13 @@
 # Autoridad del pipeline simplificado
 
-**Estado:** norma aceptada para preparar el cutover de Etapa 2, 2026-08-14
+**Estado:** norma aceptada; cutover P05 completado el 2026-08-15
 
 **Versión ejecutable:** `pipeline-authority/1.0.0`
 
-**Estado operativo:** `FORMALIZED_RUNTIME_CUTOVER_PENDING`
+**Estado operativo:** `P05_RUNTIME_CUTOVER_COMPLETE_P08_PENDING`
 
 Esta decisión simplifica la asignación de autoridad sin rediseñar la
-arquitectura conceptual ni cambiar routing. P04 conserva
+arquitectura conceptual ni cambiar routing histórico. P04 conserva
 `AssessmentBlueprint` como output canónico de etapa, pero su frontera de
 inferencia se restringe a `BlueprintModelDraft`; un compilador determinista
 materializa identidad, policy y estado antes del preflight. P06, P07 y P09 no
@@ -34,10 +34,13 @@ deshabilitado. Los contratos, prompts, rutas, fixtures, reportes y receipts
 históricos de P05/P08 se conservan para lectura, auditoría y migración; su
 presencia no les devuelve autoridad canónica ni autoriza llamadas.
 
-El runtime actual aún conserva dependencias operativas de P05/P08. Esta
-iteración formaliza el destino y los invariantes, pero no cambia workflows,
-jobs, persistencia, routing ni transiciones productivas. Por eso no puede
-declararse completo el cutover hasta resolver la sección 6.
+El runtime activo ya retiró P05 de workflows, jobs nuevos, guards de
+aprobación, costo, API y UI. `BlueprintRow.review`, el descriptor/job legacy,
+contratos, registry, rutas, fixtures y receipts siguen legibles; un job P05
+anterior al corte se reconcilia mediante `BLUEPRINT_PREFLIGHT` sin construir
+transporte, consumir autorización o resolver una clave, incluso si el worker
+eval-only fue configurado como real. P08 y el orden legado de P09 siguen
+pendientes según la sección 6.
 
 ## 2. Autoridad del backend
 
@@ -129,6 +132,18 @@ presente palabras como “vigente”, “gate”, “autoridad siguiente” o �
 expresiones sólo describen el checkpoint fechado donde fueron registradas; no
 confieren autoridad después de ADR-037.
 
+El `frozen_product_boundary.json` conserva el hash de `web/workflows.py` de su
+baseline Phase 1. Desde Fase 3 ese hash es deliberadamente archivado: el proof
+continúa verificando byte a byte las demás fuentes congeladas y devuelve el
+manifest histórico, pero no exige que el runtime activo mantenga el antiguo
+gate P05. Así se preserva evidencia sin canonizarla ni reescribirla.
+
+El runner local `cv-stage0 run-synthetic`, el rehearsal, el harness, los mocks
+y las pruebas directas del gateway que todavía materializan P05 se clasifican
+`TEST_ONLY` o `HISTORICAL_COMPATIBILITY`. No son endpoints del Service ni jobs
+ordinarios del producto y permanecen exclusivamente mock/offline salvo un gate
+de evaluación sintética con autorización humana independiente.
+
 Toda evaluación nueva de un checkpoint declara exactamente uno de estos
 estados de oracle:
 
@@ -155,18 +170,25 @@ colector nunca extrae códigos desde texto libre. Para cualquier otra
 clasificación no se añade esa enumeración: la política content-free de datos
 estudiantiles reales no cambia.
 
-## 6. Dependencias para el cutover posterior
+## 6. Estado del cutover y dependencias posteriores
 
-P05 todavía participa en:
+P05 ya no participa en el runtime activo:
 
-- `_run_activity_pipeline` y el job durable de revisión/edición de blueprint;
-- el guard de aprobación y `BlueprintRow.review`/`BlueprintEnvelope.review`;
-- estimación de llamadas/costo, estados de stage y resume;
-- contratos, registry, rutas, prompts, fixtures y observabilidad histórica.
+- P04 entrega el `AssessmentBlueprint` compilado a un StageRun durable
+  `BLUEPRINT_PREFLIGHT`;
+- PASS publica una versión `READY` para decisión docente y FAIL publica una
+  versión `NEEDS_REVIEW` con diagnostics/correction scope;
+- editar crea un job `BLUEPRINT_PREFLIGHT`, revalida y no invoca gateway;
+- aprobar recomputa el gate contra spec/rubric/policy/decisiones vigentes y no
+  consulta status, checks ni recommendation P05;
+- el presupuesto de actividad reserva P01/P02 opcional/P03/P04, nunca P05.
 
-El cutover debe reemplazar sólo su gate activo por el preflight determinista ya
-existente y la decisión docente, preservando versionado, idempotencia y
-compatibilidad de lectura. No debe borrar reviews P05 persistidas.
+Los jobs `BLUEPRINT_REVIEW` y sus descriptores sólo existen como entrada de
+recovery. El worker extrae el candidato histórico, verifica tenant, lineage,
+ETag, policy y estructura, ejecuta/reusa el preflight vigente y finaliza con la
+misma transición que un job nuevo. No llama P05 ni sobrescribe la review
+histórica. `BlueprintEnvelope.review` permanece como lectura legacy y
+`preflight` es la autoridad mecánica nueva.
 
 P08 todavía participa en:
 
@@ -182,10 +204,10 @@ P09 para que ocurra después de la revisión/aprobación docente, sin perder
 exactly-once, acciones localizadas ni lineage. Ese cambio toca workflows, jobs
 y persistencia y queda expresamente fuera de esta iteración.
 
-## 7. Límites de esta formalización
+## 7. Límites después de Fase 3
 
-No cambia provider routing, prompts ejecutables, parser, seguridad, tenancy,
-auth, storage, exports ni infraestructura. No autoriza despliegue, datos
-estudiantiles reales, un corpus nuevo ni llamadas billables. Cualquier cambio
-operativo posterior debe mantener P10 deshabilitado y demostrar regresión de
-Etapas 0/1/2 antes de promover el cutover.
+Fase 3 no cambia provider routing histórico, prompts ejecutables, parser,
+seguridad, tenancy, auth, storage, exports, P06/P07/P08/P09 ni infraestructura.
+No autoriza despliegue, datos estudiantiles reales, un corpus nuevo ni llamadas
+billables. La siguiente fase deberá tratar P08 y luego el orden de P09 con su
+propia migración compatible; P10 permanece deshabilitado.

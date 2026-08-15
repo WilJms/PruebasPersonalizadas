@@ -9,7 +9,9 @@
 compatibilidad e historia. En el pipeline objetivo P05/P08 son inactivos y P10
 continúa deshabilitado. El pack no es por sí mismo autoridad de activación ni
 gate canónico para seleccionar modelo; esta iteración no cambia prompts
-ejecutables fuera de P04 ni provider routing.
+ejecutables fuera de P04 ni provider routing. Fase 3 ya hizo inalcanzable P05
+desde ejecuciones nuevas; su fila/ruta sólo sirve a replay histórico. P08 y P09
+conservan el comportamiento previo hasta fases posteriores.
 
 Las versiones retenidas son P01 `1.1.3`, P02 `1.1.4`, P03 `1.1.3`, P04
 `1.1.12`, P05 `1.1.8`, P06 `1.1.5`, P07 `1.1.4`, P08 `1.1.5`, P09 `1.1.6`, P10 `1.1.3` y P11

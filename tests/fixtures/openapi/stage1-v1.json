@@ -1427,6 +1427,16 @@
             "title": "Issues",
             "type": "array"
           },
+          "preflight": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BlueprintReviewPreflight"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "review": {
             "anyOf": [
               {
@@ -1592,6 +1602,71 @@
           "message"
         ],
         "title": "BlueprintReviewCheck",
+        "type": "object"
+      },
+      "BlueprintReviewPreflight": {
+        "additionalProperties": false,
+        "description": "Server-derived facts that P05 must not ask the model to recompute.",
+        "properties": {
+          "blueprint_id": {
+            "maxLength": 128,
+            "minLength": 3,
+            "pattern": "^[a-z][a-z0-9_-]*$",
+            "title": "Blueprint Id",
+            "type": "string"
+          },
+          "blueprint_version": {
+            "minimum": 1.0,
+            "title": "Blueprint Version",
+            "type": "integer"
+          },
+          "catalog_plan_feasible": {
+            "title": "Catalog Plan Feasible",
+            "type": "boolean"
+          },
+          "catalog_size_sufficient": {
+            "title": "Catalog Size Sufficient",
+            "type": "boolean"
+          },
+          "format_feasible": {
+            "title": "Format Feasible",
+            "type": "boolean"
+          },
+          "justification_matrix_valid": {
+            "title": "Justification Matrix Valid",
+            "type": "boolean"
+          },
+          "policy_constraints_match": {
+            "title": "Policy Constraints Match",
+            "type": "boolean"
+          },
+          "schema_version": {
+            "const": "1.1.0",
+            "default": "1.1.0",
+            "title": "Schema Version",
+            "type": "string"
+          },
+          "source_coverage_complete": {
+            "title": "Source Coverage Complete",
+            "type": "boolean"
+          },
+          "time_feasible": {
+            "title": "Time Feasible",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "blueprint_id",
+          "blueprint_version",
+          "policy_constraints_match",
+          "source_coverage_complete",
+          "catalog_size_sufficient",
+          "time_feasible",
+          "format_feasible",
+          "justification_matrix_valid",
+          "catalog_plan_feasible"
+        ],
+        "title": "BlueprintReviewPreflight",
         "type": "object"
       },
       "BulkApprovalCommand": {

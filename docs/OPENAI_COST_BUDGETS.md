@@ -5,6 +5,17 @@
 > activa, un gate de selección de modelo ni autorización de gasto. Cualquier
 > precio o budget futuro debe revalidarse bajo un instrumento nuevo.
 
+## Estado activo después del cutover P05
+
+Fase 3 elimina P05 de toda estimación futura del producto. Una actividad nueva
+reserva tres llamadas sin rúbrica (P01/P03/P04) o cuatro con rúbrica
+(P01/P02/P03/P04); una edición de blueprint reserva **cero** llamadas porque su
+preflight es determinista. Para el fixture histórico con rúbrica, el ceiling
+con la tabla retenida baja de USD 0.253571 a USD 0.197097. No se suma el antiguo
+ceiling de edición P05 USD 0.111300. Receipts y cifras fechadas posteriores en
+este documento no se reescriben y no autorizan gasto. El producto/Service y el
+worker ordinario continúan en mock y P10 deshabilitado.
+
 Política Standard short-context observada y revalidada el 2026-08-11 en la página
 oficial de ese corte. El perfil histórico usaba únicamente Luna; Terra y Sol se
 conservan como referencias de catálogo y no son rutas callable ni fallback.

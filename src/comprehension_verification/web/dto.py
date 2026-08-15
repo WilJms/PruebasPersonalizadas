@@ -236,6 +236,8 @@ class PolicyDecisionEnvelope(m.StrictModel):
 
 class BlueprintEnvelope(m.StrictModel):
     blueprint: m.AssessmentBlueprint
+    preflight: m.BlueprintReviewPreflight | None = None
+    # Historical P05 evidence remains readable but is not an active gate.
     review: m.BlueprintReview | None = None
     issues: list[m.Diagnostic] = Field(default_factory=list)
     etag: Etag

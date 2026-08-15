@@ -24,6 +24,9 @@ CONVERGENCE_MIGRATION = MIGRATION_DIR / "202608120004_stage2_convergence.sql"
 SYNTHETIC_PROVIDER_MIGRATION = (
     MIGRATION_DIR / "202608120005_stage2_synthetic_provider_gate.sql"
 )
+P05_RUNTIME_CUTOVER_MIGRATION = (
+    MIGRATION_DIR / "202608150006_phase3_p05_runtime_cutover.sql"
+)
 STAGE2_RECOVERY = (
     ROOT
     / "deploy/supabase/rollbacks/202608070003_stage2_experimental_recovery.sql"
@@ -61,6 +64,7 @@ def test_supabase_migration_matches_orm_table_and_column_surface() -> None:
         "synthetic_provider_claims",
     }
     stage2_columns = {
+        "blueprints": {"preflight"},
         "idempotency_keys": {"expires_at"},
         "exports": {
             "activity_id", "assessment_version", "assessment_snapshot_hash",
@@ -123,6 +127,7 @@ def test_idempotency_hygiene_migration_removes_and_blocks_capabilities() -> None
         "202608070003_stage2_experimental.sql",
         "202608120004_stage2_convergence.sql",
         "202608120005_stage2_synthetic_provider_gate.sql",
+        "202608150006_phase3_p05_runtime_cutover.sql",
     ]
     sql = IDEMPOTENCY_HYGIENE_MIGRATION.read_text(encoding="utf-8").lower()
     assert sql.startswith("begin;")
@@ -153,6 +158,16 @@ def test_idempotency_hygiene_migration_removes_and_blocks_capabilities() -> None
     assert "synthetic_provider_authorizations_are_append_only" in provider_sql
     assert "synthetic_provider_claims_are_append_only" in provider_sql
     assert "synthetic_only_no_student_data" in provider_sql
+
+    cutover_sql = P05_RUNTIME_CUTOVER_MIGRATION.read_text(
+        encoding="utf-8"
+    ).lower()
+    assert cutover_sql.startswith("begin;")
+    assert cutover_sql.rstrip().endswith("commit;")
+    assert "alter table public.blueprints" in cutover_sql
+    assert "add column preflight jsonb" in cutover_sql
+    assert "drop column" not in cutover_sql
+    assert "drop table" not in cutover_sql
     assert "drop table" not in provider_sql
     assert "drop column" not in provider_sql
 

@@ -2248,7 +2248,7 @@ class Stage2Service:
         target_stage: str | None = None,
     ) -> dict[str, Any]:
         source = self.repository.job_control(job_id, actor.workspace_id)
-        if source.kind in {"ACTIVITY", "BLUEPRINT_REVIEW"}:
+        if source.kind in {"ACTIVITY", "BLUEPRINT_REVIEW", "BLUEPRINT_PREFLIGHT"}:
             self._require_teacher(actor)
         else:
             self._require_reviewer(actor)
@@ -2292,6 +2292,7 @@ class Stage2Service:
                         "AMBIGUITY_TRIAGE",
                         "BLUEPRINT_BUILD",
                         "BLUEPRINT_REVIEW",
+                        "BLUEPRINT_PREFLIGHT",
                     },
                     "SUBMISSION": {
                         "SUBMISSION_PARSE",
@@ -2303,7 +2304,11 @@ class Stage2Service:
                         "ASSEMBLE",
                     },
                     "QUESTION_ACTION": {"QUESTION_GENERATE"},
-                    "BLUEPRINT_REVIEW": {"BLUEPRINT_REVIEW"},
+                    "BLUEPRINT_REVIEW": {
+                        "BLUEPRINT_REVIEW",
+                        "BLUEPRINT_PREFLIGHT",
+                    },
+                    "BLUEPRINT_PREFLIGHT": {"BLUEPRINT_PREFLIGHT"},
                 }
                 if resume_from not in allowed_stages.get(source.kind, set()):
                     raise WorkflowError(

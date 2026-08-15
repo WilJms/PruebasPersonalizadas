@@ -5,11 +5,10 @@
 **Equipo:** dos desarrolladores  
 **Principio:** laboratorio para validar el pipeline; no SaaS institucional terminado
 
-**Aclaración ADR-037 (2026-08-14):** la autoridad objetivo queda formalizada
-sin cutover operativo en esta iteración. P05/P08 permanecen legibles como
-contratos/artefactos históricos, pero no son etapas activas objetivo; P10 sigue
-deshabilitado. El runtime actual conserva dependencias legacy que deben
-migrarse de forma compatible antes de declarar esta simplificación desplegada.
+**Aclaración ADR-037 / Fase 3 (2026-08-15):** P05/P08 permanecen legibles como
+contratos/artefactos históricos, pero no son etapas activas objetivo. El
+runtime ya retiró P05 mediante preflight durable y recovery compatible; P08 y
+el orden objetivo de P09 siguen pendientes. P10 continúa deshabilitado.
 
 ---
 
@@ -196,9 +195,9 @@ Prefijo `/api/v1`. Todos los mutables usan `Idempotency-Key`; ediciones versiona
 | GET/PATCH | `/activities/{activity_id}` | lee/edita mientras no haya blueprint aprobado |
 | POST | `/activities/{activity_id}/artifacts/uploads` | crea upload session para consigna/rúbrica |
 | POST | `/activities/{activity_id}/artifacts/{artifact_id}:complete` | verifica hash/MIME y registra |
-| POST | `/activities/{activity_id}/blueprints:generate` | endpoint estable; job legacy P01-P05, target P01-P04 + preflight |
-| GET | `/activities/{activity_id}/blueprints/{version}` | blueprint + review + issues |
-| PATCH | `/activities/{activity_id}/blueprints/{version}` | edición con ETag |
+| POST | `/activities/{activity_id}/blueprints:generate` | P01-P04 + `BLUEPRINT_PREFLIGHT`; cero P05 activo |
+| GET | `/activities/{activity_id}/blueprints/{version}` | blueprint + preflight + issues; review P05 sólo si existe historia |
+| PATCH | `/activities/{activity_id}/blueprints/{version}` | edición con ETag y job `BLUEPRINT_PREFLIGHT` |
 | POST | `/activities/{activity_id}/decisions` | guarda `PolicyDecision` |
 | POST | `/activities/{activity_id}/blueprints/{version}:approve` | congela blueprint |
 
@@ -242,18 +241,18 @@ Prefijo `/api/v1`. Todos los mutables usan `Idempotency-Key`; ediciones versiona
 
 ## 10. Jobs
 
-La tabla describe el runtime legado que debe seguir siendo legible durante la
-migración. El objetivo reemplaza la ejecución activa de
-`BLUEPRINT_BUILD_REVIEW`/`QUESTION_REVIEW` por preflight/validaciones
-deterministas y decisiones docentes; no se cambian jobs ni estados en esta
-iteración.
+La tabla distingue el runtime activo de los estados que siguen legibles por
+compatibilidad. Fase 3 reemplazó `BLUEPRINT_BUILD_REVIEW`; P08 conserva todavía
+su job/estado activo hasta una fase posterior.
 
 | Job/stage | Input | Output | Retry |
 |---|---|---|---|
 | `ACTIVITY_PARSE` | artifacts de consigna/rúbrica | EvidenceUnits fuente | un fallback de parser |
 | `ACTIVITY_SPEC` | `ActivitySpecRequest` | `ActivitySpec` | técnico/P11 |
 | `RUBRIC_NORMALIZE` | request P02 | `RubricSpec` | técnico/P11 |
-| `BLUEPRINT_BUILD_REVIEW` | P03-P05 | blueprint/review/issues | LEGACY; cutover a P04 + preflight + docente pendiente |
+| `BLUEPRINT_BUILD` | request P04 | `AssessmentBlueprint` compilado | provider/cache gobernado existente |
+| `BLUEPRINT_PREFLIGHT` | blueprint + spec/rubric/policy/decisiones | blueprint READY/NEEDS_REVIEW + preflight | determinista; reuse hash-bound |
+| `BLUEPRINT_REVIEW` | descriptor P05 anterior al corte | reconciliación por preflight, sin provider | LEGACY/HISTORICAL; retry/resume compatible |
 | `SUBMISSION_PARSE` | artifacts submission | EvidenceUnits | un fallback aprobado |
 | `EVIDENCE_MAP` | request P06 | claims, variant matches y oportunidades | bundle corregido |
 | `ASSESSMENT_PLAN` | oportunidades + policy | exactamente \(N\) primarias + reserva o diagnóstico | no retry sin input/policy nuevo |
@@ -342,7 +341,8 @@ su contrato siga siendo legible. Habilitarlo exige decisión nueva y corpus
 autorizado.
 
 Las rutas iniciales se conservan como historia/configuración compatible y no se
-modifican aquí. P05/P08 no son activas en el objetivo y el harness actual no es
+modifican aquí. P05 ya no es alcanzable por ejecuciones nuevas; P08 no es activa
+en el objetivo pero su cutover está pendiente. El harness actual no es
 un gate canónico para escoger modelo. Cualquier comparación futura requiere un
 instrumento nuevo gobernado; no se implementa en este MVP change.
 

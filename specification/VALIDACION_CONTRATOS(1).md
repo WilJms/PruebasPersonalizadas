@@ -188,7 +188,9 @@ El test exige que los 21 nombres distintos existan en `roots`, que el registry u
 Un test independiente exige que el pipeline objetivo incluya sólo P01-P04,
 P06/P07/P09 como etapas de modelo, marque P05/P08 `inactive`, P10 `disabled` y
 asigne una única autoridad a cada decisión. La presencia de una ruta en el
-registry se interpreta como compatibilidad hasta completar el cutover.
+registry es compatibilidad histórica, no reachability. Para P05 el cutover ya
+está completo y ninguna ejecución nueva consulta su ruta; P08 sigue pendiente
+de retiro operativo.
 
 ---
 

@@ -149,6 +149,8 @@ class SyntheticProviderAuthorizationSpec:
                 raise ValueError("synthetic authorization contains a non-canonical ID")
         if self.job_kind not in {
             "ACTIVITY",
+            # Retained only so historical P05 authorization rows remain
+            # reconstructible. Repository/worker gates forbid new consumption.
             "BLUEPRINT_REVIEW",
             "SUBMISSION",
             "QUESTION_ACTION",

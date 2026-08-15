@@ -1013,13 +1013,22 @@ def test_offline_rehearsal_has_zero_provider_activity_and_valid_goldens() -> Non
     }
 
 
-def test_frozen_product_boundary_matches_phase1_predecessor() -> None:
+def test_frozen_product_boundary_preserves_archived_phase1_runtime() -> None:
     manifest = json.loads(FROZEN_PRODUCT_BOUNDARY_PATH.read_text(encoding="utf-8"))
     proof = frozen_product_boundary_proof()
     assert proof["baseline_git_sha"] == (
         "5698be185355dff48f25b5e791150d232d70eb9f"
     )
     assert proof["source_file_sha256"] == manifest["source_file_sha256"]
+    active_workflow_hash = sha256(
+        (
+            Path(__file__).parents[1]
+            / "src/comprehension_verification/web/workflows.py"
+        ).read_bytes()
+    ).hexdigest()
+    assert active_workflow_hash != manifest["source_file_sha256"][
+        "src/comprehension_verification/web/workflows.py"
+    ]
     assert proof["route_profile_material_hashes"] == (
         manifest["route_profile_material_hashes"]
     )

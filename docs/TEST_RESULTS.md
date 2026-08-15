@@ -3,6 +3,29 @@
 Fecha de corte documental: 2026-08-15 (America/Santiago; ejecución cloud hasta
 2026-08-11 UTC; toda la validación ADR-037 fue local, offline y mock).
 
+## Estado vigente — Fase 3, P05 fuera del runtime activo — 2026-08-15
+
+| Prueba o gate | Resultado observado |
+|---|---|
+| Autoridad activa | P01→P02→P03→P04→compilador server-side→preflight determinista→docente; ninguna transición activa exige `BlueprintReview`, recommendation, checks ni status P05 |
+| Focal Fase 3 | 118 passed, 2 skips PostgreSQL explícitos; cubre happy path, preflight FAIL, edición, aprobación, recovery legacy, retry/resume/crash, cache, coste, API, autoridad, migración y provider gate |
+| Backend completo | `make test`: 774 passed, 17 skips PostgreSQL explícitos, 1 warning Starlette conocido |
+| Cobertura | `make test-cov`: mismos 774 passed/17 skips; 81% global sobre 13.823 statements |
+| Contratos | 54 roots, 145 `$defs`, 289 refs y 8 fixtures PASS; schema/model hashes `ad5f7b9197d4…`/`72687300eea5…`; OpenAPI regenerado desde la aplicación |
+| Frontend | typecheck PASS; Vitest 6/6 archivos y 36/36 tests; build PASS; `npm audit` 0 vulnerabilidades |
+| Navegador | Playwright crítico Etapa 1 1/1 y Etapa 2 2/2 PASS; recorrido manual teacher generate→preflight→edit→preflight→approve PASS y P05 ausente |
+| Coste/observabilidad | actividad nueva reserva 3 llamadas sin rubric o 4 con rubric; P05 futuro = 0; métricas separan `BLUEPRINT_PREFLIGHT`, aprobación docente e historia P05 |
+| Legacy P05 | queued/running/leased/crash/retry/resume se reconcilian idempotentemente mediante preflight sin gateway; completed sigue legible pero su review no tiene autoridad; worker eval-only tampoco resuelve secreto ni transporte para esos jobs |
+| Rehearsal | `make openai-convergence-dry-run` PASS con claves removidas; `provider_call_receipts=[]`, transporte provider no construido y material hash histórico `sha256:1b37e8d6b0a68b4e7e88fc2dc873fa87ba490a743fd3c3ba9497d5b337fd8566` preservado |
+| Seguridad/higiene | secret scan 344 archivos PASS; `compileall`, `git diff --check` y Terraform fmt/init sin backend/validate PASS |
+| PostgreSQL/Docker | no hay URL PostgreSQL local y el daemon Docker local no está activo; los 17 skips, PostgreSQL 16/17 y builds runtime/audit deben validarse en los dos CI del SHA final de PR #3 |
+
+P05 permanece en contratos, registry, routes, mocks, fixtures, reports y harness
+únicamente para compatibilidad/replay histórico. Los flujos nuevos no escriben
+reviews P05 ni consumen autorización real P05. P08 y P09 conservan exactamente
+la autoridad previa y P10 sigue deshabilitado. Ningún report/receipt histórico
+fue regenerado o reescrito.
+
 ## Estado vigente — P04 draft/compilador determinista — 2026-08-15
 
 | Prueba o gate | Resultado observado |

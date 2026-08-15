@@ -1171,6 +1171,7 @@ export interface components {
             etag: string;
             /** Issues */
             issues?: components["schemas"]["Diagnostic"][];
+            preflight?: components["schemas"]["BlueprintReviewPreflight"] | null;
             review?: components["schemas"]["BlueprintReview"] | null;
             /** Version */
             version: number;
@@ -1221,6 +1222,36 @@ export interface components {
             /** Referenced Ids */
             referenced_ids?: string[];
             status: components["schemas"]["ReviewCheckStatus"];
+        };
+        /**
+         * BlueprintReviewPreflight
+         * @description Server-derived facts that P05 must not ask the model to recompute.
+         */
+        BlueprintReviewPreflight: {
+            /** Blueprint Id */
+            blueprint_id: string;
+            /** Blueprint Version */
+            blueprint_version: number;
+            /** Catalog Plan Feasible */
+            catalog_plan_feasible: boolean;
+            /** Catalog Size Sufficient */
+            catalog_size_sufficient: boolean;
+            /** Format Feasible */
+            format_feasible: boolean;
+            /** Justification Matrix Valid */
+            justification_matrix_valid: boolean;
+            /** Policy Constraints Match */
+            policy_constraints_match: boolean;
+            /**
+             * Schema Version
+             * @default 1.1.0
+             * @constant
+             */
+            schema_version: "1.1.0";
+            /** Source Coverage Complete */
+            source_coverage_complete: boolean;
+            /** Time Feasible */
+            time_feasible: boolean;
         };
         /** BulkApprovalCommand */
         BulkApprovalCommand: {

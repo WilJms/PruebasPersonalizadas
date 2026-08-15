@@ -1195,3 +1195,41 @@
   `blueprint-compiler-boundary/1.0.0`; los receipts históricos no se
   reescriben y siguen siendo evidencia no canónica conforme ADR-037.
 - **Relación:** D-074, ADR-037 y `pipeline-authority/1.0.0`.
+
+## D-076 - P05 queda retirado del runtime activo con recovery determinista
+
+- **Flujo activo:** actividad ejecuta P01/P02 opcional/P03/P04, persiste un
+  `BLUEPRINT_PREFLIGHT` determinista y entrega el `AssessmentBlueprint` a la
+  decisión docente. No construye `BlueprintReviewRequest`, no invoca P05 y no
+  consulta recommendation/checks/status P05.
+- **Persistencia:** `blueprints.preflight` conserva el snapshot mecánico; la
+  columna nullable `review` sigue legible como historia. Nuevas versiones
+  activas escriben `review=NULL`. La migración 006 es aditiva y no borra
+  contratos, prompts, routes, fixtures, reports ni receipts.
+- **Edición/aprobación:** editar crea un job durable
+  `BLUEPRINT_PREFLIGHT`, vuelve a ligar spec/rubric/policy/decisiones y publica
+  PASS o FAIL. Aprobar recomputa el preflight, verifica snapshot cuando existe,
+  ETag, versión, ownership y permiso docente; una review P05 histórica no es
+  autoridad.
+- **Recovery:** un job legacy `BLUEPRINT_REVIEW` queued/running/retry/resume
+  conserva su descriptor, pero el worker lo reconcilia por preflight sin
+  gateway. StageRun reuse, lease recovery, cancellation y transición final son
+  tenant-scoped, hash-bound y fail-closed ante lineage o fuente divergente. Aun
+  si el worker eval-only parte configurado como real, estos jobs usan un
+  runtime provider-free: no consumen autorización, no resuelven clave y no
+  construyen transporte; tampoco admiten una autorización real nueva.
+- **Costo/observabilidad:** el presupuesto activo baja de 4/5 a 3/4 llamadas
+  según exista rúbrica; P05 futuro es cero. StageRuns y auditoría exponen
+  outcome PASS/FAIL, códigos deterministas y aprobación docente sin scores
+  semánticos nuevos.
+- **Historia:** el harness congelado conserva el hash archivado del runtime de
+  su baseline y se declara no canónico; el workflow activo puede divergir por
+  este cutover sin reescribir evidencia histórica. El runner sintético de
+  Etapa 0, rehearsal, harness, mocks y tests directos que materializan P05 son
+  `TEST_ONLY`/`HISTORICAL_COMPATIBILITY`, no runtime productivo.
+- **Fuera de alcance:** P06/P07/P08/P09, routing histórico e infraestructura no
+  cambian; P08 y el movimiento de P09 siguen pendientes. P10 permanece
+  deshabilitado y no hubo autorización ni transporte billable.
+- **Relación:** D-074, D-075, ADR-037,
+  `pipeline-authority/1.0.0` y migración
+  `202608150006_phase3_p05_runtime_cutover.sql`.

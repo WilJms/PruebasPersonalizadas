@@ -7,8 +7,9 @@
 **Aclaración ADR-037 (2026-08-14):** el objetivo formal es
 P01→P02→P03→P04→preflight determinista→aprobación docente y, por submission,
 P06→planner→P07→validaciones deterministas→revisión/aprobación docente→P09.
-P05/P08 son inactivos en el objetivo, P10 sigue deshabilitado y el cutover del
-runtime legado queda para una historia posterior. Las filas cerradas de Etapas
+P05/P08 son inactivos en el objetivo y P10 sigue deshabilitado. Fase 3 ya
+retiró P05 del runtime activo con preflight/recovery compatible; P08 y el orden
+de P09 quedan para historias posteriores. Las filas cerradas de Etapas
 0/1 se conservan como historia y regresión, no como autoridad para reactivar
 esas etapas.
 
@@ -165,14 +166,16 @@ Una persona completa el recorrido solicitado en cloud con una actividad y una en
 | E2-15 | Aviso fijo de producto | footer/callout visible informa límites sobre autoría/IA/historia; no proviene de P09 ni aparece en documentos generados |
 | E2-16 | Autoridad del pipeline formalizada | manifiesto versionado asigna una sola autoridad a cada decisión, marca P05/P08 inactivos y P10 deshabilitado sin cambiar routing/workflows |
 | E2-17 | Evaluación histórica y oracle explícito | harness/qualifications legados no seleccionan modelo; `ORACLE_SUSPECT` nunca produce `MODEL_OWNED_*`; reportes sintéticos enumeran códigos content-free |
+| E2-18 | Cutover runtime P05 | P04→preflight durable→docente; edición, aprobación, costo y recovery legacy producen cero llamadas P05 y conservan lectura histórica |
 
 ## Dependencias
 
 - observabilidad y datos de Etapa 1;
 - política provisional de datos/retención para el entorno controlado;
 - conjunto de archivos DOCX/PDF representativos y autorizados.
-- `pipeline-authority/1.0.0` como fuente del objetivo; el retiro operativo de
-  P05/P08 exige una historia separada con migración compatible de jobs/estado.
+- `pipeline-authority/1.0.0` como fuente del objetivo; P05 quedó retirado por
+  E2-18 y el retiro operativo de P08/orden de P09 exige historias separadas con
+  migración compatible de jobs/estado.
 
 ## Riesgos y mitigaciones
 

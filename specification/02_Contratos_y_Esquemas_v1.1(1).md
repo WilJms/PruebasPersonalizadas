@@ -5,10 +5,12 @@
 **Artefacto generado:** `contracts.schema_v1.1.json` (JSON Schema Draft 2020-12)  
 **Regla:** el JSON Schema no se edita manualmente; se regenera desde Pydantic y CI compara bytes canónicos.
 
-**Estado ADR-037:** no hay cambio de schema en esta iteración. Los roots P05 y
-P08 se conservan para lectura histórica y migración, pero no son etapas activas
-del pipeline objetivo. Su presencia en `CONTRACT_MODELS` no confiere autoridad
-ni autoriza invocación. P10 permanece deshabilitado.
+**Estado ADR-037 / Fase 3:** no cambia el schema contractual canónico. Los roots
+P05 y P08 se conservan para lectura histórica y migración. P05 ya no es
+alcanzable en ejecuciones nuevas; P08 sigue pendiente. Su presencia en
+`CONTRACT_MODELS` no confiere autoridad ni autoriza invocación. P10 permanece
+deshabilitado. La API añade `BlueprintEnvelope.preflight` desde el contrato
+existente `BlueprintReviewPreflight`; `review` queda nullable/legacy.
 
 ---
 
@@ -91,9 +93,8 @@ input y hash de reuse; el proveedor sólo debe respetar el cap recibido y nunca
 devolverlo como decisión propia.
 
 Las filas P05/P08 de esta frontera documentan contratos retenidos. La frontera
-activa objetivo salta de P04 a preflight/aprobación docente y de P07 a
-validaciones/revisión docente. P09 recibe únicamente preguntas aprobadas cuando
-se complete el cutover operativo.
+activa ya salta de P04 a preflight/aprobación docente. El salto P07 a
+validaciones/revisión docente y la ubicación final de P09 siguen pendientes.
 
 ## 3. Invariantes críticas
 

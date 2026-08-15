@@ -12,6 +12,11 @@ from pydantic import BaseModel, TypeAdapter, ValidationError
 from sqlalchemy.exc import IntegrityError, OperationalError
 
 from ..canonical import canonical_hash, sha256_bytes, stable_id
+from ..blueprint_compiler import (
+    BLUEPRINT_COMPILER_VERSION,
+    blueprint_compiler_boundary,
+    preflight_compiled_blueprint,
+)
 from ..contracts import models as m
 from ..diagnostics import diagnostic
 from ..exports import RENDERER_VERSION, render_views
@@ -91,10 +96,11 @@ ALLOWED_MEDIA_TYPES = frozenset(
     {"text/plain", "text/markdown", "application/pdf", DOCX_MEDIA_TYPE}
 )
 ACTIVITY_UPLOAD_OPEN_STATUSES = frozenset({"DRAFT"})
-ACTIVITY_PIPELINE_VERSION = "stage1-activity-pipeline/2.0.0"
+ACTIVITY_PIPELINE_VERSION = "stage1-activity-pipeline/3.0.0"
 SUBMISSION_PIPELINE_VERSION = "stage1-submission-pipeline/2.0.0"
 ASSEMBLER_VERSION = "stage1-assembler/2.0.0"
 BLUEPRINT_REVIEW_DESCRIPTOR_VERSION = "blueprint-review-descriptor/3.0.0"
+BLUEPRINT_PREFLIGHT_DESCRIPTOR_VERSION = "blueprint-preflight-descriptor/1.0.0"
 
 
 def _blueprint_review_descriptor_component_version() -> str:
@@ -122,6 +128,43 @@ def _blueprint_review_descriptor_policy_hash(
             "blueprint_policy": request.blueprint_policy.model_dump(
                 mode="json"
             ),
+            "p10_enabled": False,
+        }
+    )
+
+
+def _blueprint_preflight_component_version() -> str:
+    return _component_fingerprint(
+        "blueprint-preflight/1",
+        {
+            "compiler_version": BLUEPRINT_COMPILER_VERSION,
+            "compiler_boundary": blueprint_compiler_boundary(),
+            "preflight_schema": m.BlueprintReviewPreflight.model_json_schema(
+                mode="validation"
+            ),
+        },
+    )
+
+
+def _blueprint_preflight_descriptor_component_version() -> str:
+    return _component_fingerprint(
+        "blueprint-preflight-descriptor/1",
+        {
+            "format": BLUEPRINT_PREFLIGHT_DESCRIPTOR_VERSION,
+            "blueprint_schema": m.AssessmentBlueprint.model_json_schema(
+                mode="validation"
+            ),
+        },
+    )
+
+
+def _blueprint_preflight_descriptor_policy_hash(
+    *, blueprint_policy: m.BlueprintPolicy
+) -> str:
+    return canonical_hash(
+        {
+            "format": BLUEPRINT_PREFLIGHT_DESCRIPTOR_VERSION,
+            "blueprint_policy": blueprint_policy.model_dump(mode="json"),
             "p10_enabled": False,
         }
     )
@@ -325,6 +368,7 @@ _ACTIVITY_RESUME_ORDER = {
     "AMBIGUITY_TRIAGE": 3,
     "BLUEPRINT_BUILD": 4,
     "BLUEPRINT_REVIEW": 5,
+    "BLUEPRINT_PREFLIGHT": 5,
 }
 _SUBMISSION_RESUME_ORDER = {
     "SUBMISSION_PARSE": 0,
@@ -335,7 +379,14 @@ _SUBMISSION_RESUME_ORDER = {
     "ASSEMBLE": 5,
     "GUIDE_BUILD": 6,
 }
-_BLUEPRINT_REVIEW_RESUME_ORDER = {"BLUEPRINT_REVIEW": 0}
+_BLUEPRINT_REVIEW_RESUME_ORDER = {
+    "BLUEPRINT_REVIEW": 0,
+    "BLUEPRINT_PREFLIGHT": 0,
+}
+_BLUEPRINT_PREFLIGHT_RESUME_ORDER = {
+    "BLUEPRINT_REVIEW": 0,
+    "BLUEPRINT_PREFLIGHT": 0,
+}
 _PROMPT_APPLICATION_STAGE = {
     "P01_ACTIVITY_SPEC_V1": "ACTIVITY_SPEC",
     "P02_RUBRIC_NORMALIZE_V1": "RUBRIC_NORMALIZE",
@@ -390,6 +441,11 @@ _PRECONDITION_FAILURE_CODES = frozenset(
         "BLUEPRINT_REVIEW_DESCRIPTOR_HASH_MISMATCH",
         "BLUEPRINT_REVIEW_DESCRIPTOR_VERSION_MISMATCH",
         "BLUEPRINT_REVIEW_SOURCE_CHANGED",
+        "BLUEPRINT_PREFLIGHT_DESCRIPTOR_MISSING",
+        "BLUEPRINT_PREFLIGHT_DESCRIPTOR_INVALID",
+        "BLUEPRINT_PREFLIGHT_DESCRIPTOR_HASH_MISMATCH",
+        "BLUEPRINT_PREFLIGHT_DESCRIPTOR_VERSION_MISMATCH",
+        "BLUEPRINT_PREFLIGHT_SOURCE_CHANGED",
     }
 )
 
@@ -1058,10 +1114,9 @@ class Stage1Service:
             if phase == "ACTIVITY_BLUEPRINT":
                 prompt_ids = [
                     "P01_ACTIVITY_SPEC_V1",
-                    *(["P02_RUBRIC_NORMALIZE_V1"] if calls == 5 else []),
+                    *(["P02_RUBRIC_NORMALIZE_V1"] if calls == 4 else []),
                     "P03_AMBIGUITY_TRIAGE_V1",
                     "P04_BLUEPRINT_BUILD_V1",
-                    "P05_BLUEPRINT_REVIEW_V1",
                 ]
             elif phase == "SUBMISSION_ASSESSMENT" and calls >= 2:
                 question_count = max(0, (calls - 2) // 2)
@@ -1173,7 +1228,7 @@ class Stage1Service:
             tenant_id=actor.workspace_id,
             submission_id=None,
         )
-        calls = 5 if any(row.role == m.ArtifactRole.RUBRIC.value for row in artifacts) else 4
+        calls = 4 if any(row.role == m.ArtifactRole.RUBRIC.value for row in artifacts) else 3
         return self._cost_estimate(
             phase="ACTIVITY_BLUEPRINT",
             aggregate_id=activity.id,
@@ -1457,8 +1512,8 @@ class Stage1Service:
                 await self._run_activity_pipeline(job)
             elif job.kind == "SUBMISSION":
                 await self._run_submission_pipeline(job)
-            elif job.kind == "BLUEPRINT_REVIEW":
-                await self._run_blueprint_review_job(job)
+            elif job.kind in {"BLUEPRINT_PREFLIGHT", "BLUEPRINT_REVIEW"}:
+                await self._run_blueprint_preflight_job(job)
             elif job.kind == "QUESTION_ACTION" and self._question_action_processor:
                 await self._question_action_processor(job)
             else:
@@ -1638,11 +1693,6 @@ class Stage1Service:
             ),
             m.AssessmentBlueprint,
         )
-        if blueprint.status != m.WorkflowStatus.READY:
-            self._stop_activity_output(
-                activity, job, blueprint.status.value, blueprint.diagnostics
-            )
-            return
         if set(blueprint.decision_ids) != {
             decision.decision_id for decision in resolved_decisions
         }:
@@ -1650,83 +1700,78 @@ class Stage1Service:
                 "BLUEPRINT_REFERENCE_MISMATCH",
                 "Blueprint does not bind the exact teacher decisions",
             )
-        self._set_job(job, "BLUEPRINT_REVIEW", 0.82)
-        review = await self._gateway_stage(
-            job,
-            "P05_BLUEPRINT_REVIEW_V1",
-            m.BlueprintReviewRequest(
-                blueprint=blueprint,
-                activity_spec=p01,
-                rubric_spec=rubric,
-                resolved_decisions=resolved_decisions,
-                blueprint_policy=policy,
-                deterministic_preflight=build_blueprint_review_preflight(
-                    blueprint=blueprint,
-                    activity_spec=p01,
-                    rubric_spec=rubric,
-                    blueprint_policy=policy,
-                ),
-            ),
-            m.BlueprintReview,
+        self._set_job(job, "BLUEPRINT_PREFLIGHT", 0.82)
+        blueprint, preflight = self._blueprint_preflight_stage(
+            job=job,
+            blueprint=blueprint,
+            activity_spec=p01,
+            rubric_spec=rubric,
+            resolved_decisions=resolved_decisions,
+            blueprint_policy=policy,
         )
-        row = self._blueprint_row(job.tenant_id, blueprint, review)
+        row = self._blueprint_row(
+            job.tenant_id,
+            blueprint,
+            preflight=preflight,
+            review=None,
+        )
         with self.repository.session() as session:
             session.merge(row)
-        if review.status != "READY" or (
-            review.approval_recommendation
-            == m.BlueprintApprovalRecommendation.REJECT
-        ):
-            if review.status == "TECHNICAL_FAILURE":
-                self._fail_job(
-                    job,
-                    "BLUEPRINT_REVIEW_TECHNICAL_FAILURE",
-                    "Blueprint review failed at a validated boundary.",
-                )
-            else:
-                self.repository.set_activity_status(
-                    activity.id, job.tenant_id, "NEEDS_REVIEW"
-                )
-                self._needs_review_job(
-                    job,
-                    "BLUEPRINT_REVIEW_BLOCKED",
-                    review.diagnostics
-                    or [
-                        diagnostic(
-                            "BLUEPRINT_REVIEW_BLOCKED",
-                            "La revisión del blueprint requiere intervención docente.",
-                        )
-                    ],
-                )
+        if not preflight.catalog_plan_feasible:
+            self.repository.set_activity_status(
+                activity.id, job.tenant_id, "NEEDS_REVIEW"
+            )
+            self._needs_review_job(
+                job,
+                "BLUEPRINT_PREFLIGHT_FAILED",
+                blueprint.diagnostics
+                or [
+                    diagnostic(
+                        "BLUEPRINT_PREFLIGHT_FAILED",
+                        "El blueprint no supera el preflight determinista.",
+                    )
+                ],
+            )
             return
         self.repository.set_activity_status(activity.id, job.tenant_id, "BLUEPRINT_READY")
-        self._complete_job(job, "BLUEPRINT_REVIEW")
+        self._complete_job(job, "BLUEPRINT_PREFLIGHT")
 
-    async def _run_blueprint_review_job(self, job: JobRow) -> None:
-        """Review one teacher edit through the same durable P05 boundary."""
+    async def _run_blueprint_preflight_job(self, job: JobRow) -> None:
+        """Gate a teacher edit; legacy P05 jobs are reconciled without transport."""
 
-        self._set_job(job, "BLUEPRINT_REVIEW", 0.25)
-        descriptor = self.repository.blueprint_review_descriptor(
-            job_ids=self._job_lineage_ids(job),
-            tenant_id=job.tenant_id,
-        )
+        self._set_job(job, "BLUEPRINT_PREFLIGHT", 0.25)
+        lineage = self._job_lineage_ids(job)
+        legacy_request: m.BlueprintReviewRequest | None = None
+        if job.kind == "BLUEPRINT_REVIEW":
+            descriptor = self.repository.blueprint_review_descriptor(
+                job_ids=lineage, tenant_id=job.tenant_id
+            )
+            missing_code = "BLUEPRINT_REVIEW_DESCRIPTOR_MISSING"
+            invalid_code = "BLUEPRINT_REVIEW_DESCRIPTOR_INVALID"
+            version_code = "BLUEPRINT_REVIEW_DESCRIPTOR_VERSION_MISMATCH"
+        else:
+            descriptor = self.repository.blueprint_preflight_descriptor(
+                job_ids=lineage, tenant_id=job.tenant_id
+            )
+            missing_code = "BLUEPRINT_PREFLIGHT_DESCRIPTOR_MISSING"
+            invalid_code = "BLUEPRINT_PREFLIGHT_DESCRIPTOR_INVALID"
+            version_code = "BLUEPRINT_PREFLIGHT_DESCRIPTOR_VERSION_MISMATCH"
         if descriptor is None or descriptor.output is None:
             raise WorkflowError(
-                "BLUEPRINT_REVIEW_DESCRIPTOR_MISSING",
-                "The durable blueprint review input is unavailable.",
-                status_code=409,
-            )
-        if descriptor.component_version != (
-            _blueprint_review_descriptor_component_version()
-        ):
-            raise WorkflowError(
-                "BLUEPRINT_REVIEW_DESCRIPTOR_VERSION_MISMATCH",
-                "The durable blueprint review input no longer matches this worker.",
+                missing_code,
+                "The durable blueprint preflight input is unavailable.",
                 status_code=409,
             )
         try:
-            request = m.BlueprintReviewRequest.model_validate(
-                descriptor.output.get("review_request")
-            )
+            if job.kind == "BLUEPRINT_REVIEW":
+                legacy_request = m.BlueprintReviewRequest.model_validate(
+                    descriptor.output.get("review_request")
+                )
+                candidate = legacy_request.blueprint
+            else:
+                candidate = m.AssessmentBlueprint.model_validate(
+                    descriptor.output.get("candidate_blueprint")
+                )
             source_version = TypeAdapter(int).validate_python(
                 descriptor.output.get("source_blueprint_version")
             )
@@ -1738,25 +1783,17 @@ class Stage1Service:
             )
         except ValidationError as exc:
             raise WorkflowError(
-                "BLUEPRINT_REVIEW_DESCRIPTOR_INVALID",
-                "The durable blueprint review input is invalid.",
+                invalid_code,
+                "The durable blueprint preflight input is invalid.",
                 status_code=409,
             ) from exc
-        if descriptor.policy_hash != (
-            _blueprint_review_descriptor_policy_hash(request)
-        ):
-            raise WorkflowError(
-                "BLUEPRINT_REVIEW_DESCRIPTOR_VERSION_MISMATCH",
-                "The durable blueprint review input no longer matches this worker.",
-                status_code=409,
-            )
         if (
-            request.blueprint.activity_id != job.aggregate_id
-            or request.blueprint.blueprint_version != source_version + 1
+            candidate.activity_id != job.aggregate_id
+            or candidate.blueprint_version != source_version + 1
         ):
             raise WorkflowError(
-                "BLUEPRINT_REVIEW_DESCRIPTOR_INVALID",
-                "The durable blueprint review references are inconsistent.",
+                invalid_code,
+                "The durable blueprint preflight references are inconsistent.",
                 status_code=409,
             )
 
@@ -1766,7 +1803,7 @@ class Stage1Service:
         )
         latest = self.repository.latest_blueprint(job.aggregate_id, job.tenant_id)
         original = m.AssessmentBlueprint.model_validate(latest.data)
-        persisted_activity_spec = m.ActivitySpec.model_validate(
+        activity_spec = m.ActivitySpec.model_validate(
             cast(
                 ActivitySpecRow,
                 self.repository.scoped(
@@ -1775,7 +1812,7 @@ class Stage1Service:
             ).data
         )
         try:
-            persisted_rubric = m.RubricSpec.model_validate(
+            rubric_spec = m.RubricSpec.model_validate(
                 cast(
                     RubricSpecRow,
                     self.repository.scoped(
@@ -1784,36 +1821,66 @@ class Stage1Service:
                 ).data
             )
         except NotFound:
-            persisted_rubric = None
+            rubric_spec = None
+        blueprint_policy = m.BlueprintPolicy.model_validate(activity.blueprint_policy)
+        resolved_decisions = self._resolved_policy_decisions(
+            job.aggregate_id, job.tenant_id
+        )
+        expected_component = (
+            _blueprint_review_descriptor_component_version()
+            if job.kind == "BLUEPRINT_REVIEW"
+            else _blueprint_preflight_descriptor_component_version()
+        )
+        expected_policy_hash = (
+            _blueprint_review_descriptor_policy_hash(legacy_request)
+            if legacy_request is not None
+            else _blueprint_preflight_descriptor_policy_hash(
+                blueprint_policy=blueprint_policy
+            )
+        )
+        if (
+            descriptor.component_version != expected_component
+            or descriptor.policy_hash != expected_policy_hash
+        ):
+            raise WorkflowError(
+                version_code,
+                "The durable blueprint preflight input no longer matches this worker.",
+                status_code=409,
+            )
+        legacy_inputs_changed = legacy_request is not None and any(
+            (
+                legacy_request.activity_spec != activity_spec,
+                legacy_request.rubric_spec != rubric_spec,
+                legacy_request.blueprint_policy != blueprint_policy,
+                legacy_request.resolved_decisions != resolved_decisions,
+            )
+        )
         if any(
             (
                 latest.version != source_version,
                 latest.etag != source_etag,
-                request.activity_spec != persisted_activity_spec,
-                request.rubric_spec != persisted_rubric,
-                request.blueprint_policy
-                != m.BlueprintPolicy.model_validate(activity.blueprint_policy),
-                request.resolved_decisions
-                != self._resolved_policy_decisions(job.aggregate_id, job.tenant_id),
-                _blueprint_structure(request.blueprint)
-                != _blueprint_structure(original),
+                legacy_inputs_changed,
+                _blueprint_structure(candidate) != _blueprint_structure(original),
             )
         ):
             raise WorkflowError(
-                "BLUEPRINT_REVIEW_SOURCE_CHANGED",
-                "The blueprint review source changed before worker execution.",
+                "BLUEPRINT_PREFLIGHT_SOURCE_CHANGED",
+                "The blueprint preflight source changed before worker execution.",
                 status_code=409,
             )
 
-        review = await self._gateway_stage(
-            job,
-            "P05_BLUEPRINT_REVIEW_V1",
-            request,
-            m.BlueprintReview,
+        gated, preflight = self._blueprint_preflight_stage(
+            job=job,
+            blueprint=candidate,
+            activity_spec=activity_spec,
+            rubric_spec=rubric_spec,
+            resolved_decisions=resolved_decisions,
+            blueprint_policy=blueprint_policy,
         )
-        self._cancellation_checkpoint(job)
-        row = self._blueprint_row(job.tenant_id, request.blueprint, review)
-        finalized = self.repository.finalize_blueprint_review_job(
+        row = self._blueprint_row(
+            job.tenant_id, gated, preflight=preflight, review=None
+        )
+        finalized = self.repository.finalize_blueprint_preflight_job(
             job_id=job.id,
             tenant_id=job.tenant_id,
             source_version=source_version,
@@ -2239,7 +2306,8 @@ class Stage1Service:
                 status_code=409,
             )
         if (
-            original.status != m.WorkflowStatus.READY
+            original.status
+            not in {m.WorkflowStatus.READY, m.WorkflowStatus.NEEDS_REVIEW}
             or original.approved_by is not None
             or original.approved_at is not None
         ):
@@ -2270,70 +2338,37 @@ class Stage1Service:
                 "Blueprint editing is not allowed in the current activity state",
                 status_code=409,
             )
-        activity_spec = m.ActivitySpec.model_validate(
-            cast(
-                ActivitySpecRow,
-                self.repository.scoped(
-                    ActivitySpecRow, activity_id, actor.workspace_id
-                ),
-            ).data
-        )
-        try:
-            rubric_spec = m.RubricSpec.model_validate(
-                cast(
-                    RubricSpecRow,
-                    self.repository.scoped(
-                        RubricSpecRow, activity_id, actor.workspace_id
-                    ),
-                ).data
-            )
-        except NotFound:
-            rubric_spec = None
-        resolved_decisions = self._resolved_policy_decisions(
-            activity_id, actor.workspace_id
-        )
         blueprint_policy = m.BlueprintPolicy.model_validate(
             activity.blueprint_policy
-        )
-        review_request = m.BlueprintReviewRequest(
-            blueprint=updated,
-            activity_spec=activity_spec,
-            rubric_spec=rubric_spec,
-            resolved_decisions=resolved_decisions,
-            blueprint_policy=blueprint_policy,
-            deterministic_preflight=build_blueprint_review_preflight(
-                blueprint=updated,
-                activity_spec=activity_spec,
-                rubric_spec=rubric_spec,
-                blueprint_policy=blueprint_policy,
-            ),
         )
         queued = self._new_job(
             actor.workspace_id,
             activity_id,
-            "blueprint_review",
-            "BLUEPRINT_REVIEW",
+            "blueprint_preflight",
+            "BLUEPRINT_PREFLIGHT",
         )
         queued_at = utc_now()
         descriptor_output = {
-            "kind": "BLUEPRINT_REVIEW_DESCRIPTOR",
+            "kind": "BLUEPRINT_PREFLIGHT_DESCRIPTOR",
             "source_blueprint_version": current.version,
             "source_etag": current.etag,
             "source_activity_status": activity.status,
             "actor_id": actor.user_id,
-            "review_request": review_request.model_dump(mode="json"),
+            "candidate_blueprint": updated.model_dump(mode="json"),
         }
         try:
-            self.repository.prepare_blueprint_review_job(
+            self.repository.prepare_blueprint_preflight_job(
                 status=queued,
                 source_version=current.version,
                 source_etag=current.etag,
                 descriptor_output=descriptor_output,
                 descriptor_component_version=(
-                    _blueprint_review_descriptor_component_version()
+                    _blueprint_preflight_descriptor_component_version()
                 ),
                 descriptor_policy_hash=(
-                    _blueprint_review_descriptor_policy_hash(review_request)
+                    _blueprint_preflight_descriptor_policy_hash(
+                        blueprint_policy=blueprint_policy
+                    )
                 ),
                 actor_id=actor.user_id,
                 occurred_at=queued_at,
@@ -2343,7 +2378,7 @@ class Stage1Service:
             status_code = 412 if code == "ETAG_MISMATCH" else 409
             raise WorkflowError(
                 code,
-                "The blueprint review could not be queued from this version.",
+                "The blueprint preflight could not be queued from this version.",
                 status_code=status_code,
             ) from exc
         if self.job_runner is None:
@@ -2356,7 +2391,7 @@ class Stage1Service:
                 tenant_id=actor.workspace_id,
                 failure=diagnostic(
                     "JOB_DISPATCH_FAILED",
-                    "The durable blueprint review could not be dispatched.",
+                    "The durable blueprint preflight could not be dispatched.",
                     retryable=True,
                 ),
             )
@@ -2379,7 +2414,6 @@ class Stage1Service:
         if current.etag != if_match:
             raise WorkflowError("ETAG_MISMATCH", "Blueprint has changed", status_code=412)
         blueprint = m.AssessmentBlueprint.model_validate(current.data)
-        review = m.BlueprintReview.model_validate(current.review)
         if (
             blueprint.status != m.WorkflowStatus.READY
             or blueprint.approved_by is not None
@@ -2390,8 +2424,29 @@ class Stage1Service:
                 "Only a server-unapproved READY blueprint may be approved",
                 status_code=409,
             )
-        if review.status != "READY" or review.approval_recommendation == m.BlueprintApprovalRecommendation.REJECT:
-            raise WorkflowError("BLUEPRINT_REVIEW_BLOCKED", "Blueprint review does not permit approval", status_code=409)
+        expected, preflight = self._derive_blueprint_preflight(
+            blueprint=blueprint,
+            activity_id=activity_id,
+            tenant_id=actor.workspace_id,
+        )
+        persisted_preflight = (
+            m.BlueprintReviewPreflight.model_validate(current.preflight)
+            if current.preflight is not None
+            else None
+        )
+        if (
+            expected != blueprint
+            or not preflight.catalog_plan_feasible
+            or (
+                persisted_preflight is not None
+                and persisted_preflight != preflight
+            )
+        ):
+            raise WorkflowError(
+                "BLUEPRINT_PREFLIGHT_BLOCKED",
+                "Blueprint deterministic preflight does not permit approval",
+                status_code=409,
+            )
         approved = blueprint.model_copy(
             update={
                 "blueprint_version": current.version + 1,
@@ -2400,8 +2455,15 @@ class Stage1Service:
                 "approved_at": utc_now(),
             }
         )
-        copied_review = review.model_copy(update={"blueprint_version": approved.blueprint_version})
-        row = self._blueprint_row(actor.workspace_id, approved, copied_review)
+        approved_preflight = preflight.model_copy(
+            update={"blueprint_version": approved.blueprint_version}
+        )
+        row = self._blueprint_row(
+            actor.workspace_id,
+            approved,
+            preflight=approved_preflight,
+            review=None,
+        )
         try:
             self.repository.add(row)
         except IntegrityError as exc:
@@ -2419,6 +2481,94 @@ class Stage1Service:
             payload={"blueprint_version": approved.blueprint_version},
         )
         return row
+
+    def blueprint_review_projection(
+        self, row: BlueprintRow, actor: Actor
+    ) -> tuple[dict[str, Any] | None, list[dict[str, Any]]]:
+        """Expose the active gate for legacy P05 rows without reviving P05."""
+
+        if row.tenant_id != actor.workspace_id:
+            raise WorkflowError(
+                "TENANT_SCOPE_VIOLATION",
+                "Blueprint does not belong to the current workspace",
+                status_code=404,
+            )
+        blueprint = m.AssessmentBlueprint.model_validate(row.data)
+        if row.preflight is not None:
+            preflight = m.BlueprintReviewPreflight.model_validate(row.preflight)
+            return (
+                preflight.model_dump(mode="json"),
+                list(blueprint.model_dump(mode="json").get("diagnostics", [])),
+            )
+        if row.review is None:
+            return (
+                None,
+                list(blueprint.model_dump(mode="json").get("diagnostics", [])),
+            )
+        expected, preflight = self._derive_blueprint_preflight(
+            blueprint=blueprint,
+            activity_id=row.activity_id,
+            tenant_id=actor.workspace_id,
+        )
+        return (
+            preflight.model_dump(mode="json"),
+            list(expected.model_dump(mode="json").get("diagnostics", [])),
+        )
+
+    def _derive_blueprint_preflight(
+        self,
+        *,
+        blueprint: m.AssessmentBlueprint,
+        activity_id: str,
+        tenant_id: str,
+    ) -> tuple[m.AssessmentBlueprint, m.BlueprintReviewPreflight]:
+        activity_spec = m.ActivitySpec.model_validate(
+            cast(
+                ActivitySpecRow,
+                self.repository.scoped(
+                    ActivitySpecRow, activity_id, tenant_id
+                ),
+            ).data
+        )
+        try:
+            rubric_spec = m.RubricSpec.model_validate(
+                cast(
+                    RubricSpecRow,
+                    self.repository.scoped(
+                        RubricSpecRow, activity_id, tenant_id
+                    ),
+                ).data
+            )
+        except NotFound:
+            rubric_spec = None
+        resolved_decisions = self._resolved_policy_decisions(
+            activity_id, tenant_id
+        )
+        scoped_activity = cast(
+            ActivityRow,
+            self.repository.scoped(ActivityRow, activity_id, tenant_id),
+        )
+        blueprint_policy = m.BlueprintPolicy.model_validate(
+            scoped_activity.blueprint_policy
+        )
+        request = m.BlueprintBuildRequest(
+            target_blueprint_id=blueprint.blueprint_id,
+            target_blueprint_version=blueprint.blueprint_version,
+            activity_spec=activity_spec,
+            rubric_spec=rubric_spec,
+            resolved_decisions=resolved_decisions,
+            blueprint_policy=blueprint_policy,
+        )
+        expected = preflight_compiled_blueprint(
+            blueprint=blueprint, request=request
+        )
+        preflight = build_blueprint_review_preflight(
+            blueprint=expected,
+            activity_spec=activity_spec,
+            rubric_spec=rubric_spec,
+            blueprint_policy=blueprint_policy,
+        )
+        return expected, preflight
 
     def evidence_view(self, submission_id: str, actor: Actor) -> list[dict[str, Any]]:
         submission = cast(SubmissionRow, self.repository.scoped(SubmissionRow, submission_id, actor.workspace_id))
@@ -3148,7 +3298,7 @@ class Stage1Service:
         """
 
         submission: SubmissionRow | None = None
-        if job.kind in {"ACTIVITY", "BLUEPRINT_REVIEW"}:
+        if job.kind in {"ACTIVITY", "BLUEPRINT_REVIEW", "BLUEPRINT_PREFLIGHT"}:
             activity = cast(
                 ActivityRow,
                 self.repository.scoped(
@@ -3432,6 +3582,12 @@ class Stage1Service:
     async def _gateway_stage(
         self, job: JobRow, prompt_id: str, request: BaseModel, output_model: type[T], *, cache_suffix: str = ""
     ) -> T:
+        if prompt_id == "P05_BLUEPRINT_REVIEW_V1":
+            raise WorkflowError(
+                "P05_ACTIVE_RUNTIME_RETIRED",
+                "P05 is historical-only and cannot be invoked by the product runtime.",
+                status_code=409,
+            )
         self._cancellation_checkpoint(job)
         stage = f"{prompt_id}:{cache_suffix}" if cache_suffix else prompt_id
         inputs = request.model_dump(mode="json")
@@ -3526,6 +3682,110 @@ class Stage1Service:
         self._cancellation_checkpoint(job)
         return output
 
+    def _blueprint_preflight_stage(
+        self,
+        *,
+        job: JobRow,
+        blueprint: m.AssessmentBlueprint,
+        activity_spec: m.ActivitySpec,
+        rubric_spec: m.RubricSpec | None,
+        resolved_decisions: list[m.PolicyDecision],
+        blueprint_policy: m.BlueprintPolicy,
+    ) -> tuple[m.AssessmentBlueprint, m.BlueprintReviewPreflight]:
+        """Run or reuse the active deterministic gate without provider transport."""
+
+        self._cancellation_checkpoint(job)
+        request = m.BlueprintBuildRequest(
+            target_blueprint_id=blueprint.blueprint_id,
+            target_blueprint_version=blueprint.blueprint_version,
+            activity_spec=activity_spec,
+            rubric_spec=rubric_spec,
+            resolved_decisions=resolved_decisions,
+            blueprint_policy=blueprint_policy,
+        )
+        inputs = {
+            "blueprint": blueprint.model_dump(mode="json"),
+            "request": request.model_dump(mode="json"),
+        }
+        policy_hash = canonical_hash(
+            {
+                "blueprint_policy": blueprint_policy.model_dump(mode="json"),
+                "p10_enabled": False,
+            }
+        )
+        component_version = _blueprint_preflight_component_version()
+        cached = self.repository.stage_by_key(
+            tenant_id=job.tenant_id,
+            stage="BLUEPRINT_PREFLIGHT",
+            inputs=inputs,
+            policy_hash=policy_hash,
+            component_version=component_version,
+        )
+        expected_blueprint = preflight_compiled_blueprint(
+            blueprint=blueprint.model_copy(
+                update={"approved_by": None, "approved_at": None}, deep=True
+            ),
+            request=request,
+        )
+        expected_preflight = build_blueprint_review_preflight(
+            blueprint=expected_blueprint,
+            activity_spec=activity_spec,
+            rubric_spec=rubric_spec,
+            blueprint_policy=blueprint_policy,
+        )
+        if cached is not None and cached.output is not None:
+            gated = m.AssessmentBlueprint.model_validate(
+                cached.output.get("blueprint")
+            )
+            preflight = m.BlueprintReviewPreflight.model_validate(
+                cached.output.get("preflight")
+            )
+            if gated != expected_blueprint or preflight != expected_preflight:
+                raise WorkflowError(
+                    "STAGE_REUSE_HASH_MISMATCH",
+                    "The reusable blueprint preflight no longer matches its deterministic boundary.",
+                    status_code=409,
+                )
+            self._record_stage_reuse(job, cached)
+            stage_run = cached
+        else:
+            self._assert_application_stage_may_execute(job, "BLUEPRINT_PREFLIGHT")
+            stage_run, _ = self.repository.save_stage(
+                job_id=job.id,
+                tenant_id=job.tenant_id,
+                stage="BLUEPRINT_PREFLIGHT",
+                inputs=inputs,
+                component_version=component_version,
+                policy_hash=policy_hash,
+                output={
+                    "blueprint": expected_blueprint.model_dump(mode="json"),
+                    "preflight": expected_preflight.model_dump(mode="json"),
+                },
+            )
+            gated = expected_blueprint
+            preflight = expected_preflight
+        audit_payload = {
+            "stage_run_id": stage_run.id,
+            "blueprint_version": gated.blueprint_version,
+            "outcome": "PASS" if preflight.catalog_plan_feasible else "FAIL",
+            "diagnostic_codes": sorted(item.code for item in gated.diagnostics),
+        }
+        if not self.repository.has_audit_event(
+            tenant_id=job.tenant_id,
+            event_type="blueprint.preflight.observed",
+            aggregate_id=job.id,
+            payload_contains={"stage_run_id": stage_run.id},
+        ):
+            self.repository.audit(
+                tenant_id=job.tenant_id,
+                event_type="blueprint.preflight.observed",
+                aggregate_id=job.id,
+                actor_id="system_worker",
+                payload=audit_payload,
+            )
+        self._cancellation_checkpoint(job)
+        return gated, preflight
+
     def _record_p08_observability(
         self,
         *,
@@ -3569,6 +3829,8 @@ class Stage1Service:
             return _ACTIVITY_RESUME_ORDER
         if job.kind == "BLUEPRINT_REVIEW":
             return _BLUEPRINT_REVIEW_RESUME_ORDER
+        if job.kind == "BLUEPRINT_PREFLIGHT":
+            return _BLUEPRINT_PREFLIGHT_RESUME_ORDER
         if job.kind == "SUBMISSION":
             return _SUBMISSION_RESUME_ORDER
         if job.kind == "QUESTION_ACTION":
@@ -3669,7 +3931,7 @@ class Stage1Service:
         )
 
     def _stage_policy_hash(self, job: JobRow) -> str:
-        if job.kind in {"ACTIVITY", "BLUEPRINT_REVIEW"}:
+        if job.kind in {"ACTIVITY", "BLUEPRINT_REVIEW", "BLUEPRINT_PREFLIGHT"}:
             activity = cast(
                 ActivityRow,
                 self.repository.scoped(ActivityRow, job.aggregate_id, job.tenant_id),
@@ -3688,7 +3950,18 @@ class Stage1Service:
         return self._model_policy_hash(activity)
 
     @staticmethod
-    def _blueprint_row(tenant_id: str, blueprint: m.AssessmentBlueprint, review: m.BlueprintReview) -> BlueprintRow:
+    def _blueprint_row(
+        tenant_id: str,
+        blueprint: m.AssessmentBlueprint,
+        *,
+        preflight: m.BlueprintReviewPreflight,
+        review: m.BlueprintReview | None,
+    ) -> BlueprintRow:
+        if (
+            preflight.blueprint_id != blueprint.blueprint_id
+            or preflight.blueprint_version != blueprint.blueprint_version
+        ):
+            raise ValueError("blueprint preflight identity mismatch")
         data = blueprint.model_dump(mode="json")
         return BlueprintRow(
             row_id=stable_id("blueprintrow", blueprint.activity_id, blueprint.blueprint_version),
@@ -3699,7 +3972,8 @@ class Stage1Service:
             status=blueprint.status.value,
             etag=_etag(data),
             data=data,
-            review=review.model_dump(mode="json"),
+            review=review.model_dump(mode="json") if review is not None else None,
+            preflight=preflight.model_dump(mode="json"),
         )
 
     @staticmethod
@@ -3898,7 +4172,7 @@ class Stage1Service:
                 raise NotFound("job not found")
             persisted.failure_class = failure_class.value
             persisted.next_attempt_at = None
-        if job.kind in {"ACTIVITY", "BLUEPRINT_REVIEW"}:
+        if job.kind in {"ACTIVITY", "BLUEPRINT_REVIEW", "BLUEPRINT_PREFLIGHT"}:
             self.repository.set_activity_status(job.aggregate_id, job.tenant_id, "TECHNICAL_FAILURE")
         elif job.kind == "SUBMISSION":
             submission = cast(

@@ -145,13 +145,13 @@ describe("API client security defaults", () => {
     expect(headers.get("Idempotency-Key")).toMatch(/^[0-9a-f-]{36}$/i);
   });
 
-  it("starts durable blueprint review with If-Match and returns the accepted job", async () => {
+  it("starts durable blueprint preflight with If-Match and returns the accepted job", async () => {
     const job = {
       schema_version: "1.1.0",
-      job_id: "job_blueprint_review_01",
+      job_id: "job_blueprint_preflight_01",
       tenant_id: "tenant_01",
       aggregate_id: "activity_01",
-      stage: "BLUEPRINT_REVIEW",
+      stage: "BLUEPRINT_PREFLIGHT",
       status: "QUEUED",
       progress: 0,
       attempt: 1,

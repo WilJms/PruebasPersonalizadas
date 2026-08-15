@@ -66,15 +66,17 @@ test("critical Stage 1 journey survives browser restart and enforces evidence-fi
     page.getByRole("heading", { name: "Catálogo de comprensión revisable", exact: true }),
   ).toBeVisible();
   await expect(page.getByText(/Dificultad derivada/).first()).toBeVisible();
-  await expect(page.getByText("Revisión P05")).toBeVisible();
+  await expect(page.getByText("Preflight determinista")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Catálogo factible" })).toBeVisible();
+  await expect(page.getByText("Revisión P05")).toHaveCount(0);
   await page.getByRole("button", { name: "Editar blueprint" }).click();
   await page.getByRole("textbox", { name: "Nombre de dimensión 1" }).fill(
-    "Comprensión verificable revisada por job P05",
+    "Comprensión verificable revisada por preflight",
   );
   await page.getByRole("button", { name: "Guardar nueva versión" }).click();
   await expect(
     page.getByRole("heading", {
-      name: "Comprensión verificable revisada por job P05",
+      name: "Comprensión verificable revisada por preflight",
       exact: true,
     }),
   ).toBeVisible();

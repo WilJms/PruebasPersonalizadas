@@ -33,6 +33,10 @@ SYNTHETIC_PROVIDER_GATE = (
     ROOT
     / "deploy/supabase/migrations/202608120005_stage2_synthetic_provider_gate.sql"
 )
+P05_RUNTIME_CUTOVER = (
+    ROOT
+    / "deploy/supabase/migrations/202608150006_phase3_p05_runtime_cutover.sql"
+)
 RECOVERY = (
     ROOT
     / "deploy/supabase/rollbacks/202608070003_stage2_experimental_recovery.sql"
@@ -161,7 +165,6 @@ def test_stage2_forward_migration_is_additive_data_preserving_and_matches_orm() 
         if table.name in new_tables
     }
     assert created == expected
-
     for table_name in new_tables:
         assert f"alter table public.{table_name} enable row level security;" in lowered
         assert f"{table_name}_tenant_read" in lowered
@@ -254,6 +257,16 @@ def test_synthetic_provider_gate_migration_matches_orm_and_is_append_only() -> N
         assert f"{table_name}_are_append_only" in lowered
         assert f"revoke all on public.{table_name} from anon, authenticated;" in lowered
         assert f"grant all on public.{table_name} to service_role;" in lowered
+
+
+def test_p05_runtime_cutover_adds_only_the_deterministic_preflight_snapshot() -> None:
+    lowered = P05_RUNTIME_CUTOVER.read_text(encoding="utf-8").lower()
+    assert lowered.startswith("begin;")
+    assert lowered.rstrip().endswith("commit;")
+    assert "alter table public.blueprints" in lowered
+    assert "add column preflight jsonb" in lowered
+    assert "drop table" not in lowered
+    assert "drop column" not in lowered
 
 
 def test_recovery_refuses_loss_before_restoring_e1_constraints() -> None:

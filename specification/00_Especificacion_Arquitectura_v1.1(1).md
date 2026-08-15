@@ -27,6 +27,12 @@ El modelo de IA nunca recibe herramientas, red, shell ni capacidad para ejecutar
 
 Para el MVP se recomienda un monolito modular en Python/FastAPI desplegado como Cloud Run Service, PostgreSQL y Auth de Supabase, objetos privados en Cloudflare R2 y trabajos largos en Cloud Run Jobs con estado durable en PostgreSQL, sin Redis inicial. La interfaz React/TypeScript/Vite se sirve al comienzo desde el mismo contenedor. El gateway conserva configuraciones históricas aprobadas —proveedor, snapshot, modelo, `reasoning_effort`, temperatura y límites—, pero ADR-037 no cambia ni usa esa matriz para seleccionar modelo. El pipeline objetivo mantiene P01-P04, P06/P07/P09, deja P05/P08 inactivos y P10 deshabilitado. Cualquier comparación futura requiere un instrumento nuevo y autoridad humana separada.
 
+**Estado operativo Fase 3 (2026-08-15):** P05 ya fue retirado del runtime
+activo. El flujo de actividad persiste el preflight determinista y pasa
+directamente a edición/aprobación docente. Contratos y evidencia P05 siguen
+disponibles para historia/replay; P08 y el orden objetivo de P09 continúan
+pendientes y P10 permanece deshabilitado.
+
 El alcance inmediato es todavía más estrecho que el MVP institucional descrito en v1.0: una aplicación web experimental, carga manual, contexto cerrado, un proveedor principal, revisión humana obligatoria y un primer anillo de PDF digital, DOCX, TXT y Markdown. OCR, presentaciones, hojas de cálculo y código se añaden solo después de comprobar el recorrido principal. LTI y conectores Canvas/Moodle/Blackboard permanecen en la arquitectura futura.
 
 ### Dos horizontes explícitos en v1.1
@@ -1247,9 +1253,10 @@ No incluye LMS/LTI, nota automática, uso sumativo, internet abierto, facturaci�
 
 ## 24.1 Recorrido objetivo del entorno experimental
 
-Este recorrido es el objetivo formal. El runtime conserva temporalmente
-dependencias P05/P08 y el orden legado de P09; el cutover se ejecutará en una
-fase posterior con migración compatible.
+Este recorrido es el objetivo formal. Fase 3 retiró las dependencias activas
+P05 mediante preflight durable y recovery compatible. El runtime conserva
+temporalmente P08 y el orden legado de P09; esos cutovers se ejecutarán en
+fases posteriores independientes.
 
 1. Usuario autenticado crea actividad y configuración.
 2. Carga/pega consigna y rúbrica opcional; se parsean con procedencia.

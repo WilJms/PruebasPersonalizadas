@@ -2,6 +2,37 @@
 
 Fecha de corte: 2026-08-15 (America/Santiago).
 
+## Estado vigente — cutover runtime P05 completo (2026-08-15)
+
+Fase 3 implementa `P05_RUNTIME_CUTOVER_COMPLETE_P08_PENDING`. El pipeline de
+actividad nuevo termina P01→P02 opcional→P03→P04→`BLUEPRINT_PREFLIGHT`→docente.
+P04 sigue produciendo el `AssessmentBlueprint` canónico mediante el compilador
+de D-075; el preflight se persiste como StageRun y en
+`blueprints.preflight`. PASS deja una versión `READY`; FAIL conserva una versión
+`NEEDS_REVIEW` y sus diagnostics/correction scope. Ninguno de los dos caminos
+construye request, gateway transport, review ni ledger P05.
+
+Ediciones docentes crean un job durable `BLUEPRINT_PREFLIGHT`, vuelven a
+validar contra spec/rubric/policy/decisiones y sólo entonces publican la nueva
+versión. La aprobación exige blueprint vigente, preflight recomputado PASS,
+snapshot coherente cuando existe, ETag, ownership, permiso y acción docente;
+ignora completamente recommendation/status/checks históricos P05. El costo de
+actividad pasa de 4/5 llamadas a 3/4 sin/con rúbrica.
+
+La migración aditiva 006 añade `blueprints.preflight`; `review` permanece
+nullable y legible. Un job legacy `BLUEPRINT_REVIEW` se valida por descriptor,
+tenant, lineage, ETag y estructura, luego ejecuta o reutiliza el preflight y se
+finaliza sin proveedor. Incluso en el worker eval-only real esa clase de job no
+consume autorización, no resuelve la clave ni construye transporte; una
+autorización nueva se rechaza. Lease recovery, retry/resume y cancel no dejan
+la actividad stranded. Registry, routes, prompts, contracts, fixtures, reports y
+receipts P05 no se borran ni reescriben: son compatibilidad/evidencia histórica
+no canónica. El CLI sintético de Etapa 0, rehearsal, harness, mocks y tests que
+aún materializan P05 son superficies test-only/históricas, no runtime del
+producto. P06/P07/P08/P09 no cambian, P08 y el movimiento de P09 siguen
+pendientes y P10 continúa deshabilitado. No hubo llamadas reales ni autorización
+billable.
+
 ## Estado vigente — frontera semántica P04 compilada en servidor (2026-08-15)
 
 Sobre el baseline de Fase 1
@@ -38,13 +69,14 @@ permanecen sin reescritura. La regresión final fue
 conocido; el gate contractual quedó en 54 roots, 145 definiciones, 289
 referencias y 8 fixtures.
 
-## Estado vigente — `PIPELINE_AUTHORITY_FORMALIZED` / `RUNTIME_CUTOVER_PENDING` (2026-08-14)
+## Historial — `PIPELINE_AUTHORITY_FORMALIZED` / `RUNTIME_CUTOVER_PENDING` (2026-08-14)
 
 ADR-037 y `pipeline-authority/1.0.0` fijan el objetivo sin rediseñar la
 arquitectura: P01→P02→P03→P04→preflight→docente y, por submission,
 P06→planner→P07→validaciones→docente→P09. P05/P08 son inactivos en el objetivo
-y P10 continúa deshabilitado. El runtime no se declara migrado: todavía existen
-dependencias legacy P05/P08 en workflows, jobs, persistencia, estados y UI.
+y P10 continúa deshabilitado. En ese corte el runtime todavía conservaba
+dependencias legacy P05/P08; Fase 3 retiró P05, mientras P08/P09 siguen
+pendientes.
 
 El harness semántico y todas las qualifications Luna/Terra/Sol quedan como
 `HISTORICAL_NON_CANONICAL_EVIDENCE`; reports y receipts se preservan y ya no

@@ -612,9 +612,11 @@ revisión humana. Una discrepancia sistemática con el instrumento no demuestra
 por sí sola un fallo del modelo y no debe impulsar selección de modelo.
 
 **Consecuencias:** la autoridad objetivo queda ejecutable mediante
-`pipeline-authority/1.0.0`, pero el cutover operativo permanece pendiente. Esta
-iteración no cambia P04/P06/P07/P09, provider routing, prompts ejecutables,
-workflows, jobs, persistencia ni despliegue. Una fase posterior debe retirar
-las invocaciones activas P05/P08 conservando lectura histórica, idempotencia,
-lineage, edición/regeneración localizada y ubicar P09 después de la aprobación
-docente. No se autoriza un corpus nuevo, llamadas billables ni datos reales.
+`pipeline-authority/1.0.0`. Fase 3 completó el cutover operativo de P05: el
+runtime activo usa `AssessmentBlueprint` compilado, preflight determinista
+durable y decisión docente; reviews/jobs P05 anteriores se leen o reconcilian
+sin una nueva llamada. No cambian P04/P06/P07/P08/P09, provider routing,
+prompts ejecutables ni despliegue. Fases posteriores deben retirar P08 y ubicar
+P09 después de la aprobación docente conservando lectura histórica,
+idempotencia, lineage y regeneración localizada. No se autoriza un corpus
+nuevo, llamadas billables ni datos reales.

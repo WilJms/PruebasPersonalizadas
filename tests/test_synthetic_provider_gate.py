@@ -364,3 +364,116 @@ def test_authorization_claim_is_exactly_once_at_repository_boundary() -> None:
     assert grant.job_id == "job_exactly_once_gate"
     with pytest.raises(Conflict, match="ALREADY_CONSUMED"):
         repository.consume_synthetic_provider_authorization(**kwargs)
+
+
+def test_legacy_blueprint_review_job_is_provider_free_even_on_real_worker(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    repository = Repository("sqlite+pysqlite://")
+    job = _seed_job(repository, "job_legacy_blueprint_review")
+    with repository.session() as session:
+        persisted = session.get(JobRow, job.id)
+        assert persisted is not None
+        persisted.kind = "BLUEPRINT_REVIEW"
+        persisted.stage = "BLUEPRINT_REVIEW"
+
+    settings = _settings(job.id)
+    store = MemoryObjectStore(
+        secret="legacy-provider-free-object-store-secret-at-least-32-bytes"
+    )
+    counters = {
+        "key_resolver": 0,
+        "provider_runtime": 0,
+        "provider_free_runtime": 0,
+        "processed": 0,
+    }
+    monkeypatch.setattr(worker, "get_worker_settings", lambda: settings)
+    monkeypatch.setattr(
+        worker,
+        "build_worker_bootstrap_runtime",
+        lambda _settings: SimpleNamespace(
+            repository=repository,
+            object_store=store,
+        ),
+    )
+
+    def forbidden_resolver(_resource: str) -> SecretStr:
+        counters["key_resolver"] += 1
+        raise AssertionError("legacy P05 recovery must not resolve a key")
+
+    class ProviderFreeService:
+        async def process_job(self, job_id: str) -> None:
+            counters["processed"] += 1
+            current = repository.job_status(job_id, "tnt_synthetic_gate")
+            repository.save_job_status(
+                current.model_copy(
+                    update={
+                        "status": "SUCCEEDED",
+                        "stage": "BLUEPRINT_PREFLIGHT",
+                        "progress": 1.0,
+                        "finished_at": datetime.now(UTC),
+                    }
+                )
+            )
+
+    def construct_provider_free_runtime(
+        runtime_settings: WorkerSettings,
+        **kwargs: object,
+    ) -> object:
+        if runtime_settings.model_mode == "real":
+            counters["provider_runtime"] += 1
+        else:
+            counters["provider_free_runtime"] += 1
+        assert runtime_settings.model_mode == "mock"
+        assert runtime_settings.openai_secret_version_resource is None
+        assert runtime_settings.synthetic_evaluation_candidate_sha is None
+        assert kwargs["provider_grant"] is None
+        assert kwargs["api_key"] is None
+        return SimpleNamespace(
+            repository=repository,
+            service=ProviderFreeService(),
+        )
+
+    monkeypatch.setattr(worker, "resolve_openai_api_key", forbidden_resolver)
+    monkeypatch.setattr(
+        worker, "build_worker_runtime", construct_provider_free_runtime
+    )
+
+    assert asyncio.run(worker.run_once()) == 0
+    assert counters == {
+        "key_resolver": 0,
+        "provider_runtime": 0,
+        "provider_free_runtime": 1,
+        "processed": 1,
+    }
+    with repository.session() as session:
+        assert session.scalar(
+            select(func.count()).select_from(SyntheticProviderClaimRow)
+        ) == 0
+
+
+def test_legacy_blueprint_review_cannot_receive_new_provider_authorization() -> None:
+    repository = Repository("sqlite+pysqlite://")
+    job = _seed_job(repository, "job_legacy_auth_forbidden")
+    with repository.session() as session:
+        persisted = session.get(JobRow, job.id)
+        assert persisted is not None
+        persisted.kind = "BLUEPRINT_REVIEW"
+    spec = SyntheticProviderAuthorizationSpec(
+        authorization_id="authorization_legacy_auth_forbidden",
+        tenant_id=job.tenant_id,
+        job_id=job.id,
+        job_kind="BLUEPRINT_REVIEW",
+        aggregate_id=job.aggregate_id,
+        expected_claim_attempt=1,
+        artifact_hashes=repository.synthetic_artifact_hashes_for_job(job.id),
+        candidate_sha=CANDIDATE_SHA,
+        boundary_hash=synthetic_provider_boundary_hash(),
+        secret_version_resource=SECRET_RESOURCE,
+        max_requests=1,
+        max_cost_usd=0.10,
+        expires_at=datetime.now(UTC) + timedelta(minutes=30),
+        created_by="operator_gate",
+    )
+    with pytest.raises(Conflict, match="PROVIDER_FREE_JOB"):
+        repository.authorize_synthetic_provider_job(spec)

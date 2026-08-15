@@ -21,14 +21,9 @@ from pydantic import ValidationError
 from pydantic import SecretStr
 
 from comprehension_verification.model_gateway import (
-    LUNA_MODEL_ID,
     OPENAI_DEFAULT_REQUEST_TIMEOUT_SECONDS,
     OPENAI_GATEWAY_TIMEOUT_GRACE_SECONDS,
-    OPENAI_MAX_INPUT_TOKENS,
-    OPENAI_P11_MAX_INPUT_TOKENS,
-    prompt_spec,
 )
-from comprehension_verification.model_gateway.openai_pricing import estimate_cost_usd
 from comprehension_verification.provider_authorization import (
     SyntheticProviderGrant,
     synthetic_provider_boundary_hash,
@@ -175,8 +170,8 @@ def test_web_uses_real_worker_route_profile_for_cost_authorization() -> None:
     assert estimate.model_mode == "real"
     assert estimate.estimated_model_calls == 4
     assert estimate.estimated_input_tokens == 480_000
-    assert estimate.estimated_output_tokens == 80_000
-    assert estimate.upper_bound_cost_usd == pytest.approx(0.216)
+    assert estimate.estimated_output_tokens == 72_000
+    assert estimate.upper_bound_cost_usd == pytest.approx(0.2064)
     assert estimate.within_limit is True
 
     submission = service._cost_estimate(
@@ -211,7 +206,7 @@ def test_manual_eval_fixtures_fit_the_versioned_e2e_budget_envelope() -> None:
     activity = service._cost_estimate(
         phase="ACTIVITY_BLUEPRINT",
         aggregate_id="act_manual_eval_fixture",
-        calls=5,
+        calls=4,
         input_bytes=assignment_bytes + rubric_bytes,
         fingerprint_source={"fixture": "activity_01_rubric"},
     )
@@ -223,31 +218,16 @@ def test_manual_eval_fixtures_fit_the_versioned_e2e_budget_envelope() -> None:
         fingerprint_source={"fixture": "submission_sufficient"},
     )
 
-    assert activity.upper_bound_cost_usd == 0.253571
+    assert activity.upper_bound_cost_usd == 0.197097
     assert submission.upper_bound_cost_usd == 0.490573
     assert activity.within_limit is submission.within_limit is True
 
-    p05_spec = prompt_spec("P05_BLUEPRINT_REVIEW_V1")
-    p11_spec = prompt_spec("P11_SCHEMA_REPAIR_V1")
-    edit_ceiling = estimate_cost_usd(
-        model=LUNA_MODEL_ID,
-        input_tokens=OPENAI_MAX_INPUT_TOKENS,
-        output_tokens=p05_spec.max_output_tokens,
-        cache_write_tokens=OPENAI_MAX_INPUT_TOKENS,
-    ) + estimate_cost_usd(
-        model=LUNA_MODEL_ID,
-        input_tokens=OPENAI_P11_MAX_INPUT_TOKENS,
-        output_tokens=p11_spec.max_output_tokens,
-        cache_write_tokens=OPENAI_P11_MAX_INPUT_TOKENS,
-    )
-    assert edit_ceiling == 0.1113
     assert round(
         activity.upper_bound_cost_usd
-        + edit_ceiling
         + submission.upper_bound_cost_usd,
         6,
-    ) == 0.855444
-    assert 2 * (activity.estimated_model_calls + 1 + submission.estimated_model_calls) == 32
+    ) == 0.68767
+    assert 2 * (activity.estimated_model_calls + submission.estimated_model_calls) == 28
 
 
 def test_spa_document_cannot_survive_a_rollout_in_browser_cache(tmp_path: Path) -> None:

@@ -160,7 +160,7 @@ def _activity_payload(row: ActivityRow, repository: Repository) -> dict[str, Any
     job = (
         activity_job
         if activity_job is not None
-        and activity_job.stage == "BLUEPRINT_REVIEW"
+        and activity_job.stage in {"BLUEPRINT_PREFLIGHT", "BLUEPRINT_REVIEW"}
         and activity_job.status
         in {"QUEUED", "RUNNING", "FAILED", "NEEDS_REVIEW"}
         else submission_job or activity_job
@@ -302,13 +302,24 @@ def _submission_payload(row: SubmissionRow, repository: Repository) -> dict[str,
     return state
 
 
-def _blueprint_response(row: Any, response: Response) -> dto.BlueprintEnvelope:
+def _blueprint_response(
+    row: Any,
+    response: Response,
+    *,
+    preflight: dict[str, Any] | None = None,
+    issues: list[dict[str, Any]] | None = None,
+) -> dto.BlueprintEnvelope:
     response.headers["ETag"] = row.etag
     return dto.BlueprintEnvelope.model_validate(
         {
             "blueprint": row.data,
+            "preflight": preflight if preflight is not None else row.preflight,
             "review": row.review,
-            "issues": (row.review or {}).get("diagnostics", []),
+            "issues": (
+                issues
+                if issues is not None
+                else (row.data or {}).get("diagnostics", [])
+            ),
             "etag": row.etag,
             "version": row.version,
         }
@@ -602,8 +613,9 @@ def create_app(
             body = dto.BlueprintEnvelope.model_validate(
                 {
                     "blueprint": row.data,
+                    "preflight": row.preflight,
                     "review": row.review,
-                    "issues": (row.review or {}).get("diagnostics", []),
+                    "issues": (row.data or {}).get("diagnostics", []),
                     "etag": row.etag,
                     "version": row.version,
                 }
@@ -1434,9 +1446,10 @@ def create_app(
         response: Response,
         actor: Annotated[Actor, Depends(current_actor)],
     ) -> dto.BlueprintEnvelope:
+        row = runtime.repository.latest_blueprint(activity_id, actor.workspace_id)
+        preflight, issues = runtime.service.blueprint_review_projection(row, actor)
         return _blueprint_response(
-            runtime.repository.latest_blueprint(activity_id, actor.workspace_id),
-            response,
+            row, response, preflight=preflight, issues=issues
         )
 
     @app.get(
@@ -1455,9 +1468,12 @@ def create_app(
         response: Response,
         actor: Annotated[Actor, Depends(current_actor)],
     ) -> dto.BlueprintEnvelope:
+        row = runtime.repository.blueprint_version(
+            activity_id, version, actor.workspace_id
+        )
+        preflight, issues = runtime.service.blueprint_review_projection(row, actor)
         return _blueprint_response(
-            runtime.repository.blueprint_version(activity_id, version, actor.workspace_id),
-            response,
+            row, response, preflight=preflight, issues=issues
         )
 
     @app.patch(
