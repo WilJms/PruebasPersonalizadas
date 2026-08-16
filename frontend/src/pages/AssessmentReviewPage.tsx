@@ -786,7 +786,11 @@ function QuestionEvidenceCard({
         </section>
 
         <section className="score-panel">
-          <span className="mini-label">Scores y validación semántica</span>
+          <span className="mini-label">
+            {review
+              ? "Review histórico P08 · compatibilidad no autoritativa"
+              : "Validación determinista activa"}
+          </span>
           {review ? (
             <>
               <div className="chip-row">
@@ -804,11 +808,13 @@ function QuestionEvidenceCard({
                 ))}
               </div>
               {(review.justifications ?? []).map((value) => <p key={value}>{value}</p>)}
-              <ReferenceList label="Evidencia de review" values={review.evidence_ids ?? []} />
+              <ReferenceList label="Evidencia del review histórico" values={review.evidence_ids ?? []} />
               <ReferenceList label="Fuentes de curso" values={review.source_ids ?? []} emptyLabel="Sin fuentes de curso: contexto CLOSED." />
             </>
           ) : (
-            <p className="muted">No hay review semántica asociada.</p>
+            <p className="muted">
+              La pregunta P07 superó las invariantes deterministas activas. El runtime actual no ejecuta P08.
+            </p>
           )}
           <Diagnostics items={review?.diagnostics} />
           {(review?.critical_failure_codes ?? []).length > 0 && (

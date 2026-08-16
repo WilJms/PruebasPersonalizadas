@@ -39,6 +39,37 @@ SYNTHETIC_PROVIDER_REQUEST_CAP_VERSION: Final = (
     "stage2-provider-request-cap/1.0.0"
 )
 
+# Registry/routes remain a historical capability catalog. This separate
+# product policy is the authorization/reachability boundary after Phase 6.
+ACTIVE_PRODUCT_MODEL_PROMPT_IDS: Final = frozenset(
+    {
+        "P01_ACTIVITY_SPEC_V1",
+        "P02_RUBRIC_NORMALIZE_V1",
+        "P03_AMBIGUITY_TRIAGE_V1",
+        "P04_BLUEPRINT_BUILD_V1",
+        "P06_EVIDENCE_MAP_V1",
+        "P07_QUESTION_BUILD_V1",
+        "P09_GUIDE_BUILD_V1",
+    }
+)
+INTERNAL_SCHEMA_REPAIR_PROMPT_IDS: Final = frozenset(
+    {"P11_SCHEMA_REPAIR_V1"}
+)
+HISTORICAL_PRODUCT_PROMPT_IDS: Final = frozenset(
+    {"P05_BLUEPRINT_REVIEW_V1", "P08_QUESTION_REVIEW_V1"}
+)
+DISABLED_PRODUCT_PROMPT_IDS: Final = frozenset(
+    {"P10_ENRICHED_CONTEXT_V1"}
+)
+
+if (
+    ACTIVE_PRODUCT_MODEL_PROMPT_IDS
+    | INTERNAL_SCHEMA_REPAIR_PROMPT_IDS
+    | HISTORICAL_PRODUCT_PROMPT_IDS
+    | DISABLED_PRODUCT_PROMPT_IDS
+) != set(PROMPT_SPECS):
+    raise RuntimeError("product prompt policy must partition the registry")
+
 _CANONICAL_HASH = re.compile(r"^sha256:[a-f0-9]{64}$")
 _CANDIDATE_SHA = re.compile(r"^[a-f0-9]{40}$")
 _CANONICAL_ID = re.compile(r"^[a-z][a-z0-9_-]{2,127}$")
@@ -76,6 +107,16 @@ def synthetic_provider_boundary_material() -> dict[str, Any]:
             "fallback": False,
             "p10_callable": False,
             "sdk_retries": 0,
+        },
+        "product_runtime_prompt_policy": {
+            "active_model_stages": sorted(ACTIVE_PRODUCT_MODEL_PROMPT_IDS),
+            "internal_schema_repair": sorted(
+                INTERNAL_SCHEMA_REPAIR_PROMPT_IDS
+            ),
+            "historical_non_callable": sorted(
+                HISTORICAL_PRODUCT_PROMPT_IDS
+            ),
+            "disabled": sorted(DISABLED_PRODUCT_PROMPT_IDS),
         },
         "prompts": {
             prompt_id: {

@@ -331,6 +331,49 @@ def test_generated_candidate_id_collision_cannot_cross_submission_scope() -> Non
         assert persisted.data["synthetic"] == "first"
 
 
+def test_current_generated_question_persists_without_creating_p08_review() -> None:
+    repo = Repository("sqlite+pysqlite://")
+    question = GeneratedQuestionRow(
+        id="candidate_phase6",
+        tenant_id="tnt_stage2",
+        submission_id="sub_phase6",
+        data={"status": "READY", "candidate": {"candidate_id": "candidate_phase6"}},
+    )
+
+    repo.save_generated_question(question)
+    repo.save_generated_question(question)
+
+    assert repo.review_rows("sub_phase6", "tnt_stage2") == []
+    with repo.session() as session:
+        persisted = session.get(GeneratedQuestionRow, question.id)
+        assert persisted is not None
+        assert persisted.data == question.data
+
+
+@pytest.mark.parametrize("decision", ["ACCEPT", "REJECT", "ESCALATE"])
+def test_historical_p08_decisions_remain_readable(decision: str) -> None:
+    repo = Repository("sqlite+pysqlite://")
+    submission_id = f"sub_historical_{decision.lower()}"
+    repo.save_generated_question_and_review(
+        question=GeneratedQuestionRow(
+            id=f"candidate_historical_{decision.lower()}",
+            tenant_id="tnt_stage2",
+            submission_id=submission_id,
+            data={"status": "READY"},
+        ),
+        review=QuestionReviewRow(
+            question_id=f"question_historical_{decision.lower()}",
+            tenant_id="tnt_stage2",
+            submission_id=submission_id,
+            data={"status": "READY", "review": {"decision": decision}},
+        ),
+    )
+
+    rows = repo.review_rows(submission_id, "tnt_stage2")
+    assert len(rows) == 1
+    assert rows[0].data["review"]["decision"] == decision
+
+
 def test_cancel_wins_atomically_before_assessment_publication() -> None:
     repo = Repository("sqlite+pysqlite://")
     assessment, guide = assessment_and_guide()

@@ -12,8 +12,9 @@ gate canónico para seleccionar modelo; esta iteración no cambia provider
 routing. Fase 3 ya hizo inalcanzable P05
 desde ejecuciones nuevas; su fila/ruta sólo sirve a replay histórico. Fase 4
 reduce P06 a mapping categórico sobre aliases y deja N/factibilidad al planner.
-Fase 5 reduce P07 a un draft semántico alias-only; P08 sigue activo
-temporalmente y P09 conserva el comportamiento actual hasta fases posteriores.
+Fase 5 redujo P07 a un draft semántico alias-only. Fase 6 retiró P08 del
+runtime activo con hard guard previo al transporte; P09 conserva el orden
+actual hasta Fase 7.
 
 Las versiones retenidas son P01 `1.1.3`, P02 `1.1.4`, P03 `1.1.3`, P04
 `1.1.12`, P05 `1.1.8`, P06 `1.1.6`, P07 `1.1.5`, P08 `1.1.5`, P09 `1.1.6`, P10 `1.1.3` y P11
@@ -156,9 +157,9 @@ artefactos históricos.
 | `P04_BLUEPRINT_BUILD_V1` | `BlueprintBuildRequest` | `BlueprintModelDraft` -> `AssessmentBlueprint` compilado | specs + decisiones docentes | preflight + aprobación docente | GPT-5.6 Luna, high |
 | `P05_BLUEPRINT_REVIEW_V1` | `BlueprintReviewRequest` | `BlueprintReview` | P04 | histórico/compatibilidad | INACTIVE_TARGET; ruta histórica retenida |
 | `P06_EVIDENCE_MAP_V1` | `EvidenceMapRequest` -> `EvidenceMappingAliasEnvelope` wire | `EvidenceMappingModelDraft` -> `EvidenceMapPatch` materializado | parser + blueprint | planificador | GPT-5.6 Luna, high |
-| `P07_QUESTION_BUILD_V1` | `QuestionBuildRequest` -> `QuestionAliasEnvelope` wire | `QuestionModelDraft` -> `QuestionGenerationResult` materializado | plan + oportunidad primaria/reserva | validaciones + P08 temporal + revisión docente | GPT-5.6 Luna, high |
-| `P08_QUESTION_REVIEW_V1` | `QuestionReviewRequest` | `QuestionReviewResult` | P07 + reglas previas | histórico/compatibilidad | INACTIVE_TARGET; ruta histórica retenida |
-| `P09_GUIDE_BUILD_V1` | `GuideBuildRequest` | `EvaluationGuide` | preguntas aprobadas | plataforma/evaluador | GPT-5.6 Luna, high |
+| `P07_QUESTION_BUILD_V1` | `QuestionBuildRequest` -> `QuestionAliasEnvelope` wire | `QuestionModelDraft` -> `QuestionGenerationResult` materializado | plan + oportunidad primaria/reserva | validaciones deterministas + ASSEMBLE | GPT-5.6 Luna, high |
+| `P08_QUESTION_REVIEW_V1` | `QuestionReviewRequest` | `QuestionReviewResult` | P07 + reglas previas históricas | histórico/compatibilidad | HISTORICAL_NON_CALLABLE; ruta retenida |
+| `P09_GUIDE_BUILD_V1` | `GuideBuildRequest` | `EvaluationGuide` | Assessment ensamblado interino; objetivo posterior aprobado | plataforma/evaluador | GPT-5.6 Luna, high |
 | `P10_ENRICHED_CONTEXT_V1` | `QuestionBuildRequest` (`COURSE_ENRICHED`) | `QuestionGenerationResult` | retrieval autorizado + plan | reglas/P08 | DISABLED; sin ruta callable |
 | `P11_SCHEMA_REPAIR_V1` | `SchemaRepairRequest` | `SchemaRepairResult` | validador JSON | validador del root objetivo | GPT-5.6 Luna, low; temperatura no enviada |
 
@@ -686,7 +687,13 @@ cross-submission o conocimiento externo falla cerrado.
 
 ---
 
-## 10. `P08_QUESTION_REVIEW_V1` - Validador semántico
+## 10. `P08_QUESTION_REVIEW_V1` - Validador semántico histórico
+
+> **HISTORICAL / NON-ACTIVE:** el bloque siguiente queda congelado para
+> interpretar hashes, receipts, fixtures y replay anteriores a Fase 6. Su
+> wording —incluida la expresión histórica «subconjunto estricto»— no define la
+> arquitectura actual: el visible anchor vigente es un subconjunto que puede
+> ser menor o igual al support. El runtime del producto no ejecuta este prompt.
 
 | Aspecto | Definición v1.1 |
 |---|---|

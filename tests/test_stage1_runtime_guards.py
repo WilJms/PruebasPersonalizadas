@@ -178,15 +178,15 @@ def test_web_uses_real_worker_route_profile_for_cost_authorization() -> None:
         phase="SUBMISSION_ASSESSMENT",
         aggregate_id="sub_synthetic",
         # One selected question plus three governed reserve opportunities.
-        calls=10,
+        calls=6,
         input_bytes=10_000,
         fingerprint_source={"synthetic": True, "reserves": 3},
     )
     assert submission.model_mode == "real"
-    assert submission.estimated_model_calls == 10
-    assert submission.estimated_input_tokens == 1_200_000
-    assert submission.estimated_output_tokens == 178_000
-    assert submission.upper_bound_cost_usd == pytest.approx(0.5136)
+    assert submission.estimated_model_calls == 6
+    assert submission.estimated_input_tokens == 720_000
+    assert submission.estimated_output_tokens == 114_000
+    assert submission.upper_bound_cost_usd == pytest.approx(0.3168)
     assert submission.within_limit is True
 
 
@@ -213,21 +213,22 @@ def test_manual_eval_fixtures_fit_the_versioned_e2e_budget_envelope() -> None:
     submission = service._cost_estimate(
         phase="SUBMISSION_ASSESSMENT",
         aggregate_id="sub_manual_eval_fixture",
-        calls=10,
+        # P06 + four governed P07 opportunities + P09; P08 is retired.
+        calls=6,
         input_bytes=submission_bytes,
         fingerprint_source={"fixture": "submission_sufficient"},
     )
 
     assert activity.upper_bound_cost_usd == 0.197097
-    assert submission.upper_bound_cost_usd == 0.490573
+    assert submission.upper_bound_cost_usd == 0.302984
     assert activity.within_limit is submission.within_limit is True
 
     assert round(
         activity.upper_bound_cost_usd
         + submission.upper_bound_cost_usd,
         6,
-    ) == 0.68767
-    assert 2 * (activity.estimated_model_calls + submission.estimated_model_calls) == 28
+    ) == 0.500081
+    assert 2 * (activity.estimated_model_calls + submission.estimated_model_calls) == 20
 
 
 def test_spa_document_cannot_survive_a_rollout_in_browser_cache(tmp_path: Path) -> None:

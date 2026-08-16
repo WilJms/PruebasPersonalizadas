@@ -31,7 +31,7 @@ const submissions = [
     activity_id: "activity_01",
     subject_ref: "estudiante_014",
     status: "NEEDS_REVIEW",
-    current_stage: "QUESTION_REVIEW",
+    current_stage: "QUESTION_VALIDATE",
     progress: 1,
     active_job_id: "job_01",
     artifact_uploaded: true,

@@ -249,18 +249,11 @@ def test_edit_retry_reconstructs_protected_replacement_after_terminal_rollback(
         )
         service = app.state.runtime.service
         repository = app.state.runtime.repository
-        original_gateway_stage = service._gateway_stage
         original_apply = repository.apply_question_review_action
-
-        async def timeout_question_review(job, prompt_id: str, *args, **kwargs):
-            if prompt_id == "P08_QUESTION_REVIEW_V1":
-                raise GatewayTimeout("synthetic provider detail")
-            return await original_gateway_stage(job, prompt_id, *args, **kwargs)
 
         def rollback_terminal_transaction(*_args, **_kwargs):
             raise ConnectionError("synthetic terminal transaction detail")
 
-        monkeypatch.setattr(service, "_gateway_stage", timeout_question_review)
         monkeypatch.setattr(
             repository,
             "apply_question_review_action",
@@ -278,7 +271,6 @@ def test_edit_retry_reconstructs_protected_replacement_after_terminal_rollback(
                 "replacement": replacement,
             },
         )
-        monkeypatch.setattr(service, "_gateway_stage", original_gateway_stage)
         monkeypatch.setattr(
             repository, "apply_question_review_action", original_apply
         )
@@ -316,6 +308,14 @@ def test_edit_retry_reconstructs_protected_replacement_after_terminal_rollback(
         )
         assert retried.status_code == 200, retried.text
         assert retried.json()["job"]["status"] == "SUCCEEDED"
+        action_prompt_ids = [
+            item["prompt_id"]
+            for item in repository.model_calls(tenant_id=TENANT_ID)
+            if item["job_id"]
+            in {source_job.id, retried.json()["job"]["job_id"]}
+        ]
+        assert action_prompt_ids == ["P09_GUIDE_BUILD_V1"]
+        assert "P08_QUESTION_REVIEW_V1" not in action_prompt_ids
         refreshed = client.get(
             f"/api/v1/submissions/{fixture['submission_id']}/assessment"
         )

@@ -16,7 +16,8 @@
 
 La documentación explica invariantes contextuales, pero no redefine tipos, enums ni obligatoriedad.
 
-Fases 4/5 implementan ADR-037 con cambios contractuales mínimos y regenerados:
+Fases 4/5 implementan fronteras ADR-037 con cambios contractuales mínimos y
+Fase 6 retira P08 sin borrar contratos:
 añaden los envelopes/drafts provider de P06 y P07, mientras
 `EvidenceMapPatch` y `QuestionGenerationResult` siguen siendo outputs canónicos.
 El bundle esperado tiene 58 roots, 163 `$defs`, 319 refs y 8 fixtures. Los
@@ -209,15 +210,16 @@ Un test independiente exige que el pipeline objetivo incluya sólo P01-P04,
 P06/P07/P09 como etapas de modelo, marque P05/P08 `inactive`, P10 `disabled` y
 asigne una única autoridad a cada decisión. La presencia de una ruta en el
 registry es compatibilidad histórica, no reachability. Para P05 el cutover ya
-está completo y ninguna ejecución nueva consulta su ruta; P08 sigue pendiente
-de retiro operativo.
+está completo y ninguna ejecución nueva consulta su ruta; el retiro operativo
+de P08 también está completo y su hard guard precede el transporte.
 
 Para P07, tests separados exigen que el provider draft no contenga IDs,
 metadata, locators ni anchor text; que
 `anchor evidence ⊆ candidate.evidence_ids = opportunity.evidence_ids`; que el
 materializador recupere literalmente `display_text`/locator; y que un cache
-canónico recompilado sea idéntico. P08 debe seguir llamado y recibir support
-completa y anchor visible como fronteras distintas.
+canónico recompilado sea idéntico. El runtime debe continuar con validación
+determinista, exactamente N y ASSEMBLE sin llamar P08. Tests históricos pueden
+validar su contrato/replay por una superficie explícitamente no productiva.
 
 ---
 
@@ -287,7 +289,7 @@ Se prohíbe:
 - La corrección de blueprint/plan no es wire-compatible con `BlueprintSlot`, candidate batches, selector posterior o guide patches.
 - No se convierten slots en oportunidades mediante un rename: el catálogo y cada plan se regeneran desde consigna, rúbrica, decisiones y evidencia versionadas.
 - `QuestionGenerationResult.context_mode` tiene default `CLOSED`; P10 exige `COURSE_ENRICHED` explícito.
-- P07/P08 usan IDs y roots nuevos; el prompt registry debe actualizarse de forma atómica con el schema.
+- P07/P08 conservan sus IDs y roots contractuales; la presencia de P08 en el registry no lo vuelve callable.
 - P09 persiste `EvaluationGuide` independiente, asociado a assessment/submission.
 - `ActivityConfig` elimina profundidad/operaciones solicitadas y añade modo de justificación.
 - bulk approval y ModelRouteResolution son nuevos roots operacionales.

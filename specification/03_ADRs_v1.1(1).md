@@ -644,7 +644,20 @@ visible anchor es un subconjunto seleccionado por aliases. El servidor crea
 identidad/metadata y reconstruye texto, transformación y locator exactos desde
 `EvidenceUnit`, sin permitir anchor libre ni evidencia adicional. Los
 observables y la redacción siguen siendo semánticos. Leakage objetivo, scope,
-membership y replay se validan determinísticamente. P08 continúa activo de
-forma temporal sin cambiar scores, decisión o routing; P09 no se mueve y P10
+membership y replay se validan determinísticamente. En ese corte de Fase 5,
+P08 continuaba activo de forma temporal sin cambiar scores, decisión o routing; P09 no se mueve y P10
 sigue deshabilitado. La siguiente modificación funcional es retirar P08 del
 runtime. No cambian modelo/reasoning ni se autoriza proveedor real o gasto.
+
+**Nota de implementación — Fase 6, 2026-08-15:** P08 queda retirado de toda
+ejecución nueva. El hard guard `P08_ACTIVE_RUNTIME_RETIRED` precede gateway,
+trusted context y transporte; no se construye request, ledger, StageRun, coste
+ni `QuestionReviewRow` P08. P07 READY pasa por validaciones deterministas y a
+selección; replacement o defecto question-local objetivo consume una reserva
+finita, mientras scope/security falla cerrado. Exactamente N sigue siendo
+precondición de ASSEMBLE. Contratos, prompt, ruta, mocks, rows, reports,
+receipts y qualification P08 se preservan como historia no autoritativa.
+Resume desde `QUESTION_REVIEW` revalida/reutiliza P07 vigente e ignora la
+decisión histórica. El runtime interino conserva
+`P07 validado -> ASSEMBLE -> P09 -> workflow docente`; mover P09 pertenece a
+Fase 7. P10 continúa deshabilitado y no se autorizó proveedor real ni gasto.

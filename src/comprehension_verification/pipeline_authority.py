@@ -1,9 +1,9 @@
 """Normative target authority for the Stage 2 pipeline simplification.
 
-P05 has been removed from active product routing, P06 uses a reduced semantic
-mapping boundary and P07 uses an alias-only drafting boundary with canonical
-server materialization. Historical evidence remains readable. The independent
-P08 cutover is still pending.
+P05 and P08 have been removed from active product routing, P06 uses a reduced
+semantic mapping boundary and P07 uses an alias-only drafting boundary with
+canonical server materialization. Historical evidence remains readable. P09
+still runs in its Phase 5 order until the independent Phase 7 relocation.
 """
 
 from __future__ import annotations
@@ -15,7 +15,7 @@ from typing import Any
 
 
 PIPELINE_AUTHORITY_VERSION = "pipeline-authority/1.0.0"
-PIPELINE_CUTOVER_STATUS = "P07_QUESTION_GENERATION_BOUNDARY_COMPLETE_P08_PENDING"
+PIPELINE_CUTOVER_STATUS = "P08_RUNTIME_RETIRED_P09_RELOCATION_PENDING"
 HISTORICAL_HARNESS_EVIDENCE_STATUS = "HISTORICAL_NON_CANONICAL_EVIDENCE"
 
 TARGET_ACTIVITY_PIPELINE = (
@@ -34,6 +34,15 @@ TARGET_SUBMISSION_PIPELINE = (
     "TEACHER_QUESTION_REVIEW_APPROVAL",
     "P09",
 )
+ACTIVE_SUBMISSION_PIPELINE = (
+    "P06",
+    "DETERMINISTIC_PLANNER",
+    "P07",
+    "DETERMINISTIC_QUESTION_VALIDATIONS",
+    "ASSEMBLE",
+    "P09",
+    "TEACHER_QUESTION_REVIEW_APPROVAL",
+)
 TARGET_ACTIVE_MODEL_STAGE_IDS = (
     "P01",
     "P02",
@@ -45,6 +54,13 @@ TARGET_ACTIVE_MODEL_STAGE_IDS = (
 )
 TARGET_INACTIVE_MODEL_STAGE_IDS = ("P05", "P08")
 DISABLED_MODEL_STAGE_IDS = ("P10",)
+COMPATIBILITY_ONLY_FIELDS = MappingProxyType(
+    {
+        "Anchor.self_containment_score": (
+            "DERIVED_COMPATIBILITY_LEGACY_NO_ACTIVE_AUTHORITY"
+        )
+    }
+)
 
 
 class DecisionAuthority(StrEnum):
@@ -134,11 +150,16 @@ def pipeline_authority_manifest() -> dict[str, Any]:
             "activity": list(TARGET_ACTIVITY_PIPELINE),
             "submission": list(TARGET_SUBMISSION_PIPELINE),
         },
+        "active_interim_pipelines": {
+            "submission": list(ACTIVE_SUBMISSION_PIPELINE),
+            "p09_relocation_pending": True,
+        },
         "model_stage_policy": {
             "active": list(TARGET_ACTIVE_MODEL_STAGE_IDS),
             "inactive": list(TARGET_INACTIVE_MODEL_STAGE_IDS),
             "disabled": list(DISABLED_MODEL_STAGE_IDS),
         },
+        "compatibility_only_fields": dict(COMPATIBILITY_ONLY_FIELDS),
         "decision_authority": {
             authority.value: [
                 rule.decision_id

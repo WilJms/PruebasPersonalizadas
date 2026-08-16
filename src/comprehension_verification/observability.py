@@ -1,4 +1,4 @@
-"""Content-free diagnostic projections shared by product and rehearsal."""
+"""Content-free diagnostic projections retained for historical rehearsal."""
 
 from __future__ import annotations
 
@@ -12,7 +12,12 @@ def p08_decision_diagnostics(
     review_result: m.QuestionReviewResult,
     validation_policy: m.QuestionValidationPolicy,
 ) -> dict[str, Any]:
-    """Project a P08 decision into stable, reproducible audit metadata."""
+    """Project a historical P08 decision into reproducible audit metadata.
+
+    Phase 6 does not call this function from the active product gateway. It is
+    retained so existing P08 audit rows, reports, and offline replay keep their
+    original interpretation without making scores or thresholds authoritative.
+    """
 
     if review_result.status != "READY" or review_result.review is None:
         return {

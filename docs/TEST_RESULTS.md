@@ -3,7 +3,30 @@
 Fecha de corte documental: 2026-08-15 (America/Santiago; ejecución cloud hasta
 2026-08-11 UTC; toda la validación ADR-037 fue local, offline y mock).
 
-## Estado vigente — Fase 5, frontera P07 support/visible — 2026-08-15
+## Estado vigente — Fase 6, P08 fuera del runtime activo — 2026-08-15
+
+| Prueba o gate | Resultado observado |
+|---|---|
+| Corte focal P08 | 137 passed: hard guard pre-transporte, cero invocaciones/rows nuevos, reservas, exact-N, fallo cerrado, coste, persistencia y recovery ACCEPT/REJECT/ESCALATE |
+| Harness histórico | 123 passed; P08 conserva prompt, contratos, fixtures y replay `HISTORICAL_NON_CANONICAL_EVIDENCE`, sin volverse callable por el producto |
+| Backend completo | `make test`: 822 passed, 17 skips exclusivamente PostgreSQL y 1 warning Starlette conocido |
+| Cobertura | equivalente a `make test-cov`: 822 passed/17 skips; 81% global sobre 14.565 statements; `COVERAGE_FILE` redirigido a `/tmp` y `coverage.xml` preexistente intacto |
+| Contratos | 58 roots, 163 `$defs`, 319 refs y 8 fixtures PASS; schema temporal sin drift; hashes schema/model `ffb955e42d23724a754d1a5a74c30db7b25398016a8f435312732870cd625da0`/`a36a4a8d262349ed87fbf0674b267e362704925588bae6193e7d5c11d714aa07` |
+| Frontera P07 | materializador de Fase 5 byte-idéntico, source hash `341316e12724…`; visible anchor `⊆` support evidence y `Anchor.self_containment_score` clasificado `DERIVED_COMPATIBILITY_LEGACY_NO_ACTIVE_AUTHORITY` |
+| Runtime activo | `P06 -> planner -> P07 -> QUESTION_VALIDATE -> exact-N -> ASSEMBLE -> P09 -> docente`; P08 calls/ledgers/rows/scores/gates = 0 y `Assessment.status=NEEDS_REVIEW` |
+| Coste | para N=1 y R=3: 10→6 calls, 1.200.000→720.000 input tokens, 178.000→114.000 output tokens y USD 0,5136→0,3168; ahorro conservador USD 0,1968 |
+| Frontend | typecheck PASS; Vitest 6/6 archivos y 36/36 tests; build PASS; npm audit 0 vulnerabilidades |
+| Browser/Playwright | navegador integrado PASS sobre flujo real mock: estimación 6 calls, `QUESTION_VALIDATE`, ninguna etapa P08 y label determinista; consola/overlay limpios y 390 px sin overflow. Playwright Stage 1 1/1 y Stage 2 2/2 PASS |
+| Rehearsal/higiene | convergence dry-run PASS con `provider_call_receipts=[]` y transporte no construido; fixture PDF temporal byte-idéntico, secret scan 349 archivos, `compileall` y Terraform fmt/init/validate PASS |
+| PostgreSQL/Docker | `pg_isready` sin respuesta y daemon Docker no disponible localmente; 17 skips locales y matrices PG16/PG17/Docker corresponden a push/PR CI |
+| Red/provider | ambas API keys removidas, `CVA_MODEL_MODE=mock`, `CVA_P10_ENABLED=false`; provider real, secreto resuelto, requests billables y recalificación histórica = 0 |
+
+P09 conserva deliberadamente el orden interino de Fase 5; moverlo detrás de la
+aprobación/edición docente y reducir duplicación con P07 es la única siguiente
+modificación funcional autorizada para Fase 7. El resultado remoto del SHA
+publicado se registra en el CURRENT STATE de PR #3 y en el informe final.
+
+## Histórico — Fase 5, frontera P07 support/visible — 2026-08-15
 
 | Prueba o gate | Resultado observado |
 |---|---|

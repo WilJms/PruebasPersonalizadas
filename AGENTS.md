@@ -56,7 +56,10 @@ No copie ni redefina modelos Pydantic. Importe `comprehension_verification.contr
   P07 devuelve un `QuestionModelDraft` sobre aliases `E*`: el servidor conserva
   support evidence completa, crea identidad/metadata y reconstruye el anchor
   visible literal como un subconjunto, sin aceptar texto ni locators del modelo;
-  el cutover de P08 y el orden objetivo de P09 permanecen pendientes;
+  el cutover runtime de P08 está completo: las nuevas preguntas pasan de P07
+  a validación determinista y se guardan sin review P08; contratos, filas,
+  prompts, rutas y receipts P08 permanecen como historia legible. El orden
+  objetivo de P09 sigue pendiente y su relocación pertenece a Fase 7;
 - Assessment y EvaluationGuide JSON separados; HTML/PDF son vistas derivadas;
 - artefactos locales son solo desarrollo/fixtures, no operación productiva.
 - shell E1 privado y tenant-scoped; Supabase se usa para Auth y PostgreSQL;

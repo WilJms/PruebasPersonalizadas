@@ -178,7 +178,8 @@ def _assert_p04_contract_boundary_delta(
                 m.SCHEMA_VERSION
             )
         elif prompt_id == "P08_QUESTION_REVIEW_V1":
-            # P08 remains active. Its prompt/input adapt mechanically so
+            # P08 is retained only as frozen historical harness evidence. Its
+            # prompt/input adapt mechanically so
             # support evidence and the visible anchor remain distinct.
             assert changed == {"hash", "input_schema_hash"}
         else:

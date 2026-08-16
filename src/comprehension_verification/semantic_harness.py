@@ -264,10 +264,10 @@ def load_semantic_fixture() -> dict[str, Any]:
 def frozen_product_boundary_proof() -> dict[str, Any]:
     """Verify the archived ladder boundary without canonizing current runtime.
 
-    Phase 3 changed P05 routing and Phase 4 changes the P06 provider boundary.
-    The ladder evidence remains immutable and historical: its recorded hashes
-    are returned as archived evidence, while unrelated product sources and
-    prompts remain byte-verified against the working tree.
+    Phases 3-6 changed active product routing/boundaries while preserving this
+    ladder as immutable historical evidence. Its recorded hashes are returned
+    as archived evidence, while unrelated product sources and prompts remain
+    byte-verified against the working tree.
     """
 
     frozen = json.loads(
@@ -287,9 +287,10 @@ def frozen_product_boundary_proof() -> dict[str, Any]:
     if changed_paths and PIPELINE_CUTOVER_STATUS not in {
         "P06_SEMANTIC_MAPPING_BOUNDARY_COMPLETE_P08_PENDING",
         "P07_QUESTION_GENERATION_BOUNDARY_COMPLETE_P08_PENDING",
+        "P08_RUNTIME_RETIRED_P09_RELOCATION_PENDING",
     }:
         raise ValueError(
-            "historical runtime drift requires a declared P06/P07 boundary"
+            "historical runtime drift requires a declared pipeline cutover"
         )
     actual_route_profile_hashes = {
         profile_id: canonical_hash(

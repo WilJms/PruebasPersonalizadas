@@ -3,7 +3,9 @@ from __future__ import annotations
 import pytest
 
 from comprehension_verification.pipeline_authority import (
+    ACTIVE_SUBMISSION_PIPELINE,
     BACKEND_DECISIONS,
+    COMPATIBILITY_ONLY_FIELDS,
     DISABLED_MODEL_STAGE_IDS,
     HISTORICAL_HARNESS_EVIDENCE_STATUS,
     MODEL_DECISIONS,
@@ -96,12 +98,31 @@ def test_every_governed_decision_has_one_authority() -> None:
         authority_for("model_selection")
 
 
-def test_manifest_marks_p07_boundary_complete_and_harness_historical() -> None:
+def test_manifest_marks_p08_retired_and_harness_historical() -> None:
     manifest = pipeline_authority_manifest()
     assert manifest["version"] == PIPELINE_AUTHORITY_VERSION
     assert manifest["cutover_status"] == PIPELINE_CUTOVER_STATUS
     assert PIPELINE_CUTOVER_STATUS == (
-        "P07_QUESTION_GENERATION_BOUNDARY_COMPLETE_P08_PENDING"
+        "P08_RUNTIME_RETIRED_P09_RELOCATION_PENDING"
+    )
+    assert ACTIVE_SUBMISSION_PIPELINE == (
+        "P06",
+        "DETERMINISTIC_PLANNER",
+        "P07",
+        "DETERMINISTIC_QUESTION_VALIDATIONS",
+        "ASSEMBLE",
+        "P09",
+        "TEACHER_QUESTION_REVIEW_APPROVAL",
+    )
+    assert manifest["active_interim_pipelines"]["submission"] == list(
+        ACTIVE_SUBMISSION_PIPELINE
+    )
+    assert manifest["active_interim_pipelines"]["p09_relocation_pending"] is True
+    assert COMPATIBILITY_ONLY_FIELDS["Anchor.self_containment_score"] == (
+        "DERIVED_COMPATIBILITY_LEGACY_NO_ACTIVE_AUTHORITY"
+    )
+    assert manifest["compatibility_only_fields"] == dict(
+        COMPATIBILITY_ONLY_FIELDS
     )
     assert manifest["historical_semantic_harness"] == {
         "evidence_status": HISTORICAL_HARNESS_EVIDENCE_STATUS,

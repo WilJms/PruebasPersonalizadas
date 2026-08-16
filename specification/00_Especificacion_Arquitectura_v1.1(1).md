@@ -27,12 +27,12 @@ El modelo de IA nunca recibe herramientas, red, shell ni capacidad para ejecutar
 
 Para el MVP se recomienda un monolito modular en Python/FastAPI desplegado como Cloud Run Service, PostgreSQL y Auth de Supabase, objetos privados en Cloudflare R2 y trabajos largos en Cloud Run Jobs con estado durable en PostgreSQL, sin Redis inicial. La interfaz React/TypeScript/Vite se sirve al comienzo desde el mismo contenedor. El gateway conserva configuraciones históricas aprobadas —proveedor, snapshot, modelo, `reasoning_effort`, temperatura y límites—, pero ADR-037 no cambia ni usa esa matriz para seleccionar modelo. El pipeline objetivo mantiene P01-P04, P06/P07/P09, deja P05/P08 inactivos y P10 deshabilitado. Cualquier comparación futura requiere un instrumento nuevo y autoridad humana separada.
 
-**Estado operativo Fase 4 (2026-08-15):** P05 ya fue retirado del runtime
-activo. P06 conserva su etapa, pero el proveedor sólo entrega mapping semántico
-categórico sobre aliases locales; el servidor materializa el
-`EvidenceMapPatch` y el planner decide en exclusiva N/factibilidad global. P07
-no fue rediseñado, P08 sigue activo en el runtime actual, P09 conserva su orden
-actual y P10 permanece deshabilitado.
+**Estado operativo Fase 6 (2026-08-15):** P05 y P08 ya fueron retirados del
+runtime activo. P06 entrega mapping semántico local, el planner decide
+N/factibilidad y P07 entrega un draft alias-only que el servidor materializa y
+valida. El flujo interino ensambla exactamente N, ejecuta P09 en su orden
+heredado y recién después entra al workflow docente. P09 se moverá sólo en
+Fase 7; P10 permanece deshabilitado.
 
 El alcance inmediato es todavía más estrecho que el MVP institucional descrito en v1.0: una aplicación web experimental, carga manual, contexto cerrado, un proveedor principal, revisión humana obligatoria y un primer anillo de PDF digital, DOCX, TXT y Markdown. OCR, presentaciones, hojas de cálculo y código se añaden solo después de comprobar el recorrido principal. LTI y conectores Canvas/Moodle/Blackboard permanecen en la arquitectura futura.
 
@@ -533,6 +533,10 @@ ADR-037 mantiene P06/P07/P09 y el planner, pero retira P08 de la secuencia
 objetivo. Las validaciones mecánicas pertenecen al backend y la decisión
 semántica final de cada pregunta pertenece al docente.
 
+Fase 6 ya implementa el retiro de P08. El diagrama siguiente sigue siendo el
+orden **objetivo** posterior a Fase 7; el runtime interino vigente es
+`P07 validado -> exactamente N -> ASSEMBLE -> P09 -> revisión docente`.
+
 ```mermaid
 flowchart TB
     A["Cuarentena e ingesta"] --> B["IR con procedencia"]
@@ -690,11 +694,10 @@ acepta o rechaza considerando:
 - calidad discriminativa entre explicación y paráfrasis;
 - observabilidad de la guía.
 
-La salida estructurada no garantiza corrección. P08 ya no es un gate activo en
-el pipeline objetivo, pero en el runtime de Fase 5 sigue llamado temporalmente
-con sus diez scores/decisión intactos. Recibe support evidence completa y anchor
-visible por separado y no puede exigir que ambos conjuntos sean idénticos. Sus
-oracles y resultados no sustituyen la autoridad docente. Los invariantes verificables de la
+La salida estructurada no garantiza corrección. P08 ya no es un gate activo ni
+callable por el runtime del producto. Sus diez scores/decisión, prompts, rutas y
+rows se conservan sólo como historia; no sustituyen la autoridad docente. Los
+invariantes verificables de la
 lista anterior que puedan expresarse mecánicamente deben promoverse a
 validaciones deterministas versionadas; los demás permanecen bajo revisión
 docente.
@@ -1303,9 +1306,9 @@ No incluye LMS/LTI, nota automática, uso sumativo, internet abierto, facturaci�
 
 Este recorrido es el objetivo formal. Fase 3 retiró las dependencias activas
 P05 mediante preflight durable y recovery compatible; Fase 5 redujo P07 a
-redacción semántica alias-only y materialización server-side. El runtime conserva
-temporalmente P08 y el orden legado de P09; esos cutovers se ejecutarán en
-fases posteriores independientes.
+redacción semántica alias-only y materialización server-side; Fase 6 retiró P08
+con recovery histórico. El runtime conserva únicamente el orden legado de P09,
+cuyo cutover se ejecutará en Fase 7.
 
 1. Usuario autenticado crea actividad y configuración.
 2. Carga/pega consigna y rúbrica opcional; se parsean con procedencia.
@@ -1319,9 +1322,11 @@ fases posteriores independientes.
 8. P07 devuelve un `QuestionModelDraft` por oportunidad primaria; el backend
    conserva support completa, reconstruye el visible anchor y ejecuta
    validaciones deterministas, con reemplazo localizado desde reserva cuando
-   corresponda. En el runtime actual P08 continúa después de esas validaciones.
-9. Docente inspecciona fuentes y acepta, edita, rechaza o regenera por oportunidad; su decisión es la autoridad académica final.
-10. P09 crea la guía estructurada para las preguntas aprobadas; validación cruzada ensambla `Assessment` y `EvaluationGuide`.
+   corresponda. No se construye request/review/ledger P08.
+9. El backend exige exactamente N, ensambla el `Assessment` y P09 crea la guía
+   estructurada en el mismo orden heredado de Fase 5.
+10. Docente inspecciona fuentes y acepta, edita, rechaza o regenera por
+   oportunidad; su decisión es la autoridad académica final.
 11. Aprobación individual o masiva explícita congela versiones; renderer opcional genera evaluación/guía/cobertura/JSON.
 12. Ledger y feedback registran calidad, acciones, fallos, latencia, tokens, costo y revisión.
 
@@ -1364,14 +1369,14 @@ La secuencia siguiente conserva la versión institucional completa de v1.0. Los 
     pertenencia, support/visible subset, localizadores, transformación, PII,
     leakage, longitud, formato y política de justificación.
 27. Preguntas que fallan grounding, procedencia, autorización o seguridad se descartan sin reparación semántica.
-28. El backend aplica validaciones deterministas y el docente revisa suficiencia, alineación, answerability, demanda, neutralidad y observables; P08 no es una etapa activa objetivo, aunque Fase 5 la conserva temporalmente en runtime.
+28. El backend aplica validaciones deterministas y el docente revisa suficiencia, alineación, answerability, demanda, neutralidad y observables; P08 no es una etapa activa ni callable.
 29. Si una pregunta falla validación o es rechazada, se genera sólo un reemplazo localizado desde reserva; no hay cascada ilimitada ni lote de candidatos.
 30. Si no se conservan exactamente \(N\), el plan queda `ASSESSMENT_PLAN_INFEASIBLE`.
 31. Tras la aprobación docente se genera con P09 la guía estructurada 0-3 con elementos observables, alternativas y límites de inferencia.
 34. Una validación final comprueba que guía, pregunta y ancla usan las mismas fuentes y que el PDF del estudiante no contiene respuestas.
 35. Se crea `Assessment` JSON canónico con lineage completo y estado `NEEDS_REVIEW`.
 36. La plataforma presenta evaluación y guía estructurada; PDF/HTML son exportaciones opcionales y un fallo de render se reintenta sin modelos.
-37. El docente ve pregunta, ancla, fuente, oportunidad, scores y advertencias; puede aceptar, editar, rechazar o regenerar localmente.
+37. El docente ve pregunta, ancla, fuente, oportunidad y diagnostics; scores P08 sólo pueden aparecer etiquetados como historia. Puede aceptar, editar, rechazar o regenerar localmente.
 38. Toda edición registra actor, antes/después y motivo; cambios que alteran el constructo requieren revalidación.
 39. La aprobación individual o masiva explícita crea versiones inmutables; las excepciones quedan excluidas y auditadas para revisión individual.
 40. La aplicación registra respuestas/observaciones si se usa dentro del producto; el evaluador puede marcar ítem defectuoso.

@@ -22,7 +22,7 @@ const PIPELINE_STAGES: Array<{ state: SubmissionDomainState; label: string; deta
   { state: "MAPPING_OPPORTUNITIES", label: "Mapeo", detail: "Variantes y oportunidades" },
   { state: "PLANNING", label: "Plan exacto", detail: "N primarias y reserva" },
   { state: "GENERATING", label: "Preguntas", detail: "Una por oportunidad" },
-  { state: "VALIDATING_QUESTIONS", label: "Revisión", detail: "Reglas y scores P08" },
+  { state: "VALIDATING_QUESTIONS", label: "Validación", detail: "Invariantes deterministas sobre P07" },
   { state: "GUIDE_READY", label: "Guía", detail: "Objeto estructurado" },
   { state: "NEEDS_REVIEW", label: "Revisión humana", detail: "Evidence-first" },
 ];

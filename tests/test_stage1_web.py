@@ -878,6 +878,7 @@ def test_stage1_single_submission_mock_e2e_survives_new_browser_session() -> Non
         assert assessment["question_count"] == 2
         assert len(assessment["questions"]) == 2
         assert review_body["guide"]["status"] == "READY"
+        assert review_body["reviews"] == []
         assert all(question["anchor"]["fragments"] for question in assessment["questions"])
         assert all(question["dimension_id"] for question in assessment["questions"])
         assert all(question["cognitive_operation"] for question in assessment["questions"])
@@ -1073,12 +1074,25 @@ def test_stage1_single_submission_mock_e2e_survives_new_browser_session() -> Non
         ledger_before = reopened.get(
             f"/api/v1/jobs/{submission_job}/model-calls"
         ).json()["items"]
-        assert {item["prompt_id"] for item in ledger_before} >= {
+        prompt_sequence = [item["prompt_id"] for item in ledger_before]
+        assert set(prompt_sequence) == {
             "P06_EVIDENCE_MAP_V1",
             "P07_QUESTION_BUILD_V1",
-            "P08_QUESTION_REVIEW_V1",
             "P09_GUIDE_BUILD_V1",
         }
+        assert len(prompt_sequence) == 4
+        assert prompt_sequence.count("P07_QUESTION_BUILD_V1") == 2
+        assert "P08_QUESTION_REVIEW_V1" not in prompt_sequence
+        stages = app.state.runtime.repository.stage_runs_for_job(
+            submission_job, "tnt_experimental"
+        )
+        stage_names = [item.stage for item in stages]
+        assert len(
+            [name for name in stage_names if name.startswith("QUESTION_VALIDATE:")]
+        ) == 2
+        assert stage_names.index("ASSEMBLE") < stage_names.index(
+            "P09_GUIDE_BUILD_V1"
+        )
         required_ledger_fields = {
             "provider",
             "model_snapshot",

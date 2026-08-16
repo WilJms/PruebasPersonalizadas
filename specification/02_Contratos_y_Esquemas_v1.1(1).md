@@ -6,12 +6,12 @@
 **Artefacto generado:** `contracts.schema_v1.1.json` (JSON Schema Draft 2020-12)  
 **Regla:** el JSON Schema no se edita manualmente; se regenera desde Pydantic y CI compara bytes canónicos.
 
-**Estado ADR-037 / Fase 5:** `QuestionGenerationResult` sigue siendo el
+**Estado ADR-037 / Fase 6:** `QuestionGenerationResult` sigue siendo el
 contrato canónico P07/P10 y se añaden dos roots de frontera,
 `QuestionAliasEnvelope` y `QuestionModelDraft`. El bundle generado contiene 58
-roots, 163 `$defs`, 319 refs y 8 fixtures. P05/P08 permanecen legibles; P05 no
-es alcanzable en ejecuciones nuevas y P08 sigue activo temporalmente hasta su
-cutover de Fase 6. P09 conserva su orden actual y P10 permanece deshabilitado.
+roots, 163 `$defs`, 319 refs y 8 fixtures. P05/P08 permanecen legibles pero no
+son alcanzables en ejecuciones nuevas. P09 conserva su orden interino y P10
+permanece deshabilitado.
 La presencia de un root no confiere autoridad ni autoriza invocación.
 
 ---
@@ -26,6 +26,9 @@ La presencia de un root no confiere autoridad ni autoriza invocación.
 6. Hashes usan `sha256:<64 hex>` sobre bytes originales o representación canónica declarada.
 7. Fechas se serializan ISO 8601 UTC.
 8. Scores 0-1 expresan una señal/umbral, no una probabilidad calibrada salvo documentación explícita. Los scores legacy materializados en P06 no son señales activas: son proyecciones derivadas de compatibilidad y no gobiernan elegibilidad o ranking.
+   `Anchor.self_containment_score` también es
+   `DERIVED_COMPATIBILITY / LEGACY_NO_ACTIVE_AUTHORITY`: no es gate,
+   answerability, aceptación, probabilidad ni autoridad docente.
 9. `extra="forbid"`: un campo desconocido falla, evitando aceptar silenciosamente cambios de modelos.
 10. Ningún contrato implica ejecutar o dereferenciar contenido. Un `path` o `locator` es dato validado por el servicio propietario.
 
@@ -60,7 +63,7 @@ La presencia de un root no confiere autoridad ni autoriza invocación.
 | `QuestionModelDraft` | proveedor P07 | materializador P07 | redacción semántica, observables y selección del visible anchor por alias; sin identidad, metadata, locator ni texto de anchor canónico |
 | `QuestionGenerationResult` | P07/P10 | validaciones/revisión docente | una pregunta generada o solicitud de reemplazo |
 | `QuestionReviewResult` | P08 histórico | lectura/compatibilidad | scores, decisión o abstención legados |
-| `EvaluationGuide` | P09 posterior a aprobación | plataforma/evaluador | guía estructurada asociada a assessment/submission |
+| `EvaluationGuide` | P09; interino tras ASSEMBLE, objetivo tras aprobación | plataforma/evaluador | guía estructurada asociada a assessment/submission |
 | `Assessment` | planificador/generador/guide | review/export | objeto canónico de salida, siempre con exactamente \(N\) preguntas cuando es utilizable |
 | `QuestionReviewAction` | UI docente | revision service/auditoría | aceptar, editar, rechazar o regenerar |
 | `BulkApprovalRequest` | UI autorizada | approval service | selección y confirmación explícita |
@@ -86,7 +89,7 @@ La presencia de un root no confiere autoridad ni autoriza invocación.
 | `EvidenceMapRequest` | P06 | `EvidenceMappingModelDraft` sobre payload `EvidenceMappingAliasEnvelope` | `EvidenceMapPatch` materializado |
 | `QuestionBuildRequest` | P07 | `QuestionModelDraft` sobre payload `QuestionAliasEnvelope` | `QuestionGenerationResult` materializado |
 | `QuestionBuildRequest` | P10 deshabilitado | `QuestionGenerationResult` | `QuestionGenerationResult` |
-| `QuestionReviewRequest` | P08 | `QuestionReviewResult` | `QuestionReviewResult` |
+| `QuestionReviewRequest` | P08 histórico no callable | `QuestionReviewResult` | lectura/replay histórico |
 | `GuideBuildRequest` | P09 | `EvaluationGuide` | `EvaluationGuide` |
 | `SchemaRepairRequest` | P11 | `SchemaRepairResult` | `SchemaRepairResult` |
 
@@ -127,8 +130,8 @@ validators y `p07-question-materializer/1.0.0`. El materializador conserva
 selección `visible_anchor_aliases` a IDs, texto y locators exactos del
 `EvidenceBundle`. El proveedor no puede devolver IDs canónicos, metadata,
 operación, formato, dificultad, tiempo, lineage, locator ni texto del anchor.
-El anchor visible puede ser un subconjunto estricto de la evidencia que
-sustenta internamente la pregunta.
+El anchor visible es un subconjunto de la evidencia que sustenta internamente
+la pregunta; puede ser menor o coincidir con ella.
 
 `BlueprintPolicy.max_variants_per_dimension=6` y
 `max_templates_per_variant=12` son defaults operacionales provisionales,
@@ -137,10 +140,9 @@ policy conserva `schema_version`/`policy_id` y su valor completo participa en el
 input y hash de reuse; el proveedor sólo debe respetar el cap recibido y nunca
 devolverlo como decisión propia.
 
-Las filas P05/P08 documentan contratos retenidos. La frontera activa ya salta
-de P04 a preflight/aprobación docente; después de P07 ejecuta validaciones
-deterministas y todavía P08. Retirar P08 corresponde a Fase 6 y mover P09 a
-Fase 7.
+Las filas P05/P08 documentan contratos retenidos. La frontera activa salta de
+P04 a preflight/aprobación docente y de P07 a validaciones deterministas,
+exactamente N y ASSEMBLE, sin review P08. Mover P09 corresponde a Fase 7.
 
 ## 3. Invariantes críticas
 
@@ -173,7 +175,7 @@ Fase 7.
 - `QuestionCandidate.evidence_ids` coincide con la support evidence completa de
   la oportunidad; el proveedor no puede ampliarla ni reducirla;
 - los evidence IDs del anchor visible son un subconjunto no vacío de esa
-  support evidence y pueden ser un subconjunto estricto;
+  support evidence y pueden ser menores o iguales a ella;
 - aliases de visible anchor, support y scope se resuelven sólo dentro del
   envelope local hash-bound; un alias desconocido o cross-submission falla;
 - selección solo existe con `CHOICE`, al menos tres opciones y una mejor respuesta;
@@ -185,7 +187,7 @@ Fase 7.
 - operación, formato, dificultad, tiempo, justificación, path de blueprint,
   identidad y lineage de P07 se copian desde la oportunidad/request confiable;
 - leakage bloquea únicamente copia literal o overlap objetivo alto y conserva
-  los casos ambiguos como warning; no sustituye la revisión semántica P08;
+  los casos ambiguos como warning; no sustituye el juicio pedagógico docente;
 - una pregunta con fallo crítico no puede llegar a revisión/aprobación docente; se intenta sólo un reemplazo localizado desde reserva;
 - `QuestionGenerationResult.context_mode=CLOSED` prohíbe `course_source_ids` y `citations`;
 - en contexto enriquecido, la pregunta mantiene igualdad exacta entre `course_source_ids` y los `source_id` citados.

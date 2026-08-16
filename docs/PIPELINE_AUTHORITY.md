@@ -1,11 +1,11 @@
 # Autoridad del pipeline simplificado
 
-**Estado:** norma aceptada; cutover P05 y fronteras semánticas P06/P07 completados el
-2026-08-15
+**Estado:** norma aceptada; cutover P05/P08 y fronteras semánticas P06/P07
+completados el 2026-08-15
 
 **Versión ejecutable:** `pipeline-authority/1.0.0`
 
-**Estado operativo:** `P07_QUESTION_GENERATION_BOUNDARY_COMPLETE_P08_PENDING`
+**Estado operativo:** `P08_RUNTIME_RETIRED_P09_RELOCATION_PENDING`
 
 Esta decisión simplifica la asignación de autoridad sin rediseñar la
 arquitectura conceptual ni cambiar routing histórico. P04 conserva
@@ -15,7 +15,8 @@ materializa identidad, policy y estado antes del preflight. P06, P07 y P09 no
 se retiran: P06 queda reducido al mapping semántico local y entrega al planner
 toda autoridad sobre N; P07 redacta sólo el contenido semántico de una pregunta
 ya planificada y el servidor materializa identidad, metadata, support evidence
-y anchor visible. P08 sigue activo temporalmente y P09 conserva su orden. La
+y anchor visible. P08 ya no es callable por el runtime del producto; P09
+conserva el orden de Fase 5 hasta su relocación separada en Fase 7. La
 fuente ejecutable de esta norma es
 `src/comprehension_verification/pipeline_authority.py`.
 
@@ -39,13 +40,13 @@ deshabilitado. Los contratos, prompts, rutas, fixtures, reportes y receipts
 históricos de P05/P08 se conservan para lectura, auditoría y migración; su
 presencia no les devuelve autoridad canónica ni autoriza llamadas.
 
-El runtime activo ya retiró P05 de workflows, jobs nuevos, guards de
+El runtime activo ya retiró P05 y P08 de workflows, jobs nuevos, guards de
 aprobación, costo, API y UI. `BlueprintRow.review`, el descriptor/job legacy,
 contratos, registry, rutas, fixtures y receipts siguen legibles; un job P05
 anterior al corte se reconcilia mediante `BLUEPRINT_PREFLIGHT` sin construir
 transporte, consumir autorización o resolver una clave, incluso si el worker
-eval-only fue configurado como real. P08 y el orden legado de P09 siguen
-pendientes según la sección 6.
+eval-only fue configurado como real. El orden objetivo de P09 sigue pendiente
+según la sección 6.
 
 ## 2. Autoridad del backend
 
@@ -153,8 +154,8 @@ válido de N.
 - `p07-question-materializer/1.0.0` crea IDs y campos confiables, deriva la
   estructura/transformación del anchor, aplica leakage literal/overlap
   conservador y nunca mejora texto, inventa observables o convierte un
-  reemplazo en pregunta. P08 permanece activo y evalúa answerability contra
-  support evidence, no exige que toda ella sea visible.
+  reemplazo en pregunta. Ningún reviewer de modelo decide aceptación: la
+  calidad pedagógica y answerability sustantiva quedan para el docente.
 - StageRun persiste exclusivamente `QuestionGenerationResult`. El fingerprint
   liga prompt/root/schema wire, envelope, opportunity, bundle/support,
   generation policy, scope, validators y materializer. En replay se proyecta
@@ -258,19 +259,22 @@ misma transición que un job nuevo. No llama P05 ni sobrescribe la review
 histórica. `BlueprintEnvelope.review` permanece como lectura legacy y
 `preflight` es la autoridad mecánica nueva.
 
-P08 todavía participa en:
+P08 participa únicamente como compatibilidad histórica en:
 
-- el loop de generación por oportunidad y la selección de pregunta;
-- `QuestionReview`, `GeneratedQuestionRow`, acciones localizadas y
-  regeneración;
-- estado/resume, estimación de llamadas, métricas y DTO/UI de revisión;
-- contratos, registry, rutas, prompts, fixtures y observabilidad histórica.
+- `QuestionReviewRequest/Result`, `QuestionReviewRow`, scores y decisiones
+  almacenadas antes del corte;
+- registry, rutas, prompt y mocks congelados para replay/harness explícito;
+- fixtures, qualification, reportes, receipts y observabilidad histórica.
 
-El cutover debe sustituir su aceptación activa por validaciones deterministas
-y decisión docente. También debe separar de forma durable la generación de
-P09 para que ocurra después de la revisión/aprobación docente, sin perder
-exactly-once, acciones localizadas ni lineage. Ese cambio toca workflows, jobs
-y persistencia y queda expresamente fuera de esta iteración.
+El hard guard `P08_ACTIVE_RUNTIME_RETIRED` se evalúa antes de construir gateway
+o transporte. Nuevas ejecuciones no crean request, ledger, StageRun ni row P08,
+no reservan su coste y no emiten su evento de decisión. Un resume legado desde
+`QUESTION_REVIEW` reutiliza y revalida el P07 vigente; cualquier ACCEPT,
+REJECT o ESCALATE anterior se preserva pero se ignora como autoridad.
+
+La separación durable de P09 para ejecutarlo después de aprobación docente
+pertenece exclusivamente a Fase 7. En Fase 6 conserva el orden interino
+`P07 validado -> ASSEMBLE -> P09 -> revisión docente`.
 
 P06 ya participa con su frontera reducida:
 
@@ -289,14 +293,18 @@ P07 ya participa con su frontera reducida:
   answerability, ownership ni lineage;
 - reemplazo, reservas, regeneración localizada, retry/resume y cache conservan
   sus transiciones y presupuestos previos;
-- P08 sigue siendo llamado en el runtime y P09 sigue en su orden anterior.
+- P08 tiene cero llamadas activas; P09 sigue en su orden anterior.
 
-## 7. Límites después de Fase 5
+## 7. Límites después de Fase 6
 
-Fase 5 cambia únicamente la frontera ejecutable P07 y la adaptación mecánica
-P08 para distinguir support evidence de visible anchor. No cambia routing,
-modelo, reasoning, parser, tenancy, auth, storage, exports, los diez scores ni
-la decisión de P08, el orden/semántica de P09 o infraestructura. No autoriza
-despliegue, datos estudiantiles reales, corpus nuevo ni llamadas billables. La
-única siguiente modificación funcional es retirar P08 del runtime activo; P09
-no se mueve todavía y P10 permanece deshabilitado.
+Fase 6 retira únicamente P08 de autoridad y reachability activa. No borra su
+historia, no crea P08b/judge/critic, no cambia routing/modelo/reasoning de las
+etapas restantes y no mueve P09. El runtime interino exige exactamente N,
+persiste `QuestionGenerationResult` sin review, conserva aprobación docente y
+mantiene P10 deshabilitado. No autoriza despliegue, datos estudiantiles reales,
+corpus nuevo ni llamadas billables.
+
+`Anchor.self_containment_score` permanece físicamente por compatibilidad como
+`DERIVED_COMPATIBILITY / LEGACY_NO_ACTIVE_AUTHORITY`: no es gate, probabilidad
+calibrada, señal de answerability, aceptación, P08 ni aprobación docente. El
+anchor visible es un subconjunto de support evidence y puede coincidir con ella.

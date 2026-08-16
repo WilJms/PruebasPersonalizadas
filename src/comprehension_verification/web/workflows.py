@@ -50,6 +50,7 @@ from ..parsers import (
 )
 from ..planning import PLANNER_VERSION, build_assessment_plan
 from ..provider_authorization import SyntheticProviderGrant
+from ..question_generation import QuestionGenerationCompilationError
 from ..observability import p08_decision_diagnostics
 from ..validation import (
     ContextValidationError,
@@ -59,7 +60,6 @@ from ..validation import (
     validate_evaluation_guide,
     validate_evidence_map,
     validate_generation_result,
-    validate_review_result,
 )
 from .auth import Actor
 from . import dto
@@ -82,7 +82,6 @@ from .repository import (
     JobRow,
     NotFound,
     PolicyDecisionRow,
-    QuestionReviewRow,
     Repository,
     RubricSpecRow,
     StageRunRow,
@@ -97,8 +96,9 @@ ALLOWED_MEDIA_TYPES = frozenset(
 )
 ACTIVITY_UPLOAD_OPEN_STATUSES = frozenset({"DRAFT"})
 ACTIVITY_PIPELINE_VERSION = "stage1-activity-pipeline/3.0.0"
-SUBMISSION_PIPELINE_VERSION = "stage1-submission-pipeline/2.0.0"
+SUBMISSION_PIPELINE_VERSION = "stage1-submission-pipeline/3.0.0"
 ASSEMBLER_VERSION = "stage1-assembler/2.0.0"
+QUESTION_VALIDATION_STAGE_VERSION = "question-validation-stage/1.0.0"
 BLUEPRINT_REVIEW_DESCRIPTOR_VERSION = "blueprint-review-descriptor/3.0.0"
 BLUEPRINT_PREFLIGHT_DESCRIPTOR_VERSION = "blueprint-preflight-descriptor/1.0.0"
 
@@ -208,6 +208,27 @@ def _assembler_component_version() -> str:
         {
             "assembler_version": ASSEMBLER_VERSION,
             "assessment_schema": m.Assessment.model_json_schema(mode="validation"),
+        },
+    )
+
+
+def _question_validation_component_version() -> str:
+    return _component_fingerprint(
+        "question-validation-stage/1",
+        {
+            "version": QUESTION_VALIDATION_STAGE_VERSION,
+            "application_validator": PROMPT_APPLICATION_VALIDATOR_VERSIONS[
+                "P07_QUESTION_BUILD_V1"
+            ],
+            "generation_schema": m.QuestionGenerationResult.model_json_schema(
+                mode="validation"
+            ),
+            "opportunity_schema": m.QuestionOpportunity.model_json_schema(
+                mode="validation"
+            ),
+            "evidence_bundle_schema": m.EvidenceBundle.model_json_schema(
+                mode="validation"
+            ),
         },
     )
 
@@ -370,6 +391,9 @@ _SUBMISSION_RESUME_ORDER = {
     "EVIDENCE_MAP": 1,
     "ASSESSMENT_PLAN": 2,
     "QUESTION_GENERATE": 3,
+    "QUESTION_VALIDATE": 4,
+    # Historical Phase 5 jobs can resume from this floor. The Phase 6
+    # pipeline reconciles their current P07 StageRun and never re-enters P08.
     "QUESTION_REVIEW": 4,
     "ASSEMBLE": 5,
     "GUIDE_BUILD": 6,
@@ -410,14 +434,32 @@ class _CooperativeJobCancellation(RuntimeError):
 
 _SECURITY_FAILURE_CODES = frozenset(
     {
+        "ANCHOR_NOT_DERIVABLE",
         "CROSS_SUBMISSION_EVIDENCE",
         "INGEST_ENCRYPTED_FILE",
+        "INVENTED_EVIDENCE_ID",
+        "INVENTED_ID",
         "IR_PROVENANCE_GAP",
         "MODEL_CONTEXT_NOT_ALLOWLISTED",
         "MODEL_SAFETY_BLOCK",
+        "QUESTION_PII",
+        "QUESTION_SECURITY_FAIL",
         "REJECTED_SECURITY",
         "SYNTHETIC_ATTESTATION_REQUIRED",
         "SYNTHETIC_ATTESTATION_SCOPE_MISMATCH",
+        "UNAUTHORIZED_EVIDENCE",
+        "UNAUTHORIZED_SOURCE",
+    }
+)
+
+_QUESTION_LOCAL_REPLACEMENT_CODES = frozenset(
+    {
+        "P07_ANCHOR_STRUCTURE_INCOMPATIBLE",
+        "P07_OBSERVABLE_DUPLICATE",
+        "P07_VISIBLE_ANCHOR_EMPTY",
+        "P07_VISIBLE_ANCHOR_LIMIT_EXCEEDED",
+        "QUESTION_ANSWER_LEAKAGE",
+        "QUESTION_OBSERVABLES_INVALID",
     }
 )
 
@@ -1114,17 +1156,10 @@ class Stage1Service:
                     "P04_BLUEPRINT_BUILD_V1",
                 ]
             elif phase == "SUBMISSION_ASSESSMENT" and calls >= 2:
-                question_count = max(0, (calls - 2) // 2)
+                question_count = max(0, calls - 2)
                 prompt_ids = [
                     "P06_EVIDENCE_MAP_V1",
-                    *[
-                        prompt_id
-                        for _ in range(question_count)
-                        for prompt_id in (
-                            "P07_QUESTION_BUILD_V1",
-                            "P08_QUESTION_REVIEW_V1",
-                        )
-                    ],
+                    *["P07_QUESTION_BUILD_V1" for _ in range(question_count)],
                     "P09_GUIDE_BUILD_V1",
                 ]
             else:
@@ -1255,9 +1290,10 @@ class Stage1Service:
             submission_id=submission.id,
         )
         # Reserve the complete governed replacement surface: P06 and P09 once,
-        # plus P07/P08 for every selected and maximum reserve opportunity.
+        # plus P07 for every selected and maximum reserve opportunity. P08 is
+        # historical-only and has zero future calls/cost in product estimates.
         constraints = blueprint.assessment_constraints
-        calls = 2 + 2 * (
+        calls = 2 + (
             constraints.question_count + constraints.max_reserve_opportunities
         )
         return self._cost_estimate(
@@ -1886,6 +1922,163 @@ class Stage1Service:
         if not finalized:
             raise _CooperativeJobCancellation
 
+    @staticmethod
+    def _question_local_replacement_code(exc: BaseException) -> str | None:
+        """Return only correction-local codes; scope/security stays fail-closed."""
+
+        current: BaseException | None = exc
+        visited: set[int] = set()
+        while current is not None and id(current) not in visited:
+            code = str(getattr(current, "code", ""))
+            if code in _QUESTION_LOCAL_REPLACEMENT_CODES:
+                return code
+            if isinstance(current, QuestionGenerationCompilationError):
+                return None
+            visited.add(id(current))
+            current = current.__cause__ or current.__context__
+        return None
+
+    def _record_question_validation_fact(
+        self,
+        *,
+        job: JobRow,
+        opportunity_id: str,
+        generation_hash: str | None,
+        passed: bool,
+        diagnostic_codes: list[str],
+    ) -> None:
+        event_type = (
+            "question.validation.passed"
+            if passed
+            else "question.validation.failed"
+        )
+        payload = {
+            "validator_version": QUESTION_VALIDATION_STAGE_VERSION,
+            "opportunity_id": opportunity_id,
+            "generation_output_hash": generation_hash,
+            "diagnostic_codes": sorted(set(diagnostic_codes)),
+        }
+        if self.repository.has_audit_event(
+            tenant_id=job.tenant_id,
+            event_type=event_type,
+            aggregate_id=job.id,
+            payload_contains=payload,
+        ):
+            return
+        self.repository.audit(
+            tenant_id=job.tenant_id,
+            event_type=event_type,
+            aggregate_id=job.id,
+            actor_id="system_worker",
+            payload=payload,
+        )
+
+    def _validate_question_stage(
+        self,
+        *,
+        job: JobRow,
+        generation: m.QuestionGenerationResult,
+        opportunity: m.QuestionOpportunity,
+        bundle: m.EvidenceBundle,
+    ) -> None:
+        """Persist the active objective P07 validation boundary."""
+
+        stage = f"QUESTION_VALIDATE:{opportunity.opportunity_id}"
+        generation_hash = canonical_hash(generation.model_dump(mode="json"))
+        inputs = {
+            "generation_output_hash": generation_hash,
+            "opportunity_hash": canonical_hash(
+                opportunity.model_dump(mode="json")
+            ),
+            "evidence_bundle_hash": canonical_hash(bundle.model_dump(mode="json")),
+        }
+        component_version = _question_validation_component_version()
+        policy_hash = self._stage_policy_hash(job)
+        try:
+            validate_generation_result(
+                generation,
+                opportunity=opportunity,
+                bundle=bundle,
+            )
+        except Exception as exc:
+            self._record_failed_stage(
+                job=job,
+                stage=stage,
+                inputs=inputs,
+                policy_hash=policy_hash,
+                component_version=component_version,
+                exc=exc,
+            )
+            self._record_question_validation_fact(
+                job=job,
+                opportunity_id=opportunity.opportunity_id,
+                generation_hash=generation_hash,
+                passed=False,
+                diagnostic_codes=[str(getattr(exc, "code", "MODEL_OUTPUT_INVALID"))],
+            )
+            raise
+        diagnostic_codes = [item.code for item in generation.diagnostics]
+        self.repository.save_stage(
+            job_id=job.id,
+            tenant_id=job.tenant_id,
+            stage=stage,
+            inputs=inputs,
+            component_version=component_version,
+            policy_hash=policy_hash,
+            output={
+                "status": "PASSED",
+                "submission_id": generation.submission_id,
+                "opportunity_id": generation.opportunity_id,
+                "candidate_id": (
+                    generation.candidate.candidate_id
+                    if generation.candidate is not None
+                    else None
+                ),
+                "generation_output_hash": generation_hash,
+                "diagnostic_codes": sorted(set(diagnostic_codes)),
+            },
+        )
+        self._record_question_validation_fact(
+            job=job,
+            opportunity_id=opportunity.opportunity_id,
+            generation_hash=generation_hash,
+            passed=True,
+            diagnostic_codes=diagnostic_codes,
+        )
+
+    def _consume_question_reserve(
+        self,
+        *,
+        job: JobRow,
+        rejected_opportunity_id: str,
+        reason_code: str,
+        reserves: list[str],
+        primary_queue: list[str],
+    ) -> bool:
+        if not reserves:
+            return False
+        reserve_id = reserves.pop(0)
+        primary_queue.append(reserve_id)
+        payload = {
+            "rejected_opportunity_id": rejected_opportunity_id,
+            "reserve_opportunity_id": reserve_id,
+            "reason_code": reason_code,
+        }
+        if not self.repository.has_audit_event(
+            tenant_id=job.tenant_id,
+            event_type="question.reserve.consumed",
+            aggregate_id=job.id,
+            payload_contains=payload,
+        ):
+            self.repository.audit(
+                tenant_id=job.tenant_id,
+                event_type="question.reserve.consumed",
+                aggregate_id=job.id,
+                actor_id="system_worker",
+                payload=payload,
+            )
+        return True
+
     async def _run_submission_pipeline(self, job: JobRow) -> None:
         submission = cast(SubmissionRow, self.repository.scoped(SubmissionRow, job.aggregate_id, job.tenant_id))
         activity = cast(ActivityRow, self.repository.scoped(ActivityRow, submission.activity_id, job.tenant_id))
@@ -2042,68 +2235,98 @@ class Stage1Service:
         generation_policy = m.QuestionGenerationPolicy(
             policy_id=stable_id("policy", activity.id, "question_generation")
         )
-        validation_policy = m.QuestionValidationPolicy(
-            policy_id=stable_id("policy", activity.id, "question_validation")
-        )
         selected: list[m.SelectedQuestion] = []
-        reviews: dict[str, m.QuestionReviewResult] = {}
         reserves = list(plan.reserve_opportunity_ids)
         primary_queue = list(plan.selected_opportunity_ids)
         self._set_submission(submission, job, m.SubmissionProcessingStatus.GENERATING, "QUESTION_GENERATE", 0.4)
         while primary_queue and len(selected) < plan.question_count:
             opportunity_id = primary_queue.pop(0)
             opportunity = opportunity_by_id[opportunity_id]
-            generation = await self._gateway_stage(
-                job,
-                "P07_QUESTION_BUILD_V1",
-                m.QuestionBuildRequest(
-                    target_candidate_id=stable_id(
-                        "candidate",
-                        submission.id,
-                        plan.plan_id,
-                        opportunity.opportunity_id,
-                        "initial",
+            try:
+                generation = await self._gateway_stage(
+                    job,
+                    "P07_QUESTION_BUILD_V1",
+                    m.QuestionBuildRequest(
+                        target_candidate_id=stable_id(
+                            "candidate",
+                            submission.id,
+                            plan.plan_id,
+                            opportunity.opportunity_id,
+                            "initial",
+                        ),
+                        plan=plan,
+                        opportunity=opportunity,
+                        evidence_bundle=bundle,
+                        generation_policy=generation_policy,
+                        avoid=[],
                     ),
-                    plan=plan,
-                    opportunity=opportunity,
-                    evidence_bundle=bundle,
-                    generation_policy=generation_policy,
-                    avoid=[],
-                ),
-                m.QuestionGenerationResult,
-                cache_suffix=opportunity_id,
-            )
-            validate_generation_result(generation, opportunity=opportunity, bundle=bundle)
-            self._cancellation_checkpoint(job)
-            if generation.status != "READY" or generation.candidate is None:
-                if reserves:
-                    primary_queue.append(reserves.pop(0))
+                    m.QuestionGenerationResult,
+                    cache_suffix=opportunity_id,
+                )
+            except Exception as exc:
+                local_code = self._question_local_replacement_code(exc)
+                if local_code is None:
+                    raise
+                self._record_question_validation_fact(
+                    job=job,
+                    opportunity_id=opportunity_id,
+                    generation_hash=None,
+                    passed=False,
+                    diagnostic_codes=[local_code],
+                )
+                if self._consume_question_reserve(
+                    job=job,
+                    rejected_opportunity_id=opportunity_id,
+                    reason_code=local_code,
+                    reserves=reserves,
+                    primary_queue=primary_queue,
+                ):
                     continue
                 break
-            self._set_submission(submission, job, m.SubmissionProcessingStatus.VALIDATING_QUESTIONS, "QUESTION_REVIEW", 0.55)
-            review = await self._gateway_stage(
+            self._set_submission(
+                submission,
                 job,
-                "P08_QUESTION_REVIEW_V1",
-                m.QuestionReviewRequest(
-                    generation_result=generation,
+                m.SubmissionProcessingStatus.VALIDATING_QUESTIONS,
+                "QUESTION_VALIDATE",
+                0.55,
+            )
+            try:
+                self._validate_question_stage(
+                    job=job,
+                    generation=generation,
                     opportunity=opportunity,
-                    evidence_bundle=bundle,
-                    validation_policy=validation_policy,
-                ),
-                m.QuestionReviewResult,
-                cache_suffix=opportunity_id,
-            )
-            validate_review_result(
-                review,
-                generation_result=generation,
-                validation_policy=validation_policy,
-            )
-            self._cancellation_checkpoint(job)
-            if review.status != "READY" or review.review is None or review.review.decision != m.ReviewDecision.ACCEPT:
-                if reserves:
-                    primary_queue.append(reserves.pop(0))
+                    bundle=bundle,
+                )
+            except Exception as exc:
+                local_code = self._question_local_replacement_code(exc)
+                if local_code is None:
+                    raise
+                if self._consume_question_reserve(
+                    job=job,
+                    rejected_opportunity_id=opportunity_id,
+                    reason_code=local_code,
+                    reserves=reserves,
+                    primary_queue=primary_queue,
+                ):
                     continue
                 break
+            self._cancellation_checkpoint(job)
+            if generation.status == "REPLACEMENT_REQUIRED":
+                if self._consume_question_reserve(
+                    job=job,
+                    rejected_opportunity_id=opportunity_id,
+                    reason_code="P07_REPLACEMENT_REQUIRED",
+                    reserves=reserves,
+                    primary_queue=primary_queue,
+                ):
+                    continue
+                break
+            if generation.status != "READY" or generation.candidate is None:
+                raise WorkflowError(
+                    "QUESTION_GENERATION_TECHNICAL_FAILURE",
+                    "P07 did not produce a READY candidate or an explicit replacement.",
+                    status_code=500,
+                )
             candidate = generation.candidate
             selected_question = selected_question_from_candidate(
                 candidate,
@@ -2111,20 +2334,13 @@ class Stage1Service:
                 submission_id=submission.id,
             )
             selected.append(selected_question)
-            reviews[selected_question.question_id] = review
-            self.repository.save_generated_question_and_review(
-                question=GeneratedQuestionRow(
+            self.repository.save_generated_question(
+                GeneratedQuestionRow(
                     id=candidate.candidate_id,
                     tenant_id=job.tenant_id,
                     submission_id=submission.id,
                     data=generation.model_dump(mode="json"),
-                ),
-                review=QuestionReviewRow(
-                    question_id=selected_question.question_id,
-                    tenant_id=job.tenant_id,
-                    submission_id=submission.id,
-                    data=review.model_dump(mode="json"),
-                ),
+                )
             )
         if len(selected) != plan.question_count:
             self._terminal_domain_failure(
@@ -3583,6 +3799,12 @@ class Stage1Service:
                 "P05 is historical-only and cannot be invoked by the product runtime.",
                 status_code=409,
             )
+        if prompt_id == "P08_QUESTION_REVIEW_V1":
+            raise WorkflowError(
+                "P08_ACTIVE_RUNTIME_RETIRED",
+                "P08 is historical-only and cannot be invoked by the product runtime.",
+                status_code=409,
+            )
         self._cancellation_checkpoint(job)
         stage = f"{prompt_id}:{cache_suffix}" if cache_suffix else prompt_id
         inputs = request.model_dump(mode="json")
@@ -3621,12 +3843,6 @@ class Stage1Service:
                 ).model_dump(mode="json")
             )
             self._record_stage_reuse(job, cached)
-            self._record_p08_observability(
-                job=job,
-                stage=stage,
-                request=request,
-                output=output,
-            )
             self._cancellation_checkpoint(job)
             return output
         self._assert_resume_may_execute(job, prompt_id)
@@ -3659,12 +3875,6 @@ class Stage1Service:
                 exc=exc,
             )
             raise
-        self._record_p08_observability(
-            job=job,
-            stage=stage,
-            request=request,
-            output=output,
-        )
         self.repository.save_stage(
             job_id=job.id,
             tenant_id=job.tenant_id,
@@ -3789,7 +3999,11 @@ class Stage1Service:
         request: BaseModel,
         output: BaseModel,
     ) -> None:
-        """Persist P08 cause metadata without prompts, output text, or raw codes."""
+        """Persist a historical P08 projection for explicit replay tooling only.
+
+        The active gateway guard returns before this compatibility helper can
+        run. Existing audit rows and direct historical tests remain readable.
+        """
 
         if not (
             isinstance(request, m.QuestionReviewRequest)

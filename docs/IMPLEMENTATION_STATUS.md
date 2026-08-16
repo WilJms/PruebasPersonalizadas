@@ -2,7 +2,41 @@
 
 Fecha de corte: 2026-08-15 (America/Santiago).
 
-## Estado vigente — frontera de generación P07 completa (2026-08-15)
+## Estado vigente — Fase 6, P08 retirado del runtime activo (2026-08-15)
+
+El flujo interino de submission es
+`P06 -> planner -> P07 -> validación determinista -> exactamente N -> ASSEMBLE
+-> P09 -> revisión/aprobación docente`. `P08_QUESTION_REVIEW_V1` falla con
+`P08_ACTIVE_RUNTIME_RETIRED` antes de construir gateway/transporte; una
+ejecución nueva produce cero requests, ledgers, StageRuns, costes y
+`QuestionReviewRow` P08. No existe reviewer, judge, critic, score o umbral
+sustitutivo.
+
+`validate_generation_result` y la frontera materializadora P07 conservan scope,
+IDs server-owned, opportunity/path, support, anchor/locator canónico, formato,
+dificultad, tiempo, justificación, PII/secrets, choice shape, leakage y replay.
+`REPLACEMENT_REQUIRED` o un defecto question-local objetivo consume una reserva
+finita; scope/security falla cerrado. Antes de ASSEMBLE continúa siendo
+obligatorio `len(selected) == plan.question_count`, sin Assessment parcial.
+
+La persistencia nueva usa `save_generated_question` y deja `reviews=[]`.
+`QuestionReviewRow`, contratos, prompt, registry/routes, mocks, harness,
+qualification, reportes y receipts P08 históricos permanecen tenant-scoped y
+legibles, pero ACCEPT/REJECT/ESCALATE ya no cambian el resultado actual. Resume
+desde `QUESTION_REVIEW` legado reusa y revalida el P07 vigente sin nueva llamada
+P08; un P07 viejo que no recompila bajo la frontera vigente falla cerrado.
+
+P09 conserva exactamente el orden funcional de Fase 5, después de ASSEMBLE y
+antes del workflow docente. Moverlo después de aprobación es deuda explícita de
+Fase 7. P10 continúa deshabilitado. Toda validación de Fase 6 usa mock, keys
+removidas y cero red/requests billables.
+
+El anchor visible es un **subconjunto** de support evidence: puede ser menor o
+coincidir con ella. `Anchor.self_containment_score` se conserva como
+`DERIVED_COMPATIBILITY / LEGACY_NO_ACTIVE_AUTHORITY`; no es gate, probabilidad,
+answerability, aceptación, input P08 ni autoridad de aprobación docente.
+
+## Historial — frontera de generación P07 completa, Fase 5 (2026-08-15)
 
 Fase 5 conserva `P07_QUESTION_BUILD_V1` y sus objetos canónicos, pero reduce la
 inferencia a `QuestionModelDraft`. El proveedor recibe
@@ -17,7 +51,7 @@ Prompt pack/P07 avanzan a `1.1.16`/`1.1.5`.
 `QuestionCandidate.evidence_ids` como support evidence completa de la
 oportunidad y reconstruye `AnchorFragment` literalmente desde cada
 `EvidenceUnit` seleccionado. Por tanto el anchor visible puede ser un
-subconjunto estricto sin perder answerability:
+subconjunto, menor o igual, sin perder answerability:
 `anchor evidence ⊆ candidate evidence = opportunity evidence`. Identidad,
 path del blueprint, operation, response format, difficulty, time,
 justification, option/observable IDs y campos canónicos son server-owned. Un
@@ -55,12 +89,12 @@ input canónico/alias baja de 2.294 a 914 bytes y el output provider de 3.051 a
 P07 siguen en una por oportunidad, más sólo reservas/regeneraciones ya
 gobernadas; no cambiaron modelo, route ni reasoning.
 
-P08 sigue activo, con los mismos diez scores, decisión y routing; ahora entiende
+Durante Fase 5 P08 seguía activo, con los mismos diez scores, decisión y routing; entendía
 support evidence y visible anchor por separado. P09 conserva orden y semántica,
 y P10 sigue deshabilitado. Reservas, regeneración localizada, teacher edit,
 avoid fingerprints, retry/resume y lineage conservan el comportamiento previo.
-La próxima modificación funcional, no iniciada, es retirar P08 del runtime; P09
-no se mueve en esa fase.
+La modificación funcional siguiente era retirar P08 del runtime; Fase 6 la
+completó sin mover P09.
 
 Validación local final: 19/19 tests directos P07 y `make test`/`make test-cov`
 con 809 passed, 17 skips PostgreSQL explícitos, una warning Starlette conocida

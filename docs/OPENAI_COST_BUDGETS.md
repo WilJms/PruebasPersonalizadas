@@ -5,7 +5,29 @@
 > activa, un gate de selección de modelo ni autorización de gasto. Cualquier
 > precio o budget futuro debe revalidarse bajo un instrumento nuevo.
 
-## Estado activo después de la frontera P07 de Fase 5
+## Estado activo después del cutover P08 de Fase 6
+
+P08 tiene **cero llamadas y cero coste futuro**. Sin regeneraciones, para N
+preguntas el submission pasa de `P06 1 + P07 N + P08 N + P09 1 = 2N+2` a
+`P06 1 + P07 N + P08 0 + P09 1 = N+2`. Si el presupuesto reserva R
+oportunidades, la cota activa es `N+R+2`, no `2(N+R)+2`.
+
+Con los parámetros ejecutables del repositorio usados por el preflight
+(`N=1`, `R=3`, input de 10.000 bytes, perfil worker real histórico), la cota
+baja así, sin consultar pricing online:
+
+| Métrica de submission | Antes Fase 6 | Después Fase 6 | Ahorro |
+|---|---:|---:|---:|
+| tareas semánticas máximas | 10 | 6 | 4 P08 / 40% |
+| input reservado | 1.200.000 | 720.000 tokens | 480.000 |
+| output reservado | 178.000 | 114.000 tokens | 64.000 |
+| ceiling histórico | USD 0,5136 | USD 0,3168 | USD 0,1968 |
+
+Los receipts y costes P08 anteriores al corte permanecen históricos. Esta
+reducción no autoriza gasto: Fase 6 se verificó offline/mock, con keys removidas,
+P10 false y cero red/billable.
+
+## Historial — frontera P07 de Fase 5
 
 P07 mantiene exactamente **una** llamada y **un** ledger por oportunidad no
 reutilizada; no añade clasificadores, tools, reparaciones semánticas ni llamadas

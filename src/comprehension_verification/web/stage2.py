@@ -28,8 +28,8 @@ from ..exports import RENDERER_VERSION, render_views
 from ..validation import (
     ContextValidationError,
     validate_evaluation_guide,
+    validate_generation_result,
     validate_question_candidate,
-    validate_review_result,
 )
 from .auth import Actor
 from .repository import (
@@ -1212,6 +1212,7 @@ class Stage2Service:
         replacement: m.SelectedQuestion | None = None,
         _execution_job: JobRow | None = None,
         _logical_action_id: str | None = None,
+        _logical_occurred_at: datetime | None = None,
     ) -> m.QuestionReviewActionRecord:
         """Apply one canonical question action with server-side revalidation."""
 
@@ -1267,6 +1268,7 @@ class Stage2Service:
             )
         before = assessment.questions[question_index]
         occurred_at = utc_now()
+        logical_occurred_at = _logical_occurred_at or occurred_at
         action = m.QuestionReviewAction(
             action_id=stable_id(
                 "reviewaction",
@@ -1379,9 +1381,6 @@ class Stage2Service:
                 assessment_etag=current.etag,
                 create_job=False,
             )
-        validation_policy = m.QuestionValidationPolicy(
-            policy_id=stable_id("policy", assessment.activity_id, "question_validation")
-        )
         after: m.SelectedQuestion | None = None
         guide: m.EvaluationGuide | None = None
         try:
@@ -1419,6 +1418,11 @@ class Stage2Service:
                     status="READY",
                     candidate=candidate,
                     diagnostics=[],
+                )
+                validate_generation_result(
+                    generation,
+                    opportunity=opportunity,
+                    bundle=bundle,
                 )
             else:
                 policy = m.BlueprintPolicy.model_validate(
@@ -1585,6 +1589,11 @@ class Stage2Service:
                     m.QuestionGenerationResult,
                     cache_suffix=f"local-{logical_action_id}",
                 )
+                validate_generation_result(
+                    generation,
+                    opportunity=opportunity,
+                    bundle=bundle,
+                )
                 if generation.status != "READY" or generation.candidate is None:
                     return self._failed_question_action(
                         action=action,
@@ -1600,46 +1609,10 @@ class Stage2Service:
                         ],
                         job=job,
                     )
-                validate_question_candidate(
-                    generation.candidate, opportunity=opportunity, bundle=bundle
-                )
-
-            review = await self.legacy._gateway_stage(
-                job,
-                "P08_QUESTION_REVIEW_V1",
-                m.QuestionReviewRequest(
-                    generation_result=generation,
-                    opportunity=opportunity,
-                    evidence_bundle=bundle,
-                    validation_policy=validation_policy,
-                ),
-                m.QuestionReviewResult,
-                cache_suffix=f"local-{logical_action_id}",
-            )
-            validate_review_result(
-                review,
-                generation_result=generation,
-                validation_policy=validation_policy,
-            )
-            if (
-                review.status != "READY"
-                or review.review is None
-                or review.review.decision != m.ReviewDecision.ACCEPT
-                or generation.candidate is None
-            ):
-                return self._failed_question_action(
-                    action=action,
-                    assessment=assessment,
-                    assessment_version=current.version,
-                    question=before,
-                    diagnostics=review.diagnostics
-                    or [
-                        diagnostic(
-                            "QUESTION_POLICY_VIOLATION",
-                            "The edited or regenerated question did not pass semantic review.",
-                        )
-                    ],
-                    job=job,
+            if generation.candidate is None:  # guarded by current contracts
+                raise ContextValidationError(
+                    "MODEL_OUTPUT_INVALID",
+                    "A localized question action requires a validated candidate.",
                 )
             after = self._selected_from_candidate(
                 generation.candidate,
@@ -1676,7 +1649,10 @@ class Stage2Service:
                         )
                     ),
                     "lineage": lineage,
-                    "created_at": utc_now(),
+                    # Bind replay identity to the protected logical action.
+                    # A retry must rebuild the exact P09 request instead of
+                    # introducing a fresh wall-clock value and a second call.
+                    "created_at": logical_occurred_at,
                 }
             )
             existing_guide = m.EvaluationGuide.model_validate(
@@ -1684,12 +1660,19 @@ class Stage2Service:
                     assessment_id, actor.workspace_id
                 ).data
             )
+            # Provider input is bound to the logical teacher action, not to a
+            # particular execution attempt. The final persisted lineage still
+            # records the actual job below, while retries can reuse exactly one
+            # durable P09 result.
+            guide_input_assessment = revised.model_copy(
+                update={"lineage": assessment.lineage}
+            )
             guide = await self.legacy._gateway_stage(
                 job,
                 "P09_GUIDE_BUILD_V1",
                 m.GuideBuildRequest(
                     guide_id=existing_guide.guide_id,
-                    assessment=revised,
+                    assessment=guide_input_assessment,
                     evidence_bundle=bundle,
                 ),
                 m.EvaluationGuide,
@@ -2071,6 +2054,7 @@ class Stage2Service:
             replacement=source_action.replacement,
             _execution_job=job,
             _logical_action_id=logical_action_id,
+            _logical_occurred_at=source_action.occurred_at,
         )
 
     @staticmethod
@@ -2294,6 +2278,9 @@ class Stage2Service:
                         "EVIDENCE_MAP",
                         "ASSESSMENT_PLAN",
                         "QUESTION_GENERATE",
+                        "QUESTION_VALIDATE",
+                        # Historical Phase 5 floor. Phase 6 reconciles P07 and
+                        # advances to deterministic validation/assembly.
                         "QUESTION_REVIEW",
                         "GUIDE_BUILD",
                         "ASSEMBLE",

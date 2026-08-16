@@ -17,6 +17,7 @@ from comprehension_verification.model_gateway import (
 from comprehension_verification.provider_authorization import (
     SyntheticProviderAuthorizationSpec,
     synthetic_provider_boundary_hash,
+    synthetic_provider_boundary_material,
 )
 from comprehension_verification.web import worker
 from comprehension_verification.web.object_store import MemoryObjectStore
@@ -36,6 +37,15 @@ SECRET_RESOURCE = (
     "projects/project-stage1/secrets/cva-openai-api-key/versions/2"
 )
 ARTIFACT_HASH = "sha256:" + "b" * 64
+
+
+def test_provider_boundary_marks_p08_historical_and_non_callable() -> None:
+    policy = synthetic_provider_boundary_material()[
+        "product_runtime_prompt_policy"
+    ]
+    assert "P08_QUESTION_REVIEW_V1" in policy["historical_non_callable"]
+    assert "P08_QUESTION_REVIEW_V1" not in policy["active_model_stages"]
+    assert policy["disabled"] == ["P10_ENRICHED_CONTEXT_V1"]
 
 
 def _settings(job_id: str, *, candidate_sha: str = CANDIDATE_SHA) -> WorkerSettings:

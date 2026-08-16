@@ -1987,17 +1987,37 @@ class Repository:
                 )
             )
 
+    def save_generated_question(self, question: GeneratedQuestionRow) -> None:
+        """Persist one current P07 result without requiring a P08 review."""
+
+        with self.session() as session:
+            existing_question = session.get(GeneratedQuestionRow, question.id)
+            if existing_question is None:
+                session.add(question)
+            elif any(
+                (
+                    existing_question.tenant_id != question.tenant_id,
+                    existing_question.submission_id != question.submission_id,
+                    existing_question.data != question.data,
+                )
+            ):
+                raise Conflict("GENERATED_QUESTION_ID_COLLISION")
+
     def save_generated_question_and_review(
         self,
         *,
         question: GeneratedQuestionRow,
         review: QuestionReviewRow,
     ) -> None:
-        """Persist immutable server-scoped model artifacts without ``merge``.
+        """Persist a historical P07/P08 pair without ``merge``.
 
         Candidate IDs are global primary keys for backward compatibility.  A
         model-supplied collision must therefore fail rather than overwrite a
         row owned by another tenant/submission (or mutate an observed output).
+
+        New Phase 6 product executions call :meth:`save_generated_question`
+        and never create a ``QuestionReviewRow``. This retained operation keeps
+        historical fixtures, replay, and stored P08 receipts readable.
         """
 
         if (
@@ -3100,6 +3120,8 @@ class Repository:
             "EVIDENCE_MAP": 0.20,
             "ASSESSMENT_PLAN": 0.32,
             "QUESTION_GENERATE": 0.40,
+            "QUESTION_VALIDATE": 0.55,
+            # Legacy Phase 5 continuation floor; reconciled without P08.
             "QUESTION_REVIEW": 0.55,
             "ASSEMBLE": 0.72,
             "GUIDE_BUILD": 0.82,
@@ -3160,6 +3182,9 @@ class Repository:
             "EVIDENCE_MAP": m.SubmissionProcessingStatus.MAPPING_OPPORTUNITIES,
             "ASSESSMENT_PLAN": m.SubmissionProcessingStatus.PLANNING,
             "QUESTION_GENERATE": m.SubmissionProcessingStatus.GENERATING,
+            "QUESTION_VALIDATE": (
+                m.SubmissionProcessingStatus.VALIDATING_QUESTIONS
+            ),
             "QUESTION_REVIEW": (
                 m.SubmissionProcessingStatus.VALIDATING_QUESTIONS
             ),

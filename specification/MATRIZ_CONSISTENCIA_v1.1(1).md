@@ -25,9 +25,9 @@
 | `AssessmentPlan` | planificador determinista sin LLM | exactamente \(N\) primarias + reserva disjunta o diagnóstico específico | assessment_plans | consistente |
 | `QuestionAliasEnvelope`, `QuestionModelDraft` | P07 alias-only: redacción/observables/visible E*, sin IDs ni anchor text | roots exportados; provider DTO separado del canónico | transitorios; hash boundary, nunca stage cache | consistente |
 | `QuestionBuildRequest` -> `QuestionGenerationResult` | P07 Luna-high; servidor materializa metadata/support/anchor por oportunidad | support completa y anchor visible subset; CLOSED | generated_questions/StageRun canónico | consistente |
-| `QuestionReviewRequest` -> `QuestionReviewResult` | P08 inactivo objetivo, aún activo en runtime actual | support y anchor visible separados; contrato retenido | question_reviews activos/legibles | cutover pendiente; adaptación mecánica Fase 5 |
+| `QuestionReviewRequest` -> `QuestionReviewResult` | P08 histórico no callable | contrato, scores y decisiones retenidos | question_reviews legibles; no se escriben en flujo nuevo | cutover Fase 6 completo |
 | `ChoiceOption` y justificación | respuesta/rationale de cada opción; misconception por distractor | `CHOICE`; `student_justification_required` | assessment_questions/guides | consistente |
-| `GuideBuildRequest` -> `EvaluationGuide` | P09 objetivo después de aprobación; Fase 5 conserva el orden runtime actual | guía completa por assessment/submission | GET assessment guide | cutover pendiente; sin cambio Fase 5 |
+| `GuideBuildRequest` -> `EvaluationGuide` | P09 objetivo después de aprobación; Fase 6 conserva el orden interino tras ASSEMBLE | guía completa por assessment/submission | GET assessment guide | relocación Fase 7 pendiente |
 | P10 enriquecido | deshabilitado | contrato retenido, no callable | sin activación | consistente |
 | `SchemaRepairRequest` -> `SchemaRepairResult` | P11 Luna-minimal, temperatura 0 | repair estructural único | ledger/result | consistente |
 | `Assessment` | exactamente \(N\), lineage y resumen de justificación | root + invariantes atómicas | GET/review/approve/export | consistente |
@@ -36,7 +36,7 @@
 | `EvaluationGuide` | representación principal en plataforma | root independiente | `evaluation_guides`; PDF/HTML opcional | consistente |
 | aviso de autoría/IA/historia | footer/callout fijo de producto | deliberadamente fuera de outputs LLM | componente UI, no export generado | consistente |
 | `SubmissionProcessingState` | mapeo -> plan -> generación -> validación -> docente -> guía | cuatro terminales pedagógicos específicos | GET submission | target; migración de estados pendiente |
-| `pipeline-authority/1.0.0` | pipelines y autoridad backend/modelo/docente | manifiesto Python inmutable | P05 cutover completo; P08 pendiente | consistente |
+| `pipeline-authority/1.0.0` | pipelines y autoridad backend/modelo/docente | manifiesto Python inmutable | P05/P08 cutover completo; P09 relocación pendiente | consistente |
 | oracle de qualification | `VALID`/`ORACLE_SUSPECT`/`INVALID`/`NOT_APPLICABLE` | clasificador causal | reportes históricos/sintéticos | consistente |
 | `JobStatus` | Cloud Run Jobs | root técnico separado | jobs/stage_runs | consistente |
 | `ModelRoute` | config aprobada completa | provider/model/snapshot/effort/temp/capabilities/limits | catálogo + ledger | consistente |
@@ -64,7 +64,7 @@
 14. La API persiste el job antes de disparar Cloud Run Jobs; cerrar el navegador no cancela el trabajo.
 15. Backend decide identidad, versiones, hashes, estado, lineage, pertenencia, restricciones, factibilidad, almacenamiento, transiciones y validaciones deterministas.
 16. Modelo propone semántica/estructura/redacción/observables; docente resuelve ambigüedad y conserva autoridad académica final.
-17. P05 no es etapa activa y P08 no es etapa activa objetivo; P10 está deshabilitado. Contratos/receipts históricos no implican activación.
+17. P05/P08 no son etapas activas ni callables; P10 está deshabilitado. Contratos/receipts históricos no implican activación.
 18. `ORACLE_SUSPECT` hace inconclusa la atribución y prevalece sobre `MODEL_OWNED_*`.
 19. Sólo `SYNTHETIC_ONLY_NO_STUDENT_DATA` enumera códigos diagnósticos en claro con hash; la política de datos reales no cambia.
 20. P04 no devuelve identidad, workflow, policy materializada ni prueba de factibilidad: el servidor compila `BlueprintModelDraft`, crea los IDs canónicos y ejecuta el preflight/planner exacto después.
@@ -75,7 +75,8 @@
 25. P07 no devuelve IDs, locators, anchor text, operation, format, difficulty ni time; `QuestionModelDraft` contiene sólo semántica y aliases locales.
 26. `QuestionCandidate.evidence_ids` conserva support evidence completa y el anchor visible es un subconjunto reconstruido literalmente por el servidor.
 27. Draft y resultado canónico P07 no son intercambiables; support, oportunidad, bundle, policy, scope, schema y materializador invalidan reuse y replay exige igualdad exacta.
-28. P08 sigue activo temporalmente y revisa answerability contra support completa sin exigir que sea idéntica al anchor visible; P09 no se mueve y P10 sigue disabled.
+28. P08 tiene cero invocaciones activas; validación determinista y docente sustituyen su autoridad sin recrear scores. P09 no se mueve y P10 sigue disabled.
+29. `Anchor.self_containment_score` es compatibilidad legacy sin autoridad; el visible anchor puede ser menor o igual al support.
 
 ## 3. Decisiones cerradas y abiertas
 
@@ -83,7 +84,7 @@
 |---|---|---|
 | stack MVP | Cloud Run Service/Jobs + Supabase + R2; sin Redis | revisar solo si telemetría/quotas lo exigen |
 | frontend | React/TypeScript/Vite en mismo servicio inicialmente | Vercel Pro opcional si aporta valor |
-| rutas retenidas | configuración existente sin cambio; P05/P08 inactivos objetivo | cualquier selección futura exige gate/corpus nuevo |
+| rutas retenidas | configuración existente sin cambio; P05/P08 históricos no callables | cualquier selección futura exige gate/corpus nuevo |
 | harness/qualifications actuales | evidencia histórica no canónica | instrumento futuro independiente |
 | Terra | no promovido por la evidencia histórica | decisión humana sobre evidencia nueva gobernada |
 | P10 | deshabilitado | ADR, corpus y autorización futuros |

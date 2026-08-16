@@ -1309,7 +1309,7 @@
   generation policy, scope, validators y materializador. Replay recompila y
   exige igualdad exacta; retry/resume, reservas, regeneración y teacher edit
   conservan exactly-once, lineage y evidence allowlists.
-- **Compatibilidad temporal:** P08 sigue activo sin cambiar scores, decisión,
+- **Compatibilidad temporal de Fase 5:** P08 seguía activo sin cambiar scores, decisión,
   route o rol; revisa answerability contra support completa y anchor visible
   por separado. P09 no se mueve ni se rediseña. P10 sigue disabled. El harness
   proyecta goldens históricos sin volverlos autoridad ni cambiar veredictos.
@@ -1320,3 +1320,46 @@
   ni iniciar Fase 6 dentro de esta decisión.
 - **Relación:** ADR-037, D-074/D-075/D-076/D-077,
   `pipeline-authority/1.0.0`, `PIPELINE_AUTHORITY.md`.
+
+## D-079 - P08 queda histórico y la aceptación vuelve a backend más docente
+
+- **Cutover:** el runtime nuevo pasa de P07 materializado a
+  `validate_generation_result`, validaciones objetivas, selección determinista,
+  exactamente N, ASSEMBLE y P09. No construye `QuestionReviewRequest`, no llama
+  P08, no espera `ReviewDecision`, no usa scores/thresholds y no crea
+  `QuestionReviewRow`.
+- **Guard:** `_gateway_stage` rechaza P08 con
+  `P08_ACTIVE_RUNTIME_RETIRED` antes de gateway, trusted context, adapter,
+  secreto o transporte. La policy de autorización separa etapas activas de
+  P05/P08 históricas no callables; P10 continúa disabled.
+- **Autoridad:** P07 propone semántica; el backend decide identidad, scope,
+  membership, support/anchor/locator, path, formato, dificultad, tiempo,
+  justificación, seguridad, choices, leakage, replay y exact-N. El docente
+  conserva claridad/calidad/pertinencia y aceptar, editar, regenerar o rechazar.
+  No se introdujo reviewer, judge, critic ni score sustituto.
+- **Reservas:** sólo `REPLACEMENT_REQUIRED` y defectos question-local objetivos
+  consumen la reserva compatible y finita. Fallos de scope/security no se
+  degradan a reserva. Agotar P07+reservas termina sin Assessment parcial.
+- **Persistencia e historia:** `save_generated_question` permite guardar el
+  resultado vigente sin review. La operación histórica atómica, rows,
+  contratos, prompt, routes, mocks, harness, fixtures, reports y receipts P08
+  permanecen legibles y tenant-scoped. ACCEPT/REJECT/ESCALATE históricos no
+  autorizan ni vetan una pregunta actual.
+- **Recovery:** `QUESTION_REVIEW` permanece únicamente como floor legado. Un
+  retry recompila/revalida el P07 vigente, reutiliza StageRuns compatibles y no
+  llama P08; una salida vieja que no pasa replay no puede ser blanqueada por un
+  ACCEPT histórico. Retry de acción docente liga P09 al logical action para no
+  duplicar la llamada tras rollback terminal.
+- **Costo/observabilidad:** por N sin reservas el total pasa de `2N+2` a `N+2`:
+  P06=1, P07=N, P08=0, P09=1. Runtime nuevo registra READY/replacement,
+  validación determinista y reserva consumida, no decisión/scores P08 activos.
+- **Compatibilidad menor:** visible anchor es un subconjunto, no necesariamente
+  propio, de support evidence. `Anchor.self_containment_score` queda
+  `DERIVED_COMPATIBILITY / LEGACY_NO_ACTIVE_AUTHORITY` y no participa en gates,
+  answerability, aceptación ni aprobación.
+- **Fuera de alcance:** P09 conserva el orden interino posterior a ASSEMBLE y
+  anterior a revisión docente. Su relocación posterior a aprobación pertenece
+  exclusivamente a Fase 7. No cambian DTO, prompt, route, modelo ni reasoning
+  de P09; P10 y datos reales permanecen bloqueados.
+- **Relación:** ADR-037, D-074 a D-078,
+  `pipeline-authority/1.0.0`, `PHASE6_P08_RUNTIME_CUTOVER.md`.

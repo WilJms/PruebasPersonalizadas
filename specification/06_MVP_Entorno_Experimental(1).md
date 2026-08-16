@@ -5,14 +5,14 @@
 **Equipo:** dos desarrolladores  
 **Principio:** laboratorio para validar el pipeline; no SaaS institucional terminado
 
-**Aclaración ADR-037 / Fase 5 (2026-08-15):** P05/P08 permanecen legibles como
+**Aclaración ADR-037 / Fase 6 (2026-08-15):** P05/P08 permanecen legibles como
 contratos/artefactos históricos y no son etapas activas objetivo. El runtime ya
 retiró P05. P06 usa un provider DTO alias-only/categórico, materialización
 server-side y planner como única autoridad de N/factibilidad. P07 usa aliases y
 un draft semántico pequeño; el backend conserva support evidence completa y
-reconstruye el visible anchor exacto. P08 continúa activo en el runtime actual
-y P09 conserva su orden actual hasta sus cutovers posteriores. P10 continúa
-deshabilitado.
+reconstruye el visible anchor exacto. P08 ya no es callable: nuevas ejecuciones
+validan P07, exigen exactamente N y ensamblan sin review P08. P09 conserva su
+orden interino hasta Fase 7. P10 continúa deshabilitado.
 
 ---
 
@@ -51,7 +51,7 @@ No existe rol estudiante en esta versión. Las evaluaciones se descargan para se
 5. El usuario resuelve asuntos bloqueantes, edita y aprueba el blueprint.
 6. Carga uno o varios entregables con `subject_ref` seudónimo.
 7. Inicia el pipeline; observa progreso por submission y etapa.
-8. Abre una entrega y revisa evidencia, matches de variante, oportunidades, plan y preguntas/reviews.
+8. Abre una entrega y revisa evidencia, matches de variante, oportunidades, plan, preguntas y validaciones deterministas.
 9. En cada pregunta acepta, rechaza, edita o solicita regeneración localizada.
 10. Aprueba el Assessment completo o selecciona varios elegibles, revisa el alcance y confirma una aprobación masiva; las excepciones quedan fuera.
 11. Usa la guía dentro de la plataforma y, si lo necesita, descarga evaluación, guía, cobertura y JSON canónico.
@@ -68,7 +68,7 @@ No existe rol estudiante en esta versión. Las evaluaciones se descargan para se
 - carga de múltiples entregables;
 - jobs asíncronos con progreso, retry controlado y diagnóstico;
 - IR con evidencia/localizadores;
-- P01-P04/P06/P07/P09 detrás de contratos v1.1; P05/P08 retenidos para compatibilidad, P08 aún activo en runtime y P10 deshabilitado;
+- P01-P04/P06/P07/P09 detrás de contratos v1.1; P05/P08 retenidos sólo para compatibilidad histórica y P10 deshabilitado;
 - P06 categórico sobre aliases locales, materialización canónica, resumen durable 0..N y plan determinista exacto de \(N\), seguido de P07 semántico alias-only, materialización server-side, validaciones y revisión;
 - support evidence completa server-owned separada del visible anchor, que es un subconjunto literal reconstruido desde evidencia/localizadores confiables;
 - fail-closed atómico: nunca una evaluación parcial;
@@ -247,8 +247,8 @@ Prefijo `/api/v1`. Todos los mutables usan `Idempotency-Key`; ediciones versiona
 ## 10. Jobs
 
 La tabla distingue el runtime activo de los estados que siguen legibles por
-compatibilidad. Fase 3 reemplazó `BLUEPRINT_BUILD_REVIEW`; P08 conserva todavía
-su job/estado activo hasta una fase posterior.
+compatibilidad. Fase 3 reemplazó `BLUEPRINT_BUILD_REVIEW`; Fase 6 convirtió
+`QUESTION_REVIEW` en floor legado y añadió `QUESTION_VALIDATE` activo.
 
 | Job/stage | Input | Output | Retry |
 |---|---|---|---|
@@ -262,9 +262,10 @@ su job/estado activo hasta una fase posterior.
 | `EVIDENCE_MAP` | request P06 -> envelope de aliases | draft categórico -> `EvidenceMapPatch` con resumen 0..N | bundle/policy/blueprint nuevo; reuse exacto si frontera coincide |
 | `ASSESSMENT_PLAN` | oportunidades + policy | exactamente \(N\) primarias + reserva o diagnóstico | no retry sin input/policy nuevo |
 | `QUESTION_GENERATE` | request P07 -> envelope aliases; P10 deshabilitado | draft semántico -> `QuestionGenerationResult` materializado | reemplazo desde reserva; reuse sólo con frontera exacta |
-| `QUESTION_REVIEW` | request P08 | `QuestionReviewResult` | ACTIVE_CURRENT; target inactivo, cutover pendiente |
+| `QUESTION_VALIDATE` | P07 canónico + opportunity + bundle | PASS/diagnostics objetivos hash-bound | ACTIVE_CURRENT; reserva sólo para defecto local corregible |
+| `QUESTION_REVIEW` | estado/request P08 anterior al corte | reconciliación por P07 vigente | LEGACY/HISTORICAL; nunca invoca P08 |
+| `ASSEMBLE` | plan + exactamente N preguntas + lineage | Assessment `NEEDS_REVIEW` | determinista y atómico |
 | `GUIDE_BUILD` | request P09 | `EvaluationGuide` | orden runtime actual sin cambios; objetivo posterior diferido |
-| `ASSEMBLE` | plan + preguntas + guía + lineage | Assessment | determinista y atómico |
 | `RENDER_EXPORT` | Assessment | archivos derivados | retry sin LLM |
 
 Cada stage persiste `input_hash`, `component_version`, intento, timestamps, output ref y diagnostics. Un stage completo se reutiliza si su clave coincide.
@@ -336,8 +337,8 @@ Los blobs nunca se guardan en PostgreSQL. Los JSONB completos son fuente del sna
 | P05 | histórico | BlueprintReviewRequest | BlueprintReview | INACTIVE_TARGET; lectura compatible |
 | P06 | submission | EvidenceMapRequest -> EvidenceMappingAliasEnvelope | EvidenceMappingModelDraft -> EvidenceMapPatch | aliases/scope, soporte categórico, materializador; planner decide N |
 | P07 | oportunidad cerrada | QuestionBuildRequest -> QuestionAliasEnvelope | QuestionModelDraft -> QuestionGenerationResult | redacción/visible aliases del modelo; support, identidad, anchor, locator y metadata en backend |
-| P08 | runtime actual / histórico objetivo | QuestionReviewRequest | QuestionReviewResult | ACTIVE_CURRENT; INACTIVE_TARGET pendiente |
-| P09 | orden runtime actual | GuideBuildRequest | EvaluationGuide | sin cambio en Fase 5; orden objetivo posterior pendiente |
+| P08 | histórico no callable | QuestionReviewRequest | QuestionReviewResult | HISTORICAL_COMPATIBILITY; hard guard pre-transporte |
+| P09 | orden runtime interino | GuideBuildRequest | EvaluationGuide | sin cambio en Fase 6; orden objetivo posterior pendiente |
 | P10 | oportunidad enriquecida posterior | QuestionBuildRequest | QuestionGenerationResult | citations/source IDs |
 | P11 | fallo estructural | SchemaRepairRequest | SchemaRepairResult | revalidar schema objetivo |
 
@@ -346,11 +347,10 @@ su contrato siga siendo legible. Habilitarlo exige decisión nueva y corpus
 autorizado.
 
 Las rutas iniciales se conservan como historia/configuración compatible y no se
-modifican aquí. P05 ya no es alcanzable por ejecuciones nuevas; P08 no es activa
-en el objetivo, pero sigue activa en el runtime hasta su cutover. P09 tampoco se
+modifican aquí. P05/P08 ya no son alcanzables por ejecuciones nuevas; P09 no se
 mueve en esta fase. `candidate.evidence_ids` lleva la support evidence completa
-y `candidate.anchor` únicamente el subconjunto visible; P08 recibe ambos sin
-asumir igualdad. El harness actual no es
+y `candidate.anchor` el subconjunto visible, que puede ser menor o igual. El
+harness actual no es
 un gate canónico para escoger modelo. Cualquier comparación futura requiere un
 instrumento nuevo gobernado; no se implementa en este MVP change.
 

@@ -552,7 +552,7 @@ function ReviewHarness({ initialBundle = assessmentBundle }: { initialBundle?: A
 }
 
 describe("Stage 1 evidence-first review", () => {
-  it("shows provenance, semantic review and guide while keeping question actions out of scope", async () => {
+  it("shows provenance, a clearly historical P08 review and the guide", async () => {
     const user = userEvent.setup();
     render(
       <MemoryRouter>
@@ -576,6 +576,7 @@ describe("Stage 1 evidence-first review", () => {
     expect(screen.getByText("paragraph index: 3", { exact: false })).toBeInTheDocument();
     expect(screen.getByText("QUESTION_GROUNDED")).toBeInTheDocument();
     expect(screen.getByText("Grounding")).toBeInTheDocument();
+    expect(screen.getByText("Review histórico P08 · compatibilidad no autoritativa")).toBeInTheDocument();
 
     const approve = screen.getByRole("button", { name: "Aprobar Assessment" });
     expect(approve).toBeDisabled();

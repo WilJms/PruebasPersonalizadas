@@ -155,7 +155,7 @@ def test_signed_memory_object_capability_enforces_method_and_content_type() -> N
     assert media_type == "text/plain"
 
 
-def test_product_p08_audit_is_idempotent_and_content_free() -> None:
+def test_historical_p08_audit_is_idempotent_and_content_free() -> None:
     repo = Repository("sqlite+pysqlite://")
     service = Stage1Service(
         settings=_settings(),
@@ -626,6 +626,51 @@ def test_product_gateway_rejects_p05_before_constructing_any_gateway() -> None:
         )
     assert blocked.value.code == "P05_ACTIVE_RUNTIME_RETIRED"
     assert repo.model_calls(tenant_id="tnt_backend") == []
+
+
+def test_product_gateway_rejects_p08_before_constructing_any_transport() -> None:
+    repo = Repository("sqlite+pysqlite://")
+    store = MemoryObjectStore(
+        secret="object-test-secret-with-at-least-thirty-two-bytes"
+    )
+    transport_constructed = False
+
+    def forbidden_gateway(_job_id: str) -> ModelGateway:
+        nonlocal transport_constructed
+        transport_constructed = True
+        raise AssertionError("P08 must be rejected before gateway construction")
+
+    service = Stage1Service(
+        settings=_settings(),
+        repository=repo,
+        object_store=store,
+        gateway_factory=forbidden_gateway,
+    )
+    job = JobRow(
+        id="job_p08_runtime_forbidden",
+        tenant_id="tnt_backend",
+        kind="SUBMISSION",
+        aggregate_id="sub_backend",
+        stage="QUESTION_VALIDATE",
+        status="RUNNING",
+        progress=0.55,
+        attempt=1,
+        diagnostics=[],
+    )
+    request = build_rehearsal_checkpoints().p08_request
+    with pytest.raises(WorkflowError) as blocked:
+        asyncio.run(
+            service._gateway_stage(
+                job,
+                "P08_QUESTION_REVIEW_V1",
+                request,
+                m.QuestionReviewResult,
+            )
+        )
+    assert blocked.value.code == "P08_ACTIVE_RUNTIME_RETIRED"
+    assert transport_constructed is False
+    assert repo.model_calls(tenant_id="tnt_backend") == []
+    assert repo.stage_runs_for_job(job.id, job.tenant_id) == []
 
 
 def test_activity_waiting_for_legacy_p05_resumes_at_preflight_without_provider() -> None:
