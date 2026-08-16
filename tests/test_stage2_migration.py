@@ -37,6 +37,10 @@ P05_RUNTIME_CUTOVER = (
     ROOT
     / "deploy/supabase/migrations/202608150006_phase3_p05_runtime_cutover.sql"
 )
+PHASE7_POST_APPROVAL_P09 = (
+    ROOT
+    / "deploy/supabase/migrations/202608160007_phase7_post_approval_p09.sql"
+)
 RECOVERY = (
     ROOT
     / "deploy/supabase/rollbacks/202608070003_stage2_experimental_recovery.sql"
@@ -269,6 +273,35 @@ def test_p05_runtime_cutover_adds_only_the_deterministic_preflight_snapshot() ->
     assert "drop column" not in lowered
 
 
+def test_phase7_post_approval_p09_migration_is_additive_and_preserves_history() -> None:
+    lowered = PHASE7_POST_APPROVAL_P09.read_text(encoding="utf-8").lower()
+    assert lowered.startswith("begin;")
+    assert lowered.rstrip().endswith("commit;")
+    assert "alter table public.evaluation_guides" in lowered
+    for column in {
+        "assessment_version",
+        "assessment_etag",
+        "assessment_snapshot_hash",
+        "question_set_hash",
+        "approval_event_id",
+        "approval_snapshot_hash",
+        "guide_policy_hash",
+        "materializer_boundary_hash",
+        "guide_job_id",
+        "status",
+        "created_at",
+    }:
+        assert re.search(rf"add column\s+{column}\b", lowered)
+    assert "alter table public.jobs" in lowered
+    assert "add column descriptor jsonb" in lowered
+    assert "uq_evaluation_guides_approved_version" in lowered
+    assert "where assessment_version is not null" in lowered
+    assert "set status = 'historical_preapproval'" in lowered
+    assert "delete from" not in lowered
+    assert "drop table" not in lowered
+    assert "drop column" not in lowered
+
+
 def test_recovery_refuses_loss_before_restoring_e1_constraints() -> None:
     sql = RECOVERY.read_text(encoding="utf-8").lower()
     assert sql.startswith("begin;")
@@ -310,6 +343,8 @@ def test_real_postgres_upgrade_when_explicit_loopback_database_is_available() ->
     assert '"status": "PASS"' in result.stdout
     assert '"stage2_preserved_upgrade_rows": 1' in result.stdout
     assert '"stage2_duplicate_subject_blocked": true' in result.stdout
+    assert '"phase7_legacy_guide_preserved": true' in result.stdout
+    assert '"phase7_exact_version_unique": true' in result.stdout
 
 
 @pytest.mark.skipif(

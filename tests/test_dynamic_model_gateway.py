@@ -3,8 +3,12 @@ from __future__ import annotations
 import asyncio
 from datetime import UTC, datetime
 
-from comprehension_verification.canonical import sha256_text
+from comprehension_verification.canonical import canonical_hash, sha256_text, stable_id
 from comprehension_verification.contracts import models as m
+from comprehension_verification.guide_generation import (
+    build_guide_approval_binding,
+    guide_id_for_binding,
+)
 from comprehension_verification.model_gateway import (
     GatewayConfig,
     ModelGateway,
@@ -373,23 +377,41 @@ def test_p07_p08_and_p09_derive_ids_anchors_scores_and_guide_from_request() -> N
         ),
         created_at=FIXED_TIME,
     )
+    approved = assessment.model_copy(
+        update={
+            "status": m.WorkflowStatus.APPROVED,
+            "approved_by": "usr_dynamic_teacher",
+            "approved_at": FIXED_TIME,
+        }
+    )
+    assessment_etag = f'"{canonical_hash(approved)}"'
+    approval_event_id = stable_id(
+        "evt", approved.tenant_id, "assessment.approved", approved.assessment_id
+    )
+    binding = build_guide_approval_binding(
+        assessment=approved,
+        assessment_version=2,
+        assessment_etag=assessment_etag,
+        approval_event_id=approval_event_id,
+    )
     guide = _invoke(
         "P09_GUIDE_BUILD_V1",
         m.GuideBuildRequest(
-            guide_id="guide_custom",
-            assessment=assessment,
+            guide_id=guide_id_for_binding(binding),
+            assessment=approved,
+            binding=binding,
             evidence_bundle=bundle,
         ),
     )
 
-    validate_evaluation_guide(guide, assessment=assessment, bundle=bundle)
-    assert guide.assessment_id == assessment.assessment_id
+    validate_evaluation_guide(guide, assessment=approved, bundle=bundle)
+    assert guide.assessment_id == approved.assessment_id
     assert guide.submission_id == bundle.submission_id
     assert [item.question_id for item in guide.items] == question_ids
     for item in guide.items:
         question = next(
             question
-            for question in assessment.questions
+            for question in approved.questions
             if question.question_id == item.question_id
         )
         assert {

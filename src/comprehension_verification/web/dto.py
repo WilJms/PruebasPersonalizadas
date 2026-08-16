@@ -349,14 +349,30 @@ class AssessmentEnvelope(m.StrictModel):
     assessment: m.Assessment
     assessment_version: int = Field(ge=1)
     etag: Etag
-    guide: m.EvaluationGuide
+    guide: m.EvaluationGuide | None = None
+    guide_status: m.GuideLifecycleStatus = m.GuideLifecycleStatus.NOT_AVAILABLE
+    guide_job_id: m.Id | None = None
     reviews: list[QuestionReviewResource]
     evidence: list[EvidenceResource] = Field(default_factory=list)
     evidence_receipts: list[EvidenceReceipt] = Field(default_factory=list)
 
 
 class GuideEnvelope(m.StrictModel):
+    guide: m.EvaluationGuide | None = None
+    status: m.GuideLifecycleStatus
+    job_id: m.Id | None = None
+
+
+class GuideHistoryItem(m.StrictModel):
+    lifecycle_status: m.GuideLifecycleStatus
+    assessment_version: int | None = Field(default=None, ge=1)
+    assessment_etag: str | None = None
+    guide_job_id: m.Id | None = None
     guide: m.EvaluationGuide
+
+
+class GuideHistoryEnvelope(m.StrictModel):
+    items: list[GuideHistoryItem] = Field(default_factory=list)
 
 
 class QuestionReviewActionCommand(m.StrictModel):
@@ -528,7 +544,11 @@ class BulkApprovalHistoryEnvelope(m.StrictModel):
 
 class CostEstimate(m.StrictModel):
     estimate_id: m.Id
-    phase: Literal["ACTIVITY_BLUEPRINT", "SUBMISSION_ASSESSMENT"]
+    phase: Literal[
+        "ACTIVITY_BLUEPRINT",
+        "SUBMISSION_ASSESSMENT",
+        "APPROVED_GUIDE_ENRICHMENT",
+    ]
     model_mode: Literal["mock", "real"]
     estimated_model_calls: int = Field(ge=0, le=100)
     estimated_input_tokens: int = Field(ge=0)

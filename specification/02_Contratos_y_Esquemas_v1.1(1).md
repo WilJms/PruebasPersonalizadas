@@ -6,12 +6,13 @@
 **Artefacto generado:** `contracts.schema_v1.1.json` (JSON Schema Draft 2020-12)  
 **Regla:** el JSON Schema no se edita manualmente; se regenera desde Pydantic y CI compara bytes canónicos.
 
-**Estado ADR-037 / Fase 6:** `QuestionGenerationResult` sigue siendo el
-contrato canónico P07/P10 y se añaden dos roots de frontera,
-`QuestionAliasEnvelope` y `QuestionModelDraft`. El bundle generado contiene 58
-roots, 163 `$defs`, 319 refs y 8 fixtures. P05/P08 permanecen legibles pero no
-son alcanzables en ejecuciones nuevas. P09 conserva su orden interino y P10
-permanece deshabilitado.
+**Estado ADR-037 / Fase 7:** `QuestionGenerationResult` sigue siendo el
+contrato canónico P07/P10 y `EvaluationGuide` el output canónico P09. La nueva
+frontera P09 añade los roots transitorios `GuideAliasEnvelope` y
+`GuideModelDraft`, además de binding/contexts embebidos. El bundle generado
+contiene 60 roots, 174 `$defs`, 335 refs y 8 fixtures. P05/P08 permanecen
+legibles pero no son alcanzables en ejecuciones nuevas; P09 sólo lo es después
+de aprobación docente durable y P10 permanece deshabilitado.
 La presencia de un root no confiere autoridad ni autoriza invocación.
 
 ---
@@ -63,7 +64,9 @@ La presencia de un root no confiere autoridad ni autoriza invocación.
 | `QuestionModelDraft` | proveedor P07 | materializador P07 | redacción semántica, observables y selección del visible anchor por alias; sin identidad, metadata, locator ni texto de anchor canónico |
 | `QuestionGenerationResult` | P07/P10 | validaciones/revisión docente | una pregunta generada o solicitud de reemplazo |
 | `QuestionReviewResult` | P08 histórico | lectura/compatibilidad | scores, decisión o abstención legados |
-| `EvaluationGuide` | P09; interino tras ASSEMBLE, objetivo tras aprobación | plataforma/evaluador | guía estructurada asociada a assessment/submission |
+| `GuideAliasEnvelope` | compilador de input P09 | proveedor P09 | namespace cerrado Q/E/O de una versión ya aprobada; sin IDs/locators/bookkeeping canónicos |
+| `GuideModelDraft` | proveedor P09 | materializador P09 | enriquecimiento por aliases: adiciones, condiciones, niveles 0–3, límites e incertidumbres |
+| `EvaluationGuide` | materializador P09 post-aprobación | plataforma/evaluador | guía estructurada ligada a versión/ETag/approval/question set exactos |
 | `Assessment` | planificador/generador/guide | review/export | objeto canónico de salida, siempre con exactamente \(N\) preguntas cuando es utilizable |
 | `QuestionReviewAction` | UI docente | revision service/auditoría | aceptar, editar, rechazar o regenerar |
 | `BulkApprovalRequest` | UI autorizada | approval service | selección y confirmación explícita |
@@ -90,7 +93,7 @@ La presencia de un root no confiere autoridad ni autoriza invocación.
 | `QuestionBuildRequest` | P07 | `QuestionModelDraft` sobre payload `QuestionAliasEnvelope` | `QuestionGenerationResult` materializado |
 | `QuestionBuildRequest` | P10 deshabilitado | `QuestionGenerationResult` | `QuestionGenerationResult` |
 | `QuestionReviewRequest` | P08 histórico no callable | `QuestionReviewResult` | lectura/replay histórico |
-| `GuideBuildRequest` | P09 | `EvaluationGuide` | `EvaluationGuide` |
+| `GuideBuildRequest` | P09 | `GuideModelDraft` sobre payload `GuideAliasEnvelope` | `EvaluationGuide` materializada |
 | `SchemaRepairRequest` | P11 | `SchemaRepairResult` | `SchemaRepairResult` |
 
 `ModelTaskEnvelope` envuelve una llamada y `TrustedPromptContext` declara las
@@ -98,14 +101,16 @@ allowlists. Para las fronteras no proyectadas, `payload` se vuelve a validar
 contra el input root de la fila. P04 proyecta `BlueprintBuildRequest` a su
 draft boundary; P06 proyecta `EvidenceMapRequest` a
 `EvidenceMappingAliasEnvelope`; P07 proyecta `QuestionBuildRequest` a
-`QuestionAliasEnvelope`. En P04,
+`QuestionAliasEnvelope`; P09 proyecta `GuideBuildRequest` a
+`GuideAliasEnvelope`. En P04,
 `provider_output_schema_name=BlueprintModelDraft` limita la inferencia y
 `output_schema_name=AssessmentBlueprint` conserva el objeto canónico. En P06,
 `provider_output_schema_name=EvidenceMappingModelDraft` y
 `output_schema_name=EvidenceMapPatch` separan igualmente wire y etapa. En P07,
 `provider_output_schema_name=QuestionModelDraft` y
 `output_schema_name=QuestionGenerationResult` impiden usar el draft como cache
-canónico.
+canónico. En P09, `provider_output_schema_name=GuideModelDraft` y
+`output_schema_name=EvaluationGuide` hacen la misma separación.
 
 La identidad P06 liga prompt, schema wire exacto, versión/hash del alias
 envelope, `p06-evidence-materializer/1.0.0`, blueprint/policy/evidence hashes y
@@ -140,9 +145,16 @@ policy conserva `schema_version`/`policy_id` y su valor completo participa en el
 input y hash de reuse; el proveedor sólo debe respetar el cap recibido y nunca
 devolverlo como decisión propia.
 
+La identidad P09 liga prompt/schema wire, envelope, scope, support bundle,
+assessment/version/ETag/snapshot, question set, evento/snapshot de aprobación,
+policy, validators y `p09-guide-materializer/1.0.0`. El provider draft y la
+guía canónica no son intercambiables: StageRun guarda sólo `EvaluationGuide` y
+replay exige proyección/rematerialización idéntica.
+
 Las filas P05/P08 documentan contratos retenidos. La frontera activa salta de
 P04 a preflight/aprobación docente y de P07 a validaciones deterministas,
-exactamente N y ASSEMBLE, sin review P08. Mover P09 corresponde a Fase 7.
+exactamente N, ASSEMBLE y revisión/aprobación docente; sólo entonces P09
+materializa la guía.
 
 ## 3. Invariantes críticas
 
@@ -194,8 +206,16 @@ exactamente N y ASSEMBLE, sin review P08. Mover P09 corresponde a Fase 7.
 
 ### Guía y reparación
 
-- `EvaluationGuide` referencia preguntas aprobadas, no reescribe pregunta/ancla y no duplica IDs;
-- la guía se persiste con `guide_id`, `assessment_id` y `submission_id`; PDF/HTML es vista opcional;
+- P09 requiere `Assessment.APPROVED` y un `GuideApprovalBinding` exacto; ASSEMBLE
+  y toda acción pre-aprobación producen cero llamadas y cero guías activas;
+- `EvaluationGuide` referencia exactamente las preguntas de esa versión, no
+  reescribe pregunta/ancla, no amplía support y no duplica IDs;
+- purpose y observables core P07 son prefijo inmutable; P09 sólo añade
+  enriquecimiento question-local y deja 2–5 observables;
+- una guía READY tiene niveles exactos 0/1/2/3, nivel 2 contiene todos los
+  observables required, `cannot_infer` e incertidumbres; no existe READY parcial;
+- la guía se persiste con binding completo, `guide_id`, `assessment_id`,
+  `submission_id` y versión; una fila legacy sin binding es histórica, no current;
 - los avisos globales de autoría/IA/proceso histórico pertenecen a UI fija, no a P09 ni al objeto generado;
 - `SchemaRepairResult.REPAIRED` exige `repaired_output`, que luego valida contra el root objetivo;
 - `UNREPAIRABLE` exige `repaired_output=null`; P11 nunca repara grounding ni añade evidencia.

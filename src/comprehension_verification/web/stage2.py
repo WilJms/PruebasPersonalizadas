@@ -27,7 +27,6 @@ from ..diagnostics import diagnostic
 from ..exports import RENDERER_VERSION, render_views
 from ..validation import (
     ContextValidationError,
-    validate_evaluation_guide,
     validate_generation_result,
     validate_question_candidate,
 )
@@ -41,7 +40,6 @@ from .repository import (
     EvidenceMapRow,
     EvidenceRow,
     ExportRow,
-    GuideRow,
     JobControlRecordRow,
     JobRow,
     ModelCallRow,
@@ -981,7 +979,7 @@ class Stage2Service:
             choices=question.choices,
             student_justification_required=question.student_justification_required,
             preliminary_guide=question.preliminary_guide,
-            uncertainties=[],
+            uncertainties=list(question.semantic_uncertainties),
         )
 
     @staticmethod
@@ -1010,6 +1008,7 @@ class Stage2Service:
             choices=candidate.choices,
             student_justification_required=candidate.student_justification_required,
             preliminary_guide=candidate.preliminary_guide,
+            semantic_uncertainties=candidate.uncertainties,
             planning_score=opportunity.activity_priority,
         )
 
@@ -1382,7 +1381,6 @@ class Stage2Service:
                 create_job=False,
             )
         after: m.SelectedQuestion | None = None
-        guide: m.EvaluationGuide | None = None
         try:
             if action_type == m.QuestionReviewActionType.EDIT:
                 if replacement is None:
@@ -1655,33 +1653,6 @@ class Stage2Service:
                     "created_at": logical_occurred_at,
                 }
             )
-            existing_guide = m.EvaluationGuide.model_validate(
-                self.repository.guide_for_assessment(
-                    assessment_id, actor.workspace_id
-                ).data
-            )
-            # Provider input is bound to the logical teacher action, not to a
-            # particular execution attempt. The final persisted lineage still
-            # records the actual job below, while retries can reuse exactly one
-            # durable P09 result.
-            guide_input_assessment = revised.model_copy(
-                update={"lineage": assessment.lineage}
-            )
-            guide = await self.legacy._gateway_stage(
-                job,
-                "P09_GUIDE_BUILD_V1",
-                m.GuideBuildRequest(
-                    guide_id=existing_guide.guide_id,
-                    assessment=guide_input_assessment,
-                    evidence_bundle=bundle,
-                ),
-                m.EvaluationGuide,
-                cache_suffix=f"local-{logical_action_id}",
-            )
-            validate_evaluation_guide(guide, assessment=revised, bundle=bundle)
-            revised = revised.model_copy(
-                update={"lineage": self._lineage_after_job(revised.lineage, job)}
-            )
         except (ContextValidationError, ValidationError, WorkflowError) as exc:
             failure_class, retryable, code = self.legacy._classify_failure(exc)
             return self._failed_question_action(
@@ -1721,17 +1692,10 @@ class Stage2Service:
                 retryable=retryable,
             )
 
-        assert after is not None and guide is not None
+        assert after is not None
         next_version = current.version + 1
         resulting_row = self._assessment_row(
             revised, tenant_id=actor.workspace_id, version=next_version
-        )
-        resulting_guide = GuideRow(
-            guide_id=guide.guide_id,
-            assessment_id=assessment_id,
-            tenant_id=actor.workspace_id,
-            submission_id=assessment.submission_id,
-            data=guide.model_dump(mode="json"),
         )
         record = m.QuestionReviewActionRecord(
             record_id=stable_id("reviewrecord", action.action_id),
@@ -1755,7 +1719,6 @@ class Stage2Service:
             stored = self.repository.apply_question_review_action(
                 record,
                 resulting_row,
-                resulting_guide,
                 terminal_job=job,
             )
             if stored is None:
@@ -2286,6 +2249,7 @@ class Stage2Service:
                         "ASSEMBLE",
                     },
                     "QUESTION_ACTION": {"QUESTION_GENERATE"},
+                    "GUIDE_BUILD": {"GUIDE_BUILD"},
                     "BLUEPRINT_REVIEW": {
                         "BLUEPRINT_REVIEW",
                         "BLUEPRINT_PREFLIGHT",
@@ -2476,11 +2440,15 @@ class Stage2Service:
                 "Exports require the exact approved assessment version.",
                 status_code=409,
             )
-        guide = m.EvaluationGuide.model_validate(
-            self.repository.guide_for_assessment(
-                assessment_id, actor.workspace_id
-            ).data
-        )
+        try:
+            guide_row = self.repository.guide_for_approved_version(assessment_row)
+        except NotFound as exc:
+            raise WorkflowError(
+                "GUIDE_NOT_READY",
+                "Exports require the guide for the exact approved version.",
+                status_code=409,
+            ) from exc
+        guide = m.EvaluationGuide.model_validate(guide_row.data)
         if guide.status != m.WorkflowStatus.READY:
             raise WorkflowError(
                 "GUIDE_NOT_READY",
@@ -2728,7 +2696,7 @@ class Stage2Service:
             payload=payload,
         )
 
-    def bulk_approve(
+    async def bulk_approve(
         self,
         *,
         activity_id: str,
@@ -2833,6 +2801,9 @@ class Stage2Service:
                         },
                     )
                     approved.append(target)
+                    await self.legacy.ensure_approved_guide_job(
+                        row, actor_id=actor.user_id
+                    )
                     continue
                 if row.version != target.assessment_version:
                     raise WorkflowError(
@@ -2845,15 +2816,6 @@ class Stage2Service:
                         "BULK_TARGET_NOT_REVIEWABLE",
                         "Target is not awaiting review.",
                         status_code=409,
-                    )
-                guide = m.EvaluationGuide.model_validate(
-                    self.repository.guide_for_assessment(
-                        target.assessment_id, actor.workspace_id
-                    ).data
-                )
-                if guide.status != m.WorkflowStatus.READY:
-                    raise WorkflowError(
-                        "GUIDE_NOT_READY", "Target guide is not READY.", status_code=409
                     )
                 latest_by_question: dict[str, m.QuestionReviewActionRecord] = {}
                 for action_row in self.repository.question_review_actions(
@@ -2879,7 +2841,7 @@ class Stage2Service:
                     )
                 self.legacy.evidence_view(assessment.submission_id, actor)
                 self.legacy._assert_evidence_receipts_complete(row, assessment, actor)
-                self.legacy.approve_assessment(
+                await self.legacy.approve_assessment_and_enqueue_guide(
                     assessment_id=target.assessment_id,
                     if_match=row.etag,
                     actor=actor,

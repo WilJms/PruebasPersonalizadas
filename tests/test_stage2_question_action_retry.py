@@ -314,7 +314,7 @@ def test_edit_retry_reconstructs_protected_replacement_after_terminal_rollback(
             if item["job_id"]
             in {source_job.id, retried.json()["job"]["job_id"]}
         ]
-        assert action_prompt_ids == ["P09_GUIDE_BUILD_V1"]
+        assert action_prompt_ids == []
         assert "P08_QUESTION_REVIEW_V1" not in action_prompt_ids
         refreshed = client.get(
             f"/api/v1/submissions/{fixture['submission_id']}/assessment"

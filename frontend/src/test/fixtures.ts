@@ -196,7 +196,8 @@ const scores = {
 export const assessmentBundle: AssessmentBundle = {
   etag: '"sha256:assessment-1"',
   assessment_version: 1,
-  guide: evaluationGuide,
+  guide: null,
+  guide_status: "NOT_AVAILABLE",
   assessment: {
     schema_version: "1.1.0",
     assessment_id: "assessment_01",

@@ -28,7 +28,7 @@ Stage2SchemaVersion = Literal[CONTRACT_VERSION]
 Id = Annotated[str, Field(min_length=3, max_length=128, pattern=r"^[a-z][a-z0-9_-]*$")]
 
 # Provider-local aliases are deliberately not canonical IDs.  They exist only
-# inside one P04/P06/P07 inference boundary and are resolved by a server
+# inside one P04/P06/P07/P09 inference boundary and are resolved by a server
 # compiler/materializer.
 DimensionAlias = Annotated[str, Field(pattern=r"^D[1-9][0-9]{0,2}$")]
 VariantAlias = Annotated[str, Field(pattern=r"^V[1-9][0-9]{0,2}$")]
@@ -39,6 +39,11 @@ EvidenceAlias = Annotated[str, Field(pattern=r"^E[1-9][0-9]{0,2}$")]
 ArtifactAlias = Annotated[str, Field(pattern=r"^A[1-9][0-9]{0,2}$")]
 FingerprintAlias = Annotated[str, Field(pattern=r"^F[1-9][0-9]{0,2}$")]
 MappingScopeAlias = Annotated[str, Field(pattern=r"^S[a-f0-9]{24}$")]
+GuideQuestionAlias = Annotated[str, Field(pattern=r"^Q[1-9][0-9]{0,2}$")]
+GuideObservableAlias = Annotated[str, Field(pattern=r"^O[1-9][0-9]{0,2}$")]
+GuideAdditionalObservableAlias = Annotated[
+    str, Field(pattern=r"^N[1-9][0-9]{0,2}$")
+]
 
 PrincipalId = Annotated[
     str,
@@ -282,6 +287,16 @@ class SubmissionProcessingStatus(StrEnum):
     TECHNICAL_FAILURE = "TECHNICAL_FAILURE"
     REJECTED_SECURITY = "REJECTED_SECURITY"
     CANCELLED = "CANCELLED"
+
+
+class GuideLifecycleStatus(StrEnum):
+    NOT_AVAILABLE = "NOT_AVAILABLE"
+    PENDING = "PENDING"
+    BUILDING = "BUILDING"
+    READY = "READY"
+    FAILED = "FAILED"
+    NEEDS_REVIEW = "NEEDS_REVIEW"
+    HISTORICAL_PREAPPROVAL = "HISTORICAL_PREAPPROVAL"
 
 
 class StageRunStatus(StrEnum):
@@ -1708,10 +1723,12 @@ class GuideLevel(StrictModel):
 class GuideDraft(StrictModel):
     purpose: Annotated[str, Field(min_length=1, max_length=1000)]
     observable_elements: list[ObservableElement] = Field(default_factory=list, max_length=20)
+    acceptance_conditions: list[str] = Field(default_factory=list, max_length=20)
     acceptable_alternatives: list[str] = Field(default_factory=list, max_length=20)
     misconceptions: list[str] = Field(default_factory=list, max_length=20)
     levels: list[GuideLevel] = Field(default_factory=list, max_length=4)
     cannot_infer: list[str] = Field(default_factory=list, max_length=20)
+    semantic_uncertainties: list[str] = Field(default_factory=list, max_length=20)
 
 
 class EvaluationGuideItem(StrictModel):
@@ -1719,13 +1736,46 @@ class EvaluationGuideItem(StrictModel):
     guide: GuideDraft
 
 
+class GuideApprovalBinding(StrictModel):
+    """Server-owned identity tying one guide to one approved assessment version."""
+
+    binding_version: Literal["guide-approval-binding/1.0.0"] = (
+        "guide-approval-binding/1.0.0"
+    )
+    tenant_id: Id
+    assessment_id: Id
+    submission_id: Id
+    assessment_version: PositiveInt
+    assessment_etag: Annotated[
+        str, Field(pattern=r'^"sha256:[a-f0-9]{64}"$')
+    ]
+    assessment_snapshot_hash: Hash
+    question_set_hash: Hash
+    approval_event_id: Id
+    approval_snapshot_hash: Hash
+    approved_by: PrincipalId
+    approved_at: datetime
+    guide_policy_hash: Hash
+    materializer_boundary_hash: Hash
+
+    @model_validator(mode="after")
+    def binding_is_utc(self) -> "GuideApprovalBinding":
+        _require_utc(self.approved_at, "approved_at")
+        return self
+
+
 class EvaluationGuide(StrictModel):
-    """Structured guide persisted with the assessment and submission."""
+    """Structured guide for an exact approved assessment version.
+
+    ``binding=None`` is accepted only so pre-Phase-7 historical rows remain
+    readable. Active selection and export require a complete binding.
+    """
 
     schema_version: SchemaVersion = LEGACY_SCHEMA_VERSION
     guide_id: Id
     assessment_id: Id
     submission_id: Id
+    binding: GuideApprovalBinding | None = None
     status: Literal["READY", "NEEDS_REVIEW", "TECHNICAL_FAILURE"]
     items: list[EvaluationGuideItem] = Field(default_factory=list, max_length=20)
     diagnostics: list[Diagnostic] = Field(default_factory=list)
@@ -1747,6 +1797,210 @@ class EvaluationGuide(StrictModel):
                     [element.element_id for element in elements],
                     "EvaluationGuide observable element_ids",
                 )
+                if [level.level for level in item.guide.levels] != [0, 1, 2, 3]:
+                    raise ValueError("READY guide items require exact levels 0-3")
+                if self.binding is not None and not item.guide.acceptance_conditions:
+                    raise ValueError("READY guide items require acceptance conditions")
+                if self.binding is not None and not item.guide.cannot_infer:
+                    raise ValueError("READY guide items require cannot_infer limits")
+        _require_utc(self.created_at, "created_at")
+        return self
+
+
+class GuideEvidenceContext(StrictModel):
+    """Question-local support exposed to P09 without canonical identity."""
+
+    evidence_alias: EvidenceAlias
+    artifact_alias: ArtifactAlias
+    modality: EvidenceModality
+    content_text: str | None = Field(default=None, max_length=100_000)
+    structured_content: dict[str, Any] | None = None
+    language: str | None = Field(default=None, max_length=35)
+
+    @model_validator(mode="after")
+    def has_content(self) -> "GuideEvidenceContext":
+        if not self.content_text and not self.structured_content:
+            raise ValueError("guide support evidence must contain content")
+        return self
+
+
+class GuideCoreObservableContext(StrictModel):
+    """P07-owned observable represented by one P09-local alias."""
+
+    observable_alias: GuideObservableAlias
+    description: Annotated[str, Field(min_length=1, max_length=1000)]
+    support_evidence_aliases: Annotated[
+        list[EvidenceAlias], Field(min_length=1, max_length=50)
+    ]
+    required_for_level_2: bool
+
+    @model_validator(mode="after")
+    def aliases_are_unique(self) -> "GuideCoreObservableContext":
+        _require_unique(
+            self.support_evidence_aliases, "support_evidence_aliases"
+        )
+        return self
+
+
+class GuideChoiceContext(StrictModel):
+    """Choice semantics without the canonical option ID."""
+
+    text: Annotated[str, Field(min_length=1, max_length=1000)]
+    is_best_answer: bool
+    evaluator_rationale: Annotated[str, Field(min_length=1, max_length=1500)]
+    misconception: str | None = Field(default=None, max_length=1000)
+
+
+class GuideQuestionContext(StrictModel):
+    """One approved question projected into its own closed P09 namespace."""
+
+    question_alias: GuideQuestionAlias
+    cognitive_operation: CognitiveOperation
+    response_format: ResponseFormat
+    difficulty: DifficultyBand
+    question_text: Annotated[str, Field(min_length=5, max_length=4000)]
+    visible_anchor_texts: Annotated[
+        list[str], Field(min_length=1, max_length=8)
+    ]
+    support_evidence: Annotated[
+        list[GuideEvidenceContext], Field(min_length=1, max_length=50)
+    ]
+    purpose: Annotated[str, Field(min_length=1, max_length=1000)]
+    core_observables: Annotated[
+        list[GuideCoreObservableContext], Field(min_length=1, max_length=5)
+    ]
+    acceptable_alternatives: list[str] = Field(default_factory=list, max_length=20)
+    misconceptions: list[str] = Field(default_factory=list, max_length=20)
+    choices: list[GuideChoiceContext] = Field(default_factory=list, max_length=8)
+    semantic_uncertainties: list[str] = Field(default_factory=list, max_length=20)
+    student_justification_required: bool
+
+    @model_validator(mode="after")
+    def aliases_are_local_and_unique(self) -> "GuideQuestionContext":
+        _require_unique(
+            [item.evidence_alias for item in self.support_evidence],
+            "guide support evidence aliases",
+        )
+        _require_unique(
+            [item.observable_alias for item in self.core_observables],
+            "guide core observable aliases",
+        )
+        return self
+
+
+class GuideEnrichmentConstraints(StrictModel):
+    enrichment_only: Literal[True] = True
+    preserve_core_observables: Literal[True] = True
+    external_sources_allowed: Literal[False] = False
+    required_levels: tuple[Literal[0], Literal[1], Literal[2], Literal[3]] = (
+        0,
+        1,
+        2,
+        3,
+    )
+    minimum_observables: Literal[2] = 2
+    maximum_observables: Literal[5] = 5
+
+
+class GuideAliasEnvelope(StrictModel):
+    """Exact P09 input, stripped of canonical IDs and approval bookkeeping."""
+
+    alias_schema_version: Literal["p09-alias-envelope/1.0.0"] = (
+        "p09-alias-envelope/1.0.0"
+    )
+    scope_alias: MappingScopeAlias
+    source_scope_hash: Hash
+    context_mode: Literal[ContextMode.CLOSED] = ContextMode.CLOSED
+    questions: Annotated[list[GuideQuestionContext], Field(min_length=1, max_length=20)]
+    constraints: GuideEnrichmentConstraints = Field(
+        default_factory=GuideEnrichmentConstraints
+    )
+
+    @model_validator(mode="after")
+    def aliases_are_unique(self) -> "GuideAliasEnvelope":
+        _require_unique(
+            [item.question_alias for item in self.questions],
+            "guide question aliases",
+        )
+        return self
+
+
+class GuideAdditionalObservableDraft(StrictModel):
+    observable_alias: GuideAdditionalObservableAlias
+    description: Annotated[str, Field(min_length=3, max_length=1000)]
+    support_evidence_aliases: Annotated[
+        list[EvidenceAlias], Field(min_length=1, max_length=50)
+    ]
+    required_for_level_2: bool = True
+
+    @model_validator(mode="after")
+    def aliases_are_unique(self) -> "GuideAdditionalObservableDraft":
+        _require_unique(
+            self.support_evidence_aliases, "support_evidence_aliases"
+        )
+        return self
+
+
+class GuideLevelDraft(StrictModel):
+    level: Annotated[int, Field(ge=0, le=3)]
+    label: Annotated[str, Field(min_length=1, max_length=100)]
+    descriptor: Annotated[str, Field(min_length=1, max_length=2000)]
+    observable_aliases: list[
+        GuideObservableAlias | GuideAdditionalObservableAlias
+    ] = Field(default_factory=list, max_length=5)
+
+    @model_validator(mode="after")
+    def aliases_are_unique(self) -> "GuideLevelDraft":
+        _require_unique(self.observable_aliases, "observable_aliases")
+        return self
+
+
+class GuideQuestionModelDraft(StrictModel):
+    question_alias: GuideQuestionAlias
+    additional_observables: list[GuideAdditionalObservableDraft] = Field(
+        default_factory=list, max_length=4
+    )
+    acceptance_conditions: Annotated[list[str], Field(min_length=1, max_length=20)]
+    acceptable_alternative_additions: list[str] = Field(
+        default_factory=list, max_length=20
+    )
+    misconception_additions: list[str] = Field(default_factory=list, max_length=20)
+    levels: Annotated[list[GuideLevelDraft], Field(min_length=4, max_length=4)]
+    cannot_infer: Annotated[list[str], Field(min_length=1, max_length=20)]
+    semantic_uncertainties: list[str] = Field(default_factory=list, max_length=20)
+
+    @model_validator(mode="after")
+    def scale_and_aliases_are_exact(self) -> "GuideQuestionModelDraft":
+        if [item.level for item in self.levels] != [0, 1, 2, 3]:
+            raise ValueError("guide draft levels must be ordered exactly 0-3")
+        _require_unique(
+            [item.observable_alias for item in self.additional_observables],
+            "additional observable aliases",
+        )
+        return self
+
+
+class GuideModelDraft(StrictModel):
+    """Reduced P09 output; the server materializes all canonical identity."""
+
+    scope_alias: MappingScopeAlias
+    status: Literal["READY", "NEEDS_REVIEW"]
+    items: list[GuideQuestionModelDraft] = Field(default_factory=list, max_length=20)
+    abstention_reason: Annotated[str, Field(min_length=3, max_length=800)] | None = None
+
+    @model_validator(mode="after")
+    def status_is_complete_and_clean(self) -> "GuideModelDraft":
+        _require_unique(
+            [item.question_alias for item in self.items],
+            "guide draft question aliases",
+        )
+        if self.status == "READY":
+            if not self.items or self.abstention_reason is not None:
+                raise ValueError("READY guide draft requires items and no abstention")
+        elif self.items or self.abstention_reason is None:
+            raise ValueError(
+                "NEEDS_REVIEW guide draft requires an abstention and no partial items"
+            )
         return self
 
 
@@ -1913,6 +2167,7 @@ class SelectedQuestion(StrictModel):
     choices: list[ChoiceOption] = Field(default_factory=list)
     student_justification_required: bool = False
     preliminary_guide: GuideDraft
+    semantic_uncertainties: list[str] = Field(default_factory=list, max_length=20)
     planning_score: Score
 
     @model_validator(mode="after")
@@ -3133,7 +3388,30 @@ class GuideBuildRequest(StrictModel):
     schema_version: SchemaVersion = LEGACY_SCHEMA_VERSION
     guide_id: Id
     assessment: Assessment
+    binding: GuideApprovalBinding
     evidence_bundle: EvidenceBundle
+
+    @model_validator(mode="after")
+    def guide_is_bound_to_exact_approval(self) -> "GuideBuildRequest":
+        assessment = self.assessment
+        binding = self.binding
+        if assessment.status != WorkflowStatus.APPROVED:
+            raise ValueError("P09 requires an approved assessment")
+        if any(
+            (
+                binding.tenant_id != assessment.tenant_id,
+                binding.assessment_id != assessment.assessment_id,
+                binding.submission_id != assessment.submission_id,
+                self.evidence_bundle.tenant_id != assessment.tenant_id,
+                self.evidence_bundle.submission_id != assessment.submission_id,
+                binding.approved_by != assessment.approved_by,
+                binding.approved_at != assessment.approved_at,
+            )
+        ):
+            raise ValueError("P09 approval, assessment and evidence scopes differ")
+        if self.evidence_bundle.context_mode != ContextMode.CLOSED:
+            raise ValueError("P09 requires CLOSED context")
+        return self
 
 
 class SchemaValidationIssue(StrictModel):
@@ -3186,6 +3464,8 @@ CONTRACT_MODELS: tuple[type[BaseModel], ...] = (
     EvidenceMappingModelDraft,
     QuestionAliasEnvelope,
     QuestionModelDraft,
+    GuideAliasEnvelope,
+    GuideModelDraft,
     QuestionGenerationPolicy,
     QuestionValidationPolicy,
     AssessmentBlueprint,

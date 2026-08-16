@@ -21,6 +21,11 @@ from comprehension_verification.contracts import model_by_name, models
 from comprehension_verification.evidence_mapping import (
     build_evidence_mapping_alias_envelope,
 )
+from comprehension_verification.guide_generation import (
+    build_guide_alias_envelope,
+    build_guide_approval_binding,
+    guide_id_for_binding,
+)
 from comprehension_verification.question_generation import (
     build_question_alias_envelope,
 )
@@ -1072,6 +1077,7 @@ def _selected_question() -> models.SelectedQuestion:
         choices=candidate.choices,
         student_justification_required=candidate.student_justification_required,
         preliminary_guide=candidate.preliminary_guide,
+        semantic_uncertainties=candidate.uncertainties,
         planning_score=0.91,
     )
 
@@ -1118,6 +1124,41 @@ def _assessment() -> models.Assessment:
             renderer_version="mock-renderer/1",
         ),
         created_at=FIXED_TIME,
+    )
+
+
+def _approved_assessment() -> models.Assessment:
+    return _assessment().model_copy(
+        update={
+            "status": models.WorkflowStatus.APPROVED,
+            "approved_by": "teacher_demo",
+            "approved_at": FIXED_TIME,
+        }
+    )
+
+
+def _guide_request() -> models.GuideBuildRequest:
+    assessment = _approved_assessment()
+    assessment_etag = f'"{canonical_hash(assessment)}"'
+    approval_event_id = stable_id(
+        "evt",
+        assessment.tenant_id,
+        "assessment.approved",
+        assessment.assessment_id,
+        assessment.approved_by,
+        2,
+    )
+    binding = build_guide_approval_binding(
+        assessment=assessment,
+        assessment_version=2,
+        assessment_etag=assessment_etag,
+        approval_event_id=approval_event_id,
+    )
+    return models.GuideBuildRequest(
+        guide_id=guide_id_for_binding(binding),
+        assessment=assessment,
+        binding=binding,
+        evidence_bundle=_evidence_bundle(),
     )
 
 
@@ -1194,9 +1235,7 @@ def build_mock_request(prompt_id: str) -> BaseModel:
             ),
         )
     if prompt_id == "P09_GUIDE_BUILD_V1":
-        return models.GuideBuildRequest(
-            guide_id="guide_demo", assessment=_assessment(), evidence_bundle=_evidence_bundle()
-        )
+        return _guide_request()
     if prompt_id == "P11_SCHEMA_REPAIR_V1":
         invalid = _activity_spec().model_dump(mode="json")
         invalid["unexpected_field"] = "remove structurally"
@@ -1538,37 +1577,63 @@ class DeterministicMockFactory:
                 ),
             )
         if prompt_id == "P09_GUIDE_BUILD_V1":
-            if not request.assessment.questions:
-                return models.EvaluationGuide(
-                    guide_id=request.guide_id,
-                    assessment_id=request.assessment.assessment_id,
-                    submission_id=request.assessment.submission_id,
-                    status="NEEDS_REVIEW",
-                    diagnostics=[
-                        _diagnostic(
-                            "GUIDE_UNSUPPORTED",
-                            "La evaluación no contiene preguntas utilizables.",
+            envelope = build_guide_alias_envelope(request)
+            items: list[models.GuideQuestionModelDraft] = []
+            for question in envelope.questions:
+                additional = []
+                aliases = [
+                    item.observable_alias for item in question.core_observables
+                ]
+                if len(aliases) < 2:
+                    additional = [
+                        models.GuideAdditionalObservableDraft(
+                            observable_alias="N1",
+                            description=(
+                                "Delimita la conclusión defendible sin ampliar "
+                                "la evidencia autorizada."
+                            ),
+                            support_evidence_aliases=[
+                                question.support_evidence[0].evidence_alias
+                            ],
                         )
-                    ],
-                    created_at=FIXED_TIME,
-                )
-            return models.EvaluationGuide(
-                guide_id=request.guide_id,
-                assessment_id=request.assessment.assessment_id,
-                submission_id=request.assessment.submission_id,
-                status="READY",
-                items=[
-                    models.EvaluationGuideItem(
-                        question_id=question.question_id,
-                        guide=_guide_for_question(
-                            question.question_id,
-                            list(question.evidence_ids),
-                            source_ids=list(question.course_source_ids),
-                        ),
+                    ]
+                    aliases.append("N1")
+                items.append(
+                    models.GuideQuestionModelDraft(
+                        question_alias=question.question_alias,
+                        additional_observables=additional,
+                        acceptance_conditions=[
+                            "La respuesta conecta explícitamente su conclusión con la evidencia localizada."
+                        ],
+                        acceptable_alternative_additions=[
+                            "Una formulación equivalente es aceptable si conserva la misma relación observable."
+                        ],
+                        misconception_additions=[
+                            "Generaliza la conclusión más allá del soporte disponible."
+                        ],
+                        levels=[
+                            models.GuideLevelDraft(
+                                level=level,
+                                label=f"Nivel {level}",
+                                descriptor=(
+                                    "No establece una relación respaldada por la evidencia."
+                                    if level == 0
+                                    else "Establece la relación con precisión creciente y soporte localizado."
+                                ),
+                                observable_aliases=[] if level == 0 else aliases,
+                            )
+                            for level in range(4)
+                        ],
+                        cannot_infer=[
+                            "No permite determinar si la conclusión se mantiene fuera del fragmento aportado."
+                        ],
+                        semantic_uncertainties=[],
                     )
-                    for question in request.assessment.questions
-                ],
-                created_at=FIXED_TIME,
+                )
+            return models.GuideModelDraft(
+                scope_alias=envelope.scope_alias,
+                status="READY",
+                items=items,
             )
         if prompt_id == "P11_SCHEMA_REPAIR_V1":
             return self._repair(request)
@@ -1727,19 +1792,13 @@ class DeterministicMockFactory:
                 ],
             )
         if prompt_id == "P09_GUIDE_BUILD_V1":
-            return models.EvaluationGuide(
-                guide_id=request.guide_id,
-                assessment_id=request.assessment.assessment_id,
-                submission_id=request.assessment.submission_id,
+            return models.GuideModelDraft(
+                scope_alias=build_guide_alias_envelope(request).scope_alias,
                 status="NEEDS_REVIEW",
                 items=[],
-                diagnostics=[
-                    _diagnostic(
-                        "GUIDE_UNSUPPORTED",
-                        "No se puede construir una guía observable completa.",
-                    )
-                ],
-                created_at=FIXED_TIME,
+                abstention_reason=(
+                    "No se puede construir una guía observable completa."
+                ),
             )
         if prompt_id == "P11_SCHEMA_REPAIR_V1":
             return models.SchemaRepairResult(
@@ -1813,6 +1872,7 @@ class DeterministicMockAdapter:
             if prompt_id in {
                 "P06_EVIDENCE_MAP_V1",
                 "P07_QUESTION_BUILD_V1",
+                "P09_GUIDE_BUILD_V1",
             }
             else request.model_dump_json().encode("utf-8")
         )

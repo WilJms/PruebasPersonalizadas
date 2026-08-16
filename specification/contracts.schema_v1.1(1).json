@@ -64,6 +64,12 @@
     "QuestionModelDraft": {
       "$ref": "#/$defs/QuestionModelDraft"
     },
+    "GuideAliasEnvelope": {
+      "$ref": "#/$defs/GuideAliasEnvelope"
+    },
+    "GuideModelDraft": {
+      "$ref": "#/$defs/GuideModelDraft"
+    },
     "QuestionGenerationPolicy": {
       "$ref": "#/$defs/QuestionGenerationPolicy"
     },
@@ -3057,7 +3063,7 @@
     },
     "EvaluationGuide": {
       "additionalProperties": false,
-      "description": "Structured guide persisted with the assessment and submission.",
+      "description": "Structured guide for an exact approved assessment version.\n\n``binding=None`` is accepted only so pre-Phase-7 historical rows remain\nreadable. Active selection and export require a complete binding.",
       "properties": {
         "schema_version": {
           "const": "1.1.0",
@@ -3085,6 +3091,17 @@
           "pattern": "^[a-z][a-z0-9_-]*$",
           "title": "Submission Id",
           "type": "string"
+        },
+        "binding": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/GuideApprovalBinding"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         },
         "status": {
           "enum": [
@@ -4903,6 +4920,195 @@
       "title": "FeedbackTargetType",
       "type": "string"
     },
+    "GuideAdditionalObservableDraft": {
+      "additionalProperties": false,
+      "properties": {
+        "observable_alias": {
+          "pattern": "^N[1-9][0-9]{0,2}$",
+          "title": "Observable Alias",
+          "type": "string"
+        },
+        "description": {
+          "maxLength": 1000,
+          "minLength": 3,
+          "title": "Description",
+          "type": "string"
+        },
+        "support_evidence_aliases": {
+          "items": {
+            "pattern": "^E[1-9][0-9]{0,2}$",
+            "type": "string"
+          },
+          "maxItems": 50,
+          "minItems": 1,
+          "title": "Support Evidence Aliases",
+          "type": "array"
+        },
+        "required_for_level_2": {
+          "default": true,
+          "title": "Required For Level 2",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "observable_alias",
+        "description",
+        "support_evidence_aliases"
+      ],
+      "title": "GuideAdditionalObservableDraft",
+      "type": "object"
+    },
+    "GuideAliasEnvelope": {
+      "additionalProperties": false,
+      "description": "Exact P09 input, stripped of canonical IDs and approval bookkeeping.",
+      "properties": {
+        "alias_schema_version": {
+          "const": "p09-alias-envelope/1.0.0",
+          "default": "p09-alias-envelope/1.0.0",
+          "title": "Alias Schema Version",
+          "type": "string"
+        },
+        "scope_alias": {
+          "pattern": "^S[a-f0-9]{24}$",
+          "title": "Scope Alias",
+          "type": "string"
+        },
+        "source_scope_hash": {
+          "pattern": "^sha256:[a-f0-9]{64}$",
+          "title": "Source Scope Hash",
+          "type": "string"
+        },
+        "context_mode": {
+          "const": "CLOSED",
+          "default": "CLOSED",
+          "title": "Context Mode",
+          "type": "string"
+        },
+        "questions": {
+          "items": {
+            "$ref": "#/$defs/GuideQuestionContext"
+          },
+          "maxItems": 20,
+          "minItems": 1,
+          "title": "Questions",
+          "type": "array"
+        },
+        "constraints": {
+          "$ref": "#/$defs/GuideEnrichmentConstraints"
+        }
+      },
+      "required": [
+        "scope_alias",
+        "source_scope_hash",
+        "questions"
+      ],
+      "title": "GuideAliasEnvelope",
+      "type": "object"
+    },
+    "GuideApprovalBinding": {
+      "additionalProperties": false,
+      "description": "Server-owned identity tying one guide to one approved assessment version.",
+      "properties": {
+        "binding_version": {
+          "const": "guide-approval-binding/1.0.0",
+          "default": "guide-approval-binding/1.0.0",
+          "title": "Binding Version",
+          "type": "string"
+        },
+        "tenant_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Tenant Id",
+          "type": "string"
+        },
+        "assessment_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Assessment Id",
+          "type": "string"
+        },
+        "submission_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Submission Id",
+          "type": "string"
+        },
+        "assessment_version": {
+          "minimum": 1,
+          "title": "Assessment Version",
+          "type": "integer"
+        },
+        "assessment_etag": {
+          "pattern": "^\"sha256:[a-f0-9]{64}\"$",
+          "title": "Assessment Etag",
+          "type": "string"
+        },
+        "assessment_snapshot_hash": {
+          "pattern": "^sha256:[a-f0-9]{64}$",
+          "title": "Assessment Snapshot Hash",
+          "type": "string"
+        },
+        "question_set_hash": {
+          "pattern": "^sha256:[a-f0-9]{64}$",
+          "title": "Question Set Hash",
+          "type": "string"
+        },
+        "approval_event_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Approval Event Id",
+          "type": "string"
+        },
+        "approval_snapshot_hash": {
+          "pattern": "^sha256:[a-f0-9]{64}$",
+          "title": "Approval Snapshot Hash",
+          "type": "string"
+        },
+        "approved_by": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^([a-z][a-z0-9_-]*|[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12})$",
+          "title": "Approved By",
+          "type": "string"
+        },
+        "approved_at": {
+          "format": "date-time",
+          "title": "Approved At",
+          "type": "string"
+        },
+        "guide_policy_hash": {
+          "pattern": "^sha256:[a-f0-9]{64}$",
+          "title": "Guide Policy Hash",
+          "type": "string"
+        },
+        "materializer_boundary_hash": {
+          "pattern": "^sha256:[a-f0-9]{64}$",
+          "title": "Materializer Boundary Hash",
+          "type": "string"
+        }
+      },
+      "required": [
+        "tenant_id",
+        "assessment_id",
+        "submission_id",
+        "assessment_version",
+        "assessment_etag",
+        "assessment_snapshot_hash",
+        "question_set_hash",
+        "approval_event_id",
+        "approval_snapshot_hash",
+        "approved_by",
+        "approved_at",
+        "guide_policy_hash",
+        "materializer_boundary_hash"
+      ],
+      "title": "GuideApprovalBinding",
+      "type": "object"
+    },
     "GuideBuildRequest": {
       "additionalProperties": false,
       "properties": {
@@ -4922,6 +5128,9 @@
         "assessment": {
           "$ref": "#/$defs/Assessment"
         },
+        "binding": {
+          "$ref": "#/$defs/GuideApprovalBinding"
+        },
         "evidence_bundle": {
           "$ref": "#/$defs/EvidenceBundle"
         }
@@ -4929,9 +5138,91 @@
       "required": [
         "guide_id",
         "assessment",
+        "binding",
         "evidence_bundle"
       ],
       "title": "GuideBuildRequest",
+      "type": "object"
+    },
+    "GuideChoiceContext": {
+      "additionalProperties": false,
+      "description": "Choice semantics without the canonical option ID.",
+      "properties": {
+        "text": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "title": "Text",
+          "type": "string"
+        },
+        "is_best_answer": {
+          "title": "Is Best Answer",
+          "type": "boolean"
+        },
+        "evaluator_rationale": {
+          "maxLength": 1500,
+          "minLength": 1,
+          "title": "Evaluator Rationale",
+          "type": "string"
+        },
+        "misconception": {
+          "anyOf": [
+            {
+              "maxLength": 1000,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Misconception"
+        }
+      },
+      "required": [
+        "text",
+        "is_best_answer",
+        "evaluator_rationale"
+      ],
+      "title": "GuideChoiceContext",
+      "type": "object"
+    },
+    "GuideCoreObservableContext": {
+      "additionalProperties": false,
+      "description": "P07-owned observable represented by one P09-local alias.",
+      "properties": {
+        "observable_alias": {
+          "pattern": "^O[1-9][0-9]{0,2}$",
+          "title": "Observable Alias",
+          "type": "string"
+        },
+        "description": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "title": "Description",
+          "type": "string"
+        },
+        "support_evidence_aliases": {
+          "items": {
+            "pattern": "^E[1-9][0-9]{0,2}$",
+            "type": "string"
+          },
+          "maxItems": 50,
+          "minItems": 1,
+          "title": "Support Evidence Aliases",
+          "type": "array"
+        },
+        "required_for_level_2": {
+          "title": "Required For Level 2",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "observable_alias",
+        "description",
+        "support_evidence_aliases",
+        "required_for_level_2"
+      ],
+      "title": "GuideCoreObservableContext",
       "type": "object"
     },
     "GuideDraft": {
@@ -4949,6 +5240,14 @@
           },
           "maxItems": 20,
           "title": "Observable Elements",
+          "type": "array"
+        },
+        "acceptance_conditions": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 20,
+          "title": "Acceptance Conditions",
           "type": "array"
         },
         "acceptable_alternatives": {
@@ -4982,12 +5281,152 @@
           "maxItems": 20,
           "title": "Cannot Infer",
           "type": "array"
+        },
+        "semantic_uncertainties": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 20,
+          "title": "Semantic Uncertainties",
+          "type": "array"
         }
       },
       "required": [
         "purpose"
       ],
       "title": "GuideDraft",
+      "type": "object"
+    },
+    "GuideEnrichmentConstraints": {
+      "additionalProperties": false,
+      "properties": {
+        "enrichment_only": {
+          "const": true,
+          "default": true,
+          "title": "Enrichment Only",
+          "type": "boolean"
+        },
+        "preserve_core_observables": {
+          "const": true,
+          "default": true,
+          "title": "Preserve Core Observables",
+          "type": "boolean"
+        },
+        "external_sources_allowed": {
+          "const": false,
+          "default": false,
+          "title": "External Sources Allowed",
+          "type": "boolean"
+        },
+        "required_levels": {
+          "default": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "maxItems": 4,
+          "minItems": 4,
+          "prefixItems": [
+            {
+              "const": 0,
+              "type": "integer"
+            },
+            {
+              "const": 1,
+              "type": "integer"
+            },
+            {
+              "const": 2,
+              "type": "integer"
+            },
+            {
+              "const": 3,
+              "type": "integer"
+            }
+          ],
+          "title": "Required Levels",
+          "type": "array"
+        },
+        "minimum_observables": {
+          "const": 2,
+          "default": 2,
+          "title": "Minimum Observables",
+          "type": "integer"
+        },
+        "maximum_observables": {
+          "const": 5,
+          "default": 5,
+          "title": "Maximum Observables",
+          "type": "integer"
+        }
+      },
+      "title": "GuideEnrichmentConstraints",
+      "type": "object"
+    },
+    "GuideEvidenceContext": {
+      "additionalProperties": false,
+      "description": "Question-local support exposed to P09 without canonical identity.",
+      "properties": {
+        "evidence_alias": {
+          "pattern": "^E[1-9][0-9]{0,2}$",
+          "title": "Evidence Alias",
+          "type": "string"
+        },
+        "artifact_alias": {
+          "pattern": "^A[1-9][0-9]{0,2}$",
+          "title": "Artifact Alias",
+          "type": "string"
+        },
+        "modality": {
+          "$ref": "#/$defs/EvidenceModality"
+        },
+        "content_text": {
+          "anyOf": [
+            {
+              "maxLength": 100000,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Content Text"
+        },
+        "structured_content": {
+          "anyOf": [
+            {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Structured Content"
+        },
+        "language": {
+          "anyOf": [
+            {
+              "maxLength": 35,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Language"
+        }
+      },
+      "required": [
+        "evidence_alias",
+        "artifact_alias",
+        "modality"
+      ],
+      "title": "GuideEvidenceContext",
       "type": "object"
     },
     "GuideLevel": {
@@ -5028,6 +5467,286 @@
         "descriptor"
       ],
       "title": "GuideLevel",
+      "type": "object"
+    },
+    "GuideLevelDraft": {
+      "additionalProperties": false,
+      "properties": {
+        "level": {
+          "maximum": 3,
+          "minimum": 0,
+          "title": "Level",
+          "type": "integer"
+        },
+        "label": {
+          "maxLength": 100,
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "descriptor": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "title": "Descriptor",
+          "type": "string"
+        },
+        "observable_aliases": {
+          "items": {
+            "anyOf": [
+              {
+                "pattern": "^O[1-9][0-9]{0,2}$",
+                "type": "string"
+              },
+              {
+                "pattern": "^N[1-9][0-9]{0,2}$",
+                "type": "string"
+              }
+            ]
+          },
+          "maxItems": 5,
+          "title": "Observable Aliases",
+          "type": "array"
+        }
+      },
+      "required": [
+        "level",
+        "label",
+        "descriptor"
+      ],
+      "title": "GuideLevelDraft",
+      "type": "object"
+    },
+    "GuideModelDraft": {
+      "additionalProperties": false,
+      "description": "Reduced P09 output; the server materializes all canonical identity.",
+      "properties": {
+        "scope_alias": {
+          "pattern": "^S[a-f0-9]{24}$",
+          "title": "Scope Alias",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "READY",
+            "NEEDS_REVIEW"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "items": {
+          "items": {
+            "$ref": "#/$defs/GuideQuestionModelDraft"
+          },
+          "maxItems": 20,
+          "title": "Items",
+          "type": "array"
+        },
+        "abstention_reason": {
+          "anyOf": [
+            {
+              "maxLength": 800,
+              "minLength": 3,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Abstention Reason"
+        }
+      },
+      "required": [
+        "scope_alias",
+        "status"
+      ],
+      "title": "GuideModelDraft",
+      "type": "object"
+    },
+    "GuideQuestionContext": {
+      "additionalProperties": false,
+      "description": "One approved question projected into its own closed P09 namespace.",
+      "properties": {
+        "question_alias": {
+          "pattern": "^Q[1-9][0-9]{0,2}$",
+          "title": "Question Alias",
+          "type": "string"
+        },
+        "cognitive_operation": {
+          "$ref": "#/$defs/CognitiveOperation"
+        },
+        "response_format": {
+          "$ref": "#/$defs/ResponseFormat"
+        },
+        "difficulty": {
+          "$ref": "#/$defs/DifficultyBand"
+        },
+        "question_text": {
+          "maxLength": 4000,
+          "minLength": 5,
+          "title": "Question Text",
+          "type": "string"
+        },
+        "visible_anchor_texts": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 8,
+          "minItems": 1,
+          "title": "Visible Anchor Texts",
+          "type": "array"
+        },
+        "support_evidence": {
+          "items": {
+            "$ref": "#/$defs/GuideEvidenceContext"
+          },
+          "maxItems": 50,
+          "minItems": 1,
+          "title": "Support Evidence",
+          "type": "array"
+        },
+        "purpose": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "title": "Purpose",
+          "type": "string"
+        },
+        "core_observables": {
+          "items": {
+            "$ref": "#/$defs/GuideCoreObservableContext"
+          },
+          "maxItems": 5,
+          "minItems": 1,
+          "title": "Core Observables",
+          "type": "array"
+        },
+        "acceptable_alternatives": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 20,
+          "title": "Acceptable Alternatives",
+          "type": "array"
+        },
+        "misconceptions": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 20,
+          "title": "Misconceptions",
+          "type": "array"
+        },
+        "choices": {
+          "items": {
+            "$ref": "#/$defs/GuideChoiceContext"
+          },
+          "maxItems": 8,
+          "title": "Choices",
+          "type": "array"
+        },
+        "semantic_uncertainties": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 20,
+          "title": "Semantic Uncertainties",
+          "type": "array"
+        },
+        "student_justification_required": {
+          "title": "Student Justification Required",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "question_alias",
+        "cognitive_operation",
+        "response_format",
+        "difficulty",
+        "question_text",
+        "visible_anchor_texts",
+        "support_evidence",
+        "purpose",
+        "core_observables",
+        "student_justification_required"
+      ],
+      "title": "GuideQuestionContext",
+      "type": "object"
+    },
+    "GuideQuestionModelDraft": {
+      "additionalProperties": false,
+      "properties": {
+        "question_alias": {
+          "pattern": "^Q[1-9][0-9]{0,2}$",
+          "title": "Question Alias",
+          "type": "string"
+        },
+        "additional_observables": {
+          "items": {
+            "$ref": "#/$defs/GuideAdditionalObservableDraft"
+          },
+          "maxItems": 4,
+          "title": "Additional Observables",
+          "type": "array"
+        },
+        "acceptance_conditions": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 20,
+          "minItems": 1,
+          "title": "Acceptance Conditions",
+          "type": "array"
+        },
+        "acceptable_alternative_additions": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 20,
+          "title": "Acceptable Alternative Additions",
+          "type": "array"
+        },
+        "misconception_additions": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 20,
+          "title": "Misconception Additions",
+          "type": "array"
+        },
+        "levels": {
+          "items": {
+            "$ref": "#/$defs/GuideLevelDraft"
+          },
+          "maxItems": 4,
+          "minItems": 4,
+          "title": "Levels",
+          "type": "array"
+        },
+        "cannot_infer": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 20,
+          "minItems": 1,
+          "title": "Cannot Infer",
+          "type": "array"
+        },
+        "semantic_uncertainties": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 20,
+          "title": "Semantic Uncertainties",
+          "type": "array"
+        }
+      },
+      "required": [
+        "question_alias",
+        "acceptance_conditions",
+        "levels",
+        "cannot_infer"
+      ],
+      "title": "GuideQuestionModelDraft",
       "type": "object"
     },
     "HumanReviewMetricAggregate": {
@@ -8636,6 +9355,14 @@
         },
         "preliminary_guide": {
           "$ref": "#/$defs/GuideDraft"
+        },
+        "semantic_uncertainties": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 20,
+          "title": "Semantic Uncertainties",
+          "type": "array"
         },
         "planning_score": {
           "maximum": 1.0,

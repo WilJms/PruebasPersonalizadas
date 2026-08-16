@@ -148,6 +148,42 @@ export function AssessmentReviewPage() {
     };
   }, [submissionId]);
 
+  const guideLifecycle = bundle?.guide_status ?? "NOT_AVAILABLE";
+  useEffect(() => {
+    if (
+      bundle?.assessment.status !== "APPROVED" ||
+      !["PENDING", "BUILDING"].includes(guideLifecycle)
+    ) {
+      return;
+    }
+    let cancelled = false;
+    let timer: number | undefined;
+    const pollGuide = async () => {
+      try {
+        const refreshed = await getAssessmentBundle(submissionId);
+        if (!cancelled) {
+          setBundle((current) => ({
+            ...refreshed,
+            evidence: mergeEvidence(
+              refreshed.evidence ?? [],
+              current?.evidence ?? [],
+            ),
+          }));
+          if (["PENDING", "BUILDING"].includes(refreshed.guide_status)) {
+            timer = window.setTimeout(pollGuide, 1_500);
+          }
+        }
+      } catch (caught) {
+        if (!cancelled) setError(caught);
+      }
+    };
+    timer = window.setTimeout(pollGuide, 1_500);
+    return () => {
+      cancelled = true;
+      if (timer !== undefined) window.clearTimeout(timer);
+    };
+  }, [bundle?.assessment.status, guideLifecycle, submissionId]);
+
   const questions = bundle?.assessment.questions ?? [];
   const receipts = bundle?.evidence_receipts ?? [];
   const allEvidenceVerified = useMemo(
@@ -415,8 +451,10 @@ export function AssessmentReview({
 }) {
   const { assessment, guide } = bundle;
   const approved = assessment.status === "APPROVED";
+  const guideStatus = bundle.guide_status ?? "NOT_AVAILABLE";
+  const guideReady = guideStatus === "READY" && guide !== null && guide !== undefined;
   const questions = assessment.questions ?? [];
-  const guideItems = guide.items ?? [];
+  const guideItems = guide?.items ?? [];
   const evidence = bundle.evidence ?? [];
   const receipts = bundle.evidence_receipts ?? [];
   const evidenceById = useMemo(
@@ -551,7 +589,12 @@ export function AssessmentReview({
         role="tabpanel"
         tabIndex={0}
       >
-        <GuideView guide={guide} questions={questions} />
+        <GuideView
+          guide={guide}
+          jobId={bundle.guide_job_id}
+          questions={questions}
+          status={guideStatus}
+        />
       </section>
 
       {!choiceContractsComplete && (
@@ -577,7 +620,7 @@ export function AssessmentReview({
             <h2>Exportar sin repetir llamadas al modelo</h2>
             <p>Los PDF y el JSON se regeneran desde objetos canónicos ya aprobados.</p>
           </div>
-          {approved ? <div className="export-actions">
+          {approved && guideReady ? <div className="export-actions">
             {([
               ["ASSESSMENT_PDF", "Evaluación PDF"],
               ["ASSESSMENT_HTML", "Evaluación HTML"],
@@ -611,7 +654,11 @@ export function AssessmentReview({
                 </button>
               );
             })}
-          </div> : <p>Las nuevas vistas se habilitan cuando la versión queda aprobada.</p>}
+          </div> : approved ? (
+            <p>La aprobación ya quedó congelada. Las vistas se habilitan cuando la guía exacta de esta versión esté lista.</p>
+          ) : (
+            <p>Las nuevas vistas se habilitan cuando la versión queda aprobada y su guía exacta está lista.</p>
+          )}
           <ExportHistory exports={exports} />
       </section>
 
@@ -620,7 +667,9 @@ export function AssessmentReview({
           <strong>{approved ? "Assessment aprobado" : "Revisión humana obligatoria"}</strong>
           <span>
             {approved
-              ? "La versión aprobada quedó congelada."
+              ? guideReady
+                ? "La versión aprobada quedó congelada y su guía exacta está lista."
+                : "La versión aprobada quedó congelada; la guía se enriquece aparte y no revoca la aprobación."
               : allEvidenceVerified
                 ? "Todos los fragmentos tienen confirmación durable para tu identidad."
                 : "Carga y verifica el localizador exacto de cada fragmento antes de aprobar."}
@@ -1021,11 +1070,42 @@ function ReferenceList({
 
 function GuideView({
   guide,
+  status,
+  jobId,
   questions,
 }: {
-  guide: EvaluationGuide;
+  guide?: EvaluationGuide | null;
+  status: string;
+  jobId?: string | null;
   questions: SelectedQuestion[];
 }) {
+  if (status === "NOT_AVAILABLE") {
+    return (
+      <div className="processing-card" role="status">
+        <h2>Guía posterior a la aprobación</h2>
+        <p>P09 se ejecutará una sola vez sobre la versión que apruebes. La revisión y la aprobación no dependen de una guía previa.</p>
+      </div>
+    );
+  }
+  if (status === "PENDING" || status === "BUILDING") {
+    return (
+      <div className="processing-card" role="status">
+        <span className="spinner" aria-hidden="true" />
+        <h2>{status === "PENDING" ? "Guía pendiente" : "Construyendo guía"}</h2>
+        <p>La aprobación ya es durable. P09 está enriqueciendo únicamente la guía de esta versión.</p>
+        {jobId ? <code>{jobId}</code> : null}
+      </div>
+    );
+  }
+  if (status === "FAILED" || status === "NEEDS_REVIEW" || !guide) {
+    return (
+      <div className="error-notice" role="status">
+        <h2>La guía no quedó lista</h2>
+        <p>La evaluación sigue aprobada. No se publicó una guía parcial; puedes revisar o reintentar el job técnico.</p>
+        {guide ? <Diagnostics items={guide.diagnostics} /> : null}
+      </div>
+    );
+  }
   const textById = new Map(
     questions.map((question) => [question.question_id, question.question_text]),
   );
@@ -1052,9 +1132,11 @@ function GuideView({
               </ul>
             </section>
             <section>
+              <ReferenceList label="Condiciones de aceptación" values={item.guide.acceptance_conditions ?? []} />
               <ReferenceList label="Alternativas aceptables" values={item.guide.acceptable_alternatives ?? []} />
               <ReferenceList label="Posibles errores conceptuales a observar" values={item.guide.misconceptions ?? []} />
               <ReferenceList label="No permite inferir" values={item.guide.cannot_infer ?? []} />
+              <ReferenceList label="Incertidumbres semánticas" values={item.guide.semantic_uncertainties ?? []} />
             </section>
           </div>
           <div className="level-grid">

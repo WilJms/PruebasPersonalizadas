@@ -5,6 +5,32 @@
 > activa, un gate de selección de modelo ni autorización de gasto. Cualquier
 > precio o budget futuro debe revalidarse bajo un instrumento nuevo.
 
+## Estado activo después del cutover P09 de Fase 7
+
+El nominal para una versión finalmente aprobada sin reservas/regeneraciones no
+cambia: `P06 1 + P07 N + P09 1 = N+2`. La diferencia causal es temporal: antes
+de la aprobación docente P09 tiene **cero** llamadas, ledgers y costo; edits,
+regenerations, rejects y versiones descartadas tampoco consumen P09. Sólo la
+versión exacta aprobada habilita una llamada mediante el job durable
+`GUIDE_BUILD`. No se infiere ni publica un ahorro promedio sin una distribución
+observada de versiones descartadas.
+
+Modelo, route, `reasoning_effort=high`, máximos y política de retry no cambian.
+La frontera provider P09 actual es `GuideModelDraft` estricto de 3.131 bytes,
+frente a 4.461 bytes del `EvaluationGuide` enviado como root en Fase 6
+(−1.330; −29,81%). Ya no se pide al modelo la `EvaluationGuide` canónica con identidad y
+bookkeeping. El servidor posee identidad, question mapping, evidence
+membership, IDs canónicos, materialización y validación; el docente posee
+aceptación, edición, regeneración y rechazo de preguntas. P09 sólo aporta
+enrichment y no reproduce esas decisiones como segunda autoridad.
+
+El estimador offline del harness histórico, después de esta reducción P09,
+produce ceilings agregados de USD 0,63683675 (Luna XHIGH), USD 0,63682025
+(Luna MAX) y USD 6,36845 (Terra medium); son controles conservadores no
+canónicos, no precios revalidados ni autorización. Fase 7 se ejecutó con keys
+removidas, mock/P10 false, cero red, cero secreto resuelto y cero requests
+reales/billables.
+
 ## Estado activo después del cutover P08 de Fase 6
 
 P08 tiene **cero llamadas y cero coste futuro**. Sin regeneraciones, para N

@@ -140,9 +140,9 @@ test("critical Stage 1 journey survives browser restart and enforces evidence-fi
   await page.keyboard.press("End");
   const guideTab = page.getByRole("tab", { name: /Guía estructurada/ });
   await expect(guideTab).toBeFocused();
-  await expect(page.getByText("Elementos observables", { exact: true })).toBeVisible();
-  await expect(page.getByText("Posibles errores conceptuales a observar", { exact: true })).toBeVisible();
-  await expect(page.getByText("No permite inferir", { exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Guía posterior a la aprobación" })).toBeVisible();
+  await expect(page.getByText(/P09 se ejecutará una sola vez/)).toBeVisible();
+  await expect(page.getByText("Elementos observables", { exact: true })).toHaveCount(0);
   await assertNoCriticalAccessibilityViolations(page);
 
   await assertViewportDoesNotOverflow(page, 320);
@@ -151,6 +151,11 @@ test("critical Stage 1 journey survives browser restart and enforces evidence-fi
   await page.getByRole("tab", { name: /Evaluación/ }).click();
   await approve.click();
   await expect(page.getByText("Assessment aprobado")).toBeVisible();
+  await page.getByRole("tab", { name: /Guía estructurada/ }).click();
+  await expect(page.getByText("Elementos observables", { exact: true })).toBeVisible();
+  await expect(page.getByText("Condiciones de aceptación", { exact: true })).toBeVisible();
+  await expect(page.getByText("No permite inferir", { exact: true })).toBeVisible();
+  await page.getByRole("tab", { name: /Evaluación/ }).click();
   await page.getByRole("button", { name: "Evaluación PDF" }).click();
   await expect(page.getByRole("link", { name: "Descargar Evaluación PDF" })).toBeVisible();
 

@@ -1973,9 +1973,8 @@ def test_stage2_controlled_pilot_e2e(tmp_path: Path) -> None:
         assert m.CoverageReport.model_validate(coverage.json()["coverage"]).traces  # 22
         guide = client.get(f"/api/v1/assessments/{assessment_id}/guide")
         assert guide.status_code == 200, guide.text
-        assert m.EvaluationGuide.model_validate(guide.json()["guide"]).status == (
-            m.WorkflowStatus.READY
-        )  # 23
+        assert guide.json()["guide"] is None
+        assert guide.json()["status"] == "NOT_AVAILABLE"  # 23
 
         current_question_id = final_bundle["assessment"]["questions"][0]["question_id"]
         feedback = client.post(
@@ -2011,7 +2010,12 @@ def test_stage2_controlled_pilot_e2e(tmp_path: Path) -> None:
             json={},
         )
         assert individually_approved.status_code == 200, individually_approved.text
-        assert individually_approved.json()["assessment"]["status"] == "APPROVED"  # 25
+        individually_approved_body = individually_approved.json()
+        assert individually_approved_body["assessment"]["status"] == "APPROVED"  # 25
+        assert individually_approved_body["guide_status"] == "READY"
+        assert m.EvaluationGuide.model_validate(
+            individually_approved_body["guide"]
+        ).status == m.WorkflowStatus.READY
 
         bulk = client.post(
             f"/api/v1/activities/{activity_id}/assessments:bulk-approve",

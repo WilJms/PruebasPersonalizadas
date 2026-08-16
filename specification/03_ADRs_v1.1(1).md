@@ -612,14 +612,15 @@ revisión humana. Una discrepancia sistemática con el instrumento no demuestra
 por sí sola un fallo del modelo y no debe impulsar selección de modelo.
 
 **Consecuencias:** la autoridad objetivo queda ejecutable mediante
-`pipeline-authority/1.0.0`. Fase 3 completó el cutover operativo de P05: el
+`pipeline-authority/1.1.0`. Fase 3 completó el cutover operativo de P05: el
 runtime activo usa `AssessmentBlueprint` compilado, preflight determinista
 durable y decisión docente; reviews/jobs P05 anteriores se leen o reconcilian
-sin una nueva llamada. No cambian P04/P06/P07/P08/P09, provider routing,
-prompts ejecutables ni despliegue. Fases posteriores deben retirar P08 y ubicar
-P09 después de la aprobación docente conservando lectura histórica,
-idempotencia, lineage y regeneración localizada. No se autoriza un corpus
-nuevo, llamadas billables ni datos reales.
+sin una nueva llamada. En el corte de adopción no cambiaban
+P04/P06/P07/P08/P09, provider routing, prompts ejecutables ni despliegue; las
+notas siguientes registran los cutovers posteriores. Fase 6 retiró P08 y Fase 7 ubicó P09 después
+de la aprobación docente conservando lectura histórica, idempotencia, lineage
+y regeneración localizada. No se autoriza un corpus nuevo, llamadas billables
+ni datos reales.
 
 **Nota de implementación — Fase 4, 2026-08-15:** la frase anterior “no cambian
 P06” describe el corte de adopción de ADR-037 y no congela una implementación
@@ -661,3 +662,32 @@ Resume desde `QUESTION_REVIEW` revalida/reutiliza P07 vigente e ignora la
 decisión histórica. El runtime interino conserva
 `P07 validado -> ASSEMBLE -> P09 -> workflow docente`; mover P09 pertenece a
 Fase 7. P10 continúa deshabilitado y no se autorizó proveedor real ni gasto.
+
+**Nota de implementación — Fase 7, 2026-08-16:** queda ejecutado el orden
+objetivo de P09 y `pipeline-authority/1.1.0`. El workflow de submission termina
+ASSEMBLE en `Assessment.NEEDS_REVIEW` sin construir request, StageRun, ledger ni
+guía P09. Editar, regenerar o rechazar antes de aprobación tampoco alcanza
+P09. Una aprobación docente exacta se persiste primero y luego crea, de forma
+idempotente, un job durable `GUIDE_BUILD`; por tanto la aprobación no depende de
+la disponibilidad ni del resultado de la guía.
+
+P09 es una única llamada de enriquecimiento por versión aprobada, no un
+reviewer ni un gate. El proveedor recibe `GuideAliasEnvelope`, devuelve
+`GuideModelDraft` y sólo puede proponer condiciones de aceptación,
+observables adicionales, alternativas/misconceptions adicionales, escala
+0–3, `cannot_infer` e incertidumbres semánticas. No puede devolver IDs
+canónicos, texto o anchor de pregunta, locators, workflow, approval metadata ni
+evidencia fuera del namespace local. `p09-guide-materializer/1.0.0` preserva
+literalmente purpose y observables core de P07, resuelve aliases contra la
+support evidence exacta, crea identidad y exige guía completa o fallo cerrado.
+
+Cada guía activa liga tenant, submission, assessment/version/ETag, hash del
+snapshot y question set, evento/snapshot de aprobación, actor/fecha, policy y
+boundary del materializador. Un fallo P09 deja el Assessment aprobado y no
+publica una guía parcial `READY`. Filas pre-Fase 7 se preservan como
+`HISTORICAL_PREAPPROVAL` y nunca se eligen como guía current sin el binding
+exacto. Retry/recovery reutiliza StageRun y una identidad lógica derivada del
+binding; exports exigen la guía de la versión aprobada vigente. Modelo, route y
+`reasoning_effort` P09 no cambian; el nominal sigue siendo `P06 1 + P07 N +
+P09 1 = N+2`. P05/P08 permanecen históricos, P10 deshabilitado, y no se
+autorizó proveedor real, corpus nuevo ni gasto.

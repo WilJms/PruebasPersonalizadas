@@ -877,7 +877,9 @@ def test_stage1_single_submission_mock_e2e_survives_new_browser_session() -> Non
         assessment = review_body["assessment"]
         assert assessment["question_count"] == 2
         assert len(assessment["questions"]) == 2
-        assert review_body["guide"]["status"] == "READY"
+        assert review_body["guide"] is None
+        assert review_body["guide_status"] == "NOT_AVAILABLE"
+        assert review_body["guide_job_id"] is None
         assert review_body["reviews"] == []
         assert all(question["anchor"]["fragments"] for question in assessment["questions"])
         assert all(question["dimension_id"] for question in assessment["questions"])
@@ -1078,10 +1080,10 @@ def test_stage1_single_submission_mock_e2e_survives_new_browser_session() -> Non
         assert set(prompt_sequence) == {
             "P06_EVIDENCE_MAP_V1",
             "P07_QUESTION_BUILD_V1",
-            "P09_GUIDE_BUILD_V1",
         }
-        assert len(prompt_sequence) == 4
+        assert len(prompt_sequence) == 3
         assert prompt_sequence.count("P07_QUESTION_BUILD_V1") == 2
+        assert "P09_GUIDE_BUILD_V1" not in prompt_sequence
         assert "P08_QUESTION_REVIEW_V1" not in prompt_sequence
         stages = app.state.runtime.repository.stage_runs_for_job(
             submission_job, "tnt_experimental"
@@ -1090,9 +1092,7 @@ def test_stage1_single_submission_mock_e2e_survives_new_browser_session() -> Non
         assert len(
             [name for name in stage_names if name.startswith("QUESTION_VALIDATE:")]
         ) == 2
-        assert stage_names.index("ASSEMBLE") < stage_names.index(
-            "P09_GUIDE_BUILD_V1"
-        )
+        assert "P09_GUIDE_BUILD_V1" not in stage_names
         required_ledger_fields = {
             "provider",
             "model_snapshot",
@@ -1117,7 +1117,17 @@ def test_stage1_single_submission_mock_e2e_survives_new_browser_session() -> Non
             json={},
         )
         assert approved_assessment.status_code == 200, approved_assessment.text
-        assert approved_assessment.json()["assessment"]["status"] == "APPROVED"
+        approved_body = approved_assessment.json()
+        assert approved_body["assessment"]["status"] == "APPROVED"
+        assert approved_body["guide_status"] == "READY"
+        guide_job_id = approved_body["guide_job_id"]
+        assert guide_job_id
+        guide_ledger = reopened.get(
+            f"/api/v1/jobs/{guide_job_id}/model-calls"
+        ).json()["items"]
+        assert [item["prompt_id"] for item in guide_ledger] == [
+            "P09_GUIDE_BUILD_V1"
+        ]
 
         expected_types = {
             "ASSESSMENT_PDF": "application/pdf",

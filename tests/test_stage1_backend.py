@@ -755,7 +755,7 @@ def test_activity_waiting_for_legacy_p05_resumes_at_preflight_without_provider()
     )
 
 
-def test_submission_pipeline_does_not_persist_assessment_when_p09_is_not_ready() -> None:
+def test_submission_pipeline_persists_reviewable_assessment_without_calling_p09() -> None:
     repo = Repository("sqlite+pysqlite://")
     store = MemoryObjectStore(
         secret="object-test-secret-with-at-least-thirty-two-bytes"
@@ -822,20 +822,7 @@ def test_submission_pipeline_does_not_persist_assessment_when_p09_is_not_ready()
         job, prompt_id, request, output_model, *, cache_suffix=""
     ):
         if prompt_id == "P09_GUIDE_BUILD_V1":
-            return m.EvaluationGuide(
-                guide_id=request.guide_id,
-                assessment_id=request.assessment.assessment_id,
-                submission_id=request.assessment.submission_id,
-                status="NEEDS_REVIEW",
-                items=[],
-                diagnostics=[
-                    diagnostic(
-                        "GUIDE_UNSUPPORTED",
-                        "La guía requiere revisión humana y no es utilizable.",
-                    )
-                ],
-                created_at=utc_now(),
-            )
+            raise AssertionError("P09 must not run before teacher approval")
         return await original_gateway_stage(
             job,
             prompt_id,
@@ -850,17 +837,25 @@ def test_submission_pipeline_does_not_persist_assessment_when_p09_is_not_ready()
     )
     asyncio.run(service.process_job(submission_job.job_id))
     stopped = repo.job_status(submission_job.job_id, actor.workspace_id)
-    assert stopped.status == "NEEDS_REVIEW"
-    assert [item.code for item in stopped.diagnostics] == ["GUIDE_UNSUPPORTED"]
+    assert stopped.status == "SUCCEEDED"
+    assert stopped.diagnostics == []
     persisted_submission = repo.scoped(
         SubmissionRow, submission.id, actor.workspace_id
     )
     assert isinstance(persisted_submission, SubmissionRow)
     state = m.SubmissionProcessingState.model_validate(persisted_submission.state)
     assert state.status == m.SubmissionProcessingStatus.NEEDS_REVIEW
-    assert state.current_stage == "GUIDE_BUILD"
+    assert state.current_stage == "NEEDS_REVIEW"
+    assert repo.latest_assessment(
+        submission.id, actor.workspace_id
+    ).status == m.WorkflowStatus.NEEDS_REVIEW.value
     with pytest.raises(NotFound):
-        repo.latest_assessment(submission.id, actor.workspace_id)
+        repo.guide_for_assessment(
+            repo.latest_assessment(
+                submission.id, actor.workspace_id
+            ).assessment_id,
+            actor.workspace_id,
+        )
 
 
 def test_upload_size_is_rejected_from_head_before_object_body_is_read() -> None:

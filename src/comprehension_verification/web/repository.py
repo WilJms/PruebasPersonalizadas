@@ -23,9 +23,11 @@ from sqlalchemy import (
     String,
     Text,
     UniqueConstraint,
+    and_,
     cast,
     create_engine,
     delete,
+    func,
     or_,
     select,
     text,
@@ -272,10 +274,42 @@ class AssessmentRow(Base):
 
 class GuideRow(Base):
     __tablename__ = "evaluation_guides"
+    __table_args__ = (
+        Index(
+            "uq_evaluation_guides_approved_version",
+            "tenant_id",
+            "assessment_id",
+            "assessment_version",
+            unique=True,
+            postgresql_where=text("assessment_version is not null"),
+            sqlite_where=text("assessment_version is not null"),
+        ),
+    )
     guide_id: Mapped[str] = mapped_column(String(128), primary_key=True)
     assessment_id: Mapped[str] = mapped_column(String(128), index=True)
     tenant_id: Mapped[str] = mapped_column(String(128), index=True)
     submission_id: Mapped[str] = mapped_column(String(128), index=True)
+    assessment_version: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    assessment_etag: Mapped[str | None] = mapped_column(String(80), nullable=True)
+    assessment_snapshot_hash: Mapped[str | None] = mapped_column(
+        String(80), nullable=True
+    )
+    question_set_hash: Mapped[str | None] = mapped_column(String(80), nullable=True)
+    approval_event_id: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    approval_snapshot_hash: Mapped[str | None] = mapped_column(
+        String(80), nullable=True
+    )
+    guide_policy_hash: Mapped[str | None] = mapped_column(String(80), nullable=True)
+    materializer_boundary_hash: Mapped[str | None] = mapped_column(
+        String(80), nullable=True
+    )
+    guide_job_id: Mapped[str | None] = mapped_column(
+        String(128), nullable=True, index=True
+    )
+    status: Mapped[str | None] = mapped_column(String(32), nullable=True, index=True)
+    created_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
     data: Mapped[dict[str, Any]] = mapped_column(JSON)
 
 
@@ -319,6 +353,7 @@ class JobRow(Base):
     progress: Mapped[float] = mapped_column(Float, default=0.0)
     attempt: Mapped[int] = mapped_column(Integer, default=0)
     diagnostics: Mapped[list[dict[str, Any]]] = mapped_column(JSON, default=list)
+    descriptor: Mapped[dict[str, Any] | None] = mapped_column(JSON, nullable=True)
     control_state: Mapped[str] = mapped_column(String(32), default="ACTIVE")
     failure_class: Mapped[str | None] = mapped_column(String(32), nullable=True)
     max_attempts: Mapped[int] = mapped_column(Integer, default=MAX_JOB_ATTEMPTS)
@@ -653,6 +688,18 @@ _POSTGRES_REQUIRED_COLUMNS = frozenset(
         ("jobs", "cancel_requested_at"),
         ("jobs", "cancel_requested_by"),
         ("jobs", "cancelled_at"),
+        ("jobs", "descriptor"),
+        ("evaluation_guides", "assessment_version"),
+        ("evaluation_guides", "assessment_etag"),
+        ("evaluation_guides", "assessment_snapshot_hash"),
+        ("evaluation_guides", "question_set_hash"),
+        ("evaluation_guides", "approval_event_id"),
+        ("evaluation_guides", "approval_snapshot_hash"),
+        ("evaluation_guides", "guide_policy_hash"),
+        ("evaluation_guides", "materializer_boundary_hash"),
+        ("evaluation_guides", "guide_job_id"),
+        ("evaluation_guides", "status"),
+        ("evaluation_guides", "created_at"),
         ("stage_runs", "component_version"),
         ("stage_runs", "output_hash"),
         ("stage_runs", "failure_class"),
@@ -729,6 +776,7 @@ _POSTGRES_REQUIRED_INDEXES = {
     ("jobs", "ix_jobs_claim_eligible"): False,
     ("stage_runs", "uq_stage_runs_succeeded_stage_key"): True,
     ("idempotency_keys", "ix_idempotency_keys_expires_at"): False,
+    ("evaluation_guides", "uq_evaluation_guides_approved_version"): True,
 }
 
 _POSTGRES_POLICY_QUAL = "cva_is_workspace_member((tenant_id)::text)"
@@ -1911,25 +1959,35 @@ class Repository:
         job_id: str,
         tenant_id: str,
         assessment: AssessmentRow,
-        guide: GuideRow,
+        guide: GuideRow | None = None,
     ) -> bool:
-        """Atomically publish review output or acknowledge a winning cancellation."""
+        """Atomically publish the reviewable assessment after deterministic P07.
+
+        ``guide`` is retained only for historical callers. Phase 7 product
+        executions always pass ``None`` and cannot create a pre-approval guide.
+        """
 
         assessment_value = m.Assessment.model_validate(assessment.data)
-        guide_value = m.EvaluationGuide.model_validate(guide.data)
-        if any(
+        inconsistent = any(
             (
                 assessment.tenant_id != tenant_id,
-                guide.tenant_id != tenant_id,
-                assessment.submission_id != guide.submission_id,
-                assessment.assessment_id != guide.assessment_id,
                 assessment_value.submission_id != assessment.submission_id,
                 assessment_value.assessment_id != assessment.assessment_id,
                 assessment_value.status != m.WorkflowStatus.NEEDS_REVIEW,
-                guide_value.assessment_id != assessment.assessment_id,
-                guide_value.status != m.WorkflowStatus.READY,
             )
-        ):
+        )
+        if guide is not None:
+            guide_value = m.EvaluationGuide.model_validate(guide.data)
+            inconsistent = inconsistent or any(
+                (
+                    guide.tenant_id != tenant_id,
+                    assessment.submission_id != guide.submission_id,
+                    assessment.assessment_id != guide.assessment_id,
+                    guide_value.assessment_id != assessment.assessment_id,
+                    guide_value.status != m.WorkflowStatus.READY,
+                )
+            )
+        if inconsistent:
             raise ValueError("assessment finalization references are inconsistent")
 
         now = utc_now()
@@ -1953,7 +2011,8 @@ class Repository:
                 raise Conflict("SUBMISSION_FINALIZATION_STATE_CHANGED")
 
             session.merge(assessment)
-            session.merge(guide)
+            if guide is not None:
+                session.merge(guide)
             submission.state = m.SubmissionProcessingState(
                 submission_id=submission.id,
                 activity_id=submission.activity_id,
@@ -2679,6 +2738,29 @@ class Repository:
                         }
                     ).model_dump(mode="json")
                     submission.updated_at = now
+            elif row.kind == "GUIDE_BUILD":
+                statement = select(SubmissionRow).where(
+                    SubmissionRow.id == row.aggregate_id,
+                    SubmissionRow.tenant_id == tenant_id,
+                )
+                if self.engine.dialect.name == "postgresql":
+                    statement = statement.with_for_update()
+                submission = session.scalar(statement)
+                if submission is not None:
+                    current = m.SubmissionProcessingState.model_validate(
+                        submission.state
+                    )
+                    submission.state = current.model_copy(
+                        update={
+                            "status": m.SubmissionProcessingStatus.APPROVED,
+                            "current_stage": "GUIDE_FAILED",
+                            "active_job_id": None,
+                            "diagnostics": [failure],
+                            "updated_at": now,
+                        }
+                    ).model_dump(mode="json")
+                    submission.active_job_id = None
+                    submission.updated_at = now
             return True
 
     def job_status(self, job_id: str, tenant_id: str) -> m.JobStatus:
@@ -2874,6 +2956,29 @@ class Repository:
             )
             activity.updated_at = completed_at
             return
+        if row.kind == "GUIDE_BUILD":
+            submission_statement = select(SubmissionRow).where(
+                SubmissionRow.id == row.aggregate_id,
+                SubmissionRow.tenant_id == row.tenant_id,
+            )
+            if self.engine.dialect.name == "postgresql":
+                submission_statement = submission_statement.with_for_update()
+            submission = session.scalar(submission_statement)
+            if submission is None:
+                raise NotFound("submission not found")
+            current = m.SubmissionProcessingState.model_validate(submission.state)
+            submission.state = current.model_copy(
+                update={
+                    "status": m.SubmissionProcessingStatus.APPROVED,
+                    "current_stage": "GUIDE_FAILED",
+                    "active_job_id": None,
+                    "diagnostics": [m.Diagnostic.model_validate(cancellation)],
+                    "updated_at": completed_at,
+                }
+            ).model_dump(mode="json")
+            submission.active_job_id = None
+            submission.updated_at = completed_at
+            return
         if row.kind != "SUBMISSION":
             return
         submission_statement = select(SubmissionRow).where(
@@ -2979,6 +3084,7 @@ class Repository:
                     progress=source.progress,
                     attempt=source.attempt,
                     diagnostics=[],
+                    descriptor=source.descriptor,
                     control_state="ACTIVE",
                     max_attempts=effective_max,
                     next_attempt_at=next_attempt_at,
@@ -3072,6 +3178,7 @@ class Repository:
                     progress=source.progress,
                     attempt=source.attempt,
                     diagnostics=[],
+                    descriptor=source.descriptor,
                     control_state="ACTIVE",
                     max_attempts=source.max_attempts,
                     next_attempt_at=next_attempt_at,
@@ -3164,6 +3271,31 @@ class Repository:
                 else "BLUEPRINT_REVIEW_QUEUED"
             )
             activity.updated_at = activated_at
+            return
+        if source.kind == "GUIDE_BUILD":
+            statement = select(SubmissionRow).where(
+                SubmissionRow.id == source.aggregate_id,
+                SubmissionRow.tenant_id == source.tenant_id,
+            )
+            if self.engine.dialect.name == "postgresql":
+                statement = statement.with_for_update()
+            submission = session.scalar(statement)
+            if submission is None:
+                raise NotFound("submission not found")
+            current = m.SubmissionProcessingState.model_validate(submission.state)
+            if current.status != m.SubmissionProcessingStatus.APPROVED:
+                raise Conflict("GUIDE_BUILD_CONTINUATION_NOT_ALLOWED")
+            submission.state = current.model_copy(
+                update={
+                    "current_stage": "GUIDE_PENDING",
+                    "progress": result.progress,
+                    "active_job_id": result.id,
+                    "diagnostics": [],
+                    "updated_at": activated_at,
+                }
+            ).model_dump(mode="json")
+            submission.active_job_id = result.id
+            submission.updated_at = activated_at
             return
         if source.kind != "SUBMISSION":
             return
@@ -3307,6 +3439,28 @@ class Repository:
                             }
                         ).model_dump(mode="json")
                         submission.updated_at = reconciled_at
+                elif row.kind == "GUIDE_BUILD":
+                    submission = session.scalar(
+                        select(SubmissionRow).where(
+                            SubmissionRow.id == row.aggregate_id,
+                            SubmissionRow.tenant_id == row.tenant_id,
+                        )
+                    )
+                    if submission is not None:
+                        current = m.SubmissionProcessingState.model_validate(
+                            submission.state
+                        )
+                        submission.state = current.model_copy(
+                            update={
+                                "status": m.SubmissionProcessingStatus.APPROVED,
+                                "current_stage": "GUIDE_FAILED",
+                                "active_job_id": None,
+                                "diagnostics": [failure],
+                                "updated_at": reconciled_at,
+                            }
+                        ).model_dump(mode="json")
+                        submission.active_job_id = None
+                        submission.updated_at = reconciled_at
             return len(rows)
 
     def claim_next_job(self, *, lease_seconds: int = 3900) -> JobRow | None:
@@ -3388,7 +3542,7 @@ class Repository:
             )
             if activity is None:
                 raise Conflict("SYNTHETIC_AUTHORIZATION_SCOPE_MISMATCH")
-        elif job.kind in {"SUBMISSION", "QUESTION_ACTION"}:
+        elif job.kind in {"SUBMISSION", "QUESTION_ACTION", "GUIDE_BUILD"}:
             submission = session.scalar(
                 select(SubmissionRow).where(
                     SubmissionRow.id == job.aggregate_id,
@@ -3687,7 +3841,7 @@ class Repository:
                 if activity is not None:
                     activity.status = "TECHNICAL_FAILURE"
                     activity.updated_at = now
-            elif row.kind == "SUBMISSION":
+            elif row.kind in {"SUBMISSION", "GUIDE_BUILD"}:
                 submission = session.scalar(
                     select(SubmissionRow).where(
                         SubmissionRow.id == row.aggregate_id,
@@ -3704,14 +3858,24 @@ class Repository:
                     submission.state = current.model_copy(
                         update={
                             "status": (
-                                m.SubmissionProcessingStatus.TECHNICAL_FAILURE
+                                m.SubmissionProcessingStatus.APPROVED
+                                if row.kind == "GUIDE_BUILD"
+                                else m.SubmissionProcessingStatus.TECHNICAL_FAILURE
                             ),
-                            "current_stage": row.stage,
-                            "active_job_id": row.id,
+                            "current_stage": (
+                                "GUIDE_FAILED"
+                                if row.kind == "GUIDE_BUILD"
+                                else row.stage
+                            ),
+                            "active_job_id": (
+                                None if row.kind == "GUIDE_BUILD" else row.id
+                            ),
                             "diagnostics": [failure],
                             "updated_at": now,
                         }
                     ).model_dump(mode="json")
+                    if row.kind == "GUIDE_BUILD":
+                        submission.active_job_id = None
                     submission.updated_at = now
 
     def save_stage(
@@ -3967,6 +4131,47 @@ class Repository:
                 raise NotFound("assessment not found")
             return row
 
+    def assessment_version(
+        self, assessment_id: str, version: int, tenant_id: str
+    ) -> AssessmentRow:
+        with self.session() as session:
+            row = session.scalar(
+                select(AssessmentRow).where(
+                    AssessmentRow.assessment_id == assessment_id,
+                    AssessmentRow.version == version,
+                    AssessmentRow.tenant_id == tenant_id,
+                )
+            )
+            if row is None:
+                raise NotFound("assessment version not found")
+            return row
+
+    def latest_approved_assessments(self) -> list[AssessmentRow]:
+        """Return current APPROVED rows for startup crash-gap reconciliation."""
+
+        with self.session() as session:
+            latest = (
+                select(
+                    AssessmentRow.tenant_id.label("tenant_id"),
+                    AssessmentRow.assessment_id.label("assessment_id"),
+                    func.max(AssessmentRow.version).label("version"),
+                )
+                .group_by(AssessmentRow.tenant_id, AssessmentRow.assessment_id)
+                .subquery()
+            )
+            return list(
+                session.scalars(
+                    select(AssessmentRow).join(
+                        latest,
+                        and_(
+                            AssessmentRow.tenant_id == latest.c.tenant_id,
+                            AssessmentRow.assessment_id == latest.c.assessment_id,
+                            AssessmentRow.version == latest.c.version,
+                        ),
+                    ).where(AssessmentRow.status == m.WorkflowStatus.APPROVED.value)
+                )
+            )
+
     def approve_assessment_atomic(
         self,
         *,
@@ -4056,6 +4261,256 @@ class Repository:
         except IntegrityError as exc:
             raise Conflict("ASSESSMENT_VERSION_CONFLICT") from exc
 
+    def ensure_guide_build_job(
+        self,
+        *,
+        approved_row: AssessmentRow,
+        binding: m.GuideApprovalBinding,
+        guide_id: str,
+        job_id: str,
+        descriptor: dict[str, Any],
+        actor_id: str,
+        max_attempts: int,
+    ) -> tuple[JobRow, bool]:
+        """Idempotently create the post-approval P09 job.
+
+        Approval is intentionally committed by a prior transaction. This
+        method verifies that durable happens-before edge and can therefore be
+        called by both the request path and crash-gap reconciliation.
+        """
+
+        approved = m.Assessment.model_validate(approved_row.data)
+        if any(
+            (
+                approved.status != m.WorkflowStatus.APPROVED,
+                approved_row.version != binding.assessment_version,
+                approved_row.etag != binding.assessment_etag,
+                approved_row.assessment_id != binding.assessment_id,
+                approved_row.submission_id != binding.submission_id,
+                approved_row.tenant_id != binding.tenant_id,
+                descriptor.get("guide_id") != guide_id,
+                descriptor.get("logical_job_id") != job_id,
+                descriptor.get("binding") != binding.model_dump(mode="json"),
+            )
+        ):
+            raise ValueError("guide job descriptor does not match approval")
+        now = utc_now()
+        try:
+            with self.session() as session:
+                existing = session.get(JobRow, job_id)
+                if existing is not None:
+                    if any(
+                        (
+                            existing.tenant_id != binding.tenant_id,
+                            existing.kind != "GUIDE_BUILD",
+                            existing.aggregate_id != binding.submission_id,
+                            existing.descriptor != descriptor,
+                        )
+                    ):
+                        raise Conflict("GUIDE_BUILD_JOB_ID_COLLISION")
+                    return existing, False
+
+                exact_statement = select(AssessmentRow).where(
+                    AssessmentRow.row_id == approved_row.row_id,
+                    AssessmentRow.tenant_id == binding.tenant_id,
+                    AssessmentRow.assessment_id == binding.assessment_id,
+                    AssessmentRow.version == binding.assessment_version,
+                    AssessmentRow.etag == binding.assessment_etag,
+                    AssessmentRow.status == m.WorkflowStatus.APPROVED.value,
+                )
+                submission_statement = select(SubmissionRow).where(
+                    SubmissionRow.id == binding.submission_id,
+                    SubmissionRow.tenant_id == binding.tenant_id,
+                )
+                if self.engine.dialect.name == "postgresql":
+                    exact_statement = exact_statement.with_for_update()
+                    submission_statement = submission_statement.with_for_update()
+                exact = session.scalar(exact_statement)
+                submission = session.scalar(submission_statement)
+                approval_event = session.get(AuditEventRow, binding.approval_event_id)
+                if exact is None or submission is None or approval_event is None:
+                    raise Conflict("GUIDE_BUILD_APPROVAL_NOT_DURABLE")
+                if any(
+                    (
+                        approval_event.tenant_id != binding.tenant_id,
+                        approval_event.event_type != "assessment.approved",
+                        approval_event.aggregate_id != binding.assessment_id,
+                        approval_event.payload.get("assessment_version")
+                        != binding.assessment_version,
+                    )
+                ):
+                    raise Conflict("GUIDE_BUILD_APPROVAL_EVENT_MISMATCH")
+                state = m.SubmissionProcessingState.model_validate(submission.state)
+                if state.status != m.SubmissionProcessingStatus.APPROVED:
+                    raise Conflict("GUIDE_BUILD_ASSESSMENT_NOT_APPROVED")
+                job = JobRow(
+                    id=job_id,
+                    tenant_id=binding.tenant_id,
+                    kind="GUIDE_BUILD",
+                    aggregate_id=binding.submission_id,
+                    stage="GUIDE_BUILD",
+                    status="QUEUED",
+                    progress=0.0,
+                    attempt=0,
+                    diagnostics=[],
+                    descriptor=descriptor,
+                    control_state="ACTIVE",
+                    max_attempts=max_attempts,
+                )
+                session.add(job)
+                submission.state = state.model_copy(
+                    update={
+                        "current_stage": "GUIDE_PENDING",
+                        "progress": 0.0,
+                        "active_job_id": job_id,
+                        "diagnostics": [],
+                        "updated_at": now,
+                    }
+                ).model_dump(mode="json")
+                submission.active_job_id = job_id
+                submission.updated_at = now
+                session.add(
+                    AuditEventRow(
+                        id=stable_id(
+                            "evt",
+                            binding.tenant_id,
+                            "guide.build_queued",
+                            binding.assessment_id,
+                            binding.assessment_version,
+                            job_id,
+                        ),
+                        tenant_id=binding.tenant_id,
+                        event_type="guide.build_queued",
+                        aggregate_id=binding.assessment_id,
+                        actor_id=actor_id,
+                        payload={
+                            "assessment_version": binding.assessment_version,
+                            "approval_event_id": binding.approval_event_id,
+                            "approval_snapshot_hash": binding.approval_snapshot_hash,
+                            "guide_id": guide_id,
+                            "job_id": job_id,
+                            "request_boundary_hash": descriptor.get(
+                                "request_boundary_hash"
+                            ),
+                        },
+                        occurred_at=now,
+                    )
+                )
+                session.flush()
+                return job, True
+        except IntegrityError:
+            with self.session() as session:
+                existing = session.get(JobRow, job_id)
+                if (
+                    existing is not None
+                    and existing.tenant_id == binding.tenant_id
+                    and existing.kind == "GUIDE_BUILD"
+                    and existing.descriptor == descriptor
+                ):
+                    return existing, False
+            raise Conflict("GUIDE_BUILD_JOB_CONFLICT")
+
+    def finalize_guide_build(
+        self,
+        *,
+        job_id: str,
+        tenant_id: str,
+        guide: GuideRow,
+    ) -> bool:
+        """Publish an all-or-nothing guide without changing approval state."""
+
+        value = m.EvaluationGuide.model_validate(guide.data)
+        if value.binding is None:
+            raise ValueError("active guide requires an approval binding")
+        binding = value.binding
+        if any(
+            (
+                binding.tenant_id != tenant_id,
+                guide.tenant_id != tenant_id,
+                guide.assessment_id != binding.assessment_id,
+                guide.submission_id != binding.submission_id,
+                guide.assessment_version != binding.assessment_version,
+                guide.assessment_etag != binding.assessment_etag,
+                guide.guide_job_id != job_id,
+                guide.status != value.status,
+            )
+        ):
+            raise ValueError("guide row does not match its approval binding")
+        now = utc_now()
+        with self.session() as session:
+            job = self._lock_job(session, job_id, tenant_id, self.engine.dialect.name)
+            if job.control_state != "ACTIVE":
+                if job.control_state == "CANCEL_REQUESTED":
+                    self._complete_job_cancellation(session, job, now)
+                return False
+            if job.kind != "GUIDE_BUILD" or job.status != "RUNNING":
+                raise Conflict("GUIDE_BUILD_FINALIZATION_STATE_CHANGED")
+            assessment = session.scalar(
+                select(AssessmentRow).where(
+                    AssessmentRow.tenant_id == tenant_id,
+                    AssessmentRow.assessment_id == binding.assessment_id,
+                    AssessmentRow.version == binding.assessment_version,
+                    AssessmentRow.etag == binding.assessment_etag,
+                    AssessmentRow.status == m.WorkflowStatus.APPROVED.value,
+                )
+            )
+            submission = session.scalar(
+                select(SubmissionRow).where(
+                    SubmissionRow.id == binding.submission_id,
+                    SubmissionRow.tenant_id == tenant_id,
+                )
+            )
+            if assessment is None or submission is None:
+                raise Conflict("GUIDE_BUILD_APPROVAL_VERSION_CHANGED")
+            state = m.SubmissionProcessingState.model_validate(submission.state)
+            if state.status != m.SubmissionProcessingStatus.APPROVED:
+                raise Conflict("GUIDE_BUILD_APPROVAL_REVOKED")
+            session.merge(guide)
+            ready = value.status == "READY"
+            job.status = "SUCCEEDED" if ready else "NEEDS_REVIEW"
+            job.progress = 1.0
+            job.finished_at = now
+            job.next_attempt_at = None
+            job.failure_class = None if ready else m.FailureClass.VALIDATION.value
+            job.diagnostics = [
+                item.model_dump(mode="json") for item in value.diagnostics
+            ]
+            submission.state = state.model_copy(
+                update={
+                    "current_stage": "GUIDE_READY" if ready else "GUIDE_FAILED",
+                    "progress": 1.0,
+                    "active_job_id": None,
+                    "diagnostics": [] if ready else value.diagnostics,
+                    "updated_at": now,
+                }
+            ).model_dump(mode="json")
+            submission.active_job_id = None
+            submission.updated_at = now
+            session.add(
+                AuditEventRow(
+                    id=stable_id(
+                        "evt",
+                        tenant_id,
+                        "guide.ready" if ready else "guide.needs_review",
+                        value.guide_id,
+                        job_id,
+                    ),
+                    tenant_id=tenant_id,
+                    event_type="guide.ready" if ready else "guide.needs_review",
+                    aggregate_id=binding.assessment_id,
+                    actor_id="system_worker",
+                    payload={
+                        "assessment_version": binding.assessment_version,
+                        "approval_event_id": binding.approval_event_id,
+                        "approval_snapshot_hash": binding.approval_snapshot_hash,
+                        "guide_id": value.guide_id,
+                        "job_id": job_id,
+                    },
+                    occurred_at=now,
+                )
+            )
+            return True
+
     def guide_for_assessment(self, assessment_id: str, tenant_id: str) -> GuideRow:
         with self.session() as session:
             row = session.scalar(
@@ -4067,6 +4522,93 @@ class Repository:
             if row is None:
                 raise NotFound("guide not found")
             return row
+
+    def guide_for_approved_version(
+        self,
+        assessment: AssessmentRow,
+        *,
+        require_ready: bool = True,
+    ) -> GuideRow:
+        """Select only the guide bound to this exact approved row."""
+
+        value = m.Assessment.model_validate(assessment.data)
+        if (
+            value.status != m.WorkflowStatus.APPROVED
+            or value.approved_by is None
+            or value.approved_at is None
+        ):
+            raise NotFound("approved guide not found")
+        from ..guide_generation import (
+            build_guide_approval_binding,
+            guide_id_for_binding,
+        )
+
+        approval_event_id = stable_id(
+            "evt",
+            assessment.tenant_id,
+            "assessment.approved",
+            assessment.assessment_id,
+            value.approved_by,
+            assessment.version,
+        )
+        expected = build_guide_approval_binding(
+            assessment=value,
+            assessment_version=assessment.version,
+            assessment_etag=assessment.etag,
+            approval_event_id=approval_event_id,
+        )
+        expected_guide_id = guide_id_for_binding(expected)
+        with self.session() as session:
+            statement = select(GuideRow).where(
+                GuideRow.guide_id == expected_guide_id,
+                GuideRow.tenant_id == assessment.tenant_id,
+                GuideRow.assessment_id == assessment.assessment_id,
+                GuideRow.submission_id == assessment.submission_id,
+                GuideRow.assessment_version == assessment.version,
+                GuideRow.assessment_etag == assessment.etag,
+                GuideRow.assessment_snapshot_hash
+                == expected.assessment_snapshot_hash,
+                GuideRow.question_set_hash == expected.question_set_hash,
+                GuideRow.approval_event_id == expected.approval_event_id,
+                GuideRow.approval_snapshot_hash == expected.approval_snapshot_hash,
+                GuideRow.guide_policy_hash == expected.guide_policy_hash,
+                GuideRow.materializer_boundary_hash
+                == expected.materializer_boundary_hash,
+            )
+            if require_ready:
+                statement = statement.where(GuideRow.status == "READY")
+            row = session.scalar(statement.limit(1))
+            if row is None:
+                raise NotFound("approved guide not found")
+            guide = m.EvaluationGuide.model_validate(row.data)
+            approval_event = session.get(AuditEventRow, expected.approval_event_id)
+            if (
+                guide.guide_id != expected_guide_id
+                or guide.binding != expected
+                or guide.status != row.status
+                or approval_event is None
+                or approval_event.tenant_id != assessment.tenant_id
+                or approval_event.event_type != "assessment.approved"
+                or approval_event.aggregate_id != assessment.assessment_id
+                or approval_event.actor_id != value.approved_by
+                or approval_event.payload.get("assessment_version")
+                != assessment.version
+            ):
+                raise NotFound("approved guide not found")
+            return row
+
+    def guide_history(self, assessment_id: str, tenant_id: str) -> list[GuideRow]:
+        with self.session() as session:
+            return list(
+                session.scalars(
+                    select(GuideRow)
+                    .where(
+                        GuideRow.assessment_id == assessment_id,
+                        GuideRow.tenant_id == tenant_id,
+                    )
+                    .order_by(GuideRow.created_at, GuideRow.guide_id)
+                )
+            )
 
     def review_rows(self, submission_id: str, tenant_id: str) -> list[QuestionReviewRow]:
         with self.session() as session:

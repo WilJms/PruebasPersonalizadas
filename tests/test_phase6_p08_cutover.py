@@ -167,7 +167,6 @@ def test_p07_replacement_consumes_one_reserve_and_still_assembles_exact_n() -> N
             "P06_EVIDENCE_MAP_V1",
             "P07_QUESTION_BUILD_V1",
             "P07_QUESTION_BUILD_V1",
-            "P09_GUIDE_BUILD_V1",
         ]
         assert "P08_QUESTION_REVIEW_V1" not in adapter.prompt_ids
         reserve_events = repository.audit_events(
@@ -181,9 +180,7 @@ def test_p07_replacement_consumes_one_reserve_and_still_assembles_exact_n() -> N
         )
         stages = repository.stage_runs_for_job(job_id, TENANT_ID)
         stage_names = [row.stage for row in stages]
-        assert stage_names.index("ASSEMBLE") < stage_names.index(
-            "P09_GUIDE_BUILD_V1"
-        )
+        assert "P09_GUIDE_BUILD_V1" not in stage_names
         assert not repository.audit_events(
             tenant_id=TENANT_ID,
             event_type="question.review.decision_observed",
@@ -264,8 +261,10 @@ def test_exhausted_p07_replacements_never_publish_partial_assessment() -> None:
 
 
 @pytest.mark.parametrize("decision", ["ACCEPT", "REJECT", "ESCALATE"])
+@pytest.mark.parametrize("resume_from_stage", ["QUESTION_REVIEW", "GUIDE_BUILD"])
 def test_legacy_question_review_resume_ignores_historical_decision(
     decision: str,
+    resume_from_stage: str,
 ) -> None:
     app = _app()
     with TestClient(app) as client:
@@ -342,13 +341,19 @@ def test_legacy_question_review_resume_ignores_historical_decision(
         retry = repository.schedule_job_retry(
             job_id=source_job_id,
             tenant_id=TENANT_ID,
-            resulting_job_id=f"job_phase6_legacy_{decision.lower()}",
-            control_id=f"control_phase6_legacy_{decision.lower()}",
+            resulting_job_id=(
+                f"job_phase6_legacy_{decision.lower()}_"
+                f"{resume_from_stage.lower()}"
+            ),
+            control_id=(
+                f"control_phase6_legacy_{decision.lower()}_"
+                f"{resume_from_stage.lower()}"
+            ),
             actor_id="usr_stage2_teacher",
             reason_code="PHASE6_P08_RUNTIME_CUTOVER",
             failure_class="TRANSIENT",
             next_attempt_at=utc_now(),
-            resume_from_stage="QUESTION_REVIEW",
+            resume_from_stage=resume_from_stage,
         )
         asyncio.run(service.process_job(retry.id))
 
@@ -362,7 +367,7 @@ def test_legacy_question_review_resume_ignores_historical_decision(
             "P07_QUESTION_BUILD_V1"
         ]
         assert "P08_QUESTION_REVIEW_V1" not in adapter.prompt_ids
-        assert adapter.prompt_ids[-1] == "P09_GUIDE_BUILD_V1"
+        assert adapter.prompt_ids[-1] == "P07_QUESTION_BUILD_V1"
         assert repository.has_audit_event(
             tenant_id=TENANT_ID,
             event_type="stage.reused",

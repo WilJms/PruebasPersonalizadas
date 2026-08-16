@@ -542,6 +542,8 @@ export async function getAssessmentBundle(
       evidence: bundle.evidence ?? [],
       evidence_receipts: bundle.evidence_receipts ?? [],
       guide: bundle.guide,
+      guide_status: bundle.guide_status,
+      guide_job_id: bundle.guide_job_id,
       etag: bundle.etag,
       assessment_version: bundle.assessment_version,
     };
@@ -549,9 +551,9 @@ export async function getAssessmentBundle(
   throw new ApiError(500, "La respuesta de evaluación no tiene el contrato esperado.");
 }
 
-export async function getGuide(assessmentId: string): Promise<EvaluationGuide> {
+export async function getGuide(assessmentId: string): Promise<EvaluationGuide | null> {
   const result = await request<unknown>(`/assessments/${assessmentId}/guide`);
-  return pick<EvaluationGuide>(result, "guide");
+  return pick<EvaluationGuide | null>(result, "guide");
 }
 
 export async function verifyEvidenceFragment(
@@ -591,6 +593,8 @@ export async function approveAssessment(
       evidence: bundle.evidence ?? [],
       evidence_receipts: bundle.evidence_receipts ?? [],
       guide: bundle.guide,
+      guide_status: bundle.guide_status,
+      guide_job_id: bundle.guide_job_id,
       etag: bundle.etag,
       assessment_version: bundle.assessment_version,
     };

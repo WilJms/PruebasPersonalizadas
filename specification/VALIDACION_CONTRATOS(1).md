@@ -16,11 +16,11 @@
 
 La documentación explica invariantes contextuales, pero no redefine tipos, enums ni obligatoriedad.
 
-Fases 4/5 implementan fronteras ADR-037 con cambios contractuales mínimos y
-Fase 6 retira P08 sin borrar contratos:
-añaden los envelopes/drafts provider de P06 y P07, mientras
-`EvidenceMapPatch` y `QuestionGenerationResult` siguen siendo outputs canónicos.
-El bundle esperado tiene 58 roots, 163 `$defs`, 319 refs y 8 fixtures. Los
+Fases 4/5 implementan fronteras ADR-037 con cambios contractuales mínimos,
+Fase 6 retira P08 y Fase 7 añade la frontera P09 sin borrar contratos:
+los envelopes/drafts provider de P06/P07/P09 quedan separados de
+`EvidenceMapPatch`, `QuestionGenerationResult` y `EvaluationGuide` canónicos.
+El bundle esperado tiene 60 roots, 174 `$defs`, 335 refs y 8 fixtures. Los
 roots/fixtures P05/P08 continúan obligatorios por compatibilidad histórica y
 P10 como contrato deshabilitado; ninguno prueba reachability.
 
@@ -112,7 +112,9 @@ Crear `tests/fixtures/contracts/v1.1/{valid,invalid}` durante la implementación
   cross-submission;
 - P10 enriched con igualdad exacta entre `course_source_ids` y citations;
 - P08 `NEEDS_REVIEW` sin scores fabricados;
-- P09 ready completo y `NEEDS_REVIEW` sin items fabricados;
+- P09 approval binding exacto; envelope Q/E/O local; draft sin IDs/texto/
+  anchor/locator; core P07 preservado; niveles 0–3; evidence scope; replay;
+  READY completo y `NEEDS_REVIEW` sin items fabricados;
 - P11 repaired/unrepairable;
 - localizadores de todas las variantes habilitadas;
 - human approval, bulk approval con partición/exclusiones, `SelectedQuestion` editada y `QuestionReviewAction`;
@@ -190,19 +192,21 @@ PROVIDER_OUTPUT_CONTRACTS = {
     "P04_BLUEPRINT_BUILD_V1": "BlueprintModelDraft",
     "P06_EVIDENCE_MAP_V1": "EvidenceMappingModelDraft",
     "P07_QUESTION_BUILD_V1": "QuestionModelDraft",
+    "P09_GUIDE_BUILD_V1": "GuideModelDraft",
 }
 ```
 
 `PROMPT_CONTRACTS` conserva el output canónico de etapa para compatibilidad. El
 schema estructurado que ve el proveedor se toma de
-`PROVIDER_OUTPUT_CONTRACTS`; P04, P06 y P07 difieren. El gateway compila P04 y
-materializa P06/P07 antes de devolver sus outputs canónicos. P06/P07 proyectan
-los requests a `EvidenceMappingAliasEnvelope`/`QuestionAliasEnvelope`; esos
+`PROVIDER_OUTPUT_CONTRACTS`; P04, P06, P07 y P09 difieren. El gateway compila
+P04 y materializa P06/P07/P09 antes de devolver sus outputs canónicos.
+P06/P07/P09 proyectan los requests a `EvidenceMappingAliasEnvelope`/
+`QuestionAliasEnvelope`/`GuideAliasEnvelope`; esos
 payloads wire son roots exportados y validados, pero no reemplazan los input
 roots de etapa.
 
-El test exige que los 22 nombres distintos de request/stage/provider existan en
-`roots`, además de los roots de envelope alias P06/P07; que el registry use versión
+El test exige que los nombres distintos de request/stage/provider existan en
+`roots`, además de los roots de envelope alias P06/P07/P09; que el registry use versión
 1.1.0; y que la llamada valide request, payload/envelope, output provider,
 compilación/materialización y contexto en ese orden.
 
@@ -220,6 +224,15 @@ materializador recupere literalmente `display_text`/locator; y que un cache
 canónico recompilado sea idéntico. El runtime debe continuar con validación
 determinista, exactamente N y ASSEMBLE sin llamar P08. Tests históricos pueden
 validar su contrato/replay por una superficie explícitamente no productiva.
+
+Para P09, tests separados exigen que `GuideBuildRequest` sólo se construya
+desde un `Assessment.APPROVED` con binding exacto ya persistido; que el provider
+draft no pueda devolver IDs canónicos, texto/anchor, locators o bookkeeping;
+que cada alias E/O/N permanezca question-local; que el core P07 sea inmutable;
+que niveles sean exactamente 0/1/2/3; y que StageRun replay rematerialice la
+misma `EvaluationGuide`. Un fallo/abstención no revoca aprobación ni puede
+persistir una guía parcial READY. Filas sin binding actual validan sólo como
+historia, no como current authority.
 
 ---
 

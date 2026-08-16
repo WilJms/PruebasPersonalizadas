@@ -44,7 +44,7 @@ No copie ni redefina modelos Pydantic. Importe `comprehension_verification.contr
 - registry P01-P11 -> ModelGateway -> proveedor mock/real;
 - validación estructural y contextual separada;
 - planificador determinista antes de generación;
-- autoridad objetivo formalizada por `pipeline-authority/1.0.0`: actividad
+- autoridad objetivo formalizada por `pipeline-authority/1.1.0`: actividad
   P01→P02→P03→P04→preflight determinista→aprobación docente; por submission
   P06→planner determinista→P07→validaciones deterministas→revisión/aprobación
   docente→P09. P05/P08 son inactivos en el objetivo y P10 sigue deshabilitado;
@@ -58,8 +58,15 @@ No copie ni redefina modelos Pydantic. Importe `comprehension_verification.contr
   visible literal como un subconjunto, sin aceptar texto ni locators del modelo;
   el cutover runtime de P08 está completo: las nuevas preguntas pasan de P07
   a validación determinista y se guardan sin review P08; contratos, filas,
-  prompts, rutas y receipts P08 permanecen como historia legible. El orden
-  objetivo de P09 sigue pendiente y su relocación pertenece a Fase 7;
+  prompts, rutas y receipts P08 permanecen como historia legible. El cutover
+  P09 también está completo: ASSEMBLE termina primero en `NEEDS_REVIEW`; sólo
+  una aprobación docente exacta y durable crea un job `GUIDE_BUILD`, y P09
+  enriquece una vez esa versión aprobada mediante aliases locales sin poder
+  revisar ni cambiar preguntas, anchors o support evidence. El servidor
+  preserva los observables core P07, materializa identidad/levels/evidence y
+  liga la guía a versión, ETag, evento/snapshot de aprobación, question set,
+  policy y boundary. Guías pre-Fase 7 quedan como
+  `HISTORICAL_PREAPPROVAL`, legibles pero nunca current;
 - Assessment y EvaluationGuide JSON separados; HTML/PDF son vistas derivadas;
 - artefactos locales son solo desarrollo/fixtures, no operación productiva.
 - shell E1 privado y tenant-scoped; Supabase se usa para Auth y PostgreSQL;

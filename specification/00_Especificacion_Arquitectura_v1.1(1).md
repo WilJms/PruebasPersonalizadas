@@ -27,12 +27,13 @@ El modelo de IA nunca recibe herramientas, red, shell ni capacidad para ejecutar
 
 Para el MVP se recomienda un monolito modular en Python/FastAPI desplegado como Cloud Run Service, PostgreSQL y Auth de Supabase, objetos privados en Cloudflare R2 y trabajos largos en Cloud Run Jobs con estado durable en PostgreSQL, sin Redis inicial. La interfaz React/TypeScript/Vite se sirve al comienzo desde el mismo contenedor. El gateway conserva configuraciones históricas aprobadas —proveedor, snapshot, modelo, `reasoning_effort`, temperatura y límites—, pero ADR-037 no cambia ni usa esa matriz para seleccionar modelo. El pipeline objetivo mantiene P01-P04, P06/P07/P09, deja P05/P08 inactivos y P10 deshabilitado. Cualquier comparación futura requiere un instrumento nuevo y autoridad humana separada.
 
-**Estado operativo Fase 6 (2026-08-15):** P05 y P08 ya fueron retirados del
+**Estado operativo Fase 7 (2026-08-16):** P05 y P08 ya fueron retirados del
 runtime activo. P06 entrega mapping semántico local, el planner decide
 N/factibilidad y P07 entrega un draft alias-only que el servidor materializa y
-valida. El flujo interino ensambla exactamente N, ejecuta P09 en su orden
-heredado y recién después entra al workflow docente. P09 se moverá sólo en
-Fase 7; P10 permanece deshabilitado.
+valida. El flujo ensambla exactamente N y publica `Assessment.NEEDS_REVIEW` sin
+P09. Después de edición/regeneración/rechazo, una aprobación docente exacta se
+persiste y crea un job durable `GUIDE_BUILD`; P09 enriquece una sola vez esa
+versión, sin revisar ni modificar preguntas. P10 permanece deshabilitado.
 
 El alcance inmediato es todavía más estrecho que el MVP institucional descrito en v1.0: una aplicación web experimental, carga manual, contexto cerrado, un proveedor principal, revisión humana obligatoria y un primer anillo de PDF digital, DOCX, TXT y Markdown. OCR, presentaciones, hojas de cálculo y código se añaden solo después de comprobar el recorrido principal. LTI y conectores Canvas/Moodle/Blackboard permanecen en la arquitectura futura.
 
@@ -533,9 +534,9 @@ ADR-037 mantiene P06/P07/P09 y el planner, pero retira P08 de la secuencia
 objetivo. Las validaciones mecánicas pertenecen al backend y la decisión
 semántica final de cada pregunta pertenece al docente.
 
-Fase 6 ya implementa el retiro de P08. El diagrama siguiente sigue siendo el
-orden **objetivo** posterior a Fase 7; el runtime interino vigente es
-`P07 validado -> exactamente N -> ASSEMBLE -> P09 -> revisión docente`.
+Fase 7 completa el orden objetivo. P07 y el backend producen exactamente N,
+ASSEMBLE persiste primero `Assessment.NEEDS_REVIEW`, el docente decide y sólo
+una aprobación durable habilita P09 como enriquecimiento de guía.
 
 ```mermaid
 flowchart TB
@@ -548,8 +549,11 @@ flowchart TB
     F --> G["Validaciones deterministas"]
     G --> H{¿Todas válidas?}
     H -->|No| X
-    H -->|Sí| I["Revisión/aprobación docente"]
-    I --> J["P09: guía estructurada + vistas"]
+    H -->|Sí| I["ASSEMBLE: Assessment NEEDS_REVIEW"]
+    I --> K["Revisión/edición/regeneración docente"]
+    K --> L["Aprobación durable exacta"]
+    L --> J["P09: enriquecimiento de guía"]
+    J --> M["Materialización + Guide READY"]
 ```
 
 ## 9.1 Mapping local y suficiencia global
@@ -613,9 +617,13 @@ sequenceDiagram
     W->>W: Planifica exactamente N
     W->>M: Genera N preguntas con P07
     W->>W: Aplica validaciones deterministas
-    W-->>A: Preguntas + evidencia + diagnóstico
-    A-->>D: Revisión, edición y aprobación
-    W->>M: P09 genera guía de preguntas aprobadas
+    W-->>A: Assessment NEEDS_REVIEW + evidencia + diagnóstico
+    A-->>D: Revisión, edición y regeneración; P09=0
+    D->>A: Aprobación exacta
+    A->>W: Persiste approval y encola GUIDE_BUILD
+    W->>M: P09 enriquece guía de versión aprobada
+    M-->>W: GuideModelDraft alias-only
+    W->>W: Materializa/valida EvaluationGuide
 ```
 
 ---
@@ -1304,11 +1312,11 @@ No incluye LMS/LTI, nota automática, uso sumativo, internet abierto, facturaci�
 
 ## 24.1 Recorrido objetivo del entorno experimental
 
-Este recorrido es el objetivo formal. Fase 3 retiró las dependencias activas
+Este recorrido es el runtime formal. Fase 3 retiró las dependencias activas
 P05 mediante preflight durable y recovery compatible; Fase 5 redujo P07 a
 redacción semántica alias-only y materialización server-side; Fase 6 retiró P08
-con recovery histórico. El runtime conserva únicamente el orden legado de P09,
-cuyo cutover se ejecutará en Fase 7.
+con recovery histórico. Fase 7 completó el cutover post-aprobación de P09 con
+job durable, binding exacto y lectura histórica compatible.
 
 1. Usuario autenticado crea actividad y configuración.
 2. Carga/pega consigna y rúbrica opcional; se parsean con procedencia.
@@ -1323,12 +1331,17 @@ cuyo cutover se ejecutará en Fase 7.
    conserva support completa, reconstruye el visible anchor y ejecuta
    validaciones deterministas, con reemplazo localizado desde reserva cuando
    corresponda. No se construye request/review/ledger P08.
-9. El backend exige exactamente N, ensambla el `Assessment` y P09 crea la guía
-   estructurada en el mismo orden heredado de Fase 5.
+9. El backend exige exactamente N, ensambla el `Assessment.NEEDS_REVIEW` y
+   termina el job de submission con cero P09 y cero guía activa.
 10. Docente inspecciona fuentes y acepta, edita, rechaza o regenera por
-   oportunidad; su decisión es la autoridad académica final.
-11. Aprobación individual o masiva explícita congela versiones; renderer opcional genera evaluación/guía/cobertura/JSON.
-12. Ledger y feedback registran calidad, acciones, fallos, latencia, tokens, costo y revisión.
+   oportunidad; ninguna de esas acciones pre-aprobación llama P09.
+11. Aprobación individual o masiva explícita congela la versión y evento; sólo
+   entonces se encola `GUIDE_BUILD`. P09 recibe aliases locales, añade
+   condiciones/observables/niveles/límites y el servidor materializa una guía
+   ligada a esa aprobación sin permitir cambios de pregunta/evidencia.
+12. Renderer/export usa únicamente Assessment aprobado y Guide READY de la
+   misma versión; ledger y feedback registran calidad, acciones, fallos,
+   latencia, tokens, costo y revisión.
 
 ## 24.2 Arquitectura objetivo conservada
 

@@ -20,6 +20,7 @@ from .canonical import canonical_hash, sha256_text, stable_id
 from .contracts import model_by_name, models as m
 from .evaluation_reporting import prepare_historical_harness_report
 from .evidence_mapping import materialize_evidence_mapping_draft
+from .guide_generation import build_guide_approval_binding, guide_id_for_binding
 from .question_generation import materialize_question_draft
 from .model_gateway import (
     CallBudget,
@@ -2911,9 +2912,33 @@ class ProductRehearsal:
             )
 
             current_stage = "P09"
+            approved_assessment = assessment.model_copy(
+                update={
+                    "status": m.WorkflowStatus.APPROVED,
+                    "approved_by": "usr_historical_rehearsal_teacher",
+                    "approved_at": datetime(
+                        2026, 8, 12, 12, 5, tzinfo=UTC
+                    ),
+                }
+            )
+            assessment_etag = f'"{canonical_hash(approved_assessment)}"'
+            approval_event_id = stable_id(
+                "evt",
+                approved_assessment.tenant_id,
+                "assessment.approved",
+                approved_assessment.assessment_id,
+                scenario_id,
+            )
+            binding = build_guide_approval_binding(
+                assessment=approved_assessment,
+                assessment_version=2,
+                assessment_etag=assessment_etag,
+                approval_event_id=approval_event_id,
+            )
             p09 = m.GuideBuildRequest(
-                guide_id=stable_id("guide", assessment.assessment_id),
-                assessment=assessment,
+                guide_id=guide_id_for_binding(binding),
+                assessment=approved_assessment,
+                binding=binding,
                 evidence_bundle=p06.evidence_bundle,
             )
             guide = cast(
@@ -2927,7 +2952,7 @@ class ProductRehearsal:
             )
             validate_evaluation_guide(
                 guide,
-                assessment=assessment,
+                assessment=approved_assessment,
                 bundle=p06.evidence_bundle,
             )
             if guide.status != m.WorkflowStatus.READY:
@@ -2938,7 +2963,10 @@ class ProductRehearsal:
             p09_row.update(
                 {
                     "chain_output_role": "CURRENT_RUN_MODEL_OUTPUT",
-                    "dataflow_input_from": "ASSEMBLY_CURRENT_RUN_OUTPUT",
+                    "dataflow_input_from": (
+                        "ASSEMBLY_CURRENT_RUN_OUTPUT_WITH_SYNTHETIC_"
+                        "TEACHER_APPROVAL"
+                    ),
                     "consumed_assessment_hash": canonical_hash(
                         p09.assessment.model_dump(mode="json")
                     ),

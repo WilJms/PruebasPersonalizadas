@@ -195,6 +195,7 @@ class SyntheticProviderAuthorizationSpec:
             "BLUEPRINT_REVIEW",
             "SUBMISSION",
             "QUESTION_ACTION",
+            "GUIDE_BUILD",
         }:
             raise ValueError("synthetic authorization contains an unsupported job kind")
         if not 1 <= self.expected_claim_attempt <= 10:

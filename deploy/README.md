@@ -52,7 +52,7 @@ terraform -chdir=deploy/terraform apply \
 Este boundary habilita APIs y crea Artifact Registry, identidades y
 contenedores vacíos de Secret Manager. No crea todavía Service ni Job.
 
-## Boundary 2: migraciones PostgreSQL 001 -> 002 -> 003 -> 004 -> 005 -> 006
+## Boundary 2: migraciones PostgreSQL 001 -> 002 -> 003 -> 004 -> 005 -> 006 -> 007
 
 Antes de migrar se debe detener todo writer, capturar un backup restaurable y
 registrar su identificador fuera de Git. En una base vacía, el orden único es:
@@ -63,6 +63,7 @@ registrar su identificador fuera de Git. En una base vacía, el orden único es:
 4. `deploy/supabase/migrations/202608120004_stage2_convergence.sql`;
 5. `deploy/supabase/migrations/202608120005_stage2_synthetic_provider_gate.sql`.
 6. `deploy/supabase/migrations/202608150006_phase3_p05_runtime_cutover.sql`.
+7. `deploy/supabase/migrations/202608160007_phase7_post_approval_p09.sql`.
 
 Cada archivo contiene su propia transacción y debe ejecutarse con fallo cerrado:
 
@@ -79,6 +80,8 @@ PGSERVICE=cva-stage2-admin psql -X --set=ON_ERROR_STOP=1 \
   --file=deploy/supabase/migrations/202608120005_stage2_synthetic_provider_gate.sql
 PGSERVICE=cva-stage2-admin psql -X --set=ON_ERROR_STOP=1 \
   --file=deploy/supabase/migrations/202608150006_phase3_p05_runtime_cutover.sql
+PGSERVICE=cva-stage2-admin psql -X --set=ON_ERROR_STOP=1 \
+  --file=deploy/supabase/migrations/202608160007_phase7_post_approval_p09.sql
 ```
 
 Una base existente aplica, en orden, sólo las migraciones posteriores a su

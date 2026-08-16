@@ -20,6 +20,11 @@ from ..blueprint_compiler import (
 from ..contracts import models as m
 from ..diagnostics import diagnostic
 from ..exports import RENDERER_VERSION, render_views
+from ..guide_generation import (
+    build_guide_approval_binding,
+    guide_id_for_binding,
+    p09_alias_envelope_boundary,
+)
 from ..model_gateway import (
     CallBudget,
     GatewayConfig,
@@ -96,7 +101,8 @@ ALLOWED_MEDIA_TYPES = frozenset(
 )
 ACTIVITY_UPLOAD_OPEN_STATUSES = frozenset({"DRAFT"})
 ACTIVITY_PIPELINE_VERSION = "stage1-activity-pipeline/3.0.0"
-SUBMISSION_PIPELINE_VERSION = "stage1-submission-pipeline/3.0.0"
+SUBMISSION_PIPELINE_VERSION = "stage1-submission-pipeline/4.0.0"
+GUIDE_BUILD_DESCRIPTOR_VERSION = "guide-build-descriptor/1.0.0"
 ASSEMBLER_VERSION = "stage1-assembler/2.0.0"
 QUESTION_VALIDATION_STAGE_VERSION = "question-validation-stage/1.0.0"
 BLUEPRINT_REVIEW_DESCRIPTOR_VERSION = "blueprint-review-descriptor/3.0.0"
@@ -374,6 +380,7 @@ def selected_question_from_candidate(
             candidate.student_justification_required
         ),
         preliminary_guide=candidate.preliminary_guide,
+        semantic_uncertainties=candidate.uncertainties,
         planning_score=opportunity.activity_priority,
     )
 
@@ -396,8 +403,11 @@ _SUBMISSION_RESUME_ORDER = {
     # pipeline reconciles their current P07 StageRun and never re-enters P08.
     "QUESTION_REVIEW": 4,
     "ASSEMBLE": 5,
-    "GUIDE_BUILD": 6,
+    # A historical pre-Phase-7 floor now converges at ASSEMBLE and cannot
+    # re-enter P09 before approval.
+    "GUIDE_BUILD": 5,
 }
+_GUIDE_BUILD_RESUME_ORDER = {"GUIDE_BUILD": 0}
 _BLUEPRINT_REVIEW_RESUME_ORDER = {
     "BLUEPRINT_REVIEW": 0,
     "BLUEPRINT_PREFLIGHT": 0,
@@ -1156,12 +1166,13 @@ class Stage1Service:
                     "P04_BLUEPRINT_BUILD_V1",
                 ]
             elif phase == "SUBMISSION_ASSESSMENT" and calls >= 2:
-                question_count = max(0, calls - 2)
+                question_count = max(0, calls - 1)
                 prompt_ids = [
                     "P06_EVIDENCE_MAP_V1",
                     *["P07_QUESTION_BUILD_V1" for _ in range(question_count)],
-                    "P09_GUIDE_BUILD_V1",
                 ]
+            elif phase == "APPROVED_GUIDE_ENRICHMENT" and calls == 1:
+                prompt_ids = ["P09_GUIDE_BUILD_V1"]
             else:
                 raise ValueError(f"Unknown real-mode cost phase: {phase}")
             if len(prompt_ids) != calls:
@@ -1289,11 +1300,11 @@ class Stage1Service:
             tenant_id=actor.workspace_id,
             submission_id=submission.id,
         )
-        # Reserve the complete governed replacement surface: P06 and P09 once,
-        # plus P07 for every selected and maximum reserve opportunity. P08 is
-        # historical-only and has zero future calls/cost in product estimates.
+        # Pre-approval work contains P06 once plus P07 for every selected and
+        # maximum reserve opportunity. P08 is historical-only and P09 belongs
+        # to the later, independently approved guide job.
         constraints = blueprint.assessment_constraints
-        calls = 2 + (
+        calls = 1 + (
             constraints.question_count + constraints.max_reserve_opportunities
         )
         return self._cost_estimate(
@@ -1308,6 +1319,33 @@ class Stage1Service:
                 "question_count": blueprint.assessment_constraints.question_count,
                 "artifacts": self._artifact_estimate_fingerprint(artifacts),
                 "pipeline_version": SUBMISSION_PIPELINE_VERSION,
+            },
+        )
+
+    def guide_cost_estimate(
+        self, assessment_id: str, actor: Actor
+    ) -> dto.CostEstimate:
+        assessment_row = self.repository.assessment_by_id(
+            assessment_id, actor.workspace_id
+        )
+        assessment = m.Assessment.model_validate(assessment_row.data)
+        artifacts = self.repository.artifacts_for(
+            activity_id=assessment.activity_id,
+            tenant_id=actor.workspace_id,
+            submission_id=assessment.submission_id,
+        )
+        return self._cost_estimate(
+            phase="APPROVED_GUIDE_ENRICHMENT",
+            aggregate_id=assessment_id,
+            calls=1,
+            input_bytes=sum(row.byte_size or 0 for row in artifacts),
+            fingerprint_source={
+                "assessment_id": assessment_id,
+                "assessment_version": assessment_row.version,
+                "assessment_etag": assessment_row.etag,
+                "assessment_snapshot_hash": canonical_hash(assessment),
+                "pipeline_version": GUIDE_BUILD_DESCRIPTOR_VERSION,
+                "artifacts": self._artifact_estimate_fingerprint(artifacts),
             },
         )
 
@@ -1547,6 +1585,8 @@ class Stage1Service:
                 await self._run_blueprint_preflight_job(job)
             elif job.kind == "QUESTION_ACTION" and self._question_action_processor:
                 await self._question_action_processor(job)
+            elif job.kind == "GUIDE_BUILD":
+                await self._run_guide_build_job(job)
             else:
                 raise WorkflowError("JOB_KIND_INVALID", "Unknown job kind", status_code=500)
         except _CooperativeJobCancellation:
@@ -2419,32 +2459,6 @@ class Stage1Service:
                 output={"assessment": assessment.model_dump(mode="json")},
             )
         self._cancellation_checkpoint(job)
-        guide_id = stable_id("guide", assessment.assessment_id, submission.id)
-        self._set_submission(submission, job, m.SubmissionProcessingStatus.GUIDE_READY, "GUIDE_BUILD", 0.82)
-        guide = await self._gateway_stage(
-            job,
-            "P09_GUIDE_BUILD_V1",
-            m.GuideBuildRequest(guide_id=guide_id, assessment=assessment, evidence_bundle=bundle),
-            m.EvaluationGuide,
-        )
-        validate_evaluation_guide(guide, assessment=assessment, bundle=bundle)
-        self._cancellation_checkpoint(job)
-        if guide.status != "READY":
-            if guide.status == "NEEDS_REVIEW":
-                self._terminal_domain_failure(
-                    submission,
-                    job,
-                    m.SubmissionProcessingStatus.NEEDS_REVIEW.value,
-                    guide.diagnostics,
-                    stage="GUIDE_BUILD",
-                )
-            else:
-                raise WorkflowError(
-                    "GUIDE_TECHNICAL_FAILURE",
-                    "Evaluation guide generation failed at a validated boundary",
-                    status_code=500,
-                )
-            return
         assessment_row = AssessmentRow(
             row_id=stable_id("assessmentrow", assessment.assessment_id, 1),
             assessment_id=assessment.assessment_id,
@@ -2459,13 +2473,6 @@ class Stage1Service:
             job_id=job.id,
             tenant_id=job.tenant_id,
             assessment=assessment_row,
-            guide=GuideRow(
-                guide_id=guide.guide_id,
-                assessment_id=assessment.assessment_id,
-                tenant_id=job.tenant_id,
-                submission_id=submission.id,
-                data=guide.model_dump(mode="json"),
-            ),
         )
         if not finalized:
             raise _CooperativeJobCancellation
@@ -3088,7 +3095,30 @@ class Stage1Service:
                 status_code=409,
             )
         assessment_row = self.repository.latest_assessment(submission.id, actor.workspace_id)
-        guide = self.repository.guide_for_assessment(assessment_row.assessment_id, actor.workspace_id)
+        guide_data: dict[str, Any] | None = None
+        guide_status = m.GuideLifecycleStatus.NOT_AVAILABLE
+        guide_job_id: str | None = None
+        if assessment_row.status == m.WorkflowStatus.APPROVED.value:
+            state = m.SubmissionProcessingState.model_validate(submission.state)
+            guide_job_id = state.active_job_id
+            guide_status = {
+                "GUIDE_PENDING": m.GuideLifecycleStatus.PENDING,
+                "GUIDE_BUILDING": m.GuideLifecycleStatus.BUILDING,
+                "GUIDE_FAILED": m.GuideLifecycleStatus.FAILED,
+                "GUIDE_READY": m.GuideLifecycleStatus.READY,
+            }.get(state.current_stage, m.GuideLifecycleStatus.PENDING)
+            try:
+                guide_row = self.repository.guide_for_approved_version(
+                    assessment_row, require_ready=False
+                )
+                guide_data = guide_row.data
+                guide_job_id = guide_row.guide_job_id
+                guide_status = {
+                    "READY": m.GuideLifecycleStatus.READY,
+                    "NEEDS_REVIEW": m.GuideLifecycleStatus.NEEDS_REVIEW,
+                }.get(guide_row.status, m.GuideLifecycleStatus.FAILED)
+            except NotFound:
+                pass
         reviews = self.repository.review_rows(submission.id, actor.workspace_id)
         review_items: list[dict[str, Any]] = []
         for row in reviews:
@@ -3106,10 +3136,359 @@ class Stage1Service:
             "assessment": assessment_row.data,
             "assessment_version": assessment_row.version,
             "etag": assessment_row.etag,
-            "guide": guide.data,
+            "guide": guide_data,
+            "guide_status": guide_status,
+            "guide_job_id": guide_job_id,
             "reviews": review_items,
             "evidence_receipts": self.evidence_receipts(assessment_row, actor),
         }
+
+    def guide_view(self, assessment_id: str, actor: Actor) -> dict[str, Any]:
+        assessment = self.repository.assessment_by_id(
+            assessment_id, actor.workspace_id
+        )
+        view = self.assessment_view(assessment.submission_id, actor)
+        return {
+            "guide": view["guide"],
+            "status": view["guide_status"],
+            "job_id": view["guide_job_id"],
+        }
+
+    def guide_history(self, assessment_id: str, actor: Actor) -> list[dict[str, Any]]:
+        self.repository.assessment_by_id(assessment_id, actor.workspace_id)
+        return [
+            {
+                "lifecycle_status": (
+                    row.status
+                    if row.assessment_version is not None
+                    and row.approval_snapshot_hash is not None
+                    else m.GuideLifecycleStatus.HISTORICAL_PREAPPROVAL
+                ),
+                "assessment_version": row.assessment_version,
+                "assessment_etag": row.assessment_etag,
+                "guide_job_id": row.guide_job_id,
+                "guide": row.data,
+            }
+            for row in self.repository.guide_history(
+                assessment_id, actor.workspace_id
+            )
+        ]
+
+    def _guide_request_for_approved_row(
+        self, approved_row: AssessmentRow
+    ) -> tuple[m.GuideBuildRequest, dict[str, Any], str]:
+        assessment = m.Assessment.model_validate(approved_row.data)
+        if (
+            assessment.status != m.WorkflowStatus.APPROVED
+            or assessment.approved_by is None
+            or assessment.approved_at is None
+        ):
+            raise WorkflowError(
+                "HUMAN_APPROVAL_REQUIRED",
+                "Guide generation requires an approved assessment version.",
+                status_code=409,
+            )
+        approval_event_id = stable_id(
+            "evt",
+            approved_row.tenant_id,
+            "assessment.approved",
+            approved_row.assessment_id,
+            assessment.approved_by,
+            approved_row.version,
+        )
+        binding = build_guide_approval_binding(
+            assessment=assessment,
+            assessment_version=approved_row.version,
+            assessment_etag=approved_row.etag,
+            approval_event_id=approval_event_id,
+        )
+        evidence_units = [
+            m.EvidenceUnit.model_validate(row.data)
+            for row in self.repository.evidence_for_submission(
+                approved_row.submission_id, approved_row.tenant_id
+            )
+        ]
+        if not evidence_units:
+            raise WorkflowError(
+                "GUIDE_EVIDENCE_MISSING",
+                "The approved assessment has no durable evidence bundle.",
+                status_code=409,
+            )
+        evidence_ids = {item.evidence_id for item in evidence_units}
+        required_ids = {
+            evidence_id
+            for question in assessment.questions
+            for evidence_id in question.evidence_ids
+        }
+        if not required_ids.issubset(evidence_ids):
+            raise WorkflowError(
+                "GUIDE_EVIDENCE_MISSING",
+                "Approved question support is absent from durable evidence.",
+                status_code=409,
+            )
+        bundle = m.EvidenceBundle(
+            bundle_id=stable_id(
+                "bundle",
+                approved_row.tenant_id,
+                approved_row.submission_id,
+                [item.normalized_hash for item in evidence_units],
+            ),
+            tenant_id=approved_row.tenant_id,
+            activity_id=assessment.activity_id,
+            submission_id=approved_row.submission_id,
+            context_mode=m.ContextMode.CLOSED,
+            allowed_evidence_ids=[item.evidence_id for item in evidence_units],
+            evidence_units=evidence_units,
+            course_passages=[],
+        )
+        guide_id = guide_id_for_binding(binding)
+        request = m.GuideBuildRequest(
+            guide_id=guide_id,
+            assessment=assessment,
+            binding=binding,
+            evidence_bundle=bundle,
+        )
+        request_boundary = p09_alias_envelope_boundary(request)
+        artifacts = self.repository.artifacts_for(
+            activity_id=assessment.activity_id,
+            tenant_id=approved_row.tenant_id,
+            submission_id=approved_row.submission_id,
+        )
+        descriptor = {
+            "format": GUIDE_BUILD_DESCRIPTOR_VERSION,
+            "assessment_row_id": approved_row.row_id,
+            "guide_id": guide_id,
+            "binding": binding.model_dump(mode="json"),
+            "request_boundary_hash": request_boundary["request_boundary_hash"],
+            "artifact_hashes": sorted(
+                item.sha256 for item in artifacts if item.sha256 is not None
+            ),
+            "evidence_snapshot_hash": canonical_hash(
+                [
+                    {
+                        "evidence_id": item.evidence_id,
+                        "artifact_hash": item.artifact_hash,
+                        "normalized_hash": item.normalized_hash,
+                    }
+                    for item in evidence_units
+                ]
+            ),
+        }
+        job_id = stable_id(
+            "job",
+            approved_row.tenant_id,
+            "guide_build",
+            binding.approval_snapshot_hash,
+            request_boundary["request_boundary_hash"],
+        )
+        descriptor["logical_job_id"] = job_id
+        return request, descriptor, job_id
+
+    async def ensure_approved_guide_job(
+        self,
+        approved_row: AssessmentRow,
+        *,
+        actor_id: str,
+    ) -> JobRow:
+        """Repair the approval-to-job crash gap and dispatch one durable claim."""
+
+        request, descriptor, job_id = self._guide_request_for_approved_row(
+            approved_row
+        )
+        job, created = self.repository.ensure_guide_build_job(
+            approved_row=approved_row,
+            binding=request.binding,
+            guide_id=request.guide_id,
+            job_id=job_id,
+            descriptor=descriptor,
+            actor_id=actor_id,
+            max_attempts=self.settings.job_max_attempts,
+        )
+        already_dispatched = self.repository.has_audit_event(
+            tenant_id=job.tenant_id,
+            event_type="guide.dispatch_succeeded",
+            aggregate_id=request.binding.assessment_id,
+            payload_contains={"job_id": job.id},
+        )
+        should_dispatch = (
+            (created or actor_id == "system_reconciler")
+            and not already_dispatched
+        )
+        if (
+            should_dispatch
+            and job.status == "QUEUED"
+            and job.control_state == "ACTIVE"
+        ):
+            if self.job_runner is None:
+                raise RuntimeError("JobRunner is not configured")
+            try:
+                await self.job_runner.dispatch(job.id)
+            except Exception:
+                self.repository.fail_queued_dispatch(
+                    job_id=job.id,
+                    tenant_id=job.tenant_id,
+                    failure=diagnostic(
+                        "JOB_DISPATCH_FAILED",
+                        "The post-approval guide job could not be dispatched.",
+                        retryable=True,
+                    ),
+                )
+            else:
+                self.repository.audit(
+                    tenant_id=job.tenant_id,
+                    event_type="guide.dispatch_succeeded",
+                    aggregate_id=request.binding.assessment_id,
+                    actor_id=actor_id,
+                    payload={
+                        "job_id": job.id,
+                        "assessment_version": request.binding.assessment_version,
+                        "approval_snapshot_hash": (
+                            request.binding.approval_snapshot_hash
+                        ),
+                    },
+                )
+        return cast(JobRow, self.repository.get(JobRow, job.id))
+
+    async def reconcile_approved_guide_jobs(self) -> int:
+        """Recover approvals committed before their deterministic job existed."""
+
+        recovered = 0
+        for row in self.repository.latest_approved_assessments():
+            try:
+                request, _descriptor, _job_id = self._guide_request_for_approved_row(
+                    row
+                )
+                try:
+                    self.repository.guide_for_approved_version(row)
+                    continue
+                except NotFound:
+                    pass
+                before = self.repository.has_audit_event(
+                    tenant_id=row.tenant_id,
+                    event_type="guide.build_queued",
+                    aggregate_id=row.assessment_id,
+                    payload_contains={
+                        "assessment_version": row.version,
+                        "guide_id": request.guide_id,
+                    },
+                )
+                await self.ensure_approved_guide_job(
+                    row, actor_id="system_reconciler"
+                )
+                if not before:
+                    recovered += 1
+            except Exception:
+                if not self.repository.has_audit_event(
+                    tenant_id=row.tenant_id,
+                    event_type="guide.reconciliation_deferred",
+                    aggregate_id=row.assessment_id,
+                    payload_contains={"assessment_version": row.version},
+                ):
+                    self.repository.audit(
+                        tenant_id=row.tenant_id,
+                        event_type="guide.reconciliation_deferred",
+                        aggregate_id=row.assessment_id,
+                        actor_id="system_reconciler",
+                        payload={"assessment_version": row.version},
+                    )
+        return recovered
+
+    async def _run_guide_build_job(self, job: JobRow) -> None:
+        descriptor = job.descriptor or {}
+        if descriptor.get("format") != GUIDE_BUILD_DESCRIPTOR_VERSION:
+            raise WorkflowError(
+                "GUIDE_BUILD_DESCRIPTOR_INVALID",
+                "The durable guide descriptor is missing or unsupported.",
+                status_code=409,
+            )
+        try:
+            binding = m.GuideApprovalBinding.model_validate(
+                descriptor.get("binding")
+            )
+        except ValidationError as exc:
+            raise WorkflowError(
+                "GUIDE_BUILD_DESCRIPTOR_INVALID",
+                "The durable guide binding is invalid.",
+                status_code=409,
+            ) from exc
+        approved_row = self.repository.assessment_version(
+            binding.assessment_id,
+            binding.assessment_version,
+            binding.tenant_id,
+        )
+        request, expected_descriptor, expected_job_id = (
+            self._guide_request_for_approved_row(approved_row)
+        )
+        if (
+            descriptor.get("logical_job_id") != expected_job_id
+            or job.aggregate_id != binding.submission_id
+            or descriptor != expected_descriptor
+        ):
+            raise WorkflowError(
+                "GUIDE_BUILD_DESCRIPTOR_HASH_MISMATCH",
+                "The durable job differs from the exact approved snapshot.",
+                status_code=409,
+            )
+        submission = cast(
+            SubmissionRow,
+            self.repository.scoped(
+                SubmissionRow, binding.submission_id, binding.tenant_id
+            ),
+        )
+        self._set_job(job, "GUIDE_BUILD", 0.35)
+        self.repository.set_submission_state(
+            m.SubmissionProcessingState(
+                submission_id=submission.id,
+                activity_id=submission.activity_id,
+                status=m.SubmissionProcessingStatus.APPROVED,
+                current_stage="GUIDE_BUILDING",
+                progress=0.35,
+                active_job_id=job.id,
+                diagnostics=[],
+                updated_at=utc_now(),
+            )
+        )
+        guide = await self._gateway_stage(
+            job,
+            "P09_GUIDE_BUILD_V1",
+            request,
+            m.EvaluationGuide,
+            cache_suffix=request.binding.approval_snapshot_hash,
+        )
+        validate_evaluation_guide(
+            guide,
+            assessment=request.assessment,
+            bundle=request.evidence_bundle,
+        )
+        self._cancellation_checkpoint(job)
+        finalized = self.repository.finalize_guide_build(
+            job_id=job.id,
+            tenant_id=job.tenant_id,
+            guide=GuideRow(
+                guide_id=guide.guide_id,
+                assessment_id=guide.assessment_id,
+                tenant_id=job.tenant_id,
+                submission_id=guide.submission_id,
+                assessment_version=request.binding.assessment_version,
+                assessment_etag=request.binding.assessment_etag,
+                assessment_snapshot_hash=(
+                    request.binding.assessment_snapshot_hash
+                ),
+                question_set_hash=request.binding.question_set_hash,
+                approval_event_id=request.binding.approval_event_id,
+                approval_snapshot_hash=request.binding.approval_snapshot_hash,
+                guide_policy_hash=request.binding.guide_policy_hash,
+                materializer_boundary_hash=(
+                    request.binding.materializer_boundary_hash
+                ),
+                guide_job_id=job.id,
+                status=guide.status,
+                created_at=guide.created_at,
+                data=guide.model_dump(mode="json"),
+            ),
+        )
+        if not finalized:
+            raise _CooperativeJobCancellation
 
     def approve_assessment(self, *, assessment_id: str, if_match: str, actor: Actor) -> AssessmentRow:
         if not actor.can_approve_assessments:
@@ -3118,6 +3497,8 @@ class Stage1Service:
         if current.etag != if_match:
             raise WorkflowError("ETAG_MISMATCH", "Assessment has changed", status_code=412)
         assessment = m.Assessment.model_validate(current.data)
+        if assessment.status == m.WorkflowStatus.APPROVED:
+            return current
         if assessment.status != m.WorkflowStatus.NEEDS_REVIEW:
             raise WorkflowError("ASSESSMENT_NOT_REVIEWABLE", "Assessment is not awaiting review", status_code=409)
         submission = cast(
@@ -3133,17 +3514,6 @@ class Stage1Service:
             raise WorkflowError(
                 "ASSESSMENT_SUBMISSION_NOT_REVIEWABLE",
                 "The submission no longer permits assessment approval.",
-                status_code=409,
-            )
-        guide = m.EvaluationGuide.model_validate(
-            self.repository.guide_for_assessment(
-                assessment_id, actor.workspace_id
-            ).data
-        )
-        if guide.status != "READY":
-            raise WorkflowError(
-                "GUIDE_NOT_READY",
-                "Assessment cannot be approved without a complete READY guide",
                 status_code=409,
             )
         # Approval is blocked unless every anchor still resolves byte-for-byte.
@@ -3183,6 +3553,35 @@ class Stage1Service:
             ) from exc
         return row
 
+    async def approve_assessment_and_enqueue_guide(
+        self, *, assessment_id: str, if_match: str, actor: Actor
+    ) -> AssessmentRow:
+        """Persist approval first; guide enqueue is recoverable and nonblocking."""
+
+        row = self.approve_assessment(
+            assessment_id=assessment_id, if_match=if_match, actor=actor
+        )
+        try:
+            await self.ensure_approved_guide_job(row, actor_id=actor.user_id)
+        except Exception:
+            # Approval is authoritative and must never be rolled back because
+            # enrichment scheduling failed. Startup reconciliation repairs the
+            # durable gap from the approved version and audit event.
+            if not self.repository.has_audit_event(
+                tenant_id=row.tenant_id,
+                event_type="guide.enqueue_deferred",
+                aggregate_id=row.assessment_id,
+                payload_contains={"assessment_version": row.version},
+            ):
+                self.repository.audit(
+                    tenant_id=row.tenant_id,
+                    event_type="guide.enqueue_deferred",
+                    aggregate_id=row.assessment_id,
+                    actor_id=actor.user_id,
+                    payload={"assessment_version": row.version},
+                )
+        return row
+
     def create_export(self, assessment_id: str, actor: Actor) -> ExportRow:
         assessment_row = self.repository.assessment_by_id(assessment_id, actor.workspace_id)
         assessment = m.Assessment.model_validate(assessment_row.data)
@@ -3198,7 +3597,14 @@ class Stage1Service:
             )
         ):
             raise WorkflowError("HUMAN_APPROVAL_REQUIRED", "Export requires human approval", status_code=409)
-        guide_row = self.repository.guide_for_assessment(assessment_id, actor.workspace_id)
+        try:
+            guide_row = self.repository.guide_for_approved_version(assessment_row)
+        except NotFound as exc:
+            raise WorkflowError(
+                "GUIDE_NOT_READY",
+                "Export requires the guide for the exact approved version.",
+                status_code=409,
+            ) from exc
         guide = m.EvaluationGuide.model_validate(guide_row.data)
         if guide.status != "READY":
             raise WorkflowError(
@@ -3793,6 +4199,18 @@ class Stage1Service:
     async def _gateway_stage(
         self, job: JobRow, prompt_id: str, request: BaseModel, output_model: type[T], *, cache_suffix: str = ""
     ) -> T:
+        if prompt_id == "P09_GUIDE_BUILD_V1" and job.kind != "GUIDE_BUILD":
+            raise WorkflowError(
+                "P09_POST_APPROVAL_JOB_REQUIRED",
+                "P09 can only run from the exact post-approval guide job.",
+                status_code=409,
+            )
+        if job.kind == "GUIDE_BUILD" and prompt_id != "P09_GUIDE_BUILD_V1":
+            raise WorkflowError(
+                "GUIDE_BUILD_PROMPT_FORBIDDEN",
+                "The post-approval guide job can only invoke P09.",
+                status_code=409,
+            )
         if prompt_id == "P05_BLUEPRINT_REVIEW_V1":
             raise WorkflowError(
                 "P05_ACTIVE_RUNTIME_RETIRED",
@@ -4044,6 +4462,8 @@ class Stage1Service:
             return _SUBMISSION_RESUME_ORDER
         if job.kind == "QUESTION_ACTION":
             return _SUBMISSION_RESUME_ORDER
+        if job.kind == "GUIDE_BUILD":
+            return _GUIDE_BUILD_RESUME_ORDER
         return {}
 
     def _mark_resume_floor(self, job: JobRow, application_stage: str) -> None:
@@ -4396,6 +4816,25 @@ class Stage1Service:
                     current_stage=status.stage,
                     progress=status.progress,
                     active_job_id=job.id,
+                    diagnostics=[failure],
+                    updated_at=utc_now(),
+                )
+            )
+        elif job.kind == "GUIDE_BUILD":
+            submission = cast(
+                SubmissionRow,
+                self.repository.scoped(
+                    SubmissionRow, job.aggregate_id, job.tenant_id
+                ),
+            )
+            self.repository.set_submission_state(
+                m.SubmissionProcessingState(
+                    submission_id=submission.id,
+                    activity_id=submission.activity_id,
+                    status=m.SubmissionProcessingStatus.APPROVED,
+                    current_stage="GUIDE_FAILED",
+                    progress=status.progress,
+                    active_job_id=None,
                     diagnostics=[failure],
                     updated_at=utc_now(),
                 )

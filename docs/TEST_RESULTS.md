@@ -1,7 +1,31 @@
 # Resultados verificables — candidato Etapa 2
 
-Fecha de corte documental: 2026-08-15 (America/Santiago; ejecución cloud hasta
+Fecha de corte documental: 2026-08-16 (America/Santiago; ejecución cloud hasta
 2026-08-11 UTC; toda la validación ADR-037 fue local, offline y mock).
+
+## Estado vigente — Fase 7, P09 post-aprobación enrichment-only — 2026-08-16
+
+| Prueba o gate | Resultado observado |
+|---|---|
+| Corte focal P09 | 10/10 tests directos PASS; orden durable, reachability por job, approval binding, aliases/materializador, evidencia/core, niveles, fallo cerrado, historia, recovery, cache y exports |
+| Escenarios A–T | 10 tests focales PASS: tres edits más regeneración antes de approval producen 0 P09; aprobación exacta produce un logical `GUIDE_BUILD`; repetición, crash/retry y nueva versión no duplican ni mezclan guía |
+| Backend completo | `make test`: 848 passed, 17 skips exclusivamente PostgreSQL local no configurado y 1 warning Starlette conocido |
+| Cobertura | `make test-cov`: 848 passed/17 skips; 81% global sobre 15.337 statements; `COVERAGE_FILE` redirigido a `/tmp` y `coverage.xml` preexistente byte-idéntico |
+| Contratos | 60 roots, 174 `$defs`, 335 refs y 8 fixtures PASS; hashes model/schema `2380d0be33b1f49a7b35e724aef8453d1469027b2d0466f9da1e38accdaf6ec3`/`775e8c16dbba9953db0869b16bc61e4d3ab642258ad670eda170e7d98d5ae7ff` |
+| Frontera P09 | provider root `GuideModelDraft`, schema estricto 3.131 bytes y hash `21b2020c83e9…`; alias/materializer/policy versionados y hash-bound; core P07 y support membership permanecen server-owned |
+| Runtime activo | `P06 -> planner -> P07 -> validation -> exact-N -> ASSEMBLE/NEEDS_REVIEW -> docente -> GUIDE_BUILD/P09 -> Guide READY`; P05/P08 históricos y P10 disabled |
+| Coste | aprobación final de N preguntas conserva P06=1, P07=N, P09=1: N+2; P09 pre-aprobación, edits y aprobación repetida = 0 llamadas adicionales; sin ahorro medio inventado |
+| Frontend | typecheck PASS; Vitest 6/6 archivos y 37/37 tests; build PASS; `npm audit` 0 vulnerabilidades |
+| Browser/Playwright | navegador integrado PASS en desktop y 390x844: estados pre-aprobación/READY, aprobación, condiciones/niveles/cannot-infer, exports, consola y overlay limpios, sin overflow; Playwright Stage 1 1/1 y Stage 2 2/2 PASS |
+| Rehearsal/higiene | tres casos Stage 0 PASS; convergence dry-run PASS con `provider_call_receipts=[]` y transporte no construido; OpenAPI, fixtures, secret scan 353 archivos, `compileall`, 11/11 deploy y Terraform fmt/init/validate PASS |
+| PostgreSQL/Docker | `pg_isready` sin respuesta y daemon Docker no disponible localmente; 17 skips locales, migración/aditividad y builds runtime/audit quedan exigidos en push/PR CI PG16/PG17/Docker |
+| Red/provider | ambas API keys removidas, `CVA_MODEL_MODE=mock`, `CVA_P10_ENABLED=false`; provider real, secreto resuelto, authorization billable y requests reales = 0 |
+
+P09 ya no forma parte del job normal de submission: la aprobación exacta se
+persiste antes de crear/reconciliar el trabajo durable de guía. Un fallo de
+guía no revoca el Assessment aprobado y una guía legacy o de otra versión nunca
+es current ni exportable. Los runs remotos del SHA publicado se registran en
+el CURRENT STATE de PR #3 y en el informe final.
 
 ## Estado vigente — Fase 6, P08 fuera del runtime activo — 2026-08-15
 

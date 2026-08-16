@@ -4,7 +4,7 @@
 **Estrategia:** recorridos verticales, revisión humana 100%, un proveedor principal, contexto cerrado  
 **Estado:** plan inmediato; la preparación institucional permanece condicionada a evidencia del piloto
 
-**Aclaración ADR-037 / Fase 6 (2026-08-15):** el objetivo formal es
+**Aclaración ADR-037 / Fase 7 (2026-08-16):** el flujo funcional vigente es
 P01→P02→P03→P04→preflight determinista→aprobación docente y, por submission,
 P06→planner→P07→validaciones deterministas→revisión/aprobación docente→P09.
 P05/P08 son inactivos en el objetivo y P10 sigue deshabilitado. Fase 3 ya
@@ -13,8 +13,10 @@ conserva P06 como mapping semántico categórico sobre aliases, lo materializa e
 servidor y hace al planner única autoridad sobre N/factibilidad. Fase 5 reduce
 P07 a redacción semántica y selección de visible anchor por aliases; el servidor
 conserva support evidence completa, identidad y anchor canónico. Fase 6 retira
-P08 con hard guard y persistencia/recovery históricos; el runtime interino
-conserva P09 después de ASSEMBLE y antes del workflow docente hasta Fase 7.
+P08 con hard guard y persistencia/recovery históricos. Fase 7 hace que ASSEMBLE
+termine primero en `NEEDS_REVIEW`; una aprobación durable exacta crea el job
+idempotente `GUIDE_BUILD` y recién entonces P09 enriquece la guía sin revisar o
+modificar preguntas.
 Las filas cerradas de Etapas
 0/1 se conservan como historia y regresión, no como autoridad para reactivar
 esas etapas.
@@ -177,16 +179,17 @@ Una persona completa el recorrido solicitado en cloud con una actividad y una en
 | E2-19 | Frontera semántica P06 | provider DTO alias-only y categórico → materializador → patch canónico; mapping 0..N completa, planner decide N, cache/recovery seguro y una sola llamada |
 | E2-20 | Frontera semántica P07 | provider DTO alias-only → materializador server-side; support evidence completa se separa del visible anchor, metadata/locator/texto canónico quedan en backend y cache/replay son hash-bound |
 | E2-21 | Cutover runtime P08 | P07→validaciones deterministas→exactamente N→ASSEMBLE; hard guard pre-transporte, cero calls/ledger/coste/reviews nuevos P08 y recovery histórico idempotente |
+| E2-22 | P09 post-aprobación enrichment-only | ASSEMBLE→Assessment `NEEDS_REVIEW` sin P09; aprobación exacta→job durable→una `GuideModelDraft` alias-only→guía materializada/version-bound; fallo no revoca aprobación y legacy permanece histórico |
 
 ## Dependencias
 
 - observabilidad y datos de Etapa 1;
 - política provisional de datos/retención para el entorno controlado;
 - conjunto de archivos DOCX/PDF representativos y autorizados.
-- `pipeline-authority/1.0.0` como fuente del objetivo; P05 quedó retirado por
+- `pipeline-authority/1.1.0` como fuente ejecutable; P05 quedó retirado por
   E2-18, P06 quedó simplificado por E2-19, P07 por E2-20 y P08 fue retirado por
-  E2-21. El orden de P09 permanece intacto hasta una Fase 7 separada, con
-  migración compatible de jobs/estado.
+  E2-21 y P09 quedó movido/enriquecido por E2-22, con migración aditiva,
+  binding exacto, job durable y lectura histórica compatible.
 
 ## Riesgos y mitigaciones
 

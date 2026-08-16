@@ -77,14 +77,17 @@ const guideDraft = {
     source_ids: [],
     required_for_level_2: true,
   }],
+  acceptance_conditions: ["Relaciona la decisión, el efecto y el trade-off con evidencia local."],
   acceptable_alternatives: ["Describe primero el efecto y luego reconstruye la causa."],
   misconceptions: ["Confundir correlación con causalidad."],
   levels: [
     { level: 0, label: "No observable", descriptor: "No usa la evidencia.", observable_element_ids: [] },
     { level: 1, label: "Parcial", descriptor: "Menciona decisión o efecto.", observable_element_ids: ["element_01"] },
     { level: 2, label: "Suficiente", descriptor: "Conecta decisión, efecto y costo.", observable_element_ids: ["element_01"] },
+    { level: 3, label: "Profundo", descriptor: "Conecta y delimita la inferencia con precisión.", observable_element_ids: ["element_01"] },
   ],
   cannot_infer: ["Intención personal del estudiante."],
+  semantic_uncertainties: ["La evidencia no permite generalizar fuera del caso."],
 };
 
 const approvedBundle = {
@@ -98,6 +101,8 @@ const approvedBundle = {
     submission_id: "submission_01",
     subject_ref: "estudiante_014",
     status: "APPROVED",
+    approved_by: "teacher_01",
+    approved_at: "2026-08-07T12:05:00Z",
     context_mode: "CLOSED",
     assessment_plan_id: "assessment_plan_01",
     question_count: 1,
@@ -152,6 +157,8 @@ const approvedBundle = {
     diagnostics: [],
     created_at: "2026-08-07T12:00:00Z",
   },
+  guide_status: "READY",
+  guide_job_id: "job_guide_01",
   reviews: [],
   evidence: [{
     schema_version: "1.1.0",

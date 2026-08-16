@@ -80,6 +80,10 @@ from comprehension_verification.model_gateway.registry import (
     prompt_spec,
 )
 from comprehension_verification.canonical import canonical_hash
+from comprehension_verification.guide_generation import (
+    build_guide_approval_binding,
+    guide_id_for_binding,
+)
 from comprehension_verification.evaluation_gate import (
     EvaluationAuthorizationConsumed,
     EvaluationAuthorizationLedger,
@@ -1398,6 +1402,20 @@ def _request_for_case(case: dict[str, Any]) -> Any:
             opportunity["student_justification_required"] = bool(
                 case["justification_required"]
             )
+
+    if prompt_id == "P09_GUIDE_BUILD_V1":
+        assessment = models.Assessment.model_validate(data["assessment"])
+        prior_binding = models.GuideApprovalBinding.model_validate(
+            data["binding"]
+        )
+        binding = build_guide_approval_binding(
+            assessment=assessment,
+            assessment_version=prior_binding.assessment_version,
+            assessment_etag=f'"{canonical_hash(assessment)}"',
+            approval_event_id=prior_binding.approval_event_id,
+        )
+        data["binding"] = binding.model_dump(mode="json")
+        data["guide_id"] = guide_id_for_binding(binding)
 
     validated = type(request).model_validate(data)
     serialized = json.dumps(validated.model_dump(mode="json"), sort_keys=True)

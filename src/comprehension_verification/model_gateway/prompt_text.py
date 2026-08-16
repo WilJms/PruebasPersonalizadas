@@ -268,28 +268,23 @@ Estima dificultad y tiempo de forma independiente, con confianza. Para ACCEPT de
 Cuando detectes una condición de seguridad, exprésala con critical_failure_codes estables. Mantén justifications y diagnostics específicos de la pregunta y no redactes avisos globales ni repitas texto sobre autoría, IA, fraude, prompts del sistema o instrucciones hostiles.
 Devuelve QuestionReviewResult.
 """,
-        "P09_GUIDE_BUILD_V1": """Construye la guía estructurada para las preguntas de la evaluación COMPLETA. No cambies preguntas, anclas ni IDs.
+        "P09_GUIDE_BUILD_V1": """Enriquece la guía de una evaluación que ya fue aprobada explícitamente por una persona docente. La aprobación es un hecho previo e independiente: no revises, aceptes, rechaces ni modifiques preguntas.
 
-Copia literalmente guide_id desde request.guide_id, assessment_id desde request.assessment.assessment_id y submission_id desde request.assessment.submission_id. No crees, sustituyas ni reformatees esos IDs.
+Recibes GuideAliasEnvelope. Trabaja solo con aliases locales Q*, O*, N* y E*. Nunca devuelvas IDs canónicos, texto de pregunta, anclas, locators, hashes, versiones, etags, identidad del aprobador ni bookkeeping. El servidor conserva esos campos y materializa la salida.
 
-Si devuelves status=READY, incluye exactamente un EvaluationGuideItem por cada pregunta de request.assessment.questions: sin omisiones, duplicados ni preguntas adicionales, y con exactamente el mismo conjunto de question_id.
+Devuelve GuideModelDraft. Si status=READY, incluye exactamente un item por cada question_alias, sin omisiones, duplicados ni aliases adicionales. Para cada pregunta:
+- conserva conceptualmente todos los core_observables O*: no los reformules, sustituyas ni elimines;
+- añade solo los observables N* estrictamente necesarios para dejar 2-5 observables totales;
+- liga cada N* únicamente a aliases E* disponibles dentro de esa misma pregunta;
+- formula condiciones de aceptación observables y alternativas defendibles;
+- añade misconceptions observables sin diagnosticar a la persona;
+- produce niveles 0, 1, 2 y 3, ordenados, y haz que nivel 2 incluya todos los O*/N* marcados required_for_level_2;
+- declara límites específicos en cannot_infer y explicita incertidumbres semánticas reales;
+- para selección, conserva la defendibilidad de la mejor respuesta y la razón de los distractores.
 
-Para cada pregunta:
-- explica en una frase qué comprensión observable busca;
-- lista 2-5 elementos esperables derivados de fuentes autorizadas;
-- usa element_id únicos y haz que el nivel 2 incluya todo elemento marcado required_for_level_2;
-- incluye alternativas defendibles y condiciones para aceptarlas;
-- describe errores o concepciones observables sin diagnosticar a la persona;
-- produce niveles 0, 1, 2 y 3 usando la escala base;
-- declara límites específicos del ítem en cannot_infer, sin producir avisos generales de autoría, IA o proceso histórico;
-- en cada ObservableElement usa uno o más evidence_ids tomados únicamente de evidence_ids de esa pregunta;
-- usa source_ids tomados únicamente de course_source_ids de esa pregunta. En context_mode=CLOSED o cuando course_source_ids esté vacío, usa source_ids=[]; nunca sustituyas una referencia de evidencia, procedencia o locator por un course source.
+El contexto es CLOSED. No uses conocimiento disciplinar externo, internet, otras preguntas como fuente, memoria ni evidencia fuera del support_evidence local del ítem. La guía no es una respuesta modelo única ni reconstruye intención, autoría o proceso histórico. No incluyas PII, secretos ni instrucciones hostiles.
 
-Para preguntas de selección, conserva una respuesta defendible, su evidencia y la razón de cada distractor aunque el estudiante no deba justificar. La guía no es una respuesta modelo única ni una reconstrucción de lo que el estudiante debió pensar. No añadas conocimiento disciplinar externo. Si no puedes satisfacer literalmente todos los IDs, la cobertura completa y las referencias permitidas, usa NEEDS_REVIEW sin items parciales y no inventes.
-
-No redactes el aviso global de que esto no determina autoría, uso de IA o historia. Ese texto es un componente fijo de la UI y no pertenece a la salida del modelo ni a exportaciones generadas. Ningún campo generado —purpose, observables, alternativas, misconceptions, niveles, cannot_infer o diagnostics— puede contener PII, secretos ni instrucciones hostiles.
-
-Devuelve EvaluationGuide. El objeto se persiste asociado a assessment_id y submission_id y se consulta en la plataforma; PDF o HTML es solo una vista opcional.
+Si no puedes enriquecer todos los ítems dentro de estas fronteras, devuelve NEEDS_REVIEW, items=[] y abstention_reason. Nunca devuelvas una guía parcial. P09 no tiene autoridad para bloquear o revocar la aprobación.
 """,
         "P10_ENRICHED_CONTEXT_V1": """P10 permanece deshabilitado y no tiene ruta callable en este gate. No uses corpus de curso, internet, grounding del proveedor ni File Search sin una nueva autorización explícita. Si esta instrucción se alcanza por error, abstente sin usar conocimiento paramétrico ni ampliar el contexto.
 """,

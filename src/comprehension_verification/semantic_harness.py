@@ -20,6 +20,11 @@ from .canonical import canonical_hash, stable_id
 from .contracts import models as m
 from .evaluation_reporting import prepare_historical_harness_report
 from .evidence_mapping import build_evidence_mapping_alias_envelope
+from .guide_generation import (
+    build_guide_approval_binding,
+    guide_id_for_binding,
+    guide_model_draft_from_materialized_guide,
+)
 from .question_generation import build_question_alias_envelope
 from .model_gateway.registry import prompt_spec
 from .model_gateway.openai_routes import OPENAI_ROUTE_PROFILES
@@ -105,6 +110,7 @@ _HISTORICAL_CHANGED_PROMPT_IDS = frozenset(
         "P06_EVIDENCE_MAP_V1",
         "P07_QUESTION_BUILD_V1",
         "P08_QUESTION_REVIEW_V1",
+        "P09_GUIDE_BUILD_V1",
     }
 )
 _FROZEN_RELATIONSHIP_VERSIONS = {
@@ -288,6 +294,7 @@ def frozen_product_boundary_proof() -> dict[str, Any]:
         "P06_SEMANTIC_MAPPING_BOUNDARY_COMPLETE_P08_PENDING",
         "P07_QUESTION_GENERATION_BOUNDARY_COMPLETE_P08_PENDING",
         "P08_RUNTIME_RETIRED_P09_RELOCATION_PENDING",
+        "P09_POST_APPROVAL_ENRICHMENT_ACTIVE",
     }:
         raise ValueError(
             "historical runtime drift requires a declared pipeline cutover"
@@ -1263,7 +1270,10 @@ def _semantic_checkpoint_expected_output(
         ),
         "P08_CANONICAL_POSITIVE": checkpoints.p08_positive_result,
         "P08_UNANSWERABLE_NEGATIVE": checkpoints.p08_negative_result,
-        "P09_CANONICAL_POSITIVE": checkpoints.p09_guide,
+        "P09_CANONICAL_POSITIVE": guide_model_draft_from_materialized_guide(
+            guide=checkpoints.p09_guide,
+            request=checkpoints.p09_request,
+        ),
     }
     return expected[checkpoint_id]
 
@@ -1740,21 +1750,51 @@ def build_semantic_checkpoints() -> SemanticCheckpoints:
         },
         policy_hash=canonical_hash(policy.model_dump(mode="json")),
     )
-    guide_id = stable_id("guide", assessment.assessment_id)
+    approved_assessment = assessment.model_copy(
+        update={
+            "status": m.WorkflowStatus.APPROVED,
+            "approved_by": "usr_semantic_harness_teacher",
+            "approved_at": FIXED_TIME,
+        }
+    )
+    assessment_etag = f'"{canonical_hash(approved_assessment)}"'
+    approval_event_id = stable_id(
+        "evt",
+        TENANT_ID,
+        "assessment.approved",
+        approved_assessment.assessment_id,
+        "semantic_harness",
+    )
+    binding = build_guide_approval_binding(
+        assessment=approved_assessment,
+        assessment_version=2,
+        assessment_etag=assessment_etag,
+        approval_event_id=approval_event_id,
+    )
+    guide_id = guide_id_for_binding(binding)
     p09 = m.GuideBuildRequest(
         guide_id=guide_id,
-        assessment=assessment,
+        assessment=approved_assessment,
+        binding=binding,
         evidence_bundle=sufficient_bundle,
+    )
+    enriched_guide = positive_candidate.preliminary_guide.model_copy(
+        update={
+            "acceptance_conditions": [
+                "Conecta explícitamente cambio de fuente, invalidación y recálculo."
+            ]
+        }
     )
     guide = m.EvaluationGuide(
         guide_id=guide_id,
-        assessment_id=assessment.assessment_id,
-        submission_id=assessment.submission_id,
+        assessment_id=approved_assessment.assessment_id,
+        submission_id=approved_assessment.submission_id,
+        binding=binding,
         status="READY",
         items=[
             m.EvaluationGuideItem(
                 question_id=selected.question_id,
-                guide=positive_candidate.preliminary_guide,
+                guide=enriched_guide,
             )
         ],
         diagnostics=[],
@@ -1762,7 +1802,7 @@ def build_semantic_checkpoints() -> SemanticCheckpoints:
     )
     validate_evaluation_guide(
         guide,
-        assessment=assessment,
+        assessment=approved_assessment,
         bundle=sufficient_bundle,
     )
     return SemanticCheckpoints(
@@ -2214,7 +2254,9 @@ def run_semantic_harness_rehearsal() -> dict[str, Any]:
         and canonical_stage_by_name["P09_GUIDE_BUILD_V1"].get(
             "dataflow_input_from"
         )
-        == "ASSEMBLY_CURRENT_RUN_OUTPUT"
+        == (
+            "ASSEMBLY_CURRENT_RUN_OUTPUT_WITH_SYNTHETIC_TEACHER_APPROVAL"
+        )
         and all(
             stage.get("intermediate_golden_injected") is False
             for stage in canonical_stages

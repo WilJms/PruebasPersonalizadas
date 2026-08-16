@@ -1363,3 +1363,41 @@
   de P09; P10 y datos reales permanecen bloqueados.
 - **Relación:** ADR-037, D-074 a D-078,
   `pipeline-authority/1.0.0`, `PHASE6_P08_RUNTIME_CUTOVER.md`.
+
+## D-080 - P09 enriquece únicamente una versión ya aprobada
+
+- **Happens-before:** ASSEMBLE persiste primero un `Assessment.NEEDS_REVIEW` y
+  termina sin P09. Editar, regenerar o rechazar preguntas antes de aprobación
+  tampoco llama al modelo. La aprobación docente exacta y su audit event se
+  confirman antes de crear el job durable `GUIDE_BUILD`; el endpoint no espera
+  a P09 y una falla de guía nunca revoca la aprobación.
+- **Identidad e idempotencia:** el servidor deriva binding, `guide_id`, logical
+  job ID y stage key desde tenant/submission, assessment ID, versión, ETag,
+  snapshot, question-set hash, evento/snapshot de aprobación, policy y
+  materializer boundary. Repetir aprobación o reconciliar un crash crea como
+  máximo un trabajo lógico y reutiliza el StageRun compatible.
+- **Frontera provider:** P09 recibe `GuideAliasEnvelope` con preguntas aprobadas
+  y namespaces `Q*`, `E*`, `O*`; devuelve `GuideModelDraft` con enriquecimiento
+  question-local. No puede transportar IDs canónicos, locators, texto/anchor de
+  salida, workflow o approval bookkeeping. No cambia modelo, route ni
+  `reasoning_effort`.
+- **Autoridad:** P07 conserva purpose, observables core, alternativas y
+  misconceptions base. P09 sólo añade condiciones de aceptación, como máximo
+  observables `N*` hasta un total 2–5, alternativas/misconceptions adicionales,
+  niveles exactos 0/1/2/3, `cannot_infer` e incertidumbres. No revisa,
+  acepta, rechaza ni modifica la pregunta o su support evidence.
+- **Materialización y fallo:** `p09-guide-materializer/1.0.0` resuelve aliases,
+  crea IDs y referencias canónicas y exige cobertura completa, evidencia local,
+  core intacto, nivel 2 con todos los observables requeridos y contexto CLOSED.
+  Abstención o defecto deja la guía no lista; nunca persiste un `READY` parcial.
+- **Versiones e historia:** la migración 007 añade columnas nullable y un índice
+  único parcial por tenant/assessment/version. Guías anteriores se preservan
+  como `HISTORICAL_PREAPPROVAL`, visibles en history pero nunca current ni
+  exportables para una versión aprobada actual sin binding exacto.
+- **Costo/seguridad:** el nominal permanece `P06 1 + P07 N + P09 1 = N+2`;
+  el beneficio es evitar P09 sobre versiones editadas o descartadas, sin
+  inventar un ahorro medio. P05/P08 siguen históricos, P10 disabled y toda la
+  implementación/validación de esta decisión es offline/mock.
+- **Relación:** ADR-037, D-074 a D-079,
+  `pipeline-authority/1.1.0`, `PHASE7_POST_APPROVAL_P09.md` y migración
+  `202608160007_phase7_post_approval_p09.sql`.

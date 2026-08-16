@@ -37,6 +37,14 @@ from comprehension_verification.evidence_mapping import (
     p06_alias_envelope_schema_boundary,
     validate_materialized_evidence_mapping,
 )
+from comprehension_verification.guide_generation import (
+    GuideGenerationCompilationError,
+    build_guide_alias_envelope,
+    guide_generation_materializer_boundary,
+    materialize_guide_draft,
+    p09_alias_envelope_schema_boundary,
+    validate_materialized_guide,
+)
 from comprehension_verification.question_generation import (
     QuestionGenerationCompilationError,
     build_question_alias_envelope,
@@ -73,7 +81,7 @@ PROMPT_RELATIONSHIP_VALIDATOR_VERSIONS: Mapping[str, str] = {
     "P06_EVIDENCE_MAP_V1": "relationship-p06/3.0.0",
     "P07_QUESTION_BUILD_V1": "relationship-p07/3.0.0",
     "P08_QUESTION_REVIEW_V1": "relationship-p08/2.1.0",
-    "P09_GUIDE_BUILD_V1": "relationship-p09/2.0.0",
+    "P09_GUIDE_BUILD_V1": "relationship-p09/3.0.0",
     "P10_ENRICHED_CONTEXT_V1": "relationship-p10/2.0.0",
     "P11_SCHEMA_REPAIR_V1": "relationship-p11/2.0.0",
 }
@@ -192,6 +200,11 @@ class ContextFailureCode(StrEnum):
     P09_QUESTION_SOURCE_ID_NOT_ALLOWLISTED = (
         "P09_QUESTION_SOURCE_ID_NOT_ALLOWLISTED"
     )
+    P09_DRAFT_MATERIALIZATION_FAILED = "P09_DRAFT_MATERIALIZATION_FAILED"
+    P09_ALIAS_REFERENCE_UNKNOWN = "P09_ALIAS_REFERENCE_UNKNOWN"
+    P09_SCOPE_ALIAS_MISMATCH = "P09_SCOPE_ALIAS_MISMATCH"
+    P09_APPROVAL_BINDING_MISMATCH = "P09_APPROVAL_BINDING_MISMATCH"
+    P09_CANONICAL_REPLAY_FAILED = "P09_CANONICAL_REPLAY_FAILED"
 
 
 @dataclass(frozen=True, slots=True)
@@ -917,6 +930,13 @@ class ModelGateway:
             material["question_generation_materializer"] = (
                 question_generation_materializer_boundary()
             )
+        elif prompt_id == "P09_GUIDE_BUILD_V1":
+            material["alias_envelope_schema"] = (
+                p09_alias_envelope_schema_boundary()
+            )
+            material["guide_generation_materializer"] = (
+                guide_generation_materializer_boundary()
+            )
         return f"model-stage-execution/2:{_hash(material).removeprefix('sha256:')}"
 
     def validate_cached_output(
@@ -946,6 +966,7 @@ class ModelGateway:
             "P04_BLUEPRINT_BUILD_V1",
             "P06_EVIDENCE_MAP_V1",
             "P07_QUESTION_BUILD_V1",
+            "P09_GUIDE_BUILD_V1",
         }:
             output = self._validate_stage_output(spec, raw_output)
         else:
@@ -1457,6 +1478,15 @@ class ModelGateway:
             provider_payload = build_question_alias_envelope(
                 request
             ).model_dump(mode="json")
+        elif spec.prompt_id == "P09_GUIDE_BUILD_V1":
+            if not isinstance(request, models.GuideBuildRequest):
+                raise GatewayValidationError(
+                    "P09 alias boundary received an unexpected request root",
+                    phase=ValidationPhase.ENVELOPE,
+                )
+            provider_payload = build_guide_alias_envelope(
+                request
+            ).model_dump(mode="json")
         raw = {
             "schema_version": SCHEMA_VERSION,
             "prompt_id": spec.prompt_id,
@@ -1523,6 +1553,7 @@ class ModelGateway:
             "P04_BLUEPRINT_BUILD_V1",
             "P06_EVIDENCE_MAP_V1",
             "P07_QUESTION_BUILD_V1",
+            "P09_GUIDE_BUILD_V1",
         }:
             return output
         if prompt_id == "P04_BLUEPRINT_BUILD_V1":
@@ -1583,8 +1614,9 @@ class ModelGateway:
                     phase=phase,
                     failure_code=failure_code,
                 ) from exc
-        if not isinstance(request, models.QuestionBuildRequest) or not isinstance(
-            output, models.QuestionModelDraft
+        if prompt_id == "P07_QUESTION_BUILD_V1" and (
+            not isinstance(request, models.QuestionBuildRequest)
+            or not isinstance(output, models.QuestionModelDraft)
         ):
             raise GatewayContextError(
                 "P07 provider boundary used an unexpected contract",
@@ -1593,22 +1625,55 @@ class ModelGateway:
                     ContextFailureCode.P07_DRAFT_MATERIALIZATION_FAILED
                 ),
             )
+        if prompt_id == "P07_QUESTION_BUILD_V1":
+            assert isinstance(request, models.QuestionBuildRequest)
+            assert isinstance(output, models.QuestionModelDraft)
+            try:
+                return materialize_question_draft(draft=output, request=request)
+            except QuestionGenerationCompilationError as exc:
+                failure_code = {
+                    "P07_ALIAS_REFERENCE_UNKNOWN": (
+                        ContextFailureCode.P07_ALIAS_REFERENCE_UNKNOWN
+                    ),
+                    "P07_SCOPE_ALIAS_MISMATCH": (
+                        ContextFailureCode.P07_SCOPE_ALIAS_MISMATCH
+                    ),
+                }.get(
+                    exc.code,
+                    ContextFailureCode.P07_DRAFT_MATERIALIZATION_FAILED,
+                )
+                raise GatewayContextError(
+                    "P07 semantic draft failed deterministic materialization",
+                    phase=phase,
+                    failure_code=failure_code,
+                ) from exc
+        if not isinstance(request, models.GuideBuildRequest) or not isinstance(
+            output, models.GuideModelDraft
+        ):
+            raise GatewayContextError(
+                "P09 provider boundary used an unexpected contract",
+                phase=phase,
+                failure_code=ContextFailureCode.P09_DRAFT_MATERIALIZATION_FAILED,
+            )
         try:
-            return materialize_question_draft(draft=output, request=request)
-        except QuestionGenerationCompilationError as exc:
+            return materialize_guide_draft(draft=output, request=request)
+        except GuideGenerationCompilationError as exc:
             failure_code = {
-                "P07_ALIAS_REFERENCE_UNKNOWN": (
-                    ContextFailureCode.P07_ALIAS_REFERENCE_UNKNOWN
+                "P09_ALIAS_REFERENCE_UNKNOWN": (
+                    ContextFailureCode.P09_ALIAS_REFERENCE_UNKNOWN
                 ),
-                "P07_SCOPE_ALIAS_MISMATCH": (
-                    ContextFailureCode.P07_SCOPE_ALIAS_MISMATCH
+                "P09_SCOPE_ALIAS_MISMATCH": (
+                    ContextFailureCode.P09_SCOPE_ALIAS_MISMATCH
+                ),
+                "P09_APPROVAL_BINDING_MISMATCH": (
+                    ContextFailureCode.P09_APPROVAL_BINDING_MISMATCH
                 ),
             }.get(
                 exc.code,
-                ContextFailureCode.P07_DRAFT_MATERIALIZATION_FAILED,
+                ContextFailureCode.P09_DRAFT_MATERIALIZATION_FAILED,
             )
             raise GatewayContextError(
-                "P07 semantic draft failed deterministic materialization",
+                "P09 semantic draft failed deterministic materialization",
                 phase=phase,
                 failure_code=failure_code,
             ) from exc
@@ -2051,6 +2116,8 @@ class ModelGateway:
             if output.review is not None:
                 raise GatewayContextError("P08 abstention cannot fabricate scores")
         elif prompt_id == "P09_GUIDE_BUILD_V1" and output.status != "READY":
+            if isinstance(output, models.GuideModelDraft):
+                return
             require_diagnostic()
             if output.items:
                 raise GatewayContextError("P09 abstention cannot expose a partial guide")
@@ -2299,60 +2366,33 @@ class ModelGateway:
                     ),
                 )
         elif prompt_id == "P09_GUIDE_BUILD_V1":
-            if output.guide_id != request.guide_id:
+            if not isinstance(request, models.GuideBuildRequest) or not isinstance(
+                output, models.EvaluationGuide
+            ):
                 raise GatewayContextError(
-                    "P09 output guide_id mismatch",
+                    "P09 relationship used an unexpected contract",
                     phase=phase,
-                    failure_code=ContextFailureCode.P09_GUIDE_ID_MISMATCH,
+                    failure_code=ContextFailureCode.P09_DRAFT_MATERIALIZATION_FAILED,
                 )
-            if output.assessment_id != request.assessment.assessment_id:
-                raise GatewayContextError(
-                    "P09 output assessment_id mismatch",
-                    phase=phase,
-                    failure_code=ContextFailureCode.P09_ASSESSMENT_ID_MISMATCH,
-                )
-            if output.submission_id != request.assessment.submission_id:
-                raise GatewayContextError(
-                    "P09 output submission_id mismatch",
-                    phase=phase,
-                    failure_code=ContextFailureCode.P09_SUBMISSION_ID_MISMATCH,
-                )
-            questions = {q.question_id: q for q in request.assessment.questions}
-            for item in output.items:
-                question = questions.get(item.question_id)
-                if question is None:
-                    raise GatewayContextError(
-                        "Guide references an unknown question_id",
-                        phase=phase,
-                        failure_code=ContextFailureCode.P09_UNKNOWN_QUESTION_ID,
-                    )
-                for element in item.guide.observable_elements:
-                    if not set(element.evidence_ids).issubset(set(question.evidence_ids)):
-                        raise GatewayContextError(
-                            "Guide invented evidence for a question",
-                            phase=phase,
-                            failure_code=(
-                                ContextFailureCode.P09_QUESTION_EVIDENCE_ID_NOT_ALLOWLISTED
-                            ),
-                        )
-                    if not set(element.source_ids).issubset(set(question.course_source_ids)):
-                        raise GatewayContextError(
-                            "Guide invented a course source",
-                            phase=phase,
-                            failure_code=(
-                                ContextFailureCode.P09_QUESTION_SOURCE_ID_NOT_ALLOWLISTED
-                            ),
-                        )
-            if output.status == "READY" and {
-                item.question_id for item in output.items
-            } != set(questions):
-                raise GatewayContextError(
-                    "READY guide must cover every assessment question",
-                    phase=phase,
-                    failure_code=(
-                        ContextFailureCode.P09_QUESTION_COVERAGE_MISMATCH
+            try:
+                validate_materialized_guide(guide=output, request=request)
+            except GuideGenerationCompilationError as exc:
+                failure_code = {
+                    "P09_APPROVAL_BINDING_MISMATCH": (
+                        ContextFailureCode.P09_APPROVAL_BINDING_MISMATCH
                     ),
-                )
+                    "P09_CANONICAL_REPLAY_MISMATCH": (
+                        ContextFailureCode.P09_CANONICAL_REPLAY_FAILED
+                    ),
+                    "P09_ALIAS_REFERENCE_UNKNOWN": (
+                        ContextFailureCode.P09_ALIAS_REFERENCE_UNKNOWN
+                    ),
+                }.get(exc.code, ContextFailureCode.P09_DRAFT_MATERIALIZATION_FAILED)
+                raise GatewayContextError(
+                    "P09 output failed deterministic replay",
+                    phase=phase,
+                    failure_code=failure_code,
+                ) from exc
         elif prompt_id == "P11_SCHEMA_REPAIR_V1":
             if output.target_schema_name != request.target_schema_name:
                 raise GatewayContextError("P11 changed target_schema_name")

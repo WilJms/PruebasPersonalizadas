@@ -203,8 +203,11 @@ def test_canonical_document_integrated_chain_uses_current_outputs_without_golden
     assert by_stage["P08_QUESTION_REVIEW_V1"]["upstream_output_hash"] == (
         by_stage["P08_QUESTION_REVIEW_V1"]["consumed_generation_hash"]
     )
-    assert by_stage["P09_GUIDE_BUILD_V1"]["consumed_assessment_hash"] == (
+    assert by_stage["P09_GUIDE_BUILD_V1"]["consumed_assessment_hash"] != (
         by_stage["ASSEMBLY"]["output_hash"]
+    )
+    assert by_stage["P09_GUIDE_BUILD_V1"]["dataflow_input_from"] == (
+        "ASSEMBLY_CURRENT_RUN_OUTPUT_WITH_SYNTHETIC_TEACHER_APPROVAL"
     )
     assert not any(
         row.get("intermediate_golden_injected") is True
@@ -906,7 +909,7 @@ def test_offline_rehearsal_has_zero_provider_activity_and_valid_goldens() -> Non
     assert report["causal_classification"] == "QUALIFICATION_PASSED"
     assert report["evidence_status"] == "HISTORICAL_NON_CANONICAL_EVIDENCE"
     assert report["model_selection_gate"] is False
-    assert report["pipeline_authority_version"] == "pipeline-authority/1.0.0"
+    assert report["pipeline_authority_version"] == "pipeline-authority/1.1.0"
     assert report["diagnostic_codes_hash"].startswith("sha256:")
     assert all(item["status"] == "PASS" for item in report["checks"])
     assert report["controls"] == {

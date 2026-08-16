@@ -1,5 +1,6 @@
 """FastAPI shell for the private Stage 2 experimental environment."""
 
+from contextlib import asynccontextmanager
 from datetime import UTC, datetime
 import json
 import logging
@@ -27,7 +28,6 @@ from .repository import (
     ExportRow,
     EvidenceRow,
     FeedbackEventRow,
-    GuideRow,
     NotFound,
     PolicyDecisionRow,
     QuestionReviewActionRow,
@@ -342,6 +342,13 @@ def create_app(
         job_runner=job_runner,
         inline_wait_for_completion=inline_wait_for_completion,
     )
+    @asynccontextmanager
+    async def lifespan(_app: FastAPI):
+        # Approval and guide scheduling are intentionally separate commits.
+        # Startup closes the only crash gap without revisiting human approval.
+        await runtime.service.reconcile_approved_guide_jobs()
+        yield
+
     app = FastAPI(
         title="Comprehension Verification Lab",
         version="0.4.0",
@@ -349,6 +356,7 @@ def create_app(
         redoc_url=None,
         openapi_url="/api/openapi.json" if selected.environment != "cloud" else None,
         responses=PROBLEM_RESPONSES,
+        lifespan=lifespan,
     )
     app.state.runtime = runtime
     rate_limiter = FixedWindowRateLimiter()
@@ -1834,11 +1842,28 @@ def create_app(
         assessment_id: str,
         actor: Annotated[Actor, Depends(current_actor)],
     ) -> dict[str, Any]:
-        row = cast(
-            GuideRow,
-            runtime.repository.guide_for_assessment(assessment_id, actor.workspace_id),
-        )
-        return {"guide": row.data}
+        return runtime.service.guide_view(assessment_id, actor)
+
+    @app.get(
+        "/api/v1/assessments/{assessment_id}/guide/estimate",
+        response_model=dto.EstimateEnvelope,
+    )
+    def guide_estimate(
+        assessment_id: str,
+        actor: Annotated[Actor, Depends(current_actor)],
+    ) -> dict[str, Any]:
+        estimate = runtime.service.guide_cost_estimate(assessment_id, actor)
+        return {"estimate": estimate.model_dump(mode="json")}
+
+    @app.get(
+        "/api/v1/assessments/{assessment_id}/guide/history",
+        response_model=dto.GuideHistoryEnvelope,
+    )
+    def guide_history(
+        assessment_id: str,
+        actor: Annotated[Actor, Depends(current_actor)],
+    ) -> dict[str, Any]:
+        return {"items": runtime.service.guide_history(assessment_id, actor)}
 
     @app.post(
         "/api/v1/assessments/{assessment_id}/questions/{question_id}/actions",
@@ -1917,7 +1942,7 @@ def create_app(
         "/api/v1/assessments/{assessment_id}:approve",
         response_model=dto.AssessmentEnvelope,
     )
-    def approve_assessment(
+    async def approve_assessment(
         assessment_id: str,
         _payload: Annotated[dto.EmptyCommand, Body(default_factory=dto.EmptyCommand)],
         response: Response,
@@ -1929,7 +1954,7 @@ def create_app(
                 "IF_MATCH_REQUIRED", "If-Match is required", status_code=428
             )
         runtime.stage2.assert_no_unresolved_question_action(assessment_id, actor)
-        row = runtime.service.approve_assessment(
+        row = await runtime.service.approve_assessment_and_enqueue_guide(
             assessment_id=assessment_id,
             if_match=if_match,
             actor=actor,
@@ -1987,12 +2012,12 @@ def create_app(
         "/api/v1/activities/{activity_id}/assessments:bulk-approve",
         response_model=dto.BulkApprovalEnvelope,
     )
-    def bulk_approve_assessments(
+    async def bulk_approve_assessments(
         activity_id: str,
         payload: dto.BulkApprovalCommand,
         actor: Annotated[Actor, Depends(mutating_actor)],
     ) -> dict[str, Any]:
-        record = runtime.stage2.bulk_approve(
+        record = await runtime.stage2.bulk_approve(
             activity_id=activity_id,
             targets=payload.targets,
             explicit_confirmation=payload.explicit_confirmation,

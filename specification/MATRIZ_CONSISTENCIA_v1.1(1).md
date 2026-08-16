@@ -1,7 +1,7 @@
 # Matriz de consistencia v1.1
 
 **Auditoría:** arquitectura, P01-P11, contratos, Pydantic, JSON Schema, persistencia/API y plan  
-**Fecha:** 15-08-2026
+**Fecha:** 16-08-2026
 **Criterio:** cada fila distingue el objetivo ADR-037 de los contratos y estados legacy retenidos durante el cutover.
 
 ## 1. Matriz sistemática
@@ -27,7 +27,8 @@
 | `QuestionBuildRequest` -> `QuestionGenerationResult` | P07 Luna-high; servidor materializa metadata/support/anchor por oportunidad | support completa y anchor visible subset; CLOSED | generated_questions/StageRun canónico | consistente |
 | `QuestionReviewRequest` -> `QuestionReviewResult` | P08 histórico no callable | contrato, scores y decisiones retenidos | question_reviews legibles; no se escriben en flujo nuevo | cutover Fase 6 completo |
 | `ChoiceOption` y justificación | respuesta/rationale de cada opción; misconception por distractor | `CHOICE`; `student_justification_required` | assessment_questions/guides | consistente |
-| `GuideBuildRequest` -> `EvaluationGuide` | P09 objetivo después de aprobación; Fase 6 conserva el orden interino tras ASSEMBLE | guía completa por assessment/submission | GET assessment guide | relocación Fase 7 pendiente |
+| `GuideAliasEnvelope`, `GuideModelDraft` | P09 enrichment-only post-aprobación con aliases Q/E/O | provider DTO separado; sin IDs/texto/anchor/locator/bookkeeping canónicos | transitorios y hash-bound; nunca cache canónico | consistente |
+| `GuideBuildRequest` -> `EvaluationGuide` | approval exacta -> job durable P09 -> materializador | binding de version/ETag/approval/question set; core P07 + enrichment, niveles 0–3 | current/status/history + export exact-version | cutover Fase 7 completo |
 | P10 enriquecido | deshabilitado | contrato retenido, no callable | sin activación | consistente |
 | `SchemaRepairRequest` -> `SchemaRepairResult` | P11 Luna-minimal, temperatura 0 | repair estructural único | ledger/result | consistente |
 | `Assessment` | exactamente \(N\), lineage y resumen de justificación | root + invariantes atómicas | GET/review/approve/export | consistente |
@@ -36,7 +37,7 @@
 | `EvaluationGuide` | representación principal en plataforma | root independiente | `evaluation_guides`; PDF/HTML opcional | consistente |
 | aviso de autoría/IA/historia | footer/callout fijo de producto | deliberadamente fuera de outputs LLM | componente UI, no export generado | consistente |
 | `SubmissionProcessingState` | mapeo -> plan -> generación -> validación -> docente -> guía | cuatro terminales pedagógicos específicos | GET submission | target; migración de estados pendiente |
-| `pipeline-authority/1.0.0` | pipelines y autoridad backend/modelo/docente | manifiesto Python inmutable | P05/P08 cutover completo; P09 relocación pendiente | consistente |
+| `pipeline-authority/1.1.0` | pipelines y autoridad backend/modelo/docente | manifiesto Python inmutable | P05/P08 históricos; P09 post-aprobación activo | consistente |
 | oracle de qualification | `VALID`/`ORACLE_SUSPECT`/`INVALID`/`NOT_APPLICABLE` | clasificador causal | reportes históricos/sintéticos | consistente |
 | `JobStatus` | Cloud Run Jobs | root técnico separado | jobs/stage_runs | consistente |
 | `ModelRoute` | config aprobada completa | provider/model/snapshot/effort/temp/capabilities/limits | catálogo + ledger | consistente |
@@ -75,8 +76,16 @@
 25. P07 no devuelve IDs, locators, anchor text, operation, format, difficulty ni time; `QuestionModelDraft` contiene sólo semántica y aliases locales.
 26. `QuestionCandidate.evidence_ids` conserva support evidence completa y el anchor visible es un subconjunto reconstruido literalmente por el servidor.
 27. Draft y resultado canónico P07 no son intercambiables; support, oportunidad, bundle, policy, scope, schema y materializador invalidan reuse y replay exige igualdad exacta.
-28. P08 tiene cero invocaciones activas; validación determinista y docente sustituyen su autoridad sin recrear scores. P09 no se mueve y P10 sigue disabled.
+28. P08 tiene cero invocaciones activas; validación determinista y docente sustituyen su autoridad sin recrear scores. P09 sólo se habilita por aprobación durable y P10 sigue disabled.
 29. `Anchor.self_containment_score` es compatibilidad legacy sin autoridad; el visible anchor puede ser menor o igual al support.
+30. ASSEMBLE termina en `Assessment.NEEDS_REVIEW`; edits/regenerations/rejects
+    pre-aprobación producen cero P09 y una aprobación repetida no duplica el
+    logical `GUIDE_BUILD`.
+31. P09 conserva purpose y observables core P07, no puede modificar question/
+    anchor/support, y sólo aporta condiciones, adiciones locales, niveles
+    0–3, `cannot_infer` e incertidumbres.
+32. Un fallo P09 no revoca aprobación ni crea READY parcial; una guía legacy o
+    de otra versión permanece legible pero no es current ni exportable.
 
 ## 3. Decisiones cerradas y abiertas
 

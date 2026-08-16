@@ -5,14 +5,16 @@
 **Equipo:** dos desarrolladores  
 **Principio:** laboratorio para validar el pipeline; no SaaS institucional terminado
 
-**Aclaración ADR-037 / Fase 6 (2026-08-15):** P05/P08 permanecen legibles como
+**Aclaración ADR-037 / Fase 7 (2026-08-16):** P05/P08 permanecen legibles como
 contratos/artefactos históricos y no son etapas activas objetivo. El runtime ya
 retiró P05. P06 usa un provider DTO alias-only/categórico, materialización
 server-side y planner como única autoridad de N/factibilidad. P07 usa aliases y
 un draft semántico pequeño; el backend conserva support evidence completa y
 reconstruye el visible anchor exacto. P08 ya no es callable: nuevas ejecuciones
-validan P07, exigen exactamente N y ensamblan sin review P08. P09 conserva su
-orden interino hasta Fase 7. P10 continúa deshabilitado.
+validan P07, exigen exactamente N y ensamblan sin review P08. ASSEMBLE publica
+primero un Assessment `NEEDS_REVIEW`; sólo una aprobación durable exacta crea
+el job `GUIDE_BUILD`, y P09 enriquece esa versión sin revisar o cambiar las
+preguntas. P10 continúa deshabilitado.
 
 ---
 
@@ -53,8 +55,8 @@ No existe rol estudiante en esta versión. Las evaluaciones se descargan para se
 7. Inicia el pipeline; observa progreso por submission y etapa.
 8. Abre una entrega y revisa evidencia, matches de variante, oportunidades, plan, preguntas y validaciones deterministas.
 9. En cada pregunta acepta, rechaza, edita o solicita regeneración localizada.
-10. Aprueba el Assessment completo o selecciona varios elegibles, revisa el alcance y confirma una aprobación masiva; las excepciones quedan fuera.
-11. Usa la guía dentro de la plataforma y, si lo necesita, descarga evaluación, guía, cobertura y JSON canónico.
+10. Aprueba el Assessment completo o selecciona varios elegibles, revisa el alcance y confirma una aprobación masiva; las excepciones quedan fuera. La aprobación queda persistida antes de iniciar la guía.
+11. La UI muestra la guía como pending/building/failed/ready; cuando está READY se usa dentro de la plataforma y, si hace falta, se descarga junto con evaluación, cobertura y JSON canónico.
 12. Registra feedback; el sistema agrega métricas técnicas, económicas y de aceptación.
 
 ---
@@ -76,7 +78,7 @@ No existe rol estudiante en esta versión. Las evaluaciones se descargan para se
 - reemplazo localizado desde una oportunidad de reserva;
 - aprobación masiva explícita con exclusiones auditadas;
 - justificación estructurada `NOT_REQUIRED`/`SELECTED`/`ALL` y aviso de alcance limitado;
-- guía estructurada principal en plataforma; evaluación/guía/coverage/JSON exportables como vistas;
+- guía estructurada post-aprobación con estado independiente; sólo la guía READY ligada a la versión aprobada current entra en evaluación/guía/coverage/JSON exportables;
 - ledger de modelo y métricas básicas;
 - feedback docente estructurado;
 - autenticación sencilla y roles mínimos;
@@ -226,8 +228,9 @@ Prefijo `/api/v1`. Todos los mutables usan `Idempotency-Key`; ediciones versiona
 |---|---|---|
 | POST | `/assessments/{assessment_id}/questions/{question_id}/actions` | `QuestionReviewAction` |
 | POST | `/assessments/{assessment_id}/questions/{question_id}:regenerate` | reemplazo desde oportunidad de reserva |
-| GET | `/assessments/{assessment_id}/guide` | `EvaluationGuide` para roles autorizados |
-| POST | `/assessments/{assessment_id}:approve` | aprobación humana completa |
+| GET | `/assessments/{assessment_id}/guide` | estado current pending/building/failed o `EvaluationGuide` READY para la versión aprobada exacta |
+| GET | `/assessments/{assessment_id}/guides/history` | guías históricas tenant-scoped, incluidas legacy etiquetadas |
+| POST | `/assessments/{assessment_id}:approve` | persiste aprobación humana y encola idempotentemente `GUIDE_BUILD`; no espera P09 |
 | POST | `/assessments:bulk-approve` | `BulkApprovalRequest` -> `BulkApprovalRecord` |
 | POST | `/assessments/{assessment_id}/exports` | crea evaluación/guía/coverage/JSON |
 | GET | `/exports/{export_id}` | estado y URL temporal |
@@ -248,7 +251,8 @@ Prefijo `/api/v1`. Todos los mutables usan `Idempotency-Key`; ediciones versiona
 
 La tabla distingue el runtime activo de los estados que siguen legibles por
 compatibilidad. Fase 3 reemplazó `BLUEPRINT_BUILD_REVIEW`; Fase 6 convirtió
-`QUESTION_REVIEW` en floor legado y añadió `QUESTION_VALIDATE` activo.
+`QUESTION_REVIEW` en floor legado y añadió `QUESTION_VALIDATE`; Fase 7 separó
+`GUIDE_BUILD` como job post-aprobación.
 
 | Job/stage | Input | Output | Retry |
 |---|---|---|---|
@@ -265,7 +269,7 @@ compatibilidad. Fase 3 reemplazó `BLUEPRINT_BUILD_REVIEW`; Fase 6 convirtió
 | `QUESTION_VALIDATE` | P07 canónico + opportunity + bundle | PASS/diagnostics objetivos hash-bound | ACTIVE_CURRENT; reserva sólo para defecto local corregible |
 | `QUESTION_REVIEW` | estado/request P08 anterior al corte | reconciliación por P07 vigente | LEGACY/HISTORICAL; nunca invoca P08 |
 | `ASSEMBLE` | plan + exactamente N preguntas + lineage | Assessment `NEEDS_REVIEW` | determinista y atómico |
-| `GUIDE_BUILD` | request P09 | `EvaluationGuide` | orden runtime actual sin cambios; objetivo posterior diferido |
+| `GUIDE_BUILD` | versión aprobada + binding exacto -> envelope P09 | draft alias-only -> `EvaluationGuide` materializada | logical ID/stage key deterministas; retry/replay exactos, fallo no revoca aprobación |
 | `RENDER_EXPORT` | Assessment | archivos derivados | retry sin LLM |
 
 Cada stage persiste `input_hash`, `component_version`, intento, timestamps, output ref y diagnostics. Un stage completo se reutiliza si su clave coincide.
@@ -282,13 +286,13 @@ Se separan dos ejes para no confundir ejecución y resultado.
 
 ### Submission de dominio
 
-`UPLOADED -> VALIDATING -> PARSING -> EVIDENCE_READY -> MAPPING_OPPORTUNITIES -> PLANNING -> GENERATING -> VALIDATING_QUESTIONS -> GUIDE_READY -> NEEDS_REVIEW -> APPROVED`.
+`UPLOADED -> VALIDATING -> PARSING -> EVIDENCE_READY -> MAPPING_OPPORTUNITIES -> PLANNING -> GENERATING -> VALIDATING_QUESTIONS -> NEEDS_REVIEW -> APPROVED`.
 
 Terminales para una versión: `INSUFFICIENT_RELEVANT_EVIDENCE`, `INSUFFICIENT_DISTINCT_QUESTION_OPPORTUNITIES`, `EVIDENCE_MAPPING_UNCERTAIN`, `ASSESSMENT_PLAN_INFEASIBLE`, `TECHNICAL_FAILURE`, `REJECTED_SECURITY`, `CANCELLED`. Un retry o archivo corregido crea nueva ejecución; no muta el historial.
 
-La posición actual de `GUIDE_READY` es legacy. El cutover posterior debe
-introducir una transición durable de revisión/aprobación de preguntas antes de
-P09 sin reusar estados de manera ambigua.
+`GUIDE_READY` en una submission antigua permanece legible como estado legacy.
+La guía actual usa un eje/job separado: `PENDING -> BUILDING -> READY | FAILED`,
+siempre después de `Assessment.APPROVED`.
 
 ### Assessment
 
@@ -313,7 +317,7 @@ P09 sin reusar estados de manera ambigua.
 | `evidence_claims`, `evidence_variant_matches` | claims, alignments dimensión/variante, patch/version |
 | `question_opportunities`, `assessment_plans` | oportunidades concretas, primarias/reserva y diagnósticos |
 | `generated_questions`, `question_reviews` | preguntas por oportunidad, scores y vetos |
-| `assessments`, `assessment_questions`, `evaluation_guides` | Assessment/version, preguntas y guía estructurada |
+| `assessments`, `assessment_questions`, `evaluation_guides` | Assessment/version, preguntas y guía con binding exacto; filas legacy preservadas como history |
 | `question_review_actions` | acción, actor, motivo, before/after |
 | `bulk_approval_records`, `bulk_approval_exclusions` | actor, fecha, scope, versiones, aprobados y excepciones |
 | `jobs`, `stage_runs` | estado, idempotencia, attempts, diagnostics |
@@ -338,7 +342,7 @@ Los blobs nunca se guardan en PostgreSQL. Los JSONB completos son fuente del sna
 | P06 | submission | EvidenceMapRequest -> EvidenceMappingAliasEnvelope | EvidenceMappingModelDraft -> EvidenceMapPatch | aliases/scope, soporte categórico, materializador; planner decide N |
 | P07 | oportunidad cerrada | QuestionBuildRequest -> QuestionAliasEnvelope | QuestionModelDraft -> QuestionGenerationResult | redacción/visible aliases del modelo; support, identidad, anchor, locator y metadata en backend |
 | P08 | histórico no callable | QuestionReviewRequest | QuestionReviewResult | HISTORICAL_COMPATIBILITY; hard guard pre-transporte |
-| P09 | orden runtime interino | GuideBuildRequest | EvaluationGuide | sin cambio en Fase 6; orden objetivo posterior pendiente |
+| P09 | job durable post-aprobación | GuideBuildRequest -> GuideAliasEnvelope | GuideModelDraft -> EvaluationGuide | binding exacto, core P07 preservado, aliases locales, niveles 0–3 y no partial READY |
 | P10 | oportunidad enriquecida posterior | QuestionBuildRequest | QuestionGenerationResult | citations/source IDs |
 | P11 | fallo estructural | SchemaRepairRequest | SchemaRepairResult | revalidar schema objetivo |
 
@@ -347,8 +351,8 @@ su contrato siga siendo legible. Habilitarlo exige decisión nueva y corpus
 autorizado.
 
 Las rutas iniciales se conservan como historia/configuración compatible y no se
-modifican aquí. P05/P08 ya no son alcanzables por ejecuciones nuevas; P09 no se
-mueve en esta fase. `candidate.evidence_ids` lleva la support evidence completa
+modifican aquí. P05/P08 ya no son alcanzables por ejecuciones nuevas; P09 sólo
+es alcanzable desde una aprobación durable exacta. `candidate.evidence_ids` lleva la support evidence completa
 y `candidate.anchor` el subconjunto visible, que puede ser menor o igual. El
 harness actual no es
 un gate canónico para escoger modelo. Cualquier comparación futura requiere un

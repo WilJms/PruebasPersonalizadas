@@ -29,7 +29,7 @@ PROMPT_APPLICATION_VALIDATOR_VERSIONS: Mapping[str, str] = MappingProxyType(
         "P06_EVIDENCE_MAP_V1": "application-validator-p06/3.0.0",
         "P07_QUESTION_BUILD_V1": "application-validator-p07/3.0.0",
         "P08_QUESTION_REVIEW_V1": "application-validator-p08/2.0.0",
-        "P09_GUIDE_BUILD_V1": "application-validator-p09/2.0.0",
+        "P09_GUIDE_BUILD_V1": "application-validator-p09/3.0.0",
     }
 )
 _MAX_BLUEPRINT_PREFLIGHT_STATES = 50_000
@@ -923,11 +923,33 @@ def validate_evaluation_guide(
     bundle: m.EvidenceBundle,
 ) -> None:
     validate_generated_output_safety(guide)
+    if assessment.status != m.WorkflowStatus.APPROVED:
+        raise ContextValidationError(
+            "HUMAN_APPROVAL_REQUIRED", "active guide validation requires approval"
+        )
+    if guide.binding is None:
+        raise ContextValidationError(
+            "GUIDE_APPROVAL_BINDING_REQUIRED",
+            "active guide is not bound to an approved assessment version",
+        )
     if guide.assessment_id != assessment.assessment_id:
         raise ContextValidationError("INVENTED_ID", "guide assessment mismatch")
     if guide.submission_id != assessment.submission_id or guide.submission_id != bundle.submission_id:
         raise ContextValidationError("CROSS_SUBMISSION_EVIDENCE", "guide submission mismatch")
     assessment_questions = {item.question_id: item for item in assessment.questions}
+    if any(
+        (
+            guide.binding.tenant_id != assessment.tenant_id,
+            guide.binding.assessment_id != assessment.assessment_id,
+            guide.binding.submission_id != assessment.submission_id,
+            guide.binding.approved_by != assessment.approved_by,
+            guide.binding.approved_at != assessment.approved_at,
+        )
+    ):
+        raise ContextValidationError(
+            "GUIDE_APPROVAL_BINDING_MISMATCH",
+            "guide binding differs from the approved assessment",
+        )
     if guide.status == "READY":
         if {item.question_id for item in guide.items} != set(assessment_questions):
             raise ContextValidationError("GUIDE_INCOMPLETE", "guide must cover every question exactly")
@@ -942,6 +964,19 @@ def validate_evaluation_guide(
                 code="DUPLICATE_ID",
                 label="guide observable element IDs",
             )
+            core = question.preliminary_guide.observable_elements
+            if item.guide.purpose != question.preliminary_guide.purpose or (
+                item.guide.observable_elements[: len(core)] != core
+            ):
+                raise ContextValidationError(
+                    "GUIDE_CORE_MUTATED",
+                    "P09 changed a P07-owned guide core",
+                )
+            if not item.guide.acceptance_conditions or not item.guide.cannot_infer:
+                raise ContextValidationError(
+                    "GUIDE_INCOMPLETE",
+                    "guide requires acceptance conditions and cannot-infer limits",
+                )
             levels = [level.level for level in item.guide.levels]
             if levels != [0, 1, 2, 3]:
                 raise ContextValidationError("GUIDE_INCOMPLETE", "guide levels must be 0,1,2,3")
@@ -969,6 +1004,10 @@ def validate_evaluation_guide(
                     )
                 if not set(element.source_ids).issubset(allowed_sources):
                     raise ContextValidationError("UNAUTHORIZED_SOURCE", "guide widens sources")
+                if bundle.context_mode == m.ContextMode.CLOSED and element.source_ids:
+                    raise ContextValidationError(
+                        "UNAUTHORIZED_SOURCE", "CLOSED guide cannot use external sources"
+                    )
     else:
         if guide.items:
             raise ContextValidationError(

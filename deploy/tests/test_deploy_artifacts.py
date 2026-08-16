@@ -27,6 +27,9 @@ SYNTHETIC_PROVIDER_MIGRATION = (
 P05_RUNTIME_CUTOVER_MIGRATION = (
     MIGRATION_DIR / "202608150006_phase3_p05_runtime_cutover.sql"
 )
+PHASE7_POST_APPROVAL_P09_MIGRATION = (
+    MIGRATION_DIR / "202608160007_phase7_post_approval_p09.sql"
+)
 STAGE2_RECOVERY = (
     ROOT
     / "deploy/supabase/rollbacks/202608070003_stage2_experimental_recovery.sql"
@@ -74,7 +77,13 @@ def test_supabase_migration_matches_orm_table_and_column_surface() -> None:
         "jobs": {
             "control_state", "failure_class", "max_attempts", "next_attempt_at",
             "resume_from_stage", "cancel_requested_at", "cancel_requested_by",
-            "cancelled_at",
+            "cancelled_at", "descriptor",
+        },
+        "evaluation_guides": {
+            "assessment_version", "assessment_etag", "assessment_snapshot_hash",
+            "question_set_hash", "approval_event_id", "approval_snapshot_hash",
+            "guide_policy_hash", "materializer_boundary_hash", "guide_job_id",
+            "status", "created_at",
         },
         "stage_runs": {
             "component_version", "output_hash", "failure_class", "next_attempt_at",
@@ -128,6 +137,7 @@ def test_idempotency_hygiene_migration_removes_and_blocks_capabilities() -> None
         "202608120004_stage2_convergence.sql",
         "202608120005_stage2_synthetic_provider_gate.sql",
         "202608150006_phase3_p05_runtime_cutover.sql",
+        "202608160007_phase7_post_approval_p09.sql",
     ]
     sql = IDEMPOTENCY_HYGIENE_MIGRATION.read_text(encoding="utf-8").lower()
     assert sql.startswith("begin;")
@@ -149,6 +159,17 @@ def test_idempotency_hygiene_migration_removes_and_blocks_capabilities() -> None
     assert "ix_idempotency_keys_expires_at" in convergence_sql
     assert "drop table" not in convergence_sql
     assert "drop column" not in convergence_sql
+
+    phase7_sql = PHASE7_POST_APPROVAL_P09_MIGRATION.read_text(
+        encoding="utf-8"
+    ).lower()
+    assert phase7_sql.startswith("begin;")
+    assert phase7_sql.rstrip().endswith("commit;")
+    assert "add column assessment_version integer" in phase7_sql
+    assert "add column descriptor jsonb" in phase7_sql
+    assert "uq_evaluation_guides_approved_version" in phase7_sql
+    assert "drop table" not in phase7_sql
+    assert "drop column" not in phase7_sql
 
     provider_sql = SYNTHETIC_PROVIDER_MIGRATION.read_text(
         encoding="utf-8"

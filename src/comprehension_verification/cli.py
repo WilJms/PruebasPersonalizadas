@@ -26,6 +26,7 @@ from .contracts import models as m
 from .diagnostics import diagnostic
 from .exports import RENDERER_VERSION, render_views
 from .fixture_builder import DEFAULT_STAGE0_ROOT, build_stage0_fixtures
+from .guide_generation import build_guide_approval_binding, guide_id_for_binding
 from .model_gateway import (
     CallBudget,
     GatewayConfig,
@@ -295,6 +296,7 @@ def _selected_question(
         choices=list(candidate.choices),
         student_justification_required=candidate.student_justification_required,
         preliminary_guide=candidate.preliminary_guide,
+        semantic_uncertainties=candidate.uncertainties,
         planning_score=opportunity.activity_priority,
     )
 
@@ -737,21 +739,49 @@ async def _run_synthetic(case: str, output: Path) -> int:
         ledgers=ledgers,
         clock=clock,
     )
+    # This development-only runner is historical, but its future P09 fixture
+    # still exercises the Phase 7 provider boundary with an explicit synthetic
+    # approval snapshot. The rendered assessment remains the archived
+    # NEEDS_REVIEW artifact and is never a product-runtime transition.
+    approved_for_historical_p09 = assessment.model_copy(
+        update={
+            "status": m.WorkflowStatus.APPROVED,
+            "approved_by": "usr_synthetic_historical_teacher",
+            "approved_at": clock.now(),
+        }
+    )
+    historical_etag = f'"{canonical_hash(approved_for_historical_p09)}"'
+    historical_approval_event_id = stable_id(
+        "evt",
+        approved_for_historical_p09.tenant_id,
+        "assessment.approved",
+        approved_for_historical_p09.assessment_id,
+        "historical_cli",
+    )
+    historical_binding = build_guide_approval_binding(
+        assessment=approved_for_historical_p09,
+        assessment_version=1,
+        assessment_etag=historical_etag,
+        approval_event_id=historical_approval_event_id,
+    )
     guide = m.EvaluationGuide.model_validate(
         (
             await _invoke(
                 gateway,
                 "P09_GUIDE_BUILD_V1",
                 m.GuideBuildRequest(
-                    guide_id=stable_id("guide", assessment.assessment_id),
-                    assessment=assessment,
+                    guide_id=guide_id_for_binding(historical_binding),
+                    assessment=approved_for_historical_p09,
+                    binding=historical_binding,
                     evidence_bundle=bundle,
                 ),
                 fixture=fixture,
             )
         ).model_dump(mode="json")
     )
-    validate_evaluation_guide(guide, assessment=assessment, bundle=bundle)
+    validate_evaluation_guide(
+        guide, assessment=approved_for_historical_p09, bundle=bundle
+    )
     rendered = render_views(assessment, guide, output)
 
     source_contains_injection = any(

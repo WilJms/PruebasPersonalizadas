@@ -114,11 +114,13 @@ _P07_INTENTIONAL_BOUNDARY_DELTA = {
     "version",
     "hash",
     "input_schema_hash",
+    "output_schema_hash",
     "provider_output_schema_version",
     "provider_output_schema_hash",
     "relationship_validator",
     "application_validator",
 }
+_P09_INTENTIONAL_BOUNDARY_DELTA = set(_SEMANTIC_PROMPT_FIELDS)
 
 
 def _assert_p04_contract_boundary_delta(
@@ -182,6 +184,18 @@ def _assert_p04_contract_boundary_delta(
             # prompt/input adapt mechanically so
             # support evidence and the visible anchor remain distinct.
             assert changed == {"hash", "input_schema_hash"}
+        elif prompt_id == "P09_GUIDE_BUILD_V1":
+            assert changed == _P09_INTENTIONAL_BOUNDARY_DELTA
+            assert current_row["version"] == "1.1.7"
+            assert current_row["relationship_validator"] == (
+                "relationship-p09/3.0.0"
+            )
+            assert current_row["application_validator"] == (
+                "application-validator-p09/3.0.0"
+            )
+            assert current_row["provider_output_schema_version"] == (
+                m.SCHEMA_VERSION
+            )
         else:
             assert changed == set()
 
@@ -633,7 +647,7 @@ def test_xhigh_offline_qualification_is_exact_and_non_billable() -> None:
     assert controls["fixture_changes"] == 0
     assert controls["prompt_changes"] == 0
     assert controls["validator_changes"] == 0
-    assert controls["budget_charged_usd"] == pytest.approx(0.648857)
+    assert controls["budget_charged_usd"] == pytest.approx(0.63683675)
     assert controls["max_observed_budget_charge_usd"] == pytest.approx(
         0.02496675
     )
@@ -684,7 +698,7 @@ def test_xhigh_boundary_preserves_product_semantics_and_records_harness_delta() 
         OPENAI_XHIGH_ROUTE_PROFILE_ID,
         max_call_cost_usd=0.10,
     )
-    assert xhigh["prompt_pack_version"] == "1.1.16"
+    assert xhigh["prompt_pack_version"] == "1.1.17"
     assert high["prompt_pack_version"] == "1.1.14"
     assert xhigh["planner_version"] == "stage2-planner/3.0.0"
     assert high["planner_version"] == "stage2-planner/2.0.0"
@@ -707,7 +721,12 @@ def test_xhigh_boundary_preserves_product_semantics_and_records_harness_delta() 
             for key in high["checkpoints"][scenario_id]
             if high["checkpoints"][scenario_id][key]
             != xhigh["checkpoints"][scenario_id][key]
-        } == {"post_p03", "blueprint_valid", "mapping_planning_valid"}
+        } == {
+            "post_p03",
+            "blueprint_valid",
+            "mapping_planning_valid",
+            "assessment_valid",
+        }
     _assert_p04_contract_boundary_delta(
         current=xhigh["prompts"],
         historical=high["prompts"],
@@ -841,7 +860,7 @@ def test_max_offline_qualification_is_exact_and_non_billable() -> None:
     assert controls["fixture_changes"] == 0
     assert controls["prompt_changes"] == 0
     assert controls["validator_changes"] == 0
-    assert controls["budget_charged_usd"] == pytest.approx(0.6488405)
+    assert controls["budget_charged_usd"] == pytest.approx(0.63682025)
     assert controls["max_observed_budget_charge_usd"] == pytest.approx(
         0.02496625
     )
@@ -890,7 +909,7 @@ def test_max_boundary_preserves_product_semantics_and_records_harness_delta() ->
         OPENAI_MAX_ROUTE_PROFILE_ID,
         max_call_cost_usd=0.10,
     )
-    assert maximum["prompt_pack_version"] == "1.1.16"
+    assert maximum["prompt_pack_version"] == "1.1.17"
     assert xhigh["prompt_pack_version"] == "1.1.14"
     assert maximum["planner_version"] == "stage2-planner/3.0.0"
     assert xhigh["planner_version"] == "stage2-planner/2.0.0"
@@ -910,7 +929,12 @@ def test_max_boundary_preserves_product_semantics_and_records_harness_delta() ->
             for key in xhigh["checkpoints"][scenario_id]
             if xhigh["checkpoints"][scenario_id][key]
             != maximum["checkpoints"][scenario_id][key]
-        } == {"post_p03", "blueprint_valid", "mapping_planning_valid"}
+        } == {
+            "post_p03",
+            "blueprint_valid",
+            "mapping_planning_valid",
+            "assessment_valid",
+        }
     _assert_p04_contract_boundary_delta(
         current=maximum["prompts"],
         historical=xhigh["prompts"],
@@ -1050,7 +1074,7 @@ def test_terra_medium_offline_qualification_is_exact_and_non_billable() -> None:
     assert controls["tools_enabled"] is False
     assert controls["store"] is False
     assert controls["background"] is False
-    assert controls["budget_charged_usd"] == pytest.approx(6.4887025)
+    assert controls["budget_charged_usd"] == pytest.approx(6.36845)
     assert controls["max_observed_budget_charge_usd"] == pytest.approx(
         0.24967
     )
@@ -1183,7 +1207,7 @@ def test_terra_medium_boundary_preserves_product_and_records_harness_delta() -> 
             eval_harness.TERRA_MEDIUM_OFFLINE_REHEARSAL_MAX_CALL_COST_USD
         ),
     )
-    assert terra["prompt_pack_version"] == "1.1.16"
+    assert terra["prompt_pack_version"] == "1.1.17"
     assert maximum["prompt_pack_version"] == "1.1.14"
     assert terra["planner_version"] == "stage2-planner/3.0.0"
     assert maximum["planner_version"] == "stage2-planner/2.0.0"
@@ -1203,7 +1227,12 @@ def test_terra_medium_boundary_preserves_product_and_records_harness_delta() -> 
             for key in maximum["checkpoints"][scenario_id]
             if maximum["checkpoints"][scenario_id][key]
             != terra["checkpoints"][scenario_id][key]
-        } == {"post_p03", "blueprint_valid", "mapping_planning_valid"}
+        } == {
+            "post_p03",
+            "blueprint_valid",
+            "mapping_planning_valid",
+            "assessment_valid",
+        }
     _assert_p04_contract_boundary_delta(
         current=terra["prompts"],
         historical=maximum["prompts"],

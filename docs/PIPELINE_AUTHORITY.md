@@ -1,11 +1,11 @@
 # Autoridad del pipeline simplificado
 
-**Estado:** norma aceptada; cutover P05/P08 y fronteras semánticas P06/P07
-completados el 2026-08-15
+**Estado:** norma aceptada; pipeline funcional simplificado completo con
+cutover P05/P08, fronteras P06/P07 y P09 post-aprobación al 2026-08-16
 
-**Versión ejecutable:** `pipeline-authority/1.0.0`
+**Versión ejecutable:** `pipeline-authority/1.1.0`
 
-**Estado operativo:** `P08_RUNTIME_RETIRED_P09_RELOCATION_PENDING`
+**Estado operativo:** `P09_POST_APPROVAL_ENRICHMENT_ACTIVE`
 
 Esta decisión simplifica la asignación de autoridad sin rediseñar la
 arquitectura conceptual ni cambiar routing histórico. P04 conserva
@@ -15,8 +15,9 @@ materializa identidad, policy y estado antes del preflight. P06, P07 y P09 no
 se retiran: P06 queda reducido al mapping semántico local y entrega al planner
 toda autoridad sobre N; P07 redacta sólo el contenido semántico de una pregunta
 ya planificada y el servidor materializa identidad, metadata, support evidence
-y anchor visible. P08 ya no es callable por el runtime del producto; P09
-conserva el orden de Fase 5 hasta su relocación separada en Fase 7. La
+y anchor visible. P08 ya no es callable por el runtime del producto; P09 se
+ejecuta una sola vez mediante job durable después de la aprobación docente
+exacta y sólo enriquece la guía sin revisar ni cambiar preguntas. La
 fuente ejecutable de esta norma es
 `src/comprehension_verification/pipeline_authority.py`.
 
@@ -45,7 +46,7 @@ aprobación, costo, API y UI. `BlueprintRow.review`, el descriptor/job legacy,
 contratos, registry, rutas, fixtures y receipts siguen legibles; un job P05
 anterior al corte se reconcilia mediante `BLUEPRINT_PREFLIGHT` sin construir
 transporte, consumir autorización o resolver una clave, incluso si el worker
-eval-only fue configurado como real. El orden objetivo de P09 sigue pendiente
+eval-only fue configurado como real. El orden objetivo de P09 ya está activo
 según la sección 6.
 
 ## 2. Autoridad del backend
@@ -162,6 +163,34 @@ válido de N.
   el objeto canónico, se recompila y se exige igualdad exacta; draft y resultado
   canónico nunca son intercambiables.
 
+### Frontera de aprobación, inferencia y materialización P09
+
+- ASSEMBLE persiste un `Assessment.NEEDS_REVIEW` y termina con cero llamadas
+  P09. Acciones docentes de edición, regeneración o rechazo pre-aprobación
+  tampoco crean guía. Sólo una aprobación exacta ya persistida puede crear el
+  job durable e idempotente `GUIDE_BUILD`.
+- `GuideApprovalBinding` liga tenant/submission, assessment ID, versión, ETag,
+  snapshot, question-set hash, approval event/snapshot, actor/fecha, policy y
+  materializer boundary. De ese binding se derivan `guide_id`, logical job ID y
+  stage key; un cambio de versión, pregunta, aprobación o scope invalida reuse.
+- El proveedor recibe `GuideAliasEnvelope` (`p09-alias-envelope/1.0.0`) con
+  preguntas aprobadas y namespaces question-local `Q*`, `E*` y `O*`; devuelve
+  únicamente `GuideModelDraft`. No recibe ni devuelve identidad canónica,
+  locators, texto/anchor editable, estado de pregunta o approval bookkeeping.
+- P07 es dueño de purpose, observables core, alternativas y misconceptions
+  base. P09 puede añadir condiciones de aceptación, observables `N*` hasta un
+  total de 2–5, alternativas/misconceptions, niveles exactos 0/1/2/3,
+  `cannot_infer` e incertidumbres. No puede omitir o contradecir el core ni
+  ampliar support evidence.
+- `p09-guide-materializer/1.0.0` resuelve aliases, crea IDs/referencias, conserva
+  el core literalmente y exige coverage exacta, contexto CLOSED y nivel 2 con
+  los observables requeridos. Sólo `EvaluationGuide` canónica se guarda en el
+  StageRun; replay proyecta un draft y exige rematerialización idéntica.
+- Un fallo/abstención P09 no revoca ni bloquea el Assessment aprobado y nunca
+  publica una guía parcial `READY`. Filas pre-Fase 7 permanecen legibles como
+  `HISTORICAL_PREAPPROVAL`, pero no son current ni exportables para una versión
+  aprobada vigente.
+
 ## 3. Autoridad del modelo
 
 El modelo propone exclusivamente:
@@ -272,9 +301,17 @@ no reservan su coste y no emiten su evento de decisión. Un resume legado desde
 `QUESTION_REVIEW` reutiliza y revalida el P07 vigente; cualquier ACCEPT,
 REJECT o ESCALATE anterior se preserva pero se ignora como autoridad.
 
-La separación durable de P09 para ejecutarlo después de aprobación docente
-pertenece exclusivamente a Fase 7. En Fase 6 conserva el orden interino
-`P07 validado -> ASSEMBLE -> P09 -> revisión docente`.
+P09 participa únicamente después de aprobación docente durable:
+
+- ASSEMBLE publica primero `Assessment.NEEDS_REVIEW`, sin guía activa;
+- aprobar persiste versión/ETag y evento humano antes de encolar
+  `GUIDE_BUILD`; la respuesta no espera al proveedor;
+- una repetición de aprobación o reconciliación de crash no duplica el logical
+  job ni P09; un crash después del output reutiliza el StageRun canónico;
+- el fallo de guía deja el Assessment aprobado y permite retry/recovery sin
+  guardar un `READY` parcial;
+- sólo la guía con binding exacto de la versión aprobada vigente puede ser
+  current o entrar a export.
 
 P06 ya participa con su frontera reducida:
 
@@ -293,16 +330,17 @@ P07 ya participa con su frontera reducida:
   answerability, ownership ni lineage;
 - reemplazo, reservas, regeneración localizada, retry/resume y cache conservan
   sus transiciones y presupuestos previos;
-- P08 tiene cero llamadas activas; P09 sigue en su orden anterior.
+- P08 tiene cero llamadas activas; la aprobación posterior habilita P09.
 
-## 7. Límites después de Fase 6
+## 7. Límites después de Fase 7
 
-Fase 6 retira únicamente P08 de autoridad y reachability activa. No borra su
-historia, no crea P08b/judge/critic, no cambia routing/modelo/reasoning de las
-etapas restantes y no mueve P09. El runtime interino exige exactamente N,
-persiste `QuestionGenerationResult` sin review, conserva aprobación docente y
-mantiene P10 deshabilitado. No autoriza despliegue, datos estudiantiles reales,
-corpus nuevo ni llamadas billables.
+Fase 7 completa el orden funcional objetivo sin borrar historia, crear un
+reviewer sustituto ni cambiar routing/modelo/reasoning. P09 no es autoridad
+sobre aceptación, corrección, anchor, evidence membership, operación o
+aprobación. El runtime exige exactamente N, persiste el Assessment para
+revisión humana y sólo después de aprobación genera una guía separada. P05/P08
+permanecen históricos y P10 deshabilitado. La fase no autoriza datos
+estudiantiles reales, corpus nuevo, qualification real ni llamadas billables.
 
 `Anchor.self_containment_score` permanece físicamente por compatibilidad como
 `DERIVED_COMPATIBILITY / LEGACY_NO_ACTIVE_AUTHORITY`: no es gate, probabilidad

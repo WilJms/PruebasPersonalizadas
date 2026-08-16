@@ -1,6 +1,6 @@
 # Anexo A - Prompt pack operacional
 
-**Versión candidata del pack:** `prompt-pack/1.1.16`
+**Versión candidata del pack:** `prompt-pack/1.1.17`
 **Compatibilidad:** bundle `assessment-contracts/1.2.0`; marker wire runtime `schema_version=1.1.0`
 **Perfil de ruta retenido (no autoridad de selección):** `LUNA_BASELINE_V1` (ADR-036)
 **Principio:** una tarea semántica por llamada; contenido estudiantil siempre no confiable; structured outputs obligatorios.
@@ -13,11 +13,12 @@ routing. Fase 3 ya hizo inalcanzable P05
 desde ejecuciones nuevas; su fila/ruta sólo sirve a replay histórico. Fase 4
 reduce P06 a mapping categórico sobre aliases y deja N/factibilidad al planner.
 Fase 5 redujo P07 a un draft semántico alias-only. Fase 6 retiró P08 del
-runtime activo con hard guard previo al transporte; P09 conserva el orden
-actual hasta Fase 7.
+runtime activo con hard guard previo al transporte. Fase 7 ubica P09 después
+de la aprobación durable y lo reduce a enriquecimiento alias-only; no revisa
+ni modifica preguntas.
 
 Las versiones retenidas son P01 `1.1.3`, P02 `1.1.4`, P03 `1.1.3`, P04
-`1.1.12`, P05 `1.1.8`, P06 `1.1.6`, P07 `1.1.5`, P08 `1.1.5`, P09 `1.1.6`, P10 `1.1.3` y P11
+`1.1.12`, P05 `1.1.8`, P06 `1.1.6`, P07 `1.1.5`, P08 `1.1.5`, P09 `1.1.7`, P10 `1.1.3` y P11
 `1.1.5`. P04 `1.1.11` refuerza la unicidad global y prohíbe duplicados
 semánticos disfrazados con IDs distintos; P04 `1.1.12` restringe el output del
 proveedor a `BlueprintModelDraft` y traslada identidad, policy, workflow y
@@ -32,7 +33,10 @@ N, scores continuos ni campos server-owned; P07 `1.1.5` recibe support evidence
 por aliases y devuelve `QuestionModelDraft` sin identidad, metadata, locator ni
 anchor text; y P08 `1.1.5` limita de forma explícita las referencias del review a
 los `evidence_ids` y `course_source_ids` de la candidata, nunca a IDs presentes
-solamente en el bundle o la oportunidad.
+solamente en el bundle o la oportunidad. P09 `1.1.7` recibe un
+`GuideAliasEnvelope` de la versión aprobada y devuelve `GuideModelDraft`; el
+servidor preserva el core P07, resuelve aliases y materializa la
+`EvaluationGuide` canónica.
 Este pack conserva ADR-030 y el constructo. Las qualifications ejecutadas con
 el harness actual son evidencia histórica; cualquier gate futuro exige un
 instrumento y autoridad vigentes antes de build/deploy. Los textos se
@@ -159,7 +163,7 @@ artefactos históricos.
 | `P06_EVIDENCE_MAP_V1` | `EvidenceMapRequest` -> `EvidenceMappingAliasEnvelope` wire | `EvidenceMappingModelDraft` -> `EvidenceMapPatch` materializado | parser + blueprint | planificador | GPT-5.6 Luna, high |
 | `P07_QUESTION_BUILD_V1` | `QuestionBuildRequest` -> `QuestionAliasEnvelope` wire | `QuestionModelDraft` -> `QuestionGenerationResult` materializado | plan + oportunidad primaria/reserva | validaciones deterministas + ASSEMBLE | GPT-5.6 Luna, high |
 | `P08_QUESTION_REVIEW_V1` | `QuestionReviewRequest` | `QuestionReviewResult` | P07 + reglas previas históricas | histórico/compatibilidad | HISTORICAL_NON_CALLABLE; ruta retenida |
-| `P09_GUIDE_BUILD_V1` | `GuideBuildRequest` | `EvaluationGuide` | Assessment ensamblado interino; objetivo posterior aprobado | plataforma/evaluador | GPT-5.6 Luna, high |
+| `P09_GUIDE_BUILD_V1` | `GuideBuildRequest` -> `GuideAliasEnvelope` wire | `GuideModelDraft` -> `EvaluationGuide` materializada | versión de Assessment ya aprobada + job durable `GUIDE_BUILD` | plataforma/evaluador | GPT-5.6 Luna, high |
 | `P10_ENRICHED_CONTEXT_V1` | `QuestionBuildRequest` (`COURSE_ENRICHED`) | `QuestionGenerationResult` | retrieval autorizado + plan | reglas/P08 | DISABLED; sin ruta callable |
 | `P11_SCHEMA_REPAIR_V1` | `SchemaRepairRequest` | `SchemaRepairResult` | validador JSON | validador del root objetivo | GPT-5.6 Luna, low; temperatura no enviada |
 
@@ -202,7 +206,7 @@ reutiliza como calificación del nuevo límite.
 | `EvidenceMapRequest` | `blueprint`, `evidence_bundle`, `planning_policy`; el provider recibe sólo su proyección `EvidenceMappingAliasEnvelope` |
 | `QuestionBuildRequest` | `plan`, `opportunity`, `evidence_bundle`, `generation_policy`; opcional `avoid`; el provider recibe sólo `QuestionAliasEnvelope` |
 | `QuestionReviewRequest` | `generation_result`, `opportunity`, `evidence_bundle`, `validation_policy` |
-| `GuideBuildRequest` | `guide_id`, `assessment`, `evidence_bundle` |
+| `GuideBuildRequest` | `guide_id`, `assessment`, `evidence_bundle`, `binding`; el provider recibe sólo `GuideAliasEnvelope` |
 | `SchemaRepairRequest` | `target_schema_name`, `invalid_output`, `validation_issues` |
 
 Todos incorporan `schema_version=1.1.0`. No se permiten propiedades extra.
@@ -766,51 +770,51 @@ Devuelve QuestionReviewResult.
 
 | Aspecto | Definición v1.1 |
 |---|---|
-| Input / output | `GuideBuildRequest` -> `EvaluationGuide` |
+| Input / output | request canónica `GuideBuildRequest`; wire `GuideAliasEnvelope` -> `GuideModelDraft`; etapa `EvaluationGuide` materializada |
 | Modelo | GPT-5.6 Luna; `reasoning_effort=high`; temperatura baja |
-| Abstención | `NEEDS_REVIEW` o `TECHNICAL_FAILURE`; nunca una guía parcial marcada como lista |
-| Evidencia no confiable | Assessment completo + bundle exacto de la submission |
-| Validación posterior | question IDs, fuentes subset de la pregunta, niveles 0-3, leakage y alcanzabilidad |
-| Retry | P11 estructural; `GUIDE_UNSUPPORTED` vuelve a evidencia/selección o revisión humana, no se repara semánticamente |
-| Límite determinista | persistencia, permisos de consulta, aviso fijo de plataforma, export y chequeos de IDs ocurren en código |
+| Precondición | aprobación docente exacta ya persistida; P09 no se alcanza durante ASSEMBLE ni acciones pre-aprobación |
+| Abstención | `NEEDS_REVIEW` con `items=[]`; nunca una guía parcial marcada como lista y nunca revoca el Assessment aprobado |
+| Evidencia no confiable | una pregunta aprobada sólo ve su support evidence local `E*`; contexto siempre `CLOSED` |
+| Validación posterior | scope/aliases, coverage, core P07 intacto, total 2–5 observables, niveles 0–3, level 2 requerido, safety y replay exacto |
+| Retry | mismo logical guide/StageRun cuando la frontera coincide; P11 sólo para estructura y toda salida vuelve a materializarse/validarse |
+| Límite determinista | binding de aprobación, identidad, IDs, evidence membership, materialización, persistencia, selección current, export y aviso fijo ocurren en código |
 
 ### Prompt de desarrollador
 
 ```text
-Construye la guía estructurada para las preguntas de la evaluación COMPLETA. No cambies preguntas, anclas ni IDs.
+Enriquece la guía de una evaluación que ya fue aprobada explícitamente por una persona docente. La aprobación es un hecho previo e independiente: no revises, aceptes, rechaces ni modifiques preguntas.
 
-Copia literalmente `guide_id` desde `request.guide_id`, `assessment_id` desde `request.assessment.assessment_id` y `submission_id` desde `request.assessment.submission_id`. No crees, sustituyas ni reformatees esos IDs.
+El payload es GuideAliasEnvelope y todos sus aliases son locales a esta única llamada. Cada Q* contiene el texto/anchor visible aprobado sólo como contexto, sus observables core P07 O* y su support evidence E*. No devuelvas texto o anchor de pregunta, IDs canónicos, locators, metadata de workflow ni datos de aprobación.
 
-Si devuelves `status=READY`, incluye exactamente un `EvaluationGuideItem` por cada pregunta de `request.assessment.questions`: sin omisiones, duplicados ni preguntas adicionales, y con exactamente el mismo conjunto de `question_id`.
+Devuelve GuideModelDraft. Si status=READY, incluye exactamente un item por cada question_alias, sin omisiones, duplicados ni aliases adicionales. Para cada pregunta:
+- conserva todos los O* core; no los reformules, contradigas ni omitas;
+- añade sólo observables nuevos N* no duplicados y sustentados por E* de esa misma Q*, hasta dejar 2-5 observables totales;
+- aporta condiciones de aceptación observables;
+- sólo añade alternativas y misconceptions que amplíen, no reescriban, las bases P07;
+- produce exactamente los niveles 0, 1, 2 y 3 y referencia únicamente O*/N* locales; nivel 2 debe incluir todo observable marcado required;
+- declara cannot_infer e incertidumbres específicas del ítem;
+- no uses conocimiento externo, course sources ni evidencia de otra pregunta;
+- no produzcas avisos globales de autoría, IA, fraude, proceso histórico o system prompt.
 
-Para cada pregunta:
-- explica en una frase qué comprensión observable busca;
-- lista 2-5 elementos esperables derivados de fuentes autorizadas;
-- incluye alternativas defendibles y condiciones para aceptarlas;
-- describe errores/concepciones observables sin diagnosticar a la persona;
-- produce niveles 0, 1, 2 y 3 usando la escala base;
-- declara límites específicos del ítem en `cannot_infer`, sin producir avisos generales de autoría, IA o proceso histórico;
-- en cada `ObservableElement` usa uno o más `evidence_ids` tomados únicamente de `evidence_ids` de esa pregunta;
-- usa `source_ids` tomados únicamente de `course_source_ids` de esa pregunta. En `context_mode=CLOSED` o cuando `course_source_ids` esté vacío, usa `source_ids=[]`; nunca sustituyas una referencia de evidencia, procedencia o locator por un course source.
-
-Para preguntas de selección, conserva una respuesta defendible, su evidencia y la razón de cada distractor aunque el estudiante no deba justificar. La guía no es una respuesta modelo única ni una reconstrucción de lo que el estudiante “debió pensar”. No añadas conocimiento disciplinar externo. Si no puedes satisfacer literalmente todos los IDs, la cobertura completa y las referencias permitidas, usa `NEEDS_REVIEW` sin items parciales y no inventes.
-
-No redactes el aviso global “esto no determina autoría/uso de IA/historia”. Ese texto es un componente fijo de la UI y no pertenece a la salida del modelo ni a exportaciones generadas.
-
-Devuelve `EvaluationGuide`. El objeto se persiste asociado a `assessment_id` y `submission_id` y se consulta en la plataforma; PDF/HTML es solo una vista opcional.
+Si no puedes enriquecer todos los ítems dentro de estas fronteras, devuelve NEEDS_REVIEW, items=[] y abstention_reason. Nunca devuelvas una guía parcial. P09 no tiene autoridad para bloquear o revocar la aprobación.
 ```
 
 ### Validación cruzada
 
 Después de la llamada:
 
-- unión de IDs de guía debe ser subconjunto de fuentes de pregunta;
-- `guide_id`, `assessment_id` y `submission_id` coinciden literalmente con la request;
-- un resultado `READY` cubre exactamente el conjunto de preguntas, una vez cada una;
-- cada elemento limita evidencia/fuentes a su propia pregunta y `CLOSED` no admite `source_ids`;
-- niveles 0-3 completos y ordenados;
+- approval binding, `guide_id`, scope alias y hashes coinciden con la versión
+  aprobada exacta antes de aceptar el draft;
+- un resultado `READY` cubre exactamente los `Q*`, una vez cada uno;
+- todo `E*`, `O*` o `N*` se resuelve sólo dentro de su pregunta; no existe
+  salida para cambiar question text, anchor, locator o support membership;
+- purpose y observables core P07 se conservan literalmente; las adiciones no
+  los duplican y dejan 2–5 observables;
+- niveles 0-3 completos y ordenados; nivel 2 incluye todos los required;
+- `CLOSED` impide sources externos y una abstención no contiene items;
 - no hay avisos generales de “autor”, “IA”, “fraude” o proceso histórico producidos por el modelo;
-- un revisor semántico verifica que nivel 2 sea alcanzable en el tiempo previsto.
+- el materializador crea IDs/referencias canónicas y el replay exige igualdad
+  exacta antes de persistir `EvaluationGuide`.
 
 ---
 

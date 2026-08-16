@@ -1,8 +1,49 @@
 # Estado de implementación — Etapa 2
 
-Fecha de corte: 2026-08-15 (America/Santiago).
+Fecha de corte: 2026-08-16 (America/Santiago).
 
-## Estado vigente — Fase 6, P08 retirado del runtime activo (2026-08-15)
+## Estado vigente — Fase 7, P09 post-aprobación enrichment-only (2026-08-16)
+
+El pipeline funcional simplificado está completo en
+`pipeline-authority/1.1.0`: actividad ejecuta P01→P02→P03→P04→preflight
+determinista→aprobación docente; submission ejecuta P06→planner→P07→validación
+determinista→exactamente N→ASSEMBLE/`NEEDS_REVIEW`→acciones/aprobación docente
+→P09→`EvaluationGuide.READY`. P05/P08 son históricos y P10 permanece disabled.
+
+ASSEMBLE ya no llama P09 ni crea una guía activa. Una aprobación exacta se
+persiste junto con su evento durable y después encola idempotentemente
+`GUIDE_BUILD`; editar/regenerar/rechazar antes de aprobación produce cero P09.
+El job liga assessment version/ETag/snapshot, question-set hash, evento y
+snapshot de aprobación, policy y materializer. Repetir approval, reconciliar un
+crash o reintentar reutiliza la misma identidad lógica/StageRun y no duplica la
+guía ni la llamada.
+
+P09 `1.1.7` recibe `GuideAliasEnvelope` y devuelve `GuideModelDraft`, no
+`EvaluationGuide`. El DTO no puede escribir IDs canónicos, preguntas, anchors,
+locators, evidence membership, workflow ni aprobación. El materializador
+`p09-guide-materializer/1.0.0` conserva purpose/observables core P07, limita
+adiciones al support question-local, crea identidad y exige coverage completa,
+2–5 observables, niveles exactos 0–3, level 2 requerido, `cannot_infer` y
+contexto CLOSED. Un fallo deja el Assessment aprobado y ninguna guía parcial
+`READY`.
+
+La migración aditiva 007 conserva filas previas como
+`HISTORICAL_PREAPPROVAL`; sólo una guía ligada a la versión aprobada actual se
+selecciona como current/exportable. API/UI muestran pending/building/needs-review/
+failed/ready de forma separada de la aprobación y exponen history etiquetada. El
+nominal permanece `N+2` (P06=1, P07=N, P09=1), pero P09 pre-aprobación es cero.
+
+Frontera P09 actual: provider root `GuideModelDraft`, schema estricto 3.131
+bytes frente a 4.461 en el baseline de Fase 6 (−1.330; −29,81%),
+y `sha256:21b2020c83e941d260273b4ffc95511e057522093395cf85e621e5056ce04a3f`;
+materializer source
+`sha256:0d4af856781cb9df11e7299a2eeef04efae4fc5e44e8d0f7c46c7614e882a563`
+y boundary
+`sha256:0fe0051d348d418707c2698f0e632de18ce71fb3e5572792337b5b6ce89795f6`.
+Toda la ejecución de Fase 7 usa mock/offline, keys removidas y P10 false; no
+resuelve secretos ni autoriza/transmite requests billables.
+
+## Historial — Fase 6, P08 retirado del runtime activo (2026-08-15)
 
 El flujo interino de submission es
 `P06 -> planner -> P07 -> validación determinista -> exactamente N -> ASSEMBLE

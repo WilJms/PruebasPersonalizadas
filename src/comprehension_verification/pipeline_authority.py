@@ -3,7 +3,8 @@
 P05 and P08 have been removed from active product routing, P06 uses a reduced
 semantic mapping boundary and P07 uses an alias-only drafting boundary with
 canonical server materialization. Historical evidence remains readable. P09
-still runs in its Phase 5 order until the independent Phase 7 relocation.
+runs only after durable teacher approval and enriches, but cannot review or
+modify, the exact approved assessment version.
 """
 
 from __future__ import annotations
@@ -14,8 +15,8 @@ from types import MappingProxyType
 from typing import Any
 
 
-PIPELINE_AUTHORITY_VERSION = "pipeline-authority/1.0.0"
-PIPELINE_CUTOVER_STATUS = "P08_RUNTIME_RETIRED_P09_RELOCATION_PENDING"
+PIPELINE_AUTHORITY_VERSION = "pipeline-authority/1.1.0"
+PIPELINE_CUTOVER_STATUS = "P09_POST_APPROVAL_ENRICHMENT_ACTIVE"
 HISTORICAL_HARNESS_EVIDENCE_STATUS = "HISTORICAL_NON_CANONICAL_EVIDENCE"
 
 TARGET_ACTIVITY_PIPELINE = (
@@ -31,18 +32,11 @@ TARGET_SUBMISSION_PIPELINE = (
     "DETERMINISTIC_PLANNER",
     "P07",
     "DETERMINISTIC_QUESTION_VALIDATIONS",
-    "TEACHER_QUESTION_REVIEW_APPROVAL",
-    "P09",
-)
-ACTIVE_SUBMISSION_PIPELINE = (
-    "P06",
-    "DETERMINISTIC_PLANNER",
-    "P07",
-    "DETERMINISTIC_QUESTION_VALIDATIONS",
     "ASSEMBLE",
-    "P09",
-    "TEACHER_QUESTION_REVIEW_APPROVAL",
+    "TEACHER_ASSESSMENT_APPROVAL",
+    "P09_POST_APPROVAL_GUIDE_ENRICHMENT",
 )
+ACTIVE_SUBMISSION_PIPELINE = TARGET_SUBMISSION_PIPELINE
 TARGET_ACTIVE_MODEL_STAGE_IDS = (
     "P01",
     "P02",
@@ -93,6 +87,9 @@ BACKEND_DECISIONS = (
     "deterministic_validations",
     "support_evidence",
     "canonical_visible_anchor",
+    "guide_approval_binding",
+    "guide_core_preservation",
+    "guide_version_selection",
 )
 MODEL_DECISIONS = (
     "semantic_interpretation",
@@ -102,11 +99,13 @@ MODEL_DECISIONS = (
     "observables",
     "semantic_alternatives",
     "visible_anchor_selection_within_support",
+    "post_approval_guide_enrichment",
 )
 TEACHER_DECISIONS = (
     "academic_ambiguity_resolution",
     "blueprint_approval",
     "question_approve_edit_reject",
+    "assessment_approval_independent_of_guide",
     "final_academic_authority",
 )
 
@@ -152,7 +151,7 @@ def pipeline_authority_manifest() -> dict[str, Any]:
         },
         "active_interim_pipelines": {
             "submission": list(ACTIVE_SUBMISSION_PIPELINE),
-            "p09_relocation_pending": True,
+            "p09_relocation_pending": False,
         },
         "model_stage_policy": {
             "active": list(TARGET_ACTIVE_MODEL_STAGE_IDS),

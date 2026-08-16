@@ -113,6 +113,9 @@ def test_registry_is_exact_complete_and_immutable() -> None:
     assert PROVIDER_OUTPUT_CONTRACTS["P07_QUESTION_BUILD_V1"] == (
         "QuestionModelDraft"
     )
+    assert PROVIDER_OUTPUT_CONTRACTS["P09_GUIDE_BUILD_V1"] == (
+        "GuideModelDraft"
+    )
     assert set(PROMPT_SPECS) == set(EXPECTED_PROMPT_CONTRACTS)
     for prompt_id, (request_root, output_root) in EXPECTED_PROMPT_CONTRACTS.items():
         spec = PROMPT_SPECS[prompt_id]
@@ -129,6 +132,8 @@ def test_registry_is_exact_complete_and_immutable() -> None:
             if prompt_id == "P06_EVIDENCE_MAP_V1"
             else "QuestionModelDraft"
             if prompt_id == "P07_QUESTION_BUILD_V1"
+            else "GuideModelDraft"
+            if prompt_id == "P09_GUIDE_BUILD_V1"
             else output_root
         )
 
@@ -143,7 +148,7 @@ def test_registry_is_exact_complete_and_immutable() -> None:
         "P06_EVIDENCE_MAP_V1": "1.1.6",
         "P07_QUESTION_BUILD_V1": "1.1.5",
         "P08_QUESTION_REVIEW_V1": "1.1.5",
-        "P09_GUIDE_BUILD_V1": "1.1.6",
+        "P09_GUIDE_BUILD_V1": "1.1.7",
         "P10_ENRICHED_CONTEXT_V1": "1.1.3",
         "P11_SCHEMA_REPAIR_V1": "1.1.5",
     }
@@ -284,18 +289,18 @@ def test_p06_request_binds_planning_policy_to_blueprint_constraints() -> None:
         models.EvidenceMapRequest.model_validate(raw)
 
 
-def test_p09_v115_makes_all_context_relationships_explicit() -> None:
+def test_p09_v117_is_post_approval_enrichment_only() -> None:
     p09 = PROMPT_SPECS["P09_GUIDE_BUILD_V1"].developer_instruction
     for exact_reference in (
-        "guide_id desde request.guide_id",
-        "assessment_id desde request.assessment.assessment_id",
-        "submission_id desde request.assessment.submission_id",
-        "exactamente el mismo conjunto de question_id",
-        "evidence_ids de esa pregunta",
-        "course_source_ids de esa pregunta",
-        "context_mode=CLOSED",
-        "source_ids=[]",
-        "NEEDS_REVIEW sin items parciales",
+        "ya fue aprobada explícitamente",
+        "no revises, aceptes, rechaces ni modifiques preguntas",
+        "GuideAliasEnvelope",
+        "GuideModelDraft",
+        "aliases locales Q*, O*, N* y E*",
+        "conserva conceptualmente todos los core_observables O*",
+        "niveles 0, 1, 2 y 3",
+        "contexto es CLOSED",
+        "items=[] y abstention_reason",
     ):
         assert exact_reference in p09
 
@@ -783,65 +788,30 @@ def test_p02_context_observability_reports_all_coexisting_classes() -> None:
 def _p09_context_case(scenario: str) -> tuple[models.GuideBuildRequest, dict]:
     prompt_id = "P09_GUIDE_BUILD_V1"
     request = build_mock_request(prompt_id)
-
-    if scenario == "question_coverage":
-        assessment_data = request.assessment.model_dump(mode="json")
-        second_question = json.loads(json.dumps(assessment_data["questions"][0]))
-        second_question["question_id"] = "question_demo_2"
-        assessment_data["question_count"] = 2
-        assessment_data["questions"].append(second_question)
-        request = request.model_copy(
-            update={"assessment": models.Assessment.model_validate(assessment_data)}
-        )
-    elif scenario == "question_evidence_id":
-        bundle_data = request.evidence_bundle.model_dump(mode="json")
-        extra_evidence = json.loads(json.dumps(bundle_data["evidence_units"][0]))
-        extra_evidence["evidence_id"] = "ev_context_authorized_not_question"
-        bundle_data["allowed_evidence_ids"].append(
-            "ev_context_authorized_not_question"
-        )
-        bundle_data["evidence_units"].append(extra_evidence)
-        request = request.model_copy(
-            update={
-                "evidence_bundle": models.EvidenceBundle.model_validate(bundle_data)
-            }
-        )
-    elif scenario == "question_source_id":
-        enriched_bundle = build_mock_request(
-            "P10_ENRICHED_CONTEXT_V1"
-        ).evidence_bundle
-        assessment_data = request.assessment.model_dump(mode="json")
-        assessment_data["context_mode"] = "COURSE_ENRICHED"
-        request = request.model_copy(
-            update={
-                "assessment": models.Assessment.model_validate(assessment_data),
-                "evidence_bundle": enriched_bundle,
-            }
-        )
-
     raw = (
         DeterministicMockAdapter()
         .factory.output_for(prompt_id, request, MockBehavior.HAPPY)
         .model_dump(mode="json")
     )
-    if scenario == "guide_id":
-        raw["guide_id"] = "ctx_private_value"
-    elif scenario == "assessment_id":
-        raw["assessment_id"] = "ctx_private_value"
-    elif scenario == "submission_id":
-        raw["submission_id"] = "ctx_private_value"
+    if scenario == "scope_alias":
+        raw["scope_alias"] = "S" + "0" * 24
     elif scenario == "question_coverage":
-        raw["items"] = raw["items"][:1]
-    elif scenario == "unknown_question_id":
-        raw["items"][0]["question_id"] = "ctx_private_value"
-    elif scenario == "question_evidence_id":
-        raw["items"][0]["guide"]["observable_elements"][0][
-            "evidence_ids"
-        ] = ["ev_context_authorized_not_question"]
-    elif scenario == "question_source_id":
-        raw["items"][0]["guide"]["observable_elements"][0]["source_ids"] = [
-            "source_course_1"
+        extra = json.loads(json.dumps(raw["items"][0]))
+        extra["question_alias"] = "Q2"
+        raw["items"].append(extra)
+    elif scenario == "question_alias":
+        raw["items"][0]["question_alias"] = "Q2"
+    elif scenario == "evidence_alias":
+        raw["items"][0]["additional_observables"] = [
+            {
+                "observable_alias": "N1",
+                "description": "Un elemento adicional delimitado.",
+                "support_evidence_aliases": ["E99"],
+                "required_for_level_2": False,
+            }
         ]
+    elif scenario == "observable_alias":
+        raw["items"][0]["levels"][2]["observable_aliases"] = ["O99"]
     else:  # pragma: no cover - guards the test table itself
         raise AssertionError(f"Unknown P09 contextual scenario: {scenario}")
     return request, raw
@@ -850,21 +820,22 @@ def _p09_context_case(scenario: str) -> tuple[models.GuideBuildRequest, dict]:
 @pytest.mark.parametrize(
     ("scenario", "expected_code"),
     (
-        ("guide_id", ContextFailureCode.P09_GUIDE_ID_MISMATCH),
-        ("assessment_id", ContextFailureCode.P09_ASSESSMENT_ID_MISMATCH),
-        ("submission_id", ContextFailureCode.P09_SUBMISSION_ID_MISMATCH),
+        ("scope_alias", ContextFailureCode.P09_SCOPE_ALIAS_MISMATCH),
         (
             "question_coverage",
-            ContextFailureCode.P09_QUESTION_COVERAGE_MISMATCH,
-        ),
-        ("unknown_question_id", ContextFailureCode.P09_UNKNOWN_QUESTION_ID),
-        (
-            "question_evidence_id",
-            ContextFailureCode.P09_QUESTION_EVIDENCE_ID_NOT_ALLOWLISTED,
+            ContextFailureCode.P09_DRAFT_MATERIALIZATION_FAILED,
         ),
         (
-            "question_source_id",
-            ContextFailureCode.P09_QUESTION_SOURCE_ID_NOT_ALLOWLISTED,
+            "question_alias",
+            ContextFailureCode.P09_DRAFT_MATERIALIZATION_FAILED,
+        ),
+        (
+            "evidence_alias",
+            ContextFailureCode.P09_ALIAS_REFERENCE_UNKNOWN,
+        ),
+        (
+            "observable_alias",
+            ContextFailureCode.P09_ALIAS_REFERENCE_UNKNOWN,
         ),
     ),
 )
@@ -878,7 +849,7 @@ def test_p09_contextual_failures_are_distinct_and_content_free(
         prompt_spec(prompt_id), request
     )["schema"]
     assert not provider_schema_validation_issues(provider_schema, raw)
-    assert isinstance(models.EvaluationGuide.model_validate(raw), models.EvaluationGuide)
+    assert isinstance(models.GuideModelDraft.model_validate(raw), models.GuideModelDraft)
 
     gateway = ModelGateway(
         mock_adapter=ContextBreakingAdapter(
@@ -907,12 +878,32 @@ def test_p09_contextual_failures_are_distinct_and_content_free(
         in ledger.route.reason_codes
     )
     serialized = json.dumps(ledger.model_dump(mode="json"), sort_keys=True)
-    for protected_value in (
-        "ctx_private_value",
-        "ev_context_authorized_not_question",
-        "source_course_1",
-    ):
+    for protected_value in ("S000000000000000000000000", "E99", "O99"):
         assert protected_value not in serialized
+
+
+def test_p09_provider_dto_cannot_emit_canonical_identity_or_question_content() -> None:
+    request = build_mock_request("P09_GUIDE_BUILD_V1")
+    schema = structured_output_format(
+        prompt_spec("P09_GUIDE_BUILD_V1"), request
+    )["schema"]
+    raw = (
+        DeterministicMockAdapter()
+        .factory.output_for("P09_GUIDE_BUILD_V1", request, MockBehavior.HAPPY)
+        .model_dump(mode="json")
+    )
+    for field in (
+        "guide_id",
+        "assessment_id",
+        "submission_id",
+        "question_text",
+        "anchor",
+        "evidence_ids",
+        "source_ids",
+    ):
+        mutated = json.loads(json.dumps(raw))
+        mutated[field] = "server_owned"
+        assert provider_schema_validation_issues(schema, mutated)
 
 
 def test_p04_rejects_invented_source_ids_and_records_attempt() -> None:

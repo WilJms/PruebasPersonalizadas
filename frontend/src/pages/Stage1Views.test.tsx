@@ -21,6 +21,7 @@ import {
   ambiguityView,
   assessmentBundle,
   blueprintView,
+  evaluationGuide,
   failedTechnicalJob,
   submission,
 } from "../test/fixtures";
@@ -552,7 +553,7 @@ function ReviewHarness({ initialBundle = assessmentBundle }: { initialBundle?: A
 }
 
 describe("Stage 1 evidence-first review", () => {
-  it("shows provenance, a clearly historical P08 review and the guide", async () => {
+  it("shows provenance and keeps P09 unavailable before approval", async () => {
     const user = userEvent.setup();
     render(
       <MemoryRouter>
@@ -570,7 +571,7 @@ describe("Stage 1 evidence-first review", () => {
     expect(assessmentTab).toHaveFocus();
     expect(assessmentTab).toHaveAttribute("aria-selected", "true");
 
-    expect(screen.getAllByText("¿Cómo produjo la decisión descrita el efecto observado?")).toHaveLength(2);
+    expect(screen.getAllByText("¿Cómo produjo la decisión descrita el efecto observado?")).toHaveLength(1);
     expect(screen.getByText("dimension: dim_causal")).toBeInTheDocument();
     expect(screen.getByText("variant: variant_tradeoff")).toBeInTheDocument();
     expect(screen.getByText("paragraph index: 3", { exact: false })).toBeInTheDocument();
@@ -587,6 +588,26 @@ describe("Stage 1 evidence-first review", () => {
     expect(screen.queryByRole("button", { name: /evaluación pdf|guía pdf|json canónico/i })).not.toBeInTheDocument();
 
     await user.click(screen.getByRole("tab", { name: /Guía estructurada/ }));
+    const guidePanel = screen.getByRole("tabpanel", { name: /Guía estructurada/ });
+    expect(within(guidePanel).getByText("Guía posterior a la aprobación")).toBeInTheDocument();
+    expect(within(guidePanel).getByText(/P09 se ejecutará una sola vez/)).toBeInTheDocument();
+  });
+
+  it("renders the exact post-approval guide once it is ready", async () => {
+    const ready = structuredClone(assessmentBundle);
+    ready.assessment.status = "APPROVED";
+    ready.assessment.approved_by = "teacher_01";
+    ready.assessment.approved_at = "2026-07-31T12:00:00Z";
+    ready.guide = evaluationGuide;
+    ready.guide_status = "READY";
+    render(
+      <MemoryRouter>
+        <ReviewHarness initialBundle={ready} />
+      </MemoryRouter>,
+    );
+    await userEvent.setup().click(
+      screen.getByRole("tab", { name: /Guía estructurada/ }),
+    );
     const guidePanel = screen.getByRole("tabpanel", { name: /Guía estructurada/ });
     expect(within(guidePanel).getByText("Observar una explicación causal basada en la entrega.")).toBeInTheDocument();
     expect(within(guidePanel).getByText("Relaciona la decisión con su efecto y su trade-off.")).toBeInTheDocument();
