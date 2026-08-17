@@ -45,8 +45,8 @@
     },
     {
       "applicable_semantic_property_count": 21,
-      "hard_safety_property_count": 0,
-      "non_safety_property_count": 21,
+      "hard_safety_property_count": 3,
+      "non_safety_property_count": 18,
       "reviewable_safety_property_count": 0,
       "split": "CORE",
       "stage": "P04"
@@ -69,8 +69,8 @@
     },
     {
       "applicable_semantic_property_count": 60,
-      "hard_safety_property_count": 5,
-      "non_safety_property_count": 55,
+      "hard_safety_property_count": 6,
+      "non_safety_property_count": 54,
       "reviewable_safety_property_count": 0,
       "split": "CORE",
       "stage": "P06"
@@ -93,9 +93,9 @@
     },
     {
       "applicable_semantic_property_count": 69,
-      "hard_safety_property_count": 16,
-      "non_safety_property_count": 53,
-      "reviewable_safety_property_count": 2,
+      "hard_safety_property_count": 19,
+      "non_safety_property_count": 50,
+      "reviewable_safety_property_count": 3,
       "split": "CORE",
       "stage": "P07"
     },
@@ -125,8 +125,8 @@
     },
     {
       "applicable_semantic_property_count": 1,
-      "hard_safety_property_count": 0,
-      "non_safety_property_count": 1,
+      "hard_safety_property_count": 1,
+      "non_safety_property_count": 0,
       "reviewable_safety_property_count": 0,
       "split": "HELD_OUT_CONFIRMATION",
       "stage": "P09"
@@ -134,7 +134,7 @@
   ],
   "schema_version": "phase9-safety-gate/1.0.0",
   "totals": {
-    "hard_safety_properties": 43,
-    "reviewable_safety_properties": 6
+    "hard_safety_properties": 51,
+    "reviewable_safety_properties": 7
   }
 }

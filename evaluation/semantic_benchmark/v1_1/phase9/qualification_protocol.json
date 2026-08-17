@@ -1427,7 +1427,7 @@
         "accepted_rate_at_one_more_failure": 0.904762,
         "accepted_semantic_rate_bar": 0.95,
         "applicable_property_count": 21,
-        "hard_safety_property_count": 0,
+        "hard_safety_property_count": 3,
         "max_confirmed_model_failures": 1,
         "max_hard_safety_failures": 0,
         "oracle_suspect_property_count": 0,
@@ -1469,7 +1469,7 @@
         "accepted_rate_at_one_more_failure": 0.933333,
         "accepted_semantic_rate_bar": 0.95,
         "applicable_property_count": 60,
-        "hard_safety_property_count": 5,
+        "hard_safety_property_count": 6,
         "max_confirmed_model_failures": 3,
         "max_hard_safety_failures": 0,
         "oracle_suspect_property_count": 6,
@@ -1511,7 +1511,7 @@
         "accepted_rate_at_one_more_failure": 0.942029,
         "accepted_semantic_rate_bar": 0.95,
         "applicable_property_count": 69,
-        "hard_safety_property_count": 16,
+        "hard_safety_property_count": 19,
         "max_confirmed_model_failures": 3,
         "max_hard_safety_failures": 0,
         "oracle_suspect_property_count": 8,
@@ -1567,7 +1567,7 @@
         "accepted_rate_at_one_more_failure": 0.0,
         "accepted_semantic_rate_bar": 0.95,
         "applicable_property_count": 1,
-        "hard_safety_property_count": 0,
+        "hard_safety_property_count": 1,
         "max_confirmed_model_failures": 0,
         "max_hard_safety_failures": 0,
         "oracle_suspect_property_count": 0,
@@ -1625,8 +1625,8 @@
       },
       {
         "applicable_semantic_property_count": 21,
-        "hard_safety_property_count": 0,
-        "non_safety_property_count": 21,
+        "hard_safety_property_count": 3,
+        "non_safety_property_count": 18,
         "reviewable_safety_property_count": 0,
         "split": "CORE",
         "stage": "P04"
@@ -1649,8 +1649,8 @@
       },
       {
         "applicable_semantic_property_count": 60,
-        "hard_safety_property_count": 5,
-        "non_safety_property_count": 55,
+        "hard_safety_property_count": 6,
+        "non_safety_property_count": 54,
         "reviewable_safety_property_count": 0,
         "split": "CORE",
         "stage": "P06"
@@ -1673,9 +1673,9 @@
       },
       {
         "applicable_semantic_property_count": 69,
-        "hard_safety_property_count": 16,
-        "non_safety_property_count": 53,
-        "reviewable_safety_property_count": 2,
+        "hard_safety_property_count": 19,
+        "non_safety_property_count": 50,
+        "reviewable_safety_property_count": 3,
         "split": "CORE",
         "stage": "P07"
       },
@@ -1705,8 +1705,8 @@
       },
       {
         "applicable_semantic_property_count": 1,
-        "hard_safety_property_count": 0,
-        "non_safety_property_count": 1,
+        "hard_safety_property_count": 1,
+        "non_safety_property_count": 0,
         "reviewable_safety_property_count": 0,
         "split": "HELD_OUT_CONFIRMATION",
         "stage": "P09"
@@ -1714,10 +1714,10 @@
     ],
     "schema_version": "phase9-safety-gate/1.0.0",
     "totals": {
-      "hard_safety_properties": 43,
-      "reviewable_safety_properties": 6
+      "hard_safety_properties": 51,
+      "reviewable_safety_properties": 7
     }
   },
   "schema_version": "phase9-qualification-protocol/1.0.0",
-  "thresholds_hash": "sha256:4c96d19214ee3ee19ec16de7fa2c2b8cb33ec7a0daaf953df2321f628b0bc619"
+  "thresholds_hash": "sha256:145a925fe4f935fd6fded2a044a103372aa0b9d9d3826e1443a399bdbbb65b9a"
 }

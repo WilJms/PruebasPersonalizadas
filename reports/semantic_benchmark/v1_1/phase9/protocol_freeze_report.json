@@ -18,12 +18,12 @@
     "phase9_may_read_not_restructure": true,
     "splits_frozen_at": "PHASE_8_1_CLOSE"
   },
-  "phase9_protocol_boundary_hash": "sha256:2ecf3236df16ae592e8d0c6f9cc03ee20a0245a7dff806509825806caf7a30d1",
+  "phase9_protocol_boundary_hash": "sha256:e4254b28e9d448334b9288a78f0149f013443fcf5e21f501462801c2a012fffa",
   "phase_8_1_baseline_sha": "76f2724223c0b928450eabe931bd2894d604667f",
   "pricing_snapshot_hash": "sha256:ab5d39711bd5ae868191144dc7b9646a9bf5fd2255ec2567b2a8d4d941036329",
   "protocol_version": "phase9-qualification-protocol/1.0.0",
   "provider_calls": 0,
   "readiness": "PHASE9_PROTOCOL_READY_FOR_EXECUTION",
   "schema_version": "phase9-protocol-freeze-report/1.0.0",
-  "thresholds_hash": "sha256:4c96d19214ee3ee19ec16de7fa2c2b8cb33ec7a0daaf953df2321f628b0bc619"
+  "thresholds_hash": "sha256:145a925fe4f935fd6fded2a044a103372aa0b9d9d3826e1443a399bdbbb65b9a"
 }

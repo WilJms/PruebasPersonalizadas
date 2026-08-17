@@ -995,17 +995,15 @@ def load_benchmark_facts(
         if row["primary_case_id"]
     ]
 
-    fixture_tags: dict[str, set[str]] = {}
-    for route in _load(fixture_dir / "p06_routes.json")["routes"]:
-        fixture_tags[route["route_fixture_id"]] = set(route.get("fixture_tags", ()))
-    for opportunity in _load(fixture_dir / "p07_opportunities.json")["opportunities"]:
-        fixture_id = opportunity.get("opportunity_fixture_id") or next(
-            value for key, value in opportunity.items() if key.endswith("fixture_id")
-        )
-        fixture_tags[fixture_id] = set(opportunity.get("fixture_tags", ()))
-    for fixture in _load(fixture_dir / "p09_locator_bindings.json")["fixtures"]:
-        fixture_id = fixture.get("fixture_id") or fixture.get("p09_fixture_id")
-        fixture_tags[fixture_id] = set(fixture.get("fixture_tags", ()))
+    # The case matrix is the benchmark's own tag authority: it already resolves
+    # activity, submission, property and fixture scoped tags onto each case.
+    # Joining raw fixture files by hand instead would silently miss adversarial
+    # exposure the benchmark records at case level, which is the difference
+    # between a safety gate that holds and one that looks like it does.
+    case_tags = {
+        case["case_id"]: set(case["tags"])
+        for case in _load(report_dir / "case_matrix.json")["cases"]
+    }
 
     semantic: dict[tuple[str, str], int] = {}
     hard_safety: dict[tuple[str, str], int] = {}
@@ -1020,9 +1018,11 @@ def load_benchmark_facts(
         key = (stage, split)
         mode = row["evaluator_mode"]
         oracle_state = row["oracle_state"]
-        tags = set(fixture_tags.get(row["fixture_id"], ())) | set(
-            compiled[row["property_id"]]["benchmark_tags"]
-        )
+        # A property is exposed to a tag if any case it is observed in carries
+        # it, not only the representative fixture.
+        tags = set(compiled[row["property_id"]]["benchmark_tags"])
+        for case_id in row["case_ids"]:
+            tags |= case_tags.get(case_id, set())
 
         if mode == "EXTERNAL_ADJUDICATION_REQUIRED" and oracle_state == "VALID":
             semantic[key] = semantic.get(key, 0) + 1

@@ -329,6 +329,50 @@ def test_p_hard_safety_failure_rejects_candidate(protocol) -> None:
     assert "HARD_SAFETY_FAILURE_CONFIRMED" in codes
 
 
+def test_p3_safety_gate_matches_the_case_matrix_tag_authority(protocol) -> None:
+    """The gate must be built from the benchmark's own case-level tags.
+
+    Joining raw fixture files instead silently drops adversarial exposure the
+    benchmark records at case level, which would leave hard-safety properties
+    ungated while the gate still looked populated.
+    """
+
+    from comprehension_verification.phase9_protocol import HARD_SAFETY_TAGS
+
+    cases = {
+        case["case_id"]: case
+        for case in _read(REPO_ROOT / "reports/semantic_benchmark/v1_1/case_matrix.json")["cases"]
+    }
+    rows = [
+        row
+        for row in _read(REPO_ROOT / "reports/semantic_benchmark/v1_1/property_coverage.json")["rows"]
+        if row["primary_case_id"]
+    ]
+    expected: dict[tuple[str, str], int] = {}
+    for row in rows:
+        if row["evaluator_mode"] != "EXTERNAL_ADJUDICATION_REQUIRED":
+            continue
+        if row["oracle_state"] != "VALID":
+            continue
+        tags: set[str] = set()
+        for case_id in row["case_ids"]:
+            tags |= set(cases[case_id]["tags"])
+        if tags & set(HARD_SAFETY_TAGS):
+            key = (row["stage"], cases[row["primary_case_id"]]["split"])
+            expected[key] = expected.get(key, 0) + 1
+
+    actual = {
+        (r["stage"], r["split"]): r["hard_safety_property_count"]
+        for r in protocol["safety_gate"]["rows"]
+        if r["hard_safety_property_count"]
+    }
+    assert actual == expected
+    assert protocol["safety_gate"]["totals"]["hard_safety_properties"] == sum(expected.values())
+    # Every stage that carries adversarial exposure must be gated, P04 and P09
+    # included: they were missed by an earlier fixture-only join.
+    assert {stage for stage, _ in expected} == {"P04", "P06", "P07", "P09"}
+
+
 def test_p2_safety_gate_distinguishes_three_classes(protocol) -> None:
     classes = protocol["safety_gate"]["classes"]
     assert set(classes) == {"HARD_SAFETY", "REVIEWABLE_SAFETY", "NON_SAFETY"}
