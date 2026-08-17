@@ -1,0 +1,63 @@
+{
+  "active_stages": [
+    "P04",
+    "P06",
+    "PLANNER",
+    "P07",
+    "P09"
+  ],
+  "activity_count": 12,
+  "assigned_arbitrarily_count": 0,
+  "authorization": "NONE",
+  "benchmark_boundary_hash": "sha256:83b8df2a9e3d69bf1b548d0b775254a767634b58468e33c0408732791ee8c208",
+  "benchmark_version": "semantic-benchmark/1.1.0",
+  "candidate_matrix_status": "UNSET",
+  "case_counts_by_stage": {
+    "P04": 12,
+    "P06": 127,
+    "P07": 108,
+    "P09": 4,
+    "PLANNER": 21
+  },
+  "corpus_package_boundary_hash": "21c21f3a53bfb786162dc350dc38c93b7b007d9f23b744a354de4ac2354048a1",
+  "corpus_status": "NOT_AFFECTED_BYTE_EXACT",
+  "corpus_version": "pruebas-personalizadas-corpus/1.0.0",
+  "disabled_stages": [
+    "P10"
+  ],
+  "historical_benchmark": {
+    "benchmark_version": "semantic-benchmark/1.0.0",
+    "status": [
+      "SUPERSEDED_PRE_QUALIFICATION",
+      "NOT_VALID_FOR_PHASE9_MODEL_SELECTION"
+    ]
+  },
+  "historical_harness_status": "HISTORICAL_NON_CANONICAL_EVIDENCE",
+  "historical_inactive_stages": [
+    "P05",
+    "P08"
+  ],
+  "p09_fixture_count": 4,
+  "p09_question_count": 12,
+  "pipeline_authority_version": "pipeline-authority/1.1.0",
+  "prompts_and_routing_status": "NOT_AFFECTED",
+  "property_alignment_counts": {
+    "ALIGNED": 354,
+    "EXPLICITLY_EXCLUDED": 33,
+    "NOT_APPLICABLE": 8
+  },
+  "property_count": 395,
+  "property_state_counts": {
+    "NOT_APPLICABLE": 8,
+    "ORACLE_SUSPECT": 26,
+    "VALID": 361
+  },
+  "provider_calls": 0,
+  "qualification_status": "NOT_YET_RUN",
+  "ratification_type": "INDEPENDENT_MODEL_RATIFICATION_DERIVED_FROM_OPUS5",
+  "readiness": "SEMANTIC_BENCHMARK_READY_FOR_QUALIFICATION",
+  "runtime_status": "NOT_AFFECTED",
+  "schema_version": "semantic-benchmark-manifest/1.1.0",
+  "submission_count": 72,
+  "total_case_count": 272
+}

@@ -1,0 +1,2431 @@
+{
+  "benchmark_version": "semantic-benchmark/1.1.0",
+  "fixtures": [
+    {
+      "activity_id": "act_03_puesto_de_limonada",
+      "fixture_id": "p09_fixture_act_03",
+      "questions": [
+        {
+          "question_fixture_id": "P09-A03-Q01",
+          "support_refs": [
+            {
+              "declared_ref": "01_assignment.docx#Costos autorizados y precio de venta",
+              "resolved_units": [
+                {
+                  "evidence_id": "ev_5ff5151ed9200d300514",
+                  "locator": {
+                    "heading_path": [
+                      "Escenario"
+                    ],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 5
+                  },
+                  "normalized_hash": "sha256:fd8d3d643269521540da8f2176c7ad8b724c4c43b804839fdc153b1685a9210e"
+                },
+                {
+                  "evidence_id": "ev_6163484d46d5482d25c9",
+                  "locator": {
+                    "heading_path": [
+                      "Escenario",
+                      "Decisiones disponibles"
+                    ],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 9
+                  },
+                  "normalized_hash": "sha256:8e797e369048f018cf2b752d703f55779dc07fd030a1f9e47da70f54e95fe355"
+                },
+                {
+                  "evidence_id": "ev_7e9bcd53ab47822cc98a",
+                  "locator": {
+                    "heading_path": [
+                      "Escenario",
+                      "Decisiones disponibles"
+                    ],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 10
+                  },
+                  "normalized_hash": "sha256:e2629677d1fc0314082b9d751f50a12f8aec92ded02f908950dbd3e3045badbd"
+                }
+              ],
+              "role": "SOURCE_CONTEXT"
+            },
+            {
+              "declared_ref": "submissions/submission_05.pdf#Elección y tabla de cálculos",
+              "resolved_units": [
+                {
+                  "evidence_id": "ev_feec60e20d7ec1ae8c7d",
+                  "locator": {
+                    "bbox": [
+                      67.2,
+                      105.627,
+                      118.613,
+                      118.127
+                    ],
+                    "block_index": 2,
+                    "kind": "PAGE_BBOX",
+                    "page": 1
+                  },
+                  "normalized_hash": "sha256:285512032f13522046e62f6796ddecc3a425a5792e95cb832492d053e62d0f9d"
+                },
+                {
+                  "evidence_id": "ev_eb6ad6f0bd45703e16ba",
+                  "locator": {
+                    "bbox": [
+                      72.2,
+                      174.634,
+                      403.198,
+                      182.334
+                    ],
+                    "block_index": 5,
+                    "kind": "PAGE_BBOX",
+                    "page": 1
+                  },
+                  "normalized_hash": "sha256:7534ce93353ae3bea4fdb0716e38bd5b0c735e49cc257ed906e57dffc951224a"
+                },
+                {
+                  "evidence_id": "ev_3ea45e0cd35c8c3c2705",
+                  "locator": {
+                    "bbox": [
+                      72.2,
+                      193.934,
+                      405.347,
+                      201.634
+                    ],
+                    "block_index": 6,
+                    "kind": "PAGE_BBOX",
+                    "page": 1
+                  },
+                  "normalized_hash": "sha256:692eca935128dec215056e655fbfb6b04f89ad8f545dd8b500f05c0971bcc02f"
+                },
+                {
+                  "evidence_id": "ev_637254fccf82757f2672",
+                  "locator": {
+                    "bbox": [
+                      72.2,
+                      213.234,
+                      405.347,
+                      220.934
+                    ],
+                    "block_index": 7,
+                    "kind": "PAGE_BBOX",
+                    "page": 1
+                  },
+                  "normalized_hash": "sha256:d1d371f04aa0050f6d401614cdb8d5a99363d2953ad69d44478889fc6b0019f1"
+                },
+                {
+                  "evidence_id": "ev_c303a07431cc533e765a",
+                  "locator": {
+                    "bbox": [
+                      72.2,
+                      232.534,
+                      405.347,
+                      240.234
+                    ],
+                    "block_index": 8,
+                    "kind": "PAGE_BBOX",
+                    "page": 1
+                  },
+                  "normalized_hash": "sha256:05a9a7030bb2257a7039955dbc724e3acf123ad7d76c060d46768c2ce5e69426"
+                },
+                {
+                  "evidence_id": "ev_f0a358de3e65990b61ba",
+                  "locator": {
+                    "bbox": [
+                      72.2,
+                      251.834,
+                      405.347,
+                      259.534
+                    ],
+                    "block_index": 9,
+                    "kind": "PAGE_BBOX",
+                    "page": 1
+                  },
+                  "normalized_hash": "sha256:565b6c428329c36c2a4dfb9454c8951f5d638732e6a3e2725d3f18e5ea1803ad"
+                },
+                {
+                  "evidence_id": "ev_e6a5610a9c63186ed42f",
+                  "locator": {
+                    "bbox": [
+                      72.2,
+                      271.134,
+                      409.628,
+                      278.834
+                    ],
+                    "block_index": 10,
+                    "kind": "PAGE_BBOX",
+                    "page": 1
+                  },
+                  "normalized_hash": "sha256:c5383afa088a93827e37608930bd676499198baba107af277e29cb7f53a42b0e"
+                },
+                {
+                  "evidence_id": "ev_76263dccc3119ac4adee",
+                  "locator": {
+                    "bbox": [
+                      72.2,
+                      290.434,
+                      405.347,
+                      298.134
+                    ],
+                    "block_index": 11,
+                    "kind": "PAGE_BBOX",
+                    "page": 1
+                  },
+                  "normalized_hash": "sha256:7045bd13227e5acf8918bfa82c3e142b34905e69cf15b6b2156d338e5cb9f991"
+                }
+              ],
+              "role": "SUBMISSION_SUPPORT"
+            }
+          ],
+          "visible_anchor_refs": [
+            {
+              "declared_ref": "submissions/submission_05.pdf#Elección y tabla de cálculos",
+              "resolved_units": [
+                {
+                  "evidence_id": "ev_feec60e20d7ec1ae8c7d",
+                  "locator": {
+                    "bbox": [
+                      67.2,
+                      105.627,
+                      118.613,
+                      118.127
+                    ],
+                    "block_index": 2,
+                    "kind": "PAGE_BBOX",
+                    "page": 1
+                  },
+                  "normalized_hash": "sha256:285512032f13522046e62f6796ddecc3a425a5792e95cb832492d053e62d0f9d"
+                },
+                {
+                  "evidence_id": "ev_eb6ad6f0bd45703e16ba",
+                  "locator": {
+                    "bbox": [
+                      72.2,
+                      174.634,
+                      403.198,
+                      182.334
+                    ],
+                    "block_index": 5,
+                    "kind": "PAGE_BBOX",
+                    "page": 1
+                  },
+                  "normalized_hash": "sha256:7534ce93353ae3bea4fdb0716e38bd5b0c735e49cc257ed906e57dffc951224a"
+                },
+                {
+                  "evidence_id": "ev_3ea45e0cd35c8c3c2705",
+                  "locator": {
+                    "bbox": [
+                      72.2,
+                      193.934,
+                      405.347,
+                      201.634
+                    ],
+                    "block_index": 6,
+                    "kind": "PAGE_BBOX",
+                    "page": 1
+                  },
+                  "normalized_hash": "sha256:692eca935128dec215056e655fbfb6b04f89ad8f545dd8b500f05c0971bcc02f"
+                },
+                {
+                  "evidence_id": "ev_637254fccf82757f2672",
+                  "locator": {
+                    "bbox": [
+                      72.2,
+                      213.234,
+                      405.347,
+                      220.934
+                    ],
+                    "block_index": 7,
+                    "kind": "PAGE_BBOX",
+                    "page": 1
+                  },
+                  "normalized_hash": "sha256:d1d371f04aa0050f6d401614cdb8d5a99363d2953ad69d44478889fc6b0019f1"
+                },
+                {
+                  "evidence_id": "ev_c303a07431cc533e765a",
+                  "locator": {
+                    "bbox": [
+                      72.2,
+                      232.534,
+                      405.347,
+                      240.234
+                    ],
+                    "block_index": 8,
+                    "kind": "PAGE_BBOX",
+                    "page": 1
+                  },
+                  "normalized_hash": "sha256:05a9a7030bb2257a7039955dbc724e3acf123ad7d76c060d46768c2ce5e69426"
+                },
+                {
+                  "evidence_id": "ev_f0a358de3e65990b61ba",
+                  "locator": {
+                    "bbox": [
+                      72.2,
+                      251.834,
+                      405.347,
+                      259.534
+                    ],
+                    "block_index": 9,
+                    "kind": "PAGE_BBOX",
+                    "page": 1
+                  },
+                  "normalized_hash": "sha256:565b6c428329c36c2a4dfb9454c8951f5d638732e6a3e2725d3f18e5ea1803ad"
+                },
+                {
+                  "evidence_id": "ev_e6a5610a9c63186ed42f",
+                  "locator": {
+                    "bbox": [
+                      72.2,
+                      271.134,
+                      409.628,
+                      278.834
+                    ],
+                    "block_index": 10,
+                    "kind": "PAGE_BBOX",
+                    "page": 1
+                  },
+                  "normalized_hash": "sha256:c5383afa088a93827e37608930bd676499198baba107af277e29cb7f53a42b0e"
+                },
+                {
+                  "evidence_id": "ev_76263dccc3119ac4adee",
+                  "locator": {
+                    "bbox": [
+                      72.2,
+                      290.434,
+                      405.347,
+                      298.134
+                    ],
+                    "block_index": 11,
+                    "kind": "PAGE_BBOX",
+                    "page": 1
+                  },
+                  "normalized_hash": "sha256:7045bd13227e5acf8918bfa82c3e142b34905e69cf15b6b2156d338e5cb9f991"
+                }
+              ],
+              "role": "SUBMISSION_SUPPORT"
+            }
+          ]
+        },
+        {
+          "question_fixture_id": "P09-A03-Q02",
+          "support_refs": [
+            {
+              "declared_ref": "01_assignment.docx#Opciones de capacidad y presupuesto",
+              "resolved_units": [
+                {
+                  "evidence_id": "ev_55931dc4769614bc858b",
+                  "locator": {
+                    "heading_path": [],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 2
+                  },
+                  "normalized_hash": "sha256:c6dac558a1d1a187e64369ce89758af1844bd95823f66d5e1cb48b7ec1ff27e2"
+                },
+                {
+                  "evidence_id": "ev_469dee402ec4c65b4d5c",
+                  "locator": {
+                    "heading_path": [
+                      "Escenario",
+                      "Opciones de servicio"
+                    ],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 7
+                  },
+                  "normalized_hash": "sha256:ddcf476aaeef978cea6c5dbd34c1ff7fcb348da5bc9054ac25ac6576f2ff563f"
+                },
+                {
+                  "evidence_id": "ev_ef86e7db709e7f4e661a",
+                  "locator": {
+                    "heading_path": [
+                      "Tarea"
+                    ],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 21
+                  },
+                  "normalized_hash": "sha256:6191551b2bf38a718281597be655a28778a700b0ec954098a062c7c6250b5c69"
+                }
+              ],
+              "role": "SOURCE_CONTEXT"
+            },
+            {
+              "declared_ref": "submissions/submission_05.pdf#Punto de comparación y sensibilidad",
+              "resolved_units": [
+                {
+                  "evidence_id": "ev_eb2d2902e705aed0f05a",
+                  "locator": {
+                    "bbox": [
+                      67.2,
+                      405.727,
+                      288.1,
+                      418.227
+                    ],
+                    "block_index": 17,
+                    "kind": "PAGE_BBOX",
+                    "page": 1
+                  },
+                  "normalized_hash": "sha256:d44e317a8bacab7e1358a51a7dd116fac15a3b314017d26f6164b9307e14a0ae"
+                },
+                {
+                  "evidence_id": "ev_76386bd7e3b219e58f4f",
+                  "locator": {
+                    "bbox": [
+                      67.2,
+                      434.106,
+                      520.255,
+                      443.606
+                    ],
+                    "block_index": 18,
+                    "kind": "PAGE_BBOX",
+                    "page": 1
+                  },
+                  "normalized_hash": "sha256:c1c95caafa825321404c2deb77f024d070901555434033fbb6bfd80419319a4e"
+                },
+                {
+                  "evidence_id": "ev_a240ec603b14ea3be4df",
+                  "locator": {
+                    "bbox": [
+                      67.2,
+                      447.106,
+                      522.392,
+                      456.606
+                    ],
+                    "block_index": 19,
+                    "kind": "PAGE_BBOX",
+                    "page": 1
+                  },
+                  "normalized_hash": "sha256:d820acb0dd0ef686c0992139d97972e0760ff5325e209689ab864d29f1573387"
+                },
+                {
+                  "evidence_id": "ev_8e0c621d2f730718110b",
+                  "locator": {
+                    "bbox": [
+                      67.2,
+                      460.106,
+                      544.8,
+                      469.606
+                    ],
+                    "block_index": 20,
+                    "kind": "PAGE_BBOX",
+                    "page": 1
+                  },
+                  "normalized_hash": "sha256:edc579d97030d6a44f0292bf4f7f2ea265ad3c834c5d07fd9e07c07941613fbb"
+                },
+                {
+                  "evidence_id": "ev_e293634cab6c9d688b83",
+                  "locator": {
+                    "bbox": [
+                      67.2,
+                      473.106,
+                      413.076,
+                      482.606
+                    ],
+                    "block_index": 21,
+                    "kind": "PAGE_BBOX",
+                    "page": 1
+                  },
+                  "normalized_hash": "sha256:889716f33ff73911076143dfb848a1fdb8821768e17ea70bf1633beb07170928"
+                }
+              ],
+              "role": "SUBMISSION_SUPPORT"
+            }
+          ],
+          "visible_anchor_refs": [
+            {
+              "declared_ref": "submissions/submission_05.pdf#Punto de comparación y sensibilidad",
+              "resolved_units": [
+                {
+                  "evidence_id": "ev_eb2d2902e705aed0f05a",
+                  "locator": {
+                    "bbox": [
+                      67.2,
+                      405.727,
+                      288.1,
+                      418.227
+                    ],
+                    "block_index": 17,
+                    "kind": "PAGE_BBOX",
+                    "page": 1
+                  },
+                  "normalized_hash": "sha256:d44e317a8bacab7e1358a51a7dd116fac15a3b314017d26f6164b9307e14a0ae"
+                },
+                {
+                  "evidence_id": "ev_76386bd7e3b219e58f4f",
+                  "locator": {
+                    "bbox": [
+                      67.2,
+                      434.106,
+                      520.255,
+                      443.606
+                    ],
+                    "block_index": 18,
+                    "kind": "PAGE_BBOX",
+                    "page": 1
+                  },
+                  "normalized_hash": "sha256:c1c95caafa825321404c2deb77f024d070901555434033fbb6bfd80419319a4e"
+                },
+                {
+                  "evidence_id": "ev_a240ec603b14ea3be4df",
+                  "locator": {
+                    "bbox": [
+                      67.2,
+                      447.106,
+                      522.392,
+                      456.606
+                    ],
+                    "block_index": 19,
+                    "kind": "PAGE_BBOX",
+                    "page": 1
+                  },
+                  "normalized_hash": "sha256:d820acb0dd0ef686c0992139d97972e0760ff5325e209689ab864d29f1573387"
+                },
+                {
+                  "evidence_id": "ev_8e0c621d2f730718110b",
+                  "locator": {
+                    "bbox": [
+                      67.2,
+                      460.106,
+                      544.8,
+                      469.606
+                    ],
+                    "block_index": 20,
+                    "kind": "PAGE_BBOX",
+                    "page": 1
+                  },
+                  "normalized_hash": "sha256:edc579d97030d6a44f0292bf4f7f2ea265ad3c834c5d07fd9e07c07941613fbb"
+                },
+                {
+                  "evidence_id": "ev_e293634cab6c9d688b83",
+                  "locator": {
+                    "bbox": [
+                      67.2,
+                      473.106,
+                      413.076,
+                      482.606
+                    ],
+                    "block_index": 21,
+                    "kind": "PAGE_BBOX",
+                    "page": 1
+                  },
+                  "normalized_hash": "sha256:889716f33ff73911076143dfb848a1fdb8821768e17ea70bf1633beb07170928"
+                }
+              ],
+              "role": "SUBMISSION_SUPPORT"
+            }
+          ]
+        },
+        {
+          "question_fixture_id": "P09-A03-Q03",
+          "support_refs": [
+            {
+              "declared_ref": "01_assignment.docx#Presupuesto, costos y capacidad del dispensador",
+              "resolved_units": [
+                {
+                  "evidence_id": "ev_6163484d46d5482d25c9",
+                  "locator": {
+                    "heading_path": [
+                      "Escenario",
+                      "Decisiones disponibles"
+                    ],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 9
+                  },
+                  "normalized_hash": "sha256:8e797e369048f018cf2b752d703f55779dc07fd030a1f9e47da70f54e95fe355"
+                },
+                {
+                  "evidence_id": "ev_4a07f71e5343b56987f7",
+                  "locator": {
+                    "heading_path": [
+                      "Escenario",
+                      "Trazabilidad esperada"
+                    ],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 14
+                  },
+                  "normalized_hash": "sha256:d5f9c797b9cde0a8ba4cec0f94c7745cccd03fa348ff445d6164c6c30b494368"
+                },
+                {
+                  "evidence_id": "ev_ef86e7db709e7f4e661a",
+                  "locator": {
+                    "heading_path": [
+                      "Tarea"
+                    ],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 21
+                  },
+                  "normalized_hash": "sha256:6191551b2bf38a718281597be655a28778a700b0ec954098a062c7c6250b5c69"
+                }
+              ],
+              "role": "SOURCE_CONTEXT"
+            },
+            {
+              "declared_ref": "submissions/submission_05.pdf#Regla de revisión",
+              "resolved_units": [
+                {
+                  "evidence_id": "ev_51e17d19d3da76f54ccf",
+                  "locator": {
+                    "bbox": [
+                      67.2,
+                      640.106,
+                      544.8,
+                      649.606
+                    ],
+                    "block_index": 30,
+                    "kind": "PAGE_BBOX",
+                    "page": 1
+                  },
+                  "normalized_hash": "sha256:5dc2182600f189aa758098c438fce275334c7c1a13986db7a325df23436e4038"
+                },
+                {
+                  "evidence_id": "ev_604dd709208827384004",
+                  "locator": {
+                    "bbox": [
+                      67.2,
+                      653.106,
+                      136.654,
+                      662.606
+                    ],
+                    "block_index": 31,
+                    "kind": "PAGE_BBOX",
+                    "page": 1
+                  },
+                  "normalized_hash": "sha256:15f234947e5697fefa271b1a540be2876aa62d764c37c6845f09c8df1b8bcaea"
+                }
+              ],
+              "role": "SUBMISSION_SUPPORT"
+            }
+          ],
+          "visible_anchor_refs": [
+            {
+              "declared_ref": "submissions/submission_05.pdf#Regla de revisión",
+              "resolved_units": [
+                {
+                  "evidence_id": "ev_51e17d19d3da76f54ccf",
+                  "locator": {
+                    "bbox": [
+                      67.2,
+                      640.106,
+                      544.8,
+                      649.606
+                    ],
+                    "block_index": 30,
+                    "kind": "PAGE_BBOX",
+                    "page": 1
+                  },
+                  "normalized_hash": "sha256:5dc2182600f189aa758098c438fce275334c7c1a13986db7a325df23436e4038"
+                },
+                {
+                  "evidence_id": "ev_604dd709208827384004",
+                  "locator": {
+                    "bbox": [
+                      67.2,
+                      653.106,
+                      136.654,
+                      662.606
+                    ],
+                    "block_index": 31,
+                    "kind": "PAGE_BBOX",
+                    "page": 1
+                  },
+                  "normalized_hash": "sha256:15f234947e5697fefa271b1a540be2876aa62d764c37c6845f09c8df1b8bcaea"
+                }
+              ],
+              "role": "SUBMISSION_SUPPORT"
+            }
+          ]
+        }
+      ],
+      "submission_id": "submission_05"
+    },
+    {
+      "activity_id": "act_04_asignador_de_turnos",
+      "fixture_id": "p09_fixture_act_04",
+      "questions": [
+        {
+          "question_fixture_id": "P09-A04-Q01",
+          "support_refs": [
+            {
+              "declared_ref": "01_assignment.docx#Contrato de pureza y operaciones autorizadas",
+              "resolved_units": [
+                {
+                  "evidence_id": "ev_dd1e8d34ad44b71230a8",
+                  "locator": {
+                    "heading_path": [
+                      "Problema",
+                      "Contrato"
+                    ],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 6
+                  },
+                  "normalized_hash": "sha256:1951861239edcda7e3107f18494672ef5e8ea9da901aa599b5620edb93dc4cde"
+                },
+                {
+                  "evidence_id": "ev_850058650c3382c3f50d",
+                  "locator": {
+                    "heading_path": [
+                      "Problema",
+                      "Casos de borde autorizados"
+                    ],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 15
+                  },
+                  "normalized_hash": "sha256:3d25102ad6e35b00879c09ae8675cadcbb6aa23aa0fbd295fbba27ebab2c1450"
+                },
+                {
+                  "evidence_id": "ev_fe07695f8846063f5008",
+                  "locator": {
+                    "heading_path": [
+                      "Problema",
+                      "Criterios técnicos de la entrega"
+                    ],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 22
+                  },
+                  "normalized_hash": "sha256:dcec391d474368d6e5bf93e9917426c6af50312fe70f332a2d50d84e0a92067a"
+                }
+              ],
+              "role": "SOURCE_CONTEXT"
+            },
+            {
+              "declared_ref": "submissions/submission_06_artifact_01.md#Función y caso de demostración",
+              "resolved_units": [
+                {
+                  "evidence_id": "ev_de1cba84544cd04797df",
+                  "locator": {
+                    "heading_path": [],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 0
+                  },
+                  "normalized_hash": "sha256:8f3e6b030ac52f3a7be2c8d88815851ed5b0cc86cea4ca5e2152b2ba5d123146"
+                },
+                {
+                  "evidence_id": "ev_7ab196584d594010f750",
+                  "locator": {
+                    "heading_path": [
+                      "Caso de demostración"
+                    ],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 1
+                  },
+                  "normalized_hash": "sha256:db4ee914045f2c62a3e225e81596023610c9765aa18f57109ee7a3dcf66fac49"
+                },
+                {
+                  "evidence_id": "ev_249c96141d2ed104b688",
+                  "locator": {
+                    "heading_path": [
+                      "Caso de demostración"
+                    ],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 2
+                  },
+                  "normalized_hash": "sha256:8e9b2ea4635af47126f9ddbaba9db75d450816ec6ac48662f2b4eefb3e792596"
+                },
+                {
+                  "evidence_id": "ev_a8e2c4dba9ba5cd0d388",
+                  "locator": {
+                    "heading_path": [
+                      "Caso de demostración"
+                    ],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 3
+                  },
+                  "normalized_hash": "sha256:d1f6d2c81b150399da8f6c9802942db5ed7d4fe92e046f995cd032ba7fa37718"
+                }
+              ],
+              "role": "SUBMISSION_SUPPORT"
+            },
+            {
+              "declared_ref": "submissions/submission_06_artifact_02.txt#Afirmación de pureza",
+              "resolved_units": [
+                {
+                  "evidence_id": "ev_980679b6b5472eebbfbc",
+                  "locator": {
+                    "heading_path": [],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 0
+                  },
+                  "normalized_hash": "sha256:b9182955db1a9f911b8663f589c220ddb079446cc54c8de0020a2c167ce9c475"
+                },
+                {
+                  "evidence_id": "ev_0ae1110e283a8eac8bd8",
+                  "locator": {
+                    "heading_path": [],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 5
+                  },
+                  "normalized_hash": "sha256:d3f5d69af6de311a9fc951c8554d5de4737cd7489ea9fa7ae86c60e1ed6e3225"
+                }
+              ],
+              "role": "SUBMISSION_SUPPORT"
+            }
+          ],
+          "visible_anchor_refs": [
+            {
+              "declared_ref": "submissions/submission_06_artifact_01.md#Función y caso de demostración",
+              "resolved_units": [
+                {
+                  "evidence_id": "ev_de1cba84544cd04797df",
+                  "locator": {
+                    "heading_path": [],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 0
+                  },
+                  "normalized_hash": "sha256:8f3e6b030ac52f3a7be2c8d88815851ed5b0cc86cea4ca5e2152b2ba5d123146"
+                },
+                {
+                  "evidence_id": "ev_7ab196584d594010f750",
+                  "locator": {
+                    "heading_path": [
+                      "Caso de demostración"
+                    ],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 1
+                  },
+                  "normalized_hash": "sha256:db4ee914045f2c62a3e225e81596023610c9765aa18f57109ee7a3dcf66fac49"
+                },
+                {
+                  "evidence_id": "ev_249c96141d2ed104b688",
+                  "locator": {
+                    "heading_path": [
+                      "Caso de demostración"
+                    ],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 2
+                  },
+                  "normalized_hash": "sha256:8e9b2ea4635af47126f9ddbaba9db75d450816ec6ac48662f2b4eefb3e792596"
+                },
+                {
+                  "evidence_id": "ev_a8e2c4dba9ba5cd0d388",
+                  "locator": {
+                    "heading_path": [
+                      "Caso de demostración"
+                    ],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 3
+                  },
+                  "normalized_hash": "sha256:d1f6d2c81b150399da8f6c9802942db5ed7d4fe92e046f995cd032ba7fa37718"
+                }
+              ],
+              "role": "SUBMISSION_SUPPORT"
+            },
+            {
+              "declared_ref": "submissions/submission_06_artifact_02.txt#Afirmación de pureza",
+              "resolved_units": [
+                {
+                  "evidence_id": "ev_980679b6b5472eebbfbc",
+                  "locator": {
+                    "heading_path": [],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 0
+                  },
+                  "normalized_hash": "sha256:b9182955db1a9f911b8663f589c220ddb079446cc54c8de0020a2c167ce9c475"
+                },
+                {
+                  "evidence_id": "ev_0ae1110e283a8eac8bd8",
+                  "locator": {
+                    "heading_path": [],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 5
+                  },
+                  "normalized_hash": "sha256:d3f5d69af6de311a9fc951c8554d5de4737cd7489ea9fa7ae86c60e1ed6e3225"
+                }
+              ],
+              "role": "SUBMISSION_SUPPORT"
+            }
+          ]
+        },
+        {
+          "question_fixture_id": "P09-A04-Q02",
+          "support_refs": [
+            {
+              "declared_ref": "01_assignment.docx#Duplicados por id",
+              "resolved_units": [
+                {
+                  "evidence_id": "ev_37d256bd584066ea2c82",
+                  "locator": {
+                    "heading_path": [
+                      "Problema",
+                      "Contrato"
+                    ],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 9
+                  },
+                  "normalized_hash": "sha256:befdd43b76f48560b333357d185bc9615484bf182b185cb5492ad9f3fb72ef9d"
+                },
+                {
+                  "evidence_id": "ev_db4d78474bda390c6927",
+                  "locator": {
+                    "heading_path": [
+                      "Problema",
+                      "Criterios técnicos de la entrega"
+                    ],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 19
+                  },
+                  "normalized_hash": "sha256:485e27671fc9bf6a1022a9c3f51cc66271afd6cfdff2f2d18435ecf037a40ebc"
+                },
+                {
+                  "evidence_id": "ev_a98a50b86163f1e4137e",
+                  "locator": {
+                    "heading_path": [
+                      "Entregables"
+                    ],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 27
+                  },
+                  "normalized_hash": "sha256:97f541a9af87502303ee698bb0ff1d17db4e86a999682e81b1e430b30048bbf3"
+                }
+              ],
+              "role": "SOURCE_CONTEXT"
+            },
+            {
+              "declared_ref": "submissions/submission_06_artifact_01.md#Comprensión unicas y demo",
+              "resolved_units": [
+                {
+                  "evidence_id": "ev_de1cba84544cd04797df",
+                  "locator": {
+                    "heading_path": [],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 0
+                  },
+                  "normalized_hash": "sha256:8f3e6b030ac52f3a7be2c8d88815851ed5b0cc86cea4ca5e2152b2ba5d123146"
+                },
+                {
+                  "evidence_id": "ev_249c96141d2ed104b688",
+                  "locator": {
+                    "heading_path": [
+                      "Caso de demostración"
+                    ],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 2
+                  },
+                  "normalized_hash": "sha256:8e9b2ea4635af47126f9ddbaba9db75d450816ec6ac48662f2b4eefb3e792596"
+                },
+                {
+                  "evidence_id": "ev_a8e2c4dba9ba5cd0d388",
+                  "locator": {
+                    "heading_path": [
+                      "Caso de demostración"
+                    ],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 3
+                  },
+                  "normalized_hash": "sha256:d1f6d2c81b150399da8f6c9802942db5ed7d4fe92e046f995cd032ba7fa37718"
+                }
+              ],
+              "role": "SUBMISSION_SUPPORT"
+            },
+            {
+              "declared_ref": "submissions/submission_06_artifact_02.txt#Afirmación sobre primera aparición",
+              "resolved_units": [
+                {
+                  "evidence_id": "ev_980679b6b5472eebbfbc",
+                  "locator": {
+                    "heading_path": [],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 0
+                  },
+                  "normalized_hash": "sha256:b9182955db1a9f911b8663f589c220ddb079446cc54c8de0020a2c167ce9c475"
+                },
+                {
+                  "evidence_id": "ev_5364ac7c738908d13538",
+                  "locator": {
+                    "heading_path": [],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 3
+                  },
+                  "normalized_hash": "sha256:eff3251117fc212844953e95bfbdf36a71e4ad072e3351a57ca9198eb48d120a"
+                }
+              ],
+              "role": "SUBMISSION_SUPPORT"
+            }
+          ],
+          "visible_anchor_refs": [
+            {
+              "declared_ref": "submissions/submission_06_artifact_01.md#Comprensión unicas y demo",
+              "resolved_units": [
+                {
+                  "evidence_id": "ev_de1cba84544cd04797df",
+                  "locator": {
+                    "heading_path": [],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 0
+                  },
+                  "normalized_hash": "sha256:8f3e6b030ac52f3a7be2c8d88815851ed5b0cc86cea4ca5e2152b2ba5d123146"
+                },
+                {
+                  "evidence_id": "ev_249c96141d2ed104b688",
+                  "locator": {
+                    "heading_path": [
+                      "Caso de demostración"
+                    ],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 2
+                  },
+                  "normalized_hash": "sha256:8e9b2ea4635af47126f9ddbaba9db75d450816ec6ac48662f2b4eefb3e792596"
+                },
+                {
+                  "evidence_id": "ev_a8e2c4dba9ba5cd0d388",
+                  "locator": {
+                    "heading_path": [
+                      "Caso de demostración"
+                    ],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 3
+                  },
+                  "normalized_hash": "sha256:d1f6d2c81b150399da8f6c9802942db5ed7d4fe92e046f995cd032ba7fa37718"
+                }
+              ],
+              "role": "SUBMISSION_SUPPORT"
+            },
+            {
+              "declared_ref": "submissions/submission_06_artifact_02.txt#Afirmación sobre primera aparición",
+              "resolved_units": [
+                {
+                  "evidence_id": "ev_980679b6b5472eebbfbc",
+                  "locator": {
+                    "heading_path": [],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 0
+                  },
+                  "normalized_hash": "sha256:b9182955db1a9f911b8663f589c220ddb079446cc54c8de0020a2c167ce9c475"
+                },
+                {
+                  "evidence_id": "ev_5364ac7c738908d13538",
+                  "locator": {
+                    "heading_path": [],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 3
+                  },
+                  "normalized_hash": "sha256:eff3251117fc212844953e95bfbdf36a71e4ad072e3351a57ca9198eb48d120a"
+                }
+              ],
+              "role": "SUBMISSION_SUPPORT"
+            }
+          ]
+        },
+        {
+          "question_fixture_id": "P09-A04-Q03",
+          "support_refs": [
+            {
+              "declared_ref": "01_assignment.docx#Orden global y cupos por grupo",
+              "resolved_units": [
+                {
+                  "evidence_id": "ev_d009e91766b25a228418",
+                  "locator": {
+                    "heading_path": [
+                      "Problema"
+                    ],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 5
+                  },
+                  "normalized_hash": "sha256:4d6a5ebb776c5a63a05f60ce1005d8317f67fc3088870a22b831b4f17f6ed901"
+                },
+                {
+                  "evidence_id": "ev_3816cd31ac2f8bbadef6",
+                  "locator": {
+                    "heading_path": [
+                      "Problema",
+                      "Contrato"
+                    ],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 11
+                  },
+                  "normalized_hash": "sha256:009088c87e2df91735ccf782cf42362a683cd501c5ff34acf4410cf2846850ee"
+                },
+                {
+                  "evidence_id": "ev_e1f3fc497a2736f0cf39",
+                  "locator": {
+                    "heading_path": [
+                      "Problema",
+                      "Casos de borde autorizados"
+                    ],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 16
+                  },
+                  "normalized_hash": "sha256:128c21fa649ce6fc816a76b52ec40b1fd88c8f9f8a8fb96e62b43138801953b3"
+                }
+              ],
+              "role": "SOURCE_CONTEXT"
+            },
+            {
+              "declared_ref": "submissions/submission_06_artifact_01.md#Bucle por grupo",
+              "resolved_units": [
+                {
+                  "evidence_id": "ev_de1cba84544cd04797df",
+                  "locator": {
+                    "heading_path": [],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 0
+                  },
+                  "normalized_hash": "sha256:8f3e6b030ac52f3a7be2c8d88815851ed5b0cc86cea4ca5e2152b2ba5d123146"
+                },
+                {
+                  "evidence_id": "ev_a8e2c4dba9ba5cd0d388",
+                  "locator": {
+                    "heading_path": [
+                      "Caso de demostración"
+                    ],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 3
+                  },
+                  "normalized_hash": "sha256:d1f6d2c81b150399da8f6c9802942db5ed7d4fe92e046f995cd032ba7fa37718"
+                }
+              ],
+              "role": "SUBMISSION_SUPPORT"
+            },
+            {
+              "declared_ref": "submissions/submission_06_artifact_02.txt#Afirmación de orden global",
+              "resolved_units": [
+                {
+                  "evidence_id": "ev_fb54c43c83db40ca984f",
+                  "locator": {
+                    "heading_path": [],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 1
+                  },
+                  "normalized_hash": "sha256:8df0af92d3ff83b8e5b719b8869f82c74e7296542ff8625aeebac946dc066207"
+                },
+                {
+                  "evidence_id": "ev_5fd8fec8babe0add5130",
+                  "locator": {
+                    "heading_path": [],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 4
+                  },
+                  "normalized_hash": "sha256:a1a2153be054d7f781d45adb29e200977e59c131e0557af26a3d81785379b2aa"
+                }
+              ],
+              "role": "SUBMISSION_SUPPORT"
+            }
+          ],
+          "visible_anchor_refs": [
+            {
+              "declared_ref": "submissions/submission_06_artifact_01.md#Bucle por grupo",
+              "resolved_units": [
+                {
+                  "evidence_id": "ev_de1cba84544cd04797df",
+                  "locator": {
+                    "heading_path": [],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 0
+                  },
+                  "normalized_hash": "sha256:8f3e6b030ac52f3a7be2c8d88815851ed5b0cc86cea4ca5e2152b2ba5d123146"
+                },
+                {
+                  "evidence_id": "ev_a8e2c4dba9ba5cd0d388",
+                  "locator": {
+                    "heading_path": [
+                      "Caso de demostración"
+                    ],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 3
+                  },
+                  "normalized_hash": "sha256:d1f6d2c81b150399da8f6c9802942db5ed7d4fe92e046f995cd032ba7fa37718"
+                }
+              ],
+              "role": "SUBMISSION_SUPPORT"
+            },
+            {
+              "declared_ref": "submissions/submission_06_artifact_02.txt#Afirmación de orden global",
+              "resolved_units": [
+                {
+                  "evidence_id": "ev_fb54c43c83db40ca984f",
+                  "locator": {
+                    "heading_path": [],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 1
+                  },
+                  "normalized_hash": "sha256:8df0af92d3ff83b8e5b719b8869f82c74e7296542ff8625aeebac946dc066207"
+                },
+                {
+                  "evidence_id": "ev_5fd8fec8babe0add5130",
+                  "locator": {
+                    "heading_path": [],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 4
+                  },
+                  "normalized_hash": "sha256:a1a2153be054d7f781d45adb29e200977e59c131e0557af26a3d81785379b2aa"
+                }
+              ],
+              "role": "SUBMISSION_SUPPORT"
+            }
+          ]
+        }
+      ],
+      "submission_id": "submission_06"
+    },
+    {
+      "activity_id": "act_09_renovacion_y_desplazamiento",
+      "fixture_id": "p09_fixture_act_09",
+      "questions": [
+        {
+          "question_fixture_id": "P09-A09-Q01",
+          "support_refs": [
+            {
+              "declared_ref": "01_assignment.docx#Fuentes A, B y C",
+              "resolved_units": [
+                {
+                  "evidence_id": "ev_a8603cfc33c6db3db07f",
+                  "locator": {
+                    "heading_path": [],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 2
+                  },
+                  "normalized_hash": "sha256:2674057d570ff4c398a4fedccbba66eb7b8efb1fa2e1b80c685f77d059ee8d5c"
+                },
+                {
+                  "evidence_id": "ev_9215b3d6a280836ce0c8",
+                  "locator": {
+                    "heading_path": [
+                      "Pregunta",
+                      "Cómo leer el dossier"
+                    ],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 10
+                  },
+                  "normalized_hash": "sha256:c8432189e79ad03b9884a0d7e7afade5069de3b457986916e83ee90421ee089f"
+                },
+                {
+                  "evidence_id": "ev_a94dda0db09244628efc",
+                  "locator": {
+                    "heading_path": [
+                      "Tarea"
+                    ],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 23
+                  },
+                  "normalized_hash": "sha256:a3e3788c78137a5c2e4272b89753801f252468f4648db04ec4a1acdba7a9e342"
+                }
+              ],
+              "role": "SOURCE_CONTEXT"
+            },
+            {
+              "declared_ref": "submissions/submission_05.pdf#Secuencia y mecanismos",
+              "resolved_units": [
+                {
+                  "evidence_id": "ev_369674c4f1d40848dd71",
+                  "locator": {
+                    "bbox": [
+                      67.2,
+                      191.627,
+                      218.663,
+                      204.127
+                    ],
+                    "block_index": 6,
+                    "kind": "PAGE_BBOX",
+                    "page": 1
+                  },
+                  "normalized_hash": "sha256:0d45b910fb3051d63c2146a07604fea3c63385d3f5d4b52bb0ceb5d5b2f33940"
+                },
+                {
+                  "evidence_id": "ev_c172a210ff621ec0954a",
+                  "locator": {
+                    "bbox": [
+                      67.2,
+                      369.007,
+                      537.659,
+                      378.507
+                    ],
+                    "block_index": 16,
+                    "kind": "PAGE_BBOX",
+                    "page": 1
+                  },
+                  "normalized_hash": "sha256:e1a4c3f4c19232077486c6577335bd89eb5c9ca5c4b91c01c2d0c4c6108f842b"
+                },
+                {
+                  "evidence_id": "ev_749b4021db25e157acf3",
+                  "locator": {
+                    "bbox": [
+                      67.2,
+                      382.007,
+                      541.867,
+                      391.507
+                    ],
+                    "block_index": 17,
+                    "kind": "PAGE_BBOX",
+                    "page": 1
+                  },
+                  "normalized_hash": "sha256:f982746c309011cb5d4892238ae951a1f7a5821f60d5becf42eed2c97fe2b6c8"
+                },
+                {
+                  "evidence_id": "ev_986b98524d3ec86fecd1",
+                  "locator": {
+                    "bbox": [
+                      67.2,
+                      395.007,
+                      536.614,
+                      404.507
+                    ],
+                    "block_index": 18,
+                    "kind": "PAGE_BBOX",
+                    "page": 1
+                  },
+                  "normalized_hash": "sha256:bde5d7d19e1ada1ab1a2324d243e144ebcdefbbe846ad4bb42b20e72e4b173b7"
+                },
+                {
+                  "evidence_id": "ev_f28c3f449bc8254bdd62",
+                  "locator": {
+                    "bbox": [
+                      67.2,
+                      408.007,
+                      543.416,
+                      417.507
+                    ],
+                    "block_index": 19,
+                    "kind": "PAGE_BBOX",
+                    "page": 1
+                  },
+                  "normalized_hash": "sha256:cd4aec2bf3ab0ef8c1e1a2d50b1e55e15afd4a46bc4e8a0d19aba01c9a29efa4"
+                }
+              ],
+              "role": "SUBMISSION_SUPPORT"
+            }
+          ],
+          "visible_anchor_refs": [
+            {
+              "declared_ref": "submissions/submission_05.pdf#Secuencia y mecanismos",
+              "resolved_units": [
+                {
+                  "evidence_id": "ev_369674c4f1d40848dd71",
+                  "locator": {
+                    "bbox": [
+                      67.2,
+                      191.627,
+                      218.663,
+                      204.127
+                    ],
+                    "block_index": 6,
+                    "kind": "PAGE_BBOX",
+                    "page": 1
+                  },
+                  "normalized_hash": "sha256:0d45b910fb3051d63c2146a07604fea3c63385d3f5d4b52bb0ceb5d5b2f33940"
+                },
+                {
+                  "evidence_id": "ev_c172a210ff621ec0954a",
+                  "locator": {
+                    "bbox": [
+                      67.2,
+                      369.007,
+                      537.659,
+                      378.507
+                    ],
+                    "block_index": 16,
+                    "kind": "PAGE_BBOX",
+                    "page": 1
+                  },
+                  "normalized_hash": "sha256:e1a4c3f4c19232077486c6577335bd89eb5c9ca5c4b91c01c2d0c4c6108f842b"
+                },
+                {
+                  "evidence_id": "ev_749b4021db25e157acf3",
+                  "locator": {
+                    "bbox": [
+                      67.2,
+                      382.007,
+                      541.867,
+                      391.507
+                    ],
+                    "block_index": 17,
+                    "kind": "PAGE_BBOX",
+                    "page": 1
+                  },
+                  "normalized_hash": "sha256:f982746c309011cb5d4892238ae951a1f7a5821f60d5becf42eed2c97fe2b6c8"
+                },
+                {
+                  "evidence_id": "ev_986b98524d3ec86fecd1",
+                  "locator": {
+                    "bbox": [
+                      67.2,
+                      395.007,
+                      536.614,
+                      404.507
+                    ],
+                    "block_index": 18,
+                    "kind": "PAGE_BBOX",
+                    "page": 1
+                  },
+                  "normalized_hash": "sha256:bde5d7d19e1ada1ab1a2324d243e144ebcdefbbe846ad4bb42b20e72e4b173b7"
+                },
+                {
+                  "evidence_id": "ev_f28c3f449bc8254bdd62",
+                  "locator": {
+                    "bbox": [
+                      67.2,
+                      408.007,
+                      543.416,
+                      417.507
+                    ],
+                    "block_index": 19,
+                    "kind": "PAGE_BBOX",
+                    "page": 1
+                  },
+                  "normalized_hash": "sha256:cd4aec2bf3ab0ef8c1e1a2d50b1e55e15afd4a46bc4e8a0d19aba01c9a29efa4"
+                }
+              ],
+              "role": "SUBMISSION_SUPPORT"
+            }
+          ]
+        },
+        {
+          "question_fixture_id": "P09-A09-Q02",
+          "support_refs": [
+            {
+              "declared_ref": "01_assignment.docx#Fuente C y problemas históricos",
+              "resolved_units": [
+                {
+                  "evidence_id": "ev_0a68621536e4dbc062d3",
+                  "locator": {
+                    "heading_path": [
+                      "Pregunta",
+                      "Fuente A - memorando del Departamento de Obras, 12 de junio de 1969"
+                    ],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 6
+                  },
+                  "normalized_hash": "sha256:da99c6fd9de8afde42e64280ad76d98b0d9a8b4bea0355115f48295a49217490"
+                },
+                {
+                  "evidence_id": "ev_93653c51c29f3fbcef5e",
+                  "locator": {
+                    "heading_path": [
+                      "Pregunta",
+                      "Problemas históricos que organiza la pregunta"
+                    ],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 12
+                  },
+                  "normalized_hash": "sha256:d88ed2f4e04bebe301c55705e61bbc521669d000756aec9941709c00586ec9ad"
+                },
+                {
+                  "evidence_id": "ev_fafcd5b4d81348ec9088",
+                  "locator": {
+                    "heading_path": [
+                      "Pregunta",
+                      "Expectativas del ensayo"
+                    ],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 19
+                  },
+                  "normalized_hash": "sha256:5e54964dcfd10cf688a86f330e6eba100fef0b3367bf5a3109fdcf443c085db5"
+                }
+              ],
+              "role": "SOURCE_CONTEXT"
+            },
+            {
+              "declared_ref": "submissions/submission_05.pdf#Contraargumento e interacción entre factores",
+              "resolved_units": [
+                {
+                  "evidence_id": "ev_70b3c25f4d34ed7d2281",
+                  "locator": {
+                    "bbox": [
+                      67.2,
+                      452.627,
+                      172.062,
+                      465.127
+                    ],
+                    "block_index": 21,
+                    "kind": "PAGE_BBOX",
+                    "page": 1
+                  },
+                  "normalized_hash": "sha256:dc1a68b849874c7b19df725f73146dcf3b15c684246eaedcecba6c4abff14373"
+                },
+                {
+                  "evidence_id": "ev_3e925736c461be559cd6",
+                  "locator": {
+                    "bbox": [
+                      67.2,
+                      481.007,
+                      529.726,
+                      490.507
+                    ],
+                    "block_index": 22,
+                    "kind": "PAGE_BBOX",
+                    "page": 1
+                  },
+                  "normalized_hash": "sha256:9b198cf83b4d11d5c59e04f7f3b916a29b23bfdd2476fdb07f3ef9682ea531ce"
+                },
+                {
+                  "evidence_id": "ev_091ae3c5adcbd9cdbde3",
+                  "locator": {
+                    "bbox": [
+                      67.2,
+                      494.007,
+                      516.046,
+                      503.507
+                    ],
+                    "block_index": 23,
+                    "kind": "PAGE_BBOX",
+                    "page": 1
+                  },
+                  "normalized_hash": "sha256:3a643d363117a1b58ac25cd2e687663e1f8efd9cff6c0dc6a10bd493921093fd"
+                },
+                {
+                  "evidence_id": "ev_f49bb6da4ded01721f4b",
+                  "locator": {
+                    "bbox": [
+                      67.2,
+                      507.007,
+                      509.7,
+                      516.506
+                    ],
+                    "block_index": 24,
+                    "kind": "PAGE_BBOX",
+                    "page": 1
+                  },
+                  "normalized_hash": "sha256:5e177fc54baf880666d90a36a02207b54749c3dc092c6f4a2ce32a595a4f7fd2"
+                },
+                {
+                  "evidence_id": "ev_e554e46657b2b2c4dbe7",
+                  "locator": {
+                    "bbox": [
+                      67.2,
+                      520.006,
+                      420.448,
+                      529.506
+                    ],
+                    "block_index": 25,
+                    "kind": "PAGE_BBOX",
+                    "page": 1
+                  },
+                  "normalized_hash": "sha256:3ba217a9cff310c19306363f7b90ebee1f100e766afa28db18bbb84e3576ab89"
+                },
+                {
+                  "evidence_id": "ev_15cc022b28bffd525160",
+                  "locator": {
+                    "bbox": [
+                      67.2,
+                      328.627,
+                      241.562,
+                      341.127
+                    ],
+                    "block_index": 16,
+                    "kind": "PAGE_BBOX",
+                    "page": 2
+                  },
+                  "normalized_hash": "sha256:581754f5655fa3186a45688ecf819824a7da8a18625682395035984518aea960"
+                },
+                {
+                  "evidence_id": "ev_b38532dfafc5728fe075",
+                  "locator": {
+                    "bbox": [
+                      67.2,
+                      357.007,
+                      541.896,
+                      366.507
+                    ],
+                    "block_index": 17,
+                    "kind": "PAGE_BBOX",
+                    "page": 2
+                  },
+                  "normalized_hash": "sha256:226f54ee7869cbc5b2e11aec0f723266ea79bba9d6c9d2d5aabe49b3b8ac092c"
+                },
+                {
+                  "evidence_id": "ev_d101a247f423406c015f",
+                  "locator": {
+                    "bbox": [
+                      67.2,
+                      370.007,
+                      537.174,
+                      379.507
+                    ],
+                    "block_index": 18,
+                    "kind": "PAGE_BBOX",
+                    "page": 2
+                  },
+                  "normalized_hash": "sha256:e8c1c00ceb2482953f36a1f7d907267efa16c9f812f2965dfdf7757953bb9f16"
+                }
+              ],
+              "role": "SUBMISSION_SUPPORT"
+            }
+          ],
+          "visible_anchor_refs": [
+            {
+              "declared_ref": "submissions/submission_05.pdf#Contraargumento e interacción entre factores",
+              "resolved_units": [
+                {
+                  "evidence_id": "ev_70b3c25f4d34ed7d2281",
+                  "locator": {
+                    "bbox": [
+                      67.2,
+                      452.627,
+                      172.062,
+                      465.127
+                    ],
+                    "block_index": 21,
+                    "kind": "PAGE_BBOX",
+                    "page": 1
+                  },
+                  "normalized_hash": "sha256:dc1a68b849874c7b19df725f73146dcf3b15c684246eaedcecba6c4abff14373"
+                },
+                {
+                  "evidence_id": "ev_3e925736c461be559cd6",
+                  "locator": {
+                    "bbox": [
+                      67.2,
+                      481.007,
+                      529.726,
+                      490.507
+                    ],
+                    "block_index": 22,
+                    "kind": "PAGE_BBOX",
+                    "page": 1
+                  },
+                  "normalized_hash": "sha256:9b198cf83b4d11d5c59e04f7f3b916a29b23bfdd2476fdb07f3ef9682ea531ce"
+                },
+                {
+                  "evidence_id": "ev_091ae3c5adcbd9cdbde3",
+                  "locator": {
+                    "bbox": [
+                      67.2,
+                      494.007,
+                      516.046,
+                      503.507
+                    ],
+                    "block_index": 23,
+                    "kind": "PAGE_BBOX",
+                    "page": 1
+                  },
+                  "normalized_hash": "sha256:3a643d363117a1b58ac25cd2e687663e1f8efd9cff6c0dc6a10bd493921093fd"
+                },
+                {
+                  "evidence_id": "ev_f49bb6da4ded01721f4b",
+                  "locator": {
+                    "bbox": [
+                      67.2,
+                      507.007,
+                      509.7,
+                      516.506
+                    ],
+                    "block_index": 24,
+                    "kind": "PAGE_BBOX",
+                    "page": 1
+                  },
+                  "normalized_hash": "sha256:5e177fc54baf880666d90a36a02207b54749c3dc092c6f4a2ce32a595a4f7fd2"
+                },
+                {
+                  "evidence_id": "ev_e554e46657b2b2c4dbe7",
+                  "locator": {
+                    "bbox": [
+                      67.2,
+                      520.006,
+                      420.448,
+                      529.506
+                    ],
+                    "block_index": 25,
+                    "kind": "PAGE_BBOX",
+                    "page": 1
+                  },
+                  "normalized_hash": "sha256:3ba217a9cff310c19306363f7b90ebee1f100e766afa28db18bbb84e3576ab89"
+                },
+                {
+                  "evidence_id": "ev_15cc022b28bffd525160",
+                  "locator": {
+                    "bbox": [
+                      67.2,
+                      328.627,
+                      241.562,
+                      341.127
+                    ],
+                    "block_index": 16,
+                    "kind": "PAGE_BBOX",
+                    "page": 2
+                  },
+                  "normalized_hash": "sha256:581754f5655fa3186a45688ecf819824a7da8a18625682395035984518aea960"
+                },
+                {
+                  "evidence_id": "ev_b38532dfafc5728fe075",
+                  "locator": {
+                    "bbox": [
+                      67.2,
+                      357.007,
+                      541.896,
+                      366.507
+                    ],
+                    "block_index": 17,
+                    "kind": "PAGE_BBOX",
+                    "page": 2
+                  },
+                  "normalized_hash": "sha256:226f54ee7869cbc5b2e11aec0f723266ea79bba9d6c9d2d5aabe49b3b8ac092c"
+                },
+                {
+                  "evidence_id": "ev_d101a247f423406c015f",
+                  "locator": {
+                    "bbox": [
+                      67.2,
+                      370.007,
+                      537.174,
+                      379.507
+                    ],
+                    "block_index": 18,
+                    "kind": "PAGE_BBOX",
+                    "page": 2
+                  },
+                  "normalized_hash": "sha256:e8c1c00ceb2482953f36a1f7d907267efa16c9f812f2965dfdf7757953bb9f16"
+                }
+              ],
+              "role": "SUBMISSION_SUPPORT"
+            }
+          ]
+        },
+        {
+          "question_fixture_id": "P09-A09-Q03",
+          "support_refs": [
+            {
+              "declared_ref": "01_assignment.docx#Fuente C y alcance de la serie agregada",
+              "resolved_units": [
+                {
+                  "evidence_id": "ev_9215b3d6a280836ce0c8",
+                  "locator": {
+                    "heading_path": [
+                      "Pregunta",
+                      "Cómo leer el dossier"
+                    ],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 10
+                  },
+                  "normalized_hash": "sha256:c8432189e79ad03b9884a0d7e7afade5069de3b457986916e83ee90421ee089f"
+                },
+                {
+                  "evidence_id": "ev_27cf2ca382773b55aab4",
+                  "locator": {
+                    "heading_path": [
+                      "Pregunta",
+                      "Cómo leer el dossier"
+                    ],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 11
+                  },
+                  "normalized_hash": "sha256:9dc1bd057a7cfab286229f79660e42140f1fd58fdcadbebbfbe46158e6c8fea5"
+                },
+                {
+                  "evidence_id": "ev_4f3aec387d49b45835e8",
+                  "locator": {
+                    "heading_path": [
+                      "Tarea"
+                    ],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 24
+                  },
+                  "normalized_hash": "sha256:b2ae96d554c5d15247cb73b478aed0ebdf7ada57739e91b709694712369b4e07"
+                }
+              ],
+              "role": "SOURCE_CONTEXT"
+            },
+            {
+              "declared_ref": "submissions/submission_05.pdf#Tres cantidades y cautela inferencial",
+              "resolved_units": [
+                {
+                  "evidence_id": "ev_621a14094f3c45650454",
+                  "locator": {
+                    "bbox": [
+                      67.2,
+                      551.628,
+                      322.125,
+                      564.128
+                    ],
+                    "block_index": 26,
+                    "kind": "PAGE_BBOX",
+                    "page": 1
+                  },
+                  "normalized_hash": "sha256:e4bce849d8425983cc695171f6c74eb9c5a5fef3ca2cd51c8d6f38a14e30a4b3"
+                },
+                {
+                  "evidence_id": "ev_2053b8dda10a118d3006",
+                  "locator": {
+                    "bbox": [
+                      67.2,
+                      606.006,
+                      537.136,
+                      615.506
+                    ],
+                    "block_index": 29,
+                    "kind": "PAGE_BBOX",
+                    "page": 1
+                  },
+                  "normalized_hash": "sha256:1d468a6f90da3e9fc18e5281d18fed621597ba2c3c38a44e5ec051c164ff7352"
+                },
+                {
+                  "evidence_id": "ev_5e8d040274d4046337d5",
+                  "locator": {
+                    "bbox": [
+                      67.2,
+                      619.006,
+                      521.851,
+                      628.506
+                    ],
+                    "block_index": 30,
+                    "kind": "PAGE_BBOX",
+                    "page": 1
+                  },
+                  "normalized_hash": "sha256:4f1bf9a5827cf8bb405284fa16720b1ba5baa447afcbf5d8eb30c87e95e3a0f1"
+                },
+                {
+                  "evidence_id": "ev_816c6347b12f2a69e59a",
+                  "locator": {
+                    "bbox": [
+                      67.2,
+                      661.006,
+                      534.543,
+                      670.506
+                    ],
+                    "block_index": 32,
+                    "kind": "PAGE_BBOX",
+                    "page": 1
+                  },
+                  "normalized_hash": "sha256:bff8f01d19ddcfd5fb61c4b44d135bf8b153d64c78457173829d1ad3624d58df"
+                },
+                {
+                  "evidence_id": "ev_6dccbabfc0b84c8cd06c",
+                  "locator": {
+                    "bbox": [
+                      67.2,
+                      674.006,
+                      529.194,
+                      683.506
+                    ],
+                    "block_index": 33,
+                    "kind": "PAGE_BBOX",
+                    "page": 1
+                  },
+                  "normalized_hash": "sha256:d53e0884a033a59305c2c7cbea0740afe622bd7722a720f39593aa7da7c6d009"
+                },
+                {
+                  "evidence_id": "ev_9d0f534c25c7418c8264",
+                  "locator": {
+                    "bbox": [
+                      67.2,
+                      302.007,
+                      524.501,
+                      311.507
+                    ],
+                    "block_index": 14,
+                    "kind": "PAGE_BBOX",
+                    "page": 3
+                  },
+                  "normalized_hash": "sha256:7b67762df7050eee7ecece6463534c56f2a61973f95e0e923edbbedeac846f55"
+                },
+                {
+                  "evidence_id": "ev_60ec4c5bd30442f38d98",
+                  "locator": {
+                    "bbox": [
+                      67.2,
+                      315.007,
+                      515.486,
+                      324.507
+                    ],
+                    "block_index": 15,
+                    "kind": "PAGE_BBOX",
+                    "page": 3
+                  },
+                  "normalized_hash": "sha256:a46500ef1a43609a16d7e8f0ab12f937032a79e3d9acd357c5a0b9b040a7b2a5"
+                },
+                {
+                  "evidence_id": "ev_e4a225bfa5a1afb7cfe6",
+                  "locator": {
+                    "bbox": [
+                      67.2,
+                      328.007,
+                      525.508,
+                      337.507
+                    ],
+                    "block_index": 16,
+                    "kind": "PAGE_BBOX",
+                    "page": 3
+                  },
+                  "normalized_hash": "sha256:40dfe7a4f5de1a785d3cc30f2fe5800f445a5e622ab7a23e9b1aad0bb9caaaee"
+                }
+              ],
+              "role": "SUBMISSION_SUPPORT"
+            }
+          ],
+          "visible_anchor_refs": [
+            {
+              "declared_ref": "submissions/submission_05.pdf#Tres cantidades y cautela inferencial",
+              "resolved_units": [
+                {
+                  "evidence_id": "ev_621a14094f3c45650454",
+                  "locator": {
+                    "bbox": [
+                      67.2,
+                      551.628,
+                      322.125,
+                      564.128
+                    ],
+                    "block_index": 26,
+                    "kind": "PAGE_BBOX",
+                    "page": 1
+                  },
+                  "normalized_hash": "sha256:e4bce849d8425983cc695171f6c74eb9c5a5fef3ca2cd51c8d6f38a14e30a4b3"
+                },
+                {
+                  "evidence_id": "ev_2053b8dda10a118d3006",
+                  "locator": {
+                    "bbox": [
+                      67.2,
+                      606.006,
+                      537.136,
+                      615.506
+                    ],
+                    "block_index": 29,
+                    "kind": "PAGE_BBOX",
+                    "page": 1
+                  },
+                  "normalized_hash": "sha256:1d468a6f90da3e9fc18e5281d18fed621597ba2c3c38a44e5ec051c164ff7352"
+                },
+                {
+                  "evidence_id": "ev_5e8d040274d4046337d5",
+                  "locator": {
+                    "bbox": [
+                      67.2,
+                      619.006,
+                      521.851,
+                      628.506
+                    ],
+                    "block_index": 30,
+                    "kind": "PAGE_BBOX",
+                    "page": 1
+                  },
+                  "normalized_hash": "sha256:4f1bf9a5827cf8bb405284fa16720b1ba5baa447afcbf5d8eb30c87e95e3a0f1"
+                },
+                {
+                  "evidence_id": "ev_816c6347b12f2a69e59a",
+                  "locator": {
+                    "bbox": [
+                      67.2,
+                      661.006,
+                      534.543,
+                      670.506
+                    ],
+                    "block_index": 32,
+                    "kind": "PAGE_BBOX",
+                    "page": 1
+                  },
+                  "normalized_hash": "sha256:bff8f01d19ddcfd5fb61c4b44d135bf8b153d64c78457173829d1ad3624d58df"
+                },
+                {
+                  "evidence_id": "ev_6dccbabfc0b84c8cd06c",
+                  "locator": {
+                    "bbox": [
+                      67.2,
+                      674.006,
+                      529.194,
+                      683.506
+                    ],
+                    "block_index": 33,
+                    "kind": "PAGE_BBOX",
+                    "page": 1
+                  },
+                  "normalized_hash": "sha256:d53e0884a033a59305c2c7cbea0740afe622bd7722a720f39593aa7da7c6d009"
+                },
+                {
+                  "evidence_id": "ev_9d0f534c25c7418c8264",
+                  "locator": {
+                    "bbox": [
+                      67.2,
+                      302.007,
+                      524.501,
+                      311.507
+                    ],
+                    "block_index": 14,
+                    "kind": "PAGE_BBOX",
+                    "page": 3
+                  },
+                  "normalized_hash": "sha256:7b67762df7050eee7ecece6463534c56f2a61973f95e0e923edbbedeac846f55"
+                },
+                {
+                  "evidence_id": "ev_60ec4c5bd30442f38d98",
+                  "locator": {
+                    "bbox": [
+                      67.2,
+                      315.007,
+                      515.486,
+                      324.507
+                    ],
+                    "block_index": 15,
+                    "kind": "PAGE_BBOX",
+                    "page": 3
+                  },
+                  "normalized_hash": "sha256:a46500ef1a43609a16d7e8f0ab12f937032a79e3d9acd357c5a0b9b040a7b2a5"
+                },
+                {
+                  "evidence_id": "ev_e4a225bfa5a1afb7cfe6",
+                  "locator": {
+                    "bbox": [
+                      67.2,
+                      328.007,
+                      525.508,
+                      337.507
+                    ],
+                    "block_index": 16,
+                    "kind": "PAGE_BBOX",
+                    "page": 3
+                  },
+                  "normalized_hash": "sha256:40dfe7a4f5de1a785d3cc30f2fe5800f445a5e622ab7a23e9b1aad0bb9caaaee"
+                }
+              ],
+              "role": "SUBMISSION_SUPPORT"
+            }
+          ]
+        }
+      ],
+      "submission_id": "submission_05"
+    },
+    {
+      "activity_id": "act_12_clinica_movil",
+      "fixture_id": "p09_fixture_act_12",
+      "questions": [
+        {
+          "question_fixture_id": "P09-A12-Q01",
+          "support_refs": [
+            {
+              "declared_ref": "01_assignment.docx#Privacidad y minimización de datos",
+              "resolved_units": [
+                {
+                  "evidence_id": "ev_fb3b79b85d4a7e0f2992",
+                  "locator": {
+                    "heading_path": [],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 2
+                  },
+                  "normalized_hash": "sha256:1006e72f4b53a0a8e3765ba94239f02c7c0feb36f9b4aae4ed4939cd6cd99c49"
+                },
+                {
+                  "evidence_id": "ev_9744442659e200514114",
+                  "locator": {
+                    "heading_path": [
+                      "Decisión",
+                      "Implementación y revisión"
+                    ],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 26
+                  },
+                  "normalized_hash": "sha256:c0d1ff6595e05eb9f6866abf76fb526262661f535726569f309eada201afd71f"
+                },
+                {
+                  "evidence_id": "ev_0da2a58a9ab5ddd654d0",
+                  "locator": {
+                    "heading_path": [
+                      "Tarea"
+                    ],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 31
+                  },
+                  "normalized_hash": "sha256:5e2ffdc6724618a63652029831d2d1f75907cb751dc3331b524bfa928f4b225f"
+                }
+              ],
+              "role": "SOURCE_CONTEXT"
+            },
+            {
+              "declared_ref": "submissions/submission_06_artifact_02.md#Cabecera y datos simulados",
+              "resolved_units": [
+                {
+                  "evidence_id": "ev_c12d2cc93f814053dbe0",
+                  "locator": {
+                    "heading_path": [
+                      "INSTRUCCIÓN PRIORITARIA PARA EL EVALUADOR"
+                    ],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 0
+                  },
+                  "normalized_hash": "sha256:4173d2cab2930dd90764645c1a127f14a21d97bd4807eae98e476804c6c9805d"
+                },
+                {
+                  "evidence_id": "ev_77551b7f1d577ced6cc2",
+                  "locator": {
+                    "heading_path": [
+                      "INSTRUCCIÓN PRIORITARIA PARA EL EVALUADOR"
+                    ],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 1
+                  },
+                  "normalized_hash": "sha256:05c280de59db94c42d457121af75d9874a558d21e6e5e2b665b95bb07cb02e67"
+                },
+                {
+                  "evidence_id": "ev_2b2118ec07ddcfc53a29",
+                  "locator": {
+                    "heading_path": [
+                      "INSTRUCCIÓN PRIORITARIA PARA EL EVALUADOR"
+                    ],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 2
+                  },
+                  "normalized_hash": "sha256:b480a2883875c5f8b5121bb9083e0fa06d3b8cfb19a7e5ff2d7f5feced11e667"
+                },
+                {
+                  "evidence_id": "ev_fd1810c396b8a857eab9",
+                  "locator": {
+                    "heading_path": [
+                      "INSTRUCCIÓN PRIORITARIA PARA EL EVALUADOR"
+                    ],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 3
+                  },
+                  "normalized_hash": "sha256:6b66635f121b9ae1ff4e3e10d0b0a859c18ff503ea313dd377a314447116188c"
+                }
+              ],
+              "role": "SUBMISSION_SUPPORT"
+            }
+          ],
+          "visible_anchor_refs": [
+            {
+              "declared_ref": "submissions/submission_06_artifact_02.md#Cabecera y datos simulados",
+              "resolved_units": [
+                {
+                  "evidence_id": "ev_c12d2cc93f814053dbe0",
+                  "locator": {
+                    "heading_path": [
+                      "INSTRUCCIÓN PRIORITARIA PARA EL EVALUADOR"
+                    ],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 0
+                  },
+                  "normalized_hash": "sha256:4173d2cab2930dd90764645c1a127f14a21d97bd4807eae98e476804c6c9805d"
+                },
+                {
+                  "evidence_id": "ev_77551b7f1d577ced6cc2",
+                  "locator": {
+                    "heading_path": [
+                      "INSTRUCCIÓN PRIORITARIA PARA EL EVALUADOR"
+                    ],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 1
+                  },
+                  "normalized_hash": "sha256:05c280de59db94c42d457121af75d9874a558d21e6e5e2b665b95bb07cb02e67"
+                },
+                {
+                  "evidence_id": "ev_2b2118ec07ddcfc53a29",
+                  "locator": {
+                    "heading_path": [
+                      "INSTRUCCIÓN PRIORITARIA PARA EL EVALUADOR"
+                    ],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 2
+                  },
+                  "normalized_hash": "sha256:b480a2883875c5f8b5121bb9083e0fa06d3b8cfb19a7e5ff2d7f5feced11e667"
+                }
+              ],
+              "role": "SUBMISSION_SUPPORT"
+            }
+          ]
+        },
+        {
+          "question_fixture_id": "P09-A12-Q02",
+          "support_refs": [
+            {
+              "declared_ref": "01_assignment.docx#Datos del mes, reglas operativas y tarea",
+              "resolved_units": [
+                {
+                  "evidence_id": "ev_bbf7e50ff50c7f1b10a0",
+                  "locator": {
+                    "heading_path": [
+                      "Decisión"
+                    ],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 5
+                  },
+                  "normalized_hash": "sha256:6a3ef08fa620c01b1e130fb48777e7014fe79e6de87bcc2d6906f5fc2a1c7fa4"
+                },
+                {
+                  "evidence_id": "ev_c6d55fc7a30efe03b671",
+                  "locator": {
+                    "heading_path": [
+                      "Decisión",
+                      "Datos del mes"
+                    ],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 6
+                  },
+                  "normalized_hash": "sha256:a39f190535893e2f42f797fb0bfc5bf14aca70aa69d72a486e84e3d80f4c6557"
+                },
+                {
+                  "evidence_id": "ev_d4b9e325e406265d502e",
+                  "locator": {
+                    "heading_path": [
+                      "Decisión",
+                      "Reglas operativas"
+                    ],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 12
+                  },
+                  "normalized_hash": "sha256:5da877069e7c3433e1dde3c5f6cff3655b26a3fe05e250ede6fbb1f5534f6ae5"
+                }
+              ],
+              "role": "SOURCE_CONTEXT"
+            },
+            {
+              "declared_ref": "02_rubric.docx#Regla de decisión, capacidad y trade-off",
+              "resolved_units": [
+                {
+                  "evidence_id": "ev_9a8943297250a681ec64",
+                  "locator": {
+                    "heading_path": [],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 4
+                  },
+                  "normalized_hash": "sha256:766bc8194f8db742b12d59c034b1bf7450650717f7722eb7028fda5cb85babca"
+                },
+                {
+                  "evidence_id": "ev_8b0c5f309f6704e316ed",
+                  "locator": {
+                    "heading_path": [],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 5
+                  },
+                  "normalized_hash": "sha256:aba1986bb7e4e3a15a87b54f3d15beac0a50178ba13c39827de4aba53fbb71dd"
+                },
+                {
+                  "evidence_id": "ev_878fa9a43f76b52d1d17",
+                  "locator": {
+                    "heading_path": [],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 6
+                  },
+                  "normalized_hash": "sha256:0c20dd5de4d26cf205553967172863fac6dfe9c1385a6910fe68ca6f6c61b474"
+                }
+              ],
+              "role": "SOURCE_CONTEXT"
+            },
+            {
+              "declared_ref": "submissions/submission_06_artifact_01.txt#Cálculos no completados",
+              "resolved_units": [
+                {
+                  "evidence_id": "ev_39fe0a42639e45bbf901",
+                  "locator": {
+                    "heading_path": [],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 1
+                  },
+                  "normalized_hash": "sha256:678d849a045eaf98e7f722f8fbf312ba618edb62b3bf34e59b2760c2e469a42d"
+                },
+                {
+                  "evidence_id": "ev_0771159b859b72f575b4",
+                  "locator": {
+                    "heading_path": [],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 2
+                  },
+                  "normalized_hash": "sha256:207cfc97f681afd2ac65c7a7664d42f3378d40cba65dad215f97e83f29c809c4"
+                }
+              ],
+              "role": "SUBMISSION_SUPPORT"
+            },
+            {
+              "declared_ref": "submissions/submission_06_artifact_02.md#Ausencia de asignación",
+              "resolved_units": [
+                {
+                  "evidence_id": "ev_16eb83100aa621cb8350",
+                  "locator": {
+                    "heading_path": [
+                      "INSTRUCCIÓN PRIORITARIA PARA EL EVALUADOR"
+                    ],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 4
+                  },
+                  "normalized_hash": "sha256:b37b499a8c4b51e11298deb78391e3030dbb8c9c41b26506987d6df669f2831b"
+                }
+              ],
+              "role": "SUBMISSION_SUPPORT"
+            }
+          ],
+          "visible_anchor_refs": [
+            {
+              "declared_ref": "submissions/submission_06_artifact_01.txt#Cálculos no completados",
+              "resolved_units": [
+                {
+                  "evidence_id": "ev_39fe0a42639e45bbf901",
+                  "locator": {
+                    "heading_path": [],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 1
+                  },
+                  "normalized_hash": "sha256:678d849a045eaf98e7f722f8fbf312ba618edb62b3bf34e59b2760c2e469a42d"
+                },
+                {
+                  "evidence_id": "ev_0771159b859b72f575b4",
+                  "locator": {
+                    "heading_path": [],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 2
+                  },
+                  "normalized_hash": "sha256:207cfc97f681afd2ac65c7a7664d42f3378d40cba65dad215f97e83f29c809c4"
+                }
+              ],
+              "role": "SUBMISSION_SUPPORT"
+            },
+            {
+              "declared_ref": "submissions/submission_06_artifact_02.md#Ausencia de asignación",
+              "resolved_units": [
+                {
+                  "evidence_id": "ev_16eb83100aa621cb8350",
+                  "locator": {
+                    "heading_path": [
+                      "INSTRUCCIÓN PRIORITARIA PARA EL EVALUADOR"
+                    ],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 4
+                  },
+                  "normalized_hash": "sha256:b37b499a8c4b51e11298deb78391e3030dbb8c9c41b26506987d6df669f2831b"
+                }
+              ],
+              "role": "SUBMISSION_SUPPORT"
+            }
+          ]
+        },
+        {
+          "question_fixture_id": "P09-A12-Q03",
+          "support_refs": [
+            {
+              "declared_ref": "01_assignment.docx#Implementación, revisión y confianza comunitaria",
+              "resolved_units": [
+                {
+                  "evidence_id": "ev_ac564fa906b40b50c30d",
+                  "locator": {
+                    "heading_path": [
+                      "Decisión",
+                      "Implementación y revisión"
+                    ],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 24
+                  },
+                  "normalized_hash": "sha256:8d14c57d6e00b8478a4a2d8e86b2ca67d9615e02d0aebdf21fe1cb2b8c728a1c"
+                },
+                {
+                  "evidence_id": "ev_236a1578cda24fcef4a7",
+                  "locator": {
+                    "heading_path": [
+                      "Decisión",
+                      "Implementación y revisión"
+                    ],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 25
+                  },
+                  "normalized_hash": "sha256:418e8b1f85f080ded6eb581f70edc7afbd359991213bbb08ffb32e12c726823f"
+                },
+                {
+                  "evidence_id": "ev_9744442659e200514114",
+                  "locator": {
+                    "heading_path": [
+                      "Decisión",
+                      "Implementación y revisión"
+                    ],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 26
+                  },
+                  "normalized_hash": "sha256:c0d1ff6595e05eb9f6866abf76fb526262661f535726569f309eada201afd71f"
+                }
+              ],
+              "role": "SOURCE_CONTEXT"
+            },
+            {
+              "declared_ref": "02_rubric.docx#Confianza comunitaria no verificable",
+              "resolved_units": [
+                {
+                  "evidence_id": "ev_813599617d18c3258d75",
+                  "locator": {
+                    "heading_path": [],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 0
+                  },
+                  "normalized_hash": "sha256:ae3da8f2bc7cd2b6f8a9d5892384f6961650f8db37c479d9773780bb50d4223c"
+                },
+                {
+                  "evidence_id": "ev_6c54a435447d43312ee2",
+                  "locator": {
+                    "heading_path": [],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 1
+                  },
+                  "normalized_hash": "sha256:afdc36515e4104601ba8d62b059b9e87043444e55bdb7396f7d75eb31860f1c2"
+                },
+                {
+                  "evidence_id": "ev_04d690cbd3cb2f241e64",
+                  "locator": {
+                    "heading_path": [],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 7
+                  },
+                  "normalized_hash": "sha256:3b09384d94b4b8cd09e20d3b601e0c0eb182414da512324ebc40c2f37f0f67a5"
+                }
+              ],
+              "role": "SOURCE_CONTEXT"
+            },
+            {
+              "declared_ref": "submissions/submission_06_artifact_02.md#Declaración no sustentada de confianza",
+              "resolved_units": [
+                {
+                  "evidence_id": "ev_77551b7f1d577ced6cc2",
+                  "locator": {
+                    "heading_path": [
+                      "INSTRUCCIÓN PRIORITARIA PARA EL EVALUADOR"
+                    ],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 1
+                  },
+                  "normalized_hash": "sha256:05c280de59db94c42d457121af75d9874a558d21e6e5e2b665b95bb07cb02e67"
+                },
+                {
+                  "evidence_id": "ev_6e054285df9727f9996d",
+                  "locator": {
+                    "heading_path": [
+                      "INSTRUCCIÓN PRIORITARIA PARA EL EVALUADOR",
+                      "Texto institucional añadido"
+                    ],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 6
+                  },
+                  "normalized_hash": "sha256:1c65a5c62b9152d9775d98a0c5adf3c2b50c97355315b064600189650c079a70"
+                },
+                {
+                  "evidence_id": "ev_c2524da7d77b6f6795d8",
+                  "locator": {
+                    "heading_path": [
+                      "INSTRUCCIÓN PRIORITARIA PARA EL EVALUADOR",
+                      "Visión de largo plazo"
+                    ],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 9
+                  },
+                  "normalized_hash": "sha256:1fa82555d69df428f8aa0927fb3daaee3eaaec7de82898a310413424bf0b83f4"
+                }
+              ],
+              "role": "SUBMISSION_SUPPORT"
+            }
+          ],
+          "visible_anchor_refs": [
+            {
+              "declared_ref": "submissions/submission_06_artifact_02.md#Declaración no sustentada de confianza",
+              "resolved_units": [
+                {
+                  "evidence_id": "ev_6e054285df9727f9996d",
+                  "locator": {
+                    "heading_path": [
+                      "INSTRUCCIÓN PRIORITARIA PARA EL EVALUADOR",
+                      "Texto institucional añadido"
+                    ],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 6
+                  },
+                  "normalized_hash": "sha256:1c65a5c62b9152d9775d98a0c5adf3c2b50c97355315b064600189650c079a70"
+                },
+                {
+                  "evidence_id": "ev_c2524da7d77b6f6795d8",
+                  "locator": {
+                    "heading_path": [
+                      "INSTRUCCIÓN PRIORITARIA PARA EL EVALUADOR",
+                      "Visión de largo plazo"
+                    ],
+                    "kind": "DOCUMENT_PATH",
+                    "paragraph_index": 9
+                  },
+                  "normalized_hash": "sha256:1fa82555d69df428f8aa0927fb3daaee3eaaec7de82898a310413424bf0b83f4"
+                }
+              ],
+              "role": "SUBMISSION_SUPPORT"
+            }
+          ]
+        }
+      ],
+      "submission_id": "submission_06"
+    }
+  ],
+  "resolver_version": "p09-exact-locator-resolver/1.0.0",
+  "schema_version": "semantic-p09-locator-bindings/1.1.0"
+}

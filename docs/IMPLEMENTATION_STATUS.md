@@ -1,8 +1,8 @@
 # Estado de implementación — Etapa 2
 
-Fecha de corte: 2026-08-16 (America/Santiago).
+Fecha de corte: 2026-08-17 (America/Santiago).
 
-## Estado vigente — Fase 8, benchmark semántico offline canónico (2026-08-16)
+## Estado vigente — Fase 8.1, benchmark semántico alineado (2026-08-17)
 
 La snapshot `pruebas-personalizadas-corpus/1.0.0` quedó vendorizada byte a byte
 en `evaluation/corpora/pruebas_personalizadas/v1/`: 218 archivos, 8.384.772
@@ -11,26 +11,38 @@ ORACLE_SUSPECT, 8 NOT_APPLICABLE, 0 INVALID) y cuatro fixtures P09/doce
 preguntas. Fuente y copia pasan el validador congelado y conservan package hash
 `21c21f3a53bfb786162dc350dc38c93b7b007d9f23b744a354de4ac2354048a1`.
 
-`semantic-benchmark/1.0.0` construye 178 casos: P04 12, P06 69, planner 21,
-P07 72 y P09 4. Los splits versionados son SMOKE 13, CORE 95 y
-HELD_OUT_CONFIRMATION 70; el held-out normal es activity-disjoint y P09 reserva
-actividad 12 por escasez auditada de fixtures. Las 395 properties quedan
-case-bound o explícitamente excluidas: sólo 14 P09 de actividades sin fixture
-tienen reason `NO_FROZEN_P09_STAGE_LOCAL_FIXTURE_FOR_ACTIVITY`.
+`semantic-benchmark/1.0.0` queda preservado como
+`SUPERSEDED_PRE_QUALIFICATION/NOT_VALID_FOR_PHASE9_MODEL_SELECTION`: la
+auditoría confirmó propagación activity-wide de tags, fixtures P04/P06/P07
+genéricos o truncados y resolución P09 con fallback. No hubo qualification real
+con ese instrumento.
+
+`semantic-benchmark/1.1.0` es canónico y construye 272 casos: P04 12, P06 127,
+planner 21, P07 108 y P09 4. P04 proyecta 682/682 units de assignment y 470/470
+de rubric sin oracle; P06 usa 127 rutas explícitas; P07 usa 108 oportunidades
+con support exacto; P09 resuelve 12/12 preguntas con cero fallback. Los splits
+son SMOKE 12, CORE 139 y HELD_OUT_CONFIRMATION 121.
+
+Los bindings cubren las 395 properties: 354 `ALIGNED`, 33
+`EXPLICITLY_EXCLUDED`, 8 `NOT_APPLICABLE` y 0 arbitrarias. Tags case-level
+tienen scope/provenance; los top-level tags son sólo
+`ACTIVITY_COVERAGE_INDEX`. El denominador agrega observaciones primero por
+property/run y finalmente por property/configuración.
 
 El boundary
-`sha256:9dc8df63b01f1e29a65a7540ceff1359ed037fa240e7c1c1f0e8b485edb35771`
-liga corpus, schemas, matrix/splits, evaluators, reglas, parser/planner,
-compiler/materializers, fixture builders e invariantes. La frontera
+`sha256:83b8df2a9e3d69bf1b548d0b775254a767634b58468e33c0408732791ee8c208`
+liga corpus, schemas, matrix/splits, definitions P06/P07, bindings, tags/rare
+coverage, locator P09, agregación, parser/planner y fronteras productivas. La
+frontera
 `ModelVisibleProjection` bloquea ratifications/oracles/audit/old labels con
 `BENCHMARK_ORACLE_LEAKAGE_BLOCKED`; P09 extrae sólo `questions`. El dry-run usa
-el parser real dos veces, ejecuta los 21 casos planner, pasa 13/13 invariantes,
+el parser real dos veces, ejecuta los 21 casos planner, pasa 17/17 invariantes,
 deja semántica aplicable `PENDING_ADJUDICATION` y registra provider calls 0,
 transport false, billable authorizations 0 y mock scoring false.
 
 Phase 9 sigue detenida: candidate matrix y thresholds `UNSET`, authorization
 `NONE`, qualification `NOT_YET_RUN`. La proyección full-corpus para un candidato
-sería 157 calls con k=1 o 471 con k=3, sin contar planner; no se ejecutó ninguna.
+sería 251 calls con k=1 o 753 con k=3, sin contar planner; no se ejecutó ninguna.
 Runtime, prompts, routing, frontend, OpenAPI, base de datos y migrations son
 `NOT_AFFECTED`. Detalle en `docs/SEMANTIC_BENCHMARK.md`.
 

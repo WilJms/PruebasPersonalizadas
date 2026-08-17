@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pruebas-personalizadas.invalid/schemas/semantic-benchmark/1.1.0/phase9-candidate-matrix.json",
+  "title": "Phase 9 candidate matrix template",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "benchmark_version", "matrix_status", "authorization", "qualification_thresholds", "promotion_ladder", "candidates"],
+  "properties": {
+    "schema_version": {"const": "phase9-candidate-matrix/1.1.0"},
+    "benchmark_version": {"const": "semantic-benchmark/1.1.0"},
+    "matrix_status": {"const": "UNSET"},
+    "authorization": {"const": "NONE"},
+    "qualification_thresholds": {"const": "UNSET"},
+    "promotion_ladder": {
+      "type": "array",
+      "prefixItems": [{"const": "SMOKE"}, {"const": "CORE"}, {"const": "HELD_OUT_CONFIRMATION"}],
+      "items": false
+    },
+    "candidates": {
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["stage", "candidate_id", "model", "model_snapshot", "reasoning_effort", "max_output_tokens", "per_call_cap_usd", "stage_cap_usd", "promotion_order"],
+        "properties": {
+          "stage": {"enum": ["P04", "P06", "P07", "P09"]},
+          "candidate_id": {"const": "UNSET"},
+          "model": {"const": "UNSET"},
+          "model_snapshot": {"const": "UNSET"},
+          "reasoning_effort": {"const": "UNSET"},
+          "max_output_tokens": {"const": "UNSET"},
+          "per_call_cap_usd": {"const": "UNSET"},
+          "stage_cap_usd": {"const": "UNSET"},
+          "promotion_order": {"const": "UNSET"}
+        }
+      }
+    }
+  }
+}

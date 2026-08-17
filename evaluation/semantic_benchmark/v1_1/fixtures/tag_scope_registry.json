@@ -1,0 +1,492 @@
+{
+  "activity_coverage_index": {
+    "act_01_luz_y_plantines": [
+      "ADJUDICATION_TASK",
+      "ANSWER_VISIBLE",
+      "DETECTION_TASK",
+      "EXTERNAL_KNOWLEDGE_TRAP",
+      "KEYWORDS_WITHOUT_RELATION",
+      "LATENT_CONTRADICTION",
+      "LEAKAGE_ORACLE_SUSPECT",
+      "PLAN_FEASIBLE",
+      "PLAN_INFEASIBLE",
+      "PREMISE_VISIBLE",
+      "PROMPT_INJECTION_NOISY",
+      "SELF_DECLARED_GAP",
+      "TECHNICAL_STRING_NOT_INSTRUCTION",
+      "VISIBLE_ANCHOR_RISK"
+    ],
+    "act_02_voz_en_un_microcuento": [
+      "ADJUDICATION_TASK",
+      "ANSWER_VISIBLE",
+      "DETECTION_TASK",
+      "EXTERNAL_KNOWLEDGE_TRAP",
+      "KEYWORDS_WITHOUT_RELATION",
+      "LATENT_CONTRADICTION",
+      "LEAKAGE_ORACLE_SUSPECT",
+      "PLAN_FEASIBLE",
+      "PLAN_INFEASIBLE",
+      "PREMISE_VISIBLE",
+      "PROMPT_INJECTION_NOISY",
+      "TECHNICAL_STRING_NOT_INSTRUCTION",
+      "VISIBLE_ANCHOR_RISK"
+    ],
+    "act_03_puesto_de_limonada": [
+      "ADJUDICATION_TASK",
+      "ANSWER_VISIBLE",
+      "DETECTION_TASK",
+      "DIFFICULTY_CAVEAT",
+      "KEYWORDS_WITHOUT_RELATION",
+      "LATENT_CONTRADICTION",
+      "LEAKAGE_ORACLE_SUSPECT",
+      "PLAN_INFEASIBLE",
+      "PREMISE_VISIBLE",
+      "SELF_DECLARED_GAP",
+      "TECHNICAL_STRING_NOT_INSTRUCTION",
+      "VISIBLE_ANCHOR_RISK"
+    ],
+    "act_04_asignador_de_turnos": [
+      "ADJUDICATION_TASK",
+      "CROSS_ARTIFACT_RECONCILIATION",
+      "EXPLICIT_CROSS_ARTIFACT_CONFLICT",
+      "KEYWORDS_WITHOUT_RELATION",
+      "MISSING_ARTIFACT",
+      "MULTI_ARTIFACT",
+      "PLAN_INFEASIBLE",
+      "PREMISE_VISIBLE",
+      "PROMPT_INJECTION_NOISY",
+      "PROMPT_INJECTION_SILENT",
+      "SELF_DECLARED_GAP",
+      "TECHNICAL_STRING_NOT_INSTRUCTION",
+      "VISIBLE_ANCHOR_RISK"
+    ],
+    "act_05_visitas_a_bibliotecas": [
+      "ADJUDICATION_TASK",
+      "ANSWER_VISIBLE",
+      "DETECTION_TASK",
+      "KEYWORDS_WITHOUT_RELATION",
+      "LATENT_CONTRADICTION",
+      "LEAKAGE_ORACLE_SUSPECT",
+      "LENGTH_ORIENTATIVE_NON_EVALUABLE",
+      "PLAN_INFEASIBLE",
+      "PREMISE_VISIBLE",
+      "PROMPT_INJECTION_NOISY",
+      "PROMPT_INJECTION_SILENT",
+      "SELF_DECLARED_GAP",
+      "TECHNICAL_STRING_NOT_INSTRUCTION",
+      "VISIBLE_ANCHOR_RISK"
+    ],
+    "act_06_movilidad_estudiantil": [
+      "ADJUDICATION_TASK",
+      "ANSWER_VISIBLE",
+      "DETECTION_TASK",
+      "EXTERNAL_KNOWLEDGE_TRAP",
+      "KEYWORDS_WITHOUT_RELATION",
+      "LATENT_CONTRADICTION",
+      "LEAKAGE_ORACLE_SUSPECT",
+      "LENGTH_ORIENTATIVE_NON_EVALUABLE",
+      "PLAN_INFEASIBLE",
+      "PREMISE_VISIBLE",
+      "PROMPT_INJECTION_NOISY",
+      "SELF_DECLARED_GAP",
+      "TECHNICAL_STRING_NOT_INSTRUCTION"
+    ],
+    "act_07_aislamiento_termico": [
+      "ADJUDICATION_TASK",
+      "ANSWER_VISIBLE",
+      "DETECTION_TASK",
+      "EXPLICIT_RECONCILIATION",
+      "KEYWORDS_WITHOUT_RELATION",
+      "LEAKAGE_ORACLE_SUSPECT",
+      "LENGTH_ORIENTATIVE_NON_EVALUABLE",
+      "MISSING_ARTIFACT",
+      "MULTI_ARTIFACT",
+      "PLAN_INFEASIBLE",
+      "PREMISE_VISIBLE",
+      "PROMPT_INJECTION_NOISY",
+      "PROMPT_INJECTION_SILENT",
+      "SELF_DECLARED_GAP",
+      "TECHNICAL_STRING_NOT_INSTRUCTION",
+      "VISIBLE_ANCHOR_RISK"
+    ],
+    "act_08_triage_de_logs": [
+      "ADJUDICATION_TASK",
+      "ADVERSARIAL_AUTHORIZED_SOURCE",
+      "CROSS_ARTIFACT_RECONCILIATION",
+      "EXPLICIT_CROSS_ARTIFACT_CONFLICT",
+      "EXTERNAL_KNOWLEDGE_TRAP",
+      "KEYWORDS_WITHOUT_RELATION",
+      "MISSING_ARTIFACT",
+      "MULTI_ARTIFACT",
+      "PLAN_INFEASIBLE",
+      "PREMISE_VISIBLE",
+      "PROMPT_INJECTION_NOISY",
+      "SIMULATED_PII",
+      "TECHNICAL_STRING_NOT_INSTRUCTION",
+      "VISIBLE_ANCHOR_RISK"
+    ],
+    "act_09_renovacion_y_desplazamiento": [
+      "ADJUDICATION_TASK",
+      "ANSWER_VISIBLE",
+      "DETECTION_TASK",
+      "KEYWORDS_WITHOUT_RELATION",
+      "LATENT_CONTRADICTION",
+      "LEAKAGE_ORACLE_SUSPECT",
+      "LENGTH_ORIENTATIVE_NON_EVALUABLE",
+      "PREMISE_VISIBLE",
+      "PROMPT_INJECTION_NOISY",
+      "SILENT_CONCEPTUAL_GAP",
+      "VISIBLE_ANCHOR_RISK"
+    ],
+    "act_10_experimento_onboarding": [
+      "ADJUDICATION_TASK",
+      "DECLARED_CONCEPTUAL_OMISSION",
+      "DETECTION_TASK",
+      "KEYWORDS_WITHOUT_RELATION",
+      "LATENT_CONTRADICTION",
+      "LENGTH_ORIENTATIVE_NON_EVALUABLE",
+      "MULTI_ARTIFACT",
+      "NEAR_DUPLICATE_OPPORTUNITIES",
+      "PROMPT_INJECTION_SILENT",
+      "SELF_DECLARED_GAP"
+    ],
+    "act_11_duplicados_en_pagos": [
+      "DETECTION_TASK",
+      "KEYWORDS_WITHOUT_RELATION",
+      "LATENT_CONTRADICTION",
+      "LENGTH_ORIENTATIVE_NON_EVALUABLE",
+      "MULTI_ARTIFACT",
+      "PLAN_INFEASIBLE",
+      "PROMPT_INJECTION_NOISY",
+      "PROMPT_INJECTION_SILENT",
+      "TECHNICAL_STRING_NOT_INSTRUCTION"
+    ],
+    "act_12_clinica_movil": [
+      "ADJUDICATION_TASK",
+      "ANSWER_VISIBLE",
+      "CROSS_ARTIFACT_RECONCILIATION",
+      "DETECTION_TASK",
+      "EXPLICIT_CROSS_ARTIFACT_CONFLICT",
+      "KEYWORDS_WITHOUT_RELATION",
+      "LEAKAGE_ORACLE_SUSPECT",
+      "LENGTH_ORIENTATIVE_NON_EVALUABLE",
+      "MISSING_ARTIFACT",
+      "MULTI_ARTIFACT",
+      "PLAN_INFEASIBLE",
+      "PREMISE_VISIBLE",
+      "PROMPT_INJECTION_NOISY",
+      "SIMULATED_PII",
+      "TECHNICAL_STRING_NOT_INSTRUCTION",
+      "VISIBLE_ANCHOR_RISK"
+    ]
+  },
+  "allowed_scopes": [
+    "ACTIVITY",
+    "SUBMISSION",
+    "PROPERTY",
+    "FIXTURE",
+    "CASE_DERIVED"
+  ],
+  "benchmark_version": "semantic-benchmark/1.1.0",
+  "schema_version": "semantic-tag-scope-registry/1.1.0",
+  "tags": [
+    {
+      "allowed_scopes": [
+        "SUBMISSION",
+        "PROPERTY",
+        "FIXTURE",
+        "CASE_DERIVED"
+      ],
+      "tag": "ADJUDICATION_TASK"
+    },
+    {
+      "allowed_scopes": [
+        "SUBMISSION",
+        "PROPERTY",
+        "FIXTURE",
+        "CASE_DERIVED"
+      ],
+      "tag": "ADVERSARIAL_AUTHORIZED_SOURCE"
+    },
+    {
+      "allowed_scopes": [
+        "SUBMISSION",
+        "PROPERTY",
+        "FIXTURE",
+        "CASE_DERIVED"
+      ],
+      "tag": "ANSWER_VISIBLE"
+    },
+    {
+      "allowed_scopes": [
+        "SUBMISSION",
+        "PROPERTY",
+        "FIXTURE",
+        "CASE_DERIVED"
+      ],
+      "tag": "BENCHMARK_SCAFFOLD_NOT_P01_P02_P03_GOLDEN"
+    },
+    {
+      "allowed_scopes": [
+        "SUBMISSION",
+        "PROPERTY",
+        "FIXTURE",
+        "CASE_DERIVED"
+      ],
+      "tag": "CROSS_ARTIFACT_RECONCILIATION"
+    },
+    {
+      "allowed_scopes": [
+        "SUBMISSION",
+        "PROPERTY",
+        "FIXTURE",
+        "CASE_DERIVED"
+      ],
+      "tag": "DECLARED_CONCEPTUAL_OMISSION"
+    },
+    {
+      "allowed_scopes": [
+        "SUBMISSION",
+        "PROPERTY",
+        "FIXTURE",
+        "CASE_DERIVED"
+      ],
+      "tag": "DETECTION_TASK"
+    },
+    {
+      "allowed_scopes": [
+        "SUBMISSION",
+        "PROPERTY",
+        "FIXTURE",
+        "CASE_DERIVED"
+      ],
+      "tag": "DIFFICULTY_CAVEAT"
+    },
+    {
+      "allowed_scopes": [
+        "SUBMISSION",
+        "PROPERTY",
+        "FIXTURE",
+        "CASE_DERIVED"
+      ],
+      "tag": "EXPLICIT_CROSS_ARTIFACT_CONFLICT"
+    },
+    {
+      "allowed_scopes": [
+        "SUBMISSION",
+        "PROPERTY",
+        "FIXTURE",
+        "CASE_DERIVED"
+      ],
+      "tag": "EXPLICIT_RECONCILIATION"
+    },
+    {
+      "allowed_scopes": [
+        "SUBMISSION",
+        "PROPERTY",
+        "FIXTURE",
+        "CASE_DERIVED"
+      ],
+      "tag": "EXTERNAL_KNOWLEDGE_TRAP"
+    },
+    {
+      "allowed_scopes": [
+        "SUBMISSION",
+        "PROPERTY",
+        "FIXTURE",
+        "CASE_DERIVED"
+      ],
+      "tag": "KEYWORDS_WITHOUT_RELATION"
+    },
+    {
+      "allowed_scopes": [
+        "SUBMISSION",
+        "PROPERTY",
+        "FIXTURE",
+        "CASE_DERIVED"
+      ],
+      "tag": "LATENT_CONTRADICTION"
+    },
+    {
+      "allowed_scopes": [
+        "SUBMISSION",
+        "PROPERTY",
+        "FIXTURE",
+        "CASE_DERIVED"
+      ],
+      "tag": "LEAKAGE_ORACLE_SUSPECT"
+    },
+    {
+      "allowed_scopes": [
+        "SUBMISSION",
+        "PROPERTY",
+        "FIXTURE",
+        "CASE_DERIVED"
+      ],
+      "tag": "LENGTH_ORIENTATIVE_NON_EVALUABLE"
+    },
+    {
+      "allowed_scopes": [
+        "SUBMISSION",
+        "PROPERTY",
+        "FIXTURE",
+        "CASE_DERIVED"
+      ],
+      "tag": "MISSING_ARTIFACT"
+    },
+    {
+      "allowed_scopes": [
+        "SUBMISSION",
+        "PROPERTY",
+        "FIXTURE",
+        "CASE_DERIVED"
+      ],
+      "tag": "MULTI_ARTIFACT"
+    },
+    {
+      "allowed_scopes": [
+        "SUBMISSION",
+        "PROPERTY",
+        "FIXTURE",
+        "CASE_DERIVED"
+      ],
+      "tag": "NEAR_DUPLICATE_OPPORTUNITIES"
+    },
+    {
+      "allowed_scopes": [
+        "SUBMISSION",
+        "PROPERTY",
+        "FIXTURE",
+        "CASE_DERIVED"
+      ],
+      "tag": "P06_INSUFFICIENT"
+    },
+    {
+      "allowed_scopes": [
+        "SUBMISSION",
+        "PROPERTY",
+        "FIXTURE",
+        "CASE_DERIVED"
+      ],
+      "tag": "P06_UNCERTAIN"
+    },
+    {
+      "allowed_scopes": [
+        "SUBMISSION",
+        "PROPERTY",
+        "FIXTURE",
+        "CASE_DERIVED"
+      ],
+      "tag": "P09_CANNOT_INFER"
+    },
+    {
+      "allowed_scopes": [
+        "SUBMISSION",
+        "PROPERTY",
+        "FIXTURE",
+        "CASE_DERIVED"
+      ],
+      "tag": "P09_FIXED_APPROVED_INPUT"
+    },
+    {
+      "allowed_scopes": [
+        "SUBMISSION",
+        "PROPERTY",
+        "FIXTURE",
+        "CASE_DERIVED"
+      ],
+      "tag": "P09_NO_PII_PROPAGATION"
+    },
+    {
+      "allowed_scopes": [
+        "SUBMISSION",
+        "PROPERTY",
+        "FIXTURE",
+        "CASE_DERIVED"
+      ],
+      "tag": "PLAN_FEASIBLE"
+    },
+    {
+      "allowed_scopes": [
+        "SUBMISSION",
+        "PROPERTY",
+        "FIXTURE",
+        "CASE_DERIVED"
+      ],
+      "tag": "PLAN_INFEASIBLE"
+    },
+    {
+      "allowed_scopes": [
+        "SUBMISSION",
+        "PROPERTY",
+        "FIXTURE",
+        "CASE_DERIVED"
+      ],
+      "tag": "PREMISE_VISIBLE"
+    },
+    {
+      "allowed_scopes": [
+        "SUBMISSION",
+        "PROPERTY",
+        "FIXTURE",
+        "CASE_DERIVED"
+      ],
+      "tag": "PROMPT_INJECTION_NOISY"
+    },
+    {
+      "allowed_scopes": [
+        "SUBMISSION",
+        "PROPERTY",
+        "FIXTURE",
+        "CASE_DERIVED"
+      ],
+      "tag": "PROMPT_INJECTION_SILENT"
+    },
+    {
+      "allowed_scopes": [
+        "SUBMISSION",
+        "PROPERTY",
+        "FIXTURE",
+        "CASE_DERIVED"
+      ],
+      "tag": "SELF_DECLARED_GAP"
+    },
+    {
+      "allowed_scopes": [
+        "SUBMISSION",
+        "PROPERTY",
+        "FIXTURE",
+        "CASE_DERIVED"
+      ],
+      "tag": "SILENT_CONCEPTUAL_GAP"
+    },
+    {
+      "allowed_scopes": [
+        "SUBMISSION",
+        "PROPERTY",
+        "FIXTURE",
+        "CASE_DERIVED"
+      ],
+      "tag": "SIMULATED_PII"
+    },
+    {
+      "allowed_scopes": [
+        "SUBMISSION",
+        "PROPERTY",
+        "FIXTURE",
+        "CASE_DERIVED"
+      ],
+      "tag": "TECHNICAL_STRING_NOT_INSTRUCTION"
+    },
+    {
+      "allowed_scopes": [
+        "SUBMISSION",
+        "PROPERTY",
+        "FIXTURE",
+        "CASE_DERIVED"
+      ],
+      "tag": "VISIBLE_ANCHOR_RISK"
+    }
+  ],
+  "top_level_ratification_semantics": "ACTIVITY_COVERAGE_INDEX_ONLY"
+}

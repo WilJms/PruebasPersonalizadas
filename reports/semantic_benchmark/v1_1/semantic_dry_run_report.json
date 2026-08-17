@@ -1,0 +1,6127 @@
+{
+  "benchmark_version": "semantic-benchmark/1.1.0",
+  "billable_authorizations": 0,
+  "case_observation_count": 368,
+  "case_observations": [
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A01-P04-001",
+      "oracle_state": "VALID",
+      "property_id": "A01-ACT-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A01-P04-001",
+      "oracle_state": "VALID",
+      "property_id": "A01-ACT-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A01-P04-001",
+      "oracle_state": "VALID",
+      "property_id": "A01-ACT-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A01-P04-001",
+      "oracle_state": "VALID",
+      "property_id": "A01-ACT-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A01-S01-P06-R01",
+      "oracle_state": "VALID",
+      "property_id": "A01-ACT-P5",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A01-S01-P06-R01",
+      "oracle_state": "VALID",
+      "property_id": "A01-S01-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A01-S01-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A01-S01-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A01-S01-P07-O02",
+      "oracle_state": "VALID",
+      "property_id": "A01-S01-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A01-S02-P06-R01",
+      "oracle_state": "VALID",
+      "property_id": "A01-S02-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A01-S03-P06-R01",
+      "oracle_state": "VALID",
+      "property_id": "A01-S03-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A01-S03-P06-R02",
+      "oracle_state": "VALID",
+      "property_id": "A01-S03-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A01-S03-P07-O02",
+      "oracle_state": "VALID",
+      "property_id": "A01-S03-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A01-S03-P07-O02",
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A01-S03-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A01-S04-P06-R01",
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A01-S04-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A01-S04-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A01-S04-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A01-S05-P06-R01",
+      "oracle_state": "VALID",
+      "property_id": "A01-S05-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A01-S05-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A01-S05-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A01-S05-P07-O02",
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A01-ACT-FINAL-LEAKAGE",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A01-S05-P07-O02",
+      "oracle_state": "VALID",
+      "property_id": "A01-S05-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A01-S06-P06-R01",
+      "oracle_state": "VALID",
+      "property_id": "A01-S06-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A01-S06-P07-O01",
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A01-ACT-FINAL-LEAKAGE",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A01-S06-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A01-S06-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A01-S06-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A01-S06-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A01-S06-P07-O02",
+      "oracle_state": "VALID",
+      "property_id": "A01-S06-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A01-S06-P07-O02",
+      "oracle_state": "VALID",
+      "property_id": "A01-S06-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A02-P04-001",
+      "oracle_state": "VALID",
+      "property_id": "A02-ACT-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A02-P04-001",
+      "oracle_state": "VALID",
+      "property_id": "A02-ACT-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A02-P04-001",
+      "oracle_state": "VALID",
+      "property_id": "A02-ACT-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A02-S01-P06-R01",
+      "oracle_state": "VALID",
+      "property_id": "A02-S01-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A02-S01-P06-R02",
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A02-S01-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A02-S01-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A02-S01-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A02-S01-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A02-S01-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A02-S02-P06-R01",
+      "oracle_state": "VALID",
+      "property_id": "A02-S02-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A02-S02-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A02-S02-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A02-S02-P07-O02",
+      "oracle_state": "VALID",
+      "property_id": "A02-S02-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A02-S03-P06-R01",
+      "oracle_state": "VALID",
+      "property_id": "A02-S03-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A02-S03-P06-R02",
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A02-S03-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A02-S04-P06-R01",
+      "oracle_state": "VALID",
+      "property_id": "A02-S04-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A02-S04-P06-R02",
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A02-S04-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A02-S04-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A02-S04-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A02-S04-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A02-S04-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A02-S05-P06-R01",
+      "oracle_state": "VALID",
+      "property_id": "A02-S05-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A02-S05-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A02-S05-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A02-S05-P07-O02",
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A02-ACT-FINAL-LEAKAGE",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A02-S05-P07-O02",
+      "oracle_state": "VALID",
+      "property_id": "A02-ACT-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A02-S05-P07-O02",
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A02-S05-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A02-S06-P06-R01",
+      "oracle_state": "VALID",
+      "property_id": "A02-S06-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A03-P04-001",
+      "oracle_state": "VALID",
+      "property_id": "A03-ACT-FINAL-DIFFICULTY",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A03-P04-001",
+      "oracle_state": "VALID",
+      "property_id": "A03-ACT-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A03-P04-001",
+      "oracle_state": "VALID",
+      "property_id": "A03-ACT-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A03-P04-001",
+      "oracle_state": "VALID",
+      "property_id": "A03-ACT-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A03-P04-001",
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A03-ACT-P5",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A03-P09-F01",
+      "oracle_state": "VALID",
+      "property_id": "A03-ACT-P09a",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P09"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A03-P09-F01",
+      "oracle_state": "VALID",
+      "property_id": "A03-ACT-P09b",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P09"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A03-S01-P06-R01",
+      "oracle_state": "VALID",
+      "property_id": "A03-S01-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A03-S01-P06-R02",
+      "oracle_state": "VALID",
+      "property_id": "A03-S01-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A03-S01-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A03-S01-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A03-S02-P06-R01",
+      "oracle_state": "VALID",
+      "property_id": "A03-S02-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A03-S02-P06-R02",
+      "oracle_state": "VALID",
+      "property_id": "A03-S02-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A03-S03-P06-R01",
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A03-S03-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A03-S03-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A03-S03-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A03-S04-P06-R01",
+      "oracle_state": "VALID",
+      "property_id": "A03-S04-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A03-S04-P06-R02",
+      "oracle_state": "VALID",
+      "property_id": "A03-S04-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A03-S04-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A03-S04-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A03-S04-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A03-S04-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A03-S05-P06-R01",
+      "oracle_state": "VALID",
+      "property_id": "A03-S05-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A03-S05-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A03-S05-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A03-S05-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A03-S05-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A03-S05-P07-O03",
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A03-ACT-FINAL-LEAKAGE",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A03-S05-P07-O03",
+      "oracle_state": "VALID",
+      "property_id": "A03-S05-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A03-S05-P07-O03",
+      "oracle_state": "VALID",
+      "property_id": "A03-S05-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A03-S06-P06-R01",
+      "oracle_state": "VALID",
+      "property_id": "A03-S06-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A03-S06-P06-R02",
+      "oracle_state": "VALID",
+      "property_id": "A03-S06-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A03-S06-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A03-S06-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A03-S06-P07-O02",
+      "oracle_state": "VALID",
+      "property_id": "A03-S06-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A03-S06-P07-O03",
+      "oracle_state": "VALID",
+      "property_id": "A03-S06-P5",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A04-P04-001",
+      "oracle_state": "VALID",
+      "property_id": "A04-ACT-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A04-P04-001",
+      "oracle_state": "VALID",
+      "property_id": "A04-ACT-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A04-P04-001",
+      "oracle_state": "VALID",
+      "property_id": "A04-ACT-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A04-P09-F01",
+      "oracle_state": "VALID",
+      "property_id": "A04-ACT-P09a",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P09"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A04-P09-F01",
+      "oracle_state": "VALID",
+      "property_id": "A04-ACT-P09b",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P09"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A04-S01-P06-R01",
+      "oracle_state": "VALID",
+      "property_id": "A04-ACT-P5",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A04-S01-P06-R01",
+      "oracle_state": "VALID",
+      "property_id": "A04-S01-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A04-S01-P06-R02",
+      "oracle_state": "VALID",
+      "property_id": "A04-ACT-P5",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A04-S01-P06-R02",
+      "oracle_state": "VALID",
+      "property_id": "A04-S01-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A04-S01-P06-R03",
+      "oracle_state": "VALID",
+      "property_id": "A04-ACT-P5",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A04-S01-P06-R03",
+      "oracle_state": "VALID",
+      "property_id": "A04-S01-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A04-S01-P06-R04",
+      "oracle_state": "VALID",
+      "property_id": "A04-ACT-P5",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A04-S01-P06-R04",
+      "oracle_state": "VALID",
+      "property_id": "A04-S01-P5",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A04-S01-P07-O01",
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A04-S01-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A04-S02-P06-R01",
+      "oracle_state": "VALID",
+      "property_id": "A04-ACT-P5",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A04-S02-P06-R01",
+      "oracle_state": "VALID",
+      "property_id": "A04-S02-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A04-S02-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A04-ACT-P6",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A04-S02-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A04-S02-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A04-S02-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A04-S02-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A04-S03-P06-R01",
+      "oracle_state": "VALID",
+      "property_id": "A04-ACT-P5",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A04-S03-P06-R01",
+      "oracle_state": "VALID",
+      "property_id": "A04-S03-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A04-S03-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A04-S03-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A04-S03-P07-O02",
+      "oracle_state": "VALID",
+      "property_id": "A04-S03-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A04-S04-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A04-S04-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A04-S04-P07-O02",
+      "oracle_state": "VALID",
+      "property_id": "A04-S04-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A04-S04-P07-O03",
+      "oracle_state": "VALID",
+      "property_id": "A04-S04-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A04-S05-P06-R01",
+      "oracle_state": "VALID",
+      "property_id": "A04-ACT-P5",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A04-S05-P06-R01",
+      "oracle_state": "VALID",
+      "property_id": "A04-S05-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A04-S05-P06-R02",
+      "oracle_state": "VALID",
+      "property_id": "A04-ACT-P5",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A04-S05-P06-R02",
+      "oracle_state": "VALID",
+      "property_id": "A04-S05-P5",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A04-S05-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A04-ACT-P6",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A04-S05-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A04-S05-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A04-S05-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A04-S05-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A04-S05-P07-O02",
+      "oracle_state": "VALID",
+      "property_id": "A04-ACT-P6",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A04-S05-P07-O02",
+      "oracle_state": "VALID",
+      "property_id": "A04-S05-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A04-S05-P07-O02",
+      "oracle_state": "VALID",
+      "property_id": "A04-S05-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A04-S06-P06-R01",
+      "oracle_state": "VALID",
+      "property_id": "A04-ACT-P5",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A04-S06-P06-R01",
+      "oracle_state": "VALID",
+      "property_id": "A04-S06-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A04-S06-P06-R02",
+      "oracle_state": "VALID",
+      "property_id": "A04-ACT-P5",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A04-S06-P06-R02",
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A04-S06-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A04-S06-P06-R03",
+      "oracle_state": "VALID",
+      "property_id": "A04-ACT-P5",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A04-S06-P06-R03",
+      "oracle_state": "VALID",
+      "property_id": "A04-S06-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A04-S06-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A04-S06-FINAL-XAR",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A04-S06-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A04-S06-P5",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A04-S06-P07-O02",
+      "oracle_state": "VALID",
+      "property_id": "A04-S06-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A04-S06-P07-O02",
+      "oracle_state": "VALID",
+      "property_id": "A04-S06-P5",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A05-P04-001",
+      "oracle_state": "VALID",
+      "property_id": "A05-ACT-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A05-P04-001",
+      "oracle_state": "VALID",
+      "property_id": "A05-ACT-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A05-P04-001",
+      "oracle_state": "VALID",
+      "property_id": "A05-ACT-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A05-P04-001",
+      "oracle_state": "VALID",
+      "property_id": "A05-ACT-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A05-S01-P06-R01",
+      "oracle_state": "VALID",
+      "property_id": "A05-S01-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A05-S01-P06-R02",
+      "oracle_state": "VALID",
+      "property_id": "A05-S01-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A05-S02-P06-R01",
+      "oracle_state": "VALID",
+      "property_id": "A05-S02-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A05-S02-P06-R02",
+      "oracle_state": "VALID",
+      "property_id": "A05-S02-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A05-S02-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A05-S02-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A05-S02-P07-O02",
+      "oracle_state": "VALID",
+      "property_id": "A05-S02-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A05-S03-P06-R01",
+      "oracle_state": "VALID",
+      "property_id": "A05-S03-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A05-S03-P07-O01",
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A05-ACT-FINAL-LEAKAGE",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A05-S03-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A05-ACT-P5",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A05-S03-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A05-S03-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A05-S03-P07-O02",
+      "oracle_state": "VALID",
+      "property_id": "A05-S03-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A05-S03-P07-O03",
+      "oracle_state": "VALID",
+      "property_id": "A05-S03-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A05-S03-P07-O04",
+      "oracle_state": "VALID",
+      "property_id": "A05-S03-P5",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A05-S04-P06-R01",
+      "oracle_state": "VALID",
+      "property_id": "A05-S04-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A05-S04-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A05-S04-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A05-S04-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A05-S04-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A05-S04-P07-O02",
+      "oracle_state": "VALID",
+      "property_id": "A05-S04-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A05-S04-P07-O02",
+      "oracle_state": "VALID",
+      "property_id": "A05-S04-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A05-S05-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A05-S05-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A05-S05-P07-O02",
+      "oracle_state": "VALID",
+      "property_id": "A05-S05-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A05-S06-P06-R01",
+      "oracle_state": "VALID",
+      "property_id": "A05-S06-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A05-S06-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A05-S06-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A05-S06-P07-O02",
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A05-S06-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A06-P04-001",
+      "oracle_state": "VALID",
+      "property_id": "A06-ACT-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A06-P04-001",
+      "oracle_state": "VALID",
+      "property_id": "A06-ACT-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A06-P04-001",
+      "oracle_state": "VALID",
+      "property_id": "A06-ACT-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A06-P04-001",
+      "oracle_state": "VALID",
+      "property_id": "A06-ACT-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A06-S01-P06-R01",
+      "oracle_state": "VALID",
+      "property_id": "A06-ACT-FINAL-P5",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A06-S01-P06-R01",
+      "oracle_state": "VALID",
+      "property_id": "A06-S01-FINAL-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A06-S01-P06-R02",
+      "oracle_state": "VALID",
+      "property_id": "A06-ACT-FINAL-P5",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A06-S01-P06-R02",
+      "oracle_state": "VALID",
+      "property_id": "A06-S01-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A06-S01-P06-R03",
+      "oracle_state": "VALID",
+      "property_id": "A06-ACT-FINAL-P5",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A06-S01-P06-R03",
+      "oracle_state": "VALID",
+      "property_id": "A06-S01-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A06-S01-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A06-S01-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A06-S01-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A06-S01-P5",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A06-S02-P06-R01",
+      "oracle_state": "VALID",
+      "property_id": "A06-S02-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A06-S02-P06-R02",
+      "oracle_state": "VALID",
+      "property_id": "A06-S02-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A06-S02-P07-O01",
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A06-S02-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A06-S02-P07-O02",
+      "oracle_state": "VALID",
+      "property_id": "A06-S02-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A06-S03-P06-R01",
+      "oracle_state": "VALID",
+      "property_id": "A06-S03-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A06-S03-P07-O02",
+      "oracle_state": "VALID",
+      "property_id": "A06-S03-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A06-S03-P07-O02",
+      "oracle_state": "VALID",
+      "property_id": "A06-S03-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A06-S04-P06-R01",
+      "oracle_state": "VALID",
+      "property_id": "A06-ACT-FINAL-P5",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A06-S04-P06-R01",
+      "oracle_state": "VALID",
+      "property_id": "A06-S04-FINAL-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A06-S04-P06-R02",
+      "oracle_state": "VALID",
+      "property_id": "A06-ACT-FINAL-P5",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A06-S04-P06-R02",
+      "oracle_state": "VALID",
+      "property_id": "A06-S04-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A06-S04-P06-R03",
+      "oracle_state": "VALID",
+      "property_id": "A06-ACT-FINAL-P5",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A06-S04-P06-R03",
+      "oracle_state": "VALID",
+      "property_id": "A06-S04-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A06-S04-P07-O01",
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A06-S04-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A06-S05-P06-R01",
+      "oracle_state": "VALID",
+      "property_id": "A06-S05-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A06-S05-P06-R02",
+      "oracle_state": "VALID",
+      "property_id": "A06-S05-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A06-S05-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A06-S05-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A06-S05-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A06-S05-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A06-S06-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A06-S06-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A06-S06-P07-O02",
+      "oracle_state": "VALID",
+      "property_id": "A06-S06-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A07-P04-001",
+      "oracle_state": "VALID",
+      "property_id": "A07-ACT-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A07-P04-001",
+      "oracle_state": "VALID",
+      "property_id": "A07-ACT-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A07-P04-001",
+      "oracle_state": "VALID",
+      "property_id": "A07-ACT-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A07-S01-P06-R01",
+      "oracle_state": "VALID",
+      "property_id": "A07-S01-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A07-S01-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A07-ACT-P5",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A07-S01-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A07-S01-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A07-S02-P06-R01",
+      "oracle_state": "VALID",
+      "property_id": "A07-S02-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A07-S02-P06-R02",
+      "oracle_state": "VALID",
+      "property_id": "A07-S02-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A07-S02-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A07-S02-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A07-S02-P07-O02",
+      "oracle_state": "VALID",
+      "property_id": "A07-S02-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A07-S03-P06-R01",
+      "oracle_state": "VALID",
+      "property_id": "A07-S03-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A07-S03-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A07-S03-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A07-S03-P07-O02",
+      "oracle_state": "VALID",
+      "property_id": "A07-S03-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A07-S04-P06-R01",
+      "oracle_state": "VALID",
+      "property_id": "A07-S04-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A07-S04-P06-R02",
+      "oracle_state": "VALID",
+      "property_id": "A07-S04-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A07-S04-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A07-S04-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A07-S04-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A07-S04-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A07-S05-P06-R01",
+      "oracle_state": "VALID",
+      "property_id": "A07-S05-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A07-S05-P06-R02",
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A07-S05-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A07-S05-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A07-S05-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A07-S05-P07-O02",
+      "oracle_state": "VALID",
+      "property_id": "A07-S05-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A07-S05-P07-O03",
+      "oracle_state": "VALID",
+      "property_id": "A07-S05-P5",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A07-S06-P06-R01",
+      "oracle_state": "VALID",
+      "property_id": "A07-S06-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A07-S06-P06-R02",
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A07-S06-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A07-S06-P07-O01",
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A07-ACT-FINAL-LEAKAGE",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A07-S06-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A07-ACT-P5",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A07-S06-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A07-S06-FINAL-RECON",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A07-S06-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A07-S06-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A07-S06-P07-O02",
+      "oracle_state": "VALID",
+      "property_id": "A07-S06-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A07-S06-P07-O02",
+      "oracle_state": "VALID",
+      "property_id": "A07-S06-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A08-P04-001",
+      "oracle_state": "VALID",
+      "property_id": "A08-ACT-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A08-P04-001",
+      "oracle_state": "VALID",
+      "property_id": "A08-ACT-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A08-P04-001",
+      "oracle_state": "VALID",
+      "property_id": "A08-ACT-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A08-S01-P06-R01",
+      "oracle_state": "VALID",
+      "property_id": "A08-S01-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A08-S01-P06-R02",
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A08-S01-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A08-S01-P06-R03",
+      "oracle_state": "VALID",
+      "property_id": "A08-S01-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A08-S01-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A08-S01-FINAL-XAR",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A08-S01-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A08-S01-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A08-S02-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A08-S02-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A08-S02-P07-O02",
+      "oracle_state": "VALID",
+      "property_id": "A08-ACT-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A08-S02-P07-O02",
+      "oracle_state": "VALID",
+      "property_id": "A08-S02-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A08-S02-P07-O03",
+      "oracle_state": "VALID",
+      "property_id": "A08-S02-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A08-S03-P06-R01",
+      "oracle_state": "VALID",
+      "property_id": "A08-S03-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A08-S03-P06-R02",
+      "oracle_state": "VALID",
+      "property_id": "A08-S03-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A08-S03-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A08-S03-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A08-S03-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A08-S03-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A08-S04-P06-R01",
+      "oracle_state": "VALID",
+      "property_id": "A08-S04-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A08-S04-P06-R02",
+      "oracle_state": "VALID",
+      "property_id": "A08-S04-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A08-S05-P06-R01",
+      "oracle_state": "VALID",
+      "property_id": "A08-S05-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A08-S05-P06-R02",
+      "oracle_state": "VALID",
+      "property_id": "A08-S05-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A08-S06-P06-R01",
+      "oracle_state": "VALID",
+      "property_id": "A08-S06-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A08-S06-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A08-S06-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A08-S06-P07-O02",
+      "oracle_state": "VALID",
+      "property_id": "A08-S06-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A09-P04-001",
+      "oracle_state": "VALID",
+      "property_id": "A09-ACT-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A09-P04-001",
+      "oracle_state": "VALID",
+      "property_id": "A09-ACT-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A09-P04-001",
+      "oracle_state": "VALID",
+      "property_id": "A09-ACT-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A09-P04-001",
+      "oracle_state": "VALID",
+      "property_id": "A09-ACT-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A09-P09-F01",
+      "oracle_state": "VALID",
+      "property_id": "A09-ACT-P09a",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P09"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A09-P09-F01",
+      "oracle_state": "VALID",
+      "property_id": "A09-ACT-P09b",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P09"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A09-S01-P06-R01",
+      "oracle_state": "VALID",
+      "property_id": "A09-S01-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A09-S01-P06-R02",
+      "oracle_state": "VALID",
+      "property_id": "A09-S01-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A09-S01-P06-R03",
+      "oracle_state": "VALID",
+      "property_id": "A09-S01-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A09-S02-P06-R01",
+      "oracle_state": "VALID",
+      "property_id": "A09-S02-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A09-S02-P06-R02",
+      "oracle_state": "VALID",
+      "property_id": "A09-S02-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A09-S02-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A09-S02-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A09-S02-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A09-S02-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A09-S03-P06-R01",
+      "oracle_state": "VALID",
+      "property_id": "A09-S03-FINAL-SILENT-GAP",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A09-S03-P06-R02",
+      "oracle_state": "VALID",
+      "property_id": "A09-S03-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A09-S03-P06-R03",
+      "oracle_state": "VALID",
+      "property_id": "A09-S03-P5",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A09-S03-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A09-S03-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A09-S03-P07-O03",
+      "oracle_state": "VALID",
+      "property_id": "A09-S03-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A09-S04-P06-R01",
+      "oracle_state": "VALID",
+      "property_id": "A09-S04-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A09-S04-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A09-S04-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A09-S04-P07-O02",
+      "oracle_state": "VALID",
+      "property_id": "A09-S04-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A09-S05-P06-R01",
+      "oracle_state": "VALID",
+      "property_id": "A09-S05-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A09-S05-P06-R02",
+      "oracle_state": "VALID",
+      "property_id": "A09-S05-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A09-S05-P06-R03",
+      "oracle_state": "VALID",
+      "property_id": "A09-S05-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A09-S05-P06-R04",
+      "oracle_state": "VALID",
+      "property_id": "A09-S05-P5",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A09-S05-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A09-S05-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A09-S05-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A09-S05-P6",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A09-S06-P06-R01",
+      "oracle_state": "VALID",
+      "property_id": "A09-S06-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A09-S06-P06-R02",
+      "oracle_state": "VALID",
+      "property_id": "A09-S06-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A09-S06-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A09-S06-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A09-S06-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A09-S06-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A10-P04-001",
+      "oracle_state": "VALID",
+      "property_id": "A10-ACT-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A10-P04-001",
+      "oracle_state": "VALID",
+      "property_id": "A10-ACT-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A10-P04-001",
+      "oracle_state": "VALID",
+      "property_id": "A10-ACT-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A10-P04-001",
+      "oracle_state": "VALID",
+      "property_id": "A10-ACT-P6",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A10-S01-P06-R01",
+      "oracle_state": "VALID",
+      "property_id": "A10-S01-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A10-S01-P06-R02",
+      "oracle_state": "VALID",
+      "property_id": "A10-S01-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A10-S01-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A10-S01-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A10-S02-P06-R01",
+      "oracle_state": "VALID",
+      "property_id": "A10-S02-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A10-S02-P06-R02",
+      "oracle_state": "VALID",
+      "property_id": "A10-S02-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A10-S03-P06-R01",
+      "oracle_state": "VALID",
+      "property_id": "A10-S03-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A10-S03-P06-R02",
+      "oracle_state": "VALID",
+      "property_id": "A10-S03-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A10-S03-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A10-S03-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A10-S03-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A10-S03-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A10-S03-P07-O03",
+      "oracle_state": "VALID",
+      "property_id": "A10-S03-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A10-S03-P07-O03",
+      "oracle_state": "VALID",
+      "property_id": "A10-S03-P5",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A10-S04-P06-R01",
+      "oracle_state": "VALID",
+      "property_id": "A10-S04-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A10-S04-P06-R02",
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A10-S04-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A10-S04-P06-R03",
+      "oracle_state": "VALID",
+      "property_id": "A10-S04-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A10-S04-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A10-S04-FINAL-DECLARED-OMISSION",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A10-S04-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A10-S04-P6",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A10-S04-P07-O03",
+      "oracle_state": "VALID",
+      "property_id": "A10-S04-P5",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A10-S04-P07-O03",
+      "oracle_state": "VALID",
+      "property_id": "A10-S04-P6",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A10-S05-P06-R01",
+      "oracle_state": "VALID",
+      "property_id": "A10-S05-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A10-S05-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A10-ACT-P5",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A10-S05-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A10-S05-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A10-S05-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A10-S05-P5",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A10-S05-P07-O02",
+      "oracle_state": "VALID",
+      "property_id": "A10-ACT-P5",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A10-S05-P07-O02",
+      "oracle_state": "VALID",
+      "property_id": "A10-S05-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A10-S05-P07-O02",
+      "oracle_state": "VALID",
+      "property_id": "A10-S05-P5",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A10-S05-P07-O03",
+      "oracle_state": "VALID",
+      "property_id": "A10-ACT-P5",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A10-S05-P07-O03",
+      "oracle_state": "VALID",
+      "property_id": "A10-S05-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A10-S05-P07-O03",
+      "oracle_state": "VALID",
+      "property_id": "A10-S05-P5",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A10-S06-P06-R01",
+      "oracle_state": "VALID",
+      "property_id": "A10-S06-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A10-S06-P06-R02",
+      "oracle_state": "VALID",
+      "property_id": "A10-S06-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A10-S06-P06-R03",
+      "oracle_state": "VALID",
+      "property_id": "A10-S06-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A10-S06-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A10-S06-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A11-P04-001",
+      "oracle_state": "VALID",
+      "property_id": "A11-ACT-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A11-P04-001",
+      "oracle_state": "VALID",
+      "property_id": "A11-ACT-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A11-P04-001",
+      "oracle_state": "VALID",
+      "property_id": "A11-ACT-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A11-P04-001",
+      "oracle_state": "VALID",
+      "property_id": "A11-ACT-P5",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A11-S01-P06-R01",
+      "oracle_state": "VALID",
+      "property_id": "A11-S01-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A11-S01-P06-R02",
+      "oracle_state": "VALID",
+      "property_id": "A11-S01-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A11-S01-P06-R03",
+      "oracle_state": "VALID",
+      "property_id": "A11-S01-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A11-S01-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A11-ACT-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A11-S01-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A11-S01-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A11-S01-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A11-S01-P5",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A11-S02-P06-R01",
+      "oracle_state": "VALID",
+      "property_id": "A11-S02-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A11-S02-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A11-S02-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A11-S02-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A11-S02-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A11-S02-P07-O03",
+      "oracle_state": "VALID",
+      "property_id": "A11-S02-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A11-S02-P07-O03",
+      "oracle_state": "VALID",
+      "property_id": "A11-S02-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A11-S03-P06-R01",
+      "oracle_state": "VALID",
+      "property_id": "A11-S03-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A11-S03-P06-R02",
+      "oracle_state": "VALID",
+      "property_id": "A11-S03-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A11-S03-P06-R03",
+      "oracle_state": "VALID",
+      "property_id": "A11-S03-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A11-S03-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A11-S03-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A11-S04-P06-R01",
+      "oracle_state": "VALID",
+      "property_id": "A11-S04-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A11-S04-P06-R02",
+      "oracle_state": "VALID",
+      "property_id": "A11-S04-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A11-S04-P06-R03",
+      "oracle_state": "VALID",
+      "property_id": "A11-S04-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A11-S04-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A11-S04-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A11-S04-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A11-S04-P5",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A11-S05-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A11-ACT-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A11-S05-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A11-S05-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A11-S05-P07-O02",
+      "oracle_state": "VALID",
+      "property_id": "A11-S05-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A11-S06-P06-R01",
+      "oracle_state": "VALID",
+      "property_id": "A11-S06-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A11-S06-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A11-S06-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A11-S06-P07-O02",
+      "oracle_state": "VALID",
+      "property_id": "A11-S06-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A12-P04-001",
+      "oracle_state": "VALID",
+      "property_id": "A12-ACT-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A12-P04-001",
+      "oracle_state": "VALID",
+      "property_id": "A12-ACT-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A12-P04-001",
+      "oracle_state": "VALID",
+      "property_id": "A12-ACT-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A12-P04-001",
+      "oracle_state": "VALID",
+      "property_id": "A12-ACT-P5",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A12-P09-F01",
+      "oracle_state": "VALID",
+      "property_id": "A12-ACT-P09a",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P09"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A12-P09-F01",
+      "oracle_state": "VALID",
+      "property_id": "A12-ACT-P09b",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P09"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A12-S01-P06-R01",
+      "oracle_state": "VALID",
+      "property_id": "A12-S01-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A12-S01-P06-R02",
+      "oracle_state": "VALID",
+      "property_id": "A12-S01-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A12-S01-P07-O02",
+      "oracle_state": "VALID",
+      "property_id": "A12-S01-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A12-S01-P07-O02",
+      "oracle_state": "VALID",
+      "property_id": "A12-S01-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A12-S02-P06-R01",
+      "oracle_state": "VALID",
+      "property_id": "A12-S02-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A12-S02-P06-R02",
+      "oracle_state": "VALID",
+      "property_id": "A12-S02-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A12-S02-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A12-S02-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A12-S02-P07-O02",
+      "oracle_state": "VALID",
+      "property_id": "A12-S02-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A12-S03-P06-R01",
+      "oracle_state": "VALID",
+      "property_id": "A12-S03-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A12-S03-P06-R02",
+      "oracle_state": "VALID",
+      "property_id": "A12-S03-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A12-S03-P06-R03",
+      "oracle_state": "VALID",
+      "property_id": "A12-S03-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A12-S03-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A12-S03-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A12-S03-P07-O02",
+      "oracle_state": "VALID",
+      "property_id": "A12-S03-P5",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A12-S04-P06-R01",
+      "oracle_state": "VALID",
+      "property_id": "A12-S04-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A12-S04-P06-R02",
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A12-S04-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A12-S04-P06-R03",
+      "oracle_state": "VALID",
+      "property_id": "A12-S04-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A12-S04-P07-O01",
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A12-ACT-FINAL-LEAKAGE",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A12-S04-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A12-S04-FINAL-XAR",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A12-S04-P07-O02",
+      "oracle_state": "VALID",
+      "property_id": "A12-S04-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A12-S04-P07-O03",
+      "oracle_state": "VALID",
+      "property_id": "A12-S04-P5",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A12-S05-P06-R01",
+      "oracle_state": "VALID",
+      "property_id": "A12-S05-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A12-S05-P06-R02",
+      "oracle_state": "VALID",
+      "property_id": "A12-S05-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A12-S05-P06-R03",
+      "oracle_state": "VALID",
+      "property_id": "A12-S05-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A12-S05-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A12-S05-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A12-S05-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A12-S05-P5",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A12-S06-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A12-S06-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A12-S06-P07-O02",
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A12-ACT-FINAL-LEAKAGE",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A12-S06-P07-O02",
+      "oracle_state": "VALID",
+      "property_id": "A12-ACT-P6",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A12-S06-P07-O02",
+      "oracle_state": "VALID",
+      "property_id": "A12-S06-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A12-S06-P07-O03",
+      "oracle_state": "VALID",
+      "property_id": "A12-ACT-P6",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A12-S06-P07-O03",
+      "oracle_state": "VALID",
+      "property_id": "A12-S06-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    }
+  ],
+  "execution_mode": "NON_BILLABLE_BENCHMARK_DRY_RUN",
+  "explicitly_excluded_property_count": 33,
+  "mock_outputs_scored": false,
+  "model_call_ledger_writes": 0,
+  "outcome_counts": {
+    "NOT_APPLICABLE": 8,
+    "PENDING_ADJUDICATION": 354
+  },
+  "property_count": 395,
+  "property_outcomes": [
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A01-ACT-FINAL-LEAKAGE",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A01-ACT-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A01-ACT-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A01-ACT-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A01-ACT-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A01-ACT-P5",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A01-S01-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A01-S01-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A01-S01-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A01-S01-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "PLANNER"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A01-S02-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "EXPLICITLY_EXCLUDED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A01-S02-P2",
+      "result_state": null,
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A01-S02-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "PLANNER"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A01-S03-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A01-S03-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A01-S03-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A01-S03-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A01-S04-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "PLANNER"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A01-S04-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A01-S04-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A01-S05-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A01-S05-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A01-S05-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "EXPLICITLY_EXCLUDED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A01-S05-P4",
+      "result_state": null,
+      "stage": "P09"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A01-S06-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A01-S06-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A01-S06-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A01-S06-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "EXPLICITLY_EXCLUDED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A01-S06-P5",
+      "result_state": null,
+      "stage": "P09"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A02-ACT-FINAL-LEAKAGE",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A02-ACT-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A02-ACT-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A02-ACT-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A02-ACT-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "EXPLICITLY_EXCLUDED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A02-ACT-P5",
+      "result_state": null,
+      "stage": "P09"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A02-S01-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A02-S01-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A02-S01-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A02-S01-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A02-S02-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A02-S02-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A02-S02-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A02-S02-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "PLANNER"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A02-S03-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A02-S03-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A02-S03-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "PLANNER"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A02-S04-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A02-S04-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A02-S04-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A02-S04-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A02-S05-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A02-S05-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A02-S05-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "EXPLICITLY_EXCLUDED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A02-S05-P4",
+      "result_state": null,
+      "stage": "P09"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A02-S06-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "EXPLICITLY_EXCLUDED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A02-S06-P2",
+      "result_state": null,
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A02-S06-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "PLANNER"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A03-ACT-FINAL-DIFFICULTY",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A03-ACT-FINAL-LEAKAGE",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A03-ACT-P09a",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P09"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A03-ACT-P09b",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P09"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A03-ACT-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A03-ACT-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A03-ACT-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A03-ACT-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "PLANNER"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A03-ACT-P5",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A03-S01-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A03-S01-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A03-S01-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "EXPLICITLY_EXCLUDED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A03-S01-P4",
+      "result_state": null,
+      "stage": "P04"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A03-S02-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "EXPLICITLY_EXCLUDED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A03-S02-P2",
+      "result_state": null,
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A03-S02-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A03-S03-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "PLANNER"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A03-S03-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A03-S03-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A03-S04-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A03-S04-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A03-S04-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A03-S04-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A03-S05-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A03-S05-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A03-S05-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A03-S05-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A03-S06-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A03-S06-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A03-S06-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A03-S06-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A03-S06-P5",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A04-ACT-P09a",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P09"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A04-ACT-P09b",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P09"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A04-ACT-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A04-ACT-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A04-ACT-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "alignment_status": "EXPLICITLY_EXCLUDED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A04-ACT-P4",
+      "result_state": null,
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A04-ACT-P5",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A04-ACT-P6",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A04-S01-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A04-S01-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A04-S01-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A04-S01-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A04-S01-P5",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A04-S02-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A04-S02-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A04-S02-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A04-S03-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A04-S03-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A04-S03-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A04-S03-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "PLANNER"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A04-S04-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A04-S04-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A04-S04-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A04-S04-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "PLANNER"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A04-S05-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A04-S05-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A04-S05-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A04-S05-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A04-S05-P5",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A04-S06-FINAL-XAR",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A04-S06-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A04-S06-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A04-S06-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A04-S06-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A04-S06-P5",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A05-ACT-FINAL-LEAKAGE",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "NOT_APPLICABLE",
+      "candidate_output_present": false,
+      "oracle_state": "NOT_APPLICABLE",
+      "property_id": "A05-ACT-FINAL-LENGTH",
+      "result_state": "NOT_APPLICABLE",
+      "stage": "P04"
+    },
+    {
+      "alignment_status": "EXPLICITLY_EXCLUDED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A05-ACT-P09a",
+      "result_state": null,
+      "stage": "P09"
+    },
+    {
+      "alignment_status": "EXPLICITLY_EXCLUDED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A05-ACT-P09b",
+      "result_state": null,
+      "stage": "P09"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A05-ACT-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A05-ACT-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A05-ACT-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A05-ACT-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A05-ACT-P5",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A05-S01-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "EXPLICITLY_EXCLUDED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A05-S01-P2",
+      "result_state": null,
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A05-S01-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A05-S02-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A05-S02-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A05-S02-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A05-S02-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A05-S03-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A05-S03-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A05-S03-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A05-S03-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A05-S03-P5",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A05-S04-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A05-S04-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A05-S04-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A05-S04-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A05-S05-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A05-S05-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A05-S05-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "PLANNER"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A05-S06-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A05-S06-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A05-S06-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "EXPLICITLY_EXCLUDED",
+      "candidate_output_present": false,
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A06-ACT-FINAL-LEAKAGE",
+      "result_state": null,
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "NOT_APPLICABLE",
+      "candidate_output_present": false,
+      "oracle_state": "NOT_APPLICABLE",
+      "property_id": "A06-ACT-FINAL-LENGTH",
+      "result_state": "NOT_APPLICABLE",
+      "stage": "P04"
+    },
+    {
+      "alignment_status": "EXPLICITLY_EXCLUDED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A06-ACT-FINAL-P09",
+      "result_state": null,
+      "stage": "P09"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A06-ACT-FINAL-P5",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "EXPLICITLY_EXCLUDED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A06-ACT-P09b",
+      "result_state": null,
+      "stage": "P09"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A06-ACT-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A06-ACT-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A06-ACT-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A06-ACT-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A06-S01-FINAL-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A06-S01-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A06-S01-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A06-S01-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A06-S01-P5",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A06-S02-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A06-S02-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A06-S02-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A06-S02-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A06-S03-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A06-S03-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A06-S03-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A06-S04-FINAL-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A06-S04-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A06-S04-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A06-S04-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A06-S05-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A06-S05-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A06-S05-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A06-S05-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A06-S06-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A06-S06-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A06-S06-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "PLANNER"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A07-ACT-FINAL-LEAKAGE",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "NOT_APPLICABLE",
+      "candidate_output_present": false,
+      "oracle_state": "NOT_APPLICABLE",
+      "property_id": "A07-ACT-FINAL-LENGTH",
+      "result_state": "NOT_APPLICABLE",
+      "stage": "P04"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A07-ACT-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A07-ACT-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A07-ACT-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A07-ACT-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "PLANNER"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A07-ACT-P5",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A07-S01-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A07-S01-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A07-S01-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "PLANNER"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A07-S02-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A07-S02-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A07-S02-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A07-S02-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A07-S03-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A07-S03-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A07-S03-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A07-S03-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "PLANNER"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A07-S04-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A07-S04-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A07-S04-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A07-S04-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A07-S05-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A07-S05-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A07-S05-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A07-S05-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A07-S05-P5",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A07-S06-FINAL-RECON",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A07-S06-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A07-S06-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A07-S06-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A07-S06-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "EXPLICITLY_EXCLUDED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A07-S06-P5",
+      "result_state": null,
+      "stage": "P09"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A08-ACT-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A08-ACT-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A08-ACT-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A08-ACT-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "EXPLICITLY_EXCLUDED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A08-ACT-P5",
+      "result_state": null,
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "EXPLICITLY_EXCLUDED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A08-ACT-P6",
+      "result_state": null,
+      "stage": "P09"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A08-S01-FINAL-XAR",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A08-S01-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A08-S01-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A08-S01-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A08-S01-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A08-S02-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A08-S02-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A08-S02-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A08-S02-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "PLANNER"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A08-S03-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A08-S03-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A08-S03-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A08-S03-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A08-S04-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A08-S04-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "EXPLICITLY_EXCLUDED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A08-S04-P3",
+      "result_state": null,
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A08-S05-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A08-S05-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "EXPLICITLY_EXCLUDED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A08-S05-P3",
+      "result_state": null,
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "EXPLICITLY_EXCLUDED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A08-S05-P4",
+      "result_state": null,
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A08-S06-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A08-S06-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A08-S06-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A08-S06-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "PLANNER"
+    },
+    {
+      "alignment_status": "EXPLICITLY_EXCLUDED",
+      "candidate_output_present": false,
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A09-ACT-FINAL-LEAKAGE",
+      "result_state": null,
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "NOT_APPLICABLE",
+      "candidate_output_present": false,
+      "oracle_state": "NOT_APPLICABLE",
+      "property_id": "A09-ACT-FINAL-LENGTH",
+      "result_state": "NOT_APPLICABLE",
+      "stage": "P04"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A09-ACT-P09a",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P09"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A09-ACT-P09b",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P09"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A09-ACT-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A09-ACT-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A09-ACT-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A09-ACT-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "alignment_status": "EXPLICITLY_EXCLUDED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A09-ACT-P5",
+      "result_state": null,
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A09-S01-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A09-S01-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A09-S01-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "EXPLICITLY_EXCLUDED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A09-S01-P4",
+      "result_state": null,
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A09-S02-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A09-S02-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A09-S02-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A09-S02-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A09-S03-FINAL-SILENT-GAP",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A09-S03-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A09-S03-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "EXPLICITLY_EXCLUDED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A09-S03-P3",
+      "result_state": null,
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A09-S03-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A09-S03-P5",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A09-S04-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A09-S04-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A09-S04-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "EXPLICITLY_EXCLUDED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A09-S04-P4",
+      "result_state": null,
+      "stage": "P04"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A09-S05-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A09-S05-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A09-S05-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A09-S05-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A09-S05-P5",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A09-S05-P6",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A09-S06-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A09-S06-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A09-S06-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A09-S06-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "NOT_APPLICABLE",
+      "candidate_output_present": false,
+      "oracle_state": "NOT_APPLICABLE",
+      "property_id": "A10-ACT-FINAL-LENGTH",
+      "result_state": "NOT_APPLICABLE",
+      "stage": "P04"
+    },
+    {
+      "alignment_status": "EXPLICITLY_EXCLUDED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A10-ACT-P09a",
+      "result_state": null,
+      "stage": "P09"
+    },
+    {
+      "alignment_status": "EXPLICITLY_EXCLUDED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A10-ACT-P09b",
+      "result_state": null,
+      "stage": "P09"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A10-ACT-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A10-ACT-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A10-ACT-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A10-ACT-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "PLANNER"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A10-ACT-P5",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A10-ACT-P6",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A10-S01-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A10-S01-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A10-S01-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A10-S02-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A10-S02-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "EXPLICITLY_EXCLUDED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A10-S02-P3",
+      "result_state": null,
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A10-S03-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A10-S03-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A10-S03-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A10-S03-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A10-S03-P5",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A10-S04-FINAL-DECLARED-OMISSION",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A10-S04-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A10-S04-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A10-S04-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "EXPLICITLY_EXCLUDED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A10-S04-P4",
+      "result_state": null,
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A10-S04-P5",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A10-S04-P6",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A10-S05-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A10-S05-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A10-S05-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A10-S05-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A10-S05-P5",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A10-S06-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A10-S06-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A10-S06-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A10-S06-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "NOT_APPLICABLE",
+      "candidate_output_present": false,
+      "oracle_state": "NOT_APPLICABLE",
+      "property_id": "A11-ACT-FINAL-LENGTH",
+      "result_state": "NOT_APPLICABLE",
+      "stage": "P04"
+    },
+    {
+      "alignment_status": "EXPLICITLY_EXCLUDED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A11-ACT-P09a",
+      "result_state": null,
+      "stage": "P09"
+    },
+    {
+      "alignment_status": "EXPLICITLY_EXCLUDED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A11-ACT-P09b",
+      "result_state": null,
+      "stage": "P09"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A11-ACT-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A11-ACT-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A11-ACT-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A11-ACT-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A11-ACT-P5",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "alignment_status": "NOT_APPLICABLE",
+      "candidate_output_present": false,
+      "oracle_state": "NOT_APPLICABLE",
+      "property_id": "A11-ACT-P6",
+      "result_state": "NOT_APPLICABLE",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A11-S01-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A11-S01-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A11-S01-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A11-S01-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A11-S01-P5",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A11-S02-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A11-S02-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A11-S02-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A11-S02-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A11-S03-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A11-S03-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A11-S03-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A11-S03-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A11-S04-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A11-S04-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A11-S04-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A11-S04-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A11-S04-P5",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A11-S05-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A11-S05-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A11-S05-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "PLANNER"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A11-S06-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A11-S06-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A11-S06-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A11-S06-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "PLANNER"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A12-ACT-FINAL-LEAKAGE",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "NOT_APPLICABLE",
+      "candidate_output_present": false,
+      "oracle_state": "NOT_APPLICABLE",
+      "property_id": "A12-ACT-FINAL-LENGTH",
+      "result_state": "NOT_APPLICABLE",
+      "stage": "P04"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A12-ACT-P09a",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P09"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A12-ACT-P09b",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P09"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A12-ACT-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A12-ACT-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A12-ACT-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "alignment_status": "EXPLICITLY_EXCLUDED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A12-ACT-P4",
+      "result_state": null,
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A12-ACT-P5",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A12-ACT-P6",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A12-S01-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A12-S01-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A12-S01-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A12-S01-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A12-S02-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A12-S02-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A12-S02-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A12-S02-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A12-S03-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A12-S03-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A12-S03-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A12-S03-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A12-S03-P5",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A12-S04-FINAL-XAR",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A12-S04-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A12-S04-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A12-S04-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A12-S04-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A12-S04-P5",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A12-S05-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A12-S05-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A12-S05-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A12-S05-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A12-S05-P5",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A12-S06-P1",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A12-S06-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A12-S06-P3",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "candidate_output_present": false,
+      "oracle_state": "VALID",
+      "property_id": "A12-S06-P4",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "PLANNER"
+    }
+  ],
+  "provider_calls": 0,
+  "provider_transport_constructed": false,
+  "review_packets_created": 0,
+  "schema_version": "semantic-benchmark-dry-run/1.1.0",
+  "statistical_significance_claimed": false
+}

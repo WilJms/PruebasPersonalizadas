@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pruebas-personalizadas.invalid/schemas/semantic-benchmark/1.1.0/p06-routes.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "benchmark_version", "routes"],
+  "properties": {
+    "schema_version": {"const": "semantic-p06-route-definitions/1.1.0"},
+    "benchmark_version": {"const": "semantic-benchmark/1.1.0"},
+    "routes": {"type": "array", "items": {"$ref": "#/$defs/route"}}
+  },
+  "$defs": {
+    "unit": {
+      "type": "object", "additionalProperties": false,
+      "required": ["evidence_id", "normalized_hash", "locator"],
+      "properties": {
+        "evidence_id": {"type": "string", "pattern": "^ev_[a-z0-9]+$"},
+        "normalized_hash": {"type": "string", "pattern": "^sha256:[a-f0-9]{64}$"},
+        "locator": {"$ref": "#/$defs/locator"}
+      }
+    },
+    "locator": {
+      "type": "object", "additionalProperties": false, "required": ["kind"],
+      "properties": {
+        "kind": {"enum": ["PAGE_BBOX", "DOCUMENT_PATH"]},
+        "page": {"type": "integer", "minimum": 1},
+        "bbox": {"type": "array", "minItems": 4, "maxItems": 4, "items": {"type": "number"}},
+        "block_index": {"type": "integer", "minimum": 0},
+        "paragraph_index": {"type": "integer", "minimum": 0},
+        "heading_path": {"type": "array", "items": {"type": "string"}},
+        "table_index": {"type": "integer", "minimum": 0},
+        "row": {"type": "integer", "minimum": 0},
+        "column": {"type": "integer", "minimum": 0}
+      }
+    },
+    "source": {
+      "type": "object", "additionalProperties": false,
+      "required": ["relative_ref", "role", "resolved_units"],
+      "properties": {
+        "relative_ref": {"type": "string", "minLength": 1},
+        "role": {"enum": ["SUBMISSION_SUPPORT", "SOURCE_CONTEXT"]},
+        "resolved_units": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/unit"}}
+      }
+    },
+    "route": {
+      "type": "object", "additionalProperties": false,
+      "required": ["route_fixture_id", "activity_id", "submission_id", "model_visible_definition", "source_provenance", "fixture_tags", "oracle_binding_metadata", "fixture_derivation_provenance"],
+      "properties": {
+        "route_fixture_id": {"type": "string", "pattern": "^P06-A[0-9]{2}-S[0-9]{2}-R[0-9]{2}$"},
+        "activity_id": {"type": "string", "pattern": "^act_[0-9]{2}_[a-z0-9_]+$"},
+        "submission_id": {"type": "string", "pattern": "^submission_[0-9]{2}$"},
+        "model_visible_definition": {
+          "type": "object", "additionalProperties": false,
+          "required": ["construct", "cognitive_operation", "focus", "observable", "evidence_requirement", "response_formats"],
+          "properties": {
+            "construct": {"type": "string", "minLength": 1, "maxLength": 300},
+            "cognitive_operation": {"enum": ["JUSTIFY_DECISION", "RECONSTRUCT_REASONING", "CONNECT_INTERNAL", "CRITIQUE_LIMITATION", "INTERPRET_REPRESENTATION", "TRACE_FLOW"]},
+            "focus": {"type": "string", "minLength": 1, "maxLength": 1000},
+            "observable": {"type": "string", "minLength": 1, "maxLength": 1000},
+            "evidence_requirement": {
+              "type": "object", "additionalProperties": false,
+              "required": ["allowed_modalities", "min_distinct_units", "cross_artifact_required"],
+              "properties": {
+                "allowed_modalities": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"enum": ["HEADING", "PARAGRAPH", "LIST", "TABLE", "CELL_RANGE", "FORMULA", "SLIDE_SHAPE", "SPEAKER_NOTES", "CODE_SYMBOL", "CODE_SPAN", "NOTEBOOK_CELL", "IMAGE_REGION", "CHART", "EQUATION", "OTHER"]}},
+                "min_distinct_units": {"type": "integer", "minimum": 1, "maximum": 20},
+                "cross_artifact_required": {"type": "boolean"}
+              }
+            },
+            "response_formats": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"enum": ["OPEN_SHORT", "STRUCTURED_BULLETS"]}}
+          }
+        },
+        "source_provenance": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/source"}},
+        "fixture_tags": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+        "oracle_binding_metadata": {
+          "type": "object", "additionalProperties": false, "required": ["property_ids"],
+          "properties": {"property_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string"}}}
+        },
+        "fixture_derivation_provenance": {
+          "type": "object", "additionalProperties": false, "required": ["authority_ref", "method"],
+          "properties": {"authority_ref": {"type": "string"}, "method": {"const": "CURATED_NEUTRAL_ROUTE_FROM_SOURCE_REFS"}}
+        }
+      }
+    }
+  }
+}

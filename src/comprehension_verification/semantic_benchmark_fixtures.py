@@ -11,7 +11,6 @@ from pathlib import Path
 import re
 from typing import Any
 
-from .blueprint_compiler import compile_and_preflight_blueprint
 from .canonical import canonical_hash, stable_id
 from .contracts import models as m
 from .evidence_mapping import build_evidence_mapping_alias_envelope
@@ -28,12 +27,13 @@ from .question_generation import (
 )
 
 
-P04_FIXTURE_BUILDER_VERSION = "semantic-benchmark-fixture-p04/1.0.0"
-P06_FIXTURE_BUILDER_VERSION = "semantic-benchmark-fixture-p06/1.0.0"
+P04_FIXTURE_BUILDER_VERSION = "semantic-benchmark-fixture-p04/1.1.0"
+P06_FIXTURE_BUILDER_VERSION = "semantic-benchmark-fixture-p06/1.1.0"
 PLANNER_FIXTURE_BUILDER_VERSION = "semantic-benchmark-fixture-planner/1.0.0"
-P07_FIXTURE_BUILDER_VERSION = "semantic-benchmark-fixture-p07/1.0.0"
-P09_FIXTURE_BUILDER_VERSION = "semantic-benchmark-fixture-p09/1.0.0"
-P09_OPERATION_PROJECTION_VERSION = "p09-frozen-operation-projection/1.0.0"
+P07_FIXTURE_BUILDER_VERSION = "semantic-benchmark-fixture-p07/1.1.0"
+P09_FIXTURE_BUILDER_VERSION = "semantic-benchmark-fixture-p09/1.1.0"
+P09_OPERATION_PROJECTION_VERSION = "p09-frozen-operation-projection/1.1.0"
+P09_LOCATOR_RESOLVER_VERSION = "p09-exact-locator-resolver/1.0.0"
 
 FIXED_INSTANT = datetime(2026, 8, 16, 12, 0, 0, tzinfo=timezone.utc)
 BENCHMARK_TENANT_ID = "tenant_semantic_benchmark"
@@ -63,8 +63,14 @@ def build_p04_fixture(
     corpus_root: Path,
     activity_path: str,
     activity_id: str,
-) -> tuple[m.BlueprintBuildRequest, m.BlueprintModelDraft, m.AssessmentBlueprint]:
-    """Create a source-only P04 scaffold and compile it with the real compiler."""
+) -> tuple[m.BlueprintBuildRequest, dict[str, int]]:
+    """Project every parsed assignment/rubric unit into a P04 request.
+
+    This benchmark-only projection deliberately performs no semantic grouping:
+    every assignment unit becomes one ordered sourced requirement and every
+    rubric unit becomes one ordered criterion.  The function has no oracle
+    parameter and reads only the two paths named below.
+    """
 
     activity_dir = corpus_root / activity_path
     assignment_artifact, assignment_units = _parse_source(
@@ -78,40 +84,23 @@ def build_p04_fixture(
     if not assignment_units or not rubric_units:
         raise ValueError("benchmark P04 sources must yield evidence")
 
-    assignment_rows = list(assignment_units[:3])
-    while len(assignment_rows) < 3:
-        assignment_rows.append(assignment_rows[-1])
-    rubric_rows = list(rubric_units[:3])
-    while len(rubric_rows) < 3:
-        rubric_rows.append(rubric_rows[-1])
-
-    outcomes = [
+    assignment_rows = list(assignment_units)
+    rubric_rows = list(rubric_units)
+    requirements = [
         m.SourcedStatement(
-            statement_id=stable_id("outcome", activity_id, index),
-            text=_text(unit, f"Fuente de actividad {index}"),
+            statement_id=stable_id("source_requirement", activity_id, index),
+            text=_text(unit, f"Bloque fuente de actividad {index}"),
             evidence_ids=[unit.evidence_id],
             certainty="EXPLICIT",
         )
         for index, unit in enumerate(assignment_rows, start=1)
     ]
-    expected_product = m.SourcedStatement(
-        statement_id=stable_id("product", activity_id, 1),
-        text=_text(assignment_rows[-1], "Producto explícito de la actividad"),
-        evidence_ids=[assignment_rows[-1].evidence_id],
-        certainty="EXPLICIT",
-    )
-    requirement = m.SourcedStatement(
-        statement_id=stable_id("requirement", activity_id, 1),
-        text=_text(assignment_rows[0], "Requisito explícito de la actividad"),
-        evidence_ids=[assignment_rows[0].evidence_id],
-        certainty="EXPLICIT",
-    )
     activity = m.ActivitySpec(
         activity_id=activity_id,
         status=m.WorkflowStatus.READY,
-        learning_outcomes=outcomes,
-        expected_products=[expected_product],
-        requirements=[requirement],
+        learning_outcomes=[],
+        expected_products=[],
+        requirements=requirements,
         allowed_materials=[],
         prohibited_materials=[],
         contradictions=[],
@@ -121,8 +110,8 @@ def build_p04_fixture(
     criteria = [
         m.RubricCriterion(
             criterion_id=stable_id("criterion", activity_id, index),
-            name=f"Criterio fuente {index}",
-            description=_text(unit, f"Criterio explícito {index}"),
+            name=f"Bloque de rúbrica fuente {index}",
+            description=_text(unit, f"Bloque explícito de rúbrica {index}"),
             evidence_ids=[unit.evidence_id],
             grading_weight=None,
             levels=[],
@@ -176,101 +165,19 @@ def build_p04_fixture(
         resolved_decisions=[],
         blueprint_policy=policy,
     )
-    factors = m.VerificationFactors(
-        learning_relevance=0.9,
-        centrality=0.9,
-        expected_evidence=0.9,
-        discriminative_potential=0.8,
-        auditability=0.9,
-        short_response_observability=0.9,
-    )
-    dimensions: list[m.BlueprintDimensionDraft] = []
-    variants: list[m.EvidenceVariantDraft] = []
-    templates: list[m.QuestionOpportunityTemplateDraft] = []
-    operations = (
-        m.CognitiveOperation.RECONSTRUCT_REASONING,
-        m.CognitiveOperation.CONNECT_INTERNAL,
-        m.CognitiveOperation.CRITIQUE_LIMITATION,
-    )
-    for index, (criterion, outcome, source_unit) in enumerate(
-        zip(criteria, outcomes, rubric_rows, strict=True), start=1
-    ):
-        dimensions.append(
-            m.BlueprintDimensionDraft(
-                dimension_alias=f"D{index}",
-                name=f"Dimensión fuente {index}",
-                criterion_ids=[criterion.criterion_id],
-                learning_outcome_ids=[outcome.statement_id],
-                grading_weight=None,
-                verification_priority=0.9 - (index - 1) * 0.05,
-                factors=factors.model_copy(deep=True),
-                justification=_text(source_unit, f"Justificación fuente {index}"),
-            )
-        )
-        variants.append(
-            m.EvidenceVariantDraft(
-                variant_alias=f"V{index}",
-                dimension_alias=f"D{index}",
-                name=f"Evidencia localizada {index}",
-                description=_text(source_unit, f"Evidencia explícita {index}"),
-                evidence_requirement=m.EvidenceRequirement(
-                    allowed_modalities=list(m.EvidenceModality),
-                    min_distinct_units=1,
-                    min_extraction_confidence=0.70,
-                    min_alignment=0.65,
-                    cross_artifact_required=False,
-                    course_sources_allowed=False,
-                ),
-                verification_potential=0.9,
-                supported_operations=[
-                    m.SupportedOperation(
-                        cognitive_operation=operations[index - 1],
-                        support_strength=0.9,
-                        rationale=_text(source_unit, f"Relación explícita {index}"),
-                    )
-                ],
-            )
-        )
-        templates.append(
-            m.QuestionOpportunityTemplateDraft(
-                template_alias=f"T{index}",
-                variant_alias=f"V{index}",
-                cognitive_operation=operations[index - 1],
-                focus=_text(rubric_rows[index - 1], f"Foco fuente {index}"),
-                observable=_text(assignment_rows[index - 1], f"Observable fuente {index}"),
-                difficulty=m.DifficultyBand.MEDIUM,
-                target_minutes=5,
-                allowed_anchor_structures=[
-                    m.AnchorStructure.SINGLE_FRAGMENT,
-                    m.AnchorStructure.CROSS_ARTIFACT,
-                ],
-                allowed_response_formats=[m.ResponseFormat.OPEN_SHORT],
-                verification_potential=0.9,
-                justification_required=False,
-            )
-        )
-    draft = m.BlueprintModelDraft(
-        dimensions=dimensions,
-        evidence_variants=variants,
-        question_opportunities=templates,
-    )
-    blueprint = compile_and_preflight_blueprint(draft=draft, request=request)
-    if blueprint.status != m.WorkflowStatus.READY:
-        raise ValueError("benchmark P04 scaffold failed deterministic preflight")
-    # This copy represents an explicit benchmark-controlled teacher approval;
-    # it is only an input fixture for P06 and is not an exact P04 golden.
-    approved = blueprint.model_copy(
-        update={
-            "status": m.WorkflowStatus.APPROVED,
-            "approved_by": "user_benchmark_teacher",
-            "approved_at": FIXED_INSTANT,
-        },
-        deep=True,
-    )
-    # Bind parsed artifacts without putting their filenames or text into reports.
     if assignment_artifact.sha256 == rubric_artifact.sha256:
         raise ValueError("assignment and rubric source boundaries must differ")
-    return request, draft, approved
+    coverage = {
+        "assignment_units_total": len(assignment_units),
+        "assignment_units_projected": len(requirements),
+        "rubric_units_total": len(rubric_units),
+        "rubric_units_projected": len(criteria),
+    }
+    if coverage["assignment_units_total"] != coverage["assignment_units_projected"]:
+        raise ValueError("benchmark P04 assignment projection is incomplete")
+    if coverage["rubric_units_total"] != coverage["rubric_units_projected"]:
+        raise ValueError("benchmark P04 rubric projection is incomplete")
+    return request, coverage
 
 
 def parse_submission_bundle(
@@ -315,17 +222,117 @@ def parse_submission_bundle(
 
 def build_p06_fixture(
     *,
-    approved_blueprint: m.AssessmentBlueprint,
+    route_fixture_id: str,
+    model_visible_definition: dict[str, Any],
     bundle: m.EvidenceBundle,
 ) -> tuple[m.EvidenceMapRequest, m.EvidenceMappingAliasEnvelope]:
+    """Build one source-grounded P06 route without using the P04 scaffold."""
+
+    operation = m.CognitiveOperation(
+        model_visible_definition["cognitive_operation"]
+    )
+    response_formats = [
+        m.ResponseFormat(value)
+        for value in model_visible_definition["response_formats"]
+    ]
+    requirement_value = model_visible_definition["evidence_requirement"]
+    criterion_id = stable_id("criterion_p06_route", route_fixture_id)
+    outcome_id = stable_id("outcome_p06_route", route_fixture_id)
+    template = m.QuestionOpportunityTemplate(
+        opportunity_template_id=stable_id("template_p06_route", route_fixture_id),
+        cognitive_operation=operation,
+        focus=model_visible_definition["focus"],
+        observable=model_visible_definition["observable"],
+        difficulty=m.DifficultyBand.MEDIUM,
+        target_minutes=5,
+        allowed_anchor_structures=[m.AnchorStructure.SINGLE_FRAGMENT],
+        allowed_response_formats=response_formats,
+        verification_potential=0.9,
+        minimum_quality=0.75,
+        student_justification_required=True,
+    )
+    variant = m.EvidenceVariant(
+        variant_id=stable_id("variant_p06_route", route_fixture_id),
+        name=model_visible_definition["construct"],
+        description=model_visible_definition["focus"],
+        evidence_requirement=m.EvidenceRequirement(
+            allowed_modalities=[
+                m.EvidenceModality(value)
+                for value in requirement_value["allowed_modalities"]
+            ],
+            min_distinct_units=requirement_value["min_distinct_units"],
+            min_extraction_confidence=0.70,
+            min_alignment=0.65,
+            cross_artifact_required=requirement_value[
+                "cross_artifact_required"
+            ],
+            course_sources_allowed=False,
+        ),
+        verification_potential=0.9,
+        supported_operations=[
+            m.SupportedOperation(
+                cognitive_operation=operation,
+                support_strength=0.9,
+                rationale=(
+                    "La ruta define una relación verificable sobre evidencia "
+                    "localizada de una sola submission."
+                ),
+            )
+        ],
+        question_opportunities=[template],
+    )
+    dimension = m.BlueprintDimension(
+        dimension_id=stable_id("dimension_p06_route", route_fixture_id),
+        name=model_visible_definition["construct"],
+        criterion_ids=[criterion_id],
+        learning_outcome_ids=[outcome_id],
+        grading_weight=None,
+        verification_priority=0.9,
+        factors=m.VerificationFactors(
+            learning_relevance=0.9,
+            centrality=0.9,
+            expected_evidence=0.9,
+            discriminative_potential=0.9,
+            auditability=0.9,
+            short_response_observability=0.9,
+        ),
+        justification=model_visible_definition["focus"],
+        evidence_variants=[variant],
+    )
+    planning_policy = m.AssessmentPlanningPolicy(
+        policy_id=stable_id("planning_policy_p06_route", route_fixture_id),
+        minimum_opportunity_quality=0.75,
+        minimum_evidence_fit=0.70,
+        max_reserve_opportunities=0,
+    )
+    approved_blueprint = m.AssessmentBlueprint(
+        blueprint_id=stable_id("blueprint_p06_route", route_fixture_id),
+        blueprint_version=1,
+        activity_id=bundle.activity_id,
+        status=m.WorkflowStatus.APPROVED,
+        context_mode=m.ContextMode.CLOSED,
+        dimensions=[dimension],
+        assessment_constraints=m.AssessmentConstraints(
+            question_count=1,
+            target_total_minutes=5,
+            allowed_response_formats=response_formats,
+            minimum_opportunity_quality=0.75,
+            max_reserve_opportunities=0,
+            priority_criterion_ids=[],
+            required_criterion_ids=[criterion_id],
+            structured_justification_policy=m.StructuredJustificationPolicy(
+                mode=m.StructuredJustificationMode.ALL,
+                selected_opportunity_template_ids=[],
+            ),
+        ),
+        decision_ids=[],
+        diagnostics=[],
+        approved_by="user_benchmark_teacher",
+        approved_at=FIXED_INSTANT,
+    )
     request = m.EvidenceMapRequest(
         blueprint=approved_blueprint,
-        planning_policy=m.AssessmentPlanningPolicy(
-            policy_id=stable_id("planning_policy", bundle.activity_id),
-            minimum_opportunity_quality=0.75,
-            minimum_evidence_fit=0.70,
-            max_reserve_opportunities=0,
-        ),
+        planning_policy=planning_policy,
         evidence_bundle=bundle,
     )
     return request, build_evidence_mapping_alias_envelope(request)
@@ -471,46 +478,51 @@ def build_planner_fixture(
 
 def build_p07_fixture(
     *,
+    opportunity_fixture_id: str,
+    model_visible_definition: dict[str, Any],
     bundle: m.EvidenceBundle,
-    difficulty: str,
-    multi_artifact: bool,
 ) -> tuple[m.QuestionBuildRequest, m.QuestionAliasEnvelope]:
-    units = list(bundle.evidence_units)
-    support = [units[0]]
-    if multi_artifact:
-        second = next(
-            (item for item in units[1:] if item.artifact_id != units[0].artifact_id),
-            None,
-        )
-        if second is not None:
-            support.append(second)
-    difficulty_value = {
-        "SIMPLE": m.DifficultyBand.LOW,
-        "INTERMEDIATE": m.DifficultyBand.MEDIUM,
-        "DIFFICULT": m.DifficultyBand.HIGH,
-    }[difficulty]
+    """Build one P07 request from an explicit opportunity and exact support."""
+
+    by_id = {item.evidence_id: item for item in bundle.evidence_units}
+    support_ids = list(model_visible_definition["support_evidence_ids"])
+    if len(support_ids) != len(set(support_ids)) or not support_ids:
+        raise ValueError("P07 opportunity support must be non-empty and unique")
+    try:
+        support = [by_id[value] for value in support_ids]
+    except KeyError as exc:
+        raise ValueError("P07 opportunity support does not resolve exactly") from exc
+    anchor_structures = [
+        m.AnchorStructure(value)
+        for value in model_visible_definition["allowed_anchor_structures"]
+    ]
+    if (
+        m.AnchorStructure.CROSS_ARTIFACT in anchor_structures
+        and len({item.artifact_id for item in support}) < 2
+    ):
+        raise ValueError("P07 cross-artifact opportunity has one support artifact")
+    operation = m.CognitiveOperation(model_visible_definition["operation"])
+    response_format = m.ResponseFormat(model_visible_definition["response_format"])
     opportunity = m.QuestionOpportunity(
-        opportunity_id=stable_id("opportunity_p07", bundle.activity_id, bundle.submission_id),
-        opportunity_template_id=stable_id("template_p07", bundle.activity_id),
+        opportunity_id=stable_id("opportunity_p07", opportunity_fixture_id),
+        opportunity_template_id=stable_id("template_p07", opportunity_fixture_id),
         submission_id=bundle.submission_id,
-        dimension_id=stable_id("dimension_p07", bundle.activity_id),
-        variant_id=stable_id("variant_p07", bundle.activity_id),
-        evidence_ids=[item.evidence_id for item in support],
-        cognitive_operation=m.CognitiveOperation.RECONSTRUCT_REASONING,
-        focus="Reconstrucción localizada en la evidencia autorizada.",
-        observable="Conecta afirmaciones con su soporte local sin ampliar fuentes.",
-        difficulty=difficulty_value,
-        target_minutes=5,
-        allowed_anchor_structures=[
-            m.AnchorStructure.CROSS_ARTIFACT
-            if len(support) > 1
-            else m.AnchorStructure.SINGLE_FRAGMENT
-        ],
-        allowed_response_formats=[m.ResponseFormat.OPEN_SHORT],
+        dimension_id=stable_id("dimension_p07", opportunity_fixture_id),
+        variant_id=stable_id("variant_p07", opportunity_fixture_id),
+        evidence_ids=support_ids,
+        cognitive_operation=operation,
+        focus=model_visible_definition["focus"],
+        observable=model_visible_definition["observable"],
+        difficulty=m.DifficultyBand(model_visible_definition["difficulty"]),
+        target_minutes=model_visible_definition["target_minutes"],
+        allowed_anchor_structures=anchor_structures,
+        allowed_response_formats=[response_format],
         activity_priority=0.9,
         evidence_fit=1.0,
         opportunity_quality=0.9,
-        student_justification_required=True,
+        student_justification_required=model_visible_definition[
+            "student_justification_required"
+        ],
         support_status=m.EvidenceSupportStatus.SUFFICIENT,
         support_type=(
             m.EvidenceSupportType.COMPOSITE
@@ -520,26 +532,24 @@ def build_p07_fixture(
         support_description="Soporte stage-local derivado de EvidenceUnits reales.",
     )
     plan = m.AssessmentPlan(
-        plan_id=stable_id("plan_p07", bundle.activity_id, bundle.submission_id),
+        plan_id=stable_id("plan_p07", opportunity_fixture_id),
         submission_id=bundle.submission_id,
-        blueprint_id=stable_id("blueprint", bundle.activity_id),
+        blueprint_id=stable_id("blueprint_p07", opportunity_fixture_id),
         blueprint_version=1,
         status="READY",
         question_count=1,
         selected_opportunity_ids=[opportunity.opportunity_id],
         reserve_opportunity_ids=[],
-        estimated_total_minutes=5,
+        estimated_total_minutes=model_visible_definition["target_minutes"],
         diagnostics=[],
     )
     request = m.QuestionBuildRequest(
-        target_candidate_id=stable_id(
-            "candidate_p07", bundle.activity_id, bundle.submission_id
-        ),
+        target_candidate_id=stable_id("candidate_p07", opportunity_fixture_id),
         plan=plan,
         opportunity=opportunity,
         evidence_bundle=bundle,
         generation_policy=m.QuestionGenerationPolicy(
-            policy_id=stable_id("generation_policy", bundle.activity_id),
+            policy_id=stable_id("generation_policy", opportunity_fixture_id),
             max_anchor_fragments=4,
             max_course_passages=0,
             require_accessible_alternative=True,
@@ -565,27 +575,21 @@ _P09_OPERATION_MAP = {
 }
 
 
-def _artifact_units(bundle: m.EvidenceBundle) -> dict[str, list[m.EvidenceUnit]]:
-    by_filename: dict[str, list[m.EvidenceUnit]] = {}
-    artifact_filename: dict[str, str] = {}
-    # ArtifactRef is not retained by EvidenceBundle; parser IDs are stable by
-    # artifact hash.  The caller supplies refs in manifest order, and this
-    # fallback maps each distinct artifact to its encountered position.
-    for unit in bundle.evidence_units:
-        artifact_filename.setdefault(unit.artifact_id, unit.artifact_id)
-        by_filename.setdefault(unit.artifact_id, []).append(unit)
-    return by_filename
-
-
 def build_p09_fixture(
     *,
     fixture: dict[str, Any],
+    locator_bindings: dict[str, Any],
     bundle: m.EvidenceBundle,
     artifact_refs: list[str],
     difficulty: str,
     assignment_hash: str,
     rubric_hash: str,
-) -> tuple[m.GuideBuildRequest, m.GuideAliasEnvelope, dict[str, str]]:
+) -> tuple[
+    m.GuideBuildRequest,
+    m.GuideAliasEnvelope,
+    dict[str, str],
+    list[dict[str, Any]],
+]:
     """Project only frozen ``questions`` into a canonical approved P09 request."""
 
     units_by_artifact_id: dict[str, list[m.EvidenceUnit]] = {}
@@ -595,7 +599,14 @@ def build_p09_fixture(
     filename_to_units: dict[str, list[m.EvidenceUnit]] = {}
     for relative, artifact_id in zip(artifact_refs, ordered_artifact_ids, strict=True):
         filename_to_units[Path(relative).name] = units_by_artifact_id[artifact_id]
-    all_units = list(bundle.evidence_units)
+    binding_by_question = {
+        item["question_fixture_id"]: item
+        for item in locator_bindings["questions"]
+    }
+    if set(binding_by_question) != {
+        item["question_fixture_id"] for item in fixture["questions"]
+    }:
+        raise ValueError("P09 locator binding question coverage mismatch")
     level = {
         "SIMPLE": m.DifficultyBand.LOW,
         "INTERMEDIATE": m.DifficultyBand.MEDIUM,
@@ -603,26 +614,86 @@ def build_p09_fixture(
     }[difficulty]
     questions: list[m.SelectedQuestion] = []
     operation_projection: dict[str, str] = {}
+    integrity_rows: list[dict[str, Any]] = []
     for index, row in enumerate(fixture["questions"], start=1):
         raw_operation = row["cognitive_operation"]
         operation = _P09_OPERATION_MAP[raw_operation]
         operation_projection[raw_operation] = operation.value
-        support: list[m.EvidenceUnit] = []
-        for ref in row["support_refs"]:
-            filename = Path(ref.split("#", 1)[0]).name
-            if filename in filename_to_units:
-                support.extend(filename_to_units[filename][:2])
-        if not support:
-            support = all_units[:1]
-        support = list({item.evidence_id: item for item in support}.values())[:4]
-        visible: list[m.EvidenceUnit] = []
-        for ref in row["visible_anchor_refs"]:
-            filename = Path(ref.split("#", 1)[0]).name
-            if filename in filename_to_units:
-                visible.extend(filename_to_units[filename][:1])
-        visible = [item for item in visible if item.evidence_id in {x.evidence_id for x in support}]
-        if not visible:
-            visible = support[:1]
+        question_binding = binding_by_question[row["question_fixture_id"]]
+        if [item["declared_ref"] for item in question_binding["support_refs"]] != row[
+            "support_refs"
+        ]:
+            raise ValueError("P09 declared support refs differ from exact bindings")
+        if [
+            item["declared_ref"]
+            for item in question_binding["visible_anchor_refs"]
+        ] != row["visible_anchor_refs"]:
+            raise ValueError("P09 declared visible refs differ from exact bindings")
+
+        def resolve_submission_rows(
+            values: list[dict[str, Any]], *, visible_anchor: bool
+        ) -> list[m.EvidenceUnit]:
+            resolved: list[m.EvidenceUnit] = []
+            for value in values:
+                role = value["role"]
+                if role == "SOURCE_CONTEXT":
+                    if visible_anchor:
+                        raise ValueError("P09 visible anchor cannot use source context")
+                    continue
+                if role != "SUBMISSION_SUPPORT":
+                    raise ValueError("P09 locator binding role is invalid")
+                filename = Path(value["declared_ref"].split("#", 1)[0]).name
+                file_units = {
+                    item.evidence_id: item
+                    for item in filename_to_units.get(filename, [])
+                }
+                if not file_units:
+                    raise ValueError("BENCHMARK_FIXTURE_LOCATOR_UNRESOLVED")
+                for expected in value["resolved_units"]:
+                    unit = file_units.get(expected["evidence_id"])
+                    if unit is None:
+                        raise ValueError("BENCHMARK_FIXTURE_LOCATOR_UNRESOLVED")
+                    if (
+                        unit.normalized_hash != expected["normalized_hash"]
+                        or unit.locator.model_dump(
+                            mode="json", exclude_none=True
+                        )
+                        != expected["locator"]
+                    ):
+                        raise ValueError("BENCHMARK_FIXTURE_LOCATOR_AMBIGUOUS")
+                    resolved.append(unit)
+            unique = {item.evidence_id: item for item in resolved}
+            return list(unique.values())
+
+        support = resolve_submission_rows(
+            question_binding["support_refs"], visible_anchor=False
+        )
+        visible = resolve_submission_rows(
+            question_binding["visible_anchor_refs"], visible_anchor=True
+        )
+        if not support or not visible:
+            raise ValueError("BENCHMARK_FIXTURE_LOCATOR_UNRESOLVED")
+        support_ids = {item.evidence_id for item in support}
+        if not {item.evidence_id for item in visible}.issubset(support_ids):
+            raise ValueError("P09 visible anchor is outside exact support")
+        if len(visible) > 8:
+            raise ValueError("P09 exact visible locator exceeds anchor contract")
+        integrity_rows.append(
+            {
+                "question_fixture_id": row["question_fixture_id"],
+                "support_refs_declared": list(row["support_refs"]),
+                "support_evidence_ids_resolved": [
+                    item.evidence_id for item in support
+                ],
+                "visible_refs_declared": list(row["visible_anchor_refs"]),
+                "visible_evidence_ids_resolved": [
+                    item.evidence_id for item in visible
+                ],
+                "unresolved": 0,
+                "ambiguous": 0,
+                "visible_subset_support": True,
+            }
+        )
         question_id = stable_id("question_p09", fixture["fixture_id"], index)
         observables = [
             m.ObservableElement(
@@ -729,4 +800,9 @@ def build_p09_fixture(
         binding=binding,
         evidence_bundle=bundle,
     )
-    return request, build_guide_alias_envelope(request), operation_projection
+    return (
+        request,
+        build_guide_alias_envelope(request),
+        operation_projection,
+        integrity_rows,
+    )

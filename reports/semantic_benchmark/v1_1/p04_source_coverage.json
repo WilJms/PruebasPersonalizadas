@@ -1,0 +1,143 @@
+{
+  "activity_count": 12,
+  "assignment_coverage": 1.0,
+  "benchmark_version": "semantic-benchmark/1.1.0",
+  "complete_activity_count": 12,
+  "oracle_reads": 0,
+  "rows": [
+    {
+      "activity_id": "act_01_luz_y_plantines",
+      "assignment_coverage": 1.0,
+      "assignment_units_projected": 60,
+      "assignment_units_total": 60,
+      "case_id": "PP-A01-P04-001",
+      "oracle_reads": 0,
+      "rubric_coverage": 1.0,
+      "rubric_units_projected": 48,
+      "rubric_units_total": 48
+    },
+    {
+      "activity_id": "act_02_voz_en_un_microcuento",
+      "assignment_coverage": 1.0,
+      "assignment_units_projected": 24,
+      "assignment_units_total": 24,
+      "case_id": "PP-A02-P04-001",
+      "oracle_reads": 0,
+      "rubric_coverage": 1.0,
+      "rubric_units_projected": 48,
+      "rubric_units_total": 48
+    },
+    {
+      "activity_id": "act_03_puesto_de_limonada",
+      "assignment_coverage": 1.0,
+      "assignment_units_projected": 50,
+      "assignment_units_total": 50,
+      "case_id": "PP-A03-P04-001",
+      "oracle_reads": 0,
+      "rubric_coverage": 1.0,
+      "rubric_units_projected": 52,
+      "rubric_units_total": 52
+    },
+    {
+      "activity_id": "act_04_asignador_de_turnos",
+      "assignment_coverage": 1.0,
+      "assignment_units_projected": 49,
+      "assignment_units_total": 49,
+      "case_id": "PP-A04-P04-001",
+      "oracle_reads": 0,
+      "rubric_coverage": 1.0,
+      "rubric_units_projected": 43,
+      "rubric_units_total": 43
+    },
+    {
+      "activity_id": "act_05_visitas_a_bibliotecas",
+      "assignment_coverage": 1.0,
+      "assignment_units_projected": 75,
+      "assignment_units_total": 75,
+      "case_id": "PP-A05-P04-001",
+      "oracle_reads": 0,
+      "rubric_coverage": 1.0,
+      "rubric_units_projected": 7,
+      "rubric_units_total": 7
+    },
+    {
+      "activity_id": "act_06_movilidad_estudiantil",
+      "assignment_coverage": 1.0,
+      "assignment_units_projected": 64,
+      "assignment_units_total": 64,
+      "case_id": "PP-A06-P04-001",
+      "oracle_reads": 0,
+      "rubric_coverage": 1.0,
+      "rubric_units_projected": 48,
+      "rubric_units_total": 48
+    },
+    {
+      "activity_id": "act_07_aislamiento_termico",
+      "assignment_coverage": 1.0,
+      "assignment_units_projected": 29,
+      "assignment_units_total": 29,
+      "case_id": "PP-A07-P04-001",
+      "oracle_reads": 0,
+      "rubric_coverage": 1.0,
+      "rubric_units_projected": 28,
+      "rubric_units_total": 28
+    },
+    {
+      "activity_id": "act_08_triage_de_logs",
+      "assignment_coverage": 1.0,
+      "assignment_units_projected": 95,
+      "assignment_units_total": 95,
+      "case_id": "PP-A08-P04-001",
+      "oracle_reads": 0,
+      "rubric_coverage": 1.0,
+      "rubric_units_projected": 48,
+      "rubric_units_total": 48
+    },
+    {
+      "activity_id": "act_09_renovacion_y_desplazamiento",
+      "assignment_coverage": 1.0,
+      "assignment_units_projected": 51,
+      "assignment_units_total": 51,
+      "case_id": "PP-A09-P04-001",
+      "oracle_reads": 0,
+      "rubric_coverage": 1.0,
+      "rubric_units_projected": 49,
+      "rubric_units_total": 49
+    },
+    {
+      "activity_id": "act_10_experimento_onboarding",
+      "assignment_coverage": 1.0,
+      "assignment_units_projected": 53,
+      "assignment_units_total": 53,
+      "case_id": "PP-A10-P04-001",
+      "oracle_reads": 0,
+      "rubric_coverage": 1.0,
+      "rubric_units_projected": 42,
+      "rubric_units_total": 42
+    },
+    {
+      "activity_id": "act_11_duplicados_en_pagos",
+      "assignment_coverage": 1.0,
+      "assignment_units_projected": 72,
+      "assignment_units_total": 72,
+      "case_id": "PP-A11-P04-001",
+      "oracle_reads": 0,
+      "rubric_coverage": 1.0,
+      "rubric_units_projected": 48,
+      "rubric_units_total": 48
+    },
+    {
+      "activity_id": "act_12_clinica_movil",
+      "assignment_coverage": 1.0,
+      "assignment_units_projected": 60,
+      "assignment_units_total": 60,
+      "case_id": "PP-A12-P04-001",
+      "oracle_reads": 0,
+      "rubric_coverage": 1.0,
+      "rubric_units_projected": 9,
+      "rubric_units_total": 9
+    }
+  ],
+  "rubric_coverage": 1.0,
+  "schema_version": "semantic-p04-source-coverage/1.1.0"
+}

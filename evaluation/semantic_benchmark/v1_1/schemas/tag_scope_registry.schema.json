@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pruebas-personalizadas.invalid/schemas/semantic-benchmark/1.1.0/tag-scope-registry.json",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema_version", "benchmark_version", "top_level_ratification_semantics", "allowed_scopes", "tags", "activity_coverage_index"],
+  "properties": {
+    "schema_version": {"const": "semantic-tag-scope-registry/1.1.0"},
+    "benchmark_version": {"const": "semantic-benchmark/1.1.0"},
+    "top_level_ratification_semantics": {"const": "ACTIVITY_COVERAGE_INDEX_ONLY"},
+    "allowed_scopes": {"type": "array", "prefixItems": [{"const": "ACTIVITY"}, {"const": "SUBMISSION"}, {"const": "PROPERTY"}, {"const": "FIXTURE"}, {"const": "CASE_DERIVED"}], "items": false},
+    "tags": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["tag", "allowed_scopes"], "properties": {"tag": {"type": "string"}, "allowed_scopes": {"type": "array", "uniqueItems": true, "items": {"enum": ["SUBMISSION", "PROPERTY", "FIXTURE", "CASE_DERIVED"]}}}}},
+    "activity_coverage_index": {"type": "object", "minProperties": 12, "maxProperties": 12, "additionalProperties": {"type": "array", "uniqueItems": true, "items": {"type": "string"}}}
+  }
+}

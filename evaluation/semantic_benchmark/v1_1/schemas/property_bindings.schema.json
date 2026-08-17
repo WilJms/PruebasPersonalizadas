@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pruebas-personalizadas.invalid/schemas/semantic-benchmark/1.1.0/property-bindings.json",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema_version", "benchmark_version", "property_count", "bindings"],
+  "properties": {
+    "schema_version": {"const": "semantic-property-bindings/1.1.0"},
+    "benchmark_version": {"const": "semantic-benchmark/1.1.0"},
+    "property_count": {"const": 395},
+    "bindings": {
+      "type": "array", "minItems": 395, "maxItems": 395,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["property_id", "stage", "oracle_state", "binding_scope", "primary_case_id", "additional_case_ids", "fixture_id", "source_provenance", "alignment_status", "exclusion_reason"],
+        "properties": {
+          "property_id": {"type": "string", "minLength": 1},
+          "stage": {"enum": ["P04", "P06", "PLANNER", "P07", "P09"]},
+          "oracle_state": {"enum": ["VALID", "ORACLE_SUSPECT", "NOT_APPLICABLE"]},
+          "binding_scope": {"enum": ["CASE_SPECIFIC", "SUBMISSION_WIDE", "ACTIVITY_WIDE", "FIXTURE_WIDE", "EXPLICITLY_EXCLUDED"]},
+          "primary_case_id": {"type": ["string", "null"]},
+          "additional_case_ids": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+          "fixture_id": {"type": ["string", "null"]},
+          "source_provenance": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+          "alignment_status": {"enum": ["ALIGNED", "EXPLICITLY_EXCLUDED", "NOT_APPLICABLE"]},
+          "exclusion_reason": {"type": ["string", "null"]}
+        }
+      }
+    }
+  }
+}

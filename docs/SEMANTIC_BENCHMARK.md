@@ -2,232 +2,241 @@
 
 ## Estado y autoridad
 
-Phase 8 integra un corpus sintético congelado y construye un instrumento
-offline para la futura qualification de Phase 9. No cambia el pipeline del
-producto, sus prompts, routing, reasoning, contratos públicos ni validadores.
+Phase 8.1 corrige exclusivamente el instrumento de evaluación. El corpus, el
+runtime, los prompts, el routing, los DTO/materializers productivos, el planner,
+la base de datos, OpenAPI y el frontend no cambian.
 
 - corpus: `pruebas-personalizadas-corpus/1.0.0`;
-- benchmark: `semantic-benchmark/1.0.0`;
 - corpus package boundary:
   `21c21f3a53bfb786162dc350dc38c93b7b007d9f23b744a354de4ac2354048a1`;
-- benchmark boundary:
-  `sha256:9dc8df63b01f1e29a65a7540ceff1359ed037fa240e7c1c1f0e8b485edb35771`;
+- benchmark canónico: `semantic-benchmark/1.1.0`;
+- benchmark boundary: `sha256:83b8df2a9e3d69bf1b548d0b775254a767634b58468e33c0408732791ee8c208`;
 - clasificación: `SYNTHETIC_ONLY_NO_STUDENT_DATA`;
-- ratificación: `INDEPENDENT_MODEL_RATIFICATION_DERIVED_FROM_OPUS5`;
 - qualification real: `NOT_YET_RUN`;
 - candidate matrix: `UNSET`;
-- autorización billable: `NONE`.
+- autorización: `NONE`;
+- provider calls: `0`.
 
-No se describe el corpus como “human-ratified”: no hubo esa ratificación. El
-old harness y todos sus resultados conservan
-`HISTORICAL_NON_CANONICAL_EVIDENCE`; siguen legibles, pero no son selector,
-oracle, baseline ni fallback del benchmark nuevo.
+`semantic-benchmark/1.0.0` y `reports/semantic_benchmark/v1/` se preservan como
+historia con los estados `SUPERSEDED_PRE_QUALIFICATION` y
+`NOT_VALID_FOR_PHASE9_MODEL_SELECTION`. El corpus v1 no era inválido: el
+problema estaba en la alineación fixture/property/tag del instrumento v1.0.0.
+Nunca se ejecutó ese instrumento contra un provider real.
 
-## Snapshot y superficies
+## Corpus inmutable y superficies
 
-La snapshot se conserva byte a byte en
-`evaluation/corpora/pruebas_personalizadas/v1/`: 218 archivos, 8.384.772 bytes,
-12 actividades, 72 submissions neutrales, 395 propiedades, cuatro fixtures
-P09 y doce preguntas P09. El validador original se ejecuta tanto sobre la
-fuente resuelta como sobre la copia y exige
-`CORPUS_READY_FOR_SEMANTIC_BENCHMARK` y el package hash exacto.
-La regla rooted de `.gitattributes` desactiva normalización de texto y el lint
-de trailing whitespace sólo para esta snapshot, de modo que Git preserve sus
-bytes congelados sin ocultar los diffs de texto.
+La snapshot conserva 218 archivos y 8.384.772 bytes: 12 actividades, 72
+submissions, 395 properties, cuatro fixtures P09 y doce preguntas. El validador
+exige tanto `CORPUS_READY_FOR_SEMANTIC_BENCHMARK` como el package hash exacto.
+Phase 8.1 no modifica un byte bajo
+`evaluation/corpora/pruebas_personalizadas/v1/`.
 
-El manifest separa tres superficies:
+El manifest mantiene tres superficies:
 
-1. `SOURCE_INPUT` + `model_visible=true`: assignment, rubric y artifacts
-   neutrales de submission. Son los únicos archivos completos proyectables.
-2. `BENCHMARK_AUTHORITY` y `P09_STAGE_FIXTURE`: ratifications, manifest y
-   definiciones de properties. Los lee el evaluador, nunca el modelo.
-3. `AUDIT_HISTORY`: `_audit_history/**`, mappings, drafts y material Opus
-   previo. Nunca es model input ni oracle post-fix.
+1. `SOURCE_INPUT/model_visible=true`: assignment, rubric y artifacts neutrales.
+2. `BENCHMARK_AUTHORITY` y `P09_STAGE_FIXTURE`: ratifications, properties y
+   fixtures aprobados; son autoridad del evaluador, no input libre del modelo.
+3. `AUDIT_HISTORY`: historia legible pero inalcanzable desde model input y
+   adjudicación post-fix.
 
-`CorpusPackage -> ModelVisibleProjection` falla cerrado con
-`BENCHMARK_ORACLE_LEAKAGE_BLOCKED` si una referencia no es `SOURCE_INPUT` o no
-declara `model_visible=true`. Para P09 existe una única proyección tipada
-adicional: extrae `questions` de uno de los cuatro fixtures congelados y deja
-`p09_properties` fuera. Las referencias `#questions` y `#p09_properties` son
-distintas y todo case exige conjuntos `model_visible_refs`/`oracle_refs`
-disjuntos.
+`ModelVisibleProjection` falla con `BENCHMARK_ORACLE_LEAKAGE_BLOCKED` ante
+ratifications, audit history u old labels. Para P09 sólo proyecta `questions` y
+mantiene `p09_properties` en una referencia oracle disjunta.
 
-## Stages y fixtures
+## Causa raíz v1.0.0
 
-Los stages semánticos activos son P04, P06, P07 y P09. PLANNER es un componente
-determinista. P05/P08 son históricos; P10 sigue disabled. P01/P02/P03 no se
-convierten en qualification stages porque el corpus no contiene properties
-ratificadas para ellos.
+La auditoría reproducible en
+`reports/semantic_benchmark/v1_1/benchmark_alignment_audit.json` confirmó los
+cinco defectos:
 
-| Stage | Casos | Fixture stage-local | Naturaleza |
-|---|---:|---|---|
-| P04 | 12 | `BlueprintBuildRequest` + draft mínimo compilado | `BENCHMARK_SCAFFOLD_NOT_P01_P02_P03_GOLDEN` |
-| P06 | 69 | blueprint controlado + `EvidenceBundle` del parser real | input P06, no P04 golden |
-| PLANNER | 21 | `EvidenceMapPatch` categórico + blueprint + policy | input controlado, no P06 golden |
-| P07 | 72 | `QuestionBuildRequest` + oportunidad/support reales | input P07, no expected output |
-| P09 | 4 | fixture congelado proyectado a `GuideBuildRequest` aprobado | input P09, no P07 golden |
-| Total | 178 |  |  |
+- tags agregados de actividad se propagaban a cases no relacionados; 32 cases
+  tenían simultáneamente `PLAN_FEASIBLE` y `PLAN_INFEASIBLE`;
+- P07 usaba una oportunidad genérica por submission, basada en primeros units;
+- P06 consumía el scaffold P04 genérico en lugar de una ruta stage-local;
+- P04 proyectaba sólo tres EvidenceUnits iniciales de cada fuente;
+- P09 resolvía principalmente por filename y admitía fallback al primer unit.
 
-P06 no inventa casos sin propiedad: tres submissions con properties de
-actividad ocupan casos que de otro modo no tendrían property P06, y tres
-submissions sin property P06 ratificada quedan catalogadas por sus otros
-stages. P07 cubre las 72 submissions mediante properties submission-locales o
-de actividad. Los 21 casos planner corresponden a las 21 properties
-deterministas, incluida la factibilidad e inviabilidad explícitas.
+La corrección elimina esa implementación canónica: v1.1 consume manifests
+explícitos, bindings y locators exactos. Los reports v1 permanecen sin
+reinterpretar ni borrar.
 
-P09 usa exactamente los fixtures de actividades 03, 04, 09 y 12. Sus preguntas,
-core observables, alternativas y misconceptions permanecen fijos. La
-proyección versionada de las operaciones propias del fixture a los enums
-canónicos sólo permite construir el request; no cambia los bytes ni declara un
-golden P07. Ocho properties P09 de esas actividades quedan case-bound. Las 14
-properties P09 de actividades sin fixture se conservan e indexan como
-`EXPLICITLY_EXCLUDED/NO_FROZEN_P09_STAGE_LOCAL_FIXTURE_FOR_ACTIVITY`; no hay
-property oculta ni caso vacío.
+## Fixtures alineados
 
-Los `support_refs` del fixture permanecen como provenance del evaluador. El
-request canónico P09 contiene únicamente el support de submission que ya
-pertenece a las preguntas aprobadas; las referencias a assignment/rubric no se
-convierten en evidence IDs ni amplían el bundle. El model-visible envelope sí
-conserva question text, core observables, alternativas y misconceptions fijos.
+| Stage | Casos | Autoridad v1.1 | Llamadas k=1 |
+|---|---:|---|---:|
+| P04 | 12 | proyección exhaustiva `BlueprintBuildRequest` | 12 |
+| P06 | 127 | `p06_routes.json`, una ruta source-grounded por case | 127 |
+| PLANNER | 21 | fixture categórico determinista | 0 |
+| P07 | 108 | `p07_opportunities.json`, una oportunidad explícita por case | 108 |
+| P09 | 4 | cuatro Assessment fixtures, doce preguntas exactas | 4 |
+| Total | 272 |  | 251 |
 
-El parser es `stage2-parser/2.0.0`. DOCX, PDF, Markdown y TXT atraviesan
-`SafeParserService`; no existe parser alternativo, OCR especial ni
-normalización favorable al corpus. El dry-run compara dos extracciones de las
-72 submissions, incluidos artifact hashes, locators, IDs y agrupamiento.
+### P04
 
-## Properties y resultados
+El builder lee exclusivamente `01_assignment.docx` y `02_rubric.docx` con el
+parser real. Proyecta 682/682 units de assignment y 470/470 units de rubric,
+conservando orden, EvidenceUnit ID y provenance. No recibe ni lee ratification,
+compiled properties, audit history u Opus; `oracle_reads=0`. Sigue marcado
+`BENCHMARK_SCAFFOLD_NOT_P01_P02_P03_GOLDEN`: es un input exhaustivo compatible
+con el contrato, no un golden P01/P02/P03 ni un expected output P04.
 
-La compilación conserva el objeto raw, wording, ID, stage, kind, oracle state,
-confidence, refs, alternativas, tags, hash de fuente y hash de ratification.
+### P06
 
-| Oracle state | Cantidad | Política |
-|---|---:|---|
-| `VALID` | 361 | utilizable para adjudicación |
-| `ORACLE_SUSPECT` | 26 | revisión separada; nunca hard-failure denominator |
-| `NOT_APPLICABLE` | 8 | trazable, fuera de denominador |
-| `INVALID` | 0 | incompatible con el corpus READY |
+Las 127 rutas declaran construct, operación, focus, observable, requisito de
+evidencia, formatos y provenance exacta. El request se construye desde una ruta
+source-grounded y una sola submission, sin depender del P04 benchmark scaffold.
+`oracle_binding_metadata` queda fuera de `model_visible_definition`; los enums
+`SUFFICIENT`, `PARTIAL`, `INSUFFICIENT`, `UNCERTAIN`, IDs de property y estados
+esperados no entran en model input.
 
-Los kinds `REQUIRED`, `PROHIBITED`, `DEFENSIBLE_ALTERNATIVE` y
-`CONTEXTUAL_NOTE` se preservan. Una confidence alta no vuelve hard una property.
-La clasificación interna distingue `HARD_SEMANTIC_PROPERTY`,
-`REVIEWABLE_SEMANTIC_PROPERTY`, `ORACLE_SUSPECT_PROPERTY` y
-`NOT_APPLICABLE_PROPERTY`.
+### P07
 
-Los result states son mutuamente distintos:
+Las 108 oportunidades cubren 63 submissions con al menos una oportunidad:
+promedio 1,71 y máximo 4 por submission. Cada fixture fija operación, focus,
+observable, política y `support_evidence_ids` exactos. Los IDs resuelven contra
+la submission concreta con hash normalizado y locator; no existe `units[0]`,
+primer artefacto ni fallback. Oportunidades independientes de una misma
+submission producen distintos case IDs, requests e input hashes. Treinta y
+nueve reglas P07 con refs sólo de assignment/rubric no crean una oportunidad
+artificial: 28 prohibiciones ejercitables se observan sobre oportunidades
+exactas de su submission con scope `SUBMISSION_WIDE`, y 11 quedan excluidas.
+En total se excluyen 17 properties P07 para las que no existe una oportunidad
+stage-local no circular defendible.
 
-- `PASS`;
-- `MODEL_FAILURE`;
-- `DEFENSIBLE_ALTERNATIVE`;
-- `ORACLE_SUSPECT`;
-- `TECHNICAL_FAILURE`;
-- `NOT_APPLICABLE`;
-- `PENDING_ADJUDICATION`.
+### P09
 
-El dry-run no tiene outputs de candidatos. Por eso las properties semánticas
-aplicables quedan `PENDING_ADJUDICATION` y las ocho no aplicables conservan
-`NOT_APPLICABLE`. No se puntúa output mock ni se genera review packet falso.
+P09 permanece en cuatro calls, una por Assessment aprobado. Un manifest
+separado resuelve las 12 preguntas por archivo + locator hasta EvidenceUnits
+exactos y congela EvidenceUnit ID, normalized hash y locator real. Resultado:
+12/12 support refs y visible refs resueltos, `unresolved=0`, `ambiguous=0`,
+`fallback=0` y `visible_anchor ⊆ support`. Assignment/rubric son sólo lineage;
+no amplían `SelectedQuestion.evidence_ids`. Cada case acepta únicamente
+properties P09 de su actividad con scope activity-level o de la submission del
+fixture.
 
-## Adjudicación y métricas
+## Property bindings y adjudicación
 
-Cada property declara uno de tres modos. La distribución es:
+`property_bindings.json` cubre las 395 properties y distingue
+`CASE_SPECIFIC`, `SUBMISSION_WIDE`, `ACTIVITY_WIDE`, `FIXTURE_WIDE` y
+`EXPLICITLY_EXCLUDED`.
 
-| Stage | DETERMINISTIC | RULE_BASED | EXTERNAL_ADJUDICATION_REQUIRED |
-|---|---:|---:|---:|
-| P04 | 7 | 0 | 47 |
-| P06 | 1 | 0 | 130 |
-| PLANNER | 21 | 0 | 0 |
-| P07 | 0 | 5 | 162 |
-| P09 | 0 | 3 | 19 |
-| Total | 29 | 8 | 358 |
+| Estado de alineación | Cantidad |
+|---|---:|
+| `ALIGNED` | 354 |
+| `EXPLICITLY_EXCLUDED` | 33 |
+| `NOT_APPLICABLE` | 8 |
+| `ASSIGNED_ARBITRARILY` | 0 |
 
-`RULE_BASED` se limita a prohibiciones mecánicas explícitas de literal o
-source/evidence membership. Interpretación, pertinencia, equivalencia,
-suficiencia compleja y alternativas abiertas requieren adjudicación externa.
-No existe LLM judge autoritativo.
+Las 33 exclusiones son 14 P09 sin fixture/scope congelado, dos P04
+submission-level sin output P04 submission-local y 17 P07 sin oportunidad
+inequívoca. Cada fila conserva source provenance y razón. Los ocho N/A siguen
+trazables y separados de una exclusión instrumental.
 
-El agregador futuro conserva runs dentro de su case, calcula success rate,
-disagreement, alternativas, abstención y technical failures, y agrupa por
-stage, candidate, reasoning, split, disciplina, dificultad, kind y tag. Cada
-rate declara denominador. Las properties `ORACLE_SUSPECT`, `NOT_APPLICABLE`,
-technical failures y pending no entran en el hard model-failure denominator.
-`statistical_significance_claimed=false`; sólo se habilita comparación
-descriptiva.
+Los evaluator modes no cambian: 29 `DETERMINISTIC`, 8 `RULE_BASED` y 358
+`EXTERNAL_ADJUDICATION_REQUIRED`. Esa carga externa es deuda explícita de
+preparación Phase 9, no scoring simulado.
 
-El schema de review packet contiene un único case/output/property, sus refs y
-hashes necesarios. No incluye el corpus, audit history, old labels ni otros
-held-out cases. Phase 8 sólo valida ese schema con un fixture sintético.
+La métrica final usa `PROPERTY`, no case ni repetición. La cadena es
+`case/property/run observation -> property/run outcome -> property/config
+outcome`. Tres cases por tres runs producen nueve observaciones, tres outcomes
+property/run y un único denominador de property. `REQUIRED` exige todas las
+observaciones aplicables; en `PROHIBITED` cualquier violación aplicable falla;
+`DEFENSIBLE_ALTERNATIVE` no se vuelve hard failure y `CONTEXTUAL_NOTE` no es un
+gate automático. Technical/pending, N/A y oracle-suspect quedan fuera del hard
+semantic denominator.
 
-## Identidad, boundary y replay
+## Scope y provenance de tags
 
-Cada case fingerprint liga corpus version/package boundary, input hash,
-stage, property IDs, fixture builder y benchmark version. El input hash liga
-los contratos y envelopes canónicos más hashes de los archivos model-visible;
-cambiar un byte de source invalida la identidad aunque el parser extrajera el
-mismo texto. Candidate config queda fuera de la identidad del caso y entrará
-en la identidad de la corrida futura.
+Cada tag de case registra `tag`, `scope`, `source` y `property_ids`. Los scopes
+permitidos son `SUBMISSION`, `PROPERTY`, `FIXTURE` y `CASE_DERIVED`; `ACTIVITY`
+sólo existe como `ACTIVITY_COVERAGE_INDEX` y nunca como assertion de case.
+`MULTI_ARTIFACT` se deriva del request concreto. Planner lleva exactamente uno
+de sus dos outcomes.
 
-El benchmark boundary liga además schemas, case matrix, split manifest,
-compiled properties/evaluators, reglas de oracle/result, parser/planner,
-compiler P04, materializadores P06/P07/P09, pipeline authority, validadores,
-fixture builders e invariantes. No contiene timestamp, path absoluto, UUID ni
-working directory. Se prueba en procesos separados.
+| Tag auditado | Cases v1.0.0 | Cases v1.1.0 |
+|---|---:|---:|
+| `PLAN_FEASIBLE` | 32 | 2 |
+| `PLAN_INFEASIBLE` | 151 | 19 |
+| `SIMULATED_PII` | 28 | 4 |
+| `SILENT_CONCEPTUAL_GAP` | 14 | 1 |
+| `PROMPT_INJECTION_SILENT` | 74 | 12 |
+| `ADVERSARIAL_AUTHORIZED_SOURCE` | 14 | 1 |
+| `LEAKAGE_ORACLE_SUSPECT` | 119 | 8 |
 
-## Splits y held-out
+## Rare coverage y singleton policy
 
-La estrategia normal reserva por actividad 03, 08, 09, 10 y 12, de manera
-activity-disjoint. La única excepción explícita es P09: actividad 03 SMOKE,
-04/09 CORE y 12 HELD_OUT, porque sólo existen cuatro fixtures y el stage debe
-seguir siendo calificable.
+Los conteos salen de tags case-scoped con provenance. `rare_property_count`
+cuenta properties explícitamente bound observadas por esos cases; no multiplica
+una property por sus observaciones.
+
+| Familia | Properties | Cases | SMOKE | CORE | HELD_OUT | Política |
+|---|---:|---:|---:|---:|---:|---|
+| silent conceptual gap | 1 | 1 | 0 | 0 | 1 | singleton confirmatorio |
+| P06 uncertain | 6 | 5 | 1 | 2 | 2 | qualification + held-out |
+| simulated PII | 8 | 4 | 1 | 0 | 3 | safety antes y después del lock |
+| silent prompt injection | 19 | 12 | 0 | 7 | 5 | safety multi-instance |
+| authorized-source adversarial | 3 | 1 | 0 | 1 | 0 | singleton safety en qualification |
+| multi-artifact | 141 | 115 | 3 | 51 | 61 | estructural multi-instance |
+| answer leakage | 21 | 8 | 1 | 3 | 4 | safety multi-instance |
+| planner infeasibility | 19 | 19 | 1 | 11 | 7 | estructural multi-instance |
+| P09 cannot-infer | 4 | 2 | 0 | 1 | 1 | semántica multi-instance |
+
+No se afirma cobertura held-out independiente para una familia singleton. El
+payload adversarial autorizado se ubica en CORE para poder eliminar un
+candidato peligroso; el único silent conceptual gap se reserva como fenómeno
+confirmatorio.
+
+## Splits congelados después de Phase 8.1
 
 | Split | P04 | P06 | PLANNER | P07 | P09 | Total |
 |---|---:|---:|---:|---:|---:|---:|
-| SMOKE | 1 | 4 | 2 | 5 | 1 | 13 |
-| CORE | 6 | 37 | 13 | 37 | 2 | 95 |
-| HELD_OUT_CONFIRMATION | 5 | 28 | 6 | 30 | 1 | 70 |
+| SMOKE | 1 | 2 | 2 | 6 | 1 | 12 |
+| CORE | 6 | 64 | 12 | 55 | 2 | 139 |
+| HELD_OUT_CONFIRMATION | 5 | 61 | 7 | 47 | 1 | 121 |
 
-SMOKE incluye grounding, insufficiency, external knowledge, prompt injection,
-P06 UNCERTAIN, multi-artifact, answer leakage, replacement, planner
-feasible/infeasible y preservación P09. El reporte protege explícitamente
-silent conceptual gap, P06 uncertain, simulated PII, silent injection,
-authorized-source adversarial, multi-artifact, leakage, PLAN_INFEASIBLE y P09
-cannot_infer.
+Fuera de la excepción P09 auditada, held-out reserva actividades
+03/07/09/10/12 y es disjunto de qualification. SMOKE contiene los cinco stages,
+insufficiency, conocimiento externo, prompt injection, leakage, multi-artifact
+y safety. PII aparece antes del held-out y en confirmación; P06 uncertainty
+aparece en los tres splits.
 
-Una vez iniciada Phase 9, HELD_OUT no puede ajustar prompt, reasoning, routing,
-thresholds ni candidate list. Sólo confirma o rechaza la configuración ya
-seleccionada. El candidato final debe completar esa confirmación.
+Desde este cierre, `HELD_OUT_CONFIRMATION` sólo puede confirmar o rechazar. No
+puede cambiar prompt, reasoning, routing, candidate list ni thresholds.
 
-## Calls y promoción futura
+## Call budget y candidate matrix
 
-PLANNER nunca cuenta como llamada. Para un candidato hipotético sobre todos los
-casos disponibles:
+| k | P04 | P06 | P07 | P09 | Total | Planner |
+|---:|---:|---:|---:|---:|---:|---:|
+| 1 | 12 | 127 | 108 | 4 | 251 | 0 |
+| 3 | 36 | 381 | 324 | 12 | 753 | 0 |
 
-| k | P04 | P06 | P07 | P09 | Total |
-|---:|---:|---:|---:|---:|---:|
-| 1 | 12 | 69 | 72 | 4 | 157 |
-| 3 | 36 | 207 | 216 | 12 | 471 |
+Con k=1, la distribución es SMOKE 10, CORE 127 y HELD_OUT 114 llamadas; con
+k=3 es 30/381/342. Son proyecciones de conteo, no autorización ni estimación
+USD. Modelo, snapshot, reasoning, token/cost caps, promotion order y thresholds
+siguen `UNSET`; pricing debe consultarse sólo en una fase Phase 9 explícita.
 
-Phase 9 no necesariamente ejecutará el full corpus por candidato. La plantilla
-permite la ladder `SMOKE -> CORE -> HELD_OUT_CONFIRMATION`, k >= 3 para stages
-semánticos y una ejecución para planner. Candidate IDs, modelos, snapshots,
-reasoning, token/cost caps, promotion order y thresholds siguen `UNSET`. No se
-publica precio: debe refrescarse justo antes de Phase 9.
+## Boundary, reports y gate
 
-## Ejecución offline
+El boundary v1.1 liga corpus, schemas, case matrix, splits, P04 completo, rutas
+P06, oportunidades P07, property bindings, tag registry/provenance, rare rules,
+resolver P09, aggregation policy, código del benchmark y fronteras productivas
+actuales. El generador de definitions es offline y sus JSON versionados son la
+autoridad consumida durante qualification.
 
-```bash
-make semantic-benchmark-dry-run
-```
+`make semantic-benchmark-dry-run` elimina ambas API keys, fuerza mock/P10 false
+y escribe `reports/semantic_benchmark/v1_1/`. El gate ejecuta 17 checks reales:
+corpus, P04 completeness/isolation, P06 alignment/isolation, P07
+alignment/support, P09 scope/locators, tag/rare validity, bindings/denominator,
+splits, anti-leakage, candidate matrix y call graph provider. Todos pasan
+17/17; parser y planner también se reproducen. No se puntúa output mock:
+provider calls 0, real transport false, billable authorizations 0 y mock
+semantic scoring false.
 
-El target elimina ambas API keys, fija mock/P10 false, valida el corpus,
-construye fixtures/cases, ejecuta parser/planner/invariantes y escribe reportes
-machine-readable en `reports/semantic_benchmark/v1/`. Su call graph no importa
-gateway, adapter, transport, Secret Manager, autorización billable ni ledger
-real. El resultado exige 13/13 invariantes y reporta:
+## Stop de Phase 9
 
-- provider calls: 0;
-- real transport: false;
-- billable authorizations: 0;
-- mock semantic scoring: false.
-
-Frontend, base de datos, migrations, OpenAPI y runtime productivo son
-`NOT_AFFECTED`.
+Este estado sólo habilita una futura preparación/freeze de qualification. No
+selecciona modelos, no consulta pricing, no fija thresholds, no ejecuta SMOKE,
+CORE ni held-out y no autoriza presupuesto. Antes de Phase 9 todavía deben
+definirse mecanismo/capacidad de adjudicación externa para 358 properties,
+candidate matrix, snapshots disponibles, reasoning, k, thresholds, promotion
+criteria, call/cost caps y autorización hash-bound exactamente acotada.

@@ -2,7 +2,7 @@
 
 **Estado:** norma aceptada; pipeline funcional simplificado completo con
 cutover P05/P08, fronteras P06/P07 y P09 post-aprobación; benchmark offline
-Phase 8 registrado al 2026-08-16 sin cambio de runtime
+Phase 8.1 registrada al 2026-08-17 sin cambio de runtime
 
 **Versión ejecutable:** `pipeline-authority/1.1.0`
 
@@ -348,19 +348,22 @@ estudiantiles reales, corpus nuevo, qualification real ni llamadas billables.
 calibrada, señal de answerability, aceptación, P08 ni aprobación docente. El
 anchor visible es un subconjunto de support evidence y puede coincidir con ella.
 
-## 8. Benchmark semántico offline después de Fase 8
+## 8. Benchmark semántico offline después de Fase 8.1
 
-`semantic-benchmark/1.0.0` es un instrumento de evaluación separado, no otra
-etapa del pipeline. Indexa el corpus congelado
-`pruebas-personalizadas-corpus/1.0.0` y construye cases para P04/P06/P07/P09 y
-planner. No vuelve callable P05/P08, no activa P10 y no añade un reviewer o LLM
-judge. Los scaffolds de P04, blueprints P06, opportunities P07 y assessments
-aprobados P09 son `BENCHMARK_INPUT_FIXTURE`, nunca goldens de un stage previo.
+`semantic-benchmark/1.1.0` es un instrumento de evaluación separado, no otra
+etapa del pipeline. Reemplaza como autoridad a v1.0.0, preservado como
+`SUPERSEDED_PRE_QUALIFICATION`, e indexa el mismo corpus congelado
+`pruebas-personalizadas-corpus/1.0.0`. Construye cases para P04/P06/P07/P09 y
+planner sin volver callable P05/P08, activar P10 o añadir un reviewer/LLM judge.
+P04 exhaustivo, routes P06, opportunities P07 y assessments aprobados P09 son
+`BENCHMARK_INPUT_FIXTURE`, nunca goldens de un stage previo.
 
 La proyección model-visible sólo acepta `SOURCE_INPUT/model_visible=true`; las
 ratifications y properties son autoridad exclusiva del evaluator, y audit
-history es inalcanzable. La excepción P09 proyecta sólo `questions` del fixture
-congelado y separa `#p09_properties`. El dry-run es filesystem-only, ejecuta el
-parser/planner reales, deja semántica en `PENDING_ADJUDICATION` y acredita cero
-gateway, adapter, transporte, autorización billable o llamadas. Por tanto no
-cambia `pipeline-authority/1.1.0` ni sus decisiones backend/model/docente.
+history es inalcanzable. P06/P07 separan `model_visible_definition` de
+`oracle_binding_metadata`; P09 proyecta sólo `questions` y resuelve locators
+exactos sin fallback. Bindings y tags scoped pertenecen al benchmark, no al
+runtime. El dry-run es filesystem-only, ejecuta parser/planner reales, deja
+semántica en `PENDING_ADJUDICATION` y acredita cero gateway, adapter,
+transporte, autorización billable o llamadas. Por tanto no cambia
+`pipeline-authority/1.1.0` ni sus decisiones backend/model/docente.

@@ -1,28 +1,30 @@
 # Resultados verificables — candidato Etapa 2
 
-Fecha de corte documental: 2026-08-16 (America/Santiago; ejecución cloud hasta
+Fecha de corte documental: 2026-08-17 (America/Santiago; ejecución cloud hasta
 2026-08-11 UTC; toda la validación ADR-037 fue local, offline y mock).
 
-## Estado vigente — Fase 8, benchmark semántico offline — 2026-08-16
+## Estado vigente — Fase 8.1, benchmark semántico alineado — 2026-08-17
 
 | Prueba o gate | Resultado observado |
 |---|---|
 | Corpus fuente/copia | ambos validadores PASS; 218 archivos/8.384.772 bytes byte-equal; 12 actividades, 72 submissions, 395 properties y package hash `21c21f3…048a1` |
-| Corte focal Phase 8 | 29/29 PASS: hash correcto/incorrecto/mutado, anti-leakage/call graph, builders/replay, parser/planner, splits/held-out, estados/denominadores, calls, candidate template, review packet y cross-process |
-| Case matrix | 178 casos: P04 12, P06 69, planner 21, P07 72, P09 4; 381 properties case-bound y 14 P09 explícitamente excluidas por ausencia de fixture |
-| Splits | SMOKE 13, CORE 95 y HELD_OUT 70; todos los stages tienen smoke y las familias raras quedan indexadas |
-| Dry-run | 13/13 invariantes PASS; parser real reproducible para 72 submissions; planner 21/21; reports y boundary cross-process reproducibles |
-| Semántica | ninguna salida mock puntuada; applicable=`PENDING_ADJUDICATION`, N/A preservado; review packets reales 0 |
-| Backend completo | `make test`: 877 passed, 17 skips exclusivamente PostgreSQL local no configurado y 1 warning Starlette histórico |
-| Cobertura | `make test-cov`: 877 passed/17 skips; 82% global sobre 16.051 statements; `COVERAGE_FILE` fuera del repo y `coverage.xml` protegido byte-idéntico |
+| Auditoría v1 | cinco defectos confirmados: tags activity-wide, P04 truncado, P06 scaffold genérico, P07 first-unit/genérico y P09 filename/fallback; v1 preservado como `SUPERSEDED_PRE_QUALIFICATION` |
+| Corte focal Phase 8.1 | 48/48 PASS: P04 completeness/late-unit/oracle isolation; P06 routes/status isolation; P07 opportunities/support/no-fallback/multiplicidad; P09 locators/scope; tags/rare/singletons; bindings/schemas/circularity; denominador; splits/calls; replay cross-process |
+| Case matrix | 272 casos: P04 12, P06 127, planner 21, P07 108, P09 4; 354 properties alineadas, 33 excluidas con razón, 8 N/A y 0 arbitrarias |
+| Splits | SMOKE 12, CORE 139 y HELD_OUT 121; PII y P06 uncertainty tienen qualification + held-out, y los singleton declaran política explícita |
+| P04/P09 | P04 682/682 assignment units y 470/470 rubric units, oracle reads 0; P09 12/12 preguntas exactas, unresolved/ambiguous/fallback 0 |
+| Dry-run | 17/17 invariantes evidence-backed PASS; parser real reproducible para 72 submissions; planner 21/21; reports y boundary cross-process reproducibles |
+| Semántica | ninguna salida mock puntuada; aligned applicable=`PENDING_ADJUDICATION`, N/A preservado y exclusiones separadas; review packets reales 0 |
+| Backend completo | `make test`: 896 passed, 17 skips exclusivamente PostgreSQL local no configurado y 1 warning Starlette histórico |
+| Cobertura | `make test-cov`: 896 passed/17 skips; 82% global sobre 16.456 statements; `COVERAGE_FILE=/tmp/cva-phase81-coverage-data` y `coverage.xml` protegido byte-idéntico |
 | Contratos | 60 roots, 174 `$defs`, 335 refs y 8 fixtures PASS; hashes model/schema `2380d0be33b1…`/`775e8c16dbba…` sin cambio |
-| Parser/planner focal | 79/79 PASS; cache/replay/resume 31/31 PASS; provider authorization/security 18/18 PASS |
-| Higiene | secret scan 799 archivos PASS, compileall PASS y ambos untracked protegidos conservaron sus SHA-256 exactos |
+| Parser/planner focal | 64/64 PASS; cache/replay/reconciliation 3/3 PASS; provider authorization 16/16 PASS |
+| Higiene | secret scan 838 archivos PASS, compileall PASS, `git diff --check` PASS y untracked protegidos conservaron sus SHA-256 exactos |
 | Provider | API keys removidas, mock/P10 false, calls 0, real transport false, billable authorizations 0 y ledger writes 0 |
 | Producto | prompts, routing, runtime, contratos públicos, OpenAPI, frontend, DB y migrations `NOT_AFFECTED` |
 
 El benchmark boundary observado es
-`sha256:9dc8df63b01f1e29a65a7540ceff1359ed037fa240e7c1c1f0e8b485edb35771`.
+`sha256:83b8df2a9e3d69bf1b548d0b775254a767634b58468e33c0408732791ee8c208`.
 Candidate matrix/thresholds siguen `UNSET`, qualification `NOT_YET_RUN` y no se
 consultó pricing. PostgreSQL, Docker, frontend y deploy no cambiaron; sus gates
 de regresión se verifican en push/PR CI del SHA final sin provider real.

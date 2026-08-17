@@ -5,16 +5,21 @@
 > activa, un gate de selección de modelo ni autorización de gasto. Cualquier
 > precio o budget futuro debe revalidarse bajo un instrumento nuevo.
 
-## Proyección offline del benchmark Phase 8
+## Proyección offline del benchmark Phase 8.1
 
-Phase 8 no consulta pricing, no elige candidatos y no autoriza gasto. El
+Phase 8.1 no consulta pricing, no elige candidatos y no autoriza gasto. El
 planner de calls del benchmark cuenta para un candidato hipotético sobre todos
 los casos disponibles:
 
 | Repeticiones | P04 | P06 | P07 | P09 | Total model calls | Planner calls |
 |---:|---:|---:|---:|---:|---:|---:|
-| k=1 | 12 | 69 | 72 | 4 | 157 | 0 |
-| k=3 | 36 | 207 | 216 | 12 | 471 | 0 |
+| k=1 | 12 | 127 | 108 | 4 | 251 | 0 |
+| k=3 | 36 | 381 | 324 | 12 | 753 | 0 |
+
+Por split, k=1 distribuye 10 calls SMOKE, 127 CORE y 114
+HELD_OUT_CONFIRMATION; k=3 distribuye 30/381/342. Los conteos 157/471 de
+`semantic-benchmark/1.0.0` son historia `SUPERSEDED_PRE_QUALIFICATION` y nunca
+se convirtieron en gasto ni selección.
 
 La ladder futura puede ejecutar sólo SMOKE, promover a CORE y reservar
 HELD_OUT_CONFIRMATION. Estos totales no son un plan de compra ni una

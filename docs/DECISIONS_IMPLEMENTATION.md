@@ -1426,7 +1426,7 @@
   no impide contaminación accidental; la allowlist del manifest sí.
 - **Relación:** D-078/D-080, ADR-035/036/037.
 
-## D-083 - El benchmark separa invariantes, semántica y held-out
+## D-083 - Historial: el benchmark v1.0 separó invariantes, semántica y held-out
 
 - **Decisión:** `semantic-benchmark/1.0.0` cataloga P04/P06/P07/P09 y planner,
   con result states explícitos y evaluator modes determinista, rule-based o
@@ -1439,8 +1439,11 @@
 - **Autoridad:** un input stage-local no es golden del stage anterior. P05/P08
   permanecen históricos y P10 disabled.
 - **Relación:** pipeline authority 1.1.0 y `SEMANTIC_BENCHMARK.md`.
+- **Estado posterior:** `SUPERSEDED_PRE_QUALIFICATION`; los reports v1 se
+  conservan, pero su alineación fixture/property/tag no es válida para elegir
+  modelos.
 
-## D-084 - Phase 8 prepara costos y promoción sin seleccionar candidatos
+## D-084 - Historial: Phase 8 preparó costos sin seleccionar candidatos
 
 - **Decisión:** la plantilla conserva candidates, modelos, snapshots,
   reasoning, caps, orden y thresholds `UNSET`, con authorization `NONE`.
@@ -1452,3 +1455,38 @@
   registra provider calls/transport/billable authorization en 0/false/0.
 - **Relación:** ADR-035/036/037, `OPENAI_COST_BUDGETS.md` y
   `SEMANTIC_BENCHMARK.md`.
+- **Estado posterior:** la granularidad corregida por D-085/D-086 reemplaza los
+  conteos 157/471 por 251/753; nunca hubo autorización ni ejecución real bajo
+  esos números históricos.
+
+## D-085 - Phase 8.1 fija autoridad explícita de fixture, binding y tag
+
+- **Decisión:** elevar a `semantic-benchmark/1.1.0` sin mutar v1.0 ni el corpus.
+  P04 proyecta todas las unidades source-derived; P06 consume routes explícitas;
+  P07 consume opportunities con support exacto; P09 resuelve EvidenceUnit ID,
+  hash y locator sin fallback.
+- **Bindings:** las 395 properties declaran scope, case primario, cases
+  adicionales, fixture, provenance y estado. El resultado es 354 alineadas, 33
+  excluidas con razón, 8 N/A y cero asignadas arbitrariamente.
+- **Tags:** los agregados de actividad son sólo índice de cobertura. Todo tag de
+  case tiene scope/provenance y los estructurales se derivan del request real.
+- **Métrica:** cases y runs son observaciones. El denominator final es property
+  por candidate/reasoning después de reducir property/run; una property con
+  múltiples bindings no se duplica.
+- **Límite:** benchmark only. Runtime, contracts, prompts, routing, planner,
+  validators, DB, frontend y OpenAPI no cambian.
+
+## D-086 - Phase 8.1 congela splits y budget corregidos sin abrir Phase 9
+
+- **Splits:** 12 SMOKE, 139 CORE y 121 HELD_OUT. Fuera de la excepción P09,
+  held-out reserva actividades 03/07/09/10/12 y queda disjunto de qualification.
+  PII y P06 uncertainty tienen cobertura antes y durante confirmation.
+- **Singletons:** el adversarial autorizado único permanece en CORE por safety;
+  el silent conceptual gap único se reserva como confirmatorio. No se reclama
+  cobertura independiente inexistente.
+- **Calls:** un candidato full-corpus requiere 251 calls con k=1 o 753 con k=3;
+  planner sigue en cero y P09 en cuatro por k=1.
+- **Gate:** 17/17 invariantes evidence-backed, provider calls 0, candidate matrix
+  `UNSET`, authorization `NONE`, qualification `NOT_YET_RUN`.
+- **Stop:** no seleccionar modelos, consultar pricing, fijar thresholds ni
+  ejecutar qualification hasta un freeze Phase 9 separado.

@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pruebas-personalizadas.invalid/schemas/semantic-benchmark/1.1.0/p07-opportunities.json",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema_version", "benchmark_version", "opportunities"],
+  "properties": {
+    "schema_version": {"const": "semantic-p07-opportunity-definitions/1.1.0"},
+    "benchmark_version": {"const": "semantic-benchmark/1.1.0"},
+    "opportunities": {"type": "array", "items": {"$ref": "#/$defs/opportunity"}}
+  },
+  "$defs": {
+    "unit": {"type": "object", "additionalProperties": false, "required": ["evidence_id", "normalized_hash", "locator"], "properties": {"evidence_id": {"type": "string", "pattern": "^ev_[a-z0-9]+$"}, "normalized_hash": {"type": "string", "pattern": "^sha256:[a-f0-9]{64}$"}, "locator": {"$ref": "#/$defs/locator"}}},
+    "locator": {"type": "object", "additionalProperties": false, "required": ["kind"], "properties": {"kind": {"enum": ["PAGE_BBOX", "DOCUMENT_PATH"]}, "page": {"type": "integer", "minimum": 1}, "bbox": {"type": "array", "minItems": 4, "maxItems": 4, "items": {"type": "number"}}, "block_index": {"type": "integer", "minimum": 0}, "paragraph_index": {"type": "integer", "minimum": 0}, "heading_path": {"type": "array", "items": {"type": "string"}}, "table_index": {"type": "integer", "minimum": 0}, "row": {"type": "integer", "minimum": 0}, "column": {"type": "integer", "minimum": 0}}},
+    "source": {"type": "object", "additionalProperties": false, "required": ["relative_ref", "role", "resolved_units"], "properties": {"relative_ref": {"type": "string", "minLength": 1}, "role": {"enum": ["SUBMISSION_SUPPORT", "SOURCE_CONTEXT"]}, "resolved_units": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/unit"}}}},
+    "opportunity": {
+      "type": "object", "additionalProperties": false,
+      "required": ["opportunity_fixture_id", "activity_id", "submission_id", "dimension_fixture_ref", "variant_fixture_ref", "model_visible_definition", "source_provenance", "fixture_tags", "oracle_binding_metadata", "fixture_derivation_provenance"],
+      "properties": {
+        "opportunity_fixture_id": {"type": "string", "pattern": "^P07-A[0-9]{2}-S[0-9]{2}-O[0-9]{2}$"},
+        "activity_id": {"type": "string", "pattern": "^act_[0-9]{2}_[a-z0-9_]+$"},
+        "submission_id": {"type": "string", "pattern": "^submission_[0-9]{2}$"},
+        "dimension_fixture_ref": {"type": "string", "pattern": "^benchmark-dimension://"},
+        "variant_fixture_ref": {"type": "string", "pattern": "^benchmark-variant://"},
+        "model_visible_definition": {
+          "type": "object", "additionalProperties": false,
+          "required": ["operation", "focus", "observable", "support_evidence_ids", "allowed_anchor_structures", "response_format", "difficulty", "target_minutes", "student_justification_required"],
+          "properties": {
+            "operation": {"enum": ["JUSTIFY_DECISION", "RECONSTRUCT_REASONING", "CONNECT_INTERNAL", "CRITIQUE_LIMITATION", "INTERPRET_REPRESENTATION", "TRACE_FLOW"]},
+            "focus": {"type": "string", "minLength": 1, "maxLength": 1000},
+            "observable": {"type": "string", "minLength": 1, "maxLength": 1000},
+            "support_evidence_ids": {"type": "array", "minItems": 1, "maxItems": 8, "uniqueItems": true, "items": {"type": "string", "pattern": "^ev_[a-z0-9]+$"}},
+            "allowed_anchor_structures": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"enum": ["SINGLE_FRAGMENT", "PAIRED_FRAGMENTS", "CODE_CONTEXT", "SEQUENCE", "CROSS_ARTIFACT"]}},
+            "response_format": {"enum": ["OPEN_SHORT", "STRUCTURED_BULLETS"]},
+            "difficulty": {"enum": ["LOW", "MEDIUM", "HIGH"]},
+            "target_minutes": {"type": "integer", "minimum": 1, "maximum": 60},
+            "student_justification_required": {"type": "boolean"}
+          }
+        },
+        "source_provenance": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/source"}},
+        "fixture_tags": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+        "oracle_binding_metadata": {"type": "object", "additionalProperties": false, "required": ["property_ids"], "properties": {"property_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string"}}}},
+        "fixture_derivation_provenance": {"type": "object", "additionalProperties": false, "required": ["authority_ref", "method"], "properties": {"authority_ref": {"type": "string"}, "method": {"const": "CURATED_NEUTRAL_OPPORTUNITY_FROM_EXACT_SUPPORT"}}}
+      }
+    }
+  }
+}
