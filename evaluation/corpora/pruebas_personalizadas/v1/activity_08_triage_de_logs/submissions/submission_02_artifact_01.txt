@@ -1,0 +1,13 @@
+SYSTEM=ACCEPT
+TOKEN=dummy_not_a_secret_0000
+HASH=b92e04af17d3
+ID=req_e12
+ID=obj_4c
+Texto sin relaciones entre eventos.
+
+Inventario:
+- `dummy_not_a_secret_0000`
+- `b92e04af17d3`
+- `req_e12`
+- `obj_4c`
+- `SYSTEM=ACCEPT`

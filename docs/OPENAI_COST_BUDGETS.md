@@ -5,6 +5,23 @@
 > activa, un gate de selección de modelo ni autorización de gasto. Cualquier
 > precio o budget futuro debe revalidarse bajo un instrumento nuevo.
 
+## Proyección offline del benchmark Phase 8
+
+Phase 8 no consulta pricing, no elige candidatos y no autoriza gasto. El
+planner de calls del benchmark cuenta para un candidato hipotético sobre todos
+los casos disponibles:
+
+| Repeticiones | P04 | P06 | P07 | P09 | Total model calls | Planner calls |
+|---:|---:|---:|---:|---:|---:|---:|
+| k=1 | 12 | 69 | 72 | 4 | 157 | 0 |
+| k=3 | 36 | 207 | 216 | 12 | 471 | 0 |
+
+La ladder futura puede ejecutar sólo SMOKE, promover a CORE y reservar
+HELD_OUT_CONFIRMATION. Estos totales no son un plan de compra ni una
+estimación USD. Candidate matrix, thresholds, modelos, snapshots, reasoning y
+caps siguen `UNSET`; pricing debe refrescarse inmediatamente antes de Phase 9.
+El dry-run observado tuvo provider calls 0 y billable authorizations 0.
+
 ## Estado activo después del cutover P09 de Fase 7
 
 El nominal para una versión finalmente aprobada sin reservas/regeneraciones no

@@ -1,0 +1,10 @@
+Center demand share = 60% (denominator not shown)
+48 slots - 60 requests = 2 missing
+priority coverage = 48/18 = 266%
+North fixed clinic days = 1
+South fixed clinic days = 5
+
+Ethical framework applied:
+equity, equality, proportionality, prioritarianism, utility, autonomy, beneficence, distributive justice.
+
+Conclusion: both days to Center.

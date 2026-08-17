@@ -1,0 +1,16 @@
+Primero leo cada diccionario sin modificarlo. Agrego un id a `vistos` solo después de comprobar campos, prioridad y grupo. Ese orden importa: si la primera aparición de un id es inválida, la siguiente todavía puede ser la primera válida. Guardo tuplas nuevas, de modo que `sort` actúa sobre `validas` y no sobre la lista recibida.
+
+La clave `(prioridad, marca, id)` reproduce los tres desempates del contrato. Incluí `posicion` en la tupla solo como dato de rastreo; no participa en la clave porque el id ya hace determinista el último empate.
+
+Para los cupos uso un diccionario `usados` por grupo. Así una asignación en A no consume capacidad de B. El recorrido de validación y el de asignación son lineales. La ordenación de hasta n solicitudes válidas cuesta O(n log n) y domina; los conjuntos y diccionarios tienen acceso esperado O(1). El espacio adicional es O(n + g), con g grupos.
+
+Casos de borde que tuve presentes:
+
+- un registro que no es diccionario se descarta al intentar leer los campos;
+- un grupo conocido con cupo cero sigue siendo una solicitud válida, pero va a espera;
+- dos registros válidos del mismo id no compiten: solo queda el primero, incluso si el segundo tiene prioridad mejor;
+- dos grupos con cupos distintos comparten el orden global de candidatas, aunque cada uno consume únicamente su propio contador.
+
+No usé la posición original como desempate porque el contrato pide id después de marca. La conservo en la tupla para poder inspeccionar de dónde salió una candidatura durante depuración; podría retirarse sin cambiar la salida. Tampoco redistribuyo lugares vacantes: si B tiene cupo cero, ese hecho no aumenta A.
+
+La afirmación de pureza se limita a las entradas: construyo nuevas tuplas, listas y contadores. Los ids y demás valores se leen, pero no se escriben. Si los valores fueran objetos mutables anidados, la función tampoco los modifica. Esta precisión importa más que afirmar de manera general que Python es funcional.

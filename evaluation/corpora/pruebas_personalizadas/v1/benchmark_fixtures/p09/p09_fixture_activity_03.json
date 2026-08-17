@@ -1,0 +1,96 @@
+{
+  "schema_version": "p09-stage-fixture/1.0.0",
+  "fixture_id": "p09_fixture_act_03",
+  "fixture_role": "P09_STAGE_LOCAL_INPUT",
+  "activity_id": "act_03_puesto_de_limonada",
+  "submission_id": "submission_05",
+  "approval_context": "BENCHMARK_APPROVED_FIXTURE",
+  "question_role": "FIXED_INPUT_FOR_P09_NOT_QUESTION_GOLDEN_FOR_P07",
+  "questions": [
+    {
+      "question_fixture_id": "P09-A03-Q01",
+      "question_text": "Reconstruye el costo total y el ingreso máximo de tu plan de 80 vasos a partir de las partidas autorizadas; luego calcula el excedente y deja visible cada operación.",
+      "cognitive_operation": "RECONSTRUCT_QUANTITATIVE_CHAIN",
+      "response_format": "Operaciones rotuladas y una explicación breve.",
+      "support_refs": [
+        "01_assignment.docx#Costos autorizados y precio de venta",
+        "submissions/submission_05.pdf#Elección y tabla de cálculos"
+      ],
+      "visible_anchor_refs": [
+        "submissions/submission_05.pdf#Elección y tabla de cálculos"
+      ],
+      "core_observables": [
+        "suma costos fijos, dispensador y costo variable sin omitir partidas",
+        "distingue costo, ingreso y excedente",
+        "mantiene unidades monetarias y cantidad de vasos"
+      ],
+      "acceptable_alternatives": [
+        "presentar las mismas operaciones en tabla o en secuencia algebraica"
+      ],
+      "misconceptions": [
+        "tratar el presupuesto de 70 como ingreso",
+        "restar solo el costo variable al ingreso"
+      ]
+    },
+    {
+      "question_fixture_id": "P09-A03-Q02",
+      "question_text": "Tu informe compara preparar 80 vasos con preparar 60. ¿Qué objetivo hace defendible cada alternativa y qué cifras de tu propia comparación sostienen ese trade-off?",
+      "cognitive_operation": "ADJUDICATE_ALTERNATIVES_WITH_EVIDENCE",
+      "response_format": "Comparación de dos alternativas con al menos dos cifras y un objetivo explícito.",
+      "support_refs": [
+        "01_assignment.docx#Opciones de capacidad y presupuesto",
+        "submissions/submission_05.pdf#Punto de comparación y sensibilidad"
+      ],
+      "visible_anchor_refs": [
+        "submissions/submission_05.pdf#Punto de comparación y sensibilidad"
+      ],
+      "core_observables": [
+        "relaciona 80 vasos con mayor capacidad y mayor desembolso",
+        "relaciona 60 vasos con menor riesgo presupuestario",
+        "no presenta una alternativa defendible como única respuesta correcta"
+      ],
+      "acceptable_alternatives": [
+        "priorizar capacidad de venta",
+        "priorizar conservación de fondos"
+      ],
+      "misconceptions": [
+        "afirmar que el mayor excedente máximo elimina el riesgo de no vender",
+        "comparar alternativas con partidas de costo externas"
+      ]
+    },
+    {
+      "question_fixture_id": "P09-A03-Q03",
+      "question_text": "Usando solo la estructura de costos autorizada, determina el máximo número entero de vasos que puede prepararse con dispensador sin superar el presupuesto de 70 y justifica por qué 90 no es viable.",
+      "cognitive_operation": "SOLVE_BUDGET_BOUND",
+      "response_format": "Desigualdad u operaciones equivalentes, máximo entero y comprobación del siguiente valor.",
+      "support_refs": [
+        "01_assignment.docx#Presupuesto, costos y capacidad del dispensador",
+        "submissions/submission_05.pdf#Regla de revisión"
+      ],
+      "visible_anchor_refs": [
+        "submissions/submission_05.pdf#Regla de revisión"
+      ],
+      "core_observables": [
+        "separa costos fijos del costo por vaso",
+        "obtiene un máximo entero dentro del presupuesto",
+        "comprueba que el valor inmediatamente superior excede el límite"
+      ],
+      "acceptable_alternatives": [
+        "resolver mediante desigualdad",
+        "resolver mediante prueba aritmética de valores consecutivos"
+      ],
+      "misconceptions": [
+        "usar 90 solo porque es la capacidad física",
+        "redondear hacia arriba un máximo presupuestario"
+      ]
+    }
+  ],
+  "p09_properties": [
+    {"property_id": "PRESERVE_FIXED_QUESTIONS", "description": "P09 no cambia el texto ni la operación cognitiva de las preguntas aprobadas.", "required": true},
+    {"property_id": "CORE_OBSERVABLES", "description": "La guía debe conservar cálculo, unidades, comparación y límite presupuestario como observables centrales.", "required": true},
+    {"property_id": "LEVELS_0_TO_3", "description": "Cada pregunta debe recibir niveles 0-3 distinguibles sin imponer redacción exacta.", "required": true},
+    {"property_id": "ACCEPTANCE_AND_ALTERNATIVES", "description": "Las condiciones de aceptación admiten las rutas aritméticas y objetivos alternativos indicados.", "required": true},
+    {"property_id": "NO_EVIDENCE_WIDENING", "description": "P09 no añade costos, probabilidades de venta ni reglas externas al dossier.", "required": true},
+    {"property_id": "MISCONCEPTIONS_AND_CANNOT_INFER", "description": "La guía registra confusiones previsibles y que no puede inferirse cuántos vasos se venderán realmente.", "required": true}
+  ]
+}

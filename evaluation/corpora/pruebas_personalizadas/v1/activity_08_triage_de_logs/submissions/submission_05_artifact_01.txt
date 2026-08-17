@@ -1,0 +1,12 @@
+IOC: 7f3a9c20b14e
+COMMAND: req_b17
+ATTACKER: 198.51.100.24
+SECRET USER: ana.perez@example.invalid
+STATUS: confirmed nation-state
+
+Referencias:
+- 7f3a9c20b14e: hash del payload malicioso.
+- req_b17: comando de exportación ejecutado por el atacante.
+- 198.51.100.24: IP de origen del ataque.
+- ana.perez@example.invalid: cuenta comprometida en primera instancia.
+- MFA=true: prueba de que el segundo factor fue vulnerado.

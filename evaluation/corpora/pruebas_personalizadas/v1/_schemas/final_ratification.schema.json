@@ -1,0 +1,165 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/schemas/final_ratification.schema.json",
+  "title": "Corpus final ratification",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "ratification_type",
+    "source_reviewer_model",
+    "curation_role",
+    "activity_id",
+    "activity_path",
+    "discipline",
+    "difficulty_declared",
+    "difficulty_caveat",
+    "ratification_status",
+    "confidence",
+    "source_snapshot_hashes",
+    "submissions",
+    "activity_level_properties",
+    "known_caveats",
+    "resolved_findings",
+    "benchmark_tags",
+    "property_counts"
+  ],
+  "properties": {
+    "schema_version": {"const": "corpus-final-ratification/1.0.0"},
+    "ratification_type": {"const": "INDEPENDENT_MODEL_RATIFICATION_DERIVED_FROM_OPUS5"},
+    "source_reviewer_model": {"const": "OPUS_5"},
+    "curation_role": {"const": "CORPUS_FINALIZATION"},
+    "activity_id": {"type": "string", "pattern": "^act_[0-9]{2}_[a-z0-9_]+$"},
+    "activity_path": {"type": "string", "pattern": "^activity_[0-9]{2}_[a-z0-9_]+$"},
+    "discipline": {"type": "string", "minLength": 1},
+    "difficulty_declared": {"enum": ["simple", "intermedia", "dificil"]},
+    "difficulty_caveat": {"type": ["string", "null"]},
+    "ratification_status": {"enum": ["RATIFIED", "RATIFIED_WITH_CAVEATS"]},
+    "confidence": {"enum": ["LOW", "MEDIUM", "HIGH"]},
+    "source_snapshot_hashes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["assignment_sha256", "rubric_sha256", "submissions_boundary_sha256"],
+      "properties": {
+        "assignment_sha256": {"$ref": "#/$defs/sha256"},
+        "rubric_sha256": {"$ref": "#/$defs/sha256"},
+        "submissions_boundary_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "submissions": {
+      "type": "array",
+      "minItems": 6,
+      "maxItems": 6,
+      "items": {"$ref": "#/$defs/submission"}
+    },
+    "activity_level_properties": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/oracle_property"}
+    },
+    "known_caveats": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/caveat"}
+    },
+    "resolved_findings": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/resolved_finding"}
+    },
+    "benchmark_tags": {"$ref": "#/$defs/tags"},
+    "property_counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["total", "VALID", "ORACLE_SUSPECT", "NOT_APPLICABLE"],
+      "properties": {
+        "total": {"type": "integer", "minimum": 1},
+        "VALID": {"type": "integer", "minimum": 0},
+        "ORACLE_SUSPECT": {"type": "integer", "minimum": 0},
+        "NOT_APPLICABLE": {"type": "integer", "minimum": 0}
+      }
+    }
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "tags": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "pattern": "^[A-Z][A-Z0-9_]*$"}
+    },
+    "source_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["file"],
+      "properties": {
+        "file": {"type": "string", "pattern": "^(01_assignment\\.docx|02_rubric\\.docx|submissions/submission_[0-9]{2}(?:_artifact_[0-9]{2})?\\.(?:md|txt|pdf))$"},
+        "section": {"type": "string", "minLength": 1}
+      }
+    },
+    "oracle_property": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "property_id",
+        "stage",
+        "kind",
+        "oracle_state",
+        "confidence",
+        "description",
+        "source_refs",
+        "defensible_alternatives",
+        "notes",
+        "benchmark_tags"
+      ],
+      "properties": {
+        "property_id": {"type": "string", "pattern": "^[A-Za-z0-9_-]+$"},
+        "stage": {"enum": ["P04", "P06", "P07", "P09", "PLANNER"]},
+        "kind": {"enum": ["REQUIRED", "DEFENSIBLE_ALTERNATIVE", "PROHIBITED", "CONTEXTUAL_NOTE"]},
+        "oracle_state": {"enum": ["VALID", "ORACLE_SUSPECT", "NOT_APPLICABLE"]},
+        "confidence": {"enum": ["LOW", "MEDIUM", "HIGH"]},
+        "description": {"type": "string", "minLength": 1},
+        "source_refs": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/source_ref"}},
+        "defensible_alternatives": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "notes": {"type": "string"},
+        "benchmark_tags": {"$ref": "#/$defs/tags"}
+      }
+    },
+    "submission": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["submission_id", "artifacts", "source_snapshot_hashes", "properties", "benchmark_tags"],
+      "properties": {
+        "submission_id": {"type": "string", "pattern": "^submission_[0-9]{2}$"},
+        "artifacts": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "pattern": "^submissions/submission_[0-9]{2}(?:_artifact_[0-9]{2})?\\.(?:md|txt|pdf)$"}
+        },
+        "source_snapshot_hashes": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": {"$ref": "#/$defs/sha256"}
+        },
+        "properties": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/oracle_property"}},
+        "benchmark_tags": {"$ref": "#/$defs/tags"}
+      }
+    },
+    "caveat": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["property_id", "summary"],
+      "properties": {
+        "property_id": {"type": "string", "minLength": 1},
+        "summary": {"type": "string", "minLength": 1}
+      }
+    },
+    "resolved_finding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["revision_id", "resolution_state", "summary"],
+      "properties": {
+        "revision_id": {"type": "string", "pattern": "^RR-[0-9]{3}$"},
+        "resolution_state": {"enum": ["SOURCE_FIXED", "ORACLE_FIXED", "RECLASSIFIED", "PRESERVED_AS_ORACLE_SUSPECT", "DOCUMENTED_NON_BLOCKING", "NOT_APPLICABLE"]},
+        "summary": {"type": "string", "minLength": 1}
+      }
+    }
+  }
+}

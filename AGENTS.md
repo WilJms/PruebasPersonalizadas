@@ -105,6 +105,7 @@ make test-cov
 make stage0-demo
 make stage0-fail
 make stage0-injection
+make semantic-benchmark-dry-run
 make frontend-install
 make frontend-typecheck
 make frontend-test
@@ -118,6 +119,18 @@ make postgres-sensitive CVA_TEST_POSTGRES_URL=postgresql://...
 make postgres-stage2-recovery CVA_TEST_POSTGRES_URL=postgresql://...
 make secrets-check
 ```
+
+## Benchmark semántico Phase 8
+
+La snapshot canónica vive en
+`evaluation/corpora/pruebas_personalizadas/v1/`, es
+`SYNTHETIC_ONLY_NO_STUDENT_DATA` y conserva package hash
+`21c21f3a53bfb786162dc350dc38c93b7b007d9f23b744a354de4ac2354048a1`.
+No se editan sus bytes. El benchmark `semantic-benchmark/1.0.0` cubre P04,
+P06, planner, P07 y P09 offline; P05/P08 siguen históricos y P10 disabled.
+Oracle, `p09_properties` y `_audit_history/**` nunca entran a
+`ModelVisibleProjection`. Phase 8 no autoriza candidatos, thresholds, gasto ni
+qualification real; la matriz Phase 9 permanece `UNSET`.
 
 ## Reglas de seguridad
 

@@ -9,6 +9,22 @@
 > “autoridad siguiente”— se refiere exclusivamente al checkpoint fechado de
 > esa sección y no expresa autoridad posterior a ADR-037.
 
+## Estado Phase 8 — instrumento canónico preparado, qualification no ejecutada
+
+El instrumento nuevo ya existe como `semantic-benchmark/1.0.0` sobre el corpus
+congelado `pruebas-personalizadas-corpus/1.0.0`; no reutiliza resultados,
+receipts, candidates ni scores del harness histórico. Sus stages semánticos son
+P04/P06/P07/P09 y planner es determinista. P05/P08 siguen históricos y P10
+disabled.
+
+El dry-run recorre 178 casos, ejecuta 21 planner cases, verifica el parser real,
+splits e aislamiento de oracle, y deja outputs semánticos en
+`PENDING_ADJUDICATION`. Provider calls, transporte, secretos resueltos,
+autorizaciones billables y scoring mock son cero. La matriz de Phase 9, modelos,
+snapshots, reasoning, thresholds y caps permanecen `UNSET`; qualification es
+`NOT_YET_RUN`. No buscar, seleccionar ni ejecutar modelos hasta un gate Phase 9
+separado. Véase `SEMANTIC_BENCHMARK.md`.
+
 **Estado Fase 4 (2026-08-15):** el prompt pack ejecutable avanza a `1.1.15` y
 P06 a `1.1.6` por su DTO alias-only/categórico y materialización server-side.
 La validación de esta fase fue exclusivamente mock/offline: cero requests,

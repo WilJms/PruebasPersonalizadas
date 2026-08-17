@@ -1,0 +1,17 @@
+Costo fijo, costo variable, ingreso, ganancia, punto de equilibrio.
+
+Voy a vender 75 vasos con jarras prestadas. Fijos: 18. Variables: 75 x 0,46 = 34,50. También sumo el precio de venta: 75 x 1,25 = 93,75. Total del proyecto: 18 + 34,50 + 93,75 = 146,25.
+
+El presupuesto se supera, pero la ganancia es 93,75. La capacidad es una restricción importante.
+
+Marco conceptual:
+El costo fijo es aquel que no varía con la cantidad producida, mientras que el costo variable cambia proporcionalmente a las unidades. El punto de equilibrio es la cantidad en la que los ingresos igualan a los costos totales. El margen de contribución es la diferencia entre el precio de venta y el costo variable unitario. El retorno sobre la inversión mide la eficiencia del capital empleado. Todos estos conceptos son aplicables a un puesto de limonada.
+
+Aplicación:
+El margen de contribución aquí es 1,25 menos 0,46, es decir 0,79 por vaso. Con ese margen el proyecto es rentable desde el primer vaso. El costo de oportunidad de no vender es alto porque el curso pierde la ocasión. La elasticidad del precio no se conoce, pero a $1,25 el producto parece accesible.
+
+Sobre la capacidad:
+Las jarras dicen 60 y yo propongo 75, pero podría servir 15 después usando los mismos vasos o pedir otra jarra prestada a alguien del curso. El dispensador cuesta 14 y tiene 90 de capacidad; quizá habría que agregarlo, con lo cual el costo sería 66,50.
+
+Conclusión:
+Uso los conceptos de punto de equilibrio, margen, ROI y costo de oportunidad, aunque no calculo todos. El riesgo es que el presupuesto sea una restricción dura y que la capacidad de las jarras no se pueda ampliar. La ganancia de 93,75 justifica el proyecto.

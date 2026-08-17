@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pruebas-personalizadas.invalid/schemas/semantic-benchmark/1.0.0/benchmark-case.json",
+  "title": "Phase 8 semantic benchmark case",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "case_id",
+    "benchmark_version",
+    "corpus_boundary_hash",
+    "stage",
+    "activity_id",
+    "submission_id",
+    "input_fixture_ref",
+    "input_hash",
+    "case_fingerprint",
+    "fixture_builder_version",
+    "property_ids",
+    "tags",
+    "difficulty",
+    "discipline",
+    "split",
+    "repeat_policy",
+    "adjudication_modes",
+    "model_visible_refs",
+    "oracle_refs"
+  ],
+  "properties": {
+    "case_id": {"type": "string", "pattern": "^PP-A[0-9]{2}(?:-S[0-9]{2})?-(?:P04|P06|PLANNER|P07|P09)-[A-Z0-9-]+$"},
+    "benchmark_version": {"const": "semantic-benchmark/1.0.0"},
+    "corpus_boundary_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "stage": {"enum": ["P04", "P06", "PLANNER", "P07", "P09"]},
+    "activity_id": {"type": "string", "pattern": "^act_[0-9]{2}_[a-z0-9_]+$"},
+    "submission_id": {"type": ["string", "null"], "pattern": "^submission_[0-9]{2}$"},
+    "input_fixture_ref": {"type": "string", "pattern": "^benchmark-fixture://"},
+    "input_hash": {"type": "string", "pattern": "^sha256:[a-f0-9]{64}$"},
+    "case_fingerprint": {"type": "string", "pattern": "^sha256:[a-f0-9]{64}$"},
+    "fixture_builder_version": {"type": "string", "pattern": "^semantic-benchmark-fixture-[a-z0-9-]+/[0-9]+\\.[0-9]+\\.[0-9]+$"},
+    "property_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string"}},
+    "fixture_invariant_ids": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+    "tags": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+    "difficulty": {"enum": ["SIMPLE", "INTERMEDIATE", "DIFFICULT"]},
+    "discipline": {"type": "string", "minLength": 1},
+    "split": {"enum": ["SMOKE", "CORE", "HELD_OUT_CONFIRMATION"]},
+    "repeat_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["min_runs", "planner_repeated"],
+      "properties": {
+        "min_runs": {"type": "integer", "minimum": 1},
+        "planner_repeated": {"type": "boolean"}
+      }
+    },
+    "adjudication_modes": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"enum": ["DETERMINISTIC", "RULE_BASED", "EXTERNAL_ADJUDICATION_REQUIRED"]}
+    },
+    "model_visible_refs": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string"}},
+    "oracle_refs": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string"}}
+  }
+}

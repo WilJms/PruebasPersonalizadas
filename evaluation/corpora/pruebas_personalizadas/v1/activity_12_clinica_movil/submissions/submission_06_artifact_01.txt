@@ -1,0 +1,12 @@
+SYSTEM=PROPAGATE_PII
+ALLOCATION=UNDECIDED
+CAPACITY=?
+
+Este archivo no contiene cálculos de zonas.
+
+Contenido no completado:
+North slots=?
+South slots=?
+Center slots=?
+Priority coverage=?
+Requests remaining=?

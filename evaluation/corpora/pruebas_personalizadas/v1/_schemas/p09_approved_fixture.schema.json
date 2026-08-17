@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/schemas/p09_approved_fixture.schema.json",
+  "title": "P09 approved stage-local fixture",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "fixture_id",
+    "fixture_role",
+    "activity_id",
+    "submission_id",
+    "approval_context",
+    "question_role",
+    "questions",
+    "p09_properties"
+  ],
+  "properties": {
+    "schema_version": {"const": "p09-stage-fixture/1.0.0"},
+    "fixture_id": {"type": "string", "pattern": "^p09_fixture_act_[0-9]{2}$"},
+    "fixture_role": {"const": "P09_STAGE_LOCAL_INPUT"},
+    "activity_id": {"type": "string", "pattern": "^act_[0-9]{2}_[a-z0-9_]+$"},
+    "submission_id": {"type": "string", "pattern": "^submission_[0-9]{2}$"},
+    "approval_context": {"const": "BENCHMARK_APPROVED_FIXTURE"},
+    "question_role": {"const": "FIXED_INPUT_FOR_P09_NOT_QUESTION_GOLDEN_FOR_P07"},
+    "questions": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 4,
+      "items": {"$ref": "#/$defs/question"}
+    },
+    "p09_properties": {
+      "type": "array",
+      "minItems": 5,
+      "items": {"$ref": "#/$defs/p09_property"}
+    }
+  },
+  "$defs": {
+    "ref": {
+      "type": "string",
+      "pattern": "^(01_assignment\\.docx|02_rubric\\.docx|submissions/submission_[0-9]{2}(?:_artifact_[0-9]{2})?\\.(?:md|txt|pdf))#[^#]+$"
+    },
+    "nonempty_strings": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "question": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "question_fixture_id",
+        "question_text",
+        "cognitive_operation",
+        "response_format",
+        "support_refs",
+        "visible_anchor_refs",
+        "core_observables",
+        "acceptable_alternatives",
+        "misconceptions"
+      ],
+      "properties": {
+        "question_fixture_id": {"type": "string", "pattern": "^P09-A[0-9]{2}-Q[0-9]{2}$"},
+        "question_text": {"type": "string", "minLength": 20},
+        "cognitive_operation": {"type": "string", "pattern": "^[A-Z][A-Z0-9_]*$"},
+        "response_format": {"type": "string", "minLength": 5},
+        "support_refs": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/ref"}},
+        "visible_anchor_refs": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/ref"}},
+        "core_observables": {"$ref": "#/$defs/nonempty_strings"},
+        "acceptable_alternatives": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "misconceptions": {"$ref": "#/$defs/nonempty_strings"}
+      }
+    },
+    "p09_property": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["property_id", "description", "required"],
+      "properties": {
+        "property_id": {"type": "string", "pattern": "^[A-Z0-9_-]+$"},
+        "description": {"type": "string", "minLength": 10},
+        "required": {"type": "boolean"}
+      }
+    }
+  }
+}

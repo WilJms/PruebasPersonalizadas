@@ -1,0 +1,12 @@
+s_77: login_success y exportación.
+req_e12: status 200, scope all.
+obj_4c: archivo creado y descargado.
+req_b17: status 403, no unido a s_77.
+
+Secuencia seleccionada:
+- auth failures -> login_success: misma cuenta e IP;
+- login_success -> req_e12: sesión s_77;
+- req_e12 -> obj_4c -> descarga: mismo objeto y tamaño;
+- req_b17: conservar como evento bloqueado, no atribuirlo a s_77.
+
+Faltantes: línea base, ticket, contenido y destinatario. Acción respaldada: revocar s_77 y preservar registros.

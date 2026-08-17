@@ -1401,3 +1401,54 @@
 - **Relación:** ADR-037, D-074 a D-079,
   `pipeline-authority/1.1.0`, `PHASE7_POST_APPROVAL_P09.md` y migración
   `202608160007_phase7_post_approval_p09.sql`.
+
+## D-081 - El corpus Phase 8 se integra como snapshot inmutable de evaluación
+
+- **Decisión:** vendorizar byte a byte
+  `pruebas-personalizadas-corpus/1.0.0` bajo `evaluation/corpora`, fuera de
+  runtime/tenant data, y exigir su validador más package hash exacto
+  `21c21f3…048a1` antes de construir cases.
+- **Razón:** una referencia externa no basta para reproducibilidad CI, pero
+  copiar no concede autoridad para editar, reformatear o volver a ratificar.
+- **Límite:** los 218 archivos/8.384.772 bytes conservan inventario, hashes y
+  audit history. No hay API, UI, tabla, migration ni Git LFS innecesario.
+- **Relación:** ADR-037 y `SEMANTIC_BENCHMARK.md`.
+
+## D-082 - ModelVisibleProjection aplica anti-oracle leakage antes del gateway
+
+- **Decisión:** sólo `SOURCE_INPUT/model_visible=true` admite proyección de
+  archivo completo. `BENCHMARK_AUTHORITY`, `P09_STAGE_FIXTURE` completo y
+  `AUDIT_HISTORY` fallan con `BENCHMARK_ORACLE_LEAKAGE_BLOCKED`.
+- **P09:** una proyección tipada extrae únicamente `questions`; las properties
+  quedan en la referencia disjunta `#p09_properties`. Ningún builder importa
+  gateway/adapter/provider authorization.
+- **Razón:** separar prompts de evaluación y oracle por convención documental
+  no impide contaminación accidental; la allowlist del manifest sí.
+- **Relación:** D-078/D-080, ADR-035/036/037.
+
+## D-083 - El benchmark separa invariantes, semántica y held-out
+
+- **Decisión:** `semantic-benchmark/1.0.0` cataloga P04/P06/P07/P09 y planner,
+  con result states explícitos y evaluator modes determinista, rule-based o
+  adjudicación externa. El dry-run nunca convierte ausencia de output en PASS.
+- **Cases:** 178 totales: 12/69/21/72/4. Cada property queda case-bound o
+  explícitamente excluida; sólo 14 P09 sin fixture congelado tienen esa razón.
+- **Splits:** SMOKE 13, CORE 95 y HELD_OUT 70. El held-out normal reserva
+  actividades 03/08/09/10/12; P09 documenta una excepción por sus cuatro
+  fixtures y reserva actividad 12 para confirmación.
+- **Autoridad:** un input stage-local no es golden del stage anterior. P05/P08
+  permanecen históricos y P10 disabled.
+- **Relación:** pipeline authority 1.1.0 y `SEMANTIC_BENCHMARK.md`.
+
+## D-084 - Phase 8 prepara costos y promoción sin seleccionar candidatos
+
+- **Decisión:** la plantilla conserva candidates, modelos, snapshots,
+  reasoning, caps, orden y thresholds `UNSET`, con authorization `NONE`.
+- **Calls:** para un candidato hipotético full-corpus, 157 con k=1 y 471 con
+  k=3; planner suma cero. No se consulta ni congela precio en Phase 8.
+- **Promoción:** la infraestructura admite SMOKE→CORE→HELD_OUT; una vez abierta
+  Phase 9, held-out sólo confirma o rechaza y nunca tunea.
+- **Seguridad:** el target offline remueve keys, fuerza mock/P10 false y
+  registra provider calls/transport/billable authorization en 0/false/0.
+- **Relación:** ADR-035/036/037, `OPENAI_COST_BUDGETS.md` y
+  `SEMANTIC_BENCHMARK.md`.

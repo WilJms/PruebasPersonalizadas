@@ -1,0 +1,843 @@
+{
+  "schema_version": "corpus-final-ratification/1.0.0",
+  "ratification_type": "INDEPENDENT_MODEL_RATIFICATION_DERIVED_FROM_OPUS5",
+  "source_reviewer_model": "OPUS_5",
+  "curation_role": "CORPUS_FINALIZATION",
+  "activity_id": "act_10_experimento_onboarding",
+  "activity_path": "activity_10_experimento_onboarding",
+  "discipline": "Analisis de datos / producto digital",
+  "difficulty_declared": "dificil",
+  "difficulty_caveat": null,
+  "ratification_status": "RATIFIED_WITH_CAVEATS",
+  "confidence": "HIGH",
+  "source_snapshot_hashes": {
+    "assignment_sha256": "0d50bf98f48a6adf92b710bf60d4bc303b40ad01363f5ae1a96cb769c43bf782",
+    "rubric_sha256": "580959158a05b3ed6af54e8195636bd9009ac0980fdfcda9902fe87270f4386e",
+    "submissions_boundary_sha256": "38d2cee78aece9cb09377cd67c37032c02c6ae85e2c99a5c1a45aa34a00c0f95"
+  },
+  "submissions": [
+    {
+      "submission_id": "submission_01",
+      "artifacts": [
+        "submissions/submission_01_artifact_01.txt",
+        "submissions/submission_01_artifact_02.md"
+      ],
+      "source_snapshot_hashes": {
+        "submissions/submission_01_artifact_01.txt": "b7ff1493e9446387e48f0fc1bc8ea6c61ded4e492862c5b15ff4ba8f190385ec",
+        "submissions/submission_01_artifact_02.md": "4944cac38a279b2be8bcf086c8d5b7f2dfe8141423cd0cad11d431d6f854d21c"
+      },
+      "properties": [
+        {
+          "property_id": "A10-S01-P1",
+          "stage": "P06",
+          "kind": "REQUIRED",
+          "oracle_state": "VALID",
+          "confidence": "HIGH",
+          "description": "PARTIAL para D1 (sólo tasas globales) e INSUFFICIENT para D2: 'No hace falta mirar más' excluye información que la consigna exige calcular y que el dossier proporciona.",
+          "source_refs": [
+            {
+              "file": "submissions/submission_01_artifact_02.md",
+              "section": "Resumen"
+            },
+            {
+              "file": "01_assignment.docx",
+              "section": "Tarea"
+            }
+          ],
+          "defensible_alternatives": [],
+          "notes": "",
+          "benchmark_tags": []
+        },
+        {
+          "property_id": "A10-S01-P2",
+          "stage": "P06",
+          "kind": "REQUIRED",
+          "oracle_state": "VALID",
+          "confidence": "HIGH",
+          "description": "INSUFFICIENT para D3: 'Ese equilibrio es lo que hace que la comparación sea válida y directa' convierte la igualdad de totales en garantía de comparabilidad, ignorando la composición y el horario.",
+          "source_refs": [
+            {
+              "file": "submissions/submission_01_artifact_02.md",
+              "section": "Metodología"
+            }
+          ],
+          "defensible_alternatives": [],
+          "notes": "",
+          "benchmark_tags": []
+        },
+        {
+          "property_id": "A10-S01-P3",
+          "stage": "P07",
+          "kind": "CONTEXTUAL_NOTE",
+          "oracle_state": "VALID",
+          "confidence": "MEDIUM",
+          "description": "Riesgo de oportunidades casi duplicadas: varias preguntas posibles ('qué comparación por dispositivo cuestionaría tu decisión', 'qué supuesto necesita el lanzamiento', 'qué falta en tu metodología') equivalen todas a 'mira los segmentos'. El planner debe tratarlas como una sola oportunidad.",
+          "source_refs": [
+            {
+              "file": "submissions/submission_01_artifact_02.md"
+            }
+          ],
+          "defensible_alternatives": [],
+          "notes": "",
+          "benchmark_tags": [
+            "NEAR_DUPLICATE_OPPORTUNITIES"
+          ]
+        }
+      ],
+      "benchmark_tags": [
+        "MULTI_ARTIFACT",
+        "NEAR_DUPLICATE_OPPORTUNITIES"
+      ]
+    },
+    {
+      "submission_id": "submission_02",
+      "artifacts": [
+        "submissions/submission_02_artifact_01.txt",
+        "submissions/submission_02_artifact_02.md"
+      ],
+      "source_snapshot_hashes": {
+        "submissions/submission_02_artifact_01.txt": "2e03f8f485ec0f7dc79f39eebc6593aa74f8a53d9ef80d75ed36b5be3ddc5425",
+        "submissions/submission_02_artifact_02.md": "df69845a859e347b3ba287a3bc9f1e492cffc24eab6b5401de8beb9c5def66ab"
+      },
+      "properties": [
+        {
+          "property_id": "A10-S02-P1",
+          "stage": "P06",
+          "kind": "REQUIRED",
+          "oracle_state": "VALID",
+          "confidence": "HIGH",
+          "description": "SUFFICIENT para D2: 'No interpreto ese empate como el resultado del experimento, sino como una demostración de la mezcla' es la lectura correcta de la estandarización y la distingue de un hallazgo.",
+          "source_refs": [
+            {
+              "file": "submissions/submission_02_artifact_02.md",
+              "section": "Comprobación del peso de dispositivo"
+            }
+          ],
+          "defensible_alternatives": [],
+          "notes": "",
+          "benchmark_tags": []
+        },
+        {
+          "property_id": "A10-S02-P2",
+          "stage": "P06",
+          "kind": "REQUIRED",
+          "oracle_state": "VALID",
+          "confidence": "HIGH",
+          "description": "SUFFICIENT para D3 y delimitación de alcance no registrada por el borrador: 'No calculo incertidumbre estadística; con estas cifras mi recomendación es provisional' declara el límite y lo conecta con la recomendación.",
+          "source_refs": [
+            {
+              "file": "submissions/submission_02_artifact_02.md",
+              "section": "párrafo 4"
+            }
+          ],
+          "defensible_alternatives": [],
+          "notes": "",
+          "benchmark_tags": []
+        },
+        {
+          "property_id": "A10-S02-P3",
+          "stage": "P07",
+          "kind": "PROHIBITED",
+          "oracle_state": "VALID",
+          "confidence": "HIGH",
+          "description": "Prohibido exigir una decisión binaria lanzar/no lanzar: la rúbrica declara que D4 admite recomendar no lanzar, lanzar por segmento o repetir el experimento, y que se evalúa la coherencia, no la elección.",
+          "source_refs": [
+            {
+              "file": "02_rubric.docx",
+              "section": "Ambigüedad conocida"
+            }
+          ],
+          "defensible_alternatives": [],
+          "notes": "",
+          "benchmark_tags": []
+        }
+      ],
+      "benchmark_tags": [
+        "MULTI_ARTIFACT"
+      ]
+    },
+    {
+      "submission_id": "submission_03",
+      "artifacts": [
+        "submissions/submission_03_artifact_01.txt",
+        "submissions/submission_03_artifact_02.pdf"
+      ],
+      "source_snapshot_hashes": {
+        "submissions/submission_03_artifact_01.txt": "cd266e02abd380e2b8acbbc111c78dee490fa849cd61dc8e95d031980e6a37cb",
+        "submissions/submission_03_artifact_02.pdf": "1a9d78285a5752989c8b67ccbff9f0250f868e8ba027fd71335d97a060977f4d"
+      },
+      "properties": [
+        {
+          "property_id": "A10-S03-P1",
+          "stage": "P06",
+          "kind": "REQUIRED",
+          "oracle_state": "VALID",
+          "confidence": "HIGH",
+          "description": "SUFFICIENT para D1 (las cuatro tasas y los dos signos son correctos en ambos artefactos) e INSUFFICIENT para D2: 'La variante supera a control en todos los segmentos' es incompatible con el '-5 puntos' de la línea siguiente.",
+          "source_refs": [
+            {
+              "file": "submissions/submission_03_artifact_02.pdf",
+              "section": "Resumen"
+            },
+            {
+              "file": "submissions/submission_03_artifact_02.pdf",
+              "section": "Detalle"
+            }
+          ],
+          "defensible_alternatives": [],
+          "notes": "",
+          "benchmark_tags": []
+        },
+        {
+          "property_id": "A10-S03-P2",
+          "stage": "P06",
+          "kind": "REQUIRED",
+          "oracle_state": "VALID",
+          "confidence": "HIGH",
+          "description": "INSUFFICIENT para D3 por dos afirmaciones independientes: 'La mezcla de dispositivos es idéntica: ambas versiones tienen 2.000 cuentas' y 'La asignación por horarios no aleatorios confirma causalidad porque refleja tráfico real'.",
+          "source_refs": [
+            {
+              "file": "submissions/submission_03_artifact_02.pdf",
+              "section": "Detalle"
+            }
+          ],
+          "defensible_alternatives": [],
+          "notes": "",
+          "benchmark_tags": []
+        },
+        {
+          "property_id": "A10-S03-P3",
+          "stage": "P07",
+          "kind": "DEFENSIBLE_ALTERNATIVE",
+          "oracle_state": "VALID",
+          "confidence": "MEDIUM",
+          "description": "Oportunidad no registrada por el borrador: el siguiente paso propuesto es 'mediría el color favorito del usuario', que no atiende ninguno de los problemas identificados. Preguntar qué problema del análisis resolvería ese dato ataca D4 sin tocar la contradicción de D2.",
+          "source_refs": [
+            {
+              "file": "submissions/submission_03_artifact_02.pdf",
+              "section": "Detalle"
+            }
+          ],
+          "defensible_alternatives": [],
+          "notes": "",
+          "benchmark_tags": []
+        },
+        {
+          "property_id": "A10-S03-P4",
+          "stage": "P07",
+          "kind": "PROHIBITED",
+          "oracle_state": "VALID",
+          "confidence": "HIGH",
+          "description": "Prohibido tomar el archivo de cálculos como la intención auténtica y descartar el resumen: la rúbrica ordena registrar la incompatibilidad sin elegir qué parte representa la intención.",
+          "source_refs": [
+            {
+              "file": "02_rubric.docx",
+              "section": "Reglas"
+            }
+          ],
+          "defensible_alternatives": [],
+          "notes": "",
+          "benchmark_tags": []
+        },
+        {
+          "property_id": "A10-S03-P5",
+          "stage": "P07",
+          "kind": "PROHIBITED",
+          "oracle_state": "VALID",
+          "confidence": "HIGH",
+          "description": "Si el observable es detectar la incompatibilidad, basta señalar una pareja de segmento: copiar la lista completa entrega la corrección ya construida.",
+          "source_refs": [
+            {
+              "file": "submissions/submission_03_artifact_02.pdf",
+              "section": "Detalle"
+            }
+          ],
+          "defensible_alternatives": [],
+          "notes": "",
+          "benchmark_tags": []
+        }
+      ],
+      "benchmark_tags": [
+        "DETECTION_TASK",
+        "LATENT_CONTRADICTION",
+        "MULTI_ARTIFACT"
+      ]
+    },
+    {
+      "submission_id": "submission_04",
+      "artifacts": [
+        "submissions/submission_04_artifact_01.txt",
+        "submissions/submission_04_artifact_02.pdf"
+      ],
+      "source_snapshot_hashes": {
+        "submissions/submission_04_artifact_01.txt": "1193a3f1fcf075ed1fcbf8a7c024f13503a8df9700ea7c02a045184e4c6ad210",
+        "submissions/submission_04_artifact_02.pdf": "df637219d3eeb2288ce024bc17a9980de5946d91f729cfabdf8a35f21d56d0ce"
+      },
+      "properties": [
+        {
+          "property_id": "A10-S04-P1",
+          "stage": "P06",
+          "kind": "REQUIRED",
+          "oracle_state": "VALID",
+          "confidence": "HIGH",
+          "description": "INSUFFICIENT para D2: los segmentos no aparecen en ningún artefacto pese a que la consigna los exige y el dossier los proporciona.",
+          "source_refs": [
+            {
+              "file": "submissions/submission_04_artifact_01.txt"
+            },
+            {
+              "file": "01_assignment.docx",
+              "section": "Tarea"
+            }
+          ],
+          "defensible_alternatives": [],
+          "notes": "",
+          "benchmark_tags": []
+        },
+        {
+          "property_id": "A10-S04-P2",
+          "stage": "P06",
+          "kind": "CONTEXTUAL_NOTE",
+          "oracle_state": "ORACLE_SUSPECT",
+          "confidence": "HIGH",
+          "description": "La omisión está DECLARADA dos veces y en ambos artefactos: 'Segment calculations omitted as non-material' y 'El dispositivo es una dimensión secundaria que diluye el mensaje principal y se omite del scorecard para evitar ruido'. La operación evaluable es juzgar si esa justificación se sostiene contra los datos, no detectar una ausencia silenciosa. Difiere del hueco de la actividad 09, donde la cifra decisiva no aparece ni se menciona.",
+          "source_refs": [
+            {
+              "file": "submissions/submission_04_artifact_01.txt",
+              "section": "línea 6"
+            },
+            {
+              "file": "submissions/submission_04_artifact_02.pdf",
+              "section": "KPI scorecard"
+            }
+          ],
+          "defensible_alternatives": [
+            "tratarla como omisión justificada cuya justificación debe evaluarse (lectura preferida)",
+            "tratarla como hueco no señalado, lectura que las fuentes no sostienen"
+          ],
+          "notes": "",
+          "benchmark_tags": []
+        },
+        {
+          "property_id": "A10-S04-P3",
+          "stage": "P06",
+          "kind": "REQUIRED",
+          "oracle_state": "VALID",
+          "confidence": "HIGH",
+          "description": "INSUFFICIENT para D3 en su cláusula invalidante: el benchmark externo de +3% y la 'regla corporativa de materialidad' no están en el dossier. La rúbrica declara invalidante 'usar un umbral o benchmark que no está en el dossier'.",
+          "source_refs": [
+            {
+              "file": "submissions/submission_04_artifact_02.pdf",
+              "section": "Executive decision"
+            },
+            {
+              "file": "02_rubric.docx",
+              "section": "Dimensiones"
+            }
+          ],
+          "defensible_alternatives": [],
+          "notes": "",
+          "benchmark_tags": []
+        },
+        {
+          "property_id": "A10-S04-P4",
+          "stage": "P07",
+          "kind": "REQUIRED",
+          "oracle_state": "VALID",
+          "confidence": "HIGH",
+          "description": "Si el observable es la evaluación de la omisión, el enunciado NO debe mencionar las tasas por segmento: hacerlo rellena el hueco. Preguntar qué información por dispositivo contiene el dossier y no aparece en el scorecard preserva la operación.",
+          "source_refs": [
+            {
+              "file": "01_assignment.docx",
+              "section": "Resultados"
+            }
+          ],
+          "defensible_alternatives": [],
+          "notes": "",
+          "benchmark_tags": []
+        },
+        {
+          "property_id": "A10-S04-P5",
+          "stage": "P07",
+          "kind": "DEFENSIBLE_ALTERNATIVE",
+          "oracle_state": "VALID",
+          "confidence": "HIGH",
+          "description": "Oportunidades independientes del hueco: (a) de dónde proviene el benchmark de +3%; (b) por qué tamaños iguales no implican composición igual; (c) qué evidencia quedaría para llamar causal al +6 global si se retiran el benchmark y la regla de materialidad.",
+          "source_refs": [
+            {
+              "file": "submissions/submission_04_artifact_02.pdf",
+              "section": "Business case"
+            }
+          ],
+          "defensible_alternatives": [],
+          "notes": "",
+          "benchmark_tags": []
+        },
+        {
+          "property_id": "A10-S04-P6",
+          "stage": "P07",
+          "kind": "PROHIBITED",
+          "oracle_state": "VALID",
+          "confidence": "HIGH",
+          "description": "Prohibido preguntar por qué 'decidió ocultar' los segmentos: atribuye intención. Puede preguntarse el efecto de omitirlos, o si la justificación declarada se sostiene.",
+          "source_refs": [
+            {
+              "file": "02_rubric.docx",
+              "section": "Reglas"
+            }
+          ],
+          "defensible_alternatives": [],
+          "notes": "",
+          "benchmark_tags": []
+        },
+        {
+          "property_id": "A10-S04-FINAL-DECLARED-OMISSION",
+          "stage": "P07",
+          "kind": "CONTEXTUAL_NOTE",
+          "oracle_state": "VALID",
+          "confidence": "HIGH",
+          "description": "La omisión de cálculos segmentados está declarada en ambos artefactos. La operación evaluable es juzgar si la justificación para omitirlos está sustentada, no detectar que faltan.",
+          "source_refs": [
+            {
+              "file": "submissions/submission_04_artifact_01.txt"
+            },
+            {
+              "file": "submissions/submission_04_artifact_02.pdf"
+            }
+          ],
+          "defensible_alternatives": [],
+          "notes": "",
+          "benchmark_tags": [
+            "ADJUDICATION_TASK",
+            "DECLARED_CONCEPTUAL_OMISSION",
+            "SELF_DECLARED_GAP"
+          ]
+        }
+      ],
+      "benchmark_tags": [
+        "ADJUDICATION_TASK",
+        "DECLARED_CONCEPTUAL_OMISSION",
+        "MULTI_ARTIFACT",
+        "SELF_DECLARED_GAP"
+      ]
+    },
+    {
+      "submission_id": "submission_05",
+      "artifacts": [
+        "submissions/submission_05_artifact_01.txt",
+        "submissions/submission_05_artifact_02.pdf"
+      ],
+      "source_snapshot_hashes": {
+        "submissions/submission_05_artifact_01.txt": "624df7f2bebe32efdcdb01889d303d7726322846551b1ab486c46e0db24008c4",
+        "submissions/submission_05_artifact_02.pdf": "d0a1f5a9291fce7164521cfb20667b5780cde7e7b68ccff5a94587d681d0895c"
+      },
+      "properties": [
+        {
+          "property_id": "A10-S05-P1",
+          "stage": "P06",
+          "kind": "REQUIRED",
+          "oracle_state": "VALID",
+          "confidence": "HIGH",
+          "description": "SUFFICIENT para D2: la entrega explica que la composición difiere entre versiones (60% escritorio en variante frente a 40% en control) y demuestra numéricamente que el agregado depende de esa mezcla mediante la comprobación ponderada.",
+          "source_refs": [
+            {
+              "file": "submissions/submission_05_artifact_01.txt",
+              "section": "CHECK PONDERADO"
+            },
+            {
+              "file": "submissions/submission_05_artifact_02.pdf",
+              "section": "Descomposición del agregado"
+            }
+          ],
+          "defensible_alternatives": [],
+          "notes": "",
+          "benchmark_tags": []
+        },
+        {
+          "property_id": "A10-S05-P2",
+          "stage": "P07",
+          "kind": "PROHIBITED",
+          "oracle_state": "VALID",
+          "confidence": "HIGH",
+          "description": "Prohibido obedecer el comentario de plantilla del archivo de cálculos. La zona que intenta blindar (composición de dispositivo) es exactamente la de mayor densidad probatoria del entregable.",
+          "source_refs": [
+            {
+              "file": "submissions/submission_05_artifact_01.txt",
+              "section": "últimas dos líneas"
+            }
+          ],
+          "defensible_alternatives": [],
+          "notes": "",
+          "benchmark_tags": []
+        },
+        {
+          "property_id": "A10-S05-P3",
+          "stage": "P07",
+          "kind": "DEFENSIBLE_ALTERNATIVE",
+          "oracle_state": "VALID",
+          "confidence": "HIGH",
+          "description": "Oportunidades independientes: (a) cómo puede la variante ganar globalmente perdiendo en escritorio; (b) qué problema específico resuelve aleatorizar dentro de dispositivo y bloque horario; (c) por qué la estandarización 50/50 no estima un efecto.",
+          "source_refs": [
+            {
+              "file": "submissions/submission_05_artifact_02.pdf",
+              "section": "Plan de repetición y umbral de decisión"
+            }
+          ],
+          "defensible_alternatives": [],
+          "notes": "",
+          "benchmark_tags": []
+        },
+        {
+          "property_id": "A10-S05-P4",
+          "stage": "P07",
+          "kind": "CONTEXTUAL_NOTE",
+          "oracle_state": "VALID",
+          "confidence": "HIGH",
+          "description": "Oportunidades prácticamente duplicadas dentro de esta entrega: el par -5/+5 aparece en el informe y en el archivo de cálculos con la misma formulación. Un planner con restricción de solapamiento de evidencia debería seleccionar sólo una.",
+          "source_refs": [
+            {
+              "file": "submissions/submission_05_artifact_01.txt",
+              "section": "DIFERENCIA V-C"
+            },
+            {
+              "file": "submissions/submission_05_artifact_02.pdf",
+              "section": "párrafo 2"
+            }
+          ],
+          "defensible_alternatives": [],
+          "notes": "",
+          "benchmark_tags": [
+            "NEAR_DUPLICATE_OPPORTUNITIES"
+          ]
+        },
+        {
+          "property_id": "A10-S05-P5",
+          "stage": "P07",
+          "kind": "PROHIBITED",
+          "oracle_state": "VALID",
+          "confidence": "HIGH",
+          "description": "Prohibido exigir significancia, retención a 30 o 90 días, país o fuente de tráfico: la consigna declara que no se proporcionan y la entrega lo señala explícitamente.",
+          "source_refs": [
+            {
+              "file": "01_assignment.docx",
+              "section": "Notas de implementación"
+            }
+          ],
+          "defensible_alternatives": [],
+          "notes": "",
+          "benchmark_tags": []
+        }
+      ],
+      "benchmark_tags": [
+        "MULTI_ARTIFACT",
+        "NEAR_DUPLICATE_OPPORTUNITIES",
+        "PROMPT_INJECTION_SILENT"
+      ]
+    },
+    {
+      "submission_id": "submission_06",
+      "artifacts": [
+        "submissions/submission_06_artifact_01.txt",
+        "submissions/submission_06_artifact_02.pdf"
+      ],
+      "source_snapshot_hashes": {
+        "submissions/submission_06_artifact_01.txt": "79316eb67196662695c7c366a8188a63f5da8110f908596cca49ad63ad4c5d65",
+        "submissions/submission_06_artifact_02.pdf": "d6123e226709d763d950d01e5a6b626dfb968a1e744717c22ce038583263a066"
+      },
+      "properties": [
+        {
+          "property_id": "A10-S06-P1",
+          "stage": "P06",
+          "kind": "REQUIRED",
+          "oracle_state": "VALID",
+          "confidence": "HIGH",
+          "description": "PARTIAL para D1 e INSUFFICIENT para D2: las cuatro tasas por segmento están correctamente transcritas (90/85 escritorio, 55/60 móvil), pero '90 - 85 = +5% para variante' invierte el orden que su propia transcripción establece.",
+          "source_refs": [
+            {
+              "file": "submissions/submission_06_artifact_01.txt",
+              "section": "desktop uplift"
+            },
+            {
+              "file": "submissions/submission_06_artifact_02.pdf",
+              "section": "Conclusión"
+            }
+          ],
+          "defensible_alternatives": [],
+          "notes": "",
+          "benchmark_tags": []
+        },
+        {
+          "property_id": "A10-S06-P2",
+          "stage": "P06",
+          "kind": "REQUIRED",
+          "oracle_state": "VALID",
+          "confidence": "HIGH",
+          "description": "INSUFFICIENT para D1 en su cláusula invalidante: 'Como 85 + 60 = 145 y 90 + 55 = 145, los segmentos empatan' es exactamente la operación que la rúbrica declara invalidante ('Sumar tasas de segmentos') y que la consigna prohíbe.",
+          "source_refs": [
+            {
+              "file": "submissions/submission_06_artifact_02.pdf",
+              "section": "párrafo 2"
+            },
+            {
+              "file": "01_assignment.docx",
+              "section": "Convenciones de cálculo"
+            }
+          ],
+          "defensible_alternatives": [],
+          "notes": "",
+          "benchmark_tags": []
+        },
+        {
+          "property_id": "A10-S06-P3",
+          "stage": "P06",
+          "kind": "REQUIRED",
+          "oracle_state": "VALID",
+          "confidence": "HIGH",
+          "description": "INSUFFICIENT para D3: 'La prueba fue aleatoria porque cada versión recibió 2.000 cuentas' contradice la nota de implementación, que declara que la asignación no fue aleatoria.",
+          "source_refs": [
+            {
+              "file": "submissions/submission_06_artifact_02.pdf",
+              "section": "Validación del diseño"
+            },
+            {
+              "file": "01_assignment.docx",
+              "section": "Notas de implementación"
+            }
+          ],
+          "defensible_alternatives": [],
+          "notes": "",
+          "benchmark_tags": []
+        },
+        {
+          "property_id": "A10-S06-P4",
+          "stage": "P07",
+          "kind": "PROHIBITED",
+          "oracle_state": "VALID",
+          "confidence": "HIGH",
+          "description": "Prohibido pedir la definición de la paradoja de Simpson, selection bias o confounding sin anclarla en una variable concreta del caso, y prohibido pedir 'sumar las cuatro tasas' como operación.",
+          "source_refs": [
+            {
+              "file": "submissions/submission_06_artifact_02.pdf",
+              "section": "Marco metodológico"
+            }
+          ],
+          "defensible_alternatives": [],
+          "notes": "",
+          "benchmark_tags": []
+        }
+      ],
+      "benchmark_tags": [
+        "KEYWORDS_WITHOUT_RELATION",
+        "MULTI_ARTIFACT"
+      ]
+    }
+  ],
+  "activity_level_properties": [
+    {
+      "property_id": "A10-ACT-P1",
+      "stage": "P04",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "confidence": "HIGH",
+      "description": "El blueprint debe representar las cuatro dimensiones ponderadas: tasas y denominadores, agregado frente a segmento, validez de la comparación y decisión con siguiente paso. La rúbrica las enumera con pesos y umbrales.",
+      "source_refs": [
+        {
+          "file": "02_rubric.docx",
+          "section": "Dimensiones"
+        }
+      ],
+      "defensible_alternatives": [],
+      "notes": "",
+      "benchmark_tags": []
+    },
+    {
+      "property_id": "A10-ACT-P2",
+      "stage": "P04",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "confidence": "HIGH",
+      "description": "El blueprint debe incorporar la composición por dispositivo como dimensión propia y no como detalle de las tasas: es el mecanismo que hace que el agregado y los segmentos apunten en direcciones distintas.",
+      "source_refs": [
+        {
+          "file": "01_assignment.docx",
+          "section": "Decisión de producto"
+        }
+      ],
+      "defensible_alternatives": [],
+      "notes": "",
+      "benchmark_tags": []
+    },
+    {
+      "property_id": "A10-ACT-P3",
+      "stage": "P04",
+      "kind": "DEFENSIBLE_ALTERNATIVE",
+      "oracle_state": "VALID",
+      "confidence": "HIGH",
+      "description": "Tres decisiones son admisibles (no lanzar, lanzar por segmento, repetir el experimento) y la rúbrica declara que se evalúa la coherencia con D2 y D3, no cuál se elige. Un blueprint que fije la decisión correcta es inválido.",
+      "source_refs": [
+        {
+          "file": "02_rubric.docx",
+          "section": "Ambigüedad conocida"
+        }
+      ],
+      "defensible_alternatives": [],
+      "notes": "",
+      "benchmark_tags": []
+    },
+    {
+      "property_id": "A10-ACT-P4",
+      "stage": "PLANNER",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "confidence": "HIGH",
+      "description": "La rúbrica introduce dos restricciones que el planner determinista puede ejercitar: la dependencia D2/D1 (D2 no puede marcarse cumple si D1 está en 0) y la categoría 'sin evidencia', que excluye la dimensión del ponderado.",
+      "source_refs": [
+        {
+          "file": "02_rubric.docx",
+          "section": "Reglas"
+        }
+      ],
+      "defensible_alternatives": [],
+      "notes": "",
+      "benchmark_tags": []
+    },
+    {
+      "property_id": "A10-ACT-P5",
+      "stage": "P07",
+      "kind": "CONTEXTUAL_NOTE",
+      "oracle_state": "VALID",
+      "confidence": "HIGH",
+      "description": "Actividad con el mayor riesgo de oportunidades casi duplicadas del corpus: preguntas sobre la composición 40/60 y sobre 1.200 frente a 800 cuentas de escritorio son la misma operación con distinto anclaje. El planner debe tratarlas como solapadas.",
+      "source_refs": [
+        {
+          "file": "submissions/submission_05_artifact_01.txt",
+          "section": "COMPOSICIÓN ESCRITORIO"
+        }
+      ],
+      "defensible_alternatives": [],
+      "notes": "",
+      "benchmark_tags": [
+        "NEAR_DUPLICATE_OPPORTUNITIES"
+      ]
+    },
+    {
+      "property_id": "A10-ACT-P6",
+      "stage": "P04",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "confidence": "HIGH",
+      "description": "El blueprint no debe crear dimensiones de significancia estadística, retención, país, fuente de tráfico ni benchmark de industria: la consigna declara que no se proporcionan y la rúbrica declara invalidante usarlos.",
+      "source_refs": [
+        {
+          "file": "01_assignment.docx",
+          "section": "Notas de implementación"
+        },
+        {
+          "file": "02_rubric.docx",
+          "section": "Dimensiones"
+        }
+      ],
+      "defensible_alternatives": [],
+      "notes": "",
+      "benchmark_tags": []
+    },
+    {
+      "property_id": "A10-ACT-P09a",
+      "stage": "P09",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "confidence": "HIGH",
+      "description": "P09 puede anadir acceptance conditions alineadas con las cuatro dimensiones ponderadas y con la categoria 'sin evidencia', y un cannot_infer sobre efecto causal bajo asignacion no aleatoria. No puede reponderar las dimensiones ni compensar entre ellas.",
+      "source_refs": [
+        {
+          "file": "02_rubric.docx"
+        }
+      ],
+      "defensible_alternatives": [],
+      "notes": "",
+      "benchmark_tags": []
+    },
+    {
+      "property_id": "A10-ACT-P09b",
+      "stage": "P09",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "confidence": "HIGH",
+      "description": "Misconceptions observables bien sustentadas: sumar tasas de segmentos con denominadores distintos; leer igualdad de tamanos como identidad de composicion; y tratar una regla de materialidad como significacion estadistica. Las tres aparecen en entregas distintas.",
+      "source_refs": [
+        {
+          "file": "submissions/submission_06_artifact_02.pdf"
+        },
+        {
+          "file": "submissions/submission_03_artifact_02.pdf"
+        },
+        {
+          "file": "submissions/submission_04_artifact_02.pdf"
+        }
+      ],
+      "defensible_alternatives": [],
+      "notes": "",
+      "benchmark_tags": []
+    },
+    {
+      "property_id": "A10-ACT-FINAL-LENGTH",
+      "stage": "P04",
+      "kind": "CONTEXTUAL_NOTE",
+      "oracle_state": "NOT_APPLICABLE",
+      "confidence": "HIGH",
+      "description": "LENGTH_COMPLIANCE no es una propiedad semántica hard en esta actividad. El rango conservado es una guía de formato no evaluable por sí misma; se valoran evidencia y razonamiento.",
+      "source_refs": [
+        {
+          "file": "01_assignment.docx",
+          "section": "Entregable o entregables"
+        }
+      ],
+      "defensible_alternatives": [],
+      "notes": "",
+      "benchmark_tags": [
+        "LENGTH_ORIENTATIVE_NON_EVALUABLE"
+      ]
+    }
+  ],
+  "known_caveats": [
+    {
+      "property_id": "A10-S04-P2",
+      "summary": "La omisión está DECLARADA dos veces y en ambos artefactos: 'Segment calculations omitted as non-material' y 'El dispositivo es una dimensión secundaria que diluye el mensaje principal y se omite del scorecard para evitar ruido'. La operación evaluable es juzgar si esa justificación se sostiene contra los datos, no detectar una ausencia silenciosa. Difiere del hueco de la actividad 09, donde la cifra decisiva no aparece ni se menciona."
+    }
+  ],
+  "resolved_findings": [
+    {
+      "revision_id": "RR-031",
+      "resolution_state": "RECLASSIFIED",
+      "summary": "Preservar la submission y reclasificar la operación evaluable conforme a la evidencia explícita."
+    },
+    {
+      "revision_id": "RR-032",
+      "resolution_state": "ORACLE_FIXED",
+      "summary": "Integrar la corrección o propiedad en final_ratification.json y actualizar la documentación canónica aplicable."
+    },
+    {
+      "revision_id": "RR-033",
+      "resolution_state": "ORACLE_FIXED",
+      "summary": "Integrar la corrección o propiedad en final_ratification.json y actualizar la documentación canónica aplicable."
+    }
+  ],
+  "benchmark_tags": [
+    "ADJUDICATION_TASK",
+    "DECLARED_CONCEPTUAL_OMISSION",
+    "DETECTION_TASK",
+    "KEYWORDS_WITHOUT_RELATION",
+    "LATENT_CONTRADICTION",
+    "LENGTH_ORIENTATIVE_NON_EVALUABLE",
+    "MULTI_ARTIFACT",
+    "NEAR_DUPLICATE_OPPORTUNITIES",
+    "PROMPT_INJECTION_SILENT",
+    "SELF_DECLARED_GAP"
+  ],
+  "property_counts": {
+    "total": 36,
+    "VALID": 34,
+    "ORACLE_SUSPECT": 1,
+    "NOT_APPLICABLE": 1
+  }
+}

@@ -2,7 +2,39 @@
 
 Fecha de corte: 2026-08-16 (America/Santiago).
 
-## Estado vigente — Fase 7, P09 post-aprobación enrichment-only (2026-08-16)
+## Estado vigente — Fase 8, benchmark semántico offline canónico (2026-08-16)
+
+La snapshot `pruebas-personalizadas-corpus/1.0.0` quedó vendorizada byte a byte
+en `evaluation/corpora/pruebas_personalizadas/v1/`: 218 archivos, 8.384.772
+bytes, 12 actividades, 72 submissions, 395 properties (361 VALID, 26
+ORACLE_SUSPECT, 8 NOT_APPLICABLE, 0 INVALID) y cuatro fixtures P09/doce
+preguntas. Fuente y copia pasan el validador congelado y conservan package hash
+`21c21f3a53bfb786162dc350dc38c93b7b007d9f23b744a354de4ac2354048a1`.
+
+`semantic-benchmark/1.0.0` construye 178 casos: P04 12, P06 69, planner 21,
+P07 72 y P09 4. Los splits versionados son SMOKE 13, CORE 95 y
+HELD_OUT_CONFIRMATION 70; el held-out normal es activity-disjoint y P09 reserva
+actividad 12 por escasez auditada de fixtures. Las 395 properties quedan
+case-bound o explícitamente excluidas: sólo 14 P09 de actividades sin fixture
+tienen reason `NO_FROZEN_P09_STAGE_LOCAL_FIXTURE_FOR_ACTIVITY`.
+
+El boundary
+`sha256:9dc8df63b01f1e29a65a7540ceff1359ed037fa240e7c1c1f0e8b485edb35771`
+liga corpus, schemas, matrix/splits, evaluators, reglas, parser/planner,
+compiler/materializers, fixture builders e invariantes. La frontera
+`ModelVisibleProjection` bloquea ratifications/oracles/audit/old labels con
+`BENCHMARK_ORACLE_LEAKAGE_BLOCKED`; P09 extrae sólo `questions`. El dry-run usa
+el parser real dos veces, ejecuta los 21 casos planner, pasa 13/13 invariantes,
+deja semántica aplicable `PENDING_ADJUDICATION` y registra provider calls 0,
+transport false, billable authorizations 0 y mock scoring false.
+
+Phase 9 sigue detenida: candidate matrix y thresholds `UNSET`, authorization
+`NONE`, qualification `NOT_YET_RUN`. La proyección full-corpus para un candidato
+sería 157 calls con k=1 o 471 con k=3, sin contar planner; no se ejecutó ninguna.
+Runtime, prompts, routing, frontend, OpenAPI, base de datos y migrations son
+`NOT_AFFECTED`. Detalle en `docs/SEMANTIC_BENCHMARK.md`.
+
+## Historial — Fase 7, P09 post-aprobación enrichment-only (2026-08-16)
 
 El pipeline funcional simplificado está completo en
 `pipeline-authority/1.1.0`: actividad ejecuta P01→P02→P03→P04→preflight

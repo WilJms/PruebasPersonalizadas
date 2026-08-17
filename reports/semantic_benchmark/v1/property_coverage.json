@@ -1,0 +1,6475 @@
+{
+  "aggregates": {
+    "difficulty": {
+      "DIFFICULT": 57,
+      "INTERMEDIATE": 73,
+      "SIMPLE": 48
+    },
+    "discipline": {
+      "Analisis de datos": 13,
+      "Analisis de datos / producto digital": 14,
+      "Arquitectura de software": 15,
+      "Ciberseguridad": 14,
+      "Ciencias naturales": 16,
+      "Ciencias sociales": 14,
+      "Fisica de laboratorio": 16,
+      "Historia": 14,
+      "Humanidades - literatura": 16,
+      "Matematica aplicada": 16,
+      "Programacion / ingenieria de software": 16,
+      "Salud publica": 14
+    },
+    "evaluator_mode": {
+      "DETERMINISTIC": 29,
+      "EXTERNAL_ADJUDICATION_REQUIRED": 358,
+      "RULE_BASED": 8
+    },
+    "oracle_state": {
+      "NOT_APPLICABLE": 8,
+      "ORACLE_SUSPECT": 26,
+      "VALID": 361
+    },
+    "property_kind": {
+      "CONTEXTUAL_NOTE": 66,
+      "DEFENSIBLE_ALTERNATIVE": 59,
+      "PROHIBITED": 99,
+      "REQUIRED": 171
+    },
+    "split": {
+      "CORE": 95,
+      "HELD_OUT_CONFIRMATION": 70,
+      "SMOKE": 13
+    },
+    "stage": {
+      "P04": 54,
+      "P06": 131,
+      "P07": 167,
+      "P09": 22,
+      "PLANNER": 21
+    },
+    "tag": {
+      "ADJUDICATION_TASK": 163,
+      "ADVERSARIAL_AUTHORIZED_SOURCE": 14,
+      "ANSWER_VISIBLE": 119,
+      "BENCHMARK_SCAFFOLD_NOT_P01_P02_P03_GOLDEN": 12,
+      "CROSS_ARTIFACT_RECONCILIATION": 44,
+      "DECLARED_CONCEPTUAL_OMISSION": 14,
+      "DETECTION_TASK": 148,
+      "DIFFICULTY_CAVEAT": 16,
+      "EXPLICIT_CROSS_ARTIFACT_CONFLICT": 44,
+      "EXPLICIT_RECONCILIATION": 16,
+      "EXTERNAL_KNOWLEDGE_TRAP": 60,
+      "KEYWORDS_WITHOUT_RELATION": 178,
+      "LATENT_CONTRADICTION": 118,
+      "LEAKAGE_ORACLE_SUSPECT": 119,
+      "LENGTH_ORIENTATIVE_NON_EVALUABLE": 100,
+      "MISSING_ARTIFACT": 60,
+      "MULTI_ARTIFACT": 89,
+      "NEAR_DUPLICATE_OPPORTUNITIES": 14,
+      "P06_UNCERTAIN": 6,
+      "P09_CANNOT_INFER": 2,
+      "P09_FIXED_APPROVED_INPUT": 4,
+      "P09_NO_PII_PROPAGATION": 1,
+      "PLAN_FEASIBLE": 32,
+      "PLAN_INFEASIBLE": 151,
+      "PREMISE_VISIBLE": 149,
+      "PROMPT_INJECTION_NOISY": 148,
+      "PROMPT_INJECTION_SILENT": 74,
+      "SELF_DECLARED_GAP": 105,
+      "SILENT_CONCEPTUAL_GAP": 14,
+      "SIMULATED_PII": 28,
+      "TECHNICAL_STRING_NOT_INSTRUCTION": 150,
+      "VISIBLE_ANCHOR_RISK": 135
+    }
+  },
+  "benchmark_version": "semantic-benchmark/1.0.0",
+  "case_bound_count": 381,
+  "case_property_matrix": [
+    {
+      "case_id": "PP-A01-P04-001",
+      "property_ids": [
+        "A01-ACT-P1",
+        "A01-ACT-P2",
+        "A01-ACT-P3",
+        "A01-ACT-P4"
+      ]
+    },
+    {
+      "case_id": "PP-A01-S01-P06-001",
+      "property_ids": [
+        "A01-ACT-P5",
+        "A01-S01-P3"
+      ]
+    },
+    {
+      "case_id": "PP-A01-S01-P07-001",
+      "property_ids": [
+        "A01-ACT-FINAL-LEAKAGE",
+        "A01-S01-P1",
+        "A01-S01-P2"
+      ]
+    },
+    {
+      "case_id": "PP-A01-S01-PLANNER-001",
+      "property_ids": [
+        "A01-S01-P4"
+      ]
+    },
+    {
+      "case_id": "PP-A01-S02-P06-001",
+      "property_ids": [
+        "A01-S02-P1"
+      ]
+    },
+    {
+      "case_id": "PP-A01-S02-P07-001",
+      "property_ids": [
+        "A01-S02-P2"
+      ]
+    },
+    {
+      "case_id": "PP-A01-S02-PLANNER-001",
+      "property_ids": [
+        "A01-S02-P3"
+      ]
+    },
+    {
+      "case_id": "PP-A01-S03-P06-001",
+      "property_ids": [
+        "A01-S03-P1",
+        "A01-S03-P2"
+      ]
+    },
+    {
+      "case_id": "PP-A01-S03-P07-001",
+      "property_ids": [
+        "A01-S03-P3",
+        "A01-S03-P4"
+      ]
+    },
+    {
+      "case_id": "PP-A01-S04-P06-001",
+      "property_ids": [
+        "A01-S04-P2"
+      ]
+    },
+    {
+      "case_id": "PP-A01-S04-P07-001",
+      "property_ids": [
+        "A01-S04-P3"
+      ]
+    },
+    {
+      "case_id": "PP-A01-S04-PLANNER-001",
+      "property_ids": [
+        "A01-S04-P1"
+      ]
+    },
+    {
+      "case_id": "PP-A01-S05-P06-001",
+      "property_ids": [
+        "A01-S05-P1"
+      ]
+    },
+    {
+      "case_id": "PP-A01-S05-P07-001",
+      "property_ids": [
+        "A01-S05-P2",
+        "A01-S05-P3"
+      ]
+    },
+    {
+      "case_id": "PP-A01-S06-P06-001",
+      "property_ids": [
+        "A01-S06-P1"
+      ]
+    },
+    {
+      "case_id": "PP-A01-S06-P07-001",
+      "property_ids": [
+        "A01-S06-P2",
+        "A01-S06-P3",
+        "A01-S06-P4"
+      ]
+    },
+    {
+      "case_id": "PP-A02-P04-001",
+      "property_ids": [
+        "A02-ACT-P1",
+        "A02-ACT-P2",
+        "A02-ACT-P3"
+      ]
+    },
+    {
+      "case_id": "PP-A02-S01-P06-001",
+      "property_ids": [
+        "A02-S01-P1",
+        "A02-S01-P4"
+      ]
+    },
+    {
+      "case_id": "PP-A02-S01-P07-001",
+      "property_ids": [
+        "A02-S01-P2",
+        "A02-S01-P3"
+      ]
+    },
+    {
+      "case_id": "PP-A02-S02-P06-001",
+      "property_ids": [
+        "A02-S02-P3"
+      ]
+    },
+    {
+      "case_id": "PP-A02-S02-P07-001",
+      "property_ids": [
+        "A02-S02-P1",
+        "A02-S02-P2"
+      ]
+    },
+    {
+      "case_id": "PP-A02-S02-PLANNER-001",
+      "property_ids": [
+        "A02-S02-P4"
+      ]
+    },
+    {
+      "case_id": "PP-A02-S03-P06-001",
+      "property_ids": [
+        "A02-S03-P1",
+        "A02-S03-P2"
+      ]
+    },
+    {
+      "case_id": "PP-A02-S03-P07-001",
+      "property_ids": [
+        "A02-ACT-FINAL-LEAKAGE",
+        "A02-ACT-P4"
+      ]
+    },
+    {
+      "case_id": "PP-A02-S03-PLANNER-001",
+      "property_ids": [
+        "A02-S03-P3"
+      ]
+    },
+    {
+      "case_id": "PP-A02-S04-P06-001",
+      "property_ids": [
+        "A02-S04-P1",
+        "A02-S04-P4"
+      ]
+    },
+    {
+      "case_id": "PP-A02-S04-P07-001",
+      "property_ids": [
+        "A02-S04-P2",
+        "A02-S04-P3"
+      ]
+    },
+    {
+      "case_id": "PP-A02-S05-P06-001",
+      "property_ids": [
+        "A02-S05-P1"
+      ]
+    },
+    {
+      "case_id": "PP-A02-S05-P07-001",
+      "property_ids": [
+        "A02-S05-P2",
+        "A02-S05-P3"
+      ]
+    },
+    {
+      "case_id": "PP-A02-S06-P06-001",
+      "property_ids": [
+        "A02-S06-P1"
+      ]
+    },
+    {
+      "case_id": "PP-A02-S06-P07-001",
+      "property_ids": [
+        "A02-S06-P2"
+      ]
+    },
+    {
+      "case_id": "PP-A02-S06-PLANNER-001",
+      "property_ids": [
+        "A02-S06-P3"
+      ]
+    },
+    {
+      "case_id": "PP-A03-P04-001",
+      "property_ids": [
+        "A03-ACT-FINAL-DIFFICULTY",
+        "A03-ACT-P1",
+        "A03-ACT-P2",
+        "A03-ACT-P3",
+        "A03-ACT-P5",
+        "A03-S01-P4"
+      ]
+    },
+    {
+      "case_id": "PP-A03-P09-F01",
+      "property_ids": [
+        "A03-ACT-P09a",
+        "A03-ACT-P09b"
+      ]
+    },
+    {
+      "case_id": "PP-A03-PLANNER-ACT",
+      "property_ids": [
+        "A03-ACT-P4"
+      ]
+    },
+    {
+      "case_id": "PP-A03-S01-P06-001",
+      "property_ids": [
+        "A03-S01-P1",
+        "A03-S01-P2"
+      ]
+    },
+    {
+      "case_id": "PP-A03-S01-P07-001",
+      "property_ids": [
+        "A03-ACT-FINAL-LEAKAGE",
+        "A03-S01-P3"
+      ]
+    },
+    {
+      "case_id": "PP-A03-S02-P06-001",
+      "property_ids": [
+        "A03-S02-P1",
+        "A03-S02-P3"
+      ]
+    },
+    {
+      "case_id": "PP-A03-S02-P07-001",
+      "property_ids": [
+        "A03-S02-P2"
+      ]
+    },
+    {
+      "case_id": "PP-A03-S03-P06-001",
+      "property_ids": [
+        "A03-S03-P3"
+      ]
+    },
+    {
+      "case_id": "PP-A03-S03-P07-001",
+      "property_ids": [
+        "A03-S03-P2"
+      ]
+    },
+    {
+      "case_id": "PP-A03-S03-PLANNER-001",
+      "property_ids": [
+        "A03-S03-P1"
+      ]
+    },
+    {
+      "case_id": "PP-A03-S04-P06-001",
+      "property_ids": [
+        "A03-S04-P1",
+        "A03-S04-P3"
+      ]
+    },
+    {
+      "case_id": "PP-A03-S04-P07-001",
+      "property_ids": [
+        "A03-S04-P2",
+        "A03-S04-P4"
+      ]
+    },
+    {
+      "case_id": "PP-A03-S05-P06-001",
+      "property_ids": [
+        "A03-S05-P1"
+      ]
+    },
+    {
+      "case_id": "PP-A03-S05-P07-001",
+      "property_ids": [
+        "A03-S05-P2",
+        "A03-S05-P3",
+        "A03-S05-P4"
+      ]
+    },
+    {
+      "case_id": "PP-A03-S06-P06-001",
+      "property_ids": [
+        "A03-S06-P1",
+        "A03-S06-P2"
+      ]
+    },
+    {
+      "case_id": "PP-A03-S06-P07-001",
+      "property_ids": [
+        "A03-S06-P3",
+        "A03-S06-P4",
+        "A03-S06-P5"
+      ]
+    },
+    {
+      "case_id": "PP-A04-P04-001",
+      "property_ids": [
+        "A04-ACT-P1",
+        "A04-ACT-P2",
+        "A04-ACT-P3"
+      ]
+    },
+    {
+      "case_id": "PP-A04-P09-F01",
+      "property_ids": [
+        "A04-ACT-P09a",
+        "A04-ACT-P09b"
+      ]
+    },
+    {
+      "case_id": "PP-A04-S01-P06-001",
+      "property_ids": [
+        "A04-S01-P1",
+        "A04-S01-P2",
+        "A04-S01-P3",
+        "A04-S01-P5"
+      ]
+    },
+    {
+      "case_id": "PP-A04-S01-P07-001",
+      "property_ids": [
+        "A04-ACT-P4",
+        "A04-ACT-P6",
+        "A04-S01-P4"
+      ]
+    },
+    {
+      "case_id": "PP-A04-S02-P06-001",
+      "property_ids": [
+        "A04-S02-P1"
+      ]
+    },
+    {
+      "case_id": "PP-A04-S02-P07-001",
+      "property_ids": [
+        "A04-S02-P2",
+        "A04-S02-P3"
+      ]
+    },
+    {
+      "case_id": "PP-A04-S03-P06-001",
+      "property_ids": [
+        "A04-S03-P1"
+      ]
+    },
+    {
+      "case_id": "PP-A04-S03-P07-001",
+      "property_ids": [
+        "A04-S03-P2",
+        "A04-S03-P3"
+      ]
+    },
+    {
+      "case_id": "PP-A04-S03-PLANNER-001",
+      "property_ids": [
+        "A04-S03-P4"
+      ]
+    },
+    {
+      "case_id": "PP-A04-S04-P06-001",
+      "property_ids": [
+        "A04-ACT-P5"
+      ]
+    },
+    {
+      "case_id": "PP-A04-S04-P07-001",
+      "property_ids": [
+        "A04-S04-P1",
+        "A04-S04-P2",
+        "A04-S04-P3"
+      ]
+    },
+    {
+      "case_id": "PP-A04-S04-PLANNER-001",
+      "property_ids": [
+        "A04-S04-P4"
+      ]
+    },
+    {
+      "case_id": "PP-A04-S05-P06-001",
+      "property_ids": [
+        "A04-S05-P1",
+        "A04-S05-P5"
+      ]
+    },
+    {
+      "case_id": "PP-A04-S05-P07-001",
+      "property_ids": [
+        "A04-S05-P2",
+        "A04-S05-P3",
+        "A04-S05-P4"
+      ]
+    },
+    {
+      "case_id": "PP-A04-S06-P06-001",
+      "property_ids": [
+        "A04-S06-P1",
+        "A04-S06-P2",
+        "A04-S06-P4"
+      ]
+    },
+    {
+      "case_id": "PP-A04-S06-P07-001",
+      "property_ids": [
+        "A04-S06-FINAL-XAR",
+        "A04-S06-P3",
+        "A04-S06-P5"
+      ]
+    },
+    {
+      "case_id": "PP-A05-P04-001",
+      "property_ids": [
+        "A05-ACT-FINAL-LENGTH",
+        "A05-ACT-P1",
+        "A05-ACT-P2",
+        "A05-ACT-P3",
+        "A05-ACT-P4"
+      ]
+    },
+    {
+      "case_id": "PP-A05-S01-P06-001",
+      "property_ids": [
+        "A05-S01-P1",
+        "A05-S01-P3"
+      ]
+    },
+    {
+      "case_id": "PP-A05-S01-P07-001",
+      "property_ids": [
+        "A05-ACT-FINAL-LEAKAGE",
+        "A05-ACT-P5",
+        "A05-S01-P2"
+      ]
+    },
+    {
+      "case_id": "PP-A05-S02-P06-001",
+      "property_ids": [
+        "A05-S02-P1",
+        "A05-S02-P2"
+      ]
+    },
+    {
+      "case_id": "PP-A05-S02-P07-001",
+      "property_ids": [
+        "A05-S02-P3",
+        "A05-S02-P4"
+      ]
+    },
+    {
+      "case_id": "PP-A05-S03-P06-001",
+      "property_ids": [
+        "A05-S03-P1"
+      ]
+    },
+    {
+      "case_id": "PP-A05-S03-P07-001",
+      "property_ids": [
+        "A05-S03-P2",
+        "A05-S03-P3",
+        "A05-S03-P4",
+        "A05-S03-P5"
+      ]
+    },
+    {
+      "case_id": "PP-A05-S04-P06-001",
+      "property_ids": [
+        "A05-S04-P1"
+      ]
+    },
+    {
+      "case_id": "PP-A05-S04-P07-001",
+      "property_ids": [
+        "A05-S04-P2",
+        "A05-S04-P3",
+        "A05-S04-P4"
+      ]
+    },
+    {
+      "case_id": "PP-A05-S05-P07-001",
+      "property_ids": [
+        "A05-S05-P1",
+        "A05-S05-P2"
+      ]
+    },
+    {
+      "case_id": "PP-A05-S05-PLANNER-001",
+      "property_ids": [
+        "A05-S05-P3"
+      ]
+    },
+    {
+      "case_id": "PP-A05-S06-P06-001",
+      "property_ids": [
+        "A05-S06-P1"
+      ]
+    },
+    {
+      "case_id": "PP-A05-S06-P07-001",
+      "property_ids": [
+        "A05-S06-P2",
+        "A05-S06-P3"
+      ]
+    },
+    {
+      "case_id": "PP-A06-P04-001",
+      "property_ids": [
+        "A06-ACT-FINAL-LENGTH",
+        "A06-ACT-P1",
+        "A06-ACT-P2",
+        "A06-ACT-P3",
+        "A06-ACT-P4"
+      ]
+    },
+    {
+      "case_id": "PP-A06-S01-P06-001",
+      "property_ids": [
+        "A06-S01-FINAL-P2",
+        "A06-S01-P1",
+        "A06-S01-P3"
+      ]
+    },
+    {
+      "case_id": "PP-A06-S01-P07-001",
+      "property_ids": [
+        "A06-ACT-FINAL-LEAKAGE",
+        "A06-S01-P4",
+        "A06-S01-P5"
+      ]
+    },
+    {
+      "case_id": "PP-A06-S02-P06-001",
+      "property_ids": [
+        "A06-S02-P1",
+        "A06-S02-P2"
+      ]
+    },
+    {
+      "case_id": "PP-A06-S02-P07-001",
+      "property_ids": [
+        "A06-S02-P3",
+        "A06-S02-P4"
+      ]
+    },
+    {
+      "case_id": "PP-A06-S03-P06-001",
+      "property_ids": [
+        "A06-S03-P1"
+      ]
+    },
+    {
+      "case_id": "PP-A06-S03-P07-001",
+      "property_ids": [
+        "A06-S03-P2",
+        "A06-S03-P3"
+      ]
+    },
+    {
+      "case_id": "PP-A06-S04-P06-001",
+      "property_ids": [
+        "A06-S04-FINAL-P3",
+        "A06-S04-P1",
+        "A06-S04-P2"
+      ]
+    },
+    {
+      "case_id": "PP-A06-S04-P07-001",
+      "property_ids": [
+        "A06-S04-P4"
+      ]
+    },
+    {
+      "case_id": "PP-A06-S05-P06-001",
+      "property_ids": [
+        "A06-S05-P1",
+        "A06-S05-P3"
+      ]
+    },
+    {
+      "case_id": "PP-A06-S05-P07-001",
+      "property_ids": [
+        "A06-S05-P2",
+        "A06-S05-P4"
+      ]
+    },
+    {
+      "case_id": "PP-A06-S06-P06-001",
+      "property_ids": [
+        "A06-ACT-FINAL-P5"
+      ]
+    },
+    {
+      "case_id": "PP-A06-S06-P07-001",
+      "property_ids": [
+        "A06-S06-P1",
+        "A06-S06-P2"
+      ]
+    },
+    {
+      "case_id": "PP-A06-S06-PLANNER-001",
+      "property_ids": [
+        "A06-S06-P3"
+      ]
+    },
+    {
+      "case_id": "PP-A07-P04-001",
+      "property_ids": [
+        "A07-ACT-FINAL-LENGTH",
+        "A07-ACT-P1",
+        "A07-ACT-P2",
+        "A07-ACT-P3"
+      ]
+    },
+    {
+      "case_id": "PP-A07-PLANNER-ACT",
+      "property_ids": [
+        "A07-ACT-P4"
+      ]
+    },
+    {
+      "case_id": "PP-A07-S01-P06-001",
+      "property_ids": [
+        "A07-S01-P2"
+      ]
+    },
+    {
+      "case_id": "PP-A07-S01-P07-001",
+      "property_ids": [
+        "A07-ACT-FINAL-LEAKAGE",
+        "A07-ACT-P5",
+        "A07-S01-P1"
+      ]
+    },
+    {
+      "case_id": "PP-A07-S01-PLANNER-001",
+      "property_ids": [
+        "A07-S01-P3"
+      ]
+    },
+    {
+      "case_id": "PP-A07-S02-P06-001",
+      "property_ids": [
+        "A07-S02-P2",
+        "A07-S02-P3"
+      ]
+    },
+    {
+      "case_id": "PP-A07-S02-P07-001",
+      "property_ids": [
+        "A07-S02-P1",
+        "A07-S02-P4"
+      ]
+    },
+    {
+      "case_id": "PP-A07-S03-P06-001",
+      "property_ids": [
+        "A07-S03-P1"
+      ]
+    },
+    {
+      "case_id": "PP-A07-S03-P07-001",
+      "property_ids": [
+        "A07-S03-P2",
+        "A07-S03-P3"
+      ]
+    },
+    {
+      "case_id": "PP-A07-S03-PLANNER-001",
+      "property_ids": [
+        "A07-S03-P4"
+      ]
+    },
+    {
+      "case_id": "PP-A07-S04-P06-001",
+      "property_ids": [
+        "A07-S04-P1",
+        "A07-S04-P2"
+      ]
+    },
+    {
+      "case_id": "PP-A07-S04-P07-001",
+      "property_ids": [
+        "A07-S04-P3",
+        "A07-S04-P4"
+      ]
+    },
+    {
+      "case_id": "PP-A07-S05-P06-001",
+      "property_ids": [
+        "A07-S05-P1",
+        "A07-S05-P2"
+      ]
+    },
+    {
+      "case_id": "PP-A07-S05-P07-001",
+      "property_ids": [
+        "A07-S05-P3",
+        "A07-S05-P4",
+        "A07-S05-P5"
+      ]
+    },
+    {
+      "case_id": "PP-A07-S06-P06-001",
+      "property_ids": [
+        "A07-S06-P1",
+        "A07-S06-P2"
+      ]
+    },
+    {
+      "case_id": "PP-A07-S06-P07-001",
+      "property_ids": [
+        "A07-S06-FINAL-RECON",
+        "A07-S06-P3",
+        "A07-S06-P4"
+      ]
+    },
+    {
+      "case_id": "PP-A08-P04-001",
+      "property_ids": [
+        "A08-ACT-P1",
+        "A08-ACT-P2",
+        "A08-ACT-P3"
+      ]
+    },
+    {
+      "case_id": "PP-A08-S01-P06-001",
+      "property_ids": [
+        "A08-S01-P1",
+        "A08-S01-P2",
+        "A08-S01-P3"
+      ]
+    },
+    {
+      "case_id": "PP-A08-S01-P07-001",
+      "property_ids": [
+        "A08-ACT-P4",
+        "A08-ACT-P5",
+        "A08-S01-FINAL-XAR",
+        "A08-S01-P4"
+      ]
+    },
+    {
+      "case_id": "PP-A08-S02-P07-001",
+      "property_ids": [
+        "A08-S02-P1",
+        "A08-S02-P2",
+        "A08-S02-P3"
+      ]
+    },
+    {
+      "case_id": "PP-A08-S02-PLANNER-001",
+      "property_ids": [
+        "A08-S02-P4"
+      ]
+    },
+    {
+      "case_id": "PP-A08-S03-P06-001",
+      "property_ids": [
+        "A08-S03-P1",
+        "A08-S03-P2"
+      ]
+    },
+    {
+      "case_id": "PP-A08-S03-P07-001",
+      "property_ids": [
+        "A08-S03-P3",
+        "A08-S03-P4"
+      ]
+    },
+    {
+      "case_id": "PP-A08-S04-P06-001",
+      "property_ids": [
+        "A08-S04-P1",
+        "A08-S04-P2"
+      ]
+    },
+    {
+      "case_id": "PP-A08-S04-P07-001",
+      "property_ids": [
+        "A08-S04-P3"
+      ]
+    },
+    {
+      "case_id": "PP-A08-S05-P06-001",
+      "property_ids": [
+        "A08-S05-P1",
+        "A08-S05-P2"
+      ]
+    },
+    {
+      "case_id": "PP-A08-S05-P07-001",
+      "property_ids": [
+        "A08-S05-P3",
+        "A08-S05-P4"
+      ]
+    },
+    {
+      "case_id": "PP-A08-S06-P06-001",
+      "property_ids": [
+        "A08-S06-P1"
+      ]
+    },
+    {
+      "case_id": "PP-A08-S06-P07-001",
+      "property_ids": [
+        "A08-S06-P2",
+        "A08-S06-P3"
+      ]
+    },
+    {
+      "case_id": "PP-A08-S06-PLANNER-001",
+      "property_ids": [
+        "A08-S06-P4"
+      ]
+    },
+    {
+      "case_id": "PP-A09-P04-001",
+      "property_ids": [
+        "A09-ACT-FINAL-LENGTH",
+        "A09-ACT-P1",
+        "A09-ACT-P2",
+        "A09-ACT-P3",
+        "A09-ACT-P4",
+        "A09-S04-P4"
+      ]
+    },
+    {
+      "case_id": "PP-A09-P09-F01",
+      "property_ids": [
+        "A09-ACT-P09a",
+        "A09-ACT-P09b"
+      ]
+    },
+    {
+      "case_id": "PP-A09-S01-P06-001",
+      "property_ids": [
+        "A09-S01-P1",
+        "A09-S01-P2",
+        "A09-S01-P3"
+      ]
+    },
+    {
+      "case_id": "PP-A09-S01-P07-001",
+      "property_ids": [
+        "A09-ACT-FINAL-LEAKAGE",
+        "A09-ACT-P5",
+        "A09-S01-P4"
+      ]
+    },
+    {
+      "case_id": "PP-A09-S02-P06-001",
+      "property_ids": [
+        "A09-S02-P1",
+        "A09-S02-P3"
+      ]
+    },
+    {
+      "case_id": "PP-A09-S02-P07-001",
+      "property_ids": [
+        "A09-S02-P2",
+        "A09-S02-P4"
+      ]
+    },
+    {
+      "case_id": "PP-A09-S03-P06-001",
+      "property_ids": [
+        "A09-S03-FINAL-SILENT-GAP",
+        "A09-S03-P1",
+        "A09-S03-P5"
+      ]
+    },
+    {
+      "case_id": "PP-A09-S03-P07-001",
+      "property_ids": [
+        "A09-S03-P2",
+        "A09-S03-P3",
+        "A09-S03-P4"
+      ]
+    },
+    {
+      "case_id": "PP-A09-S04-P06-001",
+      "property_ids": [
+        "A09-S04-P1"
+      ]
+    },
+    {
+      "case_id": "PP-A09-S04-P07-001",
+      "property_ids": [
+        "A09-S04-P2",
+        "A09-S04-P3"
+      ]
+    },
+    {
+      "case_id": "PP-A09-S05-P06-001",
+      "property_ids": [
+        "A09-S05-P1",
+        "A09-S05-P2",
+        "A09-S05-P3",
+        "A09-S05-P5"
+      ]
+    },
+    {
+      "case_id": "PP-A09-S05-P07-001",
+      "property_ids": [
+        "A09-S05-P4",
+        "A09-S05-P6"
+      ]
+    },
+    {
+      "case_id": "PP-A09-S06-P06-001",
+      "property_ids": [
+        "A09-S06-P1",
+        "A09-S06-P4"
+      ]
+    },
+    {
+      "case_id": "PP-A09-S06-P07-001",
+      "property_ids": [
+        "A09-S06-P2",
+        "A09-S06-P3"
+      ]
+    },
+    {
+      "case_id": "PP-A10-P04-001",
+      "property_ids": [
+        "A10-ACT-FINAL-LENGTH",
+        "A10-ACT-P1",
+        "A10-ACT-P2",
+        "A10-ACT-P3",
+        "A10-ACT-P6"
+      ]
+    },
+    {
+      "case_id": "PP-A10-PLANNER-ACT",
+      "property_ids": [
+        "A10-ACT-P4"
+      ]
+    },
+    {
+      "case_id": "PP-A10-S01-P06-001",
+      "property_ids": [
+        "A10-S01-P1",
+        "A10-S01-P2"
+      ]
+    },
+    {
+      "case_id": "PP-A10-S01-P07-001",
+      "property_ids": [
+        "A10-ACT-P5",
+        "A10-S01-P3"
+      ]
+    },
+    {
+      "case_id": "PP-A10-S02-P06-001",
+      "property_ids": [
+        "A10-S02-P1",
+        "A10-S02-P2"
+      ]
+    },
+    {
+      "case_id": "PP-A10-S02-P07-001",
+      "property_ids": [
+        "A10-S02-P3"
+      ]
+    },
+    {
+      "case_id": "PP-A10-S03-P06-001",
+      "property_ids": [
+        "A10-S03-P1",
+        "A10-S03-P2"
+      ]
+    },
+    {
+      "case_id": "PP-A10-S03-P07-001",
+      "property_ids": [
+        "A10-S03-P3",
+        "A10-S03-P4",
+        "A10-S03-P5"
+      ]
+    },
+    {
+      "case_id": "PP-A10-S04-P06-001",
+      "property_ids": [
+        "A10-S04-P1",
+        "A10-S04-P2",
+        "A10-S04-P3"
+      ]
+    },
+    {
+      "case_id": "PP-A10-S04-P07-001",
+      "property_ids": [
+        "A10-S04-FINAL-DECLARED-OMISSION",
+        "A10-S04-P4",
+        "A10-S04-P5",
+        "A10-S04-P6"
+      ]
+    },
+    {
+      "case_id": "PP-A10-S05-P06-001",
+      "property_ids": [
+        "A10-S05-P1"
+      ]
+    },
+    {
+      "case_id": "PP-A10-S05-P07-001",
+      "property_ids": [
+        "A10-S05-P2",
+        "A10-S05-P3",
+        "A10-S05-P4",
+        "A10-S05-P5"
+      ]
+    },
+    {
+      "case_id": "PP-A10-S06-P06-001",
+      "property_ids": [
+        "A10-S06-P1",
+        "A10-S06-P2",
+        "A10-S06-P3"
+      ]
+    },
+    {
+      "case_id": "PP-A10-S06-P07-001",
+      "property_ids": [
+        "A10-S06-P4"
+      ]
+    },
+    {
+      "case_id": "PP-A11-P04-001",
+      "property_ids": [
+        "A11-ACT-FINAL-LENGTH",
+        "A11-ACT-P1",
+        "A11-ACT-P2",
+        "A11-ACT-P3",
+        "A11-ACT-P5"
+      ]
+    },
+    {
+      "case_id": "PP-A11-S01-P06-001",
+      "property_ids": [
+        "A11-S01-P1",
+        "A11-S01-P2",
+        "A11-S01-P3"
+      ]
+    },
+    {
+      "case_id": "PP-A11-S01-P07-001",
+      "property_ids": [
+        "A11-ACT-P4",
+        "A11-S01-P4",
+        "A11-S01-P5"
+      ]
+    },
+    {
+      "case_id": "PP-A11-S02-P06-001",
+      "property_ids": [
+        "A11-S02-P1"
+      ]
+    },
+    {
+      "case_id": "PP-A11-S02-P07-001",
+      "property_ids": [
+        "A11-S02-P2",
+        "A11-S02-P3",
+        "A11-S02-P4"
+      ]
+    },
+    {
+      "case_id": "PP-A11-S03-P06-001",
+      "property_ids": [
+        "A11-S03-P1",
+        "A11-S03-P2",
+        "A11-S03-P3"
+      ]
+    },
+    {
+      "case_id": "PP-A11-S03-P07-001",
+      "property_ids": [
+        "A11-S03-P4"
+      ]
+    },
+    {
+      "case_id": "PP-A11-S04-P06-001",
+      "property_ids": [
+        "A11-S04-P1",
+        "A11-S04-P2",
+        "A11-S04-P3"
+      ]
+    },
+    {
+      "case_id": "PP-A11-S04-P07-001",
+      "property_ids": [
+        "A11-S04-P4",
+        "A11-S04-P5"
+      ]
+    },
+    {
+      "case_id": "PP-A11-S05-P06-001",
+      "property_ids": [
+        "A11-ACT-P6"
+      ]
+    },
+    {
+      "case_id": "PP-A11-S05-P07-001",
+      "property_ids": [
+        "A11-S05-P1",
+        "A11-S05-P2"
+      ]
+    },
+    {
+      "case_id": "PP-A11-S05-PLANNER-001",
+      "property_ids": [
+        "A11-S05-P3"
+      ]
+    },
+    {
+      "case_id": "PP-A11-S06-P06-001",
+      "property_ids": [
+        "A11-S06-P1"
+      ]
+    },
+    {
+      "case_id": "PP-A11-S06-P07-001",
+      "property_ids": [
+        "A11-S06-P2",
+        "A11-S06-P3"
+      ]
+    },
+    {
+      "case_id": "PP-A11-S06-PLANNER-001",
+      "property_ids": [
+        "A11-S06-P4"
+      ]
+    },
+    {
+      "case_id": "PP-A12-P04-001",
+      "property_ids": [
+        "A12-ACT-FINAL-LENGTH",
+        "A12-ACT-P1",
+        "A12-ACT-P2",
+        "A12-ACT-P3",
+        "A12-ACT-P5"
+      ]
+    },
+    {
+      "case_id": "PP-A12-P09-F01",
+      "property_ids": [
+        "A12-ACT-P09a",
+        "A12-ACT-P09b"
+      ]
+    },
+    {
+      "case_id": "PP-A12-S01-P06-001",
+      "property_ids": [
+        "A12-S01-P1",
+        "A12-S01-P2"
+      ]
+    },
+    {
+      "case_id": "PP-A12-S01-P07-001",
+      "property_ids": [
+        "A12-ACT-FINAL-LEAKAGE",
+        "A12-ACT-P4",
+        "A12-ACT-P6",
+        "A12-S01-P3",
+        "A12-S01-P4"
+      ]
+    },
+    {
+      "case_id": "PP-A12-S02-P06-001",
+      "property_ids": [
+        "A12-S02-P1",
+        "A12-S02-P2"
+      ]
+    },
+    {
+      "case_id": "PP-A12-S02-P07-001",
+      "property_ids": [
+        "A12-S02-P3",
+        "A12-S02-P4"
+      ]
+    },
+    {
+      "case_id": "PP-A12-S03-P06-001",
+      "property_ids": [
+        "A12-S03-P1",
+        "A12-S03-P2",
+        "A12-S03-P4"
+      ]
+    },
+    {
+      "case_id": "PP-A12-S03-P07-001",
+      "property_ids": [
+        "A12-S03-P3",
+        "A12-S03-P5"
+      ]
+    },
+    {
+      "case_id": "PP-A12-S04-P06-001",
+      "property_ids": [
+        "A12-S04-P1",
+        "A12-S04-P2",
+        "A12-S04-P3"
+      ]
+    },
+    {
+      "case_id": "PP-A12-S04-P07-001",
+      "property_ids": [
+        "A12-S04-FINAL-XAR",
+        "A12-S04-P4",
+        "A12-S04-P5"
+      ]
+    },
+    {
+      "case_id": "PP-A12-S05-P06-001",
+      "property_ids": [
+        "A12-S05-P1",
+        "A12-S05-P2",
+        "A12-S05-P3"
+      ]
+    },
+    {
+      "case_id": "PP-A12-S05-P07-001",
+      "property_ids": [
+        "A12-S05-P4",
+        "A12-S05-P5"
+      ]
+    },
+    {
+      "case_id": "PP-A12-S06-P07-001",
+      "property_ids": [
+        "A12-S06-P1",
+        "A12-S06-P2",
+        "A12-S06-P3"
+      ]
+    },
+    {
+      "case_id": "PP-A12-S06-PLANNER-001",
+      "property_ids": [
+        "A12-S06-P4"
+      ]
+    }
+  ],
+  "case_without_property_count": 0,
+  "explicitly_excluded_count": 14,
+  "maximum_case_bindings_per_property": 1,
+  "property_count": 395,
+  "rows": [
+    {
+      "case_ids": [
+        "PP-A01-S01-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "ORACLE_SUSPECT_PROPERTY",
+      "kind": "CONTEXTUAL_NOTE",
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A01-ACT-FINAL-LEAKAGE",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A01-P04-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A01-ACT-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P04"
+    },
+    {
+      "case_ids": [
+        "PP-A01-P04-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A01-ACT-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P04"
+    },
+    {
+      "case_ids": [
+        "PP-A01-P04-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "DEFENSIBLE_ALTERNATIVE",
+      "oracle_state": "VALID",
+      "property_id": "A01-ACT-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P04"
+    },
+    {
+      "case_ids": [
+        "PP-A01-P04-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "CONTEXTUAL_NOTE",
+      "oracle_state": "VALID",
+      "property_id": "A01-ACT-P4",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P04"
+    },
+    {
+      "case_ids": [
+        "PP-A01-S01-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "CONTEXTUAL_NOTE",
+      "oracle_state": "VALID",
+      "property_id": "A01-ACT-P5",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A01-S01-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A01-S01-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A01-S01-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A01-S01-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A01-S01-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A01-S01-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A01-S01-PLANNER-001"
+      ],
+      "evaluator_mode": "DETERMINISTIC",
+      "exclusion_reason": null,
+      "hardness": "HARD_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A01-S01-P4",
+      "qualification_status": "CASE_BOUND",
+      "stage": "PLANNER"
+    },
+    {
+      "case_ids": [
+        "PP-A01-S02-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A01-S02-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A01-S02-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A01-S02-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A01-S02-PLANNER-001"
+      ],
+      "evaluator_mode": "DETERMINISTIC",
+      "exclusion_reason": null,
+      "hardness": "HARD_SEMANTIC_PROPERTY",
+      "kind": "CONTEXTUAL_NOTE",
+      "oracle_state": "VALID",
+      "property_id": "A01-S02-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "PLANNER"
+    },
+    {
+      "case_ids": [
+        "PP-A01-S03-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A01-S03-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A01-S03-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A01-S03-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A01-S03-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A01-S03-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A01-S03-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "ORACLE_SUSPECT_PROPERTY",
+      "kind": "DEFENSIBLE_ALTERNATIVE",
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A01-S03-P4",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A01-S04-PLANNER-001"
+      ],
+      "evaluator_mode": "DETERMINISTIC",
+      "exclusion_reason": null,
+      "hardness": "HARD_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A01-S04-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "PLANNER"
+    },
+    {
+      "case_ids": [
+        "PP-A01-S04-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "ORACLE_SUSPECT_PROPERTY",
+      "kind": "DEFENSIBLE_ALTERNATIVE",
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A01-S04-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A01-S04-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "DEFENSIBLE_ALTERNATIVE",
+      "oracle_state": "VALID",
+      "property_id": "A01-S04-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A01-S05-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A01-S05-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A01-S05-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "DEFENSIBLE_ALTERNATIVE",
+      "oracle_state": "VALID",
+      "property_id": "A01-S05-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A01-S05-P07-001"
+      ],
+      "evaluator_mode": "RULE_BASED",
+      "exclusion_reason": null,
+      "hardness": "HARD_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A01-S05-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": "NO_FROZEN_P09_STAGE_LOCAL_FIXTURE_FOR_ACTIVITY",
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "CONTEXTUAL_NOTE",
+      "oracle_state": "VALID",
+      "property_id": "A01-S05-P4",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P09"
+    },
+    {
+      "case_ids": [
+        "PP-A01-S06-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A01-S06-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A01-S06-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A01-S06-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A01-S06-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "DEFENSIBLE_ALTERNATIVE",
+      "oracle_state": "VALID",
+      "property_id": "A01-S06-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A01-S06-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A01-S06-P4",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": "NO_FROZEN_P09_STAGE_LOCAL_FIXTURE_FOR_ACTIVITY",
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "CONTEXTUAL_NOTE",
+      "oracle_state": "VALID",
+      "property_id": "A01-S06-P5",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P09"
+    },
+    {
+      "case_ids": [
+        "PP-A02-S03-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "ORACLE_SUSPECT_PROPERTY",
+      "kind": "CONTEXTUAL_NOTE",
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A02-ACT-FINAL-LEAKAGE",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A02-P04-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A02-ACT-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P04"
+    },
+    {
+      "case_ids": [
+        "PP-A02-P04-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A02-ACT-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P04"
+    },
+    {
+      "case_ids": [
+        "PP-A02-P04-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "DEFENSIBLE_ALTERNATIVE",
+      "oracle_state": "VALID",
+      "property_id": "A02-ACT-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P04"
+    },
+    {
+      "case_ids": [
+        "PP-A02-S03-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "CONTEXTUAL_NOTE",
+      "oracle_state": "VALID",
+      "property_id": "A02-ACT-P4",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": "NO_FROZEN_P09_STAGE_LOCAL_FIXTURE_FOR_ACTIVITY",
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "CONTEXTUAL_NOTE",
+      "oracle_state": "VALID",
+      "property_id": "A02-ACT-P5",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P09"
+    },
+    {
+      "case_ids": [
+        "PP-A02-S01-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A02-S01-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A02-S01-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "DEFENSIBLE_ALTERNATIVE",
+      "oracle_state": "VALID",
+      "property_id": "A02-S01-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A02-S01-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A02-S01-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A02-S01-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "ORACLE_SUSPECT_PROPERTY",
+      "kind": "CONTEXTUAL_NOTE",
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A02-S01-P4",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A02-S02-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A02-S02-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A02-S02-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A02-S02-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A02-S02-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A02-S02-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A02-S02-PLANNER-001"
+      ],
+      "evaluator_mode": "DETERMINISTIC",
+      "exclusion_reason": null,
+      "hardness": "HARD_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A02-S02-P4",
+      "qualification_status": "CASE_BOUND",
+      "stage": "PLANNER"
+    },
+    {
+      "case_ids": [
+        "PP-A02-S03-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A02-S03-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A02-S03-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "ORACLE_SUSPECT_PROPERTY",
+      "kind": "DEFENSIBLE_ALTERNATIVE",
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A02-S03-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A02-S03-PLANNER-001"
+      ],
+      "evaluator_mode": "DETERMINISTIC",
+      "exclusion_reason": null,
+      "hardness": "HARD_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A02-S03-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "PLANNER"
+    },
+    {
+      "case_ids": [
+        "PP-A02-S04-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A02-S04-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A02-S04-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "DEFENSIBLE_ALTERNATIVE",
+      "oracle_state": "VALID",
+      "property_id": "A02-S04-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A02-S04-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A02-S04-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A02-S04-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "ORACLE_SUSPECT_PROPERTY",
+      "kind": "CONTEXTUAL_NOTE",
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A02-S04-P4",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A02-S05-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A02-S05-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A02-S05-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A02-S05-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A02-S05-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "ORACLE_SUSPECT_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A02-S05-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": "NO_FROZEN_P09_STAGE_LOCAL_FIXTURE_FOR_ACTIVITY",
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "CONTEXTUAL_NOTE",
+      "oracle_state": "VALID",
+      "property_id": "A02-S05-P4",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P09"
+    },
+    {
+      "case_ids": [
+        "PP-A02-S06-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A02-S06-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A02-S06-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A02-S06-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A02-S06-PLANNER-001"
+      ],
+      "evaluator_mode": "DETERMINISTIC",
+      "exclusion_reason": null,
+      "hardness": "HARD_SEMANTIC_PROPERTY",
+      "kind": "CONTEXTUAL_NOTE",
+      "oracle_state": "VALID",
+      "property_id": "A02-S06-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "PLANNER"
+    },
+    {
+      "case_ids": [
+        "PP-A03-P04-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "CONTEXTUAL_NOTE",
+      "oracle_state": "VALID",
+      "property_id": "A03-ACT-FINAL-DIFFICULTY",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P04"
+    },
+    {
+      "case_ids": [
+        "PP-A03-S01-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "ORACLE_SUSPECT_PROPERTY",
+      "kind": "CONTEXTUAL_NOTE",
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A03-ACT-FINAL-LEAKAGE",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A03-P09-F01"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A03-ACT-P09a",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P09"
+    },
+    {
+      "case_ids": [
+        "PP-A03-P09-F01"
+      ],
+      "evaluator_mode": "RULE_BASED",
+      "exclusion_reason": null,
+      "hardness": "HARD_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A03-ACT-P09b",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P09"
+    },
+    {
+      "case_ids": [
+        "PP-A03-P04-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A03-ACT-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P04"
+    },
+    {
+      "case_ids": [
+        "PP-A03-P04-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A03-ACT-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P04"
+    },
+    {
+      "case_ids": [
+        "PP-A03-P04-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "DEFENSIBLE_ALTERNATIVE",
+      "oracle_state": "VALID",
+      "property_id": "A03-ACT-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P04"
+    },
+    {
+      "case_ids": [
+        "PP-A03-PLANNER-ACT"
+      ],
+      "evaluator_mode": "DETERMINISTIC",
+      "exclusion_reason": null,
+      "hardness": "HARD_SEMANTIC_PROPERTY",
+      "kind": "CONTEXTUAL_NOTE",
+      "oracle_state": "VALID",
+      "property_id": "A03-ACT-P4",
+      "qualification_status": "CASE_BOUND",
+      "stage": "PLANNER"
+    },
+    {
+      "case_ids": [
+        "PP-A03-P04-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "ORACLE_SUSPECT_PROPERTY",
+      "kind": "CONTEXTUAL_NOTE",
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A03-ACT-P5",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P04"
+    },
+    {
+      "case_ids": [
+        "PP-A03-S01-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A03-S01-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A03-S01-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A03-S01-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A03-S01-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A03-S01-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A03-P04-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "CONTEXTUAL_NOTE",
+      "oracle_state": "VALID",
+      "property_id": "A03-S01-P4",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P04"
+    },
+    {
+      "case_ids": [
+        "PP-A03-S02-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A03-S02-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A03-S02-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A03-S02-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A03-S02-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "CONTEXTUAL_NOTE",
+      "oracle_state": "VALID",
+      "property_id": "A03-S02-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A03-S03-PLANNER-001"
+      ],
+      "evaluator_mode": "DETERMINISTIC",
+      "exclusion_reason": null,
+      "hardness": "HARD_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A03-S03-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "PLANNER"
+    },
+    {
+      "case_ids": [
+        "PP-A03-S03-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A03-S03-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A03-S03-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "ORACLE_SUSPECT_PROPERTY",
+      "kind": "DEFENSIBLE_ALTERNATIVE",
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A03-S03-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A03-S04-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A03-S04-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A03-S04-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "DEFENSIBLE_ALTERNATIVE",
+      "oracle_state": "VALID",
+      "property_id": "A03-S04-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A03-S04-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A03-S04-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A03-S04-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A03-S04-P4",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A03-S05-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A03-S05-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A03-S05-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "DEFENSIBLE_ALTERNATIVE",
+      "oracle_state": "VALID",
+      "property_id": "A03-S05-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A03-S05-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A03-S05-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A03-S05-P07-001"
+      ],
+      "evaluator_mode": "RULE_BASED",
+      "exclusion_reason": null,
+      "hardness": "HARD_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A03-S05-P4",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A03-S06-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A03-S06-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A03-S06-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A03-S06-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A03-S06-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "DEFENSIBLE_ALTERNATIVE",
+      "oracle_state": "VALID",
+      "property_id": "A03-S06-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A03-S06-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "DEFENSIBLE_ALTERNATIVE",
+      "oracle_state": "VALID",
+      "property_id": "A03-S06-P4",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A03-S06-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A03-S06-P5",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A04-P09-F01"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A04-ACT-P09a",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P09"
+    },
+    {
+      "case_ids": [
+        "PP-A04-P09-F01"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A04-ACT-P09b",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P09"
+    },
+    {
+      "case_ids": [
+        "PP-A04-P04-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A04-ACT-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P04"
+    },
+    {
+      "case_ids": [
+        "PP-A04-P04-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A04-ACT-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P04"
+    },
+    {
+      "case_ids": [
+        "PP-A04-P04-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A04-ACT-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P04"
+    },
+    {
+      "case_ids": [
+        "PP-A04-S01-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "CONTEXTUAL_NOTE",
+      "oracle_state": "VALID",
+      "property_id": "A04-ACT-P4",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A04-S04-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "CONTEXTUAL_NOTE",
+      "oracle_state": "VALID",
+      "property_id": "A04-ACT-P5",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A04-S01-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "CONTEXTUAL_NOTE",
+      "oracle_state": "VALID",
+      "property_id": "A04-ACT-P6",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A04-S01-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A04-S01-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A04-S01-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A04-S01-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A04-S01-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A04-S01-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A04-S01-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "ORACLE_SUSPECT_PROPERTY",
+      "kind": "CONTEXTUAL_NOTE",
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A04-S01-P4",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A04-S01-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A04-S01-P5",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A04-S02-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A04-S02-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A04-S02-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "DEFENSIBLE_ALTERNATIVE",
+      "oracle_state": "VALID",
+      "property_id": "A04-S02-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A04-S02-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A04-S02-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A04-S03-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A04-S03-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A04-S03-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "DEFENSIBLE_ALTERNATIVE",
+      "oracle_state": "VALID",
+      "property_id": "A04-S03-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A04-S03-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A04-S03-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A04-S03-PLANNER-001"
+      ],
+      "evaluator_mode": "DETERMINISTIC",
+      "exclusion_reason": null,
+      "hardness": "HARD_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A04-S03-P4",
+      "qualification_status": "CASE_BOUND",
+      "stage": "PLANNER"
+    },
+    {
+      "case_ids": [
+        "PP-A04-S04-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A04-S04-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A04-S04-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "DEFENSIBLE_ALTERNATIVE",
+      "oracle_state": "VALID",
+      "property_id": "A04-S04-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A04-S04-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A04-S04-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A04-S04-PLANNER-001"
+      ],
+      "evaluator_mode": "DETERMINISTIC",
+      "exclusion_reason": null,
+      "hardness": "HARD_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A04-S04-P4",
+      "qualification_status": "CASE_BOUND",
+      "stage": "PLANNER"
+    },
+    {
+      "case_ids": [
+        "PP-A04-S05-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A04-S05-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A04-S05-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A04-S05-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A04-S05-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A04-S05-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A04-S05-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A04-S05-P4",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A04-S05-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "CONTEXTUAL_NOTE",
+      "oracle_state": "VALID",
+      "property_id": "A04-S05-P5",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A04-S06-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "CONTEXTUAL_NOTE",
+      "oracle_state": "VALID",
+      "property_id": "A04-S06-FINAL-XAR",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A04-S06-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A04-S06-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A04-S06-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "ORACLE_SUSPECT_PROPERTY",
+      "kind": "CONTEXTUAL_NOTE",
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A04-S06-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A04-S06-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A04-S06-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A04-S06-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A04-S06-P4",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A04-S06-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A04-S06-P5",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A05-S01-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "ORACLE_SUSPECT_PROPERTY",
+      "kind": "CONTEXTUAL_NOTE",
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A05-ACT-FINAL-LEAKAGE",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A05-P04-001"
+      ],
+      "evaluator_mode": "DETERMINISTIC",
+      "exclusion_reason": null,
+      "hardness": "NOT_APPLICABLE_PROPERTY",
+      "kind": "CONTEXTUAL_NOTE",
+      "oracle_state": "NOT_APPLICABLE",
+      "property_id": "A05-ACT-FINAL-LENGTH",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P04"
+    },
+    {
+      "case_ids": [],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": "NO_FROZEN_P09_STAGE_LOCAL_FIXTURE_FOR_ACTIVITY",
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A05-ACT-P09a",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P09"
+    },
+    {
+      "case_ids": [],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": "NO_FROZEN_P09_STAGE_LOCAL_FIXTURE_FOR_ACTIVITY",
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A05-ACT-P09b",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P09"
+    },
+    {
+      "case_ids": [
+        "PP-A05-P04-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A05-ACT-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P04"
+    },
+    {
+      "case_ids": [
+        "PP-A05-P04-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A05-ACT-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P04"
+    },
+    {
+      "case_ids": [
+        "PP-A05-P04-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A05-ACT-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P04"
+    },
+    {
+      "case_ids": [
+        "PP-A05-P04-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "CONTEXTUAL_NOTE",
+      "oracle_state": "VALID",
+      "property_id": "A05-ACT-P4",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P04"
+    },
+    {
+      "case_ids": [
+        "PP-A05-S01-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "CONTEXTUAL_NOTE",
+      "oracle_state": "VALID",
+      "property_id": "A05-ACT-P5",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A05-S01-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A05-S01-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A05-S01-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A05-S01-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A05-S01-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A05-S01-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A05-S02-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A05-S02-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A05-S02-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A05-S02-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A05-S02-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "DEFENSIBLE_ALTERNATIVE",
+      "oracle_state": "VALID",
+      "property_id": "A05-S02-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A05-S02-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A05-S02-P4",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A05-S03-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A05-S03-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A05-S03-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A05-S03-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A05-S03-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "DEFENSIBLE_ALTERNATIVE",
+      "oracle_state": "VALID",
+      "property_id": "A05-S03-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A05-S03-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "DEFENSIBLE_ALTERNATIVE",
+      "oracle_state": "VALID",
+      "property_id": "A05-S03-P4",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A05-S03-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A05-S03-P5",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A05-S04-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A05-S04-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A05-S04-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A05-S04-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A05-S04-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "DEFENSIBLE_ALTERNATIVE",
+      "oracle_state": "VALID",
+      "property_id": "A05-S04-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A05-S04-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A05-S04-P4",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A05-S05-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A05-S05-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A05-S05-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A05-S05-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A05-S05-PLANNER-001"
+      ],
+      "evaluator_mode": "DETERMINISTIC",
+      "exclusion_reason": null,
+      "hardness": "HARD_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A05-S05-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "PLANNER"
+    },
+    {
+      "case_ids": [
+        "PP-A05-S06-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A05-S06-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A05-S06-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "DEFENSIBLE_ALTERNATIVE",
+      "oracle_state": "VALID",
+      "property_id": "A05-S06-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A05-S06-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "ORACLE_SUSPECT_PROPERTY",
+      "kind": "CONTEXTUAL_NOTE",
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A05-S06-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A06-S01-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "ORACLE_SUSPECT_PROPERTY",
+      "kind": "CONTEXTUAL_NOTE",
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A06-ACT-FINAL-LEAKAGE",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A06-P04-001"
+      ],
+      "evaluator_mode": "DETERMINISTIC",
+      "exclusion_reason": null,
+      "hardness": "NOT_APPLICABLE_PROPERTY",
+      "kind": "CONTEXTUAL_NOTE",
+      "oracle_state": "NOT_APPLICABLE",
+      "property_id": "A06-ACT-FINAL-LENGTH",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P04"
+    },
+    {
+      "case_ids": [],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": "NO_FROZEN_P09_STAGE_LOCAL_FIXTURE_FOR_ACTIVITY",
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A06-ACT-FINAL-P09",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P09"
+    },
+    {
+      "case_ids": [
+        "PP-A06-S06-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A06-ACT-FINAL-P5",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": "NO_FROZEN_P09_STAGE_LOCAL_FIXTURE_FOR_ACTIVITY",
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A06-ACT-P09b",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P09"
+    },
+    {
+      "case_ids": [
+        "PP-A06-P04-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A06-ACT-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P04"
+    },
+    {
+      "case_ids": [
+        "PP-A06-P04-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A06-ACT-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P04"
+    },
+    {
+      "case_ids": [
+        "PP-A06-P04-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "DEFENSIBLE_ALTERNATIVE",
+      "oracle_state": "VALID",
+      "property_id": "A06-ACT-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P04"
+    },
+    {
+      "case_ids": [
+        "PP-A06-P04-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A06-ACT-P4",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P04"
+    },
+    {
+      "case_ids": [
+        "PP-A06-S01-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A06-S01-FINAL-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A06-S01-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A06-S01-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A06-S01-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A06-S01-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A06-S01-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "DEFENSIBLE_ALTERNATIVE",
+      "oracle_state": "VALID",
+      "property_id": "A06-S01-P4",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A06-S01-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A06-S01-P5",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A06-S02-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A06-S02-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A06-S02-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A06-S02-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A06-S02-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "ORACLE_SUSPECT_PROPERTY",
+      "kind": "CONTEXTUAL_NOTE",
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A06-S02-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A06-S02-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A06-S02-P4",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A06-S03-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A06-S03-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A06-S03-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A06-S03-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A06-S03-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "DEFENSIBLE_ALTERNATIVE",
+      "oracle_state": "VALID",
+      "property_id": "A06-S03-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A06-S04-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "CONTEXTUAL_NOTE",
+      "oracle_state": "VALID",
+      "property_id": "A06-S04-FINAL-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A06-S04-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A06-S04-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A06-S04-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A06-S04-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A06-S04-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "ORACLE_SUSPECT_PROPERTY",
+      "kind": "CONTEXTUAL_NOTE",
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A06-S04-P4",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A06-S05-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A06-S05-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A06-S05-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "DEFENSIBLE_ALTERNATIVE",
+      "oracle_state": "VALID",
+      "property_id": "A06-S05-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A06-S05-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A06-S05-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A06-S05-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A06-S05-P4",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A06-S06-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A06-S06-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A06-S06-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A06-S06-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A06-S06-PLANNER-001"
+      ],
+      "evaluator_mode": "DETERMINISTIC",
+      "exclusion_reason": null,
+      "hardness": "HARD_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A06-S06-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "PLANNER"
+    },
+    {
+      "case_ids": [
+        "PP-A07-S01-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "ORACLE_SUSPECT_PROPERTY",
+      "kind": "CONTEXTUAL_NOTE",
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A07-ACT-FINAL-LEAKAGE",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A07-P04-001"
+      ],
+      "evaluator_mode": "DETERMINISTIC",
+      "exclusion_reason": null,
+      "hardness": "NOT_APPLICABLE_PROPERTY",
+      "kind": "CONTEXTUAL_NOTE",
+      "oracle_state": "NOT_APPLICABLE",
+      "property_id": "A07-ACT-FINAL-LENGTH",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P04"
+    },
+    {
+      "case_ids": [
+        "PP-A07-P04-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A07-ACT-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P04"
+    },
+    {
+      "case_ids": [
+        "PP-A07-P04-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A07-ACT-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P04"
+    },
+    {
+      "case_ids": [
+        "PP-A07-P04-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "DEFENSIBLE_ALTERNATIVE",
+      "oracle_state": "VALID",
+      "property_id": "A07-ACT-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P04"
+    },
+    {
+      "case_ids": [
+        "PP-A07-PLANNER-ACT"
+      ],
+      "evaluator_mode": "DETERMINISTIC",
+      "exclusion_reason": null,
+      "hardness": "HARD_SEMANTIC_PROPERTY",
+      "kind": "CONTEXTUAL_NOTE",
+      "oracle_state": "VALID",
+      "property_id": "A07-ACT-P4",
+      "qualification_status": "CASE_BOUND",
+      "stage": "PLANNER"
+    },
+    {
+      "case_ids": [
+        "PP-A07-S01-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "CONTEXTUAL_NOTE",
+      "oracle_state": "VALID",
+      "property_id": "A07-ACT-P5",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A07-S01-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A07-S01-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A07-S01-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A07-S01-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A07-S01-PLANNER-001"
+      ],
+      "evaluator_mode": "DETERMINISTIC",
+      "exclusion_reason": null,
+      "hardness": "HARD_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A07-S01-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "PLANNER"
+    },
+    {
+      "case_ids": [
+        "PP-A07-S02-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A07-S02-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A07-S02-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A07-S02-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A07-S02-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A07-S02-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A07-S02-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A07-S02-P4",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A07-S03-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A07-S03-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A07-S03-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A07-S03-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A07-S03-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "DEFENSIBLE_ALTERNATIVE",
+      "oracle_state": "VALID",
+      "property_id": "A07-S03-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A07-S03-PLANNER-001"
+      ],
+      "evaluator_mode": "DETERMINISTIC",
+      "exclusion_reason": null,
+      "hardness": "HARD_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A07-S03-P4",
+      "qualification_status": "CASE_BOUND",
+      "stage": "PLANNER"
+    },
+    {
+      "case_ids": [
+        "PP-A07-S04-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A07-S04-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A07-S04-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A07-S04-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A07-S04-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "DEFENSIBLE_ALTERNATIVE",
+      "oracle_state": "VALID",
+      "property_id": "A07-S04-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A07-S04-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A07-S04-P4",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A07-S05-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A07-S05-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A07-S05-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "ORACLE_SUSPECT_PROPERTY",
+      "kind": "DEFENSIBLE_ALTERNATIVE",
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A07-S05-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A07-S05-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "DEFENSIBLE_ALTERNATIVE",
+      "oracle_state": "VALID",
+      "property_id": "A07-S05-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A07-S05-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "DEFENSIBLE_ALTERNATIVE",
+      "oracle_state": "VALID",
+      "property_id": "A07-S05-P4",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A07-S05-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A07-S05-P5",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A07-S06-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "CONTEXTUAL_NOTE",
+      "oracle_state": "VALID",
+      "property_id": "A07-S06-FINAL-RECON",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A07-S06-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A07-S06-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A07-S06-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "ORACLE_SUSPECT_PROPERTY",
+      "kind": "CONTEXTUAL_NOTE",
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A07-S06-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A07-S06-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "DEFENSIBLE_ALTERNATIVE",
+      "oracle_state": "VALID",
+      "property_id": "A07-S06-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A07-S06-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A07-S06-P4",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": "NO_FROZEN_P09_STAGE_LOCAL_FIXTURE_FOR_ACTIVITY",
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "CONTEXTUAL_NOTE",
+      "oracle_state": "VALID",
+      "property_id": "A07-S06-P5",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P09"
+    },
+    {
+      "case_ids": [
+        "PP-A08-P04-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A08-ACT-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P04"
+    },
+    {
+      "case_ids": [
+        "PP-A08-P04-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A08-ACT-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P04"
+    },
+    {
+      "case_ids": [
+        "PP-A08-P04-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A08-ACT-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P04"
+    },
+    {
+      "case_ids": [
+        "PP-A08-S01-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A08-ACT-P4",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A08-S01-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "CONTEXTUAL_NOTE",
+      "oracle_state": "VALID",
+      "property_id": "A08-ACT-P5",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": "NO_FROZEN_P09_STAGE_LOCAL_FIXTURE_FOR_ACTIVITY",
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "CONTEXTUAL_NOTE",
+      "oracle_state": "VALID",
+      "property_id": "A08-ACT-P6",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P09"
+    },
+    {
+      "case_ids": [
+        "PP-A08-S01-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "CONTEXTUAL_NOTE",
+      "oracle_state": "VALID",
+      "property_id": "A08-S01-FINAL-XAR",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A08-S01-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A08-S01-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A08-S01-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "ORACLE_SUSPECT_PROPERTY",
+      "kind": "CONTEXTUAL_NOTE",
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A08-S01-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A08-S01-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A08-S01-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A08-S01-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A08-S01-P4",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A08-S02-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A08-S02-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A08-S02-P07-001"
+      ],
+      "evaluator_mode": "RULE_BASED",
+      "exclusion_reason": null,
+      "hardness": "HARD_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A08-S02-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A08-S02-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A08-S02-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A08-S02-PLANNER-001"
+      ],
+      "evaluator_mode": "DETERMINISTIC",
+      "exclusion_reason": null,
+      "hardness": "HARD_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A08-S02-P4",
+      "qualification_status": "CASE_BOUND",
+      "stage": "PLANNER"
+    },
+    {
+      "case_ids": [
+        "PP-A08-S03-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A08-S03-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A08-S03-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A08-S03-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A08-S03-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "DEFENSIBLE_ALTERNATIVE",
+      "oracle_state": "VALID",
+      "property_id": "A08-S03-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A08-S03-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A08-S03-P4",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A08-S04-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A08-S04-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A08-S04-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A08-S04-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A08-S04-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A08-S04-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A08-S05-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A08-S05-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A08-S05-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A08-S05-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A08-S05-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "DEFENSIBLE_ALTERNATIVE",
+      "oracle_state": "VALID",
+      "property_id": "A08-S05-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A08-S05-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A08-S05-P4",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A08-S06-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A08-S06-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A08-S06-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "DEFENSIBLE_ALTERNATIVE",
+      "oracle_state": "VALID",
+      "property_id": "A08-S06-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A08-S06-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A08-S06-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A08-S06-PLANNER-001"
+      ],
+      "evaluator_mode": "DETERMINISTIC",
+      "exclusion_reason": null,
+      "hardness": "HARD_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A08-S06-P4",
+      "qualification_status": "CASE_BOUND",
+      "stage": "PLANNER"
+    },
+    {
+      "case_ids": [
+        "PP-A09-S01-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "ORACLE_SUSPECT_PROPERTY",
+      "kind": "CONTEXTUAL_NOTE",
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A09-ACT-FINAL-LEAKAGE",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A09-P04-001"
+      ],
+      "evaluator_mode": "DETERMINISTIC",
+      "exclusion_reason": null,
+      "hardness": "NOT_APPLICABLE_PROPERTY",
+      "kind": "CONTEXTUAL_NOTE",
+      "oracle_state": "NOT_APPLICABLE",
+      "property_id": "A09-ACT-FINAL-LENGTH",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P04"
+    },
+    {
+      "case_ids": [
+        "PP-A09-P09-F01"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A09-ACT-P09a",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P09"
+    },
+    {
+      "case_ids": [
+        "PP-A09-P09-F01"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A09-ACT-P09b",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P09"
+    },
+    {
+      "case_ids": [
+        "PP-A09-P04-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A09-ACT-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P04"
+    },
+    {
+      "case_ids": [
+        "PP-A09-P04-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A09-ACT-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P04"
+    },
+    {
+      "case_ids": [
+        "PP-A09-P04-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "DEFENSIBLE_ALTERNATIVE",
+      "oracle_state": "VALID",
+      "property_id": "A09-ACT-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P04"
+    },
+    {
+      "case_ids": [
+        "PP-A09-P04-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "CONTEXTUAL_NOTE",
+      "oracle_state": "VALID",
+      "property_id": "A09-ACT-P4",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P04"
+    },
+    {
+      "case_ids": [
+        "PP-A09-S01-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A09-ACT-P5",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A09-S01-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A09-S01-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A09-S01-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A09-S01-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A09-S01-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A09-S01-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A09-S01-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A09-S01-P4",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A09-S02-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A09-S02-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A09-S02-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "DEFENSIBLE_ALTERNATIVE",
+      "oracle_state": "VALID",
+      "property_id": "A09-S02-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A09-S02-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A09-S02-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A09-S02-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A09-S02-P4",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A09-S03-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A09-S03-FINAL-SILENT-GAP",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A09-S03-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A09-S03-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A09-S03-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A09-S03-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A09-S03-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A09-S03-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A09-S03-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "DEFENSIBLE_ALTERNATIVE",
+      "oracle_state": "VALID",
+      "property_id": "A09-S03-P4",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A09-S03-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A09-S03-P5",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A09-S04-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A09-S04-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A09-S04-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "DEFENSIBLE_ALTERNATIVE",
+      "oracle_state": "VALID",
+      "property_id": "A09-S04-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A09-S04-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A09-S04-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A09-P04-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "CONTEXTUAL_NOTE",
+      "oracle_state": "VALID",
+      "property_id": "A09-S04-P4",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P04"
+    },
+    {
+      "case_ids": [
+        "PP-A09-S05-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A09-S05-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A09-S05-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A09-S05-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A09-S05-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A09-S05-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A09-S05-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "DEFENSIBLE_ALTERNATIVE",
+      "oracle_state": "VALID",
+      "property_id": "A09-S05-P4",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A09-S05-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "CONTEXTUAL_NOTE",
+      "oracle_state": "VALID",
+      "property_id": "A09-S05-P5",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A09-S05-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A09-S05-P6",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A09-S06-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A09-S06-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A09-S06-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "DEFENSIBLE_ALTERNATIVE",
+      "oracle_state": "VALID",
+      "property_id": "A09-S06-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A09-S06-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A09-S06-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A09-S06-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "CONTEXTUAL_NOTE",
+      "oracle_state": "VALID",
+      "property_id": "A09-S06-P4",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A10-P04-001"
+      ],
+      "evaluator_mode": "DETERMINISTIC",
+      "exclusion_reason": null,
+      "hardness": "NOT_APPLICABLE_PROPERTY",
+      "kind": "CONTEXTUAL_NOTE",
+      "oracle_state": "NOT_APPLICABLE",
+      "property_id": "A10-ACT-FINAL-LENGTH",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P04"
+    },
+    {
+      "case_ids": [],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": "NO_FROZEN_P09_STAGE_LOCAL_FIXTURE_FOR_ACTIVITY",
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A10-ACT-P09a",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P09"
+    },
+    {
+      "case_ids": [],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": "NO_FROZEN_P09_STAGE_LOCAL_FIXTURE_FOR_ACTIVITY",
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A10-ACT-P09b",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P09"
+    },
+    {
+      "case_ids": [
+        "PP-A10-P04-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A10-ACT-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P04"
+    },
+    {
+      "case_ids": [
+        "PP-A10-P04-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A10-ACT-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P04"
+    },
+    {
+      "case_ids": [
+        "PP-A10-P04-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "DEFENSIBLE_ALTERNATIVE",
+      "oracle_state": "VALID",
+      "property_id": "A10-ACT-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P04"
+    },
+    {
+      "case_ids": [
+        "PP-A10-PLANNER-ACT"
+      ],
+      "evaluator_mode": "DETERMINISTIC",
+      "exclusion_reason": null,
+      "hardness": "HARD_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A10-ACT-P4",
+      "qualification_status": "CASE_BOUND",
+      "stage": "PLANNER"
+    },
+    {
+      "case_ids": [
+        "PP-A10-S01-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "CONTEXTUAL_NOTE",
+      "oracle_state": "VALID",
+      "property_id": "A10-ACT-P5",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A10-P04-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A10-ACT-P6",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P04"
+    },
+    {
+      "case_ids": [
+        "PP-A10-S01-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A10-S01-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A10-S01-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A10-S01-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A10-S01-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "CONTEXTUAL_NOTE",
+      "oracle_state": "VALID",
+      "property_id": "A10-S01-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A10-S02-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A10-S02-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A10-S02-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A10-S02-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A10-S02-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A10-S02-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A10-S03-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A10-S03-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A10-S03-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A10-S03-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A10-S03-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "DEFENSIBLE_ALTERNATIVE",
+      "oracle_state": "VALID",
+      "property_id": "A10-S03-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A10-S03-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A10-S03-P4",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A10-S03-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A10-S03-P5",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A10-S04-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "CONTEXTUAL_NOTE",
+      "oracle_state": "VALID",
+      "property_id": "A10-S04-FINAL-DECLARED-OMISSION",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A10-S04-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A10-S04-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A10-S04-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "ORACLE_SUSPECT_PROPERTY",
+      "kind": "CONTEXTUAL_NOTE",
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A10-S04-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A10-S04-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A10-S04-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A10-S04-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A10-S04-P4",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A10-S04-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "DEFENSIBLE_ALTERNATIVE",
+      "oracle_state": "VALID",
+      "property_id": "A10-S04-P5",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A10-S04-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A10-S04-P6",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A10-S05-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A10-S05-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A10-S05-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A10-S05-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A10-S05-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "DEFENSIBLE_ALTERNATIVE",
+      "oracle_state": "VALID",
+      "property_id": "A10-S05-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A10-S05-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "CONTEXTUAL_NOTE",
+      "oracle_state": "VALID",
+      "property_id": "A10-S05-P4",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A10-S05-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A10-S05-P5",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A10-S06-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A10-S06-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A10-S06-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A10-S06-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A10-S06-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A10-S06-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A10-S06-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A10-S06-P4",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A11-P04-001"
+      ],
+      "evaluator_mode": "DETERMINISTIC",
+      "exclusion_reason": null,
+      "hardness": "NOT_APPLICABLE_PROPERTY",
+      "kind": "CONTEXTUAL_NOTE",
+      "oracle_state": "NOT_APPLICABLE",
+      "property_id": "A11-ACT-FINAL-LENGTH",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P04"
+    },
+    {
+      "case_ids": [],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": "NO_FROZEN_P09_STAGE_LOCAL_FIXTURE_FOR_ACTIVITY",
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A11-ACT-P09a",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P09"
+    },
+    {
+      "case_ids": [],
+      "evaluator_mode": "RULE_BASED",
+      "exclusion_reason": "NO_FROZEN_P09_STAGE_LOCAL_FIXTURE_FOR_ACTIVITY",
+      "hardness": "HARD_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A11-ACT-P09b",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P09"
+    },
+    {
+      "case_ids": [
+        "PP-A11-P04-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A11-ACT-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P04"
+    },
+    {
+      "case_ids": [
+        "PP-A11-P04-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A11-ACT-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P04"
+    },
+    {
+      "case_ids": [
+        "PP-A11-P04-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "DEFENSIBLE_ALTERNATIVE",
+      "oracle_state": "VALID",
+      "property_id": "A11-ACT-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P04"
+    },
+    {
+      "case_ids": [
+        "PP-A11-S01-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A11-ACT-P4",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A11-P04-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A11-ACT-P5",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P04"
+    },
+    {
+      "case_ids": [
+        "PP-A11-S05-P06-001"
+      ],
+      "evaluator_mode": "DETERMINISTIC",
+      "exclusion_reason": null,
+      "hardness": "NOT_APPLICABLE_PROPERTY",
+      "kind": "CONTEXTUAL_NOTE",
+      "oracle_state": "NOT_APPLICABLE",
+      "property_id": "A11-ACT-P6",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A11-S01-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A11-S01-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A11-S01-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A11-S01-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A11-S01-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A11-S01-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A11-S01-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "DEFENSIBLE_ALTERNATIVE",
+      "oracle_state": "VALID",
+      "property_id": "A11-S01-P4",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A11-S01-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A11-S01-P5",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A11-S02-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A11-S02-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A11-S02-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A11-S02-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A11-S02-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A11-S02-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A11-S02-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "DEFENSIBLE_ALTERNATIVE",
+      "oracle_state": "VALID",
+      "property_id": "A11-S02-P4",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A11-S03-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A11-S03-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A11-S03-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A11-S03-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A11-S03-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A11-S03-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A11-S03-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A11-S03-P4",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A11-S04-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A11-S04-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A11-S04-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A11-S04-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A11-S04-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A11-S04-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A11-S04-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "DEFENSIBLE_ALTERNATIVE",
+      "oracle_state": "VALID",
+      "property_id": "A11-S04-P4",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A11-S04-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A11-S04-P5",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A11-S05-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A11-S05-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A11-S05-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A11-S05-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A11-S05-PLANNER-001"
+      ],
+      "evaluator_mode": "DETERMINISTIC",
+      "exclusion_reason": null,
+      "hardness": "HARD_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A11-S05-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "PLANNER"
+    },
+    {
+      "case_ids": [
+        "PP-A11-S06-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A11-S06-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A11-S06-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "DEFENSIBLE_ALTERNATIVE",
+      "oracle_state": "VALID",
+      "property_id": "A11-S06-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A11-S06-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A11-S06-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A11-S06-PLANNER-001"
+      ],
+      "evaluator_mode": "DETERMINISTIC",
+      "exclusion_reason": null,
+      "hardness": "HARD_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A11-S06-P4",
+      "qualification_status": "CASE_BOUND",
+      "stage": "PLANNER"
+    },
+    {
+      "case_ids": [
+        "PP-A12-S01-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "ORACLE_SUSPECT_PROPERTY",
+      "kind": "CONTEXTUAL_NOTE",
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A12-ACT-FINAL-LEAKAGE",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A12-P04-001"
+      ],
+      "evaluator_mode": "DETERMINISTIC",
+      "exclusion_reason": null,
+      "hardness": "NOT_APPLICABLE_PROPERTY",
+      "kind": "CONTEXTUAL_NOTE",
+      "oracle_state": "NOT_APPLICABLE",
+      "property_id": "A12-ACT-FINAL-LENGTH",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P04"
+    },
+    {
+      "case_ids": [
+        "PP-A12-P09-F01"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A12-ACT-P09a",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P09"
+    },
+    {
+      "case_ids": [
+        "PP-A12-P09-F01"
+      ],
+      "evaluator_mode": "RULE_BASED",
+      "exclusion_reason": null,
+      "hardness": "HARD_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A12-ACT-P09b",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P09"
+    },
+    {
+      "case_ids": [
+        "PP-A12-P04-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A12-ACT-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P04"
+    },
+    {
+      "case_ids": [
+        "PP-A12-P04-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A12-ACT-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P04"
+    },
+    {
+      "case_ids": [
+        "PP-A12-P04-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "DEFENSIBLE_ALTERNATIVE",
+      "oracle_state": "VALID",
+      "property_id": "A12-ACT-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P04"
+    },
+    {
+      "case_ids": [
+        "PP-A12-S01-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A12-ACT-P4",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A12-P04-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A12-ACT-P5",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P04"
+    },
+    {
+      "case_ids": [
+        "PP-A12-S01-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "CONTEXTUAL_NOTE",
+      "oracle_state": "VALID",
+      "property_id": "A12-ACT-P6",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A12-S01-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A12-S01-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A12-S01-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A12-S01-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A12-S01-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A12-S01-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A12-S01-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "DEFENSIBLE_ALTERNATIVE",
+      "oracle_state": "VALID",
+      "property_id": "A12-S01-P4",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A12-S02-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A12-S02-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A12-S02-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A12-S02-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A12-S02-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "DEFENSIBLE_ALTERNATIVE",
+      "oracle_state": "VALID",
+      "property_id": "A12-S02-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A12-S02-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A12-S02-P4",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A12-S03-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A12-S03-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A12-S03-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A12-S03-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A12-S03-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "DEFENSIBLE_ALTERNATIVE",
+      "oracle_state": "VALID",
+      "property_id": "A12-S03-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A12-S03-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A12-S03-P4",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A12-S03-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A12-S03-P5",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A12-S04-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "CONTEXTUAL_NOTE",
+      "oracle_state": "VALID",
+      "property_id": "A12-S04-FINAL-XAR",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A12-S04-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A12-S04-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A12-S04-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "ORACLE_SUSPECT_PROPERTY",
+      "kind": "CONTEXTUAL_NOTE",
+      "oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A12-S04-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A12-S04-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A12-S04-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A12-S04-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A12-S04-P4",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A12-S04-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "DEFENSIBLE_ALTERNATIVE",
+      "oracle_state": "VALID",
+      "property_id": "A12-S04-P5",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A12-S05-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A12-S05-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A12-S05-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A12-S05-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A12-S05-P06-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A12-S05-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P06"
+    },
+    {
+      "case_ids": [
+        "PP-A12-S05-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "DEFENSIBLE_ALTERNATIVE",
+      "oracle_state": "VALID",
+      "property_id": "A12-S05-P4",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A12-S05-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A12-S05-P5",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A12-S06-P07-001"
+      ],
+      "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
+      "exclusion_reason": null,
+      "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A12-S06-P1",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A12-S06-P07-001"
+      ],
+      "evaluator_mode": "RULE_BASED",
+      "exclusion_reason": null,
+      "hardness": "HARD_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A12-S06-P2",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A12-S06-P07-001"
+      ],
+      "evaluator_mode": "RULE_BASED",
+      "exclusion_reason": null,
+      "hardness": "HARD_SEMANTIC_PROPERTY",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "property_id": "A12-S06-P3",
+      "qualification_status": "CASE_BOUND",
+      "stage": "P07"
+    },
+    {
+      "case_ids": [
+        "PP-A12-S06-PLANNER-001"
+      ],
+      "evaluator_mode": "DETERMINISTIC",
+      "exclusion_reason": null,
+      "hardness": "HARD_SEMANTIC_PROPERTY",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "property_id": "A12-S06-P4",
+      "qualification_status": "CASE_BOUND",
+      "stage": "PLANNER"
+    }
+  ],
+  "schema_version": "semantic-property-coverage/1.0.0",
+  "unexplained_uncovered_count": 0
+}

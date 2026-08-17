@@ -1,0 +1,16 @@
+Control overall: 1380/2000 = 69%
+Variant overall: 1500/2000 = 75%
+Desktop control: 720/800 = 90%
+Desktop variant: 1020/1200 = 85%
+Mobile control: 660/1200 = 55%
+Mobile variant: 480/800 = 60%
+
+Device shares:
+Control desktop = 800/2000 = 40%; mobile = 60%.
+Variant desktop = 1200/2000 = 60%; mobile = 40%.
+
+Equal-weight check:
+Control = (90% + 55%)/2 = 72.5%.
+Variant = (85% + 60%)/2 = 72.5%.
+
+The equal-weight check illustrates composition only. It does not repair the non-random assignment.

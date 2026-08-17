@@ -1,0 +1,18 @@
+CAPACIDAD TOTAL = 2 jornadas x 24 = 48 atenciones.
+
+SUR, 1 jornada: min(20 prioritarios,24)=20; remanente=4; solicitudes sin cupo=35-24=11.
+NORTE, 1 jornada: min(12 prioritarios,24)=12; remanente=12; solicitudes sin cupo=42-24=18.
+TOTAL elegido: 32 controles prioritarios potencialmente cubiertos; 16 cupos para otras solicitudes.
+
+CENTRO no elegido: 18 prioritarios; 60 solicitudes; con 1 jornada quedarían 36 solicitudes. Tiene 5 días fijos/semana y viaje medio 20 min.
+
+Supuesto: cada cupo atiende una solicitud. Límite: solicitudes no equivalen necesariamente a pacientes únicos.
+
+ALTERNATIVAS
+Centro+Sur: prioritarios potenciales 18+20=38; solicitudes sin cupo 36+11=47.
+Centro+Norte: prioritarios potenciales 18+12=30; solicitudes sin cupo 36+18=54.
+Sur+Norte: prioritarios potenciales 20+12=32; solicitudes sin cupo 11+18=29.
+Dos en Centro: max 18 prioritarios; 60-48=12 solicitudes sin cupo.
+Dos en Sur: max 20 prioritarios; 35 solicitudes atendibles; hasta 13 cupos ociosos no transferibles.
+
+Las cifras son máximos teóricos. Inasistencia histórica no se usa para excluir por anticipado ni asegura el uso real.

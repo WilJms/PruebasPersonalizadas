@@ -1,0 +1,1501 @@
+{
+  "schema_version": "pre-finalization-manifest/1.0.0",
+  "scope": "ALL_ORIGINAL_FILES_BEFORE_FINALIZATION",
+  "file_count": 166,
+  "files": [
+    {
+      "relative_path": ".DS_Store",
+      "sha256": "a1a10681b096c3a2acc3a47a3ff681de5b507d89572ccea5d0c3dd5be564565d",
+      "bytes": 38916,
+      "role": "AUXILIARY_OS_METADATA",
+      "activity": null,
+      "submission": null,
+      "artifact_grouping": "corpus_root"
+    },
+    {
+      "relative_path": "activity_01_luz_y_plantines/.DS_Store",
+      "sha256": "e9d9d9ad2a409ff2babc4f6c2d0389225bdca167cb8d896e5548d162d112f9c0",
+      "bytes": 8196,
+      "role": "AUXILIARY_OS_METADATA",
+      "activity": "activity_01",
+      "submission": null,
+      "artifact_grouping": "activity_01"
+    },
+    {
+      "relative_path": "activity_01_luz_y_plantines/01_assignment.docx",
+      "sha256": "f1abef8577915bbd8a1ccbfa87a41621adab745c74ccebdd4084dec605aec18b",
+      "bytes": 40467,
+      "role": "SOURCE_ASSIGNMENT",
+      "activity": "activity_01",
+      "submission": null,
+      "artifact_grouping": "activity_01"
+    },
+    {
+      "relative_path": "activity_01_luz_y_plantines/02_rubric.docx",
+      "sha256": "4d094045be8e9df0cf35fca1407973b8a71d7c0108cca89da5d60504b5e25126",
+      "bytes": 40987,
+      "role": "SOURCE_RUBRIC",
+      "activity": "activity_01",
+      "submission": null,
+      "artifact_grouping": "activity_01"
+    },
+    {
+      "relative_path": "activity_01_luz_y_plantines/human_review_draft.md",
+      "sha256": "c39bc81ced6269a5db6dbe2a60f18ebd5b53b3a5e842ef6e73654e27c59cc9d2",
+      "bytes": 9952,
+      "role": "PRE_FINAL_ORACLE_DRAFT",
+      "activity": "activity_01",
+      "submission": null,
+      "artifact_grouping": "activity_01"
+    },
+    {
+      "relative_path": "activity_01_luz_y_plantines/opus5_ratification.json",
+      "sha256": "fec100f75e9390244fb3ef23b55d58ed4ce99aa522dbc40497aeda9a47e5daf5",
+      "bytes": 31160,
+      "role": "OPUS5_RATIFICATION",
+      "activity": "activity_01",
+      "submission": null,
+      "artifact_grouping": "activity_01"
+    },
+    {
+      "relative_path": "activity_01_luz_y_plantines/submissions/submission_01_strong.pdf",
+      "sha256": "9eae3a43f8b86fbde5432943fbdbc49bc378d14d2079ec64df9876747cab1597",
+      "bytes": 3504,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_01",
+      "submission": "original_submission_01",
+      "artifact_grouping": "activity_01/original_submission_01"
+    },
+    {
+      "relative_path": "activity_01_luz_y_plantines/submissions/submission_02_adequate.md",
+      "sha256": "c9882dc9c46da796a593ec34b91f179bc2e3fb39b350d05ed8ba2bfc66220649",
+      "bytes": 2087,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_01",
+      "submission": "original_submission_02",
+      "artifact_grouping": "activity_01/original_submission_02"
+    },
+    {
+      "relative_path": "activity_01_luz_y_plantines/submissions/submission_03_partial_keywords.txt",
+      "sha256": "e540430e88c8717e75fe6f70348ee5a141edc21dffbbd629b761381351a4fba1",
+      "bytes": 2013,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_01",
+      "submission": "original_submission_03",
+      "artifact_grouping": "activity_01/original_submission_03"
+    },
+    {
+      "relative_path": "activity_01_luz_y_plantines/submissions/submission_04_superficial.md",
+      "sha256": "0a7b9553a2fce31ace5c767f050f0108f6c2632e17518d92e16023c8b08c1ec6",
+      "bytes": 2362,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_01",
+      "submission": "original_submission_04",
+      "artifact_grouping": "activity_01/original_submission_04"
+    },
+    {
+      "relative_path": "activity_01_luz_y_plantines/submissions/submission_05_contradictory.pdf",
+      "sha256": "4c949694496f4f39217cc469d2d9d4096a82df3a80a0faa08ba80cbe3bcdd2ec",
+      "bytes": 2745,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_01",
+      "submission": "original_submission_05",
+      "artifact_grouping": "activity_01/original_submission_05"
+    },
+    {
+      "relative_path": "activity_01_luz_y_plantines/submissions/submission_06_adversarial_or_insufficient.txt",
+      "sha256": "2ab52d2ae14ef8643c99a3ee3d544990f92c2866151b4014221f3b8acb548b8b",
+      "bytes": 1016,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_01",
+      "submission": "original_submission_06",
+      "artifact_grouping": "activity_01/original_submission_06"
+    },
+    {
+      "relative_path": "activity_02_voz_en_un_microcuento/.DS_Store",
+      "sha256": "3dfbb43ae3ebdde604d8d6212d53de70b10574793b011ace1e422c21b04024f7",
+      "bytes": 8196,
+      "role": "AUXILIARY_OS_METADATA",
+      "activity": "activity_02",
+      "submission": null,
+      "artifact_grouping": "activity_02"
+    },
+    {
+      "relative_path": "activity_02_voz_en_un_microcuento/01_assignment.docx",
+      "sha256": "8a4b3a84858cc4b6960bfc7385161d3a43b6751ca26d0f8690ad7a28220257b5",
+      "bytes": 40097,
+      "role": "SOURCE_ASSIGNMENT",
+      "activity": "activity_02",
+      "submission": null,
+      "artifact_grouping": "activity_02"
+    },
+    {
+      "relative_path": "activity_02_voz_en_un_microcuento/02_rubric.docx",
+      "sha256": "a007e8547ee6bdb592ab2bd6752d763cbd3656a00b9491a29b63131316d51709",
+      "bytes": 40986,
+      "role": "SOURCE_RUBRIC",
+      "activity": "activity_02",
+      "submission": null,
+      "artifact_grouping": "activity_02"
+    },
+    {
+      "relative_path": "activity_02_voz_en_un_microcuento/human_review_draft.md",
+      "sha256": "24cc978bb10abef14f8d79bc6a5105e3ef6c59b433613cea54a8a70a1d05b90c",
+      "bytes": 9480,
+      "role": "PRE_FINAL_ORACLE_DRAFT",
+      "activity": "activity_02",
+      "submission": null,
+      "artifact_grouping": "activity_02"
+    },
+    {
+      "relative_path": "activity_02_voz_en_un_microcuento/opus5_ratification.json",
+      "sha256": "cdd79244986781a0a6fd7b68194fd577f255940a979997e292a950537317ab38",
+      "bytes": 29577,
+      "role": "OPUS5_RATIFICATION",
+      "activity": "activity_02",
+      "submission": null,
+      "artifact_grouping": "activity_02"
+    },
+    {
+      "relative_path": "activity_02_voz_en_un_microcuento/submissions/submission_01_strong.pdf",
+      "sha256": "d22b275217b10d02e16b9b410b009a7fc858f3a536f3ecd9edf20b871608374c",
+      "bytes": 3660,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_02",
+      "submission": "original_submission_01",
+      "artifact_grouping": "activity_02/original_submission_01"
+    },
+    {
+      "relative_path": "activity_02_voz_en_un_microcuento/submissions/submission_02_adequate.md",
+      "sha256": "07fe6eac4c73cf30fc434b522cebc315c43e354143cb43ee4bf5d6832862c111",
+      "bytes": 2466,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_02",
+      "submission": "original_submission_02",
+      "artifact_grouping": "activity_02/original_submission_02"
+    },
+    {
+      "relative_path": "activity_02_voz_en_un_microcuento/submissions/submission_03_partial_keywords.txt",
+      "sha256": "787f34cb1a3925223c609b312ca3fa0884132e91581622ced02caced08b6e4c9",
+      "bytes": 2107,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_02",
+      "submission": "original_submission_03",
+      "artifact_grouping": "activity_02/original_submission_03"
+    },
+    {
+      "relative_path": "activity_02_voz_en_un_microcuento/submissions/submission_04_superficial.md",
+      "sha256": "fe06d04c29e632725edde7745f606704fdb0e6253cc27f53edc2011d6cf4fb6e",
+      "bytes": 2202,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_02",
+      "submission": "original_submission_04",
+      "artifact_grouping": "activity_02/original_submission_04"
+    },
+    {
+      "relative_path": "activity_02_voz_en_un_microcuento/submissions/submission_05_contradictory.pdf",
+      "sha256": "5a77ca8915a11657f6c9f7d17a3c4a52292dd1abd3c4ec67b40545392d1df566",
+      "bytes": 2647,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_02",
+      "submission": "original_submission_05",
+      "artifact_grouping": "activity_02/original_submission_05"
+    },
+    {
+      "relative_path": "activity_02_voz_en_un_microcuento/submissions/submission_06_adversarial_or_insufficient.txt",
+      "sha256": "a74fcd256a54a4c1f6a18610bab5a038132af7029317b5225acbb88b67388578",
+      "bytes": 967,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_02",
+      "submission": "original_submission_06",
+      "artifact_grouping": "activity_02/original_submission_06"
+    },
+    {
+      "relative_path": "activity_03_puesto_de_limonada/01_assignment.docx",
+      "sha256": "6bd45338a96b303a0f6d2d81a3982e948f5f95731022a14a67444ffd9727459f",
+      "bytes": 40367,
+      "role": "SOURCE_ASSIGNMENT",
+      "activity": "activity_03",
+      "submission": null,
+      "artifact_grouping": "activity_03"
+    },
+    {
+      "relative_path": "activity_03_puesto_de_limonada/02_rubric.docx",
+      "sha256": "1a66e055a809a6be7e7a3a0ac33093c654b4dc826ff5df7c322888496ca41a5e",
+      "bytes": 39523,
+      "role": "SOURCE_RUBRIC",
+      "activity": "activity_03",
+      "submission": null,
+      "artifact_grouping": "activity_03"
+    },
+    {
+      "relative_path": "activity_03_puesto_de_limonada/human_review_draft.md",
+      "sha256": "b247a122925a8430484dd2153b1f1d65870b1c857aadb465d6a35207515d5d9c",
+      "bytes": 10076,
+      "role": "PRE_FINAL_ORACLE_DRAFT",
+      "activity": "activity_03",
+      "submission": null,
+      "artifact_grouping": "activity_03"
+    },
+    {
+      "relative_path": "activity_03_puesto_de_limonada/opus5_ratification.json",
+      "sha256": "d9659b65d38d3f0ccbe4ee91201e2850c61c8241604dbeab44391d2fe476dca8",
+      "bytes": 31751,
+      "role": "OPUS5_RATIFICATION",
+      "activity": "activity_03",
+      "submission": null,
+      "artifact_grouping": "activity_03"
+    },
+    {
+      "relative_path": "activity_03_puesto_de_limonada/submissions/submission_01_strong.pdf",
+      "sha256": "bf7568337f5d352443711d91d50f9cbd33ff956d1f6b30e2fa9e0a177ebe66fb",
+      "bytes": 3771,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_03",
+      "submission": "original_submission_01",
+      "artifact_grouping": "activity_03/original_submission_01"
+    },
+    {
+      "relative_path": "activity_03_puesto_de_limonada/submissions/submission_02_adequate.md",
+      "sha256": "0f69f116e6dfb2871c218a56ed1add082bb9ee8fdd626c056d2da98943552f2c",
+      "bytes": 2020,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_03",
+      "submission": "original_submission_02",
+      "artifact_grouping": "activity_03/original_submission_02"
+    },
+    {
+      "relative_path": "activity_03_puesto_de_limonada/submissions/submission_03_partial_keywords.txt",
+      "sha256": "9994be43d75de3c5688035f52f4c6480676d1268601bc2b8fa090702e384916d",
+      "bytes": 1702,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_03",
+      "submission": "original_submission_03",
+      "artifact_grouping": "activity_03/original_submission_03"
+    },
+    {
+      "relative_path": "activity_03_puesto_de_limonada/submissions/submission_04_superficial.md",
+      "sha256": "8bc81977219f9f4685b21246d8d56ad62952bb65ad238e0aba6506491c03f415",
+      "bytes": 3390,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_03",
+      "submission": "original_submission_04",
+      "artifact_grouping": "activity_03/original_submission_04"
+    },
+    {
+      "relative_path": "activity_03_puesto_de_limonada/submissions/submission_05_contradictory.pdf",
+      "sha256": "eda5214a4e4b70f1f69d14ac1c6046d3bf7789ca089ccc380568a297ed7de19f",
+      "bytes": 2815,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_03",
+      "submission": "original_submission_05",
+      "artifact_grouping": "activity_03/original_submission_05"
+    },
+    {
+      "relative_path": "activity_03_puesto_de_limonada/submissions/submission_06_adversarial_or_insufficient.txt",
+      "sha256": "51acb90f16aa2ded6b8338046c44fa607ec470e2bbf75db9beb6909e92e75d74",
+      "bytes": 1024,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_03",
+      "submission": "original_submission_06",
+      "artifact_grouping": "activity_03/original_submission_06"
+    },
+    {
+      "relative_path": "activity_04_asignador_de_turnos/01_assignment.docx",
+      "sha256": "0bf67adc27d936ec090be39bc7b3b7ea76d063fbf141915079efaee262505d15",
+      "bytes": 40706,
+      "role": "SOURCE_ASSIGNMENT",
+      "activity": "activity_04",
+      "submission": null,
+      "artifact_grouping": "activity_04"
+    },
+    {
+      "relative_path": "activity_04_asignador_de_turnos/02_rubric.docx",
+      "sha256": "bde129b7a90362871b9dc76ad24388a6ded288404a29a79b68c0c2b37bfcb65d",
+      "bytes": 39345,
+      "role": "SOURCE_RUBRIC",
+      "activity": "activity_04",
+      "submission": null,
+      "artifact_grouping": "activity_04"
+    },
+    {
+      "relative_path": "activity_04_asignador_de_turnos/human_review_draft.md",
+      "sha256": "a6df83db7b58accce28aa137bd76e2842f9f59f425828b416f81ec0c2b93ff65",
+      "bytes": 10969,
+      "role": "PRE_FINAL_ORACLE_DRAFT",
+      "activity": "activity_04",
+      "submission": null,
+      "artifact_grouping": "activity_04"
+    },
+    {
+      "relative_path": "activity_04_asignador_de_turnos/opus5_ratification.json",
+      "sha256": "26da73386759f03e1d0b924df5006614f4ea598a954832cc033b3d1867033b26",
+      "bytes": 37301,
+      "role": "OPUS5_RATIFICATION",
+      "activity": "activity_04",
+      "submission": null,
+      "artifact_grouping": "activity_04"
+    },
+    {
+      "relative_path": "activity_04_asignador_de_turnos/submissions/submission_01_strong_code.md",
+      "sha256": "c8603d5abbc96ed601fc65a282972785ab2362bbd483febe7079c54498e46a4f",
+      "bytes": 1922,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_04",
+      "submission": "original_submission_01",
+      "artifact_grouping": "activity_04/original_submission_01"
+    },
+    {
+      "relative_path": "activity_04_asignador_de_turnos/submissions/submission_01_strong_note.txt",
+      "sha256": "9dc87b1353a0451bd7c8de7fa21f87fa2774f933750616c5c9e134cd05eeb458",
+      "bytes": 1994,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_04",
+      "submission": "original_submission_01",
+      "artifact_grouping": "activity_04/original_submission_01"
+    },
+    {
+      "relative_path": "activity_04_asignador_de_turnos/submissions/submission_02_adequate_code.md",
+      "sha256": "0c852da216cd4ea5f9694d83597c4b9735299d48137f52742658678325785385",
+      "bytes": 1533,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_04",
+      "submission": "original_submission_02",
+      "artifact_grouping": "activity_04/original_submission_02"
+    },
+    {
+      "relative_path": "activity_04_asignador_de_turnos/submissions/submission_02_adequate_note.txt",
+      "sha256": "cf986cea2fc1babaa96bfb33b16c2188dc23ee774dce37e76cdf38202c1b66d9",
+      "bytes": 1822,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_04",
+      "submission": "original_submission_02",
+      "artifact_grouping": "activity_04/original_submission_02"
+    },
+    {
+      "relative_path": "activity_04_asignador_de_turnos/submissions/submission_03_partial_keywords_code.md",
+      "sha256": "329ada5437eef8c25bdd0a735af8217a474771a4712b81e07d4ab845d1d10a7d",
+      "bytes": 1174,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_04",
+      "submission": "original_submission_03",
+      "artifact_grouping": "activity_04/original_submission_03"
+    },
+    {
+      "relative_path": "activity_04_asignador_de_turnos/submissions/submission_03_partial_keywords_note.txt",
+      "sha256": "ddc96031184a173dae254749a3416b343c4a7817b0b849bfcb519166ed5aa4da",
+      "bytes": 1690,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_04",
+      "submission": "original_submission_03",
+      "artifact_grouping": "activity_04/original_submission_03"
+    },
+    {
+      "relative_path": "activity_04_asignador_de_turnos/submissions/submission_04_superficial_code.md",
+      "sha256": "1feae37468d3f5a960f2b56801f6a980e06fb6ea081eece8f2615662433b990f",
+      "bytes": 802,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_04",
+      "submission": "original_submission_04",
+      "artifact_grouping": "activity_04/original_submission_04"
+    },
+    {
+      "relative_path": "activity_04_asignador_de_turnos/submissions/submission_05_contradictory_code.md",
+      "sha256": "d8752f762a023dc1ae6aa9a52eb978c86883b43fce9c8a84e0179673d765a51d",
+      "bytes": 1144,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_04",
+      "submission": "original_submission_05",
+      "artifact_grouping": "activity_04/original_submission_05"
+    },
+    {
+      "relative_path": "activity_04_asignador_de_turnos/submissions/submission_05_contradictory_note.txt",
+      "sha256": "398b27ac005011cfb99e2232fb949718e74c1698126dff4c0cd72d1d4ae51496",
+      "bytes": 1154,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_04",
+      "submission": "original_submission_05",
+      "artifact_grouping": "activity_04/original_submission_05"
+    },
+    {
+      "relative_path": "activity_04_asignador_de_turnos/submissions/submission_06_adversarial_or_insufficient_code.md",
+      "sha256": "8948de0fcafd4ef1a57fe3bc7824629b7924199505d9fca3ec0b73f952a0588e",
+      "bytes": 602,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_04",
+      "submission": "original_submission_06",
+      "artifact_grouping": "activity_04/original_submission_06"
+    },
+    {
+      "relative_path": "activity_04_asignador_de_turnos/submissions/submission_06_adversarial_or_insufficient_note.txt",
+      "sha256": "c34beeb83f6e42d7a265a962f4c21d849d3d53307ac9ae622acdbfa47df02b48",
+      "bytes": 1044,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_04",
+      "submission": "original_submission_06",
+      "artifact_grouping": "activity_04/original_submission_06"
+    },
+    {
+      "relative_path": "activity_05_visitas_a_bibliotecas/.DS_Store",
+      "sha256": "0a9d6d42418323e1fd237ead5a8509e92a1e1b732ea81b8125805312ecd44c9f",
+      "bytes": 8196,
+      "role": "AUXILIARY_OS_METADATA",
+      "activity": "activity_05",
+      "submission": null,
+      "artifact_grouping": "activity_05"
+    },
+    {
+      "relative_path": "activity_05_visitas_a_bibliotecas/01_assignment.docx",
+      "sha256": "4437dded752c0fc55efada89097d5a787b6ac57f2c8acf14dd2b131048bfaceb",
+      "bytes": 40494,
+      "role": "SOURCE_ASSIGNMENT",
+      "activity": "activity_05",
+      "submission": null,
+      "artifact_grouping": "activity_05"
+    },
+    {
+      "relative_path": "activity_05_visitas_a_bibliotecas/02_rubric.docx",
+      "sha256": "657e912cddd27deb10a6226c7bb85cb6639ba95343d61e463c3aa9f367ab7a37",
+      "bytes": 38464,
+      "role": "SOURCE_RUBRIC",
+      "activity": "activity_05",
+      "submission": null,
+      "artifact_grouping": "activity_05"
+    },
+    {
+      "relative_path": "activity_05_visitas_a_bibliotecas/human_review_draft.md",
+      "sha256": "61750e9275662d0b0c48798f997abed71480d27200688bb752f02a90dc68c439",
+      "bytes": 10761,
+      "role": "PRE_FINAL_ORACLE_DRAFT",
+      "activity": "activity_05",
+      "submission": null,
+      "artifact_grouping": "activity_05"
+    },
+    {
+      "relative_path": "activity_05_visitas_a_bibliotecas/opus5_ratification.json",
+      "sha256": "d9ca581de4498f3cae7b9d04b1a4a0b959596a13755929afa803c36bfc16aad5",
+      "bytes": 31253,
+      "role": "OPUS5_RATIFICATION",
+      "activity": "activity_05",
+      "submission": null,
+      "artifact_grouping": "activity_05"
+    },
+    {
+      "relative_path": "activity_05_visitas_a_bibliotecas/submissions/submission_01_strong.pdf",
+      "sha256": "44ee48be24ccadd874aa07029504f1b3e5ecbcf701469ffa8d982e12ca40d7ce",
+      "bytes": 3639,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_05",
+      "submission": "original_submission_01",
+      "artifact_grouping": "activity_05/original_submission_01"
+    },
+    {
+      "relative_path": "activity_05_visitas_a_bibliotecas/submissions/submission_02_adequate.md",
+      "sha256": "05f65cec4eb909d34142a4dfde269b4cd132f5922cc0145d23c0cc7ffd67a4e5",
+      "bytes": 2069,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_05",
+      "submission": "original_submission_02",
+      "artifact_grouping": "activity_05/original_submission_02"
+    },
+    {
+      "relative_path": "activity_05_visitas_a_bibliotecas/submissions/submission_03_partial_keywords.pdf",
+      "sha256": "e2284189b1dc1f11df56986933db0f3cf57615c280fa9895b08fcd9e2f2e874d",
+      "bytes": 3083,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_05",
+      "submission": "original_submission_03",
+      "artifact_grouping": "activity_05/original_submission_03"
+    },
+    {
+      "relative_path": "activity_05_visitas_a_bibliotecas/submissions/submission_04_superficial.txt",
+      "sha256": "3e84cc0480a359f3c8d6c2c0a98206d5ef4375714fd623d867ae262f6b3e4111",
+      "bytes": 566,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_05",
+      "submission": "original_submission_04",
+      "artifact_grouping": "activity_05/original_submission_04"
+    },
+    {
+      "relative_path": "activity_05_visitas_a_bibliotecas/submissions/submission_05_contradictory.md",
+      "sha256": "0aa46019dd397354550ac2bcc8146b040e12597384ad200ec76454e86f0fb755",
+      "bytes": 1209,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_05",
+      "submission": "original_submission_05",
+      "artifact_grouping": "activity_05/original_submission_05"
+    },
+    {
+      "relative_path": "activity_05_visitas_a_bibliotecas/submissions/submission_06_adversarial_or_insufficient.pdf",
+      "sha256": "c26958b47e0984cfe65d633e0972c2d0b5d7b3c800b4c79cfa312371e3671d17",
+      "bytes": 4725,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_05",
+      "submission": "original_submission_06",
+      "artifact_grouping": "activity_05/original_submission_06"
+    },
+    {
+      "relative_path": "activity_06_movilidad_estudiantil/01_assignment.docx",
+      "sha256": "0622e222008ec0c6ae801fbdb09e5895c937ff461e990e679ca4bdc5ec55bd54",
+      "bytes": 40449,
+      "role": "SOURCE_ASSIGNMENT",
+      "activity": "activity_06",
+      "submission": null,
+      "artifact_grouping": "activity_06"
+    },
+    {
+      "relative_path": "activity_06_movilidad_estudiantil/02_rubric.docx",
+      "sha256": "93d21994450cc21ecd52589b1cbd9d7d157aab0ac2b9307ad05a59d2340c3c22",
+      "bytes": 40981,
+      "role": "SOURCE_RUBRIC",
+      "activity": "activity_06",
+      "submission": null,
+      "artifact_grouping": "activity_06"
+    },
+    {
+      "relative_path": "activity_06_movilidad_estudiantil/human_review_draft.md",
+      "sha256": "ba963820b6754d22e938b376acd1b6e722a99a7ead04e42a8f4cb879f4e5ac4a",
+      "bytes": 9726,
+      "role": "PRE_FINAL_ORACLE_DRAFT",
+      "activity": "activity_06",
+      "submission": null,
+      "artifact_grouping": "activity_06"
+    },
+    {
+      "relative_path": "activity_06_movilidad_estudiantil/opus5_ratification.json",
+      "sha256": "d57de231872c7652e5521910aa509b58328d2f1947f8ba5eaaface0de4592d52",
+      "bytes": 34266,
+      "role": "OPUS5_RATIFICATION",
+      "activity": "activity_06",
+      "submission": null,
+      "artifact_grouping": "activity_06"
+    },
+    {
+      "relative_path": "activity_06_movilidad_estudiantil/submissions/submission_01_strong.pdf",
+      "sha256": "fdf731ced4c534d3aa3969e1664cc1c5ea1b51c56b87326fee310ddd786ee2dc",
+      "bytes": 3732,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_06",
+      "submission": "original_submission_01",
+      "artifact_grouping": "activity_06/original_submission_01"
+    },
+    {
+      "relative_path": "activity_06_movilidad_estudiantil/submissions/submission_02_adequate.md",
+      "sha256": "f6334941daf65217209d6a0291e91b54fac2bece096dc602802f67f742170ac0",
+      "bytes": 1766,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_06",
+      "submission": "original_submission_02",
+      "artifact_grouping": "activity_06/original_submission_02"
+    },
+    {
+      "relative_path": "activity_06_movilidad_estudiantil/submissions/submission_03_partial_keywords.txt",
+      "sha256": "f7d07c93955b8e029c7f34297927c0e825fd7a7c8ac2bb7c853a505e1436fb1c",
+      "bytes": 1907,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_06",
+      "submission": "original_submission_03",
+      "artifact_grouping": "activity_06/original_submission_03"
+    },
+    {
+      "relative_path": "activity_06_movilidad_estudiantil/submissions/submission_04_superficial.md",
+      "sha256": "bbed7215a39559e8135e2589f7e10b83a31ddd5b9c52f28aa0227a2fe53ce601",
+      "bytes": 4126,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_06",
+      "submission": "original_submission_04",
+      "artifact_grouping": "activity_06/original_submission_04"
+    },
+    {
+      "relative_path": "activity_06_movilidad_estudiantil/submissions/submission_05_contradictory.pdf",
+      "sha256": "9c07fe31043f9b9fbe8b1c82195c2976c8f47431d600f84d69fcf5114f7b55c9",
+      "bytes": 2669,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_06",
+      "submission": "original_submission_05",
+      "artifact_grouping": "activity_06/original_submission_05"
+    },
+    {
+      "relative_path": "activity_06_movilidad_estudiantil/submissions/submission_06_adversarial_or_insufficient.txt",
+      "sha256": "5b062aa4256d2f1a3a58f6919e7ad5451faf9d6a9f4d6ec4999745c9d7211faa",
+      "bytes": 1067,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_06",
+      "submission": "original_submission_06",
+      "artifact_grouping": "activity_06/original_submission_06"
+    },
+    {
+      "relative_path": "activity_07_aislamiento_termico/01_assignment.docx",
+      "sha256": "0d68bd0ded05a12604680af4397466d389e65e96e0ddd0c3c523358a1733dc35",
+      "bytes": 40078,
+      "role": "SOURCE_ASSIGNMENT",
+      "activity": "activity_07",
+      "submission": null,
+      "artifact_grouping": "activity_07"
+    },
+    {
+      "relative_path": "activity_07_aislamiento_termico/02_rubric.docx",
+      "sha256": "097d3b6cca1b5267e545ddaeb164f13ea61688702f5c00c6886b1a7c603052ca",
+      "bytes": 38985,
+      "role": "SOURCE_RUBRIC",
+      "activity": "activity_07",
+      "submission": null,
+      "artifact_grouping": "activity_07"
+    },
+    {
+      "relative_path": "activity_07_aislamiento_termico/human_review_draft.md",
+      "sha256": "30a8a4ee3d73be50cb5a88c1568663cacc944ecdf63447ecd9e73b448fd15f72",
+      "bytes": 11386,
+      "role": "PRE_FINAL_ORACLE_DRAFT",
+      "activity": "activity_07",
+      "submission": null,
+      "artifact_grouping": "activity_07"
+    },
+    {
+      "relative_path": "activity_07_aislamiento_termico/opus5_ratification.json",
+      "sha256": "d1de542aba4c0e6b8c378c6e5557f4c1bd452acd46e562602f4c15a3c290469f",
+      "bytes": 36120,
+      "role": "OPUS5_RATIFICATION",
+      "activity": "activity_07",
+      "submission": null,
+      "artifact_grouping": "activity_07"
+    },
+    {
+      "relative_path": "activity_07_aislamiento_termico/submissions/submission_01_strong_notebook.txt",
+      "sha256": "4215a055f30585c7e98f11051c0efd3ed9dfd87a4b5c17be311d9c3e2a436a02",
+      "bytes": 1139,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_07",
+      "submission": "original_submission_01",
+      "artifact_grouping": "activity_07/original_submission_01"
+    },
+    {
+      "relative_path": "activity_07_aislamiento_termico/submissions/submission_01_strong_report.pdf",
+      "sha256": "60182abc8e122d47dd7eeafab859e48dd3597a31614f3ab7da1215c4e842f71c",
+      "bytes": 4180,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_07",
+      "submission": "original_submission_01",
+      "artifact_grouping": "activity_07/original_submission_01"
+    },
+    {
+      "relative_path": "activity_07_aislamiento_termico/submissions/submission_02_adequate_report.md",
+      "sha256": "93f812d3b9f20f5d73e96cc8ca567bde537d7936ecf7f0533f5217865072464d",
+      "bytes": 2122,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_07",
+      "submission": "original_submission_02",
+      "artifact_grouping": "activity_07/original_submission_02"
+    },
+    {
+      "relative_path": "activity_07_aislamiento_termico/submissions/submission_03_partial_keywords_notebook.txt",
+      "sha256": "a03e63d0347842f729e246693ac8f9244ee33c4be3b8c29daa2699c5f15bcf90",
+      "bytes": 620,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_07",
+      "submission": "original_submission_03",
+      "artifact_grouping": "activity_07/original_submission_03"
+    },
+    {
+      "relative_path": "activity_07_aislamiento_termico/submissions/submission_03_partial_keywords_report.pdf",
+      "sha256": "acbf21c8df0d6bcc7b3d513a0ce05f357ee69fae78d41560e4e77564f82e7f73",
+      "bytes": 2978,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_07",
+      "submission": "original_submission_03",
+      "artifact_grouping": "activity_07/original_submission_03"
+    },
+    {
+      "relative_path": "activity_07_aislamiento_termico/submissions/submission_04_superficial_notebook.txt",
+      "sha256": "24203d6b179cb14554675378fe55a68c3bf4349f259d74744146ed870213acfe",
+      "bytes": 423,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_07",
+      "submission": "original_submission_04",
+      "artifact_grouping": "activity_07/original_submission_04"
+    },
+    {
+      "relative_path": "activity_07_aislamiento_termico/submissions/submission_04_superficial_report.md",
+      "sha256": "a90a0cf34f8eacd2d21eb17b2132908c484436088651866cff92aca950820d97",
+      "bytes": 1967,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_07",
+      "submission": "original_submission_04",
+      "artifact_grouping": "activity_07/original_submission_04"
+    },
+    {
+      "relative_path": "activity_07_aislamiento_termico/submissions/submission_05_contradictory_notebook.txt",
+      "sha256": "71517a40f4ac054b98e57ed6496f4728a085edfb14632e7f3c1c3cb0981e4fa4",
+      "bytes": 735,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_07",
+      "submission": "original_submission_05",
+      "artifact_grouping": "activity_07/original_submission_05"
+    },
+    {
+      "relative_path": "activity_07_aislamiento_termico/submissions/submission_05_contradictory_report.pdf",
+      "sha256": "d9ed8678b057b9f603fbb54e03d3120c42461c133c7ee2864d4e47ac29c8b2ee",
+      "bytes": 2826,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_07",
+      "submission": "original_submission_05",
+      "artifact_grouping": "activity_07/original_submission_05"
+    },
+    {
+      "relative_path": "activity_07_aislamiento_termico/submissions/submission_06_adversarial_or_insufficient_notebook.txt",
+      "sha256": "6679b322d47d32e4890a9c2c192067ae2fd81dc2a96035ed31bb11e980a2325e",
+      "bytes": 425,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_07",
+      "submission": "original_submission_06",
+      "artifact_grouping": "activity_07/original_submission_06"
+    },
+    {
+      "relative_path": "activity_07_aislamiento_termico/submissions/submission_06_adversarial_or_insufficient_report.md",
+      "sha256": "936077102d889f822760f0f64b4e428872ec887655bdf52f953491f2650711cd",
+      "bytes": 1424,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_07",
+      "submission": "original_submission_06",
+      "artifact_grouping": "activity_07/original_submission_06"
+    },
+    {
+      "relative_path": "activity_08_triage_de_logs/01_assignment.docx",
+      "sha256": "d998ff1aa9b2a0cf4fec5a95e9806918d42fea54711123cbbd65bc26b263d70d",
+      "bytes": 41422,
+      "role": "SOURCE_ASSIGNMENT",
+      "activity": "activity_08",
+      "submission": null,
+      "artifact_grouping": "activity_08"
+    },
+    {
+      "relative_path": "activity_08_triage_de_logs/02_rubric.docx",
+      "sha256": "c3b41274873e42d2cf901df779d96fdf3a591609ebcf6a325f4379ef7647ccd3",
+      "bytes": 41134,
+      "role": "SOURCE_RUBRIC",
+      "activity": "activity_08",
+      "submission": null,
+      "artifact_grouping": "activity_08"
+    },
+    {
+      "relative_path": "activity_08_triage_de_logs/human_review_draft.md",
+      "sha256": "3fb36804f02f812d1f6be895f1548994fa40195a63dcb1d0d785357851a90e45",
+      "bytes": 10352,
+      "role": "PRE_FINAL_ORACLE_DRAFT",
+      "activity": "activity_08",
+      "submission": null,
+      "artifact_grouping": "activity_08"
+    },
+    {
+      "relative_path": "activity_08_triage_de_logs/opus5_ratification.json",
+      "sha256": "edd8f71092f0ecc0acdc5e4b9e289919be86e46b1b871e9a054baa6c8378ecb9",
+      "bytes": 32551,
+      "role": "OPUS5_RATIFICATION",
+      "activity": "activity_08",
+      "submission": null,
+      "artifact_grouping": "activity_08"
+    },
+    {
+      "relative_path": "activity_08_triage_de_logs/submissions/submission_01_strong_evidence.txt",
+      "sha256": "9fa93fb15acd0b111ac2c45c006506026f66d48c333310dd74b7e7f66fdc83c9",
+      "bytes": 891,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_08",
+      "submission": "original_submission_01",
+      "artifact_grouping": "activity_08/original_submission_01"
+    },
+    {
+      "relative_path": "activity_08_triage_de_logs/submissions/submission_01_strong_incident_note.md",
+      "sha256": "0f7ed742de205bedbea2c3785d53f1fa6cb56416fd08dc6715166bea1eff0bcf",
+      "bytes": 3193,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_08",
+      "submission": "original_submission_01",
+      "artifact_grouping": "activity_08/original_submission_01"
+    },
+    {
+      "relative_path": "activity_08_triage_de_logs/submissions/submission_02_adequate_evidence.txt",
+      "sha256": "0f520d1a27058de6e2c2bf35564573cdc4f35105f48e0fee4952569c548745e9",
+      "bytes": 501,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_08",
+      "submission": "original_submission_02",
+      "artifact_grouping": "activity_08/original_submission_02"
+    },
+    {
+      "relative_path": "activity_08_triage_de_logs/submissions/submission_02_adequate_incident_note.md",
+      "sha256": "0650bed6edd2fb2f55626bb73df00bdc213bf1f16c162de290b86089f2799d8d",
+      "bytes": 1850,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_08",
+      "submission": "original_submission_02",
+      "artifact_grouping": "activity_08/original_submission_02"
+    },
+    {
+      "relative_path": "activity_08_triage_de_logs/submissions/submission_03_partial_keywords_evidence.txt",
+      "sha256": "db73eff0fbfb89185e5197ce394d0c4878faad1c7c5026361da8919f320c09a9",
+      "bytes": 421,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_08",
+      "submission": "original_submission_03",
+      "artifact_grouping": "activity_08/original_submission_03"
+    },
+    {
+      "relative_path": "activity_08_triage_de_logs/submissions/submission_03_partial_keywords_incident_note.md",
+      "sha256": "897393a5964e9c556f737e3e9b2661b09ae1b1a5bcc08428c11be29bd80a26b3",
+      "bytes": 1729,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_08",
+      "submission": "original_submission_03",
+      "artifact_grouping": "activity_08/original_submission_03"
+    },
+    {
+      "relative_path": "activity_08_triage_de_logs/submissions/submission_04_superficial_incident_note.md",
+      "sha256": "3d6cef0b67e7068318d4871b3f33ae4eba44c70125dcf29a9c33da3988354288",
+      "bytes": 3337,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_08",
+      "submission": "original_submission_04",
+      "artifact_grouping": "activity_08/original_submission_04"
+    },
+    {
+      "relative_path": "activity_08_triage_de_logs/submissions/submission_05_contradictory_evidence.txt",
+      "sha256": "67646d1243fdb9a4dc167ddebcc55ceefad51d2ac1237aa4834d32bcb319a595",
+      "bytes": 323,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_08",
+      "submission": "original_submission_05",
+      "artifact_grouping": "activity_08/original_submission_05"
+    },
+    {
+      "relative_path": "activity_08_triage_de_logs/submissions/submission_05_contradictory_incident_note.md",
+      "sha256": "ab8816dbecd791bf452c6b4bb4f812165d57a5fb13161b6cf8a665b5818fc0ff",
+      "bytes": 1496,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_08",
+      "submission": "original_submission_05",
+      "artifact_grouping": "activity_08/original_submission_05"
+    },
+    {
+      "relative_path": "activity_08_triage_de_logs/submissions/submission_06_adversarial_or_insufficient_evidence.txt",
+      "sha256": "c6bc28f81ac6a7d700d3091b82b7697207a9d7c41c2989effb9210e26e7d020b",
+      "bytes": 218,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_08",
+      "submission": "original_submission_06",
+      "artifact_grouping": "activity_08/original_submission_06"
+    },
+    {
+      "relative_path": "activity_08_triage_de_logs/submissions/submission_06_adversarial_or_insufficient_incident_note.md",
+      "sha256": "7c2dd71d50654a046a72d7659ce6b3d37774cf75f5333f206ae39f33ca74ca2a",
+      "bytes": 1236,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_08",
+      "submission": "original_submission_06",
+      "artifact_grouping": "activity_08/original_submission_06"
+    },
+    {
+      "relative_path": "activity_09_renovacion_y_desplazamiento/.DS_Store",
+      "sha256": "a26e0eea90f28b23f1a707c8f94b5300da735c086d1b777fc37befca2169858b",
+      "bytes": 8196,
+      "role": "AUXILIARY_OS_METADATA",
+      "activity": "activity_09",
+      "submission": null,
+      "artifact_grouping": "activity_09"
+    },
+    {
+      "relative_path": "activity_09_renovacion_y_desplazamiento/01_assignment.docx",
+      "sha256": "c7a912ffe583d4d190eaa56a5cb5279cf54de1c94470003d920201b73aee1954",
+      "bytes": 41176,
+      "role": "SOURCE_ASSIGNMENT",
+      "activity": "activity_09",
+      "submission": null,
+      "artifact_grouping": "activity_09"
+    },
+    {
+      "relative_path": "activity_09_renovacion_y_desplazamiento/02_rubric.docx",
+      "sha256": "33de57460ee514251240fc9113ccb947dc18fab3597a7aa41498e25f3736db38",
+      "bytes": 41261,
+      "role": "SOURCE_RUBRIC",
+      "activity": "activity_09",
+      "submission": null,
+      "artifact_grouping": "activity_09"
+    },
+    {
+      "relative_path": "activity_09_renovacion_y_desplazamiento/human_review_draft.md",
+      "sha256": "a77af6f5c5c8e7072b7de1f08a04ebddf46239ea62fa3c0cc32b7a5f0bd7ad37",
+      "bytes": 10999,
+      "role": "PRE_FINAL_ORACLE_DRAFT",
+      "activity": "activity_09",
+      "submission": null,
+      "artifact_grouping": "activity_09"
+    },
+    {
+      "relative_path": "activity_09_renovacion_y_desplazamiento/opus5_ratification.json",
+      "sha256": "bec5a55beb0a98d08b55ae94aceeea36a19df2586e562ddbd71e193d132a8e17",
+      "bytes": 35791,
+      "role": "OPUS5_RATIFICATION",
+      "activity": "activity_09",
+      "submission": null,
+      "artifact_grouping": "activity_09"
+    },
+    {
+      "relative_path": "activity_09_renovacion_y_desplazamiento/submissions/submission_01_strong.pdf",
+      "sha256": "c4fc05c5cc2d2b8dcec2598780ce2e01c974e92b3ba6e8c8e7691b7b941cd21d",
+      "bytes": 9261,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_09",
+      "submission": "original_submission_01",
+      "artifact_grouping": "activity_09/original_submission_01"
+    },
+    {
+      "relative_path": "activity_09_renovacion_y_desplazamiento/submissions/submission_02_adequate.md",
+      "sha256": "e34b6356355eeec89acc843939b96f721fa1b54187ca6abeecd7933757df20d9",
+      "bytes": 3090,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_09",
+      "submission": "original_submission_02",
+      "artifact_grouping": "activity_09/original_submission_02"
+    },
+    {
+      "relative_path": "activity_09_renovacion_y_desplazamiento/submissions/submission_03_partial_keywords.pdf",
+      "sha256": "8d8ffe4a52bdcf5f22fd95e92f548e44042262927e82fa8e43eb0892e7bf848f",
+      "bytes": 3039,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_09",
+      "submission": "original_submission_03",
+      "artifact_grouping": "activity_09/original_submission_03"
+    },
+    {
+      "relative_path": "activity_09_renovacion_y_desplazamiento/submissions/submission_04_superficial_long.md",
+      "sha256": "401fae281fdbdec959622cf8f9efa139b288ac66cbb24a4c96eaf68ae4b49ea6",
+      "bytes": 4125,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_09",
+      "submission": "original_submission_04",
+      "artifact_grouping": "activity_09/original_submission_04"
+    },
+    {
+      "relative_path": "activity_09_renovacion_y_desplazamiento/submissions/submission_05_contradictory.pdf",
+      "sha256": "7b3f574cd52f799af8f87c1a55158bd5986fafc270d00375766115c99ec45e63",
+      "bytes": 2770,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_09",
+      "submission": "original_submission_05",
+      "artifact_grouping": "activity_09/original_submission_05"
+    },
+    {
+      "relative_path": "activity_09_renovacion_y_desplazamiento/submissions/submission_06_polished_gap_or_adversarial.pdf",
+      "sha256": "de7ce77cd0a30fb6ce121a5ae73442052667fdd2b4920ee4041525e1b5897df1",
+      "bytes": 4793,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_09",
+      "submission": "original_submission_06",
+      "artifact_grouping": "activity_09/original_submission_06"
+    },
+    {
+      "relative_path": "activity_10_experimento_onboarding/01_assignment.docx",
+      "sha256": "3813733577cdfb0ecf5600813dac49de1409f7d76e8f1ede1f1cf4a33628b0bb",
+      "bytes": 40540,
+      "role": "SOURCE_ASSIGNMENT",
+      "activity": "activity_10",
+      "submission": null,
+      "artifact_grouping": "activity_10"
+    },
+    {
+      "relative_path": "activity_10_experimento_onboarding/02_rubric.docx",
+      "sha256": "580959158a05b3ed6af54e8195636bd9009ac0980fdfcda9902fe87270f4386e",
+      "bytes": 39373,
+      "role": "SOURCE_RUBRIC",
+      "activity": "activity_10",
+      "submission": null,
+      "artifact_grouping": "activity_10"
+    },
+    {
+      "relative_path": "activity_10_experimento_onboarding/human_review_draft.md",
+      "sha256": "469b6281c0dbb13231ffe600d5c2d39dc01e1e24f02fdfdca4f6f3647f2da445",
+      "bytes": 11230,
+      "role": "PRE_FINAL_ORACLE_DRAFT",
+      "activity": "activity_10",
+      "submission": null,
+      "artifact_grouping": "activity_10"
+    },
+    {
+      "relative_path": "activity_10_experimento_onboarding/opus5_ratification.json",
+      "sha256": "773205c590b2927dd4c717d0092f91e84b4ed674e1050f01c4a43a927b42d35f",
+      "bytes": 38090,
+      "role": "OPUS5_RATIFICATION",
+      "activity": "activity_10",
+      "submission": null,
+      "artifact_grouping": "activity_10"
+    },
+    {
+      "relative_path": "activity_10_experimento_onboarding/submissions/submission_01_strong_calculations.txt",
+      "sha256": "624df7f2bebe32efdcdb01889d303d7726322846551b1ab486c46e0db24008c4",
+      "bytes": 981,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_10",
+      "submission": "original_submission_01",
+      "artifact_grouping": "activity_10/original_submission_01"
+    },
+    {
+      "relative_path": "activity_10_experimento_onboarding/submissions/submission_01_strong_report.pdf",
+      "sha256": "d0a1f5a9291fce7164521cfb20667b5780cde7e7b68ccff5a94587d681d0895c",
+      "bytes": 5816,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_10",
+      "submission": "original_submission_01",
+      "artifact_grouping": "activity_10/original_submission_01"
+    },
+    {
+      "relative_path": "activity_10_experimento_onboarding/submissions/submission_02_adequate_calculations.txt",
+      "sha256": "2e03f8f485ec0f7dc79f39eebc6593aa74f8a53d9ef80d75ed36b5be3ddc5425",
+      "bytes": 491,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_10",
+      "submission": "original_submission_02",
+      "artifact_grouping": "activity_10/original_submission_02"
+    },
+    {
+      "relative_path": "activity_10_experimento_onboarding/submissions/submission_02_adequate_report.md",
+      "sha256": "df69845a859e347b3ba287a3bc9f1e492cffc24eab6b5401de8beb9c5def66ab",
+      "bytes": 2067,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_10",
+      "submission": "original_submission_02",
+      "artifact_grouping": "activity_10/original_submission_02"
+    },
+    {
+      "relative_path": "activity_10_experimento_onboarding/submissions/submission_03_partial_keywords_calculations.txt",
+      "sha256": "79316eb67196662695c7c366a8188a63f5da8110f908596cca49ad63ad4c5d65",
+      "bytes": 365,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_10",
+      "submission": "original_submission_03",
+      "artifact_grouping": "activity_10/original_submission_03"
+    },
+    {
+      "relative_path": "activity_10_experimento_onboarding/submissions/submission_03_partial_keywords_report.pdf",
+      "sha256": "d6123e226709d763d950d01e5a6b626dfb968a1e744717c22ce038583263a066",
+      "bytes": 2912,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_10",
+      "submission": "original_submission_03",
+      "artifact_grouping": "activity_10/original_submission_03"
+    },
+    {
+      "relative_path": "activity_10_experimento_onboarding/submissions/submission_04_superficial_calculations.txt",
+      "sha256": "b7ff1493e9446387e48f0fc1bc8ea6c61ded4e492862c5b15ff4ba8f190385ec",
+      "bytes": 233,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_10",
+      "submission": "original_submission_04",
+      "artifact_grouping": "activity_10/original_submission_04"
+    },
+    {
+      "relative_path": "activity_10_experimento_onboarding/submissions/submission_04_superficial_report.md",
+      "sha256": "4944cac38a279b2be8bcf086c8d5b7f2dfe8141423cd0cad11d431d6f854d21c",
+      "bytes": 1466,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_10",
+      "submission": "original_submission_04",
+      "artifact_grouping": "activity_10/original_submission_04"
+    },
+    {
+      "relative_path": "activity_10_experimento_onboarding/submissions/submission_05_contradictory_calculations.txt",
+      "sha256": "cd266e02abd380e2b8acbbc111c78dee490fa849cd61dc8e95d031980e6a37cb",
+      "bytes": 319,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_10",
+      "submission": "original_submission_05",
+      "artifact_grouping": "activity_10/original_submission_05"
+    },
+    {
+      "relative_path": "activity_10_experimento_onboarding/submissions/submission_05_contradictory_report.pdf",
+      "sha256": "1a9d78285a5752989c8b67ccbff9f0250f868e8ba027fd71335d97a060977f4d",
+      "bytes": 2578,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_10",
+      "submission": "original_submission_05",
+      "artifact_grouping": "activity_10/original_submission_05"
+    },
+    {
+      "relative_path": "activity_10_experimento_onboarding/submissions/submission_06_polished_gap_calculations.txt",
+      "sha256": "1193a3f1fcf075ed1fcbf8a7c024f13503a8df9700ea7c02a045184e4c6ad210",
+      "bytes": 435,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_10",
+      "submission": "original_submission_06",
+      "artifact_grouping": "activity_10/original_submission_06"
+    },
+    {
+      "relative_path": "activity_10_experimento_onboarding/submissions/submission_06_polished_gap_report.pdf",
+      "sha256": "df637219d3eeb2288ce024bc17a9980de5946d91f729cfabdf8a35f21d56d0ce",
+      "bytes": 4321,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_10",
+      "submission": "original_submission_06",
+      "artifact_grouping": "activity_10/original_submission_06"
+    },
+    {
+      "relative_path": "activity_11_duplicados_en_pagos/01_assignment.docx",
+      "sha256": "9c3fc121aaaf96888c318afee2244b694011dd7360dfff8546c89e2caf76f841",
+      "bytes": 41161,
+      "role": "SOURCE_ASSIGNMENT",
+      "activity": "activity_11",
+      "submission": null,
+      "artifact_grouping": "activity_11"
+    },
+    {
+      "relative_path": "activity_11_duplicados_en_pagos/02_rubric.docx",
+      "sha256": "717e39a40e6d9629458317812b84c366e268a0eb2f58d181aa0ce5132cd97597",
+      "bytes": 41131,
+      "role": "SOURCE_RUBRIC",
+      "activity": "activity_11",
+      "submission": null,
+      "artifact_grouping": "activity_11"
+    },
+    {
+      "relative_path": "activity_11_duplicados_en_pagos/human_review_draft.md",
+      "sha256": "c312bc5342cf960525ebbbd626bacaac3363cf695990e5d5d7bf5a52499b9352",
+      "bytes": 11011,
+      "role": "PRE_FINAL_ORACLE_DRAFT",
+      "activity": "activity_11",
+      "submission": null,
+      "artifact_grouping": "activity_11"
+    },
+    {
+      "relative_path": "activity_11_duplicados_en_pagos/opus5_ratification.json",
+      "sha256": "d2372ed65328541f027ebbe0b352af9e04fd6075af152f72a6b059cf392725af",
+      "bytes": 37042,
+      "role": "OPUS5_RATIFICATION",
+      "activity": "activity_11",
+      "submission": null,
+      "artifact_grouping": "activity_11"
+    },
+    {
+      "relative_path": "activity_11_duplicados_en_pagos/submissions/submission_01_strong_adr.md",
+      "sha256": "e2616c79c0c648fbcd56fd53d8238fbf9b5da90c293867fe62c8a71dc1e24f7c",
+      "bytes": 2121,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_11",
+      "submission": "original_submission_01",
+      "artifact_grouping": "activity_11/original_submission_01"
+    },
+    {
+      "relative_path": "activity_11_duplicados_en_pagos/submissions/submission_01_strong_patch.md",
+      "sha256": "2f4aea4e4950b0303f3c2cf66707cc2c04031cb157df7d229fe7511bdeca9129",
+      "bytes": 1299,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_11",
+      "submission": "original_submission_01",
+      "artifact_grouping": "activity_11/original_submission_01"
+    },
+    {
+      "relative_path": "activity_11_duplicados_en_pagos/submissions/submission_01_strong_postmortem.md",
+      "sha256": "642fcf6274dfde6960443a7084ae4e74dae8a33dfbc1bcbc8a83bda858f5de02",
+      "bytes": 2121,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_11",
+      "submission": "original_submission_01",
+      "artifact_grouping": "activity_11/original_submission_01"
+    },
+    {
+      "relative_path": "activity_11_duplicados_en_pagos/submissions/submission_02_adequate_adr.md",
+      "sha256": "a9ab268c1003ac56bece6597fee791d1f42669c48c5d1610b2f4533ec64e6ba5",
+      "bytes": 1632,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_11",
+      "submission": "original_submission_02",
+      "artifact_grouping": "activity_11/original_submission_02"
+    },
+    {
+      "relative_path": "activity_11_duplicados_en_pagos/submissions/submission_02_adequate_patch.md",
+      "sha256": "f0d5fafd1c3b2ac2833f27420de0bcf37f9c80b0c7782a91a302044b4fe5db77",
+      "bytes": 700,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_11",
+      "submission": "original_submission_02",
+      "artifact_grouping": "activity_11/original_submission_02"
+    },
+    {
+      "relative_path": "activity_11_duplicados_en_pagos/submissions/submission_02_adequate_postmortem.md",
+      "sha256": "8795b03acaae5fd4b836a1b1bfc8b16f44c537188f399a41b1e053d5e61ab551",
+      "bytes": 1623,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_11",
+      "submission": "original_submission_02",
+      "artifact_grouping": "activity_11/original_submission_02"
+    },
+    {
+      "relative_path": "activity_11_duplicados_en_pagos/submissions/submission_03_partial_keywords_adr.md",
+      "sha256": "5f73d2a0ce718b5cde9a31bf4e8a2e9eda319bf78ca35dec7098e4b5eebf0190",
+      "bytes": 1344,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_11",
+      "submission": "original_submission_03",
+      "artifact_grouping": "activity_11/original_submission_03"
+    },
+    {
+      "relative_path": "activity_11_duplicados_en_pagos/submissions/submission_03_partial_keywords_patch.md",
+      "sha256": "b14a11a585e242789ac27b71f92bcfe46ff035a70bfac73069fdf45a8d2013c1",
+      "bytes": 497,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_11",
+      "submission": "original_submission_03",
+      "artifact_grouping": "activity_11/original_submission_03"
+    },
+    {
+      "relative_path": "activity_11_duplicados_en_pagos/submissions/submission_03_partial_keywords_postmortem.md",
+      "sha256": "4bcaa7649d6bad62de73fe5bb3f87078bca61ec4ca15e4258f53e190f89806ff",
+      "bytes": 1189,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_11",
+      "submission": "original_submission_03",
+      "artifact_grouping": "activity_11/original_submission_03"
+    },
+    {
+      "relative_path": "activity_11_duplicados_en_pagos/submissions/submission_04_superficial_adr.md",
+      "sha256": "c45f20c9ff5333c673a034ab6525f2d9cdd260891fe010d0a099a2e3104ae686",
+      "bytes": 139,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_11",
+      "submission": "original_submission_04",
+      "artifact_grouping": "activity_11/original_submission_04"
+    },
+    {
+      "relative_path": "activity_11_duplicados_en_pagos/submissions/submission_04_superficial_patch.md",
+      "sha256": "bd9daf8c160a673c6ebf0daa069f38489d094d7b3cc1ce35a6db705093151f60",
+      "bytes": 94,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_11",
+      "submission": "original_submission_04",
+      "artifact_grouping": "activity_11/original_submission_04"
+    },
+    {
+      "relative_path": "activity_11_duplicados_en_pagos/submissions/submission_04_superficial_postmortem.md",
+      "sha256": "17dacb94a7df084dd72528e5ca51645b2c18403428770aa7dab2b140348492ac",
+      "bytes": 839,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_11",
+      "submission": "original_submission_04",
+      "artifact_grouping": "activity_11/original_submission_04"
+    },
+    {
+      "relative_path": "activity_11_duplicados_en_pagos/submissions/submission_05_contradictory_adr.md",
+      "sha256": "d6072db1a371da1b0220ea3ca36c4ad2af2eb99b1109c82f67853d22c1727420",
+      "bytes": 1122,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_11",
+      "submission": "original_submission_05",
+      "artifact_grouping": "activity_11/original_submission_05"
+    },
+    {
+      "relative_path": "activity_11_duplicados_en_pagos/submissions/submission_05_contradictory_patch.md",
+      "sha256": "738facea9dadf97d49bd84ae4196971c9a23d7564eba9701ef93e11a39fa8719",
+      "bytes": 513,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_11",
+      "submission": "original_submission_05",
+      "artifact_grouping": "activity_11/original_submission_05"
+    },
+    {
+      "relative_path": "activity_11_duplicados_en_pagos/submissions/submission_05_contradictory_postmortem.md",
+      "sha256": "81369d2ade5c8908cb823450861236f75af0d90ebb69f28d104b848cd2554ea0",
+      "bytes": 868,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_11",
+      "submission": "original_submission_05",
+      "artifact_grouping": "activity_11/original_submission_05"
+    },
+    {
+      "relative_path": "activity_11_duplicados_en_pagos/submissions/submission_06_adversarial_or_insufficient_adr.md",
+      "sha256": "33598f883a55b8a53c4b19bbd5c8c25c590f7eb7cbddb7bc9d67ee962162b3a2",
+      "bytes": 603,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_11",
+      "submission": "original_submission_06",
+      "artifact_grouping": "activity_11/original_submission_06"
+    },
+    {
+      "relative_path": "activity_11_duplicados_en_pagos/submissions/submission_06_adversarial_or_insufficient_patch.md",
+      "sha256": "58b84bd62eac727331ccdc75f153884e0d1da79d78313632e9fa98ec9c046f11",
+      "bytes": 96,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_11",
+      "submission": "original_submission_06",
+      "artifact_grouping": "activity_11/original_submission_06"
+    },
+    {
+      "relative_path": "activity_11_duplicados_en_pagos/submissions/submission_06_adversarial_or_insufficient_postmortem.md",
+      "sha256": "d1b3e6a8d6026fb2a0582f7e550bac4f5d06b2ec1df7f327d623739a8b23c7a1",
+      "bytes": 903,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_11",
+      "submission": "original_submission_06",
+      "artifact_grouping": "activity_11/original_submission_06"
+    },
+    {
+      "relative_path": "activity_12_clinica_movil/01_assignment.docx",
+      "sha256": "a303e95a80d5098b77ea29c2fb54e613c45463d2f957bb692d02a7bc5104b57e",
+      "bytes": 40905,
+      "role": "SOURCE_ASSIGNMENT",
+      "activity": "activity_12",
+      "submission": null,
+      "artifact_grouping": "activity_12"
+    },
+    {
+      "relative_path": "activity_12_clinica_movil/02_rubric.docx",
+      "sha256": "f7e8465ff870d48a2002c0d2a2a303e0a5e170f4d60e338cafee015fd143347c",
+      "bytes": 38627,
+      "role": "SOURCE_RUBRIC",
+      "activity": "activity_12",
+      "submission": null,
+      "artifact_grouping": "activity_12"
+    },
+    {
+      "relative_path": "activity_12_clinica_movil/human_review_draft.md",
+      "sha256": "789a913566886f0421906bbbf541fed00c7d052f6e2791b3e97dd850460a8ffe",
+      "bytes": 11915,
+      "role": "PRE_FINAL_ORACLE_DRAFT",
+      "activity": "activity_12",
+      "submission": null,
+      "artifact_grouping": "activity_12"
+    },
+    {
+      "relative_path": "activity_12_clinica_movil/opus5_ratification.json",
+      "sha256": "60683af4dab76021350ddd6db0e5e30ac909652795a053de2da49c0a89275ee9",
+      "bytes": 39864,
+      "role": "OPUS5_RATIFICATION",
+      "activity": "activity_12",
+      "submission": null,
+      "artifact_grouping": "activity_12"
+    },
+    {
+      "relative_path": "activity_12_clinica_movil/submissions/submission_01_strong_allocation_notes.txt",
+      "sha256": "c201a229b703f960fee36388d27b2bfea04332c144f1f3ce3f1fc9dea1e93d24",
+      "bytes": 1127,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_12",
+      "submission": "original_submission_01",
+      "artifact_grouping": "activity_12/original_submission_01"
+    },
+    {
+      "relative_path": "activity_12_clinica_movil/submissions/submission_01_strong_brief.pdf",
+      "sha256": "70ce89c81494ad52cf350d95a1d1d268c6377bbc616d0f03c2f93393c1a4cd2b",
+      "bytes": 6087,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_12",
+      "submission": "original_submission_01",
+      "artifact_grouping": "activity_12/original_submission_01"
+    },
+    {
+      "relative_path": "activity_12_clinica_movil/submissions/submission_02_adequate_allocation_notes.txt",
+      "sha256": "956ceff144321eec3a9d07d64bc4d0700c936f67bcd3c0514ccf9f3dadae6357",
+      "bytes": 563,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_12",
+      "submission": "original_submission_02",
+      "artifact_grouping": "activity_12/original_submission_02"
+    },
+    {
+      "relative_path": "activity_12_clinica_movil/submissions/submission_02_adequate_brief.md",
+      "sha256": "aa79e05cdd1293f4050b55b97aa4247eb5dec21df27d7f0a53b940e044463fd8",
+      "bytes": 2415,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_12",
+      "submission": "original_submission_02",
+      "artifact_grouping": "activity_12/original_submission_02"
+    },
+    {
+      "relative_path": "activity_12_clinica_movil/submissions/submission_03_partial_keywords_allocation_notes.txt",
+      "sha256": "b21f79bd42829e76973b0ee5793effb0ec8f03467f93a56618756ce7e060ceca",
+      "bytes": 342,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_12",
+      "submission": "original_submission_03",
+      "artifact_grouping": "activity_12/original_submission_03"
+    },
+    {
+      "relative_path": "activity_12_clinica_movil/submissions/submission_03_partial_keywords_brief.pdf",
+      "sha256": "79cfd4450f585144265194367578ec10bc9f7eab5df936d7312f5c6d7d916156",
+      "bytes": 2924,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_12",
+      "submission": "original_submission_03",
+      "artifact_grouping": "activity_12/original_submission_03"
+    },
+    {
+      "relative_path": "activity_12_clinica_movil/submissions/submission_04_superficial_brief.md",
+      "sha256": "ff8204aa83d6ef9feed2cd509fc78a5d6a0de42569426bc8d81169c41d18ea59",
+      "bytes": 3577,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_12",
+      "submission": "original_submission_04",
+      "artifact_grouping": "activity_12/original_submission_04"
+    },
+    {
+      "relative_path": "activity_12_clinica_movil/submissions/submission_05_contradictory_allocation_notes.txt",
+      "sha256": "3959475ed19fa7db5940369087af05d0dca26e88bc5e43cfcc829290da2c6426",
+      "bytes": 438,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_12",
+      "submission": "original_submission_05",
+      "artifact_grouping": "activity_12/original_submission_05"
+    },
+    {
+      "relative_path": "activity_12_clinica_movil/submissions/submission_05_contradictory_brief.pdf",
+      "sha256": "0e543d02a5f8bc9a5a1fa6991b1b395427ff38664ff1145f2646f117fcf16c57",
+      "bytes": 2652,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_12",
+      "submission": "original_submission_05",
+      "artifact_grouping": "activity_12/original_submission_05"
+    },
+    {
+      "relative_path": "activity_12_clinica_movil/submissions/submission_06_adversarial_or_insufficient_allocation_notes.txt",
+      "sha256": "7cd4fc9abc2394bab5d8d37dfd52032f00a49021ea2bc39e697e28df725cc06b",
+      "bytes": 209,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_12",
+      "submission": "original_submission_06",
+      "artifact_grouping": "activity_12/original_submission_06"
+    },
+    {
+      "relative_path": "activity_12_clinica_movil/submissions/submission_06_adversarial_or_insufficient_brief.md",
+      "sha256": "ef063503f195cacb24585c0c137ee00cd5a0eab67992c9728336b22073080385",
+      "bytes": 1425,
+      "role": "SOURCE_SUBMISSION_ARTIFACT",
+      "activity": "activity_12",
+      "submission": "original_submission_06",
+      "artifact_grouping": "activity_12/original_submission_06"
+    },
+    {
+      "relative_path": "corpus_manifest.md",
+      "sha256": "e3bdd50c7c6230172ee527c5251ec847baea9a70785c2247abd28ca80dca2cde",
+      "bytes": 12623,
+      "role": "PRE_FINAL_CORPUS_MANIFEST",
+      "activity": null,
+      "submission": null,
+      "artifact_grouping": "corpus_root"
+    },
+    {
+      "relative_path": "opus5_corpus_audit.md",
+      "sha256": "734ed21f157f47b733e3904b8b5acc224a5dad1922a9b11451df53a837b5d119",
+      "bytes": 34906,
+      "role": "OPUS5_CORPUS_AUDIT",
+      "activity": null,
+      "submission": null,
+      "artifact_grouping": "corpus_root"
+    },
+    {
+      "relative_path": "opus5_ratification_manifest.json",
+      "sha256": "bcb4a0b597ec5aeac9b92d050879de7c67963f49aa380658d63dbdacd0b6779c",
+      "bytes": 50505,
+      "role": "OPUS5_RATIFICATION_MANIFEST",
+      "activity": null,
+      "submission": null,
+      "artifact_grouping": "corpus_root"
+    }
+  ]
+}

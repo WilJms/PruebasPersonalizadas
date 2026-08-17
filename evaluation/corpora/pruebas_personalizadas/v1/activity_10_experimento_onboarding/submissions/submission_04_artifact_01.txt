@@ -1,0 +1,13 @@
+Control total = 1380/2000 = 69.0%
+Variant total = 1500/2000 = 75.0%
+Absolute uplift = +6.0 pp
+Relative uplift = 6/69 = 8.7%
+Incremental activations = 1500-1380 = 120
+
+Segment calculations omitted as non-material.
+External benchmark = +3% (industry standard for onboarding changes).
+
+Executive extrapolation:
+At 20,000 accounts, 6 pp would equal 1,200 extra activations.
+
+Significance rule applied: differences above 5 pp are material.

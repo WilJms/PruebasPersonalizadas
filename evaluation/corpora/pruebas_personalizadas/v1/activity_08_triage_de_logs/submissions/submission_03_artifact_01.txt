@@ -1,0 +1,16 @@
+E1 auth 14:03:02-14:03:20 - cinco fallos admin_exports / 198.51.100.24
+E2 auth 14:06:41 - éxito MFA / sesión s_77 / misma IP
+E3 gateway req_e12 - export scope=all / s_77 / status 200 / 4.812.220 bytes
+E4 storage obj_4c - creación por admin_exports / s_77 / hash registrado
+E5 gateway req_e19 - descarga obj_4c / status 200 / mismo tamaño
+E6 WAF req_b17 - 403, sin sesión vinculada; mantener separado
+
+Relaciones y límites:
+R1 E1->E2: misma cuenta e IP; no identifica a la persona.
+R2 E2->E3->E4->E5: sesión s_77 y objeto/tamaño conectan la secuencia.
+R3 E6 separado: otra IP, sin sesión, status 403.
+L1 no hay contenido de obj_4c.
+L2 no hay línea base de tamaños ni horario habitual.
+L3 MFA=true registra finalización del flujo, no legitimidad humana.
+
+Dato siguiente solicitado: ticket de exportación y línea base de `admin_exports`, conservando identidades fuera de la nota.

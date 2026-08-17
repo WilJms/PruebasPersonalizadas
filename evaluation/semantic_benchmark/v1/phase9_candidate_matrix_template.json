@@ -1,0 +1,58 @@
+{
+  "authorization": "NONE",
+  "benchmark_version": "semantic-benchmark/1.0.0",
+  "candidates": [
+    {
+      "candidate_id": "UNSET",
+      "max_output_tokens": "UNSET",
+      "model": "UNSET",
+      "model_snapshot": "UNSET",
+      "per_call_cap_usd": "UNSET",
+      "promotion_order": "UNSET",
+      "reasoning_effort": "UNSET",
+      "stage": "P04",
+      "stage_cap_usd": "UNSET"
+    },
+    {
+      "candidate_id": "UNSET",
+      "max_output_tokens": "UNSET",
+      "model": "UNSET",
+      "model_snapshot": "UNSET",
+      "per_call_cap_usd": "UNSET",
+      "promotion_order": "UNSET",
+      "reasoning_effort": "UNSET",
+      "stage": "P06",
+      "stage_cap_usd": "UNSET"
+    },
+    {
+      "candidate_id": "UNSET",
+      "max_output_tokens": "UNSET",
+      "model": "UNSET",
+      "model_snapshot": "UNSET",
+      "per_call_cap_usd": "UNSET",
+      "promotion_order": "UNSET",
+      "reasoning_effort": "UNSET",
+      "stage": "P07",
+      "stage_cap_usd": "UNSET"
+    },
+    {
+      "candidate_id": "UNSET",
+      "max_output_tokens": "UNSET",
+      "model": "UNSET",
+      "model_snapshot": "UNSET",
+      "per_call_cap_usd": "UNSET",
+      "promotion_order": "UNSET",
+      "reasoning_effort": "UNSET",
+      "stage": "P09",
+      "stage_cap_usd": "UNSET"
+    }
+  ],
+  "matrix_status": "UNSET",
+  "promotion_ladder": [
+    "SMOKE",
+    "CORE",
+    "HELD_OUT_CONFIRMATION"
+  ],
+  "qualification_thresholds": "UNSET",
+  "schema_version": "phase9-candidate-matrix/1.0.0"
+}

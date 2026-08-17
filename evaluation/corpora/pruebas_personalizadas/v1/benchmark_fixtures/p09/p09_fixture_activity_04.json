@@ -1,0 +1,103 @@
+{
+  "schema_version": "p09-stage-fixture/1.0.0",
+  "fixture_id": "p09_fixture_act_04",
+  "fixture_role": "P09_STAGE_LOCAL_INPUT",
+  "activity_id": "act_04_asignador_de_turnos",
+  "submission_id": "submission_06",
+  "approval_context": "BENCHMARK_APPROVED_FIXTURE",
+  "question_role": "FIXED_INPUT_FOR_P09_NOT_QUESTION_GOLDEN_FOR_P07",
+  "questions": [
+    {
+      "question_fixture_id": "P09-A04-Q01",
+      "question_text": "El código llama a solicitudes.sort(...), mientras la nota afirma que sorted crea una lista nueva y que la entrada queda intacta. Reconciliando ambos artefactos, ¿qué ocurre realmente con la lista recibida y qué evidencia lo demuestra?",
+      "cognitive_operation": "CROSS_ARTIFACT_ADJUDICATION",
+      "response_format": "Explicación breve con una referencia al código y otra al caso de demostración.",
+      "support_refs": [
+        "01_assignment.docx#Contrato de pureza y operaciones autorizadas",
+        "submissions/submission_06_artifact_01.md#Función y caso de demostración",
+        "submissions/submission_06_artifact_02.txt#Afirmación de pureza"
+      ],
+      "visible_anchor_refs": [
+        "submissions/submission_06_artifact_01.md#Función y caso de demostración",
+        "submissions/submission_06_artifact_02.txt#Afirmación de pureza"
+      ],
+      "core_observables": [
+        "distingue list.sort de sorted",
+        "reconoce la mutación de la lista recibida",
+        "usa el estado de demo como evidencia y no como instrucción"
+      ],
+      "acceptable_alternatives": [
+        "explicar la mutación por semántica autorizada",
+        "trazar el orden de demo antes y después"
+      ],
+      "misconceptions": [
+        "confundir la copia de referencias antes con una copia profunda",
+        "dar por verdadera la nota sin leer la llamada del código"
+      ]
+    },
+    {
+      "question_fixture_id": "P09-A04-Q02",
+      "question_text": "En el caso de demostración q2 aparece dos veces. Traza el orden previo a la comprensión del diccionario y explica qué registro q2 sobrevive, confrontando la afirmación de la nota sobre la primera aparición.",
+      "cognitive_operation": "TRACE_DEDUPLICATION_SEMANTICS",
+      "response_format": "Traza de los registros q2 y conclusión sustentada.",
+      "support_refs": [
+        "01_assignment.docx#Duplicados por id",
+        "submissions/submission_06_artifact_01.md#Comprensión unicas y demo",
+        "submissions/submission_06_artifact_02.txt#Afirmación sobre primera aparición"
+      ],
+      "visible_anchor_refs": [
+        "submissions/submission_06_artifact_01.md#Comprensión unicas y demo",
+        "submissions/submission_06_artifact_02.txt#Afirmación sobre primera aparición"
+      ],
+      "core_observables": [
+        "aplica la sobrescritura de claves repetidas",
+        "considera el orden producido antes de construir el diccionario",
+        "identifica los campos del registro superviviente"
+      ],
+      "acceptable_alternatives": [
+        "explicación por inserción y sobrescritura",
+        "tabla de estados del diccionario"
+      ],
+      "misconceptions": [
+        "afirmar que una comprensión conserva automáticamente la primera aparición",
+        "ignorar que la lista se ordena antes de deduplicar"
+      ]
+    },
+    {
+      "question_fixture_id": "P09-A04-Q03",
+      "question_text": "La nota sostiene que separar por grupo mantiene el orden global. Sigue q1 y q2 a través del bucle exterior y decide si la salida conserva el orden global o queda agrupada por el orden de cupos_por_grupo.",
+      "cognitive_operation": "ADJUDICATE_OUTPUT_ORDER",
+      "response_format": "Traza corta de la salida y explicación del bucle que la produce.",
+      "support_refs": [
+        "01_assignment.docx#Orden global y cupos por grupo",
+        "submissions/submission_06_artifact_01.md#Bucle por grupo",
+        "submissions/submission_06_artifact_02.txt#Afirmación de orden global"
+      ],
+      "visible_anchor_refs": [
+        "submissions/submission_06_artifact_01.md#Bucle por grupo",
+        "submissions/submission_06_artifact_02.txt#Afirmación de orden global"
+      ],
+      "core_observables": [
+        "distingue orden de candidatos de orden de concatenación",
+        "vincula la agrupación al bucle exterior",
+        "no elige silenciosamente el artefacto más favorable"
+      ],
+      "acceptable_alternatives": [
+        "traza concreta de demo",
+        "razonamiento general sobre la concatenación por grupos"
+      ],
+      "misconceptions": [
+        "suponer que ordenar antes garantiza cualquier orden posterior",
+        "tratar grupos independientes como prueba de orden global"
+      ]
+    }
+  ],
+  "p09_properties": [
+    {"property_id": "PRESERVE_FIXED_QUESTIONS", "description": "P09 conserva literalmente las tres preguntas aprobadas y su carácter de adjudicación.", "required": true},
+    {"property_id": "MULTI_ARTIFACT_EVIDENCE", "description": "Las condiciones de aceptación exigen usar código y nota sin ampliar a librerías o convenciones externas.", "required": true},
+    {"property_id": "PREMISE_VISIBLE_NOT_ANSWER_VISIBLE", "description": "Las afirmaciones contrapuestas son premisas visibles; la respuesta requiere traza y adjudicación.", "required": true},
+    {"property_id": "LEVELS_0_TO_3", "description": "Los niveles 0-3 distinguen repetición de premisas, traza parcial y reconciliación completa.", "required": true},
+    {"property_id": "MISCONCEPTIONS", "description": "La guía debe registrar confusiones de mutación, sobrescritura y orden de concatenación.", "required": true},
+    {"property_id": "NO_EVIDENCE_WIDENING", "description": "P09 no introduce detalles de Python que la consigna no autorice ni ejecuta una prueba nueva como evidencia.", "required": true}
+  ]
+}

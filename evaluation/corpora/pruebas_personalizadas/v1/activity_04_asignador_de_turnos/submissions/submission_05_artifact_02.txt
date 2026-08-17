@@ -1,0 +1,13 @@
+Copio cada solicitud válida con `dict(s)` y copio también los cupos, por eso no cambio las entradas. Para eliminar duplicados construyo `por_id`, un diccionario indexado por identificador. Después uso `sorted` con prioridad, marca e id, y consumo un contador independiente por grupo.
+
+La comprensión de listas es O(n), el diccionario es O(n) esperado y ordenar es O(n log n). El último recorrido es O(n), así que domina O(n log n). Elegí un diccionario porque permite localizar un id de forma directa y porque deja el código más corto que llevar un conjunto aparte.
+
+## Alcance de la solución
+
+La copia superficial de cada diccionario basta para este contrato porque solo leo campos escalares: no hay listas ni diccionarios anidados dentro de una solicitud. `disponibles` evita modificar el mapa original y también deja explícito qué grupo pierde un cupo en cada paso. El orden de salida es el orden de `ordenadas`, ya que cada id se agrega a una de las dos listas en ese único recorrido.
+
+Preferí separar la validación de la deduplicación en dos pasos. Primero descarto todo lo que no cumple el contrato de campos, prioridad y grupo; recién después reduzco a un registro por id. Me pareció más legible que mezclar ambas cosas en un solo bucle, aunque signifique recorrer la lista dos veces.
+
+Sobre los cupos, mantengo un contador por grupo en lugar de un total, porque la consigna dice que agotar A no debe consumir capacidad de B. Un grupo con cupo cero funciona sin caso especial: la comparación `> 0` falla en la primera solicitud y todas van a espera.
+
+No traté entradas que no sean diccionarios. La expresión `k in s` podría aceptar otros contenedores y luego fallar al indexar. Para el ejercicio asumo que la lista contiene diccionarios, que es lo que muestran los ejemplos de la consigna.

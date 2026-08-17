@@ -1,0 +1,20 @@
+Orden de medición: lana -> papel -> aluminio. Volumen: 200 mL en cada taza.
+
+00:00 lana 70,0; papel 69,0; aluminio 71,0. Sin derrames.
+05:00 lana 65,0; papel 62,0; aluminio 63,0.
+10:00 lana 61,0; papel 57,0; aluminio 57,0. La lectura de aluminio terminó a 10:25 porque se deslizó el soporte. Se secó el termómetro.
+15:00 lana 58,0; papel 53,0; aluminio 52,0.
+
+La lana quedó algo más suelta en el borde inferior. Las tres tazas permanecieron sin tapa.
+
+Observaciones de montaje:
+Se verificó 200 mL con la misma probeta. Las envolturas cubrían paredes y base, no la abertura. Papel tenía dos capas; lana una capa de grosor irregular; aluminio una hoja doblada. No medimos espesores, por eso el informe no compara "igual grosor".
+
+Revisión después de la corrida:
+- caídas lana: 5 / 4 / 3 grados por tramo;
+- caídas papel: 7 / 5 / 4;
+- caídas aluminio: 8 / 6 / 5;
+- posible demora relevante solo para aluminio a 10:00;
+- no repetir cifras corregidas sin hacer otra medición.
+
+La mesa estaba cerca de la puerta, que se abrió dos veces. No anotamos la hora exacta de esas aperturas ni qué taza habría recibido más corriente.

@@ -1,0 +1,98 @@
+{
+  "schema_version": "p09-stage-fixture/1.0.0",
+  "fixture_id": "p09_fixture_act_09",
+  "fixture_role": "P09_STAGE_LOCAL_INPUT",
+  "activity_id": "act_09_renovacion_y_desplazamiento",
+  "submission_id": "submission_05",
+  "approval_context": "BENCHMARK_APPROVED_FIXTURE",
+  "question_role": "FIXED_INPUT_FOR_P09_NOT_QUESTION_GOLDEN_FOR_P07",
+  "questions": [
+    {
+      "question_fixture_id": "P09-A09-Q01",
+      "question_text": "La Fuente B describe la renta como 'casi el doble'. Compárala con el cambio de 18 a 27 del dossier y presenta al menos dos lecturas compatibles de esa diferencia, indicando qué no puede decidirse con estas fuentes.",
+      "cognitive_operation": "INTERPRET_WITH_ALTERNATIVES",
+      "response_format": "Comparación cuantitativa, dos interpretaciones y un límite inferencial.",
+      "support_refs": [
+        "01_assignment.docx#Fuentes A, B y C",
+        "submissions/submission_05.pdf#Secuencia y mecanismos"
+      ],
+      "visible_anchor_refs": [
+        "submissions/submission_05.pdf#Secuencia y mecanismos"
+      ],
+      "core_observables": [
+        "calcula o explica la relación 27 frente a 18",
+        "distingue percepción o casos particulares de la renta agregada",
+        "declara que el dossier no identifica la oferta concreta de cada familia"
+      ],
+      "acceptable_alternatives": [
+        "la frase refleja percepción o gastos no registrados",
+        "la frase refleja ofertas particulares distintas de la referencia agregada",
+        "la frase es una aproximación retórica que no coincide exactamente con la razón"
+      ],
+      "misconceptions": [
+        "descartar toda la carta por una diferencia cuantitativa",
+        "tratar 27 como exactamente el doble de 18"
+      ]
+    },
+    {
+      "question_fixture_id": "P09-A09-Q02",
+      "question_text": "Juzga si construir 76 reemplazos para 118 viviendas basta por sí solo para explicar la permanencia del desplazamiento hasta 1972. Usa también las ocupaciones 22 y 18 y la evolución de la renta.",
+      "cognitive_operation": "ADJUDICATE_HISTORICAL_EXPLANATION",
+      "response_format": "Tesis breve, cadena de evidencia y reconocimiento de lo que sí explica el contraargumento.",
+      "support_refs": [
+        "01_assignment.docx#Fuente C y problemas históricos",
+        "submissions/submission_05.pdf#Contraargumento e interacción entre factores"
+      ],
+      "visible_anchor_refs": [
+        "submissions/submission_05.pdf#Contraargumento e interacción entre factores"
+      ],
+      "core_observables": [
+        "reconoce el límite material 118 frente a 76",
+        "explica por qué 22 y 18 requieren factores adicionales",
+        "jerarquiza factores sin convertir correlación agregada en causa individual"
+      ],
+      "acceptable_alternatives": [
+        "jerarquía temporal: demolición al inicio y acceso después",
+        "explicación combinada con distinto peso relativo de capacidad, renta y ejecución"
+      ],
+      "misconceptions": [
+        "convertir 76 departamentos en 76 retornos",
+        "afirmar que el déficit de 42 explica cada trayectoria individual"
+      ]
+    },
+    {
+      "question_fixture_id": "P09-A09-Q03",
+      "question_text": "La Fuente C baja de 22 hogares del sector en 1970 a 18 en 1972. ¿Qué permite afirmar ese cambio y qué no permite inferir sobre las cuatro trayectorias o sus causas?",
+      "cognitive_operation": "BOUND_CANNOT_INFER",
+      "response_format": "Dos columnas o dos párrafos: puede afirmarse / no puede inferirse.",
+      "support_refs": [
+        "01_assignment.docx#Fuente C y alcance de la serie agregada",
+        "submissions/submission_05.pdf#Tres cantidades y cautela inferencial"
+      ],
+      "visible_anchor_refs": [
+        "submissions/submission_05.pdf#Tres cantidades y cautela inferencial"
+      ],
+      "core_observables": [
+        "afirma una disminución agregada de cuatro",
+        "no identifica personas ni trayectorias",
+        "no atribuye la disminución a renta, expulsión o decisión voluntaria sin evidencia"
+      ],
+      "acceptable_alternatives": [
+        "mencionar entradas y salidas compensatorias posibles",
+        "mencionar cambios de clasificación como posibilidad no resoluble"
+      ],
+      "misconceptions": [
+        "afirmar que cuatro familias específicas fueron expulsadas",
+        "tratar una serie agregada como seguimiento longitudinal"
+      ]
+    }
+  ],
+  "p09_properties": [
+    {"property_id": "PRESERVE_FIXED_QUESTIONS", "description": "P09 no reescribe las preguntas ni convierte una lectura interpretativa en respuesta única.", "required": true},
+    {"property_id": "ALTERNATIVE_INTERPRETATIONS", "description": "La guía admite alternativas compatibles siempre que conserven cifras, posición y alcance de las fuentes.", "required": true},
+    {"property_id": "CANNOT_INFER_CENTRAL", "description": "cannot_infer debe ser explícito para trayectorias, motivos y causalidad individual.", "required": true},
+    {"property_id": "LEVELS_0_TO_3", "description": "Los niveles 0-3 distinguen recuento, relación parcial, jerarquía sustentada y cautela inferencial.", "required": true},
+    {"property_id": "NO_EXTERNAL_HISTORY", "description": "P09 no añade leyes, actores, procesos urbanos ni contexto externo al dossier.", "required": true},
+    {"property_id": "MISCONCEPTIONS", "description": "La guía registra confusión entre capacidad, ocupación y trayectorias individuales.", "required": true}
+  ]
+}

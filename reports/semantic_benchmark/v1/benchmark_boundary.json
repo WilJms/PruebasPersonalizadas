@@ -1,0 +1,256 @@
+{
+  "benchmark_boundary_hash": "sha256:9dc8df63b01f1e29a65a7540ceff1359ed037fa240e7c1c1f0e8b485edb35771",
+  "benchmark_version": "semantic-benchmark/1.0.0",
+  "boundary_format": "semantic-benchmark-boundary/1.0.0",
+  "case_matrix_hash": "sha256:65dc52ffe5fdcb788560df5cd25dfbf75b9776142b71669b5131b20bbfe6f751",
+  "compiled_properties_hash": "sha256:c69c33d4e3382031222815c203f6f7d0e0bd19dce69f328e23263459514c7a47",
+  "corpus_package_boundary_hash": "21c21f3a53bfb786162dc350dc38c93b7b007d9f23b744a354de4ac2354048a1",
+  "corpus_version": "pruebas-personalizadas-corpus/1.0.0",
+  "deterministic_invariant_definitions": [
+    "CORPUS_MANIFEST_AND_BOUNDARY",
+    "SOURCE_PARSER_DETERMINISM",
+    "CASE_IDENTITY_AND_SCHEMA",
+    "PROPERTY_COMPILATION_AND_COVERAGE",
+    "MODEL_VISIBLE_ORACLE_DISJOINT",
+    "ORACLE_AND_AUDIT_REJECTED",
+    "STAGE_LOCAL_FIXTURE_VALIDATION",
+    "PLANNER_EXACT_N_OR_FAIL_CLOSED",
+    "SPLIT_POLICY_AND_HELD_OUT_LOCK",
+    "P09_APPROVAL_AND_CORE_BOUNDARY",
+    "P05_P08_HISTORICAL_P10_DISABLED",
+    "CANDIDATE_MATRIX_UNSET",
+    "PROVIDER_CALL_GRAPH_ABSENT"
+  ],
+  "executable_source_hashes": {
+    "parser": "sha256:e9996dd42cba91ad0e01895acdc843b5570ab6e5fca0547d3efe4d377a02a347",
+    "planner": "sha256:ed020a6735b5d518c0295378b997bb72ec4f541a1e8afc654955ccca55abd028",
+    "prompt_registry": "sha256:dc81754f7de949b54043188a9e3219af2d3dfa748cf33b2c076b0dfafd536059",
+    "prompt_text": "sha256:3eae88367910df2734c87fd6673633c685bf32cc7d8b42e3896caf6406c00b59"
+  },
+  "fixture_builder_versions": [
+    "semantic-benchmark-fixture-p04/1.0.0",
+    "semantic-benchmark-fixture-p06/1.0.0",
+    "semantic-benchmark-fixture-planner/1.0.0",
+    "semantic-benchmark-fixture-p07/1.0.0",
+    "semantic-benchmark-fixture-p09/1.0.0",
+    "p09-frozen-operation-projection/1.0.0"
+  ],
+  "oracle_state_rules": {
+    "INVALID": "forbidden in the frozen ready corpus",
+    "NOT_APPLICABLE": "traced but excluded from semantic denominators",
+    "ORACLE_SUSPECT": "reviewable but excluded from hard failure denominators",
+    "VALID": "usable for adjudication"
+  },
+  "p04_compiler_boundary": {
+    "boundary_hash": "sha256:bd2278c6a53f5b3f184e3aed5d88ab5d51180528ac889faae239fb21dad499be",
+    "canonical_contracts_source_hash": "sha256:2380d0be33b1f49a7b35e724aef8453d1469027b2d0466f9da1e38accdaf6ec3",
+    "canonical_identity_source_hash": "sha256:b8f4220f8a272fbc0f2b1183dec4165429864efb4644197ca4f8c25483dc5604",
+    "compiler_source_hash": "sha256:fc3c1d45f428d1d1308b319a49840effb40f1b5aea71eeb00bf93c6a2b71a7de",
+    "diagnostics_source_hash": "sha256:de219a296e7a04a37a5e29d797524320f7a9e77fd7ef14e814a0add817d060a4",
+    "format": "blueprint-compiler-boundary/1.0.0",
+    "preflight_source_hash": "sha256:64316a1dcc620d9273df33e68df73cebdde6a91462ef4e607c97e8fb03717bab",
+    "version": "blueprint-compiler/1.0.0"
+  },
+  "p06_materializer_boundary": {
+    "alias_envelope_schema": {
+      "boundary_hash": "sha256:d4fafd899f10f33d39d99f296c79acabec0b5e5e08768a7c970dbcff23057f76",
+      "format": "p06-alias-envelope-schema-boundary/1.0.0",
+      "schema_hash": "sha256:ab1dc167292a65912b0ad7c2a3da4905060799e13425bba663777fbe0a55e368",
+      "schema_name": "EvidenceMappingAliasEnvelope",
+      "version": "p06-alias-envelope/1.0.0"
+    },
+    "boundary_hash": "sha256:54b399d12f1236687cbdd8627afeca8137d31dec2acb46526371699d184ce338",
+    "canonical_contracts_source_hash": "sha256:2380d0be33b1f49a7b35e724aef8453d1469027b2d0466f9da1e38accdaf6ec3",
+    "canonical_identity_source_hash": "sha256:b8f4220f8a272fbc0f2b1183dec4165429864efb4644197ca4f8c25483dc5604",
+    "format": "p06-materializer-boundary/1.0.0",
+    "materializer_source_hash": "sha256:1c4ad999b4fe19d92f4c23cd628fe08921950733c132f85a0d7bb8d88c9ce508",
+    "version": "p06-evidence-materializer/1.0.0"
+  },
+  "p07_materializer_boundary": {
+    "alias_envelope_schema": {
+      "boundary_hash": "sha256:214c6dbcdc5e92f8c6a5db5a16c48799473b31043911017a10d4ab3c451fe418",
+      "format": "p07-alias-envelope-schema-boundary/1.0.0",
+      "schema_hash": "sha256:b8fc6e07c93b71d9530c1481f9f3112299128bfb2a23d9ca4f8050f4fccc40dc",
+      "schema_name": "QuestionAliasEnvelope",
+      "version": "p07-alias-envelope/1.0.0"
+    },
+    "answer_leakage_policy": {
+      "blocking_ngram_coverage": 0.9,
+      "boundary_hash": "sha256:a5d82250129eb23686eee8afd85f86c777414e2f826195ea21a51872b1c2f41e",
+      "format": "p07-answer-leakage-boundary/1.0.0",
+      "literal_min_characters": 24,
+      "literal_min_tokens": 4,
+      "ngram_size": 4,
+      "version": "p07-answer-leakage/1.0.0",
+      "warning_ngram_coverage": 0.65
+    },
+    "boundary_hash": "sha256:1cd957375edb57fc1b3f0eebf62a71ddb44f653ba30eeb257cb2bcdf12257e73",
+    "canonical_contracts_source_hash": "sha256:2380d0be33b1f49a7b35e724aef8453d1469027b2d0466f9da1e38accdaf6ec3",
+    "canonical_identity_source_hash": "sha256:b8f4220f8a272fbc0f2b1183dec4165429864efb4644197ca4f8c25483dc5604",
+    "format": "p07-materializer-boundary/1.0.0",
+    "materializer_source_hash": "sha256:341316e1272477c4032595e542c7df60d63de505c315011423175aa1835762e8",
+    "version": "p07-question-materializer/1.0.0"
+  },
+  "p09_materializer_boundary": {
+    "alias_envelope_schema": {
+      "boundary_hash": "sha256:a3979376b3394fff812524bceb836272420d7b16c3e4fec2d5ca0a585fce0b82",
+      "format": "p09-alias-envelope-schema-boundary/1.0.0",
+      "schema_hash": "sha256:3b0050e44d98575b9c54b9612312f431085560a76943754c0a73d4325ebff2e9",
+      "schema_name": "GuideAliasEnvelope",
+      "version": "p09-alias-envelope/1.0.0"
+    },
+    "boundary_hash": "sha256:0fe0051d348d418707c2698f0e632de18ce71fb3e5572792337b5b6ce89795f6",
+    "canonical_contracts_source_hash": "sha256:2380d0be33b1f49a7b35e724aef8453d1469027b2d0466f9da1e38accdaf6ec3",
+    "canonical_identity_source_hash": "sha256:b8f4220f8a272fbc0f2b1183dec4165429864efb4644197ca4f8c25483dc5604",
+    "format": "p09-materializer-boundary/1.0.0",
+    "guide_policy": {
+      "boundary_hash": "sha256:627f0dfcbbd96da86c484ee4d0b0d62c17c2b0a2ce698e28baf55244f6a09c00",
+      "context_mode": "CLOSED",
+      "enrichment_only": true,
+      "external_sources_allowed": false,
+      "format": "p09-guide-enrichment-policy-boundary/1.0.0",
+      "maximum_observables": 5,
+      "minimum_observables": 2,
+      "partial_guides_allowed": false,
+      "preserve_p07_core_observables": true,
+      "required_levels": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "version": "p09-guide-enrichment-policy/1.0.0"
+    },
+    "materializer_source_hash": "sha256:0d4af856781cb9df11e7299a2eeef04efae4fc5e44e8d0f7c46c7614e882a563",
+    "version": "p09-guide-materializer/1.0.0"
+  },
+  "parser_version": "stage2-parser/2.0.0",
+  "pipeline_authority": {
+    "active_interim_pipelines": {
+      "p09_relocation_pending": false,
+      "submission": [
+        "P06",
+        "DETERMINISTIC_PLANNER",
+        "P07",
+        "DETERMINISTIC_QUESTION_VALIDATIONS",
+        "ASSEMBLE",
+        "TEACHER_ASSESSMENT_APPROVAL",
+        "P09_POST_APPROVAL_GUIDE_ENRICHMENT"
+      ]
+    },
+    "compatibility_only_fields": {
+      "Anchor.self_containment_score": "DERIVED_COMPATIBILITY_LEGACY_NO_ACTIVE_AUTHORITY"
+    },
+    "cutover_status": "P09_POST_APPROVAL_ENRICHMENT_ACTIVE",
+    "decision_authority": {
+      "BACKEND": [
+        "ids",
+        "versions",
+        "hashes",
+        "states",
+        "lineage",
+        "evidence_membership",
+        "allowlists",
+        "formats",
+        "count",
+        "time_budgets",
+        "constraints",
+        "planner_feasibility",
+        "storage",
+        "transitions",
+        "deterministic_validations",
+        "support_evidence",
+        "canonical_visible_anchor",
+        "guide_approval_binding",
+        "guide_core_preservation",
+        "guide_version_selection"
+      ],
+      "MODEL": [
+        "semantic_interpretation",
+        "pedagogical_structure_proposal",
+        "evidence_construct_relationship",
+        "wording",
+        "observables",
+        "semantic_alternatives",
+        "visible_anchor_selection_within_support",
+        "post_approval_guide_enrichment"
+      ],
+      "TEACHER": [
+        "academic_ambiguity_resolution",
+        "blueprint_approval",
+        "question_approve_edit_reject",
+        "assessment_approval_independent_of_guide",
+        "final_academic_authority"
+      ]
+    },
+    "historical_semantic_harness": {
+      "evidence_status": "HISTORICAL_NON_CANONICAL_EVIDENCE",
+      "model_selection_gate": false,
+      "retain_reports_and_receipts": true
+    },
+    "model_stage_policy": {
+      "active": [
+        "P01",
+        "P02",
+        "P03",
+        "P04",
+        "P06",
+        "P07",
+        "P09"
+      ],
+      "disabled": [
+        "P10"
+      ],
+      "inactive": [
+        "P05",
+        "P08"
+      ]
+    },
+    "target_pipelines": {
+      "activity": [
+        "P01",
+        "P02",
+        "P03",
+        "P04",
+        "DETERMINISTIC_BLUEPRINT_PREFLIGHT",
+        "TEACHER_BLUEPRINT_APPROVAL"
+      ],
+      "submission": [
+        "P06",
+        "DETERMINISTIC_PLANNER",
+        "P07",
+        "DETERMINISTIC_QUESTION_VALIDATIONS",
+        "ASSEMBLE",
+        "TEACHER_ASSESSMENT_APPROVAL",
+        "P09_POST_APPROVAL_GUIDE_ENRICHMENT"
+      ]
+    },
+    "version": "pipeline-authority/1.1.0"
+  },
+  "planner_version": "stage2-planner/3.0.0",
+  "property_evaluator_definitions": {
+    "DETERMINISTIC": "product-owned invariant with exact machine result",
+    "EXTERNAL_ADJUDICATION_REQUIRED": "semantic interpretation deferred to Phase 9 review",
+    "RULE_BASED": "explicit mechanical relation; no hidden semantic inference"
+  },
+  "result_state_rules": {
+    "DEFENSIBLE_ALTERNATIVE": "output differs but remains source-defensible",
+    "MODEL_FAILURE": "a VALID property is violated by the model-owned stage",
+    "NOT_APPLICABLE": "the source oracle marks the property out of scope",
+    "ORACLE_SUSPECT": "the execution confirms the oracle cannot decide",
+    "PASS": "candidate output satisfies the ratified property",
+    "PENDING_ADJUDICATION": "no real output exists or semantic review is pending",
+    "TECHNICAL_FAILURE": "provider, timeout, schema, or tooling failure"
+  },
+  "schemas": {
+    "benchmark_case.schema.json": "sha256:cc69139736faf94cb726edb8964dde4274656526ab14b2a713a20520198512cc",
+    "phase9_candidate_matrix.schema.json": "sha256:0b7c345dd07f2e1c9147ac5176549bb9b99c17a47a3aa3f1eb779a370706190b",
+    "review_packet.schema.json": "sha256:817ba79298545d99ba735aad716c3c55602b14e8b4422f7e0466891e2b0347d5"
+  },
+  "split_manifest_hash": "sha256:45c5403847c1ab696a8743f8a587d11b18ac2907a4922e1ebfb951ae8370a075",
+  "validator_source_hashes": {
+    "semantic_benchmark.py": "sha256:e850bae1a7d84acf9140ae756f7a3207116a1ea3f46f32ba3277ef04e4eae716",
+    "semantic_benchmark_fixtures.py": "sha256:2692894888950599d8fc840c003ed1a6ec6bfb9e725780aec1a3afb835d6af33",
+    "validation.py": "sha256:64316a1dcc620d9273df33e68df73cebdde6a91462ef4e607c97e8fb03717bab"
+  }
+}

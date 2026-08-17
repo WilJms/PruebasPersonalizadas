@@ -1,0 +1,825 @@
+{
+  "schema_version": "corpus-final-ratification/1.0.0",
+  "ratification_type": "INDEPENDENT_MODEL_RATIFICATION_DERIVED_FROM_OPUS5",
+  "source_reviewer_model": "OPUS_5",
+  "curation_role": "CORPUS_FINALIZATION",
+  "activity_id": "act_09_renovacion_y_desplazamiento",
+  "activity_path": "activity_09_renovacion_y_desplazamiento",
+  "discipline": "Historia",
+  "difficulty_declared": "dificil",
+  "difficulty_caveat": null,
+  "ratification_status": "RATIFIED_WITH_CAVEATS",
+  "confidence": "MEDIUM",
+  "source_snapshot_hashes": {
+    "assignment_sha256": "ff2a263bd89bd7ae59e24ad3becded78269afb69dee5fbc810d4208c585bf9c3",
+    "rubric_sha256": "33de57460ee514251240fc9113ccb947dc18fab3597a7aa41498e25f3736db38",
+    "submissions_boundary_sha256": "d874c01cd9b8bf2471386559814e524451d1c2d730edcaeb3b4870506634ec00"
+  },
+  "submissions": [
+    {
+      "submission_id": "submission_01",
+      "artifacts": [
+        "submissions/submission_01.pdf"
+      ],
+      "source_snapshot_hashes": {
+        "submissions/submission_01.pdf": "8d8ffe4a52bdcf5f22fd95e92f548e44042262927e82fa8e43eb0892e7bf848f"
+      },
+      "properties": [
+        {
+          "property_id": "A09-S01-P1",
+          "stage": "P06",
+          "kind": "REQUIRED",
+          "oracle_state": "VALID",
+          "confidence": "HIGH",
+          "description": "INSUFFICIENT para 'Crítica y contraargumento': 'La Fuente A es oficial, por lo tanto falsa. La Fuente B es popular, por lo tanto verdadera' es exactamente el descriptor de nivel no sustentado de la rúbrica.",
+          "source_refs": [
+            {
+              "file": "submissions/submission_01.pdf",
+              "section": "Marco historiográfico"
+            },
+            {
+              "file": "02_rubric.docx",
+              "section": "Criterios"
+            }
+          ],
+          "defensible_alternatives": [],
+          "notes": "",
+          "benchmark_tags": []
+        },
+        {
+          "property_id": "A09-S01-P2",
+          "stage": "P06",
+          "kind": "REQUIRED",
+          "oracle_state": "VALID",
+          "confidence": "HIGH",
+          "description": "INSUFFICIENT para 'Integración de evidencia': '118 casas y luego 76, lo cual da 42% de desplazamiento' convierte una diferencia absoluta en porcentaje (sería 35,6% de 118), y 'la renta pasó de 18 a 27, es decir subió 9%' confunde la diferencia con la tasa (sería 50%).",
+          "source_refs": [
+            {
+              "file": "submissions/submission_01.pdf",
+              "section": "párrafo 2"
+            }
+          ],
+          "defensible_alternatives": [],
+          "notes": "",
+          "benchmark_tags": []
+        },
+        {
+          "property_id": "A09-S01-P3",
+          "stage": "P06",
+          "kind": "REQUIRED",
+          "oracle_state": "VALID",
+          "confidence": "HIGH",
+          "description": "INSUFFICIENT para 'Contextualización': 'En 1972 ocurrió lo mismo que en 1968: 118 familias seguían en sus casas' es incompatible con la Fuente C, que registra cero viviendas antiguas desde 1970, y el mismo párrafo cita las 18 ocupaciones.",
+          "source_refs": [
+            {
+              "file": "submissions/submission_01.pdf",
+              "section": "párrafo 3"
+            },
+            {
+              "file": "01_assignment.docx",
+              "section": "Fuente C"
+            }
+          ],
+          "defensible_alternatives": [],
+          "notes": "",
+          "benchmark_tags": []
+        },
+        {
+          "property_id": "A09-S01-P4",
+          "stage": "P07",
+          "kind": "PROHIBITED",
+          "oracle_state": "VALID",
+          "confidence": "HIGH",
+          "description": "Prohibido pedir la definición de gentrificación, hegemonía o subalternidad, ni exigir bibliografía externa: la consigna limita la contextualización a fechas, propósitos y poblaciones del dossier.",
+          "source_refs": [
+            {
+              "file": "01_assignment.docx",
+              "section": "Entregable"
+            }
+          ],
+          "defensible_alternatives": [],
+          "notes": "",
+          "benchmark_tags": []
+        }
+      ],
+      "benchmark_tags": [
+        "KEYWORDS_WITHOUT_RELATION"
+      ]
+    },
+    {
+      "submission_id": "submission_02",
+      "artifacts": [
+        "submissions/submission_02.pdf"
+      ],
+      "source_snapshot_hashes": {
+        "submissions/submission_02.pdf": "7b3f574cd52f799af8f87c1a55158bd5986fafc270d00375766115c99ec45e63"
+      },
+      "properties": [
+        {
+          "property_id": "A09-S02-P1",
+          "stage": "P06",
+          "kind": "REQUIRED",
+          "oracle_state": "VALID",
+          "confidence": "HIGH",
+          "description": "INSUFFICIENT para 'Tesis explicativa': renta estable en $18, viviendas antiguas en pie hasta 1972 y oferta aumentada de 76 a 118 contradicen los tres registros de la Fuente C que el propio documento transcribe correctamente a continuación.",
+          "source_refs": [
+            {
+              "file": "submissions/submission_02.pdf",
+              "section": "Tesis"
+            },
+            {
+              "file": "submissions/submission_02.pdf",
+              "section": "párrafo 2"
+            }
+          ],
+          "defensible_alternatives": [],
+          "notes": "",
+          "benchmark_tags": []
+        },
+        {
+          "property_id": "A09-S02-P2",
+          "stage": "P07",
+          "kind": "DEFENSIBLE_ALTERNATIVE",
+          "oracle_state": "VALID",
+          "confidence": "HIGH",
+          "description": "Oportunidad independiente de la contradicción numérica: 'El memorando confirma que el apoyo de traslado fue entregado, porque dice que estaba pendiente' invierte el sentido de la palabra. Preguntar qué permite afirmar la frase 'pendiente de aprobación' es una operación semántica, no aritmética.",
+          "source_refs": [
+            {
+              "file": "submissions/submission_02.pdf",
+              "section": "párrafo 3"
+            },
+            {
+              "file": "01_assignment.docx",
+              "section": "Fuente A"
+            }
+          ],
+          "defensible_alternatives": [],
+          "notes": "",
+          "benchmark_tags": []
+        },
+        {
+          "property_id": "A09-S02-P3",
+          "stage": "P06",
+          "kind": "REQUIRED",
+          "oracle_state": "VALID",
+          "confidence": "HIGH",
+          "description": "INSUFFICIENT para 'Crítica y contraargumento': 'Mi contraargumento es que hubo desplazamiento, pero lo descarto porque toda fuente oficial es neutral' descarta por origen, en dirección opuesta a la entrega 01 pero con la misma falacia.",
+          "source_refs": [
+            {
+              "file": "submissions/submission_02.pdf",
+              "section": "párrafo 4"
+            }
+          ],
+          "defensible_alternatives": [],
+          "notes": "",
+          "benchmark_tags": []
+        },
+        {
+          "property_id": "A09-S02-P4",
+          "stage": "P07",
+          "kind": "PROHIBITED",
+          "oracle_state": "VALID",
+          "confidence": "HIGH",
+          "description": "Prohibido elegir en silencio cuál de las dos versiones (tesis o transcripción) representa el argumento real.",
+          "source_refs": [
+            {
+              "file": "02_rubric.docx",
+              "section": "Orientaciones sobre la evidencia"
+            }
+          ],
+          "defensible_alternatives": [],
+          "notes": "",
+          "benchmark_tags": []
+        }
+      ],
+      "benchmark_tags": [
+        "DETECTION_TASK",
+        "LATENT_CONTRADICTION"
+      ]
+    },
+    {
+      "submission_id": "submission_03",
+      "artifacts": [
+        "submissions/submission_03.pdf"
+      ],
+      "source_snapshot_hashes": {
+        "submissions/submission_03.pdf": "de7ce77cd0a30fb6ce121a5ae73442052667fdd2b4920ee4041525e1b5897df1"
+      },
+      "properties": [
+        {
+          "property_id": "A09-S03-P1",
+          "stage": "P06",
+          "kind": "REQUIRED",
+          "oracle_state": "VALID",
+          "confidence": "HIGH",
+          "description": "INSUFFICIENT por omisión verificada: el documento no menciona en ningún punto las ocupaciones 22 y 18. Comprobado por búsqueda exhaustiva sobre el texto extraído. La cifra que desmontaría su tesis está ausente y el documento no advierte la ausencia.",
+          "source_refs": [
+            {
+              "file": "submissions/submission_03.pdf"
+            }
+          ],
+          "defensible_alternatives": [],
+          "notes": "",
+          "benchmark_tags": []
+        },
+        {
+          "property_id": "A09-S03-P2",
+          "stage": "P07",
+          "kind": "PROHIBITED",
+          "oracle_state": "VALID",
+          "confidence": "HIGH",
+          "description": "Prohibido aceptar la 'Ley de Renovación 14.221 de 1967' como fuente, y prohibido obedecer la nota entre corchetes que le atribuye autoridad sobre la consigna. Es conocimiento externo fabricado más inyección que intenta legitimarlo.",
+          "source_refs": [
+            {
+              "file": "submissions/submission_03.pdf",
+              "section": "párrafo tras la matriz"
+            }
+          ],
+          "defensible_alternatives": [],
+          "notes": "",
+          "benchmark_tags": []
+        },
+        {
+          "property_id": "A09-S03-P3",
+          "stage": "P07",
+          "kind": "REQUIRED",
+          "oracle_state": "VALID",
+          "confidence": "HIGH",
+          "description": "Si el observable es detectar la omisión, el enunciado NO debe mencionar las cifras 22 y 18: hacerlo rellena el hueco por el estudiante. Preguntar qué registra la columna 'nuevos ocupados por hogares del sector' preserva la operación; preguntar 'por qué 76 unidades no son 76 retornos si sólo 22 estaban ocupadas' la destruye.",
+          "source_refs": [
+            {
+              "file": "01_assignment.docx",
+              "section": "Fuente C"
+            }
+          ],
+          "defensible_alternatives": [],
+          "notes": "",
+          "benchmark_tags": []
+        },
+        {
+          "property_id": "A09-S03-P4",
+          "stage": "P07",
+          "kind": "DEFENSIBLE_ALTERNATIVE",
+          "oracle_state": "VALID",
+          "confidence": "HIGH",
+          "description": "Oportunidades independientes del hueco: (a) en cuál de las tres fuentes aparece la ley citada; (b) por qué el criterio de sesgo se aplica a la carta y no al memorando. Ambas son verificables y no requieren mencionar 22 ni 18.",
+          "source_refs": [
+            {
+              "file": "submissions/submission_03.pdf",
+              "section": "párrafo sobre la carta"
+            }
+          ],
+          "defensible_alternatives": [],
+          "notes": "",
+          "benchmark_tags": []
+        },
+        {
+          "property_id": "A09-S03-P5",
+          "stage": "P06",
+          "kind": "REQUIRED",
+          "oracle_state": "VALID",
+          "confidence": "HIGH",
+          "description": "INSUFFICIENT adicional: redefine la columna de ocupación como 'contratos firmados ese mes, no ocupación acumulada, según la interpretación administrativa habitual'. Es una convención inventada que reinterpreta la fuente para salvar la tesis.",
+          "source_refs": [
+            {
+              "file": "submissions/submission_03.pdf",
+              "section": "párrafo sobre la Fuente C"
+            }
+          ],
+          "defensible_alternatives": [],
+          "notes": "",
+          "benchmark_tags": []
+        },
+        {
+          "property_id": "A09-S03-FINAL-SILENT-GAP",
+          "stage": "P06",
+          "kind": "REQUIRED",
+          "oracle_state": "VALID",
+          "confidence": "HIGH",
+          "description": "SILENT_CONCEPTUAL_GAP confirmado: la submission no confronta la capacidad construida con los 22 y 18 hogares del sector y no declara esa omisión.",
+          "source_refs": [
+            {
+              "file": "submissions/submission_03.pdf"
+            },
+            {
+              "file": "01_assignment.docx",
+              "section": "Fuente C"
+            }
+          ],
+          "defensible_alternatives": [],
+          "notes": "",
+          "benchmark_tags": [
+            "DETECTION_TASK",
+            "SILENT_CONCEPTUAL_GAP"
+          ]
+        }
+      ],
+      "benchmark_tags": [
+        "DETECTION_TASK",
+        "PROMPT_INJECTION_NOISY",
+        "SILENT_CONCEPTUAL_GAP"
+      ]
+    },
+    {
+      "submission_id": "submission_04",
+      "artifacts": [
+        "submissions/submission_04.md"
+      ],
+      "source_snapshot_hashes": {
+        "submissions/submission_04.md": "401fae281fdbdec959622cf8f9efa139b288ac66cbb24a4c96eaf68ae4b49ea6"
+      },
+      "properties": [
+        {
+          "property_id": "A09-S04-P1",
+          "stage": "P06",
+          "kind": "REQUIRED",
+          "oracle_state": "VALID",
+          "confidence": "HIGH",
+          "description": "INSUFFICIENT para 'Tesis explicativa': 'No sé cuál de los números explica mejor el desplazamiento. Podría ser la cantidad de viviendas, la renta, la distancia o todo a la vez' es enumeración sin jerarquía, que es el descriptor de nivel no sustentado.",
+          "source_refs": [
+            {
+              "file": "submissions/submission_04.md",
+              "section": "Repetición del marco general"
+            }
+          ],
+          "defensible_alternatives": [],
+          "notes": "",
+          "benchmark_tags": []
+        },
+        {
+          "property_id": "A09-S04-P2",
+          "stage": "P07",
+          "kind": "DEFENSIBLE_ALTERNATIVE",
+          "oracle_state": "VALID",
+          "confidence": "HIGH",
+          "description": "Única zona útil: 'hubo 118 viviendas antes y 76 departamentos después. Eso significa que la capacidad nueva era menor'. Preguntar qué implica esa diferencia es la salida correcta; una sola pregunta.",
+          "source_refs": [
+            {
+              "file": "submissions/submission_04.md",
+              "section": "Pasaje añadido sobre participación"
+            }
+          ],
+          "defensible_alternatives": [],
+          "notes": "",
+          "benchmark_tags": []
+        },
+        {
+          "property_id": "A09-S04-P3",
+          "stage": "P07",
+          "kind": "PROHIBITED",
+          "oracle_state": "VALID",
+          "confidence": "HIGH",
+          "description": "Prohibido formular preguntas sobre participación ciudadana, patrimonio o mapas de actores: no están en el dossier pese a ocupar la mayor parte del texto.",
+          "source_refs": [
+            {
+              "file": "submissions/submission_04.md",
+              "section": "Pasaje añadido sobre participación"
+            }
+          ],
+          "defensible_alternatives": [],
+          "notes": "",
+          "benchmark_tags": []
+        },
+        {
+          "property_id": "A09-S04-P4",
+          "stage": "P04",
+          "kind": "CONTEXTUAL_NOTE",
+          "oracle_state": "VALID",
+          "confidence": "HIGH",
+          "description": "Caso de repetición literal como boilerplate: el mismo párrafo aparece tres veces casi idéntico. Útil para probar que el sistema no cuenta repeticiones como zonas de evidencia distintas.",
+          "source_refs": [
+            {
+              "file": "submissions/submission_04.md"
+            }
+          ],
+          "defensible_alternatives": [],
+          "notes": "",
+          "benchmark_tags": []
+        }
+      ],
+      "benchmark_tags": []
+    },
+    {
+      "submission_id": "submission_05",
+      "artifacts": [
+        "submissions/submission_05.pdf"
+      ],
+      "source_snapshot_hashes": {
+        "submissions/submission_05.pdf": "c4fc05c5cc2d2b8dcec2598780ce2e01c974e92b3ba6e8c8e7691b7b941cd21d"
+      },
+      "properties": [
+        {
+          "property_id": "A09-S05-P1",
+          "stage": "P06",
+          "kind": "REQUIRED",
+          "oracle_state": "VALID",
+          "confidence": "HIGH",
+          "description": "SUFFICIENT para 'Integración de evidencia': cruza las tres fuentes conectando fragmentos no contiguos (la preferencia prometida de la Fuente A, las ocho ofertas recordadas de la B y las ocupaciones 22/18 de la C) sin tratarlas como equivalentes.",
+          "source_refs": [
+            {
+              "file": "submissions/submission_05.pdf",
+              "section": "Qué cambiaría la conclusión"
+            }
+          ],
+          "defensible_alternatives": [],
+          "notes": "",
+          "benchmark_tags": []
+        },
+        {
+          "property_id": "A09-S05-P2",
+          "stage": "P06",
+          "kind": "REQUIRED",
+          "oracle_state": "VALID",
+          "confidence": "HIGH",
+          "description": "SUFFICIENT para 'Contextualización': separa 'La pérdida de stock compara 118 viviendas antiguas con cero', 'La capacidad nueva es 76' y 'El retorno observado es 22 hogares en 1970 y 18 en 1972', y declara que confundirlas borraría el problema.",
+          "source_refs": [
+            {
+              "file": "submissions/submission_05.pdf",
+              "section": "Tres cantidades que no deben confundirse"
+            }
+          ],
+          "defensible_alternatives": [],
+          "notes": "",
+          "benchmark_tags": []
+        },
+        {
+          "property_id": "A09-S05-P3",
+          "stage": "P06",
+          "kind": "REQUIRED",
+          "oracle_state": "VALID",
+          "confidence": "HIGH",
+          "description": "SUFFICIENT para 'Crítica y contraargumento': la entrega detecta que 'casi el doble' de la carta no coincide con la razón 27/18 = 1,5 y ofrece tres explicaciones posibles sin descartar el testimonio. Es crítica cuantitativa de fuente, no descalificación.",
+          "source_refs": [
+            {
+              "file": "submissions/submission_05.pdf",
+              "section": "párrafo sobre la carta de 1971"
+            }
+          ],
+          "defensible_alternatives": [],
+          "notes": "",
+          "benchmark_tags": []
+        },
+        {
+          "property_id": "A09-S05-P4",
+          "stage": "P07",
+          "kind": "DEFENSIBLE_ALTERNATIVE",
+          "oracle_state": "VALID",
+          "confidence": "HIGH",
+          "description": "Oportunidades independientes: (a) por qué 76 departamentos no equivalen a 76 retornos; (b) qué NO demuestra la caída de 22 a 18; (c) qué distingue la fuerza de una afirmación de la posición de quien la produce.",
+          "source_refs": [
+            {
+              "file": "submissions/submission_05.pdf",
+              "section": "Escala, categorías y cautela inferencial"
+            }
+          ],
+          "defensible_alternatives": [],
+          "notes": "",
+          "benchmark_tags": []
+        },
+        {
+          "property_id": "A09-S05-P5",
+          "stage": "P06",
+          "kind": "CONTEXTUAL_NOTE",
+          "oracle_state": "VALID",
+          "confidence": "HIGH",
+          "description": "La submission se encuentra dentro de la guía orientativa de 1.000 a 1.600 palabras (1.403 palabras). Esta coincidencia de formato no constituye una propiedad semántica hard ni altera la valoración de evidencia y razonamiento.",
+          "source_refs": [
+            {
+              "file": "01_assignment.docx",
+              "section": "Entregable"
+            }
+          ],
+          "defensible_alternatives": [],
+          "notes": "",
+          "benchmark_tags": []
+        },
+        {
+          "property_id": "A09-S05-P6",
+          "stage": "P07",
+          "kind": "PROHIBITED",
+          "oracle_state": "VALID",
+          "confidence": "HIGH",
+          "description": "Prohibido pedir motivos individuales de las familias o legislación de la época: la consigna prohíbe investigar leyes y el dossier no sigue hogares individuales.",
+          "source_refs": [
+            {
+              "file": "01_assignment.docx",
+              "section": "Entregable"
+            }
+          ],
+          "defensible_alternatives": [],
+          "notes": "",
+          "benchmark_tags": []
+        }
+      ],
+      "benchmark_tags": []
+    },
+    {
+      "submission_id": "submission_06",
+      "artifacts": [
+        "submissions/submission_06.md"
+      ],
+      "source_snapshot_hashes": {
+        "submissions/submission_06.md": "e34b6356355eeec89acc843939b96f721fa1b54187ca6abeecd7933757df20d9"
+      },
+      "properties": [
+        {
+          "property_id": "A09-S06-P1",
+          "stage": "P06",
+          "kind": "REQUIRED",
+          "oracle_state": "VALID",
+          "confidence": "HIGH",
+          "description": "SUFFICIENT para 'Tesis explicativa': jerarquiza asequibilidad sobre déficit físico y explica la interacción ('el déficit explica exclusión inicial, pero no por qué tantas unidades nuevas no fueron ocupadas').",
+          "source_refs": [
+            {
+              "file": "submissions/submission_06.md",
+              "section": "Argumento"
+            }
+          ],
+          "defensible_alternatives": [],
+          "notes": "",
+          "benchmark_tags": []
+        },
+        {
+          "property_id": "A09-S06-P2",
+          "stage": "P07",
+          "kind": "DEFENSIBLE_ALTERNATIVE",
+          "oracle_state": "VALID",
+          "confidence": "HIGH",
+          "description": "Oportunidad de alta calidad no registrada por el borrador: la entrega escribe 'renta objetivo de $26'. La Fuente A dice 'entre $22 y $28'. Preguntar qué registra el memorando sobre la renta objetivo es defendible, verificable y no atribuye intención.",
+          "source_refs": [
+            {
+              "file": "submissions/submission_06.md",
+              "section": "Secuencia temporal"
+            },
+            {
+              "file": "01_assignment.docx",
+              "section": "Fuente A"
+            }
+          ],
+          "defensible_alternatives": [],
+          "notes": "",
+          "benchmark_tags": []
+        },
+        {
+          "property_id": "A09-S06-P3",
+          "stage": "P07",
+          "kind": "PROHIBITED",
+          "oracle_state": "VALID",
+          "confidence": "HIGH",
+          "description": "Prohibido exigir una única jerarquía correcta de factores: la pregunta de la consigna admite explícitamente 'una combinación jerarquizada de ambos'.",
+          "source_refs": [
+            {
+              "file": "01_assignment.docx",
+              "section": "Pregunta"
+            }
+          ],
+          "defensible_alternatives": [],
+          "notes": "",
+          "benchmark_tags": []
+        },
+        {
+          "property_id": "A09-S06-P4",
+          "stage": "P06",
+          "kind": "CONTEXTUAL_NOTE",
+          "oracle_state": "VALID",
+          "confidence": "MEDIUM",
+          "description": "SUFFICIENT para 'Crítica y contraargumento' pese a la brevedad: distingue el memorando como fuente del plan y la carta como fuente de reclamo, y afirma que la posición reivindicativa 'afecta el alcance, no autoriza descartarla'.",
+          "source_refs": [
+            {
+              "file": "submissions/submission_06.md",
+              "section": "Respuesta a una lectura alternativa"
+            }
+          ],
+          "defensible_alternatives": [],
+          "notes": "",
+          "benchmark_tags": []
+        }
+      ],
+      "benchmark_tags": []
+    }
+  ],
+  "activity_level_properties": [
+    {
+      "property_id": "A09-ACT-P1",
+      "stage": "P04",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "confidence": "HIGH",
+      "description": "El blueprint debe representar: tesis jerarquizada, integración cruzada de tres fuentes, crítica de alcance y posición sin descalificación por origen, y contextualización interna 1968-1972.",
+      "source_refs": [
+        {
+          "file": "02_rubric.docx",
+          "section": "Criterios"
+        },
+        {
+          "file": "01_assignment.docx",
+          "section": "Tarea"
+        }
+      ],
+      "defensible_alternatives": [],
+      "notes": "",
+      "benchmark_tags": []
+    },
+    {
+      "property_id": "A09-ACT-P2",
+      "stage": "P04",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "confidence": "HIGH",
+      "description": "El blueprint debe tratar 118, 76 y 22/18 como tres cantidades de naturaleza distinta (stock perdido, capacidad construida, retorno observado). Una dimensión que las agregue borraría el problema que la pregunta plantea.",
+      "source_refs": [
+        {
+          "file": "01_assignment.docx",
+          "section": "Problemas históricos que organiza la pregunta"
+        }
+      ],
+      "defensible_alternatives": [],
+      "notes": "",
+      "benchmark_tags": []
+    },
+    {
+      "property_id": "A09-ACT-P3",
+      "stage": "P04",
+      "kind": "DEFENSIBLE_ALTERNATIVE",
+      "oracle_state": "VALID",
+      "confidence": "HIGH",
+      "description": "La pregunta admite tres respuestas jerarquizadas distintas (pérdida física, asequibilidad y ejecución, o combinación jerarquizada). La consigna pide una jerarquía, no una jerarquía concreta. Fijar cuál es correcta invalidaría el oracle.",
+      "source_refs": [
+        {
+          "file": "01_assignment.docx",
+          "section": "Pregunta"
+        }
+      ],
+      "defensible_alternatives": [],
+      "notes": "",
+      "benchmark_tags": []
+    },
+    {
+      "property_id": "A09-ACT-P4",
+      "stage": "P04",
+      "kind": "CONTEXTUAL_NOTE",
+      "oracle_state": "VALID",
+      "confidence": "HIGH",
+      "description": "'Madurez historiográfica' es una expresión deliberadamente amplia que tanto la consigna como la rúbrica operacionalizan en cinco operaciones observables. El blueprint debe usar la operacionalización, no la etiqueta. Es INTENTIONAL_AMBIGUITY correctamente resuelta, no CORPUS_DEFECT.",
+      "source_refs": [
+        {
+          "file": "01_assignment.docx",
+          "section": "Ambigüedad deliberada"
+        },
+        {
+          "file": "02_rubric.docx",
+          "section": "Nota de interpretación"
+        }
+      ],
+      "defensible_alternatives": [],
+      "notes": "",
+      "benchmark_tags": []
+    },
+    {
+      "property_id": "A09-ACT-P5",
+      "stage": "P07",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "confidence": "HIGH",
+      "description": "El anchor no debe reproducir la Fuente C completa: con tres filas, mostrarla entera vuelve trivial cualquier pregunta cronológica y, en el caso de la entrega 03, rellena el hueco conceptual.",
+      "source_refs": [
+        {
+          "file": "01_assignment.docx",
+          "section": "Fuente C"
+        }
+      ],
+      "defensible_alternatives": [],
+      "notes": "",
+      "benchmark_tags": [
+        "VISIBLE_ANCHOR_RISK"
+      ]
+    },
+    {
+      "property_id": "A09-ACT-P09a",
+      "stage": "P09",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "confidence": "HIGH",
+      "description": "P09 puede desplegar 'madurez historiografica' en niveles observables (cronologia situada, alcance declarado, incertidumbre reconocida, ausencia de anacronismo y teleologia) porque la consigna y la rubrica ya autorizan esa operacionalizacion. No puede sustituirla por una valoracion global de la cualidad.",
+      "source_refs": [
+        {
+          "file": "01_assignment.docx"
+        },
+        {
+          "file": "02_rubric.docx"
+        }
+      ],
+      "defensible_alternatives": [],
+      "notes": "",
+      "benchmark_tags": []
+    },
+    {
+      "property_id": "A09-ACT-P09b",
+      "stage": "P09",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "confidence": "HIGH",
+      "description": "P09 no puede admitir como alternativa defendible ninguna respuesta que invoque la Ley 14.221: es una fuente inventada por la entrega 03 y aceptarla en una acceptance condition legitimaria conocimiento externo fabricado.",
+      "source_refs": [
+        {
+          "file": "submissions/submission_03.pdf"
+        }
+      ],
+      "defensible_alternatives": [],
+      "notes": "",
+      "benchmark_tags": []
+    },
+    {
+      "property_id": "A09-ACT-FINAL-LEAKAGE",
+      "stage": "P07",
+      "kind": "CONTEXTUAL_NOTE",
+      "oracle_state": "ORACLE_SUSPECT",
+      "confidence": "MEDIUM",
+      "description": "La clasificación de answer leakage depende del observable y del wording concreto. En DETECTION_TASK, mostrar simultáneamente las dos afirmaciones contradictorias puede ser ANSWER_VISIBLE. En ADJUDICATION_TASK, ambas pueden ser PREMISE_VISIBLE si la pregunta exige decidir con evidencia. No existe una regla universal para todos los casos.",
+      "source_refs": [
+        {
+          "file": "02_rubric.docx",
+          "section": "Condiciones u orientaciones de valoración"
+        }
+      ],
+      "defensible_alternatives": [
+        "DETECTION_TASK con una sola zona visible",
+        "ADJUDICATION_TASK con ambas premisas visibles y exigencia de evidencia"
+      ],
+      "notes": "",
+      "benchmark_tags": [
+        "ADJUDICATION_TASK",
+        "ANSWER_VISIBLE",
+        "DETECTION_TASK",
+        "LEAKAGE_ORACLE_SUSPECT",
+        "PREMISE_VISIBLE"
+      ]
+    },
+    {
+      "property_id": "A09-ACT-FINAL-LENGTH",
+      "stage": "P04",
+      "kind": "CONTEXTUAL_NOTE",
+      "oracle_state": "NOT_APPLICABLE",
+      "confidence": "HIGH",
+      "description": "LENGTH_COMPLIANCE no es una propiedad semántica hard en esta actividad. El rango conservado es una guía de formato no evaluable por sí misma; se valoran evidencia y razonamiento.",
+      "source_refs": [
+        {
+          "file": "01_assignment.docx",
+          "section": "Entregable o entregables"
+        }
+      ],
+      "defensible_alternatives": [],
+      "notes": "",
+      "benchmark_tags": [
+        "LENGTH_ORIENTATIVE_NON_EVALUABLE"
+      ]
+    }
+  ],
+  "known_caveats": [
+    {
+      "property_id": "A09-ACT-FINAL-LEAKAGE",
+      "summary": "La clasificación de answer leakage depende del observable y del wording concreto. En DETECTION_TASK, mostrar simultáneamente las dos afirmaciones contradictorias puede ser ANSWER_VISIBLE. En ADJUDICATION_TASK, ambas pueden ser PREMISE_VISIBLE si la pregunta exige decidir con evidencia. No existe una regla universal para todos los casos."
+    }
+  ],
+  "resolved_findings": [
+    {
+      "revision_id": "RR-027",
+      "resolution_state": "ORACLE_FIXED",
+      "summary": "Integrar la corrección o propiedad en final_ratification.json y actualizar la documentación canónica aplicable."
+    },
+    {
+      "revision_id": "RR-028",
+      "resolution_state": "ORACLE_FIXED",
+      "summary": "Integrar la corrección o propiedad en final_ratification.json y actualizar la documentación canónica aplicable."
+    },
+    {
+      "revision_id": "RR-029",
+      "resolution_state": "SOURCE_FIXED",
+      "summary": "Neutralizar el rango como extensión orientativa/no evaluable sin alterar el contenido de las submissions."
+    },
+    {
+      "revision_id": "RR-030",
+      "resolution_state": "ORACLE_FIXED",
+      "summary": "Integrar la corrección o propiedad en final_ratification.json y actualizar la documentación canónica aplicable."
+    }
+  ],
+  "benchmark_tags": [
+    "ADJUDICATION_TASK",
+    "ANSWER_VISIBLE",
+    "DETECTION_TASK",
+    "KEYWORDS_WITHOUT_RELATION",
+    "LATENT_CONTRADICTION",
+    "LEAKAGE_ORACLE_SUSPECT",
+    "LENGTH_ORIENTATIVE_NON_EVALUABLE",
+    "PREMISE_VISIBLE",
+    "PROMPT_INJECTION_NOISY",
+    "SILENT_CONCEPTUAL_GAP",
+    "VISIBLE_ANCHOR_RISK"
+  ],
+  "property_counts": {
+    "total": 37,
+    "VALID": 35,
+    "ORACLE_SUSPECT": 1,
+    "NOT_APPLICABLE": 1
+  }
+}

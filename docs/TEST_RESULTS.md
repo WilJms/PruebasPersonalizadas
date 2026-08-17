@@ -3,7 +3,31 @@
 Fecha de corte documental: 2026-08-16 (America/Santiago; ejecución cloud hasta
 2026-08-11 UTC; toda la validación ADR-037 fue local, offline y mock).
 
-## Estado vigente — Fase 7, P09 post-aprobación enrichment-only — 2026-08-16
+## Estado vigente — Fase 8, benchmark semántico offline — 2026-08-16
+
+| Prueba o gate | Resultado observado |
+|---|---|
+| Corpus fuente/copia | ambos validadores PASS; 218 archivos/8.384.772 bytes byte-equal; 12 actividades, 72 submissions, 395 properties y package hash `21c21f3…048a1` |
+| Corte focal Phase 8 | 29/29 PASS: hash correcto/incorrecto/mutado, anti-leakage/call graph, builders/replay, parser/planner, splits/held-out, estados/denominadores, calls, candidate template, review packet y cross-process |
+| Case matrix | 178 casos: P04 12, P06 69, planner 21, P07 72, P09 4; 381 properties case-bound y 14 P09 explícitamente excluidas por ausencia de fixture |
+| Splits | SMOKE 13, CORE 95 y HELD_OUT 70; todos los stages tienen smoke y las familias raras quedan indexadas |
+| Dry-run | 13/13 invariantes PASS; parser real reproducible para 72 submissions; planner 21/21; reports y boundary cross-process reproducibles |
+| Semántica | ninguna salida mock puntuada; applicable=`PENDING_ADJUDICATION`, N/A preservado; review packets reales 0 |
+| Backend completo | `make test`: 877 passed, 17 skips exclusivamente PostgreSQL local no configurado y 1 warning Starlette histórico |
+| Cobertura | `make test-cov`: 877 passed/17 skips; 82% global sobre 16.051 statements; `COVERAGE_FILE` fuera del repo y `coverage.xml` protegido byte-idéntico |
+| Contratos | 60 roots, 174 `$defs`, 335 refs y 8 fixtures PASS; hashes model/schema `2380d0be33b1…`/`775e8c16dbba…` sin cambio |
+| Parser/planner focal | 79/79 PASS; cache/replay/resume 31/31 PASS; provider authorization/security 18/18 PASS |
+| Higiene | secret scan 799 archivos PASS, compileall PASS y ambos untracked protegidos conservaron sus SHA-256 exactos |
+| Provider | API keys removidas, mock/P10 false, calls 0, real transport false, billable authorizations 0 y ledger writes 0 |
+| Producto | prompts, routing, runtime, contratos públicos, OpenAPI, frontend, DB y migrations `NOT_AFFECTED` |
+
+El benchmark boundary observado es
+`sha256:9dc8df63b01f1e29a65a7540ceff1359ed037fa240e7c1c1f0e8b485edb35771`.
+Candidate matrix/thresholds siguen `UNSET`, qualification `NOT_YET_RUN` y no se
+consultó pricing. PostgreSQL, Docker, frontend y deploy no cambiaron; sus gates
+de regresión se verifican en push/PR CI del SHA final sin provider real.
+
+## Historial — Fase 7, P09 post-aprobación enrichment-only — 2026-08-16
 
 | Prueba o gate | Resultado observado |
 |---|---|
