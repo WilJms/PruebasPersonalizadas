@@ -1,7 +1,7 @@
 {
   "benchmark_version": "semantic-benchmark/1.1.0",
   "billable_authorizations": 0,
-  "case_observation_count": 368,
+  "case_observation_count": 372,
   "case_observations": [
     {
       "candidate_output_present": false,
@@ -1759,6 +1759,14 @@
       "candidate_output_present": false,
       "case_id": "PP-A08-S02-P07-O01",
       "oracle_state": "VALID",
+      "property_id": "A08-ACT-P5",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A08-S02-P07-O01",
+      "oracle_state": "VALID",
       "property_id": "A08-S02-P1",
       "result_state": "PENDING_ADJUDICATION",
       "stage": "P07"
@@ -1775,7 +1783,23 @@
       "candidate_output_present": false,
       "case_id": "PP-A08-S02-P07-O02",
       "oracle_state": "VALID",
+      "property_id": "A08-ACT-P5",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A08-S02-P07-O02",
+      "oracle_state": "VALID",
       "property_id": "A08-S02-P2",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A08-S02-P07-O03",
+      "oracle_state": "VALID",
+      "property_id": "A08-ACT-P5",
       "result_state": "PENDING_ADJUDICATION",
       "stage": "P07"
     },
@@ -2272,6 +2296,14 @@
       "case_id": "PP-A10-S04-P07-O01",
       "oracle_state": "VALID",
       "property_id": "A10-S04-FINAL-DECLARED-OMISSION",
+      "result_state": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "candidate_output_present": false,
+      "case_id": "PP-A10-S04-P07-O01",
+      "oracle_state": "VALID",
+      "property_id": "A10-S04-P4",
       "result_state": "PENDING_ADJUDICATION",
       "stage": "P07"
     },
@@ -2949,12 +2981,12 @@
     }
   ],
   "execution_mode": "NON_BILLABLE_BENCHMARK_DRY_RUN",
-  "explicitly_excluded_property_count": 33,
+  "explicitly_excluded_property_count": 31,
   "mock_outputs_scored": false,
   "model_call_ledger_writes": 0,
   "outcome_counts": {
     "NOT_APPLICABLE": 8,
-    "PENDING_ADJUDICATION": 354
+    "PENDING_ADJUDICATION": 356
   },
   "property_count": 395,
   "property_outcomes": [
@@ -4751,11 +4783,11 @@
       "stage": "P07"
     },
     {
-      "alignment_status": "EXPLICITLY_EXCLUDED",
+      "alignment_status": "ALIGNED",
       "candidate_output_present": false,
       "oracle_state": "VALID",
       "property_id": "A08-ACT-P5",
-      "result_state": null,
+      "result_state": "PENDING_ADJUDICATION",
       "stage": "P07"
     },
     {
@@ -5447,11 +5479,11 @@
       "stage": "P06"
     },
     {
-      "alignment_status": "EXPLICITLY_EXCLUDED",
+      "alignment_status": "ALIGNED",
       "candidate_output_present": false,
       "oracle_state": "VALID",
       "property_id": "A10-S04-P4",
-      "result_state": null,
+      "result_state": "PENDING_ADJUDICATION",
       "stage": "P07"
     },
     {

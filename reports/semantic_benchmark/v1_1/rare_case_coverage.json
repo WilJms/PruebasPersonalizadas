@@ -318,6 +318,7 @@
         "A07-S06-P3",
         "A07-S06-P4",
         "A08-ACT-P4",
+        "A08-ACT-P5",
         "A08-S01-FINAL-XAR",
         "A08-S01-P1",
         "A08-S01-P2",
@@ -349,6 +350,7 @@
         "A10-S04-P1",
         "A10-S04-P2",
         "A10-S04-P3",
+        "A10-S04-P4",
         "A10-S04-P5",
         "A10-S04-P6",
         "A10-S05-P1",
@@ -413,7 +415,7 @@
         "A12-S06-P3"
       ],
       "rare_case_count": 115,
-      "rare_property_count": 141,
+      "rare_property_count": 143,
       "singleton_policy": {
         "classification": "MULTI_INSTANCE_RARE_FAMILY",
         "independent_held_out_claimed": true,
@@ -677,6 +679,7 @@
       ],
       "property_ids": [
         "A08-ACT-P4",
+        "A08-ACT-P5",
         "A08-S02-P2",
         "A12-ACT-FINAL-LEAKAGE",
         "A12-ACT-P09a",
@@ -686,7 +689,7 @@
         "A12-S06-P3"
       ],
       "rare_case_count": 4,
-      "rare_property_count": 8,
+      "rare_property_count": 9,
       "singleton_policy": {
         "classification": "MULTI_INSTANCE_RARE_FAMILY",
         "independent_held_out_claimed": true,

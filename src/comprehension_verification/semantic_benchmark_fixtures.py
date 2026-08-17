@@ -27,7 +27,7 @@ from .question_generation import (
 )
 
 
-P04_FIXTURE_BUILDER_VERSION = "semantic-benchmark-fixture-p04/1.1.0"
+P04_FIXTURE_BUILDER_VERSION = "semantic-benchmark-fixture-p04/1.1.1"
 P06_FIXTURE_BUILDER_VERSION = "semantic-benchmark-fixture-p06/1.1.0"
 PLANNER_FIXTURE_BUILDER_VERSION = "semantic-benchmark-fixture-planner/1.0.0"
 P07_FIXTURE_BUILDER_VERSION = "semantic-benchmark-fixture-p07/1.1.0"
@@ -116,7 +116,12 @@ def build_p04_fixture(
             grading_weight=None,
             levels=[],
             observables=[],
-            verification_fit="HIGH",
+            # The contract requires one of HIGH / MEDIUM / LOW / NOT_VERIFIABLE
+            # and the source states none of them.  MEDIUM is the mid-point of
+            # the scale, is applied uniformly so it carries no differential
+            # signal, and keeps every criterion inside the verifiable-coverage
+            # set exactly as HIGH or LOW would.
+            verification_fit="MEDIUM",
             overlaps_with=[],
         )
         for index, unit in enumerate(rubric_rows, start=1)

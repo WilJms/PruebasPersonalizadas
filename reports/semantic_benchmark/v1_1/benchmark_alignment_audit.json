@@ -71,6 +71,45 @@
       },
       "finding_id": "V1_P09_FILENAME_ONLY_WITH_FALLBACK",
       "resolution": "EXACT_HASHED_EVIDENCE_ID_AND_LOCATOR_BINDINGS_NO_FALLBACK"
+    },
+    {
+      "confirmed": true,
+      "evidence": {
+        "baseline_activity_property_placement": "FIRST_AVAILABLE_SUBMISSION_CASE",
+        "baseline_code_authority": "22148a3:semantic_benchmark.py:property_coverage",
+        "recomputed_violation_count": 0,
+        "representative_selector_counts": {
+          "ACTIVITY_STAGE_EXHAUSTIVE": 1,
+          "CROSS_ARTIFACT_ANCHOR": 2,
+          "FROZEN_FIXTURE_SCOPE": 8,
+          "OWN_FIXTURE": 235,
+          "SHARED_ORACLE_TAGS": 2,
+          "SOURCE_SUBMISSION_REFS": 4,
+          "STAGE_ACTIVITY_FIXTURE": 45,
+          "STAGE_CASE_IDENTITY": 21,
+          "SUBMISSION_EXHAUSTIVE": 28,
+          "TOPICAL_MARKER": 10
+        }
+      },
+      "finding_id": "V1_ACTIVITY_PROPERTY_ASSIGNED_TO_FREE_SUBMISSION",
+      "resolution": "DECLARED_REPRESENTATIVE_SELECTOR_RECOMPUTED_PER_BINDING"
+    },
+    {
+      "confirmed": true,
+      "evidence": {
+        "baseline_denominator_unit": "CASE_PROPERTY_RUN",
+        "denominator_probe": {
+          "hard_property_denominator": 1,
+          "observation_count": 9,
+          "passed": true,
+          "property_outcome_count": 1,
+          "property_run_outcome_count": 3
+        },
+        "properties_bound_to_multiple_cases": 20,
+        "qualification_denominator_unit": "PROPERTY_CANDIDATE_REASONING"
+      },
+      "finding_id": "V1_MULTI_OBSERVATION_DENOMINATOR_INFLATION",
+      "resolution": "PROPERTY_SCOPED_DENOMINATOR_WITH_CASE_AND_RUN_OBSERVATIONS"
     }
   ],
   "schema_version": "semantic-benchmark-alignment-audit/1.1.0",

@@ -1,8 +1,8 @@
 {
-  "benchmark_boundary_hash": "sha256:83b8df2a9e3d69bf1b548d0b775254a767634b58468e33c0408732791ee8c208",
+  "benchmark_boundary_hash": "sha256:426dda4d560a8d7d53639dfbaa0773c28565450f06e8ff62d51a8cd1bd6f62ff",
   "benchmark_version": "semantic-benchmark/1.1.0",
   "boundary_format": "semantic-benchmark-boundary/1.1.0",
-  "case_matrix_hash": "sha256:7d94bf4a30d10c482ad5e8aa349dc37e1c83c47907e518d6a989bd4c111bf7e2",
+  "case_matrix_hash": "sha256:df92c0b993c1520f76937c3c5b136c1ff0fd42f9d1f6b35510d415dd8972f19d",
   "case_tag_provenance_hash": "sha256:f4991778dabc711cde197753f273c5bb9c0818153026db65e417de38eb3fd7af",
   "compiled_properties_hash": "sha256:c69c33d4e3382031222815c203f6f7d0e0bd19dce69f328e23263459514c7a47",
   "corpus_package_boundary_hash": "21c21f3a53bfb786162dc350dc38c93b7b007d9f23b744a354de4ac2354048a1",
@@ -33,7 +33,7 @@
     "prompt_text": "sha256:3eae88367910df2734c87fd6673633c685bf32cc7d8b42e3896caf6406c00b59"
   },
   "fixture_builder_versions": [
-    "semantic-benchmark-fixture-p04/1.1.0",
+    "semantic-benchmark-fixture-p04/1.1.1",
     "semantic-benchmark-fixture-p06/1.1.0",
     "semantic-benchmark-fixture-planner/1.0.0",
     "semantic-benchmark-fixture-p07/1.1.0",
@@ -41,7 +41,7 @@
     "p09-frozen-operation-projection/1.1.0",
     "p09-exact-locator-resolver/1.0.0"
   ],
-  "fixture_definition_source_hash": "sha256:15d4f02a04e7e0a39340e5c03cd2d2f6dc275111e2dae42f34a305a78457b4b6",
+  "fixture_definition_source_hash": "sha256:a7abb2a74e45caad8c6e2aee4152e729d2e9a751de24980696213c5b41d2774c",
   "oracle_state_rules": {
     "INVALID": "forbidden in the frozen ready corpus",
     "NOT_APPLICABLE": "traced but excluded from semantic denominators",
@@ -251,14 +251,14 @@
     "required_quantifier": "ALL_APPLICABLE_CASE_OBSERVATIONS",
     "technical_and_pending_policy": "EXCLUDED_FROM_SEMANTIC_FAILURE_DENOMINATOR"
   },
-  "property_binding_definitions_hash": "sha256:036205361a6aa67b864f239dc743b97dccd6f333467da91d00c00ad8e29d44fd",
+  "property_binding_definitions_hash": "sha256:c9ccba03dc10b8ffe4b3bed3d644107e36dd21c6fc151e2b18a9773687f406f4",
   "property_evaluator_definitions": {
     "DETERMINISTIC": "product-owned invariant with exact machine result",
     "EXTERNAL_ADJUDICATION_REQUIRED": "semantic interpretation deferred to Phase 9 review",
     "RULE_BASED": "explicit mechanical relation; no hidden semantic inference"
   },
-  "property_fixture_alignment_hash": "sha256:9159a87cfd835ab4254f876928b40fb8e434a568a8ef1d873b691f2b2d1ccb01",
-  "rare_case_coverage_hash": "sha256:c46225a5e3cec5a9982ef056684c681acd6f6bc2163af9d35531b6900918f3f0",
+  "property_fixture_alignment_hash": "sha256:21d3aa2aa86520b6adaf37968a4bf0ff92f0834e0dca5b82ec9ff78bb5bb53e9",
+  "rare_case_coverage_hash": "sha256:5a26f3f8bc42cc9c881f09514a618b7692a620a3a4ebfcbe56058ba57881e520",
   "rare_coverage_rules": {
     "answer_leakage": {
       "criticality": "SAFETY_CRITICAL",
@@ -321,7 +321,7 @@
     "p07_opportunities.schema.json": "sha256:4a93eb3de0074230b708f996f72c6aea6aef03df32f171093d65e7bd7fb99c93",
     "p09_locator_bindings.schema.json": "sha256:b42e528f8166b5645fa8532b94d3b92f5151d15833bbf9df0d3d169359752715",
     "phase9_candidate_matrix.schema.json": "sha256:5d40173fcbc7d974c14c90de302cdbb2add461a4f32e06867515c0811731c771",
-    "property_bindings.schema.json": "sha256:35e1f63eca8f95d490cf20847e2dc809c19c1c7331f9cff0bcf897f299f3080f",
+    "property_bindings.schema.json": "sha256:400242f0ce30f60ab8d2e8985ecf6d22f747b23da0f680c1a8f0017af9ccdea5",
     "review_packet.schema.json": "sha256:bd17dea8e2eae8d993cf4d890353cc0a3a8bbed4e86d11f0f1c92cd15643d395",
     "tag_scope_registry.schema.json": "sha256:2844008e1abe9931e86da7ce6e9e74b7966fd396cb081fdf8097d78e8fc567ef"
   },
@@ -329,8 +329,8 @@
   "tag_scope_registry_hash": "sha256:41de797cc377d31d86d6ccf812a6de9b84b9b141eb0cf33ef91c45fe86fee8b9",
   "tag_scope_report_hash": "sha256:d8a64a4e7c052970c7a293fe8f2b86fab05075dcc5696053e17a351955263ed4",
   "validator_source_hashes": {
-    "semantic_benchmark.py": "sha256:a0e208ef1325905e25712fcd4e3f8a14eafbf32cfaf074897977ec8064363f81",
-    "semantic_benchmark_fixtures.py": "sha256:589e3a368f41057dc2c1a9661f2461b7421206985b1e73f04ecb5061a497da7e",
+    "semantic_benchmark.py": "sha256:2fe405ca1ab3a2ef1982a496cf2aa2b6777cf7ec132a07a6df64a259327f151e",
+    "semantic_benchmark_fixtures.py": "sha256:e09315337438b470ab0401f570c1f5244b7ca1e6578b3345eeaf6fe9be21c620",
     "validation.py": "sha256:64316a1dcc620d9273df33e68df73cebdde6a91462ef4e607c97e8fb03717bab"
   }
 }

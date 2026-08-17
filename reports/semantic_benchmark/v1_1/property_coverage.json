@@ -80,11 +80,12 @@
       "VISIBLE_ANCHOR_RISK": 11
     }
   },
-  "aligned_count": 354,
+  "aligned_count": 356,
+  "arbitrary_binding_violations": [],
   "assigned_arbitrarily_count": 0,
   "benchmark_version": "semantic-benchmark/1.1.0",
   "case_bindings_are_observations": true,
-  "case_bound_count": 354,
+  "case_bound_count": 356,
   "case_property_matrix": [
     {
       "case_id": "PP-A01-P04-001",
@@ -1113,6 +1114,7 @@
     {
       "case_id": "PP-A08-S02-P07-O01",
       "property_ids": [
+        "A08-ACT-P5",
         "A08-S02-P1"
       ]
     },
@@ -1120,12 +1122,14 @@
       "case_id": "PP-A08-S02-P07-O02",
       "property_ids": [
         "A08-ACT-P4",
+        "A08-ACT-P5",
         "A08-S02-P2"
       ]
     },
     {
       "case_id": "PP-A08-S02-P07-O03",
       "property_ids": [
+        "A08-ACT-P5",
         "A08-S02-P3"
       ]
     },
@@ -1446,6 +1450,7 @@
       "case_id": "PP-A10-S04-P07-O01",
       "property_ids": [
         "A10-S04-FINAL-DECLARED-OMISSION",
+        "A10-S04-P4",
         "A10-S04-P6"
       ]
     },
@@ -1837,11 +1842,23 @@
     }
   ],
   "case_without_property_count": 0,
-  "explicitly_excluded_count": 33,
+  "explicitly_excluded_count": 31,
   "maximum_case_bindings_per_property": 11,
   "not_applicable_count": 8,
   "property_count": 395,
-  "qualification_denominator_unit": "PROPERTY",
+  "qualification_denominator_unit": "PROPERTY_CANDIDATE_REASONING",
+  "representative_selector_counts": {
+    "ACTIVITY_STAGE_EXHAUSTIVE": 1,
+    "CROSS_ARTIFACT_ANCHOR": 2,
+    "FROZEN_FIXTURE_SCOPE": 8,
+    "OWN_FIXTURE": 235,
+    "SHARED_ORACLE_TAGS": 2,
+    "SOURCE_SUBMISSION_REFS": 4,
+    "STAGE_ACTIVITY_FIXTURE": 45,
+    "STAGE_CASE_IDENTITY": 21,
+    "SUBMISSION_EXHAUSTIVE": 28,
+    "TOPICAL_MARKER": 10
+  },
   "rows": [
     {
       "additional_case_ids": [
@@ -1861,6 +1878,7 @@
       "oracle_state": "ORACLE_SUSPECT",
       "primary_case_id": "PP-A01-S05-P07-O02",
       "property_id": "A01-ACT-FINAL-LEAKAGE",
+      "representative_selector_kind": "TOPICAL_MARKER",
       "stage": "P07"
     },
     {
@@ -1878,6 +1896,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A01-P04-001",
       "property_id": "A01-ACT-P1",
+      "representative_selector_kind": "STAGE_ACTIVITY_FIXTURE",
       "stage": "P04"
     },
     {
@@ -1895,6 +1914,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A01-P04-001",
       "property_id": "A01-ACT-P2",
+      "representative_selector_kind": "STAGE_ACTIVITY_FIXTURE",
       "stage": "P04"
     },
     {
@@ -1912,6 +1932,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A01-P04-001",
       "property_id": "A01-ACT-P3",
+      "representative_selector_kind": "STAGE_ACTIVITY_FIXTURE",
       "stage": "P04"
     },
     {
@@ -1929,6 +1950,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A01-P04-001",
       "property_id": "A01-ACT-P4",
+      "representative_selector_kind": "STAGE_ACTIVITY_FIXTURE",
       "stage": "P04"
     },
     {
@@ -1946,6 +1968,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A01-S01-P06-R01",
       "property_id": "A01-ACT-P5",
+      "representative_selector_kind": "SOURCE_SUBMISSION_REFS",
       "stage": "P06"
     },
     {
@@ -1963,6 +1986,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A01-S01-P07-O01",
       "property_id": "A01-S01-P1",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -1980,6 +2004,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A01-S01-P07-O02",
       "property_id": "A01-S01-P2",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -1997,6 +2022,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A01-S01-P06-R01",
       "property_id": "A01-S01-P3",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -2014,6 +2040,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A01-S01-PLANNER-001",
       "property_id": "A01-S01-P4",
+      "representative_selector_kind": "STAGE_CASE_IDENTITY",
       "stage": "PLANNER"
     },
     {
@@ -2031,6 +2058,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A01-S02-P06-R01",
       "property_id": "A01-S02-P1",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -2039,13 +2067,14 @@
       "binding_scope": "EXPLICITLY_EXCLUDED",
       "case_ids": [],
       "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
-      "exclusion_reason": "NO_UNAMBIGUOUS_P07_STAGE_LOCAL_OPPORTUNITY_FIXTURE",
+      "exclusion_reason": "NO_P07_OPPORTUNITY_FIXTURE_FOR_SUBMISSION",
       "fixture_id": null,
       "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
       "kind": "PROHIBITED",
       "oracle_state": "VALID",
       "primary_case_id": null,
       "property_id": "A01-S02-P2",
+      "representative_selector_kind": "NONE",
       "stage": "P07"
     },
     {
@@ -2063,6 +2092,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A01-S02-PLANNER-001",
       "property_id": "A01-S02-P3",
+      "representative_selector_kind": "STAGE_CASE_IDENTITY",
       "stage": "PLANNER"
     },
     {
@@ -2080,6 +2110,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A01-S03-P06-R01",
       "property_id": "A01-S03-P1",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -2097,6 +2128,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A01-S03-P06-R02",
       "property_id": "A01-S03-P2",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -2114,6 +2146,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A01-S03-P07-O02",
       "property_id": "A01-S03-P3",
+      "representative_selector_kind": "SUBMISSION_EXHAUSTIVE",
       "stage": "P07"
     },
     {
@@ -2131,6 +2164,7 @@
       "oracle_state": "ORACLE_SUSPECT",
       "primary_case_id": "PP-A01-S03-P07-O02",
       "property_id": "A01-S03-P4",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -2148,6 +2182,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A01-S04-PLANNER-001",
       "property_id": "A01-S04-P1",
+      "representative_selector_kind": "STAGE_CASE_IDENTITY",
       "stage": "PLANNER"
     },
     {
@@ -2165,6 +2200,7 @@
       "oracle_state": "ORACLE_SUSPECT",
       "primary_case_id": "PP-A01-S04-P06-R01",
       "property_id": "A01-S04-P2",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -2182,6 +2218,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A01-S04-P07-O01",
       "property_id": "A01-S04-P3",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -2199,6 +2236,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A01-S05-P06-R01",
       "property_id": "A01-S05-P1",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -2216,6 +2254,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A01-S05-P07-O01",
       "property_id": "A01-S05-P2",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -2233,6 +2272,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A01-S05-P07-O02",
       "property_id": "A01-S05-P3",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -2248,6 +2288,7 @@
       "oracle_state": "VALID",
       "primary_case_id": null,
       "property_id": "A01-S05-P4",
+      "representative_selector_kind": "NONE",
       "stage": "P09"
     },
     {
@@ -2265,6 +2306,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A01-S06-P06-R01",
       "property_id": "A01-S06-P1",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -2282,6 +2324,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A01-S06-P07-O01",
       "property_id": "A01-S06-P2",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -2299,6 +2342,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A01-S06-P07-O02",
       "property_id": "A01-S06-P3",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -2319,6 +2363,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A01-S06-P07-O01",
       "property_id": "A01-S06-P4",
+      "representative_selector_kind": "SUBMISSION_EXHAUSTIVE",
       "stage": "P07"
     },
     {
@@ -2334,6 +2379,7 @@
       "oracle_state": "VALID",
       "primary_case_id": null,
       "property_id": "A01-S06-P5",
+      "representative_selector_kind": "NONE",
       "stage": "P09"
     },
     {
@@ -2351,6 +2397,7 @@
       "oracle_state": "ORACLE_SUSPECT",
       "primary_case_id": "PP-A02-S05-P07-O02",
       "property_id": "A02-ACT-FINAL-LEAKAGE",
+      "representative_selector_kind": "TOPICAL_MARKER",
       "stage": "P07"
     },
     {
@@ -2368,6 +2415,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A02-P04-001",
       "property_id": "A02-ACT-P1",
+      "representative_selector_kind": "STAGE_ACTIVITY_FIXTURE",
       "stage": "P04"
     },
     {
@@ -2385,6 +2433,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A02-P04-001",
       "property_id": "A02-ACT-P2",
+      "representative_selector_kind": "STAGE_ACTIVITY_FIXTURE",
       "stage": "P04"
     },
     {
@@ -2402,6 +2451,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A02-P04-001",
       "property_id": "A02-ACT-P3",
+      "representative_selector_kind": "STAGE_ACTIVITY_FIXTURE",
       "stage": "P04"
     },
     {
@@ -2419,6 +2469,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A02-S05-P07-O02",
       "property_id": "A02-ACT-P4",
+      "representative_selector_kind": "TOPICAL_MARKER",
       "stage": "P07"
     },
     {
@@ -2434,6 +2485,7 @@
       "oracle_state": "VALID",
       "primary_case_id": null,
       "property_id": "A02-ACT-P5",
+      "representative_selector_kind": "NONE",
       "stage": "P09"
     },
     {
@@ -2451,6 +2503,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A02-S01-P06-R01",
       "property_id": "A02-S01-P1",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -2468,6 +2521,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A02-S01-P07-O01",
       "property_id": "A02-S01-P2",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -2485,6 +2539,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A02-S01-P07-O01",
       "property_id": "A02-S01-P3",
+      "representative_selector_kind": "SUBMISSION_EXHAUSTIVE",
       "stage": "P07"
     },
     {
@@ -2502,6 +2557,7 @@
       "oracle_state": "ORACLE_SUSPECT",
       "primary_case_id": "PP-A02-S01-P06-R02",
       "property_id": "A02-S01-P4",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -2519,6 +2575,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A02-S02-P07-O01",
       "property_id": "A02-S02-P1",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -2536,6 +2593,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A02-S02-P07-O02",
       "property_id": "A02-S02-P2",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -2553,6 +2611,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A02-S02-P06-R01",
       "property_id": "A02-S02-P3",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -2570,6 +2629,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A02-S02-PLANNER-001",
       "property_id": "A02-S02-P4",
+      "representative_selector_kind": "STAGE_CASE_IDENTITY",
       "stage": "PLANNER"
     },
     {
@@ -2587,6 +2647,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A02-S03-P06-R01",
       "property_id": "A02-S03-P1",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -2604,6 +2665,7 @@
       "oracle_state": "ORACLE_SUSPECT",
       "primary_case_id": "PP-A02-S03-P06-R02",
       "property_id": "A02-S03-P2",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -2621,6 +2683,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A02-S03-PLANNER-001",
       "property_id": "A02-S03-P3",
+      "representative_selector_kind": "STAGE_CASE_IDENTITY",
       "stage": "PLANNER"
     },
     {
@@ -2638,6 +2701,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A02-S04-P06-R01",
       "property_id": "A02-S04-P1",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -2655,6 +2719,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A02-S04-P07-O01",
       "property_id": "A02-S04-P2",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -2672,6 +2737,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A02-S04-P07-O01",
       "property_id": "A02-S04-P3",
+      "representative_selector_kind": "SUBMISSION_EXHAUSTIVE",
       "stage": "P07"
     },
     {
@@ -2689,6 +2755,7 @@
       "oracle_state": "ORACLE_SUSPECT",
       "primary_case_id": "PP-A02-S04-P06-R02",
       "property_id": "A02-S04-P4",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -2706,6 +2773,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A02-S05-P06-R01",
       "property_id": "A02-S05-P1",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -2723,6 +2791,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A02-S05-P07-O01",
       "property_id": "A02-S05-P2",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -2740,6 +2809,7 @@
       "oracle_state": "ORACLE_SUSPECT",
       "primary_case_id": "PP-A02-S05-P07-O02",
       "property_id": "A02-S05-P3",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -2755,6 +2825,7 @@
       "oracle_state": "VALID",
       "primary_case_id": null,
       "property_id": "A02-S05-P4",
+      "representative_selector_kind": "NONE",
       "stage": "P09"
     },
     {
@@ -2772,6 +2843,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A02-S06-P06-R01",
       "property_id": "A02-S06-P1",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -2780,13 +2852,14 @@
       "binding_scope": "EXPLICITLY_EXCLUDED",
       "case_ids": [],
       "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
-      "exclusion_reason": "NO_UNAMBIGUOUS_P07_STAGE_LOCAL_OPPORTUNITY_FIXTURE",
+      "exclusion_reason": "NO_P07_OPPORTUNITY_FIXTURE_FOR_SUBMISSION",
       "fixture_id": null,
       "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
       "kind": "PROHIBITED",
       "oracle_state": "VALID",
       "primary_case_id": null,
       "property_id": "A02-S06-P2",
+      "representative_selector_kind": "NONE",
       "stage": "P07"
     },
     {
@@ -2804,6 +2877,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A02-S06-PLANNER-001",
       "property_id": "A02-S06-P3",
+      "representative_selector_kind": "STAGE_CASE_IDENTITY",
       "stage": "PLANNER"
     },
     {
@@ -2821,6 +2895,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A03-P04-001",
       "property_id": "A03-ACT-FINAL-DIFFICULTY",
+      "representative_selector_kind": "STAGE_ACTIVITY_FIXTURE",
       "stage": "P04"
     },
     {
@@ -2838,6 +2913,7 @@
       "oracle_state": "ORACLE_SUSPECT",
       "primary_case_id": "PP-A03-S05-P07-O03",
       "property_id": "A03-ACT-FINAL-LEAKAGE",
+      "representative_selector_kind": "TOPICAL_MARKER",
       "stage": "P07"
     },
     {
@@ -2855,6 +2931,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A03-P09-F01",
       "property_id": "A03-ACT-P09a",
+      "representative_selector_kind": "FROZEN_FIXTURE_SCOPE",
       "stage": "P09"
     },
     {
@@ -2872,6 +2949,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A03-P09-F01",
       "property_id": "A03-ACT-P09b",
+      "representative_selector_kind": "FROZEN_FIXTURE_SCOPE",
       "stage": "P09"
     },
     {
@@ -2889,6 +2967,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A03-P04-001",
       "property_id": "A03-ACT-P1",
+      "representative_selector_kind": "STAGE_ACTIVITY_FIXTURE",
       "stage": "P04"
     },
     {
@@ -2906,6 +2985,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A03-P04-001",
       "property_id": "A03-ACT-P2",
+      "representative_selector_kind": "STAGE_ACTIVITY_FIXTURE",
       "stage": "P04"
     },
     {
@@ -2923,6 +3003,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A03-P04-001",
       "property_id": "A03-ACT-P3",
+      "representative_selector_kind": "STAGE_ACTIVITY_FIXTURE",
       "stage": "P04"
     },
     {
@@ -2940,6 +3021,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A03-PLANNER-ACT",
       "property_id": "A03-ACT-P4",
+      "representative_selector_kind": "STAGE_CASE_IDENTITY",
       "stage": "PLANNER"
     },
     {
@@ -2957,6 +3039,7 @@
       "oracle_state": "ORACLE_SUSPECT",
       "primary_case_id": "PP-A03-P04-001",
       "property_id": "A03-ACT-P5",
+      "representative_selector_kind": "STAGE_ACTIVITY_FIXTURE",
       "stage": "P04"
     },
     {
@@ -2974,6 +3057,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A03-S01-P06-R01",
       "property_id": "A03-S01-P1",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -2991,6 +3075,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A03-S01-P06-R02",
       "property_id": "A03-S01-P2",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -3008,6 +3093,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A03-S01-P07-O01",
       "property_id": "A03-S01-P3",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -3023,6 +3109,7 @@
       "oracle_state": "VALID",
       "primary_case_id": null,
       "property_id": "A03-S01-P4",
+      "representative_selector_kind": "NONE",
       "stage": "P04"
     },
     {
@@ -3040,6 +3127,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A03-S02-P06-R01",
       "property_id": "A03-S02-P1",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -3048,13 +3136,14 @@
       "binding_scope": "EXPLICITLY_EXCLUDED",
       "case_ids": [],
       "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
-      "exclusion_reason": "NO_UNAMBIGUOUS_P07_STAGE_LOCAL_OPPORTUNITY_FIXTURE",
+      "exclusion_reason": "NO_P07_OPPORTUNITY_FIXTURE_FOR_SUBMISSION",
       "fixture_id": null,
       "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
       "kind": "PROHIBITED",
       "oracle_state": "VALID",
       "primary_case_id": null,
       "property_id": "A03-S02-P2",
+      "representative_selector_kind": "NONE",
       "stage": "P07"
     },
     {
@@ -3072,6 +3161,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A03-S02-P06-R02",
       "property_id": "A03-S02-P3",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -3089,6 +3179,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A03-S03-PLANNER-001",
       "property_id": "A03-S03-P1",
+      "representative_selector_kind": "STAGE_CASE_IDENTITY",
       "stage": "PLANNER"
     },
     {
@@ -3106,6 +3197,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A03-S03-P07-O01",
       "property_id": "A03-S03-P2",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -3123,6 +3215,7 @@
       "oracle_state": "ORACLE_SUSPECT",
       "primary_case_id": "PP-A03-S03-P06-R01",
       "property_id": "A03-S03-P3",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -3140,6 +3233,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A03-S04-P06-R01",
       "property_id": "A03-S04-P1",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -3157,6 +3251,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A03-S04-P07-O01",
       "property_id": "A03-S04-P2",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -3174,6 +3269,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A03-S04-P06-R02",
       "property_id": "A03-S04-P3",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -3191,6 +3287,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A03-S04-P07-O01",
       "property_id": "A03-S04-P4",
+      "representative_selector_kind": "SUBMISSION_EXHAUSTIVE",
       "stage": "P07"
     },
     {
@@ -3208,6 +3305,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A03-S05-P06-R01",
       "property_id": "A03-S05-P1",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -3225,6 +3323,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A03-S05-P07-O01",
       "property_id": "A03-S05-P2",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -3245,6 +3344,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A03-S05-P07-O01",
       "property_id": "A03-S05-P3",
+      "representative_selector_kind": "SUBMISSION_EXHAUSTIVE",
       "stage": "P07"
     },
     {
@@ -3262,6 +3362,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A03-S05-P07-O03",
       "property_id": "A03-S05-P4",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -3279,6 +3380,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A03-S06-P06-R01",
       "property_id": "A03-S06-P1",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -3296,6 +3398,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A03-S06-P06-R02",
       "property_id": "A03-S06-P2",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -3313,6 +3416,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A03-S06-P07-O01",
       "property_id": "A03-S06-P3",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -3330,6 +3434,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A03-S06-P07-O02",
       "property_id": "A03-S06-P4",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -3347,6 +3452,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A03-S06-P07-O03",
       "property_id": "A03-S06-P5",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -3364,6 +3470,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A04-P09-F01",
       "property_id": "A04-ACT-P09a",
+      "representative_selector_kind": "FROZEN_FIXTURE_SCOPE",
       "stage": "P09"
     },
     {
@@ -3381,6 +3488,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A04-P09-F01",
       "property_id": "A04-ACT-P09b",
+      "representative_selector_kind": "FROZEN_FIXTURE_SCOPE",
       "stage": "P09"
     },
     {
@@ -3398,6 +3506,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A04-P04-001",
       "property_id": "A04-ACT-P1",
+      "representative_selector_kind": "STAGE_ACTIVITY_FIXTURE",
       "stage": "P04"
     },
     {
@@ -3415,6 +3524,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A04-P04-001",
       "property_id": "A04-ACT-P2",
+      "representative_selector_kind": "STAGE_ACTIVITY_FIXTURE",
       "stage": "P04"
     },
     {
@@ -3432,6 +3542,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A04-P04-001",
       "property_id": "A04-ACT-P3",
+      "representative_selector_kind": "STAGE_ACTIVITY_FIXTURE",
       "stage": "P04"
     },
     {
@@ -3440,13 +3551,14 @@
       "binding_scope": "EXPLICITLY_EXCLUDED",
       "case_ids": [],
       "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
-      "exclusion_reason": "NO_UNAMBIGUOUS_P07_STAGE_LOCAL_OPPORTUNITY_FIXTURE",
+      "exclusion_reason": "CONDITION_CONFINED_TO_SOURCE_OUTSIDE_P07_INPUT",
       "fixture_id": null,
       "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
       "kind": "CONTEXTUAL_NOTE",
       "oracle_state": "VALID",
       "primary_case_id": null,
       "property_id": "A04-ACT-P4",
+      "representative_selector_kind": "NONE",
       "stage": "P07"
     },
     {
@@ -3485,6 +3597,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A04-S01-P06-R01",
       "property_id": "A04-ACT-P5",
+      "representative_selector_kind": "ACTIVITY_STAGE_EXHAUSTIVE",
       "stage": "P06"
     },
     {
@@ -3507,6 +3620,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A04-S02-P07-O01",
       "property_id": "A04-ACT-P6",
+      "representative_selector_kind": "SOURCE_SUBMISSION_REFS",
       "stage": "P07"
     },
     {
@@ -3524,6 +3638,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A04-S01-P06-R01",
       "property_id": "A04-S01-P1",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -3541,6 +3656,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A04-S01-P06-R02",
       "property_id": "A04-S01-P2",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -3558,6 +3674,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A04-S01-P06-R03",
       "property_id": "A04-S01-P3",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -3575,6 +3692,7 @@
       "oracle_state": "ORACLE_SUSPECT",
       "primary_case_id": "PP-A04-S01-P07-O01",
       "property_id": "A04-S01-P4",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -3592,6 +3710,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A04-S01-P06-R04",
       "property_id": "A04-S01-P5",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -3609,6 +3728,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A04-S02-P06-R01",
       "property_id": "A04-S02-P1",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -3626,6 +3746,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A04-S02-P07-O01",
       "property_id": "A04-S02-P2",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -3643,6 +3764,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A04-S02-P07-O01",
       "property_id": "A04-S02-P3",
+      "representative_selector_kind": "SUBMISSION_EXHAUSTIVE",
       "stage": "P07"
     },
     {
@@ -3660,6 +3782,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A04-S03-P06-R01",
       "property_id": "A04-S03-P1",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -3677,6 +3800,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A04-S03-P07-O01",
       "property_id": "A04-S03-P2",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -3694,6 +3818,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A04-S03-P07-O02",
       "property_id": "A04-S03-P3",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -3711,6 +3836,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A04-S03-PLANNER-001",
       "property_id": "A04-S03-P4",
+      "representative_selector_kind": "STAGE_CASE_IDENTITY",
       "stage": "PLANNER"
     },
     {
@@ -3728,6 +3854,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A04-S04-P07-O01",
       "property_id": "A04-S04-P1",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -3745,6 +3872,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A04-S04-P07-O02",
       "property_id": "A04-S04-P2",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -3762,6 +3890,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A04-S04-P07-O03",
       "property_id": "A04-S04-P3",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -3779,6 +3908,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A04-S04-PLANNER-001",
       "property_id": "A04-S04-P4",
+      "representative_selector_kind": "STAGE_CASE_IDENTITY",
       "stage": "PLANNER"
     },
     {
@@ -3796,6 +3926,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A04-S05-P06-R01",
       "property_id": "A04-S05-P1",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -3813,6 +3944,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A04-S05-P07-O01",
       "property_id": "A04-S05-P2",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -3830,6 +3962,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A04-S05-P07-O02",
       "property_id": "A04-S05-P3",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -3850,6 +3983,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A04-S05-P07-O01",
       "property_id": "A04-S05-P4",
+      "representative_selector_kind": "SUBMISSION_EXHAUSTIVE",
       "stage": "P07"
     },
     {
@@ -3867,6 +4001,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A04-S05-P06-R02",
       "property_id": "A04-S05-P5",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -3884,6 +4019,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A04-S06-P07-O01",
       "property_id": "A04-S06-FINAL-XAR",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -3901,6 +4037,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A04-S06-P06-R01",
       "property_id": "A04-S06-P1",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -3918,6 +4055,7 @@
       "oracle_state": "ORACLE_SUSPECT",
       "primary_case_id": "PP-A04-S06-P06-R02",
       "property_id": "A04-S06-P2",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -3935,6 +4073,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A04-S06-P07-O02",
       "property_id": "A04-S06-P3",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -3952,6 +4091,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A04-S06-P06-R03",
       "property_id": "A04-S06-P4",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -3972,6 +4112,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A04-S06-P07-O01",
       "property_id": "A04-S06-P5",
+      "representative_selector_kind": "SUBMISSION_EXHAUSTIVE",
       "stage": "P07"
     },
     {
@@ -3989,6 +4130,7 @@
       "oracle_state": "ORACLE_SUSPECT",
       "primary_case_id": "PP-A05-S03-P07-O01",
       "property_id": "A05-ACT-FINAL-LEAKAGE",
+      "representative_selector_kind": "TOPICAL_MARKER",
       "stage": "P07"
     },
     {
@@ -4004,6 +4146,7 @@
       "oracle_state": "NOT_APPLICABLE",
       "primary_case_id": null,
       "property_id": "A05-ACT-FINAL-LENGTH",
+      "representative_selector_kind": "NONE",
       "stage": "P04"
     },
     {
@@ -4019,6 +4162,7 @@
       "oracle_state": "VALID",
       "primary_case_id": null,
       "property_id": "A05-ACT-P09a",
+      "representative_selector_kind": "NONE",
       "stage": "P09"
     },
     {
@@ -4034,6 +4178,7 @@
       "oracle_state": "VALID",
       "primary_case_id": null,
       "property_id": "A05-ACT-P09b",
+      "representative_selector_kind": "NONE",
       "stage": "P09"
     },
     {
@@ -4051,6 +4196,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A05-P04-001",
       "property_id": "A05-ACT-P1",
+      "representative_selector_kind": "STAGE_ACTIVITY_FIXTURE",
       "stage": "P04"
     },
     {
@@ -4068,6 +4214,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A05-P04-001",
       "property_id": "A05-ACT-P2",
+      "representative_selector_kind": "STAGE_ACTIVITY_FIXTURE",
       "stage": "P04"
     },
     {
@@ -4085,6 +4232,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A05-P04-001",
       "property_id": "A05-ACT-P3",
+      "representative_selector_kind": "STAGE_ACTIVITY_FIXTURE",
       "stage": "P04"
     },
     {
@@ -4102,6 +4250,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A05-P04-001",
       "property_id": "A05-ACT-P4",
+      "representative_selector_kind": "STAGE_ACTIVITY_FIXTURE",
       "stage": "P04"
     },
     {
@@ -4119,6 +4268,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A05-S03-P07-O01",
       "property_id": "A05-ACT-P5",
+      "representative_selector_kind": "SHARED_ORACLE_TAGS",
       "stage": "P07"
     },
     {
@@ -4136,6 +4286,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A05-S01-P06-R01",
       "property_id": "A05-S01-P1",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -4144,13 +4295,14 @@
       "binding_scope": "EXPLICITLY_EXCLUDED",
       "case_ids": [],
       "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
-      "exclusion_reason": "NO_UNAMBIGUOUS_P07_STAGE_LOCAL_OPPORTUNITY_FIXTURE",
+      "exclusion_reason": "NO_P07_OPPORTUNITY_FIXTURE_FOR_SUBMISSION",
       "fixture_id": null,
       "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
       "kind": "REQUIRED",
       "oracle_state": "VALID",
       "primary_case_id": null,
       "property_id": "A05-S01-P2",
+      "representative_selector_kind": "NONE",
       "stage": "P07"
     },
     {
@@ -4168,6 +4320,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A05-S01-P06-R02",
       "property_id": "A05-S01-P3",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -4185,6 +4338,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A05-S02-P06-R01",
       "property_id": "A05-S02-P1",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -4202,6 +4356,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A05-S02-P06-R02",
       "property_id": "A05-S02-P2",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -4219,6 +4374,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A05-S02-P07-O01",
       "property_id": "A05-S02-P3",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -4236,6 +4392,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A05-S02-P07-O02",
       "property_id": "A05-S02-P4",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -4253,6 +4410,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A05-S03-P06-R01",
       "property_id": "A05-S03-P1",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -4270,6 +4428,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A05-S03-P07-O01",
       "property_id": "A05-S03-P2",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -4287,6 +4446,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A05-S03-P07-O02",
       "property_id": "A05-S03-P3",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -4304,6 +4464,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A05-S03-P07-O03",
       "property_id": "A05-S03-P4",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -4321,6 +4482,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A05-S03-P07-O04",
       "property_id": "A05-S03-P5",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -4338,6 +4500,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A05-S04-P06-R01",
       "property_id": "A05-S04-P1",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -4355,6 +4518,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A05-S04-P07-O01",
       "property_id": "A05-S04-P2",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -4372,6 +4536,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A05-S04-P07-O02",
       "property_id": "A05-S04-P3",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -4392,6 +4557,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A05-S04-P07-O01",
       "property_id": "A05-S04-P4",
+      "representative_selector_kind": "SUBMISSION_EXHAUSTIVE",
       "stage": "P07"
     },
     {
@@ -4409,6 +4575,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A05-S05-P07-O01",
       "property_id": "A05-S05-P1",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -4426,6 +4593,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A05-S05-P07-O02",
       "property_id": "A05-S05-P2",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -4443,6 +4611,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A05-S05-PLANNER-001",
       "property_id": "A05-S05-P3",
+      "representative_selector_kind": "STAGE_CASE_IDENTITY",
       "stage": "PLANNER"
     },
     {
@@ -4460,6 +4629,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A05-S06-P06-R01",
       "property_id": "A05-S06-P1",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -4477,6 +4647,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A05-S06-P07-O01",
       "property_id": "A05-S06-P2",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -4494,6 +4665,7 @@
       "oracle_state": "ORACLE_SUSPECT",
       "primary_case_id": "PP-A05-S06-P07-O02",
       "property_id": "A05-S06-P3",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -4502,13 +4674,14 @@
       "binding_scope": "EXPLICITLY_EXCLUDED",
       "case_ids": [],
       "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
-      "exclusion_reason": "NO_UNAMBIGUOUS_P07_STAGE_LOCAL_OPPORTUNITY_FIXTURE",
+      "exclusion_reason": "NO_P07_OPPORTUNITY_EXERCISES_THE_DECLARED_CONDITION",
       "fixture_id": null,
       "hardness": "ORACLE_SUSPECT_PROPERTY",
       "kind": "CONTEXTUAL_NOTE",
       "oracle_state": "ORACLE_SUSPECT",
       "primary_case_id": null,
       "property_id": "A06-ACT-FINAL-LEAKAGE",
+      "representative_selector_kind": "NONE",
       "stage": "P07"
     },
     {
@@ -4524,6 +4697,7 @@
       "oracle_state": "NOT_APPLICABLE",
       "primary_case_id": null,
       "property_id": "A06-ACT-FINAL-LENGTH",
+      "representative_selector_kind": "NONE",
       "stage": "P04"
     },
     {
@@ -4539,6 +4713,7 @@
       "oracle_state": "VALID",
       "primary_case_id": null,
       "property_id": "A06-ACT-FINAL-P09",
+      "representative_selector_kind": "NONE",
       "stage": "P09"
     },
     {
@@ -4567,6 +4742,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A06-S01-P06-R01",
       "property_id": "A06-ACT-FINAL-P5",
+      "representative_selector_kind": "SOURCE_SUBMISSION_REFS",
       "stage": "P06"
     },
     {
@@ -4582,6 +4758,7 @@
       "oracle_state": "VALID",
       "primary_case_id": null,
       "property_id": "A06-ACT-P09b",
+      "representative_selector_kind": "NONE",
       "stage": "P09"
     },
     {
@@ -4599,6 +4776,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A06-P04-001",
       "property_id": "A06-ACT-P1",
+      "representative_selector_kind": "STAGE_ACTIVITY_FIXTURE",
       "stage": "P04"
     },
     {
@@ -4616,6 +4794,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A06-P04-001",
       "property_id": "A06-ACT-P2",
+      "representative_selector_kind": "STAGE_ACTIVITY_FIXTURE",
       "stage": "P04"
     },
     {
@@ -4633,6 +4812,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A06-P04-001",
       "property_id": "A06-ACT-P3",
+      "representative_selector_kind": "STAGE_ACTIVITY_FIXTURE",
       "stage": "P04"
     },
     {
@@ -4650,6 +4830,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A06-P04-001",
       "property_id": "A06-ACT-P4",
+      "representative_selector_kind": "STAGE_ACTIVITY_FIXTURE",
       "stage": "P04"
     },
     {
@@ -4667,6 +4848,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A06-S01-P06-R01",
       "property_id": "A06-S01-FINAL-P2",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -4684,6 +4866,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A06-S01-P06-R02",
       "property_id": "A06-S01-P1",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -4701,6 +4884,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A06-S01-P06-R03",
       "property_id": "A06-S01-P3",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -4718,6 +4902,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A06-S01-P07-O01",
       "property_id": "A06-S01-P4",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -4735,6 +4920,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A06-S01-P07-O01",
       "property_id": "A06-S01-P5",
+      "representative_selector_kind": "SUBMISSION_EXHAUSTIVE",
       "stage": "P07"
     },
     {
@@ -4752,6 +4938,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A06-S02-P06-R01",
       "property_id": "A06-S02-P1",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -4769,6 +4956,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A06-S02-P06-R02",
       "property_id": "A06-S02-P2",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -4786,6 +4974,7 @@
       "oracle_state": "ORACLE_SUSPECT",
       "primary_case_id": "PP-A06-S02-P07-O01",
       "property_id": "A06-S02-P3",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -4803,6 +4992,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A06-S02-P07-O02",
       "property_id": "A06-S02-P4",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -4820,6 +5010,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A06-S03-P06-R01",
       "property_id": "A06-S03-P1",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -4837,6 +5028,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A06-S03-P07-O02",
       "property_id": "A06-S03-P2",
+      "representative_selector_kind": "SUBMISSION_EXHAUSTIVE",
       "stage": "P07"
     },
     {
@@ -4854,6 +5046,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A06-S03-P07-O02",
       "property_id": "A06-S03-P3",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -4871,6 +5064,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A06-S04-P06-R01",
       "property_id": "A06-S04-FINAL-P3",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -4888,6 +5082,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A06-S04-P06-R02",
       "property_id": "A06-S04-P1",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -4905,6 +5100,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A06-S04-P06-R03",
       "property_id": "A06-S04-P2",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -4922,6 +5118,7 @@
       "oracle_state": "ORACLE_SUSPECT",
       "primary_case_id": "PP-A06-S04-P07-O01",
       "property_id": "A06-S04-P4",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -4939,6 +5136,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A06-S05-P06-R01",
       "property_id": "A06-S05-P1",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -4956,6 +5154,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A06-S05-P07-O01",
       "property_id": "A06-S05-P2",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -4973,6 +5172,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A06-S05-P06-R02",
       "property_id": "A06-S05-P3",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -4990,6 +5190,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A06-S05-P07-O01",
       "property_id": "A06-S05-P4",
+      "representative_selector_kind": "SUBMISSION_EXHAUSTIVE",
       "stage": "P07"
     },
     {
@@ -5007,6 +5208,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A06-S06-P07-O01",
       "property_id": "A06-S06-P1",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -5024,6 +5226,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A06-S06-P07-O02",
       "property_id": "A06-S06-P2",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -5041,6 +5244,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A06-S06-PLANNER-001",
       "property_id": "A06-S06-P3",
+      "representative_selector_kind": "STAGE_CASE_IDENTITY",
       "stage": "PLANNER"
     },
     {
@@ -5058,6 +5262,7 @@
       "oracle_state": "ORACLE_SUSPECT",
       "primary_case_id": "PP-A07-S06-P07-O01",
       "property_id": "A07-ACT-FINAL-LEAKAGE",
+      "representative_selector_kind": "TOPICAL_MARKER",
       "stage": "P07"
     },
     {
@@ -5073,6 +5278,7 @@
       "oracle_state": "NOT_APPLICABLE",
       "primary_case_id": null,
       "property_id": "A07-ACT-FINAL-LENGTH",
+      "representative_selector_kind": "NONE",
       "stage": "P04"
     },
     {
@@ -5090,6 +5296,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A07-P04-001",
       "property_id": "A07-ACT-P1",
+      "representative_selector_kind": "STAGE_ACTIVITY_FIXTURE",
       "stage": "P04"
     },
     {
@@ -5107,6 +5314,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A07-P04-001",
       "property_id": "A07-ACT-P2",
+      "representative_selector_kind": "STAGE_ACTIVITY_FIXTURE",
       "stage": "P04"
     },
     {
@@ -5124,6 +5332,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A07-P04-001",
       "property_id": "A07-ACT-P3",
+      "representative_selector_kind": "STAGE_ACTIVITY_FIXTURE",
       "stage": "P04"
     },
     {
@@ -5141,6 +5350,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A07-PLANNER-ACT",
       "property_id": "A07-ACT-P4",
+      "representative_selector_kind": "STAGE_CASE_IDENTITY",
       "stage": "PLANNER"
     },
     {
@@ -5161,6 +5371,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A07-S01-P07-O01",
       "property_id": "A07-ACT-P5",
+      "representative_selector_kind": "CROSS_ARTIFACT_ANCHOR",
       "stage": "P07"
     },
     {
@@ -5178,6 +5389,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A07-S01-P07-O01",
       "property_id": "A07-S01-P1",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -5195,6 +5407,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A07-S01-P06-R01",
       "property_id": "A07-S01-P2",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -5212,6 +5425,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A07-S01-PLANNER-001",
       "property_id": "A07-S01-P3",
+      "representative_selector_kind": "STAGE_CASE_IDENTITY",
       "stage": "PLANNER"
     },
     {
@@ -5229,6 +5443,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A07-S02-P07-O01",
       "property_id": "A07-S02-P1",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -5246,6 +5461,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A07-S02-P06-R01",
       "property_id": "A07-S02-P2",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -5263,6 +5479,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A07-S02-P06-R02",
       "property_id": "A07-S02-P3",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -5280,6 +5497,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A07-S02-P07-O02",
       "property_id": "A07-S02-P4",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -5297,6 +5515,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A07-S03-P06-R01",
       "property_id": "A07-S03-P1",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -5314,6 +5533,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A07-S03-P07-O01",
       "property_id": "A07-S03-P2",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -5331,6 +5551,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A07-S03-P07-O02",
       "property_id": "A07-S03-P3",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -5348,6 +5569,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A07-S03-PLANNER-001",
       "property_id": "A07-S03-P4",
+      "representative_selector_kind": "STAGE_CASE_IDENTITY",
       "stage": "PLANNER"
     },
     {
@@ -5365,6 +5587,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A07-S04-P06-R01",
       "property_id": "A07-S04-P1",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -5382,6 +5605,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A07-S04-P06-R02",
       "property_id": "A07-S04-P2",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -5399,6 +5623,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A07-S04-P07-O01",
       "property_id": "A07-S04-P3",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -5416,6 +5641,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A07-S04-P07-O01",
       "property_id": "A07-S04-P4",
+      "representative_selector_kind": "SUBMISSION_EXHAUSTIVE",
       "stage": "P07"
     },
     {
@@ -5433,6 +5659,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A07-S05-P06-R01",
       "property_id": "A07-S05-P1",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -5450,6 +5677,7 @@
       "oracle_state": "ORACLE_SUSPECT",
       "primary_case_id": "PP-A07-S05-P06-R02",
       "property_id": "A07-S05-P2",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -5467,6 +5695,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A07-S05-P07-O01",
       "property_id": "A07-S05-P3",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -5484,6 +5713,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A07-S05-P07-O02",
       "property_id": "A07-S05-P4",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -5501,6 +5731,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A07-S05-P07-O03",
       "property_id": "A07-S05-P5",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -5518,6 +5749,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A07-S06-P07-O01",
       "property_id": "A07-S06-FINAL-RECON",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -5535,6 +5767,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A07-S06-P06-R01",
       "property_id": "A07-S06-P1",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -5552,6 +5785,7 @@
       "oracle_state": "ORACLE_SUSPECT",
       "primary_case_id": "PP-A07-S06-P06-R02",
       "property_id": "A07-S06-P2",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -5569,6 +5803,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A07-S06-P07-O02",
       "property_id": "A07-S06-P3",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -5589,6 +5824,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A07-S06-P07-O01",
       "property_id": "A07-S06-P4",
+      "representative_selector_kind": "SUBMISSION_EXHAUSTIVE",
       "stage": "P07"
     },
     {
@@ -5604,6 +5840,7 @@
       "oracle_state": "VALID",
       "primary_case_id": null,
       "property_id": "A07-S06-P5",
+      "representative_selector_kind": "NONE",
       "stage": "P09"
     },
     {
@@ -5621,6 +5858,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A08-P04-001",
       "property_id": "A08-ACT-P1",
+      "representative_selector_kind": "STAGE_ACTIVITY_FIXTURE",
       "stage": "P04"
     },
     {
@@ -5638,6 +5876,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A08-P04-001",
       "property_id": "A08-ACT-P2",
+      "representative_selector_kind": "STAGE_ACTIVITY_FIXTURE",
       "stage": "P04"
     },
     {
@@ -5655,6 +5894,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A08-P04-001",
       "property_id": "A08-ACT-P3",
+      "representative_selector_kind": "STAGE_ACTIVITY_FIXTURE",
       "stage": "P04"
     },
     {
@@ -5672,21 +5912,30 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A08-S02-P07-O02",
       "property_id": "A08-ACT-P4",
+      "representative_selector_kind": "SHARED_ORACLE_TAGS",
       "stage": "P07"
     },
     {
-      "additional_case_ids": [],
-      "alignment_status": "EXPLICITLY_EXCLUDED",
-      "binding_scope": "EXPLICITLY_EXCLUDED",
-      "case_ids": [],
+      "additional_case_ids": [
+        "PP-A08-S02-P07-O02",
+        "PP-A08-S02-P07-O03"
+      ],
+      "alignment_status": "ALIGNED",
+      "binding_scope": "ACTIVITY_WIDE",
+      "case_ids": [
+        "PP-A08-S02-P07-O01",
+        "PP-A08-S02-P07-O02",
+        "PP-A08-S02-P07-O03"
+      ],
       "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
-      "exclusion_reason": "NO_UNAMBIGUOUS_P07_STAGE_LOCAL_OPPORTUNITY_FIXTURE",
-      "fixture_id": null,
+      "exclusion_reason": null,
+      "fixture_id": "P07-A08-S02-O01",
       "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
       "kind": "CONTEXTUAL_NOTE",
       "oracle_state": "VALID",
-      "primary_case_id": null,
+      "primary_case_id": "PP-A08-S02-P07-O01",
       "property_id": "A08-ACT-P5",
+      "representative_selector_kind": "TOPICAL_MARKER",
       "stage": "P07"
     },
     {
@@ -5702,6 +5951,7 @@
       "oracle_state": "VALID",
       "primary_case_id": null,
       "property_id": "A08-ACT-P6",
+      "representative_selector_kind": "NONE",
       "stage": "P09"
     },
     {
@@ -5719,6 +5969,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A08-S01-P07-O01",
       "property_id": "A08-S01-FINAL-XAR",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -5736,6 +5987,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A08-S01-P06-R01",
       "property_id": "A08-S01-P1",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -5753,6 +6005,7 @@
       "oracle_state": "ORACLE_SUSPECT",
       "primary_case_id": "PP-A08-S01-P06-R02",
       "property_id": "A08-S01-P2",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -5770,6 +6023,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A08-S01-P06-R03",
       "property_id": "A08-S01-P3",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -5787,6 +6041,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A08-S01-P07-O01",
       "property_id": "A08-S01-P4",
+      "representative_selector_kind": "SUBMISSION_EXHAUSTIVE",
       "stage": "P07"
     },
     {
@@ -5804,6 +6059,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A08-S02-P07-O01",
       "property_id": "A08-S02-P1",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -5821,6 +6077,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A08-S02-P07-O02",
       "property_id": "A08-S02-P2",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -5838,6 +6095,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A08-S02-P07-O03",
       "property_id": "A08-S02-P3",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -5855,6 +6113,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A08-S02-PLANNER-001",
       "property_id": "A08-S02-P4",
+      "representative_selector_kind": "STAGE_CASE_IDENTITY",
       "stage": "PLANNER"
     },
     {
@@ -5872,6 +6131,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A08-S03-P06-R01",
       "property_id": "A08-S03-P1",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -5889,6 +6149,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A08-S03-P06-R02",
       "property_id": "A08-S03-P2",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -5906,6 +6167,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A08-S03-P07-O01",
       "property_id": "A08-S03-P3",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -5923,6 +6185,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A08-S03-P07-O01",
       "property_id": "A08-S03-P4",
+      "representative_selector_kind": "SUBMISSION_EXHAUSTIVE",
       "stage": "P07"
     },
     {
@@ -5940,6 +6203,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A08-S04-P06-R01",
       "property_id": "A08-S04-P1",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -5957,6 +6221,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A08-S04-P06-R02",
       "property_id": "A08-S04-P2",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -5965,13 +6230,14 @@
       "binding_scope": "EXPLICITLY_EXCLUDED",
       "case_ids": [],
       "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
-      "exclusion_reason": "NO_UNAMBIGUOUS_P07_STAGE_LOCAL_OPPORTUNITY_FIXTURE",
+      "exclusion_reason": "NO_P07_OPPORTUNITY_FIXTURE_FOR_SUBMISSION",
       "fixture_id": null,
       "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
       "kind": "PROHIBITED",
       "oracle_state": "VALID",
       "primary_case_id": null,
       "property_id": "A08-S04-P3",
+      "representative_selector_kind": "NONE",
       "stage": "P07"
     },
     {
@@ -5989,6 +6255,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A08-S05-P06-R01",
       "property_id": "A08-S05-P1",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -6006,6 +6273,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A08-S05-P06-R02",
       "property_id": "A08-S05-P2",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -6014,13 +6282,14 @@
       "binding_scope": "EXPLICITLY_EXCLUDED",
       "case_ids": [],
       "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
-      "exclusion_reason": "NO_UNAMBIGUOUS_P07_STAGE_LOCAL_OPPORTUNITY_FIXTURE",
+      "exclusion_reason": "NO_P07_OPPORTUNITY_FIXTURE_FOR_SUBMISSION",
       "fixture_id": null,
       "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
       "kind": "DEFENSIBLE_ALTERNATIVE",
       "oracle_state": "VALID",
       "primary_case_id": null,
       "property_id": "A08-S05-P3",
+      "representative_selector_kind": "NONE",
       "stage": "P07"
     },
     {
@@ -6029,13 +6298,14 @@
       "binding_scope": "EXPLICITLY_EXCLUDED",
       "case_ids": [],
       "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
-      "exclusion_reason": "NO_UNAMBIGUOUS_P07_STAGE_LOCAL_OPPORTUNITY_FIXTURE",
+      "exclusion_reason": "NO_P07_OPPORTUNITY_FIXTURE_FOR_SUBMISSION",
       "fixture_id": null,
       "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
       "kind": "PROHIBITED",
       "oracle_state": "VALID",
       "primary_case_id": null,
       "property_id": "A08-S05-P4",
+      "representative_selector_kind": "NONE",
       "stage": "P07"
     },
     {
@@ -6053,6 +6323,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A08-S06-P06-R01",
       "property_id": "A08-S06-P1",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -6070,6 +6341,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A08-S06-P07-O01",
       "property_id": "A08-S06-P2",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -6087,6 +6359,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A08-S06-P07-O02",
       "property_id": "A08-S06-P3",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -6104,6 +6377,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A08-S06-PLANNER-001",
       "property_id": "A08-S06-P4",
+      "representative_selector_kind": "STAGE_CASE_IDENTITY",
       "stage": "PLANNER"
     },
     {
@@ -6112,13 +6386,14 @@
       "binding_scope": "EXPLICITLY_EXCLUDED",
       "case_ids": [],
       "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
-      "exclusion_reason": "NO_UNAMBIGUOUS_P07_STAGE_LOCAL_OPPORTUNITY_FIXTURE",
+      "exclusion_reason": "NO_P07_OPPORTUNITY_EXERCISES_THE_DECLARED_CONDITION",
       "fixture_id": null,
       "hardness": "ORACLE_SUSPECT_PROPERTY",
       "kind": "CONTEXTUAL_NOTE",
       "oracle_state": "ORACLE_SUSPECT",
       "primary_case_id": null,
       "property_id": "A09-ACT-FINAL-LEAKAGE",
+      "representative_selector_kind": "NONE",
       "stage": "P07"
     },
     {
@@ -6134,6 +6409,7 @@
       "oracle_state": "NOT_APPLICABLE",
       "primary_case_id": null,
       "property_id": "A09-ACT-FINAL-LENGTH",
+      "representative_selector_kind": "NONE",
       "stage": "P04"
     },
     {
@@ -6151,6 +6427,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A09-P09-F01",
       "property_id": "A09-ACT-P09a",
+      "representative_selector_kind": "FROZEN_FIXTURE_SCOPE",
       "stage": "P09"
     },
     {
@@ -6168,6 +6445,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A09-P09-F01",
       "property_id": "A09-ACT-P09b",
+      "representative_selector_kind": "FROZEN_FIXTURE_SCOPE",
       "stage": "P09"
     },
     {
@@ -6185,6 +6463,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A09-P04-001",
       "property_id": "A09-ACT-P1",
+      "representative_selector_kind": "STAGE_ACTIVITY_FIXTURE",
       "stage": "P04"
     },
     {
@@ -6202,6 +6481,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A09-P04-001",
       "property_id": "A09-ACT-P2",
+      "representative_selector_kind": "STAGE_ACTIVITY_FIXTURE",
       "stage": "P04"
     },
     {
@@ -6219,6 +6499,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A09-P04-001",
       "property_id": "A09-ACT-P3",
+      "representative_selector_kind": "STAGE_ACTIVITY_FIXTURE",
       "stage": "P04"
     },
     {
@@ -6236,6 +6517,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A09-P04-001",
       "property_id": "A09-ACT-P4",
+      "representative_selector_kind": "STAGE_ACTIVITY_FIXTURE",
       "stage": "P04"
     },
     {
@@ -6244,13 +6526,14 @@
       "binding_scope": "EXPLICITLY_EXCLUDED",
       "case_ids": [],
       "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
-      "exclusion_reason": "NO_UNAMBIGUOUS_P07_STAGE_LOCAL_OPPORTUNITY_FIXTURE",
+      "exclusion_reason": "NO_P07_OPPORTUNITY_EXERCISES_THE_DECLARED_CONDITION",
       "fixture_id": null,
       "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
       "kind": "PROHIBITED",
       "oracle_state": "VALID",
       "primary_case_id": null,
       "property_id": "A09-ACT-P5",
+      "representative_selector_kind": "NONE",
       "stage": "P07"
     },
     {
@@ -6268,6 +6551,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A09-S01-P06-R01",
       "property_id": "A09-S01-P1",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -6285,6 +6569,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A09-S01-P06-R02",
       "property_id": "A09-S01-P2",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -6302,6 +6587,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A09-S01-P06-R03",
       "property_id": "A09-S01-P3",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -6310,13 +6596,14 @@
       "binding_scope": "EXPLICITLY_EXCLUDED",
       "case_ids": [],
       "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
-      "exclusion_reason": "NO_UNAMBIGUOUS_P07_STAGE_LOCAL_OPPORTUNITY_FIXTURE",
+      "exclusion_reason": "NO_P07_OPPORTUNITY_FIXTURE_FOR_SUBMISSION",
       "fixture_id": null,
       "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
       "kind": "PROHIBITED",
       "oracle_state": "VALID",
       "primary_case_id": null,
       "property_id": "A09-S01-P4",
+      "representative_selector_kind": "NONE",
       "stage": "P07"
     },
     {
@@ -6334,6 +6621,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A09-S02-P06-R01",
       "property_id": "A09-S02-P1",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -6351,6 +6639,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A09-S02-P07-O01",
       "property_id": "A09-S02-P2",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -6368,6 +6657,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A09-S02-P06-R02",
       "property_id": "A09-S02-P3",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -6385,6 +6675,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A09-S02-P07-O01",
       "property_id": "A09-S02-P4",
+      "representative_selector_kind": "SUBMISSION_EXHAUSTIVE",
       "stage": "P07"
     },
     {
@@ -6402,6 +6693,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A09-S03-P06-R01",
       "property_id": "A09-S03-FINAL-SILENT-GAP",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -6419,6 +6711,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A09-S03-P06-R02",
       "property_id": "A09-S03-P1",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -6436,6 +6729,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A09-S03-P07-O01",
       "property_id": "A09-S03-P2",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -6444,13 +6738,14 @@
       "binding_scope": "EXPLICITLY_EXCLUDED",
       "case_ids": [],
       "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
-      "exclusion_reason": "NO_UNAMBIGUOUS_P07_STAGE_LOCAL_OPPORTUNITY_FIXTURE",
+      "exclusion_reason": "NO_P07_OPPORTUNITY_EXERCISES_THE_DECLARED_CONDITION",
       "fixture_id": null,
       "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
       "kind": "REQUIRED",
       "oracle_state": "VALID",
       "primary_case_id": null,
       "property_id": "A09-S03-P3",
+      "representative_selector_kind": "NONE",
       "stage": "P07"
     },
     {
@@ -6468,6 +6763,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A09-S03-P07-O03",
       "property_id": "A09-S03-P4",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -6485,6 +6781,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A09-S03-P06-R03",
       "property_id": "A09-S03-P5",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -6502,6 +6799,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A09-S04-P06-R01",
       "property_id": "A09-S04-P1",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -6519,6 +6817,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A09-S04-P07-O01",
       "property_id": "A09-S04-P2",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -6536,6 +6835,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A09-S04-P07-O02",
       "property_id": "A09-S04-P3",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -6551,6 +6851,7 @@
       "oracle_state": "VALID",
       "primary_case_id": null,
       "property_id": "A09-S04-P4",
+      "representative_selector_kind": "NONE",
       "stage": "P04"
     },
     {
@@ -6568,6 +6869,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A09-S05-P06-R01",
       "property_id": "A09-S05-P1",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -6585,6 +6887,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A09-S05-P06-R02",
       "property_id": "A09-S05-P2",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -6602,6 +6905,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A09-S05-P06-R03",
       "property_id": "A09-S05-P3",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -6619,6 +6923,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A09-S05-P07-O01",
       "property_id": "A09-S05-P4",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -6636,6 +6941,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A09-S05-P06-R04",
       "property_id": "A09-S05-P5",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -6653,6 +6959,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A09-S05-P07-O01",
       "property_id": "A09-S05-P6",
+      "representative_selector_kind": "SUBMISSION_EXHAUSTIVE",
       "stage": "P07"
     },
     {
@@ -6670,6 +6977,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A09-S06-P06-R01",
       "property_id": "A09-S06-P1",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -6687,6 +6995,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A09-S06-P07-O01",
       "property_id": "A09-S06-P2",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -6704,6 +7013,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A09-S06-P07-O01",
       "property_id": "A09-S06-P3",
+      "representative_selector_kind": "SUBMISSION_EXHAUSTIVE",
       "stage": "P07"
     },
     {
@@ -6721,6 +7031,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A09-S06-P06-R02",
       "property_id": "A09-S06-P4",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -6736,6 +7047,7 @@
       "oracle_state": "NOT_APPLICABLE",
       "primary_case_id": null,
       "property_id": "A10-ACT-FINAL-LENGTH",
+      "representative_selector_kind": "NONE",
       "stage": "P04"
     },
     {
@@ -6751,6 +7063,7 @@
       "oracle_state": "VALID",
       "primary_case_id": null,
       "property_id": "A10-ACT-P09a",
+      "representative_selector_kind": "NONE",
       "stage": "P09"
     },
     {
@@ -6766,6 +7079,7 @@
       "oracle_state": "VALID",
       "primary_case_id": null,
       "property_id": "A10-ACT-P09b",
+      "representative_selector_kind": "NONE",
       "stage": "P09"
     },
     {
@@ -6783,6 +7097,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A10-P04-001",
       "property_id": "A10-ACT-P1",
+      "representative_selector_kind": "STAGE_ACTIVITY_FIXTURE",
       "stage": "P04"
     },
     {
@@ -6800,6 +7115,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A10-P04-001",
       "property_id": "A10-ACT-P2",
+      "representative_selector_kind": "STAGE_ACTIVITY_FIXTURE",
       "stage": "P04"
     },
     {
@@ -6817,6 +7133,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A10-P04-001",
       "property_id": "A10-ACT-P3",
+      "representative_selector_kind": "STAGE_ACTIVITY_FIXTURE",
       "stage": "P04"
     },
     {
@@ -6834,6 +7151,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A10-PLANNER-ACT",
       "property_id": "A10-ACT-P4",
+      "representative_selector_kind": "STAGE_CASE_IDENTITY",
       "stage": "PLANNER"
     },
     {
@@ -6856,6 +7174,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A10-S05-P07-O01",
       "property_id": "A10-ACT-P5",
+      "representative_selector_kind": "SOURCE_SUBMISSION_REFS",
       "stage": "P07"
     },
     {
@@ -6873,6 +7192,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A10-P04-001",
       "property_id": "A10-ACT-P6",
+      "representative_selector_kind": "STAGE_ACTIVITY_FIXTURE",
       "stage": "P04"
     },
     {
@@ -6890,6 +7210,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A10-S01-P06-R01",
       "property_id": "A10-S01-P1",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -6907,6 +7228,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A10-S01-P06-R02",
       "property_id": "A10-S01-P2",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -6924,6 +7246,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A10-S01-P07-O01",
       "property_id": "A10-S01-P3",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -6941,6 +7264,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A10-S02-P06-R01",
       "property_id": "A10-S02-P1",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -6958,6 +7282,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A10-S02-P06-R02",
       "property_id": "A10-S02-P2",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -6966,13 +7291,14 @@
       "binding_scope": "EXPLICITLY_EXCLUDED",
       "case_ids": [],
       "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
-      "exclusion_reason": "NO_UNAMBIGUOUS_P07_STAGE_LOCAL_OPPORTUNITY_FIXTURE",
+      "exclusion_reason": "NO_P07_OPPORTUNITY_FIXTURE_FOR_SUBMISSION",
       "fixture_id": null,
       "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
       "kind": "PROHIBITED",
       "oracle_state": "VALID",
       "primary_case_id": null,
       "property_id": "A10-S02-P3",
+      "representative_selector_kind": "NONE",
       "stage": "P07"
     },
     {
@@ -6990,6 +7316,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A10-S03-P06-R01",
       "property_id": "A10-S03-P1",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -7007,6 +7334,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A10-S03-P06-R02",
       "property_id": "A10-S03-P2",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -7024,6 +7352,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A10-S03-P07-O01",
       "property_id": "A10-S03-P3",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -7044,6 +7373,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A10-S03-P07-O01",
       "property_id": "A10-S03-P4",
+      "representative_selector_kind": "SUBMISSION_EXHAUSTIVE",
       "stage": "P07"
     },
     {
@@ -7061,6 +7391,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A10-S03-P07-O03",
       "property_id": "A10-S03-P5",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -7078,6 +7409,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A10-S04-P07-O01",
       "property_id": "A10-S04-FINAL-DECLARED-OMISSION",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -7095,6 +7427,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A10-S04-P06-R01",
       "property_id": "A10-S04-P1",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -7112,6 +7445,7 @@
       "oracle_state": "ORACLE_SUSPECT",
       "primary_case_id": "PP-A10-S04-P06-R02",
       "property_id": "A10-S04-P2",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -7129,21 +7463,25 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A10-S04-P06-R03",
       "property_id": "A10-S04-P3",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
       "additional_case_ids": [],
-      "alignment_status": "EXPLICITLY_EXCLUDED",
-      "binding_scope": "EXPLICITLY_EXCLUDED",
-      "case_ids": [],
+      "alignment_status": "ALIGNED",
+      "binding_scope": "SUBMISSION_WIDE",
+      "case_ids": [
+        "PP-A10-S04-P07-O01"
+      ],
       "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
-      "exclusion_reason": "NO_UNAMBIGUOUS_P07_STAGE_LOCAL_OPPORTUNITY_FIXTURE",
-      "fixture_id": null,
+      "exclusion_reason": null,
+      "fixture_id": "P07-A10-S04-O01",
       "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
       "kind": "REQUIRED",
       "oracle_state": "VALID",
-      "primary_case_id": null,
+      "primary_case_id": "PP-A10-S04-P07-O01",
       "property_id": "A10-S04-P4",
+      "representative_selector_kind": "TOPICAL_MARKER",
       "stage": "P07"
     },
     {
@@ -7161,6 +7499,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A10-S04-P07-O03",
       "property_id": "A10-S04-P5",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -7181,6 +7520,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A10-S04-P07-O01",
       "property_id": "A10-S04-P6",
+      "representative_selector_kind": "SUBMISSION_EXHAUSTIVE",
       "stage": "P07"
     },
     {
@@ -7198,6 +7538,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A10-S05-P06-R01",
       "property_id": "A10-S05-P1",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -7215,6 +7556,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A10-S05-P07-O01",
       "property_id": "A10-S05-P2",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -7232,6 +7574,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A10-S05-P07-O02",
       "property_id": "A10-S05-P3",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -7249,6 +7592,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A10-S05-P07-O03",
       "property_id": "A10-S05-P4",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -7271,6 +7615,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A10-S05-P07-O01",
       "property_id": "A10-S05-P5",
+      "representative_selector_kind": "SUBMISSION_EXHAUSTIVE",
       "stage": "P07"
     },
     {
@@ -7288,6 +7633,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A10-S06-P06-R01",
       "property_id": "A10-S06-P1",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -7305,6 +7651,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A10-S06-P06-R02",
       "property_id": "A10-S06-P2",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -7322,6 +7669,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A10-S06-P06-R03",
       "property_id": "A10-S06-P3",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -7339,6 +7687,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A10-S06-P07-O01",
       "property_id": "A10-S06-P4",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -7354,6 +7703,7 @@
       "oracle_state": "NOT_APPLICABLE",
       "primary_case_id": null,
       "property_id": "A11-ACT-FINAL-LENGTH",
+      "representative_selector_kind": "NONE",
       "stage": "P04"
     },
     {
@@ -7369,6 +7719,7 @@
       "oracle_state": "VALID",
       "primary_case_id": null,
       "property_id": "A11-ACT-P09a",
+      "representative_selector_kind": "NONE",
       "stage": "P09"
     },
     {
@@ -7384,6 +7735,7 @@
       "oracle_state": "VALID",
       "primary_case_id": null,
       "property_id": "A11-ACT-P09b",
+      "representative_selector_kind": "NONE",
       "stage": "P09"
     },
     {
@@ -7401,6 +7753,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A11-P04-001",
       "property_id": "A11-ACT-P1",
+      "representative_selector_kind": "STAGE_ACTIVITY_FIXTURE",
       "stage": "P04"
     },
     {
@@ -7418,6 +7771,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A11-P04-001",
       "property_id": "A11-ACT-P2",
+      "representative_selector_kind": "STAGE_ACTIVITY_FIXTURE",
       "stage": "P04"
     },
     {
@@ -7435,6 +7789,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A11-P04-001",
       "property_id": "A11-ACT-P3",
+      "representative_selector_kind": "STAGE_ACTIVITY_FIXTURE",
       "stage": "P04"
     },
     {
@@ -7455,6 +7810,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A11-S01-P07-O01",
       "property_id": "A11-ACT-P4",
+      "representative_selector_kind": "CROSS_ARTIFACT_ANCHOR",
       "stage": "P07"
     },
     {
@@ -7472,6 +7828,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A11-P04-001",
       "property_id": "A11-ACT-P5",
+      "representative_selector_kind": "STAGE_ACTIVITY_FIXTURE",
       "stage": "P04"
     },
     {
@@ -7487,6 +7844,7 @@
       "oracle_state": "NOT_APPLICABLE",
       "primary_case_id": null,
       "property_id": "A11-ACT-P6",
+      "representative_selector_kind": "NONE",
       "stage": "P06"
     },
     {
@@ -7504,6 +7862,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A11-S01-P06-R01",
       "property_id": "A11-S01-P1",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -7521,6 +7880,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A11-S01-P06-R02",
       "property_id": "A11-S01-P2",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -7538,6 +7898,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A11-S01-P06-R03",
       "property_id": "A11-S01-P3",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -7555,6 +7916,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A11-S01-P07-O01",
       "property_id": "A11-S01-P4",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -7572,6 +7934,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A11-S01-P07-O01",
       "property_id": "A11-S01-P5",
+      "representative_selector_kind": "SUBMISSION_EXHAUSTIVE",
       "stage": "P07"
     },
     {
@@ -7589,6 +7952,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A11-S02-P06-R01",
       "property_id": "A11-S02-P1",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -7606,6 +7970,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A11-S02-P07-O01",
       "property_id": "A11-S02-P2",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -7626,6 +7991,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A11-S02-P07-O01",
       "property_id": "A11-S02-P3",
+      "representative_selector_kind": "SUBMISSION_EXHAUSTIVE",
       "stage": "P07"
     },
     {
@@ -7643,6 +8009,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A11-S02-P07-O03",
       "property_id": "A11-S02-P4",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -7660,6 +8027,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A11-S03-P06-R01",
       "property_id": "A11-S03-P1",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -7677,6 +8045,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A11-S03-P06-R02",
       "property_id": "A11-S03-P2",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -7694,6 +8063,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A11-S03-P06-R03",
       "property_id": "A11-S03-P3",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -7711,6 +8081,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A11-S03-P07-O01",
       "property_id": "A11-S03-P4",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -7728,6 +8099,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A11-S04-P06-R01",
       "property_id": "A11-S04-P1",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -7745,6 +8117,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A11-S04-P06-R02",
       "property_id": "A11-S04-P2",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -7762,6 +8135,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A11-S04-P06-R03",
       "property_id": "A11-S04-P3",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -7779,6 +8153,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A11-S04-P07-O01",
       "property_id": "A11-S04-P4",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -7796,6 +8171,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A11-S04-P07-O01",
       "property_id": "A11-S04-P5",
+      "representative_selector_kind": "SUBMISSION_EXHAUSTIVE",
       "stage": "P07"
     },
     {
@@ -7813,6 +8189,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A11-S05-P07-O01",
       "property_id": "A11-S05-P1",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -7830,6 +8207,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A11-S05-P07-O02",
       "property_id": "A11-S05-P2",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -7847,6 +8225,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A11-S05-PLANNER-001",
       "property_id": "A11-S05-P3",
+      "representative_selector_kind": "STAGE_CASE_IDENTITY",
       "stage": "PLANNER"
     },
     {
@@ -7864,6 +8243,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A11-S06-P06-R01",
       "property_id": "A11-S06-P1",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -7881,6 +8261,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A11-S06-P07-O01",
       "property_id": "A11-S06-P2",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -7898,6 +8279,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A11-S06-P07-O02",
       "property_id": "A11-S06-P3",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -7915,6 +8297,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A11-S06-PLANNER-001",
       "property_id": "A11-S06-P4",
+      "representative_selector_kind": "STAGE_CASE_IDENTITY",
       "stage": "PLANNER"
     },
     {
@@ -7935,6 +8318,7 @@
       "oracle_state": "ORACLE_SUSPECT",
       "primary_case_id": "PP-A12-S04-P07-O01",
       "property_id": "A12-ACT-FINAL-LEAKAGE",
+      "representative_selector_kind": "TOPICAL_MARKER",
       "stage": "P07"
     },
     {
@@ -7950,6 +8334,7 @@
       "oracle_state": "NOT_APPLICABLE",
       "primary_case_id": null,
       "property_id": "A12-ACT-FINAL-LENGTH",
+      "representative_selector_kind": "NONE",
       "stage": "P04"
     },
     {
@@ -7967,6 +8352,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A12-P09-F01",
       "property_id": "A12-ACT-P09a",
+      "representative_selector_kind": "FROZEN_FIXTURE_SCOPE",
       "stage": "P09"
     },
     {
@@ -7984,6 +8370,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A12-P09-F01",
       "property_id": "A12-ACT-P09b",
+      "representative_selector_kind": "FROZEN_FIXTURE_SCOPE",
       "stage": "P09"
     },
     {
@@ -8001,6 +8388,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A12-P04-001",
       "property_id": "A12-ACT-P1",
+      "representative_selector_kind": "STAGE_ACTIVITY_FIXTURE",
       "stage": "P04"
     },
     {
@@ -8018,6 +8406,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A12-P04-001",
       "property_id": "A12-ACT-P2",
+      "representative_selector_kind": "STAGE_ACTIVITY_FIXTURE",
       "stage": "P04"
     },
     {
@@ -8035,6 +8424,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A12-P04-001",
       "property_id": "A12-ACT-P3",
+      "representative_selector_kind": "STAGE_ACTIVITY_FIXTURE",
       "stage": "P04"
     },
     {
@@ -8043,13 +8433,14 @@
       "binding_scope": "EXPLICITLY_EXCLUDED",
       "case_ids": [],
       "evaluator_mode": "EXTERNAL_ADJUDICATION_REQUIRED",
-      "exclusion_reason": "NO_UNAMBIGUOUS_P07_STAGE_LOCAL_OPPORTUNITY_FIXTURE",
+      "exclusion_reason": "CONDITION_CONFINED_TO_SOURCE_OUTSIDE_P07_INPUT",
       "fixture_id": null,
       "hardness": "REVIEWABLE_SEMANTIC_PROPERTY",
       "kind": "REQUIRED",
       "oracle_state": "VALID",
       "primary_case_id": null,
       "property_id": "A12-ACT-P4",
+      "representative_selector_kind": "NONE",
       "stage": "P07"
     },
     {
@@ -8067,6 +8458,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A12-P04-001",
       "property_id": "A12-ACT-P5",
+      "representative_selector_kind": "STAGE_ACTIVITY_FIXTURE",
       "stage": "P04"
     },
     {
@@ -8087,6 +8479,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A12-S06-P07-O02",
       "property_id": "A12-ACT-P6",
+      "representative_selector_kind": "TOPICAL_MARKER",
       "stage": "P07"
     },
     {
@@ -8104,6 +8497,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A12-S01-P06-R01",
       "property_id": "A12-S01-P1",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -8121,6 +8515,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A12-S01-P06-R02",
       "property_id": "A12-S01-P2",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -8138,6 +8533,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A12-S01-P07-O02",
       "property_id": "A12-S01-P3",
+      "representative_selector_kind": "SUBMISSION_EXHAUSTIVE",
       "stage": "P07"
     },
     {
@@ -8155,6 +8551,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A12-S01-P07-O02",
       "property_id": "A12-S01-P4",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -8172,6 +8569,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A12-S02-P06-R01",
       "property_id": "A12-S02-P1",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -8189,6 +8587,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A12-S02-P06-R02",
       "property_id": "A12-S02-P2",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -8206,6 +8605,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A12-S02-P07-O01",
       "property_id": "A12-S02-P3",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -8223,6 +8623,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A12-S02-P07-O02",
       "property_id": "A12-S02-P4",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -8240,6 +8641,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A12-S03-P06-R01",
       "property_id": "A12-S03-P1",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -8257,6 +8659,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A12-S03-P06-R02",
       "property_id": "A12-S03-P2",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -8274,6 +8677,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A12-S03-P07-O01",
       "property_id": "A12-S03-P3",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -8291,6 +8695,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A12-S03-P06-R03",
       "property_id": "A12-S03-P4",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -8308,6 +8713,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A12-S03-P07-O02",
       "property_id": "A12-S03-P5",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -8325,6 +8731,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A12-S04-P07-O01",
       "property_id": "A12-S04-FINAL-XAR",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -8342,6 +8749,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A12-S04-P06-R01",
       "property_id": "A12-S04-P1",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -8359,6 +8767,7 @@
       "oracle_state": "ORACLE_SUSPECT",
       "primary_case_id": "PP-A12-S04-P06-R02",
       "property_id": "A12-S04-P2",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -8376,6 +8785,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A12-S04-P06-R03",
       "property_id": "A12-S04-P3",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -8393,6 +8803,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A12-S04-P07-O02",
       "property_id": "A12-S04-P4",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -8410,6 +8821,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A12-S04-P07-O03",
       "property_id": "A12-S04-P5",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -8427,6 +8839,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A12-S05-P06-R01",
       "property_id": "A12-S05-P1",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -8444,6 +8857,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A12-S05-P06-R02",
       "property_id": "A12-S05-P2",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -8461,6 +8875,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A12-S05-P06-R03",
       "property_id": "A12-S05-P3",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P06"
     },
     {
@@ -8478,6 +8893,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A12-S05-P07-O01",
       "property_id": "A12-S05-P4",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -8495,6 +8911,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A12-S05-P07-O01",
       "property_id": "A12-S05-P5",
+      "representative_selector_kind": "SUBMISSION_EXHAUSTIVE",
       "stage": "P07"
     },
     {
@@ -8512,6 +8929,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A12-S06-P07-O01",
       "property_id": "A12-S06-P1",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -8529,6 +8947,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A12-S06-P07-O02",
       "property_id": "A12-S06-P2",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -8546,6 +8965,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A12-S06-P07-O03",
       "property_id": "A12-S06-P3",
+      "representative_selector_kind": "OWN_FIXTURE",
       "stage": "P07"
     },
     {
@@ -8563,6 +8983,7 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A12-S06-PLANNER-001",
       "property_id": "A12-S06-P4",
+      "representative_selector_kind": "STAGE_CASE_IDENTITY",
       "stage": "PLANNER"
     }
   ],

@@ -51,8 +51,13 @@
     },
     {
       "evidence": {
+        "cross_submission_count": 0,
+        "exact_count": 108,
         "fallback_count": 0,
-        "resolved_opportunity_count": 108
+        "opportunity_count": 108,
+        "request_mismatch_count": 0,
+        "resolution_mode": "EXACT_DECLARED_EVIDENCE_ID_LOOKUP_NO_FALLBACK",
+        "unresolved_count": 0
       },
       "invariant_id": "P07_SUPPORT_RESOLUTION",
       "result": "PASS"
@@ -91,9 +96,9 @@
     },
     {
       "evidence": {
-        "aligned_count": 354,
+        "aligned_count": 356,
         "assigned_arbitrarily_count": 0,
-        "explicitly_excluded_count": 33,
+        "explicitly_excluded_count": 31,
         "not_applicable_count": 8,
         "property_count": 395
       },

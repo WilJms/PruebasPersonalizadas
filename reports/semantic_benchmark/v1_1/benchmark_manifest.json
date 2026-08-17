@@ -9,7 +9,7 @@
   "activity_count": 12,
   "assigned_arbitrarily_count": 0,
   "authorization": "NONE",
-  "benchmark_boundary_hash": "sha256:83b8df2a9e3d69bf1b548d0b775254a767634b58468e33c0408732791ee8c208",
+  "benchmark_boundary_hash": "sha256:426dda4d560a8d7d53639dfbaa0773c28565450f06e8ff62d51a8cd1bd6f62ff",
   "benchmark_version": "semantic-benchmark/1.1.0",
   "candidate_matrix_status": "UNSET",
   "case_counts_by_stage": {
@@ -42,8 +42,8 @@
   "pipeline_authority_version": "pipeline-authority/1.1.0",
   "prompts_and_routing_status": "NOT_AFFECTED",
   "property_alignment_counts": {
-    "ALIGNED": 354,
-    "EXPLICITLY_EXCLUDED": 33,
+    "ALIGNED": 356,
+    "EXPLICITLY_EXCLUDED": 31,
     "NOT_APPLICABLE": 8
   },
   "property_count": 395,

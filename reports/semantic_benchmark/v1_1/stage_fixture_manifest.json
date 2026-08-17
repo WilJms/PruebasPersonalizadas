@@ -2,10 +2,10 @@
   "benchmark_version": "semantic-benchmark/1.1.0",
   "fixtures": [
     {
-      "builder_version": "semantic-benchmark-fixture-p04/1.1.0",
+      "builder_version": "semantic-benchmark-fixture-p04/1.1.1",
       "canonical_contract": "BlueprintBuildRequest",
       "fixture_ref": "benchmark-fixture://p04/act_01_luz_y_plantines",
-      "input_hash": "sha256:bda400badd79aac2f70b9a070d370c8ed77829e37b96a633f92415bb5d2594dc",
+      "input_hash": "sha256:ab75e7a8366a966033a994bad421053bc2993517b094ab159609168e6181e7a9",
       "oracle_reads": 0,
       "property_provenance": [
         "A01-ACT-P1",
@@ -27,10 +27,10 @@
       "stage": "P04"
     },
     {
-      "builder_version": "semantic-benchmark-fixture-p04/1.1.0",
+      "builder_version": "semantic-benchmark-fixture-p04/1.1.1",
       "canonical_contract": "BlueprintBuildRequest",
       "fixture_ref": "benchmark-fixture://p04/act_02_voz_en_un_microcuento",
-      "input_hash": "sha256:eb35f443e871f1fabc647759113aef838c44321f3c41589b2d4df985696706c9",
+      "input_hash": "sha256:b7a960b7a26a67c8f5482f60213c95cd88b25f18c986401b869f850840c95de6",
       "oracle_reads": 0,
       "property_provenance": [
         "A02-ACT-P1",
@@ -51,10 +51,10 @@
       "stage": "P04"
     },
     {
-      "builder_version": "semantic-benchmark-fixture-p04/1.1.0",
+      "builder_version": "semantic-benchmark-fixture-p04/1.1.1",
       "canonical_contract": "BlueprintBuildRequest",
       "fixture_ref": "benchmark-fixture://p04/act_03_puesto_de_limonada",
-      "input_hash": "sha256:ac71a47be2ce349e66059e378a83609f37d7ed35c5b50330aee33a2f59088adc",
+      "input_hash": "sha256:d72b1571695852c6e3fb2b325f0efe9c5f3911d3cf80036e2f2c1974bd66f4ae",
       "oracle_reads": 0,
       "property_provenance": [
         "A03-ACT-FINAL-DIFFICULTY",
@@ -77,10 +77,10 @@
       "stage": "P04"
     },
     {
-      "builder_version": "semantic-benchmark-fixture-p04/1.1.0",
+      "builder_version": "semantic-benchmark-fixture-p04/1.1.1",
       "canonical_contract": "BlueprintBuildRequest",
       "fixture_ref": "benchmark-fixture://p04/act_04_asignador_de_turnos",
-      "input_hash": "sha256:9950d680f02a2a6966068f59a7d6b631e1f99c1b547b71ceae66693fa2f069bc",
+      "input_hash": "sha256:ab6229b98453d410f2cfbd44200b5beac6762ceb68b8577876b22a93e844e88a",
       "oracle_reads": 0,
       "property_provenance": [
         "A04-ACT-P1",
@@ -101,10 +101,10 @@
       "stage": "P04"
     },
     {
-      "builder_version": "semantic-benchmark-fixture-p04/1.1.0",
+      "builder_version": "semantic-benchmark-fixture-p04/1.1.1",
       "canonical_contract": "BlueprintBuildRequest",
       "fixture_ref": "benchmark-fixture://p04/act_05_visitas_a_bibliotecas",
-      "input_hash": "sha256:9520ec8a7822fa08f26d84a5e1365010da0b8925b626c40b68d78adabf12be7f",
+      "input_hash": "sha256:81cd07c10f1a31e0c78abb506bc11afaffb4d7a55f2f034207a2e28450b0765d",
       "oracle_reads": 0,
       "property_provenance": [
         "A05-ACT-P1",
@@ -126,10 +126,10 @@
       "stage": "P04"
     },
     {
-      "builder_version": "semantic-benchmark-fixture-p04/1.1.0",
+      "builder_version": "semantic-benchmark-fixture-p04/1.1.1",
       "canonical_contract": "BlueprintBuildRequest",
       "fixture_ref": "benchmark-fixture://p04/act_06_movilidad_estudiantil",
-      "input_hash": "sha256:0735838f31bf19cde49af1540da72f695601103968a86fab5a343960d3a9d55b",
+      "input_hash": "sha256:b814716e35c366b125299bff9035181def4aaf094ea6df11654dba800e058c7d",
       "oracle_reads": 0,
       "property_provenance": [
         "A06-ACT-P1",
@@ -151,10 +151,10 @@
       "stage": "P04"
     },
     {
-      "builder_version": "semantic-benchmark-fixture-p04/1.1.0",
+      "builder_version": "semantic-benchmark-fixture-p04/1.1.1",
       "canonical_contract": "BlueprintBuildRequest",
       "fixture_ref": "benchmark-fixture://p04/act_07_aislamiento_termico",
-      "input_hash": "sha256:c360da24ba4e7454d9fb8458b95171e2a708191aca2a0877d0ea3b5fef62a2a8",
+      "input_hash": "sha256:655cdb7c9046c0f68faeda286dcddc4355d1678d98202a95f101921e7c4babd7",
       "oracle_reads": 0,
       "property_provenance": [
         "A07-ACT-P1",
@@ -175,10 +175,10 @@
       "stage": "P04"
     },
     {
-      "builder_version": "semantic-benchmark-fixture-p04/1.1.0",
+      "builder_version": "semantic-benchmark-fixture-p04/1.1.1",
       "canonical_contract": "BlueprintBuildRequest",
       "fixture_ref": "benchmark-fixture://p04/act_08_triage_de_logs",
-      "input_hash": "sha256:cdebf41502524f027d2f19154c4c6aac70c5628039efa92d8fcfaf13a97e6f40",
+      "input_hash": "sha256:c5ae7d69f545d421a3f8341e980ebd47eb1393d93bcb620012a12741dbc2eeeb",
       "oracle_reads": 0,
       "property_provenance": [
         "A08-ACT-P1",
@@ -199,10 +199,10 @@
       "stage": "P04"
     },
     {
-      "builder_version": "semantic-benchmark-fixture-p04/1.1.0",
+      "builder_version": "semantic-benchmark-fixture-p04/1.1.1",
       "canonical_contract": "BlueprintBuildRequest",
       "fixture_ref": "benchmark-fixture://p04/act_09_renovacion_y_desplazamiento",
-      "input_hash": "sha256:3a725ce831f70d41837aee6dc3b24174ebeacd36ddbf1b95c0c220e1aefbdbcc",
+      "input_hash": "sha256:e8d2dc36e68bfaf2c8f2f2a88c52e0d6e4e204def7fc5ebf317d9e7e7870feca",
       "oracle_reads": 0,
       "property_provenance": [
         "A09-ACT-P1",
@@ -224,10 +224,10 @@
       "stage": "P04"
     },
     {
-      "builder_version": "semantic-benchmark-fixture-p04/1.1.0",
+      "builder_version": "semantic-benchmark-fixture-p04/1.1.1",
       "canonical_contract": "BlueprintBuildRequest",
       "fixture_ref": "benchmark-fixture://p04/act_10_experimento_onboarding",
-      "input_hash": "sha256:ff63f581d8a6e3f1513b08c107929cf130afa9972b16f997e253fb0afec18f85",
+      "input_hash": "sha256:a5f1122d5ce68f69b3997f4b5a8f1b6da91c857c09b4cbdf9bbc3cd699822708",
       "oracle_reads": 0,
       "property_provenance": [
         "A10-ACT-P1",
@@ -249,10 +249,10 @@
       "stage": "P04"
     },
     {
-      "builder_version": "semantic-benchmark-fixture-p04/1.1.0",
+      "builder_version": "semantic-benchmark-fixture-p04/1.1.1",
       "canonical_contract": "BlueprintBuildRequest",
       "fixture_ref": "benchmark-fixture://p04/act_11_duplicados_en_pagos",
-      "input_hash": "sha256:3ec6aa2f7b0f0a40fa51b08024d7911108aeb309e41d37f71468f0c3f940506d",
+      "input_hash": "sha256:c7b3b399759c2ff500ab1ee1f1503ac148f496aab89b254c28483d0b90570665",
       "oracle_reads": 0,
       "property_provenance": [
         "A11-ACT-P1",
@@ -274,10 +274,10 @@
       "stage": "P04"
     },
     {
-      "builder_version": "semantic-benchmark-fixture-p04/1.1.0",
+      "builder_version": "semantic-benchmark-fixture-p04/1.1.1",
       "canonical_contract": "BlueprintBuildRequest",
       "fixture_ref": "benchmark-fixture://p04/act_12_clinica_movil",
-      "input_hash": "sha256:50eb5ff4ee30ef9bc6f7143b0cc0ea66b202c78f946a27f6c423dbff00b73aaf",
+      "input_hash": "sha256:4c0bd60319bdf0444dc5686cd9fcc77ac92ce4b898c4857ba3aa403e05807280",
       "oracle_reads": 0,
       "property_provenance": [
         "A12-ACT-P1",
@@ -4543,7 +4543,19 @@
         "ev_4f1b7e369a62348daf24",
         "ev_5c40a7712932dc0063fc",
         "ev_81e72036798a8f4ded1f"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_01",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_4f1b7e369a62348daf24",
+          "ev_5c40a7712932dc0063fc",
+          "ev_81e72036798a8f4ded1f"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -4580,7 +4592,19 @@
         "ev_4f1b7e369a62348daf24",
         "ev_5c40a7712932dc0063fc",
         "ev_57e8261b77efc06e87eb"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_01",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_4f1b7e369a62348daf24",
+          "ev_5c40a7712932dc0063fc",
+          "ev_57e8261b77efc06e87eb"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -4619,7 +4643,19 @@
         "ev_f5d07c6e822cb5f935a0",
         "ev_856d94e982fd4d525722",
         "ev_c579dd16629f81c516ab"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_03",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_f5d07c6e822cb5f935a0",
+          "ev_856d94e982fd4d525722",
+          "ev_c579dd16629f81c516ab"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -4656,7 +4692,19 @@
         "ev_c960937fe8a551fb5c88",
         "ev_99f0272f15821e02fa99",
         "ev_d3c3c0904a33711a4e3a"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_04",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_c960937fe8a551fb5c88",
+          "ev_99f0272f15821e02fa99",
+          "ev_d3c3c0904a33711a4e3a"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -4693,7 +4741,19 @@
         "ev_4cc57c449655e3cd1cc8",
         "ev_0205284351412d981f64",
         "ev_fa392f99230f506599f1"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_05",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_4cc57c449655e3cd1cc8",
+          "ev_0205284351412d981f64",
+          "ev_fa392f99230f506599f1"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -4731,7 +4791,19 @@
         "ev_4cc57c449655e3cd1cc8",
         "ev_95913076ce9b66b8fafe",
         "ev_fa392f99230f506599f1"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_05",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_4cc57c449655e3cd1cc8",
+          "ev_95913076ce9b66b8fafe",
+          "ev_fa392f99230f506599f1"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -4770,7 +4842,19 @@
         "ev_e7b4acdc4bd139706da8",
         "ev_762cf4b32a2a1e08c0af",
         "ev_a989ded75a89405e5546"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_06",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_e7b4acdc4bd139706da8",
+          "ev_762cf4b32a2a1e08c0af",
+          "ev_a989ded75a89405e5546"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -4809,7 +4893,19 @@
         "ev_e7b4acdc4bd139706da8",
         "ev_7e740a9b3b798a743147",
         "ev_cdb660dd65dd68cbda8d"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_06",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_e7b4acdc4bd139706da8",
+          "ev_7e740a9b3b798a743147",
+          "ev_cdb660dd65dd68cbda8d"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -4848,7 +4944,19 @@
         "ev_c87a05706d7923faefd3",
         "ev_9f4d6ba41b0fa159ff76",
         "ev_912eaae29d8c9d5b42ae"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_01",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_c87a05706d7923faefd3",
+          "ev_9f4d6ba41b0fa159ff76",
+          "ev_912eaae29d8c9d5b42ae"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -4886,7 +4994,19 @@
         "ev_8c4e84959f4828f71c44",
         "ev_46fdcf7ea49ad7b11095",
         "ev_595660a897451258f84e"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_02",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_8c4e84959f4828f71c44",
+          "ev_46fdcf7ea49ad7b11095",
+          "ev_595660a897451258f84e"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -4923,7 +5043,19 @@
         "ev_8c4e84959f4828f71c44",
         "ev_1ab092d7dc94b791974f",
         "ev_7595553c96444c4ba9b3"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_02",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_8c4e84959f4828f71c44",
+          "ev_1ab092d7dc94b791974f",
+          "ev_7595553c96444c4ba9b3"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -4961,7 +5093,19 @@
         "ev_572b8dcc490faf65145a",
         "ev_8faf9b344278d993a0f1",
         "ev_2f3de7570188c61af821"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_04",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_572b8dcc490faf65145a",
+          "ev_8faf9b344278d993a0f1",
+          "ev_2f3de7570188c61af821"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -4998,7 +5142,19 @@
         "ev_95595134709493023a03",
         "ev_b78b6c7ba50ff1949b75",
         "ev_e53c97f402f50e3933eb"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_05",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_95595134709493023a03",
+          "ev_b78b6c7ba50ff1949b75",
+          "ev_e53c97f402f50e3933eb"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -5037,7 +5193,19 @@
         "ev_f53622b7ae33b46843b0",
         "ev_bfe7485611114227a423",
         "ev_358a9b90aa41476f7613"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_05",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_f53622b7ae33b46843b0",
+          "ev_bfe7485611114227a423",
+          "ev_358a9b90aa41476f7613"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -5075,7 +5243,19 @@
         "ev_cb29f97a8f747fcc93dd",
         "ev_20809a37073203e4b971",
         "ev_faf38e7ee4912ab1267f"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_01",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_cb29f97a8f747fcc93dd",
+          "ev_20809a37073203e4b971",
+          "ev_faf38e7ee4912ab1267f"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -5112,7 +5292,19 @@
         "ev_98afb9e0718b18eb3165",
         "ev_2dba00ec7b6de0a3fa00",
         "ev_1dccb3b0b417a3771c92"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_03",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_98afb9e0718b18eb3165",
+          "ev_2dba00ec7b6de0a3fa00",
+          "ev_1dccb3b0b417a3771c92"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -5151,7 +5343,19 @@
         "ev_945b112f29a92d474a29",
         "ev_101a3f06fbbfcd14fd9d",
         "ev_641b506b25b442ca5b9b"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_04",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_945b112f29a92d474a29",
+          "ev_101a3f06fbbfcd14fd9d",
+          "ev_641b506b25b442ca5b9b"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -5189,7 +5393,19 @@
         "ev_92b123d7df184c06a435",
         "ev_eb2d2902e705aed0f05a",
         "ev_a240ec603b14ea3be4df"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_05",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_92b123d7df184c06a435",
+          "ev_eb2d2902e705aed0f05a",
+          "ev_a240ec603b14ea3be4df"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -5228,7 +5444,19 @@
         "ev_a2a40947591851d6b8c1",
         "ev_a5f09809a4f4e08b8095",
         "ev_d2996889aea0ffac50c9"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_05",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_a2a40947591851d6b8c1",
+          "ev_a5f09809a4f4e08b8095",
+          "ev_d2996889aea0ffac50c9"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -5265,7 +5493,19 @@
         "ev_caab5f242f8d71bc5a8c",
         "ev_3c4b943a2f48bd25ae98",
         "ev_0a36420f776ecc70b7b2"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_06",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_caab5f242f8d71bc5a8c",
+          "ev_3c4b943a2f48bd25ae98",
+          "ev_0a36420f776ecc70b7b2"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -5302,7 +5542,19 @@
         "ev_51acec81bf63b767d510",
         "ev_3c4b943a2f48bd25ae98",
         "ev_0a36420f776ecc70b7b2"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_06",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_51acec81bf63b767d510",
+          "ev_3c4b943a2f48bd25ae98",
+          "ev_0a36420f776ecc70b7b2"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -5339,7 +5591,19 @@
         "ev_2728609930ff4fa7bada",
         "ev_a7f2f0a881f248fab1e1",
         "ev_0a36420f776ecc70b7b2"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_06",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_2728609930ff4fa7bada",
+          "ev_a7f2f0a881f248fab1e1",
+          "ev_0a36420f776ecc70b7b2"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -5376,7 +5640,19 @@
         "ev_4cffed2aac9844f7a0eb",
         "ev_d7a4a746404aecad1f16",
         "ev_adf72ccecdbd4251a07a"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_01",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_4cffed2aac9844f7a0eb",
+          "ev_d7a4a746404aecad1f16",
+          "ev_adf72ccecdbd4251a07a"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -5415,7 +5691,19 @@
         "ev_f80608f8f7609cffc324",
         "ev_3603148662d004422d48",
         "ev_a42121204d2a595e7a54"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_02",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_f80608f8f7609cffc324",
+          "ev_3603148662d004422d48",
+          "ev_a42121204d2a595e7a54"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -5452,7 +5740,19 @@
         "ev_cddffb54550c0e618945",
         "ev_8c5f574d50fa5dab8f0c",
         "ev_95c080db44aa99921a98"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_03",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_cddffb54550c0e618945",
+          "ev_8c5f574d50fa5dab8f0c",
+          "ev_95c080db44aa99921a98"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -5489,7 +5789,19 @@
         "ev_cddffb54550c0e618945",
         "ev_1386892cc225ad82ee0b",
         "ev_8c5f574d50fa5dab8f0c"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_03",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_cddffb54550c0e618945",
+          "ev_1386892cc225ad82ee0b",
+          "ev_8c5f574d50fa5dab8f0c"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -5533,7 +5845,22 @@
         "ev_d51b247f31c9d414be2d",
         "ev_95cf0ccd2ad25af5d41f",
         "ev_0b63130dc0d8913e3443"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_04",
+        "cross_submission_count": 0,
+        "declared_count": 6,
+        "distinct_declared_count": 6,
+        "request_evidence_ids": [
+          "ev_e35eda28656765c8672b",
+          "ev_d6498631df0b2f2de313",
+          "ev_0e42a44d56d47e4aee8c",
+          "ev_d51b247f31c9d414be2d",
+          "ev_95cf0ccd2ad25af5d41f",
+          "ev_0b63130dc0d8913e3443"
+        ],
+        "resolved_count": 6
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -5570,7 +5897,19 @@
         "ev_e35eda28656765c8672b",
         "ev_d6498631df0b2f2de313",
         "ev_0e42a44d56d47e4aee8c"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_04",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_e35eda28656765c8672b",
+          "ev_d6498631df0b2f2de313",
+          "ev_0e42a44d56d47e4aee8c"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -5607,7 +5946,19 @@
         "ev_d51b247f31c9d414be2d",
         "ev_0c94436ab1839455a969",
         "ev_aab63ccd6d622f1889d0"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_04",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_d51b247f31c9d414be2d",
+          "ev_0c94436ab1839455a969",
+          "ev_aab63ccd6d622f1889d0"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -5646,7 +5997,19 @@
         "ev_db6d6b7b9d636bda5ff5",
         "ev_2bc8e51dd5597cfb210b",
         "ev_190e268168673da9070c"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_05",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_db6d6b7b9d636bda5ff5",
+          "ev_2bc8e51dd5597cfb210b",
+          "ev_190e268168673da9070c"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -5685,7 +6048,19 @@
         "ev_7cedb51e3b21575a3060",
         "ev_bfec7d4ee8846dd6173e",
         "ev_190e268168673da9070c"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_05",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_7cedb51e3b21575a3060",
+          "ev_bfec7d4ee8846dd6173e",
+          "ev_190e268168673da9070c"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -5730,7 +6105,22 @@
         "ev_980679b6b5472eebbfbc",
         "ev_fb54c43c83db40ca984f",
         "ev_477e6db37c09bfc1f516"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_06",
+        "cross_submission_count": 0,
+        "declared_count": 6,
+        "distinct_declared_count": 6,
+        "request_evidence_ids": [
+          "ev_de1cba84544cd04797df",
+          "ev_7ab196584d594010f750",
+          "ev_249c96141d2ed104b688",
+          "ev_980679b6b5472eebbfbc",
+          "ev_fb54c43c83db40ca984f",
+          "ev_477e6db37c09bfc1f516"
+        ],
+        "resolved_count": 6
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -5768,7 +6158,19 @@
         "ev_de1cba84544cd04797df",
         "ev_7ab196584d594010f750",
         "ev_249c96141d2ed104b688"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_06",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_de1cba84544cd04797df",
+          "ev_7ab196584d594010f750",
+          "ev_249c96141d2ed104b688"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -5806,7 +6208,19 @@
         "ev_09757b6e8ec1dbc34a34",
         "ev_11878fc10ac21d34bbe4",
         "ev_1973cd597ba74ffb29e3"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_02",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_09757b6e8ec1dbc34a34",
+          "ev_11878fc10ac21d34bbe4",
+          "ev_1973cd597ba74ffb29e3"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -5843,7 +6257,19 @@
         "ev_2e1389d94bf8fd3d02bb",
         "ev_4b1c4282ee76c266b25b",
         "ev_c7a02fc92d3fb5714095"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_02",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_2e1389d94bf8fd3d02bb",
+          "ev_4b1c4282ee76c266b25b",
+          "ev_c7a02fc92d3fb5714095"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -5882,7 +6308,19 @@
         "ev_b0f634480d75daa5af9b",
         "ev_e2f36f1d80d4c6351dda",
         "ev_39d06eb77e57ab18194e"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_03",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_b0f634480d75daa5af9b",
+          "ev_e2f36f1d80d4c6351dda",
+          "ev_39d06eb77e57ab18194e"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -5919,7 +6357,19 @@
         "ev_e2f36f1d80d4c6351dda",
         "ev_39d06eb77e57ab18194e",
         "ev_d3b403e0d53bb6f3d4c3"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_03",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_e2f36f1d80d4c6351dda",
+          "ev_39d06eb77e57ab18194e",
+          "ev_d3b403e0d53bb6f3d4c3"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -5957,7 +6407,19 @@
         "ev_33ac03a924bf00e571e3",
         "ev_1995c1320ab2ecebe215",
         "ev_5e304575584352841454"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_03",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_33ac03a924bf00e571e3",
+          "ev_1995c1320ab2ecebe215",
+          "ev_5e304575584352841454"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -5994,7 +6456,19 @@
         "ev_b0f634480d75daa5af9b",
         "ev_e2f36f1d80d4c6351dda",
         "ev_39d06eb77e57ab18194e"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_03",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_b0f634480d75daa5af9b",
+          "ev_e2f36f1d80d4c6351dda",
+          "ev_39d06eb77e57ab18194e"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -6032,7 +6506,19 @@
         "ev_fc5c2f06472f3e8cfda3",
         "ev_c505a575ff1435968d18",
         "ev_c6f6695d488efbdb2fa0"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_04",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_fc5c2f06472f3e8cfda3",
+          "ev_c505a575ff1435968d18",
+          "ev_c6f6695d488efbdb2fa0"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -6070,7 +6556,19 @@
         "ev_0c59d7ead2d5de01f542",
         "ev_9c691939d728e1041b48",
         "ev_9855f4f4a7c9085fbba9"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_04",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_0c59d7ead2d5de01f542",
+          "ev_9c691939d728e1041b48",
+          "ev_9855f4f4a7c9085fbba9"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -6107,7 +6605,19 @@
         "ev_b31ca01bf79b46858108",
         "ev_6628d08cb81e01971d80",
         "ev_0bb0979e8a9aa9756511"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_05",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_b31ca01bf79b46858108",
+          "ev_6628d08cb81e01971d80",
+          "ev_0bb0979e8a9aa9756511"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -6144,7 +6654,19 @@
         "ev_5579eac4a33a63f8d256",
         "ev_ec7e9f1cf577b384ae52",
         "ev_83c6480430c885d9ea99"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_05",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_5579eac4a33a63f8d256",
+          "ev_ec7e9f1cf577b384ae52",
+          "ev_83c6480430c885d9ea99"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -6181,7 +6703,19 @@
         "ev_05846da3750f294f7154",
         "ev_5b29155f0c02d41ea715",
         "ev_4b8e8100e9628167b0a7"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_06",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_05846da3750f294f7154",
+          "ev_5b29155f0c02d41ea715",
+          "ev_4b8e8100e9628167b0a7"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -6218,7 +6752,19 @@
         "ev_05846da3750f294f7154",
         "ev_5b29155f0c02d41ea715",
         "ev_4b8e8100e9628167b0a7"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_06",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_05846da3750f294f7154",
+          "ev_5b29155f0c02d41ea715",
+          "ev_4b8e8100e9628167b0a7"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -6256,7 +6802,19 @@
         "ev_d5fe7dc3acdb8d3cb9e1",
         "ev_06ba68861bfff77a9b7f",
         "ev_a43956c530542987c607"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_01",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_d5fe7dc3acdb8d3cb9e1",
+          "ev_06ba68861bfff77a9b7f",
+          "ev_a43956c530542987c607"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -6293,7 +6851,19 @@
         "ev_30463cc16c1e02e7e6e1",
         "ev_c1ebbaf9ffe5073b359d",
         "ev_ccb71b12a0e429678849"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_02",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_30463cc16c1e02e7e6e1",
+          "ev_c1ebbaf9ffe5073b359d",
+          "ev_ccb71b12a0e429678849"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -6331,7 +6901,19 @@
         "ev_8211b85d0b0747f3451e",
         "ev_2d0e413aa9abce5cadf2",
         "ev_60c130996611bea433fc"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_02",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_8211b85d0b0747f3451e",
+          "ev_2d0e413aa9abce5cadf2",
+          "ev_60c130996611bea433fc"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -6370,7 +6952,19 @@
         "ev_2b87b889cec7784bbe95",
         "ev_4b268ce6514813b7ab25",
         "ev_9ed6ac3b4f76e0ad574c"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_03",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_2b87b889cec7784bbe95",
+          "ev_4b268ce6514813b7ab25",
+          "ev_9ed6ac3b4f76e0ad574c"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -6407,7 +7001,19 @@
         "ev_2bb18068474508f7ba43",
         "ev_e0d54b255aef4d769a9b",
         "ev_b6bb4cea3ab316e98616"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_04",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_2bb18068474508f7ba43",
+          "ev_e0d54b255aef4d769a9b",
+          "ev_b6bb4cea3ab316e98616"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -6446,7 +7052,19 @@
         "ev_365f2b996fd61db1f9ce",
         "ev_e01bf746c7a6a406c69a",
         "ev_7f3571d59fe60e93a2c1"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_05",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_365f2b996fd61db1f9ce",
+          "ev_e01bf746c7a6a406c69a",
+          "ev_7f3571d59fe60e93a2c1"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -6483,7 +7101,19 @@
         "ev_25a7d4fb7dc4b600d4e5",
         "ev_4606f1fdd428315a65af",
         "ev_bbb48d8650e489657e2c"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_06",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_25a7d4fb7dc4b600d4e5",
+          "ev_4606f1fdd428315a65af",
+          "ev_bbb48d8650e489657e2c"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -6521,7 +7151,19 @@
         "ev_25a7d4fb7dc4b600d4e5",
         "ev_4606f1fdd428315a65af",
         "ev_1d6b985bbe6d76588af4"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_06",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_25a7d4fb7dc4b600d4e5",
+          "ev_4606f1fdd428315a65af",
+          "ev_1d6b985bbe6d76588af4"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -6566,7 +7208,22 @@
         "ev_0ba8f479cf9cb111c3b5",
         "ev_19e77083d5181389b0e9",
         "ev_32073aa21947feb71a78"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_01",
+        "cross_submission_count": 0,
+        "declared_count": 6,
+        "distinct_declared_count": 6,
+        "request_evidence_ids": [
+          "ev_476119202311c972de96",
+          "ev_d6ae76a7a730b612cf3f",
+          "ev_cf955a73c2ce32d851d4",
+          "ev_0ba8f479cf9cb111c3b5",
+          "ev_19e77083d5181389b0e9",
+          "ev_32073aa21947feb71a78"
+        ],
+        "resolved_count": 6
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -6603,7 +7260,19 @@
         "ev_503d12da1e0262016053",
         "ev_054afdc8131435058ca0",
         "ev_f31c46106f12e22cf633"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_02",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_503d12da1e0262016053",
+          "ev_054afdc8131435058ca0",
+          "ev_f31c46106f12e22cf633"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -6640,7 +7309,19 @@
         "ev_054afdc8131435058ca0",
         "ev_47ea267e1e68d8cfcb63",
         "ev_07bfa7f3a1041f36d52f"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_02",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_054afdc8131435058ca0",
+          "ev_47ea267e1e68d8cfcb63",
+          "ev_07bfa7f3a1041f36d52f"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -6677,7 +7358,19 @@
         "ev_e3a98dcee4f2d0461fab",
         "ev_f909bad3e21db7f07401",
         "ev_757c20a6130deb4562ea"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_03",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_e3a98dcee4f2d0461fab",
+          "ev_f909bad3e21db7f07401",
+          "ev_757c20a6130deb4562ea"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -6714,7 +7407,19 @@
         "ev_40d3c988f40dba79af4f",
         "ev_bf805fc9a141160cbeea",
         "ev_0ec76931808148565ebc"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_03",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_40d3c988f40dba79af4f",
+          "ev_bf805fc9a141160cbeea",
+          "ev_0ec76931808148565ebc"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -6752,7 +7457,19 @@
         "ev_1ed3ecce6904d98953af",
         "ev_4be187308b6e42b4fb1b",
         "ev_11e81cc536ca91605288"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_04",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_1ed3ecce6904d98953af",
+          "ev_4be187308b6e42b4fb1b",
+          "ev_11e81cc536ca91605288"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -6790,7 +7507,19 @@
         "ev_bb485f27e4354f3acbdc",
         "ev_203b4001a1606cb9e4e1",
         "ev_950205f1347191512e67"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_05",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_bb485f27e4354f3acbdc",
+          "ev_203b4001a1606cb9e4e1",
+          "ev_950205f1347191512e67"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -6827,7 +7556,19 @@
         "ev_bb485f27e4354f3acbdc",
         "ev_203b4001a1606cb9e4e1",
         "ev_950205f1347191512e67"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_05",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_bb485f27e4354f3acbdc",
+          "ev_203b4001a1606cb9e4e1",
+          "ev_950205f1347191512e67"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -6865,7 +7606,19 @@
         "ev_b9256fb355d3f835fc4b",
         "ev_7c9b8248173ec46ea6eb",
         "ev_53ae6530600296f557f3"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_05",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_b9256fb355d3f835fc4b",
+          "ev_7c9b8248173ec46ea6eb",
+          "ev_53ae6530600296f557f3"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -6912,7 +7665,22 @@
         "ev_4ed09fec7991fbb4bdc1",
         "ev_5f369ae7e4cfdd86d400",
         "ev_14d6403063edf09fd4cc"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_06",
+        "cross_submission_count": 0,
+        "declared_count": 6,
+        "distinct_declared_count": 6,
+        "request_evidence_ids": [
+          "ev_e221105fd9afeff24e58",
+          "ev_19fa5077d3712197d996",
+          "ev_58663e739214f2ac2e31",
+          "ev_4ed09fec7991fbb4bdc1",
+          "ev_5f369ae7e4cfdd86d400",
+          "ev_14d6403063edf09fd4cc"
+        ],
+        "resolved_count": 6
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -6951,7 +7719,19 @@
         "ev_6a14266493171db140e7",
         "ev_d85a44fc004c3ea44412",
         "ev_791ca66c258420b5a281"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_06",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_6a14266493171db140e7",
+          "ev_d85a44fc004c3ea44412",
+          "ev_791ca66c258420b5a281"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -6996,7 +7776,22 @@
         "ev_cc2a74727d8b93c801d6",
         "ev_8dac70946f1536d583e8",
         "ev_af533c4bd047b44af43e"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_01",
+        "cross_submission_count": 0,
+        "declared_count": 6,
+        "distinct_declared_count": 6,
+        "request_evidence_ids": [
+          "ev_8e948b87421a05604677",
+          "ev_58def417921c7f7ac10b",
+          "ev_7c990f8598a94cc23fbd",
+          "ev_cc2a74727d8b93c801d6",
+          "ev_8dac70946f1536d583e8",
+          "ev_af533c4bd047b44af43e"
+        ],
+        "resolved_count": 6
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -7022,6 +7817,7 @@
         "target_minutes": 5
       },
       "property_provenance": [
+        "A08-ACT-P5",
         "A08-S02-P1"
       ],
       "role": "SOURCE_GROUNDED_QUESTION_OPPORTUNITY_NOT_EXPECTED_OUTPUT",
@@ -7033,7 +7829,19 @@
         "ev_1579b8f521adae3c8ef2",
         "ev_98bab90120083a02f7b0",
         "ev_9494945c5762ff2bafc3"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_02",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_1579b8f521adae3c8ef2",
+          "ev_98bab90120083a02f7b0",
+          "ev_9494945c5762ff2bafc3"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -7060,6 +7868,7 @@
       },
       "property_provenance": [
         "A08-ACT-P4",
+        "A08-ACT-P5",
         "A08-S02-P2"
       ],
       "role": "SOURCE_GROUNDED_QUESTION_OPPORTUNITY_NOT_EXPECTED_OUTPUT",
@@ -7072,7 +7881,19 @@
         "ev_98bab90120083a02f7b0",
         "ev_b8e87c4ee89e6d436417",
         "ev_28f296cc642d42dcc917"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_02",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_98bab90120083a02f7b0",
+          "ev_b8e87c4ee89e6d436417",
+          "ev_28f296cc642d42dcc917"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -7097,6 +7918,7 @@
         "target_minutes": 5
       },
       "property_provenance": [
+        "A08-ACT-P5",
         "A08-S02-P3"
       ],
       "role": "SOURCE_GROUNDED_QUESTION_OPPORTUNITY_NOT_EXPECTED_OUTPUT",
@@ -7107,7 +7929,18 @@
       "support_evidence_ids": [
         "ev_ecf3b2403b7a88303362",
         "ev_28879e12946ea7a24c03"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_02",
+        "cross_submission_count": 0,
+        "declared_count": 2,
+        "distinct_declared_count": 2,
+        "request_evidence_ids": [
+          "ev_ecf3b2403b7a88303362",
+          "ev_28879e12946ea7a24c03"
+        ],
+        "resolved_count": 2
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -7145,7 +7978,19 @@
         "ev_c6a32dcffcbdb081da6e",
         "ev_de8c719a51eaa86d81fc",
         "ev_70ff752adaa2817df640"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_03",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_c6a32dcffcbdb081da6e",
+          "ev_de8c719a51eaa86d81fc",
+          "ev_70ff752adaa2817df640"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -7182,7 +8027,19 @@
         "ev_1bb19cee2357b4fddeb1",
         "ev_e2720364bd2a6b0d9cf2",
         "ev_b05ee62d4ea68726038f"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_06",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_1bb19cee2357b4fddeb1",
+          "ev_e2720364bd2a6b0d9cf2",
+          "ev_b05ee62d4ea68726038f"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -7219,7 +8076,19 @@
         "ev_ed74e777cec13b667a4a",
         "ev_47257d9c4a111f54f0de",
         "ev_eb5fef64a45538242cab"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_06",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_ed74e777cec13b667a4a",
+          "ev_47257d9c4a111f54f0de",
+          "ev_eb5fef64a45538242cab"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -7258,7 +8127,19 @@
         "ev_dd1c4d7378282bda66ab",
         "ev_8373a978445af0f9d55e",
         "ev_8bc2fa6c00ea939dc010"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_02",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_dd1c4d7378282bda66ab",
+          "ev_8373a978445af0f9d55e",
+          "ev_8bc2fa6c00ea939dc010"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -7295,7 +8176,19 @@
         "ev_337621a12f5e202e5478",
         "ev_4941233a279894078d9f",
         "ev_083325d9297a8e968591"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_03",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_337621a12f5e202e5478",
+          "ev_4941233a279894078d9f",
+          "ev_083325d9297a8e968591"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -7332,7 +8225,19 @@
         "ev_4941233a279894078d9f",
         "ev_c4efbf983ce7fde98339",
         "ev_bd52b1226ec99a0e500e"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_03",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_4941233a279894078d9f",
+          "ev_c4efbf983ce7fde98339",
+          "ev_bd52b1226ec99a0e500e"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -7369,7 +8274,19 @@
         "ev_5acb73750ed06f05ce35",
         "ev_9ff4269f3983d141d77f",
         "ev_f9215cdfd87402d0fbbe"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_04",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_5acb73750ed06f05ce35",
+          "ev_9ff4269f3983d141d77f",
+          "ev_f9215cdfd87402d0fbbe"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -7406,7 +8323,19 @@
         "ev_5acb73750ed06f05ce35",
         "ev_9ff4269f3983d141d77f",
         "ev_f9215cdfd87402d0fbbe"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_04",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_5acb73750ed06f05ce35",
+          "ev_9ff4269f3983d141d77f",
+          "ev_f9215cdfd87402d0fbbe"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -7444,7 +8373,19 @@
         "ev_c172a210ff621ec0954a",
         "ev_947953594c9f82b0164f",
         "ev_6773e1dc79e8b6ce5636"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_05",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_c172a210ff621ec0954a",
+          "ev_947953594c9f82b0164f",
+          "ev_6773e1dc79e8b6ce5636"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -7483,7 +8424,19 @@
         "ev_376c1a7acadb0b928fd9",
         "ev_45753ee740a2571c5a64",
         "ev_488af37a7ba70238c00c"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_06",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_376c1a7acadb0b928fd9",
+          "ev_45753ee740a2571c5a64",
+          "ev_488af37a7ba70238c00c"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -7520,7 +8473,19 @@
         "ev_8dd75f550158437fd06d",
         "ev_174ec3c8dd9b0fc0bc89",
         "ev_e4512b6c94fa8608a65a"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_01",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_8dd75f550158437fd06d",
+          "ev_174ec3c8dd9b0fc0bc89",
+          "ev_e4512b6c94fa8608a65a"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -7558,7 +8523,19 @@
         "ev_9c17d887a62cbff463cd",
         "ev_ac54220aa4a0ba9db006",
         "ev_acc47fef0f926f0aa0d2"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_03",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_9c17d887a62cbff463cd",
+          "ev_ac54220aa4a0ba9db006",
+          "ev_acc47fef0f926f0aa0d2"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -7596,7 +8573,19 @@
         "ev_a3988b8ccbe73f3bdcf8",
         "ev_b9d40e24f14a5f4b46e1",
         "ev_9c17d887a62cbff463cd"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_03",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_a3988b8ccbe73f3bdcf8",
+          "ev_b9d40e24f14a5f4b46e1",
+          "ev_9c17d887a62cbff463cd"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -7626,6 +8615,7 @@
       },
       "property_provenance": [
         "A10-S04-FINAL-DECLARED-OMISSION",
+        "A10-S04-P4",
         "A10-S04-P6"
       ],
       "role": "SOURCE_GROUNDED_QUESTION_OPPORTUNITY_NOT_EXPECTED_OUTPUT",
@@ -7641,7 +8631,22 @@
         "ev_ad117cd15c479140df21",
         "ev_5d4804c4b935109a93d8",
         "ev_07f2c7bfb8f55e3a0b37"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_04",
+        "cross_submission_count": 0,
+        "declared_count": 6,
+        "distinct_declared_count": 6,
+        "request_evidence_ids": [
+          "ev_4d734016c1adf9d12959",
+          "ev_ab6570442d7b9ebcfeec",
+          "ev_56a64f12ff16a3ffb923",
+          "ev_ad117cd15c479140df21",
+          "ev_5d4804c4b935109a93d8",
+          "ev_07f2c7bfb8f55e3a0b37"
+        ],
+        "resolved_count": 6
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -7679,7 +8684,19 @@
         "ev_df8dc0e18007a407c433",
         "ev_88844269d5f024ed302c",
         "ev_75ca1b3fdcc5c11831c6"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_04",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_df8dc0e18007a407c433",
+          "ev_88844269d5f024ed302c",
+          "ev_75ca1b3fdcc5c11831c6"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -7718,7 +8735,19 @@
         "ev_87da04c315db828cd589",
         "ev_a6c1b8402a9e6f9220c3",
         "ev_2d8d1e1a9ba5e017ed24"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_05",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_87da04c315db828cd589",
+          "ev_a6c1b8402a9e6f9220c3",
+          "ev_2d8d1e1a9ba5e017ed24"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -7757,7 +8786,19 @@
         "ev_4ec327acff111d2ecf87",
         "ev_4543bb1ba2bd4e0cf7d6",
         "ev_3783ef2d5b2924ad6202"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_05",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_4ec327acff111d2ecf87",
+          "ev_4543bb1ba2bd4e0cf7d6",
+          "ev_3783ef2d5b2924ad6202"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -7803,7 +8844,22 @@
         "ev_a315e177952b4de580ff",
         "ev_6cd168929cbacefabc01",
         "ev_d964f870001ec3756bfc"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_05",
+        "cross_submission_count": 0,
+        "declared_count": 6,
+        "distinct_declared_count": 6,
+        "request_evidence_ids": [
+          "ev_c09e77c748339f24ee7d",
+          "ev_96477a064a5ae06b43c3",
+          "ev_2d8d1e1a9ba5e017ed24",
+          "ev_a315e177952b4de580ff",
+          "ev_6cd168929cbacefabc01",
+          "ev_d964f870001ec3756bfc"
+        ],
+        "resolved_count": 6
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -7840,7 +8896,19 @@
         "ev_4bc3008b2c1bd7fe66ef",
         "ev_a4af0c554d3eb57b00e7",
         "ev_8115c1a2321e1ec7df5e"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_06",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_4bc3008b2c1bd7fe66ef",
+          "ev_a4af0c554d3eb57b00e7",
+          "ev_8115c1a2321e1ec7df5e"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -7891,7 +8959,24 @@
         "ev_9ee9eedafc5177c8a853",
         "ev_1533d698521b28deb076",
         "ev_29280bdb46a33f37c0dc"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_01",
+        "cross_submission_count": 0,
+        "declared_count": 8,
+        "distinct_declared_count": 8,
+        "request_evidence_ids": [
+          "ev_9163391d77bbfe35b761",
+          "ev_91cd6819c14468f2e754",
+          "ev_8f097d2759b2503580f4",
+          "ev_db45aac6022307076e27",
+          "ev_1cf3f0b4fee23c0fda53",
+          "ev_9ee9eedafc5177c8a853",
+          "ev_1533d698521b28deb076",
+          "ev_29280bdb46a33f37c0dc"
+        ],
+        "resolved_count": 8
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -7929,7 +9014,19 @@
         "ev_20f58229f6f85984c12b",
         "ev_55a3dcf02ed3f743b881",
         "ev_fc3e2ff8527bd155a7bd"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_02",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_20f58229f6f85984c12b",
+          "ev_55a3dcf02ed3f743b881",
+          "ev_fc3e2ff8527bd155a7bd"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -7967,7 +9064,19 @@
         "ev_c28ba206b15eccb9e2f8",
         "ev_fc3e2ff8527bd155a7bd",
         "ev_dc09600de1d1ffe862a6"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_02",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_c28ba206b15eccb9e2f8",
+          "ev_fc3e2ff8527bd155a7bd",
+          "ev_dc09600de1d1ffe862a6"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -8004,7 +9113,19 @@
         "ev_a27324ca58b5ba1a0f8d",
         "ev_041cf30d60a5a037b5f8",
         "ev_18eda10a6be995aae860"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_03",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_a27324ca58b5ba1a0f8d",
+          "ev_041cf30d60a5a037b5f8",
+          "ev_18eda10a6be995aae860"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -8042,7 +9163,19 @@
         "ev_d45789246581504f8425",
         "ev_b7707a84fa9ea9081405",
         "ev_c159690af19791be5e64"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_04",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_d45789246581504f8425",
+          "ev_b7707a84fa9ea9081405",
+          "ev_c159690af19791be5e64"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -8092,7 +9225,24 @@
         "ev_bd135ed0a6ea199909ed",
         "ev_6b0e517ce65e0aa5e38c",
         "ev_b32ac7912673fcc61f88"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_05",
+        "cross_submission_count": 0,
+        "declared_count": 8,
+        "distinct_declared_count": 8,
+        "request_evidence_ids": [
+          "ev_ff4bf794ee6f13f4d589",
+          "ev_3356ac38b624e8576131",
+          "ev_497bb945ce1799e7692f",
+          "ev_dc122d0d6918d9bdd46e",
+          "ev_02c8bf9e7da60543231a",
+          "ev_bd135ed0a6ea199909ed",
+          "ev_6b0e517ce65e0aa5e38c",
+          "ev_b32ac7912673fcc61f88"
+        ],
+        "resolved_count": 8
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -8129,7 +9279,19 @@
         "ev_ff4bf794ee6f13f4d589",
         "ev_3356ac38b624e8576131",
         "ev_497bb945ce1799e7692f"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_05",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_ff4bf794ee6f13f4d589",
+          "ev_3356ac38b624e8576131",
+          "ev_497bb945ce1799e7692f"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -8166,7 +9328,19 @@
         "ev_5e623d744b19fe926a1d",
         "ev_14e93180b69dd76f4586",
         "ev_244d712caceb8e8fa03d"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_06",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_5e623d744b19fe926a1d",
+          "ev_14e93180b69dd76f4586",
+          "ev_244d712caceb8e8fa03d"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -8201,7 +9375,18 @@
       "support_evidence_ids": [
         "ev_577db4d3f09209d921ec",
         "ev_ecca4b8ed422407afb14"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_06",
+        "cross_submission_count": 0,
+        "declared_count": 2,
+        "distinct_declared_count": 2,
+        "request_evidence_ids": [
+          "ev_577db4d3f09209d921ec",
+          "ev_ecca4b8ed422407afb14"
+        ],
+        "resolved_count": 2
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -8239,7 +9424,19 @@
         "ev_0ff088a8b56c8249a24e",
         "ev_5aff9f2de67809d4a444",
         "ev_73281cd9a5ae4bc4e85d"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_01",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_0ff088a8b56c8249a24e",
+          "ev_5aff9f2de67809d4a444",
+          "ev_73281cd9a5ae4bc4e85d"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -8276,7 +9473,19 @@
         "ev_2b80d39d51b221f32eaa",
         "ev_6db382ae4d51b7c00529",
         "ev_8f7fcca2c9816aaf8d92"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_02",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_2b80d39d51b221f32eaa",
+          "ev_6db382ae4d51b7c00529",
+          "ev_8f7fcca2c9816aaf8d92"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -8313,7 +9522,19 @@
         "ev_0dd68cafbcb5e686ddf1",
         "ev_b26660c54d94364162ab",
         "ev_fa3fab342555f480aa6d"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_02",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_0dd68cafbcb5e686ddf1",
+          "ev_b26660c54d94364162ab",
+          "ev_fa3fab342555f480aa6d"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -8351,7 +9572,19 @@
         "ev_f12548e83827201fe483",
         "ev_fa7056e4b3b64f47f1ff",
         "ev_c1dcf856549e2d76b39f"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_03",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_f12548e83827201fe483",
+          "ev_fa7056e4b3b64f47f1ff",
+          "ev_c1dcf856549e2d76b39f"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -8388,7 +9621,19 @@
         "ev_5f7cabd934b663dd49a8",
         "ev_dc16442c6149008196c8",
         "ev_362bfebbc56558487a02"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_03",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_5f7cabd934b663dd49a8",
+          "ev_dc16442c6149008196c8",
+          "ev_362bfebbc56558487a02"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -8433,7 +9678,22 @@
         "ev_2505eae2a83c0c665cd4",
         "ev_0d1185078e0c7b54b992",
         "ev_64b06ff5869cd234f9a0"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_04",
+        "cross_submission_count": 0,
+        "declared_count": 6,
+        "distinct_declared_count": 6,
+        "request_evidence_ids": [
+          "ev_ed787fb79060c76c7b6d",
+          "ev_5e61bf57740e2cb458e8",
+          "ev_915f80b8a3c6010d78f2",
+          "ev_2505eae2a83c0c665cd4",
+          "ev_0d1185078e0c7b54b992",
+          "ev_64b06ff5869cd234f9a0"
+        ],
+        "resolved_count": 6
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -8471,7 +9731,19 @@
         "ev_90967e4613adfd6778a3",
         "ev_15867b6e048416df2e15",
         "ev_4fa22d5f136073192265"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_04",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_90967e4613adfd6778a3",
+          "ev_15867b6e048416df2e15",
+          "ev_4fa22d5f136073192265"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -8509,7 +9781,19 @@
         "ev_2505eae2a83c0c665cd4",
         "ev_15867b6e048416df2e15",
         "ev_19309c449f32ec1e6112"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_04",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_2505eae2a83c0c665cd4",
+          "ev_15867b6e048416df2e15",
+          "ev_19309c449f32ec1e6112"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -8547,7 +9831,19 @@
         "ev_1bc424e58017335a4adf",
         "ev_eeb0911e246960cd39d9",
         "ev_95cf9d6c59b35f0c8cfb"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_05",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_1bc424e58017335a4adf",
+          "ev_eeb0911e246960cd39d9",
+          "ev_95cf9d6c59b35f0c8cfb"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -8585,7 +9881,19 @@
         "ev_77551b7f1d577ced6cc2",
         "ev_2b2118ec07ddcfc53a29",
         "ev_16eb83100aa621cb8350"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_06",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_77551b7f1d577ced6cc2",
+          "ev_2b2118ec07ddcfc53a29",
+          "ev_16eb83100aa621cb8350"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -8624,7 +9932,19 @@
         "ev_77551b7f1d577ced6cc2",
         "ev_2b2118ec07ddcfc53a29",
         "ev_6dc4b88fa1958a6c4004"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_06",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_77551b7f1d577ced6cc2",
+          "ev_2b2118ec07ddcfc53a29",
+          "ev_6dc4b88fa1958a6c4004"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "builder_version": "semantic-benchmark-fixture-p07/1.1.0",
@@ -8662,7 +9982,19 @@
         "ev_484cb770dce88f1902b1",
         "ev_39fe0a42639e45bbf901",
         "ev_0771159b859b72f575b4"
-      ]
+      ],
+      "support_resolution": {
+        "bundle_submission_id": "submission_06",
+        "cross_submission_count": 0,
+        "declared_count": 3,
+        "distinct_declared_count": 3,
+        "request_evidence_ids": [
+          "ev_484cb770dce88f1902b1",
+          "ev_39fe0a42639e45bbf901",
+          "ev_0771159b859b72f575b4"
+        ],
+        "resolved_count": 3
+      }
     },
     {
       "ambiguous_locator_count": 0,

@@ -30,6 +30,7 @@ from comprehension_verification.semantic_benchmark import (
     ResultState,
     SEMANTIC_BENCHMARK_VERSION,
     BenchmarkValidationError,
+    _binding_arbitrariness,
     aggregate_future_semantic_runs,
     benchmark_boundary,
     build_benchmark,
@@ -482,6 +483,34 @@ def test_p04_projects_every_assignment_and_rubric_unit_without_oracle(
     assert "[:3]" not in builder_source
 
 
+def test_p04_contract_required_fields_stay_scale_neutral() -> None:
+    """The projection must not smuggle a judgement into a required field.
+
+    ``verification_fit`` has no neutral member, so the projection has to pick
+    one.  It picks the mid-point, applies it to every criterion so it carries no
+    differential signal, and never claims the maximum of the scale for source
+    text the teacher never graded.  ``certainty`` stays EXPLICIT because each
+    requirement really is a verbatim projection of an explicit unit.
+    """
+
+    request, _coverage = build_p04_fixture(
+        corpus_root=DEFAULT_CORPUS_ROOT,
+        activity_path="activity_01_luz_y_plantines",
+        activity_id="act_01_luz_y_plantines",
+    )
+    fits = {item.verification_fit for item in request.rubric_spec.criteria}
+    assert fits == {"MEDIUM"}
+    assert "HIGH" not in fits
+    assert {item.certainty for item in request.activity_spec.requirements} == {
+        "EXPLICIT"
+    }
+    assert all(
+        item.grading_weight is None and not item.levels and not item.observables
+        for item in request.rubric_spec.criteria
+    )
+    assert request.rubric_spec.reported_weight_total is None
+
+
 def test_p04_late_assignment_unit_changes_the_source_faithful_input_hash(
     tmp_path: Path,
 ) -> None:
@@ -666,7 +695,9 @@ def test_p07_rules_without_exact_submission_support_never_create_opportunities(
     for binding in indirect:
         prop = properties[binding["property_id"]]
         if binding["alignment_status"] == "ALIGNED":
-            assert prop["kind"] == "PROHIBITED"
+            # Only a normative rule becomes a case assertion, and only inside
+            # the submission it was written about.
+            assert prop["kind"] in {"PROHIBITED", "REQUIRED"}
             assert binding["binding_scope"] == "SUBMISSION_WIDE"
             bound_case_ids = [
                 binding["primary_case_id"], *binding["additional_case_ids"]
@@ -678,9 +709,11 @@ def test_p07_rules_without_exact_submission_support_never_create_opportunities(
             )
         else:
             assert binding["binding_scope"] == "EXPLICITLY_EXCLUDED"
-            assert binding["exclusion_reason"] == (
-                "NO_UNAMBIGUOUS_P07_STAGE_LOCAL_OPPORTUNITY_FIXTURE"
-            )
+            assert binding["exclusion_reason"] in {
+                "NO_P07_OPPORTUNITY_FIXTURE_FOR_SUBMISSION",
+                "NO_P07_OPPORTUNITY_EXERCISES_THE_DECLARED_CONDITION",
+                "ADVISORY_PROPERTY_KIND_IS_NOT_A_CASE_ASSERTION",
+            }
 
 
 def test_multiple_independent_p07_opportunities_produce_distinct_requests(
@@ -850,11 +883,12 @@ def test_all_395_property_bindings_are_explicit_and_non_arbitrary(
     report = property_fixture_alignment(benchmark_build)
     assert report["property_count"] == 395
     assert report["alignment_counts"] == {
-        "ALIGNED": 354,
-        "EXPLICITLY_EXCLUDED": 33,
+        "ALIGNED": 356,
+        "EXPLICITLY_EXCLUDED": 31,
         "NOT_APPLICABLE": 8,
     }
     assert report["assigned_arbitrarily_count"] == 0
+    assert report["arbitrary_binding_violations"] == []
     assert all(
         item["alignment_status"] != "ASSIGNED_ARBITRARILY"
         for item in report["rows"]
@@ -864,9 +898,119 @@ def test_all_395_property_bindings_are_explicit_and_non_arbitrary(
             assert item["primary_case_id"]
             assert item["fixture_id"]
             assert item["exclusion_reason"] is None
+            assert item["representative_selector"]["kind"] != "NONE"
         else:
             assert item["primary_case_id"] is None
             assert item["exclusion_reason"]
+            assert item["representative_selector"]["kind"] == "NONE"
+
+
+def test_arbitrary_binding_detection_is_a_real_recomputation(
+    benchmark_build,
+) -> None:
+    """A convenient case must not survive the selector recomputation.
+
+    The historical v1.0.0 defect attached an activity-level property to the
+    first free submission case.  Re-pointing any binding at another case has to
+    make the derived counter move, otherwise the readiness gate is asserting a
+    constant instead of proving anything.
+    """
+
+    assert _binding_arbitrariness(benchmark_build)["assigned_arbitrarily_count"] == 0
+    for property_id, replacement in (
+        ("A01-ACT-P1", "PP-A02-P04-001"),
+        ("A10-S04-P4", "PP-A10-S04-P07-O03"),
+        ("A01-S01-P1", "PP-A01-S02-P07-O01"),
+    ):
+        alignment = [deepcopy(item) for item in benchmark_build.property_alignment]
+        row = next(item for item in alignment if item["property_id"] == property_id)
+        assert row["primary_case_id"] != replacement
+        row["primary_case_id"] = replacement
+        mutated = replace(benchmark_build, property_alignment=tuple(alignment))
+        result = _binding_arbitrariness(mutated)
+        assert result["assigned_arbitrarily_count"] == 1
+        assert result["violations"][0]["property_id"] == property_id
+
+
+def test_normative_p07_rules_bind_to_the_case_that_exercises_them(
+    benchmark_build,
+) -> None:
+    """A REQUIRED wording rule binds wherever its antecedent is real.
+
+    ``A10-S04-P4`` forbids naming the per-segment rates when the observable is
+    the evaluation of the declared omission.  ``PP-A10-S04-P07-O01`` is exactly
+    that opportunity, so the rule is a case assertion there and its PROHIBITED
+    sibling lands on the same case.
+    """
+
+    rows = {
+        item["property_id"]: item
+        for item in benchmark_build.property_alignment
+    }
+    omission_rule = rows["A10-S04-P4"]
+    assert omission_rule["alignment_status"] == "ALIGNED"
+    assert omission_rule["primary_case_id"] == "PP-A10-S04-P07-O01"
+    assert omission_rule["representative_selector"]["kind"] == "TOPICAL_MARKER"
+    assert rows["A10-S04-P6"]["primary_case_id"] == "PP-A10-S04-P07-O01"
+
+    case = next(
+        item
+        for item in benchmark_build.cases
+        if item["case_id"] == "PP-A10-S04-P07-O01"
+    )
+    assert {"A10-S04-P4", "A10-S04-P6"} <= set(case["property_ids"])
+
+    opportunity = next(
+        item
+        for item in benchmark_build.fixture_definitions["p07_opportunities"][
+            "opportunities"
+        ]
+        if item["opportunity_fixture_id"] == "P07-A10-S04-O01"
+    )
+    assert {"DECLARED_CONCEPTUAL_OMISSION", "SELF_DECLARED_GAP"} <= set(
+        opportunity["fixture_tags"]
+    )
+
+
+def test_every_exclusion_states_a_concrete_stage_local_reason(
+    benchmark_build,
+) -> None:
+    """No property is dropped for convenience.
+
+    Each exclusion names one structural fact: the stage input cannot carry the
+    property's scope, no fixture exists for that scope, no fixture exercises the
+    declared condition, the condition lives outside the stage input, or the
+    source oracle itself marked the property out of scope.
+    """
+
+    allowed = {
+        "SOURCE_ORACLE_NOT_APPLICABLE",
+        "P04_INPUT_EXCLUDES_SUBMISSIONS_BY_STAGE_CONTRACT",
+        "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_ROUTE_FIXTURE",
+        "NO_P07_OPPORTUNITY_FIXTURE_FOR_SUBMISSION",
+        "NO_P07_OPPORTUNITY_EXERCISES_THE_DECLARED_CONDITION",
+        "ADVISORY_PROPERTY_KIND_IS_NOT_A_CASE_ASSERTION",
+        "CONDITION_CONFINED_TO_SOURCE_OUTSIDE_P07_INPUT",
+        "NO_FROZEN_P09_STAGE_LOCAL_FIXTURE_FOR_SCOPE",
+    }
+    report = property_fixture_alignment(benchmark_build)
+    reasons = report["exclusion_reason_counts"]
+    assert set(reasons) <= allowed
+    assert sum(reasons.values()) == 39
+    assert reasons["NO_FROZEN_P09_STAGE_LOCAL_FIXTURE_FOR_SCOPE"] == 14
+
+    frozen_p09_activities = {
+        item["activity_id"]
+        for item in benchmark_build.cases
+        if item["stage"] == "P09"
+    }
+    properties = {
+        item["property_id"]: item for item in benchmark_build.properties
+    }
+    for row in report["rows"]:
+        if row["exclusion_reason"] != "NO_FROZEN_P09_STAGE_LOCAL_FIXTURE_FOR_SCOPE":
+            continue
+        assert properties[row["property_id"]]["activity_id"] not in frozen_p09_activities
 
 
 def test_strict_fixture_schemas_reject_unknown_fields(benchmark_build) -> None:

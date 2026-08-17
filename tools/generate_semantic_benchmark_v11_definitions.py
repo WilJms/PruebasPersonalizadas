@@ -735,6 +735,45 @@ def _case_id_for_opportunity(opportunity: dict[str, Any]) -> str:
     return "PP-" + opportunity["opportunity_fixture_id"].removeprefix("P07-").replace("-O", "-P07-O")
 
 
+TOPICAL_MARKER_FAMILIES: tuple[tuple[str, tuple[str, ...], tuple[str, ...]], ...] = (
+    (
+        "SIMULATED_PII",
+        ("pii", "privacidad", "correo simulado", "informacion sensible"),
+        ("SIMULATED_PII",),
+    ),
+    (
+        "PROMPT_INJECTION",
+        ("obedec", "prompt injection", "comentario html", "docstring"),
+        ("PROMPT_INJECTION_NOISY", "PROMPT_INJECTION_SILENT"),
+    ),
+    (
+        "CONCEPTUAL_OMISSION",
+        ("omision", "hueco conceptual"),
+        ("DECLARED_CONCEPTUAL_OMISSION", "SELF_DECLARED_GAP", "SILENT_CONCEPTUAL_GAP"),
+    ),
+    (
+        "ANSWER_LEAKAGE",
+        ("leakage",),
+        ("ANSWER_VISIBLE", "PREMISE_VISIBLE", "VISIBLE_ANCHOR_RISK"),
+    ),
+)
+
+# Normative kinds constrain the wording of a produced question, so they are
+# bindable to a sibling opportunity whenever that opportunity really exercises
+# the condition.  Advisory kinds describe what the corpus is good for and never
+# become case assertions.
+NORMATIVE_PROPERTY_KINDS = frozenset({"PROHIBITED", "REQUIRED"})
+
+
+def _topical_marker(description: str) -> tuple[str, tuple[str, ...]] | None:
+    """Return the first topical family whose marker occurs in ``description``."""
+
+    for family, markers, tags in TOPICAL_MARKER_FAMILIES:
+        if any(marker in description for marker in markers):
+            return family, tags
+    return None
+
+
 def build_property_bindings(
     properties: list[dict[str, Any]],
     routes_document: dict[str, Any],
@@ -783,6 +822,7 @@ def build_property_bindings(
         scope = "CASE_SPECIFIC"
         status = "ALIGNED"
         reason: str | None = None
+        selector: dict[str, Any] = {"kind": "NONE", "detail": {}}
         if prop["oracle_state"] == "NOT_APPLICABLE":
             scope = "EXPLICITLY_EXCLUDED"
             status = "NOT_APPLICABLE"
@@ -792,6 +832,10 @@ def build_property_bindings(
                 cases = [f"PP-A{_activity_number(rat['activity_id']):02d}-P04-001"]
                 fixture_id = f"p04:{rat['activity_id']}"
                 scope = "ACTIVITY_WIDE"
+                selector = {
+                    "kind": "STAGE_ACTIVITY_FIXTURE",
+                    "detail": {"activity_id": rat["activity_id"]},
+                }
             else:
                 scope = "EXPLICITLY_EXCLUDED"
                 status = "EXPLICITLY_EXCLUDED"
@@ -801,6 +845,10 @@ def build_property_bindings(
                 route = route_by_property[property_id]
                 cases = [_case_id_for_route(route)]
                 fixture_id = route["route_fixture_id"]
+                selector = {
+                    "kind": "OWN_FIXTURE",
+                    "detail": {"fixture_id": route["route_fixture_id"]},
+                }
             else:
                 candidates = p06_cases_by_activity[rat["activity_id"]]
                 source_submissions = {
@@ -818,6 +866,17 @@ def build_property_bindings(
                     cases = [case_id for case_id, _route in selected]
                     fixture_id = selected[0][1]["route_fixture_id"]
                     scope = "ACTIVITY_WIDE"
+                    selector = {
+                        "kind": (
+                            "SOURCE_SUBMISSION_REFS"
+                            if source_submissions
+                            else "ACTIVITY_STAGE_EXHAUSTIVE"
+                        ),
+                        "detail": {
+                            "activity_id": rat["activity_id"],
+                            "submission_ids": sorted(source_submissions),
+                        },
+                    }
                 else:
                     scope = "EXPLICITLY_EXCLUDED"
                     status = "EXPLICITLY_EXCLUDED"
@@ -828,48 +887,54 @@ def build_property_bindings(
                 if opportunity is not None:
                     cases = [_case_id_for_opportunity(opportunity)]
                     fixture_id = opportunity["opportunity_fixture_id"]
+                    selector = {
+                        "kind": "OWN_FIXTURE",
+                        "detail": {
+                            "fixture_id": opportunity["opportunity_fixture_id"]
+                        },
+                    }
                 else:
-                    candidates = p07_cases_by_submission[
+                    siblings = p07_cases_by_submission[
                         (rat["activity_id"], submission_id)
                     ]
                     description = _normalized(prop["description"])
-                    if any(
-                        marker in description
-                        for marker in ("pii", "privacidad", "correo simulado")
-                    ):
+                    marker = _topical_marker(description)
+                    if marker is not None:
+                        family, marker_tags = marker
                         candidates = [
                             pair
-                            for pair in candidates
-                            if "SIMULATED_PII" in pair[1]["fixture_tags"]
+                            for pair in siblings
+                            if set(marker_tags) & set(pair[1]["fixture_tags"])
                         ]
-                    elif any(
-                        marker in description
-                        for marker in (
-                            "obedec",
-                            "prompt injection",
-                            "comentario html",
-                            "docstring",
-                        )
-                    ):
-                        candidates = [
-                            pair
-                            for pair in candidates
-                            if {
-                                "PROMPT_INJECTION_NOISY",
-                                "PROMPT_INJECTION_SILENT",
-                            }
-                            & set(pair[1]["fixture_tags"])
-                        ]
-                    if prop["kind"] == "PROHIBITED" and candidates:
+                    else:
+                        family, marker_tags = "", ()
+                        candidates = list(siblings)
+                    if prop["kind"] in NORMATIVE_PROPERTY_KINDS and candidates:
                         cases = [case_id for case_id, _opportunity in candidates]
                         fixture_id = candidates[0][1]["opportunity_fixture_id"]
                         scope = "SUBMISSION_WIDE"
+                        selector = {
+                            "kind": (
+                                "TOPICAL_MARKER" if marker else "SUBMISSION_EXHAUSTIVE"
+                            ),
+                            "detail": {
+                                "activity_id": rat["activity_id"],
+                                "submission_id": submission_id,
+                                "marker_family": family,
+                                "marker_tags": sorted(marker_tags),
+                            },
+                        }
                     else:
                         scope = "EXPLICITLY_EXCLUDED"
                         status = "EXPLICITLY_EXCLUDED"
-                        reason = (
-                            "NO_UNAMBIGUOUS_P07_STAGE_LOCAL_OPPORTUNITY_FIXTURE"
-                        )
+                        if not siblings:
+                            reason = "NO_P07_OPPORTUNITY_FIXTURE_FOR_SUBMISSION"
+                        elif prop["kind"] not in NORMATIVE_PROPERTY_KINDS:
+                            reason = "ADVISORY_PROPERTY_KIND_IS_NOT_A_CASE_ASSERTION"
+                        else:
+                            reason = (
+                                "NO_P07_OPPORTUNITY_EXERCISES_THE_DECLARED_CONDITION"
+                            )
             else:
                 candidates = p07_cases_by_activity[rat["activity_id"]]
                 source_submissions = {
@@ -880,17 +945,16 @@ def build_property_bindings(
                 tags = set(prop["benchmark_tags"])
                 description = _normalized(prop["description"])
                 selected: list[tuple[str, dict[str, Any]]] = []
+                selector_kind = "NONE"
+                selector_detail: dict[str, Any] = {
+                    "activity_id": rat["activity_id"]
+                }
                 if source_submissions:
                     selected = [
                         pair for pair in candidates if pair[1]["submission_id"] in source_submissions
                     ]
-                elif "leakage" in description:
-                    selected = [
-                        pair
-                        for pair in candidates
-                        if set(pair[1]["fixture_tags"])
-                        & {"ANSWER_VISIBLE", "PREMISE_VISIBLE", "VISIBLE_ANCHOR_RISK"}
-                    ]
+                    selector_kind = "SOURCE_SUBMISSION_REFS"
+                    selector_detail["submission_ids"] = sorted(source_submissions)
                 elif "multi artefact" in description or "artefactos" in description:
                     selected = [
                         pair
@@ -898,24 +962,42 @@ def build_property_bindings(
                         if "CROSS_ARTIFACT"
                         in pair[1]["model_visible_definition"]["allowed_anchor_structures"]
                     ]
-                elif "informacion sensible" in description or "pii" in description:
+                    selector_kind = "CROSS_ARTIFACT_ANCHOR"
+                elif (marker := _topical_marker(description)) is not None:
+                    family, marker_tags = marker
                     selected = [
-                        pair for pair in candidates if "SIMULATED_PII" in pair[1]["fixture_tags"]
+                        pair
+                        for pair in candidates
+                        if set(marker_tags) & set(pair[1]["fixture_tags"])
                     ]
+                    selector_kind = "TOPICAL_MARKER"
+                    selector_detail["marker_family"] = family
+                    selector_detail["marker_tags"] = sorted(marker_tags)
                 elif tags:
                     selected = [
                         pair
                         for pair in candidates
                         if tags & set(pair[1]["fixture_tags"])
                     ]
+                    selector_kind = "SHARED_ORACLE_TAGS"
+                    selector_detail["oracle_tags"] = sorted(tags)
                 if selected:
                     cases = [case_id for case_id, _opportunity in selected]
                     fixture_id = selected[0][1]["opportunity_fixture_id"]
                     scope = "ACTIVITY_WIDE"
+                    selector = {"kind": selector_kind, "detail": selector_detail}
                 else:
                     scope = "EXPLICITLY_EXCLUDED"
                     status = "EXPLICITLY_EXCLUDED"
-                    reason = "NO_UNAMBIGUOUS_P07_STAGE_LOCAL_OPPORTUNITY_FIXTURE"
+                    if selector_kind == "NONE":
+                        # No submission ref, no topical marker and no oracle tag:
+                        # the condition lives only in the assignment or rubric,
+                        # which never enters the P07 model-visible input.
+                        reason = "CONDITION_CONFINED_TO_SOURCE_OUTSIDE_P07_INPUT"
+                    else:
+                        reason = (
+                            "NO_P07_OPPORTUNITY_EXERCISES_THE_DECLARED_CONDITION"
+                        )
         elif stage == "PLANNER":
             number = _activity_number(rat["activity_id"])
             if submission_id:
@@ -923,18 +1005,36 @@ def build_property_bindings(
             else:
                 cases = [f"PP-A{number:02d}-PLANNER-ACT"]
             fixture_id = f"planner:{property_id}"
+            selector = {
+                "kind": "STAGE_CASE_IDENTITY",
+                "detail": {
+                    "activity_id": rat["activity_id"],
+                    "submission_id": submission_id,
+                },
+            }
         elif stage == "P09":
             target = p09_fixture_by_activity.get(rat["activity_id"])
             if target and submission_id in (None, target[2]):
                 cases = [target[0]]
                 fixture_id = target[1]
                 scope = "ACTIVITY_WIDE" if submission_id is None else "SUBMISSION_WIDE"
+                selector = {
+                    "kind": "FROZEN_FIXTURE_SCOPE",
+                    "detail": {
+                        "activity_id": rat["activity_id"],
+                        "submission_id": submission_id,
+                    },
+                }
             else:
                 scope = "EXPLICITLY_EXCLUDED"
                 status = "EXPLICITLY_EXCLUDED"
                 reason = "NO_FROZEN_P09_STAGE_LOCAL_FIXTURE_FOR_SCOPE"
         if status == "ALIGNED" and not cases:
             raise RuntimeError(f"aligned property has no case: {property_id}")
+        if status == "ALIGNED" and selector["kind"] == "NONE":
+            raise RuntimeError(
+                f"aligned property has no representative selector: {property_id}"
+            )
         rows.append(
             {
                 "property_id": property_id,
@@ -944,6 +1044,7 @@ def build_property_bindings(
                 "primary_case_id": cases[0] if cases else None,
                 "additional_case_ids": cases[1:],
                 "fixture_id": fixture_id,
+                "representative_selector": selector,
                 "source_provenance": [
                     f"{rat['activity_path']}/{ref['file']}"
                     + (f"#{ref['section']}" if ref.get("section") else "")

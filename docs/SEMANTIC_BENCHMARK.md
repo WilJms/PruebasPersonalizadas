@@ -10,7 +10,7 @@ la base de datos, OpenAPI y el frontend no cambian.
 - corpus package boundary:
   `21c21f3a53bfb786162dc350dc38c93b7b007d9f23b744a354de4ac2354048a1`;
 - benchmark canónico: `semantic-benchmark/1.1.0`;
-- benchmark boundary: `sha256:83b8df2a9e3d69bf1b548d0b775254a767634b58468e33c0408732791ee8c208`;
+- benchmark boundary: `sha256:426dda4d560a8d7d53639dfbaa0773c28565450f06e8ff62d51a8cd1bd6f62ff`;
 - clasificación: `SYNTHETIC_ONLY_NO_STUDENT_DATA`;
 - qualification real: `NOT_YET_RUN`;
 - candidate matrix: `UNSET`;
@@ -47,18 +47,23 @@ mantiene `p09_properties` en una referencia oracle disjunta.
 
 La auditoría reproducible en
 `reports/semantic_benchmark/v1_1/benchmark_alignment_audit.json` confirmó los
-cinco defectos:
+siete defectos:
 
 - tags agregados de actividad se propagaban a cases no relacionados; 32 cases
   tenían simultáneamente `PLAN_FEASIBLE` y `PLAN_INFEASIBLE`;
 - P07 usaba una oportunidad genérica por submission, basada en primeros units;
 - P06 consumía el scaffold P04 genérico en lugar de una ruta stage-local;
 - P04 proyectaba sólo tres EvidenceUnits iniciales de cada fuente;
-- P09 resolvía principalmente por filename y admitía fallback al primer unit.
+- P09 resolvía principalmente por filename y admitía fallback al primer unit;
+- una property activity-level podía caer sobre la primera submission libre;
+- varias observations de una misma property podían inflar el denominador.
 
 La corrección elimina esa implementación canónica: v1.1 consume manifests
-explícitos, bindings y locators exactos. Los reports v1 permanecen sin
-reinterpretar ni borrar.
+explícitos, bindings y locators exactos. Los dos últimos defectos quedan
+cerrados por construcciones verificables, no por afirmación: cada binding
+declara el `representative_selector` que eligió sus cases y el reporte lo
+vuelve a derivar, y el denominador de qualification es la property, con cases y
+runs como observations.  Los reports v1 permanecen sin reinterpretar ni borrar.
 
 ## Fixtures alineados
 
@@ -80,6 +85,16 @@ compiled properties, audit history u Opus; `oracle_reads=0`. Sigue marcado
 `BENCHMARK_SCAFFOLD_NOT_P01_P02_P03_GOLDEN`: es un input exhaustivo compatible
 con el contrato, no un golden P01/P02/P03 ni un expected output P04.
 
+Los campos que el contrato exige y la fuente no declara se mantienen neutros.
+`verification_fit` no admite un valor nulo, así que la proyección usa `MEDIUM`
+—el punto medio de la escala— de forma uniforme en los 470 criterios: no afirma
+la verificabilidad máxima de un texto que el docente nunca calificó, no
+introduce señal diferencial entre bloques y conserva la misma semántica de
+cobertura que cualquier valor distinto de `NOT_VERIFIABLE`. `certainty` se
+queda en `EXPLICIT` porque cada requirement sí es la proyección literal de un
+unit explícito. Nombres como `Bloque de rúbrica fuente N` son andamiaje
+declarado, sin jerarquía pedagógica inventada.
+
 ### P06
 
 Las 127 rutas declaran construct, operación, focus, observable, requisito de
@@ -98,9 +113,9 @@ la submission concreta con hash normalizado y locator; no existe `units[0]`,
 primer artefacto ni fallback. Oportunidades independientes de una misma
 submission producen distintos case IDs, requests e input hashes. Treinta y
 nueve reglas P07 con refs sólo de assignment/rubric no crean una oportunidad
-artificial: 28 prohibiciones ejercitables se observan sobre oportunidades
-exactas de su submission con scope `SUBMISSION_WIDE`, y 11 quedan excluidas.
-En total se excluyen 17 properties P07 para las que no existe una oportunidad
+artificial: 29 reglas normativas ejercitables se observan sobre oportunidades
+exactas de su submission con scope `SUBMISSION_WIDE`, y 10 quedan excluidas.
+En total se excluyen 15 properties P07 para las que no existe una oportunidad
 stage-local no circular defendible.
 
 ### P09
@@ -122,21 +137,60 @@ fixture.
 
 | Estado de alineación | Cantidad |
 |---|---:|
-| `ALIGNED` | 354 |
-| `EXPLICITLY_EXCLUDED` | 33 |
+| `ALIGNED` | 356 |
+| `EXPLICITLY_EXCLUDED` | 31 |
 | `NOT_APPLICABLE` | 8 |
 | `ASSIGNED_ARBITRARILY` | 0 |
 
-Las 33 exclusiones son 14 P09 sin fixture/scope congelado, dos P04
-submission-level sin output P04 submission-local y 17 P07 sin oportunidad
-inequívoca. Cada fila conserva source provenance y razón. Los ocho N/A siguen
+Cada binding declara además un `representative_selector`: la regla explícita
+que eligió sus cases. `assigned_arbitrarily_count` no es una constante: el
+reporte vuelve a derivar el conjunto de cases desde ese selector y cuenta las
+filas que no se reproducen. Un binding apuntado a un case simplemente
+disponible —el defecto histórico de v1.0.0— aparece como violación.
+
+| `representative_selector` | Filas |
+|---|---:|
+| `OWN_FIXTURE` | 235 |
+| `STAGE_ACTIVITY_FIXTURE` | 45 |
+| `SUBMISSION_EXHAUSTIVE` | 28 |
+| `STAGE_CASE_IDENTITY` | 21 |
+| `TOPICAL_MARKER` | 10 |
+| `FROZEN_FIXTURE_SCOPE` | 8 |
+| `SOURCE_SUBMISSION_REFS` | 4 |
+| `CROSS_ARTIFACT_ANCHOR` | 2 |
+| `SHARED_ORACLE_TAGS` | 2 |
+| `ACTIVITY_STAGE_EXHAUSTIVE` | 1 |
+
+Las 31 exclusiones declaran un hecho estructural, nunca comodidad:
+
+| Razón | Filas |
+|---|---:|
+| `NO_FROZEN_P09_STAGE_LOCAL_FIXTURE_FOR_SCOPE` | 14 |
+| `NO_P07_OPPORTUNITY_FIXTURE_FOR_SUBMISSION` | 9 |
+| `NO_P07_OPPORTUNITY_EXERCISES_THE_DECLARED_CONDITION` | 4 |
+| `P04_INPUT_EXCLUDES_SUBMISSIONS_BY_STAGE_CONTRACT` | 2 |
+| `CONDITION_CONFINED_TO_SOURCE_OUTSIDE_P07_INPUT` | 2 |
+
+Las 14 P09 pertenecen a actividades sin Assessment aprobado congelado; las dos
+P04 son properties submission-level cuyo stage input no lleva submissions; las
+dos `CONDITION_CONFINED_TO_SOURCE_OUTSIDE_P07_INPUT` describen condiciones que
+sólo viven en consigna o rúbrica, fuera del input model-visible de P07; y las
+cuatro restantes tienen fixtures hermanos pero ninguno ejercita el antecedente
+declarado. Cada fila conserva source provenance y razón. Los ocho N/A siguen
 trazables y separados de una exclusión instrumental.
+
+Una regla normativa (`PROHIBITED` o `REQUIRED`) sí se liga a un fixture hermano
+cuando ese fixture ejercita realmente la condición: `A10-S04-P4` prohíbe nombrar
+las tasas por segmento cuando el observable es la evaluación de la omisión, y
+`PP-A10-S04-P07-O01` es exactamente esa oportunidad. Un `CONTEXTUAL_NOTE`
+submission-level no se convierte en aserción de case.
 
 Los evaluator modes no cambian: 29 `DETERMINISTIC`, 8 `RULE_BASED` y 358
 `EXTERNAL_ADJUDICATION_REQUIRED`. Esa carga externa es deuda explícita de
 preparación Phase 9, no scoring simulado.
 
-La métrica final usa `PROPERTY`, no case ni repetición. La cadena es
+La métrica final usa `PROPERTY_CANDIDATE_REASONING`, no case ni repetición. La
+cadena es
 `case/property/run observation -> property/run outcome -> property/config
 outcome`. Tres cases por tres runs producen nueve observaciones, tres outcomes
 property/run y un único denominador de property. `REQUIRED` exige todas las

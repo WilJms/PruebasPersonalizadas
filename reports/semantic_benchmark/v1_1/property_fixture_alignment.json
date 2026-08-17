@@ -1,12 +1,33 @@
 {
   "alignment_counts": {
-    "ALIGNED": 354,
-    "EXPLICITLY_EXCLUDED": 33,
+    "ALIGNED": 356,
+    "EXPLICITLY_EXCLUDED": 31,
     "NOT_APPLICABLE": 8
   },
+  "arbitrary_binding_violations": [],
   "assigned_arbitrarily_count": 0,
   "benchmark_version": "semantic-benchmark/1.1.0",
+  "exclusion_reason_counts": {
+    "CONDITION_CONFINED_TO_SOURCE_OUTSIDE_P07_INPUT": 2,
+    "NO_FROZEN_P09_STAGE_LOCAL_FIXTURE_FOR_SCOPE": 14,
+    "NO_P07_OPPORTUNITY_EXERCISES_THE_DECLARED_CONDITION": 4,
+    "NO_P07_OPPORTUNITY_FIXTURE_FOR_SUBMISSION": 9,
+    "P04_INPUT_EXCLUDES_SUBMISSIONS_BY_STAGE_CONTRACT": 2,
+    "SOURCE_ORACLE_NOT_APPLICABLE": 8
+  },
   "property_count": 395,
+  "representative_selector_counts": {
+    "ACTIVITY_STAGE_EXHAUSTIVE": 1,
+    "CROSS_ARTIFACT_ANCHOR": 2,
+    "FROZEN_FIXTURE_SCOPE": 8,
+    "OWN_FIXTURE": 235,
+    "SHARED_ORACLE_TAGS": 2,
+    "SOURCE_SUBMISSION_REFS": 4,
+    "STAGE_ACTIVITY_FIXTURE": 45,
+    "STAGE_CASE_IDENTITY": 21,
+    "SUBMISSION_EXHAUSTIVE": 28,
+    "TOPICAL_MARKER": 10
+  },
   "rows": [
     {
       "additional_case_ids": [
@@ -19,6 +40,18 @@
       "oracle_state": "ORACLE_SUSPECT",
       "primary_case_id": "PP-A01-S05-P07-O02",
       "property_id": "A01-ACT-FINAL-LEAKAGE",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_01_luz_y_plantines",
+          "marker_family": "ANSWER_LEAKAGE",
+          "marker_tags": [
+            "ANSWER_VISIBLE",
+            "PREMISE_VISIBLE",
+            "VISIBLE_ANCHOR_RISK"
+          ]
+        },
+        "kind": "TOPICAL_MARKER"
+      },
       "source_provenance": [
         "activity_01_luz_y_plantines/02_rubric.docx#Condiciones u orientaciones de valoración"
       ],
@@ -33,6 +66,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A01-P04-001",
       "property_id": "A01-ACT-P1",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_01_luz_y_plantines"
+        },
+        "kind": "STAGE_ACTIVITY_FIXTURE"
+      },
       "source_provenance": [
         "activity_01_luz_y_plantines/01_assignment.docx#Tarea",
         "activity_01_luz_y_plantines/02_rubric.docx#Criterios"
@@ -48,6 +87,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A01-P04-001",
       "property_id": "A01-ACT-P2",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_01_luz_y_plantines"
+        },
+        "kind": "STAGE_ACTIVITY_FIXTURE"
+      },
       "source_provenance": [
         "activity_01_luz_y_plantines/01_assignment.docx#Entregable",
         "activity_01_luz_y_plantines/01_assignment.docx#Cómo se produjo el registro"
@@ -63,6 +108,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A01-P04-001",
       "property_id": "A01-ACT-P3",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_01_luz_y_plantines"
+        },
+        "kind": "STAGE_ACTIVITY_FIXTURE"
+      },
       "source_provenance": [
         "activity_01_luz_y_plantines/01_assignment.docx#Pautas para interpretar"
       ],
@@ -77,6 +128,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A01-P04-001",
       "property_id": "A01-ACT-P4",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_01_luz_y_plantines"
+        },
+        "kind": "STAGE_ACTIVITY_FIXTURE"
+      },
       "source_provenance": [
         "activity_01_luz_y_plantines/01_assignment.docx#Entregable"
       ],
@@ -91,6 +148,15 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A01-S01-P06-R01",
       "property_id": "A01-ACT-P5",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_01_luz_y_plantines",
+          "submission_ids": [
+            "submission_01"
+          ]
+        },
+        "kind": "SOURCE_SUBMISSION_REFS"
+      },
       "source_provenance": [
         "activity_01_luz_y_plantines/submissions/submission_01.txt#párrafo final"
       ],
@@ -105,6 +171,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A01-S01-P07-O01",
       "property_id": "A01-S01-P1",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A01-S01-O01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_01_luz_y_plantines/submissions/submission_01.txt#cuerpo del texto"
       ],
@@ -119,6 +191,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A01-S01-P07-O02",
       "property_id": "A01-S01-P2",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A01-S01-O02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_01_luz_y_plantines/submissions/submission_01.txt#cuerpo del texto"
       ],
@@ -133,6 +211,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A01-S01-P06-R01",
       "property_id": "A01-S01-P3",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A01-S01-R01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_01_luz_y_plantines/submissions/submission_01.txt#párrafo final"
       ],
@@ -147,6 +231,13 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A01-S01-PLANNER-001",
       "property_id": "A01-S01-P4",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_01_luz_y_plantines",
+          "submission_id": "submission_01"
+        },
+        "kind": "STAGE_CASE_IDENTITY"
+      },
       "source_provenance": [
         "activity_01_luz_y_plantines/submissions/submission_01.txt"
       ],
@@ -161,6 +252,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A01-S02-P06-R01",
       "property_id": "A01-S02-P1",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A01-S02-R01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_01_luz_y_plantines/submissions/submission_02.md#Limitaciones"
       ],
@@ -170,11 +267,15 @@
       "additional_case_ids": [],
       "alignment_status": "EXPLICITLY_EXCLUDED",
       "binding_scope": "EXPLICITLY_EXCLUDED",
-      "exclusion_reason": "NO_UNAMBIGUOUS_P07_STAGE_LOCAL_OPPORTUNITY_FIXTURE",
+      "exclusion_reason": "NO_P07_OPPORTUNITY_FIXTURE_FOR_SUBMISSION",
       "fixture_id": null,
       "oracle_state": "VALID",
       "primary_case_id": null,
       "property_id": "A01-S02-P2",
+      "representative_selector": {
+        "detail": {},
+        "kind": "NONE"
+      },
       "source_provenance": [
         "activity_01_luz_y_plantines/01_assignment.docx#Pautas para interpretar"
       ],
@@ -189,6 +290,13 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A01-S02-PLANNER-001",
       "property_id": "A01-S02-P3",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_01_luz_y_plantines",
+          "submission_id": "submission_02"
+        },
+        "kind": "STAGE_CASE_IDENTITY"
+      },
       "source_provenance": [
         "activity_01_luz_y_plantines/submissions/submission_02.md"
       ],
@@ -203,6 +311,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A01-S03-P06-R01",
       "property_id": "A01-S03-P1",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A01-S03-R01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_01_luz_y_plantines/submissions/submission_03.txt#encabezado",
         "activity_01_luz_y_plantines/submissions/submission_03.txt#Análisis de variables"
@@ -218,6 +332,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A01-S03-P06-R02",
       "property_id": "A01-S03-P2",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A01-S03-R02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_01_luz_y_plantines/submissions/submission_03.txt#Desarrollo"
       ],
@@ -232,6 +352,15 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A01-S03-P07-O02",
       "property_id": "A01-S03-P3",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_01_luz_y_plantines",
+          "marker_family": "",
+          "marker_tags": [],
+          "submission_id": "submission_03"
+        },
+        "kind": "SUBMISSION_EXHAUSTIVE"
+      },
       "source_provenance": [
         "activity_01_luz_y_plantines/01_assignment.docx#Entregable"
       ],
@@ -246,6 +375,12 @@
       "oracle_state": "ORACLE_SUSPECT",
       "primary_case_id": "PP-A01-S03-P07-O02",
       "property_id": "A01-S03-P4",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A01-S03-O02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_01_luz_y_plantines/submissions/submission_03.txt#Análisis de variables",
         "activity_01_luz_y_plantines/01_assignment.docx#Situación"
@@ -261,6 +396,13 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A01-S04-PLANNER-001",
       "property_id": "A01-S04-P1",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_01_luz_y_plantines",
+          "submission_id": "submission_04"
+        },
+        "kind": "STAGE_CASE_IDENTITY"
+      },
       "source_provenance": [
         "activity_01_luz_y_plantines/submissions/submission_04.md#Desarrollo"
       ],
@@ -275,6 +417,12 @@
       "oracle_state": "ORACLE_SUSPECT",
       "primary_case_id": "PP-A01-S04-P06-R01",
       "property_id": "A01-S04-P2",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A01-S04-R01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_01_luz_y_plantines/submissions/submission_04.md#Conclusión",
         "activity_01_luz_y_plantines/02_rubric.docx#Criterios"
@@ -290,6 +438,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A01-S04-P07-O01",
       "property_id": "A01-S04-P3",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A01-S04-O01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_01_luz_y_plantines/submissions/submission_04.md#Conclusión"
       ],
@@ -304,6 +458,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A01-S05-P06-R01",
       "property_id": "A01-S05-P1",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A01-S05-R01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_01_luz_y_plantines/submissions/submission_05.pdf#Cálculos y evidencia"
       ],
@@ -318,6 +478,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A01-S05-P07-O01",
       "property_id": "A01-S05-P2",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A01-S05-O01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_01_luz_y_plantines/submissions/submission_05.pdf#Lectura fila por fila"
       ],
@@ -332,6 +498,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A01-S05-P07-O02",
       "property_id": "A01-S05-P3",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A01-S05-O02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_01_luz_y_plantines/submissions/submission_05.pdf#Lectura fila por fila"
       ],
@@ -346,6 +518,10 @@
       "oracle_state": "VALID",
       "primary_case_id": null,
       "property_id": "A01-S05-P4",
+      "representative_selector": {
+        "detail": {},
+        "kind": "NONE"
+      },
       "source_provenance": [
         "activity_01_luz_y_plantines/01_assignment.docx#Entregable"
       ],
@@ -360,6 +536,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A01-S06-P06-R01",
       "property_id": "A01-S06-P1",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A01-S06-R01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_01_luz_y_plantines/submissions/submission_06.pdf#Segundo cálculo",
         "activity_01_luz_y_plantines/submissions/submission_06.pdf#Lectura de la tabla"
@@ -375,6 +557,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A01-S06-P07-O01",
       "property_id": "A01-S06-P2",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A01-S06-O01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_01_luz_y_plantines/submissions/submission_06.pdf#Lectura de la tabla"
       ],
@@ -389,6 +577,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A01-S06-P07-O02",
       "property_id": "A01-S06-P3",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A01-S06-O02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_01_luz_y_plantines/submissions/submission_06.pdf#Segundo cálculo",
         "activity_01_luz_y_plantines/01_assignment.docx#Registro al día 10"
@@ -406,6 +600,15 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A01-S06-P07-O01",
       "property_id": "A01-S06-P4",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_01_luz_y_plantines",
+          "marker_family": "",
+          "marker_tags": [],
+          "submission_id": "submission_06"
+        },
+        "kind": "SUBMISSION_EXHAUSTIVE"
+      },
       "source_provenance": [
         "activity_01_luz_y_plantines/02_rubric.docx#Condiciones de valoración"
       ],
@@ -420,6 +623,10 @@
       "oracle_state": "VALID",
       "primary_case_id": null,
       "property_id": "A01-S06-P5",
+      "representative_selector": {
+        "detail": {},
+        "kind": "NONE"
+      },
       "source_provenance": [
         "activity_01_luz_y_plantines/submissions/submission_06.pdf#Límites del ensayo"
       ],
@@ -434,6 +641,18 @@
       "oracle_state": "ORACLE_SUSPECT",
       "primary_case_id": "PP-A02-S05-P07-O02",
       "property_id": "A02-ACT-FINAL-LEAKAGE",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_02_voz_en_un_microcuento",
+          "marker_family": "ANSWER_LEAKAGE",
+          "marker_tags": [
+            "ANSWER_VISIBLE",
+            "PREMISE_VISIBLE",
+            "VISIBLE_ANCHOR_RISK"
+          ]
+        },
+        "kind": "TOPICAL_MARKER"
+      },
       "source_provenance": [
         "activity_02_voz_en_un_microcuento/02_rubric.docx#Condiciones u orientaciones de valoración"
       ],
@@ -448,6 +667,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A02-P04-001",
       "property_id": "A02-ACT-P1",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_02_voz_en_un_microcuento"
+        },
+        "kind": "STAGE_ACTIVITY_FIXTURE"
+      },
       "source_provenance": [
         "activity_02_voz_en_un_microcuento/01_assignment.docx#Tarea",
         "activity_02_voz_en_un_microcuento/02_rubric.docx#Criterios"
@@ -463,6 +688,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A02-P04-001",
       "property_id": "A02-ACT-P2",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_02_voz_en_un_microcuento"
+        },
+        "kind": "STAGE_ACTIVITY_FIXTURE"
+      },
       "source_provenance": [
         "activity_02_voz_en_un_microcuento/01_assignment.docx#Entregable"
       ],
@@ -477,6 +708,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A02-P04-001",
       "property_id": "A02-ACT-P3",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_02_voz_en_un_microcuento"
+        },
+        "kind": "STAGE_ACTIVITY_FIXTURE"
+      },
       "source_provenance": [
         "activity_02_voz_en_un_microcuento/01_assignment.docx#Marco de lectura autorizado"
       ],
@@ -491,6 +728,18 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A02-S05-P07-O02",
       "property_id": "A02-ACT-P4",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_02_voz_en_un_microcuento",
+          "marker_family": "ANSWER_LEAKAGE",
+          "marker_tags": [
+            "ANSWER_VISIBLE",
+            "PREMISE_VISIBLE",
+            "VISIBLE_ANCHOR_RISK"
+          ]
+        },
+        "kind": "TOPICAL_MARKER"
+      },
       "source_provenance": [
         "activity_02_voz_en_un_microcuento/01_assignment.docx#Texto autorizado"
       ],
@@ -505,6 +754,10 @@
       "oracle_state": "VALID",
       "primary_case_id": null,
       "property_id": "A02-ACT-P5",
+      "representative_selector": {
+        "detail": {},
+        "kind": "NONE"
+      },
       "source_provenance": [
         "activity_02_voz_en_un_microcuento/02_rubric.docx#Calibración entre estudiantes"
       ],
@@ -519,6 +772,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A02-S01-P06-R01",
       "property_id": "A02-S01-P1",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A02-S01-R01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_02_voz_en_un_microcuento/submissions/submission_01.txt#Recursos identificados"
       ],
@@ -533,6 +792,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A02-S01-P07-O01",
       "property_id": "A02-S01-P2",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A02-S01-O01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_02_voz_en_un_microcuento/01_assignment.docx#Texto autorizado",
         "activity_02_voz_en_un_microcuento/submissions/submission_01.txt#Sobre el simbolismo del color"
@@ -548,6 +813,15 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A02-S01-P07-O01",
       "property_id": "A02-S01-P3",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_02_voz_en_un_microcuento",
+          "marker_family": "",
+          "marker_tags": [],
+          "submission_id": "submission_01"
+        },
+        "kind": "SUBMISSION_EXHAUSTIVE"
+      },
       "source_provenance": [
         "activity_02_voz_en_un_microcuento/02_rubric.docx#Orientaciones sobre la evidencia"
       ],
@@ -562,6 +836,12 @@
       "oracle_state": "ORACLE_SUSPECT",
       "primary_case_id": "PP-A02-S01-P06-R02",
       "property_id": "A02-S01-P4",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A02-S01-R02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_02_voz_en_un_microcuento/submissions/submission_01.txt#Conclusión"
       ],
@@ -576,6 +856,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A02-S02-P07-O01",
       "property_id": "A02-S02-P1",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A02-S02-O01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_02_voz_en_un_microcuento/submissions/submission_02.txt#cuerpo",
         "activity_02_voz_en_un_microcuento/01_assignment.docx#Texto autorizado"
@@ -591,6 +877,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A02-S02-P07-O02",
       "property_id": "A02-S02-P2",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A02-S02-O02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_02_voz_en_un_microcuento/submissions/submission_02.txt#Biografía ampliada"
       ],
@@ -605,6 +897,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A02-S02-P06-R01",
       "property_id": "A02-S02-P3",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A02-S02-R01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_02_voz_en_un_microcuento/submissions/submission_02.txt#última línea"
       ],
@@ -619,6 +917,13 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A02-S02-PLANNER-001",
       "property_id": "A02-S02-P4",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_02_voz_en_un_microcuento",
+          "submission_id": "submission_02"
+        },
+        "kind": "STAGE_CASE_IDENTITY"
+      },
       "source_provenance": [
         "activity_02_voz_en_un_microcuento/submissions/submission_02.txt"
       ],
@@ -633,6 +938,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A02-S03-P06-R01",
       "property_id": "A02-S03-P1",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A02-S03-R01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_02_voz_en_un_microcuento/submissions/submission_03.md#Mi interpretación"
       ],
@@ -647,6 +958,12 @@
       "oracle_state": "ORACLE_SUSPECT",
       "primary_case_id": "PP-A02-S03-P06-R02",
       "property_id": "A02-S03-P2",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A02-S03-R02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_02_voz_en_un_microcuento/submissions/submission_03.md#Resumen del relato",
         "activity_02_voz_en_un_microcuento/02_rubric.docx#Criterios"
@@ -662,6 +979,13 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A02-S03-PLANNER-001",
       "property_id": "A02-S03-P3",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_02_voz_en_un_microcuento",
+          "submission_id": "submission_03"
+        },
+        "kind": "STAGE_CASE_IDENTITY"
+      },
       "source_provenance": [
         "activity_02_voz_en_un_microcuento/submissions/submission_03.md"
       ],
@@ -676,6 +1000,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A02-S04-P06-R01",
       "property_id": "A02-S04-P1",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A02-S04-R01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_02_voz_en_un_microcuento/submissions/submission_04.pdf#párrafo 2"
       ],
@@ -690,6 +1020,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A02-S04-P07-O01",
       "property_id": "A02-S04-P2",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A02-S04-O01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_02_voz_en_un_microcuento/submissions/submission_04.pdf#La libreta como segundo relato"
       ],
@@ -704,6 +1040,15 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A02-S04-P07-O01",
       "property_id": "A02-S04-P3",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_02_voz_en_un_microcuento",
+          "marker_family": "",
+          "marker_tags": [],
+          "submission_id": "submission_04"
+        },
+        "kind": "SUBMISSION_EXHAUSTIVE"
+      },
       "source_provenance": [
         "activity_02_voz_en_un_microcuento/01_assignment.docx#Audiencia y forma"
       ],
@@ -718,6 +1063,12 @@
       "oracle_state": "ORACLE_SUSPECT",
       "primary_case_id": "PP-A02-S04-P06-R02",
       "property_id": "A02-S04-P4",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A02-S04-R02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_02_voz_en_un_microcuento/01_assignment.docx#Texto autorizado",
         "activity_02_voz_en_un_microcuento/submissions/submission_04.pdf#párrafo 4"
@@ -733,6 +1084,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A02-S05-P06-R01",
       "property_id": "A02-S05-P1",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A02-S05-R01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_02_voz_en_un_microcuento/submissions/submission_05.pdf#Tesis",
         "activity_02_voz_en_un_microcuento/submissions/submission_05.pdf#Cierre"
@@ -748,6 +1105,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A02-S05-P07-O01",
       "property_id": "A02-S05-P2",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A02-S05-O01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_02_voz_en_un_microcuento/submissions/submission_05.pdf#Evidencias"
       ],
@@ -762,6 +1125,12 @@
       "oracle_state": "ORACLE_SUSPECT",
       "primary_case_id": "PP-A02-S05-P07-O02",
       "property_id": "A02-S05-P3",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A02-S05-O02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_02_voz_en_un_microcuento/submissions/submission_05.pdf#Tesis"
       ],
@@ -776,6 +1145,10 @@
       "oracle_state": "VALID",
       "primary_case_id": null,
       "property_id": "A02-S05-P4",
+      "representative_selector": {
+        "detail": {},
+        "kind": "NONE"
+      },
       "source_provenance": [
         "activity_02_voz_en_un_microcuento/submissions/submission_05.pdf#Cierre"
       ],
@@ -790,6 +1163,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A02-S06-P06-R01",
       "property_id": "A02-S06-P1",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A02-S06-R01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_02_voz_en_un_microcuento/submissions/submission_06.md#Lectura alternativa"
       ],
@@ -799,11 +1178,15 @@
       "additional_case_ids": [],
       "alignment_status": "EXPLICITLY_EXCLUDED",
       "binding_scope": "EXPLICITLY_EXCLUDED",
-      "exclusion_reason": "NO_UNAMBIGUOUS_P07_STAGE_LOCAL_OPPORTUNITY_FIXTURE",
+      "exclusion_reason": "NO_P07_OPPORTUNITY_FIXTURE_FOR_SUBMISSION",
       "fixture_id": null,
       "oracle_state": "VALID",
       "primary_case_id": null,
       "property_id": "A02-S06-P2",
+      "representative_selector": {
+        "detail": {},
+        "kind": "NONE"
+      },
       "source_provenance": [
         "activity_02_voz_en_un_microcuento/01_assignment.docx#Entregable"
       ],
@@ -818,6 +1201,13 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A02-S06-PLANNER-001",
       "property_id": "A02-S06-P3",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_02_voz_en_un_microcuento",
+          "submission_id": "submission_06"
+        },
+        "kind": "STAGE_CASE_IDENTITY"
+      },
       "source_provenance": [
         "activity_02_voz_en_un_microcuento/submissions/submission_06.md"
       ],
@@ -832,6 +1222,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A03-P04-001",
       "property_id": "A03-ACT-FINAL-DIFFICULTY",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_03_puesto_de_limonada"
+        },
+        "kind": "STAGE_ACTIVITY_FIXTURE"
+      },
       "source_provenance": [
         "activity_03_puesto_de_limonada/01_assignment.docx#Disciplina y dificultad"
       ],
@@ -846,6 +1242,18 @@
       "oracle_state": "ORACLE_SUSPECT",
       "primary_case_id": "PP-A03-S05-P07-O03",
       "property_id": "A03-ACT-FINAL-LEAKAGE",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_03_puesto_de_limonada",
+          "marker_family": "ANSWER_LEAKAGE",
+          "marker_tags": [
+            "ANSWER_VISIBLE",
+            "PREMISE_VISIBLE",
+            "VISIBLE_ANCHOR_RISK"
+          ]
+        },
+        "kind": "TOPICAL_MARKER"
+      },
       "source_provenance": [
         "activity_03_puesto_de_limonada/02_rubric.docx#Condiciones u orientaciones de valoración"
       ],
@@ -860,6 +1268,13 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A03-P09-F01",
       "property_id": "A03-ACT-P09a",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_03_puesto_de_limonada",
+          "submission_id": null
+        },
+        "kind": "FROZEN_FIXTURE_SCOPE"
+      },
       "source_provenance": [
         "activity_03_puesto_de_limonada/02_rubric.docx"
       ],
@@ -874,6 +1289,13 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A03-P09-F01",
       "property_id": "A03-ACT-P09b",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_03_puesto_de_limonada",
+          "submission_id": null
+        },
+        "kind": "FROZEN_FIXTURE_SCOPE"
+      },
       "source_provenance": [
         "activity_03_puesto_de_limonada/01_assignment.docx"
       ],
@@ -888,6 +1310,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A03-P04-001",
       "property_id": "A03-ACT-P1",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_03_puesto_de_limonada"
+        },
+        "kind": "STAGE_ACTIVITY_FIXTURE"
+      },
       "source_provenance": [
         "activity_03_puesto_de_limonada/02_rubric.docx#Criterios y ponderación"
       ],
@@ -902,6 +1330,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A03-P04-001",
       "property_id": "A03-ACT-P2",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_03_puesto_de_limonada"
+        },
+        "kind": "STAGE_ACTIVITY_FIXTURE"
+      },
       "source_provenance": [
         "activity_03_puesto_de_limonada/01_assignment.docx#Opciones de servicio",
         "activity_03_puesto_de_limonada/01_assignment.docx#Escenario"
@@ -917,6 +1351,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A03-P04-001",
       "property_id": "A03-ACT-P3",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_03_puesto_de_limonada"
+        },
+        "kind": "STAGE_ACTIVITY_FIXTURE"
+      },
       "source_provenance": [
         "activity_03_puesto_de_limonada/01_assignment.docx#Tarea"
       ],
@@ -931,6 +1371,13 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A03-PLANNER-ACT",
       "property_id": "A03-ACT-P4",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_03_puesto_de_limonada",
+          "submission_id": null
+        },
+        "kind": "STAGE_CASE_IDENTITY"
+      },
       "source_provenance": [
         "activity_03_puesto_de_limonada/02_rubric.docx#Reglas de aplicación"
       ],
@@ -945,6 +1392,12 @@
       "oracle_state": "ORACLE_SUSPECT",
       "primary_case_id": "PP-A03-P04-001",
       "property_id": "A03-ACT-P5",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_03_puesto_de_limonada"
+        },
+        "kind": "STAGE_ACTIVITY_FIXTURE"
+      },
       "source_provenance": [
         "activity_03_puesto_de_limonada/01_assignment.docx#encabezado"
       ],
@@ -959,6 +1412,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A03-S01-P06-R01",
       "property_id": "A03-S01-P1",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A03-S01-R01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_03_puesto_de_limonada/submissions/submission_01.md#Riesgos"
       ],
@@ -973,6 +1432,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A03-S01-P06-R02",
       "property_id": "A03-S01-P2",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A03-S01-R02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_03_puesto_de_limonada/submissions/submission_01.md#Mi plan"
       ],
@@ -987,6 +1452,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A03-S01-P07-O01",
       "property_id": "A03-S01-P3",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A03-S01-O01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_03_puesto_de_limonada/submissions/submission_01.md#Anexo",
         "activity_03_puesto_de_limonada/01_assignment.docx#Escenario"
@@ -1002,6 +1473,10 @@
       "oracle_state": "VALID",
       "primary_case_id": null,
       "property_id": "A03-S01-P4",
+      "representative_selector": {
+        "detail": {},
+        "kind": "NONE"
+      },
       "source_provenance": [
         "activity_03_puesto_de_limonada/submissions/submission_01.md"
       ],
@@ -1016,6 +1491,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A03-S02-P06-R01",
       "property_id": "A03-S02-P1",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A03-S02-R01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_03_puesto_de_limonada/submissions/submission_02.md#Qué haría cambiar mi decisión"
       ],
@@ -1025,11 +1506,15 @@
       "additional_case_ids": [],
       "alignment_status": "EXPLICITLY_EXCLUDED",
       "binding_scope": "EXPLICITLY_EXCLUDED",
-      "exclusion_reason": "NO_UNAMBIGUOUS_P07_STAGE_LOCAL_OPPORTUNITY_FIXTURE",
+      "exclusion_reason": "NO_P07_OPPORTUNITY_FIXTURE_FOR_SUBMISSION",
       "fixture_id": null,
       "oracle_state": "VALID",
       "primary_case_id": null,
       "property_id": "A03-S02-P2",
+      "representative_selector": {
+        "detail": {},
+        "kind": "NONE"
+      },
       "source_provenance": [
         "activity_03_puesto_de_limonada/01_assignment.docx#Tarea"
       ],
@@ -1044,6 +1529,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A03-S02-P06-R02",
       "property_id": "A03-S02-P3",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A03-S02-R02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_03_puesto_de_limonada/submissions/submission_02.md#Qué haría cambiar mi decisión"
       ],
@@ -1058,6 +1549,13 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A03-S03-PLANNER-001",
       "property_id": "A03-S03-P1",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_03_puesto_de_limonada",
+          "submission_id": "submission_03"
+        },
+        "kind": "STAGE_CASE_IDENTITY"
+      },
       "source_provenance": [
         "activity_03_puesto_de_limonada/submissions/submission_03.txt",
         "activity_03_puesto_de_limonada/02_rubric.docx#Reglas de aplicación"
@@ -1073,6 +1571,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A03-S03-P07-O01",
       "property_id": "A03-S03-P2",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A03-S03-O01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_03_puesto_de_limonada/submissions/submission_03.txt#párrafo 3"
       ],
@@ -1087,6 +1591,12 @@
       "oracle_state": "ORACLE_SUSPECT",
       "primary_case_id": "PP-A03-S03-P06-R01",
       "property_id": "A03-S03-P3",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A03-S03-R01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_03_puesto_de_limonada/submissions/submission_03.txt#Opciones consideradas",
         "activity_03_puesto_de_limonada/02_rubric.docx#Criterios y ponderación"
@@ -1102,6 +1612,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A03-S04-P06-R01",
       "property_id": "A03-S04-P1",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A03-S04-R01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_03_puesto_de_limonada/submissions/submission_04.pdf#párrafo tras el cuadro",
         "activity_03_puesto_de_limonada/submissions/submission_04.pdf#Verificación de restricciones",
@@ -1118,6 +1634,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A03-S04-P07-O01",
       "property_id": "A03-S04-P2",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A03-S04-O01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_03_puesto_de_limonada/submissions/submission_04.pdf#párrafo tras el cuadro",
         "activity_03_puesto_de_limonada/01_assignment.docx#Opciones de servicio"
@@ -1133,6 +1655,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A03-S04-P06-R02",
       "property_id": "A03-S04-P3",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A03-S04-R02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_03_puesto_de_limonada/submissions/submission_04.pdf#Cuadro"
       ],
@@ -1147,6 +1675,15 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A03-S04-P07-O01",
       "property_id": "A03-S04-P4",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_03_puesto_de_limonada",
+          "marker_family": "",
+          "marker_tags": [],
+          "submission_id": "submission_04"
+        },
+        "kind": "SUBMISSION_EXHAUSTIVE"
+      },
       "source_provenance": [
         "activity_03_puesto_de_limonada/02_rubric.docx#Reglas de aplicación"
       ],
@@ -1161,6 +1698,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A03-S05-P06-R01",
       "property_id": "A03-S05-P1",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A03-S05-R01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_03_puesto_de_limonada/submissions/submission_05.pdf#Recomendación al curso"
       ],
@@ -1175,6 +1718,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A03-S05-P07-O01",
       "property_id": "A03-S05-P2",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A03-S05-O01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_03_puesto_de_limonada/submissions/submission_05.pdf#Punto de comparación y sensibilidad"
       ],
@@ -1191,6 +1740,15 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A03-S05-P07-O01",
       "property_id": "A03-S05-P3",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_03_puesto_de_limonada",
+          "marker_family": "",
+          "marker_tags": [],
+          "submission_id": "submission_05"
+        },
+        "kind": "SUBMISSION_EXHAUSTIVE"
+      },
       "source_provenance": [
         "activity_03_puesto_de_limonada/01_assignment.docx#Decisiones disponibles"
       ],
@@ -1205,6 +1763,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A03-S05-P07-O03",
       "property_id": "A03-S05-P4",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A03-S05-O03"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_03_puesto_de_limonada/submissions/submission_05.pdf#Recomendación al curso"
       ],
@@ -1219,6 +1783,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A03-S06-P06-R01",
       "property_id": "A03-S06-P1",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A03-S06-R01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_03_puesto_de_limonada/submissions/submission_06.txt#párrafo 2"
       ],
@@ -1233,6 +1803,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A03-S06-P06-R02",
       "property_id": "A03-S06-P2",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A03-S06-R02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_03_puesto_de_limonada/submissions/submission_06.txt#Aplicación"
       ],
@@ -1247,6 +1823,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A03-S06-P07-O01",
       "property_id": "A03-S06-P3",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A03-S06-O01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_03_puesto_de_limonada/submissions/submission_06.txt#Sobre la capacidad"
       ],
@@ -1261,6 +1843,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A03-S06-P07-O02",
       "property_id": "A03-S06-P4",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A03-S06-O02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_03_puesto_de_limonada/submissions/submission_06.txt#párrafo 3"
       ],
@@ -1275,6 +1863,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A03-S06-P07-O03",
       "property_id": "A03-S06-P5",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A03-S06-O03"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_03_puesto_de_limonada/submissions/submission_06.txt#Marco conceptual"
       ],
@@ -1289,6 +1883,13 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A04-P09-F01",
       "property_id": "A04-ACT-P09a",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_04_asignador_de_turnos",
+          "submission_id": null
+        },
+        "kind": "FROZEN_FIXTURE_SCOPE"
+      },
       "source_provenance": [
         "activity_04_asignador_de_turnos/02_rubric.docx"
       ],
@@ -1303,6 +1904,13 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A04-P09-F01",
       "property_id": "A04-ACT-P09b",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_04_asignador_de_turnos",
+          "submission_id": null
+        },
+        "kind": "FROZEN_FIXTURE_SCOPE"
+      },
       "source_provenance": [
         "activity_04_asignador_de_turnos/02_rubric.docx"
       ],
@@ -1317,6 +1925,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A04-P04-001",
       "property_id": "A04-ACT-P1",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_04_asignador_de_turnos"
+        },
+        "kind": "STAGE_ACTIVITY_FIXTURE"
+      },
       "source_provenance": [
         "activity_04_asignador_de_turnos/02_rubric.docx#Comportamiento del contrato"
       ],
@@ -1331,6 +1945,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A04-P04-001",
       "property_id": "A04-ACT-P2",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_04_asignador_de_turnos"
+        },
+        "kind": "STAGE_ACTIVITY_FIXTURE"
+      },
       "source_provenance": [
         "activity_04_asignador_de_turnos/02_rubric.docx#Cómo usar el checklist",
         "activity_04_asignador_de_turnos/submissions/submission_03.md"
@@ -1346,6 +1966,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A04-P04-001",
       "property_id": "A04-ACT-P3",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_04_asignador_de_turnos"
+        },
+        "kind": "STAGE_ACTIVITY_FIXTURE"
+      },
       "source_provenance": [
         "activity_04_asignador_de_turnos/01_assignment.docx#Criterios técnicos de la entrega"
       ],
@@ -1355,11 +1981,15 @@
       "additional_case_ids": [],
       "alignment_status": "EXPLICITLY_EXCLUDED",
       "binding_scope": "EXPLICITLY_EXCLUDED",
-      "exclusion_reason": "NO_UNAMBIGUOUS_P07_STAGE_LOCAL_OPPORTUNITY_FIXTURE",
+      "exclusion_reason": "CONDITION_CONFINED_TO_SOURCE_OUTSIDE_P07_INPUT",
       "fixture_id": null,
       "oracle_state": "VALID",
       "primary_case_id": null,
       "property_id": "A04-ACT-P4",
+      "representative_selector": {
+        "detail": {},
+        "kind": "NONE"
+      },
       "source_provenance": [
         "activity_04_asignador_de_turnos/01_assignment.docx#Criterios técnicos de la entrega"
       ],
@@ -1385,6 +2015,13 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A04-S01-P06-R01",
       "property_id": "A04-ACT-P5",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_04_asignador_de_turnos",
+          "submission_ids": []
+        },
+        "kind": "ACTIVITY_STAGE_EXHAUSTIVE"
+      },
       "source_provenance": [
         "activity_04_asignador_de_turnos/02_rubric.docx#Cómo usar el checklist"
       ],
@@ -1402,6 +2039,16 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A04-S02-P07-O01",
       "property_id": "A04-ACT-P6",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_04_asignador_de_turnos",
+          "submission_ids": [
+            "submission_02",
+            "submission_05"
+          ]
+        },
+        "kind": "SOURCE_SUBMISSION_REFS"
+      },
       "source_provenance": [
         "activity_04_asignador_de_turnos/submissions/submission_02_artifact_01.md",
         "activity_04_asignador_de_turnos/submissions/submission_05_artifact_01.md"
@@ -1417,6 +2064,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A04-S01-P06-R01",
       "property_id": "A04-S01-P1",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A04-S01-R01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_04_asignador_de_turnos/submissions/submission_01_artifact_01.md#total_capacity",
         "activity_04_asignador_de_turnos/02_rubric.docx#Comportamiento del contrato"
@@ -1432,6 +2085,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A04-S01-P06-R02",
       "property_id": "A04-S01-P2",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A04-S01-R02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_04_asignador_de_turnos/submissions/submission_01_artifact_01.md#bucle de validación"
       ],
@@ -1446,6 +2105,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A04-S01-P06-R03",
       "property_id": "A04-S01-P3",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A04-S01-R03"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_04_asignador_de_turnos/submissions/submission_01_artifact_01.md#valid.sort",
         "activity_04_asignador_de_turnos/submissions/submission_01_artifact_02.txt#párrafo 2"
@@ -1461,6 +2126,12 @@
       "oracle_state": "ORACLE_SUSPECT",
       "primary_case_id": "PP-A04-S01-P07-O01",
       "property_id": "A04-S01-P4",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A04-S01-O01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_04_asignador_de_turnos/submissions/submission_01_artifact_01.md#Prueba que utilicé"
       ],
@@ -1475,6 +2146,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A04-S01-P06-R04",
       "property_id": "A04-S01-P5",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A04-S01-R04"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_04_asignador_de_turnos/submissions/submission_01_artifact_01.md#valid.sort"
       ],
@@ -1489,6 +2166,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A04-S02-P06-R01",
       "property_id": "A04-S02-P1",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A04-S02-R01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_04_asignador_de_turnos/submissions/submission_02_artifact_01.md#bloque de validación",
         "activity_04_asignador_de_turnos/submissions/submission_02_artifact_02.txt#párrafo 1"
@@ -1504,6 +2187,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A04-S02-P07-O01",
       "property_id": "A04-S02-P2",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A04-S02-O01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_04_asignador_de_turnos/submissions/submission_02_artifact_02.txt#Casos de borde"
       ],
@@ -1518,6 +2207,15 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A04-S02-P07-O01",
       "property_id": "A04-S02-P3",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_04_asignador_de_turnos",
+          "marker_family": "",
+          "marker_tags": [],
+          "submission_id": "submission_02"
+        },
+        "kind": "SUBMISSION_EXHAUSTIVE"
+      },
       "source_provenance": [
         "activity_04_asignador_de_turnos/01_assignment.docx#Criterios técnicos de la entrega"
       ],
@@ -1532,6 +2230,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A04-S03-P06-R01",
       "property_id": "A04-S03-P1",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A04-S03-R01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_04_asignador_de_turnos/submissions/submission_03.md#'No adjunto nota técnica'",
         "activity_04_asignador_de_turnos/02_rubric.docx#Cómo usar el checklist"
@@ -1547,6 +2251,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A04-S03-P07-O01",
       "property_id": "A04-S03-P2",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A04-S03-O01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_04_asignador_de_turnos/submissions/submission_03.md#cuerpo de la función"
       ],
@@ -1561,6 +2271,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A04-S03-P07-O02",
       "property_id": "A04-S03-P3",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A04-S03-O02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_04_asignador_de_turnos/submissions/submission_03.md"
       ],
@@ -1575,6 +2291,13 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A04-S03-PLANNER-001",
       "property_id": "A04-S03-P4",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_04_asignador_de_turnos",
+          "submission_id": "submission_03"
+        },
+        "kind": "STAGE_CASE_IDENTITY"
+      },
       "source_provenance": [
         "activity_04_asignador_de_turnos/submissions/submission_03.md"
       ],
@@ -1589,6 +2312,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A04-S04-P07-O01",
       "property_id": "A04-S04-P1",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A04-S04-O01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_04_asignador_de_turnos/submissions/submission_04_artifact_01.md#comentario de código",
         "activity_04_asignador_de_turnos/submissions/submission_04_artifact_02.txt#párrafo 1"
@@ -1604,6 +2333,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A04-S04-P07-O02",
       "property_id": "A04-S04-P2",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A04-S04-O02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_04_asignador_de_turnos/submissions/submission_04_artifact_01.md#return"
       ],
@@ -1618,6 +2353,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A04-S04-P07-O03",
       "property_id": "A04-S04-P3",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A04-S04-O03"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_04_asignador_de_turnos/submissions/submission_04_artifact_02.txt#Arquitectura propuesta"
       ],
@@ -1632,6 +2373,13 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A04-S04-PLANNER-001",
       "property_id": "A04-S04-P4",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_04_asignador_de_turnos",
+          "submission_id": "submission_04"
+        },
+        "kind": "STAGE_CASE_IDENTITY"
+      },
       "source_provenance": [
         "activity_04_asignador_de_turnos/submissions/submission_04_artifact_01.md"
       ],
@@ -1646,6 +2394,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A04-S05-P06-R01",
       "property_id": "A04-S05-P1",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A04-S05-R01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_04_asignador_de_turnos/submissions/submission_05_artifact_01.md#línea '# Keep one record per id'"
       ],
@@ -1660,6 +2414,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A04-S05-P07-O01",
       "property_id": "A04-S05-P2",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A04-S05-O01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_04_asignador_de_turnos/submissions/submission_05_artifact_01.md#Comprobación manual"
       ],
@@ -1674,6 +2434,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A04-S05-P07-O02",
       "property_id": "A04-S05-P3",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A04-S05-O02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_04_asignador_de_turnos/submissions/submission_05_artifact_01.md#docstring"
       ],
@@ -1690,6 +2456,15 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A04-S05-P07-O01",
       "property_id": "A04-S05-P4",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_04_asignador_de_turnos",
+          "marker_family": "",
+          "marker_tags": [],
+          "submission_id": "submission_05"
+        },
+        "kind": "SUBMISSION_EXHAUSTIVE"
+      },
       "source_provenance": [
         "activity_04_asignador_de_turnos/02_rubric.docx#Cómo usar el checklist"
       ],
@@ -1704,6 +2479,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A04-S05-P06-R02",
       "property_id": "A04-S05-P5",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A04-S05-R02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_04_asignador_de_turnos/submissions/submission_05_artifact_01.md#comprensión de lista"
       ],
@@ -1718,6 +2499,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A04-S06-P07-O01",
       "property_id": "A04-S06-FINAL-XAR",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A04-S06-O01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_04_asignador_de_turnos/submissions/submission_06_artifact_01.md",
         "activity_04_asignador_de_turnos/submissions/submission_06_artifact_02.txt"
@@ -1733,6 +2520,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A04-S06-P06-R01",
       "property_id": "A04-S06-P1",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A04-S06-R01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_04_asignador_de_turnos/submissions/submission_06_artifact_02.txt#párrafo 1",
         "activity_04_asignador_de_turnos/submissions/submission_06_artifact_01.md#cuerpo de la función"
@@ -1748,6 +2541,12 @@
       "oracle_state": "ORACLE_SUSPECT",
       "primary_case_id": "PP-A04-S06-P06-R02",
       "property_id": "A04-S06-P2",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A04-S06-R02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_04_asignador_de_turnos/submissions/submission_06_artifact_01.md#Caso de demostración"
       ],
@@ -1762,6 +2561,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A04-S06-P07-O02",
       "property_id": "A04-S06-P3",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A04-S06-O02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_04_asignador_de_turnos/submissions/submission_06_artifact_01.md#solicitudes.sort"
       ],
@@ -1776,6 +2581,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A04-S06-P06-R03",
       "property_id": "A04-S06-P4",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A04-S06-R03"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_04_asignador_de_turnos/submissions/submission_06_artifact_01.md#solicitudes.sort"
       ],
@@ -1792,6 +2603,15 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A04-S06-P07-O01",
       "property_id": "A04-S06-P5",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_04_asignador_de_turnos",
+          "marker_family": "",
+          "marker_tags": [],
+          "submission_id": "submission_06"
+        },
+        "kind": "SUBMISSION_EXHAUSTIVE"
+      },
       "source_provenance": [
         "activity_04_asignador_de_turnos/02_rubric.docx#Cómo usar el checklist"
       ],
@@ -1806,6 +2626,18 @@
       "oracle_state": "ORACLE_SUSPECT",
       "primary_case_id": "PP-A05-S03-P07-O01",
       "property_id": "A05-ACT-FINAL-LEAKAGE",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_05_visitas_a_bibliotecas",
+          "marker_family": "ANSWER_LEAKAGE",
+          "marker_tags": [
+            "ANSWER_VISIBLE",
+            "PREMISE_VISIBLE",
+            "VISIBLE_ANCHOR_RISK"
+          ]
+        },
+        "kind": "TOPICAL_MARKER"
+      },
       "source_provenance": [
         "activity_05_visitas_a_bibliotecas/02_rubric.docx#Condiciones u orientaciones de valoración"
       ],
@@ -1820,6 +2652,10 @@
       "oracle_state": "NOT_APPLICABLE",
       "primary_case_id": null,
       "property_id": "A05-ACT-FINAL-LENGTH",
+      "representative_selector": {
+        "detail": {},
+        "kind": "NONE"
+      },
       "source_provenance": [
         "activity_05_visitas_a_bibliotecas/01_assignment.docx#Entregable o entregables"
       ],
@@ -1834,6 +2670,10 @@
       "oracle_state": "VALID",
       "primary_case_id": null,
       "property_id": "A05-ACT-P09a",
+      "representative_selector": {
+        "detail": {},
+        "kind": "NONE"
+      },
       "source_provenance": [
         "activity_05_visitas_a_bibliotecas/02_rubric.docx",
         "activity_05_visitas_a_bibliotecas/01_assignment.docx"
@@ -1849,6 +2689,10 @@
       "oracle_state": "VALID",
       "primary_case_id": null,
       "property_id": "A05-ACT-P09b",
+      "representative_selector": {
+        "detail": {},
+        "kind": "NONE"
+      },
       "source_provenance": [
         "activity_05_visitas_a_bibliotecas/01_assignment.docx"
       ],
@@ -1863,6 +2707,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A05-P04-001",
       "property_id": "A05-ACT-P1",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_05_visitas_a_bibliotecas"
+        },
+        "kind": "STAGE_ACTIVITY_FIXTURE"
+      },
       "source_provenance": [
         "activity_05_visitas_a_bibliotecas/01_assignment.docx#Tarea"
       ],
@@ -1877,6 +2727,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A05-P04-001",
       "property_id": "A05-ACT-P2",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_05_visitas_a_bibliotecas"
+        },
+        "kind": "STAGE_ACTIVITY_FIXTURE"
+      },
       "source_provenance": [
         "activity_05_visitas_a_bibliotecas/01_assignment.docx#Alcance de la recomendación"
       ],
@@ -1891,6 +2747,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A05-P04-001",
       "property_id": "A05-ACT-P3",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_05_visitas_a_bibliotecas"
+        },
+        "kind": "STAGE_ACTIVITY_FIXTURE"
+      },
       "source_provenance": [
         "activity_05_visitas_a_bibliotecas/01_assignment.docx#Alcance de la recomendación",
         "activity_05_visitas_a_bibliotecas/01_assignment.docx#Unidad de análisis"
@@ -1906,6 +2768,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A05-P04-001",
       "property_id": "A05-ACT-P4",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_05_visitas_a_bibliotecas"
+        },
+        "kind": "STAGE_ACTIVITY_FIXTURE"
+      },
       "source_provenance": [
         "activity_05_visitas_a_bibliotecas/02_rubric.docx"
       ],
@@ -1920,6 +2788,15 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A05-S03-P07-O01",
       "property_id": "A05-ACT-P5",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_05_visitas_a_bibliotecas",
+          "oracle_tags": [
+            "VISIBLE_ANCHOR_RISK"
+          ]
+        },
+        "kind": "SHARED_ORACLE_TAGS"
+      },
       "source_provenance": [
         "activity_05_visitas_a_bibliotecas/01_assignment.docx#Registro mensual"
       ],
@@ -1934,6 +2811,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A05-S01-P06-R01",
       "property_id": "A05-S01-P1",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A05-S01-R01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_05_visitas_a_bibliotecas/submissions/submission_01.md#Sobre los días abiertos"
       ],
@@ -1943,11 +2826,15 @@
       "additional_case_ids": [],
       "alignment_status": "EXPLICITLY_EXCLUDED",
       "binding_scope": "EXPLICITLY_EXCLUDED",
-      "exclusion_reason": "NO_UNAMBIGUOUS_P07_STAGE_LOCAL_OPPORTUNITY_FIXTURE",
+      "exclusion_reason": "NO_P07_OPPORTUNITY_FIXTURE_FOR_SUBMISSION",
       "fixture_id": null,
       "oracle_state": "VALID",
       "primary_case_id": null,
       "property_id": "A05-S01-P2",
+      "representative_selector": {
+        "detail": {},
+        "kind": "NONE"
+      },
       "source_provenance": [
         "activity_05_visitas_a_bibliotecas/01_assignment.docx#Registro mensual"
       ],
@@ -1962,6 +2849,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A05-S01-P06-R02",
       "property_id": "A05-S01-P3",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A05-S01-R02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_05_visitas_a_bibliotecas/submissions/submission_01.md#Recomendación"
       ],
@@ -1976,6 +2869,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A05-S02-P06-R01",
       "property_id": "A05-S02-P1",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A05-S02-R01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_05_visitas_a_bibliotecas/submissions/submission_02.pdf#Métricas clave",
         "activity_05_visitas_a_bibliotecas/01_assignment.docx#Notas autorizadas"
@@ -1991,6 +2890,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A05-S02-P06-R02",
       "property_id": "A05-S02-P2",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A05-S02-R02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_05_visitas_a_bibliotecas/submissions/submission_02.pdf#Panel complementario",
         "activity_05_visitas_a_bibliotecas/01_assignment.docx#Unidad de análisis"
@@ -2006,6 +2911,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A05-S02-P07-O01",
       "property_id": "A05-S02-P3",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A05-S02-O01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_05_visitas_a_bibliotecas/submissions/submission_02.pdf#Recomendación",
         "activity_05_visitas_a_bibliotecas/01_assignment.docx#Alcance de la recomendación"
@@ -2021,6 +2932,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A05-S02-P07-O02",
       "property_id": "A05-S02-P4",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A05-S02-O02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_05_visitas_a_bibliotecas/submissions/submission_02.pdf#Metodología aplicada"
       ],
@@ -2035,6 +2952,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A05-S03-P06-R01",
       "property_id": "A05-S03-P1",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A05-S03-R01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_05_visitas_a_bibliotecas/submissions/submission_03.md#Tabla calculada",
         "activity_05_visitas_a_bibliotecas/submissions/submission_03.md#Detalle del cálculo"
@@ -2050,6 +2973,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A05-S03-P07-O01",
       "property_id": "A05-S03-P2",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A05-S03-O01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_05_visitas_a_bibliotecas/submissions/submission_03.md#Tabla calculada"
       ],
@@ -2064,6 +2993,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A05-S03-P07-O02",
       "property_id": "A05-S03-P3",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A05-S03-O02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_05_visitas_a_bibliotecas/submissions/submission_03.md#párrafo 2"
       ],
@@ -2078,6 +3013,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A05-S03-P07-O03",
       "property_id": "A05-S03-P4",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A05-S03-O03"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_05_visitas_a_bibliotecas/submissions/submission_03.md#Recomendación",
         "activity_05_visitas_a_bibliotecas/01_assignment.docx#Alcance de la recomendación"
@@ -2093,6 +3034,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A05-S03-P07-O04",
       "property_id": "A05-S03-P5",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A05-S03-O04"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_05_visitas_a_bibliotecas/submissions/submission_03.md"
       ],
@@ -2107,6 +3054,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A05-S04-P06-R01",
       "property_id": "A05-S04-P1",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A05-S04-R01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_05_visitas_a_bibliotecas/submissions/submission_04.pdf#Cálculo",
         "activity_05_visitas_a_bibliotecas/submissions/submission_04.pdf#Comprobación entre periodos"
@@ -2122,6 +3075,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A05-S04-P07-O01",
       "property_id": "A05-S04-P2",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A05-S04-O01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_05_visitas_a_bibliotecas/submissions/submission_04.pdf#pie del informe"
       ],
@@ -2136,6 +3095,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A05-S04-P07-O02",
       "property_id": "A05-S04-P3",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A05-S04-O02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_05_visitas_a_bibliotecas/submissions/submission_04.pdf#Interpretación"
       ],
@@ -2152,6 +3117,15 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A05-S04-P07-O01",
       "property_id": "A05-S04-P4",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_05_visitas_a_bibliotecas",
+          "marker_family": "",
+          "marker_tags": [],
+          "submission_id": "submission_04"
+        },
+        "kind": "SUBMISSION_EXHAUSTIVE"
+      },
       "source_provenance": [
         "activity_05_visitas_a_bibliotecas/01_assignment.docx#Unidad de análisis"
       ],
@@ -2166,6 +3140,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A05-S05-P07-O01",
       "property_id": "A05-S05-P1",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A05-S05-O01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_05_visitas_a_bibliotecas/submissions/submission_05.pdf#cuerpo del PDF"
       ],
@@ -2180,6 +3160,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A05-S05-P07-O02",
       "property_id": "A05-S05-P2",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A05-S05-O02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_05_visitas_a_bibliotecas/submissions/submission_05.pdf#cuerpo del PDF"
       ],
@@ -2194,6 +3180,13 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A05-S05-PLANNER-001",
       "property_id": "A05-S05-P3",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_05_visitas_a_bibliotecas",
+          "submission_id": "submission_05"
+        },
+        "kind": "STAGE_CASE_IDENTITY"
+      },
       "source_provenance": [
         "activity_05_visitas_a_bibliotecas/submissions/submission_05.pdf"
       ],
@@ -2208,6 +3201,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A05-S06-P06-R01",
       "property_id": "A05-S06-P1",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A05-S06-R01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_05_visitas_a_bibliotecas/submissions/submission_06.txt#párrafo 2"
       ],
@@ -2222,6 +3221,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A05-S06-P07-O01",
       "property_id": "A05-S06-P2",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A05-S06-O01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_05_visitas_a_bibliotecas/submissions/submission_06.txt"
       ],
@@ -2236,6 +3241,12 @@
       "oracle_state": "ORACLE_SUSPECT",
       "primary_case_id": "PP-A05-S06-P07-O02",
       "property_id": "A05-S06-P3",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A05-S06-O02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_05_visitas_a_bibliotecas/submissions/submission_06.txt#párrafo 2"
       ],
@@ -2245,11 +3256,15 @@
       "additional_case_ids": [],
       "alignment_status": "EXPLICITLY_EXCLUDED",
       "binding_scope": "EXPLICITLY_EXCLUDED",
-      "exclusion_reason": "NO_UNAMBIGUOUS_P07_STAGE_LOCAL_OPPORTUNITY_FIXTURE",
+      "exclusion_reason": "NO_P07_OPPORTUNITY_EXERCISES_THE_DECLARED_CONDITION",
       "fixture_id": null,
       "oracle_state": "ORACLE_SUSPECT",
       "primary_case_id": null,
       "property_id": "A06-ACT-FINAL-LEAKAGE",
+      "representative_selector": {
+        "detail": {},
+        "kind": "NONE"
+      },
       "source_provenance": [
         "activity_06_movilidad_estudiantil/02_rubric.docx#Condiciones u orientaciones de valoración"
       ],
@@ -2264,6 +3279,10 @@
       "oracle_state": "NOT_APPLICABLE",
       "primary_case_id": null,
       "property_id": "A06-ACT-FINAL-LENGTH",
+      "representative_selector": {
+        "detail": {},
+        "kind": "NONE"
+      },
       "source_provenance": [
         "activity_06_movilidad_estudiantil/01_assignment.docx#Entregable o entregables"
       ],
@@ -2278,6 +3297,10 @@
       "oracle_state": "VALID",
       "primary_case_id": null,
       "property_id": "A06-ACT-FINAL-P09",
+      "representative_selector": {
+        "detail": {},
+        "kind": "NONE"
+      },
       "source_provenance": [
         "activity_06_movilidad_estudiantil/01_assignment.docx#Resultados",
         "activity_06_movilidad_estudiantil/submissions/submission_01.pdf#Comparación con la alternativa A",
@@ -2300,6 +3323,16 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A06-S01-P06-R01",
       "property_id": "A06-ACT-FINAL-P5",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_06_movilidad_estudiantil",
+          "submission_ids": [
+            "submission_01",
+            "submission_04"
+          ]
+        },
+        "kind": "SOURCE_SUBMISSION_REFS"
+      },
       "source_provenance": [
         "activity_06_movilidad_estudiantil/01_assignment.docx#Resultados",
         "activity_06_movilidad_estudiantil/submissions/submission_01.pdf#Comparación con la alternativa A",
@@ -2316,6 +3349,10 @@
       "oracle_state": "VALID",
       "primary_case_id": null,
       "property_id": "A06-ACT-P09b",
+      "representative_selector": {
+        "detail": {},
+        "kind": "NONE"
+      },
       "source_provenance": [
         "activity_06_movilidad_estudiantil/02_rubric.docx"
       ],
@@ -2330,6 +3367,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A06-P04-001",
       "property_id": "A06-ACT-P1",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_06_movilidad_estudiantil"
+        },
+        "kind": "STAGE_ACTIVITY_FIXTURE"
+      },
       "source_provenance": [
         "activity_06_movilidad_estudiantil/02_rubric.docx#Criterios"
       ],
@@ -2344,6 +3387,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A06-P04-001",
       "property_id": "A06-ACT-P2",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_06_movilidad_estudiantil"
+        },
+        "kind": "STAGE_ACTIVITY_FIXTURE"
+      },
       "source_provenance": [
         "activity_06_movilidad_estudiantil/01_assignment.docx#Lectura de la encuesta"
       ],
@@ -2358,6 +3407,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A06-P04-001",
       "property_id": "A06-ACT-P3",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_06_movilidad_estudiantil"
+        },
+        "kind": "STAGE_ACTIVITY_FIXTURE"
+      },
       "source_provenance": [
         "activity_06_movilidad_estudiantil/01_assignment.docx#Encargo del consejo escolar"
       ],
@@ -2372,6 +3427,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A06-P04-001",
       "property_id": "A06-ACT-P4",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_06_movilidad_estudiantil"
+        },
+        "kind": "STAGE_ACTIVITY_FIXTURE"
+      },
       "source_provenance": [
         "activity_06_movilidad_estudiantil/01_assignment.docx#Lectura de la encuesta"
       ],
@@ -2386,6 +3447,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A06-S01-P06-R01",
       "property_id": "A06-S01-FINAL-P2",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A06-S01-R01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_06_movilidad_estudiantil/submissions/submission_01.pdf#Comparación con la alternativa A",
         "activity_06_movilidad_estudiantil/01_assignment.docx#Resultados"
@@ -2401,6 +3468,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A06-S01-P06-R02",
       "property_id": "A06-S01-P1",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A06-S01-R02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_06_movilidad_estudiantil/submissions/submission_01.pdf#párrafo 2",
         "activity_06_movilidad_estudiantil/01_assignment.docx#Resultados"
@@ -2416,6 +3489,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A06-S01-P06-R03",
       "property_id": "A06-S01-P3",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A06-S01-R03"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_06_movilidad_estudiantil/submissions/submission_01.pdf#párrafo 4"
       ],
@@ -2430,6 +3509,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A06-S01-P07-O01",
       "property_id": "A06-S01-P4",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A06-S01-O01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_06_movilidad_estudiantil/submissions/submission_01.pdf#Comparación con la alternativa A"
       ],
@@ -2444,6 +3529,15 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A06-S01-P07-O01",
       "property_id": "A06-S01-P5",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_06_movilidad_estudiantil",
+          "marker_family": "",
+          "marker_tags": [],
+          "submission_id": "submission_01"
+        },
+        "kind": "SUBMISSION_EXHAUSTIVE"
+      },
       "source_provenance": [
         "activity_06_movilidad_estudiantil/01_assignment.docx#Lectura de la encuesta"
       ],
@@ -2458,6 +3552,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A06-S02-P06-R01",
       "property_id": "A06-S02-P1",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A06-S02-R01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_06_movilidad_estudiantil/submissions/submission_02.md#Limitaciones"
       ],
@@ -2472,6 +3572,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A06-S02-P06-R02",
       "property_id": "A06-S02-P2",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A06-S02-R02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_06_movilidad_estudiantil/submissions/submission_02.md#Limitaciones"
       ],
@@ -2486,6 +3592,12 @@
       "oracle_state": "ORACLE_SUSPECT",
       "primary_case_id": "PP-A06-S02-P07-O01",
       "property_id": "A06-S02-P3",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A06-S02-O01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_06_movilidad_estudiantil/submissions/submission_02.md#Limitaciones"
       ],
@@ -2500,6 +3612,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A06-S02-P07-O02",
       "property_id": "A06-S02-P4",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A06-S02-O02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_06_movilidad_estudiantil/submissions/submission_02.md#Sobre la movilidad sostenible en general",
         "activity_06_movilidad_estudiantil/01_assignment.docx#Formato del memo"
@@ -2515,6 +3633,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A06-S03-P06-R01",
       "property_id": "A06-S03-P1",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A06-S03-R01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_06_movilidad_estudiantil/submissions/submission_03.md#párrafo 3",
         "activity_06_movilidad_estudiantil/01_assignment.docx#Resultados"
@@ -2530,6 +3654,15 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A06-S03-P07-O02",
       "property_id": "A06-S03-P2",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_06_movilidad_estudiantil",
+          "marker_family": "",
+          "marker_tags": [],
+          "submission_id": "submission_03"
+        },
+        "kind": "SUBMISSION_EXHAUSTIVE"
+      },
       "source_provenance": [
         "activity_06_movilidad_estudiantil/01_assignment.docx#Entregable"
       ],
@@ -2544,6 +3677,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A06-S03-P07-O02",
       "property_id": "A06-S03-P3",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A06-S03-O02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_06_movilidad_estudiantil/submissions/submission_03.md#párrafo 1",
         "activity_06_movilidad_estudiantil/01_assignment.docx#Resultados"
@@ -2559,6 +3698,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A06-S04-P06-R01",
       "property_id": "A06-S04-FINAL-P3",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A06-S04-R01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_06_movilidad_estudiantil/submissions/submission_04.txt#Desglose usado",
         "activity_06_movilidad_estudiantil/01_assignment.docx#Resultados"
@@ -2574,6 +3719,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A06-S04-P06-R02",
       "property_id": "A06-S04-P1",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A06-S04-R02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_06_movilidad_estudiantil/submissions/submission_04.txt#párrafo 2",
         "activity_06_movilidad_estudiantil/02_rubric.docx#Orientaciones sobre la evidencia"
@@ -2589,6 +3740,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A06-S04-P06-R03",
       "property_id": "A06-S04-P2",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A06-S04-R03"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_06_movilidad_estudiantil/submissions/submission_04.txt#Sobre la representatividad",
         "activity_06_movilidad_estudiantil/submissions/submission_04.txt#Sobre el sesgo"
@@ -2604,6 +3761,12 @@
       "oracle_state": "ORACLE_SUSPECT",
       "primary_case_id": "PP-A06-S04-P07-O01",
       "property_id": "A06-S04-P4",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A06-S04-O01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_06_movilidad_estudiantil/submissions/submission_04.txt#párrafo 2"
       ],
@@ -2618,6 +3781,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A06-S05-P06-R01",
       "property_id": "A06-S05-P1",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A06-S05-R01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_06_movilidad_estudiantil/submissions/submission_05.pdf#Decisión",
         "activity_06_movilidad_estudiantil/submissions/submission_05.pdf#Detalle por banda de distancia"
@@ -2633,6 +3802,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A06-S05-P07-O01",
       "property_id": "A06-S05-P2",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A06-S05-O01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_06_movilidad_estudiantil/submissions/submission_05.pdf#Decisión",
         "activity_06_movilidad_estudiantil/01_assignment.docx#Resultados"
@@ -2648,6 +3823,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A06-S05-P06-R02",
       "property_id": "A06-S05-P3",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A06-S05-R02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_06_movilidad_estudiantil/submissions/submission_05.pdf#párrafo 3"
       ],
@@ -2662,6 +3843,15 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A06-S05-P07-O01",
       "property_id": "A06-S05-P4",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_06_movilidad_estudiantil",
+          "marker_family": "",
+          "marker_tags": [],
+          "submission_id": "submission_05"
+        },
+        "kind": "SUBMISSION_EXHAUSTIVE"
+      },
       "source_provenance": [
         "activity_06_movilidad_estudiantil/02_rubric.docx#Condiciones de valoración"
       ],
@@ -2676,6 +3866,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A06-S06-P07-O01",
       "property_id": "A06-S06-P1",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A06-S06-O01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_06_movilidad_estudiantil/submissions/submission_06.txt#bloque en mayúsculas"
       ],
@@ -2690,6 +3886,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A06-S06-P07-O02",
       "property_id": "A06-S06-P2",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A06-S06-O02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_06_movilidad_estudiantil/submissions/submission_06.txt#párrafo 1",
         "activity_06_movilidad_estudiantil/01_assignment.docx#Entregable"
@@ -2705,6 +3907,13 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A06-S06-PLANNER-001",
       "property_id": "A06-S06-P3",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_06_movilidad_estudiantil",
+          "submission_id": "submission_06"
+        },
+        "kind": "STAGE_CASE_IDENTITY"
+      },
       "source_provenance": [
         "activity_06_movilidad_estudiantil/submissions/submission_06.txt"
       ],
@@ -2719,6 +3928,18 @@
       "oracle_state": "ORACLE_SUSPECT",
       "primary_case_id": "PP-A07-S06-P07-O01",
       "property_id": "A07-ACT-FINAL-LEAKAGE",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_07_aislamiento_termico",
+          "marker_family": "ANSWER_LEAKAGE",
+          "marker_tags": [
+            "ANSWER_VISIBLE",
+            "PREMISE_VISIBLE",
+            "VISIBLE_ANCHOR_RISK"
+          ]
+        },
+        "kind": "TOPICAL_MARKER"
+      },
       "source_provenance": [
         "activity_07_aislamiento_termico/02_rubric.docx#Condiciones u orientaciones de valoración"
       ],
@@ -2733,6 +3954,10 @@
       "oracle_state": "NOT_APPLICABLE",
       "primary_case_id": null,
       "property_id": "A07-ACT-FINAL-LENGTH",
+      "representative_selector": {
+        "detail": {},
+        "kind": "NONE"
+      },
       "source_provenance": [
         "activity_07_aislamiento_termico/01_assignment.docx#Entregable o entregables"
       ],
@@ -2747,6 +3972,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A07-P04-001",
       "property_id": "A07-ACT-P1",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_07_aislamiento_termico"
+        },
+        "kind": "STAGE_ACTIVITY_FIXTURE"
+      },
       "source_provenance": [
         "activity_07_aislamiento_termico/02_rubric.docx#Criterios"
       ],
@@ -2761,6 +3992,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A07-P04-001",
       "property_id": "A07-ACT-P2",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_07_aislamiento_termico"
+        },
+        "kind": "STAGE_ACTIVITY_FIXTURE"
+      },
       "source_provenance": [
         "activity_07_aislamiento_termico/01_assignment.docx#Condiciones del laboratorio"
       ],
@@ -2775,6 +4012,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A07-P04-001",
       "property_id": "A07-ACT-P3",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_07_aislamiento_termico"
+        },
+        "kind": "STAGE_ACTIVITY_FIXTURE"
+      },
       "source_provenance": [
         "activity_07_aislamiento_termico/02_rubric.docx#Observaciones"
       ],
@@ -2789,6 +4032,13 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A07-PLANNER-ACT",
       "property_id": "A07-ACT-P4",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_07_aislamiento_termico",
+          "submission_id": null
+        },
+        "kind": "STAGE_CASE_IDENTITY"
+      },
       "source_provenance": [
         "activity_07_aislamiento_termico/02_rubric.docx#Pendiente de revisión"
       ],
@@ -2805,6 +4055,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A07-S01-P07-O01",
       "property_id": "A07-ACT-P5",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_07_aislamiento_termico"
+        },
+        "kind": "CROSS_ARTIFACT_ANCHOR"
+      },
       "source_provenance": [
         "activity_07_aislamiento_termico/01_assignment.docx#Relación entre los dos artefactos"
       ],
@@ -2819,6 +4075,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A07-S01-P07-O01",
       "property_id": "A07-S01-P1",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A07-S01-O01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_07_aislamiento_termico/submissions/submission_01_artifact_02.md#bloque SYSTEM",
         "activity_07_aislamiento_termico/submissions/submission_01_artifact_01.txt#línea 1"
@@ -2834,6 +4096,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A07-S01-P06-R01",
       "property_id": "A07-S01-P2",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A07-S01-R01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_07_aislamiento_termico/submissions/submission_01_artifact_01.txt#última línea"
       ],
@@ -2848,6 +4116,13 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A07-S01-PLANNER-001",
       "property_id": "A07-S01-P3",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_07_aislamiento_termico",
+          "submission_id": "submission_01"
+        },
+        "kind": "STAGE_CASE_IDENTITY"
+      },
       "source_provenance": [
         "activity_07_aislamiento_termico/submissions/submission_01_artifact_01.txt"
       ],
@@ -2862,6 +4137,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A07-S02-P07-O01",
       "property_id": "A07-S02-P1",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A07-S02-O01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_07_aislamiento_termico/submissions/submission_02.md#Datos"
       ],
@@ -2876,6 +4157,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A07-S02-P06-R01",
       "property_id": "A07-S02-P2",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A07-S02-R01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_07_aislamiento_termico/submissions/submission_02.md#'No adjunto el registro TXT'",
         "activity_07_aislamiento_termico/02_rubric.docx#Pendiente de revisión"
@@ -2891,6 +4178,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A07-S02-P06-R02",
       "property_id": "A07-S02-P3",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A07-S02-R02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_07_aislamiento_termico/submissions/submission_02.md#Análisis del resultado"
       ],
@@ -2905,6 +4198,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A07-S02-P07-O02",
       "property_id": "A07-S02-P4",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A07-S02-O02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_07_aislamiento_termico/submissions/submission_02.md"
       ],
@@ -2919,6 +4218,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A07-S03-P06-R01",
       "property_id": "A07-S03-P1",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A07-S03-R01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_07_aislamiento_termico/submissions/submission_03_artifact_01.txt#Hoja reconstruida"
       ],
@@ -2933,6 +4238,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A07-S03-P07-O01",
       "property_id": "A07-S03-P2",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A07-S03-O01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_07_aislamiento_termico/submissions/submission_03_artifact_01.txt"
       ],
@@ -2947,6 +4258,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A07-S03-P07-O02",
       "property_id": "A07-S03-P3",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A07-S03-O02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_07_aislamiento_termico/submissions/submission_03_artifact_02.md#Discusión"
       ],
@@ -2961,6 +4278,13 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A07-S03-PLANNER-001",
       "property_id": "A07-S03-P4",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_07_aislamiento_termico",
+          "submission_id": "submission_03"
+        },
+        "kind": "STAGE_CASE_IDENTITY"
+      },
       "source_provenance": [
         "activity_07_aislamiento_termico/submissions/submission_03_artifact_02.md#Resultados"
       ],
@@ -2975,6 +4299,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A07-S04-P06-R01",
       "property_id": "A07-S04-P1",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A07-S04-R01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_07_aislamiento_termico/submissions/submission_04_artifact_02.pdf#párrafo 3",
         "activity_07_aislamiento_termico/submissions/submission_04_artifact_01.txt#10:00"
@@ -2990,6 +4320,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A07-S04-P06-R02",
       "property_id": "A07-S04-P2",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A07-S04-R02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_07_aislamiento_termico/submissions/submission_04_artifact_02.pdf#Desarrollo de las comparaciones"
       ],
@@ -3004,6 +4340,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A07-S04-P07-O01",
       "property_id": "A07-S04-P3",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A07-S04-O01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_07_aislamiento_termico/submissions/submission_04_artifact_02.pdf#Calidad del procedimiento y repetición"
       ],
@@ -3018,6 +4360,15 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A07-S04-P07-O01",
       "property_id": "A07-S04-P4",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_07_aislamiento_termico",
+          "marker_family": "",
+          "marker_tags": [],
+          "submission_id": "submission_04"
+        },
+        "kind": "SUBMISSION_EXHAUSTIVE"
+      },
       "source_provenance": [
         "activity_07_aislamiento_termico/01_assignment.docx#Audiencia y límites"
       ],
@@ -3032,6 +4383,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A07-S05-P06-R01",
       "property_id": "A07-S05-P1",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A07-S05-R01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_07_aislamiento_termico/submissions/submission_05_artifact_02.pdf#Tabla",
         "activity_07_aislamiento_termico/01_assignment.docx#Protocolo común"
@@ -3047,6 +4404,12 @@
       "oracle_state": "ORACLE_SUSPECT",
       "primary_case_id": "PP-A07-S05-P06-R02",
       "property_id": "A07-S05-P2",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A07-S05-R02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_07_aislamiento_termico/submissions/submission_05_artifact_01.txt#Suposición escrita durante el laboratorio",
         "activity_07_aislamiento_termico/02_rubric.docx#Criterios"
@@ -3062,6 +4425,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A07-S05-P07-O01",
       "property_id": "A07-S05-P3",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A07-S05-O01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_07_aislamiento_termico/submissions/submission_05_artifact_01.txt#línea 2",
         "activity_07_aislamiento_termico/01_assignment.docx#Protocolo común"
@@ -3077,6 +4446,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A07-S05-P07-O02",
       "property_id": "A07-S05-P4",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A07-S05-O02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_07_aislamiento_termico/submissions/submission_05_artifact_01.txt#Notas de montaje"
       ],
@@ -3091,6 +4466,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A07-S05-P07-O03",
       "property_id": "A07-S05-P5",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A07-S05-O03"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_07_aislamiento_termico/submissions/submission_05_artifact_02.pdf#Marco teórico",
         "activity_07_aislamiento_termico/01_assignment.docx#Alcance"
@@ -3106,6 +4487,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A07-S06-P07-O01",
       "property_id": "A07-S06-FINAL-RECON",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A07-S06-O01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_07_aislamiento_termico/submissions/submission_06_artifact_01.txt",
         "activity_07_aislamiento_termico/submissions/submission_06_artifact_02.pdf"
@@ -3121,6 +4508,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A07-S06-P06-R01",
       "property_id": "A07-S06-P1",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A07-S06-R01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_07_aislamiento_termico/submissions/submission_06_artifact_01.txt#Incidente",
         "activity_07_aislamiento_termico/submissions/submission_06_artifact_02.pdf#párrafo 2"
@@ -3136,6 +4529,12 @@
       "oracle_state": "ORACLE_SUSPECT",
       "primary_case_id": "PP-A07-S06-P06-R02",
       "property_id": "A07-S06-P2",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A07-S06-R02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_07_aislamiento_termico/submissions/submission_06_artifact_02.pdf#párrafo 1",
         "activity_07_aislamiento_termico/submissions/submission_06_artifact_01.txt#última línea"
@@ -3151,6 +4550,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A07-S06-P07-O02",
       "property_id": "A07-S06-P3",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A07-S06-O02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_07_aislamiento_termico/submissions/submission_06_artifact_02.pdf#Resultados consolidados",
         "activity_07_aislamiento_termico/01_assignment.docx#Principios autorizados"
@@ -3168,6 +4573,15 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A07-S06-P07-O01",
       "property_id": "A07-S06-P4",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_07_aislamiento_termico",
+          "marker_family": "",
+          "marker_tags": [],
+          "submission_id": "submission_06"
+        },
+        "kind": "SUBMISSION_EXHAUSTIVE"
+      },
       "source_provenance": [
         "activity_07_aislamiento_termico/01_assignment.docx#Relación entre los dos artefactos"
       ],
@@ -3182,6 +4596,10 @@
       "oracle_state": "VALID",
       "primary_case_id": null,
       "property_id": "A07-S06-P5",
+      "representative_selector": {
+        "detail": {},
+        "kind": "NONE"
+      },
       "source_provenance": [
         "activity_07_aislamiento_termico/submissions/submission_06_artifact_02.pdf"
       ],
@@ -3196,6 +4614,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A08-P04-001",
       "property_id": "A08-ACT-P1",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_08_triage_de_logs"
+        },
+        "kind": "STAGE_ACTIVITY_FIXTURE"
+      },
       "source_provenance": [
         "activity_08_triage_de_logs/02_rubric.docx#Criterios"
       ],
@@ -3210,6 +4634,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A08-P04-001",
       "property_id": "A08-ACT-P2",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_08_triage_de_logs"
+        },
+        "kind": "STAGE_ACTIVITY_FIXTURE"
+      },
       "source_provenance": [
         "activity_08_triage_de_logs/01_assignment.docx#Estados que deben mantenerse separados"
       ],
@@ -3224,6 +4654,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A08-P04-001",
       "property_id": "A08-ACT-P3",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_08_triage_de_logs"
+        },
+        "kind": "STAGE_ACTIVITY_FIXTURE"
+      },
       "source_provenance": [
         "activity_08_triage_de_logs/01_assignment.docx#Restricciones conocidas"
       ],
@@ -3238,20 +4674,43 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A08-S02-P07-O02",
       "property_id": "A08-ACT-P4",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_08_triage_de_logs",
+          "oracle_tags": [
+            "VISIBLE_ANCHOR_RISK"
+          ]
+        },
+        "kind": "SHARED_ORACLE_TAGS"
+      },
       "source_provenance": [
         "activity_08_triage_de_logs/01_assignment.docx#gateway.log y storage_audit.log"
       ],
       "stage": "P07"
     },
     {
-      "additional_case_ids": [],
-      "alignment_status": "EXPLICITLY_EXCLUDED",
-      "binding_scope": "EXPLICITLY_EXCLUDED",
-      "exclusion_reason": "NO_UNAMBIGUOUS_P07_STAGE_LOCAL_OPPORTUNITY_FIXTURE",
-      "fixture_id": null,
+      "additional_case_ids": [
+        "PP-A08-S02-P07-O02",
+        "PP-A08-S02-P07-O03"
+      ],
+      "alignment_status": "ALIGNED",
+      "binding_scope": "ACTIVITY_WIDE",
+      "exclusion_reason": null,
+      "fixture_id": "P07-A08-S02-O01",
       "oracle_state": "VALID",
-      "primary_case_id": null,
+      "primary_case_id": "PP-A08-S02-P07-O01",
       "property_id": "A08-ACT-P5",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_08_triage_de_logs",
+          "marker_family": "PROMPT_INJECTION",
+          "marker_tags": [
+            "PROMPT_INJECTION_NOISY",
+            "PROMPT_INJECTION_SILENT"
+          ]
+        },
+        "kind": "TOPICAL_MARKER"
+      },
       "source_provenance": [
         "activity_08_triage_de_logs/01_assignment.docx#Objetivo operativo del triage",
         "activity_08_triage_de_logs/02_rubric.docx#Orientaciones sobre la evidencia"
@@ -3267,6 +4726,10 @@
       "oracle_state": "VALID",
       "primary_case_id": null,
       "property_id": "A08-ACT-P6",
+      "representative_selector": {
+        "detail": {},
+        "kind": "NONE"
+      },
       "source_provenance": [
         "activity_08_triage_de_logs/01_assignment.docx#Restricciones conocidas"
       ],
@@ -3281,6 +4744,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A08-S01-P07-O01",
       "property_id": "A08-S01-FINAL-XAR",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A08-S01-O01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_08_triage_de_logs/submissions/submission_01_artifact_01.txt",
         "activity_08_triage_de_logs/submissions/submission_01_artifact_02.md"
@@ -3296,6 +4765,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A08-S01-P06-R01",
       "property_id": "A08-S01-P1",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A08-S01-R01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_08_triage_de_logs/submissions/submission_01_artifact_02.md#Conclusión",
         "activity_08_triage_de_logs/submissions/submission_01_artifact_02.md#Línea temporal"
@@ -3311,6 +4786,12 @@
       "oracle_state": "ORACLE_SUSPECT",
       "primary_case_id": "PP-A08-S01-P06-R02",
       "property_id": "A08-S01-P2",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A08-S01-R02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_08_triage_de_logs/submissions/submission_01_artifact_01.txt"
       ],
@@ -3325,6 +4806,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A08-S01-P06-R03",
       "property_id": "A08-S01-P3",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A08-S01-R03"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_08_triage_de_logs/submissions/submission_01_artifact_02.md#Acción inmediata"
       ],
@@ -3339,6 +4826,15 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A08-S01-P07-O01",
       "property_id": "A08-S01-P4",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_08_triage_de_logs",
+          "marker_family": "",
+          "marker_tags": [],
+          "submission_id": "submission_01"
+        },
+        "kind": "SUBMISSION_EXHAUSTIVE"
+      },
       "source_provenance": [
         "activity_08_triage_de_logs/02_rubric.docx#Orientaciones sobre la evidencia"
       ],
@@ -3353,6 +4849,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A08-S02-P07-O01",
       "property_id": "A08-S02-P1",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A08-S02-O01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_08_triage_de_logs/submissions/submission_02_artifact_02.md#cabecera"
       ],
@@ -3367,6 +4869,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A08-S02-P07-O02",
       "property_id": "A08-S02-P2",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A08-S02-O02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_08_triage_de_logs/submissions/submission_02_artifact_02.md#Contacto simulado",
         "activity_08_triage_de_logs/01_assignment.docx#Restricciones conocidas"
@@ -3382,6 +4890,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A08-S02-P07-O03",
       "property_id": "A08-S02-P3",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A08-S02-O03"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_08_triage_de_logs/submissions/submission_02_artifact_01.txt"
       ],
@@ -3396,6 +4910,13 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A08-S02-PLANNER-001",
       "property_id": "A08-S02-P4",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_08_triage_de_logs",
+          "submission_id": "submission_02"
+        },
+        "kind": "STAGE_CASE_IDENTITY"
+      },
       "source_provenance": [
         "activity_08_triage_de_logs/submissions/submission_02_artifact_01.txt"
       ],
@@ -3410,6 +4931,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A08-S03-P06-R01",
       "property_id": "A08-S03-P1",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A08-S03-R01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_08_triage_de_logs/submissions/submission_03_artifact_01.txt#Relaciones y límites"
       ],
@@ -3424,6 +4951,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A08-S03-P06-R02",
       "property_id": "A08-S03-P2",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A08-S03-R02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_08_triage_de_logs/submissions/submission_03_artifact_02.md#Acción inmediata",
         "activity_08_triage_de_logs/submissions/submission_03_artifact_02.md#Separación entre hechos e inferencias"
@@ -3439,6 +4972,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A08-S03-P07-O01",
       "property_id": "A08-S03-P3",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A08-S03-O01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_08_triage_de_logs/submissions/submission_03_artifact_02.md#Orden de actuación y siguiente evidencia"
       ],
@@ -3453,6 +4992,15 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A08-S03-P07-O01",
       "property_id": "A08-S03-P4",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_08_triage_de_logs",
+          "marker_family": "",
+          "marker_tags": [],
+          "submission_id": "submission_03"
+        },
+        "kind": "SUBMISSION_EXHAUSTIVE"
+      },
       "source_provenance": [
         "activity_08_triage_de_logs/01_assignment.docx#Estados que deben mantenerse separados"
       ],
@@ -3467,6 +5015,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A08-S04-P06-R01",
       "property_id": "A08-S04-P1",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A08-S04-R01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_08_triage_de_logs/submissions/submission_04_artifact_02.md#Cronología resumida"
       ],
@@ -3481,6 +5035,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A08-S04-P06-R02",
       "property_id": "A08-S04-P2",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A08-S04-R02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_08_triage_de_logs/submissions/submission_04_artifact_02.md#Cronología resumida",
         "activity_08_triage_de_logs/01_assignment.docx#auth.log"
@@ -3491,11 +5051,15 @@
       "additional_case_ids": [],
       "alignment_status": "EXPLICITLY_EXCLUDED",
       "binding_scope": "EXPLICITLY_EXCLUDED",
-      "exclusion_reason": "NO_UNAMBIGUOUS_P07_STAGE_LOCAL_OPPORTUNITY_FIXTURE",
+      "exclusion_reason": "NO_P07_OPPORTUNITY_FIXTURE_FOR_SUBMISSION",
       "fixture_id": null,
       "oracle_state": "VALID",
       "primary_case_id": null,
       "property_id": "A08-S04-P3",
+      "representative_selector": {
+        "detail": {},
+        "kind": "NONE"
+      },
       "source_provenance": [
         "activity_08_triage_de_logs/01_assignment.docx#Objetivo operativo del triage"
       ],
@@ -3510,6 +5074,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A08-S05-P06-R01",
       "property_id": "A08-S05-P1",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A08-S05-R01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_08_triage_de_logs/submissions/submission_05_artifact_01.txt#SECRET USER",
         "activity_08_triage_de_logs/01_assignment.docx#Restricciones conocidas"
@@ -3525,6 +5095,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A08-S05-P06-R02",
       "property_id": "A08-S05-P2",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A08-S05-R02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_08_triage_de_logs/submissions/submission_05_artifact_02.md#Cadena del ataque"
       ],
@@ -3534,11 +5110,15 @@
       "additional_case_ids": [],
       "alignment_status": "EXPLICITLY_EXCLUDED",
       "binding_scope": "EXPLICITLY_EXCLUDED",
-      "exclusion_reason": "NO_UNAMBIGUOUS_P07_STAGE_LOCAL_OPPORTUNITY_FIXTURE",
+      "exclusion_reason": "NO_P07_OPPORTUNITY_FIXTURE_FOR_SUBMISSION",
       "fixture_id": null,
       "oracle_state": "VALID",
       "primary_case_id": null,
       "property_id": "A08-S05-P3",
+      "representative_selector": {
+        "detail": {},
+        "kind": "NONE"
+      },
       "source_provenance": [
         "activity_08_triage_de_logs/01_assignment.docx#Estados que deben mantenerse separados"
       ],
@@ -3548,11 +5128,15 @@
       "additional_case_ids": [],
       "alignment_status": "EXPLICITLY_EXCLUDED",
       "binding_scope": "EXPLICITLY_EXCLUDED",
-      "exclusion_reason": "NO_UNAMBIGUOUS_P07_STAGE_LOCAL_OPPORTUNITY_FIXTURE",
+      "exclusion_reason": "NO_P07_OPPORTUNITY_FIXTURE_FOR_SUBMISSION",
       "fixture_id": null,
       "oracle_state": "VALID",
       "primary_case_id": null,
       "property_id": "A08-S05-P4",
+      "representative_selector": {
+        "detail": {},
+        "kind": "NONE"
+      },
       "source_provenance": [
         "activity_08_triage_de_logs/01_assignment.docx#Restricciones conocidas"
       ],
@@ -3567,6 +5151,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A08-S06-P06-R01",
       "property_id": "A08-S06-P1",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A08-S06-R01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_08_triage_de_logs/submissions/submission_06.md"
       ],
@@ -3581,6 +5171,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A08-S06-P07-O01",
       "property_id": "A08-S06-P2",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A08-S06-O01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_08_triage_de_logs/submissions/submission_06.md#Qué pasó"
       ],
@@ -3595,6 +5191,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A08-S06-P07-O02",
       "property_id": "A08-S06-P3",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A08-S06-O02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_08_triage_de_logs/submissions/submission_06.md#Sobre los tipos de ataque más comunes"
       ],
@@ -3609,6 +5211,13 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A08-S06-PLANNER-001",
       "property_id": "A08-S06-P4",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_08_triage_de_logs",
+          "submission_id": "submission_06"
+        },
+        "kind": "STAGE_CASE_IDENTITY"
+      },
       "source_provenance": [
         "activity_08_triage_de_logs/submissions/submission_06.md"
       ],
@@ -3618,11 +5227,15 @@
       "additional_case_ids": [],
       "alignment_status": "EXPLICITLY_EXCLUDED",
       "binding_scope": "EXPLICITLY_EXCLUDED",
-      "exclusion_reason": "NO_UNAMBIGUOUS_P07_STAGE_LOCAL_OPPORTUNITY_FIXTURE",
+      "exclusion_reason": "NO_P07_OPPORTUNITY_EXERCISES_THE_DECLARED_CONDITION",
       "fixture_id": null,
       "oracle_state": "ORACLE_SUSPECT",
       "primary_case_id": null,
       "property_id": "A09-ACT-FINAL-LEAKAGE",
+      "representative_selector": {
+        "detail": {},
+        "kind": "NONE"
+      },
       "source_provenance": [
         "activity_09_renovacion_y_desplazamiento/02_rubric.docx#Condiciones u orientaciones de valoración"
       ],
@@ -3637,6 +5250,10 @@
       "oracle_state": "NOT_APPLICABLE",
       "primary_case_id": null,
       "property_id": "A09-ACT-FINAL-LENGTH",
+      "representative_selector": {
+        "detail": {},
+        "kind": "NONE"
+      },
       "source_provenance": [
         "activity_09_renovacion_y_desplazamiento/01_assignment.docx#Entregable o entregables"
       ],
@@ -3651,6 +5268,13 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A09-P09-F01",
       "property_id": "A09-ACT-P09a",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_09_renovacion_y_desplazamiento",
+          "submission_id": null
+        },
+        "kind": "FROZEN_FIXTURE_SCOPE"
+      },
       "source_provenance": [
         "activity_09_renovacion_y_desplazamiento/01_assignment.docx",
         "activity_09_renovacion_y_desplazamiento/02_rubric.docx"
@@ -3666,6 +5290,13 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A09-P09-F01",
       "property_id": "A09-ACT-P09b",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_09_renovacion_y_desplazamiento",
+          "submission_id": null
+        },
+        "kind": "FROZEN_FIXTURE_SCOPE"
+      },
       "source_provenance": [
         "activity_09_renovacion_y_desplazamiento/submissions/submission_03.pdf"
       ],
@@ -3680,6 +5311,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A09-P04-001",
       "property_id": "A09-ACT-P1",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_09_renovacion_y_desplazamiento"
+        },
+        "kind": "STAGE_ACTIVITY_FIXTURE"
+      },
       "source_provenance": [
         "activity_09_renovacion_y_desplazamiento/02_rubric.docx#Criterios",
         "activity_09_renovacion_y_desplazamiento/01_assignment.docx#Tarea"
@@ -3695,6 +5332,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A09-P04-001",
       "property_id": "A09-ACT-P2",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_09_renovacion_y_desplazamiento"
+        },
+        "kind": "STAGE_ACTIVITY_FIXTURE"
+      },
       "source_provenance": [
         "activity_09_renovacion_y_desplazamiento/01_assignment.docx#Problemas históricos que organiza la pregunta"
       ],
@@ -3709,6 +5352,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A09-P04-001",
       "property_id": "A09-ACT-P3",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_09_renovacion_y_desplazamiento"
+        },
+        "kind": "STAGE_ACTIVITY_FIXTURE"
+      },
       "source_provenance": [
         "activity_09_renovacion_y_desplazamiento/01_assignment.docx#Pregunta"
       ],
@@ -3723,6 +5372,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A09-P04-001",
       "property_id": "A09-ACT-P4",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_09_renovacion_y_desplazamiento"
+        },
+        "kind": "STAGE_ACTIVITY_FIXTURE"
+      },
       "source_provenance": [
         "activity_09_renovacion_y_desplazamiento/01_assignment.docx#Ambigüedad deliberada",
         "activity_09_renovacion_y_desplazamiento/02_rubric.docx#Nota de interpretación"
@@ -3733,11 +5388,15 @@
       "additional_case_ids": [],
       "alignment_status": "EXPLICITLY_EXCLUDED",
       "binding_scope": "EXPLICITLY_EXCLUDED",
-      "exclusion_reason": "NO_UNAMBIGUOUS_P07_STAGE_LOCAL_OPPORTUNITY_FIXTURE",
+      "exclusion_reason": "NO_P07_OPPORTUNITY_EXERCISES_THE_DECLARED_CONDITION",
       "fixture_id": null,
       "oracle_state": "VALID",
       "primary_case_id": null,
       "property_id": "A09-ACT-P5",
+      "representative_selector": {
+        "detail": {},
+        "kind": "NONE"
+      },
       "source_provenance": [
         "activity_09_renovacion_y_desplazamiento/01_assignment.docx#Fuente C"
       ],
@@ -3752,6 +5411,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A09-S01-P06-R01",
       "property_id": "A09-S01-P1",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A09-S01-R01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_09_renovacion_y_desplazamiento/submissions/submission_01.pdf#Marco historiográfico",
         "activity_09_renovacion_y_desplazamiento/02_rubric.docx#Criterios"
@@ -3767,6 +5432,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A09-S01-P06-R02",
       "property_id": "A09-S01-P2",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A09-S01-R02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_09_renovacion_y_desplazamiento/submissions/submission_01.pdf#párrafo 2"
       ],
@@ -3781,6 +5452,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A09-S01-P06-R03",
       "property_id": "A09-S01-P3",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A09-S01-R03"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_09_renovacion_y_desplazamiento/submissions/submission_01.pdf#párrafo 3",
         "activity_09_renovacion_y_desplazamiento/01_assignment.docx#Fuente C"
@@ -3791,11 +5468,15 @@
       "additional_case_ids": [],
       "alignment_status": "EXPLICITLY_EXCLUDED",
       "binding_scope": "EXPLICITLY_EXCLUDED",
-      "exclusion_reason": "NO_UNAMBIGUOUS_P07_STAGE_LOCAL_OPPORTUNITY_FIXTURE",
+      "exclusion_reason": "NO_P07_OPPORTUNITY_FIXTURE_FOR_SUBMISSION",
       "fixture_id": null,
       "oracle_state": "VALID",
       "primary_case_id": null,
       "property_id": "A09-S01-P4",
+      "representative_selector": {
+        "detail": {},
+        "kind": "NONE"
+      },
       "source_provenance": [
         "activity_09_renovacion_y_desplazamiento/01_assignment.docx#Entregable"
       ],
@@ -3810,6 +5491,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A09-S02-P06-R01",
       "property_id": "A09-S02-P1",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A09-S02-R01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_09_renovacion_y_desplazamiento/submissions/submission_02.pdf#Tesis",
         "activity_09_renovacion_y_desplazamiento/submissions/submission_02.pdf#párrafo 2"
@@ -3825,6 +5512,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A09-S02-P07-O01",
       "property_id": "A09-S02-P2",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A09-S02-O01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_09_renovacion_y_desplazamiento/submissions/submission_02.pdf#párrafo 3",
         "activity_09_renovacion_y_desplazamiento/01_assignment.docx#Fuente A"
@@ -3840,6 +5533,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A09-S02-P06-R02",
       "property_id": "A09-S02-P3",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A09-S02-R02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_09_renovacion_y_desplazamiento/submissions/submission_02.pdf#párrafo 4"
       ],
@@ -3854,6 +5553,15 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A09-S02-P07-O01",
       "property_id": "A09-S02-P4",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_09_renovacion_y_desplazamiento",
+          "marker_family": "",
+          "marker_tags": [],
+          "submission_id": "submission_02"
+        },
+        "kind": "SUBMISSION_EXHAUSTIVE"
+      },
       "source_provenance": [
         "activity_09_renovacion_y_desplazamiento/02_rubric.docx#Orientaciones sobre la evidencia"
       ],
@@ -3868,6 +5576,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A09-S03-P06-R01",
       "property_id": "A09-S03-FINAL-SILENT-GAP",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A09-S03-R01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_09_renovacion_y_desplazamiento/submissions/submission_03.pdf",
         "activity_09_renovacion_y_desplazamiento/01_assignment.docx#Fuente C"
@@ -3883,6 +5597,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A09-S03-P06-R02",
       "property_id": "A09-S03-P1",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A09-S03-R02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_09_renovacion_y_desplazamiento/submissions/submission_03.pdf"
       ],
@@ -3897,6 +5617,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A09-S03-P07-O01",
       "property_id": "A09-S03-P2",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A09-S03-O01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_09_renovacion_y_desplazamiento/submissions/submission_03.pdf#párrafo tras la matriz"
       ],
@@ -3906,11 +5632,15 @@
       "additional_case_ids": [],
       "alignment_status": "EXPLICITLY_EXCLUDED",
       "binding_scope": "EXPLICITLY_EXCLUDED",
-      "exclusion_reason": "NO_UNAMBIGUOUS_P07_STAGE_LOCAL_OPPORTUNITY_FIXTURE",
+      "exclusion_reason": "NO_P07_OPPORTUNITY_EXERCISES_THE_DECLARED_CONDITION",
       "fixture_id": null,
       "oracle_state": "VALID",
       "primary_case_id": null,
       "property_id": "A09-S03-P3",
+      "representative_selector": {
+        "detail": {},
+        "kind": "NONE"
+      },
       "source_provenance": [
         "activity_09_renovacion_y_desplazamiento/01_assignment.docx#Fuente C"
       ],
@@ -3925,6 +5655,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A09-S03-P07-O03",
       "property_id": "A09-S03-P4",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A09-S03-O03"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_09_renovacion_y_desplazamiento/submissions/submission_03.pdf#párrafo sobre la carta"
       ],
@@ -3939,6 +5675,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A09-S03-P06-R03",
       "property_id": "A09-S03-P5",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A09-S03-R03"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_09_renovacion_y_desplazamiento/submissions/submission_03.pdf#párrafo sobre la Fuente C"
       ],
@@ -3953,6 +5695,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A09-S04-P06-R01",
       "property_id": "A09-S04-P1",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A09-S04-R01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_09_renovacion_y_desplazamiento/submissions/submission_04.md#Repetición del marco general"
       ],
@@ -3967,6 +5715,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A09-S04-P07-O01",
       "property_id": "A09-S04-P2",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A09-S04-O01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_09_renovacion_y_desplazamiento/submissions/submission_04.md#Pasaje añadido sobre participación"
       ],
@@ -3981,6 +5735,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A09-S04-P07-O02",
       "property_id": "A09-S04-P3",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A09-S04-O02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_09_renovacion_y_desplazamiento/submissions/submission_04.md#Pasaje añadido sobre participación"
       ],
@@ -3995,6 +5755,10 @@
       "oracle_state": "VALID",
       "primary_case_id": null,
       "property_id": "A09-S04-P4",
+      "representative_selector": {
+        "detail": {},
+        "kind": "NONE"
+      },
       "source_provenance": [
         "activity_09_renovacion_y_desplazamiento/submissions/submission_04.md"
       ],
@@ -4009,6 +5773,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A09-S05-P06-R01",
       "property_id": "A09-S05-P1",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A09-S05-R01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_09_renovacion_y_desplazamiento/submissions/submission_05.pdf#Qué cambiaría la conclusión"
       ],
@@ -4023,6 +5793,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A09-S05-P06-R02",
       "property_id": "A09-S05-P2",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A09-S05-R02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_09_renovacion_y_desplazamiento/submissions/submission_05.pdf#Tres cantidades que no deben confundirse"
       ],
@@ -4037,6 +5813,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A09-S05-P06-R03",
       "property_id": "A09-S05-P3",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A09-S05-R03"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_09_renovacion_y_desplazamiento/submissions/submission_05.pdf#párrafo sobre la carta de 1971"
       ],
@@ -4051,6 +5833,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A09-S05-P07-O01",
       "property_id": "A09-S05-P4",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A09-S05-O01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_09_renovacion_y_desplazamiento/submissions/submission_05.pdf#Escala, categorías y cautela inferencial"
       ],
@@ -4065,6 +5853,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A09-S05-P06-R04",
       "property_id": "A09-S05-P5",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A09-S05-R04"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_09_renovacion_y_desplazamiento/01_assignment.docx#Entregable"
       ],
@@ -4079,6 +5873,15 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A09-S05-P07-O01",
       "property_id": "A09-S05-P6",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_09_renovacion_y_desplazamiento",
+          "marker_family": "",
+          "marker_tags": [],
+          "submission_id": "submission_05"
+        },
+        "kind": "SUBMISSION_EXHAUSTIVE"
+      },
       "source_provenance": [
         "activity_09_renovacion_y_desplazamiento/01_assignment.docx#Entregable"
       ],
@@ -4093,6 +5896,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A09-S06-P06-R01",
       "property_id": "A09-S06-P1",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A09-S06-R01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_09_renovacion_y_desplazamiento/submissions/submission_06.md#Argumento"
       ],
@@ -4107,6 +5916,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A09-S06-P07-O01",
       "property_id": "A09-S06-P2",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A09-S06-O01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_09_renovacion_y_desplazamiento/submissions/submission_06.md#Secuencia temporal",
         "activity_09_renovacion_y_desplazamiento/01_assignment.docx#Fuente A"
@@ -4122,6 +5937,15 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A09-S06-P07-O01",
       "property_id": "A09-S06-P3",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_09_renovacion_y_desplazamiento",
+          "marker_family": "",
+          "marker_tags": [],
+          "submission_id": "submission_06"
+        },
+        "kind": "SUBMISSION_EXHAUSTIVE"
+      },
       "source_provenance": [
         "activity_09_renovacion_y_desplazamiento/01_assignment.docx#Pregunta"
       ],
@@ -4136,6 +5960,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A09-S06-P06-R02",
       "property_id": "A09-S06-P4",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A09-S06-R02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_09_renovacion_y_desplazamiento/submissions/submission_06.md#Respuesta a una lectura alternativa"
       ],
@@ -4150,6 +5980,10 @@
       "oracle_state": "NOT_APPLICABLE",
       "primary_case_id": null,
       "property_id": "A10-ACT-FINAL-LENGTH",
+      "representative_selector": {
+        "detail": {},
+        "kind": "NONE"
+      },
       "source_provenance": [
         "activity_10_experimento_onboarding/01_assignment.docx#Entregable o entregables"
       ],
@@ -4164,6 +5998,10 @@
       "oracle_state": "VALID",
       "primary_case_id": null,
       "property_id": "A10-ACT-P09a",
+      "representative_selector": {
+        "detail": {},
+        "kind": "NONE"
+      },
       "source_provenance": [
         "activity_10_experimento_onboarding/02_rubric.docx"
       ],
@@ -4178,6 +6016,10 @@
       "oracle_state": "VALID",
       "primary_case_id": null,
       "property_id": "A10-ACT-P09b",
+      "representative_selector": {
+        "detail": {},
+        "kind": "NONE"
+      },
       "source_provenance": [
         "activity_10_experimento_onboarding/submissions/submission_06_artifact_02.pdf",
         "activity_10_experimento_onboarding/submissions/submission_03_artifact_02.pdf",
@@ -4194,6 +6036,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A10-P04-001",
       "property_id": "A10-ACT-P1",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_10_experimento_onboarding"
+        },
+        "kind": "STAGE_ACTIVITY_FIXTURE"
+      },
       "source_provenance": [
         "activity_10_experimento_onboarding/02_rubric.docx#Dimensiones"
       ],
@@ -4208,6 +6056,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A10-P04-001",
       "property_id": "A10-ACT-P2",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_10_experimento_onboarding"
+        },
+        "kind": "STAGE_ACTIVITY_FIXTURE"
+      },
       "source_provenance": [
         "activity_10_experimento_onboarding/01_assignment.docx#Decisión de producto"
       ],
@@ -4222,6 +6076,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A10-P04-001",
       "property_id": "A10-ACT-P3",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_10_experimento_onboarding"
+        },
+        "kind": "STAGE_ACTIVITY_FIXTURE"
+      },
       "source_provenance": [
         "activity_10_experimento_onboarding/02_rubric.docx#Ambigüedad conocida"
       ],
@@ -4236,6 +6096,13 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A10-PLANNER-ACT",
       "property_id": "A10-ACT-P4",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_10_experimento_onboarding",
+          "submission_id": null
+        },
+        "kind": "STAGE_CASE_IDENTITY"
+      },
       "source_provenance": [
         "activity_10_experimento_onboarding/02_rubric.docx#Reglas"
       ],
@@ -4253,6 +6120,15 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A10-S05-P07-O01",
       "property_id": "A10-ACT-P5",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_10_experimento_onboarding",
+          "submission_ids": [
+            "submission_05"
+          ]
+        },
+        "kind": "SOURCE_SUBMISSION_REFS"
+      },
       "source_provenance": [
         "activity_10_experimento_onboarding/submissions/submission_05_artifact_01.txt#COMPOSICIÓN ESCRITORIO"
       ],
@@ -4267,6 +6143,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A10-P04-001",
       "property_id": "A10-ACT-P6",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_10_experimento_onboarding"
+        },
+        "kind": "STAGE_ACTIVITY_FIXTURE"
+      },
       "source_provenance": [
         "activity_10_experimento_onboarding/01_assignment.docx#Notas de implementación",
         "activity_10_experimento_onboarding/02_rubric.docx#Dimensiones"
@@ -4282,6 +6164,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A10-S01-P06-R01",
       "property_id": "A10-S01-P1",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A10-S01-R01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_10_experimento_onboarding/submissions/submission_01_artifact_02.md#Resumen",
         "activity_10_experimento_onboarding/01_assignment.docx#Tarea"
@@ -4297,6 +6185,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A10-S01-P06-R02",
       "property_id": "A10-S01-P2",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A10-S01-R02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_10_experimento_onboarding/submissions/submission_01_artifact_02.md#Metodología"
       ],
@@ -4311,6 +6205,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A10-S01-P07-O01",
       "property_id": "A10-S01-P3",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A10-S01-O01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_10_experimento_onboarding/submissions/submission_01_artifact_02.md"
       ],
@@ -4325,6 +6225,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A10-S02-P06-R01",
       "property_id": "A10-S02-P1",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A10-S02-R01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_10_experimento_onboarding/submissions/submission_02_artifact_02.md#Comprobación del peso de dispositivo"
       ],
@@ -4339,6 +6245,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A10-S02-P06-R02",
       "property_id": "A10-S02-P2",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A10-S02-R02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_10_experimento_onboarding/submissions/submission_02_artifact_02.md#párrafo 4"
       ],
@@ -4348,11 +6260,15 @@
       "additional_case_ids": [],
       "alignment_status": "EXPLICITLY_EXCLUDED",
       "binding_scope": "EXPLICITLY_EXCLUDED",
-      "exclusion_reason": "NO_UNAMBIGUOUS_P07_STAGE_LOCAL_OPPORTUNITY_FIXTURE",
+      "exclusion_reason": "NO_P07_OPPORTUNITY_FIXTURE_FOR_SUBMISSION",
       "fixture_id": null,
       "oracle_state": "VALID",
       "primary_case_id": null,
       "property_id": "A10-S02-P3",
+      "representative_selector": {
+        "detail": {},
+        "kind": "NONE"
+      },
       "source_provenance": [
         "activity_10_experimento_onboarding/02_rubric.docx#Ambigüedad conocida"
       ],
@@ -4367,6 +6283,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A10-S03-P06-R01",
       "property_id": "A10-S03-P1",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A10-S03-R01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_10_experimento_onboarding/submissions/submission_03_artifact_02.pdf#Resumen",
         "activity_10_experimento_onboarding/submissions/submission_03_artifact_02.pdf#Detalle"
@@ -4382,6 +6304,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A10-S03-P06-R02",
       "property_id": "A10-S03-P2",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A10-S03-R02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_10_experimento_onboarding/submissions/submission_03_artifact_02.pdf#Detalle"
       ],
@@ -4396,6 +6324,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A10-S03-P07-O01",
       "property_id": "A10-S03-P3",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A10-S03-O01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_10_experimento_onboarding/submissions/submission_03_artifact_02.pdf#Detalle"
       ],
@@ -4412,6 +6346,15 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A10-S03-P07-O01",
       "property_id": "A10-S03-P4",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_10_experimento_onboarding",
+          "marker_family": "",
+          "marker_tags": [],
+          "submission_id": "submission_03"
+        },
+        "kind": "SUBMISSION_EXHAUSTIVE"
+      },
       "source_provenance": [
         "activity_10_experimento_onboarding/02_rubric.docx#Reglas"
       ],
@@ -4426,6 +6369,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A10-S03-P07-O03",
       "property_id": "A10-S03-P5",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A10-S03-O03"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_10_experimento_onboarding/submissions/submission_03_artifact_02.pdf#Detalle"
       ],
@@ -4440,6 +6389,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A10-S04-P07-O01",
       "property_id": "A10-S04-FINAL-DECLARED-OMISSION",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A10-S04-O01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_10_experimento_onboarding/submissions/submission_04_artifact_01.txt",
         "activity_10_experimento_onboarding/submissions/submission_04_artifact_02.pdf"
@@ -4455,6 +6410,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A10-S04-P06-R01",
       "property_id": "A10-S04-P1",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A10-S04-R01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_10_experimento_onboarding/submissions/submission_04_artifact_01.txt",
         "activity_10_experimento_onboarding/01_assignment.docx#Tarea"
@@ -4470,6 +6431,12 @@
       "oracle_state": "ORACLE_SUSPECT",
       "primary_case_id": "PP-A10-S04-P06-R02",
       "property_id": "A10-S04-P2",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A10-S04-R02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_10_experimento_onboarding/submissions/submission_04_artifact_01.txt#línea 6",
         "activity_10_experimento_onboarding/submissions/submission_04_artifact_02.pdf#KPI scorecard"
@@ -4485,6 +6452,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A10-S04-P06-R03",
       "property_id": "A10-S04-P3",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A10-S04-R03"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_10_experimento_onboarding/submissions/submission_04_artifact_02.pdf#Executive decision",
         "activity_10_experimento_onboarding/02_rubric.docx#Dimensiones"
@@ -4493,13 +6466,26 @@
     },
     {
       "additional_case_ids": [],
-      "alignment_status": "EXPLICITLY_EXCLUDED",
-      "binding_scope": "EXPLICITLY_EXCLUDED",
-      "exclusion_reason": "NO_UNAMBIGUOUS_P07_STAGE_LOCAL_OPPORTUNITY_FIXTURE",
-      "fixture_id": null,
+      "alignment_status": "ALIGNED",
+      "binding_scope": "SUBMISSION_WIDE",
+      "exclusion_reason": null,
+      "fixture_id": "P07-A10-S04-O01",
       "oracle_state": "VALID",
-      "primary_case_id": null,
+      "primary_case_id": "PP-A10-S04-P07-O01",
       "property_id": "A10-S04-P4",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_10_experimento_onboarding",
+          "marker_family": "CONCEPTUAL_OMISSION",
+          "marker_tags": [
+            "DECLARED_CONCEPTUAL_OMISSION",
+            "SELF_DECLARED_GAP",
+            "SILENT_CONCEPTUAL_GAP"
+          ],
+          "submission_id": "submission_04"
+        },
+        "kind": "TOPICAL_MARKER"
+      },
       "source_provenance": [
         "activity_10_experimento_onboarding/01_assignment.docx#Resultados"
       ],
@@ -4514,6 +6500,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A10-S04-P07-O03",
       "property_id": "A10-S04-P5",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A10-S04-O03"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_10_experimento_onboarding/submissions/submission_04_artifact_02.pdf#Business case"
       ],
@@ -4530,6 +6522,15 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A10-S04-P07-O01",
       "property_id": "A10-S04-P6",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_10_experimento_onboarding",
+          "marker_family": "",
+          "marker_tags": [],
+          "submission_id": "submission_04"
+        },
+        "kind": "SUBMISSION_EXHAUSTIVE"
+      },
       "source_provenance": [
         "activity_10_experimento_onboarding/02_rubric.docx#Reglas"
       ],
@@ -4544,6 +6545,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A10-S05-P06-R01",
       "property_id": "A10-S05-P1",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A10-S05-R01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_10_experimento_onboarding/submissions/submission_05_artifact_01.txt#CHECK PONDERADO",
         "activity_10_experimento_onboarding/submissions/submission_05_artifact_02.pdf#Descomposición del agregado"
@@ -4559,6 +6566,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A10-S05-P07-O01",
       "property_id": "A10-S05-P2",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A10-S05-O01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_10_experimento_onboarding/submissions/submission_05_artifact_01.txt#últimas dos líneas"
       ],
@@ -4573,6 +6586,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A10-S05-P07-O02",
       "property_id": "A10-S05-P3",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A10-S05-O02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_10_experimento_onboarding/submissions/submission_05_artifact_02.pdf#Plan de repetición y umbral de decisión"
       ],
@@ -4587,6 +6606,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A10-S05-P07-O03",
       "property_id": "A10-S05-P4",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A10-S05-O03"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_10_experimento_onboarding/submissions/submission_05_artifact_01.txt#DIFERENCIA V-C",
         "activity_10_experimento_onboarding/submissions/submission_05_artifact_02.pdf#párrafo 2"
@@ -4605,6 +6630,15 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A10-S05-P07-O01",
       "property_id": "A10-S05-P5",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_10_experimento_onboarding",
+          "marker_family": "",
+          "marker_tags": [],
+          "submission_id": "submission_05"
+        },
+        "kind": "SUBMISSION_EXHAUSTIVE"
+      },
       "source_provenance": [
         "activity_10_experimento_onboarding/01_assignment.docx#Notas de implementación"
       ],
@@ -4619,6 +6653,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A10-S06-P06-R01",
       "property_id": "A10-S06-P1",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A10-S06-R01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_10_experimento_onboarding/submissions/submission_06_artifact_01.txt#desktop uplift",
         "activity_10_experimento_onboarding/submissions/submission_06_artifact_02.pdf#Conclusión"
@@ -4634,6 +6674,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A10-S06-P06-R02",
       "property_id": "A10-S06-P2",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A10-S06-R02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_10_experimento_onboarding/submissions/submission_06_artifact_02.pdf#párrafo 2",
         "activity_10_experimento_onboarding/01_assignment.docx#Convenciones de cálculo"
@@ -4649,6 +6695,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A10-S06-P06-R03",
       "property_id": "A10-S06-P3",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A10-S06-R03"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_10_experimento_onboarding/submissions/submission_06_artifact_02.pdf#Validación del diseño",
         "activity_10_experimento_onboarding/01_assignment.docx#Notas de implementación"
@@ -4664,6 +6716,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A10-S06-P07-O01",
       "property_id": "A10-S06-P4",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A10-S06-O01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_10_experimento_onboarding/submissions/submission_06_artifact_02.pdf#Marco metodológico"
       ],
@@ -4678,6 +6736,10 @@
       "oracle_state": "NOT_APPLICABLE",
       "primary_case_id": null,
       "property_id": "A11-ACT-FINAL-LENGTH",
+      "representative_selector": {
+        "detail": {},
+        "kind": "NONE"
+      },
       "source_provenance": [
         "activity_11_duplicados_en_pagos/01_assignment.docx#Entregable o entregables"
       ],
@@ -4692,6 +6754,10 @@
       "oracle_state": "VALID",
       "primary_case_id": null,
       "property_id": "A11-ACT-P09a",
+      "representative_selector": {
+        "detail": {},
+        "kind": "NONE"
+      },
       "source_provenance": [
         "activity_11_duplicados_en_pagos/01_assignment.docx"
       ],
@@ -4706,6 +6772,10 @@
       "oracle_state": "VALID",
       "primary_case_id": null,
       "property_id": "A11-ACT-P09b",
+      "representative_selector": {
+        "detail": {},
+        "kind": "NONE"
+      },
       "source_provenance": [
         "activity_11_duplicados_en_pagos/01_assignment.docx"
       ],
@@ -4720,6 +6790,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A11-P04-001",
       "property_id": "A11-ACT-P1",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_11_duplicados_en_pagos"
+        },
+        "kind": "STAGE_ACTIVITY_FIXTURE"
+      },
       "source_provenance": [
         "activity_11_duplicados_en_pagos/02_rubric.docx#Criterios"
       ],
@@ -4734,6 +6810,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A11-P04-001",
       "property_id": "A11-ACT-P2",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_11_duplicados_en_pagos"
+        },
+        "kind": "STAGE_ACTIVITY_FIXTURE"
+      },
       "source_provenance": [
         "activity_11_duplicados_en_pagos/01_assignment.docx#Modelo de fallo autorizado"
       ],
@@ -4748,6 +6830,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A11-P04-001",
       "property_id": "A11-ACT-P3",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_11_duplicados_en_pagos"
+        },
+        "kind": "STAGE_ACTIVITY_FIXTURE"
+      },
       "source_provenance": [
         "activity_11_duplicados_en_pagos/01_assignment.docx#Restricciones y capacidades"
       ],
@@ -4764,6 +6852,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A11-S01-P07-O01",
       "property_id": "A11-ACT-P4",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_11_duplicados_en_pagos"
+        },
+        "kind": "CROSS_ARTIFACT_ANCHOR"
+      },
       "source_provenance": [
         "activity_11_duplicados_en_pagos/01_assignment.docx#Función de cada artefacto"
       ],
@@ -4778,6 +6872,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A11-P04-001",
       "property_id": "A11-ACT-P5",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_11_duplicados_en_pagos"
+        },
+        "kind": "STAGE_ACTIVITY_FIXTURE"
+      },
       "source_provenance": [
         "activity_11_duplicados_en_pagos/01_assignment.docx#Entregables"
       ],
@@ -4792,6 +6892,10 @@
       "oracle_state": "NOT_APPLICABLE",
       "primary_case_id": null,
       "property_id": "A11-ACT-P6",
+      "representative_selector": {
+        "detail": {},
+        "kind": "NONE"
+      },
       "source_provenance": [
         "activity_11_duplicados_en_pagos/01_assignment.docx#Extensión orientativa / no evaluable"
       ],
@@ -4806,6 +6910,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A11-S01-P06-R01",
       "property_id": "A11-S01-P1",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A11-S01-R01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_11_duplicados_en_pagos/submissions/submission_01_artifact_01.md#Excepción",
         "activity_11_duplicados_en_pagos/submissions/submission_01_artifact_02.md#línea 2"
@@ -4821,6 +6931,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A11-S01-P06-R02",
       "property_id": "A11-S01-P2",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A11-S01-R02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_11_duplicados_en_pagos/submissions/submission_01_artifact_01.md#párrafo 1",
         "activity_11_duplicados_en_pagos/submissions/submission_01_artifact_02.md#Orden efectivo"
@@ -4836,6 +6952,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A11-S01-P06-R03",
       "property_id": "A11-S01-P3",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A11-S01-R03"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_11_duplicados_en_pagos/submissions/submission_01_artifact_03.md#párrafo 1",
         "activity_11_duplicados_en_pagos/submissions/submission_01_artifact_03.md#Cronología"
@@ -4851,6 +6973,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A11-S01-P07-O01",
       "property_id": "A11-S01-P4",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A11-S01-O01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_11_duplicados_en_pagos/submissions/submission_01_artifact_01.md",
         "activity_11_duplicados_en_pagos/submissions/submission_01_artifact_02.md",
@@ -4867,6 +6995,15 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A11-S01-P07-O01",
       "property_id": "A11-S01-P5",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_11_duplicados_en_pagos",
+          "marker_family": "",
+          "marker_tags": [],
+          "submission_id": "submission_01"
+        },
+        "kind": "SUBMISSION_EXHAUSTIVE"
+      },
       "source_provenance": [
         "activity_11_duplicados_en_pagos/02_rubric.docx#Orientaciones sobre la evidencia"
       ],
@@ -4881,6 +7018,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A11-S02-P06-R01",
       "property_id": "A11-S02-P1",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A11-S02-R01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_11_duplicados_en_pagos/submissions/submission_02_artifact_01.md#Alternativas consideradas",
         "activity_11_duplicados_en_pagos/submissions/submission_02_artifact_02.md#Caso abierto"
@@ -4896,6 +7039,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A11-S02-P07-O01",
       "property_id": "A11-S02-P2",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A11-S02-O01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_11_duplicados_en_pagos/submissions/submission_02_artifact_01.md#tras la decisión"
       ],
@@ -4912,6 +7061,15 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A11-S02-P07-O01",
       "property_id": "A11-S02-P3",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_11_duplicados_en_pagos",
+          "marker_family": "",
+          "marker_tags": [],
+          "submission_id": "submission_02"
+        },
+        "kind": "SUBMISSION_EXHAUSTIVE"
+      },
       "source_provenance": [
         "activity_11_duplicados_en_pagos/01_assignment.docx#Restricciones y capacidades"
       ],
@@ -4926,6 +7084,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A11-S02-P07-O03",
       "property_id": "A11-S02-P4",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A11-S02-O03"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_11_duplicados_en_pagos/submissions/submission_02_artifact_01.md#Consecuencias"
       ],
@@ -4940,6 +7104,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A11-S03-P06-R01",
       "property_id": "A11-S03-P1",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A11-S03-R01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_11_duplicados_en_pagos/submissions/submission_03_artifact_02.md#comentario",
         "activity_11_duplicados_en_pagos/02_rubric.docx#Criterios"
@@ -4955,6 +7125,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A11-S03-P06-R02",
       "property_id": "A11-S03-P2",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A11-S03-R02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_11_duplicados_en_pagos/submissions/submission_03_artifact_02.md#línea 2",
         "activity_11_duplicados_en_pagos/01_assignment.docx#Restricciones y capacidades"
@@ -4970,6 +7146,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A11-S03-P06-R03",
       "property_id": "A11-S03-P3",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A11-S03-R03"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_11_duplicados_en_pagos/submissions/submission_03_artifact_03.md#párrafo 2",
         "activity_11_duplicados_en_pagos/01_assignment.docx#Trazas autorizadas"
@@ -4985,6 +7167,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A11-S03-P07-O01",
       "property_id": "A11-S03-P4",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A11-S03-O01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_11_duplicados_en_pagos/submissions/submission_03_artifact_03.md#Análisis"
       ],
@@ -4999,6 +7187,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A11-S04-P06-R01",
       "property_id": "A11-S04-P1",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A11-S04-R01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_11_duplicados_en_pagos/submissions/submission_04_artifact_01.md#Decisión",
         "activity_11_duplicados_en_pagos/submissions/submission_04_artifact_02.md#línea 2"
@@ -5014,6 +7208,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A11-S04-P06-R02",
       "property_id": "A11-S04-P2",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A11-S04-R02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_11_duplicados_en_pagos/submissions/submission_04_artifact_03.md#Cadena causal",
         "activity_11_duplicados_en_pagos/submissions/submission_04_artifact_02.md"
@@ -5029,6 +7229,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A11-S04-P06-R03",
       "property_id": "A11-S04-P3",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A11-S04-R03"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_11_duplicados_en_pagos/submissions/submission_04_artifact_02.md#def reconcile"
       ],
@@ -5043,6 +7249,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A11-S04-P07-O01",
       "property_id": "A11-S04-P4",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A11-S04-O01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_11_duplicados_en_pagos/submissions/submission_04_artifact_01.md#Opciones consideradas"
       ],
@@ -5057,6 +7269,15 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A11-S04-P07-O01",
       "property_id": "A11-S04-P5",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_11_duplicados_en_pagos",
+          "marker_family": "",
+          "marker_tags": [],
+          "submission_id": "submission_04"
+        },
+        "kind": "SUBMISSION_EXHAUSTIVE"
+      },
       "source_provenance": [
         "activity_11_duplicados_en_pagos/01_assignment.docx#Audiencia y alcance"
       ],
@@ -5071,6 +7292,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A11-S05-P07-O01",
       "property_id": "A11-S05-P1",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A11-S05-O01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_11_duplicados_en_pagos/submissions/submission_05_artifact_03.md#cabecera",
         "activity_11_duplicados_en_pagos/submissions/submission_05_artifact_02.md",
@@ -5087,6 +7314,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A11-S05-P07-O02",
       "property_id": "A11-S05-P2",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A11-S05-O02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_11_duplicados_en_pagos/submissions/submission_05_artifact_03.md#Build hash"
       ],
@@ -5101,6 +7334,13 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A11-S05-PLANNER-001",
       "property_id": "A11-S05-P3",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_11_duplicados_en_pagos",
+          "submission_id": "submission_05"
+        },
+        "kind": "STAGE_CASE_IDENTITY"
+      },
       "source_provenance": [
         "activity_11_duplicados_en_pagos/submissions/submission_05_artifact_01.md"
       ],
@@ -5115,6 +7355,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A11-S06-P06-R01",
       "property_id": "A11-S06-P1",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A11-S06-R01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_11_duplicados_en_pagos/submissions/submission_06_artifact_01.md"
       ],
@@ -5129,6 +7375,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A11-S06-P07-O01",
       "property_id": "A11-S06-P2",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A11-S06-O01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_11_duplicados_en_pagos/submissions/submission_06_artifact_03.md#Timeline"
       ],
@@ -5143,6 +7395,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A11-S06-P07-O02",
       "property_id": "A11-S06-P3",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A11-S06-O02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_11_duplicados_en_pagos/submissions/submission_06_artifact_02.md"
       ],
@@ -5157,6 +7415,13 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A11-S06-PLANNER-001",
       "property_id": "A11-S06-P4",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_11_duplicados_en_pagos",
+          "submission_id": "submission_06"
+        },
+        "kind": "STAGE_CASE_IDENTITY"
+      },
       "source_provenance": [
         "activity_11_duplicados_en_pagos/submissions/submission_06_artifact_01.md"
       ],
@@ -5173,6 +7438,18 @@
       "oracle_state": "ORACLE_SUSPECT",
       "primary_case_id": "PP-A12-S04-P07-O01",
       "property_id": "A12-ACT-FINAL-LEAKAGE",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_12_clinica_movil",
+          "marker_family": "ANSWER_LEAKAGE",
+          "marker_tags": [
+            "ANSWER_VISIBLE",
+            "PREMISE_VISIBLE",
+            "VISIBLE_ANCHOR_RISK"
+          ]
+        },
+        "kind": "TOPICAL_MARKER"
+      },
       "source_provenance": [
         "activity_12_clinica_movil/02_rubric.docx#Condiciones u orientaciones de valoración"
       ],
@@ -5187,6 +7464,10 @@
       "oracle_state": "NOT_APPLICABLE",
       "primary_case_id": null,
       "property_id": "A12-ACT-FINAL-LENGTH",
+      "representative_selector": {
+        "detail": {},
+        "kind": "NONE"
+      },
       "source_provenance": [
         "activity_12_clinica_movil/01_assignment.docx#Entregable o entregables"
       ],
@@ -5201,6 +7482,13 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A12-P09-F01",
       "property_id": "A12-ACT-P09a",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_12_clinica_movil",
+          "submission_id": null
+        },
+        "kind": "FROZEN_FIXTURE_SCOPE"
+      },
       "source_provenance": [
         "activity_12_clinica_movil/02_rubric.docx"
       ],
@@ -5215,6 +7503,13 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A12-P09-F01",
       "property_id": "A12-ACT-P09b",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_12_clinica_movil",
+          "submission_id": null
+        },
+        "kind": "FROZEN_FIXTURE_SCOPE"
+      },
       "source_provenance": [
         "activity_12_clinica_movil/01_assignment.docx"
       ],
@@ -5229,6 +7524,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A12-P04-001",
       "property_id": "A12-ACT-P1",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_12_clinica_movil"
+        },
+        "kind": "STAGE_ACTIVITY_FIXTURE"
+      },
       "source_provenance": [
         "activity_12_clinica_movil/01_assignment.docx#Tarea",
         "activity_12_clinica_movil/02_rubric.docx"
@@ -5244,6 +7545,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A12-P04-001",
       "property_id": "A12-ACT-P2",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_12_clinica_movil"
+        },
+        "kind": "STAGE_ACTIVITY_FIXTURE"
+      },
       "source_provenance": [
         "activity_12_clinica_movil/01_assignment.docx#Reglas operativas"
       ],
@@ -5258,6 +7565,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A12-P04-001",
       "property_id": "A12-ACT-P3",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_12_clinica_movil"
+        },
+        "kind": "STAGE_ACTIVITY_FIXTURE"
+      },
       "source_provenance": [
         "activity_12_clinica_movil/01_assignment.docx#Naturaleza de la decisión"
       ],
@@ -5267,11 +7580,15 @@
       "additional_case_ids": [],
       "alignment_status": "EXPLICITLY_EXCLUDED",
       "binding_scope": "EXPLICITLY_EXCLUDED",
-      "exclusion_reason": "NO_UNAMBIGUOUS_P07_STAGE_LOCAL_OPPORTUNITY_FIXTURE",
+      "exclusion_reason": "CONDITION_CONFINED_TO_SOURCE_OUTSIDE_P07_INPUT",
       "fixture_id": null,
       "oracle_state": "VALID",
       "primary_case_id": null,
       "property_id": "A12-ACT-P4",
+      "representative_selector": {
+        "detail": {},
+        "kind": "NONE"
+      },
       "source_provenance": [
         "activity_12_clinica_movil/02_rubric.docx",
         "activity_12_clinica_movil/01_assignment.docx#Implementación y revisión"
@@ -5287,6 +7604,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A12-P04-001",
       "property_id": "A12-ACT-P5",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_12_clinica_movil"
+        },
+        "kind": "STAGE_ACTIVITY_FIXTURE"
+      },
       "source_provenance": [
         "activity_12_clinica_movil/01_assignment.docx#Voces autorizadas"
       ],
@@ -5303,6 +7626,16 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A12-S06-P07-O02",
       "property_id": "A12-ACT-P6",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_12_clinica_movil",
+          "marker_family": "SIMULATED_PII",
+          "marker_tags": [
+            "SIMULATED_PII"
+          ]
+        },
+        "kind": "TOPICAL_MARKER"
+      },
       "source_provenance": [
         "activity_12_clinica_movil/01_assignment.docx#Reglas operativas"
       ],
@@ -5317,6 +7650,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A12-S01-P06-R01",
       "property_id": "A12-S01-P1",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A12-S01-R01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_12_clinica_movil/submissions/submission_01_artifact_02.md#Comparación con Sur-Norte"
       ],
@@ -5331,6 +7670,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A12-S01-P06-R02",
       "property_id": "A12-S01-P2",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A12-S01-R02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_12_clinica_movil/submissions/submission_01_artifact_02.md#párrafo 3"
       ],
@@ -5345,6 +7690,15 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A12-S01-P07-O02",
       "property_id": "A12-S01-P3",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_12_clinica_movil",
+          "marker_family": "",
+          "marker_tags": [],
+          "submission_id": "submission_01"
+        },
+        "kind": "SUBMISSION_EXHAUSTIVE"
+      },
       "source_provenance": [
         "activity_12_clinica_movil/02_rubric.docx"
       ],
@@ -5359,6 +7713,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A12-S01-P07-O02",
       "property_id": "A12-S01-P4",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A12-S01-O02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_12_clinica_movil/submissions/submission_01_artifact_02.md#Comparación con Sur-Norte"
       ],
@@ -5373,6 +7733,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A12-S02-P06-R01",
       "property_id": "A12-S02-P1",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A12-S02-R01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_12_clinica_movil/submissions/submission_02.md#Decisión"
       ],
@@ -5387,6 +7753,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A12-S02-P06-R02",
       "property_id": "A12-S02-P2",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A12-S02-R02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_12_clinica_movil/submissions/submission_02.md",
         "activity_12_clinica_movil/01_assignment.docx#Entregables"
@@ -5402,6 +7774,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A12-S02-P07-O01",
       "property_id": "A12-S02-P3",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A12-S02-O01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_12_clinica_movil/submissions/submission_02.md#Decisión"
       ],
@@ -5416,6 +7794,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A12-S02-P07-O02",
       "property_id": "A12-S02-P4",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A12-S02-O02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_12_clinica_movil/submissions/submission_02.md#Sobre el rol de las clínicas móviles"
       ],
@@ -5430,6 +7814,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A12-S03-P06-R01",
       "property_id": "A12-S03-P1",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A12-S03-R01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_12_clinica_movil/submissions/submission_03_artifact_02.pdf#Principios",
         "activity_12_clinica_movil/01_assignment.docx#Datos del mes"
@@ -5445,6 +7835,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A12-S03-P06-R02",
       "property_id": "A12-S03-P2",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A12-S03-R02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_12_clinica_movil/submissions/submission_03_artifact_02.pdf#párrafo 2",
         "activity_12_clinica_movil/submissions/submission_03_artifact_01.txt#línea 2"
@@ -5460,6 +7856,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A12-S03-P07-O01",
       "property_id": "A12-S03-P3",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A12-S03-O01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_12_clinica_movil/submissions/submission_03_artifact_01.txt#líneas 4-5",
         "activity_12_clinica_movil/01_assignment.docx#Datos del mes"
@@ -5475,6 +7877,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A12-S03-P06-R03",
       "property_id": "A12-S03-P4",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A12-S03-R03"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_12_clinica_movil/submissions/submission_03_artifact_02.pdf#párrafo 3",
         "activity_12_clinica_movil/01_assignment.docx#Naturaleza de la decisión"
@@ -5490,6 +7898,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A12-S03-P07-O02",
       "property_id": "A12-S03-P5",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A12-S03-O02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_12_clinica_movil/submissions/submission_03_artifact_02.pdf#Desarrollo de los principios"
       ],
@@ -5504,6 +7918,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A12-S04-P07-O01",
       "property_id": "A12-S04-FINAL-XAR",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A12-S04-O01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_12_clinica_movil/submissions/submission_04_artifact_01.txt",
         "activity_12_clinica_movil/submissions/submission_04_artifact_02.pdf"
@@ -5519,6 +7939,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A12-S04-P06-R01",
       "property_id": "A12-S04-P1",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A12-S04-R01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_12_clinica_movil/submissions/submission_04_artifact_02.pdf#Elección",
         "activity_12_clinica_movil/01_assignment.docx#Datos del mes"
@@ -5534,6 +7960,12 @@
       "oracle_state": "ORACLE_SUSPECT",
       "primary_case_id": "PP-A12-S04-P06-R02",
       "property_id": "A12-S04-P2",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A12-S04-R02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_12_clinica_movil/submissions/submission_04_artifact_01.txt"
       ],
@@ -5548,6 +7980,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A12-S04-P06-R03",
       "property_id": "A12-S04-P3",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A12-S04-R03"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_12_clinica_movil/submissions/submission_04_artifact_02.pdf#párrafo 3",
         "activity_12_clinica_movil/submissions/submission_04_artifact_01.txt#Transfer plan",
@@ -5564,6 +8002,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A12-S04-P07-O02",
       "property_id": "A12-S04-P4",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A12-S04-O02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_12_clinica_movil/submissions/submission_04_artifact_02.pdf#párrafo 4",
         "activity_12_clinica_movil/01_assignment.docx#Reglas operativas"
@@ -5579,6 +8023,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A12-S04-P07-O03",
       "property_id": "A12-S04-P5",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A12-S04-O03"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_12_clinica_movil/submissions/submission_04_artifact_02.pdf#párrafo 3",
         "activity_12_clinica_movil/01_assignment.docx#Planificación del piloto"
@@ -5594,6 +8044,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A12-S05-P06-R01",
       "property_id": "A12-S05-P1",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A12-S05-R01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_12_clinica_movil/submissions/submission_05_artifact_01.txt#bloque de cálculo",
         "activity_12_clinica_movil/01_assignment.docx#Datos del mes"
@@ -5609,6 +8065,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A12-S05-P06-R02",
       "property_id": "A12-S05-P2",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A12-S05-R02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_12_clinica_movil/submissions/submission_05_artifact_01.txt#ALTERNATIVAS"
       ],
@@ -5623,6 +8085,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A12-S05-P06-R03",
       "property_id": "A12-S05-P3",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P06-A12-S05-R03"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_12_clinica_movil/submissions/submission_05_artifact_02.pdf#Evidencia situada y factibilidad",
         "activity_12_clinica_movil/01_assignment.docx#Planificación del piloto"
@@ -5638,6 +8106,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A12-S05-P07-O01",
       "property_id": "A12-S05-P4",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A12-S05-O01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_12_clinica_movil/submissions/submission_05_artifact_02.pdf#Comparación de asignaciones descartadas"
       ],
@@ -5652,6 +8126,15 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A12-S05-P07-O01",
       "property_id": "A12-S05-P5",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_12_clinica_movil",
+          "marker_family": "",
+          "marker_tags": [],
+          "submission_id": "submission_05"
+        },
+        "kind": "SUBMISSION_EXHAUSTIVE"
+      },
       "source_provenance": [
         "activity_12_clinica_movil/01_assignment.docx#Comparabilidad"
       ],
@@ -5666,6 +8149,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A12-S06-P07-O01",
       "property_id": "A12-S06-P1",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A12-S06-O01"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_12_clinica_movil/submissions/submission_06_artifact_02.md#cabecera",
         "activity_12_clinica_movil/01_assignment.docx#Reglas operativas"
@@ -5681,6 +8170,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A12-S06-P07-O02",
       "property_id": "A12-S06-P2",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A12-S06-O02"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_12_clinica_movil/submissions/submission_06_artifact_02.md#Datos simulados"
       ],
@@ -5695,6 +8190,12 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A12-S06-P07-O03",
       "property_id": "A12-S06-P3",
+      "representative_selector": {
+        "detail": {
+          "fixture_id": "P07-A12-S06-O03"
+        },
+        "kind": "OWN_FIXTURE"
+      },
       "source_provenance": [
         "activity_12_clinica_movil/submissions/submission_06_artifact_01.txt"
       ],
@@ -5709,6 +8210,13 @@
       "oracle_state": "VALID",
       "primary_case_id": "PP-A12-S06-PLANNER-001",
       "property_id": "A12-S06-P4",
+      "representative_selector": {
+        "detail": {
+          "activity_id": "act_12_clinica_movil",
+          "submission_id": "submission_06"
+        },
+        "kind": "STAGE_CASE_IDENTITY"
+      },
       "source_provenance": [
         "activity_12_clinica_movil/submissions/submission_06_artifact_01.txt",
         "activity_12_clinica_movil/02_rubric.docx"

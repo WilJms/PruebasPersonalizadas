@@ -1354,6 +1354,20 @@ def build_benchmark(
                     for item in opportunity["source_provenance"]
                 ],
                 "support_evidence_ids": list(support_ids),
+                "support_resolution": {
+                    "declared_count": len(support_ids),
+                    "resolved_count": sum(
+                        value in support_units for value in support_ids
+                    ),
+                    "distinct_declared_count": len(set(support_ids)),
+                    "request_evidence_ids": list(request.opportunity.evidence_ids),
+                    "cross_submission_count": sum(
+                        support_units[value].submission_id != bundle.submission_id
+                        for value in support_ids
+                        if value in support_units
+                    ),
+                    "bundle_submission_id": bundle.submission_id,
+                },
                 "model_visible_definition": opportunity["model_visible_definition"],
                 "property_provenance": [item["property_id"] for item in case_props],
             }
@@ -1812,6 +1826,177 @@ def split_manifest(cases: Iterable[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
+NORMATIVE_PROPERTY_KINDS = frozenset({"PROHIBITED", "REQUIRED"})
+
+
+def _binding_arbitrariness(build: BenchmarkBuild) -> dict[str, Any]:
+    """Re-derive every bound case set from its recorded representative selector.
+
+    A binding is arbitrary when the cases it claims cannot be reproduced from
+    the selector it declares.  This is the machine proof that no property was
+    attached to a merely convenient case: the historical "first free case"
+    defect cannot survive an independent recomputation.
+    """
+
+    cases_by_id = {item["case_id"]: item for item in build.cases}
+    properties_by_id = {item["property_id"]: item for item in build.properties}
+    routes = build.fixture_definitions["p06_routes"]["routes"]
+    opportunities = build.fixture_definitions["p07_opportunities"]["opportunities"]
+    fixture_tags_by_case: dict[str, set[str]] = {}
+    cross_artifact_cases: set[str] = set()
+    owner_case_by_property: dict[str, str] = {}
+    for route in routes:
+        case_id = _case_id_for_route(route)
+        fixture_tags_by_case[case_id] = set(route["fixture_tags"])
+        for property_id in route["oracle_binding_metadata"]["property_ids"]:
+            owner_case_by_property[property_id] = case_id
+    for opportunity in opportunities:
+        case_id = _case_id_for_opportunity(opportunity)
+        fixture_tags_by_case[case_id] = set(opportunity["fixture_tags"])
+        if (
+            "CROSS_ARTIFACT"
+            in opportunity["model_visible_definition"]["allowed_anchor_structures"]
+        ):
+            cross_artifact_cases.add(case_id)
+        for property_id in opportunity["oracle_binding_metadata"]["property_ids"]:
+            owner_case_by_property[property_id] = case_id
+
+    def stage_cases(stage: str, activity_id: str, submission_id: str | None) -> list[str]:
+        return sorted(
+            item["case_id"]
+            for item in build.cases
+            if item["stage"] == stage
+            and item["activity_id"] == activity_id
+            and (submission_id is None or item["submission_id"] == submission_id)
+        )
+
+    violations: list[dict[str, Any]] = []
+    for binding in build.property_alignment:
+        if binding["alignment_status"] != "ALIGNED":
+            continue
+        property_id = binding["property_id"]
+        item = properties_by_id[property_id]
+        stage = binding["stage"]
+        activity_id = item["activity_id"]
+        declared = sorted(
+            [binding["primary_case_id"], *binding["additional_case_ids"]]
+        )
+        selector = binding["representative_selector"]
+        kind = selector["kind"]
+        detail = selector["detail"]
+        source_submissions = sorted(
+            {
+                match.group(1)
+                for ref in item["source_refs"]
+                if (
+                    match := re.search(
+                        r"submissions/(submission_\d+)", str(ref.get("file"))
+                    )
+                )
+            }
+        )
+        expected: list[str] | None
+        if kind == "OWN_FIXTURE":
+            owner = owner_case_by_property.get(property_id)
+            expected = [owner] if owner else []
+        elif kind == "STAGE_ACTIVITY_FIXTURE":
+            expected = (
+                stage_cases(stage, activity_id, None)
+                if item["submission_id"] is None
+                else []
+            )
+        elif kind == "STAGE_CASE_IDENTITY":
+            # The planner case set is one dedicated case per activity plus one
+            # per submission, so the property's own scope names exactly one.
+            expected = [
+                case_id
+                for case_id in stage_cases(stage, activity_id, None)
+                if cases_by_id[case_id]["submission_id"] == item["submission_id"]
+            ]
+        elif kind == "FROZEN_FIXTURE_SCOPE":
+            candidates = stage_cases(stage, activity_id, None)
+            expected = [
+                case_id
+                for case_id in candidates
+                if item["submission_id"]
+                in (None, cases_by_id[case_id]["submission_id"])
+            ]
+        elif kind == "SOURCE_SUBMISSION_REFS":
+            expected = (
+                [
+                    case_id
+                    for case_id in stage_cases(stage, activity_id, None)
+                    if cases_by_id[case_id]["submission_id"]
+                    in set(detail["submission_ids"])
+                ]
+                if detail["submission_ids"] == source_submissions and source_submissions
+                else []
+            )
+        elif kind == "ACTIVITY_STAGE_EXHAUSTIVE":
+            expected = [] if source_submissions else stage_cases(stage, activity_id, None)
+        elif kind == "SUBMISSION_EXHAUSTIVE":
+            expected = (
+                stage_cases(stage, activity_id, item["submission_id"])
+                if item["kind"] in NORMATIVE_PROPERTY_KINDS
+                and item["submission_id"] is not None
+                else []
+            )
+        elif kind == "TOPICAL_MARKER":
+            marker_tags = set(detail["marker_tags"])
+            scope_submission = detail.get("submission_id")
+            expected = [
+                case_id
+                for case_id in stage_cases(stage, activity_id, scope_submission)
+                if fixture_tags_by_case.get(case_id, set()) & marker_tags
+            ]
+            if scope_submission is not None and item["kind"] not in NORMATIVE_PROPERTY_KINDS:
+                expected = []
+        elif kind == "CROSS_ARTIFACT_ANCHOR":
+            expected = [
+                case_id
+                for case_id in stage_cases(stage, activity_id, None)
+                if case_id in cross_artifact_cases
+            ]
+        elif kind == "SHARED_ORACLE_TAGS":
+            oracle_tags = set(item["benchmark_tags"])
+            expected = (
+                [
+                    case_id
+                    for case_id in stage_cases(stage, activity_id, None)
+                    if fixture_tags_by_case.get(case_id, set()) & oracle_tags
+                ]
+                if set(detail["oracle_tags"]) == oracle_tags and oracle_tags
+                else []
+            )
+        else:
+            expected = None
+        if expected is None or sorted(expected) != declared or not declared:
+            violations.append(
+                {
+                    "property_id": property_id,
+                    "selector_kind": kind,
+                    "declared_case_ids": declared,
+                    "recomputed_case_ids": sorted(expected or []),
+                }
+            )
+    return {
+        "assigned_arbitrarily_count": len(violations),
+        "recomputed_binding_count": sum(
+            item["alignment_status"] == "ALIGNED" for item in build.property_alignment
+        ),
+        "selector_kind_counts": dict(
+            sorted(
+                Counter(
+                    item["representative_selector"]["kind"]
+                    for item in build.property_alignment
+                    if item["alignment_status"] == "ALIGNED"
+                ).items()
+            )
+        ),
+        "violations": violations,
+    }
+
+
 def property_coverage(build: BenchmarkBuild) -> dict[str, Any]:
     cases_by_property: dict[str, list[str]] = defaultdict(list)
     for case in build.cases:
@@ -1821,6 +2006,7 @@ def property_coverage(build: BenchmarkBuild) -> dict[str, Any]:
     alignment_by_id = {
         item["property_id"]: item for item in build.property_alignment
     }
+    arbitrariness = _binding_arbitrariness(build)
     rows: list[dict[str, Any]] = []
     unexplained = 0
     for property_id, item in sorted(properties_by_id.items()):
@@ -1854,6 +2040,9 @@ def property_coverage(build: BenchmarkBuild) -> dict[str, Any]:
                 "fixture_id": binding["fixture_id"],
                 "alignment_status": binding["alignment_status"],
                 "exclusion_reason": binding["exclusion_reason"],
+                "representative_selector_kind": binding["representative_selector"][
+                    "kind"
+                ],
             }
         )
     status_counts = Counter(item["alignment_status"] for item in rows)
@@ -1865,10 +2054,14 @@ def property_coverage(build: BenchmarkBuild) -> dict[str, Any]:
         "aligned_count": status_counts["ALIGNED"],
         "explicitly_excluded_count": status_counts["EXPLICITLY_EXCLUDED"],
         "not_applicable_count": status_counts["NOT_APPLICABLE"],
-        "assigned_arbitrarily_count": 0,
+        "assigned_arbitrarily_count": arbitrariness["assigned_arbitrarily_count"],
+        "arbitrary_binding_violations": arbitrariness["violations"],
+        "representative_selector_counts": arbitrariness["selector_kind_counts"],
         "unexplained_uncovered_count": unexplained,
         "case_without_property_count": sum(not item["property_ids"] for item in build.cases),
-        "qualification_denominator_unit": "PROPERTY",
+        "qualification_denominator_unit": PROPERTY_AGGREGATION_RULES[
+            "qualification_denominator_unit"
+        ],
         "case_bindings_are_observations": True,
         "case_property_matrix": [
             {"case_id": item["case_id"], "property_ids": list(item["property_ids"])}
@@ -1915,6 +2108,7 @@ def property_fixture_alignment(build: BenchmarkBuild) -> dict[str, Any]:
             "BENCHMARK_PROPERTY_BINDING_INCOMPLETE",
             "alignment report is not exhaustive",
         )
+    arbitrariness = _binding_arbitrariness(build)
     return {
         "schema_version": "semantic-property-fixture-alignment/1.1.0",
         "benchmark_version": SEMANTIC_BENCHMARK_VERSION,
@@ -1923,7 +2117,18 @@ def property_fixture_alignment(build: BenchmarkBuild) -> dict[str, Any]:
             key: counts[key]
             for key in ("ALIGNED", "EXPLICITLY_EXCLUDED", "NOT_APPLICABLE")
         },
-        "assigned_arbitrarily_count": 0,
+        "assigned_arbitrarily_count": arbitrariness["assigned_arbitrarily_count"],
+        "arbitrary_binding_violations": arbitrariness["violations"],
+        "representative_selector_counts": arbitrariness["selector_kind_counts"],
+        "exclusion_reason_counts": dict(
+            sorted(
+                Counter(
+                    item["exclusion_reason"]
+                    for item in rows
+                    if item["exclusion_reason"] is not None
+                ).items()
+            )
+        ),
         "rows": rows,
     }
 
@@ -2620,6 +2825,42 @@ def _provider_call_graph_absent() -> tuple[bool, list[str]]:
     return not violations, sorted(violations)
 
 
+def _p07_support_resolution_proof(build: BenchmarkBuild) -> dict[str, Any]:
+    """Witness that every P07 opportunity resolved exact submission support.
+
+    The builder already fails closed on an unknown id, but the readiness gate
+    must observe the resolution rather than assume it: each opportunity has to
+    resolve all of its declared ids, keep them distinct, hand exactly those ids
+    to the request, and never reach outside its own submission.
+    """
+
+    rows = [item for item in build.fixture_manifest if item["stage"] == "P07"]
+    exact = 0
+    unresolved = 0
+    cross_submission = 0
+    mismatched_request = 0
+    for row in rows:
+        resolution = row["support_resolution"]
+        declared = list(row["support_evidence_ids"])
+        resolved_all = resolution["resolved_count"] == resolution["declared_count"]
+        distinct = resolution["distinct_declared_count"] == len(declared)
+        same_submission = resolution["cross_submission_count"] == 0
+        request_matches = resolution["request_evidence_ids"] == declared
+        unresolved += not resolved_all
+        cross_submission += not same_submission
+        mismatched_request += not request_matches
+        exact += bool(resolved_all and distinct and same_submission and request_matches)
+    return {
+        "opportunity_count": len(rows),
+        "exact_count": exact,
+        "unresolved_count": unresolved,
+        "cross_submission_count": cross_submission,
+        "request_mismatch_count": mismatched_request,
+        "fallback_count": 0,
+        "resolution_mode": "EXACT_DECLARED_EVIDENCE_ID_LOOKUP_NO_FALLBACK",
+    }
+
+
 def _property_denominator_probe(build: BenchmarkBuild) -> dict[str, Any]:
     property_value = next(
         item
@@ -2744,6 +2985,7 @@ def _readiness_invariant_report(
     p09_cases = [item for item in build.cases if item["stage"] == "P09"]
     denominator_probe = _property_denominator_probe(build)
     split_proof = _split_coverage_proof(build, rare)
+    p07_support = _p07_support_resolution_proof(build)
     provider_absent, provider_violations = _provider_call_graph_absent()
     definitions_serialized = json.dumps(
         [
@@ -2833,14 +3075,11 @@ def _readiness_invariant_report(
             },
         ),
         "P07_SUPPORT_RESOLUTION": (
-            all(
-                item["model_visible_definition"]["support_evidence_ids"]
-                for item in opportunity_rows
-            ),
-            {
-                "resolved_opportunity_count": len(opportunity_rows),
-                "fallback_count": 0,
-            },
+            p07_support["exact_count"] == len(opportunity_rows)
+            and p07_support["fallback_count"] == 0
+            and p07_support["unresolved_count"] == 0
+            and p07_support["cross_submission_count"] == 0,
+            p07_support,
         ),
         "P09_PROPERTY_SCOPE": (
             p09_scope,
@@ -2955,6 +3194,8 @@ def benchmark_alignment_audit(build: BenchmarkBuild) -> dict[str, Any]:
     old_boundary = _json(old_root / "benchmark_boundary.json")
     old_tag_counts = Counter(tag for item in old_cases for tag in item["tags"])
     new_tag_counts = Counter(tag for item in build.cases for tag in item["tags"])
+    arbitrariness = _binding_arbitrariness(build)
+    denominator_probe = _property_denominator_probe(build)
     findings = [
         {
             "finding_id": "V1_TAG_SCOPE_ACTIVITY_PROPAGATION",
@@ -3009,6 +3250,38 @@ def benchmark_alignment_audit(build: BenchmarkBuild) -> dict[str, Any]:
             },
             "resolution": "EXACT_HASHED_EVIDENCE_ID_AND_LOCATOR_BINDINGS_NO_FALLBACK",
         },
+        {
+            "finding_id": "V1_ACTIVITY_PROPERTY_ASSIGNED_TO_FREE_SUBMISSION",
+            "confirmed": True,
+            "evidence": {
+                "baseline_code_authority": "22148a3:semantic_benchmark.py:property_coverage",
+                "baseline_activity_property_placement": "FIRST_AVAILABLE_SUBMISSION_CASE",
+                "recomputed_violation_count": arbitrariness[
+                    "assigned_arbitrarily_count"
+                ],
+                "representative_selector_counts": arbitrariness[
+                    "selector_kind_counts"
+                ],
+            },
+            "resolution": "DECLARED_REPRESENTATIVE_SELECTOR_RECOMPUTED_PER_BINDING",
+        },
+        {
+            "finding_id": "V1_MULTI_OBSERVATION_DENOMINATOR_INFLATION",
+            "confirmed": True,
+            "evidence": {
+                "baseline_denominator_unit": "CASE_PROPERTY_RUN",
+                "qualification_denominator_unit": PROPERTY_AGGREGATION_RULES[
+                    "qualification_denominator_unit"
+                ],
+                "properties_bound_to_multiple_cases": sum(
+                    len(item["additional_case_ids"]) > 0
+                    for item in build.property_alignment
+                    if item["alignment_status"] == "ALIGNED"
+                ),
+                "denominator_probe": denominator_probe,
+            },
+            "resolution": "PROPERTY_SCOPED_DENOMINATOR_WITH_CASE_AND_RUN_OBSERVATIONS",
+        },
     ]
     return {
         "schema_version": "semantic-benchmark-alignment-audit/1.1.0",
@@ -3036,7 +3309,7 @@ def benchmark_alignment_audit(build: BenchmarkBuild) -> dict[str, Any]:
             key: new_tag_counts[key]
             for key in sorted(RARE_FAMILY_POLICIES[family]["tag"] for family in RARE_FAMILY_POLICIES)
         },
-        "assigned_arbitrarily_after": 0,
+        "assigned_arbitrarily_after": arbitrariness["assigned_arbitrarily_count"],
     }
 
 
@@ -3227,7 +3500,7 @@ def run_offline_dry_run(
         ),
         "property_count": len(build.properties),
         "property_alignment_counts": alignment["alignment_counts"],
-        "assigned_arbitrarily_count": 0,
+        "assigned_arbitrarily_count": alignment["assigned_arbitrarily_count"],
         "property_state_counts": dict(
             sorted(Counter(item["oracle_state"] for item in build.properties).items())
         ),
