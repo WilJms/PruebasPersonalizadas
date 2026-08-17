@@ -1,0 +1,29 @@
+{
+  "adjudication_protocol_hash": "sha256:8ca70d583f7179d732ca227696f3b6855f8ec3c49fee544075a2e48f4c39b332",
+  "adjudicator_calls": 0,
+  "authorization": "NONE",
+  "benchmark_boundary_hash": "sha256:426dda4d560a8d7d53639dfbaa0773c28565450f06e8ff62d51a8cd1bd6f62ff",
+  "billable_authorizations": 0,
+  "budget_plan_hash": "sha256:2814d1ee6e594f383d5be33cb79a408ffb8cfd55bb876e5e46ee38cbbf22fab8",
+  "candidate_matrix_hash": "sha256:fe9a4d52c516b4103e33b5af36ef7dd121eed8dc286dc86b6cd214c0c2b9c00f",
+  "candidate_matrix_status": "FROZEN",
+  "corpus_package_boundary_hash": "21c21f3a53bfb786162dc350dc38c93b7b007d9f23b744a354de4ac2354048a1",
+  "execution_state": "REAL_EXECUTION_NOT_AUTHORIZED",
+  "held_out_lock": {
+    "held_out_may_not_adjust_thresholds": true,
+    "held_out_may_not_choose_reasoning": true,
+    "held_out_may_not_modify_prompts": true,
+    "held_out_may_not_modify_routing": true,
+    "held_out_may_not_select_candidates": true,
+    "phase9_may_read_not_restructure": true,
+    "splits_frozen_at": "PHASE_8_1_CLOSE"
+  },
+  "phase9_protocol_boundary_hash": "sha256:2ecf3236df16ae592e8d0c6f9cc03ee20a0245a7dff806509825806caf7a30d1",
+  "phase_8_1_baseline_sha": "76f2724223c0b928450eabe931bd2894d604667f",
+  "pricing_snapshot_hash": "sha256:ab5d39711bd5ae868191144dc7b9646a9bf5fd2255ec2567b2a8d4d941036329",
+  "protocol_version": "phase9-qualification-protocol/1.0.0",
+  "provider_calls": 0,
+  "readiness": "PHASE9_PROTOCOL_READY_FOR_EXECUTION",
+  "schema_version": "phase9-protocol-freeze-report/1.0.0",
+  "thresholds_hash": "sha256:4c96d19214ee3ee19ec16de7fa2c2b8cb33ec7a0daaf953df2321f628b0bc619"
+}

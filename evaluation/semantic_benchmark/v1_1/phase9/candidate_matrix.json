@@ -1,0 +1,190 @@
+{
+  "authorization": "NONE",
+  "benchmark_boundary_hash": "sha256:426dda4d560a8d7d53639dfbaa0773c28565450f06e8ff62d51a8cd1bd6f62ff",
+  "benchmark_version": "semantic-benchmark/1.1.0",
+  "candidate_identity_fields": [
+    "stage",
+    "model",
+    "reasoning_effort",
+    "max_output_tokens",
+    "route_profile_id"
+  ],
+  "candidates": [
+    {
+      "candidate_id": "P04-C1-LUNA-HIGH",
+      "hypothesis": "The incumbent production route already meets the blueprint bar; if it qualifies, nothing more expensive is justified.",
+      "max_output_tokens": 16000,
+      "model": "gpt-5.6-luna",
+      "promotion_order": 1,
+      "reasoning_effort": "HIGH",
+      "route_profile_id": "LUNA_BASELINE_V1",
+      "stage": "P04"
+    },
+    {
+      "candidate_id": "P04-C2-TERRA-HIGH",
+      "hypothesis": "Blueprint construction is model-class bound rather than effort bound; a mid-tier model closes the residual.",
+      "max_output_tokens": 16000,
+      "model": "gpt-5.6-terra",
+      "promotion_order": 2,
+      "reasoning_effort": "HIGH",
+      "route_profile_id": "TERRA_HIGH_V1",
+      "stage": "P04"
+    },
+    {
+      "candidate_id": "P04-C3-SOL-HIGH",
+      "hypothesis": "Once-per-activity amortization justifies the frontier model if and only if the cheaper classes fail the bar.",
+      "max_output_tokens": 16000,
+      "model": "gpt-5.6-sol",
+      "promotion_order": 3,
+      "reasoning_effort": "HIGH",
+      "route_profile_id": "SOL_HIGH_V1",
+      "stage": "P04"
+    },
+    {
+      "candidate_id": "P06-C1-LUNA-HIGH",
+      "hypothesis": "The incumbent production route already maps evidence adequately.",
+      "max_output_tokens": 16000,
+      "model": "gpt-5.6-luna",
+      "promotion_order": 1,
+      "reasoning_effort": "HIGH",
+      "route_profile_id": "LUNA_BASELINE_V1",
+      "stage": "P06"
+    },
+    {
+      "candidate_id": "P06-C2-LUNA-XHIGH",
+      "hypothesis": "Residual evidence-mapping errors are reasoning-depth bound, not model-class bound, and cost nothing extra per input token.",
+      "max_output_tokens": 16000,
+      "model": "gpt-5.6-luna",
+      "promotion_order": 2,
+      "reasoning_effort": "XHIGH",
+      "route_profile_id": "LUNA_XHIGH_V1",
+      "stage": "P06"
+    },
+    {
+      "candidate_id": "P06-C3-TERRA-HIGH",
+      "hypothesis": "Evidence mapping needs a stronger model class than luna.",
+      "max_output_tokens": 16000,
+      "model": "gpt-5.6-terra",
+      "promotion_order": 3,
+      "reasoning_effort": "HIGH",
+      "route_profile_id": "TERRA_HIGH_V1",
+      "stage": "P06"
+    },
+    {
+      "candidate_id": "P07-C1-LUNA-HIGH",
+      "hypothesis": "The incumbent production route already builds sound questions.",
+      "max_output_tokens": 10000,
+      "model": "gpt-5.6-luna",
+      "promotion_order": 1,
+      "reasoning_effort": "HIGH",
+      "route_profile_id": "LUNA_BASELINE_V1",
+      "stage": "P07"
+    },
+    {
+      "candidate_id": "P07-C2-LUNA-XHIGH",
+      "hypothesis": "Question construction under anti-leakage constraints is the most reasoning-dense per-submission stage; depth closes the residual.",
+      "max_output_tokens": 10000,
+      "model": "gpt-5.6-luna",
+      "promotion_order": 2,
+      "reasoning_effort": "XHIGH",
+      "route_profile_id": "LUNA_XHIGH_V1",
+      "stage": "P07"
+    },
+    {
+      "candidate_id": "P07-C3-TERRA-HIGH",
+      "hypothesis": "Question construction needs a stronger model class than luna.",
+      "max_output_tokens": 10000,
+      "model": "gpt-5.6-terra",
+      "promotion_order": 3,
+      "reasoning_effort": "HIGH",
+      "route_profile_id": "TERRA_HIGH_V1",
+      "stage": "P07"
+    },
+    {
+      "candidate_id": "P09-C1-LUNA-HIGH",
+      "hypothesis": "P09 is an alias-only enrichment of an already approved assessment with server-owned identity, so the cheapest route should suffice.",
+      "max_output_tokens": 10000,
+      "model": "gpt-5.6-luna",
+      "promotion_order": 1,
+      "reasoning_effort": "HIGH",
+      "route_profile_id": "LUNA_BASELINE_V1",
+      "stage": "P09"
+    },
+    {
+      "candidate_id": "P09-C2-LUNA-XHIGH",
+      "hypothesis": "Guide enrichment residuals are reasoning-depth bound.",
+      "max_output_tokens": 10000,
+      "model": "gpt-5.6-luna",
+      "promotion_order": 2,
+      "reasoning_effort": "XHIGH",
+      "route_profile_id": "LUNA_XHIGH_V1",
+      "stage": "P09"
+    }
+  ],
+  "execution_state": "REAL_EXECUTION_NOT_AUTHORIZED",
+  "matrix_status": "FROZEN",
+  "max_candidates_per_stage": 3,
+  "model_drift_risk": "OpenAI publishes no dated snapshot for the gpt-5.6 family. The alias may be repointed by the provider without a protocol change, so Phase 9B must re-verify the model page alongside pricing immediately before the first call and stop on any drift.",
+  "model_identifier_kind": "STABLE_ALIAS_NO_DATED_SNAPSHOT_PUBLISHED",
+  "no_qualifying_configuration_policy": "If every candidate for a stage fails its rung, the stage result is NO_QUALIFYING_CONFIGURATION. Adding a candidate mid-qualification is forbidden; it requires a new candidate matrix hash and protocol boundary.",
+  "output_cap_derivation": "max_output_tokens is pinned to the live production registry contract for each stage. Phase 9A changes no product runtime, and a cap the product cannot issue would qualify nothing. Reasoning tokens count against this cap, so XHIGH candidates carry a real truncation risk; truncation is a TECHNICAL_FAILURE bounded by the technical failure gate, never a MODEL_FAILURE.",
+  "reasoning_change_creates_new_candidate": true,
+  "schema_version": "phase9-frozen-candidate-matrix/1.0.0",
+  "verified_models": [
+    {
+      "context_window": 1050000,
+      "identifier_kind": "STABLE_ALIAS_NO_DATED_SNAPSHOT_PUBLISHED",
+      "max_output_tokens": 128000,
+      "model": "gpt-5.6-luna",
+      "official_source": "https://developers.openai.com/api/docs/models/gpt-5.6-luna",
+      "reasoning_efforts": [
+        "none",
+        "low",
+        "medium",
+        "high",
+        "xhigh",
+        "max"
+      ],
+      "responses_api": true,
+      "status": "GA",
+      "structured_outputs": true
+    },
+    {
+      "context_window": 1050000,
+      "identifier_kind": "STABLE_ALIAS_NO_DATED_SNAPSHOT_PUBLISHED",
+      "max_output_tokens": 128000,
+      "model": "gpt-5.6-terra",
+      "official_source": "https://developers.openai.com/api/docs/models/gpt-5.6-terra",
+      "reasoning_efforts": [
+        "none",
+        "low",
+        "medium",
+        "high",
+        "xhigh",
+        "max"
+      ],
+      "responses_api": true,
+      "status": "GA",
+      "structured_outputs": true
+    },
+    {
+      "alias_note": "the bare gpt-5.6 alias routes here",
+      "context_window": 1050000,
+      "identifier_kind": "STABLE_ALIAS_NO_DATED_SNAPSHOT_PUBLISHED",
+      "max_output_tokens": 128000,
+      "model": "gpt-5.6-sol",
+      "official_source": "https://developers.openai.com/api/docs/models/gpt-5.6-sol",
+      "reasoning_efforts": [
+        "none",
+        "low",
+        "medium",
+        "high",
+        "xhigh",
+        "max"
+      ],
+      "responses_api": true,
+      "status": "GA",
+      "structured_outputs": true
+    }
+  ]
+}

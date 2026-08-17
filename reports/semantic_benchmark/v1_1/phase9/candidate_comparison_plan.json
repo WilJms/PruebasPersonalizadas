@@ -1,0 +1,180 @@
+{
+  "authorization": "NONE",
+  "ladder": [
+    {
+      "candidate_ids": [
+        "P04-C1-LUNA-HIGH",
+        "P04-C2-TERRA-HIGH",
+        "P04-C3-SOL-HIGH"
+      ],
+      "promotion_order": [
+        "P04-C1-LUNA-HIGH",
+        "P04-C2-TERRA-HIGH",
+        "P04-C3-SOL-HIGH"
+      ],
+      "prompt_id": "P04_BLUEPRINT_BUILD_V1",
+      "rungs": {
+        "CORE": {
+          "applicable_semantic_properties": 21,
+          "calls_per_candidate": 18,
+          "cases": 6
+        },
+        "HELD_OUT_CONFIRMATION": {
+          "applicable_semantic_properties": 19,
+          "calls_per_candidate": 15,
+          "cases": 5
+        },
+        "SMOKE": {
+          "applicable_semantic_properties": 4,
+          "calls_per_candidate": 3,
+          "cases": 1
+        }
+      },
+      "stage": "P04"
+    },
+    {
+      "candidate_ids": [
+        "P06-C1-LUNA-HIGH",
+        "P06-C2-LUNA-XHIGH",
+        "P06-C3-TERRA-HIGH"
+      ],
+      "promotion_order": [
+        "P06-C1-LUNA-HIGH",
+        "P06-C2-LUNA-XHIGH",
+        "P06-C3-TERRA-HIGH"
+      ],
+      "prompt_id": "P06_EVIDENCE_MAP_V1",
+      "rungs": {
+        "CORE": {
+          "applicable_semantic_properties": 60,
+          "calls_per_candidate": 192,
+          "cases": 64
+        },
+        "HELD_OUT_CONFIRMATION": {
+          "applicable_semantic_properties": 56,
+          "calls_per_candidate": 183,
+          "cases": 61
+        },
+        "SMOKE": {
+          "applicable_semantic_properties": 3,
+          "calls_per_candidate": 6,
+          "cases": 2
+        }
+      },
+      "stage": "P06"
+    },
+    {
+      "candidate_ids": [
+        "P07-C1-LUNA-HIGH",
+        "P07-C2-LUNA-XHIGH",
+        "P07-C3-TERRA-HIGH"
+      ],
+      "promotion_order": [
+        "P07-C1-LUNA-HIGH",
+        "P07-C2-LUNA-XHIGH",
+        "P07-C3-TERRA-HIGH"
+      ],
+      "prompt_id": "P07_QUESTION_BUILD_V1",
+      "rungs": {
+        "CORE": {
+          "applicable_semantic_properties": 69,
+          "calls_per_candidate": 165,
+          "cases": 55
+        },
+        "HELD_OUT_CONFIRMATION": {
+          "applicable_semantic_properties": 60,
+          "calls_per_candidate": 141,
+          "cases": 47
+        },
+        "SMOKE": {
+          "applicable_semantic_properties": 6,
+          "calls_per_candidate": 18,
+          "cases": 6
+        }
+      },
+      "stage": "P07"
+    },
+    {
+      "candidate_ids": [
+        "P09-C1-LUNA-HIGH",
+        "P09-C2-LUNA-XHIGH"
+      ],
+      "promotion_order": [
+        "P09-C1-LUNA-HIGH",
+        "P09-C2-LUNA-XHIGH"
+      ],
+      "prompt_id": "P09_GUIDE_BUILD_V1",
+      "rungs": {
+        "CORE": {
+          "applicable_semantic_properties": 4,
+          "calls_per_candidate": 6,
+          "cases": 2
+        },
+        "HELD_OUT_CONFIRMATION": {
+          "applicable_semantic_properties": 1,
+          "calls_per_candidate": 3,
+          "cases": 1
+        },
+        "SMOKE": {
+          "applicable_semantic_properties": 1,
+          "calls_per_candidate": 3,
+          "cases": 1
+        }
+      },
+      "stage": "P09"
+    }
+  ],
+  "metric_denominators": {
+    "accepted_semantic_rate": "accepted_property_count / applicable_property_count, where applicable_property_count counts PROPERTY_CANDIDATE_REASONING units with a VALID oracle and EXTERNAL adjudication, never multiplied by cases or runs.",
+    "confirmed_model_failure_rate": "confirmed_model_failure_count / applicable_property_count.",
+    "technical_failure_rate": "technical_failure_count / attempted PROPERTY_CANDIDATE_REASONING_RUN units, measured after the single permitted technical retry."
+  },
+  "promotion": {
+    "candidates_on_core": "ONLY_SMOKE_QUALIFIED",
+    "candidates_on_held_out": "ONLY_THE_SELECTED_STAGE_WINNER",
+    "candidates_on_smoke": "ALL",
+    "core_role": "SELECTION_EVIDENCE",
+    "held_out_failure_policy": "A winner that fails HELD_OUT_CONFIRMATION is rejected for that stage. The next CORE-qualified candidate by tie-break order may attempt held-out exactly once. No candidate may be tuned, and thresholds do not move.",
+    "held_out_multi_candidate_allowed": false,
+    "held_out_role": "CONFIRM_OR_REJECT_THE_ALREADY_SELECTED_WINNER",
+    "ladder": [
+      "SMOKE",
+      "CORE",
+      "HELD_OUT_CONFIRMATION"
+    ],
+    "no_qualifying_configuration_policy": "If every candidate for a stage fails its rung, the stage result is NO_QUALIFYING_CONFIGURATION. Adding a candidate mid-qualification is forbidden; it requires a new candidate matrix hash and protocol boundary.",
+    "pending_adjudication_blocks_promotion": true,
+    "pending_adjudication_rule": "A configuration may not promote while any required adjudication for the rung is unresolved. Promotion never happens on an incomplete scoreboard.",
+    "skipping_rungs_allowed": false,
+    "smoke_role": "SCREENING",
+    "stage_winners_may_differ": true
+  },
+  "promotion_metrics": [
+    "applicable_property_count",
+    "accepted_property_count",
+    "pass_count",
+    "defensible_alternative_count",
+    "confirmed_model_failure_count",
+    "oracle_suspect_count",
+    "technical_failure_count",
+    "adjudication_pending_count",
+    "hard_safety_failure_count",
+    "stability_disagreement_count",
+    "accepted_semantic_rate",
+    "confirmed_model_failure_rate",
+    "technical_failure_rate"
+  ],
+  "results_present": false,
+  "schema_version": "phase9-candidate-comparison-plan/1.0.0",
+  "stage_winners_may_differ": true,
+  "tie_break_order": [
+    "ZERO_HARD_SAFETY_FAILURES",
+    "MEETS_RUNG_QUALIFICATION_THRESHOLD",
+    "LOWER_STABILITY_DISAGREEMENT_COUNT",
+    "LOWER_CONFIRMED_MODEL_FAILURE_RATE",
+    "LOWER_TECHNICAL_FAILURE_RATE",
+    "LOWER_PROJECTED_PRODUCTION_COST",
+    "LOWER_P95_END_TO_END_LATENCY",
+    "LEXICOGRAPHICALLY_SMALLEST_CANDIDATE_ID"
+  ]
+}

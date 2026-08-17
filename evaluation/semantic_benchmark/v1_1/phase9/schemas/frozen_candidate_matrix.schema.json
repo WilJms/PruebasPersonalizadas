@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pruebas-personalizadas.invalid/schemas/phase9/1.0.0/frozen-candidate-matrix.json",
+  "title": "Frozen Phase 9 candidate matrix",
+  "description": "The Phase 8.1 template at evaluation/semantic_benchmark/v1_1/phase9_candidate_matrix_template.json stays UNSET by design; it is the benchmark-side placeholder. This document is the authoritative frozen matrix. Freezing it does not authorize it: authorization stays NONE until Phase 9B.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "benchmark_version",
+    "benchmark_boundary_hash",
+    "matrix_status",
+    "authorization",
+    "execution_state",
+    "max_candidates_per_stage",
+    "candidate_identity_fields",
+    "reasoning_change_creates_new_candidate",
+    "model_identifier_kind",
+    "model_drift_risk",
+    "output_cap_derivation",
+    "verified_models",
+    "candidates",
+    "no_qualifying_configuration_policy"
+  ],
+  "properties": {
+    "schema_version": {"const": "phase9-frozen-candidate-matrix/1.0.0"},
+    "benchmark_version": {"const": "semantic-benchmark/1.1.0"},
+    "benchmark_boundary_hash": {"type": "string", "pattern": "^sha256:[a-f0-9]{64}$"},
+    "matrix_status": {"const": "FROZEN"},
+    "authorization": {"const": "NONE"},
+    "execution_state": {"const": "REAL_EXECUTION_NOT_AUTHORIZED"},
+    "max_candidates_per_stage": {"type": "integer", "minimum": 1, "maximum": 3},
+    "candidate_identity_fields": {"type": "array", "items": {"type": "string"}},
+    "reasoning_change_creates_new_candidate": {"const": true},
+    "model_identifier_kind": {"type": "string", "minLength": 1},
+    "model_drift_risk": {"type": "string", "minLength": 1},
+    "output_cap_derivation": {"type": "string", "minLength": 1},
+    "no_qualifying_configuration_policy": {"type": "string", "minLength": 1},
+    "verified_models": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["model", "identifier_kind", "responses_api", "structured_outputs", "status", "official_source"],
+        "properties": {
+          "model": {"enum": ["gpt-5.6-luna", "gpt-5.6-terra", "gpt-5.6-sol"]},
+          "responses_api": {"const": true},
+          "structured_outputs": {"const": true},
+          "status": {"const": "GA"},
+          "official_source": {"type": "string", "pattern": "^https://developers\\.openai\\.com/"}
+        }
+      }
+    },
+    "candidates": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "candidate_id",
+          "stage",
+          "model",
+          "reasoning_effort",
+          "max_output_tokens",
+          "route_profile_id",
+          "promotion_order",
+          "hypothesis"
+        ],
+        "properties": {
+          "candidate_id": {"type": "string", "pattern": "^P0[4679]-C[0-9]+-[A-Z]+-[A-Z]+$"},
+          "stage": {"enum": ["P04", "P06", "P07", "P09"]},
+          "model": {"enum": ["gpt-5.6-luna", "gpt-5.6-terra", "gpt-5.6-sol"]},
+          "reasoning_effort": {"enum": ["LOW", "MEDIUM", "HIGH", "XHIGH", "MAX"]},
+          "max_output_tokens": {"type": "integer", "minimum": 1000, "maximum": 128000},
+          "route_profile_id": {
+            "enum": [
+              "LUNA_BASELINE_V1",
+              "LUNA_XHIGH_V1",
+              "LUNA_MAX_V1",
+              "TERRA_MEDIUM_V1",
+              "TERRA_HIGH_V1",
+              "TERRA_XHIGH_V1",
+              "SOL_MEDIUM_V1",
+              "SOL_HIGH_V1",
+              "SOL_XHIGH_V1"
+            ]
+          },
+          "promotion_order": {"type": "integer", "minimum": 1, "maximum": 3},
+          "hypothesis": {"type": "string", "minLength": 1}
+        }
+      }
+    }
+  }
+}

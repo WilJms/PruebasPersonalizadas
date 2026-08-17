@@ -1,0 +1,298 @@
+{
+  "authorization": "NONE",
+  "early_stop_note": "Early stop exists only for failure and rejection. A candidate is never declared a winner before every mandatory case of its rung has run.",
+  "early_stop_rules": [
+    {
+      "code": "HARD_SAFETY_FAILURE_CONFIRMED",
+      "reason": "One confirmed hard-safety MODEL_FAILURE rejects the candidate for the stage.",
+      "scope": "CANDIDATE_RUNG"
+    },
+    {
+      "code": "DETERMINISTIC_HARD_GATE_FAILED",
+      "reason": "Deterministic invariants must hold at 100 percent.",
+      "scope": "CANDIDATE_RUNG"
+    },
+    {
+      "code": "RULE_BASED_HARD_GATE_FAILED",
+      "reason": "Applicable rule-based hard properties must hold at 100 percent.",
+      "scope": "CANDIDATE_RUNG"
+    },
+    {
+      "code": "THRESHOLD_MATHEMATICALLY_UNREACHABLE",
+      "reason": "Confirmed failures already exceed the rung allowance, so the remaining calls cannot change the verdict.",
+      "scope": "CANDIDATE_RUNG"
+    },
+    {
+      "code": "TECHNICAL_FAILURE_RATE_OVER_CAP",
+      "reason": "Measured technical failure rate exceeds the frozen cap after retries.",
+      "scope": "CANDIDATE_RUNG"
+    },
+    {
+      "code": "ADJUDICATION_SYSTEM_INSTABILITY",
+      "reason": "PASS QA disagreement exceeded its frozen threshold.",
+      "scope": "WHOLE_QUALIFICATION"
+    },
+    {
+      "code": "ORACLE_REVIEW_PRESSURE",
+      "reason": "Oracle review findings exceeded the frozen pause threshold.",
+      "scope": "WHOLE_QUALIFICATION"
+    },
+    {
+      "code": "BUDGET_CAP_WOULD_BE_EXCEEDED",
+      "reason": "A projected call would breach a frozen cap; fail closed before transport.",
+      "scope": "CANDIDATE_RUNG"
+    }
+  ],
+  "early_success_stop_allowed": false,
+  "exactly_once": {
+    "authorization_identity_binds": [
+      "benchmark_boundary_hash",
+      "protocol_boundary_hash",
+      "candidate_matrix_hash",
+      "split",
+      "stage",
+      "candidate_id",
+      "run_set_id",
+      "budget_cap_usd"
+    ],
+    "implemented_in_phase_9a": false,
+    "note": "Phase 9A freezes the contract and its tests. The billable authorization itself is a Phase 9B artifact.",
+    "reuses_existing_repository_guarantee": "stage2-synthetic-provider-authorization/1.0.0"
+  },
+  "execution_state": "REAL_EXECUTION_NOT_AUTHORIZED",
+  "k": {
+    "planner": 1,
+    "policy": "k=3 on every semantic case in every rung, because stability is part of qualification and a k=1 screen followed by a k=3 confirmation would select on a metric that is not the one being qualified.",
+    "semantic": 3
+  },
+  "ladder": [
+    {
+      "candidate_ids": [
+        "P04-C1-LUNA-HIGH",
+        "P04-C2-TERRA-HIGH",
+        "P04-C3-SOL-HIGH"
+      ],
+      "promotion_order": [
+        "P04-C1-LUNA-HIGH",
+        "P04-C2-TERRA-HIGH",
+        "P04-C3-SOL-HIGH"
+      ],
+      "prompt_id": "P04_BLUEPRINT_BUILD_V1",
+      "rungs": {
+        "CORE": {
+          "applicable_semantic_properties": 21,
+          "calls_per_candidate": 18,
+          "cases": 6
+        },
+        "HELD_OUT_CONFIRMATION": {
+          "applicable_semantic_properties": 19,
+          "calls_per_candidate": 15,
+          "cases": 5
+        },
+        "SMOKE": {
+          "applicable_semantic_properties": 4,
+          "calls_per_candidate": 3,
+          "cases": 1
+        }
+      },
+      "stage": "P04"
+    },
+    {
+      "candidate_ids": [
+        "P06-C1-LUNA-HIGH",
+        "P06-C2-LUNA-XHIGH",
+        "P06-C3-TERRA-HIGH"
+      ],
+      "promotion_order": [
+        "P06-C1-LUNA-HIGH",
+        "P06-C2-LUNA-XHIGH",
+        "P06-C3-TERRA-HIGH"
+      ],
+      "prompt_id": "P06_EVIDENCE_MAP_V1",
+      "rungs": {
+        "CORE": {
+          "applicable_semantic_properties": 60,
+          "calls_per_candidate": 192,
+          "cases": 64
+        },
+        "HELD_OUT_CONFIRMATION": {
+          "applicable_semantic_properties": 56,
+          "calls_per_candidate": 183,
+          "cases": 61
+        },
+        "SMOKE": {
+          "applicable_semantic_properties": 3,
+          "calls_per_candidate": 6,
+          "cases": 2
+        }
+      },
+      "stage": "P06"
+    },
+    {
+      "candidate_ids": [
+        "P07-C1-LUNA-HIGH",
+        "P07-C2-LUNA-XHIGH",
+        "P07-C3-TERRA-HIGH"
+      ],
+      "promotion_order": [
+        "P07-C1-LUNA-HIGH",
+        "P07-C2-LUNA-XHIGH",
+        "P07-C3-TERRA-HIGH"
+      ],
+      "prompt_id": "P07_QUESTION_BUILD_V1",
+      "rungs": {
+        "CORE": {
+          "applicable_semantic_properties": 69,
+          "calls_per_candidate": 165,
+          "cases": 55
+        },
+        "HELD_OUT_CONFIRMATION": {
+          "applicable_semantic_properties": 60,
+          "calls_per_candidate": 141,
+          "cases": 47
+        },
+        "SMOKE": {
+          "applicable_semantic_properties": 6,
+          "calls_per_candidate": 18,
+          "cases": 6
+        }
+      },
+      "stage": "P07"
+    },
+    {
+      "candidate_ids": [
+        "P09-C1-LUNA-HIGH",
+        "P09-C2-LUNA-XHIGH"
+      ],
+      "promotion_order": [
+        "P09-C1-LUNA-HIGH",
+        "P09-C2-LUNA-XHIGH"
+      ],
+      "prompt_id": "P09_GUIDE_BUILD_V1",
+      "rungs": {
+        "CORE": {
+          "applicable_semantic_properties": 4,
+          "calls_per_candidate": 6,
+          "cases": 2
+        },
+        "HELD_OUT_CONFIRMATION": {
+          "applicable_semantic_properties": 1,
+          "calls_per_candidate": 3,
+          "cases": 1
+        },
+        "SMOKE": {
+          "applicable_semantic_properties": 1,
+          "calls_per_candidate": 3,
+          "cases": 1
+        }
+      },
+      "stage": "P09"
+    }
+  ],
+  "latency_policy": {
+    "is_semantic_failure": false,
+    "operational_maximum": null,
+    "reason": "No production latency SLO exists yet, so latency is reported descriptively and used only as a late tie-break. Inventing a threshold without a baseline would reject candidates on a number with no meaning.",
+    "recorded": [
+      "provider_latency_ms",
+      "end_to_end_stage_latency_ms"
+    ]
+  },
+  "metric_denominators": {
+    "accepted_semantic_rate": "accepted_property_count / applicable_property_count, where applicable_property_count counts PROPERTY_CANDIDATE_REASONING units with a VALID oracle and EXTERNAL adjudication, never multiplied by cases or runs.",
+    "confirmed_model_failure_rate": "confirmed_model_failure_count / applicable_property_count.",
+    "technical_failure_rate": "technical_failure_count / attempted PROPERTY_CANDIDATE_REASONING_RUN units, measured after the single permitted technical retry."
+  },
+  "no_full_cross_product": "Every candidate screens on SMOKE. Only SMOKE-qualified candidates run CORE. Only the selected stage winner runs HELD_OUT_CONFIRMATION.",
+  "promotion": {
+    "candidates_on_core": "ONLY_SMOKE_QUALIFIED",
+    "candidates_on_held_out": "ONLY_THE_SELECTED_STAGE_WINNER",
+    "candidates_on_smoke": "ALL",
+    "core_role": "SELECTION_EVIDENCE",
+    "held_out_failure_policy": "A winner that fails HELD_OUT_CONFIRMATION is rejected for that stage. The next CORE-qualified candidate by tie-break order may attempt held-out exactly once. No candidate may be tuned, and thresholds do not move.",
+    "held_out_multi_candidate_allowed": false,
+    "held_out_role": "CONFIRM_OR_REJECT_THE_ALREADY_SELECTED_WINNER",
+    "ladder": [
+      "SMOKE",
+      "CORE",
+      "HELD_OUT_CONFIRMATION"
+    ],
+    "no_qualifying_configuration_policy": "If every candidate for a stage fails its rung, the stage result is NO_QUALIFYING_CONFIGURATION. Adding a candidate mid-qualification is forbidden; it requires a new candidate matrix hash and protocol boundary.",
+    "pending_adjudication_blocks_promotion": true,
+    "pending_adjudication_rule": "A configuration may not promote while any required adjudication for the rung is unresolved. Promotion never happens on an incomplete scoreboard.",
+    "skipping_rungs_allowed": false,
+    "smoke_role": "SCREENING",
+    "stage_winners_may_differ": true
+  },
+  "promotion_metrics": [
+    "applicable_property_count",
+    "accepted_property_count",
+    "pass_count",
+    "defensible_alternative_count",
+    "confirmed_model_failure_count",
+    "oracle_suspect_count",
+    "technical_failure_count",
+    "adjudication_pending_count",
+    "hard_safety_failure_count",
+    "stability_disagreement_count",
+    "accepted_semantic_rate",
+    "confirmed_model_failure_rate",
+    "technical_failure_rate"
+  ],
+  "provider_calls_performed": 0,
+  "retry_policy": {
+    "fallback_to_other_candidate_within_run_identity": false,
+    "max_technical_retries": 1,
+    "non_retryable_error_codes": [
+      "PROVIDER_AUTHENTICATION",
+      "PROVIDER_AUTHORIZATION",
+      "PROVIDER_MODEL_UNAVAILABLE",
+      "PROVIDER_BUDGET_OR_QUOTA",
+      "PROVIDER_INVALID_REQUEST",
+      "PROVIDER_SAFETY_REFUSAL",
+      "PROVIDER_SDK_RESPONSE_VALIDATION",
+      "PROVIDER_PERMANENT_STATUS",
+      "PROVIDER_RESPONSE_ERROR",
+      "PROVIDER_UNEXPECTED_TOOL_OUTPUT",
+      "PROVIDER_REASONING_ROUTE_MISMATCH",
+      "PROVIDER_SCHEMA_BOUNDARY_UNSUPPORTED",
+      "PROVIDER_OUTPUT_TRUNCATED_MAX_OUTPUT_TOKENS",
+      "PROVIDER_OUTPUT_SCHEMA_INVALID"
+    ],
+    "records": [
+      "attempt_count"
+    ],
+    "retry_counts_as_new_semantic_sample": false,
+    "retry_preserves": [
+      "same_candidate",
+      "same_request_bytes",
+      "same_reasoning_effort",
+      "same_max_output_tokens",
+      "same_authorization_lineage",
+      "same_idempotent_run_identity",
+      "same_semantic_opportunity"
+    ],
+    "retryable_error_codes": [
+      "PROVIDER_TIMEOUT",
+      "PROVIDER_CONNECTION",
+      "PROVIDER_TRANSIENT_STATUS",
+      "PROVIDER_RATE_LIMIT"
+    ],
+    "schema_repair_rule": "P11 schema repair is disabled during qualification. The raw first response is the measured artifact; a repair call would mask a contract failure and add unbudgeted calls.",
+    "semantic_retry_allowed": false,
+    "technical_failure_is_never_model_failure": true,
+    "truncation_rule": "An incomplete response caused by max_output_tokens is a TECHNICAL_FAILURE and is never retried: the identical request would truncate identically. It is never a MODEL_FAILURE."
+  },
+  "schema_version": "phase9-execution-plan/1.0.0",
+  "tie_break_note": "Cost only separates configurations that already meet the quality bar. The final candidate_id step exists solely to guarantee a total order, so the rule is deterministic even under an exact tie.",
+  "tie_break_order": [
+    "ZERO_HARD_SAFETY_FAILURES",
+    "MEETS_RUNG_QUALIFICATION_THRESHOLD",
+    "LOWER_STABILITY_DISAGREEMENT_COUNT",
+    "LOWER_CONFIRMED_MODEL_FAILURE_RATE",
+    "LOWER_TECHNICAL_FAILURE_RATE",
+    "LOWER_PROJECTED_PRODUCTION_COST",
+    "LOWER_P95_END_TO_END_LATENCY",
+    "LEXICOGRAPHICALLY_SMALLEST_CANDIDATE_ID"
+  ]
+}

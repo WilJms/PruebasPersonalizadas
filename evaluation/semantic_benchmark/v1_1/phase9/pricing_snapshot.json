@@ -1,0 +1,43 @@
+{
+  "copied_from_repository_history": false,
+  "models": [
+    {
+      "cached_input_price": 0.02,
+      "input_price": 0.2,
+      "model": "gpt-5.6-luna",
+      "output_price": 1.2
+    },
+    {
+      "cached_input_price": 0.2,
+      "input_price": 2.0,
+      "model": "gpt-5.6-terra",
+      "output_price": 12.0
+    },
+    {
+      "cached_input_price": 0.5,
+      "input_price": 5.0,
+      "model": "gpt-5.6-sol",
+      "output_price": 30.0
+    }
+  ],
+  "notes": "Standard short-context rates read from the official OpenAI pricing page on 2026-08-17. The gpt-5.6 family carries a long-context tier at roughly 2x input, but every projected Phase 9 request is far below that threshold, so only short-context rates are used. Reasoning tokens are billed as output tokens and count against max_output_tokens, which is why the worst-case output term below is the full cap. Cache-write pricing exists but no cache reuse is assumed anywhere in this plan.",
+  "official_source": "https://developers.openai.com/api/docs/pricing",
+  "pricing_unit": "USD_PER_MILLION_TOKENS",
+  "refresh_guard": {
+    "action": "RE_READ_OFFICIAL_OPENAI_PRICING_AND_MODEL_PAGES",
+    "also_verifies": [
+      "model_alias_still_resolves",
+      "model_status_still_ga"
+    ],
+    "on_any_difference": "STOP_DO_NOT_EXECUTE",
+    "on_stop_required": [
+      "recompute_budget",
+      "issue_new_protocol_and_budget_boundary",
+      "obtain_new_explicit_authorization"
+    ],
+    "when": "IMMEDIATELY_BEFORE_THE_FIRST_REAL_CALL_OF_PHASE_9B"
+  },
+  "retrieved_at": "2026-08-17",
+  "schema_version": "phase9-pricing-snapshot/1.0.0",
+  "source_authority": "OFFICIAL_OPENAI_ONLY"
+}

@@ -1,0 +1,305 @@
+{
+  "authorization": "NONE",
+  "disclaimer": "ESTIMATE_NOT_BILL",
+  "global_cap_usd": 498.3438,
+  "k": {
+    "planner": 1,
+    "policy": "k=3 on every semantic case in every rung, because stability is part of qualification and a k=1 screen followed by a k=3 confirmation would select on a metric that is not the one being qualified.",
+    "semantic": 3
+  },
+  "per_candidate": [
+    {
+      "calls_by_rung": {
+        "CORE": 18,
+        "HELD_OUT_CONFIRMATION": 15,
+        "SMOKE": 3
+      },
+      "candidate_id": "P04-C1-LUNA-HIGH",
+      "expected_cost_usd_by_rung": {
+        "CORE": 0.3654,
+        "HELD_OUT_CONFIRMATION": 0.3045,
+        "SMOKE": 0.0609
+      },
+      "full_ladder_cap_usd": 1.4375,
+      "model": "gpt-5.6-luna",
+      "per_call_cap_usd": 0.0363,
+      "reasoning_effort": "HIGH",
+      "stage": "P04",
+      "worst_case_cost_usd_by_rung": {
+        "CORE": 0.522,
+        "HELD_OUT_CONFIRMATION": 0.435,
+        "SMOKE": 0.087
+      }
+    },
+    {
+      "calls_by_rung": {
+        "CORE": 18,
+        "HELD_OUT_CONFIRMATION": 15,
+        "SMOKE": 3
+      },
+      "candidate_id": "P04-C2-TERRA-HIGH",
+      "expected_cost_usd_by_rung": {
+        "CORE": 3.6576,
+        "HELD_OUT_CONFIRMATION": 3.048,
+        "SMOKE": 0.6096
+      },
+      "full_ladder_cap_usd": 14.3551,
+      "model": "gpt-5.6-terra",
+      "per_call_cap_usd": 0.3625,
+      "reasoning_effort": "HIGH",
+      "stage": "P04",
+      "worst_case_cost_usd_by_rung": {
+        "CORE": 5.22,
+        "HELD_OUT_CONFIRMATION": 4.35,
+        "SMOKE": 0.87
+      }
+    },
+    {
+      "calls_by_rung": {
+        "CORE": 18,
+        "HELD_OUT_CONFIRMATION": 15,
+        "SMOKE": 3
+      },
+      "candidate_id": "P04-C3-SOL-HIGH",
+      "expected_cost_usd_by_rung": {
+        "CORE": 9.144,
+        "HELD_OUT_CONFIRMATION": 7.62,
+        "SMOKE": 1.524
+      },
+      "full_ladder_cap_usd": 35.8895,
+      "model": "gpt-5.6-sol",
+      "per_call_cap_usd": 0.9063,
+      "reasoning_effort": "HIGH",
+      "stage": "P04",
+      "worst_case_cost_usd_by_rung": {
+        "CORE": 13.05,
+        "HELD_OUT_CONFIRMATION": 10.875,
+        "SMOKE": 2.175
+      }
+    },
+    {
+      "calls_by_rung": {
+        "CORE": 192,
+        "HELD_OUT_CONFIRMATION": 183,
+        "SMOKE": 6
+      },
+      "candidate_id": "P06-C1-LUNA-HIGH",
+      "expected_cost_usd_by_rung": {
+        "CORE": 2.976,
+        "HELD_OUT_CONFIRMATION": 2.8365,
+        "SMOKE": 0.093
+      },
+      "full_ladder_cap_usd": 13.9561,
+      "model": "gpt-5.6-luna",
+      "per_call_cap_usd": 0.0333,
+      "reasoning_effort": "HIGH",
+      "stage": "P06",
+      "worst_case_cost_usd_by_rung": {
+        "CORE": 5.1072,
+        "HELD_OUT_CONFIRMATION": 4.8678,
+        "SMOKE": 0.1596
+      }
+    },
+    {
+      "calls_by_rung": {
+        "CORE": 192,
+        "HELD_OUT_CONFIRMATION": 183,
+        "SMOKE": 6
+      },
+      "candidate_id": "P06-C2-LUNA-XHIGH",
+      "expected_cost_usd_by_rung": {
+        "CORE": 4.4544,
+        "HELD_OUT_CONFIRMATION": 4.2456,
+        "SMOKE": 0.1392
+      },
+      "full_ladder_cap_usd": 13.9561,
+      "model": "gpt-5.6-luna",
+      "per_call_cap_usd": 0.0333,
+      "reasoning_effort": "XHIGH",
+      "stage": "P06",
+      "worst_case_cost_usd_by_rung": {
+        "CORE": 5.1072,
+        "HELD_OUT_CONFIRMATION": 4.8678,
+        "SMOKE": 0.1596
+      }
+    },
+    {
+      "calls_by_rung": {
+        "CORE": 192,
+        "HELD_OUT_CONFIRMATION": 183,
+        "SMOKE": 6
+      },
+      "candidate_id": "P06-C3-TERRA-HIGH",
+      "expected_cost_usd_by_rung": {
+        "CORE": 29.7984,
+        "HELD_OUT_CONFIRMATION": 28.4016,
+        "SMOKE": 0.9312
+      },
+      "full_ladder_cap_usd": 139.3508,
+      "model": "gpt-5.6-terra",
+      "per_call_cap_usd": 0.3325,
+      "reasoning_effort": "HIGH",
+      "stage": "P06",
+      "worst_case_cost_usd_by_rung": {
+        "CORE": 51.072,
+        "HELD_OUT_CONFIRMATION": 48.678,
+        "SMOKE": 1.596
+      }
+    },
+    {
+      "calls_by_rung": {
+        "CORE": 165,
+        "HELD_OUT_CONFIRMATION": 141,
+        "SMOKE": 18
+      },
+      "candidate_id": "P07-C1-LUNA-HIGH",
+      "expected_cost_usd_by_rung": {
+        "CORE": 1.848,
+        "HELD_OUT_CONFIRMATION": 1.5792,
+        "SMOKE": 0.2016
+      },
+      "full_ladder_cap_usd": 8.6605,
+      "model": "gpt-5.6-luna",
+      "per_call_cap_usd": 0.0243,
+      "reasoning_effort": "HIGH",
+      "stage": "P07",
+      "worst_case_cost_usd_by_rung": {
+        "CORE": 3.201,
+        "HELD_OUT_CONFIRMATION": 2.7354,
+        "SMOKE": 0.3492
+      }
+    },
+    {
+      "calls_by_rung": {
+        "CORE": 165,
+        "HELD_OUT_CONFIRMATION": 141,
+        "SMOKE": 18
+      },
+      "candidate_id": "P07-C2-LUNA-XHIGH",
+      "expected_cost_usd_by_rung": {
+        "CORE": 2.64,
+        "HELD_OUT_CONFIRMATION": 2.256,
+        "SMOKE": 0.288
+      },
+      "full_ladder_cap_usd": 8.6605,
+      "model": "gpt-5.6-luna",
+      "per_call_cap_usd": 0.0243,
+      "reasoning_effort": "XHIGH",
+      "stage": "P07",
+      "worst_case_cost_usd_by_rung": {
+        "CORE": 3.201,
+        "HELD_OUT_CONFIRMATION": 2.7354,
+        "SMOKE": 0.3492
+      }
+    },
+    {
+      "calls_by_rung": {
+        "CORE": 165,
+        "HELD_OUT_CONFIRMATION": 141,
+        "SMOKE": 18
+      },
+      "candidate_id": "P07-C3-TERRA-HIGH",
+      "expected_cost_usd_by_rung": {
+        "CORE": 18.48,
+        "HELD_OUT_CONFIRMATION": 15.792,
+        "SMOKE": 2.016
+      },
+      "full_ladder_cap_usd": 86.4271,
+      "model": "gpt-5.6-terra",
+      "per_call_cap_usd": 0.2425,
+      "reasoning_effort": "HIGH",
+      "stage": "P07",
+      "worst_case_cost_usd_by_rung": {
+        "CORE": 32.01,
+        "HELD_OUT_CONFIRMATION": 27.354,
+        "SMOKE": 3.492
+      }
+    },
+    {
+      "calls_by_rung": {
+        "CORE": 6,
+        "HELD_OUT_CONFIRMATION": 3,
+        "SMOKE": 3
+      },
+      "candidate_id": "P09-C1-LUNA-HIGH",
+      "expected_cost_usd_by_rung": {
+        "CORE": 0.0636,
+        "HELD_OUT_CONFIRMATION": 0.0318,
+        "SMOKE": 0.0318
+      },
+      "full_ladder_cap_usd": 0.3103,
+      "model": "gpt-5.6-luna",
+      "per_call_cap_usd": 0.0235,
+      "reasoning_effort": "HIGH",
+      "stage": "P09",
+      "worst_case_cost_usd_by_rung": {
+        "CORE": 0.1128,
+        "HELD_OUT_CONFIRMATION": 0.0564,
+        "SMOKE": 0.0564
+      }
+    },
+    {
+      "calls_by_rung": {
+        "CORE": 6,
+        "HELD_OUT_CONFIRMATION": 3,
+        "SMOKE": 3
+      },
+      "candidate_id": "P09-C2-LUNA-XHIGH",
+      "expected_cost_usd_by_rung": {
+        "CORE": 0.0924,
+        "HELD_OUT_CONFIRMATION": 0.0462,
+        "SMOKE": 0.0462
+      },
+      "full_ladder_cap_usd": 0.3103,
+      "model": "gpt-5.6-luna",
+      "per_call_cap_usd": 0.0235,
+      "reasoning_effort": "XHIGH",
+      "stage": "P09",
+      "worst_case_cost_usd_by_rung": {
+        "CORE": 0.1128,
+        "HELD_OUT_CONFIRMATION": 0.0564,
+        "SMOKE": 0.0564
+      }
+    }
+  ],
+  "per_stage": {
+    "P04": {
+      "candidate_count": 3,
+      "core_cap_usd": 23.4918,
+      "held_out_cap_usd": 27.189,
+      "held_out_passes_funded": 2,
+      "smoke_cap_usd": 3.9153,
+      "stage_cap_usd": 60.0557,
+      "technical_retry_reserve_usd": 5.4596
+    },
+    "P06": {
+      "candidate_count": 3,
+      "core_cap_usd": 76.6272,
+      "held_out_cap_usd": 121.695,
+      "held_out_passes_funded": 2,
+      "smoke_cap_usd": 2.3946,
+      "stage_cap_usd": 220.7885,
+      "technical_retry_reserve_usd": 20.0717
+    },
+    "P07": {
+      "candidate_count": 3,
+      "core_cap_usd": 48.0315,
+      "held_out_cap_usd": 68.385,
+      "held_out_passes_funded": 2,
+      "smoke_cap_usd": 5.2398,
+      "stage_cap_usd": 133.8219,
+      "technical_retry_reserve_usd": 12.1656
+    },
+    "P09": {
+      "candidate_count": 2,
+      "core_cap_usd": 0.282,
+      "held_out_cap_usd": 0.141,
+      "held_out_passes_funded": 2,
+      "smoke_cap_usd": 0.141,
+      "stage_cap_usd": 0.6204,
+      "technical_retry_reserve_usd": 0.0564
+    }
+  },
+  "provider_calls_performed": 0,
+  "schema_version": "phase9-call-budget-projection/1.0.0"
+}

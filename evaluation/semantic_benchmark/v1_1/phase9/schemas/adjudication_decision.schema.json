@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pruebas-personalizadas.invalid/schemas/phase9/1.0.0/adjudication-decision.json",
+  "title": "Blind single-pass adjudication decision",
+  "description": "One decision over one minimal review packet. The adjudicator never emits TECHNICAL_FAILURE: infrastructure classifies transport, timeout, truncation and schema failures before a packet is ever built. No candidate identity may appear anywhere in this document.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "packet_hash",
+    "property_id",
+    "decision",
+    "confidence",
+    "source_findings",
+    "candidate_output_findings",
+    "defensible_alternative_considered",
+    "oracle_problem_detected",
+    "model_failure_requirements",
+    "rationale"
+  ],
+  "properties": {
+    "schema_version": {"const": "phase9-adjudication-decision/1.0.0"},
+    "packet_hash": {"type": "string", "pattern": "^sha256:[a-f0-9]{64}$"},
+    "property_id": {"type": "string", "minLength": 1},
+    "decision": {
+      "enum": [
+        "PASS",
+        "MODEL_FAILURE",
+        "DEFENSIBLE_ALTERNATIVE",
+        "ORACLE_SUSPECT",
+        "PENDING_ADJUDICATION"
+      ]
+    },
+    "confidence": {"enum": ["HIGH", "MEDIUM", "LOW"]},
+    "source_findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["source_ref", "finding"],
+        "properties": {
+          "source_ref": {"type": "string", "minLength": 1},
+          "finding": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "candidate_output_findings": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1}
+    },
+    "defensible_alternative_considered": {"type": "boolean"},
+    "oracle_problem_detected": {"type": "boolean"},
+    "model_failure_requirements": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Every requirement must be true for a MODEL_FAILURE decision.",
+      "required": [
+        "PROPERTY_ORACLE_STATE_IS_VALID",
+        "CANDIDATE_OUTPUT_ACTUALLY_VIOLATES_THE_PROPERTY",
+        "VIOLATION_ATTRIBUTABLE_TO_THE_MODEL_OWNED_STAGE",
+        "NOT_A_DETERMINISTIC_MATERIALIZER_PARSER_OR_PLANNER_FAILURE",
+        "NOT_A_TECHNICAL_FAILURE",
+        "FIXTURE_IS_VALID",
+        "AUTHORIZED_SOURCE_CLEARLY_SUPPORTS_THE_JUDGEMENT",
+        "NO_REASONABLE_DEFENSIBLE_ALTERNATIVE_EXISTS",
+        "JUDGEMENT_DOES_NOT_DEPEND_ON_EXTERNAL_KNOWLEDGE",
+        "ADJUDICATOR_CONFIDENCE_IS_HIGH",
+        "RATIONALE_CITES_CONCRETE_SOURCE_REFS"
+      ],
+      "patternProperties": {"^[A-Z_]+$": {"type": "boolean"}}
+    },
+    "rationale": {"type": "string", "minLength": 1}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"decision": {"const": "MODEL_FAILURE"}}},
+      "then": {
+        "properties": {
+          "confidence": {"const": "HIGH"},
+          "defensible_alternative_considered": {"const": true},
+          "source_findings": {"minItems": 1}
+        }
+      }
+    }
+  ]
+}

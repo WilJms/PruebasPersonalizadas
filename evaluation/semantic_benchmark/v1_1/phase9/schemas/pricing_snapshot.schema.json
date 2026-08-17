@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pruebas-personalizadas.invalid/schemas/phase9/1.0.0/pricing-snapshot.json",
+  "title": "Official OpenAI pricing snapshot",
+  "description": "Prices read directly from the official OpenAI pricing page on retrieved_at. Repository history is never an acceptable source. Phase 9B must re-read the same official page immediately before the first real call and stop on any difference.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "retrieved_at",
+    "official_source",
+    "source_authority",
+    "pricing_unit",
+    "copied_from_repository_history",
+    "models",
+    "notes",
+    "refresh_guard"
+  ],
+  "properties": {
+    "schema_version": {"const": "phase9-pricing-snapshot/1.0.0"},
+    "retrieved_at": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$"},
+    "official_source": {"type": "string", "pattern": "^https://developers\\.openai\\.com/"},
+    "source_authority": {"const": "OFFICIAL_OPENAI_ONLY"},
+    "pricing_unit": {"const": "USD_PER_MILLION_TOKENS"},
+    "copied_from_repository_history": {"const": false},
+    "notes": {"type": "string", "minLength": 1},
+    "models": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["model", "input_price", "cached_input_price", "output_price"],
+        "properties": {
+          "model": {"enum": ["gpt-5.6-luna", "gpt-5.6-terra", "gpt-5.6-sol"]},
+          "input_price": {"type": "number", "exclusiveMinimum": 0},
+          "cached_input_price": {"type": "number", "minimum": 0},
+          "output_price": {"type": "number", "exclusiveMinimum": 0}
+        }
+      }
+    },
+    "refresh_guard": {
+      "type": "object",
+      "required": ["when", "action", "on_any_difference"],
+      "properties": {
+        "when": {"const": "IMMEDIATELY_BEFORE_THE_FIRST_REAL_CALL_OF_PHASE_9B"},
+        "on_any_difference": {"const": "STOP_DO_NOT_EXECUTE"}
+      }
+    }
+  }
+}

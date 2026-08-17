@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pruebas-personalizadas.invalid/schemas/phase9/1.0.0/failure-consolidation.json",
+  "title": "Deterministic two-pass failure consolidation",
+  "description": "Joins two independent blind adjudications of the same packet into one result state. The second pass is produced in a fresh context that never saw the first pass. No third model judge participates; the consolidator is a pure rule table.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "packet_hash",
+    "property_id",
+    "first_pass",
+    "second_pass",
+    "source_reasons_compatible",
+    "diagnostic",
+    "result_state",
+    "consolidator"
+  ],
+  "properties": {
+    "schema_version": {"const": "phase9-failure-consolidation/1.0.0"},
+    "packet_hash": {"type": "string", "pattern": "^sha256:[a-f0-9]{64}$"},
+    "property_id": {"type": "string", "minLength": 1},
+    "first_pass": {"$ref": "#/$defs/passRecord"},
+    "second_pass": {"$ref": "#/$defs/passRecord"},
+    "source_reasons_compatible": {
+      "type": "boolean",
+      "description": "True only when both passes cite at least one shared authorized source ref for the same violation."
+    },
+    "diagnostic": {
+      "enum": [
+        "MODEL_FAILURE_CONFIRMED",
+        "FAILURE_CONFIRMATION_REQUIRED",
+        "ADJUDICATION_DISAGREEMENT",
+        "ORACLE_REVIEW_FINDING",
+        "SOURCE_SCOPE_UNCLEAR"
+      ]
+    },
+    "result_state": {
+      "enum": ["MODEL_FAILURE", "ORACLE_SUSPECT", "PENDING_ADJUDICATION"]
+    },
+    "consolidator": {"const": "DETERMINISTIC_RULE_TABLE_NO_MODEL"}
+  },
+  "$defs": {
+    "passRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["decision", "confidence", "packet_result_hash", "saw_other_pass"],
+      "properties": {
+        "decision": {
+          "enum": [
+            "PASS",
+            "MODEL_FAILURE",
+            "DEFENSIBLE_ALTERNATIVE",
+            "ORACLE_SUSPECT",
+            "PENDING_ADJUDICATION"
+          ]
+        },
+        "confidence": {"enum": ["HIGH", "MEDIUM", "LOW"]},
+        "packet_result_hash": {"type": "string", "pattern": "^sha256:[a-f0-9]{64}$"},
+        "saw_other_pass": {"const": false}
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"result_state": {"const": "MODEL_FAILURE"}}},
+      "then": {
+        "properties": {
+          "diagnostic": {"const": "MODEL_FAILURE_CONFIRMED"},
+          "source_reasons_compatible": {"const": true},
+          "first_pass": {"properties": {"decision": {"const": "MODEL_FAILURE"}, "confidence": {"const": "HIGH"}}},
+          "second_pass": {"properties": {"decision": {"const": "MODEL_FAILURE"}, "confidence": {"const": "HIGH"}}}
+        }
+      }
+    }
+  ]
+}
