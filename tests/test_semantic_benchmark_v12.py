@@ -589,6 +589,40 @@ def test_ctx_l_context_cannot_attach_to_another_packet(build, catalog) -> None:
         )
 
 
+def test_ctx_strict_contract_rejects_any_added_field(build, catalog) -> None:
+    """Equivalent-or-stronger than additionalProperties=false.
+
+    The context hash covers every key except itself, so smuggling a field in --
+    forbidden name or not -- invalidates the binding cryptographically rather
+    than relying on a schema keyword.
+    """
+
+    route = build.routes["routes"][0]
+    context, packet, packet_hash, stage_hash = _context_for(build, catalog, route)
+    authority = p06_field_authority()["field_authority_hash"]
+
+    smuggled = {**context, "harmless_looking_extra": "anything"}
+    with pytest.raises(AdjudicationContextError):
+        verify_context_binding(
+            smuggled,
+            packet=packet,
+            packet_hash=packet_hash,
+            stage_boundary_hash=stage_hash,
+            field_authority_hash=authority,
+        )
+
+    tampered = deepcopy(context)
+    tampered["route_context"]["focus"] = "a different task"
+    with pytest.raises(AdjudicationContextError):
+        verify_context_binding(
+            tampered,
+            packet=packet,
+            packet_hash=packet_hash,
+            stage_boundary_hash=stage_hash,
+            field_authority_hash=authority,
+        )
+
+
 def test_ctx_m_blind_handoff_remains_self_contained(build, catalog) -> None:
     context, *_ = _context_for(build, catalog, build.routes["routes"][0])
     assert context["self_contained"] is True
