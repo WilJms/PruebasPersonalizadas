@@ -1,0 +1,101 @@
+{
+  "byte_size": 1154,
+  "media_type": "text/plain",
+  "parser_id": "stage0-txt",
+  "parser_version": "stage2-parser/2.0.0",
+  "schema_version": "phase9-blind-source-projection/1.0.0",
+  "source_content_hash": "sha256:398b27ac005011cfb99e2232fb949718e74c1698126dff4c0cd72d1d4ae51496",
+  "unit_count": 6,
+  "units": [
+    {
+      "content_text": "La función es completamente pura: `sorted` crea una lista nueva y nunca toca `solicitudes`. El diccionario conserva la primera aparición de cada id. La clave de tres campos garantiza el orden global incluso después de asignar por grupos.",
+      "evidence_id": "ev_980679b6b5472eebbfbc",
+      "locator": {
+        "column": null,
+        "heading_path": [],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 0,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "PARAGRAPH",
+      "normalized_hash": "sha256:b9182955db1a9f911b8663f589c220ddb079446cc54c8de0020a2c167ce9c475",
+      "source_order": 0
+    },
+    {
+      "content_text": "La complejidad es O(n log n) por la ordenación. Separar por grupo mantiene exactamente el mismo orden global, porque cada grupo es independiente y la lista ya venía ordenada. Las prioridades inválidas se descartan en la comprensión del diccionario.",
+      "evidence_id": "ev_fb54c43c83db40ca984f",
+      "locator": {
+        "column": null,
+        "heading_path": [],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 1,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "PARAGRAPH",
+      "normalized_hash": "sha256:8df0af92d3ff83b8e5b719b8869f82c74e7296542ff8625aeebac946dc066207",
+      "source_order": 1
+    },
+    {
+      "content_text": "## Decisiones",
+      "evidence_id": "ev_477e6db37c09bfc1f516",
+      "locator": {
+        "column": null,
+        "heading_path": [],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 2,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "PARAGRAPH",
+      "normalized_hash": "sha256:c9392147d5eb8393757b80bfc3c41bf13469e640de49935c74787046f61f7afc",
+      "source_order": 2
+    },
+    {
+      "content_text": "Elegí ordenar antes de deduplicar para que el diccionario reciba las solicitudes en el orden definitivo. Así la primera que entra por cada id es también la de mejor prioridad, y no hace falta comparar después.",
+      "evidence_id": "ev_5364ac7c738908d13538",
+      "locator": {
+        "column": null,
+        "heading_path": [],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 3,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "PARAGRAPH",
+      "normalized_hash": "sha256:eff3251117fc212844953e95bfbdf36a71e4ad072e3351a57ca9198eb48d120a",
+      "source_order": 3
+    },
+    {
+      "content_text": "El bucle exterior recorre `cupos_por_grupo` porque es la estructura que define la capacidad. Recorrerla garantiza que ningún grupo consuma lugares de otro y que un grupo con cupo cero envíe todas sus solicitudes a espera sin caso especial.",
+      "evidence_id": "ev_5fd8fec8babe0add5130",
+      "locator": {
+        "column": null,
+        "heading_path": [],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 4,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "PARAGRAPH",
+      "normalized_hash": "sha256:a1a2153be054d7f781d45adb29e200977e59c131e0557af26a3d81785379b2aa",
+      "source_order": 4
+    },
+    {
+      "content_text": "La copia de la lista de referencias en el caso de demostración muestra que la entrada original se conserva intacta después de la llamada, tal como exige el contrato de función pura.",
+      "evidence_id": "ev_0ae1110e283a8eac8bd8",
+      "locator": {
+        "column": null,
+        "heading_path": [],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 5,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "PARAGRAPH",
+      "normalized_hash": "sha256:d3f5d69af6de311a9fc951c8554d5de4737cd7489ea9fa7ae86c60e1ed6e3225",
+      "source_order": 5
+    }
+  ]
+}

@@ -1,0 +1,887 @@
+{
+  "byte_size": 39523,
+  "media_type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "parser_id": "stage2-docx-structural",
+  "parser_version": "stage2-parser/2.0.0",
+  "schema_version": "phase9-blind-source-projection/1.0.0",
+  "source_content_hash": "sha256:1a66e055a809a6be7e7a3a0ac33093c654b4dc826ff5df7c322888496ca41a5e",
+  "unit_count": 52,
+  "units": [
+    {
+      "content_text": "PAUTA DE CORRECCIÓN 03",
+      "evidence_id": "ev_f24788764c20ed411956",
+      "locator": {
+        "column": null,
+        "heading_path": [],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 0,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "PARAGRAPH",
+      "normalized_hash": "sha256:9d42a429c48faa44d0271c4b5424db6758fa04946b4ee081792ab354f6c90860",
+      "source_order": 0
+    },
+    {
+      "content_text": "Puesto de limonada: pauta con puntaje",
+      "evidence_id": "ev_8b79aefb874824bd7ae5",
+      "locator": {
+        "column": null,
+        "heading_path": [],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 1,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "PARAGRAPH",
+      "normalized_hash": "sha256:b2aa1eafae8969794dafb31eb03e3b5ed577f5160d71c21b0d203f7823d9efad",
+      "source_order": 1
+    },
+    {
+      "content_text": "Escala 0-4 por criterio. Puntaje máximo 40 puntos.",
+      "evidence_id": "ev_cf7a763c0b02a1bd75d3",
+      "locator": {
+        "column": null,
+        "heading_path": [],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 2,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "PARAGRAPH",
+      "normalized_hash": "sha256:c31ba66c9fe9843ece04fe6e755a94a211b94445cff6e073d122ad30af21f6cc",
+      "source_order": 2
+    },
+    {
+      "content_text": "Matemática aplicada   |   Nota de aprobación: 24/40",
+      "evidence_id": "ev_036d1929f99f0f7f3233",
+      "locator": {
+        "column": null,
+        "heading_path": [],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 3,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "PARAGRAPH",
+      "normalized_hash": "sha256:404dda38969433208c3221183a914d2b38606014d8a69342e6a63a195ceb21be",
+      "source_order": 3
+    },
+    {
+      "content_text": "Escala",
+      "evidence_id": "ev_1d7f3e3fa61fe8e10249",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Escala"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 4,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "HEADING",
+      "normalized_hash": "sha256:6432ba75d2571b124db2d0e07d279a0e3528888e0ede4296394175de4377a049",
+      "source_order": 4
+    },
+    {
+      "content_text": "Puntos",
+      "evidence_id": "ev_28315a3283d023bf8ac4",
+      "locator": {
+        "column": 0,
+        "heading_path": [
+          "Escala"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 0,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:55a18e3a79c75dbf84b73a287da110e5efe929d4a9712fc0a5187554e34604d0",
+      "source_order": 5
+    },
+    {
+      "content_text": "Significado",
+      "evidence_id": "ev_04637796629656cb3ee0",
+      "locator": {
+        "column": 1,
+        "heading_path": [
+          "Escala"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 0,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:54ad9824222058b790f7b4766b2dbeaa6bd5f37f1e71f61de0ce7fc5edf4aabc",
+      "source_order": 6
+    },
+    {
+      "content_text": "4",
+      "evidence_id": "ev_e5a018e9446aef10e9ca",
+      "locator": {
+        "column": 0,
+        "heading_path": [
+          "Escala"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 1,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:4b227777d4dd1fc61c6f884f48641d02b4d121d3fd328cb08b5531fcacdabf8a",
+      "source_order": 7
+    },
+    {
+      "content_text": "La operación pedida está completa y se puede reproducir con lo escrito.",
+      "evidence_id": "ev_96dc01a9546694ec2b20",
+      "locator": {
+        "column": 1,
+        "heading_path": [
+          "Escala"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 1,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:c33452d57a155f90f8a924a361727f88cbee2f144c31cead037b198060ef09dc",
+      "source_order": 8
+    },
+    {
+      "content_text": "3",
+      "evidence_id": "ev_c526311f03c80d1a3dae",
+      "locator": {
+        "column": 0,
+        "heading_path": [
+          "Escala"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 2,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:4e07408562bedb8b60ce05c1decfe3ad16b72230967de01f640b7e4729b49fce",
+      "source_order": 9
+    },
+    {
+      "content_text": "La operación está, con un error aritmético menor que no cambia la decisión.",
+      "evidence_id": "ev_99030e74a7111c6c4897",
+      "locator": {
+        "column": 1,
+        "heading_path": [
+          "Escala"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 2,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:ee156da29c62caefd0e703973008a2aec8b46e10be702f29fcd064fb72e0633d",
+      "source_order": 10
+    },
+    {
+      "content_text": "2",
+      "evidence_id": "ev_3333a9777aa52a354a82",
+      "locator": {
+        "column": 0,
+        "heading_path": [
+          "Escala"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 3,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:d4735e3a265e16eee03f59718b9b5d03019c07d8b6c51f90da3a666eec13ab35",
+      "source_order": 11
+    },
+    {
+      "content_text": "Aparece parte del procedimiento; falta un paso necesario para verificarlo.",
+      "evidence_id": "ev_428e21f1dc2b82cd53c9",
+      "locator": {
+        "column": 1,
+        "heading_path": [
+          "Escala"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 3,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:8cbdae9ba96f491a0730f69907225d6517e45d586c14c1f9a68e89ee03bff248",
+      "source_order": 12
+    },
+    {
+      "content_text": "1",
+      "evidence_id": "ev_c4fa4eeb0b0451498b51",
+      "locator": {
+        "column": 0,
+        "heading_path": [
+          "Escala"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 4,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b",
+      "source_order": 13
+    },
+    {
+      "content_text": "Se menciona el concepto sin cálculo asociado.",
+      "evidence_id": "ev_840e2f68b8a7772e80bf",
+      "locator": {
+        "column": 1,
+        "heading_path": [
+          "Escala"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 4,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:95d4f6340a88ae7338f402284985e817be6c815d3f0d28a59735e8f9caf01af5",
+      "source_order": 14
+    },
+    {
+      "content_text": "0",
+      "evidence_id": "ev_fbd0641c48c497750247",
+      "locator": {
+        "column": 0,
+        "heading_path": [
+          "Escala"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 5,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9",
+      "source_order": 15
+    },
+    {
+      "content_text": "Ausente, o el cálculo contradice la decisión sin advertirlo.",
+      "evidence_id": "ev_303307f1177e25560118",
+      "locator": {
+        "column": 1,
+        "heading_path": [
+          "Escala"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 5,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:ac33b9f1433a5e41bff4825ac15728ce48c0827182c26287c5c186dc0edccb71",
+      "source_order": 16
+    },
+    {
+      "content_text": "Criterios y ponderación",
+      "evidence_id": "ev_dcdcd51a53a4a8105ca4",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Criterios y ponderación"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 6,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "HEADING",
+      "normalized_hash": "sha256:cb804ed6ec8d7539a0ccc60f8c1ea55a785017da363ffe2d7539f19487a97417",
+      "source_order": 17
+    },
+    {
+      "content_text": "#",
+      "evidence_id": "ev_48494644806906a81eb2",
+      "locator": {
+        "column": 0,
+        "heading_path": [
+          "Criterios y ponderación"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 0,
+        "table_index": 1
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:334359b90efed75da5f0ada1d5e6b256f4a6bd0aee7eb39c0f90182a021ffc8b",
+      "source_order": 18
+    },
+    {
+      "content_text": "Criterio",
+      "evidence_id": "ev_996cee86b0af8d8ec071",
+      "locator": {
+        "column": 1,
+        "heading_path": [
+          "Criterios y ponderación"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 0,
+        "table_index": 1
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:5b4de759e1494527e8a9f48b0865c7252654bb220deeb8c092d012fa1bee6f96",
+      "source_order": 19
+    },
+    {
+      "content_text": "Peso",
+      "evidence_id": "ev_08b45e32355c277bdcd2",
+      "locator": {
+        "column": 2,
+        "heading_path": [
+          "Criterios y ponderación"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 0,
+        "table_index": 1
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:c27dd5dd9f3cecad8e2dbd1a0ce21de5921c832d7ba2a54fddcbef9ee6105cc2",
+      "source_order": 20
+    },
+    {
+      "content_text": "Qué debe poder señalarse en el documento",
+      "evidence_id": "ev_69fe9de6185eb897dc23",
+      "locator": {
+        "column": 3,
+        "heading_path": [
+          "Criterios y ponderación"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 0,
+        "table_index": 1
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:6ef4a3ddaa3b79b98084e72de44eb10701825835c1d03873a13cced0fbef5882",
+      "source_order": 21
+    },
+    {
+      "content_text": "1",
+      "evidence_id": "ev_64e29ca9bc3fc129c42a",
+      "locator": {
+        "column": 0,
+        "heading_path": [
+          "Criterios y ponderación"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 1,
+        "table_index": 1
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b",
+      "source_order": 22
+    },
+    {
+      "content_text": "Identificación de plan, opción y cantidad",
+      "evidence_id": "ev_08d0159fa0ceb90afb31",
+      "locator": {
+        "column": 1,
+        "heading_path": [
+          "Criterios y ponderación"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 1,
+        "table_index": 1
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:facfe4048f36618ad0168c7a68016a9ad92d4ab65d69767746901ff252d04995",
+      "source_order": 23
+    },
+    {
+      "content_text": "x2",
+      "evidence_id": "ev_03fa085caeafb4641a6e",
+      "locator": {
+        "column": 2,
+        "heading_path": [
+          "Criterios y ponderación"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 1,
+        "table_index": 1
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:844ecc08164e2eab27634a9adee1afa6599e589570e719784e080ce747fc0e45",
+      "source_order": 24
+    },
+    {
+      "content_text": "Nombre de la opción de servicio y número entero de vasos entre 60 y 90.",
+      "evidence_id": "ev_e5a5bea6be936d67a89c",
+      "locator": {
+        "column": 3,
+        "heading_path": [
+          "Criterios y ponderación"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 1,
+        "table_index": 1
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:789cab3e7f4fdee82937c407568bf2e9590486b7f7765996e50689c28cc7ca9b",
+      "source_order": 25
+    },
+    {
+      "content_text": "2",
+      "evidence_id": "ev_f42d25b936433ca98d3d",
+      "locator": {
+        "column": 0,
+        "heading_path": [
+          "Criterios y ponderación"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 2,
+        "table_index": 1
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:d4735e3a265e16eee03f59718b9b5d03019c07d8b6c51f90da3a666eec13ab35",
+      "source_order": 26
+    },
+    {
+      "content_text": "Costo total con desglose",
+      "evidence_id": "ev_4a92214ef52362039526",
+      "locator": {
+        "column": 1,
+        "heading_path": [
+          "Criterios y ponderación"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 2,
+        "table_index": 1
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:f972f465c07d0ab5a6da685fb5b8a9af5e5dadc20efe45889e5b28fbb90674ee",
+      "source_order": 27
+    },
+    {
+      "content_text": "x3",
+      "evidence_id": "ev_b23fda95831496cc88e3",
+      "locator": {
+        "column": 2,
+        "heading_path": [
+          "Criterios y ponderación"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 2,
+        "table_index": 1
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:844b69c4d54cc264bc2dadb6bb70f53bc123beafc0f58d81ed8cd4a07c24a5a7",
+      "source_order": 28
+    },
+    {
+      "content_text": "Los $18 comunes, los $14 si corresponde y la expresión del costo variable.",
+      "evidence_id": "ev_bd3c3e49ff8fe4b0215f",
+      "locator": {
+        "column": 3,
+        "heading_path": [
+          "Criterios y ponderación"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 2,
+        "table_index": 1
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:f5cec3dad5fd0fa6cc7aca894caf5b8020ec7e324e6af3bb4b0b307f9e35394c",
+      "source_order": 29
+    },
+    {
+      "content_text": "3",
+      "evidence_id": "ev_615d03a48f478df22718",
+      "locator": {
+        "column": 0,
+        "heading_path": [
+          "Criterios y ponderación"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 3,
+        "table_index": 1
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:4e07408562bedb8b60ce05c1decfe3ad16b72230967de01f640b7e4729b49fce",
+      "source_order": 30
+    },
+    {
+      "content_text": "Ingreso y excedente bajo venta completa",
+      "evidence_id": "ev_0493f1d618368e2979b4",
+      "locator": {
+        "column": 1,
+        "heading_path": [
+          "Criterios y ponderación"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 3,
+        "table_index": 1
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:a6f02e567d7bb4fc04d2d3a21b89333a65386446e021286ac97f00da623ce32d",
+      "source_order": 31
+    },
+    {
+      "content_text": "x2",
+      "evidence_id": "ev_e22f1cfd79d9d16f7b5c",
+      "locator": {
+        "column": 2,
+        "heading_path": [
+          "Criterios y ponderación"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 3,
+        "table_index": 1
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:844ecc08164e2eab27634a9adee1afa6599e589570e719784e080ce747fc0e45",
+      "source_order": 32
+    },
+    {
+      "content_text": "Multiplicación por $1,25 y resta contra el costo calculado.",
+      "evidence_id": "ev_4653e5ec79cf6a39c6ee",
+      "locator": {
+        "column": 3,
+        "heading_path": [
+          "Criterios y ponderación"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 3,
+        "table_index": 1
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:e9ed0c4ad79bbbcc0c53d0783c8e1d573cb18666c85e325a950f5c336494e427",
+      "source_order": 33
+    },
+    {
+      "content_text": "4",
+      "evidence_id": "ev_401141238921ed70e0c6",
+      "locator": {
+        "column": 0,
+        "heading_path": [
+          "Criterios y ponderación"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 4,
+        "table_index": 1
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:4b227777d4dd1fc61c6f884f48641d02b4d121d3fd328cb08b5531fcacdabf8a",
+      "source_order": 34
+    },
+    {
+      "content_text": "Verificación de la restricción de capacidad",
+      "evidence_id": "ev_a309c173891c2993cfcb",
+      "locator": {
+        "column": 1,
+        "heading_path": [
+          "Criterios y ponderación"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 4,
+        "table_index": 1
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:cf611d44260e8a048c0a0131c4e83b405bc7bd680c3781629fefcc1982708a86",
+      "source_order": 35
+    },
+    {
+      "content_text": "x1",
+      "evidence_id": "ev_56551bb45da6c840940f",
+      "locator": {
+        "column": 2,
+        "heading_path": [
+          "Criterios y ponderación"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 4,
+        "table_index": 1
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:ec31682fde561917952ff78a7a8adeffd0febc372dd26871916c46c630381b45",
+      "source_order": 36
+    },
+    {
+      "content_text": "Relación explícita entre cantidad elegida y el tope de la opción.",
+      "evidence_id": "ev_1c7acaa96c3c65606b15",
+      "locator": {
+        "column": 3,
+        "heading_path": [
+          "Criterios y ponderación"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 4,
+        "table_index": 1
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:dcf33c6febd707c016e8b7343369eb2333985acb523fa0d923c36015dd602d35",
+      "source_order": 37
+    },
+    {
+      "content_text": "5",
+      "evidence_id": "ev_d1156759c6bbf948a13a",
+      "locator": {
+        "column": 0,
+        "heading_path": [
+          "Criterios y ponderación"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 5,
+        "table_index": 1
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:ef2d127de37b942baad06145e54b0c619a1f22327b2ebbcfbec78f5564afe39d",
+      "source_order": 38
+    },
+    {
+      "content_text": "Comparación con la alternativa no elegida",
+      "evidence_id": "ev_a5c4a83bbd585610e16e",
+      "locator": {
+        "column": 1,
+        "heading_path": [
+          "Criterios y ponderación"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 5,
+        "table_index": 1
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:a6c332fbf3bb4e8d300b7c47ef340c4cda01b8b4d46fb884de50383669e00937",
+      "source_order": 39
+    },
+    {
+      "content_text": "x1",
+      "evidence_id": "ev_0ff10953b63195a75d71",
+      "locator": {
+        "column": 2,
+        "heading_path": [
+          "Criterios y ponderación"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 5,
+        "table_index": 1
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:ec31682fde561917952ff78a7a8adeffd0febc372dd26871916c46c630381b45",
+      "source_order": 40
+    },
+    {
+      "content_text": "Al menos una cifra de la otra opción puesta al lado de la propia.",
+      "evidence_id": "ev_3d857eeeaf11832f6fd5",
+      "locator": {
+        "column": 3,
+        "heading_path": [
+          "Criterios y ponderación"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 5,
+        "table_index": 1
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:d28b02ad48bbf015621c998efca1a2eab07ce351f59d74370ff65bc0373dd74f",
+      "source_order": 41
+    },
+    {
+      "content_text": "6",
+      "evidence_id": "ev_0b68a0e60c4d52d01766",
+      "locator": {
+        "column": 0,
+        "heading_path": [
+          "Criterios y ponderación"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 6,
+        "table_index": 1
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:e7f6c011776e8db7cd330b54174fd76f7d0216b612387a5ffcfb81e6f0919683",
+      "source_order": 42
+    },
+    {
+      "content_text": "Riesgo o condición que cambiaría la decisión",
+      "evidence_id": "ev_a1d9cc6cf7d6f3ba7f97",
+      "locator": {
+        "column": 1,
+        "heading_path": [
+          "Criterios y ponderación"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 6,
+        "table_index": 1
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:86ab661474d1a59c65ca7d110df4855eaa334f100b5b092949c2fce6ce89ff95",
+      "source_order": 43
+    },
+    {
+      "content_text": "x1",
+      "evidence_id": "ev_7545bfe656368d5d4d6d",
+      "locator": {
+        "column": 2,
+        "heading_path": [
+          "Criterios y ponderación"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 6,
+        "table_index": 1
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:ec31682fde561917952ff78a7a8adeffd0febc372dd26871916c46c630381b45",
+      "source_order": 44
+    },
+    {
+      "content_text": "Un escenario concreto, no una advertencia general.",
+      "evidence_id": "ev_cb21e78c2f47d496da23",
+      "locator": {
+        "column": 3,
+        "heading_path": [
+          "Criterios y ponderación"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 6,
+        "table_index": 1
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:9773863aca088b224e277a310e119a0d6f567df87eaeb76ef2582de5dd438cb7",
+      "source_order": 45
+    },
+    {
+      "content_text": "Reglas de aplicación",
+      "evidence_id": "ev_efd56a4e5ea7d0c7cf5b",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Reglas de aplicación"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 8,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "HEADING",
+      "normalized_hash": "sha256:7456ed5d1f422defac3dc5694d956676954808529139c32ed58e960bb9549f39",
+      "source_order": 46
+    },
+    {
+      "content_text": "El puntaje se asigna por criterio y luego se multiplica por su peso. No se compensan criterios entre sí.",
+      "evidence_id": "ev_d27380f655cdab272139",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Reglas de aplicación"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 9,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "LIST",
+      "normalized_hash": "sha256:fad1bb33c7192ec81f5506f7cbe306e71ff41721438d5751845c1a3a208df66e",
+      "source_order": 47
+    },
+    {
+      "content_text": "Un criterio con puntaje 0 por contradicción interna se registra como 0 aunque otra parte del documento lo resuelva.",
+      "evidence_id": "ev_0fdb9da512997b906f94",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Reglas de aplicación"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 10,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "LIST",
+      "normalized_hash": "sha256:73b2db1c114a47715d3c0986e67adc0c41353db87b54c0d777b4836add990cd6",
+      "source_order": 48
+    },
+    {
+      "content_text": "Si el documento no contiene material para evaluar un criterio, se anota \"sin evidencia\" en lugar de 0, y ese criterio queda fuera del denominador.",
+      "evidence_id": "ev_fe57c16a95ce5717f3d8",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Reglas de aplicación"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 11,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "LIST",
+      "normalized_hash": "sha256:8391bc3aa13cf1664a83df3714a66347d31c6a68e21bbf892a852be0478cd8a8",
+      "source_order": 49
+    },
+    {
+      "content_text": "La extensión no otorga ni descuenta puntos.",
+      "evidence_id": "ev_7e01653f18d7e6c1ba04",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Reglas de aplicación"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 12,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "LIST",
+      "normalized_hash": "sha256:694f82cadde0684268f6e85bd313fe8b0749480f98ea27907f7f07f14a9463f2",
+      "source_order": 50
+    },
+    {
+      "content_text": "Observación: el criterio 6 admite más de una respuesta correcta. Un aumento de precio, una caída de demanda o una capacidad distinta son todos escenarios válidos si el documento los conecta con su propio plan.",
+      "evidence_id": "ev_f25cebd2307c9b51b307",
+      "locator": {
+        "column": 0,
+        "heading_path": [
+          "Reglas de aplicación"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 0,
+        "table_index": 2
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:d1f64619a183c702a369a54d6669230e1eb18c31c4fbc1eaa5bbbbf0b2209e8c",
+      "source_order": 51
+    }
+  ]
+}

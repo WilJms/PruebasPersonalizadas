@@ -1968,3 +1968,37 @@ def recompute_accounting_from_ledger(ledger: Mapping[str, Any]) -> dict[str, Any
         "by_stage": dict(sorted(by_stage.items())),
         "semantic_status": "PENDING_ADJUDICATION",
     }
+
+
+EFFECTIVE_ACCOUNTING_SOURCE_RULE: Final = "ACCOUNTING_AMENDMENT_WHEN_PRESENT"
+
+
+def effective_accounting(execution_dir: Path) -> dict[str, Any]:
+    """Return the accounting a consolidator must use, and say where it came from.
+
+    ``execution_manifest.json`` is historical evidence and is never rewritten,
+    but its original ``accounting`` block counted deterministic rejections
+    inside a single failure counter. Where an amendment exists it supersedes
+    that block; the ledger remains the underlying authority in both cases. A
+    consolidator must never read ``execution_manifest.json#accounting`` as the
+    technical gate.
+    """
+
+    ledger = json.loads((execution_dir / "call_ledger.json").read_text("utf-8"))
+    amendment_path = execution_dir / "accounting_amendment.json"
+    if amendment_path.is_file():
+        amendment = json.loads(amendment_path.read_text("utf-8"))
+        accounting = amendment["recomputed_accounting"]
+        source = "accounting_amendment.json"
+    else:
+        accounting = recompute_accounting_from_ledger(ledger)
+        source = "call_ledger.json"
+    return {
+        "rule": EFFECTIVE_ACCOUNTING_SOURCE_RULE,
+        "source": source,
+        "underlying_authority": "call_ledger.json",
+        "superseded": "execution_manifest.json#accounting",
+        "accounting": accounting,
+        "technical_failure_rate": accounting["technical_failure_rate"],
+        "semantic_status": "PENDING_ADJUDICATION",
+    }

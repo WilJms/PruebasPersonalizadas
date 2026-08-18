@@ -1,6 +1,6 @@
 PYTHON ?= .venv/bin/python
 
-.PHONY: install contracts openapi fixtures test test-cov stage0-demo stage0-fail stage0-injection semantic-benchmark-dry-run phase9-protocol-freeze phase9-smoke-dry-run phase9-smoke-real real-smoke harness-semantic-documents harness-semantic-rehearsal openai-convergence-dry-run openai-convergence-real openai-xhigh-qualification-dry-run openai-xhigh-qualification-real openai-max-qualification-dry-run openai-max-qualification-real openai-terra-medium-qualification-dry-run openai-terra-medium-qualification-real openai-terra-high-qualification-dry-run openai-terra-high-qualification-real openai-terra-xhigh-qualification-dry-run openai-terra-xhigh-qualification-real openai-sol-medium-qualification-dry-run openai-sol-medium-qualification-real openai-sol-high-qualification-dry-run openai-sol-high-qualification-real openai-sol-xhigh-qualification-dry-run openai-sol-xhigh-qualification-real openai-sol-ladder-dry-run openai-canary-dry-run openai-p01-injection-recanary-dry-run openai-p02-v113-recanary-dry-run openai-p04-v116-recanary-dry-run openai-p05-v114-recanary-dry-run openai-blueprint-v119-v115-recanary-dry-run openai-blueprint-v117-v115-timeout-recovery-dry-run openai-p06-v112-decision-lineage-recanary-dry-run openai-p09-v115-recanary-dry-run openai-p11-v114-direct-dry-run openai-qualification-dry-run openai-qualification-v113-continuation-dry-run openai-qualification-v114-continuation-dry-run frontend-install frontend-typecheck frontend-test frontend-build postgres-prepare postgres-e2e postgres-sensitive postgres-stage2-recovery secrets-check
+.PHONY: install contracts openapi fixtures test test-cov stage0-demo stage0-fail stage0-injection semantic-benchmark-dry-run phase9-protocol-freeze phase9-smoke-dry-run phase9-smoke-real phase9-blind-handoff phase9-blind-handoff-verify real-smoke harness-semantic-documents harness-semantic-rehearsal openai-convergence-dry-run openai-convergence-real openai-xhigh-qualification-dry-run openai-xhigh-qualification-real openai-max-qualification-dry-run openai-max-qualification-real openai-terra-medium-qualification-dry-run openai-terra-medium-qualification-real openai-terra-high-qualification-dry-run openai-terra-high-qualification-real openai-terra-xhigh-qualification-dry-run openai-terra-xhigh-qualification-real openai-sol-medium-qualification-dry-run openai-sol-medium-qualification-real openai-sol-high-qualification-dry-run openai-sol-high-qualification-real openai-sol-xhigh-qualification-dry-run openai-sol-xhigh-qualification-real openai-sol-ladder-dry-run openai-canary-dry-run openai-p01-injection-recanary-dry-run openai-p02-v113-recanary-dry-run openai-p04-v116-recanary-dry-run openai-p05-v114-recanary-dry-run openai-blueprint-v119-v115-recanary-dry-run openai-blueprint-v117-v115-timeout-recovery-dry-run openai-p06-v112-decision-lineage-recanary-dry-run openai-p09-v115-recanary-dry-run openai-p11-v114-direct-dry-run openai-qualification-dry-run openai-qualification-v113-continuation-dry-run openai-qualification-v114-continuation-dry-run frontend-install frontend-typecheck frontend-test frontend-build postgres-prepare postgres-e2e postgres-sensitive postgres-stage2-recovery secrets-check
 
 install:
 	$(PYTHON) -m pip install -e '.[dev]'
@@ -57,6 +57,18 @@ phase9-smoke-real:
 		--secret-version-resource "$(SECRET_VERSION_RESOURCE)" \
 		--created-by "$${CVA_PHASE9_OPERATOR:-phase9b1-operator}" \
 		--report "$(REPORT)"
+
+# Phase 9B.2. Packages the frozen blind bundle so an isolated adjudicator needs
+# nothing else. Touches no packet, calls no provider, decides nothing.
+phase9-blind-handoff:
+	@env -u OPENAI_API_KEY -u CVA_OPENAI_API_KEY \
+		CVA_MODEL_MODE=mock CVA_P10_ENABLED=false $(PYTHON) \
+		scripts/build_phase9_blind_handoff.py
+
+phase9-blind-handoff-verify:
+	@env -u OPENAI_API_KEY -u CVA_OPENAI_API_KEY \
+		CVA_MODEL_MODE=mock CVA_P10_ENABLED=false $(PYTHON) \
+		scripts/build_phase9_blind_handoff.py --verify-only
 
 real-smoke:
 	$(PYTHON) -m comprehension_verification.cli real-provider-smoke --budget-usd "$${CVA_REAL_SMOKE_BUDGET_USD:-0}"

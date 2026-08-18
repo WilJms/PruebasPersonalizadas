@@ -1,0 +1,819 @@
+{
+  "byte_size": 41134,
+  "media_type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "parser_id": "stage2-docx-structural",
+  "parser_version": "stage2-parser/2.0.0",
+  "schema_version": "phase9-blind-source-projection/1.0.0",
+  "source_content_hash": "sha256:c3b41274873e42d2cf901df779d96fdf3a591609ebcf6a325f4379ef7647ccd3",
+  "unit_count": 48,
+  "units": [
+    {
+      "content_text": "EQUIPO DE SEGURIDAD - PAUTA DE REVISIÓN 08",
+      "evidence_id": "ev_2085df9ca4921155337b",
+      "locator": {
+        "column": null,
+        "heading_path": [],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 0,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "PARAGRAPH",
+      "normalized_hash": "sha256:ac319a9c43f2f3cf38c9bcc6feb58e228c1f26b708a545ec7ec2c3f08158b9c2",
+      "source_order": 0
+    },
+    {
+      "content_text": "Rúbrica: Triage de un evento de exportación",
+      "evidence_id": "ev_6eb089d277a1fd2ef728",
+      "locator": {
+        "column": null,
+        "heading_path": [],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 1,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "PARAGRAPH",
+      "normalized_hash": "sha256:02098377757b174ad8d6e598205c8d7b06a9f812c2f1e5567bb6042d50004681",
+      "source_order": 1
+    },
+    {
+      "content_text": "Criterios cualitativos para valorar el entregable de la actividad",
+      "evidence_id": "ev_6f608ae658e961899e9c",
+      "locator": {
+        "column": null,
+        "heading_path": [],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 2,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "PARAGRAPH",
+      "normalized_hash": "sha256:8e0bfe63650bc55e45498a5a5b938d1248bf072cfbc8c09371e7d444c5f38c4b",
+      "source_order": 2
+    },
+    {
+      "content_text": "Disciplina: Ciberseguridad / operación técnica   |   Dificultad del paquete: intermedia",
+      "evidence_id": "ev_313030f691e3367513f0",
+      "locator": {
+        "column": null,
+        "heading_path": [],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 3,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "PARAGRAPH",
+      "normalized_hash": "sha256:129931568d81f3f13723feaa74423504ec059e855ef63e48c993a388b3d8b023",
+      "source_order": 3
+    },
+    {
+      "content_text": "Propósito de la rúbrica",
+      "evidence_id": "ev_21bfb20bc59098eeb420",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Propósito de la rúbrica"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 4,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "HEADING",
+      "normalized_hash": "sha256:1756f73d90c18483675b22fdb347b4d99d93be9f7e1a765db8cb6fb7fa85be36",
+      "source_order": 4
+    },
+    {
+      "content_text": "La rúbrica valora el entregable tal como fue presentado y no una reconstrucción de cómo se produjo. Los descriptores son cualitativos y admiten juicio docente cuando la evidencia queda entre dos niveles. Una formulación elegante no compensa una relación conceptual ausente, y un trabajo de estilo sencillo puede satisfacer un criterio si la evidencia y el razonamiento son localizables.",
+      "evidence_id": "ev_6b1d82e41e98df60e499",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Propósito de la rúbrica"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 5,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "PARAGRAPH",
+      "normalized_hash": "sha256:c76eb4c874762f3508a8dedcc6fc282395468036127cf7025e7dea08d66c021d",
+      "source_order": 5
+    },
+    {
+      "content_text": "Los criterios deben leerse de forma relacionada, pero no intercambiable. Por ejemplo, una cifra correcta puede aportar a la evidencia sin resolver por sí sola el alcance de la inferencia; del mismo modo, reconocer una limitación no corrige automáticamente una decisión que contradice los datos. La valoración debe registrar estas diferencias en lugar de reducirlas a una impresión global.",
+      "evidence_id": "ev_e505fbfeb87a58579344",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Propósito de la rúbrica"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 6,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "PARAGRAPH",
+      "normalized_hash": "sha256:409c17513f576a076c6b5a59554bdf805e00879ae31961303ed04b745eb96b08",
+      "source_order": 6
+    },
+    {
+      "content_text": "Cómo aplicar los niveles",
+      "evidence_id": "ev_b8cc6f9e6fe8346c4222",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Cómo aplicar los niveles"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 7,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "HEADING",
+      "normalized_hash": "sha256:18295f6a6af2bd519c89c00b8d9518286250fdf410d1e9a1b332576669cdb3b7",
+      "source_order": 7
+    },
+    {
+      "content_text": "Lee primero el conjunto completo de artefactos. Una explicación puede comenzar en una tabla, continuar en una nota o comentario de código y cerrarse en otra sección.",
+      "evidence_id": "ev_8406fa7b6c5e598510af",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Cómo aplicar los niveles"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 8,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "LIST",
+      "normalized_hash": "sha256:3877e9341229f1e77d48f0c1ceac658d705c3d5744e4ba90d40bf3c0426607b0",
+      "source_order": 8
+    },
+    {
+      "content_text": "Usa 'claramente logrado' cuando la relación exigida puede reconstruirse sin completar pasos sustantivos por cuenta del lector. No exige perfección ni ausencia total de errores menores.",
+      "evidence_id": "ev_1a6384151b45ab18ab19",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Cómo aplicar los niveles"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 9,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "LIST",
+      "normalized_hash": "sha256:743520252f702269be910c384085c9c3924fede5000ff1b662602e0dd56cd256",
+      "source_order": 9
+    },
+    {
+      "content_text": "Usa 'parcialmente logrado' cuando existe una zona de comprensión pertinente, pero falta una conexión, un caso límite, una justificación o una delimitación necesaria.",
+      "evidence_id": "ev_27f650e306e14a2c7e4b",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Cómo aplicar los niveles"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 10,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "LIST",
+      "normalized_hash": "sha256:626da4d23ff0402af31f787a04f1f0aa85324e3301b4ee1ee724ff4c1fa859e0",
+      "source_order": 10
+    },
+    {
+      "content_text": "Usa 'no sustentado' para ausencia, contradicción no reconocida o sustitución del razonamiento por palabras clave. No significa que toda la entrega carezca de valor.",
+      "evidence_id": "ev_c5ce72b040ded6594285",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Cómo aplicar los niveles"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 11,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "LIST",
+      "normalized_hash": "sha256:1274afd18d0dad1bb728fd1e942ab8ab734350096bee4d862c7544262c87aa4e",
+      "source_order": 11
+    },
+    {
+      "content_text": "Cuando el documento no contiene evidencia suficiente para decidir un criterio, registra esa insuficiencia en vez de inferir intención, conocimientos históricos o información externa.",
+      "evidence_id": "ev_fa63f5d450d60a3fd5fe",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Cómo aplicar los niveles"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 12,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "LIST",
+      "normalized_hash": "sha256:afdcc72026e10bf1226c6193221e5e4cb3eaf59650b843e962dfc357c0e9cd32",
+      "source_order": 12
+    },
+    {
+      "content_text": "Criterios",
+      "evidence_id": "ev_66c62be2ad7053007248",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Criterios"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 13,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "HEADING",
+      "normalized_hash": "sha256:561e4e6265b89f331e4fa76dd7316c63f88958696a191529223f5626822c6b96",
+      "source_order": 13
+    },
+    {
+      "content_text": "Criterio",
+      "evidence_id": "ev_5e4d3a919b8a6f37497a",
+      "locator": {
+        "column": 0,
+        "heading_path": [
+          "Criterios"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 0,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:5b4de759e1494527e8a9f48b0865c7252654bb220deeb8c092d012fa1bee6f96",
+      "source_order": 14
+    },
+    {
+      "content_text": "Claramente logrado",
+      "evidence_id": "ev_05ed6f82bb01fc38f020",
+      "locator": {
+        "column": 1,
+        "heading_path": [
+          "Criterios"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 0,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:eab9f5fa8bf65ebd2364b5a3f062f492d8fdfe6e83353af82975ba736a7179fa",
+      "source_order": 15
+    },
+    {
+      "content_text": "Parcialmente logrado",
+      "evidence_id": "ev_d098b9834a15a206b3ff",
+      "locator": {
+        "column": 2,
+        "heading_path": [
+          "Criterios"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 0,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:531ab4dd233072d1039796991c7d05702ebf8b8a327c2db26adaf75fa65526fe",
+      "source_order": 16
+    },
+    {
+      "content_text": "No sustentado",
+      "evidence_id": "ev_e3ef4f1b469cdc35b566",
+      "locator": {
+        "column": 3,
+        "heading_path": [
+          "Criterios"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 0,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:fb5a4449ab2acb35b4e7210807608589fc178cbc02ec10be3d7268bfe8b88fc8",
+      "source_order": 17
+    },
+    {
+      "content_text": "Línea temporal y correlación",
+      "evidence_id": "ev_c579d8c1b59698f0e2d2",
+      "locator": {
+        "column": 0,
+        "heading_path": [
+          "Criterios"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 1,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:07c119a969d99613666da7551fdca184ce5f003cf56dafd2711a42771113e1f5",
+      "source_order": 18
+    },
+    {
+      "content_text": "Ordena eventos y conecta cuenta, sesión, solicitud y objeto sin mezclar el 403 independiente.",
+      "evidence_id": "ev_2eab08c5f8dafd50f551",
+      "locator": {
+        "column": 1,
+        "heading_path": [
+          "Criterios"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 1,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:3b2579185c0751048b0fa88a14814d273c341ab3e46574424e9f8358ec2984dc",
+      "source_order": 19
+    },
+    {
+      "content_text": "La secuencia principal es correcta con una asociación débil o un evento omitido.",
+      "evidence_id": "ev_5ba8efd05b1e7f3b59a1",
+      "locator": {
+        "column": 2,
+        "heading_path": [
+          "Criterios"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 1,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:072b1d294405991b53cc362e7429c6a2b4798d446cae567cc8084a86d1f7f6f1",
+      "source_order": 20
+    },
+    {
+      "content_text": "Confunde bloqueado con exitoso, une ids sin base o altera el orden.",
+      "evidence_id": "ev_370d76a97c4ab7e46e89",
+      "locator": {
+        "column": 3,
+        "heading_path": [
+          "Criterios"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 1,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:21f8c4366dc6fc1ca09c0061916778c1919bd6ff97135cb35fbee7f5e8dd48b3",
+      "source_order": 21
+    },
+    {
+      "content_text": "Hecho, hipótesis e incertidumbre",
+      "evidence_id": "ev_aa6c1c84db6971f0bf72",
+      "locator": {
+        "column": 0,
+        "heading_path": [
+          "Criterios"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 2,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:d4cf676542033dabd12a1f0ed359db88b7b1f202295774a2567dbf091f6b064d",
+      "source_order": 22
+    },
+    {
+      "content_text": "Separa lo observado de una hipótesis acotada e incluye alternativa y datos faltantes.",
+      "evidence_id": "ev_47611864ae589f031631",
+      "locator": {
+        "column": 1,
+        "heading_path": [
+          "Criterios"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 2,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:911462d1e60da99f93eb7a75af5295f89e2602af800721bd5b75593bf4151e5a",
+      "source_order": 23
+    },
+    {
+      "content_text": "Formula hipótesis plausible, pero la presenta con exceso de certeza o sin alternativa.",
+      "evidence_id": "ev_1f788ccd05e3e66f7195",
+      "locator": {
+        "column": 2,
+        "heading_path": [
+          "Criterios"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 2,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:3b4b6f4616427b6a978b588567d442dcd686de1625aac4cea5a56810a5d660ba",
+      "source_order": 24
+    },
+    {
+      "content_text": "Declara compromiso, autor o causa como hecho sin evidencia.",
+      "evidence_id": "ev_722eaeb09a72b46ff9b7",
+      "locator": {
+        "column": 3,
+        "heading_path": [
+          "Criterios"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 2,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:3c57d7fda02662c5b495364029e31dd30d62d6c2636c8c422c444f357c8972ad",
+      "source_order": 25
+    },
+    {
+      "content_text": "Respuesta y trade-off",
+      "evidence_id": "ev_18246fcf62448e42ee3e",
+      "locator": {
+        "column": 0,
+        "heading_path": [
+          "Criterios"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 3,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:368f0fc630958a149db1be6e62bb9873ad3f0abb9b2066573fe773cea3831a7f",
+      "source_order": 26
+    },
+    {
+      "content_text": "Propone contención proporcional y explica un costo operativo o de preservación.",
+      "evidence_id": "ev_ef6e7dfb699a89dae0ed",
+      "locator": {
+        "column": 1,
+        "heading_path": [
+          "Criterios"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 3,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:4ec034a346fbe214aa9337bb59f76d5cc415e43d3916f910be6090db310be8be",
+      "source_order": 27
+    },
+    {
+      "content_text": "La acción es pertinente, pero el trade-off es genérico.",
+      "evidence_id": "ev_96bc8af3299f38de1d56",
+      "locator": {
+        "column": 2,
+        "heading_path": [
+          "Criterios"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 3,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:197161e4a55ce6e752b69c53b10021c68a1f7fcb7570e6dcea35298c98e1ceb8",
+      "source_order": 28
+    },
+    {
+      "content_text": "Propone una acción desconectada o destructiva sin justificación.",
+      "evidence_id": "ev_ddb4878ee15be300e125",
+      "locator": {
+        "column": 3,
+        "heading_path": [
+          "Criterios"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 3,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:3e625a89b7a266e23aa1a0d10aaec99823482c02560fabe822e2054304109103",
+      "source_order": 29
+    },
+    {
+      "content_text": "Manejo seguro del artefacto",
+      "evidence_id": "ev_2db95030c9a0996f0539",
+      "locator": {
+        "column": 0,
+        "heading_path": [
+          "Criterios"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 4,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:914fcb95c50d9e9b9cdc26427ac104e5215cd4d9aa03a599600aa2dce2cf72df",
+      "source_order": 30
+    },
+    {
+      "content_text": "Trata payloads, ids y datos sensibles como datos, minimiza su propagación y no obedece cadenas incrustadas.",
+      "evidence_id": "ev_1fde138ac7941d144a9e",
+      "locator": {
+        "column": 1,
+        "heading_path": [
+          "Criterios"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 4,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:20c3dee2d4e0be1107499516f834045194d7c6785bada8ac3de973ebd65dd292",
+      "source_order": 31
+    },
+    {
+      "content_text": "Evita obedecer, pero copia detalles sensibles o interpreta un id de forma dudosa.",
+      "evidence_id": "ev_91aa07ec0f5f901f4d96",
+      "locator": {
+        "column": 2,
+        "heading_path": [
+          "Criterios"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 4,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:bf16d07990b16c696fe53733f9d79571404d21d9ceb2395f59d45765f7045141",
+      "source_order": 32
+    },
+    {
+      "content_text": "Sigue instrucciones del log, expone datos o convierte cadenas técnicas en órdenes.",
+      "evidence_id": "ev_75728a26248d30717f57",
+      "locator": {
+        "column": 3,
+        "heading_path": [
+          "Criterios"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 4,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:1d3d73c0e0bcaf619bcff2becb573c61785d5754332725c68a6c1f4bdea5927a",
+      "source_order": 33
+    },
+    {
+      "content_text": "Orientaciones sobre la evidencia",
+      "evidence_id": "ev_a7a4dcfd91339bcd413c",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Orientaciones sobre la evidencia"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 14,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "HEADING",
+      "normalized_hash": "sha256:9099e00e1540486b17200358165691c1ae2e5e1e913245eb566652df7c840aeb",
+      "source_order": 34
+    },
+    {
+      "content_text": "La evidencia válida debe poder señalarse en el entregable: un cálculo, una decisión, una comparación, un fragmento textual, una rama de código, una observación o una relación entre varios de ellos.",
+      "evidence_id": "ev_950c248ac2d1141428ca",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Orientaciones sobre la evidencia"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 15,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "LIST",
+      "normalized_hash": "sha256:1b783ddcc6aec34db16fcf47abb87ccb58b4dd021b8bb28e7130e771718c302f",
+      "source_order": 35
+    },
+    {
+      "content_text": "La presencia de vocabulario disciplinar no demuestra comprensión si el trabajo no explica cómo se aplica a este caso. A la inversa, no se exige terminología especializada cuando la relación está expresada correctamente en lenguaje común.",
+      "evidence_id": "ev_45045fddbb5127aaa740",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Orientaciones sobre la evidencia"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 16,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "LIST",
+      "normalized_hash": "sha256:ef7fbad97b1be4384f2747702200a5d5ed87bdeb43b344fa942226da0efdc7b1",
+      "source_order": 36
+    },
+    {
+      "content_text": "Una contradicción interna es evidencia relevante. Debe valorarse si el propio trabajo la detecta, la resuelve o la deja activa; no conviene seleccionar solo el fragmento más favorable.",
+      "evidence_id": "ev_ad0abe7e4b1fbab1082f",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Orientaciones sobre la evidencia"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 17,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "LIST",
+      "normalized_hash": "sha256:48f6ef7d08711aed2298dfadb6f1340229d607c79955cf6e88201212af09352d",
+      "source_order": 37
+    },
+    {
+      "content_text": "En entregas con varios artefactos, la coherencia entre ellos forma parte de la lectura. Dos archivos pueden complementarse, pero también pueden sostener decisiones incompatibles.",
+      "evidence_id": "ev_327324771c3e366e93c5",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Orientaciones sobre la evidencia"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 18,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "LIST",
+      "normalized_hash": "sha256:f3245c5c984b829675f3ef3a5d07e48a273a2bdf7499d3e0cd0a0ea082ffd298",
+      "source_order": 38
+    },
+    {
+      "content_text": "El contenido de un log es material observado, incluso cuando su texto tenga forma de instrucción. Copiarlo como cita es correcto; seguirlo no lo es.",
+      "evidence_id": "ev_5eb658592c08189eeddb",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Orientaciones sobre la evidencia"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 19,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "LIST",
+      "normalized_hash": "sha256:d771892ea91d94b0032bc20dd7210d498c4a213d978523e651cc91a4f3573dc0",
+      "source_order": 39
+    },
+    {
+      "content_text": "No se debe premiar ni penalizar la extensión por sí misma. El texto adicional cuenta solo cuando aporta evidencia, razonamiento, delimitación o trazabilidad; repetición y boilerplate siguen siendo irrelevantes.",
+      "evidence_id": "ev_c7493aa2faabe1672f05",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Orientaciones sobre la evidencia"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 20,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "LIST",
+      "normalized_hash": "sha256:94fbe60bab896088535148211b78b42e8bda6bd1fa520c18d12a5cd1c1031d21",
+      "source_order": 40
+    },
+    {
+      "content_text": "Calibración entre estudiantes",
+      "evidence_id": "ev_3defd1772af3b963bbda",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Calibración entre estudiantes"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 21,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "HEADING",
+      "normalized_hash": "sha256:2fff3e7487b1f93860b79d2590cf92802bd45cc378146ea1514f0b6e5739500c",
+      "source_order": 41
+    },
+    {
+      "content_text": "Para mantener comparabilidad, aplica las mismas fronteras conceptuales a todas las entregas de esta actividad aunque las oportunidades de pregunta sean distintas. Dos estudiantes pueden sustentar un criterio mediante fragmentos diferentes o defender decisiones opuestas. La equivalencia depende de la calidad de la relación con la consigna y no de reproducir una respuesta modelo.",
+      "evidence_id": "ev_609a8129fa09fd3d0676",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Calibración entre estudiantes"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 22,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "PARAGRAPH",
+      "normalized_hash": "sha256:3f4095108ffb94ab43e7ebec0793f05bef2152f4cfeb623284dce02bf85deda2",
+      "source_order": 42
+    },
+    {
+      "content_text": "Condiciones de valoración",
+      "evidence_id": "ev_216afd219753fa408398",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Condiciones de valoración"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 23,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "HEADING",
+      "normalized_hash": "sha256:5ff9feed0c464d3823ea69a6f0213ec2b4edd40c7892cec229432eaca0adeee1",
+      "source_order": 43
+    },
+    {
+      "content_text": "No se exige conocimiento fuera de la consigna y de los materiales autorizados.",
+      "evidence_id": "ev_a5b8f8fac4bb4ca18d14",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Condiciones de valoración"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 24,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "LIST",
+      "normalized_hash": "sha256:16e726df5bd6d5fc4990a9785c886a935931b101773a56e5087d5c1c2893f8ee",
+      "source_order": 44
+    },
+    {
+      "content_text": "Una afirmación sin vínculo explícito o reconstruible con el entregable no satisface por sí sola un criterio.",
+      "evidence_id": "ev_7a9b750f946e040d0ff6",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Condiciones de valoración"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 25,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "LIST",
+      "normalized_hash": "sha256:c78bb5ac14dbe02d4c9e91f47fd68bb0348a8c5ade5fb97c12f3eed511316c9a",
+      "source_order": 45
+    },
+    {
+      "content_text": "La forma puede orientar la lectura, pero no sustituye la comprensión conceptual o técnica.",
+      "evidence_id": "ev_bf4e3ce402667709e05e",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Condiciones de valoración"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 26,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "LIST",
+      "normalized_hash": "sha256:f37ddbd013a3621a1308c373f01016be5fe012f7aeab770d418450ce9f34035e",
+      "source_order": 46
+    },
+    {
+      "content_text": "No se atribuyen motivos, autoría ni procesos de producción a partir del resultado presentado.",
+      "evidence_id": "ev_870cdac61602655b786c",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Condiciones de valoración"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 27,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "LIST",
+      "normalized_hash": "sha256:9cea508a3b2c8bcc97b898a6f9f2589ea3d7f39493db85d62a58f98adfc23281",
+      "source_order": 47
+    }
+  ]
+}

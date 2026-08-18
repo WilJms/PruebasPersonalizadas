@@ -1,0 +1,601 @@
+{
+  "packet_source_relations": 50,
+  "packet_sources": [
+    {
+      "declared_ref": "02_rubric.docx",
+      "packet_hash": "sha256:bb08b77fc6c13627fe5ce90538871ece470e8f981048500cea670084e1917d89",
+      "packet_id": "pkt-004c4d800926d036842b",
+      "projection_path": "projections/sha256-4d094045be8e9df0cf35fca1407973b8a71d7c0108cca89da5d60504b5e25126.docx.json",
+      "resolution_status": "RESOLVED_EXACT_HASH",
+      "source_blob_hash": "sha256:4d094045be8e9df0cf35fca1407973b8a71d7c0108cca89da5d60504b5e25126",
+      "source_blob_path": "sources/sha256-4d094045be8e9df0cf35fca1407973b8a71d7c0108cca89da5d60504b5e25126.docx"
+    },
+    {
+      "declared_ref": "submissions/submission_06_artifact_01.md",
+      "packet_hash": "sha256:823e34a9f7fe70117f31b939b6d82fb11f76af8dc349d0c954cb9447cfde482b",
+      "packet_id": "pkt-02c232a62cce33bdff26",
+      "projection_path": "projections/sha256-d8752f762a023dc1ae6aa9a52eb978c86883b43fce9c8a84e0179673d765a51d.md.json",
+      "resolution_status": "RESOLVED_EXACT_HASH",
+      "source_blob_hash": "sha256:d8752f762a023dc1ae6aa9a52eb978c86883b43fce9c8a84e0179673d765a51d",
+      "source_blob_path": "sources/sha256-d8752f762a023dc1ae6aa9a52eb978c86883b43fce9c8a84e0179673d765a51d.md"
+    },
+    {
+      "declared_ref": "submissions/submission_06_artifact_02.txt",
+      "packet_hash": "sha256:823e34a9f7fe70117f31b939b6d82fb11f76af8dc349d0c954cb9447cfde482b",
+      "packet_id": "pkt-02c232a62cce33bdff26",
+      "projection_path": "projections/sha256-398b27ac005011cfb99e2232fb949718e74c1698126dff4c0cd72d1d4ae51496.txt.json",
+      "resolution_status": "RESOLVED_EXACT_HASH",
+      "source_blob_hash": "sha256:398b27ac005011cfb99e2232fb949718e74c1698126dff4c0cd72d1d4ae51496",
+      "source_blob_path": "sources/sha256-398b27ac005011cfb99e2232fb949718e74c1698126dff4c0cd72d1d4ae51496.txt"
+    },
+    {
+      "declared_ref": "02_rubric.docx",
+      "packet_hash": "sha256:94fab6570564a40b95df3388744b33a0745d0d2a13cff5e0222bd1c9e2701efa",
+      "packet_id": "pkt-0680372053a524ff7a28",
+      "projection_path": "projections/sha256-1a66e055a809a6be7e7a3a0ac33093c654b4dc826ff5df7c322888496ca41a5e.docx.json",
+      "resolution_status": "RESOLVED_EXACT_HASH",
+      "source_blob_hash": "sha256:1a66e055a809a6be7e7a3a0ac33093c654b4dc826ff5df7c322888496ca41a5e",
+      "source_blob_path": "sources/sha256-1a66e055a809a6be7e7a3a0ac33093c654b4dc826ff5df7c322888496ca41a5e.docx"
+    },
+    {
+      "declared_ref": "02_rubric.docx",
+      "packet_hash": "sha256:6888f77799464e2a9a25fbe803f763251916c043f29a38e310042b9e508ae886",
+      "packet_id": "pkt-0db1cebf34c341d9e139",
+      "projection_path": "projections/sha256-1a66e055a809a6be7e7a3a0ac33093c654b4dc826ff5df7c322888496ca41a5e.docx.json",
+      "resolution_status": "RESOLVED_EXACT_HASH",
+      "source_blob_hash": "sha256:1a66e055a809a6be7e7a3a0ac33093c654b4dc826ff5df7c322888496ca41a5e",
+      "source_blob_path": "sources/sha256-1a66e055a809a6be7e7a3a0ac33093c654b4dc826ff5df7c322888496ca41a5e.docx"
+    },
+    {
+      "declared_ref": "01_assignment.docx",
+      "packet_hash": "sha256:092c99691e13a6ed755bdd7d1c583a504c9bddcffc274977e866aaca331580cd",
+      "packet_id": "pkt-0e3bd7394e892ad7185c",
+      "projection_path": "projections/sha256-8a4b3a84858cc4b6960bfc7385161d3a43b6751ca26d0f8690ad7a28220257b5.docx.json",
+      "resolution_status": "RESOLVED_EXACT_HASH",
+      "source_blob_hash": "sha256:8a4b3a84858cc4b6960bfc7385161d3a43b6751ca26d0f8690ad7a28220257b5",
+      "source_blob_path": "sources/sha256-8a4b3a84858cc4b6960bfc7385161d3a43b6751ca26d0f8690ad7a28220257b5.docx"
+    },
+    {
+      "declared_ref": "submissions/submission_02.txt",
+      "packet_hash": "sha256:092c99691e13a6ed755bdd7d1c583a504c9bddcffc274977e866aaca331580cd",
+      "packet_id": "pkt-0e3bd7394e892ad7185c",
+      "projection_path": "projections/sha256-a74fcd256a54a4c1f6a18610bab5a038132af7029317b5225acbb88b67388578.txt.json",
+      "resolution_status": "RESOLVED_EXACT_HASH",
+      "source_blob_hash": "sha256:a74fcd256a54a4c1f6a18610bab5a038132af7029317b5225acbb88b67388578",
+      "source_blob_path": "sources/sha256-a74fcd256a54a4c1f6a18610bab5a038132af7029317b5225acbb88b67388578.txt"
+    },
+    {
+      "declared_ref": "01_assignment.docx",
+      "packet_hash": "sha256:f62fb96244a9a77621447afb1c6c8e83e7529f812225157ba9a3a1629814a335",
+      "packet_id": "pkt-12bf7375c31ca667d9d3",
+      "projection_path": "projections/sha256-8a4b3a84858cc4b6960bfc7385161d3a43b6751ca26d0f8690ad7a28220257b5.docx.json",
+      "resolution_status": "RESOLVED_EXACT_HASH",
+      "source_blob_hash": "sha256:8a4b3a84858cc4b6960bfc7385161d3a43b6751ca26d0f8690ad7a28220257b5",
+      "source_blob_path": "sources/sha256-8a4b3a84858cc4b6960bfc7385161d3a43b6751ca26d0f8690ad7a28220257b5.docx"
+    },
+    {
+      "declared_ref": "submissions/submission_02.txt",
+      "packet_hash": "sha256:f62fb96244a9a77621447afb1c6c8e83e7529f812225157ba9a3a1629814a335",
+      "packet_id": "pkt-12bf7375c31ca667d9d3",
+      "projection_path": "projections/sha256-a74fcd256a54a4c1f6a18610bab5a038132af7029317b5225acbb88b67388578.txt.json",
+      "resolution_status": "RESOLVED_EXACT_HASH",
+      "source_blob_hash": "sha256:a74fcd256a54a4c1f6a18610bab5a038132af7029317b5225acbb88b67388578",
+      "source_blob_path": "sources/sha256-a74fcd256a54a4c1f6a18610bab5a038132af7029317b5225acbb88b67388578.txt"
+    },
+    {
+      "declared_ref": "submissions/submission_01.txt",
+      "packet_hash": "sha256:68ba4fcaec6be23732c991abc0f7f58f7ddab602cf8360c255b28ae1dd333569",
+      "packet_id": "pkt-167c67ebc78ac4126e58",
+      "projection_path": "projections/sha256-f33aa63575b544d7f03e070ad8a2aa3936f4e76d7ebf98922404efa5442818d5.txt.json",
+      "resolution_status": "RESOLVED_EXACT_HASH",
+      "source_blob_hash": "sha256:f33aa63575b544d7f03e070ad8a2aa3936f4e76d7ebf98922404efa5442818d5",
+      "source_blob_path": "sources/sha256-f33aa63575b544d7f03e070ad8a2aa3936f4e76d7ebf98922404efa5442818d5.txt"
+    },
+    {
+      "declared_ref": "submissions/submission_03.txt",
+      "packet_hash": "sha256:784da56f982b5d16db18e04d3734f46e89bc81fd67f76f958ff0cf9cc5eec36c",
+      "packet_id": "pkt-1900f4f82a502c446fb1",
+      "projection_path": "projections/sha256-e540430e88c8717e75fe6f70348ee5a141edc21dffbbd629b761381351a4fba1.txt.json",
+      "resolution_status": "RESOLVED_EXACT_HASH",
+      "source_blob_hash": "sha256:e540430e88c8717e75fe6f70348ee5a141edc21dffbbd629b761381351a4fba1",
+      "source_blob_path": "sources/sha256-e540430e88c8717e75fe6f70348ee5a141edc21dffbbd629b761381351a4fba1.txt"
+    },
+    {
+      "declared_ref": "01_assignment.docx",
+      "packet_hash": "sha256:259ab67054108774afd832a15168127f9f109d4a9877c5f4518c0d4f79d15b74",
+      "packet_id": "pkt-1c37e80635ce3aa55d8d",
+      "projection_path": "projections/sha256-cc66ee343f603cce1617dd7f2d41d1f7b31824ce8633a14144caf739f05f2204.docx.json",
+      "resolution_status": "RESOLVED_EXACT_HASH",
+      "source_blob_hash": "sha256:cc66ee343f603cce1617dd7f2d41d1f7b31824ce8633a14144caf739f05f2204",
+      "source_blob_path": "sources/sha256-cc66ee343f603cce1617dd7f2d41d1f7b31824ce8633a14144caf739f05f2204.docx"
+    },
+    {
+      "declared_ref": "01_assignment.docx",
+      "packet_hash": "sha256:ab8023a47ef502e70845511b4463ea3c1f5d067e94bb72b9fd055333913ac7d0",
+      "packet_id": "pkt-1d5f252b348f29d672ff",
+      "projection_path": "projections/sha256-cc66ee343f603cce1617dd7f2d41d1f7b31824ce8633a14144caf739f05f2204.docx.json",
+      "resolution_status": "RESOLVED_EXACT_HASH",
+      "source_blob_hash": "sha256:cc66ee343f603cce1617dd7f2d41d1f7b31824ce8633a14144caf739f05f2204",
+      "source_blob_path": "sources/sha256-cc66ee343f603cce1617dd7f2d41d1f7b31824ce8633a14144caf739f05f2204.docx"
+    },
+    {
+      "declared_ref": "02_rubric.docx",
+      "packet_hash": "sha256:ab8023a47ef502e70845511b4463ea3c1f5d067e94bb72b9fd055333913ac7d0",
+      "packet_id": "pkt-1d5f252b348f29d672ff",
+      "projection_path": "projections/sha256-c3b41274873e42d2cf901df779d96fdf3a591609ebcf6a325f4379ef7647ccd3.docx.json",
+      "resolution_status": "RESOLVED_EXACT_HASH",
+      "source_blob_hash": "sha256:c3b41274873e42d2cf901df779d96fdf3a591609ebcf6a325f4379ef7647ccd3",
+      "source_blob_path": "sources/sha256-c3b41274873e42d2cf901df779d96fdf3a591609ebcf6a325f4379ef7647ccd3.docx"
+    },
+    {
+      "declared_ref": "submissions/submission_01.txt",
+      "packet_hash": "sha256:33dfbbfb28de92c06502b44b20403b7e5596a9ba98e7869600810cd3e4b8328d",
+      "packet_id": "pkt-1fe159e242639cc4772c",
+      "projection_path": "projections/sha256-f33aa63575b544d7f03e070ad8a2aa3936f4e76d7ebf98922404efa5442818d5.txt.json",
+      "resolution_status": "RESOLVED_EXACT_HASH",
+      "source_blob_hash": "sha256:f33aa63575b544d7f03e070ad8a2aa3936f4e76d7ebf98922404efa5442818d5",
+      "source_blob_path": "sources/sha256-f33aa63575b544d7f03e070ad8a2aa3936f4e76d7ebf98922404efa5442818d5.txt"
+    },
+    {
+      "declared_ref": "submissions/submission_04_artifact_01.md",
+      "packet_hash": "sha256:39d52c9e9963a59d4bff6117c8a2121bea8dbd4b0e2ec00aaa25923a81509952",
+      "packet_id": "pkt-373696b1f5ce9fbc059b",
+      "projection_path": "projections/sha256-8948de0fcafd4ef1a57fe3bc7824629b7924199505d9fca3ec0b73f952a0588e.md.json",
+      "resolution_status": "RESOLVED_EXACT_HASH",
+      "source_blob_hash": "sha256:8948de0fcafd4ef1a57fe3bc7824629b7924199505d9fca3ec0b73f952a0588e",
+      "source_blob_path": "sources/sha256-8948de0fcafd4ef1a57fe3bc7824629b7924199505d9fca3ec0b73f952a0588e.md"
+    },
+    {
+      "declared_ref": "submissions/submission_04_artifact_02.txt",
+      "packet_hash": "sha256:39d52c9e9963a59d4bff6117c8a2121bea8dbd4b0e2ec00aaa25923a81509952",
+      "packet_id": "pkt-373696b1f5ce9fbc059b",
+      "projection_path": "projections/sha256-c34beeb83f6e42d7a265a962f4c21d849d3d53307ac9ae622acdbfa47df02b48.txt.json",
+      "resolution_status": "RESOLVED_EXACT_HASH",
+      "source_blob_hash": "sha256:c34beeb83f6e42d7a265a962f4c21d849d3d53307ac9ae622acdbfa47df02b48",
+      "source_blob_path": "sources/sha256-c34beeb83f6e42d7a265a962f4c21d849d3d53307ac9ae622acdbfa47df02b48.txt"
+    },
+    {
+      "declared_ref": "submissions/submission_01.txt",
+      "packet_hash": "sha256:46b641605ab936b42bd6d5480f3e16770dd3ff4245264368ced60cddf1eda36f",
+      "packet_id": "pkt-3ddda365764632399fa3",
+      "projection_path": "projections/sha256-f33aa63575b544d7f03e070ad8a2aa3936f4e76d7ebf98922404efa5442818d5.txt.json",
+      "resolution_status": "RESOLVED_EXACT_HASH",
+      "source_blob_hash": "sha256:f33aa63575b544d7f03e070ad8a2aa3936f4e76d7ebf98922404efa5442818d5",
+      "source_blob_path": "sources/sha256-f33aa63575b544d7f03e070ad8a2aa3936f4e76d7ebf98922404efa5442818d5.txt"
+    },
+    {
+      "declared_ref": "01_assignment.docx",
+      "packet_hash": "sha256:d42281abb3166adaa4af6d0bafaaef323177f79e8e7cfa933e30cf23aa454540",
+      "packet_id": "pkt-4645a1a16d8065e07c17",
+      "projection_path": "projections/sha256-f1abef8577915bbd8a1ccbfa87a41621adab745c74ccebdd4084dec605aec18b.docx.json",
+      "resolution_status": "RESOLVED_EXACT_HASH",
+      "source_blob_hash": "sha256:f1abef8577915bbd8a1ccbfa87a41621adab745c74ccebdd4084dec605aec18b",
+      "source_blob_path": "sources/sha256-f1abef8577915bbd8a1ccbfa87a41621adab745c74ccebdd4084dec605aec18b.docx"
+    },
+    {
+      "declared_ref": "submissions/submission_01.txt",
+      "packet_hash": "sha256:a44988299cd937faa71d8c01a1bd696e508b7f30879da7d8923753f681fe00b4",
+      "packet_id": "pkt-4d6873e2b3ce90592024",
+      "projection_path": "projections/sha256-f33aa63575b544d7f03e070ad8a2aa3936f4e76d7ebf98922404efa5442818d5.txt.json",
+      "resolution_status": "RESOLVED_EXACT_HASH",
+      "source_blob_hash": "sha256:f33aa63575b544d7f03e070ad8a2aa3936f4e76d7ebf98922404efa5442818d5",
+      "source_blob_path": "sources/sha256-f33aa63575b544d7f03e070ad8a2aa3936f4e76d7ebf98922404efa5442818d5.txt"
+    },
+    {
+      "declared_ref": "02_rubric.docx",
+      "packet_hash": "sha256:9b9182a98eb7dc6b5664e7a4662936f9ca4981e6321fe77344456830ee2b9cf5",
+      "packet_id": "pkt-544c8567891d3719350d",
+      "projection_path": "projections/sha256-4d094045be8e9df0cf35fca1407973b8a71d7c0108cca89da5d60504b5e25126.docx.json",
+      "resolution_status": "RESOLVED_EXACT_HASH",
+      "source_blob_hash": "sha256:4d094045be8e9df0cf35fca1407973b8a71d7c0108cca89da5d60504b5e25126",
+      "source_blob_path": "sources/sha256-4d094045be8e9df0cf35fca1407973b8a71d7c0108cca89da5d60504b5e25126.docx"
+    },
+    {
+      "declared_ref": "submissions/submission_01.txt",
+      "packet_hash": "sha256:ef352f4c4dd99a95ec9d39d98c31556b4d2d8d04859de450a3684f5e285d8f94",
+      "packet_id": "pkt-579701ed0c7b0fb08dad",
+      "projection_path": "projections/sha256-f33aa63575b544d7f03e070ad8a2aa3936f4e76d7ebf98922404efa5442818d5.txt.json",
+      "resolution_status": "RESOLVED_EXACT_HASH",
+      "source_blob_hash": "sha256:f33aa63575b544d7f03e070ad8a2aa3936f4e76d7ebf98922404efa5442818d5",
+      "source_blob_path": "sources/sha256-f33aa63575b544d7f03e070ad8a2aa3936f4e76d7ebf98922404efa5442818d5.txt"
+    },
+    {
+      "declared_ref": "02_rubric.docx",
+      "packet_hash": "sha256:acbb5342833b317a995364a6eeed76b93df160be8f6b56fad49cbee38129e904",
+      "packet_id": "pkt-5bdb07c3f1d1270d5135",
+      "projection_path": "projections/sha256-bde129b7a90362871b9dc76ad24388a6ded288404a29a79b68c0c2b37bfcb65d.docx.json",
+      "resolution_status": "RESOLVED_EXACT_HASH",
+      "source_blob_hash": "sha256:bde129b7a90362871b9dc76ad24388a6ded288404a29a79b68c0c2b37bfcb65d",
+      "source_blob_path": "sources/sha256-bde129b7a90362871b9dc76ad24388a6ded288404a29a79b68c0c2b37bfcb65d.docx"
+    },
+    {
+      "declared_ref": "02_rubric.docx",
+      "packet_hash": "sha256:a6d177d86145c3115ec76e981c0e0e3bc086d3fac390f03ac736d72f4028a6b3",
+      "packet_id": "pkt-64378e07d649bac9a975",
+      "projection_path": "projections/sha256-bde129b7a90362871b9dc76ad24388a6ded288404a29a79b68c0c2b37bfcb65d.docx.json",
+      "resolution_status": "RESOLVED_EXACT_HASH",
+      "source_blob_hash": "sha256:bde129b7a90362871b9dc76ad24388a6ded288404a29a79b68c0c2b37bfcb65d",
+      "source_blob_path": "sources/sha256-bde129b7a90362871b9dc76ad24388a6ded288404a29a79b68c0c2b37bfcb65d.docx"
+    },
+    {
+      "declared_ref": "02_rubric.docx",
+      "packet_hash": "sha256:15bdfdc08ff6ebd4e112a4e25f8a3612147eb4e1edfa10ee77eeaeb7111674c5",
+      "packet_id": "pkt-7078aee88b3fe0c5610e",
+      "projection_path": "projections/sha256-bde129b7a90362871b9dc76ad24388a6ded288404a29a79b68c0c2b37bfcb65d.docx.json",
+      "resolution_status": "RESOLVED_EXACT_HASH",
+      "source_blob_hash": "sha256:bde129b7a90362871b9dc76ad24388a6ded288404a29a79b68c0c2b37bfcb65d",
+      "source_blob_path": "sources/sha256-bde129b7a90362871b9dc76ad24388a6ded288404a29a79b68c0c2b37bfcb65d.docx"
+    },
+    {
+      "declared_ref": "submissions/submission_01.txt",
+      "packet_hash": "sha256:fdb2449b89273ef69d4907b2dfa53670bd82c666f1f4080c04cb50a931845edb",
+      "packet_id": "pkt-70edd185f67404055758",
+      "projection_path": "projections/sha256-f33aa63575b544d7f03e070ad8a2aa3936f4e76d7ebf98922404efa5442818d5.txt.json",
+      "resolution_status": "RESOLVED_EXACT_HASH",
+      "source_blob_hash": "sha256:f33aa63575b544d7f03e070ad8a2aa3936f4e76d7ebf98922404efa5442818d5",
+      "source_blob_path": "sources/sha256-f33aa63575b544d7f03e070ad8a2aa3936f4e76d7ebf98922404efa5442818d5.txt"
+    },
+    {
+      "declared_ref": "submissions/submission_01.txt",
+      "packet_hash": "sha256:0c233c8b4c17c38001afda8a8ea5386d88c082d7b28012916a01d0762b13980d",
+      "packet_id": "pkt-7a4329b52019f49021d7",
+      "projection_path": "projections/sha256-f33aa63575b544d7f03e070ad8a2aa3936f4e76d7ebf98922404efa5442818d5.txt.json",
+      "resolution_status": "RESOLVED_EXACT_HASH",
+      "source_blob_hash": "sha256:f33aa63575b544d7f03e070ad8a2aa3936f4e76d7ebf98922404efa5442818d5",
+      "source_blob_path": "sources/sha256-f33aa63575b544d7f03e070ad8a2aa3936f4e76d7ebf98922404efa5442818d5.txt"
+    },
+    {
+      "declared_ref": "01_assignment.docx",
+      "packet_hash": "sha256:0c005694dd6677a04f7b08cf0396585d14658aefbcbc0025e578473d28c21e7d",
+      "packet_id": "pkt-861c88dfb36c6d5db4bd",
+      "projection_path": "projections/sha256-cc66ee343f603cce1617dd7f2d41d1f7b31824ce8633a14144caf739f05f2204.docx.json",
+      "resolution_status": "RESOLVED_EXACT_HASH",
+      "source_blob_hash": "sha256:cc66ee343f603cce1617dd7f2d41d1f7b31824ce8633a14144caf739f05f2204",
+      "source_blob_path": "sources/sha256-cc66ee343f603cce1617dd7f2d41d1f7b31824ce8633a14144caf739f05f2204.docx"
+    },
+    {
+      "declared_ref": "02_rubric.docx",
+      "packet_hash": "sha256:0c005694dd6677a04f7b08cf0396585d14658aefbcbc0025e578473d28c21e7d",
+      "packet_id": "pkt-861c88dfb36c6d5db4bd",
+      "projection_path": "projections/sha256-c3b41274873e42d2cf901df779d96fdf3a591609ebcf6a325f4379ef7647ccd3.docx.json",
+      "resolution_status": "RESOLVED_EXACT_HASH",
+      "source_blob_hash": "sha256:c3b41274873e42d2cf901df779d96fdf3a591609ebcf6a325f4379ef7647ccd3",
+      "source_blob_path": "sources/sha256-c3b41274873e42d2cf901df779d96fdf3a591609ebcf6a325f4379ef7647ccd3.docx"
+    },
+    {
+      "declared_ref": "submissions/submission_01.txt",
+      "packet_hash": "sha256:cdd498364afd702e157139e87761fd1627728be2b398991e13cb0cdeb53d1bf5",
+      "packet_id": "pkt-892370b63cd7894a4a8e",
+      "projection_path": "projections/sha256-f33aa63575b544d7f03e070ad8a2aa3936f4e76d7ebf98922404efa5442818d5.txt.json",
+      "resolution_status": "RESOLVED_EXACT_HASH",
+      "source_blob_hash": "sha256:f33aa63575b544d7f03e070ad8a2aa3936f4e76d7ebf98922404efa5442818d5",
+      "source_blob_path": "sources/sha256-f33aa63575b544d7f03e070ad8a2aa3936f4e76d7ebf98922404efa5442818d5.txt"
+    },
+    {
+      "declared_ref": "submissions/submission_04_artifact_01.md",
+      "packet_hash": "sha256:116da05141820cf9edf72dbe245a4dc8ac895a7b4c47fdbcea1258a7bbd894e9",
+      "packet_id": "pkt-8eff66d4d87ae17e4ead",
+      "projection_path": "projections/sha256-8948de0fcafd4ef1a57fe3bc7824629b7924199505d9fca3ec0b73f952a0588e.md.json",
+      "resolution_status": "RESOLVED_EXACT_HASH",
+      "source_blob_hash": "sha256:8948de0fcafd4ef1a57fe3bc7824629b7924199505d9fca3ec0b73f952a0588e",
+      "source_blob_path": "sources/sha256-8948de0fcafd4ef1a57fe3bc7824629b7924199505d9fca3ec0b73f952a0588e.md"
+    },
+    {
+      "declared_ref": "submissions/submission_04_artifact_02.txt",
+      "packet_hash": "sha256:116da05141820cf9edf72dbe245a4dc8ac895a7b4c47fdbcea1258a7bbd894e9",
+      "packet_id": "pkt-8eff66d4d87ae17e4ead",
+      "projection_path": "projections/sha256-c34beeb83f6e42d7a265a962f4c21d849d3d53307ac9ae622acdbfa47df02b48.txt.json",
+      "resolution_status": "RESOLVED_EXACT_HASH",
+      "source_blob_hash": "sha256:c34beeb83f6e42d7a265a962f4c21d849d3d53307ac9ae622acdbfa47df02b48",
+      "source_blob_path": "sources/sha256-c34beeb83f6e42d7a265a962f4c21d849d3d53307ac9ae622acdbfa47df02b48.txt"
+    },
+    {
+      "declared_ref": "01_assignment.docx",
+      "packet_hash": "sha256:50bc94682320efaa290797911bb16f4b1e6b7215d8b66e58b338395502d4fcce",
+      "packet_id": "pkt-93afa6dc45f4fd144563",
+      "projection_path": "projections/sha256-8a4b3a84858cc4b6960bfc7385161d3a43b6751ca26d0f8690ad7a28220257b5.docx.json",
+      "resolution_status": "RESOLVED_EXACT_HASH",
+      "source_blob_hash": "sha256:8a4b3a84858cc4b6960bfc7385161d3a43b6751ca26d0f8690ad7a28220257b5",
+      "source_blob_path": "sources/sha256-8a4b3a84858cc4b6960bfc7385161d3a43b6751ca26d0f8690ad7a28220257b5.docx"
+    },
+    {
+      "declared_ref": "submissions/submission_02.txt",
+      "packet_hash": "sha256:50bc94682320efaa290797911bb16f4b1e6b7215d8b66e58b338395502d4fcce",
+      "packet_id": "pkt-93afa6dc45f4fd144563",
+      "projection_path": "projections/sha256-a74fcd256a54a4c1f6a18610bab5a038132af7029317b5225acbb88b67388578.txt.json",
+      "resolution_status": "RESOLVED_EXACT_HASH",
+      "source_blob_hash": "sha256:a74fcd256a54a4c1f6a18610bab5a038132af7029317b5225acbb88b67388578",
+      "source_blob_path": "sources/sha256-a74fcd256a54a4c1f6a18610bab5a038132af7029317b5225acbb88b67388578.txt"
+    },
+    {
+      "declared_ref": "01_assignment.docx",
+      "packet_hash": "sha256:8aad22747427fed68b6ef7cb8056b2461a1fb71ef322657f17cb38bce6519cce",
+      "packet_id": "pkt-9524573e3af783849c15",
+      "projection_path": "projections/sha256-cc66ee343f603cce1617dd7f2d41d1f7b31824ce8633a14144caf739f05f2204.docx.json",
+      "resolution_status": "RESOLVED_EXACT_HASH",
+      "source_blob_hash": "sha256:cc66ee343f603cce1617dd7f2d41d1f7b31824ce8633a14144caf739f05f2204",
+      "source_blob_path": "sources/sha256-cc66ee343f603cce1617dd7f2d41d1f7b31824ce8633a14144caf739f05f2204.docx"
+    },
+    {
+      "declared_ref": "01_assignment.docx",
+      "packet_hash": "sha256:31f556f2f4a479c6603c2a56b79a45a7b70b074592c2443a2dfed5acc142e127",
+      "packet_id": "pkt-95460c83a1130e0ad166",
+      "projection_path": "projections/sha256-f1abef8577915bbd8a1ccbfa87a41621adab745c74ccebdd4084dec605aec18b.docx.json",
+      "resolution_status": "RESOLVED_EXACT_HASH",
+      "source_blob_hash": "sha256:f1abef8577915bbd8a1ccbfa87a41621adab745c74ccebdd4084dec605aec18b",
+      "source_blob_path": "sources/sha256-f1abef8577915bbd8a1ccbfa87a41621adab745c74ccebdd4084dec605aec18b.docx"
+    },
+    {
+      "declared_ref": "submissions/submission_01.txt",
+      "packet_hash": "sha256:8ee108483fdda09039cf22553a9eec387f3e09e7f85f550a0df58a674fe07c1f",
+      "packet_id": "pkt-a3662316b81ec026b418",
+      "projection_path": "projections/sha256-f33aa63575b544d7f03e070ad8a2aa3936f4e76d7ebf98922404efa5442818d5.txt.json",
+      "resolution_status": "RESOLVED_EXACT_HASH",
+      "source_blob_hash": "sha256:f33aa63575b544d7f03e070ad8a2aa3936f4e76d7ebf98922404efa5442818d5",
+      "source_blob_path": "sources/sha256-f33aa63575b544d7f03e070ad8a2aa3936f4e76d7ebf98922404efa5442818d5.txt"
+    },
+    {
+      "declared_ref": "01_assignment.docx",
+      "packet_hash": "sha256:c85707e6c78d79043690eb85c591404c9a2fcc6facf563af4161dbb68b61f53d",
+      "packet_id": "pkt-ae4b8cb67fe1092684c9",
+      "projection_path": "projections/sha256-cc66ee343f603cce1617dd7f2d41d1f7b31824ce8633a14144caf739f05f2204.docx.json",
+      "resolution_status": "RESOLVED_EXACT_HASH",
+      "source_blob_hash": "sha256:cc66ee343f603cce1617dd7f2d41d1f7b31824ce8633a14144caf739f05f2204",
+      "source_blob_path": "sources/sha256-cc66ee343f603cce1617dd7f2d41d1f7b31824ce8633a14144caf739f05f2204.docx"
+    },
+    {
+      "declared_ref": "01_assignment.docx",
+      "packet_hash": "sha256:167f17b5f94a50f040d225bd360b91108639db9c278b5572def050ffa3517454",
+      "packet_id": "pkt-b9a45a68b975c50f89c3",
+      "projection_path": "projections/sha256-cc66ee343f603cce1617dd7f2d41d1f7b31824ce8633a14144caf739f05f2204.docx.json",
+      "resolution_status": "RESOLVED_EXACT_HASH",
+      "source_blob_hash": "sha256:cc66ee343f603cce1617dd7f2d41d1f7b31824ce8633a14144caf739f05f2204",
+      "source_blob_path": "sources/sha256-cc66ee343f603cce1617dd7f2d41d1f7b31824ce8633a14144caf739f05f2204.docx"
+    },
+    {
+      "declared_ref": "02_rubric.docx",
+      "packet_hash": "sha256:167f17b5f94a50f040d225bd360b91108639db9c278b5572def050ffa3517454",
+      "packet_id": "pkt-b9a45a68b975c50f89c3",
+      "projection_path": "projections/sha256-c3b41274873e42d2cf901df779d96fdf3a591609ebcf6a325f4379ef7647ccd3.docx.json",
+      "resolution_status": "RESOLVED_EXACT_HASH",
+      "source_blob_hash": "sha256:c3b41274873e42d2cf901df779d96fdf3a591609ebcf6a325f4379ef7647ccd3",
+      "source_blob_path": "sources/sha256-c3b41274873e42d2cf901df779d96fdf3a591609ebcf6a325f4379ef7647ccd3.docx"
+    },
+    {
+      "declared_ref": "submissions/submission_06_artifact_01.md",
+      "packet_hash": "sha256:b203faf5e672d808a3372cb71990e39fb81e1651109b0bbe2f91328d9939c2be",
+      "packet_id": "pkt-bc9d91b11c8c20c22758",
+      "projection_path": "projections/sha256-d8752f762a023dc1ae6aa9a52eb978c86883b43fce9c8a84e0179673d765a51d.md.json",
+      "resolution_status": "RESOLVED_EXACT_HASH",
+      "source_blob_hash": "sha256:d8752f762a023dc1ae6aa9a52eb978c86883b43fce9c8a84e0179673d765a51d",
+      "source_blob_path": "sources/sha256-d8752f762a023dc1ae6aa9a52eb978c86883b43fce9c8a84e0179673d765a51d.md"
+    },
+    {
+      "declared_ref": "submissions/submission_06_artifact_02.txt",
+      "packet_hash": "sha256:b203faf5e672d808a3372cb71990e39fb81e1651109b0bbe2f91328d9939c2be",
+      "packet_id": "pkt-bc9d91b11c8c20c22758",
+      "projection_path": "projections/sha256-398b27ac005011cfb99e2232fb949718e74c1698126dff4c0cd72d1d4ae51496.txt.json",
+      "resolution_status": "RESOLVED_EXACT_HASH",
+      "source_blob_hash": "sha256:398b27ac005011cfb99e2232fb949718e74c1698126dff4c0cd72d1d4ae51496",
+      "source_blob_path": "sources/sha256-398b27ac005011cfb99e2232fb949718e74c1698126dff4c0cd72d1d4ae51496.txt"
+    },
+    {
+      "declared_ref": "submissions/submission_03.txt",
+      "packet_hash": "sha256:b3cf71abbed5e0938d0d9a3b2f947021d1ad32c8718d433541480723324aa9a7",
+      "packet_id": "pkt-c91f7587faaca00be31a",
+      "projection_path": "projections/sha256-e540430e88c8717e75fe6f70348ee5a141edc21dffbbd629b761381351a4fba1.txt.json",
+      "resolution_status": "RESOLVED_EXACT_HASH",
+      "source_blob_hash": "sha256:e540430e88c8717e75fe6f70348ee5a141edc21dffbbd629b761381351a4fba1",
+      "source_blob_path": "sources/sha256-e540430e88c8717e75fe6f70348ee5a141edc21dffbbd629b761381351a4fba1.txt"
+    },
+    {
+      "declared_ref": "02_rubric.docx",
+      "packet_hash": "sha256:a74395ca0fdc7a473d7025636463d81f6e2ca7eefd0b9742279a58d70aabe9e2",
+      "packet_id": "pkt-d467f4482e1dcff9f948",
+      "projection_path": "projections/sha256-4d094045be8e9df0cf35fca1407973b8a71d7c0108cca89da5d60504b5e25126.docx.json",
+      "resolution_status": "RESOLVED_EXACT_HASH",
+      "source_blob_hash": "sha256:4d094045be8e9df0cf35fca1407973b8a71d7c0108cca89da5d60504b5e25126",
+      "source_blob_path": "sources/sha256-4d094045be8e9df0cf35fca1407973b8a71d7c0108cca89da5d60504b5e25126.docx"
+    },
+    {
+      "declared_ref": "01_assignment.docx",
+      "packet_hash": "sha256:535b6786eaa4ec433f56f42946fe4406cc5ae1345c3a14a71bd0130165b943a4",
+      "packet_id": "pkt-d6779f74e6abd7065627",
+      "projection_path": "projections/sha256-f1abef8577915bbd8a1ccbfa87a41621adab745c74ccebdd4084dec605aec18b.docx.json",
+      "resolution_status": "RESOLVED_EXACT_HASH",
+      "source_blob_hash": "sha256:f1abef8577915bbd8a1ccbfa87a41621adab745c74ccebdd4084dec605aec18b",
+      "source_blob_path": "sources/sha256-f1abef8577915bbd8a1ccbfa87a41621adab745c74ccebdd4084dec605aec18b.docx"
+    },
+    {
+      "declared_ref": "submissions/submission_03.txt",
+      "packet_hash": "sha256:70e776ebdf0c45ed4163fc79b617203d45d266c69d41fd15a66580cababe0fb4",
+      "packet_id": "pkt-d79a2a1e5cf81cc5597b",
+      "projection_path": "projections/sha256-e540430e88c8717e75fe6f70348ee5a141edc21dffbbd629b761381351a4fba1.txt.json",
+      "resolution_status": "RESOLVED_EXACT_HASH",
+      "source_blob_hash": "sha256:e540430e88c8717e75fe6f70348ee5a141edc21dffbbd629b761381351a4fba1",
+      "source_blob_path": "sources/sha256-e540430e88c8717e75fe6f70348ee5a141edc21dffbbd629b761381351a4fba1.txt"
+    },
+    {
+      "declared_ref": "01_assignment.docx",
+      "packet_hash": "sha256:949eb459e1d93124de67862142b487de3495dd95b334ba7c7deda20a4f9888e1",
+      "packet_id": "pkt-d8d89ac3cd7b1539f07b",
+      "projection_path": "projections/sha256-f1abef8577915bbd8a1ccbfa87a41621adab745c74ccebdd4084dec605aec18b.docx.json",
+      "resolution_status": "RESOLVED_EXACT_HASH",
+      "source_blob_hash": "sha256:f1abef8577915bbd8a1ccbfa87a41621adab745c74ccebdd4084dec605aec18b",
+      "source_blob_path": "sources/sha256-f1abef8577915bbd8a1ccbfa87a41621adab745c74ccebdd4084dec605aec18b.docx"
+    },
+    {
+      "declared_ref": "02_rubric.docx",
+      "packet_hash": "sha256:949eb459e1d93124de67862142b487de3495dd95b334ba7c7deda20a4f9888e1",
+      "packet_id": "pkt-d8d89ac3cd7b1539f07b",
+      "projection_path": "projections/sha256-4d094045be8e9df0cf35fca1407973b8a71d7c0108cca89da5d60504b5e25126.docx.json",
+      "resolution_status": "RESOLVED_EXACT_HASH",
+      "source_blob_hash": "sha256:4d094045be8e9df0cf35fca1407973b8a71d7c0108cca89da5d60504b5e25126",
+      "source_blob_path": "sources/sha256-4d094045be8e9df0cf35fca1407973b8a71d7c0108cca89da5d60504b5e25126.docx"
+    },
+    {
+      "declared_ref": "submissions/submission_06_artifact_01.md",
+      "packet_hash": "sha256:58e1afc6d48ac28c397e0b5d77416b41aac6e6edbf78e72a77660baa5177be70",
+      "packet_id": "pkt-f48d2240e59044d5dbd4",
+      "projection_path": "projections/sha256-d8752f762a023dc1ae6aa9a52eb978c86883b43fce9c8a84e0179673d765a51d.md.json",
+      "resolution_status": "RESOLVED_EXACT_HASH",
+      "source_blob_hash": "sha256:d8752f762a023dc1ae6aa9a52eb978c86883b43fce9c8a84e0179673d765a51d",
+      "source_blob_path": "sources/sha256-d8752f762a023dc1ae6aa9a52eb978c86883b43fce9c8a84e0179673d765a51d.md"
+    },
+    {
+      "declared_ref": "submissions/submission_06_artifact_02.txt",
+      "packet_hash": "sha256:58e1afc6d48ac28c397e0b5d77416b41aac6e6edbf78e72a77660baa5177be70",
+      "packet_id": "pkt-f48d2240e59044d5dbd4",
+      "projection_path": "projections/sha256-398b27ac005011cfb99e2232fb949718e74c1698126dff4c0cd72d1d4ae51496.txt.json",
+      "resolution_status": "RESOLVED_EXACT_HASH",
+      "source_blob_hash": "sha256:398b27ac005011cfb99e2232fb949718e74c1698126dff4c0cd72d1d4ae51496",
+      "source_blob_path": "sources/sha256-398b27ac005011cfb99e2232fb949718e74c1698126dff4c0cd72d1d4ae51496.txt"
+    }
+  ],
+  "projection_note": "Projections are produced by the product parser for readability. Where a projection and the raw artifact appear to disagree, the raw artifact governs.",
+  "schema_version": "phase9-blind-source-material/1.0.0",
+  "source_authority": "RAW_ARTIFACT_BYTES_ARE_AUTHORITATIVE",
+  "sources": [
+    {
+      "declared_ref": "02_rubric.docx",
+      "media_type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "projection_hash": "sha256:13f02c66176a780b5ca596b85e13c12b5db513becc9de67c379fe2806ab4ce05",
+      "projection_path": "projections/sha256-1a66e055a809a6be7e7a3a0ac33093c654b4dc826ff5df7c322888496ca41a5e.docx.json",
+      "role": "RUBRIC",
+      "source_blob_hash": "sha256:1a66e055a809a6be7e7a3a0ac33093c654b4dc826ff5df7c322888496ca41a5e",
+      "source_blob_path": "sources/sha256-1a66e055a809a6be7e7a3a0ac33093c654b4dc826ff5df7c322888496ca41a5e.docx",
+      "unit_count": 52
+    },
+    {
+      "declared_ref": "submissions/submission_06_artifact_02.txt",
+      "media_type": "text/plain",
+      "projection_hash": "sha256:dcd331fcfe2d045d908a930f26ecc4de574ee2b4e3c214db622c1ab94c1bde70",
+      "projection_path": "projections/sha256-398b27ac005011cfb99e2232fb949718e74c1698126dff4c0cd72d1d4ae51496.txt.json",
+      "role": "SUBMISSION",
+      "source_blob_hash": "sha256:398b27ac005011cfb99e2232fb949718e74c1698126dff4c0cd72d1d4ae51496",
+      "source_blob_path": "sources/sha256-398b27ac005011cfb99e2232fb949718e74c1698126dff4c0cd72d1d4ae51496.txt",
+      "unit_count": 6
+    },
+    {
+      "declared_ref": "02_rubric.docx",
+      "media_type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "projection_hash": "sha256:02bae7d3a42a67952c80567818ebb66623bb2da70b570026d273811d9a61bedc",
+      "projection_path": "projections/sha256-4d094045be8e9df0cf35fca1407973b8a71d7c0108cca89da5d60504b5e25126.docx.json",
+      "role": "RUBRIC",
+      "source_blob_hash": "sha256:4d094045be8e9df0cf35fca1407973b8a71d7c0108cca89da5d60504b5e25126",
+      "source_blob_path": "sources/sha256-4d094045be8e9df0cf35fca1407973b8a71d7c0108cca89da5d60504b5e25126.docx",
+      "unit_count": 48
+    },
+    {
+      "declared_ref": "submissions/submission_04_artifact_01.md",
+      "media_type": "text/markdown",
+      "projection_hash": "sha256:0f15a57da2c670c9894b5dde31a140ca597a70d82225c8db9c36f5b2713b5884",
+      "projection_path": "projections/sha256-8948de0fcafd4ef1a57fe3bc7824629b7924199505d9fca3ec0b73f952a0588e.md.json",
+      "role": "SUBMISSION",
+      "source_blob_hash": "sha256:8948de0fcafd4ef1a57fe3bc7824629b7924199505d9fca3ec0b73f952a0588e",
+      "source_blob_path": "sources/sha256-8948de0fcafd4ef1a57fe3bc7824629b7924199505d9fca3ec0b73f952a0588e.md",
+      "unit_count": 4
+    },
+    {
+      "declared_ref": "01_assignment.docx",
+      "media_type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "projection_hash": "sha256:922f66029a4d06763b73ea159e72fe09c340802fa9c6dba131a7ed80aea832b6",
+      "projection_path": "projections/sha256-8a4b3a84858cc4b6960bfc7385161d3a43b6751ca26d0f8690ad7a28220257b5.docx.json",
+      "role": "ASSIGNMENT_PROMPT",
+      "source_blob_hash": "sha256:8a4b3a84858cc4b6960bfc7385161d3a43b6751ca26d0f8690ad7a28220257b5",
+      "source_blob_path": "sources/sha256-8a4b3a84858cc4b6960bfc7385161d3a43b6751ca26d0f8690ad7a28220257b5.docx",
+      "unit_count": 24
+    },
+    {
+      "declared_ref": "submissions/submission_02.txt",
+      "media_type": "text/plain",
+      "projection_hash": "sha256:cb979d47f5b87d245e6b6f1c16e6256953d3fa2d5fbcf957e574d2bdce07b45a",
+      "projection_path": "projections/sha256-a74fcd256a54a4c1f6a18610bab5a038132af7029317b5225acbb88b67388578.txt.json",
+      "role": "SUBMISSION",
+      "source_blob_hash": "sha256:a74fcd256a54a4c1f6a18610bab5a038132af7029317b5225acbb88b67388578",
+      "source_blob_path": "sources/sha256-a74fcd256a54a4c1f6a18610bab5a038132af7029317b5225acbb88b67388578.txt",
+      "unit_count": 6
+    },
+    {
+      "declared_ref": "02_rubric.docx",
+      "media_type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "projection_hash": "sha256:52cc592e0d107ae71a6e68d697433b2bf3e360160260e0c178505d965f9eb5f5",
+      "projection_path": "projections/sha256-bde129b7a90362871b9dc76ad24388a6ded288404a29a79b68c0c2b37bfcb65d.docx.json",
+      "role": "RUBRIC",
+      "source_blob_hash": "sha256:bde129b7a90362871b9dc76ad24388a6ded288404a29a79b68c0c2b37bfcb65d",
+      "source_blob_path": "sources/sha256-bde129b7a90362871b9dc76ad24388a6ded288404a29a79b68c0c2b37bfcb65d.docx",
+      "unit_count": 43
+    },
+    {
+      "declared_ref": "submissions/submission_04_artifact_02.txt",
+      "media_type": "text/plain",
+      "projection_hash": "sha256:4c615d9351de5adfa4cef43cff20d284c576f8d786d99c52604d958419952e17",
+      "projection_path": "projections/sha256-c34beeb83f6e42d7a265a962f4c21d849d3d53307ac9ae622acdbfa47df02b48.txt.json",
+      "role": "SUBMISSION",
+      "source_blob_hash": "sha256:c34beeb83f6e42d7a265a962f4c21d849d3d53307ac9ae622acdbfa47df02b48",
+      "source_blob_path": "sources/sha256-c34beeb83f6e42d7a265a962f4c21d849d3d53307ac9ae622acdbfa47df02b48.txt",
+      "unit_count": 7
+    },
+    {
+      "declared_ref": "02_rubric.docx",
+      "media_type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "projection_hash": "sha256:9ef3f4b2495a442eb8f7b732471e02eea0655c9dd009678249ae04cb1af3fea6",
+      "projection_path": "projections/sha256-c3b41274873e42d2cf901df779d96fdf3a591609ebcf6a325f4379ef7647ccd3.docx.json",
+      "role": "RUBRIC",
+      "source_blob_hash": "sha256:c3b41274873e42d2cf901df779d96fdf3a591609ebcf6a325f4379ef7647ccd3",
+      "source_blob_path": "sources/sha256-c3b41274873e42d2cf901df779d96fdf3a591609ebcf6a325f4379ef7647ccd3.docx",
+      "unit_count": 48
+    },
+    {
+      "declared_ref": "01_assignment.docx",
+      "media_type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "projection_hash": "sha256:3c4763a500d005fb5fad4797e3576e512af10f1f12a7626f530426f82bcce021",
+      "projection_path": "projections/sha256-cc66ee343f603cce1617dd7f2d41d1f7b31824ce8633a14144caf739f05f2204.docx.json",
+      "role": "ASSIGNMENT_PROMPT",
+      "source_blob_hash": "sha256:cc66ee343f603cce1617dd7f2d41d1f7b31824ce8633a14144caf739f05f2204",
+      "source_blob_path": "sources/sha256-cc66ee343f603cce1617dd7f2d41d1f7b31824ce8633a14144caf739f05f2204.docx",
+      "unit_count": 95
+    },
+    {
+      "declared_ref": "submissions/submission_06_artifact_01.md",
+      "media_type": "text/markdown",
+      "projection_hash": "sha256:154fadeb6ba607e60e35efc2ab94c30868a6b96301d5f4eed4a43fd14a48d836",
+      "projection_path": "projections/sha256-d8752f762a023dc1ae6aa9a52eb978c86883b43fce9c8a84e0179673d765a51d.md.json",
+      "role": "SUBMISSION",
+      "source_blob_hash": "sha256:d8752f762a023dc1ae6aa9a52eb978c86883b43fce9c8a84e0179673d765a51d",
+      "source_blob_path": "sources/sha256-d8752f762a023dc1ae6aa9a52eb978c86883b43fce9c8a84e0179673d765a51d.md",
+      "unit_count": 4
+    },
+    {
+      "declared_ref": "submissions/submission_03.txt",
+      "media_type": "text/plain",
+      "projection_hash": "sha256:ddfc54dfa1675605ec900b8caa237515f826c790897d9e40736c2494b004e82b",
+      "projection_path": "projections/sha256-e540430e88c8717e75fe6f70348ee5a141edc21dffbbd629b761381351a4fba1.txt.json",
+      "role": "SUBMISSION",
+      "source_blob_hash": "sha256:e540430e88c8717e75fe6f70348ee5a141edc21dffbbd629b761381351a4fba1",
+      "source_blob_path": "sources/sha256-e540430e88c8717e75fe6f70348ee5a141edc21dffbbd629b761381351a4fba1.txt",
+      "unit_count": 7
+    },
+    {
+      "declared_ref": "01_assignment.docx",
+      "media_type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "projection_hash": "sha256:5e88ae340f9ab8bb950e98fa2b14cca4cd9400f563d13ab01080ace56d326b02",
+      "projection_path": "projections/sha256-f1abef8577915bbd8a1ccbfa87a41621adab745c74ccebdd4084dec605aec18b.docx.json",
+      "role": "ASSIGNMENT_PROMPT",
+      "source_blob_hash": "sha256:f1abef8577915bbd8a1ccbfa87a41621adab745c74ccebdd4084dec605aec18b",
+      "source_blob_path": "sources/sha256-f1abef8577915bbd8a1ccbfa87a41621adab745c74ccebdd4084dec605aec18b.docx",
+      "unit_count": 60
+    },
+    {
+      "declared_ref": "submissions/submission_01.txt",
+      "media_type": "text/plain",
+      "projection_hash": "sha256:3b94656a24e0ea5ff4d6d79b5dd2afe40a499324bdad8ac11e262704599cec45",
+      "projection_path": "projections/sha256-f33aa63575b544d7f03e070ad8a2aa3936f4e76d7ebf98922404efa5442818d5.txt.json",
+      "role": "SUBMISSION",
+      "source_blob_hash": "sha256:f33aa63575b544d7f03e070ad8a2aa3936f4e76d7ebf98922404efa5442818d5",
+      "source_blob_path": "sources/sha256-f33aa63575b544d7f03e070ad8a2aa3936f4e76d7ebf98922404efa5442818d5.txt",
+      "unit_count": 6
+    }
+  ],
+  "unique_source_count": 14
+}
