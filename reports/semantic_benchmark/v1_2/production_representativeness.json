@@ -1,0 +1,1327 @@
+{
+  "benchmark_only_semantic_channel": false,
+  "claim": "Every executable P06 benchmark route is a projection of the real production P06 input boundary.",
+  "envelope_builder": "comprehension_verification.evidence_mapping.build_evidence_mapping_alias_envelope",
+  "production_chain": [
+    "AssessmentBlueprint",
+    "BlueprintDimension",
+    "EvidenceVariant",
+    "QuestionOpportunityTemplate",
+    "EvidenceMappingAliasEnvelope",
+    "EvidenceMappingModelDraft"
+  ],
+  "report_hash": "sha256:386b736de97fd900a8d0d1fb036526f94aea59a92be76f71682a3db739cc1ee6",
+  "route_count": 77,
+  "routes": [
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:e10d6de2fd47bfeefefb136dca4c18a1a73f02081a71d762d6d8107a5f696d28",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A01-S02-R01",
+      "scope_alias": "S0ca46b99f0007981bd259081",
+      "source_scope_hash": "sha256:0ca46b99f0007981bd2590813971d1769e91e817fb0af3ddbafa45e0d207f094",
+      "target_construct_key": "RUBRIC::A01::LIMITACION"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:d8b06b34a606589e1a16ba87f3d22294f83bdba1676a1cf5b6094af75f059a79",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A01-S03-R01",
+      "scope_alias": "Sbe4cd2519af1e293301789f3",
+      "source_scope_hash": "sha256:be4cd2519af1e293301789f371e632b476b66bf30669cdf0ff05959d7cb7a6ed",
+      "target_construct_key": "RUBRIC::A01::USO_DE_EVIDENCIA"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:1bfba393a62ae15a00f634beade8cf5b56883ba85339633cc3a27785d4debc77",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A01-S03-R02",
+      "scope_alias": "Sa8f0d797a120178bc23e8fac",
+      "source_scope_hash": "sha256:a8f0d797a120178bc23e8fac0119100167244a8d68fd1f774cbfc2cf5bb3ebff",
+      "target_construct_key": "RUBRIC::A01::VARIABLES_Y_MEDIDAS"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:e10d6de2fd47bfeefefb136dca4c18a1a73f02081a71d762d6d8107a5f696d28",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A01-S04-R01",
+      "scope_alias": "S9865264e97ddb083ea633c67",
+      "source_scope_hash": "sha256:9865264e97ddb083ea633c67211e7f714ee2bee90e02b9bf7cd428231a5f4899",
+      "target_construct_key": "RUBRIC::A01::LIMITACION"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:d8b06b34a606589e1a16ba87f3d22294f83bdba1676a1cf5b6094af75f059a79",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A01-S05-R01",
+      "scope_alias": "Sc6eca340be7afb5493d76ee6",
+      "source_scope_hash": "sha256:c6eca340be7afb5493d76ee6d358145d3212de3450b4877fdaa28d68d6790d20",
+      "target_construct_key": "RUBRIC::A01::USO_DE_EVIDENCIA"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:868aead2b110123c0bbeb43b0998543ab78b78172a1b8c6e47f2e4203ae4c11d",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A02-S01-R01",
+      "scope_alias": "S486283880988c5c17a48b713",
+      "source_scope_hash": "sha256:486283880988c5c17a48b713480bad62b15a899a527a58eb081c17a566c7d044",
+      "target_construct_key": "RUBRIC::A02::RELACION_Y_RAZONAMIENTO"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:255d325579ccb6c69ed3c77c5196d4df5334d7080523d73d31f497b714c23b77",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A02-S03-R01",
+      "scope_alias": "S30ea6edaa9cbdc41d6fc9b0c",
+      "source_scope_hash": "sha256:30ea6edaa9cbdc41d6fc9b0c9f792a67cc2880e97ef1e4ee0b8b3c54dae00fb7",
+      "target_construct_key": "RUBRIC::A02::APERTURA_INTERPRETATIVA"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:868aead2b110123c0bbeb43b0998543ab78b78172a1b8c6e47f2e4203ae4c11d",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A02-S03-R02",
+      "scope_alias": "S34a278f4689527b867e02a19",
+      "source_scope_hash": "sha256:34a278f4689527b867e02a19f3a45fbf0632b8a7425521719ede9ee4fa465b8c",
+      "target_construct_key": "RUBRIC::A02::RELACION_Y_RAZONAMIENTO"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:868aead2b110123c0bbeb43b0998543ab78b78172a1b8c6e47f2e4203ae4c11d",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A02-S04-R01",
+      "scope_alias": "S61ea37bb5876fca4e094c19f",
+      "source_scope_hash": "sha256:61ea37bb5876fca4e094c19f5a5a60f2f0e2f65714a935563988b14f1274aa31",
+      "target_construct_key": "RUBRIC::A02::RELACION_Y_RAZONAMIENTO"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:12b6c324ddcd21eb2d29e92aa72f4c3313ba3b370d0914f6c02b788ff53cd4dc",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A02-S05-R01",
+      "scope_alias": "S9b57c1054daaeb63cd996e7e",
+      "source_scope_hash": "sha256:9b57c1054daaeb63cd996e7ed797ae87bb451bec666973ad19970460e874d274",
+      "target_construct_key": "RUBRIC::A02::TESIS_INTERPRETATIVA"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:255d325579ccb6c69ed3c77c5196d4df5334d7080523d73d31f497b714c23b77",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A02-S06-R01",
+      "scope_alias": "S7de6a6818bc0feffdc19aa9b",
+      "source_scope_hash": "sha256:7de6a6818bc0feffdc19aa9b5f7817e3b5e58760faf437d043d7b775525f1205",
+      "target_construct_key": "RUBRIC::A02::APERTURA_INTERPRETATIVA"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:8647efd143b948b16936ebb16a82272c1bddbf5862f31e73ed01d789b0ada576",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A03-S01-R01",
+      "scope_alias": "S5618e5049f1fc9399f7931cd",
+      "source_scope_hash": "sha256:5618e5049f1fc9399f7931cde67f264ef8b76c98c730716d88f181cf88ecb2e1",
+      "target_construct_key": "RUBRIC::A03::COMPARACION_CON_LA_ALTERNATIVA_NO_ELEGIDA"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:d021b9f7b491e2b187d3be0aafd6eded3c4f338f934465426c3e841e3eba4029",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A03-S01-R02",
+      "scope_alias": "S74ba6e7af92e2fed1cc36774",
+      "source_scope_hash": "sha256:74ba6e7af92e2fed1cc36774e5ba80490f87bf7e0d43e08275545dac2ae9d543",
+      "target_construct_key": "RUBRIC::A03::VERIFICACION_DE_LA_RESTRICCION_DE_CAPACIDAD"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:450884b54ff70975046b29a9906d477a79d46325459960fd7fa26cc81138be7b",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A03-S02-R01",
+      "scope_alias": "S7bbcd70d79139ec5a8408bb0",
+      "source_scope_hash": "sha256:7bbcd70d79139ec5a8408bb0c9616062a28ae9557270f0569aaf9a0e0e177d0c",
+      "target_construct_key": "RUBRIC::A03::RIESGO_O_CONDICION_QUE_CAMBIARIA_LA_DECISION"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:1f30ff689f3b08b1145916c5188951678a614d4a2998c29655b0822b642dde3c",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A03-S04-R01",
+      "scope_alias": "S9c24d5f50d6d7e97ccc2a85d",
+      "source_scope_hash": "sha256:9c24d5f50d6d7e97ccc2a85ddb7a2433ce8203fdcbdfcbd250c6608c53aad53d",
+      "target_construct_key": "RUBRIC::A03::COSTO_TOTAL_CON_DESGLOSE"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:d021b9f7b491e2b187d3be0aafd6eded3c4f338f934465426c3e841e3eba4029",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A03-S04-R02",
+      "scope_alias": "S1f0a509d5a2db0556e924bd4",
+      "source_scope_hash": "sha256:1f0a509d5a2db0556e924bd4d3e970fa57b6c43dba0a5f6614ef22568c81db26",
+      "target_construct_key": "RUBRIC::A03::VERIFICACION_DE_LA_RESTRICCION_DE_CAPACIDAD"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:d021b9f7b491e2b187d3be0aafd6eded3c4f338f934465426c3e841e3eba4029",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A03-S05-R01",
+      "scope_alias": "Sb852a4e7601bd45917993a1d",
+      "source_scope_hash": "sha256:b852a4e7601bd45917993a1d624b0515a19e91903d85ad2f6788734066cd759b",
+      "target_construct_key": "RUBRIC::A03::VERIFICACION_DE_LA_RESTRICCION_DE_CAPACIDAD"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:1f30ff689f3b08b1145916c5188951678a614d4a2998c29655b0822b642dde3c",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A03-S06-R01",
+      "scope_alias": "S6869916c8490c10b3c511039",
+      "source_scope_hash": "sha256:6869916c8490c10b3c5110399658d09570a18e80ddb00def4a090c0425adbc6b",
+      "target_construct_key": "RUBRIC::A03::COSTO_TOTAL_CON_DESGLOSE"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:a8e80fea0f844f16d7a99cbd5430184c25ec147fcdb522b465bfcea32ebce194",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A03-S06-R02",
+      "scope_alias": "S42babf35aede5ac532b492c6",
+      "source_scope_hash": "sha256:42babf35aede5ac532b492c631d1118544106906539d63ca7d57f9e953e155b3",
+      "target_construct_key": "RUBRIC::A03::INGRESO_Y_EXCEDENTE_BAJO_VENTA_COMPLETA"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:5054a2980bf43c9cf46a2675dc8112fd4776df290141e0367aba44edcc2dfbac",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A04-S01-R01",
+      "scope_alias": "S6d755ac4822b9b9123539e74",
+      "source_scope_hash": "sha256:6d755ac4822b9b9123539e74862b16c3294e649c1ae64749b6e1d71296a2f3a3",
+      "target_construct_key": "RUBRIC::A04::DESCARTA_REGISTROS_CON_CAMPO_FALTANTE"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:ede366cae7d938e9d4c3dd5214f04af0df7e428d3fe67e7d8fbbec130ca75349",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A04-S01-R02",
+      "scope_alias": "Sc0f7396a02aabe7402023130",
+      "source_scope_hash": "sha256:c0f7396a02aabe7402023130eb458ffa77240a91d797954485d806a667d9ae9a",
+      "target_construct_key": "RUBRIC::A04::ORDENA_POR_PRIORIDAD_LUEGO_MARCA_LUEGO_ID"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:2dbe835003228d7edfc73672f3ba4294924695fd8a0b554a848c86aaa6a78edc",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A04-S01-R03",
+      "scope_alias": "S220a069e5dea5d0b7657ab29",
+      "source_scope_hash": "sha256:220a069e5dea5d0b7657ab2902b91d2f2b72b72ddb0d4308e04ad0ec9e123dbf",
+      "target_construct_key": "RUBRIC::A04::UNA_APARICION_INVALIDA_NO_RESERVA_EL_ID"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:2dbe835003228d7edfc73672f3ba4294924695fd8a0b554a848c86aaa6a78edc",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A04-S02-R01",
+      "scope_alias": "S96ccbb978fa325364e9acdfa",
+      "source_scope_hash": "sha256:96ccbb978fa325364e9acdfa3276380246f91c470624d14ed2160888e297a1dd",
+      "target_construct_key": "RUBRIC::A04::UNA_APARICION_INVALIDA_NO_RESERVA_EL_ID"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:32afb92274dc370e1d84d7f071d49350185ec978e9b65bfe9dde5614b9d88ac9",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A04-S03-R01",
+      "scope_alias": "S996a68987dfab5671192d1ef",
+      "source_scope_hash": "sha256:996a68987dfab5671192d1ef242f81c8d2962d682af8dacf461a1d4be843bbf8",
+      "target_construct_key": "RUBRIC::A04::NO_MUTA_SOLICITUDES_NI_CUPOS_POR_GRUPO"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:20c6dac09c8a68c6fb3d1a48b80d882ea1d9db85fe0edca9d0a61060bce53077",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A04-S05-R01",
+      "scope_alias": "Sb53698f26b441e8229c4ce1f",
+      "source_scope_hash": "sha256:b53698f26b441e8229c4ce1fe8749a1ae2d8dc0194de506f4f629315086004cc",
+      "target_construct_key": "RUBRIC::A04::CONSERVA_LA_PRIMERA_APARICION_VALIDA_DE_UN_ID_REPETIDO"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:2dbe835003228d7edfc73672f3ba4294924695fd8a0b554a848c86aaa6a78edc",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A04-S05-R02",
+      "scope_alias": "Sf5eb903376fcdfedef04606d",
+      "source_scope_hash": "sha256:f5eb903376fcdfedef04606d6c9b2370a2f11b25f9f1a085a0d55f0d0395bf73",
+      "target_construct_key": "RUBRIC::A04::UNA_APARICION_INVALIDA_NO_RESERVA_EL_ID"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:5054a2980bf43c9cf46a2675dc8112fd4776df290141e0367aba44edcc2dfbac",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A04-S06-R01",
+      "scope_alias": "Sa16d37706a649b927b7509e5",
+      "source_scope_hash": "sha256:a16d37706a649b927b7509e5ad835b2feeaafd396da940dc3b06f7910d40f491",
+      "target_construct_key": "RUBRIC::A04::DESCARTA_REGISTROS_CON_CAMPO_FALTANTE"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:79972b11b2c10a200ed91999a4a54c73cf538c415f8c3fecff68be8af164c0f5",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A06-S01-R01",
+      "scope_alias": "S0d67fbf8ec3caedf7931f7d9",
+      "source_scope_hash": "sha256:0d67fbf8ec3caedf7931f7d9f2a581ee4474da10bf9a8467ca42b4427b70f20d",
+      "target_construct_key": "RUBRIC::A06::CALIDAD_DE_INFERENCIA"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:13a6ecb221ac04b8d4d2c2262b00ced16af2737f2f0da47c17419ac9adfb9e86",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A06-S01-R02",
+      "scope_alias": "S2097a946835adc6160c0a7fc",
+      "source_scope_hash": "sha256:2097a946835adc6160c0a7fc69d1203cd4389371ff9681edc47f332802ea0ce2",
+      "target_construct_key": "RUBRIC::A06::EVIDENCIA_Y_SUBGRUPOS"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:79972b11b2c10a200ed91999a4a54c73cf538c415f8c3fecff68be8af164c0f5",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A06-S02-R01",
+      "scope_alias": "S3dc6eec1053085d113d0decf",
+      "source_scope_hash": "sha256:3dc6eec1053085d113d0decfda03198ef0703819ba609a6951b9c7048dd66443",
+      "target_construct_key": "RUBRIC::A06::CALIDAD_DE_INFERENCIA"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:a9e1de2354b265edb61c811df3ee0ed6077c0650687a8b4d1b3b1dbdc56c9b3f",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A06-S02-R02",
+      "scope_alias": "S4461c43dadf9d199816b58ca",
+      "source_scope_hash": "sha256:4461c43dadf9d199816b58caddb630b9468f09e0f768227f3e25a43620608ad1",
+      "target_construct_key": "RUBRIC::A06::TRADE_OFF"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:a9e1de2354b265edb61c811df3ee0ed6077c0650687a8b4d1b3b1dbdc56c9b3f",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A06-S03-R01",
+      "scope_alias": "S399267321ab2c20ef888eb99",
+      "source_scope_hash": "sha256:399267321ab2c20ef888eb998c669011b264ba97e9a5485956b89d53d24c3b5a",
+      "target_construct_key": "RUBRIC::A06::TRADE_OFF"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:79972b11b2c10a200ed91999a4a54c73cf538c415f8c3fecff68be8af164c0f5",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A06-S04-R01",
+      "scope_alias": "S82b1778b04c5e665a1613f26",
+      "source_scope_hash": "sha256:82b1778b04c5e665a1613f266eac7e11f18edadb5f971a187fa2cc983e5e0f67",
+      "target_construct_key": "RUBRIC::A06::CALIDAD_DE_INFERENCIA"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:13a6ecb221ac04b8d4d2c2262b00ced16af2737f2f0da47c17419ac9adfb9e86",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A06-S04-R02",
+      "scope_alias": "S6eaa54228139a244713852f8",
+      "source_scope_hash": "sha256:6eaa54228139a244713852f8878af78a66cb2899759c5f1c52d2326b7703f172",
+      "target_construct_key": "RUBRIC::A06::EVIDENCIA_Y_SUBGRUPOS"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:79972b11b2c10a200ed91999a4a54c73cf538c415f8c3fecff68be8af164c0f5",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A06-S05-R01",
+      "scope_alias": "S5bd2e8d77da6b16a53bc5b0f",
+      "source_scope_hash": "sha256:5bd2e8d77da6b16a53bc5b0f51368e4cba64addb65f0d2c8f0f268a4accd01e1",
+      "target_construct_key": "RUBRIC::A06::CALIDAD_DE_INFERENCIA"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:13a6ecb221ac04b8d4d2c2262b00ced16af2737f2f0da47c17419ac9adfb9e86",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A06-S05-R02",
+      "scope_alias": "S40bddda65e6d2ff88b85c7a5",
+      "source_scope_hash": "sha256:40bddda65e6d2ff88b85c7a585d7a351670fc91689943dc9c2947a3225b1ce38",
+      "target_construct_key": "RUBRIC::A06::EVIDENCIA_Y_SUBGRUPOS"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:9e9b964f008932edffe7c3014345c3b7e64b95e11903a2d0a899e9aea33efc27",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A07-S02-R01",
+      "scope_alias": "Sf94ccb6f5c393c1299351cbf",
+      "source_scope_hash": "sha256:f94ccb6f5c393c1299351cbf59f20b4b45ab683b181f7acbcb3604752b90554f",
+      "target_construct_key": "RUBRIC::A07::CRITERIO_DE_COMPARACION"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:9e9b964f008932edffe7c3014345c3b7e64b95e11903a2d0a899e9aea33efc27",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A07-S04-R01",
+      "scope_alias": "S0a92fc247c33be9e7f0b993f",
+      "source_scope_hash": "sha256:0a92fc247c33be9e7f0b993f60ff8e27ff6540e2c0f078ed17c3b77a8b18e528",
+      "target_construct_key": "RUBRIC::A07::CRITERIO_DE_COMPARACION"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:82086ad7558d5720d1cee902c596fef1a53c66f08fe340f6346ee5b741fbb030",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A07-S04-R02",
+      "scope_alias": "S6285a8ad68027bace4a14e73",
+      "source_scope_hash": "sha256:6285a8ad68027bace4a14e73021a190b9427fef86cdd6a61e57e8b65ab6c6c34",
+      "target_construct_key": "RUBRIC::A07::USO_DE_LOS_DOS_ARTEFACTOS"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:fe00666f3e3efdef88924e38bd95e62b4c159b4b352410f5dc138cf41d6ed291",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A08-S01-R01",
+      "scope_alias": "Sf65901699eaebb7604c0eb33",
+      "source_scope_hash": "sha256:f65901699eaebb7604c0eb3338f5ea0b292ddfd692a4d7ca5ea2d8e2de686251",
+      "target_construct_key": "RUBRIC::A08::HECHO_HIPOTESIS_E_INCERTIDUMBRE"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:dc1eb502f7ce628540de2a24ae1b4439c144a0cff4294e906c8b084a3cce7b12",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A08-S01-R02",
+      "scope_alias": "Sa3cb8ef5ef27459d4ad5cebc",
+      "source_scope_hash": "sha256:a3cb8ef5ef27459d4ad5cebcc46d6ab72ddf44b5b640f161ce1e4def131f236e",
+      "target_construct_key": "RUBRIC::A08::RESPUESTA_Y_TRADE_OFF"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:41a7f0e6d14a996a8587471f3785d93005b1ada2aee09393aedfd7eedc38e483",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A08-S03-R01",
+      "scope_alias": "Sdb887c8841670c8d7acfa227",
+      "source_scope_hash": "sha256:db887c8841670c8d7acfa227204f79d84414b15c309a967d7e197ed4680ca0da",
+      "target_construct_key": "RUBRIC::A08::LINEA_TEMPORAL_Y_CORRELACION"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:add465e309cfa37e7fc27b6435eb1587e4ee617b8f6739bc027d2f3d37458731",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A08-S03-R02",
+      "scope_alias": "S5c6a969000bfd827cd5eee7b",
+      "source_scope_hash": "sha256:5c6a969000bfd827cd5eee7beaa23b6c61a73961925c53cd7008d2056f3fe57f",
+      "target_construct_key": "RUBRIC::A08::MANEJO_SEGURO_DEL_ARTEFACTO"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:fe00666f3e3efdef88924e38bd95e62b4c159b4b352410f5dc138cf41d6ed291",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A08-S04-R01",
+      "scope_alias": "S2e63d0aa35710758af299da7",
+      "source_scope_hash": "sha256:2e63d0aa35710758af299da78cb51197b0fddaa43fbc457078e17d5b92833dcb",
+      "target_construct_key": "RUBRIC::A08::HECHO_HIPOTESIS_E_INCERTIDUMBRE"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:41a7f0e6d14a996a8587471f3785d93005b1ada2aee09393aedfd7eedc38e483",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A08-S05-R01",
+      "scope_alias": "Sd2d4a41f69902fff379aecd3",
+      "source_scope_hash": "sha256:d2d4a41f69902fff379aecd372a25401ba259bd2491980e1f92ebb3cce1a8b6e",
+      "target_construct_key": "RUBRIC::A08::LINEA_TEMPORAL_Y_CORRELACION"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:add465e309cfa37e7fc27b6435eb1587e4ee617b8f6739bc027d2f3d37458731",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A08-S05-R02",
+      "scope_alias": "Sbfa239114858cf63dbcc5462",
+      "source_scope_hash": "sha256:bfa239114858cf63dbcc5462e493fd3f522c66cec5b1ae3c47b33207eac329c1",
+      "target_construct_key": "RUBRIC::A08::MANEJO_SEGURO_DEL_ARTEFACTO"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:a80f83a2e523fa9ce2eebea02d0f2a2e233ab9aed91f72bb2cb29a4a536ecf98",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A09-S01-R01",
+      "scope_alias": "S230a991a9aff35d7a4ff9bf5",
+      "source_scope_hash": "sha256:230a991a9aff35d7a4ff9bf59d495948a3d87fd927076070de59cd016731e5eb",
+      "target_construct_key": "RUBRIC::A09::CONTEXTUALIZACION_Y_MADUREZ_HISTORIOGRAFICA"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:b35c2e24374fcaab43d2fae71afe3eaa49bb6a74b383883993a8c77e1436f29c",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A09-S01-R02",
+      "scope_alias": "Sd473839f14e39b346037da57",
+      "source_scope_hash": "sha256:d473839f14e39b346037da574fa96e8a7b5cd71bd62df99d5385ef085af39b2d",
+      "target_construct_key": "RUBRIC::A09::CRITICA_Y_CONTRAARGUMENTO"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:ed31910183ef95dd39815f29610b5aed1b93efdef89b7e0d9636537adc6aaa5e",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A09-S01-R03",
+      "scope_alias": "Sff83e78bb466f2744cd4e11a",
+      "source_scope_hash": "sha256:ff83e78bb466f2744cd4e11a29dda1f235f6f47857cd73ecf201291dfa5a52a2",
+      "target_construct_key": "RUBRIC::A09::INTEGRACION_DE_EVIDENCIA"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:b35c2e24374fcaab43d2fae71afe3eaa49bb6a74b383883993a8c77e1436f29c",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A09-S02-R01",
+      "scope_alias": "S34710b773876dbb098d27440",
+      "source_scope_hash": "sha256:34710b773876dbb098d27440d61cb31a49865af6c0051e0c178b2e7990ac9c46",
+      "target_construct_key": "RUBRIC::A09::CRITICA_Y_CONTRAARGUMENTO"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:c258ba6a7717004538c37008dd55ae83c8e9a8c0b260f8a2030fbb09b4ddfc62",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A09-S02-R02",
+      "scope_alias": "S60fba5caefff59dcd31cd7be",
+      "source_scope_hash": "sha256:60fba5caefff59dcd31cd7bef9cb9cac59a3abb4bc94a1a4a721cef3b1c57bd9",
+      "target_construct_key": "RUBRIC::A09::TESIS_EXPLICATIVA"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:c258ba6a7717004538c37008dd55ae83c8e9a8c0b260f8a2030fbb09b4ddfc62",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A09-S04-R01",
+      "scope_alias": "Sf1578ba8e82c4dbfeb2ed31d",
+      "source_scope_hash": "sha256:f1578ba8e82c4dbfeb2ed31d3a1bcc4572afa8133fd5a4faa12af51002b34572",
+      "target_construct_key": "RUBRIC::A09::TESIS_EXPLICATIVA"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:a80f83a2e523fa9ce2eebea02d0f2a2e233ab9aed91f72bb2cb29a4a536ecf98",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A09-S05-R01",
+      "scope_alias": "Sbe834d0775d499bbd8a3b02f",
+      "source_scope_hash": "sha256:be834d0775d499bbd8a3b02f045745cca9b61f0c51a286b3776aa8929568d375",
+      "target_construct_key": "RUBRIC::A09::CONTEXTUALIZACION_Y_MADUREZ_HISTORIOGRAFICA"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:b35c2e24374fcaab43d2fae71afe3eaa49bb6a74b383883993a8c77e1436f29c",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A09-S05-R02",
+      "scope_alias": "S6cb097d9a87d6c1092b4b1ec",
+      "source_scope_hash": "sha256:6cb097d9a87d6c1092b4b1ec0ddc737c512f30e4dfd904ee41b7f7ea744a89ce",
+      "target_construct_key": "RUBRIC::A09::CRITICA_Y_CONTRAARGUMENTO"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:ed31910183ef95dd39815f29610b5aed1b93efdef89b7e0d9636537adc6aaa5e",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A09-S05-R03",
+      "scope_alias": "S1d1d1cb3a4b76f2ae06dcaf8",
+      "source_scope_hash": "sha256:1d1d1cb3a4b76f2ae06dcaf808cc4f26301b9a4a28f5175591532cc0f56655f8",
+      "target_construct_key": "RUBRIC::A09::INTEGRACION_DE_EVIDENCIA"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:b35c2e24374fcaab43d2fae71afe3eaa49bb6a74b383883993a8c77e1436f29c",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A09-S06-R01",
+      "scope_alias": "Sc4bcaba0ff013eca938660d0",
+      "source_scope_hash": "sha256:c4bcaba0ff013eca938660d0df90fc043cfcc40292656fb0db7e794ad4cdb9ea",
+      "target_construct_key": "RUBRIC::A09::CRITICA_Y_CONTRAARGUMENTO"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:c258ba6a7717004538c37008dd55ae83c8e9a8c0b260f8a2030fbb09b4ddfc62",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A09-S06-R02",
+      "scope_alias": "S177ce93f8b368015a76031c1",
+      "source_scope_hash": "sha256:177ce93f8b368015a76031c1319b062cc173b0569f4d43edc97e75b32e9fbda2",
+      "target_construct_key": "RUBRIC::A09::TESIS_EXPLICATIVA"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:13c87627fc0914a1d8f514455dfb90e937ae1b981d0b141b84945397c53a10d4",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A10-S01-R01",
+      "scope_alias": "S1d8948b7a6811d095cced565",
+      "source_scope_hash": "sha256:1d8948b7a6811d095cced56576f13f506f419f550cbf56ef216da0340a2332ab",
+      "target_construct_key": "RUBRIC::A10::D3_VALIDEZ_DE_LA_COMPARACION"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:a6c2eb2ec9bbb03c1e593fef360a4a6f9b2187bb9bfc655b4f3f889e6b4897d1",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A10-S02-R01",
+      "scope_alias": "S1b9fafe77af676c7fa44ec1c",
+      "source_scope_hash": "sha256:1b9fafe77af676c7fa44ec1c2f837f8d491e7f8755bf5f345d59b1425aa5a9d9",
+      "target_construct_key": "RUBRIC::A10::D2_AGREGADO_FRENTE_A_SEGMENTO"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:13c87627fc0914a1d8f514455dfb90e937ae1b981d0b141b84945397c53a10d4",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A10-S02-R02",
+      "scope_alias": "S3dbaccd5be04d21fdc7df34d",
+      "source_scope_hash": "sha256:3dbaccd5be04d21fdc7df34dcf110f1bf2d01491f72d04ee7443aae6eca13d22",
+      "target_construct_key": "RUBRIC::A10::D3_VALIDEZ_DE_LA_COMPARACION"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:13c87627fc0914a1d8f514455dfb90e937ae1b981d0b141b84945397c53a10d4",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A10-S03-R01",
+      "scope_alias": "S31eb98beac49243307af49d8",
+      "source_scope_hash": "sha256:31eb98beac49243307af49d8e31d47027af88e42ad13ff971fae10e1826fcb76",
+      "target_construct_key": "RUBRIC::A10::D3_VALIDEZ_DE_LA_COMPARACION"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:a6c2eb2ec9bbb03c1e593fef360a4a6f9b2187bb9bfc655b4f3f889e6b4897d1",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A10-S04-R01",
+      "scope_alias": "S7a4c3a281c41da83603b97d9",
+      "source_scope_hash": "sha256:7a4c3a281c41da83603b97d9fe75370739c6e11e00ca471954284e7b78f7d392",
+      "target_construct_key": "RUBRIC::A10::D2_AGREGADO_FRENTE_A_SEGMENTO"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:13c87627fc0914a1d8f514455dfb90e937ae1b981d0b141b84945397c53a10d4",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A10-S04-R02",
+      "scope_alias": "S081edb212974cfbc6a5fa030",
+      "source_scope_hash": "sha256:081edb212974cfbc6a5fa0303b18817a5041e47d070b262081c83e4c02e008ea",
+      "target_construct_key": "RUBRIC::A10::D3_VALIDEZ_DE_LA_COMPARACION"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:a6c2eb2ec9bbb03c1e593fef360a4a6f9b2187bb9bfc655b4f3f889e6b4897d1",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A10-S05-R01",
+      "scope_alias": "S121d7265da6c8e01c3eef78f",
+      "source_scope_hash": "sha256:121d7265da6c8e01c3eef78f090dc913e3bd6b919db2dbf9be2cad9859867954",
+      "target_construct_key": "RUBRIC::A10::D2_AGREGADO_FRENTE_A_SEGMENTO"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:e2d2b38d5639918e5f5c166194fa0bde5d21d50c7aa5c7450eb63eadd931dcbc",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A10-S06-R01",
+      "scope_alias": "S0cc2bab31b3b2ca2e31fdb69",
+      "source_scope_hash": "sha256:0cc2bab31b3b2ca2e31fdb69e39e15415c59efddfddbd7a3865a745bea3730e8",
+      "target_construct_key": "RUBRIC::A10::D1_TASAS_Y_DENOMINADORES"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:13c87627fc0914a1d8f514455dfb90e937ae1b981d0b141b84945397c53a10d4",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A10-S06-R02",
+      "scope_alias": "Sb18c20ae1ed5ff5e5a0c543f",
+      "source_scope_hash": "sha256:b18c20ae1ed5ff5e5a0c543f2ba1bda50d766a25dba44f8407aa971d99810647",
+      "target_construct_key": "RUBRIC::A10::D3_VALIDEZ_DE_LA_COMPARACION"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:2e7b008a8bb6bcac06573adaec6de525efc28b60e29e2d6c308942ac858f2fc9",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A11-S01-R01",
+      "scope_alias": "S3462c086bb8d5c2b8ce5f47a",
+      "source_scope_hash": "sha256:3462c086bb8d5c2b8ce5f47aba99ea45dc647393b1021b8e910d01acd8032a41",
+      "target_construct_key": "RUBRIC::A11::CADENA_CAUSAL"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:b8ede7bb9da5f611f30a8e7686153cba34c5d90ec74742a368899135327cd767",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A11-S01-R02",
+      "scope_alias": "Sfdbfd4957d2d3c6a48f23943",
+      "source_scope_hash": "sha256:fdbfd4957d2d3c6a48f23943bb6f02063b3dd3874330183cc69968bcd1d2ac79",
+      "target_construct_key": "RUBRIC::A11::COHERENCIA_ENTRE_ARTEFACTOS"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:41fdeb8531aefab131f056fcde8987c41d65069820711f1355b27f63239144f9",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A11-S01-R03",
+      "scope_alias": "Sa9248b77973f60ec9c228380",
+      "source_scope_hash": "sha256:a9248b77973f60ec9c228380c7872ac44abf2a553a2b206f2516b8aa40ae417c",
+      "target_construct_key": "RUBRIC::A11::INVARIANT_Y_CLAVE"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:41fdeb8531aefab131f056fcde8987c41d65069820711f1355b27f63239144f9",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A11-S02-R01",
+      "scope_alias": "S456cf5a169039807bfacfb6f",
+      "source_scope_hash": "sha256:456cf5a169039807bfacfb6f83fe7a6373032d953cfa5dd275d15fcb1ba0bfbd",
+      "target_construct_key": "RUBRIC::A11::INVARIANT_Y_CLAVE"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:2e7b008a8bb6bcac06573adaec6de525efc28b60e29e2d6c308942ac858f2fc9",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A11-S03-R01",
+      "scope_alias": "S06e2b42b1fe36025d0c6fe34",
+      "source_scope_hash": "sha256:06e2b42b1fe36025d0c6fe34c05a3910aa9f701fe9ed15bf7a13cee4f3fefd1e",
+      "target_construct_key": "RUBRIC::A11::CADENA_CAUSAL"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:41fdeb8531aefab131f056fcde8987c41d65069820711f1355b27f63239144f9",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A11-S03-R02",
+      "scope_alias": "Se1729648782a1e5db616d753",
+      "source_scope_hash": "sha256:e1729648782a1e5db616d7530b9d368a0ec2aca9255e57af97a989418ddb2c58",
+      "target_construct_key": "RUBRIC::A11::INVARIANT_Y_CLAVE"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:323914311927df1625c5b4b2174bc7dd3c03017b1c53cd99227df630c63cc710",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A11-S03-R03",
+      "scope_alias": "Sc6b600e9cbb631fbff31e09c",
+      "source_scope_hash": "sha256:c6b600e9cbb631fbff31e09c6ba627acc6699e1c12bd93f9b4cfa062a81f1951",
+      "target_construct_key": "RUBRIC::A11::TRADE_OFFS_Y_RECUPERACION"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:b8ede7bb9da5f611f30a8e7686153cba34c5d90ec74742a368899135327cd767",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A11-S04-R01",
+      "scope_alias": "S0218719d1c0a130a0a50826a",
+      "source_scope_hash": "sha256:0218719d1c0a130a0a50826a7e869e64715e82c070e3e28f76638cbe3b8b85eb",
+      "target_construct_key": "RUBRIC::A11::COHERENCIA_ENTRE_ARTEFACTOS"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:41fdeb8531aefab131f056fcde8987c41d65069820711f1355b27f63239144f9",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A11-S04-R02",
+      "scope_alias": "Sef49c62e1c3da27ccb736a81",
+      "source_scope_hash": "sha256:ef49c62e1c3da27ccb736a818fdee0d83e538a8f7a136cb1f76360f2fcfab23e",
+      "target_construct_key": "RUBRIC::A11::INVARIANT_Y_CLAVE"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:323914311927df1625c5b4b2174bc7dd3c03017b1c53cd99227df630c63cc710",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A11-S04-R03",
+      "scope_alias": "S9653a80910838a980cd124aa",
+      "source_scope_hash": "sha256:9653a80910838a980cd124aaaab00cada3f0148f6b9d5ebe3c718d6d4907012d",
+      "target_construct_key": "RUBRIC::A11::TRADE_OFFS_Y_RECUPERACION"
+    },
+    {
+      "envelope_schema_version": "p06-alias-envelope/1.0.0",
+      "projection_hash": "sha256:41fdeb8531aefab131f056fcde8987c41d65069820711f1355b27f63239144f9",
+      "represented_surfaces": [
+        "EvidenceMappingDimensionContext.justification",
+        "EvidenceMappingDimensionContext.name",
+        "EvidenceMappingTemplateContext.cognitive_operation",
+        "EvidenceMappingTemplateContext.focus",
+        "EvidenceMappingTemplateContext.observable",
+        "EvidenceMappingVariantContext.description",
+        "EvidenceMappingVariantContext.name"
+      ],
+      "route_fixture_id": "P06-A11-S06-R01",
+      "scope_alias": "Sefb59b3f4ffcbe3078ae8f61",
+      "source_scope_hash": "sha256:efb59b3f4ffcbe3078ae8f6173353ecb9d9ca5808ee654f03bf9585c9abda9e9",
+      "target_construct_key": "RUBRIC::A11::INVARIANT_Y_CLAVE"
+    }
+  ],
+  "schema_version": "p06-production-representativeness/1.0.0"
+}

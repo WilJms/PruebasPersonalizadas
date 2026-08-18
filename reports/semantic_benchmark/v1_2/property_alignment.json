@@ -1,0 +1,779 @@
+{
+  "aligned_count": 77,
+  "assigned_arbitrarily_count": 0,
+  "hard_alignment_requires_construct_identity_equality": true,
+  "report_hash": "sha256:d6df70cd2df0ce444ad8b796b79a7dadf7b7b4957b3428adc91e1099f5a35b79",
+  "rows": [
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A01-S02-R01",
+      "primary_case_id": "PP-A01-S02-P06-R01",
+      "property_id": "A01-S02-P1",
+      "property_target_construct_key": "RUBRIC::A01::LIMITACION",
+      "route_target_construct_key": "RUBRIC::A01::LIMITACION",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A01-S03-R02",
+      "primary_case_id": "PP-A01-S03-P06-R02",
+      "property_id": "A01-S03-P1",
+      "property_target_construct_key": "RUBRIC::A01::VARIABLES_Y_MEDIDAS",
+      "route_target_construct_key": "RUBRIC::A01::VARIABLES_Y_MEDIDAS",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A01-S03-R01",
+      "primary_case_id": "PP-A01-S03-P06-R01",
+      "property_id": "A01-S03-P2",
+      "property_target_construct_key": "RUBRIC::A01::USO_DE_EVIDENCIA",
+      "route_target_construct_key": "RUBRIC::A01::USO_DE_EVIDENCIA",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A01-S04-R01",
+      "primary_case_id": "PP-A01-S04-P06-R01",
+      "property_id": "A01-S04-P2",
+      "property_target_construct_key": "RUBRIC::A01::LIMITACION",
+      "route_target_construct_key": "RUBRIC::A01::LIMITACION",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A01-S05-R01",
+      "primary_case_id": "PP-A01-S05-P06-R01",
+      "property_id": "A01-S05-P1",
+      "property_target_construct_key": "RUBRIC::A01::USO_DE_EVIDENCIA",
+      "route_target_construct_key": "RUBRIC::A01::USO_DE_EVIDENCIA",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A02-S01-R01",
+      "primary_case_id": "PP-A02-S01-P06-R01",
+      "property_id": "A02-S01-P1",
+      "property_target_construct_key": "RUBRIC::A02::RELACION_Y_RAZONAMIENTO",
+      "route_target_construct_key": "RUBRIC::A02::RELACION_Y_RAZONAMIENTO",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A02-S03-R02",
+      "primary_case_id": "PP-A02-S03-P06-R02",
+      "property_id": "A02-S03-P1",
+      "property_target_construct_key": "RUBRIC::A02::RELACION_Y_RAZONAMIENTO",
+      "route_target_construct_key": "RUBRIC::A02::RELACION_Y_RAZONAMIENTO",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A02-S03-R01",
+      "primary_case_id": "PP-A02-S03-P06-R01",
+      "property_id": "A02-S03-P2",
+      "property_target_construct_key": "RUBRIC::A02::APERTURA_INTERPRETATIVA",
+      "route_target_construct_key": "RUBRIC::A02::APERTURA_INTERPRETATIVA",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A02-S04-R01",
+      "primary_case_id": "PP-A02-S04-P06-R01",
+      "property_id": "A02-S04-P1",
+      "property_target_construct_key": "RUBRIC::A02::RELACION_Y_RAZONAMIENTO",
+      "route_target_construct_key": "RUBRIC::A02::RELACION_Y_RAZONAMIENTO",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A02-S05-R01",
+      "primary_case_id": "PP-A02-S05-P06-R01",
+      "property_id": "A02-S05-P1",
+      "property_target_construct_key": "RUBRIC::A02::TESIS_INTERPRETATIVA",
+      "route_target_construct_key": "RUBRIC::A02::TESIS_INTERPRETATIVA",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A02-S06-R01",
+      "primary_case_id": "PP-A02-S06-P06-R01",
+      "property_id": "A02-S06-P1",
+      "property_target_construct_key": "RUBRIC::A02::APERTURA_INTERPRETATIVA",
+      "route_target_construct_key": "RUBRIC::A02::APERTURA_INTERPRETATIVA",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A03-S01-R01",
+      "primary_case_id": "PP-A03-S01-P06-R01",
+      "property_id": "A03-S01-P1",
+      "property_target_construct_key": "RUBRIC::A03::COMPARACION_CON_LA_ALTERNATIVA_NO_ELEGIDA",
+      "route_target_construct_key": "RUBRIC::A03::COMPARACION_CON_LA_ALTERNATIVA_NO_ELEGIDA",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A03-S01-R02",
+      "primary_case_id": "PP-A03-S01-P06-R02",
+      "property_id": "A03-S01-P2",
+      "property_target_construct_key": "RUBRIC::A03::VERIFICACION_DE_LA_RESTRICCION_DE_CAPACIDAD",
+      "route_target_construct_key": "RUBRIC::A03::VERIFICACION_DE_LA_RESTRICCION_DE_CAPACIDAD",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A03-S02-R01",
+      "primary_case_id": "PP-A03-S02-P06-R01",
+      "property_id": "A03-S02-P1",
+      "property_target_construct_key": "RUBRIC::A03::RIESGO_O_CONDICION_QUE_CAMBIARIA_LA_DECISION",
+      "route_target_construct_key": "RUBRIC::A03::RIESGO_O_CONDICION_QUE_CAMBIARIA_LA_DECISION",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A03-S04-R02",
+      "primary_case_id": "PP-A03-S04-P06-R02",
+      "property_id": "A03-S04-P1",
+      "property_target_construct_key": "RUBRIC::A03::VERIFICACION_DE_LA_RESTRICCION_DE_CAPACIDAD",
+      "route_target_construct_key": "RUBRIC::A03::VERIFICACION_DE_LA_RESTRICCION_DE_CAPACIDAD",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A03-S04-R01",
+      "primary_case_id": "PP-A03-S04-P06-R01",
+      "property_id": "A03-S04-P3",
+      "property_target_construct_key": "RUBRIC::A03::COSTO_TOTAL_CON_DESGLOSE",
+      "route_target_construct_key": "RUBRIC::A03::COSTO_TOTAL_CON_DESGLOSE",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A03-S05-R01",
+      "primary_case_id": "PP-A03-S05-P06-R01",
+      "property_id": "A03-S05-P1",
+      "property_target_construct_key": "RUBRIC::A03::VERIFICACION_DE_LA_RESTRICCION_DE_CAPACIDAD",
+      "route_target_construct_key": "RUBRIC::A03::VERIFICACION_DE_LA_RESTRICCION_DE_CAPACIDAD",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A03-S06-R02",
+      "primary_case_id": "PP-A03-S06-P06-R02",
+      "property_id": "A03-S06-P1",
+      "property_target_construct_key": "RUBRIC::A03::INGRESO_Y_EXCEDENTE_BAJO_VENTA_COMPLETA",
+      "route_target_construct_key": "RUBRIC::A03::INGRESO_Y_EXCEDENTE_BAJO_VENTA_COMPLETA",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A03-S06-R01",
+      "primary_case_id": "PP-A03-S06-P06-R01",
+      "property_id": "A03-S06-P2",
+      "property_target_construct_key": "RUBRIC::A03::COSTO_TOTAL_CON_DESGLOSE",
+      "route_target_construct_key": "RUBRIC::A03::COSTO_TOTAL_CON_DESGLOSE",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A04-S01-R03",
+      "primary_case_id": "PP-A04-S01-P06-R03",
+      "property_id": "A04-S01-P2",
+      "property_target_construct_key": "RUBRIC::A04::UNA_APARICION_INVALIDA_NO_RESERVA_EL_ID",
+      "route_target_construct_key": "RUBRIC::A04::UNA_APARICION_INVALIDA_NO_RESERVA_EL_ID",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A04-S01-R02",
+      "primary_case_id": "PP-A04-S01-P06-R02",
+      "property_id": "A04-S01-P3",
+      "property_target_construct_key": "RUBRIC::A04::ORDENA_POR_PRIORIDAD_LUEGO_MARCA_LUEGO_ID",
+      "route_target_construct_key": "RUBRIC::A04::ORDENA_POR_PRIORIDAD_LUEGO_MARCA_LUEGO_ID",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A04-S01-R01",
+      "primary_case_id": "PP-A04-S01-P06-R01",
+      "property_id": "A04-S01-P5",
+      "property_target_construct_key": "RUBRIC::A04::DESCARTA_REGISTROS_CON_CAMPO_FALTANTE",
+      "route_target_construct_key": "RUBRIC::A04::DESCARTA_REGISTROS_CON_CAMPO_FALTANTE",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A04-S02-R01",
+      "primary_case_id": "PP-A04-S02-P06-R01",
+      "property_id": "A04-S02-P1",
+      "property_target_construct_key": "RUBRIC::A04::UNA_APARICION_INVALIDA_NO_RESERVA_EL_ID",
+      "route_target_construct_key": "RUBRIC::A04::UNA_APARICION_INVALIDA_NO_RESERVA_EL_ID",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A04-S03-R01",
+      "primary_case_id": "PP-A04-S03-P06-R01",
+      "property_id": "A04-S03-P1",
+      "property_target_construct_key": "RUBRIC::A04::NO_MUTA_SOLICITUDES_NI_CUPOS_POR_GRUPO",
+      "route_target_construct_key": "RUBRIC::A04::NO_MUTA_SOLICITUDES_NI_CUPOS_POR_GRUPO",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A04-S05-R01",
+      "primary_case_id": "PP-A04-S05-P06-R01",
+      "property_id": "A04-S05-P1",
+      "property_target_construct_key": "RUBRIC::A04::CONSERVA_LA_PRIMERA_APARICION_VALIDA_DE_UN_ID_REPETIDO",
+      "route_target_construct_key": "RUBRIC::A04::CONSERVA_LA_PRIMERA_APARICION_VALIDA_DE_UN_ID_REPETIDO",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A04-S05-R02",
+      "primary_case_id": "PP-A04-S05-P06-R02",
+      "property_id": "A04-S05-P5",
+      "property_target_construct_key": "RUBRIC::A04::UNA_APARICION_INVALIDA_NO_RESERVA_EL_ID",
+      "route_target_construct_key": "RUBRIC::A04::UNA_APARICION_INVALIDA_NO_RESERVA_EL_ID",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A04-S06-R01",
+      "primary_case_id": "PP-A04-S06-P06-R01",
+      "property_id": "A04-S06-P4",
+      "property_target_construct_key": "RUBRIC::A04::DESCARTA_REGISTROS_CON_CAMPO_FALTANTE",
+      "route_target_construct_key": "RUBRIC::A04::DESCARTA_REGISTROS_CON_CAMPO_FALTANTE",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A06-S01-R02",
+      "primary_case_id": "PP-A06-S01-P06-R02",
+      "property_id": "A06-S01-P1",
+      "property_target_construct_key": "RUBRIC::A06::EVIDENCIA_Y_SUBGRUPOS",
+      "route_target_construct_key": "RUBRIC::A06::EVIDENCIA_Y_SUBGRUPOS",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A06-S01-R01",
+      "primary_case_id": "PP-A06-S01-P06-R01",
+      "property_id": "A06-S01-P3",
+      "property_target_construct_key": "RUBRIC::A06::CALIDAD_DE_INFERENCIA",
+      "route_target_construct_key": "RUBRIC::A06::CALIDAD_DE_INFERENCIA",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A06-S02-R01",
+      "primary_case_id": "PP-A06-S02-P06-R01",
+      "property_id": "A06-S02-P1",
+      "property_target_construct_key": "RUBRIC::A06::CALIDAD_DE_INFERENCIA",
+      "route_target_construct_key": "RUBRIC::A06::CALIDAD_DE_INFERENCIA",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A06-S02-R02",
+      "primary_case_id": "PP-A06-S02-P06-R02",
+      "property_id": "A06-S02-P2",
+      "property_target_construct_key": "RUBRIC::A06::TRADE_OFF",
+      "route_target_construct_key": "RUBRIC::A06::TRADE_OFF",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A06-S03-R01",
+      "primary_case_id": "PP-A06-S03-P06-R01",
+      "property_id": "A06-S03-P1",
+      "property_target_construct_key": "RUBRIC::A06::TRADE_OFF",
+      "route_target_construct_key": "RUBRIC::A06::TRADE_OFF",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A06-S04-R02",
+      "primary_case_id": "PP-A06-S04-P06-R02",
+      "property_id": "A06-S04-P1",
+      "property_target_construct_key": "RUBRIC::A06::EVIDENCIA_Y_SUBGRUPOS",
+      "route_target_construct_key": "RUBRIC::A06::EVIDENCIA_Y_SUBGRUPOS",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A06-S04-R01",
+      "primary_case_id": "PP-A06-S04-P06-R01",
+      "property_id": "A06-S04-P2",
+      "property_target_construct_key": "RUBRIC::A06::CALIDAD_DE_INFERENCIA",
+      "route_target_construct_key": "RUBRIC::A06::CALIDAD_DE_INFERENCIA",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A06-S05-R02",
+      "primary_case_id": "PP-A06-S05-P06-R02",
+      "property_id": "A06-S05-P1",
+      "property_target_construct_key": "RUBRIC::A06::EVIDENCIA_Y_SUBGRUPOS",
+      "route_target_construct_key": "RUBRIC::A06::EVIDENCIA_Y_SUBGRUPOS",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A06-S05-R01",
+      "primary_case_id": "PP-A06-S05-P06-R01",
+      "property_id": "A06-S05-P3",
+      "property_target_construct_key": "RUBRIC::A06::CALIDAD_DE_INFERENCIA",
+      "route_target_construct_key": "RUBRIC::A06::CALIDAD_DE_INFERENCIA",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A07-S02-R01",
+      "primary_case_id": "PP-A07-S02-P06-R01",
+      "property_id": "A07-S02-P3",
+      "property_target_construct_key": "RUBRIC::A07::CRITERIO_DE_COMPARACION",
+      "route_target_construct_key": "RUBRIC::A07::CRITERIO_DE_COMPARACION",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A07-S04-R02",
+      "primary_case_id": "PP-A07-S04-P06-R02",
+      "property_id": "A07-S04-P1",
+      "property_target_construct_key": "RUBRIC::A07::USO_DE_LOS_DOS_ARTEFACTOS",
+      "route_target_construct_key": "RUBRIC::A07::USO_DE_LOS_DOS_ARTEFACTOS",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A07-S04-R01",
+      "primary_case_id": "PP-A07-S04-P06-R01",
+      "property_id": "A07-S04-P2",
+      "property_target_construct_key": "RUBRIC::A07::CRITERIO_DE_COMPARACION",
+      "route_target_construct_key": "RUBRIC::A07::CRITERIO_DE_COMPARACION",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A08-S01-R01",
+      "primary_case_id": "PP-A08-S01-P06-R01",
+      "property_id": "A08-S01-P1",
+      "property_target_construct_key": "RUBRIC::A08::HECHO_HIPOTESIS_E_INCERTIDUMBRE",
+      "route_target_construct_key": "RUBRIC::A08::HECHO_HIPOTESIS_E_INCERTIDUMBRE",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A08-S01-R02",
+      "primary_case_id": "PP-A08-S01-P06-R02",
+      "property_id": "A08-S01-P3",
+      "property_target_construct_key": "RUBRIC::A08::RESPUESTA_Y_TRADE_OFF",
+      "route_target_construct_key": "RUBRIC::A08::RESPUESTA_Y_TRADE_OFF",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A08-S03-R01",
+      "primary_case_id": "PP-A08-S03-P06-R01",
+      "property_id": "A08-S03-P1",
+      "property_target_construct_key": "RUBRIC::A08::LINEA_TEMPORAL_Y_CORRELACION",
+      "route_target_construct_key": "RUBRIC::A08::LINEA_TEMPORAL_Y_CORRELACION",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A08-S03-R02",
+      "primary_case_id": "PP-A08-S03-P06-R02",
+      "property_id": "A08-S03-P2",
+      "property_target_construct_key": "RUBRIC::A08::MANEJO_SEGURO_DEL_ARTEFACTO",
+      "route_target_construct_key": "RUBRIC::A08::MANEJO_SEGURO_DEL_ARTEFACTO",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A08-S04-R01",
+      "primary_case_id": "PP-A08-S04-P06-R01",
+      "property_id": "A08-S04-P1",
+      "property_target_construct_key": "RUBRIC::A08::HECHO_HIPOTESIS_E_INCERTIDUMBRE",
+      "route_target_construct_key": "RUBRIC::A08::HECHO_HIPOTESIS_E_INCERTIDUMBRE",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A08-S05-R02",
+      "primary_case_id": "PP-A08-S05-P06-R02",
+      "property_id": "A08-S05-P1",
+      "property_target_construct_key": "RUBRIC::A08::MANEJO_SEGURO_DEL_ARTEFACTO",
+      "route_target_construct_key": "RUBRIC::A08::MANEJO_SEGURO_DEL_ARTEFACTO",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A08-S05-R01",
+      "primary_case_id": "PP-A08-S05-P06-R01",
+      "property_id": "A08-S05-P2",
+      "property_target_construct_key": "RUBRIC::A08::LINEA_TEMPORAL_Y_CORRELACION",
+      "route_target_construct_key": "RUBRIC::A08::LINEA_TEMPORAL_Y_CORRELACION",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A09-S01-R02",
+      "primary_case_id": "PP-A09-S01-P06-R02",
+      "property_id": "A09-S01-P1",
+      "property_target_construct_key": "RUBRIC::A09::CRITICA_Y_CONTRAARGUMENTO",
+      "route_target_construct_key": "RUBRIC::A09::CRITICA_Y_CONTRAARGUMENTO",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A09-S01-R03",
+      "primary_case_id": "PP-A09-S01-P06-R03",
+      "property_id": "A09-S01-P2",
+      "property_target_construct_key": "RUBRIC::A09::INTEGRACION_DE_EVIDENCIA",
+      "route_target_construct_key": "RUBRIC::A09::INTEGRACION_DE_EVIDENCIA",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A09-S01-R01",
+      "primary_case_id": "PP-A09-S01-P06-R01",
+      "property_id": "A09-S01-P3",
+      "property_target_construct_key": "RUBRIC::A09::CONTEXTUALIZACION_Y_MADUREZ_HISTORIOGRAFICA",
+      "route_target_construct_key": "RUBRIC::A09::CONTEXTUALIZACION_Y_MADUREZ_HISTORIOGRAFICA",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A09-S02-R02",
+      "primary_case_id": "PP-A09-S02-P06-R02",
+      "property_id": "A09-S02-P1",
+      "property_target_construct_key": "RUBRIC::A09::TESIS_EXPLICATIVA",
+      "route_target_construct_key": "RUBRIC::A09::TESIS_EXPLICATIVA",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A09-S02-R01",
+      "primary_case_id": "PP-A09-S02-P06-R01",
+      "property_id": "A09-S02-P3",
+      "property_target_construct_key": "RUBRIC::A09::CRITICA_Y_CONTRAARGUMENTO",
+      "route_target_construct_key": "RUBRIC::A09::CRITICA_Y_CONTRAARGUMENTO",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A09-S04-R01",
+      "primary_case_id": "PP-A09-S04-P06-R01",
+      "property_id": "A09-S04-P1",
+      "property_target_construct_key": "RUBRIC::A09::TESIS_EXPLICATIVA",
+      "route_target_construct_key": "RUBRIC::A09::TESIS_EXPLICATIVA",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A09-S05-R03",
+      "primary_case_id": "PP-A09-S05-P06-R03",
+      "property_id": "A09-S05-P1",
+      "property_target_construct_key": "RUBRIC::A09::INTEGRACION_DE_EVIDENCIA",
+      "route_target_construct_key": "RUBRIC::A09::INTEGRACION_DE_EVIDENCIA",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A09-S05-R01",
+      "primary_case_id": "PP-A09-S05-P06-R01",
+      "property_id": "A09-S05-P2",
+      "property_target_construct_key": "RUBRIC::A09::CONTEXTUALIZACION_Y_MADUREZ_HISTORIOGRAFICA",
+      "route_target_construct_key": "RUBRIC::A09::CONTEXTUALIZACION_Y_MADUREZ_HISTORIOGRAFICA",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A09-S05-R02",
+      "primary_case_id": "PP-A09-S05-P06-R02",
+      "property_id": "A09-S05-P3",
+      "property_target_construct_key": "RUBRIC::A09::CRITICA_Y_CONTRAARGUMENTO",
+      "route_target_construct_key": "RUBRIC::A09::CRITICA_Y_CONTRAARGUMENTO",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A09-S06-R02",
+      "primary_case_id": "PP-A09-S06-P06-R02",
+      "property_id": "A09-S06-P1",
+      "property_target_construct_key": "RUBRIC::A09::TESIS_EXPLICATIVA",
+      "route_target_construct_key": "RUBRIC::A09::TESIS_EXPLICATIVA",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A09-S06-R01",
+      "primary_case_id": "PP-A09-S06-P06-R01",
+      "property_id": "A09-S06-P4",
+      "property_target_construct_key": "RUBRIC::A09::CRITICA_Y_CONTRAARGUMENTO",
+      "route_target_construct_key": "RUBRIC::A09::CRITICA_Y_CONTRAARGUMENTO",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A10-S01-R01",
+      "primary_case_id": "PP-A10-S01-P06-R01",
+      "property_id": "A10-S01-P2",
+      "property_target_construct_key": "RUBRIC::A10::D3_VALIDEZ_DE_LA_COMPARACION",
+      "route_target_construct_key": "RUBRIC::A10::D3_VALIDEZ_DE_LA_COMPARACION",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A10-S02-R01",
+      "primary_case_id": "PP-A10-S02-P06-R01",
+      "property_id": "A10-S02-P1",
+      "property_target_construct_key": "RUBRIC::A10::D2_AGREGADO_FRENTE_A_SEGMENTO",
+      "route_target_construct_key": "RUBRIC::A10::D2_AGREGADO_FRENTE_A_SEGMENTO",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A10-S02-R02",
+      "primary_case_id": "PP-A10-S02-P06-R02",
+      "property_id": "A10-S02-P2",
+      "property_target_construct_key": "RUBRIC::A10::D3_VALIDEZ_DE_LA_COMPARACION",
+      "route_target_construct_key": "RUBRIC::A10::D3_VALIDEZ_DE_LA_COMPARACION",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A10-S03-R01",
+      "primary_case_id": "PP-A10-S03-P06-R01",
+      "property_id": "A10-S03-P2",
+      "property_target_construct_key": "RUBRIC::A10::D3_VALIDEZ_DE_LA_COMPARACION",
+      "route_target_construct_key": "RUBRIC::A10::D3_VALIDEZ_DE_LA_COMPARACION",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A10-S04-R01",
+      "primary_case_id": "PP-A10-S04-P06-R01",
+      "property_id": "A10-S04-P1",
+      "property_target_construct_key": "RUBRIC::A10::D2_AGREGADO_FRENTE_A_SEGMENTO",
+      "route_target_construct_key": "RUBRIC::A10::D2_AGREGADO_FRENTE_A_SEGMENTO",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A10-S04-R02",
+      "primary_case_id": "PP-A10-S04-P06-R02",
+      "property_id": "A10-S04-P3",
+      "property_target_construct_key": "RUBRIC::A10::D3_VALIDEZ_DE_LA_COMPARACION",
+      "route_target_construct_key": "RUBRIC::A10::D3_VALIDEZ_DE_LA_COMPARACION",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A10-S05-R01",
+      "primary_case_id": "PP-A10-S05-P06-R01",
+      "property_id": "A10-S05-P1",
+      "property_target_construct_key": "RUBRIC::A10::D2_AGREGADO_FRENTE_A_SEGMENTO",
+      "route_target_construct_key": "RUBRIC::A10::D2_AGREGADO_FRENTE_A_SEGMENTO",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A10-S06-R01",
+      "primary_case_id": "PP-A10-S06-P06-R01",
+      "property_id": "A10-S06-P2",
+      "property_target_construct_key": "RUBRIC::A10::D1_TASAS_Y_DENOMINADORES",
+      "route_target_construct_key": "RUBRIC::A10::D1_TASAS_Y_DENOMINADORES",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A10-S06-R02",
+      "primary_case_id": "PP-A10-S06-P06-R02",
+      "property_id": "A10-S06-P3",
+      "property_target_construct_key": "RUBRIC::A10::D3_VALIDEZ_DE_LA_COMPARACION",
+      "route_target_construct_key": "RUBRIC::A10::D3_VALIDEZ_DE_LA_COMPARACION",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A11-S01-R03",
+      "primary_case_id": "PP-A11-S01-P06-R03",
+      "property_id": "A11-S01-P1",
+      "property_target_construct_key": "RUBRIC::A11::INVARIANT_Y_CLAVE",
+      "route_target_construct_key": "RUBRIC::A11::INVARIANT_Y_CLAVE",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A11-S01-R02",
+      "primary_case_id": "PP-A11-S01-P06-R02",
+      "property_id": "A11-S01-P2",
+      "property_target_construct_key": "RUBRIC::A11::COHERENCIA_ENTRE_ARTEFACTOS",
+      "route_target_construct_key": "RUBRIC::A11::COHERENCIA_ENTRE_ARTEFACTOS",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A11-S01-R01",
+      "primary_case_id": "PP-A11-S01-P06-R01",
+      "property_id": "A11-S01-P3",
+      "property_target_construct_key": "RUBRIC::A11::CADENA_CAUSAL",
+      "route_target_construct_key": "RUBRIC::A11::CADENA_CAUSAL",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A11-S02-R01",
+      "primary_case_id": "PP-A11-S02-P06-R01",
+      "property_id": "A11-S02-P1",
+      "property_target_construct_key": "RUBRIC::A11::INVARIANT_Y_CLAVE",
+      "route_target_construct_key": "RUBRIC::A11::INVARIANT_Y_CLAVE",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A11-S03-R02",
+      "primary_case_id": "PP-A11-S03-P06-R02",
+      "property_id": "A11-S03-P1",
+      "property_target_construct_key": "RUBRIC::A11::INVARIANT_Y_CLAVE",
+      "route_target_construct_key": "RUBRIC::A11::INVARIANT_Y_CLAVE",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A11-S03-R03",
+      "primary_case_id": "PP-A11-S03-P06-R03",
+      "property_id": "A11-S03-P2",
+      "property_target_construct_key": "RUBRIC::A11::TRADE_OFFS_Y_RECUPERACION",
+      "route_target_construct_key": "RUBRIC::A11::TRADE_OFFS_Y_RECUPERACION",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A11-S03-R01",
+      "primary_case_id": "PP-A11-S03-P06-R01",
+      "property_id": "A11-S03-P3",
+      "property_target_construct_key": "RUBRIC::A11::CADENA_CAUSAL",
+      "route_target_construct_key": "RUBRIC::A11::CADENA_CAUSAL",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A11-S04-R02",
+      "primary_case_id": "PP-A11-S04-P06-R02",
+      "property_id": "A11-S04-P1",
+      "property_target_construct_key": "RUBRIC::A11::INVARIANT_Y_CLAVE",
+      "route_target_construct_key": "RUBRIC::A11::INVARIANT_Y_CLAVE",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A11-S04-R01",
+      "primary_case_id": "PP-A11-S04-P06-R01",
+      "property_id": "A11-S04-P2",
+      "property_target_construct_key": "RUBRIC::A11::COHERENCIA_ENTRE_ARTEFACTOS",
+      "route_target_construct_key": "RUBRIC::A11::COHERENCIA_ENTRE_ARTEFACTOS",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A11-S04-R03",
+      "primary_case_id": "PP-A11-S04-P06-R03",
+      "property_id": "A11-S04-P3",
+      "property_target_construct_key": "RUBRIC::A11::TRADE_OFFS_Y_RECUPERACION",
+      "route_target_construct_key": "RUBRIC::A11::TRADE_OFFS_Y_RECUPERACION",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    },
+    {
+      "alignment_status": "ALIGNED",
+      "construct_identity_equal": true,
+      "fixture_id": "P06-A11-S06-R01",
+      "primary_case_id": "PP-A11-S06-P06-R01",
+      "property_id": "A11-S06-P1",
+      "property_target_construct_key": "RUBRIC::A11::INVARIANT_Y_CLAVE",
+      "route_target_construct_key": "RUBRIC::A11::INVARIANT_Y_CLAVE",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT"
+    }
+  ],
+  "schema_version": "p06-property-alignment/1.2.0"
+}

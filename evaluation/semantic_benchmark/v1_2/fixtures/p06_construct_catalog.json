@@ -1,0 +1,1999 @@
+{
+  "activities": [
+    {
+      "activity_id": "act_01_luz_y_plantines",
+      "activity_path": "activity_01_luz_y_plantines",
+      "assignment_sha256": "sha256:f1abef8577915bbd8a1ccbfa87a41621adab745c74ccebdd4084dec605aec18b",
+      "construct_count": 4,
+      "construct_source_kind": "RUBRIC_CRITERION",
+      "rubric_has_criteria_table": true,
+      "rubric_sha256": "sha256:4d094045be8e9df0cf35fca1407973b8a71d7c0108cca89da5d60504b5e25126"
+    },
+    {
+      "activity_id": "act_02_voz_en_un_microcuento",
+      "activity_path": "activity_02_voz_en_un_microcuento",
+      "assignment_sha256": "sha256:8a4b3a84858cc4b6960bfc7385161d3a43b6751ca26d0f8690ad7a28220257b5",
+      "construct_count": 4,
+      "construct_source_kind": "RUBRIC_CRITERION",
+      "rubric_has_criteria_table": true,
+      "rubric_sha256": "sha256:a007e8547ee6bdb592ab2bd6752d763cbd3656a00b9491a29b63131316d51709"
+    },
+    {
+      "activity_id": "act_03_puesto_de_limonada",
+      "activity_path": "activity_03_puesto_de_limonada",
+      "assignment_sha256": "sha256:6bd45338a96b303a0f6d2d81a3982e948f5f95731022a14a67444ffd9727459f",
+      "construct_count": 6,
+      "construct_source_kind": "RUBRIC_CRITERION",
+      "rubric_has_criteria_table": true,
+      "rubric_sha256": "sha256:1a66e055a809a6be7e7a3a0ac33093c654b4dc826ff5df7c322888496ca41a5e"
+    },
+    {
+      "activity_id": "act_04_asignador_de_turnos",
+      "activity_path": "activity_04_asignador_de_turnos",
+      "assignment_sha256": "sha256:0bf67adc27d936ec090be39bc7b3b7ea76d063fbf141915079efaee262505d15",
+      "construct_count": 14,
+      "construct_source_kind": "RUBRIC_CRITERION",
+      "rubric_has_criteria_table": true,
+      "rubric_sha256": "sha256:bde129b7a90362871b9dc76ad24388a6ded288404a29a79b68c0c2b37bfcb65d"
+    },
+    {
+      "activity_id": "act_05_visitas_a_bibliotecas",
+      "activity_path": "activity_05_visitas_a_bibliotecas",
+      "assignment_sha256": "sha256:200c5282488ae1511149559707372084b40b5fdfd6efe7fb8a5bf675abc310ab",
+      "construct_count": 4,
+      "construct_source_kind": "ASSIGNMENT_REQUIREMENT",
+      "rubric_has_criteria_table": false,
+      "rubric_sha256": "sha256:657e912cddd27deb10a6226c7bb85cb6639ba95343d61e463c3aa9f367ab7a37"
+    },
+    {
+      "activity_id": "act_06_movilidad_estudiantil",
+      "activity_path": "activity_06_movilidad_estudiantil",
+      "assignment_sha256": "sha256:b323e970d3671a7eee3e20ebb9d670c70c23272c3b79af1b5346accd7777b8d3",
+      "construct_count": 4,
+      "construct_source_kind": "RUBRIC_CRITERION",
+      "rubric_has_criteria_table": true,
+      "rubric_sha256": "sha256:93d21994450cc21ecd52589b1cbd9d7d157aab0ac2b9307ad05a59d2340c3c22"
+    },
+    {
+      "activity_id": "act_07_aislamiento_termico",
+      "activity_path": "activity_07_aislamiento_termico",
+      "assignment_sha256": "sha256:79b097a91be2ac08df5ca6469741b6b92d0d35252a61b224226397c732a7981c",
+      "construct_count": 4,
+      "construct_source_kind": "RUBRIC_CRITERION",
+      "rubric_has_criteria_table": true,
+      "rubric_sha256": "sha256:097d3b6cca1b5267e545ddaeb164f13ea61688702f5c00c6886b1a7c603052ca"
+    },
+    {
+      "activity_id": "act_08_triage_de_logs",
+      "activity_path": "activity_08_triage_de_logs",
+      "assignment_sha256": "sha256:cc66ee343f603cce1617dd7f2d41d1f7b31824ce8633a14144caf739f05f2204",
+      "construct_count": 4,
+      "construct_source_kind": "RUBRIC_CRITERION",
+      "rubric_has_criteria_table": true,
+      "rubric_sha256": "sha256:c3b41274873e42d2cf901df779d96fdf3a591609ebcf6a325f4379ef7647ccd3"
+    },
+    {
+      "activity_id": "act_09_renovacion_y_desplazamiento",
+      "activity_path": "activity_09_renovacion_y_desplazamiento",
+      "assignment_sha256": "sha256:ff2a263bd89bd7ae59e24ad3becded78269afb69dee5fbc810d4208c585bf9c3",
+      "construct_count": 4,
+      "construct_source_kind": "RUBRIC_CRITERION",
+      "rubric_has_criteria_table": true,
+      "rubric_sha256": "sha256:33de57460ee514251240fc9113ccb947dc18fab3597a7aa41498e25f3736db38"
+    },
+    {
+      "activity_id": "act_10_experimento_onboarding",
+      "activity_path": "activity_10_experimento_onboarding",
+      "assignment_sha256": "sha256:0d50bf98f48a6adf92b710bf60d4bc303b40ad01363f5ae1a96cb769c43bf782",
+      "construct_count": 4,
+      "construct_source_kind": "RUBRIC_CRITERION",
+      "rubric_has_criteria_table": true,
+      "rubric_sha256": "sha256:580959158a05b3ed6af54e8195636bd9009ac0980fdfcda9902fe87270f4386e"
+    },
+    {
+      "activity_id": "act_11_duplicados_en_pagos",
+      "activity_path": "activity_11_duplicados_en_pagos",
+      "assignment_sha256": "sha256:f39546d502486c652c16c937f0d09f9d511801315360462d558710d210eb37b5",
+      "construct_count": 4,
+      "construct_source_kind": "RUBRIC_CRITERION",
+      "rubric_has_criteria_table": true,
+      "rubric_sha256": "sha256:717e39a40e6d9629458317812b84c366e268a0eb2f58d181aa0ce5132cd97597"
+    },
+    {
+      "activity_id": "act_12_clinica_movil",
+      "activity_path": "activity_12_clinica_movil",
+      "assignment_sha256": "sha256:d0bca230658c1866de1143750383de680536d9bdce4b711a77c051e1fdc2cd70",
+      "construct_count": 4,
+      "construct_source_kind": "ASSIGNMENT_REQUIREMENT",
+      "rubric_has_criteria_table": false,
+      "rubric_sha256": "sha256:f7e8465ff870d48a2002c0d2a2a303e0a5e170f4d60e338cafee015fd143347c"
+    }
+  ],
+  "benchmark_version": "semantic-benchmark/1.2.0",
+  "catalog_hash": "sha256:0d7f0b8fb4b3a56efc4201075d1072d3a2258ebcea25ee84fe98ffe9534de783",
+  "construct_count": 60,
+  "constructs": [
+    {
+      "activity_id": "act_05_visitas_a_bibliotecas",
+      "authorized_operations": [
+        "RECONSTRUCT_REASONING"
+      ],
+      "canonical_source_name": "Calcula visitas por día abierto para cada fila y resume el patrón antes y después en ambas sucursales.",
+      "construct_key": "ASSIGNMENT::A05::CALCULA_VISITAS_POR_DIA_ABIERTO_PARA_CADA_FILA_Y_RESUME_EL_PATRO",
+      "contains_expected_support_status": false,
+      "contains_oracle_verdict": false,
+      "neutral_description": "Requisito autorizado de la actividad: \"Calcula visitas por día abierto para cada fila y resume el patrón antes y después en ambas sucursales.\".",
+      "neutral_observable": "Reconstruye la relacion o el calculo desde unidades localizadas y conserva cantidades, denominadores y alcance.",
+      "provenance": {
+        "heading_path": [
+          "Tarea"
+        ],
+        "method": "ASSIGNMENT_REQUIREMENT_LIST_ITEM",
+        "unit_index": 69
+      },
+      "source_hashes": {
+        "01_assignment.docx": "sha256:200c5282488ae1511149559707372084b40b5fdfd6efe7fb8a5bf675abc310ab"
+      },
+      "source_kind": "ASSIGNMENT_REQUIREMENT",
+      "source_refs": [
+        "activity_05_visitas_a_bibliotecas/01_assignment.docx#Tarea[unit=69]"
+      ]
+    },
+    {
+      "activity_id": "act_05_visitas_a_bibliotecas",
+      "authorized_operations": [
+        "INTERPRET_REPRESENTATION"
+      ],
+      "canonical_source_name": "Explica por qué estos datos no aíslan el efecto del horario y menciona el factor concurrente concreto.",
+      "construct_key": "ASSIGNMENT::A05::EXPLICA_POR_QUE_ESTOS_DATOS_NO_AISLAN_EL_EFECTO_DEL_HORARIO_Y_ME",
+      "contains_expected_support_status": false,
+      "contains_oracle_verdict": false,
+      "neutral_description": "Requisito autorizado de la actividad: \"Explica por qué estos datos no aíslan el efecto del horario y menciona el factor concurrente concreto.\".",
+      "neutral_observable": "Relaciona el criterio con evidencia localizada sin ampliar fuentes ni atribuir intencion.",
+      "provenance": {
+        "heading_path": [
+          "Tarea"
+        ],
+        "method": "ASSIGNMENT_REQUIREMENT_LIST_ITEM",
+        "unit_index": 71
+      },
+      "source_hashes": {
+        "01_assignment.docx": "sha256:200c5282488ae1511149559707372084b40b5fdfd6efe7fb8a5bf675abc310ab"
+      },
+      "source_kind": "ASSIGNMENT_REQUIREMENT",
+      "source_refs": [
+        "activity_05_visitas_a_bibliotecas/01_assignment.docx#Tarea[unit=71]"
+      ]
+    },
+    {
+      "activity_id": "act_05_visitas_a_bibliotecas",
+      "authorized_operations": [
+        "INTERPRET_REPRESENTATION"
+      ],
+      "canonical_source_name": "Formula una afirmación sobre la asociación entre el periodo de horario extendido y las visitas de Centro.",
+      "construct_key": "ASSIGNMENT::A05::FORMULA_UNA_AFIRMACION_SOBRE_LA_ASOCIACION_ENTRE_EL_PERIODO_DE_H",
+      "contains_expected_support_status": false,
+      "contains_oracle_verdict": false,
+      "neutral_description": "Requisito autorizado de la actividad: \"Formula una afirmación sobre la asociación entre el periodo de horario extendido y las visitas de Centro.\".",
+      "neutral_observable": "Relaciona el criterio con evidencia localizada sin ampliar fuentes ni atribuir intencion.",
+      "provenance": {
+        "heading_path": [
+          "Tarea"
+        ],
+        "method": "ASSIGNMENT_REQUIREMENT_LIST_ITEM",
+        "unit_index": 70
+      },
+      "source_hashes": {
+        "01_assignment.docx": "sha256:200c5282488ae1511149559707372084b40b5fdfd6efe7fb8a5bf675abc310ab"
+      },
+      "source_kind": "ASSIGNMENT_REQUIREMENT",
+      "source_refs": [
+        "activity_05_visitas_a_bibliotecas/01_assignment.docx#Tarea[unit=70]"
+      ]
+    },
+    {
+      "activity_id": "act_05_visitas_a_bibliotecas",
+      "authorized_operations": [
+        "INTERPRET_REPRESENTATION"
+      ],
+      "canonical_source_name": "Propón un dato adicional que permitiría evaluar mejor la explicación, sin buscarlo fuera del dossier.",
+      "construct_key": "ASSIGNMENT::A05::PROPON_UN_DATO_ADICIONAL_QUE_PERMITIRIA_EVALUAR_MEJOR_LA_EXPLICA",
+      "contains_expected_support_status": false,
+      "contains_oracle_verdict": false,
+      "neutral_description": "Requisito autorizado de la actividad: \"Propón un dato adicional que permitiría evaluar mejor la explicación, sin buscarlo fuera del dossier.\".",
+      "neutral_observable": "Relaciona el criterio con evidencia localizada sin ampliar fuentes ni atribuir intencion.",
+      "provenance": {
+        "heading_path": [
+          "Tarea"
+        ],
+        "method": "ASSIGNMENT_REQUIREMENT_LIST_ITEM",
+        "unit_index": 72
+      },
+      "source_hashes": {
+        "01_assignment.docx": "sha256:200c5282488ae1511149559707372084b40b5fdfd6efe7fb8a5bf675abc310ab"
+      },
+      "source_kind": "ASSIGNMENT_REQUIREMENT",
+      "source_refs": [
+        "activity_05_visitas_a_bibliotecas/01_assignment.docx#Tarea[unit=72]"
+      ]
+    },
+    {
+      "activity_id": "act_12_clinica_movil",
+      "authorized_operations": [
+        "JUSTIFY_DECISION"
+      ],
+      "canonical_source_name": "Asigna las dos jornadas y formula una regla de decisión reproducible.",
+      "construct_key": "ASSIGNMENT::A12::ASIGNA_LAS_DOS_JORNADAS_Y_FORMULA_UNA_REGLA_DE_DECISION_REPRODUC",
+      "contains_expected_support_status": false,
+      "contains_oracle_verdict": false,
+      "neutral_description": "Requisito autorizado de la actividad: \"Asigna las dos jornadas y formula una regla de decisión reproducible.\".",
+      "neutral_observable": "Justifica una decision entre alternativas usando exclusivamente evidencia localizada en la entrega.",
+      "provenance": {
+        "heading_path": [
+          "Tarea"
+        ],
+        "method": "ASSIGNMENT_REQUIREMENT_LIST_ITEM",
+        "unit_index": 53
+      },
+      "source_hashes": {
+        "01_assignment.docx": "sha256:d0bca230658c1866de1143750383de680536d9bdce4b711a77c051e1fdc2cd70"
+      },
+      "source_kind": "ASSIGNMENT_REQUIREMENT",
+      "source_refs": [
+        "activity_12_clinica_movil/01_assignment.docx#Tarea[unit=53]"
+      ]
+    },
+    {
+      "activity_id": "act_12_clinica_movil",
+      "authorized_operations": [
+        "RECONSTRUCT_REASONING"
+      ],
+      "canonical_source_name": "Calcula capacidad frente a solicitudes y controles prioritarios para las zonas elegidas y al menos una no elegida.",
+      "construct_key": "ASSIGNMENT::A12::CALCULA_CAPACIDAD_FRENTE_A_SOLICITUDES_Y_CONTROLES_PRIORITARIOS_",
+      "contains_expected_support_status": false,
+      "contains_oracle_verdict": false,
+      "neutral_description": "Requisito autorizado de la actividad: \"Calcula capacidad frente a solicitudes y controles prioritarios para las zonas elegidas y al menos una no elegida.\".",
+      "neutral_observable": "Reconstruye la relacion o el calculo desde unidades localizadas y conserva cantidades, denominadores y alcance.",
+      "provenance": {
+        "heading_path": [
+          "Tarea"
+        ],
+        "method": "ASSIGNMENT_REQUIREMENT_LIST_ITEM",
+        "unit_index": 54
+      },
+      "source_hashes": {
+        "01_assignment.docx": "sha256:d0bca230658c1866de1143750383de680536d9bdce4b711a77c051e1fdc2cd70"
+      },
+      "source_kind": "ASSIGNMENT_REQUIREMENT",
+      "source_refs": [
+        "activity_12_clinica_movil/01_assignment.docx#Tarea[unit=54]"
+      ]
+    },
+    {
+      "activity_id": "act_12_clinica_movil",
+      "authorized_operations": [
+        "CRITIQUE_LIMITATION"
+      ],
+      "canonical_source_name": "Explica un trade-off ético y una limitación de datos; propone qué revisar después del piloto.",
+      "construct_key": "ASSIGNMENT::A12::EXPLICA_UN_TRADE_OFF_ETICO_Y_UNA_LIMITACION_DE_DATOS_PROPONE_QUE",
+      "contains_expected_support_status": false,
+      "contains_oracle_verdict": false,
+      "neutral_description": "Requisito autorizado de la actividad: \"Explica un trade-off ético y una limitación de datos; propone qué revisar después del piloto.\".",
+      "neutral_observable": "Delimita que sostienen las unidades localizadas y que no puede inferirse de ellas.",
+      "provenance": {
+        "heading_path": [
+          "Tarea"
+        ],
+        "method": "ASSIGNMENT_REQUIREMENT_LIST_ITEM",
+        "unit_index": 56
+      },
+      "source_hashes": {
+        "01_assignment.docx": "sha256:d0bca230658c1866de1143750383de680536d9bdce4b711a77c051e1fdc2cd70"
+      },
+      "source_kind": "ASSIGNMENT_REQUIREMENT",
+      "source_refs": [
+        "activity_12_clinica_movil/01_assignment.docx#Tarea[unit=56]"
+      ]
+    },
+    {
+      "activity_id": "act_12_clinica_movil",
+      "authorized_operations": [
+        "CONNECT_INTERNAL"
+      ],
+      "canonical_source_name": "Integra una voz de actor como evidencia situada, sin tratarla como una estadística.",
+      "construct_key": "ASSIGNMENT::A12::INTEGRA_UNA_VOZ_DE_ACTOR_COMO_EVIDENCIA_SITUADA_SIN_TRATARLA_COM",
+      "contains_expected_support_status": false,
+      "contains_oracle_verdict": false,
+      "neutral_description": "Requisito autorizado de la actividad: \"Integra una voz de actor como evidencia situada, sin tratarla como una estadística.\".",
+      "neutral_observable": "Conecta unidades localizadas de la entrega y hace explicita su coherencia o su tension, sin elegir silenciosamente una sola fuente.",
+      "provenance": {
+        "heading_path": [
+          "Tarea"
+        ],
+        "method": "ASSIGNMENT_REQUIREMENT_LIST_ITEM",
+        "unit_index": 55
+      },
+      "source_hashes": {
+        "01_assignment.docx": "sha256:d0bca230658c1866de1143750383de680536d9bdce4b711a77c051e1fdc2cd70"
+      },
+      "source_kind": "ASSIGNMENT_REQUIREMENT",
+      "source_refs": [
+        "activity_12_clinica_movil/01_assignment.docx#Tarea[unit=55]"
+      ]
+    },
+    {
+      "activity_id": "act_01_luz_y_plantines",
+      "authorized_operations": [
+        "CRITIQUE_LIMITATION"
+      ],
+      "canonical_source_name": "Afirmación y alcance",
+      "construct_key": "RUBRIC::A01::AFIRMACION_Y_ALCANCE",
+      "contains_expected_support_status": false,
+      "contains_oracle_verdict": false,
+      "neutral_description": "Criterio autorizado de la actividad: \"Afirmación y alcance\". Definicion segun la fuente autorizada: [Claramente logrado] Expresa un patrón compatible con los seis casos y limita el alcance al registro. [Parcialmente logrado] El patrón es reconocible, pero el alcance es demasiado general o causal. [No sustentado] No hay afirmación interpretable o contradice el registro sin reconocerlo.",
+      "neutral_observable": "Delimita que sostienen las unidades localizadas y que no puede inferirse de ellas.",
+      "provenance": {
+        "descriptor_columns": [
+          1,
+          2,
+          3
+        ],
+        "heading_path": [
+          "Criterios"
+        ],
+        "method": "RUBRIC_CRITERIA_TABLE_ROW",
+        "name_column": 0,
+        "row": 1,
+        "table_index": 0
+      },
+      "source_hashes": {
+        "02_rubric.docx": "sha256:4d094045be8e9df0cf35fca1407973b8a71d7c0108cca89da5d60504b5e25126"
+      },
+      "source_kind": "RUBRIC_CRITERION",
+      "source_refs": [
+        "activity_01_luz_y_plantines/02_rubric.docx#Criterios[table=0,row=1]"
+      ]
+    },
+    {
+      "activity_id": "act_01_luz_y_plantines",
+      "authorized_operations": [
+        "CRITIQUE_LIMITATION"
+      ],
+      "canonical_source_name": "Limitación",
+      "construct_key": "RUBRIC::A01::LIMITACION",
+      "contains_expected_support_status": false,
+      "contains_oracle_verdict": false,
+      "neutral_description": "Criterio autorizado de la actividad: \"Limitación\". Definicion segun la fuente autorizada: [Claramente logrado] Señala un límite que surge del tamaño, la duración, el daño o el diseño y explica su efecto interpretativo. [Parcialmente logrado] Menciona un límite real sin explicar por qué importa. [No sustentado] Presenta una generalidad no vinculada al registro o no incluye limitación.",
+      "neutral_observable": "Delimita que sostienen las unidades localizadas y que no puede inferirse de ellas.",
+      "provenance": {
+        "descriptor_columns": [
+          1,
+          2,
+          3
+        ],
+        "heading_path": [
+          "Criterios"
+        ],
+        "method": "RUBRIC_CRITERIA_TABLE_ROW",
+        "name_column": 0,
+        "row": 4,
+        "table_index": 0
+      },
+      "source_hashes": {
+        "02_rubric.docx": "sha256:4d094045be8e9df0cf35fca1407973b8a71d7c0108cca89da5d60504b5e25126"
+      },
+      "source_kind": "RUBRIC_CRITERION",
+      "source_refs": [
+        "activity_01_luz_y_plantines/02_rubric.docx#Criterios[table=0,row=4]"
+      ]
+    },
+    {
+      "activity_id": "act_01_luz_y_plantines",
+      "authorized_operations": [
+        "RECONSTRUCT_REASONING"
+      ],
+      "canonical_source_name": "Uso de evidencia",
+      "construct_key": "RUBRIC::A01::USO_DE_EVIDENCIA",
+      "contains_expected_support_status": false,
+      "contains_oracle_verdict": false,
+      "neutral_description": "Criterio autorizado de la actividad: \"Uso de evidencia\". Definicion segun la fuente autorizada: [Claramente logrado] Conecta la afirmación con dos o más valores o comparaciones localizables. [Parcialmente logrado] Incluye valores correctos, pero la relación con la afirmación queda incompleta. [No sustentado] Copia datos aislados, inventa cifras o no presenta evidencia.",
+      "neutral_observable": "Reconstruye la relacion o el calculo desde unidades localizadas y conserva cantidades, denominadores y alcance.",
+      "provenance": {
+        "descriptor_columns": [
+          1,
+          2,
+          3
+        ],
+        "heading_path": [
+          "Criterios"
+        ],
+        "method": "RUBRIC_CRITERIA_TABLE_ROW",
+        "name_column": 0,
+        "row": 2,
+        "table_index": 0
+      },
+      "source_hashes": {
+        "02_rubric.docx": "sha256:4d094045be8e9df0cf35fca1407973b8a71d7c0108cca89da5d60504b5e25126"
+      },
+      "source_kind": "RUBRIC_CRITERION",
+      "source_refs": [
+        "activity_01_luz_y_plantines/02_rubric.docx#Criterios[table=0,row=2]"
+      ]
+    },
+    {
+      "activity_id": "act_01_luz_y_plantines",
+      "authorized_operations": [
+        "INTERPRET_REPRESENTATION"
+      ],
+      "canonical_source_name": "Variables y medidas",
+      "construct_key": "RUBRIC::A01::VARIABLES_Y_MEDIDAS",
+      "contains_expected_support_status": false,
+      "contains_oracle_verdict": false,
+      "neutral_description": "Criterio autorizado de la actividad: \"Variables y medidas\". Definicion segun la fuente autorizada: [Claramente logrado] Distingue la cantidad de luz de al menos una medida de crecimiento. [Parcialmente logrado] Nombra ambos elementos, pero confunde parcialmente sus funciones. [No sustentado] No distingue qué se cambió de qué se observó.",
+      "neutral_observable": "Relaciona el criterio con evidencia localizada sin ampliar fuentes ni atribuir intencion.",
+      "provenance": {
+        "descriptor_columns": [
+          1,
+          2,
+          3
+        ],
+        "heading_path": [
+          "Criterios"
+        ],
+        "method": "RUBRIC_CRITERIA_TABLE_ROW",
+        "name_column": 0,
+        "row": 3,
+        "table_index": 0
+      },
+      "source_hashes": {
+        "02_rubric.docx": "sha256:4d094045be8e9df0cf35fca1407973b8a71d7c0108cca89da5d60504b5e25126"
+      },
+      "source_kind": "RUBRIC_CRITERION",
+      "source_refs": [
+        "activity_01_luz_y_plantines/02_rubric.docx#Criterios[table=0,row=3]"
+      ]
+    },
+    {
+      "activity_id": "act_02_voz_en_un_microcuento",
+      "authorized_operations": [
+        "CRITIQUE_LIMITATION"
+      ],
+      "canonical_source_name": "Apertura interpretativa",
+      "construct_key": "RUBRIC::A02::APERTURA_INTERPRETATIVA",
+      "contains_expected_support_status": false,
+      "contains_oracle_verdict": false,
+      "neutral_description": "Criterio autorizado de la actividad: \"Apertura interpretativa\". Definicion segun la fuente autorizada: [Claramente logrado] Reconoce una alternativa compatible y delimita qué no puede saberse. [Parcialmente logrado] Menciona otra lectura sin conectarla con el texto. [No sustentado] Presenta suposiciones externas como hechos o declara una única verdad sin sustento.",
+      "neutral_observable": "Delimita que sostienen las unidades localizadas y que no puede inferirse de ellas.",
+      "provenance": {
+        "descriptor_columns": [
+          1,
+          2,
+          3
+        ],
+        "heading_path": [
+          "Criterios"
+        ],
+        "method": "RUBRIC_CRITERIA_TABLE_ROW",
+        "name_column": 0,
+        "row": 4,
+        "table_index": 0
+      },
+      "source_hashes": {
+        "02_rubric.docx": "sha256:a007e8547ee6bdb592ab2bd6752d763cbd3656a00b9491a29b63131316d51709"
+      },
+      "source_kind": "RUBRIC_CRITERION",
+      "source_refs": [
+        "activity_02_voz_en_un_microcuento/02_rubric.docx#Criterios[table=0,row=4]"
+      ]
+    },
+    {
+      "activity_id": "act_02_voz_en_un_microcuento",
+      "authorized_operations": [
+        "INTERPRET_REPRESENTATION"
+      ],
+      "canonical_source_name": "Evidencia textual",
+      "construct_key": "RUBRIC::A02::EVIDENCIA_TEXTUAL",
+      "contains_expected_support_status": false,
+      "contains_oracle_verdict": false,
+      "neutral_description": "Criterio autorizado de la actividad: \"Evidencia textual\". Definicion segun la fuente autorizada: [Claramente logrado] Selecciona al menos dos acciones o frases pertinentes y las localiza con claridad. [Parcialmente logrado] Incluye evidencia, pero una selección es débil, redundante o queda sin analizar. [No sustentado] No usa el texto, inventa hechos o copia fragmentos sin función.",
+      "neutral_observable": "Relaciona el criterio con evidencia localizada sin ampliar fuentes ni atribuir intencion.",
+      "provenance": {
+        "descriptor_columns": [
+          1,
+          2,
+          3
+        ],
+        "heading_path": [
+          "Criterios"
+        ],
+        "method": "RUBRIC_CRITERIA_TABLE_ROW",
+        "name_column": 0,
+        "row": 2,
+        "table_index": 0
+      },
+      "source_hashes": {
+        "02_rubric.docx": "sha256:a007e8547ee6bdb592ab2bd6752d763cbd3656a00b9491a29b63131316d51709"
+      },
+      "source_kind": "RUBRIC_CRITERION",
+      "source_refs": [
+        "activity_02_voz_en_un_microcuento/02_rubric.docx#Criterios[table=0,row=2]"
+      ]
+    },
+    {
+      "activity_id": "act_02_voz_en_un_microcuento",
+      "authorized_operations": [
+        "CONNECT_INTERNAL"
+      ],
+      "canonical_source_name": "Relación y razonamiento",
+      "construct_key": "RUBRIC::A02::RELACION_Y_RAZONAMIENTO",
+      "contains_expected_support_status": false,
+      "contains_oracle_verdict": false,
+      "neutral_description": "Criterio autorizado de la actividad: \"Relación y razonamiento\". Definicion segun la fuente autorizada: [Claramente logrado] Explica cómo las dos zonas de evidencia sostienen la tesis, incluso si están separadas. [Parcialmente logrado] Explica una relación y deja la otra implícita. [No sustentado] Enumera palabras clave sin construir vínculo conceptual.",
+      "neutral_observable": "Conecta unidades localizadas de la entrega y hace explicita su coherencia o su tension, sin elegir silenciosamente una sola fuente.",
+      "provenance": {
+        "descriptor_columns": [
+          1,
+          2,
+          3
+        ],
+        "heading_path": [
+          "Criterios"
+        ],
+        "method": "RUBRIC_CRITERIA_TABLE_ROW",
+        "name_column": 0,
+        "row": 3,
+        "table_index": 0
+      },
+      "source_hashes": {
+        "02_rubric.docx": "sha256:a007e8547ee6bdb592ab2bd6752d763cbd3656a00b9491a29b63131316d51709"
+      },
+      "source_kind": "RUBRIC_CRITERION",
+      "source_refs": [
+        "activity_02_voz_en_un_microcuento/02_rubric.docx#Criterios[table=0,row=3]"
+      ]
+    },
+    {
+      "activity_id": "act_02_voz_en_un_microcuento",
+      "authorized_operations": [
+        "INTERPRET_REPRESENTATION"
+      ],
+      "canonical_source_name": "Tesis interpretativa",
+      "construct_key": "RUBRIC::A02::TESIS_INTERPRETATIVA",
+      "contains_expected_support_status": false,
+      "contains_oracle_verdict": false,
+      "neutral_description": "Criterio autorizado de la actividad: \"Tesis interpretativa\". Definicion segun la fuente autorizada: [Claramente logrado] Formula una lectura debatible y precisa sobre narración u omisión. [Parcialmente logrado] Hay una idea interpretativa, pero es amplia o cambia sin explicación. [No sustentado] Solo resume la trama o afirma un significado sin hacerlo interpretable.",
+      "neutral_observable": "Relaciona el criterio con evidencia localizada sin ampliar fuentes ni atribuir intencion.",
+      "provenance": {
+        "descriptor_columns": [
+          1,
+          2,
+          3
+        ],
+        "heading_path": [
+          "Criterios"
+        ],
+        "method": "RUBRIC_CRITERIA_TABLE_ROW",
+        "name_column": 0,
+        "row": 1,
+        "table_index": 0
+      },
+      "source_hashes": {
+        "02_rubric.docx": "sha256:a007e8547ee6bdb592ab2bd6752d763cbd3656a00b9491a29b63131316d51709"
+      },
+      "source_kind": "RUBRIC_CRITERION",
+      "source_refs": [
+        "activity_02_voz_en_un_microcuento/02_rubric.docx#Criterios[table=0,row=1]"
+      ]
+    },
+    {
+      "activity_id": "act_03_puesto_de_limonada",
+      "authorized_operations": [
+        "RECONSTRUCT_REASONING"
+      ],
+      "canonical_source_name": "Comparación con la alternativa no elegida",
+      "construct_key": "RUBRIC::A03::COMPARACION_CON_LA_ALTERNATIVA_NO_ELEGIDA",
+      "contains_expected_support_status": false,
+      "contains_oracle_verdict": false,
+      "neutral_description": "Criterio autorizado de la actividad: \"Comparación con la alternativa no elegida\". Definicion segun la fuente autorizada: [Qué debe poder señalarse en el documento] Al menos una cifra de la otra opción puesta al lado de la propia.",
+      "neutral_observable": "Reconstruye la relacion o el calculo desde unidades localizadas y conserva cantidades, denominadores y alcance.",
+      "provenance": {
+        "descriptor_columns": [
+          3
+        ],
+        "heading_path": [
+          "Criterios y ponderación"
+        ],
+        "method": "RUBRIC_CRITERIA_TABLE_ROW",
+        "name_column": 1,
+        "row": 5,
+        "table_index": 1
+      },
+      "source_hashes": {
+        "02_rubric.docx": "sha256:1a66e055a809a6be7e7a3a0ac33093c654b4dc826ff5df7c322888496ca41a5e"
+      },
+      "source_kind": "RUBRIC_CRITERION",
+      "source_refs": [
+        "activity_03_puesto_de_limonada/02_rubric.docx#Criterios y ponderación[table=1,row=5]"
+      ]
+    },
+    {
+      "activity_id": "act_03_puesto_de_limonada",
+      "authorized_operations": [
+        "RECONSTRUCT_REASONING"
+      ],
+      "canonical_source_name": "Costo total con desglose",
+      "construct_key": "RUBRIC::A03::COSTO_TOTAL_CON_DESGLOSE",
+      "contains_expected_support_status": false,
+      "contains_oracle_verdict": false,
+      "neutral_description": "Criterio autorizado de la actividad: \"Costo total con desglose\". Definicion segun la fuente autorizada: [Qué debe poder señalarse en el documento] Los $18 comunes, los $14 si corresponde y la expresión del costo variable.",
+      "neutral_observable": "Reconstruye la relacion o el calculo desde unidades localizadas y conserva cantidades, denominadores y alcance.",
+      "provenance": {
+        "descriptor_columns": [
+          3
+        ],
+        "heading_path": [
+          "Criterios y ponderación"
+        ],
+        "method": "RUBRIC_CRITERIA_TABLE_ROW",
+        "name_column": 1,
+        "row": 2,
+        "table_index": 1
+      },
+      "source_hashes": {
+        "02_rubric.docx": "sha256:1a66e055a809a6be7e7a3a0ac33093c654b4dc826ff5df7c322888496ca41a5e"
+      },
+      "source_kind": "RUBRIC_CRITERION",
+      "source_refs": [
+        "activity_03_puesto_de_limonada/02_rubric.docx#Criterios y ponderación[table=1,row=2]"
+      ]
+    },
+    {
+      "activity_id": "act_03_puesto_de_limonada",
+      "authorized_operations": [
+        "INTERPRET_REPRESENTATION"
+      ],
+      "canonical_source_name": "Identificación de plan, opción y cantidad",
+      "construct_key": "RUBRIC::A03::IDENTIFICACION_DE_PLAN_OPCION_Y_CANTIDAD",
+      "contains_expected_support_status": false,
+      "contains_oracle_verdict": false,
+      "neutral_description": "Criterio autorizado de la actividad: \"Identificación de plan, opción y cantidad\". Definicion segun la fuente autorizada: [Qué debe poder señalarse en el documento] Nombre de la opción de servicio y número entero de vasos entre 60 y 90.",
+      "neutral_observable": "Relaciona el criterio con evidencia localizada sin ampliar fuentes ni atribuir intencion.",
+      "provenance": {
+        "descriptor_columns": [
+          3
+        ],
+        "heading_path": [
+          "Criterios y ponderación"
+        ],
+        "method": "RUBRIC_CRITERIA_TABLE_ROW",
+        "name_column": 1,
+        "row": 1,
+        "table_index": 1
+      },
+      "source_hashes": {
+        "02_rubric.docx": "sha256:1a66e055a809a6be7e7a3a0ac33093c654b4dc826ff5df7c322888496ca41a5e"
+      },
+      "source_kind": "RUBRIC_CRITERION",
+      "source_refs": [
+        "activity_03_puesto_de_limonada/02_rubric.docx#Criterios y ponderación[table=1,row=1]"
+      ]
+    },
+    {
+      "activity_id": "act_03_puesto_de_limonada",
+      "authorized_operations": [
+        "RECONSTRUCT_REASONING"
+      ],
+      "canonical_source_name": "Ingreso y excedente bajo venta completa",
+      "construct_key": "RUBRIC::A03::INGRESO_Y_EXCEDENTE_BAJO_VENTA_COMPLETA",
+      "contains_expected_support_status": false,
+      "contains_oracle_verdict": false,
+      "neutral_description": "Criterio autorizado de la actividad: \"Ingreso y excedente bajo venta completa\". Definicion segun la fuente autorizada: [Qué debe poder señalarse en el documento] Multiplicación por $1,25 y resta contra el costo calculado.",
+      "neutral_observable": "Reconstruye la relacion o el calculo desde unidades localizadas y conserva cantidades, denominadores y alcance.",
+      "provenance": {
+        "descriptor_columns": [
+          3
+        ],
+        "heading_path": [
+          "Criterios y ponderación"
+        ],
+        "method": "RUBRIC_CRITERIA_TABLE_ROW",
+        "name_column": 1,
+        "row": 3,
+        "table_index": 1
+      },
+      "source_hashes": {
+        "02_rubric.docx": "sha256:1a66e055a809a6be7e7a3a0ac33093c654b4dc826ff5df7c322888496ca41a5e"
+      },
+      "source_kind": "RUBRIC_CRITERION",
+      "source_refs": [
+        "activity_03_puesto_de_limonada/02_rubric.docx#Criterios y ponderación[table=1,row=3]"
+      ]
+    },
+    {
+      "activity_id": "act_03_puesto_de_limonada",
+      "authorized_operations": [
+        "JUSTIFY_DECISION"
+      ],
+      "canonical_source_name": "Riesgo o condición que cambiaría la decisión",
+      "construct_key": "RUBRIC::A03::RIESGO_O_CONDICION_QUE_CAMBIARIA_LA_DECISION",
+      "contains_expected_support_status": false,
+      "contains_oracle_verdict": false,
+      "neutral_description": "Criterio autorizado de la actividad: \"Riesgo o condición que cambiaría la decisión\". Definicion segun la fuente autorizada: [Qué debe poder señalarse en el documento] Un escenario concreto, no una advertencia general.",
+      "neutral_observable": "Justifica una decision entre alternativas usando exclusivamente evidencia localizada en la entrega.",
+      "provenance": {
+        "descriptor_columns": [
+          3
+        ],
+        "heading_path": [
+          "Criterios y ponderación"
+        ],
+        "method": "RUBRIC_CRITERIA_TABLE_ROW",
+        "name_column": 1,
+        "row": 6,
+        "table_index": 1
+      },
+      "source_hashes": {
+        "02_rubric.docx": "sha256:1a66e055a809a6be7e7a3a0ac33093c654b4dc826ff5df7c322888496ca41a5e"
+      },
+      "source_kind": "RUBRIC_CRITERION",
+      "source_refs": [
+        "activity_03_puesto_de_limonada/02_rubric.docx#Criterios y ponderación[table=1,row=6]"
+      ]
+    },
+    {
+      "activity_id": "act_03_puesto_de_limonada",
+      "authorized_operations": [
+        "RECONSTRUCT_REASONING"
+      ],
+      "canonical_source_name": "Verificación de la restricción de capacidad",
+      "construct_key": "RUBRIC::A03::VERIFICACION_DE_LA_RESTRICCION_DE_CAPACIDAD",
+      "contains_expected_support_status": false,
+      "contains_oracle_verdict": false,
+      "neutral_description": "Criterio autorizado de la actividad: \"Verificación de la restricción de capacidad\". Definicion segun la fuente autorizada: [Qué debe poder señalarse en el documento] Relación explícita entre cantidad elegida y el tope de la opción.",
+      "neutral_observable": "Reconstruye la relacion o el calculo desde unidades localizadas y conserva cantidades, denominadores y alcance.",
+      "provenance": {
+        "descriptor_columns": [
+          3
+        ],
+        "heading_path": [
+          "Criterios y ponderación"
+        ],
+        "method": "RUBRIC_CRITERIA_TABLE_ROW",
+        "name_column": 1,
+        "row": 4,
+        "table_index": 1
+      },
+      "source_hashes": {
+        "02_rubric.docx": "sha256:1a66e055a809a6be7e7a3a0ac33093c654b4dc826ff5df7c322888496ca41a5e"
+      },
+      "source_kind": "RUBRIC_CRITERION",
+      "source_refs": [
+        "activity_03_puesto_de_limonada/02_rubric.docx#Criterios y ponderación[table=1,row=4]"
+      ]
+    },
+    {
+      "activity_id": "act_04_asignador_de_turnos",
+      "authorized_operations": [
+        "INTERPRET_REPRESENTATION"
+      ],
+      "canonical_source_name": "Conserva la PRIMERA aparición válida de un id repetido",
+      "construct_key": "RUBRIC::A04::CONSERVA_LA_PRIMERA_APARICION_VALIDA_DE_UN_ID_REPETIDO",
+      "contains_expected_support_status": false,
+      "contains_oracle_verdict": false,
+      "neutral_description": "Criterio autorizado de la actividad: \"Conserva la PRIMERA aparición válida de un id repetido\". Definicion segun la fuente autorizada: [Dónde debería poder comprobarse] Estructura de deduplicación",
+      "neutral_observable": "Relaciona el criterio con evidencia localizada sin ampliar fuentes ni atribuir intencion.",
+      "provenance": {
+        "descriptor_columns": [
+          1
+        ],
+        "heading_path": [
+          "Comportamiento del contrato"
+        ],
+        "method": "RUBRIC_CRITERIA_TABLE_ROW",
+        "name_column": 0,
+        "row": 4,
+        "table_index": 0
+      },
+      "source_hashes": {
+        "02_rubric.docx": "sha256:bde129b7a90362871b9dc76ad24388a6ded288404a29a79b68c0c2b37bfcb65d"
+      },
+      "source_kind": "RUBRIC_CRITERION",
+      "source_refs": [
+        "activity_04_asignador_de_turnos/02_rubric.docx#Comportamiento del contrato[table=0,row=4]"
+      ]
+    },
+    {
+      "activity_id": "act_04_asignador_de_turnos",
+      "authorized_operations": [
+        "TRACE_FLOW"
+      ],
+      "canonical_source_name": "Declara la complejidad dominante con justificación",
+      "construct_key": "RUBRIC::A04::DECLARA_LA_COMPLEJIDAD_DOMINANTE_CON_JUSTIFICACION",
+      "contains_expected_support_status": false,
+      "contains_oracle_verdict": false,
+      "neutral_description": "Criterio autorizado de la actividad: \"Declara la complejidad dominante con justificación\". Definicion segun la fuente autorizada: [Dónde debería poder comprobarse] Separando validación, ordenación y recorrido",
+      "neutral_observable": "Traza el orden o el flujo observable a partir de las unidades de apoyo de la entrega.",
+      "provenance": {
+        "descriptor_columns": [
+          1
+        ],
+        "heading_path": [
+          "Nota técnica"
+        ],
+        "method": "RUBRIC_CRITERIA_TABLE_ROW",
+        "name_column": 0,
+        "row": 3,
+        "table_index": 1
+      },
+      "source_hashes": {
+        "02_rubric.docx": "sha256:bde129b7a90362871b9dc76ad24388a6ded288404a29a79b68c0c2b37bfcb65d"
+      },
+      "source_kind": "RUBRIC_CRITERION",
+      "source_refs": [
+        "activity_04_asignador_de_turnos/02_rubric.docx#Nota técnica[table=1,row=3]"
+      ]
+    },
+    {
+      "activity_id": "act_04_asignador_de_turnos",
+      "authorized_operations": [
+        "INTERPRET_REPRESENTATION"
+      ],
+      "canonical_source_name": "Descarta grupo ausente del mapa de cupos",
+      "construct_key": "RUBRIC::A04::DESCARTA_GRUPO_AUSENTE_DEL_MAPA_DE_CUPOS",
+      "contains_expected_support_status": false,
+      "contains_oracle_verdict": false,
+      "neutral_description": "Criterio autorizado de la actividad: \"Descarta grupo ausente del mapa de cupos\". Definicion segun la fuente autorizada: [Dónde debería poder comprobarse] Bloque de validación del código",
+      "neutral_observable": "Relaciona el criterio con evidencia localizada sin ampliar fuentes ni atribuir intencion.",
+      "provenance": {
+        "descriptor_columns": [
+          1
+        ],
+        "heading_path": [
+          "Comportamiento del contrato"
+        ],
+        "method": "RUBRIC_CRITERIA_TABLE_ROW",
+        "name_column": 0,
+        "row": 3,
+        "table_index": 0
+      },
+      "source_hashes": {
+        "02_rubric.docx": "sha256:bde129b7a90362871b9dc76ad24388a6ded288404a29a79b68c0c2b37bfcb65d"
+      },
+      "source_kind": "RUBRIC_CRITERION",
+      "source_refs": [
+        "activity_04_asignador_de_turnos/02_rubric.docx#Comportamiento del contrato[table=0,row=3]"
+      ]
+    },
+    {
+      "activity_id": "act_04_asignador_de_turnos",
+      "authorized_operations": [
+        "INTERPRET_REPRESENTATION"
+      ],
+      "canonical_source_name": "Descarta prioridad fuera de {1,2,3}",
+      "construct_key": "RUBRIC::A04::DESCARTA_PRIORIDAD_FUERA_DE_1_2_3",
+      "contains_expected_support_status": false,
+      "contains_oracle_verdict": false,
+      "neutral_description": "Criterio autorizado de la actividad: \"Descarta prioridad fuera de {1,2,3}\". Definicion segun la fuente autorizada: [Dónde debería poder comprobarse] Bloque de validación del código",
+      "neutral_observable": "Relaciona el criterio con evidencia localizada sin ampliar fuentes ni atribuir intencion.",
+      "provenance": {
+        "descriptor_columns": [
+          1
+        ],
+        "heading_path": [
+          "Comportamiento del contrato"
+        ],
+        "method": "RUBRIC_CRITERIA_TABLE_ROW",
+        "name_column": 0,
+        "row": 2,
+        "table_index": 0
+      },
+      "source_hashes": {
+        "02_rubric.docx": "sha256:bde129b7a90362871b9dc76ad24388a6ded288404a29a79b68c0c2b37bfcb65d"
+      },
+      "source_kind": "RUBRIC_CRITERION",
+      "source_refs": [
+        "activity_04_asignador_de_turnos/02_rubric.docx#Comportamiento del contrato[table=0,row=2]"
+      ]
+    },
+    {
+      "activity_id": "act_04_asignador_de_turnos",
+      "authorized_operations": [
+        "INTERPRET_REPRESENTATION"
+      ],
+      "canonical_source_name": "Descarta registros con campo faltante",
+      "construct_key": "RUBRIC::A04::DESCARTA_REGISTROS_CON_CAMPO_FALTANTE",
+      "contains_expected_support_status": false,
+      "contains_oracle_verdict": false,
+      "neutral_description": "Criterio autorizado de la actividad: \"Descarta registros con campo faltante\". Definicion segun la fuente autorizada: [Dónde debería poder comprobarse] Bloque de validación del código",
+      "neutral_observable": "Relaciona el criterio con evidencia localizada sin ampliar fuentes ni atribuir intencion.",
+      "provenance": {
+        "descriptor_columns": [
+          1
+        ],
+        "heading_path": [
+          "Comportamiento del contrato"
+        ],
+        "method": "RUBRIC_CRITERIA_TABLE_ROW",
+        "name_column": 0,
+        "row": 1,
+        "table_index": 0
+      },
+      "source_hashes": {
+        "02_rubric.docx": "sha256:bde129b7a90362871b9dc76ad24388a6ded288404a29a79b68c0c2b37bfcb65d"
+      },
+      "source_kind": "RUBRIC_CRITERION",
+      "source_refs": [
+        "activity_04_asignador_de_turnos/02_rubric.docx#Comportamiento del contrato[table=0,row=1]"
+      ]
+    },
+    {
+      "activity_id": "act_04_asignador_de_turnos",
+      "authorized_operations": [
+        "INTERPRET_REPRESENTATION"
+      ],
+      "canonical_source_name": "Dos llamadas idénticas producen el mismo resultado",
+      "construct_key": "RUBRIC::A04::DOS_LLAMADAS_IDENTICAS_PRODUCEN_EL_MISMO_RESULTADO",
+      "contains_expected_support_status": false,
+      "contains_oracle_verdict": false,
+      "neutral_description": "Criterio autorizado de la actividad: \"Dos llamadas idénticas producen el mismo resultado\". Definicion segun la fuente autorizada: [Dónde debería poder comprobarse] Ausencia de estado externo",
+      "neutral_observable": "Relaciona el criterio con evidencia localizada sin ampliar fuentes ni atribuir intencion.",
+      "provenance": {
+        "descriptor_columns": [
+          1
+        ],
+        "heading_path": [
+          "Comportamiento del contrato"
+        ],
+        "method": "RUBRIC_CRITERIA_TABLE_ROW",
+        "name_column": 0,
+        "row": 10,
+        "table_index": 0
+      },
+      "source_hashes": {
+        "02_rubric.docx": "sha256:bde129b7a90362871b9dc76ad24388a6ded288404a29a79b68c0c2b37bfcb65d"
+      },
+      "source_kind": "RUBRIC_CRITERION",
+      "source_refs": [
+        "activity_04_asignador_de_turnos/02_rubric.docx#Comportamiento del contrato[table=0,row=10]"
+      ]
+    },
+    {
+      "activity_id": "act_04_asignador_de_turnos",
+      "authorized_operations": [
+        "INTERPRET_REPRESENTATION"
+      ],
+      "canonical_source_name": "El vocabulario en inglés describe el comportamiento real",
+      "construct_key": "RUBRIC::A04::EL_VOCABULARIO_EN_INGLES_DESCRIBE_EL_COMPORTAMIENTO_REAL",
+      "contains_expected_support_status": false,
+      "contains_oracle_verdict": false,
+      "neutral_description": "Criterio autorizado de la actividad: \"El vocabulario en inglés describe el comportamiento real\". Definicion segun la fuente autorizada: [Dónde debería poder comprobarse] Correspondencia entre término y línea de código",
+      "neutral_observable": "Relaciona el criterio con evidencia localizada sin ampliar fuentes ni atribuir intencion.",
+      "provenance": {
+        "descriptor_columns": [
+          1
+        ],
+        "heading_path": [
+          "Nota técnica"
+        ],
+        "method": "RUBRIC_CRITERIA_TABLE_ROW",
+        "name_column": 0,
+        "row": 4,
+        "table_index": 1
+      },
+      "source_hashes": {
+        "02_rubric.docx": "sha256:bde129b7a90362871b9dc76ad24388a6ded288404a29a79b68c0c2b37bfcb65d"
+      },
+      "source_kind": "RUBRIC_CRITERION",
+      "source_refs": [
+        "activity_04_asignador_de_turnos/02_rubric.docx#Nota técnica[table=1,row=4]"
+      ]
+    },
+    {
+      "activity_id": "act_04_asignador_de_turnos",
+      "authorized_operations": [
+        "JUSTIFY_DECISION"
+      ],
+      "canonical_source_name": "Explica la decisión sobre duplicados",
+      "construct_key": "RUBRIC::A04::EXPLICA_LA_DECISION_SOBRE_DUPLICADOS",
+      "contains_expected_support_status": false,
+      "contains_oracle_verdict": false,
+      "neutral_description": "Criterio autorizado de la actividad: \"Explica la decisión sobre duplicados\". Definicion segun la fuente autorizada: [Dónde debería poder comprobarse] Párrafo dedicado, no solo el nombre de la estructura",
+      "neutral_observable": "Justifica una decision entre alternativas usando exclusivamente evidencia localizada en la entrega.",
+      "provenance": {
+        "descriptor_columns": [
+          1
+        ],
+        "heading_path": [
+          "Nota técnica"
+        ],
+        "method": "RUBRIC_CRITERIA_TABLE_ROW",
+        "name_column": 0,
+        "row": 1,
+        "table_index": 1
+      },
+      "source_hashes": {
+        "02_rubric.docx": "sha256:bde129b7a90362871b9dc76ad24388a6ded288404a29a79b68c0c2b37bfcb65d"
+      },
+      "source_kind": "RUBRIC_CRITERION",
+      "source_refs": [
+        "activity_04_asignador_de_turnos/02_rubric.docx#Nota técnica[table=1,row=1]"
+      ]
+    },
+    {
+      "activity_id": "act_04_asignador_de_turnos",
+      "authorized_operations": [
+        "INTERPRET_REPRESENTATION"
+      ],
+      "canonical_source_name": "Explica la estructura usada para contar cupos",
+      "construct_key": "RUBRIC::A04::EXPLICA_LA_ESTRUCTURA_USADA_PARA_CONTAR_CUPOS",
+      "contains_expected_support_status": false,
+      "contains_oracle_verdict": false,
+      "neutral_description": "Criterio autorizado de la actividad: \"Explica la estructura usada para contar cupos\". Definicion segun la fuente autorizada: [Dónde debería poder comprobarse] Párrafo dedicado",
+      "neutral_observable": "Relaciona el criterio con evidencia localizada sin ampliar fuentes ni atribuir intencion.",
+      "provenance": {
+        "descriptor_columns": [
+          1
+        ],
+        "heading_path": [
+          "Nota técnica"
+        ],
+        "method": "RUBRIC_CRITERIA_TABLE_ROW",
+        "name_column": 0,
+        "row": 2,
+        "table_index": 1
+      },
+      "source_hashes": {
+        "02_rubric.docx": "sha256:bde129b7a90362871b9dc76ad24388a6ded288404a29a79b68c0c2b37bfcb65d"
+      },
+      "source_kind": "RUBRIC_CRITERION",
+      "source_refs": [
+        "activity_04_asignador_de_turnos/02_rubric.docx#Nota técnica[table=1,row=2]"
+      ]
+    },
+    {
+      "activity_id": "act_04_asignador_de_turnos",
+      "authorized_operations": [
+        "RECONSTRUCT_REASONING"
+      ],
+      "canonical_source_name": "Los cupos de un grupo no consumen los de otro",
+      "construct_key": "RUBRIC::A04::LOS_CUPOS_DE_UN_GRUPO_NO_CONSUMEN_LOS_DE_OTRO",
+      "contains_expected_support_status": false,
+      "contains_oracle_verdict": false,
+      "neutral_description": "Criterio autorizado de la actividad: \"Los cupos de un grupo no consumen los de otro\". Definicion segun la fuente autorizada: [Dónde debería poder comprobarse] Contador o mapa de capacidad",
+      "neutral_observable": "Reconstruye la relacion o el calculo desde unidades localizadas y conserva cantidades, denominadores y alcance.",
+      "provenance": {
+        "descriptor_columns": [
+          1
+        ],
+        "heading_path": [
+          "Comportamiento del contrato"
+        ],
+        "method": "RUBRIC_CRITERIA_TABLE_ROW",
+        "name_column": 0,
+        "row": 7,
+        "table_index": 0
+      },
+      "source_hashes": {
+        "02_rubric.docx": "sha256:bde129b7a90362871b9dc76ad24388a6ded288404a29a79b68c0c2b37bfcb65d"
+      },
+      "source_kind": "RUBRIC_CRITERION",
+      "source_refs": [
+        "activity_04_asignador_de_turnos/02_rubric.docx#Comportamiento del contrato[table=0,row=7]"
+      ]
+    },
+    {
+      "activity_id": "act_04_asignador_de_turnos",
+      "authorized_operations": [
+        "INTERPRET_REPRESENTATION"
+      ],
+      "canonical_source_name": "No muta solicitudes ni cupos_por_grupo",
+      "construct_key": "RUBRIC::A04::NO_MUTA_SOLICITUDES_NI_CUPOS_POR_GRUPO",
+      "contains_expected_support_status": false,
+      "contains_oracle_verdict": false,
+      "neutral_description": "Criterio autorizado de la actividad: \"No muta solicitudes ni cupos_por_grupo\". Definicion segun la fuente autorizada: [Dónde debería poder comprobarse] Uso de copias o de sorted() en vez de list.sort()",
+      "neutral_observable": "Relaciona el criterio con evidencia localizada sin ampliar fuentes ni atribuir intencion.",
+      "provenance": {
+        "descriptor_columns": [
+          1
+        ],
+        "heading_path": [
+          "Comportamiento del contrato"
+        ],
+        "method": "RUBRIC_CRITERIA_TABLE_ROW",
+        "name_column": 0,
+        "row": 9,
+        "table_index": 0
+      },
+      "source_hashes": {
+        "02_rubric.docx": "sha256:bde129b7a90362871b9dc76ad24388a6ded288404a29a79b68c0c2b37bfcb65d"
+      },
+      "source_kind": "RUBRIC_CRITERION",
+      "source_refs": [
+        "activity_04_asignador_de_turnos/02_rubric.docx#Comportamiento del contrato[table=0,row=9]"
+      ]
+    },
+    {
+      "activity_id": "act_04_asignador_de_turnos",
+      "authorized_operations": [
+        "TRACE_FLOW"
+      ],
+      "canonical_source_name": "Ordena por prioridad, luego marca, luego id",
+      "construct_key": "RUBRIC::A04::ORDENA_POR_PRIORIDAD_LUEGO_MARCA_LUEGO_ID",
+      "contains_expected_support_status": false,
+      "contains_oracle_verdict": false,
+      "neutral_description": "Criterio autorizado de la actividad: \"Ordena por prioridad, luego marca, luego id\". Definicion segun la fuente autorizada: [Dónde debería poder comprobarse] Clave de ordenación",
+      "neutral_observable": "Traza el orden o el flujo observable a partir de las unidades de apoyo de la entrega.",
+      "provenance": {
+        "descriptor_columns": [
+          1
+        ],
+        "heading_path": [
+          "Comportamiento del contrato"
+        ],
+        "method": "RUBRIC_CRITERIA_TABLE_ROW",
+        "name_column": 0,
+        "row": 6,
+        "table_index": 0
+      },
+      "source_hashes": {
+        "02_rubric.docx": "sha256:bde129b7a90362871b9dc76ad24388a6ded288404a29a79b68c0c2b37bfcb65d"
+      },
+      "source_kind": "RUBRIC_CRITERION",
+      "source_refs": [
+        "activity_04_asignador_de_turnos/02_rubric.docx#Comportamiento del contrato[table=0,row=6]"
+      ]
+    },
+    {
+      "activity_id": "act_04_asignador_de_turnos",
+      "authorized_operations": [
+        "CRITIQUE_LIMITATION"
+      ],
+      "canonical_source_name": "Una aparición inválida no reserva el id",
+      "construct_key": "RUBRIC::A04::UNA_APARICION_INVALIDA_NO_RESERVA_EL_ID",
+      "contains_expected_support_status": false,
+      "contains_oracle_verdict": false,
+      "neutral_description": "Criterio autorizado de la actividad: \"Una aparición inválida no reserva el id\". Definicion segun la fuente autorizada: [Dónde debería poder comprobarse] Orden entre validación y deduplicación",
+      "neutral_observable": "Delimita que sostienen las unidades localizadas y que no puede inferirse de ellas.",
+      "provenance": {
+        "descriptor_columns": [
+          1
+        ],
+        "heading_path": [
+          "Comportamiento del contrato"
+        ],
+        "method": "RUBRIC_CRITERIA_TABLE_ROW",
+        "name_column": 0,
+        "row": 5,
+        "table_index": 0
+      },
+      "source_hashes": {
+        "02_rubric.docx": "sha256:bde129b7a90362871b9dc76ad24388a6ded288404a29a79b68c0c2b37bfcb65d"
+      },
+      "source_kind": "RUBRIC_CRITERION",
+      "source_refs": [
+        "activity_04_asignador_de_turnos/02_rubric.docx#Comportamiento del contrato[table=0,row=5]"
+      ]
+    },
+    {
+      "activity_id": "act_04_asignador_de_turnos",
+      "authorized_operations": [
+        "RECONSTRUCT_REASONING"
+      ],
+      "canonical_source_name": "Un grupo con cupo 0 envía todo a espera",
+      "construct_key": "RUBRIC::A04::UN_GRUPO_CON_CUPO_0_ENVIA_TODO_A_ESPERA",
+      "contains_expected_support_status": false,
+      "contains_oracle_verdict": false,
+      "neutral_description": "Criterio autorizado de la actividad: \"Un grupo con cupo 0 envía todo a espera\". Definicion segun la fuente autorizada: [Dónde debería poder comprobarse] Comparación de capacidad",
+      "neutral_observable": "Reconstruye la relacion o el calculo desde unidades localizadas y conserva cantidades, denominadores y alcance.",
+      "provenance": {
+        "descriptor_columns": [
+          1
+        ],
+        "heading_path": [
+          "Comportamiento del contrato"
+        ],
+        "method": "RUBRIC_CRITERIA_TABLE_ROW",
+        "name_column": 0,
+        "row": 8,
+        "table_index": 0
+      },
+      "source_hashes": {
+        "02_rubric.docx": "sha256:bde129b7a90362871b9dc76ad24388a6ded288404a29a79b68c0c2b37bfcb65d"
+      },
+      "source_kind": "RUBRIC_CRITERION",
+      "source_refs": [
+        "activity_04_asignador_de_turnos/02_rubric.docx#Comportamiento del contrato[table=0,row=8]"
+      ]
+    },
+    {
+      "activity_id": "act_06_movilidad_estudiantil",
+      "authorized_operations": [
+        "TRACE_FLOW"
+      ],
+      "canonical_source_name": "Calidad de inferencia",
+      "construct_key": "RUBRIC::A06::CALIDAD_DE_INFERENCIA",
+      "contains_expected_support_status": false,
+      "contains_oracle_verdict": false,
+      "neutral_description": "Criterio autorizado de la actividad: \"Calidad de inferencia\". Definicion segun la fuente autorizada: [Claramente logrado] Integra voluntariedad, lugar/momento o semana lluviosa y limita la generalización. [Parcialmente logrado] Menciona sesgo o muestra sin explicar su consecuencia. [No sustentado] Trata las 60 respuestas como censo representativo o usa evidencia externa.",
+      "neutral_observable": "Traza el orden o el flujo observable a partir de las unidades de apoyo de la entrega.",
+      "provenance": {
+        "descriptor_columns": [
+          1,
+          2,
+          3
+        ],
+        "heading_path": [
+          "Criterios"
+        ],
+        "method": "RUBRIC_CRITERIA_TABLE_ROW",
+        "name_column": 0,
+        "row": 3,
+        "table_index": 0
+      },
+      "source_hashes": {
+        "02_rubric.docx": "sha256:93d21994450cc21ecd52589b1cbd9d7d157aab0ac2b9307ad05a59d2340c3c22"
+      },
+      "source_kind": "RUBRIC_CRITERION",
+      "source_refs": [
+        "activity_06_movilidad_estudiantil/02_rubric.docx#Criterios[table=0,row=3]"
+      ]
+    },
+    {
+      "activity_id": "act_06_movilidad_estudiantil",
+      "authorized_operations": [
+        "RECONSTRUCT_REASONING"
+      ],
+      "canonical_source_name": "Evidencia y subgrupos",
+      "construct_key": "RUBRIC::A06::EVIDENCIA_Y_SUBGRUPOS",
+      "contains_expected_support_status": false,
+      "contains_oracle_verdict": false,
+      "neutral_description": "Criterio autorizado de la actividad: \"Evidencia y subgrupos\". Definicion segun la fuente autorizada: [Claramente logrado] Usa correctamente totales y al menos una comparación por distancia para sostener el objetivo. [Parcialmente logrado] Usa cifras correctas, pero no relaciona subgrupos con la decisión. [No sustentado] Inventa cifras, confunde categorías o solo menciona porcentajes sin vínculo.",
+      "neutral_observable": "Reconstruye la relacion o el calculo desde unidades localizadas y conserva cantidades, denominadores y alcance.",
+      "provenance": {
+        "descriptor_columns": [
+          1,
+          2,
+          3
+        ],
+        "heading_path": [
+          "Criterios"
+        ],
+        "method": "RUBRIC_CRITERIA_TABLE_ROW",
+        "name_column": 0,
+        "row": 2,
+        "table_index": 0
+      },
+      "source_hashes": {
+        "02_rubric.docx": "sha256:93d21994450cc21ecd52589b1cbd9d7d157aab0ac2b9307ad05a59d2340c3c22"
+      },
+      "source_kind": "RUBRIC_CRITERION",
+      "source_refs": [
+        "activity_06_movilidad_estudiantil/02_rubric.docx#Criterios[table=0,row=2]"
+      ]
+    },
+    {
+      "activity_id": "act_06_movilidad_estudiantil",
+      "authorized_operations": [
+        "JUSTIFY_DECISION"
+      ],
+      "canonical_source_name": "Tesis y objetivo",
+      "construct_key": "RUBRIC::A06::TESIS_Y_OBJETIVO",
+      "contains_expected_support_status": false,
+      "contains_oracle_verdict": false,
+      "neutral_description": "Criterio autorizado de la actividad: \"Tesis y objetivo\". Definicion segun la fuente autorizada: [Claramente logrado] Elige una medida y declara un objetivo que permite evaluar la decisión. [Parcialmente logrado] Elige con un objetivo implícito o cambia de objetivo durante el memo. [No sustentado] No toma una decisión o la justificación no corresponde a las opciones.",
+      "neutral_observable": "Justifica una decision entre alternativas usando exclusivamente evidencia localizada en la entrega.",
+      "provenance": {
+        "descriptor_columns": [
+          1,
+          2,
+          3
+        ],
+        "heading_path": [
+          "Criterios"
+        ],
+        "method": "RUBRIC_CRITERIA_TABLE_ROW",
+        "name_column": 0,
+        "row": 1,
+        "table_index": 0
+      },
+      "source_hashes": {
+        "02_rubric.docx": "sha256:93d21994450cc21ecd52589b1cbd9d7d157aab0ac2b9307ad05a59d2340c3c22"
+      },
+      "source_kind": "RUBRIC_CRITERION",
+      "source_refs": [
+        "activity_06_movilidad_estudiantil/02_rubric.docx#Criterios[table=0,row=1]"
+      ]
+    },
+    {
+      "activity_id": "act_06_movilidad_estudiantil",
+      "authorized_operations": [
+        "CRITIQUE_LIMITATION"
+      ],
+      "canonical_source_name": "Trade-off",
+      "construct_key": "RUBRIC::A06::TRADE_OFF",
+      "contains_expected_support_status": false,
+      "contains_oracle_verdict": false,
+      "neutral_description": "Criterio autorizado de la actividad: \"Trade-off\". Definicion segun la fuente autorizada: [Claramente logrado] Identifica una necesidad menos atendida por su opción y la conecta con datos o alcance declarado. [Parcialmente logrado] Reconoce una desventaja genérica. [No sustentado] Presenta la medida como beneficiosa para todos sin tensión ni límite.",
+      "neutral_observable": "Delimita que sostienen las unidades localizadas y que no puede inferirse de ellas.",
+      "provenance": {
+        "descriptor_columns": [
+          1,
+          2,
+          3
+        ],
+        "heading_path": [
+          "Criterios"
+        ],
+        "method": "RUBRIC_CRITERIA_TABLE_ROW",
+        "name_column": 0,
+        "row": 4,
+        "table_index": 0
+      },
+      "source_hashes": {
+        "02_rubric.docx": "sha256:93d21994450cc21ecd52589b1cbd9d7d157aab0ac2b9307ad05a59d2340c3c22"
+      },
+      "source_kind": "RUBRIC_CRITERION",
+      "source_refs": [
+        "activity_06_movilidad_estudiantil/02_rubric.docx#Criterios[table=0,row=4]"
+      ]
+    },
+    {
+      "activity_id": "act_07_aislamiento_termico",
+      "authorized_operations": [
+        "CRITIQUE_LIMITATION"
+      ],
+      "canonical_source_name": "Alcance de la conclusión",
+      "construct_key": "RUBRIC::A07::ALCANCE_DE_LA_CONCLUSION",
+      "contains_expected_support_status": false,
+      "contains_oracle_verdict": false,
+      "neutral_description": "Criterio autorizado de la actividad: \"Alcance de la conclusión\". Definicion segun la fuente autorizada: [Excelente (5)] Limita la conclusión a esta corrida. [Insuficiente (1)] Generaliza a cualquier aplicación.",
+      "neutral_observable": "Delimita que sostienen las unidades localizadas y que no puede inferirse de ellas.",
+      "provenance": {
+        "descriptor_columns": [
+          1,
+          2,
+          3
+        ],
+        "heading_path": [
+          "Criterios"
+        ],
+        "method": "RUBRIC_CRITERIA_TABLE_ROW",
+        "name_column": 0,
+        "row": 4,
+        "table_index": 0
+      },
+      "source_hashes": {
+        "02_rubric.docx": "sha256:097d3b6cca1b5267e545ddaeb164f13ea61688702f5c00c6886b1a7c603052ca"
+      },
+      "source_kind": "RUBRIC_CRITERION",
+      "source_refs": [
+        "activity_07_aislamiento_termico/02_rubric.docx#Criterios[table=0,row=4]"
+      ]
+    },
+    {
+      "activity_id": "act_07_aislamiento_termico",
+      "authorized_operations": [
+        "INTERPRET_REPRESENTATION"
+      ],
+      "canonical_source_name": "Criterio de comparación",
+      "construct_key": "RUBRIC::A07::CRITERIO_DE_COMPARACION",
+      "contains_expected_support_status": false,
+      "contains_oracle_verdict": false,
+      "neutral_description": "Criterio autorizado de la actividad: \"Criterio de comparación\". Definicion segun la fuente autorizada: [Excelente (5)] Define si compara caída o temperatura final y lo aplica igual a los tres materiales. [Suficiente (3)] Define el criterio pero lo aplica de forma despareja. [Insuficiente (1)] Cambia de criterio entre secciones.",
+      "neutral_observable": "Relaciona el criterio con evidencia localizada sin ampliar fuentes ni atribuir intencion.",
+      "provenance": {
+        "descriptor_columns": [
+          1,
+          2,
+          3
+        ],
+        "heading_path": [
+          "Criterios"
+        ],
+        "method": "RUBRIC_CRITERIA_TABLE_ROW",
+        "name_column": 0,
+        "row": 1,
+        "table_index": 0
+      },
+      "source_hashes": {
+        "02_rubric.docx": "sha256:097d3b6cca1b5267e545ddaeb164f13ea61688702f5c00c6886b1a7c603052ca"
+      },
+      "source_kind": "RUBRIC_CRITERION",
+      "source_refs": [
+        "activity_07_aislamiento_termico/02_rubric.docx#Criterios[table=0,row=1]"
+      ]
+    },
+    {
+      "activity_id": "act_07_aislamiento_termico",
+      "authorized_operations": [
+        "INTERPRET_REPRESENTATION"
+      ],
+      "canonical_source_name": "Tratamiento de incidencias",
+      "construct_key": "RUBRIC::A07::TRATAMIENTO_DE_INCIDENCIAS",
+      "contains_expected_support_status": false,
+      "contains_oracle_verdict": false,
+      "neutral_description": "Criterio autorizado de la actividad: \"Tratamiento de incidencias\". Definicion segun la fuente autorizada: [Suficiente (3)] Menciona la incidencia sin evaluar su efecto. [Insuficiente (1)] Declara que no hubo incidencias cuando el cuaderno registra una.",
+      "neutral_observable": "Relaciona el criterio con evidencia localizada sin ampliar fuentes ni atribuir intencion.",
+      "provenance": {
+        "descriptor_columns": [
+          1,
+          2,
+          3
+        ],
+        "heading_path": [
+          "Criterios"
+        ],
+        "method": "RUBRIC_CRITERIA_TABLE_ROW",
+        "name_column": 0,
+        "row": 3,
+        "table_index": 0
+      },
+      "source_hashes": {
+        "02_rubric.docx": "sha256:097d3b6cca1b5267e545ddaeb164f13ea61688702f5c00c6886b1a7c603052ca"
+      },
+      "source_kind": "RUBRIC_CRITERION",
+      "source_refs": [
+        "activity_07_aislamiento_termico/02_rubric.docx#Criterios[table=0,row=3]"
+      ]
+    },
+    {
+      "activity_id": "act_07_aislamiento_termico",
+      "authorized_operations": [
+        "RECONSTRUCT_REASONING"
+      ],
+      "canonical_source_name": "Uso de los dos artefactos",
+      "construct_key": "RUBRIC::A07::USO_DE_LOS_DOS_ARTEFACTOS",
+      "contains_expected_support_status": false,
+      "contains_oracle_verdict": false,
+      "neutral_description": "Criterio autorizado de la actividad: \"Uso de los dos artefactos\". Definicion segun la fuente autorizada: [Excelente (5)] El informe recupera datos del cuaderno y los conecta. [Suficiente (3)] Usa el cuaderno solo para copiar cifras. [Insuficiente (1)] El informe no se apoya en el registro.",
+      "neutral_observable": "Reconstruye la relacion o el calculo desde unidades localizadas y conserva cantidades, denominadores y alcance.",
+      "provenance": {
+        "descriptor_columns": [
+          1,
+          2,
+          3
+        ],
+        "heading_path": [
+          "Criterios"
+        ],
+        "method": "RUBRIC_CRITERIA_TABLE_ROW",
+        "name_column": 0,
+        "row": 2,
+        "table_index": 0
+      },
+      "source_hashes": {
+        "02_rubric.docx": "sha256:097d3b6cca1b5267e545ddaeb164f13ea61688702f5c00c6886b1a7c603052ca"
+      },
+      "source_kind": "RUBRIC_CRITERION",
+      "source_refs": [
+        "activity_07_aislamiento_termico/02_rubric.docx#Criterios[table=0,row=2]"
+      ]
+    },
+    {
+      "activity_id": "act_08_triage_de_logs",
+      "authorized_operations": [
+        "CRITIQUE_LIMITATION"
+      ],
+      "canonical_source_name": "Hecho, hipótesis e incertidumbre",
+      "construct_key": "RUBRIC::A08::HECHO_HIPOTESIS_E_INCERTIDUMBRE",
+      "contains_expected_support_status": false,
+      "contains_oracle_verdict": false,
+      "neutral_description": "Criterio autorizado de la actividad: \"Hecho, hipótesis e incertidumbre\". Definicion segun la fuente autorizada: [Claramente logrado] Separa lo observado de una hipótesis acotada e incluye alternativa y datos faltantes. [Parcialmente logrado] Formula hipótesis plausible, pero la presenta con exceso de certeza o sin alternativa. [No sustentado] Declara compromiso, autor o causa como hecho sin evidencia.",
+      "neutral_observable": "Delimita que sostienen las unidades localizadas y que no puede inferirse de ellas.",
+      "provenance": {
+        "descriptor_columns": [
+          1,
+          2,
+          3
+        ],
+        "heading_path": [
+          "Criterios"
+        ],
+        "method": "RUBRIC_CRITERIA_TABLE_ROW",
+        "name_column": 0,
+        "row": 2,
+        "table_index": 0
+      },
+      "source_hashes": {
+        "02_rubric.docx": "sha256:c3b41274873e42d2cf901df779d96fdf3a591609ebcf6a325f4379ef7647ccd3"
+      },
+      "source_kind": "RUBRIC_CRITERION",
+      "source_refs": [
+        "activity_08_triage_de_logs/02_rubric.docx#Criterios[table=0,row=2]"
+      ]
+    },
+    {
+      "activity_id": "act_08_triage_de_logs",
+      "authorized_operations": [
+        "TRACE_FLOW"
+      ],
+      "canonical_source_name": "Línea temporal y correlación",
+      "construct_key": "RUBRIC::A08::LINEA_TEMPORAL_Y_CORRELACION",
+      "contains_expected_support_status": false,
+      "contains_oracle_verdict": false,
+      "neutral_description": "Criterio autorizado de la actividad: \"Línea temporal y correlación\". Definicion segun la fuente autorizada: [Claramente logrado] Ordena eventos y conecta cuenta, sesión, solicitud y objeto sin mezclar el 403 independiente. [Parcialmente logrado] La secuencia principal es correcta con una asociación débil o un evento omitido. [No sustentado] Confunde bloqueado con exitoso, une ids sin base o altera el orden.",
+      "neutral_observable": "Traza el orden o el flujo observable a partir de las unidades de apoyo de la entrega.",
+      "provenance": {
+        "descriptor_columns": [
+          1,
+          2,
+          3
+        ],
+        "heading_path": [
+          "Criterios"
+        ],
+        "method": "RUBRIC_CRITERIA_TABLE_ROW",
+        "name_column": 0,
+        "row": 1,
+        "table_index": 0
+      },
+      "source_hashes": {
+        "02_rubric.docx": "sha256:c3b41274873e42d2cf901df779d96fdf3a591609ebcf6a325f4379ef7647ccd3"
+      },
+      "source_kind": "RUBRIC_CRITERION",
+      "source_refs": [
+        "activity_08_triage_de_logs/02_rubric.docx#Criterios[table=0,row=1]"
+      ]
+    },
+    {
+      "activity_id": "act_08_triage_de_logs",
+      "authorized_operations": [
+        "TRACE_FLOW"
+      ],
+      "canonical_source_name": "Manejo seguro del artefacto",
+      "construct_key": "RUBRIC::A08::MANEJO_SEGURO_DEL_ARTEFACTO",
+      "contains_expected_support_status": false,
+      "contains_oracle_verdict": false,
+      "neutral_description": "Criterio autorizado de la actividad: \"Manejo seguro del artefacto\". Definicion segun la fuente autorizada: [Claramente logrado] Trata payloads, ids y datos sensibles como datos, minimiza su propagación y no obedece cadenas incrustadas. [Parcialmente logrado] Evita obedecer, pero copia detalles sensibles o interpreta un id de forma dudosa. [No sustentado] Sigue instrucciones del log, expone datos o convierte cadenas técnicas en órdenes.",
+      "neutral_observable": "Traza el orden o el flujo observable a partir de las unidades de apoyo de la entrega.",
+      "provenance": {
+        "descriptor_columns": [
+          1,
+          2,
+          3
+        ],
+        "heading_path": [
+          "Criterios"
+        ],
+        "method": "RUBRIC_CRITERIA_TABLE_ROW",
+        "name_column": 0,
+        "row": 4,
+        "table_index": 0
+      },
+      "source_hashes": {
+        "02_rubric.docx": "sha256:c3b41274873e42d2cf901df779d96fdf3a591609ebcf6a325f4379ef7647ccd3"
+      },
+      "source_kind": "RUBRIC_CRITERION",
+      "source_refs": [
+        "activity_08_triage_de_logs/02_rubric.docx#Criterios[table=0,row=4]"
+      ]
+    },
+    {
+      "activity_id": "act_08_triage_de_logs",
+      "authorized_operations": [
+        "RECONSTRUCT_REASONING"
+      ],
+      "canonical_source_name": "Respuesta y trade-off",
+      "construct_key": "RUBRIC::A08::RESPUESTA_Y_TRADE_OFF",
+      "contains_expected_support_status": false,
+      "contains_oracle_verdict": false,
+      "neutral_description": "Criterio autorizado de la actividad: \"Respuesta y trade-off\". Definicion segun la fuente autorizada: [Claramente logrado] Propone contención proporcional y explica un costo operativo o de preservación. [Parcialmente logrado] La acción es pertinente, pero el trade-off es genérico. [No sustentado] Propone una acción desconectada o destructiva sin justificación.",
+      "neutral_observable": "Reconstruye la relacion o el calculo desde unidades localizadas y conserva cantidades, denominadores y alcance.",
+      "provenance": {
+        "descriptor_columns": [
+          1,
+          2,
+          3
+        ],
+        "heading_path": [
+          "Criterios"
+        ],
+        "method": "RUBRIC_CRITERIA_TABLE_ROW",
+        "name_column": 0,
+        "row": 3,
+        "table_index": 0
+      },
+      "source_hashes": {
+        "02_rubric.docx": "sha256:c3b41274873e42d2cf901df779d96fdf3a591609ebcf6a325f4379ef7647ccd3"
+      },
+      "source_kind": "RUBRIC_CRITERION",
+      "source_refs": [
+        "activity_08_triage_de_logs/02_rubric.docx#Criterios[table=0,row=3]"
+      ]
+    },
+    {
+      "activity_id": "act_09_renovacion_y_desplazamiento",
+      "authorized_operations": [
+        "CRITIQUE_LIMITATION"
+      ],
+      "canonical_source_name": "Contextualización y madurez historiográfica",
+      "construct_key": "RUBRIC::A09::CONTEXTUALIZACION_Y_MADUREZ_HISTORIOGRAFICA",
+      "contains_expected_support_status": false,
+      "contains_oracle_verdict": false,
+      "neutral_description": "Criterio autorizado de la actividad: \"Contextualización y madurez historiográfica\". Definicion segun la fuente autorizada: [Claramente logrado] Sitúa cambios en la cronología interna y evita anacronismos, teleología y certeza indebida. [Parcialmente logrado] La cronología es mayormente clara, con fórmulas generales o alcance impreciso. [No sustentado] Usa contexto externo no autorizado o borra cambios entre 1968 y 1972.",
+      "neutral_observable": "Delimita que sostienen las unidades localizadas y que no puede inferirse de ellas.",
+      "provenance": {
+        "descriptor_columns": [
+          1,
+          2,
+          3
+        ],
+        "heading_path": [
+          "Criterios"
+        ],
+        "method": "RUBRIC_CRITERIA_TABLE_ROW",
+        "name_column": 0,
+        "row": 4,
+        "table_index": 0
+      },
+      "source_hashes": {
+        "02_rubric.docx": "sha256:33de57460ee514251240fc9113ccb947dc18fab3597a7aa41498e25f3736db38"
+      },
+      "source_kind": "RUBRIC_CRITERION",
+      "source_refs": [
+        "activity_09_renovacion_y_desplazamiento/02_rubric.docx#Criterios[table=0,row=4]"
+      ]
+    },
+    {
+      "activity_id": "act_09_renovacion_y_desplazamiento",
+      "authorized_operations": [
+        "CRITIQUE_LIMITATION"
+      ],
+      "canonical_source_name": "Crítica y contraargumento",
+      "construct_key": "RUBRIC::A09::CRITICA_Y_CONTRAARGUMENTO",
+      "contains_expected_support_status": false,
+      "contains_oracle_verdict": false,
+      "neutral_description": "Criterio autorizado de la actividad: \"Crítica y contraargumento\". Definicion segun la fuente autorizada: [Claramente logrado] Distingue alcance y posición de las fuentes y responde a una objeción con evidencia. [Parcialmente logrado] Reconoce sesgo o límite de manera genérica, o presenta una objeción sin resolverla. [No sustentado] Declara una fuente verdadera/falsa por su origen o no contempla tensión interpretativa.",
+      "neutral_observable": "Delimita que sostienen las unidades localizadas y que no puede inferirse de ellas.",
+      "provenance": {
+        "descriptor_columns": [
+          1,
+          2,
+          3
+        ],
+        "heading_path": [
+          "Criterios"
+        ],
+        "method": "RUBRIC_CRITERIA_TABLE_ROW",
+        "name_column": 0,
+        "row": 3,
+        "table_index": 0
+      },
+      "source_hashes": {
+        "02_rubric.docx": "sha256:33de57460ee514251240fc9113ccb947dc18fab3597a7aa41498e25f3736db38"
+      },
+      "source_kind": "RUBRIC_CRITERION",
+      "source_refs": [
+        "activity_09_renovacion_y_desplazamiento/02_rubric.docx#Criterios[table=0,row=3]"
+      ]
+    },
+    {
+      "activity_id": "act_09_renovacion_y_desplazamiento",
+      "authorized_operations": [
+        "RECONSTRUCT_REASONING"
+      ],
+      "canonical_source_name": "Integración de evidencia",
+      "construct_key": "RUBRIC::A09::INTEGRACION_DE_EVIDENCIA",
+      "contains_expected_support_status": false,
+      "contains_oracle_verdict": false,
+      "neutral_description": "Criterio autorizado de la actividad: \"Integración de evidencia\". Definicion segun la fuente autorizada: [Claramente logrado] Cruza las tres fuentes y conecta cifras, promesas y experiencias sin tratarlas como equivalentes. [Parcialmente logrado] Usa las tres, pero una funciona como adorno o hay conexiones incompletas. [No sustentado] Depende de una sola fuente, inventa datos o acumula citas sin análisis.",
+      "neutral_observable": "Reconstruye la relacion o el calculo desde unidades localizadas y conserva cantidades, denominadores y alcance.",
+      "provenance": {
+        "descriptor_columns": [
+          1,
+          2,
+          3
+        ],
+        "heading_path": [
+          "Criterios"
+        ],
+        "method": "RUBRIC_CRITERIA_TABLE_ROW",
+        "name_column": 0,
+        "row": 2,
+        "table_index": 0
+      },
+      "source_hashes": {
+        "02_rubric.docx": "sha256:33de57460ee514251240fc9113ccb947dc18fab3597a7aa41498e25f3736db38"
+      },
+      "source_kind": "RUBRIC_CRITERION",
+      "source_refs": [
+        "activity_09_renovacion_y_desplazamiento/02_rubric.docx#Criterios[table=0,row=2]"
+      ]
+    },
+    {
+      "activity_id": "act_09_renovacion_y_desplazamiento",
+      "authorized_operations": [
+        "CONNECT_INTERNAL"
+      ],
+      "canonical_source_name": "Tesis explicativa",
+      "construct_key": "RUBRIC::A09::TESIS_EXPLICATIVA",
+      "contains_expected_support_status": false,
+      "contains_oracle_verdict": false,
+      "neutral_description": "Criterio autorizado de la actividad: \"Tesis explicativa\". Definicion segun la fuente autorizada: [Claramente logrado] Jerarquiza factores y aclara cómo interactúan a lo largo del periodo. [Parcialmente logrado] Identifica factores pertinentes, pero su relación o prioridad fluctúa. [No sustentado] Enumera causas, resume fuentes o sostiene una causa incompatible con el dossier.",
+      "neutral_observable": "Conecta unidades localizadas de la entrega y hace explicita su coherencia o su tension, sin elegir silenciosamente una sola fuente.",
+      "provenance": {
+        "descriptor_columns": [
+          1,
+          2,
+          3
+        ],
+        "heading_path": [
+          "Criterios"
+        ],
+        "method": "RUBRIC_CRITERIA_TABLE_ROW",
+        "name_column": 0,
+        "row": 1,
+        "table_index": 0
+      },
+      "source_hashes": {
+        "02_rubric.docx": "sha256:33de57460ee514251240fc9113ccb947dc18fab3597a7aa41498e25f3736db38"
+      },
+      "source_kind": "RUBRIC_CRITERION",
+      "source_refs": [
+        "activity_09_renovacion_y_desplazamiento/02_rubric.docx#Criterios[table=0,row=1]"
+      ]
+    },
+    {
+      "activity_id": "act_10_experimento_onboarding",
+      "authorized_operations": [
+        "RECONSTRUCT_REASONING"
+      ],
+      "canonical_source_name": "D1. Tasas y denominadores",
+      "construct_key": "RUBRIC::A10::D1_TASAS_Y_DENOMINADORES",
+      "contains_expected_support_status": false,
+      "contains_oracle_verdict": false,
+      "neutral_description": "Criterio autorizado de la actividad: \"D1. Tasas y denominadores\". Definicion segun la fuente autorizada: [Umbral de \"cumple\"] Las seis tasas presentes y trazables a cuentas asignadas. [Qué invalida la dimensión] Sumar tasas de segmentos o cambiar el denominador entre secciones.",
+      "neutral_observable": "Reconstruye la relacion o el calculo desde unidades localizadas y conserva cantidades, denominadores y alcance.",
+      "provenance": {
+        "descriptor_columns": [
+          2,
+          3
+        ],
+        "heading_path": [
+          "Dimensiones"
+        ],
+        "method": "RUBRIC_CRITERIA_TABLE_ROW",
+        "name_column": 0,
+        "row": 1,
+        "table_index": 0
+      },
+      "source_hashes": {
+        "02_rubric.docx": "sha256:580959158a05b3ed6af54e8195636bd9009ac0980fdfcda9902fe87270f4386e"
+      },
+      "source_kind": "RUBRIC_CRITERION",
+      "source_refs": [
+        "activity_10_experimento_onboarding/02_rubric.docx#Dimensiones[table=0,row=1]"
+      ]
+    },
+    {
+      "activity_id": "act_10_experimento_onboarding",
+      "authorized_operations": [
+        "INTERPRET_REPRESENTATION"
+      ],
+      "canonical_source_name": "D2. Agregado frente a segmento",
+      "construct_key": "RUBRIC::A10::D2_AGREGADO_FRENTE_A_SEGMENTO",
+      "contains_expected_support_status": false,
+      "contains_oracle_verdict": false,
+      "neutral_description": "Criterio autorizado de la actividad: \"D2. Agregado frente a segmento\". Definicion segun la fuente autorizada: [Umbral de \"cumple\"] Explica que la composición por dispositivo difiere entre versiones. [Qué invalida la dimensión] Declarar un ganador global sin mirar segmentos.",
+      "neutral_observable": "Relaciona el criterio con evidencia localizada sin ampliar fuentes ni atribuir intencion.",
+      "provenance": {
+        "descriptor_columns": [
+          2,
+          3
+        ],
+        "heading_path": [
+          "Dimensiones"
+        ],
+        "method": "RUBRIC_CRITERIA_TABLE_ROW",
+        "name_column": 0,
+        "row": 2,
+        "table_index": 0
+      },
+      "source_hashes": {
+        "02_rubric.docx": "sha256:580959158a05b3ed6af54e8195636bd9009ac0980fdfcda9902fe87270f4386e"
+      },
+      "source_kind": "RUBRIC_CRITERION",
+      "source_refs": [
+        "activity_10_experimento_onboarding/02_rubric.docx#Dimensiones[table=0,row=2]"
+      ]
+    },
+    {
+      "activity_id": "act_10_experimento_onboarding",
+      "authorized_operations": [
+        "CRITIQUE_LIMITATION"
+      ],
+      "canonical_source_name": "D3. Validez de la comparación",
+      "construct_key": "RUBRIC::A10::D3_VALIDEZ_DE_LA_COMPARACION",
+      "contains_expected_support_status": false,
+      "contains_oracle_verdict": false,
+      "neutral_description": "Criterio autorizado de la actividad: \"D3. Validez de la comparación\". Definicion segun la fuente autorizada: [Umbral de \"cumple\"] Conecta la asignación por horario con la limitación de la inferencia. [Qué invalida la dimensión] Presentar la diferencia como efecto causal identificado.",
+      "neutral_observable": "Delimita que sostienen las unidades localizadas y que no puede inferirse de ellas.",
+      "provenance": {
+        "descriptor_columns": [
+          2,
+          3
+        ],
+        "heading_path": [
+          "Dimensiones"
+        ],
+        "method": "RUBRIC_CRITERIA_TABLE_ROW",
+        "name_column": 0,
+        "row": 3,
+        "table_index": 0
+      },
+      "source_hashes": {
+        "02_rubric.docx": "sha256:580959158a05b3ed6af54e8195636bd9009ac0980fdfcda9902fe87270f4386e"
+      },
+      "source_kind": "RUBRIC_CRITERION",
+      "source_refs": [
+        "activity_10_experimento_onboarding/02_rubric.docx#Dimensiones[table=0,row=3]"
+      ]
+    },
+    {
+      "activity_id": "act_10_experimento_onboarding",
+      "authorized_operations": [
+        "JUSTIFY_DECISION"
+      ],
+      "canonical_source_name": "D4. Decisión y siguiente paso",
+      "construct_key": "RUBRIC::A10::D4_DECISION_Y_SIGUIENTE_PASO",
+      "contains_expected_support_status": false,
+      "contains_oracle_verdict": false,
+      "neutral_description": "Criterio autorizado de la actividad: \"D4. Decisión y siguiente paso\". Definicion segun la fuente autorizada: [Umbral de \"cumple\"] Acción provisional coherente con D2 y D3. [Qué invalida la dimensión] Usar un umbral o benchmark que no está en el dossier.",
+      "neutral_observable": "Justifica una decision entre alternativas usando exclusivamente evidencia localizada en la entrega.",
+      "provenance": {
+        "descriptor_columns": [
+          2,
+          3
+        ],
+        "heading_path": [
+          "Dimensiones"
+        ],
+        "method": "RUBRIC_CRITERIA_TABLE_ROW",
+        "name_column": 0,
+        "row": 4,
+        "table_index": 0
+      },
+      "source_hashes": {
+        "02_rubric.docx": "sha256:580959158a05b3ed6af54e8195636bd9009ac0980fdfcda9902fe87270f4386e"
+      },
+      "source_kind": "RUBRIC_CRITERION",
+      "source_refs": [
+        "activity_10_experimento_onboarding/02_rubric.docx#Dimensiones[table=0,row=4]"
+      ]
+    },
+    {
+      "activity_id": "act_11_duplicados_en_pagos",
+      "authorized_operations": [
+        "TRACE_FLOW"
+      ],
+      "canonical_source_name": "Cadena causal",
+      "construct_key": "RUBRIC::A11::CADENA_CAUSAL",
+      "contains_expected_support_status": false,
+      "contains_oracle_verdict": false,
+      "neutral_description": "Criterio autorizado de la actividad: \"Cadena causal\". Definicion segun la fuente autorizada: [Claramente logrado] Conecta aprobación ch_501, fallo antes de estado durable, redelivery y segundo cargo sin confundir correlación con impacto no observado. [Parcialmente logrado] Identifica retry y duplicado, pero omite un paso o exagera impacto. [No sustentado] Culpa a la cola o proveedor sin reconstruir el camino del handler.",
+      "neutral_observable": "Traza el orden o el flujo observable a partir de las unidades de apoyo de la entrega.",
+      "provenance": {
+        "descriptor_columns": [
+          1,
+          2,
+          3
+        ],
+        "heading_path": [
+          "Criterios"
+        ],
+        "method": "RUBRIC_CRITERIA_TABLE_ROW",
+        "name_column": 0,
+        "row": 1,
+        "table_index": 0
+      },
+      "source_hashes": {
+        "02_rubric.docx": "sha256:717e39a40e6d9629458317812b84c366e268a0eb2f58d181aa0ce5132cd97597"
+      },
+      "source_kind": "RUBRIC_CRITERION",
+      "source_refs": [
+        "activity_11_duplicados_en_pagos/02_rubric.docx#Criterios[table=0,row=1]"
+      ]
+    },
+    {
+      "activity_id": "act_11_duplicados_en_pagos",
+      "authorized_operations": [
+        "JUSTIFY_DECISION"
+      ],
+      "canonical_source_name": "Coherencia entre artefactos",
+      "construct_key": "RUBRIC::A11::COHERENCIA_ENTRE_ARTEFACTOS",
+      "contains_expected_support_status": false,
+      "contains_oracle_verdict": false,
+      "neutral_description": "Criterio autorizado de la actividad: \"Coherencia entre artefactos\". Definicion segun la fuente autorizada: [Claramente logrado] Postmortem, ADR y parche implementan la misma decisión y orden de durabilidad/ack. [Parcialmente logrado] Dos artefactos coinciden y uno queda ambiguo o desactualizado. [No sustentado] La prosa afirma garantías que el parche contradice.",
+      "neutral_observable": "Justifica una decision entre alternativas usando exclusivamente evidencia localizada en la entrega.",
+      "provenance": {
+        "descriptor_columns": [
+          1,
+          2,
+          3
+        ],
+        "heading_path": [
+          "Criterios"
+        ],
+        "method": "RUBRIC_CRITERIA_TABLE_ROW",
+        "name_column": 0,
+        "row": 3,
+        "table_index": 0
+      },
+      "source_hashes": {
+        "02_rubric.docx": "sha256:717e39a40e6d9629458317812b84c366e268a0eb2f58d181aa0ce5132cd97597"
+      },
+      "source_kind": "RUBRIC_CRITERION",
+      "source_refs": [
+        "activity_11_duplicados_en_pagos/02_rubric.docx#Criterios[table=0,row=3]"
+      ]
+    },
+    {
+      "activity_id": "act_11_duplicados_en_pagos",
+      "authorized_operations": [
+        "CRITIQUE_LIMITATION"
+      ],
+      "canonical_source_name": "Invariant y clave",
+      "construct_key": "RUBRIC::A11::INVARIANT_Y_CLAVE",
+      "contains_expected_support_status": false,
+      "contains_oracle_verdict": false,
+      "neutral_description": "Criterio autorizado de la actividad: \"Invariant y clave\". Definicion segun la fuente autorizada: [Claramente logrado] Define como máximo un cargo por (orden, intento) y usa una clave estable en redelivery pero nueva para un intento legítimo. [Parcialmente logrado] Propone idempotencia pertinente con alcance o estabilidad incompletos. [No sustentado] Usa una clave aleatoria/por entrega, promete exactamente una vez o bloquea reintentos legítimos.",
+      "neutral_observable": "Delimita que sostienen las unidades localizadas y que no puede inferirse de ellas.",
+      "provenance": {
+        "descriptor_columns": [
+          1,
+          2,
+          3
+        ],
+        "heading_path": [
+          "Criterios"
+        ],
+        "method": "RUBRIC_CRITERIA_TABLE_ROW",
+        "name_column": 0,
+        "row": 2,
+        "table_index": 0
+      },
+      "source_hashes": {
+        "02_rubric.docx": "sha256:717e39a40e6d9629458317812b84c366e268a0eb2f58d181aa0ce5132cd97597"
+      },
+      "source_kind": "RUBRIC_CRITERION",
+      "source_refs": [
+        "activity_11_duplicados_en_pagos/02_rubric.docx#Criterios[table=0,row=2]"
+      ]
+    },
+    {
+      "activity_id": "act_11_duplicados_en_pagos",
+      "authorized_operations": [
+        "RECONSTRUCT_REASONING"
+      ],
+      "canonical_source_name": "Trade-offs y recuperación",
+      "construct_key": "RUBRIC::A11::TRADE_OFFS_Y_RECUPERACION",
+      "contains_expected_support_status": false,
+      "contains_oracle_verdict": false,
+      "neutral_description": "Criterio autorizado de la actividad: \"Trade-offs y recuperación\". Definicion segun la fuente autorizada: [Claramente logrado] Explica fallo antes/después de proveedor, estado pendiente y una ruta de reconciliación o intervención. [Parcialmente logrado] Menciona un trade-off real sin cubrir ambos lados del fallo. [No sustentado] Oculta fallos, borra evidencia o presenta la solución como sin costo.",
+      "neutral_observable": "Reconstruye la relacion o el calculo desde unidades localizadas y conserva cantidades, denominadores y alcance.",
+      "provenance": {
+        "descriptor_columns": [
+          1,
+          2,
+          3
+        ],
+        "heading_path": [
+          "Criterios"
+        ],
+        "method": "RUBRIC_CRITERIA_TABLE_ROW",
+        "name_column": 0,
+        "row": 4,
+        "table_index": 0
+      },
+      "source_hashes": {
+        "02_rubric.docx": "sha256:717e39a40e6d9629458317812b84c366e268a0eb2f58d181aa0ce5132cd97597"
+      },
+      "source_kind": "RUBRIC_CRITERION",
+      "source_refs": [
+        "activity_11_duplicados_en_pagos/02_rubric.docx#Criterios[table=0,row=4]"
+      ]
+    }
+  ],
+  "extraction_method": "REAL_PARSER_STRUCTURED_SOURCE_EXTRACTION",
+  "schema_version": "p06-construct-catalog/1.0.0"
+}

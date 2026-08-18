@@ -1,5 +1,14 @@
 # Benchmark semántico canónico
 
+> **Superseded (Phase 9B.4).** Este documento describe
+> `semantic-benchmark/1.1.0`, que se conserva como evidencia histórica con su
+> boundary `sha256:426dda4d…` intacto. Tras la auditoría de validez de Phase
+> 9B.3, su porción P06 quedó marcada
+> `P06_NOT_VALID_FOR_CONTINUED_MODEL_SELECTION` y el instrumento vigente es
+> `semantic-benchmark/1.2.0` — ver [SEMANTIC_BENCHMARK_V1_2.md](SEMANTIC_BENCHMARK_V1_2.md).
+> El defecto **no** se conocía antes de ejecutar v1.1; se detectó después. Nada
+> de lo que sigue se reescribe retroactivamente.
+
 ## Estado y autoridad
 
 Phase 8.1 corrige exclusivamente el instrumento de evaluación. El corpus, el

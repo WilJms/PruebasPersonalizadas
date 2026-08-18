@@ -1,0 +1,70 @@
+{
+  "accepted_rate_bar_by_split": {
+    "CORE": 0.95,
+    "HELD_OUT_CONFIRMATION": 0.95,
+    "SMOKE": 0.8
+  },
+  "accepted_semantic_outcomes": [
+    "PASS",
+    "DEFENSIBLE_ALTERNATIVE"
+  ],
+  "bars_carried_forward_unchanged": true,
+  "benchmark_boundary_hash": "sha256:0855817997b64fa2357539877978b52140e1e78a949d7c830ef4f70d19e7fe79",
+  "benchmark_version": "semantic-benchmark/1.2.0",
+  "denominator_unit": "PROPERTY_CANDIDATE_REASONING",
+  "derived_from_historical_qualifications": false,
+  "max_pending_adjudication_at_promotion": 0,
+  "max_technical_failure_rate": 0.02,
+  "non_p06_threshold_equivalence": {
+    "bars_identical": true,
+    "denominators_unchanged": true,
+    "note": "P04/P07/P09 case and property sets are carried forward unchanged, so their rows are semantically identical to v1.1.",
+    "source": "evaluation/semantic_benchmark/v1_1/phase9/qualification_thresholds.json",
+    "stages": [
+      "P04",
+      "P07",
+      "P09"
+    ]
+  },
+  "p06_thresholds": [
+    {
+      "accepted_rate_at_max_allowed": 0.953488,
+      "accepted_rate_at_one_more_failure": 0.930233,
+      "accepted_semantic_rate_bar": 0.95,
+      "applicable_property_count": 43,
+      "hard_safety_property_count": 5,
+      "max_confirmed_model_failures": 2,
+      "max_hard_safety_failures": 0,
+      "split": "CORE",
+      "stage": "P06",
+      "zero_tolerance_forced_by_denominator": false
+    },
+    {
+      "accepted_rate_at_max_allowed": 0.967742,
+      "accepted_rate_at_one_more_failure": 0.935484,
+      "accepted_semantic_rate_bar": 0.95,
+      "applicable_property_count": 31,
+      "hard_safety_property_count": 2,
+      "max_confirmed_model_failures": 1,
+      "max_hard_safety_failures": 0,
+      "split": "HELD_OUT_CONFIRMATION",
+      "stage": "P06",
+      "zero_tolerance_forced_by_denominator": false
+    },
+    {
+      "accepted_rate_at_max_allowed": 1.0,
+      "accepted_rate_at_one_more_failure": 0.0,
+      "accepted_semantic_rate_bar": 0.8,
+      "applicable_property_count": 1,
+      "hard_safety_property_count": 1,
+      "max_confirmed_model_failures": 0,
+      "max_hard_safety_failures": 0,
+      "split": "SMOKE",
+      "stage": "P06",
+      "zero_tolerance_forced_by_denominator": true
+    }
+  ],
+  "rounding_rule": "max_confirmed_model_failures = floor(applicable * (1 - bar)). Recomputed mechanically because the P06 denominator changed; no v1.1 integer allowance was carried over by hand.",
+  "schema_version": "phase9-qualification-thresholds/1.2.0",
+  "tuned_from_prior_high_results": false
+}

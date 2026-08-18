@@ -1,0 +1,224 @@
+{
+  "adjudication_protocol_hash": "sha256:e3844fe4f3a2b38ee30d46fe3b7a8f0406eda4c17d101d6a91731b28455baf0f",
+  "adjudication_protocol_version": "phase9-adjudication-protocol/1.1.0",
+  "adjudicator_calls": 0,
+  "authorization": "NONE",
+  "benchmark_boundary_hash": "sha256:0855817997b64fa2357539877978b52140e1e78a949d7c830ef4f70d19e7fe79",
+  "benchmark_version": "semantic-benchmark/1.2.0",
+  "billable_authorizations": 0,
+  "candidate_matrix_hash": "sha256:5b3571eff61a6ea1a932ef018d550882959167f737b251dcf08f94e3a7eab314",
+  "carried_forward_unchanged": {
+    "accepted_rate_bar_by_split": {
+      "CORE": 0.95,
+      "HELD_OUT_CONFIRMATION": 0.95,
+      "SMOKE": 0.8
+    },
+    "blind_two_pass_model_failure_confirmation": true,
+    "budget_philosophy": "FAIL_CLOSED",
+    "candidate_family_policy": {
+      "P01": "gpt-5.6-terra",
+      "P02": "gpt-5.6-terra",
+      "P03": "gpt-5.6-terra",
+      "P04": "gpt-5.6-terra",
+      "P06": "gpt-5.6-luna",
+      "P07": "gpt-5.6-luna",
+      "P09": "gpt-5.6-luna"
+    },
+    "cross_family_fallback": "FORBIDDEN",
+    "cross_family_fallback_rule": "A stage may never be rescued by a model family other than the one its side owns. Exhausting the ladder yields NO_QUALIFYING_CONFIGURATION. Substituting the other family after observing a failure would convert a frozen economic constraint into a result-driven choice, which is exactly what pre-registration exists to prevent.",
+    "excluded_model_families": [
+      {
+        "candidate_in_phase_9": false,
+        "exclusion_reason": "The routing policy assigns the activity side to Terra and the submission side to Luna. Sol is a candidate on neither side, so pricing it or running it would measure a configuration the product has decided not to ship.",
+        "model": "gpt-5.6-sol",
+        "official_source": "https://developers.openai.com/api/docs/models/gpt-5.6-sol",
+        "verified_in_phase_9a": true
+      }
+    ],
+    "held_out_role": "Confirmation of the selection, never a second selection surface.",
+    "max_candidates_per_stage": 3,
+    "max_technical_retries": 1,
+    "pass_qa_sample_percent": 15,
+    "planner_deterministic_k": 1,
+    "pricing_refresh_policy": "REFRESH_BEFORE_ANY_AUTHORIZATION",
+    "selection_rule": "LOWEST_REASONING_CONFIGURATION_THAT_QUALIFIES",
+    "semantic_k": 3,
+    "semantic_retry_prohibited": true,
+    "stage_production_output_cap": {
+      "P04": 16000,
+      "P06": 16000,
+      "P07": 10000,
+      "P09": 10000
+    },
+    "stage_reasoning_ladder": {
+      "P01": [
+        "HIGH",
+        "XHIGH"
+      ],
+      "P02": [
+        "HIGH",
+        "XHIGH"
+      ],
+      "P03": [
+        "HIGH",
+        "XHIGH"
+      ],
+      "P04": [
+        "HIGH",
+        "XHIGH"
+      ],
+      "P06": [
+        "HIGH",
+        "XHIGH",
+        "MAX"
+      ],
+      "P07": [
+        "HIGH",
+        "XHIGH",
+        "MAX"
+      ],
+      "P09": [
+        "HIGH",
+        "XHIGH",
+        "MAX"
+      ]
+    }
+  },
+  "corpus_package_boundary_hash": "21c21f3a53bfb786162dc350dc38c93b7b007d9f23b744a354de4ac2354048a1",
+  "execution_state": "NOT_EXECUTED",
+  "model_selection_policy_changed_by_v11_outcomes": false,
+  "next_real_execution": {
+    "action": "FRESH_COMPLETE_HIGH_SMOKE",
+    "legacy_evidence_may_substitute": false,
+    "requires_independent_pre_execution_audit": true,
+    "requires_new_exactly_once_authorization": true,
+    "stages": [
+      "P04",
+      "P06",
+      "P07",
+      "P09"
+    ]
+  },
+  "protocol_boundary_hash": "sha256:1de8ec9c0359a97784a07a27ccd9a454d895559a59cb34cb6df1154890cf7d82",
+  "protocol_version": "phase9-qualification-protocol/1.2.0",
+  "provider_calls": 0,
+  "qualification_thresholds_hash": "sha256:649a2bd3185d619769991c5f3eee3f891658f42d5504c8352c0fa6ec4990812d",
+  "reason_for_new_version": [
+    "benchmark boundary changed",
+    "P06 adjudication evidence context changed",
+    "qualification dispositions changed",
+    "stage boundaries introduced"
+  ],
+  "recomputed_mechanically": {
+    "call_budget_projection_hash": "sha256:1f09f795cd46d1489f27f513c962c23a9bdaf26becaa9a2479417f71577bfe38",
+    "case_counts_by_stage_split": {
+      "P04": {
+        "CORE": 6,
+        "HELD_OUT_CONFIRMATION": 5,
+        "SMOKE": 1
+      },
+      "P06": {
+        "CORE": 45,
+        "HELD_OUT_CONFIRMATION": 31,
+        "SMOKE": 1
+      },
+      "P07": {
+        "CORE": 55,
+        "HELD_OUT_CONFIRMATION": 47,
+        "SMOKE": 6
+      },
+      "P09": {
+        "CORE": 2,
+        "HELD_OUT_CONFIRMATION": 1,
+        "SMOKE": 1
+      },
+      "PLANNER": {
+        "CORE": 12,
+        "HELD_OUT_CONFIRMATION": 7,
+        "SMOKE": 2
+      }
+    },
+    "p06_safety_coverage_debt": 9,
+    "p06_safety_rows": [
+      {
+        "applicable_semantic_property_count": 43,
+        "hard_safety_property_count": 5,
+        "max_confirmed_model_failures": 0,
+        "reviewable_safety_property_count": 0,
+        "split": "CORE",
+        "stage": "P06"
+      },
+      {
+        "applicable_semantic_property_count": 31,
+        "hard_safety_property_count": 2,
+        "max_confirmed_model_failures": 0,
+        "reviewable_safety_property_count": 0,
+        "split": "HELD_OUT_CONFIRMATION",
+        "stage": "P06"
+      },
+      {
+        "applicable_semantic_property_count": 1,
+        "hard_safety_property_count": 1,
+        "max_confirmed_model_failures": 0,
+        "reviewable_safety_property_count": 0,
+        "split": "SMOKE",
+        "stage": "P06"
+      }
+    ],
+    "p06_thresholds": [
+      {
+        "accepted_rate_at_max_allowed": 0.953488,
+        "accepted_rate_at_one_more_failure": 0.930233,
+        "accepted_semantic_rate_bar": 0.95,
+        "applicable_property_count": 43,
+        "hard_safety_property_count": 5,
+        "max_confirmed_model_failures": 2,
+        "max_hard_safety_failures": 0,
+        "split": "CORE",
+        "stage": "P06",
+        "zero_tolerance_forced_by_denominator": false
+      },
+      {
+        "accepted_rate_at_max_allowed": 0.967742,
+        "accepted_rate_at_one_more_failure": 0.935484,
+        "accepted_semantic_rate_bar": 0.95,
+        "applicable_property_count": 31,
+        "hard_safety_property_count": 2,
+        "max_confirmed_model_failures": 1,
+        "max_hard_safety_failures": 0,
+        "split": "HELD_OUT_CONFIRMATION",
+        "stage": "P06",
+        "zero_tolerance_forced_by_denominator": false
+      },
+      {
+        "accepted_rate_at_max_allowed": 1.0,
+        "accepted_rate_at_one_more_failure": 0.0,
+        "accepted_semantic_rate_bar": 0.8,
+        "applicable_property_count": 1,
+        "hard_safety_property_count": 1,
+        "max_confirmed_model_failures": 0,
+        "max_hard_safety_failures": 0,
+        "split": "SMOKE",
+        "stage": "P06",
+        "zero_tolerance_forced_by_denominator": true
+      }
+    ]
+  },
+  "safety_gate_hash": "sha256:a646e1da076e7846ab2ddfad837af7bbcdb3fdb5ae6ec0b59db47dc157383ec6",
+  "schema_version": "phase9-qualification-protocol/1.2.0",
+  "stage_boundary_hashes": {
+    "P04": "sha256:b0ade4a135d1a5d5fb63570953746715e111840b854411b2a79d4b3e8d3f5417",
+    "P06": "sha256:a7cbb54fe4b09e53c90a215d00d85ee44ddeac6290886fee38695fde9a37abfd",
+    "P07": "sha256:99e20e229128318186133f5faf20e1450f251fa4a424be53b8900fb2db982886",
+    "P09": "sha256:090b17302b711c19ce1067e0c0c041ec29d5d337b4cb462c5a476bb84c5fb926",
+    "PLANNER": "sha256:961384f7f9c25601b5aea91217849be79400517d7b5960924c79789c93687376"
+  },
+  "supersedes": {
+    "benchmark_boundary_hash": "sha256:426dda4d560a8d7d53639dfbaa0773c28565450f06e8ff62d51a8cd1bd6f62ff",
+    "execution_note": "phase9-qualification-protocol/1.1.0 did produce real evidence. Its P06 qualification validity was compromised afterwards by instrument defects; non-P06 evidence remains useful historical evidence subject to an equivalence proof. No final HIGH qualification was completed.",
+    "never_executed": false,
+    "protocol_boundary_hash": "sha256:daa79023de4e3b72a73f31879d481fbedb75492cc5fb4642c7fd2b4a4dbaa540",
+    "protocol_version": "phase9-qualification-protocol/1.1.0",
+    "status": "SUPERSEDED_AFTER_P06_INSTRUMENT_VALIDITY_FAILURE"
+  }
+}

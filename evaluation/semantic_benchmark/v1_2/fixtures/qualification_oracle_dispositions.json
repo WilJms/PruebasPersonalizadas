@@ -1,0 +1,2457 @@
+{
+  "benchmark_version": "semantic-benchmark/1.2.0",
+  "corpus_history_rewritten": false,
+  "disposition_count": 131,
+  "dispositions": [
+    {
+      "activity_id": "act_01_luz_y_plantines",
+      "audit_provenance": "PHASE_9B4_ACTIVITY_WIDE_REEVALUATION",
+      "candidate_scoring_allowed": false,
+      "original_description_hash": "sha256:eea3d6978973cd3a91f405645cf5c788ccba4c79728fa9cf70b4242ed62f1a02",
+      "original_kind": "CONTEXTUAL_NOTE",
+      "original_oracle_state": "VALID",
+      "property_id": "A01-ACT-P5",
+      "qualification_disposition": "ACTIVITY_COVERAGE_INDEX_ONLY",
+      "reason": "The statement indexes which submissions of the activity exhibit which support states. It describes corpus coverage, not a candidate decision, and one call sees only one submission. Scoring it from a single arbitrary submission route would be the v1.1 defect.",
+      "scope": "ACTIVITY_WIDE",
+      "source_evidence": [
+        "submissions/submission_01.txt#párrafo final"
+      ],
+      "stage": "P06",
+      "submission_id": null,
+      "v11_binding_scope": "ACTIVITY_WIDE"
+    },
+    {
+      "activity_id": "act_01_luz_y_plantines",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_construct_keys": [],
+      "candidate_scoring_allowed": false,
+      "original_description_hash": "sha256:ad03c88a036fcc1a79d80520373e23440f2f708b452e877481f33a72e9faf814",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A01-S01-P3",
+      "qualification_disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_01.txt#párrafo final"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_01"
+    },
+    {
+      "activity_id": "act_01_luz_y_plantines",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": true,
+      "original_description_hash": "sha256:e1148a8b0d7fab0402ac7fc4637a8d96c5fc6f36c458f4eda2901fd6ebb219f5",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A01-S02-P1",
+      "qualification_disposition": "QUALIFICATION_VALID",
+      "reason": "Resolved to exactly one authorized construct declared by the property itself.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_02.md#Limitaciones"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_02",
+      "target_construct_key": "RUBRIC::A01::LIMITACION"
+    },
+    {
+      "activity_id": "act_01_luz_y_plantines",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": true,
+      "original_description_hash": "sha256:7c0f05ac51912a64e0b4d5b2acc25a48c6642781911fa4d2ccdca34eec7bf1fd",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A01-S03-P1",
+      "qualification_disposition": "QUALIFICATION_VALID",
+      "reason": "Resolved to exactly one authorized construct declared by the property itself.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_03.txt#encabezado",
+        "submissions/submission_03.txt#Análisis de variables"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_03",
+      "target_construct_key": "RUBRIC::A01::VARIABLES_Y_MEDIDAS"
+    },
+    {
+      "activity_id": "act_01_luz_y_plantines",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": true,
+      "original_description_hash": "sha256:0b4fd7ecec343ae8a2076a2f3c2f01790b021e6ad62516e02607228b0b024e6e",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A01-S03-P2",
+      "qualification_disposition": "QUALIFICATION_VALID",
+      "reason": "Resolved to exactly one authorized construct declared by the property itself.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_03.txt#Desarrollo"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_03",
+      "target_construct_key": "RUBRIC::A01::USO_DE_EVIDENCIA"
+    },
+    {
+      "activity_id": "act_01_luz_y_plantines",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": false,
+      "original_description_hash": "sha256:37a49544af130381cffd67618b58552c8518336f1c5fd5bd499bfc51657d21dd",
+      "original_kind": "DEFENSIBLE_ALTERNATIVE",
+      "original_oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A01-S04-P2",
+      "qualification_disposition": "ORACLE_SUSPECT_FOR_QUALIFICATION",
+      "reason": "Resolved to one authorized construct, but the corpus records the oracle itself as unable to decide, so it cannot produce a hard MODEL_FAILURE.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_04.md#Conclusión",
+        "02_rubric.docx#Criterios"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_04",
+      "target_construct_key": "RUBRIC::A01::LIMITACION"
+    },
+    {
+      "activity_id": "act_01_luz_y_plantines",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": true,
+      "original_description_hash": "sha256:64d11fd5722a765f3fb4810bc94ad79f88260011d924a836bfd366997e6267f2",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A01-S05-P1",
+      "qualification_disposition": "QUALIFICATION_VALID",
+      "reason": "Resolved to exactly one authorized construct declared by the property itself.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_05.pdf#Cálculos y evidencia"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_05",
+      "target_construct_key": "RUBRIC::A01::USO_DE_EVIDENCIA"
+    },
+    {
+      "activity_id": "act_01_luz_y_plantines",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_construct_keys": [
+        "RUBRIC::A01::AFIRMACION_Y_ALCANCE",
+        "RUBRIC::A01::USO_DE_EVIDENCIA"
+      ],
+      "candidate_scoring_allowed": false,
+      "original_description_hash": "sha256:e375b4c714dd3be6dc0b561c1f6ca7d170885936d58f32628bd670fb2c7c5e2a",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A01-S06-P1",
+      "qualification_disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "reason": "The property declares more than one authorized construct, so a single P06 call cannot demonstrate or refute it as one gate.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_06.pdf#Segundo cálculo",
+        "submissions/submission_06.pdf#Lectura de la tabla"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_06"
+    },
+    {
+      "activity_id": "act_02_voz_en_un_microcuento",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": true,
+      "original_description_hash": "sha256:8d543429008e616d0fad3a19638652fc9d744a55b9e66948b491c9391f46fb5e",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A02-S01-P1",
+      "qualification_disposition": "QUALIFICATION_VALID",
+      "reason": "Resolved to exactly one authorized construct declared by the property itself.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_01.txt#Recursos identificados"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_01",
+      "target_construct_key": "RUBRIC::A02::RELACION_Y_RAZONAMIENTO"
+    },
+    {
+      "activity_id": "act_02_voz_en_un_microcuento",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_construct_keys": [],
+      "candidate_scoring_allowed": false,
+      "original_description_hash": "sha256:8091d0c0ddebd8ada1c873b7a7b4a3e54f1f517520922491e15e074f17b89852",
+      "original_kind": "CONTEXTUAL_NOTE",
+      "original_oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A02-S01-P4",
+      "qualification_disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_01.txt#Conclusión"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_01"
+    },
+    {
+      "activity_id": "act_02_voz_en_un_microcuento",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_construct_keys": [],
+      "candidate_scoring_allowed": false,
+      "original_description_hash": "sha256:69bb90828e19c9cf18c7ffec12a68861bf908626f4152d41c9b460cf02d76e48",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A02-S02-P3",
+      "qualification_disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_02.txt#última línea"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_02"
+    },
+    {
+      "activity_id": "act_02_voz_en_un_microcuento",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": true,
+      "original_description_hash": "sha256:126cd1d7a2faf5f306d9c58bedb39bb4f8e990ef7b3433dd383a75a7c16bd5fd",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A02-S03-P1",
+      "qualification_disposition": "QUALIFICATION_VALID",
+      "reason": "Resolved to exactly one authorized construct declared by the property itself.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_03.md#Mi interpretación"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_03",
+      "target_construct_key": "RUBRIC::A02::RELACION_Y_RAZONAMIENTO"
+    },
+    {
+      "activity_id": "act_02_voz_en_un_microcuento",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": false,
+      "original_description_hash": "sha256:fa040f4695191bc1abc18027816450304d4fe6ef4f1b7330dd65a33016427794",
+      "original_kind": "DEFENSIBLE_ALTERNATIVE",
+      "original_oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A02-S03-P2",
+      "qualification_disposition": "ORACLE_SUSPECT_FOR_QUALIFICATION",
+      "reason": "Resolved to one authorized construct, but the corpus records the oracle itself as unable to decide, so it cannot produce a hard MODEL_FAILURE.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_03.md#Resumen del relato",
+        "02_rubric.docx#Criterios"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_03",
+      "target_construct_key": "RUBRIC::A02::APERTURA_INTERPRETATIVA"
+    },
+    {
+      "activity_id": "act_02_voz_en_un_microcuento",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": true,
+      "original_description_hash": "sha256:19af94080e853366b69ca8c4999f00ed177dcd74900270d3538ded2f716481c9",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A02-S04-P1",
+      "qualification_disposition": "QUALIFICATION_VALID",
+      "reason": "Resolved to exactly one authorized construct declared by the property itself.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_04.pdf#párrafo 2"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_04",
+      "target_construct_key": "RUBRIC::A02::RELACION_Y_RAZONAMIENTO"
+    },
+    {
+      "activity_id": "act_02_voz_en_un_microcuento",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_construct_keys": [],
+      "candidate_scoring_allowed": false,
+      "original_description_hash": "sha256:648d2cbf3d7c6699cba55164f9fa34084ca458503a3f9d8af59ebdd5ff5ebd63",
+      "original_kind": "CONTEXTUAL_NOTE",
+      "original_oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A02-S04-P4",
+      "qualification_disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "01_assignment.docx#Texto autorizado",
+        "submissions/submission_04.pdf#párrafo 4"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_04"
+    },
+    {
+      "activity_id": "act_02_voz_en_un_microcuento",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": true,
+      "original_description_hash": "sha256:abf7a88baf2e0e2fe3016b17735e84bdc3278d1ac3ac66b748147eacb407cd2a",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A02-S05-P1",
+      "qualification_disposition": "QUALIFICATION_VALID",
+      "reason": "Resolved to exactly one authorized construct declared by the property itself.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_05.pdf#Tesis",
+        "submissions/submission_05.pdf#Cierre"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_05",
+      "target_construct_key": "RUBRIC::A02::TESIS_INTERPRETATIVA"
+    },
+    {
+      "activity_id": "act_02_voz_en_un_microcuento",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": true,
+      "original_description_hash": "sha256:93142662c969de088f80dfc39cb1acb7a969db4db029de39c61f4470f9cb0619",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A02-S06-P1",
+      "qualification_disposition": "QUALIFICATION_VALID",
+      "reason": "Resolved to exactly one authorized construct declared by the property itself.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_06.md#Lectura alternativa"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_06",
+      "target_construct_key": "RUBRIC::A02::APERTURA_INTERPRETATIVA"
+    },
+    {
+      "activity_id": "act_03_puesto_de_limonada",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": true,
+      "original_description_hash": "sha256:65b590d51289f6f67ba9b9052c128f54d88782e0be390fb432ff18e0ed0533ff",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A03-S01-P1",
+      "qualification_disposition": "QUALIFICATION_VALID",
+      "reason": "Resolved to exactly one authorized construct declared by the property itself.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_01.md#Riesgos"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_01",
+      "target_construct_key": "RUBRIC::A03::COMPARACION_CON_LA_ALTERNATIVA_NO_ELEGIDA"
+    },
+    {
+      "activity_id": "act_03_puesto_de_limonada",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": true,
+      "original_description_hash": "sha256:7a9b24d306a48ede393c4d94069cd90c013cfa11e8ffd9a43c602205355d950c",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A03-S01-P2",
+      "qualification_disposition": "QUALIFICATION_VALID",
+      "reason": "Resolved to exactly one authorized construct declared by the property itself.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_01.md#Mi plan"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_01",
+      "target_construct_key": "RUBRIC::A03::VERIFICACION_DE_LA_RESTRICCION_DE_CAPACIDAD"
+    },
+    {
+      "activity_id": "act_03_puesto_de_limonada",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": true,
+      "original_description_hash": "sha256:04eca5d1f07220f3da4fdffd25cc6ac73584bfb562477b7719cf644c045b4188",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A03-S02-P1",
+      "qualification_disposition": "QUALIFICATION_VALID",
+      "reason": "Resolved to exactly one authorized construct declared by the property itself.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_02.md#Qué haría cambiar mi decisión"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_02",
+      "target_construct_key": "RUBRIC::A03::RIESGO_O_CONDICION_QUE_CAMBIARIA_LA_DECISION"
+    },
+    {
+      "activity_id": "act_03_puesto_de_limonada",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_construct_keys": [],
+      "candidate_scoring_allowed": false,
+      "original_description_hash": "sha256:fb1758fe36b11dcec89beb7bb66159dde2abb88a15a5f9b05499af220e19bcc4",
+      "original_kind": "CONTEXTUAL_NOTE",
+      "original_oracle_state": "VALID",
+      "property_id": "A03-S02-P3",
+      "qualification_disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_02.md#Qué haría cambiar mi decisión"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_02"
+    },
+    {
+      "activity_id": "act_03_puesto_de_limonada",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_construct_keys": [],
+      "candidate_scoring_allowed": false,
+      "original_description_hash": "sha256:1d8900d2d485c7194aaaf60569ec49d92e9598ddc3bacae17193be9285699c76",
+      "original_kind": "DEFENSIBLE_ALTERNATIVE",
+      "original_oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A03-S03-P3",
+      "qualification_disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_03.txt#Opciones consideradas",
+        "02_rubric.docx#Criterios y ponderación"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_03"
+    },
+    {
+      "activity_id": "act_03_puesto_de_limonada",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": true,
+      "original_description_hash": "sha256:52a862e7e085b1c8321c9e6fb3ee26eae8ceecdb458724ceb6d803b41e194aad",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A03-S04-P1",
+      "qualification_disposition": "QUALIFICATION_VALID",
+      "reason": "Resolved to exactly one authorized construct declared by the property itself.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_04.pdf#párrafo tras el cuadro",
+        "submissions/submission_04.pdf#Verificación de restricciones",
+        "02_rubric.docx#Reglas de aplicación"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_04",
+      "target_construct_key": "RUBRIC::A03::VERIFICACION_DE_LA_RESTRICCION_DE_CAPACIDAD"
+    },
+    {
+      "activity_id": "act_03_puesto_de_limonada",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": true,
+      "original_description_hash": "sha256:ecfce802a04ee5f295f4a34ed3c31de6018f2daa5238c160a428082ff884af22",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A03-S04-P3",
+      "qualification_disposition": "QUALIFICATION_VALID",
+      "reason": "Resolved to exactly one authorized construct declared by the property itself.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_04.pdf#Cuadro"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_04",
+      "target_construct_key": "RUBRIC::A03::COSTO_TOTAL_CON_DESGLOSE"
+    },
+    {
+      "activity_id": "act_03_puesto_de_limonada",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": true,
+      "original_description_hash": "sha256:159e0e26317ed9057345c7e6cbca386ac21784c019f60e9629dfab319a015511",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A03-S05-P1",
+      "qualification_disposition": "QUALIFICATION_VALID",
+      "reason": "Resolved to exactly one authorized construct declared by the property itself.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_05.pdf#Recomendación al curso"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_05",
+      "target_construct_key": "RUBRIC::A03::VERIFICACION_DE_LA_RESTRICCION_DE_CAPACIDAD"
+    },
+    {
+      "activity_id": "act_03_puesto_de_limonada",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": true,
+      "original_description_hash": "sha256:2b68cf040aab90f3c3a3a3d147c8302e2252b920ee65ba3daf2979d4736593cc",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A03-S06-P1",
+      "qualification_disposition": "QUALIFICATION_VALID",
+      "reason": "Resolved to exactly one authorized construct declared by the property itself.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_06.txt#párrafo 2"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_06",
+      "target_construct_key": "RUBRIC::A03::INGRESO_Y_EXCEDENTE_BAJO_VENTA_COMPLETA"
+    },
+    {
+      "activity_id": "act_03_puesto_de_limonada",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": true,
+      "original_description_hash": "sha256:8c129b2930d2b5aad3ae8c39f4e31aa67f475fe75592436546e326b8fa34d5e6",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A03-S06-P2",
+      "qualification_disposition": "QUALIFICATION_VALID",
+      "reason": "Resolved to exactly one authorized construct declared by the property itself.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_06.txt#Aplicación"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_06",
+      "target_construct_key": "RUBRIC::A03::COSTO_TOTAL_CON_DESGLOSE"
+    },
+    {
+      "activity_id": "act_04_asignador_de_turnos",
+      "audit_provenance": "PHASE_9B4_ACTIVITY_WIDE_REEVALUATION",
+      "candidate_scoring_allowed": false,
+      "original_description_hash": "sha256:ac28231a1ae0e0ebb4e1db566a7dec2ed8c31586acd8c0c160fa89b12df48500",
+      "original_kind": "CONTEXTUAL_NOTE",
+      "original_oracle_state": "VALID",
+      "property_id": "A04-ACT-P5",
+      "qualification_disposition": "ACTIVITY_COVERAGE_INDEX_ONLY",
+      "reason": "The statement indexes which submissions of the activity exhibit which support states. It describes corpus coverage, not a candidate decision, and one call sees only one submission. Scoring it from a single arbitrary submission route would be the v1.1 defect.",
+      "scope": "ACTIVITY_WIDE",
+      "source_evidence": [
+        "02_rubric.docx#Cómo usar el checklist"
+      ],
+      "stage": "P06",
+      "submission_id": null,
+      "v11_binding_scope": "ACTIVITY_WIDE"
+    },
+    {
+      "activity_id": "act_04_asignador_de_turnos",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_construct_keys": [
+        "RUBRIC::A04::LOS_CUPOS_DE_UN_GRUPO_NO_CONSUMEN_LOS_DE_OTRO",
+        "RUBRIC::A04::UN_GRUPO_CON_CUPO_0_ENVIA_TODO_A_ESPERA"
+      ],
+      "candidate_scoring_allowed": false,
+      "original_description_hash": "sha256:c3f87e0e5160492456e87b0918e60d126fbcdcc1a47fbd5abb751b8ca25b0ff5",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A04-S01-P1",
+      "qualification_disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "reason": "The property declares more than one authorized construct, so a single P06 call cannot demonstrate or refute it as one gate.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_01_artifact_01.md#total_capacity",
+        "02_rubric.docx#Comportamiento del contrato"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_01"
+    },
+    {
+      "activity_id": "act_04_asignador_de_turnos",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": true,
+      "original_description_hash": "sha256:e938a1fb1879d190ca4c3190de855522827401fa4a5ac918ed76d148026e6ff3",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A04-S01-P2",
+      "qualification_disposition": "QUALIFICATION_VALID",
+      "reason": "Resolved to exactly one authorized construct declared by the property itself.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_01_artifact_01.md#bucle de validación"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_01",
+      "target_construct_key": "RUBRIC::A04::UNA_APARICION_INVALIDA_NO_RESERVA_EL_ID"
+    },
+    {
+      "activity_id": "act_04_asignador_de_turnos",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": true,
+      "original_description_hash": "sha256:7390a9ec0b94af6661c906da16002117e849e321f9b530ec5b5e0fad3a1b7695",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A04-S01-P3",
+      "qualification_disposition": "QUALIFICATION_VALID",
+      "reason": "Resolved to exactly one authorized construct declared by the property itself.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_01_artifact_01.md#valid.sort",
+        "submissions/submission_01_artifact_02.txt#párrafo 2"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_01",
+      "target_construct_key": "RUBRIC::A04::ORDENA_POR_PRIORIDAD_LUEGO_MARCA_LUEGO_ID"
+    },
+    {
+      "activity_id": "act_04_asignador_de_turnos",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": true,
+      "original_description_hash": "sha256:292e570c9d20c566d4ebec7e377b25c0911766c4410aa0cea37a129e08a66602",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A04-S01-P5",
+      "qualification_disposition": "QUALIFICATION_VALID",
+      "reason": "Resolved to exactly one authorized construct declared by the property itself.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_01_artifact_01.md#valid.sort"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_01",
+      "target_construct_key": "RUBRIC::A04::DESCARTA_REGISTROS_CON_CAMPO_FALTANTE"
+    },
+    {
+      "activity_id": "act_04_asignador_de_turnos",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": true,
+      "original_description_hash": "sha256:8a168c6fd9b0c96d71b673cbb5334211e71e8c3e2bf4ba5733bb50226efff895",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A04-S02-P1",
+      "qualification_disposition": "QUALIFICATION_VALID",
+      "reason": "Resolved to exactly one authorized construct declared by the property itself.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_02_artifact_01.md#bloque de validación",
+        "submissions/submission_02_artifact_02.txt#párrafo 1"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_02",
+      "target_construct_key": "RUBRIC::A04::UNA_APARICION_INVALIDA_NO_RESERVA_EL_ID"
+    },
+    {
+      "activity_id": "act_04_asignador_de_turnos",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": true,
+      "original_description_hash": "sha256:13187117870f9d8526cb0d9ab527891683001bec7f7a015868b8c9f9a469e6c5",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A04-S03-P1",
+      "qualification_disposition": "QUALIFICATION_VALID",
+      "reason": "Resolved to exactly one authorized construct declared by the property itself.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_03.md#'No adjunto nota técnica'",
+        "02_rubric.docx#Cómo usar el checklist"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_03",
+      "target_construct_key": "RUBRIC::A04::NO_MUTA_SOLICITUDES_NI_CUPOS_POR_GRUPO"
+    },
+    {
+      "activity_id": "act_04_asignador_de_turnos",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": true,
+      "original_description_hash": "sha256:e73ed03f489317cc3cb7bde5d090e8142de40e59a7a000ef3dd77bf28db2b657",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A04-S05-P1",
+      "qualification_disposition": "QUALIFICATION_VALID",
+      "reason": "Resolved to exactly one authorized construct declared by the property itself.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_05_artifact_01.md#línea '# Keep one record per id'"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_05",
+      "target_construct_key": "RUBRIC::A04::CONSERVA_LA_PRIMERA_APARICION_VALIDA_DE_UN_ID_REPETIDO"
+    },
+    {
+      "activity_id": "act_04_asignador_de_turnos",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": true,
+      "original_description_hash": "sha256:36a5ab8cbc20037a39a37d7d366fd95476769b6968fe5b08698ec93a0aac67de",
+      "original_kind": "CONTEXTUAL_NOTE",
+      "original_oracle_state": "VALID",
+      "property_id": "A04-S05-P5",
+      "qualification_disposition": "QUALIFICATION_VALID",
+      "reason": "Resolved to exactly one authorized construct declared by the property itself.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_05_artifact_01.md#comprensión de lista"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_05",
+      "target_construct_key": "RUBRIC::A04::UNA_APARICION_INVALIDA_NO_RESERVA_EL_ID"
+    },
+    {
+      "activity_id": "act_04_asignador_de_turnos",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_construct_keys": [],
+      "candidate_scoring_allowed": false,
+      "original_description_hash": "sha256:7a388ceaff14679a9d72e511eb5606cadcef9d3848fab79da9e04c4e03c2a1cc",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A04-S06-P1",
+      "qualification_disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_06_artifact_02.txt#párrafo 1",
+        "submissions/submission_06_artifact_01.md#cuerpo de la función"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_06"
+    },
+    {
+      "activity_id": "act_04_asignador_de_turnos",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_construct_keys": [],
+      "candidate_scoring_allowed": false,
+      "original_description_hash": "sha256:11b6aa4716eb6b93e1593509efd5e890b854a7c0380fb14b5f1b30bca88a02b1",
+      "original_kind": "CONTEXTUAL_NOTE",
+      "original_oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A04-S06-P2",
+      "qualification_disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_06_artifact_01.md#Caso de demostración"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_06"
+    },
+    {
+      "activity_id": "act_04_asignador_de_turnos",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": true,
+      "original_description_hash": "sha256:cc982929df2ed83876dd0c6f74e7a17712f4b226ec0032b345dafd09f947aea2",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A04-S06-P4",
+      "qualification_disposition": "QUALIFICATION_VALID",
+      "reason": "Resolved to exactly one authorized construct declared by the property itself.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_06_artifact_01.md#solicitudes.sort"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_06",
+      "target_construct_key": "RUBRIC::A04::DESCARTA_REGISTROS_CON_CAMPO_FALTANTE"
+    },
+    {
+      "activity_id": "act_05_visitas_a_bibliotecas",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_construct_keys": [],
+      "candidate_scoring_allowed": false,
+      "original_description_hash": "sha256:6de354eb2de6b949935befb66297ceed908d975965c8214ba1a5f1855849b305",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A05-S01-P1",
+      "qualification_disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_01.md#Sobre los días abiertos"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_01"
+    },
+    {
+      "activity_id": "act_05_visitas_a_bibliotecas",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_construct_keys": [],
+      "candidate_scoring_allowed": false,
+      "original_description_hash": "sha256:85e01b5c9c6cd19e444e3d09cb81429ea6375b2c0a72d9131c979bab425250ac",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A05-S01-P3",
+      "qualification_disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_01.md#Recomendación"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_01"
+    },
+    {
+      "activity_id": "act_05_visitas_a_bibliotecas",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_construct_keys": [],
+      "candidate_scoring_allowed": false,
+      "original_description_hash": "sha256:45ca0f72e25322cbaee2e2d7991a5a8f8ef1e775365764fe0d5c8a1b8d0d0c53",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A05-S02-P1",
+      "qualification_disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_02.pdf#Métricas clave",
+        "01_assignment.docx#Notas autorizadas"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_02"
+    },
+    {
+      "activity_id": "act_05_visitas_a_bibliotecas",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_construct_keys": [],
+      "candidate_scoring_allowed": false,
+      "original_description_hash": "sha256:2c8ab818384cc3308ba1c4e0e2e6b05c6226c2fdee3c112b118fd9564fea5140",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A05-S02-P2",
+      "qualification_disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_02.pdf#Panel complementario",
+        "01_assignment.docx#Unidad de análisis"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_02"
+    },
+    {
+      "activity_id": "act_05_visitas_a_bibliotecas",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_construct_keys": [],
+      "candidate_scoring_allowed": false,
+      "original_description_hash": "sha256:3eac55cddff8c1cfe7c9c32101087ee61cf81a03c7b3e70f3470d05e30f3970b",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A05-S03-P1",
+      "qualification_disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_03.md#Tabla calculada",
+        "submissions/submission_03.md#Detalle del cálculo"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_03"
+    },
+    {
+      "activity_id": "act_05_visitas_a_bibliotecas",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_construct_keys": [],
+      "candidate_scoring_allowed": false,
+      "original_description_hash": "sha256:c3a898a6d59fea02da8889cbaf8c297ca586c64ddc8e5c845ce3fe541b9b709b",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A05-S04-P1",
+      "qualification_disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_04.pdf#Cálculo",
+        "submissions/submission_04.pdf#Comprobación entre periodos"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_04"
+    },
+    {
+      "activity_id": "act_05_visitas_a_bibliotecas",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_construct_keys": [],
+      "candidate_scoring_allowed": false,
+      "original_description_hash": "sha256:91f69d64277bfe2af6589e1dee9d93344806791521ea728fce19f33b45fa5e6d",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A05-S06-P1",
+      "qualification_disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_06.txt#párrafo 2"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_06"
+    },
+    {
+      "activity_id": "act_06_movilidad_estudiantil",
+      "audit_provenance": "PHASE_9B4_ACTIVITY_WIDE_REEVALUATION",
+      "candidate_scoring_allowed": false,
+      "original_description_hash": "sha256:6aefd6108a609d5e38d77fe8fb8a352e833041f776d53bf1d89f6546741bae85",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A06-ACT-FINAL-P5",
+      "qualification_disposition": "NO_VALID_STAGE_LOCAL_FIXTURE",
+      "reason": "The statement is asserted across more than one submission. A P06 call is scoped to exactly one EvidenceBundle, so no single authorized call can evaluate it. It remains a corpus consistency assertion.",
+      "scope": "ACTIVITY_WIDE",
+      "source_evidence": [
+        "01_assignment.docx#Resultados",
+        "submissions/submission_01.pdf#Comparación con la alternativa A",
+        "submissions/submission_04.txt#Desglose usado"
+      ],
+      "stage": "P06",
+      "submission_id": null,
+      "v11_binding_scope": "ACTIVITY_WIDE"
+    },
+    {
+      "activity_id": "act_06_movilidad_estudiantil",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_construct_keys": [],
+      "candidate_scoring_allowed": false,
+      "original_description_hash": "sha256:8d7523cec2e49ce8ea1723432d6dfbbc9228317a90543b7d8b1cf2db2e66a98d",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A06-S01-FINAL-P2",
+      "qualification_disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_01.pdf#Comparación con la alternativa A",
+        "01_assignment.docx#Resultados"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_01"
+    },
+    {
+      "activity_id": "act_06_movilidad_estudiantil",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": true,
+      "original_description_hash": "sha256:ce3194c2b477be63f7e6c071a24b45277e872257a66d239950d5e87f7b0f62e6",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A06-S01-P1",
+      "qualification_disposition": "QUALIFICATION_VALID",
+      "reason": "Resolved to exactly one authorized construct declared by the property itself.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_01.pdf#párrafo 2",
+        "01_assignment.docx#Resultados"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_01",
+      "target_construct_key": "RUBRIC::A06::EVIDENCIA_Y_SUBGRUPOS"
+    },
+    {
+      "activity_id": "act_06_movilidad_estudiantil",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": true,
+      "original_description_hash": "sha256:357a3d42b6a5a057e6a0d08df7fb395499a72ae7819e9742e88d9738215bcbf9",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A06-S01-P3",
+      "qualification_disposition": "QUALIFICATION_VALID",
+      "reason": "Resolved to exactly one authorized construct declared by the property itself.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_01.pdf#párrafo 4"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_01",
+      "target_construct_key": "RUBRIC::A06::CALIDAD_DE_INFERENCIA"
+    },
+    {
+      "activity_id": "act_06_movilidad_estudiantil",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": true,
+      "original_description_hash": "sha256:027f42880c2073da333d7fbd5c7328d6f5438d7137b4a5a042513dd6e2a0b974",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A06-S02-P1",
+      "qualification_disposition": "QUALIFICATION_VALID",
+      "reason": "Resolved to exactly one authorized construct declared by the property itself.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_02.md#Limitaciones"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_02",
+      "target_construct_key": "RUBRIC::A06::CALIDAD_DE_INFERENCIA"
+    },
+    {
+      "activity_id": "act_06_movilidad_estudiantil",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": true,
+      "original_description_hash": "sha256:56d4f38eef7989655cd20bad00d34cf8201ab9ae0f61145ba15466fea8883837",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A06-S02-P2",
+      "qualification_disposition": "QUALIFICATION_VALID",
+      "reason": "Resolved to exactly one authorized construct declared by the property itself.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_02.md#Limitaciones"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_02",
+      "target_construct_key": "RUBRIC::A06::TRADE_OFF"
+    },
+    {
+      "activity_id": "act_06_movilidad_estudiantil",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": true,
+      "original_description_hash": "sha256:a5e94d932ddaf403e397ce6a1a1f0b8d6ea14361e19d52364f84eeadfea509bc",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A06-S03-P1",
+      "qualification_disposition": "QUALIFICATION_VALID",
+      "reason": "Resolved to exactly one authorized construct declared by the property itself.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_03.md#párrafo 3",
+        "01_assignment.docx#Resultados"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_03",
+      "target_construct_key": "RUBRIC::A06::TRADE_OFF"
+    },
+    {
+      "activity_id": "act_06_movilidad_estudiantil",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_construct_keys": [],
+      "candidate_scoring_allowed": false,
+      "original_description_hash": "sha256:4c36c482a107626aa6d549d4cf387d049d1d4a286544420dbd1ac47370e6fb5e",
+      "original_kind": "CONTEXTUAL_NOTE",
+      "original_oracle_state": "VALID",
+      "property_id": "A06-S04-FINAL-P3",
+      "qualification_disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_04.txt#Desglose usado",
+        "01_assignment.docx#Resultados"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_04"
+    },
+    {
+      "activity_id": "act_06_movilidad_estudiantil",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": true,
+      "original_description_hash": "sha256:ffd3979f2f430f072ea4be7866d930e543b4173bd7dcd1a65fcb6fa211124541",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A06-S04-P1",
+      "qualification_disposition": "QUALIFICATION_VALID",
+      "reason": "Resolved to exactly one authorized construct declared by the property itself.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_04.txt#párrafo 2",
+        "02_rubric.docx#Orientaciones sobre la evidencia"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_04",
+      "target_construct_key": "RUBRIC::A06::EVIDENCIA_Y_SUBGRUPOS"
+    },
+    {
+      "activity_id": "act_06_movilidad_estudiantil",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": true,
+      "original_description_hash": "sha256:5dbcf72d6d77d447f940536c381b951c713b2f0bdefdce91a793ce6e1b2f876a",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A06-S04-P2",
+      "qualification_disposition": "QUALIFICATION_VALID",
+      "reason": "Resolved to exactly one authorized construct declared by the property itself.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_04.txt#Sobre la representatividad",
+        "submissions/submission_04.txt#Sobre el sesgo"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_04",
+      "target_construct_key": "RUBRIC::A06::CALIDAD_DE_INFERENCIA"
+    },
+    {
+      "activity_id": "act_06_movilidad_estudiantil",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": true,
+      "original_description_hash": "sha256:92db76a8a3cc5905eff5aadfb5fcf0e42d796e70b6aa0e06304ff9586da17d74",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A06-S05-P1",
+      "qualification_disposition": "QUALIFICATION_VALID",
+      "reason": "Resolved to exactly one authorized construct declared by the property itself.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_05.pdf#Decisión",
+        "submissions/submission_05.pdf#Detalle por banda de distancia"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_05",
+      "target_construct_key": "RUBRIC::A06::EVIDENCIA_Y_SUBGRUPOS"
+    },
+    {
+      "activity_id": "act_06_movilidad_estudiantil",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": true,
+      "original_description_hash": "sha256:e5d7988e6ba6686b4742f53586e44e16bdc99b87bfd29b5930c8d54889422b0b",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A06-S05-P3",
+      "qualification_disposition": "QUALIFICATION_VALID",
+      "reason": "Resolved to exactly one authorized construct declared by the property itself.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_05.pdf#párrafo 3"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_05",
+      "target_construct_key": "RUBRIC::A06::CALIDAD_DE_INFERENCIA"
+    },
+    {
+      "activity_id": "act_07_aislamiento_termico",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_construct_keys": [],
+      "candidate_scoring_allowed": false,
+      "original_description_hash": "sha256:c090ba8618d22ce9742d4f36681c079f40d40cc9303d824c26b701dc8cbe5383",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A07-S01-P2",
+      "qualification_disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_01_artifact_01.txt#última línea"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_01"
+    },
+    {
+      "activity_id": "act_07_aislamiento_termico",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_construct_keys": [
+        "RUBRIC::A07::TRATAMIENTO_DE_INCIDENCIAS",
+        "RUBRIC::A07::USO_DE_LOS_DOS_ARTEFACTOS"
+      ],
+      "candidate_scoring_allowed": false,
+      "original_description_hash": "sha256:59a975249c1e92b6a252c85311a73051d9c0e07a0c7e4264f9259d9cd244e850",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A07-S02-P2",
+      "qualification_disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "reason": "The property declares more than one authorized construct, so a single P06 call cannot demonstrate or refute it as one gate.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_02.md#'No adjunto el registro TXT'",
+        "02_rubric.docx#Pendiente de revisión"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_02"
+    },
+    {
+      "activity_id": "act_07_aislamiento_termico",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": true,
+      "original_description_hash": "sha256:c389a9b4cc3539fa5fa8bf0d14bb227b6c22304ae240444cafa201cbf2aaa642",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A07-S02-P3",
+      "qualification_disposition": "QUALIFICATION_VALID",
+      "reason": "Resolved to exactly one authorized construct declared by the property itself.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_02.md#Análisis del resultado"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_02",
+      "target_construct_key": "RUBRIC::A07::CRITERIO_DE_COMPARACION"
+    },
+    {
+      "activity_id": "act_07_aislamiento_termico",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_construct_keys": [],
+      "candidate_scoring_allowed": false,
+      "original_description_hash": "sha256:90e5392a78462948093996aa5e22c8a1809aad6458cd579f7ee83ad6cb4f9282",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A07-S03-P1",
+      "qualification_disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_03_artifact_01.txt#Hoja reconstruida"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_03"
+    },
+    {
+      "activity_id": "act_07_aislamiento_termico",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": true,
+      "original_description_hash": "sha256:162b47d58ea2d4f8456b7b4ad7ec52059bdfdab1a513ecae987b595dd84fd40e",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A07-S04-P1",
+      "qualification_disposition": "QUALIFICATION_VALID",
+      "reason": "Resolved to exactly one authorized construct declared by the property itself.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_04_artifact_02.pdf#párrafo 3",
+        "submissions/submission_04_artifact_01.txt#10:00"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_04",
+      "target_construct_key": "RUBRIC::A07::USO_DE_LOS_DOS_ARTEFACTOS"
+    },
+    {
+      "activity_id": "act_07_aislamiento_termico",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": true,
+      "original_description_hash": "sha256:b4a0bb2f49ec22c582e5367cdafd50f1dfe8289b09ffb2083e6be77d8345e895",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A07-S04-P2",
+      "qualification_disposition": "QUALIFICATION_VALID",
+      "reason": "Resolved to exactly one authorized construct declared by the property itself.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_04_artifact_02.pdf#Desarrollo de las comparaciones"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_04",
+      "target_construct_key": "RUBRIC::A07::CRITERIO_DE_COMPARACION"
+    },
+    {
+      "activity_id": "act_07_aislamiento_termico",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_construct_keys": [],
+      "candidate_scoring_allowed": false,
+      "original_description_hash": "sha256:2bdda52ee6231ad36d336973c53402599dd90c81290dd76d2b2cbaaa95242993",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A07-S05-P1",
+      "qualification_disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_05_artifact_02.pdf#Tabla",
+        "01_assignment.docx#Protocolo común"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_05"
+    },
+    {
+      "activity_id": "act_07_aislamiento_termico",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_construct_keys": [],
+      "candidate_scoring_allowed": false,
+      "original_description_hash": "sha256:4461304339c9de8c93b5867168aaae956942c35293e6cadc4fa82c8a5f980a45",
+      "original_kind": "DEFENSIBLE_ALTERNATIVE",
+      "original_oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A07-S05-P2",
+      "qualification_disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_05_artifact_01.txt#Suposición escrita durante el laboratorio",
+        "02_rubric.docx#Criterios"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_05"
+    },
+    {
+      "activity_id": "act_07_aislamiento_termico",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_construct_keys": [
+        "RUBRIC::A07::TRATAMIENTO_DE_INCIDENCIAS",
+        "RUBRIC::A07::USO_DE_LOS_DOS_ARTEFACTOS"
+      ],
+      "candidate_scoring_allowed": false,
+      "original_description_hash": "sha256:b3303ec33f616b4eedf0357ed81c8398adb8c6ea89843c733ea73926d6c8b9ee",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A07-S06-P1",
+      "qualification_disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "reason": "The property declares more than one authorized construct, so a single P06 call cannot demonstrate or refute it as one gate.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_06_artifact_01.txt#Incidente",
+        "submissions/submission_06_artifact_02.pdf#párrafo 2"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_06"
+    },
+    {
+      "activity_id": "act_07_aislamiento_termico",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_construct_keys": [],
+      "candidate_scoring_allowed": false,
+      "original_description_hash": "sha256:715722e6dbc83bcc0d8f9fa01c51b208c592b01feee5807b41ad90b73a45e070",
+      "original_kind": "CONTEXTUAL_NOTE",
+      "original_oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A07-S06-P2",
+      "qualification_disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_06_artifact_02.pdf#párrafo 1",
+        "submissions/submission_06_artifact_01.txt#última línea"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_06"
+    },
+    {
+      "activity_id": "act_08_triage_de_logs",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": true,
+      "original_description_hash": "sha256:5702650f0746f1997a62d4cdb3402c601b010f49527c30df89968beb65658f16",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A08-S01-P1",
+      "qualification_disposition": "QUALIFICATION_VALID",
+      "reason": "Resolved to exactly one authorized construct declared by the property itself.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_01_artifact_02.md#Conclusión",
+        "submissions/submission_01_artifact_02.md#Línea temporal"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_01",
+      "target_construct_key": "RUBRIC::A08::HECHO_HIPOTESIS_E_INCERTIDUMBRE"
+    },
+    {
+      "activity_id": "act_08_triage_de_logs",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_construct_keys": [],
+      "candidate_scoring_allowed": false,
+      "original_description_hash": "sha256:000e1ca7572f94642d2f74836f0f457bc6c1a349d9c6dd1958d0b6fb4de71ae9",
+      "original_kind": "CONTEXTUAL_NOTE",
+      "original_oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A08-S01-P2",
+      "qualification_disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_01_artifact_01.txt#"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_01"
+    },
+    {
+      "activity_id": "act_08_triage_de_logs",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": true,
+      "original_description_hash": "sha256:fe7b14e59955a1621570cc96f39a791e39c8e8a10593e63d46c7ca13f93c8bad",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A08-S01-P3",
+      "qualification_disposition": "QUALIFICATION_VALID",
+      "reason": "Resolved to exactly one authorized construct declared by the property itself.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_01_artifact_02.md#Acción inmediata"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_01",
+      "target_construct_key": "RUBRIC::A08::RESPUESTA_Y_TRADE_OFF"
+    },
+    {
+      "activity_id": "act_08_triage_de_logs",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": true,
+      "original_description_hash": "sha256:5ec2f6504ed4efc7ca2cd8ce50de9c6589e0b92dd407450a1fb71e50d96dbd1c",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A08-S03-P1",
+      "qualification_disposition": "QUALIFICATION_VALID",
+      "reason": "Resolved to exactly one authorized construct declared by the property itself.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_03_artifact_01.txt#Relaciones y límites"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_03",
+      "target_construct_key": "RUBRIC::A08::LINEA_TEMPORAL_Y_CORRELACION"
+    },
+    {
+      "activity_id": "act_08_triage_de_logs",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": true,
+      "original_description_hash": "sha256:2d2efb04b644c780bc5ee4eb7cbaa867a13dc98f20e8eab036d303f35d7bf325",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A08-S03-P2",
+      "qualification_disposition": "QUALIFICATION_VALID",
+      "reason": "Resolved to exactly one authorized construct declared by the property itself.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_03_artifact_02.md#Acción inmediata",
+        "submissions/submission_03_artifact_02.md#Separación entre hechos e inferencias"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_03",
+      "target_construct_key": "RUBRIC::A08::MANEJO_SEGURO_DEL_ARTEFACTO"
+    },
+    {
+      "activity_id": "act_08_triage_de_logs",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": true,
+      "original_description_hash": "sha256:1af1f863d9326fd171d83b63c26baab907ac889424a35d589777d94cd649f180",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A08-S04-P1",
+      "qualification_disposition": "QUALIFICATION_VALID",
+      "reason": "Resolved to exactly one authorized construct declared by the property itself.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_04_artifact_02.md#Cronología resumida"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_04",
+      "target_construct_key": "RUBRIC::A08::HECHO_HIPOTESIS_E_INCERTIDUMBRE"
+    },
+    {
+      "activity_id": "act_08_triage_de_logs",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_construct_keys": [],
+      "candidate_scoring_allowed": false,
+      "original_description_hash": "sha256:2ba2813f771dc7b731d0804abd7b8ee06e3507d1d4ca338a4e0be64a9c08e3ac",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A08-S04-P2",
+      "qualification_disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_04_artifact_02.md#Cronología resumida",
+        "01_assignment.docx#auth.log"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_04"
+    },
+    {
+      "activity_id": "act_08_triage_de_logs",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": true,
+      "original_description_hash": "sha256:1c538f672a28e5d4275adb92f452bf6f86e4a5de64728752d6d08ad3862dc376",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A08-S05-P1",
+      "qualification_disposition": "QUALIFICATION_VALID",
+      "reason": "Resolved to exactly one authorized construct declared by the property itself.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_05_artifact_01.txt#SECRET USER",
+        "01_assignment.docx#Restricciones conocidas"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_05",
+      "target_construct_key": "RUBRIC::A08::MANEJO_SEGURO_DEL_ARTEFACTO"
+    },
+    {
+      "activity_id": "act_08_triage_de_logs",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": true,
+      "original_description_hash": "sha256:f8d374d7976945b081625749d313962aff5b889907821ae70d2e25882fb36fd1",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A08-S05-P2",
+      "qualification_disposition": "QUALIFICATION_VALID",
+      "reason": "Resolved to exactly one authorized construct declared by the property itself.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_05_artifact_02.md#Cadena del ataque"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_05",
+      "target_construct_key": "RUBRIC::A08::LINEA_TEMPORAL_Y_CORRELACION"
+    },
+    {
+      "activity_id": "act_08_triage_de_logs",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_construct_keys": [],
+      "candidate_scoring_allowed": false,
+      "original_description_hash": "sha256:11b7ec6f2bcce2529cdf534599e87819e1b693b76415952da238e3d0182d9ca8",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A08-S06-P1",
+      "qualification_disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_06.md#"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_06"
+    },
+    {
+      "activity_id": "act_09_renovacion_y_desplazamiento",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": true,
+      "original_description_hash": "sha256:edb8d8358ada49a2e30f170aa13b72c50fc5bc71ece743c7bcd27c3cfc335eeb",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A09-S01-P1",
+      "qualification_disposition": "QUALIFICATION_VALID",
+      "reason": "Resolved to exactly one authorized construct declared by the property itself.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_01.pdf#Marco historiográfico",
+        "02_rubric.docx#Criterios"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_01",
+      "target_construct_key": "RUBRIC::A09::CRITICA_Y_CONTRAARGUMENTO"
+    },
+    {
+      "activity_id": "act_09_renovacion_y_desplazamiento",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": true,
+      "original_description_hash": "sha256:8c0ab8e0354207b09a63ee504534b9d1738ece019b83ee94a784b7f5f3e479fc",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A09-S01-P2",
+      "qualification_disposition": "QUALIFICATION_VALID",
+      "reason": "Resolved to exactly one authorized construct declared by the property itself.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_01.pdf#párrafo 2"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_01",
+      "target_construct_key": "RUBRIC::A09::INTEGRACION_DE_EVIDENCIA"
+    },
+    {
+      "activity_id": "act_09_renovacion_y_desplazamiento",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": true,
+      "original_description_hash": "sha256:acc37ae2ca72d4d5a0eb4688d8e5c778d0168b15da9af1d0326c38b54d5c367f",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A09-S01-P3",
+      "qualification_disposition": "QUALIFICATION_VALID",
+      "reason": "Resolved to exactly one authorized construct declared by the property itself.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_01.pdf#párrafo 3",
+        "01_assignment.docx#Fuente C"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_01",
+      "target_construct_key": "RUBRIC::A09::CONTEXTUALIZACION_Y_MADUREZ_HISTORIOGRAFICA"
+    },
+    {
+      "activity_id": "act_09_renovacion_y_desplazamiento",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": true,
+      "original_description_hash": "sha256:476299098bb51e8f6d17605c11b11f0bf55e18018d358ff6a0a3c3f9382a76b7",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A09-S02-P1",
+      "qualification_disposition": "QUALIFICATION_VALID",
+      "reason": "Resolved to exactly one authorized construct declared by the property itself.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_02.pdf#Tesis",
+        "submissions/submission_02.pdf#párrafo 2"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_02",
+      "target_construct_key": "RUBRIC::A09::TESIS_EXPLICATIVA"
+    },
+    {
+      "activity_id": "act_09_renovacion_y_desplazamiento",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": true,
+      "original_description_hash": "sha256:a1d69201579caf15b57959fbcc5c3aa23264be963d44f784e44d6a4ef073cfe8",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A09-S02-P3",
+      "qualification_disposition": "QUALIFICATION_VALID",
+      "reason": "Resolved to exactly one authorized construct declared by the property itself.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_02.pdf#párrafo 4"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_02",
+      "target_construct_key": "RUBRIC::A09::CRITICA_Y_CONTRAARGUMENTO"
+    },
+    {
+      "activity_id": "act_09_renovacion_y_desplazamiento",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_construct_keys": [],
+      "candidate_scoring_allowed": false,
+      "original_description_hash": "sha256:95f28f20ddd6478e6bcd3c6660c68002e8e78244378c2d71e9ff8e00e2e9baee",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A09-S03-FINAL-SILENT-GAP",
+      "qualification_disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_03.pdf#",
+        "01_assignment.docx#Fuente C"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_03"
+    },
+    {
+      "activity_id": "act_09_renovacion_y_desplazamiento",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_construct_keys": [],
+      "candidate_scoring_allowed": false,
+      "original_description_hash": "sha256:1a4c1b555914cff55033c86fec37a6889f05ffa8bdf2974bbe1209e8c7153702",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A09-S03-P1",
+      "qualification_disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_03.pdf#"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_03"
+    },
+    {
+      "activity_id": "act_09_renovacion_y_desplazamiento",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_construct_keys": [],
+      "candidate_scoring_allowed": false,
+      "original_description_hash": "sha256:08b0e5fed9f2a11daee5e5f11d80df5e6fc2a098bd8277c954f06fda11f79ce2",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A09-S03-P5",
+      "qualification_disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_03.pdf#párrafo sobre la Fuente C"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_03"
+    },
+    {
+      "activity_id": "act_09_renovacion_y_desplazamiento",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": true,
+      "original_description_hash": "sha256:316d35c157a0c39f608639744c5cb135952bf179e2a1f5ecf10765399704ba9c",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A09-S04-P1",
+      "qualification_disposition": "QUALIFICATION_VALID",
+      "reason": "Resolved to exactly one authorized construct declared by the property itself.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_04.md#Repetición del marco general"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_04",
+      "target_construct_key": "RUBRIC::A09::TESIS_EXPLICATIVA"
+    },
+    {
+      "activity_id": "act_09_renovacion_y_desplazamiento",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": true,
+      "original_description_hash": "sha256:d787c4df2d04d38ed0ab8ec12cce8cbbdbb08af261002a8f649aa1b8abeac2fe",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A09-S05-P1",
+      "qualification_disposition": "QUALIFICATION_VALID",
+      "reason": "Resolved to exactly one authorized construct declared by the property itself.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_05.pdf#Qué cambiaría la conclusión"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_05",
+      "target_construct_key": "RUBRIC::A09::INTEGRACION_DE_EVIDENCIA"
+    },
+    {
+      "activity_id": "act_09_renovacion_y_desplazamiento",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": true,
+      "original_description_hash": "sha256:34b7672d7b4bfa9f912cb391808b522d2ba3280bbf0cf1df375b210afda41827",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A09-S05-P2",
+      "qualification_disposition": "QUALIFICATION_VALID",
+      "reason": "Resolved to exactly one authorized construct declared by the property itself.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_05.pdf#Tres cantidades que no deben confundirse"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_05",
+      "target_construct_key": "RUBRIC::A09::CONTEXTUALIZACION_Y_MADUREZ_HISTORIOGRAFICA"
+    },
+    {
+      "activity_id": "act_09_renovacion_y_desplazamiento",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": true,
+      "original_description_hash": "sha256:2ec3617741f65470f8d0ce85d940958b8993246b2cf01bbf65945f91987875f1",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A09-S05-P3",
+      "qualification_disposition": "QUALIFICATION_VALID",
+      "reason": "Resolved to exactly one authorized construct declared by the property itself.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_05.pdf#párrafo sobre la carta de 1971"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_05",
+      "target_construct_key": "RUBRIC::A09::CRITICA_Y_CONTRAARGUMENTO"
+    },
+    {
+      "activity_id": "act_09_renovacion_y_desplazamiento",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_construct_keys": [],
+      "candidate_scoring_allowed": false,
+      "original_description_hash": "sha256:434d5e56498c7c1c19354632b6f599ccd52cf496efadcd3a21742e110836ee2d",
+      "original_kind": "CONTEXTUAL_NOTE",
+      "original_oracle_state": "VALID",
+      "property_id": "A09-S05-P5",
+      "qualification_disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "01_assignment.docx#Entregable"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_05"
+    },
+    {
+      "activity_id": "act_09_renovacion_y_desplazamiento",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": true,
+      "original_description_hash": "sha256:885e5659a4e687d8571ac3a2b983ba560ba46c6cc848d1309b54b232f1774b0b",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A09-S06-P1",
+      "qualification_disposition": "QUALIFICATION_VALID",
+      "reason": "Resolved to exactly one authorized construct declared by the property itself.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_06.md#Argumento"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_06",
+      "target_construct_key": "RUBRIC::A09::TESIS_EXPLICATIVA"
+    },
+    {
+      "activity_id": "act_09_renovacion_y_desplazamiento",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": true,
+      "original_description_hash": "sha256:def7282f9adf5c09a52e31b53467513d4d02cc8fe8a32fe2be5f619458dcd763",
+      "original_kind": "CONTEXTUAL_NOTE",
+      "original_oracle_state": "VALID",
+      "property_id": "A09-S06-P4",
+      "qualification_disposition": "QUALIFICATION_VALID",
+      "reason": "Resolved to exactly one authorized construct declared by the property itself.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_06.md#Respuesta a una lectura alternativa"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_06",
+      "target_construct_key": "RUBRIC::A09::CRITICA_Y_CONTRAARGUMENTO"
+    },
+    {
+      "activity_id": "act_10_experimento_onboarding",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_construct_keys": [
+        "RUBRIC::A10::D1_TASAS_Y_DENOMINADORES",
+        "RUBRIC::A10::D2_AGREGADO_FRENTE_A_SEGMENTO"
+      ],
+      "candidate_scoring_allowed": false,
+      "original_description_hash": "sha256:e663d9115eeb1e773fdfb57487ac577768567e976ea89af3ad747375cf6ec683",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A10-S01-P1",
+      "qualification_disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "reason": "The property declares more than one authorized construct, so a single P06 call cannot demonstrate or refute it as one gate.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_01_artifact_02.md#Resumen",
+        "01_assignment.docx#Tarea"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_01"
+    },
+    {
+      "activity_id": "act_10_experimento_onboarding",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": true,
+      "original_description_hash": "sha256:d57306433cce469459af99cfcf7573206803f39349cfe360e8a44ef9218516c4",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A10-S01-P2",
+      "qualification_disposition": "QUALIFICATION_VALID",
+      "reason": "Resolved to exactly one authorized construct declared by the property itself.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_01_artifact_02.md#Metodología"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_01",
+      "target_construct_key": "RUBRIC::A10::D3_VALIDEZ_DE_LA_COMPARACION"
+    },
+    {
+      "activity_id": "act_10_experimento_onboarding",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": true,
+      "original_description_hash": "sha256:b78ea609c818b291c297cb01657ef88dc7d5bfb1b89fff07fdf397300f993780",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A10-S02-P1",
+      "qualification_disposition": "QUALIFICATION_VALID",
+      "reason": "Resolved to exactly one authorized construct declared by the property itself.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_02_artifact_02.md#Comprobación del peso de dispositivo"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_02",
+      "target_construct_key": "RUBRIC::A10::D2_AGREGADO_FRENTE_A_SEGMENTO"
+    },
+    {
+      "activity_id": "act_10_experimento_onboarding",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": true,
+      "original_description_hash": "sha256:1a321ca8c0fb87e52c2db88c1f3304e5be0687f7f2f11990c932c7d952745cf6",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A10-S02-P2",
+      "qualification_disposition": "QUALIFICATION_VALID",
+      "reason": "Resolved to exactly one authorized construct declared by the property itself.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_02_artifact_02.md#párrafo 4"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_02",
+      "target_construct_key": "RUBRIC::A10::D3_VALIDEZ_DE_LA_COMPARACION"
+    },
+    {
+      "activity_id": "act_10_experimento_onboarding",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_construct_keys": [
+        "RUBRIC::A10::D1_TASAS_Y_DENOMINADORES",
+        "RUBRIC::A10::D2_AGREGADO_FRENTE_A_SEGMENTO"
+      ],
+      "candidate_scoring_allowed": false,
+      "original_description_hash": "sha256:2e25a9738d08655ae7c1c993fffbf74b5203be804d953a67415ecb234127e9e6",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A10-S03-P1",
+      "qualification_disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "reason": "The property declares more than one authorized construct, so a single P06 call cannot demonstrate or refute it as one gate.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_03_artifact_02.pdf#Resumen",
+        "submissions/submission_03_artifact_02.pdf#Detalle"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_03"
+    },
+    {
+      "activity_id": "act_10_experimento_onboarding",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": true,
+      "original_description_hash": "sha256:434ffce67a76e2e65aaf085e261d92b5cb84345276cbf595efc8ee12a47aae7b",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A10-S03-P2",
+      "qualification_disposition": "QUALIFICATION_VALID",
+      "reason": "Resolved to exactly one authorized construct declared by the property itself.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_03_artifact_02.pdf#Detalle"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_03",
+      "target_construct_key": "RUBRIC::A10::D3_VALIDEZ_DE_LA_COMPARACION"
+    },
+    {
+      "activity_id": "act_10_experimento_onboarding",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": true,
+      "original_description_hash": "sha256:1ea20298a2310a3e87b18f4ac04abb03a50e4dda30491ba9017f5e59fa795fc6",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A10-S04-P1",
+      "qualification_disposition": "QUALIFICATION_VALID",
+      "reason": "Resolved to exactly one authorized construct declared by the property itself.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_04_artifact_01.txt#",
+        "01_assignment.docx#Tarea"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_04",
+      "target_construct_key": "RUBRIC::A10::D2_AGREGADO_FRENTE_A_SEGMENTO"
+    },
+    {
+      "activity_id": "act_10_experimento_onboarding",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_construct_keys": [],
+      "candidate_scoring_allowed": false,
+      "original_description_hash": "sha256:7c670a0058746ec8478580bc85f6ea8a67d582d976b395a817b6aa4baa191789",
+      "original_kind": "CONTEXTUAL_NOTE",
+      "original_oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A10-S04-P2",
+      "qualification_disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_04_artifact_01.txt#línea 6",
+        "submissions/submission_04_artifact_02.pdf#KPI scorecard"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_04"
+    },
+    {
+      "activity_id": "act_10_experimento_onboarding",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": true,
+      "original_description_hash": "sha256:5c6905c941ccb95b185649aaa6df95a47039dadf265ab3b7c22bf54d6d3ccef1",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A10-S04-P3",
+      "qualification_disposition": "QUALIFICATION_VALID",
+      "reason": "Resolved to exactly one authorized construct declared by the property itself.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_04_artifact_02.pdf#Executive decision",
+        "02_rubric.docx#Dimensiones"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_04",
+      "target_construct_key": "RUBRIC::A10::D3_VALIDEZ_DE_LA_COMPARACION"
+    },
+    {
+      "activity_id": "act_10_experimento_onboarding",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": true,
+      "original_description_hash": "sha256:a1b7277232ced3cce627722f7e27b2d07e0dd5c2a3e5343653223353be8900ff",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A10-S05-P1",
+      "qualification_disposition": "QUALIFICATION_VALID",
+      "reason": "Resolved to exactly one authorized construct declared by the property itself.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_05_artifact_01.txt#CHECK PONDERADO",
+        "submissions/submission_05_artifact_02.pdf#Descomposición del agregado"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_05",
+      "target_construct_key": "RUBRIC::A10::D2_AGREGADO_FRENTE_A_SEGMENTO"
+    },
+    {
+      "activity_id": "act_10_experimento_onboarding",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_construct_keys": [
+        "RUBRIC::A10::D1_TASAS_Y_DENOMINADORES",
+        "RUBRIC::A10::D2_AGREGADO_FRENTE_A_SEGMENTO"
+      ],
+      "candidate_scoring_allowed": false,
+      "original_description_hash": "sha256:144435bd133743f2445e364fc7fce192af6eb9f24ec5464d36e68abe017e3f49",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A10-S06-P1",
+      "qualification_disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "reason": "The property declares more than one authorized construct, so a single P06 call cannot demonstrate or refute it as one gate.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_06_artifact_01.txt#desktop uplift",
+        "submissions/submission_06_artifact_02.pdf#Conclusión"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_06"
+    },
+    {
+      "activity_id": "act_10_experimento_onboarding",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": true,
+      "original_description_hash": "sha256:0f80b89265dfcb9fc0df73ea66c77dbc5d04fb152f1ccb651571e177adcb958b",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A10-S06-P2",
+      "qualification_disposition": "QUALIFICATION_VALID",
+      "reason": "Resolved to exactly one authorized construct declared by the property itself.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_06_artifact_02.pdf#párrafo 2",
+        "01_assignment.docx#Convenciones de cálculo"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_06",
+      "target_construct_key": "RUBRIC::A10::D1_TASAS_Y_DENOMINADORES"
+    },
+    {
+      "activity_id": "act_10_experimento_onboarding",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": true,
+      "original_description_hash": "sha256:319f804332ce3d28389d034d58cbfef51c0ffdb4bfca9c66cbb5a866610507f3",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A10-S06-P3",
+      "qualification_disposition": "QUALIFICATION_VALID",
+      "reason": "Resolved to exactly one authorized construct declared by the property itself.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_06_artifact_02.pdf#Validación del diseño",
+        "01_assignment.docx#Notas de implementación"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_06",
+      "target_construct_key": "RUBRIC::A10::D3_VALIDEZ_DE_LA_COMPARACION"
+    },
+    {
+      "activity_id": "act_11_duplicados_en_pagos",
+      "audit_provenance": "PHASE_9B4_ACTIVITY_WIDE_REEVALUATION",
+      "candidate_scoring_allowed": false,
+      "original_description_hash": "sha256:5ef7ff67ca75ecbeaf433eeed171191e3ad2f50ebc9ed20b34ab61b3ab7eebc1",
+      "original_kind": "CONTEXTUAL_NOTE",
+      "original_oracle_state": "NOT_APPLICABLE",
+      "property_id": "A11-ACT-P6",
+      "qualification_disposition": "NOT_APPLICABLE",
+      "reason": "The corpus itself marks the property NOT_APPLICABLE as a hard semantic property, so it carries no candidate obligation at any stage.",
+      "scope": "ACTIVITY_WIDE",
+      "source_evidence": [
+        "01_assignment.docx#Extensión orientativa / no evaluable"
+      ],
+      "stage": "P06",
+      "submission_id": null,
+      "v11_binding_scope": "ACTIVITY_WIDE"
+    },
+    {
+      "activity_id": "act_11_duplicados_en_pagos",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": true,
+      "original_description_hash": "sha256:d178771d482c3d58713bdeebcafb3057402784f7ab12f158fbeb3ccb65a8a3ac",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A11-S01-P1",
+      "qualification_disposition": "QUALIFICATION_VALID",
+      "reason": "Resolved to exactly one authorized construct declared by the property itself.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_01_artifact_01.md#Excepción",
+        "submissions/submission_01_artifact_02.md#línea 2"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_01",
+      "target_construct_key": "RUBRIC::A11::INVARIANT_Y_CLAVE"
+    },
+    {
+      "activity_id": "act_11_duplicados_en_pagos",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": true,
+      "original_description_hash": "sha256:4628885881fa916718ed4db058a9ae45152015fad2c172afba1f5d485d6a5cfb",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A11-S01-P2",
+      "qualification_disposition": "QUALIFICATION_VALID",
+      "reason": "Resolved to exactly one authorized construct declared by the property itself.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_01_artifact_01.md#párrafo 1",
+        "submissions/submission_01_artifact_02.md#Orden efectivo"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_01",
+      "target_construct_key": "RUBRIC::A11::COHERENCIA_ENTRE_ARTEFACTOS"
+    },
+    {
+      "activity_id": "act_11_duplicados_en_pagos",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": true,
+      "original_description_hash": "sha256:642e64b9b16a8e4dafe3c0e42614149a3d42950ff0bde4d2f2e486db1fb09be5",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A11-S01-P3",
+      "qualification_disposition": "QUALIFICATION_VALID",
+      "reason": "Resolved to exactly one authorized construct declared by the property itself.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_01_artifact_03.md#párrafo 1",
+        "submissions/submission_01_artifact_03.md#Cronología"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_01",
+      "target_construct_key": "RUBRIC::A11::CADENA_CAUSAL"
+    },
+    {
+      "activity_id": "act_11_duplicados_en_pagos",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": true,
+      "original_description_hash": "sha256:cc078c681359739b215270c0387bb7c2a9f4b755f02fed1c609b72f19afe9235",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A11-S02-P1",
+      "qualification_disposition": "QUALIFICATION_VALID",
+      "reason": "Resolved to exactly one authorized construct declared by the property itself.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_02_artifact_01.md#Alternativas consideradas",
+        "submissions/submission_02_artifact_02.md#Caso abierto"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_02",
+      "target_construct_key": "RUBRIC::A11::INVARIANT_Y_CLAVE"
+    },
+    {
+      "activity_id": "act_11_duplicados_en_pagos",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": true,
+      "original_description_hash": "sha256:f58f5896f7da0768bf924ec01fc4aacde7da99aeb8a549ab81c1dd51716465d2",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A11-S03-P1",
+      "qualification_disposition": "QUALIFICATION_VALID",
+      "reason": "Resolved to exactly one authorized construct declared by the property itself.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_03_artifact_02.md#comentario",
+        "02_rubric.docx#Criterios"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_03",
+      "target_construct_key": "RUBRIC::A11::INVARIANT_Y_CLAVE"
+    },
+    {
+      "activity_id": "act_11_duplicados_en_pagos",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": true,
+      "original_description_hash": "sha256:0579dfdda54b8246c5ac2a08a57ca1bc610628bbaa59918a4366ca4d49a409a3",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A11-S03-P2",
+      "qualification_disposition": "QUALIFICATION_VALID",
+      "reason": "Resolved to exactly one authorized construct declared by the property itself.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_03_artifact_02.md#línea 2",
+        "01_assignment.docx#Restricciones y capacidades"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_03",
+      "target_construct_key": "RUBRIC::A11::TRADE_OFFS_Y_RECUPERACION"
+    },
+    {
+      "activity_id": "act_11_duplicados_en_pagos",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": true,
+      "original_description_hash": "sha256:e5332ef574c373046a213343e3e8744ca98db502e55cbbbc277571b592c2b149",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A11-S03-P3",
+      "qualification_disposition": "QUALIFICATION_VALID",
+      "reason": "Resolved to exactly one authorized construct declared by the property itself.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_03_artifact_03.md#párrafo 2",
+        "01_assignment.docx#Trazas autorizadas"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_03",
+      "target_construct_key": "RUBRIC::A11::CADENA_CAUSAL"
+    },
+    {
+      "activity_id": "act_11_duplicados_en_pagos",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": true,
+      "original_description_hash": "sha256:c3760c9dcdcec0fc296cdab257b60363933506387e261b65fbdcbb118053fb43",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A11-S04-P1",
+      "qualification_disposition": "QUALIFICATION_VALID",
+      "reason": "Resolved to exactly one authorized construct declared by the property itself.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_04_artifact_01.md#Decisión",
+        "submissions/submission_04_artifact_02.md#línea 2"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_04",
+      "target_construct_key": "RUBRIC::A11::INVARIANT_Y_CLAVE"
+    },
+    {
+      "activity_id": "act_11_duplicados_en_pagos",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": true,
+      "original_description_hash": "sha256:b48293c664294e7623a057214b8a810b517f4018b5bdc563901e3d5aff4af678",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A11-S04-P2",
+      "qualification_disposition": "QUALIFICATION_VALID",
+      "reason": "Resolved to exactly one authorized construct declared by the property itself.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_04_artifact_03.md#Cadena causal",
+        "submissions/submission_04_artifact_02.md#"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_04",
+      "target_construct_key": "RUBRIC::A11::COHERENCIA_ENTRE_ARTEFACTOS"
+    },
+    {
+      "activity_id": "act_11_duplicados_en_pagos",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": true,
+      "original_description_hash": "sha256:b03e3ea7d176acbc9196251699bd5ab54638fe9935b093c98d1ac4d98c93421f",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A11-S04-P3",
+      "qualification_disposition": "QUALIFICATION_VALID",
+      "reason": "Resolved to exactly one authorized construct declared by the property itself.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_04_artifact_02.md#def reconcile"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_04",
+      "target_construct_key": "RUBRIC::A11::TRADE_OFFS_Y_RECUPERACION"
+    },
+    {
+      "activity_id": "act_11_duplicados_en_pagos",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_scoring_allowed": true,
+      "original_description_hash": "sha256:bf370f000ecfbc001dd86da6dc52bc965232c82a2554f0f7c6f85c8c7ef5b19c",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A11-S06-P1",
+      "qualification_disposition": "QUALIFICATION_VALID",
+      "reason": "Resolved to exactly one authorized construct declared by the property itself.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_06_artifact_01.md#"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_06",
+      "target_construct_key": "RUBRIC::A11::INVARIANT_Y_CLAVE"
+    },
+    {
+      "activity_id": "act_12_clinica_movil",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_construct_keys": [],
+      "candidate_scoring_allowed": false,
+      "original_description_hash": "sha256:8daa97759d73037b1d6b53d0682aaa7efb16e73c1207cccb22d77a0a16c9dba5",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A12-S01-P1",
+      "qualification_disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_01_artifact_02.md#Comparación con Sur-Norte"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_01"
+    },
+    {
+      "activity_id": "act_12_clinica_movil",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_construct_keys": [],
+      "candidate_scoring_allowed": false,
+      "original_description_hash": "sha256:4abefd9e8ae3f2c8df47c97891d0638cf2c6e277258e7603971313948e703669",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A12-S01-P2",
+      "qualification_disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_01_artifact_02.md#párrafo 3"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_01"
+    },
+    {
+      "activity_id": "act_12_clinica_movil",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_construct_keys": [],
+      "candidate_scoring_allowed": false,
+      "original_description_hash": "sha256:5446d33ed47158b8d24198fdbb90e518ae01e596e2d8dd2c491dae5c728967c4",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A12-S02-P1",
+      "qualification_disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_02.md#Decisión"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_02"
+    },
+    {
+      "activity_id": "act_12_clinica_movil",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_construct_keys": [],
+      "candidate_scoring_allowed": false,
+      "original_description_hash": "sha256:9bb84f9b61aa83ffbfcb893a04a6f68e9de9ed476b232bbd974d3c8781531fe1",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A12-S02-P2",
+      "qualification_disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_02.md#",
+        "01_assignment.docx#Entregables"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_02"
+    },
+    {
+      "activity_id": "act_12_clinica_movil",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_construct_keys": [],
+      "candidate_scoring_allowed": false,
+      "original_description_hash": "sha256:fe759ddd702718e1090cda2e4363e5cb1864798018fc639c3de44e7bb8fc1745",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A12-S03-P1",
+      "qualification_disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_03_artifact_02.pdf#Principios",
+        "01_assignment.docx#Datos del mes"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_03"
+    },
+    {
+      "activity_id": "act_12_clinica_movil",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_construct_keys": [],
+      "candidate_scoring_allowed": false,
+      "original_description_hash": "sha256:f3bc8315d9ab0c1583b52c8a7197d323c9335f5cc56038d00c53a7b493acf80b",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A12-S03-P2",
+      "qualification_disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_03_artifact_02.pdf#párrafo 2",
+        "submissions/submission_03_artifact_01.txt#línea 2"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_03"
+    },
+    {
+      "activity_id": "act_12_clinica_movil",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_construct_keys": [],
+      "candidate_scoring_allowed": false,
+      "original_description_hash": "sha256:c7b5ff9ec96f8092cde1aacf4ff15df2491a5c0d418e04d7dae2d6e33d3642ac",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A12-S03-P4",
+      "qualification_disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_03_artifact_02.pdf#párrafo 3",
+        "01_assignment.docx#Naturaleza de la decisión"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_03"
+    },
+    {
+      "activity_id": "act_12_clinica_movil",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_construct_keys": [],
+      "candidate_scoring_allowed": false,
+      "original_description_hash": "sha256:0a14c2d89a17eba32e078a0efbc2a1ac97776578d193203f2787ae8c0a8ee135",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A12-S04-P1",
+      "qualification_disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_04_artifact_02.pdf#Elección",
+        "01_assignment.docx#Datos del mes"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_04"
+    },
+    {
+      "activity_id": "act_12_clinica_movil",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_construct_keys": [],
+      "candidate_scoring_allowed": false,
+      "original_description_hash": "sha256:a0584be35f9ddab6b1b05d475615b7ab7457031a84a52fe931f3f5ed5824fd52",
+      "original_kind": "CONTEXTUAL_NOTE",
+      "original_oracle_state": "ORACLE_SUSPECT",
+      "property_id": "A12-S04-P2",
+      "qualification_disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_04_artifact_01.txt#"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_04"
+    },
+    {
+      "activity_id": "act_12_clinica_movil",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_construct_keys": [],
+      "candidate_scoring_allowed": false,
+      "original_description_hash": "sha256:2893f70da295478fdffed9cc829e8c56a901579444cebead2d5848bb8da6e5db",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A12-S04-P3",
+      "qualification_disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_04_artifact_02.pdf#párrafo 3",
+        "submissions/submission_04_artifact_01.txt#Transfer plan",
+        "01_assignment.docx#Reglas operativas"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_04"
+    },
+    {
+      "activity_id": "act_12_clinica_movil",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_construct_keys": [],
+      "candidate_scoring_allowed": false,
+      "original_description_hash": "sha256:5b1ea3e9a44b469eeaa6575f2d9c9dee3ee7ee7f318df0b24b518d5e84012ea3",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A12-S05-P1",
+      "qualification_disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_05_artifact_01.txt#bloque de cálculo",
+        "01_assignment.docx#Datos del mes"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_05"
+    },
+    {
+      "activity_id": "act_12_clinica_movil",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_construct_keys": [],
+      "candidate_scoring_allowed": false,
+      "original_description_hash": "sha256:6f00fc2ddfa9860481a04e7994d6fedd98ec3fa8cad69e147aaa8b6c3d2077e9",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A12-S05-P2",
+      "qualification_disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_05_artifact_01.txt#ALTERNATIVAS"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_05"
+    },
+    {
+      "activity_id": "act_12_clinica_movil",
+      "audit_provenance": "PHASE_9B4_P06_CONSTRUCT_RESOLUTION",
+      "candidate_construct_keys": [],
+      "candidate_scoring_allowed": false,
+      "original_description_hash": "sha256:13e8c708b5887d37265d71f22734e6bbaf00c25476cc9d4b17acf07484b0eb61",
+      "original_kind": "REQUIRED",
+      "original_oracle_state": "VALID",
+      "property_id": "A12-S05-P3",
+      "qualification_disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "scope": "SUBMISSION_LOCAL",
+      "source_evidence": [
+        "submissions/submission_05_artifact_02.pdf#Evidencia situada y factibilidad",
+        "01_assignment.docx#Planificación del piloto"
+      ],
+      "stage": "P06",
+      "submission_id": "submission_05"
+    }
+  ],
+  "note": "A qualification disposition never edits corpus ratification bytes. The corpus records what the reviewer ratified; this artifact records whether semantic-benchmark/1.2.0 may score a candidate against it.",
+  "schema_version": "qualification-oracle-dispositions/1.0.0",
+  "scope": "QUALIFICATION_LEVEL_ONLY"
+}

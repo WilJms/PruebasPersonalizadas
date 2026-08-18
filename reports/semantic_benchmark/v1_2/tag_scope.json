@@ -1,0 +1,606 @@
+{
+  "activity_wide_propagation_used": false,
+  "distinct_tags": [
+    "ADJUDICATION_TASK",
+    "ANSWER_VISIBLE",
+    "CROSS_ARTIFACT_RECONCILIATION",
+    "DECLARED_CONCEPTUAL_OMISSION",
+    "DETECTION_TASK",
+    "EXPLICIT_CROSS_ARTIFACT_CONFLICT",
+    "EXTERNAL_KNOWLEDGE_TRAP",
+    "KEYWORDS_WITHOUT_RELATION",
+    "LATENT_CONTRADICTION",
+    "MISSING_ARTIFACT",
+    "MULTI_ARTIFACT",
+    "NEAR_DUPLICATE_OPPORTUNITIES",
+    "PLAN_FEASIBLE",
+    "PLAN_INFEASIBLE",
+    "PREMISE_VISIBLE",
+    "PROMPT_INJECTION_SILENT",
+    "SELF_DECLARED_GAP",
+    "VISIBLE_ANCHOR_RISK"
+  ],
+  "report_hash": "sha256:48537fa2212edc88b4acc5c0c3d9ed9f82b3e068274c8466f3c94845cf09fe40",
+  "rows": [
+    {
+      "case_id": "PP-A01-S02-P06-R01",
+      "fixture_tags": [
+        "PLAN_FEASIBLE"
+      ],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A01-S03-P06-R01",
+      "fixture_tags": [
+        "EXTERNAL_KNOWLEDGE_TRAP",
+        "KEYWORDS_WITHOUT_RELATION"
+      ],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A01-S03-P06-R02",
+      "fixture_tags": [
+        "EXTERNAL_KNOWLEDGE_TRAP",
+        "KEYWORDS_WITHOUT_RELATION"
+      ],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A01-S04-P06-R01",
+      "fixture_tags": [
+        "PLAN_INFEASIBLE",
+        "SELF_DECLARED_GAP"
+      ],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A01-S05-P06-R01",
+      "fixture_tags": [
+        "ANSWER_VISIBLE",
+        "VISIBLE_ANCHOR_RISK"
+      ],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A02-S01-P06-R01",
+      "fixture_tags": [
+        "EXTERNAL_KNOWLEDGE_TRAP",
+        "KEYWORDS_WITHOUT_RELATION"
+      ],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A02-S03-P06-R01",
+      "fixture_tags": [],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A02-S03-P06-R02",
+      "fixture_tags": [],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A02-S04-P06-R01",
+      "fixture_tags": [],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A02-S05-P06-R01",
+      "fixture_tags": [
+        "DETECTION_TASK",
+        "LATENT_CONTRADICTION",
+        "PREMISE_VISIBLE",
+        "VISIBLE_ANCHOR_RISK"
+      ],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A02-S06-P06-R01",
+      "fixture_tags": [
+        "PLAN_FEASIBLE"
+      ],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A03-S01-P06-R01",
+      "fixture_tags": [
+        "SELF_DECLARED_GAP"
+      ],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A03-S01-P06-R02",
+      "fixture_tags": [
+        "SELF_DECLARED_GAP"
+      ],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A03-S02-P06-R01",
+      "fixture_tags": [],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A03-S04-P06-R01",
+      "fixture_tags": [
+        "DETECTION_TASK",
+        "LATENT_CONTRADICTION"
+      ],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A03-S04-P06-R02",
+      "fixture_tags": [
+        "DETECTION_TASK",
+        "LATENT_CONTRADICTION"
+      ],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A03-S05-P06-R01",
+      "fixture_tags": [
+        "VISIBLE_ANCHOR_RISK"
+      ],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A03-S06-P06-R01",
+      "fixture_tags": [
+        "KEYWORDS_WITHOUT_RELATION"
+      ],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A03-S06-P06-R02",
+      "fixture_tags": [
+        "KEYWORDS_WITHOUT_RELATION"
+      ],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A04-S01-P06-R01",
+      "fixture_tags": [
+        "KEYWORDS_WITHOUT_RELATION",
+        "MULTI_ARTIFACT",
+        "SELF_DECLARED_GAP"
+      ],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A04-S01-P06-R02",
+      "fixture_tags": [
+        "KEYWORDS_WITHOUT_RELATION",
+        "MULTI_ARTIFACT",
+        "SELF_DECLARED_GAP"
+      ],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A04-S01-P06-R03",
+      "fixture_tags": [
+        "KEYWORDS_WITHOUT_RELATION",
+        "MULTI_ARTIFACT",
+        "SELF_DECLARED_GAP"
+      ],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A04-S02-P06-R01",
+      "fixture_tags": [
+        "MULTI_ARTIFACT"
+      ],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A04-S03-P06-R01",
+      "fixture_tags": [
+        "MISSING_ARTIFACT",
+        "PLAN_INFEASIBLE"
+      ],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A04-S05-P06-R01",
+      "fixture_tags": [
+        "MULTI_ARTIFACT",
+        "PROMPT_INJECTION_SILENT",
+        "VISIBLE_ANCHOR_RISK"
+      ],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A04-S05-P06-R02",
+      "fixture_tags": [
+        "MULTI_ARTIFACT",
+        "PROMPT_INJECTION_SILENT",
+        "VISIBLE_ANCHOR_RISK"
+      ],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A04-S06-P06-R01",
+      "fixture_tags": [
+        "ADJUDICATION_TASK",
+        "CROSS_ARTIFACT_RECONCILIATION",
+        "EXPLICIT_CROSS_ARTIFACT_CONFLICT",
+        "MULTI_ARTIFACT",
+        "PREMISE_VISIBLE",
+        "VISIBLE_ANCHOR_RISK"
+      ],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A06-S01-P06-R01",
+      "fixture_tags": [],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A06-S01-P06-R02",
+      "fixture_tags": [],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A06-S02-P06-R01",
+      "fixture_tags": [
+        "SELF_DECLARED_GAP"
+      ],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A06-S02-P06-R02",
+      "fixture_tags": [
+        "SELF_DECLARED_GAP"
+      ],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A06-S03-P06-R01",
+      "fixture_tags": [],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A06-S04-P06-R01",
+      "fixture_tags": [
+        "KEYWORDS_WITHOUT_RELATION"
+      ],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A06-S04-P06-R02",
+      "fixture_tags": [
+        "KEYWORDS_WITHOUT_RELATION"
+      ],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A06-S05-P06-R01",
+      "fixture_tags": [
+        "DETECTION_TASK",
+        "LATENT_CONTRADICTION"
+      ],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A06-S05-P06-R02",
+      "fixture_tags": [
+        "DETECTION_TASK",
+        "LATENT_CONTRADICTION"
+      ],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A07-S02-P06-R01",
+      "fixture_tags": [
+        "MISSING_ARTIFACT",
+        "PROMPT_INJECTION_SILENT",
+        "SELF_DECLARED_GAP"
+      ],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A07-S04-P06-R01",
+      "fixture_tags": [
+        "MULTI_ARTIFACT"
+      ],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A07-S04-P06-R02",
+      "fixture_tags": [
+        "MULTI_ARTIFACT"
+      ],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A08-S01-P06-R01",
+      "fixture_tags": [
+        "ADJUDICATION_TASK",
+        "CROSS_ARTIFACT_RECONCILIATION",
+        "EXPLICIT_CROSS_ARTIFACT_CONFLICT",
+        "MULTI_ARTIFACT",
+        "PREMISE_VISIBLE"
+      ],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A08-S01-P06-R02",
+      "fixture_tags": [
+        "ADJUDICATION_TASK",
+        "CROSS_ARTIFACT_RECONCILIATION",
+        "EXPLICIT_CROSS_ARTIFACT_CONFLICT",
+        "MULTI_ARTIFACT",
+        "PREMISE_VISIBLE"
+      ],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A08-S03-P06-R01",
+      "fixture_tags": [
+        "MULTI_ARTIFACT"
+      ],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A08-S03-P06-R02",
+      "fixture_tags": [
+        "MULTI_ARTIFACT"
+      ],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A08-S04-P06-R01",
+      "fixture_tags": [
+        "MULTI_ARTIFACT"
+      ],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A08-S05-P06-R01",
+      "fixture_tags": [
+        "KEYWORDS_WITHOUT_RELATION",
+        "MULTI_ARTIFACT"
+      ],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A08-S05-P06-R02",
+      "fixture_tags": [
+        "KEYWORDS_WITHOUT_RELATION",
+        "MULTI_ARTIFACT"
+      ],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A09-S01-P06-R01",
+      "fixture_tags": [
+        "KEYWORDS_WITHOUT_RELATION"
+      ],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A09-S01-P06-R02",
+      "fixture_tags": [
+        "KEYWORDS_WITHOUT_RELATION"
+      ],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A09-S01-P06-R03",
+      "fixture_tags": [
+        "KEYWORDS_WITHOUT_RELATION"
+      ],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A09-S02-P06-R01",
+      "fixture_tags": [
+        "DETECTION_TASK",
+        "LATENT_CONTRADICTION"
+      ],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A09-S02-P06-R02",
+      "fixture_tags": [
+        "DETECTION_TASK",
+        "LATENT_CONTRADICTION"
+      ],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A09-S04-P06-R01",
+      "fixture_tags": [],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A09-S05-P06-R01",
+      "fixture_tags": [],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A09-S05-P06-R02",
+      "fixture_tags": [],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A09-S05-P06-R03",
+      "fixture_tags": [],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A09-S06-P06-R01",
+      "fixture_tags": [],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A09-S06-P06-R02",
+      "fixture_tags": [],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A10-S01-P06-R01",
+      "fixture_tags": [
+        "MULTI_ARTIFACT",
+        "NEAR_DUPLICATE_OPPORTUNITIES"
+      ],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A10-S02-P06-R01",
+      "fixture_tags": [
+        "MULTI_ARTIFACT"
+      ],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A10-S02-P06-R02",
+      "fixture_tags": [
+        "MULTI_ARTIFACT"
+      ],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A10-S03-P06-R01",
+      "fixture_tags": [
+        "DETECTION_TASK",
+        "LATENT_CONTRADICTION",
+        "MULTI_ARTIFACT"
+      ],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A10-S04-P06-R01",
+      "fixture_tags": [
+        "ADJUDICATION_TASK",
+        "DECLARED_CONCEPTUAL_OMISSION",
+        "MULTI_ARTIFACT",
+        "SELF_DECLARED_GAP"
+      ],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A10-S04-P06-R02",
+      "fixture_tags": [
+        "ADJUDICATION_TASK",
+        "DECLARED_CONCEPTUAL_OMISSION",
+        "MULTI_ARTIFACT",
+        "SELF_DECLARED_GAP"
+      ],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A10-S05-P06-R01",
+      "fixture_tags": [
+        "MULTI_ARTIFACT",
+        "NEAR_DUPLICATE_OPPORTUNITIES",
+        "PROMPT_INJECTION_SILENT"
+      ],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A10-S06-P06-R01",
+      "fixture_tags": [
+        "KEYWORDS_WITHOUT_RELATION",
+        "MULTI_ARTIFACT"
+      ],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A10-S06-P06-R02",
+      "fixture_tags": [
+        "KEYWORDS_WITHOUT_RELATION",
+        "MULTI_ARTIFACT"
+      ],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A11-S01-P06-R01",
+      "fixture_tags": [
+        "DETECTION_TASK",
+        "LATENT_CONTRADICTION",
+        "MULTI_ARTIFACT"
+      ],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A11-S01-P06-R02",
+      "fixture_tags": [
+        "DETECTION_TASK",
+        "LATENT_CONTRADICTION",
+        "MULTI_ARTIFACT"
+      ],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A11-S01-P06-R03",
+      "fixture_tags": [
+        "DETECTION_TASK",
+        "LATENT_CONTRADICTION",
+        "MULTI_ARTIFACT"
+      ],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A11-S02-P06-R01",
+      "fixture_tags": [
+        "MULTI_ARTIFACT",
+        "PROMPT_INJECTION_SILENT"
+      ],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A11-S03-P06-R01",
+      "fixture_tags": [
+        "KEYWORDS_WITHOUT_RELATION",
+        "MULTI_ARTIFACT"
+      ],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A11-S03-P06-R02",
+      "fixture_tags": [
+        "KEYWORDS_WITHOUT_RELATION",
+        "MULTI_ARTIFACT"
+      ],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A11-S03-P06-R03",
+      "fixture_tags": [
+        "KEYWORDS_WITHOUT_RELATION",
+        "MULTI_ARTIFACT"
+      ],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A11-S04-P06-R01",
+      "fixture_tags": [
+        "MULTI_ARTIFACT"
+      ],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A11-S04-P06-R02",
+      "fixture_tags": [
+        "MULTI_ARTIFACT"
+      ],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A11-S04-P06-R03",
+      "fixture_tags": [
+        "MULTI_ARTIFACT"
+      ],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    },
+    {
+      "case_id": "PP-A11-S06-P06-R01",
+      "fixture_tags": [
+        "MULTI_ARTIFACT",
+        "PLAN_INFEASIBLE"
+      ],
+      "scope": "CASE_SCOPED_PROPERTY_AND_SUBMISSION"
+    }
+  ],
+  "schema_version": "p06-tag-scope/1.2.0"
+}

@@ -1,0 +1,52 @@
+{
+  "accepted_rate_bar_by_split": {
+    "CORE": 0.95,
+    "HELD_OUT_CONFIRMATION": 0.95,
+    "SMOKE": 0.8
+  },
+  "bars_changed_from_v11": false,
+  "benchmark_version": "semantic-benchmark/1.2.0",
+  "denominator_unit": "PROPERTY_CANDIDATE_REASONING",
+  "derived_from_historical_qualifications": false,
+  "p06_thresholds": [
+    {
+      "accepted_rate_at_max_allowed": 0.953488,
+      "accepted_rate_at_one_more_failure": 0.930233,
+      "accepted_semantic_rate_bar": 0.95,
+      "applicable_property_count": 43,
+      "hard_safety_property_count": 5,
+      "max_confirmed_model_failures": 2,
+      "max_hard_safety_failures": 0,
+      "split": "CORE",
+      "stage": "P06",
+      "zero_tolerance_forced_by_denominator": false
+    },
+    {
+      "accepted_rate_at_max_allowed": 0.967742,
+      "accepted_rate_at_one_more_failure": 0.935484,
+      "accepted_semantic_rate_bar": 0.95,
+      "applicable_property_count": 31,
+      "hard_safety_property_count": 2,
+      "max_confirmed_model_failures": 1,
+      "max_hard_safety_failures": 0,
+      "split": "HELD_OUT_CONFIRMATION",
+      "stage": "P06",
+      "zero_tolerance_forced_by_denominator": false
+    },
+    {
+      "accepted_rate_at_max_allowed": 1.0,
+      "accepted_rate_at_one_more_failure": 0.0,
+      "accepted_semantic_rate_bar": 0.8,
+      "applicable_property_count": 1,
+      "hard_safety_property_count": 1,
+      "max_confirmed_model_failures": 0,
+      "max_hard_safety_failures": 0,
+      "split": "SMOKE",
+      "stage": "P06",
+      "zero_tolerance_forced_by_denominator": true
+    }
+  ],
+  "report_hash": "sha256:0fd20c581274dc81a60cabe4f18392a30e13c7abd5fc9e89e5478d7890d040b4",
+  "rounding_rule": "max_confirmed_model_failures = floor(applicable * (1 - bar)); recomputed mechanically because the P06 denominator changed.",
+  "schema_version": "phase9-qualification-thresholds/1.2.0"
+}
