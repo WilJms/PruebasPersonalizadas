@@ -2,7 +2,64 @@
 
 Fecha de corte: 2026-08-17 (America/Santiago).
 
-## Estado vigente — Fase 8.1, benchmark semántico alineado (2026-08-17)
+## Estado vigente — Fase 9A.1, routing policy family-constrained (2026-08-17)
+
+`phase9-qualification-protocol/1.1.0` reemplaza a `1.0.0`
+(`sha256:e4254b28...`) **antes de cualquier llamada real**: 0 provider calls, 0
+adjudicator calls, 0 authorizations y ningún resultado de qualification bajo el
+protocolo anterior. Su estado queda registrado como
+`SUPERSEDED_PRE_EXECUTION_BY_ROUTING_POLICY_AMENDMENT` dentro del nuevo
+boundary, no borrado.
+
+La enmienda responde a una decisión explícita de producto y fija una familia por
+superficie económica. Activity side (P01-P04): `gpt-5.6-terra`, default HIGH,
+techo XHIGH. Submission side (P06/P07/P09): `gpt-5.6-luna`, default HIGH,
+escalera HIGH → XHIGH → MAX. `cross_family_fallback` = `FORBIDDEN` en ambos
+lados y `gpt-5.6-sol` deja de ser candidato en cualquier stage. Agotar la
+escalera produce `NO_QUALIFYING_CONFIGURATION`, que es información de producto y
+no un permiso para cambiar de familia después de ver resultados.
+
+La candidate matrix congela 11 configuraciones: P04 terra HIGH/XHIGH; P06, P07 y
+P09 luna HIGH/XHIGH/MAX. Los output caps siguen siendo los del registry
+productivo (P04 16k, P06 16k, P07 10k, P09 10k) y no se amplían para un rung más
+profundo; truncar bajo XHIGH/MAX es `TECHNICAL_FAILURE`, nunca `MODEL_FAILURE`.
+`TERRA_XHIGH_V1` y `LUNA_MAX_V1` existen en el registry real y cubren sus stages;
+no se inventó ninguna ruta.
+
+P01, P02 y P03 quedan como `PHASE10_OPERATIONAL_VERIFICATION_REQUIRED`: el
+benchmark no contiene qualification properties para ellos, no se fabricaron
+casos y que P04 califique no dice nada sobre ellos. Sólo P04 califica
+semánticamente en el activity side.
+
+La escalación es secuencial y dirigida por fallo: sólo corre el rung más bajo no
+intentado, y un rung más profundo se ejecuta únicamente si el anterior falló. La
+selección es `LOWEST_REASONING_CONFIGURATION_THAT_QUALIFIES`. Held-out sigue
+siendo confirmación: el fallback pre-registrado de 1.0.0 se conserva literal
+pero su precondición es inalcanzable bajo escalación secuencial, así que un
+fallo de held-out termina en `HELD_OUT_CONFIRMATION_FAILED` y
+`NO_QUALIFYING_CONFIGURATION`.
+
+Proyección de llamadas, con los dos escenarios separados: expected path 753
+calls (36/381/324/12) y worst case 1554 (57/777/690/30); planner 0. Budget
+recalculado desde cero: cap global worst-case **$84.49** y expected path
+**$16.98**, contra los $498.34 de la matrix anterior, que no se hereda. Todo es
+`ESTIMATE_NOT_BILL`.
+
+Sin cambios: benchmark `semantic-benchmark/1.1.0`
+(`sha256:426dda4d...`), corpus (`21c21f3a...`), splits, held-out membership,
+thresholds 0.80/0.95/0.95 (hash `sha256:145a925f...`), safety gate 51 hard / 7
+reviewable, adjudication protocol (hash `sha256:8ca70d58...`), k=3 semántico y
+1 planner, retry y PASS QA 15%.
+
+Nuevo boundary
+`sha256:daa79023de4e3b72a73f31879d481fbedb75492cc5fb4642c7fd2b4a4dbaa540`,
+determinista cross-process. Runtime productivo `NOT_AFFECTED`: el perfil vivo
+sigue siendo `LUNA_BASELINE_V1` y el routing final sólo se fija tras Phase 9
+qualification y Phase 10 E2E. `authorization = NONE`, `provider calls = 0`,
+`adjudicator calls = 0`, `qualification = NOT_YET_RUN`. Detalle en
+`docs/PHASE9_QUALIFICATION_PROTOCOL.md`.
+
+## Historial — Fase 8.1, benchmark semántico alineado (2026-08-17)
 
 La snapshot `pruebas-personalizadas-corpus/1.0.0` quedó vendorizada byte a byte
 en `evaluation/corpora/pruebas_personalizadas/v1/`: 218 archivos, 8.384.772

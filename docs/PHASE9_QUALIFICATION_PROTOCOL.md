@@ -1,6 +1,13 @@
 # Phase 9 qualification protocol
 
-`phase9-qualification-protocol/1.0.0`
+`phase9-qualification-protocol/1.1.0`
+
+Supersedes `phase9-qualification-protocol/1.0.0`
+(`sha256:e4254b28e9d448334b9288a78f0149f013443fcf5e21f501462801c2a012fffa`),
+which was frozen at `e33f916d6e7eda0a491a25856e1543a567333a93` and
+**never executed**: 0 provider calls, 0 adjudicator calls, 0 authorizations, no
+qualification result. Its status is
+`SUPERSEDED_PRE_EXECUTION_BY_ROUTING_POLICY_AMENDMENT`. See §13.0.
 
 Frozen on top of `semantic-benchmark/1.1.0`
 (`sha256:426dda4d560a8d7d53639dfbaa0773c28565450f06e8ff62d51a8cd1bd6f62ff`)
@@ -13,6 +20,12 @@ at Phase 8.1 baseline `76f2724223c0b928450eabe931bd2894d604667f`.
 Phase 9A freezes how a qualification would be run. It does not run one. The
 first real call requires a separate, explicit authorization that does not exist
 yet.
+
+Phase 9A.1 amended the candidate/routing policy only. The benchmark, corpus,
+fixtures, splits, thresholds, safety gates, adjudication protocol and k are
+carried over bit-identical; the adjudication protocol and thresholds hashes are
+unchanged from 1.0.0. What changed is which configurations may be executed, in
+what order, and what they cost.
 
 Regenerate and verify with:
 
@@ -260,43 +273,115 @@ truncation risk at the production caps. Truncation is a `TECHNICAL_FAILURE`
 bounded by the 2% technical gate, never a `MODEL_FAILURE`, and it is not retried
 because an identical request truncates identically.
 
+## 13.0 Why 1.0.0 was superseded before it ran
+
+1.0.0 mixed model families inside a stage: P04 climbed luna → terra → sol, and
+P06/P07 fell back to terra. An explicit product decision replaced that with a
+family constraint per pipeline side. Because 1.0.0 produced no result of any
+kind, nothing observed could have motivated the change — the amendment is
+pre-registration, not a reaction.
+
+The 1.0.0 record is kept in `superseded_protocols` inside the new boundary
+rather than deleted, so the supersession is auditable.
+
+## 13.1 Routing policy (the user's decision)
+
+The pipeline has two economic surfaces and each gets exactly one family.
+
+| | Activity side | Submission side |
+| --- | --- | --- |
+| Stages | P01, P02, P03, P04 | P06, P07, P09 |
+| Family | `gpt-5.6-terra` | `gpt-5.6-luna` |
+| Default reasoning | HIGH | HIGH |
+| Ladder | HIGH → XHIGH | HIGH → XHIGH → MAX |
+| Ceiling | XHIGH | MAX |
+| Cross-family fallback | `FORBIDDEN` | `FORBIDDEN` |
+| Forbidden here | luna, sol | terra, sol |
+
+P01–P04 run once per activity and the cost amortizes across every deliverable
+built from it, so the stronger family buys interpretation and construction
+quality where it is cheapest to buy. P06/P07/P09 multiply by submission, and P07
+multiplies again by opportunity; luna is the family deliberately assigned to
+that surface. Raising reasoning there raises output tokens but never changes the
+per-submission model class, which is the property being protected.
+
+Escalation only ever moves up the ladder of the family that already owns the
+stage. Exhausting the ladder yields `NO_QUALIFYING_CONFIGURATION` — a reportable
+product finding, not a licence to spend the other family's money after seeing a
+result. `gpt-5.6-sol` is a candidate nowhere; it is recorded in
+`excluded_model_families` rather than silently dropped, and a Sol candidate now
+fails validation with `PHASE9_UNVERIFIED_MODEL_ID`.
+
+The machine-readable form is
+`evaluation/semantic_benchmark/v1_1/phase9/phase9_routing_policy_intent.json`.
+
+**This is `TARGET_ROUTING_POLICY_INTENT`, not a deploy.** Production routing is
+unchanged and still `LUNA_BASELINE_V1`; it locks only after Phase 9
+qualification and Phase 10 end-to-end verification.
+
+### P01–P03 are not qualified by this benchmark
+
+`semantic-benchmark/1.1.0` carries **no qualification property** for P01, P02 or
+P03. Only their target routing policy is frozen here.
+
+| Stage | Status |
+| --- | --- |
+| P01 | `PHASE10_OPERATIONAL_VERIFICATION_REQUIRED` |
+| P02 | `PHASE10_OPERATIONAL_VERIFICATION_REQUIRED` |
+| P03 | `PHASE10_OPERATIONAL_VERIFICATION_REQUIRED` |
+| P04 | `PHASE9_SEMANTIC_QUALIFICATION` |
+
+No benchmark case was invented for them, and P04 passing says nothing about
+them. Phase 10 must verify them operationally.
+
+Planner is `DETERMINISTIC_NO_MODEL` (21 cases, 0 provider calls). P05 and P08
+are `HISTORICAL_INACTIVE`. P10 is `DISABLED`.
+
 ## 13. Candidate matrix
 
-Verified 2026-08-17 against the official OpenAI model and pricing pages. All
-three models are GA, Responses-API capable, structured-output capable, 1.05M
-context, 128K max output, efforts `none/low/medium/high/xhigh/max`. All three
-are already in the product's approved provider registry, so no new provider
-architecture is introduced. **No dated snapshot is published for the gpt-5.6
-family**, so each entry is recorded as a stable alias with an explicit drift
-risk — none is invented.
+Re-verified 2026-08-17 against the official OpenAI model and pricing pages:
+`REVERIFIED_UNCHANGED`. Both families are GA, Responses-API capable,
+structured-output capable, 1.05M context, 128K max output, efforts
+`none/low/medium/high/xhigh/max` — so `MAX` on luna is a real, published effort,
+not an invention. Both are already in the product's approved provider registry,
+so no new provider architecture is introduced. **No dated snapshot is published
+for the gpt-5.6 family**, so each entry is recorded as a stable alias with an
+explicit drift risk.
 
 `max_output_tokens` is pinned to the live production registry contract for every
-candidate. Phase 9A changes no product runtime, and qualifying a cap the product
-cannot issue would qualify nothing.
+candidate and does **not** widen for a deeper rung. Phase 9 qualifies
+configurations the product can actually execute, not laboratory variants. A
+deeper rung that exhausts the cap and truncates is a `TECHNICAL_FAILURE`, never
+a `MODEL_FAILURE`.
 
-P04 runs once per activity and its blueprint constrains every later submission,
-so its ladder may climb to the frontier model. P06/P07/P09 run per submission,
-so they escalate reasoning effort on the cheap model before spending a model
-class — effort is the cheaper axis.
-
-| Stage | Order | Candidate | Model | Effort | Cap | Hypothesis |
+| Stage | Order | Candidate | Model | Effort | Cap | Route profile |
 | --- | --- | --- | --- | --- | --- | --- |
-| P04 | 1 | `P04-C1-LUNA-HIGH` | luna | HIGH | 16k | incumbent suffices |
-| P04 | 2 | `P04-C2-TERRA-HIGH` | terra | HIGH | 16k | model-class bound |
-| P04 | 3 | `P04-C3-SOL-HIGH` | sol | HIGH | 16k | amortization justifies frontier |
-| P06 | 1 | `P06-C1-LUNA-HIGH` | luna | HIGH | 16k | incumbent suffices |
-| P06 | 2 | `P06-C2-LUNA-XHIGH` | luna | XHIGH | 16k | depth, not class |
-| P06 | 3 | `P06-C3-TERRA-HIGH` | terra | HIGH | 16k | needs stronger class |
-| P07 | 1 | `P07-C1-LUNA-HIGH` | luna | HIGH | 10k | incumbent suffices |
-| P07 | 2 | `P07-C2-LUNA-XHIGH` | luna | XHIGH | 10k | most reasoning-dense stage |
-| P07 | 3 | `P07-C3-TERRA-HIGH` | terra | HIGH | 10k | needs stronger class |
-| P09 | 1 | `P09-C1-LUNA-HIGH` | luna | HIGH | 10k | server-constrained enrichment |
-| P09 | 2 | `P09-C2-LUNA-XHIGH` | luna | XHIGH | 10k | depth closes residual |
+| P04 | 1 | `P04-C1-TERRA-HIGH` | terra | HIGH | 16k | `TERRA_HIGH_V1` |
+| P04 | 2 | `P04-C2-TERRA-XHIGH` | terra | XHIGH | 16k | `TERRA_XHIGH_V1` |
+| P06 | 1 | `P06-C1-LUNA-HIGH` | luna | HIGH | 16k | `LUNA_BASELINE_V1` |
+| P06 | 2 | `P06-C2-LUNA-XHIGH` | luna | XHIGH | 16k | `LUNA_XHIGH_V1` |
+| P06 | 3 | `P06-C3-LUNA-MAX` | luna | MAX | 16k | `LUNA_MAX_V1` |
+| P07 | 1 | `P07-C1-LUNA-HIGH` | luna | HIGH | 10k | `LUNA_BASELINE_V1` |
+| P07 | 2 | `P07-C2-LUNA-XHIGH` | luna | XHIGH | 10k | `LUNA_XHIGH_V1` |
+| P07 | 3 | `P07-C3-LUNA-MAX` | luna | MAX | 10k | `LUNA_MAX_V1` |
+| P09 | 1 | `P09-C1-LUNA-HIGH` | luna | HIGH | 10k | `LUNA_BASELINE_V1` |
+| P09 | 2 | `P09-C2-LUNA-XHIGH` | luna | XHIGH | 10k | `LUNA_XHIGH_V1` |
+| P09 | 3 | `P09-C3-LUNA-MAX` | luna | MAX | 10k | `LUNA_MAX_V1` |
 
-Changing reasoning effort creates a new candidate. Two candidates are enough for
-P09 — there is no third hypothesis worth paying for. If every candidate for a
-stage fails, the result is `NO_QUALIFYING_CONFIGURATION`; widening the matrix
-mid-qualification is forbidden and would require a new protocol boundary.
+11 candidates. Every route profile above already exists in the product registry
+and covers its stage at the stated model and effort — `TERRA_XHIGH_V1` covers
+P04 at terra/XHIGH, and `LUNA_MAX_V1` covers P06/P07/P09 at luna/MAX. None was
+invented and no product routing was modified. Validation rejects a candidate
+that names any other profile for its family and rung.
+
+`LOW`, `MEDIUM` and `NONE` are not candidate rungs. The matrix expresses a
+product decision, not an exhaustive model search, so nothing is added "for
+coverage".
+
+Changing reasoning effort creates a new candidate. If every rung of a stage
+fails, the result is `NO_QUALIFYING_CONFIGURATION`; widening the matrix
+mid-qualification is forbidden and would require a new protocol boundary. In
+particular the ladder may not be extended into another family.
 
 Old Luna/Terra/Sol qualifications are `HISTORICAL_NON_CANONICAL_EVIDENCE`. Their
 pass rates, failure categories, winning efforts and rankings did not inform any
@@ -305,29 +390,64 @@ understanding and for reusing still-correct budget/authorization mechanisms.
 
 ## 14. Promotion ladder
 
-`SMOKE → CORE → HELD_OUT_CONFIRMATION`, no skipping. Every candidate screens on
-SMOKE; only SMOKE-qualified candidates run CORE; only the selected stage winner
-runs held-out. There is no full cross-product.
+`SMOKE → CORE → HELD_OUT_CONFIRMATION`, no skipping.
 
-Stage winners may differ. There is no requirement that one model win everywhere.
+**Selection rule: `LOWEST_REASONING_CONFIGURATION_THAT_QUALIFIES`.** Within a
+stage the candidates differ only in reasoning effort, so the ladder is totally
+ordered and the only open question is how little reasoning the bar needs.
 
-A winner rejected at held-out is rejected for that stage; the next CORE-qualified
-candidate by tie-break order may attempt held-out exactly once. No candidate is
-tuned and thresholds do not move.
+Escalation is therefore **failure-driven and sequential**. Only the lowest
+untried rung screens on SMOKE; it runs CORE only if it clears SMOKE; a deeper
+rung is attempted only once the shallower one has failed. A rung that qualifies
+on CORE is the stage winner and no deeper rung executes at all. Reasoning is
+never raised out of curiosity or for comparison. The 11 candidates never all
+run.
+
+This is not a loss of experimental validity relative to 1.0.0. That matrix
+compared model *classes*, so running every candidate had a purpose. This matrix
+is a single-family ladder, so a deeper rung can add nothing to a selection that
+a shallower qualifying rung has already settled.
+
+Stage winners may differ; there is no requirement that one configuration win
+everywhere.
+
+### Held-out is confirmation, never tuning
+
+Reasoning escalation is decided entirely in SMOKE and CORE. A configuration that
+reaches held-out was already selected by the pre-registered rules above.
+
+The 1.0.0 fallback clause is preserved verbatim — *"the next CORE-qualified
+candidate by tie-break order may attempt held-out exactly once"* — because it
+was pre-registered. Under sequential escalation its precondition can never be
+satisfied: a deeper rung reaches CORE only after the shallower one has already
+failed CORE, so **exactly one candidate per stage is ever CORE-qualified** when
+held-out runs, and there is no second one to fall back to. The clause is
+therefore vacuous here, and the artifact records
+`held_out_fallback_reachable_under_this_matrix: false`.
+
+Running a previously untried rung after seeing a held-out failure would be
+selection on held-out evidence, which the held-out lock forbids. So on held-out
+failure the outcome is `HELD_OUT_CONFIRMATION_FAILED` and the stage reports
+`NO_QUALIFYING_CONFIGURATION`. No new candidate is invented, the family is not
+widened, thresholds do not move, and the reasoning ladder does not change.
 
 Tie-break, pre-registered and total:
 
 1. zero hard-safety failures
 2. meets the rung threshold
-3. lower stability disagreement count
-4. lower confirmed model failure rate
-5. lower technical failure rate
-6. lower projected production cost
-7. lower p95 end-to-end latency
-8. lexicographically smallest candidate id
+3. **lowest reasoning rung in the family ladder**
+4. lower stability disagreement count
+5. lower confirmed model failure rate
+6. lower technical failure rate
+7. lower projected production cost
+8. lower p95 end-to-end latency
+9. lexicographically smallest candidate id
 
-Cost only separates configurations that already meet the quality bar. Step 8
-exists so the rule stays deterministic under an exact tie.
+Step 3 decides every real case under this matrix, because a stage's candidates
+differ in nothing else; the later steps are kept so the order stays total if a
+future amendment ever widens a stage. Cost only separates configurations that
+already meet the quality bar. The final step exists so the rule stays
+deterministic under an exact tie.
 
 Latency is recorded (`provider_latency_ms`, `end_to_end_stage_latency_ms`) but is
 never a semantic failure. No production SLO exists yet, so it is reported
@@ -380,29 +500,56 @@ All figures are `ESTIMATE_NOT_BILL`.
 
 ## 17. Call projections and budget caps
 
-Calls per candidate at k=3: SMOKE P04 3 / P06 6 / P07 18 / P09 3; CORE 18 / 192 /
-165 / 6; HELD_OUT 15 / 183 / 141 / 3. One candidate across the whole corpus is
-251 calls at k=1 and 753 at k=3.
+Case counts are unchanged (P04 12, P06 127, P07 108, P09 4; planner 21,
+deterministic, 0 calls) and so are the splits. Calls per candidate at k=3:
+SMOKE P04 3 / P06 6 / P07 18 / P09 3; CORE 18 / 192 / 165 / 6; HELD_OUT
+15 / 183 / 141 / 3.
+
+Sequential escalation makes the two scenarios genuinely different numbers, and
+they are never quoted as one:
+
+| Stage | Rungs | Expected path | Worst case |
+| --- | --- | --- | --- |
+| P04 | 2 | 36 | 57 |
+| P06 | 3 | 381 | 777 |
+| P07 | 3 | 324 | 690 |
+| P09 | 3 | 12 | 30 |
+| **Total** | | **753** | **1554** |
+
+*Expected economic path* = the default HIGH rung qualifies on SMOKE and CORE and
+is confirmed on held-out, so no deeper rung ever executes. *Worst case* = every
+rung clears SMOKE and fails CORE until the last, which then qualifies and is
+confirmed.
 
 Caps exist at every level — per call (worst case × 1.25), per candidate per rung,
-per stage, and globally. A stage cap funds all candidates through SMOKE and CORE
-plus two held-out passes of its most expensive candidate, because the winner
-could be the expensive one and a rejected winner may be replaced once.
+per stage, and globally. A stage cap funds every rung through SMOKE and CORE plus
+**one** held-out pass. 1.0.0 funded two; the second is not funded here because
+the fallback that would consume it is unreachable (§14).
 
-| Stage | Cap |
-| --- | --- |
-| P04 | $60.06 |
-| P06 | $220.79 |
-| P07 | $133.82 |
-| P09 | $0.62 |
-| **Global** | **$498.34** |
+The global cap was **recomputed from scratch**. The 1.0.0 cap of $498.34 priced
+sol at P04 and terra per submission and carries no authority over this plan.
+
+| Stage | Family | Worst-case cap | Expected path |
+| --- | --- | --- | --- |
+| P04 | terra | $22.73 | $7.32 |
+| P06 | luna | $28.46 | $5.91 |
+| P07 | luna | $18.44 | $3.63 |
+| P09 | luna | $0.78 | $0.13 |
+| **Global** | | **$84.49** | **$16.98** |
+
+The global figure is the worst case including the 1.2 global margin; the
+expected-path column is an expectation, not a cap. A deeper rung costs more
+because reasoning tokens bill as output tokens against the same cap, but it never
+changes the model class — which is exactly the economic property the submission
+side was constrained to protect.
 
 A call whose projected cost would breach any cap is refused **before** provider
 transport is constructed. A separate 10% technical retry reserve is carried at
 both the rung and stage level.
 
-Freezing a cap is not authorizing a spend. Phase 9A produces
-`BUDGET_PLAN_FROZEN` only; authorization stays `NONE`.
+Freezing a cap is not authorizing a spend. Phase 9A.1 produces
+`BUDGET_PLAN_FROZEN` only; authorization stays `NONE`, and every figure is
+`ESTIMATE_NOT_BILL`.
 
 ## 18. Adjudication load
 
@@ -435,14 +582,32 @@ or the alias no longer resolves, or status is no longer GA: **stop**. Recompute
 the budget, issue a new protocol and budget boundary, and obtain a new explicit
 authorization.
 
-## 20. What Phase 9A did not touch
+## 20. What Phase 9A.1 did not touch
 
-No product runtime change. P04/P06/P07/P09 prompts, product routing, workflow,
-materializers, planner, database, frontend and OpenAPI are all untouched. The
-corpus, fixtures, property bindings, tagging, oracle and splits are unchanged —
-Phase 9A reads them and never restructures them. The Phase 8.1 candidate matrix
-template stays `UNSET` by design; it is the benchmark-side placeholder, while
+No product runtime change. P01–P09 prompts, product routing, workflow,
+materializers, planner, database, frontend and OpenAPI are all untouched; the
+live default profile is still `LUNA_BASELINE_V1`. The corpus, fixtures, property
+bindings, tagging, oracle and splits are unchanged — Phase 9 reads them and never
+restructures them. The Phase 8.1 candidate matrix template stays `UNSET` by
+design; it is the benchmark-side placeholder, while
 `phase9/candidate_matrix.json` is the authoritative frozen matrix.
+
+Carried over bit-identical from 1.0.0, and asserted as such by the tests:
+
+| Component | Evidence |
+| --- | --- |
+| Benchmark boundary | `sha256:426dda4d…` unchanged |
+| Corpus package boundary | `21c21f3a…` unchanged |
+| Splits and held-out membership | unchanged |
+| Adjudication protocol | hash `sha256:8ca70d58…` unchanged |
+| Thresholds (0.80 / 0.95 / 0.95) | hash `sha256:145a925f…` unchanged |
+| Safety gate (51 hard / 7 reviewable) | unchanged, artifact byte-identical |
+| k (semantic 3, planner 1) | unchanged |
+| Retry, PASS QA 15%, two-pass, blinding | unchanged |
+
+What changed: the candidate matrix, the routing policy intent, the escalation
+and selection semantics, the pricing snapshot's priced families, the budget, and
+consequently the protocol boundary.
 
 ## 21. Artifacts
 
@@ -450,7 +615,7 @@ Protocol (`evaluation/semantic_benchmark/v1_1/phase9/`):
 `qualification_protocol.json`, `candidate_matrix.json`,
 `adjudication_protocol.json`, `safety_gate.json`,
 `qualification_thresholds.json`, `pricing_snapshot.json`, `budget_plan.json`,
-`execution_plan.json`, and `schemas/`.
+`execution_plan.json`, `phase9_routing_policy_intent.json`, and `schemas/`.
 
 Reports (`reports/semantic_benchmark/v1_1/phase9/`):
 `protocol_freeze_report.json`, `candidate_comparison_plan.json`,
@@ -463,10 +628,15 @@ No real-output report exists.
 ```
 PHASE9_PROTOCOL_READY_FOR_EXECUTION
 REAL_EXECUTION_NOT_AUTHORIZED
+protocol             = phase9-qualification-protocol/1.1.0
+protocol boundary    = sha256:daa79023de4e3b72a73f31879d481fbedb75492cc5fb4642c7fd2b4a4dbaa540
+superseded           = 1.0.0 (sha256:e4254b28…) SUPERSEDED_PRE_EXECUTION
+benchmark            = semantic-benchmark/1.1.0 (sha256:426dda4d…) UNCHANGED
+candidate matrix     = FROZEN (11 candidates)
 authorization        = NONE
 provider calls       = 0
 adjudicator calls    = 0
-candidate matrix     = FROZEN
+qualification        = NOT_YET_RUN
 ```
 
 The first real call requires a later, explicit authorization from the user.

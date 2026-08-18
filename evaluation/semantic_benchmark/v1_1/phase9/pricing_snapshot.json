@@ -12,16 +12,11 @@
       "input_price": 2.0,
       "model": "gpt-5.6-terra",
       "output_price": 12.0
-    },
-    {
-      "cached_input_price": 0.5,
-      "input_price": 5.0,
-      "model": "gpt-5.6-sol",
-      "output_price": 30.0
     }
   ],
   "notes": "Standard short-context rates read from the official OpenAI pricing page on 2026-08-17. The gpt-5.6 family carries a long-context tier at roughly 2x input, but every projected Phase 9 request is far below that threshold, so only short-context rates are used. Reasoning tokens are billed as output tokens and count against max_output_tokens, which is why the worst-case output term below is the full cap. Cache-write pricing exists but no cache reuse is assumed anywhere in this plan.",
   "official_source": "https://developers.openai.com/api/docs/pricing",
+  "priced_model_families_note": "Only the families this protocol can bill are priced: Terra on the activity side and Luna on the submission side.",
   "pricing_unit": "USD_PER_MILLION_TOKENS",
   "refresh_guard": {
     "action": "RE_READ_OFFICIAL_OPENAI_PRICING_AND_MODEL_PAGES",
@@ -38,6 +33,31 @@
     "when": "IMMEDIATELY_BEFORE_THE_FIRST_REAL_CALL_OF_PHASE_9B"
   },
   "retrieved_at": "2026-08-17",
-  "schema_version": "phase9-pricing-snapshot/1.0.0",
+  "reverification": {
+    "authority": "OFFICIAL_OPENAI_ONLY",
+    "checked": [
+      "input_price",
+      "cached_input_price",
+      "output_price",
+      "model_status_ga",
+      "context_window",
+      "max_output_tokens",
+      "reasoning_effort_values",
+      "responses_api_support",
+      "structured_outputs_support"
+    ],
+    "does_not_replace_9b_refresh": "Phase 9B must still re-read both pages immediately before its first real call. This re-verification is dated evidence for the budget frozen here, not a substitute for that guard.",
+    "max_reasoning_effort_confirmed_available": true,
+    "repository_history_used_as_authority": false,
+    "reverified_at": "2026-08-17",
+    "reverified_for": "phase9-qualification-protocol/1.1.0",
+    "sources_reread": [
+      "https://developers.openai.com/api/docs/pricing",
+      "https://developers.openai.com/api/docs/models/gpt-5.6-terra",
+      "https://developers.openai.com/api/docs/models/gpt-5.6-luna"
+    ],
+    "status": "REVERIFIED_UNCHANGED"
+  },
+  "schema_version": "phase9-pricing-snapshot/1.1.0",
   "source_authority": "OFFICIAL_OPENAI_ONLY"
 }

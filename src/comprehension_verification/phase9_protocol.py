@@ -1,4 +1,11 @@
-"""Phase 9A qualification protocol freeze.
+"""Phase 9 qualification protocol freeze (routing-policy amendment 9A.1).
+
+Version 1.1.0 supersedes 1.0.0 before any real call was ever issued.  The
+benchmark, corpus, fixtures, splits, thresholds, safety gate and adjudication
+protocol are carried over untouched; only the candidate/routing policy changed,
+on an explicit product decision: the activity side runs Terra, the submission
+side runs Luna, and escalation only ever raises reasoning inside the family
+that owns the stage.
 
 This module is evaluation governance only.  It performs no provider call, it
 issues no billable authorization, and it never mutates the Phase 8.1 benchmark
@@ -27,7 +34,7 @@ from types import MappingProxyType
 from typing import Any, Final, Mapping, Sequence
 
 
-PROTOCOL_VERSION: Final = "phase9-qualification-protocol/1.0.0"
+PROTOCOL_VERSION: Final = "phase9-qualification-protocol/1.1.0"
 ADJUDICATION_PROTOCOL_VERSION: Final = "phase9-adjudication-protocol/1.0.0"
 BENCHMARK_VERSION: Final = "semantic-benchmark/1.1.0"
 BENCHMARK_BOUNDARY_HASH: Final = (
@@ -40,6 +47,42 @@ PHASE_8_1_BASELINE_SHA: Final = "76f2724223c0b928450eabe931bd2894d604667f"
 
 AUTHORIZATION_STATE: Final = "NONE"
 EXECUTION_STATE: Final = "REAL_EXECUTION_NOT_AUTHORIZED"
+
+# Phase 9A froze 1.0.0 and never executed it.  The record is kept rather than
+# rewritten: a superseded protocol that never ran is evidence, and deleting it
+# would make the amendment unauditable.
+SUPERSEDED_PROTOCOLS: Final = (
+    MappingProxyType(
+        {
+            "protocol_version": "phase9-qualification-protocol/1.0.0",
+            "protocol_boundary_hash": (
+                "sha256:e4254b28e9d448334b9288a78f0149f013443fcf5e21f501462801c2a012fffa"
+            ),
+            "candidate_matrix_hash": (
+                "sha256:fe9a4d52c516b4103e33b5af36ef7dd121eed8dc286dc86b6cd214c0c2b9c00f"
+            ),
+            "status": "SUPERSEDED_PRE_EXECUTION_BY_ROUTING_POLICY_AMENDMENT",
+            "superseded_by": "phase9-qualification-protocol/1.1.0",
+            "frozen_at_commit": "e33f916d6e7eda0a491a25856e1543a567333a93",
+            "provider_calls_under_this_protocol": 0,
+            "adjudicator_calls_under_this_protocol": 0,
+            "billable_authorizations_under_this_protocol": 0,
+            "qualification_results_produced": False,
+            "superseding_reason": (
+                "An explicit product decision constrained each pipeline side to "
+                "one model family: Terra activity-side, Luna submission-side, "
+                "with escalation only inside the owning family. The 1.0.0 "
+                "matrix mixed families per stage and included Sol, so it no "
+                "longer describes the experiment the product wants to run."
+            ),
+            "why_this_is_not_result_driven": (
+                "1.0.0 produced no qualification result of any kind. The "
+                "amendment was authored before the first real call, so no "
+                "outcome could have motivated it."
+            ),
+        }
+    ),
+)
 
 REPO_ROOT: Final = Path(__file__).resolve().parents[2]
 BENCHMARK_FIXTURE_DIR: Final = REPO_ROOT / "evaluation/semantic_benchmark/v1_1/fixtures"
@@ -401,25 +444,34 @@ VERIFIED_MODELS: Final = (
         "status": "GA",
         "official_source": "https://developers.openai.com/api/docs/models/gpt-5.6-terra",
     },
-    {
-        "model": "gpt-5.6-sol",
-        "identifier_kind": MODEL_IDENTIFIER_KIND,
-        "context_window": 1_050_000,
-        "max_output_tokens": 128_000,
-        "responses_api": True,
-        "structured_outputs": True,
-        "reasoning_efforts": ("none", "low", "medium", "high", "xhigh", "max"),
-        "status": "GA",
-        "alias_note": "the bare gpt-5.6 alias routes here",
-        "official_source": "https://developers.openai.com/api/docs/models/gpt-5.6-sol",
-    },
 )
 VERIFIED_MODEL_IDS: Final = frozenset(entry["model"] for entry in VERIFIED_MODELS)
+
+# Sol was verified in Phase 9A and is deliberately not a Phase 9 candidate any
+# more.  It stays recorded as an exclusion rather than being deleted, so the
+# amendment reads as a decision instead of an omission, and so that an
+# accidental Sol candidate fails PHASE9_UNVERIFIED_MODEL_ID at validation.
+EXCLUDED_MODEL_FAMILIES: Final = (
+    MappingProxyType(
+        {
+            "model": "gpt-5.6-sol",
+            "official_source": "https://developers.openai.com/api/docs/models/gpt-5.6-sol",
+            "verified_in_phase_9a": True,
+            "candidate_in_phase_9": False,
+            "exclusion_reason": (
+                "The routing policy assigns the activity side to Terra and the "
+                "submission side to Luna. Sol is a candidate on neither side, "
+                "so pricing it or running it would measure a configuration the "
+                "product has decided not to ship."
+            ),
+        }
+    ),
+)
 
 MAX_CANDIDATES_PER_STAGE: Final = 3
 
 # max_output_tokens is pinned to the live production registry contract for
-# every candidate.  Phase 9A must not change product runtime, and qualifying a
+# every candidate.  Phase 9 must not change product runtime, and qualifying a
 # cap the product cannot actually issue would qualify nothing.
 STAGE_PRODUCTION_OUTPUT_CAP: Final[Mapping[str, int]] = MappingProxyType(
     {"P04": 16_000, "P06": 16_000, "P07": 10_000, "P09": 10_000}
@@ -433,50 +485,178 @@ STAGE_PROMPT_ID: Final[Mapping[str, str]] = MappingProxyType(
     }
 )
 
-CANDIDATE_MATRIX: Final = (
-    # P04 runs once per activity and its blueprint constrains every later
-    # submission, so its ladder is allowed to climb to the frontier model.
+# ---------------------------------------------------------------------------
+# Routing policy intent (user decision, Phase 9A.1)
+# ---------------------------------------------------------------------------
+
+# The pipeline has two economic surfaces and the product decided to give each
+# one a single model family.
+#
+# The activity side (P01-P04) runs once per activity and its cost amortizes
+# across every deliverable built from that activity, so it buys the stronger
+# family.  The submission side (P06/P07/P09) multiplies by submission, and P07
+# multiplies again by opportunity, so it stays on the cheap family and buys
+# depth with reasoning instead of with model class.
+#
+# Escalation therefore only ever moves up the reasoning ladder of the family
+# that already owns the stage.  There is no cross-family fallback in either
+# direction: if the ladder is exhausted, the stage reports
+# NO_QUALIFYING_CONFIGURATION, which is a product finding and not a licence to
+# spend the other family's money after seeing the result.
+ACTIVITY_SIDE_STAGES: Final = ("P01", "P02", "P03", "P04")
+SUBMISSION_SIDE_STAGES: Final = ("P06", "P07", "P09")
+ACTIVITY_SIDE_FAMILY: Final = "gpt-5.6-terra"
+SUBMISSION_SIDE_FAMILY: Final = "gpt-5.6-luna"
+
+CROSS_FAMILY_FALLBACK: Final = "FORBIDDEN"
+CROSS_FAMILY_FALLBACK_RULE: Final = (
+    "A stage may never be rescued by a model family other than the one its "
+    "side owns. Exhausting the ladder yields NO_QUALIFYING_CONFIGURATION. "
+    "Substituting the other family after observing a failure would convert a "
+    "frozen economic constraint into a result-driven choice, which is exactly "
+    "what pre-registration exists to prevent."
+)
+
+# P01-P03 are NOT semantically qualified by semantic-benchmark/1.1.0: it
+# carries no qualification property for them. Only their target routing policy
+# is frozen here; whether they actually operate under it is a Phase 10
+# question. Inventing benchmark cases for them, or inferring their competence
+# from P04's result, would both be fabrications.
+STAGE_QUALIFICATION_STATUS: Final[Mapping[str, str]] = MappingProxyType(
     {
-        "candidate_id": "P04-C1-LUNA-HIGH",
-        "stage": "P04",
-        "model": "gpt-5.6-luna",
-        "reasoning_effort": "HIGH",
-        "max_output_tokens": 16_000,
-        "route_profile_id": "LUNA_BASELINE_V1",
-        "promotion_order": 1,
-        "hypothesis": (
-            "The incumbent production route already meets the blueprint bar; "
-            "if it qualifies, nothing more expensive is justified."
+        "P01": "PHASE10_OPERATIONAL_VERIFICATION_REQUIRED",
+        "P02": "PHASE10_OPERATIONAL_VERIFICATION_REQUIRED",
+        "P03": "PHASE10_OPERATIONAL_VERIFICATION_REQUIRED",
+        "P04": "PHASE9_SEMANTIC_QUALIFICATION",
+        "P06": "PHASE9_SEMANTIC_QUALIFICATION",
+        "P07": "PHASE9_SEMANTIC_QUALIFICATION",
+        "P09": "PHASE9_SEMANTIC_QUALIFICATION",
+    }
+)
+
+# The family that owns each semantically qualified stage, and the only ladder
+# it may climb.
+STAGE_MODEL_FAMILY: Final[Mapping[str, str]] = MappingProxyType(
+    {
+        "P01": ACTIVITY_SIDE_FAMILY,
+        "P02": ACTIVITY_SIDE_FAMILY,
+        "P03": ACTIVITY_SIDE_FAMILY,
+        "P04": ACTIVITY_SIDE_FAMILY,
+        "P06": SUBMISSION_SIDE_FAMILY,
+        "P07": SUBMISSION_SIDE_FAMILY,
+        "P09": SUBMISSION_SIDE_FAMILY,
+    }
+)
+STAGE_REASONING_LADDER: Final[Mapping[str, tuple[str, ...]]] = MappingProxyType(
+    {
+        "P01": ("HIGH", "XHIGH"),
+        "P02": ("HIGH", "XHIGH"),
+        "P03": ("HIGH", "XHIGH"),
+        "P04": ("HIGH", "XHIGH"),
+        "P06": ("HIGH", "XHIGH", "MAX"),
+        "P07": ("HIGH", "XHIGH", "MAX"),
+        "P09": ("HIGH", "XHIGH", "MAX"),
+    }
+)
+DEFAULT_REASONING: Final = "HIGH"
+
+ROUTING_POLICY_INTENT: Final[Mapping[str, Any]] = MappingProxyType(
+    {
+        "schema_version": "phase9-routing-policy-intent/1.0.0",
+        "status": "TARGET_ROUTING_POLICY_INTENT",
+        "authority": "EXPLICIT_USER_PRODUCT_DECISION",
+        "production_runtime_changed_by_this_document": False,
+        "production_routing_locks_after": (
+            "PHASE_9_QUALIFICATION_AND_PHASE_10_E2E"
         ),
-    },
+        "cross_family_fallback": CROSS_FAMILY_FALLBACK,
+        "cross_family_fallback_rule": CROSS_FAMILY_FALLBACK_RULE,
+        "ACTIVITY_SIDE": {
+            "stages": list(ACTIVITY_SIDE_STAGES),
+            "model_family": ACTIVITY_SIDE_FAMILY,
+            "default_reasoning": DEFAULT_REASONING,
+            "max_reasoning": "XHIGH",
+            "reasoning_ladder": ["HIGH", "XHIGH"],
+            "cross_family_fallback": CROSS_FAMILY_FALLBACK,
+            "forbidden_families": ["gpt-5.6-luna", "gpt-5.6-sol"],
+            "rationale": (
+                "P01-P04 run once per activity and the cost amortizes across "
+                "every deliverable produced from it, so the stronger family "
+                "buys interpretation and construction quality where it is "
+                "cheapest to buy."
+            ),
+            "qualification_status": {
+                stage: STAGE_QUALIFICATION_STATUS[stage]
+                for stage in ACTIVITY_SIDE_STAGES
+            },
+        },
+        "SUBMISSION_SIDE": {
+            "stages": list(SUBMISSION_SIDE_STAGES),
+            "model_family": SUBMISSION_SIDE_FAMILY,
+            "default_reasoning": DEFAULT_REASONING,
+            "max_reasoning": "MAX",
+            "reasoning_ladder": ["HIGH", "XHIGH", "MAX"],
+            "cross_family_fallback": CROSS_FAMILY_FALLBACK,
+            "forbidden_families": ["gpt-5.6-terra", "gpt-5.6-sol"],
+            "rationale": (
+                "P06/P07/P09 multiply by submission and P07 multiplies again "
+                "by opportunity. Luna is the family deliberately assigned to "
+                "that surface. Raising reasoning raises output tokens but "
+                "keeps the per-submission model class, which is the economic "
+                "property being protected."
+            ),
+            "qualification_status": {
+                stage: STAGE_QUALIFICATION_STATUS[stage]
+                for stage in SUBMISSION_SIDE_STAGES
+            },
+        },
+        "PLANNER": "DETERMINISTIC_NO_MODEL",
+        "P05": "HISTORICAL_INACTIVE",
+        "P08": "HISTORICAL_INACTIVE",
+        "P10": "DISABLED",
+        "p01_p03_limitation": (
+            "semantic-benchmark/1.1.0 carries no qualification property for "
+            "P01, P02 or P03. Their entry here is target routing policy only. "
+            "They are not semantically qualified by Phase 9 and P04 passing "
+            "says nothing about them; Phase 10 must verify them operationally."
+        ),
+    }
+)
+
+CANDIDATE_MATRIX: Final = (
+    # Activity side. Terra only, and the ladder stops at XHIGH: MAX Terra is
+    # not a candidate, so a P04 that fails XHIGH reports
+    # NO_QUALIFYING_CONFIGURATION rather than climbing further.
     {
-        "candidate_id": "P04-C2-TERRA-HIGH",
+        "candidate_id": "P04-C1-TERRA-HIGH",
         "stage": "P04",
         "model": "gpt-5.6-terra",
         "reasoning_effort": "HIGH",
         "max_output_tokens": 16_000,
         "route_profile_id": "TERRA_HIGH_V1",
-        "promotion_order": 2,
+        "promotion_order": 1,
         "hypothesis": (
-            "Blueprint construction is model-class bound rather than effort "
-            "bound; a mid-tier model closes the residual."
+            "The family the activity side has been assigned already meets the "
+            "blueprint bar at its default reasoning; if it qualifies, no "
+            "deeper reasoning is justified."
         ),
     },
     {
-        "candidate_id": "P04-C3-SOL-HIGH",
+        "candidate_id": "P04-C2-TERRA-XHIGH",
         "stage": "P04",
-        "model": "gpt-5.6-sol",
-        "reasoning_effort": "HIGH",
+        "model": "gpt-5.6-terra",
+        "reasoning_effort": "XHIGH",
         "max_output_tokens": 16_000,
-        "route_profile_id": "SOL_HIGH_V1",
-        "promotion_order": 3,
+        "route_profile_id": "TERRA_XHIGH_V1",
+        "promotion_order": 2,
         "hypothesis": (
-            "Once-per-activity amortization justifies the frontier model if "
-            "and only if the cheaper classes fail the bar."
+            "Residual blueprint defects are reasoning-depth bound within "
+            "Terra. This is the last rung the activity side may buy."
         ),
     },
-    # P06/P07/P09 run per submission. Their ladders escalate effort on the cheap
-    # model before spending a model class, because effort is the cheaper axis.
+    # Submission side. Luna only, climbing HIGH -> XHIGH -> MAX. Deeper
+    # reasoning costs more output tokens but never changes the model class the
+    # per-submission surface is allowed to bill.
     {
         "candidate_id": "P06-C1-LUNA-HIGH",
         "stage": "P06",
@@ -485,7 +665,7 @@ CANDIDATE_MATRIX: Final = (
         "max_output_tokens": 16_000,
         "route_profile_id": "LUNA_BASELINE_V1",
         "promotion_order": 1,
-        "hypothesis": "The incumbent production route already maps evidence adequately.",
+        "hypothesis": "The assigned submission-side family already maps evidence adequately.",
     },
     {
         "candidate_id": "P06-C2-LUNA-XHIGH",
@@ -497,18 +677,21 @@ CANDIDATE_MATRIX: Final = (
         "promotion_order": 2,
         "hypothesis": (
             "Residual evidence-mapping errors are reasoning-depth bound, not "
-            "model-class bound, and cost nothing extra per input token."
+            "model-class bound."
         ),
     },
     {
-        "candidate_id": "P06-C3-TERRA-HIGH",
+        "candidate_id": "P06-C3-LUNA-MAX",
         "stage": "P06",
-        "model": "gpt-5.6-terra",
-        "reasoning_effort": "HIGH",
+        "model": "gpt-5.6-luna",
+        "reasoning_effort": "MAX",
         "max_output_tokens": 16_000,
-        "route_profile_id": "TERRA_HIGH_V1",
+        "route_profile_id": "LUNA_MAX_V1",
         "promotion_order": 3,
-        "hypothesis": "Evidence mapping needs a stronger model class than luna.",
+        "hypothesis": (
+            "The deepest reasoning the submission-side family offers is the "
+            "last rung available before NO_QUALIFYING_CONFIGURATION."
+        ),
     },
     {
         "candidate_id": "P07-C1-LUNA-HIGH",
@@ -518,7 +701,7 @@ CANDIDATE_MATRIX: Final = (
         "max_output_tokens": 10_000,
         "route_profile_id": "LUNA_BASELINE_V1",
         "promotion_order": 1,
-        "hypothesis": "The incumbent production route already builds sound questions.",
+        "hypothesis": "The assigned submission-side family already builds sound questions.",
     },
     {
         "candidate_id": "P07-C2-LUNA-XHIGH",
@@ -534,14 +717,17 @@ CANDIDATE_MATRIX: Final = (
         ),
     },
     {
-        "candidate_id": "P07-C3-TERRA-HIGH",
+        "candidate_id": "P07-C3-LUNA-MAX",
         "stage": "P07",
-        "model": "gpt-5.6-terra",
-        "reasoning_effort": "HIGH",
+        "model": "gpt-5.6-luna",
+        "reasoning_effort": "MAX",
         "max_output_tokens": 10_000,
-        "route_profile_id": "TERRA_HIGH_V1",
+        "route_profile_id": "LUNA_MAX_V1",
         "promotion_order": 3,
-        "hypothesis": "Question construction needs a stronger model class than luna.",
+        "hypothesis": (
+            "P07 multiplies by opportunity as well as by submission, so the "
+            "deepest Luna rung is the last one the economics permit."
+        ),
     },
     {
         "candidate_id": "P09-C1-LUNA-HIGH",
@@ -553,7 +739,7 @@ CANDIDATE_MATRIX: Final = (
         "promotion_order": 1,
         "hypothesis": (
             "P09 is an alias-only enrichment of an already approved assessment "
-            "with server-owned identity, so the cheapest route should suffice."
+            "with server-owned identity, so the default rung should suffice."
         ),
     },
     {
@@ -566,16 +752,53 @@ CANDIDATE_MATRIX: Final = (
         "promotion_order": 2,
         "hypothesis": "Guide enrichment residuals are reasoning-depth bound.",
     },
+    {
+        "candidate_id": "P09-C3-LUNA-MAX",
+        "stage": "P09",
+        "model": "gpt-5.6-luna",
+        "reasoning_effort": "MAX",
+        "max_output_tokens": 10_000,
+        "route_profile_id": "LUNA_MAX_V1",
+        "promotion_order": 3,
+        "hypothesis": (
+            "The deepest Luna rung, kept for ladder symmetry with the other "
+            "submission-side stages."
+        ),
+    },
 )
 
-# Two candidates are enough for P09: its ladder has no third hypothesis worth
-# paying for. If both fail, Phase 9 reports NO_QUALIFYING_CONFIGURATION for the
-# stage instead of silently widening the matrix, because widening it requires a
-# new protocol boundary.
+# Selection is not a search for the best configuration; the family is already
+# fixed, so the ladder is totally ordered and the only open question is how
+# little reasoning the bar needs.
+# The route profile a candidate must name for its family and rung. These are
+# live product profiles: Phase 9 qualifies configurations the runtime can
+# already issue, so a candidate may not invent a route.
+ROUTE_PROFILE_FOR: Final[Mapping[tuple[str, str], str]] = MappingProxyType(
+    {
+        ("gpt-5.6-terra", "HIGH"): "TERRA_HIGH_V1",
+        ("gpt-5.6-terra", "XHIGH"): "TERRA_XHIGH_V1",
+        ("gpt-5.6-luna", "HIGH"): "LUNA_BASELINE_V1",
+        ("gpt-5.6-luna", "XHIGH"): "LUNA_XHIGH_V1",
+        ("gpt-5.6-luna", "MAX"): "LUNA_MAX_V1",
+    }
+)
+
+SELECTION_RULE: Final = "LOWEST_REASONING_CONFIGURATION_THAT_QUALIFIES"
+SELECTION_RULE_NOTE: Final = (
+    "Within a stage the candidates differ only in reasoning effort, so a "
+    "deeper rung is executed only after the shallower one has failed to "
+    "qualify. A deeper rung can never be selected while a shallower one "
+    "qualifies, and reasoning is never raised out of curiosity or for "
+    "comparison."
+)
+
 NO_QUALIFYING_CONFIGURATION_POLICY: Final = (
     "If every candidate for a stage fails its rung, the stage result is "
     "NO_QUALIFYING_CONFIGURATION. Adding a candidate mid-qualification is "
-    "forbidden; it requires a new candidate matrix hash and protocol boundary."
+    "forbidden; it requires a new candidate matrix hash and protocol boundary. "
+    "In particular the ladder may not be extended into another model family: "
+    "NO_QUALIFYING_CONFIGURATION is a reportable product finding, not a "
+    "fallback trigger."
 )
 
 
@@ -715,15 +938,45 @@ PROMOTION_RULES: Final[Mapping[str, Any]] = MappingProxyType(
         "smoke_role": "SCREENING",
         "core_role": "SELECTION_EVIDENCE",
         "held_out_role": "CONFIRM_OR_REJECT_THE_ALREADY_SELECTED_WINNER",
-        "candidates_on_smoke": "ALL",
-        "candidates_on_core": "ONLY_SMOKE_QUALIFIED",
+        "candidates_on_smoke": "LOWEST_UNTRIED_LADDER_RUNG_ONLY",
+        "candidates_on_core": "ONLY_THE_SMOKE_QUALIFIED_CURRENT_RUNG",
         "candidates_on_held_out": "ONLY_THE_SELECTED_STAGE_WINNER",
         "held_out_multi_candidate_allowed": False,
+        "selection_rule": SELECTION_RULE,
+        "selection_rule_note": SELECTION_RULE_NOTE,
+        "escalation_trigger": "QUALIFICATION_FAILURE_ONLY",
+        "escalation_rule": (
+            "Rungs are attempted in promotion order, one at a time. The next "
+            "reasoning rung is executed only after the current one has failed "
+            "SMOKE or CORE. A rung that qualifies on CORE is the selected "
+            "configuration for the stage and no deeper rung is executed at "
+            "all."
+        ),
+        "escalation_is_within_family_only": True,
+        "cross_family_fallback": CROSS_FAMILY_FALLBACK,
+        "cross_family_fallback_rule": CROSS_FAMILY_FALLBACK_RULE,
+        "ladder_exhausted_result": "NO_QUALIFYING_CONFIGURATION",
         "held_out_failure_policy": (
             "A winner that fails HELD_OUT_CONFIRMATION is rejected for that "
             "stage. The next CORE-qualified candidate by tie-break order may "
             "attempt held-out exactly once. No candidate may be tuned, and "
             "thresholds do not move."
+        ),
+        "held_out_failure_result": "HELD_OUT_CONFIRMATION_FAILED",
+        "held_out_fallback_reachable_under_this_matrix": False,
+        "held_out_fallback_vacuity_note": (
+            "The fallback clause above is carried over verbatim from 1.0.0 "
+            "because it was pre-registered, but under family-constrained "
+            "sequential escalation its precondition can never be met. "
+            "Escalation is failure-driven, so a deeper rung reaches CORE only "
+            "once the shallower rung has already failed CORE. Exactly one "
+            "candidate per stage is therefore CORE-qualified at the moment "
+            "held-out runs, and there is no second CORE-qualified candidate to "
+            "fall back to. Running a previously untried rung after seeing a "
+            "held-out failure would be selection on held-out evidence, which "
+            "the held-out lock forbids. The reachable outcome is "
+            "HELD_OUT_CONFIRMATION_FAILED and the stage reports "
+            "NO_QUALIFYING_CONFIGURATION."
         ),
         "pending_adjudication_blocks_promotion": True,
         "pending_adjudication_rule": (
@@ -739,6 +992,7 @@ PROMOTION_RULES: Final[Mapping[str, Any]] = MappingProxyType(
 TIE_BREAK_ORDER: Final = (
     "ZERO_HARD_SAFETY_FAILURES",
     "MEETS_RUNG_QUALIFICATION_THRESHOLD",
+    "LOWEST_REASONING_RUNG_IN_THE_FAMILY_LADDER",
     "LOWER_STABILITY_DISAGREEMENT_COUNT",
     "LOWER_CONFIRMED_MODEL_FAILURE_RATE",
     "LOWER_TECHNICAL_FAILURE_RATE",
@@ -749,7 +1003,11 @@ TIE_BREAK_ORDER: Final = (
 TIE_BREAK_NOTE: Final = (
     "Cost only separates configurations that already meet the quality bar. The "
     "final candidate_id step exists solely to guarantee a total order, so the "
-    "rule is deterministic even under an exact tie."
+    "rule is deterministic even under an exact tie. Under this matrix the "
+    "reasoning-rung step decides every real case before the later steps are "
+    "consulted, because a stage's candidates differ in nothing else; the "
+    "remaining steps are kept so the order stays total if a future amendment "
+    "widens a stage."
 )
 
 EARLY_STOP_RULES: Final = (
@@ -824,13 +1082,11 @@ PRICING_SNAPSHOT: Final = (
         "cached_input_price": 0.20,
         "output_price": 12.00,
     },
-    {
-        "model": "gpt-5.6-sol",
-        "input_price": 5.00,
-        "cached_input_price": 0.50,
-        "output_price": 30.00,
-    },
 )
+# Sol is priced nowhere because it is a candidate nowhere. Carrying a price the
+# protocol can never bill would put an irrelevant number inside the boundary and
+# arm the Phase 9B refresh guard against drift in a model this experiment never
+# calls.
 PRICING_NOTES: Final = (
     "Standard short-context rates read from the official OpenAI pricing page "
     "on 2026-08-17. The gpt-5.6 family carries a long-context tier at roughly "
@@ -839,6 +1095,41 @@ PRICING_NOTES: Final = (
     "billed as output tokens and count against max_output_tokens, which is why "
     "the worst-case output term below is the full cap. Cache-write pricing "
     "exists but no cache reuse is assumed anywhere in this plan."
+)
+# Re-read from the official pages during the 9A.1 amendment rather than copied
+# forward from the repository. Prices and capabilities were identical, so the
+# snapshot is carried over with the re-verification recorded instead of being
+# silently reused.
+PRICING_REVERIFICATION: Final[Mapping[str, Any]] = MappingProxyType(
+    {
+        "status": "REVERIFIED_UNCHANGED",
+        "reverified_at": "2026-08-17",
+        "reverified_for": "phase9-qualification-protocol/1.1.0",
+        "sources_reread": (
+            "https://developers.openai.com/api/docs/pricing",
+            "https://developers.openai.com/api/docs/models/gpt-5.6-terra",
+            "https://developers.openai.com/api/docs/models/gpt-5.6-luna",
+        ),
+        "checked": (
+            "input_price",
+            "cached_input_price",
+            "output_price",
+            "model_status_ga",
+            "context_window",
+            "max_output_tokens",
+            "reasoning_effort_values",
+            "responses_api_support",
+            "structured_outputs_support",
+        ),
+        "max_reasoning_effort_confirmed_available": True,
+        "authority": "OFFICIAL_OPENAI_ONLY",
+        "repository_history_used_as_authority": False,
+        "does_not_replace_9b_refresh": (
+            "Phase 9B must still re-read both pages immediately before its "
+            "first real call. This re-verification is dated evidence for the "
+            "budget frozen here, not a substitute for that guard."
+        ),
+    }
 )
 PRICING_REFRESH_GUARD: Final[Mapping[str, Any]] = MappingProxyType(
     {
@@ -917,8 +1208,12 @@ STAGE_INPUT_ENVELOPE: Final[Mapping[str, Mapping[str, int]]] = MappingProxyType(
         ),
     }
 )
+# Reasoning tokens are billed as output tokens and count against the same cap,
+# so the deeper rungs are modelled as consuming all of it even in the expected
+# case. MAX cannot cost more than XHIGH here because the cap, not the effort,
+# is the binding constraint.
 EXPECTED_OUTPUT_FRACTION_OF_CAP: Final[Mapping[str, float]] = MappingProxyType(
-    {"HIGH": 0.6, "XHIGH": 1.0}
+    {"HIGH": 0.6, "XHIGH": 1.0, "MAX": 1.0}
 )
 COST_DISCLAIMER: Final = "ESTIMATE_NOT_BILL"
 PER_CALL_CAP_MARGIN: Final = 1.25
@@ -1238,7 +1533,7 @@ def build_safety_gate(facts: BenchmarkFacts) -> dict[str, Any]:
 
 def build_candidate_matrix() -> dict[str, Any]:
     return {
-        "schema_version": "phase9-frozen-candidate-matrix/1.0.0",
+        "schema_version": "phase9-frozen-candidate-matrix/1.1.0",
         "benchmark_version": BENCHMARK_VERSION,
         "benchmark_boundary_hash": BENCHMARK_BOUNDARY_HASH,
         "matrix_status": "FROZEN",
@@ -1257,13 +1552,26 @@ def build_candidate_matrix() -> dict[str, Any]:
         "model_drift_risk": MODEL_DRIFT_RISK,
         "output_cap_derivation": (
             "max_output_tokens is pinned to the live production registry "
-            "contract for each stage. Phase 9A changes no product runtime, and "
+            "contract for each stage. Phase 9 changes no product runtime, and "
             "a cap the product cannot issue would qualify nothing. Reasoning "
-            "tokens count against this cap, so XHIGH candidates carry a real "
-            "truncation risk; truncation is a TECHNICAL_FAILURE bounded by the "
-            "technical failure gate, never a MODEL_FAILURE."
+            "tokens count against this cap, so the XHIGH and MAX rungs carry a "
+            "real truncation risk; truncation is a TECHNICAL_FAILURE bounded "
+            "by the technical failure gate, never a MODEL_FAILURE. The caps do "
+            "not widen for a deeper rung: Phase 9 qualifies configurations the "
+            "product can actually execute, not laboratory variants of them."
         ),
         "verified_models": [dict(entry) for entry in VERIFIED_MODELS],
+        "excluded_model_families": [dict(entry) for entry in EXCLUDED_MODEL_FAMILIES],
+        "routing_policy_intent": json.loads(canonical_json(dict(ROUTING_POLICY_INTENT))),
+        "stage_model_family": dict(STAGE_MODEL_FAMILY),
+        "stage_reasoning_ladder": {
+            stage: list(ladder) for stage, ladder in STAGE_REASONING_LADDER.items()
+        },
+        "stage_qualification_status": dict(STAGE_QUALIFICATION_STATUS),
+        "cross_family_fallback": CROSS_FAMILY_FALLBACK,
+        "cross_family_fallback_rule": CROSS_FAMILY_FALLBACK_RULE,
+        "selection_rule": SELECTION_RULE,
+        "selection_rule_note": SELECTION_RULE_NOTE,
         "candidates": [dict(entry) for entry in CANDIDATE_MATRIX],
         "no_qualifying_configuration_policy": NO_QUALIFYING_CONFIGURATION_POLICY,
     }
@@ -1335,14 +1643,19 @@ def build_adjudication_protocol() -> dict[str, Any]:
 
 def build_pricing_snapshot() -> dict[str, Any]:
     return {
-        "schema_version": "phase9-pricing-snapshot/1.0.0",
+        "schema_version": "phase9-pricing-snapshot/1.1.0",
         "retrieved_at": PRICING_RETRIEVED_AT,
         "official_source": PRICING_OFFICIAL_SOURCE,
         "source_authority": "OFFICIAL_OPENAI_ONLY",
         "pricing_unit": PRICING_UNIT,
         "copied_from_repository_history": False,
         "models": [dict(entry) for entry in PRICING_SNAPSHOT],
+        "priced_model_families_note": (
+            "Only the families this protocol can bill are priced: Terra on the "
+            "activity side and Luna on the submission side."
+        ),
         "notes": PRICING_NOTES,
+        "reverification": dict(PRICING_REVERIFICATION),
         "refresh_guard": dict(PRICING_REFRESH_GUARD),
     }
 
@@ -1400,6 +1713,7 @@ def build_budget_plan(facts: BenchmarkFacts) -> dict[str, Any]:
                 "stage": stage,
                 "model": candidate["model"],
                 "reasoning_effort": candidate["reasoning_effort"],
+                "promotion_order": candidate["promotion_order"],
                 "max_output_tokens": cap,
                 "worst_case_input_tokens": worst_in,
                 "expected_input_tokens": expected_in,
@@ -1414,38 +1728,66 @@ def build_budget_plan(facts: BenchmarkFacts) -> dict[str, Any]:
         )
         stage_totals[stage] += candidate_worst
 
-    # The ladder never actually runs every rung for every candidate: all
-    # candidates screen on SMOKE, only SMOKE-qualified reach CORE, and only one
-    # winner per stage reaches HELD_OUT. The stage cap funds the worst case in
-    # which every candidate clears SMOKE and CORE.
+    # Escalation is failure-driven, so the ladder is walked one rung at a time.
+    # The worst case is the path where every rung fails CORE except the last,
+    # which then also runs held-out: every candidate pays SMOKE and CORE, and
+    # exactly one pays HELD_OUT. The expected economic path is the first rung
+    # qualifying, in which case the deeper rungs are never executed at all.
+    #
+    # Only one held-out pass is funded, unlike 1.0.0. The pre-registered
+    # fallback to a second CORE-qualified candidate is unreachable here: under
+    # sequential escalation exactly one candidate per stage is ever
+    # CORE-qualified, so funding a second pass would fund a path the protocol
+    # cannot take.
     stage_caps: dict[str, Any] = {}
     for stage in SEMANTIC_STAGES:
-        stage_candidates = [c for c in per_candidate if c["stage"] == stage]
+        stage_candidates = sorted(
+            (c for c in per_candidate if c["stage"] == stage),
+            key=lambda c: c["promotion_order"],
+        )
         smoke = sum(c["rungs"]["SMOKE"]["cap_usd"] for c in stage_candidates)
         core = sum(c["rungs"]["CORE"]["cap_usd"] for c in stage_candidates)
         held_out = max(
             c["rungs"]["HELD_OUT_CONFIRMATION"]["cap_usd"] for c in stage_candidates
         )
-        # Held-out may be attempted once by a fallback candidate if the winner
-        # is rejected, so the stage funds two held-out passes.
-        held_out_funded = _round_cents(held_out * 2)
-        subtotal = _round_cents(smoke + core + held_out_funded)
+        subtotal = _round_cents(smoke + core + held_out)
         reserve = _round_cents(subtotal * RETRY_RESERVE_FRACTION)
+
+        first = stage_candidates[0]
+        expected_path = _round_cents(
+            sum(first["rungs"][split]["expected_cost_usd"] for split in SPLITS)
+        )
+        expected_path_cap = _round_cents(
+            sum(first["rungs"][split]["cap_usd"] for split in SPLITS)
+        )
         stage_caps[stage] = {
             "candidate_count": len(stage_candidates),
+            "model_family": STAGE_MODEL_FAMILY[stage],
+            "reasoning_ladder": list(STAGE_REASONING_LADDER[stage]),
             "smoke_cap_usd": _round_cents(smoke),
             "core_cap_usd": _round_cents(core),
-            "held_out_cap_usd": held_out_funded,
-            "held_out_passes_funded": 2,
+            "held_out_cap_usd": held_out,
+            "held_out_passes_funded": 1,
+            "held_out_passes_funded_rationale": (
+                "The pre-registered fallback to a second CORE-qualified "
+                "candidate cannot trigger under sequential escalation, so a "
+                "second pass is not funded."
+            ),
             "technical_retry_reserve_usd": reserve,
             "stage_cap_usd": _round_cents(subtotal + reserve),
+            "expected_path_candidate_id": first["candidate_id"],
+            "expected_path_expected_cost_usd": expected_path,
+            "expected_path_cap_usd": expected_path_cap,
         }
 
     stage_sum = sum(entry["stage_cap_usd"] for entry in stage_caps.values())
     global_cap = _round_cents(stage_sum * GLOBAL_CAP_MARGIN)
+    expected_path_total = _round_cents(
+        sum(entry["expected_path_expected_cost_usd"] for entry in stage_caps.values())
+    )
 
     return {
-        "schema_version": "phase9-budget-plan/1.0.0",
+        "schema_version": "phase9-budget-plan/1.1.0",
         "status": "BUDGET_PLAN_FROZEN",
         "authorization": AUTHORIZATION_STATE,
         "billable_authorization_created": False,
@@ -1475,11 +1817,106 @@ def build_budget_plan(facts: BenchmarkFacts) -> dict[str, Any]:
         "per_candidate": per_candidate,
         "per_stage": stage_caps,
         "global_cap_usd": global_cap,
+        "global_cap_is_worst_case_not_expected": True,
+        "expected_path_total_usd": expected_path_total,
+        "expected_vs_worst_case_note": (
+            "global_cap_usd funds the path where every reasoning rung fails "
+            "CORE and the last one is confirmed on held-out. "
+            "expected_path_total_usd is the path where the default HIGH rung "
+            "qualifies immediately and no deeper rung is ever executed. They "
+            "are different scenarios and are never to be quoted as one number."
+        ),
+        "inherited_from_previous_matrix": False,
+        "recomputed_from_scratch_note": (
+            "Recomputed from the amended matrix. The 1.0.0 cap of $498.3438 "
+            "priced Sol at P04 and Terra at P06/P07 and carries no authority "
+            "over this plan."
+        ),
         "fail_closed_rule": (
             "A call whose projected cost would breach its per-call, per-rung, "
             "per-stage or global cap is refused before any provider transport "
             "is constructed."
         ),
+    }
+
+
+def _call_projection(facts: BenchmarkFacts) -> dict[str, Any]:
+    """Project provider calls on both scenarios the ladder can take.
+
+    They are genuinely different numbers and the plan reports both: quoting a
+    single figure would either understate the exposure that has to be funded or
+    overstate what the run is expected to cost.
+    """
+
+    stages: dict[str, Any] = {}
+    expected_total = 0
+    worst_total = 0
+    for stage in SEMANTIC_STAGES:
+        stage_candidates = sorted(
+            (c for c in CANDIDATE_MATRIX if c["stage"] == stage),
+            key=lambda c: c["promotion_order"],
+        )
+        smoke = _candidate_calls(facts, stage, "SMOKE")
+        core = _candidate_calls(facts, stage, "CORE")
+        held_out = _candidate_calls(facts, stage, "HELD_OUT_CONFIRMATION")
+        rungs = len(stage_candidates)
+
+        # First rung qualifies on SMOKE and CORE, then confirms on held-out.
+        expected = smoke + core + held_out
+        # Every rung fails CORE except the last, which then confirms.
+        worst = rungs * (smoke + core) + held_out
+
+        expected_total += expected
+        worst_total += worst
+        stages[stage] = {
+            "cases": {
+                "SMOKE": facts.cases_by_stage_split.get((stage, "SMOKE"), 0),
+                "CORE": facts.cases_by_stage_split.get((stage, "CORE"), 0),
+                "HELD_OUT_CONFIRMATION": facts.cases_by_stage_split.get(
+                    (stage, "HELD_OUT_CONFIRMATION"), 0
+                ),
+            },
+            "k": SEMANTIC_K,
+            "calls_per_candidate": {
+                "SMOKE": smoke,
+                "CORE": core,
+                "HELD_OUT_CONFIRMATION": held_out,
+            },
+            "ladder_rungs": rungs,
+            "expected_economic_path": {
+                "candidate_id": stage_candidates[0]["candidate_id"],
+                "rungs_executed": 1,
+                "calls": expected,
+                "assumption": "The default HIGH rung qualifies on SMOKE and CORE.",
+            },
+            "worst_case": {
+                "rungs_executed": rungs,
+                "calls": worst,
+                "assumption": (
+                    "Every rung clears SMOKE and fails CORE until the last, "
+                    "which qualifies and is confirmed on held-out."
+                ),
+            },
+        }
+
+    return {
+        "unit": "PROVIDER_CALL",
+        "planner_calls": 0,
+        "planner_note": (
+            "The planner is deterministic and its 21 benchmark cases consume "
+            "no provider call."
+        ),
+        "per_stage": stages,
+        "totals": {
+            "expected_economic_path_calls": expected_total,
+            "worst_case_calls": worst_total,
+        },
+        "not_a_single_number": (
+            "expected_economic_path_calls and worst_case_calls describe "
+            "different outcomes of the same protocol and must never be "
+            "presented as one figure."
+        ),
+        "calls_performed_in_phase_9a": 0,
     }
 
 
@@ -1491,6 +1928,12 @@ def build_execution_plan(facts: BenchmarkFacts) -> dict[str, Any]:
             {
                 "stage": stage,
                 "prompt_id": STAGE_PROMPT_ID[stage],
+                "model_family": STAGE_MODEL_FAMILY[stage],
+                "reasoning_ladder": list(STAGE_REASONING_LADDER[stage]),
+                "max_reasoning": STAGE_REASONING_LADDER[stage][-1],
+                "qualification_status": STAGE_QUALIFICATION_STATUS[stage],
+                "cross_family_fallback": CROSS_FAMILY_FALLBACK,
+                "ladder_exhausted_result": "NO_QUALIFYING_CONFIGURATION",
                 "candidate_ids": [c["candidate_id"] for c in stage_candidates],
                 "promotion_order": [
                     c["candidate_id"]
@@ -1510,7 +1953,7 @@ def build_execution_plan(facts: BenchmarkFacts) -> dict[str, Any]:
         )
 
     return {
-        "schema_version": "phase9-execution-plan/1.0.0",
+        "schema_version": "phase9-execution-plan/1.1.0",
         "authorization": AUTHORIZATION_STATE,
         "execution_state": EXECUTION_STATE,
         "provider_calls_performed": 0,
@@ -1523,10 +1966,16 @@ def build_execution_plan(facts: BenchmarkFacts) -> dict[str, Any]:
         "early_stop_note": EARLY_STOP_NOTE,
         "retry_policy": dict(RETRY_POLICY),
         "no_full_cross_product": (
-            "Every candidate screens on SMOKE. Only SMOKE-qualified candidates "
-            "run CORE. Only the selected stage winner runs "
-            "HELD_OUT_CONFIRMATION."
+            "The 11 candidates never all execute. Within a stage only the "
+            "lowest untried reasoning rung screens on SMOKE; it runs CORE only "
+            "if it clears SMOKE; and a deeper rung is attempted only once the "
+            "shallower one has failed. The rung that qualifies on CORE is the "
+            "stage winner and is the only one to run HELD_OUT_CONFIRMATION."
         ),
+        "routing_policy_intent": json.loads(canonical_json(dict(ROUTING_POLICY_INTENT))),
+        "selection_rule": SELECTION_RULE,
+        "cross_family_fallback": CROSS_FAMILY_FALLBACK,
+        "call_projection": _call_projection(facts),
         "promotion_metrics": [
             "applicable_property_count",
             "accepted_property_count",
@@ -1618,7 +2067,9 @@ def build_adjudication_load(facts: BenchmarkFacts) -> dict[str, Any]:
                     "split": split,
                     "applicable_properties": applicable,
                     "candidates_running_worst_case": candidates_running,
+                    "candidates_running_expected_path": 1,
                     "first_pass_adjudications": first_pass,
+                    "first_pass_adjudications_expected_path": applicable,
                     "pass_qa_second_pass_expected": round(
                         first_pass * PASS_QA_SAMPLE_PERCENT / 100, 2
                     ),
@@ -1626,8 +2077,11 @@ def build_adjudication_load(facts: BenchmarkFacts) -> dict[str, Any]:
             )
 
     total_first = sum(row["first_pass_adjudications"] for row in rows)
+    total_first_expected = sum(
+        row["first_pass_adjudications_expected_path"] for row in rows
+    )
     return {
-        "schema_version": "phase9-adjudication-load/1.0.0",
+        "schema_version": "phase9-adjudication-load/1.1.0",
         "unit": "PROPERTY_ADJUDICATION_PACKET",
         "unit_note": (
             "One packet is one PROPERTY_CANDIDATE_REASONING decision. It is "
@@ -1642,12 +2096,22 @@ def build_adjudication_load(facts: BenchmarkFacts) -> dict[str, Any]:
             "Phase 9 adjudicates only the case-bound, VALID, externally "
             "adjudicated properties of the rungs a candidate actually runs."
         ),
+        "escalation_effect_on_load": (
+            "Sequential escalation changes how many candidates reach a rung, "
+            "not how the adjudication protocol works. On the expected path one "
+            "rung per stage is adjudicated; the worst case adjudicates every "
+            "rung on SMOKE and CORE."
+        ),
         "rows": rows,
         "totals": {
             "first_pass_adjudications_worst_case": total_first,
+            "first_pass_adjudications_expected_path": total_first_expected,
             "pass_qa_sample_percent": PASS_QA_SAMPLE_PERCENT,
             "expected_pass_qa_second_passes": round(
                 total_first * PASS_QA_SAMPLE_PERCENT / 100, 2
+            ),
+            "expected_pass_qa_second_passes_expected_path": round(
+                total_first_expected * PASS_QA_SAMPLE_PERCENT / 100, 2
             ),
             "failure_confirmation_second_passes": (
                 "One per first-pass MODEL_FAILURE. Unbounded in advance by "
@@ -1693,6 +2157,8 @@ def build_protocol(facts: BenchmarkFacts | None = None) -> dict[str, Any]:
         "authorization": AUTHORIZATION_STATE,
         "execution_state": EXECUTION_STATE,
         "provider_calls": 0,
+        "superseded_protocols": [dict(entry) for entry in SUPERSEDED_PROTOCOLS],
+        "routing_policy_intent": json.loads(canonical_json(dict(ROUTING_POLICY_INTENT))),
         "held_out_lock": {
             "splits_frozen_at": "PHASE_8_1_CLOSE",
             "phase9_may_read_not_restructure": True,
@@ -1701,6 +2167,11 @@ def build_protocol(facts: BenchmarkFacts | None = None) -> dict[str, Any]:
             "held_out_may_not_modify_prompts": True,
             "held_out_may_not_modify_routing": True,
             "held_out_may_not_adjust_thresholds": True,
+            "held_out_may_not_escalate_reasoning": True,
+            "reasoning_escalation_decided_in": "SMOKE_AND_CORE_ONLY",
+            "held_out_failure_may_not_create_a_new_candidate": True,
+            "held_out_failure_may_not_widen_the_model_family": True,
+            "held_out_failure_result": "HELD_OUT_CONFIRMATION_FAILED",
         },
         "historical_qualification_policy": {
             "status": "HISTORICAL_NON_CANONICAL_EVIDENCE",
@@ -1751,6 +2222,8 @@ def protocol_boundary_hash(protocol: Mapping[str, Any]) -> str:
             "authorization",
             "execution_state",
             "held_out_lock",
+            "routing_policy_intent",
+            "superseded_protocols",
             "candidate_matrix",
             "adjudication_protocol",
             "safety_gate",
@@ -1827,6 +2300,112 @@ def validate_protocol(protocol: Mapping[str, Any]) -> None:
         if orders != list(range(1, len(entries) + 1)):
             raise Phase9ProtocolError(
                 "PHASE9_PROMOTION_ORDER_INVALID", f"{stage} promotion order is not dense"
+            )
+        # Family and ladder are the amendment's whole point, so they fail
+        # closed rather than being merely documented.
+        if stage not in STAGE_MODEL_FAMILY:
+            raise Phase9ProtocolError(
+                "PHASE9_STAGE_HAS_NO_ROUTING_POLICY",
+                f"{stage} is a candidate stage with no frozen family",
+            )
+        family = STAGE_MODEL_FAMILY[stage]
+        ladder = STAGE_REASONING_LADDER[stage]
+        for entry in entries:
+            if entry["model"] != family:
+                raise Phase9ProtocolError(
+                    "PHASE9_CROSS_FAMILY_CANDIDATE",
+                    f"{entry['candidate_id']} uses {entry['model']} but {stage} "
+                    f"is owned by {family}",
+                )
+            if entry["reasoning_effort"] not in ladder:
+                raise Phase9ProtocolError(
+                    "PHASE9_REASONING_OUTSIDE_LADDER",
+                    f"{entry['candidate_id']} uses {entry['reasoning_effort']}, "
+                    f"outside the frozen ladder {list(ladder)}",
+                )
+            expected_profile = ROUTE_PROFILE_FOR[
+                (entry["model"], entry["reasoning_effort"])
+            ]
+            if entry["route_profile_id"] != expected_profile:
+                raise Phase9ProtocolError(
+                    "PHASE9_ROUTE_PROFILE_MISMATCH",
+                    f"{entry['candidate_id']} names {entry['route_profile_id']} "
+                    f"instead of {expected_profile}",
+                )
+        # Promotion order must be the reasoning ladder itself: escalation is
+        # failure-driven, so a matrix that promoted a deeper rung first would
+        # buy depth before the bar had rejected the cheaper rung.
+        by_order = [
+            entry["reasoning_effort"]
+            for entry in sorted(entries, key=lambda e: e["promotion_order"])
+        ]
+        if by_order != list(ladder[: len(by_order)]):
+            raise Phase9ProtocolError(
+                "PHASE9_LADDER_ORDER_INVALID",
+                f"{stage} promotes {by_order}, not the frozen ladder {list(ladder)}",
+            )
+
+    for stage in SEMANTIC_STAGES:
+        if stage not in by_stage:
+            raise Phase9ProtocolError(
+                "PHASE9_STAGE_HAS_NO_CANDIDATE", f"{stage} has no candidate"
+            )
+
+    excluded = {entry["model"] for entry in matrix["excluded_model_families"]}
+    for candidate in matrix["candidates"]:
+        if candidate["model"] in excluded:
+            raise Phase9ProtocolError(
+                "PHASE9_EXCLUDED_FAMILY_CANDIDATE",
+                f"{candidate['model']} is an excluded family",
+            )
+    if matrix["cross_family_fallback"] != "FORBIDDEN":
+        raise Phase9ProtocolError(
+            "PHASE9_CROSS_FAMILY_FALLBACK_ALLOWED",
+            "cross-family fallback must stay forbidden",
+        )
+    if matrix["selection_rule"] != SELECTION_RULE:
+        raise Phase9ProtocolError(
+            "PHASE9_SELECTION_RULE_DRIFT",
+            "selection must be the lowest qualifying reasoning rung",
+        )
+
+    intent = protocol["routing_policy_intent"]
+    if intent["production_runtime_changed_by_this_document"]:
+        raise Phase9ProtocolError(
+            "PHASE9_ROUTING_INTENT_TOUCHES_PRODUCTION",
+            "Phase 9A.1 changes no product runtime",
+        )
+    for side in ("ACTIVITY_SIDE", "SUBMISSION_SIDE"):
+        if intent[side]["cross_family_fallback"] != "FORBIDDEN":
+            raise Phase9ProtocolError(
+                "PHASE9_CROSS_FAMILY_FALLBACK_ALLOWED",
+                f"{side} must forbid cross-family fallback",
+            )
+    for stage in ("P01", "P02", "P03"):
+        if (
+            intent["ACTIVITY_SIDE"]["qualification_status"][stage]
+            != "PHASE10_OPERATIONAL_VERIFICATION_REQUIRED"
+        ):
+            raise Phase9ProtocolError(
+                "PHASE9_UNQUALIFIED_STAGE_CLAIMED_QUALIFIED",
+                f"{stage} has no semantic qualification in this benchmark",
+            )
+        if stage in by_stage:
+            raise Phase9ProtocolError(
+                "PHASE9_UNQUALIFIED_STAGE_HAS_CANDIDATE",
+                f"{stage} has no benchmark property and may not be qualified",
+            )
+
+    for record in protocol["superseded_protocols"]:
+        if record["provider_calls_under_this_protocol"] != 0:
+            raise Phase9ProtocolError(
+                "PHASE9_SUPERSEDED_PROTOCOL_WAS_EXECUTED",
+                f"{record['protocol_version']} is not a pre-execution supersession",
+            )
+        if record["protocol_version"] == protocol["schema_version"]:
+            raise Phase9ProtocolError(
+                "PHASE9_PROTOCOL_SUPERSEDES_ITSELF",
+                "the active protocol cannot be its own predecessor",
             )
 
     adjudication = protocol["adjudication_protocol"]

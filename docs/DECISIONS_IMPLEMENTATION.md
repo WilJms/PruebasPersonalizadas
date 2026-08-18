@@ -1490,3 +1490,35 @@
   `UNSET`, authorization `NONE`, qualification `NOT_YET_RUN`.
 - **Stop:** no seleccionar modelos, consultar pricing, fijar thresholds ni
   ejecutar qualification hasta un freeze Phase 9 separado.
+
+## D-087 - Phase 9A.1 restringe cada lado del pipeline a una familia de modelo
+
+- **Decisión de usuario:** activity side (P01-P04) usa `gpt-5.6-terra` y
+  submission side (P06/P07/P09) usa `gpt-5.6-luna`. La escalación sólo sube
+  reasoning dentro de la familia que ya posee el stage.
+- **Motivo:** P01-P04 corren una vez por actividad y su coste se amortiza entre
+  todos los entregables, así que la calidad se compra donde es barata. P06/P07/
+  P09 se multiplican por submission y P07 además por opportunity; subir
+  reasoning ahí sube output tokens pero preserva la clase económica del modelo,
+  que es justamente la propiedad protegida.
+- **Prohibición:** `cross_family_fallback` = `FORBIDDEN` en ambos lados y
+  `gpt-5.6-sol` deja de ser candidato. Agotar la escalera da
+  `NO_QUALIFYING_CONFIGURATION`; sustituir familia tras ver un resultado
+  convertiría una restricción congelada en una elección dirigida por datos.
+- **Matrix:** 11 candidatos. P04 terra HIGH→XHIGH; P06/P07/P09 luna
+  HIGH→XHIGH→MAX. Sin `LOW`, `MEDIUM` ni `NONE`. Caps productivos intactos;
+  truncar en un rung profundo es `TECHNICAL_FAILURE`, nunca `MODEL_FAILURE`.
+- **Selección:** `LOWEST_REASONING_CONFIGURATION_THAT_QUALIFIES`, con escalación
+  secuencial dirigida por fallo. El fallback de held-out pre-registrado se
+  conserva literal pero queda vacío bajo esa escalación, así que un fallo de
+  held-out termina en `HELD_OUT_CONFIRMATION_FAILED`, no en un candidato nuevo.
+- **P01-P03:** sólo policy intent. El benchmark no los califica; quedan en
+  `PHASE10_OPERATIONAL_VERIFICATION_REQUIRED` y no se fabricaron casos.
+- **Supersession:** `1.0.0` (`sha256:e4254b28...`) nunca ejecutó una llamada, y
+  se registra como `SUPERSEDED_PRE_EXECUTION_BY_ROUTING_POLICY_AMENDMENT` dentro
+  del nuevo boundary en vez de borrarse.
+- **Budget:** recalculado desde cero. Worst case $84.49, expected path $16.98,
+  reportados por separado; los $498.34 anteriores no se heredan.
+- **Límite:** sólo candidate/routing policy. Benchmark, corpus, splits,
+  thresholds, safety gate, adjudication y k quedan bit-idénticos, y el runtime
+  productivo no cambia: el routing final se fija tras Phase 9 y Phase 10.

@@ -21,6 +21,7 @@ from comprehension_verification.phase9_protocol import (  # noqa: E402
     EXECUTION_STATE,
     PHASE_8_1_BASELINE_SHA,
     PROTOCOL_VERSION,
+    SUPERSEDED_PROTOCOLS,
     build_adjudication_load,
     build_protocol,
     load_benchmark_facts,
@@ -58,6 +59,10 @@ def main() -> int:
         protocol["qualification_thresholds"],
     )
     write_json(PROTOCOL_DIR / "pricing_snapshot.json", protocol["pricing_snapshot"])
+    write_json(
+        PROTOCOL_DIR / "phase9_routing_policy_intent.json",
+        protocol["routing_policy_intent"],
+    )
     write_json(PROTOCOL_DIR / "budget_plan.json", protocol["budget_plan"])
     write_json(PROTOCOL_DIR / "execution_plan.json", protocol["execution_plan"])
 
@@ -68,7 +73,7 @@ def main() -> int:
     write_json(
         REPORT_DIR / "call_budget_projection.json",
         {
-            "schema_version": "phase9-call-budget-projection/1.0.0",
+            "schema_version": "phase9-call-budget-projection/1.1.0",
             "authorization": AUTHORIZATION_STATE,
             "provider_calls_performed": 0,
             "disclaimer": budget["disclaimer"],
@@ -97,13 +102,17 @@ def main() -> int:
             ],
             "per_stage": budget["per_stage"],
             "global_cap_usd": budget["global_cap_usd"],
+            "global_cap_is_worst_case_not_expected": True,
+            "expected_path_total_usd": budget["expected_path_total_usd"],
+            "expected_vs_worst_case_note": budget["expected_vs_worst_case_note"],
+            "call_projection": protocol["execution_plan"]["call_projection"],
         },
     )
 
     write_json(
         REPORT_DIR / "candidate_comparison_plan.json",
         {
-            "schema_version": "phase9-candidate-comparison-plan/1.0.0",
+            "schema_version": "phase9-candidate-comparison-plan/1.1.0",
             "authorization": AUTHORIZATION_STATE,
             "results_present": False,
             "ladder": protocol["execution_plan"]["ladder"],
@@ -118,7 +127,7 @@ def main() -> int:
     write_json(
         REPORT_DIR / "protocol_freeze_report.json",
         {
-            "schema_version": "phase9-protocol-freeze-report/1.0.0",
+            "schema_version": "phase9-protocol-freeze-report/1.1.0",
             "protocol_version": PROTOCOL_VERSION,
             "phase9_protocol_boundary_hash": boundary,
             "benchmark_boundary_hash": BENCHMARK_BOUNDARY_HASH,
@@ -129,7 +138,15 @@ def main() -> int:
             "thresholds_hash": protocol["thresholds_hash"],
             "pricing_snapshot_hash": protocol["pricing_snapshot_hash"],
             "budget_plan_hash": protocol["budget_plan_hash"],
+            "routing_policy_intent": protocol["routing_policy_intent"],
+            "superseded_protocols": [dict(entry) for entry in SUPERSEDED_PROTOCOLS],
             "candidate_matrix_status": "FROZEN",
+            "candidate_count": len(protocol["candidate_matrix"]["candidates"]),
+            "global_cap_usd": protocol["budget_plan"]["global_cap_usd"],
+            "expected_path_total_usd": protocol["budget_plan"]["expected_path_total_usd"],
+            "call_projection_totals": (
+                protocol["execution_plan"]["call_projection"]["totals"]
+            ),
             "authorization": AUTHORIZATION_STATE,
             "execution_state": EXECUTION_STATE,
             "provider_calls": 0,
@@ -152,6 +169,10 @@ def main() -> int:
                 "execution_state": EXECUTION_STATE,
                 "provider_calls": 0,
                 "global_cap_usd": budget["global_cap_usd"],
+                "expected_path_total_usd": budget["expected_path_total_usd"],
+                "superseded_protocol_boundary_hash": (
+                    SUPERSEDED_PROTOCOLS[0]["protocol_boundary_hash"]
+                ),
                 "readiness": "PHASE9_PROTOCOL_READY_FOR_EXECUTION",
             },
             indent=2,
