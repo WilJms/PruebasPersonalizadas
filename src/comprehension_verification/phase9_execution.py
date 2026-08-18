@@ -23,7 +23,6 @@ from __future__ import annotations
 
 import asyncio
 from collections.abc import Iterable, Mapping, Sequence
-import copy
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 import json
@@ -35,12 +34,7 @@ from pydantic import BaseModel, SecretStr
 
 from . import semantic_benchmark as sb
 from .contracts import SCHEMA_VERSION, models as m
-from .model_gateway import (
-    GatewayConfig,
-    GatewayError,
-    GatewayMode,
-    ModelGateway,
-)
+from .model_gateway import GatewayConfig, GatewayMode, ModelGateway
 from .model_gateway.gateway import CallBudget
 from .model_gateway.mock_factory import build_trusted_context
 from .model_gateway.openai_adapter import (
@@ -58,8 +52,7 @@ from .model_gateway.openai_routes import (
     build_openai_routes,
     estimate_openai_input_tokens,
 )
-from .model_gateway.registry import PROMPT_SPECS, prompt_spec
-from .phase9_protocol import canonical_json
+from .model_gateway.registry import prompt_spec
 from .semantic_benchmark_fixtures import (
     build_p04_fixture,
     build_p06_fixture,
@@ -977,17 +970,6 @@ class CostAccount:
         )
 
 
-@dataclass(frozen=True, slots=True)
-class AttemptRecord:
-    """One provider attempt, primary or technical retry."""
-
-    payload: dict[str, Any]
-
-    @property
-    def status(self) -> str:
-        return str(self.payload["response_status"])
-
-
 _DETERMINISTIC_FAILURE_MARKERS: Final = (
     "DRAFT_COMPILATION_FAILED",
     "DRAFT_MATERIALIZATION_FAILED",
@@ -1171,7 +1153,7 @@ async def _execute_logical_call(
                 envelope.trusted_context,
                 budget=CallBudget(max_cost_usd=candidate.per_call_cap_usd),
             )
-        except (GatewayError, Exception) as exc:  # noqa: BLE001 - fail closed
+        except Exception as exc:  # noqa: BLE001 - every failure fails closed
             latency_ms = int((time.monotonic() - started) * 1000)
             captured = adapter.take()
             used_requests += adapter.calls
