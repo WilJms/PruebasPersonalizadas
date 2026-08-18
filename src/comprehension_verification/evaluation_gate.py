@@ -8,12 +8,18 @@ from hashlib import sha256
 import json
 from pathlib import Path
 import sqlite3
+import time
 from typing import Any
 
 from .canonical import canonical_hash
 
 
 LEDGER_SCHEMA_VERSION = "openai-eval-authorization-ledger/1.0.0"
+
+# Budget for winning (or observing) the one-time WAL switch. Generous enough to
+# outlast a slow CI writer, bounded so a genuinely stuck database still fails.
+_WAL_SETUP_ATTEMPTS = 600
+_WAL_SETUP_RETRY_SECONDS = 0.05
 
 
 class EvaluationAuthorizationConsumed(RuntimeError):
@@ -55,6 +61,10 @@ class EvaluationAuthorizationLedger:
         self._initialize()
 
     def _connect(self) -> sqlite3.Connection:
+        # ``busy_timeout`` and ``synchronous`` are per-connection and cheap.
+        # ``journal_mode`` is deliberately absent: WAL is a persistent property
+        # of the file, so it is established once in ``_initialize`` instead of
+        # being re-asserted by every connection. See ``_ensure_wal_mode``.
         connection = sqlite3.connect(
             self.path,
             timeout=30.0,
@@ -62,12 +72,43 @@ class EvaluationAuthorizationLedger:
         )
         connection.row_factory = sqlite3.Row
         connection.execute("pragma busy_timeout = 30000")
-        connection.execute("pragma journal_mode = wal")
         connection.execute("pragma synchronous = full")
         return connection
 
+    @staticmethod
+    def _ensure_wal_mode(connection: sqlite3.Connection) -> None:
+        """Put the database into WAL once, tolerating a concurrent switcher.
+
+        Switching journal mode needs a brief exclusive lock, and unlike an
+        ordinary statement the pragma does not go through the busy handler: a
+        racing writer makes it fail immediately rather than wait out
+        ``busy_timeout``. That is what made concurrent ledger construction flaky.
+
+        Once any connection has made the switch the mode is persistent and the
+        pragma becomes a no-op, so the loser of the race only has to look again.
+        """
+
+        for _attempt in range(_WAL_SETUP_ATTEMPTS):
+            try:
+                row = connection.execute("pragma journal_mode = wal").fetchone()
+            except sqlite3.OperationalError:
+                row = None
+            if row is None:
+                try:
+                    row = connection.execute("pragma journal_mode").fetchone()
+                except sqlite3.OperationalError:
+                    row = None
+            if row is not None and str(row[0]).casefold() == "wal":
+                return
+            time.sleep(_WAL_SETUP_RETRY_SECONDS)
+        raise sqlite3.OperationalError(
+            "evaluation authorization ledger could not enter WAL mode"
+        )
+
     def _initialize(self) -> None:
-        with self._connect() as connection:
+        connection = self._connect()
+        try:
+            self._ensure_wal_mode(connection)
             connection.execute(
                 """
                 create table if not exists evaluation_authorizations (
@@ -86,6 +127,8 @@ class EvaluationAuthorizationLedger:
                 ) strict
                 """
             )
+        finally:
+            connection.close()
 
     def reserve(
         self,

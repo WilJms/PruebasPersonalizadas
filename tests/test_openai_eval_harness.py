@@ -9,6 +9,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import sqlite3
 import subprocess
 import sys
 from types import SimpleNamespace
@@ -2085,6 +2086,40 @@ def test_exactly_once_ledger_is_atomic_under_concurrency(
         outcomes = list(executor.map(lambda _: reserve(), range(8)))
     assert outcomes.count("RESERVED") == 1
     assert outcomes.count("CONSUMED") == 7
+
+
+def test_exactly_once_ledger_stays_in_wal_after_concurrent_construction(
+    tmp_path: Path,
+) -> None:
+    """WAL is set once at creation, not re-asserted by every connection.
+
+    Re-asserting `journal_mode = wal` on each connect is what made concurrent
+    construction flaky: the switch needs an exclusive lock and does not go
+    through the busy handler. The durability intent still has to hold, so this
+    pins that the file really is in WAL and that later connections inherit it
+    along with `synchronous = FULL`.
+    """
+
+    path = tmp_path / "authorization.sqlite3"
+    with ThreadPoolExecutor(max_workers=8) as executor:
+        list(executor.map(lambda _: EvaluationAuthorizationLedger(path), range(8)))
+
+    observer = sqlite3.connect(path)
+    try:
+        assert observer.execute("pragma journal_mode").fetchone()[0].casefold() == (
+            "wal"
+        )
+    finally:
+        observer.close()
+
+    connection = EvaluationAuthorizationLedger(path)._connect()
+    try:
+        assert connection.execute("pragma journal_mode").fetchone()[0].casefold() == (
+            "wal"
+        )
+        assert connection.execute("pragma synchronous").fetchone()[0] == 2
+    finally:
+        connection.close()
 
 
 def test_exactly_once_ledger_terminal_record_cannot_reopen(
