@@ -1,0 +1,115 @@
+{
+  "candidate": {
+    "anchor": {
+      "anchor_id": "anchor_8b3aaf1e843e640d828c",
+      "answer_leakage_risk": 0.0,
+      "fragments": [
+        {
+          "display_text": "La autora nació en Puerto Azul en 1982 y escribió este cuento después de perder su casa. Su color favorito era el azul. Esto explica el sobre y el carácter autobiográfico del texto.",
+          "evidence_id": "ev_8c4e84959f4828f71c44",
+          "locator": {
+            "column": null,
+            "heading_path": [],
+            "kind": "DOCUMENT_PATH",
+            "paragraph_index": 0,
+            "row": null,
+            "table_index": null
+          },
+          "transformation": "LITERAL"
+        },
+        {
+          "display_text": "El cuento trata de secretos. Es muy profundo.",
+          "evidence_id": "ev_46fdcf7ea49ad7b11095",
+          "locator": {
+            "column": null,
+            "heading_path": [],
+            "kind": "DOCUMENT_PATH",
+            "paragraph_index": 1,
+            "row": null,
+            "table_index": null
+          },
+          "transformation": "LITERAL"
+        }
+      ],
+      "self_containment_score": 1.0,
+      "structure": "PAIRED_FRAGMENTS",
+      "student_facing_label": null
+    },
+    "candidate_id": "candidate_p07_d8a7fb57f5c0c28e856d",
+    "choices": [],
+    "citations": [],
+    "cognitive_operation": "INTERPRET_REPRESENTATION",
+    "course_source_ids": [],
+    "difficulty": "LOW",
+    "dimension_id": "dimension_p07_d8a7fb57f5c0c28e856d",
+    "estimated_minutes": 5,
+    "evidence_ids": [
+      "ev_8c4e84959f4828f71c44",
+      "ev_46fdcf7ea49ad7b11095",
+      "ev_595660a897451258f84e"
+    ],
+    "opportunity_id": "opportunity_p07_d8a7fb57f5c0c28e856d",
+    "opportunity_template_id": "template_p07_d8a7fb57f5c0c28e856d",
+    "preliminary_guide": {
+      "acceptable_alternatives": [
+        "Indicar que E1 no respalda suficientemente la afirmación de E2 y justificarlo comparando el contenido de ambos fragmentos.",
+        "Señalar que los fragmentos tratan aspectos distintos y que no se puede establecer ese vínculo con la evidencia disponible.",
+        "Explicar que la evidencia presentada no basta para sostener la afirmación, identificando qué información aporta cada fragmento."
+      ],
+      "acceptance_conditions": [],
+      "cannot_infer": [],
+      "levels": [],
+      "misconceptions": [
+        "Considerar que cualquier detalle biográfico de E1 demuestra automáticamente la afirmación temática de E2.",
+        "Confundir la referencia de E1 a un carácter autobiográfico con una demostración de que el cuento trata de secretos o de que es profundo.",
+        "Introducir información que no aparece en los dos fragmentos visibles para completar o justificar la relación."
+      ],
+      "observable_elements": [
+        {
+          "description": "Determina explícitamente si la evidencia de E1 respalda la afirmación de E2.",
+          "element_id": "observable_49d0b283c71c45d35707",
+          "evidence_ids": [
+            "ev_8c4e84959f4828f71c44",
+            "ev_46fdcf7ea49ad7b11095"
+          ],
+          "required_for_level_2": true,
+          "source_ids": []
+        },
+        {
+          "description": "Justifica la relación distinguiendo el contenido que E1 aporta sobre antecedentes de la autora y una lectura autobiográfica de la afirmación de E2 sobre el tema y la profundidad del cuento.",
+          "element_id": "observable_b70714fece06648301d5",
+          "evidence_ids": [
+            "ev_8c4e84959f4828f71c44",
+            "ev_46fdcf7ea49ad7b11095"
+          ],
+          "required_for_level_2": true,
+          "source_ids": []
+        },
+        {
+          "description": "Limita la conclusión a lo que puede establecerse a partir de E1 y E2, sin añadir fuentes, intenciones o hechos no localizados.",
+          "element_id": "observable_03a724da6f97896b0728",
+          "evidence_ids": [
+            "ev_8c4e84959f4828f71c44",
+            "ev_46fdcf7ea49ad7b11095"
+          ],
+          "required_for_level_2": true,
+          "source_ids": []
+        }
+      ],
+      "purpose": "Relaciona una afirmación con evidencia localizada sin ampliar fuentes ni atribuir intención.",
+      "semantic_uncertainties": []
+    },
+    "question_text": "Lee los dos fragmentos visibles. ¿La información del primer fragmento permite sostener la afirmación principal del segundo? Responde y justifica tu conclusión relacionando explícitamente la afirmación con la evidencia, sin incorporar información externa.",
+    "response_format": "OPEN_SHORT",
+    "student_justification_required": true,
+    "submission_id": "submission_02",
+    "uncertainties": [],
+    "variant_id": "variant_p07_d8a7fb57f5c0c28e856d"
+  },
+  "context_mode": "CLOSED",
+  "diagnostics": [],
+  "opportunity_id": "opportunity_p07_d8a7fb57f5c0c28e856d",
+  "schema_version": "1.1.0",
+  "status": "READY",
+  "submission_id": "submission_02"
+}

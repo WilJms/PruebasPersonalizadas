@@ -1,0 +1,341 @@
+{
+  "assessment_id": "assessment_p09_aea301a56ebaf3635d25",
+  "binding": {
+    "approval_event_id": "approval_event_aea301a56ebaf3635d25",
+    "approval_snapshot_hash": "sha256:f435e5a249fa5d22b3d5bac4982112ba8f3dd688fa0168e7831f008eade2a853",
+    "approved_at": "2026-08-16T12:00:00Z",
+    "approved_by": "user_benchmark_teacher",
+    "assessment_etag": "\"sha256:0cd739ed473818d9e7e052f244e384f5842d20610aabe9788f19494024b98d05\"",
+    "assessment_id": "assessment_p09_aea301a56ebaf3635d25",
+    "assessment_snapshot_hash": "sha256:0cd739ed473818d9e7e052f244e384f5842d20610aabe9788f19494024b98d05",
+    "assessment_version": 1,
+    "binding_version": "guide-approval-binding/1.0.0",
+    "guide_policy_hash": "sha256:627f0dfcbbd96da86c484ee4d0b0d62c17c2b0a2ce698e28baf55244f6a09c00",
+    "materializer_boundary_hash": "sha256:0fe0051d348d418707c2698f0e632de18ce71fb3e5572792337b5b6ce89795f6",
+    "question_set_hash": "sha256:1c812e7a22d7ef23456fc5354f51a41d43cacf3094c16c2aa17e2cfc97745542",
+    "submission_id": "submission_05",
+    "tenant_id": "tenant_semantic_benchmark"
+  },
+  "created_at": "2026-08-16T12:00:00Z",
+  "diagnostics": [],
+  "guide_id": "guide_9598add25e3b5d097b98",
+  "items": [
+    {
+      "guide": {
+        "acceptable_alternatives": [
+          "presentar las mismas operaciones en tabla o en secuencia algebraica",
+          "Expresar el excedente como ingreso máximo menos costo total, siempre que se mantengan visibles las partidas y operaciones autorizadas (O1-O2; E3-E8)."
+        ],
+        "acceptance_conditions": [
+          "Suma por separado los costos fijos, el dispensador y el costo variable, sin omitir partidas (O1; E3-E6).",
+          "Distingue mediante operaciones visibles el costo total, el ingreso máximo y el excedente (O2; E6-E8).",
+          "Mantiene coherencia entre la cantidad de vasos y las unidades monetarias en los cálculos (O3; E5-E8)."
+        ],
+        "cannot_infer": [
+          "No permite inferir ventas efectivamente realizadas ni un excedente realizado; E5-E8 documentan el cálculo del plan y del máximo, no su ejecución."
+        ],
+        "levels": [
+          {
+            "descriptor": "No presenta una reconstrucción observable de las partidas ni de las operaciones solicitadas (E3-E8).",
+            "label": "Sin demostración",
+            "level": 0,
+            "observable_element_ids": []
+          },
+          {
+            "descriptor": "Presenta alguna partida u operación, pero omite o mezcla al menos una relación entre costos, ingreso y excedente (O1-O2; E3-E8).",
+            "label": "Inicial",
+            "level": 1,
+            "observable_element_ids": [
+              "observable_p09_9aa4726407be7ecee879"
+            ]
+          },
+          {
+            "descriptor": "Integra las tres observaciones requeridas: suma las partidas, distingue las magnitudes económicas y mantiene cantidad y unidades coherentes (O1-O3; E3-E8).",
+            "label": "Adecuado",
+            "level": 2,
+            "observable_element_ids": [
+              "observable_p09_9aa4726407be7ecee879",
+              "observable_p09_e4d5b5de0c709706d1e6",
+              "observable_p09_094884f0e9dd25df5888"
+            ]
+          },
+          {
+            "descriptor": "Reconstruye de forma completa, ordenada y verificable la secuencia desde las partidas hasta el excedente, sin perder la distinción entre las magnitudes ni la coherencia de unidades (O1-O3; E3-E8).",
+            "label": "Sólido y defendible",
+            "level": 3,
+            "observable_element_ids": [
+              "observable_p09_9aa4726407be7ecee879",
+              "observable_p09_e4d5b5de0c709706d1e6",
+              "observable_p09_094884f0e9dd25df5888"
+            ]
+          }
+        ],
+        "misconceptions": [
+          "tratar el presupuesto de 70 como ingreso",
+          "restar solo el costo variable al ingreso",
+          "Confunde el costo total con el costo variable al omitir los costos fijos o el dispensador (O1; E3-E6).",
+          "Calcula el excedente sin separar el ingreso máximo del costo total (O2; E6-E8)."
+        ],
+        "observable_elements": [
+          {
+            "description": "suma costos fijos, dispensador y costo variable sin omitir partidas",
+            "element_id": "observable_p09_9aa4726407be7ecee879",
+            "evidence_ids": [
+              "ev_feec60e20d7ec1ae8c7d",
+              "ev_eb6ad6f0bd45703e16ba",
+              "ev_3ea45e0cd35c8c3c2705",
+              "ev_637254fccf82757f2672",
+              "ev_c303a07431cc533e765a",
+              "ev_f0a358de3e65990b61ba",
+              "ev_e6a5610a9c63186ed42f",
+              "ev_76263dccc3119ac4adee"
+            ],
+            "required_for_level_2": true,
+            "source_ids": []
+          },
+          {
+            "description": "distingue costo, ingreso y excedente",
+            "element_id": "observable_p09_e4d5b5de0c709706d1e6",
+            "evidence_ids": [
+              "ev_feec60e20d7ec1ae8c7d",
+              "ev_eb6ad6f0bd45703e16ba",
+              "ev_3ea45e0cd35c8c3c2705",
+              "ev_637254fccf82757f2672",
+              "ev_c303a07431cc533e765a",
+              "ev_f0a358de3e65990b61ba",
+              "ev_e6a5610a9c63186ed42f",
+              "ev_76263dccc3119ac4adee"
+            ],
+            "required_for_level_2": true,
+            "source_ids": []
+          },
+          {
+            "description": "mantiene unidades monetarias y cantidad de vasos",
+            "element_id": "observable_p09_094884f0e9dd25df5888",
+            "evidence_ids": [
+              "ev_feec60e20d7ec1ae8c7d",
+              "ev_eb6ad6f0bd45703e16ba",
+              "ev_3ea45e0cd35c8c3c2705",
+              "ev_637254fccf82757f2672",
+              "ev_c303a07431cc533e765a",
+              "ev_f0a358de3e65990b61ba",
+              "ev_e6a5610a9c63186ed42f",
+              "ev_76263dccc3119ac4adee"
+            ],
+            "required_for_level_2": true,
+            "source_ids": []
+          }
+        ],
+        "purpose": "Evaluar el observable fijo sin ampliar la evidencia aprobada.",
+        "semantic_uncertainties": []
+      },
+      "question_id": "question_p09_5da97236e4558cbf5588"
+    },
+    {
+      "guide": {
+        "acceptable_alternatives": [
+          "priorizar capacidad de venta",
+          "priorizar conservación de fondos",
+          "Defender 80 vasos por la capacidad adicional o 60 vasos por la conservación de fondos, siempre que la elección se vincule a un objetivo explícito y a las cifras de E2-E5 (O1-O3; E2-E5)."
+        ],
+        "acceptance_conditions": [
+          "Relaciona preparar 80 vasos con mayor capacidad de atender ventas y con un desembolso superior, usando la comparación documentada (O1; E2-E5).",
+          "Relaciona preparar 60 vasos con menor desembolso y menor riesgo presupuestario, sin presentarlo como la única opción válida (O2-O3; E2-E5).",
+          "Explicita el trade-off con cifras de desembolso, excedente máximo y capacidad adicional, y vincula la defensa al objetivo priorizado (O1-O3; E2-E5)."
+        ],
+        "cannot_infer": [
+          "No permite inferir cuál alternativa se ejecutará ni las ventas efectivas; E2-E5 presentan una comparación condicionada a que ambas alternativas vendan todo.",
+          "No permite incorporar costos externos a la comparación documentada en E1-E5."
+        ],
+        "levels": [
+          {
+            "descriptor": "No relaciona las alternativas con objetivos ni utiliza la comparación documentada (E2-E5).",
+            "label": "Sin demostración",
+            "level": 0,
+            "observable_element_ids": []
+          },
+          {
+            "descriptor": "Reconoce una diferencia entre las alternativas, pero no conecta de manera suficiente el objetivo con las cifras del trade-off (O1-O2; E2-E5).",
+            "label": "Inicial",
+            "level": 1,
+            "observable_element_ids": [
+              "observable_p09_d10708c33c652056954a"
+            ]
+          },
+          {
+            "descriptor": "Relaciona 80 vasos con capacidad y desembolso, 60 vasos con menor riesgo presupuestario, y evita presentar una única alternativa como universalmente correcta (O1-O3; E2-E5).",
+            "label": "Adecuado",
+            "level": 2,
+            "observable_element_ids": [
+              "observable_p09_d10708c33c652056954a",
+              "observable_p09_e7cf05c1769ef02699ff",
+              "observable_p09_bf0e1be46f1a9cdbe3ed"
+            ]
+          },
+          {
+            "descriptor": "Defiende cualquiera de las alternativas de forma condicional y equilibrada, conectando el objetivo priorizado con las cifras de desembolso, excedente máximo y capacidad adicional (O1-O3; E2-E5).",
+            "label": "Sólido y defendible",
+            "level": 3,
+            "observable_element_ids": [
+              "observable_p09_d10708c33c652056954a",
+              "observable_p09_e7cf05c1769ef02699ff",
+              "observable_p09_bf0e1be46f1a9cdbe3ed"
+            ]
+          }
+        ],
+        "misconceptions": [
+          "afirmar que el mayor excedente máximo elimina el riesgo de no vender",
+          "comparar alternativas con partidas de costo externas",
+          "Declara que 80 vasos es siempre preferible solo porque tiene un excedente máximo mayor, sin considerar el desembolso o la capacidad adicional (O1-O2; E2-E5).",
+          "Presenta una alternativa como universalmente correcta sin vincularla al objetivo que se prioriza (O3; E2-E5)."
+        ],
+        "observable_elements": [
+          {
+            "description": "relaciona 80 vasos con mayor capacidad y mayor desembolso",
+            "element_id": "observable_p09_d10708c33c652056954a",
+            "evidence_ids": [
+              "ev_eb2d2902e705aed0f05a",
+              "ev_76386bd7e3b219e58f4f",
+              "ev_a240ec603b14ea3be4df",
+              "ev_8e0c621d2f730718110b",
+              "ev_e293634cab6c9d688b83"
+            ],
+            "required_for_level_2": true,
+            "source_ids": []
+          },
+          {
+            "description": "relaciona 60 vasos con menor riesgo presupuestario",
+            "element_id": "observable_p09_e7cf05c1769ef02699ff",
+            "evidence_ids": [
+              "ev_eb2d2902e705aed0f05a",
+              "ev_76386bd7e3b219e58f4f",
+              "ev_a240ec603b14ea3be4df",
+              "ev_8e0c621d2f730718110b",
+              "ev_e293634cab6c9d688b83"
+            ],
+            "required_for_level_2": true,
+            "source_ids": []
+          },
+          {
+            "description": "no presenta una alternativa defendible como única respuesta correcta",
+            "element_id": "observable_p09_bf0e1be46f1a9cdbe3ed",
+            "evidence_ids": [
+              "ev_eb2d2902e705aed0f05a",
+              "ev_76386bd7e3b219e58f4f",
+              "ev_a240ec603b14ea3be4df",
+              "ev_8e0c621d2f730718110b",
+              "ev_e293634cab6c9d688b83"
+            ],
+            "required_for_level_2": true,
+            "source_ids": []
+          }
+        ],
+        "purpose": "Evaluar el observable fijo sin ampliar la evidencia aprobada.",
+        "semantic_uncertainties": [
+          "La expresión «menor riesgo» se relaciona en E2-E5 con el menor desembolso, pero no cuantifica una probabilidad de ventas; la guía no debe convertirla en una probabilidad."
+        ]
+      },
+      "question_id": "question_p09_0b940b3c6fc408ba9b43"
+    },
+    {
+      "guide": {
+        "acceptable_alternatives": [
+          "resolver mediante desigualdad",
+          "resolver mediante prueba aritmética de valores consecutivos",
+          "Mostrar el límite mediante una desigualdad o mediante una prueba aritmética de valores enteros consecutivos, incluyendo la comprobación del valor inmediatamente superior (O2-O3; E1-E2)."
+        ],
+        "acceptance_conditions": [
+          "Separa en la expresión de costos la parte fija de la parte variable por vaso (O1; E1-E2).",
+          "Identifica un máximo entero compatible con el límite presupuestario a partir de la estructura mostrada (O2; E1-E2).",
+          "Comprueba que el entero inmediatamente superior excede el límite y verifica específicamente que 90 no es viable según E1-E2 (O3; E1-E2)."
+        ],
+        "cannot_infer": [
+          "No permite inferir una capacidad física distinta ni un criterio de producción ajeno a la estructura de costos documentada en E1-E2.",
+          "No permite inferir un valor máximo mediante una fuente distinta de la regla de costos y presupuesto mostrada en E1-E2."
+        ],
+        "levels": [
+          {
+            "descriptor": "No separa la estructura de costos ni justifica un límite entero con la evidencia disponible (E1-E2).",
+            "label": "Sin demostración",
+            "level": 0,
+            "observable_element_ids": []
+          },
+          {
+            "descriptor": "Reconoce alguna parte de la estructura de costos, pero no establece de forma verificable el máximo entero o la inviabilidad de 90 (O1; E1-E2).",
+            "label": "Inicial",
+            "level": 1,
+            "observable_element_ids": [
+              "observable_p09_c1825a7ad29d8f8cc7e5"
+            ]
+          },
+          {
+            "descriptor": "Separa costos fijos y variables, obtiene un máximo entero dentro del presupuesto y comprueba que el valor siguiente excede el límite (O1-O3; E1-E2).",
+            "label": "Adecuado",
+            "level": 2,
+            "observable_element_ids": [
+              "observable_p09_c1825a7ad29d8f8cc7e5",
+              "observable_p09_a57299714945a7ceb70b",
+              "observable_p09_9d1919c1acd22be9c828"
+            ]
+          },
+          {
+            "descriptor": "Expone una derivación reproducible del máximo entero, verifica el valor consecutivo y conecta esa comprobación con la inviabilidad documentada de 90 (O1-O3; E1-E2).",
+            "label": "Sólido y defendible",
+            "level": 3,
+            "observable_element_ids": [
+              "observable_p09_c1825a7ad29d8f8cc7e5",
+              "observable_p09_a57299714945a7ceb70b",
+              "observable_p09_9d1919c1acd22be9c828"
+            ]
+          }
+        ],
+        "misconceptions": [
+          "usar 90 solo porque es la capacidad física",
+          "redondear hacia arriba un máximo presupuestario",
+          "Incluye el costo variable entre los costos fijos o lo omite al comprobar el límite presupuestario (O1; E1-E2).",
+          "Declara viable 90 sin contrastar el total documentado con el límite presupuestario (O3; E1-E2)."
+        ],
+        "observable_elements": [
+          {
+            "description": "separa costos fijos del costo por vaso",
+            "element_id": "observable_p09_c1825a7ad29d8f8cc7e5",
+            "evidence_ids": [
+              "ev_51e17d19d3da76f54ccf",
+              "ev_604dd709208827384004"
+            ],
+            "required_for_level_2": true,
+            "source_ids": []
+          },
+          {
+            "description": "obtiene un máximo entero dentro del presupuesto",
+            "element_id": "observable_p09_a57299714945a7ceb70b",
+            "evidence_ids": [
+              "ev_51e17d19d3da76f54ccf",
+              "ev_604dd709208827384004"
+            ],
+            "required_for_level_2": true,
+            "source_ids": []
+          },
+          {
+            "description": "comprueba que el valor inmediatamente superior excede el límite",
+            "element_id": "observable_p09_9d1919c1acd22be9c828",
+            "evidence_ids": [
+              "ev_51e17d19d3da76f54ccf",
+              "ev_604dd709208827384004"
+            ],
+            "required_for_level_2": true,
+            "source_ids": []
+          }
+        ],
+        "purpose": "Evaluar el observable fijo sin ampliar la evidencia aprobada.",
+        "semantic_uncertainties": [
+          "E1-E2 documentan que 90 no es viable y muestran su cálculo, pero no explicitan el valor del máximo entero; la aceptación debe exigir la derivación del estudiante y no asumir un valor no mostrado en E1-E2."
+        ]
+      },
+      "question_id": "question_p09_a5a9d661f0441b21a3b5"
+    }
+  ],
+  "schema_version": "1.1.0",
+  "status": "READY",
+  "submission_id": "submission_05"
+}

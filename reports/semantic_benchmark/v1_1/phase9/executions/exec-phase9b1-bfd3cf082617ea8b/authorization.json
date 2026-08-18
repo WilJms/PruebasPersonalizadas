@@ -1,0 +1,141 @@
+{
+  "allowed_candidate_ids": [
+    "P04-C1-TERRA-HIGH",
+    "P06-C1-LUNA-HIGH",
+    "P07-C1-LUNA-HIGH",
+    "P09-C1-LUNA-HIGH"
+  ],
+  "allowed_case_ids": [
+    "PP-A01-P04-001",
+    "PP-A01-S01-P06-R01",
+    "PP-A01-S01-P07-O01",
+    "PP-A01-S03-P06-R01",
+    "PP-A01-S05-P07-O02",
+    "PP-A02-S02-P07-O01",
+    "PP-A03-P09-F01",
+    "PP-A04-S04-P07-O01",
+    "PP-A04-S06-P07-O01",
+    "PP-A08-S02-P07-O02"
+  ],
+  "allowed_logical_call_ids": [
+    "P04-C1-TERRA-HIGH:PP-A01-P04-001:run1",
+    "P04-C1-TERRA-HIGH:PP-A01-P04-001:run2",
+    "P04-C1-TERRA-HIGH:PP-A01-P04-001:run3",
+    "P06-C1-LUNA-HIGH:PP-A01-S01-P06-R01:run1",
+    "P06-C1-LUNA-HIGH:PP-A01-S01-P06-R01:run2",
+    "P06-C1-LUNA-HIGH:PP-A01-S01-P06-R01:run3",
+    "P06-C1-LUNA-HIGH:PP-A01-S03-P06-R01:run1",
+    "P06-C1-LUNA-HIGH:PP-A01-S03-P06-R01:run2",
+    "P06-C1-LUNA-HIGH:PP-A01-S03-P06-R01:run3",
+    "P07-C1-LUNA-HIGH:PP-A01-S01-P07-O01:run1",
+    "P07-C1-LUNA-HIGH:PP-A01-S01-P07-O01:run2",
+    "P07-C1-LUNA-HIGH:PP-A01-S01-P07-O01:run3",
+    "P07-C1-LUNA-HIGH:PP-A01-S05-P07-O02:run1",
+    "P07-C1-LUNA-HIGH:PP-A01-S05-P07-O02:run2",
+    "P07-C1-LUNA-HIGH:PP-A01-S05-P07-O02:run3",
+    "P07-C1-LUNA-HIGH:PP-A02-S02-P07-O01:run1",
+    "P07-C1-LUNA-HIGH:PP-A02-S02-P07-O01:run2",
+    "P07-C1-LUNA-HIGH:PP-A02-S02-P07-O01:run3",
+    "P07-C1-LUNA-HIGH:PP-A04-S04-P07-O01:run1",
+    "P07-C1-LUNA-HIGH:PP-A04-S04-P07-O01:run2",
+    "P07-C1-LUNA-HIGH:PP-A04-S04-P07-O01:run3",
+    "P07-C1-LUNA-HIGH:PP-A04-S06-P07-O01:run1",
+    "P07-C1-LUNA-HIGH:PP-A04-S06-P07-O01:run2",
+    "P07-C1-LUNA-HIGH:PP-A04-S06-P07-O01:run3",
+    "P07-C1-LUNA-HIGH:PP-A08-S02-P07-O02:run1",
+    "P07-C1-LUNA-HIGH:PP-A08-S02-P07-O02:run2",
+    "P07-C1-LUNA-HIGH:PP-A08-S02-P07-O02:run3",
+    "P09-C1-LUNA-HIGH:PP-A03-P09-F01:run1",
+    "P09-C1-LUNA-HIGH:PP-A03-P09-F01:run2",
+    "P09-C1-LUNA-HIGH:PP-A03-P09-F01:run3"
+  ],
+  "authorization_hash": "sha256:bfd3cf082617ea8b33879a95e3fe141ac1f9c895594d1e4a3c6a3309622d547a",
+  "authorization_id": "phase9b1-bfd3cf082617ea8b",
+  "benchmark_boundary_hash": "sha256:426dda4d560a8d7d53639dfbaa0773c28565450f06e8ff62d51a8cd1bd6f62ff",
+  "benchmark_version": "semantic-benchmark/1.1.0",
+  "candidate_matrix_hash": "sha256:a1612f10aa72d561a46c8af665df16aef823ab14543cd2e8061ff4ad17a5db6f",
+  "consumption": {
+    "consumed_at": "2026-08-18T03:41:25Z",
+    "consumed_once": true,
+    "state": "CONSUMED"
+  },
+  "corpus_package_boundary_hash": "21c21f3a53bfb786162dc350dc38c93b7b007d9f23b744a354de4ac2354048a1",
+  "created_at": "2026-08-18T03:41:25Z",
+  "created_by": "phase9b1-operator",
+  "dry_authorization_proof_hash": "sha256:f07fcea92422ea80253374205ad0274c56a917ef1acba18b18c5fdf720cdcbe6",
+  "escalation_authorized": false,
+  "excluded_candidate_ids": [
+    "P04-C2-TERRA-XHIGH",
+    "P06-C2-LUNA-XHIGH",
+    "P06-C3-LUNA-MAX",
+    "P07-C2-LUNA-XHIGH",
+    "P07-C3-LUNA-MAX",
+    "P09-C2-LUNA-XHIGH",
+    "P09-C3-LUNA-MAX"
+  ],
+  "excluded_scope": [
+    "CORE",
+    "HELD_OUT_CONFIRMATION",
+    "XHIGH",
+    "MAX",
+    "gpt-5.6-sol",
+    "P01",
+    "P02",
+    "P03",
+    "P05",
+    "P08",
+    "P10",
+    "P11_SEMANTIC_REPAIR"
+  ],
+  "k": 3,
+  "not_a_phase9_global_authorization": true,
+  "outer_budget_cap_usd": 2.0,
+  "per_call_caps_usd": {
+    "P04-C1-TERRA-HIGH": 0.3625,
+    "P06-C1-LUNA-HIGH": 0.0333,
+    "P07-C1-LUNA-HIGH": 0.0243,
+    "P09-C1-LUNA-HIGH": 0.0235
+  },
+  "phase": "PHASE_9B_1",
+  "pricing_evidence": {
+    "executable_table_source": "https://developers.openai.com/api/docs/pricing",
+    "models": {
+      "gpt-5.6-luna": {
+        "cached_input_per_million": 0.02,
+        "input_per_million": 0.2,
+        "output_per_million": 1.2
+      },
+      "gpt-5.6-terra": {
+        "cached_input_per_million": 0.2,
+        "input_per_million": 2.0,
+        "output_per_million": 12.0
+      }
+    },
+    "official_source": "https://developers.openai.com/api/docs/pricing",
+    "pricing_unit": "USD_PER_MILLION_TOKENS",
+    "retrieved_at": "2026-08-17"
+  },
+  "primary_logical_calls": 30,
+  "protocol_boundary_hash": "sha256:daa79023de4e3b72a73f31879d481fbedb75492cc5fb4642c7fd2b4a4dbaa540",
+  "protocol_version": "phase9-qualification-protocol/1.1.0",
+  "purpose": "REAL_SMOKE_HIGH_GENERATION",
+  "rung_caps_usd": {
+    "P04-C1-TERRA-HIGH": 1.0875,
+    "P06-C1-LUNA-HIGH": 0.1998,
+    "P07-C1-LUNA-HIGH": 0.4374,
+    "P09-C1-LUNA-HIGH": 0.0705
+  },
+  "schema_version": "phase9-billable-authorization/1.0.0",
+  "split": "SMOKE",
+  "technical_retry_policy": {
+    "candidate_fallback": "FORBIDDEN",
+    "max_attempts_per_logical_call": 2,
+    "retryable_codes": [
+      "PROVIDER_CONNECTION",
+      "PROVIDER_RATE_LIMIT",
+      "PROVIDER_TIMEOUT",
+      "PROVIDER_TRANSIENT_STATUS"
+    ],
+    "semantic_retry": "FORBIDDEN"
+  }
+}

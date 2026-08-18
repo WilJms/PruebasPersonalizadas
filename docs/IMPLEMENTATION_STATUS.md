@@ -2,6 +2,46 @@
 
 Fecha de corte: 2026-08-17 (America/Santiago).
 
+## Estado vigente — Fase 9B.1, generación real HIGH SMOKE (2026-08-17)
+
+Primera ejecución real bajo `semantic-benchmark/1.1.0` y
+`phase9-qualification-protocol/1.1.0`. Una sola autorización facturable
+`phase9b1-bfd3cf082617ea8b`
+(`sha256:bfd3cf082617ea8b33879a95e3fe141ac1f9c895594d1e4a3c6a3309622d547a`),
+consumida exactamente una vez, con techo externo USD 2.00 y los caps por
+llamada/rung congelados como autoridad interna.
+
+Alcance ejecutado: sólo el rung HIGH del split SMOKE, k=3, 30 primary logical
+calls sobre `P04-C1-TERRA-HIGH`, `P06-C1-LUNA-HIGH`, `P07-C1-LUNA-HIGH` y
+`P09-C1-LUNA-HIGH`. CORE, HELD_OUT, XHIGH, MAX, Sol, P01-P03, P05, P08, P10 y la
+reparación semántica de P11 quedaron inalcanzables y registran 0 llamadas. Cada
+request se reconstruyó desde el corpus sintético congelado y reprodujo su
+`input_hash` del case matrix antes de salir a transporte.
+
+Gasto real: **USD 0.38430826** sobre 117 498 tokens de entrada (87 769 en
+caché), 76 647 de salida y 46 505 de razonamiento. Precios estándar verificados
+contra la página oficial el 2026-08-17: Luna 0.20/1.20 y Terra 2.00/12.00 por
+1M tokens, coincidentes con la reducción fechada del 2026-07-30.
+
+Resultado técnico: 26 de 30 llamadas completaron y las 26 pasaron la revalidación
+determinista de su stage. Las 4 restantes son rechazos del boundary determinista
+(`P04_SOURCE_COVERAGE_MISMATCH`, `P04_DRAFT_COMPILATION_FAILED`,
+`P07_DRAFT_MATERIALIZATION_FAILED`, `P09_DRAFT_MATERIALIZATION_FAILED`), no
+fallos de transporte: `provider_technical_failures` = 0 y la tasa técnica queda
+en 0.000 frente al gate de 0.02. No hubo retries técnicos ni semánticos, y el
+mismo fixture pasa en unas repeticiones y falla en otras, lo que apunta a
+variabilidad del modelo y no a un defecto del compilador.
+
+Estado semántico: **`PENDING_ADJUDICATION`** para todas las propiedades de
+adjudicación externa. Esta ejecución **no** decide si HIGH califica. Se
+produjeron 38 blind review packets con 0 fugas de metadata; la adjudicación
+requiere un contexto Opus 5 nuevo que reciba únicamente el bundle ciego.
+
+Evidencia:
+`reports/semantic_benchmark/v1_1/phase9/executions/exec-phase9b1-bfd3cf082617ea8b/`.
+Bundle ciego separado en
+`reports/semantic_benchmark/v1_1/phase9/adjudication_bundles/exec-phase9b1-bfd3cf082617ea8b/`.
+
 ## Estado vigente — Fase 9A.1, routing policy family-constrained (2026-08-17)
 
 `phase9-qualification-protocol/1.1.0` reemplaza a `1.0.0`

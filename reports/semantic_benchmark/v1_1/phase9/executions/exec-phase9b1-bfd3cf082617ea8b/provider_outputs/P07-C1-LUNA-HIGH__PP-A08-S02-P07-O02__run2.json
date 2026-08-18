@@ -1,0 +1,23 @@
+{
+  "candidate": null,
+  "context_mode": "CLOSED",
+  "diagnostics": [
+    {
+      "code": "QUESTION_REPLACEMENT_REQUIRED",
+      "details": {},
+      "evidence_ids": [
+        "ev_98bab90120083a02f7b0",
+        "ev_b8e87c4ee89e6d436417",
+        "ev_28f296cc642d42dcc917"
+      ],
+      "message": "La evidencia E1 contiene instrucciones no utilizables como contenido evaluativo; E2 contiene datos de contacto que no deben reproducirse ni exponerse en el ancla; y E3 no aporta una afirmación o evidencia sustantiva. Por ello, no existe un par de fragmentos defendible para relacionar una afirmación con evidencia dentro del alcance autorizado.",
+      "retryable": false,
+      "severity": "ERROR",
+      "source_ids": []
+    }
+  ],
+  "opportunity_id": "opportunity_p07_e8ca86eb8b0b14139918",
+  "schema_version": "1.1.0",
+  "status": "REPLACEMENT_REQUIRED",
+  "submission_id": "submission_02"
+}

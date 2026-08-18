@@ -1,0 +1,215 @@
+{
+  "execution_id": "exec-phase9b1-bfd3cf082617ea8b",
+  "results": [
+    {
+      "boundary": "BLUEPRINT_COMPILER_AND_VALIDATORS",
+      "code": null,
+      "logical_call_id": "P04-C1-TERRA-HIGH:PP-A01-P04-001:run3",
+      "result": "PASS",
+      "semantic_status": "PENDING_ADJUDICATION",
+      "stage": "P04"
+    },
+    {
+      "boundary": "EVIDENCE_MAPPING_MATERIALIZER",
+      "code": null,
+      "logical_call_id": "P06-C1-LUNA-HIGH:PP-A01-S01-P06-R01:run1",
+      "result": "PASS",
+      "semantic_status": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "boundary": "EVIDENCE_MAPPING_MATERIALIZER",
+      "code": null,
+      "logical_call_id": "P06-C1-LUNA-HIGH:PP-A01-S01-P06-R01:run2",
+      "result": "PASS",
+      "semantic_status": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "boundary": "EVIDENCE_MAPPING_MATERIALIZER",
+      "code": null,
+      "logical_call_id": "P06-C1-LUNA-HIGH:PP-A01-S01-P06-R01:run3",
+      "result": "PASS",
+      "semantic_status": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "boundary": "EVIDENCE_MAPPING_MATERIALIZER",
+      "code": null,
+      "logical_call_id": "P06-C1-LUNA-HIGH:PP-A01-S03-P06-R01:run1",
+      "result": "PASS",
+      "semantic_status": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "boundary": "EVIDENCE_MAPPING_MATERIALIZER",
+      "code": null,
+      "logical_call_id": "P06-C1-LUNA-HIGH:PP-A01-S03-P06-R01:run2",
+      "result": "PASS",
+      "semantic_status": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "boundary": "EVIDENCE_MAPPING_MATERIALIZER",
+      "code": null,
+      "logical_call_id": "P06-C1-LUNA-HIGH:PP-A01-S03-P06-R01:run3",
+      "result": "PASS",
+      "semantic_status": "PENDING_ADJUDICATION",
+      "stage": "P06"
+    },
+    {
+      "boundary": "QUESTION_MATERIALIZER_AND_EVIDENCE_ANCHOR_VALIDATORS",
+      "code": null,
+      "logical_call_id": "P07-C1-LUNA-HIGH:PP-A01-S01-P07-O01:run1",
+      "result": "PASS",
+      "semantic_status": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "boundary": "QUESTION_MATERIALIZER_AND_EVIDENCE_ANCHOR_VALIDATORS",
+      "code": null,
+      "logical_call_id": "P07-C1-LUNA-HIGH:PP-A01-S01-P07-O01:run2",
+      "result": "PASS",
+      "semantic_status": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "boundary": "QUESTION_MATERIALIZER_AND_EVIDENCE_ANCHOR_VALIDATORS",
+      "code": null,
+      "logical_call_id": "P07-C1-LUNA-HIGH:PP-A01-S01-P07-O01:run3",
+      "result": "PASS",
+      "semantic_status": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "boundary": "QUESTION_MATERIALIZER_AND_EVIDENCE_ANCHOR_VALIDATORS",
+      "code": null,
+      "logical_call_id": "P07-C1-LUNA-HIGH:PP-A01-S05-P07-O02:run1",
+      "result": "PASS",
+      "semantic_status": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "boundary": "QUESTION_MATERIALIZER_AND_EVIDENCE_ANCHOR_VALIDATORS",
+      "code": null,
+      "logical_call_id": "P07-C1-LUNA-HIGH:PP-A01-S05-P07-O02:run2",
+      "result": "PASS",
+      "semantic_status": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "boundary": "QUESTION_MATERIALIZER_AND_EVIDENCE_ANCHOR_VALIDATORS",
+      "code": null,
+      "logical_call_id": "P07-C1-LUNA-HIGH:PP-A01-S05-P07-O02:run3",
+      "result": "PASS",
+      "semantic_status": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "boundary": "QUESTION_MATERIALIZER_AND_EVIDENCE_ANCHOR_VALIDATORS",
+      "code": null,
+      "logical_call_id": "P07-C1-LUNA-HIGH:PP-A02-S02-P07-O01:run1",
+      "result": "PASS",
+      "semantic_status": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "boundary": "QUESTION_MATERIALIZER_AND_EVIDENCE_ANCHOR_VALIDATORS",
+      "code": null,
+      "logical_call_id": "P07-C1-LUNA-HIGH:PP-A02-S02-P07-O01:run2",
+      "result": "PASS",
+      "semantic_status": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "boundary": "QUESTION_MATERIALIZER_AND_EVIDENCE_ANCHOR_VALIDATORS",
+      "code": null,
+      "logical_call_id": "P07-C1-LUNA-HIGH:PP-A02-S02-P07-O01:run3",
+      "result": "PASS",
+      "semantic_status": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "boundary": "QUESTION_MATERIALIZER_AND_EVIDENCE_ANCHOR_VALIDATORS",
+      "code": null,
+      "logical_call_id": "P07-C1-LUNA-HIGH:PP-A04-S04-P07-O01:run1",
+      "result": "PASS",
+      "semantic_status": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "boundary": "QUESTION_MATERIALIZER_AND_EVIDENCE_ANCHOR_VALIDATORS",
+      "code": null,
+      "logical_call_id": "P07-C1-LUNA-HIGH:PP-A04-S04-P07-O01:run3",
+      "result": "PASS",
+      "semantic_status": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "boundary": "QUESTION_MATERIALIZER_AND_EVIDENCE_ANCHOR_VALIDATORS",
+      "code": null,
+      "logical_call_id": "P07-C1-LUNA-HIGH:PP-A04-S06-P07-O01:run1",
+      "result": "PASS",
+      "semantic_status": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "boundary": "QUESTION_MATERIALIZER_AND_EVIDENCE_ANCHOR_VALIDATORS",
+      "code": null,
+      "logical_call_id": "P07-C1-LUNA-HIGH:PP-A04-S06-P07-O01:run2",
+      "result": "PASS",
+      "semantic_status": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "boundary": "QUESTION_MATERIALIZER_AND_EVIDENCE_ANCHOR_VALIDATORS",
+      "code": null,
+      "logical_call_id": "P07-C1-LUNA-HIGH:PP-A04-S06-P07-O01:run3",
+      "result": "PASS",
+      "semantic_status": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "boundary": "QUESTION_MATERIALIZER_AND_EVIDENCE_ANCHOR_VALIDATORS",
+      "code": null,
+      "logical_call_id": "P07-C1-LUNA-HIGH:PP-A08-S02-P07-O02:run1",
+      "result": "PASS",
+      "semantic_status": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "boundary": "QUESTION_MATERIALIZER_AND_EVIDENCE_ANCHOR_VALIDATORS",
+      "code": null,
+      "logical_call_id": "P07-C1-LUNA-HIGH:PP-A08-S02-P07-O02:run2",
+      "result": "PASS",
+      "semantic_status": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "boundary": "QUESTION_MATERIALIZER_AND_EVIDENCE_ANCHOR_VALIDATORS",
+      "code": null,
+      "logical_call_id": "P07-C1-LUNA-HIGH:PP-A08-S02-P07-O02:run3",
+      "result": "PASS",
+      "semantic_status": "PENDING_ADJUDICATION",
+      "stage": "P07"
+    },
+    {
+      "boundary": "GUIDE_MATERIALIZER_AND_VALIDATORS",
+      "code": null,
+      "logical_call_id": "P09-C1-LUNA-HIGH:PP-A03-P09-F01:run1",
+      "result": "PASS",
+      "semantic_status": "PENDING_ADJUDICATION",
+      "stage": "P09"
+    },
+    {
+      "boundary": "GUIDE_MATERIALIZER_AND_VALIDATORS",
+      "code": null,
+      "logical_call_id": "P09-C1-LUNA-HIGH:PP-A03-P09-F01:run2",
+      "result": "PASS",
+      "semantic_status": "PENDING_ADJUDICATION",
+      "stage": "P09"
+    }
+  ],
+  "schema_version": "phase9-deterministic-validation/1.0.0",
+  "semantic_status": "PENDING_ADJUDICATION"
+}

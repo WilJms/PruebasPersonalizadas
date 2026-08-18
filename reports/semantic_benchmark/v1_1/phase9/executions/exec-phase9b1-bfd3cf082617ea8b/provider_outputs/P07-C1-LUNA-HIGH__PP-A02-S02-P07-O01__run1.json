@@ -1,0 +1,114 @@
+{
+  "candidate": {
+    "anchor": {
+      "anchor_id": "anchor_8b3aaf1e843e640d828c",
+      "answer_leakage_risk": 0.0,
+      "fragments": [
+        {
+          "display_text": "La autora nació en Puerto Azul en 1982 y escribió este cuento después de perder su casa. Su color favorito era el azul. Esto explica el sobre y el carácter autobiográfico del texto.",
+          "evidence_id": "ev_8c4e84959f4828f71c44",
+          "locator": {
+            "column": null,
+            "heading_path": [],
+            "kind": "DOCUMENT_PATH",
+            "paragraph_index": 0,
+            "row": null,
+            "table_index": null
+          },
+          "transformation": "LITERAL"
+        },
+        {
+          "display_text": "El cuento trata de secretos. Es muy profundo.",
+          "evidence_id": "ev_46fdcf7ea49ad7b11095",
+          "locator": {
+            "column": null,
+            "heading_path": [],
+            "kind": "DOCUMENT_PATH",
+            "paragraph_index": 1,
+            "row": null,
+            "table_index": null
+          },
+          "transformation": "LITERAL"
+        }
+      ],
+      "self_containment_score": 1.0,
+      "structure": "PAIRED_FRAGMENTS",
+      "student_facing_label": null
+    },
+    "candidate_id": "candidate_p07_d8a7fb57f5c0c28e856d",
+    "choices": [],
+    "citations": [],
+    "cognitive_operation": "INTERPRET_REPRESENTATION",
+    "course_source_ids": [],
+    "difficulty": "LOW",
+    "dimension_id": "dimension_p07_d8a7fb57f5c0c28e856d",
+    "estimated_minutes": 5,
+    "evidence_ids": [
+      "ev_8c4e84959f4828f71c44",
+      "ev_46fdcf7ea49ad7b11095",
+      "ev_595660a897451258f84e"
+    ],
+    "opportunity_id": "opportunity_p07_d8a7fb57f5c0c28e856d",
+    "opportunity_template_id": "template_p07_d8a7fb57f5c0c28e856d",
+    "preliminary_guide": {
+      "acceptable_alternatives": [
+        "Responde que no y señala que el primer fragmento no menciona secretos, aunque sí contiene información biográfica y una explicación declarada sobre el sobre y el carácter autobiográfico.",
+        "Indica que la afirmación sobre los secretos no queda respaldada por el primer fragmento y delimita qué información sí aparece allí."
+      ],
+      "acceptance_conditions": [],
+      "cannot_infer": [],
+      "levels": [],
+      "misconceptions": [
+        "Trata la afirmación «El cuento trata de secretos» como si fuera una consecuencia de cualquier dato biográfico del primer fragmento.",
+        "Afirma que el primer fragmento demuestra que el cuento trata de secretos sin identificar una relación textual entre ambos fragmentos.",
+        "Añade información externa para justificar la afirmación en lugar de limitarse a los dos fragmentos."
+      ],
+      "observable_elements": [
+        {
+          "description": "Distingue la afirmación «El cuento trata de secretos» del segundo fragmento respecto de la información localizada en el primero.",
+          "element_id": "observable_c1ba1dd3aa61c389f3fc",
+          "evidence_ids": [
+            "ev_8c4e84959f4828f71c44",
+            "ev_46fdcf7ea49ad7b11095"
+          ],
+          "required_for_level_2": true,
+          "source_ids": []
+        },
+        {
+          "description": "Explica que el primer fragmento presenta datos sobre la autora y una relación declarada con el sobre y el carácter autobiográfico, pero no aporta un vínculo explícito con la afirmación sobre los secretos.",
+          "element_id": "observable_df7cfed7d3bbb4eace98",
+          "evidence_ids": [
+            "ev_8c4e84959f4828f71c44",
+            "ev_46fdcf7ea49ad7b11095"
+          ],
+          "required_for_level_2": true,
+          "source_ids": []
+        },
+        {
+          "description": "Justifica la respuesta usando únicamente la relación entre ambos fragmentos, sin ampliar el alcance de la evidencia.",
+          "element_id": "observable_d39dcf4b25368ebd3868",
+          "evidence_ids": [
+            "ev_8c4e84959f4828f71c44",
+            "ev_46fdcf7ea49ad7b11095"
+          ],
+          "required_for_level_2": false,
+          "source_ids": []
+        }
+      ],
+      "purpose": "Relaciona una afirmación con evidencia localizada sin ampliar fuentes ni atribuir intención.",
+      "semantic_uncertainties": []
+    },
+    "question_text": "Al relacionar los dos fragmentos, ¿puede la información del primer fragmento sostener la afirmación «El cuento trata de secretos» del segundo? Responde sí o no y justifica tu respuesta indicando qué permite afirmar el primer fragmento y qué queda sin respaldo, sin usar información externa.",
+    "response_format": "OPEN_SHORT",
+    "student_justification_required": true,
+    "submission_id": "submission_02",
+    "uncertainties": [],
+    "variant_id": "variant_p07_d8a7fb57f5c0c28e856d"
+  },
+  "context_mode": "CLOSED",
+  "diagnostics": [],
+  "opportunity_id": "opportunity_p07_d8a7fb57f5c0c28e856d",
+  "schema_version": "1.1.0",
+  "status": "READY",
+  "submission_id": "submission_02"
+}

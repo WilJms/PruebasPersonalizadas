@@ -1,0 +1,114 @@
+{
+  "candidate": {
+    "anchor": {
+      "anchor_id": "anchor_51de21c35c107d11f5ca",
+      "answer_leakage_risk": 0.0,
+      "fragments": [
+        {
+          "display_text": "La fotosíntesis es un proceso fascinante que sostiene la vida en la Tierra. Las plantas producen oxígeno, decoran los hogares y aparecen en muchas culturas. A continuación iba a escribir una historia de los jardines botánicos, pero no alcancé.",
+          "evidence_id": "ev_4f1b7e369a62348daf24",
+          "locator": {
+            "column": null,
+            "heading_path": [],
+            "kind": "DOCUMENT_PATH",
+            "paragraph_index": 0,
+            "row": null,
+            "table_index": null
+          },
+          "transformation": "LITERAL"
+        },
+        {
+          "display_text": "De la tabla recuerdo que había dos condiciones y que una planta tenía una hoja dañada. No sé si A era doce horas o cuatro horas. Tampoco sé calcular el promedio sin una calculadora.",
+          "evidence_id": "ev_81e72036798a8f4ded1f",
+          "locator": {
+            "column": null,
+            "heading_path": [],
+            "kind": "DOCUMENT_PATH",
+            "paragraph_index": 5,
+            "row": null,
+            "table_index": null
+          },
+          "transformation": "LITERAL"
+        }
+      ],
+      "self_containment_score": 1.0,
+      "structure": "PAIRED_FRAGMENTS",
+      "student_facing_label": null
+    },
+    "candidate_id": "candidate_p07_a498d6902bff3d9f6fb3",
+    "choices": [],
+    "citations": [],
+    "cognitive_operation": "INTERPRET_REPRESENTATION",
+    "course_source_ids": [],
+    "difficulty": "LOW",
+    "dimension_id": "dimension_p07_a498d6902bff3d9f6fb3",
+    "estimated_minutes": 5,
+    "evidence_ids": [
+      "ev_4f1b7e369a62348daf24",
+      "ev_5c40a7712932dc0063fc",
+      "ev_81e72036798a8f4ded1f"
+    ],
+    "opportunity_id": "opportunity_p07_a498d6902bff3d9f6fb3",
+    "opportunity_template_id": "template_p07_a498d6902bff3d9f6fb3",
+    "preliminary_guide": {
+      "acceptable_alternatives": [
+        "Indicar que solo pueden describirse como información explícita las dos condiciones y la hoja dañada, manteniendo como indeterminados la asignación horaria y el promedio.",
+        "Señalar que el primer fragmento contiene afirmaciones generales sobre la fotosíntesis y las plantas, pero no datos localizados de la tabla; por ello no permite establecer resultados ni relaciones experimentales no escritas.",
+        "Expresar la limitación con otras palabras, siempre que no convierta la información incompleta en una conclusión cuantitativa o causal."
+      ],
+      "acceptance_conditions": [],
+      "cannot_infer": [],
+      "levels": [],
+      "misconceptions": [
+        "Tratar las afirmaciones generales sobre la fotosíntesis como si fueran los datos faltantes de la tabla.",
+        "Afirmar que A corresponde necesariamente a doce o cuatro horas sin evidencia que lo determine.",
+        "Calcular o inventar un promedio aunque el segundo fragmento indica que no están disponibles los datos necesarios.",
+        "Concluir qué condición fue mejor o qué efecto produjo la hoja dañada sin evidencia localizada."
+      ],
+      "observable_elements": [
+        {
+          "description": "Distingue que el segundo fragmento solo explicita que había dos condiciones y que una planta tenía una hoja dañada.",
+          "element_id": "observable_2c34c0dfbb0521f2f419",
+          "evidence_ids": [
+            "ev_81e72036798a8f4ded1f"
+          ],
+          "required_for_level_2": true,
+          "source_ids": []
+        },
+        {
+          "description": "Reconoce que el segundo fragmento no permite determinar con seguridad si A correspondía a doce o cuatro horas ni calcular el promedio.",
+          "element_id": "observable_1e74505f565efd35a1b2",
+          "evidence_ids": [
+            "ev_81e72036798a8f4ded1f"
+          ],
+          "required_for_level_2": true,
+          "source_ids": []
+        },
+        {
+          "description": "Explica que las afirmaciones generales del primer fragmento no aportan los valores de la tabla ni permiten completar sus datos faltantes, por lo que no deben usarse para inferir una conclusión experimental adicional.",
+          "element_id": "observable_ee0e6960a916b83d44a0",
+          "evidence_ids": [
+            "ev_4f1b7e369a62348daf24",
+            "ev_81e72036798a8f4ded1f"
+          ],
+          "required_for_level_2": true,
+          "source_ids": []
+        }
+      ],
+      "purpose": "Relaciona una afirmación con evidencia localizada sin ampliar fuentes ni atribuir intención.",
+      "semantic_uncertainties": []
+    },
+    "question_text": "Lee los dos fragmentos visibles. Explica qué información explícita de la tabla puede usarse para describir la situación experimental y por qué las afirmaciones generales del primer fragmento no permiten completar los datos faltantes del segundo. Señala al menos una conclusión que no puede defenderse y justifica tu respuesta usando únicamente los fragmentos.",
+    "response_format": "OPEN_SHORT",
+    "student_justification_required": true,
+    "submission_id": "submission_01",
+    "uncertainties": [],
+    "variant_id": "variant_p07_a498d6902bff3d9f6fb3"
+  },
+  "context_mode": "CLOSED",
+  "diagnostics": [],
+  "opportunity_id": "opportunity_p07_a498d6902bff3d9f6fb3",
+  "schema_version": "1.1.0",
+  "status": "READY",
+  "submission_id": "submission_01"
+}

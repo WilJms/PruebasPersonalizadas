@@ -17,6 +17,14 @@ at Phase 8.1 baseline `76f2724223c0b928450eabe931bd2894d604667f`.
 
 **Authorization: `NONE`. Provider calls performed: 0.**
 
+> **Estado posterior (Phase 9B.1, 2026-08-17):** lo anterior describe el
+> congelamiento de Phase 9A. Desde entonces se emitió y consumió una única
+> autorización acotada, `phase9b1-bfd3cf082617ea8b`, que ejecutó 30 llamadas
+> reales del rung HIGH sobre el split SMOKE por USD 0.38430826. Ninguna cláusula
+> normativa de este protocolo cambió. CORE, HELD_OUT, XHIGH y MAX siguen sin
+> ejecutar y ningún candidato está calificado: el estado semántico es
+> `PENDING_ADJUDICATION`. Ver `docs/IMPLEMENTATION_STATUS.md`.
+
 Phase 9A freezes how a qualification would be run. It does not run one. The
 first real call requires a separate, explicit authorization that does not exist
 yet.

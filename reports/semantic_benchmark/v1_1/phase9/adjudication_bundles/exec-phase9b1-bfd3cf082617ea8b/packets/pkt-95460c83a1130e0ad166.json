@@ -1,0 +1,898 @@
+{
+  "binding_scope": "ACTIVITY_WIDE",
+  "candidate_output": {
+    "activity_id": "act_01_luz_y_plantines",
+    "approved_at": null,
+    "approved_by": null,
+    "assessment_constraints": {
+      "allowed_response_formats": [
+        "OPEN_SHORT",
+        "STRUCTURED_BULLETS"
+      ],
+      "max_reserve_opportunities": 0,
+      "minimum_opportunity_quality": 0.75,
+      "priority_criterion_ids": [],
+      "question_count": 3,
+      "required_criterion_ids": [
+        "criterion_1ad8de9ef4ba7833fdc9",
+        "criterion_35d8ba9f3d50eda3ec1f",
+        "criterion_b4fbfad4ead45ca8360f",
+        "criterion_38763707e82a24e0ff48",
+        "criterion_040d40a43f2ca5e1fc6b",
+        "criterion_c1b5b00ea70f974c97f4",
+        "criterion_ac479ea703ca74f0570f",
+        "criterion_94a88ae6b2809993d447",
+        "criterion_289b58bfb05355736447",
+        "criterion_8c6cddb7a1c81b20f4e8",
+        "criterion_5c52ffbe217fa7e17896",
+        "criterion_a6f3c8ecf97ccc9c0895",
+        "criterion_70cfb23d0d95d2610368",
+        "criterion_2d59f84ffbf4f244f0fd",
+        "criterion_67802949633145940a92",
+        "criterion_9d81f52a07de5c4278a3",
+        "criterion_cb02485fa921c787781b",
+        "criterion_ab0536e4bd32d55a4fa7",
+        "criterion_512280cfb46e3e0a1a1e",
+        "criterion_900f5695aab8c6fe429b",
+        "criterion_dd72aec1add8cd7dee7c",
+        "criterion_921789474088b2448522",
+        "criterion_d30ca9b3cac5a09f7692",
+        "criterion_0e0b71ed3bee64d8876c",
+        "criterion_58dfa4c98c7c03fa6cb4",
+        "criterion_3f3762a5c8af828c5b41",
+        "criterion_d1d282fde736c6f2d8b0",
+        "criterion_aa9264a1f04fda9ed8c9",
+        "criterion_a5c1548d01b304354d30",
+        "criterion_03547d3c296e3afc3410",
+        "criterion_f0f3337831f98d973410",
+        "criterion_193ef3985f7c04346d66",
+        "criterion_9130bcecd9f6188b5957",
+        "criterion_5e0ab7a67c33753fba4a",
+        "criterion_4a48dbc849819d202ff6",
+        "criterion_50be0de3b12ce21213d0",
+        "criterion_42ccdb66820ce9712772",
+        "criterion_f6af11ac043e2d2336f6",
+        "criterion_2d2d8615f734d4728d3f",
+        "criterion_0460cf8e02b00140f418",
+        "criterion_c493d9af0b22136647e3",
+        "criterion_ed73f1fddb33e0d882ad",
+        "criterion_58ea88c115023c48315c",
+        "criterion_a12bf093735829dad41e",
+        "criterion_6ccce4997ce5063da816",
+        "criterion_bd7bd40445ff95871f13",
+        "criterion_0ad523f8cc286c62eef2",
+        "criterion_329ae5c59e99ef442359"
+      ],
+      "structured_justification_policy": {
+        "mode": "NOT_REQUIRED",
+        "selected_opportunity_template_ids": []
+      },
+      "target_total_minutes": 15
+    },
+    "blueprint_id": "blueprint_5ea67ebf9132f95da48d",
+    "blueprint_version": 1,
+    "context_mode": "CLOSED",
+    "decision_ids": [],
+    "diagnostics": [],
+    "dimensions": [
+      {
+        "criterion_ids": [
+          "criterion_1ad8de9ef4ba7833fdc9",
+          "criterion_35d8ba9f3d50eda3ec1f",
+          "criterion_b4fbfad4ead45ca8360f",
+          "criterion_38763707e82a24e0ff48",
+          "criterion_040d40a43f2ca5e1fc6b",
+          "criterion_c1b5b00ea70f974c97f4",
+          "criterion_ac479ea703ca74f0570f",
+          "criterion_94a88ae6b2809993d447",
+          "criterion_289b58bfb05355736447",
+          "criterion_8c6cddb7a1c81b20f4e8",
+          "criterion_5c52ffbe217fa7e17896",
+          "criterion_a6f3c8ecf97ccc9c0895",
+          "criterion_70cfb23d0d95d2610368",
+          "criterion_2d59f84ffbf4f244f0fd",
+          "criterion_67802949633145940a92",
+          "criterion_9d81f52a07de5c4278a3",
+          "criterion_cb02485fa921c787781b",
+          "criterion_ab0536e4bd32d55a4fa7",
+          "criterion_512280cfb46e3e0a1a1e",
+          "criterion_900f5695aab8c6fe429b",
+          "criterion_dd72aec1add8cd7dee7c",
+          "criterion_921789474088b2448522",
+          "criterion_d30ca9b3cac5a09f7692",
+          "criterion_0e0b71ed3bee64d8876c",
+          "criterion_58dfa4c98c7c03fa6cb4",
+          "criterion_3f3762a5c8af828c5b41",
+          "criterion_4a48dbc849819d202ff6",
+          "criterion_50be0de3b12ce21213d0",
+          "criterion_42ccdb66820ce9712772",
+          "criterion_f6af11ac043e2d2336f6",
+          "criterion_2d2d8615f734d4728d3f",
+          "criterion_0460cf8e02b00140f418",
+          "criterion_c493d9af0b22136647e3",
+          "criterion_ed73f1fddb33e0d882ad",
+          "criterion_58ea88c115023c48315c",
+          "criterion_a12bf093735829dad41e",
+          "criterion_6ccce4997ce5063da816",
+          "criterion_bd7bd40445ff95871f13",
+          "criterion_0ad523f8cc286c62eef2",
+          "criterion_329ae5c59e99ef442359"
+        ],
+        "dimension_id": "dimension_f1a0432337cedc569475",
+        "evidence_variants": [
+          {
+            "description": "Evidencia localizada que relaciona valores de los grupos de 12 h y 4 h con una afirmación sobre el patrón del ensayo.",
+            "evidence_requirement": {
+              "allowed_modalities": [
+                "TABLE",
+                "CELL_RANGE",
+                "PARAGRAPH"
+              ],
+              "course_sources_allowed": false,
+              "cross_artifact_required": false,
+              "min_alignment": 0.86,
+              "min_distinct_units": 2,
+              "min_extraction_confidence": 0.8
+            },
+            "name": "Comparación entre grupos a partir de la tabla",
+            "question_opportunities": [
+              {
+                "allowed_anchor_structures": [
+                  "TABLE_OR_RANGE",
+                  "PAIRED_FRAGMENTS"
+                ],
+                "allowed_response_formats": [
+                  "OPEN_SHORT",
+                  "STRUCTURED_BULLETS"
+                ],
+                "cognitive_operation": "INTERPRET_REPRESENTATION",
+                "difficulty": "MEDIUM",
+                "focus": "Patrón comparativo entre los grupos de 12 h y 4 h.",
+                "minimum_quality": 0.75,
+                "observable": "Interpreta al menos dos valores o comparaciones localizables de la tabla sin confundir la luz con una medida de resultado.",
+                "opportunity_template_id": "oppt_23ea75ccc50aea9e0eec",
+                "student_justification_required": false,
+                "target_minutes": 3,
+                "verification_potential": 0.95
+              },
+              {
+                "allowed_anchor_structures": [
+                  "TABLE_OR_RANGE",
+                  "PAIRED_FRAGMENTS"
+                ],
+                "allowed_response_formats": [
+                  "OPEN_SHORT",
+                  "STRUCTURED_BULLETS"
+                ],
+                "cognitive_operation": "JUSTIFY_DECISION",
+                "difficulty": "HIGH",
+                "focus": "Elección de una afirmación prudente sobre el ensayo.",
+                "minimum_quality": 0.75,
+                "observable": "Defiende una afirmación sobre el patrón usando comparaciones del registro y un alcance limitado.",
+                "opportunity_template_id": "oppt_9f08bc935dd154193388",
+                "student_justification_required": false,
+                "target_minutes": 4,
+                "verification_potential": 0.94
+              }
+            ],
+            "supported_operations": [
+              {
+                "cognitive_operation": "INTERPRET_REPRESENTATION",
+                "rationale": "La tabla permite interpretar diferencias entre grupos en altura final y hojas nuevas (ev_52341c4f89619a12f587).",
+                "support_strength": 0.98
+              },
+              {
+                "cognitive_operation": "CONNECT_INTERNAL",
+                "rationale": "Permite vincular una afirmación con valores o comparaciones localizables (ev_8d32f2e8cb0320ce4a08).",
+                "support_strength": 0.94
+              },
+              {
+                "cognitive_operation": "JUSTIFY_DECISION",
+                "rationale": "Permite defender una afirmación limitada al registro (ev_4902724e6b298a4235ed).",
+                "support_strength": 0.9
+              }
+            ],
+            "variant_id": "variant_30fc1436249971ea74eb",
+            "verification_potential": 0.95
+          },
+          {
+            "description": "Fragmento del informe que formula un patrón y delimita lo que el registro permite sostener.",
+            "evidence_requirement": {
+              "allowed_modalities": [
+                "PARAGRAPH",
+                "LIST",
+                "TABLE"
+              ],
+              "course_sources_allowed": false,
+              "cross_artifact_required": false,
+              "min_alignment": 0.85,
+              "min_distinct_units": 2,
+              "min_extraction_confidence": 0.78
+            },
+            "name": "Afirmación escrita con alcance explícito",
+            "question_opportunities": [
+              {
+                "allowed_anchor_structures": [
+                  "SINGLE_FRAGMENT",
+                  "PAIRED_FRAGMENTS",
+                  "TABLE_OR_RANGE"
+                ],
+                "allowed_response_formats": [
+                  "OPEN_SHORT",
+                  "STRUCTURED_BULLETS"
+                ],
+                "cognitive_operation": "RECONSTRUCT_REASONING",
+                "difficulty": "HIGH",
+                "focus": "Relación entre una afirmación del informe y la evidencia que la respalda.",
+                "minimum_quality": 0.75,
+                "observable": "Reconstruye los pasos observables que conectan una afirmación con datos o comparaciones del registro.",
+                "opportunity_template_id": "oppt_898db7c58b0faceca3aa",
+                "student_justification_required": false,
+                "target_minutes": 4,
+                "verification_potential": 0.92
+              },
+              {
+                "allowed_anchor_structures": [
+                  "SINGLE_FRAGMENT",
+                  "PAIRED_FRAGMENTS"
+                ],
+                "allowed_response_formats": [
+                  "OPEN_SHORT",
+                  "STRUCTURED_BULLETS"
+                ],
+                "cognitive_operation": "CRITIQUE_LIMITATION",
+                "difficulty": "HIGH",
+                "focus": "Alcance de una conclusión expresada en el informe.",
+                "minimum_quality": 0.75,
+                "observable": "Identifica si la formulación excede el registro y propone una delimitación apoyada en los datos disponibles.",
+                "opportunity_template_id": "oppt_f8007153431fca8dab60",
+                "student_justification_required": false,
+                "target_minutes": 3,
+                "verification_potential": 0.91
+              }
+            ],
+            "supported_operations": [
+              {
+                "cognitive_operation": "JUSTIFY_DECISION",
+                "rationale": "La tarea solicita una afirmación principal sustentada en el registro (ev_b821cc090f2e34c6daae, ev_878ab49405975a76d44e).",
+                "support_strength": 0.96
+              },
+              {
+                "cognitive_operation": "CRITIQUE_LIMITATION",
+                "rationale": "El alcance no debe convertirse en una afirmación causal o universal (ev_1781687c2c0fb161a93a).",
+                "support_strength": 0.88
+              },
+              {
+                "cognitive_operation": "RECONSTRUCT_REASONING",
+                "rationale": "La relación entre afirmación y evidencia puede reconstruirse desde el texto y sus referencias al registro (ev_18ba1eee1373dbfd5d83).",
+                "support_strength": 0.86
+              }
+            ],
+            "variant_id": "variant_a15fa5ab5e7b19a11a4b",
+            "verification_potential": 0.91
+          },
+          {
+            "description": "Cálculo incluido en el informe que conserva unidades, valores incorporados y su aporte a la conclusión.",
+            "evidence_requirement": {
+              "allowed_modalities": [
+                "TABLE",
+                "CELL_RANGE",
+                "FORMULA",
+                "PARAGRAPH"
+              ],
+              "course_sources_allowed": false,
+              "cross_artifact_required": false,
+              "min_alignment": 0.87,
+              "min_distinct_units": 2,
+              "min_extraction_confidence": 0.82
+            },
+            "name": "Cálculo visible de promedio o comparación cuantitativa",
+            "question_opportunities": [
+              {
+                "allowed_anchor_structures": [
+                  "TABLE_OR_RANGE",
+                  "PAIRED_FRAGMENTS"
+                ],
+                "allowed_response_formats": [
+                  "OPEN_SHORT",
+                  "STRUCTURED_BULLETS"
+                ],
+                "cognitive_operation": "RECONSTRUCT_REASONING",
+                "difficulty": "MEDIUM",
+                "focus": "Procedimiento de un promedio presentado.",
+                "minimum_quality": 0.75,
+                "observable": "Explica qué valores se incluyeron, cómo se combinan y qué unidad conserva el resultado.",
+                "opportunity_template_id": "oppt_ac385d17bb445eabd353",
+                "student_justification_required": false,
+                "target_minutes": 3,
+                "verification_potential": 0.95
+              },
+              {
+                "allowed_anchor_structures": [
+                  "TABLE_OR_RANGE",
+                  "PAIRED_FRAGMENTS"
+                ],
+                "allowed_response_formats": [
+                  "OPEN_SHORT",
+                  "STRUCTURED_BULLETS"
+                ],
+                "cognitive_operation": "JUSTIFY_DECISION",
+                "difficulty": "HIGH",
+                "focus": "Aporte y límite de un cálculo para la conclusión.",
+                "minimum_quality": 0.75,
+                "observable": "Explica cómo un cálculo apoya la afirmación y por qué no resuelve por sí solo el alcance de esta.",
+                "opportunity_template_id": "oppt_6a4b2bb40d1833f379ae",
+                "student_justification_required": false,
+                "target_minutes": 3,
+                "verification_potential": 0.92
+              }
+            ],
+            "supported_operations": [
+              {
+                "cognitive_operation": "RECONSTRUCT_REASONING",
+                "rationale": "Las pautas requieren mostrar los valores incluidos al calcular un promedio y conservar las unidades (ev_e7a4d7100bb51d3512b8).",
+                "support_strength": 0.97
+              },
+              {
+                "cognitive_operation": "TRACE_FLOW",
+                "rationale": "Se puede seguir el paso desde los valores de la tabla al cálculo y a la conclusión (ev_7dd4a04281e3448ef9f5).",
+                "support_strength": 0.9
+              },
+              {
+                "cognitive_operation": "JUSTIFY_DECISION",
+                "rationale": "El cálculo puede respaldar, pero no reemplazar, la delimitación del alcance (ev_0f3448bebfc6ed223a7d).",
+                "support_strength": 0.84
+              }
+            ],
+            "variant_id": "variant_dd4a47615dd07200d02b",
+            "verification_potential": 0.93
+          }
+        ],
+        "factors": {
+          "auditability": 0.94,
+          "centrality": 0.98,
+          "discriminative_potential": 0.9,
+          "expected_evidence": 0.95,
+          "learning_relevance": 0.98,
+          "short_response_observability": 0.91
+        },
+        "grading_weight": null,
+        "justification": "La tarea exige una afirmación principal sustentada con elementos localizables y un alcance prudente; la rúbrica distingue explícitamente patrón, evidencia y delimitación (ev_b821cc090f2e34c6daae, ev_878ab49405975a76d44e, ev_4902724e6b298a4235ed, ev_8d32f2e8cb0320ce4a08).",
+        "learning_outcome_ids": [],
+        "name": "Afirmación interpretativa, evidencia y trazabilidad",
+        "verification_priority": 0.95
+      },
+      {
+        "criterion_ids": [
+          "criterion_d1d282fde736c6f2d8b0",
+          "criterion_aa9264a1f04fda9ed8c9",
+          "criterion_a5c1548d01b304354d30",
+          "criterion_03547d3c296e3afc3410"
+        ],
+        "dimension_id": "dimension_c9761a5173bbe99c815b",
+        "evidence_variants": [
+          {
+            "description": "Distinción explícita entre la cantidad de luz modificada y una medida observada de crecimiento.",
+            "evidence_requirement": {
+              "allowed_modalities": [
+                "TABLE",
+                "CELL_RANGE",
+                "PARAGRAPH",
+                "LIST"
+              ],
+              "course_sources_allowed": false,
+              "cross_artifact_required": false,
+              "min_alignment": 0.92,
+              "min_distinct_units": 2,
+              "min_extraction_confidence": 0.85
+            },
+            "name": "Identificación de condición y resultado",
+            "question_opportunities": [
+              {
+                "allowed_anchor_structures": [
+                  "TABLE_OR_RANGE",
+                  "SINGLE_FRAGMENT"
+                ],
+                "allowed_response_formats": [
+                  "OPEN_SHORT",
+                  "STRUCTURED_BULLETS"
+                ],
+                "cognitive_operation": "IDENTIFY_DEPENDENCY",
+                "difficulty": "LOW",
+                "focus": "Variable modificada y medida de resultado.",
+                "minimum_quality": 0.75,
+                "observable": "Distingue correctamente la duración diaria de luz de altura final o hojas nuevas, indicando la función de cada elemento.",
+                "opportunity_template_id": "oppt_6eacbad8d13aaec0a108",
+                "student_justification_required": false,
+                "target_minutes": 2,
+                "verification_potential": 0.97
+              },
+              {
+                "allowed_anchor_structures": [
+                  "TABLE_OR_RANGE"
+                ],
+                "allowed_response_formats": [
+                  "OPEN_SHORT",
+                  "STRUCTURED_BULLETS"
+                ],
+                "cognitive_operation": "INTERPRET_REPRESENTATION",
+                "difficulty": "LOW",
+                "focus": "Lectura funcional de los encabezados del registro.",
+                "minimum_quality": 0.75,
+                "observable": "Clasifica los encabezados pertinentes como condición experimental o resultado observado sin usar los niveles de luz como crecimiento.",
+                "opportunity_template_id": "oppt_906bc2901513b6572610",
+                "student_justification_required": false,
+                "target_minutes": 2,
+                "verification_potential": 0.96
+              }
+            ],
+            "supported_operations": [
+              {
+                "cognitive_operation": "IDENTIFY_DEPENDENCY",
+                "rationale": "La descripción del ensayo identifica la lámpara como condición variada deliberadamente (ev_5eb82cde27d008fd46e2).",
+                "support_strength": 0.98
+              },
+              {
+                "cognitive_operation": "INTERPRET_REPRESENTATION",
+                "rationale": "Los encabezados de tabla distinguen luz diaria, altura final y hojas nuevas (ev_9239442274554687dffa, ev_a16f41405221c6cc7b4e, ev_e756fb5ffe5bf0517486).",
+                "support_strength": 0.95
+              }
+            ],
+            "variant_id": "variant_524e72dd0ba6a2a2fc62",
+            "verification_potential": 0.96
+          },
+          {
+            "description": "Relación entre una fila o grupo del registro, la condición de luz y una medida de resultado usada en el informe.",
+            "evidence_requirement": {
+              "allowed_modalities": [
+                "TABLE",
+                "CELL_RANGE",
+                "PARAGRAPH"
+              ],
+              "course_sources_allowed": false,
+              "cross_artifact_required": false,
+              "min_alignment": 0.87,
+              "min_distinct_units": 2,
+              "min_extraction_confidence": 0.8
+            },
+            "name": "Trazado de evidencia desde una fila a una conclusión",
+            "question_opportunities": [
+              {
+                "allowed_anchor_structures": [
+                  "TABLE_OR_RANGE",
+                  "PAIRED_FRAGMENTS"
+                ],
+                "allowed_response_formats": [
+                  "OPEN_SHORT",
+                  "STRUCTURED_BULLETS"
+                ],
+                "cognitive_operation": "TRACE_FLOW",
+                "difficulty": "MEDIUM",
+                "focus": "Trayectoria desde un dato localizado a una conclusión.",
+                "minimum_quality": 0.75,
+                "observable": "Señala una fila o comparación, identifica la condición y la medida correspondiente, y explica su uso en la conclusión.",
+                "opportunity_template_id": "oppt_7a9eb31485453d361e2a",
+                "student_justification_required": false,
+                "target_minutes": 3,
+                "verification_potential": 0.93
+              },
+              {
+                "allowed_anchor_structures": [
+                  "PAIRED_FRAGMENTS",
+                  "TABLE_OR_RANGE"
+                ],
+                "allowed_response_formats": [
+                  "OPEN_SHORT",
+                  "STRUCTURED_BULLETS"
+                ],
+                "cognitive_operation": "CONNECT_INTERNAL",
+                "difficulty": "MEDIUM",
+                "focus": "Coherencia entre evidencia elegida y afirmación.",
+                "minimum_quality": 0.75,
+                "observable": "Explica si una evidencia concreta respalda la afirmación y qué relación aporta, en vez de repetir un valor aislado.",
+                "opportunity_template_id": "oppt_402bcd6cdd7fc2860dd5",
+                "student_justification_required": false,
+                "target_minutes": 3,
+                "verification_potential": 0.9
+              }
+            ],
+            "supported_operations": [
+              {
+                "cognitive_operation": "TRACE_FLOW",
+                "rationale": "Permite verificar cómo se usa una observación o valor localizado para apoyar una conclusión (ev_7dd4a04281e3448ef9f5).",
+                "support_strength": 0.94
+              },
+              {
+                "cognitive_operation": "CONNECT_INTERNAL",
+                "rationale": "La evidencia debe conectarse con una afirmación y no presentarse como dato aislado (ev_476f1b2bf8df4093a694).",
+                "support_strength": 0.93
+              },
+              {
+                "cognitive_operation": "JUSTIFY_DECISION",
+                "rationale": "La elección de una medida puede justificarse indicando qué aporta la otra al alcance de la conclusión (ev_fe286aafa37a4c99ea02).",
+                "support_strength": 0.86
+              }
+            ],
+            "variant_id": "variant_614bd638bc7c7928a560",
+            "verification_potential": 0.9
+          },
+          {
+            "description": "Promedio o comparación agrupada que separa niveles de la condición de las medidas de resultado y hace visibles los datos usados.",
+            "evidence_requirement": {
+              "allowed_modalities": [
+                "TABLE",
+                "CELL_RANGE",
+                "FORMULA",
+                "PARAGRAPH"
+              ],
+              "course_sources_allowed": false,
+              "cross_artifact_required": false,
+              "min_alignment": 0.9,
+              "min_distinct_units": 3,
+              "min_extraction_confidence": 0.82
+            },
+            "name": "Promedio por grupo con unidades",
+            "question_opportunities": [
+              {
+                "allowed_anchor_structures": [
+                  "TABLE_OR_RANGE",
+                  "PAIRED_FRAGMENTS"
+                ],
+                "allowed_response_formats": [
+                  "OPEN_SHORT",
+                  "STRUCTURED_BULLETS"
+                ],
+                "cognitive_operation": "TRACE_FLOW",
+                "difficulty": "MEDIUM",
+                "focus": "Trazabilidad de un resumen cuantitativo por grupo.",
+                "minimum_quality": 0.75,
+                "observable": "Relaciona los valores individuales de un grupo con el promedio o comparación agrupada que aparece en el informe.",
+                "opportunity_template_id": "oppt_5bd08c96c3cd178ec492",
+                "student_justification_required": false,
+                "target_minutes": 3,
+                "verification_potential": 0.94
+              },
+              {
+                "allowed_anchor_structures": [
+                  "TABLE_OR_RANGE",
+                  "PAIRED_FRAGMENTS"
+                ],
+                "allowed_response_formats": [
+                  "OPEN_SHORT",
+                  "STRUCTURED_BULLETS"
+                ],
+                "cognitive_operation": "INTERPRET_REPRESENTATION",
+                "difficulty": "MEDIUM",
+                "focus": "Interpretación de unidades en un cálculo.",
+                "minimum_quality": 0.75,
+                "observable": "Explica por qué el resultado cuantitativo se refiere a una medida de crecimiento y no al número de horas de luz.",
+                "opportunity_template_id": "oppt_3ec03dbe39e86f091cf3",
+                "student_justification_required": false,
+                "target_minutes": 2,
+                "verification_potential": 0.91
+              }
+            ],
+            "supported_operations": [
+              {
+                "cognitive_operation": "RECONSTRUCT_REASONING",
+                "rationale": "Los valores incluidos y las unidades permiten reconstruir el cálculo (ev_e7a4d7100bb51d3512b8).",
+                "support_strength": 0.98
+              },
+              {
+                "cognitive_operation": "TRACE_FLOW",
+                "rationale": "Los datos del grupo pueden seguirse hasta el resumen cuantitativo presentado (ev_52341c4f89619a12f587).",
+                "support_strength": 0.92
+              },
+              {
+                "cognitive_operation": "INTERPRET_REPRESENTATION",
+                "rationale": "La comparación requiere no tratar 12 h y 4 h como medidas de crecimiento (ev_10a6994514b1ea794950).",
+                "support_strength": 0.88
+              }
+            ],
+            "variant_id": "variant_249d40475325196bc23e",
+            "verification_potential": 0.94
+          }
+        ],
+        "factors": {
+          "auditability": 0.97,
+          "centrality": 0.86,
+          "discriminative_potential": 0.84,
+          "expected_evidence": 0.98,
+          "learning_relevance": 0.92,
+          "short_response_observability": 0.97
+        },
+        "grading_weight": null,
+        "justification": "La consigna solicita identificar qué variable se cambió y una medida de resultado; las pautas separan los niveles de luz de altura final y hojas nuevas (ev_2544059a7141addf3071, ev_10a6994514b1ea794950, ev_87c5006bdb46c947a5a7).",
+        "learning_outcome_ids": [],
+        "name": "Distinción entre condición experimental y medidas de resultado",
+        "verification_priority": 0.82
+      },
+      {
+        "criterion_ids": [
+          "criterion_f0f3337831f98d973410",
+          "criterion_193ef3985f7c04346d66",
+          "criterion_9130bcecd9f6188b5957",
+          "criterion_5e0ab7a67c33753fba4a"
+        ],
+        "dimension_id": "dimension_9e0ed11360a26cb2c5ad",
+        "evidence_variants": [
+          {
+            "description": "Limitación que se apoya en información del diseño o del registro y explica qué interpretación queda restringida.",
+            "evidence_requirement": {
+              "allowed_modalities": [
+                "PARAGRAPH",
+                "LIST",
+                "TABLE"
+              ],
+              "course_sources_allowed": false,
+              "cross_artifact_required": false,
+              "min_alignment": 0.9,
+              "min_distinct_units": 2,
+              "min_extraction_confidence": 0.8
+            },
+            "name": "Límite derivado del diseño del ensayo",
+            "question_opportunities": [
+              {
+                "allowed_anchor_structures": [
+                  "SINGLE_FRAGMENT",
+                  "PAIRED_FRAGMENTS"
+                ],
+                "allowed_response_formats": [
+                  "OPEN_SHORT",
+                  "STRUCTURED_BULLETS"
+                ],
+                "cognitive_operation": "CRITIQUE_LIMITATION",
+                "difficulty": "HIGH",
+                "focus": "Limitación proveniente de la ausencia de datos iniciales o intermedios.",
+                "minimum_quality": 0.75,
+                "observable": "Identifica un límite documentado y explica específicamente qué comparación o inferencia impide realizar.",
+                "opportunity_template_id": "oppt_8b9d3f9b011854a0a7e5",
+                "student_justification_required": false,
+                "target_minutes": 3,
+                "verification_potential": 0.95
+              },
+              {
+                "allowed_anchor_structures": [
+                  "SINGLE_FRAGMENT",
+                  "PAIRED_FRAGMENTS",
+                  "TABLE_OR_RANGE"
+                ],
+                "allowed_response_formats": [
+                  "OPEN_SHORT",
+                  "STRUCTURED_BULLETS"
+                ],
+                "cognitive_operation": "PREDICT_LOCAL_CONSEQUENCE",
+                "difficulty": "HIGH",
+                "focus": "Consecuencia interpretativa de una limitación del diseño.",
+                "minimum_quality": 0.75,
+                "observable": "Explica una consecuencia local para interpretar los resultados, sin agregar causas, datos o conocimientos externos.",
+                "opportunity_template_id": "oppt_36863a31b53ff06f07cf",
+                "student_justification_required": false,
+                "target_minutes": 3,
+                "verification_potential": 0.92
+              }
+            ],
+            "supported_operations": [
+              {
+                "cognitive_operation": "CRITIQUE_LIMITATION",
+                "rationale": "El registro declara que no se conoce la altura inicial ni hay datos intermedios (ev_5eb82cde27d008fd46e2).",
+                "support_strength": 0.98
+              },
+              {
+                "cognitive_operation": "PREDICT_LOCAL_CONSEQUENCE",
+                "rationale": "Permite explicar la consecuencia interpretativa local de no poder reconstruir una curva de crecimiento (ev_5eb82cde27d008fd46e2).",
+                "support_strength": 0.9
+              },
+              {
+                "cognitive_operation": "JUSTIFY_DECISION",
+                "rationale": "Permite sostener una precaución concreta para decidir si repetir el ensayo (ev_1ea50d151def288dfc23).",
+                "support_strength": 0.87
+              }
+            ],
+            "variant_id": "variant_47712ff608a80b575780",
+            "verification_potential": 0.94
+          },
+          {
+            "description": "Uso prudente de la observación sobre B2 sin corregir el dato ni inventar un efecto no registrado.",
+            "evidence_requirement": {
+              "allowed_modalities": [
+                "TABLE",
+                "CELL_RANGE",
+                "PARAGRAPH"
+              ],
+              "course_sources_allowed": false,
+              "cross_artifact_required": false,
+              "min_alignment": 0.91,
+              "min_distinct_units": 2,
+              "min_extraction_confidence": 0.82
+            },
+            "name": "Tratamiento de la incertidumbre registrada en B2",
+            "question_opportunities": [
+              {
+                "allowed_anchor_structures": [
+                  "TABLE_OR_RANGE",
+                  "PAIRED_FRAGMENTS"
+                ],
+                "allowed_response_formats": [
+                  "OPEN_SHORT",
+                  "STRUCTURED_BULLETS"
+                ],
+                "cognitive_operation": "CRITIQUE_LIMITATION",
+                "difficulty": "HIGH",
+                "focus": "Incertidumbre asociada a la observación de B2.",
+                "minimum_quality": 0.75,
+                "observable": "Explica qué se sabe y qué no se sabe sobre el daño de B2, sin corregir ni sustituir el dato registrado.",
+                "opportunity_template_id": "oppt_2bfef5f4524aa3b12fa1",
+                "student_justification_required": false,
+                "target_minutes": 3,
+                "verification_potential": 0.94
+              },
+              {
+                "allowed_anchor_structures": [
+                  "TABLE_OR_RANGE",
+                  "PAIRED_FRAGMENTS"
+                ],
+                "allowed_response_formats": [
+                  "OPEN_SHORT",
+                  "STRUCTURED_BULLETS"
+                ],
+                "cognitive_operation": "JUSTIFY_DECISION",
+                "difficulty": "HIGH",
+                "focus": "Decisión de conservar una incidencia en la interpretación.",
+                "minimum_quality": 0.75,
+                "observable": "Justifica una lectura prudente de B2 que mantenga la fila y explicite la incertidumbre pertinente.",
+                "opportunity_template_id": "oppt_7796d9b5a845423a3b88",
+                "student_justification_required": false,
+                "target_minutes": 3,
+                "verification_potential": 0.92
+              }
+            ],
+            "supported_operations": [
+              {
+                "cognitive_operation": "CRITIQUE_LIMITATION",
+                "rationale": "La fuente indica que se desconoce si el daño afectó la altura o solo las hojas nuevas (ev_1378229f4e728d4f6f3e).",
+                "support_strength": 0.97
+              },
+              {
+                "cognitive_operation": "JUSTIFY_DECISION",
+                "rationale": "La incidencia puede mencionarse sin eliminar ni reemplazar el dato (ev_1378229f4e728d4f6f3e).",
+                "support_strength": 0.89
+              },
+              {
+                "cognitive_operation": "CONNECT_INTERNAL",
+                "rationale": "Permite relacionar la observación de B2 con la medida de resultado que se interpreta (ev_6560c7da7f660727a3df).",
+                "support_strength": 0.86
+              }
+            ],
+            "variant_id": "variant_b5ea4b7aa14f98b21fbc",
+            "verification_potential": 0.93
+          },
+          {
+            "description": "Precaución que distingue una diferencia en este ensayo de una afirmación sobre un mecanismo biológico universal.",
+            "evidence_requirement": {
+              "allowed_modalities": [
+                "PARAGRAPH",
+                "LIST"
+              ],
+              "course_sources_allowed": false,
+              "cross_artifact_required": false,
+              "min_alignment": 0.9,
+              "min_distinct_units": 2,
+              "min_extraction_confidence": 0.78
+            },
+            "name": "Delimitación entre resultado observado y explicación universal",
+            "question_opportunities": [
+              {
+                "allowed_anchor_structures": [
+                  "SINGLE_FRAGMENT",
+                  "PAIRED_FRAGMENTS"
+                ],
+                "allowed_response_formats": [
+                  "OPEN_SHORT",
+                  "STRUCTURED_BULLETS"
+                ],
+                "cognitive_operation": "CRITIQUE_LIMITATION",
+                "difficulty": "HIGH",
+                "focus": "Frontera entre el resultado del ensayo y una explicación universal.",
+                "minimum_quality": 0.75,
+                "observable": "Distingue una conclusión sustentable sobre este registro de una afirmación que excede los datos disponibles.",
+                "opportunity_template_id": "oppt_23048043b9b06c087827",
+                "student_justification_required": false,
+                "target_minutes": 3,
+                "verification_potential": 0.93
+              },
+              {
+                "allowed_anchor_structures": [
+                  "SINGLE_FRAGMENT",
+                  "TABLE_OR_RANGE",
+                  "PAIRED_FRAGMENTS"
+                ],
+                "allowed_response_formats": [
+                  "OPEN_SHORT",
+                  "STRUCTURED_BULLETS"
+                ],
+                "cognitive_operation": "JUSTIFY_DECISION",
+                "difficulty": "HIGH",
+                "focus": "Reformulación prudente de una conclusión amplia.",
+                "minimum_quality": 0.75,
+                "observable": "Propone y defiende una formulación limitada a los seis plantines y al registro final disponible.",
+                "opportunity_template_id": "oppt_c1ad6bdfa9533630faab",
+                "student_justification_required": false,
+                "target_minutes": 3,
+                "verification_potential": 0.92
+              }
+            ],
+            "supported_operations": [
+              {
+                "cognitive_operation": "CRITIQUE_LIMITATION",
+                "rationale": "La pauta prohíbe convertir una diferencia observada en prueba de un mecanismo universal (ev_1781687c2c0fb161a93a).",
+                "support_strength": 0.96
+              },
+              {
+                "cognitive_operation": "JUSTIFY_DECISION",
+                "rationale": "Una afirmación prudente puede limitarse al patrón de los seis plantines (ev_525666504747ae64f073).",
+                "support_strength": 0.91
+              },
+              {
+                "cognitive_operation": "CONNECT_INTERNAL",
+                "rationale": "La delimitación se conecta con los resultados y condiciones efectivamente registrados (ev_b15cc6a38d38a5b8adfc).",
+                "support_strength": 0.84
+              }
+            ],
+            "variant_id": "variant_15eb2632f4782ce27ddf",
+            "verification_potential": 0.9
+          }
+        ],
+        "factors": {
+          "auditability": 0.9,
+          "centrality": 0.9,
+          "discriminative_potential": 0.92,
+          "expected_evidence": 0.93,
+          "learning_relevance": 0.94,
+          "short_response_observability": 0.88
+        },
+        "grading_weight": null,
+        "justification": "La consigna pide una limitación derivada del diseño o registro; se documentan ausencia de altura inicial, falta de datos intermedios e incertidumbre sobre B2 (ev_72e44ff7f651de6e675d, ev_5eb82cde27d008fd46e2, ev_1378229f4e728d4f6f3e).",
+        "learning_outcome_ids": [],
+        "name": "Limitaciones e incertidumbre del diseño y del registro",
+        "verification_priority": 0.9
+      }
+    ],
+    "schema_version": "1.1.0",
+    "status": "READY"
+  },
+  "candidate_output_hash": "sha256:5e8306f908018d86b49de04bdc52ccaa29ebad8e55b2ddbd5466e135aa0ce85c",
+  "case_id": "PP-A01-P04-001",
+  "defensible_alternatives": [],
+  "fixture_id": "p04:act_01_luz_y_plantines",
+  "oracle_state": "VALID",
+  "property": {
+    "benchmark_tags": [],
+    "confidence": "HIGH",
+    "defensible_alternatives": [],
+    "description": "La comparabilidad está declarada en la consigna ('Todas las personas responden sobre el mismo registro y las mismas cuatro operaciones'), lo que hace de esta actividad un caso limpio para probar comparabilidad entre pares.",
+    "kind": "CONTEXTUAL_NOTE",
+    "notes": "",
+    "oracle_state": "VALID",
+    "property_id": "A01-ACT-P4",
+    "source_refs": [
+      {
+        "file": "01_assignment.docx",
+        "section": "Entregable"
+      }
+    ],
+    "stage": "P04"
+  },
+  "relevant_source_refs": [
+    {
+      "file": "01_assignment.docx",
+      "section": "Entregable"
+    }
+  ],
+  "route_or_opportunity_id": null,
+  "schema_version": "semantic-review-packet/1.1.0",
+  "source_hashes": {
+    "01_assignment.docx": "sha256:f1abef8577915bbd8a1ccbfa87a41621adab745c74ccebdd4084dec605aec18b"
+  },
+  "stage": "P04"
+}

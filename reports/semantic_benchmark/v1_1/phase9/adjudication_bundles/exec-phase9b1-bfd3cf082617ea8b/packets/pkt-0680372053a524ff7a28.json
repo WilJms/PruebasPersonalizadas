@@ -1,0 +1,387 @@
+{
+  "binding_scope": "ACTIVITY_WIDE",
+  "candidate_output": {
+    "assessment_id": "assessment_p09_aea301a56ebaf3635d25",
+    "binding": {
+      "approval_event_id": "approval_event_aea301a56ebaf3635d25",
+      "approval_snapshot_hash": "sha256:f435e5a249fa5d22b3d5bac4982112ba8f3dd688fa0168e7831f008eade2a853",
+      "approved_at": "2026-08-16T12:00:00Z",
+      "approved_by": "user_benchmark_teacher",
+      "assessment_etag": "\"sha256:0cd739ed473818d9e7e052f244e384f5842d20610aabe9788f19494024b98d05\"",
+      "assessment_id": "assessment_p09_aea301a56ebaf3635d25",
+      "assessment_snapshot_hash": "sha256:0cd739ed473818d9e7e052f244e384f5842d20610aabe9788f19494024b98d05",
+      "assessment_version": 1,
+      "binding_version": "guide-approval-binding/1.0.0",
+      "guide_policy_hash": "sha256:627f0dfcbbd96da86c484ee4d0b0d62c17c2b0a2ce698e28baf55244f6a09c00",
+      "materializer_boundary_hash": "sha256:0fe0051d348d418707c2698f0e632de18ce71fb3e5572792337b5b6ce89795f6",
+      "question_set_hash": "sha256:1c812e7a22d7ef23456fc5354f51a41d43cacf3094c16c2aa17e2cfc97745542",
+      "submission_id": "submission_05",
+      "tenant_id": "tenant_semantic_benchmark"
+    },
+    "created_at": "2026-08-16T12:00:00Z",
+    "diagnostics": [],
+    "guide_id": "guide_9598add25e3b5d097b98",
+    "items": [
+      {
+        "guide": {
+          "acceptable_alternatives": [
+            "presentar las mismas operaciones en tabla o en secuencia algebraica",
+            "Puede presentar las mismas operaciones en una tabla o en una secuencia algebraica, siempre que conserve las partidas, las unidades y las relaciones de E3-E8."
+          ],
+          "acceptance_conditions": [
+            "Explicita las partidas de costos fijos, dispensador y costo variable, y las suma para obtener el costo total, conforme a E3-E6.",
+            "Distingue el costo total, el ingreso máximo y el excedente mediante operaciones separadas, conforme a E6-E8.",
+            "Mantiene de forma consistente las cantidades de vasos y las unidades monetarias en las operaciones, conforme a E3-E8.",
+            "Muestra una cadena defendible de cálculo: 18 + 14 + 36,80 = 68,80; 80 x 1,25 = 100,00; y 100,00 - 68,80 = 31,20, conforme a E3-E8."
+          ],
+          "cannot_infer": [
+            "A partir de E1-E8 no se puede inferir si efectivamente se venderán los 80 vasos ni si el ingreso máximo se materializará.",
+            "E1-E8 permiten revisar el cálculo presentado, pero no permiten inferir decisiones posteriores sobre precios, demanda o uso del excedente."
+          ],
+          "levels": [
+            {
+              "descriptor": "No presenta operaciones que permitan verificar los cálculos de costos, ingreso o excedente de E3-E8, ni evidencia los observables O1, O2 u O3.",
+              "label": "Sin evidencia suficiente",
+              "level": 0,
+              "observable_element_ids": []
+            },
+            {
+              "descriptor": "Presenta al menos una operación o partida relacionada con E3-E8, pero omite, mezcla o no hace defendible una parte de O1, O2 u O3.",
+              "label": "Parcial",
+              "level": 1,
+              "observable_element_ids": [
+                "observable_p09_9aa4726407be7ecee879"
+              ]
+            },
+            {
+              "descriptor": "Integra O1, O2 y O3: reconstruye las partidas de E3-E6, distingue los valores de E6-E8 y conserva unidades y cantidad de vasos de forma verificable.",
+              "label": "Logro esperado",
+              "level": 2,
+              "observable_element_ids": [
+                "observable_p09_9aa4726407be7ecee879",
+                "observable_p09_e4d5b5de0c709706d1e6",
+                "observable_p09_094884f0e9dd25df5888"
+              ]
+            },
+            {
+              "descriptor": "Integra O1, O2 y O3 con una secuencia completa, consistente y visible de las operaciones de E3-E8; además, la presentación permite revisar cada transición sin depender de una interpretación implícita.",
+              "label": "Completo y defendible",
+              "level": 3,
+              "observable_element_ids": [
+                "observable_p09_9aa4726407be7ecee879",
+                "observable_p09_e4d5b5de0c709706d1e6",
+                "observable_p09_094884f0e9dd25df5888"
+              ]
+            }
+          ],
+          "misconceptions": [
+            "tratar el presupuesto de 70 como ingreso",
+            "restar solo el costo variable al ingreso",
+            "Trata el presupuesto de 70 como si fuera el ingreso máximo, en lugar de distinguirlo de los valores de E6-E8.",
+            "Resta solo el costo variable al ingreso y omite los costos fijos o el dispensador identificados en E3-E6."
+          ],
+          "observable_elements": [
+            {
+              "description": "suma costos fijos, dispensador y costo variable sin omitir partidas",
+              "element_id": "observable_p09_9aa4726407be7ecee879",
+              "evidence_ids": [
+                "ev_feec60e20d7ec1ae8c7d",
+                "ev_eb6ad6f0bd45703e16ba",
+                "ev_3ea45e0cd35c8c3c2705",
+                "ev_637254fccf82757f2672",
+                "ev_c303a07431cc533e765a",
+                "ev_f0a358de3e65990b61ba",
+                "ev_e6a5610a9c63186ed42f",
+                "ev_76263dccc3119ac4adee"
+              ],
+              "required_for_level_2": true,
+              "source_ids": []
+            },
+            {
+              "description": "distingue costo, ingreso y excedente",
+              "element_id": "observable_p09_e4d5b5de0c709706d1e6",
+              "evidence_ids": [
+                "ev_feec60e20d7ec1ae8c7d",
+                "ev_eb6ad6f0bd45703e16ba",
+                "ev_3ea45e0cd35c8c3c2705",
+                "ev_637254fccf82757f2672",
+                "ev_c303a07431cc533e765a",
+                "ev_f0a358de3e65990b61ba",
+                "ev_e6a5610a9c63186ed42f",
+                "ev_76263dccc3119ac4adee"
+              ],
+              "required_for_level_2": true,
+              "source_ids": []
+            },
+            {
+              "description": "mantiene unidades monetarias y cantidad de vasos",
+              "element_id": "observable_p09_094884f0e9dd25df5888",
+              "evidence_ids": [
+                "ev_feec60e20d7ec1ae8c7d",
+                "ev_eb6ad6f0bd45703e16ba",
+                "ev_3ea45e0cd35c8c3c2705",
+                "ev_637254fccf82757f2672",
+                "ev_c303a07431cc533e765a",
+                "ev_f0a358de3e65990b61ba",
+                "ev_e6a5610a9c63186ed42f",
+                "ev_76263dccc3119ac4adee"
+              ],
+              "required_for_level_2": true,
+              "source_ids": []
+            }
+          ],
+          "purpose": "Evaluar el observable fijo sin ampliar la evidencia aprobada.",
+          "semantic_uncertainties": [
+            "El término «ingreso máximo» puede entenderse como ingreso condicionado a vender los 80 vasos; E7 muestra la operación 80 x 1,25, pero no explicita esa condición en una frase independiente.",
+            "E1 identifica una elección, pero no especifica si el presupuesto de 70 corresponde a un límite previo separado del ingreso; la guía debe evaluar la distinción entre ambos sin asumir otra interpretación."
+          ]
+        },
+        "question_id": "question_p09_5da97236e4558cbf5588"
+      },
+      {
+        "guide": {
+          "acceptable_alternatives": [
+            "priorizar capacidad de venta",
+            "priorizar conservación de fondos",
+            "Puede defender 80 vasos si prioriza la capacidad de venta y vincula esa prioridad con las veinte ventas adicionales de E5.",
+            "Puede defender 60 vasos si prioriza la conservación de fondos y vincula esa prioridad con el menor desembolso de E2-E3."
+          ],
+          "acceptance_conditions": [
+            "Relaciona preparar 80 vasos con mayor capacidad para atender ventas y con un mayor desembolso, usando las cifras comparativas de E2-E5.",
+            "Relaciona preparar 60 vasos con menor desembolso y menor riesgo presupuestario, usando E2-E4.",
+            "Explicita el trade-off entre capacidad adicional, desembolso y excedente máximo: E2-E5 indican una diferencia de desembolso de 23,20, una mejora de excedente máximo de 1,80 y la posibilidad de atender veinte ventas adicionales.",
+            "Reconoce que ambas alternativas pueden ser defendibles según el objetivo priorizado y no presenta una única elección como necesariamente correcta, conforme a E2-E5."
+          ],
+          "cannot_infer": [
+            "E1-E5 no permiten inferir una probabilidad numérica de venta ni un nivel cuantificado de riesgo; solo documentan la comparación de desembolso, excedente y capacidad.",
+            "E1-E5 no permiten inferir cuál objetivo debe priorizar la persona que responde; permiten evaluar la defensa de cualquiera de las dos prioridades documentadas."
+          ],
+          "levels": [
+            {
+              "descriptor": "No relaciona ninguna alternativa con un objetivo ni utiliza cifras de la comparación documentada en E2-E5.",
+              "label": "Sin evidencia suficiente",
+              "level": 0,
+              "observable_element_ids": []
+            },
+            {
+              "descriptor": "Menciona una alternativa u objetivo, pero no conecta de forma suficiente capacidad, desembolso, riesgo o excedente con las cifras de E2-E5.",
+              "label": "Parcial",
+              "level": 1,
+              "observable_element_ids": [
+                "observable_p09_d10708c33c652056954a"
+              ]
+            },
+            {
+              "descriptor": "Integra O1, O2 y O3: relaciona 80 vasos con capacidad y desembolso, 60 vasos con menor riesgo presupuestario y reconoce que la elección depende del objetivo, conforme a E2-E5.",
+              "label": "Logro esperado",
+              "level": 2,
+              "observable_element_ids": [
+                "observable_p09_d10708c33c652056954a",
+                "observable_p09_e7cf05c1769ef02699ff",
+                "observable_p09_bf0e1be46f1a9cdbe3ed"
+              ]
+            },
+            {
+              "descriptor": "Integra O1, O2 y O3 en una justificación equilibrada que compara explícitamente 23,20 de desembolso, 1,80 de mejora del excedente máximo y veinte ventas adicionales, sin convertir una alternativa en respuesta única, conforme a E2-E5.",
+              "label": "Completo y defendible",
+              "level": 3,
+              "observable_element_ids": [
+                "observable_p09_d10708c33c652056954a",
+                "observable_p09_e7cf05c1769ef02699ff",
+                "observable_p09_bf0e1be46f1a9cdbe3ed"
+              ]
+            }
+          ],
+          "misconceptions": [
+            "afirmar que el mayor excedente máximo elimina el riesgo de no vender",
+            "comparar alternativas con partidas de costo externas",
+            "Afirma que el mayor excedente máximo elimina por sí solo el riesgo de no vender, sin considerar el trade-off descrito en E2-E5.",
+            "Compara las alternativas usando partidas de costo externas a la comparación documentada en E2-E5."
+          ],
+          "observable_elements": [
+            {
+              "description": "relaciona 80 vasos con mayor capacidad y mayor desembolso",
+              "element_id": "observable_p09_d10708c33c652056954a",
+              "evidence_ids": [
+                "ev_eb2d2902e705aed0f05a",
+                "ev_76386bd7e3b219e58f4f",
+                "ev_a240ec603b14ea3be4df",
+                "ev_8e0c621d2f730718110b",
+                "ev_e293634cab6c9d688b83"
+              ],
+              "required_for_level_2": true,
+              "source_ids": []
+            },
+            {
+              "description": "relaciona 60 vasos con menor riesgo presupuestario",
+              "element_id": "observable_p09_e7cf05c1769ef02699ff",
+              "evidence_ids": [
+                "ev_eb2d2902e705aed0f05a",
+                "ev_76386bd7e3b219e58f4f",
+                "ev_a240ec603b14ea3be4df",
+                "ev_8e0c621d2f730718110b",
+                "ev_e293634cab6c9d688b83"
+              ],
+              "required_for_level_2": true,
+              "source_ids": []
+            },
+            {
+              "description": "no presenta una alternativa defendible como única respuesta correcta",
+              "element_id": "observable_p09_bf0e1be46f1a9cdbe3ed",
+              "evidence_ids": [
+                "ev_eb2d2902e705aed0f05a",
+                "ev_76386bd7e3b219e58f4f",
+                "ev_a240ec603b14ea3be4df",
+                "ev_8e0c621d2f730718110b",
+                "ev_e293634cab6c9d688b83"
+              ],
+              "required_for_level_2": true,
+              "source_ids": []
+            }
+          ],
+          "purpose": "Evaluar el observable fijo sin ampliar la evidencia aprobada.",
+          "semantic_uncertainties": [
+            "«Menor riesgo» no está definido mediante una probabilidad o métrica independiente; E2-E5 lo vinculan al menor desembolso y a la comparación de capacidad.",
+            "E3-E4 comparan excedentes bajo la condición de que ambos planes vendan todo, pero la condición de venta completa no se desarrolla fuera de ese fragmento."
+          ]
+        },
+        "question_id": "question_p09_0b940b3c6fc408ba9b43"
+      },
+      {
+        "guide": {
+          "acceptable_alternatives": [
+            "resolver mediante desigualdad",
+            "resolver mediante prueba aritmética de valores consecutivos",
+            "Puede resolver mediante una desigualdad, siempre que la conclusión y el límite presupuestario sean verificables con E1-E2.",
+            "Puede resolver mediante una prueba aritmética de valores consecutivos, siempre que identifique el máximo entero y compruebe el caso de 90 con E1-E2."
+          ],
+          "acceptance_conditions": [
+            "Separa los costos fijos de 18 y 14 del costo variable de 0,46 por vaso, conforme a E1-E2.",
+            "Formula una desigualdad presupuestaria o presenta una prueba aritmética equivalente usando el límite de 70 y la estructura de costos de E1-E2.",
+            "Obtiene 82 como máximo número entero de vasos compatible con el presupuesto, manteniendo la separación entre costos fijos y costo variable indicada en E1-E2.",
+            "Comprueba que 90 no es viable porque 18 + 14 + 90 x 0,46 = 73,40, que excede 70, conforme a E1-E2."
+          ],
+          "cannot_infer": [
+            "E1-E2 permiten evaluar la viabilidad presupuestaria de las cantidades calculadas, pero no permiten inferir si los vasos se venderán ni una decisión comercial posterior.",
+            "E1-E2 no permiten inferir una capacidad física o una restricción operativa distinta del límite presupuestario documentado."
+          ],
+          "levels": [
+            {
+              "descriptor": "No presenta una separación ni un cálculo verificable basado en la estructura de costos de E1-E2.",
+              "label": "Sin evidencia suficiente",
+              "level": 0,
+              "observable_element_ids": []
+            },
+            {
+              "descriptor": "Reconoce alguna partida o intenta calcular un máximo, pero no separa consistentemente los costos ni justifica el límite entero o la inviabilidad de 90 con E1-E2.",
+              "label": "Parcial",
+              "level": 1,
+              "observable_element_ids": [
+                "observable_p09_c1825a7ad29d8f8cc7e5"
+              ]
+            },
+            {
+              "descriptor": "Integra O1, O2 y O3: separa costos fijos y variables, identifica el máximo entero compatible con 70 y comprueba que 90 produce 73,40, conforme a E1-E2.",
+              "label": "Logro esperado",
+              "level": 2,
+              "observable_element_ids": [
+                "observable_p09_c1825a7ad29d8f8cc7e5",
+                "observable_p09_a57299714945a7ceb70b",
+                "observable_p09_9d1919c1acd22be9c828"
+              ]
+            },
+            {
+              "descriptor": "Integra O1, O2 y O3 mediante una desigualdad o una prueba aritmética transparente, obtiene 82 y deja explícita la comprobación de que 90 excede el presupuesto según E1-E2.",
+              "label": "Completo y defendible",
+              "level": 3,
+              "observable_element_ids": [
+                "observable_p09_c1825a7ad29d8f8cc7e5",
+                "observable_p09_a57299714945a7ceb70b",
+                "observable_p09_9d1919c1acd22be9c828"
+              ]
+            }
+          ],
+          "misconceptions": [
+            "usar 90 solo porque es la capacidad física",
+            "redondear hacia arriba un máximo presupuestario",
+            "Usa 90 solo por considerarlo la capacidad física, sin comprobar el presupuesto mediante E1-E2.",
+            "Redondea hacia arriba un máximo presupuestario y acepta un número cuyo costo excede 70, contrariando la comprobación de E1-E2."
+          ],
+          "observable_elements": [
+            {
+              "description": "separa costos fijos del costo por vaso",
+              "element_id": "observable_p09_c1825a7ad29d8f8cc7e5",
+              "evidence_ids": [
+                "ev_51e17d19d3da76f54ccf",
+                "ev_604dd709208827384004"
+              ],
+              "required_for_level_2": true,
+              "source_ids": []
+            },
+            {
+              "description": "obtiene un máximo entero dentro del presupuesto",
+              "element_id": "observable_p09_a57299714945a7ceb70b",
+              "evidence_ids": [
+                "ev_51e17d19d3da76f54ccf",
+                "ev_604dd709208827384004"
+              ],
+              "required_for_level_2": true,
+              "source_ids": []
+            },
+            {
+              "description": "comprueba que el valor inmediatamente superior excede el límite",
+              "element_id": "observable_p09_9d1919c1acd22be9c828",
+              "evidence_ids": [
+                "ev_51e17d19d3da76f54ccf",
+                "ev_604dd709208827384004"
+              ],
+              "required_for_level_2": true,
+              "source_ids": []
+            }
+          ],
+          "purpose": "Evaluar el observable fijo sin ampliar la evidencia aprobada.",
+          "semantic_uncertainties": [
+            "E1-E2 muestran la aplicación del costo variable de 0,46 a 90 vasos, pero no explicitan en una regla general que ese costo se mantenga igual para toda cantidad; la respuesta debe hacer visible esa extensión.",
+            "La expresión «máximo número entero» se interpreta respecto del presupuesto de 70; E1-E2 no documentan otro criterio de maximización."
+          ]
+        },
+        "question_id": "question_p09_a5a9d661f0441b21a3b5"
+      }
+    ],
+    "schema_version": "1.1.0",
+    "status": "READY",
+    "submission_id": "submission_05"
+  },
+  "candidate_output_hash": "sha256:1cbe1d7825b9e0c3d122be97149373f9be346398770333c8823852880480c7a6",
+  "case_id": "PP-A03-P09-F01",
+  "defensible_alternatives": [],
+  "fixture_id": "p09_fixture_act_03",
+  "oracle_state": "VALID",
+  "property": {
+    "benchmark_tags": [],
+    "confidence": "HIGH",
+    "defensible_alternatives": [],
+    "description": "P09 debe preservar el observable core de P07 y puede anadir acceptance conditions ligadas a la pauta numerica: distinguir un 4 (operacion reproducible con lo escrito) de un 3 (error aritmetico menor que no cambia la decision) es una condicion verificable en esta actividad. No puede reponderar los criterios ni alterar la regla de 'sin evidencia'.",
+    "kind": "REQUIRED",
+    "notes": "",
+    "oracle_state": "VALID",
+    "property_id": "A03-ACT-P09a",
+    "source_refs": [
+      {
+        "file": "02_rubric.docx"
+      }
+    ],
+    "stage": "P09"
+  },
+  "relevant_source_refs": [
+    {
+      "file": "02_rubric.docx"
+    }
+  ],
+  "route_or_opportunity_id": null,
+  "schema_version": "semantic-review-packet/1.1.0",
+  "source_hashes": {
+    "02_rubric.docx": "sha256:1a66e055a809a6be7e7a3a0ac33093c654b4dc826ff5df7c322888496ca41a5e"
+  },
+  "stage": "P09"
+}

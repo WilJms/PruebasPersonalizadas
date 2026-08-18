@@ -1,0 +1,13 @@
+{
+  "bundle_manifest_hash": "sha256:cee4a57a0fc3afb1557e65145b271a6d7279b843e8d8d169f230456b0c759ded",
+  "bundle_path": "reports/semantic_benchmark/v1_1/phase9/adjudication_bundles/exec-phase9b1-bfd3cf082617ea8b",
+  "execution_id": "exec-phase9b1-bfd3cf082617ea8b",
+  "leakage_audit": {
+    "documented_exceptions": 229,
+    "leaks": 0,
+    "packets_scanned": 38,
+    "result": "PASS"
+  },
+  "packet_count": 38,
+  "schema_version": "phase9-blind-bundle-pointer/1.0.0"
+}

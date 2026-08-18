@@ -1,0 +1,137 @@
+{
+  "candidate": {
+    "anchor": {
+      "anchor_id": "anchor_95835cc146f11b38921c",
+      "answer_leakage_risk": 0.0,
+      "fragments": [
+        {
+          "display_text": "```python\ndef asignar_turnos(solicitudes, cupos_por_grupo):\n    solicitudes.sort(key=lambda s: (s[\"prioridad\"], s[\"marca\"], s[\"id\"]))\n    unicas = {s[\"id\"]: s for s in solicitudes if s[\"grupo\"] in cupos_por_grupo}\n    asignadas, espera = [], []\n    for grupo in cupos_por_grupo:\n        del_grupo = [s for s in unicas.values() if s[\"grupo\"] == grupo]\n        corte = cupos_por_grupo[grupo]\n        asignadas += [s[\"id\"] for s in del_grupo[:corte]]\n        espera += [s[\"id\"] for s in del_grupo[corte:]]\n    return {\"asignadas\": asignadas, \"espera\": espera}\n```",
+          "evidence_id": "ev_de1cba84544cd04797df",
+          "locator": {
+            "column": null,
+            "heading_path": [],
+            "kind": "DOCUMENT_PATH",
+            "paragraph_index": 0,
+            "row": null,
+            "table_index": null
+          },
+          "transformation": "LITERAL"
+        },
+        {
+          "display_text": "```python\ndemo = [\n    {\"id\": \"q2\", \"grupo\": \"B\", \"prioridad\": 1, \"marca\": \"08:00\"},\n    {\"id\": \"q1\", \"grupo\": \"A\", \"prioridad\": 1, \"marca\": \"08:00\"},\n    {\"id\": \"q2\", \"grupo\": \"B\", \"prioridad\": 2, \"marca\": \"08:10\"},\n]\nantes = list(demo)\nresultado = asignar_turnos(demo, {\"A\": 1, \"B\": 1})\n```",
+          "evidence_id": "ev_249c96141d2ed104b688",
+          "locator": {
+            "column": null,
+            "heading_path": [
+              "Caso de demostración"
+            ],
+            "kind": "DOCUMENT_PATH",
+            "paragraph_index": 2,
+            "row": null,
+            "table_index": null
+          },
+          "transformation": "LITERAL"
+        },
+        {
+          "display_text": "La función es completamente pura: `sorted` crea una lista nueva y nunca toca `solicitudes`. El diccionario conserva la primera aparición de cada id. La clave de tres campos garantiza el orden global incluso después de asignar por grupos.",
+          "evidence_id": "ev_980679b6b5472eebbfbc",
+          "locator": {
+            "column": null,
+            "heading_path": [],
+            "kind": "DOCUMENT_PATH",
+            "paragraph_index": 0,
+            "row": null,
+            "table_index": null
+          },
+          "transformation": "LITERAL"
+        }
+      ],
+      "self_containment_score": 1.0,
+      "structure": "CROSS_ARTIFACT",
+      "student_facing_label": null
+    },
+    "candidate_id": "candidate_p07_577470bb027e1852d6e1",
+    "choices": [],
+    "citations": [],
+    "cognitive_operation": "CONNECT_INTERNAL",
+    "course_source_ids": [],
+    "difficulty": "MEDIUM",
+    "dimension_id": "dimension_p07_577470bb027e1852d6e1",
+    "estimated_minutes": 5,
+    "evidence_ids": [
+      "ev_de1cba84544cd04797df",
+      "ev_7ab196584d594010f750",
+      "ev_249c96141d2ed104b688",
+      "ev_980679b6b5472eebbfbc",
+      "ev_fb54c43c83db40ca984f",
+      "ev_477e6db37c09bfc1f516"
+    ],
+    "opportunity_id": "opportunity_p07_577470bb027e1852d6e1",
+    "opportunity_template_id": "template_p07_577470bb027e1852d6e1",
+    "preliminary_guide": {
+      "acceptable_alternatives": [
+        "Puede presentar la justificación en dos viñetas o en una tabla breve que compare la afirmación, la operación observada y su efecto en `demo` o en `q2`.",
+        "Es válida una explicación equivalente que no calcule todo el resultado, siempre que relacione explícitamente los fragmentos y distinga la mutación de la lista del reemplazo del valor asociado a un id repetido."
+      ],
+      "acceptance_conditions": [],
+      "cannot_infer": [],
+      "levels": [],
+      "misconceptions": [
+        "Confundir `antes = list(demo)` con una prueba de que la función no modifica `demo`; la copia se realiza antes de la llamada.",
+        "Afirmar que la comprensión del diccionario conserva el primer registro de cada id solo porque la clave aparece una vez; se confunde la posición de inserción de la clave con el valor que queda asociado tras una asignación repetida.",
+        "Concluir que la deduplicación de `q2` elimina sin más la segunda solicitud, sin analizar que la segunda aparición vuelve a asignar el valor del mismo id."
+      ],
+      "observable_elements": [
+        {
+          "description": "Relaciona explícitamente el código, el caso de demostración y la explicación, tratando por separado la afirmación sobre pureza y la afirmación sobre la primera aparición de cada id.",
+          "element_id": "observable_47b4c05e554c08128c84",
+          "evidence_ids": [
+            "ev_de1cba84544cd04797df",
+            "ev_249c96141d2ed104b688",
+            "ev_980679b6b5472eebbfbc"
+          ],
+          "required_for_level_2": true,
+          "source_ids": []
+        },
+        {
+          "description": "Explica que `sort` se invoca sobre `solicitudes` y que, al recibir `demo`, modifica la lista original; distingue esa lista de `antes`, que fue copiada antes de la llamada. Usa esta relación para justificar la tensión con la afirmación de que la función nunca toca `solicitudes`.",
+          "element_id": "observable_bb788355c85667055d5d",
+          "evidence_ids": [
+            "ev_de1cba84544cd04797df",
+            "ev_249c96141d2ed104b688",
+            "ev_980679b6b5472eebbfbc"
+          ],
+          "required_for_level_2": true,
+          "source_ids": []
+        },
+        {
+          "description": "Explica que la construcción de `unicas` procesa las entradas ordenadas y vuelve a asignar el mismo id cuando aparece el segundo `q2`; distingue la conservación de la posición de la clave de la conservación del primer valor, y usa esa distinción para evaluar la afirmación sobre la primera aparición.",
+          "element_id": "observable_6a8944d94de46e241c65",
+          "evidence_ids": [
+            "ev_de1cba84544cd04797df",
+            "ev_249c96141d2ed104b688",
+            "ev_980679b6b5472eebbfbc"
+          ],
+          "required_for_level_2": true,
+          "source_ids": []
+        }
+      ],
+      "purpose": "Conecta unidades localizadas y hace explícita su coherencia o tensión sin elegir silenciosamente una fuente.",
+      "semantic_uncertainties": []
+    },
+    "question_text": "Contrasta el código y el caso de demostración con la explicación proporcionada. ¿La afirmación de que la función es completamente pura y que conserva la primera aparición de cada id queda respaldada por esos fragmentos? Responde indicando qué parte está respaldada o entra en tensión y justifica ambas conclusiones siguiendo el tratamiento de `demo` y de las dos entradas con id `q2`. Relaciona explícitamente la explicación con las operaciones del código; no basta con repetir una de las fuentes.",
+    "response_format": "OPEN_SHORT",
+    "student_justification_required": true,
+    "submission_id": "submission_06",
+    "uncertainties": [
+      "La expresión «conserva la primera aparición» puede referirse al orden de inserción de la clave o al registro almacenado como valor; la respuesta debe distinguir ambas interpretaciones."
+    ],
+    "variant_id": "variant_p07_577470bb027e1852d6e1"
+  },
+  "context_mode": "CLOSED",
+  "diagnostics": [],
+  "opportunity_id": "opportunity_p07_577470bb027e1852d6e1",
+  "schema_version": "1.1.0",
+  "status": "READY",
+  "submission_id": "submission_06"
+}
