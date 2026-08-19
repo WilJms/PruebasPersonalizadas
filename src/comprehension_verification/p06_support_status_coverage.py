@@ -51,6 +51,15 @@ PARTIAL = "PARTIAL"
 INSUFFICIENT = "INSUFFICIENT"
 UNCERTAIN = "UNCERTAIN"
 
+P06_UNCERTAIN_SCOPE_CENSUS_VERSION = "p06-uncertain-scope-census/1.0.0"
+
+#: Scope labels for the UNCERTAIN census.  They mirror the scopes the ratified
+#: corpus itself uses: a property is stated about one submission or about the
+#: activity as a whole.
+SUBMISSION_LEVEL = "SUBMISSION"
+ACTIVITY_LEVEL = "ACTIVITY"
+BOTH_SCOPES = "SUBMISSION_LEVEL_AND_ACTIVITY_LEVEL"
+
 #: The four statuses ``EvidenceSupportStatus`` admits.  Production can express
 #: every one of them; expressiveness is not the constraint here.
 CONTRACT_SUPPORT_STATUSES = (SUFFICIENT, PARTIAL, INSUFFICIENT, UNCERTAIN)
@@ -173,6 +182,189 @@ def support_status_coverage_report(
         "candidate_scoring_property_count": len(scoring_property_ids),
     }
     return {**material, "report_hash": canonical_hash(material)}
+
+
+#: Row order and human labels for the UNCERTAIN census.  The explanatory prose
+#: in the findings and in the phase document is *generated* from this mapping
+#: plus the derived counts, so a count can never be restated as an independent
+#: numeric literal that drifts away from the machine value.
+UNCERTAIN_CENSUS_ROWS: tuple[tuple[str, str], ...] = (
+    (
+        "submission_level_asserting_uncertain",
+        "submission-level P06 properties whose text asserts UNCERTAIN",
+    ),
+    (
+        "submission_level_asserting_uncertain_oracle_valid",
+        "... of those, `oracle_state VALID`",
+    ),
+    (
+        "submission_level_asserting_uncertain_oracle_valid_kind_required",
+        "... of those, kind `REQUIRED`",
+    ),
+    (
+        "activity_level_describing_uncertain",
+        "activity-level P06 properties describing UNCERTAIN "
+        "(coverage-index statements, never candidate gates)",
+    ),
+    (
+        "combined_both_scopes",
+        "combined across both scopes (submission-level + activity-level)",
+    ),
+    (
+        "candidate_scoring_executable_asserting_uncertain",
+        "candidate-scoring executable P06 properties asserting UNCERTAIN",
+    ),
+)
+
+
+def uncertain_scope_census(
+    *,
+    property_records: Sequence[Mapping[str, Any]],
+    scoring_property_ids: Sequence[str],
+) -> dict[str, Any]:
+    """Count UNCERTAIN-bearing P06 properties with the scope always explicit.
+
+    Six populations are derived, never asserted.  They are kept apart because
+    they answer different questions and only one of them is a readiness fact:
+
+    * a *submission-level* property asserts UNCERTAIN about one submission and
+      is the only kind that can ever become a candidate gate;
+    * an *activity-level* property describes which of the four P06 states the
+      activity offers across its submissions.  It is a coverage index, not a
+      gate, and adding it to the submission-level population produces a number
+      that answers no question at all;
+    * a *candidate-scoring executable* property is a submission-level property
+      that actually reached an executable route with ``oracle_state VALID``.
+      Only this population can be observed by a qualification run, so only its
+      count is the blocking readiness fact.
+    """
+
+    scoring = set(scoring_property_ids)
+    by_scope: dict[str, list[Mapping[str, Any]]] = {
+        SUBMISSION_LEVEL: [],
+        ACTIVITY_LEVEL: [],
+    }
+    for record in property_records:
+        scope = record["scope"]
+        if scope not in by_scope:
+            raise SupportStatusCoverageError(
+                f"{record['property_id']}: unknown property scope {scope!r}"
+            )
+        if UNCERTAIN in asserted_statuses(record["description"]):
+            by_scope[scope].append(record)
+
+    submission = sorted(by_scope[SUBMISSION_LEVEL], key=lambda r: r["property_id"])
+    activity = sorted(by_scope[ACTIVITY_LEVEL], key=lambda r: r["property_id"])
+    valid = [r for r in submission if r["oracle_state"] == "VALID"]
+    valid_required = [r for r in valid if r["kind"] == "REQUIRED"]
+    executable = [r for r in submission if r["property_id"] in scoring]
+
+    def _population(rows: Sequence[Mapping[str, Any]], scope: str) -> dict[str, Any]:
+        return {
+            "scope": scope,
+            "count": len(rows),
+            "activity_count": len({r["activity_id"] for r in rows}),
+            "property_ids": [r["property_id"] for r in rows],
+        }
+
+    populations = {
+        "submission_level_asserting_uncertain": _population(
+            submission, SUBMISSION_LEVEL
+        ),
+        "submission_level_asserting_uncertain_oracle_valid": _population(
+            valid, SUBMISSION_LEVEL
+        ),
+        "submission_level_asserting_uncertain_oracle_valid_kind_required": _population(
+            valid_required, SUBMISSION_LEVEL
+        ),
+        "activity_level_describing_uncertain": {
+            **_population(activity, ACTIVITY_LEVEL),
+            "is_a_candidate_gate": False,
+            "rule": (
+                "An activity-level property states which P06 states the activity "
+                "offers across its submissions. It is a coverage index over the "
+                "activity, not a claim a candidate can be scored against, and it "
+                "must never be counted as though it were a gate."
+            ),
+        },
+        "combined_both_scopes": {
+            **_population([*submission, *activity], BOTH_SCOPES),
+            "includes_activity_level_coverage_index_statements": True,
+            "rule": (
+                "Reported only with the scope stated. This number is the size of "
+                "the corpus material that touches UNCERTAIN at any scope; it is "
+                "not a population of candidate gates."
+            ),
+        },
+        "candidate_scoring_executable_asserting_uncertain": {
+            **_population(executable, SUBMISSION_LEVEL),
+            "is_the_blocking_readiness_fact": True,
+            "rule": (
+                "A submission-level property that reached an executable route "
+                "with oracle_state VALID. Only this population can be observed "
+                "by a qualification run."
+            ),
+        },
+    }
+
+    material = {
+        "schema_version": P06_UNCERTAIN_SCOPE_CENSUS_VERSION,
+        "derivation_authority": (
+            "FROZEN_ORACLE_PROPERTY_TEXT_AND_ACTIVITY_RUBRIC_SCALE"
+        ),
+        "derived_from_benchmark_tags": False,
+        "counts_are_derived_not_declared": True,
+        "scope_rule": (
+            "Every count states its scope. A submission-level candidate-gate "
+            "population is never summed with an activity-wide coverage-index "
+            "statement without saying so."
+        ),
+        "p06_property_record_count": len(property_records),
+        "populations": populations,
+    }
+    return {**material, "census_hash": canonical_hash(material)}
+
+
+def uncertain_census_counts(census: Mapping[str, Any]) -> dict[str, int]:
+    """Return the census row key -> count mapping the prose is generated from."""
+
+    return {
+        key: census["populations"][key]["count"] for key, _label in UNCERTAIN_CENSUS_ROWS
+    }
+
+
+def uncertain_census_markdown_table(census: Mapping[str, Any]) -> str:
+    """Render the census as the exact table the phase document must carry."""
+
+    counts = uncertain_census_counts(census)
+    lines = ["| Population | Count |", "|---|---|"]
+    for key, label in UNCERTAIN_CENSUS_ROWS:
+        lines.append(f"| {label} | {counts[key]} |")
+    return "\n".join(lines)
+
+
+def uncertain_census_prose(census: Mapping[str, Any]) -> str:
+    """Generate the corpus-semantics sentence from the derived counts."""
+
+    populations = census["populations"]
+    submission = populations["submission_level_asserting_uncertain"]
+    valid_required = populations[
+        "submission_level_asserting_uncertain_oracle_valid_kind_required"
+    ]
+    activity = populations["activity_level_describing_uncertain"]
+    combined = populations["combined_both_scopes"]
+    executable = populations["candidate_scoring_executable_asserting_uncertain"]
+    return (
+        f"The frozen corpus asserts UNCERTAIN in {submission['count']} "
+        f"submission-level P06 properties across {submission['activity_count']} "
+        f"activities, {valid_required['count']} of them with oracle_state VALID "
+        f"and kind REQUIRED. A further {activity['count']} activity-level P06 "
+        "properties describe UNCERTAIN as a coverage index over their activity's "
+        f"submissions, which is not a candidate gate; both scopes together are "
+        f"{combined['count']} properties. Of the submission-level population, "
+        f"{executable['count']} reach an executable candidate-scoring route. The "
+        "material exists; it cannot be routed."
+    )
 
 
 def uncertain_coverage_gate(report: Mapping[str, Any]) -> dict[str, Any]:

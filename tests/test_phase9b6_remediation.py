@@ -17,10 +17,22 @@ from __future__ import annotations
 from copy import deepcopy
 import json
 from pathlib import Path
+import re
+import subprocess
 
 import pytest
 
 from comprehension_verification.canonical import canonical_hash
+from comprehension_verification.future_stage_boundary_plan import (
+    CORPUS_DEPENDENT_STAGES,
+    MINIMUM_NO_CORPUS_CHANGE_STAGE_BOUNDARIES,
+    P07_COMPANION_ARTIFACTS,
+    P07_FUTURE_STAGE_BOUNDARY_DEPENDENCIES,
+    FutureStageBoundaryPlanError,
+    assert_future_boundary_plan,
+    p07_future_stage_boundary_requirement,
+    validate_future_boundary_plan,
+)
 from comprehension_verification.p06_alignment_verification import (
     ALIGNED,
     MISALIGNED_DECLARED_KEY_DRIFT,
@@ -46,14 +58,22 @@ from comprehension_verification.p06_rare_coverage import (
     rare_coverage_report,
 )
 from comprehension_verification.p06_remediated_derivation import (
+    ACTIVITY_SCOPE,
     CORPUS_ROOT,
+    SUBMISSION_SCOPE,
     derive_remediated_p06,
     derivation_summary,
+    p06_property_inventory,
 )
 from comprehension_verification.p06_support_status_coverage import (
     UNCERTAIN,
+    SupportStatusCoverageError,
     support_status_coverage_report,
+    uncertain_census_counts,
+    uncertain_census_markdown_table,
+    uncertain_census_prose,
     uncertain_coverage_gate,
+    uncertain_scope_census,
 )
 from comprehension_verification.p07_adjudication_context import (
     P07AdjudicationContextError,
@@ -556,6 +576,403 @@ def test_uncertain_semantics_exist_in_the_corpus_but_reach_no_route(
     assert with_uncertain, "the corpus carries UNCERTAIN semantics"
     assert status_report["statuses"][UNCERTAIN]["candidate_scoring_property_count"] == 0
     assert not set(with_uncertain) & set(derivation.scoring_property_ids)
+
+
+# ---------------------------------------------------------------------------
+# Phase 9B.6A -- UNCERTAIN counts are derived, and prose cannot drift from them
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture(scope="module")
+def uncertain_census(derivation):
+    return uncertain_scope_census(
+        property_records=p06_property_inventory(),
+        scoring_property_ids=derivation.scoring_property_ids,
+    )
+
+
+def test_property_inventory_carries_both_scopes(derivation) -> None:
+    """The inventory must see activity-level properties the derivation cannot."""
+
+    records = p06_property_inventory()
+    scopes = {record["scope"] for record in records}
+    assert scopes == {SUBMISSION_SCOPE, ACTIVITY_SCOPE}
+    submission_ids = {
+        record["property_id"]
+        for record in records
+        if record["scope"] == SUBMISSION_SCOPE
+    }
+    assert submission_ids == set(derivation.property_descriptions)
+    activity_ids = {
+        record["property_id"] for record in records if record["scope"] == ACTIVITY_SCOPE
+    }
+    assert activity_ids, "the corpus states P06 properties at activity scope too"
+    assert not activity_ids & submission_ids
+
+
+def test_uncertain_census_separates_the_two_scopes(uncertain_census) -> None:
+    """A coverage-index statement is never summed into a candidate-gate count."""
+
+    populations = uncertain_census["populations"]
+    submission = populations["submission_level_asserting_uncertain"]
+    activity = populations["activity_level_describing_uncertain"]
+    combined = populations["combined_both_scopes"]
+
+    assert submission["scope"] == SUBMISSION_SCOPE
+    assert activity["scope"] == ACTIVITY_SCOPE
+    assert activity["is_a_candidate_gate"] is False
+    assert combined["scope"] == "SUBMISSION_LEVEL_AND_ACTIVITY_LEVEL"
+    assert combined["count"] == submission["count"] + activity["count"]
+    assert not set(submission["property_ids"]) & set(activity["property_ids"])
+
+
+def test_uncertain_census_narrows_monotonically(uncertain_census) -> None:
+    """Each 'of those' population is a subset of the one above it."""
+
+    populations = uncertain_census["populations"]
+    submission = set(
+        populations["submission_level_asserting_uncertain"]["property_ids"]
+    )
+    valid = set(
+        populations["submission_level_asserting_uncertain_oracle_valid"][
+            "property_ids"
+        ]
+    )
+    required = set(
+        populations[
+            "submission_level_asserting_uncertain_oracle_valid_kind_required"
+        ]["property_ids"]
+    )
+    executable = set(
+        populations["candidate_scoring_executable_asserting_uncertain"][
+            "property_ids"
+        ]
+    )
+    assert executable <= required <= valid <= submission
+
+
+def test_candidate_scoring_uncertain_count_agrees_with_the_gate(
+    uncertain_census, status_report
+) -> None:
+    """The blocking readiness fact has exactly one machine value, not two.
+
+    If this ever fails because the census and the support-status report
+    disagree, the discrepancy must be reported rather than either side edited
+    to match the other.
+    """
+
+    executable = uncertain_census["populations"][
+        "candidate_scoring_executable_asserting_uncertain"
+    ]
+    assert executable["is_the_blocking_readiness_fact"] is True
+    assert (
+        executable["count"]
+        == status_report["statuses"][UNCERTAIN]["candidate_scoring_property_count"]
+    )
+    gate = uncertain_coverage_gate(status_report)
+    assert gate["readiness_blocked"] is (executable["count"] == 0)
+
+
+def test_uncertain_census_rejects_an_unknown_scope() -> None:
+    with pytest.raises(SupportStatusCoverageError):
+        uncertain_scope_census(
+            property_records=[
+                {
+                    "property_id": "X",
+                    "scope": "COHORT",
+                    "activity_id": "a",
+                    "kind": "REQUIRED",
+                    "oracle_state": "VALID",
+                    "description": "UNCERTAIN para 'X'",
+                }
+            ],
+            scoring_property_ids=(),
+        )
+
+
+def test_findings_uncertain_prose_is_generated_from_the_derived_counts(
+    findings, uncertain_census
+) -> None:
+    """The explanatory prose must be the generated string, byte for byte."""
+
+    diagnosis = findings["phase_e_support_status_coverage"]["diagnosis"]
+    taxonomy = diagnosis["cause_taxonomy"]["B_corpus_semantic_coverage"]
+    assert taxonomy["evidence"] == uncertain_census_prose(uncertain_census)
+    assert taxonomy["evidence_is_generated_from_derived_counts"] is True
+    assert diagnosis["census_counts"] == uncertain_census_counts(uncertain_census)
+    assert diagnosis["census_markdown_table"] == uncertain_census_markdown_table(
+        uncertain_census
+    )
+    assert diagnosis["scope_of_the_enumeration_above"] == SUBMISSION_SCOPE
+    assert (
+        diagnosis["corpus_count"]
+        == uncertain_census["populations"]["submission_level_asserting_uncertain"][
+            "count"
+        ]
+    )
+
+
+def test_no_uncertain_prose_states_a_count_the_machine_does_not(
+    findings, uncertain_census
+) -> None:
+    """Every integer in the UNCERTAIN prose must be a derived census value.
+
+    This is the regression the inconsistency demanded: a hard-coded ``11``
+    beside a machine ``9`` fails here regardless of which one a human believes.
+    """
+
+    diagnosis = findings["phase_e_support_status_coverage"]["diagnosis"]
+    allowed = set(uncertain_census_counts(uncertain_census).values())
+    allowed |= {
+        population["activity_count"]
+        for population in uncertain_census["populations"].values()
+    }
+    prose = [
+        diagnosis["cause_taxonomy"][key]["evidence"]
+        for key in diagnosis["cause_taxonomy"]
+    ]
+    for sentence in prose:
+        for number in re.findall(r"(?<![\w.-])(\d+)(?![\w.])", sentence):
+            assert int(number) in allowed, (
+                f"{number!r} in Phase 9B.6 UNCERTAIN prose is not a derived "
+                f"census value; derived values are {sorted(allowed)}"
+            )
+
+
+def test_phase_document_uncertain_table_matches_the_machine_census(
+    uncertain_census,
+) -> None:
+    """The document carries the generated table verbatim, not a retyped one."""
+
+    document = (REPOSITORY_ROOT / "docs/PHASE9B6_STRUCTURAL_REMEDIATION.md").read_text(
+        encoding="utf-8"
+    )
+    assert uncertain_census_markdown_table(uncertain_census) in document
+    assert uncertain_census_prose(uncertain_census) in document
+
+
+def test_phase_document_states_no_stale_uncertain_count(uncertain_census) -> None:
+    """No sentence in the document may restate a count the census contradicts."""
+
+    document = (REPOSITORY_ROOT / "docs/PHASE9B6_STRUCTURAL_REMEDIATION.md").read_text(
+        encoding="utf-8"
+    )
+    counts = uncertain_census_counts(uncertain_census)
+    combined = counts["combined_both_scopes"]
+    submission = counts["submission_level_asserting_uncertain"]
+    section = document.split("### 1. `P06_UNCERTAIN`")[1].split("### 2.")[0]
+    for match in re.finditer(
+        r"\*\*(\d+)\*\* P06 properties", section
+    ):  # the shape the stale claim had
+        assert int(match.group(1)) == submission, (
+            "the document states a bare P06 property count that is not the "
+            "submission-level census value"
+        )
+    if combined != submission:
+        # The combined figure may appear, but never without its scope named.
+        for line in section.splitlines():
+            if re.search(rf"(?<![\w.]){combined}(?![\w.])", line):
+                assert "scope" in line.lower() or "both" in line.lower(), (
+                    f"line states {combined} without naming the scope: {line!r}"
+                )
+
+
+# ---------------------------------------------------------------------------
+# Phase 9B.6A -- the change-set count is derived, never a golden invariant
+# ---------------------------------------------------------------------------
+
+#: The Phase 9B.6 delivery compare.  Both commits are immutable, so the count
+#: derived from them is stable; it is still recomputed rather than asserted.
+PHASE9B6_DELIVERY_BASE = "c4fcd5227f56560f840fd4bd8616e7df2e3b1099"
+PHASE9B6_DELIVERY_HEAD = "6cabd50bdf7573dfb2e981ff9d9df76a6ebe9f96"
+
+
+def _changed_tracked_files(base: str, head: str) -> list[str] | None:
+    """Return the changed tracked files, or None if the compare is unavailable."""
+
+    try:
+        completed = subprocess.run(
+            ["git", "diff", "--name-only", base, head],
+            cwd=REPOSITORY_ROOT,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+    except OSError:  # pragma: no cover - git absent
+        return None
+    if completed.returncode != 0:  # shallow clone, or commits pruned
+        return None
+    return [line for line in completed.stdout.splitlines() if line]
+
+
+def test_change_set_count_in_the_document_is_the_derived_one() -> None:
+    """The document's changed-file figure must survive re-derivation.
+
+    An earlier Phase 9B.6 report said 14. The number is human bookkeeping, so
+    it is derived here from the commit compare rather than frozen as a
+    constant, and it is deliberately absent from the findings artifact.
+    """
+
+    changed = _changed_tracked_files(PHASE9B6_DELIVERY_BASE, PHASE9B6_DELIVERY_HEAD)
+    if changed is None:
+        pytest.skip("the Phase 9B.6 delivery compare is not available here")
+
+    document = (REPOSITORY_ROOT / "docs/PHASE9B6_STRUCTURAL_REMEDIATION.md").read_text(
+        encoding="utf-8"
+    )
+    section = document.split("## Change-set bookkeeping")[1].split("## ")[0]
+    stated = re.search(r"\*\*(\d+)\*\* changed tracked files", section)
+    assert stated is not None, "the document must state the changed-file count"
+    assert int(stated.group(1)) == len(changed), (
+        f"the document states {stated.group(1)} changed tracked files; the "
+        f"compare {PHASE9B6_DELIVERY_BASE[:7]}..{PHASE9B6_DELIVERY_HEAD[:7]} "
+        f"contains {len(changed)}"
+    )
+    assert PHASE9B6_DELIVERY_BASE in section
+    assert PHASE9B6_DELIVERY_HEAD in section
+
+
+def test_change_set_count_is_not_a_semantic_invariant(findings) -> None:
+    """It must not be hashed into the findings, or a boundary would depend on it."""
+
+    serialized = json.dumps(findings, ensure_ascii=False)
+    for key in ("changed_tracked_file", "changed_file_count", "change_set_file_count"):
+        assert key not in serialized
+
+
+# ---------------------------------------------------------------------------
+# Phase 9B.6A -- the future P07 stage boundary
+# ---------------------------------------------------------------------------
+
+
+def _sound_plan(**overrides):
+    plan = {
+        "alternative_id": "TEST",
+        "new_stage_boundaries": list(MINIMUM_NO_CORPUS_CHANGE_STAGE_BOUNDARIES),
+        "adopts_phase9b6_artifacts": list(P07_COMPANION_ARTIFACTS),
+        "p07_boundary_dependency_inventory": list(
+            P07_FUTURE_STAGE_BOUNDARY_DEPENDENCIES
+        ),
+        "new_global_boundary": True,
+        "new_candidate_matrix_hash": True,
+        "corpus_version_change": False,
+    }
+    plan.update(overrides)
+    return plan
+
+
+def test_v12_p07_stage_boundary_does_not_bind_the_phase9b6_companion() -> None:
+    """The premise of the whole requirement, re-proved from frozen v1.2 bytes."""
+
+    boundaries = json.loads(
+        (
+            REPOSITORY_ROOT / "reports/semantic_benchmark/v1_2/stage_boundaries.json"
+        ).read_text(encoding="utf-8")
+    )
+    p07 = boundaries["stages"]["P07"]
+    for absent in (
+        "field_authority_hash",
+        "field_authority_source_hash",
+        "adjudication_context_schema_version",
+        "adjudication_context_source_hash",
+        "materializer_boundary",
+        "alias_envelope_schema_boundary",
+        "model_draft_schema_hash",
+    ):
+        assert absent not in p07, (
+            f"v1.2 P07 boundary unexpectedly binds {absent}; the Phase 9B.6A "
+            "future-boundary requirement must be re-derived"
+        )
+    # P06 does bind them, which is why P07's omission is a gap and not a policy.
+    assert "field_authority_hash" in boundaries["stages"]["P06"]
+    requirement = p07_future_stage_boundary_requirement()
+    assert requirement["new_p07_stage_boundary_required"] is True
+    assert requirement["computed_here"] is False
+    assert set(requirement["introduced_by_phase_9b6"]) == set(P07_COMPANION_ARTIFACTS)
+
+
+def test_a_plan_adopting_the_p07_companion_must_rebuild_the_p07_boundary() -> None:
+    """The regression the task asks for, in both directions."""
+
+    omits_p07 = _sound_plan(new_stage_boundaries=["P06"])
+    codes = {item["code"] for item in validate_future_boundary_plan(omits_p07)}
+    assert "P07_COMPANION_ADOPTED_WITHOUT_NEW_P07_STAGE_BOUNDARY" in codes
+    with pytest.raises(FutureStageBoundaryPlanError, match="P07_COMPANION_ADOPTED"):
+        assert_future_boundary_plan(omits_p07)
+
+    assert validate_future_boundary_plan(_sound_plan()) == []
+
+
+def test_no_corpus_change_plan_has_a_minimum_of_p06_and_p07() -> None:
+    assert set(MINIMUM_NO_CORPUS_CHANGE_STAGE_BOUNDARIES) == {"P06", "P07"}
+    below = _sound_plan(new_stage_boundaries=["P07"], adopts_phase9b6_artifacts=[])
+    codes = {item["code"] for item in validate_future_boundary_plan(below)}
+    assert "BELOW_MINIMUM_NO_CORPUS_CHANGE_STAGE_BOUNDARY_SET" in codes
+
+
+def test_a_corpus_change_forces_every_corpus_dependent_boundary() -> None:
+    partial = _sound_plan(corpus_version_change=True)
+    codes = {item["code"] for item in validate_future_boundary_plan(partial)}
+    assert "CORPUS_CHANGE_WITHOUT_ALL_CORPUS_DEPENDENT_BOUNDARIES" in codes
+    complete = _sound_plan(
+        corpus_version_change=True,
+        new_stage_boundaries=list(CORPUS_DEPENDENT_STAGES),
+    )
+    assert validate_future_boundary_plan(complete) == []
+
+
+def test_a_new_p07_boundary_must_bind_the_whole_minimum_inventory() -> None:
+    for dependency in P07_FUTURE_STAGE_BOUNDARY_DEPENDENCIES:
+        incomplete = _sound_plan(
+            p07_boundary_dependency_inventory=[
+                item
+                for item in P07_FUTURE_STAGE_BOUNDARY_DEPENDENCIES
+                if item != dependency
+            ]
+        )
+        codes = {item["code"] for item in validate_future_boundary_plan(incomplete)}
+        assert "P07_BOUNDARY_DEPENDENCY_INVENTORY_INCOMPLETE" in codes, dependency
+
+
+def test_a_stage_boundary_change_forces_a_new_global_boundary() -> None:
+    codes = {
+        item["code"]
+        for item in validate_future_boundary_plan(_sound_plan(new_global_boundary=False))
+    }
+    assert "STAGE_BOUNDARY_CHANGE_WITHOUT_NEW_GLOBAL_BOUNDARY" in codes
+
+
+def test_every_published_alternative_carries_a_sound_boundary_plan(findings) -> None:
+    """Each of U1-U4 / N1-N2 must already satisfy the corrected requirement."""
+
+    report = findings["future_stage_boundary_plan"]
+    assert report["all_plans_sound"] is True
+    assert report["v13_boundary_computed"] is False
+    assert {row["alternative_id"] for row in report["plans"]} == {
+        item["id"] for item in findings["alternatives"]
+    }
+    for alternative in findings["alternatives"]:
+        requires = alternative["requires"]
+        assert "P07" in requires["new_stage_boundaries"], alternative["id"]
+        assert "P06" in requires["new_stage_boundaries"], alternative["id"]
+        assert requires["corpus_version_change"] is (
+            set(requires["new_stage_boundaries"]) == set(CORPUS_DEPENDENT_STAGES)
+        ), alternative["id"]
+        assert (
+            requires["p07_boundary_dependency_inventory"]
+            == list(P07_FUTURE_STAGE_BOUNDARY_DEPENDENCIES)
+        ), alternative["id"]
+        assert validate_future_boundary_plan(
+            {"alternative_id": alternative["id"], **requires}
+        ) == [], alternative["id"]
+
+
+def test_findings_still_create_no_new_benchmark_version(findings) -> None:
+    """The corrected boundary plan must not become a published v1.3."""
+
+    assert findings["new_benchmark_version_created"] is None
+    assert findings["future_stage_boundary_plan"]["v13_boundary_computed"] is False
+    assert findings["phase_i_p07_future_stage_boundary"]["computed_here"] is False
 
 
 # ---------------------------------------------------------------------------

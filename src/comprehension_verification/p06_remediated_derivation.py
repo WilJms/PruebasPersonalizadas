@@ -93,6 +93,61 @@ def _ratifications(corpus_root: Path) -> list[dict[str, Any]]:
     ]
 
 
+#: The two scopes at which the ratified corpus states a P06 property.  A
+#: submission-level property is a claim about one submission and is the only
+#: thing that can ever become a candidate gate.  An activity-level property is
+#: a coverage-index statement about the activity as a whole -- "this activity
+#: offers all four P06 states across its submissions" -- and is never a gate.
+#: They are counted separately for exactly that reason.
+SUBMISSION_SCOPE = "SUBMISSION"
+ACTIVITY_SCOPE = "ACTIVITY"
+
+
+def p06_property_inventory(
+    corpus_root: Path = CORPUS_ROOT,
+) -> tuple[dict[str, Any], ...]:
+    """Return every ratified P06 property, at both scopes, with its metadata.
+
+    This is the inventory any P06 count must be derived from.  It carries the
+    scope explicitly so a submission-level candidate-gate population is never
+    silently added to an activity-level coverage-index statement.
+    """
+
+    records: list[dict[str, Any]] = []
+    for ratification in _ratifications(corpus_root):
+        activity_id = ratification["activity_id"]
+        for submission in ratification["submissions"]:
+            for prop in submission["properties"]:
+                if prop["stage"] != "P06":
+                    continue
+                records.append(
+                    {
+                        "property_id": prop["property_id"],
+                        "scope": SUBMISSION_SCOPE,
+                        "activity_id": activity_id,
+                        "submission_id": submission["submission_id"],
+                        "kind": prop["kind"],
+                        "oracle_state": prop["oracle_state"],
+                        "description": prop["description"],
+                    }
+                )
+        for prop in ratification.get("activity_level_properties", []):
+            if prop["stage"] != "P06":
+                continue
+            records.append(
+                {
+                    "property_id": prop["property_id"],
+                    "scope": ACTIVITY_SCOPE,
+                    "activity_id": activity_id,
+                    "submission_id": None,
+                    "kind": prop["kind"],
+                    "oracle_state": prop["oracle_state"],
+                    "description": prop["description"],
+                }
+            )
+    return tuple(sorted(records, key=lambda item: item["property_id"]))
+
+
 def derive_remediated_p06(
     corpus_root: Path = CORPUS_ROOT,
 ) -> RemediatedP06Derivation:

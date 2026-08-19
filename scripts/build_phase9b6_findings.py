@@ -31,6 +31,15 @@ REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPOSITORY_ROOT / "src"))
 
 from comprehension_verification.canonical import canonical_hash  # noqa: E402
+from comprehension_verification.future_stage_boundary_plan import (  # noqa: E402
+    CORPUS_DEPENDENT_STAGES,
+    MINIMUM_NO_CORPUS_CHANGE_STAGE_BOUNDARIES,
+    P07_COMPANION_ARTIFACTS,
+    P07_FUTURE_STAGE_BOUNDARY_DEPENDENCIES,
+    assert_future_boundary_plan,
+    future_boundary_plan_report,
+    p07_future_stage_boundary_requirement,
+)
 from comprehension_verification.p06_alignment_verification import (  # noqa: E402
     P06_ALIGNMENT_VERIFICATION_VERSION,
     verify_alignment_report,
@@ -46,12 +55,17 @@ from comprehension_verification.p06_remediated_derivation import (  # noqa: E402
     CORPUS_ROOT,
     derive_remediated_p06,
     derivation_summary,
+    p06_property_inventory,
 )
 from comprehension_verification.p06_support_status_coverage import (  # noqa: E402
     UNCERTAIN,
     asserted_statuses,
     support_status_coverage_report,
+    uncertain_census_counts,
+    uncertain_census_markdown_table,
+    uncertain_census_prose,
     uncertain_coverage_gate,
+    uncertain_scope_census,
 )
 from comprehension_verification.p07_adjudication_context import (  # noqa: E402
     P07_ADJUDICATION_CONTEXT_VERSION,
@@ -179,8 +193,13 @@ def _blocker_reproduction(derivation) -> dict:
     }
 
 
-def _uncertain_diagnosis(derivation, status_report) -> dict:
-    """Locate the UNCERTAIN gap in the A/B/C taxonomy the task asks for."""
+def _uncertain_diagnosis(derivation, status_report, census) -> dict:
+    """Locate the UNCERTAIN gap in the A/B/C taxonomy the task asks for.
+
+    Every count here comes from ``census``, and the explanatory prose is
+    generated from those same values.  No population size is written as an
+    independent numeric literal, so prose and machine counts cannot drift.
+    """
 
     corpus_uncertain = sorted(
         property_id
@@ -200,12 +219,32 @@ def _uncertain_diagnosis(derivation, status_report) -> dict:
                 "split": entry["split"] if entry else None,
             }
         )
+
+    populations = census["populations"]
+    submission = populations["submission_level_asserting_uncertain"]
+    executable = populations["candidate_scoring_executable_asserting_uncertain"]
+    machine_count = status_report["statuses"][UNCERTAIN][
+        "candidate_scoring_property_count"
+    ]
+    if executable["count"] != machine_count:
+        raise SystemExit(
+            "UNCERTAIN census and support-status report disagree on the "
+            f"candidate-scoring count: {executable['count']} vs {machine_count}"
+        )
+    if len(rows) != submission["count"]:
+        raise SystemExit(
+            "UNCERTAIN diagnosis rows and census disagree on the submission-level "
+            f"count: {len(rows)} vs {submission['count']}"
+        )
+
     return {
         "corpus_p06_properties_asserting_uncertain": rows,
-        "corpus_count": len(rows),
-        "candidate_scoring_count": status_report["statuses"][UNCERTAIN][
-            "candidate_scoring_property_count"
-        ],
+        "scope_of_the_enumeration_above": submission["scope"],
+        "corpus_count": submission["count"],
+        "candidate_scoring_count": executable["count"],
+        "census": census,
+        "census_counts": uncertain_census_counts(census),
+        "census_markdown_table": uncertain_census_markdown_table(census),
         "cause_taxonomy": {
             "A_existing_corpus_fixture_or_binding_coverage": {
                 "applies": True,
@@ -220,12 +259,8 @@ def _uncertain_diagnosis(derivation, status_report) -> dict:
             },
             "B_corpus_semantic_coverage": {
                 "applies": False,
-                "evidence": (
-                    "The frozen corpus carries UNCERTAIN semantics in 11 P06 "
-                    "properties across 6 activities, 8 of them submission-local "
-                    "with oracle_state VALID and kind REQUIRED. The material "
-                    "exists; it cannot be routed."
-                ),
+                "evidence": uncertain_census_prose(census),
+                "evidence_is_generated_from_derived_counts": True,
             },
             "C_production_contract_expressiveness": {
                 "applies": False,
@@ -287,6 +322,41 @@ def _noisy_diagnosis(derivation, rare_report) -> dict:
     }
 
 
+def _future_boundary_requirements(*, corpus_version_change: bool) -> dict:
+    """Build the boundary requirements every open alternative shares.
+
+    Two things make P07 mandatory even for an alternative that touches only the
+    P06 gate: every such alternative adopts the Phase 9B.6 P07 repair, and the
+    v1.2 P07 stage boundary binds neither companion artifact.  So the minimum
+    changed-boundary set for a no-corpus-change v1.3 is P06 *and* P07.  A corpus
+    version change additionally forces every corpus-dependent stage boundary,
+    because each one binds the corpus package hash.
+    """
+
+    stages = (
+        list(CORPUS_DEPENDENT_STAGES)
+        if corpus_version_change
+        else list(MINIMUM_NO_CORPUS_CHANGE_STAGE_BOUNDARIES)
+    )
+    return {
+        "new_stage_boundaries": stages,
+        "new_stage_boundaries_rule": (
+            "Every corpus-dependent stage boundary is recomputed because each "
+            "binds the corpus package hash."
+            if corpus_version_change
+            else "P06 because the candidate gate changes; P07 because the Phase "
+            "9B.6 P07 repair is not bound by the v1.2 P07 stage boundary."
+        ),
+        "adopts_phase9b6_artifacts": list(P07_COMPANION_ARTIFACTS),
+        "p07_boundary_dependency_inventory": list(
+            P07_FUTURE_STAGE_BOUNDARY_DEPENDENCIES
+        ),
+        "new_global_boundary": True,
+        "new_candidate_matrix_hash": True,
+        "corpus_version_change": corpus_version_change,
+    }
+
+
 def _alternatives() -> list[dict]:
     """Exact alternatives, consequences and what each would require."""
 
@@ -316,10 +386,7 @@ def _alternatives() -> list[dict]:
             "requires": {
                 "benchmark_version": "semantic-benchmark/1.3.0",
                 "protocol_version": "phase9-qualification-protocol/1.3.0",
-                "new_stage_boundaries": ["P06"],
-                "new_global_boundary": True,
-                "new_candidate_matrix_hash": True,
-                "corpus_version_change": False,
+                **_future_boundary_requirements(corpus_version_change=False),
                 "user_decision": "What an authorized P06 candidate gate may span.",
             },
         },
@@ -347,10 +414,7 @@ def _alternatives() -> list[dict]:
             "requires": {
                 "benchmark_version": "semantic-benchmark/1.3.0",
                 "protocol_version": "phase9-qualification-protocol/1.3.0",
-                "new_stage_boundaries": ["P06"],
-                "new_global_boundary": True,
-                "new_candidate_matrix_hash": True,
-                "corpus_version_change": False,
+                **_future_boundary_requirements(corpus_version_change=False),
                 "user_decision": (
                     "Whether artifact absence may define a construct target "
                     "without reintroducing the v1.1 defect."
@@ -380,10 +444,7 @@ def _alternatives() -> list[dict]:
             "requires": {
                 "benchmark_version": "semantic-benchmark/1.3.0",
                 "protocol_version": "phase9-qualification-protocol/1.3.0",
-                "new_stage_boundaries": ["P06"],
-                "new_global_boundary": True,
-                "new_candidate_matrix_hash": True,
-                "corpus_version_change": False,
+                **_future_boundary_requirements(corpus_version_change=False),
                 "user_decision": (
                     "Accept qualifying a candidate with one contract status "
                     "unexercised."
@@ -408,10 +469,7 @@ def _alternatives() -> list[dict]:
             "requires": {
                 "benchmark_version": "semantic-benchmark/1.3.0",
                 "protocol_version": "phase9-qualification-protocol/1.3.0",
-                "new_stage_boundaries": ["P04", "P06", "PLANNER", "P07", "P09"],
-                "new_global_boundary": True,
-                "new_candidate_matrix_hash": True,
-                "corpus_version_change": True,
+                **_future_boundary_requirements(corpus_version_change=True),
                 "user_decision": (
                     "EXPLICIT AUTHORIZATION REQUIRED: no new corpus version may be "
                     "created without it."
@@ -438,10 +496,7 @@ def _alternatives() -> list[dict]:
             "requires": {
                 "benchmark_version": "semantic-benchmark/1.3.0",
                 "protocol_version": "phase9-qualification-protocol/1.3.0",
-                "new_stage_boundaries": ["P06"],
-                "new_global_boundary": True,
-                "new_candidate_matrix_hash": True,
-                "corpus_version_change": False,
+                **_future_boundary_requirements(corpus_version_change=False),
                 "user_decision": (
                     "Accept a safety-critical family with zero P06 exposure."
                 ),
@@ -471,10 +526,7 @@ def _alternatives() -> list[dict]:
             "requires": {
                 "benchmark_version": "semantic-benchmark/1.3.0",
                 "protocol_version": "phase9-qualification-protocol/1.3.0",
-                "new_stage_boundaries": ["P06"],
-                "new_global_boundary": True,
-                "new_candidate_matrix_hash": True,
-                "corpus_version_change": False,
+                **_future_boundary_requirements(corpus_version_change=False),
                 "user_decision": (
                     "Whether a P06 gate may target a stage safety obligation "
                     "rather than an authorized construct."
@@ -527,7 +579,19 @@ def main() -> int:
         },
     )
     gate = uncertain_coverage_gate(status)
+    census = uncertain_scope_census(
+        property_records=p06_property_inventory(),
+        scoring_property_ids=derivation.scoring_property_ids,
+    )
     authority = p07_field_authority()
+
+    alternatives = _alternatives()
+    boundary_plans = [
+        {"alternative_id": item["id"], **item["requires"]} for item in alternatives
+    ]
+    for plan in boundary_plans:
+        assert_future_boundary_plan(plan)
+    boundary_report = future_boundary_plan_report(boundary_plans)
 
     blocking = []
     if gate["readiness_blocked"]:
@@ -581,7 +645,7 @@ def main() -> int:
         "phase_e_support_status_coverage": {
             "report": status,
             "gate": gate,
-            "diagnosis": _uncertain_diagnosis(derivation, status),
+            "diagnosis": _uncertain_diagnosis(derivation, status, census),
         },
         "phase_f_p07_adjudication_authority": {
             "field_authority_version": authority["schema_version"],
@@ -630,7 +694,9 @@ def main() -> int:
         },
         "noisy_diagnosis": _noisy_diagnosis(derivation, rare),
         "blocking_product_decisions": blocking,
-        "alternatives": _alternatives(),
+        "alternatives": alternatives,
+        "future_stage_boundary_plan": boundary_report,
+        "phase_i_p07_future_stage_boundary": p07_future_stage_boundary_requirement(),
         "unchanged_by_this_phase": {
             "routing": True,
             "candidate_families": True,
