@@ -1,0 +1,186 @@
+{
+  "adjudicator_calls": 0,
+  "artifact_count": 16,
+  "artifacts": [
+    {
+      "bytes": 7164,
+      "file_sha256": "sha256:fdca1b5d34565ddbf8a1561970dea5dee272b9a0b9fa9b123492ce984b395623",
+      "git_blob_sha": "7c9416a85e13d470e1995564f69db2a576ded63a",
+      "has_self_material_hash": true,
+      "internal_material_hash": "sha256:90459eda031efd54981c1aa791521f469d634a843891ea4b7bc812155384d0c5",
+      "path": "evaluation/semantic_benchmark/v1_3_2/phase9/candidate_matrix.json",
+      "republished_unchanged_from": null,
+      "self_material_hash_field": "candidate_matrix_hash"
+    },
+    {
+      "bytes": 2008,
+      "file_sha256": "sha256:28534d0ac5c6571cad040ebef0825905b93715cbfcefe3b8c1779b550f97cf71",
+      "git_blob_sha": "b09d3ab15edd959c04bf00b3e973e2c2a5e103fe",
+      "has_self_material_hash": true,
+      "internal_material_hash": "sha256:21a535de03c51fc44a84047fc9a4ac7d4df88a9c0b70cc57b6718362cede6e8f",
+      "path": "evaluation/semantic_benchmark/v1_3_2/phase9/construct_selection_semantics.json",
+      "republished_unchanged_from": null,
+      "self_material_hash_field": "semantics_hash"
+    },
+    {
+      "bytes": 16302,
+      "file_sha256": "sha256:b0030ed298c26b580e063d2d28c7f70ebe4bc247dc50f92733ef86a02d04710a",
+      "git_blob_sha": "aa8d5412ed05c4e294738226eba45aa216cd699b",
+      "has_self_material_hash": true,
+      "internal_material_hash": "sha256:a3a3118ff3e02d918b16d1c312493a2beaffabd1951d98b6de52fa40c5d0fc67",
+      "path": "evaluation/semantic_benchmark/v1_3_2/phase9/n3_contractual_safety_axis.json",
+      "republished_unchanged_from": "semantic-benchmark/1.3.1",
+      "self_material_hash_field": "n3_axis_hash"
+    },
+    {
+      "bytes": 62769,
+      "file_sha256": "sha256:8bba4d80200175d8c1f8659ae1d39b58c04ca7ed35d6d57ad2b3ac5f9d4c67a5",
+      "git_blob_sha": "57a996e906c72babb5ca806f64473f935002ed30",
+      "has_self_material_hash": true,
+      "internal_material_hash": "sha256:f53ec77ae4c26732644083d10497e65e1a1bc34f830e675aa4848669d106c62d",
+      "path": "evaluation/semantic_benchmark/v1_3_2/phase9/n3_provider_fixtures.json",
+      "republished_unchanged_from": "semantic-benchmark/1.3.1",
+      "self_material_hash_field": "fixture_set_hash"
+    },
+    {
+      "bytes": 9625,
+      "file_sha256": "sha256:74f51cb1d77e13ffe06eb5a7fb8946fcaece0da267b4359c3edbefa1c9bfbbb1",
+      "git_blob_sha": "7a58c63b8204c0621e3c5ec777b16e62bdd39104",
+      "has_self_material_hash": true,
+      "internal_material_hash": "sha256:f2150f35bc13934a4179ee14dcff340fbd5a4c886e9754ebfb29eddaa6b6c17d",
+      "path": "evaluation/semantic_benchmark/v1_3_2/phase9/qualification_protocol.json",
+      "republished_unchanged_from": null,
+      "self_material_hash_field": "protocol_boundary_hash"
+    },
+    {
+      "bytes": 3769,
+      "file_sha256": "sha256:6316416ab87d3b72d9ef69feaad1d272ab2ea7bfb855a5e70c40ccc64cea59cc",
+      "git_blob_sha": "5b146fc02bd424370b621b88d6ff5bf340c0e1fc",
+      "has_self_material_hash": true,
+      "internal_material_hash": "sha256:1812472f3ebe1f04d82a60e5200da172863fb23035c7fcd50953ff391d112d2d",
+      "path": "evaluation/semantic_benchmark/v1_3_2/phase9/semantic_qualification_claim.json",
+      "republished_unchanged_from": null,
+      "self_material_hash_field": "claim_hash"
+    },
+    {
+      "bytes": 6601,
+      "file_sha256": "sha256:ac058149526b4b8bb48b41d936e5cd85b4cf91132faa86d240145f2050f5cc1e",
+      "git_blob_sha": "d2e1fd2c5c73059f5c0cb62ead8986c5b52acb7b",
+      "has_self_material_hash": true,
+      "internal_material_hash": "sha256:4951cc243ff69a534378388fe07a61c41df7fcd83b3869673d06ba38db5cacf1",
+      "path": "reports/semantic_benchmark/v1_3_2/benchmark_boundary.json",
+      "republished_unchanged_from": null,
+      "self_material_hash_field": "benchmark_boundary_hash"
+    },
+    {
+      "bytes": 4963,
+      "file_sha256": "sha256:263072b8802c96df280cd4adbf0004fcfe6f3dfcc7fc31d08e654786e96b0160",
+      "git_blob_sha": "c781dccf2566829d6c504b88e9098c9b26e462f8",
+      "has_self_material_hash": true,
+      "internal_material_hash": "sha256:5f1032d5092c8aa711b5b2ea952d8185234e03e3158006c3daa17dfa45b3ad75",
+      "path": "reports/semantic_benchmark/v1_3_2/lineage.json",
+      "republished_unchanged_from": null,
+      "self_material_hash_field": "lineage_hash"
+    },
+    {
+      "bytes": 35200,
+      "file_sha256": "sha256:3b96b987a0a0c42a4eb17b71231a1494d8dffe20aec024b4f74cb0e7912c3662",
+      "git_blob_sha": "ae74796d9a2bfcd1377b1748e4ea81ab42c43801",
+      "has_self_material_hash": true,
+      "internal_material_hash": "sha256:6fdc5eed1e2175abd89fe6c17df2d4ff2cd84503f4acdef18fb8eaae54fddfa7",
+      "path": "reports/semantic_benchmark/v1_3_2/phase9/call_budget.json",
+      "republished_unchanged_from": "semantic-benchmark/1.3.1",
+      "self_material_hash_field": "call_budget_hash"
+    },
+    {
+      "bytes": 2287,
+      "file_sha256": "sha256:9525049c1bfe664027cfae7279325318ac555cf60da57df4c2d7edbbe2b29604",
+      "git_blob_sha": "7ab75c48d96c424cbab6bab516c55cbc178974af",
+      "has_self_material_hash": true,
+      "internal_material_hash": "sha256:2ea943f61b89282aef67f015c35b89d2355f9be56de613b910ae8a45d16fa93a",
+      "path": "reports/semantic_benchmark/v1_3_2/phase9/construct_selection_independence.json",
+      "republished_unchanged_from": "semantic-benchmark/1.3.1",
+      "self_material_hash_field": "proof_hash"
+    },
+    {
+      "bytes": 5239,
+      "file_sha256": "sha256:3c80f0171c045ba32372d5ee8648111d571f825bafd695a0b452de30de101d80",
+      "git_blob_sha": "16bae6a7710096971bb47cff63fde07db9b8e0cd",
+      "has_self_material_hash": true,
+      "internal_material_hash": "sha256:fa7a5e3fcb152a09470190161739fa363b7b1198e12ee4a9beb4ee979d65e6c3",
+      "path": "reports/semantic_benchmark/v1_3_2/phase9/n3_fixture_equality_proof.json",
+      "republished_unchanged_from": null,
+      "self_material_hash_field": "proof_hash"
+    },
+    {
+      "bytes": 5747,
+      "file_sha256": "sha256:cd9807354badbd6398950d1efdd04fa49e0a95e9382b7f18fcdecf2679011d07",
+      "git_blob_sha": "7ec6ef410076413b59907ca371a4e9d0774b46d5",
+      "has_self_material_hash": true,
+      "internal_material_hash": "sha256:eb8951e9d5a5234e3c59a4a88f96905797f94273fa20d5464662d2f64ae96ac8",
+      "path": "reports/semantic_benchmark/v1_3_2/phase9/n3_production_representativeness.json",
+      "republished_unchanged_from": "semantic-benchmark/1.3.1",
+      "self_material_hash_field": "proof_hash"
+    },
+    {
+      "bytes": 4074,
+      "file_sha256": "sha256:0acd727c54af1cb062797feab29fc84381e39e4389d7b7df3d3e781fb7ebf42c",
+      "git_blob_sha": "2933c3b05bb8f941aa02100ce8af82f1fdc788fe",
+      "has_self_material_hash": true,
+      "internal_material_hash": "sha256:dccd4d30d7c577569f119b3dfe873f1fd4a93abc40f8e79782d89b23ee13f7fb",
+      "path": "reports/semantic_benchmark/v1_3_2/phase9/noisy_disposition_census.json",
+      "republished_unchanged_from": "semantic-benchmark/1.3.1",
+      "self_material_hash_field": "census_hash"
+    },
+    {
+      "bytes": 9822,
+      "file_sha256": "sha256:91cd6eca3de51ee43f0cf9fcfa7ca8bdb620248bcb4675443324998458baf338",
+      "git_blob_sha": "04a2ec3ae05726196c2636c560cdbf2dc1d517cf",
+      "has_self_material_hash": true,
+      "internal_material_hash": "sha256:bf6f81b8f8948bd94dcd7f498be1d49f08f108b2b7b7ba7fe3f4de9387d8cfa0",
+      "path": "reports/semantic_benchmark/v1_3_2/phase9/pre_results_instrument_freeze.json",
+      "republished_unchanged_from": null,
+      "self_material_hash_field": "freeze_material_hash"
+    },
+    {
+      "bytes": 13779,
+      "file_sha256": "sha256:23c2587124ff1941ea429c6d6f0dd36a130f1eb8c1142c66a8d076c878fb67f1",
+      "git_blob_sha": "76e04d3449f55915f9966c53eafdb8011c86edb6",
+      "has_self_material_hash": true,
+      "internal_material_hash": "sha256:18c936de54217ead31db79bb1ec0c5a2baa556ad7c06d552bba62f1079ad8c1c",
+      "path": "reports/semantic_benchmark/v1_3_2/phase9/stale_claim_scan.json",
+      "republished_unchanged_from": null,
+      "self_material_hash_field": "scan_hash"
+    },
+    {
+      "bytes": 84142,
+      "file_sha256": "sha256:295441e06368dbec45cf8666074e1288931403b953d2fb511796a67898f57f03",
+      "git_blob_sha": "e297e647cb2fed05e7894fe2a1da858d9be1f6d8",
+      "has_self_material_hash": true,
+      "internal_material_hash": "sha256:7ce6e059242e77e0f67bda58f140a785853cc24d27b8adad2a8dd9c9ed5f6a22",
+      "path": "reports/semantic_benchmark/v1_3_2/stage_boundaries.json",
+      "republished_unchanged_from": null,
+      "self_material_hash_field": "stage_boundaries_hash"
+    }
+  ],
+  "artifacts_without_a_self_material_hash": [],
+  "authorization": "NONE",
+  "benchmark_version": "semantic-benchmark/1.3.2",
+  "billable_authorizations": 0,
+  "credentials_resolved": 0,
+  "freeze_artifact_path": "reports/semantic_benchmark/v1_3_2/phase9/pre_results_instrument_freeze.json",
+  "hash_kinds": {
+    "FILE_SHA256": "sha256 over the exact bytes on disk, including indentation and the trailing newline. It answers 'is this file byte-identical'.",
+    "GIT_BLOB_SHA": "git's object id: sha1 over 'blob <len>\\0' followed by the file bytes. It is what `git hash-object` and the index report, and it is neither a sha256 nor comparable with one.",
+    "INTERNAL_MATERIAL_HASH": "sha256 over the canonical JSON serialization of a document's material, computed before the file exists. Two files with different whitespace share it; it is what a boundary compares."
+  },
+  "manifest_excludes_itself": true,
+  "manifest_self_exclusion_reason": "The manifest is written after the artifacts it describes, so an entry for its own bytes could not exist when it is built. Its own file SHA-256 and Git blob SHA are reported by this script's output and are recoverable with sha256sum and git hash-object.",
+  "never_conflate": "An internal material hash, a file SHA-256 and a Git blob SHA are three values over three different inputs. They are listed side by side so no reader has to guess which one a number is.",
+  "pricing_refreshed": false,
+  "provider_calls": 0,
+  "republished_unchanged_artifact_count": 6,
+  "schema_version": "phase9-freeze-hash-manifest/1.3.2",
+  "self_material_hash_rule": "Each artifact declares which field carries its own material hash, and the declaration is verified: canonical_hash(document minus that field) must equal the field's value. A dependency hash copied from another artifact cannot satisfy that.",
+  "supersedes": "phase9-freeze-hash-manifest/1.3.1"
+}

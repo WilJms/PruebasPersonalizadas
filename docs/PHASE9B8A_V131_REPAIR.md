@@ -1,6 +1,8 @@
 # Phase 9B.8A — semantic-benchmark/1.3.1
 
-**Status: `SEMANTIC_BENCHMARK_V1_3_1_PREEXECUTION_FREEZE_READY_FOR_FRESH_AUDIT`**
+**Status: `SUPERSEDED_PREEXECUTION_FREEZE_CANDIDATE_NO_RESULTS_EXECUTED`** — superseded by `semantic-benchmark/1.3.2`, see [Phase 9B.8B](PHASE9B8B_V132_CLAIM_REBIND.md), which rebinds the semantic qualification claim to the version it applies to. Nothing ever ran against 1.3.1 and its bytes are unchanged; everything below still describes it accurately.
+
+Original status at publication: `SEMANTIC_BENCHMARK_V1_3_1_PREEXECUTION_FREEZE_READY_FOR_FRESH_AUDIT`
 
 Provider calls 0, adjudicator calls 0, billable authorizations 0, credentials
 resolved 0, real transport false, candidate outcomes read false, pricing
