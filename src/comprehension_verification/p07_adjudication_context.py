@@ -411,14 +411,18 @@ def assert_not_independent_model_evidence(
     by_authority = resolved["fields_by_authority"]
     model_owned = set(by_authority[MODEL_OWNED])
     not_model = set(by_authority[SERVER_OWNED]) | set(by_authority[SERVER_DERIVED])
-    offending = sorted(label for label in field_labels if label in not_model)
+    # Materialize once: a generator would be drained by the first pass, and the
+    # unknown-field check below would then see nothing and let it through --
+    # a fail-open hole in a guard whose whole job is to fail closed.
+    labels = list(field_labels)
+    offending = sorted(label for label in labels if label in not_model)
     if offending:
         raise P07AdjudicationContextError(
             "these fields are not independent model evidence: " + ", ".join(offending)
         )
     unknown = sorted(
         label
-        for label in field_labels
+        for label in labels
         if label not in model_owned and label not in not_model
     )
     if unknown:

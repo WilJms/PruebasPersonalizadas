@@ -1054,3 +1054,24 @@ def test_findings_offer_alternatives_for_both_blocking_gaps(findings) -> None:
     ]
     for item in corpus_changing:
         assert "EXPLICIT AUTHORIZATION REQUIRED" in item["requires"]["user_decision"]
+
+
+def test_p07_attribution_guard_holds_for_single_pass_iterables() -> None:
+    """A generator must not drain past the first check.
+
+    The guard makes two passes -- server-owned/derived first, then
+    unclassified. If the input is consumed by the first pass, an unclassified
+    field slips through a guard whose whole job is to fail closed.
+    """
+
+    with pytest.raises(P07AdjudicationContextError):
+        assert_not_independent_model_evidence(
+            item for item in ["QuestionCandidate.totally_made_up"]
+        )
+    with pytest.raises(P07AdjudicationContextError):
+        assert_not_independent_model_evidence(
+            item for item in ["QuestionGenerationResult.status"]
+        )
+    assert_not_independent_model_evidence(
+        item for item in ["QuestionCandidate.question_text"]
+    )
