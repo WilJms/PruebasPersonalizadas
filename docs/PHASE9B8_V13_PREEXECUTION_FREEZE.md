@@ -1,6 +1,8 @@
 # Phase 9B.8 — semantic-benchmark/1.3.0 pre-execution freeze
 
-**Status: `SEMANTIC_BENCHMARK_V1_3_PREEXECUTION_FREEZE_READY_FOR_FRESH_AUDIT`**
+**Status: `SUPERSEDED_PREEXECUTION_FREEZE_CANDIDATE_NO_RESULTS_EXECUTED`** — superseded by `semantic-benchmark/1.3.1`, see [Phase 9B.8A](PHASE9B8A_V131_REPAIR.md). Nothing ever ran against this version, so superseding it was an instrumentation repair rather than a response to a result. Everything below still describes 1.3.0 accurately and its bytes are unchanged.
+
+Original status at publication: `SEMANTIC_BENCHMARK_V1_3_PREEXECUTION_FREEZE_READY_FOR_FRESH_AUDIT`
 
 Nothing ran. Provider calls 0, adjudicator calls 0, billable authorizations 0,
 credentials resolved 0, real transport false, candidate outcomes read false.
