@@ -53,6 +53,14 @@ from .p06_noisy_contractual_gate import (
 
 N3_PROTOCOL_VERSION = "p06-n3-contractual-safety-protocol/1.1.0"
 
+REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
+
+#: The frozen v1.2 split partition, anchored to the repository so the protocol
+#: surface never depends on the process working directory.
+V12_SPLIT_PARTITION_PATH = (
+    REPOSITORY_ROOT / "reports/semantic_benchmark/v1_2/split_partition.json"
+)
+
 #: Activities carrying the frozen P06 ``SMOKE`` split.  Used only to anchor the
 #: pre-registered N3 SAFETY_SMOKE subset in existing frozen authority.
 P06_SMOKE_ACTIVITY_IDS: tuple[str, ...] = ("act_01_luz_y_plantines",)
@@ -913,9 +921,7 @@ def assert_n3_excluded_from_semantic_denominator(
 def n3_protocol_surface(corpus_root: Path, v12_root: Path) -> dict[str, Any]:
     """The whole N3 protocol surface as one versioned, hashed document."""
 
-    population = n3_exposure_population(
-        corpus_root, Path("reports/semantic_benchmark/v1_2/split_partition.json")
-    )
+    population = n3_exposure_population(corpus_root, V12_SPLIT_PARTITION_PATH)
     safety_smoke = n3_safety_smoke_selector(
         population, smoke_activity_ids=P06_SMOKE_ACTIVITY_IDS
     )

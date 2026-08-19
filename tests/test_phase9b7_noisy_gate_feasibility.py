@@ -36,9 +36,10 @@ from comprehension_verification.p06_noisy_gate_feasibility import (
     noisy_scope_census,
     product_injection_marker_reach,
 )
+from comprehension_verification.semantic_benchmark import DEFAULT_CORPUS_ROOT
 
 
-CORPUS_ROOT = Path(__file__).resolve().parents[1] / "pruebas_personalizadas_corpus"
+CORPUS_ROOT = DEFAULT_CORPUS_ROOT
 
 
 @pytest.fixture(scope="module")

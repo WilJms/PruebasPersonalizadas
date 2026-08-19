@@ -12,10 +12,11 @@ import json
 from pathlib import Path
 
 from comprehension_verification.phase9b7_decision import phase9b7_decision
+from comprehension_verification.semantic_benchmark import DEFAULT_CORPUS_ROOT
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-CORPUS_ROOT = REPO_ROOT / "pruebas_personalizadas_corpus"
+CORPUS_ROOT = DEFAULT_CORPUS_ROOT
 OUTPUT = (
     REPO_ROOT / "reports" / "semantic_benchmark" / "phase9b7" / "product_decision.json"
 )

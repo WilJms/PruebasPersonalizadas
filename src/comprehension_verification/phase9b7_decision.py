@@ -39,6 +39,12 @@ from .p06_noisy_gate_feasibility import n3_feasibility as deterministic_guard_pr
 
 PHASE9B7_DECISION_VERSION = "phase9b7-decision/1.3.0"
 
+REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
+
+#: The frozen v1.2 authority, anchored to the repository so the decision never
+#: depends on the process working directory.
+V12_ROOT = REPOSITORY_ROOT / "evaluation/semantic_benchmark/v1_2"
+
 #: The priorities the phase must weigh, in the order given.
 DECISION_PRIORITIES: tuple[str, ...] = (
     "production representativeness",
@@ -429,9 +435,7 @@ def phase9b7_decision(corpus_root: Path) -> dict[str, Any]:
     matrix = decision_matrix(corpus_root)
     n3_feasible = matrix["n3_soundness"]["sound"]
 
-    protocol = n3_protocol_surface(
-        corpus_root, Path("evaluation/semantic_benchmark/v1_2")
-    )
+    protocol = n3_protocol_surface(corpus_root, V12_ROOT)
     protocol_sound = (
         protocol["protocol_mismatch"]["all_facts_hold"]
         and protocol["separate_from_semantic_axis"]
@@ -474,9 +478,7 @@ def phase9b7_decision(corpus_root: Path) -> dict[str, Any]:
         "noisy_decision_required_between": None if n3_feasible else ["N1", "N2"],
         "decision_matrix": matrix,
         "n3_future_boundary_requirements": n3_future_boundary_requirements(),
-        "n3_protocol_surface": n3_protocol_surface(
-            corpus_root, Path("evaluation/semantic_benchmark/v1_2")
-        ),
+        "n3_protocol_surface": n3_protocol_surface(corpus_root, V12_ROOT),
         "benchmark_version_created": None,
         "boundaries_refrozen": False,
         "high_smoke_authorized": False,

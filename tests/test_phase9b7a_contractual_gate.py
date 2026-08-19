@@ -47,9 +47,10 @@ from comprehension_verification.p06_noisy_contractual_gate import (
     observable_difference,
 )
 from comprehension_verification.qualification_semantics import CausalAttribution
+from comprehension_verification.semantic_benchmark import DEFAULT_CORPUS_ROOT
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-CORPUS_ROOT = REPO_ROOT / "pruebas_personalizadas_corpus"
+CORPUS_ROOT = DEFAULT_CORPUS_ROOT
 CATALOG = (
     REPO_ROOT
     / "evaluation"

@@ -42,9 +42,10 @@ from comprehension_verification.phase9b7_decision import (
     n3_future_boundary_requirements,
     validate_u3_n3_boundary_plan,
 )
+from comprehension_verification.semantic_benchmark import DEFAULT_CORPUS_ROOT
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-CORPUS_ROOT = REPO_ROOT / "pruebas_personalizadas_corpus"
+CORPUS_ROOT = DEFAULT_CORPUS_ROOT
 SPLIT_PARTITION = (
     REPO_ROOT / "reports" / "semantic_benchmark" / "v1_2" / "split_partition.json"
 )
