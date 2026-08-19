@@ -239,9 +239,41 @@ def test_every_execution_counter_is_zero(decision) -> None:
     assert decision["candidate_outcomes_read"] is False
 
 
-def test_no_v13_directory_is_created() -> None:
-    assert not (REPO_ROOT / "evaluation" / "semantic_benchmark" / "v1_3").exists()
-    assert not (REPO_ROOT / "reports" / "semantic_benchmark" / "v1_3").exists()
+def test_the_phase9b7_decision_path_creates_no_benchmark_version() -> None:
+    """Phase 9B.7 decides; it never builds.
+
+    Phase 9B.8 publishes ``semantic-benchmark/1.3.0``, so the presence of a
+    ``v1_3`` directory is no longer the thing to assert. What must still hold is
+    that *this* code path creates and touches nothing there: the decision is
+    recomputed and every v1.3 file is required to be byte-identical afterwards.
+    """
+
+    v13_roots = [
+        REPO_ROOT / "evaluation" / "semantic_benchmark" / "v1_3",
+        REPO_ROOT / "reports" / "semantic_benchmark" / "v1_3",
+    ]
+    before = {
+        path: path.read_bytes()
+        for root in v13_roots
+        if root.exists()
+        for path in sorted(root.rglob("*.json"))
+    }
+    decision = phase9b7_decision(CORPUS_ROOT)
+    assert decision["benchmark_version_created"] is None
+    assert decision["boundaries_refrozen"] is False
+    after = {
+        path: path.read_bytes()
+        for root in v13_roots
+        if root.exists()
+        for path in sorted(root.rglob("*.json"))
+    }
+    assert after == before
+
+    for module in ("phase9b7_decision", "p06_n3_protocol", "p06_noisy_contractual_gate"):
+        source = (
+            REPO_ROOT / "src" / "comprehension_verification" / f"{module}.py"
+        ).read_text(encoding="utf-8")
+        assert "v1_3" not in source, f"{module} must not reach into v1.3 authority"
 
 
 def test_the_published_artifact_reproduces_byte_for_byte() -> None:

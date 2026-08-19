@@ -1,0 +1,183 @@
+{
+  "candidate_scoring_property_count": 69,
+  "contract_support_statuses": [
+    "SUFFICIENT",
+    "PARTIAL",
+    "INSUFFICIENT",
+    "UNCERTAIN"
+  ],
+  "derivation_authority": "FROZEN_ORACLE_PROPERTY_TEXT_AND_ACTIVITY_RUBRIC_SCALE",
+  "derived_from_benchmark_tags": false,
+  "multi_status_properties": [
+    {
+      "asserted_statuses": [
+        "INSUFFICIENT",
+        "PARTIAL"
+      ],
+      "note": "The property mentions more than one status. Which status attaches to the resolved construct is not inferred here; both are recorded so an over-inclusive reading can only understate a coverage gap, never invent one.",
+      "property_id": "A01-S03-P2"
+    },
+    {
+      "asserted_statuses": [
+        "INSUFFICIENT",
+        "SUFFICIENT"
+      ],
+      "note": "The property mentions more than one status. Which status attaches to the resolved construct is not inferred here; both are recorded so an over-inclusive reading can only understate a coverage gap, never invent one.",
+      "property_id": "A06-S05-P1"
+    },
+    {
+      "asserted_statuses": [
+        "INSUFFICIENT",
+        "SUFFICIENT"
+      ],
+      "note": "The property mentions more than one status. Which status attaches to the resolved construct is not inferred here; both are recorded so an over-inclusive reading can only understate a coverage gap, never invent one.",
+      "property_id": "A08-S01-P1"
+    },
+    {
+      "asserted_statuses": [
+        "INSUFFICIENT",
+        "SUFFICIENT"
+      ],
+      "note": "The property mentions more than one status. Which status attaches to the resolved construct is not inferred here; both are recorded so an over-inclusive reading can only understate a coverage gap, never invent one.",
+      "property_id": "A11-S01-P1"
+    },
+    {
+      "asserted_statuses": [
+        "INSUFFICIENT",
+        "PARTIAL"
+      ],
+      "note": "The property mentions more than one status. Which status attaches to the resolved construct is not inferred here; both are recorded so an over-inclusive reading can only understate a coverage gap, never invent one.",
+      "property_id": "A11-S02-P1"
+    }
+  ],
+  "report_hash": "sha256:09b74c8a1d3328c6075038a6f2d844ae57e29418daaec813656195e0347a4fa2",
+  "schema_version": "p06-support-status-coverage/1.3.0",
+  "statuses": {
+    "INSUFFICIENT": {
+      "by_split": {
+        "CORE": 25,
+        "HELD_OUT_CONFIRMATION": 12,
+        "SMOKE": 1
+      },
+      "candidate_scoring_property_count": 38,
+      "covered": true,
+      "property_ids": [
+        "A01-S03-P1",
+        "A01-S03-P2",
+        "A02-S01-P1",
+        "A02-S03-P1",
+        "A02-S05-P1",
+        "A03-S04-P1",
+        "A04-S01-P2",
+        "A04-S01-P3",
+        "A04-S01-P5",
+        "A04-S05-P1",
+        "A04-S06-P4",
+        "A06-S04-P1",
+        "A06-S04-P2",
+        "A06-S05-P1",
+        "A06-S05-P3",
+        "A08-S01-P1",
+        "A08-S01-P3",
+        "A08-S05-P1",
+        "A08-S05-P2",
+        "A09-S01-P1",
+        "A09-S01-P2",
+        "A09-S02-P1",
+        "A09-S02-P3",
+        "A09-S04-P1",
+        "A10-S01-P2",
+        "A10-S03-P2",
+        "A10-S04-P1",
+        "A10-S04-P3",
+        "A10-S06-P2",
+        "A10-S06-P3",
+        "A11-S01-P1",
+        "A11-S01-P2",
+        "A11-S01-P3",
+        "A11-S02-P1",
+        "A11-S03-P1",
+        "A11-S03-P2",
+        "A11-S03-P3",
+        "A11-S06-P1"
+      ],
+      "sample_evidence": [
+        "canonical contract token 'INSUFFICIENT' in the property text",
+        "'queda en No' -- Activity 04 rubric: \"No\" marks a line the submission decides negatively."
+      ]
+    },
+    "PARTIAL": {
+      "by_split": {
+        "CORE": 4,
+        "HELD_OUT_CONFIRMATION": 1
+      },
+      "candidate_scoring_property_count": 5,
+      "covered": true,
+      "property_ids": [
+        "A01-S03-P2",
+        "A03-S06-P2",
+        "A06-S02-P1",
+        "A06-S02-P2",
+        "A11-S02-P1"
+      ],
+      "sample_evidence": [
+        "canonical contract token 'PARTIAL' in the property text"
+      ]
+    },
+    "SUFFICIENT": {
+      "by_split": {
+        "CORE": 17,
+        "HELD_OUT_CONFIRMATION": 14
+      },
+      "candidate_scoring_property_count": 31,
+      "covered": true,
+      "property_ids": [
+        "A01-S02-P1",
+        "A01-S05-P1",
+        "A02-S04-P1",
+        "A02-S06-P1",
+        "A03-S01-P2",
+        "A03-S02-P1",
+        "A03-S04-P3",
+        "A03-S05-P1",
+        "A04-S02-P1",
+        "A06-S01-P1",
+        "A06-S01-P3",
+        "A06-S03-P1",
+        "A06-S05-P1",
+        "A07-S02-P3",
+        "A07-S04-P1",
+        "A07-S04-P2",
+        "A08-S01-P1",
+        "A08-S03-P1",
+        "A08-S03-P2",
+        "A08-S04-P1",
+        "A09-S05-P1",
+        "A09-S05-P3",
+        "A09-S06-P1",
+        "A09-S06-P4",
+        "A10-S02-P1",
+        "A10-S02-P2",
+        "A10-S05-P1",
+        "A11-S01-P1",
+        "A11-S04-P1",
+        "A11-S04-P2",
+        "A11-S04-P3"
+      ],
+      "sample_evidence": [
+        "canonical contract token 'SUFFICIENT' in the property text"
+      ]
+    },
+    "UNCERTAIN": {
+      "by_split": {},
+      "candidate_scoring_property_count": 0,
+      "covered": false,
+      "property_ids": [],
+      "sample_evidence": []
+    }
+  },
+  "unclassified_property_ids": [],
+  "uncovered_statuses": [
+    "UNCERTAIN"
+  ]
+}

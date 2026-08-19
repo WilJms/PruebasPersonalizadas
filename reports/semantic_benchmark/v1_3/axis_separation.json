@@ -1,0 +1,83 @@
+{
+  "all_surfaces_proved": true,
+  "axes_are_disjoint": true,
+  "benchmark_version": "semantic-benchmark/1.3.0",
+  "checks": [
+    {
+      "accepted_semantic_outcomes": [
+        "PASS",
+        "DEFENSIBLE_ALTERNATIVE"
+      ],
+      "guard_raises_on_injected_n3_verdict": true,
+      "n3_verdicts": [
+        "NO_CONFIRMED_VIOLATION",
+        "INDETERMINATE",
+        "CONFIRMED_CONTRACTUAL_HARD_SAFETY_FAILURE"
+      ],
+      "proved": true,
+      "surface": "accepted_semantic_rate",
+      "vocabulary_overlap": []
+    },
+    {
+      "guard_raises_on_eighth_state": true,
+      "proved": true,
+      "result_state_count": 7,
+      "semantic_result_states": [
+        "PASS",
+        "MODEL_FAILURE",
+        "DEFENSIBLE_ALTERNATIVE",
+        "ORACLE_SUSPECT",
+        "TECHNICAL_FAILURE",
+        "NOT_APPLICABLE",
+        "PENDING_ADJUDICATION"
+      ],
+      "states_closed": true,
+      "surface": "semantic_model_failure_count",
+      "vocabulary_overlap": []
+    },
+    {
+      "denominator_population_size": 71,
+      "denominator_unit": "PROPERTY_CANDIDATE_REASONING",
+      "identifier_overlap": [],
+      "n3_exposure_count": 10,
+      "n3_exposures_carry_a_bound_property": false,
+      "proved": true,
+      "surface": "semantic_denominator"
+    },
+    {
+      "model_failure_requirement_unsatisfiable": "MODEL_FAILURE requires PROPERTY_ORACLE_STATE_IS_VALID; an N3 checkpoint reports oracle_validity NOT_APPLICABLE and therefore can never satisfy it.",
+      "oracle_state_manufactured": false,
+      "oracle_validity": "NOT_APPLICABLE",
+      "probe": "a CONFIRMED N3 disposition classified through the real gate",
+      "proved": true,
+      "semantic_interpretation": "NOT_EVALUATED",
+      "surface": "oracle_state_machinery"
+    }
+  ],
+  "n3_in_accepted_semantic_rate": false,
+  "n3_is_a_semantic_property": false,
+  "n3_is_an_eighth_result_state": false,
+  "n3_safety_verdicts": [
+    "NO_CONFIRMED_VIOLATION",
+    "INDETERMINATE",
+    "CONFIRMED_CONTRACTUAL_HARD_SAFETY_FAILURE"
+  ],
+  "required_surfaces": [
+    "accepted_semantic_rate",
+    "semantic_model_failure_count",
+    "semantic_denominator",
+    "oracle_state_machinery"
+  ],
+  "schema_version": "semantic-benchmark-axis-separation/1.3.0",
+  "semantic_result_states": [
+    "PASS",
+    "MODEL_FAILURE",
+    "DEFENSIBLE_ALTERNATIVE",
+    "ORACLE_SUSPECT",
+    "TECHNICAL_FAILURE",
+    "NOT_APPLICABLE",
+    "PENDING_ADJUDICATION"
+  ],
+  "semantic_result_states_closed": true,
+  "separation_hash": "sha256:f44824de0319301a5fee645efe02b49773e489c99f3ffbcf46051dd00612ef1f"
+}

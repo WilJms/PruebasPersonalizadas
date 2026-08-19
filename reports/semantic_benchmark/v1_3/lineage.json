@@ -1,0 +1,125 @@
+{
+  "artifacts": [
+    {
+      "equivalence_proof": {
+        "equal": true,
+        "kind": "RECOMPUTED_MATERIAL_HASH_EQUALITY",
+        "v12_frozen_material_hash": "sha256:77557edc5b0ca0ca5a7d793111fde8f47751e38c51bf4908efe132ddafa98932",
+        "v13_recomputed_material_hash": "sha256:77557edc5b0ca0ca5a7d793111fde8f47751e38c51bf4908efe132ddafa98932"
+      },
+      "reason": "The construct catalog is a function of corpus bytes and the extraction rules, neither of which v1.3 changes. Proved by recomputing it and comparing the material hash to the frozen v1.2 artifact.",
+      "v12_file_sha256": "sha256:90f818d10769af90b87cfc46f0673481330b90d252e96fa0d0c5666c4326c8d2",
+      "v12_relative_path": "fixtures/p06_construct_catalog.json",
+      "v13_disposition": "INHERITED_UNCHANGED",
+      "v13_publishes_its_own_copy": false
+    },
+    {
+      "reason": "v1.3 executes the Phase 9B.6 remediated route set: exact construct resolution, fail-closed, no location-derived semantics. Which routes are executable is the one thing U3 changes about the instrument.",
+      "v12_file_sha256": "sha256:199e3210d0458575c67fe0f041e6fe6b9ad5836489f0b367f554637350072625",
+      "v12_relative_path": "fixtures/p06_routes.json",
+      "v13_disposition": "REPLACED",
+      "v13_publishes_its_own_copy": true
+    },
+    {
+      "reason": "Bindings follow the routes, and candidate-scoring eligibility is now derived from the ratified oracle state under the repaired resolver rather than read from a hand-audited disposition list.",
+      "v12_file_sha256": "sha256:b894d976c0631812b57ec9d4624391635eaaebaf1ed884f3549b1b289165c597",
+      "v12_relative_path": "fixtures/property_bindings.json",
+      "v13_disposition": "REPLACED",
+      "v13_publishes_its_own_copy": true
+    },
+    {
+      "reason": "Coverage debt is the complement of the executable route set, so it moves whenever the route set moves.",
+      "v12_file_sha256": "sha256:7fcc4dee42de4b9569498440ee494e9dde2df47a25c5c3ad01db6e62f11248ba",
+      "v12_relative_path": "fixtures/p06_coverage_debt.json",
+      "v13_disposition": "REPLACED",
+      "v13_publishes_its_own_copy": true
+    },
+    {
+      "reason": "v1.2 carried a hand-audited disposition list from Phase 9B.4. v1.3 derives candidate-scoring eligibility mechanically. The replacement is proved to be strictly narrowing: no property gains scoring eligibility.",
+      "v12_file_sha256": "sha256:023fb8998ddfc1b277ce933aff1e6e4831f516e52965d928aa6e1af4d3088738",
+      "v12_relative_path": "fixtures/qualification_oracle_dispositions.json",
+      "v13_disposition": "REPLACED",
+      "v13_publishes_its_own_copy": true
+    },
+    {
+      "reason": "Decision semantics carry forward unchanged and that is proved by hashing the policy core with the version stamps removed. The document is republished only so its version stamps name v1.3 and so the N3 adjudication authority can be bound alongside it.",
+      "v12_file_sha256": "sha256:c574dd19035a32a902bcd8ffa2ba69bf907b10c79993a1ef98f2b5fc76749f1f",
+      "v12_relative_path": "phase9/adjudication_protocol.json",
+      "v13_disposition": "REPLACED",
+      "v13_publishes_its_own_copy": true
+    },
+    {
+      "reason": "Candidate identities are byte-identical to v1.2 and that is proved. The matrix hash still moves because the matrix binds the qualification protocol and the benchmark boundary, both of which changed.",
+      "v12_file_sha256": "sha256:e40a308cbe7dc05984a7b2aba9c9ff48602e94879ecddcafebb257df76727795",
+      "v12_relative_path": "phase9/candidate_matrix.json",
+      "v13_disposition": "REPLACED",
+      "v13_publishes_its_own_copy": true
+    },
+    {
+      "reason": "phase9-qualification-protocol/1.3.0 binds two axes, states the U3 limitation and pre-registers the N3 ordering. Semantic bars are unchanged and proved unchanged.",
+      "v12_file_sha256": "sha256:9cd0ec9c1df1ec7efc00b508a79ddd3434e3f45341da3540d2569229942f5c30",
+      "v12_relative_path": "phase9/qualification_protocol.json",
+      "v13_disposition": "REPLACED",
+      "v13_publishes_its_own_copy": true
+    },
+    {
+      "reason": "Thresholds are a function of the P06 denominators, which moved with the remediated route set.",
+      "v12_file_sha256": "sha256:c189690145b484b6e3c7276f10fb5b2c7e90721b11a7832a9d38d05752d07d9e",
+      "v12_relative_path": "phase9/qualification_thresholds.json",
+      "v13_disposition": "REPLACED",
+      "v13_publishes_its_own_copy": true
+    },
+    {
+      "reason": "The semantic safety gate is recomputed over the v1.3 applicable property population. Its rule -- 0 confirmed MODEL_FAILURE -- is unchanged; only the counts move.",
+      "v12_file_sha256": "sha256:96b0280369cb159bafb546934710d7244878a0d0ab5e1a7e5f9887796d7defcc",
+      "v12_relative_path": "phase9/safety_gate.json",
+      "v13_disposition": "REPLACED",
+      "v13_publishes_its_own_copy": true
+    }
+  ],
+  "classified_artifact_count": 10,
+  "completeness_rule": "Every JSON authority file under evaluation/semantic_benchmark/v1_2 appears in exactly one disposition class. An unclassified file raises rather than defaulting to carry-forward.",
+  "counts_by_disposition": {
+    "INHERITED_UNCHANGED": 1,
+    "REPLACED": 9
+  },
+  "from_version": "semantic-benchmark/1.2.0",
+  "lineage_hash": "sha256:240afa63df65805b36442fb7e7a34420e6f41af9579e9832f35d282cf24f049e",
+  "new_authorities": [
+    {
+      "authority": "p06-semantic-qualification-claim/1.3.0",
+      "reason": "The U3 narrowed claim and its limitations, as a hashed artifact rather than prose, so a later revision cannot drop it silently."
+    },
+    {
+      "authority": "p06-n3-contractual-safety-protocol/1.1.0",
+      "reason": "The N3 contractual hard-safety axis: verdicts, packet, two-pass consolidation, exposure population, selectors and aggregation."
+    },
+    {
+      "authority": "p06-noisy-contractual-gate/1.0.0",
+      "reason": "The contractual policy authority extracted from the executable P06 prompt, the nine rules and the violation classes."
+    },
+    {
+      "authority": "p07-field-authority/1.0.0",
+      "reason": "Introduced by Phase 9B.6 and unbound by any v1.2 stage boundary. v1.3 adopts it and binds it in the new P07 stage boundary."
+    },
+    {
+      "authority": "p07-adjudication-context/1.0.0",
+      "reason": "The P07 blind companion, likewise unbound by the v1.2 P07 boundary."
+    },
+    {
+      "authority": "p06-support-status-coverage/1.3.0",
+      "reason": "The support-status opportunity census that makes the UNCERTAIN gap measurable rather than asserted."
+    },
+    {
+      "authority": "p06-alignment-verification/1.3.0",
+      "reason": "Independent re-verification that each binding's property names the construct its route targets."
+    }
+  ],
+  "new_authority_count": 7,
+  "schema_version": "semantic-benchmark-lineage/1.3.0",
+  "silent_carry_forward_permitted": false,
+  "to_version": "semantic-benchmark/1.3.0",
+  "v12_authority_artifact_count": 10,
+  "v12_bytes_modified_by_v13": false,
+  "v12_status": "IMMUTABLE_HISTORICAL_AUTHORITY"
+}

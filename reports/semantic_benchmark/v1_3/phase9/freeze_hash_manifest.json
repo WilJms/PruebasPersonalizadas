@@ -1,0 +1,194 @@
+{
+  "adjudicator_calls": 0,
+  "artifact_count": 25,
+  "artifacts": [
+    {
+      "bytes": 33700,
+      "file_sha256": "sha256:c974e3245445124acc6aac400eff822410f6d32c0be99116e1adde7758a61c74",
+      "git_blob_sha": "9f2be516d445884529f66ca2532a580f91ad63b1",
+      "internal_material_hash": "sha256:222f1e73c1524e8e9f2f87b77ab70990f535b3dc0e1b0f67284e62e4bd5a66fa",
+      "path": "evaluation/semantic_benchmark/v1_3/fixtures/p06_coverage_debt.json"
+    },
+    {
+      "bytes": 143125,
+      "file_sha256": "sha256:f4fa96535dd85e702e5f62156fbf877c4d325519aba69a54ed49b19c9fca854d",
+      "git_blob_sha": "5af9f62895948232ed9233a1c75c545fb2f5e0ed",
+      "internal_material_hash": "sha256:a7fea53ec5ada7e8cd0f7d3a0608e54b80d423fe9201327b48ed4e29649a9230",
+      "path": "evaluation/semantic_benchmark/v1_3/fixtures/p06_routes.json"
+    },
+    {
+      "bytes": 245300,
+      "file_sha256": "sha256:96ea9799aa66f115e00bc724c7f8ae06c2bdb4b16f3aad9c41d3c3eaadde17ea",
+      "git_blob_sha": "629617f0de612c3cfe29a9cdb24aba321b523926",
+      "internal_material_hash": "sha256:cdf83164c4badc5feeec1d141c832e11059940da9a7465d05ec2545fdcdb1212",
+      "path": "evaluation/semantic_benchmark/v1_3/fixtures/property_bindings.json"
+    },
+    {
+      "bytes": 28200,
+      "file_sha256": "sha256:d8d91d09fe38ce3e72fcb8ea65d1c3469a80d0b53ac7c329d3058f6b4c91a8c6",
+      "git_blob_sha": "be81869d787bc0af3b3a143268c05a224ee7e07d",
+      "internal_material_hash": "sha256:1954185e706216d0571314c3d994996f57253f737bc1c00c6bcdec361488c86a",
+      "path": "evaluation/semantic_benchmark/v1_3/fixtures/qualification_oracle_dispositions.json"
+    },
+    {
+      "bytes": 8985,
+      "file_sha256": "sha256:5d9671cf19b5542840ec86bbab5d86cb9d1ef86ea67b672730d9adff91da5bcc",
+      "git_blob_sha": "a0586d563d75497c0972fdb674d2779f4f773fa8",
+      "internal_material_hash": "sha256:7bc7532e602ba525e3260e4bc74cad42e03cbc30e8aed086be38f24d7ca36465",
+      "path": "evaluation/semantic_benchmark/v1_3/phase9/adjudication_protocol.json"
+    },
+    {
+      "bytes": 7014,
+      "file_sha256": "sha256:6d6254a62b6b9838561923eb262b07327a5bbaacc8109b0c9e81e9f8eea4df18",
+      "git_blob_sha": "6c5ae57aaa0d1c1a8e3f363a1535a942a3407f29",
+      "internal_material_hash": "sha256:d0093979d4db2f65b2442ad94ccea67b959e06af035651e2b951ad2466d4b363",
+      "path": "evaluation/semantic_benchmark/v1_3/phase9/candidate_matrix.json"
+    },
+    {
+      "bytes": 16302,
+      "file_sha256": "sha256:b0030ed298c26b580e063d2d28c7f70ebe4bc247dc50f92733ef86a02d04710a",
+      "git_blob_sha": "aa8d5412ed05c4e294738226eba45aa216cd699b",
+      "internal_material_hash": "sha256:a3a3118ff3e02d918b16d1c312493a2beaffabd1951d98b6de52fa40c5d0fc67",
+      "path": "evaluation/semantic_benchmark/v1_3/phase9/n3_contractual_safety_axis.json"
+    },
+    {
+      "bytes": 8630,
+      "file_sha256": "sha256:b9c8b5893461290763afaaaa79da5f109a15d6ec6834a02a7538e515885c283b",
+      "git_blob_sha": "0dd47af5b1b115044c15ae3ba948b3385a123bcc",
+      "internal_material_hash": "sha256:d0093979d4db2f65b2442ad94ccea67b959e06af035651e2b951ad2466d4b363",
+      "path": "evaluation/semantic_benchmark/v1_3/phase9/qualification_protocol.json"
+    },
+    {
+      "bytes": 1906,
+      "file_sha256": "sha256:eacd0998a19a9dc7742c1ea59e38696efa996affb42acd6f189120b051bb1c27",
+      "git_blob_sha": "38ae8e41ec530031136bc9ada42f67ac63bbe779",
+      "internal_material_hash": "sha256:7308264b242f7cafe6665ee600827c5d2c3d97899e3142eec886c084d744c5a7",
+      "path": "evaluation/semantic_benchmark/v1_3/phase9/qualification_thresholds.json"
+    },
+    {
+      "bytes": 5958,
+      "file_sha256": "sha256:4c815e22fd16d81f0ea1c6a4d01bf7d8ab0799d1b9e3e0fd44991e9146cd43b9",
+      "git_blob_sha": "139e9271dd7105d3560a712596a1589a784fc85a",
+      "internal_material_hash": "sha256:6264e5c462ec57765a33977b76d4334accd4d05202d263b8486ea22ae7efc254",
+      "path": "evaluation/semantic_benchmark/v1_3/phase9/safety_gate.json"
+    },
+    {
+      "bytes": 2511,
+      "file_sha256": "sha256:255c2f8d8c02bca9ee3082cad7126bdc8d57abc14f32a7194bb65a391d900b32",
+      "git_blob_sha": "724d90679b19d8f0d95c1e793353ed6c2cb12aeb",
+      "internal_material_hash": "sha256:7dea45db24c618fcc167f21e916aa62e2f841e10f988c2c416fc68d464acca40",
+      "path": "evaluation/semantic_benchmark/v1_3/phase9/semantic_qualification_claim.json"
+    },
+    {
+      "bytes": 2556,
+      "file_sha256": "sha256:e49114924ef68a3767cd087c8c782fff494e503172a505db1164ed4ad8745fa7",
+      "git_blob_sha": "194228b7b32f680b7a0f87d5497bcbfe81a9e1c8",
+      "internal_material_hash": "sha256:f44824de0319301a5fee645efe02b49773e489c99f3ffbcf46051dd00612ef1f",
+      "path": "reports/semantic_benchmark/v1_3/axis_separation.json"
+    },
+    {
+      "bytes": 5922,
+      "file_sha256": "sha256:1ec3e877ff302d91f3e1024efbe232c5a36af6c98fad1981ce5eb2200034860f",
+      "git_blob_sha": "9fd01f14eb121692ecbb6dfd78bd0916f11a92a6",
+      "internal_material_hash": "sha256:d0093979d4db2f65b2442ad94ccea67b959e06af035651e2b951ad2466d4b363",
+      "path": "reports/semantic_benchmark/v1_3/benchmark_boundary.json"
+    },
+    {
+      "bytes": 7027,
+      "file_sha256": "sha256:cb3ddb1a6e2a89c7e025c0736d8a42c5e3f1ba9e33b8590fd8cccefae675f569",
+      "git_blob_sha": "e82e1b15a429acc9539b2b83162408f9d3b3be75",
+      "internal_material_hash": "sha256:240afa63df65805b36442fb7e7a34420e6f41af9579e9832f35d282cf24f049e",
+      "path": "reports/semantic_benchmark/v1_3/lineage.json"
+    },
+    {
+      "bytes": 15554,
+      "file_sha256": "sha256:433c51c537165c37a367fef5cbfc23d2276200be56e696274dc3844e21b2a90c",
+      "git_blob_sha": "1d24ebf715e63cd3ec84bde89101263904278d09",
+      "internal_material_hash": "sha256:8491038d70480afa06621917b126f26825797c0ab6f4220c7c77685d99988d57",
+      "path": "reports/semantic_benchmark/v1_3/p06_field_authority.json"
+    },
+    {
+      "bytes": 5307,
+      "file_sha256": "sha256:6769feb250937b81979b0227478590597b7f2091e4ff587fca0db56f29da1802",
+      "git_blob_sha": "848f92927e22cecbd0f16c627b5001daf832bf44",
+      "internal_material_hash": "sha256:aeefc371cc0af81291c91fb4349e0639243bd061b150b212a395d0cfc14cca24",
+      "path": "reports/semantic_benchmark/v1_3/p06_instrument.json"
+    },
+    {
+      "bytes": 18617,
+      "file_sha256": "sha256:f36d2b411bd4871df13cb0b813d09cc7d9fb17956cfcfa4dedd87caf43c5aecf",
+      "git_blob_sha": "f37f0ffee8be7d9d4129ec6db3d2458c7cb9ea7f",
+      "internal_material_hash": "sha256:991509f72917a515bdea0f8da0b2d7aeacce5cc71d0b774516a72205a48b0b7d",
+      "path": "reports/semantic_benchmark/v1_3/p07_field_authority.json"
+    },
+    {
+      "bytes": 32272,
+      "file_sha256": "sha256:9dfde5d4a3aa73edf906021b7e08090896859588d23d51a816cbeee05c5987c1",
+      "git_blob_sha": "4c1c030d58d5d861b9f93a10a5f84fc338b688c9",
+      "internal_material_hash": "sha256:385d9a8a6edc23182fee5c7cd4b89e6f8b2bc9633463ccb23a3de83578a11f47",
+      "path": "reports/semantic_benchmark/v1_3/phase9/call_budget.json"
+    },
+    {
+      "bytes": 6744,
+      "file_sha256": "sha256:5073269a00f02ee233411a5f832c7fe656ff38a062e14824c954762b1a6f8f51",
+      "git_blob_sha": "b12c3dde85e9c46f33ed5ee8135623712dacdc37",
+      "internal_material_hash": "sha256:efd0c4c41b449f86395a82a6750e10d80f86870499c74d362a6b8612ff95d7e5",
+      "path": "reports/semantic_benchmark/v1_3/phase9/pre_results_instrument_freeze.json"
+    },
+    {
+      "bytes": 2256,
+      "file_sha256": "sha256:82fa5636fff5d6ac45ea1c8124bac1d5205caf6e332b56b9351bea0a9493dc57",
+      "git_blob_sha": "6f4826c9b30f2908b86997e22f785aafc762b796",
+      "internal_material_hash": "sha256:9a53c8e1870d7a7de77fdde104551cbf31deb31741672b53c44e68ededdd5fe0",
+      "path": "reports/semantic_benchmark/v1_3/phase9/rung_escalation_proof.json"
+    },
+    {
+      "bytes": 51412,
+      "file_sha256": "sha256:1912849dbb1016b5a24fdaa482df84e45678180166785b39df2832e31b2e78ff",
+      "git_blob_sha": "115652acb1900596b32445f88e4390cc7a58adc6",
+      "internal_material_hash": "sha256:b7e33ffb83ca9dd7a9e379a17c210fd9d03a48dcd5cff18d8479a3b8233dc73e",
+      "path": "reports/semantic_benchmark/v1_3/property_alignment.json"
+    },
+    {
+      "bytes": 978,
+      "file_sha256": "sha256:510897d72d3dd3e0d5ae70f75fe746d3e0112574eb31cd1824c6b86a3829141d",
+      "git_blob_sha": "1fa87fd332cc6fb08970e8e4e98c4cd7c07c7c19",
+      "internal_material_hash": "sha256:9dea980868367317f97bd42f6effd67b480850a4e4111d2ffbbec5ee256440f9",
+      "path": "reports/semantic_benchmark/v1_3/split_partition.json"
+    },
+    {
+      "bytes": 32816,
+      "file_sha256": "sha256:a241a12550a583238ac84e94ef9be6e584ad05508a9d25ae317caf6967f5213c",
+      "git_blob_sha": "e114f62ecc5d2b6a53a2a60badd1aca36edd15e5",
+      "internal_material_hash": "sha256:9f932e1771a9312d4f4d42c1a9c40e9c6a0018f940cf0f838ecfd0d8750b95b2",
+      "path": "reports/semantic_benchmark/v1_3/stage_boundaries.json"
+    },
+    {
+      "bytes": 5233,
+      "file_sha256": "sha256:f5531ddf8398c30ae315c5c0031606ead6f2c8e0027cb781e28d4635d57ca3b9",
+      "git_blob_sha": "5992da4661b2ad5fcc5a206d01710850a37a2ee1",
+      "internal_material_hash": "sha256:09b74c8a1d3328c6075038a6f2d844ae57e29418daaec813656195e0347a4fa2",
+      "path": "reports/semantic_benchmark/v1_3/support_status_coverage.json"
+    },
+    {
+      "bytes": 3137,
+      "file_sha256": "sha256:e49449ef593ce3e9b3c7cc2f630dfe225689ea0467d56d26c33ab983f4fc3fb1",
+      "git_blob_sha": "4bf28b323f513ab15f5ba7e1b2bfed52cf141ba1",
+      "internal_material_hash": "sha256:d5180bdd31bb6cd2079ce9e59bf9f895dfe053ff006fd88f6ee2c144a5664998",
+      "path": "reports/semantic_benchmark/v1_3/uncertain_scope_census.json"
+    }
+  ],
+  "authorization": "NONE",
+  "benchmark_version": "semantic-benchmark/1.3.0",
+  "billable_authorizations": 0,
+  "credentials_resolved": 0,
+  "freeze_artifact_path": "reports/semantic_benchmark/v1_3/phase9/pre_results_instrument_freeze.json",
+  "hash_kinds": {
+    "FILE_SHA256": "sha256 over the exact bytes on disk, including indentation and the trailing newline. It answers 'is this file byte-identical'.",
+    "GIT_BLOB_SHA": "git's object id: sha1 over 'blob <len>\\0' followed by the file bytes. It is what `git hash-object` and the index report, and it is neither a sha256 nor comparable with one.",
+    "INTERNAL_MATERIAL_HASH": "sha256 over the canonical JSON serialization of a document's material, computed before the file exists. Two files with different whitespace share it; it is what a boundary compares."
+  },
+  "never_conflate": "An internal material hash, a file SHA-256 and a Git blob SHA are three different values over three different inputs. They are listed side by side here so no reader has to guess which one a number is.",
+  "provider_calls": 0,
+  "schema_version": "phase9-freeze-hash-manifest/1.3.0"
+}

@@ -1,0 +1,48 @@
+{
+  "accepted_decision": "U3",
+  "benchmark_version": "semantic-benchmark/1.3.0",
+  "candidate_scoring_property_count_by_status": {
+    "INSUFFICIENT": 38,
+    "PARTIAL": 5,
+    "SUFFICIENT": 31,
+    "UNCERTAIN": 0
+  },
+  "claim": "semantic-benchmark/1.3.0 qualifies P06 candidate behaviour on the support statuses SUFFICIENT, PARTIAL and INSUFFICIENT.",
+  "claim_hash": "sha256:7dea45db24c618fcc167f21e916aa62e2f841e10f988c2c416fc68d464acca40",
+  "decision_source": "reports/semantic_benchmark/phase9b7/product_decision.json",
+  "excluded_support_statuses": [
+    "UNCERTAIN"
+  ],
+  "limitation_count": 4,
+  "limitations": [
+    "semantic-benchmark/1.3.0 does NOT qualify P06 UNCERTAIN behaviour.",
+    "P06 model-selection claims are limited to SUFFICIENT / PARTIAL / INSUFFICIENT.",
+    "UNCERTAIN remains an explicit residual risk.",
+    "This limitation blocks any later claim that Phase 9 alone established full P06 contract coverage."
+  ],
+  "phase9_alone_is_full_p06_contract_coverage": false,
+  "production_contract_note": "UNCERTAIN remains a first-class member of the P06 support-status contract. v1.3 changes no production prompt, DTO, materializer or planner semantics. What v1.3 declares is the limit of its own qualification evidence.",
+  "production_contract_unchanged": true,
+  "qualified_support_statuses": [
+    "SUFFICIENT",
+    "PARTIAL",
+    "INSUFFICIENT"
+  ],
+  "schema_version": "p06-semantic-qualification-claim/1.3.0",
+  "support_status_coverage_hash": "sha256:09b74c8a1d3328c6075038a6f2d844ae57e29418daaec813656195e0347a4fa2",
+  "support_status_coverage_version": "p06-support-status-coverage/1.3.0",
+  "uncertain_coverage_gate": {
+    "candidate_scoring_property_count": 0,
+    "covered": false,
+    "gate": "P06_UNCERTAIN_SEMANTIC_COVERAGE",
+    "may_be_closed_by_the_instrument": false,
+    "rationale": "No candidate-scoring P06 property asserts UNCERTAIN as the correct support status, so a qualification run cannot observe whether a candidate reaches UNCERTAIN when the deciding artifact is absent. The instrument must not manufacture that coverage.",
+    "readiness_blocked": true,
+    "stop_code": "P06_UNCERTAIN_COVERAGE_PRODUCT_DECISION_REQUIRED"
+  },
+  "uncertain_qualification_claimed": false,
+  "uncertain_removed_from_production_contract": false,
+  "uncertain_scope_census_hash": "sha256:d5180bdd31bb6cd2079ce9e59bf9f895dfe053ff006fd88f6ee2c144a5664998",
+  "uncertain_scope_census_version": "p06-uncertain-scope-census/1.0.0",
+  "uncertain_scoring_property_count": 0
+}

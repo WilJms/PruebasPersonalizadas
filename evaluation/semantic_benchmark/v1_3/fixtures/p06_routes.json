@@ -1,0 +1,3858 @@
+{
+  "benchmark_version": "semantic-benchmark/1.3.0",
+  "derivation_version": "p06-remediated-derivation/1.3.0",
+  "report_hash": "sha256:a7fea53ec5ada7e8cd0f7d3a0608e54b80d423fe9201327b48ed4e29649a9230",
+  "resolver_version": "p06-construct-resolution/1.3.0",
+  "route_count": 71,
+  "routes": [
+    {
+      "activity_id": "act_01_luz_y_plantines",
+      "case_id": "PP-A01-S02-P06-R01",
+      "construct_provenance": {
+        "canonical_source_name": "Limitación",
+        "extraction": {
+          "descriptor_columns": [
+            1,
+            2,
+            3
+          ],
+          "heading_path": [
+            "Criterios"
+          ],
+          "method": "RUBRIC_CRITERIA_TABLE_ROW",
+          "name_column": 0,
+          "row": 4,
+          "table_index": 0
+        },
+        "source_hashes": {
+          "02_rubric.docx": "sha256:4d094045be8e9df0cf35fca1407973b8a71d7c0108cca89da5d60504b5e25126"
+        },
+        "source_kind": "RUBRIC_CRITERION",
+        "source_refs": [
+          "activity_01_luz_y_plantines/02_rubric.docx#Criterios[table=0,row=4]"
+        ]
+      },
+      "derivation_method": "FAIL_CLOSED_DECLARED_AUTHORIZED_CONSTRUCT",
+      "evidence_provenance": {
+        "artifacts": [
+          "submissions/submission_02.md"
+        ],
+        "model_visible": false,
+        "note": "Evaluator-only. The model receives the whole submission bundle and must locate the supporting evidence itself; no submission evidence location is projected into the route. Authorized rubric descriptor text is a separate matter and is documented in the route's construct provenance.",
+        "oracle_declared_locations": [
+          "submissions/submission_02.md#Limitaciones"
+        ],
+        "scope": "WHOLE_SUBMISSION_EVIDENCE_BUNDLE"
+      },
+      "fixture_tags": [
+        "PLAN_FEASIBLE"
+      ],
+      "oracle_binding_metadata": {
+        "property_ids": [
+          "A01-S02-P1"
+        ]
+      },
+      "resolver_version": "p06-construct-resolution/1.3.0",
+      "route_fixture_id": "P06-A01-S02-R01",
+      "split": "CORE",
+      "submission_id": "submission_02",
+      "target_construct_key": "RUBRIC::A01::LIMITACION"
+    },
+    {
+      "activity_id": "act_01_luz_y_plantines",
+      "case_id": "PP-A01-S03-P06-R01",
+      "construct_provenance": {
+        "canonical_source_name": "Uso de evidencia",
+        "extraction": {
+          "descriptor_columns": [
+            1,
+            2,
+            3
+          ],
+          "heading_path": [
+            "Criterios"
+          ],
+          "method": "RUBRIC_CRITERIA_TABLE_ROW",
+          "name_column": 0,
+          "row": 2,
+          "table_index": 0
+        },
+        "source_hashes": {
+          "02_rubric.docx": "sha256:4d094045be8e9df0cf35fca1407973b8a71d7c0108cca89da5d60504b5e25126"
+        },
+        "source_kind": "RUBRIC_CRITERION",
+        "source_refs": [
+          "activity_01_luz_y_plantines/02_rubric.docx#Criterios[table=0,row=2]"
+        ]
+      },
+      "derivation_method": "FAIL_CLOSED_DECLARED_AUTHORIZED_CONSTRUCT",
+      "evidence_provenance": {
+        "artifacts": [
+          "submissions/submission_03.txt"
+        ],
+        "model_visible": false,
+        "note": "Evaluator-only. The model receives the whole submission bundle and must locate the supporting evidence itself; no submission evidence location is projected into the route. Authorized rubric descriptor text is a separate matter and is documented in the route's construct provenance.",
+        "oracle_declared_locations": [
+          "submissions/submission_03.txt#Desarrollo"
+        ],
+        "scope": "WHOLE_SUBMISSION_EVIDENCE_BUNDLE"
+      },
+      "fixture_tags": [
+        "EXTERNAL_KNOWLEDGE_TRAP",
+        "KEYWORDS_WITHOUT_RELATION"
+      ],
+      "oracle_binding_metadata": {
+        "property_ids": [
+          "A01-S03-P2"
+        ]
+      },
+      "resolver_version": "p06-construct-resolution/1.3.0",
+      "route_fixture_id": "P06-A01-S03-R01",
+      "split": "CORE",
+      "submission_id": "submission_03",
+      "target_construct_key": "RUBRIC::A01::USO_DE_EVIDENCIA"
+    },
+    {
+      "activity_id": "act_01_luz_y_plantines",
+      "case_id": "PP-A01-S03-P06-R02",
+      "construct_provenance": {
+        "canonical_source_name": "Variables y medidas",
+        "extraction": {
+          "descriptor_columns": [
+            1,
+            2,
+            3
+          ],
+          "heading_path": [
+            "Criterios"
+          ],
+          "method": "RUBRIC_CRITERIA_TABLE_ROW",
+          "name_column": 0,
+          "row": 3,
+          "table_index": 0
+        },
+        "source_hashes": {
+          "02_rubric.docx": "sha256:4d094045be8e9df0cf35fca1407973b8a71d7c0108cca89da5d60504b5e25126"
+        },
+        "source_kind": "RUBRIC_CRITERION",
+        "source_refs": [
+          "activity_01_luz_y_plantines/02_rubric.docx#Criterios[table=0,row=3]"
+        ]
+      },
+      "derivation_method": "FAIL_CLOSED_DECLARED_AUTHORIZED_CONSTRUCT",
+      "evidence_provenance": {
+        "artifacts": [
+          "submissions/submission_03.txt"
+        ],
+        "model_visible": false,
+        "note": "Evaluator-only. The model receives the whole submission bundle and must locate the supporting evidence itself; no submission evidence location is projected into the route. Authorized rubric descriptor text is a separate matter and is documented in the route's construct provenance.",
+        "oracle_declared_locations": [
+          "submissions/submission_03.txt#Análisis de variables",
+          "submissions/submission_03.txt#encabezado"
+        ],
+        "scope": "WHOLE_SUBMISSION_EVIDENCE_BUNDLE"
+      },
+      "fixture_tags": [
+        "EXTERNAL_KNOWLEDGE_TRAP",
+        "KEYWORDS_WITHOUT_RELATION"
+      ],
+      "oracle_binding_metadata": {
+        "property_ids": [
+          "A01-S03-P1"
+        ]
+      },
+      "resolver_version": "p06-construct-resolution/1.3.0",
+      "route_fixture_id": "P06-A01-S03-R02",
+      "split": "SMOKE",
+      "submission_id": "submission_03",
+      "target_construct_key": "RUBRIC::A01::VARIABLES_Y_MEDIDAS"
+    },
+    {
+      "activity_id": "act_01_luz_y_plantines",
+      "case_id": "PP-A01-S04-P06-R01",
+      "construct_provenance": {
+        "canonical_source_name": "Limitación",
+        "extraction": {
+          "descriptor_columns": [
+            1,
+            2,
+            3
+          ],
+          "heading_path": [
+            "Criterios"
+          ],
+          "method": "RUBRIC_CRITERIA_TABLE_ROW",
+          "name_column": 0,
+          "row": 4,
+          "table_index": 0
+        },
+        "source_hashes": {
+          "02_rubric.docx": "sha256:4d094045be8e9df0cf35fca1407973b8a71d7c0108cca89da5d60504b5e25126"
+        },
+        "source_kind": "RUBRIC_CRITERION",
+        "source_refs": [
+          "activity_01_luz_y_plantines/02_rubric.docx#Criterios[table=0,row=4]"
+        ]
+      },
+      "derivation_method": "FAIL_CLOSED_DECLARED_AUTHORIZED_CONSTRUCT",
+      "evidence_provenance": {
+        "artifacts": [
+          "submissions/submission_04.md"
+        ],
+        "model_visible": false,
+        "note": "Evaluator-only. The model receives the whole submission bundle and must locate the supporting evidence itself; no submission evidence location is projected into the route. Authorized rubric descriptor text is a separate matter and is documented in the route's construct provenance.",
+        "oracle_declared_locations": [
+          "02_rubric.docx#Criterios",
+          "submissions/submission_04.md#Conclusión"
+        ],
+        "scope": "WHOLE_SUBMISSION_EVIDENCE_BUNDLE"
+      },
+      "fixture_tags": [
+        "PLAN_INFEASIBLE",
+        "SELF_DECLARED_GAP"
+      ],
+      "oracle_binding_metadata": {
+        "property_ids": [
+          "A01-S04-P2"
+        ]
+      },
+      "resolver_version": "p06-construct-resolution/1.3.0",
+      "route_fixture_id": "P06-A01-S04-R01",
+      "split": "CORE",
+      "submission_id": "submission_04",
+      "target_construct_key": "RUBRIC::A01::LIMITACION"
+    },
+    {
+      "activity_id": "act_01_luz_y_plantines",
+      "case_id": "PP-A01-S05-P06-R01",
+      "construct_provenance": {
+        "canonical_source_name": "Uso de evidencia",
+        "extraction": {
+          "descriptor_columns": [
+            1,
+            2,
+            3
+          ],
+          "heading_path": [
+            "Criterios"
+          ],
+          "method": "RUBRIC_CRITERIA_TABLE_ROW",
+          "name_column": 0,
+          "row": 2,
+          "table_index": 0
+        },
+        "source_hashes": {
+          "02_rubric.docx": "sha256:4d094045be8e9df0cf35fca1407973b8a71d7c0108cca89da5d60504b5e25126"
+        },
+        "source_kind": "RUBRIC_CRITERION",
+        "source_refs": [
+          "activity_01_luz_y_plantines/02_rubric.docx#Criterios[table=0,row=2]"
+        ]
+      },
+      "derivation_method": "FAIL_CLOSED_DECLARED_AUTHORIZED_CONSTRUCT",
+      "evidence_provenance": {
+        "artifacts": [
+          "submissions/submission_05.pdf"
+        ],
+        "model_visible": false,
+        "note": "Evaluator-only. The model receives the whole submission bundle and must locate the supporting evidence itself; no submission evidence location is projected into the route. Authorized rubric descriptor text is a separate matter and is documented in the route's construct provenance.",
+        "oracle_declared_locations": [
+          "submissions/submission_05.pdf#Cálculos y evidencia"
+        ],
+        "scope": "WHOLE_SUBMISSION_EVIDENCE_BUNDLE"
+      },
+      "fixture_tags": [
+        "ANSWER_VISIBLE",
+        "VISIBLE_ANCHOR_RISK"
+      ],
+      "oracle_binding_metadata": {
+        "property_ids": [
+          "A01-S05-P1"
+        ]
+      },
+      "resolver_version": "p06-construct-resolution/1.3.0",
+      "route_fixture_id": "P06-A01-S05-R01",
+      "split": "CORE",
+      "submission_id": "submission_05",
+      "target_construct_key": "RUBRIC::A01::USO_DE_EVIDENCIA"
+    },
+    {
+      "activity_id": "act_02_voz_en_un_microcuento",
+      "case_id": "PP-A02-S01-P06-R01",
+      "construct_provenance": {
+        "canonical_source_name": "Relación y razonamiento",
+        "extraction": {
+          "descriptor_columns": [
+            1,
+            2,
+            3
+          ],
+          "heading_path": [
+            "Criterios"
+          ],
+          "method": "RUBRIC_CRITERIA_TABLE_ROW",
+          "name_column": 0,
+          "row": 3,
+          "table_index": 0
+        },
+        "source_hashes": {
+          "02_rubric.docx": "sha256:a007e8547ee6bdb592ab2bd6752d763cbd3656a00b9491a29b63131316d51709"
+        },
+        "source_kind": "RUBRIC_CRITERION",
+        "source_refs": [
+          "activity_02_voz_en_un_microcuento/02_rubric.docx#Criterios[table=0,row=3]"
+        ]
+      },
+      "derivation_method": "FAIL_CLOSED_DECLARED_AUTHORIZED_CONSTRUCT",
+      "evidence_provenance": {
+        "artifacts": [
+          "submissions/submission_01.txt"
+        ],
+        "model_visible": false,
+        "note": "Evaluator-only. The model receives the whole submission bundle and must locate the supporting evidence itself; no submission evidence location is projected into the route. Authorized rubric descriptor text is a separate matter and is documented in the route's construct provenance.",
+        "oracle_declared_locations": [
+          "submissions/submission_01.txt#Recursos identificados"
+        ],
+        "scope": "WHOLE_SUBMISSION_EVIDENCE_BUNDLE"
+      },
+      "fixture_tags": [
+        "EXTERNAL_KNOWLEDGE_TRAP",
+        "KEYWORDS_WITHOUT_RELATION"
+      ],
+      "oracle_binding_metadata": {
+        "property_ids": [
+          "A02-S01-P1"
+        ]
+      },
+      "resolver_version": "p06-construct-resolution/1.3.0",
+      "route_fixture_id": "P06-A02-S01-R01",
+      "split": "CORE",
+      "submission_id": "submission_01",
+      "target_construct_key": "RUBRIC::A02::RELACION_Y_RAZONAMIENTO"
+    },
+    {
+      "activity_id": "act_02_voz_en_un_microcuento",
+      "case_id": "PP-A02-S03-P06-R01",
+      "construct_provenance": {
+        "canonical_source_name": "Apertura interpretativa",
+        "extraction": {
+          "descriptor_columns": [
+            1,
+            2,
+            3
+          ],
+          "heading_path": [
+            "Criterios"
+          ],
+          "method": "RUBRIC_CRITERIA_TABLE_ROW",
+          "name_column": 0,
+          "row": 4,
+          "table_index": 0
+        },
+        "source_hashes": {
+          "02_rubric.docx": "sha256:a007e8547ee6bdb592ab2bd6752d763cbd3656a00b9491a29b63131316d51709"
+        },
+        "source_kind": "RUBRIC_CRITERION",
+        "source_refs": [
+          "activity_02_voz_en_un_microcuento/02_rubric.docx#Criterios[table=0,row=4]"
+        ]
+      },
+      "derivation_method": "FAIL_CLOSED_DECLARED_AUTHORIZED_CONSTRUCT",
+      "evidence_provenance": {
+        "artifacts": [
+          "submissions/submission_03.md"
+        ],
+        "model_visible": false,
+        "note": "Evaluator-only. The model receives the whole submission bundle and must locate the supporting evidence itself; no submission evidence location is projected into the route. Authorized rubric descriptor text is a separate matter and is documented in the route's construct provenance.",
+        "oracle_declared_locations": [
+          "02_rubric.docx#Criterios",
+          "submissions/submission_03.md#Resumen del relato"
+        ],
+        "scope": "WHOLE_SUBMISSION_EVIDENCE_BUNDLE"
+      },
+      "fixture_tags": [],
+      "oracle_binding_metadata": {
+        "property_ids": [
+          "A02-S03-P2"
+        ]
+      },
+      "resolver_version": "p06-construct-resolution/1.3.0",
+      "route_fixture_id": "P06-A02-S03-R01",
+      "split": "CORE",
+      "submission_id": "submission_03",
+      "target_construct_key": "RUBRIC::A02::APERTURA_INTERPRETATIVA"
+    },
+    {
+      "activity_id": "act_02_voz_en_un_microcuento",
+      "case_id": "PP-A02-S03-P06-R02",
+      "construct_provenance": {
+        "canonical_source_name": "Relación y razonamiento",
+        "extraction": {
+          "descriptor_columns": [
+            1,
+            2,
+            3
+          ],
+          "heading_path": [
+            "Criterios"
+          ],
+          "method": "RUBRIC_CRITERIA_TABLE_ROW",
+          "name_column": 0,
+          "row": 3,
+          "table_index": 0
+        },
+        "source_hashes": {
+          "02_rubric.docx": "sha256:a007e8547ee6bdb592ab2bd6752d763cbd3656a00b9491a29b63131316d51709"
+        },
+        "source_kind": "RUBRIC_CRITERION",
+        "source_refs": [
+          "activity_02_voz_en_un_microcuento/02_rubric.docx#Criterios[table=0,row=3]"
+        ]
+      },
+      "derivation_method": "FAIL_CLOSED_DECLARED_AUTHORIZED_CONSTRUCT",
+      "evidence_provenance": {
+        "artifacts": [
+          "submissions/submission_03.md"
+        ],
+        "model_visible": false,
+        "note": "Evaluator-only. The model receives the whole submission bundle and must locate the supporting evidence itself; no submission evidence location is projected into the route. Authorized rubric descriptor text is a separate matter and is documented in the route's construct provenance.",
+        "oracle_declared_locations": [
+          "submissions/submission_03.md#Mi interpretación"
+        ],
+        "scope": "WHOLE_SUBMISSION_EVIDENCE_BUNDLE"
+      },
+      "fixture_tags": [],
+      "oracle_binding_metadata": {
+        "property_ids": [
+          "A02-S03-P1"
+        ]
+      },
+      "resolver_version": "p06-construct-resolution/1.3.0",
+      "route_fixture_id": "P06-A02-S03-R02",
+      "split": "CORE",
+      "submission_id": "submission_03",
+      "target_construct_key": "RUBRIC::A02::RELACION_Y_RAZONAMIENTO"
+    },
+    {
+      "activity_id": "act_02_voz_en_un_microcuento",
+      "case_id": "PP-A02-S04-P06-R01",
+      "construct_provenance": {
+        "canonical_source_name": "Relación y razonamiento",
+        "extraction": {
+          "descriptor_columns": [
+            1,
+            2,
+            3
+          ],
+          "heading_path": [
+            "Criterios"
+          ],
+          "method": "RUBRIC_CRITERIA_TABLE_ROW",
+          "name_column": 0,
+          "row": 3,
+          "table_index": 0
+        },
+        "source_hashes": {
+          "02_rubric.docx": "sha256:a007e8547ee6bdb592ab2bd6752d763cbd3656a00b9491a29b63131316d51709"
+        },
+        "source_kind": "RUBRIC_CRITERION",
+        "source_refs": [
+          "activity_02_voz_en_un_microcuento/02_rubric.docx#Criterios[table=0,row=3]"
+        ]
+      },
+      "derivation_method": "FAIL_CLOSED_DECLARED_AUTHORIZED_CONSTRUCT",
+      "evidence_provenance": {
+        "artifacts": [
+          "submissions/submission_04.pdf"
+        ],
+        "model_visible": false,
+        "note": "Evaluator-only. The model receives the whole submission bundle and must locate the supporting evidence itself; no submission evidence location is projected into the route. Authorized rubric descriptor text is a separate matter and is documented in the route's construct provenance.",
+        "oracle_declared_locations": [
+          "submissions/submission_04.pdf#párrafo 2"
+        ],
+        "scope": "WHOLE_SUBMISSION_EVIDENCE_BUNDLE"
+      },
+      "fixture_tags": [],
+      "oracle_binding_metadata": {
+        "property_ids": [
+          "A02-S04-P1"
+        ]
+      },
+      "resolver_version": "p06-construct-resolution/1.3.0",
+      "route_fixture_id": "P06-A02-S04-R01",
+      "split": "CORE",
+      "submission_id": "submission_04",
+      "target_construct_key": "RUBRIC::A02::RELACION_Y_RAZONAMIENTO"
+    },
+    {
+      "activity_id": "act_02_voz_en_un_microcuento",
+      "case_id": "PP-A02-S05-P06-R01",
+      "construct_provenance": {
+        "canonical_source_name": "Tesis interpretativa",
+        "extraction": {
+          "descriptor_columns": [
+            1,
+            2,
+            3
+          ],
+          "heading_path": [
+            "Criterios"
+          ],
+          "method": "RUBRIC_CRITERIA_TABLE_ROW",
+          "name_column": 0,
+          "row": 1,
+          "table_index": 0
+        },
+        "source_hashes": {
+          "02_rubric.docx": "sha256:a007e8547ee6bdb592ab2bd6752d763cbd3656a00b9491a29b63131316d51709"
+        },
+        "source_kind": "RUBRIC_CRITERION",
+        "source_refs": [
+          "activity_02_voz_en_un_microcuento/02_rubric.docx#Criterios[table=0,row=1]"
+        ]
+      },
+      "derivation_method": "FAIL_CLOSED_DECLARED_AUTHORIZED_CONSTRUCT",
+      "evidence_provenance": {
+        "artifacts": [
+          "submissions/submission_05.pdf"
+        ],
+        "model_visible": false,
+        "note": "Evaluator-only. The model receives the whole submission bundle and must locate the supporting evidence itself; no submission evidence location is projected into the route. Authorized rubric descriptor text is a separate matter and is documented in the route's construct provenance.",
+        "oracle_declared_locations": [
+          "submissions/submission_05.pdf#Cierre",
+          "submissions/submission_05.pdf#Tesis"
+        ],
+        "scope": "WHOLE_SUBMISSION_EVIDENCE_BUNDLE"
+      },
+      "fixture_tags": [
+        "DETECTION_TASK",
+        "LATENT_CONTRADICTION",
+        "PREMISE_VISIBLE",
+        "VISIBLE_ANCHOR_RISK"
+      ],
+      "oracle_binding_metadata": {
+        "property_ids": [
+          "A02-S05-P1"
+        ]
+      },
+      "resolver_version": "p06-construct-resolution/1.3.0",
+      "route_fixture_id": "P06-A02-S05-R01",
+      "split": "CORE",
+      "submission_id": "submission_05",
+      "target_construct_key": "RUBRIC::A02::TESIS_INTERPRETATIVA"
+    },
+    {
+      "activity_id": "act_02_voz_en_un_microcuento",
+      "case_id": "PP-A02-S06-P06-R01",
+      "construct_provenance": {
+        "canonical_source_name": "Apertura interpretativa",
+        "extraction": {
+          "descriptor_columns": [
+            1,
+            2,
+            3
+          ],
+          "heading_path": [
+            "Criterios"
+          ],
+          "method": "RUBRIC_CRITERIA_TABLE_ROW",
+          "name_column": 0,
+          "row": 4,
+          "table_index": 0
+        },
+        "source_hashes": {
+          "02_rubric.docx": "sha256:a007e8547ee6bdb592ab2bd6752d763cbd3656a00b9491a29b63131316d51709"
+        },
+        "source_kind": "RUBRIC_CRITERION",
+        "source_refs": [
+          "activity_02_voz_en_un_microcuento/02_rubric.docx#Criterios[table=0,row=4]"
+        ]
+      },
+      "derivation_method": "FAIL_CLOSED_DECLARED_AUTHORIZED_CONSTRUCT",
+      "evidence_provenance": {
+        "artifacts": [
+          "submissions/submission_06.md"
+        ],
+        "model_visible": false,
+        "note": "Evaluator-only. The model receives the whole submission bundle and must locate the supporting evidence itself; no submission evidence location is projected into the route. Authorized rubric descriptor text is a separate matter and is documented in the route's construct provenance.",
+        "oracle_declared_locations": [
+          "submissions/submission_06.md#Lectura alternativa"
+        ],
+        "scope": "WHOLE_SUBMISSION_EVIDENCE_BUNDLE"
+      },
+      "fixture_tags": [
+        "PLAN_FEASIBLE"
+      ],
+      "oracle_binding_metadata": {
+        "property_ids": [
+          "A02-S06-P1"
+        ]
+      },
+      "resolver_version": "p06-construct-resolution/1.3.0",
+      "route_fixture_id": "P06-A02-S06-R01",
+      "split": "CORE",
+      "submission_id": "submission_06",
+      "target_construct_key": "RUBRIC::A02::APERTURA_INTERPRETATIVA"
+    },
+    {
+      "activity_id": "act_03_puesto_de_limonada",
+      "case_id": "PP-A03-S01-P06-R01",
+      "construct_provenance": {
+        "canonical_source_name": "Verificación de la restricción de capacidad",
+        "extraction": {
+          "descriptor_columns": [
+            3
+          ],
+          "heading_path": [
+            "Criterios y ponderación"
+          ],
+          "method": "RUBRIC_CRITERIA_TABLE_ROW",
+          "name_column": 1,
+          "row": 4,
+          "table_index": 1
+        },
+        "source_hashes": {
+          "02_rubric.docx": "sha256:1a66e055a809a6be7e7a3a0ac33093c654b4dc826ff5df7c322888496ca41a5e"
+        },
+        "source_kind": "RUBRIC_CRITERION",
+        "source_refs": [
+          "activity_03_puesto_de_limonada/02_rubric.docx#Criterios y ponderación[table=1,row=4]"
+        ]
+      },
+      "derivation_method": "FAIL_CLOSED_DECLARED_AUTHORIZED_CONSTRUCT",
+      "evidence_provenance": {
+        "artifacts": [
+          "submissions/submission_01.md"
+        ],
+        "model_visible": false,
+        "note": "Evaluator-only. The model receives the whole submission bundle and must locate the supporting evidence itself; no submission evidence location is projected into the route. Authorized rubric descriptor text is a separate matter and is documented in the route's construct provenance.",
+        "oracle_declared_locations": [
+          "submissions/submission_01.md#Mi plan"
+        ],
+        "scope": "WHOLE_SUBMISSION_EVIDENCE_BUNDLE"
+      },
+      "fixture_tags": [
+        "SELF_DECLARED_GAP"
+      ],
+      "oracle_binding_metadata": {
+        "property_ids": [
+          "A03-S01-P2"
+        ]
+      },
+      "resolver_version": "p06-construct-resolution/1.3.0",
+      "route_fixture_id": "P06-A03-S01-R01",
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_01",
+      "target_construct_key": "RUBRIC::A03::VERIFICACION_DE_LA_RESTRICCION_DE_CAPACIDAD"
+    },
+    {
+      "activity_id": "act_03_puesto_de_limonada",
+      "case_id": "PP-A03-S02-P06-R01",
+      "construct_provenance": {
+        "canonical_source_name": "Riesgo o condición que cambiaría la decisión",
+        "extraction": {
+          "descriptor_columns": [
+            3
+          ],
+          "heading_path": [
+            "Criterios y ponderación"
+          ],
+          "method": "RUBRIC_CRITERIA_TABLE_ROW",
+          "name_column": 1,
+          "row": 6,
+          "table_index": 1
+        },
+        "source_hashes": {
+          "02_rubric.docx": "sha256:1a66e055a809a6be7e7a3a0ac33093c654b4dc826ff5df7c322888496ca41a5e"
+        },
+        "source_kind": "RUBRIC_CRITERION",
+        "source_refs": [
+          "activity_03_puesto_de_limonada/02_rubric.docx#Criterios y ponderación[table=1,row=6]"
+        ]
+      },
+      "derivation_method": "FAIL_CLOSED_DECLARED_AUTHORIZED_CONSTRUCT",
+      "evidence_provenance": {
+        "artifacts": [
+          "submissions/submission_02.md"
+        ],
+        "model_visible": false,
+        "note": "Evaluator-only. The model receives the whole submission bundle and must locate the supporting evidence itself; no submission evidence location is projected into the route. Authorized rubric descriptor text is a separate matter and is documented in the route's construct provenance.",
+        "oracle_declared_locations": [
+          "submissions/submission_02.md#Qué haría cambiar mi decisión"
+        ],
+        "scope": "WHOLE_SUBMISSION_EVIDENCE_BUNDLE"
+      },
+      "fixture_tags": [],
+      "oracle_binding_metadata": {
+        "property_ids": [
+          "A03-S02-P1"
+        ]
+      },
+      "resolver_version": "p06-construct-resolution/1.3.0",
+      "route_fixture_id": "P06-A03-S02-R01",
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_02",
+      "target_construct_key": "RUBRIC::A03::RIESGO_O_CONDICION_QUE_CAMBIARIA_LA_DECISION"
+    },
+    {
+      "activity_id": "act_03_puesto_de_limonada",
+      "case_id": "PP-A03-S04-P06-R01",
+      "construct_provenance": {
+        "canonical_source_name": "Costo total con desglose",
+        "extraction": {
+          "descriptor_columns": [
+            3
+          ],
+          "heading_path": [
+            "Criterios y ponderación"
+          ],
+          "method": "RUBRIC_CRITERIA_TABLE_ROW",
+          "name_column": 1,
+          "row": 2,
+          "table_index": 1
+        },
+        "source_hashes": {
+          "02_rubric.docx": "sha256:1a66e055a809a6be7e7a3a0ac33093c654b4dc826ff5df7c322888496ca41a5e"
+        },
+        "source_kind": "RUBRIC_CRITERION",
+        "source_refs": [
+          "activity_03_puesto_de_limonada/02_rubric.docx#Criterios y ponderación[table=1,row=2]"
+        ]
+      },
+      "derivation_method": "FAIL_CLOSED_DECLARED_AUTHORIZED_CONSTRUCT",
+      "evidence_provenance": {
+        "artifacts": [
+          "submissions/submission_04.pdf"
+        ],
+        "model_visible": false,
+        "note": "Evaluator-only. The model receives the whole submission bundle and must locate the supporting evidence itself; no submission evidence location is projected into the route. Authorized rubric descriptor text is a separate matter and is documented in the route's construct provenance.",
+        "oracle_declared_locations": [
+          "submissions/submission_04.pdf#Cuadro"
+        ],
+        "scope": "WHOLE_SUBMISSION_EVIDENCE_BUNDLE"
+      },
+      "fixture_tags": [
+        "DETECTION_TASK",
+        "LATENT_CONTRADICTION"
+      ],
+      "oracle_binding_metadata": {
+        "property_ids": [
+          "A03-S04-P3"
+        ]
+      },
+      "resolver_version": "p06-construct-resolution/1.3.0",
+      "route_fixture_id": "P06-A03-S04-R01",
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_04",
+      "target_construct_key": "RUBRIC::A03::COSTO_TOTAL_CON_DESGLOSE"
+    },
+    {
+      "activity_id": "act_03_puesto_de_limonada",
+      "case_id": "PP-A03-S04-P06-R02",
+      "construct_provenance": {
+        "canonical_source_name": "Verificación de la restricción de capacidad",
+        "extraction": {
+          "descriptor_columns": [
+            3
+          ],
+          "heading_path": [
+            "Criterios y ponderación"
+          ],
+          "method": "RUBRIC_CRITERIA_TABLE_ROW",
+          "name_column": 1,
+          "row": 4,
+          "table_index": 1
+        },
+        "source_hashes": {
+          "02_rubric.docx": "sha256:1a66e055a809a6be7e7a3a0ac33093c654b4dc826ff5df7c322888496ca41a5e"
+        },
+        "source_kind": "RUBRIC_CRITERION",
+        "source_refs": [
+          "activity_03_puesto_de_limonada/02_rubric.docx#Criterios y ponderación[table=1,row=4]"
+        ]
+      },
+      "derivation_method": "FAIL_CLOSED_DECLARED_AUTHORIZED_CONSTRUCT",
+      "evidence_provenance": {
+        "artifacts": [
+          "submissions/submission_04.pdf"
+        ],
+        "model_visible": false,
+        "note": "Evaluator-only. The model receives the whole submission bundle and must locate the supporting evidence itself; no submission evidence location is projected into the route. Authorized rubric descriptor text is a separate matter and is documented in the route's construct provenance.",
+        "oracle_declared_locations": [
+          "02_rubric.docx#Reglas de aplicación",
+          "submissions/submission_04.pdf#Verificación de restricciones",
+          "submissions/submission_04.pdf#párrafo tras el cuadro"
+        ],
+        "scope": "WHOLE_SUBMISSION_EVIDENCE_BUNDLE"
+      },
+      "fixture_tags": [
+        "DETECTION_TASK",
+        "LATENT_CONTRADICTION"
+      ],
+      "oracle_binding_metadata": {
+        "property_ids": [
+          "A03-S04-P1"
+        ]
+      },
+      "resolver_version": "p06-construct-resolution/1.3.0",
+      "route_fixture_id": "P06-A03-S04-R02",
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_04",
+      "target_construct_key": "RUBRIC::A03::VERIFICACION_DE_LA_RESTRICCION_DE_CAPACIDAD"
+    },
+    {
+      "activity_id": "act_03_puesto_de_limonada",
+      "case_id": "PP-A03-S05-P06-R01",
+      "construct_provenance": {
+        "canonical_source_name": "Verificación de la restricción de capacidad",
+        "extraction": {
+          "descriptor_columns": [
+            3
+          ],
+          "heading_path": [
+            "Criterios y ponderación"
+          ],
+          "method": "RUBRIC_CRITERIA_TABLE_ROW",
+          "name_column": 1,
+          "row": 4,
+          "table_index": 1
+        },
+        "source_hashes": {
+          "02_rubric.docx": "sha256:1a66e055a809a6be7e7a3a0ac33093c654b4dc826ff5df7c322888496ca41a5e"
+        },
+        "source_kind": "RUBRIC_CRITERION",
+        "source_refs": [
+          "activity_03_puesto_de_limonada/02_rubric.docx#Criterios y ponderación[table=1,row=4]"
+        ]
+      },
+      "derivation_method": "FAIL_CLOSED_DECLARED_AUTHORIZED_CONSTRUCT",
+      "evidence_provenance": {
+        "artifacts": [
+          "submissions/submission_05.pdf"
+        ],
+        "model_visible": false,
+        "note": "Evaluator-only. The model receives the whole submission bundle and must locate the supporting evidence itself; no submission evidence location is projected into the route. Authorized rubric descriptor text is a separate matter and is documented in the route's construct provenance.",
+        "oracle_declared_locations": [
+          "submissions/submission_05.pdf#Recomendación al curso"
+        ],
+        "scope": "WHOLE_SUBMISSION_EVIDENCE_BUNDLE"
+      },
+      "fixture_tags": [
+        "VISIBLE_ANCHOR_RISK"
+      ],
+      "oracle_binding_metadata": {
+        "property_ids": [
+          "A03-S05-P1"
+        ]
+      },
+      "resolver_version": "p06-construct-resolution/1.3.0",
+      "route_fixture_id": "P06-A03-S05-R01",
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_05",
+      "target_construct_key": "RUBRIC::A03::VERIFICACION_DE_LA_RESTRICCION_DE_CAPACIDAD"
+    },
+    {
+      "activity_id": "act_03_puesto_de_limonada",
+      "case_id": "PP-A03-S06-P06-R01",
+      "construct_provenance": {
+        "canonical_source_name": "Costo total con desglose",
+        "extraction": {
+          "descriptor_columns": [
+            3
+          ],
+          "heading_path": [
+            "Criterios y ponderación"
+          ],
+          "method": "RUBRIC_CRITERIA_TABLE_ROW",
+          "name_column": 1,
+          "row": 2,
+          "table_index": 1
+        },
+        "source_hashes": {
+          "02_rubric.docx": "sha256:1a66e055a809a6be7e7a3a0ac33093c654b4dc826ff5df7c322888496ca41a5e"
+        },
+        "source_kind": "RUBRIC_CRITERION",
+        "source_refs": [
+          "activity_03_puesto_de_limonada/02_rubric.docx#Criterios y ponderación[table=1,row=2]"
+        ]
+      },
+      "derivation_method": "FAIL_CLOSED_DECLARED_AUTHORIZED_CONSTRUCT",
+      "evidence_provenance": {
+        "artifacts": [
+          "submissions/submission_06.txt"
+        ],
+        "model_visible": false,
+        "note": "Evaluator-only. The model receives the whole submission bundle and must locate the supporting evidence itself; no submission evidence location is projected into the route. Authorized rubric descriptor text is a separate matter and is documented in the route's construct provenance.",
+        "oracle_declared_locations": [
+          "submissions/submission_06.txt#Aplicación"
+        ],
+        "scope": "WHOLE_SUBMISSION_EVIDENCE_BUNDLE"
+      },
+      "fixture_tags": [
+        "KEYWORDS_WITHOUT_RELATION"
+      ],
+      "oracle_binding_metadata": {
+        "property_ids": [
+          "A03-S06-P2"
+        ]
+      },
+      "resolver_version": "p06-construct-resolution/1.3.0",
+      "route_fixture_id": "P06-A03-S06-R01",
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_06",
+      "target_construct_key": "RUBRIC::A03::COSTO_TOTAL_CON_DESGLOSE"
+    },
+    {
+      "activity_id": "act_04_asignador_de_turnos",
+      "case_id": "PP-A04-S01-P06-R01",
+      "construct_provenance": {
+        "canonical_source_name": "Descarta registros con campo faltante",
+        "extraction": {
+          "descriptor_columns": [
+            1
+          ],
+          "heading_path": [
+            "Comportamiento del contrato"
+          ],
+          "method": "RUBRIC_CRITERIA_TABLE_ROW",
+          "name_column": 0,
+          "row": 1,
+          "table_index": 0
+        },
+        "source_hashes": {
+          "02_rubric.docx": "sha256:bde129b7a90362871b9dc76ad24388a6ded288404a29a79b68c0c2b37bfcb65d"
+        },
+        "source_kind": "RUBRIC_CRITERION",
+        "source_refs": [
+          "activity_04_asignador_de_turnos/02_rubric.docx#Comportamiento del contrato[table=0,row=1]"
+        ]
+      },
+      "derivation_method": "FAIL_CLOSED_DECLARED_AUTHORIZED_CONSTRUCT",
+      "evidence_provenance": {
+        "artifacts": [
+          "submissions/submission_01_artifact_01.md",
+          "submissions/submission_01_artifact_02.txt"
+        ],
+        "model_visible": false,
+        "note": "Evaluator-only. The model receives the whole submission bundle and must locate the supporting evidence itself; no submission evidence location is projected into the route. Authorized rubric descriptor text is a separate matter and is documented in the route's construct provenance.",
+        "oracle_declared_locations": [
+          "submissions/submission_01_artifact_01.md#valid.sort"
+        ],
+        "scope": "WHOLE_SUBMISSION_EVIDENCE_BUNDLE"
+      },
+      "fixture_tags": [
+        "KEYWORDS_WITHOUT_RELATION",
+        "MULTI_ARTIFACT",
+        "SELF_DECLARED_GAP"
+      ],
+      "oracle_binding_metadata": {
+        "property_ids": [
+          "A04-S01-P5"
+        ]
+      },
+      "resolver_version": "p06-construct-resolution/1.3.0",
+      "route_fixture_id": "P06-A04-S01-R01",
+      "split": "CORE",
+      "submission_id": "submission_01",
+      "target_construct_key": "RUBRIC::A04::DESCARTA_REGISTROS_CON_CAMPO_FALTANTE"
+    },
+    {
+      "activity_id": "act_04_asignador_de_turnos",
+      "case_id": "PP-A04-S01-P06-R02",
+      "construct_provenance": {
+        "canonical_source_name": "Ordena por prioridad, luego marca, luego id",
+        "extraction": {
+          "descriptor_columns": [
+            1
+          ],
+          "heading_path": [
+            "Comportamiento del contrato"
+          ],
+          "method": "RUBRIC_CRITERIA_TABLE_ROW",
+          "name_column": 0,
+          "row": 6,
+          "table_index": 0
+        },
+        "source_hashes": {
+          "02_rubric.docx": "sha256:bde129b7a90362871b9dc76ad24388a6ded288404a29a79b68c0c2b37bfcb65d"
+        },
+        "source_kind": "RUBRIC_CRITERION",
+        "source_refs": [
+          "activity_04_asignador_de_turnos/02_rubric.docx#Comportamiento del contrato[table=0,row=6]"
+        ]
+      },
+      "derivation_method": "FAIL_CLOSED_DECLARED_AUTHORIZED_CONSTRUCT",
+      "evidence_provenance": {
+        "artifacts": [
+          "submissions/submission_01_artifact_01.md",
+          "submissions/submission_01_artifact_02.txt"
+        ],
+        "model_visible": false,
+        "note": "Evaluator-only. The model receives the whole submission bundle and must locate the supporting evidence itself; no submission evidence location is projected into the route. Authorized rubric descriptor text is a separate matter and is documented in the route's construct provenance.",
+        "oracle_declared_locations": [
+          "submissions/submission_01_artifact_01.md#valid.sort",
+          "submissions/submission_01_artifact_02.txt#párrafo 2"
+        ],
+        "scope": "WHOLE_SUBMISSION_EVIDENCE_BUNDLE"
+      },
+      "fixture_tags": [
+        "KEYWORDS_WITHOUT_RELATION",
+        "MULTI_ARTIFACT",
+        "SELF_DECLARED_GAP"
+      ],
+      "oracle_binding_metadata": {
+        "property_ids": [
+          "A04-S01-P3"
+        ]
+      },
+      "resolver_version": "p06-construct-resolution/1.3.0",
+      "route_fixture_id": "P06-A04-S01-R02",
+      "split": "CORE",
+      "submission_id": "submission_01",
+      "target_construct_key": "RUBRIC::A04::ORDENA_POR_PRIORIDAD_LUEGO_MARCA_LUEGO_ID"
+    },
+    {
+      "activity_id": "act_04_asignador_de_turnos",
+      "case_id": "PP-A04-S01-P06-R03",
+      "construct_provenance": {
+        "canonical_source_name": "Una aparición inválida no reserva el id",
+        "extraction": {
+          "descriptor_columns": [
+            1
+          ],
+          "heading_path": [
+            "Comportamiento del contrato"
+          ],
+          "method": "RUBRIC_CRITERIA_TABLE_ROW",
+          "name_column": 0,
+          "row": 5,
+          "table_index": 0
+        },
+        "source_hashes": {
+          "02_rubric.docx": "sha256:bde129b7a90362871b9dc76ad24388a6ded288404a29a79b68c0c2b37bfcb65d"
+        },
+        "source_kind": "RUBRIC_CRITERION",
+        "source_refs": [
+          "activity_04_asignador_de_turnos/02_rubric.docx#Comportamiento del contrato[table=0,row=5]"
+        ]
+      },
+      "derivation_method": "FAIL_CLOSED_DECLARED_AUTHORIZED_CONSTRUCT",
+      "evidence_provenance": {
+        "artifacts": [
+          "submissions/submission_01_artifact_01.md",
+          "submissions/submission_01_artifact_02.txt"
+        ],
+        "model_visible": false,
+        "note": "Evaluator-only. The model receives the whole submission bundle and must locate the supporting evidence itself; no submission evidence location is projected into the route. Authorized rubric descriptor text is a separate matter and is documented in the route's construct provenance.",
+        "oracle_declared_locations": [
+          "submissions/submission_01_artifact_01.md#bucle de validación"
+        ],
+        "scope": "WHOLE_SUBMISSION_EVIDENCE_BUNDLE"
+      },
+      "fixture_tags": [
+        "KEYWORDS_WITHOUT_RELATION",
+        "MULTI_ARTIFACT",
+        "SELF_DECLARED_GAP"
+      ],
+      "oracle_binding_metadata": {
+        "property_ids": [
+          "A04-S01-P2"
+        ]
+      },
+      "resolver_version": "p06-construct-resolution/1.3.0",
+      "route_fixture_id": "P06-A04-S01-R03",
+      "split": "CORE",
+      "submission_id": "submission_01",
+      "target_construct_key": "RUBRIC::A04::UNA_APARICION_INVALIDA_NO_RESERVA_EL_ID"
+    },
+    {
+      "activity_id": "act_04_asignador_de_turnos",
+      "case_id": "PP-A04-S02-P06-R01",
+      "construct_provenance": {
+        "canonical_source_name": "Una aparición inválida no reserva el id",
+        "extraction": {
+          "descriptor_columns": [
+            1
+          ],
+          "heading_path": [
+            "Comportamiento del contrato"
+          ],
+          "method": "RUBRIC_CRITERIA_TABLE_ROW",
+          "name_column": 0,
+          "row": 5,
+          "table_index": 0
+        },
+        "source_hashes": {
+          "02_rubric.docx": "sha256:bde129b7a90362871b9dc76ad24388a6ded288404a29a79b68c0c2b37bfcb65d"
+        },
+        "source_kind": "RUBRIC_CRITERION",
+        "source_refs": [
+          "activity_04_asignador_de_turnos/02_rubric.docx#Comportamiento del contrato[table=0,row=5]"
+        ]
+      },
+      "derivation_method": "FAIL_CLOSED_DECLARED_AUTHORIZED_CONSTRUCT",
+      "evidence_provenance": {
+        "artifacts": [
+          "submissions/submission_02_artifact_01.md",
+          "submissions/submission_02_artifact_02.txt"
+        ],
+        "model_visible": false,
+        "note": "Evaluator-only. The model receives the whole submission bundle and must locate the supporting evidence itself; no submission evidence location is projected into the route. Authorized rubric descriptor text is a separate matter and is documented in the route's construct provenance.",
+        "oracle_declared_locations": [
+          "submissions/submission_02_artifact_01.md#bloque de validación",
+          "submissions/submission_02_artifact_02.txt#párrafo 1"
+        ],
+        "scope": "WHOLE_SUBMISSION_EVIDENCE_BUNDLE"
+      },
+      "fixture_tags": [
+        "MULTI_ARTIFACT"
+      ],
+      "oracle_binding_metadata": {
+        "property_ids": [
+          "A04-S02-P1"
+        ]
+      },
+      "resolver_version": "p06-construct-resolution/1.3.0",
+      "route_fixture_id": "P06-A04-S02-R01",
+      "split": "CORE",
+      "submission_id": "submission_02",
+      "target_construct_key": "RUBRIC::A04::UNA_APARICION_INVALIDA_NO_RESERVA_EL_ID"
+    },
+    {
+      "activity_id": "act_04_asignador_de_turnos",
+      "case_id": "PP-A04-S05-P06-R01",
+      "construct_provenance": {
+        "canonical_source_name": "Conserva la PRIMERA aparición válida de un id repetido",
+        "extraction": {
+          "descriptor_columns": [
+            1
+          ],
+          "heading_path": [
+            "Comportamiento del contrato"
+          ],
+          "method": "RUBRIC_CRITERIA_TABLE_ROW",
+          "name_column": 0,
+          "row": 4,
+          "table_index": 0
+        },
+        "source_hashes": {
+          "02_rubric.docx": "sha256:bde129b7a90362871b9dc76ad24388a6ded288404a29a79b68c0c2b37bfcb65d"
+        },
+        "source_kind": "RUBRIC_CRITERION",
+        "source_refs": [
+          "activity_04_asignador_de_turnos/02_rubric.docx#Comportamiento del contrato[table=0,row=4]"
+        ]
+      },
+      "derivation_method": "FAIL_CLOSED_DECLARED_AUTHORIZED_CONSTRUCT",
+      "evidence_provenance": {
+        "artifacts": [
+          "submissions/submission_05_artifact_01.md",
+          "submissions/submission_05_artifact_02.txt"
+        ],
+        "model_visible": false,
+        "note": "Evaluator-only. The model receives the whole submission bundle and must locate the supporting evidence itself; no submission evidence location is projected into the route. Authorized rubric descriptor text is a separate matter and is documented in the route's construct provenance.",
+        "oracle_declared_locations": [
+          "submissions/submission_05_artifact_01.md#línea '# Keep one record per id'"
+        ],
+        "scope": "WHOLE_SUBMISSION_EVIDENCE_BUNDLE"
+      },
+      "fixture_tags": [
+        "MULTI_ARTIFACT",
+        "PROMPT_INJECTION_SILENT",
+        "VISIBLE_ANCHOR_RISK"
+      ],
+      "oracle_binding_metadata": {
+        "property_ids": [
+          "A04-S05-P1"
+        ]
+      },
+      "resolver_version": "p06-construct-resolution/1.3.0",
+      "route_fixture_id": "P06-A04-S05-R01",
+      "split": "CORE",
+      "submission_id": "submission_05",
+      "target_construct_key": "RUBRIC::A04::CONSERVA_LA_PRIMERA_APARICION_VALIDA_DE_UN_ID_REPETIDO"
+    },
+    {
+      "activity_id": "act_04_asignador_de_turnos",
+      "case_id": "PP-A04-S06-P06-R01",
+      "construct_provenance": {
+        "canonical_source_name": "Descarta registros con campo faltante",
+        "extraction": {
+          "descriptor_columns": [
+            1
+          ],
+          "heading_path": [
+            "Comportamiento del contrato"
+          ],
+          "method": "RUBRIC_CRITERIA_TABLE_ROW",
+          "name_column": 0,
+          "row": 1,
+          "table_index": 0
+        },
+        "source_hashes": {
+          "02_rubric.docx": "sha256:bde129b7a90362871b9dc76ad24388a6ded288404a29a79b68c0c2b37bfcb65d"
+        },
+        "source_kind": "RUBRIC_CRITERION",
+        "source_refs": [
+          "activity_04_asignador_de_turnos/02_rubric.docx#Comportamiento del contrato[table=0,row=1]"
+        ]
+      },
+      "derivation_method": "FAIL_CLOSED_DECLARED_AUTHORIZED_CONSTRUCT",
+      "evidence_provenance": {
+        "artifacts": [
+          "submissions/submission_06_artifact_01.md",
+          "submissions/submission_06_artifact_02.txt"
+        ],
+        "model_visible": false,
+        "note": "Evaluator-only. The model receives the whole submission bundle and must locate the supporting evidence itself; no submission evidence location is projected into the route. Authorized rubric descriptor text is a separate matter and is documented in the route's construct provenance.",
+        "oracle_declared_locations": [
+          "submissions/submission_06_artifact_01.md#solicitudes.sort"
+        ],
+        "scope": "WHOLE_SUBMISSION_EVIDENCE_BUNDLE"
+      },
+      "fixture_tags": [
+        "ADJUDICATION_TASK",
+        "CROSS_ARTIFACT_RECONCILIATION",
+        "EXPLICIT_CROSS_ARTIFACT_CONFLICT",
+        "MULTI_ARTIFACT",
+        "PREMISE_VISIBLE",
+        "VISIBLE_ANCHOR_RISK"
+      ],
+      "oracle_binding_metadata": {
+        "property_ids": [
+          "A04-S06-P4"
+        ]
+      },
+      "resolver_version": "p06-construct-resolution/1.3.0",
+      "route_fixture_id": "P06-A04-S06-R01",
+      "split": "CORE",
+      "submission_id": "submission_06",
+      "target_construct_key": "RUBRIC::A04::DESCARTA_REGISTROS_CON_CAMPO_FALTANTE"
+    },
+    {
+      "activity_id": "act_06_movilidad_estudiantil",
+      "case_id": "PP-A06-S01-P06-R01",
+      "construct_provenance": {
+        "canonical_source_name": "Calidad de inferencia",
+        "extraction": {
+          "descriptor_columns": [
+            1,
+            2,
+            3
+          ],
+          "heading_path": [
+            "Criterios"
+          ],
+          "method": "RUBRIC_CRITERIA_TABLE_ROW",
+          "name_column": 0,
+          "row": 3,
+          "table_index": 0
+        },
+        "source_hashes": {
+          "02_rubric.docx": "sha256:93d21994450cc21ecd52589b1cbd9d7d157aab0ac2b9307ad05a59d2340c3c22"
+        },
+        "source_kind": "RUBRIC_CRITERION",
+        "source_refs": [
+          "activity_06_movilidad_estudiantil/02_rubric.docx#Criterios[table=0,row=3]"
+        ]
+      },
+      "derivation_method": "FAIL_CLOSED_DECLARED_AUTHORIZED_CONSTRUCT",
+      "evidence_provenance": {
+        "artifacts": [
+          "submissions/submission_01.pdf"
+        ],
+        "model_visible": false,
+        "note": "Evaluator-only. The model receives the whole submission bundle and must locate the supporting evidence itself; no submission evidence location is projected into the route. Authorized rubric descriptor text is a separate matter and is documented in the route's construct provenance.",
+        "oracle_declared_locations": [
+          "submissions/submission_01.pdf#párrafo 4"
+        ],
+        "scope": "WHOLE_SUBMISSION_EVIDENCE_BUNDLE"
+      },
+      "fixture_tags": [],
+      "oracle_binding_metadata": {
+        "property_ids": [
+          "A06-S01-P3"
+        ]
+      },
+      "resolver_version": "p06-construct-resolution/1.3.0",
+      "route_fixture_id": "P06-A06-S01-R01",
+      "split": "CORE",
+      "submission_id": "submission_01",
+      "target_construct_key": "RUBRIC::A06::CALIDAD_DE_INFERENCIA"
+    },
+    {
+      "activity_id": "act_06_movilidad_estudiantil",
+      "case_id": "PP-A06-S01-P06-R02",
+      "construct_provenance": {
+        "canonical_source_name": "Evidencia y subgrupos",
+        "extraction": {
+          "descriptor_columns": [
+            1,
+            2,
+            3
+          ],
+          "heading_path": [
+            "Criterios"
+          ],
+          "method": "RUBRIC_CRITERIA_TABLE_ROW",
+          "name_column": 0,
+          "row": 2,
+          "table_index": 0
+        },
+        "source_hashes": {
+          "02_rubric.docx": "sha256:93d21994450cc21ecd52589b1cbd9d7d157aab0ac2b9307ad05a59d2340c3c22"
+        },
+        "source_kind": "RUBRIC_CRITERION",
+        "source_refs": [
+          "activity_06_movilidad_estudiantil/02_rubric.docx#Criterios[table=0,row=2]"
+        ]
+      },
+      "derivation_method": "FAIL_CLOSED_DECLARED_AUTHORIZED_CONSTRUCT",
+      "evidence_provenance": {
+        "artifacts": [
+          "submissions/submission_01.pdf"
+        ],
+        "model_visible": false,
+        "note": "Evaluator-only. The model receives the whole submission bundle and must locate the supporting evidence itself; no submission evidence location is projected into the route. Authorized rubric descriptor text is a separate matter and is documented in the route's construct provenance.",
+        "oracle_declared_locations": [
+          "01_assignment.docx#Resultados",
+          "submissions/submission_01.pdf#párrafo 2"
+        ],
+        "scope": "WHOLE_SUBMISSION_EVIDENCE_BUNDLE"
+      },
+      "fixture_tags": [],
+      "oracle_binding_metadata": {
+        "property_ids": [
+          "A06-S01-P1"
+        ]
+      },
+      "resolver_version": "p06-construct-resolution/1.3.0",
+      "route_fixture_id": "P06-A06-S01-R02",
+      "split": "CORE",
+      "submission_id": "submission_01",
+      "target_construct_key": "RUBRIC::A06::EVIDENCIA_Y_SUBGRUPOS"
+    },
+    {
+      "activity_id": "act_06_movilidad_estudiantil",
+      "case_id": "PP-A06-S02-P06-R01",
+      "construct_provenance": {
+        "canonical_source_name": "Calidad de inferencia",
+        "extraction": {
+          "descriptor_columns": [
+            1,
+            2,
+            3
+          ],
+          "heading_path": [
+            "Criterios"
+          ],
+          "method": "RUBRIC_CRITERIA_TABLE_ROW",
+          "name_column": 0,
+          "row": 3,
+          "table_index": 0
+        },
+        "source_hashes": {
+          "02_rubric.docx": "sha256:93d21994450cc21ecd52589b1cbd9d7d157aab0ac2b9307ad05a59d2340c3c22"
+        },
+        "source_kind": "RUBRIC_CRITERION",
+        "source_refs": [
+          "activity_06_movilidad_estudiantil/02_rubric.docx#Criterios[table=0,row=3]"
+        ]
+      },
+      "derivation_method": "FAIL_CLOSED_DECLARED_AUTHORIZED_CONSTRUCT",
+      "evidence_provenance": {
+        "artifacts": [
+          "submissions/submission_02.md"
+        ],
+        "model_visible": false,
+        "note": "Evaluator-only. The model receives the whole submission bundle and must locate the supporting evidence itself; no submission evidence location is projected into the route. Authorized rubric descriptor text is a separate matter and is documented in the route's construct provenance.",
+        "oracle_declared_locations": [
+          "submissions/submission_02.md#Limitaciones"
+        ],
+        "scope": "WHOLE_SUBMISSION_EVIDENCE_BUNDLE"
+      },
+      "fixture_tags": [
+        "SELF_DECLARED_GAP"
+      ],
+      "oracle_binding_metadata": {
+        "property_ids": [
+          "A06-S02-P1"
+        ]
+      },
+      "resolver_version": "p06-construct-resolution/1.3.0",
+      "route_fixture_id": "P06-A06-S02-R01",
+      "split": "CORE",
+      "submission_id": "submission_02",
+      "target_construct_key": "RUBRIC::A06::CALIDAD_DE_INFERENCIA"
+    },
+    {
+      "activity_id": "act_06_movilidad_estudiantil",
+      "case_id": "PP-A06-S02-P06-R02",
+      "construct_provenance": {
+        "canonical_source_name": "Trade-off",
+        "extraction": {
+          "descriptor_columns": [
+            1,
+            2,
+            3
+          ],
+          "heading_path": [
+            "Criterios"
+          ],
+          "method": "RUBRIC_CRITERIA_TABLE_ROW",
+          "name_column": 0,
+          "row": 4,
+          "table_index": 0
+        },
+        "source_hashes": {
+          "02_rubric.docx": "sha256:93d21994450cc21ecd52589b1cbd9d7d157aab0ac2b9307ad05a59d2340c3c22"
+        },
+        "source_kind": "RUBRIC_CRITERION",
+        "source_refs": [
+          "activity_06_movilidad_estudiantil/02_rubric.docx#Criterios[table=0,row=4]"
+        ]
+      },
+      "derivation_method": "FAIL_CLOSED_DECLARED_AUTHORIZED_CONSTRUCT",
+      "evidence_provenance": {
+        "artifacts": [
+          "submissions/submission_02.md"
+        ],
+        "model_visible": false,
+        "note": "Evaluator-only. The model receives the whole submission bundle and must locate the supporting evidence itself; no submission evidence location is projected into the route. Authorized rubric descriptor text is a separate matter and is documented in the route's construct provenance.",
+        "oracle_declared_locations": [
+          "submissions/submission_02.md#Limitaciones"
+        ],
+        "scope": "WHOLE_SUBMISSION_EVIDENCE_BUNDLE"
+      },
+      "fixture_tags": [
+        "SELF_DECLARED_GAP"
+      ],
+      "oracle_binding_metadata": {
+        "property_ids": [
+          "A06-S02-P2"
+        ]
+      },
+      "resolver_version": "p06-construct-resolution/1.3.0",
+      "route_fixture_id": "P06-A06-S02-R02",
+      "split": "CORE",
+      "submission_id": "submission_02",
+      "target_construct_key": "RUBRIC::A06::TRADE_OFF"
+    },
+    {
+      "activity_id": "act_06_movilidad_estudiantil",
+      "case_id": "PP-A06-S03-P06-R01",
+      "construct_provenance": {
+        "canonical_source_name": "Trade-off",
+        "extraction": {
+          "descriptor_columns": [
+            1,
+            2,
+            3
+          ],
+          "heading_path": [
+            "Criterios"
+          ],
+          "method": "RUBRIC_CRITERIA_TABLE_ROW",
+          "name_column": 0,
+          "row": 4,
+          "table_index": 0
+        },
+        "source_hashes": {
+          "02_rubric.docx": "sha256:93d21994450cc21ecd52589b1cbd9d7d157aab0ac2b9307ad05a59d2340c3c22"
+        },
+        "source_kind": "RUBRIC_CRITERION",
+        "source_refs": [
+          "activity_06_movilidad_estudiantil/02_rubric.docx#Criterios[table=0,row=4]"
+        ]
+      },
+      "derivation_method": "FAIL_CLOSED_DECLARED_AUTHORIZED_CONSTRUCT",
+      "evidence_provenance": {
+        "artifacts": [
+          "submissions/submission_03.md"
+        ],
+        "model_visible": false,
+        "note": "Evaluator-only. The model receives the whole submission bundle and must locate the supporting evidence itself; no submission evidence location is projected into the route. Authorized rubric descriptor text is a separate matter and is documented in the route's construct provenance.",
+        "oracle_declared_locations": [
+          "01_assignment.docx#Resultados",
+          "submissions/submission_03.md#párrafo 3"
+        ],
+        "scope": "WHOLE_SUBMISSION_EVIDENCE_BUNDLE"
+      },
+      "fixture_tags": [],
+      "oracle_binding_metadata": {
+        "property_ids": [
+          "A06-S03-P1"
+        ]
+      },
+      "resolver_version": "p06-construct-resolution/1.3.0",
+      "route_fixture_id": "P06-A06-S03-R01",
+      "split": "CORE",
+      "submission_id": "submission_03",
+      "target_construct_key": "RUBRIC::A06::TRADE_OFF"
+    },
+    {
+      "activity_id": "act_06_movilidad_estudiantil",
+      "case_id": "PP-A06-S04-P06-R01",
+      "construct_provenance": {
+        "canonical_source_name": "Calidad de inferencia",
+        "extraction": {
+          "descriptor_columns": [
+            1,
+            2,
+            3
+          ],
+          "heading_path": [
+            "Criterios"
+          ],
+          "method": "RUBRIC_CRITERIA_TABLE_ROW",
+          "name_column": 0,
+          "row": 3,
+          "table_index": 0
+        },
+        "source_hashes": {
+          "02_rubric.docx": "sha256:93d21994450cc21ecd52589b1cbd9d7d157aab0ac2b9307ad05a59d2340c3c22"
+        },
+        "source_kind": "RUBRIC_CRITERION",
+        "source_refs": [
+          "activity_06_movilidad_estudiantil/02_rubric.docx#Criterios[table=0,row=3]"
+        ]
+      },
+      "derivation_method": "FAIL_CLOSED_DECLARED_AUTHORIZED_CONSTRUCT",
+      "evidence_provenance": {
+        "artifacts": [
+          "submissions/submission_04.txt"
+        ],
+        "model_visible": false,
+        "note": "Evaluator-only. The model receives the whole submission bundle and must locate the supporting evidence itself; no submission evidence location is projected into the route. Authorized rubric descriptor text is a separate matter and is documented in the route's construct provenance.",
+        "oracle_declared_locations": [
+          "submissions/submission_04.txt#Sobre el sesgo",
+          "submissions/submission_04.txt#Sobre la representatividad"
+        ],
+        "scope": "WHOLE_SUBMISSION_EVIDENCE_BUNDLE"
+      },
+      "fixture_tags": [
+        "KEYWORDS_WITHOUT_RELATION"
+      ],
+      "oracle_binding_metadata": {
+        "property_ids": [
+          "A06-S04-P2"
+        ]
+      },
+      "resolver_version": "p06-construct-resolution/1.3.0",
+      "route_fixture_id": "P06-A06-S04-R01",
+      "split": "CORE",
+      "submission_id": "submission_04",
+      "target_construct_key": "RUBRIC::A06::CALIDAD_DE_INFERENCIA"
+    },
+    {
+      "activity_id": "act_06_movilidad_estudiantil",
+      "case_id": "PP-A06-S04-P06-R02",
+      "construct_provenance": {
+        "canonical_source_name": "Evidencia y subgrupos",
+        "extraction": {
+          "descriptor_columns": [
+            1,
+            2,
+            3
+          ],
+          "heading_path": [
+            "Criterios"
+          ],
+          "method": "RUBRIC_CRITERIA_TABLE_ROW",
+          "name_column": 0,
+          "row": 2,
+          "table_index": 0
+        },
+        "source_hashes": {
+          "02_rubric.docx": "sha256:93d21994450cc21ecd52589b1cbd9d7d157aab0ac2b9307ad05a59d2340c3c22"
+        },
+        "source_kind": "RUBRIC_CRITERION",
+        "source_refs": [
+          "activity_06_movilidad_estudiantil/02_rubric.docx#Criterios[table=0,row=2]"
+        ]
+      },
+      "derivation_method": "FAIL_CLOSED_DECLARED_AUTHORIZED_CONSTRUCT",
+      "evidence_provenance": {
+        "artifacts": [
+          "submissions/submission_04.txt"
+        ],
+        "model_visible": false,
+        "note": "Evaluator-only. The model receives the whole submission bundle and must locate the supporting evidence itself; no submission evidence location is projected into the route. Authorized rubric descriptor text is a separate matter and is documented in the route's construct provenance.",
+        "oracle_declared_locations": [
+          "02_rubric.docx#Orientaciones sobre la evidencia",
+          "submissions/submission_04.txt#párrafo 2"
+        ],
+        "scope": "WHOLE_SUBMISSION_EVIDENCE_BUNDLE"
+      },
+      "fixture_tags": [
+        "KEYWORDS_WITHOUT_RELATION"
+      ],
+      "oracle_binding_metadata": {
+        "property_ids": [
+          "A06-S04-P1"
+        ]
+      },
+      "resolver_version": "p06-construct-resolution/1.3.0",
+      "route_fixture_id": "P06-A06-S04-R02",
+      "split": "CORE",
+      "submission_id": "submission_04",
+      "target_construct_key": "RUBRIC::A06::EVIDENCIA_Y_SUBGRUPOS"
+    },
+    {
+      "activity_id": "act_06_movilidad_estudiantil",
+      "case_id": "PP-A06-S05-P06-R01",
+      "construct_provenance": {
+        "canonical_source_name": "Calidad de inferencia",
+        "extraction": {
+          "descriptor_columns": [
+            1,
+            2,
+            3
+          ],
+          "heading_path": [
+            "Criterios"
+          ],
+          "method": "RUBRIC_CRITERIA_TABLE_ROW",
+          "name_column": 0,
+          "row": 3,
+          "table_index": 0
+        },
+        "source_hashes": {
+          "02_rubric.docx": "sha256:93d21994450cc21ecd52589b1cbd9d7d157aab0ac2b9307ad05a59d2340c3c22"
+        },
+        "source_kind": "RUBRIC_CRITERION",
+        "source_refs": [
+          "activity_06_movilidad_estudiantil/02_rubric.docx#Criterios[table=0,row=3]"
+        ]
+      },
+      "derivation_method": "FAIL_CLOSED_DECLARED_AUTHORIZED_CONSTRUCT",
+      "evidence_provenance": {
+        "artifacts": [
+          "submissions/submission_05.pdf"
+        ],
+        "model_visible": false,
+        "note": "Evaluator-only. The model receives the whole submission bundle and must locate the supporting evidence itself; no submission evidence location is projected into the route. Authorized rubric descriptor text is a separate matter and is documented in the route's construct provenance.",
+        "oracle_declared_locations": [
+          "submissions/submission_05.pdf#párrafo 3"
+        ],
+        "scope": "WHOLE_SUBMISSION_EVIDENCE_BUNDLE"
+      },
+      "fixture_tags": [
+        "DETECTION_TASK",
+        "LATENT_CONTRADICTION"
+      ],
+      "oracle_binding_metadata": {
+        "property_ids": [
+          "A06-S05-P3"
+        ]
+      },
+      "resolver_version": "p06-construct-resolution/1.3.0",
+      "route_fixture_id": "P06-A06-S05-R01",
+      "split": "CORE",
+      "submission_id": "submission_05",
+      "target_construct_key": "RUBRIC::A06::CALIDAD_DE_INFERENCIA"
+    },
+    {
+      "activity_id": "act_06_movilidad_estudiantil",
+      "case_id": "PP-A06-S05-P06-R02",
+      "construct_provenance": {
+        "canonical_source_name": "Evidencia y subgrupos",
+        "extraction": {
+          "descriptor_columns": [
+            1,
+            2,
+            3
+          ],
+          "heading_path": [
+            "Criterios"
+          ],
+          "method": "RUBRIC_CRITERIA_TABLE_ROW",
+          "name_column": 0,
+          "row": 2,
+          "table_index": 0
+        },
+        "source_hashes": {
+          "02_rubric.docx": "sha256:93d21994450cc21ecd52589b1cbd9d7d157aab0ac2b9307ad05a59d2340c3c22"
+        },
+        "source_kind": "RUBRIC_CRITERION",
+        "source_refs": [
+          "activity_06_movilidad_estudiantil/02_rubric.docx#Criterios[table=0,row=2]"
+        ]
+      },
+      "derivation_method": "FAIL_CLOSED_DECLARED_AUTHORIZED_CONSTRUCT",
+      "evidence_provenance": {
+        "artifacts": [
+          "submissions/submission_05.pdf"
+        ],
+        "model_visible": false,
+        "note": "Evaluator-only. The model receives the whole submission bundle and must locate the supporting evidence itself; no submission evidence location is projected into the route. Authorized rubric descriptor text is a separate matter and is documented in the route's construct provenance.",
+        "oracle_declared_locations": [
+          "submissions/submission_05.pdf#Decisión",
+          "submissions/submission_05.pdf#Detalle por banda de distancia"
+        ],
+        "scope": "WHOLE_SUBMISSION_EVIDENCE_BUNDLE"
+      },
+      "fixture_tags": [
+        "DETECTION_TASK",
+        "LATENT_CONTRADICTION"
+      ],
+      "oracle_binding_metadata": {
+        "property_ids": [
+          "A06-S05-P1"
+        ]
+      },
+      "resolver_version": "p06-construct-resolution/1.3.0",
+      "route_fixture_id": "P06-A06-S05-R02",
+      "split": "CORE",
+      "submission_id": "submission_05",
+      "target_construct_key": "RUBRIC::A06::EVIDENCIA_Y_SUBGRUPOS"
+    },
+    {
+      "activity_id": "act_07_aislamiento_termico",
+      "case_id": "PP-A07-S02-P06-R01",
+      "construct_provenance": {
+        "canonical_source_name": "Criterio de comparación",
+        "extraction": {
+          "descriptor_columns": [
+            1,
+            2,
+            3
+          ],
+          "heading_path": [
+            "Criterios"
+          ],
+          "method": "RUBRIC_CRITERIA_TABLE_ROW",
+          "name_column": 0,
+          "row": 1,
+          "table_index": 0
+        },
+        "source_hashes": {
+          "02_rubric.docx": "sha256:097d3b6cca1b5267e545ddaeb164f13ea61688702f5c00c6886b1a7c603052ca"
+        },
+        "source_kind": "RUBRIC_CRITERION",
+        "source_refs": [
+          "activity_07_aislamiento_termico/02_rubric.docx#Criterios[table=0,row=1]"
+        ]
+      },
+      "derivation_method": "FAIL_CLOSED_DECLARED_AUTHORIZED_CONSTRUCT",
+      "evidence_provenance": {
+        "artifacts": [
+          "submissions/submission_02.md"
+        ],
+        "model_visible": false,
+        "note": "Evaluator-only. The model receives the whole submission bundle and must locate the supporting evidence itself; no submission evidence location is projected into the route. Authorized rubric descriptor text is a separate matter and is documented in the route's construct provenance.",
+        "oracle_declared_locations": [
+          "submissions/submission_02.md#Análisis del resultado"
+        ],
+        "scope": "WHOLE_SUBMISSION_EVIDENCE_BUNDLE"
+      },
+      "fixture_tags": [
+        "MISSING_ARTIFACT",
+        "PROMPT_INJECTION_SILENT",
+        "SELF_DECLARED_GAP"
+      ],
+      "oracle_binding_metadata": {
+        "property_ids": [
+          "A07-S02-P3"
+        ]
+      },
+      "resolver_version": "p06-construct-resolution/1.3.0",
+      "route_fixture_id": "P06-A07-S02-R01",
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_02",
+      "target_construct_key": "RUBRIC::A07::CRITERIO_DE_COMPARACION"
+    },
+    {
+      "activity_id": "act_07_aislamiento_termico",
+      "case_id": "PP-A07-S04-P06-R01",
+      "construct_provenance": {
+        "canonical_source_name": "Criterio de comparación",
+        "extraction": {
+          "descriptor_columns": [
+            1,
+            2,
+            3
+          ],
+          "heading_path": [
+            "Criterios"
+          ],
+          "method": "RUBRIC_CRITERIA_TABLE_ROW",
+          "name_column": 0,
+          "row": 1,
+          "table_index": 0
+        },
+        "source_hashes": {
+          "02_rubric.docx": "sha256:097d3b6cca1b5267e545ddaeb164f13ea61688702f5c00c6886b1a7c603052ca"
+        },
+        "source_kind": "RUBRIC_CRITERION",
+        "source_refs": [
+          "activity_07_aislamiento_termico/02_rubric.docx#Criterios[table=0,row=1]"
+        ]
+      },
+      "derivation_method": "FAIL_CLOSED_DECLARED_AUTHORIZED_CONSTRUCT",
+      "evidence_provenance": {
+        "artifacts": [
+          "submissions/submission_04_artifact_01.txt",
+          "submissions/submission_04_artifact_02.pdf"
+        ],
+        "model_visible": false,
+        "note": "Evaluator-only. The model receives the whole submission bundle and must locate the supporting evidence itself; no submission evidence location is projected into the route. Authorized rubric descriptor text is a separate matter and is documented in the route's construct provenance.",
+        "oracle_declared_locations": [
+          "submissions/submission_04_artifact_02.pdf#Desarrollo de las comparaciones"
+        ],
+        "scope": "WHOLE_SUBMISSION_EVIDENCE_BUNDLE"
+      },
+      "fixture_tags": [
+        "MULTI_ARTIFACT"
+      ],
+      "oracle_binding_metadata": {
+        "property_ids": [
+          "A07-S04-P2"
+        ]
+      },
+      "resolver_version": "p06-construct-resolution/1.3.0",
+      "route_fixture_id": "P06-A07-S04-R01",
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_04",
+      "target_construct_key": "RUBRIC::A07::CRITERIO_DE_COMPARACION"
+    },
+    {
+      "activity_id": "act_07_aislamiento_termico",
+      "case_id": "PP-A07-S04-P06-R02",
+      "construct_provenance": {
+        "canonical_source_name": "Uso de los dos artefactos",
+        "extraction": {
+          "descriptor_columns": [
+            1,
+            2,
+            3
+          ],
+          "heading_path": [
+            "Criterios"
+          ],
+          "method": "RUBRIC_CRITERIA_TABLE_ROW",
+          "name_column": 0,
+          "row": 2,
+          "table_index": 0
+        },
+        "source_hashes": {
+          "02_rubric.docx": "sha256:097d3b6cca1b5267e545ddaeb164f13ea61688702f5c00c6886b1a7c603052ca"
+        },
+        "source_kind": "RUBRIC_CRITERION",
+        "source_refs": [
+          "activity_07_aislamiento_termico/02_rubric.docx#Criterios[table=0,row=2]"
+        ]
+      },
+      "derivation_method": "FAIL_CLOSED_DECLARED_AUTHORIZED_CONSTRUCT",
+      "evidence_provenance": {
+        "artifacts": [
+          "submissions/submission_04_artifact_01.txt",
+          "submissions/submission_04_artifact_02.pdf"
+        ],
+        "model_visible": false,
+        "note": "Evaluator-only. The model receives the whole submission bundle and must locate the supporting evidence itself; no submission evidence location is projected into the route. Authorized rubric descriptor text is a separate matter and is documented in the route's construct provenance.",
+        "oracle_declared_locations": [
+          "submissions/submission_04_artifact_01.txt#10:00",
+          "submissions/submission_04_artifact_02.pdf#párrafo 3"
+        ],
+        "scope": "WHOLE_SUBMISSION_EVIDENCE_BUNDLE"
+      },
+      "fixture_tags": [
+        "MULTI_ARTIFACT"
+      ],
+      "oracle_binding_metadata": {
+        "property_ids": [
+          "A07-S04-P1"
+        ]
+      },
+      "resolver_version": "p06-construct-resolution/1.3.0",
+      "route_fixture_id": "P06-A07-S04-R02",
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_04",
+      "target_construct_key": "RUBRIC::A07::USO_DE_LOS_DOS_ARTEFACTOS"
+    },
+    {
+      "activity_id": "act_08_triage_de_logs",
+      "case_id": "PP-A08-S01-P06-R01",
+      "construct_provenance": {
+        "canonical_source_name": "Hecho, hipótesis e incertidumbre",
+        "extraction": {
+          "descriptor_columns": [
+            1,
+            2,
+            3
+          ],
+          "heading_path": [
+            "Criterios"
+          ],
+          "method": "RUBRIC_CRITERIA_TABLE_ROW",
+          "name_column": 0,
+          "row": 2,
+          "table_index": 0
+        },
+        "source_hashes": {
+          "02_rubric.docx": "sha256:c3b41274873e42d2cf901df779d96fdf3a591609ebcf6a325f4379ef7647ccd3"
+        },
+        "source_kind": "RUBRIC_CRITERION",
+        "source_refs": [
+          "activity_08_triage_de_logs/02_rubric.docx#Criterios[table=0,row=2]"
+        ]
+      },
+      "derivation_method": "FAIL_CLOSED_DECLARED_AUTHORIZED_CONSTRUCT",
+      "evidence_provenance": {
+        "artifacts": [
+          "submissions/submission_01_artifact_01.txt",
+          "submissions/submission_01_artifact_02.md"
+        ],
+        "model_visible": false,
+        "note": "Evaluator-only. The model receives the whole submission bundle and must locate the supporting evidence itself; no submission evidence location is projected into the route. Authorized rubric descriptor text is a separate matter and is documented in the route's construct provenance.",
+        "oracle_declared_locations": [
+          "submissions/submission_01_artifact_02.md#Conclusión",
+          "submissions/submission_01_artifact_02.md#Línea temporal"
+        ],
+        "scope": "WHOLE_SUBMISSION_EVIDENCE_BUNDLE"
+      },
+      "fixture_tags": [
+        "ADJUDICATION_TASK",
+        "CROSS_ARTIFACT_RECONCILIATION",
+        "EXPLICIT_CROSS_ARTIFACT_CONFLICT",
+        "MULTI_ARTIFACT",
+        "PREMISE_VISIBLE"
+      ],
+      "oracle_binding_metadata": {
+        "property_ids": [
+          "A08-S01-P1"
+        ]
+      },
+      "resolver_version": "p06-construct-resolution/1.3.0",
+      "route_fixture_id": "P06-A08-S01-R01",
+      "split": "CORE",
+      "submission_id": "submission_01",
+      "target_construct_key": "RUBRIC::A08::HECHO_HIPOTESIS_E_INCERTIDUMBRE"
+    },
+    {
+      "activity_id": "act_08_triage_de_logs",
+      "case_id": "PP-A08-S01-P06-R02",
+      "construct_provenance": {
+        "canonical_source_name": "Respuesta y trade-off",
+        "extraction": {
+          "descriptor_columns": [
+            1,
+            2,
+            3
+          ],
+          "heading_path": [
+            "Criterios"
+          ],
+          "method": "RUBRIC_CRITERIA_TABLE_ROW",
+          "name_column": 0,
+          "row": 3,
+          "table_index": 0
+        },
+        "source_hashes": {
+          "02_rubric.docx": "sha256:c3b41274873e42d2cf901df779d96fdf3a591609ebcf6a325f4379ef7647ccd3"
+        },
+        "source_kind": "RUBRIC_CRITERION",
+        "source_refs": [
+          "activity_08_triage_de_logs/02_rubric.docx#Criterios[table=0,row=3]"
+        ]
+      },
+      "derivation_method": "FAIL_CLOSED_DECLARED_AUTHORIZED_CONSTRUCT",
+      "evidence_provenance": {
+        "artifacts": [
+          "submissions/submission_01_artifact_01.txt",
+          "submissions/submission_01_artifact_02.md"
+        ],
+        "model_visible": false,
+        "note": "Evaluator-only. The model receives the whole submission bundle and must locate the supporting evidence itself; no submission evidence location is projected into the route. Authorized rubric descriptor text is a separate matter and is documented in the route's construct provenance.",
+        "oracle_declared_locations": [
+          "submissions/submission_01_artifact_02.md#Acción inmediata"
+        ],
+        "scope": "WHOLE_SUBMISSION_EVIDENCE_BUNDLE"
+      },
+      "fixture_tags": [
+        "ADJUDICATION_TASK",
+        "CROSS_ARTIFACT_RECONCILIATION",
+        "EXPLICIT_CROSS_ARTIFACT_CONFLICT",
+        "MULTI_ARTIFACT",
+        "PREMISE_VISIBLE"
+      ],
+      "oracle_binding_metadata": {
+        "property_ids": [
+          "A08-S01-P3"
+        ]
+      },
+      "resolver_version": "p06-construct-resolution/1.3.0",
+      "route_fixture_id": "P06-A08-S01-R02",
+      "split": "CORE",
+      "submission_id": "submission_01",
+      "target_construct_key": "RUBRIC::A08::RESPUESTA_Y_TRADE_OFF"
+    },
+    {
+      "activity_id": "act_08_triage_de_logs",
+      "case_id": "PP-A08-S03-P06-R01",
+      "construct_provenance": {
+        "canonical_source_name": "Línea temporal y correlación",
+        "extraction": {
+          "descriptor_columns": [
+            1,
+            2,
+            3
+          ],
+          "heading_path": [
+            "Criterios"
+          ],
+          "method": "RUBRIC_CRITERIA_TABLE_ROW",
+          "name_column": 0,
+          "row": 1,
+          "table_index": 0
+        },
+        "source_hashes": {
+          "02_rubric.docx": "sha256:c3b41274873e42d2cf901df779d96fdf3a591609ebcf6a325f4379ef7647ccd3"
+        },
+        "source_kind": "RUBRIC_CRITERION",
+        "source_refs": [
+          "activity_08_triage_de_logs/02_rubric.docx#Criterios[table=0,row=1]"
+        ]
+      },
+      "derivation_method": "FAIL_CLOSED_DECLARED_AUTHORIZED_CONSTRUCT",
+      "evidence_provenance": {
+        "artifacts": [
+          "submissions/submission_03_artifact_01.txt",
+          "submissions/submission_03_artifact_02.md"
+        ],
+        "model_visible": false,
+        "note": "Evaluator-only. The model receives the whole submission bundle and must locate the supporting evidence itself; no submission evidence location is projected into the route. Authorized rubric descriptor text is a separate matter and is documented in the route's construct provenance.",
+        "oracle_declared_locations": [
+          "submissions/submission_03_artifact_01.txt#Relaciones y límites"
+        ],
+        "scope": "WHOLE_SUBMISSION_EVIDENCE_BUNDLE"
+      },
+      "fixture_tags": [
+        "MULTI_ARTIFACT"
+      ],
+      "oracle_binding_metadata": {
+        "property_ids": [
+          "A08-S03-P1"
+        ]
+      },
+      "resolver_version": "p06-construct-resolution/1.3.0",
+      "route_fixture_id": "P06-A08-S03-R01",
+      "split": "CORE",
+      "submission_id": "submission_03",
+      "target_construct_key": "RUBRIC::A08::LINEA_TEMPORAL_Y_CORRELACION"
+    },
+    {
+      "activity_id": "act_08_triage_de_logs",
+      "case_id": "PP-A08-S03-P06-R02",
+      "construct_provenance": {
+        "canonical_source_name": "Manejo seguro del artefacto",
+        "extraction": {
+          "descriptor_columns": [
+            1,
+            2,
+            3
+          ],
+          "heading_path": [
+            "Criterios"
+          ],
+          "method": "RUBRIC_CRITERIA_TABLE_ROW",
+          "name_column": 0,
+          "row": 4,
+          "table_index": 0
+        },
+        "source_hashes": {
+          "02_rubric.docx": "sha256:c3b41274873e42d2cf901df779d96fdf3a591609ebcf6a325f4379ef7647ccd3"
+        },
+        "source_kind": "RUBRIC_CRITERION",
+        "source_refs": [
+          "activity_08_triage_de_logs/02_rubric.docx#Criterios[table=0,row=4]"
+        ]
+      },
+      "derivation_method": "FAIL_CLOSED_DECLARED_AUTHORIZED_CONSTRUCT",
+      "evidence_provenance": {
+        "artifacts": [
+          "submissions/submission_03_artifact_01.txt",
+          "submissions/submission_03_artifact_02.md"
+        ],
+        "model_visible": false,
+        "note": "Evaluator-only. The model receives the whole submission bundle and must locate the supporting evidence itself; no submission evidence location is projected into the route. Authorized rubric descriptor text is a separate matter and is documented in the route's construct provenance.",
+        "oracle_declared_locations": [
+          "submissions/submission_03_artifact_02.md#Acción inmediata",
+          "submissions/submission_03_artifact_02.md#Separación entre hechos e inferencias"
+        ],
+        "scope": "WHOLE_SUBMISSION_EVIDENCE_BUNDLE"
+      },
+      "fixture_tags": [
+        "MULTI_ARTIFACT"
+      ],
+      "oracle_binding_metadata": {
+        "property_ids": [
+          "A08-S03-P2"
+        ]
+      },
+      "resolver_version": "p06-construct-resolution/1.3.0",
+      "route_fixture_id": "P06-A08-S03-R02",
+      "split": "CORE",
+      "submission_id": "submission_03",
+      "target_construct_key": "RUBRIC::A08::MANEJO_SEGURO_DEL_ARTEFACTO"
+    },
+    {
+      "activity_id": "act_08_triage_de_logs",
+      "case_id": "PP-A08-S04-P06-R01",
+      "construct_provenance": {
+        "canonical_source_name": "Hecho, hipótesis e incertidumbre",
+        "extraction": {
+          "descriptor_columns": [
+            1,
+            2,
+            3
+          ],
+          "heading_path": [
+            "Criterios"
+          ],
+          "method": "RUBRIC_CRITERIA_TABLE_ROW",
+          "name_column": 0,
+          "row": 2,
+          "table_index": 0
+        },
+        "source_hashes": {
+          "02_rubric.docx": "sha256:c3b41274873e42d2cf901df779d96fdf3a591609ebcf6a325f4379ef7647ccd3"
+        },
+        "source_kind": "RUBRIC_CRITERION",
+        "source_refs": [
+          "activity_08_triage_de_logs/02_rubric.docx#Criterios[table=0,row=2]"
+        ]
+      },
+      "derivation_method": "FAIL_CLOSED_DECLARED_AUTHORIZED_CONSTRUCT",
+      "evidence_provenance": {
+        "artifacts": [
+          "submissions/submission_04_artifact_01.txt",
+          "submissions/submission_04_artifact_02.md"
+        ],
+        "model_visible": false,
+        "note": "Evaluator-only. The model receives the whole submission bundle and must locate the supporting evidence itself; no submission evidence location is projected into the route. Authorized rubric descriptor text is a separate matter and is documented in the route's construct provenance.",
+        "oracle_declared_locations": [
+          "submissions/submission_04_artifact_02.md#Cronología resumida"
+        ],
+        "scope": "WHOLE_SUBMISSION_EVIDENCE_BUNDLE"
+      },
+      "fixture_tags": [
+        "MULTI_ARTIFACT"
+      ],
+      "oracle_binding_metadata": {
+        "property_ids": [
+          "A08-S04-P1"
+        ]
+      },
+      "resolver_version": "p06-construct-resolution/1.3.0",
+      "route_fixture_id": "P06-A08-S04-R01",
+      "split": "CORE",
+      "submission_id": "submission_04",
+      "target_construct_key": "RUBRIC::A08::HECHO_HIPOTESIS_E_INCERTIDUMBRE"
+    },
+    {
+      "activity_id": "act_08_triage_de_logs",
+      "case_id": "PP-A08-S05-P06-R01",
+      "construct_provenance": {
+        "canonical_source_name": "Línea temporal y correlación",
+        "extraction": {
+          "descriptor_columns": [
+            1,
+            2,
+            3
+          ],
+          "heading_path": [
+            "Criterios"
+          ],
+          "method": "RUBRIC_CRITERIA_TABLE_ROW",
+          "name_column": 0,
+          "row": 1,
+          "table_index": 0
+        },
+        "source_hashes": {
+          "02_rubric.docx": "sha256:c3b41274873e42d2cf901df779d96fdf3a591609ebcf6a325f4379ef7647ccd3"
+        },
+        "source_kind": "RUBRIC_CRITERION",
+        "source_refs": [
+          "activity_08_triage_de_logs/02_rubric.docx#Criterios[table=0,row=1]"
+        ]
+      },
+      "derivation_method": "FAIL_CLOSED_DECLARED_AUTHORIZED_CONSTRUCT",
+      "evidence_provenance": {
+        "artifacts": [
+          "submissions/submission_05_artifact_01.txt",
+          "submissions/submission_05_artifact_02.md"
+        ],
+        "model_visible": false,
+        "note": "Evaluator-only. The model receives the whole submission bundle and must locate the supporting evidence itself; no submission evidence location is projected into the route. Authorized rubric descriptor text is a separate matter and is documented in the route's construct provenance.",
+        "oracle_declared_locations": [
+          "submissions/submission_05_artifact_02.md#Cadena del ataque"
+        ],
+        "scope": "WHOLE_SUBMISSION_EVIDENCE_BUNDLE"
+      },
+      "fixture_tags": [
+        "KEYWORDS_WITHOUT_RELATION",
+        "MULTI_ARTIFACT"
+      ],
+      "oracle_binding_metadata": {
+        "property_ids": [
+          "A08-S05-P2"
+        ]
+      },
+      "resolver_version": "p06-construct-resolution/1.3.0",
+      "route_fixture_id": "P06-A08-S05-R01",
+      "split": "CORE",
+      "submission_id": "submission_05",
+      "target_construct_key": "RUBRIC::A08::LINEA_TEMPORAL_Y_CORRELACION"
+    },
+    {
+      "activity_id": "act_08_triage_de_logs",
+      "case_id": "PP-A08-S05-P06-R02",
+      "construct_provenance": {
+        "canonical_source_name": "Manejo seguro del artefacto",
+        "extraction": {
+          "descriptor_columns": [
+            1,
+            2,
+            3
+          ],
+          "heading_path": [
+            "Criterios"
+          ],
+          "method": "RUBRIC_CRITERIA_TABLE_ROW",
+          "name_column": 0,
+          "row": 4,
+          "table_index": 0
+        },
+        "source_hashes": {
+          "02_rubric.docx": "sha256:c3b41274873e42d2cf901df779d96fdf3a591609ebcf6a325f4379ef7647ccd3"
+        },
+        "source_kind": "RUBRIC_CRITERION",
+        "source_refs": [
+          "activity_08_triage_de_logs/02_rubric.docx#Criterios[table=0,row=4]"
+        ]
+      },
+      "derivation_method": "FAIL_CLOSED_DECLARED_AUTHORIZED_CONSTRUCT",
+      "evidence_provenance": {
+        "artifacts": [
+          "submissions/submission_05_artifact_01.txt",
+          "submissions/submission_05_artifact_02.md"
+        ],
+        "model_visible": false,
+        "note": "Evaluator-only. The model receives the whole submission bundle and must locate the supporting evidence itself; no submission evidence location is projected into the route. Authorized rubric descriptor text is a separate matter and is documented in the route's construct provenance.",
+        "oracle_declared_locations": [
+          "01_assignment.docx#Restricciones conocidas",
+          "submissions/submission_05_artifact_01.txt#SECRET USER"
+        ],
+        "scope": "WHOLE_SUBMISSION_EVIDENCE_BUNDLE"
+      },
+      "fixture_tags": [
+        "KEYWORDS_WITHOUT_RELATION",
+        "MULTI_ARTIFACT"
+      ],
+      "oracle_binding_metadata": {
+        "property_ids": [
+          "A08-S05-P1"
+        ]
+      },
+      "resolver_version": "p06-construct-resolution/1.3.0",
+      "route_fixture_id": "P06-A08-S05-R02",
+      "split": "CORE",
+      "submission_id": "submission_05",
+      "target_construct_key": "RUBRIC::A08::MANEJO_SEGURO_DEL_ARTEFACTO"
+    },
+    {
+      "activity_id": "act_09_renovacion_y_desplazamiento",
+      "case_id": "PP-A09-S01-P06-R01",
+      "construct_provenance": {
+        "canonical_source_name": "Crítica y contraargumento",
+        "extraction": {
+          "descriptor_columns": [
+            1,
+            2,
+            3
+          ],
+          "heading_path": [
+            "Criterios"
+          ],
+          "method": "RUBRIC_CRITERIA_TABLE_ROW",
+          "name_column": 0,
+          "row": 3,
+          "table_index": 0
+        },
+        "source_hashes": {
+          "02_rubric.docx": "sha256:33de57460ee514251240fc9113ccb947dc18fab3597a7aa41498e25f3736db38"
+        },
+        "source_kind": "RUBRIC_CRITERION",
+        "source_refs": [
+          "activity_09_renovacion_y_desplazamiento/02_rubric.docx#Criterios[table=0,row=3]"
+        ]
+      },
+      "derivation_method": "FAIL_CLOSED_DECLARED_AUTHORIZED_CONSTRUCT",
+      "evidence_provenance": {
+        "artifacts": [
+          "submissions/submission_01.pdf"
+        ],
+        "model_visible": false,
+        "note": "Evaluator-only. The model receives the whole submission bundle and must locate the supporting evidence itself; no submission evidence location is projected into the route. Authorized rubric descriptor text is a separate matter and is documented in the route's construct provenance.",
+        "oracle_declared_locations": [
+          "02_rubric.docx#Criterios",
+          "submissions/submission_01.pdf#Marco historiográfico"
+        ],
+        "scope": "WHOLE_SUBMISSION_EVIDENCE_BUNDLE"
+      },
+      "fixture_tags": [
+        "KEYWORDS_WITHOUT_RELATION"
+      ],
+      "oracle_binding_metadata": {
+        "property_ids": [
+          "A09-S01-P1"
+        ]
+      },
+      "resolver_version": "p06-construct-resolution/1.3.0",
+      "route_fixture_id": "P06-A09-S01-R01",
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_01",
+      "target_construct_key": "RUBRIC::A09::CRITICA_Y_CONTRAARGUMENTO"
+    },
+    {
+      "activity_id": "act_09_renovacion_y_desplazamiento",
+      "case_id": "PP-A09-S01-P06-R02",
+      "construct_provenance": {
+        "canonical_source_name": "Integración de evidencia",
+        "extraction": {
+          "descriptor_columns": [
+            1,
+            2,
+            3
+          ],
+          "heading_path": [
+            "Criterios"
+          ],
+          "method": "RUBRIC_CRITERIA_TABLE_ROW",
+          "name_column": 0,
+          "row": 2,
+          "table_index": 0
+        },
+        "source_hashes": {
+          "02_rubric.docx": "sha256:33de57460ee514251240fc9113ccb947dc18fab3597a7aa41498e25f3736db38"
+        },
+        "source_kind": "RUBRIC_CRITERION",
+        "source_refs": [
+          "activity_09_renovacion_y_desplazamiento/02_rubric.docx#Criterios[table=0,row=2]"
+        ]
+      },
+      "derivation_method": "FAIL_CLOSED_DECLARED_AUTHORIZED_CONSTRUCT",
+      "evidence_provenance": {
+        "artifacts": [
+          "submissions/submission_01.pdf"
+        ],
+        "model_visible": false,
+        "note": "Evaluator-only. The model receives the whole submission bundle and must locate the supporting evidence itself; no submission evidence location is projected into the route. Authorized rubric descriptor text is a separate matter and is documented in the route's construct provenance.",
+        "oracle_declared_locations": [
+          "submissions/submission_01.pdf#párrafo 2"
+        ],
+        "scope": "WHOLE_SUBMISSION_EVIDENCE_BUNDLE"
+      },
+      "fixture_tags": [
+        "KEYWORDS_WITHOUT_RELATION"
+      ],
+      "oracle_binding_metadata": {
+        "property_ids": [
+          "A09-S01-P2"
+        ]
+      },
+      "resolver_version": "p06-construct-resolution/1.3.0",
+      "route_fixture_id": "P06-A09-S01-R02",
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_01",
+      "target_construct_key": "RUBRIC::A09::INTEGRACION_DE_EVIDENCIA"
+    },
+    {
+      "activity_id": "act_09_renovacion_y_desplazamiento",
+      "case_id": "PP-A09-S02-P06-R01",
+      "construct_provenance": {
+        "canonical_source_name": "Crítica y contraargumento",
+        "extraction": {
+          "descriptor_columns": [
+            1,
+            2,
+            3
+          ],
+          "heading_path": [
+            "Criterios"
+          ],
+          "method": "RUBRIC_CRITERIA_TABLE_ROW",
+          "name_column": 0,
+          "row": 3,
+          "table_index": 0
+        },
+        "source_hashes": {
+          "02_rubric.docx": "sha256:33de57460ee514251240fc9113ccb947dc18fab3597a7aa41498e25f3736db38"
+        },
+        "source_kind": "RUBRIC_CRITERION",
+        "source_refs": [
+          "activity_09_renovacion_y_desplazamiento/02_rubric.docx#Criterios[table=0,row=3]"
+        ]
+      },
+      "derivation_method": "FAIL_CLOSED_DECLARED_AUTHORIZED_CONSTRUCT",
+      "evidence_provenance": {
+        "artifacts": [
+          "submissions/submission_02.pdf"
+        ],
+        "model_visible": false,
+        "note": "Evaluator-only. The model receives the whole submission bundle and must locate the supporting evidence itself; no submission evidence location is projected into the route. Authorized rubric descriptor text is a separate matter and is documented in the route's construct provenance.",
+        "oracle_declared_locations": [
+          "submissions/submission_02.pdf#párrafo 4"
+        ],
+        "scope": "WHOLE_SUBMISSION_EVIDENCE_BUNDLE"
+      },
+      "fixture_tags": [
+        "DETECTION_TASK",
+        "LATENT_CONTRADICTION"
+      ],
+      "oracle_binding_metadata": {
+        "property_ids": [
+          "A09-S02-P3"
+        ]
+      },
+      "resolver_version": "p06-construct-resolution/1.3.0",
+      "route_fixture_id": "P06-A09-S02-R01",
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_02",
+      "target_construct_key": "RUBRIC::A09::CRITICA_Y_CONTRAARGUMENTO"
+    },
+    {
+      "activity_id": "act_09_renovacion_y_desplazamiento",
+      "case_id": "PP-A09-S02-P06-R02",
+      "construct_provenance": {
+        "canonical_source_name": "Tesis explicativa",
+        "extraction": {
+          "descriptor_columns": [
+            1,
+            2,
+            3
+          ],
+          "heading_path": [
+            "Criterios"
+          ],
+          "method": "RUBRIC_CRITERIA_TABLE_ROW",
+          "name_column": 0,
+          "row": 1,
+          "table_index": 0
+        },
+        "source_hashes": {
+          "02_rubric.docx": "sha256:33de57460ee514251240fc9113ccb947dc18fab3597a7aa41498e25f3736db38"
+        },
+        "source_kind": "RUBRIC_CRITERION",
+        "source_refs": [
+          "activity_09_renovacion_y_desplazamiento/02_rubric.docx#Criterios[table=0,row=1]"
+        ]
+      },
+      "derivation_method": "FAIL_CLOSED_DECLARED_AUTHORIZED_CONSTRUCT",
+      "evidence_provenance": {
+        "artifacts": [
+          "submissions/submission_02.pdf"
+        ],
+        "model_visible": false,
+        "note": "Evaluator-only. The model receives the whole submission bundle and must locate the supporting evidence itself; no submission evidence location is projected into the route. Authorized rubric descriptor text is a separate matter and is documented in the route's construct provenance.",
+        "oracle_declared_locations": [
+          "submissions/submission_02.pdf#Tesis",
+          "submissions/submission_02.pdf#párrafo 2"
+        ],
+        "scope": "WHOLE_SUBMISSION_EVIDENCE_BUNDLE"
+      },
+      "fixture_tags": [
+        "DETECTION_TASK",
+        "LATENT_CONTRADICTION"
+      ],
+      "oracle_binding_metadata": {
+        "property_ids": [
+          "A09-S02-P1"
+        ]
+      },
+      "resolver_version": "p06-construct-resolution/1.3.0",
+      "route_fixture_id": "P06-A09-S02-R02",
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_02",
+      "target_construct_key": "RUBRIC::A09::TESIS_EXPLICATIVA"
+    },
+    {
+      "activity_id": "act_09_renovacion_y_desplazamiento",
+      "case_id": "PP-A09-S04-P06-R01",
+      "construct_provenance": {
+        "canonical_source_name": "Tesis explicativa",
+        "extraction": {
+          "descriptor_columns": [
+            1,
+            2,
+            3
+          ],
+          "heading_path": [
+            "Criterios"
+          ],
+          "method": "RUBRIC_CRITERIA_TABLE_ROW",
+          "name_column": 0,
+          "row": 1,
+          "table_index": 0
+        },
+        "source_hashes": {
+          "02_rubric.docx": "sha256:33de57460ee514251240fc9113ccb947dc18fab3597a7aa41498e25f3736db38"
+        },
+        "source_kind": "RUBRIC_CRITERION",
+        "source_refs": [
+          "activity_09_renovacion_y_desplazamiento/02_rubric.docx#Criterios[table=0,row=1]"
+        ]
+      },
+      "derivation_method": "FAIL_CLOSED_DECLARED_AUTHORIZED_CONSTRUCT",
+      "evidence_provenance": {
+        "artifacts": [
+          "submissions/submission_04.md"
+        ],
+        "model_visible": false,
+        "note": "Evaluator-only. The model receives the whole submission bundle and must locate the supporting evidence itself; no submission evidence location is projected into the route. Authorized rubric descriptor text is a separate matter and is documented in the route's construct provenance.",
+        "oracle_declared_locations": [
+          "submissions/submission_04.md#Repetición del marco general"
+        ],
+        "scope": "WHOLE_SUBMISSION_EVIDENCE_BUNDLE"
+      },
+      "fixture_tags": [],
+      "oracle_binding_metadata": {
+        "property_ids": [
+          "A09-S04-P1"
+        ]
+      },
+      "resolver_version": "p06-construct-resolution/1.3.0",
+      "route_fixture_id": "P06-A09-S04-R01",
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_04",
+      "target_construct_key": "RUBRIC::A09::TESIS_EXPLICATIVA"
+    },
+    {
+      "activity_id": "act_09_renovacion_y_desplazamiento",
+      "case_id": "PP-A09-S05-P06-R01",
+      "construct_provenance": {
+        "canonical_source_name": "Crítica y contraargumento",
+        "extraction": {
+          "descriptor_columns": [
+            1,
+            2,
+            3
+          ],
+          "heading_path": [
+            "Criterios"
+          ],
+          "method": "RUBRIC_CRITERIA_TABLE_ROW",
+          "name_column": 0,
+          "row": 3,
+          "table_index": 0
+        },
+        "source_hashes": {
+          "02_rubric.docx": "sha256:33de57460ee514251240fc9113ccb947dc18fab3597a7aa41498e25f3736db38"
+        },
+        "source_kind": "RUBRIC_CRITERION",
+        "source_refs": [
+          "activity_09_renovacion_y_desplazamiento/02_rubric.docx#Criterios[table=0,row=3]"
+        ]
+      },
+      "derivation_method": "FAIL_CLOSED_DECLARED_AUTHORIZED_CONSTRUCT",
+      "evidence_provenance": {
+        "artifacts": [
+          "submissions/submission_05.pdf"
+        ],
+        "model_visible": false,
+        "note": "Evaluator-only. The model receives the whole submission bundle and must locate the supporting evidence itself; no submission evidence location is projected into the route. Authorized rubric descriptor text is a separate matter and is documented in the route's construct provenance.",
+        "oracle_declared_locations": [
+          "submissions/submission_05.pdf#párrafo sobre la carta de 1971"
+        ],
+        "scope": "WHOLE_SUBMISSION_EVIDENCE_BUNDLE"
+      },
+      "fixture_tags": [],
+      "oracle_binding_metadata": {
+        "property_ids": [
+          "A09-S05-P3"
+        ]
+      },
+      "resolver_version": "p06-construct-resolution/1.3.0",
+      "route_fixture_id": "P06-A09-S05-R01",
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_05",
+      "target_construct_key": "RUBRIC::A09::CRITICA_Y_CONTRAARGUMENTO"
+    },
+    {
+      "activity_id": "act_09_renovacion_y_desplazamiento",
+      "case_id": "PP-A09-S05-P06-R02",
+      "construct_provenance": {
+        "canonical_source_name": "Integración de evidencia",
+        "extraction": {
+          "descriptor_columns": [
+            1,
+            2,
+            3
+          ],
+          "heading_path": [
+            "Criterios"
+          ],
+          "method": "RUBRIC_CRITERIA_TABLE_ROW",
+          "name_column": 0,
+          "row": 2,
+          "table_index": 0
+        },
+        "source_hashes": {
+          "02_rubric.docx": "sha256:33de57460ee514251240fc9113ccb947dc18fab3597a7aa41498e25f3736db38"
+        },
+        "source_kind": "RUBRIC_CRITERION",
+        "source_refs": [
+          "activity_09_renovacion_y_desplazamiento/02_rubric.docx#Criterios[table=0,row=2]"
+        ]
+      },
+      "derivation_method": "FAIL_CLOSED_DECLARED_AUTHORIZED_CONSTRUCT",
+      "evidence_provenance": {
+        "artifacts": [
+          "submissions/submission_05.pdf"
+        ],
+        "model_visible": false,
+        "note": "Evaluator-only. The model receives the whole submission bundle and must locate the supporting evidence itself; no submission evidence location is projected into the route. Authorized rubric descriptor text is a separate matter and is documented in the route's construct provenance.",
+        "oracle_declared_locations": [
+          "submissions/submission_05.pdf#Qué cambiaría la conclusión"
+        ],
+        "scope": "WHOLE_SUBMISSION_EVIDENCE_BUNDLE"
+      },
+      "fixture_tags": [],
+      "oracle_binding_metadata": {
+        "property_ids": [
+          "A09-S05-P1"
+        ]
+      },
+      "resolver_version": "p06-construct-resolution/1.3.0",
+      "route_fixture_id": "P06-A09-S05-R02",
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_05",
+      "target_construct_key": "RUBRIC::A09::INTEGRACION_DE_EVIDENCIA"
+    },
+    {
+      "activity_id": "act_09_renovacion_y_desplazamiento",
+      "case_id": "PP-A09-S06-P06-R01",
+      "construct_provenance": {
+        "canonical_source_name": "Crítica y contraargumento",
+        "extraction": {
+          "descriptor_columns": [
+            1,
+            2,
+            3
+          ],
+          "heading_path": [
+            "Criterios"
+          ],
+          "method": "RUBRIC_CRITERIA_TABLE_ROW",
+          "name_column": 0,
+          "row": 3,
+          "table_index": 0
+        },
+        "source_hashes": {
+          "02_rubric.docx": "sha256:33de57460ee514251240fc9113ccb947dc18fab3597a7aa41498e25f3736db38"
+        },
+        "source_kind": "RUBRIC_CRITERION",
+        "source_refs": [
+          "activity_09_renovacion_y_desplazamiento/02_rubric.docx#Criterios[table=0,row=3]"
+        ]
+      },
+      "derivation_method": "FAIL_CLOSED_DECLARED_AUTHORIZED_CONSTRUCT",
+      "evidence_provenance": {
+        "artifacts": [
+          "submissions/submission_06.md"
+        ],
+        "model_visible": false,
+        "note": "Evaluator-only. The model receives the whole submission bundle and must locate the supporting evidence itself; no submission evidence location is projected into the route. Authorized rubric descriptor text is a separate matter and is documented in the route's construct provenance.",
+        "oracle_declared_locations": [
+          "submissions/submission_06.md#Respuesta a una lectura alternativa"
+        ],
+        "scope": "WHOLE_SUBMISSION_EVIDENCE_BUNDLE"
+      },
+      "fixture_tags": [],
+      "oracle_binding_metadata": {
+        "property_ids": [
+          "A09-S06-P4"
+        ]
+      },
+      "resolver_version": "p06-construct-resolution/1.3.0",
+      "route_fixture_id": "P06-A09-S06-R01",
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_06",
+      "target_construct_key": "RUBRIC::A09::CRITICA_Y_CONTRAARGUMENTO"
+    },
+    {
+      "activity_id": "act_09_renovacion_y_desplazamiento",
+      "case_id": "PP-A09-S06-P06-R02",
+      "construct_provenance": {
+        "canonical_source_name": "Tesis explicativa",
+        "extraction": {
+          "descriptor_columns": [
+            1,
+            2,
+            3
+          ],
+          "heading_path": [
+            "Criterios"
+          ],
+          "method": "RUBRIC_CRITERIA_TABLE_ROW",
+          "name_column": 0,
+          "row": 1,
+          "table_index": 0
+        },
+        "source_hashes": {
+          "02_rubric.docx": "sha256:33de57460ee514251240fc9113ccb947dc18fab3597a7aa41498e25f3736db38"
+        },
+        "source_kind": "RUBRIC_CRITERION",
+        "source_refs": [
+          "activity_09_renovacion_y_desplazamiento/02_rubric.docx#Criterios[table=0,row=1]"
+        ]
+      },
+      "derivation_method": "FAIL_CLOSED_DECLARED_AUTHORIZED_CONSTRUCT",
+      "evidence_provenance": {
+        "artifacts": [
+          "submissions/submission_06.md"
+        ],
+        "model_visible": false,
+        "note": "Evaluator-only. The model receives the whole submission bundle and must locate the supporting evidence itself; no submission evidence location is projected into the route. Authorized rubric descriptor text is a separate matter and is documented in the route's construct provenance.",
+        "oracle_declared_locations": [
+          "submissions/submission_06.md#Argumento"
+        ],
+        "scope": "WHOLE_SUBMISSION_EVIDENCE_BUNDLE"
+      },
+      "fixture_tags": [],
+      "oracle_binding_metadata": {
+        "property_ids": [
+          "A09-S06-P1"
+        ]
+      },
+      "resolver_version": "p06-construct-resolution/1.3.0",
+      "route_fixture_id": "P06-A09-S06-R02",
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_06",
+      "target_construct_key": "RUBRIC::A09::TESIS_EXPLICATIVA"
+    },
+    {
+      "activity_id": "act_10_experimento_onboarding",
+      "case_id": "PP-A10-S01-P06-R01",
+      "construct_provenance": {
+        "canonical_source_name": "D3. Validez de la comparación",
+        "extraction": {
+          "descriptor_columns": [
+            2,
+            3
+          ],
+          "heading_path": [
+            "Dimensiones"
+          ],
+          "method": "RUBRIC_CRITERIA_TABLE_ROW",
+          "name_column": 0,
+          "row": 3,
+          "table_index": 0
+        },
+        "source_hashes": {
+          "02_rubric.docx": "sha256:580959158a05b3ed6af54e8195636bd9009ac0980fdfcda9902fe87270f4386e"
+        },
+        "source_kind": "RUBRIC_CRITERION",
+        "source_refs": [
+          "activity_10_experimento_onboarding/02_rubric.docx#Dimensiones[table=0,row=3]"
+        ]
+      },
+      "derivation_method": "FAIL_CLOSED_DECLARED_AUTHORIZED_CONSTRUCT",
+      "evidence_provenance": {
+        "artifacts": [
+          "submissions/submission_01_artifact_01.txt",
+          "submissions/submission_01_artifact_02.md"
+        ],
+        "model_visible": false,
+        "note": "Evaluator-only. The model receives the whole submission bundle and must locate the supporting evidence itself; no submission evidence location is projected into the route. Authorized rubric descriptor text is a separate matter and is documented in the route's construct provenance.",
+        "oracle_declared_locations": [
+          "submissions/submission_01_artifact_02.md#Metodología"
+        ],
+        "scope": "WHOLE_SUBMISSION_EVIDENCE_BUNDLE"
+      },
+      "fixture_tags": [
+        "MULTI_ARTIFACT",
+        "NEAR_DUPLICATE_OPPORTUNITIES"
+      ],
+      "oracle_binding_metadata": {
+        "property_ids": [
+          "A10-S01-P2"
+        ]
+      },
+      "resolver_version": "p06-construct-resolution/1.3.0",
+      "route_fixture_id": "P06-A10-S01-R01",
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_01",
+      "target_construct_key": "RUBRIC::A10::D3_VALIDEZ_DE_LA_COMPARACION"
+    },
+    {
+      "activity_id": "act_10_experimento_onboarding",
+      "case_id": "PP-A10-S02-P06-R01",
+      "construct_provenance": {
+        "canonical_source_name": "D2. Agregado frente a segmento",
+        "extraction": {
+          "descriptor_columns": [
+            2,
+            3
+          ],
+          "heading_path": [
+            "Dimensiones"
+          ],
+          "method": "RUBRIC_CRITERIA_TABLE_ROW",
+          "name_column": 0,
+          "row": 2,
+          "table_index": 0
+        },
+        "source_hashes": {
+          "02_rubric.docx": "sha256:580959158a05b3ed6af54e8195636bd9009ac0980fdfcda9902fe87270f4386e"
+        },
+        "source_kind": "RUBRIC_CRITERION",
+        "source_refs": [
+          "activity_10_experimento_onboarding/02_rubric.docx#Dimensiones[table=0,row=2]"
+        ]
+      },
+      "derivation_method": "FAIL_CLOSED_DECLARED_AUTHORIZED_CONSTRUCT",
+      "evidence_provenance": {
+        "artifacts": [
+          "submissions/submission_02_artifact_01.txt",
+          "submissions/submission_02_artifact_02.md"
+        ],
+        "model_visible": false,
+        "note": "Evaluator-only. The model receives the whole submission bundle and must locate the supporting evidence itself; no submission evidence location is projected into the route. Authorized rubric descriptor text is a separate matter and is documented in the route's construct provenance.",
+        "oracle_declared_locations": [
+          "submissions/submission_02_artifact_02.md#Comprobación del peso de dispositivo"
+        ],
+        "scope": "WHOLE_SUBMISSION_EVIDENCE_BUNDLE"
+      },
+      "fixture_tags": [
+        "MULTI_ARTIFACT"
+      ],
+      "oracle_binding_metadata": {
+        "property_ids": [
+          "A10-S02-P1"
+        ]
+      },
+      "resolver_version": "p06-construct-resolution/1.3.0",
+      "route_fixture_id": "P06-A10-S02-R01",
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_02",
+      "target_construct_key": "RUBRIC::A10::D2_AGREGADO_FRENTE_A_SEGMENTO"
+    },
+    {
+      "activity_id": "act_10_experimento_onboarding",
+      "case_id": "PP-A10-S02-P06-R02",
+      "construct_provenance": {
+        "canonical_source_name": "D3. Validez de la comparación",
+        "extraction": {
+          "descriptor_columns": [
+            2,
+            3
+          ],
+          "heading_path": [
+            "Dimensiones"
+          ],
+          "method": "RUBRIC_CRITERIA_TABLE_ROW",
+          "name_column": 0,
+          "row": 3,
+          "table_index": 0
+        },
+        "source_hashes": {
+          "02_rubric.docx": "sha256:580959158a05b3ed6af54e8195636bd9009ac0980fdfcda9902fe87270f4386e"
+        },
+        "source_kind": "RUBRIC_CRITERION",
+        "source_refs": [
+          "activity_10_experimento_onboarding/02_rubric.docx#Dimensiones[table=0,row=3]"
+        ]
+      },
+      "derivation_method": "FAIL_CLOSED_DECLARED_AUTHORIZED_CONSTRUCT",
+      "evidence_provenance": {
+        "artifacts": [
+          "submissions/submission_02_artifact_01.txt",
+          "submissions/submission_02_artifact_02.md"
+        ],
+        "model_visible": false,
+        "note": "Evaluator-only. The model receives the whole submission bundle and must locate the supporting evidence itself; no submission evidence location is projected into the route. Authorized rubric descriptor text is a separate matter and is documented in the route's construct provenance.",
+        "oracle_declared_locations": [
+          "submissions/submission_02_artifact_02.md#párrafo 4"
+        ],
+        "scope": "WHOLE_SUBMISSION_EVIDENCE_BUNDLE"
+      },
+      "fixture_tags": [
+        "MULTI_ARTIFACT"
+      ],
+      "oracle_binding_metadata": {
+        "property_ids": [
+          "A10-S02-P2"
+        ]
+      },
+      "resolver_version": "p06-construct-resolution/1.3.0",
+      "route_fixture_id": "P06-A10-S02-R02",
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_02",
+      "target_construct_key": "RUBRIC::A10::D3_VALIDEZ_DE_LA_COMPARACION"
+    },
+    {
+      "activity_id": "act_10_experimento_onboarding",
+      "case_id": "PP-A10-S03-P06-R01",
+      "construct_provenance": {
+        "canonical_source_name": "D3. Validez de la comparación",
+        "extraction": {
+          "descriptor_columns": [
+            2,
+            3
+          ],
+          "heading_path": [
+            "Dimensiones"
+          ],
+          "method": "RUBRIC_CRITERIA_TABLE_ROW",
+          "name_column": 0,
+          "row": 3,
+          "table_index": 0
+        },
+        "source_hashes": {
+          "02_rubric.docx": "sha256:580959158a05b3ed6af54e8195636bd9009ac0980fdfcda9902fe87270f4386e"
+        },
+        "source_kind": "RUBRIC_CRITERION",
+        "source_refs": [
+          "activity_10_experimento_onboarding/02_rubric.docx#Dimensiones[table=0,row=3]"
+        ]
+      },
+      "derivation_method": "FAIL_CLOSED_DECLARED_AUTHORIZED_CONSTRUCT",
+      "evidence_provenance": {
+        "artifacts": [
+          "submissions/submission_03_artifact_01.txt",
+          "submissions/submission_03_artifact_02.pdf"
+        ],
+        "model_visible": false,
+        "note": "Evaluator-only. The model receives the whole submission bundle and must locate the supporting evidence itself; no submission evidence location is projected into the route. Authorized rubric descriptor text is a separate matter and is documented in the route's construct provenance.",
+        "oracle_declared_locations": [
+          "submissions/submission_03_artifact_02.pdf#Detalle"
+        ],
+        "scope": "WHOLE_SUBMISSION_EVIDENCE_BUNDLE"
+      },
+      "fixture_tags": [
+        "DETECTION_TASK",
+        "LATENT_CONTRADICTION",
+        "MULTI_ARTIFACT"
+      ],
+      "oracle_binding_metadata": {
+        "property_ids": [
+          "A10-S03-P2"
+        ]
+      },
+      "resolver_version": "p06-construct-resolution/1.3.0",
+      "route_fixture_id": "P06-A10-S03-R01",
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_03",
+      "target_construct_key": "RUBRIC::A10::D3_VALIDEZ_DE_LA_COMPARACION"
+    },
+    {
+      "activity_id": "act_10_experimento_onboarding",
+      "case_id": "PP-A10-S04-P06-R01",
+      "construct_provenance": {
+        "canonical_source_name": "D2. Agregado frente a segmento",
+        "extraction": {
+          "descriptor_columns": [
+            2,
+            3
+          ],
+          "heading_path": [
+            "Dimensiones"
+          ],
+          "method": "RUBRIC_CRITERIA_TABLE_ROW",
+          "name_column": 0,
+          "row": 2,
+          "table_index": 0
+        },
+        "source_hashes": {
+          "02_rubric.docx": "sha256:580959158a05b3ed6af54e8195636bd9009ac0980fdfcda9902fe87270f4386e"
+        },
+        "source_kind": "RUBRIC_CRITERION",
+        "source_refs": [
+          "activity_10_experimento_onboarding/02_rubric.docx#Dimensiones[table=0,row=2]"
+        ]
+      },
+      "derivation_method": "FAIL_CLOSED_DECLARED_AUTHORIZED_CONSTRUCT",
+      "evidence_provenance": {
+        "artifacts": [
+          "submissions/submission_04_artifact_01.txt",
+          "submissions/submission_04_artifact_02.pdf"
+        ],
+        "model_visible": false,
+        "note": "Evaluator-only. The model receives the whole submission bundle and must locate the supporting evidence itself; no submission evidence location is projected into the route. Authorized rubric descriptor text is a separate matter and is documented in the route's construct provenance.",
+        "oracle_declared_locations": [
+          "01_assignment.docx#Tarea",
+          "submissions/submission_04_artifact_01.txt#"
+        ],
+        "scope": "WHOLE_SUBMISSION_EVIDENCE_BUNDLE"
+      },
+      "fixture_tags": [
+        "ADJUDICATION_TASK",
+        "DECLARED_CONCEPTUAL_OMISSION",
+        "MULTI_ARTIFACT",
+        "SELF_DECLARED_GAP"
+      ],
+      "oracle_binding_metadata": {
+        "property_ids": [
+          "A10-S04-P1"
+        ]
+      },
+      "resolver_version": "p06-construct-resolution/1.3.0",
+      "route_fixture_id": "P06-A10-S04-R01",
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_04",
+      "target_construct_key": "RUBRIC::A10::D2_AGREGADO_FRENTE_A_SEGMENTO"
+    },
+    {
+      "activity_id": "act_10_experimento_onboarding",
+      "case_id": "PP-A10-S04-P06-R02",
+      "construct_provenance": {
+        "canonical_source_name": "D3. Validez de la comparación",
+        "extraction": {
+          "descriptor_columns": [
+            2,
+            3
+          ],
+          "heading_path": [
+            "Dimensiones"
+          ],
+          "method": "RUBRIC_CRITERIA_TABLE_ROW",
+          "name_column": 0,
+          "row": 3,
+          "table_index": 0
+        },
+        "source_hashes": {
+          "02_rubric.docx": "sha256:580959158a05b3ed6af54e8195636bd9009ac0980fdfcda9902fe87270f4386e"
+        },
+        "source_kind": "RUBRIC_CRITERION",
+        "source_refs": [
+          "activity_10_experimento_onboarding/02_rubric.docx#Dimensiones[table=0,row=3]"
+        ]
+      },
+      "derivation_method": "FAIL_CLOSED_DECLARED_AUTHORIZED_CONSTRUCT",
+      "evidence_provenance": {
+        "artifacts": [
+          "submissions/submission_04_artifact_01.txt",
+          "submissions/submission_04_artifact_02.pdf"
+        ],
+        "model_visible": false,
+        "note": "Evaluator-only. The model receives the whole submission bundle and must locate the supporting evidence itself; no submission evidence location is projected into the route. Authorized rubric descriptor text is a separate matter and is documented in the route's construct provenance.",
+        "oracle_declared_locations": [
+          "02_rubric.docx#Dimensiones",
+          "submissions/submission_04_artifact_02.pdf#Executive decision"
+        ],
+        "scope": "WHOLE_SUBMISSION_EVIDENCE_BUNDLE"
+      },
+      "fixture_tags": [
+        "ADJUDICATION_TASK",
+        "DECLARED_CONCEPTUAL_OMISSION",
+        "MULTI_ARTIFACT",
+        "SELF_DECLARED_GAP"
+      ],
+      "oracle_binding_metadata": {
+        "property_ids": [
+          "A10-S04-P3"
+        ]
+      },
+      "resolver_version": "p06-construct-resolution/1.3.0",
+      "route_fixture_id": "P06-A10-S04-R02",
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_04",
+      "target_construct_key": "RUBRIC::A10::D3_VALIDEZ_DE_LA_COMPARACION"
+    },
+    {
+      "activity_id": "act_10_experimento_onboarding",
+      "case_id": "PP-A10-S05-P06-R01",
+      "construct_provenance": {
+        "canonical_source_name": "D2. Agregado frente a segmento",
+        "extraction": {
+          "descriptor_columns": [
+            2,
+            3
+          ],
+          "heading_path": [
+            "Dimensiones"
+          ],
+          "method": "RUBRIC_CRITERIA_TABLE_ROW",
+          "name_column": 0,
+          "row": 2,
+          "table_index": 0
+        },
+        "source_hashes": {
+          "02_rubric.docx": "sha256:580959158a05b3ed6af54e8195636bd9009ac0980fdfcda9902fe87270f4386e"
+        },
+        "source_kind": "RUBRIC_CRITERION",
+        "source_refs": [
+          "activity_10_experimento_onboarding/02_rubric.docx#Dimensiones[table=0,row=2]"
+        ]
+      },
+      "derivation_method": "FAIL_CLOSED_DECLARED_AUTHORIZED_CONSTRUCT",
+      "evidence_provenance": {
+        "artifacts": [
+          "submissions/submission_05_artifact_01.txt",
+          "submissions/submission_05_artifact_02.pdf"
+        ],
+        "model_visible": false,
+        "note": "Evaluator-only. The model receives the whole submission bundle and must locate the supporting evidence itself; no submission evidence location is projected into the route. Authorized rubric descriptor text is a separate matter and is documented in the route's construct provenance.",
+        "oracle_declared_locations": [
+          "submissions/submission_05_artifact_01.txt#CHECK PONDERADO",
+          "submissions/submission_05_artifact_02.pdf#Descomposición del agregado"
+        ],
+        "scope": "WHOLE_SUBMISSION_EVIDENCE_BUNDLE"
+      },
+      "fixture_tags": [
+        "MULTI_ARTIFACT",
+        "NEAR_DUPLICATE_OPPORTUNITIES",
+        "PROMPT_INJECTION_SILENT"
+      ],
+      "oracle_binding_metadata": {
+        "property_ids": [
+          "A10-S05-P1"
+        ]
+      },
+      "resolver_version": "p06-construct-resolution/1.3.0",
+      "route_fixture_id": "P06-A10-S05-R01",
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_05",
+      "target_construct_key": "RUBRIC::A10::D2_AGREGADO_FRENTE_A_SEGMENTO"
+    },
+    {
+      "activity_id": "act_10_experimento_onboarding",
+      "case_id": "PP-A10-S06-P06-R01",
+      "construct_provenance": {
+        "canonical_source_name": "D1. Tasas y denominadores",
+        "extraction": {
+          "descriptor_columns": [
+            2,
+            3
+          ],
+          "heading_path": [
+            "Dimensiones"
+          ],
+          "method": "RUBRIC_CRITERIA_TABLE_ROW",
+          "name_column": 0,
+          "row": 1,
+          "table_index": 0
+        },
+        "source_hashes": {
+          "02_rubric.docx": "sha256:580959158a05b3ed6af54e8195636bd9009ac0980fdfcda9902fe87270f4386e"
+        },
+        "source_kind": "RUBRIC_CRITERION",
+        "source_refs": [
+          "activity_10_experimento_onboarding/02_rubric.docx#Dimensiones[table=0,row=1]"
+        ]
+      },
+      "derivation_method": "FAIL_CLOSED_DECLARED_AUTHORIZED_CONSTRUCT",
+      "evidence_provenance": {
+        "artifacts": [
+          "submissions/submission_06_artifact_01.txt",
+          "submissions/submission_06_artifact_02.pdf"
+        ],
+        "model_visible": false,
+        "note": "Evaluator-only. The model receives the whole submission bundle and must locate the supporting evidence itself; no submission evidence location is projected into the route. Authorized rubric descriptor text is a separate matter and is documented in the route's construct provenance.",
+        "oracle_declared_locations": [
+          "01_assignment.docx#Convenciones de cálculo",
+          "submissions/submission_06_artifact_02.pdf#párrafo 2"
+        ],
+        "scope": "WHOLE_SUBMISSION_EVIDENCE_BUNDLE"
+      },
+      "fixture_tags": [
+        "KEYWORDS_WITHOUT_RELATION",
+        "MULTI_ARTIFACT"
+      ],
+      "oracle_binding_metadata": {
+        "property_ids": [
+          "A10-S06-P2"
+        ]
+      },
+      "resolver_version": "p06-construct-resolution/1.3.0",
+      "route_fixture_id": "P06-A10-S06-R01",
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_06",
+      "target_construct_key": "RUBRIC::A10::D1_TASAS_Y_DENOMINADORES"
+    },
+    {
+      "activity_id": "act_10_experimento_onboarding",
+      "case_id": "PP-A10-S06-P06-R02",
+      "construct_provenance": {
+        "canonical_source_name": "D3. Validez de la comparación",
+        "extraction": {
+          "descriptor_columns": [
+            2,
+            3
+          ],
+          "heading_path": [
+            "Dimensiones"
+          ],
+          "method": "RUBRIC_CRITERIA_TABLE_ROW",
+          "name_column": 0,
+          "row": 3,
+          "table_index": 0
+        },
+        "source_hashes": {
+          "02_rubric.docx": "sha256:580959158a05b3ed6af54e8195636bd9009ac0980fdfcda9902fe87270f4386e"
+        },
+        "source_kind": "RUBRIC_CRITERION",
+        "source_refs": [
+          "activity_10_experimento_onboarding/02_rubric.docx#Dimensiones[table=0,row=3]"
+        ]
+      },
+      "derivation_method": "FAIL_CLOSED_DECLARED_AUTHORIZED_CONSTRUCT",
+      "evidence_provenance": {
+        "artifacts": [
+          "submissions/submission_06_artifact_01.txt",
+          "submissions/submission_06_artifact_02.pdf"
+        ],
+        "model_visible": false,
+        "note": "Evaluator-only. The model receives the whole submission bundle and must locate the supporting evidence itself; no submission evidence location is projected into the route. Authorized rubric descriptor text is a separate matter and is documented in the route's construct provenance.",
+        "oracle_declared_locations": [
+          "01_assignment.docx#Notas de implementación",
+          "submissions/submission_06_artifact_02.pdf#Validación del diseño"
+        ],
+        "scope": "WHOLE_SUBMISSION_EVIDENCE_BUNDLE"
+      },
+      "fixture_tags": [
+        "KEYWORDS_WITHOUT_RELATION",
+        "MULTI_ARTIFACT"
+      ],
+      "oracle_binding_metadata": {
+        "property_ids": [
+          "A10-S06-P3"
+        ]
+      },
+      "resolver_version": "p06-construct-resolution/1.3.0",
+      "route_fixture_id": "P06-A10-S06-R02",
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_06",
+      "target_construct_key": "RUBRIC::A10::D3_VALIDEZ_DE_LA_COMPARACION"
+    },
+    {
+      "activity_id": "act_11_duplicados_en_pagos",
+      "case_id": "PP-A11-S01-P06-R01",
+      "construct_provenance": {
+        "canonical_source_name": "Cadena causal",
+        "extraction": {
+          "descriptor_columns": [
+            1,
+            2,
+            3
+          ],
+          "heading_path": [
+            "Criterios"
+          ],
+          "method": "RUBRIC_CRITERIA_TABLE_ROW",
+          "name_column": 0,
+          "row": 1,
+          "table_index": 0
+        },
+        "source_hashes": {
+          "02_rubric.docx": "sha256:717e39a40e6d9629458317812b84c366e268a0eb2f58d181aa0ce5132cd97597"
+        },
+        "source_kind": "RUBRIC_CRITERION",
+        "source_refs": [
+          "activity_11_duplicados_en_pagos/02_rubric.docx#Criterios[table=0,row=1]"
+        ]
+      },
+      "derivation_method": "FAIL_CLOSED_DECLARED_AUTHORIZED_CONSTRUCT",
+      "evidence_provenance": {
+        "artifacts": [
+          "submissions/submission_01_artifact_01.md",
+          "submissions/submission_01_artifact_02.md",
+          "submissions/submission_01_artifact_03.md"
+        ],
+        "model_visible": false,
+        "note": "Evaluator-only. The model receives the whole submission bundle and must locate the supporting evidence itself; no submission evidence location is projected into the route. Authorized rubric descriptor text is a separate matter and is documented in the route's construct provenance.",
+        "oracle_declared_locations": [
+          "submissions/submission_01_artifact_03.md#Cronología",
+          "submissions/submission_01_artifact_03.md#párrafo 1"
+        ],
+        "scope": "WHOLE_SUBMISSION_EVIDENCE_BUNDLE"
+      },
+      "fixture_tags": [
+        "DETECTION_TASK",
+        "LATENT_CONTRADICTION",
+        "MULTI_ARTIFACT"
+      ],
+      "oracle_binding_metadata": {
+        "property_ids": [
+          "A11-S01-P3"
+        ]
+      },
+      "resolver_version": "p06-construct-resolution/1.3.0",
+      "route_fixture_id": "P06-A11-S01-R01",
+      "split": "CORE",
+      "submission_id": "submission_01",
+      "target_construct_key": "RUBRIC::A11::CADENA_CAUSAL"
+    },
+    {
+      "activity_id": "act_11_duplicados_en_pagos",
+      "case_id": "PP-A11-S01-P06-R02",
+      "construct_provenance": {
+        "canonical_source_name": "Coherencia entre artefactos",
+        "extraction": {
+          "descriptor_columns": [
+            1,
+            2,
+            3
+          ],
+          "heading_path": [
+            "Criterios"
+          ],
+          "method": "RUBRIC_CRITERIA_TABLE_ROW",
+          "name_column": 0,
+          "row": 3,
+          "table_index": 0
+        },
+        "source_hashes": {
+          "02_rubric.docx": "sha256:717e39a40e6d9629458317812b84c366e268a0eb2f58d181aa0ce5132cd97597"
+        },
+        "source_kind": "RUBRIC_CRITERION",
+        "source_refs": [
+          "activity_11_duplicados_en_pagos/02_rubric.docx#Criterios[table=0,row=3]"
+        ]
+      },
+      "derivation_method": "FAIL_CLOSED_DECLARED_AUTHORIZED_CONSTRUCT",
+      "evidence_provenance": {
+        "artifacts": [
+          "submissions/submission_01_artifact_01.md",
+          "submissions/submission_01_artifact_02.md",
+          "submissions/submission_01_artifact_03.md"
+        ],
+        "model_visible": false,
+        "note": "Evaluator-only. The model receives the whole submission bundle and must locate the supporting evidence itself; no submission evidence location is projected into the route. Authorized rubric descriptor text is a separate matter and is documented in the route's construct provenance.",
+        "oracle_declared_locations": [
+          "submissions/submission_01_artifact_01.md#párrafo 1",
+          "submissions/submission_01_artifact_02.md#Orden efectivo"
+        ],
+        "scope": "WHOLE_SUBMISSION_EVIDENCE_BUNDLE"
+      },
+      "fixture_tags": [
+        "DETECTION_TASK",
+        "LATENT_CONTRADICTION",
+        "MULTI_ARTIFACT"
+      ],
+      "oracle_binding_metadata": {
+        "property_ids": [
+          "A11-S01-P2"
+        ]
+      },
+      "resolver_version": "p06-construct-resolution/1.3.0",
+      "route_fixture_id": "P06-A11-S01-R02",
+      "split": "CORE",
+      "submission_id": "submission_01",
+      "target_construct_key": "RUBRIC::A11::COHERENCIA_ENTRE_ARTEFACTOS"
+    },
+    {
+      "activity_id": "act_11_duplicados_en_pagos",
+      "case_id": "PP-A11-S01-P06-R03",
+      "construct_provenance": {
+        "canonical_source_name": "Invariant y clave",
+        "extraction": {
+          "descriptor_columns": [
+            1,
+            2,
+            3
+          ],
+          "heading_path": [
+            "Criterios"
+          ],
+          "method": "RUBRIC_CRITERIA_TABLE_ROW",
+          "name_column": 0,
+          "row": 2,
+          "table_index": 0
+        },
+        "source_hashes": {
+          "02_rubric.docx": "sha256:717e39a40e6d9629458317812b84c366e268a0eb2f58d181aa0ce5132cd97597"
+        },
+        "source_kind": "RUBRIC_CRITERION",
+        "source_refs": [
+          "activity_11_duplicados_en_pagos/02_rubric.docx#Criterios[table=0,row=2]"
+        ]
+      },
+      "derivation_method": "FAIL_CLOSED_DECLARED_AUTHORIZED_CONSTRUCT",
+      "evidence_provenance": {
+        "artifacts": [
+          "submissions/submission_01_artifact_01.md",
+          "submissions/submission_01_artifact_02.md",
+          "submissions/submission_01_artifact_03.md"
+        ],
+        "model_visible": false,
+        "note": "Evaluator-only. The model receives the whole submission bundle and must locate the supporting evidence itself; no submission evidence location is projected into the route. Authorized rubric descriptor text is a separate matter and is documented in the route's construct provenance.",
+        "oracle_declared_locations": [
+          "submissions/submission_01_artifact_01.md#Excepción",
+          "submissions/submission_01_artifact_02.md#línea 2"
+        ],
+        "scope": "WHOLE_SUBMISSION_EVIDENCE_BUNDLE"
+      },
+      "fixture_tags": [
+        "DETECTION_TASK",
+        "LATENT_CONTRADICTION",
+        "MULTI_ARTIFACT"
+      ],
+      "oracle_binding_metadata": {
+        "property_ids": [
+          "A11-S01-P1"
+        ]
+      },
+      "resolver_version": "p06-construct-resolution/1.3.0",
+      "route_fixture_id": "P06-A11-S01-R03",
+      "split": "CORE",
+      "submission_id": "submission_01",
+      "target_construct_key": "RUBRIC::A11::INVARIANT_Y_CLAVE"
+    },
+    {
+      "activity_id": "act_11_duplicados_en_pagos",
+      "case_id": "PP-A11-S02-P06-R01",
+      "construct_provenance": {
+        "canonical_source_name": "Invariant y clave",
+        "extraction": {
+          "descriptor_columns": [
+            1,
+            2,
+            3
+          ],
+          "heading_path": [
+            "Criterios"
+          ],
+          "method": "RUBRIC_CRITERIA_TABLE_ROW",
+          "name_column": 0,
+          "row": 2,
+          "table_index": 0
+        },
+        "source_hashes": {
+          "02_rubric.docx": "sha256:717e39a40e6d9629458317812b84c366e268a0eb2f58d181aa0ce5132cd97597"
+        },
+        "source_kind": "RUBRIC_CRITERION",
+        "source_refs": [
+          "activity_11_duplicados_en_pagos/02_rubric.docx#Criterios[table=0,row=2]"
+        ]
+      },
+      "derivation_method": "FAIL_CLOSED_DECLARED_AUTHORIZED_CONSTRUCT",
+      "evidence_provenance": {
+        "artifacts": [
+          "submissions/submission_02_artifact_01.md",
+          "submissions/submission_02_artifact_02.md",
+          "submissions/submission_02_artifact_03.md"
+        ],
+        "model_visible": false,
+        "note": "Evaluator-only. The model receives the whole submission bundle and must locate the supporting evidence itself; no submission evidence location is projected into the route. Authorized rubric descriptor text is a separate matter and is documented in the route's construct provenance.",
+        "oracle_declared_locations": [
+          "submissions/submission_02_artifact_01.md#Alternativas consideradas",
+          "submissions/submission_02_artifact_02.md#Caso abierto"
+        ],
+        "scope": "WHOLE_SUBMISSION_EVIDENCE_BUNDLE"
+      },
+      "fixture_tags": [
+        "MULTI_ARTIFACT",
+        "PROMPT_INJECTION_SILENT"
+      ],
+      "oracle_binding_metadata": {
+        "property_ids": [
+          "A11-S02-P1"
+        ]
+      },
+      "resolver_version": "p06-construct-resolution/1.3.0",
+      "route_fixture_id": "P06-A11-S02-R01",
+      "split": "CORE",
+      "submission_id": "submission_02",
+      "target_construct_key": "RUBRIC::A11::INVARIANT_Y_CLAVE"
+    },
+    {
+      "activity_id": "act_11_duplicados_en_pagos",
+      "case_id": "PP-A11-S03-P06-R01",
+      "construct_provenance": {
+        "canonical_source_name": "Cadena causal",
+        "extraction": {
+          "descriptor_columns": [
+            1,
+            2,
+            3
+          ],
+          "heading_path": [
+            "Criterios"
+          ],
+          "method": "RUBRIC_CRITERIA_TABLE_ROW",
+          "name_column": 0,
+          "row": 1,
+          "table_index": 0
+        },
+        "source_hashes": {
+          "02_rubric.docx": "sha256:717e39a40e6d9629458317812b84c366e268a0eb2f58d181aa0ce5132cd97597"
+        },
+        "source_kind": "RUBRIC_CRITERION",
+        "source_refs": [
+          "activity_11_duplicados_en_pagos/02_rubric.docx#Criterios[table=0,row=1]"
+        ]
+      },
+      "derivation_method": "FAIL_CLOSED_DECLARED_AUTHORIZED_CONSTRUCT",
+      "evidence_provenance": {
+        "artifacts": [
+          "submissions/submission_03_artifact_01.md",
+          "submissions/submission_03_artifact_02.md",
+          "submissions/submission_03_artifact_03.md"
+        ],
+        "model_visible": false,
+        "note": "Evaluator-only. The model receives the whole submission bundle and must locate the supporting evidence itself; no submission evidence location is projected into the route. Authorized rubric descriptor text is a separate matter and is documented in the route's construct provenance.",
+        "oracle_declared_locations": [
+          "01_assignment.docx#Trazas autorizadas",
+          "submissions/submission_03_artifact_03.md#párrafo 2"
+        ],
+        "scope": "WHOLE_SUBMISSION_EVIDENCE_BUNDLE"
+      },
+      "fixture_tags": [
+        "KEYWORDS_WITHOUT_RELATION",
+        "MULTI_ARTIFACT"
+      ],
+      "oracle_binding_metadata": {
+        "property_ids": [
+          "A11-S03-P3"
+        ]
+      },
+      "resolver_version": "p06-construct-resolution/1.3.0",
+      "route_fixture_id": "P06-A11-S03-R01",
+      "split": "CORE",
+      "submission_id": "submission_03",
+      "target_construct_key": "RUBRIC::A11::CADENA_CAUSAL"
+    },
+    {
+      "activity_id": "act_11_duplicados_en_pagos",
+      "case_id": "PP-A11-S03-P06-R02",
+      "construct_provenance": {
+        "canonical_source_name": "Invariant y clave",
+        "extraction": {
+          "descriptor_columns": [
+            1,
+            2,
+            3
+          ],
+          "heading_path": [
+            "Criterios"
+          ],
+          "method": "RUBRIC_CRITERIA_TABLE_ROW",
+          "name_column": 0,
+          "row": 2,
+          "table_index": 0
+        },
+        "source_hashes": {
+          "02_rubric.docx": "sha256:717e39a40e6d9629458317812b84c366e268a0eb2f58d181aa0ce5132cd97597"
+        },
+        "source_kind": "RUBRIC_CRITERION",
+        "source_refs": [
+          "activity_11_duplicados_en_pagos/02_rubric.docx#Criterios[table=0,row=2]"
+        ]
+      },
+      "derivation_method": "FAIL_CLOSED_DECLARED_AUTHORIZED_CONSTRUCT",
+      "evidence_provenance": {
+        "artifacts": [
+          "submissions/submission_03_artifact_01.md",
+          "submissions/submission_03_artifact_02.md",
+          "submissions/submission_03_artifact_03.md"
+        ],
+        "model_visible": false,
+        "note": "Evaluator-only. The model receives the whole submission bundle and must locate the supporting evidence itself; no submission evidence location is projected into the route. Authorized rubric descriptor text is a separate matter and is documented in the route's construct provenance.",
+        "oracle_declared_locations": [
+          "02_rubric.docx#Criterios",
+          "submissions/submission_03_artifact_02.md#comentario"
+        ],
+        "scope": "WHOLE_SUBMISSION_EVIDENCE_BUNDLE"
+      },
+      "fixture_tags": [
+        "KEYWORDS_WITHOUT_RELATION",
+        "MULTI_ARTIFACT"
+      ],
+      "oracle_binding_metadata": {
+        "property_ids": [
+          "A11-S03-P1"
+        ]
+      },
+      "resolver_version": "p06-construct-resolution/1.3.0",
+      "route_fixture_id": "P06-A11-S03-R02",
+      "split": "CORE",
+      "submission_id": "submission_03",
+      "target_construct_key": "RUBRIC::A11::INVARIANT_Y_CLAVE"
+    },
+    {
+      "activity_id": "act_11_duplicados_en_pagos",
+      "case_id": "PP-A11-S03-P06-R03",
+      "construct_provenance": {
+        "canonical_source_name": "Trade-offs y recuperación",
+        "extraction": {
+          "descriptor_columns": [
+            1,
+            2,
+            3
+          ],
+          "heading_path": [
+            "Criterios"
+          ],
+          "method": "RUBRIC_CRITERIA_TABLE_ROW",
+          "name_column": 0,
+          "row": 4,
+          "table_index": 0
+        },
+        "source_hashes": {
+          "02_rubric.docx": "sha256:717e39a40e6d9629458317812b84c366e268a0eb2f58d181aa0ce5132cd97597"
+        },
+        "source_kind": "RUBRIC_CRITERION",
+        "source_refs": [
+          "activity_11_duplicados_en_pagos/02_rubric.docx#Criterios[table=0,row=4]"
+        ]
+      },
+      "derivation_method": "FAIL_CLOSED_DECLARED_AUTHORIZED_CONSTRUCT",
+      "evidence_provenance": {
+        "artifacts": [
+          "submissions/submission_03_artifact_01.md",
+          "submissions/submission_03_artifact_02.md",
+          "submissions/submission_03_artifact_03.md"
+        ],
+        "model_visible": false,
+        "note": "Evaluator-only. The model receives the whole submission bundle and must locate the supporting evidence itself; no submission evidence location is projected into the route. Authorized rubric descriptor text is a separate matter and is documented in the route's construct provenance.",
+        "oracle_declared_locations": [
+          "01_assignment.docx#Restricciones y capacidades",
+          "submissions/submission_03_artifact_02.md#línea 2"
+        ],
+        "scope": "WHOLE_SUBMISSION_EVIDENCE_BUNDLE"
+      },
+      "fixture_tags": [
+        "KEYWORDS_WITHOUT_RELATION",
+        "MULTI_ARTIFACT"
+      ],
+      "oracle_binding_metadata": {
+        "property_ids": [
+          "A11-S03-P2"
+        ]
+      },
+      "resolver_version": "p06-construct-resolution/1.3.0",
+      "route_fixture_id": "P06-A11-S03-R03",
+      "split": "CORE",
+      "submission_id": "submission_03",
+      "target_construct_key": "RUBRIC::A11::TRADE_OFFS_Y_RECUPERACION"
+    },
+    {
+      "activity_id": "act_11_duplicados_en_pagos",
+      "case_id": "PP-A11-S04-P06-R01",
+      "construct_provenance": {
+        "canonical_source_name": "Coherencia entre artefactos",
+        "extraction": {
+          "descriptor_columns": [
+            1,
+            2,
+            3
+          ],
+          "heading_path": [
+            "Criterios"
+          ],
+          "method": "RUBRIC_CRITERIA_TABLE_ROW",
+          "name_column": 0,
+          "row": 3,
+          "table_index": 0
+        },
+        "source_hashes": {
+          "02_rubric.docx": "sha256:717e39a40e6d9629458317812b84c366e268a0eb2f58d181aa0ce5132cd97597"
+        },
+        "source_kind": "RUBRIC_CRITERION",
+        "source_refs": [
+          "activity_11_duplicados_en_pagos/02_rubric.docx#Criterios[table=0,row=3]"
+        ]
+      },
+      "derivation_method": "FAIL_CLOSED_DECLARED_AUTHORIZED_CONSTRUCT",
+      "evidence_provenance": {
+        "artifacts": [
+          "submissions/submission_04_artifact_01.md",
+          "submissions/submission_04_artifact_02.md",
+          "submissions/submission_04_artifact_03.md"
+        ],
+        "model_visible": false,
+        "note": "Evaluator-only. The model receives the whole submission bundle and must locate the supporting evidence itself; no submission evidence location is projected into the route. Authorized rubric descriptor text is a separate matter and is documented in the route's construct provenance.",
+        "oracle_declared_locations": [
+          "submissions/submission_04_artifact_02.md#",
+          "submissions/submission_04_artifact_03.md#Cadena causal"
+        ],
+        "scope": "WHOLE_SUBMISSION_EVIDENCE_BUNDLE"
+      },
+      "fixture_tags": [
+        "MULTI_ARTIFACT"
+      ],
+      "oracle_binding_metadata": {
+        "property_ids": [
+          "A11-S04-P2"
+        ]
+      },
+      "resolver_version": "p06-construct-resolution/1.3.0",
+      "route_fixture_id": "P06-A11-S04-R01",
+      "split": "CORE",
+      "submission_id": "submission_04",
+      "target_construct_key": "RUBRIC::A11::COHERENCIA_ENTRE_ARTEFACTOS"
+    },
+    {
+      "activity_id": "act_11_duplicados_en_pagos",
+      "case_id": "PP-A11-S04-P06-R02",
+      "construct_provenance": {
+        "canonical_source_name": "Invariant y clave",
+        "extraction": {
+          "descriptor_columns": [
+            1,
+            2,
+            3
+          ],
+          "heading_path": [
+            "Criterios"
+          ],
+          "method": "RUBRIC_CRITERIA_TABLE_ROW",
+          "name_column": 0,
+          "row": 2,
+          "table_index": 0
+        },
+        "source_hashes": {
+          "02_rubric.docx": "sha256:717e39a40e6d9629458317812b84c366e268a0eb2f58d181aa0ce5132cd97597"
+        },
+        "source_kind": "RUBRIC_CRITERION",
+        "source_refs": [
+          "activity_11_duplicados_en_pagos/02_rubric.docx#Criterios[table=0,row=2]"
+        ]
+      },
+      "derivation_method": "FAIL_CLOSED_DECLARED_AUTHORIZED_CONSTRUCT",
+      "evidence_provenance": {
+        "artifacts": [
+          "submissions/submission_04_artifact_01.md",
+          "submissions/submission_04_artifact_02.md",
+          "submissions/submission_04_artifact_03.md"
+        ],
+        "model_visible": false,
+        "note": "Evaluator-only. The model receives the whole submission bundle and must locate the supporting evidence itself; no submission evidence location is projected into the route. Authorized rubric descriptor text is a separate matter and is documented in the route's construct provenance.",
+        "oracle_declared_locations": [
+          "submissions/submission_04_artifact_01.md#Decisión",
+          "submissions/submission_04_artifact_02.md#línea 2"
+        ],
+        "scope": "WHOLE_SUBMISSION_EVIDENCE_BUNDLE"
+      },
+      "fixture_tags": [
+        "MULTI_ARTIFACT"
+      ],
+      "oracle_binding_metadata": {
+        "property_ids": [
+          "A11-S04-P1"
+        ]
+      },
+      "resolver_version": "p06-construct-resolution/1.3.0",
+      "route_fixture_id": "P06-A11-S04-R02",
+      "split": "CORE",
+      "submission_id": "submission_04",
+      "target_construct_key": "RUBRIC::A11::INVARIANT_Y_CLAVE"
+    },
+    {
+      "activity_id": "act_11_duplicados_en_pagos",
+      "case_id": "PP-A11-S04-P06-R03",
+      "construct_provenance": {
+        "canonical_source_name": "Trade-offs y recuperación",
+        "extraction": {
+          "descriptor_columns": [
+            1,
+            2,
+            3
+          ],
+          "heading_path": [
+            "Criterios"
+          ],
+          "method": "RUBRIC_CRITERIA_TABLE_ROW",
+          "name_column": 0,
+          "row": 4,
+          "table_index": 0
+        },
+        "source_hashes": {
+          "02_rubric.docx": "sha256:717e39a40e6d9629458317812b84c366e268a0eb2f58d181aa0ce5132cd97597"
+        },
+        "source_kind": "RUBRIC_CRITERION",
+        "source_refs": [
+          "activity_11_duplicados_en_pagos/02_rubric.docx#Criterios[table=0,row=4]"
+        ]
+      },
+      "derivation_method": "FAIL_CLOSED_DECLARED_AUTHORIZED_CONSTRUCT",
+      "evidence_provenance": {
+        "artifacts": [
+          "submissions/submission_04_artifact_01.md",
+          "submissions/submission_04_artifact_02.md",
+          "submissions/submission_04_artifact_03.md"
+        ],
+        "model_visible": false,
+        "note": "Evaluator-only. The model receives the whole submission bundle and must locate the supporting evidence itself; no submission evidence location is projected into the route. Authorized rubric descriptor text is a separate matter and is documented in the route's construct provenance.",
+        "oracle_declared_locations": [
+          "submissions/submission_04_artifact_02.md#def reconcile"
+        ],
+        "scope": "WHOLE_SUBMISSION_EVIDENCE_BUNDLE"
+      },
+      "fixture_tags": [
+        "MULTI_ARTIFACT"
+      ],
+      "oracle_binding_metadata": {
+        "property_ids": [
+          "A11-S04-P3"
+        ]
+      },
+      "resolver_version": "p06-construct-resolution/1.3.0",
+      "route_fixture_id": "P06-A11-S04-R03",
+      "split": "CORE",
+      "submission_id": "submission_04",
+      "target_construct_key": "RUBRIC::A11::TRADE_OFFS_Y_RECUPERACION"
+    },
+    {
+      "activity_id": "act_11_duplicados_en_pagos",
+      "case_id": "PP-A11-S06-P06-R01",
+      "construct_provenance": {
+        "canonical_source_name": "Invariant y clave",
+        "extraction": {
+          "descriptor_columns": [
+            1,
+            2,
+            3
+          ],
+          "heading_path": [
+            "Criterios"
+          ],
+          "method": "RUBRIC_CRITERIA_TABLE_ROW",
+          "name_column": 0,
+          "row": 2,
+          "table_index": 0
+        },
+        "source_hashes": {
+          "02_rubric.docx": "sha256:717e39a40e6d9629458317812b84c366e268a0eb2f58d181aa0ce5132cd97597"
+        },
+        "source_kind": "RUBRIC_CRITERION",
+        "source_refs": [
+          "activity_11_duplicados_en_pagos/02_rubric.docx#Criterios[table=0,row=2]"
+        ]
+      },
+      "derivation_method": "FAIL_CLOSED_DECLARED_AUTHORIZED_CONSTRUCT",
+      "evidence_provenance": {
+        "artifacts": [
+          "submissions/submission_06_artifact_01.md",
+          "submissions/submission_06_artifact_02.md",
+          "submissions/submission_06_artifact_03.md"
+        ],
+        "model_visible": false,
+        "note": "Evaluator-only. The model receives the whole submission bundle and must locate the supporting evidence itself; no submission evidence location is projected into the route. Authorized rubric descriptor text is a separate matter and is documented in the route's construct provenance.",
+        "oracle_declared_locations": [
+          "submissions/submission_06_artifact_01.md#"
+        ],
+        "scope": "WHOLE_SUBMISSION_EVIDENCE_BUNDLE"
+      },
+      "fixture_tags": [
+        "MULTI_ARTIFACT",
+        "PLAN_INFEASIBLE"
+      ],
+      "oracle_binding_metadata": {
+        "property_ids": [
+          "A11-S06-P1"
+        ]
+      },
+      "resolver_version": "p06-construct-resolution/1.3.0",
+      "route_fixture_id": "P06-A11-S06-R01",
+      "split": "CORE",
+      "submission_id": "submission_06",
+      "target_construct_key": "RUBRIC::A11::INVARIANT_Y_CLAVE"
+    }
+  ],
+  "schema_version": "semantic-p06-route-definitions/1.3.0"
+}

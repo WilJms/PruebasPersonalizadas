@@ -1,0 +1,449 @@
+{
+  "alias_envelope_schema_boundary": {
+    "boundary_hash": "sha256:214c6dbcdc5e92f8c6a5db5a16c48799473b31043911017a10d4ab3c451fe418",
+    "format": "p07-alias-envelope-schema-boundary/1.0.0",
+    "schema_hash": "sha256:b8fc6e07c93b71d9530c1481f9f3112299128bfb2a23d9ca4f8050f4fccc40dc",
+    "schema_name": "QuestionAliasEnvelope",
+    "version": "p07-alias-envelope/1.0.0"
+  },
+  "authority_chain": [
+    "QuestionAliasEnvelope",
+    "QuestionModelDraft",
+    "materialize_question_draft()",
+    "QuestionGenerationResult / QuestionCandidate"
+  ],
+  "authority_definitions": {
+    "MODEL_OWNED": "The provider composed this value. It is the only kind of field whose content can support VIOLATION_ATTRIBUTABLE_TO_THE_MODEL_OWNED_STAGE.",
+    "SERVER_DERIVED_FROM_MODEL_INPUT": "Computed deterministically by the server from provider input. It restates a provider decision through a server function and is never independent semantic evidence.",
+    "SERVER_OWNED": "Copied verbatim from the trusted request, or a constant. The provider could not have changed it."
+  },
+  "candidate_schema_hash": "sha256:bf08ca25e37f8fa98a80ce77b0c18d1089ec41c4bf794efbf755db3580cd9e23",
+  "executable_source_hashes": {
+    "contracts": "sha256:2380d0be33b1f49a7b35e724aef8453d1469027b2d0466f9da1e38accdaf6ec3",
+    "question_generation": "sha256:341316e1272477c4032595e542c7df60d63de505c315011423175aa1835762e8"
+  },
+  "field_authority_hash": "sha256:991509f72917a515bdea0f8da0b2d7aeacce5cc71d0b774516a72205a48b0b7d",
+  "fields": [
+    {
+      "authority": "SERVER_OWNED",
+      "contract": "QuestionCandidate",
+      "derivation": "request.target_candidate_id",
+      "field": "candidate_id",
+      "independent_semantic_evidence": false,
+      "note": "Copied from the trusted request. A provider cannot change it, so it can never be evidence of provider behaviour."
+    },
+    {
+      "authority": "SERVER_OWNED",
+      "contract": "QuestionCandidate",
+      "derivation": "constant []",
+      "field": "citations",
+      "independent_semantic_evidence": false,
+      "note": "Copied from the trusted request. A provider cannot change it, so it can never be evidence of provider behaviour."
+    },
+    {
+      "authority": "SERVER_OWNED",
+      "contract": "QuestionCandidate",
+      "derivation": "request.opportunity.cognitive_operation",
+      "field": "cognitive_operation",
+      "independent_semantic_evidence": false,
+      "note": "Copied from the trusted request. A provider cannot change it, so it can never be evidence of provider behaviour."
+    },
+    {
+      "authority": "SERVER_OWNED",
+      "contract": "QuestionCandidate",
+      "derivation": "constant []",
+      "field": "course_source_ids",
+      "independent_semantic_evidence": false,
+      "note": "Copied from the trusted request. A provider cannot change it, so it can never be evidence of provider behaviour."
+    },
+    {
+      "authority": "SERVER_OWNED",
+      "contract": "QuestionCandidate",
+      "derivation": "request.opportunity.difficulty",
+      "field": "difficulty",
+      "independent_semantic_evidence": false,
+      "note": "Copied from the trusted request. A provider cannot change it, so it can never be evidence of provider behaviour."
+    },
+    {
+      "authority": "SERVER_OWNED",
+      "contract": "QuestionCandidate",
+      "derivation": "request.opportunity.dimension_id",
+      "field": "dimension_id",
+      "independent_semantic_evidence": false,
+      "note": "Copied from the trusted request. A provider cannot change it, so it can never be evidence of provider behaviour."
+    },
+    {
+      "authority": "SERVER_OWNED",
+      "contract": "QuestionCandidate",
+      "derivation": "request.opportunity.target_minutes",
+      "field": "estimated_minutes",
+      "independent_semantic_evidence": false,
+      "note": "Copied from the trusted request. A provider cannot change it, so it can never be evidence of provider behaviour."
+    },
+    {
+      "authority": "SERVER_OWNED",
+      "contract": "QuestionCandidate",
+      "derivation": "request.opportunity.evidence_ids",
+      "field": "evidence_ids",
+      "independent_semantic_evidence": false,
+      "note": "Copied from the trusted request. A provider cannot change it, so it can never be evidence of provider behaviour."
+    },
+    {
+      "authority": "SERVER_OWNED",
+      "contract": "QuestionCandidate",
+      "derivation": "request.opportunity.opportunity_id",
+      "field": "opportunity_id",
+      "independent_semantic_evidence": false,
+      "note": "Copied from the trusted request. A provider cannot change it, so it can never be evidence of provider behaviour."
+    },
+    {
+      "authority": "SERVER_OWNED",
+      "contract": "QuestionCandidate",
+      "derivation": "request.opportunity.opportunity_template_id",
+      "field": "opportunity_template_id",
+      "independent_semantic_evidence": false,
+      "note": "Copied from the trusted request. A provider cannot change it, so it can never be evidence of provider behaviour."
+    },
+    {
+      "authority": "MODEL_OWNED",
+      "contract": "QuestionCandidate",
+      "derivation": "draft.question_text",
+      "field": "question_text",
+      "independent_semantic_evidence": true
+    },
+    {
+      "authority": "SERVER_OWNED",
+      "contract": "QuestionCandidate",
+      "derivation": "request.opportunity.allowed_response_formats[0]",
+      "field": "response_format",
+      "independent_semantic_evidence": false,
+      "note": "Copied from the trusted request. A provider cannot change it, so it can never be evidence of provider behaviour."
+    },
+    {
+      "authority": "SERVER_OWNED",
+      "contract": "QuestionCandidate",
+      "derivation": "request.opportunity.student_justification_required",
+      "field": "student_justification_required",
+      "independent_semantic_evidence": false,
+      "note": "Copied from the trusted request. A provider cannot change it, so it can never be evidence of provider behaviour."
+    },
+    {
+      "authority": "SERVER_OWNED",
+      "contract": "QuestionCandidate",
+      "derivation": "request.plan.submission_id",
+      "field": "submission_id",
+      "independent_semantic_evidence": false,
+      "note": "Copied from the trusted request. A provider cannot change it, so it can never be evidence of provider behaviour."
+    },
+    {
+      "authority": "MODEL_OWNED",
+      "contract": "QuestionCandidate",
+      "derivation": "draft.semantic_uncertainties",
+      "field": "uncertainties",
+      "independent_semantic_evidence": true
+    },
+    {
+      "authority": "SERVER_OWNED",
+      "contract": "QuestionCandidate",
+      "derivation": "request.opportunity.variant_id",
+      "field": "variant_id",
+      "independent_semantic_evidence": false,
+      "note": "Copied from the trusted request. A provider cannot change it, so it can never be evidence of provider behaviour."
+    },
+    {
+      "authority": "SERVER_DERIVED_FROM_MODEL_INPUT",
+      "contract": "QuestionCandidate.anchor",
+      "derivation": "stable_id(candidate_id, visible evidence ids, materializer version)",
+      "field": "anchor_id",
+      "independent_semantic_evidence": false
+    },
+    {
+      "authority": "SERVER_DERIVED_FROM_MODEL_INPUT",
+      "contract": "QuestionCandidate.anchor",
+      "derivation": "assess_answer_leakage(...).risk_score",
+      "field": "answer_leakage_risk",
+      "independent_semantic_evidence": false,
+      "note": "A server heuristic over provider text. A high score is a server measurement, not a provider assertion."
+    },
+    {
+      "authority": "SERVER_DERIVED_FROM_MODEL_INPUT",
+      "contract": "QuestionCandidate.anchor",
+      "derivation": "anchor_fragment_for_evidence(resolved draft.visible_anchor_aliases)",
+      "field": "fragments",
+      "independent_semantic_evidence": false,
+      "note": "Fragment *content* is authorized submission evidence rendered by the server. Only the selection was the provider's."
+    },
+    {
+      "authority": "SERVER_OWNED",
+      "contract": "QuestionCandidate.anchor",
+      "derivation": "constant 1.0",
+      "field": "self_containment_score",
+      "independent_semantic_evidence": false
+    },
+    {
+      "authority": "SERVER_DERIVED_FROM_MODEL_INPUT",
+      "contract": "QuestionCandidate.anchor",
+      "derivation": "derive_anchor_structure(resolved draft.visible_anchor_aliases, request.opportunity.allowed_anchor_structures)",
+      "field": "structure",
+      "independent_semantic_evidence": false,
+      "note": "A deterministic function of how many units the provider selected. It restates a routing choice; it is not a second, independent judgement."
+    },
+    {
+      "authority": "SERVER_OWNED",
+      "contract": "QuestionCandidate.anchor",
+      "derivation": "constant None",
+      "field": "student_facing_label",
+      "independent_semantic_evidence": false
+    },
+    {
+      "authority": "MODEL_OWNED",
+      "contract": "QuestionCandidate.choices[]",
+      "derivation": "draft.choices[].evaluator_rationale",
+      "field": "evaluator_rationale",
+      "independent_semantic_evidence": true
+    },
+    {
+      "authority": "MODEL_OWNED",
+      "contract": "QuestionCandidate.choices[]",
+      "derivation": "draft.choices[].is_best_answer",
+      "field": "is_best_answer",
+      "independent_semantic_evidence": true
+    },
+    {
+      "authority": "MODEL_OWNED",
+      "contract": "QuestionCandidate.choices[]",
+      "derivation": "draft.choices[].misconception",
+      "field": "misconception",
+      "independent_semantic_evidence": true
+    },
+    {
+      "authority": "SERVER_DERIVED_FROM_MODEL_INPUT",
+      "contract": "QuestionCandidate.choices[]",
+      "derivation": "stable_id(candidate_id, index, materializer version)",
+      "field": "option_id",
+      "independent_semantic_evidence": false
+    },
+    {
+      "authority": "MODEL_OWNED",
+      "contract": "QuestionCandidate.choices[]",
+      "derivation": "draft.choices[].text",
+      "field": "text",
+      "independent_semantic_evidence": true
+    },
+    {
+      "authority": "MODEL_OWNED",
+      "contract": "QuestionCandidate.preliminary_guide",
+      "derivation": "draft.acceptable_alternatives",
+      "field": "acceptable_alternatives",
+      "independent_semantic_evidence": true
+    },
+    {
+      "authority": "SERVER_OWNED",
+      "contract": "QuestionCandidate.preliminary_guide",
+      "derivation": "constant []",
+      "field": "cannot_infer",
+      "independent_semantic_evidence": false
+    },
+    {
+      "authority": "SERVER_OWNED",
+      "contract": "QuestionCandidate.preliminary_guide",
+      "derivation": "constant []",
+      "field": "levels",
+      "independent_semantic_evidence": false
+    },
+    {
+      "authority": "MODEL_OWNED",
+      "contract": "QuestionCandidate.preliminary_guide",
+      "derivation": "draft.misconceptions",
+      "field": "misconceptions",
+      "independent_semantic_evidence": true
+    },
+    {
+      "authority": "SERVER_OWNED",
+      "contract": "QuestionCandidate.preliminary_guide",
+      "derivation": "request.opportunity.observable",
+      "field": "purpose",
+      "independent_semantic_evidence": false
+    },
+    {
+      "authority": "MODEL_OWNED",
+      "contract": "QuestionCandidate.preliminary_guide.observable_elements[]",
+      "derivation": "draft.expected_observables[].description",
+      "field": "description",
+      "independent_semantic_evidence": true
+    },
+    {
+      "authority": "SERVER_DERIVED_FROM_MODEL_INPUT",
+      "contract": "QuestionCandidate.preliminary_guide.observable_elements[]",
+      "derivation": "stable_id(candidate_id, index, description, evidence ids, version)",
+      "field": "element_id",
+      "independent_semantic_evidence": false
+    },
+    {
+      "authority": "SERVER_DERIVED_FROM_MODEL_INPUT",
+      "contract": "QuestionCandidate.preliminary_guide.observable_elements[]",
+      "derivation": "resolved draft.expected_observables[].support_evidence_aliases",
+      "field": "evidence_ids",
+      "independent_semantic_evidence": false,
+      "note": "The alias-to-id resolution is the server's; the selection was the provider's and is already counted as routing."
+    },
+    {
+      "authority": "MODEL_OWNED",
+      "contract": "QuestionCandidate.preliminary_guide.observable_elements[]",
+      "derivation": "draft.expected_observables[].required_for_level_2",
+      "field": "required_for_level_2",
+      "independent_semantic_evidence": true
+    },
+    {
+      "authority": "SERVER_OWNED",
+      "contract": "QuestionCandidate.preliminary_guide.observable_elements[]",
+      "derivation": "constant []",
+      "field": "source_ids",
+      "independent_semantic_evidence": false
+    },
+    {
+      "authority": "SERVER_DERIVED_FROM_MODEL_INPUT",
+      "contract": "QuestionGenerationResult",
+      "derivation": "present only when the materializer accepted the draft",
+      "field": "candidate",
+      "independent_semantic_evidence": false
+    },
+    {
+      "authority": "SERVER_OWNED",
+      "contract": "QuestionGenerationResult",
+      "derivation": "request.evidence_bundle.context_mode",
+      "field": "context_mode",
+      "independent_semantic_evidence": false
+    },
+    {
+      "authority": "SERVER_OWNED",
+      "contract": "QuestionGenerationResult",
+      "derivation": "server leakage heuristic and replacement reporting",
+      "field": "diagnostics",
+      "independent_semantic_evidence": false,
+      "note": "Diagnostic prose is written by the server. It never establishes field authority and is never provider evidence."
+    },
+    {
+      "authority": "SERVER_OWNED",
+      "contract": "QuestionGenerationResult",
+      "derivation": "request.opportunity.opportunity_id",
+      "field": "opportunity_id",
+      "independent_semantic_evidence": false
+    },
+    {
+      "authority": "SERVER_DERIVED_FROM_MODEL_INPUT",
+      "contract": "QuestionGenerationResult",
+      "derivation": "draft.status, overridden by materializer replacement decisions",
+      "field": "status",
+      "independent_semantic_evidence": false,
+      "note": "REPLACEMENT_REQUIRED is NOT proof the provider asked for a replacement. materialize_question_draft() also returns it for blocked answer leakage, a repeated question fingerprint, and a choice/response-format mismatch. Those are deterministic materializer decisions and must not be attributed to the model."
+    },
+    {
+      "authority": "SERVER_OWNED",
+      "contract": "QuestionGenerationResult",
+      "derivation": "request.plan.submission_id",
+      "field": "submission_id",
+      "independent_semantic_evidence": false
+    }
+  ],
+  "fields_by_authority": {
+    "MODEL_OWNED": [
+      "QuestionCandidate.choices[].evaluator_rationale",
+      "QuestionCandidate.choices[].is_best_answer",
+      "QuestionCandidate.choices[].misconception",
+      "QuestionCandidate.choices[].text",
+      "QuestionCandidate.preliminary_guide.acceptable_alternatives",
+      "QuestionCandidate.preliminary_guide.misconceptions",
+      "QuestionCandidate.preliminary_guide.observable_elements[].description",
+      "QuestionCandidate.preliminary_guide.observable_elements[].required_for_level_2",
+      "QuestionCandidate.question_text",
+      "QuestionCandidate.uncertainties"
+    ],
+    "SERVER_DERIVED_FROM_MODEL_INPUT": [
+      "QuestionCandidate.anchor.anchor_id",
+      "QuestionCandidate.anchor.answer_leakage_risk",
+      "QuestionCandidate.anchor.fragments",
+      "QuestionCandidate.anchor.structure",
+      "QuestionCandidate.choices[].option_id",
+      "QuestionCandidate.preliminary_guide.observable_elements[].element_id",
+      "QuestionCandidate.preliminary_guide.observable_elements[].evidence_ids",
+      "QuestionGenerationResult.candidate",
+      "QuestionGenerationResult.status"
+    ],
+    "SERVER_OWNED": [
+      "QuestionCandidate.anchor.self_containment_score",
+      "QuestionCandidate.anchor.student_facing_label",
+      "QuestionCandidate.candidate_id",
+      "QuestionCandidate.citations",
+      "QuestionCandidate.cognitive_operation",
+      "QuestionCandidate.course_source_ids",
+      "QuestionCandidate.difficulty",
+      "QuestionCandidate.dimension_id",
+      "QuestionCandidate.estimated_minutes",
+      "QuestionCandidate.evidence_ids",
+      "QuestionCandidate.opportunity_id",
+      "QuestionCandidate.opportunity_template_id",
+      "QuestionCandidate.preliminary_guide.cannot_infer",
+      "QuestionCandidate.preliminary_guide.levels",
+      "QuestionCandidate.preliminary_guide.observable_elements[].source_ids",
+      "QuestionCandidate.preliminary_guide.purpose",
+      "QuestionCandidate.response_format",
+      "QuestionCandidate.student_justification_required",
+      "QuestionCandidate.submission_id",
+      "QuestionCandidate.variant_id",
+      "QuestionGenerationResult.context_mode",
+      "QuestionGenerationResult.diagnostics",
+      "QuestionGenerationResult.opportunity_id",
+      "QuestionGenerationResult.submission_id"
+    ]
+  },
+  "materializer_boundary": "sha256:1cd957375edb57fc1b3f0eebf62a71ddb44f653ba30eeb257cb2bcdf12257e73",
+  "materializer_version": "p07-question-materializer/1.0.0",
+  "model_draft_schema_hash": "sha256:2a756070f2f87684c771f6abe83d46022fdebf2a5099f772441f9217a40e5233",
+  "provider_draft_surface": {
+    "choice_draft_fields": [
+      "evaluator_rationale",
+      "is_best_answer",
+      "misconception",
+      "text"
+    ],
+    "control_fields": [
+      "replacement_reason",
+      "status"
+    ],
+    "draft_fields": [
+      "acceptable_alternatives",
+      "choices",
+      "expected_observables",
+      "misconceptions",
+      "question_text",
+      "replacement_reason",
+      "scope_alias",
+      "semantic_uncertainties",
+      "status",
+      "visible_anchor_aliases"
+    ],
+    "observable_draft_fields": [
+      "description",
+      "required_for_level_2",
+      "support_evidence_aliases"
+    ],
+    "routing_fields": [
+      "scope_alias",
+      "visible_anchor_aliases"
+    ],
+    "semantic_fields": [
+      "acceptable_alternatives",
+      "choices",
+      "expected_observables",
+      "misconceptions",
+      "question_text",
+      "semantic_uncertainties"
+    ]
+  },
+  "result_schema_hash": "sha256:6884b0f33be55fbe75139bdfe42081bf6b89fa9eb28c50536d0c0644f4f40f88",
+  "schema_version": "p07-field-authority/1.0.0",
+  "server_prose_rule": "Server diagnostic prose never establishes field authority. Only this artifact, derived from the executable materializer, does.",
+  "stage": "P07",
+  "status_is_not_a_model_confession_rule": "QuestionGenerationResult.status is SERVER_DERIVED. A blind adjudicator may not read REPLACEMENT_REQUIRED as the model declaring failure without separate MODEL_OWNED evidence."
+}

@@ -1,0 +1,198 @@
+{
+  "alignment": {
+    "aligned_count": 71,
+    "independent_of_derivation": true,
+    "verdict": "ALIGNED",
+    "verified_row_count": 71
+  },
+  "alignment_verification_version": "p06-alignment-verification/1.3.0",
+  "benchmark_version": "semantic-benchmark/1.3.0",
+  "binding_count": 71,
+  "candidate_scoring_by_activity": {
+    "act_01_luz_y_plantines": 4,
+    "act_02_voz_en_un_microcuento": 5,
+    "act_03_puesto_de_limonada": 6,
+    "act_04_asignador_de_turnos": 6,
+    "act_06_movilidad_estudiantil": 9,
+    "act_07_aislamiento_termico": 3,
+    "act_08_triage_de_logs": 7,
+    "act_09_renovacion_y_desplazamiento": 9,
+    "act_10_experimento_onboarding": 9,
+    "act_11_duplicados_en_pagos": 11
+  },
+  "candidate_scoring_by_construct_family": {
+    "RUBRIC_CRITERION": 69
+  },
+  "candidate_scoring_by_split": {
+    "CORE": 41,
+    "HELD_OUT_CONFIRMATION": 27,
+    "SMOKE": 1
+  },
+  "candidate_scoring_by_support_status_opportunity": {
+    "INSUFFICIENT": {
+      "by_split": {
+        "CORE": 25,
+        "HELD_OUT_CONFIRMATION": 12,
+        "SMOKE": 1
+      },
+      "candidate_scoring_property_count": 38,
+      "covered": true,
+      "qualified_by_v13": true
+    },
+    "PARTIAL": {
+      "by_split": {
+        "CORE": 4,
+        "HELD_OUT_CONFIRMATION": 1
+      },
+      "candidate_scoring_property_count": 5,
+      "covered": true,
+      "qualified_by_v13": true
+    },
+    "SUFFICIENT": {
+      "by_split": {
+        "CORE": 17,
+        "HELD_OUT_CONFIRMATION": 14
+      },
+      "candidate_scoring_property_count": 31,
+      "covered": true,
+      "qualified_by_v13": true
+    },
+    "UNCERTAIN": {
+      "by_split": {},
+      "candidate_scoring_property_count": 0,
+      "covered": false,
+      "qualified_by_v13": false
+    }
+  },
+  "candidate_scoring_property_count": 69,
+  "construct_resolver_version": "p06-construct-resolution/1.3.0",
+  "coverage_debt_by_disposition": {
+    "AMBIGUOUS_AUTHORIZED_CONSTRUCT_REFERENCE": 6,
+    "MULTIPLE_DECLARED_AUTHORIZED_CONSTRUCTS": 7,
+    "NO_DECLARED_AUTHORIZED_CONSTRUCT": 43
+  },
+  "coverage_debt_count": 56,
+  "derivation_version": "p06-remediated-derivation/1.3.0",
+  "executable_route_count": 71,
+  "fixture_builder_version": "semantic-benchmark-fixture-p06/1.2.0",
+  "instrument_hash": "sha256:aeefc371cc0af81291c91fb4349e0639243bd061b150b212a395d0cfc14cca24",
+  "multi_status_property_count": 5,
+  "narrowing_proof_against_v12": {
+    "added_property_count": 0,
+    "removed_property_count": 6,
+    "removed_property_ids": [
+      "A03-S01-P1",
+      "A03-S06-P1",
+      "A04-S03-P1",
+      "A04-S05-P5",
+      "A09-S01-P3",
+      "A09-S05-P2"
+    ],
+    "rule": "The repaired resolver may only remove candidate-scoring eligibility, never add it.",
+    "v12_audited_scoring_property_count": 75,
+    "v13_derived_scoring_property_count": 69
+  },
+  "non_scoring_binding_count": 2,
+  "required_properties": {
+    "artifact_absence_gate": false,
+    "benchmark_only_safety_construct": false,
+    "construct_set_gate": false,
+    "exact_construct_resolution": true,
+    "fabricated_uncertain_fixture": false,
+    "independent_property_alignment": true,
+    "location_derived_semantics": false
+  },
+  "routes_by_activity": {
+    "act_01_luz_y_plantines": 5,
+    "act_02_voz_en_un_microcuento": 6,
+    "act_03_puesto_de_limonada": 6,
+    "act_04_asignador_de_turnos": 6,
+    "act_06_movilidad_estudiantil": 9,
+    "act_07_aislamiento_termico": 3,
+    "act_08_triage_de_logs": 7,
+    "act_09_renovacion_y_desplazamiento": 9,
+    "act_10_experimento_onboarding": 9,
+    "act_11_duplicados_en_pagos": 11
+  },
+  "routes_by_construct_family": {
+    "RUBRIC_CRITERION": 71
+  },
+  "routes_by_split": {
+    "CORE": 43,
+    "HELD_OUT_CONFIRMATION": 27,
+    "SMOKE": 1
+  },
+  "schema_version": "semantic-benchmark-p06-instrument/1.3.0",
+  "scoring_property_ids": [
+    "A01-S02-P1",
+    "A01-S03-P1",
+    "A01-S03-P2",
+    "A01-S05-P1",
+    "A02-S01-P1",
+    "A02-S03-P1",
+    "A02-S04-P1",
+    "A02-S05-P1",
+    "A02-S06-P1",
+    "A03-S01-P2",
+    "A03-S02-P1",
+    "A03-S04-P1",
+    "A03-S04-P3",
+    "A03-S05-P1",
+    "A03-S06-P2",
+    "A04-S01-P2",
+    "A04-S01-P3",
+    "A04-S01-P5",
+    "A04-S02-P1",
+    "A04-S05-P1",
+    "A04-S06-P4",
+    "A06-S01-P1",
+    "A06-S01-P3",
+    "A06-S02-P1",
+    "A06-S02-P2",
+    "A06-S03-P1",
+    "A06-S04-P1",
+    "A06-S04-P2",
+    "A06-S05-P1",
+    "A06-S05-P3",
+    "A07-S02-P3",
+    "A07-S04-P1",
+    "A07-S04-P2",
+    "A08-S01-P1",
+    "A08-S01-P3",
+    "A08-S03-P1",
+    "A08-S03-P2",
+    "A08-S04-P1",
+    "A08-S05-P1",
+    "A08-S05-P2",
+    "A09-S01-P1",
+    "A09-S01-P2",
+    "A09-S02-P1",
+    "A09-S02-P3",
+    "A09-S04-P1",
+    "A09-S05-P1",
+    "A09-S05-P3",
+    "A09-S06-P1",
+    "A09-S06-P4",
+    "A10-S01-P2",
+    "A10-S02-P1",
+    "A10-S02-P2",
+    "A10-S03-P2",
+    "A10-S04-P1",
+    "A10-S04-P3",
+    "A10-S05-P1",
+    "A10-S06-P2",
+    "A10-S06-P3",
+    "A11-S01-P1",
+    "A11-S01-P2",
+    "A11-S01-P3",
+    "A11-S02-P1",
+    "A11-S03-P1",
+    "A11-S03-P2",
+    "A11-S03-P3",
+    "A11-S04-P1",
+    "A11-S04-P2",
+    "A11-S04-P3",
+    "A11-S06-P1"
+  ],
+  "support_status_opportunity_counts_are_not_a_partition": "A property may assert more than one support status, so these counts are opportunities and do not sum to the scoring total. The multi-status properties are listed in the coverage report."
+}

@@ -1,0 +1,57 @@
+{
+  "confirmation_only_stages": [
+    "SEMANTIC_HELD_OUT_CONFIRMATION",
+    "N3_HELD_OUT_CONFIRMATION"
+  ],
+  "escalation_path_under_test": "HIGH -> XHIGH -> MAX",
+  "held_out_can_trigger_escalation": false,
+  "ladder": [
+    "HIGH",
+    "XHIGH",
+    "MAX"
+  ],
+  "probes": [
+    {
+      "probe": "SELECTION_WITH_CLEAN_QUALIFICATION_SIDE_EVIDENCE",
+      "selected_rung": "HIGH"
+    },
+    {
+      "baseline_rung": "HIGH",
+      "escalated_to_a_deeper_rung": false,
+      "held_out_verdict_held_outside_the_call": {
+        "rung": "HIGH",
+        "stage": "N3_HELD_OUT_CONFIRMATION",
+        "verdict": "CONFIRMED_CONTRACTUAL_HARD_SAFETY_FAILURE"
+      },
+      "note": "The held-out verdict is real data, held next to the call rather than passed into it. Selection still returns the same rung, so no HIGH -> XHIGH -> MAX escalation can be driven by held-out evidence. Probe 3 shows that passing it in instead raises.",
+      "probe": "A_HELD_OUT_FAILURE_ON_THE_SELECTED_RUNG_DOES_NOT_ESCALATE",
+      "selected_rung": "HIGH"
+    },
+    {
+      "probe": "SMUGGLING_HELD_OUT_MATERIAL_INTO_SELECTION_RAISES",
+      "raised": true
+    },
+    {
+      "probe": "N3_SELECTION_SIDE_AGGREGATE_REFUSES_A_HELD_OUT_EXPOSURE",
+      "raised": true
+    },
+    {
+      "consequence": "A held-out N3 confirmed failure means the selected configuration is NOT qualified under this frozen benchmark. It does not authorize falling back to the next reasoning rung, escalating to XHIGH/MAX, or selecting another candidate on the exposed held-out set. It requires a NEW pre-execution decision and protocol cycle, because any reselection informed by this result would have used held-out material as a selection surface.",
+      "may_alter_candidate_ranking": false,
+      "may_fall_back_to_another_rung": false,
+      "may_select_a_different_candidate": false,
+      "outcome": "HELD_OUT_CONFIRMATION_FAILED",
+      "probe": "HELD_OUT_CONFIRMATION_CANNOT_RESELECT"
+    }
+  ],
+  "proof_hash": "sha256:9a53c8e1870d7a7de77fdde104551cbf31deb31741672b53c44e68ededdd5fe0",
+  "proved": true,
+  "schema_version": "phase9-rung-escalation-proof/1.3.0",
+  "selection_inputs": [
+    "SEMANTIC_SMOKE",
+    "N3_SAFETY_SMOKE",
+    "SEMANTIC_CORE",
+    "N3_CORE"
+  ],
+  "stage_probed": "P06"
+}
