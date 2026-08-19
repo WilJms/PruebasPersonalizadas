@@ -1,5 +1,15 @@
 # semantic-benchmark/1.2.0 — repaired P06 qualification instrument
 
+> **Status: HISTORICAL.** Phase 9B.5 falsified this instrument *before* any v1.2
+> provider execution, and Phase 9B.6 reproduced every structural blocker. Its
+> P06 portion must not be used to qualify a candidate. The frozen bytes below
+> are preserved exactly as evidence and still reproduce; the sections that
+> describe how v1.2 *worked* are left intact for that reason, including the
+> `UNIQUE_NAME_PREFIX` rule in step 2, which is the defect itself and has been
+> removed from the repaired resolver. Read
+> [PHASE9B6_STRUCTURAL_REMEDIATION.md](PHASE9B6_STRUCTURAL_REMEDIATION.md)
+> first. Verdict: `PHASE9B6_PRODUCT_DECISION_REQUIRED`.
+
 - benchmark version: `semantic-benchmark/1.2.0`
 - global benchmark boundary: `sha256:0855817997b64fa2357539877978b52140e1e78a949d7c830ef4f70d19e7fe79`
 - Phase 9 protocol: `phase9-qualification-protocol/1.2.0`
