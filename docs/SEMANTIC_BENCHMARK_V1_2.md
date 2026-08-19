@@ -38,13 +38,43 @@ therefore *declared* by the authorized source chain, not inferred from prose.
    `02_rubric.docx` criteria/dimension table, falling back to the assignment's
    `Tarea` requirements where the rubric is informal prose. 60 constructs across
    12 activities.
+
+   > **Phase 9B.6 correction — activities 05 and 12.** These two activities end
+   > up with zero executable P06 routes, and the informal-rubric fallback is
+   > *not* the cause. Both rubrics are informal prose, and for exactly that
+   > reason both fall back to `Tarea` and each obtains **four**
+   > `ASSIGNMENT_REQUIREMENT` catalog constructs — so the authorized construct
+   > space is present, named and source-grounded. The operative cause is
+   > downstream: their P06 properties do not resolve unambiguously to those
+   > source construct *names*. Under the repaired fail-closed resolver, A05
+   > loses 6 properties to `NO_DECLARED_AUTHORIZED_CONSTRUCT` and 1 to
+   > `AMBIGUOUS_AUTHORIZED_CONSTRUCT_REFERENCE`; A12 loses 12 and 1. The
+   > `NO_PRODUCTION_REPRESENTATIVE_P06_CONSTRUCT` disposition — whose reason
+   > text reads "the activity exposes no structured authorized construct" —
+   > fires only on an *empty* catalog and is emitted for no property in v1.2.
+   > Reading it as the explanation for A05/A12 would be wrong. No inferred
+   > route is created to give these activities coverage.
 2. **Declarative resolution** — a property resolves only if it *names* a catalog
    construct, by exact folded name, leading label (`D1.`), or unique
    word-boundary prefix. Anything else fails closed.
 3. **Route from the construct alone** — the model-visible route is a pure
    function of the catalog entry plus the submission's evidence modalities.
-4. **Evidence stays evaluator-side** — the model receives the whole submission
-   bundle and locates evidence itself. No location is projected into the route.
+4. **Submission evidence location stays evaluator-side** — the model receives
+   the whole submission bundle and locates the supporting evidence itself. No
+   *submission* evidence location is projected into the route.
+
+   > **Phase 9B.6 correction.** An earlier wording of this line said "No
+   > location is projected into the route", which is false as stated. Several
+   > rubrics define a criterion partly through an authorized descriptor column
+   > headed `Dónde debería poder comprobarse`, and that column is part of the
+   > criterion's own definition, so it does reach `construct_description` and
+   > therefore the model. For example the A04 route for `Una aparición inválida
+   > no reserva el id` carries `[Dónde debería poder comprobarse] Orden entre
+   > validación y deduplicación`. That is authorized rubric text, not oracle
+   > leakage, and it is deliberately **not** removed: stripping it would delete
+   > authorized source semantics the real product also shows. The claim that
+   > holds is the narrower one above — the route never says where *this
+   > submission's* evidence sits.
 
 Route count is not a target: 127 → **77** (46 qualification, 31 held-out). A
 smaller valid benchmark is preferable to a larger invalid one.
