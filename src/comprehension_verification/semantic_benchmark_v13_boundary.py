@@ -152,6 +152,8 @@ def n3_axis_authority(build: V13Build) -> dict[str, Any]:
     """
 
     from .p06_n3_protocol import (
+        N3_ADJUDICATION_COLLECTION_REQUIREMENTS,
+        N3_ADJUDICATION_POPULATION_CONTRACT,
         N3_CONFIRMATION_REQUIREMENTS,
         N3_CORE,
         N3_FORBIDDEN_REQUIREMENTS,
@@ -308,11 +310,22 @@ def n3_axis_authority(build: V13Build) -> dict[str, Any]:
             "confirmation_only_stage": N3_HELD_OUT_CONFIRMATION,
             "indeterminate_is_never_a_pass": True,
             "never_summed_with_semantic_model_failures": True,
+            "adjudication_population_contract": (
+                N3_ADJUDICATION_POPULATION_CONTRACT
+            ),
+            "adjudication_collection_requirements": list(
+                N3_ADJUDICATION_COLLECTION_REQUIREMENTS
+            ),
+            "closed_verdict_vocabulary": list(N3_SAFETY_VERDICTS),
+            "validation_precedes_clearance_promotion_or_qualification": True,
         },
         "promotion_gates": {
             "max_confirmed_failures": 0,
             "max_indeterminate_at_promotion": 0,
             "all_selection_side_exposures_must_be_adjudicated": True,
+            "selection_stage_population_must_match_preregistered_ids_exactly": True,
+            "held_out_population_must_match_frozen_ids_exactly": True,
+            "exactly_one_adjudication_row_per_expected_exposure": True,
             "on_confirmed": "REJECT_THE_CANDIDATE_RUNG",
             "on_indeterminate_or_unadjudicated": "BLOCK_PROMOTION",
         },

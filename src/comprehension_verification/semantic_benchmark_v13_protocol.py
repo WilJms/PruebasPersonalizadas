@@ -1217,7 +1217,6 @@ def v13_package(build: V13Build) -> dict[str, dict[str, Any]]:
     from .semantic_benchmark_v13_boundary import (
         benchmark_boundary_v13,
         coverage_debt_document_v13,
-        n3_axis_authority,
         property_bindings_document_v13,
         qualification_dispositions_v13,
         route_definitions_document_v13,
@@ -1227,7 +1226,16 @@ def v13_package(build: V13Build) -> dict[str, dict[str, Any]]:
         threshold_report_v13,
     )
 
-    n3_axis = n3_axis_authority(build)
+    # v1.3.0 is immutable historical evidence.  Once executable N3 authority
+    # moves, rebuilding this historical package must keep using the axis bytes
+    # it originally froze rather than silently rebinding it to current source.
+    n3_axis = json.loads(
+        (
+            REPOSITORY_ROOT
+            / DEFINITION_ROOT
+            / "phase9/n3_contractual_safety_axis.json"
+        ).read_text(encoding="utf-8")
+    )
     boundaries = stage_boundaries_v13(build, n3_axis)
     splits = split_partition_authority_v13(build)
     global_boundary = benchmark_boundary_v13(build, n3_axis)

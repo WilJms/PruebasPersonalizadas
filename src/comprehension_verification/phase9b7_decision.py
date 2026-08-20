@@ -69,6 +69,28 @@ _CORPUS_CHANGE = list(CORPUS_DEPENDENT_STAGES)
 
 _PROTOCOL = "phase9-qualification-protocol/1.3.0"
 
+# Fields introduced by the later 1.3.4 executable collection repair.  The
+# Phase 9B.7 decision is immutable historical evidence, so its reproducible
+# projection stops at the protocol surface it actually decided.  Runtime
+# monkeypatches still flow through this projection, preserving the original
+# fail-closed decision tests without rebinding old evidence to new authority.
+_POST_PHASE9B7_N3_AGGREGATION_FIELDS: tuple[str, ...] = (
+    "adjudication_population_contract",
+    "adjudication_collection_requirements",
+    "closed_verdict_vocabulary",
+    "validation_precedes_clearance_promotion_or_qualification",
+)
+
+
+def _phase9b7_n3_protocol_surface(corpus_root: Path) -> dict[str, Any]:
+    current = n3_protocol_surface(corpus_root, V12_ROOT)
+    material = {key: value for key, value in current.items() if key != "surface_hash"}
+    aggregation = dict(material["aggregation"])
+    for field in _POST_PHASE9B7_N3_AGGREGATION_FIELDS:
+        aggregation.pop(field, None)
+    material["aggregation"] = aggregation
+    return {**material, "surface_hash": canonical_hash(material)}
+
 
 def _row(
     option: str,
@@ -435,7 +457,7 @@ def phase9b7_decision(corpus_root: Path) -> dict[str, Any]:
     matrix = decision_matrix(corpus_root)
     n3_feasible = matrix["n3_soundness"]["sound"]
 
-    protocol = n3_protocol_surface(corpus_root, V12_ROOT)
+    protocol = _phase9b7_n3_protocol_surface(corpus_root)
     protocol_sound = (
         protocol["protocol_mismatch"]["all_facts_hold"]
         and protocol["separate_from_semantic_axis"]
@@ -478,7 +500,7 @@ def phase9b7_decision(corpus_root: Path) -> dict[str, Any]:
         "noisy_decision_required_between": None if n3_feasible else ["N1", "N2"],
         "decision_matrix": matrix,
         "n3_future_boundary_requirements": n3_future_boundary_requirements(),
-        "n3_protocol_surface": n3_protocol_surface(corpus_root, V12_ROOT),
+        "n3_protocol_surface": protocol,
         "benchmark_version_created": None,
         "boundaries_refrozen": False,
         "high_smoke_authorized": False,

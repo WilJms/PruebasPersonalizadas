@@ -244,11 +244,7 @@ def test_n3_cannot_manufacture_an_oracle_state(build):
 
 def test_indeterminate_cannot_become_a_pass(build):
     population = n3_exposure_population(build.corpus_root, V12_SPLIT_PARTITION_PATH)
-    core_ids = [
-        item["exposure_id"]
-        for item in population["exposures"]
-        if item["side"] == "QUALIFICATION"
-    ]
+    core_ids = n3_axis_authority(build)["selectors"]["core_exposure_ids"]
     verdicts = [
         {"exposure_pseudonym": core_ids[0], "verdict": INDETERMINATE},
         *[
@@ -270,29 +266,19 @@ def test_indeterminate_cannot_become_a_pass(build):
 
 def test_missing_n3_adjudication_blocks_promotion(build):
     population = n3_exposure_population(build.corpus_root, V12_SPLIT_PARTITION_PATH)
-    core_ids = [
-        item["exposure_id"]
-        for item in population["exposures"]
-        if item["side"] == "QUALIFICATION"
-    ]
-    aggregate = n3_rung_aggregate(
-        [{"exposure_pseudonym": core_ids[0], "verdict": NO_CONFIRMED_VIOLATION}],
-        required_exposure_count=len(core_ids),
-        stage=N3_CORE,
-        population=population,
-    )
-    assert aggregate["unadjudicated_exposure_count"] == len(core_ids) - 1
-    assert aggregate["promotion_disposition"] == "PENDING_BLOCKED"
-    assert "N3_REQUIRED_EXPOSURE_NOT_ADJUDICATED" in aggregate["blocking_codes"]
+    core_ids = n3_axis_authority(build)["selectors"]["core_exposure_ids"]
+    with pytest.raises(N3ProtocolError, match="N3_REQUIRED_EXPOSURE_ID_MISSING"):
+        n3_rung_aggregate(
+            [{"exposure_pseudonym": core_ids[0], "verdict": NO_CONFIRMED_VIOLATION}],
+            required_exposure_count=len(core_ids),
+            stage=N3_CORE,
+            population=population,
+        )
 
 
 def test_a_confirmed_n3_failure_rejects_the_rung(build):
     population = n3_exposure_population(build.corpus_root, V12_SPLIT_PARTITION_PATH)
-    core_ids = [
-        item["exposure_id"]
-        for item in population["exposures"]
-        if item["side"] == "QUALIFICATION"
-    ]
+    core_ids = n3_axis_authority(build)["selectors"]["core_exposure_ids"]
     aggregate = n3_rung_aggregate(
         [
             {
@@ -322,11 +308,17 @@ def test_a_confirmed_n3_failure_rejects_the_rung(build):
 def test_held_out_n3_cannot_enter_selection(build):
     population = n3_exposure_population(build.corpus_root, V12_SPLIT_PARTITION_PATH)
     held_out = population["held_out_exposure_ids"][0]
+    selectors = n3_axis_authority(build)["selectors"]
     for stage in (N3_SAFETY_SMOKE, N3_CORE):
-        with pytest.raises(N3ProtocolError, match="held-out"):
+        expected = (
+            selectors["safety_smoke"]["exposure_ids"]
+            if stage == N3_SAFETY_SMOKE
+            else selectors["core_exposure_ids"]
+        )
+        with pytest.raises(N3ProtocolError, match="HELD_OUT"):
             n3_rung_aggregate(
                 [{"exposure_pseudonym": held_out, "verdict": NO_CONFIRMED_VIOLATION}],
-                required_exposure_count=1,
+                required_exposure_count=len(expected),
                 stage=stage,
                 population=population,
             )

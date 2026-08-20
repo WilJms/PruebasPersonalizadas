@@ -526,9 +526,7 @@ def semantic_invariant_equality_proof(
     v132_budget = _json(V132_REPORT_ROOT / "phase9/call_budget.json")
 
     from .semantic_benchmark_v131 import p06_stage_boundary_v131
-    from .semantic_benchmark_v13_boundary import n3_axis_authority
-
-    n3_axis = n3_axis_authority(build)
+    n3_axis = _json(V132_DEFINITION_ROOT / "phase9/n3_contractual_safety_axis.json")
     derived_boundary = p06_stage_boundary_v131(build, n3_axis, fixtures)
 
     rows: list[dict[str, Any]] = []
@@ -1832,9 +1830,9 @@ def v133_package(build: V13Build) -> dict[str, dict[str, Any]]:
 
     from .n3_provider_fixtures import n3_provider_fixture_authority
     from .semantic_benchmark_v131 import call_budget_v131
-    from .semantic_benchmark_v13_boundary import n3_axis_authority
-
-    n3_axis = n3_axis_authority(build)
+    # v1.3.3 remains immutable historical evidence after later executable N3
+    # repairs.  Rebuild it against the axis bytes it actually published.
+    n3_axis = _json(V132_DEFINITION_ROOT / "phase9/n3_contractual_safety_axis.json")
     fixtures = n3_provider_fixture_authority(build.corpus_root)
     fixture_equality = n3_fixture_equality_proof_v133(fixtures)
     disposition = u3_uncertain_disposition(build)

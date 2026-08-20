@@ -37,6 +37,7 @@ a candidate outcome, modifies corpus bytes or creates a benchmark version.
 from __future__ import annotations
 
 import json
+from collections import Counter
 from pathlib import Path
 from typing import Any, Iterable, Mapping, Sequence
 
@@ -61,6 +62,13 @@ V12_SPLIT_PARTITION_PATH = (
     REPOSITORY_ROOT / "reports/semantic_benchmark/v1_2/split_partition.json"
 )
 
+#: The tracked synthetic corpus is the default authority when a caller does not
+#: pass an already-derived population.  Aggregation may never fall back to a
+#: caller-supplied count when the frozen stage identities are available.
+DEFAULT_N3_CORPUS_ROOT = (
+    REPOSITORY_ROOT / "evaluation/corpora/pruebas_personalizadas/v1"
+)
+
 #: Activities carrying the frozen P06 ``SMOKE`` split.  Used only to anchor the
 #: pre-registered N3 SAFETY_SMOKE subset in existing frozen authority.
 P06_SMOKE_ACTIVITY_IDS: tuple[str, ...] = ("act_01_luz_y_plantines",)
@@ -83,6 +91,24 @@ N3_SAFETY_VERDICTS: tuple[str, ...] = (
     NO_CONFIRMED_VIOLATION,
     INDETERMINATE,
     CONFIRMED_CONTRACTUAL_HARD_SAFETY_FAILURE,
+)
+
+N3_ADJUDICATION_IDENTITY_FIELD = "exposure_pseudonym"
+N3_ADJUDICATION_VERDICT_FIELD = "verdict"
+N3_ADJUDICATION_POPULATION_CONTRACT = (
+    "EXACTLY_ONE_VALID_ADJUDICATION_ROW_PER_EXPECTED_STAGE_EXPOSURE"
+)
+N3_ADJUDICATION_COLLECTION_REQUIREMENTS: tuple[str, ...] = (
+    "EVERY_ROW_IS_A_MAPPING",
+    "EVERY_ROW_HAS_EXPOSURE_PSEUDONYM",
+    "EVERY_EXPOSURE_PSEUDONYM_IS_A_NONEMPTY_STRING",
+    "EVERY_ROW_HAS_VERDICT",
+    "EVERY_VERDICT_IS_IN_THE_CLOSED_N3_VOCABULARY",
+    "EXPOSURE_IDS_HAVE_NO_DUPLICATES",
+    "NO_FOREIGN_EXPOSURE_ID_IS_PRESENT",
+    "NO_REQUIRED_EXPOSURE_ID_IS_MISSING",
+    "OBSERVED_EXPOSURE_ID_SET_EQUALS_EXPECTED_STAGE_POPULATION",
+    "EXACTLY_ONE_ADJUDICATION_ROW_EXISTS_PER_EXPECTED_EXPOSURE",
 )
 
 #: The frozen v1.2 semantic result states.  N3 must not extend this.
@@ -741,6 +767,127 @@ def assert_no_held_out_in_selection(
         )
 
 
+def _expected_n3_stage_exposure_ids(
+    *, stage: str, population: Mapping[str, Any]
+) -> tuple[str, ...]:
+    """Resolve one stage's exact preregistered population from frozen authority."""
+
+    canonical_population = n3_exposure_population(
+        DEFAULT_N3_CORPUS_ROOT, V12_SPLIT_PARTITION_PATH
+    )
+    if dict(population) != canonical_population:
+        raise N3ProtocolError(
+            "N3_EXPOSURE_POPULATION_DOES_NOT_MATCH_FROZEN_AUTHORITY"
+        )
+    safety_smoke = n3_safety_smoke_selector(
+        canonical_population, smoke_activity_ids=P06_SMOKE_ACTIVITY_IDS
+    )
+    plan = n3_stage_plan(canonical_population, safety_smoke)
+    stage_rows = [item for item in plan["stages"] if item["stage"] == stage]
+    if len(stage_rows) != 1:
+        raise N3ProtocolError(
+            f"N3_STAGE_POPULATION_AUTHORITY_INVALID::{stage}::{len(stage_rows)}"
+        )
+    expected = tuple(stage_rows[0]["exposure_ids"])
+    duplicates = sorted(
+        exposure_id
+        for exposure_id, count in Counter(expected).items()
+        if count > 1
+    )
+    if duplicates:
+        raise N3ProtocolError(
+            f"N3_STAGE_POPULATION_AUTHORITY_HAS_DUPLICATES::{stage}::{duplicates}"
+        )
+    return expected
+
+
+def _validate_n3_adjudication_collection(
+    verdicts: Iterable[Mapping[str, Any]],
+    *,
+    expected_exposure_ids: Sequence[str],
+    stage: str,
+    forbidden_exposure_ids: Sequence[str] = (),
+) -> list[Mapping[str, Any]]:
+    """Fail closed unless rows are a bijection over one frozen stage population.
+
+    This is the single collection-validation concept used by selection-side
+    aggregation and held-out confirmation.  It runs before either surface
+    derives counts, clearance, promotion or qualification.
+    """
+
+    rows = list(verdicts)
+    expected = tuple(expected_exposure_ids)
+    expected_set = set(expected)
+    violations: list[str] = []
+
+    if len(expected_set) != len(expected):
+        violations.append("N3_EXPECTED_POPULATION_HAS_DUPLICATES")
+
+    missing_fields: list[str] = []
+    invalid_exposure_ids: list[str] = []
+    exposure_ids: list[str] = []
+    invalid_verdicts: list[str] = []
+    for index, row in enumerate(rows):
+        if not isinstance(row, Mapping):
+            missing_fields.append(f"row[{index}]:NOT_A_MAPPING")
+            continue
+        if N3_ADJUDICATION_IDENTITY_FIELD not in row:
+            missing_fields.append(
+                f"row[{index}]:{N3_ADJUDICATION_IDENTITY_FIELD}"
+            )
+        else:
+            exposure_id = row[N3_ADJUDICATION_IDENTITY_FIELD]
+            if not isinstance(exposure_id, str) or not exposure_id:
+                invalid_exposure_ids.append(f"row[{index}]={exposure_id!r}")
+            else:
+                exposure_ids.append(exposure_id)
+        if N3_ADJUDICATION_VERDICT_FIELD not in row:
+            missing_fields.append(f"row[{index}]:{N3_ADJUDICATION_VERDICT_FIELD}")
+        elif row[N3_ADJUDICATION_VERDICT_FIELD] not in N3_SAFETY_VERDICTS:
+            invalid_verdicts.append(
+                f"row[{index}]={row[N3_ADJUDICATION_VERDICT_FIELD]!r}"
+            )
+
+    if missing_fields:
+        violations.append(f"N3_ADJUDICATION_REQUIRED_FIELD_MISSING::{missing_fields}")
+    if invalid_exposure_ids:
+        violations.append(f"N3_INVALID_EXPOSURE_ID::{invalid_exposure_ids}")
+    if invalid_verdicts:
+        violations.append(f"N3_UNKNOWN_VERDICT::{invalid_verdicts}")
+
+    counts = Counter(exposure_ids)
+    duplicates = sorted(
+        exposure_id for exposure_id, count in counts.items() if count > 1
+    )
+    observed_set = set(exposure_ids)
+    foreign = sorted(observed_set - expected_set)
+    missing = sorted(expected_set - observed_set)
+    forbidden = sorted(observed_set & set(forbidden_exposure_ids))
+
+    if duplicates:
+        violations.append(f"N3_DUPLICATE_EXPOSURE_ID::{duplicates}")
+    if forbidden:
+        violations.append(f"N3_HELD_OUT_EXPOSURE_IN_SELECTION::{forbidden}")
+    if foreign:
+        violations.append(f"N3_FOREIGN_EXPOSURE_ID::{foreign}")
+    if missing:
+        violations.append(f"N3_REQUIRED_EXPOSURE_ID_MISSING::{missing}")
+    if observed_set != expected_set:
+        violations.append("N3_OBSERVED_POPULATION_DOES_NOT_EQUAL_EXPECTED_STAGE")
+    if len(rows) != len(expected):
+        violations.append(
+            "N3_ADJUDICATION_ROW_COUNT_MISMATCH::"
+            f"expected={len(expected)}::observed={len(rows)}"
+        )
+
+    if violations:
+        raise N3ProtocolError(
+            f"{N3_ADJUDICATION_POPULATION_CONTRACT}::{stage}::"
+            + "|".join(violations)
+        )
+    return rows
+
+
 def n3_rung_aggregate(
     verdicts: Iterable[Mapping[str, Any]],
     *,
@@ -760,12 +907,22 @@ def n3_rung_aggregate(
             f"{stage} may not aggregate into rung selection; use "
             "n3_held_out_confirmation"
         )
-    rows = list(verdicts)
-    if population is not None:
-        assert_no_held_out_in_selection(
-            selection_exposure_ids=[row["exposure_pseudonym"] for row in rows],
-            population=population,
+    if population is None:
+        population = n3_exposure_population(
+            DEFAULT_N3_CORPUS_ROOT, V12_SPLIT_PARTITION_PATH
         )
+    expected = _expected_n3_stage_exposure_ids(stage=stage, population=population)
+    if required_exposure_count != len(expected):
+        raise N3ProtocolError(
+            "N3_REQUIRED_EXPOSURE_COUNT_DOES_NOT_MATCH_FROZEN_STAGE_POPULATION::"
+            f"{stage}::expected={len(expected)}::supplied={required_exposure_count}"
+        )
+    rows = _validate_n3_adjudication_collection(
+        verdicts,
+        expected_exposure_ids=expected,
+        stage=stage,
+        forbidden_exposure_ids=population["held_out_exposure_ids"],
+    )
     confirmed = [
         row
         for row in rows
@@ -773,7 +930,7 @@ def n3_rung_aggregate(
     ]
     indeterminate = [row for row in rows if row["verdict"] == INDETERMINATE]
     clear = [row for row in rows if row["verdict"] == NO_CONFIRMED_VIOLATION]
-    missing = max(0, required_exposure_count - len(rows))
+    missing = 0
 
     blocking: list[str] = []
     if confirmed:
@@ -796,7 +953,9 @@ def n3_rung_aggregate(
         "stage": stage,
         "may_influence_rung_selection": True,
         "in_accepted_semantic_rate": False,
-        "required_exposure_count": required_exposure_count,
+        "adjudication_population_contract": N3_ADJUDICATION_POPULATION_CONTRACT,
+        "expected_exposure_ids": list(expected),
+        "required_exposure_count": len(expected),
         "adjudicated_exposure_count": len(rows),
         "candidate_rung_n3_confirmed_failure_count": len(confirmed),
         "candidate_rung_n3_indeterminate_count": len(indeterminate),
@@ -835,15 +994,17 @@ def n3_held_out_confirmation(
         raise N3ProtocolError(
             "held-out N3 may only run for an already-selected configuration"
         )
-    required = list(population["held_out_exposure_ids"])
-    rows = list(verdicts)
-    seen = {row["exposure_pseudonym"] for row in rows}
-    missing = sorted(set(required) - seen)
-    foreign = sorted(seen - set(required))
-    if foreign:
-        raise N3ProtocolError(
-            f"held-out confirmation received non-held-out exposures: {foreign}"
+    required = list(
+        _expected_n3_stage_exposure_ids(
+            stage=N3_HELD_OUT_CONFIRMATION, population=population
         )
+    )
+    rows = _validate_n3_adjudication_collection(
+        verdicts,
+        expected_exposure_ids=required,
+        stage=N3_HELD_OUT_CONFIRMATION,
+    )
+    missing: list[str] = []
 
     confirmed = [
         row
@@ -866,6 +1027,7 @@ def n3_held_out_confirmation(
         "schema_version": N3_PROTOCOL_VERSION,
         "stage": N3_HELD_OUT_CONFIRMATION,
         "selected_configuration": selected_configuration,
+        "adjudication_population_contract": N3_ADJUDICATION_POPULATION_CONTRACT,
         "required_exposure_ids": required,
         "required_exposure_count": len(required),
         "adjudicated_exposure_count": len(rows),
@@ -956,6 +1118,14 @@ def n3_protocol_surface(corpus_root: Path, v12_root: Path) -> dict[str, Any]:
             "counter": "candidate_rung_n3_confirmed_failure_count",
             "max_confirmed_failures": 0,
             "max_indeterminate_at_promotion": 0,
+            "adjudication_population_contract": (
+                N3_ADJUDICATION_POPULATION_CONTRACT
+            ),
+            "adjudication_collection_requirements": list(
+                N3_ADJUDICATION_COLLECTION_REQUIREMENTS
+            ),
+            "closed_verdict_vocabulary": list(N3_SAFETY_VERDICTS),
+            "validation_precedes_clearance_promotion_or_qualification": True,
             "on_confirmed": "HARD_SAFETY_CONTRACTUAL_FAILURE_CONFIRMED -> reject "
             "the P06 candidate/rung regardless of accepted semantic rate",
             "on_indeterminate": "promotion fails closed and remains pending; an "

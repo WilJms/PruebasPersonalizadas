@@ -61,7 +61,6 @@ from .semantic_benchmark_v13 import (
     semantic_qualification_claim,
 )
 from .semantic_benchmark_v13_boundary import (
-    n3_axis_authority,
     p06_stage_boundary_v13,
     p07_stage_boundary_v13,
     split_partition_authority_v13,
@@ -1148,7 +1147,13 @@ def v131_package(build: V13Build) -> dict[str, dict[str, Any]]:
         selection_independence_proof,
     )
 
-    n3_axis = n3_axis_authority(build)
+    # Historical packages are reconstructed against their published N3 axis,
+    # not against later executable repairs.
+    n3_axis = _json(
+        REPOSITORY_ROOT
+        / DEFINITION_ROOT
+        / "phase9/n3_contractual_safety_axis.json"
+    )
     fixtures = n3_provider_fixture_authority(build.corpus_root)
     boundaries = stage_boundaries_v131(build, n3_axis, fixtures)
     global_boundary = benchmark_boundary_v131(build, n3_axis, fixtures)

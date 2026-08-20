@@ -1218,9 +1218,11 @@ def v132_package(build: V13Build) -> dict[str, dict[str, Any]]:
 
     from .n3_provider_fixtures import n3_provider_fixture_authority
     from .semantic_benchmark_v131 import call_budget_v131
-    from .semantic_benchmark_v13_boundary import n3_axis_authority
-
-    n3_axis = n3_axis_authority(build)
+    # 1.3.2 republished the 1.3.1 N3 axis byte-identically.  Preserve that
+    # historical authority when current executable N3 source changes.
+    n3_axis = _json(
+        V131_DEFINITION_ROOT / "phase9/n3_contractual_safety_axis.json"
+    )
     fixtures = n3_provider_fixture_authority(build.corpus_root)
     fixture_equality = n3_fixture_equality_proof(fixtures)
     claim = semantic_qualification_claim_v132(build)

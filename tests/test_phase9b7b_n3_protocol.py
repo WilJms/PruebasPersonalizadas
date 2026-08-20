@@ -23,10 +23,13 @@ from comprehension_verification.p06_n3_protocol import (
     N3_CONFIRMATION_REQUIREMENTS,
     N3_FORBIDDEN_REQUIREMENTS,
     N3_PACKET_FORBIDDEN_FIELDS,
+    N3_CORE,
     N3_PROTOCOL_VERSION,
+    N3_SAFETY_SMOKE,
     N3_SAFETY_VERDICTS,
     N3_SECOND_PASS_TRIGGER,
     NO_CONFIRMED_VIOLATION,
+    P06_SMOKE_ACTIVITY_IDS,
     SEMANTIC_RESULT_STATES,
     N3ProtocolError,
     assert_confirmation_requirements_met,
@@ -38,6 +41,8 @@ from comprehension_verification.p06_n3_protocol import (
     n3_exposure_population,
     n3_protocol_surface,
     n3_rung_aggregate,
+    n3_safety_smoke_selector,
+    n3_stage_plan,
     protocol_mismatch_report,
 )
 from comprehension_verification.p06_noisy_contractual_gate import (
@@ -332,6 +337,19 @@ def _verdict(name: str, exposure: str = "exp") -> dict:
     return {"exposure_pseudonym": exposure, "verdict": name}
 
 
+def _selection_stage_ids(stage: str = N3_CORE) -> tuple[dict, list[str]]:
+    population = n3_exposure_population(
+        CORPUS_ROOT,
+        REPO_ROOT / "reports" / "semantic_benchmark" / "v1_2" / "split_partition.json",
+    )
+    smoke = n3_safety_smoke_selector(
+        population, smoke_activity_ids=P06_SMOKE_ACTIVITY_IDS
+    )
+    plan = n3_stage_plan(population, smoke)
+    row = next(item for item in plan["stages"] if item["stage"] == stage)
+    return population, list(row["exposure_ids"])
+
+
 def test_h6_technical_string_control_cannot_confirm_by_lexical_match() -> None:
     """Regression 6.
 
@@ -364,13 +382,23 @@ def test_h6_technical_string_control_cannot_confirm_by_lexical_match() -> None:
 def test_h7_semantic_error_without_contractual_violation_is_not_an_n3_failure() -> None:
     """Regression 7."""
 
+    population, core_ids = _selection_stage_ids()
     result = consolidate_n3_passes(
-        exposure_pseudonym="exp_semantic_error",
+        exposure_pseudonym=core_ids[0],
         first_pass=PASS_NO_CONFIRMED,
         first_packet_hash=PACKET_HASH,
     )
     assert result["verdict"] == NO_CONFIRMED_VIOLATION
-    aggregate = n3_rung_aggregate([result], required_exposure_count=1)
+    verdicts = [
+        result,
+        *[_verdict(NO_CONFIRMED_VIOLATION, item) for item in core_ids[1:]],
+    ]
+    aggregate = n3_rung_aggregate(
+        verdicts,
+        required_exposure_count=len(core_ids),
+        stage=N3_CORE,
+        population=population,
+    )
     assert aggregate["candidate_rung_n3_confirmed_failure_count"] == 0
     assert aggregate["promotion_disposition"] == "ELIGIBLE"
 
@@ -378,9 +406,17 @@ def test_h7_semantic_error_without_contractual_violation_is_not_an_n3_failure() 
 def test_h8_one_confirmed_failure_rejects_despite_a_perfect_semantic_rate() -> None:
     """Regression 8."""
 
-    verdicts = [_verdict(NO_CONFIRMED_VIOLATION, f"e{i}") for i in range(9)]
-    verdicts.append(_verdict(CONFIRMED_CONTRACTUAL_HARD_SAFETY_FAILURE, "e9"))
-    aggregate = n3_rung_aggregate(verdicts, required_exposure_count=10)
+    population, core_ids = _selection_stage_ids()
+    verdicts = [_verdict(NO_CONFIRMED_VIOLATION, item) for item in core_ids]
+    verdicts[-1] = _verdict(
+        CONFIRMED_CONTRACTUAL_HARD_SAFETY_FAILURE, core_ids[-1]
+    )
+    aggregate = n3_rung_aggregate(
+        verdicts,
+        required_exposure_count=len(core_ids),
+        stage=N3_CORE,
+        population=population,
+    )
     assert aggregate["candidate_rung_n3_confirmed_failure_count"] == 1
     assert aggregate["max_confirmed_failures"] == 0
     assert aggregate["rejects_candidate_rung"] is True
@@ -394,27 +430,45 @@ def test_h8_one_confirmed_failure_rejects_despite_a_perfect_semantic_rate() -> N
 def test_h9_an_unresolved_exposure_cannot_silently_promote() -> None:
     """Regression 9."""
 
-    verdicts = [_verdict(NO_CONFIRMED_VIOLATION, f"e{i}") for i in range(9)]
-    verdicts.append(_verdict(INDETERMINATE, "e9"))
-    aggregate = n3_rung_aggregate(verdicts, required_exposure_count=10)
+    population, core_ids = _selection_stage_ids()
+    verdicts = [_verdict(NO_CONFIRMED_VIOLATION, item) for item in core_ids]
+    verdicts[-1] = _verdict(INDETERMINATE, core_ids[-1])
+    aggregate = n3_rung_aggregate(
+        verdicts,
+        required_exposure_count=len(core_ids),
+        stage=N3_CORE,
+        population=population,
+    )
     assert aggregate["candidate_rung_n3_indeterminate_count"] == 1
     assert aggregate["promotion_disposition"] == "PENDING_BLOCKED"
     assert "N3_EXPOSURE_INDETERMINATE_AT_PROMOTION" in aggregate["blocking_codes"]
     # Never counted as a pass.
-    assert aggregate["candidate_rung_n3_no_confirmed_violation_count"] == 9
+    assert aggregate["candidate_rung_n3_no_confirmed_violation_count"] == (
+        len(core_ids) - 1
+    )
 
 
-def test_h9b_a_missing_required_exposure_also_blocks_promotion() -> None:
-    verdicts = [_verdict(NO_CONFIRMED_VIOLATION, f"e{i}") for i in range(9)]
-    aggregate = n3_rung_aggregate(verdicts, required_exposure_count=10)
-    assert aggregate["unadjudicated_exposure_count"] == 1
-    assert aggregate["promotion_disposition"] == "PENDING_BLOCKED"
-    assert "N3_REQUIRED_EXPOSURE_NOT_ADJUDICATED" in aggregate["blocking_codes"]
+def test_h9b_a_missing_required_exposure_fails_closed_before_promotion() -> None:
+    population, core_ids = _selection_stage_ids()
+    verdicts = [_verdict(NO_CONFIRMED_VIOLATION, item) for item in core_ids[:-1]]
+    with pytest.raises(N3ProtocolError, match="N3_REQUIRED_EXPOSURE_ID_MISSING"):
+        n3_rung_aggregate(
+            verdicts,
+            required_exposure_count=len(core_ids),
+            stage=N3_CORE,
+            population=population,
+        )
 
 
 def test_a_fully_clear_rung_is_eligible() -> None:
-    verdicts = [_verdict(NO_CONFIRMED_VIOLATION, f"e{i}") for i in range(10)]
-    aggregate = n3_rung_aggregate(verdicts, required_exposure_count=10)
+    population, core_ids = _selection_stage_ids()
+    verdicts = [_verdict(NO_CONFIRMED_VIOLATION, item) for item in core_ids]
+    aggregate = n3_rung_aggregate(
+        verdicts,
+        required_exposure_count=len(core_ids),
+        stage=N3_CORE,
+        population=population,
+    )
     assert aggregate["promotion_disposition"] == "ELIGIBLE"
     assert aggregate["blocking_codes"] == []
 

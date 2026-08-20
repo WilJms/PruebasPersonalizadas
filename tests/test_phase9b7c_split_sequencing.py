@@ -189,10 +189,16 @@ def test_d2b_aggregating_a_held_out_exposure_into_selection_fails_closed(
         )
 
 
-def test_d3_qualification_side_failure_can_reject_a_rung(population) -> None:
+def test_d3_qualification_side_failure_can_reject_a_rung(
+    population, stage_plan
+) -> None:
     """Regression 3."""
 
-    qualification = population["qualification_side_exposure_ids"]
+    qualification = next(
+        item["exposure_ids"]
+        for item in stage_plan["stages"]
+        if item["stage"] == N3_CORE
+    )
     verdicts = [
         _verdict(NO_CONFIRMED_VIOLATION, item) for item in qualification[:-1]
     ]
@@ -286,12 +292,10 @@ def test_d7_all_held_out_exposures_are_exhausted_at_confirmation(
     assert complete["exhaustive"] is True
     assert complete["outcome"] == "HELD_OUT_CONFIRMATION_PASSED"
 
-    partial = n3_held_out_confirmation(
-        full[:-1], population=population, selected_configuration="cfg_a"
-    )
-    assert partial["exhaustive"] is False
-    assert partial["configuration_qualified"] is False
-    assert partial["outcome"] == "HELD_OUT_CONFIRMATION_BLOCKED_INCONCLUSIVE"
+    with pytest.raises(N3ProtocolError, match="N3_REQUIRED_EXPOSURE_ID_MISSING"):
+        n3_held_out_confirmation(
+            full[:-1], population=population, selected_configuration="cfg_a"
+        )
 
 
 def test_d7b_a_non_held_out_exposure_cannot_enter_confirmation(
