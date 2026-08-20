@@ -1,0 +1,102 @@
+{
+  "adjudicator_calls": 0,
+  "construct_selections_unchanged": true,
+  "counts_by_n3_split": {
+    "N3_CORE": 6,
+    "N3_HELD_OUT_CONFIRMATION": 3,
+    "N3_SAFETY_SMOKE": 1
+  },
+  "fixture_count": 10,
+  "fixture_set_hash": "sha256:f53ec77ae4c26732644083d10497e65e1a1bc34f830e675aa4848669d106c62d",
+  "fixture_set_hash_unchanged": true,
+  "fixtures_identical_to_v132": true,
+  "from_version": "semantic-benchmark/1.3.2",
+  "method": "Compare the derived fixture authority with the published 1.3.2 document field by field, then compare every per-fixture request hash individually. The aggregate hash alone is not the proof.",
+  "per_fixture": [
+    {
+      "alias_envelope_hash": "sha256:0a913dc1b850b90635a43c53f7fbca7cbf3d81f600da3d6f89c06bd1047efedf",
+      "identical_to_v132": true,
+      "n3_provider_fixture_id": "N3F-act_01_luz_y_plantines-submission_01",
+      "n3_split": "N3_SAFETY_SMOKE",
+      "provider_request_hash": "sha256:5da964ce012ce27120099f568f12a049c0507bbed9447e8e7b2d20dd18d13ae9",
+      "target_construct_key": "RUBRIC::A01::AFIRMACION_Y_ALCANCE"
+    },
+    {
+      "alias_envelope_hash": "sha256:2a18b4d01fb90dad5a494ddce684d4a5b52d3f9c7646ecd6921f2a4704b968ee",
+      "identical_to_v132": true,
+      "n3_provider_fixture_id": "N3F-act_02_voz_en_un_microcuento-submission_02",
+      "n3_split": "N3_CORE",
+      "provider_request_hash": "sha256:d8d64b6d1a0165091f8075a31a812e07d8138f3f66d87aecc83c74220c8d0e2a",
+      "target_construct_key": "RUBRIC::A02::TESIS_INTERPRETATIVA"
+    },
+    {
+      "alias_envelope_hash": "sha256:c5d9bd5e932df47c1a3aa9f387766166da387f2c62d96e301169cef27b7b2fb1",
+      "identical_to_v132": true,
+      "n3_provider_fixture_id": "N3F-act_04_asignador_de_turnos-submission_04",
+      "n3_split": "N3_CORE",
+      "provider_request_hash": "sha256:79aa6d1e6ef16f3d6d548ea302760d6af0b082b2f0537cbf746f7d3170aa7226",
+      "target_construct_key": "RUBRIC::A04::DESCARTA_REGISTROS_CON_CAMPO_FALTANTE"
+    },
+    {
+      "alias_envelope_hash": "sha256:5f563e4302dd844bd57d7c21a21f46307d7c646621305d4fb46d32d68dd6a063",
+      "identical_to_v132": true,
+      "n3_provider_fixture_id": "N3F-act_05_visitas_a_bibliotecas-submission_05",
+      "n3_split": "N3_CORE",
+      "provider_request_hash": "sha256:68d9fb60e50e8698f9a42c70500b0abefd205ca60d52b5f82854efaf4b72d8f7",
+      "target_construct_key": "ASSIGNMENT::A05::CALCULA_VISITAS_POR_DIA_ABIERTO_PARA_CADA_FILA_Y_RESUME_EL_PATRO"
+    },
+    {
+      "alias_envelope_hash": "sha256:fe703029f24bb89d3e6d5181ab593a91dd6415a83365f0418d976eede84ab030",
+      "identical_to_v132": true,
+      "n3_provider_fixture_id": "N3F-act_06_movilidad_estudiantil-submission_06",
+      "n3_split": "N3_CORE",
+      "provider_request_hash": "sha256:4b1838f8a8e39f72b9e1b1da36b0aa5db003188f464381e0eee669d2765ad38d",
+      "target_construct_key": "RUBRIC::A06::TESIS_Y_OBJETIVO"
+    },
+    {
+      "alias_envelope_hash": "sha256:ea5aec65477ddb7a4d031330de2b5fe19c8063e303bf8d2f776d51f89a3f2eb1",
+      "identical_to_v132": true,
+      "n3_provider_fixture_id": "N3F-act_07_aislamiento_termico-submission_01",
+      "n3_split": "N3_HELD_OUT_CONFIRMATION",
+      "provider_request_hash": "sha256:4410103170b0310df9a04ec10090b2b4e866e1823c6ef9da42f59bb97fb8d6ad",
+      "target_construct_key": "RUBRIC::A07::CRITERIO_DE_COMPARACION"
+    },
+    {
+      "alias_envelope_hash": "sha256:13371dfa71278c2262539956260bdbcfde0a820ef2a1facff8cc8f2c8024c187",
+      "identical_to_v132": true,
+      "n3_provider_fixture_id": "N3F-act_08_triage_de_logs-submission_02",
+      "n3_split": "N3_CORE",
+      "provider_request_hash": "sha256:9ab2a79bfc749df28192528c1127f016db0b9bf3dfa0126be3d6e6b8e673272b",
+      "target_construct_key": "RUBRIC::A08::LINEA_TEMPORAL_Y_CORRELACION"
+    },
+    {
+      "alias_envelope_hash": "sha256:82fce22fa4dfd2456fa667525f4d42509991c7e84c0f534554fd0dc3a79c69a0",
+      "identical_to_v132": true,
+      "n3_provider_fixture_id": "N3F-act_09_renovacion_y_desplazamiento-submission_03",
+      "n3_split": "N3_HELD_OUT_CONFIRMATION",
+      "provider_request_hash": "sha256:ecd0b079f1d08d5010da481c9bf71d7aac9c13d82335b48c5c022201a2590e7d",
+      "target_construct_key": "RUBRIC::A09::TESIS_EXPLICATIVA"
+    },
+    {
+      "alias_envelope_hash": "sha256:730b9a35db1d5338c2c6a64d36f71beac814c3201a74fc9c005b6f148dd08381",
+      "identical_to_v132": true,
+      "n3_provider_fixture_id": "N3F-act_11_duplicados_en_pagos-submission_05",
+      "n3_split": "N3_CORE",
+      "provider_request_hash": "sha256:c999bdaa3a4ea7a121999b772da22c6b92d21dd7a8b6a827aec746df49b93e7e",
+      "target_construct_key": "RUBRIC::A11::CADENA_CAUSAL"
+    },
+    {
+      "alias_envelope_hash": "sha256:53fee40e1ef3b6ac8748f82b4441c4c9c523427da3796b81e7e2a5bfad061aaf",
+      "identical_to_v132": true,
+      "n3_provider_fixture_id": "N3F-act_12_clinica_movil-submission_06",
+      "n3_split": "N3_HELD_OUT_CONFIRMATION",
+      "provider_request_hash": "sha256:f86349115b17281a4f79ee1dfb960b30f6c2b32a0192d13c1182edfc450df407",
+      "target_construct_key": "ASSIGNMENT::A12::ASIGNA_LAS_DOS_JORNADAS_Y_FORMULA_UNA_REGLA_DE_DECISION_REPRODUC"
+    }
+  ],
+  "proof_hash": "sha256:c8eb66d84ddb823d289372ceb880f1705676188642558a19bceda326e3a35a15",
+  "provider_calls": 0,
+  "schema_version": "n3-fixture-equality-proof/1.3.3",
+  "split_sequencing_unchanged": true,
+  "to_version": "semantic-benchmark/1.3.3"
+}

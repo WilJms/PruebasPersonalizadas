@@ -1,0 +1,123 @@
+{
+  "all_conditions_hold_for_every_fixture": true,
+  "condition_count": 10,
+  "conditions": [
+    "REQUEST_VALIDATES_UNDER_THE_REAL_P06_INPUT_CONTRACT",
+    "USES_THE_REAL_P06_PROMPT_AND_OUTPUT_SCHEMA",
+    "EVERY_CONSTRUCT_IS_AN_AUTHORIZED_ACTIVITY_CONSTRUCT",
+    "NO_BENCHMARK_ONLY_CONSTRUCT_IS_CREATED",
+    "NO_SEMANTIC_GOLDEN_IS_REQUIRED",
+    "NO_P04_CANDIDATE_OUTPUT_IS_CONSUMED",
+    "COMPLETE_SUBMISSION_EVIDENCE_VIA_THE_PRODUCTION_PROJECTION",
+    "NOISY_CONTENT_IS_MODEL_VISIBLE_WITHOUT_ADDING_OR_REWRITING_CORPUS_TEXT",
+    "A_SCHEMA_VALID_RESPONSE_MATERIALIZES_THROUGH_THE_REAL_MATERIALIZER",
+    "REQUEST_CONSTRUCTION_IS_OUTCOME_INDEPENDENT_AND_DETERMINISTIC"
+  ],
+  "failing_fixtures_by_condition": {},
+  "fixture_count": 10,
+  "note": "Every condition runs the real product code against every fixture. The placeholder draft used to exercise the materializer asserts no semantic answer and is discarded; it exists to prove the response path is real, not to encode an expectation.",
+  "per_fixture": [
+    {
+      "blueprint_id": "blueprint_p06_route_v12_fcb74d214e5ecfa4d3c8",
+      "blueprint_is_route_derived_not_p04_output": true,
+      "evidence_units_in_bundle": 6,
+      "evidence_units_projected": 6,
+      "materializer_version": "p06-evidence-materializer/1.0.0",
+      "n3_provider_fixture_id": "N3F-act_01_luz_y_plantines-submission_01",
+      "projected_text_is_verbatim_corpus": true,
+      "request_contract": "EvidenceMapRequest"
+    },
+    {
+      "blueprint_id": "blueprint_p06_route_v12_723b90949593341dec7b",
+      "blueprint_is_route_derived_not_p04_output": true,
+      "evidence_units_in_bundle": 6,
+      "evidence_units_projected": 6,
+      "materializer_version": "p06-evidence-materializer/1.0.0",
+      "n3_provider_fixture_id": "N3F-act_02_voz_en_un_microcuento-submission_02",
+      "projected_text_is_verbatim_corpus": true,
+      "request_contract": "EvidenceMapRequest"
+    },
+    {
+      "blueprint_id": "blueprint_p06_route_v12_30d4c0eebbb3891d61c7",
+      "blueprint_is_route_derived_not_p04_output": true,
+      "evidence_units_in_bundle": 11,
+      "evidence_units_projected": 11,
+      "materializer_version": "p06-evidence-materializer/1.0.0",
+      "n3_provider_fixture_id": "N3F-act_04_asignador_de_turnos-submission_04",
+      "projected_text_is_verbatim_corpus": true,
+      "request_contract": "EvidenceMapRequest"
+    },
+    {
+      "blueprint_id": "blueprint_p06_route_v12_a600bfa4900b93db06ab",
+      "blueprint_is_route_derived_not_p04_output": true,
+      "evidence_units_in_bundle": 55,
+      "evidence_units_projected": 55,
+      "materializer_version": "p06-evidence-materializer/1.0.0",
+      "n3_provider_fixture_id": "N3F-act_05_visitas_a_bibliotecas-submission_05",
+      "projected_text_is_verbatim_corpus": true,
+      "request_contract": "EvidenceMapRequest"
+    },
+    {
+      "blueprint_id": "blueprint_p06_route_v12_0d41e7ce1bbd046f718a",
+      "blueprint_is_route_derived_not_p04_output": true,
+      "evidence_units_in_bundle": 6,
+      "evidence_units_projected": 6,
+      "materializer_version": "p06-evidence-materializer/1.0.0",
+      "n3_provider_fixture_id": "N3F-act_06_movilidad_estudiantil-submission_06",
+      "projected_text_is_verbatim_corpus": true,
+      "request_contract": "EvidenceMapRequest"
+    },
+    {
+      "blueprint_id": "blueprint_p06_route_v12_36fad9f6a72b91c00cad",
+      "blueprint_is_route_derived_not_p04_output": true,
+      "evidence_units_in_bundle": 16,
+      "evidence_units_projected": 16,
+      "materializer_version": "p06-evidence-materializer/1.0.0",
+      "n3_provider_fixture_id": "N3F-act_07_aislamiento_termico-submission_01",
+      "projected_text_is_verbatim_corpus": true,
+      "request_contract": "EvidenceMapRequest"
+    },
+    {
+      "blueprint_id": "blueprint_p06_route_v12_8b18470f0c0be1df280d",
+      "blueprint_is_route_derived_not_p04_output": true,
+      "evidence_units_in_bundle": 12,
+      "evidence_units_projected": 12,
+      "materializer_version": "p06-evidence-materializer/1.0.0",
+      "n3_provider_fixture_id": "N3F-act_08_triage_de_logs-submission_02",
+      "projected_text_is_verbatim_corpus": true,
+      "request_contract": "EvidenceMapRequest"
+    },
+    {
+      "blueprint_id": "blueprint_p06_route_v12_e188974a3b2bb0ff4d28",
+      "blueprint_is_route_derived_not_p04_output": true,
+      "evidence_units_in_bundle": 44,
+      "evidence_units_projected": 44,
+      "materializer_version": "p06-evidence-materializer/1.0.0",
+      "n3_provider_fixture_id": "N3F-act_09_renovacion_y_desplazamiento-submission_03",
+      "projected_text_is_verbatim_corpus": true,
+      "request_contract": "EvidenceMapRequest"
+    },
+    {
+      "blueprint_id": "blueprint_p06_route_v12_0c324dc65272bd174564",
+      "blueprint_is_route_derived_not_p04_output": true,
+      "evidence_units_in_bundle": 15,
+      "evidence_units_projected": 15,
+      "materializer_version": "p06-evidence-materializer/1.0.0",
+      "n3_provider_fixture_id": "N3F-act_11_duplicados_en_pagos-submission_05",
+      "projected_text_is_verbatim_corpus": true,
+      "request_contract": "EvidenceMapRequest"
+    },
+    {
+      "blueprint_id": "blueprint_p06_route_v12_0303968bebc3b18abd43",
+      "blueprint_is_route_derived_not_p04_output": true,
+      "evidence_units_in_bundle": 13,
+      "evidence_units_projected": 13,
+      "materializer_version": "p06-evidence-materializer/1.0.0",
+      "n3_provider_fixture_id": "N3F-act_12_clinica_movil-submission_06",
+      "projected_text_is_verbatim_corpus": true,
+      "request_contract": "EvidenceMapRequest"
+    }
+  ],
+  "proof_hash": "sha256:eb8951e9d5a5234e3c59a4a88f96905797f94273fa20d5464662d2f64ae96ac8",
+  "schema_version": "n3-provider-production-representativeness/1.3.1"
+}
