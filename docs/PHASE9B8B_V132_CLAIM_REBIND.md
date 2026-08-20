@@ -1,6 +1,8 @@
 # Phase 9B.8B — semantic-benchmark/1.3.2
 
-**Status: `SEMANTIC_BENCHMARK_V1_3_2_PREEXECUTION_FREEZE_READY_FOR_FRESH_AUDIT`**
+**Status: `SUPERSEDED_PREEXECUTION_FREEZE_CANDIDATE_NO_RESULTS_EXECUTED`** — superseded by `semantic-benchmark/1.3.3`, see [Phase 9B.8C](PHASE9B8C_V133_UNCERTAIN_READINESS_RESOLUTION.md), which resolves the pre-U3 UNCERTAIN readiness gate the active claim still carried. Nothing ever ran against 1.3.2 and its bytes are unchanged; everything below still describes it accurately.
+
+Original status at publication: `SEMANTIC_BENCHMARK_V1_3_2_PREEXECUTION_FREEZE_READY_FOR_FRESH_AUDIT`
 
 Provider calls 0, adjudicator calls 0, billable authorizations 0, credentials
 resolved 0, real transport false, candidate outcomes read false, pricing

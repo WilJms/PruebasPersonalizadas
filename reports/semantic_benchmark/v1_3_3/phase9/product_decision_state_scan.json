@@ -1,0 +1,131 @@
+{
+  "active_benchmark_version": "semantic-benchmark/1.3.3",
+  "active_readiness_blocked": false,
+  "active_requires_product_decision": false,
+  "active_stop_code": null,
+  "also_scanned_for_true": [
+    "readiness_blocked",
+    "requires_product_decision"
+  ],
+  "artifacts_scanned": 16,
+  "closing_pass_rule": "This report and the pre-results freeze cannot appear in their own scan without self-reference. They are covered instead by a closing pass over the complete package, run after both exist, which raises on any violation.",
+  "decision_gap": "P06_UNCERTAIN_SEMANTIC_COVERAGE",
+  "deferred_to_closing_pass": {
+    "reports/semantic_benchmark/v1_3_3/phase9/pre_results_instrument_freeze.json": "the freeze binds this report's hash",
+    "reports/semantic_benchmark/v1_3_3/phase9/product_decision_state_scan.json": "this report cannot contain its own hash"
+  },
+  "historical_path_segments": [
+    "defect",
+    "fail_closed_rule",
+    "gate_result_verbatim",
+    "historical_claim_lineage",
+    "new_because",
+    "new_hash_reason",
+    "pre_decision_status",
+    "pre_u3_uncertain_coverage_gate",
+    "reason_for_new_version",
+    "replaced",
+    "superseded_because",
+    "uncertain_gap_state",
+    "unresolved_reasons",
+    "what_changed",
+    "what_changed_from_v132",
+    "why_a_new_hash",
+    "why_it_is_not_active",
+    "why_retained"
+  ],
+  "occurrences_found": 10,
+  "permitted_occurrence_count": 10,
+  "permitted_occurrences": [
+    {
+      "path": "evaluation/semantic_benchmark/v1_3_3/phase9/semantic_qualification_claim.json::why_a_new_hash",
+      "reason": "EXPLICIT_HISTORICAL_RECORD",
+      "value": "The claim's active disposition of the UNCERTAIN gap changed from PRODUCT_DECISION_REQUIRED to RESOLVED-by-U3, and the claim text names the version it applies to, so its material hash must change."
+    },
+    {
+      "path": "evaluation/semantic_benchmark/v1_3_3/phase9/semantic_qualification_claim.json::historical_claim_lineage.[0].uncertain_gap_state",
+      "reason": "EXPLICIT_HISTORICAL_RECORD",
+      "value": "PRODUCT_DECISION_REQUIRED"
+    },
+    {
+      "path": "evaluation/semantic_benchmark/v1_3_3/phase9/semantic_qualification_claim.json::historical_claim_lineage.[1].uncertain_gap_state",
+      "reason": "EXPLICIT_HISTORICAL_RECORD",
+      "value": "PRODUCT_DECISION_REQUIRED"
+    },
+    {
+      "path": "evaluation/semantic_benchmark/v1_3_3/phase9/semantic_qualification_claim.json::historical_claim_lineage.[2].uncertain_gap_state",
+      "reason": "EXPLICIT_HISTORICAL_RECORD",
+      "value": "PRODUCT_DECISION_REQUIRED"
+    },
+    {
+      "path": "evaluation/semantic_benchmark/v1_3_3/phase9/uncertain_coverage_disposition.json::pre_decision_status",
+      "reason": "EXPLICIT_HISTORICAL_RECORD",
+      "value": "PRODUCT_DECISION_REQUIRED"
+    },
+    {
+      "path": "evaluation/semantic_benchmark/v1_3_3/phase9/uncertain_coverage_disposition.json::pre_u3_uncertain_coverage_gate.gate_result_verbatim.stop_code",
+      "reason": "EXPLICIT_HISTORICAL_RECORD",
+      "value": "P06_UNCERTAIN_COVERAGE_PRODUCT_DECISION_REQUIRED"
+    },
+    {
+      "path": "evaluation/semantic_benchmark/v1_3_3/phase9/uncertain_coverage_disposition.json::pre_u3_uncertain_coverage_gate.stop_code",
+      "reason": "EXPLICIT_HISTORICAL_RECORD",
+      "value": "P06_UNCERTAIN_COVERAGE_PRODUCT_DECISION_REQUIRED"
+    },
+    {
+      "path": "reports/semantic_benchmark/v1_3_3/lineage.json::chain.[3].superseded_because.[0]",
+      "reason": "EXPLICIT_HISTORICAL_RECORD",
+      "value": "its active semantic qualification claim still embedded the pre-decision UNCERTAIN coverage gate, so an active field carried readiness_blocked=true and the stop code PRODUCT_DECISION_REQUIRED for a gap"
+    },
+    {
+      "path": "evaluation/semantic_benchmark/v1_3_3/phase9/uncertain_coverage_disposition.json::pre_u3_uncertain_coverage_gate.gate_result_verbatim.readiness_blocked",
+      "reason": "EXPLICIT_HISTORICAL_RECORD",
+      "value": "true"
+    },
+    {
+      "path": "evaluation/semantic_benchmark/v1_3_3/phase9/uncertain_coverage_disposition.json::pre_u3_uncertain_coverage_gate.readiness_blocked",
+      "reason": "EXPLICIT_HISTORICAL_RECORD",
+      "value": "true"
+    }
+  ],
+  "rule": "PRODUCT_DECISION_REQUIRED, and a true readiness block, may appear only in a field that records the pre-decision history or in an artifact republished byte-identically from 1.3.2 and declared as such. Every other occurrence is a current statement that the gap is open, and Phase 9B.7 closed it with U3.",
+  "scan_hash": "sha256:7b4c9fbb5cb845fdc4be105dc402fe50ad58be9bad5c9b17abe360a0f3fe5699",
+  "scanned_artifacts": [
+    "evaluation/semantic_benchmark/v1_3_3/phase9/candidate_matrix.json",
+    "evaluation/semantic_benchmark/v1_3_3/phase9/construct_selection_semantics.json",
+    "evaluation/semantic_benchmark/v1_3_3/phase9/n3_contractual_safety_axis.json",
+    "evaluation/semantic_benchmark/v1_3_3/phase9/n3_provider_fixtures.json",
+    "evaluation/semantic_benchmark/v1_3_3/phase9/qualification_protocol.json",
+    "evaluation/semantic_benchmark/v1_3_3/phase9/semantic_qualification_claim.json",
+    "evaluation/semantic_benchmark/v1_3_3/phase9/uncertain_coverage_disposition.json",
+    "reports/semantic_benchmark/v1_3_3/benchmark_boundary.json",
+    "reports/semantic_benchmark/v1_3_3/lineage.json",
+    "reports/semantic_benchmark/v1_3_3/phase9/call_budget.json",
+    "reports/semantic_benchmark/v1_3_3/phase9/construct_selection_independence.json",
+    "reports/semantic_benchmark/v1_3_3/phase9/n3_fixture_equality_proof.json",
+    "reports/semantic_benchmark/v1_3_3/phase9/n3_production_representativeness.json",
+    "reports/semantic_benchmark/v1_3_3/phase9/noisy_disposition_census.json",
+    "reports/semantic_benchmark/v1_3_3/phase9/semantic_invariant_equality_proof.json",
+    "reports/semantic_benchmark/v1_3_3/stage_boundaries.json"
+  ],
+  "scanned_for": [
+    "P06_UNCERTAIN_COVERAGE_PRODUCT_DECISION_REQUIRED",
+    "PRODUCT_DECISION_REQUIRED"
+  ],
+  "schema_version": "p06-uncertain-product-decision-state-scan/1.3.3",
+  "self_evidence_fields": [
+    "also_scanned_for_true",
+    "closing_pass_rule",
+    "deferred_to_closing_pass",
+    "historical_path_segments",
+    "permitted_occurrences",
+    "rule",
+    "scanned_for",
+    "self_evidence_fields",
+    "self_exemption_reason",
+    "violations"
+  ],
+  "self_exemption_reason": "This report records observations about the stop code, so its rule and evidence fields necessarily quote it. They are exempt by construction; every other field is scanned like any other.",
+  "violation_count": 0,
+  "violations": []
+}

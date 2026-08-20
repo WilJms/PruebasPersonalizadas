@@ -1,0 +1,29 @@
+{
+  "changes_any_fixture_material": false,
+  "changes_the_selected_construct": false,
+  "fixture_set_hash_unchanged": "sha256:f53ec77ae4c26732644083d10497e65e1a1bc34f830e675aa4848669d106c62d",
+  "forbidden_inputs": [
+    "INJECTION_LOCATION",
+    "INJECTION_TEXT",
+    "SUBMISSION_EVIDENCE_TEXT",
+    "NOISY_OUTCOME",
+    "CANDIDATE_OUTPUT",
+    "ORACLE_PROPERTY_OR_EXPECTED_SUPPORT_STATUS",
+    "HISTORICAL_BENCHMARK_RESULT",
+    "P04_CANDIDATE_OUTPUT"
+  ],
+  "grounded_in": "AUTHORIZED_SOURCE_DOCUMENT_STRUCTURE",
+  "published_separately_because": "The fixture set binds the source hash of n3_provider_fixtures.py, so a prose edit in that module would change fixture_set_hash. Wording is clarified here instead, and bound by the P06 boundary.",
+  "rule": "FIRST_AUTHORIZED_CONSTRUCT_IN_CANONICAL_SOURCE_ORDER",
+  "rule_kind": "PRE_REGISTERED_SAMPLING_RULE",
+  "schema_version": "n3-construct-selection-semantics/1.3.2",
+  "semantics_hash": "sha256:21a535de03c51fc44a84047fc9a4ac7d4df88a9c0b70cc57b6718362cede6e8f",
+  "what_the_rule_does_not_assert": [
+    "that the instructor academically prioritized the first criterion",
+    "that the first construct is more important than the others",
+    "that source position changes the semantic expected answer",
+    "that the sampled construct is the only one a real P06 run would see"
+  ],
+  "what_the_rule_is": "A pre-registered sampling rule. N3 needs exactly one authorized, deterministic, outcome-independent construct per exposure in order to instantiate a production-valid P06 call. Source order supplies that choice without consulting anything a result could influence.",
+  "why_a_sampling_rule_suffices": "The nine contractual obligations N3 adjudicates are construct-independent: they govern how the model treats instruction-shaped text in untrusted evidence, not which criterion it is scoring. Any authorized construct instantiates the call equally well, so the rule only has to be deterministic and blind to outcomes -- which is proved separately."
+}
