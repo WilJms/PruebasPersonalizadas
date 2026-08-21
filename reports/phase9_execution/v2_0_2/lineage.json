@@ -1,0 +1,33 @@
+{
+  "benchmark_version": "semantic-benchmark/1.3.5",
+  "billable_authorization": "NONE",
+  "billable_authorization_file_published": false,
+  "cost_projection_hash": "sha256:a27789f76a19dc4fe9f4d9d5124a774be69036f40babf18a0bd934487f605f9e",
+  "cost_projection_status": "PROPOSED_CAPS_NOT_AUTHORIZED",
+  "execution_version": "phase9-execution/2.0.2",
+  "high_smoke": "NOT_EXECUTED",
+  "lineage_hash": "sha256:52974986339a5f60c03d9d399653de8f3e47c5e5522bffafa52cccefdd952922",
+  "ordered_logical_call_population_equal_to_v2_0_1": true,
+  "ordered_logical_call_population_hash": "sha256:fef890ffa1b12e8717edd7cb5e13f7cdbd78b1e3eb9284aea20a21b29f45553e",
+  "phase9_execution_v2_0_0_provider_calls": 0,
+  "phase9_execution_v2_0_0_unchanged": true,
+  "phase9_execution_v2_0_0_used_for_provider_call": false,
+  "phase9_execution_v2_0_1_provider_calls": 0,
+  "phase9_execution_v2_0_1_unchanged": true,
+  "phase9_execution_v2_0_1_used_for_provider_call": false,
+  "predecessor_execution_version": "phase9-execution/2.0.1",
+  "pricing_snapshot_hash": "sha256:473857448d87f6507f3d626af5d8061c62d0830b949f6a489f6e1260feb82d55",
+  "pricing_snapshot_status": "VERIFIED_CURRENT_OFFICIAL_PRICING",
+  "product_pipeline_architecture_changed": false,
+  "product_prompts_changed": false,
+  "repair_scope": "PRICING_ACCOUNTING_COMPATIBILITY_ONLY",
+  "repaired_defects": [
+    "CURRENT_PRICING_SCHEMA_OMITTED_CACHE_WRITE_RATE",
+    "EXECUTOR_IGNORED_CACHE_WRITE_INPUT_TOKENS",
+    "PRIMARY_RESERVATION_DID_NOT_SEPARATE_TECHNICAL_RETRY_INCREMENT"
+  ],
+  "schema_version": "phase9-execution-lineage/2.0.2",
+  "semantic_benchmark_v1_3_5_unchanged": true,
+  "semantic_population_changed": false,
+  "trigger": "FINAL_PRICING_ACCOUNTING_COMPATIBILITY_GAP"
+}

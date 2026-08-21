@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Publish the phase9-execution/2.0.1 authority outside the v1.3.5 freeze.
+"""Publish the phase9-execution/2.0.2 authority outside the v1.3.5 freeze.
 
 This is a publication tool, never the first-real-call entrypoint.  It rebuilds
 the current v1.3.5 HIGH-SMOKE provider-visible requests, snapshots only that
@@ -27,10 +27,19 @@ from comprehension_verification.n3_provider_fixtures import (  # noqa: E402
     build_n3_provider_fixtures,
 )
 from comprehension_verification.phase9_execution import (  # noqa: E402
+    EXPECTED_ORDERED_LOGICAL_CALL_POPULATION_HASH,
     EXPECTED_PREDECESSOR_ARTIFACT_HASHES,
+    LONG_CONTEXT_THRESHOLD,
+    OPENAI_MAX_INPUT_TOKENS,
+    OFFICIAL_PRICING_SOURCE_URLS,
     PHASE9_EXECUTION_VERSION,
+    PROTECTED_PRIOR_EXECUTION_ARTIFACT_HASHES,
     QUALIFICATION_EXECUTION_POLICY,
     RUNTIME_SOURCE_BINDING_ROLES,
+    build_pre_authorization_cost_projection,
+    load_and_validate_cost_projection,
+    load_current_pricing_artifact,
+    prepare_phase9_execution,
 )
 from comprehension_verification.semantic_benchmark_fixtures import (  # noqa: E402
     build_p04_fixture,
@@ -47,22 +56,27 @@ from comprehension_verification.semantic_benchmark_v135 import (  # noqa: E402
 
 
 EXECUTION_VERSION = PHASE9_EXECUTION_VERSION
-AUTHORITY_ROOT = REPOSITORY_ROOT / "evaluation/phase9_execution/v2_0_1"
-REPORT_ROOT = REPOSITORY_ROOT / "reports/phase9_execution/v2_0_1"
+AUTHORITY_ROOT = REPOSITORY_ROOT / "evaluation/phase9_execution/v2_0_2"
+REPORT_ROOT = REPOSITORY_ROOT / "reports/phase9_execution/v2_0_2"
 REQUEST_AUTHORITY_PATH = AUTHORITY_ROOT / "high_smoke_request_authority.json"
 EXECUTION_BOUNDARY_PATH = AUTHORITY_ROOT / "execution_boundary.json"
+CURRENT_PRICING_PATH = AUTHORITY_ROOT / "current_pricing.json"
+COST_PROJECTION_PATH = REPORT_ROOT / "pre_authorization_cost_projection.json"
 CUTOVER_REPORT_PATH = REPORT_ROOT / "execution_cutover_report.json"
 LINEAGE_PATH = REPORT_ROOT / "lineage.json"
+BILLABLE_AUTHORIZATION_PATH = AUTHORITY_ROOT / "billable_authorization.json"
 PREDECESSOR_REQUEST_AUTHORITY_PATH = (
     REPOSITORY_ROOT
-    / "evaluation/phase9_execution/v2_0_0/high_smoke_request_authority.json"
+    / "evaluation/phase9_execution/v2_0_1/high_smoke_request_authority.json"
 )
+PREDECESSOR_REPORT_ROOT = REPOSITORY_ROOT / "reports/phase9_execution/v2_0_1"
 
 V135_DEFINITION_ROOT = REPOSITORY_ROOT / "evaluation/semantic_benchmark/v1_3_5"
 V135_REPORT_ROOT = REPOSITORY_ROOT / "reports/semantic_benchmark/v1_3_5"
 FREEZE_MANIFEST_PATH = V135_REPORT_ROOT / "phase9/freeze_hash_manifest.json"
 
 SOURCE_BINDING_PATHS = tuple(RUNTIME_SOURCE_BINDING_ROLES)
+PRICING_RETRIEVED_AT = "2026-08-21T18:18:15Z"
 
 CANDIDATE_BY_STAGE: Mapping[str, Mapping[str, str]] = {
     "P04": {
@@ -103,6 +117,71 @@ def _write(path: Path, payload: Any) -> None:
     path.write_text(_serialize(payload), encoding="utf-8")
 
 
+def build_current_pricing() -> dict[str, Any]:
+    """Build non-billable official pricing evidence verified on 2026-08-21."""
+
+    common_availability = {
+        "availability": "AVAILABLE_OPENAI_API",
+        "processing_tier": "STANDARD",
+        "responses_api_endpoint": "v1/responses",
+        "responses_api_supported": True,
+        "structured_outputs_supported": True,
+        "reasoning_high_supported": True,
+    }
+    material = {
+        "schema_version": "phase9-current-pricing/2.0.2",
+        "execution_version": EXECUTION_VERSION,
+        "status": "VERIFIED_CURRENT_OFFICIAL_PRICING",
+        "retrieved_at": PRICING_RETRIEVED_AT,
+        "effective_date": "2026-07-30",
+        "official_source_urls": list(OFFICIAL_PRICING_SOURCE_URLS),
+        "processing_tier": "STANDARD",
+        "long_context_threshold": LONG_CONTEXT_THRESHOLD,
+        "long_context_pricing_authorized": False,
+        "long_context_rule": (
+            "INPUT_TOKENS_GT_272000_REQUIRES_SEPARATE_LONG_CONTEXT_"
+            "PRICING_AUTHORITY"
+        ),
+        "cache_write_pricing_rule": {
+            "formula": (
+                "cache_write_per_million_usd == "
+                "1.25 * input_per_million_usd"
+            ),
+            "multiplier": 1.25,
+        },
+        "responses_api_supported": True,
+        "structured_outputs_supported": True,
+        "reasoning_high_supported": True,
+        "model_availability_evidence": (
+            "CURRENT_OFFICIAL_OPENAI_API_MODEL_PAGES"
+        ),
+        "models": {
+            "gpt-5.6-terra": {
+                "model_id": "gpt-5.6-terra",
+                "model_page_url": OFFICIAL_PRICING_SOURCE_URLS[0],
+                **common_availability,
+                "input_per_million_usd": 2.00,
+                "cached_input_per_million_usd": 0.20,
+                "cache_write_per_million_usd": 2.50,
+                "output_per_million_usd": 12.00,
+            },
+            "gpt-5.6-luna": {
+                "model_id": "gpt-5.6-luna",
+                "model_page_url": OFFICIAL_PRICING_SOURCE_URLS[1],
+                **common_availability,
+                "input_per_million_usd": 0.20,
+                "cached_input_per_million_usd": 0.02,
+                "cache_write_per_million_usd": 0.25,
+                "output_per_million_usd": 1.20,
+            },
+        },
+        "non_billable": True,
+        "authorization_state": "NOT_AUTHORIZED",
+        "billable_authorization": "NONE",
+    }
+    return {**material, "pricing_snapshot_hash": canonical_hash(material)}
+
+
 def _request_population_projection(
     request_authority: Mapping[str, Any],
 ) -> dict[str, Any]:
@@ -113,14 +192,14 @@ def _request_population_projection(
 
 
 def _predecessor_execution() -> dict[str, Any]:
-    for relative, expected in EXPECTED_PREDECESSOR_ARTIFACT_HASHES.items():
+    for relative, expected in PROTECTED_PRIOR_EXECUTION_ARTIFACT_HASHES.items():
         if _file_hash(REPOSITORY_ROOT / relative) != expected:
             raise RuntimeError(
-                f"published phase9-execution/2.0.0 bytes drifted: {relative}"
+                f"published phase9 execution bytes drifted: {relative}"
             )
     request = _read(PREDECESSOR_REQUEST_AUTHORITY_PATH)
     if (
-        request.get("execution_version") != "phase9-execution/2.0.0"
+        request.get("execution_version") != "phase9-execution/2.0.1"
         or request.get("request_authority_hash")
         != canonical_hash(
             {
@@ -130,36 +209,45 @@ def _predecessor_execution() -> dict[str, Any]:
             }
         )
     ):
-        raise RuntimeError("published phase9-execution/2.0.0 request is invalid")
-    report = _read(
-        REPOSITORY_ROOT
-        / "reports/phase9_execution/v2_0_0/execution_cutover_report.json"
-    )
+        raise RuntimeError("published phase9-execution/2.0.1 request is invalid")
+    report = _read(PREDECESSOR_REPORT_ROOT / "execution_cutover_report.json")
     report_material = {
         key: value for key, value in report.items() if key != "report_hash"
     }
     counters = report.get("execution_counters", {})
     if (
-        report.get("execution_version") != "phase9-execution/2.0.0"
+        report.get("execution_version") != "phase9-execution/2.0.1"
         or report.get("report_hash") != canonical_hash(report_material)
         or counters.get("provider_calls") != 0
+        or counters.get("adjudicator_calls") != 0
+        or counters.get("credential_resolutions") != 0
+        or counters.get("transport_factory_calls") != 0
+        or counters.get("real_provider_transport") is not False
         or counters.get("high_smoke") != "NOT_EXECUTED"
         or counters.get("billable_authorization") != "NONE"
     ):
-        raise RuntimeError("phase9-execution/2.0.0 is not proven unused")
+        raise RuntimeError("phase9-execution/2.0.1 is not proven unused")
+    ordered_hash = canonical_hash(_plan_calls(request))
+    if ordered_hash != EXPECTED_ORDERED_LOGICAL_CALL_POPULATION_HASH:
+        raise RuntimeError("phase9-execution/2.0.1 call population drifted")
     return {
-        "execution_version": "phase9-execution/2.0.0",
+        "execution_version": "phase9-execution/2.0.1",
         "published_artifacts": dict(EXPECTED_PREDECESSOR_ARTIFACT_HASHES),
+        "protected_prior_publications": dict(
+            PROTECTED_PRIOR_EXECUTION_ARTIFACT_HASHES
+        ),
         "provider_calls": 0,
+        "adjudicator_calls": 0,
+        "credential_resolutions": 0,
+        "transport_factory_calls": 0,
+        "real_provider_transport": False,
         "high_smoke": "NOT_EXECUTED",
         "billable_authorization": "NONE",
         "used_for_provider_call": False,
         "request_population_hash": canonical_hash(
             _request_population_projection(request)
         ),
-        "ordered_logical_call_population_hash": canonical_hash(
-            _plan_calls(request)
-        ),
+        "ordered_logical_call_population_hash": ordered_hash,
     }
 
 
@@ -506,7 +594,7 @@ def build_request_authority() -> dict[str, Any]:
         )
 
     material = {
-        "schema_version": "phase9-high-smoke-request-authority/2.0.1",
+        "schema_version": "phase9-high-smoke-request-authority/2.0.2",
         "execution_version": EXECUTION_VERSION,
         "benchmark_version": SEMANTIC_BENCHMARK_V135_VERSION,
         "protocol_version": PROTOCOL_VERSION_V135,
@@ -586,17 +674,19 @@ def build_execution_boundary(
     ordered_population_hash = canonical_hash(calls)
     if request_population_hash != predecessor["request_population_hash"]:
         raise RuntimeError(
-            "phase9-execution/2.0.1 request population differs from v2.0.0"
+            "phase9-execution/2.0.2 request population differs from v2.0.1"
         )
     if (
         ordered_population_hash
         != predecessor["ordered_logical_call_population_hash"]
     ):
         raise RuntimeError(
-            "phase9-execution/2.0.1 logical-call population differs from v2.0.0"
+            "phase9-execution/2.0.2 logical-call population differs from v2.0.1"
         )
+    if ordered_population_hash != EXPECTED_ORDERED_LOGICAL_CALL_POPULATION_HASH:
+        raise RuntimeError("phase9-execution/2.0.2 logical population hash drifted")
     plan_material = {
-        "schema_version": "phase9-high-smoke-plan/2.0.1",
+        "schema_version": "phase9-high-smoke-plan/2.0.2",
         "execution_version": EXECUTION_VERSION,
         "benchmark_version": SEMANTIC_BENCHMARK_V135_VERSION,
         "protocol_version": PROTOCOL_VERSION_V135,
@@ -627,8 +717,9 @@ def build_execution_boundary(
         for relative in sorted(SOURCE_BINDING_PATHS)
     ]
 
+    pricing = _read(CURRENT_PRICING_PATH)
     material = {
-        "schema_version": "phase9-execution-boundary/2.0.1",
+        "schema_version": "phase9-execution-boundary/2.0.2",
         "execution_version": EXECUTION_VERSION,
         "benchmark_version": SEMANTIC_BENCHMARK_V135_VERSION,
         "protocol_version": PROTOCOL_VERSION_V135,
@@ -664,6 +755,11 @@ def build_execution_boundary(
                 "request_authority_hash"
             ],
         },
+        "current_pricing": {
+            "path": str(CURRENT_PRICING_PATH.relative_to(REPOSITORY_ROOT)),
+            "file_sha256": _file_hash(CURRENT_PRICING_PATH),
+            "pricing_snapshot_hash": pricing["pricing_snapshot_hash"],
+        },
         "predecessor_execution": predecessor,
         "qualification_execution_policy": dict(QUALIFICATION_EXECUTION_POLICY),
         "source_bindings": source_bindings,
@@ -685,15 +781,32 @@ def build_execution_boundary(
             "held_out_in_plan": False,
             "result_dependent_selection": False,
         },
-        "pricing_state": "PRICING_REFRESH_REQUIRED_BEFORE_AUTHORIZATION",
+        "short_context_authority": {
+            "runtime_route_max_input_tokens": OPENAI_MAX_INPUT_TOKENS,
+            "official_long_context_threshold": LONG_CONTEXT_THRESHOLD,
+            "route_cap_below_long_context_threshold": (
+                OPENAI_MAX_INPUT_TOKENS < LONG_CONTEXT_THRESHOLD
+            ),
+            "long_context_pricing_authorized": False,
+            "disposition_beyond_route_cap_or_threshold": (
+                "FAIL_CLOSED_BEFORE_TRANSPORT"
+            ),
+        },
+        "pricing_state": "VERIFIED_CURRENT_OFFICIAL_PRICING",
+        "authorization_state": "NOT_AUTHORIZED",
         "billable_authorization": "NONE",
     }
     return {**material, "execution_boundary_hash": canonical_hash(material)}
 
 
-def build_cutover_report(boundary: Mapping[str, Any]) -> dict[str, Any]:
+def build_cutover_report(
+    boundary: Mapping[str, Any],
+    pricing: Mapping[str, Any],
+    projection: Mapping[str, Any],
+) -> dict[str, Any]:
+    retry = projection["technical_retry_reserve"]
     material = {
-        "schema_version": "phase9-execution-cutover-report/2.0.1",
+        "schema_version": "phase9-execution-cutover-report/2.0.2",
         "execution_version": EXECUTION_VERSION,
         "benchmark_version": SEMANTIC_BENCHMARK_V135_VERSION,
         "protocol_version": PROTOCOL_VERSION_V135,
@@ -702,7 +815,7 @@ def build_cutover_report(boundary: Mapping[str, Any]) -> dict[str, Any]:
         "ordered_logical_call_population_hash": boundary["high_smoke_plan"][
             "ordered_logical_call_population_hash"
         ],
-        "ordered_logical_call_population_equal_to_v2_0_0": True,
+        "ordered_logical_call_population_equal_to_v2_0_1": True,
         "high_smoke_decomposition": boundary["high_smoke_plan"]["decomposition"],
         "required_complete_population": {
             "logical_calls": 30,
@@ -713,63 +826,85 @@ def build_cutover_report(boundary: Mapping[str, Any]) -> dict[str, Any]:
         "qualification_schema_repair": "FORBIDDEN",
         "p11_provider_execution": "FORBIDDEN",
         "closed_blockers": [
-            "COMPLETE_EFFECTIVE_PROVIDER_RUNTIME_BOUNDARY",
-            "P11_OUTSIDE_30_CALL_PLAN_UNREACHABLE",
-            "N3_SEMANTIC_METADATA_LEAK_FAILS_CLOSED",
-            "INCOMPLETE_GENERATION_CANNOT_REPORT_COMPLETE",
+            "CURRENT_PRICING_BINDS_CACHE_WRITE_RATE",
+            "EXECUTOR_PRICES_CACHE_WRITE_PROVIDER_USAGE",
+            "PRIMARY_AND_TECHNICAL_RETRY_RESERVATIONS_SEPARATED",
+            "LONG_CONTEXT_FAILS_CLOSED_BEFORE_TRANSPORT",
         ],
-        "readiness": "PRICING_REFRESH_REQUIRED_BEFORE_AUTHORIZATION",
+        "pricing_snapshot": {
+            "status": pricing["status"],
+            "pricing_snapshot_hash": pricing["pricing_snapshot_hash"],
+            "retrieved_at": pricing["retrieved_at"],
+            "processing_tier": pricing["processing_tier"],
+        },
+        "cost_projection": {
+            "status": projection["status"],
+            "cost_projection_hash": projection["cost_projection_hash"],
+            "A_PRIMARY_30_CALL_RESERVATION_USD": retry[
+                "A_PRIMARY_30_CALL_RESERVATION_USD"
+            ],
+            "B_MAX_TECHNICAL_RETRY_INCREMENT_USD": retry[
+                "B_MAX_TECHNICAL_RETRY_INCREMENT_USD"
+            ],
+            "C_ABSOLUTE_RETRY_INCLUSIVE_RESERVATION_USD": retry[
+                "C_ABSOLUTE_RETRY_INCLUSIVE_RESERVATION_USD"
+            ],
+        },
+        "readiness": "AWAITING_EXPLICIT_SPEND_AUTHORIZATION",
         "execution_counters": {
             "provider_calls": 0,
             "adjudicator_calls": 0,
             "credential_resolutions": 0,
             "transport_factory_calls": 0,
             "real_provider_transport": False,
-            "pricing_refresh": "NOT_PERFORMED",
+            "pricing_refresh": "VERIFIED_CURRENT_OFFICIAL_PRICING",
             "high_smoke": "NOT_EXECUTED",
             "billable_authorization": "NONE",
         },
         "semantic_benchmark_v1_3_5_bytes_modified": False,
+        "published_execution_v2_0_0_or_v2_0_1_bytes_modified": False,
     }
     return {**material, "report_hash": canonical_hash(material)}
 
 
-def build_lineage(boundary: Mapping[str, Any]) -> dict[str, Any]:
+def build_lineage(
+    boundary: Mapping[str, Any],
+    pricing: Mapping[str, Any],
+    projection: Mapping[str, Any],
+) -> dict[str, Any]:
     material = {
-        "schema_version": "phase9-execution-lineage/2.0.1",
+        "schema_version": "phase9-execution-lineage/2.0.2",
         "execution_version": EXECUTION_VERSION,
-        "predecessor_execution_version": "phase9-execution/2.0.0",
+        "predecessor_execution_version": "phase9-execution/2.0.1",
         "benchmark_version": SEMANTIC_BENCHMARK_V135_VERSION,
         "semantic_benchmark_v1_3_5_unchanged": True,
+        "phase9_execution_v2_0_0_unchanged": True,
+        "phase9_execution_v2_0_1_unchanged": True,
         "phase9_execution_v2_0_0_provider_calls": 0,
         "phase9_execution_v2_0_0_used_for_provider_call": False,
-        "trigger": "FINAL_COMBINED_AUDIT_FOUND_FOUR_EXECUTOR_BLOCKERS",
-        "repair_scope": "FOUR_EXECUTION_DEFECT_CLASSES_ONLY",
+        "phase9_execution_v2_0_1_provider_calls": 0,
+        "phase9_execution_v2_0_1_used_for_provider_call": False,
+        "trigger": "FINAL_PRICING_ACCOUNTING_COMPATIBILITY_GAP",
+        "repair_scope": "PRICING_ACCOUNTING_COMPATIBILITY_ONLY",
         "repaired_defects": [
-            "EFFECTIVE_PROVIDER_PATH_NOT_FULLY_SOURCE_BOUND",
-            "P11_REACHABLE_OUTSIDE_30_CALL_PLAN",
-            "RAW_REPAIRED_OUTPUT_COULD_LEAK_SEMANTIC_METADATA_INTO_N3",
-            "INCOMPLETE_GENERATION_LABELED_COMPLETE",
+            "CURRENT_PRICING_SCHEMA_OMITTED_CACHE_WRITE_RATE",
+            "EXECUTOR_IGNORED_CACHE_WRITE_INPUT_TOKENS",
+            "PRIMARY_RESERVATION_DID_NOT_SEPARATE_TECHNICAL_RETRY_INCREMENT",
         ],
         "product_pipeline_architecture_changed": False,
         "product_prompts_changed": False,
         "semantic_population_changed": False,
-        "ordered_logical_call_population_equal_to_v2_0_0": True,
+        "ordered_logical_call_population_equal_to_v2_0_1": True,
         "ordered_logical_call_population_hash": boundary["high_smoke_plan"][
             "ordered_logical_call_population_hash"
         ],
-        "pricing_refresh": "NOT_PERFORMED",
+        "pricing_snapshot_status": pricing["status"],
+        "pricing_snapshot_hash": pricing["pricing_snapshot_hash"],
+        "cost_projection_status": projection["status"],
+        "cost_projection_hash": projection["cost_projection_hash"],
         "high_smoke": "NOT_EXECUTED",
         "billable_authorization": "NONE",
-        "deferred_observations": [
-            "INERT_NESTED_HELD_OUT_KEYS_IN_RUNG_COLLECTION",
-            "ORIGINAL_ROUTE_SPLIT_CORE_METADATA_IN_GROUPED_SMOKE_OBSERVATION",
-            "SEMANTIC_PACKET_HASH_EQUALITY_WHEN_PACKET_ID_REMAINS_UNIQUE",
-            "HISTORICAL_MAKE_PRECHECK_BEHAVIOR",
-            "CRASH_DURABILITY_BETWEEN_AUTHORIZATION_CONSUMPTION_AND_FINAL_EVIDENCE",
-            "U3_POLARITY_OFFLINE_SDK_DEBT",
-            "FRONTEND_PRODUCT_UX",
-        ],
+        "billable_authorization_file_published": False,
     }
     return {**material, "lineage_hash": canonical_hash(material)}
 
@@ -783,29 +918,55 @@ def _verify_frozen_bytes_unchanged(before: Mapping[str, str]) -> None:
         raise RuntimeError("semantic-benchmark/1.3.5 bytes changed during publication")
 
 
-def publish() -> tuple[
-    dict[str, Any], dict[str, Any], dict[str, Any], dict[str, Any]
-]:
+def _verify_prior_execution_bytes_unchanged(before: Mapping[str, str]) -> None:
+    after = {
+        relative: _file_hash(REPOSITORY_ROOT / relative)
+        for relative in PROTECTED_PRIOR_EXECUTION_ARTIFACT_HASHES
+    }
+    if dict(before) != after:
+        raise RuntimeError("published phase9 execution bytes changed during publication")
+
+
+def publish() -> tuple[dict[str, Any], ...]:
     frozen_before = {
         row["path"]: _file_hash(REPOSITORY_ROOT / row["path"])
         for row in _read(FREEZE_MANIFEST_PATH)["artifacts"]
     }
+    prior_before = {
+        relative: _file_hash(REPOSITORY_ROOT / relative)
+        for relative in PROTECTED_PRIOR_EXECUTION_ARTIFACT_HASHES
+    }
+    pricing = build_current_pricing()
+    _write(CURRENT_PRICING_PATH, pricing)
     request_authority = build_request_authority()
     _write(REQUEST_AUTHORITY_PATH, request_authority)
     boundary = build_execution_boundary(request_authority)
     _write(EXECUTION_BOUNDARY_PATH, boundary)
-    report = build_cutover_report(boundary)
+    prepared = prepare_phase9_execution()
+    pricing = load_current_pricing_artifact(CURRENT_PRICING_PATH)
+    projection = build_pre_authorization_cost_projection(prepared, pricing)
+    _write(COST_PROJECTION_PATH, projection)
+    load_and_validate_cost_projection(
+        prepared=prepared, pricing=pricing, path=COST_PROJECTION_PATH
+    )
+    report = build_cutover_report(boundary, pricing, projection)
     _write(CUTOVER_REPORT_PATH, report)
-    lineage = build_lineage(boundary)
+    lineage = build_lineage(boundary, pricing, projection)
     _write(LINEAGE_PATH, lineage)
     _verify_frozen_bytes_unchanged(frozen_before)
+    _verify_prior_execution_bytes_unchanged(prior_before)
     _predecessor_execution()
-    return request_authority, boundary, report, lineage
+    if BILLABLE_AUTHORIZATION_PATH.exists():
+        raise RuntimeError("billable authorization must not be published")
+    return request_authority, pricing, boundary, projection, report, lineage
 
 
-def check() -> tuple[
-    dict[str, Any], dict[str, Any], dict[str, Any], dict[str, Any]
-]:
+def check() -> tuple[dict[str, Any], ...]:
+    expected_pricing = build_current_pricing()
+    published_pricing = _read(CURRENT_PRICING_PATH)
+    if published_pricing != expected_pricing:
+        raise RuntimeError("published current official pricing is stale")
+    load_current_pricing_artifact(CURRENT_PRICING_PATH)
     expected_request = build_request_authority()
     published_request = _read(REQUEST_AUTHORITY_PATH)
     if published_request != expected_request:
@@ -813,32 +974,67 @@ def check() -> tuple[
     expected_boundary = build_execution_boundary(published_request)
     published_boundary = _read(EXECUTION_BOUNDARY_PATH)
     if published_boundary != expected_boundary:
-        raise RuntimeError("published phase9-execution/2.0.1 boundary is stale")
-    expected_report = build_cutover_report(published_boundary)
+        raise RuntimeError("published phase9-execution/2.0.2 boundary is stale")
+    prepared = prepare_phase9_execution()
+    expected_projection = build_pre_authorization_cost_projection(
+        prepared, published_pricing
+    )
+    published_projection = _read(COST_PROJECTION_PATH)
+    if published_projection != expected_projection:
+        raise RuntimeError("published pre-authorization cost projection is stale")
+    load_and_validate_cost_projection(
+        prepared=prepared,
+        pricing=published_pricing,
+        path=COST_PROJECTION_PATH,
+    )
+    expected_report = build_cutover_report(
+        published_boundary, published_pricing, published_projection
+    )
     published_report = _read(CUTOVER_REPORT_PATH)
     if published_report != expected_report:
         raise RuntimeError("published execution cutover report is stale")
-    expected_lineage = build_lineage(published_boundary)
+    expected_lineage = build_lineage(
+        published_boundary, published_pricing, published_projection
+    )
     published_lineage = _read(LINEAGE_PATH)
     if published_lineage != expected_lineage:
         raise RuntimeError("published execution lineage is stale")
     _predecessor_execution()
-    return published_request, published_boundary, published_report, published_lineage
+    if BILLABLE_AUTHORIZATION_PATH.exists():
+        raise RuntimeError("billable authorization must not be published")
+    return (
+        published_request,
+        published_pricing,
+        published_boundary,
+        published_projection,
+        published_report,
+        published_lineage,
+    )
 
 
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--publish", action="store_true")
     args = parser.parse_args()
-    request, boundary, report, _lineage = publish() if args.publish else check()
+    request, pricing, boundary, projection, report, _lineage = (
+        publish() if args.publish else check()
+    )
     print(
         json.dumps(
             {
                 "status": "PUBLISHED" if args.publish else "VALID",
                 "execution_version": EXECUTION_VERSION,
                 "request_authority_hash": request["request_authority_hash"],
+                "pricing_snapshot_hash": pricing["pricing_snapshot_hash"],
                 "execution_boundary_hash": boundary["execution_boundary_hash"],
                 "high_smoke_plan_hash": boundary["high_smoke_plan"]["plan_hash"],
+                "cost_projection_hash": projection["cost_projection_hash"],
+                "primary_30_call_reservation_usd": projection[
+                    "technical_retry_reserve"
+                ]["A_PRIMARY_30_CALL_RESERVATION_USD"],
+                "absolute_retry_inclusive_reservation_usd": projection[
+                    "technical_retry_reserve"
+                ]["C_ABSOLUTE_RETRY_INCLUSIVE_RESERVATION_USD"],
                 "readiness": report["readiness"],
             },
             indent=2,

@@ -1,4 +1,4 @@
-"""Targeted offline closure suite for phase9-execution/2.0.1.
+"""Carry the phase9-execution/2.0.1 closure into execution v2.0.2.
 
 Every adapter in this module is in-process and deterministic. No test resolves
 credentials, constructs the OpenAI transport, refreshes pricing, authorizes a
@@ -37,10 +37,13 @@ from scripts import run_phase9_smoke as smoke_cli
 
 def _pricing() -> dict[str, Any]:
     material = {
+        "long_context_threshold": px.LONG_CONTEXT_THRESHOLD,
+        "long_context_pricing_authorized": False,
         "models": {
             candidate.model: {
                 "input_per_million_usd": 0.10,
                 "cached_input_per_million_usd": 0.01,
+                "cache_write_per_million_usd": 0.125,
                 "output_per_million_usd": 0.20,
             }
             for candidate in px.AUTHORIZED_CANDIDATES
@@ -55,8 +58,14 @@ def _authorization() -> dict[str, Any]:
         "authorization_id": "auth_synthetic_test_only",
         "authorization_hash": "sha256:" + "a" * 64,
         "per_call_caps_usd": {candidate_id: 1.0 for candidate_id in candidate_ids},
-        "rung_caps_usd": {candidate_id: 100.0 for candidate_id in candidate_ids},
-        "outer_cap_usd": 100.0,
+        "rung_primary_caps_usd": {
+            candidate_id: 100.0 for candidate_id in candidate_ids
+        },
+        "rung_retry_inclusive_caps_usd": {
+            candidate_id: 100.0 for candidate_id in candidate_ids
+        },
+        "outer_primary_cap_usd": 100.0,
+        "outer_retry_inclusive_cap_usd": 100.0,
     }
 
 
@@ -115,6 +124,7 @@ class FakeProviderAdapter:
             raw_output=raw,
             input_tokens=100,
             cached_input_tokens=0,
+            cache_write_input_tokens=20,
             output_tokens=100,
             effective_model=route.model,
             output_hash=px.canonical_hash(raw),
@@ -214,9 +224,12 @@ def _activate_scratch_runtime(
 ) -> tuple[Path, px.FrozenAuthorityPaths]:
     original_root = px.REPOSITORY_ROOT
     scratch_root = tmp_path / "runtime"
-    for relative in px.REQUIRED_SOURCE_BINDING_PATHS | set(
-        px.EXPECTED_PREDECESSOR_ARTIFACT_HASHES
-    ):
+    copy_paths = (
+        px.REQUIRED_SOURCE_BINDING_PATHS
+        | set(px.PROTECTED_PRIOR_EXECUTION_ARTIFACT_HASHES)
+        | {str(px.CURRENT_PRICING_PATH.relative_to(original_root))}
+    )
+    for relative in copy_paths:
         source = original_root / relative
         destination = scratch_root / relative
         destination.parent.mkdir(parents=True, exist_ok=True)
@@ -249,18 +262,23 @@ def _activate_scratch_runtime(
         px,
         "HIGH_SMOKE_REQUEST_AUTHORITY_PATH",
         scratch_root
-        / "evaluation/phase9_execution/v2_0_1/high_smoke_request_authority.json",
+        / "evaluation/phase9_execution/v2_0_2/high_smoke_request_authority.json",
+    )
+    monkeypatch.setattr(
+        px,
+        "CURRENT_PRICING_PATH",
+        scratch_root / "evaluation/phase9_execution/v2_0_2/current_pricing.json",
     )
     monkeypatch.setattr(
         px,
         "PREDECESSOR_REQUEST_AUTHORITY_PATH",
         scratch_root
-        / "evaluation/phase9_execution/v2_0_0/high_smoke_request_authority.json",
+        / "evaluation/phase9_execution/v2_0_1/high_smoke_request_authority.json",
     )
     monkeypatch.setattr(
         px,
         "PREDECESSOR_EXECUTION_REPORT_ROOT",
-        scratch_root / "reports/phase9_execution/v2_0_0",
+        scratch_root / "reports/phase9_execution/v2_0_1",
     )
     monkeypatch.setattr(
         px,
@@ -731,7 +749,7 @@ def test_exact_complete_population_reaches_only_the_pending_adjudication_state(
     assert len(list((tmp_path / "adjudication").rglob("n3-*.json"))) == 3
 
 
-def test_v201_ordered_logical_population_is_byte_equal_to_v200(
+def test_v202_ordered_logical_population_is_byte_equal_to_v201(
     prepared: px.PreparedExecution,
 ) -> None:
     predecessor = px._read_json(px.PREDECESSOR_REQUEST_AUTHORITY_PATH)
@@ -740,7 +758,9 @@ def test_v201_ordered_logical_population_is_byte_equal_to_v200(
     )
     new_identities = [call.identity() for call in prepared.calls]
     assert old_identities == new_identities
-    assert px.canonical_hash(old_identities) == prepared.boundary["high_smoke_plan"][
+    assert px.canonical_hash(old_identities) == (
+        px.EXPECTED_ORDERED_LOGICAL_CALL_POPULATION_HASH
+    ) == prepared.boundary["high_smoke_plan"][
         "ordered_logical_call_population_hash"
     ]
     assert prepared.boundary["high_smoke_plan"]["decomposition"] == {
@@ -752,10 +772,10 @@ def test_v201_ordered_logical_population_is_byte_equal_to_v200(
     }
 
 
-def test_frozen_semantic_and_published_v200_bytes_are_unchanged(
+def test_frozen_semantic_and_published_v200_v201_bytes_are_unchanged(
     prepared: px.PreparedExecution,
 ) -> None:
-    for relative, expected in px.EXPECTED_PREDECESSOR_ARTIFACT_HASHES.items():
+    for relative, expected in px.PROTECTED_PRIOR_EXECUTION_ARTIFACT_HASHES.items():
         assert px._file_hash(px.REPOSITORY_ROOT / relative) == expected
     for relative, binding in prepared.boundary["frozen_artifacts"].items():
         assert px._file_hash(px.REPOSITORY_ROOT / relative) == binding["file_sha256"]
@@ -769,6 +789,8 @@ def test_frozen_semantic_and_published_v200_bytes_are_unchanged(
             "reports/semantic_benchmark/v1_3_5",
             "evaluation/phase9_execution/v2_0_0",
             "reports/phase9_execution/v2_0_0",
+            "evaluation/phase9_execution/v2_0_1",
+            "reports/phase9_execution/v2_0_1",
         ],
         cwd=px.REPOSITORY_ROOT,
         check=True,
@@ -778,11 +800,12 @@ def test_frozen_semantic_and_published_v200_bytes_are_unchanged(
     assert result.stdout == ""
 
 
-def test_current_stop_remains_precredential_without_pricing(
+def test_current_stop_remains_precredential_without_authorization(
     prepared: px.PreparedExecution,
 ) -> None:
     del prepared
-    assert not px.CURRENT_PRICING_PATH.exists()
+    assert px.CURRENT_PRICING_PATH.is_file()
+    assert px.COST_PROJECTION_PATH.is_file()
     assert not px.BILLABLE_AUTHORIZATION_PATH.exists()
     credential_calls = 0
     factory_calls = 0
@@ -804,23 +827,32 @@ def test_current_stop_remains_precredential_without_pricing(
             credential_resolver=credential_resolver,
             adapter_factory=adapter_factory,
         )
-    assert exc.value.code == "PRICING_REFRESH_REQUIRED_BEFORE_AUTHORIZATION"
+    assert exc.value.code == "EXPLICIT_HASH_BOUND_AUTHORIZATION_REQUIRED"
     assert credential_calls == factory_calls == 0
-    _zero_safety_counters(exc.value.safety_counters)
+    assert exc.value.safety_counters == {
+        "provider_calls": 0,
+        "adjudicator_calls": 0,
+        "credential_resolutions": 0,
+        "transport_factory_calls": 0,
+        "real_provider_transport": False,
+        "pricing_refresh": "VERIFIED_CURRENT_OFFICIAL_PRICING",
+        "high_smoke": "NOT_EXECUTED",
+        "billable_authorization": "NONE",
+    }
 
 
-def test_published_v201_report_has_construction_only_safety_counters() -> None:
+def test_published_v202_report_has_construction_only_safety_counters() -> None:
     report = px._read_json(
         px.EXECUTION_REPORT_ROOT / "execution_cutover_report.json"
     )
-    assert report["readiness"] == "PRICING_REFRESH_REQUIRED_BEFORE_AUTHORIZATION"
+    assert report["readiness"] == "AWAITING_EXPLICIT_SPEND_AUTHORIZATION"
     assert report["execution_counters"] == {
         "provider_calls": 0,
         "adjudicator_calls": 0,
         "credential_resolutions": 0,
         "transport_factory_calls": 0,
         "real_provider_transport": False,
-        "pricing_refresh": "NOT_PERFORMED",
+        "pricing_refresh": "VERIFIED_CURRENT_OFFICIAL_PRICING",
         "high_smoke": "NOT_EXECUTED",
         "billable_authorization": "NONE",
     }

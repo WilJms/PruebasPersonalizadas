@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Public entrypoint for the phase9-execution/2.0.1 HIGH-SMOKE harness.
+"""Public entrypoint for the phase9-execution/2.0.2 HIGH-SMOKE harness.
 
 Credential lookup is a deferred callback. The harness invokes it only after the
 v1.3.5 freeze, v2 execution boundary, exact plan, live prompts, current pricing,
@@ -18,6 +18,7 @@ from pydantic import SecretStr
 
 from comprehension_verification.phase9_execution import (
     BILLABLE_AUTHORIZATION_PATH,
+    COST_PROJECTION_PATH,
     CURRENT_PRICING_PATH,
     Phase9ExecutionError,
     run_phase9b_smoke,
@@ -68,8 +69,11 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--allow-billable", action="store_true")
     parser.add_argument("--secret-version-resource", default=None)
-    parser.add_argument("--created-by", default="phase9-v201-operator")
+    parser.add_argument("--created-by", default="phase9-v202-operator")
     parser.add_argument("--pricing", type=Path, default=CURRENT_PRICING_PATH)
+    parser.add_argument(
+        "--cost-projection", type=Path, default=COST_PROJECTION_PATH
+    )
     parser.add_argument(
         "--authorization", type=Path, default=BILLABLE_AUTHORIZATION_PATH
     )
@@ -80,6 +84,7 @@ def main() -> int:
         result = run_phase9b_smoke(
             created_by=args.created_by,
             pricing_path=args.pricing,
+            cost_projection_path=args.cost_projection,
             authorization_path=args.authorization,
             credential_resolver=(
                 _credential_resolver(args.secret_version_resource)
@@ -98,7 +103,7 @@ def main() -> int:
         return (
             0
             if not args.allow_billable
-            and exc.code == "PRICING_REFRESH_REQUIRED_BEFORE_AUTHORIZATION"
+            and exc.code == "EXPLICIT_HASH_BOUND_AUTHORIZATION_REQUIRED"
             else 2
         )
 

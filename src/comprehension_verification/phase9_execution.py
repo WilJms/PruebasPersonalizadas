@@ -2,13 +2,13 @@
 
 The semantic instrument and the execution harness have deliberately separate
 boundaries. This module consumes immutable v1.3.5 authority plus the frozen
-``phase9-execution/2.0.1`` request snapshot. It never rebuilds qualification
+``phase9-execution/2.0.2`` request snapshot. It never rebuilds qualification
 authority from historical benchmark trees.
 
-The public execution entrypoint is fail-closed in this checkout: no current
-pricing artifact or billable authorization is published. Therefore every
-reachable call stops before credential resolution and before transport
-construction with ``PRICING_REFRESH_REQUIRED_BEFORE_AUTHORIZATION``.
+The public execution entrypoint is fail-closed in this checkout: current
+official pricing evidence and a non-billable cost projection are published,
+but no billable authorization is. Therefore every reachable call stops before
+credential resolution and before transport construction.
 """
 
 from __future__ import annotations
@@ -18,6 +18,7 @@ from collections.abc import Callable, Mapping, Sequence
 from copy import deepcopy
 from dataclasses import dataclass, field, replace
 from datetime import UTC, datetime
+from decimal import Decimal, InvalidOperation, ROUND_CEILING
 from hashlib import sha256
 import json
 from pathlib import Path
@@ -37,10 +38,12 @@ from .model_gateway.openai_adapter import (
     OpenAIResponsesAdapter,
 )
 from .model_gateway.openai_routes import (
+    OPENAI_MAX_INPUT_TOKENS,
     build_openai_routes,
     estimate_openai_input_tokens,
     openai_route_matches_profile,
 )
+from .model_gateway.openai_pricing import LONG_CONTEXT_THRESHOLD
 from .model_gateway.registry import PROMPT_SPECS, PromptSpec, prompt_spec
 from .p06_n3_protocol import (
     N3_PACKET_FORBIDDEN_FIELDS as FROZEN_N3_PACKET_FORBIDDEN_FIELDS,
@@ -57,7 +60,7 @@ from .semantic_benchmark_v135 import (
 )
 
 
-PHASE9_EXECUTION_VERSION: Final = "phase9-execution/2.0.1"
+PHASE9_EXECUTION_VERSION: Final = "phase9-execution/2.0.2"
 BENCHMARK_VERSION: Final = "semantic-benchmark/1.3.5"
 PROTOCOL_VERSION: Final = "phase9-qualification-protocol/1.3.5"
 AUTHORIZED_K: Final = 3
@@ -86,29 +89,32 @@ N3_PACKET_FORBIDDEN_FIELDS: Final = (
 REPOSITORY_ROOT: Final = Path(__file__).resolve().parents[2]
 V135_DEFINITION_ROOT: Final = REPOSITORY_ROOT / "evaluation/semantic_benchmark/v1_3_5"
 V135_REPORT_ROOT: Final = REPOSITORY_ROOT / "reports/semantic_benchmark/v1_3_5"
-EXECUTION_AUTHORITY_ROOT: Final = REPOSITORY_ROOT / "evaluation/phase9_execution/v2_0_1"
-EXECUTION_REPORT_ROOT: Final = REPOSITORY_ROOT / "reports/phase9_execution/v2_0_1"
+EXECUTION_AUTHORITY_ROOT: Final = REPOSITORY_ROOT / "evaluation/phase9_execution/v2_0_2"
+EXECUTION_REPORT_ROOT: Final = REPOSITORY_ROOT / "reports/phase9_execution/v2_0_2"
 EXECUTION_BOUNDARY_PATH: Final = EXECUTION_AUTHORITY_ROOT / "execution_boundary.json"
 HIGH_SMOKE_REQUEST_AUTHORITY_PATH: Final = (
     EXECUTION_AUTHORITY_ROOT / "high_smoke_request_authority.json"
 )
 CURRENT_PRICING_PATH: Final = EXECUTION_AUTHORITY_ROOT / "current_pricing.json"
+COST_PROJECTION_PATH: Final = (
+    EXECUTION_REPORT_ROOT / "pre_authorization_cost_projection.json"
+)
 BILLABLE_AUTHORIZATION_PATH: Final = (
     EXECUTION_AUTHORITY_ROOT / "billable_authorization.json"
 )
 EXECUTION_EVIDENCE_ROOT: Final = EXECUTION_REPORT_ROOT / "executions"
 ADJUDICATION_BUNDLE_ROOT: Final = EXECUTION_REPORT_ROOT / "adjudication_bundles"
 PREDECESSOR_EXECUTION_AUTHORITY_ROOT: Final = (
-    REPOSITORY_ROOT / "evaluation/phase9_execution/v2_0_0"
+    REPOSITORY_ROOT / "evaluation/phase9_execution/v2_0_1"
 )
 PREDECESSOR_EXECUTION_REPORT_ROOT: Final = (
-    REPOSITORY_ROOT / "reports/phase9_execution/v2_0_0"
+    REPOSITORY_ROOT / "reports/phase9_execution/v2_0_1"
 )
 PREDECESSOR_REQUEST_AUTHORITY_PATH: Final = (
     PREDECESSOR_EXECUTION_AUTHORITY_ROOT / "high_smoke_request_authority.json"
 )
 
-EXPECTED_PREDECESSOR_ARTIFACT_HASHES: Final[Mapping[str, str]] = {
+EXPECTED_V200_ARTIFACT_HASHES: Final[Mapping[str, str]] = {
     "evaluation/phase9_execution/v2_0_0/execution_boundary.json": (
         "sha256:6f881dd2d430b0d2749759ef12b99d535e30a8194c20eafb98d2bffd0d86fcaa"
     ),
@@ -119,6 +125,50 @@ EXPECTED_PREDECESSOR_ARTIFACT_HASHES: Final[Mapping[str, str]] = {
         "sha256:a9cc87358237d19539a57ca888dc4d55b01f5d542a1ce0438f64959fc6537ca9"
     ),
 }
+
+EXPECTED_PREDECESSOR_ARTIFACT_HASHES: Final[Mapping[str, str]] = {
+    "evaluation/phase9_execution/v2_0_1/execution_boundary.json": (
+        "sha256:4146cf7aa6a5c7750fb2bb2f9694e942e61caa419967fc29c0f70ba162e638de"
+    ),
+    "evaluation/phase9_execution/v2_0_1/high_smoke_request_authority.json": (
+        "sha256:6bd9ae607670ce0fc3d39e928659c0717f0ab783794727c1afa5bbc52bc1da9f"
+    ),
+    "reports/phase9_execution/v2_0_1/execution_cutover_report.json": (
+        "sha256:c908a274a5d121c101711a11e416d7eb4d0ac11131c4ca64e7542e872a488ef4"
+    ),
+    "reports/phase9_execution/v2_0_1/lineage.json": (
+        "sha256:5e8fa82dc7536f0fbd49710ddd27fec5787bcbe412b6dded9e70bcca1b6798a7"
+    ),
+}
+
+PROTECTED_PRIOR_EXECUTION_ARTIFACT_HASHES: Final[Mapping[str, str]] = {
+    **EXPECTED_V200_ARTIFACT_HASHES,
+    **EXPECTED_PREDECESSOR_ARTIFACT_HASHES,
+}
+
+OFFICIAL_PRICING_SOURCE_URLS: Final[tuple[str, ...]] = (
+    "https://developers.openai.com/api/docs/models/gpt-5.6-terra",
+    "https://developers.openai.com/api/docs/models/gpt-5.6-luna",
+    "https://openai.com/index/advancing-the-price-performance-frontier-with-gpt-5-6/",
+)
+EXPECTED_CURRENT_PRICING_RATES: Final[Mapping[str, Mapping[str, Decimal]]] = {
+    "gpt-5.6-terra": {
+        "input_per_million_usd": Decimal("2.00"),
+        "cached_input_per_million_usd": Decimal("0.20"),
+        "cache_write_per_million_usd": Decimal("2.50"),
+        "output_per_million_usd": Decimal("12.00"),
+    },
+    "gpt-5.6-luna": {
+        "input_per_million_usd": Decimal("0.20"),
+        "cached_input_per_million_usd": Decimal("0.02"),
+        "cache_write_per_million_usd": Decimal("0.25"),
+        "output_per_million_usd": Decimal("1.20"),
+    },
+}
+CACHE_WRITE_PRICE_MULTIPLIER: Final = Decimal("1.25")
+EXPECTED_ORDERED_LOGICAL_CALL_POPULATION_HASH: Final = (
+    "sha256:fef890ffa1b12e8717edd7cb5e13f7cdbd78b1e3eb9284aea20a21b29f45553e"
+)
 
 EXPECTED_BENCHMARK_BOUNDARY_HASH: Final = (
     "sha256:ff6988324a9bd5cd1c4167b0589f8700f19985fca7ef021d0eb5dcfb875fffe5"
@@ -189,7 +239,7 @@ RUNTIME_SOURCE_BINDING_ROLES: Final[Mapping[str, str]] = {
         "frozen N3 request-authority builder"
     ),
     "src/comprehension_verification/p06_n3_protocol.py": (
-        "frozen N3 packet base consumed by the v2.0.1 blindness extension"
+        "frozen N3 packet base consumed by the v2.0.2 blindness extension"
     ),
     "src/comprehension_verification/p06_noisy_contractual_gate.py": (
         "N3 contractual prompt authority material"
@@ -271,6 +321,7 @@ EXCLUDED_FROM_AUTHORIZATION: Final = (
     "P08",
     "P10",
     "P11_SEMANTIC_REPAIR",
+    "LONG_CONTEXT",
 )
 
 
@@ -490,7 +541,7 @@ def _walk_n3_packet_keys(
 
 
 def assert_n3_packet_blind(packet: Mapping[str, Any]) -> None:
-    """Apply the frozen N3 contract plus v2.0.1 qualification metadata bans."""
+    """Apply the frozen N3 contract plus v2.0.2 qualification metadata bans."""
 
     assert_frozen_n3_packet_blind(packet)
     for path, key in _walk_n3_packet_keys(packet):
@@ -595,50 +646,67 @@ def ordered_logical_call_identities_from_request_authority(
 
 
 def _validated_predecessor_execution() -> dict[str, Any]:
-    """Bind v2.0.1 to the exact unused v2.0.0 publication and call population."""
+    """Bind v2.0.2 to the exact unused v2.0.1 publication and prior bytes."""
 
-    for relative, expected in EXPECTED_PREDECESSOR_ARTIFACT_HASHES.items():
+    for relative, expected in PROTECTED_PRIOR_EXECUTION_ARTIFACT_HASHES.items():
         path = (REPOSITORY_ROOT / relative).resolve()
         _require(
             path.is_relative_to(REPOSITORY_ROOT.resolve())
             and path.is_file()
             and _file_hash(path) == expected,
             "PHASE9_PREDECESSOR_EXECUTION_ARTIFACT_MISMATCH",
-            f"published phase9-execution/2.0.0 bytes drifted: {relative}",
+            f"published phase9 execution bytes drifted: {relative}",
         )
     request = _read_json(PREDECESSOR_REQUEST_AUTHORITY_PATH)
     _require(
-        request.get("execution_version") == "phase9-execution/2.0.0"
+        request.get("execution_version") == "phase9-execution/2.0.1"
         and request.get("request_authority_hash")
         == _self_hash(request, "request_authority_hash"),
         "PHASE9_PREDECESSOR_EXECUTION_ARTIFACT_MISMATCH",
-        "the phase9-execution/2.0.0 request authority is invalid",
+        "the phase9-execution/2.0.1 request authority is invalid",
     )
     report = _read_json(
         PREDECESSOR_EXECUTION_REPORT_ROOT / "execution_cutover_report.json"
     )
     counters = report.get("execution_counters", {})
     _require(
-        report.get("execution_version") == "phase9-execution/2.0.0"
+        report.get("execution_version") == "phase9-execution/2.0.1"
         and report.get("report_hash") == _self_hash(report, "report_hash")
         and counters.get("provider_calls") == 0
+        and counters.get("adjudicator_calls") == 0
+        and counters.get("credential_resolutions") == 0
+        and counters.get("transport_factory_calls") == 0
+        and counters.get("real_provider_transport") is False
         and counters.get("high_smoke") == "NOT_EXECUTED"
         and counters.get("billable_authorization") == "NONE",
         "PHASE9_PREDECESSOR_EXECUTION_ARTIFACT_MISMATCH",
-        "phase9-execution/2.0.0 is not proven unused",
+        "phase9-execution/2.0.1 is not proven unused",
     )
     identities = ordered_logical_call_identities_from_request_authority(request)
+    ordered_hash = canonical_hash(identities)
+    _require(
+        ordered_hash == EXPECTED_ORDERED_LOGICAL_CALL_POPULATION_HASH,
+        "PHASE9_PREDECESSOR_EXECUTION_POPULATION_MISMATCH",
+        "phase9-execution/2.0.1 ordered logical population drifted",
+    )
     return {
-        "execution_version": "phase9-execution/2.0.0",
+        "execution_version": "phase9-execution/2.0.1",
         "published_artifacts": dict(EXPECTED_PREDECESSOR_ARTIFACT_HASHES),
+        "protected_prior_publications": dict(
+            PROTECTED_PRIOR_EXECUTION_ARTIFACT_HASHES
+        ),
         "provider_calls": 0,
+        "adjudicator_calls": 0,
+        "credential_resolutions": 0,
+        "transport_factory_calls": 0,
+        "real_provider_transport": False,
         "high_smoke": "NOT_EXECUTED",
         "billable_authorization": "NONE",
         "used_for_provider_call": False,
         "request_population_hash": canonical_hash(
             _request_population_projection(request)
         ),
-        "ordered_logical_call_population_hash": canonical_hash(identities),
+        "ordered_logical_call_population_hash": ordered_hash,
     }
 
 
@@ -899,7 +967,7 @@ def load_and_validate_execution_boundary(
     boundary_override: Mapping[str, Any] | None = None,
     request_authority_override: Mapping[str, Any] | None = None,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
-    """Validate the separately versioned v2.0.1 boundary and request snapshot."""
+    """Validate the separately versioned v2.0.2 boundary and request snapshot."""
 
     boundary = (
         deepcopy(boundary_override)
@@ -913,12 +981,32 @@ def load_and_validate_execution_boundary(
         "the v2 execution boundary does not reproduce",
     )
     _require(
-        boundary.get("schema_version") == "phase9-execution-boundary/2.0.1"
+        boundary.get("schema_version") == "phase9-execution-boundary/2.0.2"
         and boundary.get("execution_version") == PHASE9_EXECUTION_VERSION
         and boundary.get("benchmark_version") == BENCHMARK_VERSION
-        and boundary.get("protocol_version") == PROTOCOL_VERSION,
+        and boundary.get("protocol_version") == PROTOCOL_VERSION
+        and boundary.get("pricing_state")
+        == "VERIFIED_CURRENT_OFFICIAL_PRICING"
+        and boundary.get("authorization_state") == "NOT_AUTHORIZED"
+        and boundary.get("billable_authorization") == "NONE",
         "PHASE9_EXECUTION_BOUNDARY_VERSION_MISMATCH",
         "the execution boundary names a different harness or instrument",
+    )
+    _require(
+        boundary.get("short_context_authority")
+        == {
+            "runtime_route_max_input_tokens": OPENAI_MAX_INPUT_TOKENS,
+            "official_long_context_threshold": LONG_CONTEXT_THRESHOLD,
+            "route_cap_below_long_context_threshold": (
+                OPENAI_MAX_INPUT_TOKENS < LONG_CONTEXT_THRESHOLD
+            ),
+            "long_context_pricing_authorized": False,
+            "disposition_beyond_route_cap_or_threshold": (
+                "FAIL_CLOSED_BEFORE_TRANSPORT"
+            ),
+        },
+        "PHASE9_LONG_CONTEXT_OR_ROUTE_CAP_MISMATCH",
+        "the boundary does not prove the runtime route cap is short-context",
     )
     _require(
         boundary.get("semantic_benchmark_bindings") == authorities.semantic_bindings,
@@ -969,7 +1057,7 @@ def load_and_validate_execution_boundary(
     )
     _require(
         request_authority.get("schema_version")
-        == "phase9-high-smoke-request-authority/2.0.1"
+        == "phase9-high-smoke-request-authority/2.0.2"
         and request_authority.get("execution_version") == PHASE9_EXECUTION_VERSION
         and request_authority.get("benchmark_version") == BENCHMARK_VERSION
         and request_authority.get("protocol_version") == PROTOCOL_VERSION
@@ -983,13 +1071,28 @@ def load_and_validate_execution_boundary(
     _require(
         boundary.get("predecessor_execution") == predecessor,
         "PHASE9_PREDECESSOR_EXECUTION_BINDING_MISMATCH",
-        "v2.0.1 does not bind the exact unused v2.0.0 publication",
+        "v2.0.2 does not bind the exact unused v2.0.1 publication",
     )
     _require(
         canonical_hash(_request_population_projection(request_authority))
         == predecessor["request_population_hash"],
         "PHASE9_PREDECESSOR_EXECUTION_POPULATION_MISMATCH",
-        "the v2.0.1 provider-visible population differs from v2.0.0",
+        "the v2.0.2 provider-visible population differs from v2.0.1",
+    )
+
+    pricing_binding = boundary.get("current_pricing", {})
+    _require(
+        pricing_binding.get("path") == _repo_relative(CURRENT_PRICING_PATH),
+        "PHASE9_CURRENT_PRICING_BINDING_MISMATCH",
+        "the execution boundary points at a non-v2.0.2 pricing artifact",
+    )
+    pricing = load_current_pricing_artifact(CURRENT_PRICING_PATH)
+    _require(
+        pricing_binding.get("file_sha256") == _file_hash(CURRENT_PRICING_PATH)
+        and pricing_binding.get("pricing_snapshot_hash")
+        == pricing.get("pricing_snapshot_hash"),
+        "PHASE9_CURRENT_PRICING_BINDING_MISMATCH",
+        "the current pricing artifact differs from the boundary binding",
     )
     _require(
         boundary.get("qualification_execution_policy")
@@ -1003,7 +1106,7 @@ def load_and_validate_execution_boundary(
         isinstance(source_bindings, Mapping)
         and set(source_bindings) == REQUIRED_SOURCE_BINDING_PATHS,
         "PHASE9_EXECUTION_SOURCE_BINDING_MISMATCH",
-        "the v2.0.1 boundary does not bind the exact runtime dependency set",
+        "the v2.0.2 boundary does not bind the exact runtime dependency set",
     )
     inventory = boundary.get("runtime_dependency_inventory")
     _require(
@@ -1042,7 +1145,7 @@ def load_and_validate_execution_boundary(
     _require(
         _repo_relative(Path(__file__)) in source_bindings,
         "PHASE9_EXECUTION_SOURCE_BINDING_MISMATCH",
-        "the exact executor source is absent from the v2.0.1 boundary",
+        "the exact executor source is absent from the v2.0.2 boundary",
     )
     return dict(boundary), dict(request_authority)
 
@@ -1254,7 +1357,7 @@ def build_high_smoke_plan(
             )
             calls.append(LogicalCall(logical_id, case, run_index))
     material = {
-        "schema_version": "phase9-high-smoke-plan/2.0.1",
+        "schema_version": "phase9-high-smoke-plan/2.0.2",
         "execution_version": PHASE9_EXECUTION_VERSION,
         "benchmark_version": BENCHMARK_VERSION,
         "protocol_version": PROTOCOL_VERSION,
@@ -1285,6 +1388,8 @@ def build_high_smoke_plan(
         and frozen_plan.get("plan_hash") == plan["plan_hash"]
         and frozen_plan.get("ordered_logical_call_population_hash")
         == ordered_population_hash
+        and ordered_population_hash
+        == EXPECTED_ORDERED_LOGICAL_CALL_POPULATION_HASH
         and boundary.get("predecessor_execution", {}).get(
             "ordered_logical_call_population_hash"
         )
@@ -1356,55 +1461,453 @@ def prepare_phase9_execution(
     )
 
 
-def load_current_pricing_artifact(path: Path = CURRENT_PRICING_PATH) -> dict[str, Any]:
-    """Load only a future explicitly published current-pricing authority."""
-
-    if not path.is_file():
+def _pricing_decimal(value: Any, *, model: str, field_name: str) -> Decimal:
+    if isinstance(value, bool):
         raise Phase9ExecutionError(
-            "PRICING_REFRESH_REQUIRED_BEFORE_AUTHORIZATION",
-            "no current official pricing artifact is published for execution v2.0.1",
+            "PHASE9_CURRENT_PRICING_INVALID",
+            f"invalid token pricing for {model}.{field_name}",
         )
-    pricing = _read_json(path)
+    try:
+        parsed = Decimal(str(value))
+    except (InvalidOperation, ValueError) as exc:
+        raise Phase9ExecutionError(
+            "PHASE9_CURRENT_PRICING_INVALID",
+            f"invalid token pricing for {model}.{field_name}",
+        ) from exc
+    _require(
+        parsed.is_finite() and parsed >= 0,
+        "PHASE9_CURRENT_PRICING_INVALID",
+        f"invalid token pricing for {model}.{field_name}",
+    )
+    return parsed
+
+
+def _validate_current_pricing_document(
+    pricing: Mapping[str, Any],
+) -> dict[str, Any]:
     _require(
         pricing.get("pricing_snapshot_hash")
         == _self_hash(pricing, "pricing_snapshot_hash"),
         "PHASE9_CURRENT_PRICING_SELF_HASH_MISMATCH",
         "the supplied current-pricing artifact does not reproduce",
     )
+    try:
+        retrieved_at = datetime.fromisoformat(
+            str(pricing["retrieved_at"]).replace("Z", "+00:00")
+        )
+    except (KeyError, ValueError) as exc:
+        raise Phase9ExecutionError(
+            "PHASE9_CURRENT_PRICING_INVALID",
+            "the current-pricing retrieval timestamp is invalid",
+        ) from exc
     _require(
-        pricing.get("schema_version") == "phase9-current-pricing/2.0.1"
+        pricing.get("schema_version") == "phase9-current-pricing/2.0.2"
         and pricing.get("execution_version") == PHASE9_EXECUTION_VERSION
         and pricing.get("status") == "VERIFIED_CURRENT_OFFICIAL_PRICING"
-        and pricing.get("official_source_url")
-        and pricing.get("retrieved_at"),
+        and pricing.get("processing_tier") == "STANDARD"
+        and pricing.get("official_source_urls")
+        == list(OFFICIAL_PRICING_SOURCE_URLS)
+        and retrieved_at.utcoffset() == UTC.utcoffset(retrieved_at)
+        and pricing.get("long_context_threshold") == LONG_CONTEXT_THRESHOLD
+        and pricing.get("long_context_pricing_authorized") is False
+        and pricing.get("responses_api_supported") is True
+        and pricing.get("structured_outputs_supported") is True
+        and pricing.get("reasoning_high_supported") is True
+        and pricing.get("non_billable") is True
+        and pricing.get("authorization_state") == "NOT_AUTHORIZED"
+        and pricing.get("billable_authorization") == "NONE",
         "PHASE9_CURRENT_PRICING_INVALID",
-        "pricing is not explicitly current and official for execution v2.0.1",
+        "pricing is not the non-billable current official v2.0.2 authority",
     )
-    required_models = {item.model for item in AUTHORIZED_CANDIDATES}
-    rows = pricing.get("models", {})
+    rule = pricing.get("cache_write_pricing_rule", {})
     _require(
-        set(rows) == required_models,
+        isinstance(rule, Mapping)
+        and _pricing_decimal(
+            rule.get("multiplier"), model="ALL", field_name="multiplier"
+        )
+        == CACHE_WRITE_PRICE_MULTIPLIER
+        and rule.get("formula")
+        == (
+            "cache_write_per_million_usd == "
+            "1.25 * input_per_million_usd"
+        ),
+        "PHASE9_CURRENT_PRICING_CACHE_WRITE_RULE_MISMATCH",
+        "cache-write pricing is not bound to 1.25 times uncached input",
+    )
+    rows = pricing.get("models", {})
+    required_models = {item.model for item in AUTHORIZED_CANDIDATES}
+    _require(
+        isinstance(rows, Mapping)
+        and set(rows) == required_models
+        == set(EXPECTED_CURRENT_PRICING_RATES),
         "PHASE9_CURRENT_PRICING_INVALID",
         "pricing must bind exactly the HIGH candidate models",
     )
-    for model, row in rows.items():
+    for model, expected_rates in EXPECTED_CURRENT_PRICING_RATES.items():
+        row = rows[model]
         _require(
-            all(
-                isinstance(row.get(key), (int, float)) and row[key] >= 0
-                for key in (
-                    "input_per_million_usd",
-                    "cached_input_per_million_usd",
-                    "output_per_million_usd",
-                )
-            ),
+            isinstance(row, Mapping)
+            and row.get("model_id") == model
+            and row.get("model_page_url")
+            == f"https://developers.openai.com/api/docs/models/{model}"
+            and row.get("availability") == "AVAILABLE_OPENAI_API"
+            and row.get("processing_tier") == "STANDARD"
+            and row.get("responses_api_endpoint") == "v1/responses"
+            and row.get("responses_api_supported") is True
+            and row.get("structured_outputs_supported") is True
+            and row.get("reasoning_high_supported") is True,
             "PHASE9_CURRENT_PRICING_INVALID",
-            f"invalid token pricing for {model}",
+            f"official model availability evidence is incomplete for {model}",
         )
-    return pricing
+        observed_rates = {
+            field_name: _pricing_decimal(
+                row.get(field_name), model=model, field_name=field_name
+            )
+            for field_name in expected_rates
+        }
+        _require(
+            observed_rates == expected_rates,
+            "PHASE9_CURRENT_PRICING_INVALID",
+            f"current official pricing differs for {model}",
+        )
+        _require(
+            observed_rates["cache_write_per_million_usd"]
+            == (
+                observed_rates["input_per_million_usd"]
+                * CACHE_WRITE_PRICE_MULTIPLIER
+            ),
+            "PHASE9_CURRENT_PRICING_CACHE_WRITE_RULE_MISMATCH",
+            f"cache-write multiplier differs from 1.25 for {model}",
+        )
+    return dict(pricing)
+
+
+def load_current_pricing_artifact(path: Path = CURRENT_PRICING_PATH) -> dict[str, Any]:
+    """Load the non-billable current-pricing authority and fail closed."""
+
+    if not path.is_file():
+        raise Phase9ExecutionError(
+            "PRICING_REFRESH_REQUIRED_BEFORE_AUTHORIZATION",
+            "no current official pricing artifact is published for execution v2.0.2",
+        )
+    return _validate_current_pricing_document(_read_json(path))
+
+
+def _round_cost(value: float) -> float:
+    return round(value, 8)
+
+
+def _aggregate_cost_projection(
+    rows: Sequence[Mapping[str, Any]], key: str
+) -> dict[str, dict[str, Any]]:
+    aggregates: dict[str, dict[str, Any]] = {}
+    for row in rows:
+        label = str(row[key])
+        aggregate = aggregates.setdefault(
+            label,
+            {
+                "logical_calls": 0,
+                "estimated_input_tokens": 0,
+                "max_output_tokens": 0,
+                "primary_call_conservative_reservation_usd": 0.0,
+                "max_technical_retry_increment_usd": 0.0,
+                "absolute_retry_inclusive_reservation_usd": 0.0,
+            },
+        )
+        aggregate["logical_calls"] += 1
+        aggregate["estimated_input_tokens"] += int(row["estimated_input_tokens"])
+        aggregate["max_output_tokens"] += int(row["max_output_tokens"])
+        for cost_key in (
+            "primary_call_conservative_reservation_usd",
+            "max_technical_retry_increment_usd",
+            "absolute_retry_inclusive_reservation_usd",
+        ):
+            aggregate[cost_key] += float(row[cost_key])
+    for aggregate in aggregates.values():
+        for cost_key in (
+            "primary_call_conservative_reservation_usd",
+            "max_technical_retry_increment_usd",
+            "absolute_retry_inclusive_reservation_usd",
+        ):
+            aggregate[cost_key] = _round_cost(float(aggregate[cost_key]))
+    return dict(sorted(aggregates.items()))
+
+
+def _cap_with_headroom(value: float, *, quantum: str) -> float:
+    amount = Decimal(str(value)) * Decimal("1.10")
+    return float(amount.quantize(Decimal(quantum), rounding=ROUND_CEILING))
+
+
+def build_pre_authorization_cost_projection(
+    prepared: PreparedExecution,
+    pricing: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Price the exact prepared 30-call population without authorizing spend."""
+
+    validated_pricing = _validate_current_pricing_document(pricing)
+    rows: list[dict[str, Any]] = []
+    route_caps: set[int] = set()
+    for call in prepared.calls:
+        candidate = call.case.candidate
+        spec = prompt_spec(candidate.prompt_id)
+        envelope = _envelope_for(candidate.prompt_id, call.case.request)
+        estimated_input_tokens = estimate_openai_input_tokens(
+            spec, call.case.request, envelope
+        )
+        route = build_openai_routes(
+            max_call_cost_usd=1_000_000.0,
+            route_profile_id=candidate.route_profile_id,
+        )[candidate.prompt_id]
+        route_caps.add(route.max_input_tokens)
+        _require(
+            route.max_input_tokens == OPENAI_MAX_INPUT_TOKENS
+            and route.max_input_tokens < LONG_CONTEXT_THRESHOLD
+            and estimated_input_tokens <= route.max_input_tokens
+            and candidate.max_output_tokens == route.max_output_tokens,
+            "PHASE9_LONG_CONTEXT_OR_ROUTE_CAP_MISMATCH",
+            f"the prepared request is outside the short-context route for {call.logical_call_id}",
+        )
+        uncached_input = _estimate_cost(
+            validated_pricing,
+            model=candidate.model,
+            input_tokens=estimated_input_tokens,
+            output_tokens=0,
+        )
+        cache_write_input = _estimate_cost(
+            validated_pricing,
+            model=candidate.model,
+            input_tokens=estimated_input_tokens,
+            output_tokens=0,
+            cache_write_input_tokens=estimated_input_tokens,
+        )
+        max_output = _estimate_cost(
+            validated_pricing,
+            model=candidate.model,
+            input_tokens=0,
+            output_tokens=candidate.max_output_tokens,
+        )
+        primary = _estimate_cost(
+            validated_pricing,
+            model=candidate.model,
+            input_tokens=estimated_input_tokens,
+            output_tokens=candidate.max_output_tokens,
+            cache_write_input_tokens=estimated_input_tokens,
+        )
+        _require(
+            cache_write_input > uncached_input
+            and primary == _round_cost(cache_write_input + max_output),
+            "PHASE9_COST_PROJECTION_ACCOUNTING_MISMATCH",
+            f"cache-write reservation did not reproduce for {call.logical_call_id}",
+        )
+        rows.append(
+            {
+                "logical_call_id": call.logical_call_id,
+                "axis": call.case.axis,
+                "stage": call.case.stage,
+                "provider_identity": call.case.provider_identity,
+                "candidate_id": candidate.candidate_id,
+                "model": candidate.model,
+                "run_index": call.run_index,
+                "estimated_input_tokens": estimated_input_tokens,
+                "max_output_tokens": candidate.max_output_tokens,
+                "runtime_route_max_input_tokens": route.max_input_tokens,
+                "long_context_threshold": LONG_CONTEXT_THRESHOLD,
+                "context_classification": "SHORT_CONTEXT_STANDARD",
+                "uncached_input_worst_case_cost_usd": uncached_input,
+                "cache_write_input_worst_case_cost_usd": cache_write_input,
+                "max_output_cost_usd": max_output,
+                "primary_call_conservative_reservation_usd": primary,
+                "max_technical_retry_increment_usd": primary,
+                "absolute_retry_inclusive_reservation_usd": _round_cost(
+                    primary * 2
+                ),
+            }
+        )
+    ordered_hash = canonical_hash([call.identity() for call in prepared.calls])
+    _require(
+        len(rows) == AUTHORIZED_PRIMARY_LOGICAL_CALLS
+        and ordered_hash == EXPECTED_ORDERED_LOGICAL_CALL_POPULATION_HASH,
+        "PHASE9_COST_PROJECTION_POPULATION_MISMATCH",
+        "the cost projection is not the exact frozen 30-call population",
+    )
+    by_stage = _aggregate_cost_projection(rows, "stage")
+    by_candidate = _aggregate_cost_projection(rows, "candidate_id")
+    by_model = _aggregate_cost_projection(rows, "model")
+    primary_total = _round_cost(
+        sum(
+            float(row["primary_call_conservative_reservation_usd"])
+            for row in rows
+        )
+    )
+    retry_increment = _round_cost(
+        sum(float(row["max_technical_retry_increment_usd"]) for row in rows)
+    )
+    retry_inclusive = _round_cost(primary_total + retry_increment)
+    per_call_caps = {
+        candidate.candidate_id: _cap_with_headroom(
+            max(
+                float(row["primary_call_conservative_reservation_usd"])
+                for row in rows
+                if row["candidate_id"] == candidate.candidate_id
+            ),
+            quantum="0.001",
+        )
+        for candidate in AUTHORIZED_CANDIDATES
+    }
+    rung_caps = {
+        candidate.candidate_id: {
+            "primary_usd": _cap_with_headroom(
+                float(
+                    by_candidate[candidate.candidate_id][
+                        "primary_call_conservative_reservation_usd"
+                    ]
+                ),
+                quantum="0.01",
+            ),
+            "retry_inclusive_usd": _cap_with_headroom(
+                float(
+                    by_candidate[candidate.candidate_id][
+                        "absolute_retry_inclusive_reservation_usd"
+                    ]
+                ),
+                quantum="0.01",
+            ),
+        }
+        for candidate in AUTHORIZED_CANDIDATES
+    }
+    material = {
+        "schema_version": "phase9-pre-authorization-cost-projection/2.0.2",
+        "execution_version": PHASE9_EXECUTION_VERSION,
+        "benchmark_version": BENCHMARK_VERSION,
+        "protocol_version": PROTOCOL_VERSION,
+        "status": "PROPOSED_CAPS_NOT_AUTHORIZED",
+        "authorization_state": "NOT_AUTHORIZED",
+        "billable_authorization": "NONE",
+        "pricing_snapshot_hash": validated_pricing["pricing_snapshot_hash"],
+        "high_smoke_plan_hash": prepared.plan["plan_hash"],
+        "request_authority_hash": prepared.request_authority[
+            "request_authority_hash"
+        ],
+        "ordered_logical_call_population_hash": ordered_hash,
+        "processing_tier": "STANDARD",
+        "projection_basis": {
+            "input_token_estimator": (
+                "comprehension_verification.model_gateway.openai_routes."
+                "estimate_openai_input_tokens"
+            ),
+            "input_reservation": "ALL_ESTIMATED_INPUT_TOKENS_AS_CACHE_WRITE",
+            "output_reservation": "FROZEN_CANDIDATE_MAX_OUTPUT_TOKENS",
+            "provider_usage_dimensions": [
+                "input_tokens",
+                "cached_input_tokens",
+                "cache_write_input_tokens",
+                "output_tokens",
+            ],
+        },
+        "mechanical_short_context_proof": {
+            "runtime_route_max_input_tokens": OPENAI_MAX_INPUT_TOKENS,
+            "official_long_context_threshold": LONG_CONTEXT_THRESHOLD,
+            "route_cap_below_long_context_threshold": (
+                OPENAI_MAX_INPUT_TOKENS < LONG_CONTEXT_THRESHOLD
+            ),
+            "observed_route_caps": sorted(route_caps),
+            "maximum_estimated_input_tokens": max(
+                int(row["estimated_input_tokens"]) for row in rows
+            ),
+            "all_estimated_inputs_within_route_cap": True,
+            "long_context_logical_calls": 0,
+            "long_context_pricing_authorized": False,
+            "disposition_beyond_route_cap_or_threshold": (
+                "FAIL_CLOSED_BEFORE_TRANSPORT"
+            ),
+        },
+        "logical_calls": rows,
+        "aggregates": {
+            "by_stage": by_stage,
+            "by_candidate": by_candidate,
+            "by_model": by_model,
+            "all_30_primary_calls": {
+                "logical_calls": len(rows),
+                "primary_call_conservative_reservation_usd": primary_total,
+            },
+        },
+        "technical_retry_reserve": {
+            "max_technical_retries_per_logical_call": (
+                MAX_TECHNICAL_RETRIES_PER_LOGICAL_CALL
+            ),
+            "retryable_technical_codes": sorted(RETRYABLE_TECHNICAL_CODES),
+            "derivation": (
+                "ONE_FULL_CONSERVATIVE_CALL_RESERVATION_PER_LOGICAL_CALL"
+            ),
+            "A_PRIMARY_30_CALL_RESERVATION_USD": primary_total,
+            "B_MAX_TECHNICAL_RETRY_INCREMENT_USD": retry_increment,
+            "C_ABSOLUTE_RETRY_INCLUSIVE_RESERVATION_USD": retry_inclusive,
+        },
+        "proposed_caps": {
+            "status": "PROPOSED_CAPS_NOT_AUTHORIZED",
+            "headroom_policy": {
+                "multiplier": 1.10,
+                "per_call_round_up_usd": 0.001,
+                "rung_and_outer_round_up_usd": 0.01,
+                "explanation": (
+                    "10_PERCENT_DETERMINISTIC_HEADROOM_ROUNDED_UP; "
+                    "NO_SPEND_AUTHORIZED"
+                ),
+            },
+            "per_call_cap_by_candidate_usd": per_call_caps,
+            "per_candidate_rung_caps_usd": rung_caps,
+            "outer_primary_cap_usd": _cap_with_headroom(
+                primary_total, quantum="0.01"
+            ),
+            "outer_retry_inclusive_cap_usd": _cap_with_headroom(
+                retry_inclusive, quantum="0.01"
+            ),
+        },
+        "safety_counters": {
+            "provider_calls": 0,
+            "adjudicator_calls": 0,
+            "credential_resolutions": 0,
+            "transport_factory_calls": 0,
+            "real_provider_transport": False,
+            "pricing_snapshot": "VERIFIED_CURRENT_OFFICIAL_PRICING",
+            "high_smoke": "NOT_EXECUTED",
+            "billable_authorization": "NONE",
+        },
+    }
+    return {**material, "cost_projection_hash": canonical_hash(material)}
+
+
+def load_and_validate_cost_projection(
+    *,
+    prepared: PreparedExecution,
+    pricing: Mapping[str, Any],
+    path: Path = COST_PROJECTION_PATH,
+) -> dict[str, Any]:
+    if not path.is_file():
+        raise Phase9ExecutionError(
+            "PHASE9_COST_PROJECTION_REQUIRED_BEFORE_AUTHORIZATION",
+            "the deterministic v2.0.2 cost projection is not published",
+        )
+    projection = _read_json(path)
+    _require(
+        projection.get("cost_projection_hash")
+        == _self_hash(projection, "cost_projection_hash"),
+        "PHASE9_COST_PROJECTION_SELF_HASH_MISMATCH",
+        "the supplied cost projection does not reproduce",
+    )
+    expected = build_pre_authorization_cost_projection(prepared, pricing)
+    _require(
+        projection == expected,
+        "PHASE9_COST_PROJECTION_MISMATCH",
+        "the published projection differs from the real prepared 30-call path",
+    )
+    return projection
 
 
 def authorization_requirements(
-    prepared: PreparedExecution, pricing: Mapping[str, Any]
+    prepared: PreparedExecution,
+    pricing: Mapping[str, Any],
+    cost_projection: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Return exact material a later explicit authorization must bind.
 
@@ -1412,8 +1915,14 @@ def authorization_requirements(
     consumed by the executor.
     """
 
+    projection = (
+        dict(cost_projection)
+        if cost_projection is not None
+        else build_pre_authorization_cost_projection(prepared, pricing)
+    )
+    retry = projection["technical_retry_reserve"]
     return {
-        "schema_version": "phase9-billable-authorization-requirements/2.0.1",
+        "schema_version": "phase9-billable-authorization-requirements/2.0.2",
         "authorization_state": "NOT_AUTHORIZED_TEMPLATE",
         "benchmark_version": BENCHMARK_VERSION,
         "protocol_version": PROTOCOL_VERSION,
@@ -1422,6 +1931,24 @@ def authorization_requirements(
         "high_smoke_plan_hash": prepared.plan["plan_hash"],
         **dict(prepared.authorities.semantic_bindings),
         "pricing_snapshot_hash": pricing["pricing_snapshot_hash"],
+        "cost_projection_hash": projection["cost_projection_hash"],
+        "primary_provider_calls": AUTHORIZED_PRIMARY_LOGICAL_CALLS,
+        "max_technical_retries_per_logical_call": (
+            MAX_TECHNICAL_RETRIES_PER_LOGICAL_CALL
+        ),
+        "absolute_provider_request_ceiling": (
+            AUTHORIZED_PRIMARY_LOGICAL_CALLS
+            * (1 + MAX_TECHNICAL_RETRIES_PER_LOGICAL_CALL)
+        ),
+        "primary_30_call_reservation_usd": retry[
+            "A_PRIMARY_30_CALL_RESERVATION_USD"
+        ],
+        "max_technical_retry_increment_usd": retry[
+            "B_MAX_TECHNICAL_RETRY_INCREMENT_USD"
+        ],
+        "absolute_retry_inclusive_reservation_usd": retry[
+            "C_ABSOLUTE_RETRY_INCLUSIVE_RESERVATION_USD"
+        ],
         "candidate_identities": [
             {
                 "stage": item.stage,
@@ -1441,8 +1968,10 @@ def authorization_requirements(
             "approved_at",
             "expires_at",
             "per_call_caps_usd",
-            "rung_caps_usd",
-            "outer_cap_usd",
+            "rung_primary_caps_usd",
+            "rung_retry_inclusive_caps_usd",
+            "outer_primary_cap_usd",
+            "outer_retry_inclusive_cap_usd",
             "ledger_path",
             "authorization_hash",
         ],
@@ -1455,11 +1984,12 @@ def load_and_validate_authorization(
     path: Path,
     prepared: PreparedExecution,
     pricing: Mapping[str, Any],
+    cost_projection: Mapping[str, Any],
 ) -> dict[str, Any]:
     if not path.is_file():
         raise Phase9ExecutionError(
             "EXPLICIT_HASH_BOUND_AUTHORIZATION_REQUIRED",
-            "no billable authorization is published for execution v2.0.1",
+            "no billable authorization is published for execution v2.0.2",
         )
     authorization = _read_json(path)
     _require(
@@ -1468,7 +1998,9 @@ def load_and_validate_authorization(
         "PHASE9_AUTHORIZATION_SELF_HASH_MISMATCH",
         "the billable authorization does not reproduce",
     )
-    requirements = authorization_requirements(prepared, pricing)
+    requirements = authorization_requirements(
+        prepared, pricing, cost_projection=cost_projection
+    )
     exact_fields = {
         key: value
         for key, value in requirements.items()
@@ -1487,12 +2019,13 @@ def load_and_validate_authorization(
         )
     _require(
         authorization.get("schema_version")
-        == "phase9-billable-authorization/2.0.1"
+        == "phase9-billable-authorization/2.0.2"
         and authorization.get("authorization_state") == "EXPLICITLY_APPROVED"
         and authorization.get("billable_authorization") == "EXPLICIT"
-        and authorization.get("primary_provider_calls") == 30,
+        and authorization.get("primary_provider_calls") == 30
+        and authorization.get("absolute_provider_request_ceiling") == 60,
         "PHASE9_AUTHORIZATION_INVALID",
-        "authorization is not an explicit 30-call execution-v2.0.1 approval",
+        "authorization is not an explicit retry-bounded execution-v2.0.2 approval",
     )
     try:
         expires_at = datetime.fromisoformat(
@@ -1508,22 +2041,86 @@ def load_and_validate_authorization(
         "billable authorization has expired",
     )
     candidate_ids = {item.candidate_id for item in AUTHORIZED_CANDIDATES}
-    for key in ("per_call_caps_usd", "rung_caps_usd"):
+    for key in (
+        "per_call_caps_usd",
+        "rung_primary_caps_usd",
+        "rung_retry_inclusive_caps_usd",
+    ):
         caps = authorization.get(key, {})
         _require(
-            set(caps) == candidate_ids
+            isinstance(caps, Mapping)
+            and set(caps) == candidate_ids
             and all(
-                isinstance(value, (int, float)) and value > 0
+                not isinstance(value, bool)
+                and isinstance(value, (int, float))
+                and value > 0
                 for value in caps.values()
             ),
             "PHASE9_AUTHORIZATION_INVALID",
             f"{key} must provide positive caps for exactly the HIGH candidates",
         )
+    proposed = cost_projection["proposed_caps"]
+    by_candidate = cost_projection["aggregates"]["by_candidate"]
+    per_call_projection = {
+        candidate_id: max(
+            float(row["primary_call_conservative_reservation_usd"])
+            for row in cost_projection["logical_calls"]
+            if row["candidate_id"] == candidate_id
+        )
+        for candidate_id in candidate_ids
+    }
+    for candidate_id in candidate_ids:
+        _require(
+            per_call_projection[candidate_id]
+            <= float(authorization["per_call_caps_usd"][candidate_id])
+            <= float(
+                proposed["per_call_cap_by_candidate_usd"][candidate_id]
+            )
+            and float(
+                by_candidate[candidate_id][
+                    "primary_call_conservative_reservation_usd"
+                ]
+            )
+            <= float(authorization["rung_primary_caps_usd"][candidate_id])
+            <= float(
+                proposed["per_candidate_rung_caps_usd"][candidate_id][
+                    "primary_usd"
+                ]
+            )
+            and float(
+                by_candidate[candidate_id][
+                    "absolute_retry_inclusive_reservation_usd"
+                ]
+            )
+            <= float(
+                authorization["rung_retry_inclusive_caps_usd"][candidate_id]
+            )
+            <= float(
+                proposed["per_candidate_rung_caps_usd"][candidate_id][
+                    "retry_inclusive_usd"
+                ]
+            ),
+            "PHASE9_AUTHORIZATION_CAP_MISMATCH",
+            f"authorization caps are outside the projected range for {candidate_id}",
+        )
+    retry = cost_projection["technical_retry_reserve"]
     _require(
-        isinstance(authorization.get("outer_cap_usd"), (int, float))
-        and authorization["outer_cap_usd"] > 0,
-        "PHASE9_AUTHORIZATION_INVALID",
-        "authorization outer cap must be positive",
+        not isinstance(authorization.get("outer_primary_cap_usd"), bool)
+        and isinstance(authorization.get("outer_primary_cap_usd"), (int, float))
+        and not isinstance(
+            authorization.get("outer_retry_inclusive_cap_usd"), bool
+        )
+        and isinstance(
+            authorization.get("outer_retry_inclusive_cap_usd"), (int, float)
+        )
+        and float(retry["A_PRIMARY_30_CALL_RESERVATION_USD"])
+        <= float(authorization["outer_primary_cap_usd"])
+        <= float(proposed["outer_primary_cap_usd"])
+        and float(retry["C_ABSOLUTE_RETRY_INCLUSIVE_RESERVATION_USD"])
+        <= float(authorization["outer_retry_inclusive_cap_usd"])
+        <= float(proposed["outer_retry_inclusive_cap_usd"]),
+        "PHASE9_AUTHORIZATION_CAP_MISMATCH",
+        "authorization outer caps are outside the projected range",
     )
     ledger_path = (
         REPOSITORY_ROOT / str(authorization.get("ledger_path", ""))
@@ -1532,7 +2129,7 @@ def load_and_validate_authorization(
     _require(
         ledger_path.is_relative_to(ledger_root),
         "PHASE9_AUTHORIZATION_INVALID",
-        "authorization ledger path is outside the execution-v2.0.1 ledger root",
+        "authorization ledger path is outside the execution-v2.0.2 ledger root",
     )
     return authorization
 
@@ -1541,7 +2138,7 @@ def _claim_authorization_once(authorization: Mapping[str, Any]) -> Path:
     ledger_path = (REPOSITORY_ROOT / authorization["ledger_path"]).resolve()
     ledger_path.parent.mkdir(parents=True, exist_ok=True)
     payload = {
-        "schema_version": "phase9-authorization-consumption/2.0.1",
+        "schema_version": "phase9-authorization-consumption/2.0.2",
         "authorization_id": authorization["authorization_id"],
         "authorization_hash": authorization["authorization_hash"],
         "execution_boundary_hash": authorization["execution_boundary_hash"],
@@ -1577,18 +2174,70 @@ def _estimate_cost(
     input_tokens: int,
     output_tokens: int,
     cached_input_tokens: int = 0,
+    cache_write_input_tokens: int = 0,
 ) -> float:
-    row = pricing["models"][model]
+    _require(
+        pricing.get("long_context_threshold") == LONG_CONTEXT_THRESHOLD
+        and pricing.get("long_context_pricing_authorized") is False,
+        "PHASE9_LONG_CONTEXT_PRICING_NOT_AUTHORIZED",
+        "only standard short-context pricing is authorized",
+    )
     input_tokens = max(0, input_tokens)
+    _require(
+        input_tokens <= LONG_CONTEXT_THRESHOLD,
+        "PHASE9_LONG_CONTEXT_PRICING_NOT_AUTHORIZED",
+        "the request exceeds the standard short-context pricing threshold",
+    )
+    try:
+        row = pricing["models"][model]
+    except (KeyError, TypeError) as exc:
+        raise Phase9ExecutionError(
+            "PHASE9_CURRENT_PRICING_INVALID",
+            f"no execution-v2.0.2 pricing row exists for {model}",
+        ) from exc
+    _require(
+        isinstance(row, Mapping),
+        "PHASE9_CURRENT_PRICING_INVALID",
+        f"the execution-v2.0.2 pricing row is invalid for {model}",
+    )
+    input_rate = _pricing_decimal(
+        row.get("input_per_million_usd"),
+        model=model,
+        field_name="input_per_million_usd",
+    )
+    cached_rate = _pricing_decimal(
+        row.get("cached_input_per_million_usd"),
+        model=model,
+        field_name="cached_input_per_million_usd",
+    )
+    cache_write_rate = _pricing_decimal(
+        row.get("cache_write_per_million_usd"),
+        model=model,
+        field_name="cache_write_per_million_usd",
+    )
+    output_rate = _pricing_decimal(
+        row.get("output_per_million_usd"),
+        model=model,
+        field_name="output_per_million_usd",
+    )
+    _require(
+        cache_write_rate == input_rate * CACHE_WRITE_PRICE_MULTIPLIER,
+        "PHASE9_CURRENT_PRICING_CACHE_WRITE_RULE_MISMATCH",
+        f"cache-write multiplier differs from 1.25 for {model}",
+    )
     cached = min(input_tokens, max(0, cached_input_tokens))
-    ordinary = input_tokens - cached
+    cache_write = min(input_tokens, max(0, cache_write_input_tokens))
+    ordinary = max(0, input_tokens - cached - cache_write)
     return round(
-        (
-            ordinary * float(row["input_per_million_usd"])
-            + cached * float(row["cached_input_per_million_usd"])
-            + max(0, output_tokens) * float(row["output_per_million_usd"])
-        )
-        / 1_000_000,
+        float(
+            (
+                ordinary * input_rate
+                + cached * cached_rate
+                + cache_write * cache_write_rate
+                + max(0, output_tokens) * output_rate
+            )
+            / Decimal("1000000")
+        ),
         8,
     )
 
@@ -1646,6 +2295,7 @@ class PricingBoundCapturingAdapter:
             input_tokens=result.input_tokens,
             output_tokens=route.max_output_tokens,
             cached_input_tokens=result.cached_input_tokens,
+            cache_write_input_tokens=result.cache_write_input_tokens,
         )
         actual = _estimate_cost(
             self.pricing,
@@ -1653,6 +2303,7 @@ class PricingBoundCapturingAdapter:
             input_tokens=result.input_tokens,
             output_tokens=result.output_tokens,
             cached_input_tokens=result.cached_input_tokens,
+            cache_write_input_tokens=result.cache_write_input_tokens,
         )
         rebound = replace(
             result, estimated_cost_usd=estimated, actual_cost_usd=actual
@@ -1667,6 +2318,7 @@ class PricingBoundCapturingAdapter:
             "provider_schema_issues": list(rebound.provider_schema_issues),
             "input_tokens": rebound.input_tokens,
             "cached_input_tokens": rebound.cached_input_tokens,
+            "cache_write_input_tokens": rebound.cache_write_input_tokens,
             "output_tokens": rebound.output_tokens,
             "reasoning_tokens": rebound.reasoning_tokens,
             "estimated_cost_usd": estimated,
@@ -1690,34 +2342,85 @@ class CostAccount:
     authorization: Mapping[str, Any]
     spent_usd: float = 0.0
     by_candidate: dict[str, float] = field(default_factory=dict)
+    primary_spent_usd: float = 0.0
+    primary_by_candidate: dict[str, float] = field(default_factory=dict)
+    retry_spent_usd: float = 0.0
+    retry_by_candidate: dict[str, float] = field(default_factory=dict)
 
-    def admit(self, candidate: AuthorizedCandidate, projected: float) -> None:
+    def admit(
+        self,
+        candidate: AuthorizedCandidate,
+        projected: float,
+        *,
+        is_retry: bool,
+    ) -> None:
         per_call = float(
             self.authorization["per_call_caps_usd"][candidate.candidate_id]
         )
-        rung = float(self.authorization["rung_caps_usd"][candidate.candidate_id])
-        outer = float(self.authorization["outer_cap_usd"])
+        primary_rung = float(
+            self.authorization["rung_primary_caps_usd"][candidate.candidate_id]
+        )
+        retry_rung = float(
+            self.authorization["rung_retry_inclusive_caps_usd"][
+                candidate.candidate_id
+            ]
+        )
+        outer_primary = float(self.authorization["outer_primary_cap_usd"])
+        outer_retry = float(
+            self.authorization["outer_retry_inclusive_cap_usd"]
+        )
         _require(
             projected <= per_call,
             "PHASE9_PER_CALL_CAP_WOULD_BE_EXCEEDED",
             f"{candidate.candidate_id} exceeds its authorized per-call cap",
         )
         _require(
-            self.by_candidate.get(candidate.candidate_id, 0.0) + projected <= rung,
+            self.by_candidate.get(candidate.candidate_id, 0.0) + projected
+            <= retry_rung,
             "PHASE9_RUNG_CAP_WOULD_BE_EXCEEDED",
-            f"{candidate.candidate_id} exceeds its authorized rung cap",
+            f"{candidate.candidate_id} exceeds its retry-inclusive rung cap",
         )
         _require(
-            self.spent_usd + projected <= outer,
+            self.spent_usd + projected <= outer_retry,
             "PHASE9_OUTER_CAP_WOULD_BE_EXCEEDED",
-            "the next request could exceed the authorized outer cap",
+            "the next request could exceed the retry-inclusive outer cap",
         )
+        if not is_retry:
+            _require(
+                self.primary_by_candidate.get(candidate.candidate_id, 0.0)
+                + projected
+                <= primary_rung,
+                "PHASE9_PRIMARY_RUNG_CAP_WOULD_BE_EXCEEDED",
+                f"{candidate.candidate_id} exceeds its primary rung cap",
+            )
+            _require(
+                self.primary_spent_usd + projected <= outer_primary,
+                "PHASE9_PRIMARY_OUTER_CAP_WOULD_BE_EXCEEDED",
+                "the next primary request could exceed the primary outer cap",
+            )
 
-    def charge(self, candidate: AuthorizedCandidate, actual: float) -> None:
+    def charge(
+        self,
+        candidate: AuthorizedCandidate,
+        actual: float,
+        *,
+        is_retry: bool,
+    ) -> None:
         self.spent_usd += actual
         self.by_candidate[candidate.candidate_id] = (
             self.by_candidate.get(candidate.candidate_id, 0.0) + actual
         )
+        if is_retry:
+            self.retry_spent_usd += actual
+            self.retry_by_candidate[candidate.candidate_id] = (
+                self.retry_by_candidate.get(candidate.candidate_id, 0.0) + actual
+            )
+        else:
+            self.primary_spent_usd += actual
+            self.primary_by_candidate[candidate.candidate_id] = (
+                self.primary_by_candidate.get(candidate.candidate_id, 0.0)
+                + actual
+            )
 
 
 def _envelope_for(prompt_id: str, request: BaseModel) -> m.ModelTaskEnvelope:
@@ -1750,6 +2453,8 @@ def _gateway_for(
         and primary_route.model == candidate.model
         and primary_route.reasoning_effort.value == candidate.reasoning_effort
         and primary_route.max_output_tokens == candidate.max_output_tokens
+        and primary_route.max_input_tokens == OPENAI_MAX_INPUT_TOKENS
+        and primary_route.max_input_tokens < LONG_CONTEXT_THRESHOLD
         and openai_route_matches_profile(candidate.prompt_id, primary_route),
         "PHASE9_QUALIFICATION_PRIMARY_ROUTE_MISMATCH",
         f"the qualification route drifted for {candidate.prompt_id}",
@@ -1770,6 +2475,7 @@ def _gateway_for(
             model=candidate.model,
             input_tokens=input_tokens,
             output_tokens=spec.max_output_tokens,
+            cache_write_input_tokens=input_tokens,
         )
 
     return ModelGateway(
@@ -1811,17 +2517,19 @@ async def _execute_call(
         model=candidate.model,
         input_tokens=input_upper,
         output_tokens=candidate.max_output_tokens,
+        cache_write_input_tokens=input_upper,
     )
     cap = float(authorization["per_call_caps_usd"][candidate.candidate_id])
     attempts: list[dict[str, Any]] = []
     for attempt_index in range(1, MAX_TECHNICAL_RETRIES_PER_LOGICAL_CALL + 2):
-        account.admit(candidate, projected)
+        is_retry = attempt_index > 1
+        account.admit(candidate, projected, is_retry=is_retry)
         gateway = _gateway_for(
             candidate=candidate,
             adapter=adapter,
             cap=cap,
             pricing=pricing,
-            job_id=f"job_phase9v201_{call.case.stage.lower()}",
+            job_id=f"job_phase9v202_{call.case.stage.lower()}",
         )
         invocation_index = len(adapter.invocations)
         capture_index = len(adapter.captured)
@@ -1837,7 +2545,11 @@ async def _execute_call(
             invocations = adapter.invocations[invocation_index:]
             captures = adapter.captured[capture_index:]
             for captured in captures:
-                account.charge(candidate, float(captured["actual_cost_usd"]))
+                account.charge(
+                    candidate,
+                    float(captured["actual_cost_usd"]),
+                    is_retry=is_retry,
+                )
             prompt_ids = [str(row["prompt_id"]) for row in invocations]
             off_plan = len(invocations) > 1 or any(
                 prompt_id != candidate.prompt_id for prompt_id in prompt_ids
@@ -1869,7 +2581,11 @@ async def _execute_call(
         invocations = adapter.invocations[invocation_index:]
         captures = adapter.captured[capture_index:]
         for captured in captures:
-            account.charge(candidate, float(captured["actual_cost_usd"]))
+            account.charge(
+                candidate,
+                float(captured["actual_cost_usd"]),
+                is_retry=is_retry,
+            )
         prompt_ids = [str(row["prompt_id"]) for row in invocations]
         off_plan = (
             len(invocations) > 1
@@ -1956,6 +2672,10 @@ async def _execute_call(
                 "provider_request_id_hash": captured["provider_request_id_hash"],
                 "actual_cost_usd": captured["actual_cost_usd"],
                 "input_tokens": captured["input_tokens"],
+                "cached_input_tokens": captured["cached_input_tokens"],
+                "cache_write_input_tokens": captured[
+                    "cache_write_input_tokens"
+                ],
                 "output_tokens": captured["output_tokens"],
                 "latency_ms": captured["latency_ms"],
             }
@@ -2054,7 +2774,7 @@ def build_semantic_blind_packets(
                     "packet": packet,
                     "logical_call_identity": call.identity(),
                     "property_id": authority["property_id"],
-                    "namespace": "phase9-semantic-blind-packet/2.0.1",
+                    "namespace": "phase9-semantic-blind-packet/2.0.2",
                 }
             )
             packets.append(
@@ -2107,7 +2827,7 @@ def build_n3_blind_packets(
                 "packet_hash": packet["packet_hash"],
                 "exposure_pseudonym": call.case.exposure_pseudonym,
                 "run_index": call.run_index,
-                "namespace": "phase9-n3-blind-packet/2.0.1",
+                "namespace": "phase9-n3-blind-packet/2.0.2",
             }
         )
         packets.append(
@@ -2134,7 +2854,7 @@ def build_blind_packet_sets(
     semantic = build_semantic_blind_packets(calls=calls, outputs=outputs)
     n3 = build_n3_blind_packets(calls=calls, outputs=outputs)
     return {
-        "schema_version": "phase9-blind-review-surfaces/2.0.1",
+        "schema_version": "phase9-blind-review-surfaces/2.0.2",
         "semantic": {
             "packet_count": len(semantic),
             "denominator": "ACCEPTED_SEMANTIC_RATE_ONLY",
@@ -2275,7 +2995,7 @@ def _write_json(path: Path, payload: Any) -> str:
 
 def _execution_id(authorization: Mapping[str, Any]) -> str:
     return (
-        "exec-phase9v201-"
+        "exec-phase9v202-"
         + str(authorization["authorization_hash"]).removeprefix("sha256:")[:16]
     )
 
@@ -2419,6 +3139,7 @@ def run_phase9b_smoke(
     *,
     created_by: str,
     pricing_path: Path = CURRENT_PRICING_PATH,
+    cost_projection_path: Path = COST_PROJECTION_PATH,
     authorization_path: Path = BILLABLE_AUTHORIZATION_PATH,
     credential_resolver: Callable[[], SecretStr | None] | None = None,
     adapter_factory: Callable[[SecretStr], Any] = default_adapter_factory,
@@ -2431,7 +3152,7 @@ def run_phase9b_smoke(
     request_authority_override: Mapping[str, Any] | None = None,
     live_specs: Mapping[str, PromptSpec] = PROMPT_SPECS,
 ) -> dict[str, Any]:
-    """Run the v2.0.1 first-real-call chain in its strict happens-before order."""
+    """Run the v2.0.2 first-real-call chain in its strict happens-before order."""
 
     del created_by  # identity is supplied by the future signed authorization
     counters = SafetyCounters()
@@ -2444,8 +3165,23 @@ def run_phase9b_smoke(
             live_specs=live_specs,
         )
         pricing = load_current_pricing_artifact(pricing_path)
+        _require(
+            pricing["pricing_snapshot_hash"]
+            == prepared.boundary["current_pricing"]["pricing_snapshot_hash"],
+            "PHASE9_CURRENT_PRICING_BINDING_MISMATCH",
+            "runtime pricing is not the boundary-bound v2.0.2 snapshot",
+        )
+        counters.pricing_refresh = "VERIFIED_CURRENT_OFFICIAL_PRICING"
+        cost_projection = load_and_validate_cost_projection(
+            prepared=prepared,
+            pricing=pricing,
+            path=cost_projection_path,
+        )
         authorization = load_and_validate_authorization(
-            path=authorization_path, prepared=prepared, pricing=pricing
+            path=authorization_path,
+            prepared=prepared,
+            pricing=pricing,
+            cost_projection=cost_projection,
         )
         if not allow_billable:
             return {
@@ -2454,6 +3190,10 @@ def run_phase9b_smoke(
                     "execution_boundary_hash"
                 ],
                 "high_smoke_plan_hash": prepared.plan["plan_hash"],
+                "pricing_snapshot_hash": pricing["pricing_snapshot_hash"],
+                "cost_projection_hash": cost_projection[
+                    "cost_projection_hash"
+                ],
                 "primary_logical_calls": len(prepared.calls),
                 "safety_counters": counters.snapshot(),
             }

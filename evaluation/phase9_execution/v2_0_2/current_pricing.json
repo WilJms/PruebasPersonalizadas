@@ -1,0 +1,58 @@
+{
+  "authorization_state": "NOT_AUTHORIZED",
+  "billable_authorization": "NONE",
+  "cache_write_pricing_rule": {
+    "formula": "cache_write_per_million_usd == 1.25 * input_per_million_usd",
+    "multiplier": 1.25
+  },
+  "effective_date": "2026-07-30",
+  "execution_version": "phase9-execution/2.0.2",
+  "long_context_pricing_authorized": false,
+  "long_context_rule": "INPUT_TOKENS_GT_272000_REQUIRES_SEPARATE_LONG_CONTEXT_PRICING_AUTHORITY",
+  "long_context_threshold": 272000,
+  "model_availability_evidence": "CURRENT_OFFICIAL_OPENAI_API_MODEL_PAGES",
+  "models": {
+    "gpt-5.6-luna": {
+      "availability": "AVAILABLE_OPENAI_API",
+      "cache_write_per_million_usd": 0.25,
+      "cached_input_per_million_usd": 0.02,
+      "input_per_million_usd": 0.2,
+      "model_id": "gpt-5.6-luna",
+      "model_page_url": "https://developers.openai.com/api/docs/models/gpt-5.6-luna",
+      "output_per_million_usd": 1.2,
+      "processing_tier": "STANDARD",
+      "reasoning_high_supported": true,
+      "responses_api_endpoint": "v1/responses",
+      "responses_api_supported": true,
+      "structured_outputs_supported": true
+    },
+    "gpt-5.6-terra": {
+      "availability": "AVAILABLE_OPENAI_API",
+      "cache_write_per_million_usd": 2.5,
+      "cached_input_per_million_usd": 0.2,
+      "input_per_million_usd": 2.0,
+      "model_id": "gpt-5.6-terra",
+      "model_page_url": "https://developers.openai.com/api/docs/models/gpt-5.6-terra",
+      "output_per_million_usd": 12.0,
+      "processing_tier": "STANDARD",
+      "reasoning_high_supported": true,
+      "responses_api_endpoint": "v1/responses",
+      "responses_api_supported": true,
+      "structured_outputs_supported": true
+    }
+  },
+  "non_billable": true,
+  "official_source_urls": [
+    "https://developers.openai.com/api/docs/models/gpt-5.6-terra",
+    "https://developers.openai.com/api/docs/models/gpt-5.6-luna",
+    "https://openai.com/index/advancing-the-price-performance-frontier-with-gpt-5-6/"
+  ],
+  "pricing_snapshot_hash": "sha256:473857448d87f6507f3d626af5d8061c62d0830b949f6a489f6e1260feb82d55",
+  "processing_tier": "STANDARD",
+  "reasoning_high_supported": true,
+  "responses_api_supported": true,
+  "retrieved_at": "2026-08-21T18:18:15Z",
+  "schema_version": "phase9-current-pricing/2.0.2",
+  "status": "VERIFIED_CURRENT_OFFICIAL_PRICING",
+  "structured_outputs_supported": true
+}

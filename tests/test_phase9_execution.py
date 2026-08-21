@@ -1,7 +1,8 @@
-"""Direct regressions for the phase9-execution/2.0.1 cutover.
+"""Direct regressions for the phase9-execution/2.0.2 cutover.
 
 Nothing in this module resolves a credential, constructs a transport, calls a
-provider, calls an adjudicator, refreshes pricing, or executes HIGH-SMOKE.
+provider, calls an adjudicator, resolves pricing over the network, or executes
+HIGH-SMOKE.
 """
 
 from __future__ import annotations
@@ -53,6 +54,19 @@ def _zero_counter_assertions(counters: dict[str, Any]) -> None:
     }
 
 
+def _pricing_verified_counter_assertions(counters: dict[str, Any]) -> None:
+    assert counters == {
+        "provider_calls": 0,
+        "adjudicator_calls": 0,
+        "credential_resolutions": 0,
+        "transport_factory_calls": 0,
+        "real_provider_transport": False,
+        "pricing_refresh": "VERIFIED_CURRENT_OFFICIAL_PRICING",
+        "high_smoke": "NOT_EXECUTED",
+        "billable_authorization": "NONE",
+    }
+
+
 @pytest.mark.parametrize(
     ("field", "legacy_path"),
     [
@@ -91,7 +105,7 @@ def test_active_v2_rejects_legacy_authority_before_read(
 def test_versions_and_every_frozen_binding_are_current(
     prepared: px.PreparedExecution,
 ) -> None:
-    assert px.PHASE9_EXECUTION_VERSION == "phase9-execution/2.0.1"
+    assert px.PHASE9_EXECUTION_VERSION == "phase9-execution/2.0.2"
     assert prepared.boundary["benchmark_version"] == "semantic-benchmark/1.3.5"
     assert prepared.boundary["protocol_version"] == (
         "phase9-qualification-protocol/1.3.5"
@@ -293,8 +307,10 @@ def test_live_prompt_mutation_blocks_before_credentials_or_transport(
     _zero_counter_assertions(exc.value.safety_counters)
 
 
-def test_absent_current_pricing_is_the_explicit_precredential_stop() -> None:
-    assert not px.CURRENT_PRICING_PATH.exists()
+def test_absent_authorization_is_the_explicit_precredential_stop() -> None:
+    assert px.CURRENT_PRICING_PATH.is_file()
+    assert px.COST_PROJECTION_PATH.is_file()
+    assert not px.BILLABLE_AUTHORIZATION_PATH.exists()
     credential_calls = 0
     factory_calls = 0
 
@@ -315,9 +331,9 @@ def test_absent_current_pricing_is_the_explicit_precredential_stop() -> None:
             credential_resolver=credential_resolver,
             adapter_factory=transport_factory,
         )
-    assert exc.value.code == "PRICING_REFRESH_REQUIRED_BEFORE_AUTHORIZATION"
+    assert exc.value.code == "EXPLICIT_HASH_BOUND_AUTHORIZATION_REQUIRED"
     assert credential_calls == factory_calls == 0
-    _zero_counter_assertions(exc.value.safety_counters)
+    _pricing_verified_counter_assertions(exc.value.safety_counters)
 
 
 def test_high_smoke_reaches_no_core_heldout_xhigh_or_max(
@@ -405,23 +421,14 @@ def test_semantic_and_n3_packet_sets_are_disjoint_and_correct(
 def test_authorization_requirements_are_v135_v2_and_not_an_authorization(
     prepared: px.PreparedExecution,
 ) -> None:
-    pricing_material = {
-        "schema_version": "phase9-current-pricing/2.0.1",
-        "execution_version": px.PHASE9_EXECUTION_VERSION,
-        "status": "SYNTHETIC_TEST_ONLY",
-        "models": {},
-    }
-    pricing = {
-        **pricing_material,
-        "pricing_snapshot_hash": px._hash(pricing_material),
-    }
+    pricing = px.load_current_pricing_artifact()
     requirements = px.authorization_requirements(prepared, pricing)
     assert requirements["authorization_state"] == "NOT_AUTHORIZED_TEMPLATE"
     assert requirements["benchmark_version"] == "semantic-benchmark/1.3.5"
     assert requirements["protocol_version"] == (
         "phase9-qualification-protocol/1.3.5"
     )
-    assert requirements["execution_version"] == "phase9-execution/2.0.1"
+    assert requirements["execution_version"] == "phase9-execution/2.0.2"
     assert requirements["execution_boundary_hash"] == (
         prepared.boundary["execution_boundary_hash"]
     )
@@ -429,16 +436,19 @@ def test_authorization_requirements_are_v135_v2_and_not_an_authorization(
     assert requirements["logical_call_identities"] == [
         call.identity() for call in prepared.calls
     ]
-    assert "outer_cap_usd" in requirements["required_future_fields"]
+    assert "outer_primary_cap_usd" in requirements["required_future_fields"]
+    assert (
+        "outer_retry_inclusive_cap_usd"
+        in requirements["required_future_fields"]
+    )
     assert "authorization_hash" in requirements["required_future_fields"]
 
 
-def test_no_executable_pricing_or_cap_fallback_remains() -> None:
+def test_no_hardcoded_pricing_or_authorization_fallback_remains() -> None:
     source = Path(px.__file__).read_text(encoding="utf-8")
-    assert "verify_pricing_snapshot" not in source
     assert "MODEL_PRICES" not in source
     assert "OUTER_AUTHORIZATION_CAP_USD" not in source
-    assert "pricing_snapshot.json" not in source
+    assert not px.BILLABLE_AUTHORIZATION_PATH.exists()
 
 
 def test_all_semantic_benchmark_v135_bytes_remain_unchanged(
