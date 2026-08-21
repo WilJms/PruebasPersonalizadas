@@ -254,6 +254,11 @@ class OpenAIResponsesAdapter:
             output_schema=output_format["schema"],
         )
 
+    async def aclose(self) -> None:
+        """Close the SDK async client on the event loop that used it."""
+
+        await self.client.close()
+
     @staticmethod
     def _result_from_response(
         response: Any,

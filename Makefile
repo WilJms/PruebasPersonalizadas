@@ -41,13 +41,16 @@ phase9-protocol-freeze:
 		CVA_MODEL_MODE=mock CVA_P10_ENABLED=false $(PYTHON) \
 		scripts/build_phase9_protocol.py
 
-# phase9-execution/2.0.2 consumes the immutable semantic-benchmark/1.3.5
-# instrument. The publication check regenerates its request/plan boundary in
-# memory and requires byte-for-byte equality with the committed artifacts.
+# phase9-execution/2.0.3 consumes the immutable semantic-benchmark/1.3.5
+# instrument. The publication check regenerates its request/plan boundary and
+# forensic repair evidence in memory, then requires byte-for-byte equality.
 phase9-execution-v2-check:
 	@env -u OPENAI_API_KEY -u CVA_OPENAI_API_KEY \
 		CVA_MODEL_MODE=mock CVA_P10_ENABLED=false $(PYTHON) \
 		scripts/build_phase9_execution_v2.py
+	@env -u OPENAI_API_KEY -u CVA_OPENAI_API_KEY \
+		CVA_MODEL_MODE=mock CVA_P10_ENABLED=false $(PYTHON) \
+		scripts/build_phase9_forensic_repair.py
 
 # Dry mode validates the complete freeze, current official pricing, and cost
 # projection, then stops explicitly because no billable authorization exists.

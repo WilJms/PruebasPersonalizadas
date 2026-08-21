@@ -1,4 +1,4 @@
-"""Direct regressions for the phase9-execution/2.0.2 cutover.
+"""Direct regressions for the phase9-execution/2.0.3 successor.
 
 Nothing in this module resolves a credential, constructs a transport, calls a
 provider, calls an adjudicator, resolves pricing over the network, or executes
@@ -105,7 +105,7 @@ def test_active_v2_rejects_legacy_authority_before_read(
 def test_versions_and_every_frozen_binding_are_current(
     prepared: px.PreparedExecution,
 ) -> None:
-    assert px.PHASE9_EXECUTION_VERSION == "phase9-execution/2.0.2"
+    assert px.PHASE9_EXECUTION_VERSION == "phase9-execution/2.0.3"
     assert prepared.boundary["benchmark_version"] == "semantic-benchmark/1.3.5"
     assert prepared.boundary["protocol_version"] == (
         "phase9-qualification-protocol/1.3.5"
@@ -307,10 +307,13 @@ def test_live_prompt_mutation_blocks_before_credentials_or_transport(
     _zero_counter_assertions(exc.value.safety_counters)
 
 
-def test_absent_authorization_is_the_explicit_precredential_stop() -> None:
+def test_absent_authorization_is_the_explicit_precredential_stop(
+    tmp_path: Path,
+) -> None:
     assert px.CURRENT_PRICING_PATH.is_file()
     assert px.COST_PROJECTION_PATH.is_file()
     assert not px.BILLABLE_AUTHORIZATION_PATH.exists()
+    assert px.PREDECESSOR_AUTHORIZATION_PATH.is_file()
     credential_calls = 0
     factory_calls = 0
 
@@ -327,6 +330,7 @@ def test_absent_authorization_is_the_explicit_precredential_stop() -> None:
     with pytest.raises(px.Phase9ExecutionError) as exc:
         px.run_phase9b_smoke(
             created_by="test",
+            authorization_path=tmp_path / "explicitly-missing-authorization.json",
             allow_billable=True,
             credential_resolver=credential_resolver,
             adapter_factory=transport_factory,
@@ -428,7 +432,7 @@ def test_authorization_requirements_are_v135_v2_and_not_an_authorization(
     assert requirements["protocol_version"] == (
         "phase9-qualification-protocol/1.3.5"
     )
-    assert requirements["execution_version"] == "phase9-execution/2.0.2"
+    assert requirements["execution_version"] == "phase9-execution/2.0.3"
     assert requirements["execution_boundary_hash"] == (
         prepared.boundary["execution_boundary_hash"]
     )
@@ -449,6 +453,12 @@ def test_no_hardcoded_pricing_or_authorization_fallback_remains() -> None:
     assert "MODEL_PRICES" not in source
     assert "OUTER_AUTHORIZATION_CAP_USD" not in source
     assert not px.BILLABLE_AUTHORIZATION_PATH.exists()
+    assert px.PREDECESSOR_AUTHORIZATION_PATH.is_file()
+    assert px._file_hash(px.PREDECESSOR_AUTHORIZATION_PATH) == (
+        px.EXPECTED_PREDECESSOR_ARTIFACT_HASHES[
+            "evaluation/phase9_execution/v2_0_2/billable_authorization.json"
+        ]
+    )
 
 
 def test_all_semantic_benchmark_v135_bytes_remain_unchanged(

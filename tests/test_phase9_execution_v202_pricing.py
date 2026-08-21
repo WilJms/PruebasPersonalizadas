@@ -1,4 +1,4 @@
-"""Offline pricing/accounting regressions for phase9-execution/2.0.2."""
+"""Offline pricing/accounting regressions for phase9-execution/2.0.3."""
 
 from __future__ import annotations
 
@@ -54,10 +54,10 @@ def _write_forged_pricing(path: Path, document: dict[str, Any]) -> None:
 def test_current_official_pricing_is_exact_and_non_billable(
     pricing: dict[str, Any],
 ) -> None:
-    assert pricing["schema_version"] == "phase9-current-pricing/2.0.2"
-    assert pricing["execution_version"] == "phase9-execution/2.0.2"
+    assert pricing["schema_version"] == "phase9-current-pricing/2.0.3"
+    assert pricing["execution_version"] == "phase9-execution/2.0.3"
     assert pricing["status"] == "VERIFIED_CURRENT_OFFICIAL_PRICING"
-    assert pricing["retrieved_at"] == "2026-08-21T18:18:15Z"
+    assert pricing["retrieved_at"] == "2026-08-21T20:50:38Z"
     assert pricing["official_source_urls"] == list(
         px.OFFICIAL_PRICING_SOURCE_URLS
     )
@@ -485,6 +485,8 @@ def test_ordered_population_and_all_protected_publications_are_unchanged(
             "reports/phase9_execution/v2_0_0",
             "evaluation/phase9_execution/v2_0_1",
             "reports/phase9_execution/v2_0_1",
+            "evaluation/phase9_execution/v2_0_2",
+            "reports/phase9_execution/v2_0_2",
         ],
         cwd=px.REPOSITORY_ROOT,
         check=True,
@@ -508,6 +510,7 @@ def test_construction_safety_counters_and_authorization_absence(
         "billable_authorization": "NONE",
     }
     assert not px.BILLABLE_AUTHORIZATION_PATH.exists()
+    assert px.PREDECESSOR_AUTHORIZATION_PATH.is_file()
     assert projection["status"] == "PROPOSED_CAPS_NOT_AUTHORIZED"
     assert projection["authorization_state"] == "NOT_AUTHORIZED"
     assert projection["billable_authorization"] == "NONE"

@@ -99,6 +99,9 @@ _HISTORICAL_PRODUCT_SOURCE_PATHS = frozenset(
         # These archived hashes remain evidence, never current-runtime oracles.
         "specification/models_v1.1(1).py",
         "src/comprehension_verification/model_gateway/gateway.py",
+        # Phase 9 may change transport lifecycle mechanics without rewriting
+        # the archived Phase 1 semantic-ladder source snapshot.
+        "src/comprehension_verification/model_gateway/openai_adapter.py",
         "src/comprehension_verification/model_gateway/prompt_text.py",
         "src/comprehension_verification/model_gateway/registry.py",
         "src/comprehension_verification/validation.py",
@@ -270,10 +273,11 @@ def load_semantic_fixture() -> dict[str, Any]:
 def frozen_product_boundary_proof() -> dict[str, Any]:
     """Verify the archived ladder boundary without canonizing current runtime.
 
-    Phases 3-6 changed active product routing/boundaries while preserving this
-    ladder as immutable historical evidence. Its recorded hashes are returned
-    as archived evidence, while unrelated product sources and prompts remain
-    byte-verified against the working tree.
+    Later phases changed active product routing, boundaries, and transport
+    lifecycle mechanics while preserving this ladder as immutable historical
+    evidence. Its recorded hashes are returned as archived evidence, while
+    unrelated product sources and prompts remain byte-verified against the
+    working tree.
     """
 
     frozen = json.loads(

@@ -1,4 +1,4 @@
-"""Carry the phase9-execution/2.0.1 closure into execution v2.0.2.
+"""Carry the historical execution closure into phase9-execution/2.0.3.
 
 Every adapter in this module is in-process and deterministic. No test resolves
 credentials, constructs the OpenAI transport, refreshes pricing, authorizes a
@@ -157,21 +157,15 @@ def _execute_population(
     pricing = _pricing()
     adapter, counters = _capturing_adapter(inner)
     account = px.CostAccount(authorization)
-    attempts: list[dict[str, Any]] = []
-    outputs: dict[str, px.CompletedCall] = {}
-    for call in prepared.calls:
-        call_attempts, output = asyncio.run(
-            px._execute_call(
-                call=call,
-                adapter=adapter,
-                authorization=authorization,
-                pricing=pricing,
-                account=account,
-            )
+    attempts, outputs = asyncio.run(
+        px._execute_population(
+            calls=prepared.calls,
+            adapter=adapter,
+            authorization=authorization,
+            pricing=pricing,
+            account=account,
         )
-        attempts.extend(call_attempts)
-        if output is not None:
-            outputs[call.logical_call_id] = output
+    )
     packets = px.build_blind_packet_sets(calls=prepared.calls, outputs=outputs)
     completion = px.generation_completion_summary(
         calls=prepared.calls,
@@ -262,23 +256,41 @@ def _activate_scratch_runtime(
         px,
         "HIGH_SMOKE_REQUEST_AUTHORITY_PATH",
         scratch_root
-        / "evaluation/phase9_execution/v2_0_2/high_smoke_request_authority.json",
+        / "evaluation/phase9_execution/v2_0_3/high_smoke_request_authority.json",
     )
     monkeypatch.setattr(
         px,
         "CURRENT_PRICING_PATH",
-        scratch_root / "evaluation/phase9_execution/v2_0_2/current_pricing.json",
+        scratch_root / "evaluation/phase9_execution/v2_0_3/current_pricing.json",
     )
     monkeypatch.setattr(
         px,
         "PREDECESSOR_REQUEST_AUTHORITY_PATH",
         scratch_root
-        / "evaluation/phase9_execution/v2_0_1/high_smoke_request_authority.json",
+        / "evaluation/phase9_execution/v2_0_2/high_smoke_request_authority.json",
     )
     monkeypatch.setattr(
         px,
         "PREDECESSOR_EXECUTION_REPORT_ROOT",
-        scratch_root / "reports/phase9_execution/v2_0_1",
+        scratch_root / "reports/phase9_execution/v2_0_2",
+    )
+    monkeypatch.setattr(
+        px,
+        "PREDECESSOR_AUTHORIZATION_PATH",
+        scratch_root
+        / "evaluation/phase9_execution/v2_0_2/billable_authorization.json",
+    )
+    monkeypatch.setattr(
+        px,
+        "PREDECESSOR_EXECUTION_MANIFEST_PATH",
+        scratch_root
+        / "reports/phase9_execution/v2_0_2/executions/exec-phase9v202-b820f4bfa94de537/execution_manifest.json",
+    )
+    monkeypatch.setattr(
+        px,
+        "PREDECESSOR_POST_EXECUTION_AUDIT_PATH",
+        scratch_root
+        / "reports/phase9_execution/v2_0_2/post_execution_audit_exec-phase9v202-b820f4bfa94de537.json",
     )
     monkeypatch.setattr(
         px,
@@ -430,6 +442,16 @@ def test_qualification_gateway_exposes_only_the_planned_primary_route(
         ],
         "successful_provider_invocations_per_logical_attempt": 1,
         "off_plan_provider_invocation_disposition": "FAIL_CLOSED",
+        "event_loop_lifecycle": "ONE_ASYNCIO_RUN_PER_AUTHORIZED_POPULATION",
+        "logical_call_execution": "SEQUENTIAL_FROZEN_ORDER",
+        "concurrency": "FORBIDDEN",
+        "adapter_reuse_scope": "ONE_LIVE_EVENT_LOOP",
+        "async_transport_close": "SAME_OWNING_EVENT_LOOP_WHEN_EXPOSED",
+        "technical_retry_owner": "OUTER_EXECUTOR",
+        "gateway_max_retries": 0,
+        "max_technical_retries_per_logical_call": 1,
+        "retry_disposition_source": "SANITIZED_UNDERLYING_PROVIDER_REASON",
+        "provider_invocation_evidence": "SAFE_CONTENT_FREE_PER_INVOCATION",
         "n3_semantic_metadata_forbidden_fields": [
             "accepted_semantic_rate",
             "qualification_outcome",
@@ -749,7 +771,7 @@ def test_exact_complete_population_reaches_only_the_pending_adjudication_state(
     assert len(list((tmp_path / "adjudication").rglob("n3-*.json"))) == 3
 
 
-def test_v202_ordered_logical_population_is_byte_equal_to_v201(
+def test_v203_ordered_logical_population_is_byte_equal_to_v202(
     prepared: px.PreparedExecution,
 ) -> None:
     predecessor = px._read_json(px.PREDECESSOR_REQUEST_AUTHORITY_PATH)
@@ -791,6 +813,8 @@ def test_frozen_semantic_and_published_v200_v201_bytes_are_unchanged(
             "reports/phase9_execution/v2_0_0",
             "evaluation/phase9_execution/v2_0_1",
             "reports/phase9_execution/v2_0_1",
+            "evaluation/phase9_execution/v2_0_2",
+            "reports/phase9_execution/v2_0_2",
         ],
         cwd=px.REPOSITORY_ROOT,
         check=True,
@@ -802,11 +826,13 @@ def test_frozen_semantic_and_published_v200_v201_bytes_are_unchanged(
 
 def test_current_stop_remains_precredential_without_authorization(
     prepared: px.PreparedExecution,
+    tmp_path: Path,
 ) -> None:
     del prepared
     assert px.CURRENT_PRICING_PATH.is_file()
     assert px.COST_PROJECTION_PATH.is_file()
     assert not px.BILLABLE_AUTHORIZATION_PATH.exists()
+    assert px.PREDECESSOR_AUTHORIZATION_PATH.is_file()
     credential_calls = 0
     factory_calls = 0
 
@@ -823,6 +849,7 @@ def test_current_stop_remains_precredential_without_authorization(
     with pytest.raises(px.Phase9ExecutionError) as exc:
         px.run_phase9b_smoke(
             created_by="test",
+            authorization_path=tmp_path / "explicitly-missing-authorization.json",
             allow_billable=True,
             credential_resolver=credential_resolver,
             adapter_factory=adapter_factory,
@@ -841,11 +868,11 @@ def test_current_stop_remains_precredential_without_authorization(
     }
 
 
-def test_published_v202_report_has_construction_only_safety_counters() -> None:
+def test_published_v203_report_has_construction_only_safety_counters() -> None:
     report = px._read_json(
         px.EXECUTION_REPORT_ROOT / "execution_cutover_report.json"
     )
-    assert report["readiness"] == "AWAITING_EXPLICIT_SPEND_AUTHORIZATION"
+    assert report["readiness"] == "NOT_EXECUTED_NO_BILLABLE_AUTHORIZATION"
     assert report["execution_counters"] == {
         "provider_calls": 0,
         "adjudicator_calls": 0,

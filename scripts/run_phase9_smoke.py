@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Public entrypoint for the phase9-execution/2.0.2 HIGH-SMOKE harness.
+"""Public entrypoint for the phase9-execution/2.0.3 HIGH-SMOKE harness.
 
 Credential lookup is a deferred callback. The harness invokes it only after the
 v1.3.5 freeze, v2 execution boundary, exact plan, live prompts, current pricing,
@@ -69,7 +69,7 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--allow-billable", action="store_true")
     parser.add_argument("--secret-version-resource", default=None)
-    parser.add_argument("--created-by", default="phase9-v202-operator")
+    parser.add_argument("--created-by", default="phase9-v203-operator")
     parser.add_argument("--pricing", type=Path, default=CURRENT_PRICING_PATH)
     parser.add_argument(
         "--cost-projection", type=Path, default=COST_PROJECTION_PATH
