@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Publish the phase9-execution/2.0.0 authority outside the v1.3.5 freeze.
+"""Publish the phase9-execution/2.0.1 authority outside the v1.3.5 freeze.
 
 This is a publication tool, never the first-real-call entrypoint.  It rebuilds
 the current v1.3.5 HIGH-SMOKE provider-visible requests, snapshots only that
@@ -26,6 +26,12 @@ from comprehension_verification.canonical import canonical_hash  # noqa: E402
 from comprehension_verification.n3_provider_fixtures import (  # noqa: E402
     build_n3_provider_fixtures,
 )
+from comprehension_verification.phase9_execution import (  # noqa: E402
+    EXPECTED_PREDECESSOR_ARTIFACT_HASHES,
+    PHASE9_EXECUTION_VERSION,
+    QUALIFICATION_EXECUTION_POLICY,
+    RUNTIME_SOURCE_BINDING_ROLES,
+)
 from comprehension_verification.semantic_benchmark_fixtures import (  # noqa: E402
     build_p04_fixture,
     build_p07_fixture,
@@ -40,27 +46,23 @@ from comprehension_verification.semantic_benchmark_v135 import (  # noqa: E402
 )
 
 
-EXECUTION_VERSION = "phase9-execution/2.0.0"
-AUTHORITY_ROOT = REPOSITORY_ROOT / "evaluation/phase9_execution/v2_0_0"
-REPORT_ROOT = REPOSITORY_ROOT / "reports/phase9_execution/v2_0_0"
+EXECUTION_VERSION = PHASE9_EXECUTION_VERSION
+AUTHORITY_ROOT = REPOSITORY_ROOT / "evaluation/phase9_execution/v2_0_1"
+REPORT_ROOT = REPOSITORY_ROOT / "reports/phase9_execution/v2_0_1"
 REQUEST_AUTHORITY_PATH = AUTHORITY_ROOT / "high_smoke_request_authority.json"
 EXECUTION_BOUNDARY_PATH = AUTHORITY_ROOT / "execution_boundary.json"
 CUTOVER_REPORT_PATH = REPORT_ROOT / "execution_cutover_report.json"
+LINEAGE_PATH = REPORT_ROOT / "lineage.json"
+PREDECESSOR_REQUEST_AUTHORITY_PATH = (
+    REPOSITORY_ROOT
+    / "evaluation/phase9_execution/v2_0_0/high_smoke_request_authority.json"
+)
 
 V135_DEFINITION_ROOT = REPOSITORY_ROOT / "evaluation/semantic_benchmark/v1_3_5"
 V135_REPORT_ROOT = REPOSITORY_ROOT / "reports/semantic_benchmark/v1_3_5"
 FREEZE_MANIFEST_PATH = V135_REPORT_ROOT / "phase9/freeze_hash_manifest.json"
 
-SOURCE_BINDING_PATHS = (
-    "src/comprehension_verification/phase9_execution.py",
-    "scripts/run_phase9_smoke.py",
-    "scripts/build_phase9_execution_v2.py",
-    "src/comprehension_verification/semantic_benchmark.py",
-    "src/comprehension_verification/semantic_benchmark_v135.py",
-    "src/comprehension_verification/semantic_benchmark_fixtures.py",
-    "src/comprehension_verification/n3_provider_fixtures.py",
-    "src/comprehension_verification/p06_n3_protocol.py",
-)
+SOURCE_BINDING_PATHS = tuple(RUNTIME_SOURCE_BINDING_ROLES)
 
 CANDIDATE_BY_STAGE: Mapping[str, Mapping[str, str]] = {
     "P04": {
@@ -99,6 +101,66 @@ def _serialize(payload: Any) -> str:
 def _write(path: Path, payload: Any) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(_serialize(payload), encoding="utf-8")
+
+
+def _request_population_projection(
+    request_authority: Mapping[str, Any],
+) -> dict[str, Any]:
+    return {
+        "semantic_cases": deepcopy(request_authority["semantic_cases"]),
+        "n3_exposures": deepcopy(request_authority["n3_exposures"]),
+    }
+
+
+def _predecessor_execution() -> dict[str, Any]:
+    for relative, expected in EXPECTED_PREDECESSOR_ARTIFACT_HASHES.items():
+        if _file_hash(REPOSITORY_ROOT / relative) != expected:
+            raise RuntimeError(
+                f"published phase9-execution/2.0.0 bytes drifted: {relative}"
+            )
+    request = _read(PREDECESSOR_REQUEST_AUTHORITY_PATH)
+    if (
+        request.get("execution_version") != "phase9-execution/2.0.0"
+        or request.get("request_authority_hash")
+        != canonical_hash(
+            {
+                key: value
+                for key, value in request.items()
+                if key != "request_authority_hash"
+            }
+        )
+    ):
+        raise RuntimeError("published phase9-execution/2.0.0 request is invalid")
+    report = _read(
+        REPOSITORY_ROOT
+        / "reports/phase9_execution/v2_0_0/execution_cutover_report.json"
+    )
+    report_material = {
+        key: value for key, value in report.items() if key != "report_hash"
+    }
+    counters = report.get("execution_counters", {})
+    if (
+        report.get("execution_version") != "phase9-execution/2.0.0"
+        or report.get("report_hash") != canonical_hash(report_material)
+        or counters.get("provider_calls") != 0
+        or counters.get("high_smoke") != "NOT_EXECUTED"
+        or counters.get("billable_authorization") != "NONE"
+    ):
+        raise RuntimeError("phase9-execution/2.0.0 is not proven unused")
+    return {
+        "execution_version": "phase9-execution/2.0.0",
+        "published_artifacts": dict(EXPECTED_PREDECESSOR_ARTIFACT_HASHES),
+        "provider_calls": 0,
+        "high_smoke": "NOT_EXECUTED",
+        "billable_authorization": "NONE",
+        "used_for_provider_call": False,
+        "request_population_hash": canonical_hash(
+            _request_population_projection(request)
+        ),
+        "ordered_logical_call_population_hash": canonical_hash(
+            _plan_calls(request)
+        ),
+    }
 
 
 def _submission_bundle_factory(package: sb.CorpusPackage):
@@ -444,7 +506,7 @@ def build_request_authority() -> dict[str, Any]:
         )
 
     material = {
-        "schema_version": "phase9-high-smoke-request-authority/2.0.0",
+        "schema_version": "phase9-high-smoke-request-authority/2.0.1",
         "execution_version": EXECUTION_VERSION,
         "benchmark_version": SEMANTIC_BENCHMARK_V135_VERSION,
         "protocol_version": PROTOCOL_VERSION_V135,
@@ -517,8 +579,24 @@ def build_execution_boundary(
     rung = _read(V135_REPORT_ROOT / "phase9/rung_collection_authority.json")
 
     calls = _plan_calls(request_authority)
+    predecessor = _predecessor_execution()
+    request_population_hash = canonical_hash(
+        _request_population_projection(request_authority)
+    )
+    ordered_population_hash = canonical_hash(calls)
+    if request_population_hash != predecessor["request_population_hash"]:
+        raise RuntimeError(
+            "phase9-execution/2.0.1 request population differs from v2.0.0"
+        )
+    if (
+        ordered_population_hash
+        != predecessor["ordered_logical_call_population_hash"]
+    ):
+        raise RuntimeError(
+            "phase9-execution/2.0.1 logical-call population differs from v2.0.0"
+        )
     plan_material = {
-        "schema_version": "phase9-high-smoke-plan/2.0.0",
+        "schema_version": "phase9-high-smoke-plan/2.0.1",
         "execution_version": EXECUTION_VERSION,
         "benchmark_version": SEMANTIC_BENCHMARK_V135_VERSION,
         "protocol_version": PROTOCOL_VERSION_V135,
@@ -536,8 +614,21 @@ def build_execution_boundary(
         )
         decomposition[key] = decomposition.get(key, 0) + 1
 
+    source_bindings = {
+        relative: _file_hash(REPOSITORY_ROOT / relative)
+        for relative in SOURCE_BINDING_PATHS
+    }
+    runtime_inventory = [
+        {
+            "path": relative,
+            "role": RUNTIME_SOURCE_BINDING_ROLES[relative],
+            "file_sha256": source_bindings[relative],
+        }
+        for relative in sorted(SOURCE_BINDING_PATHS)
+    ]
+
     material = {
-        "schema_version": "phase9-execution-boundary/2.0.0",
+        "schema_version": "phase9-execution-boundary/2.0.1",
         "execution_version": EXECUTION_VERSION,
         "benchmark_version": SEMANTIC_BENCHMARK_V135_VERSION,
         "protocol_version": PROTOCOL_VERSION_V135,
@@ -573,12 +664,14 @@ def build_execution_boundary(
                 "request_authority_hash"
             ],
         },
-        "source_bindings": {
-            relative: _file_hash(REPOSITORY_ROOT / relative)
-            for relative in SOURCE_BINDING_PATHS
-        },
+        "predecessor_execution": predecessor,
+        "qualification_execution_policy": dict(QUALIFICATION_EXECUTION_POLICY),
+        "source_bindings": source_bindings,
+        "runtime_dependency_inventory": runtime_inventory,
+        "runtime_dependency_inventory_hash": canonical_hash(runtime_inventory),
         "high_smoke_plan": {
             "plan_hash": canonical_hash(plan_material),
+            "ordered_logical_call_population_hash": ordered_population_hash,
             "primary_provider_calls": len(calls),
             "decomposition": dict(sorted(decomposition.items())),
             "semantic_provider_call_unit_by_stage": {
@@ -600,18 +693,37 @@ def build_execution_boundary(
 
 def build_cutover_report(boundary: Mapping[str, Any]) -> dict[str, Any]:
     material = {
-        "schema_version": "phase9-execution-cutover-report/2.0.0",
+        "schema_version": "phase9-execution-cutover-report/2.0.1",
         "execution_version": EXECUTION_VERSION,
         "benchmark_version": SEMANTIC_BENCHMARK_V135_VERSION,
         "protocol_version": PROTOCOL_VERSION_V135,
         "execution_boundary_hash": boundary["execution_boundary_hash"],
         "high_smoke_plan_hash": boundary["high_smoke_plan"]["plan_hash"],
+        "ordered_logical_call_population_hash": boundary["high_smoke_plan"][
+            "ordered_logical_call_population_hash"
+        ],
+        "ordered_logical_call_population_equal_to_v2_0_0": True,
         "high_smoke_decomposition": boundary["high_smoke_plan"]["decomposition"],
+        "required_complete_population": {
+            "logical_calls": 30,
+            "semantic_packets": 54,
+            "n3_packets": 3,
+            "p06_semantic_observations": 6,
+        },
+        "qualification_schema_repair": "FORBIDDEN",
+        "p11_provider_execution": "FORBIDDEN",
+        "closed_blockers": [
+            "COMPLETE_EFFECTIVE_PROVIDER_RUNTIME_BOUNDARY",
+            "P11_OUTSIDE_30_CALL_PLAN_UNREACHABLE",
+            "N3_SEMANTIC_METADATA_LEAK_FAILS_CLOSED",
+            "INCOMPLETE_GENERATION_CANNOT_REPORT_COMPLETE",
+        ],
         "readiness": "PRICING_REFRESH_REQUIRED_BEFORE_AUTHORIZATION",
         "execution_counters": {
             "provider_calls": 0,
             "adjudicator_calls": 0,
             "credential_resolutions": 0,
+            "transport_factory_calls": 0,
             "real_provider_transport": False,
             "pricing_refresh": "NOT_PERFORMED",
             "high_smoke": "NOT_EXECUTED",
@@ -620,6 +732,46 @@ def build_cutover_report(boundary: Mapping[str, Any]) -> dict[str, Any]:
         "semantic_benchmark_v1_3_5_bytes_modified": False,
     }
     return {**material, "report_hash": canonical_hash(material)}
+
+
+def build_lineage(boundary: Mapping[str, Any]) -> dict[str, Any]:
+    material = {
+        "schema_version": "phase9-execution-lineage/2.0.1",
+        "execution_version": EXECUTION_VERSION,
+        "predecessor_execution_version": "phase9-execution/2.0.0",
+        "benchmark_version": SEMANTIC_BENCHMARK_V135_VERSION,
+        "semantic_benchmark_v1_3_5_unchanged": True,
+        "phase9_execution_v2_0_0_provider_calls": 0,
+        "phase9_execution_v2_0_0_used_for_provider_call": False,
+        "trigger": "FINAL_COMBINED_AUDIT_FOUND_FOUR_EXECUTOR_BLOCKERS",
+        "repair_scope": "FOUR_EXECUTION_DEFECT_CLASSES_ONLY",
+        "repaired_defects": [
+            "EFFECTIVE_PROVIDER_PATH_NOT_FULLY_SOURCE_BOUND",
+            "P11_REACHABLE_OUTSIDE_30_CALL_PLAN",
+            "RAW_REPAIRED_OUTPUT_COULD_LEAK_SEMANTIC_METADATA_INTO_N3",
+            "INCOMPLETE_GENERATION_LABELED_COMPLETE",
+        ],
+        "product_pipeline_architecture_changed": False,
+        "product_prompts_changed": False,
+        "semantic_population_changed": False,
+        "ordered_logical_call_population_equal_to_v2_0_0": True,
+        "ordered_logical_call_population_hash": boundary["high_smoke_plan"][
+            "ordered_logical_call_population_hash"
+        ],
+        "pricing_refresh": "NOT_PERFORMED",
+        "high_smoke": "NOT_EXECUTED",
+        "billable_authorization": "NONE",
+        "deferred_observations": [
+            "INERT_NESTED_HELD_OUT_KEYS_IN_RUNG_COLLECTION",
+            "ORIGINAL_ROUTE_SPLIT_CORE_METADATA_IN_GROUPED_SMOKE_OBSERVATION",
+            "SEMANTIC_PACKET_HASH_EQUALITY_WHEN_PACKET_ID_REMAINS_UNIQUE",
+            "HISTORICAL_MAKE_PRECHECK_BEHAVIOR",
+            "CRASH_DURABILITY_BETWEEN_AUTHORIZATION_CONSUMPTION_AND_FINAL_EVIDENCE",
+            "U3_POLARITY_OFFLINE_SDK_DEBT",
+            "FRONTEND_PRODUCT_UX",
+        ],
+    }
+    return {**material, "lineage_hash": canonical_hash(material)}
 
 
 def _verify_frozen_bytes_unchanged(before: Mapping[str, str]) -> None:
@@ -631,7 +783,9 @@ def _verify_frozen_bytes_unchanged(before: Mapping[str, str]) -> None:
         raise RuntimeError("semantic-benchmark/1.3.5 bytes changed during publication")
 
 
-def publish() -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
+def publish() -> tuple[
+    dict[str, Any], dict[str, Any], dict[str, Any], dict[str, Any]
+]:
     frozen_before = {
         row["path"]: _file_hash(REPOSITORY_ROOT / row["path"])
         for row in _read(FREEZE_MANIFEST_PATH)["artifacts"]
@@ -642,11 +796,16 @@ def publish() -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
     _write(EXECUTION_BOUNDARY_PATH, boundary)
     report = build_cutover_report(boundary)
     _write(CUTOVER_REPORT_PATH, report)
+    lineage = build_lineage(boundary)
+    _write(LINEAGE_PATH, lineage)
     _verify_frozen_bytes_unchanged(frozen_before)
-    return request_authority, boundary, report
+    _predecessor_execution()
+    return request_authority, boundary, report, lineage
 
 
-def check() -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
+def check() -> tuple[
+    dict[str, Any], dict[str, Any], dict[str, Any], dict[str, Any]
+]:
     expected_request = build_request_authority()
     published_request = _read(REQUEST_AUTHORITY_PATH)
     if published_request != expected_request:
@@ -654,19 +813,24 @@ def check() -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
     expected_boundary = build_execution_boundary(published_request)
     published_boundary = _read(EXECUTION_BOUNDARY_PATH)
     if published_boundary != expected_boundary:
-        raise RuntimeError("published phase9-execution/2.0.0 boundary is stale")
+        raise RuntimeError("published phase9-execution/2.0.1 boundary is stale")
     expected_report = build_cutover_report(published_boundary)
     published_report = _read(CUTOVER_REPORT_PATH)
     if published_report != expected_report:
         raise RuntimeError("published execution cutover report is stale")
-    return published_request, published_boundary, published_report
+    expected_lineage = build_lineage(published_boundary)
+    published_lineage = _read(LINEAGE_PATH)
+    if published_lineage != expected_lineage:
+        raise RuntimeError("published execution lineage is stale")
+    _predecessor_execution()
+    return published_request, published_boundary, published_report, published_lineage
 
 
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--publish", action="store_true")
     args = parser.parse_args()
-    request, boundary, report = publish() if args.publish else check()
+    request, boundary, report, _lineage = publish() if args.publish else check()
     print(
         json.dumps(
             {

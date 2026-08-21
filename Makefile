@@ -41,7 +41,7 @@ phase9-protocol-freeze:
 		CVA_MODEL_MODE=mock CVA_P10_ENABLED=false $(PYTHON) \
 		scripts/build_phase9_protocol.py
 
-# phase9-execution/2.0.0 consumes the immutable semantic-benchmark/1.3.5
+# phase9-execution/2.0.1 consumes the immutable semantic-benchmark/1.3.5
 # instrument. The publication check regenerates its request/plan boundary in
 # memory and requires byte-for-byte equality with the committed artifacts.
 phase9-execution-v2-check:

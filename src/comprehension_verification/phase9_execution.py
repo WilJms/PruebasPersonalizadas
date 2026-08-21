@@ -2,7 +2,7 @@
 
 The semantic instrument and the execution harness have deliberately separate
 boundaries. This module consumes immutable v1.3.5 authority plus the frozen
-``phase9-execution/2.0.0`` request snapshot. It never rebuilds qualification
+``phase9-execution/2.0.1`` request snapshot. It never rebuilds qualification
 authority from historical benchmark trees.
 
 The public execution entrypoint is fail-closed in this checkout: no current
@@ -36,13 +36,18 @@ from .model_gateway.openai_adapter import (
     OpenAIAdapterConfig,
     OpenAIResponsesAdapter,
 )
-from .model_gateway.openai_routes import build_openai_routes, estimate_openai_input_tokens
+from .model_gateway.openai_routes import (
+    build_openai_routes,
+    estimate_openai_input_tokens,
+    openai_route_matches_profile,
+)
 from .model_gateway.registry import PROMPT_SPECS, PromptSpec, prompt_spec
 from .p06_n3_protocol import (
-    N3_PACKET_FORBIDDEN_FIELDS,
+    N3_PACKET_FORBIDDEN_FIELDS as FROZEN_N3_PACKET_FORBIDDEN_FIELDS,
+    N3ProtocolError,
     N3_SAFETY_VERDICTS,
-    assert_n3_packet_blind,
-    build_n3_packet,
+    assert_n3_packet_blind as assert_frozen_n3_packet_blind,
+    build_n3_packet as build_frozen_n3_packet,
 )
 from .semantic_benchmark import load_corpus_package
 from .semantic_benchmark_v135 import (
@@ -52,20 +57,37 @@ from .semantic_benchmark_v135 import (
 )
 
 
-PHASE9_EXECUTION_VERSION: Final = "phase9-execution/2.0.0"
+PHASE9_EXECUTION_VERSION: Final = "phase9-execution/2.0.1"
 BENCHMARK_VERSION: Final = "semantic-benchmark/1.3.5"
 PROTOCOL_VERSION: Final = "phase9-qualification-protocol/1.3.5"
 AUTHORIZED_K: Final = 3
 AUTHORIZED_PRIMARY_LOGICAL_CALLS: Final = 30
+AUTHORIZED_SEMANTIC_PACKET_COUNT: Final = 54
+AUTHORIZED_N3_PACKET_COUNT: Final = 3
+AUTHORIZED_P06_SEMANTIC_OBSERVATION_COUNT: Final = 6
 AUTHORIZED_SPLIT: Final = "SMOKE"
 OPENAI_GATEWAY_TIMEOUT_GRACE_SECONDS: Final = 15
 MAX_TECHNICAL_RETRIES_PER_LOGICAL_CALL: Final = 1
+QUALIFICATION_SCHEMA_REPAIR: Final = "FORBIDDEN"
+QUALIFICATION_N3_SEMANTIC_METADATA_FORBIDDEN_FIELDS: Final = frozenset(
+    {
+        "semantic_outcome",
+        "semantic_status",
+        "result_state",
+        "accepted_semantic_rate",
+        "qualification_outcome",
+    }
+)
+N3_PACKET_FORBIDDEN_FIELDS: Final = (
+    FROZEN_N3_PACKET_FORBIDDEN_FIELDS
+    | QUALIFICATION_N3_SEMANTIC_METADATA_FORBIDDEN_FIELDS
+)
 
 REPOSITORY_ROOT: Final = Path(__file__).resolve().parents[2]
 V135_DEFINITION_ROOT: Final = REPOSITORY_ROOT / "evaluation/semantic_benchmark/v1_3_5"
 V135_REPORT_ROOT: Final = REPOSITORY_ROOT / "reports/semantic_benchmark/v1_3_5"
-EXECUTION_AUTHORITY_ROOT: Final = REPOSITORY_ROOT / "evaluation/phase9_execution/v2_0_0"
-EXECUTION_REPORT_ROOT: Final = REPOSITORY_ROOT / "reports/phase9_execution/v2_0_0"
+EXECUTION_AUTHORITY_ROOT: Final = REPOSITORY_ROOT / "evaluation/phase9_execution/v2_0_1"
+EXECUTION_REPORT_ROOT: Final = REPOSITORY_ROOT / "reports/phase9_execution/v2_0_1"
 EXECUTION_BOUNDARY_PATH: Final = EXECUTION_AUTHORITY_ROOT / "execution_boundary.json"
 HIGH_SMOKE_REQUEST_AUTHORITY_PATH: Final = (
     EXECUTION_AUTHORITY_ROOT / "high_smoke_request_authority.json"
@@ -76,6 +98,27 @@ BILLABLE_AUTHORIZATION_PATH: Final = (
 )
 EXECUTION_EVIDENCE_ROOT: Final = EXECUTION_REPORT_ROOT / "executions"
 ADJUDICATION_BUNDLE_ROOT: Final = EXECUTION_REPORT_ROOT / "adjudication_bundles"
+PREDECESSOR_EXECUTION_AUTHORITY_ROOT: Final = (
+    REPOSITORY_ROOT / "evaluation/phase9_execution/v2_0_0"
+)
+PREDECESSOR_EXECUTION_REPORT_ROOT: Final = (
+    REPOSITORY_ROOT / "reports/phase9_execution/v2_0_0"
+)
+PREDECESSOR_REQUEST_AUTHORITY_PATH: Final = (
+    PREDECESSOR_EXECUTION_AUTHORITY_ROOT / "high_smoke_request_authority.json"
+)
+
+EXPECTED_PREDECESSOR_ARTIFACT_HASHES: Final[Mapping[str, str]] = {
+    "evaluation/phase9_execution/v2_0_0/execution_boundary.json": (
+        "sha256:6f881dd2d430b0d2749759ef12b99d535e30a8194c20eafb98d2bffd0d86fcaa"
+    ),
+    "evaluation/phase9_execution/v2_0_0/high_smoke_request_authority.json": (
+        "sha256:4ea7dbe28be868ce548787dd1f24e46ef98f97ea30e22e2fdcddd35aaf7b220e"
+    ),
+    "reports/phase9_execution/v2_0_0/execution_cutover_report.json": (
+        "sha256:a9cc87358237d19539a57ca888dc4d55b01f5d542a1ce0438f64959fc6537ca9"
+    ),
+}
 
 EXPECTED_BENCHMARK_BOUNDARY_HASH: Final = (
     "sha256:ff6988324a9bd5cd1c4167b0589f8700f19985fca7ef021d0eb5dcfb875fffe5"
@@ -95,18 +138,107 @@ EXPECTED_N3_AXIS_HASH: Final = (
 EXPECTED_CORPUS_BOUNDARY_HASH: Final = (
     "21c21f3a53bfb786162dc350dc38c93b7b007d9f23b744a354de4ac2354048a1"
 )
-REQUIRED_SOURCE_BINDING_PATHS: Final = frozenset(
-    {
-        "scripts/build_phase9_execution_v2.py",
-        "scripts/run_phase9_smoke.py",
-        "src/comprehension_verification/n3_provider_fixtures.py",
-        "src/comprehension_verification/p06_n3_protocol.py",
-        "src/comprehension_verification/phase9_execution.py",
-        "src/comprehension_verification/semantic_benchmark.py",
-        "src/comprehension_verification/semantic_benchmark_fixtures.py",
-        "src/comprehension_verification/semantic_benchmark_v135.py",
-    }
-)
+RUNTIME_SOURCE_BINDING_ROLES: Final[Mapping[str, str]] = {
+    "scripts/build_phase9_execution_v2.py": "execution authority publication",
+    "scripts/run_phase9_smoke.py": "CLI status and deferred credential entrypoint",
+    "specification/models_v1.1(1).py": "canonical request and output contracts",
+    "src/comprehension_verification/blueprint_compiler.py": (
+        "P04 deterministic materialization and acceptance"
+    ),
+    "src/comprehension_verification/canonical.py": (
+        "canonical execution identity and hashing"
+    ),
+    "src/comprehension_verification/contracts.py": "canonical contract loader",
+    "src/comprehension_verification/diagnostics.py": (
+        "P04 deterministic diagnostic materialization"
+    ),
+    "src/comprehension_verification/evidence_mapping.py": (
+        "P06 deterministic materialization and acceptance"
+    ),
+    "src/comprehension_verification/guide_generation.py": (
+        "P09 deterministic materialization and acceptance"
+    ),
+    "src/comprehension_verification/model_gateway/__init__.py": (
+        "gateway public import boundary used by authorization and execution"
+    ),
+    "src/comprehension_verification/model_gateway/gateway.py": (
+        "call control, validation, materialization, and invocation multiplicity"
+    ),
+    "src/comprehension_verification/model_gateway/mock_factory.py": (
+        "trusted-context and synthetic attestation construction"
+    ),
+    "src/comprehension_verification/model_gateway/openai_adapter.py": (
+        "provider request construction and response accounting"
+    ),
+    "src/comprehension_verification/model_gateway/openai_pricing.py": (
+        "adapter-side provider result accounting"
+    ),
+    "src/comprehension_verification/model_gateway/openai_routes.py": (
+        "route, model, reasoning, and provider-visible developer instruction"
+    ),
+    "src/comprehension_verification/model_gateway/openai_schema.py": (
+        "provider structured-output schema construction"
+    ),
+    "src/comprehension_verification/model_gateway/prompt_text.py": (
+        "provider-visible system and task instructions"
+    ),
+    "src/comprehension_verification/model_gateway/registry.py": (
+        "prompt contracts, versions, and provider output roots"
+    ),
+    "src/comprehension_verification/n3_provider_fixtures.py": (
+        "frozen N3 request-authority builder"
+    ),
+    "src/comprehension_verification/p06_n3_protocol.py": (
+        "frozen N3 packet base consumed by the v2.0.1 blindness extension"
+    ),
+    "src/comprehension_verification/p06_noisy_contractual_gate.py": (
+        "N3 contractual prompt authority material"
+    ),
+    "src/comprehension_verification/phase9_execution.py": (
+        "execution boundary, accounting, completeness, and evidence"
+    ),
+    "src/comprehension_verification/phase9_protocol.py": (
+        "N3 execution cardinality constant"
+    ),
+    "src/comprehension_verification/provider_authorization.py": (
+        "pinned-secret validation before credential resolution"
+    ),
+    "src/comprehension_verification/question_generation.py": (
+        "P07 deterministic materialization and acceptance"
+    ),
+    "src/comprehension_verification/semantic_benchmark.py": (
+        "frozen corpus and request-authority loading"
+    ),
+    "src/comprehension_verification/semantic_benchmark_fixtures.py": (
+        "frozen semantic request builder"
+    ),
+    "src/comprehension_verification/semantic_benchmark_v135.py": (
+        "frozen prompt guard and v1.3.5 authority validation"
+    ),
+    "src/comprehension_verification/validation.py": (
+        "P04 deterministic preflight acceptance"
+    ),
+    "src/comprehension_verification/web/provider_secrets.py": (
+        "post-authorization credential resolution boundary"
+    ),
+}
+REQUIRED_SOURCE_BINDING_PATHS: Final = frozenset(RUNTIME_SOURCE_BINDING_ROLES)
+
+QUALIFICATION_EXECUTION_POLICY: Final[Mapping[str, Any]] = {
+    "qualification_schema_repair": QUALIFICATION_SCHEMA_REPAIR,
+    "p11_provider_execution": "FORBIDDEN",
+    "allowed_provider_prompt_ids": [
+        "P04_BLUEPRINT_BUILD_V1",
+        "P06_EVIDENCE_MAP_V1",
+        "P07_QUESTION_BUILD_V1",
+        "P09_GUIDE_BUILD_V1",
+    ],
+    "successful_provider_invocations_per_logical_attempt": 1,
+    "off_plan_provider_invocation_disposition": "FAIL_CLOSED",
+    "n3_semantic_metadata_forbidden_fields": sorted(
+        QUALIFICATION_N3_SEMANTIC_METADATA_FORBIDDEN_FIELDS
+    ),
+}
 
 EXPECTED_PLAN_DECOMPOSITION: Final[Mapping[str, int]] = {
     "SEMANTIC/P04/SMOKE/HIGH": 3,
@@ -342,11 +474,172 @@ def _require(condition: bool, code: str, message: str) -> None:
         raise Phase9ExecutionError(code, message)
 
 
+def _walk_n3_packet_keys(
+    value: Any, path: str = ""
+) -> Sequence[tuple[str, str]]:
+    rows: list[tuple[str, str]] = []
+    if isinstance(value, Mapping):
+        for key, item in value.items():
+            child = f"{path}.{key}" if path else str(key)
+            rows.append((child, str(key)))
+            rows.extend(_walk_n3_packet_keys(item, child))
+    elif isinstance(value, (list, tuple)):
+        for index, item in enumerate(value):
+            rows.extend(_walk_n3_packet_keys(item, f"{path}[{index}]"))
+    return rows
+
+
+def assert_n3_packet_blind(packet: Mapping[str, Any]) -> None:
+    """Apply the frozen N3 contract plus v2.0.1 qualification metadata bans."""
+
+    assert_frozen_n3_packet_blind(packet)
+    for path, key in _walk_n3_packet_keys(packet):
+        if key in QUALIFICATION_N3_SEMANTIC_METADATA_FORBIDDEN_FIELDS:
+            raise N3ProtocolError(f"forbidden N3 packet field at {path}")
+
+
+def build_n3_packet(
+    *,
+    exposure_pseudonym: str,
+    run_index: int,
+    route_context: Mapping[str, Any],
+    model_visible_evidence: Sequence[Mapping[str, Any]],
+    model_owned_output: Mapping[str, Any],
+    p06_stage_boundary_hash: str,
+    p06_field_authority_hash: str,
+    exposure_selector: Mapping[str, Any],
+    n3_gate_source_hash: str,
+) -> dict[str, Any]:
+    """Build a frozen-format packet and enforce the executor-local extension."""
+
+    packet = build_frozen_n3_packet(
+        exposure_pseudonym=exposure_pseudonym,
+        run_index=run_index,
+        route_context=route_context,
+        model_visible_evidence=model_visible_evidence,
+        model_owned_output=model_owned_output,
+        p06_stage_boundary_hash=p06_stage_boundary_hash,
+        p06_field_authority_hash=p06_field_authority_hash,
+        exposure_selector=exposure_selector,
+        n3_gate_source_hash=n3_gate_source_hash,
+    )
+    assert_n3_packet_blind(packet)
+    return packet
+
+
 def _repo_relative(path: Path) -> str:
     try:
         return str(path.resolve().relative_to(REPOSITORY_ROOT.resolve()))
     except ValueError:
         return str(path.resolve())
+
+
+def _request_population_projection(
+    request_authority: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Project only provider-visible cases; execution publication metadata is excluded."""
+
+    return {
+        "semantic_cases": deepcopy(request_authority.get("semantic_cases", [])),
+        "n3_exposures": deepcopy(request_authority.get("n3_exposures", [])),
+    }
+
+
+def ordered_logical_call_identities_from_request_authority(
+    request_authority: Mapping[str, Any],
+) -> list[dict[str, Any]]:
+    """Derive the ordered 30-call identity population without outcome data."""
+
+    groups = [
+        *request_authority.get("semantic_cases", []),
+        *request_authority.get("n3_exposures", []),
+    ]
+    _require(
+        all(isinstance(row, Mapping) for row in groups),
+        "PHASE9_HIGH_SMOKE_PLAN_MISMATCH",
+        "the request authority contains a non-object provider population row",
+    )
+    groups.sort(
+        key=lambda row: (
+            {"P04": 0, "P06": 1, "P07": 2, "P09": 3}.get(
+                str(row.get("stage")), 99
+            ),
+            1 if row.get("axis") == "CONTRACTUAL_HARD_SAFETY" else 0,
+            str(row.get("provider_identity")),
+        )
+    )
+    identities: list[dict[str, Any]] = []
+    for row in groups:
+        stage = str(row.get("stage"))
+        _require(
+            stage in CANDIDATE_BY_STAGE,
+            "PHASE9_HIGH_SMOKE_PLAN_MISMATCH",
+            f"the request authority contains an unauthorized stage: {stage}",
+        )
+        candidate = CANDIDATE_BY_STAGE[stage]
+        for run_index in range(1, AUTHORIZED_K + 1):
+            identity = {
+                "axis": row.get("axis"),
+                "stage": stage,
+                "split": row.get("split"),
+                "provider_unit": row.get("provider_unit"),
+                "provider_identity": row.get("provider_identity"),
+                "candidate_id": candidate.candidate_id,
+                "reasoning_rung": candidate.reasoning_effort,
+                "run_index": run_index,
+            }
+            if row.get("axis") == "CONTRACTUAL_HARD_SAFETY":
+                identity["exposure_pseudonym"] = row.get("exposure_pseudonym")
+            identities.append(identity)
+    return identities
+
+
+def _validated_predecessor_execution() -> dict[str, Any]:
+    """Bind v2.0.1 to the exact unused v2.0.0 publication and call population."""
+
+    for relative, expected in EXPECTED_PREDECESSOR_ARTIFACT_HASHES.items():
+        path = (REPOSITORY_ROOT / relative).resolve()
+        _require(
+            path.is_relative_to(REPOSITORY_ROOT.resolve())
+            and path.is_file()
+            and _file_hash(path) == expected,
+            "PHASE9_PREDECESSOR_EXECUTION_ARTIFACT_MISMATCH",
+            f"published phase9-execution/2.0.0 bytes drifted: {relative}",
+        )
+    request = _read_json(PREDECESSOR_REQUEST_AUTHORITY_PATH)
+    _require(
+        request.get("execution_version") == "phase9-execution/2.0.0"
+        and request.get("request_authority_hash")
+        == _self_hash(request, "request_authority_hash"),
+        "PHASE9_PREDECESSOR_EXECUTION_ARTIFACT_MISMATCH",
+        "the phase9-execution/2.0.0 request authority is invalid",
+    )
+    report = _read_json(
+        PREDECESSOR_EXECUTION_REPORT_ROOT / "execution_cutover_report.json"
+    )
+    counters = report.get("execution_counters", {})
+    _require(
+        report.get("execution_version") == "phase9-execution/2.0.0"
+        and report.get("report_hash") == _self_hash(report, "report_hash")
+        and counters.get("provider_calls") == 0
+        and counters.get("high_smoke") == "NOT_EXECUTED"
+        and counters.get("billable_authorization") == "NONE",
+        "PHASE9_PREDECESSOR_EXECUTION_ARTIFACT_MISMATCH",
+        "phase9-execution/2.0.0 is not proven unused",
+    )
+    identities = ordered_logical_call_identities_from_request_authority(request)
+    return {
+        "execution_version": "phase9-execution/2.0.0",
+        "published_artifacts": dict(EXPECTED_PREDECESSOR_ARTIFACT_HASHES),
+        "provider_calls": 0,
+        "high_smoke": "NOT_EXECUTED",
+        "billable_authorization": "NONE",
+        "used_for_provider_call": False,
+        "request_population_hash": canonical_hash(
+            _request_population_projection(request)
+        ),
+        "ordered_logical_call_population_hash": canonical_hash(identities),
+    }
 
 
 def _assert_current_frozen_path(name: str, path: Path) -> None:
@@ -606,7 +899,7 @@ def load_and_validate_execution_boundary(
     boundary_override: Mapping[str, Any] | None = None,
     request_authority_override: Mapping[str, Any] | None = None,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
-    """Validate the separately versioned v2 boundary and request snapshot."""
+    """Validate the separately versioned v2.0.1 boundary and request snapshot."""
 
     boundary = (
         deepcopy(boundary_override)
@@ -620,7 +913,8 @@ def load_and_validate_execution_boundary(
         "the v2 execution boundary does not reproduce",
     )
     _require(
-        boundary.get("execution_version") == PHASE9_EXECUTION_VERSION
+        boundary.get("schema_version") == "phase9-execution-boundary/2.0.1"
+        and boundary.get("execution_version") == PHASE9_EXECUTION_VERSION
         and boundary.get("benchmark_version") == BENCHMARK_VERSION
         and boundary.get("protocol_version") == PROTOCOL_VERSION,
         "PHASE9_EXECUTION_BOUNDARY_VERSION_MISMATCH",
@@ -674,7 +968,9 @@ def load_and_validate_execution_boundary(
         "the request authority is not the boundary-bound publication",
     )
     _require(
-        request_authority.get("execution_version") == PHASE9_EXECUTION_VERSION
+        request_authority.get("schema_version")
+        == "phase9-high-smoke-request-authority/2.0.1"
+        and request_authority.get("execution_version") == PHASE9_EXECUTION_VERSION
         and request_authority.get("benchmark_version") == BENCHMARK_VERSION
         and request_authority.get("protocol_version") == PROTOCOL_VERSION
         and request_authority.get("selection_depends_on_results") is False
@@ -683,16 +979,60 @@ def load_and_validate_execution_boundary(
         "the request snapshot is not the result-independent v1.3.5 SMOKE surface",
     )
 
+    predecessor = _validated_predecessor_execution()
+    _require(
+        boundary.get("predecessor_execution") == predecessor,
+        "PHASE9_PREDECESSOR_EXECUTION_BINDING_MISMATCH",
+        "v2.0.1 does not bind the exact unused v2.0.0 publication",
+    )
+    _require(
+        canonical_hash(_request_population_projection(request_authority))
+        == predecessor["request_population_hash"],
+        "PHASE9_PREDECESSOR_EXECUTION_POPULATION_MISMATCH",
+        "the v2.0.1 provider-visible population differs from v2.0.0",
+    )
+    _require(
+        boundary.get("qualification_execution_policy")
+        == QUALIFICATION_EXECUTION_POLICY,
+        "PHASE9_QUALIFICATION_EXECUTION_POLICY_MISMATCH",
+        "the executor-local no-P11 and call-accounting policy drifted",
+    )
+
     source_bindings = boundary.get("source_bindings", {})
     _require(
         isinstance(source_bindings, Mapping)
         and set(source_bindings) == REQUIRED_SOURCE_BINDING_PATHS,
         "PHASE9_EXECUTION_SOURCE_BINDING_MISMATCH",
-        "the v2 boundary does not bind the exact executor/builder source set",
+        "the v2.0.1 boundary does not bind the exact runtime dependency set",
+    )
+    inventory = boundary.get("runtime_dependency_inventory")
+    _require(
+        isinstance(inventory, list)
+        and boundary.get("runtime_dependency_inventory_hash")
+        == canonical_hash(inventory)
+        and len(inventory) == len(REQUIRED_SOURCE_BINDING_PATHS),
+        "PHASE9_EXECUTION_SOURCE_INVENTORY_MISMATCH",
+        "the runtime dependency inventory is missing, duplicated, or unhashed",
+    )
+    inventory_by_path = {
+        str(row.get("path")): row
+        for row in inventory
+        if isinstance(row, Mapping)
+    }
+    _require(
+        len(inventory_by_path) == len(inventory)
+        and set(inventory_by_path) == REQUIRED_SOURCE_BINDING_PATHS,
+        "PHASE9_EXECUTION_SOURCE_INVENTORY_MISMATCH",
+        "the runtime dependency inventory path set drifted",
     )
     for relative, expected in source_bindings.items():
+        row = inventory_by_path[relative]
         path = (REPOSITORY_ROOT / relative).resolve()
         _require(
+            row.get("path") == relative
+            and row.get("role") == RUNTIME_SOURCE_BINDING_ROLES[relative]
+            and row.get("file_sha256") == expected
+            and
             path.is_relative_to(REPOSITORY_ROOT.resolve())
             and path.is_file()
             and _file_hash(path) == expected,
@@ -702,7 +1042,7 @@ def load_and_validate_execution_boundary(
     _require(
         _repo_relative(Path(__file__)) in source_bindings,
         "PHASE9_EXECUTION_SOURCE_BINDING_MISMATCH",
-        "the exact executor source is absent from the v2 boundary",
+        "the exact executor source is absent from the v2.0.1 boundary",
     )
     return dict(boundary), dict(request_authority)
 
@@ -914,13 +1254,14 @@ def build_high_smoke_plan(
             )
             calls.append(LogicalCall(logical_id, case, run_index))
     material = {
-        "schema_version": "phase9-high-smoke-plan/2.0.0",
+        "schema_version": "phase9-high-smoke-plan/2.0.1",
         "execution_version": PHASE9_EXECUTION_VERSION,
         "benchmark_version": BENCHMARK_VERSION,
         "protocol_version": PROTOCOL_VERSION,
         "logical_calls": [call.identity() for call in calls],
     }
     plan = {**material, "plan_hash": canonical_hash(material)}
+    ordered_population_hash = canonical_hash(material["logical_calls"])
     decomposition: dict[str, int] = {}
     for call in calls:
         identity = call.identity()
@@ -942,6 +1283,12 @@ def build_high_smoke_plan(
         and frozen_plan.get("primary_provider_calls") == len(calls)
         and frozen_plan.get("decomposition") == decomposition
         and frozen_plan.get("plan_hash") == plan["plan_hash"]
+        and frozen_plan.get("ordered_logical_call_population_hash")
+        == ordered_population_hash
+        and boundary.get("predecessor_execution", {}).get(
+            "ordered_logical_call_population_hash"
+        )
+        == ordered_population_hash
         and frozen_plan.get("k") == 3
         and frozen_plan.get("held_out_in_plan") is False
         and frozen_plan.get("result_dependent_selection") is False,
@@ -1015,7 +1362,7 @@ def load_current_pricing_artifact(path: Path = CURRENT_PRICING_PATH) -> dict[str
     if not path.is_file():
         raise Phase9ExecutionError(
             "PRICING_REFRESH_REQUIRED_BEFORE_AUTHORIZATION",
-            "no current official pricing artifact is published for execution v2",
+            "no current official pricing artifact is published for execution v2.0.1",
         )
     pricing = _read_json(path)
     _require(
@@ -1025,13 +1372,13 @@ def load_current_pricing_artifact(path: Path = CURRENT_PRICING_PATH) -> dict[str
         "the supplied current-pricing artifact does not reproduce",
     )
     _require(
-        pricing.get("schema_version") == "phase9-current-pricing/2.0.0"
+        pricing.get("schema_version") == "phase9-current-pricing/2.0.1"
         and pricing.get("execution_version") == PHASE9_EXECUTION_VERSION
         and pricing.get("status") == "VERIFIED_CURRENT_OFFICIAL_PRICING"
         and pricing.get("official_source_url")
         and pricing.get("retrieved_at"),
         "PHASE9_CURRENT_PRICING_INVALID",
-        "pricing is not explicitly current and official for execution v2",
+        "pricing is not explicitly current and official for execution v2.0.1",
     )
     required_models = {item.model for item in AUTHORIZED_CANDIDATES}
     rows = pricing.get("models", {})
@@ -1066,7 +1413,7 @@ def authorization_requirements(
     """
 
     return {
-        "schema_version": "phase9-billable-authorization-requirements/2.0.0",
+        "schema_version": "phase9-billable-authorization-requirements/2.0.1",
         "authorization_state": "NOT_AUTHORIZED_TEMPLATE",
         "benchmark_version": BENCHMARK_VERSION,
         "protocol_version": PROTOCOL_VERSION,
@@ -1112,7 +1459,7 @@ def load_and_validate_authorization(
     if not path.is_file():
         raise Phase9ExecutionError(
             "EXPLICIT_HASH_BOUND_AUTHORIZATION_REQUIRED",
-            "no billable authorization is published for execution v2",
+            "no billable authorization is published for execution v2.0.1",
         )
     authorization = _read_json(path)
     _require(
@@ -1140,12 +1487,12 @@ def load_and_validate_authorization(
         )
     _require(
         authorization.get("schema_version")
-        == "phase9-billable-authorization/2.0.0"
+        == "phase9-billable-authorization/2.0.1"
         and authorization.get("authorization_state") == "EXPLICITLY_APPROVED"
         and authorization.get("billable_authorization") == "EXPLICIT"
         and authorization.get("primary_provider_calls") == 30,
         "PHASE9_AUTHORIZATION_INVALID",
-        "authorization is not an explicit 30-call execution-v2 approval",
+        "authorization is not an explicit 30-call execution-v2.0.1 approval",
     )
     try:
         expires_at = datetime.fromisoformat(
@@ -1185,7 +1532,7 @@ def load_and_validate_authorization(
     _require(
         ledger_path.is_relative_to(ledger_root),
         "PHASE9_AUTHORIZATION_INVALID",
-        "authorization ledger path is outside the execution-v2 ledger root",
+        "authorization ledger path is outside the execution-v2.0.1 ledger root",
     )
     return authorization
 
@@ -1194,7 +1541,7 @@ def _claim_authorization_once(authorization: Mapping[str, Any]) -> Path:
     ledger_path = (REPOSITORY_ROOT / authorization["ledger_path"]).resolve()
     ledger_path.parent.mkdir(parents=True, exist_ok=True)
     payload = {
-        "schema_version": "phase9-authorization-consumption/2.0.0",
+        "schema_version": "phase9-authorization-consumption/2.0.1",
         "authorization_id": authorization["authorization_id"],
         "authorization_hash": authorization["authorization_hash"],
         "execution_boundary_hash": authorization["execution_boundary_hash"],
@@ -1263,6 +1610,7 @@ class PricingBoundCapturingAdapter:
         self.counters = counters
         self.max_requests = max_requests
         self.calls = 0
+        self.invocations: list[dict[str, Any]] = []
         self.captured: list[dict[str, Any]] = []
 
     async def invoke(self, **kwargs: Any) -> Any:
@@ -1274,7 +1622,23 @@ class PricingBoundCapturingAdapter:
         self.calls += 1
         self.counters.provider_calls += 1
         started = time.monotonic()
-        result = await self.inner.invoke(**kwargs)
+        invocation = {
+            "prompt_id": str(kwargs.get("prompt_id", "")),
+            "provider_attempt": kwargs.get("attempt"),
+            "status": "INVOKING",
+        }
+        self.invocations.append(invocation)
+        try:
+            result = await self.inner.invoke(**kwargs)
+        except BaseException as exc:
+            invocation.update(
+                {
+                    "status": "FAILED",
+                    "failure_code": _failure_code(exc),
+                    "latency_ms": int((time.monotonic() - started) * 1000),
+                }
+            )
+            raise
         route = kwargs["route"]
         estimated = _estimate_cost(
             self.pricing,
@@ -1293,23 +1657,31 @@ class PricingBoundCapturingAdapter:
         rebound = replace(
             result, estimated_cost_usd=estimated, actual_cost_usd=actual
         )
-        self.captured.append(
+        captured = {
+            "prompt_id": invocation["prompt_id"],
+            "raw_output": rebound.raw_output,
+            "output_hash": rebound.output_hash,
+            "effective_model": rebound.effective_model,
+            "provider_request_id_hash": rebound.provider_request_id_hash,
+            "provider_schema_valid": rebound.provider_schema_valid,
+            "provider_schema_issues": list(rebound.provider_schema_issues),
+            "input_tokens": rebound.input_tokens,
+            "cached_input_tokens": rebound.cached_input_tokens,
+            "output_tokens": rebound.output_tokens,
+            "reasoning_tokens": rebound.reasoning_tokens,
+            "estimated_cost_usd": estimated,
+            "actual_cost_usd": actual,
+            "latency_ms": int((time.monotonic() - started) * 1000),
+        }
+        invocation.update(
             {
-                "raw_output": rebound.raw_output,
-                "output_hash": rebound.output_hash,
-                "effective_model": rebound.effective_model,
-                "provider_request_id_hash": rebound.provider_request_id_hash,
-                "provider_schema_valid": rebound.provider_schema_valid,
-                "provider_schema_issues": list(rebound.provider_schema_issues),
-                "input_tokens": rebound.input_tokens,
-                "cached_input_tokens": rebound.cached_input_tokens,
-                "output_tokens": rebound.output_tokens,
-                "reasoning_tokens": rebound.reasoning_tokens,
-                "estimated_cost_usd": estimated,
+                "status": "COMPLETED",
                 "actual_cost_usd": actual,
-                "latency_ms": int((time.monotonic() - started) * 1000),
+                "provider_schema_valid": rebound.provider_schema_valid,
+                "latency_ms": captured["latency_ms"],
             }
         )
+        self.captured.append(captured)
         return rebound
 
 
@@ -1369,8 +1741,27 @@ def _gateway_for(
     pricing: Mapping[str, Any],
     job_id: str,
 ) -> ModelGateway:
-    routes = build_openai_routes(
+    profile_routes = build_openai_routes(
         max_call_cost_usd=cap, route_profile_id=candidate.route_profile_id
+    )
+    primary_route = profile_routes.get(candidate.prompt_id)
+    _require(
+        primary_route is not None
+        and primary_route.model == candidate.model
+        and primary_route.reasoning_effort.value == candidate.reasoning_effort
+        and primary_route.max_output_tokens == candidate.max_output_tokens
+        and openai_route_matches_profile(candidate.prompt_id, primary_route),
+        "PHASE9_QUALIFICATION_PRIMARY_ROUTE_MISMATCH",
+        f"the qualification route drifted for {candidate.prompt_id}",
+    )
+    # Executor-local policy: qualification receives exactly the planned primary
+    # route. The product registry retains P11, but this gateway cannot resolve it.
+    routes = {candidate.prompt_id: primary_route}
+    _require(
+        set(routes) == {candidate.prompt_id}
+        and "P11_SCHEMA_REPAIR_V1" not in routes,
+        "PHASE9_QUALIFICATION_SCHEMA_REPAIR_REACHABLE",
+        "qualification must not resolve a P11 provider route",
     )
 
     def estimator(spec: PromptSpec, input_tokens: int) -> float:
@@ -1430,8 +1821,9 @@ async def _execute_call(
             adapter=adapter,
             cap=cap,
             pricing=pricing,
-            job_id=f"job_phase9v2_{call.case.stage.lower()}",
+            job_id=f"job_phase9v201_{call.case.stage.lower()}",
         )
+        invocation_index = len(adapter.invocations)
         capture_index = len(adapter.captured)
         started = time.monotonic()
         try:
@@ -1442,14 +1834,15 @@ async def _execute_call(
                 budget=CallBudget(max_cost_usd=cap),
             )
         except Exception as exc:  # noqa: BLE001 - execution always fails closed
-            code = _failure_code(exc)
-            captured = (
-                adapter.captured[capture_index]
-                if len(adapter.captured) > capture_index
-                else None
-            )
-            if captured is not None:
+            invocations = adapter.invocations[invocation_index:]
+            captures = adapter.captured[capture_index:]
+            for captured in captures:
                 account.charge(candidate, float(captured["actual_cost_usd"]))
+            prompt_ids = [str(row["prompt_id"]) for row in invocations]
+            off_plan = len(invocations) > 1 or any(
+                prompt_id != candidate.prompt_id for prompt_id in prompt_ids
+            )
+            code = "OFF_PLAN_PROVIDER_CALL" if off_plan else _failure_code(exc)
             attempts.append(
                 {
                     **call.identity(),
@@ -1457,20 +1850,107 @@ async def _execute_call(
                     "attempt_index": attempt_index,
                     "status": "FAILED",
                     "failure_code": code,
+                    "provider_invocation_count": len(invocations),
+                    "provider_prompt_ids": prompt_ids,
+                    "actual_cost_usd": round(
+                        sum(float(row["actual_cost_usd"]) for row in captures), 8
+                    ),
                     "latency_ms": int((time.monotonic() - started) * 1000),
                 }
             )
-            if code in RETRYABLE_TECHNICAL_CODES and attempt_index == 1:
+            if (
+                not off_plan
+                and code in RETRYABLE_TECHNICAL_CODES
+                and attempt_index == 1
+            ):
                 continue
             return attempts, None
-        captured = adapter.captured[capture_index]
-        account.charge(candidate, float(captured["actual_cost_usd"]))
+
+        invocations = adapter.invocations[invocation_index:]
+        captures = adapter.captured[capture_index:]
+        for captured in captures:
+            account.charge(candidate, float(captured["actual_cost_usd"]))
+        prompt_ids = [str(row["prompt_id"]) for row in invocations]
+        off_plan = (
+            len(invocations) > 1
+            or any(prompt_id != candidate.prompt_id for prompt_id in prompt_ids)
+            or result.prompt_id != candidate.prompt_id
+        )
+        accounting_mismatch = (
+            len(invocations) != 1
+            or len(captures) != 1
+            or (
+                bool(captures)
+                and captures[0].get("prompt_id") != candidate.prompt_id
+            )
+        )
+        if off_plan or accounting_mismatch:
+            attempts.append(
+                {
+                    **call.identity(),
+                    "logical_call_id": call.logical_call_id,
+                    "attempt_index": attempt_index,
+                    "status": "FAILED",
+                    "failure_code": (
+                        "OFF_PLAN_PROVIDER_CALL"
+                        if off_plan
+                        else "PHASE9_PROVIDER_INVOCATION_ACCOUNTING_MISMATCH"
+                    ),
+                    "provider_invocation_count": len(invocations),
+                    "provider_prompt_ids": prompt_ids,
+                    "actual_cost_usd": round(
+                        sum(float(row["actual_cost_usd"]) for row in captures), 8
+                    ),
+                    "latency_ms": int((time.monotonic() - started) * 1000),
+                }
+            )
+            return attempts, None
+
+        captured = captures[0]
+        if result.repaired:
+            attempts.append(
+                {
+                    **call.identity(),
+                    "logical_call_id": call.logical_call_id,
+                    "attempt_index": attempt_index,
+                    "status": "FAILED",
+                    "failure_code": "PHASE9_QUALIFICATION_SCHEMA_REPAIR_FORBIDDEN",
+                    "provider_invocation_count": 1,
+                    "provider_prompt_ids": prompt_ids,
+                    "actual_cost_usd": captured["actual_cost_usd"],
+                    "latency_ms": int((time.monotonic() - started) * 1000),
+                }
+            )
+            return attempts, None
+        raw = captured["raw_output"]
+        if captured.get("provider_schema_valid") is not True or not isinstance(
+            raw, Mapping
+        ):
+            attempts.append(
+                {
+                    **call.identity(),
+                    "logical_call_id": call.logical_call_id,
+                    "attempt_index": attempt_index,
+                    "status": "FAILED",
+                    "failure_code": "PHASE9_PROVIDER_SCHEMA_INVALID",
+                    "provider_invocation_count": 1,
+                    "provider_prompt_ids": prompt_ids,
+                    "actual_cost_usd": captured["actual_cost_usd"],
+                    "provider_schema_valid": captured.get(
+                        "provider_schema_valid"
+                    ),
+                    "latency_ms": int((time.monotonic() - started) * 1000),
+                }
+            )
+            return attempts, None
         attempts.append(
             {
                 **call.identity(),
                 "logical_call_id": call.logical_call_id,
                 "attempt_index": attempt_index,
                 "status": "COMPLETED",
+                "provider_invocation_count": 1,
+                "provider_prompt_ids": prompt_ids,
                 "request_hash": call.case.request_hash,
                 "provider_output_hash": captured["output_hash"],
                 "provider_request_id_hash": captured["provider_request_id_hash"],
@@ -1481,9 +1961,6 @@ async def _execute_call(
             }
         )
         canonical = result.output.model_dump(mode="json")
-        raw = captured["raw_output"]
-        if not isinstance(raw, Mapping):
-            raw = {"unstructured_provider_output": raw}
         return attempts, CompletedCall(canonical, dict(raw))
     return attempts, None
 
@@ -1577,7 +2054,7 @@ def build_semantic_blind_packets(
                     "packet": packet,
                     "logical_call_identity": call.identity(),
                     "property_id": authority["property_id"],
-                    "namespace": "phase9-semantic-blind-packet/2.0.0",
+                    "namespace": "phase9-semantic-blind-packet/2.0.1",
                 }
             )
             packets.append(
@@ -1630,7 +2107,7 @@ def build_n3_blind_packets(
                 "packet_hash": packet["packet_hash"],
                 "exposure_pseudonym": call.case.exposure_pseudonym,
                 "run_index": call.run_index,
-                "namespace": "phase9-n3-blind-packet/2.0.0",
+                "namespace": "phase9-n3-blind-packet/2.0.1",
             }
         )
         packets.append(
@@ -1657,7 +2134,7 @@ def build_blind_packet_sets(
     semantic = build_semantic_blind_packets(calls=calls, outputs=outputs)
     n3 = build_n3_blind_packets(calls=calls, outputs=outputs)
     return {
-        "schema_version": "phase9-blind-review-surfaces/2.0.0",
+        "schema_version": "phase9-blind-review-surfaces/2.0.1",
         "semantic": {
             "packet_count": len(semantic),
             "denominator": "ACCEPTED_SEMANTIC_RATE_ONLY",
@@ -1672,6 +2149,121 @@ def build_blind_packet_sets(
     }
 
 
+def generation_completion_summary(
+    *,
+    calls: Sequence[LogicalCall],
+    outputs: Mapping[str, CompletedCall],
+    attempts: Sequence[Mapping[str, Any]],
+    packets: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Prove the exact frozen generation population before any success state."""
+
+    planned_by_id = {call.logical_call_id: call for call in calls}
+    planned_ids = set(planned_by_id)
+    completed_ids = set(outputs)
+    completed_attempt_ids = [
+        str(row.get("logical_call_id"))
+        for row in attempts
+        if row.get("status") == "COMPLETED"
+    ]
+    missing_ids = sorted(planned_ids - completed_ids)
+    extra_ids = sorted(completed_ids - planned_ids)
+    extra_attempt_ids = sorted(
+        {
+            str(row.get("logical_call_id"))
+            for row in attempts
+            if row.get("logical_call_id") not in planned_ids
+        }
+    )
+    identity_mismatches: list[str] = []
+    off_plan_prompt_attempts: list[str] = []
+    for row in attempts:
+        logical_call_id = row.get("logical_call_id")
+        call = planned_by_id.get(str(logical_call_id))
+        if call is None:
+            continue
+        if any(row.get(key) != value for key, value in call.identity().items()):
+            identity_mismatches.append(str(logical_call_id))
+        prompt_ids = row.get("provider_prompt_ids", [])
+        if not isinstance(prompt_ids, list) or any(
+            prompt_id != call.case.candidate.prompt_id for prompt_id in prompt_ids
+        ):
+            off_plan_prompt_attempts.append(str(logical_call_id))
+
+    semantic_surface = packets.get("semantic", {})
+    n3_surface = packets.get("n3", {})
+    semantic_packets = semantic_surface.get("packets", [])
+    n3_packets = n3_surface.get("packets", [])
+    semantic_count = semantic_surface.get("packet_count")
+    n3_count = n3_surface.get("packet_count")
+    p06_semantic_case_ids = {
+        call.case.provider_identity
+        for call in calls
+        if call.case.axis == "SEMANTIC" and call.case.stage == "P06"
+    }
+    p06_observation_count = sum(
+        isinstance(row, Mapping)
+        and isinstance(row.get("packet"), Mapping)
+        and row["packet"].get("case_id") in p06_semantic_case_ids
+        for row in semantic_packets
+    ) if isinstance(semantic_packets, list) else -1
+
+    violations: list[str] = []
+    if len(calls) != AUTHORIZED_PRIMARY_LOGICAL_CALLS:
+        violations.append("PLANNED_LOGICAL_CALL_COUNT")
+    if len(planned_by_id) != AUTHORIZED_PRIMARY_LOGICAL_CALLS:
+        violations.append("PLANNED_LOGICAL_CALL_IDENTITY_UNIQUENESS")
+    if len(outputs) != AUTHORIZED_PRIMARY_LOGICAL_CALLS:
+        violations.append("SUCCESSFULLY_COMPLETED_LOGICAL_CALL_COUNT")
+    if len(completed_ids) != AUTHORIZED_PRIMARY_LOGICAL_CALLS:
+        violations.append("COMPLETED_LOGICAL_CALL_IDENTITY_UNIQUENESS")
+    if missing_ids:
+        violations.append("MISSING_PLANNED_LOGICAL_CALL_IDENTITY")
+    if extra_ids or extra_attempt_ids or identity_mismatches:
+        violations.append("EXTRA_OR_MISMATCHED_PROVIDER_IDENTITY")
+    if (
+        len(completed_attempt_ids) != AUTHORIZED_PRIMARY_LOGICAL_CALLS
+        or set(completed_attempt_ids) != completed_ids
+    ):
+        violations.append("COMPLETED_ATTEMPT_POPULATION")
+    if off_plan_prompt_attempts:
+        violations.append("OFF_PLAN_PROVIDER_CALL")
+    if (
+        semantic_count != AUTHORIZED_SEMANTIC_PACKET_COUNT
+        or not isinstance(semantic_packets, list)
+        or len(semantic_packets) != AUTHORIZED_SEMANTIC_PACKET_COUNT
+    ):
+        violations.append("SEMANTIC_PACKET_POPULATION")
+    if (
+        n3_count != AUTHORIZED_N3_PACKET_COUNT
+        or not isinstance(n3_packets, list)
+        or len(n3_packets) != AUTHORIZED_N3_PACKET_COUNT
+    ):
+        violations.append("N3_PACKET_POPULATION")
+    if p06_observation_count != AUTHORIZED_P06_SEMANTIC_OBSERVATION_COUNT:
+        violations.append("P06_SEMANTIC_OBSERVATION_POPULATION")
+
+    return {
+        "complete": not violations,
+        "violations": violations,
+        "planned_logical_calls": len(calls),
+        "unique_planned_logical_call_identities": len(planned_by_id),
+        "successfully_completed_logical_calls": len(outputs),
+        "unique_completed_logical_call_identities": len(completed_ids),
+        "completed_attempts": len(completed_attempt_ids),
+        "missing_planned_logical_call_ids": missing_ids,
+        "extra_completed_logical_call_ids": extra_ids,
+        "extra_attempt_logical_call_ids": extra_attempt_ids,
+        "identity_mismatch_logical_call_ids": sorted(set(identity_mismatches)),
+        "off_plan_prompt_logical_call_ids": sorted(
+            set(off_plan_prompt_attempts)
+        ),
+        "semantic_packet_count": semantic_count,
+        "n3_packet_count": n3_count,
+        "p06_semantic_observation_count": p06_observation_count,
+    }
+
+
 def _write_json(path: Path, payload: Any) -> str:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
@@ -1681,6 +2273,13 @@ def _write_json(path: Path, payload: Any) -> str:
     return canonical_hash(payload)
 
 
+def _execution_id(authorization: Mapping[str, Any]) -> str:
+    return (
+        "exec-phase9v201-"
+        + str(authorization["authorization_hash"]).removeprefix("sha256:")[:16]
+    )
+
+
 def _write_execution_evidence(
     *,
     prepared: PreparedExecution,
@@ -1688,15 +2287,18 @@ def _write_execution_evidence(
     pricing: Mapping[str, Any],
     attempts: Sequence[Mapping[str, Any]],
     packets: Mapping[str, Any],
+    completion: Mapping[str, Any],
     account: CostAccount,
     counters: SafetyCounters,
     evidence_root: Path,
     adjudication_root: Path,
 ) -> dict[str, Any]:
-    execution_id = (
-        "exec-phase9v2-"
-        + authorization["authorization_hash"].removeprefix("sha256:")[:16]
+    _require(
+        completion.get("complete") is True,
+        "PHASE9_SMOKE_GENERATION_INCOMPLETE",
+        "complete execution evidence requires the exact 30/54/3 population",
     )
+    execution_id = _execution_id(authorization)
     execution_dir = evidence_root / execution_id
     _require(
         not execution_dir.exists(),
@@ -1738,6 +2340,10 @@ def _write_execution_evidence(
         "actual_cost_usd": round(account.spent_usd, 8),
         "semantic_packet_count": packets["semantic"]["packet_count"],
         "n3_packet_count": packets["n3"]["packet_count"],
+        "p06_semantic_observation_count": completion[
+            "p06_semantic_observation_count"
+        ],
+        "completion": dict(completion),
         "semantic_and_n3_packets_separate": True,
         "adjudication_performed_here": False,
         "safety_counters": counters.snapshot(),
@@ -1752,6 +2358,59 @@ def _write_execution_evidence(
         "manifest_hash": manifest_hash,
         "semantic_bundle": _repo_relative(semantic_root),
         "n3_bundle": _repo_relative(n3_root),
+        "safety_counters": counters.snapshot(),
+    }
+
+
+def _write_incomplete_execution_evidence(
+    *,
+    prepared: PreparedExecution,
+    authorization: Mapping[str, Any],
+    pricing: Mapping[str, Any],
+    attempts: Sequence[Mapping[str, Any]],
+    completion: Mapping[str, Any],
+    account: CostAccount,
+    counters: SafetyCounters,
+    evidence_root: Path,
+) -> dict[str, Any]:
+    """Persist content-free failure accounting without emitting review packets."""
+
+    execution_id = _execution_id(authorization)
+    execution_dir = evidence_root / execution_id
+    _require(
+        not execution_dir.exists(),
+        "PHASE9_EXECUTION_EVIDENCE_EXISTS",
+        f"immutable execution evidence already exists: {execution_id}",
+    )
+    manifest = {
+        "schema_version": PHASE9_EXECUTION_VERSION,
+        "status": "PHASE9_SMOKE_GENERATION_INCOMPLETE",
+        "execution_id": execution_id,
+        "benchmark_version": BENCHMARK_VERSION,
+        "protocol_version": PROTOCOL_VERSION,
+        "execution_version": PHASE9_EXECUTION_VERSION,
+        "execution_boundary_hash": prepared.boundary["execution_boundary_hash"],
+        "high_smoke_plan_hash": prepared.plan["plan_hash"],
+        "pricing_snapshot_hash": pricing["pricing_snapshot_hash"],
+        "authorization_id": authorization["authorization_id"],
+        "authorization_hash": authorization["authorization_hash"],
+        "attempts": list(attempts),
+        "actual_cost_usd": round(account.spent_usd, 8),
+        "completion": dict(completion),
+        "adjudication_packets_emitted": 0,
+        "adjudication_performed_here": False,
+        "safety_counters": counters.snapshot(),
+    }
+    manifest_hash = _write_json(
+        execution_dir / "execution_manifest.json", manifest
+    )
+    return {
+        "status": "PHASE9_SMOKE_GENERATION_INCOMPLETE",
+        "execution_id": execution_id,
+        "execution_dir": _repo_relative(execution_dir),
+        "manifest_hash": manifest_hash,
+        "completion": dict(completion),
+        "adjudication_packets_emitted": 0,
         "safety_counters": counters.snapshot(),
     }
 
@@ -1772,7 +2431,7 @@ def run_phase9b_smoke(
     request_authority_override: Mapping[str, Any] | None = None,
     live_specs: Mapping[str, PromptSpec] = PROMPT_SPECS,
 ) -> dict[str, Any]:
-    """Run the v2 first-real-call chain in its strict happens-before order."""
+    """Run the v2.0.1 first-real-call chain in its strict happens-before order."""
 
     del created_by  # identity is supplied by the future signed authorization
     counters = SafetyCounters()
@@ -1861,14 +2520,33 @@ def run_phase9b_smoke(
             attempts.extend(call_attempts)
             if output is not None:
                 outputs[call.logical_call_id] = output
-        counters.high_smoke = "EXECUTED"
         packet_sets = build_blind_packet_sets(calls=prepared.calls, outputs=outputs)
+        completion = generation_completion_summary(
+            calls=prepared.calls,
+            outputs=outputs,
+            attempts=attempts,
+            packets=packet_sets,
+        )
+        if completion["complete"] is not True:
+            counters.high_smoke = "ATTEMPTED_INCOMPLETE"
+            return _write_incomplete_execution_evidence(
+                prepared=prepared,
+                authorization=authorization,
+                pricing=pricing,
+                attempts=attempts,
+                completion=completion,
+                account=account,
+                counters=counters,
+                evidence_root=evidence_root,
+            )
+        counters.high_smoke = "EXECUTED_COMPLETE"
         return _write_execution_evidence(
             prepared=prepared,
             authorization=authorization,
             pricing=pricing,
             attempts=attempts,
             packets=packet_sets,
+            completion=completion,
             account=account,
             counters=counters,
             evidence_root=evidence_root,

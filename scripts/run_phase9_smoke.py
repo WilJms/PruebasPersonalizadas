@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Public entrypoint for the phase9-execution/2.0.0 HIGH-SMOKE harness.
+"""Public entrypoint for the phase9-execution/2.0.1 HIGH-SMOKE harness.
 
 Credential lookup is a deferred callback. The harness invokes it only after the
 v1.3.5 freeze, v2 execution boundary, exact plan, live prompts, current pricing,
@@ -25,6 +25,20 @@ from comprehension_verification.phase9_execution import (
 from comprehension_verification.provider_authorization import (
     validate_pinned_secret_resource,
 )
+
+
+_SUCCESS_STATUSES = frozenset(
+    {
+        "REAL_SMOKE_HIGH_GENERATION_COMPLETE_PENDING_ADJUDICATION",
+        "READY_REQUIRES_EXPLICIT_ALLOW_BILLABLE",
+    }
+)
+
+
+def _result_exit_code(result: dict[str, object]) -> int:
+    """Only exact closed success states receive a zero CLI exit code."""
+
+    return 0 if result.get("status") in _SUCCESS_STATUSES else 1
 
 
 def _credential_resolver(secret_version_resource: str | None):
@@ -54,7 +68,7 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--allow-billable", action="store_true")
     parser.add_argument("--secret-version-resource", default=None)
-    parser.add_argument("--created-by", default="phase9-v2-operator")
+    parser.add_argument("--created-by", default="phase9-v201-operator")
     parser.add_argument("--pricing", type=Path, default=CURRENT_PRICING_PATH)
     parser.add_argument(
         "--authorization", type=Path, default=BILLABLE_AUTHORIZATION_PATH
@@ -100,9 +114,7 @@ def main() -> int:
             encoding="utf-8",
         )
     print(json.dumps(summary, ensure_ascii=False, indent=2, sort_keys=True))
-    return 0 if result["status"].startswith(
-        ("REAL_SMOKE_HIGH_GENERATION_COMPLETE", "READY_REQUIRES_EXPLICIT")
-    ) else 1
+    return _result_exit_code(result)
 
 
 if __name__ == "__main__":

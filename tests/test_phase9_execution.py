@@ -1,4 +1,4 @@
-"""Direct regressions for the phase9-execution/2.0.0 cutover.
+"""Direct regressions for the phase9-execution/2.0.1 cutover.
 
 Nothing in this module resolves a credential, constructs a transport, calls a
 provider, calls an adjudicator, refreshes pricing, or executes HIGH-SMOKE.
@@ -91,7 +91,7 @@ def test_active_v2_rejects_legacy_authority_before_read(
 def test_versions_and_every_frozen_binding_are_current(
     prepared: px.PreparedExecution,
 ) -> None:
-    assert px.PHASE9_EXECUTION_VERSION == "phase9-execution/2.0.0"
+    assert px.PHASE9_EXECUTION_VERSION == "phase9-execution/2.0.1"
     assert prepared.boundary["benchmark_version"] == "semantic-benchmark/1.3.5"
     assert prepared.boundary["protocol_version"] == (
         "phase9-qualification-protocol/1.3.5"
@@ -406,7 +406,7 @@ def test_authorization_requirements_are_v135_v2_and_not_an_authorization(
     prepared: px.PreparedExecution,
 ) -> None:
     pricing_material = {
-        "schema_version": "phase9-current-pricing/2.0.0",
+        "schema_version": "phase9-current-pricing/2.0.1",
         "execution_version": px.PHASE9_EXECUTION_VERSION,
         "status": "SYNTHETIC_TEST_ONLY",
         "models": {},
@@ -421,7 +421,7 @@ def test_authorization_requirements_are_v135_v2_and_not_an_authorization(
     assert requirements["protocol_version"] == (
         "phase9-qualification-protocol/1.3.5"
     )
-    assert requirements["execution_version"] == "phase9-execution/2.0.0"
+    assert requirements["execution_version"] == "phase9-execution/2.0.1"
     assert requirements["execution_boundary_hash"] == (
         prepared.boundary["execution_boundary_hash"]
     )

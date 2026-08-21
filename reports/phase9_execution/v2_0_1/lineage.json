@@ -1,0 +1,35 @@
+{
+  "benchmark_version": "semantic-benchmark/1.3.5",
+  "billable_authorization": "NONE",
+  "deferred_observations": [
+    "INERT_NESTED_HELD_OUT_KEYS_IN_RUNG_COLLECTION",
+    "ORIGINAL_ROUTE_SPLIT_CORE_METADATA_IN_GROUPED_SMOKE_OBSERVATION",
+    "SEMANTIC_PACKET_HASH_EQUALITY_WHEN_PACKET_ID_REMAINS_UNIQUE",
+    "HISTORICAL_MAKE_PRECHECK_BEHAVIOR",
+    "CRASH_DURABILITY_BETWEEN_AUTHORIZATION_CONSUMPTION_AND_FINAL_EVIDENCE",
+    "U3_POLARITY_OFFLINE_SDK_DEBT",
+    "FRONTEND_PRODUCT_UX"
+  ],
+  "execution_version": "phase9-execution/2.0.1",
+  "high_smoke": "NOT_EXECUTED",
+  "lineage_hash": "sha256:56505885c7d6deac8498a1b6c0380c583bb7e1369f15eb6ed041cd2f8b9ed47a",
+  "ordered_logical_call_population_equal_to_v2_0_0": true,
+  "ordered_logical_call_population_hash": "sha256:fef890ffa1b12e8717edd7cb5e13f7cdbd78b1e3eb9284aea20a21b29f45553e",
+  "phase9_execution_v2_0_0_provider_calls": 0,
+  "phase9_execution_v2_0_0_used_for_provider_call": false,
+  "predecessor_execution_version": "phase9-execution/2.0.0",
+  "pricing_refresh": "NOT_PERFORMED",
+  "product_pipeline_architecture_changed": false,
+  "product_prompts_changed": false,
+  "repair_scope": "FOUR_EXECUTION_DEFECT_CLASSES_ONLY",
+  "repaired_defects": [
+    "EFFECTIVE_PROVIDER_PATH_NOT_FULLY_SOURCE_BOUND",
+    "P11_REACHABLE_OUTSIDE_30_CALL_PLAN",
+    "RAW_REPAIRED_OUTPUT_COULD_LEAK_SEMANTIC_METADATA_INTO_N3",
+    "INCOMPLETE_GENERATION_LABELED_COMPLETE"
+  ],
+  "schema_version": "phase9-execution-lineage/2.0.1",
+  "semantic_benchmark_v1_3_5_unchanged": true,
+  "semantic_population_changed": false,
+  "trigger": "FINAL_COMBINED_AUDIT_FOUND_FOUR_EXECUTOR_BLOCKERS"
+}
