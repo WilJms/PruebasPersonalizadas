@@ -15,7 +15,6 @@ from pathlib import Path
 import subprocess
 
 import pytest
-from pydantic import SecretStr
 
 from comprehension_verification import phase9_execution as px
 from comprehension_verification.contracts import models as m
@@ -312,24 +311,11 @@ def test_actual_phase9_transport_boundary_blocks_prompt_drift(stage):
             + "\nCONTROLLED_ENTRYPOINT_MUTATION"
         ),
     )
-    factory_calls = 0
-
-    def transport_factory(_api_key):
-        nonlocal factory_calls
-        factory_calls += 1
-        return object()
-
     with pytest.raises(
         px.Phase9ExecutionError,
         match="PHASE9_EXECUTABLE_PROMPT_AUTHORITY_MISMATCH",
     ):
-        px._build_v135_prompt_guarded_transport(
-            candidate=px.CANDIDATE_BY_STAGE[stage],
-            api_key=SecretStr("synthetic-test-only-not-a-provider-key"),
-            adapter_factory=transport_factory,
-            live_specs=mutated_specs,
-        )
-    assert factory_calls == 0
+        px.prepare_phase9_execution(live_specs=mutated_specs)
 
 
 def test_p06_every_submission_group_has_its_full_route_surface(build, package):

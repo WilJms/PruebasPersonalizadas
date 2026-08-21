@@ -1,6 +1,6 @@
 PYTHON ?= .venv/bin/python
 
-.PHONY: install contracts openapi fixtures test test-cov stage0-demo stage0-fail stage0-injection semantic-benchmark-dry-run phase9-protocol-freeze phase9-smoke-dry-run phase9-smoke-real phase9-blind-handoff phase9-blind-handoff-verify real-smoke harness-semantic-documents harness-semantic-rehearsal openai-convergence-dry-run openai-convergence-real openai-xhigh-qualification-dry-run openai-xhigh-qualification-real openai-max-qualification-dry-run openai-max-qualification-real openai-terra-medium-qualification-dry-run openai-terra-medium-qualification-real openai-terra-high-qualification-dry-run openai-terra-high-qualification-real openai-terra-xhigh-qualification-dry-run openai-terra-xhigh-qualification-real openai-sol-medium-qualification-dry-run openai-sol-medium-qualification-real openai-sol-high-qualification-dry-run openai-sol-high-qualification-real openai-sol-xhigh-qualification-dry-run openai-sol-xhigh-qualification-real openai-sol-ladder-dry-run openai-canary-dry-run openai-p01-injection-recanary-dry-run openai-p02-v113-recanary-dry-run openai-p04-v116-recanary-dry-run openai-p05-v114-recanary-dry-run openai-blueprint-v119-v115-recanary-dry-run openai-blueprint-v117-v115-timeout-recovery-dry-run openai-p06-v112-decision-lineage-recanary-dry-run openai-p09-v115-recanary-dry-run openai-p11-v114-direct-dry-run openai-qualification-dry-run openai-qualification-v113-continuation-dry-run openai-qualification-v114-continuation-dry-run frontend-install frontend-typecheck frontend-test frontend-build postgres-prepare postgres-e2e postgres-sensitive postgres-stage2-recovery secrets-check
+.PHONY: install contracts openapi fixtures test test-cov stage0-demo stage0-fail stage0-injection semantic-benchmark-dry-run phase9-protocol-freeze phase9-execution-v2-check phase9-smoke-dry-run phase9-smoke-real phase9-blind-handoff phase9-blind-handoff-verify real-smoke harness-semantic-documents harness-semantic-rehearsal openai-convergence-dry-run openai-convergence-real openai-xhigh-qualification-dry-run openai-xhigh-qualification-real openai-max-qualification-dry-run openai-max-qualification-real openai-terra-medium-qualification-dry-run openai-terra-medium-qualification-real openai-terra-high-qualification-dry-run openai-terra-high-qualification-real openai-terra-xhigh-qualification-dry-run openai-terra-xhigh-qualification-real openai-sol-medium-qualification-dry-run openai-sol-medium-qualification-real openai-sol-high-qualification-dry-run openai-sol-high-qualification-real openai-sol-xhigh-qualification-dry-run openai-sol-xhigh-qualification-real openai-sol-ladder-dry-run openai-canary-dry-run openai-p01-injection-recanary-dry-run openai-p02-v113-recanary-dry-run openai-p04-v116-recanary-dry-run openai-p05-v114-recanary-dry-run openai-blueprint-v119-v115-recanary-dry-run openai-blueprint-v117-v115-timeout-recovery-dry-run openai-p06-v112-decision-lineage-recanary-dry-run openai-p09-v115-recanary-dry-run openai-p11-v114-direct-dry-run openai-qualification-dry-run openai-qualification-v113-continuation-dry-run openai-qualification-v114-continuation-dry-run frontend-install frontend-typecheck frontend-test frontend-build postgres-prepare postgres-e2e postgres-sensitive postgres-stage2-recovery secrets-check
 
 install:
 	$(PYTHON) -m pip install -e '.[dev]'
@@ -41,19 +41,31 @@ phase9-protocol-freeze:
 		CVA_MODEL_MODE=mock CVA_P10_ENABLED=false $(PYTHON) \
 		scripts/build_phase9_protocol.py
 
-# Phase 9B.1. Dry mode proves the authorization offline with zero provider
-# calls. Real mode consumes it once and executes the 30 frozen HIGH SMOKE
-# calls; it never adjudicates and never escalates a reasoning rung.
-phase9-smoke-dry-run:
+# phase9-execution/2.0.0 consumes the immutable semantic-benchmark/1.3.5
+# instrument. The publication check regenerates its request/plan boundary in
+# memory and requires byte-for-byte equality with the committed artifacts.
+phase9-execution-v2-check:
+	@env -u OPENAI_API_KEY -u CVA_OPENAI_API_KEY \
+		CVA_MODEL_MODE=mock CVA_P10_ENABLED=false $(PYTHON) \
+		scripts/build_phase9_execution_v2.py
+
+# Dry mode validates the complete freeze and stops explicitly because current
+# pricing and a hash-bound billable authorization have not been supplied.
+phase9-smoke-dry-run: phase9-execution-v2-check
 	@env -u OPENAI_API_KEY -u CVA_OPENAI_API_KEY \
 		CVA_MODEL_MODE=mock CVA_P10_ENABLED=false $(PYTHON) \
 		scripts/run_phase9_smoke.py
 
-phase9-smoke-real:
+phase9-smoke-real: phase9-execution-v2-check
+	@test -n "$(PRICING)" || { echo "PRICING is required" >&2; exit 2; }
+	@test -n "$(AUTHORIZATION)" || { echo "AUTHORIZATION is required" >&2; exit 2; }
 	@test -n "$(SECRET_VERSION_RESOURCE)" || { echo "SECRET_VERSION_RESOURCE is required" >&2; exit 2; }
+	@test -n "$(REPORT)" || { echo "REPORT is required" >&2; exit 2; }
 	@env -u OPENAI_API_KEY -u CVA_OPENAI_API_KEY $(PYTHON) \
 		scripts/run_phase9_smoke.py \
 		--allow-billable \
+		--pricing "$(PRICING)" \
+		--authorization "$(AUTHORIZATION)" \
 		--secret-version-resource "$(SECRET_VERSION_RESOURCE)" \
 		--created-by "$${CVA_PHASE9_OPERATOR:-phase9b1-operator}" \
 		--report "$(REPORT)"

@@ -12,12 +12,15 @@ from typing import Any
 import pytest
 
 from comprehension_verification import phase9_blind_handoff as bh
-from comprehension_verification import phase9_execution as px
 
 
 BUNDLE = bh.bundle_root()
 EXECUTION_DIR = (
-    px.BENCHMARK_REPORT_ROOT / "phase9/executions/exec-phase9b1-bfd3cf082617ea8b"
+    Path(__file__).resolve().parents[1]
+    / "reports/semantic_benchmark/v1_1/phase9/executions/exec-phase9b1-bfd3cf082617ea8b"
+)
+HISTORICAL_PROTOCOL_ROOT = (
+    Path(__file__).resolve().parents[1] / "evaluation/semantic_benchmark/v1_1/phase9"
 )
 
 pytestmark = pytest.mark.skipif(
@@ -62,7 +65,7 @@ def test_packets_gained_no_fields(bundle_manifest: dict[str, Any]) -> None:
 
     allowed = set(
         json.loads(
-            (px.PHASE9_DEFINITION_ROOT / "adjudication_protocol.json").read_text(
+            (HISTORICAL_PROTOCOL_ROOT / "adjudication_protocol.json").read_text(
                 "utf-8"
             )
         )["blinding"]["allowed_packet_fields"]
@@ -327,13 +330,15 @@ def test_no_semantic_verdict_appears_anywhere_in_the_bundle() -> None:
 def test_accounting_amendment_remains_the_effective_authority() -> None:
     if not EXECUTION_DIR.exists():  # pragma: no cover - evidence absent in a fork
         pytest.skip("no recorded Phase 9B.1 execution")
-    effective = px.effective_accounting(EXECUTION_DIR)
-    assert effective["rule"] == "ACCOUNTING_AMENDMENT_WHEN_PRESENT"
-    assert effective["source"] == "accounting_amendment.json"
-    assert effective["superseded"] == "execution_manifest.json#accounting"
-    assert effective["accounting"]["provider_technical_failures"] == 0
-    assert effective["accounting"]["deterministic_validation_failures"] == 4
-    assert effective["technical_failure_rate"] == 0.0
+    amendment = json.loads(
+        (EXECUTION_DIR / "accounting_amendment.json").read_text("utf-8")
+    )
+    accounting = amendment["recomputed_accounting"]
+    assert amendment["amends"] == "execution_manifest.json#accounting"
+    assert amendment["source_of_truth"] == "call_ledger.json"
+    assert accounting["provider_technical_failures"] == 0
+    assert accounting["deterministic_validation_failures"] == 4
+    assert accounting["technical_failure_rate"] == 0.0
 
 
 def test_historical_execution_manifest_is_not_rewritten() -> None:

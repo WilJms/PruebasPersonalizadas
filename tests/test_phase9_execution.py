@@ -1,500 +1,468 @@
-"""Phase 9B execution tests. None of these may reach a real provider."""
+"""Direct regressions for the phase9-execution/2.0.0 cutover.
+
+Nothing in this module resolves a credential, constructs a transport, calls a
+provider, calls an adjudicator, refreshes pricing, or executes HIGH-SMOKE.
+"""
 
 from __future__ import annotations
 
+from copy import deepcopy
+from dataclasses import replace
+from hashlib import sha256
 import json
 from pathlib import Path
+import subprocess
 from typing import Any
 
 import pytest
-from pydantic import BaseModel, SecretStr
 
-from comprehension_verification.model_gateway.mock_factory import (
-    AdapterResult,
-    DeterministicMockFactory,
-    MockBehavior,
-)
-from comprehension_verification.model_gateway.openai_pricing import estimate_cost_usd
 from comprehension_verification import phase9_execution as px
-
-
-class _OfflineAdapter:
-    """Deterministic stand-in shaped exactly like the real provider adapter."""
-
-    def __init__(self, *, behavior: MockBehavior = MockBehavior.HAPPY) -> None:
-        self.behavior = behavior
-        self.config = None
-        self.seen: list[str] = []
-
-    async def invoke(self, **kwargs: Any) -> AdapterResult:
-        prompt_id = kwargs["prompt_id"]
-        request = kwargs["request"]
-        route = kwargs["route"]
-        self.seen.append(prompt_id)
-        draft = DeterministicMockFactory().output_for(
-            prompt_id, request, self.behavior
-        )
-        raw = draft.model_dump(mode="json")
-        input_tokens, output_tokens = 1_000, 500
-        return AdapterResult(
-            raw_output=raw,
-            input_tokens=input_tokens,
-            cached_input_tokens=0,
-            output_tokens=output_tokens,
-            estimated_cost_usd=estimate_cost_usd(
-                model=route.model,
-                input_tokens=input_tokens,
-                output_tokens=route.max_output_tokens,
-            ),
-            actual_cost_usd=estimate_cost_usd(
-                model=route.model,
-                input_tokens=input_tokens,
-                output_tokens=output_tokens,
-            ),
-            reasoning_tokens=120,
-            effective_model=route.model,
-            output_hash="sha256:" + "0" * 64,
-            provider_request_id_hash="sha256:" + "1" * 64,
-            provider_schema_valid=True,
-            reason_codes=("OFFLINE_TEST_ADAPTER", "REASONING_TOKENS_120"),
-        )
+from comprehension_verification.model_gateway.registry import PROMPT_SPECS
 
 
 @pytest.fixture(scope="module")
-def smoke_cases() -> list[px.SmokeCase]:
-    return px.build_smoke_cases()
+def prepared() -> px.PreparedExecution:
+    return px.prepare_phase9_execution()
 
 
-@pytest.fixture(scope="module")
-def logical_calls(smoke_cases: list[px.SmokeCase]) -> list[px.LogicalCall]:
-    return px.build_logical_calls(smoke_cases)
-
-
-@pytest.fixture(scope="module")
-def offline_run(tmp_path_factory: pytest.TempPathFactory) -> dict[str, Any]:
-    root = tmp_path_factory.mktemp("phase9b")
-    return px.run_phase9b_smoke(
-        api_key=SecretStr("offline-test-key-not-a-credential"),
-        created_by="offline-test",
-        evidence_root=root / "executions",
-        adjudication_root=root / "bundle",
-        transport=True,
-        adapter_factory=lambda _key: _OfflineAdapter(),
-    )
-
-
-def test_frozen_boundaries_match_the_phase9_freeze() -> None:
-    observed = px.revalidate_frozen_boundaries()
-    assert observed["benchmark_boundary_hash"] == px.EXPECTED_BENCHMARK_BOUNDARY_HASH
-    assert observed["protocol_boundary_hash"] == px.EXPECTED_PROTOCOL_BOUNDARY_HASH
-    assert observed["candidate_matrix_hash"] == px.EXPECTED_CANDIDATE_MATRIX_HASH
-    assert (
-        observed["corpus_package_boundary_hash"] == px.EXPECTED_CORPUS_BOUNDARY_HASH
-    )
-
-
-def test_executable_pricing_equals_the_frozen_snapshot() -> None:
-    pricing = px.verify_pricing_snapshot()
-    assert pricing["models"]["gpt-5.6-luna"] == {
-        "input_per_million": 0.20,
-        "cached_input_per_million": 0.02,
-        "output_per_million": 1.20,
-    }
-    assert pricing["models"]["gpt-5.6-terra"] == {
-        "input_per_million": 2.00,
-        "cached_input_per_million": 0.20,
-        "output_per_million": 12.00,
-    }
-
-
-def test_every_smoke_request_reproduces_its_frozen_input_hash(
-    smoke_cases: list[px.SmokeCase],
-) -> None:
-    assert len(smoke_cases) == 10
-    for case in smoke_cases:
-        assert case.rebuilt_input_hash == case.frozen_input_hash
-
-
-def test_the_plan_is_exactly_thirty_authorized_primary_calls(
-    logical_calls: list[px.LogicalCall],
-) -> None:
-    assert len(logical_calls) == px.AUTHORIZED_PRIMARY_LOGICAL_CALLS == 30
-    per_stage = {"P04": 0, "P06": 0, "P07": 0, "P09": 0}
-    for call in logical_calls:
-        per_stage[call.case.stage] += 1
-    assert per_stage == {"P04": 3, "P06": 6, "P07": 18, "P09": 3}
-
-
-def test_dry_proof_makes_every_forbidden_surface_unreachable(
-    logical_calls: list[px.LogicalCall],
-) -> None:
-    proof = px.dry_authorization_proof(logical_calls)
-    assert proof["result"] == "PASS"
-    assert proof["findings"] == []
-    assert proof["reachable_reasoning_efforts"] == ["HIGH"]
-    assert proof["reachable_splits"] == ["SMOKE"]
-    assert "gpt-5.6-sol" not in proof["reachable_models"]
-    assert all(proof["unreachable"].values())
-    assert proof["projected_worst_case_total_usd"] <= px.OUTER_AUTHORIZATION_CAP_USD
-
-
-def test_forbidden_candidates_are_absent_from_the_authorized_set() -> None:
-    authorized = {item.candidate_id for item in px.AUTHORIZED_CANDIDATES}
-    assert authorized.isdisjoint(px.FORBIDDEN_CANDIDATE_IDS)
-    assert len(authorized) == 4
-
-
-def test_authorization_binds_every_frozen_boundary_and_starts_unconsumed(
-    logical_calls: list[px.LogicalCall],
-) -> None:
-    authorization = px.build_authorization(
-        boundaries=px.revalidate_frozen_boundaries(),
-        pricing=px.verify_pricing_snapshot(),
-        calls=logical_calls,
-        proof=px.dry_authorization_proof(logical_calls),
-        created_by="test",
-    )
-    assert authorization["benchmark_boundary_hash"] == (
-        px.EXPECTED_BENCHMARK_BOUNDARY_HASH
-    )
-    assert authorization["protocol_boundary_hash"] == (
-        px.EXPECTED_PROTOCOL_BOUNDARY_HASH
-    )
-    assert authorization["candidate_matrix_hash"] == (
-        px.EXPECTED_CANDIDATE_MATRIX_HASH
-    )
-    assert authorization["split"] == "SMOKE"
-    assert authorization["k"] == 3
-    assert authorization["primary_logical_calls"] == 30
-    assert authorization["outer_budget_cap_usd"] == 2.00
-    assert authorization["consumption"]["state"] == "CREATED_NOT_CONSUMED"
-    assert authorization["consumption"]["consumed_once"] is False
-    for excluded in ("CORE", "HELD_OUT_CONFIRMATION", "XHIGH", "MAX", "gpt-5.6-sol"):
-        assert excluded in authorization["excluded_scope"]
-
-
-def test_cost_account_fails_closed_on_each_cap() -> None:
-    candidate = px.CANDIDATE_BY_STAGE["P07"]
-    account = px.CostAccount()
-    with pytest.raises(px.Phase9ExecutionError) as per_call:
-        account.admit(candidate, candidate.per_call_cap_usd + 0.01)
-    assert per_call.value.code == "PHASE9_PER_CALL_CAP_WOULD_BE_EXCEEDED"
-
-    account.by_candidate[candidate.candidate_id] = candidate.smoke_rung_cap_usd
-    with pytest.raises(px.Phase9ExecutionError) as rung:
-        account.admit(candidate, 0.001)
-    assert rung.value.code == "PHASE9_RUNG_CAP_WOULD_BE_EXCEEDED"
-
-    outer = px.CostAccount(spent_usd=px.OUTER_AUTHORIZATION_CAP_USD)
-    with pytest.raises(px.Phase9ExecutionError) as breach:
-        outer.admit(candidate, 0.001)
-    assert breach.value.code == "PHASE9_OUTER_CAP_WOULD_BE_EXCEEDED"
-
-
-def test_dry_mode_performs_no_provider_call_and_consumes_nothing() -> None:
-    result = px.run_phase9b_smoke(
-        api_key=None, created_by="test", transport=False
-    )
-    assert result["status"] == "DRY_RUN"
-    assert result["provider_calls"] == 0
-    assert result["billable_authorizations_consumed"] == 0
-
-
-def test_real_mode_without_a_credential_stops_before_transport() -> None:
-    with pytest.raises(px.Phase9ExecutionError) as exc:
-        px.run_phase9b_smoke(api_key=None, created_by="test", transport=True)
-    assert exc.value.code == "OPENAI_CREDENTIAL_REQUIRED"
-
-
-def test_offline_execution_attempts_exactly_thirty_calls(
-    offline_run: dict[str, Any],
-) -> None:
-    """The offline adapter reuses the repository's generic deterministic mock.
-
-    That mock cannot author a valid P07 draft for every benchmark opportunity,
-    so some runs are rejected by the P07 materializer. That is the deterministic
-    boundary doing its job, and the assertion here is about the harness: exactly
-    thirty authorized logical calls are attempted and every one is accounted
-    for, whatever the product boundary then decides.
-    """
-
-    accounting = offline_run["accounting"]
-    assert accounting["primary_logical_calls_attempted"] == 30
-    assert (
-        accounting["primary_logical_calls_completed"]
-        + accounting["attempts_not_completed"]
-        == 30
-    )
-    assert accounting["authorization_consumed_exactly_once"] is True
-    assert accounting["core_calls"] == 0
-    assert accounting["held_out_calls"] == 0
-    assert accounting["xhigh_calls"] == 0
-    assert accounting["max_calls"] == 0
-    assert accounting["sol_calls"] == 0
-    assert accounting["p10_p11_calls"] == 0
-    assert accounting["semantic_retries"] == 0
-    assert offline_run["cost"]["within_outer_cap"] is True
-
-
-def test_offline_execution_records_full_usage_evidence(
-    offline_run: dict[str, Any],
-) -> None:
-    for attempt in offline_run["attempts"]:
-        for field in (
-            "logical_call_id",
-            "attempt_index",
-            "case_id",
-            "stage",
-            "candidate_id",
-            "model",
-            "reasoning_effort",
-            "route_profile_id",
-            "request_hash",
-            "model_visible_input_hash",
-            "provider_response_id_hash",
-            "response_status",
-            "provider_output_hash",
-            "input_tokens",
-            "output_tokens",
-            "reasoning_tokens",
-            "total_tokens",
-            "actual_cost_usd",
-            "latency_ms",
-            "timestamp",
-            "authorization_id",
-            "benchmark_boundary_hash",
-            "protocol_boundary_hash",
-            "candidate_matrix_hash",
-        ):
-            assert field in attempt
-        assert attempt["semantic_status"] == "PENDING_ADJUDICATION"
-
-
-def test_offline_execution_leaves_every_property_pending(
-    offline_run: dict[str, Any],
-) -> None:
-    assert offline_run["semantic_status"] == "PENDING_ADJUDICATION"
-    for row in offline_run["deterministic_validation"]:
-        assert row["result"] in {
-            "PASS",
-            "DETERMINISTIC_VALIDATION_FAILURE",
-            "CONTRACT_OR_SCHEMA_FAILURE",
-        }
-        assert "MODEL_FAILURE" not in json.dumps(row)
-
-
-def test_blind_packets_carry_only_protocol_allowed_fields(
-    offline_run: dict[str, Any],
-) -> None:
-    bundle_root = Path(offline_run["blind_bundle"]["root"])
-    manifest = json.loads((bundle_root / "bundle_manifest.json").read_text("utf-8"))
-    allowed = set(
-        json.loads(
+def _decomposition(calls: tuple[px.LogicalCall, ...]) -> dict[str, int]:
+    result: dict[str, int] = {}
+    for call in calls:
+        key = "/".join(
             (
-                px.PHASE9_DEFINITION_ROOT / "adjudication_protocol.json"
-            ).read_text("utf-8")
-        )["blinding"]["allowed_packet_fields"]
+                call.case.axis,
+                call.case.stage,
+                call.case.split,
+                call.case.candidate.reasoning_effort,
+            )
+        )
+        result[key] = result.get(key, 0) + 1
+    return result
+
+
+def _zero_counter_assertions(counters: dict[str, Any]) -> None:
+    assert counters == {
+        "provider_calls": 0,
+        "adjudicator_calls": 0,
+        "credential_resolutions": 0,
+        "transport_factory_calls": 0,
+        "real_provider_transport": False,
+        "pricing_refresh": "NOT_PERFORMED",
+        "high_smoke": "NOT_EXECUTED",
+        "billable_authorization": "NONE",
+    }
+
+
+@pytest.mark.parametrize(
+    ("field", "legacy_path"),
+    [
+        (
+            "call_budget",
+            px.REPOSITORY_ROOT / "reports/semantic_benchmark/v1_1/case_matrix.json",
+        ),
+        (
+            "candidate_matrix",
+            px.REPOSITORY_ROOT
+            / "evaluation/semantic_benchmark/v1_1/phase9/candidate_matrix.json",
+        ),
+    ],
+)
+def test_active_v2_rejects_legacy_authority_before_read(
+    field: str, legacy_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Regression for the defect: no v1.1 matrix/protocol path is readable."""
+
+    observed_reads: list[Path] = []
+    original = Path.read_text
+
+    def recording_read(path: Path, *args: Any, **kwargs: Any) -> str:
+        observed_reads.append(path.resolve())
+        return original(path, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "read_text", recording_read)
+    paths = replace(px.FrozenAuthorityPaths(), **{field: legacy_path})
+    with pytest.raises(px.Phase9ExecutionError) as exc:
+        px.prepare_phase9_execution(authority_paths=paths)
+    assert exc.value.code == "PHASE9_V2_LEGACY_AUTHORITY_FORBIDDEN"
+    assert legacy_path.resolve() not in observed_reads
+    assert not any("semantic_benchmark/v1_1" in str(path) for path in observed_reads)
+
+
+def test_versions_and_every_frozen_binding_are_current(
+    prepared: px.PreparedExecution,
+) -> None:
+    assert px.PHASE9_EXECUTION_VERSION == "phase9-execution/2.0.0"
+    assert prepared.boundary["benchmark_version"] == "semantic-benchmark/1.3.5"
+    assert prepared.boundary["protocol_version"] == (
+        "phase9-qualification-protocol/1.3.5"
     )
-    assert manifest["packet_count"] > 0
-    for row in manifest["packets"]:
-        packet = json.loads((bundle_root / row["file"]).read_text("utf-8"))
-        assert set(packet) <= allowed
-        for forbidden in px.FORBIDDEN_PACKET_FIELDS:
-            assert forbidden not in packet
-
-
-def test_blind_bundle_manifest_carries_no_run_metadata(
-    offline_run: dict[str, Any],
-) -> None:
-    manifest = offline_run["blind_bundle"]
-    assert manifest["contains_candidate_metadata"] is False
-    assert manifest["contains_split_or_rung_metadata"] is False
-    assert manifest["contains_cost_or_latency_metadata"] is False
-    text = json.dumps(manifest["packets"])
-    for token in ("luna", "terra", "SMOKE", "HIGH", "candidate_id", "USD"):
-        assert token not in text
-    # Manifest order is by pseudonymous id, never by case or promotion order.
-    ids = [row["packet_id"] for row in manifest["packets"]]
-    assert ids == sorted(ids)
-
-
-def test_leakage_scan_blocks_an_injected_metadata_leak() -> None:
-    clean = {
-        "schema_version": "semantic-review-packet/1.1.0",
-        "case_id": "PP-A01-P04-001",
-        "stage": "P04",
-        "fixture_id": "benchmark-fixture://p04/act_01",
-        "route_or_opportunity_id": None,
-        "binding_scope": "CASE",
-        "candidate_output": {"text": "una respuesta"},
-        "candidate_output_hash": "sha256:" + "0" * 64,
-        "relevant_source_refs": [],
-        "property": {"text": "propiedad"},
-        "defensible_alternatives": [],
-        "oracle_state": "VALID",
-        "source_hashes": {},
+    assert prepared.boundary["semantic_benchmark_bindings"] == {
+        "pre_results_instrument_freeze_hash": (
+            "sha256:c2c2a552780c0cea7af5f7b3097da115de6fc6ee84cdbdfd9ad9943f8d655126"
+        ),
+        "benchmark_boundary_hash": px.EXPECTED_BENCHMARK_BOUNDARY_HASH,
+        "stage_boundaries_hash": (
+            "sha256:1393551f498ab97daecb6b40ea0ae93fcae3fcdaa188a683dcc9adf6a8c8b49b"
+        ),
+        "stage_boundary_hashes": {
+            "P04": "sha256:866b95464960123d3e96ab1d713d9980dea127bdbe9f1f07922c37888bb4d761",
+            "P06": "sha256:8bbf07c653435783c21af4257d62df77ac325f5454e2a47c3b570337fde42354",
+            "P07": "sha256:a1cd37d8dec4260ccee1eb5ecaaa8ba4d6e73170f274fca300f2e4669177bef6",
+            "P09": "sha256:0006106e4433124fdea9fddd296346b4dd239e20f10bfa4aa1a670a44d3989c1",
+            "PLANNER": "sha256:961384f7f9c25601b5aea91217849be79400517d7b5960924c79789c93687376",
+        },
+        "protocol_boundary_hash": px.EXPECTED_PROTOCOL_BOUNDARY_HASH,
+        "candidate_matrix_hash": (
+            "sha256:d4c693ec60c4603ea9924daf5146f06d714bb19f1007a5d82fef57d4d5dfb36d"
+        ),
+        "candidate_execution_contract_hash": px.EXPECTED_EXECUTION_CONTRACT_HASH,
+        "prompt_authority_hash": px.EXPECTED_PROMPT_AUTHORITY_HASH,
+        "call_budget_hash": (
+            "sha256:f0ed55246d56362b170aa0b2e29f99f4d1f1660f5f16b90751cc298d18b69dde"
+        ),
+        "n3_axis_hash": px.EXPECTED_N3_AXIS_HASH,
+        "p06_submission_request_set_hash": (
+            "sha256:7c1698189001ae48f80895cf07390cda811b652574401f4b5d1ce662de9ce960"
+        ),
+        "p06_property_observation_bindings_hash": (
+            "sha256:d0d2bd909dd0b3137387b04c9a38995cb72baf0ce0ca6b442783cf93af76581c"
+        ),
+        "n3_provider_fixture_set_hash": (
+            "sha256:9e00281c1d54a9436766105d6ba27aaae01564bd38182cfb4bd64e427b8ec310"
+        ),
+        "rung_collection_hash": (
+            "sha256:bee091a421683f3e17e54d0118f85cac50f39605b89054324004b0b842a7efcc"
+        ),
+        "corpus_package_boundary_hash": px.EXPECTED_CORPUS_BOUNDARY_HASH,
     }
-    assert px.scan_packet_for_leakage(clean)["result"] == "PASS"
+    assert "1.1.0" not in json.dumps(
+        {
+            "benchmark_version": prepared.boundary["benchmark_version"],
+            "protocol_version": prepared.boundary["protocol_version"],
+            "execution_version": prepared.boundary["execution_version"],
+        }
+    )
 
-    leaked = {**clean, "candidate_id": "P04-C1-TERRA-HIGH"}
-    scan = px.scan_packet_for_leakage(leaked)
-    assert scan["result"] == "BLOCKED"
-    assert any(item["kind"] == "FORBIDDEN_FIELD_NAME" for item in scan["leaks"])
 
-
-def test_offline_bundle_passes_the_leakage_audit(
-    offline_run: dict[str, Any],
+def test_execution_boundary_binds_exact_sources_and_plan(
+    prepared: px.PreparedExecution,
 ) -> None:
-    assert offline_run["leakage_blocked"] == []
-    assert offline_run["blind_bundle"]["leakage_scan"]["leaks"] == 0
-    assert offline_run["blind_bundle"]["leakage_scan"]["result"] == "PASS"
+    boundary = prepared.boundary
+    assert boundary["execution_boundary_hash"] == px._self_hash(
+        boundary, "execution_boundary_hash"
+    )
+    assert set(boundary["source_bindings"]) == px.REQUIRED_SOURCE_BINDING_PATHS
+    for relative, expected in boundary["source_bindings"].items():
+        assert expected == px._file_hash(px.REPOSITORY_ROOT / relative)
+    assert boundary["request_authority"]["request_authority_hash"] == (
+        prepared.request_authority["request_authority_hash"]
+    )
+    assert boundary["high_smoke_plan"]["plan_hash"] == prepared.plan["plan_hash"]
 
 
-def test_execution_evidence_is_written_and_immutable(
-    offline_run: dict[str, Any],
+def test_exact_high_smoke_plan_is_thirty_calls_3_3_3_18_3(
+    prepared: px.PreparedExecution,
 ) -> None:
-    hashes = offline_run["evidence_hashes"]
-    for name in (
-        "authorization.json",
-        "dry_authorization_proof.json",
-        "call_ledger.json",
-        "usage_and_cost.json",
-        "deterministic_validation/report.json",
-        "blind_bundle_manifest.json",
-        "execution_manifest.json",
-    ):
-        assert hashes[name].startswith("sha256:")
-    assert offline_run["execution_id"].startswith("exec-phase9b1-")
+    assert len(prepared.calls) == px.AUTHORIZED_PRIMARY_LOGICAL_CALLS == 30
+    assert _decomposition(prepared.calls) == px.EXPECTED_PLAN_DECOMPOSITION
+    assert prepared.boundary["high_smoke_plan"]["decomposition"] == (
+        px.EXPECTED_PLAN_DECOMPOSITION
+    )
+    assert len({call.logical_call_id for call in prepared.calls}) == 30
 
 
-def test_retry_policy_is_one_attempt_on_allowlisted_codes_only() -> None:
-    assert px.MAX_TECHNICAL_RETRIES_PER_LOGICAL_CALL == 1
-    assert px.RETRYABLE_TECHNICAL_CODES == {
-        "PROVIDER_TIMEOUT",
-        "PROVIDER_CONNECTION",
-        "PROVIDER_TRANSIENT_STATUS",
-        "PROVIDER_RATE_LIMIT",
-    }
-
-
-def test_offline_failures_are_classified_and_never_semantic(
-    offline_run: dict[str, Any],
+def test_p06_semantic_smoke_is_one_grouped_two_route_request_k3(
+    prepared: px.PreparedExecution,
 ) -> None:
-    kinds = {
-        item["technical_diagnostic"]["failure_kind"]
-        for item in offline_run["attempts"]
-        if item["technical_diagnostic"] is not None
-    }
-    assert kinds <= {
-        "PROVIDER_TECHNICAL_FAILURE",
-        "CONTRACT_OR_SCHEMA_FAILURE",
-        "DETERMINISTIC_VALIDATION_FAILURE",
-        "UNCLASSIFIED_TECHNICAL_FAILURE",
-    }
-    text = json.dumps(offline_run["attempts"])
-    for verdict in ("MODEL_FAILURE", "DEFENSIBLE_ALTERNATIVE", "ORACLE_SUSPECT"):
-        assert verdict not in text
-
-
-def test_no_retry_is_issued_for_a_deterministic_rejection(
-    offline_run: dict[str, Any],
-) -> None:
-    for item in offline_run["attempts"]:
-        diagnostic = item["technical_diagnostic"]
-        if diagnostic and diagnostic["failure_kind"] == (
-            "DETERMINISTIC_VALIDATION_FAILURE"
-        ):
-            assert item["attempt_index"] == 1
-    assert all(not item["is_new_semantic_sample"] for item in offline_run["attempts"])
-
-
-def test_accounting_separates_technical_from_deterministic_failures(
-    offline_run: dict[str, Any],
-) -> None:
-    """The 2% technical gate must never absorb a deterministic rejection."""
-
-    accounting = offline_run["accounting"]
-    assert accounting["provider_technical_failures"] == 0
-    assert accounting["deterministic_validation_failures"] == 6
-    assert accounting["technical_failure_rate"] == 0.0
+    cases = [
+        case
+        for case in prepared.cases
+        if case.axis == "SEMANTIC" and case.stage == "P06"
+    ]
+    assert len(cases) == 1
+    case = cases[0]
+    row = next(
+        item
+        for item in prepared.request_authority["semantic_cases"]
+        if item["provider_identity"] == case.provider_identity
+    )
+    group = row["p06_group_authority"]
+    assert case.provider_unit == "SUBMISSION_RUN"
     assert (
-        accounting["provider_technical_failures"]
-        + accounting["deterministic_validation_failures"]
-        + accounting["contract_or_schema_failures"]
-        == accounting["attempts_not_completed"]
-    )
+        group["route_count"],
+        group["dimension_count"],
+        group["variant_count"],
+        group["template_count"],
+    ) == (2, 2, 2, 2)
+    assert len(case.request.blueprint.dimensions) == 2
+    assert len([call for call in prepared.calls if call.case is case]) == 3
+    assert [
+        call.run_index for call in prepared.calls if call.case is case
+    ] == [1, 2, 3]
 
 
-def test_recomputed_accounting_matches_the_persisted_ledger(
-    offline_run: dict[str, Any],
+def test_n3_is_one_explicit_exposure_run_axis_not_semantic_scoring(
+    prepared: px.PreparedExecution,
 ) -> None:
-    """A derived summary is recomputed from the ledger, never edited in place."""
+    cases = [
+        case for case in prepared.cases if case.axis == "CONTRACTUAL_HARD_SAFETY"
+    ]
+    assert len(cases) == 1
+    case = cases[0]
+    assert case.stage == "P06"
+    assert case.split == "N3_SAFETY_SMOKE"
+    assert case.provider_unit == "EXPOSURE_RUN"
+    assert case.property_observations == ()
+    n3_calls = [call for call in prepared.calls if call.case is case]
+    assert [
+        (call.case.exposure_pseudonym, call.run_index) for call in n3_calls
+    ] == [
+        ("N3-act_01_luz_y_plantines-submission_01", 1),
+        ("N3-act_01_luz_y_plantines-submission_01", 2),
+        ("N3-act_01_luz_y_plantines-submission_01", 3),
+    ]
 
-    execution_dir = Path(offline_run["execution_dir"])
-    ledger = json.loads((execution_dir / "call_ledger.json").read_text("utf-8"))
-    recomputed = px.recompute_accounting_from_ledger(ledger)
-    accounting = offline_run["accounting"]
-    for key in (
-        "primary_logical_calls_attempted",
-        "primary_logical_calls_completed",
-        "attempts_not_completed",
-        "provider_technical_failures",
-        "deterministic_validation_failures",
-        "contract_or_schema_failures",
-        "technical_failure_rate",
-    ):
-        assert recomputed[key] == accounting[key]
-    assert recomputed["semantic_status"] == "PENDING_ADJUDICATION"
+
+def test_stale_v135_hash_blocks_before_credentials_or_transport(
+    prepared: px.PreparedExecution,
+) -> None:
+    mutated = deepcopy(prepared.authorities.documents["benchmark_boundary"])
+    mutated["benchmark_boundary_hash"] = "sha256:" + "0" * 64
+    credential_calls = 0
+    factory_calls = 0
+
+    def credential_resolver():
+        nonlocal credential_calls
+        credential_calls += 1
+        return None
+
+    def transport_factory(_key):
+        nonlocal factory_calls
+        factory_calls += 1
+        return object()
+
+    with pytest.raises(px.Phase9ExecutionError) as exc:
+        px.run_phase9b_smoke(
+            created_by="test",
+            allow_billable=True,
+            credential_resolver=credential_resolver,
+            adapter_factory=transport_factory,
+            authority_document_overrides={"benchmark_boundary": mutated},
+        )
+    assert exc.value.code == "PHASE9_V135_SELF_HASH_MISMATCH"
+    assert credential_calls == factory_calls == 0
+    _zero_counter_assertions(exc.value.safety_counters)
 
 
-def test_recorded_execution_evidence_is_internally_consistent() -> None:
-    """The committed real execution must stay replay-safe and coherent."""
-
-    root = (
-        px.BENCHMARK_REPORT_ROOT
-        / "phase9/executions/exec-phase9b1-bfd3cf082617ea8b"
+def test_live_prompt_mutation_blocks_before_credentials_or_transport(
+    prepared: px.PreparedExecution,
+) -> None:
+    del prepared
+    prompt_id = "P06_EVIDENCE_MAP_V1"
+    mutated_specs = dict(PROMPT_SPECS)
+    mutated_specs[prompt_id] = replace(
+        PROMPT_SPECS[prompt_id],
+        developer_instruction=(
+            PROMPT_SPECS[prompt_id].developer_instruction
+            + "\nCONTROLLED_EXECUTION_V2_TEST_MUTATION"
+        ),
     )
-    if not root.exists():  # pragma: no cover - evidence not present in a fork
-        pytest.skip("no recorded Phase 9B.1 execution in this checkout")
-    ledger = json.loads((root / "call_ledger.json").read_text("utf-8"))
-    manifest = json.loads((root / "execution_manifest.json").read_text("utf-8"))
-    amendment = json.loads((root / "accounting_amendment.json").read_text("utf-8"))
-    authorization = json.loads((root / "authorization.json").read_text("utf-8"))
+    credential_calls = 0
+    factory_calls = 0
 
-    assert authorization["consumption"]["consumed_once"] is True
-    assert authorization["outer_budget_cap_usd"] == 2.00
-    assert manifest["semantic_status"] == "PENDING_ADJUDICATION"
-    assert manifest["semantic_adjudication_performed_here"] is False
-    assert manifest["escalation_performed"] is False
+    def credential_resolver():
+        nonlocal credential_calls
+        credential_calls += 1
+        return None
 
-    recomputed = px.recompute_accounting_from_ledger(ledger)
-    assert recomputed == amendment["recomputed_accounting"]
-    assert recomputed["primary_logical_calls_attempted"] == 30
-    assert recomputed["provider_technical_failures"] == 0
-    assert recomputed["technical_failure_rate"] <= 0.02
+    def transport_factory(_key):
+        nonlocal factory_calls
+        factory_calls += 1
+        return object()
 
-    for attempt in ledger["attempts"]:
-        assert attempt["reasoning_effort"] == "HIGH"
-        assert attempt["model"] in {"gpt-5.6-luna", "gpt-5.6-terra"}
-        assert attempt["candidate_id"] not in px.FORBIDDEN_CANDIDATE_IDS
-        assert attempt["semantic_status"] == "PENDING_ADJUDICATION"
-
-    cost = json.loads((root / "usage_and_cost.json").read_text("utf-8"))
-    assert cost["cost"]["actual_total_usd"] <= px.OUTER_AUTHORIZATION_CAP_USD
-    assert cost["cost"]["within_outer_cap"] is True
+    with pytest.raises(px.Phase9ExecutionError) as exc:
+        px.run_phase9b_smoke(
+            created_by="test",
+            allow_billable=True,
+            credential_resolver=credential_resolver,
+            adapter_factory=transport_factory,
+            live_specs=mutated_specs,
+        )
+    assert exc.value.code == "PHASE9_EXECUTABLE_PROMPT_AUTHORITY_MISMATCH"
+    assert credential_calls == factory_calls == 0
+    _zero_counter_assertions(exc.value.safety_counters)
 
 
-def test_recorded_blind_bundle_has_no_leaks() -> None:
-    root = (
-        px.BENCHMARK_REPORT_ROOT
-        / "phase9/adjudication_bundles/exec-phase9b1-bfd3cf082617ea8b"
+def test_absent_current_pricing_is_the_explicit_precredential_stop() -> None:
+    assert not px.CURRENT_PRICING_PATH.exists()
+    credential_calls = 0
+    factory_calls = 0
+
+    def credential_resolver():
+        nonlocal credential_calls
+        credential_calls += 1
+        return None
+
+    def transport_factory(_key):
+        nonlocal factory_calls
+        factory_calls += 1
+        return object()
+
+    with pytest.raises(px.Phase9ExecutionError) as exc:
+        px.run_phase9b_smoke(
+            created_by="test",
+            allow_billable=True,
+            credential_resolver=credential_resolver,
+            adapter_factory=transport_factory,
+        )
+    assert exc.value.code == "PRICING_REFRESH_REQUIRED_BEFORE_AUTHORIZATION"
+    assert credential_calls == factory_calls == 0
+    _zero_counter_assertions(exc.value.safety_counters)
+
+
+def test_high_smoke_reaches_no_core_heldout_xhigh_or_max(
+    prepared: px.PreparedExecution,
+) -> None:
+    for call in prepared.calls:
+        assert call.case.split in {"SMOKE", "N3_SAFETY_SMOKE"}
+        assert call.case.candidate.reasoning_effort == "HIGH"
+        assert call.case.candidate.candidate_id not in px.FORBIDDEN_CANDIDATE_IDS
+    assert not any(
+        call.case.split
+        in {"CORE", "HELD_OUT_CONFIRMATION", "N3_CORE", "N3_HELD_OUT_CONFIRMATION"}
+        for call in prepared.calls
     )
-    if not root.exists():  # pragma: no cover - evidence not present in a fork
-        pytest.skip("no recorded Phase 9B.1 bundle in this checkout")
-    manifest = json.loads((root / "bundle_manifest.json").read_text("utf-8"))
-    assert manifest["leakage_scan"]["leaks"] == 0
-    assert manifest["packet_count"] == len(manifest["packets"])
-    for row in manifest["packets"]:
-        packet = json.loads((root / row["file"]).read_text("utf-8"))
-        assert px.scan_packet_for_leakage(packet)["result"] == "PASS"
-        assert px._hash(packet) == row["packet_hash"]
+
+
+def test_heldout_material_cannot_enter_high_smoke_selection(
+    prepared: px.PreparedExecution,
+) -> None:
+    authority = prepared.request_authority
+    assert authority["selection_depends_on_results"] is False
+    assert authority["contains_held_out_material"] is False
+    assert {row["split"] for row in authority["semantic_cases"]} == {"SMOKE"}
+    assert {row["split"] for row in authority["n3_exposures"]} == {
+        "N3_SAFETY_SMOKE"
+    }
+    held_out = set(
+        prepared.authorities.documents["n3_axis"]["selectors"][
+            "held_out_exposure_ids"
+        ]
+    )
+    assert not held_out.intersection(
+        row["exposure_pseudonym"] for row in authority["n3_exposures"]
+    )
+
+
+def test_semantic_and_n3_packet_sets_are_disjoint_and_correct(
+    prepared: px.PreparedExecution,
+) -> None:
+    outputs = {
+        call.logical_call_id: px.CompletedCall(
+            canonical_output=(
+                {"opportunities": []}
+                if call.case.axis == "SEMANTIC" and call.case.stage == "P06"
+                else {}
+            ),
+            provider_output={},
+        )
+        for call in prepared.calls
+    }
+    surfaces = px.build_blind_packet_sets(calls=prepared.calls, outputs=outputs)
+    assert surfaces["semantic"]["packet_count"] == 54
+    assert surfaces["semantic"]["denominator"] == "ACCEPTED_SEMANTIC_RATE_ONLY"
+    assert surfaces["n3"]["packet_count"] == 3
+    assert surfaces["n3"]["denominator"] == (
+        "EXCLUDED_FROM_ACCEPTED_SEMANTIC_RATE"
+    )
+    assert surfaces["n3"]["verdicts"] == [
+        "NO_CONFIRMED_VIOLATION",
+        "INDETERMINATE",
+        "CONFIRMED_CONTRACTUAL_HARD_SAFETY_FAILURE",
+    ]
+    semantic_ids = {
+        row["packet_id"] for row in surfaces["semantic"]["packets"]
+    }
+    n3_ids = {row["packet_id"] for row in surfaces["n3"]["packets"]}
+    assert semantic_ids.isdisjoint(n3_ids)
+    p06_semantic = [
+        row
+        for row in surfaces["semantic"]["packets"]
+        if row["packet"]["case_id"] == "PP-A01-S03-P06-G01"
+    ]
+    assert len(p06_semantic) == 6
+    assert all(row["packet"]["candidate_output"]["route_omitted"] for row in p06_semantic)
+    assert [
+        (row["packet"]["exposure_pseudonym"], row["packet"]["run_index"])
+        for row in surfaces["n3"]["packets"]
+    ] == [
+        ("N3-act_01_luz_y_plantines-submission_01", 1),
+        ("N3-act_01_luz_y_plantines-submission_01", 2),
+        ("N3-act_01_luz_y_plantines-submission_01", 3),
+    ]
+
+
+def test_authorization_requirements_are_v135_v2_and_not_an_authorization(
+    prepared: px.PreparedExecution,
+) -> None:
+    pricing_material = {
+        "schema_version": "phase9-current-pricing/2.0.0",
+        "execution_version": px.PHASE9_EXECUTION_VERSION,
+        "status": "SYNTHETIC_TEST_ONLY",
+        "models": {},
+    }
+    pricing = {
+        **pricing_material,
+        "pricing_snapshot_hash": px._hash(pricing_material),
+    }
+    requirements = px.authorization_requirements(prepared, pricing)
+    assert requirements["authorization_state"] == "NOT_AUTHORIZED_TEMPLATE"
+    assert requirements["benchmark_version"] == "semantic-benchmark/1.3.5"
+    assert requirements["protocol_version"] == (
+        "phase9-qualification-protocol/1.3.5"
+    )
+    assert requirements["execution_version"] == "phase9-execution/2.0.0"
+    assert requirements["execution_boundary_hash"] == (
+        prepared.boundary["execution_boundary_hash"]
+    )
+    assert requirements["high_smoke_plan_hash"] == prepared.plan["plan_hash"]
+    assert requirements["logical_call_identities"] == [
+        call.identity() for call in prepared.calls
+    ]
+    assert "outer_cap_usd" in requirements["required_future_fields"]
+    assert "authorization_hash" in requirements["required_future_fields"]
+
+
+def test_no_executable_pricing_or_cap_fallback_remains() -> None:
+    source = Path(px.__file__).read_text(encoding="utf-8")
+    assert "verify_pricing_snapshot" not in source
+    assert "MODEL_PRICES" not in source
+    assert "OUTER_AUTHORIZATION_CAP_USD" not in source
+    assert "pricing_snapshot.json" not in source
+
+
+def test_all_semantic_benchmark_v135_bytes_remain_unchanged(
+    prepared: px.PreparedExecution,
+) -> None:
+    for relative, binding in prepared.boundary["frozen_artifacts"].items():
+        data = (px.REPOSITORY_ROOT / relative).read_bytes()
+        assert "semantic_benchmark/v1_3_5" in relative
+        assert f"sha256:{sha256(data).hexdigest()}" == binding["file_sha256"]
+    assert px._file_hash(px.FrozenAuthorityPaths().freeze_manifest) == (
+        prepared.boundary["freeze_manifest_file_sha256"]
+    )
+    result = subprocess.run(
+        [
+            "git",
+            "status",
+            "--porcelain",
+            "--",
+            "evaluation/semantic_benchmark/v1_3_5",
+            "reports/semantic_benchmark/v1_3_5",
+        ],
+        cwd=px.REPOSITORY_ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    assert result.stdout == ""
