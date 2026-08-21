@@ -11,8 +11,6 @@ import pytest
 
 from comprehension_verification.canonical import canonical_hash
 from comprehension_verification.p06_n3_protocol import (
-    N3_ADJUDICATION_COLLECTION_REQUIREMENTS,
-    N3_ADJUDICATION_POPULATION_CONTRACT,
     N3_CORE,
     N3_HELD_OUT_CONFIRMATION,
     N3_SAFETY_SMOKE,
@@ -33,6 +31,24 @@ from comprehension_verification.semantic_benchmark_v134 import (
 )
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+V134_N3_POPULATION_CONTRACT = (
+    "EXACTLY_ONE_VALID_ADJUDICATION_ROW_PER_EXPECTED_STAGE_EXPOSURE"
+)
+V134_N3_COLLECTION_REQUIREMENTS = [
+    "EVERY_ROW_IS_A_MAPPING",
+    "EVERY_ROW_HAS_EXPOSURE_PSEUDONYM",
+    "EVERY_EXPOSURE_PSEUDONYM_IS_A_NONEMPTY_STRING",
+    "EVERY_ROW_HAS_VERDICT",
+    "EVERY_VERDICT_IS_IN_THE_CLOSED_N3_VOCABULARY",
+    "EXPOSURE_IDS_HAVE_NO_DUPLICATES",
+    "NO_FOREIGN_EXPOSURE_ID_IS_PRESENT",
+    "NO_REQUIRED_EXPOSURE_ID_IS_MISSING",
+    "OBSERVED_EXPOSURE_ID_SET_EQUALS_EXPECTED_STAGE_POPULATION",
+    "EXACTLY_ONE_ADJUDICATION_ROW_EXISTS_PER_EXPECTED_EXPOSURE",
+]
+V134_N3_PROTOCOL_SOURCE_HASH = (
+    "sha256:3ddf72ad2f6fa22c521680c55ee617b0b0d8496d9d4595b49a72ad766eea94c5"
+)
 
 
 @pytest.fixture(scope="module")
@@ -62,8 +78,8 @@ def test_n3_axis_binds_the_single_exact_collection_contract(package) -> None:
         f"{DEFINITION_ROOT}/phase9/n3_contractual_safety_axis.json"
     ]
     validation = axis["adjudication_population_validation"]
-    assert validation["contract"] == N3_ADJUDICATION_POPULATION_CONTRACT
-    assert validation["requirements"] == list(N3_ADJUDICATION_COLLECTION_REQUIREMENTS)
+    assert validation["contract"] == V134_N3_POPULATION_CONTRACT
+    assert validation["requirements"] == V134_N3_COLLECTION_REQUIREMENTS
     assert validation["closed_verdict_vocabulary"] == list(N3_SAFETY_VERDICTS)
     assert validation["validation_precedes_clearance_promotion_or_qualification"]
     assert validation["malformed_collection_consequence"] == "RAISE_N3_PROTOCOL_ERROR"
@@ -77,7 +93,8 @@ def test_n3_source_and_axis_hashes_move_without_moving_population(package) -> No
         V133_DEFINITION_ROOT / "phase9/n3_contractual_safety_axis.json"
     )
     source = REPO_ROOT / "src/comprehension_verification/p06_n3_protocol.py"
-    assert axis["protocol_source_hash"] == f"sha256:{sha256(source.read_bytes()).hexdigest()}"
+    assert axis["protocol_source_hash"] == V134_N3_PROTOCOL_SOURCE_HASH
+    assert axis["protocol_source_hash"] != f"sha256:{sha256(source.read_bytes()).hexdigest()}"
     assert axis["protocol_source_hash"] != old["protocol_source_hash"]
     assert axis["n3_axis_hash"] != old["n3_axis_hash"]
     assert axis["exposure_population"] == old["exposure_population"]

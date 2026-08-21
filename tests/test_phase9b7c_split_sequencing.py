@@ -24,6 +24,7 @@ from comprehension_verification.p06_n3_protocol import (
     N3_CORE,
     N3_HELD_OUT_CONFIRMATION,
     N3_SAFETY_SMOKE,
+    N3_RUNS_PER_EXPOSURE,
     NO_CONFIRMED_VIOLATION,
     P06_SMOKE_ACTIVITY_IDS,
     QUALIFICATION_SIDE,
@@ -68,8 +69,20 @@ def stage_plan(population, safety_smoke) -> dict:
     return n3_stage_plan(population, safety_smoke)
 
 
-def _verdict(name: str, exposure: str) -> dict:
-    return {"exposure_pseudonym": exposure, "verdict": name}
+def _verdict(name: str, exposure: str, run_index: int = 1) -> dict:
+    return {
+        "exposure_pseudonym": exposure,
+        "run_index": run_index,
+        "verdict": name,
+    }
+
+
+def _verdicts(name: str, exposures: list[str]) -> list[dict]:
+    return [
+        _verdict(name, exposure, run_index)
+        for exposure in exposures
+        for run_index in range(1, N3_RUNS_PER_EXPOSURE + 1)
+    ]
 
 
 # --------------------------------------------------------------------------
@@ -199,12 +212,8 @@ def test_d3_qualification_side_failure_can_reject_a_rung(
         for item in stage_plan["stages"]
         if item["stage"] == N3_CORE
     )
-    verdicts = [
-        _verdict(NO_CONFIRMED_VIOLATION, item) for item in qualification[:-1]
-    ]
-    verdicts.append(
-        _verdict(CONFIRMED_CONTRACTUAL_HARD_SAFETY_FAILURE, qualification[-1])
-    )
+    verdicts = _verdicts(NO_CONFIRMED_VIOLATION, qualification)
+    verdicts[-1]["verdict"] = CONFIRMED_CONTRACTUAL_HARD_SAFETY_FAILURE
     aggregate = n3_rung_aggregate(
         verdicts,
         required_exposure_count=len(qualification),
@@ -219,16 +228,10 @@ def test_d3_qualification_side_failure_can_reject_a_rung(
 def test_d4_held_out_failure_cannot_trigger_escalation(population) -> None:
     """Regression 4."""
 
-    verdicts = [
-        _verdict(NO_CONFIRMED_VIOLATION, item)
-        for item in population["held_out_exposure_ids"][:-1]
-    ]
-    verdicts.append(
-        _verdict(
-            CONFIRMED_CONTRACTUAL_HARD_SAFETY_FAILURE,
-            population["held_out_exposure_ids"][-1],
-        )
+    verdicts = _verdicts(
+        NO_CONFIRMED_VIOLATION, population["held_out_exposure_ids"]
     )
+    verdicts[-1]["verdict"] = CONFIRMED_CONTRACTUAL_HARD_SAFETY_FAILURE
     result = n3_held_out_confirmation(
         verdicts, population=population, selected_configuration="cfg_high_rung_1"
     )
@@ -242,10 +245,9 @@ def test_d4_held_out_failure_cannot_trigger_escalation(population) -> None:
 def test_d5_held_out_result_cannot_alter_ranking(population, stage_plan) -> None:
     """Regression 5."""
 
-    verdicts = [
-        _verdict(NO_CONFIRMED_VIOLATION, item)
-        for item in population["held_out_exposure_ids"]
-    ]
+    verdicts = _verdicts(
+        NO_CONFIRMED_VIOLATION, population["held_out_exposure_ids"]
+    )
     result = n3_held_out_confirmation(
         verdicts, population=population, selected_configuration="cfg_a"
     )
@@ -260,10 +262,9 @@ def test_d6_held_out_runs_only_after_a_configuration_is_selected(
 ) -> None:
     """Regression 6."""
 
-    verdicts = [
-        _verdict(NO_CONFIRMED_VIOLATION, item)
-        for item in population["held_out_exposure_ids"]
-    ]
+    verdicts = _verdicts(
+        NO_CONFIRMED_VIOLATION, population["held_out_exposure_ids"]
+    )
     for absent in (None, ""):
         with pytest.raises(N3ProtocolError):
             n3_held_out_confirmation(
@@ -282,10 +283,9 @@ def test_d7_all_held_out_exposures_are_exhausted_at_confirmation(
 ) -> None:
     """Regression 7."""
 
-    full = [
-        _verdict(NO_CONFIRMED_VIOLATION, item)
-        for item in population["held_out_exposure_ids"]
-    ]
+    full = _verdicts(
+        NO_CONFIRMED_VIOLATION, population["held_out_exposure_ids"]
+    )
     complete = n3_held_out_confirmation(
         full, population=population, selected_configuration="cfg_a"
     )
@@ -294,17 +294,18 @@ def test_d7_all_held_out_exposures_are_exhausted_at_confirmation(
 
     with pytest.raises(N3ProtocolError, match="N3_REQUIRED_EXPOSURE_ID_MISSING"):
         n3_held_out_confirmation(
-            full[:-1], population=population, selected_configuration="cfg_a"
+            full[:-N3_RUNS_PER_EXPOSURE],
+            population=population,
+            selected_configuration="cfg_a",
         )
 
 
 def test_d7b_a_non_held_out_exposure_cannot_enter_confirmation(
     population,
 ) -> None:
-    verdicts = [
-        _verdict(NO_CONFIRMED_VIOLATION, item)
-        for item in population["held_out_exposure_ids"]
-    ]
+    verdicts = _verdicts(
+        NO_CONFIRMED_VIOLATION, population["held_out_exposure_ids"]
+    )
     verdicts.append(
         _verdict(
             NO_CONFIRMED_VIOLATION,
@@ -320,11 +321,10 @@ def test_d7b_a_non_held_out_exposure_cannot_enter_confirmation(
 def test_d8_unresolved_held_out_blocks_final_confirmation(population) -> None:
     """Regression 8."""
 
-    verdicts = [
-        _verdict(NO_CONFIRMED_VIOLATION, item)
-        for item in population["held_out_exposure_ids"][:-1]
-    ]
-    verdicts.append(_verdict(INDETERMINATE, population["held_out_exposure_ids"][-1]))
+    verdicts = _verdicts(
+        NO_CONFIRMED_VIOLATION, population["held_out_exposure_ids"]
+    )
+    verdicts[-1]["verdict"] = INDETERMINATE
     result = n3_held_out_confirmation(
         verdicts, population=population, selected_configuration="cfg_a"
     )

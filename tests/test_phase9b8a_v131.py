@@ -314,7 +314,7 @@ def test_a_fixture_set_that_does_not_cover_the_population_fails_closed(monkeypat
 
     monkeypatch.setattr(module, "build_n3_provider_fixtures", _short)
     with pytest.raises(N3ProviderFixtureError, match="does not cover"):
-        module.n3_provider_fixture_authority(DEFAULT_CORPUS_ROOT)
+        module.n3_provider_fixture_authority_current(DEFAULT_CORPUS_ROOT)
 
 
 def test_the_p06_boundary_is_new_and_supersedes_the_v130_one(build, n3_axis, fixtures):

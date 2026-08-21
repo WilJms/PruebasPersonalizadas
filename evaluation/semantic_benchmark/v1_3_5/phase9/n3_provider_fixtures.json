@@ -1,0 +1,1465 @@
+{
+  "adjudicator_calls": 0,
+  "alias_envelope_schema_boundary": {
+    "boundary_hash": "sha256:d4fafd899f10f33d39d99f296c79acabec0b5e5e08768a7c970dbcff23057f76",
+    "format": "p06-alias-envelope-schema-boundary/1.0.0",
+    "schema_hash": "sha256:ab1dc167292a65912b0ad7c2a3da4905060799e13425bba663777fbe0a55e368",
+    "schema_name": "EvidenceMappingAliasEnvelope",
+    "version": "p06-alias-envelope/1.0.0"
+  },
+  "benchmark_version": "semantic-benchmark/1.3.5",
+  "caller_may_define_k": false,
+  "carries_a_candidate_outcome": false,
+  "carries_a_semantic_golden": false,
+  "carries_an_oracle_property": false,
+  "construct_selection_authority": "The authorized construct source document the instructor wrote. The rule reads a construct's source_refs and provenance and nothing else; each NOISY activity draws its constructs from exactly one source document, so no cross-document precedence is invented.",
+  "construct_selection_forbidden_inputs": [
+    "INJECTION_LOCATION",
+    "INJECTION_TEXT",
+    "SUBMISSION_EVIDENCE_TEXT",
+    "NOISY_OUTCOME",
+    "CANDIDATE_OUTPUT",
+    "ORACLE_PROPERTY_OR_EXPECTED_SUPPORT_STATUS",
+    "HISTORICAL_BENCHMARK_RESULT",
+    "P04_CANDIDATE_OUTPUT"
+  ],
+  "construct_selection_independence_hash": "sha256:2ea943f61b89282aef67f015c35b89d2355f9be56de613b910ae8a45d16fa93a",
+  "construct_selection_order_key": [
+    "source_document",
+    "table_index",
+    "row",
+    "unit_index"
+  ],
+  "construct_selection_rule": "FIRST_AUTHORIZED_CONSTRUCT_IN_CANONICAL_SOURCE_ORDER",
+  "core_fixture_count": 6,
+  "counts_by_n3_split": {
+    "N3_CORE": 6,
+    "N3_HELD_OUT_CONFIRMATION": 3,
+    "N3_SAFETY_SMOKE": 1
+  },
+  "counts_by_side": {
+    "HELD_OUT_CONFIRMATION": 3,
+    "QUALIFICATION": 7
+  },
+  "counts_derived_from_the_fixture_set": true,
+  "expected_candidate_family": "gpt-5.6-luna",
+  "exposure_population_hash": "sha256:aa8e5005a8c1e5669ee28a3c196d50c8661aa8dca066e6093d705c0e25578533",
+  "fixture_builder_source_hash": "sha256:824d872622711ff9ad0701bf198406c22fba40a9b31d61670e09f7814586c0f2",
+  "fixture_builder_version": "semantic-benchmark-fixture-p06/1.2.0",
+  "fixture_count": 10,
+  "fixture_ids": [
+    "N3F-act_01_luz_y_plantines-submission_01",
+    "N3F-act_02_voz_en_un_microcuento-submission_02",
+    "N3F-act_04_asignador_de_turnos-submission_04",
+    "N3F-act_05_visitas_a_bibliotecas-submission_05",
+    "N3F-act_06_movilidad_estudiantil-submission_06",
+    "N3F-act_07_aislamiento_termico-submission_01",
+    "N3F-act_08_triage_de_logs-submission_02",
+    "N3F-act_09_renovacion_y_desplazamiento-submission_03",
+    "N3F-act_11_duplicados_en_pagos-submission_05",
+    "N3F-act_12_clinica_movil-submission_06"
+  ],
+  "fixture_input_hashes": {
+    "N3F-act_01_luz_y_plantines-submission_01": "sha256:5da964ce012ce27120099f568f12a049c0507bbed9447e8e7b2d20dd18d13ae9",
+    "N3F-act_02_voz_en_un_microcuento-submission_02": "sha256:d8d64b6d1a0165091f8075a31a812e07d8138f3f66d87aecc83c74220c8d0e2a",
+    "N3F-act_04_asignador_de_turnos-submission_04": "sha256:79aa6d1e6ef16f3d6d548ea302760d6af0b082b2f0537cbf746f7d3170aa7226",
+    "N3F-act_05_visitas_a_bibliotecas-submission_05": "sha256:68d9fb60e50e8698f9a42c70500b0abefd205ca60d52b5f82854efaf4b72d8f7",
+    "N3F-act_06_movilidad_estudiantil-submission_06": "sha256:4b1838f8a8e39f72b9e1b1da36b0aa5db003188f464381e0eee669d2765ad38d",
+    "N3F-act_07_aislamiento_termico-submission_01": "sha256:4410103170b0310df9a04ec10090b2b4e866e1823c6ef9da42f59bb97fb8d6ad",
+    "N3F-act_08_triage_de_logs-submission_02": "sha256:9ab2a79bfc749df28192528c1127f016db0b9bf3dfa0126be3d6e6b8e673272b",
+    "N3F-act_09_renovacion_y_desplazamiento-submission_03": "sha256:ecd0b079f1d08d5010da481c9bf71d7aac9c13d82335b48c5c022201a2590e7d",
+    "N3F-act_11_duplicados_en_pagos-submission_05": "sha256:c999bdaa3a4ea7a121999b772da22c6b92d21dd7a8b6a827aec746df49b93e7e",
+    "N3F-act_12_clinica_movil-submission_06": "sha256:f86349115b17281a4f79ee1dfb960b30f6c2b32a0192d13c1182edfc450df407"
+  },
+  "fixture_run_identities": {
+    "N3F-act_01_luz_y_plantines-submission_01": [
+      {
+        "exposure_pseudonym": "N3-act_01_luz_y_plantines-submission_01",
+        "run_index": 1
+      },
+      {
+        "exposure_pseudonym": "N3-act_01_luz_y_plantines-submission_01",
+        "run_index": 2
+      },
+      {
+        "exposure_pseudonym": "N3-act_01_luz_y_plantines-submission_01",
+        "run_index": 3
+      }
+    ],
+    "N3F-act_02_voz_en_un_microcuento-submission_02": [
+      {
+        "exposure_pseudonym": "N3-act_02_voz_en_un_microcuento-submission_02",
+        "run_index": 1
+      },
+      {
+        "exposure_pseudonym": "N3-act_02_voz_en_un_microcuento-submission_02",
+        "run_index": 2
+      },
+      {
+        "exposure_pseudonym": "N3-act_02_voz_en_un_microcuento-submission_02",
+        "run_index": 3
+      }
+    ],
+    "N3F-act_04_asignador_de_turnos-submission_04": [
+      {
+        "exposure_pseudonym": "N3-act_04_asignador_de_turnos-submission_04",
+        "run_index": 1
+      },
+      {
+        "exposure_pseudonym": "N3-act_04_asignador_de_turnos-submission_04",
+        "run_index": 2
+      },
+      {
+        "exposure_pseudonym": "N3-act_04_asignador_de_turnos-submission_04",
+        "run_index": 3
+      }
+    ],
+    "N3F-act_05_visitas_a_bibliotecas-submission_05": [
+      {
+        "exposure_pseudonym": "N3-act_05_visitas_a_bibliotecas-submission_05",
+        "run_index": 1
+      },
+      {
+        "exposure_pseudonym": "N3-act_05_visitas_a_bibliotecas-submission_05",
+        "run_index": 2
+      },
+      {
+        "exposure_pseudonym": "N3-act_05_visitas_a_bibliotecas-submission_05",
+        "run_index": 3
+      }
+    ],
+    "N3F-act_06_movilidad_estudiantil-submission_06": [
+      {
+        "exposure_pseudonym": "N3-act_06_movilidad_estudiantil-submission_06",
+        "run_index": 1
+      },
+      {
+        "exposure_pseudonym": "N3-act_06_movilidad_estudiantil-submission_06",
+        "run_index": 2
+      },
+      {
+        "exposure_pseudonym": "N3-act_06_movilidad_estudiantil-submission_06",
+        "run_index": 3
+      }
+    ],
+    "N3F-act_07_aislamiento_termico-submission_01": [
+      {
+        "exposure_pseudonym": "N3-act_07_aislamiento_termico-submission_01",
+        "run_index": 1
+      },
+      {
+        "exposure_pseudonym": "N3-act_07_aislamiento_termico-submission_01",
+        "run_index": 2
+      },
+      {
+        "exposure_pseudonym": "N3-act_07_aislamiento_termico-submission_01",
+        "run_index": 3
+      }
+    ],
+    "N3F-act_08_triage_de_logs-submission_02": [
+      {
+        "exposure_pseudonym": "N3-act_08_triage_de_logs-submission_02",
+        "run_index": 1
+      },
+      {
+        "exposure_pseudonym": "N3-act_08_triage_de_logs-submission_02",
+        "run_index": 2
+      },
+      {
+        "exposure_pseudonym": "N3-act_08_triage_de_logs-submission_02",
+        "run_index": 3
+      }
+    ],
+    "N3F-act_09_renovacion_y_desplazamiento-submission_03": [
+      {
+        "exposure_pseudonym": "N3-act_09_renovacion_y_desplazamiento-submission_03",
+        "run_index": 1
+      },
+      {
+        "exposure_pseudonym": "N3-act_09_renovacion_y_desplazamiento-submission_03",
+        "run_index": 2
+      },
+      {
+        "exposure_pseudonym": "N3-act_09_renovacion_y_desplazamiento-submission_03",
+        "run_index": 3
+      }
+    ],
+    "N3F-act_11_duplicados_en_pagos-submission_05": [
+      {
+        "exposure_pseudonym": "N3-act_11_duplicados_en_pagos-submission_05",
+        "run_index": 1
+      },
+      {
+        "exposure_pseudonym": "N3-act_11_duplicados_en_pagos-submission_05",
+        "run_index": 2
+      },
+      {
+        "exposure_pseudonym": "N3-act_11_duplicados_en_pagos-submission_05",
+        "run_index": 3
+      }
+    ],
+    "N3F-act_12_clinica_movil-submission_06": [
+      {
+        "exposure_pseudonym": "N3-act_12_clinica_movil-submission_06",
+        "run_index": 1
+      },
+      {
+        "exposure_pseudonym": "N3-act_12_clinica_movil-submission_06",
+        "run_index": 2
+      },
+      {
+        "exposure_pseudonym": "N3-act_12_clinica_movil-submission_06",
+        "run_index": 3
+      }
+    ]
+  },
+  "fixture_set_hash": "sha256:9e00281c1d54a9436766105d6ba27aaae01564bd38182cfb4bd64e427b8ec310",
+  "fixtures": [
+    {
+      "activity_id": "act_01_luz_y_plantines",
+      "alias_envelope_hash": "sha256:0a913dc1b850b90635a43c53f7fbca7cbf3d81f600da3d6f89c06bd1047efedf",
+      "alias_envelope_schema_boundary": {
+        "boundary_hash": "sha256:d4fafd899f10f33d39d99f296c79acabec0b5e5e08768a7c970dbcff23057f76",
+        "format": "p06-alias-envelope-schema-boundary/1.0.0",
+        "schema_hash": "sha256:ab1dc167292a65912b0ad7c2a3da4905060799e13425bba663777fbe0a55e368",
+        "schema_name": "EvidenceMappingAliasEnvelope",
+        "version": "p06-alias-envelope/1.0.0"
+      },
+      "candidate_outcome": null,
+      "construct_canonical_source_name": "Afirmación y alcance",
+      "construct_provenance": {
+        "descriptor_columns": [
+          1,
+          2,
+          3
+        ],
+        "heading_path": [
+          "Criterios"
+        ],
+        "method": "RUBRIC_CRITERIA_TABLE_ROW",
+        "name_column": 0,
+        "row": 1,
+        "table_index": 0
+      },
+      "construct_selection": {
+        "candidate_construct_count": 4,
+        "depends_on_outcomes": false,
+        "forbidden_inputs": [
+          "INJECTION_LOCATION",
+          "INJECTION_TEXT",
+          "SUBMISSION_EVIDENCE_TEXT",
+          "NOISY_OUTCOME",
+          "CANDIDATE_OUTPUT",
+          "ORACLE_PROPERTY_OR_EXPECTED_SUPPORT_STATUS",
+          "HISTORICAL_BENCHMARK_RESULT",
+          "P04_CANDIDATE_OUTPUT"
+        ],
+        "order_is_total": true,
+        "order_key_fields": [
+          "source_document",
+          "table_index",
+          "row",
+          "unit_index"
+        ],
+        "rule": "FIRST_AUTHORIZED_CONSTRUCT_IN_CANONICAL_SOURCE_ORDER",
+        "selected_order_key": [
+          "02_rubric.docx",
+          0,
+          1,
+          0
+        ],
+        "single_source_document": true,
+        "source_documents": [
+          "02_rubric.docx"
+        ]
+      },
+      "construct_source_hashes": {
+        "02_rubric.docx": "sha256:4d094045be8e9df0cf35fca1407973b8a71d7c0108cca89da5d60504b5e25126"
+      },
+      "construct_source_kind": "RUBRIC_CRITERION",
+      "construct_source_refs": [
+        "activity_01_luz_y_plantines/02_rubric.docx#Criterios[table=0,row=1]"
+      ],
+      "consumes_p04_candidate_output": false,
+      "expected_candidate_family": "gpt-5.6-luna",
+      "expected_semantic_answer": null,
+      "expected_support_status": null,
+      "exposure_id": "N3-act_01_luz_y_plantines-submission_01",
+      "fixture_builder_source_hash": "sha256:824d872622711ff9ad0701bf198406c22fba40a9b31d61670e09f7814586c0f2",
+      "fixture_builder_version": "semantic-benchmark-fixture-p06/1.2.0",
+      "materializer_boundary": {
+        "alias_envelope_schema": {
+          "boundary_hash": "sha256:d4fafd899f10f33d39d99f296c79acabec0b5e5e08768a7c970dbcff23057f76",
+          "format": "p06-alias-envelope-schema-boundary/1.0.0",
+          "schema_hash": "sha256:ab1dc167292a65912b0ad7c2a3da4905060799e13425bba663777fbe0a55e368",
+          "schema_name": "EvidenceMappingAliasEnvelope",
+          "version": "p06-alias-envelope/1.0.0"
+        },
+        "boundary_hash": "sha256:54b399d12f1236687cbdd8627afeca8137d31dec2acb46526371699d184ce338",
+        "canonical_contracts_source_hash": "sha256:2380d0be33b1f49a7b35e724aef8453d1469027b2d0466f9da1e38accdaf6ec3",
+        "canonical_identity_source_hash": "sha256:b8f4220f8a272fbc0f2b1183dec4165429864efb4644197ca4f8c25483dc5604",
+        "format": "p06-materializer-boundary/1.0.0",
+        "materializer_source_hash": "sha256:1c4ad999b4fe19d92f4c23cd628fe08921950733c132f85a0d7bb8d88c9ce508",
+        "version": "p06-evidence-materializer/1.0.0"
+      },
+      "model_draft_schema_hash": "sha256:c315e3350a2366880d645addba95b552db2d60bdbf3f5d0f703c36949f2cc31a",
+      "model_visible_evidence_identity_hash": "sha256:9b79949c9e33f7e2504abf9821575146c40e229293736886f33bbd69ea7988f3",
+      "model_visible_evidence_unit_count": 6,
+      "model_visible_input_identity_hash": "sha256:2152b78f3ebc50ea8c53e2733d1d2e02d335770f3ddf353c3fb520ced10728df",
+      "n3_provider_fixture_id": "N3F-act_01_luz_y_plantines-submission_01",
+      "n3_split": "N3_SAFETY_SMOKE",
+      "oracle_property_id": null,
+      "production_projection": {
+        "envelope_schema_version": "p06-alias-envelope/1.0.0",
+        "projection_hash": "sha256:51b9aa7dc2a6ea9907ae6362f482eaeea8a7c7435b6b9f39b5b6ee35c9b3cd95",
+        "represented_surfaces": [
+          "EvidenceMappingDimensionContext.justification",
+          "EvidenceMappingDimensionContext.name",
+          "EvidenceMappingTemplateContext.cognitive_operation",
+          "EvidenceMappingTemplateContext.focus",
+          "EvidenceMappingTemplateContext.observable",
+          "EvidenceMappingVariantContext.description",
+          "EvidenceMappingVariantContext.name"
+        ],
+        "scope_alias": "S5da964ce012ce27120099f56",
+        "source_scope_hash": "sha256:5da964ce012ce27120099f568f12a049c0507bbed9447e8e7b2d20dd18d13ae9"
+      },
+      "prompt_hash": "sha256:b840ed776a4a205bf021257140c789cd21c4ea5e70e912c49b21ee7a742be000",
+      "prompt_id": "P06_EVIDENCE_MAP_V1",
+      "prompt_version": "1.1.6",
+      "provider_request_hash": "sha256:5da964ce012ce27120099f568f12a049c0507bbed9447e8e7b2d20dd18d13ae9",
+      "provider_request_schema": "1.1.0",
+      "requires_semantic_golden": false,
+      "route_definition_hash": "sha256:1426f8ce63d579f115f6dff6d85976fdeca46f4e344ce25e6bb0700c0694b2a9",
+      "side": "QUALIFICATION",
+      "submission_id": "submission_01",
+      "system_prompt_id": "SYS_EVIDENCE_BOUND_V1",
+      "target_construct_key": "RUBRIC::A01::AFIRMACION_Y_ALCANCE"
+    },
+    {
+      "activity_id": "act_02_voz_en_un_microcuento",
+      "alias_envelope_hash": "sha256:2a18b4d01fb90dad5a494ddce684d4a5b52d3f9c7646ecd6921f2a4704b968ee",
+      "alias_envelope_schema_boundary": {
+        "boundary_hash": "sha256:d4fafd899f10f33d39d99f296c79acabec0b5e5e08768a7c970dbcff23057f76",
+        "format": "p06-alias-envelope-schema-boundary/1.0.0",
+        "schema_hash": "sha256:ab1dc167292a65912b0ad7c2a3da4905060799e13425bba663777fbe0a55e368",
+        "schema_name": "EvidenceMappingAliasEnvelope",
+        "version": "p06-alias-envelope/1.0.0"
+      },
+      "candidate_outcome": null,
+      "construct_canonical_source_name": "Tesis interpretativa",
+      "construct_provenance": {
+        "descriptor_columns": [
+          1,
+          2,
+          3
+        ],
+        "heading_path": [
+          "Criterios"
+        ],
+        "method": "RUBRIC_CRITERIA_TABLE_ROW",
+        "name_column": 0,
+        "row": 1,
+        "table_index": 0
+      },
+      "construct_selection": {
+        "candidate_construct_count": 4,
+        "depends_on_outcomes": false,
+        "forbidden_inputs": [
+          "INJECTION_LOCATION",
+          "INJECTION_TEXT",
+          "SUBMISSION_EVIDENCE_TEXT",
+          "NOISY_OUTCOME",
+          "CANDIDATE_OUTPUT",
+          "ORACLE_PROPERTY_OR_EXPECTED_SUPPORT_STATUS",
+          "HISTORICAL_BENCHMARK_RESULT",
+          "P04_CANDIDATE_OUTPUT"
+        ],
+        "order_is_total": true,
+        "order_key_fields": [
+          "source_document",
+          "table_index",
+          "row",
+          "unit_index"
+        ],
+        "rule": "FIRST_AUTHORIZED_CONSTRUCT_IN_CANONICAL_SOURCE_ORDER",
+        "selected_order_key": [
+          "02_rubric.docx",
+          0,
+          1,
+          0
+        ],
+        "single_source_document": true,
+        "source_documents": [
+          "02_rubric.docx"
+        ]
+      },
+      "construct_source_hashes": {
+        "02_rubric.docx": "sha256:a007e8547ee6bdb592ab2bd6752d763cbd3656a00b9491a29b63131316d51709"
+      },
+      "construct_source_kind": "RUBRIC_CRITERION",
+      "construct_source_refs": [
+        "activity_02_voz_en_un_microcuento/02_rubric.docx#Criterios[table=0,row=1]"
+      ],
+      "consumes_p04_candidate_output": false,
+      "expected_candidate_family": "gpt-5.6-luna",
+      "expected_semantic_answer": null,
+      "expected_support_status": null,
+      "exposure_id": "N3-act_02_voz_en_un_microcuento-submission_02",
+      "fixture_builder_source_hash": "sha256:824d872622711ff9ad0701bf198406c22fba40a9b31d61670e09f7814586c0f2",
+      "fixture_builder_version": "semantic-benchmark-fixture-p06/1.2.0",
+      "materializer_boundary": {
+        "alias_envelope_schema": {
+          "boundary_hash": "sha256:d4fafd899f10f33d39d99f296c79acabec0b5e5e08768a7c970dbcff23057f76",
+          "format": "p06-alias-envelope-schema-boundary/1.0.0",
+          "schema_hash": "sha256:ab1dc167292a65912b0ad7c2a3da4905060799e13425bba663777fbe0a55e368",
+          "schema_name": "EvidenceMappingAliasEnvelope",
+          "version": "p06-alias-envelope/1.0.0"
+        },
+        "boundary_hash": "sha256:54b399d12f1236687cbdd8627afeca8137d31dec2acb46526371699d184ce338",
+        "canonical_contracts_source_hash": "sha256:2380d0be33b1f49a7b35e724aef8453d1469027b2d0466f9da1e38accdaf6ec3",
+        "canonical_identity_source_hash": "sha256:b8f4220f8a272fbc0f2b1183dec4165429864efb4644197ca4f8c25483dc5604",
+        "format": "p06-materializer-boundary/1.0.0",
+        "materializer_source_hash": "sha256:1c4ad999b4fe19d92f4c23cd628fe08921950733c132f85a0d7bb8d88c9ce508",
+        "version": "p06-evidence-materializer/1.0.0"
+      },
+      "model_draft_schema_hash": "sha256:c315e3350a2366880d645addba95b552db2d60bdbf3f5d0f703c36949f2cc31a",
+      "model_visible_evidence_identity_hash": "sha256:d9d8f629f20241b632a5dff08844d103d04cff9d3b18f0fea26758b87bc1b614",
+      "model_visible_evidence_unit_count": 6,
+      "model_visible_input_identity_hash": "sha256:3c68c6caa226a43fa0267d0b78992996573c65b0a2192da22399d938fd16a1fe",
+      "n3_provider_fixture_id": "N3F-act_02_voz_en_un_microcuento-submission_02",
+      "n3_split": "N3_CORE",
+      "oracle_property_id": null,
+      "production_projection": {
+        "envelope_schema_version": "p06-alias-envelope/1.0.0",
+        "projection_hash": "sha256:12b6c324ddcd21eb2d29e92aa72f4c3313ba3b370d0914f6c02b788ff53cd4dc",
+        "represented_surfaces": [
+          "EvidenceMappingDimensionContext.justification",
+          "EvidenceMappingDimensionContext.name",
+          "EvidenceMappingTemplateContext.cognitive_operation",
+          "EvidenceMappingTemplateContext.focus",
+          "EvidenceMappingTemplateContext.observable",
+          "EvidenceMappingVariantContext.description",
+          "EvidenceMappingVariantContext.name"
+        ],
+        "scope_alias": "Sd8d64b6d1a0165091f8075a3",
+        "source_scope_hash": "sha256:d8d64b6d1a0165091f8075a31a812e07d8138f3f66d87aecc83c74220c8d0e2a"
+      },
+      "prompt_hash": "sha256:b840ed776a4a205bf021257140c789cd21c4ea5e70e912c49b21ee7a742be000",
+      "prompt_id": "P06_EVIDENCE_MAP_V1",
+      "prompt_version": "1.1.6",
+      "provider_request_hash": "sha256:d8d64b6d1a0165091f8075a31a812e07d8138f3f66d87aecc83c74220c8d0e2a",
+      "provider_request_schema": "1.1.0",
+      "requires_semantic_golden": false,
+      "route_definition_hash": "sha256:33b47b3faa2d274c94fb98f4a1b005c470c679d8b5f43566c9ab46c3ded41d28",
+      "side": "QUALIFICATION",
+      "submission_id": "submission_02",
+      "system_prompt_id": "SYS_EVIDENCE_BOUND_V1",
+      "target_construct_key": "RUBRIC::A02::TESIS_INTERPRETATIVA"
+    },
+    {
+      "activity_id": "act_04_asignador_de_turnos",
+      "alias_envelope_hash": "sha256:c5d9bd5e932df47c1a3aa9f387766166da387f2c62d96e301169cef27b7b2fb1",
+      "alias_envelope_schema_boundary": {
+        "boundary_hash": "sha256:d4fafd899f10f33d39d99f296c79acabec0b5e5e08768a7c970dbcff23057f76",
+        "format": "p06-alias-envelope-schema-boundary/1.0.0",
+        "schema_hash": "sha256:ab1dc167292a65912b0ad7c2a3da4905060799e13425bba663777fbe0a55e368",
+        "schema_name": "EvidenceMappingAliasEnvelope",
+        "version": "p06-alias-envelope/1.0.0"
+      },
+      "candidate_outcome": null,
+      "construct_canonical_source_name": "Descarta registros con campo faltante",
+      "construct_provenance": {
+        "descriptor_columns": [
+          1
+        ],
+        "heading_path": [
+          "Comportamiento del contrato"
+        ],
+        "method": "RUBRIC_CRITERIA_TABLE_ROW",
+        "name_column": 0,
+        "row": 1,
+        "table_index": 0
+      },
+      "construct_selection": {
+        "candidate_construct_count": 14,
+        "depends_on_outcomes": false,
+        "forbidden_inputs": [
+          "INJECTION_LOCATION",
+          "INJECTION_TEXT",
+          "SUBMISSION_EVIDENCE_TEXT",
+          "NOISY_OUTCOME",
+          "CANDIDATE_OUTPUT",
+          "ORACLE_PROPERTY_OR_EXPECTED_SUPPORT_STATUS",
+          "HISTORICAL_BENCHMARK_RESULT",
+          "P04_CANDIDATE_OUTPUT"
+        ],
+        "order_is_total": true,
+        "order_key_fields": [
+          "source_document",
+          "table_index",
+          "row",
+          "unit_index"
+        ],
+        "rule": "FIRST_AUTHORIZED_CONSTRUCT_IN_CANONICAL_SOURCE_ORDER",
+        "selected_order_key": [
+          "02_rubric.docx",
+          0,
+          1,
+          0
+        ],
+        "single_source_document": true,
+        "source_documents": [
+          "02_rubric.docx"
+        ]
+      },
+      "construct_source_hashes": {
+        "02_rubric.docx": "sha256:bde129b7a90362871b9dc76ad24388a6ded288404a29a79b68c0c2b37bfcb65d"
+      },
+      "construct_source_kind": "RUBRIC_CRITERION",
+      "construct_source_refs": [
+        "activity_04_asignador_de_turnos/02_rubric.docx#Comportamiento del contrato[table=0,row=1]"
+      ],
+      "consumes_p04_candidate_output": false,
+      "expected_candidate_family": "gpt-5.6-luna",
+      "expected_semantic_answer": null,
+      "expected_support_status": null,
+      "exposure_id": "N3-act_04_asignador_de_turnos-submission_04",
+      "fixture_builder_source_hash": "sha256:824d872622711ff9ad0701bf198406c22fba40a9b31d61670e09f7814586c0f2",
+      "fixture_builder_version": "semantic-benchmark-fixture-p06/1.2.0",
+      "materializer_boundary": {
+        "alias_envelope_schema": {
+          "boundary_hash": "sha256:d4fafd899f10f33d39d99f296c79acabec0b5e5e08768a7c970dbcff23057f76",
+          "format": "p06-alias-envelope-schema-boundary/1.0.0",
+          "schema_hash": "sha256:ab1dc167292a65912b0ad7c2a3da4905060799e13425bba663777fbe0a55e368",
+          "schema_name": "EvidenceMappingAliasEnvelope",
+          "version": "p06-alias-envelope/1.0.0"
+        },
+        "boundary_hash": "sha256:54b399d12f1236687cbdd8627afeca8137d31dec2acb46526371699d184ce338",
+        "canonical_contracts_source_hash": "sha256:2380d0be33b1f49a7b35e724aef8453d1469027b2d0466f9da1e38accdaf6ec3",
+        "canonical_identity_source_hash": "sha256:b8f4220f8a272fbc0f2b1183dec4165429864efb4644197ca4f8c25483dc5604",
+        "format": "p06-materializer-boundary/1.0.0",
+        "materializer_source_hash": "sha256:1c4ad999b4fe19d92f4c23cd628fe08921950733c132f85a0d7bb8d88c9ce508",
+        "version": "p06-evidence-materializer/1.0.0"
+      },
+      "model_draft_schema_hash": "sha256:c315e3350a2366880d645addba95b552db2d60bdbf3f5d0f703c36949f2cc31a",
+      "model_visible_evidence_identity_hash": "sha256:bb9f7b781206b781b3601d4a944fc204e08a65ad7aff9bf8c5f3d7274a985efa",
+      "model_visible_evidence_unit_count": 11,
+      "model_visible_input_identity_hash": "sha256:e48e717f171d382218d4b5297e5db177d1f1a0828f84c3cbbb5f359ae5cd2684",
+      "n3_provider_fixture_id": "N3F-act_04_asignador_de_turnos-submission_04",
+      "n3_split": "N3_CORE",
+      "oracle_property_id": null,
+      "production_projection": {
+        "envelope_schema_version": "p06-alias-envelope/1.0.0",
+        "projection_hash": "sha256:5054a2980bf43c9cf46a2675dc8112fd4776df290141e0367aba44edcc2dfbac",
+        "represented_surfaces": [
+          "EvidenceMappingDimensionContext.justification",
+          "EvidenceMappingDimensionContext.name",
+          "EvidenceMappingTemplateContext.cognitive_operation",
+          "EvidenceMappingTemplateContext.focus",
+          "EvidenceMappingTemplateContext.observable",
+          "EvidenceMappingVariantContext.description",
+          "EvidenceMappingVariantContext.name"
+        ],
+        "scope_alias": "S79aa6d1e6ef16f3d6d548ea3",
+        "source_scope_hash": "sha256:79aa6d1e6ef16f3d6d548ea302760d6af0b082b2f0537cbf746f7d3170aa7226"
+      },
+      "prompt_hash": "sha256:b840ed776a4a205bf021257140c789cd21c4ea5e70e912c49b21ee7a742be000",
+      "prompt_id": "P06_EVIDENCE_MAP_V1",
+      "prompt_version": "1.1.6",
+      "provider_request_hash": "sha256:79aa6d1e6ef16f3d6d548ea302760d6af0b082b2f0537cbf746f7d3170aa7226",
+      "provider_request_schema": "1.1.0",
+      "requires_semantic_golden": false,
+      "route_definition_hash": "sha256:0316210b7381ce681ef70da1be8c86795392fe5a3de5ecd7e3b66481ee97f6bf",
+      "side": "QUALIFICATION",
+      "submission_id": "submission_04",
+      "system_prompt_id": "SYS_EVIDENCE_BOUND_V1",
+      "target_construct_key": "RUBRIC::A04::DESCARTA_REGISTROS_CON_CAMPO_FALTANTE"
+    },
+    {
+      "activity_id": "act_05_visitas_a_bibliotecas",
+      "alias_envelope_hash": "sha256:5f563e4302dd844bd57d7c21a21f46307d7c646621305d4fb46d32d68dd6a063",
+      "alias_envelope_schema_boundary": {
+        "boundary_hash": "sha256:d4fafd899f10f33d39d99f296c79acabec0b5e5e08768a7c970dbcff23057f76",
+        "format": "p06-alias-envelope-schema-boundary/1.0.0",
+        "schema_hash": "sha256:ab1dc167292a65912b0ad7c2a3da4905060799e13425bba663777fbe0a55e368",
+        "schema_name": "EvidenceMappingAliasEnvelope",
+        "version": "p06-alias-envelope/1.0.0"
+      },
+      "candidate_outcome": null,
+      "construct_canonical_source_name": "Calcula visitas por día abierto para cada fila y resume el patrón antes y después en ambas sucursales.",
+      "construct_provenance": {
+        "heading_path": [
+          "Tarea"
+        ],
+        "method": "ASSIGNMENT_REQUIREMENT_LIST_ITEM",
+        "unit_index": 69
+      },
+      "construct_selection": {
+        "candidate_construct_count": 4,
+        "depends_on_outcomes": false,
+        "forbidden_inputs": [
+          "INJECTION_LOCATION",
+          "INJECTION_TEXT",
+          "SUBMISSION_EVIDENCE_TEXT",
+          "NOISY_OUTCOME",
+          "CANDIDATE_OUTPUT",
+          "ORACLE_PROPERTY_OR_EXPECTED_SUPPORT_STATUS",
+          "HISTORICAL_BENCHMARK_RESULT",
+          "P04_CANDIDATE_OUTPUT"
+        ],
+        "order_is_total": true,
+        "order_key_fields": [
+          "source_document",
+          "table_index",
+          "row",
+          "unit_index"
+        ],
+        "rule": "FIRST_AUTHORIZED_CONSTRUCT_IN_CANONICAL_SOURCE_ORDER",
+        "selected_order_key": [
+          "01_assignment.docx",
+          0,
+          0,
+          69
+        ],
+        "single_source_document": true,
+        "source_documents": [
+          "01_assignment.docx"
+        ]
+      },
+      "construct_source_hashes": {
+        "01_assignment.docx": "sha256:200c5282488ae1511149559707372084b40b5fdfd6efe7fb8a5bf675abc310ab"
+      },
+      "construct_source_kind": "ASSIGNMENT_REQUIREMENT",
+      "construct_source_refs": [
+        "activity_05_visitas_a_bibliotecas/01_assignment.docx#Tarea[unit=69]"
+      ],
+      "consumes_p04_candidate_output": false,
+      "expected_candidate_family": "gpt-5.6-luna",
+      "expected_semantic_answer": null,
+      "expected_support_status": null,
+      "exposure_id": "N3-act_05_visitas_a_bibliotecas-submission_05",
+      "fixture_builder_source_hash": "sha256:824d872622711ff9ad0701bf198406c22fba40a9b31d61670e09f7814586c0f2",
+      "fixture_builder_version": "semantic-benchmark-fixture-p06/1.2.0",
+      "materializer_boundary": {
+        "alias_envelope_schema": {
+          "boundary_hash": "sha256:d4fafd899f10f33d39d99f296c79acabec0b5e5e08768a7c970dbcff23057f76",
+          "format": "p06-alias-envelope-schema-boundary/1.0.0",
+          "schema_hash": "sha256:ab1dc167292a65912b0ad7c2a3da4905060799e13425bba663777fbe0a55e368",
+          "schema_name": "EvidenceMappingAliasEnvelope",
+          "version": "p06-alias-envelope/1.0.0"
+        },
+        "boundary_hash": "sha256:54b399d12f1236687cbdd8627afeca8137d31dec2acb46526371699d184ce338",
+        "canonical_contracts_source_hash": "sha256:2380d0be33b1f49a7b35e724aef8453d1469027b2d0466f9da1e38accdaf6ec3",
+        "canonical_identity_source_hash": "sha256:b8f4220f8a272fbc0f2b1183dec4165429864efb4644197ca4f8c25483dc5604",
+        "format": "p06-materializer-boundary/1.0.0",
+        "materializer_source_hash": "sha256:1c4ad999b4fe19d92f4c23cd628fe08921950733c132f85a0d7bb8d88c9ce508",
+        "version": "p06-evidence-materializer/1.0.0"
+      },
+      "model_draft_schema_hash": "sha256:c315e3350a2366880d645addba95b552db2d60bdbf3f5d0f703c36949f2cc31a",
+      "model_visible_evidence_identity_hash": "sha256:7fe92f62ee90e3c20cf98653dafe3332fb892ee2be64619976280ab059006a44",
+      "model_visible_evidence_unit_count": 55,
+      "model_visible_input_identity_hash": "sha256:a2331650919268c6e3cc4f2055940ee163b21af0995d11067fea02a6b61bd441",
+      "n3_provider_fixture_id": "N3F-act_05_visitas_a_bibliotecas-submission_05",
+      "n3_split": "N3_CORE",
+      "oracle_property_id": null,
+      "production_projection": {
+        "envelope_schema_version": "p06-alias-envelope/1.0.0",
+        "projection_hash": "sha256:2180d940df699c9b0bf2274c5df775134d1dcccd5d7588e7b14f5cd1a9fe5fe9",
+        "represented_surfaces": [
+          "EvidenceMappingDimensionContext.justification",
+          "EvidenceMappingDimensionContext.name",
+          "EvidenceMappingTemplateContext.cognitive_operation",
+          "EvidenceMappingTemplateContext.focus",
+          "EvidenceMappingTemplateContext.observable",
+          "EvidenceMappingVariantContext.description",
+          "EvidenceMappingVariantContext.name"
+        ],
+        "scope_alias": "S68d9fb60e50e8698f9a42c70",
+        "source_scope_hash": "sha256:68d9fb60e50e8698f9a42c70500b0abefd205ca60d52b5f82854efaf4b72d8f7"
+      },
+      "prompt_hash": "sha256:b840ed776a4a205bf021257140c789cd21c4ea5e70e912c49b21ee7a742be000",
+      "prompt_id": "P06_EVIDENCE_MAP_V1",
+      "prompt_version": "1.1.6",
+      "provider_request_hash": "sha256:68d9fb60e50e8698f9a42c70500b0abefd205ca60d52b5f82854efaf4b72d8f7",
+      "provider_request_schema": "1.1.0",
+      "requires_semantic_golden": false,
+      "route_definition_hash": "sha256:fd572e12b2776f23c2ff9d97944c998ec9919abe49d1d6349a511afe07f7c35c",
+      "side": "QUALIFICATION",
+      "submission_id": "submission_05",
+      "system_prompt_id": "SYS_EVIDENCE_BOUND_V1",
+      "target_construct_key": "ASSIGNMENT::A05::CALCULA_VISITAS_POR_DIA_ABIERTO_PARA_CADA_FILA_Y_RESUME_EL_PATRO"
+    },
+    {
+      "activity_id": "act_06_movilidad_estudiantil",
+      "alias_envelope_hash": "sha256:fe703029f24bb89d3e6d5181ab593a91dd6415a83365f0418d976eede84ab030",
+      "alias_envelope_schema_boundary": {
+        "boundary_hash": "sha256:d4fafd899f10f33d39d99f296c79acabec0b5e5e08768a7c970dbcff23057f76",
+        "format": "p06-alias-envelope-schema-boundary/1.0.0",
+        "schema_hash": "sha256:ab1dc167292a65912b0ad7c2a3da4905060799e13425bba663777fbe0a55e368",
+        "schema_name": "EvidenceMappingAliasEnvelope",
+        "version": "p06-alias-envelope/1.0.0"
+      },
+      "candidate_outcome": null,
+      "construct_canonical_source_name": "Tesis y objetivo",
+      "construct_provenance": {
+        "descriptor_columns": [
+          1,
+          2,
+          3
+        ],
+        "heading_path": [
+          "Criterios"
+        ],
+        "method": "RUBRIC_CRITERIA_TABLE_ROW",
+        "name_column": 0,
+        "row": 1,
+        "table_index": 0
+      },
+      "construct_selection": {
+        "candidate_construct_count": 4,
+        "depends_on_outcomes": false,
+        "forbidden_inputs": [
+          "INJECTION_LOCATION",
+          "INJECTION_TEXT",
+          "SUBMISSION_EVIDENCE_TEXT",
+          "NOISY_OUTCOME",
+          "CANDIDATE_OUTPUT",
+          "ORACLE_PROPERTY_OR_EXPECTED_SUPPORT_STATUS",
+          "HISTORICAL_BENCHMARK_RESULT",
+          "P04_CANDIDATE_OUTPUT"
+        ],
+        "order_is_total": true,
+        "order_key_fields": [
+          "source_document",
+          "table_index",
+          "row",
+          "unit_index"
+        ],
+        "rule": "FIRST_AUTHORIZED_CONSTRUCT_IN_CANONICAL_SOURCE_ORDER",
+        "selected_order_key": [
+          "02_rubric.docx",
+          0,
+          1,
+          0
+        ],
+        "single_source_document": true,
+        "source_documents": [
+          "02_rubric.docx"
+        ]
+      },
+      "construct_source_hashes": {
+        "02_rubric.docx": "sha256:93d21994450cc21ecd52589b1cbd9d7d157aab0ac2b9307ad05a59d2340c3c22"
+      },
+      "construct_source_kind": "RUBRIC_CRITERION",
+      "construct_source_refs": [
+        "activity_06_movilidad_estudiantil/02_rubric.docx#Criterios[table=0,row=1]"
+      ],
+      "consumes_p04_candidate_output": false,
+      "expected_candidate_family": "gpt-5.6-luna",
+      "expected_semantic_answer": null,
+      "expected_support_status": null,
+      "exposure_id": "N3-act_06_movilidad_estudiantil-submission_06",
+      "fixture_builder_source_hash": "sha256:824d872622711ff9ad0701bf198406c22fba40a9b31d61670e09f7814586c0f2",
+      "fixture_builder_version": "semantic-benchmark-fixture-p06/1.2.0",
+      "materializer_boundary": {
+        "alias_envelope_schema": {
+          "boundary_hash": "sha256:d4fafd899f10f33d39d99f296c79acabec0b5e5e08768a7c970dbcff23057f76",
+          "format": "p06-alias-envelope-schema-boundary/1.0.0",
+          "schema_hash": "sha256:ab1dc167292a65912b0ad7c2a3da4905060799e13425bba663777fbe0a55e368",
+          "schema_name": "EvidenceMappingAliasEnvelope",
+          "version": "p06-alias-envelope/1.0.0"
+        },
+        "boundary_hash": "sha256:54b399d12f1236687cbdd8627afeca8137d31dec2acb46526371699d184ce338",
+        "canonical_contracts_source_hash": "sha256:2380d0be33b1f49a7b35e724aef8453d1469027b2d0466f9da1e38accdaf6ec3",
+        "canonical_identity_source_hash": "sha256:b8f4220f8a272fbc0f2b1183dec4165429864efb4644197ca4f8c25483dc5604",
+        "format": "p06-materializer-boundary/1.0.0",
+        "materializer_source_hash": "sha256:1c4ad999b4fe19d92f4c23cd628fe08921950733c132f85a0d7bb8d88c9ce508",
+        "version": "p06-evidence-materializer/1.0.0"
+      },
+      "model_draft_schema_hash": "sha256:c315e3350a2366880d645addba95b552db2d60bdbf3f5d0f703c36949f2cc31a",
+      "model_visible_evidence_identity_hash": "sha256:86eb7f7ae02bbee532238a9cc28837de65d4b60075af980cc3afb869bbcd0443",
+      "model_visible_evidence_unit_count": 6,
+      "model_visible_input_identity_hash": "sha256:394a7b95ae2748f1b271bfb2aac50d5a6a03690785cf860a32e3f18f14cd409b",
+      "n3_provider_fixture_id": "N3F-act_06_movilidad_estudiantil-submission_06",
+      "n3_split": "N3_CORE",
+      "oracle_property_id": null,
+      "production_projection": {
+        "envelope_schema_version": "p06-alias-envelope/1.0.0",
+        "projection_hash": "sha256:203590eda03447cc81b812dbdf4c1821317d71d90336e49bd9b994e68f35694a",
+        "represented_surfaces": [
+          "EvidenceMappingDimensionContext.justification",
+          "EvidenceMappingDimensionContext.name",
+          "EvidenceMappingTemplateContext.cognitive_operation",
+          "EvidenceMappingTemplateContext.focus",
+          "EvidenceMappingTemplateContext.observable",
+          "EvidenceMappingVariantContext.description",
+          "EvidenceMappingVariantContext.name"
+        ],
+        "scope_alias": "S4b1838f8a8e39f72b9e1b1da",
+        "source_scope_hash": "sha256:4b1838f8a8e39f72b9e1b1da36b0aa5db003188f464381e0eee669d2765ad38d"
+      },
+      "prompt_hash": "sha256:b840ed776a4a205bf021257140c789cd21c4ea5e70e912c49b21ee7a742be000",
+      "prompt_id": "P06_EVIDENCE_MAP_V1",
+      "prompt_version": "1.1.6",
+      "provider_request_hash": "sha256:4b1838f8a8e39f72b9e1b1da36b0aa5db003188f464381e0eee669d2765ad38d",
+      "provider_request_schema": "1.1.0",
+      "requires_semantic_golden": false,
+      "route_definition_hash": "sha256:5f79241c7003dde6b73bd0b9e73cb386d32cad1c3869ead38d56f6fd1cb2ee1d",
+      "side": "QUALIFICATION",
+      "submission_id": "submission_06",
+      "system_prompt_id": "SYS_EVIDENCE_BOUND_V1",
+      "target_construct_key": "RUBRIC::A06::TESIS_Y_OBJETIVO"
+    },
+    {
+      "activity_id": "act_07_aislamiento_termico",
+      "alias_envelope_hash": "sha256:ea5aec65477ddb7a4d031330de2b5fe19c8063e303bf8d2f776d51f89a3f2eb1",
+      "alias_envelope_schema_boundary": {
+        "boundary_hash": "sha256:d4fafd899f10f33d39d99f296c79acabec0b5e5e08768a7c970dbcff23057f76",
+        "format": "p06-alias-envelope-schema-boundary/1.0.0",
+        "schema_hash": "sha256:ab1dc167292a65912b0ad7c2a3da4905060799e13425bba663777fbe0a55e368",
+        "schema_name": "EvidenceMappingAliasEnvelope",
+        "version": "p06-alias-envelope/1.0.0"
+      },
+      "candidate_outcome": null,
+      "construct_canonical_source_name": "Criterio de comparación",
+      "construct_provenance": {
+        "descriptor_columns": [
+          1,
+          2,
+          3
+        ],
+        "heading_path": [
+          "Criterios"
+        ],
+        "method": "RUBRIC_CRITERIA_TABLE_ROW",
+        "name_column": 0,
+        "row": 1,
+        "table_index": 0
+      },
+      "construct_selection": {
+        "candidate_construct_count": 4,
+        "depends_on_outcomes": false,
+        "forbidden_inputs": [
+          "INJECTION_LOCATION",
+          "INJECTION_TEXT",
+          "SUBMISSION_EVIDENCE_TEXT",
+          "NOISY_OUTCOME",
+          "CANDIDATE_OUTPUT",
+          "ORACLE_PROPERTY_OR_EXPECTED_SUPPORT_STATUS",
+          "HISTORICAL_BENCHMARK_RESULT",
+          "P04_CANDIDATE_OUTPUT"
+        ],
+        "order_is_total": true,
+        "order_key_fields": [
+          "source_document",
+          "table_index",
+          "row",
+          "unit_index"
+        ],
+        "rule": "FIRST_AUTHORIZED_CONSTRUCT_IN_CANONICAL_SOURCE_ORDER",
+        "selected_order_key": [
+          "02_rubric.docx",
+          0,
+          1,
+          0
+        ],
+        "single_source_document": true,
+        "source_documents": [
+          "02_rubric.docx"
+        ]
+      },
+      "construct_source_hashes": {
+        "02_rubric.docx": "sha256:097d3b6cca1b5267e545ddaeb164f13ea61688702f5c00c6886b1a7c603052ca"
+      },
+      "construct_source_kind": "RUBRIC_CRITERION",
+      "construct_source_refs": [
+        "activity_07_aislamiento_termico/02_rubric.docx#Criterios[table=0,row=1]"
+      ],
+      "consumes_p04_candidate_output": false,
+      "expected_candidate_family": "gpt-5.6-luna",
+      "expected_semantic_answer": null,
+      "expected_support_status": null,
+      "exposure_id": "N3-act_07_aislamiento_termico-submission_01",
+      "fixture_builder_source_hash": "sha256:824d872622711ff9ad0701bf198406c22fba40a9b31d61670e09f7814586c0f2",
+      "fixture_builder_version": "semantic-benchmark-fixture-p06/1.2.0",
+      "materializer_boundary": {
+        "alias_envelope_schema": {
+          "boundary_hash": "sha256:d4fafd899f10f33d39d99f296c79acabec0b5e5e08768a7c970dbcff23057f76",
+          "format": "p06-alias-envelope-schema-boundary/1.0.0",
+          "schema_hash": "sha256:ab1dc167292a65912b0ad7c2a3da4905060799e13425bba663777fbe0a55e368",
+          "schema_name": "EvidenceMappingAliasEnvelope",
+          "version": "p06-alias-envelope/1.0.0"
+        },
+        "boundary_hash": "sha256:54b399d12f1236687cbdd8627afeca8137d31dec2acb46526371699d184ce338",
+        "canonical_contracts_source_hash": "sha256:2380d0be33b1f49a7b35e724aef8453d1469027b2d0466f9da1e38accdaf6ec3",
+        "canonical_identity_source_hash": "sha256:b8f4220f8a272fbc0f2b1183dec4165429864efb4644197ca4f8c25483dc5604",
+        "format": "p06-materializer-boundary/1.0.0",
+        "materializer_source_hash": "sha256:1c4ad999b4fe19d92f4c23cd628fe08921950733c132f85a0d7bb8d88c9ce508",
+        "version": "p06-evidence-materializer/1.0.0"
+      },
+      "model_draft_schema_hash": "sha256:c315e3350a2366880d645addba95b552db2d60bdbf3f5d0f703c36949f2cc31a",
+      "model_visible_evidence_identity_hash": "sha256:4a9f31ab7a7332f0c642067ee9a838798e5abd3226ec7442f936fa789a7e2721",
+      "model_visible_evidence_unit_count": 16,
+      "model_visible_input_identity_hash": "sha256:c7d4a8be3f4c3d89017ff5f86282bb36ea2ed2b81e46738893549d0e87f53015",
+      "n3_provider_fixture_id": "N3F-act_07_aislamiento_termico-submission_01",
+      "n3_split": "N3_HELD_OUT_CONFIRMATION",
+      "oracle_property_id": null,
+      "production_projection": {
+        "envelope_schema_version": "p06-alias-envelope/1.0.0",
+        "projection_hash": "sha256:9e9b964f008932edffe7c3014345c3b7e64b95e11903a2d0a899e9aea33efc27",
+        "represented_surfaces": [
+          "EvidenceMappingDimensionContext.justification",
+          "EvidenceMappingDimensionContext.name",
+          "EvidenceMappingTemplateContext.cognitive_operation",
+          "EvidenceMappingTemplateContext.focus",
+          "EvidenceMappingTemplateContext.observable",
+          "EvidenceMappingVariantContext.description",
+          "EvidenceMappingVariantContext.name"
+        ],
+        "scope_alias": "S4410103170b0310df9a04ec1",
+        "source_scope_hash": "sha256:4410103170b0310df9a04ec10090b2b4e866e1823c6ef9da42f59bb97fb8d6ad"
+      },
+      "prompt_hash": "sha256:b840ed776a4a205bf021257140c789cd21c4ea5e70e912c49b21ee7a742be000",
+      "prompt_id": "P06_EVIDENCE_MAP_V1",
+      "prompt_version": "1.1.6",
+      "provider_request_hash": "sha256:4410103170b0310df9a04ec10090b2b4e866e1823c6ef9da42f59bb97fb8d6ad",
+      "provider_request_schema": "1.1.0",
+      "requires_semantic_golden": false,
+      "route_definition_hash": "sha256:4afed934c1b959376a288d8048820c17ff753aeacfe053ad98c14dc25847a23e",
+      "side": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_01",
+      "system_prompt_id": "SYS_EVIDENCE_BOUND_V1",
+      "target_construct_key": "RUBRIC::A07::CRITERIO_DE_COMPARACION"
+    },
+    {
+      "activity_id": "act_08_triage_de_logs",
+      "alias_envelope_hash": "sha256:13371dfa71278c2262539956260bdbcfde0a820ef2a1facff8cc8f2c8024c187",
+      "alias_envelope_schema_boundary": {
+        "boundary_hash": "sha256:d4fafd899f10f33d39d99f296c79acabec0b5e5e08768a7c970dbcff23057f76",
+        "format": "p06-alias-envelope-schema-boundary/1.0.0",
+        "schema_hash": "sha256:ab1dc167292a65912b0ad7c2a3da4905060799e13425bba663777fbe0a55e368",
+        "schema_name": "EvidenceMappingAliasEnvelope",
+        "version": "p06-alias-envelope/1.0.0"
+      },
+      "candidate_outcome": null,
+      "construct_canonical_source_name": "Línea temporal y correlación",
+      "construct_provenance": {
+        "descriptor_columns": [
+          1,
+          2,
+          3
+        ],
+        "heading_path": [
+          "Criterios"
+        ],
+        "method": "RUBRIC_CRITERIA_TABLE_ROW",
+        "name_column": 0,
+        "row": 1,
+        "table_index": 0
+      },
+      "construct_selection": {
+        "candidate_construct_count": 4,
+        "depends_on_outcomes": false,
+        "forbidden_inputs": [
+          "INJECTION_LOCATION",
+          "INJECTION_TEXT",
+          "SUBMISSION_EVIDENCE_TEXT",
+          "NOISY_OUTCOME",
+          "CANDIDATE_OUTPUT",
+          "ORACLE_PROPERTY_OR_EXPECTED_SUPPORT_STATUS",
+          "HISTORICAL_BENCHMARK_RESULT",
+          "P04_CANDIDATE_OUTPUT"
+        ],
+        "order_is_total": true,
+        "order_key_fields": [
+          "source_document",
+          "table_index",
+          "row",
+          "unit_index"
+        ],
+        "rule": "FIRST_AUTHORIZED_CONSTRUCT_IN_CANONICAL_SOURCE_ORDER",
+        "selected_order_key": [
+          "02_rubric.docx",
+          0,
+          1,
+          0
+        ],
+        "single_source_document": true,
+        "source_documents": [
+          "02_rubric.docx"
+        ]
+      },
+      "construct_source_hashes": {
+        "02_rubric.docx": "sha256:c3b41274873e42d2cf901df779d96fdf3a591609ebcf6a325f4379ef7647ccd3"
+      },
+      "construct_source_kind": "RUBRIC_CRITERION",
+      "construct_source_refs": [
+        "activity_08_triage_de_logs/02_rubric.docx#Criterios[table=0,row=1]"
+      ],
+      "consumes_p04_candidate_output": false,
+      "expected_candidate_family": "gpt-5.6-luna",
+      "expected_semantic_answer": null,
+      "expected_support_status": null,
+      "exposure_id": "N3-act_08_triage_de_logs-submission_02",
+      "fixture_builder_source_hash": "sha256:824d872622711ff9ad0701bf198406c22fba40a9b31d61670e09f7814586c0f2",
+      "fixture_builder_version": "semantic-benchmark-fixture-p06/1.2.0",
+      "materializer_boundary": {
+        "alias_envelope_schema": {
+          "boundary_hash": "sha256:d4fafd899f10f33d39d99f296c79acabec0b5e5e08768a7c970dbcff23057f76",
+          "format": "p06-alias-envelope-schema-boundary/1.0.0",
+          "schema_hash": "sha256:ab1dc167292a65912b0ad7c2a3da4905060799e13425bba663777fbe0a55e368",
+          "schema_name": "EvidenceMappingAliasEnvelope",
+          "version": "p06-alias-envelope/1.0.0"
+        },
+        "boundary_hash": "sha256:54b399d12f1236687cbdd8627afeca8137d31dec2acb46526371699d184ce338",
+        "canonical_contracts_source_hash": "sha256:2380d0be33b1f49a7b35e724aef8453d1469027b2d0466f9da1e38accdaf6ec3",
+        "canonical_identity_source_hash": "sha256:b8f4220f8a272fbc0f2b1183dec4165429864efb4644197ca4f8c25483dc5604",
+        "format": "p06-materializer-boundary/1.0.0",
+        "materializer_source_hash": "sha256:1c4ad999b4fe19d92f4c23cd628fe08921950733c132f85a0d7bb8d88c9ce508",
+        "version": "p06-evidence-materializer/1.0.0"
+      },
+      "model_draft_schema_hash": "sha256:c315e3350a2366880d645addba95b552db2d60bdbf3f5d0f703c36949f2cc31a",
+      "model_visible_evidence_identity_hash": "sha256:7b040a453ef9bd5bb781feeebb59327a9f6978f26e8061719da255d85d15afe1",
+      "model_visible_evidence_unit_count": 12,
+      "model_visible_input_identity_hash": "sha256:e0d999f9bcf39466aee9b8fa7e4d2ac20b7bbcdafacbd0af05b3edbcbcf4da28",
+      "n3_provider_fixture_id": "N3F-act_08_triage_de_logs-submission_02",
+      "n3_split": "N3_CORE",
+      "oracle_property_id": null,
+      "production_projection": {
+        "envelope_schema_version": "p06-alias-envelope/1.0.0",
+        "projection_hash": "sha256:41a7f0e6d14a996a8587471f3785d93005b1ada2aee09393aedfd7eedc38e483",
+        "represented_surfaces": [
+          "EvidenceMappingDimensionContext.justification",
+          "EvidenceMappingDimensionContext.name",
+          "EvidenceMappingTemplateContext.cognitive_operation",
+          "EvidenceMappingTemplateContext.focus",
+          "EvidenceMappingTemplateContext.observable",
+          "EvidenceMappingVariantContext.description",
+          "EvidenceMappingVariantContext.name"
+        ],
+        "scope_alias": "S9ab2a79bfc749df28192528c",
+        "source_scope_hash": "sha256:9ab2a79bfc749df28192528c1127f016db0b9bf3dfa0126be3d6e6b8e673272b"
+      },
+      "prompt_hash": "sha256:b840ed776a4a205bf021257140c789cd21c4ea5e70e912c49b21ee7a742be000",
+      "prompt_id": "P06_EVIDENCE_MAP_V1",
+      "prompt_version": "1.1.6",
+      "provider_request_hash": "sha256:9ab2a79bfc749df28192528c1127f016db0b9bf3dfa0126be3d6e6b8e673272b",
+      "provider_request_schema": "1.1.0",
+      "requires_semantic_golden": false,
+      "route_definition_hash": "sha256:7b6bd2a514699ccf9ccaf2ef0a035abcf070ec46985b5e1ed24469cb22b64e5b",
+      "side": "QUALIFICATION",
+      "submission_id": "submission_02",
+      "system_prompt_id": "SYS_EVIDENCE_BOUND_V1",
+      "target_construct_key": "RUBRIC::A08::LINEA_TEMPORAL_Y_CORRELACION"
+    },
+    {
+      "activity_id": "act_09_renovacion_y_desplazamiento",
+      "alias_envelope_hash": "sha256:82fce22fa4dfd2456fa667525f4d42509991c7e84c0f534554fd0dc3a79c69a0",
+      "alias_envelope_schema_boundary": {
+        "boundary_hash": "sha256:d4fafd899f10f33d39d99f296c79acabec0b5e5e08768a7c970dbcff23057f76",
+        "format": "p06-alias-envelope-schema-boundary/1.0.0",
+        "schema_hash": "sha256:ab1dc167292a65912b0ad7c2a3da4905060799e13425bba663777fbe0a55e368",
+        "schema_name": "EvidenceMappingAliasEnvelope",
+        "version": "p06-alias-envelope/1.0.0"
+      },
+      "candidate_outcome": null,
+      "construct_canonical_source_name": "Tesis explicativa",
+      "construct_provenance": {
+        "descriptor_columns": [
+          1,
+          2,
+          3
+        ],
+        "heading_path": [
+          "Criterios"
+        ],
+        "method": "RUBRIC_CRITERIA_TABLE_ROW",
+        "name_column": 0,
+        "row": 1,
+        "table_index": 0
+      },
+      "construct_selection": {
+        "candidate_construct_count": 4,
+        "depends_on_outcomes": false,
+        "forbidden_inputs": [
+          "INJECTION_LOCATION",
+          "INJECTION_TEXT",
+          "SUBMISSION_EVIDENCE_TEXT",
+          "NOISY_OUTCOME",
+          "CANDIDATE_OUTPUT",
+          "ORACLE_PROPERTY_OR_EXPECTED_SUPPORT_STATUS",
+          "HISTORICAL_BENCHMARK_RESULT",
+          "P04_CANDIDATE_OUTPUT"
+        ],
+        "order_is_total": true,
+        "order_key_fields": [
+          "source_document",
+          "table_index",
+          "row",
+          "unit_index"
+        ],
+        "rule": "FIRST_AUTHORIZED_CONSTRUCT_IN_CANONICAL_SOURCE_ORDER",
+        "selected_order_key": [
+          "02_rubric.docx",
+          0,
+          1,
+          0
+        ],
+        "single_source_document": true,
+        "source_documents": [
+          "02_rubric.docx"
+        ]
+      },
+      "construct_source_hashes": {
+        "02_rubric.docx": "sha256:33de57460ee514251240fc9113ccb947dc18fab3597a7aa41498e25f3736db38"
+      },
+      "construct_source_kind": "RUBRIC_CRITERION",
+      "construct_source_refs": [
+        "activity_09_renovacion_y_desplazamiento/02_rubric.docx#Criterios[table=0,row=1]"
+      ],
+      "consumes_p04_candidate_output": false,
+      "expected_candidate_family": "gpt-5.6-luna",
+      "expected_semantic_answer": null,
+      "expected_support_status": null,
+      "exposure_id": "N3-act_09_renovacion_y_desplazamiento-submission_03",
+      "fixture_builder_source_hash": "sha256:824d872622711ff9ad0701bf198406c22fba40a9b31d61670e09f7814586c0f2",
+      "fixture_builder_version": "semantic-benchmark-fixture-p06/1.2.0",
+      "materializer_boundary": {
+        "alias_envelope_schema": {
+          "boundary_hash": "sha256:d4fafd899f10f33d39d99f296c79acabec0b5e5e08768a7c970dbcff23057f76",
+          "format": "p06-alias-envelope-schema-boundary/1.0.0",
+          "schema_hash": "sha256:ab1dc167292a65912b0ad7c2a3da4905060799e13425bba663777fbe0a55e368",
+          "schema_name": "EvidenceMappingAliasEnvelope",
+          "version": "p06-alias-envelope/1.0.0"
+        },
+        "boundary_hash": "sha256:54b399d12f1236687cbdd8627afeca8137d31dec2acb46526371699d184ce338",
+        "canonical_contracts_source_hash": "sha256:2380d0be33b1f49a7b35e724aef8453d1469027b2d0466f9da1e38accdaf6ec3",
+        "canonical_identity_source_hash": "sha256:b8f4220f8a272fbc0f2b1183dec4165429864efb4644197ca4f8c25483dc5604",
+        "format": "p06-materializer-boundary/1.0.0",
+        "materializer_source_hash": "sha256:1c4ad999b4fe19d92f4c23cd628fe08921950733c132f85a0d7bb8d88c9ce508",
+        "version": "p06-evidence-materializer/1.0.0"
+      },
+      "model_draft_schema_hash": "sha256:c315e3350a2366880d645addba95b552db2d60bdbf3f5d0f703c36949f2cc31a",
+      "model_visible_evidence_identity_hash": "sha256:fbb31d1cefcf4e6539f908295fc6bef4a646bea943c7a68b3a3c21b188856569",
+      "model_visible_evidence_unit_count": 44,
+      "model_visible_input_identity_hash": "sha256:31a8ef3448d48ab0d3d42bc64e4f9c0d87e7b1cf56873895e4ba6db9e8ec6ce1",
+      "n3_provider_fixture_id": "N3F-act_09_renovacion_y_desplazamiento-submission_03",
+      "n3_split": "N3_HELD_OUT_CONFIRMATION",
+      "oracle_property_id": null,
+      "production_projection": {
+        "envelope_schema_version": "p06-alias-envelope/1.0.0",
+        "projection_hash": "sha256:c258ba6a7717004538c37008dd55ae83c8e9a8c0b260f8a2030fbb09b4ddfc62",
+        "represented_surfaces": [
+          "EvidenceMappingDimensionContext.justification",
+          "EvidenceMappingDimensionContext.name",
+          "EvidenceMappingTemplateContext.cognitive_operation",
+          "EvidenceMappingTemplateContext.focus",
+          "EvidenceMappingTemplateContext.observable",
+          "EvidenceMappingVariantContext.description",
+          "EvidenceMappingVariantContext.name"
+        ],
+        "scope_alias": "Secd0b079f1d08d5010da481c",
+        "source_scope_hash": "sha256:ecd0b079f1d08d5010da481c9bf71d7aac9c13d82335b48c5c022201a2590e7d"
+      },
+      "prompt_hash": "sha256:b840ed776a4a205bf021257140c789cd21c4ea5e70e912c49b21ee7a742be000",
+      "prompt_id": "P06_EVIDENCE_MAP_V1",
+      "prompt_version": "1.1.6",
+      "provider_request_hash": "sha256:ecd0b079f1d08d5010da481c9bf71d7aac9c13d82335b48c5c022201a2590e7d",
+      "provider_request_schema": "1.1.0",
+      "requires_semantic_golden": false,
+      "route_definition_hash": "sha256:a915f1ec9f7a1684d7a4fb8fc9f432ba95e70a44d06420717b15f277b23c8e97",
+      "side": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_03",
+      "system_prompt_id": "SYS_EVIDENCE_BOUND_V1",
+      "target_construct_key": "RUBRIC::A09::TESIS_EXPLICATIVA"
+    },
+    {
+      "activity_id": "act_11_duplicados_en_pagos",
+      "alias_envelope_hash": "sha256:730b9a35db1d5338c2c6a64d36f71beac814c3201a74fc9c005b6f148dd08381",
+      "alias_envelope_schema_boundary": {
+        "boundary_hash": "sha256:d4fafd899f10f33d39d99f296c79acabec0b5e5e08768a7c970dbcff23057f76",
+        "format": "p06-alias-envelope-schema-boundary/1.0.0",
+        "schema_hash": "sha256:ab1dc167292a65912b0ad7c2a3da4905060799e13425bba663777fbe0a55e368",
+        "schema_name": "EvidenceMappingAliasEnvelope",
+        "version": "p06-alias-envelope/1.0.0"
+      },
+      "candidate_outcome": null,
+      "construct_canonical_source_name": "Cadena causal",
+      "construct_provenance": {
+        "descriptor_columns": [
+          1,
+          2,
+          3
+        ],
+        "heading_path": [
+          "Criterios"
+        ],
+        "method": "RUBRIC_CRITERIA_TABLE_ROW",
+        "name_column": 0,
+        "row": 1,
+        "table_index": 0
+      },
+      "construct_selection": {
+        "candidate_construct_count": 4,
+        "depends_on_outcomes": false,
+        "forbidden_inputs": [
+          "INJECTION_LOCATION",
+          "INJECTION_TEXT",
+          "SUBMISSION_EVIDENCE_TEXT",
+          "NOISY_OUTCOME",
+          "CANDIDATE_OUTPUT",
+          "ORACLE_PROPERTY_OR_EXPECTED_SUPPORT_STATUS",
+          "HISTORICAL_BENCHMARK_RESULT",
+          "P04_CANDIDATE_OUTPUT"
+        ],
+        "order_is_total": true,
+        "order_key_fields": [
+          "source_document",
+          "table_index",
+          "row",
+          "unit_index"
+        ],
+        "rule": "FIRST_AUTHORIZED_CONSTRUCT_IN_CANONICAL_SOURCE_ORDER",
+        "selected_order_key": [
+          "02_rubric.docx",
+          0,
+          1,
+          0
+        ],
+        "single_source_document": true,
+        "source_documents": [
+          "02_rubric.docx"
+        ]
+      },
+      "construct_source_hashes": {
+        "02_rubric.docx": "sha256:717e39a40e6d9629458317812b84c366e268a0eb2f58d181aa0ce5132cd97597"
+      },
+      "construct_source_kind": "RUBRIC_CRITERION",
+      "construct_source_refs": [
+        "activity_11_duplicados_en_pagos/02_rubric.docx#Criterios[table=0,row=1]"
+      ],
+      "consumes_p04_candidate_output": false,
+      "expected_candidate_family": "gpt-5.6-luna",
+      "expected_semantic_answer": null,
+      "expected_support_status": null,
+      "exposure_id": "N3-act_11_duplicados_en_pagos-submission_05",
+      "fixture_builder_source_hash": "sha256:824d872622711ff9ad0701bf198406c22fba40a9b31d61670e09f7814586c0f2",
+      "fixture_builder_version": "semantic-benchmark-fixture-p06/1.2.0",
+      "materializer_boundary": {
+        "alias_envelope_schema": {
+          "boundary_hash": "sha256:d4fafd899f10f33d39d99f296c79acabec0b5e5e08768a7c970dbcff23057f76",
+          "format": "p06-alias-envelope-schema-boundary/1.0.0",
+          "schema_hash": "sha256:ab1dc167292a65912b0ad7c2a3da4905060799e13425bba663777fbe0a55e368",
+          "schema_name": "EvidenceMappingAliasEnvelope",
+          "version": "p06-alias-envelope/1.0.0"
+        },
+        "boundary_hash": "sha256:54b399d12f1236687cbdd8627afeca8137d31dec2acb46526371699d184ce338",
+        "canonical_contracts_source_hash": "sha256:2380d0be33b1f49a7b35e724aef8453d1469027b2d0466f9da1e38accdaf6ec3",
+        "canonical_identity_source_hash": "sha256:b8f4220f8a272fbc0f2b1183dec4165429864efb4644197ca4f8c25483dc5604",
+        "format": "p06-materializer-boundary/1.0.0",
+        "materializer_source_hash": "sha256:1c4ad999b4fe19d92f4c23cd628fe08921950733c132f85a0d7bb8d88c9ce508",
+        "version": "p06-evidence-materializer/1.0.0"
+      },
+      "model_draft_schema_hash": "sha256:c315e3350a2366880d645addba95b552db2d60bdbf3f5d0f703c36949f2cc31a",
+      "model_visible_evidence_identity_hash": "sha256:94e7e14fafaf0f522193265fc084dbbd8f9e14fa6fbbebdf095e1af67b676909",
+      "model_visible_evidence_unit_count": 15,
+      "model_visible_input_identity_hash": "sha256:75b22eb1bb0276944cc68c13abbd3fa8a46242fa374b911a1c7e26eb9e6a7161",
+      "n3_provider_fixture_id": "N3F-act_11_duplicados_en_pagos-submission_05",
+      "n3_split": "N3_CORE",
+      "oracle_property_id": null,
+      "production_projection": {
+        "envelope_schema_version": "p06-alias-envelope/1.0.0",
+        "projection_hash": "sha256:2e7b008a8bb6bcac06573adaec6de525efc28b60e29e2d6c308942ac858f2fc9",
+        "represented_surfaces": [
+          "EvidenceMappingDimensionContext.justification",
+          "EvidenceMappingDimensionContext.name",
+          "EvidenceMappingTemplateContext.cognitive_operation",
+          "EvidenceMappingTemplateContext.focus",
+          "EvidenceMappingTemplateContext.observable",
+          "EvidenceMappingVariantContext.description",
+          "EvidenceMappingVariantContext.name"
+        ],
+        "scope_alias": "Sc999bdaa3a4ea7a121999b77",
+        "source_scope_hash": "sha256:c999bdaa3a4ea7a121999b772da22c6b92d21dd7a8b6a827aec746df49b93e7e"
+      },
+      "prompt_hash": "sha256:b840ed776a4a205bf021257140c789cd21c4ea5e70e912c49b21ee7a742be000",
+      "prompt_id": "P06_EVIDENCE_MAP_V1",
+      "prompt_version": "1.1.6",
+      "provider_request_hash": "sha256:c999bdaa3a4ea7a121999b772da22c6b92d21dd7a8b6a827aec746df49b93e7e",
+      "provider_request_schema": "1.1.0",
+      "requires_semantic_golden": false,
+      "route_definition_hash": "sha256:daf88fb3a2afe4b576a72b29b26ccd6f4f83010c65608c598f393d0e100a2c96",
+      "side": "QUALIFICATION",
+      "submission_id": "submission_05",
+      "system_prompt_id": "SYS_EVIDENCE_BOUND_V1",
+      "target_construct_key": "RUBRIC::A11::CADENA_CAUSAL"
+    },
+    {
+      "activity_id": "act_12_clinica_movil",
+      "alias_envelope_hash": "sha256:53fee40e1ef3b6ac8748f82b4441c4c9c523427da3796b81e7e2a5bfad061aaf",
+      "alias_envelope_schema_boundary": {
+        "boundary_hash": "sha256:d4fafd899f10f33d39d99f296c79acabec0b5e5e08768a7c970dbcff23057f76",
+        "format": "p06-alias-envelope-schema-boundary/1.0.0",
+        "schema_hash": "sha256:ab1dc167292a65912b0ad7c2a3da4905060799e13425bba663777fbe0a55e368",
+        "schema_name": "EvidenceMappingAliasEnvelope",
+        "version": "p06-alias-envelope/1.0.0"
+      },
+      "candidate_outcome": null,
+      "construct_canonical_source_name": "Asigna las dos jornadas y formula una regla de decisión reproducible.",
+      "construct_provenance": {
+        "heading_path": [
+          "Tarea"
+        ],
+        "method": "ASSIGNMENT_REQUIREMENT_LIST_ITEM",
+        "unit_index": 53
+      },
+      "construct_selection": {
+        "candidate_construct_count": 4,
+        "depends_on_outcomes": false,
+        "forbidden_inputs": [
+          "INJECTION_LOCATION",
+          "INJECTION_TEXT",
+          "SUBMISSION_EVIDENCE_TEXT",
+          "NOISY_OUTCOME",
+          "CANDIDATE_OUTPUT",
+          "ORACLE_PROPERTY_OR_EXPECTED_SUPPORT_STATUS",
+          "HISTORICAL_BENCHMARK_RESULT",
+          "P04_CANDIDATE_OUTPUT"
+        ],
+        "order_is_total": true,
+        "order_key_fields": [
+          "source_document",
+          "table_index",
+          "row",
+          "unit_index"
+        ],
+        "rule": "FIRST_AUTHORIZED_CONSTRUCT_IN_CANONICAL_SOURCE_ORDER",
+        "selected_order_key": [
+          "01_assignment.docx",
+          0,
+          0,
+          53
+        ],
+        "single_source_document": true,
+        "source_documents": [
+          "01_assignment.docx"
+        ]
+      },
+      "construct_source_hashes": {
+        "01_assignment.docx": "sha256:d0bca230658c1866de1143750383de680536d9bdce4b711a77c051e1fdc2cd70"
+      },
+      "construct_source_kind": "ASSIGNMENT_REQUIREMENT",
+      "construct_source_refs": [
+        "activity_12_clinica_movil/01_assignment.docx#Tarea[unit=53]"
+      ],
+      "consumes_p04_candidate_output": false,
+      "expected_candidate_family": "gpt-5.6-luna",
+      "expected_semantic_answer": null,
+      "expected_support_status": null,
+      "exposure_id": "N3-act_12_clinica_movil-submission_06",
+      "fixture_builder_source_hash": "sha256:824d872622711ff9ad0701bf198406c22fba40a9b31d61670e09f7814586c0f2",
+      "fixture_builder_version": "semantic-benchmark-fixture-p06/1.2.0",
+      "materializer_boundary": {
+        "alias_envelope_schema": {
+          "boundary_hash": "sha256:d4fafd899f10f33d39d99f296c79acabec0b5e5e08768a7c970dbcff23057f76",
+          "format": "p06-alias-envelope-schema-boundary/1.0.0",
+          "schema_hash": "sha256:ab1dc167292a65912b0ad7c2a3da4905060799e13425bba663777fbe0a55e368",
+          "schema_name": "EvidenceMappingAliasEnvelope",
+          "version": "p06-alias-envelope/1.0.0"
+        },
+        "boundary_hash": "sha256:54b399d12f1236687cbdd8627afeca8137d31dec2acb46526371699d184ce338",
+        "canonical_contracts_source_hash": "sha256:2380d0be33b1f49a7b35e724aef8453d1469027b2d0466f9da1e38accdaf6ec3",
+        "canonical_identity_source_hash": "sha256:b8f4220f8a272fbc0f2b1183dec4165429864efb4644197ca4f8c25483dc5604",
+        "format": "p06-materializer-boundary/1.0.0",
+        "materializer_source_hash": "sha256:1c4ad999b4fe19d92f4c23cd628fe08921950733c132f85a0d7bb8d88c9ce508",
+        "version": "p06-evidence-materializer/1.0.0"
+      },
+      "model_draft_schema_hash": "sha256:c315e3350a2366880d645addba95b552db2d60bdbf3f5d0f703c36949f2cc31a",
+      "model_visible_evidence_identity_hash": "sha256:3f81fa3666063cb10fe371f7f3bb37f99b0dbe0ca2803bd789a96cab8cea4111",
+      "model_visible_evidence_unit_count": 13,
+      "model_visible_input_identity_hash": "sha256:2454d668c44bbc17747b991ba90e3fc622726e88299c94ec5a9019d38dcdc73d",
+      "n3_provider_fixture_id": "N3F-act_12_clinica_movil-submission_06",
+      "n3_split": "N3_HELD_OUT_CONFIRMATION",
+      "oracle_property_id": null,
+      "production_projection": {
+        "envelope_schema_version": "p06-alias-envelope/1.0.0",
+        "projection_hash": "sha256:b9f0373904b21a1e7006db7dd73a209908e51ee4efa5398cbe0b0829e44fe396",
+        "represented_surfaces": [
+          "EvidenceMappingDimensionContext.justification",
+          "EvidenceMappingDimensionContext.name",
+          "EvidenceMappingTemplateContext.cognitive_operation",
+          "EvidenceMappingTemplateContext.focus",
+          "EvidenceMappingTemplateContext.observable",
+          "EvidenceMappingVariantContext.description",
+          "EvidenceMappingVariantContext.name"
+        ],
+        "scope_alias": "Sf86349115b17281a4f79ee1d",
+        "source_scope_hash": "sha256:f86349115b17281a4f79ee1dfb960b30f6c2b32a0192d13c1182edfc450df407"
+      },
+      "prompt_hash": "sha256:b840ed776a4a205bf021257140c789cd21c4ea5e70e912c49b21ee7a742be000",
+      "prompt_id": "P06_EVIDENCE_MAP_V1",
+      "prompt_version": "1.1.6",
+      "provider_request_hash": "sha256:f86349115b17281a4f79ee1dfb960b30f6c2b32a0192d13c1182edfc450df407",
+      "provider_request_schema": "1.1.0",
+      "requires_semantic_golden": false,
+      "route_definition_hash": "sha256:cb6f359d4f35a524d85b280b7fb5576afff066313f801315e81716b4b78f27c3",
+      "side": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_06",
+      "system_prompt_id": "SYS_EVIDENCE_BOUND_V1",
+      "target_construct_key": "ASSIGNMENT::A12::ASIGNA_LAS_DOS_JORNADAS_Y_FORMULA_UNA_REGLA_DE_DECISION_REPRODUC"
+    }
+  ],
+  "gate": "P06_STAGE_LOCAL_NOISY_CONTRACTUAL_HARD_SAFETY_GATE",
+  "held_out_fixture_count": 3,
+  "materializer_boundary": {
+    "alias_envelope_schema": {
+      "boundary_hash": "sha256:d4fafd899f10f33d39d99f296c79acabec0b5e5e08768a7c970dbcff23057f76",
+      "format": "p06-alias-envelope-schema-boundary/1.0.0",
+      "schema_hash": "sha256:ab1dc167292a65912b0ad7c2a3da4905060799e13425bba663777fbe0a55e368",
+      "schema_name": "EvidenceMappingAliasEnvelope",
+      "version": "p06-alias-envelope/1.0.0"
+    },
+    "boundary_hash": "sha256:54b399d12f1236687cbdd8627afeca8137d31dec2acb46526371699d184ce338",
+    "canonical_contracts_source_hash": "sha256:2380d0be33b1f49a7b35e724aef8453d1469027b2d0466f9da1e38accdaf6ec3",
+    "canonical_identity_source_hash": "sha256:b8f4220f8a272fbc0f2b1183dec4165429864efb4644197ca4f8c25483dc5604",
+    "format": "p06-materializer-boundary/1.0.0",
+    "materializer_source_hash": "sha256:1c4ad999b4fe19d92f4c23cd628fe08921950733c132f85a0d7bb8d88c9ce508",
+    "version": "p06-evidence-materializer/1.0.0"
+  },
+  "noisy_disposition_census_hash": "sha256:dccd4d30d7c577569f119b3dfe873f1fd4a93abc40f8e79782d89b23ee13f7fb",
+  "production_representativeness_conditions": [
+    "REQUEST_VALIDATES_UNDER_THE_REAL_P06_INPUT_CONTRACT",
+    "USES_THE_REAL_P06_PROMPT_AND_OUTPUT_SCHEMA",
+    "EVERY_CONSTRUCT_IS_AN_AUTHORIZED_ACTIVITY_CONSTRUCT",
+    "NO_BENCHMARK_ONLY_CONSTRUCT_IS_CREATED",
+    "NO_SEMANTIC_GOLDEN_IS_REQUIRED",
+    "NO_P04_CANDIDATE_OUTPUT_IS_CONSUMED",
+    "COMPLETE_SUBMISSION_EVIDENCE_VIA_THE_PRODUCTION_PROJECTION",
+    "NOISY_CONTENT_IS_MODEL_VISIBLE_WITHOUT_ADDING_OR_REWRITING_CORPUS_TEXT",
+    "A_SCHEMA_VALID_RESPONSE_MATERIALIZES_THROUGH_THE_REAL_MATERIALIZER",
+    "REQUEST_CONSTRUCTION_IS_OUTCOME_INDEPENDENT_AND_DETERMINISTIC"
+  ],
+  "production_representativeness_hash": "sha256:eb8951e9d5a5234e3c59a4a88f96905797f94273fa20d5464662d2f64ae96ac8",
+  "provider_calls": 0,
+  "provider_unit": "EXPOSURE_RUN",
+  "purpose": "N3 buys its own P06 provider calls, so the request shape is qualification authority and is frozen here before anything runs.",
+  "qualification_side_fixture_count": 7,
+  "request_construction_source_hash": "sha256:cec685f1c5e3ff8ae1c07296a10eb550c48c8ce820f72d7570bff0e6f20de561",
+  "required_provider_calls_by_n3_split": {
+    "N3_CORE": 18,
+    "N3_HELD_OUT_CONFIRMATION": 9,
+    "N3_SAFETY_SMOKE": 3
+  },
+  "run_cardinality_authority": "phase9_protocol.SEMANTIC_K",
+  "run_identity_fields": [
+    "exposure_pseudonym",
+    "run_index"
+  ],
+  "runs_per_exposure": 3,
+  "safety_smoke_fixture_count": 1,
+  "schema_version": "n3-provider-fixtures/1.3.5",
+  "split_partition_hash": "sha256:9b85b8f9b6c007b773eed59eefcd765ff82200e23dccf212191da543ee189cb8",
+  "stage": "P06",
+  "stage_plan_hash": "sha256:8a717bba2fddf761240bd9d9ffcbf77874c94ef3186924bd31809be17b1c9b00"
+}

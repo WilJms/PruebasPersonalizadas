@@ -16,6 +16,7 @@ from comprehension_verification.p06_n3_protocol import (
     N3_CORE,
     N3_HELD_OUT_CONFIRMATION,
     N3_SAFETY_SMOKE,
+    N3_RUNS_PER_EXPOSURE,
     NO_CONFIRMED_VIOLATION,
     P06_SMOKE_ACTIVITY_IDS,
     V12_SPLIT_PARTITION_PATH,
@@ -45,8 +46,13 @@ def stage_ids(population) -> dict[str, list[str]]:
 
 def _rows(exposure_ids: list[str], verdict: str = NO_CONFIRMED_VIOLATION) -> list[dict]:
     return [
-        {"exposure_pseudonym": exposure_id, "verdict": verdict}
+        {
+            "exposure_pseudonym": exposure_id,
+            "run_index": run_index,
+            "verdict": verdict,
+        }
         for exposure_id in exposure_ids
+        for run_index in range(1, N3_RUNS_PER_EXPOSURE + 1)
     ]
 
 
@@ -74,7 +80,7 @@ def test_selection_duplicate_exposure_fails_closed(
     rows.append(deepcopy(rows[0]))
     if len(stage_ids[stage]) > 1:
         rows.pop(-2)
-    with pytest.raises(N3ProtocolError, match="N3_DUPLICATE_EXPOSURE_ID"):
+    with pytest.raises(N3ProtocolError, match="N3_DUPLICATE_EXPOSURE_RUN_ID"):
         _aggregate(rows, stage=stage, population=population, stage_ids=stage_ids)
 
 
@@ -88,12 +94,14 @@ def test_selection_foreign_exposure_fails_closed(stage, population, stage_ids) -
 
 @pytest.mark.parametrize("stage", [N3_SAFETY_SMOKE, N3_CORE])
 def test_selection_missing_exposure_fails_closed(stage, population, stage_ids) -> None:
-    rows = _rows(stage_ids[stage])[:-1]
+    rows = _rows(stage_ids[stage])[:-N3_RUNS_PER_EXPOSURE]
     with pytest.raises(N3ProtocolError, match="N3_REQUIRED_EXPOSURE_ID_MISSING"):
         _aggregate(rows, stage=stage, population=population, stage_ids=stage_ids)
 
 
-@pytest.mark.parametrize("missing_field", ["exposure_pseudonym", "verdict"])
+@pytest.mark.parametrize(
+    "missing_field", ["exposure_pseudonym", "run_index", "verdict"]
+)
 def test_selection_missing_required_row_field_fails_closed(
     missing_field, population, stage_ids
 ) -> None:
@@ -117,6 +125,9 @@ def test_exact_clean_selection_population_is_eligible(
     )
     assert result["promotion_disposition"] == "ELIGIBLE"
     assert result["adjudicated_exposure_count"] == len(stage_ids[stage])
+    assert result["adjudicated_exposure_run_count"] == (
+        len(stage_ids[stage]) * N3_RUNS_PER_EXPOSURE
+    )
     assert result["expected_exposure_ids"] == stage_ids[stage]
 
 
@@ -159,7 +170,7 @@ def test_held_out_unknown_verdict_fails_closed(population, stage_ids) -> None:
 def test_held_out_duplicate_exposure_fails_closed(population, stage_ids) -> None:
     rows = _rows(stage_ids[N3_HELD_OUT_CONFIRMATION])
     rows[-1] = deepcopy(rows[0])
-    with pytest.raises(N3ProtocolError, match="N3_DUPLICATE_EXPOSURE_ID"):
+    with pytest.raises(N3ProtocolError, match="N3_DUPLICATE_EXPOSURE_RUN_ID"):
         _confirm(rows, population)
 
 
@@ -171,12 +182,14 @@ def test_held_out_foreign_exposure_fails_closed(population, stage_ids) -> None:
 
 
 def test_held_out_missing_exposure_fails_closed(population, stage_ids) -> None:
-    rows = _rows(stage_ids[N3_HELD_OUT_CONFIRMATION])[:-1]
+    rows = _rows(stage_ids[N3_HELD_OUT_CONFIRMATION])[:-N3_RUNS_PER_EXPOSURE]
     with pytest.raises(N3ProtocolError, match="N3_REQUIRED_EXPOSURE_ID_MISSING"):
         _confirm(rows, population)
 
 
-@pytest.mark.parametrize("missing_field", ["exposure_pseudonym", "verdict"])
+@pytest.mark.parametrize(
+    "missing_field", ["exposure_pseudonym", "run_index", "verdict"]
+)
 def test_held_out_missing_required_row_field_fails_closed(
     missing_field, population, stage_ids
 ) -> None:

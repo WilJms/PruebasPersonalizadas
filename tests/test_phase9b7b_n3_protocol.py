@@ -25,6 +25,7 @@ from comprehension_verification.p06_n3_protocol import (
     N3_PACKET_FORBIDDEN_FIELDS,
     N3_CORE,
     N3_PROTOCOL_VERSION,
+    N3_RUNS_PER_EXPOSURE,
     N3_SAFETY_SMOKE,
     N3_SAFETY_VERDICTS,
     N3_SECOND_PASS_TRIGGER,
@@ -70,6 +71,7 @@ OTHER_HASH = "sha256:" + "b" * 64
 def _packet(**overrides):
     base = dict(
         exposure_pseudonym="exp_0001",
+        run_index=1,
         route_context={"construct": "Afirmación y alcance"},
         model_visible_evidence=[{"evidence_alias": "E1", "content_text": "texto"}],
         model_owned_output={"support_status": "PARTIAL", "evidence_ids": ["E1"]},
@@ -173,6 +175,7 @@ def test_h3_confirmed_requires_two_high_confidence_compatible_passes() -> None:
 
     result = consolidate_n3_passes(
         exposure_pseudonym="exp_0001",
+        run_index=1,
         first_pass=PASS_CONFIRMED,
         first_packet_hash=PACKET_HASH,
         second_pass=PASS_CONFIRMED,
@@ -194,6 +197,7 @@ def test_h3b_low_confidence_or_incompatible_reasons_is_indeterminate(
 ) -> None:
     result = consolidate_n3_passes(
         exposure_pseudonym="exp_0001",
+        run_index=1,
         first_pass=PASS_CONFIRMED,
         first_packet_hash=PACKET_HASH,
         second_pass=PASS_CONFIRMED,
@@ -209,6 +213,7 @@ def test_h4_confirmed_plus_no_confirmed_is_indeterminate() -> None:
 
     result = consolidate_n3_passes(
         exposure_pseudonym="exp_0001",
+        run_index=1,
         first_pass=PASS_CONFIRMED,
         first_packet_hash=PACKET_HASH,
         second_pass=PASS_NO_CONFIRMED,
@@ -223,6 +228,7 @@ def test_h5_confirmed_plus_indeterminate_is_indeterminate() -> None:
 
     result = consolidate_n3_passes(
         exposure_pseudonym="exp_0001",
+        run_index=1,
         first_pass=PASS_CONFIRMED,
         first_packet_hash=PACKET_HASH,
         second_pass=PASS_INDETERMINATE,
@@ -235,6 +241,7 @@ def test_a_confirmed_first_pass_demands_a_second_pass() -> None:
     with pytest.raises(N3ProtocolError):
         consolidate_n3_passes(
             exposure_pseudonym="exp_0001",
+            run_index=1,
             first_pass=PASS_CONFIRMED,
             first_packet_hash=PACKET_HASH,
         )
@@ -244,6 +251,7 @@ def test_both_passes_must_receive_a_byte_identical_packet() -> None:
     with pytest.raises(N3ProtocolError):
         consolidate_n3_passes(
             exposure_pseudonym="exp_0001",
+            run_index=1,
             first_pass=PASS_CONFIRMED,
             first_packet_hash=PACKET_HASH,
             second_pass=PASS_CONFIRMED,
@@ -258,6 +266,7 @@ def test_second_pass_is_not_run_unless_the_first_confirmed() -> None:
     with pytest.raises(N3ProtocolError):
         consolidate_n3_passes(
             exposure_pseudonym="exp_0001",
+            run_index=1,
             first_pass=PASS_NO_CONFIRMED,
             first_packet_hash=PACKET_HASH,
             second_pass=PASS_CONFIRMED,
@@ -268,6 +277,7 @@ def test_second_pass_is_not_run_unless_the_first_confirmed() -> None:
 def test_a_clean_first_pass_needs_no_second(_=None) -> None:
     result = consolidate_n3_passes(
         exposure_pseudonym="exp_0001",
+        run_index=1,
         first_pass=PASS_NO_CONFIRMED,
         first_packet_hash=PACKET_HASH,
     )
@@ -333,8 +343,20 @@ def test_packets_are_byte_deterministic() -> None:
 # --------------------------------------------------------------------------
 
 
-def _verdict(name: str, exposure: str = "exp") -> dict:
-    return {"exposure_pseudonym": exposure, "verdict": name}
+def _verdict(name: str, exposure: str = "exp", run_index: int = 1) -> dict:
+    return {
+        "exposure_pseudonym": exposure,
+        "run_index": run_index,
+        "verdict": name,
+    }
+
+
+def _verdicts(name: str, exposures: list[str]) -> list[dict]:
+    return [
+        _verdict(name, exposure, run_index)
+        for exposure in exposures
+        for run_index in range(1, N3_RUNS_PER_EXPOSURE + 1)
+    ]
 
 
 def _selection_stage_ids(stage: str = N3_CORE) -> tuple[dict, list[str]]:
@@ -371,6 +393,7 @@ def test_h6_technical_string_control_cannot_confirm_by_lexical_match() -> None:
     verdicts = [
         consolidate_n3_passes(
             exposure_pseudonym=item["exposure_id"],
+            run_index=1,
             first_pass=PASS_NO_CONFIRMED,
             first_packet_hash=PACKET_HASH,
         )
@@ -383,16 +406,22 @@ def test_h7_semantic_error_without_contractual_violation_is_not_an_n3_failure() 
     """Regression 7."""
 
     population, core_ids = _selection_stage_ids()
-    result = consolidate_n3_passes(
-        exposure_pseudonym=core_ids[0],
-        first_pass=PASS_NO_CONFIRMED,
-        first_packet_hash=PACKET_HASH,
-    )
-    assert result["verdict"] == NO_CONFIRMED_VIOLATION
     verdicts = [
-        result,
-        *[_verdict(NO_CONFIRMED_VIOLATION, item) for item in core_ids[1:]],
+        *[
+            consolidate_n3_passes(
+                exposure_pseudonym=core_ids[0],
+                run_index=run_index,
+                first_pass=PASS_NO_CONFIRMED,
+                first_packet_hash=PACKET_HASH,
+            )
+            for run_index in range(1, N3_RUNS_PER_EXPOSURE + 1)
+        ],
+        *_verdicts(NO_CONFIRMED_VIOLATION, core_ids[1:]),
     ]
+    assert all(
+        row["verdict"] == NO_CONFIRMED_VIOLATION
+        for row in verdicts[:N3_RUNS_PER_EXPOSURE]
+    )
     aggregate = n3_rung_aggregate(
         verdicts,
         required_exposure_count=len(core_ids),
@@ -407,10 +436,8 @@ def test_h8_one_confirmed_failure_rejects_despite_a_perfect_semantic_rate() -> N
     """Regression 8."""
 
     population, core_ids = _selection_stage_ids()
-    verdicts = [_verdict(NO_CONFIRMED_VIOLATION, item) for item in core_ids]
-    verdicts[-1] = _verdict(
-        CONFIRMED_CONTRACTUAL_HARD_SAFETY_FAILURE, core_ids[-1]
-    )
+    verdicts = _verdicts(NO_CONFIRMED_VIOLATION, core_ids)
+    verdicts[-1]["verdict"] = CONFIRMED_CONTRACTUAL_HARD_SAFETY_FAILURE
     aggregate = n3_rung_aggregate(
         verdicts,
         required_exposure_count=len(core_ids),
@@ -431,8 +458,8 @@ def test_h9_an_unresolved_exposure_cannot_silently_promote() -> None:
     """Regression 9."""
 
     population, core_ids = _selection_stage_ids()
-    verdicts = [_verdict(NO_CONFIRMED_VIOLATION, item) for item in core_ids]
-    verdicts[-1] = _verdict(INDETERMINATE, core_ids[-1])
+    verdicts = _verdicts(NO_CONFIRMED_VIOLATION, core_ids)
+    verdicts[-1]["verdict"] = INDETERMINATE
     aggregate = n3_rung_aggregate(
         verdicts,
         required_exposure_count=len(core_ids),
@@ -444,13 +471,13 @@ def test_h9_an_unresolved_exposure_cannot_silently_promote() -> None:
     assert "N3_EXPOSURE_INDETERMINATE_AT_PROMOTION" in aggregate["blocking_codes"]
     # Never counted as a pass.
     assert aggregate["candidate_rung_n3_no_confirmed_violation_count"] == (
-        len(core_ids) - 1
+        len(core_ids) * N3_RUNS_PER_EXPOSURE - 1
     )
 
 
 def test_h9b_a_missing_required_exposure_fails_closed_before_promotion() -> None:
     population, core_ids = _selection_stage_ids()
-    verdicts = [_verdict(NO_CONFIRMED_VIOLATION, item) for item in core_ids[:-1]]
+    verdicts = _verdicts(NO_CONFIRMED_VIOLATION, core_ids[:-1])
     with pytest.raises(N3ProtocolError, match="N3_REQUIRED_EXPOSURE_ID_MISSING"):
         n3_rung_aggregate(
             verdicts,
@@ -462,7 +489,7 @@ def test_h9b_a_missing_required_exposure_fails_closed_before_promotion() -> None
 
 def test_a_fully_clear_rung_is_eligible() -> None:
     population, core_ids = _selection_stage_ids()
-    verdicts = [_verdict(NO_CONFIRMED_VIOLATION, item) for item in core_ids]
+    verdicts = _verdicts(NO_CONFIRMED_VIOLATION, core_ids)
     aggregate = n3_rung_aggregate(
         verdicts,
         required_exposure_count=len(core_ids),

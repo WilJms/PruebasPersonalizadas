@@ -1213,7 +1213,9 @@ def self_material_hash(path: str, document: Mapping[str, Any]) -> str | None:
 # --------------------------------------------------------------------------
 
 
-def v132_package(build: V13Build) -> dict[str, dict[str, Any]]:
+def _rebuild_v132_package_with_original_builders(
+    build: V13Build,
+) -> dict[str, dict[str, Any]]:
     """Every generated 1.3.2 document, keyed by repository-relative path."""
 
     from .n3_provider_fixtures import n3_provider_fixture_authority
@@ -1291,4 +1293,20 @@ def v132_package(build: V13Build) -> dict[str, dict[str, Any]]:
     package[f"{REPORT_ROOT}/phase9/stale_claim_scan.json"] = stale_scan
     package[f"{REPORT_ROOT}/phase9/pre_results_instrument_freeze.json"] = freeze
     stale_claim_scan(package, republished_unchanged=REPUBLISHED_FROM_V131)
+    return package
+
+
+def v132_package(build: V13Build) -> dict[str, dict[str, Any]]:
+    """Return immutable, already-published v1.3.2 evidence."""
+
+    if build.package_hash != (
+        "21c21f3a53bfb786162dc350dc38c93b7b007d9f23b744a354de4ac2354048a1"
+    ):
+        raise V13BuildError("v1.3.2 historical package requires canonical corpus")
+    package = {
+        relative: _json(REPOSITORY_ROOT / relative)
+        for relative in SELF_MATERIAL_HASH_FIELD
+    }
+    for relative, document in package.items():
+        self_material_hash(relative, document)
     return package

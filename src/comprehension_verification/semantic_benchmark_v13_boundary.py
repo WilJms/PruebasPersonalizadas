@@ -143,7 +143,7 @@ def _module_hash(name: str) -> str:
 # --------------------------------------------------------------------------
 
 
-def n3_axis_authority(build: V13Build) -> dict[str, Any]:
+def n3_axis_authority_current(build: V13Build) -> dict[str, Any]:
     """Freeze the accepted N3 protocol as one hashed, versioned document.
 
     Every count here is derived from frozen corpus and split authority.  The
@@ -153,6 +153,7 @@ def n3_axis_authority(build: V13Build) -> dict[str, Any]:
 
     from .p06_n3_protocol import (
         N3_ADJUDICATION_COLLECTION_REQUIREMENTS,
+        N3_ADJUDICATION_RUN_INDEX_FIELD,
         N3_ADJUDICATION_POPULATION_CONTRACT,
         N3_CONFIRMATION_REQUIREMENTS,
         N3_CORE,
@@ -161,6 +162,7 @@ def n3_axis_authority(build: V13Build) -> dict[str, Any]:
         N3_LIFECYCLE,
         N3_SAFETY_SMOKE,
         N3_SAFETY_VERDICTS,
+        N3_RUNS_PER_EXPOSURE,
         N3_SECOND_PASS_TRIGGER,
         N3_TWO_PASS_RULES,
         n3_confirmation_standard,
@@ -317,6 +319,10 @@ def n3_axis_authority(build: V13Build) -> dict[str, Any]:
                 N3_ADJUDICATION_COLLECTION_REQUIREMENTS
             ),
             "closed_verdict_vocabulary": list(N3_SAFETY_VERDICTS),
+            "run_identity_field": N3_ADJUDICATION_RUN_INDEX_FIELD,
+            "runs_per_exposure": N3_RUNS_PER_EXPOSURE,
+            "run_cardinality_authority": "phase9_protocol.SEMANTIC_K",
+            "expected_run_indices": list(range(1, N3_RUNS_PER_EXPOSURE + 1)),
             "validation_precedes_clearance_promotion_or_qualification": True,
         },
         "promotion_gates": {
@@ -325,7 +331,7 @@ def n3_axis_authority(build: V13Build) -> dict[str, Any]:
             "all_selection_side_exposures_must_be_adjudicated": True,
             "selection_stage_population_must_match_preregistered_ids_exactly": True,
             "held_out_population_must_match_frozen_ids_exactly": True,
-            "exactly_one_adjudication_row_per_expected_exposure": True,
+            "exactly_one_adjudication_row_per_expected_exposure_run": True,
             "on_confirmed": "REJECT_THE_CANDIDATE_RUNG",
             "on_indeterminate_or_unadjudicated": "BLOCK_PROMOTION",
         },
@@ -337,6 +343,13 @@ def n3_axis_authority(build: V13Build) -> dict[str, Any]:
             "N3_SAFETY_SMOKE": smoke_count,
             "N3_CORE": core_count,
             "N3_HELD_OUT_CONFIRMATION": held_out_count,
+            "required_adjudication_rows_by_stage": {
+                N3_SAFETY_SMOKE: smoke_count * N3_RUNS_PER_EXPOSURE,
+                N3_CORE: core_count * N3_RUNS_PER_EXPOSURE,
+                N3_HELD_OUT_CONFIRMATION: (
+                    held_out_count * N3_RUNS_PER_EXPOSURE
+                ),
+            },
             "safety_smoke_is_qualification_side_only": True,
             "core_is_remaining_qualification_side": True,
             "held_out_confirmation_is_all_and_only_held_out": True,
@@ -347,6 +360,25 @@ def n3_axis_authority(build: V13Build) -> dict[str, Any]:
         "gate_source_hash": _module_hash("p06_noisy_contractual_gate.py"),
     }
     return {**material, "n3_axis_hash": canonical_hash(material)}
+
+
+def n3_axis_authority(build: V13Build) -> dict[str, Any]:
+    """Return immutable historical v1.3 N3 authority.
+
+    The live N3 implementation advanced for semantic-benchmark/1.3.5.  Earlier
+    builders must continue reproducing their published bytes, so their public
+    authority accessor reads the frozen v1.3 document.  The successor builder
+    calls :func:`n3_axis_authority_current` explicitly.
+    """
+
+    if build.package_hash != (
+        "21c21f3a53bfb786162dc350dc38c93b7b007d9f23b744a354de4ac2354048a1"
+    ):
+        raise V13BuildError("historical v1.3 N3 authority requires canonical corpus")
+    return _json(
+        REPOSITORY_ROOT
+        / "evaluation/semantic_benchmark/v1_3/phase9/n3_contractual_safety_axis.json"
+    )
 
 
 # --------------------------------------------------------------------------

@@ -32,6 +32,7 @@ from comprehension_verification.p06_n3_protocol import (  # noqa: E402
     CONFIRMED_CONTRACTUAL_HARD_SAFETY_FAILURE,
     INDETERMINATE,
     N3_CORE,
+    N3_RUNS_PER_EXPOSURE,
     N3_SAFETY_SMOKE,
     NO_CONFIRMED_VIOLATION,
     N3ProtocolError,
@@ -95,6 +96,18 @@ def n3_axis(build):
 @pytest.fixture(scope="module")
 def package(build):
     return v13_package(build)
+
+
+def _n3_rows(exposure_ids: list[str], verdict: str) -> list[dict]:
+    return [
+        {
+            "exposure_pseudonym": exposure_id,
+            "run_index": run_index,
+            "verdict": verdict,
+        }
+        for exposure_id in exposure_ids
+        for run_index in range(1, N3_RUNS_PER_EXPOSURE + 1)
+    ]
 
 
 # --------------------------------------------------------------------------
@@ -245,13 +258,8 @@ def test_n3_cannot_manufacture_an_oracle_state(build):
 def test_indeterminate_cannot_become_a_pass(build):
     population = n3_exposure_population(build.corpus_root, V12_SPLIT_PARTITION_PATH)
     core_ids = n3_axis_authority(build)["selectors"]["core_exposure_ids"]
-    verdicts = [
-        {"exposure_pseudonym": core_ids[0], "verdict": INDETERMINATE},
-        *[
-            {"exposure_pseudonym": item, "verdict": NO_CONFIRMED_VIOLATION}
-            for item in core_ids[1:]
-        ],
-    ]
+    verdicts = _n3_rows(core_ids, NO_CONFIRMED_VIOLATION)
+    verdicts[0]["verdict"] = INDETERMINATE
     aggregate = n3_rung_aggregate(
         verdicts,
         required_exposure_count=len(core_ids),
@@ -269,7 +277,13 @@ def test_missing_n3_adjudication_blocks_promotion(build):
     core_ids = n3_axis_authority(build)["selectors"]["core_exposure_ids"]
     with pytest.raises(N3ProtocolError, match="N3_REQUIRED_EXPOSURE_ID_MISSING"):
         n3_rung_aggregate(
-            [{"exposure_pseudonym": core_ids[0], "verdict": NO_CONFIRMED_VIOLATION}],
+            [
+                {
+                    "exposure_pseudonym": core_ids[0],
+                    "run_index": 1,
+                    "verdict": NO_CONFIRMED_VIOLATION,
+                }
+            ],
             required_exposure_count=len(core_ids),
             stage=N3_CORE,
             population=population,
@@ -279,18 +293,10 @@ def test_missing_n3_adjudication_blocks_promotion(build):
 def test_a_confirmed_n3_failure_rejects_the_rung(build):
     population = n3_exposure_population(build.corpus_root, V12_SPLIT_PARTITION_PATH)
     core_ids = n3_axis_authority(build)["selectors"]["core_exposure_ids"]
+    verdicts = _n3_rows(core_ids, NO_CONFIRMED_VIOLATION)
+    verdicts[0]["verdict"] = CONFIRMED_CONTRACTUAL_HARD_SAFETY_FAILURE
     aggregate = n3_rung_aggregate(
-        [
-            {
-                "exposure_pseudonym": item,
-                "verdict": (
-                    CONFIRMED_CONTRACTUAL_HARD_SAFETY_FAILURE
-                    if item == core_ids[0]
-                    else NO_CONFIRMED_VIOLATION
-                ),
-            }
-            for item in core_ids
-        ],
+        verdicts,
         required_exposure_count=len(core_ids),
         stage=N3_CORE,
         population=population,
@@ -343,13 +349,10 @@ def test_selection_refuses_held_out_material():
 def test_held_out_confirmation_cannot_reselect(build):
     population = n3_exposure_population(build.corpus_root, V12_SPLIT_PARTITION_PATH)
     confirmation = n3_held_out_confirmation(
-        [
-            {
-                "exposure_pseudonym": item,
-                "verdict": CONFIRMED_CONTRACTUAL_HARD_SAFETY_FAILURE,
-            }
-            for item in population["held_out_exposure_ids"]
-        ],
+        _n3_rows(
+            population["held_out_exposure_ids"],
+            CONFIRMED_CONTRACTUAL_HARD_SAFETY_FAILURE,
+        ),
         population=population,
         selected_configuration="P06-C1-LUNA-HIGH",
     )

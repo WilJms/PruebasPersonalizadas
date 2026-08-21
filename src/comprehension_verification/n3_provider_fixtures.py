@@ -52,6 +52,7 @@ from .p06_n3_protocol import (
     HELD_OUT_SIDE,
     N3_CORE,
     N3_HELD_OUT_CONFIRMATION,
+    N3_RUNS_PER_EXPOSURE,
     N3_SAFETY_SMOKE,
     P06_SMOKE_ACTIVITY_IDS,
     QUALIFICATION_SIDE,
@@ -73,6 +74,7 @@ from .semantic_benchmark_v12_boundary import _production_projection
 
 
 N3_PROVIDER_FIXTURES_VERSION = "n3-provider-fixtures/1.3.1"
+N3_PROVIDER_FIXTURES_V135_VERSION = "n3-provider-fixtures/1.3.5"
 
 #: The construct-selection rule, named so a reader can check the code against
 #: the claim rather than against a comment.
@@ -843,10 +845,10 @@ def noisy_disposition_prose(census: Mapping[str, int]) -> str:
 # --------------------------------------------------------------------------
 
 
-def n3_provider_fixture_authority(
+def n3_provider_fixture_authority_current(
     corpus_root: Path = DEFAULT_CORPUS_ROOT,
 ) -> dict[str, Any]:
-    """The versioned N3 provider fixture set, with every count derived."""
+    """The current run-aware N3 provider fixture set, with derived counts."""
 
     build = build_n3_provider_fixtures(corpus_root)
     representativeness = production_representativeness_proof(build, corpus_root)
@@ -892,7 +894,8 @@ def n3_provider_fixture_authority(
         )
 
     material = {
-        "schema_version": N3_PROVIDER_FIXTURES_VERSION,
+        "schema_version": N3_PROVIDER_FIXTURES_V135_VERSION,
+        "benchmark_version": "semantic-benchmark/1.3.5",
         "gate": "P06_STAGE_LOCAL_NOISY_CONTRACTUAL_HARD_SAFETY_GATE",
         "stage": "P06",
         "purpose": (
@@ -920,6 +923,21 @@ def n3_provider_fixture_authority(
         "fixture_count": len(build.fixtures),
         "fixture_input_hashes": input_hashes,
         "fixture_ids": sorted(input_hashes),
+        "provider_unit": "EXPOSURE_RUN",
+        "run_identity_fields": ["exposure_pseudonym", "run_index"],
+        "runs_per_exposure": N3_RUNS_PER_EXPOSURE,
+        "run_cardinality_authority": "phase9_protocol.SEMANTIC_K",
+        "caller_may_define_k": False,
+        "fixture_run_identities": {
+            item["n3_provider_fixture_id"]: [
+                {
+                    "exposure_pseudonym": item["exposure_id"],
+                    "run_index": run_index,
+                }
+                for run_index in range(1, N3_RUNS_PER_EXPOSURE + 1)
+            ]
+            for item in build.fixtures
+        },
         # --- derived counts
         "counts_by_n3_split": dict(sorted(by_split.items())),
         "counts_by_side": dict(sorted(by_side.items())),
@@ -928,6 +946,10 @@ def n3_provider_fixture_authority(
         "held_out_fixture_count": by_split[N3_HELD_OUT_CONFIRMATION],
         "qualification_side_fixture_count": by_side[QUALIFICATION_SIDE],
         "counts_derived_from_the_fixture_set": True,
+        "required_provider_calls_by_n3_split": {
+            split: count * N3_RUNS_PER_EXPOSURE
+            for split, count in sorted(by_split.items())
+        },
         # --- bindings
         "exposure_population_hash": build.population["population_hash"],
         "stage_plan_hash": build.stage_plan["stage_plan_hash"],
@@ -952,3 +974,26 @@ def n3_provider_fixture_authority(
         "adjudicator_calls": 0,
     }
     return {**material, "fixture_set_hash": canonical_hash(material)}
+
+
+def n3_provider_fixture_authority(
+    corpus_root: Path = DEFAULT_CORPUS_ROOT,
+) -> dict[str, Any]:
+    """Return immutable historical v1.3.1 fixture authority.
+
+    Successor benchmark builders must call
+    :func:`n3_provider_fixture_authority_current` explicitly.  This public
+    historical accessor preserves every already-published v1.3.1--v1.3.4
+    equality proof after the live N3 stage plan advances to exposure/run rows.
+    """
+
+    if Path(corpus_root).resolve() != Path(DEFAULT_CORPUS_ROOT).resolve():
+        raise N3ProviderFixtureError(
+            "historical N3 fixture authority requires the canonical corpus"
+        )
+    return json.loads(
+        (
+            REPOSITORY_ROOT
+            / "evaluation/semantic_benchmark/v1_3_1/phase9/n3_provider_fixtures.json"
+        ).read_text(encoding="utf-8")
+    )

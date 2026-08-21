@@ -1,0 +1,2673 @@
+{
+  "benchmark_version": "semantic-benchmark/1.3.5",
+  "binding_count": 71,
+  "bindings": [
+    {
+      "binding_scope": "CASE_SPECIFIC",
+      "candidate_scoring_allowed": true,
+      "candidate_sees_property_or_oracle": false,
+      "construct_reference_accounting": [
+        {
+          "classification": "EXACT_AUTHORIZED_NAME",
+          "construct_key": "RUBRIC::A01::LIMITACION",
+          "matched": true,
+          "reference": "Limitación",
+          "reference_kind": "QUOTED_SPAN"
+        },
+        {
+          "classification": "UNRELATED_TO_ANY_AUTHORIZED_NAME",
+          "containment": 0.0588,
+          "matched": false,
+          "nearest_authorized_name": "uso de evidencia",
+          "reference": "Si uno de ellos ya era más alto el primer día, parte de la diferencia final vendría de ahí",
+          "reference_kind": "QUOTED_SPAN"
+        }
+      ],
+      "expected_dimension_alias": "D1",
+      "expected_opportunity_template_id": "template_p06_submission_v135_57e39d8b4b0f90006f29",
+      "expected_template_alias": "T1",
+      "expected_variant_alias": "V1",
+      "expected_variant_id": "variant_p06_submission_v135_57e39d8b4b0f90006f29",
+      "fixture_id": "P06-A01-S02-R01",
+      "oracle_state": "VALID",
+      "original_route_case_id": "PP-A01-S02-P06-R01",
+      "original_route_split": "CORE",
+      "primary_case_id": "PP-A01-S02-P06-R01",
+      "property_id": "A01-S02-P1",
+      "property_target_construct_key": "RUBRIC::A01::LIMITACION",
+      "provider_case_id": "PP-A01-S02-P06-G01",
+      "provider_split": "CORE",
+      "route_target_construct_key": "RUBRIC::A01::LIMITACION",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT_FAIL_CLOSED",
+      "stage": "P06"
+    },
+    {
+      "binding_scope": "CASE_SPECIFIC",
+      "candidate_scoring_allowed": true,
+      "candidate_sees_property_or_oracle": false,
+      "construct_reference_accounting": [
+        {
+          "classification": "EXACT_AUTHORIZED_NAME",
+          "construct_key": "RUBRIC::A01::VARIABLES_Y_MEDIDAS",
+          "matched": true,
+          "reference": "Variables y medidas",
+          "reference_kind": "QUOTED_SPAN"
+        }
+      ],
+      "expected_dimension_alias": "D2",
+      "expected_opportunity_template_id": "template_p06_submission_v135_7ac51939a2d123e89615",
+      "expected_template_alias": "T2",
+      "expected_variant_alias": "V2",
+      "expected_variant_id": "variant_p06_submission_v135_7ac51939a2d123e89615",
+      "fixture_id": "P06-A01-S03-R02",
+      "oracle_state": "VALID",
+      "original_route_case_id": "PP-A01-S03-P06-R02",
+      "original_route_split": "SMOKE",
+      "primary_case_id": "PP-A01-S03-P06-R02",
+      "property_id": "A01-S03-P1",
+      "property_target_construct_key": "RUBRIC::A01::VARIABLES_Y_MEDIDAS",
+      "provider_case_id": "PP-A01-S03-P06-G01",
+      "provider_split": "SMOKE",
+      "route_target_construct_key": "RUBRIC::A01::VARIABLES_Y_MEDIDAS",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT_FAIL_CLOSED",
+      "stage": "P06"
+    },
+    {
+      "binding_scope": "CASE_SPECIFIC",
+      "candidate_scoring_allowed": true,
+      "candidate_sees_property_or_oracle": false,
+      "construct_reference_accounting": [
+        {
+          "classification": "EXACT_AUTHORIZED_NAME",
+          "construct_key": "RUBRIC::A01::USO_DE_EVIDENCIA",
+          "matched": true,
+          "reference": "Uso de evidencia",
+          "reference_kind": "QUOTED_SPAN"
+        }
+      ],
+      "expected_dimension_alias": "D1",
+      "expected_opportunity_template_id": "template_p06_submission_v135_b3004f68db3808740ae1",
+      "expected_template_alias": "T1",
+      "expected_variant_alias": "V1",
+      "expected_variant_id": "variant_p06_submission_v135_b3004f68db3808740ae1",
+      "fixture_id": "P06-A01-S03-R01",
+      "oracle_state": "VALID",
+      "original_route_case_id": "PP-A01-S03-P06-R01",
+      "original_route_split": "CORE",
+      "primary_case_id": "PP-A01-S03-P06-R01",
+      "property_id": "A01-S03-P2",
+      "property_target_construct_key": "RUBRIC::A01::USO_DE_EVIDENCIA",
+      "provider_case_id": "PP-A01-S03-P06-G01",
+      "provider_split": "SMOKE",
+      "route_target_construct_key": "RUBRIC::A01::USO_DE_EVIDENCIA",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT_FAIL_CLOSED",
+      "stage": "P06"
+    },
+    {
+      "binding_scope": "CASE_SPECIFIC",
+      "candidate_scoring_allowed": false,
+      "candidate_sees_property_or_oracle": false,
+      "construct_reference_accounting": [
+        {
+          "classification": "EXACT_AUTHORIZED_NAME",
+          "construct_key": "RUBRIC::A01::LIMITACION",
+          "matched": true,
+          "reference": "Limitación",
+          "reference_kind": "QUOTED_SPAN"
+        },
+        {
+          "classification": "UNRELATED_TO_ANY_AUTHORIZED_NAME",
+          "matched": false,
+          "reference": "Parcialmente logrado",
+          "reference_kind": "QUOTED_SPAN"
+        }
+      ],
+      "expected_dimension_alias": "D1",
+      "expected_opportunity_template_id": "template_p06_submission_v135_4358e12223dd19a67f28",
+      "expected_template_alias": "T1",
+      "expected_variant_alias": "V1",
+      "expected_variant_id": "variant_p06_submission_v135_4358e12223dd19a67f28",
+      "fixture_id": "P06-A01-S04-R01",
+      "oracle_state": "ORACLE_SUSPECT",
+      "original_route_case_id": "PP-A01-S04-P06-R01",
+      "original_route_split": "CORE",
+      "primary_case_id": "PP-A01-S04-P06-R01",
+      "property_id": "A01-S04-P2",
+      "property_target_construct_key": "RUBRIC::A01::LIMITACION",
+      "provider_case_id": "PP-A01-S04-P06-G01",
+      "provider_split": "CORE",
+      "route_target_construct_key": "RUBRIC::A01::LIMITACION",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT_FAIL_CLOSED",
+      "stage": "P06"
+    },
+    {
+      "binding_scope": "CASE_SPECIFIC",
+      "candidate_scoring_allowed": true,
+      "candidate_sees_property_or_oracle": false,
+      "construct_reference_accounting": [
+        {
+          "classification": "EXACT_AUTHORIZED_NAME",
+          "construct_key": "RUBRIC::A01::USO_DE_EVIDENCIA",
+          "matched": true,
+          "reference": "Uso de evidencia",
+          "reference_kind": "QUOTED_SPAN"
+        }
+      ],
+      "expected_dimension_alias": "D1",
+      "expected_opportunity_template_id": "template_p06_submission_v135_dde1f6a152a183f07cf2",
+      "expected_template_alias": "T1",
+      "expected_variant_alias": "V1",
+      "expected_variant_id": "variant_p06_submission_v135_dde1f6a152a183f07cf2",
+      "fixture_id": "P06-A01-S05-R01",
+      "oracle_state": "VALID",
+      "original_route_case_id": "PP-A01-S05-P06-R01",
+      "original_route_split": "CORE",
+      "primary_case_id": "PP-A01-S05-P06-R01",
+      "property_id": "A01-S05-P1",
+      "property_target_construct_key": "RUBRIC::A01::USO_DE_EVIDENCIA",
+      "provider_case_id": "PP-A01-S05-P06-G01",
+      "provider_split": "CORE",
+      "route_target_construct_key": "RUBRIC::A01::USO_DE_EVIDENCIA",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT_FAIL_CLOSED",
+      "stage": "P06"
+    },
+    {
+      "binding_scope": "CASE_SPECIFIC",
+      "candidate_scoring_allowed": true,
+      "candidate_sees_property_or_oracle": false,
+      "construct_reference_accounting": [
+        {
+          "classification": "EXACT_AUTHORIZED_NAME",
+          "construct_key": "RUBRIC::A02::RELACION_Y_RAZONAMIENTO",
+          "matched": true,
+          "reference": "Relación y razonamiento",
+          "reference_kind": "QUOTED_SPAN"
+        },
+        {
+          "classification": "UNRELATED_TO_ANY_AUTHORIZED_NAME",
+          "matched": false,
+          "reference": "no vino nadie",
+          "reference_kind": "QUOTED_SPAN"
+        }
+      ],
+      "expected_dimension_alias": "D1",
+      "expected_opportunity_template_id": "template_p06_submission_v135_d004d859e52652af2ffe",
+      "expected_template_alias": "T1",
+      "expected_variant_alias": "V1",
+      "expected_variant_id": "variant_p06_submission_v135_d004d859e52652af2ffe",
+      "fixture_id": "P06-A02-S01-R01",
+      "oracle_state": "VALID",
+      "original_route_case_id": "PP-A02-S01-P06-R01",
+      "original_route_split": "CORE",
+      "primary_case_id": "PP-A02-S01-P06-R01",
+      "property_id": "A02-S01-P1",
+      "property_target_construct_key": "RUBRIC::A02::RELACION_Y_RAZONAMIENTO",
+      "provider_case_id": "PP-A02-S01-P06-G01",
+      "provider_split": "CORE",
+      "route_target_construct_key": "RUBRIC::A02::RELACION_Y_RAZONAMIENTO",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT_FAIL_CLOSED",
+      "stage": "P06"
+    },
+    {
+      "binding_scope": "CASE_SPECIFIC",
+      "candidate_scoring_allowed": true,
+      "candidate_sees_property_or_oracle": false,
+      "construct_reference_accounting": [
+        {
+          "classification": "EXACT_AUTHORIZED_NAME",
+          "construct_key": "RUBRIC::A02::RELACION_Y_RAZONAMIENTO",
+          "matched": true,
+          "reference": "Relación y razonamiento",
+          "reference_kind": "QUOTED_SPAN"
+        },
+        {
+          "classification": "UNRELATED_TO_ANY_AUTHORIZED_NAME",
+          "matched": false,
+          "reference": "oculta algo",
+          "reference_kind": "QUOTED_SPAN"
+        }
+      ],
+      "expected_dimension_alias": "D2",
+      "expected_opportunity_template_id": "template_p06_submission_v135_48df1f700700f84f387a",
+      "expected_template_alias": "T2",
+      "expected_variant_alias": "V2",
+      "expected_variant_id": "variant_p06_submission_v135_48df1f700700f84f387a",
+      "fixture_id": "P06-A02-S03-R02",
+      "oracle_state": "VALID",
+      "original_route_case_id": "PP-A02-S03-P06-R02",
+      "original_route_split": "CORE",
+      "primary_case_id": "PP-A02-S03-P06-R02",
+      "property_id": "A02-S03-P1",
+      "property_target_construct_key": "RUBRIC::A02::RELACION_Y_RAZONAMIENTO",
+      "provider_case_id": "PP-A02-S03-P06-G01",
+      "provider_split": "CORE",
+      "route_target_construct_key": "RUBRIC::A02::RELACION_Y_RAZONAMIENTO",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT_FAIL_CLOSED",
+      "stage": "P06"
+    },
+    {
+      "binding_scope": "CASE_SPECIFIC",
+      "candidate_scoring_allowed": false,
+      "candidate_sees_property_or_oracle": false,
+      "construct_reference_accounting": [
+        {
+          "classification": "EXACT_AUTHORIZED_NAME",
+          "construct_key": "RUBRIC::A02::APERTURA_INTERPRETATIVA",
+          "matched": true,
+          "reference": "Apertura interpretativa",
+          "reference_kind": "QUOTED_SPAN"
+        }
+      ],
+      "expected_dimension_alias": "D1",
+      "expected_opportunity_template_id": "template_p06_submission_v135_ddf505461de74286b957",
+      "expected_template_alias": "T1",
+      "expected_variant_alias": "V1",
+      "expected_variant_id": "variant_p06_submission_v135_ddf505461de74286b957",
+      "fixture_id": "P06-A02-S03-R01",
+      "oracle_state": "ORACLE_SUSPECT",
+      "original_route_case_id": "PP-A02-S03-P06-R01",
+      "original_route_split": "CORE",
+      "primary_case_id": "PP-A02-S03-P06-R01",
+      "property_id": "A02-S03-P2",
+      "property_target_construct_key": "RUBRIC::A02::APERTURA_INTERPRETATIVA",
+      "provider_case_id": "PP-A02-S03-P06-G01",
+      "provider_split": "CORE",
+      "route_target_construct_key": "RUBRIC::A02::APERTURA_INTERPRETATIVA",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT_FAIL_CLOSED",
+      "stage": "P06"
+    },
+    {
+      "binding_scope": "CASE_SPECIFIC",
+      "candidate_scoring_allowed": true,
+      "candidate_sees_property_or_oracle": false,
+      "construct_reference_accounting": [
+        {
+          "classification": "EXACT_AUTHORIZED_NAME",
+          "construct_key": "RUBRIC::A02::RELACION_Y_RAZONAMIENTO",
+          "matched": true,
+          "reference": "Relación y razonamiento",
+          "reference_kind": "QUOTED_SPAN"
+        },
+        {
+          "classification": "UNRELATED_TO_ANY_AUTHORIZED_NAME",
+          "matched": false,
+          "reference": "no vino nadie",
+          "reference_kind": "QUOTED_SPAN"
+        }
+      ],
+      "expected_dimension_alias": "D1",
+      "expected_opportunity_template_id": "template_p06_submission_v135_105470dd61b7a4fa930f",
+      "expected_template_alias": "T1",
+      "expected_variant_alias": "V1",
+      "expected_variant_id": "variant_p06_submission_v135_105470dd61b7a4fa930f",
+      "fixture_id": "P06-A02-S04-R01",
+      "oracle_state": "VALID",
+      "original_route_case_id": "PP-A02-S04-P06-R01",
+      "original_route_split": "CORE",
+      "primary_case_id": "PP-A02-S04-P06-R01",
+      "property_id": "A02-S04-P1",
+      "property_target_construct_key": "RUBRIC::A02::RELACION_Y_RAZONAMIENTO",
+      "provider_case_id": "PP-A02-S04-P06-G01",
+      "provider_split": "CORE",
+      "route_target_construct_key": "RUBRIC::A02::RELACION_Y_RAZONAMIENTO",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT_FAIL_CLOSED",
+      "stage": "P06"
+    },
+    {
+      "binding_scope": "CASE_SPECIFIC",
+      "candidate_scoring_allowed": true,
+      "candidate_sees_property_or_oracle": false,
+      "construct_reference_accounting": [
+        {
+          "classification": "EXACT_AUTHORIZED_NAME",
+          "construct_key": "RUBRIC::A02::TESIS_INTERPRETATIVA",
+          "matched": true,
+          "reference": "Tesis interpretativa",
+          "reference_kind": "QUOTED_SPAN"
+        }
+      ],
+      "expected_dimension_alias": "D1",
+      "expected_opportunity_template_id": "template_p06_submission_v135_f356c8d02ebf75465c28",
+      "expected_template_alias": "T1",
+      "expected_variant_alias": "V1",
+      "expected_variant_id": "variant_p06_submission_v135_f356c8d02ebf75465c28",
+      "fixture_id": "P06-A02-S05-R01",
+      "oracle_state": "VALID",
+      "original_route_case_id": "PP-A02-S05-P06-R01",
+      "original_route_split": "CORE",
+      "primary_case_id": "PP-A02-S05-P06-R01",
+      "property_id": "A02-S05-P1",
+      "property_target_construct_key": "RUBRIC::A02::TESIS_INTERPRETATIVA",
+      "provider_case_id": "PP-A02-S05-P06-G01",
+      "provider_split": "CORE",
+      "route_target_construct_key": "RUBRIC::A02::TESIS_INTERPRETATIVA",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT_FAIL_CLOSED",
+      "stage": "P06"
+    },
+    {
+      "binding_scope": "CASE_SPECIFIC",
+      "candidate_scoring_allowed": true,
+      "candidate_sees_property_or_oracle": false,
+      "construct_reference_accounting": [
+        {
+          "classification": "EXACT_AUTHORIZED_NAME",
+          "construct_key": "RUBRIC::A02::APERTURA_INTERPRETATIVA",
+          "matched": true,
+          "reference": "Apertura interpretativa",
+          "reference_kind": "QUOTED_SPAN"
+        },
+        {
+          "classification": "TOO_UNSPECIFIC_TO_NAME_A_CONSTRUCT",
+          "matched": false,
+          "reference": "vino",
+          "reference_kind": "QUOTED_SPAN"
+        },
+        {
+          "classification": "TOO_UNSPECIFIC_TO_NAME_A_CONSTRUCT",
+          "matched": false,
+          "reference": "entró",
+          "reference_kind": "QUOTED_SPAN"
+        },
+        {
+          "classification": "UNRELATED_TO_ANY_AUTHORIZED_NAME",
+          "matched": false,
+          "reference": "cómo usa Elisa esa palabra en las hojas anteriores",
+          "reference_kind": "QUOTED_SPAN"
+        }
+      ],
+      "expected_dimension_alias": "D1",
+      "expected_opportunity_template_id": "template_p06_submission_v135_123c1aa787ec50bb1984",
+      "expected_template_alias": "T1",
+      "expected_variant_alias": "V1",
+      "expected_variant_id": "variant_p06_submission_v135_123c1aa787ec50bb1984",
+      "fixture_id": "P06-A02-S06-R01",
+      "oracle_state": "VALID",
+      "original_route_case_id": "PP-A02-S06-P06-R01",
+      "original_route_split": "CORE",
+      "primary_case_id": "PP-A02-S06-P06-R01",
+      "property_id": "A02-S06-P1",
+      "property_target_construct_key": "RUBRIC::A02::APERTURA_INTERPRETATIVA",
+      "provider_case_id": "PP-A02-S06-P06-G01",
+      "provider_split": "CORE",
+      "route_target_construct_key": "RUBRIC::A02::APERTURA_INTERPRETATIVA",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT_FAIL_CLOSED",
+      "stage": "P06"
+    },
+    {
+      "binding_scope": "CASE_SPECIFIC",
+      "candidate_scoring_allowed": true,
+      "candidate_sees_property_or_oracle": false,
+      "construct_reference_accounting": [
+        {
+          "classification": "EXACT_AUTHORIZED_NAME",
+          "construct_key": "RUBRIC::A03::VERIFICACION_DE_LA_RESTRICCION_DE_CAPACIDAD",
+          "matched": true,
+          "reference": "Verificación de la restricción de capacidad",
+          "reference_kind": "QUOTED_SPAN"
+        },
+        {
+          "classification": "UNRELATED_TO_ANY_AUTHORIZED_NAME",
+          "containment": 0.2308,
+          "matched": false,
+          "nearest_authorized_name": "identificacion de plan opcion y cantidad",
+          "reference": "dice que llega a 90 y mi cantidad de 80 entra sin problema",
+          "reference_kind": "QUOTED_SPAN"
+        },
+        {
+          "classification": "UNRELATED_TO_ANY_AUTHORIZED_NAME",
+          "containment": 0.2,
+          "matched": false,
+          "nearest_authorized_name": "identificacion de plan opcion y cantidad",
+          "reference": "El total es $68,80 y está debajo de $70",
+          "reference_kind": "QUOTED_SPAN"
+        }
+      ],
+      "expected_dimension_alias": "D1",
+      "expected_opportunity_template_id": "template_p06_submission_v135_dcde1a0fc8b3d10d7533",
+      "expected_template_alias": "T1",
+      "expected_variant_alias": "V1",
+      "expected_variant_id": "variant_p06_submission_v135_dcde1a0fc8b3d10d7533",
+      "fixture_id": "P06-A03-S01-R01",
+      "oracle_state": "VALID",
+      "original_route_case_id": "PP-A03-S01-P06-R01",
+      "original_route_split": "HELD_OUT_CONFIRMATION",
+      "primary_case_id": "PP-A03-S01-P06-R01",
+      "property_id": "A03-S01-P2",
+      "property_target_construct_key": "RUBRIC::A03::VERIFICACION_DE_LA_RESTRICCION_DE_CAPACIDAD",
+      "provider_case_id": "PP-A03-S01-P06-G01",
+      "provider_split": "HELD_OUT_CONFIRMATION",
+      "route_target_construct_key": "RUBRIC::A03::VERIFICACION_DE_LA_RESTRICCION_DE_CAPACIDAD",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT_FAIL_CLOSED",
+      "stage": "P06"
+    },
+    {
+      "binding_scope": "CASE_SPECIFIC",
+      "candidate_scoring_allowed": true,
+      "candidate_sees_property_or_oracle": false,
+      "construct_reference_accounting": [
+        {
+          "classification": "EXACT_AUTHORIZED_NAME",
+          "construct_key": "RUBRIC::A03::RIESGO_O_CONDICION_QUE_CAMBIARIA_LA_DECISION",
+          "matched": true,
+          "reference": "Riesgo o condición que cambiaría la decisión",
+          "reference_kind": "QUOTED_SPAN"
+        }
+      ],
+      "expected_dimension_alias": "D1",
+      "expected_opportunity_template_id": "template_p06_submission_v135_9db81ecab9801484ade6",
+      "expected_template_alias": "T1",
+      "expected_variant_alias": "V1",
+      "expected_variant_id": "variant_p06_submission_v135_9db81ecab9801484ade6",
+      "fixture_id": "P06-A03-S02-R01",
+      "oracle_state": "VALID",
+      "original_route_case_id": "PP-A03-S02-P06-R01",
+      "original_route_split": "HELD_OUT_CONFIRMATION",
+      "primary_case_id": "PP-A03-S02-P06-R01",
+      "property_id": "A03-S02-P1",
+      "property_target_construct_key": "RUBRIC::A03::RIESGO_O_CONDICION_QUE_CAMBIARIA_LA_DECISION",
+      "provider_case_id": "PP-A03-S02-P06-G01",
+      "provider_split": "HELD_OUT_CONFIRMATION",
+      "route_target_construct_key": "RUBRIC::A03::RIESGO_O_CONDICION_QUE_CAMBIARIA_LA_DECISION",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT_FAIL_CLOSED",
+      "stage": "P06"
+    },
+    {
+      "binding_scope": "CASE_SPECIFIC",
+      "candidate_scoring_allowed": true,
+      "candidate_sees_property_or_oracle": false,
+      "construct_reference_accounting": [
+        {
+          "classification": "EXACT_AUTHORIZED_NAME",
+          "construct_key": "RUBRIC::A03::VERIFICACION_DE_LA_RESTRICCION_DE_CAPACIDAD",
+          "matched": true,
+          "reference": "Verificación de la restricción de capacidad",
+          "reference_kind": "QUOTED_SPAN"
+        }
+      ],
+      "expected_dimension_alias": "D2",
+      "expected_opportunity_template_id": "template_p06_submission_v135_3eb83d731a0f74862982",
+      "expected_template_alias": "T2",
+      "expected_variant_alias": "V2",
+      "expected_variant_id": "variant_p06_submission_v135_3eb83d731a0f74862982",
+      "fixture_id": "P06-A03-S04-R02",
+      "oracle_state": "VALID",
+      "original_route_case_id": "PP-A03-S04-P06-R02",
+      "original_route_split": "HELD_OUT_CONFIRMATION",
+      "primary_case_id": "PP-A03-S04-P06-R02",
+      "property_id": "A03-S04-P1",
+      "property_target_construct_key": "RUBRIC::A03::VERIFICACION_DE_LA_RESTRICCION_DE_CAPACIDAD",
+      "provider_case_id": "PP-A03-S04-P06-G01",
+      "provider_split": "HELD_OUT_CONFIRMATION",
+      "route_target_construct_key": "RUBRIC::A03::VERIFICACION_DE_LA_RESTRICCION_DE_CAPACIDAD",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT_FAIL_CLOSED",
+      "stage": "P06"
+    },
+    {
+      "binding_scope": "CASE_SPECIFIC",
+      "candidate_scoring_allowed": true,
+      "candidate_sees_property_or_oracle": false,
+      "construct_reference_accounting": [
+        {
+          "classification": "EXACT_AUTHORIZED_NAME",
+          "construct_key": "RUBRIC::A03::COSTO_TOTAL_CON_DESGLOSE",
+          "matched": true,
+          "reference": "Costo total con desglose",
+          "reference_kind": "QUOTED_SPAN"
+        }
+      ],
+      "expected_dimension_alias": "D1",
+      "expected_opportunity_template_id": "template_p06_submission_v135_695316510a9aa508920d",
+      "expected_template_alias": "T1",
+      "expected_variant_alias": "V1",
+      "expected_variant_id": "variant_p06_submission_v135_695316510a9aa508920d",
+      "fixture_id": "P06-A03-S04-R01",
+      "oracle_state": "VALID",
+      "original_route_case_id": "PP-A03-S04-P06-R01",
+      "original_route_split": "HELD_OUT_CONFIRMATION",
+      "primary_case_id": "PP-A03-S04-P06-R01",
+      "property_id": "A03-S04-P3",
+      "property_target_construct_key": "RUBRIC::A03::COSTO_TOTAL_CON_DESGLOSE",
+      "provider_case_id": "PP-A03-S04-P06-G01",
+      "provider_split": "HELD_OUT_CONFIRMATION",
+      "route_target_construct_key": "RUBRIC::A03::COSTO_TOTAL_CON_DESGLOSE",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT_FAIL_CLOSED",
+      "stage": "P06"
+    },
+    {
+      "binding_scope": "CASE_SPECIFIC",
+      "candidate_scoring_allowed": true,
+      "candidate_sees_property_or_oracle": false,
+      "construct_reference_accounting": [
+        {
+          "classification": "EXACT_AUTHORIZED_NAME",
+          "construct_key": "RUBRIC::A03::VERIFICACION_DE_LA_RESTRICCION_DE_CAPACIDAD",
+          "matched": true,
+          "reference": "Verificación de la restricción de capacidad",
+          "reference_kind": "QUOTED_SPAN"
+        }
+      ],
+      "expected_dimension_alias": "D1",
+      "expected_opportunity_template_id": "template_p06_submission_v135_c219cc4f1ad428e5ada4",
+      "expected_template_alias": "T1",
+      "expected_variant_alias": "V1",
+      "expected_variant_id": "variant_p06_submission_v135_c219cc4f1ad428e5ada4",
+      "fixture_id": "P06-A03-S05-R01",
+      "oracle_state": "VALID",
+      "original_route_case_id": "PP-A03-S05-P06-R01",
+      "original_route_split": "HELD_OUT_CONFIRMATION",
+      "primary_case_id": "PP-A03-S05-P06-R01",
+      "property_id": "A03-S05-P1",
+      "property_target_construct_key": "RUBRIC::A03::VERIFICACION_DE_LA_RESTRICCION_DE_CAPACIDAD",
+      "provider_case_id": "PP-A03-S05-P06-G01",
+      "provider_split": "HELD_OUT_CONFIRMATION",
+      "route_target_construct_key": "RUBRIC::A03::VERIFICACION_DE_LA_RESTRICCION_DE_CAPACIDAD",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT_FAIL_CLOSED",
+      "stage": "P06"
+    },
+    {
+      "binding_scope": "CASE_SPECIFIC",
+      "candidate_scoring_allowed": true,
+      "candidate_sees_property_or_oracle": false,
+      "construct_reference_accounting": [
+        {
+          "classification": "EXACT_AUTHORIZED_NAME",
+          "construct_key": "RUBRIC::A03::COSTO_TOTAL_CON_DESGLOSE",
+          "matched": true,
+          "reference": "Costo total con desglose",
+          "reference_kind": "QUOTED_SPAN"
+        }
+      ],
+      "expected_dimension_alias": "D1",
+      "expected_opportunity_template_id": "template_p06_submission_v135_89cc90f80682924b2e43",
+      "expected_template_alias": "T1",
+      "expected_variant_alias": "V1",
+      "expected_variant_id": "variant_p06_submission_v135_89cc90f80682924b2e43",
+      "fixture_id": "P06-A03-S06-R01",
+      "oracle_state": "VALID",
+      "original_route_case_id": "PP-A03-S06-P06-R01",
+      "original_route_split": "HELD_OUT_CONFIRMATION",
+      "primary_case_id": "PP-A03-S06-P06-R01",
+      "property_id": "A03-S06-P2",
+      "property_target_construct_key": "RUBRIC::A03::COSTO_TOTAL_CON_DESGLOSE",
+      "provider_case_id": "PP-A03-S06-P06-G01",
+      "provider_split": "HELD_OUT_CONFIRMATION",
+      "route_target_construct_key": "RUBRIC::A03::COSTO_TOTAL_CON_DESGLOSE",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT_FAIL_CLOSED",
+      "stage": "P06"
+    },
+    {
+      "binding_scope": "CASE_SPECIFIC",
+      "candidate_scoring_allowed": true,
+      "candidate_sees_property_or_oracle": false,
+      "construct_reference_accounting": [
+        {
+          "classification": "EXACT_AUTHORIZED_NAME",
+          "construct_key": "RUBRIC::A04::UNA_APARICION_INVALIDA_NO_RESERVA_EL_ID",
+          "matched": true,
+          "reference": "Una aparición inválida no reserva el id",
+          "reference_kind": "QUOTED_SPAN"
+        }
+      ],
+      "expected_dimension_alias": "D3",
+      "expected_opportunity_template_id": "template_p06_submission_v135_e9c06feed3d6311f542e",
+      "expected_template_alias": "T3",
+      "expected_variant_alias": "V3",
+      "expected_variant_id": "variant_p06_submission_v135_e9c06feed3d6311f542e",
+      "fixture_id": "P06-A04-S01-R03",
+      "oracle_state": "VALID",
+      "original_route_case_id": "PP-A04-S01-P06-R03",
+      "original_route_split": "CORE",
+      "primary_case_id": "PP-A04-S01-P06-R03",
+      "property_id": "A04-S01-P2",
+      "property_target_construct_key": "RUBRIC::A04::UNA_APARICION_INVALIDA_NO_RESERVA_EL_ID",
+      "provider_case_id": "PP-A04-S01-P06-G01",
+      "provider_split": "CORE",
+      "route_target_construct_key": "RUBRIC::A04::UNA_APARICION_INVALIDA_NO_RESERVA_EL_ID",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT_FAIL_CLOSED",
+      "stage": "P06"
+    },
+    {
+      "binding_scope": "CASE_SPECIFIC",
+      "candidate_scoring_allowed": true,
+      "candidate_sees_property_or_oracle": false,
+      "construct_reference_accounting": [
+        {
+          "classification": "EXACT_AUTHORIZED_NAME",
+          "construct_key": "RUBRIC::A04::ORDENA_POR_PRIORIDAD_LUEGO_MARCA_LUEGO_ID",
+          "matched": true,
+          "reference": "Ordena por prioridad, luego marca, luego id",
+          "reference_kind": "QUOTED_SPAN"
+        }
+      ],
+      "expected_dimension_alias": "D2",
+      "expected_opportunity_template_id": "template_p06_submission_v135_deae0dfd05084a4a8a3e",
+      "expected_template_alias": "T2",
+      "expected_variant_alias": "V2",
+      "expected_variant_id": "variant_p06_submission_v135_deae0dfd05084a4a8a3e",
+      "fixture_id": "P06-A04-S01-R02",
+      "oracle_state": "VALID",
+      "original_route_case_id": "PP-A04-S01-P06-R02",
+      "original_route_split": "CORE",
+      "primary_case_id": "PP-A04-S01-P06-R02",
+      "property_id": "A04-S01-P3",
+      "property_target_construct_key": "RUBRIC::A04::ORDENA_POR_PRIORIDAD_LUEGO_MARCA_LUEGO_ID",
+      "provider_case_id": "PP-A04-S01-P06-G01",
+      "provider_split": "CORE",
+      "route_target_construct_key": "RUBRIC::A04::ORDENA_POR_PRIORIDAD_LUEGO_MARCA_LUEGO_ID",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT_FAIL_CLOSED",
+      "stage": "P06"
+    },
+    {
+      "binding_scope": "CASE_SPECIFIC",
+      "candidate_scoring_allowed": true,
+      "candidate_sees_property_or_oracle": false,
+      "construct_reference_accounting": [
+        {
+          "classification": "EXACT_AUTHORIZED_NAME",
+          "construct_key": "RUBRIC::A04::DESCARTA_REGISTROS_CON_CAMPO_FALTANTE",
+          "matched": true,
+          "reference": "Descarta registros con campo faltante",
+          "reference_kind": "QUOTED_SPAN"
+        },
+        {
+          "classification": "TOO_UNSPECIFIC_TO_NAME_A_CONSTRUCT",
+          "containment": 1.0,
+          "matched": false,
+          "nearest_authorized_name": "ordena por prioridad luego marca luego id",
+          "reference": "marca",
+          "reference_kind": "QUOTED_SPAN"
+        }
+      ],
+      "expected_dimension_alias": "D1",
+      "expected_opportunity_template_id": "template_p06_submission_v135_b6e024111d35dc29366f",
+      "expected_template_alias": "T1",
+      "expected_variant_alias": "V1",
+      "expected_variant_id": "variant_p06_submission_v135_b6e024111d35dc29366f",
+      "fixture_id": "P06-A04-S01-R01",
+      "oracle_state": "VALID",
+      "original_route_case_id": "PP-A04-S01-P06-R01",
+      "original_route_split": "CORE",
+      "primary_case_id": "PP-A04-S01-P06-R01",
+      "property_id": "A04-S01-P5",
+      "property_target_construct_key": "RUBRIC::A04::DESCARTA_REGISTROS_CON_CAMPO_FALTANTE",
+      "provider_case_id": "PP-A04-S01-P06-G01",
+      "provider_split": "CORE",
+      "route_target_construct_key": "RUBRIC::A04::DESCARTA_REGISTROS_CON_CAMPO_FALTANTE",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT_FAIL_CLOSED",
+      "stage": "P06"
+    },
+    {
+      "binding_scope": "CASE_SPECIFIC",
+      "candidate_scoring_allowed": true,
+      "candidate_sees_property_or_oracle": false,
+      "construct_reference_accounting": [
+        {
+          "classification": "EXACT_AUTHORIZED_NAME",
+          "construct_key": "RUBRIC::A04::UNA_APARICION_INVALIDA_NO_RESERVA_EL_ID",
+          "matched": true,
+          "reference": "Una aparición inválida no reserva el id",
+          "reference_kind": "QUOTED_SPAN"
+        },
+        {
+          "classification": "UNRELATED_TO_ANY_AUTHORIZED_NAME",
+          "matched": false,
+          "reference": "vistos.add(sid)",
+          "reference_kind": "QUOTED_SPAN"
+        },
+        {
+          "classification": "TOO_UNSPECIFIC_TO_NAME_A_CONSTRUCT",
+          "matched": false,
+          "reference": "a9",
+          "reference_kind": "QUOTED_SPAN"
+        },
+        {
+          "classification": "TOO_UNSPECIFIC_TO_NAME_A_CONSTRUCT",
+          "matched": false,
+          "reference": "c2",
+          "reference_kind": "QUOTED_SPAN"
+        },
+        {
+          "classification": "TOO_UNSPECIFIC_TO_NAME_A_CONSTRUCT",
+          "matched": false,
+          "reference": "m7",
+          "reference_kind": "QUOTED_SPAN"
+        },
+        {
+          "classification": "TOO_UNSPECIFIC_TO_NAME_A_CONSTRUCT",
+          "matched": false,
+          "reference": "z1",
+          "reference_kind": "QUOTED_SPAN"
+        }
+      ],
+      "expected_dimension_alias": "D1",
+      "expected_opportunity_template_id": "template_p06_submission_v135_f81eb572ae71915bc0f1",
+      "expected_template_alias": "T1",
+      "expected_variant_alias": "V1",
+      "expected_variant_id": "variant_p06_submission_v135_f81eb572ae71915bc0f1",
+      "fixture_id": "P06-A04-S02-R01",
+      "oracle_state": "VALID",
+      "original_route_case_id": "PP-A04-S02-P06-R01",
+      "original_route_split": "CORE",
+      "primary_case_id": "PP-A04-S02-P06-R01",
+      "property_id": "A04-S02-P1",
+      "property_target_construct_key": "RUBRIC::A04::UNA_APARICION_INVALIDA_NO_RESERVA_EL_ID",
+      "provider_case_id": "PP-A04-S02-P06-G01",
+      "provider_split": "CORE",
+      "route_target_construct_key": "RUBRIC::A04::UNA_APARICION_INVALIDA_NO_RESERVA_EL_ID",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT_FAIL_CLOSED",
+      "stage": "P06"
+    },
+    {
+      "binding_scope": "CASE_SPECIFIC",
+      "candidate_scoring_allowed": true,
+      "candidate_sees_property_or_oracle": false,
+      "construct_reference_accounting": [
+        {
+          "classification": "EXACT_AUTHORIZED_NAME",
+          "construct_key": "RUBRIC::A04::CONSERVA_LA_PRIMERA_APARICION_VALIDA_DE_UN_ID_REPETIDO",
+          "matched": true,
+          "reference": "Conserva la PRIMERA aparición válida de un id repetido",
+          "reference_kind": "QUOTED_SPAN"
+        }
+      ],
+      "expected_dimension_alias": "D1",
+      "expected_opportunity_template_id": "template_p06_submission_v135_77bf034f75ad9417fa34",
+      "expected_template_alias": "T1",
+      "expected_variant_alias": "V1",
+      "expected_variant_id": "variant_p06_submission_v135_77bf034f75ad9417fa34",
+      "fixture_id": "P06-A04-S05-R01",
+      "oracle_state": "VALID",
+      "original_route_case_id": "PP-A04-S05-P06-R01",
+      "original_route_split": "CORE",
+      "primary_case_id": "PP-A04-S05-P06-R01",
+      "property_id": "A04-S05-P1",
+      "property_target_construct_key": "RUBRIC::A04::CONSERVA_LA_PRIMERA_APARICION_VALIDA_DE_UN_ID_REPETIDO",
+      "provider_case_id": "PP-A04-S05-P06-G01",
+      "provider_split": "CORE",
+      "route_target_construct_key": "RUBRIC::A04::CONSERVA_LA_PRIMERA_APARICION_VALIDA_DE_UN_ID_REPETIDO",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT_FAIL_CLOSED",
+      "stage": "P06"
+    },
+    {
+      "binding_scope": "CASE_SPECIFIC",
+      "candidate_scoring_allowed": true,
+      "candidate_sees_property_or_oracle": false,
+      "construct_reference_accounting": [
+        {
+          "classification": "EXACT_AUTHORIZED_NAME",
+          "construct_key": "RUBRIC::A04::DESCARTA_REGISTROS_CON_CAMPO_FALTANTE",
+          "matched": true,
+          "reference": "Descarta registros con campo faltante",
+          "reference_kind": "QUOTED_SPAN"
+        }
+      ],
+      "expected_dimension_alias": "D1",
+      "expected_opportunity_template_id": "template_p06_submission_v135_39c9c517cc0745aff801",
+      "expected_template_alias": "T1",
+      "expected_variant_alias": "V1",
+      "expected_variant_id": "variant_p06_submission_v135_39c9c517cc0745aff801",
+      "fixture_id": "P06-A04-S06-R01",
+      "oracle_state": "VALID",
+      "original_route_case_id": "PP-A04-S06-P06-R01",
+      "original_route_split": "CORE",
+      "primary_case_id": "PP-A04-S06-P06-R01",
+      "property_id": "A04-S06-P4",
+      "property_target_construct_key": "RUBRIC::A04::DESCARTA_REGISTROS_CON_CAMPO_FALTANTE",
+      "provider_case_id": "PP-A04-S06-P06-G01",
+      "provider_split": "CORE",
+      "route_target_construct_key": "RUBRIC::A04::DESCARTA_REGISTROS_CON_CAMPO_FALTANTE",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT_FAIL_CLOSED",
+      "stage": "P06"
+    },
+    {
+      "binding_scope": "CASE_SPECIFIC",
+      "candidate_scoring_allowed": true,
+      "candidate_sees_property_or_oracle": false,
+      "construct_reference_accounting": [
+        {
+          "classification": "EXACT_AUTHORIZED_NAME",
+          "construct_key": "RUBRIC::A06::EVIDENCIA_Y_SUBGRUPOS",
+          "matched": true,
+          "reference": "Evidencia y subgrupos",
+          "reference_kind": "QUOTED_SPAN"
+        }
+      ],
+      "expected_dimension_alias": "D2",
+      "expected_opportunity_template_id": "template_p06_submission_v135_5bc81d21af1a82daa781",
+      "expected_template_alias": "T2",
+      "expected_variant_alias": "V2",
+      "expected_variant_id": "variant_p06_submission_v135_5bc81d21af1a82daa781",
+      "fixture_id": "P06-A06-S01-R02",
+      "oracle_state": "VALID",
+      "original_route_case_id": "PP-A06-S01-P06-R02",
+      "original_route_split": "CORE",
+      "primary_case_id": "PP-A06-S01-P06-R02",
+      "property_id": "A06-S01-P1",
+      "property_target_construct_key": "RUBRIC::A06::EVIDENCIA_Y_SUBGRUPOS",
+      "provider_case_id": "PP-A06-S01-P06-G01",
+      "provider_split": "CORE",
+      "route_target_construct_key": "RUBRIC::A06::EVIDENCIA_Y_SUBGRUPOS",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT_FAIL_CLOSED",
+      "stage": "P06"
+    },
+    {
+      "binding_scope": "CASE_SPECIFIC",
+      "candidate_scoring_allowed": true,
+      "candidate_sees_property_or_oracle": false,
+      "construct_reference_accounting": [
+        {
+          "classification": "EXACT_AUTHORIZED_NAME",
+          "construct_key": "RUBRIC::A06::CALIDAD_DE_INFERENCIA",
+          "matched": true,
+          "reference": "Calidad de inferencia",
+          "reference_kind": "QUOTED_SPAN"
+        },
+        {
+          "classification": "UNRELATED_TO_ANY_AUTHORIZED_NAME",
+          "containment": 0.125,
+          "matched": false,
+          "nearest_authorized_name": "calidad de inferencia",
+          "reference": "no para estimar preferencias de toda la matrícula",
+          "reference_kind": "QUOTED_SPAN"
+        }
+      ],
+      "expected_dimension_alias": "D1",
+      "expected_opportunity_template_id": "template_p06_submission_v135_e019bac3271da08541f7",
+      "expected_template_alias": "T1",
+      "expected_variant_alias": "V1",
+      "expected_variant_id": "variant_p06_submission_v135_e019bac3271da08541f7",
+      "fixture_id": "P06-A06-S01-R01",
+      "oracle_state": "VALID",
+      "original_route_case_id": "PP-A06-S01-P06-R01",
+      "original_route_split": "CORE",
+      "primary_case_id": "PP-A06-S01-P06-R01",
+      "property_id": "A06-S01-P3",
+      "property_target_construct_key": "RUBRIC::A06::CALIDAD_DE_INFERENCIA",
+      "provider_case_id": "PP-A06-S01-P06-G01",
+      "provider_split": "CORE",
+      "route_target_construct_key": "RUBRIC::A06::CALIDAD_DE_INFERENCIA",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT_FAIL_CLOSED",
+      "stage": "P06"
+    },
+    {
+      "binding_scope": "CASE_SPECIFIC",
+      "candidate_scoring_allowed": true,
+      "candidate_sees_property_or_oracle": false,
+      "construct_reference_accounting": [
+        {
+          "classification": "EXACT_AUTHORIZED_NAME",
+          "construct_key": "RUBRIC::A06::CALIDAD_DE_INFERENCIA",
+          "matched": true,
+          "reference": "Calidad de inferencia",
+          "reference_kind": "QUOTED_SPAN"
+        },
+        {
+          "classification": "UNRELATED_TO_ANY_AUTHORIZED_NAME",
+          "containment": 0.0714,
+          "matched": false,
+          "nearest_authorized_name": "evidencia y subgrupos",
+          "reference": "fue en recreos y estaba lloviendo, así que podría no representar un día normal",
+          "reference_kind": "QUOTED_SPAN"
+        }
+      ],
+      "expected_dimension_alias": "D1",
+      "expected_opportunity_template_id": "template_p06_submission_v135_0d74f1bca56238d53062",
+      "expected_template_alias": "T1",
+      "expected_variant_alias": "V1",
+      "expected_variant_id": "variant_p06_submission_v135_0d74f1bca56238d53062",
+      "fixture_id": "P06-A06-S02-R01",
+      "oracle_state": "VALID",
+      "original_route_case_id": "PP-A06-S02-P06-R01",
+      "original_route_split": "CORE",
+      "primary_case_id": "PP-A06-S02-P06-R01",
+      "property_id": "A06-S02-P1",
+      "property_target_construct_key": "RUBRIC::A06::CALIDAD_DE_INFERENCIA",
+      "provider_case_id": "PP-A06-S02-P06-G01",
+      "provider_split": "CORE",
+      "route_target_construct_key": "RUBRIC::A06::CALIDAD_DE_INFERENCIA",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT_FAIL_CLOSED",
+      "stage": "P06"
+    },
+    {
+      "binding_scope": "CASE_SPECIFIC",
+      "candidate_scoring_allowed": true,
+      "candidate_sees_property_or_oracle": false,
+      "construct_reference_accounting": [
+        {
+          "classification": "EXACT_AUTHORIZED_NAME",
+          "construct_key": "RUBRIC::A06::TRADE_OFF",
+          "matched": true,
+          "reference": "Trade-off",
+          "reference_kind": "QUOTED_SPAN"
+        },
+        {
+          "classification": "UNRELATED_TO_ANY_AUTHORIZED_NAME",
+          "containment": 0.0909,
+          "matched": false,
+          "nearest_authorized_name": "evidencia y subgrupos",
+          "reference": "una persona que vive lejos y usa bus no recibe ayuda",
+          "reference_kind": "QUOTED_SPAN"
+        }
+      ],
+      "expected_dimension_alias": "D2",
+      "expected_opportunity_template_id": "template_p06_submission_v135_d7d9a628b8853b6194a2",
+      "expected_template_alias": "T2",
+      "expected_variant_alias": "V2",
+      "expected_variant_id": "variant_p06_submission_v135_d7d9a628b8853b6194a2",
+      "fixture_id": "P06-A06-S02-R02",
+      "oracle_state": "VALID",
+      "original_route_case_id": "PP-A06-S02-P06-R02",
+      "original_route_split": "CORE",
+      "primary_case_id": "PP-A06-S02-P06-R02",
+      "property_id": "A06-S02-P2",
+      "property_target_construct_key": "RUBRIC::A06::TRADE_OFF",
+      "provider_case_id": "PP-A06-S02-P06-G01",
+      "provider_split": "CORE",
+      "route_target_construct_key": "RUBRIC::A06::TRADE_OFF",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT_FAIL_CLOSED",
+      "stage": "P06"
+    },
+    {
+      "binding_scope": "CASE_SPECIFIC",
+      "candidate_scoring_allowed": true,
+      "candidate_sees_property_or_oracle": false,
+      "construct_reference_accounting": [
+        {
+          "classification": "EXACT_AUTHORIZED_NAME",
+          "construct_key": "RUBRIC::A06::TRADE_OFF",
+          "matched": true,
+          "reference": "Trade-off",
+          "reference_kind": "QUOTED_SPAN"
+        }
+      ],
+      "expected_dimension_alias": "D1",
+      "expected_opportunity_template_id": "template_p06_submission_v135_425e272f6565957ff908",
+      "expected_template_alias": "T1",
+      "expected_variant_alias": "V1",
+      "expected_variant_id": "variant_p06_submission_v135_425e272f6565957ff908",
+      "fixture_id": "P06-A06-S03-R01",
+      "oracle_state": "VALID",
+      "original_route_case_id": "PP-A06-S03-P06-R01",
+      "original_route_split": "CORE",
+      "primary_case_id": "PP-A06-S03-P06-R01",
+      "property_id": "A06-S03-P1",
+      "property_target_construct_key": "RUBRIC::A06::TRADE_OFF",
+      "provider_case_id": "PP-A06-S03-P06-G01",
+      "provider_split": "CORE",
+      "route_target_construct_key": "RUBRIC::A06::TRADE_OFF",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT_FAIL_CLOSED",
+      "stage": "P06"
+    },
+    {
+      "binding_scope": "CASE_SPECIFIC",
+      "candidate_scoring_allowed": true,
+      "candidate_sees_property_or_oracle": false,
+      "construct_reference_accounting": [
+        {
+          "classification": "EXACT_AUTHORIZED_NAME",
+          "construct_key": "RUBRIC::A06::EVIDENCIA_Y_SUBGRUPOS",
+          "matched": true,
+          "reference": "Evidencia y subgrupos",
+          "reference_kind": "QUOTED_SPAN"
+        },
+        {
+          "classification": "UNRELATED_TO_ANY_AUTHORIZED_NAME",
+          "matched": false,
+          "reference": "El 26% apoya los bicicleteros",
+          "reference_kind": "QUOTED_SPAN"
+        }
+      ],
+      "expected_dimension_alias": "D2",
+      "expected_opportunity_template_id": "template_p06_submission_v135_3ad1ce4587da0a828b5f",
+      "expected_template_alias": "T2",
+      "expected_variant_alias": "V2",
+      "expected_variant_id": "variant_p06_submission_v135_3ad1ce4587da0a828b5f",
+      "fixture_id": "P06-A06-S04-R02",
+      "oracle_state": "VALID",
+      "original_route_case_id": "PP-A06-S04-P06-R02",
+      "original_route_split": "CORE",
+      "primary_case_id": "PP-A06-S04-P06-R02",
+      "property_id": "A06-S04-P1",
+      "property_target_construct_key": "RUBRIC::A06::EVIDENCIA_Y_SUBGRUPOS",
+      "provider_case_id": "PP-A06-S04-P06-G01",
+      "provider_split": "CORE",
+      "route_target_construct_key": "RUBRIC::A06::EVIDENCIA_Y_SUBGRUPOS",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT_FAIL_CLOSED",
+      "stage": "P06"
+    },
+    {
+      "binding_scope": "CASE_SPECIFIC",
+      "candidate_scoring_allowed": true,
+      "candidate_sees_property_or_oracle": false,
+      "construct_reference_accounting": [
+        {
+          "classification": "EXACT_AUTHORIZED_NAME",
+          "construct_key": "RUBRIC::A06::CALIDAD_DE_INFERENCIA",
+          "matched": true,
+          "reference": "Calidad de inferencia",
+          "reference_kind": "QUOTED_SPAN"
+        }
+      ],
+      "expected_dimension_alias": "D1",
+      "expected_opportunity_template_id": "template_p06_submission_v135_9f85e2a2c5b2ce5aceb5",
+      "expected_template_alias": "T1",
+      "expected_variant_alias": "V1",
+      "expected_variant_id": "variant_p06_submission_v135_9f85e2a2c5b2ce5aceb5",
+      "fixture_id": "P06-A06-S04-R01",
+      "oracle_state": "VALID",
+      "original_route_case_id": "PP-A06-S04-P06-R01",
+      "original_route_split": "CORE",
+      "primary_case_id": "PP-A06-S04-P06-R01",
+      "property_id": "A06-S04-P2",
+      "property_target_construct_key": "RUBRIC::A06::CALIDAD_DE_INFERENCIA",
+      "provider_case_id": "PP-A06-S04-P06-G01",
+      "provider_split": "CORE",
+      "route_target_construct_key": "RUBRIC::A06::CALIDAD_DE_INFERENCIA",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT_FAIL_CLOSED",
+      "stage": "P06"
+    },
+    {
+      "binding_scope": "CASE_SPECIFIC",
+      "candidate_scoring_allowed": true,
+      "candidate_sees_property_or_oracle": false,
+      "construct_reference_accounting": [
+        {
+          "classification": "EXACT_AUTHORIZED_NAME",
+          "construct_key": "RUBRIC::A06::EVIDENCIA_Y_SUBGRUPOS",
+          "matched": true,
+          "reference": "Evidencia y subgrupos",
+          "reference_kind": "QUOTED_SPAN"
+        }
+      ],
+      "expected_dimension_alias": "D2",
+      "expected_opportunity_template_id": "template_p06_submission_v135_52ba7aadac1a84195639",
+      "expected_template_alias": "T2",
+      "expected_variant_alias": "V2",
+      "expected_variant_id": "variant_p06_submission_v135_52ba7aadac1a84195639",
+      "fixture_id": "P06-A06-S05-R02",
+      "oracle_state": "VALID",
+      "original_route_case_id": "PP-A06-S05-P06-R02",
+      "original_route_split": "CORE",
+      "primary_case_id": "PP-A06-S05-P06-R02",
+      "property_id": "A06-S05-P1",
+      "property_target_construct_key": "RUBRIC::A06::EVIDENCIA_Y_SUBGRUPOS",
+      "provider_case_id": "PP-A06-S05-P06-G01",
+      "provider_split": "CORE",
+      "route_target_construct_key": "RUBRIC::A06::EVIDENCIA_Y_SUBGRUPOS",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT_FAIL_CLOSED",
+      "stage": "P06"
+    },
+    {
+      "binding_scope": "CASE_SPECIFIC",
+      "candidate_scoring_allowed": true,
+      "candidate_sees_property_or_oracle": false,
+      "construct_reference_accounting": [
+        {
+          "classification": "EXACT_AUTHORIZED_NAME",
+          "construct_key": "RUBRIC::A06::CALIDAD_DE_INFERENCIA",
+          "matched": true,
+          "reference": "Calidad de inferencia",
+          "reference_kind": "QUOTED_SPAN"
+        },
+        {
+          "classification": "UNRELATED_TO_ANY_AUTHORIZED_NAME",
+          "containment": 0.0526,
+          "matched": false,
+          "nearest_authorized_name": "calidad de inferencia",
+          "reference": "La encuesta voluntaria no se puede generalizar. Aun así, prueba con exactitud que el 100% de la escuela prefiere subsidios",
+          "reference_kind": "QUOTED_SPAN"
+        }
+      ],
+      "expected_dimension_alias": "D1",
+      "expected_opportunity_template_id": "template_p06_submission_v135_e01aaf878853239cc7a2",
+      "expected_template_alias": "T1",
+      "expected_variant_alias": "V1",
+      "expected_variant_id": "variant_p06_submission_v135_e01aaf878853239cc7a2",
+      "fixture_id": "P06-A06-S05-R01",
+      "oracle_state": "VALID",
+      "original_route_case_id": "PP-A06-S05-P06-R01",
+      "original_route_split": "CORE",
+      "primary_case_id": "PP-A06-S05-P06-R01",
+      "property_id": "A06-S05-P3",
+      "property_target_construct_key": "RUBRIC::A06::CALIDAD_DE_INFERENCIA",
+      "provider_case_id": "PP-A06-S05-P06-G01",
+      "provider_split": "CORE",
+      "route_target_construct_key": "RUBRIC::A06::CALIDAD_DE_INFERENCIA",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT_FAIL_CLOSED",
+      "stage": "P06"
+    },
+    {
+      "binding_scope": "CASE_SPECIFIC",
+      "candidate_scoring_allowed": true,
+      "candidate_sees_property_or_oracle": false,
+      "construct_reference_accounting": [
+        {
+          "classification": "EXACT_AUTHORIZED_NAME",
+          "construct_key": "RUBRIC::A07::CRITERIO_DE_COMPARACION",
+          "matched": true,
+          "reference": "Criterio de comparación",
+          "reference_kind": "QUOTED_SPAN"
+        }
+      ],
+      "expected_dimension_alias": "D1",
+      "expected_opportunity_template_id": "template_p06_submission_v135_0ea810b78d9724eb4fd6",
+      "expected_template_alias": "T1",
+      "expected_variant_alias": "V1",
+      "expected_variant_id": "variant_p06_submission_v135_0ea810b78d9724eb4fd6",
+      "fixture_id": "P06-A07-S02-R01",
+      "oracle_state": "VALID",
+      "original_route_case_id": "PP-A07-S02-P06-R01",
+      "original_route_split": "HELD_OUT_CONFIRMATION",
+      "primary_case_id": "PP-A07-S02-P06-R01",
+      "property_id": "A07-S02-P3",
+      "property_target_construct_key": "RUBRIC::A07::CRITERIO_DE_COMPARACION",
+      "provider_case_id": "PP-A07-S02-P06-G01",
+      "provider_split": "HELD_OUT_CONFIRMATION",
+      "route_target_construct_key": "RUBRIC::A07::CRITERIO_DE_COMPARACION",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT_FAIL_CLOSED",
+      "stage": "P06"
+    },
+    {
+      "binding_scope": "CASE_SPECIFIC",
+      "candidate_scoring_allowed": true,
+      "candidate_sees_property_or_oracle": false,
+      "construct_reference_accounting": [
+        {
+          "classification": "EXACT_AUTHORIZED_NAME",
+          "construct_key": "RUBRIC::A07::USO_DE_LOS_DOS_ARTEFACTOS",
+          "matched": true,
+          "reference": "Uso de los dos artefactos",
+          "reference_kind": "QUOTED_SPAN"
+        }
+      ],
+      "expected_dimension_alias": "D2",
+      "expected_opportunity_template_id": "template_p06_submission_v135_fe3e6834461bf99bd088",
+      "expected_template_alias": "T2",
+      "expected_variant_alias": "V2",
+      "expected_variant_id": "variant_p06_submission_v135_fe3e6834461bf99bd088",
+      "fixture_id": "P06-A07-S04-R02",
+      "oracle_state": "VALID",
+      "original_route_case_id": "PP-A07-S04-P06-R02",
+      "original_route_split": "HELD_OUT_CONFIRMATION",
+      "primary_case_id": "PP-A07-S04-P06-R02",
+      "property_id": "A07-S04-P1",
+      "property_target_construct_key": "RUBRIC::A07::USO_DE_LOS_DOS_ARTEFACTOS",
+      "provider_case_id": "PP-A07-S04-P06-G01",
+      "provider_split": "HELD_OUT_CONFIRMATION",
+      "route_target_construct_key": "RUBRIC::A07::USO_DE_LOS_DOS_ARTEFACTOS",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT_FAIL_CLOSED",
+      "stage": "P06"
+    },
+    {
+      "binding_scope": "CASE_SPECIFIC",
+      "candidate_scoring_allowed": true,
+      "candidate_sees_property_or_oracle": false,
+      "construct_reference_accounting": [
+        {
+          "classification": "EXACT_AUTHORIZED_NAME",
+          "construct_key": "RUBRIC::A07::CRITERIO_DE_COMPARACION",
+          "matched": true,
+          "reference": "Criterio de comparación",
+          "reference_kind": "QUOTED_SPAN"
+        }
+      ],
+      "expected_dimension_alias": "D1",
+      "expected_opportunity_template_id": "template_p06_submission_v135_afd710880f8247340940",
+      "expected_template_alias": "T1",
+      "expected_variant_alias": "V1",
+      "expected_variant_id": "variant_p06_submission_v135_afd710880f8247340940",
+      "fixture_id": "P06-A07-S04-R01",
+      "oracle_state": "VALID",
+      "original_route_case_id": "PP-A07-S04-P06-R01",
+      "original_route_split": "HELD_OUT_CONFIRMATION",
+      "primary_case_id": "PP-A07-S04-P06-R01",
+      "property_id": "A07-S04-P2",
+      "property_target_construct_key": "RUBRIC::A07::CRITERIO_DE_COMPARACION",
+      "provider_case_id": "PP-A07-S04-P06-G01",
+      "provider_split": "HELD_OUT_CONFIRMATION",
+      "route_target_construct_key": "RUBRIC::A07::CRITERIO_DE_COMPARACION",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT_FAIL_CLOSED",
+      "stage": "P06"
+    },
+    {
+      "binding_scope": "CASE_SPECIFIC",
+      "candidate_scoring_allowed": true,
+      "candidate_sees_property_or_oracle": false,
+      "construct_reference_accounting": [
+        {
+          "classification": "EXACT_AUTHORIZED_NAME",
+          "construct_key": "RUBRIC::A08::HECHO_HIPOTESIS_E_INCERTIDUMBRE",
+          "matched": true,
+          "reference": "Hecho, hipótesis e incertidumbre",
+          "reference_kind": "QUOTED_SPAN"
+        }
+      ],
+      "expected_dimension_alias": "D1",
+      "expected_opportunity_template_id": "template_p06_submission_v135_5d78852c3e8ef6e4a063",
+      "expected_template_alias": "T1",
+      "expected_variant_alias": "V1",
+      "expected_variant_id": "variant_p06_submission_v135_5d78852c3e8ef6e4a063",
+      "fixture_id": "P06-A08-S01-R01",
+      "oracle_state": "VALID",
+      "original_route_case_id": "PP-A08-S01-P06-R01",
+      "original_route_split": "CORE",
+      "primary_case_id": "PP-A08-S01-P06-R01",
+      "property_id": "A08-S01-P1",
+      "property_target_construct_key": "RUBRIC::A08::HECHO_HIPOTESIS_E_INCERTIDUMBRE",
+      "provider_case_id": "PP-A08-S01-P06-G01",
+      "provider_split": "CORE",
+      "route_target_construct_key": "RUBRIC::A08::HECHO_HIPOTESIS_E_INCERTIDUMBRE",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT_FAIL_CLOSED",
+      "stage": "P06"
+    },
+    {
+      "binding_scope": "CASE_SPECIFIC",
+      "candidate_scoring_allowed": true,
+      "candidate_sees_property_or_oracle": false,
+      "construct_reference_accounting": [
+        {
+          "classification": "EXACT_AUTHORIZED_NAME",
+          "construct_key": "RUBRIC::A08::RESPUESTA_Y_TRADE_OFF",
+          "matched": true,
+          "reference": "Respuesta y trade-off",
+          "reference_kind": "QUOTED_SPAN"
+        },
+        {
+          "classification": "UNRELATED_TO_ANY_AUTHORIZED_NAME",
+          "matched": false,
+          "reference": "no es necesario interrumpir el servicio",
+          "reference_kind": "QUOTED_SPAN"
+        },
+        {
+          "classification": "UNRELATED_TO_ANY_AUTHORIZED_NAME",
+          "matched": false,
+          "reference": "revocar todas las cuentas de la empresa",
+          "reference_kind": "QUOTED_SPAN"
+        }
+      ],
+      "expected_dimension_alias": "D2",
+      "expected_opportunity_template_id": "template_p06_submission_v135_5eedf574e9256821d0f2",
+      "expected_template_alias": "T2",
+      "expected_variant_alias": "V2",
+      "expected_variant_id": "variant_p06_submission_v135_5eedf574e9256821d0f2",
+      "fixture_id": "P06-A08-S01-R02",
+      "oracle_state": "VALID",
+      "original_route_case_id": "PP-A08-S01-P06-R02",
+      "original_route_split": "CORE",
+      "primary_case_id": "PP-A08-S01-P06-R02",
+      "property_id": "A08-S01-P3",
+      "property_target_construct_key": "RUBRIC::A08::RESPUESTA_Y_TRADE_OFF",
+      "provider_case_id": "PP-A08-S01-P06-G01",
+      "provider_split": "CORE",
+      "route_target_construct_key": "RUBRIC::A08::RESPUESTA_Y_TRADE_OFF",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT_FAIL_CLOSED",
+      "stage": "P06"
+    },
+    {
+      "binding_scope": "CASE_SPECIFIC",
+      "candidate_scoring_allowed": true,
+      "candidate_sees_property_or_oracle": false,
+      "construct_reference_accounting": [
+        {
+          "classification": "EXACT_AUTHORIZED_NAME",
+          "construct_key": "RUBRIC::A08::LINEA_TEMPORAL_Y_CORRELACION",
+          "matched": true,
+          "reference": "Línea temporal y correlación",
+          "reference_kind": "QUOTED_SPAN"
+        },
+        {
+          "classification": "TOO_UNSPECIFIC_TO_NAME_A_CONSTRUCT",
+          "matched": false,
+          "reference": "R2",
+          "reference_kind": "LABEL"
+        },
+        {
+          "classification": "TOO_UNSPECIFIC_TO_NAME_A_CONSTRUCT",
+          "matched": false,
+          "reference": "E2",
+          "reference_kind": "LABEL"
+        },
+        {
+          "classification": "TOO_UNSPECIFIC_TO_NAME_A_CONSTRUCT",
+          "matched": false,
+          "reference": "E3",
+          "reference_kind": "LABEL"
+        },
+        {
+          "classification": "TOO_UNSPECIFIC_TO_NAME_A_CONSTRUCT",
+          "matched": false,
+          "reference": "E4",
+          "reference_kind": "LABEL"
+        },
+        {
+          "classification": "TOO_UNSPECIFIC_TO_NAME_A_CONSTRUCT",
+          "matched": false,
+          "reference": "E5",
+          "reference_kind": "LABEL"
+        },
+        {
+          "classification": "TOO_UNSPECIFIC_TO_NAME_A_CONSTRUCT",
+          "matched": false,
+          "reference": "R3",
+          "reference_kind": "LABEL"
+        }
+      ],
+      "expected_dimension_alias": "D1",
+      "expected_opportunity_template_id": "template_p06_submission_v135_f5855f0fd4291147f046",
+      "expected_template_alias": "T1",
+      "expected_variant_alias": "V1",
+      "expected_variant_id": "variant_p06_submission_v135_f5855f0fd4291147f046",
+      "fixture_id": "P06-A08-S03-R01",
+      "oracle_state": "VALID",
+      "original_route_case_id": "PP-A08-S03-P06-R01",
+      "original_route_split": "CORE",
+      "primary_case_id": "PP-A08-S03-P06-R01",
+      "property_id": "A08-S03-P1",
+      "property_target_construct_key": "RUBRIC::A08::LINEA_TEMPORAL_Y_CORRELACION",
+      "provider_case_id": "PP-A08-S03-P06-G01",
+      "provider_split": "CORE",
+      "route_target_construct_key": "RUBRIC::A08::LINEA_TEMPORAL_Y_CORRELACION",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT_FAIL_CLOSED",
+      "stage": "P06"
+    },
+    {
+      "binding_scope": "CASE_SPECIFIC",
+      "candidate_scoring_allowed": true,
+      "candidate_sees_property_or_oracle": false,
+      "construct_reference_accounting": [
+        {
+          "classification": "EXACT_AUTHORIZED_NAME",
+          "construct_key": "RUBRIC::A08::MANEJO_SEGURO_DEL_ARTEFACTO",
+          "matched": true,
+          "reference": "Manejo seguro del artefacto",
+          "reference_kind": "QUOTED_SPAN"
+        },
+        {
+          "classification": "UNRELATED_TO_ANY_AUTHORIZED_NAME",
+          "matched": false,
+          "reference": "Su payload intenta parecer una instrucción, pero el resultado registrado es bloqueo",
+          "reference_kind": "QUOTED_SPAN"
+        }
+      ],
+      "expected_dimension_alias": "D2",
+      "expected_opportunity_template_id": "template_p06_submission_v135_da06a737bfd9f700622a",
+      "expected_template_alias": "T2",
+      "expected_variant_alias": "V2",
+      "expected_variant_id": "variant_p06_submission_v135_da06a737bfd9f700622a",
+      "fixture_id": "P06-A08-S03-R02",
+      "oracle_state": "VALID",
+      "original_route_case_id": "PP-A08-S03-P06-R02",
+      "original_route_split": "CORE",
+      "primary_case_id": "PP-A08-S03-P06-R02",
+      "property_id": "A08-S03-P2",
+      "property_target_construct_key": "RUBRIC::A08::MANEJO_SEGURO_DEL_ARTEFACTO",
+      "provider_case_id": "PP-A08-S03-P06-G01",
+      "provider_split": "CORE",
+      "route_target_construct_key": "RUBRIC::A08::MANEJO_SEGURO_DEL_ARTEFACTO",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT_FAIL_CLOSED",
+      "stage": "P06"
+    },
+    {
+      "binding_scope": "CASE_SPECIFIC",
+      "candidate_scoring_allowed": true,
+      "candidate_sees_property_or_oracle": false,
+      "construct_reference_accounting": [
+        {
+          "classification": "EXACT_AUTHORIZED_NAME",
+          "construct_key": "RUBRIC::A08::HECHO_HIPOTESIS_E_INCERTIDUMBRE",
+          "matched": true,
+          "reference": "Hecho, hipótesis e incertidumbre",
+          "reference_kind": "QUOTED_SPAN"
+        },
+        {
+          "classification": "UNRELATED_TO_ANY_AUTHORIZED_NAME",
+          "matched": false,
+          "reference": "un 200 demuestra transferencia desde el servicio, no quién terminó con el archivo",
+          "reference_kind": "QUOTED_SPAN"
+        }
+      ],
+      "expected_dimension_alias": "D1",
+      "expected_opportunity_template_id": "template_p06_submission_v135_657138d2e81723f9c3ca",
+      "expected_template_alias": "T1",
+      "expected_variant_alias": "V1",
+      "expected_variant_id": "variant_p06_submission_v135_657138d2e81723f9c3ca",
+      "fixture_id": "P06-A08-S04-R01",
+      "oracle_state": "VALID",
+      "original_route_case_id": "PP-A08-S04-P06-R01",
+      "original_route_split": "CORE",
+      "primary_case_id": "PP-A08-S04-P06-R01",
+      "property_id": "A08-S04-P1",
+      "property_target_construct_key": "RUBRIC::A08::HECHO_HIPOTESIS_E_INCERTIDUMBRE",
+      "provider_case_id": "PP-A08-S04-P06-G01",
+      "provider_split": "CORE",
+      "route_target_construct_key": "RUBRIC::A08::HECHO_HIPOTESIS_E_INCERTIDUMBRE",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT_FAIL_CLOSED",
+      "stage": "P06"
+    },
+    {
+      "binding_scope": "CASE_SPECIFIC",
+      "candidate_scoring_allowed": true,
+      "candidate_sees_property_or_oracle": false,
+      "construct_reference_accounting": [
+        {
+          "classification": "EXACT_AUTHORIZED_NAME",
+          "construct_key": "RUBRIC::A08::MANEJO_SEGURO_DEL_ARTEFACTO",
+          "matched": true,
+          "reference": "Manejo seguro del artefacto",
+          "reference_kind": "QUOTED_SPAN"
+        }
+      ],
+      "expected_dimension_alias": "D2",
+      "expected_opportunity_template_id": "template_p06_submission_v135_b3e8c2d9b46f43d065b3",
+      "expected_template_alias": "T2",
+      "expected_variant_alias": "V2",
+      "expected_variant_id": "variant_p06_submission_v135_b3e8c2d9b46f43d065b3",
+      "fixture_id": "P06-A08-S05-R02",
+      "oracle_state": "VALID",
+      "original_route_case_id": "PP-A08-S05-P06-R02",
+      "original_route_split": "CORE",
+      "primary_case_id": "PP-A08-S05-P06-R02",
+      "property_id": "A08-S05-P1",
+      "property_target_construct_key": "RUBRIC::A08::MANEJO_SEGURO_DEL_ARTEFACTO",
+      "provider_case_id": "PP-A08-S05-P06-G01",
+      "provider_split": "CORE",
+      "route_target_construct_key": "RUBRIC::A08::MANEJO_SEGURO_DEL_ARTEFACTO",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT_FAIL_CLOSED",
+      "stage": "P06"
+    },
+    {
+      "binding_scope": "CASE_SPECIFIC",
+      "candidate_scoring_allowed": true,
+      "candidate_sees_property_or_oracle": false,
+      "construct_reference_accounting": [
+        {
+          "classification": "EXACT_AUTHORIZED_NAME",
+          "construct_key": "RUBRIC::A08::LINEA_TEMPORAL_Y_CORRELACION",
+          "matched": true,
+          "reference": "Línea temporal y correlación",
+          "reference_kind": "QUOTED_SPAN"
+        },
+        {
+          "classification": "UNRELATED_TO_ANY_AUTHORIZED_NAME",
+          "matched": false,
+          "reference": "el hash 7f3a9c20b14e ejecutó un bypass",
+          "reference_kind": "QUOTED_SPAN"
+        }
+      ],
+      "expected_dimension_alias": "D1",
+      "expected_opportunity_template_id": "template_p06_submission_v135_405ae1bc1fde6686698b",
+      "expected_template_alias": "T1",
+      "expected_variant_alias": "V1",
+      "expected_variant_id": "variant_p06_submission_v135_405ae1bc1fde6686698b",
+      "fixture_id": "P06-A08-S05-R01",
+      "oracle_state": "VALID",
+      "original_route_case_id": "PP-A08-S05-P06-R01",
+      "original_route_split": "CORE",
+      "primary_case_id": "PP-A08-S05-P06-R01",
+      "property_id": "A08-S05-P2",
+      "property_target_construct_key": "RUBRIC::A08::LINEA_TEMPORAL_Y_CORRELACION",
+      "provider_case_id": "PP-A08-S05-P06-G01",
+      "provider_split": "CORE",
+      "route_target_construct_key": "RUBRIC::A08::LINEA_TEMPORAL_Y_CORRELACION",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT_FAIL_CLOSED",
+      "stage": "P06"
+    },
+    {
+      "binding_scope": "CASE_SPECIFIC",
+      "candidate_scoring_allowed": true,
+      "candidate_sees_property_or_oracle": false,
+      "construct_reference_accounting": [
+        {
+          "classification": "EXACT_AUTHORIZED_NAME",
+          "construct_key": "RUBRIC::A09::CRITICA_Y_CONTRAARGUMENTO",
+          "matched": true,
+          "reference": "Crítica y contraargumento",
+          "reference_kind": "QUOTED_SPAN"
+        },
+        {
+          "classification": "UNRELATED_TO_ANY_AUTHORIZED_NAME",
+          "matched": false,
+          "reference": "La Fuente A es oficial, por lo tanto falsa. La Fuente B es popular, por lo tanto verdadera",
+          "reference_kind": "QUOTED_SPAN"
+        }
+      ],
+      "expected_dimension_alias": "D1",
+      "expected_opportunity_template_id": "template_p06_submission_v135_434422228fefb063478d",
+      "expected_template_alias": "T1",
+      "expected_variant_alias": "V1",
+      "expected_variant_id": "variant_p06_submission_v135_434422228fefb063478d",
+      "fixture_id": "P06-A09-S01-R01",
+      "oracle_state": "VALID",
+      "original_route_case_id": "PP-A09-S01-P06-R01",
+      "original_route_split": "HELD_OUT_CONFIRMATION",
+      "primary_case_id": "PP-A09-S01-P06-R01",
+      "property_id": "A09-S01-P1",
+      "property_target_construct_key": "RUBRIC::A09::CRITICA_Y_CONTRAARGUMENTO",
+      "provider_case_id": "PP-A09-S01-P06-G01",
+      "provider_split": "HELD_OUT_CONFIRMATION",
+      "route_target_construct_key": "RUBRIC::A09::CRITICA_Y_CONTRAARGUMENTO",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT_FAIL_CLOSED",
+      "stage": "P06"
+    },
+    {
+      "binding_scope": "CASE_SPECIFIC",
+      "candidate_scoring_allowed": true,
+      "candidate_sees_property_or_oracle": false,
+      "construct_reference_accounting": [
+        {
+          "classification": "EXACT_AUTHORIZED_NAME",
+          "construct_key": "RUBRIC::A09::INTEGRACION_DE_EVIDENCIA",
+          "matched": true,
+          "reference": "Integración de evidencia",
+          "reference_kind": "QUOTED_SPAN"
+        },
+        {
+          "classification": "UNRELATED_TO_ANY_AUTHORIZED_NAME",
+          "containment": 0.0909,
+          "matched": false,
+          "nearest_authorized_name": "contextualizacion y madurez historiografica",
+          "reference": "118 casas y luego 76, lo cual da 42% de desplazamiento",
+          "reference_kind": "QUOTED_SPAN"
+        },
+        {
+          "classification": "UNRELATED_TO_ANY_AUTHORIZED_NAME",
+          "containment": 0.0909,
+          "matched": false,
+          "nearest_authorized_name": "integracion de evidencia",
+          "reference": "la renta pasó de 18 a 27, es decir subió 9%",
+          "reference_kind": "QUOTED_SPAN"
+        }
+      ],
+      "expected_dimension_alias": "D2",
+      "expected_opportunity_template_id": "template_p06_submission_v135_16598e835e8a6be4ee2f",
+      "expected_template_alias": "T2",
+      "expected_variant_alias": "V2",
+      "expected_variant_id": "variant_p06_submission_v135_16598e835e8a6be4ee2f",
+      "fixture_id": "P06-A09-S01-R02",
+      "oracle_state": "VALID",
+      "original_route_case_id": "PP-A09-S01-P06-R02",
+      "original_route_split": "HELD_OUT_CONFIRMATION",
+      "primary_case_id": "PP-A09-S01-P06-R02",
+      "property_id": "A09-S01-P2",
+      "property_target_construct_key": "RUBRIC::A09::INTEGRACION_DE_EVIDENCIA",
+      "provider_case_id": "PP-A09-S01-P06-G01",
+      "provider_split": "HELD_OUT_CONFIRMATION",
+      "route_target_construct_key": "RUBRIC::A09::INTEGRACION_DE_EVIDENCIA",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT_FAIL_CLOSED",
+      "stage": "P06"
+    },
+    {
+      "binding_scope": "CASE_SPECIFIC",
+      "candidate_scoring_allowed": true,
+      "candidate_sees_property_or_oracle": false,
+      "construct_reference_accounting": [
+        {
+          "classification": "EXACT_AUTHORIZED_NAME",
+          "construct_key": "RUBRIC::A09::TESIS_EXPLICATIVA",
+          "matched": true,
+          "reference": "Tesis explicativa",
+          "reference_kind": "QUOTED_SPAN"
+        }
+      ],
+      "expected_dimension_alias": "D2",
+      "expected_opportunity_template_id": "template_p06_submission_v135_62d9f7b04f3079f0e080",
+      "expected_template_alias": "T2",
+      "expected_variant_alias": "V2",
+      "expected_variant_id": "variant_p06_submission_v135_62d9f7b04f3079f0e080",
+      "fixture_id": "P06-A09-S02-R02",
+      "oracle_state": "VALID",
+      "original_route_case_id": "PP-A09-S02-P06-R02",
+      "original_route_split": "HELD_OUT_CONFIRMATION",
+      "primary_case_id": "PP-A09-S02-P06-R02",
+      "property_id": "A09-S02-P1",
+      "property_target_construct_key": "RUBRIC::A09::TESIS_EXPLICATIVA",
+      "provider_case_id": "PP-A09-S02-P06-G01",
+      "provider_split": "HELD_OUT_CONFIRMATION",
+      "route_target_construct_key": "RUBRIC::A09::TESIS_EXPLICATIVA",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT_FAIL_CLOSED",
+      "stage": "P06"
+    },
+    {
+      "binding_scope": "CASE_SPECIFIC",
+      "candidate_scoring_allowed": true,
+      "candidate_sees_property_or_oracle": false,
+      "construct_reference_accounting": [
+        {
+          "classification": "EXACT_AUTHORIZED_NAME",
+          "construct_key": "RUBRIC::A09::CRITICA_Y_CONTRAARGUMENTO",
+          "matched": true,
+          "reference": "Crítica y contraargumento",
+          "reference_kind": "QUOTED_SPAN"
+        },
+        {
+          "classification": "UNRELATED_TO_ANY_AUTHORIZED_NAME",
+          "containment": 0.0714,
+          "matched": false,
+          "nearest_authorized_name": "critica y contraargumento",
+          "reference": "Mi contraargumento es que hubo desplazamiento, pero lo descarto porque toda fuente oficial es neutral",
+          "reference_kind": "QUOTED_SPAN"
+        }
+      ],
+      "expected_dimension_alias": "D1",
+      "expected_opportunity_template_id": "template_p06_submission_v135_ba46a675b100ecab30b8",
+      "expected_template_alias": "T1",
+      "expected_variant_alias": "V1",
+      "expected_variant_id": "variant_p06_submission_v135_ba46a675b100ecab30b8",
+      "fixture_id": "P06-A09-S02-R01",
+      "oracle_state": "VALID",
+      "original_route_case_id": "PP-A09-S02-P06-R01",
+      "original_route_split": "HELD_OUT_CONFIRMATION",
+      "primary_case_id": "PP-A09-S02-P06-R01",
+      "property_id": "A09-S02-P3",
+      "property_target_construct_key": "RUBRIC::A09::CRITICA_Y_CONTRAARGUMENTO",
+      "provider_case_id": "PP-A09-S02-P06-G01",
+      "provider_split": "HELD_OUT_CONFIRMATION",
+      "route_target_construct_key": "RUBRIC::A09::CRITICA_Y_CONTRAARGUMENTO",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT_FAIL_CLOSED",
+      "stage": "P06"
+    },
+    {
+      "binding_scope": "CASE_SPECIFIC",
+      "candidate_scoring_allowed": true,
+      "candidate_sees_property_or_oracle": false,
+      "construct_reference_accounting": [
+        {
+          "classification": "EXACT_AUTHORIZED_NAME",
+          "construct_key": "RUBRIC::A09::TESIS_EXPLICATIVA",
+          "matched": true,
+          "reference": "Tesis explicativa",
+          "reference_kind": "QUOTED_SPAN"
+        },
+        {
+          "classification": "UNRELATED_TO_ANY_AUTHORIZED_NAME",
+          "containment": 0.0476,
+          "matched": false,
+          "nearest_authorized_name": "integracion de evidencia",
+          "reference": "No sé cuál de los números explica mejor el desplazamiento. Podría ser la cantidad de viviendas, la renta, la distancia o todo a la vez",
+          "reference_kind": "QUOTED_SPAN"
+        }
+      ],
+      "expected_dimension_alias": "D1",
+      "expected_opportunity_template_id": "template_p06_submission_v135_ca86461acc5775da008c",
+      "expected_template_alias": "T1",
+      "expected_variant_alias": "V1",
+      "expected_variant_id": "variant_p06_submission_v135_ca86461acc5775da008c",
+      "fixture_id": "P06-A09-S04-R01",
+      "oracle_state": "VALID",
+      "original_route_case_id": "PP-A09-S04-P06-R01",
+      "original_route_split": "HELD_OUT_CONFIRMATION",
+      "primary_case_id": "PP-A09-S04-P06-R01",
+      "property_id": "A09-S04-P1",
+      "property_target_construct_key": "RUBRIC::A09::TESIS_EXPLICATIVA",
+      "provider_case_id": "PP-A09-S04-P06-G01",
+      "provider_split": "HELD_OUT_CONFIRMATION",
+      "route_target_construct_key": "RUBRIC::A09::TESIS_EXPLICATIVA",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT_FAIL_CLOSED",
+      "stage": "P06"
+    },
+    {
+      "binding_scope": "CASE_SPECIFIC",
+      "candidate_scoring_allowed": true,
+      "candidate_sees_property_or_oracle": false,
+      "construct_reference_accounting": [
+        {
+          "classification": "EXACT_AUTHORIZED_NAME",
+          "construct_key": "RUBRIC::A09::INTEGRACION_DE_EVIDENCIA",
+          "matched": true,
+          "reference": "Integración de evidencia",
+          "reference_kind": "QUOTED_SPAN"
+        }
+      ],
+      "expected_dimension_alias": "D2",
+      "expected_opportunity_template_id": "template_p06_submission_v135_9a80a37b48a58d8915b7",
+      "expected_template_alias": "T2",
+      "expected_variant_alias": "V2",
+      "expected_variant_id": "variant_p06_submission_v135_9a80a37b48a58d8915b7",
+      "fixture_id": "P06-A09-S05-R02",
+      "oracle_state": "VALID",
+      "original_route_case_id": "PP-A09-S05-P06-R02",
+      "original_route_split": "HELD_OUT_CONFIRMATION",
+      "primary_case_id": "PP-A09-S05-P06-R02",
+      "property_id": "A09-S05-P1",
+      "property_target_construct_key": "RUBRIC::A09::INTEGRACION_DE_EVIDENCIA",
+      "provider_case_id": "PP-A09-S05-P06-G01",
+      "provider_split": "HELD_OUT_CONFIRMATION",
+      "route_target_construct_key": "RUBRIC::A09::INTEGRACION_DE_EVIDENCIA",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT_FAIL_CLOSED",
+      "stage": "P06"
+    },
+    {
+      "binding_scope": "CASE_SPECIFIC",
+      "candidate_scoring_allowed": true,
+      "candidate_sees_property_or_oracle": false,
+      "construct_reference_accounting": [
+        {
+          "classification": "EXACT_AUTHORIZED_NAME",
+          "construct_key": "RUBRIC::A09::CRITICA_Y_CONTRAARGUMENTO",
+          "matched": true,
+          "reference": "Crítica y contraargumento",
+          "reference_kind": "QUOTED_SPAN"
+        },
+        {
+          "classification": "UNRELATED_TO_ANY_AUTHORIZED_NAME",
+          "matched": false,
+          "reference": "casi el doble",
+          "reference_kind": "QUOTED_SPAN"
+        }
+      ],
+      "expected_dimension_alias": "D1",
+      "expected_opportunity_template_id": "template_p06_submission_v135_af8df43ddb782c957c1f",
+      "expected_template_alias": "T1",
+      "expected_variant_alias": "V1",
+      "expected_variant_id": "variant_p06_submission_v135_af8df43ddb782c957c1f",
+      "fixture_id": "P06-A09-S05-R01",
+      "oracle_state": "VALID",
+      "original_route_case_id": "PP-A09-S05-P06-R01",
+      "original_route_split": "HELD_OUT_CONFIRMATION",
+      "primary_case_id": "PP-A09-S05-P06-R01",
+      "property_id": "A09-S05-P3",
+      "property_target_construct_key": "RUBRIC::A09::CRITICA_Y_CONTRAARGUMENTO",
+      "provider_case_id": "PP-A09-S05-P06-G01",
+      "provider_split": "HELD_OUT_CONFIRMATION",
+      "route_target_construct_key": "RUBRIC::A09::CRITICA_Y_CONTRAARGUMENTO",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT_FAIL_CLOSED",
+      "stage": "P06"
+    },
+    {
+      "binding_scope": "CASE_SPECIFIC",
+      "candidate_scoring_allowed": true,
+      "candidate_sees_property_or_oracle": false,
+      "construct_reference_accounting": [
+        {
+          "classification": "EXACT_AUTHORIZED_NAME",
+          "construct_key": "RUBRIC::A09::TESIS_EXPLICATIVA",
+          "matched": true,
+          "reference": "Tesis explicativa",
+          "reference_kind": "QUOTED_SPAN"
+        },
+        {
+          "classification": "UNRELATED_TO_ANY_AUTHORIZED_NAME",
+          "matched": false,
+          "reference": "el déficit explica exclusión inicial, pero no por qué tantas unidades nuevas no fueron ocupadas",
+          "reference_kind": "QUOTED_SPAN"
+        }
+      ],
+      "expected_dimension_alias": "D2",
+      "expected_opportunity_template_id": "template_p06_submission_v135_4c2e007de207e42ac9e3",
+      "expected_template_alias": "T2",
+      "expected_variant_alias": "V2",
+      "expected_variant_id": "variant_p06_submission_v135_4c2e007de207e42ac9e3",
+      "fixture_id": "P06-A09-S06-R02",
+      "oracle_state": "VALID",
+      "original_route_case_id": "PP-A09-S06-P06-R02",
+      "original_route_split": "HELD_OUT_CONFIRMATION",
+      "primary_case_id": "PP-A09-S06-P06-R02",
+      "property_id": "A09-S06-P1",
+      "property_target_construct_key": "RUBRIC::A09::TESIS_EXPLICATIVA",
+      "provider_case_id": "PP-A09-S06-P06-G01",
+      "provider_split": "HELD_OUT_CONFIRMATION",
+      "route_target_construct_key": "RUBRIC::A09::TESIS_EXPLICATIVA",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT_FAIL_CLOSED",
+      "stage": "P06"
+    },
+    {
+      "binding_scope": "CASE_SPECIFIC",
+      "candidate_scoring_allowed": true,
+      "candidate_sees_property_or_oracle": false,
+      "construct_reference_accounting": [
+        {
+          "classification": "EXACT_AUTHORIZED_NAME",
+          "construct_key": "RUBRIC::A09::CRITICA_Y_CONTRAARGUMENTO",
+          "matched": true,
+          "reference": "Crítica y contraargumento",
+          "reference_kind": "QUOTED_SPAN"
+        },
+        {
+          "classification": "UNRELATED_TO_ANY_AUTHORIZED_NAME",
+          "matched": false,
+          "reference": "afecta el alcance, no autoriza descartarla",
+          "reference_kind": "QUOTED_SPAN"
+        }
+      ],
+      "expected_dimension_alias": "D1",
+      "expected_opportunity_template_id": "template_p06_submission_v135_b273f0b2fe734be4ec4e",
+      "expected_template_alias": "T1",
+      "expected_variant_alias": "V1",
+      "expected_variant_id": "variant_p06_submission_v135_b273f0b2fe734be4ec4e",
+      "fixture_id": "P06-A09-S06-R01",
+      "oracle_state": "VALID",
+      "original_route_case_id": "PP-A09-S06-P06-R01",
+      "original_route_split": "HELD_OUT_CONFIRMATION",
+      "primary_case_id": "PP-A09-S06-P06-R01",
+      "property_id": "A09-S06-P4",
+      "property_target_construct_key": "RUBRIC::A09::CRITICA_Y_CONTRAARGUMENTO",
+      "provider_case_id": "PP-A09-S06-P06-G01",
+      "provider_split": "HELD_OUT_CONFIRMATION",
+      "route_target_construct_key": "RUBRIC::A09::CRITICA_Y_CONTRAARGUMENTO",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT_FAIL_CLOSED",
+      "stage": "P06"
+    },
+    {
+      "binding_scope": "CASE_SPECIFIC",
+      "candidate_scoring_allowed": true,
+      "candidate_sees_property_or_oracle": false,
+      "construct_reference_accounting": [
+        {
+          "classification": "UNRELATED_TO_ANY_AUTHORIZED_NAME",
+          "containment": 0.1667,
+          "matched": false,
+          "nearest_authorized_name": "d3 validez de la comparacion",
+          "reference": "Ese equilibrio es lo que hace que la comparación sea válida y directa",
+          "reference_kind": "QUOTED_SPAN"
+        },
+        {
+          "classification": "EXACT_AUTHORIZED_LABEL",
+          "construct_key": "RUBRIC::A10::D3_VALIDEZ_DE_LA_COMPARACION",
+          "matched": true,
+          "reference": "D3",
+          "reference_kind": "LABEL"
+        }
+      ],
+      "expected_dimension_alias": "D1",
+      "expected_opportunity_template_id": "template_p06_submission_v135_d4d608d082f1b3b24a91",
+      "expected_template_alias": "T1",
+      "expected_variant_alias": "V1",
+      "expected_variant_id": "variant_p06_submission_v135_d4d608d082f1b3b24a91",
+      "fixture_id": "P06-A10-S01-R01",
+      "oracle_state": "VALID",
+      "original_route_case_id": "PP-A10-S01-P06-R01",
+      "original_route_split": "HELD_OUT_CONFIRMATION",
+      "primary_case_id": "PP-A10-S01-P06-R01",
+      "property_id": "A10-S01-P2",
+      "property_target_construct_key": "RUBRIC::A10::D3_VALIDEZ_DE_LA_COMPARACION",
+      "provider_case_id": "PP-A10-S01-P06-G01",
+      "provider_split": "HELD_OUT_CONFIRMATION",
+      "route_target_construct_key": "RUBRIC::A10::D3_VALIDEZ_DE_LA_COMPARACION",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT_FAIL_CLOSED",
+      "stage": "P06"
+    },
+    {
+      "binding_scope": "CASE_SPECIFIC",
+      "candidate_scoring_allowed": true,
+      "candidate_sees_property_or_oracle": false,
+      "construct_reference_accounting": [
+        {
+          "classification": "UNRELATED_TO_ANY_AUTHORIZED_NAME",
+          "containment": 0.1333,
+          "matched": false,
+          "nearest_authorized_name": "d3 validez de la comparacion",
+          "reference": "No interpreto ese empate como el resultado del experimento, sino como una demostración de la mezcla",
+          "reference_kind": "QUOTED_SPAN"
+        },
+        {
+          "classification": "EXACT_AUTHORIZED_LABEL",
+          "construct_key": "RUBRIC::A10::D2_AGREGADO_FRENTE_A_SEGMENTO",
+          "matched": true,
+          "reference": "D2",
+          "reference_kind": "LABEL"
+        }
+      ],
+      "expected_dimension_alias": "D1",
+      "expected_opportunity_template_id": "template_p06_submission_v135_290f9b300120f4dd1dcc",
+      "expected_template_alias": "T1",
+      "expected_variant_alias": "V1",
+      "expected_variant_id": "variant_p06_submission_v135_290f9b300120f4dd1dcc",
+      "fixture_id": "P06-A10-S02-R01",
+      "oracle_state": "VALID",
+      "original_route_case_id": "PP-A10-S02-P06-R01",
+      "original_route_split": "HELD_OUT_CONFIRMATION",
+      "primary_case_id": "PP-A10-S02-P06-R01",
+      "property_id": "A10-S02-P1",
+      "property_target_construct_key": "RUBRIC::A10::D2_AGREGADO_FRENTE_A_SEGMENTO",
+      "provider_case_id": "PP-A10-S02-P06-G01",
+      "provider_split": "HELD_OUT_CONFIRMATION",
+      "route_target_construct_key": "RUBRIC::A10::D2_AGREGADO_FRENTE_A_SEGMENTO",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT_FAIL_CLOSED",
+      "stage": "P06"
+    },
+    {
+      "binding_scope": "CASE_SPECIFIC",
+      "candidate_scoring_allowed": true,
+      "candidate_sees_property_or_oracle": false,
+      "construct_reference_accounting": [
+        {
+          "classification": "UNRELATED_TO_ANY_AUTHORIZED_NAME",
+          "matched": false,
+          "reference": "No calculo incertidumbre estadística; con estas cifras mi recomendación es provisional",
+          "reference_kind": "QUOTED_SPAN"
+        },
+        {
+          "classification": "EXACT_AUTHORIZED_LABEL",
+          "construct_key": "RUBRIC::A10::D3_VALIDEZ_DE_LA_COMPARACION",
+          "matched": true,
+          "reference": "D3",
+          "reference_kind": "LABEL"
+        }
+      ],
+      "expected_dimension_alias": "D2",
+      "expected_opportunity_template_id": "template_p06_submission_v135_78743f899023dfe48da4",
+      "expected_template_alias": "T2",
+      "expected_variant_alias": "V2",
+      "expected_variant_id": "variant_p06_submission_v135_78743f899023dfe48da4",
+      "fixture_id": "P06-A10-S02-R02",
+      "oracle_state": "VALID",
+      "original_route_case_id": "PP-A10-S02-P06-R02",
+      "original_route_split": "HELD_OUT_CONFIRMATION",
+      "primary_case_id": "PP-A10-S02-P06-R02",
+      "property_id": "A10-S02-P2",
+      "property_target_construct_key": "RUBRIC::A10::D3_VALIDEZ_DE_LA_COMPARACION",
+      "provider_case_id": "PP-A10-S02-P06-G01",
+      "provider_split": "HELD_OUT_CONFIRMATION",
+      "route_target_construct_key": "RUBRIC::A10::D3_VALIDEZ_DE_LA_COMPARACION",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT_FAIL_CLOSED",
+      "stage": "P06"
+    },
+    {
+      "binding_scope": "CASE_SPECIFIC",
+      "candidate_scoring_allowed": true,
+      "candidate_sees_property_or_oracle": false,
+      "construct_reference_accounting": [
+        {
+          "classification": "UNRELATED_TO_ANY_AUTHORIZED_NAME",
+          "containment": 0.1667,
+          "matched": false,
+          "nearest_authorized_name": "d3 validez de la comparacion",
+          "reference": "La mezcla de dispositivos es idéntica: ambas versiones tienen 2.000 cuentas",
+          "reference_kind": "QUOTED_SPAN"
+        },
+        {
+          "classification": "UNRELATED_TO_ANY_AUTHORIZED_NAME",
+          "containment": 0.0833,
+          "matched": false,
+          "nearest_authorized_name": "d3 validez de la comparacion",
+          "reference": "La asignación por horarios no aleatorios confirma causalidad porque refleja tráfico real",
+          "reference_kind": "QUOTED_SPAN"
+        },
+        {
+          "classification": "EXACT_AUTHORIZED_LABEL",
+          "construct_key": "RUBRIC::A10::D3_VALIDEZ_DE_LA_COMPARACION",
+          "matched": true,
+          "reference": "D3",
+          "reference_kind": "LABEL"
+        }
+      ],
+      "expected_dimension_alias": "D1",
+      "expected_opportunity_template_id": "template_p06_submission_v135_dfe0da8468546b21eee7",
+      "expected_template_alias": "T1",
+      "expected_variant_alias": "V1",
+      "expected_variant_id": "variant_p06_submission_v135_dfe0da8468546b21eee7",
+      "fixture_id": "P06-A10-S03-R01",
+      "oracle_state": "VALID",
+      "original_route_case_id": "PP-A10-S03-P06-R01",
+      "original_route_split": "HELD_OUT_CONFIRMATION",
+      "primary_case_id": "PP-A10-S03-P06-R01",
+      "property_id": "A10-S03-P2",
+      "property_target_construct_key": "RUBRIC::A10::D3_VALIDEZ_DE_LA_COMPARACION",
+      "provider_case_id": "PP-A10-S03-P06-G01",
+      "provider_split": "HELD_OUT_CONFIRMATION",
+      "route_target_construct_key": "RUBRIC::A10::D3_VALIDEZ_DE_LA_COMPARACION",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT_FAIL_CLOSED",
+      "stage": "P06"
+    },
+    {
+      "binding_scope": "CASE_SPECIFIC",
+      "candidate_scoring_allowed": true,
+      "candidate_sees_property_or_oracle": false,
+      "construct_reference_accounting": [
+        {
+          "classification": "EXACT_AUTHORIZED_LABEL",
+          "construct_key": "RUBRIC::A10::D2_AGREGADO_FRENTE_A_SEGMENTO",
+          "matched": true,
+          "reference": "D2",
+          "reference_kind": "LABEL"
+        }
+      ],
+      "expected_dimension_alias": "D1",
+      "expected_opportunity_template_id": "template_p06_submission_v135_7aebc434ac794337de4f",
+      "expected_template_alias": "T1",
+      "expected_variant_alias": "V1",
+      "expected_variant_id": "variant_p06_submission_v135_7aebc434ac794337de4f",
+      "fixture_id": "P06-A10-S04-R01",
+      "oracle_state": "VALID",
+      "original_route_case_id": "PP-A10-S04-P06-R01",
+      "original_route_split": "HELD_OUT_CONFIRMATION",
+      "primary_case_id": "PP-A10-S04-P06-R01",
+      "property_id": "A10-S04-P1",
+      "property_target_construct_key": "RUBRIC::A10::D2_AGREGADO_FRENTE_A_SEGMENTO",
+      "provider_case_id": "PP-A10-S04-P06-G01",
+      "provider_split": "HELD_OUT_CONFIRMATION",
+      "route_target_construct_key": "RUBRIC::A10::D2_AGREGADO_FRENTE_A_SEGMENTO",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT_FAIL_CLOSED",
+      "stage": "P06"
+    },
+    {
+      "binding_scope": "CASE_SPECIFIC",
+      "candidate_scoring_allowed": true,
+      "candidate_sees_property_or_oracle": false,
+      "construct_reference_accounting": [
+        {
+          "classification": "UNRELATED_TO_ANY_AUTHORIZED_NAME",
+          "containment": 0.25,
+          "matched": false,
+          "nearest_authorized_name": "d3 validez de la comparacion",
+          "reference": "regla corporativa de materialidad",
+          "reference_kind": "QUOTED_SPAN"
+        },
+        {
+          "classification": "UNRELATED_TO_ANY_AUTHORIZED_NAME",
+          "matched": false,
+          "reference": "usar un umbral o benchmark que no está en el dossier",
+          "reference_kind": "QUOTED_SPAN"
+        },
+        {
+          "classification": "EXACT_AUTHORIZED_LABEL",
+          "construct_key": "RUBRIC::A10::D3_VALIDEZ_DE_LA_COMPARACION",
+          "matched": true,
+          "reference": "D3",
+          "reference_kind": "LABEL"
+        }
+      ],
+      "expected_dimension_alias": "D2",
+      "expected_opportunity_template_id": "template_p06_submission_v135_45b5e24df3f4cf6de1be",
+      "expected_template_alias": "T2",
+      "expected_variant_alias": "V2",
+      "expected_variant_id": "variant_p06_submission_v135_45b5e24df3f4cf6de1be",
+      "fixture_id": "P06-A10-S04-R02",
+      "oracle_state": "VALID",
+      "original_route_case_id": "PP-A10-S04-P06-R02",
+      "original_route_split": "HELD_OUT_CONFIRMATION",
+      "primary_case_id": "PP-A10-S04-P06-R02",
+      "property_id": "A10-S04-P3",
+      "property_target_construct_key": "RUBRIC::A10::D3_VALIDEZ_DE_LA_COMPARACION",
+      "provider_case_id": "PP-A10-S04-P06-G01",
+      "provider_split": "HELD_OUT_CONFIRMATION",
+      "route_target_construct_key": "RUBRIC::A10::D3_VALIDEZ_DE_LA_COMPARACION",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT_FAIL_CLOSED",
+      "stage": "P06"
+    },
+    {
+      "binding_scope": "CASE_SPECIFIC",
+      "candidate_scoring_allowed": true,
+      "candidate_sees_property_or_oracle": false,
+      "construct_reference_accounting": [
+        {
+          "classification": "EXACT_AUTHORIZED_LABEL",
+          "construct_key": "RUBRIC::A10::D2_AGREGADO_FRENTE_A_SEGMENTO",
+          "matched": true,
+          "reference": "D2",
+          "reference_kind": "LABEL"
+        }
+      ],
+      "expected_dimension_alias": "D1",
+      "expected_opportunity_template_id": "template_p06_submission_v135_9d09947f537a781d0fb1",
+      "expected_template_alias": "T1",
+      "expected_variant_alias": "V1",
+      "expected_variant_id": "variant_p06_submission_v135_9d09947f537a781d0fb1",
+      "fixture_id": "P06-A10-S05-R01",
+      "oracle_state": "VALID",
+      "original_route_case_id": "PP-A10-S05-P06-R01",
+      "original_route_split": "HELD_OUT_CONFIRMATION",
+      "primary_case_id": "PP-A10-S05-P06-R01",
+      "property_id": "A10-S05-P1",
+      "property_target_construct_key": "RUBRIC::A10::D2_AGREGADO_FRENTE_A_SEGMENTO",
+      "provider_case_id": "PP-A10-S05-P06-G01",
+      "provider_split": "HELD_OUT_CONFIRMATION",
+      "route_target_construct_key": "RUBRIC::A10::D2_AGREGADO_FRENTE_A_SEGMENTO",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT_FAIL_CLOSED",
+      "stage": "P06"
+    },
+    {
+      "binding_scope": "CASE_SPECIFIC",
+      "candidate_scoring_allowed": true,
+      "candidate_sees_property_or_oracle": false,
+      "construct_reference_accounting": [
+        {
+          "classification": "UNRELATED_TO_ANY_AUTHORIZED_NAME",
+          "containment": 0.1,
+          "matched": false,
+          "nearest_authorized_name": "d1 tasas y denominadores",
+          "reference": "Como 85 + 60 = 145 y 90 + 55 = 145, los segmentos empatan",
+          "reference_kind": "QUOTED_SPAN"
+        },
+        {
+          "classification": "UNRELATED_TO_ANY_AUTHORIZED_NAME",
+          "containment": 0.25,
+          "matched": false,
+          "nearest_authorized_name": "d1 tasas y denominadores",
+          "reference": "Sumar tasas de segmentos",
+          "reference_kind": "QUOTED_SPAN"
+        },
+        {
+          "classification": "EXACT_AUTHORIZED_LABEL",
+          "construct_key": "RUBRIC::A10::D1_TASAS_Y_DENOMINADORES",
+          "matched": true,
+          "reference": "D1",
+          "reference_kind": "LABEL"
+        }
+      ],
+      "expected_dimension_alias": "D1",
+      "expected_opportunity_template_id": "template_p06_submission_v135_cbb329d66200dc6b0a74",
+      "expected_template_alias": "T1",
+      "expected_variant_alias": "V1",
+      "expected_variant_id": "variant_p06_submission_v135_cbb329d66200dc6b0a74",
+      "fixture_id": "P06-A10-S06-R01",
+      "oracle_state": "VALID",
+      "original_route_case_id": "PP-A10-S06-P06-R01",
+      "original_route_split": "HELD_OUT_CONFIRMATION",
+      "primary_case_id": "PP-A10-S06-P06-R01",
+      "property_id": "A10-S06-P2",
+      "property_target_construct_key": "RUBRIC::A10::D1_TASAS_Y_DENOMINADORES",
+      "provider_case_id": "PP-A10-S06-P06-G01",
+      "provider_split": "HELD_OUT_CONFIRMATION",
+      "route_target_construct_key": "RUBRIC::A10::D1_TASAS_Y_DENOMINADORES",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT_FAIL_CLOSED",
+      "stage": "P06"
+    },
+    {
+      "binding_scope": "CASE_SPECIFIC",
+      "candidate_scoring_allowed": true,
+      "candidate_sees_property_or_oracle": false,
+      "construct_reference_accounting": [
+        {
+          "classification": "UNRELATED_TO_ANY_AUTHORIZED_NAME",
+          "containment": 0.0909,
+          "matched": false,
+          "nearest_authorized_name": "d3 validez de la comparacion",
+          "reference": "La prueba fue aleatoria porque cada versión recibió 2.000 cuentas",
+          "reference_kind": "QUOTED_SPAN"
+        },
+        {
+          "classification": "EXACT_AUTHORIZED_LABEL",
+          "construct_key": "RUBRIC::A10::D3_VALIDEZ_DE_LA_COMPARACION",
+          "matched": true,
+          "reference": "D3",
+          "reference_kind": "LABEL"
+        }
+      ],
+      "expected_dimension_alias": "D2",
+      "expected_opportunity_template_id": "template_p06_submission_v135_34d74c6188c2a11c71d1",
+      "expected_template_alias": "T2",
+      "expected_variant_alias": "V2",
+      "expected_variant_id": "variant_p06_submission_v135_34d74c6188c2a11c71d1",
+      "fixture_id": "P06-A10-S06-R02",
+      "oracle_state": "VALID",
+      "original_route_case_id": "PP-A10-S06-P06-R02",
+      "original_route_split": "HELD_OUT_CONFIRMATION",
+      "primary_case_id": "PP-A10-S06-P06-R02",
+      "property_id": "A10-S06-P3",
+      "property_target_construct_key": "RUBRIC::A10::D3_VALIDEZ_DE_LA_COMPARACION",
+      "provider_case_id": "PP-A10-S06-P06-G01",
+      "provider_split": "HELD_OUT_CONFIRMATION",
+      "route_target_construct_key": "RUBRIC::A10::D3_VALIDEZ_DE_LA_COMPARACION",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT_FAIL_CLOSED",
+      "stage": "P06"
+    },
+    {
+      "binding_scope": "CASE_SPECIFIC",
+      "candidate_scoring_allowed": true,
+      "candidate_sees_property_or_oracle": false,
+      "construct_reference_accounting": [
+        {
+          "classification": "EXACT_AUTHORIZED_NAME",
+          "construct_key": "RUBRIC::A11::INVARIANT_Y_CLAVE",
+          "matched": true,
+          "reference": "Invariant y clave",
+          "reference_kind": "QUOTED_SPAN"
+        },
+        {
+          "classification": "UNRELATED_TO_ANY_AUTHORIZED_NAME",
+          "matched": false,
+          "reference": "Justificación de la excepción",
+          "reference_kind": "QUOTED_SPAN"
+        }
+      ],
+      "expected_dimension_alias": "D3",
+      "expected_opportunity_template_id": "template_p06_submission_v135_fc4a355079ba55ca78c5",
+      "expected_template_alias": "T3",
+      "expected_variant_alias": "V3",
+      "expected_variant_id": "variant_p06_submission_v135_fc4a355079ba55ca78c5",
+      "fixture_id": "P06-A11-S01-R03",
+      "oracle_state": "VALID",
+      "original_route_case_id": "PP-A11-S01-P06-R03",
+      "original_route_split": "CORE",
+      "primary_case_id": "PP-A11-S01-P06-R03",
+      "property_id": "A11-S01-P1",
+      "property_target_construct_key": "RUBRIC::A11::INVARIANT_Y_CLAVE",
+      "provider_case_id": "PP-A11-S01-P06-G01",
+      "provider_split": "CORE",
+      "route_target_construct_key": "RUBRIC::A11::INVARIANT_Y_CLAVE",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT_FAIL_CLOSED",
+      "stage": "P06"
+    },
+    {
+      "binding_scope": "CASE_SPECIFIC",
+      "candidate_scoring_allowed": true,
+      "candidate_sees_property_or_oracle": false,
+      "construct_reference_accounting": [
+        {
+          "classification": "EXACT_AUTHORIZED_NAME",
+          "construct_key": "RUBRIC::A11::COHERENCIA_ENTRE_ARTEFACTOS",
+          "matched": true,
+          "reference": "Coherencia entre artefactos",
+          "reference_kind": "QUOTED_SPAN"
+        }
+      ],
+      "expected_dimension_alias": "D2",
+      "expected_opportunity_template_id": "template_p06_submission_v135_92a953024f0d18fc6981",
+      "expected_template_alias": "T2",
+      "expected_variant_alias": "V2",
+      "expected_variant_id": "variant_p06_submission_v135_92a953024f0d18fc6981",
+      "fixture_id": "P06-A11-S01-R02",
+      "oracle_state": "VALID",
+      "original_route_case_id": "PP-A11-S01-P06-R02",
+      "original_route_split": "CORE",
+      "primary_case_id": "PP-A11-S01-P06-R02",
+      "property_id": "A11-S01-P2",
+      "property_target_construct_key": "RUBRIC::A11::COHERENCIA_ENTRE_ARTEFACTOS",
+      "provider_case_id": "PP-A11-S01-P06-G01",
+      "provider_split": "CORE",
+      "route_target_construct_key": "RUBRIC::A11::COHERENCIA_ENTRE_ARTEFACTOS",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT_FAIL_CLOSED",
+      "stage": "P06"
+    },
+    {
+      "binding_scope": "CASE_SPECIFIC",
+      "candidate_scoring_allowed": true,
+      "candidate_sees_property_or_oracle": false,
+      "construct_reference_accounting": [
+        {
+          "classification": "EXACT_AUTHORIZED_NAME",
+          "construct_key": "RUBRIC::A11::CADENA_CAUSAL",
+          "matched": true,
+          "reference": "Cadena causal",
+          "reference_kind": "QUOTED_SPAN"
+        },
+        {
+          "classification": "UNRELATED_TO_ANY_AUTHORIZED_NAME",
+          "matched": false,
+          "reference": "La causa fue confirmar el mensaje antes del primer cargo",
+          "reference_kind": "QUOTED_SPAN"
+        },
+        {
+          "classification": "UNRELATED_TO_ANY_AUTHORIZED_NAME",
+          "matched": false,
+          "reference": "No hubo segundo cargo; ch_502 es solo un retry id",
+          "reference_kind": "QUOTED_SPAN"
+        }
+      ],
+      "expected_dimension_alias": "D1",
+      "expected_opportunity_template_id": "template_p06_submission_v135_5bc7635547494982a7e5",
+      "expected_template_alias": "T1",
+      "expected_variant_alias": "V1",
+      "expected_variant_id": "variant_p06_submission_v135_5bc7635547494982a7e5",
+      "fixture_id": "P06-A11-S01-R01",
+      "oracle_state": "VALID",
+      "original_route_case_id": "PP-A11-S01-P06-R01",
+      "original_route_split": "CORE",
+      "primary_case_id": "PP-A11-S01-P06-R01",
+      "property_id": "A11-S01-P3",
+      "property_target_construct_key": "RUBRIC::A11::CADENA_CAUSAL",
+      "provider_case_id": "PP-A11-S01-P06-G01",
+      "provider_split": "CORE",
+      "route_target_construct_key": "RUBRIC::A11::CADENA_CAUSAL",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT_FAIL_CLOSED",
+      "stage": "P06"
+    },
+    {
+      "binding_scope": "CASE_SPECIFIC",
+      "candidate_scoring_allowed": true,
+      "candidate_sees_property_or_oracle": false,
+      "construct_reference_accounting": [
+        {
+          "classification": "EXACT_AUTHORIZED_NAME",
+          "construct_key": "RUBRIC::A11::INVARIANT_Y_CLAVE",
+          "matched": true,
+          "reference": "Invariant y clave",
+          "reference_kind": "QUOTED_SPAN"
+        }
+      ],
+      "expected_dimension_alias": "D1",
+      "expected_opportunity_template_id": "template_p06_submission_v135_d1666f84f2bf1a6e4a35",
+      "expected_template_alias": "T1",
+      "expected_variant_alias": "V1",
+      "expected_variant_id": "variant_p06_submission_v135_d1666f84f2bf1a6e4a35",
+      "fixture_id": "P06-A11-S02-R01",
+      "oracle_state": "VALID",
+      "original_route_case_id": "PP-A11-S02-P06-R01",
+      "original_route_split": "CORE",
+      "primary_case_id": "PP-A11-S02-P06-R01",
+      "property_id": "A11-S02-P1",
+      "property_target_construct_key": "RUBRIC::A11::INVARIANT_Y_CLAVE",
+      "provider_case_id": "PP-A11-S02-P06-G01",
+      "provider_split": "CORE",
+      "route_target_construct_key": "RUBRIC::A11::INVARIANT_Y_CLAVE",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT_FAIL_CLOSED",
+      "stage": "P06"
+    },
+    {
+      "binding_scope": "CASE_SPECIFIC",
+      "candidate_scoring_allowed": true,
+      "candidate_sees_property_or_oracle": false,
+      "construct_reference_accounting": [
+        {
+          "classification": "EXACT_AUTHORIZED_NAME",
+          "construct_key": "RUBRIC::A11::INVARIANT_Y_CLAVE",
+          "matched": true,
+          "reference": "Invariant y clave",
+          "reference_kind": "QUOTED_SPAN"
+        },
+        {
+          "classification": "UNRELATED_TO_ANY_AUTHORIZED_NAME",
+          "matched": false,
+          "reference": "d1 -> key uuid-A; d2 -> key uuid-B",
+          "reference_kind": "QUOTED_SPAN"
+        }
+      ],
+      "expected_dimension_alias": "D2",
+      "expected_opportunity_template_id": "template_p06_submission_v135_51716d9d3df23899f22c",
+      "expected_template_alias": "T2",
+      "expected_variant_alias": "V2",
+      "expected_variant_id": "variant_p06_submission_v135_51716d9d3df23899f22c",
+      "fixture_id": "P06-A11-S03-R02",
+      "oracle_state": "VALID",
+      "original_route_case_id": "PP-A11-S03-P06-R02",
+      "original_route_split": "CORE",
+      "primary_case_id": "PP-A11-S03-P06-R02",
+      "property_id": "A11-S03-P1",
+      "property_target_construct_key": "RUBRIC::A11::INVARIANT_Y_CLAVE",
+      "provider_case_id": "PP-A11-S03-P06-G01",
+      "provider_split": "CORE",
+      "route_target_construct_key": "RUBRIC::A11::INVARIANT_Y_CLAVE",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT_FAIL_CLOSED",
+      "stage": "P06"
+    },
+    {
+      "binding_scope": "CASE_SPECIFIC",
+      "candidate_scoring_allowed": true,
+      "candidate_sees_property_or_oracle": false,
+      "construct_reference_accounting": [
+        {
+          "classification": "EXACT_AUTHORIZED_NAME",
+          "construct_key": "RUBRIC::A11::TRADE_OFFS_Y_RECUPERACION",
+          "matched": true,
+          "reference": "Trade-offs y recuperación",
+          "reference_kind": "QUOTED_SPAN"
+        }
+      ],
+      "expected_dimension_alias": "D3",
+      "expected_opportunity_template_id": "template_p06_submission_v135_e348b3f3540362846a76",
+      "expected_template_alias": "T3",
+      "expected_variant_alias": "V3",
+      "expected_variant_id": "variant_p06_submission_v135_e348b3f3540362846a76",
+      "fixture_id": "P06-A11-S03-R03",
+      "oracle_state": "VALID",
+      "original_route_case_id": "PP-A11-S03-P06-R03",
+      "original_route_split": "CORE",
+      "primary_case_id": "PP-A11-S03-P06-R03",
+      "property_id": "A11-S03-P2",
+      "property_target_construct_key": "RUBRIC::A11::TRADE_OFFS_Y_RECUPERACION",
+      "provider_case_id": "PP-A11-S03-P06-G01",
+      "provider_split": "CORE",
+      "route_target_construct_key": "RUBRIC::A11::TRADE_OFFS_Y_RECUPERACION",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT_FAIL_CLOSED",
+      "stage": "P06"
+    },
+    {
+      "binding_scope": "CASE_SPECIFIC",
+      "candidate_scoring_allowed": true,
+      "candidate_sees_property_or_oracle": false,
+      "construct_reference_accounting": [
+        {
+          "classification": "EXACT_AUTHORIZED_NAME",
+          "construct_key": "RUBRIC::A11::CADENA_CAUSAL",
+          "matched": true,
+          "reference": "Cadena causal",
+          "reference_kind": "QUOTED_SPAN"
+        },
+        {
+          "classification": "UNRELATED_TO_ANY_AUTHORIZED_NAME",
+          "matched": false,
+          "reference": "El timeout ocurrió antes de que el proveedor respondiera, así que la primera operación nunca existió",
+          "reference_kind": "QUOTED_SPAN"
+        }
+      ],
+      "expected_dimension_alias": "D1",
+      "expected_opportunity_template_id": "template_p06_submission_v135_e46f2916792c4be522ae",
+      "expected_template_alias": "T1",
+      "expected_variant_alias": "V1",
+      "expected_variant_id": "variant_p06_submission_v135_e46f2916792c4be522ae",
+      "fixture_id": "P06-A11-S03-R01",
+      "oracle_state": "VALID",
+      "original_route_case_id": "PP-A11-S03-P06-R01",
+      "original_route_split": "CORE",
+      "primary_case_id": "PP-A11-S03-P06-R01",
+      "property_id": "A11-S03-P3",
+      "property_target_construct_key": "RUBRIC::A11::CADENA_CAUSAL",
+      "provider_case_id": "PP-A11-S03-P06-G01",
+      "provider_split": "CORE",
+      "route_target_construct_key": "RUBRIC::A11::CADENA_CAUSAL",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT_FAIL_CLOSED",
+      "stage": "P06"
+    },
+    {
+      "binding_scope": "CASE_SPECIFIC",
+      "candidate_scoring_allowed": true,
+      "candidate_sees_property_or_oracle": false,
+      "construct_reference_accounting": [
+        {
+          "classification": "EXACT_AUTHORIZED_NAME",
+          "construct_key": "RUBRIC::A11::INVARIANT_Y_CLAVE",
+          "matched": true,
+          "reference": "Invariant y clave",
+          "reference_kind": "QUOTED_SPAN"
+        }
+      ],
+      "expected_dimension_alias": "D2",
+      "expected_opportunity_template_id": "template_p06_submission_v135_6682f20c0a97c0f9704a",
+      "expected_template_alias": "T2",
+      "expected_variant_alias": "V2",
+      "expected_variant_id": "variant_p06_submission_v135_6682f20c0a97c0f9704a",
+      "fixture_id": "P06-A11-S04-R02",
+      "oracle_state": "VALID",
+      "original_route_case_id": "PP-A11-S04-P06-R02",
+      "original_route_split": "CORE",
+      "primary_case_id": "PP-A11-S04-P06-R02",
+      "property_id": "A11-S04-P1",
+      "property_target_construct_key": "RUBRIC::A11::INVARIANT_Y_CLAVE",
+      "provider_case_id": "PP-A11-S04-P06-G01",
+      "provider_split": "CORE",
+      "route_target_construct_key": "RUBRIC::A11::INVARIANT_Y_CLAVE",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT_FAIL_CLOSED",
+      "stage": "P06"
+    },
+    {
+      "binding_scope": "CASE_SPECIFIC",
+      "candidate_scoring_allowed": true,
+      "candidate_sees_property_or_oracle": false,
+      "construct_reference_accounting": [
+        {
+          "classification": "EXACT_AUTHORIZED_NAME",
+          "construct_key": "RUBRIC::A11::COHERENCIA_ENTRE_ARTEFACTOS",
+          "matched": true,
+          "reference": "Coherencia entre artefactos",
+          "reference_kind": "QUOTED_SPAN"
+        }
+      ],
+      "expected_dimension_alias": "D1",
+      "expected_opportunity_template_id": "template_p06_submission_v135_912a9a0c230dc530e4de",
+      "expected_template_alias": "T1",
+      "expected_variant_alias": "V1",
+      "expected_variant_id": "variant_p06_submission_v135_912a9a0c230dc530e4de",
+      "fixture_id": "P06-A11-S04-R01",
+      "oracle_state": "VALID",
+      "original_route_case_id": "PP-A11-S04-P06-R01",
+      "original_route_split": "CORE",
+      "primary_case_id": "PP-A11-S04-P06-R01",
+      "property_id": "A11-S04-P2",
+      "property_target_construct_key": "RUBRIC::A11::COHERENCIA_ENTRE_ARTEFACTOS",
+      "provider_case_id": "PP-A11-S04-P06-G01",
+      "provider_split": "CORE",
+      "route_target_construct_key": "RUBRIC::A11::COHERENCIA_ENTRE_ARTEFACTOS",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT_FAIL_CLOSED",
+      "stage": "P06"
+    },
+    {
+      "binding_scope": "CASE_SPECIFIC",
+      "candidate_scoring_allowed": true,
+      "candidate_sees_property_or_oracle": false,
+      "construct_reference_accounting": [
+        {
+          "classification": "EXACT_AUTHORIZED_NAME",
+          "construct_key": "RUBRIC::A11::TRADE_OFFS_Y_RECUPERACION",
+          "matched": true,
+          "reference": "Trade-offs y recuperación",
+          "reference_kind": "QUOTED_SPAN"
+        },
+        {
+          "classification": "UNRELATED_TO_ANY_AUTHORIZED_NAME",
+          "matched": false,
+          "reference": "is_older_than(hours=23)",
+          "reference_kind": "QUOTED_SPAN"
+        }
+      ],
+      "expected_dimension_alias": "D3",
+      "expected_opportunity_template_id": "template_p06_submission_v135_7758aa3978cc180b81de",
+      "expected_template_alias": "T3",
+      "expected_variant_alias": "V3",
+      "expected_variant_id": "variant_p06_submission_v135_7758aa3978cc180b81de",
+      "fixture_id": "P06-A11-S04-R03",
+      "oracle_state": "VALID",
+      "original_route_case_id": "PP-A11-S04-P06-R03",
+      "original_route_split": "CORE",
+      "primary_case_id": "PP-A11-S04-P06-R03",
+      "property_id": "A11-S04-P3",
+      "property_target_construct_key": "RUBRIC::A11::TRADE_OFFS_Y_RECUPERACION",
+      "provider_case_id": "PP-A11-S04-P06-G01",
+      "provider_split": "CORE",
+      "route_target_construct_key": "RUBRIC::A11::TRADE_OFFS_Y_RECUPERACION",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT_FAIL_CLOSED",
+      "stage": "P06"
+    },
+    {
+      "binding_scope": "CASE_SPECIFIC",
+      "candidate_scoring_allowed": true,
+      "candidate_sees_property_or_oracle": false,
+      "construct_reference_accounting": [
+        {
+          "classification": "EXACT_AUTHORIZED_NAME",
+          "construct_key": "RUBRIC::A11::INVARIANT_Y_CLAVE",
+          "matched": true,
+          "reference": "Invariant y clave",
+          "reference_kind": "QUOTED_SPAN"
+        },
+        {
+          "classification": "UNRELATED_TO_ANY_AUTHORIZED_NAME",
+          "matched": false,
+          "reference": "use idempotency because it is a best practice",
+          "reference_kind": "QUOTED_SPAN"
+        },
+        {
+          "classification": "UNRELATED_TO_ANY_AUTHORIZED_NAME",
+          "matched": false,
+          "reference": "Alternatives: none considered",
+          "reference_kind": "QUOTED_SPAN"
+        }
+      ],
+      "expected_dimension_alias": "D1",
+      "expected_opportunity_template_id": "template_p06_submission_v135_2f718de698b123197857",
+      "expected_template_alias": "T1",
+      "expected_variant_alias": "V1",
+      "expected_variant_id": "variant_p06_submission_v135_2f718de698b123197857",
+      "fixture_id": "P06-A11-S06-R01",
+      "oracle_state": "VALID",
+      "original_route_case_id": "PP-A11-S06-P06-R01",
+      "original_route_split": "CORE",
+      "primary_case_id": "PP-A11-S06-P06-R01",
+      "property_id": "A11-S06-P1",
+      "property_target_construct_key": "RUBRIC::A11::INVARIANT_Y_CLAVE",
+      "provider_case_id": "PP-A11-S06-P06-G01",
+      "provider_split": "CORE",
+      "route_target_construct_key": "RUBRIC::A11::INVARIANT_Y_CLAVE",
+      "selection_rule": "SINGLE_DECLARED_AUTHORIZED_CONSTRUCT_FAIL_CLOSED",
+      "stage": "P06"
+    }
+  ],
+  "candidate_scoring_property_count": 69,
+  "candidate_scoring_property_ids": [
+    "A01-S02-P1",
+    "A01-S03-P1",
+    "A01-S03-P2",
+    "A01-S05-P1",
+    "A02-S01-P1",
+    "A02-S03-P1",
+    "A02-S04-P1",
+    "A02-S05-P1",
+    "A02-S06-P1",
+    "A03-S01-P2",
+    "A03-S02-P1",
+    "A03-S04-P1",
+    "A03-S04-P3",
+    "A03-S05-P1",
+    "A03-S06-P2",
+    "A04-S01-P2",
+    "A04-S01-P3",
+    "A04-S01-P5",
+    "A04-S02-P1",
+    "A04-S05-P1",
+    "A04-S06-P4",
+    "A06-S01-P1",
+    "A06-S01-P3",
+    "A06-S02-P1",
+    "A06-S02-P2",
+    "A06-S03-P1",
+    "A06-S04-P1",
+    "A06-S04-P2",
+    "A06-S05-P1",
+    "A06-S05-P3",
+    "A07-S02-P3",
+    "A07-S04-P1",
+    "A07-S04-P2",
+    "A08-S01-P1",
+    "A08-S01-P3",
+    "A08-S03-P1",
+    "A08-S03-P2",
+    "A08-S04-P1",
+    "A08-S05-P1",
+    "A08-S05-P2",
+    "A09-S01-P1",
+    "A09-S01-P2",
+    "A09-S02-P1",
+    "A09-S02-P3",
+    "A09-S04-P1",
+    "A09-S05-P1",
+    "A09-S05-P3",
+    "A09-S06-P1",
+    "A09-S06-P4",
+    "A10-S01-P2",
+    "A10-S02-P1",
+    "A10-S02-P2",
+    "A10-S03-P2",
+    "A10-S04-P1",
+    "A10-S04-P3",
+    "A10-S05-P1",
+    "A10-S06-P2",
+    "A10-S06-P3",
+    "A11-S01-P1",
+    "A11-S01-P2",
+    "A11-S01-P3",
+    "A11-S02-P1",
+    "A11-S03-P1",
+    "A11-S03-P2",
+    "A11-S03-P3",
+    "A11-S04-P1",
+    "A11-S04-P2",
+    "A11-S04-P3",
+    "A11-S06-P1"
+  ],
+  "expected_support_status_exposed_to_candidate": false,
+  "observation_bindings_hash": "sha256:d0d2bd909dd0b3137387b04c9a38995cb72baf0ce0ca6b442783cf93af76581c",
+  "omitted_expected_route_can_be_scored_as_model_failure": true,
+  "oracle_outcome_exposed_to_candidate": false,
+  "schema_version": "semantic-p06-property-observation-bindings/1.3.5",
+  "visibility": "EVALUATOR_ONLY_NEVER_MODEL_VISIBLE"
+}

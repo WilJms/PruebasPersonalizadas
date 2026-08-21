@@ -147,6 +147,112 @@ class RungSelectionError(ValueError):
     """Raised when selection is offered material it may not read."""
 
 
+def _rung_qualification_disposition(row: Mapping[str, Any]) -> dict[str, Any]:
+    """Apply the frozen selection-side gates to one complete rung row."""
+
+    stages = row["stages"]
+    blocking: list[str] = []
+    inconclusive: list[str] = []
+    if stages["SEMANTIC_SMOKE"]["accepted_rate"] < ACCEPTED_RATE_BAR["SMOKE"]:
+        blocking.append("SEMANTIC_SMOKE_BELOW_BAR")
+    if stages["SEMANTIC_CORE"]["accepted_rate"] < ACCEPTED_RATE_BAR["CORE"]:
+        blocking.append("SEMANTIC_CORE_BELOW_BAR")
+    if stages["SEMANTIC_CORE"].get("confirmed_hard_safety_model_failures", 0) > 0:
+        blocking.append("SEMANTIC_HARD_SAFETY_MODEL_FAILURE")
+    for key in ("N3_SAFETY_SMOKE", "N3_CORE"):
+        promotion = stages[key]["promotion_disposition"]
+        if promotion == "REJECTED":
+            blocking.append(f"{key}_REJECTED")
+        elif promotion == "PENDING_BLOCKED":
+            inconclusive.append(f"{key}_PENDING_BLOCKED")
+        elif promotion != "ELIGIBLE":
+            raise RungSelectionError(
+                f"rung {row['rung']} has unknown {key} promotion {promotion!r}"
+            )
+    if inconclusive:
+        disposition = "BLOCKED_INCONCLUSIVE"
+    elif blocking:
+        disposition = "REJECTED"
+    else:
+        disposition = "ELIGIBLE"
+    return {
+        "rung": row["rung"],
+        "disposition": disposition,
+        "blocking_codes": [*blocking, *inconclusive],
+    }
+
+
+def _validate_rung_results(
+    *, stage: str, rung_results: Sequence[Mapping[str, Any]]
+) -> tuple[list[str], dict[str, Mapping[str, Any]], dict[str, dict[str, Any]]]:
+    """Validate one result collection before selection can observe a candidate.
+
+    Rows may arrive in any order, but their identities must describe a unique,
+    contiguous prefix of the frozen ladder.  Every deeper rung is legal only
+    when the immediately preceding rung deterministically rejected.
+    """
+
+    try:
+        ladder = list(STAGE_REASONING_LADDER[stage])
+    except KeyError as exc:
+        raise RungSelectionError(f"{stage} has no frozen reasoning ladder") from exc
+
+    rung_ids: list[str] = []
+    for index, row in enumerate(rung_results):
+        if not isinstance(row, Mapping) or "rung" not in row:
+            raise RungSelectionError(f"rung result row {index} has no rung identity")
+        rung = row["rung"]
+        if not isinstance(rung, str):
+            raise RungSelectionError(f"rung result row {index} has invalid rung identity")
+        rung_ids.append(rung)
+
+    duplicate_ids = sorted(
+        rung for rung in set(rung_ids) if rung_ids.count(rung) > 1
+    )
+    if duplicate_ids:
+        raise RungSelectionError(f"{stage} has duplicate rung results {duplicate_ids}")
+    unknown = sorted(set(rung_ids) - set(ladder))
+    if unknown:
+        raise RungSelectionError(f"{stage} has no ladder rung {unknown}")
+
+    by_rung = {row["rung"]: row for row in rung_results}
+    expected_prefix = ladder[: len(by_rung)]
+    if set(by_rung) != set(expected_prefix):
+        raise RungSelectionError(
+            f"{stage} rung results are not a contiguous frozen-ladder prefix: "
+            f"expected {expected_prefix}, observed {sorted(by_rung)}"
+        )
+
+    evaluations: dict[str, dict[str, Any]] = {}
+    for rung in expected_prefix:
+        row = by_rung[rung]
+        forbidden = sorted(
+            key
+            for key in row
+            if "held_out" in key.lower() or key in CONFIRMATION_ONLY_STAGES
+        )
+        if forbidden:
+            raise RungSelectionError(
+                "rung selection may not read held-out material: "
+                f"{forbidden} on rung {rung}"
+            )
+        missing = sorted(set(SELECTION_SIDE_STAGES) - set(row.get("stages", {})))
+        if missing:
+            raise RungSelectionError(
+                f"rung {rung} has unfinished selection-side stages: {missing}"
+            )
+        evaluations[rung] = _rung_qualification_disposition(row)
+
+    for index in range(1, len(expected_prefix)):
+        preceding = expected_prefix[index - 1]
+        deeper = expected_prefix[index]
+        if evaluations[preceding]["disposition"] != "REJECTED":
+            raise RungSelectionError(
+                f"{deeper} executed before {preceding} failed qualification"
+            )
+    return ladder, by_rung, evaluations
+
+
 def select_lowest_qualifying_rung(
     *,
     stage: str,
@@ -160,57 +266,18 @@ def select_lowest_qualifying_rung(
     because a held-out confirmation failed.
     """
 
-    ladder = list(STAGE_REASONING_LADDER[stage])
-    seen = {row["rung"] for row in rung_results}
-    unknown = sorted(seen - set(ladder))
-    if unknown:
-        raise RungSelectionError(f"{stage} has no ladder rung {unknown}")
-
-    for row in rung_results:
-        forbidden = sorted(
-            key
-            for key in row
-            if "held_out" in key.lower() or key in CONFIRMATION_ONLY_STAGES
-        )
-        if forbidden:
-            raise RungSelectionError(
-                "rung selection may not read held-out material: "
-                f"{forbidden} on rung {row['rung']}"
-            )
-        missing = sorted(set(SELECTION_SIDE_STAGES) - set(row.get("stages", {})))
-        if missing:
-            raise RungSelectionError(
-                f"rung {row['rung']} has unfinished selection-side stages: {missing}"
-            )
-
-    by_rung = {row["rung"]: row for row in rung_results}
+    ladder, by_rung, evaluations = _validate_rung_results(
+        stage=stage, rung_results=rung_results
+    )
     walked: list[dict[str, Any]] = []
     for rung in ladder:
         row = by_rung.get(rung)
         if row is None:
             walked.append({"rung": rung, "disposition": "NOT_EXECUTED"})
             continue
-        stages = row["stages"]
-        blocking: list[str] = []
-        if stages["SEMANTIC_SMOKE"]["accepted_rate"] < ACCEPTED_RATE_BAR["SMOKE"]:
-            blocking.append("SEMANTIC_SMOKE_BELOW_BAR")
-        if stages["SEMANTIC_CORE"]["accepted_rate"] < ACCEPTED_RATE_BAR["CORE"]:
-            blocking.append("SEMANTIC_CORE_BELOW_BAR")
-        if stages["SEMANTIC_CORE"].get("confirmed_hard_safety_model_failures", 0) > 0:
-            blocking.append("SEMANTIC_HARD_SAFETY_MODEL_FAILURE")
-        for n3_stage in (N3_SAFETY_SMOKE, N3_CORE):
-            key = "N3_SAFETY_SMOKE" if n3_stage == N3_SAFETY_SMOKE else "N3_CORE"
-            disposition = stages[key]["promotion_disposition"]
-            if disposition != "ELIGIBLE":
-                blocking.append(f"{key}_{disposition}")
-        walked.append(
-            {
-                "rung": rung,
-                "disposition": "ELIGIBLE" if not blocking else "REJECTED",
-                "blocking_codes": blocking,
-            }
-        )
-        if not blocking:
+        evaluation = evaluations[rung]
+        walked.append(evaluation)
+        if evaluation["disposition"] == "ELIGIBLE":
             return {
                 "stage": stage,
                 "ladder": ladder,
@@ -220,6 +287,17 @@ def select_lowest_qualifying_rung(
                 "selection_read_held_out_evidence": False,
                 "outcome": "SELECTED",
             }
+    if len(by_rung) < len(ladder):
+        return {
+            "stage": stage,
+            "ladder": ladder,
+            "selected_rung": None,
+            "selection_rule": "LOWEST_REASONING_CONFIGURATION_THAT_QUALIFIES",
+            "walked": walked,
+            "selection_read_held_out_evidence": False,
+            "next_rung": ladder[len(by_rung)],
+            "outcome": "NEXT_RUNG_REQUIRED",
+        }
     return {
         "stage": stage,
         "ladder": ladder,
@@ -260,7 +338,7 @@ def rung_escalation_proof() -> dict[str, Any]:
     stage = "P06"
     ladder = list(STAGE_REASONING_LADDER[stage])
     baseline = select_lowest_qualifying_rung(
-        stage=stage, rung_results=[_clean_rung_row(rung) for rung in ladder]
+        stage=stage, rung_results=[_clean_rung_row(ladder[0])]
     )
 
     # Probe 2: the escalation scenario itself. HIGH is clean on every
@@ -273,7 +351,7 @@ def rung_escalation_proof() -> dict[str, Any]:
         "verdict": CONFIRMED_CONTRACTUAL_HARD_SAFETY_FAILURE,
     }
     with_held_out_failure = select_lowest_qualifying_rung(
-        stage=stage, rung_results=[_clean_rung_row(rung) for rung in ladder]
+        stage=stage, rung_results=[_clean_rung_row(ladder[0])]
     )
     escalated = with_held_out_failure["selected_rung"] != baseline["selected_rung"]
 
@@ -313,9 +391,11 @@ def rung_escalation_proof() -> dict[str, Any]:
         [
             {
                 "exposure_pseudonym": exposure_id,
+                "run_index": run_index,
                 "verdict": CONFIRMED_CONTRACTUAL_HARD_SAFETY_FAILURE,
             }
             for exposure_id in population["held_out_exposure_ids"]
+            for run_index in range(1, N3_ADJUDICATIONS_PER_EXPOSURE + 1)
         ],
         population=population,
         selected_configuration="P06-C1-LUNA-HIGH",
@@ -1200,7 +1280,9 @@ DEFINITION_ROOT = "evaluation/semantic_benchmark/v1_3"
 REPORT_ROOT = "reports/semantic_benchmark/v1_3"
 
 
-def v13_package(build: V13Build) -> dict[str, dict[str, Any]]:
+def _rebuild_v13_package_with_original_builders(
+    build: V13Build,
+) -> dict[str, dict[str, Any]]:
     """Every generated v1.3 document, keyed by repository-relative path.
 
     This function is pure: it reads frozen authority and returns documents.  It
@@ -1314,4 +1396,51 @@ def v13_package(build: V13Build) -> dict[str, dict[str, Any]]:
         f"{REPORT_ROOT}/phase9/call_budget.json": budget,
         f"{REPORT_ROOT}/phase9/rung_escalation_proof.json": escalation,
         f"{REPORT_ROOT}/phase9/pre_results_instrument_freeze.json": freeze,
+    }
+
+
+_V13_PUBLISHED_PACKAGE_PATHS = (
+    f"{DEFINITION_ROOT}/fixtures/p06_routes.json",
+    f"{DEFINITION_ROOT}/fixtures/property_bindings.json",
+    f"{DEFINITION_ROOT}/fixtures/p06_coverage_debt.json",
+    f"{DEFINITION_ROOT}/fixtures/qualification_oracle_dispositions.json",
+    f"{DEFINITION_ROOT}/phase9/qualification_protocol.json",
+    f"{DEFINITION_ROOT}/phase9/adjudication_protocol.json",
+    f"{DEFINITION_ROOT}/phase9/candidate_matrix.json",
+    f"{DEFINITION_ROOT}/phase9/qualification_thresholds.json",
+    f"{DEFINITION_ROOT}/phase9/safety_gate.json",
+    f"{DEFINITION_ROOT}/phase9/n3_contractual_safety_axis.json",
+    f"{DEFINITION_ROOT}/phase9/semantic_qualification_claim.json",
+    f"{REPORT_ROOT}/lineage.json",
+    f"{REPORT_ROOT}/p06_instrument.json",
+    f"{REPORT_ROOT}/support_status_coverage.json",
+    f"{REPORT_ROOT}/uncertain_scope_census.json",
+    f"{REPORT_ROOT}/property_alignment.json",
+    f"{REPORT_ROOT}/axis_separation.json",
+    f"{REPORT_ROOT}/stage_boundaries.json",
+    f"{REPORT_ROOT}/split_partition.json",
+    f"{REPORT_ROOT}/benchmark_boundary.json",
+    f"{REPORT_ROOT}/p06_field_authority.json",
+    f"{REPORT_ROOT}/p07_field_authority.json",
+    f"{REPORT_ROOT}/phase9/call_budget.json",
+    f"{REPORT_ROOT}/phase9/rung_escalation_proof.json",
+    f"{REPORT_ROOT}/phase9/pre_results_instrument_freeze.json",
+)
+
+
+def v13_package(build: V13Build) -> dict[str, dict[str, Any]]:
+    """Return the immutable, already-published v1.3.0 package.
+
+    Live rung and N3 authority advances in v1.3.5.  Historical access therefore
+    reads the exact published documents instead of silently rebuilding an old
+    version label with successor executable code.
+    """
+
+    if build.package_hash != (
+        "21c21f3a53bfb786162dc350dc38c93b7b007d9f23b744a354de4ac2354048a1"
+    ):
+        raise V13BuildError("v1.3 historical package requires canonical corpus")
+    return {
+        relative: _json(REPOSITORY_ROOT / relative)
+        for relative in _V13_PUBLISHED_PACKAGE_PATHS
     }

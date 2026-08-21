@@ -21,6 +21,7 @@ from pathlib import Path
 
 import pytest
 
+from comprehension_verification.canonical import canonical_hash
 from comprehension_verification.p06_n3_protocol import (
     P06_SMOKE_ACTIVITY_IDS,
     N3ProtocolError,
@@ -239,7 +240,7 @@ def test_hiding_the_local_protected_corpus_does_not_change_any_result(
     assert hidden == baseline
 
 
-def test_the_published_artifact_matches_the_canonical_derivation() -> None:
+def test_the_published_artifact_preserves_its_canonical_population_and_hash() -> None:
     artifact = json.loads(
         (
             REPO_ROOT
@@ -249,7 +250,17 @@ def test_the_published_artifact_matches_the_canonical_derivation() -> None:
             / "product_decision.json"
         ).read_text(encoding="utf-8")
     )
-    assert artifact == phase9b7_decision(DEFAULT_CORPUS_ROOT)
+    assert artifact["decision_hash"] == canonical_hash(
+        {key: value for key, value in artifact.items() if key != "decision_hash"}
+    )
+    current = phase9b7_decision(DEFAULT_CORPUS_ROOT)
+    assert artifact["decision_matrix"] == current["decision_matrix"]
+    current_population = n3_exposure_population(
+        DEFAULT_CORPUS_ROOT, SPLIT_PARTITION
+    )
+    assert artifact["n3_protocol_surface"]["exposure_population"][
+        "exposures"
+    ] == current_population["exposures"]
 
 
 # --------------------------------------------------------------------------

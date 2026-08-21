@@ -1134,7 +1134,9 @@ def self_material_hash(path: str, document: Mapping[str, Any]) -> str | None:
 # --------------------------------------------------------------------------
 
 
-def v131_package(build: V13Build) -> dict[str, dict[str, Any]]:
+def _rebuild_v131_package_with_original_builders(
+    build: V13Build,
+) -> dict[str, dict[str, Any]]:
     """Every generated v1.3.1 document, keyed by repository-relative path.
 
     Pure: it reads frozen authority and returns documents, writing nothing, so
@@ -1209,3 +1211,19 @@ def build_v131(corpus_root: Path = DEFAULT_CORPUS_ROOT) -> V13Build:
     """v1.3.1 reuses the v1.3.0 semantic instrument unchanged."""
 
     return build_v13(corpus_root)
+
+
+def v131_package(build: V13Build) -> dict[str, dict[str, Any]]:
+    """Return immutable, already-published v1.3.1 evidence."""
+
+    if build.package_hash != (
+        "21c21f3a53bfb786162dc350dc38c93b7b007d9f23b744a354de4ac2354048a1"
+    ):
+        raise V13BuildError("v1.3.1 historical package requires canonical corpus")
+    package = {
+        relative: _json(REPOSITORY_ROOT / relative)
+        for relative in SELF_MATERIAL_HASH_FIELD
+    }
+    for relative, document in package.items():
+        self_material_hash(relative, document)
+    return package

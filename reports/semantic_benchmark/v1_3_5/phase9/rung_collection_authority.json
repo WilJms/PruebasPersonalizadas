@@ -1,0 +1,40 @@
+{
+  "benchmark_version": "semantic-benchmark/1.3.5",
+  "frozen_ladders": {
+    "P04": [
+      "HIGH",
+      "XHIGH"
+    ],
+    "P06": [
+      "HIGH",
+      "XHIGH",
+      "MAX"
+    ],
+    "P07": [
+      "HIGH",
+      "XHIGH",
+      "MAX"
+    ],
+    "P09": [
+      "HIGH",
+      "XHIGH",
+      "MAX"
+    ]
+  },
+  "held_out_may_enter_validation_or_selection": false,
+  "malformed_collection_consequence": "RAISE_RUNG_SELECTION_ERROR",
+  "requirements": [
+    "EVERY_SUPPLIED_RUNG_IS_KNOWN",
+    "RUNG_IDENTITIES_ARE_UNIQUE",
+    "EXECUTED_RUNGS_FORM_A_CONTIGUOUS_FROZEN_LADDER_PREFIX",
+    "A_DEEPER_RUNG_REQUIRES_THE_PRECEDING_RUNG",
+    "A_DEEPER_RUNG_REQUIRES_PRECEDING_REJECTION",
+    "HELD_OUT_MATERIAL_IS_FORBIDDEN",
+    "VALIDATION_COMPLETES_BEFORE_SELECTION"
+  ],
+  "row_order_affects_selection": false,
+  "rung_collection_hash": "sha256:bee091a421683f3e17e54d0118f85cac50f39605b89054324004b0b842a7efcc",
+  "schema_version": "phase9-rung-result-collection/1.3.5",
+  "selector": "select_lowest_qualifying_rung",
+  "selector_source_hash": "sha256:421d1d748b1857cecde30a2369faaaece7fda8ad4f34ced89a97b4081c5eda44"
+}

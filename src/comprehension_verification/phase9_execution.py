@@ -59,6 +59,10 @@ from .semantic_benchmark_fixtures import (
     build_p07_fixture,
     build_p09_fixture,
 )
+from .semantic_benchmark_v135 import (
+    QualificationPromptMismatch,
+    build_qualification_transport_after_prompt_guard,
+)
 
 
 PHASE9_EXECUTION_VERSION: Final = "phase9-execution/1.0.0"
@@ -70,6 +74,17 @@ PHASE9_DEFINITION_ROOT: Final = (
     REPOSITORY_ROOT / "evaluation/semantic_benchmark/v1_1/phase9"
 )
 EXECUTION_EVIDENCE_ROOT: Final = BENCHMARK_REPORT_ROOT / "phase9/executions"
+V135_PROMPT_AUTHORITY_PATH: Final = (
+    REPOSITORY_ROOT
+    / "evaluation/semantic_benchmark/v1_3_5/phase9/executable_prompt_authority.json"
+)
+V135_EXECUTION_CONTRACT_PATH: Final = (
+    REPOSITORY_ROOT
+    / "evaluation/semantic_benchmark/v1_3_5/phase9/candidate_execution_contract.json"
+)
+EXPECTED_V135_PROMPT_AUTHORITY_HASH: Final = (
+    "sha256:820396b80101c79478e6cd1b9914a6cae6931dc055c1199e9e533bc3c6e2c3e9"
+)
 
 EXPECTED_BENCHMARK_BOUNDARY_HASH: Final = (
     "sha256:426dda4d560a8d7d53639dfbaa0773c28565450f06e8ff62d51a8cd1bd6f62ff"
@@ -1106,6 +1121,53 @@ def default_adapter_factory(api_key: SecretStr) -> Any:
     )
 
 
+def _build_v135_prompt_guarded_transport(
+    *,
+    candidate: AuthorizedCandidate,
+    api_key: SecretStr,
+    adapter_factory: Any = default_adapter_factory,
+    live_specs: Mapping[str, Any] | None = None,
+) -> Any:
+    """Validate the current prompt freeze immediately before adapter creation."""
+
+    try:
+        frozen_prompt_authority = json.loads(
+            V135_PROMPT_AUTHORITY_PATH.read_text(encoding="utf-8")
+        )
+        frozen_execution_contract = json.loads(
+            V135_EXECUTION_CONTRACT_PATH.read_text(encoding="utf-8")
+        )
+    except (OSError, json.JSONDecodeError) as exc:
+        raise Phase9ExecutionError(
+            "PHASE9_EXECUTABLE_PROMPT_AUTHORITY_UNAVAILABLE",
+            "the frozen v1.3.5 prompt authority cannot be loaded",
+        ) from exc
+    if (
+        frozen_prompt_authority.get("prompt_authority_hash")
+        != EXPECTED_V135_PROMPT_AUTHORITY_HASH
+    ):
+        raise Phase9ExecutionError(
+            "PHASE9_EXECUTABLE_PROMPT_AUTHORITY_MISMATCH",
+            "the frozen v1.3.5 prompt authority is not the expected publication",
+        )
+    kwargs: dict[str, Any] = {}
+    if live_specs is not None:
+        kwargs["live_specs"] = live_specs
+    try:
+        return build_qualification_transport_after_prompt_guard(
+            stage=candidate.stage,
+            prompt_id=candidate.prompt_id,
+            frozen_prompt_authority=frozen_prompt_authority,
+            frozen_execution_contract=frozen_execution_contract,
+            transport_factory=lambda: adapter_factory(api_key),
+            **kwargs,
+        )
+    except QualificationPromptMismatch as exc:
+        raise Phase9ExecutionError(
+            "PHASE9_EXECUTABLE_PROMPT_AUTHORITY_MISMATCH", str(exc)
+        ) from exc
+
+
 async def _execute_logical_call(
     *,
     call: LogicalCall,
@@ -1141,7 +1203,12 @@ async def _execute_logical_call(
             )
         account.admit(candidate, projected)
 
-        adapter = CapturingAdapter(adapter_factory(api_key), max_requests=1)
+        guarded_transport = _build_v135_prompt_guarded_transport(
+            candidate=candidate,
+            api_key=api_key,
+            adapter_factory=adapter_factory,
+        )
+        adapter = CapturingAdapter(guarded_transport, max_requests=1)
         gateway = _gateway_for(
             candidate, adapter, job_id=f"job_phase9b1_{call.case.stage.lower()}"
         )

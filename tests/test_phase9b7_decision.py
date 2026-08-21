@@ -16,6 +16,7 @@ from pathlib import Path
 
 import pytest
 
+from comprehension_verification.canonical import canonical_hash
 from comprehension_verification.future_stage_boundary_plan import (
     CORPUS_DEPENDENT_STAGES,
     MINIMUM_NO_CORPUS_CHANGE_STAGE_BOUNDARIES,
@@ -276,11 +277,21 @@ def test_the_phase9b7_decision_path_creates_no_benchmark_version() -> None:
         assert "v1_3" not in source, f"{module} must not reach into v1.3 authority"
 
 
-def test_the_published_artifact_reproduces_byte_for_byte() -> None:
+def test_the_published_artifact_remains_immutable_and_self_consistent() -> None:
     if not ARTIFACT.exists():
         pytest.skip("artifact not built in this working tree")
     published = json.loads(ARTIFACT.read_text(encoding="utf-8"))
-    assert published["decision_hash"] == phase9b7_decision(CORPUS_ROOT)["decision_hash"]
+    assert published["decision_hash"] == canonical_hash(
+        {key: value for key, value in published.items() if key != "decision_hash"}
+    )
+    current = phase9b7_decision(CORPUS_ROOT)
+    assert published["decision_matrix"] == current["decision_matrix"]
+    assert published["n3_protocol_surface"]["schema_version"] == (
+        "p06-n3-contractual-safety-protocol/1.1.0"
+    )
+    assert current["n3_protocol_surface"]["schema_version"] == (
+        "p06-n3-contractual-safety-protocol/1.2.0"
+    )
 
 
 # --------------------------------------------------------------------------

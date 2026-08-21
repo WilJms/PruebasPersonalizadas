@@ -1,0 +1,45 @@
+{
+  "changed": {
+    "active_stage_boundaries": [
+      "P04",
+      "P06",
+      "P07",
+      "P09"
+    ],
+    "n3_adjudication_identity": "EXPOSURE_PSEUDONYM_PLUS_RUN_INDEX",
+    "n3_axis_hash_transition": {
+      "after": "sha256:0add76d694432b3a8cc7f53a2f6e0d4cef10aa69e893121a638d7d8ffa8c6eec",
+      "before": "sha256:2a2ae98be319ef12b6adc821ce6c86ea5895021d1dac441a92d285793976ea70"
+    },
+    "n3_provider_fixture_set_hash_transition": {
+      "after": "sha256:9e00281c1d54a9436766105d6ba27aaae01564bd38182cfb4bd64e427b8ec310",
+      "before": "sha256:f53ec77ae4c26732644083d10497e65e1a1bc34f830e675aa4848669d106c62d",
+      "change_reason": "fixture authority now binds exposure/run identities and run-derived stage call counts",
+      "provider_request_hashes_changed": false
+    },
+    "p06_observation_bindings_hash": "sha256:d0d2bd909dd0b3137387b04c9a38995cb72baf0ce0ca6b442783cf93af76581c",
+    "p06_provider_request_count": {
+      "after_submission_grouped": 45,
+      "before_route_isolated": 71
+    },
+    "p06_request_set_hash": "sha256:7c1698189001ae48f80895cf07390cda811b652574401f4b5d1ce662de9ce960",
+    "prompt_authority_hash": "sha256:820396b80101c79478e6cd1b9914a6cae6931dc055c1199e9e533bc3c6e2c3e9",
+    "rung_collection_validation": true
+  },
+  "delta_hash": "sha256:bef40e9228cb5cb3a17ccaacfbdaec49e130adabd487fa4b8d56aa8fea1d81ee",
+  "from_version": "semantic-benchmark/1.3.4",
+  "no_claim_of_byte_carry_forward_for_changed_material": true,
+  "schema_version": "semantic-benchmark-convergence-delta/1.3.5",
+  "to_version": "semantic-benchmark/1.3.5",
+  "unchanged": {
+    "candidate_identities": true,
+    "corpus_package_hash": "21c21f3a53bfb786162dc350dc38c93b7b007d9f23b744a354de4ac2354048a1",
+    "executable_p06_route_count": 71,
+    "p06_candidate_scoring_property_count": 69,
+    "p06_property_observation_count": 71,
+    "product_pipeline_architecture": true,
+    "semantic_bars": true,
+    "u3_status_scope": true
+  },
+  "v134_bytes_modified": false
+}

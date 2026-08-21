@@ -977,66 +977,22 @@ def self_material_hash(path: str, document: Mapping[str, Any]) -> str | None:
 
 
 def v134_package(build: V13Build) -> dict[str, dict[str, Any]]:
-    """Return every generated 1.3.4 document without writing any file."""
+    """Return immutable published 1.3.4 evidence after the live protocol moves.
 
-    carried = republished_documents()
-    fixtures = n3_provider_fixture_authority(build.corpus_root)
-    _assert_provider_fixtures_unchanged(fixtures)
-    n3_axis = n3_axis_v134(build)
-    disposition = carried[
-        f"{DEFINITION_ROOT}/phase9/uncertain_coverage_disposition.json"
-    ]
-    claim = semantic_qualification_claim_v134(build)
-    boundaries = stage_boundaries_v134(n3_axis, claim)
-    global_boundary = benchmark_boundary_v134(
-        n3_axis, claim, disposition, boundaries
-    )
-    matrix = candidate_matrix_v134(
-        benchmark_boundary_hash=global_boundary["benchmark_boundary_hash"]
-    )
-    protocol = qualification_protocol_v134(
-        n3_axis,
-        claim,
-        benchmark_boundary=global_boundary,
-        candidate_matrix=matrix,
-    )
-    equality = carry_forward_equality_proof_v134(
-        build, n3_axis, claim, matrix, boundaries
-    )
-    lineage = lineage_v134()
+    v1.3.5 advances executable N3 and fixture authority.  Re-running those live
+    builders under a historical version label would silently rewrite 1.3.4, so
+    the historical accessor now reads exactly the already-published documents
+    registered by its manifest contract.
+    """
 
-    package: dict[str, dict[str, Any]] = {
-        **carried,
-        f"{DEFINITION_ROOT}/phase9/n3_contractual_safety_axis.json": n3_axis,
-        f"{DEFINITION_ROOT}/phase9/semantic_qualification_claim.json": claim,
-        f"{DEFINITION_ROOT}/phase9/qualification_protocol.json": protocol,
-        f"{DEFINITION_ROOT}/phase9/candidate_matrix.json": matrix,
-        f"{REPORT_ROOT}/lineage.json": lineage,
-        f"{REPORT_ROOT}/stage_boundaries.json": boundaries,
-        f"{REPORT_ROOT}/benchmark_boundary.json": global_boundary,
-        f"{REPORT_ROOT}/phase9/semantic_carry_forward_equality_proof.json": equality,
+    if build.package_hash != (
+        "21c21f3a53bfb786162dc350dc38c93b7b007d9f23b744a354de4ac2354048a1"
+    ):
+        raise V13BuildError("v1.3.4 historical package requires canonical corpus")
+    package = {
+        relative: _json(REPOSITORY_ROOT / relative)
+        for relative in SELF_MATERIAL_HASH_FIELD
     }
-    stale = stale_claim_scan_v134(package)
-    decision = product_decision_state_scan_v134(package)
-    freeze = pre_results_freeze_v134(
-        n3_axis,
-        claim,
-        disposition,
-        benchmark_boundary=global_boundary,
-        stage_boundaries=boundaries,
-        qualification_protocol=protocol,
-        candidate_matrix=matrix,
-        lineage=lineage,
-        equality_proof=equality,
-        stale_scan=stale,
-        decision_scan=decision,
-    )
-    package[f"{REPORT_ROOT}/phase9/stale_claim_scan.json"] = stale
-    package[f"{REPORT_ROOT}/phase9/product_decision_state_scan.json"] = decision
-    package[f"{REPORT_ROOT}/phase9/pre_results_instrument_freeze.json"] = freeze
-
-    # Closing validation covers the freeze as an active authority without
-    # inserting self-referential output into either scan artifact.
-    stale_claim_scan_v134(package)
-    product_decision_state_scan_v134(package)
+    for relative, document in package.items():
+        self_material_hash(relative, document)
     return package

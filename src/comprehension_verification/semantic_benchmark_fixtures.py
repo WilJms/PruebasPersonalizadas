@@ -9,7 +9,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from pathlib import Path
 import re
-from typing import Any
+from typing import Any, Mapping, Sequence
 
 from .canonical import canonical_hash, stable_id
 from .contracts import models as m
@@ -29,6 +29,9 @@ from .question_generation import (
 
 P04_FIXTURE_BUILDER_VERSION = "semantic-benchmark-fixture-p04/1.1.1"
 P06_FIXTURE_BUILDER_VERSION = "semantic-benchmark-fixture-p06/1.1.0"
+P06_SUBMISSION_FIXTURE_BUILDER_V135_VERSION = (
+    "semantic-benchmark-fixture-p06-submission/1.3.5"
+)
 PLANNER_FIXTURE_BUILDER_VERSION = "semantic-benchmark-fixture-planner/1.0.0"
 P07_FIXTURE_BUILDER_VERSION = "semantic-benchmark-fixture-p07/1.1.0"
 P09_FIXTURE_BUILDER_VERSION = "semantic-benchmark-fixture-p09/1.1.0"
@@ -341,6 +344,183 @@ def build_p06_fixture(
         evidence_bundle=bundle,
     )
     return request, build_evidence_mapping_alias_envelope(request)
+
+
+def build_p06_submission_fixture_v135(
+    *,
+    submission_fixture_id: str,
+    routes: Sequence[Mapping[str, Any]],
+    bundle: m.EvidenceBundle,
+) -> tuple[
+    m.EvidenceMapRequest,
+    m.EvidenceMappingAliasEnvelope,
+    tuple[dict[str, str], ...],
+]:
+    """Build one production-shaped P06 request for a complete submission group.
+
+    Each input row names one already-authorized semantic route and its neutral
+    model-visible definition.  The function combines every row into one
+    approved ``AssessmentBlueprint`` and then delegates alias construction to
+    the production ``build_evidence_mapping_alias_envelope()`` implementation.
+    It accepts no property IDs, expected support status or oracle outcome.
+    """
+
+    ordered = sorted(routes, key=lambda item: str(item["route_fixture_id"]))
+    if not ordered:
+        raise ValueError("a P06 submission fixture requires at least one route")
+    route_ids = [str(item["route_fixture_id"]) for item in ordered]
+    if len(route_ids) != len(set(route_ids)):
+        raise ValueError("P06 submission fixture route identities must be unique")
+
+    dimensions: list[m.BlueprintDimension] = []
+    response_format_values: set[m.ResponseFormat] = set()
+    criterion_ids: list[str] = []
+    alias_bindings: list[dict[str, str]] = []
+    for index, route in enumerate(ordered, start=1):
+        route_fixture_id = str(route["route_fixture_id"])
+        definition = dict(route["model_visible_definition"])
+        operation = m.CognitiveOperation(definition["cognitive_operation"])
+        response_formats = [
+            m.ResponseFormat(value) for value in definition["response_formats"]
+        ]
+        response_format_values.update(response_formats)
+        requirement = definition["evidence_requirement"]
+        criterion_id = stable_id(
+            "criterion_p06_submission_v135", submission_fixture_id, route_fixture_id
+        )
+        outcome_id = stable_id(
+            "outcome_p06_submission_v135", submission_fixture_id, route_fixture_id
+        )
+        dimension_id = stable_id(
+            "dimension_p06_submission_v135", submission_fixture_id, route_fixture_id
+        )
+        variant_id = stable_id(
+            "variant_p06_submission_v135", submission_fixture_id, route_fixture_id
+        )
+        template_id = stable_id(
+            "template_p06_submission_v135", submission_fixture_id, route_fixture_id
+        )
+        template = m.QuestionOpportunityTemplate(
+            opportunity_template_id=template_id,
+            cognitive_operation=operation,
+            focus=definition["focus"],
+            observable=definition["observable"],
+            difficulty=m.DifficultyBand.MEDIUM,
+            target_minutes=5,
+            allowed_anchor_structures=[m.AnchorStructure.SINGLE_FRAGMENT],
+            allowed_response_formats=response_formats,
+            verification_potential=0.9,
+            minimum_quality=0.75,
+            student_justification_required=True,
+        )
+        variant = m.EvidenceVariant(
+            variant_id=variant_id,
+            name=definition["construct"],
+            description=definition["construct_description"],
+            evidence_requirement=m.EvidenceRequirement(
+                allowed_modalities=[
+                    m.EvidenceModality(value)
+                    for value in requirement["allowed_modalities"]
+                ],
+                min_distinct_units=requirement["min_distinct_units"],
+                min_extraction_confidence=0.70,
+                min_alignment=0.65,
+                cross_artifact_required=requirement["cross_artifact_required"],
+                course_sources_allowed=False,
+            ),
+            verification_potential=0.9,
+            supported_operations=[
+                m.SupportedOperation(
+                    cognitive_operation=operation,
+                    support_strength=0.9,
+                    rationale=(
+                        "El criterio autorizado de la actividad define una "
+                        "relacion verificable sobre evidencia localizada de una "
+                        "sola entrega."
+                    ),
+                )
+            ],
+            question_opportunities=[template],
+        )
+        dimensions.append(
+            m.BlueprintDimension(
+                dimension_id=dimension_id,
+                name=definition["construct"],
+                criterion_ids=[criterion_id],
+                learning_outcome_ids=[outcome_id],
+                grading_weight=None,
+                verification_priority=0.9,
+                factors=m.VerificationFactors(
+                    learning_relevance=0.9,
+                    centrality=0.9,
+                    expected_evidence=0.9,
+                    discriminative_potential=0.9,
+                    auditability=0.9,
+                    short_response_observability=0.9,
+                ),
+                justification=definition["construct_description"],
+                evidence_variants=[variant],
+            )
+        )
+        criterion_ids.append(criterion_id)
+        alias_bindings.append(
+            {
+                "route_fixture_id": route_fixture_id,
+                "dimension_alias": f"D{index}",
+                "variant_alias": f"V{index}",
+                "template_alias": f"T{index}",
+                "dimension_id": dimension_id,
+                "variant_id": variant_id,
+                "opportunity_template_id": template_id,
+            }
+        )
+
+    planning_policy = m.AssessmentPlanningPolicy(
+        policy_id=stable_id("planning_policy_p06_submission_v135", submission_fixture_id),
+        minimum_opportunity_quality=0.75,
+        minimum_evidence_fit=0.70,
+        max_reserve_opportunities=0,
+    )
+    blueprint = m.AssessmentBlueprint(
+        blueprint_id=stable_id("blueprint_p06_submission_v135", submission_fixture_id),
+        blueprint_version=1,
+        activity_id=bundle.activity_id,
+        status=m.WorkflowStatus.APPROVED,
+        context_mode=m.ContextMode.CLOSED,
+        dimensions=dimensions,
+        assessment_constraints=m.AssessmentConstraints(
+            question_count=len(dimensions),
+            target_total_minutes=5 * len(dimensions),
+            allowed_response_formats=sorted(
+                response_format_values, key=lambda item: item.value
+            ),
+            minimum_opportunity_quality=0.75,
+            max_reserve_opportunities=0,
+            priority_criterion_ids=[],
+            required_criterion_ids=criterion_ids,
+            structured_justification_policy=m.StructuredJustificationPolicy(
+                mode=m.StructuredJustificationMode.ALL,
+                selected_opportunity_template_ids=[],
+            ),
+        ),
+        decision_ids=[],
+        diagnostics=[],
+        approved_by="user_benchmark_teacher",
+        approved_at=FIXED_INSTANT,
+    )
+    request = m.EvidenceMapRequest(
+        blueprint=blueprint,
+        planning_policy=planning_policy,
+        evidence_bundle=bundle,
+    )
+    envelope = build_evidence_mapping_alias_envelope(request)
+    if (
+        len(envelope.dimensions),
+        len(envelope.variants),
+        len(envelope.templates),
+    ) != (len(ordered), len(ordered), len(ordered)):
+        raise ValueError("P06 submission fixture silently collapsed an executable route")
+    return request, envelope, tuple(alias_bindings)
 
 
 def build_planner_fixture(
