@@ -1,0 +1,9 @@
+{
+  "authorization_hash": "sha256:b820f4bfa94de537fe868123fd97060940466da5fbfe9c73d238f0ee61421357",
+  "authorization_id": "phase9-high-smoke-20260821t195155z-3a9043f192fa",
+  "consumed_at": "2026-08-21T19:53:38Z",
+  "execution_boundary_hash": "sha256:41b7d13dbf07da8708f82b28daff7d74d5db73de18508f0a5c464fcc9eae512e",
+  "high_smoke_plan_hash": "sha256:92f29cf2ac22071eed1c556d7f7dde735e302ccaa5d1b1de2645eee29cb4c869",
+  "schema_version": "phase9-authorization-consumption/2.0.2",
+  "state": "CONSUMED_EXACTLY_ONCE"
+}

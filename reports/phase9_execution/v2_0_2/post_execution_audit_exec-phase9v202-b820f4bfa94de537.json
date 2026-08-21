@@ -1,0 +1,146 @@
+{
+  "actual_cost_usd": {
+    "authorized_ceiling": 3.35,
+    "by_surface": {
+      "P04": 0.1789731,
+      "P06_N3": 0.00210609,
+      "P06_SEMANTIC": 0.0037051,
+      "P07": 0.02198176,
+      "P09": 0.00648005
+    },
+    "ceiling_utilization_fraction": 0.0636555522,
+    "ceiling_utilization_percent": 6.36555522,
+    "global_total": 0.2132461,
+    "luna_total": 0.034273,
+    "terra_total": 0.1789731
+  },
+  "audit_hash": "sha256:f2d6fef3f2ea40de8daf0912077791885b0e32575fd1e69ecf257a413eed1fdf",
+  "authorization_approved_at": "2026-08-21T19:51:55Z",
+  "authorization_consumed_at": "2026-08-21T19:53:38Z",
+  "authorization_consumption_state": "CONSUMED_EXACTLY_ONCE",
+  "authorization_expires_at": "2026-08-21T23:51:55Z",
+  "authorization_hash": "sha256:b820f4bfa94de537fe868123fd97060940466da5fbfe9c73d238f0ee61421357",
+  "authorization_id": "phase9-high-smoke-20260821t195155z-3a9043f192fa",
+  "bindings": {
+    "benchmark_version": "semantic-benchmark/1.3.5",
+    "cost_projection_hash": "sha256:a27789f76a19dc4fe9f4d9d5124a774be69036f40babf18a0bd934487f605f9e",
+    "execution_boundary_hash": "sha256:41b7d13dbf07da8708f82b28daff7d74d5db73de18508f0a5c464fcc9eae512e",
+    "execution_version": "phase9-execution/2.0.2",
+    "high_smoke_plan_hash": "sha256:92f29cf2ac22071eed1c556d7f7dde735e302ccaa5d1b1de2645eee29cb4c869",
+    "ordered_logical_call_population_hash": "sha256:fef890ffa1b12e8717edd7cb5e13f7cdbd78b1e3eb9284aea20a21b29f45553e",
+    "pricing_snapshot_hash": "sha256:473857448d87f6507f3d626af5d8061c62d0830b949f6a489f6e1260feb82d55",
+    "protocol_version": "phase9-qualification-protocol/1.3.5"
+  },
+  "evidence": {
+    "authorization": {
+      "canonical_hash": "sha256:b820f4bfa94de537fe868123fd97060940466da5fbfe9c73d238f0ee61421357",
+      "file_sha256": "sha256:86589a5041661529f208e9b9763aaf61c2d8a2eea47b1a3b8fdc99c403bfb6b5",
+      "path": "evaluation/phase9_execution/v2_0_2/billable_authorization.json"
+    },
+    "authorization_ledger": {
+      "canonical_hash": "sha256:722897cba6551b3f4e87172182a1ede5a7dc3a52fa690dee45e835af516c57e6",
+      "file_sha256": "sha256:908698707cbbd11af29d220c2045ae04c56189a269f40a0a1f6e4a470b580872",
+      "path": "reports/phase9_execution/v2_0_2/authorization_ledger/phase9-high-smoke-20260821t195155z-3a9043f192fa.json"
+    },
+    "execution_manifest": {
+      "canonical_hash": "sha256:3b8647e3226005ccc3bcfa3cf2c3463f1b2499bd3416769fa99a917e7536d49e",
+      "file_sha256": "sha256:f626786485b4cb64c62a0c19c18ccc8f8aaaeab6b0ec173f8dd4215f30fbae76",
+      "path": "reports/phase9_execution/v2_0_2/executions/exec-phase9v202-b820f4bfa94de537/execution_manifest.json"
+    },
+    "execution_result": {
+      "canonical_hash": "sha256:86a3aaded8e57fc3a9f91343c9efeb824bfe7445e5ecc32a4d06f18afa4f2dc8",
+      "file_sha256": "sha256:470ab000810f9028c259bd4a26fa95e93bb21d01e5e5e6a0ba76cce29aaab020",
+      "path": "reports/phase9_execution/v2_0_2/execution_result_phase9-high-smoke-20260821t195155z-3a9043f192fa.json"
+    }
+  },
+  "execution_counts": {
+    "adjudicator_calls": 0,
+    "by_surface": {
+      "P04": {
+        "completed": 0,
+        "failed": 3,
+        "planned": 3,
+        "provider_invocations": 3
+      },
+      "P06_N3": {
+        "completed": 2,
+        "failed": 1,
+        "planned": 3,
+        "provider_invocations": 3
+      },
+      "P06_SEMANTIC": {
+        "completed": 1,
+        "failed": 2,
+        "planned": 3,
+        "provider_invocations": 3
+      },
+      "P07": {
+        "completed": 9,
+        "failed": 9,
+        "planned": 18,
+        "provider_invocations": 18
+      },
+      "P09": {
+        "completed": 0,
+        "failed": 3,
+        "planned": 3,
+        "provider_invocations": 3
+      }
+    },
+    "failure_codes": {
+      "MODEL_CONTEXT_NOT_ALLOWLISTED": 3,
+      "MODEL_PROVIDER_ERROR": 15
+    },
+    "provider_logical_calls_completed": 12,
+    "provider_logical_calls_failed": 18,
+    "provider_logical_calls_planned": 30,
+    "provider_prompt_ids": {
+      "P04_BLUEPRINT_BUILD_V1": 3,
+      "P06_EVIDENCE_MAP_V1": 6,
+      "P07_QUESTION_BUILD_V1": 18,
+      "P09_GUIDE_BUILD_V1": 3
+    },
+    "technical_retries_used": 0,
+    "total_provider_invocations": 30
+  },
+  "execution_id": "exec-phase9v202-b820f4bfa94de537",
+  "forbidden_call_proof": {
+    "CORE": 0,
+    "HELD_OUT": 0,
+    "MAX": 0,
+    "P11": 0,
+    "XHIGH": 0,
+    "adjudicator": 0,
+    "fallback": 0,
+    "gpt-5.6-sol": 0,
+    "semantic_retry": 0
+  },
+  "generated_at": "2026-08-21T20:03:24Z",
+  "immutable_scope": {
+    "execution_v2_0_0_modified": false,
+    "execution_v2_0_1_modified": false,
+    "published_v2_0_2_boundary_pricing_request_authority_cost_projection_modified": false,
+    "semantic_benchmark_modified": false
+  },
+  "packet_counts": {
+    "adjudication_packets_emitted": 0,
+    "blind_bundle_paths_persisted": 0,
+    "n3_computed_before_incomplete_disposition": 2,
+    "p06_semantic_observations_computed": 2,
+    "semantic_computed_before_incomplete_disposition": 18
+  },
+  "persisted_token_usage": {
+    "attempt_rows_with_all_four_billable_dimensions": 12,
+    "attempt_rows_without_billable_token_dimensions": 18,
+    "cache_write_input_tokens": 10243,
+    "cached_input_tokens": 22850,
+    "coverage": "PARTIAL_12_OF_30_ATTEMPT_ROWS",
+    "input_tokens": 33129,
+    "interpretation": "TOKEN_TOTALS_ARE_EXACT_ONLY_FOR_THE_12_COMPLETED_ROWS_AND_MUST_NOT_BE_REPRESENTED_AS_ALL_30_INVOCATIONS",
+    "output_tokens": 20640,
+    "reasoning_token_evidence": "NOT_PERSISTED_BY_PHASE9_EXECUTION_2_0_2",
+    "reasoning_tokens": null
+  },
+  "schema_version": "phase9-post-execution-audit/2.0.2",
+  "status": "PHASE9_SMOKE_GENERATION_INCOMPLETE"
+}
