@@ -21,11 +21,19 @@ La unidad canónica no es un PDF ni un bloque de texto plano. Es un objeto JSON 
 La solución usa dos pipelines:
 
 1. **Pipeline de actividad**, ejecutado una vez: normaliza consigna y rúbrica, resuelve ambigüedades, construye el blueprint y lo somete a aprobación docente.
-2. **Pipeline por estudiante**, ejecutado en paralelo: inspecciona y normaliza archivos, mapea evidencia a variantes del blueprint, construye oportunidades de pregunta, planifica determinísticamente exactamente \(N\) oportunidades primarias y una reserva pequeña, genera y valida las \(N\) preguntas, y persiste la evaluación junto con su guía estructurada.
+2. **Pipeline por estudiante**, ejecutado en paralelo: inspecciona y normaliza archivos, P06 mapea evidencia a variantes del blueprint, el planner selecciona exactamente \(N\) oportunidades primarias y una reserva pequeña, P07 genera, el backend valida, el docente revisa/aprueba y P09 crea la guía estructurada.
 
 El modelo de IA nunca recibe herramientas, red, shell ni capacidad para ejecutar código del estudiante. Los archivos se tratan como entrada hostil: cuarentena, detección real de tipo, antivirus, límites de descompresión, parsing en sandbox sin red y sanitización de contenido activo. Las instrucciones contenidas dentro de un entregable se consideran datos y no órdenes. Los outputs de modelos se validan contra esquemas y contra la evidencia fuente; cumplimiento de un JSON Schema no equivale a verdad semántica.
 
-Para el MVP se recomienda un monolito modular en Python/FastAPI desplegado como Cloud Run Service, PostgreSQL y Auth de Supabase, objetos privados en Cloudflare R2 y trabajos largos en Cloud Run Jobs con estado durable en PostgreSQL, sin Redis inicial. La interfaz React/TypeScript/Vite se sirve al comienzo desde el mismo contenedor. El gateway resuelve configuraciones aprobadas —proveedor, snapshot, modelo, `reasoning_effort`, temperatura y límites— antes de cada llamada. La matriz inicial fija Sol-medium para P01/P02, Luna-high para P03, Sol-high para P04/P05, Luna-high para P06-P09, un bake-off abierto para P10 y Luna-minimal con temperatura 0 para P11. Terra no es el default: solo entra si una evaluación propia demuestra ventaja sobre Luna-high. OpenAI es la primera familia, no la única; Claude Sonnet y Gemini 3.6 Flash son comparadores principales.
+Para el MVP se recomienda un monolito modular en Python/FastAPI desplegado como Cloud Run Service, PostgreSQL y Auth de Supabase, objetos privados en Cloudflare R2 y trabajos largos en Cloud Run Jobs con estado durable en PostgreSQL, sin Redis inicial. La interfaz React/TypeScript/Vite se sirve al comienzo desde el mismo contenedor. El gateway conserva configuraciones históricas aprobadas —proveedor, snapshot, modelo, `reasoning_effort`, temperatura y límites—, pero ADR-037 no cambia ni usa esa matriz para seleccionar modelo. El pipeline objetivo mantiene P01-P04, P06/P07/P09, deja P05/P08 inactivos y P10 deshabilitado. Cualquier comparación futura requiere un instrumento nuevo y autoridad humana separada.
+
+**Estado operativo Fase 7 (2026-08-16):** P05 y P08 ya fueron retirados del
+runtime activo. P06 entrega mapping semántico local, el planner decide
+N/factibilidad y P07 entrega un draft alias-only que el servidor materializa y
+valida. El flujo ensambla exactamente N y publica `Assessment.NEEDS_REVIEW` sin
+P09. Después de edición/regeneración/rechazo, una aprobación docente exacta se
+persiste y crea un job durable `GUIDE_BUILD`; P09 enriquece una sola vez esa
+versión, sin revisar ni modificar preguntas. P10 permanece deshabilitado.
 
 El alcance inmediato es todavía más estrecho que el MVP institucional descrito en v1.0: una aplicación web experimental, carga manual, contexto cerrado, un proveedor principal, revisión humana obligatoria y un primer anillo de PDF digital, DOCX, TXT y Markdown. OCR, presentaciones, hojas de cálculo y código se añaden solo después de comprobar el recorrido principal. LTI y conectores Canvas/Moodle/Blackboard permanecen en la arquitectura futura.
 
@@ -354,14 +362,26 @@ Nunca se pierde el original. La normalización no “corrige” silenciosamente 
 
 ## 6.3 Ancla
 
-Un `Anchor` es una vista autocontenida de una o más unidades. Debe cumplir:
+P07 distingue dos fronteras. **Support evidence** es toda la evidencia
+server-owned de la `QuestionOpportunity` que sustenta operación, foco,
+observable, answerability y observables esperados. El **visible anchor** es el
+subconjunto que se presenta al estudiante para localizar la pregunta y aportar
+sus premisas. Debe cumplirse
+`anchor evidence ⊆ candidate.evidence_ids = opportunity.evidence_ids`.
+
+Un `Anchor` es la vista canónica autocontenida de una o más unidades visibles.
+P07 selecciona exclusivamente aliases `E*`; el backend recupera texto,
+modalidad y locator desde `EvidenceUnit` y deriva una transformación permitida.
+El modelo no redacta `display_text`, no copia locators y no convierte una
+paráfrasis en evidencia. El anchor debe cumplir:
 
 1. fidelidad literal o transformación declarada;
 2. localizador reproducible;
 3. contexto suficiente para entender la pregunta;
 4. longitud mínima compatible con lo anterior;
 5. ausencia de información no autorizada;
-6. no revelar directamente la respuesta esperada;
+6. no contener ya la conclusión completa exigida por los observables mediante
+   copia o paráfrasis trivial, sin ocultar premisas necesarias;
 7. presentación accesible para su modalidad.
 
 Ejemplos:
@@ -445,12 +465,17 @@ Docling ofrece un modelo unificado para PDF, Office, imágenes y otros formatos,
 
 # 8. Pipeline de actividad
 
+ADR-037 fija la autoridad objetivo de esta sección. El modelo propone la
+estructura pedagógica en P04; el backend ejecuta el preflight y el docente
+decide la aprobación académica. P05 se conserva sólo como contrato y evidencia
+histórica durante la migración.
+
 ```mermaid
 flowchart TB
     A["Ingestar consigna, rúbrica\ny corpus opcional"] --> B["Normalizar requisitos\ny criterios"]
     B --> C["Detectar ambigüedades\ny pedir resolución"]
     C --> D["Construir blueprint\ncomún"]
-    D --> E["Validación determinista\ny semántica"]
+    D --> E["Preflight determinista"]
     E --> F{¿Aprobación docente?}
     F -->|No| C
     F -->|Sí| G["Congelar versión\ny abrir lote"]
@@ -466,7 +491,7 @@ flowchart TB
 6. **Resolver con docente:** preguntas concretas con default recomendado; las respuestas se versionan como `PolicyDecision`.
 7. **Calcular prioridad de verificación:** separada del peso de nota.
 8. **Diseñar el catálogo:** dimensiones relevantes/evaluables, variantes de evidencia, operaciones soportadas y oportunidades de pregunta por variante.
-9. **Validar blueprint:** relevancia, cobertura conceptual, unicidad, accesibilidad y factibilidad esperada; el catálogo no se dimensiona por `question_count`.
+9. **Preflight de blueprint:** el backend comprueba IDs, versiones, hashes, pertenencia, allowlists, formatos, conteo, tiempo, restricciones y factibilidad; el catálogo no se dimensiona por `question_count`.
 10. **Aprobar y congelar:** `blueprint_version` inmutable para el lote; cambios posteriores crean nueva versión y requieren decisión sobre regeneración.
 
 ## 8.2 Prioridad de verificación
@@ -505,45 +530,63 @@ La comparabilidad es la naturaleza del blueprint y no un modo seleccionable. La 
 
 # 9. Pipeline por estudiante
 
+ADR-037 mantiene P06/P07/P09 y el planner, pero retira P08 de la secuencia
+objetivo. Las validaciones mecánicas pertenecen al backend y la decisión
+semántica final de cada pregunta pertenece al docente.
+
+Fase 7 completa el orden objetivo. P07 y el backend producen exactamente N,
+ASSEMBLE persiste primero `Assessment.NEEDS_REVIEW`, el docente decide y sólo
+una aprobación durable habilita P09 como enriquecimiento de guía.
+
 ```mermaid
 flowchart TB
     A["Cuarentena e ingesta"] --> B["IR con procedencia"]
-    B --> C["Mapa de evidencia\ny cobertura"]
-    C --> D["Mapear variantes y\nconstruir oportunidades"]
-    D --> E{¿Plan exacto de N?}
+    B --> C["P06: relaciones locales\ny soporte categórico"]
+    C --> D["Materializador: aliases a\nEvidenceMapPatch canónico"]
+    D --> E{¿Planner construye\nplan exacto de N?}
     E -->|No| X["Diagnóstico específico\nsin evaluación parcial"]
     E -->|Sí| F["Generar N preguntas"]
-    F --> G["Validar cada pregunta"]
+    F --> G["Validaciones deterministas"]
     G --> H{¿Todas válidas?}
     H -->|No| X
-    H -->|Sí| I["Guía estructurada + vistas"]
-    I --> J["Revisión docente"]
+    H -->|Sí| I["ASSEMBLE: Assessment NEEDS_REVIEW"]
+    I --> K["Revisión/edición/regeneración docente"]
+    K --> L["Aprobación durable exacta"]
+    L --> J["P09: enriquecimiento de guía"]
+    J --> M["Materialización + Guide READY"]
 ```
 
-## 9.1 Cobertura y suficiencia
+## 9.1 Mapping local y suficiencia global
 
-Para cada dimensión y variante del blueprint se calcula:
+P06 evalúa cada relación material entre una ruta del blueprint y evidencia de
+una sola submission. Su resultado local es `SUFFICIENT`, `PARTIAL`,
+`INSUFFICIENT` o `UNCERTAIN`, junto con tipo/descripción de soporte y abstención
+si corresponde. El provider no recibe N ni produce cobertura global, selección
+o scores continuos para cruzar thresholds. El servidor valida unidades
+distintas, modalidad, extracción, artefactos cruzados, pertenencia y ruta antes
+de aceptar un `SUFFICIENT`.
 
-- número de unidades distintas;
-- calidad media/mínima de extracción;
-- fuerza de alineación con criterio;
-- especificidad del fragmento;
-- diversidad de artefactos;
-- oportunidades de pregunta no redundantes;
-- riesgo de ambigüedad o de revelar respuesta.
+Un `EvidenceMapPatch.status=READY` significa que el mapping terminó, incluso si
+su resumen contiene cero o menos de N relaciones suficientes. Se preservan las
+relaciones parciales, insuficientes e inciertas como diagnóstico durable; no se
+publican preguntas a partir de ellas.
 
-Resultados de planificación:
+Después, el planner determinista es la única autoridad de factibilidad global:
 
-- `READY`: existe un plan con exactamente \(N\) oportunidades primarias y, como máximo, una reserva pequeña;
-- `INSUFFICIENT_RELEVANT_EVIDENCE`: no hay evidencia pertinente suficiente para los criterios de la actividad;
-- `INSUFFICIENT_DISTINCT_QUESTION_OPPORTUNITIES`: existe evidencia, pero no permite \(N\) preguntas sustancialmente distintas;
-- `EVIDENCE_MAPPING_UNCERTAIN`: la correspondencia dimensión-variante-evidencia no alcanza la confianza exigida;
-- `ASSESSMENT_PLAN_INFEASIBLE`: las oportunidades válidas no satisfacen conjuntamente tiempo, calidad u otras restricciones no relajables;
-- `TECHNICAL_FAILURE` o `REJECTED_SECURITY`: el procesamiento no fue confiable o violó una política.
+- `READY`: existe un plan con exactamente \(N\) oportunidades primarias y, como
+  máximo, la reserva permitida;
+- `INSUFFICIENT_RELEVANT_EVIDENCE`: no existe ninguna oportunidad suficiente;
+- `INSUFFICIENT_DISTINCT_QUESTION_OPPORTUNITIES` o
+  `EVIDENCE_MAPPING_UNCERTAIN`: se conservan sólo al leer un patch P06 histórico
+  que terminó con esos estados;
+- `ASSESSMENT_PLAN_INFEASIBLE`: las oportunidades `SUFFICIENT` no alcanzan N o
+  no satisfacen conjuntamente cobertura, tiempo, formato, justificación,
+  diversidad y solapamiento;
+- `TECHNICAL_FAILURE` o `REJECTED_SECURITY`: el procesamiento no fue confiable
+  o violó una política.
 
-Los cuatro primeros códigos son diagnósticos precisos y mutuamente interpretables; no existe `READY_WITH_GAPS`. Si el plan no puede tener exactamente \(N\), no se genera ninguna pregunta de esa evaluación.
-
-No se confunde un archivo corto con una falla técnica. Tampoco se penaliza automáticamente un entregable que, por diseño de la actividad, no contiene evidencia de una dimensión: esa es una señal para revisar el blueprint o la tarea.
+No existe `READY_WITH_GAPS`. Si el planner no puede construir exactamente N,
+no se genera ninguna pregunta, aunque el mapping local válido se conserve.
 
 ## 9.2 Operaciones cognitivas
 
@@ -568,12 +611,19 @@ sequenceDiagram
     A->>W: Inicia jobs idempotentes
     W->>P: Extrae IR en sandbox
     P-->>W: Evidencia + procedencia
-    W->>M: Mapea variantes y oportunidades
-    M-->>W: JSON estructurado
+    W->>M: Envelope P06 con aliases locales
+    M-->>W: Draft con soporte categórico
+    W->>W: Materializa patch canónico
     W->>W: Planifica exactamente N
-    W->>M: Genera y valida N preguntas
-    W-->>A: Evaluación + guía + diagnóstico
-    A-->>D: Revisión y aprobación
+    W->>M: Genera N preguntas con P07
+    W->>W: Aplica validaciones deterministas
+    W-->>A: Assessment NEEDS_REVIEW + evidencia + diagnóstico
+    A-->>D: Revisión, edición y regeneración; P09=0
+    D->>A: Aprobación exacta
+    A->>W: Persiste approval y encola GUIDE_BUILD
+    W->>M: P09 enriquece guía de versión aprobada
+    M-->>W: GuideModelDraft alias-only
+    W->>W: Materializa/valida EvaluationGuide
 ```
 
 ---
@@ -582,17 +632,39 @@ sequenceDiagram
 
 ## 10.1 Planificación determinista de oportunidades
 
-P06 mapea `dimension -> variant -> evidence_ids` y construye oportunidades concretas antes de redactar. El planificador elige exactamente \(N=\texttt{question_count}\) oportunidades primarias de alta calidad y unas pocas reservas. El puntaje base es:
+P06 mapea `variant/template -> evidence_ids` y soporte categórico. El servidor
+construye las oportunidades canónicas desde el blueprint antes de redactar. El
+planificador filtra exclusivamente `support_status=SUFFICIENT`, aplica todas
+las restricciones confiables y elige exactamente
+\(N=\texttt{question_count}\) oportunidades primarias más la reserva permitida.
+El ranking base es:
 
 \[
-P_o = w_a A_o + w_e E_o + w_q Q_o - \Pi_{\text{dimensión}} - \Pi_{\text{variante}} - \Pi_{\text{redundancia}}
+P_o = w_a A_o - \Pi_{\text{dimensión}} - \Pi_{\text{variante}} - \Pi_{\text{solapamiento}}
 \]
 
-donde \(A_o\) es la prioridad de actividad, \(E_o\) el ajuste a la evidencia de la submission y \(Q_o\) la calidad intrínseca de la oportunidad. Se prefiere diversidad de dimensiones y variantes, pero no de manera rígida si obliga a escoger una oportunidad más débil. Solo se reutiliza evidencia o una variante cuando el foco y el observable son sustancialmente distintos.
+donde \(A_o\) es la prioridad server-owned de la dimensión. Los campos legacy
+`evidence_fit` y `opportunity_quality` no participan en elegibilidad ni ranking:
+se derivan sólo para compatibilidad histórica. Las penalizaciones y el search
+exhaustivo son deterministas; la heurística puede ordenar candidatos, pero
+nunca declarar por sí sola inviabilidad. Sólo se reutiliza evidencia o una
+variante cuando los constraints de solapamiento, foco y observable lo permiten.
 
 ## 10.2 Generación de preguntas
 
-Para cada oportunidad primaria se envía un paquete pequeño: fragmentos y localizadores exactos, operación permitida, foco, observable, restricciones, fuentes autorizadas si aplican e IDs opacos. El modelo genera una sola pregunta por oportunidad; el sistema no usa `candidate_multiplier` ni produce 3-5 candidatos por slot.
+Para cada oportunidad primaria, el servidor proyecta un
+`QuestionAliasEnvelope`: operación, foco, observable, formato seleccionado,
+dificultad, tiempo, idioma, justificación, estructuras permitidas, constraints y
+support evidence textual/estructurada mediante aliases locales. IDs canónicos,
+locators, lineage y workflow state no forman parte del output provider.
+
+El modelo genera un `QuestionModelDraft` con una sola pregunta, aliases del
+visible anchor, observables ligados a support aliases, alternativas,
+misconceptions, choices/rationales e incertidumbre o reemplazo. Un
+materializador determinista crea `QuestionGenerationResult`/`QuestionCandidate`,
+copia todos los campos confiables y reconstruye el anchor exacto. No mejora la
+redacción ni cambia la oportunidad. El sistema no usa `candidate_multiplier`
+ni produce 3-5 candidatos por slot.
 
 ## 10.3 Validaciones deterministas
 
@@ -600,19 +672,24 @@ Para cada oportunidad primaria se envía un paquete pequeño: fragmentos y local
 - todos los IDs existen y pertenecen al tenant/entrega;
 - hash y localizadores coinciden;
 - ancla es substring o transformación explícita de evidencia;
+- support evidence coincide con la oportunidad y el anchor visible es su
+  subconjunto server-reconstructed;
 - límites de longitud, idioma y caracteres;
 - ausencia de PII no requerida y secretos detectables;
 - no contiene instrucciones del sistema, claves o texto de otros estudiantes;
 - no usa fuentes no autorizadas;
-- pregunta no es vacía, duplicada o respuesta literal del ancla;
+- pregunta no es vacía, duplicada ni enuncia literalmente/casi literalmente
+  todos sus observables; el anchor tampoco contiene la respuesta completa;
 - tiempo y formato admitidos;
 - solapamiento de anclas por debajo del máximo;
 - selección, si existe, tiene una respuesta defendible y cada distractor conserva evidencia fuente, razón y confusión plausible;
 - la exigencia de justificación coincide con la política resuelta para esa actividad/oportunidad.
 
-## 10.4 Validaciones semánticas
+## 10.4 Revisión semántica y autoridad docente
 
-Un prompt independiente evalúa sin conocer la “preferencia” del generador:
+La relación evidencia/constructo, la redacción, los observables y las
+alternativas son propuestas semánticas del modelo. El docente revisa, edita,
+acepta o rechaza considerando:
 
 - fidelidad y grounding;
 - suficiencia/autosuficiencia del ancla;
@@ -625,7 +702,13 @@ Un prompt independiente evalúa sin conocer la “preferencia” del generador:
 - calidad discriminativa entre explicación y paráfrasis;
 - observabilidad de la guía.
 
-La salida estructurada no garantiza corrección. OpenAI advierte que un esquema puede cumplirse incluso cuando el modelo fuerza una respuesta semánticamente incorrecta; por ello existen estos controles y el fail-closed ([Structured Outputs](https://developers.openai.com/api/docs/guides/structured-outputs)).
+La salida estructurada no garantiza corrección. P08 ya no es un gate activo ni
+callable por el runtime del producto. Sus diez scores/decisión, prompts, rutas y
+rows se conservan sólo como historia; no sustituyen la autoridad docente. Los
+invariantes verificables de la
+lista anterior que puedan expresarse mecánicamente deben promoverse a
+validaciones deterministas versionadas; los demás permanecen bajo revisión
+docente.
 
 ## 10.5 Calidad de pregunta
 
@@ -711,21 +794,29 @@ La interfaz y salidas apuntan a WCAG 2.2 AA ([W3C](https://www.w3.org/TR/WCAG22/
 
 ## 12.2 Recomendación inicial
 
-| Prompt | Ruta inicial | `reasoning_effort` | Temperatura |
-|---|---|---|---:|
-| P01 Especificación de actividad | GPT-5.6 Sol | medium | baja |
-| P02 Normalización de rúbrica | GPT-5.6 Sol | medium | baja |
-| P03 Triaje de ambigüedad | GPT-5.6 Luna | high | baja |
-| P04 Construcción de blueprint | GPT-5.6 Sol | high | baja |
-| P05 Revisión de blueprint | GPT-5.6 Sol | high | baja |
-| P06 Mapa de evidencia y oportunidades | GPT-5.6 Luna | high | baja |
-| P07 Generación de pregunta | GPT-5.6 Luna | high | baja |
-| P08 Revisión semántica | GPT-5.6 Luna | high | baja |
-| P09 Guía estructurada | GPT-5.6 Luna | high | baja |
-| P10 Contexto enriquecido | bake-off abierto | según ruta | baja |
-| P11 Reparación de esquema | GPT-5.6 Luna | minimal | 0 |
+La tabla conserva la configuración histórica de rutas y no cambia provider
+routing. Bajo ADR-037, P05/P08 son inactivos en el pipeline objetivo y P10 está
+deshabilitado; ninguna fila histórica constituye un gate de selección de
+modelo.
 
-P10 se decide por un bake-off que prioriza grounding, citas y abstención. Terra no es ruta predeterminada: solo puede sustituir Luna-high cuando una evaluación por tarea demuestra una ventaja medible. La estrategia es OpenAI-first, no OpenAI-only; Claude Sonnet y Gemini 3.6 Flash son los comparadores principales.
+| Prompt | Ruta histórica | `reasoning_effort` | Estado ADR-037 |
+|---|---|---|---|
+| P01 Especificación de actividad | GPT-5.6 Sol | medium | activo objetivo |
+| P02 Normalización de rúbrica | GPT-5.6 Sol | medium | activo objetivo |
+| P03 Triaje de ambigüedad | GPT-5.6 Luna | high | activo objetivo |
+| P04 Construcción de blueprint | GPT-5.6 Sol | high | activo objetivo |
+| P05 Revisión de blueprint | GPT-5.6 Sol | high | histórico/inactivo objetivo |
+| P06 Mapa de evidencia y oportunidades | GPT-5.6 Luna | high | activo objetivo |
+| P07 Generación de pregunta | GPT-5.6 Luna | high | activo objetivo |
+| P08 Revisión semántica | GPT-5.6 Luna | high | histórico/inactivo objetivo |
+| P09 Guía estructurada | GPT-5.6 Luna | high | activo objetivo |
+| P10 Contexto enriquecido | sin ruta activa | — | deshabilitado |
+| P11 Reparación de esquema | GPT-5.6 Luna | minimal | utilidad estructural, no etapa pedagógica |
+
+El diseño histórico reservaba P10 y comparadores para un bake-off. ADR-037 deja
+P10 deshabilitado y declara el harness existente no canónico para selección.
+Cualquier comparación futura entre Luna, Terra, Sol, Claude o Gemini requiere
+un corpus, gate y autorización nuevos; ninguna ocurre en esta iteración.
 
 Sol, Terra y Luna aceptan entrada visual por API, por lo que detectar una imagen no cambia de proveedor por sí solo. Se envía únicamente el crop o unidad sanitizada necesaria. Gemini 3.6 Flash puede ser una alternativa aprobada para tareas multimodales específicas —en particular video, audio o PDF nativos— o cuando el bake-off demuestre ventaja; nunca es fallback genérico automático por latencia o error.
 
@@ -1063,6 +1154,11 @@ Medidas de control:
 
 # 20. Framework de evaluación del producto
 
+El harness semántico y las qualifications ejecutadas antes de ADR-037 son
+evidencia histórica y no un gate canónico para seleccionar modelo. Sus reports
+y receipts se conservan. Un corpus futuro requiere autoridad, provenance y
+gates propios; no se implementa en esta iteración.
+
 ## 20.1 Conjunto dorado
 
 Construir 20-30 actividades iniciales y al menos 200 entregables autorizados/desidentificados, estratificados por disciplina, idioma, calidad, formato y longitud. Dos especialistas anotan de forma independiente:
@@ -1164,7 +1260,7 @@ No incluye LMS/LTI, nota automática, uso sumativo, internet abierto, facturaci�
 6. **Parsing:** contenedor con PyMuPDF, `python-docx`, `libmagic` y ClamAV cuando sea viable; adaptadores posteriores se añaden por gate y nunca ejecutan contenido.
 7. **Planificación:** reglas Python deterministas para exactamente \(N\) primarias y reserva; OR-Tools solo si las restricciones observadas lo justifican.
 8. **Model gateway:** adapter propio sobre SDKs oficiales, catálogo de capacidades/rutas, mocks para tests y llamadas pagadas reales solo en ejecución explícita.
-9. **Modelos:** rutas P01-P11 de §12.2; Terra solo con ventaja medida; Claude Sonnet y Gemini 3.6 Flash como comparadores.
+9. **Modelos:** configuración de rutas retenida para compatibilidad; P05/P08 inactivos objetivo y P10 deshabilitado; comparadores sólo bajo un gate futuro nuevo.
 10. **Render:** plantillas Jinja2 + WeasyPrint para exportación PDF/HTML; guía estructurada y JSON canónico permanecen como fuente primaria.
 11. **CI/CD:** GitHub + Cloud Build o GitHub Actions + despliegue a Cloud Run.
 12. **Observabilidad/seguridad:** logs estructurados, ledger, OpenTelemetry/Sentry según necesidad, secret manager y escaneo de dependencias/contenedor.
@@ -1214,20 +1310,38 @@ No incluye LMS/LTI, nota automática, uso sumativo, internet abierto, facturaci�
 
 # 24. Pipeline de extremo a extremo
 
-## 24.1 Recorrido inmediato del entorno experimental
+## 24.1 Recorrido objetivo del entorno experimental
+
+Este recorrido es el runtime formal. Fase 3 retiró las dependencias activas
+P05 mediante preflight durable y recovery compatible; Fase 5 redujo P07 a
+redacción semántica alias-only y materialización server-side; Fase 6 retiró P08
+con recovery histórico. Fase 7 completó el cutover post-aprobación de P09 con
+job durable, binding exacto y lectura histórica compatible.
 
 1. Usuario autenticado crea actividad y configuración.
 2. Carga/pega consigna y rúbrica opcional; se parsean con procedencia.
-3. P01-P05 producen specs, issues, catálogo de blueprint y review; reglas validan y el docente aprueba.
+3. P01-P04 producen specs, issues y catálogo de blueprint; el backend ejecuta el preflight determinista y el docente aprueba.
 4. Carga submissions seudónimas; cada una obtiene job/estado independiente.
 5. Parser produce EvidenceUnits; fallos técnicos/seguridad se detienen.
-6. P06 mapea dimensiones/variantes, evidencia y oportunidades; código verifica confianza.
+6. P06 devuelve relaciones categóricas sobre aliases locales; el servidor
+   valida scope/rutas/evidencia y materializa oportunidades canónicas sin
+   decidir N.
 7. El planificador determinista selecciona exactamente \(N\) primarias y una reserva pequeña, o emite un diagnóstico específico sin generar.
-8. P07 genera una pregunta por oportunidad primaria; reglas y P08 validan, con reemplazo localizado desde reserva.
-9. P09 crea la guía estructurada; validación cruzada ensambla `Assessment` y `EvaluationGuide`.
-10. Docente inspecciona fuentes y acepta, edita, rechaza o regenera por oportunidad.
-11. Aprobación individual o masiva explícita congela versiones; renderer opcional genera evaluación/guía/cobertura/JSON.
-12. Ledger y feedback registran calidad, acciones, fallos, latencia, tokens, costo y revisión.
+8. P07 devuelve un `QuestionModelDraft` por oportunidad primaria; el backend
+   conserva support completa, reconstruye el visible anchor y ejecuta
+   validaciones deterministas, con reemplazo localizado desde reserva cuando
+   corresponda. No se construye request/review/ledger P08.
+9. El backend exige exactamente N, ensambla el `Assessment.NEEDS_REVIEW` y
+   termina el job de submission con cero P09 y cero guía activa.
+10. Docente inspecciona fuentes y acepta, edita, rechaza o regenera por
+   oportunidad; ninguna de esas acciones pre-aprobación llama P09.
+11. Aprobación individual o masiva explícita congela la versión y evento; sólo
+   entonces se encola `GUIDE_BUILD`. P09 recibe aliases locales, añade
+   condiciones/observables/niveles/límites y el servidor materializa una guía
+   ligada a esa aprobación sin permitir cambios de pregunta/evidencia.
+12. Renderer/export usa únicamente Assessment aprobado y Guide READY de la
+   misma versión; ledger y feedback registran calidad, acciones, fallos,
+   latencia, tokens, costo y revisión.
 
 ## 24.2 Arquitectura objetivo conservada
 
@@ -1252,22 +1366,30 @@ La secuencia siguiente conserva la versión institucional completa de v1.0. Los 
 17. Identidad del estudiante se transforma a `subject_ref`; nombre/matrícula no ingresan al model gateway.
 18. Cada entrega repite cuarentena y parsing en un workflow independiente; archivos idénticos pueden reutilizar derivados por hash dentro del mismo tenant/política.
 19. Un indexador determinista crea secciones, relaciones, símbolos, tablas y localizadores.
-20. P06 con Luna-high anota claims y mapea cada dimensión a variantes/evidencia; cualquier claim sin evidencia se elimina.
-21. El motor instancia oportunidades permitidas y puntúa prioridad de actividad, ajuste a evidencia y calidad, con penalizaciones de reutilización/redundancia.
+20. P06 con Luna-high relaciona aliases de variante/template con aliases de
+    evidencia y declara soporte local; no copia identidad ni constraints y no
+    decide factibilidad global.
+21. El materializador instancia oportunidades permitidas desde el blueprint y
+    el planner ordena por prioridad server-owned con penalizaciones de
+    reutilización/solapamiento; los scores continuos P06 no son autoridad.
 22. El planificador crea exactamente \(N\) oportunidades primarias y una reserva pequeña; si no puede, emite el diagnóstico preciso y no genera ninguna pregunta.
 23. Para cada primaria recupera evidencia específica con contexto mínimo y fuentes autorizadas.
 24. El resolvedor comprueba capacidades, privacidad, región, retención, presupuesto, disponibilidad y fallbacks aprobados; registra códigos de razón estables.
-25. P07 con Luna-high genera una pregunta estructurada por oportunidad, sin herramientas ni acceso a otros estudiantes.
-26. Se valida JSON, IDs, pertenencia al tenant, localizadores, literalidad/transformación de ancla, PII, longitud, formato y política de justificación.
+25. P07 con Luna-high recibe una oportunidad y support evidence por aliases;
+    devuelve sólo redacción, visible aliases, observables y semántica asociada,
+    sin herramientas ni acceso a otros estudiantes.
+26. El servidor materializa IDs/metadata y el anchor literal; valida JSON,
+    pertenencia, support/visible subset, localizadores, transformación, PII,
+    leakage, longitud, formato y política de justificación.
 27. Preguntas que fallan grounding, procedencia, autorización o seguridad se descartan sin reparación semántica.
-28. P08 con Luna-high califica suficiencia, alineación, answerability, demanda, neutralidad y guía observable.
-29. Si una pregunta falla, se genera solo un reemplazo desde reserva; no hay cascada ilimitada ni lote de candidatos.
+28. El backend aplica validaciones deterministas y el docente revisa suficiencia, alineación, answerability, demanda, neutralidad y observables; P08 no es una etapa activa ni callable.
+29. Si una pregunta falla validación o es rechazada, se genera sólo un reemplazo localizado desde reserva; no hay cascada ilimitada ni lote de candidatos.
 30. Si no se conservan exactamente \(N\), el plan queda `ASSESSMENT_PLAN_INFEASIBLE`.
-31. Para el conjunto se genera la guía estructurada 0-3 con elementos observables, alternativas y límites de inferencia.
+31. Tras la aprobación docente se genera con P09 la guía estructurada 0-3 con elementos observables, alternativas y límites de inferencia.
 34. Una validación final comprueba que guía, pregunta y ancla usan las mismas fuentes y que el PDF del estudiante no contiene respuestas.
 35. Se crea `Assessment` JSON canónico con lineage completo y estado `NEEDS_REVIEW`.
 36. La plataforma presenta evaluación y guía estructurada; PDF/HTML son exportaciones opcionales y un fallo de render se reintenta sin modelos.
-37. El docente ve pregunta, ancla, fuente, oportunidad, scores y advertencias; puede aceptar, editar, rechazar o regenerar localmente.
+37. El docente ve pregunta, ancla, fuente, oportunidad y diagnostics; scores P08 sólo pueden aparecer etiquetados como historia. Puede aceptar, editar, rechazar o regenerar localmente.
 38. Toda edición registra actor, antes/después y motivo; cambios que alteran el constructo requieren revalidación.
 39. La aprobación individual o masiva explícita crea versiones inmutables; las excepciones quedan excluidas y auditadas para revisión individual.
 40. La aplicación registra respuestas/observaciones si se usa dentro del producto; el evaluador puede marcar ítem defectuoso.
@@ -1286,7 +1408,7 @@ Ordenadas por impacto y dependencia:
 1. **Fixture y vertical slice:** escoger 3-5 actividades sintéticas/autorizadas, incluida una entrega insuficiente y una adversarial.
 2. **Modalidad/configuración:** escrita/oral/mixta, 4-6 preguntas como hipótesis, tiempo, formatos y política de justificación; la profundidad la aplica el sistema.
 3. **Primer anillo:** confirmar TXT/MD, PDF digital y DOCX; tamaños/páginas máximos y qué queda apagado.
-4. **Rutas provisionales:** aplicar la matriz P01-P11 y definir capabilities/políticas; P10 permanece en bake-off.
+4. **Rutas retenidas:** no cambiar provider routing en este cutover; P05/P08 quedan inactivos objetivo y P10 deshabilitado.
 5. **Stack cloud:** Cloud Run Service/Jobs, Supabase PostgreSQL/Auth y R2 privado; local solo para desarrollo/pruebas.
 6. **Criterios de Etapa 0-2:** grounding resoluble, fail-closed, revisión humana, export consistente y métricas completas.
 7. **Datos reales:** no ingresarlos hasta tener política provisional, minimización, acceso y borrado probados.

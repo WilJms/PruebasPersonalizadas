@@ -3,10 +3,11 @@
 Este directorio contiene el runbook y la infraestructura declarativa de E2.
 Ningún comando de esta guía se ejecuta automáticamente al validar el
 repositorio: crear cuentas, cargar secretos, migrar la base y aplicar Terraform
-siguen siendo acciones externas, explícitas y revisadas. El entorno conserva
-`CVA_MODEL_MODE=mock`, `CVA_P10_ENABLED=false` y
-`CVA_REQUIRE_LIBMAGIC=true`; no se autorizan IA real ni datos estudiantiles
-reales.
+siguen siendo acciones externas, explícitas y revisadas. El producto y el
+Service web conservan `CVA_MODEL_MODE=mock`; P10 y datos estudiantiles reales
+no se autorizan. La única excepción posible es un Job y una service account
+eval-only separados para evaluación sintética por-job bajo ADR-035/036; su flag
+no autoriza llamadas y el Service web no puede invocar ese Job.
 
 ## Invariantes operativos
 
@@ -51,14 +52,18 @@ terraform -chdir=deploy/terraform apply \
 Este boundary habilita APIs y crea Artifact Registry, identidades y
 contenedores vacíos de Secret Manager. No crea todavía Service ni Job.
 
-## Boundary 2: migraciones PostgreSQL 001 -> 002 -> 003
+## Boundary 2: migraciones PostgreSQL 001 -> 002 -> 003 -> 004 -> 005 -> 006 -> 007
 
 Antes de migrar se debe detener todo writer, capturar un backup restaurable y
 registrar su identificador fuera de Git. En una base vacía, el orden único es:
 
 1. `deploy/supabase/migrations/202607310001_stage1.sql`;
 2. `deploy/supabase/migrations/202608070002_idempotency_capability_hygiene.sql`;
-3. `deploy/supabase/migrations/202608070003_stage2_experimental.sql`.
+3. `deploy/supabase/migrations/202608070003_stage2_experimental.sql`;
+4. `deploy/supabase/migrations/202608120004_stage2_convergence.sql`;
+5. `deploy/supabase/migrations/202608120005_stage2_synthetic_provider_gate.sql`.
+6. `deploy/supabase/migrations/202608150006_phase3_p05_runtime_cutover.sql`.
+7. `deploy/supabase/migrations/202608160007_phase7_post_approval_p09.sql`.
 
 Cada archivo contiene su propia transacción y debe ejecutarse con fallo cerrado:
 
@@ -69,11 +74,20 @@ PGSERVICE=cva-stage2-admin psql -X --set=ON_ERROR_STOP=1 \
   --file=deploy/supabase/migrations/202608070002_idempotency_capability_hygiene.sql
 PGSERVICE=cva-stage2-admin psql -X --set=ON_ERROR_STOP=1 \
   --file=deploy/supabase/migrations/202608070003_stage2_experimental.sql
+PGSERVICE=cva-stage2-admin psql -X --set=ON_ERROR_STOP=1 \
+  --file=deploy/supabase/migrations/202608120004_stage2_convergence.sql
+PGSERVICE=cva-stage2-admin psql -X --set=ON_ERROR_STOP=1 \
+  --file=deploy/supabase/migrations/202608120005_stage2_synthetic_provider_gate.sql
+PGSERVICE=cva-stage2-admin psql -X --set=ON_ERROR_STOP=1 \
+  --file=deploy/supabase/migrations/202608150006_phase3_p05_runtime_cutover.sql
+PGSERVICE=cva-stage2-admin psql -X --set=ON_ERROR_STOP=1 \
+  --file=deploy/supabase/migrations/202608160007_phase7_post_approval_p09.sql
 ```
 
-Una base E1 que ya tenga 001 y 002 verificadas aplica únicamente 003; no se
-reproducen migraciones ya registradas. Después se comprueban RLS, grants,
-triggers append-only, constraints y `/api/readiness` antes de habilitar tráfico.
+Una base existente aplica, en orden, sólo las migraciones posteriores a su
+última versión verificada. No se reproducen migraciones ya registradas.
+Después se comprueban RLS, grants, triggers append-only,
+constraints, expiración de idempotencia y `/api/readiness` antes de habilitar tráfico.
 La URL o credencial PostgreSQL vive en un `PGSERVICE` externo, nunca en el
 comando, logs, tfvars o Git.
 
@@ -96,14 +110,21 @@ CVA_STAGE2_PROJECT=cva-experimento-wiljms
 CVA_STAGE2_REGION=us-east1
 CVA_STAGE2_REPOSITORY=comprehension-verification
 CVA_STAGE2_SOURCE_SHA="$(git rev-parse HEAD)"
+CVA_STAGE2_BUILD_SERVICE_ACCOUNT="$(terraform -chdir=deploy/terraform output -raw cloud_build_service_account)"
+CVA_STAGE2_BUILD_SERVICE_ACCOUNT_RESOURCE="projects/$CVA_STAGE2_PROJECT/serviceAccounts/$CVA_STAGE2_BUILD_SERVICE_ACCOUNT"
 test -z "$(git status --porcelain=v1)"
+test "$CVA_STAGE2_BUILD_SERVICE_ACCOUNT" = \
+  "cva-cloudbuild@$CVA_STAGE2_PROJECT.iam.gserviceaccount.com"
 
 CVA_STAGE2_BUILD_ID="$(gcloud builds submit \
   --project="$CVA_STAGE2_PROJECT" \
   --region="$CVA_STAGE2_REGION" \
   --config=deploy/cloudbuild.yaml \
+  --service-account="$CVA_STAGE2_BUILD_SERVICE_ACCOUNT_RESOURCE" \
+  --timeout=3600s \
   --substitutions=COMMIT_SHA="$CVA_STAGE2_SOURCE_SHA",_REGION="$CVA_STAGE2_REGION",_REPOSITORY="$CVA_STAGE2_REPOSITORY",_IMAGE=application,_VITE_SUPABASE_URL=SUPABASE_URL,_VITE_SUPABASE_PUBLISHABLE_KEY=PUBLISHABLE_KEY \
   --async --format='value(id)')"
+test -n "$CVA_STAGE2_BUILD_ID"
 
 gcloud builds log --stream "$CVA_STAGE2_BUILD_ID" \
   --project="$CVA_STAGE2_PROJECT" --region="$CVA_STAGE2_REGION"
@@ -111,6 +132,13 @@ test "$(gcloud builds describe "$CVA_STAGE2_BUILD_ID" \
   --project="$CVA_STAGE2_PROJECT" --region="$CVA_STAGE2_REGION" \
   --format='value(status)')" = SUCCESS
 ```
+
+La identidad del build manual es obligatoria. Omitir `--service-account` hace
+que la CLI seleccione la cuenta predeterminada del proyecto, que no representa
+la frontera de mínimo privilegio declarada por Terraform y puede no leer el
+archivo fuente. Un submit que falla, incluso antes de devolver build ID, se
+detiene sin retry automático; cualquier repetición requiere un gate humano
+nuevo y exacto.
 
 Cloud Build publica la etiqueta `$BUILD_ID` solo si todos los pasos terminan
 bien. El digest se resuelve después de esa publicación desde Artifact Registry,
@@ -148,6 +176,47 @@ terraform -chdir=deploy/terraform plan \
 Los dos planes consecutivos posteriores al apply deben terminar con exit 0.
 Exit 2 indica drift o cambios pendientes y debe investigarse; no se aplica a
 ciegas.
+
+## Boundary OpenAI sintético posterior (no aplicado)
+
+El baseline E2 se despliega y verifica primero en mock. Crear el adapter no
+cambia ese runtime: los defaults permanecen
+`enable_openai_secret_container=false`,
+`enable_synthetic_evaluation_provider=false` y
+`openai_api_key_secret_version=null`; SHA y ceilings sintéticos también
+permanecen `null`.
+
+La apertura posterior se divide en planes revisables. El primero puede crear
+solo el contenedor vacío protegido del secreto. Una persona carga la clave del
+proyecto dedicado fuera de Git y Terraform; el valor nunca se escribe en
+tfvars. Solo después de los checkpoints de credenciales, smoke, evals y gasto
+se puede fijar una versión numérica, el SHA candidato, requests/cost ceilings y
+habilitar la capacidad eval-only. La precondición rechaza cualquier combinación
+incompleta.
+
+El worker ordinario permanece mock y su cuenta no obtiene acceso OpenAI. Un
+segundo Cloud Run Job con una service account eval-only es la única superficie
+que obtiene `secretAccessor`; no existe grant `web -> eval job` y el Job no
+recibe `CVA_OPENAI_API_KEY`, sólo el nombre de recurso numérico fijado. Después
+de reclamar el `CVA_CLAIM_JOB_ID` exacto, el código debe consumir una
+autorización append-only que coincida en job/tenant/kind/aggregate/attempt,
+SHA/boundary, hashes exactos de artefactos, ruta/modelo, secreto, expiración y
+caps. Sólo entonces consulta Secret Manager y construye el adapter. Ausencia,
+reuso o divergencia termina como `SECURITY` con cero resolver/adapter/request.
+El Service web y el worker ordinario continúan en mock y sin clave. P10
+permanece `false` en todas las superficies. La imagen sigue
+siendo propiedad exclusiva de Terraform y debe ser un digest construido desde
+el commit aprobado. Los pasos y dobles opt-ins están detallados en
+[`OPENAI_PROVIDER_SETUP.md`](../docs/OPENAI_PROVIDER_SETUP.md).
+
+Para el primer candidato manual-eval, el perfil de código fija retries
+gateway/SDK 0/0 y P11 a 80,000 tokens máximos de input. El estimate preventivo
+reserva full-cache-write. El tfvars autorizado debe fijar
+`synthetic_evaluation_max_job_cost_usd = 0.55`; con una pregunta, actividad y submission
+quedan respectivamente en USD 0.253571 y USD 0.490573. El E2E completo con una
+edición P05 reserva USD 0.855444 y máximo 32 Responses bajo un cap humano
+separado de USD 0.90. Estos valores son propuesta reproducible, no autorización
+de apply o gasto.
 
 ## Recovery y rollback
 

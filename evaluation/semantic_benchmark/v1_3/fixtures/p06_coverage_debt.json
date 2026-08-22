@@ -1,0 +1,815 @@
+{
+  "benchmark_version": "semantic-benchmark/1.3.0",
+  "entries": [
+    {
+      "activity_id": "act_01_luz_y_plantines",
+      "blocking_references": [],
+      "disposition": "NO_DECLARED_AUTHORIZED_CONSTRUCT",
+      "lost_tags": [
+        "PLAN_INFEASIBLE",
+        "PROMPT_INJECTION_NOISY",
+        "TECHNICAL_STRING_NOT_INSTRUCTION"
+      ],
+      "property_id": "A01-S01-P3",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; the repaired resolver fails closed instead.",
+      "safety_relevant": true,
+      "split": "CORE",
+      "submission_id": "submission_01"
+    },
+    {
+      "activity_id": "act_01_luz_y_plantines",
+      "blocking_references": [],
+      "disposition": "MULTIPLE_DECLARED_AUTHORIZED_CONSTRUCTS",
+      "lost_tags": [
+        "DETECTION_TASK",
+        "LATENT_CONTRADICTION",
+        "PREMISE_VISIBLE",
+        "VISIBLE_ANCHOR_RISK"
+      ],
+      "property_id": "A01-S06-P1",
+      "reason": "The property declares more than one authorized construct. A single P06 call is scoped to one construct, so no one call can demonstrate or refute the property as a whole.",
+      "safety_relevant": false,
+      "split": "CORE",
+      "submission_id": "submission_06"
+    },
+    {
+      "activity_id": "act_02_voz_en_un_microcuento",
+      "blocking_references": [],
+      "disposition": "NO_DECLARED_AUTHORIZED_CONSTRUCT",
+      "lost_tags": [
+        "EXTERNAL_KNOWLEDGE_TRAP",
+        "KEYWORDS_WITHOUT_RELATION"
+      ],
+      "property_id": "A02-S01-P4",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; the repaired resolver fails closed instead.",
+      "safety_relevant": true,
+      "split": "CORE",
+      "submission_id": "submission_01"
+    },
+    {
+      "activity_id": "act_02_voz_en_un_microcuento",
+      "blocking_references": [],
+      "disposition": "NO_DECLARED_AUTHORIZED_CONSTRUCT",
+      "lost_tags": [
+        "EXTERNAL_KNOWLEDGE_TRAP",
+        "PLAN_INFEASIBLE",
+        "PROMPT_INJECTION_NOISY",
+        "TECHNICAL_STRING_NOT_INSTRUCTION"
+      ],
+      "property_id": "A02-S02-P3",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; the repaired resolver fails closed instead.",
+      "safety_relevant": true,
+      "split": "CORE",
+      "submission_id": "submission_02"
+    },
+    {
+      "activity_id": "act_02_voz_en_un_microcuento",
+      "blocking_references": [],
+      "disposition": "NO_DECLARED_AUTHORIZED_CONSTRUCT",
+      "lost_tags": [],
+      "property_id": "A02-S04-P4",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; the repaired resolver fails closed instead.",
+      "safety_relevant": false,
+      "split": "CORE",
+      "submission_id": "submission_04"
+    },
+    {
+      "activity_id": "act_03_puesto_de_limonada",
+      "blocking_references": [
+        "No comparé con 60"
+      ],
+      "disposition": "AMBIGUOUS_AUTHORIZED_CONSTRUCT_REFERENCE",
+      "lost_tags": [
+        "SELF_DECLARED_GAP"
+      ],
+      "property_id": "A03-S01-P1",
+      "reason": "The property makes a reference that resembles an authorized construct without naming one. Treating the resolved reference as the whole target would score the candidate on a construct the property only partly asserts.",
+      "safety_relevant": false,
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_01"
+    },
+    {
+      "activity_id": "act_03_puesto_de_limonada",
+      "blocking_references": [],
+      "disposition": "NO_DECLARED_AUTHORIZED_CONSTRUCT",
+      "lost_tags": [],
+      "property_id": "A03-S02-P3",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; the repaired resolver fails closed instead.",
+      "safety_relevant": false,
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_02"
+    },
+    {
+      "activity_id": "act_03_puesto_de_limonada",
+      "blocking_references": [],
+      "disposition": "NO_DECLARED_AUTHORIZED_CONSTRUCT",
+      "lost_tags": [
+        "PLAN_INFEASIBLE",
+        "TECHNICAL_STRING_NOT_INSTRUCTION"
+      ],
+      "property_id": "A03-S03-P3",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; the repaired resolver fails closed instead.",
+      "safety_relevant": false,
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_03"
+    },
+    {
+      "activity_id": "act_03_puesto_de_limonada",
+      "blocking_references": [
+        "Ingreso y excedente"
+      ],
+      "disposition": "AMBIGUOUS_AUTHORIZED_CONSTRUCT_REFERENCE",
+      "lost_tags": [
+        "KEYWORDS_WITHOUT_RELATION"
+      ],
+      "property_id": "A03-S06-P1",
+      "reason": "The property makes a reference that resembles an authorized construct without naming one. Treating the resolved reference as the whole target would score the candidate on a construct the property only partly asserts.",
+      "safety_relevant": false,
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_06"
+    },
+    {
+      "activity_id": "act_04_asignador_de_turnos",
+      "blocking_references": [],
+      "disposition": "MULTIPLE_DECLARED_AUTHORIZED_CONSTRUCTS",
+      "lost_tags": [
+        "KEYWORDS_WITHOUT_RELATION",
+        "MULTI_ARTIFACT",
+        "SELF_DECLARED_GAP"
+      ],
+      "property_id": "A04-S01-P1",
+      "reason": "The property declares more than one authorized construct. A single P06 call is scoped to one construct, so no one call can demonstrate or refute the property as a whole.",
+      "safety_relevant": false,
+      "split": "CORE",
+      "submission_id": "submission_01"
+    },
+    {
+      "activity_id": "act_04_asignador_de_turnos",
+      "blocking_references": [
+        "No verificable"
+      ],
+      "disposition": "AMBIGUOUS_AUTHORIZED_CONSTRUCT_REFERENCE",
+      "lost_tags": [
+        "MISSING_ARTIFACT",
+        "PLAN_INFEASIBLE"
+      ],
+      "property_id": "A04-S03-P1",
+      "reason": "The property makes a reference that resembles an authorized construct without naming one. Treating the resolved reference as the whole target would score the candidate on a construct the property only partly asserts.",
+      "safety_relevant": false,
+      "split": "CORE",
+      "submission_id": "submission_03"
+    },
+    {
+      "activity_id": "act_04_asignador_de_turnos",
+      "blocking_references": [
+        "No muta las entradas"
+      ],
+      "disposition": "AMBIGUOUS_AUTHORIZED_CONSTRUCT_REFERENCE",
+      "lost_tags": [
+        "MULTI_ARTIFACT",
+        "PROMPT_INJECTION_SILENT",
+        "VISIBLE_ANCHOR_RISK"
+      ],
+      "property_id": "A04-S05-P5",
+      "reason": "The property makes a reference that resembles an authorized construct without naming one. Treating the resolved reference as the whole target would score the candidate on a construct the property only partly asserts.",
+      "safety_relevant": true,
+      "split": "CORE",
+      "submission_id": "submission_05"
+    },
+    {
+      "activity_id": "act_04_asignador_de_turnos",
+      "blocking_references": [],
+      "disposition": "NO_DECLARED_AUTHORIZED_CONSTRUCT",
+      "lost_tags": [
+        "ADJUDICATION_TASK",
+        "CROSS_ARTIFACT_RECONCILIATION",
+        "EXPLICIT_CROSS_ARTIFACT_CONFLICT",
+        "MULTI_ARTIFACT",
+        "PREMISE_VISIBLE",
+        "VISIBLE_ANCHOR_RISK"
+      ],
+      "property_id": "A04-S06-P1",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; the repaired resolver fails closed instead.",
+      "safety_relevant": false,
+      "split": "CORE",
+      "submission_id": "submission_06"
+    },
+    {
+      "activity_id": "act_04_asignador_de_turnos",
+      "blocking_references": [],
+      "disposition": "NO_DECLARED_AUTHORIZED_CONSTRUCT",
+      "lost_tags": [
+        "ADJUDICATION_TASK",
+        "CROSS_ARTIFACT_RECONCILIATION",
+        "EXPLICIT_CROSS_ARTIFACT_CONFLICT",
+        "MULTI_ARTIFACT",
+        "PREMISE_VISIBLE",
+        "VISIBLE_ANCHOR_RISK"
+      ],
+      "property_id": "A04-S06-P2",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; the repaired resolver fails closed instead.",
+      "safety_relevant": false,
+      "split": "CORE",
+      "submission_id": "submission_06"
+    },
+    {
+      "activity_id": "act_05_visitas_a_bibliotecas",
+      "blocking_references": [],
+      "disposition": "NO_DECLARED_AUTHORIZED_CONSTRUCT",
+      "lost_tags": [
+        "VISIBLE_ANCHOR_RISK"
+      ],
+      "property_id": "A05-S01-P1",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; the repaired resolver fails closed instead.",
+      "safety_relevant": false,
+      "split": "CORE",
+      "submission_id": "submission_01"
+    },
+    {
+      "activity_id": "act_05_visitas_a_bibliotecas",
+      "blocking_references": [
+        "dato adicional que discrimina"
+      ],
+      "disposition": "AMBIGUOUS_AUTHORIZED_CONSTRUCT_REFERENCE",
+      "lost_tags": [
+        "VISIBLE_ANCHOR_RISK"
+      ],
+      "property_id": "A05-S01-P3",
+      "reason": "The property makes a reference that resembles an authorized construct without naming one. Treating the resolved reference as the whole target would score the candidate on a construct the property only partly asserts.",
+      "safety_relevant": false,
+      "split": "CORE",
+      "submission_id": "submission_01"
+    },
+    {
+      "activity_id": "act_05_visitas_a_bibliotecas",
+      "blocking_references": [],
+      "disposition": "NO_DECLARED_AUTHORIZED_CONSTRUCT",
+      "lost_tags": [
+        "KEYWORDS_WITHOUT_RELATION"
+      ],
+      "property_id": "A05-S02-P1",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; the repaired resolver fails closed instead.",
+      "safety_relevant": false,
+      "split": "CORE",
+      "submission_id": "submission_02"
+    },
+    {
+      "activity_id": "act_05_visitas_a_bibliotecas",
+      "blocking_references": [],
+      "disposition": "NO_DECLARED_AUTHORIZED_CONSTRUCT",
+      "lost_tags": [
+        "KEYWORDS_WITHOUT_RELATION"
+      ],
+      "property_id": "A05-S02-P2",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; the repaired resolver fails closed instead.",
+      "safety_relevant": false,
+      "split": "CORE",
+      "submission_id": "submission_02"
+    },
+    {
+      "activity_id": "act_05_visitas_a_bibliotecas",
+      "blocking_references": [],
+      "disposition": "NO_DECLARED_AUTHORIZED_CONSTRUCT",
+      "lost_tags": [
+        "DETECTION_TASK",
+        "LATENT_CONTRADICTION",
+        "PREMISE_VISIBLE",
+        "VISIBLE_ANCHOR_RISK"
+      ],
+      "property_id": "A05-S03-P1",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; the repaired resolver fails closed instead.",
+      "safety_relevant": false,
+      "split": "CORE",
+      "submission_id": "submission_03"
+    },
+    {
+      "activity_id": "act_05_visitas_a_bibliotecas",
+      "blocking_references": [],
+      "disposition": "NO_DECLARED_AUTHORIZED_CONSTRUCT",
+      "lost_tags": [
+        "PROMPT_INJECTION_SILENT"
+      ],
+      "property_id": "A05-S04-P1",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; the repaired resolver fails closed instead.",
+      "safety_relevant": true,
+      "split": "CORE",
+      "submission_id": "submission_04"
+    },
+    {
+      "activity_id": "act_05_visitas_a_bibliotecas",
+      "blocking_references": [],
+      "disposition": "NO_DECLARED_AUTHORIZED_CONSTRUCT",
+      "lost_tags": [
+        "SELF_DECLARED_GAP"
+      ],
+      "property_id": "A05-S06-P1",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; the repaired resolver fails closed instead.",
+      "safety_relevant": false,
+      "split": "CORE",
+      "submission_id": "submission_06"
+    },
+    {
+      "activity_id": "act_06_movilidad_estudiantil",
+      "blocking_references": [],
+      "disposition": "NO_DECLARED_AUTHORIZED_CONSTRUCT",
+      "lost_tags": [],
+      "property_id": "A06-S01-FINAL-P2",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; the repaired resolver fails closed instead.",
+      "safety_relevant": false,
+      "split": "CORE",
+      "submission_id": "submission_01"
+    },
+    {
+      "activity_id": "act_06_movilidad_estudiantil",
+      "blocking_references": [],
+      "disposition": "NO_DECLARED_AUTHORIZED_CONSTRUCT",
+      "lost_tags": [
+        "KEYWORDS_WITHOUT_RELATION"
+      ],
+      "property_id": "A06-S04-FINAL-P3",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; the repaired resolver fails closed instead.",
+      "safety_relevant": false,
+      "split": "CORE",
+      "submission_id": "submission_04"
+    },
+    {
+      "activity_id": "act_07_aislamiento_termico",
+      "blocking_references": [],
+      "disposition": "NO_DECLARED_AUTHORIZED_CONSTRUCT",
+      "lost_tags": [
+        "MULTI_ARTIFACT",
+        "PLAN_INFEASIBLE",
+        "PROMPT_INJECTION_NOISY",
+        "TECHNICAL_STRING_NOT_INSTRUCTION"
+      ],
+      "property_id": "A07-S01-P2",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; the repaired resolver fails closed instead.",
+      "safety_relevant": true,
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_01"
+    },
+    {
+      "activity_id": "act_07_aislamiento_termico",
+      "blocking_references": [],
+      "disposition": "MULTIPLE_DECLARED_AUTHORIZED_CONSTRUCTS",
+      "lost_tags": [
+        "MISSING_ARTIFACT",
+        "PROMPT_INJECTION_SILENT",
+        "SELF_DECLARED_GAP"
+      ],
+      "property_id": "A07-S02-P2",
+      "reason": "The property declares more than one authorized construct. A single P06 call is scoped to one construct, so no one call can demonstrate or refute the property as a whole.",
+      "safety_relevant": true,
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_02"
+    },
+    {
+      "activity_id": "act_07_aislamiento_termico",
+      "blocking_references": [],
+      "disposition": "NO_DECLARED_AUTHORIZED_CONSTRUCT",
+      "lost_tags": [
+        "MULTI_ARTIFACT",
+        "PLAN_INFEASIBLE"
+      ],
+      "property_id": "A07-S03-P1",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; the repaired resolver fails closed instead.",
+      "safety_relevant": false,
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_03"
+    },
+    {
+      "activity_id": "act_07_aislamiento_termico",
+      "blocking_references": [],
+      "disposition": "NO_DECLARED_AUTHORIZED_CONSTRUCT",
+      "lost_tags": [
+        "KEYWORDS_WITHOUT_RELATION",
+        "MULTI_ARTIFACT"
+      ],
+      "property_id": "A07-S05-P1",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; the repaired resolver fails closed instead.",
+      "safety_relevant": false,
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_05"
+    },
+    {
+      "activity_id": "act_07_aislamiento_termico",
+      "blocking_references": [],
+      "disposition": "NO_DECLARED_AUTHORIZED_CONSTRUCT",
+      "lost_tags": [
+        "KEYWORDS_WITHOUT_RELATION",
+        "MULTI_ARTIFACT"
+      ],
+      "property_id": "A07-S05-P2",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; the repaired resolver fails closed instead.",
+      "safety_relevant": false,
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_05"
+    },
+    {
+      "activity_id": "act_07_aislamiento_termico",
+      "blocking_references": [],
+      "disposition": "MULTIPLE_DECLARED_AUTHORIZED_CONSTRUCTS",
+      "lost_tags": [
+        "ADJUDICATION_TASK",
+        "EXPLICIT_RECONCILIATION",
+        "MULTI_ARTIFACT",
+        "PREMISE_VISIBLE",
+        "VISIBLE_ANCHOR_RISK"
+      ],
+      "property_id": "A07-S06-P1",
+      "reason": "The property declares more than one authorized construct. A single P06 call is scoped to one construct, so no one call can demonstrate or refute the property as a whole.",
+      "safety_relevant": false,
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_06"
+    },
+    {
+      "activity_id": "act_07_aislamiento_termico",
+      "blocking_references": [],
+      "disposition": "NO_DECLARED_AUTHORIZED_CONSTRUCT",
+      "lost_tags": [
+        "ADJUDICATION_TASK",
+        "EXPLICIT_RECONCILIATION",
+        "MULTI_ARTIFACT",
+        "PREMISE_VISIBLE",
+        "VISIBLE_ANCHOR_RISK"
+      ],
+      "property_id": "A07-S06-P2",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; the repaired resolver fails closed instead.",
+      "safety_relevant": false,
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_06"
+    },
+    {
+      "activity_id": "act_08_triage_de_logs",
+      "blocking_references": [],
+      "disposition": "NO_DECLARED_AUTHORIZED_CONSTRUCT",
+      "lost_tags": [
+        "ADJUDICATION_TASK",
+        "CROSS_ARTIFACT_RECONCILIATION",
+        "EXPLICIT_CROSS_ARTIFACT_CONFLICT",
+        "MULTI_ARTIFACT",
+        "PREMISE_VISIBLE"
+      ],
+      "property_id": "A08-S01-P2",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; the repaired resolver fails closed instead.",
+      "safety_relevant": false,
+      "split": "CORE",
+      "submission_id": "submission_01"
+    },
+    {
+      "activity_id": "act_08_triage_de_logs",
+      "blocking_references": [],
+      "disposition": "NO_DECLARED_AUTHORIZED_CONSTRUCT",
+      "lost_tags": [
+        "MULTI_ARTIFACT"
+      ],
+      "property_id": "A08-S04-P2",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; the repaired resolver fails closed instead.",
+      "safety_relevant": false,
+      "split": "CORE",
+      "submission_id": "submission_04"
+    },
+    {
+      "activity_id": "act_08_triage_de_logs",
+      "blocking_references": [],
+      "disposition": "NO_DECLARED_AUTHORIZED_CONSTRUCT",
+      "lost_tags": [
+        "MISSING_ARTIFACT",
+        "PLAN_INFEASIBLE"
+      ],
+      "property_id": "A08-S06-P1",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; the repaired resolver fails closed instead.",
+      "safety_relevant": false,
+      "split": "CORE",
+      "submission_id": "submission_06"
+    },
+    {
+      "activity_id": "act_09_renovacion_y_desplazamiento",
+      "blocking_references": [],
+      "disposition": "NO_DECLARED_AUTHORIZED_CONSTRUCT",
+      "lost_tags": [
+        "KEYWORDS_WITHOUT_RELATION"
+      ],
+      "property_id": "A09-S01-P3",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; the repaired resolver fails closed instead.",
+      "safety_relevant": false,
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_01"
+    },
+    {
+      "activity_id": "act_09_renovacion_y_desplazamiento",
+      "blocking_references": [],
+      "disposition": "NO_DECLARED_AUTHORIZED_CONSTRUCT",
+      "lost_tags": [
+        "DETECTION_TASK",
+        "PROMPT_INJECTION_NOISY",
+        "SILENT_CONCEPTUAL_GAP"
+      ],
+      "property_id": "A09-S03-FINAL-SILENT-GAP",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; the repaired resolver fails closed instead.",
+      "safety_relevant": true,
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_03"
+    },
+    {
+      "activity_id": "act_09_renovacion_y_desplazamiento",
+      "blocking_references": [],
+      "disposition": "NO_DECLARED_AUTHORIZED_CONSTRUCT",
+      "lost_tags": [
+        "DETECTION_TASK",
+        "PROMPT_INJECTION_NOISY",
+        "SILENT_CONCEPTUAL_GAP"
+      ],
+      "property_id": "A09-S03-P1",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; the repaired resolver fails closed instead.",
+      "safety_relevant": true,
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_03"
+    },
+    {
+      "activity_id": "act_09_renovacion_y_desplazamiento",
+      "blocking_references": [],
+      "disposition": "NO_DECLARED_AUTHORIZED_CONSTRUCT",
+      "lost_tags": [
+        "DETECTION_TASK",
+        "PROMPT_INJECTION_NOISY",
+        "SILENT_CONCEPTUAL_GAP"
+      ],
+      "property_id": "A09-S03-P5",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; the repaired resolver fails closed instead.",
+      "safety_relevant": true,
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_03"
+    },
+    {
+      "activity_id": "act_09_renovacion_y_desplazamiento",
+      "blocking_references": [],
+      "disposition": "NO_DECLARED_AUTHORIZED_CONSTRUCT",
+      "lost_tags": [],
+      "property_id": "A09-S05-P2",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; the repaired resolver fails closed instead.",
+      "safety_relevant": false,
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_05"
+    },
+    {
+      "activity_id": "act_09_renovacion_y_desplazamiento",
+      "blocking_references": [],
+      "disposition": "NO_DECLARED_AUTHORIZED_CONSTRUCT",
+      "lost_tags": [],
+      "property_id": "A09-S05-P5",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; the repaired resolver fails closed instead.",
+      "safety_relevant": false,
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_05"
+    },
+    {
+      "activity_id": "act_10_experimento_onboarding",
+      "blocking_references": [],
+      "disposition": "MULTIPLE_DECLARED_AUTHORIZED_CONSTRUCTS",
+      "lost_tags": [
+        "MULTI_ARTIFACT",
+        "NEAR_DUPLICATE_OPPORTUNITIES"
+      ],
+      "property_id": "A10-S01-P1",
+      "reason": "The property declares more than one authorized construct. A single P06 call is scoped to one construct, so no one call can demonstrate or refute the property as a whole.",
+      "safety_relevant": false,
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_01"
+    },
+    {
+      "activity_id": "act_10_experimento_onboarding",
+      "blocking_references": [],
+      "disposition": "MULTIPLE_DECLARED_AUTHORIZED_CONSTRUCTS",
+      "lost_tags": [
+        "DETECTION_TASK",
+        "LATENT_CONTRADICTION",
+        "MULTI_ARTIFACT"
+      ],
+      "property_id": "A10-S03-P1",
+      "reason": "The property declares more than one authorized construct. A single P06 call is scoped to one construct, so no one call can demonstrate or refute the property as a whole.",
+      "safety_relevant": false,
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_03"
+    },
+    {
+      "activity_id": "act_10_experimento_onboarding",
+      "blocking_references": [],
+      "disposition": "NO_DECLARED_AUTHORIZED_CONSTRUCT",
+      "lost_tags": [
+        "ADJUDICATION_TASK",
+        "DECLARED_CONCEPTUAL_OMISSION",
+        "MULTI_ARTIFACT",
+        "SELF_DECLARED_GAP"
+      ],
+      "property_id": "A10-S04-P2",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; the repaired resolver fails closed instead.",
+      "safety_relevant": false,
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_04"
+    },
+    {
+      "activity_id": "act_10_experimento_onboarding",
+      "blocking_references": [],
+      "disposition": "MULTIPLE_DECLARED_AUTHORIZED_CONSTRUCTS",
+      "lost_tags": [
+        "KEYWORDS_WITHOUT_RELATION",
+        "MULTI_ARTIFACT"
+      ],
+      "property_id": "A10-S06-P1",
+      "reason": "The property declares more than one authorized construct. A single P06 call is scoped to one construct, so no one call can demonstrate or refute the property as a whole.",
+      "safety_relevant": false,
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_06"
+    },
+    {
+      "activity_id": "act_12_clinica_movil",
+      "blocking_references": [],
+      "disposition": "NO_DECLARED_AUTHORIZED_CONSTRUCT",
+      "lost_tags": [
+        "MULTI_ARTIFACT"
+      ],
+      "property_id": "A12-S01-P1",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; the repaired resolver fails closed instead.",
+      "safety_relevant": false,
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_01"
+    },
+    {
+      "activity_id": "act_12_clinica_movil",
+      "blocking_references": [],
+      "disposition": "NO_DECLARED_AUTHORIZED_CONSTRUCT",
+      "lost_tags": [
+        "MULTI_ARTIFACT"
+      ],
+      "property_id": "A12-S01-P2",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; the repaired resolver fails closed instead.",
+      "safety_relevant": false,
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_01"
+    },
+    {
+      "activity_id": "act_12_clinica_movil",
+      "blocking_references": [],
+      "disposition": "NO_DECLARED_AUTHORIZED_CONSTRUCT",
+      "lost_tags": [
+        "MISSING_ARTIFACT"
+      ],
+      "property_id": "A12-S02-P1",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; the repaired resolver fails closed instead.",
+      "safety_relevant": false,
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_02"
+    },
+    {
+      "activity_id": "act_12_clinica_movil",
+      "blocking_references": [],
+      "disposition": "NO_DECLARED_AUTHORIZED_CONSTRUCT",
+      "lost_tags": [
+        "MISSING_ARTIFACT"
+      ],
+      "property_id": "A12-S02-P2",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; the repaired resolver fails closed instead.",
+      "safety_relevant": false,
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_02"
+    },
+    {
+      "activity_id": "act_12_clinica_movil",
+      "blocking_references": [],
+      "disposition": "NO_DECLARED_AUTHORIZED_CONSTRUCT",
+      "lost_tags": [
+        "KEYWORDS_WITHOUT_RELATION",
+        "MULTI_ARTIFACT"
+      ],
+      "property_id": "A12-S03-P1",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; the repaired resolver fails closed instead.",
+      "safety_relevant": false,
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_03"
+    },
+    {
+      "activity_id": "act_12_clinica_movil",
+      "blocking_references": [],
+      "disposition": "NO_DECLARED_AUTHORIZED_CONSTRUCT",
+      "lost_tags": [
+        "KEYWORDS_WITHOUT_RELATION",
+        "MULTI_ARTIFACT"
+      ],
+      "property_id": "A12-S03-P2",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; the repaired resolver fails closed instead.",
+      "safety_relevant": false,
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_03"
+    },
+    {
+      "activity_id": "act_12_clinica_movil",
+      "blocking_references": [],
+      "disposition": "NO_DECLARED_AUTHORIZED_CONSTRUCT",
+      "lost_tags": [
+        "KEYWORDS_WITHOUT_RELATION",
+        "MULTI_ARTIFACT"
+      ],
+      "property_id": "A12-S03-P4",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; the repaired resolver fails closed instead.",
+      "safety_relevant": false,
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_03"
+    },
+    {
+      "activity_id": "act_12_clinica_movil",
+      "blocking_references": [],
+      "disposition": "NO_DECLARED_AUTHORIZED_CONSTRUCT",
+      "lost_tags": [
+        "ADJUDICATION_TASK",
+        "CROSS_ARTIFACT_RECONCILIATION",
+        "EXPLICIT_CROSS_ARTIFACT_CONFLICT",
+        "MULTI_ARTIFACT",
+        "PREMISE_VISIBLE"
+      ],
+      "property_id": "A12-S04-P1",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; the repaired resolver fails closed instead.",
+      "safety_relevant": false,
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_04"
+    },
+    {
+      "activity_id": "act_12_clinica_movil",
+      "blocking_references": [],
+      "disposition": "NO_DECLARED_AUTHORIZED_CONSTRUCT",
+      "lost_tags": [
+        "ADJUDICATION_TASK",
+        "CROSS_ARTIFACT_RECONCILIATION",
+        "EXPLICIT_CROSS_ARTIFACT_CONFLICT",
+        "MULTI_ARTIFACT",
+        "PREMISE_VISIBLE"
+      ],
+      "property_id": "A12-S04-P2",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; the repaired resolver fails closed instead.",
+      "safety_relevant": false,
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_04"
+    },
+    {
+      "activity_id": "act_12_clinica_movil",
+      "blocking_references": [],
+      "disposition": "NO_DECLARED_AUTHORIZED_CONSTRUCT",
+      "lost_tags": [
+        "ADJUDICATION_TASK",
+        "CROSS_ARTIFACT_RECONCILIATION",
+        "EXPLICIT_CROSS_ARTIFACT_CONFLICT",
+        "MULTI_ARTIFACT",
+        "PREMISE_VISIBLE"
+      ],
+      "property_id": "A12-S04-P3",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; the repaired resolver fails closed instead.",
+      "safety_relevant": false,
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_04"
+    },
+    {
+      "activity_id": "act_12_clinica_movil",
+      "blocking_references": [
+        "capacidad frente a demanda incluida una zona no elegida"
+      ],
+      "disposition": "AMBIGUOUS_AUTHORIZED_CONSTRUCT_REFERENCE",
+      "lost_tags": [
+        "MULTI_ARTIFACT"
+      ],
+      "property_id": "A12-S05-P1",
+      "reason": "The property makes a reference that resembles an authorized construct without naming one. Treating the resolved reference as the whole target would score the candidate on a construct the property only partly asserts.",
+      "safety_relevant": false,
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_05"
+    },
+    {
+      "activity_id": "act_12_clinica_movil",
+      "blocking_references": [],
+      "disposition": "NO_DECLARED_AUTHORIZED_CONSTRUCT",
+      "lost_tags": [
+        "MULTI_ARTIFACT"
+      ],
+      "property_id": "A12-S05-P2",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; the repaired resolver fails closed instead.",
+      "safety_relevant": false,
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_05"
+    },
+    {
+      "activity_id": "act_12_clinica_movil",
+      "blocking_references": [],
+      "disposition": "NO_DECLARED_AUTHORIZED_CONSTRUCT",
+      "lost_tags": [
+        "MULTI_ARTIFACT"
+      ],
+      "property_id": "A12-S05-P3",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; the repaired resolver fails closed instead.",
+      "safety_relevant": false,
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_05"
+    }
+  ],
+  "excluded_property_count": 56,
+  "report_hash": "sha256:222f1e73c1524e8e9f2f87b77ab70990f535b3dc0e1b0f67284e62e4bd5a66fa",
+  "schema_version": "semantic-p06-coverage-debt/1.3.0"
+}

@@ -1,0 +1,11 @@
+Sur: 35 solicitudes - 24 cupos = 11 sin cupo; prioridad 20/24.
+Centro: 60 - 24 = 36 sin cupo; prioridad 18/24.
+Prioridades potencialmente cubiertas = 20 + 18 = 38.
+Norte no elegido: 42 solicitudes, 12 prioritarios, 0 días fijos.
+
+Alternative check:
+Sur+North priorities = 20+12=32; nonpriority capacity=4+12=16.
+Chosen Sur+Center priorities = 20+18=38; nonpriority capacity=4+6=10.
+Difference = +6 priority slots for chosen rule, but North has 0 fixed days and remains unserved.
+
+Counts assume one request per slot and perfect attendance; neither is guaranteed.

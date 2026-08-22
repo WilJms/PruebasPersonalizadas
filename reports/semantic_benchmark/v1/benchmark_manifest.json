@@ -1,0 +1,46 @@
+{
+  "active_stages": [
+    "P04",
+    "P06",
+    "PLANNER",
+    "P07",
+    "P09"
+  ],
+  "activity_count": 12,
+  "benchmark_boundary_hash": "sha256:9dc8df63b01f1e29a65a7540ceff1359ed037fa240e7c1c1f0e8b485edb35771",
+  "benchmark_version": "semantic-benchmark/1.0.0",
+  "candidate_matrix_status": "UNSET",
+  "case_counts_by_stage": {
+    "P04": 12,
+    "P06": 69,
+    "P07": 72,
+    "P09": 4,
+    "PLANNER": 21
+  },
+  "corpus_package_boundary_hash": "21c21f3a53bfb786162dc350dc38c93b7b007d9f23b744a354de4ac2354048a1",
+  "corpus_version": "pruebas-personalizadas-corpus/1.0.0",
+  "disabled_stages": [
+    "P10"
+  ],
+  "historical_harness_status": "HISTORICAL_NON_CANONICAL_EVIDENCE",
+  "historical_inactive_stages": [
+    "P05",
+    "P08"
+  ],
+  "p09_fixture_count": 4,
+  "p09_question_count": 12,
+  "pipeline_authority_version": "pipeline-authority/1.1.0",
+  "property_count": 395,
+  "property_state_counts": {
+    "NOT_APPLICABLE": 8,
+    "ORACLE_SUSPECT": 26,
+    "VALID": 361
+  },
+  "provider_calls": 0,
+  "qualification_status": "NOT_YET_RUN",
+  "ratification_type": "INDEPENDENT_MODEL_RATIFICATION_DERIVED_FROM_OPUS5",
+  "readiness": "SEMANTIC_BENCHMARK_READY_FOR_QUALIFICATION",
+  "schema_version": "semantic-benchmark-manifest/1.0.0",
+  "submission_count": 72,
+  "total_case_count": 178
+}

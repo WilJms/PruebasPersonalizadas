@@ -11,11 +11,16 @@ from fastapi.testclient import TestClient
 
 from comprehension_verification.canonical import sha256_bytes, stable_id
 from comprehension_verification.contracts import models as m
+from comprehension_verification.evidence_mapping import (
+    build_evidence_mapping_alias_envelope,
+    materialize_evidence_mapping_draft,
+)
 from comprehension_verification.web import dto
 from comprehension_verification.web.app import create_app
 from comprehension_verification.web.jobs import RecordingJobRunner
 from comprehension_verification.web.repository import (
     ActivityRow,
+    EvidenceMapRow,
     ExportRow,
     IdempotencyRow,
     JobControlRecordRow,
@@ -103,6 +108,37 @@ def _other_workspace_client(app: Any) -> tuple[TestClient, dict[str, str]]:
     client.cookies.set("cva_session", token)
     client.cookies.set("cva_csrf", csrf)
     return client, {"X-CSRF-Token": csrf}
+
+
+def test_get_job_is_read_only_and_does_not_reconcile_stale_worker_state() -> None:
+    app = _app()
+    repository: Repository = app.state.runtime.repository
+    repository.add(
+        JobRow(
+            id="job_stale_read_only",
+            tenant_id=TENANT_ID,
+            kind="ACTIVITY",
+            aggregate_id="act_stale_read_only",
+            stage="BLUEPRINT_BUILD",
+            status="RUNNING",
+            progress=0.5,
+            attempt=1,
+            diagnostics=[],
+            started_at=utc_now() - timedelta(hours=3),
+        )
+    )
+
+    with TestClient(app) as client:
+        _login(client)
+        response = client.get("/api/v1/jobs/job_stale_read_only")
+
+    assert response.status_code == 200
+    assert response.json()["job"]["status"] == "RUNNING"
+    persisted = repository.job_control(
+        "job_stale_read_only", TENANT_ID
+    )
+    assert persisted.status == "RUNNING"
+    assert persisted.failure_class is None
 
 
 def _create_activity(
@@ -245,6 +281,66 @@ def test_upload_idempotency_replay_reissues_exact_disposable_reservation() -> No
         serialized = json.dumps(descriptor, sort_keys=True)
         assert "upload_url" not in serialized
         assert "/api/v1/object-uploads/" not in serialized
+
+
+def test_question_action_idempotency_stores_only_reference_metadata() -> None:
+    app = _app()
+    with TestClient(app) as client:
+        headers = _login(client)
+        fixture = _processed_submission(client, headers)
+        question_id = fixture["review"]["assessment"]["questions"][0][
+            "question_id"
+        ]
+        key = str(uuid4())
+        path = (
+            f"/api/v1/assessments/{fixture['assessment_id']}/questions/"
+            f"{question_id}/actions"
+        )
+        first = client.post(
+            path,
+            headers=_mutating(
+                headers,
+                idempotency_key=key,
+                **{"If-Match": fixture["etag"]},
+            ),
+            json={"action": "ACCEPT"},
+        )
+        assert first.status_code == 200, first.text
+        replayed = client.post(
+            path,
+            headers=_mutating(
+                headers,
+                idempotency_key=key,
+                **{"If-Match": fixture["etag"]},
+            ),
+            json={"action": "ACCEPT"},
+        )
+        assert replayed.status_code == 200, replayed.text
+        assert replayed.headers["Idempotency-Replayed"] == "true"
+
+        repository: Repository = app.state.runtime.repository
+        row = repository.scoped(
+            IdempotencyRow,
+            stable_id("idem", TENANT_ID, key),
+            TENANT_ID,
+        )
+        descriptor = row.response
+        assert descriptor is not None
+        assert descriptor["kind"] == "question_action"
+        assert descriptor["record_id"] == first.json()["action_record"]["record_id"]
+        assert row.expires_at > row.created_at
+        serialized = json.dumps(descriptor, sort_keys=True)
+        for forbidden in (
+            "assessment",
+            "guide",
+            "question_text",
+            "display_text",
+            "content_text",
+            "anchor",
+            "evidence",
+            "body",
+        ):
+            assert f'"{forbidden}"' not in serialized
 
 
 def _approve_blueprint(
@@ -1215,19 +1311,8 @@ def test_question_regeneration_replaces_locally_and_enforces_limit() -> None:
                 "reason_code": "SECOND_REGENERATION_ATTEMPT",
             },
         )
-        assert limited.status_code == 200, limited.text
-        limited_record = m.QuestionReviewActionRecord.model_validate(
-            limited.json()["action_record"]
-        )
-        assert limited_record.status == m.QuestionReviewRecordStatus.FAILED
-        assert limited_record.assessment_version_after is None
-        assert limited_record.after_question is None
-        assert [item.code for item in limited_record.diagnostics] == [
-            "LOCAL_REGENERATION_LIMIT"
-        ]
-        assert limited.json()["bundle"]["assessment_version"] == (
-            first_record.assessment_version_after
-        )
+        assert limited.status_code == 409, limited.text
+        assert limited.json()["code"] == "LOCAL_REGENERATION_LIMIT"
         history = client.get(
             (
                 f"/api/v1/assessments/{assessment_id}/questions/"
@@ -1241,11 +1326,9 @@ def test_question_regeneration_replaces_locally_and_enforces_limit() -> None:
         ]
         assert [item.action.action for item in historical] == [
             m.QuestionReviewActionType.REGENERATE,
-            m.QuestionReviewActionType.REGENERATE,
         ]
         assert [item.status for item in historical] == [
             m.QuestionReviewRecordStatus.APPLIED,
-            m.QuestionReviewRecordStatus.FAILED,
         ]
 
 
@@ -1703,19 +1786,28 @@ def test_stage2_controlled_pilot_e2e(tmp_path: Path) -> None:
                 job.aggregate_id == insufficient_id
                 and prompt_id == "P06_EVIDENCE_MAP_V1"
             ):
-                return m.EvidenceMapPatch(
-                    submission_id=insufficient_id,
-                    status="INSUFFICIENT_RELEVANT_EVIDENCE",
-                    diagnostics=[
-                        m.Diagnostic(
-                            code="INSUFFICIENT_RELEVANT_EVIDENCE",
-                            severity="ERROR",
-                            message=(
-                                "The authorized synthetic submission does not meet "
-                                "the evidence floor."
-                            ),
-                        )
-                    ],
+                assert isinstance(request, m.EvidenceMapRequest)
+                envelope = build_evidence_mapping_alias_envelope(request)
+                return materialize_evidence_mapping_draft(
+                    draft=m.EvidenceMappingModelDraft(
+                        scope_alias=envelope.scope_alias,
+                        mappings=[
+                            m.EvidenceMappingRelationDraft(
+                                variant_alias=envelope.variants[0].variant_alias,
+                                template_alias=envelope.templates[0].template_alias,
+                                evidence_aliases=[
+                                    envelope.evidence_units[0].evidence_alias
+                                ],
+                                support_status=m.EvidenceSupportStatus.PARTIAL,
+                                support_type=m.EvidenceSupportType.DIRECT,
+                                support_description=(
+                                    "La evidencia tiene una relación local, pero no "
+                                    "completa el observable del template."
+                                ),
+                            )
+                        ],
+                    ),
+                    request=request,
                 )
             return await original_gateway_stage(
                 job,
@@ -1739,6 +1831,17 @@ def test_stage2_controlled_pilot_e2e(tmp_path: Path) -> None:
         assert insufficient_job.json()["job"]["diagnostics"][0]["code"] == (
             "INSUFFICIENT_RELEVANT_EVIDENCE"
         )
+        durable_mapping = repository.scoped(
+            EvidenceMapRow, insufficient_id, TENANT_ID
+        ).data
+        assert durable_mapping["status"] == "READY"
+        assert durable_mapping["mapping_summary"] == {
+            "mapped_relation_count": 1,
+            "sufficient_count": 0,
+            "partial_count": 1,
+            "insufficient_count": 0,
+            "uncertain_count": 0,
+        }
         no_partial_assessment = client.get(
             f"/api/v1/submissions/{insufficient_id}/assessment"
         )
@@ -1857,9 +1960,8 @@ def test_stage2_controlled_pilot_e2e(tmp_path: Path) -> None:
         assert m.CoverageReport.model_validate(coverage.json()["coverage"]).traces  # 22
         guide = client.get(f"/api/v1/assessments/{assessment_id}/guide")
         assert guide.status_code == 200, guide.text
-        assert m.EvaluationGuide.model_validate(guide.json()["guide"]).status == (
-            m.WorkflowStatus.READY
-        )  # 23
+        assert guide.json()["guide"] is None
+        assert guide.json()["status"] == "NOT_AVAILABLE"  # 23
 
         current_question_id = final_bundle["assessment"]["questions"][0]["question_id"]
         feedback = client.post(
@@ -1895,7 +1997,12 @@ def test_stage2_controlled_pilot_e2e(tmp_path: Path) -> None:
             json={},
         )
         assert individually_approved.status_code == 200, individually_approved.text
-        assert individually_approved.json()["assessment"]["status"] == "APPROVED"  # 25
+        individually_approved_body = individually_approved.json()
+        assert individually_approved_body["assessment"]["status"] == "APPROVED"  # 25
+        assert individually_approved_body["guide_status"] == "READY"
+        assert m.EvaluationGuide.model_validate(
+            individually_approved_body["guide"]
+        ).status == m.WorkflowStatus.READY
 
         bulk = client.post(
             f"/api/v1/activities/{activity_id}/assessments:bulk-approve",

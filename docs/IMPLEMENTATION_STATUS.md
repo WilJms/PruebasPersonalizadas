@@ -1,7 +1,1133 @@
 # Estado de implementación — Etapa 2
 
-Fecha de corte: 2026-08-07 (America/Santiago; evidencia externa hasta
-2026-08-08 UTC).
+Fecha de corte: 2026-08-17 (America/Santiago).
+
+## Estado vigente — Fase 9B.1, generación real HIGH SMOKE (2026-08-17)
+
+Primera ejecución real bajo `semantic-benchmark/1.1.0` y
+`phase9-qualification-protocol/1.1.0`. Una sola autorización facturable
+`phase9b1-bfd3cf082617ea8b`
+(`sha256:bfd3cf082617ea8b33879a95e3fe141ac1f9c895594d1e4a3c6a3309622d547a`),
+consumida exactamente una vez, con techo externo USD 2.00 y los caps por
+llamada/rung congelados como autoridad interna.
+
+Alcance ejecutado: sólo el rung HIGH del split SMOKE, k=3, 30 primary logical
+calls sobre `P04-C1-TERRA-HIGH`, `P06-C1-LUNA-HIGH`, `P07-C1-LUNA-HIGH` y
+`P09-C1-LUNA-HIGH`. CORE, HELD_OUT, XHIGH, MAX, Sol, P01-P03, P05, P08, P10 y la
+reparación semántica de P11 quedaron inalcanzables y registran 0 llamadas. Cada
+request se reconstruyó desde el corpus sintético congelado y reprodujo su
+`input_hash` del case matrix antes de salir a transporte.
+
+Gasto real: **USD 0.38430826** sobre 117 498 tokens de entrada (87 769 en
+caché), 76 647 de salida y 46 505 de razonamiento. Precios estándar verificados
+contra la página oficial el 2026-08-17: Luna 0.20/1.20 y Terra 2.00/12.00 por
+1M tokens, coincidentes con la reducción fechada del 2026-07-30.
+
+Resultado técnico: 26 de 30 llamadas completaron y las 26 pasaron la revalidación
+determinista de su stage. Las 4 restantes son rechazos del boundary determinista
+(`P04_SOURCE_COVERAGE_MISMATCH`, `P04_DRAFT_COMPILATION_FAILED`,
+`P07_DRAFT_MATERIALIZATION_FAILED`, `P09_DRAFT_MATERIALIZATION_FAILED`), no
+fallos de transporte: `provider_technical_failures` = 0 y la tasa técnica queda
+en 0.000 frente al gate de 0.02. No hubo retries técnicos ni semánticos, y el
+mismo fixture pasa en unas repeticiones y falla en otras, lo que apunta a
+variabilidad del modelo y no a un defecto del compilador.
+
+Estado semántico: **`PENDING_ADJUDICATION`** para todas las propiedades de
+adjudicación externa. Esta ejecución **no** decide si HIGH califica. Se
+produjeron 38 blind review packets con 0 fugas de metadata; la adjudicación
+requiere un contexto Opus 5 nuevo que reciba únicamente el bundle ciego.
+
+Evidencia:
+`reports/semantic_benchmark/v1_1/phase9/executions/exec-phase9b1-bfd3cf082617ea8b/`.
+Bundle ciego separado en
+`reports/semantic_benchmark/v1_1/phase9/adjudication_bundles/exec-phase9b1-bfd3cf082617ea8b/`.
+
+## Estado vigente — Fase 9A.1, routing policy family-constrained (2026-08-17)
+
+`phase9-qualification-protocol/1.1.0` reemplaza a `1.0.0`
+(`sha256:e4254b28...`) **antes de cualquier llamada real**: 0 provider calls, 0
+adjudicator calls, 0 authorizations y ningún resultado de qualification bajo el
+protocolo anterior. Su estado queda registrado como
+`SUPERSEDED_PRE_EXECUTION_BY_ROUTING_POLICY_AMENDMENT` dentro del nuevo
+boundary, no borrado.
+
+La enmienda responde a una decisión explícita de producto y fija una familia por
+superficie económica. Activity side (P01-P04): `gpt-5.6-terra`, default HIGH,
+techo XHIGH. Submission side (P06/P07/P09): `gpt-5.6-luna`, default HIGH,
+escalera HIGH → XHIGH → MAX. `cross_family_fallback` = `FORBIDDEN` en ambos
+lados y `gpt-5.6-sol` deja de ser candidato en cualquier stage. Agotar la
+escalera produce `NO_QUALIFYING_CONFIGURATION`, que es información de producto y
+no un permiso para cambiar de familia después de ver resultados.
+
+La candidate matrix congela 11 configuraciones: P04 terra HIGH/XHIGH; P06, P07 y
+P09 luna HIGH/XHIGH/MAX. Los output caps siguen siendo los del registry
+productivo (P04 16k, P06 16k, P07 10k, P09 10k) y no se amplían para un rung más
+profundo; truncar bajo XHIGH/MAX es `TECHNICAL_FAILURE`, nunca `MODEL_FAILURE`.
+`TERRA_XHIGH_V1` y `LUNA_MAX_V1` existen en el registry real y cubren sus stages;
+no se inventó ninguna ruta.
+
+P01, P02 y P03 quedan como `PHASE10_OPERATIONAL_VERIFICATION_REQUIRED`: el
+benchmark no contiene qualification properties para ellos, no se fabricaron
+casos y que P04 califique no dice nada sobre ellos. Sólo P04 califica
+semánticamente en el activity side.
+
+La escalación es secuencial y dirigida por fallo: sólo corre el rung más bajo no
+intentado, y un rung más profundo se ejecuta únicamente si el anterior falló. La
+selección es `LOWEST_REASONING_CONFIGURATION_THAT_QUALIFIES`. Held-out sigue
+siendo confirmación: el fallback pre-registrado de 1.0.0 se conserva literal
+pero su precondición es inalcanzable bajo escalación secuencial, así que un
+fallo de held-out termina en `HELD_OUT_CONFIRMATION_FAILED` y
+`NO_QUALIFYING_CONFIGURATION`.
+
+Proyección de llamadas, con los dos escenarios separados: expected path 753
+calls (36/381/324/12) y worst case 1554 (57/777/690/30); planner 0. Budget
+recalculado desde cero: cap global worst-case **$84.49** y expected path
+**$16.98**, contra los $498.34 de la matrix anterior, que no se hereda. Todo es
+`ESTIMATE_NOT_BILL`.
+
+Sin cambios: benchmark `semantic-benchmark/1.1.0`
+(`sha256:426dda4d...`), corpus (`21c21f3a...`), splits, held-out membership,
+thresholds 0.80/0.95/0.95 (hash `sha256:145a925f...`), safety gate 51 hard / 7
+reviewable, adjudication protocol (hash `sha256:8ca70d58...`), k=3 semántico y
+1 planner, retry y PASS QA 15%.
+
+Nuevo boundary
+`sha256:daa79023de4e3b72a73f31879d481fbedb75492cc5fb4642c7fd2b4a4dbaa540`,
+determinista cross-process. Runtime productivo `NOT_AFFECTED`: el perfil vivo
+sigue siendo `LUNA_BASELINE_V1` y el routing final sólo se fija tras Phase 9
+qualification y Phase 10 E2E. `authorization = NONE`, `provider calls = 0`,
+`adjudicator calls = 0`, `qualification = NOT_YET_RUN`. Detalle en
+`docs/PHASE9_QUALIFICATION_PROTOCOL.md`.
+
+## Historial — Fase 8.1, benchmark semántico alineado (2026-08-17)
+
+La snapshot `pruebas-personalizadas-corpus/1.0.0` quedó vendorizada byte a byte
+en `evaluation/corpora/pruebas_personalizadas/v1/`: 218 archivos, 8.384.772
+bytes, 12 actividades, 72 submissions, 395 properties (361 VALID, 26
+ORACLE_SUSPECT, 8 NOT_APPLICABLE, 0 INVALID) y cuatro fixtures P09/doce
+preguntas. Fuente y copia pasan el validador congelado y conservan package hash
+`21c21f3a53bfb786162dc350dc38c93b7b007d9f23b744a354de4ac2354048a1`.
+
+`semantic-benchmark/1.0.0` queda preservado como
+`SUPERSEDED_PRE_QUALIFICATION/NOT_VALID_FOR_PHASE9_MODEL_SELECTION`: la
+auditoría confirmó propagación activity-wide de tags, fixtures P04/P06/P07
+genéricos o truncados y resolución P09 con fallback. No hubo qualification real
+con ese instrumento.
+
+`semantic-benchmark/1.1.0` es canónico y construye 272 casos: P04 12, P06 127,
+planner 21, P07 108 y P09 4. P04 proyecta 682/682 units de assignment y 470/470
+de rubric sin oracle; P06 usa 127 rutas explícitas; P07 usa 108 oportunidades
+con support exacto; P09 resuelve 12/12 preguntas con cero fallback. Los splits
+son SMOKE 12, CORE 139 y HELD_OUT_CONFIRMATION 121.
+
+Los bindings cubren las 395 properties: 354 `ALIGNED`, 33
+`EXPLICITLY_EXCLUDED`, 8 `NOT_APPLICABLE` y 0 arbitrarias. Tags case-level
+tienen scope/provenance; los top-level tags son sólo
+`ACTIVITY_COVERAGE_INDEX`. El denominador agrega observaciones primero por
+property/run y finalmente por property/configuración.
+
+El boundary
+`sha256:83b8df2a9e3d69bf1b548d0b775254a767634b58468e33c0408732791ee8c208`
+liga corpus, schemas, matrix/splits, definitions P06/P07, bindings, tags/rare
+coverage, locator P09, agregación, parser/planner y fronteras productivas. La
+frontera
+`ModelVisibleProjection` bloquea ratifications/oracles/audit/old labels con
+`BENCHMARK_ORACLE_LEAKAGE_BLOCKED`; P09 extrae sólo `questions`. El dry-run usa
+el parser real dos veces, ejecuta los 21 casos planner, pasa 17/17 invariantes,
+deja semántica aplicable `PENDING_ADJUDICATION` y registra provider calls 0,
+transport false, billable authorizations 0 y mock scoring false.
+
+Phase 9 sigue detenida: candidate matrix y thresholds `UNSET`, authorization
+`NONE`, qualification `NOT_YET_RUN`. La proyección full-corpus para un candidato
+sería 251 calls con k=1 o 753 con k=3, sin contar planner; no se ejecutó ninguna.
+Runtime, prompts, routing, frontend, OpenAPI, base de datos y migrations son
+`NOT_AFFECTED`. Detalle en `docs/SEMANTIC_BENCHMARK.md`.
+
+## Historial — Fase 7, P09 post-aprobación enrichment-only (2026-08-16)
+
+El pipeline funcional simplificado está completo en
+`pipeline-authority/1.1.0`: actividad ejecuta P01→P02→P03→P04→preflight
+determinista→aprobación docente; submission ejecuta P06→planner→P07→validación
+determinista→exactamente N→ASSEMBLE/`NEEDS_REVIEW`→acciones/aprobación docente
+→P09→`EvaluationGuide.READY`. P05/P08 son históricos y P10 permanece disabled.
+
+ASSEMBLE ya no llama P09 ni crea una guía activa. Una aprobación exacta se
+persiste junto con su evento durable y después encola idempotentemente
+`GUIDE_BUILD`; editar/regenerar/rechazar antes de aprobación produce cero P09.
+El job liga assessment version/ETag/snapshot, question-set hash, evento y
+snapshot de aprobación, policy y materializer. Repetir approval, reconciliar un
+crash o reintentar reutiliza la misma identidad lógica/StageRun y no duplica la
+guía ni la llamada.
+
+P09 `1.1.7` recibe `GuideAliasEnvelope` y devuelve `GuideModelDraft`, no
+`EvaluationGuide`. El DTO no puede escribir IDs canónicos, preguntas, anchors,
+locators, evidence membership, workflow ni aprobación. El materializador
+`p09-guide-materializer/1.0.0` conserva purpose/observables core P07, limita
+adiciones al support question-local, crea identidad y exige coverage completa,
+2–5 observables, niveles exactos 0–3, level 2 requerido, `cannot_infer` y
+contexto CLOSED. Un fallo deja el Assessment aprobado y ninguna guía parcial
+`READY`.
+
+La migración aditiva 007 conserva filas previas como
+`HISTORICAL_PREAPPROVAL`; sólo una guía ligada a la versión aprobada actual se
+selecciona como current/exportable. API/UI muestran pending/building/needs-review/
+failed/ready de forma separada de la aprobación y exponen history etiquetada. El
+nominal permanece `N+2` (P06=1, P07=N, P09=1), pero P09 pre-aprobación es cero.
+
+Frontera P09 actual: provider root `GuideModelDraft`, schema estricto 3.131
+bytes frente a 4.461 en el baseline de Fase 6 (−1.330; −29,81%),
+y `sha256:21b2020c83e941d260273b4ffc95511e057522093395cf85e621e5056ce04a3f`;
+materializer source
+`sha256:0d4af856781cb9df11e7299a2eeef04efae4fc5e44e8d0f7c46c7614e882a563`
+y boundary
+`sha256:0fe0051d348d418707c2698f0e632de18ce71fb3e5572792337b5b6ce89795f6`.
+Toda la ejecución de Fase 7 usa mock/offline, keys removidas y P10 false; no
+resuelve secretos ni autoriza/transmite requests billables.
+
+## Historial — Fase 6, P08 retirado del runtime activo (2026-08-15)
+
+El flujo interino de submission es
+`P06 -> planner -> P07 -> validación determinista -> exactamente N -> ASSEMBLE
+-> P09 -> revisión/aprobación docente`. `P08_QUESTION_REVIEW_V1` falla con
+`P08_ACTIVE_RUNTIME_RETIRED` antes de construir gateway/transporte; una
+ejecución nueva produce cero requests, ledgers, StageRuns, costes y
+`QuestionReviewRow` P08. No existe reviewer, judge, critic, score o umbral
+sustitutivo.
+
+`validate_generation_result` y la frontera materializadora P07 conservan scope,
+IDs server-owned, opportunity/path, support, anchor/locator canónico, formato,
+dificultad, tiempo, justificación, PII/secrets, choice shape, leakage y replay.
+`REPLACEMENT_REQUIRED` o un defecto question-local objetivo consume una reserva
+finita; scope/security falla cerrado. Antes de ASSEMBLE continúa siendo
+obligatorio `len(selected) == plan.question_count`, sin Assessment parcial.
+
+La persistencia nueva usa `save_generated_question` y deja `reviews=[]`.
+`QuestionReviewRow`, contratos, prompt, registry/routes, mocks, harness,
+qualification, reportes y receipts P08 históricos permanecen tenant-scoped y
+legibles, pero ACCEPT/REJECT/ESCALATE ya no cambian el resultado actual. Resume
+desde `QUESTION_REVIEW` legado reusa y revalida el P07 vigente sin nueva llamada
+P08; un P07 viejo que no recompila bajo la frontera vigente falla cerrado.
+
+P09 conserva exactamente el orden funcional de Fase 5, después de ASSEMBLE y
+antes del workflow docente. Moverlo después de aprobación es deuda explícita de
+Fase 7. P10 continúa deshabilitado. Toda validación de Fase 6 usa mock, keys
+removidas y cero red/requests billables.
+
+El anchor visible es un **subconjunto** de support evidence: puede ser menor o
+coincidir con ella. `Anchor.self_containment_score` se conserva como
+`DERIVED_COMPATIBILITY / LEGACY_NO_ACTIVE_AUTHORITY`; no es gate, probabilidad,
+answerability, aceptación, input P08 ni autoridad de aprobación docente.
+
+## Historial — frontera de generación P07 completa, Fase 5 (2026-08-15)
+
+Fase 5 conserva `P07_QUESTION_BUILD_V1` y sus objetos canónicos, pero reduce la
+inferencia a `QuestionModelDraft`. El proveedor recibe
+`QuestionAliasEnvelope` con scope local, oportunidad confiable, constraints y
+support evidence allowlisted como `E*`/`A*`; devuelve redacción, selección de
+visible anchor por alias, observables, alternativas, misconceptions,
+choices/rationales e incertidumbre o reemplazo. Ya no devuelve IDs, metadata,
+operación, formato, dificultad, tiempo, lineage, locators ni texto de anchor.
+Prompt pack/P07 avanzan a `1.1.16`/`1.1.5`.
+
+`p07-question-materializer/1.0.0` conserva
+`QuestionCandidate.evidence_ids` como support evidence completa de la
+oportunidad y reconstruye `AnchorFragment` literalmente desde cada
+`EvidenceUnit` seleccionado. Por tanto el anchor visible puede ser un
+subconjunto, menor o igual, sin perder answerability:
+`anchor evidence ⊆ candidate evidence = opportunity evidence`. Identidad,
+path del blueprint, operation, response format, difficulty, time,
+justification, option/observable IDs y campos canónicos son server-owned. Un
+draft incompatible falla cerrado o materializa `REPLACEMENT_REQUIRED`; nunca
+se mejora semántica ni se amplía evidencia.
+
+La frontera liga `p07-alias-envelope/1.0.0`, schema estricto provider,
+request/opportunity/support/bundle/policy/scope y
+`p07-materializer-boundary/1.0.0`. StageRun persiste sólo
+`QuestionGenerationResult`; un hit proyecta el draft y exige recompilación
+idéntica. Un draft no se interpreta como resultado canónico ni un resultado
+histórico como provider DTO nuevo. Cambio de support, oportunidad, scope,
+schema o materializador invalida reuse.
+
+La frontera publicada queda fijada por materializer source
+`sha256:341316e1272477c4032595e542c7df60d63de505c315011423175aa1835762e8`
+y boundary
+`sha256:9173f3dad548ca5da11ffa18a57c07c6badd89affaf99073e3005873def2617b`.
+El schema de aliases es
+`sha256:b8fc6e07c93b71d9530c1481f9f3112299128bfb2a23d9ca4f8050f4fccc40dc`
+y su boundary
+`sha256:214c6dbcdc5e92f8c6a5db5a16c48799473b31043911017a10d4ab3c451fe418`.
+
+La detección `p07-answer-leakage/1.0.0` bloquea sólo copia literal o cobertura
+4-gram ≥90% de observables/respuesta en anchor o pregunta; 65–90% queda como
+warning. No pretende decidir equivalencia semántica, suficiencia pedagógica,
+calidad general ni conocimiento externo. PII, secretos y claims/instrucciones
+prohibidos fallan antes de materializar; los literales reconstruidos del
+EvidenceUnit no se confunden con texto generado.
+
+La superficie provider baja de 13.671 a 2.822 bytes (-79,36%), de 100 a 17
+ocurrencias de propiedades y de 7 a 10 campos root pequeños; el payload de
+input canónico/alias baja de 2.294 a 914 bytes y el output provider de 3.051 a
+837 bytes. En mock, input/output baja de 573/750 a 416/216 tokens. Las llamadas
+P07 siguen en una por oportunidad, más sólo reservas/regeneraciones ya
+gobernadas; no cambiaron modelo, route ni reasoning.
+
+Durante Fase 5 P08 seguía activo, con los mismos diez scores, decisión y routing; entendía
+support evidence y visible anchor por separado. P09 conserva orden y semántica,
+y P10 sigue deshabilitado. Reservas, regeneración localizada, teacher edit,
+avoid fingerprints, retry/resume y lineage conservan el comportamiento previo.
+La modificación funcional siguiente era retirar P08 del runtime; Fase 6 la
+completó sin mover P09.
+
+Validación local final: 19/19 tests directos P07 y `make test`/`make test-cov`
+con 809 passed, 17 skips PostgreSQL explícitos, una warning Starlette conocida
+y 81% de cobertura sobre 14.495 statements. El gate de contratos pasó con 58
+roots/163 defs/319 refs/8 fixtures y hashes schema/model
+`ffb955e42d23724a754d1a5a74c30db7b25398016a8f435312732870cd625da0`/
+`a36a4a8d262349ed87fbf0674b267e362704925588bae6193e7d5c11d714aa07`.
+Typecheck, 36 tests frontend, build, Playwright 1+2, OpenAPI no-drift,
+Terraform, 11 deploy tests, fixtures, compileall, secret scan y convergence
+dry-run pasaron. Toda ejecución usó keys removidas, mock y P10 false; red del
+proveedor, secretos resueltos y requests billables fueron cero. PostgreSQL y el
+daemon Docker no estaban disponibles localmente y corresponden al CI del SHA
+publicado.
+
+## Historial — frontera semántica P06 completa (2026-08-15)
+
+Fase 4 conserva P06, pero reduce su pregunta a qué evidencia autorizada de una
+submission sustenta qué ruta semántica del blueprint. El payload del proveedor
+es `EvidenceMappingAliasEnvelope`; no contiene IDs canónicos, N ni campos
+mecánicos de oportunidad. El output wire es `EvidenceMappingModelDraft` con
+aliases `V*`/`T*`/`E*`, estado categórico, tipo/descripción de soporte,
+incertidumbre y abstención local. Prompt pack/P06 avanzan a `1.1.15`/`1.1.6`.
+
+`p06-evidence-materializer/1.0.0` resuelve el namespace cerrado, valida scope,
+membership, rutas y requisitos deterministas, crea IDs estables y copia los
+campos confiables del blueprint a un `EvidenceMapPatch` canónico. Su boundary
+`p06-materializer-boundary/1.0.0` es
+`sha256:34953efe2f54ed24a672bb9908f51c2edfa61d718409f05b612ba45a57c3f1af`;
+el schema de aliases queda ligado por
+`sha256:d4fafd899f10f33d39d99f296c79acabec0b5e5e08768a7c970dbcff23057f76`.
+El cache de StageRun guarda sólo el patch canónico y exige replay materializado
+idéntico. Snapshots históricos continúan legibles, pero no se reinterpretan
+como drafts ni se reutilizan bajo la frontera actual si no recompilan igual.
+
+`READY` en P06 ahora significa mapping completado aunque existan 0..N
+relaciones `SUFFICIENT`; conserva también `PARTIAL`, `INSUFFICIENT` y
+`UNCERTAIN`, con conteos durables en `mapping_summary`. Sólo el planner
+`stage2-planner/3.0.0` filtra `SUFFICIENT`, aplica constraints server-owned,
+selecciona exactamente N y prueba factibilidad. Si hay 3 suficientes para N=5,
+P06 termina y el planner devuelve `ASSESSMENT_PLAN_INFEASIBLE` con
+`mapping_completed=true`. `evidence_fit`, `mapping_confidence` y
+`opportunity_quality` permanecen únicamente para lectura/compatibilidad y se
+derivan en servidor; ningún validator, planner o workflow activo los usa como
+gate o ranking semántico.
+
+La superficie provider P06 bajó de 7.789 a 1.862 bytes (-76,09%), de 52 a 10
+ocurrencias de propiedades y de 7 a 2 campos root. En el fixture mock, el
+payload bajó de 3.413 a 1.325 bytes; la estimación offline pasó de 853/392 a
+520/89 tokens input/output. Sigue existiendo exactamente una llamada y un
+ledger P06 por ejecución no reutilizada; retry/resume no los duplica. No se
+cambió modelo, route ni reasoning y no hubo red, secreto o llamada billable.
+
+En ese corte P07 conservaba su frontera anterior; Fase 5 la sustituyó por la
+separación support evidence/visible anchor descrita arriba. P08 seguía activo,
+P09 conservaba su orden y P10 permanecía deshabilitado.
+
+Validación local final: focal ampliado 308 passed; `make test` y
+`make test-cov` 790 passed/17 skips PostgreSQL, 81% coverage; contratos 56
+roots/155 defs/306 refs/8 fixtures; convergence dry-run y secret scan PASS.
+Frontend no fue modificado. PostgreSQL/Docker no estaban disponibles localmente
+y quedan cubiertos por las matrices CI del SHA final.
+
+## Estado vigente — cutover runtime P05 completo (2026-08-15)
+
+Fase 3 implementa `P05_RUNTIME_CUTOVER_COMPLETE_P08_PENDING`. El pipeline de
+actividad nuevo termina P01→P02 opcional→P03→P04→`BLUEPRINT_PREFLIGHT`→docente.
+P04 sigue produciendo el `AssessmentBlueprint` canónico mediante el compilador
+de D-075; el preflight se persiste como StageRun y en
+`blueprints.preflight`. PASS deja una versión `READY`; FAIL conserva una versión
+`NEEDS_REVIEW` y sus diagnostics/correction scope. Ninguno de los dos caminos
+construye request, gateway transport, review ni ledger P05.
+
+Ediciones docentes crean un job durable `BLUEPRINT_PREFLIGHT`, vuelven a
+validar contra spec/rubric/policy/decisiones y sólo entonces publican la nueva
+versión. La aprobación exige blueprint vigente, preflight recomputado PASS,
+snapshot coherente cuando existe, ETag, ownership, permiso y acción docente;
+ignora completamente recommendation/status/checks históricos P05. El costo de
+actividad pasa de 4/5 llamadas a 3/4 sin/con rúbrica.
+
+La migración aditiva 006 añade `blueprints.preflight`; `review` permanece
+nullable y legible. Un job legacy `BLUEPRINT_REVIEW` se valida por descriptor,
+tenant, lineage, ETag y estructura, luego ejecuta o reutiliza el preflight y se
+finaliza sin proveedor. Incluso en el worker eval-only real esa clase de job no
+consume autorización, no resuelve la clave ni construye transporte; una
+autorización nueva se rechaza. Lease recovery, retry/resume y cancel no dejan
+la actividad stranded. Registry, routes, prompts, contracts, fixtures, reports y
+receipts P05 no se borran ni reescriben: son compatibilidad/evidencia histórica
+no canónica. El CLI sintético de Etapa 0, rehearsal, harness, mocks y tests que
+aún materializan P05 son superficies test-only/históricas, no runtime del
+producto. P06/P07/P08/P09 no cambian, P08 y el movimiento de P09 siguen
+pendientes y P10 continúa deshabilitado. No hubo llamadas reales ni autorización
+billable.
+
+## Estado vigente — frontera semántica P04 compilada en servidor (2026-08-15)
+
+Sobre el baseline de Fase 1
+`5698be185355dff48f25b5e791150d232d70eb9f`, P04 conserva
+`AssessmentBlueprint`, sus dimensiones, variantes,
+`QuestionOpportunityTemplate` y el catálogo común. La llamada al proveedor ya
+no devuelve ese root completo: devuelve `BlueprintModelDraft`, con aliases
+locales D/V/T y sólo decisiones pedagógicas. El gateway compila el draft de
+forma determinista, crea IDs canónicos, copia identidad/policy/decisiones,
+deriva workflow y ejecuta el preflight exacto existente.
+
+El compilador rechaza aliases o referencias inexistentes, duplicados
+semánticos evidentes, operaciones no soportadas, formatos/contexto fuera de
+allowlist, estructuras imposibles y los límites server-owned del catálogo.
+`BlueprintPolicy` añade defaults compatibles de seis variantes por dimensión y
+doce templates por variante: son guardrails operacionales provisionales,
+configurables y server-owned, no límites pedagógicos universales. Si el
+catálogo compilado no admite un plan de \(N\), el servidor devuelve un diagnóstico concreto y
+`correction_scope=P04_BLUEPRINT_BUILD`; el modelo no reproduce ese cálculo.
+
+La frontera estructurada del proveedor bajó de 11.475 a 7.373 bytes canónicos,
+de 71 a 44 definiciones de propiedad y de 12 a 3 campos root. Los invariantes
+retirados del modelo quedaron en compilador/preflight. No hubo llamadas reales,
+build, deploy, cambio de routing, datos reales ni habilitación de P10. El
+provider output queda ligado a `provider-output-schema-boundary/1.0.0`, schema
+wire estricto hash `sha256:f7cd09db3f22db8dc1d7a48f2ad383935f524479004ec9695ff1c61ef4dd7ab0`.
+El compilador `blueprint-compiler/1.0.0` queda ligado por
+`blueprint-compiler-boundary/1.0.0`, boundary hash
+`sha256:3473adf8d2b8c2e4203a6a0f441ae7d45a387a2f6629e5a60cec8e2dc36bdfe5`.
+El cache de etapa persiste sólo el `AssessmentBlueprint`; su replay recompila
+la proyección semántica y exige igualdad canónica. Los receipts históricos
+permanecen sin reescritura. La regresión final fue
+`766 passed, 17 skipped` por PostgreSQL local ausente y un warning Starlette
+conocido; el gate contractual quedó en 54 roots, 145 definiciones, 289
+referencias y 8 fixtures.
+
+## Historial — `PIPELINE_AUTHORITY_FORMALIZED` / `RUNTIME_CUTOVER_PENDING` (2026-08-14)
+
+ADR-037 y `pipeline-authority/1.0.0` fijan el objetivo sin rediseñar la
+arquitectura: P01→P02→P03→P04→preflight→docente y, por submission,
+P06→planner→P07→validaciones→docente→P09. P05/P08 son inactivos en el objetivo
+y P10 continúa deshabilitado. En ese corte el runtime todavía conservaba
+dependencias legacy P05/P08; Fase 3 retiró P05, mientras P08/P09 siguen
+pendientes.
+
+El harness semántico y todas las qualifications Luna/Terra/Sol quedan como
+`HISTORICAL_NON_CANONICAL_EVIDENCE`; reports y receipts se preservan y ya no
+seleccionan modelo. El clasificador distingue `VALID`, `ORACLE_SUSPECT`,
+`INVALID` y `NOT_APPLICABLE`; la sospecha prevalece sobre `MODEL_OWNED_*`.
+Sólo reportes `SYNTHETIC_ONLY_NO_STUDENT_DATA` enumeran códigos estructurados
+en claro con hash. No hubo llamadas billables, build, deploy, cambio de routing
+ni habilitación de datos reales en esta iteración.
+
+## Historial — `LUNA_HIGH_QUALIFICATION_FAILED` / `CONVERGENCE_INCOMPLETE` (2026-08-12)
+
+Desde este encabezado, “vigente”, “abierto” y “autoridad siguiente” significan
+únicamente “en el corte histórico de la subsección”. No describen autoridad
+actual ni reabren un gate de selección de modelo.
+
+El candidato congelado `93da59414fb49bd4df5c21af193a0226b4bc5fdb`
+cerró la remediación focalizada de P08 y el oráculo determinista de P05. P08
+explicita que sólo revisa al candidato y no puede ampliar sus `evidence_ids` ni
+`source_ids`; P05 clasifica el positivo como `APPROVABLE` y exige la matriz
+exacta de categorías, estados y criticidad, con una única falla crítica
+`PLAN_FEASIBILITY` en la mutación. Ambos golden checks pasaron sin requests al
+proveedor.
+
+La regresión del candidato quedó verde: backend 609 passed/17 skips PostgreSQL
+explícitos, PostgreSQL 1+8+206 casos, frontend 36/36, contratos, OpenAPI,
+seguridad, cache/reuse, exactly-once y Terraform. Los workflows de push y PR
+del candidato pasaron 7/7 jobs cada uno. No se ejecutó build, deploy, apply,
+migración remota ni E2E cloud.
+
+La única matriz real final autorizada usó exclusivamente `gpt-5.6-luna` con
+reasoning HIGH. Terminó `FAIL` tras 16/24 requests: P07 produjo
+`UNAUTHORIZED_EVIDENCE`, P08 rechazó las dos rutas que lo alcanzaron, P05
+produjo `P05_REFERENCED_ID_NOT_ALLOWLISTED` y P06 produjo
+`UNSUPPORTED_COGNITIVE_OPERATION`. Fueron fallas semánticas atribuibles al
+modelo, sin falla de credenciales, red, schema, runtime, infraestructura ni
+ledger. Consumió USD 0.07123828 reales y USD 0.27835468 conservadores, dentro
+de caps USD 0.75/0.10; P10/P11, tools, store, fallback y retries fueron cero.
+
+Conforme al stop contractual, no hubo tuning, repetición, XHIGH ni cambio de
+modelo. El resultado terminal es **`LUNA_HIGH_QUALIFICATION_FAILED`** y
+**`CONVERGENCE_INCOMPLETE`**; el candidato no pasa a Fase 4 Ultra. El handoff
+consolidado y la matriz final están en
+`docs/audits/STAGE2_CONVERGENCE_HANDOFF.md` y
+`reports/openai/stage2_convergence_93da594_20260812_final_01.json`.
+
+## Historial — `OPENAI_REAL_P04_V119_RECANARY_READY` (2026-08-11)
+
+El SHA `fefea94d25a974ddf05e71f7212616e625ee5303` quedó construido y
+desplegado por el build `89cff4cb-3b8e-4abf-87e2-af82581ad078`,
+`SUCCESS/VERIFIED`, con digest coincidente y procedencia firmada
+`sha256:04032e44c4177318545ae15a1dc48a9a72b0b04411c86f92f30dfb87a4d6b95d`.
+El plan guardado `4adf5d8526efefdabe251c26ea12429b74971c35d825eaedaf8ad5eb220fc00e`
+tuvo exactamente dos updates in-place de imagen y su único apply terminó
+0/2/0. Web quedó mock/sin clave; worker real con secreto v2, USD 0.55, P10
+false, task/paralelismo 1/1 y `maxRetries=0`; health/readiness, IAM y dos planes
+`No changes` pasaron.
+
+El E2E fresco `act_8187dcc2159d5462d99a` se detuvo correctamente en su segunda
+ejecución. `job_579409c52eb9459dc703` / `cva-worker-blj5v` terminó
+infraestructuralmente `SUCCEEDED` y en dominio `NEEDS_REVIEW`; P01-P03 fueron
+`SCHEMA_VALID` y seis decisiones P03 recomendadas quedaron durables. La única
+reanudación creó `job_d683a83a252b71fb45e2` / `cva-worker-m2mlr`, que terminó
+exit 1, `FAILED/SECURITY`, intento 1 y sin retry. P04 1.1.8 pasó el schema del
+proveedor, pero el validador rechazó
+`CONTEXT_FAILURE_OUTPUT_EVIDENCE_ID_NOT_ALLOWLISTED`: un diagnóstico usó como
+`evidence_id` un ID de otra clase. No se llamó P05, no hubo blueprint, edición,
+aprobación ni submission.
+
+El tramo consumió exactamente cuatro Responses y USD 0.02256005: P01
+USD 0.00215155, P02 USD 0.00194855, P03 USD 0.00537480 y P04
+USD 0.01308515. P10/P11/Sol/fallback/retries fueron cero. El stop conserva el
+límite ampliado de cuatro executions: sólo se usaron dos y no se intentaron las
+dos restantes.
+
+La remediación normativa P04 1.1.9 mantiene intacto el rechazo de seguridad y
+hace explícitas las allowlists de `diagnostics[].evidence_ids/source_ids`; los
+IDs de statement/criterion/decision/issue/option nunca se reinterpretan como
+evidencia. La recanary fija la misma forma productiva: un learning outcome, dos
+criterios sin pesos/niveles, seis decisiones, N=1, diez minutos, dos formatos,
+dos evidence IDs autorizados y cero fuentes de curso. Su dry-run pasa P04→P05
+con 2 fake/0 red, hashes P04
+`sha256:d34145db…`/`sha256:0cacc7b7…`, ceiling USD 0.05046625 y cap USD 0.06.
+La evidencia vigente queda deliberadamente en 16/18 hasta ejecutar y sellar
+exactamente una recanary real P04→P05; no se repetirá el E2E antes de ese gate.
+La regresión candidata pasa 558 pruebas backend con 16 skips PostgreSQL
+explícitos, frontend 34/34, deploy 11/11, seguridad 2/2, contratos,
+fixtures/OpenAPI, secretos, Terraform, audit npm, imagen y smoke aislado.
+
+## Historial — `OPENAI_REAL_MANUAL_EVAL_PENDING` (2026-08-11)
+
+El código candidato `88416b522414f316613bea96ad08687e8a335a38` fue construido
+una sola vez por Cloud Build
+`441be72d-04ae-46e9-b150-6eec1032c8d6`. El build terminó
+`SUCCESS/VERIFIED`; Cloud Build y Artifact Registry resolvieron exactamente el
+digest
+`sha256:d31899535c76b08ee79163479530b044783b73956c6fe228a01a3e603008893d`.
+La imagen expone procedencia SLSA 3 firmada, con predicate v1 y ese build/SHA
+como invocation y subject.
+
+El plan Terraform guardado tuvo SHA-256
+`64b200559044ecb2e0a44ea68a63f7c174088c12da1209f6624b77f388c1670e` y
+contenía únicamente dos updates in-place: imagen de `cva-web` e imagen de
+`cva-worker`; 0 create, 0 delete, 0 replace y 0 cambios adicionales. Su único
+apply terminó `0 added, 2 changed, 0 destroyed`. Dos planes vivos consecutivos
+posteriores terminaron exit 0 y `No changes`.
+
+Web quedó Ready en revisión `cva-web-00019-8s5`, mock y sin clave. Worker quedó
+Ready, real, con `cva-openai-api-key` v2, máximo USD 0.55 por job, P10 false,
+task/paralelismo 1/1 y `maxRetries=0`; el acceso al secreto pertenece sólo a
+`cva-worker`. Ambos usan el digest inmutable indicado. Health y readiness
+respondieron 200 y `/api/v1/activities` anónimo respondió 401. Build, plan,
+apply y verificación ejecutaron 0 jobs, 0 E2E y 0 Responses.
+
+La evidencia real vigente en ese corte continuaba 18/18 y la regresión del SHA
+desplegado permanece verde. Falta únicamente un E2E fresco, exclusivamente sintético, con
+edición/re-review P05 durable y submission antes de declarar
+`OPENAI_REAL_MANUAL_EVAL_READY`.
+
+## Historial — `OPENAI_REAL_REMEDIATION_DEPLOY_REQUIRED` (2026-08-11)
+
+El candidato `dfd102d85816de30b3b082777268388061f83585` fue construido por
+Cloud Build `78a7c1f4-b857-472b-b210-9d56e638190a`, verificado y desplegado
+con digest
+`sha256:9048f9da77fda2b5ab8d6a974d9b4b8b5a2b6a141062bcb36751b8516691e3ab`.
+Web permanece mock/sin clave y worker real con secreto v2, USD 0.55, P10
+false, task/paralelismo 1/1 y `maxRetries=0`; health/readiness y no-drift
+pasaron.
+
+El E2E sintético nuevo creó la actividad `act_aecd258c017c5b37c603`. El job
+`job_79990d0a59293ba1579e`/execution `cva-worker-mlrkw` terminó
+infraestructuralmente `SUCCEEDED` y dominio `NEEDS_REVIEW` en P03. Se
+persistieron exactamente las tres opciones recomendadas y una única
+reanudación creó `job_6d448be53c5080bd1c61`/`cva-worker-j2lkz`. P04 y P05
+pasaron schema/Pydantic/contexto, el blueprint quedó `READY`, pero P05 devolvió
+`READY/REJECT`. Se aplicó el stop antes de edición, aprobación, submission o
+tercera ejecución.
+
+El tramo consumió cinco Responses y USD 0.03490275: P01 USD 0.00189380,
+P02 USD 0.00198725, P03 USD 0.00714900, P04 USD 0.01014495 y P05 USD
+0.01372775. P10/P11/Sol/fallback/retries fueron cero. La causa es doble: P05
+confundió el catálogo ADR-030 con un plan exacto-N, y las decisiones P03 sólo
+transportaban option IDs opacos.
+
+La remediación local introduce `PolicyDecision.selected_option` autocontenido,
+rehidratación compatible de decisiones históricas, P04 1.1.7, P05 1.1.5 y
+validación determinista de cobertura fuente y factibilidad exacta-N. El gate
+P04→P05 dry-run pasa con dos transportes fake, hashes
+`sha256:48f9aa99…`/`sha256:e2f944b4…` para P04 y
+`sha256:d5f35e82…`/`sha256:022bcdd3…` para P05 derivado, ceiling USD
+0.04988775 y cap USD 0.06. P06 decision-lineage también pasa dry-run, una
+request, ceiling USD 0.023361 y cap USD 0.03.
+
+La observación real acoplada quedó consumida y se detuvo correctamente en P05:
+P04 1.1.7 terminó PASS `READY` con schema provider/Pydantic/contexto/outcome
+PASS, 4,570 input, 4,567 cache-write, 7,132 output, 5,094 reasoning, 56,949 ms
+y USD 0.00970075. Su output validado quedó ligado a
+`sha256:66f57765…`. P05 recibió exactamente ese output, pero alcanzó el límite
+interno de 120 s a los 120,016 ms y terminó `MODEL_TIMEOUT`. Fueron exactamente
+2/2 Responses, sin retry/P10/P11/Sol/fallback; el charge conservador agregado
+fue USD 0.05106550 bajo cap USD 0.06. El reporte content-free tiene SHA-256
+`d0d27500adeee0b4b234a5ee65e3e642f9b85929cd689fc6f86beb87eee2de14`.
+
+La recuperación distinta terminó PASS en el SHA `1125410…`: P04 y P05
+devolvieron `READY` y pasaron schema provider, Pydantic, contexto, outcome y
+los controles semánticos acoplados. Fueron exactamente 2/2 Responses, 0
+retries/P10/P11/Sol/fallback, 48,578 ms + 47,023 ms y USD 0.01645840 actual;
+el charge conservador fue USD 0.04086520 y el ceiling USD 0.05147825 bajo cap
+USD 0.06. P05 quedó ligado al input dinámico `sha256:e8bd0e92…`; el reporte
+content-free tiene SHA-256
+`3452b12bf89ea0cb59c29837b054d60db0ef46ceeb950802c680e20001a94df8`.
+El gate está consumido y no admite replay.
+
+P06 decision-lineage se ejecutó después del PASS acoplado y terminó PASS
+`READY` en 8,270 ms: schema provider/Pydantic/contexto/outcome y todos los
+controles de lineage pasaron. Consumió exactamente 1/1 Responses, 2,884 input,
+2,881 cache-write, 637 output y 224 reasoning; USD 0.00148525 actual, USD
+0.01992085 de charge y USD 0.023361 de ceiling bajo cap USD 0.03. P10, P11,
+Sol, fallback y retries fueron cero. El reporte content-free tiene SHA-256
+`5daf7774e0ffee1bbc6b9b834b09f2022a496cdf14daabed303467cd7087c5b3` y
+el gate quedó consumido.
+
+P04/P05/P06 elevan la evidencia vigente a 18/18. La remediación usa timeout
+SDK/gateway 240/245 s y retries cero; no quedan evals focales pendientes.
+
+La regresión local completa pasa con 554 pruebas backend, 16 skips
+PostgreSQL explícitos, una advertencia conocida y 80% de cobertura; el CI del
+SHA `19f4b17…` terminó 7/7 verde tanto en push como en PR. Este estado no es
+todavía `OPENAI_REAL_MANUAL_EVAL_READY`: faltan construir/desplegar el nuevo
+SHA y ejecutar un E2E fresco con edición P05 durable y submission.
+
+## Historial — `OPENAI_REAL_P04_V116_REMEDIATION_DEPLOY_REQUIRED` (2026-08-11)
+
+Las seis interpretaciones recomendadas de P03 fueron seleccionadas en la UI y
+persistidas como seis `PolicyDecision` distintas. `Guardar y reanudar
+blueprint` creó exactamente el job `job_38cda767879d8f37f1d2` y la ejecución
+Cloud Run `cva-worker-99fk7`; P01-P03 se reutilizaron desde sus `stage_runs`
+sin otra llamada. P04 v1.1.2 hizo una Responses y devolvió JSON válido para el
+schema del proveedor, pero inválido para un invariante Pydantic raíz. La única
+P11 permitida produjo `SCHEMA_VALID` sin corregir el contrato destino. El job
+quedó `FAILED`/`PERMANENT`, la actividad `TECHNICAL_FAILURE` y la task terminó
+exit 1 con `maxRetries=0`; se aplicó el stop antes de P05, blueprint y
+submission.
+
+La continuación consumió dos Responses: P04, 4,662 input, 4,659 cache-write,
+6,951 output, 2,463 reasoning, 58,165 ms y USD 0.00950655; P11, 7,079 input,
+7,076 cache-write, 194 output, 53 reasoning, 3,074 ms y USD 0.00200240. El E2E
+de producto acumula 5 Responses y USD 0.02453340. P10, Sol, fallback y retries
+permanecieron en cero; existen cero blueprints y cero submissions.
+
+La remediación normativa `prompt-pack/1.1.6` hace explícitas en P04 las
+referencias allowlist, decisiones exactas y relaciones entre IDs, operaciones,
+formatos, justificación y aprobación que JSON Schema no puede expresar. Su
+frontera queda fijada por prompt
+`sha256:95989468bf10f1d23d2090d7aeb378c24c073ea509dc1e9830396b2fba32b98b`
+e input
+`sha256:7320de03d1d88dff8ba6442e2fb929d5e2a05532691a9fe40a08603e7f9b4091`.
+
+La primera observación aislada consumió una request, pero el proceso de
+orquestación perdió su salida antes de archivarla. `store=false` dejó cero
+Responses recuperables en Platform; se clasificó `INCONCLUSIVE` y su gate se
+cerró sin replay. Bajo un gate de recuperación separado y también de una sola
+request, la misma frontera terminó **PASS `READY`**: provider schema,
+Pydantic, contexto y expected outcome PASS; 3,554 input, 3,551 cached, 4,422
+output, 2,588 reasoning, 35,515 ms y USD 0.00537802. El ceiling fue USD
+0.02442225, bajo el cap USD 0.03; P10/P11/Sol/fallback y retries fueron cero.
+El reporte content-free quedó ligado a request/output hashes y SHA-256 de
+reporte `c47db41ae010c38e3bfe4c3c461d04fac50f5e0d17774e884836b5c90bb9402a`.
+Ambos gates están consumidos y fallan cerrados.
+
+La regresión local candidata termina 556 PASS/16 skips backend, 127/127 en
+gateway+harness, 34/34 frontend, 11/11 deploy y 2/2 seguridad; typecheck,
+frontend build, npm audit, Terraform fmt/validate, contratos, fixtures,
+OpenAPI, secretos y `git diff --check` también pasan.
+
+El digest desplegado continúa siendo
+`sha256:97960034f6c4c6c3b2967d186035f0940e481f9e2c9bf9df24213cd30d31aaeb`;
+no se hizo build, deploy, Terraform, IAM, cambio de secreto ni job adicional.
+El candidato aún no es `OPENAI_REAL_MANUAL_EVAL_READY`: debe cerrar la suite
+local/CI, construir y desplegar un SHA nuevo bajo digest inmutable y completar
+un E2E sintético nuevo sobre P04 v1.1.6.
+
+## Historial — `OPENAI_REAL_SYNTHETIC_E2E_P03_DECISION_REQUIRED` (2026-08-11)
+
+La autorización del primer E2E real quedó consumida y se detuvo en su primer
+estado de dominio distinto de `SUCCEEDED`, tal como exigía el gate. La UI creó
+únicamente la actividad `act_ea5ebf2189f790692730` con `question_count=1` y
+los hashes exactos de `assignment.md` y `rubric.md` del bundle autorizado. El
+único job de actividad, `job_5319932b9b5e2fcb0d0c`, produjo una sola ejecución
+Cloud Run, `cva-worker-tj99w`; la tarea de infraestructura terminó
+`EXECUTION_SUCCEEDED`, intento 1 y `maxRetries=0`, pero P03 persistió el job y
+la actividad como `NEEDS_REVIEW` con `ASSIGNMENT_AMBIGUOUS`.
+
+P01, P02 y P03 terminaron `SCHEMA_VALID` con Luna y stage runs `SUCCEEDED`.
+Se observaron 3/32 Responses, 8,650 input, 0 cached, 9,052 output y USD
+0.01302445 de costo real calculado frente al cap agregado USD 0.90. P10, P11,
+Sol, fallback y retries fueron cero. P03 devolvió seis ambigüedades, cuatro
+bloqueantes; la UI no seleccionó ninguna interpretación. No se crearon
+blueprint, decisiones docentes, edición P05, submission ni otro job. Después
+de la parada quedaron cero jobs `QUEUED`/`RUNNING`, 24 ejecuciones históricas
+y cero builds activos.
+
+El candidato no es todavía `OPENAI_REAL_MANUAL_EVAL_READY`. Resolver P03
+requiere una decisión docente explícita y una autorización nueva: la acción UI
+crearía otro job de actividad y otra ejecución, fuera de la frontera ya
+consumida de exactamente un job de actividad y máximo tres ejecuciones. No se
+hicieron cambios de build, Terraform, IAM, secretos, imagen ni configuración.
+
+## Historial — `OPENAI_REAL_SYNTHETIC_E2E_APPROVAL_REQUIRED` (2026-08-11)
+
+El único submit autorizado para `b4ec283ff4af7e50e1435a6588293a94a8de4de4`
+creó el build `613270cf-bdfb-4b18-a423-35f68198f471` con la cuenta dedicada
+`cva-cloudbuild`, región `us-east1` y timeout 3600 s. Terminó `SUCCESS`, con
+`requestedVerifyOption=VERIFIED`, y publicó
+`sha256:97960034f6c4c6c3b2967d186035f0940e481f9e2c9bf9df24213cd30d31aaeb`.
+Artifact Registry resolvió el tag del build al mismo digest, informó SLSA 3 y
+la configuración OCI fijó `org.opencontainers.image.revision` al SHA
+autorizado. No hubo retry ni un segundo build.
+
+El plan Terraform guardado
+`ad7ab59a5eae5823bf6ee6dac481d2b6fe4d9636a38341cedb02ed23d760a370`
+mostró 36 recursos sin cambio, exactamente dos updates in-place (`cva-web` y
+`cva-worker`), exactamente un create (`roles/secretmanager.secretAccessor`
+sólo para `cva-worker`) y cero delete/replace. Todas las precondiciones
+autorizadas pasaron antes de ejecutar exactamente un apply: web quedó en mock
+y sin clave; worker en real con `cva-openai-api-key` v2; costo máximo por job
+USD 0.55; P10 false; task/paralelismo 1/1 y `maxRetries=0`. El apply terminó
+`1 added, 2 changed, 0 destroyed`.
+
+La revisión web `cva-web-00017-vvp` está Ready, Service y Job usan el mismo
+digest inmutable, y el IAM del secreto contiene únicamente a `cva-worker`.
+Health/readiness respondieron 200 y una ruta privada anónima respondió 401.
+Dos planes consecutivos con refresh terminaron exit 0 y `No changes`. El Job
+conservó exactamente 23 ejecuciones; la última sigue siendo
+`cva-worker-w8q8x` del 8 de agosto. Esta fase ejecutó cero jobs, cero E2E y cero
+Responses requests.
+
+El candidato experimental ya está desplegado, pero todavía no es
+`OPENAI_REAL_MANUAL_EVAL_READY`. El único paso billable pendiente es un E2E
+sintético real bajo autorización separada: fixture versionado
+`activity_01_rubric`, ceiling agregado USD 0.855444, cap humano propuesto USD
+0.90, máximo defensivo 32 Responses, retries automáticos cero, stop al primer
+job no exitoso y P10/Sol/fallback cero. No se autoriza dato estudiantil real.
+
+El preflight read-only posterior al deploy revalidó la tarifa oficial Luna
+(USD 0.20/M input, 0.02/M cached, 0.25/M cache-write y 1.20/M output). El
+proyecto `PruebasPersonalizadas` conserva sólo `gpt-5.6-luna`, límites efectivos
+200,000 TPM / 500 RPM y gasto USD 3.87 de USD 5.00: quedan USD 1.13, superiores
+al cap propuesto USD 0.90. La vista de límites se cerró con Cancel; no hubo
+cambio de configuración ni request de modelo/Responses.
+
+## Historial — `OPENAI_REAL_CANDIDATE_BUILD_REAUTHORIZATION_REQUIRED` (2026-08-11)
+
+El primer submit autorizado para `0a521d6` se detuvo en el primer fallo,
+antes de crear un recurso build o devolver build ID. La CLI cargó el archivo
+fuente, pero la resolución posterior usó la cuenta de cómputo predeterminada,
+que recibió `403 storage.objects.get`; el runbook manual omitía la identidad
+`cva-cloudbuild` ya declarada para el trigger. No hubo retry, digest, Terraform
+apply, cambio de IAM/runtime, job, E2E ni Responses request. La autorización
+quedó consumida.
+
+La remediación hace obligatorio `--service-account` con el output canónico de
+Terraform, fija `--timeout=3600s`, exige build ID no vacío y añade una regresión
+estática. `cva-cloudbuild` conserva los permisos mínimos observados para leer y
+crear objetos y publicar en Artifact Registry. Un nuevo submit requiere un
+gate humano exacto fijado al nuevo SHA; el runtime continúa en mock sobre el
+digest histórico.
+
+El gate renovado para `b8142f5` sí creó exactamente un build con la identidad
+correcta: `ccadfb3c-c645-4de4-879e-7dcaaa8cf8d8`. Se detuvo en el paso 0 con
+540 PASS, 16 skips y ocho fallos del harness, todos por
+`FileNotFoundError: make`: la imagen Alpine declaraba `git` y `libmagic`, pero
+no el ejecutable usado por ocho Make targets versionados. No se ejecutaron los
+gates Terraform/frontend, build de imagen o smoke; el resultado no contiene
+imagen ni digest. Tampoco hubo apply, cambio de IAM/runtime, job, E2E o
+Responses request. El segundo gate quedó consumido sin retry.
+
+La remediación declara `make` como dependencia explícita del paso y su
+regresión estática lo hace obligatorio. Una reproducción desde cero sobre los
+211 archivos de upload, dentro de la misma imagen Alpine fijada por digest,
+terminó PASS: contratos/fixtures/secret scan, 548 tests con 16 skips, 11 tests
+de deploy y dos controles de seguridad. El P1 operativo queda corregido
+offline; un Cloud Build nuevo continúa requiriendo autorización exacta para
+probarlo en el entorno remoto.
+
+La única canary P11 directa v1.1.4 autorizada sobre `976aadc` quedó consumida y
+terminó **PASS** `REPAIRED`. Schema estricto del proveedor, Pydantic, contexto y
+expected outcome pasaron; la reparación conservó el target y fue exactamente
+la modificación estructural mínima autorizada. La ejecución usó una Responses
+request, P11 exactamente uno y retries gateway/prompt/SDK, P10, Sol y fallback
+en cero. El costo calculado fue USD 0.00070015, el charge conservador USD
+0.00996535 y el ceiling USD 0.01172550, bajo el cap USD 0.02.
+
+La observación usó 1,462 input, 0 cached, 1,459 cache-write, 279 output y 34
+reasoning tokens en 3,892 ms. Queda ligada a prompt/input:
+
+```text
+sha256:43f2ca4d6a0c02f015125a96f3a12bc5dd8d6c0eab0583f9c2f11b0f1c1f1f04
+sha256:f8c2a6058214a4958b83e8850780e2827e1269720251f25f1e21d062371fb185
+```
+
+Sólo se conservan metadatos seguros: output hash
+`sha256:8b12cf3f787b45200c8577a1d3ab1e5fadd406e6b0674f8ce71a1a6c8e998be6`
+y request-ID hash
+`sha256:f1c5229c5fb856cb545d686fbc9818e551e0b1b7b1ccf1bdab086c9fc48782b2`;
+no se retuvieron payload, output, clave ni request ID en claro. El entrypoint
+queda sellado con `OPENAI_P11_V114_DIRECT_ALREADY_CONSUMED` antes del adapter.
+
+La evidencia real hash-bound cubre ahora **18/18** casos. P0/P1 permanecen
+cerrados y el conteo vigente es **P0=0, P1=0, P2=5, P3=1**. Cloud continúa en
+el digest histórico, `CVA_MODEL_MODE=mock` y `CVA_P10_ENABLED=false`; no se creó
+un build ni hubo deploy, Terraform apply, IAM, datos estudiantiles reales o
+merge a main. El siguiente gate es construir y desplegar el candidato inmutable y,
+después, ejecutar el E2E sintético OpenAI real bajo una autorización separada.
+Este estado todavía no es `OPENAI_REAL_MANUAL_EVAL_READY`.
+
+## Historial — `OPENAI_REAL_QUALIFICATION_V114_CONTINUATION_APPROVAL_REQUIRED` (2026-08-10)
+
+La rotación sigue cerrada: Secret Manager v1 está `DISABLED`; v2 está
+`ENABLED`, autentica con SDK retries cero y sólo ve `gpt-5.6-luna`. El preflight
+inmediatamente anterior a la recanary confirmó el proyecto OpenAI
+`PruebasPersonalizadas` (`proj_te2wY3kbHAkFp8IgjglH063t`), USD 3.84 de USD 5.00
+en el límite mensual del proyecto, reset en 21 días, y capacidad Luna de
+200,000 TPM / 500 RPM. La tarifa oficial coincide con el harness: USD 0.20/M
+input, 0.02/M cached input, 0.25/M cache-write y 1.20/M output. La inspección
+fue read-only y no expuso secretos.
+
+El propietario aceptó la remediación normativa P05/P11 v1.1.4 y autorizó
+exactamente una recanary P05 fijada por `35ecaf8`, cap USD 0.03, máximo una
+Responses request, stop al primer fallo y retries/P10/P11/Sol/fallback cero.
+La llamada única terminó **PASS**: `READY`, schema provider, Pydantic, contexto
+y expected outcome PASS, con Luna-high solicitada y efectiva. Usó 2,520 input,
+0 cached, 2,517 cache-write, 7,282 output y 5,478 reasoning tokens en 57,540 ms.
+El costo calculado fue USD 0.00936825; el charge conservador USD 0.01982985 y
+el ceiling USD 0.02252775. No se retuvo output ni request ID en claro.
+
+La observación queda ligada a prompt
+`sha256:1b1bb9cc10bb4eb633486863bba8dbfdbd70d2f0266795cbaa37505b7e6dcb0a`
+e input bundle
+`sha256:be9521524e643adf11b13914a0e39bbb605f2962e1964b8535a8df1643177969`.
+La autorización quedó consumida y el entrypoint bloquea otra recanary con
+`OPENAI_P05_V114_RECANARY_ALREADY_CONSUMED`. El PASS cierra el P1 P05; el
+conteo vigente es **P0=0, P1=0, P2=5, P3=1**.
+
+La evidencia real hash-bound cubre ahora **14/18** casos: diez PASS de la
+qualification 1.1.2, P02 1.1.3, P03/P04 de la continuación 1.1.3 y P05 1.1.4.
+Todo gate anterior queda consumido. El harness bloquea drift de prompt, input,
+expected outcome, behavior o severidad antes de credencial/transporte.
+
+El nuevo dry-run v1.1.4 fija sólo los cuatro casos aún no observados:
+`oa-p06-happy-docx`, `oa-p08-happy-pdf`, `oa-p09-happy-docx` y
+`oa-p11-happy`. Pasó 4/4 con cuatro transportes fake, cero red/billable, catorce
+evidencias reutilizadas y cobertura acumulable 18/18. Su ceiling es USD
+0.08616480 sin cache y USD 0.09270600 reservando todo input como cache-write;
+el cap humano propuesto es USD 0.10. La frontera permite máximo cinco Responses
+requests, P11 máximo uno, stop al primer fallo y retries/P10/Sol/fallback cero.
+El opt-in histórico v1.1.3 no abre este gate.
+
+La auditoría offline de preparación del E2E encontró y cerró un P1 adicional
+sin consumir red ni autorización: el gateway calculaba la reserva previa con
+tarifa de input ordinario, aunque las ejecuciones reales habían clasificado
+casi todo el input como cache-write a 1.25×. El estimador preventivo usa ahora
+full-cache-write tanto para el resolvedor como para el preflight de la UI. El
+perfil manual Luna-only fija retries automáticos gateway/SDK en 0/0, conserva
+retry durable sólo como acción humana y limita P11 a 80,000 tokens de input;
+el peor caso calificado de P11 es 76,482 y un exceso falla antes de Responses.
+El hallazgo quedó cerrado y el conteo abierto continúa **P0=0, P1=0, P2=5,
+P3=1**.
+
+Con los fixtures versionados de `activity_01_rubric`, una actividad de una
+pregunta reserva USD 0.253571 y la submission con tres oportunidades de reserva
+USD 0.490573; ambas pasan un límite propuesto de USD 0.55 por job. Un recorrido
+offline por las rutas reales y transporte fake terminó ambos jobs en
+`SUCCEEDED`, ejecutó P01-P09 en nueve tareas semánticas, observó como máximo
+27,330 tokens de input preflight y creó cero llamadas de red/facturables. Si el
+E2E añade una edición durable P05, su techo route-max es USD 0.111300; el
+ceiling agregado actividad+edición+submission es USD 0.855444, cap humano
+propuesto USD 0.90 y máximo defensivo 32 Responses requests, sin retries.
+
+La inspección cloud read-only confirmó Service `cva-web` revisión
+`cva-web-00016-gml` y Job `cva-worker` en el digest histórico
+`sha256:0d8f29f28dc510bf2cb14f10252e42afe5a7ce05c14e67facccaa066d0065765`,
+ambos todavía mock/P10 false; el Job mantiene un task, paralelismo uno y
+`maxRetries=0`. Health/readiness respondieron 200 y una ruta privada 401. El
+secreto `cva-openai-api-key` conserva v2 `enabled`, v1 `disabled` y ninguna
+cuenta web/worker tiene todavía su IAM. Un plan Terraform no mutante,
+`refresh=false`, con el digest vigente y valores reales provisionales mostró
+exactamente dos updates in-place (Service/Job), una creación IAM para el worker
+y 36 recursos sin cambio; no se aplicó.
+
+Este estado aún no es `OPENAI_REAL_MANUAL_EVAL_READY`: primero hace falta una
+autorización billable exacta para esa continuación v1.1.4; después, bajo gates
+separados, deploy/Terraform y E2E sintético real. Cloud continúa
+`CVA_MODEL_MODE=mock`, `CVA_P10_ENABLED=false`; no hubo deploy, Terraform apply,
+IAM, P10, Sol/fallback, datos estudiantiles reales ni merge a main.
+
+## Historial — `OPENAI_REAL_V112_ROTATION_BLOCKED` (2026-08-10)
+
+La rama `codex/openai-real-provider-gate` remedia técnicamente el P0 P01. El
+propietario aceptó la semántica normativa 1.1.2, pero ordenó conservar el P0
+como blocker empírico hasta que `oa-p01-injection-md` pase una observación real
+v1.1.2. Prompt pack `1.1.2` define `READY` para una
+consigna suficiente y usable, y exige que todo status no `READY` vacíe sus
+cinco listas sourced. El fixture injection es ahora inequívocamente suficiente,
+espera `READY` y conserva el marcador como dato no propagable. Sus hashes
+nuevos impiden reutilizar las seis observaciones reales 1.1.1 como evidencia
+vigente.
+
+La qualification dry-run pasó los 18 casos `real_eligible`, sin evidencia
+reutilizada, con 18 transportes fake, cero red/billable, P11 directo al final,
+una reserva estructural, máximo conservador 19 requests y ceiling
+full-cache-write USD 0.31043475 frente a cap USD 0.32. P07 quedó cubierto por
+cuatro casos suficientes diversos más uno insuficiente; su P2 de recurrencia
+permanece abierto hasta evaluación real y revisión humana.
+
+El entrypoint real exige ahora una decisión P01 y una aprobación billable como
+opt-ins distintos. La decisión queda ligada a los hashes exactos v1.1.2; un
+drift de prompt o input, un cap fuera de rango o la ausencia de cualquiera de
+los gates bloquea antes de leer la credencial o crear transporte.
+
+P05 interactivo ya es un job durable: API `202 JobEnvelope`, descriptor
+hash-verificado, ejecución exclusiva en worker y publicación atómica de la
+nueva versión. Cancel y retry conservan/reconstruyen estado; la UI espera el
+job y recupera la versión final. El P2 funcional P05 queda cerrado. El conteo
+vigente es **P0=1, P1=0, P2=5, P3=1**.
+
+La revisión integrada pasó backend, frontend, OpenAPI, navegador y E2E local,
+incluida corrección del overflow móvil de la revisión P05. Cloud no cambió:
+continúa mock/P10 false. No hubo request facturable. El propietario autorizó
+la rotación y una única qualification sintética con cap USD 0.32. La rotación
+quedó parcialmente ejecutada: la clave restringida
+`cva-stage2-qualification-20260810` fue creada en el mismo proyecto, copiada
+directamente a `cva-openai-api-key` versión `2`, verificada como `enabled` e
+inyectada en memoria para un `models.list` no facturable. La autenticación pasó
+y el catálogo devolvió únicamente `gpt-5.6-luna`.
+
+La clave histórica no quedó revocada. Seis confirmaciones sobre el target
+exacto en Platform —la última desde la vista organizacional— no cambiaron su
+estado y una comprobación autenticada posterior todavía fue aceptada. El
+endpoint administrativo oficial respondió `403` a la credencial de proyecto,
+como corresponde a una operación que exige una Admin API key. No se creó ni
+solicitó esa autoridad adicional. Por ello la versión `1` permanece `enabled`,
+no se consumió la autorización de qualification y no se ejecutó el primer caso
+P01. El stop es fail-closed y no incluye deploy, Terraform apply, IAM, billing,
+P10, Sol/fallback, datos reales ni merge. Un verificador content-free queda
+versionado para exigir 401 sobre la clave histórica y Luna visible sobre la
+nueva antes de continuar.
+
+Este estado no es `OPENAI_REAL_MANUAL_EVAL_READY`: la credencial nueva está
+lista, pero la rotación no termina hasta observar rechazo de la clave anterior
+y deshabilitar la versión `1`. Todavía faltan validación empírica/cierre del
+P0, qualification 1.1.2 real, deployment real y E2E sintético real de la
+aplicación.
+
+## Historial — merge E2 y gate OpenAI (2026-08-09)
+
+`STAGE2_MERGED_AND_VERIFIED` quedó registrado antes de iniciar este gate.
+
+| Elemento | Evidencia vigente |
+|---|---|
+| Merge E2 en `main` | `ced91544931afe4453d39ba5e7e86b399d18fcdc` |
+| CI completa de `main` | run `31269564662`, 7/7 jobs; commit checks 8/8 |
+| Cloud Build baseline corregido | `7c05fba0-a573-44e3-b1a2-4f1338ef21ec`, `SUCCESS/VERIFIED`, SLSA 3 |
+| Digest desplegado | `sha256:0d8f29f28dc510bf2cb14f10252e42afe5a7ce05c14e67facccaa066d0065765` |
+| Cloud Run | Service rev `cva-web-00016-gml` y Job generación 16 Ready, mismo digest |
+| Invariantes runtime | health/readiness 200, privado anónimo 401, mock, P10 false, libmagic true, Job retries 0 |
+| Verificación focalizada cloud | E2-FINAL-001..004 y regresión sintética PASS |
+| Terraform | apply revisado y dos planes vivos consecutivos sin drift |
+| Evidencia durable del cierre | `STAGE2_MERGED_AND_VERIFIED_ced9154_20260808T180056Z.json`, SHA-256 `f70a2aea2d8193e85d81770b60c0e0f555079de669f2a9a39a9c220db3efb71b` |
+| Paquete de auditoría focalizada | SHA-256 `cb5e61e25d43a866bd11a0126bf229636fae57366c17dbdba6090657e0bd978d` |
+
+El código auditado fue `d905557…` con 410 passed/16 skips PostgreSQL
+explícitos y auditoría focalizada P0=0/P1=0. El runtime histórico
+`44b9483…` precede las cuatro correcciones P1 y no se presenta como runtime del
+candidato corregido.
+
+Desde ese `main` verificado se creó `codex/openai-real-provider-gate`.
+El estado técnico alcanzado es `OPENAI_REAL_SMOKE_PASS` sobre
+`LUNA_BASELINE_V1`: SDK oficial `openai==2.53.0` fijado con hashes, Responses
+API, modelos explícitos,
+Structured Outputs derivados de Pydantic, errores/retries/budget/ledger,
+Secret Manager/IAM worker-only, smoke gobernado y golden set sintético. P11 es
+efectivamente `gpt-5.6-luna` con `reasoning_effort=low`; P10 no tiene ruta.
+P01/P02 usan Luna-medium y P03-P09 Luna-high. La matriz Sol histórica no es
+callable ni fallback y el adapter la rechaza antes de crear transporte.
+Los schemas, prompts versionados, allowlists y validación posterior alcanzan
+`OPENAI_CONTRACT_BOUNDARIES_PASS` offline. La calidad del proveedor permanece
+en `OPENAI_SEMANTIC_EVAL_PENDING`; no se declara
+`OPENAI_SYNTHETIC_E2E_PASS` antes de ejecutar el recorrido real autorizado.
+
+El proyecto OpenAI dedicado `PruebasPersonalizadas`
+(`proj_te2wY3kbHAkFp8IgjglH063t`) quedó identificado y permite únicamente
+`gpt-5.6-luna`. El propietario insertó privadamente la clave de aplicación como
+la versión numérica `1` de `cva-openai-api-key`; Secret Manager informa esa
+única versión `enabled`. El agente no inspeccionó el payload: el proceso aislado
+del smoke lo consumió solo en memoria y limpió su environment al terminar. La
+clave no está montada en ningún runtime, el secreto no tiene bindings IAM y CI
+no recibe la clave. El cloud vigente no fue modificado: sigue en mock/P10 false.
+La temperatura deseada se conserva en la ruta canónica y se omite del request,
+con reason codes explícitos.
+
+Tras un fallo local/pre-provider del harness efímero (`routes=`), con cero
+Responses requests y USD 0.00, se protegió el entrypoint versionado sin cambiar
+gateway, adapter, rutas ni contratos. El commit `e1f6714…` pasó la CI
+`31293361151` 7/7. La única llamada P11 Luna-low autorizada terminó
+`OPENAI_REAL_SMOKE_PASS`: 1 request/attempt, 1,365 input tokens, 0 cached, 257
+output, 57 reasoning, 3,832 ms, costo estimado post-usage USD 0.0099411 y costo
+real calculado USD 0.0006495. Modelo solicitado/efectivo Luna, validaciones
+schema/Pydantic/contextual PASS y cero retries. P10, Sol y tools permanecieron
+en cero; `store=false`, `background=false`. Los request/output IDs se conservaron
+solo como hashes. Platform mostró antes del smoke spend limit USD 5.00, USD 3.77
+usado y `gpt-5.6-luna` como único modelo permitido. No hubo segunda request.
+
+La preparación posterior de los dos canaries quedó cerrada offline en
+`OPENAI_LUNA_CANARY_APPROVAL_REQUIRED`. El harness versionado admite un único
+caso P01 o P07 por ejecución bajo una frontera separada: ruta Luna seleccionada
+únicamente, P10/P11 ausentes, guard de una request y retries
+gateway/prompt/SDK 0/0/0, sin alterar la política del worker. P01 Luna-medium y
+P07 Luna-high pasaron contra el adapter real y transporte fake con
+schema/Pydantic/contexto/IDs válidos. Los precios Standard vigentes permanecen
+en Sol 5.00/0.50/30.00, Terra 2.00/0.20/12.00 y Luna 0.20/0.02/1.20 USD por
+millón de tokens de input/cached input/output.
+
+La autorización humana posterior produjo `OPENAI_LUNA_CANARY_P07_FAILED` sobre
+el sucesor `9923097f7b511453af5306614fa62ae436c6c4b3`, cuya CI
+`31323517518` había terminado 7/7. P01 pasó con outcome `READY`, Luna efectiva,
+1 request, 1,712/858 tokens input/output, 516 reasoning, 9,030 ms y USD
+0.00145745 calculados. P07 consumió su única request y falló estructuralmente;
+P11 no tenía ruta y fue bloqueado antes de transporte, por lo que no hubo
+repair ni segunda request. P07 registró 3,839/1,930 tokens input/output, 1,034
+reasoning y USD 0.00327560 calculados; el outcome y las validaciones
+contextuales no se alcanzaron. La severidad manifest es P1. Total: 2 requests,
+USD 0.00473305; P10/P11/Sol/retries/exposición del secreto en cero. Platform no
+ofreció aún costo atribuible por llamada: conservó spend redondeado USD 3.77 y
+el desglose Luna histórico de 1,365 input tokens. Cloud no se modificó y sigue
+mock/P10 false.
+
+La investigación posterior queda en
+`OPENAI_LUNA_P07_ROOT_CAUSE_UNRESOLVED`. El fallo histórico demuestra que
+`QuestionGenerationResult.model_validate()` rechazó el output, pero la evidencia
+retenida no distingue incumplimiento del JSON Schema provider de una invariante
+Pydantic no representable en ese schema. Por ello no se cambió prompt, contrato
+ni expected outcome. El schema P07 exacto quedó fijado en 13.671 bytes y
+SHA-256 `80692d48637f0ae2d7a7e6f05ab4e9b0a5e2d8eff6f1b103fbd14f62c482639a`;
+la frontera provider/Pydantic/contexto está documentada y reproducida offline.
+
+Sí se cerró un defecto determinista de observabilidad: el bloqueo de P11
+enmascaraba el fallo primario y descartaba el ledger que ya contenía latencia,
+modelo efectivo, usage y hashes. El gateway conserva ahora ese ledger y separa
+`primary_failure=OUTPUT_PYDANTIC_VALIDATION_FAILED` de
+`repair_disposition=BLOCKED_BY_CANARY_POLICY`; el adapter clasifica localmente
+el objeto contra el mismo schema enviado. Solo se exponen tipos y paths
+saneados, nunca valores, mensajes, `input`/`ctx` Pydantic ni output. P11 sigue
+en cero dentro del canary.
+
+La validación posterior pasó 107 pruebas focalizadas, ambos canary dry-runs con
+cero red/facturación, 471 pruebas con cobertura (16 skips PostgreSQL
+explícitos), contratos 53/140/274 sin drift y secret scan de 290 archivos. La
+tarifa Standard oficial fue revalidada sin cambios y esta investigación añadió
+USD 0.00. P0 permaneció en cero, no apareció otro P1 y el P1 histórico P07
+quedó entonces abierto hasta una eventual única recanary expresamente
+autorizada.
+
+Esa autorización se consumió sobre
+`97a6b2e8cd7cf852e9e3a6fefeb09c135793ac19`. La única recanary P07 terminó
+`OPENAI_LUNA_P07_RECANARY_PASS_REVIEW_REQUIRED`: outcome `READY`, Luna-high
+solicitada y efectiva, provider schema/Pydantic/contexto/invariantes PASS, una
+request, retries 0/0/0 y P10/P11/Sol 0. Registró 3,839 input, 0 cached, 3,836
+cache-write, 1,505 output y 655 reasoning tokens, 12,666 ms y USD 0.00276560
+calculados frente al cap humano USD 0.03. No hubo cambios de producto, cloud o
+expected outcomes. La revisión humana posterior cierra el P1 como blocker sin
+atribuir una causa raíz ni afirmar que el modelo fue corregido: el incidente
+original fue fail-closed, la pérdida determinista de observabilidad sí quedó
+corregida y la frontera sin relajar produjo una recanary completamente válida.
+La posible recurrencia de outputs P07 inválidos continúa como P2 independiente.
+
+El gate siguiente queda preparado en un modo específico de calificación. Reusa
+las observaciones reales P01/P07/P11 y propone los otros 15 casos
+`real_eligible`, incluidos cuatro P07 diferentes, para completar 18/18 sin
+repetir gasto. El dry-run pasó 15/15 con adapter real/transporte fake y cero
+red/facturación. Hay 15 primarias, una reserva P11 global, máximo 16 requests,
+retries 0/0/0, P10/Sol/fallback deshabilitados, ceiling full-cache-write USD
+0.26877750 y cap humano propuesto USD 0.30. El alcance es técnico; no declara
+calidad pedagógica.
+
+La autorización posterior se consumió una sola vez sobre `73d252b…`. El gate
+se detuvo en la primera primaria, `oa-p01-injection-md`: provider schema y
+Pydantic PASS, contexto FAIL con `MODEL_CONTEXT_NOT_ALLOWLISTED`, expected
+outcome no evaluado y ningún repair/P11. Luna medium fue solicitada y efectiva;
+hubo 1 request, retries 0/0/0, P10/Sol/fallback 0, 10,345 ms y USD 0.00156270
+calculados. Los otros 14 casos no se ejecutaron ni se reinició la secuencia.
+El manifest intacto preclasifica el fallo como P0; su causa raíz sigue abierta
+y no se atribuye al modelo sin evidencia. El checkpoint vigente es
+`OPENAI_REAL_SYNTHETIC_QUALIFICATION_P01_INJECTION_CONTEXT_FAILED_REVIEW_REQUIRED`.
+
+La investigación offline posterior comprobó que ese código ocultaba cinco
+clases P01 distintas: evidence ID no allowlisted, course source ID no
+allowlisted, abstención sin diagnóstico, abstención con campos sourced y
+`activity_id` cambiado. Todas pasan schema provider/Pydantic en las
+regresiones y fallan cerradas sin P11; el output histórico no fue retenido y su
+hash no permite recuperar cuál ocurrió. No se atribuye seguimiento de la
+inyección ni un defecto del modelo. El gateway/harness conserva ahora el
+subtipos contextuales content-free —incluidos los que coexistan— y booleanos de frontera sin output, valores,
+IDs ni mensajes.
+
+El fixture fue auditado como una consigna `ASSIGNMENT_PROMPT` ya normalizada,
+no una submission ni una prueba de parser. Su descripción se corrigió sin
+cambiar request, prompt, schema, contrato o expected `VALID`; los hashes
+históricos permanecen fijados. El dry-run de una única recanary P01 pasa con 0
+red/billable, Luna-medium, P10/P11/Sol/fallback/retries 0, ceiling USD
+0.01201925 y cap humano propuesto USD 0.02. El checkpoint queda en
+`OPENAI_P01_INJECTION_RECANARY_APPROVAL_REQUIRED`; no se ejecutó la recanary.
+
+La autorización posterior ejecutó esa única recanary sobre `0a61ff75…`. La
+versión 1 del secreto `cva-openai-api-key` estaba `ENABLED` y se inyectó desde
+Secret Manager solo al environment efímero del proceso. Provider schema y
+Pydantic pasaron; el validator contextual falló con la única clase
+`P01_ABSTENTION_SOURCED_FIELDS_PRESENT`. Esto demuestra que el objeto no READY
+conservó al menos un campo sourced que la política exige vacío, pero no explica
+por qué se produjo esa forma ni demuestra seguimiento de la inyección. El
+marcador no reapareció en el output. Hubo 1 request, retries 0/0/0,
+P10/P11/Sol/fallback 0, 1,725 input, 0 cached, 1,722 cache-write, 872 output,
+516 reasoning, 9,779 ms y USD 0.00147750 calculados frente al cap USD 0.02.
+El P0 permanece abierto para revisión en
+`OPENAI_P01_INJECTION_RECANARY_P01_ABSTENTION_SOURCED_FIELDS_PRESENT_REVIEW_REQUIRED`.
+
+La regresión local previa al smoke quedó en 457 passed/16 skips PostgreSQL
+explícitos, 80% de cobertura, 40 tests focalizados CLI/adapter, golden set
+20/20 con 0 network/0 billable, PostgreSQL 16/17
+con 155/155 y doble matriz 1+7, frontend 32/32, Playwright 1+2, navegador
+integrado limpio, Docker runtime/audit, Stage 0 reproducible,
+contratos/OpenAPI sin drift, Terraform válido y secret scan limpio. La CI del
+commit previo al gasto quedó 7/7 verde.
+
+| Severidad de ese checkpoint | Abiertos |
+|---|---:|
+| P0 | 1 |
+| P1 | 0 |
+| P2 | 6 |
+| P3 | 1 |
+
+El P0 nuevo de ese checkpoint correspondía exclusivamente al fallo contextual
+P01 preclasificado por el manifest y requería revisión antes de cualquier
+avance. No quedaba un P1 abierto. Los P2 históricos seguían siendo
+AV/compensación, corpus/política de privacidad y semántica real pendiente. El
+cuarto P2 era la re-revisión interactiva P05 del Service: quedaba bloqueada con
+`MODEL_EXECUTION_REQUIRES_WORKER` cuando el worker sea real hasta migrarla a un
+job durable, por lo que nunca mezclaba silenciosamente mock con OpenAI. El
+quinto P2 era la observación de confiabilidad P07: se cerraría con evidencia de no
+recurrencia sobre los casos P07 diversos y la revisión humana posterior, o se
+reclasificaría si reaparecía una violación estructural/contextual. El sexto P2
+era la cobertura limitada de detección de prompt injection: existían prevención,
+sentinelas sintéticos y rechazo de eco, pero no un detector general implementado
+como `PROMPT_INJECTION_SIGNAL`. El P3 continúa siendo el warning deprecado
+Starlette/httpx del adaptador de tests.
 
 ## Identidad y gate
 

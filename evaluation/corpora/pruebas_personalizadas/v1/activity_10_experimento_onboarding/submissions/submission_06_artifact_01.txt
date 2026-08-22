@@ -1,0 +1,9 @@
+global uplift = 75 - 69 = +6%
+desktop uplift = 90 - 85 = +5% para variante
+mobile uplift = 60 - 55 = +5% para variante
+sum of segment rates: 145 vs 145
+decision: variant wins
+
+Both versions received 2,000 accounts, therefore the split is balanced.
+Segment rates add up to the same number, therefore segments are tied.
+Aggregate breaks the tie in favour of variant.

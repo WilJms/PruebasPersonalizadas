@@ -1,0 +1,66 @@
+{
+  "activities_whose_selection_moves_when_source_order_is_reversed": 10,
+  "all_forbidden_inputs_are_inert": true,
+  "baseline_selection": {
+    "act_01_luz_y_plantines": "RUBRIC::A01::AFIRMACION_Y_ALCANCE",
+    "act_02_voz_en_un_microcuento": "RUBRIC::A02::TESIS_INTERPRETATIVA",
+    "act_04_asignador_de_turnos": "RUBRIC::A04::DESCARTA_REGISTROS_CON_CAMPO_FALTANTE",
+    "act_05_visitas_a_bibliotecas": "ASSIGNMENT::A05::CALCULA_VISITAS_POR_DIA_ABIERTO_PARA_CADA_FILA_Y_RESUME_EL_PATRO",
+    "act_06_movilidad_estudiantil": "RUBRIC::A06::TESIS_Y_OBJETIVO",
+    "act_07_aislamiento_termico": "RUBRIC::A07::CRITERIO_DE_COMPARACION",
+    "act_08_triage_de_logs": "RUBRIC::A08::LINEA_TEMPORAL_Y_CORRELACION",
+    "act_09_renovacion_y_desplazamiento": "RUBRIC::A09::TESIS_EXPLICATIVA",
+    "act_11_duplicados_en_pagos": "RUBRIC::A11::CADENA_CAUSAL",
+    "act_12_clinica_movil": "ASSIGNMENT::A12::ASIGNA_LAS_DOS_JORNADAS_Y_FORMULA_UNA_REGLA_DE_DECISION_REPRODUC"
+  },
+  "forbidden_inputs": [
+    "INJECTION_LOCATION",
+    "INJECTION_TEXT",
+    "SUBMISSION_EVIDENCE_TEXT",
+    "NOISY_OUTCOME",
+    "CANDIDATE_OUTPUT",
+    "ORACLE_PROPERTY_OR_EXPECTED_SUPPORT_STATUS",
+    "HISTORICAL_BENCHMARK_RESULT",
+    "P04_CANDIDATE_OUTPUT"
+  ],
+  "order_key_fields": [
+    "source_document",
+    "table_index",
+    "row",
+    "unit_index"
+  ],
+  "probes": [
+    {
+      "probe": "CATALOG_INPUT_ORDER_REVERSED",
+      "stable": true
+    },
+    {
+      "probe": "INJECTION_TEXT_VIA_neutral_description",
+      "stable": true
+    },
+    {
+      "probe": "SUBMISSION_EVIDENCE_TEXT_VIA_neutral_observable",
+      "stable": true
+    },
+    {
+      "probe": "NOISY_OUTCOME_VIA_authorized_operations",
+      "stable": true
+    },
+    {
+      "probe": "ORACLE_PROPERTY_OR_EXPECTED_SUPPORT_STATUS_VIA_contains_expected_support_status",
+      "stable": true
+    },
+    {
+      "probe": "CANDIDATE_OUTPUT_VIA_contains_oracle_verdict",
+      "stable": true
+    }
+  ],
+  "proof_hash": "sha256:2ea943f61b89282aef67f015c35b89d2355f9be56de613b910ae8a45d16fa93a",
+  "reads_only": [
+    "construct.source_refs",
+    "construct.provenance"
+  ],
+  "rule": "FIRST_AUTHORIZED_CONSTRUCT_IN_CANONICAL_SOURCE_ORDER",
+  "rule_actually_reads_source_order": true,
+  "schema_version": "n3-construct-selection-independence/1.3.1"
+}

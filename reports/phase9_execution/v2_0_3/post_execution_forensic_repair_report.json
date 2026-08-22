@@ -1,0 +1,31 @@
+{
+  "async_lifecycle_reproduction_hash": "sha256:14359e54988abdcf9593c38a4d6a299757e40b30021937ee09b5c925e8782ed7",
+  "billable_authorization_v2_0_3": "NONE",
+  "execution_boundary_hash": "sha256:73e81ae321490b2fe6984a17b687a90181557e368264353c88a68b5418874143",
+  "execution_version": "phase9-execution/2.0.3",
+  "high_smoke_plan_hash": "sha256:f3689ccb1710cb43692623eaaee4d2857ef6e4c029951c0885d97cfd8f8901e9",
+  "high_smoke_v2_0_3": "NOT_EXECUTED",
+  "historical_output_hashes_present_in_successor_documents": [],
+  "historical_v2_0_2_completed_output_hash_count": 12,
+  "ordered_logical_call_population_hash": "sha256:fef890ffa1b12e8717edd7cb5e13f7cdbd78b1e3eb9284aea20a21b29f45553e",
+  "population_decomposition": {
+    "CONTRACTUAL_HARD_SAFETY/P06/N3_SAFETY_SMOKE/HIGH": 3,
+    "SEMANTIC/P04/SMOKE/HIGH": 3,
+    "SEMANTIC/P06/SMOKE/HIGH": 3,
+    "SEMANTIC/P07/SMOKE/HIGH": 18,
+    "SEMANTIC/P09/SMOKE/HIGH": 3
+  },
+  "repair_report_hash": "sha256:32aaf8039c35228e6d6f6e5733f6f22fd51269bf73e65f00902a78fe6e4269a5",
+  "safety_counters": {
+    "adjudicator_calls": 0,
+    "credential_resolutions": 0,
+    "provider_calls": 0,
+    "real_provider_transport": false,
+    "transport_factory_calls": 0
+  },
+  "schema_version": "phase9-post-execution-forensic-repair/2.0.3",
+  "successor_adjudication_bundle_count": 0,
+  "successor_execution_manifest_count": 0,
+  "v2_0_2_forensic_report_hash": "sha256:7a1f14ec23bad864242429b6c74ae7de5dd7d79ffd82b2d0ccdbe9867f2c559c",
+  "v2_0_2_successful_outputs_carried_forward": false
+}

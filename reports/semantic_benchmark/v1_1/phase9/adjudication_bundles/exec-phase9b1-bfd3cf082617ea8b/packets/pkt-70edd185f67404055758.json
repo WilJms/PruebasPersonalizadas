@@ -1,0 +1,100 @@
+{
+  "binding_scope": "CASE_SPECIFIC",
+  "candidate_output": {
+    "claims": [],
+    "diagnostics": [],
+    "mapping_summary": {
+      "insufficient_count": 0,
+      "mapped_relation_count": 1,
+      "partial_count": 1,
+      "sufficient_count": 0,
+      "uncertain_count": 0
+    },
+    "opportunities": [
+      {
+        "abstention_reason": null,
+        "activity_priority": 0.9,
+        "allowed_anchor_structures": [
+          "SINGLE_FRAGMENT"
+        ],
+        "allowed_response_formats": [
+          "OPEN_SHORT"
+        ],
+        "cognitive_operation": "INTERPRET_REPRESENTATION",
+        "difficulty": "MEDIUM",
+        "dimension_id": "dimension_p06_route_216714b2043ff1249014",
+        "evidence_fit": 0.5,
+        "evidence_ids": [
+          "ev_5eb56778d9b553f69d72",
+          "ev_57e8261b77efc06e87eb",
+          "ev_81e72036798a8f4ded1f"
+        ],
+        "focus": "Examinar relación entre afirmación y evidencia: párrafo final usando exclusivamente la evidencia localizada y el alcance autorizado de la actividad.",
+        "observable": "Relaciona una afirmación con evidencia localizada sin ampliar fuentes ni atribuir intención.",
+        "opportunity_id": "opportunity_9eb1682d357f99a7dc82",
+        "opportunity_quality": 0.75,
+        "opportunity_template_id": "template_p06_route_216714b2043ff1249014",
+        "semantic_uncertainty": "No se puede determinar con precisión qué condiciones corresponden a la afirmación ni si la diferencia observada está respaldada por los datos de la tabla.",
+        "student_justification_required": true,
+        "submission_id": "submission_01",
+        "support_description": "La entrega afirma que los plantines crecieron diferente y menciona dos condiciones y una hoja dañada, pero no adjunta cálculos ni identifica con seguridad las condiciones de la tabla.",
+        "support_status": "PARTIAL",
+        "support_type": "COMPOSITE",
+        "target_minutes": 5,
+        "variant_id": "variant_p06_route_216714b2043ff1249014"
+      }
+    ],
+    "schema_version": "1.1.0",
+    "status": "READY",
+    "submission_id": "submission_01",
+    "variant_matches": [
+      {
+        "dimension_id": "dimension_p06_route_216714b2043ff1249014",
+        "evidence_fit": 0.5,
+        "evidence_ids": [
+          "ev_5eb56778d9b553f69d72",
+          "ev_57e8261b77efc06e87eb",
+          "ev_81e72036798a8f4ded1f"
+        ],
+        "justification": "Relaciones categóricas P06 materializadas por el servidor.",
+        "mapping_confidence": 1.0,
+        "support_status": "PARTIAL",
+        "variant_id": "variant_p06_route_216714b2043ff1249014"
+      }
+    ]
+  },
+  "candidate_output_hash": "sha256:3a5a1513001029c42d77dc5c36a43c4aad6689d3aa64210d7df943aba8a2ac0d",
+  "case_id": "PP-A01-S01-P06-R01",
+  "defensible_alternatives": [],
+  "fixture_id": "P06-A01-S01-R01",
+  "oracle_state": "VALID",
+  "property": {
+    "benchmark_tags": [],
+    "confidence": "HIGH",
+    "defensible_alternatives": [],
+    "description": "UNCERTAIN bien fundado: el párrafo final declara recordar dos condiciones y una hoja dañada pero no saber si A era doce o cuatro horas. Es ambigüedad genuina del propio documento, no ausencia de evidencia. El draft omite esta zona.",
+    "kind": "REQUIRED",
+    "notes": "",
+    "oracle_state": "VALID",
+    "property_id": "A01-S01-P3",
+    "source_refs": [
+      {
+        "file": "submissions/submission_01.txt",
+        "section": "párrafo final"
+      }
+    ],
+    "stage": "P06"
+  },
+  "relevant_source_refs": [
+    {
+      "file": "submissions/submission_01.txt",
+      "section": "párrafo final"
+    }
+  ],
+  "route_or_opportunity_id": "P06-A01-S01-R01",
+  "schema_version": "semantic-review-packet/1.1.0",
+  "source_hashes": {
+    "submissions/submission_01.txt": "sha256:f33aa63575b544d7f03e070ad8a2aa3936f4e76d7ebf98922404efa5442818d5"
+  },
+  "stage": "P06"
+}

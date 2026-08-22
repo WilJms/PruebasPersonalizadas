@@ -1,0 +1,237 @@
+{
+  "schema_version": "p06-field-authority-audit/1.0.0",
+  "audit_kind": "STRUCTURAL_AUDIT_FROM_EXECUTABLE_CODE",
+  "first_pass_results_read": false,
+  "FIRST_PASS_RESULTS_NOT_READ_DURING_STRUCTURAL_AUDIT": true,
+  "baseline_commit": "d5fb8ef1b50266982b0d8e85aeceef6b50624122",
+  "benchmark_version": "semantic-benchmark/1.1.0",
+  "traced_chain": [
+    "EvidenceMappingAliasEnvelope  (specification/models_v1.1(1).py:1109)",
+    "EvidenceMappingRelationDraft  (specification/models_v1.1(1).py:1129)",
+    "EvidenceMappingModelDraft     (specification/models_v1.1(1).py:1165)",
+    "materialize_evidence_mapping_draft()  (src/comprehension_verification/evidence_mapping.py:318)",
+    "EvidenceMapPatch              (specification/models_v1.1(1).py:1596)"
+  ],
+  "method": "Read executable assignment sites only. Prose justification strings were explicitly excluded as authority evidence.",
+  "headline_finding": {
+    "question": "Is support_status in the canonical output copied from the provider relation?",
+    "answer": "YES - verbatim copy. support_status is MODEL_OWNED.",
+    "primary_evidence": "src/comprehension_verification/evidence_mapping.py:418  QuestionOpportunity(..., support_status=relation.support_status, ...) inside materialize_evidence_mapping_draft()",
+    "corroborating_evidence": [
+      "src/comprehension_verification/evidence_mapping.py:485 _draft_from_materialized_mapping() reconstructs EvidenceMappingRelationDraft.support_status FROM opportunity.support_status, i.e. the field round-trips as an identity; a server-derived value could not.",
+      "src/comprehension_verification/evidence_mapping.py:544 validate_materialized_evidence_mapping() requires replayed == mapping, so the copy is contract-enforced, not incidental.",
+      "Route fixtures build exactly one dimension/one variant/one template (src/comprehension_verification/semantic_benchmark_fixtures.py:228-335), so the variant aggregate is 1:1 with the single model-owned relation."
+    ],
+    "misleading_surface": {
+      "string": "Relaciones categóricas P06 materializadas por el servidor.",
+      "location": "src/comprehension_verification/evidence_mapping.py:457 EvidenceVariantMatch.justification",
+      "why_misleading": "It is a server-authored justification attached to the variant AGGREGATION object, describing alias resolution into canonical IR. It does not describe ownership of the semantic support decision, and it sits in the same canonical output object graph as the model-owned support_status. Reading it as an ownership statement inverts the actual authority."
+    }
+  },
+  "model_owned_fields": [
+    {
+      "field": "QuestionOpportunity.support_status",
+      "authority": "MODEL_OWNED",
+      "evidence": "src/comprehension_verification/evidence_mapping.py:418 support_status=relation.support_status",
+      "note": "Verbatim copy of provider EvidenceMappingRelationDraft.support_status. THE P06 semantic decision."
+    },
+    {
+      "field": "QuestionOpportunity.support_type",
+      "authority": "MODEL_OWNED",
+      "evidence": "src/comprehension_verification/evidence_mapping.py:419 support_type=relation.support_type",
+      "note": "Verbatim copy."
+    },
+    {
+      "field": "QuestionOpportunity.support_description",
+      "authority": "MODEL_OWNED",
+      "evidence": "src/comprehension_verification/evidence_mapping.py:420 support_description=relation.support_description",
+      "note": "Verbatim copy of free-text provider rationale."
+    },
+    {
+      "field": "QuestionOpportunity.semantic_uncertainty",
+      "authority": "MODEL_OWNED",
+      "evidence": "src/comprehension_verification/evidence_mapping.py:421",
+      "note": "Verbatim copy."
+    },
+    {
+      "field": "QuestionOpportunity.abstention_reason",
+      "authority": "MODEL_OWNED",
+      "evidence": "src/comprehension_verification/evidence_mapping.py:422",
+      "note": "Verbatim copy."
+    },
+    {
+      "field": "QuestionOpportunity.evidence_ids",
+      "authority": "MODEL_OWNED_SELECTION_SERVER_RESOLVED_IDENTITY",
+      "evidence": "src/comprehension_verification/evidence_mapping.py:369-378 alias->EvidenceUnit lookup, src/comprehension_verification/evidence_mapping.py:390 evidence_ids=[item.evidence_id ...]",
+      "note": "WHICH evidence is selected is the provider's choice (relation.evidence_aliases); the canonical evidence_id strings are server-resolved. Selection semantics are model-owned."
+    }
+  ],
+  "server_owned_fields": [
+    {
+      "field": "QuestionOpportunity.opportunity_id",
+      "authority": "SERVER_OWNED",
+      "evidence": "src/comprehension_verification/evidence_mapping.py:391 stable_id(...)",
+      "note": "Deterministic identity."
+    },
+    {
+      "field": "QuestionOpportunity.opportunity_template_id",
+      "authority": "SERVER_OWNED",
+      "evidence": "src/comprehension_verification/evidence_mapping.py:409",
+      "note": "Trusted template identity."
+    },
+    {
+      "field": "QuestionOpportunity.submission_id",
+      "authority": "SERVER_OWNED",
+      "evidence": "src/comprehension_verification/evidence_mapping.py:410",
+      "note": ""
+    },
+    {
+      "field": "QuestionOpportunity.dimension_id",
+      "authority": "SERVER_OWNED",
+      "evidence": "src/comprehension_verification/evidence_mapping.py:411",
+      "note": ""
+    },
+    {
+      "field": "QuestionOpportunity.variant_id",
+      "authority": "SERVER_OWNED",
+      "evidence": "src/comprehension_verification/evidence_mapping.py:399",
+      "note": ""
+    },
+    {
+      "field": "QuestionOpportunity.cognitive_operation",
+      "authority": "SERVER_OWNED",
+      "evidence": "src/comprehension_verification/evidence_mapping.py:397 template.cognitive_operation",
+      "note": "Trusted blueprint value; also validated against variant.supported_operations at src/comprehension_verification/evidence_mapping.py:378-386."
+    },
+    {
+      "field": "QuestionOpportunity.focus",
+      "authority": "SERVER_OWNED",
+      "evidence": "src/comprehension_verification/evidence_mapping.py:406 template.focus",
+      "note": ""
+    },
+    {
+      "field": "QuestionOpportunity.observable",
+      "authority": "SERVER_OWNED",
+      "evidence": "src/comprehension_verification/evidence_mapping.py:407 template.observable",
+      "note": ""
+    },
+    {
+      "field": "QuestionOpportunity.difficulty",
+      "authority": "SERVER_OWNED",
+      "evidence": "src/comprehension_verification/evidence_mapping.py:408",
+      "note": ""
+    },
+    {
+      "field": "QuestionOpportunity.target_minutes",
+      "authority": "SERVER_OWNED",
+      "evidence": "src/comprehension_verification/evidence_mapping.py:409",
+      "note": ""
+    },
+    {
+      "field": "QuestionOpportunity.allowed_anchor_structures",
+      "authority": "SERVER_OWNED",
+      "evidence": "src/comprehension_verification/evidence_mapping.py:410",
+      "note": ""
+    },
+    {
+      "field": "QuestionOpportunity.allowed_response_formats",
+      "authority": "SERVER_OWNED",
+      "evidence": "src/comprehension_verification/evidence_mapping.py:411",
+      "note": ""
+    },
+    {
+      "field": "QuestionOpportunity.activity_priority",
+      "authority": "SERVER_OWNED",
+      "evidence": "src/comprehension_verification/evidence_mapping.py:412 dimension.verification_priority",
+      "note": ""
+    },
+    {
+      "field": "QuestionOpportunity.evidence_fit",
+      "authority": "SERVER_DERIVED_FROM_MODEL_INPUT",
+      "evidence": "src/comprehension_verification/evidence_mapping.py:413 _compatibility_fit(relation.support_status); fn at src/comprehension_verification/evidence_mapping.py:261",
+      "note": "Pure function of the model-owned support_status. Not independent evidence."
+    },
+    {
+      "field": "QuestionOpportunity.opportunity_quality",
+      "authority": "SERVER_OWNED",
+      "evidence": "src/comprehension_verification/evidence_mapping.py:415 template.minimum_quality",
+      "note": ""
+    },
+    {
+      "field": "QuestionOpportunity.student_justification_required",
+      "authority": "SERVER_OWNED",
+      "evidence": "src/comprehension_verification/evidence_mapping.py:416",
+      "note": ""
+    },
+    {
+      "field": "EvidenceVariantMatch.evidence_fit",
+      "authority": "SERVER_DERIVED_FROM_MODEL_INPUT",
+      "evidence": "src/comprehension_verification/evidence_mapping.py:451 _compatibility_fit(aggregate_status)",
+      "note": ""
+    },
+    {
+      "field": "EvidenceVariantMatch.mapping_confidence",
+      "authority": "SERVER_DERIVED_FROM_MODEL_INPUT",
+      "evidence": "src/comprehension_verification/evidence_mapping.py:452-456",
+      "note": "0.0 iff aggregate is UNCERTAIN else 1.0; a projection of the model decision."
+    },
+    {
+      "field": "EvidenceVariantMatch.justification",
+      "authority": "SERVER_OWNED_PROSE",
+      "evidence": "src/comprehension_verification/evidence_mapping.py:457",
+      "note": "Constant string. NOT an authority statement. See headline_finding.misleading_surface."
+    },
+    {
+      "field": "EvidenceVariantMatch.support_status",
+      "authority": "SERVER_DERIVED_FROM_MODEL_INPUT",
+      "evidence": "src/comprehension_verification/evidence_mapping.py:460 aggregate_status via _aggregate_support_status() at src/comprehension_verification/evidence_mapping.py:303",
+      "note": "Deterministic max-severity fold over model-owned statuses. In benchmark route fixtures each variant holds exactly ONE template, so this equals the model's own support_status."
+    },
+    {
+      "field": "EvidenceMappingSummary.*_count",
+      "authority": "SERVER_DERIVED_FROM_MODEL_INPUT",
+      "evidence": "src/comprehension_verification/evidence_mapping.py:464-466, 475-481",
+      "note": "Counts over model-owned statuses."
+    },
+    {
+      "field": "EvidenceMapPatch.submission_id / status / claims / diagnostics",
+      "authority": "SERVER_OWNED",
+      "evidence": "src/comprehension_verification/evidence_mapping.py:469-482",
+      "note": "status hardcoded READY; claims and diagnostics hardcoded empty."
+    }
+  ],
+  "server_side_rejection_gates_that_can_mask_model_semantics": [
+    {
+      "code": "P06_SUFFICIENT_REQUIREMENT_MISMATCH",
+      "location": "src/comprehension_verification/evidence_mapping.py:272 _validate_sufficient_evidence()",
+      "effect": "A provider SUFFICIENT is HARD-REJECTED (exception) unless the selected evidence satisfies min_distinct_units, allowed_modalities, min_extraction_confidence and cross_artifact_required. A model that correctly judges SUFFICIENT but under-selects evidence produces a compilation error, not a canonical output.",
+      "adjudication_consequence": "Absence of a SUFFICIENT opportunity is NOT proof the model judged otherwise."
+    },
+    {
+      "code": "P06_UNSUPPORTED_OPERATION",
+      "location": "src/comprehension_verification/evidence_mapping.py:379",
+      "effect": "Template operation must be declared by the variant.",
+      "adjudication_consequence": "Structural, never semantic."
+    },
+    {
+      "code": "P06_MAPPING_DUPLICATE / P06_ALIAS_REFERENCE_UNKNOWN / P06_TEMPLATE_VARIANT_MISMATCH / P06_SCOPE_ALIAS_MISMATCH",
+      "location": "src/comprehension_verification/evidence_mapping.py:325-368",
+      "effect": "Alias hygiene.",
+      "adjudication_consequence": "Structural, never semantic."
+    }
+  ],
+  "what_the_model_actually_sees_for_a_p06_route": {
+    "envelope_builder": "src/comprehension_verification/evidence_mapping.py:157 build_evidence_mapping_alias_envelope()",
+    "fields": {
+      "dimension.name": "= model_visible_definition.construct (semantic_benchmark_fixtures.py:291)",
+      "dimension.justification": "= model_visible_definition.focus (semantic_benchmark_fixtures.py:304)",
+      "variant.name": "= model_visible_definition.construct (semantic_benchmark_fixtures.py:261)",
+      "variant.description": "= model_visible_definition.focus (semantic_benchmark_fixtures.py:262)",
+      "template.focus": "= model_visible_definition.focus",
+      "template.observable": "= model_visible_definition.observable",
+      "template.cognitive_operation": "= model_visible_definition.cognitive_operation",
+      "evidence_units": "content_text / structured_content of the resolved units"
+    },
+    "critical_consequence": "The provider never sees the property_id, the property description, or the rubric criterion the property scores. Its support_status is a judgement about model_visible_definition.construct ONLY."
+  }
+}

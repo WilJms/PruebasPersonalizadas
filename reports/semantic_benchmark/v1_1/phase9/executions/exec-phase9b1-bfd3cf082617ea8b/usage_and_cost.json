@@ -1,0 +1,78 @@
+{
+  "cost": {
+    "actual_total_usd": 0.38430826,
+    "by_call_usd": {
+      "P04-C1-TERRA-HIGH:PP-A01-P04-001:run1": 0.1203285,
+      "P04-C1-TERRA-HIGH:PP-A01-P04-001:run2": 0.0952566,
+      "P04-C1-TERRA-HIGH:PP-A01-P04-001:run3": 0.0990246,
+      "P06-C1-LUNA-HIGH:PP-A01-S01-P06-R01:run1": 0.00171695,
+      "P06-C1-LUNA-HIGH:PP-A01-S01-P06-R01:run2": 0.00090226,
+      "P06-C1-LUNA-HIGH:PP-A01-S01-P06-R01:run3": 0.00147946,
+      "P06-C1-LUNA-HIGH:PP-A01-S03-P06-R01:run1": 0.00153584,
+      "P06-C1-LUNA-HIGH:PP-A01-S03-P06-R01:run2": 0.00103792,
+      "P06-C1-LUNA-HIGH:PP-A01-S03-P06-R01:run3": 0.00122752,
+      "P07-C1-LUNA-HIGH:PP-A01-S01-P07-O01:run1": 0.001788,
+      "P07-C1-LUNA-HIGH:PP-A01-S01-P07-O01:run2": 0.0024642,
+      "P07-C1-LUNA-HIGH:PP-A01-S01-P07-O01:run3": 0.0018894,
+      "P07-C1-LUNA-HIGH:PP-A01-S05-P07-O02:run1": 0.00058359,
+      "P07-C1-LUNA-HIGH:PP-A01-S05-P07-O02:run2": 0.00045028,
+      "P07-C1-LUNA-HIGH:PP-A01-S05-P07-O02:run3": 0.00045268,
+      "P07-C1-LUNA-HIGH:PP-A02-S02-P07-O01:run1": 0.00216509,
+      "P07-C1-LUNA-HIGH:PP-A02-S02-P07-O01:run2": 0.00182984,
+      "P07-C1-LUNA-HIGH:PP-A02-S02-P07-O01:run3": 0.00184184,
+      "P07-C1-LUNA-HIGH:PP-A04-S04-P07-O01:run1": 0.00379144,
+      "P07-C1-LUNA-HIGH:PP-A04-S04-P07-O01:run2": 0.0026367,
+      "P07-C1-LUNA-HIGH:PP-A04-S04-P07-O01:run3": 0.0040659,
+      "P07-C1-LUNA-HIGH:PP-A04-S06-P07-O01:run1": 0.00622694,
+      "P07-C1-LUNA-HIGH:PP-A04-S06-P07-O01:run2": 0.00626402,
+      "P07-C1-LUNA-HIGH:PP-A04-S06-P07-O01:run3": 0.00202922,
+      "P07-C1-LUNA-HIGH:PP-A08-S02-P07-O02:run1": 0.00077494,
+      "P07-C1-LUNA-HIGH:PP-A08-S02-P07-O02:run2": 0.00124458,
+      "P07-C1-LUNA-HIGH:PP-A08-S02-P07-O02:run3": 0.00086538,
+      "P09-C1-LUNA-HIGH:PP-A03-P09-F01:run1": 0.00787925,
+      "P09-C1-LUNA-HIGH:PP-A03-P09-F01:run2": 0.00541486,
+      "P09-C1-LUNA-HIGH:PP-A03-P09-F01:run3": 0.00714046
+    },
+    "by_candidate_usd": {
+      "P04-C1-TERRA-HIGH": 0.3146097,
+      "P06-C1-LUNA-HIGH": 0.00789995,
+      "P07-C1-LUNA-HIGH": 0.04136404,
+      "P09-C1-LUNA-HIGH": 0.02043457
+    },
+    "by_stage_usd": {
+      "P04": 0.3146097,
+      "P06": 0.00789995,
+      "P07": 0.04136404,
+      "P09": 0.02043457
+    },
+    "outer_authorization_cap_usd": 2.0,
+    "pricing_evidence": {
+      "executable_table_source": "https://developers.openai.com/api/docs/pricing",
+      "models": {
+        "gpt-5.6-luna": {
+          "cached_input_per_million": 0.02,
+          "input_per_million": 0.2,
+          "output_per_million": 1.2
+        },
+        "gpt-5.6-terra": {
+          "cached_input_per_million": 0.2,
+          "input_per_million": 2.0,
+          "output_per_million": 12.0
+        }
+      },
+      "official_source": "https://developers.openai.com/api/docs/pricing",
+      "pricing_unit": "USD_PER_MILLION_TOKENS",
+      "retrieved_at": "2026-08-17"
+    },
+    "within_outer_cap": true
+  },
+  "execution_id": "exec-phase9b1-bfd3cf082617ea8b",
+  "schema_version": "phase9-usage-and-cost/1.0.0",
+  "usage": {
+    "cached_input_tokens": 87769,
+    "input_tokens": 117498,
+    "output_tokens": 76647,
+    "reasoning_tokens": 46505,
+    "total_tokens": 194145
+  }
+}

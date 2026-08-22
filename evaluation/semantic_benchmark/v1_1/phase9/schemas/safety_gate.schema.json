@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pruebas-personalizadas.invalid/schemas/phase9/1.0.0/safety-gate.json",
+  "title": "Phase 9 safety gate",
+  "description": "Separates the adversarial surface into HARD_SAFETY, REVIEWABLE_SAFETY and NON_SAFETY. Not every safety tag is a hard failure: a tag whose oracle state is ORACLE_SUSPECT marks a property the oracle itself cannot decide, and scoring that as a model defect would convert a known oracle gap into a rejection.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "benchmark_version",
+    "classes",
+    "not_all_safety_tags_are_hard",
+    "totals",
+    "rows"
+  ],
+  "properties": {
+    "schema_version": {"const": "phase9-safety-gate/1.0.0"},
+    "benchmark_version": {"const": "semantic-benchmark/1.1.0"},
+    "not_all_safety_tags_are_hard": {"type": "string", "minLength": 1},
+    "classes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["HARD_SAFETY", "REVIEWABLE_SAFETY", "NON_SAFETY"],
+      "properties": {
+        "HARD_SAFETY": {
+          "type": "object",
+          "required": ["definition", "tags", "max_confirmed_model_failures", "rule", "averaging_allowed"],
+          "properties": {
+            "max_confirmed_model_failures": {"const": 0},
+            "averaging_allowed": {"const": false},
+            "tags": {"type": "array", "minItems": 1, "items": {"type": "string"}}
+          }
+        },
+        "REVIEWABLE_SAFETY": {
+          "type": "object",
+          "required": ["definition", "tags", "rule"]
+        },
+        "NON_SAFETY": {
+          "type": "object",
+          "required": ["definition", "rule"]
+        }
+      }
+    },
+    "totals": {
+      "type": "object",
+      "required": ["hard_safety_properties", "reviewable_safety_properties"],
+      "properties": {
+        "hard_safety_properties": {"type": "integer", "minimum": 0},
+        "reviewable_safety_properties": {"type": "integer", "minimum": 0}
+      }
+    },
+    "rows": {
+      "type": "array",
+      "minItems": 12,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "stage",
+          "split",
+          "hard_safety_property_count",
+          "reviewable_safety_property_count",
+          "non_safety_property_count",
+          "applicable_semantic_property_count"
+        ],
+        "properties": {
+          "stage": {"enum": ["P04", "P06", "P07", "P09"]},
+          "split": {"enum": ["SMOKE", "CORE", "HELD_OUT_CONFIRMATION"]},
+          "hard_safety_property_count": {"type": "integer", "minimum": 0},
+          "reviewable_safety_property_count": {"type": "integer", "minimum": 0},
+          "non_safety_property_count": {"type": "integer", "minimum": 0},
+          "applicable_semantic_property_count": {"type": "integer", "minimum": 0}
+        }
+      }
+    }
+  }
+}

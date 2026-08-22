@@ -1,0 +1,74 @@
+{
+  "accepted_decision": "U3",
+  "applicable_benchmark_version": "semantic-benchmark/1.3.2",
+  "candidate_scoring_property_count_by_status": {
+    "INSUFFICIENT": 38,
+    "PARTIAL": 5,
+    "SUFFICIENT": 31,
+    "UNCERTAIN": 0
+  },
+  "claim": "semantic-benchmark/1.3.2 qualifies P06 candidate behaviour on the support statuses SUFFICIENT, PARTIAL and INSUFFICIENT.",
+  "claim_hash": "sha256:1812472f3ebe1f04d82a60e5200da172863fb23035c7fcd50953ff391d112d2d",
+  "claim_semantics_changed_from_v131": false,
+  "decision_source": "reports/semantic_benchmark/phase9b7/product_decision.json",
+  "excluded_support_statuses": [
+    "UNCERTAIN"
+  ],
+  "historical_claim_lineage": [
+    {
+      "benchmark_version": "semantic-benchmark/1.3.0",
+      "claim_named_version": "semantic-benchmark/1.3.0",
+      "correct_when_published": true,
+      "status": "SUPERSEDED_PREEXECUTION_FREEZE_CANDIDATE_NO_RESULTS_EXECUTED"
+    },
+    {
+      "benchmark_version": "semantic-benchmark/1.3.1",
+      "claim_named_version": "semantic-benchmark/1.3.0",
+      "correct_when_published": false,
+      "defect": "The claim was carried forward verbatim, so an active version published a current claim naming a superseded one.",
+      "status": "SUPERSEDED_PREEXECUTION_FREEZE_CANDIDATE_NO_RESULTS_EXECUTED"
+    }
+  ],
+  "limitation_count": 4,
+  "limitations": [
+    "semantic-benchmark/1.3.2 does NOT qualify P06 UNCERTAIN behaviour.",
+    "P06 model-selection claims are limited to SUFFICIENT / PARTIAL / INSUFFICIENT.",
+    "UNCERTAIN remains an explicit residual risk.",
+    "Phase 9 alone does not establish full P06 contract coverage."
+  ],
+  "originating_product_decision": {
+    "accepted": true,
+    "decision": "U3",
+    "phase": "9B.7",
+    "unchanged_by_this_repair": true
+  },
+  "phase9_alone_is_full_p06_contract_coverage": false,
+  "production_contract_note": "UNCERTAIN remains a first-class member of the P06 support-status contract. 1.3.2 changes no production prompt, DTO, materializer or planner semantics. What it declares is the limit of its own qualification evidence.",
+  "production_contract_unchanged": true,
+  "qualified_support_statuses": [
+    "SUFFICIENT",
+    "PARTIAL",
+    "INSUFFICIENT"
+  ],
+  "reader_must_not_infer_applicability_from_lineage": true,
+  "schema_version": "p06-semantic-qualification-claim/1.3.2",
+  "supersedes_claim_binding_from": "semantic-benchmark/1.3.1",
+  "support_status_coverage_hash": "sha256:09b74c8a1d3328c6075038a6f2d844ae57e29418daaec813656195e0347a4fa2",
+  "support_status_coverage_version": "p06-support-status-coverage/1.3.0",
+  "uncertain_coverage_gate": {
+    "candidate_scoring_property_count": 0,
+    "covered": false,
+    "gate": "P06_UNCERTAIN_SEMANTIC_COVERAGE",
+    "may_be_closed_by_the_instrument": false,
+    "rationale": "No candidate-scoring P06 property asserts UNCERTAIN as the correct support status, so a qualification run cannot observe whether a candidate reaches UNCERTAIN when the deciding artifact is absent. The instrument must not manufacture that coverage.",
+    "readiness_blocked": true,
+    "stop_code": "P06_UNCERTAIN_COVERAGE_PRODUCT_DECISION_REQUIRED"
+  },
+  "uncertain_qualification_claimed": false,
+  "uncertain_removed_from_production_contract": false,
+  "uncertain_scope_census_hash": "sha256:d5180bdd31bb6cd2079ce9e59bf9f895dfe053ff006fd88f6ee2c144a5664998",
+  "uncertain_scope_census_version": "p06-uncertain-scope-census/1.0.0",
+  "uncertain_scoring_property_count": 0,
+  "what_changed": "The claim and its limitations now name the benchmark version they actually apply to. Nothing about which behaviour is qualified changed.",
+  "why_a_new_hash": "The claim text and the applicable benchmark version both changed, so the claim's material hash must change even though its meaning did not."
+}

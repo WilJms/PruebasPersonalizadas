@@ -1,0 +1,19 @@
+Variable independiente: altura final.
+Variable dependiente: horas de luz.
+
+La hipótesis se cumple porque hay fotosíntesis, crecimiento, control y evidencia. Los datos correctos son 12 h, 4 h, 5,8 cm y 3,0 cm. Como 12 es mayor que 4, la planta A2 creció mejor. B2 tuvo 3 hojas y una hoja dañada.
+
+Desarrollo:
+El grupo de 12 horas tiene alturas 5,2; 5,8 y 5,5. El de 4 horas tiene 3,0; 3,5 y 3,2. Podría sumar cada grupo, aunque no hice la división. Esto parece apoyar la hipótesis porque el primer conjunto de números es más alto.
+
+Marco teórico:
+La fotosíntesis es el proceso por el cual las plantas transforman la luz en energía química. Este proceso es fundamental para el crecimiento vegetal y explica científicamente los resultados obtenidos en el experimento. La clorofila capta la radiación y permite la síntesis de compuestos. Por lo tanto, a mayor cantidad de luz, mayor fotosíntesis y mayor crecimiento. Este mecanismo es la causa científica de lo observado en la tabla.
+
+Análisis de variables:
+Control significa que había agua, maceta y sustrato iguales. El grupo control es el de 4 horas porque recibió menos tratamiento. La variable independiente es la altura porque es la que cambia en la tabla, mientras que las horas dependen de la lámpara y por eso son la variable dependiente. La observación es una tercera variable que también se midió.
+
+Errores y anomalías:
+La hoja rota de B2 es un error experimental. La inclinación de A3 también es una anomalía. Ambos son errores de manipulación y disminuyen la validez del experimento. Si hubiera más plantas aumentaría la confiabilidad y el margen de error sería menor.
+
+Conclusión:
+La muestra es pequeña. Esto puede cambiar la validez, aunque no sé exactamente qué comparación afecta. Los resultados demuestran la hipótesis de que la luz produce crecimiento mediante fotosíntesis, con evidencia en los datos de la tabla y respaldo en el marco teórico. La correlación entre las variables es alta y significativa.

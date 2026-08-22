@@ -1,0 +1,109 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pruebas-personalizadas.invalid/schemas/phase9/1.1.0/routing-policy-intent.json",
+  "title": "Phase 9 target routing policy intent",
+  "description": "The family-constrained routing policy the product decided to qualify: Terra on the activity side, Luna on the submission side, escalation only inside the owning family. This document is intent, not deployment. It changes no product runtime; production routing locks only after Phase 9 qualification and Phase 10 end-to-end verification. P01-P03 appear here because their target policy is frozen, NOT because the benchmark qualifies them: semantic-benchmark/1.1.0 carries no qualification property for them.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "status",
+    "authority",
+    "production_runtime_changed_by_this_document",
+    "production_routing_locks_after",
+    "cross_family_fallback",
+    "cross_family_fallback_rule",
+    "ACTIVITY_SIDE",
+    "SUBMISSION_SIDE",
+    "PLANNER",
+    "P05",
+    "P08",
+    "P10",
+    "p01_p03_limitation"
+  ],
+  "properties": {
+    "schema_version": {"const": "phase9-routing-policy-intent/1.0.0"},
+    "status": {"const": "TARGET_ROUTING_POLICY_INTENT"},
+    "authority": {"const": "EXPLICIT_USER_PRODUCT_DECISION"},
+    "production_runtime_changed_by_this_document": {"const": false},
+    "production_routing_locks_after": {"const": "PHASE_9_QUALIFICATION_AND_PHASE_10_E2E"},
+    "cross_family_fallback": {"const": "FORBIDDEN"},
+    "cross_family_fallback_rule": {"type": "string", "minLength": 1},
+    "PLANNER": {"const": "DETERMINISTIC_NO_MODEL"},
+    "P05": {"const": "HISTORICAL_INACTIVE"},
+    "P08": {"const": "HISTORICAL_INACTIVE"},
+    "P10": {"const": "DISABLED"},
+    "p01_p03_limitation": {"type": "string", "minLength": 1},
+    "ACTIVITY_SIDE": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "stages",
+        "model_family",
+        "default_reasoning",
+        "max_reasoning",
+        "reasoning_ladder",
+        "cross_family_fallback",
+        "forbidden_families",
+        "rationale",
+        "qualification_status"
+      ],
+      "properties": {
+        "stages": {"const": ["P01", "P02", "P03", "P04"]},
+        "model_family": {"const": "gpt-5.6-terra"},
+        "default_reasoning": {"const": "HIGH"},
+        "max_reasoning": {"const": "XHIGH"},
+        "reasoning_ladder": {"const": ["HIGH", "XHIGH"]},
+        "cross_family_fallback": {"const": "FORBIDDEN"},
+        "forbidden_families": {"const": ["gpt-5.6-luna", "gpt-5.6-sol"]},
+        "rationale": {"type": "string", "minLength": 1},
+        "qualification_status": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["P01", "P02", "P03", "P04"],
+          "properties": {
+            "P01": {"const": "PHASE10_OPERATIONAL_VERIFICATION_REQUIRED"},
+            "P02": {"const": "PHASE10_OPERATIONAL_VERIFICATION_REQUIRED"},
+            "P03": {"const": "PHASE10_OPERATIONAL_VERIFICATION_REQUIRED"},
+            "P04": {"const": "PHASE9_SEMANTIC_QUALIFICATION"}
+          }
+        }
+      }
+    },
+    "SUBMISSION_SIDE": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "stages",
+        "model_family",
+        "default_reasoning",
+        "max_reasoning",
+        "reasoning_ladder",
+        "cross_family_fallback",
+        "forbidden_families",
+        "rationale",
+        "qualification_status"
+      ],
+      "properties": {
+        "stages": {"const": ["P06", "P07", "P09"]},
+        "model_family": {"const": "gpt-5.6-luna"},
+        "default_reasoning": {"const": "HIGH"},
+        "max_reasoning": {"const": "MAX"},
+        "reasoning_ladder": {"const": ["HIGH", "XHIGH", "MAX"]},
+        "cross_family_fallback": {"const": "FORBIDDEN"},
+        "forbidden_families": {"const": ["gpt-5.6-terra", "gpt-5.6-sol"]},
+        "rationale": {"type": "string", "minLength": 1},
+        "qualification_status": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["P06", "P07", "P09"],
+          "properties": {
+            "P06": {"const": "PHASE9_SEMANTIC_QUALIFICATION"},
+            "P07": {"const": "PHASE9_SEMANTIC_QUALIFICATION"},
+            "P09": {"const": "PHASE9_SEMANTIC_QUALIFICATION"}
+          }
+        }
+      }
+    }
+  }
+}

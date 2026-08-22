@@ -16,8 +16,19 @@ from typing import Any
 
 from pydantic import BaseModel, ValidationError
 
-from comprehension_verification.canonical import stable_id
+from comprehension_verification.canonical import canonical_hash, stable_id
 from comprehension_verification.contracts import model_by_name, models
+from comprehension_verification.evidence_mapping import (
+    build_evidence_mapping_alias_envelope,
+)
+from comprehension_verification.guide_generation import (
+    build_guide_alias_envelope,
+    build_guide_approval_binding,
+    guide_id_for_binding,
+)
+from comprehension_verification.question_generation import (
+    build_question_alias_envelope,
+)
 
 
 FIXED_TIME = datetime(2026, 7, 30, 12, 0, tzinfo=UTC)
@@ -42,6 +53,14 @@ class AdapterResult:
     output_tokens: int
     estimated_cost_usd: float = 0.0
     actual_cost_usd: float = 0.0
+    cache_write_input_tokens: int = 0
+    reasoning_tokens: int = 0
+    effective_model: str | None = None
+    output_hash: str | None = None
+    provider_request_id_hash: str | None = None
+    provider_schema_valid: bool | None = None
+    provider_schema_issues: tuple[tuple[str, str], ...] = ()
+    reason_codes: tuple[str, ...] = ()
 
 
 def _diagnostic(
@@ -210,6 +229,24 @@ def _blueprint_policy() -> models.BlueprintPolicy:
     )
 
 
+def _policy_decision() -> models.PolicyDecision:
+    selected_option = models.DecisionOption(
+        option_id="option_closed_materials",
+        label="Usar únicamente el paquete autorizado",
+        consequence=(
+            "Mantiene el contexto cerrado y prohíbe fuentes de curso externas."
+        ),
+    )
+    return models.PolicyDecision(
+        decision_id="decision_closed_materials",
+        issue_id="issue_material_boundary",
+        selected_option_id=selected_option.option_id,
+        selected_option=selected_option,
+        decided_by="usr_teacher",
+        decided_at=FIXED_TIME,
+    )
+
+
 def _opportunity_template() -> models.QuestionOpportunityTemplate:
     return models.QuestionOpportunityTemplate(
         opportunity_template_id="opt_explain_1",
@@ -281,6 +318,7 @@ def _blueprint(*, status: models.WorkflowStatus = models.WorkflowStatus.READY) -
                 mode=models.StructuredJustificationMode.NOT_REQUIRED
             ),
         ),
+        decision_ids=[_policy_decision().decision_id],
     )
 
 
@@ -350,6 +388,7 @@ def _plan() -> models.AssessmentPlan:
 
 
 def _guide_draft() -> models.GuideDraft:
+    element_ids = ["observable_1", "observable_2"]
     return models.GuideDraft(
         purpose="Observar una explicación localizada del mecanismo.",
         observable_elements=[
@@ -357,7 +396,12 @@ def _guide_draft() -> models.GuideDraft:
                 element_id="observable_1",
                 description="Relaciona consulta e invalidación.",
                 evidence_ids=["ev_submission_1"],
-            )
+            ),
+            models.ObservableElement(
+                element_id="observable_2",
+                description="Delimita la consecuencia observable del cambio.",
+                evidence_ids=["ev_submission_1"],
+            ),
         ],
         acceptable_alternatives=["Puede describir la relación en orden inverso."],
         misconceptions=["Confunde invalidación con cálculo inicial."],
@@ -370,7 +414,7 @@ def _guide_draft() -> models.GuideDraft:
                     if level == 0
                     else "Explica el mecanismo con precisión creciente."
                 ),
-                observable_element_ids=[] if level == 0 else ["observable_1"],
+                observable_element_ids=[] if level == 0 else element_ids,
             )
             for level in range(4)
         ],
@@ -428,115 +472,33 @@ def _candidate(*, enriched: bool = False) -> models.QuestionCandidate:
     )
 
 
-def _dynamic_blueprint(
+def _dynamic_blueprint_draft(
     request: models.BlueprintBuildRequest,
-) -> models.AssessmentBlueprint:
-    """Build a deterministic catalog from the trusted E1 blueprint policy.
+) -> models.BlueprintModelDraft:
+    """Build a deterministic semantic draft from the trusted P04 inputs.
 
-    The static fixtures above remain useful for isolated contract tests.  Web
-    requests, however, may legitimately select any accepted question count,
-    time budget, response formats, and justification policy.  The mock must
-    preserve those constraints instead of silently replacing them with the
-    one-question demo defaults.
+    Canonical IDs, constraints, status and approval metadata are deliberately
+    absent; the production compiler owns those fields in mock and real modes.
     """
 
     policy = request.blueprint_policy
-    activity_id = request.activity_spec.activity_id
-    selected_template_ids = list(
-        dict.fromkeys(
-            policy.structured_justification_policy.selected_opportunity_template_ids
-        )
+    selected_count = len(
+        policy.structured_justification_policy.selected_opportunity_template_ids
     )
-    catalog_size = max(
+    requested_catalog_size = max(
         policy.question_count + policy.planning_policy.max_reserve_opportunities,
-        len(selected_template_ids),
+        selected_count,
     )
-    template_ids = list(selected_template_ids)
-    generated_index = 0
-    while len(template_ids) < catalog_size:
-        candidate_id = stable_id(
-            "oppt", activity_id, policy.policy_id, generated_index
-        )
-        generated_index += 1
-        if candidate_id not in template_ids:
-            template_ids.append(candidate_id)
-
+    catalog_size = min(
+        requested_catalog_size,
+        policy.max_variants_per_dimension * policy.max_templates_per_variant,
+    )
     operations = list(models.CognitiveOperation)
     difficulties = list(models.DifficultyBand)
     target_minutes = min(
         60,
         max(1, policy.target_total_minutes // policy.question_count),
     )
-    justification_mode = policy.structured_justification_policy.mode
-    templates: list[models.QuestionOpportunityTemplate] = []
-    for index, template_id in enumerate(template_ids):
-        operation = operations[index % len(operations)]
-        justification_required = (
-            justification_mode == models.StructuredJustificationMode.ALL
-            or template_id in selected_template_ids
-        )
-        templates.append(
-            models.QuestionOpportunityTemplate(
-                opportunity_template_id=template_id,
-                cognitive_operation=operation,
-                focus=f"Aspecto verificable {index + 1} del entregable.",
-                observable=(
-                    "Relaciona una afirmación localizada con una consecuencia "
-                    "observable en la evidencia."
-                ),
-                difficulty=difficulties[index % len(difficulties)],
-                target_minutes=target_minutes,
-                allowed_anchor_structures=[models.AnchorStructure.SINGLE_FRAGMENT],
-                allowed_response_formats=list(policy.allowed_response_formats),
-                verification_potential=0.95,
-                minimum_quality=policy.planning_policy.minimum_opportunity_quality,
-                student_justification_required=justification_required,
-            )
-        )
-
-    variants: list[models.EvidenceVariant] = []
-    for chunk_index, start in enumerate(range(0, len(templates), 100)):
-        chunk = templates[start : start + 100]
-        chunk_operations = list(
-            dict.fromkeys(item.cognitive_operation for item in chunk)
-        )
-        variants.append(
-            models.EvidenceVariant(
-                variant_id=stable_id(
-                    "variant", activity_id, policy.policy_id, chunk_index
-                ),
-                name=f"Evidencia localizada {chunk_index + 1}",
-                description=(
-                    "Fragmentos textuales localizables que permiten una "
-                    "verificación acotada."
-                ),
-                evidence_requirement=models.EvidenceRequirement(
-                    allowed_modalities=[
-                        models.EvidenceModality.HEADING,
-                        models.EvidenceModality.PARAGRAPH,
-                        models.EvidenceModality.LIST,
-                        models.EvidenceModality.OTHER,
-                    ],
-                    min_distinct_units=1,
-                    min_extraction_confidence=0.0,
-                    min_alignment=0.0,
-                ),
-                verification_potential=0.95,
-                supported_operations=[
-                    models.SupportedOperation(
-                        cognitive_operation=operation,
-                        support_strength=0.95,
-                        rationale=(
-                            "La operación se deriva del catálogo y se valida "
-                            "contra evidencia localizada."
-                        ),
-                    )
-                    for operation in chunk_operations
-                ],
-                question_opportunities=chunk,
-            )
-        )
-
     rubric_criterion_ids = (
         [criterion.criterion_id for criterion in request.rubric_spec.criteria]
         if request.rubric_spec is not None
@@ -555,58 +517,105 @@ def _dynamic_blueprint(
     learning_outcome_ids = [
         outcome.statement_id for outcome in request.activity_spec.learning_outcomes
     ]
-    blueprint_id = stable_id(
-        "blueprint",
-        activity_id,
-        policy.policy_id,
-        policy.question_count,
-        policy.target_total_minutes,
-        [item.value for item in policy.allowed_response_formats],
-        [decision.decision_id for decision in request.resolved_decisions],
-    )
-    return models.AssessmentBlueprint(
-        blueprint_id=blueprint_id,
-        blueprint_version=1,
-        activity_id=activity_id,
-        status=models.WorkflowStatus.READY,
-        context_mode=models.ContextMode.CLOSED,
-        dimensions=[
-            models.BlueprintDimension(
-                dimension_id=stable_id("dimension", blueprint_id, 0),
-                name="Comprensión verificable del entregable",
-                criterion_ids=criterion_ids,
-                learning_outcome_ids=learning_outcome_ids,
-                verification_priority=0.95,
-                factors=models.VerificationFactors(
-                    learning_relevance=0.95,
-                    centrality=0.9,
-                    expected_evidence=0.9,
-                    discriminative_potential=0.85,
-                    auditability=1.0,
-                    short_response_observability=0.9,
-                ),
-                justification=(
-                    "Dimensión sintética derivada de requisitos y evidencia "
-                    "autorizados para probar la orquestación."
-                ),
-                evidence_variants=variants,
-            )
-        ],
-        assessment_constraints=models.AssessmentConstraints(
-            question_count=policy.question_count,
-            target_total_minutes=policy.target_total_minutes,
-            allowed_response_formats=list(policy.allowed_response_formats),
-            minimum_opportunity_quality=(
-                policy.planning_policy.minimum_opportunity_quality
-            ),
-            max_reserve_opportunities=(
-                policy.planning_policy.max_reserve_opportunities
-            ),
-            structured_justification_policy=(
-                policy.structured_justification_policy.model_copy(deep=True)
-            ),
+    dimension = models.BlueprintDimensionDraft(
+        dimension_alias="D1",
+        name="Comprensión verificable del entregable",
+        criterion_ids=criterion_ids,
+        learning_outcome_ids=learning_outcome_ids,
+        verification_priority=0.95,
+        factors=models.VerificationFactors(
+            learning_relevance=0.95,
+            centrality=0.9,
+            expected_evidence=0.9,
+            discriminative_potential=0.85,
+            auditability=1.0,
+            short_response_observability=0.9,
         ),
-        decision_ids=[decision.decision_id for decision in request.resolved_decisions],
+        justification=(
+            "Dimensión sintética derivada de requisitos y evidencia "
+            "autorizados para probar la orquestación."
+        ),
+    )
+
+    variants: list[models.EvidenceVariantDraft] = []
+    templates: list[models.QuestionOpportunityTemplateDraft] = []
+    for chunk_index, start in enumerate(
+        range(0, catalog_size, policy.max_templates_per_variant)
+    ):
+        variant_alias = f"V{chunk_index + 1}"
+        stop = min(start + policy.max_templates_per_variant, catalog_size)
+        chunk_operations = list(
+            dict.fromkeys(
+                operations[index % len(operations)]
+                for index in range(start, stop)
+            )
+        )
+        variants.append(
+            models.EvidenceVariantDraft(
+                variant_alias=variant_alias,
+                dimension_alias="D1",
+                name=f"Evidencia localizada {chunk_index + 1}",
+                description=(
+                    "Fragmentos textuales localizables que permiten una "
+                    f"verificación acotada en la variante {chunk_index + 1}."
+                ),
+                evidence_requirement=models.EvidenceRequirement(
+                    allowed_modalities=[
+                        models.EvidenceModality.HEADING,
+                        models.EvidenceModality.PARAGRAPH,
+                        models.EvidenceModality.LIST,
+                        models.EvidenceModality.OTHER,
+                    ],
+                    min_distinct_units=1,
+                    min_extraction_confidence=0.0,
+                    min_alignment=0.0,
+                ),
+                verification_potential=0.95,
+                supported_operations=[
+                    models.SupportedOperation(
+                        cognitive_operation=operation,
+                        support_strength=0.95,
+                        rationale=(
+                            "La evidencia localizada sustenta la operación "
+                            f"{operation.value.lower()}."
+                        ),
+                    )
+                    for operation in chunk_operations
+                ],
+            )
+        )
+        for index in range(start, stop):
+            templates.append(
+                models.QuestionOpportunityTemplateDraft(
+                    template_alias=f"T{index + 1}",
+                    variant_alias=variant_alias,
+                    cognitive_operation=operations[index % len(operations)],
+                    focus=f"Aspecto verificable {index + 1} del entregable.",
+                    observable=(
+                        "Relaciona la afirmación localizada "
+                        f"{index + 1} con una consecuencia observable."
+                    ),
+                    difficulty=difficulties[index % len(difficulties)],
+                    target_minutes=target_minutes,
+                    allowed_anchor_structures=[
+                        models.AnchorStructure.SINGLE_FRAGMENT
+                    ],
+                    allowed_response_formats=list(policy.allowed_response_formats),
+                    verification_potential=0.95,
+                    justification_required=(
+                        policy.structured_justification_policy.mode
+                        == models.StructuredJustificationMode.SELECTED
+                        and index < selected_count
+                    ),
+                )
+            )
+
+    return models.BlueprintModelDraft(
+        dimensions=[
+            dimension,
+        ],
+        evidence_variants=variants,
+        question_opportunities=templates,
     )
 
 
@@ -632,158 +641,74 @@ def _eligible_evidence(
 
 def _dynamic_evidence_map(
     request: models.EvidenceMapRequest,
-) -> models.EvidenceMapPatch:
-    bundle = request.evidence_bundle
-    opportunities: list[models.QuestionOpportunity] = []
-    variant_matches: list[models.EvidenceVariantMatch] = []
-    evidence_alignments: dict[
-        str, list[tuple[str, str, models.CognitiveOperation]]
-    ] = {}
+) -> models.EvidenceMappingModelDraft:
+    """Produce semantic aliases only; the gateway materializes canonical IR."""
 
+    envelope = build_evidence_mapping_alias_envelope(request)
+    evidence_alias_by_id = {
+        evidence.evidence_id: context.evidence_alias
+        for evidence, context in zip(
+            request.evidence_bundle.evidence_units,
+            envelope.evidence_units,
+            strict=True,
+        )
+    }
+    variant_alias_by_id = {
+        variant.variant_id: context.variant_alias
+        for variant, context in zip(
+            (
+                variant
+                for dimension in request.blueprint.dimensions
+                for variant in dimension.evidence_variants
+            ),
+            envelope.variants,
+            strict=True,
+        )
+    }
+    template_contexts = iter(envelope.templates)
+    mappings: list[models.EvidenceMappingRelationDraft] = []
     for dimension in request.blueprint.dimensions:
         for variant in dimension.evidence_variants:
-            eligible = _eligible_evidence(variant, bundle)
-            if not eligible:
-                continue
-            matched_ids = [
-                evidence.evidence_id
-                for evidence in eligible[:50]
-            ]
-            variant_matches.append(
-                models.EvidenceVariantMatch(
-                    dimension_id=dimension.dimension_id,
-                    variant_id=variant.variant_id,
-                    evidence_ids=matched_ids,
-                    evidence_fit=0.95,
-                    mapping_confidence=0.95,
-                    justification=(
-                        "La evidencia cumple modalidad, confianza y procedencia "
-                        "exigidas por la variante."
-                    ),
-                )
+            eligible = _eligible_evidence(
+                variant, request.evidence_bundle
             )
-            minimum_units = variant.evidence_requirement.min_distinct_units
-            for template_index, template in enumerate(
+            for template_index, _template in enumerate(
                 variant.question_opportunities
             ):
+                template_context = next(template_contexts)
+                if not eligible:
+                    continue
+                minimum_units = variant.evidence_requirement.min_distinct_units
                 selected = [
                     eligible[(template_index + offset) % len(eligible)]
                     for offset in range(minimum_units)
                 ]
-                selected_ids = list(
-                    dict.fromkeys(evidence.evidence_id for evidence in selected)
+                selected_aliases = list(
+                    dict.fromkeys(
+                        evidence_alias_by_id[item.evidence_id]
+                        for item in selected
+                    )
                 )
-                opportunity_id = stable_id(
-                    "opp",
-                    bundle.submission_id,
-                    request.blueprint.blueprint_id,
-                    request.blueprint.blueprint_version,
-                    template.opportunity_template_id,
-                    selected_ids,
-                )
-                opportunities.append(
-                    models.QuestionOpportunity(
-                        opportunity_id=opportunity_id,
-                        opportunity_template_id=template.opportunity_template_id,
-                        submission_id=bundle.submission_id,
-                        dimension_id=dimension.dimension_id,
-                        variant_id=variant.variant_id,
-                        evidence_ids=selected_ids,
-                        cognitive_operation=template.cognitive_operation,
-                        focus=template.focus,
-                        observable=template.observable,
-                        difficulty=template.difficulty,
-                        target_minutes=template.target_minutes,
-                        allowed_anchor_structures=list(
-                            template.allowed_anchor_structures
+                mappings.append(
+                    models.EvidenceMappingRelationDraft(
+                        variant_alias=variant_alias_by_id[variant.variant_id],
+                        template_alias=template_context.template_alias,
+                        evidence_aliases=selected_aliases,
+                        support_status=models.EvidenceSupportStatus.SUFFICIENT,
+                        support_type=(
+                            models.EvidenceSupportType.COMPOSITE
+                            if len(selected_aliases) > 1
+                            else models.EvidenceSupportType.DIRECT
                         ),
-                        allowed_response_formats=list(
-                            template.allowed_response_formats
-                        ),
-                        activity_priority=dimension.verification_priority,
-                        evidence_fit=0.95,
-                        opportunity_quality=max(
-                            template.minimum_quality,
-                            template.verification_potential,
-                        ),
-                        student_justification_required=(
-                            template.student_justification_required
+                        support_description=(
+                            "La evidencia localizada sustenta el aspecto "
+                            "observable de esta ruta sintética."
                         ),
                     )
                 )
-                for evidence_id in selected_ids:
-                    evidence_alignments.setdefault(evidence_id, []).append(
-                        (
-                            dimension.dimension_id,
-                            variant.variant_id,
-                            template.cognitive_operation,
-                        )
-                    )
-
-    if not opportunities:
-        return models.EvidenceMapPatch(
-            submission_id=bundle.submission_id,
-            status="INSUFFICIENT_RELEVANT_EVIDENCE",
-            diagnostics=[
-                _diagnostic(
-                    "INSUFFICIENT_RELEVANT_EVIDENCE",
-                    "La evidencia no satisface ninguna variante del blueprint.",
-                    evidence_ids=list(bundle.allowed_evidence_ids),
-                )
-            ],
-        )
-
-    evidence_by_id = {
-        evidence.evidence_id: evidence for evidence in bundle.evidence_units
-    }
-    claims: list[models.EvidenceClaim] = []
-    for claim_index, evidence_id in enumerate(sorted(evidence_alignments)):
-        evidence = evidence_by_id[evidence_id]
-        alignments = evidence_alignments[evidence_id]
-        unique_paths = list(
-            dict.fromkeys((dimension_id, variant_id) for dimension_id, variant_id, _ in alignments)
-        )
-        supported_operations = list(
-            dict.fromkeys(operation for _, _, operation in alignments)
-        )
-        source_text = (evidence.content_text or "").strip()
-        claims.append(
-            models.EvidenceClaim(
-                claim_id=stable_id(
-                    "claim", bundle.submission_id, evidence_id, claim_index
-                ),
-                text=(
-                    source_text[:1500]
-                    if source_text
-                    else "Evidencia estructurada localizada en el entregable."
-                ),
-                evidence_ids=[evidence_id],
-                alignments=[
-                    models.EvidenceAlignment(
-                        dimension_id=dimension_id,
-                        variant_ids=[variant_id],
-                        strength=0.95,
-                        justification=(
-                            "El fragmento satisface la variante sintética "
-                            "seleccionada."
-                        ),
-                    )
-                    for dimension_id, variant_id in unique_paths
-                ],
-                supported_operations=supported_operations,
-                specificity=0.95,
-                auditability=1.0,
-                self_containment=0.9,
-                ambiguity_risk=0.1,
-            )
-        )
-
-    return models.EvidenceMapPatch(
-        submission_id=bundle.submission_id,
-        status="READY",
-        claims=claims,
-        variant_matches=variant_matches,
-        opportunities=opportunities,
+    return models.EvidenceMappingModelDraft(
+        scope_alias=envelope.scope_alias,
+        mappings=mappings,
     )
 
 
@@ -828,19 +753,30 @@ def _guide_for_question(
     *,
     source_ids: list[str] | None = None,
 ) -> models.GuideDraft:
-    element_id = stable_id("observable", question_key, evidence_ids, source_ids or [])
+    element_ids = [
+        stable_id("observable", question_key, evidence_ids, source_ids or [], index)
+        for index in range(2)
+    ]
     return models.GuideDraft(
         purpose="Observar una explicación acotada a la evidencia señalada.",
         observable_elements=[
             models.ObservableElement(
-                element_id=element_id,
+                element_id=element_ids[0],
                 description=(
                     "Relaciona el fragmento localizado con la respuesta sin "
                     "añadir supuestos externos."
                 ),
                 evidence_ids=list(evidence_ids),
                 source_ids=list(source_ids or []),
-            )
+            ),
+            models.ObservableElement(
+                element_id=element_ids[1],
+                description=(
+                    "Delimita qué conclusión es observable y cuál excede la evidencia."
+                ),
+                evidence_ids=list(evidence_ids),
+                source_ids=list(source_ids or []),
+            ),
         ],
         acceptable_alternatives=[
             "Puede expresar la misma relación con una formulación equivalente."
@@ -857,7 +793,7 @@ def _guide_for_question(
                     if level == 0
                     else "Establece la relación con precisión creciente y evidencia localizada."
                 ),
-                observable_element_ids=[] if level == 0 else [element_id],
+                observable_element_ids=[] if level == 0 else element_ids,
             )
             for level in range(4)
         ],
@@ -904,13 +840,7 @@ def _dynamic_candidate(
         anchor_evidence = anchor_evidence[:1]
 
     response_format = opportunity.allowed_response_formats[0]
-    candidate_id = stable_id(
-        "candidate",
-        request.plan.plan_id,
-        opportunity.opportunity_id,
-        evidence_ids,
-        [fingerprint.fingerprint_id for fingerprint in request.avoid],
-    )
+    candidate_id = request.target_candidate_id
     choices: list[models.ChoiceOption] = []
     if response_format == models.ResponseFormat.CHOICE:
         choices = [
@@ -952,7 +882,7 @@ def _dynamic_candidate(
         for passage in course_passages[:1]
     ]
     source_ids = [citation.source_id for citation in citations]
-    question_text = {
+    question_stem = {
         models.ResponseFormat.CHOICE: (
             "¿Qué interpretación está mejor respaldada por el fragmento señalado?"
         ),
@@ -969,6 +899,9 @@ def _dynamic_candidate(
             "Explica la relación observable indicada en el fragmento señalado."
         ),
     }[response_format]
+    question_text = (
+        f"{question_stem} Enfoca tu respuesta en: {opportunity.focus[:500]}"
+    )
     return models.QuestionCandidate(
         candidate_id=candidate_id,
         submission_id=request.plan.submission_id,
@@ -1009,6 +942,108 @@ def _dynamic_candidate(
     )
 
 
+def _dynamic_question_draft(
+    request: models.QuestionBuildRequest,
+) -> models.QuestionModelDraft:
+    envelope = build_question_alias_envelope(request)
+    support_aliases = [
+        item.evidence_alias for item in envelope.support_evidence
+    ]
+    allowed = set(envelope.opportunity.allowed_anchor_structures)
+    visible_count = 1
+    if not allowed.intersection(
+        {
+            models.AnchorStructure.SINGLE_FRAGMENT,
+            models.AnchorStructure.TABLE_OR_RANGE,
+            models.AnchorStructure.CODE_CONTEXT,
+            models.AnchorStructure.FIGURE_WITH_CONTEXT,
+        }
+    ):
+        visible_count = min(2, len(support_aliases))
+    response_format = envelope.opportunity.response_format
+    question_text = {
+        models.ResponseFormat.CHOICE: (
+            "¿Qué interpretación está mejor respaldada por la evidencia señalada?"
+        ),
+        models.ResponseFormat.STRUCTURED_BULLETS: (
+            "Explica en puntos qué función cumple la decisión localizada."
+        ),
+        models.ResponseFormat.ANNOTATION_OR_DIAGRAM: (
+            "Representa y explica cómo funciona la decisión localizada."
+        ),
+        models.ResponseFormat.ORAL_EQUIVALENT: (
+            "Explica oralmente qué función cumple la decisión localizada."
+        ),
+        models.ResponseFormat.OPEN_SHORT: (
+            "Explica qué función cumple la decisión localizada y fundamenta tu respuesta."
+        ),
+    }[response_format]
+    question_text = (
+        f"{question_text} Enfoca tu respuesta en: "
+        f"{envelope.opportunity.focus[:500]}"
+    )
+    choices: list[models.QuestionChoiceDraft] = []
+    if response_format == models.ResponseFormat.CHOICE:
+        choices = [
+            models.QuestionChoiceDraft(
+                text=text,
+                is_best_answer=index == 0,
+                evaluator_rationale=rationale,
+                misconception=None if index == 0 else misconception,
+            )
+            for index, (text, rationale, misconception) in enumerate(
+                [
+                    (
+                        "Limita el resultado a la versión vigente de la fuente.",
+                        "La evidencia de soporte describe esa relación localizada.",
+                        None,
+                    ),
+                    (
+                        "Conserva cualquier resultado anterior sin volver a consultarlo.",
+                        "Contradice la relación observable de la evidencia.",
+                        "Confunde reutilización con validez de una versión anterior.",
+                    ),
+                    (
+                        "Elimina la necesidad de mantener una fuente actualizada.",
+                        "Añade una conclusión que el soporte no autoriza.",
+                        "Generaliza una consecuencia local a todo el sistema.",
+                    ),
+                ]
+            )
+        ]
+    return models.QuestionModelDraft(
+        scope_alias=envelope.scope_alias,
+        status="READY",
+        question_text=question_text,
+        visible_anchor_aliases=support_aliases[:visible_count],
+        expected_observables=[
+            models.QuestionObservableDraft(
+                description=(
+                    "Relaciona la decisión localizada con la vigencia del resultado."
+                ),
+                support_evidence_aliases=support_aliases,
+                required_for_level_2=True,
+            ),
+            models.QuestionObservableDraft(
+                description=(
+                    "Delimita la consecuencia defendible sin agregar conocimiento externo."
+                ),
+                support_evidence_aliases=support_aliases,
+                required_for_level_2=True,
+            ),
+        ],
+        acceptable_alternatives=[
+            "Puede expresar la misma relación con una formulación equivalente."
+        ],
+        misconceptions=[
+            "Generaliza el efecto local más allá de la evidencia autorizada."
+        ],
+        choices=choices,
+        semantic_uncertainties=[],
+        replacement_reason=None,
+    )
+
+
 def _generation_result(*, enriched: bool = False) -> models.QuestionGenerationResult:
     return models.QuestionGenerationResult(
         submission_id="sub_demo",
@@ -1042,6 +1077,7 @@ def _selected_question() -> models.SelectedQuestion:
         choices=candidate.choices,
         student_justification_required=candidate.student_justification_required,
         preliminary_guide=candidate.preliminary_guide,
+        semantic_uncertainties=candidate.uncertainties,
         planning_score=0.91,
     )
 
@@ -1078,13 +1114,51 @@ def _assessment() -> models.Assessment:
             blueprint_id="blueprint_demo",
             blueprint_version=1,
             parser_versions={"text": "mock-parser/1"},
-            prompt_versions={"pack": "1.1.0"},
+            # This fixture lineage is part of previously observed real input
+            # bundles. Keep the historical pack marker stable when unrelated
+            # prompt entries advance.
+            prompt_versions={"pack": "1.1.5"},
             model_snapshots={"mock": "deterministic-mock-v1"},
             policy_hash=HASH_D,
             planner_version="mock-planner/1",
             renderer_version="mock-renderer/1",
         ),
         created_at=FIXED_TIME,
+    )
+
+
+def _approved_assessment() -> models.Assessment:
+    return _assessment().model_copy(
+        update={
+            "status": models.WorkflowStatus.APPROVED,
+            "approved_by": "teacher_demo",
+            "approved_at": FIXED_TIME,
+        }
+    )
+
+
+def _guide_request() -> models.GuideBuildRequest:
+    assessment = _approved_assessment()
+    assessment_etag = f'"{canonical_hash(assessment)}"'
+    approval_event_id = stable_id(
+        "evt",
+        assessment.tenant_id,
+        "assessment.approved",
+        assessment.assessment_id,
+        assessment.approved_by,
+        2,
+    )
+    binding = build_guide_approval_binding(
+        assessment=assessment,
+        assessment_version=2,
+        assessment_etag=assessment_etag,
+        approval_event_id=approval_event_id,
+    )
+    return models.GuideBuildRequest(
+        guide_id=guide_id_for_binding(binding),
+        assessment=assessment,
+        binding=binding,
+        evidence_bundle=_evidence_bundle(),
     )
 
 
@@ -1105,24 +1179,45 @@ def build_mock_request(prompt_id: str) -> BaseModel:
         )
     if prompt_id == "P04_BLUEPRINT_BUILD_V1":
         return models.BlueprintBuildRequest(
+            target_blueprint_id="blueprint_demo",
+            target_blueprint_version=1,
             activity_spec=_activity_spec(),
             rubric_spec=_rubric_spec(),
+            resolved_decisions=[_policy_decision()],
             blueprint_policy=_blueprint_policy(),
         )
     if prompt_id == "P05_BLUEPRINT_REVIEW_V1":
+        from comprehension_verification.validation import (
+            build_blueprint_review_preflight,
+        )
+
+        blueprint = _blueprint()
+        activity_spec = _activity_spec()
+        rubric_spec = _rubric_spec()
+        blueprint_policy = _blueprint_policy()
         return models.BlueprintReviewRequest(
-            blueprint=_blueprint(),
-            activity_spec=_activity_spec(),
-            rubric_spec=_rubric_spec(),
-            blueprint_policy=_blueprint_policy(),
+            blueprint=blueprint,
+            activity_spec=activity_spec,
+            rubric_spec=rubric_spec,
+            resolved_decisions=[_policy_decision()],
+            blueprint_policy=blueprint_policy,
+            deterministic_preflight=build_blueprint_review_preflight(
+                blueprint=blueprint,
+                activity_spec=activity_spec,
+                rubric_spec=rubric_spec,
+                blueprint_policy=blueprint_policy,
+            ),
         )
     if prompt_id == "P06_EVIDENCE_MAP_V1":
         return models.EvidenceMapRequest(
-            blueprint=_blueprint(), evidence_bundle=_evidence_bundle()
+            blueprint=_blueprint(),
+            planning_policy=_blueprint_policy().planning_policy,
+            evidence_bundle=_evidence_bundle(),
         )
     if prompt_id in {"P07_QUESTION_BUILD_V1", "P10_ENRICHED_CONTEXT_V1"}:
         enriched = prompt_id == "P10_ENRICHED_CONTEXT_V1"
         return models.QuestionBuildRequest(
+            target_candidate_id="candidate_demo_1",
             plan=_plan(),
             opportunity=_opportunity(),
             evidence_bundle=_evidence_bundle(enriched=enriched),
@@ -1140,9 +1235,7 @@ def build_mock_request(prompt_id: str) -> BaseModel:
             ),
         )
     if prompt_id == "P09_GUIDE_BUILD_V1":
-        return models.GuideBuildRequest(
-            guide_id="guide_demo", assessment=_assessment(), evidence_bundle=_evidence_bundle()
-        )
+        return _guide_request()
     if prompt_id == "P11_SCHEMA_REPAIR_V1":
         invalid = _activity_spec().model_dump(mode="json")
         invalid["unexpected_field"] = "remove structurally"
@@ -1201,12 +1294,27 @@ def build_trusted_context(request: BaseModel) -> models.TrustedPromptContext:
         tenant_id=first("tenant_id", "tnt_demo"),
         activity_id=first("activity_id", "act_demo"),
         submission_id=first("submission_id"),
-        blueprint_id=first("blueprint_id"),
-        blueprint_version=first("blueprint_version"),
+        blueprint_id=first("blueprint_id", first("target_blueprint_id")),
+        blueprint_version=first(
+            "blueprint_version", first("target_blueprint_version")
+        ),
         allowed_evidence_ids=sorted(evidence_ids),
         allowed_course_source_ids=sorted(source_ids) if mode == "COURSE_ENRICHED" else [],
-        output_language="es-CL",
+        output_language=first("output_language", "es-CL"),
         context_mode=mode,
+        data_classification="SYNTHETIC_ONLY_NO_STUDENT_DATA",
+        attestation_id=stable_id("attestation", canonical_hash(data)),
+        attested_input_hash=canonical_hash(data),
+        attested_artifact_hashes=sorted(
+            {
+                value
+                for obj in objects
+                for key, value in obj.items()
+                if key in {"artifact_hash", "sha256"}
+                and isinstance(value, str)
+                and value.startswith("sha256:")
+            }
+        ),
     )
 
 
@@ -1270,26 +1378,39 @@ class DeterministicMockFactory:
                 activity_id=request.activity_spec.activity_id, issues=[], blocked=False
             )
         if prompt_id == "P04_BLUEPRINT_BUILD_V1":
-            return _dynamic_blueprint(request)
+            return _dynamic_blueprint_draft(request)
         if prompt_id == "P05_BLUEPRINT_REVIEW_V1":
             blueprint = request.blueprint
-            catalog_size = sum(
-                len(variant.question_opportunities)
-                for dimension in blueprint.dimensions
-                for variant in dimension.evidence_variants
+            from comprehension_verification.validation import (
+                blueprint_review_preflight_expected_checks,
             )
-            constraints_match = (
-                blueprint.assessment_constraints.question_count
-                == request.blueprint_policy.question_count
-                and blueprint.assessment_constraints.target_total_minutes
-                == request.blueprint_policy.target_total_minutes
-                and set(blueprint.assessment_constraints.allowed_response_formats)
-                == set(request.blueprint_policy.allowed_response_formats)
+
+            deterministic_checks = blueprint_review_preflight_expected_checks(
+                request.deterministic_preflight
             )
-            catalog_sufficient = (
-                catalog_size >= blueprint.assessment_constraints.question_count
+            approved = not any(
+                critical
+                for _status, critical in deterministic_checks.values()
             )
-            approved = constraints_match and catalog_sufficient
+
+            def deterministic_check(
+                category: str,
+            ) -> tuple[models.ReviewCheckStatus, bool]:
+                return deterministic_checks[category]
+
+            time_status, time_critical = deterministic_check("TIME")
+            format_status, format_critical = deterministic_check(
+                "FORMAT_FEASIBILITY"
+            )
+            catalog_status, catalog_critical = deterministic_check(
+                "OPPORTUNITY_CATALOG"
+            )
+            plan_status, plan_critical = deterministic_check(
+                "PLAN_FEASIBILITY"
+            )
+            coverage_status, coverage_critical = deterministic_check(
+                "COVERAGE"
+            )
             return models.BlueprintReview(
                 activity_id=request.activity_spec.activity_id,
                 blueprint_id=blueprint.blueprint_id,
@@ -1298,6 +1419,13 @@ class DeterministicMockFactory:
                 approval_recommendation=("APPROVE" if approved else "REJECT"),
                 checks=[
                     models.BlueprintReviewCheck(
+                        check_code="BLUEPRINT_CONSTRUCT",
+                        category="CONSTRUCT",
+                        status="PASS",
+                        message="El catálogo representa el constructo declarado.",
+                        referenced_ids=[blueprint.blueprint_id],
+                    ),
+                    models.BlueprintReviewCheck(
                         check_code="BLUEPRINT_SOURCE_FIDELITY",
                         category="SOURCE_FIDELITY",
                         status="PASS",
@@ -1305,28 +1433,99 @@ class DeterministicMockFactory:
                         referenced_ids=[blueprint.blueprint_id],
                     ),
                     models.BlueprintReviewCheck(
+                        check_code="BLUEPRINT_CONCEPTUAL_COVERAGE",
+                        category="COVERAGE",
+                        status=coverage_status,
+                        message=(
+                            "Las dimensiones cubren conceptualmente las fuentes; "
+                            "la selección exacta pertenece al planificador."
+                        ),
+                        referenced_ids=[blueprint.blueprint_id],
+                        critical=coverage_critical,
+                    ),
+                    models.BlueprintReviewCheck(
+                        check_code="BLUEPRINT_CATALOG_DIVERSITY",
+                        category="COMPARABILITY",
+                        status="PASS",
+                        message=(
+                            "La diversidad entre oportunidades conserva una "
+                            "calibración auditable."
+                        ),
+                        referenced_ids=[blueprint.blueprint_id],
+                    ),
+                    models.BlueprintReviewCheck(
+                        check_code="BLUEPRINT_COGNITIVE_DEMAND",
+                        category="COGNITIVE_DEMAND",
+                        status="PASS",
+                        message="Las operaciones declaran una demanda cognitiva verificable.",
+                        referenced_ids=[blueprint.blueprint_id],
+                    ),
+                    models.BlueprintReviewCheck(
+                        check_code="BLUEPRINT_TIME",
+                        category="TIME",
+                        status=time_status,
+                        message="El catálogo conserva el límite temporal confiable.",
+                        referenced_ids=[blueprint.blueprint_id],
+                        critical=time_critical,
+                    ),
+                    models.BlueprintReviewCheck(
+                        check_code="BLUEPRINT_FORMAT_FEASIBILITY",
+                        category="FORMAT_FEASIBILITY",
+                        status=format_status,
+                        message="Los formatos pertenecen a la política confiable.",
+                        referenced_ids=[blueprint.blueprint_id],
+                        critical=format_critical,
+                    ),
+                    models.BlueprintReviewCheck(
+                        check_code="BLUEPRINT_OPPORTUNITY_CATALOG",
+                        category="OPPORTUNITY_CATALOG",
+                        status=catalog_status,
+                        message=(
+                            "El catálogo contiene suficientes oportunidades "
+                            "independientemente del número solicitado."
+                            if catalog_status == models.ReviewCheckStatus.PASS
+                            else "El catálogo no contiene suficientes oportunidades."
+                        ),
+                        referenced_ids=[blueprint.blueprint_id],
+                        correction=(
+                            None
+                            if catalog_status == models.ReviewCheckStatus.PASS
+                            else "Regenerar suficientes oportunidades elegibles."
+                        ),
+                        critical=catalog_critical,
+                    ),
+                    models.BlueprintReviewCheck(
                         check_code="BLUEPRINT_PLAN_FEASIBILITY",
                         category="PLAN_FEASIBILITY",
-                        status=("PASS" if approved else "FAIL"),
+                        status=plan_status,
                         message=(
                             "El catálogo contiene suficientes oportunidades y "
                             "conserva las restricciones configuradas."
-                            if approved
+                            if plan_status == models.ReviewCheckStatus.PASS
                             else "El catálogo o sus restricciones no permiten el plan solicitado."
                         ),
                         referenced_ids=[blueprint.blueprint_id],
                         correction=(
                             None
-                            if approved
+                            if plan_status == models.ReviewCheckStatus.PASS
                             else "Regenerar el catálogo desde la política vigente."
                         ),
-                        critical=not approved,
+                        critical=plan_critical,
+                    ),
+                    models.BlueprintReviewCheck(
+                        check_code="BLUEPRINT_ACCESSIBILITY",
+                        category="ACCESSIBILITY",
+                        status="PASS",
+                        message="Las alternativas del catálogo conservan una forma accesible.",
+                        referenced_ids=[blueprint.blueprint_id],
                     ),
                 ],
             )
         if prompt_id == "P06_EVIDENCE_MAP_V1":
             return _dynamic_evidence_map(request)
-        if prompt_id in {"P07_QUESTION_BUILD_V1", "P10_ENRICHED_CONTEXT_V1"}:
+        if prompt_id == "P07_QUESTION_BUILD_V1":
+            return _dynamic_question_draft(request)
+        if prompt_id == "P10_ENRICHED_CONTEXT_V1":
             candidate = _dynamic_candidate(request)
             return models.QuestionGenerationResult(
                 submission_id=request.plan.submission_id,
@@ -1378,37 +1577,63 @@ class DeterministicMockFactory:
                 ),
             )
         if prompt_id == "P09_GUIDE_BUILD_V1":
-            if not request.assessment.questions:
-                return models.EvaluationGuide(
-                    guide_id=request.guide_id,
-                    assessment_id=request.assessment.assessment_id,
-                    submission_id=request.assessment.submission_id,
-                    status="NEEDS_REVIEW",
-                    diagnostics=[
-                        _diagnostic(
-                            "GUIDE_UNSUPPORTED",
-                            "La evaluación no contiene preguntas utilizables.",
+            envelope = build_guide_alias_envelope(request)
+            items: list[models.GuideQuestionModelDraft] = []
+            for question in envelope.questions:
+                additional = []
+                aliases = [
+                    item.observable_alias for item in question.core_observables
+                ]
+                if len(aliases) < 2:
+                    additional = [
+                        models.GuideAdditionalObservableDraft(
+                            observable_alias="N1",
+                            description=(
+                                "Delimita la conclusión defendible sin ampliar "
+                                "la evidencia autorizada."
+                            ),
+                            support_evidence_aliases=[
+                                question.support_evidence[0].evidence_alias
+                            ],
                         )
-                    ],
-                    created_at=FIXED_TIME,
-                )
-            return models.EvaluationGuide(
-                guide_id=request.guide_id,
-                assessment_id=request.assessment.assessment_id,
-                submission_id=request.assessment.submission_id,
-                status="READY",
-                items=[
-                    models.EvaluationGuideItem(
-                        question_id=question.question_id,
-                        guide=_guide_for_question(
-                            question.question_id,
-                            list(question.evidence_ids),
-                            source_ids=list(question.course_source_ids),
-                        ),
+                    ]
+                    aliases.append("N1")
+                items.append(
+                    models.GuideQuestionModelDraft(
+                        question_alias=question.question_alias,
+                        additional_observables=additional,
+                        acceptance_conditions=[
+                            "La respuesta conecta explícitamente su conclusión con la evidencia localizada."
+                        ],
+                        acceptable_alternative_additions=[
+                            "Una formulación equivalente es aceptable si conserva la misma relación observable."
+                        ],
+                        misconception_additions=[
+                            "Generaliza la conclusión más allá del soporte disponible."
+                        ],
+                        levels=[
+                            models.GuideLevelDraft(
+                                level=level,
+                                label=f"Nivel {level}",
+                                descriptor=(
+                                    "No establece una relación respaldada por la evidencia."
+                                    if level == 0
+                                    else "Establece la relación con precisión creciente y soporte localizado."
+                                ),
+                                observable_aliases=[] if level == 0 else aliases,
+                            )
+                            for level in range(4)
+                        ],
+                        cannot_infer=[
+                            "No permite determinar si la conclusión se mantiene fuera del fragmento aportado."
+                        ],
+                        semantic_uncertainties=[],
                     )
-                    for question in request.assessment.questions
-                ],
-                created_at=FIXED_TIME,
+                )
+            return models.GuideModelDraft(
+                scope_alias=envelope.scope_alias,
+                status="READY",
+                items=items,
             )
         if prompt_id == "P11_SCHEMA_REPAIR_V1":
             return self._repair(request)
@@ -1477,15 +1702,13 @@ class DeterministicMockFactory:
                 ],
             )
         if prompt_id == "P04_BLUEPRINT_BUILD_V1":
-            return _dynamic_blueprint(request).model_copy(
+            draft = _dynamic_blueprint_draft(request)
+            return draft.model_copy(
                 update={
-                    "status": models.WorkflowStatus.BLOCKED,
-                    "diagnostics": [
-                        _diagnostic(
-                            "ASSIGNMENT_AMBIGUOUS",
-                            "El blueprint requiere una decisión docente antes de aprobarse.",
-                        )
-                    ],
+                    "question_opportunities": [
+                        item.model_copy(update={"target_minutes": 60})
+                        for item in draft.question_opportunities
+                    ]
                 }
             )
         if prompt_id == "P05_BLUEPRINT_REVIEW_V1":
@@ -1503,19 +1726,43 @@ class DeterministicMockFactory:
                 ],
             )
         if prompt_id == "P06_EVIDENCE_MAP_V1":
-            return models.EvidenceMapPatch(
-                submission_id=request.evidence_bundle.submission_id,
-                status="INSUFFICIENT_RELEVANT_EVIDENCE",
-                opportunities=[],
-                diagnostics=[
-                    _diagnostic(
-                        "INSUFFICIENT_RELEVANT_EVIDENCE",
-                        "No hay evidencia pertinente suficiente para mapear oportunidades.",
-                        evidence_ids=list(request.evidence_bundle.allowed_evidence_ids),
+            envelope = build_evidence_mapping_alias_envelope(request)
+            return models.EvidenceMappingModelDraft(
+                scope_alias=envelope.scope_alias,
+                mappings=[
+                    models.EvidenceMappingRelationDraft(
+                        variant_alias=envelope.variants[0].variant_alias,
+                        template_alias=envelope.templates[0].template_alias,
+                        evidence_aliases=[
+                            envelope.evidence_units[0].evidence_alias
+                        ],
+                        support_status=models.EvidenceSupportStatus.UNCERTAIN,
+                        support_type=None,
+                        support_description=(
+                            "La relación sintética no puede resolverse con fidelidad."
+                        ),
+                        semantic_uncertainty=(
+                            "La evidencia admite más de una interpretación local."
+                        ),
+                        abstention_reason=(
+                            "No existe base suficiente para declarar soporte."
+                        ),
                     )
                 ],
             )
-        if prompt_id in {"P07_QUESTION_BUILD_V1", "P10_ENRICHED_CONTEXT_V1"}:
+        if prompt_id == "P07_QUESTION_BUILD_V1":
+            envelope = build_question_alias_envelope(request)
+            return models.QuestionModelDraft(
+                scope_alias=envelope.scope_alias,
+                status="REPLACEMENT_REQUIRED",
+                semantic_uncertainties=[
+                    "La evidencia no permite resolver el observable con fidelidad."
+                ],
+                replacement_reason=(
+                    "La oportunidad no admite una pregunta grounded dentro del soporte autorizado."
+                ),
+            )
+        if prompt_id == "P10_ENRICHED_CONTEXT_V1":
             return models.QuestionGenerationResult(
                 submission_id=request.plan.submission_id,
                 opportunity_id=request.opportunity.opportunity_id,
@@ -1545,19 +1792,13 @@ class DeterministicMockFactory:
                 ],
             )
         if prompt_id == "P09_GUIDE_BUILD_V1":
-            return models.EvaluationGuide(
-                guide_id=request.guide_id,
-                assessment_id=request.assessment.assessment_id,
-                submission_id=request.assessment.submission_id,
+            return models.GuideModelDraft(
+                scope_alias=build_guide_alias_envelope(request).scope_alias,
                 status="NEEDS_REVIEW",
                 items=[],
-                diagnostics=[
-                    _diagnostic(
-                        "GUIDE_UNSUPPORTED",
-                        "No se puede construir una guía observable completa.",
-                    )
-                ],
-                created_at=FIXED_TIME,
+                abstention_reason=(
+                    "No se puede construir una guía observable completa."
+                ),
             )
         if prompt_id == "P11_SCHEMA_REPAIR_V1":
             return models.SchemaRepairResult(
@@ -1613,7 +1854,7 @@ class DeterministicMockAdapter:
         attempt: int,
         behavior: MockBehavior,
     ) -> AdapterResult:
-        del envelope, route  # Explicitly unused: mocks never inspect transport secrets.
+        del route  # Mocks never inspect provider transport secrets.
         if behavior == MockBehavior.TIMEOUT:
             # Cancellation by asyncio.timeout/wait_for is the expected exit.
             await asyncio.sleep(3_600)
@@ -1623,7 +1864,18 @@ class DeterministicMockAdapter:
             raw = deepcopy(raw)
             raw["unexpected_field"] = "structural-only"
         encoded = json.dumps(raw, ensure_ascii=False, sort_keys=True).encode("utf-8")
-        request_bytes = request.model_dump_json().encode("utf-8")
+        # Preserve historical mock accounting for unchanged prompts. P06/P07
+        # count their reduced alias-only wire envelopes because those are now
+        # the payloads actually sent to the provider boundary.
+        request_bytes = (
+            envelope.model_dump_json().encode("utf-8")
+            if prompt_id in {
+                "P06_EVIDENCE_MAP_V1",
+                "P07_QUESTION_BUILD_V1",
+                "P09_GUIDE_BUILD_V1",
+            }
+            else request.model_dump_json().encode("utf-8")
+        )
         return AdapterResult(
             raw_output=raw,
             input_tokens=max(1, len(request_bytes) // 4),

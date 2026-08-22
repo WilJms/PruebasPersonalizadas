@@ -1,0 +1,10 @@
+req_b17 = 403 BLOCKED
+req_e12 = 200 EXPORT
+obj_4c = CREATED
+req_e19 = 200 DOWNLOAD
+s_77 = login + export + download
+Conclusión declarada: no ocurrió ninguna exportación.
+
+Acciones declaradas en la nota: ninguna + revocar todas las cuentas.
+
+Siguiente dato: confirmar con el responsable si existía una tarea programada.

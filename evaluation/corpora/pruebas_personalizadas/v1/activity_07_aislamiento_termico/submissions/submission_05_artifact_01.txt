@@ -1,0 +1,10 @@
+Inicio con demoras: lana se llenó primero; papel aproximadamente 2 min después; aluminio después.
+Lana: 75, 69, 64, 60.
+Papel: 68, 62, 58, 55.
+Aluminio: 70, 61, 56, 52.
+Se usaron tazas parecidas. La de lana era de cerámica gruesa; las otras dos eran de plástico rígido.
+
+Notas de montaje:
+Las cuatro cifras de cada material están separadas aproximadamente por cinco minutos desde su propio llenado. No usamos tres cronómetros. La taza de cerámica se eligió porque era la única donde la lana no se deslizaba. No pesamos las tazas.
+
+Suposición escrita durante el laboratorio: "más temperatura final = mejor".

@@ -1182,11 +1182,33 @@
             "title": "Minimum Opportunity Quality",
             "type": "number"
           },
+          "priority_criterion_ids": {
+            "items": {
+              "maxLength": 128,
+              "minLength": 3,
+              "pattern": "^[a-z][a-z0-9_-]*$",
+              "type": "string"
+            },
+            "maxItems": 100,
+            "title": "Priority Criterion Ids",
+            "type": "array"
+          },
           "question_count": {
             "maximum": 20.0,
             "minimum": 1.0,
             "title": "Question Count",
             "type": "integer"
+          },
+          "required_criterion_ids": {
+            "items": {
+              "maxLength": 128,
+              "minLength": 3,
+              "pattern": "^[a-z][a-z0-9_-]*$",
+              "type": "string"
+            },
+            "maxItems": 100,
+            "title": "Required Criterion Ids",
+            "type": "array"
           },
           "structured_justification_policy": {
             "$ref": "#/components/schemas/StructuredJustificationPolicy"
@@ -1239,7 +1261,32 @@
             "type": "array"
           },
           "guide": {
-            "$ref": "#/components/schemas/EvaluationGuide"
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EvaluationGuide"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "guide_job_id": {
+            "anyOf": [
+              {
+                "maxLength": 128,
+                "minLength": 3,
+                "pattern": "^[a-z][a-z0-9_-]*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Guide Job Id"
+          },
+          "guide_status": {
+            "$ref": "#/components/schemas/GuideLifecycleStatus",
+            "default": "NOT_AVAILABLE"
           },
           "reviews": {
             "items": {
@@ -1253,7 +1300,6 @@
           "assessment",
           "assessment_version",
           "etag",
-          "guide",
           "reviews"
         ],
         "title": "AssessmentEnvelope",
@@ -1404,6 +1450,16 @@
             },
             "title": "Issues",
             "type": "array"
+          },
+          "preflight": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BlueprintReviewPreflight"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "review": {
             "anyOf": [
@@ -1570,6 +1626,71 @@
           "message"
         ],
         "title": "BlueprintReviewCheck",
+        "type": "object"
+      },
+      "BlueprintReviewPreflight": {
+        "additionalProperties": false,
+        "description": "Server-derived facts that P05 must not ask the model to recompute.",
+        "properties": {
+          "blueprint_id": {
+            "maxLength": 128,
+            "minLength": 3,
+            "pattern": "^[a-z][a-z0-9_-]*$",
+            "title": "Blueprint Id",
+            "type": "string"
+          },
+          "blueprint_version": {
+            "minimum": 1.0,
+            "title": "Blueprint Version",
+            "type": "integer"
+          },
+          "catalog_plan_feasible": {
+            "title": "Catalog Plan Feasible",
+            "type": "boolean"
+          },
+          "catalog_size_sufficient": {
+            "title": "Catalog Size Sufficient",
+            "type": "boolean"
+          },
+          "format_feasible": {
+            "title": "Format Feasible",
+            "type": "boolean"
+          },
+          "justification_matrix_valid": {
+            "title": "Justification Matrix Valid",
+            "type": "boolean"
+          },
+          "policy_constraints_match": {
+            "title": "Policy Constraints Match",
+            "type": "boolean"
+          },
+          "schema_version": {
+            "const": "1.1.0",
+            "default": "1.1.0",
+            "title": "Schema Version",
+            "type": "string"
+          },
+          "source_coverage_complete": {
+            "title": "Source Coverage Complete",
+            "type": "boolean"
+          },
+          "time_feasible": {
+            "title": "Time Feasible",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "blueprint_id",
+          "blueprint_version",
+          "policy_constraints_match",
+          "source_coverage_complete",
+          "catalog_size_sufficient",
+          "time_feasible",
+          "format_feasible",
+          "justification_matrix_valid",
+          "catalog_plan_feasible"
+        ],
+        "title": "BlueprintReviewPreflight",
         "type": "object"
       },
       "BulkApprovalCommand": {
@@ -1957,7 +2078,8 @@
           "phase": {
             "enum": [
               "ACTIVITY_BLUEPRINT",
-              "SUBMISSION_ASSESSMENT"
+              "SUBMISSION_ASSESSMENT",
+              "APPROVED_GUIDE_ENRICHMENT"
             ],
             "title": "Phase",
             "type": "string"
@@ -2549,7 +2671,7 @@
       },
       "EvaluationGuide": {
         "additionalProperties": false,
-        "description": "Structured guide persisted with the assessment and submission.",
+        "description": "Structured guide for an exact approved assessment version.\n\n``binding=None`` is accepted only so pre-Phase-7 historical rows remain\nreadable. Active selection and export require a complete binding.",
         "properties": {
           "assessment_id": {
             "maxLength": 128,
@@ -2557,6 +2679,16 @@
             "pattern": "^[a-z][a-z0-9_-]*$",
             "title": "Assessment Id",
             "type": "string"
+          },
+          "binding": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GuideApprovalBinding"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "created_at": {
             "format": "date-time",
@@ -3975,6 +4107,110 @@
         "title": "FeedbackTargetType",
         "type": "string"
       },
+      "GuideApprovalBinding": {
+        "additionalProperties": false,
+        "description": "Server-owned identity tying one guide to one approved assessment version.",
+        "properties": {
+          "approval_event_id": {
+            "maxLength": 128,
+            "minLength": 3,
+            "pattern": "^[a-z][a-z0-9_-]*$",
+            "title": "Approval Event Id",
+            "type": "string"
+          },
+          "approval_snapshot_hash": {
+            "pattern": "^sha256:[a-f0-9]{64}$",
+            "title": "Approval Snapshot Hash",
+            "type": "string"
+          },
+          "approved_at": {
+            "format": "date-time",
+            "title": "Approved At",
+            "type": "string"
+          },
+          "approved_by": {
+            "maxLength": 128,
+            "minLength": 3,
+            "pattern": "^([a-z][a-z0-9_-]*|[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12})$",
+            "title": "Approved By",
+            "type": "string"
+          },
+          "assessment_etag": {
+            "pattern": "^\"sha256:[a-f0-9]{64}\"$",
+            "title": "Assessment Etag",
+            "type": "string"
+          },
+          "assessment_id": {
+            "maxLength": 128,
+            "minLength": 3,
+            "pattern": "^[a-z][a-z0-9_-]*$",
+            "title": "Assessment Id",
+            "type": "string"
+          },
+          "assessment_snapshot_hash": {
+            "pattern": "^sha256:[a-f0-9]{64}$",
+            "title": "Assessment Snapshot Hash",
+            "type": "string"
+          },
+          "assessment_version": {
+            "minimum": 1.0,
+            "title": "Assessment Version",
+            "type": "integer"
+          },
+          "binding_version": {
+            "const": "guide-approval-binding/1.0.0",
+            "default": "guide-approval-binding/1.0.0",
+            "title": "Binding Version",
+            "type": "string"
+          },
+          "guide_policy_hash": {
+            "pattern": "^sha256:[a-f0-9]{64}$",
+            "title": "Guide Policy Hash",
+            "type": "string"
+          },
+          "materializer_boundary_hash": {
+            "pattern": "^sha256:[a-f0-9]{64}$",
+            "title": "Materializer Boundary Hash",
+            "type": "string"
+          },
+          "question_set_hash": {
+            "pattern": "^sha256:[a-f0-9]{64}$",
+            "title": "Question Set Hash",
+            "type": "string"
+          },
+          "submission_id": {
+            "maxLength": 128,
+            "minLength": 3,
+            "pattern": "^[a-z][a-z0-9_-]*$",
+            "title": "Submission Id",
+            "type": "string"
+          },
+          "tenant_id": {
+            "maxLength": 128,
+            "minLength": 3,
+            "pattern": "^[a-z][a-z0-9_-]*$",
+            "title": "Tenant Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "tenant_id",
+          "assessment_id",
+          "submission_id",
+          "assessment_version",
+          "assessment_etag",
+          "assessment_snapshot_hash",
+          "question_set_hash",
+          "approval_event_id",
+          "approval_snapshot_hash",
+          "approved_by",
+          "approved_at",
+          "guide_policy_hash",
+          "materializer_boundary_hash"
+        ],
+        "title": "GuideApprovalBinding",
+        "type": "object"
+      },
       "GuideDraft": {
         "additionalProperties": false,
         "properties": {
@@ -3984,6 +4220,14 @@
             },
             "maxItems": 20,
             "title": "Acceptable Alternatives",
+            "type": "array"
+          },
+          "acceptance_conditions": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 20,
+            "title": "Acceptance Conditions",
             "type": "array"
           },
           "cannot_infer": {
@@ -4023,6 +4267,14 @@
             "minLength": 1,
             "title": "Purpose",
             "type": "string"
+          },
+          "semantic_uncertainties": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 20,
+            "title": "Semantic Uncertainties",
+            "type": "array"
           }
         },
         "required": [
@@ -4035,13 +4287,105 @@
         "additionalProperties": false,
         "properties": {
           "guide": {
-            "$ref": "#/components/schemas/EvaluationGuide"
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EvaluationGuide"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "job_id": {
+            "anyOf": [
+              {
+                "maxLength": 128,
+                "minLength": 3,
+                "pattern": "^[a-z][a-z0-9_-]*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Job Id"
+          },
+          "status": {
+            "$ref": "#/components/schemas/GuideLifecycleStatus"
           }
         },
         "required": [
-          "guide"
+          "status"
         ],
         "title": "GuideEnvelope",
+        "type": "object"
+      },
+      "GuideHistoryEnvelope": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/GuideHistoryItem"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "title": "GuideHistoryEnvelope",
+        "type": "object"
+      },
+      "GuideHistoryItem": {
+        "additionalProperties": false,
+        "properties": {
+          "assessment_etag": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assessment Etag"
+          },
+          "assessment_version": {
+            "anyOf": [
+              {
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assessment Version"
+          },
+          "guide": {
+            "$ref": "#/components/schemas/EvaluationGuide"
+          },
+          "guide_job_id": {
+            "anyOf": [
+              {
+                "maxLength": 128,
+                "minLength": 3,
+                "pattern": "^[a-z][a-z0-9_-]*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Guide Job Id"
+          },
+          "lifecycle_status": {
+            "$ref": "#/components/schemas/GuideLifecycleStatus"
+          }
+        },
+        "required": [
+          "lifecycle_status",
+          "guide"
+        ],
+        "title": "GuideHistoryItem",
         "type": "object"
       },
       "GuideLevel": {
@@ -4083,6 +4427,19 @@
         ],
         "title": "GuideLevel",
         "type": "object"
+      },
+      "GuideLifecycleStatus": {
+        "enum": [
+          "NOT_AVAILABLE",
+          "PENDING",
+          "BUILDING",
+          "READY",
+          "FAILED",
+          "NEEDS_REVIEW",
+          "HISTORICAL_PREAPPROVAL"
+        ],
+        "title": "GuideLifecycleStatus",
+        "type": "string"
       },
       "HealthResource": {
         "additionalProperties": false,
@@ -5529,6 +5886,16 @@
             "title": "Schema Version",
             "type": "string"
           },
+          "selected_option": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DecisionOption"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "selected_option_id": {
             "maxLength": 128,
             "minLength": 3,
@@ -5935,14 +6302,30 @@
         "additionalProperties": false,
         "properties": {
           "action_record": {
-            "$ref": "#/components/schemas/QuestionReviewActionRecord"
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/QuestionReviewActionRecord"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "bundle": {
             "$ref": "#/components/schemas/AssessmentEnvelope"
+          },
+          "job": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/JobStatus"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": [
-          "action_record",
           "bundle"
         ],
         "title": "QuestionReviewActionEnvelope",
@@ -5956,6 +6339,13 @@
               "$ref": "#/components/schemas/QuestionReviewActionRecord"
             },
             "title": "Items",
+            "type": "array"
+          },
+          "jobs": {
+            "items": {
+              "$ref": "#/components/schemas/JobStatus"
+            },
+            "title": "Jobs",
             "type": "array"
           }
         },
@@ -6154,6 +6544,7 @@
             "type": "integer"
           },
           "evidence_ids": {
+            "description": "Only IDs from generation_result.candidate.evidence_ids are authorized; IDs present only elsewhere in the request are forbidden. Use [] when no evidence ID is needed.",
             "items": {
               "maxLength": 128,
               "minLength": 3,
@@ -6190,6 +6581,7 @@
             "$ref": "#/components/schemas/QuestionScores"
           },
           "source_ids": {
+            "description": "Only IDs from generation_result.candidate.course_source_ids are authorized; IDs present only elsewhere in the request are forbidden. Use [] when no source ID is needed.",
             "items": {
               "maxLength": 128,
               "minLength": 3,
@@ -6316,7 +6708,9 @@
           "MINIMAL",
           "LOW",
           "MEDIUM",
-          "HIGH"
+          "HIGH",
+          "XHIGH",
+          "MAX"
         ],
         "title": "ReasoningEffort",
         "type": "string"
@@ -6458,6 +6852,14 @@
           },
           "response_format": {
             "$ref": "#/components/schemas/ResponseFormat"
+          },
+          "semantic_uncertainties": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 20,
+            "title": "Semantic Uncertainties",
+            "type": "array"
           },
           "source_candidate_id": {
             "maxLength": 128,
@@ -9822,11 +10224,11 @@
           "required": true
         },
         "responses": {
-          "200": {
+          "202": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/BlueprintEnvelope"
+                  "$ref": "#/components/schemas/JobEnvelope"
                 }
               }
             },
@@ -12791,6 +13193,364 @@
           }
         },
         "summary": "Guide"
+      }
+    },
+    "/api/v1/assessments/{assessment_id}/guide/estimate": {
+      "get": {
+        "operationId": "guide_estimate_api_v1_assessments__assessment_id__guide_estimate_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "assessment_id",
+            "required": true,
+            "schema": {
+              "title": "Assessment Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EstimateEnvelope"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              },
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "RFC 9457-style problem detail"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              },
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "RFC 9457-style problem detail"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              },
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "RFC 9457-style problem detail"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              },
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "RFC 9457-style problem detail"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              },
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "RFC 9457-style problem detail"
+          },
+          "412": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              },
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "RFC 9457-style problem detail"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              },
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "RFC 9457-style problem detail"
+          },
+          "428": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              },
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "RFC 9457-style problem detail"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              },
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "RFC 9457-style problem detail"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              },
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "RFC 9457-style problem detail"
+          }
+        },
+        "summary": "Guide Estimate"
+      }
+    },
+    "/api/v1/assessments/{assessment_id}/guide/history": {
+      "get": {
+        "operationId": "guide_history_api_v1_assessments__assessment_id__guide_history_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "assessment_id",
+            "required": true,
+            "schema": {
+              "title": "Assessment Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuideHistoryEnvelope"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              },
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "RFC 9457-style problem detail"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              },
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "RFC 9457-style problem detail"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              },
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "RFC 9457-style problem detail"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              },
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "RFC 9457-style problem detail"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              },
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "RFC 9457-style problem detail"
+          },
+          "412": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              },
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "RFC 9457-style problem detail"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              },
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "RFC 9457-style problem detail"
+          },
+          "428": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              },
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "RFC 9457-style problem detail"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              },
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "RFC 9457-style problem detail"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              },
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "RFC 9457-style problem detail"
+          }
+        },
+        "summary": "Guide History"
       }
     },
     "/api/v1/assessments/{assessment_id}/questions/{question_id}/actions": {

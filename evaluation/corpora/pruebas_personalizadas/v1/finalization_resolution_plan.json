@@ -1,0 +1,511 @@
+{
+  "schema_version": "corpus-finalization-resolution-plan/1.0.0",
+  "source": "opus5_ratification_manifest.json.required_revisions",
+  "item_count": 40,
+  "allowed_resolution_states": [
+    "SOURCE_FIXED",
+    "ORACLE_FIXED",
+    "RECLASSIFIED",
+    "PRESERVED_AS_ORACLE_SUSPECT",
+    "DOCUMENTED_NON_BLOCKING",
+    "NOT_APPLICABLE"
+  ],
+  "items": [
+    {
+      "revision_id": "RR-001",
+      "activity": "activity_01_luz_y_plantines",
+      "source_revision": "Corregir en el oracle la afirmación 'única zona con anclaje real' de la entrega 03.",
+      "planned_resolution_state": "ORACLE_FIXED",
+      "intended_action": "Integrar la corrección o propiedad en final_ratification.json y actualizar la documentación canónica aplicable.",
+      "source_authority_check": "Verificar contra bytes reales antes de cualquier cambio de source data.",
+      "completion_evidence": [
+        "activity_01_luz_y_plantines/final_ratification.json"
+      ],
+      "implementation_status": "COMPLETED"
+    },
+    {
+      "revision_id": "RR-002",
+      "activity": "activity_01_luz_y_plantines",
+      "source_revision": "Registrar la exclusión asimétrica de A2 en la entrega 05 como oportunidad adicional.",
+      "planned_resolution_state": "ORACLE_FIXED",
+      "intended_action": "Integrar la corrección o propiedad en final_ratification.json y actualizar la documentación canónica aplicable.",
+      "source_authority_check": "Verificar contra bytes reales antes de cualquier cambio de source data.",
+      "completion_evidence": [
+        "activity_01_luz_y_plantines/final_ratification.json"
+      ],
+      "implementation_status": "COMPLETED"
+    },
+    {
+      "revision_id": "RR-003",
+      "activity": "activity_01_luz_y_plantines",
+      "source_revision": "Resolver la tensión §7/§10 del borrador: o el ejemplo se reformula para señalar un solo párrafo, o §7 se relaja explicitando que depende del observable.",
+      "planned_resolution_state": "PRESERVED_AS_ORACLE_SUSPECT",
+      "intended_action": "Registrar la distinción DETECTION/ADJUDICATION y conservar dependencia del wording como ORACLE_SUSPECT.",
+      "source_authority_check": "Verificar contra bytes reales antes de cualquier cambio de source data.",
+      "completion_evidence": [
+        "activity_01_luz_y_plantines/final_ratification.json"
+      ],
+      "implementation_status": "COMPLETED"
+    },
+    {
+      "revision_id": "RR-004",
+      "activity": "activity_02_voz_en_un_microcuento",
+      "source_revision": "Corregir 'sobre azul' por 'esquina azul' en las propiedades del oracle y añadir la operación de lectura correspondiente.",
+      "planned_resolution_state": "ORACLE_FIXED",
+      "intended_action": "Integrar la corrección o propiedad en final_ratification.json y actualizar la documentación canónica aplicable.",
+      "source_authority_check": "Verificar contra bytes reales antes de cualquier cambio de source data.",
+      "completion_evidence": [
+        "activity_02_voz_en_un_microcuento/final_ratification.json"
+      ],
+      "implementation_status": "COMPLETED"
+    },
+    {
+      "revision_id": "RR-005",
+      "activity": "activity_02_voz_en_un_microcuento",
+      "source_revision": "Rebajar la afirmación 'ninguna sección lo advierte' para la entrega 03 y marcarla ORACLE_SUSPECT.",
+      "planned_resolution_state": "PRESERVED_AS_ORACLE_SUSPECT",
+      "intended_action": "Rebajar la lectura a ORACLE_SUSPECT con alternativas explícitas.",
+      "source_authority_check": "Verificar contra bytes reales antes de cualquier cambio de source data.",
+      "completion_evidence": [
+        "activity_02_voz_en_un_microcuento/final_ratification.json"
+      ],
+      "implementation_status": "COMPLETED"
+    },
+    {
+      "revision_id": "RR-006",
+      "activity": "activity_02_voz_en_un_microcuento",
+      "source_revision": "Registrar la alternativa PARTIAL para el criterio 4 de la entrega 04.",
+      "planned_resolution_state": "ORACLE_FIXED",
+      "intended_action": "Integrar la corrección o propiedad en final_ratification.json y actualizar la documentación canónica aplicable.",
+      "source_authority_check": "Verificar contra bytes reales antes de cualquier cambio de source data.",
+      "completion_evidence": [
+        "activity_02_voz_en_un_microcuento/final_ratification.json"
+      ],
+      "implementation_status": "COMPLETED"
+    },
+    {
+      "revision_id": "RR-007",
+      "activity": "activity_03_puesto_de_limonada",
+      "source_revision": "Corregir la afirmación sobre el criterio 4 de la entrega 04 (sí verifica el presupuesto).",
+      "planned_resolution_state": "ORACLE_FIXED",
+      "intended_action": "Integrar la corrección o propiedad en final_ratification.json y actualizar la documentación canónica aplicable.",
+      "source_authority_check": "Verificar contra bytes reales antes de cualquier cambio de source data.",
+      "completion_evidence": [
+        "activity_03_puesto_de_limonada/final_ratification.json"
+      ],
+      "implementation_status": "COMPLETED"
+    },
+    {
+      "revision_id": "RR-008",
+      "activity": "activity_03_puesto_de_limonada",
+      "source_revision": "Ampliar a cuatro el recuento de incoherencias de la entrega 05 e incluir el intercambio de capacidades.",
+      "planned_resolution_state": "ORACLE_FIXED",
+      "intended_action": "Integrar la corrección o propiedad en final_ratification.json y actualizar la documentación canónica aplicable.",
+      "source_authority_check": "Verificar contra bytes reales antes de cualquier cambio de source data.",
+      "completion_evidence": [
+        "activity_03_puesto_de_limonada/final_ratification.json"
+      ],
+      "implementation_status": "COMPLETED"
+    },
+    {
+      "revision_id": "RR-009",
+      "activity": "activity_03_puesto_de_limonada",
+      "source_revision": "Añadir como propiedades la alternativa viable de 75 vasos con dispensador ($66,50) de la entrega 03 y el máximo real de 82 vasos.",
+      "planned_resolution_state": "ORACLE_FIXED",
+      "intended_action": "Integrar la corrección o propiedad en final_ratification.json y actualizar la documentación canónica aplicable.",
+      "source_authority_check": "Verificar contra bytes reales antes de cualquier cambio de source data.",
+      "completion_evidence": [
+        "activity_03_puesto_de_limonada/final_ratification.json"
+      ],
+      "implementation_status": "COMPLETED"
+    },
+    {
+      "revision_id": "RR-010",
+      "activity": "activity_04_asignador_de_turnos",
+      "source_revision": "Enunciar explícitamente que el defecto de la entrega 02 no es observable en la salida y que el anchor debe apuntar al registro superviviente.",
+      "planned_resolution_state": "ORACLE_FIXED",
+      "intended_action": "Integrar la corrección o propiedad en final_ratification.json y actualizar la documentación canónica aplicable.",
+      "source_authority_check": "Verificar contra bytes reales antes de cualquier cambio de source data.",
+      "completion_evidence": [
+        "activity_04_asignador_de_turnos/final_ratification.json"
+      ],
+      "implementation_status": "COMPLETED"
+    },
+    {
+      "revision_id": "RR-011",
+      "activity": "activity_04_asignador_de_turnos",
+      "source_revision": "Corregir la afirmación sobre la entrega 05: el archivo de código describe correctamente tres de los comportamientos.",
+      "planned_resolution_state": "ORACLE_FIXED",
+      "intended_action": "Integrar la corrección o propiedad en final_ratification.json y actualizar la documentación canónica aplicable.",
+      "source_authority_check": "Verificar contra bytes reales antes de cualquier cambio de source data.",
+      "completion_evidence": [
+        "activity_04_asignador_de_turnos/final_ratification.json"
+      ],
+      "implementation_status": "COMPLETED"
+    },
+    {
+      "revision_id": "RR-012",
+      "activity": "activity_04_asignador_de_turnos",
+      "source_revision": "Añadir el fallo por KeyError ante campo faltante en las entregas 03 y 05.",
+      "planned_resolution_state": "ORACLE_FIXED",
+      "intended_action": "Integrar la corrección o propiedad en final_ratification.json y actualizar la documentación canónica aplicable.",
+      "source_authority_check": "Verificar contra bytes reales antes de cualquier cambio de source data.",
+      "completion_evidence": [
+        "activity_04_asignador_de_turnos/final_ratification.json"
+      ],
+      "implementation_status": "COMPLETED"
+    },
+    {
+      "revision_id": "RR-013",
+      "activity": "activity_05_visitas_a_bibliotecas",
+      "source_revision": "Corregir la transición mensual de Barrio contradicha por la tabla autorizada.",
+      "planned_resolution_state": "ORACLE_FIXED",
+      "intended_action": "Integrar la corrección o propiedad en final_ratification.json y actualizar la documentación canónica aplicable.",
+      "source_authority_check": "Verificar contra bytes reales antes de cualquier cambio de source data.",
+      "completion_evidence": [
+        "activity_05_visitas_a_bibliotecas/final_ratification.json"
+      ],
+      "implementation_status": "COMPLETED"
+    },
+    {
+      "revision_id": "RR-014",
+      "activity": "activity_05_visitas_a_bibliotecas",
+      "source_revision": "Registrar como propiedad la violación del alcance provisional en las entregas 03 y 05.",
+      "planned_resolution_state": "ORACLE_FIXED",
+      "intended_action": "Integrar la corrección o propiedad en final_ratification.json y actualizar la documentación canónica aplicable.",
+      "source_authority_check": "Verificar contra bytes reales antes de cualquier cambio de source data.",
+      "completion_evidence": [
+        "activity_05_visitas_a_bibliotecas/final_ratification.json"
+      ],
+      "implementation_status": "COMPLETED"
+    },
+    {
+      "revision_id": "RR-015",
+      "activity": "activity_05_visitas_a_bibliotecas",
+      "source_revision": "Reconciliar el rango de extensión de la consigna con las entregas reales, o declarar explícitamente que la extensión no es criterio evaluable en esta actividad.",
+      "planned_resolution_state": "SOURCE_FIXED",
+      "intended_action": "Neutralizar el rango como extensión orientativa/no evaluable sin alterar el contenido de las submissions.",
+      "source_authority_check": "Verificar contra bytes reales antes de cualquier cambio de source data.",
+      "completion_evidence": [
+        "activity_05_visitas_a_bibliotecas/01_assignment.docx",
+        "activity_05_visitas_a_bibliotecas/final_ratification.json"
+      ],
+      "implementation_status": "COMPLETED"
+    },
+    {
+      "revision_id": "RR-016",
+      "activity": "activity_06_movilidad_estudiantil",
+      "source_revision": "Resolver el defecto accidental de transcripción del apoyo por banda preservando la tabla autorizada y corrigiendo sólo las dos entregas afectadas.",
+      "planned_resolution_state": "SOURCE_FIXED",
+      "intended_action": "Corregir únicamente las submissions 01 y 03 a 15/8/3, recomputar su prosa dependiente y preservar la tabla autorizada.",
+      "source_authority_check": "Verificar contra bytes reales antes de cualquier cambio de source data.",
+      "completion_evidence": [
+        "activity_06_movilidad_estudiantil/final_ratification.json",
+        "activity_06_movilidad_estudiantil/submissions/submission_01.pdf",
+        "activity_06_movilidad_estudiantil/submissions/submission_04.txt"
+      ],
+      "implementation_status": "COMPLETED"
+    },
+    {
+      "revision_id": "RR-017",
+      "activity": "activity_06_movilidad_estudiantil",
+      "source_revision": "Retirar del oracle pre-final las certificaciones de la transcripción contradicha del apoyo por banda.",
+      "planned_resolution_state": "ORACLE_FIXED",
+      "intended_action": "Integrar la corrección o propiedad en final_ratification.json y actualizar la documentación canónica aplicable.",
+      "source_authority_check": "Verificar contra bytes reales antes de cualquier cambio de source data.",
+      "completion_evidence": [
+        "activity_06_movilidad_estudiantil/final_ratification.json"
+      ],
+      "implementation_status": "COMPLETED"
+    },
+    {
+      "revision_id": "RR-018",
+      "activity": "activity_06_movilidad_estudiantil",
+      "source_revision": "Reformular con precisión la falacia de la banda lejana en la entrega 03.",
+      "planned_resolution_state": "ORACLE_FIXED",
+      "intended_action": "Integrar la corrección o propiedad en final_ratification.json y actualizar la documentación canónica aplicable.",
+      "source_authority_check": "Verificar contra bytes reales antes de cualquier cambio de source data.",
+      "completion_evidence": [
+        "activity_06_movilidad_estudiantil/final_ratification.json"
+      ],
+      "implementation_status": "COMPLETED"
+    },
+    {
+      "revision_id": "RR-019",
+      "activity": "activity_06_movilidad_estudiantil",
+      "source_revision": "Registrar la cifra inventada '40 de las 60' de la entrega 05 como oportunidad separada del intercambio de columnas.",
+      "planned_resolution_state": "ORACLE_FIXED",
+      "intended_action": "Integrar la corrección o propiedad en final_ratification.json y actualizar la documentación canónica aplicable.",
+      "source_authority_check": "Verificar contra bytes reales antes de cualquier cambio de source data.",
+      "completion_evidence": [
+        "activity_06_movilidad_estudiantil/final_ratification.json"
+      ],
+      "implementation_status": "COMPLETED"
+    },
+    {
+      "revision_id": "RR-020",
+      "activity": "activity_07_aislamiento_termico",
+      "source_revision": "Registrar explícitamente el auto-señalamiento de la entrega 05 y reclasificarla como caso de reconciliación explícita, no de detección. Si se quiere conservar un caso de detección limpio, eliminar la frase 'Más adelante concluimos lo contrario' y la línea 'revisar: debería ser menos caída'.",
+      "planned_resolution_state": "RECLASSIFIED",
+      "intended_action": "Preservar la submission y reclasificar la operación evaluable conforme a la evidencia explícita.",
+      "source_authority_check": "Verificar contra bytes reales antes de cualquier cambio de source data.",
+      "completion_evidence": [
+        "activity_07_aislamiento_termico/final_ratification.json",
+        "corpus_manifest.md"
+      ],
+      "implementation_status": "COMPLETED"
+    },
+    {
+      "revision_id": "RR-021",
+      "activity": "activity_07_aislamiento_termico",
+      "source_revision": "Añadir la alternativa de nivel para el criterio de comparación de la entrega 03.",
+      "planned_resolution_state": "ORACLE_FIXED",
+      "intended_action": "Integrar la corrección o propiedad en final_ratification.json y actualizar la documentación canónica aplicable.",
+      "source_authority_check": "Verificar contra bytes reales antes de cualquier cambio de source data.",
+      "completion_evidence": [
+        "activity_07_aislamiento_termico/final_ratification.json"
+      ],
+      "implementation_status": "COMPLETED"
+    },
+    {
+      "revision_id": "RR-022",
+      "activity": "activity_07_aislamiento_termico",
+      "source_revision": "Registrar como propiedades la temperatura inicial fuera de rango (75 grados) y las líneas temporales no simultáneas de la entrega 03.",
+      "planned_resolution_state": "ORACLE_FIXED",
+      "intended_action": "Integrar la corrección o propiedad en final_ratification.json y actualizar la documentación canónica aplicable.",
+      "source_authority_check": "Verificar contra bytes reales antes de cualquier cambio de source data.",
+      "completion_evidence": [
+        "activity_07_aislamiento_termico/final_ratification.json"
+      ],
+      "implementation_status": "COMPLETED"
+    },
+    {
+      "revision_id": "RR-023",
+      "activity": "activity_08_triage_de_logs",
+      "source_revision": "Registrar la ruta de detección cruzada del índice de evidencia de la entrega 05.",
+      "planned_resolution_state": "RECLASSIFIED",
+      "intended_action": "Registrar CROSS_ARTIFACT_RECONCILIATION y EXPLICIT_CROSS_ARTIFACT_CONFLICT, no detección latente.",
+      "source_authority_check": "Verificar contra bytes reales antes de cualquier cambio de source data.",
+      "completion_evidence": [
+        "activity_08_triage_de_logs/final_ratification.json",
+        "corpus_manifest.md"
+      ],
+      "implementation_status": "COMPLETED"
+    },
+    {
+      "revision_id": "RR-024",
+      "activity": "activity_08_triage_de_logs",
+      "source_revision": "Añadir el evento s_18 / ana.perez como dimensión de distractor y de minimización.",
+      "planned_resolution_state": "ORACLE_FIXED",
+      "intended_action": "Integrar la corrección o propiedad en final_ratification.json y actualizar la documentación canónica aplicable.",
+      "source_authority_check": "Verificar contra bytes reales antes de cualquier cambio de source data.",
+      "completion_evidence": [
+        "activity_08_triage_de_logs/final_ratification.json"
+      ],
+      "implementation_status": "COMPLETED"
+    },
+    {
+      "revision_id": "RR-025",
+      "activity": "activity_08_triage_de_logs",
+      "source_revision": "Corregir la imprecisión de la consigna sobre el rango de documentación mediante una dirección TEST-NET coherente.",
+      "planned_resolution_state": "SOURCE_FIXED",
+      "intended_action": "Reemplazar la IP privada por una dirección TEST-NET y actualizar todas las referencias canónicas relacionadas.",
+      "source_authority_check": "Verificar contra bytes reales antes de cualquier cambio de source data.",
+      "completion_evidence": [
+        "activity_08_triage_de_logs/01_assignment.docx",
+        "activity_08_triage_de_logs/final_ratification.json"
+      ],
+      "implementation_status": "COMPLETED"
+    },
+    {
+      "revision_id": "RR-026",
+      "activity": "activity_08_triage_de_logs",
+      "source_revision": "Diversificar el prefijo del hash 7f3a9c20b14e para eliminar la coincidencia con la actividad 01.",
+      "planned_resolution_state": "SOURCE_FIXED",
+      "intended_action": "Cambiar la cadena técnica simulada por otra cadena sintética sin tocar hashes físicos.",
+      "source_authority_check": "Verificar contra bytes reales antes de cualquier cambio de source data.",
+      "completion_evidence": [
+        "activity_01_luz_y_plantines/final_ratification.json",
+        "activity_01_luz_y_plantines/submissions/submission_01.txt"
+      ],
+      "implementation_status": "COMPLETED"
+    },
+    {
+      "revision_id": "RR-027",
+      "activity": "activity_09_renovacion_y_desplazamiento",
+      "source_revision": "Corregir la afirmación sobre la extensión de la entrega 01: cumple el rango declarado por la consigna.",
+      "planned_resolution_state": "ORACLE_FIXED",
+      "intended_action": "Integrar la corrección o propiedad en final_ratification.json y actualizar la documentación canónica aplicable.",
+      "source_authority_check": "Verificar contra bytes reales antes de cualquier cambio de source data.",
+      "completion_evidence": [
+        "activity_09_renovacion_y_desplazamiento/final_ratification.json"
+      ],
+      "implementation_status": "COMPLETED"
+    },
+    {
+      "revision_id": "RR-028",
+      "activity": "activity_09_renovacion_y_desplazamiento",
+      "source_revision": "Registrar como propiedad la renta objetivo de $26 en la entrega 02, inexistente en la Fuente A ($22 a $28).",
+      "planned_resolution_state": "ORACLE_FIXED",
+      "intended_action": "Integrar la corrección o propiedad en final_ratification.json y actualizar la documentación canónica aplicable.",
+      "source_authority_check": "Verificar contra bytes reales antes de cualquier cambio de source data.",
+      "completion_evidence": [
+        "activity_09_renovacion_y_desplazamiento/final_ratification.json"
+      ],
+      "implementation_status": "COMPLETED"
+    },
+    {
+      "revision_id": "RR-029",
+      "activity": "activity_09_renovacion_y_desplazamiento",
+      "source_revision": "Reconciliar el rango de extensión de la consigna con las entregas reales, o declarar que la extensión no es criterio evaluable.",
+      "planned_resolution_state": "SOURCE_FIXED",
+      "intended_action": "Neutralizar el rango como extensión orientativa/no evaluable sin alterar el contenido de las submissions.",
+      "source_authority_check": "Verificar contra bytes reales antes de cualquier cambio de source data.",
+      "completion_evidence": [
+        "activity_09_renovacion_y_desplazamiento/01_assignment.docx",
+        "activity_09_renovacion_y_desplazamiento/final_ratification.json"
+      ],
+      "implementation_status": "COMPLETED"
+    },
+    {
+      "revision_id": "RR-030",
+      "activity": "activity_09_renovacion_y_desplazamiento",
+      "source_revision": "Añadir como propiedad la crítica cuantitativa de 'casi el doble' que realiza la entrega 01.",
+      "planned_resolution_state": "ORACLE_FIXED",
+      "intended_action": "Integrar la corrección o propiedad en final_ratification.json y actualizar la documentación canónica aplicable.",
+      "source_authority_check": "Verificar contra bytes reales antes de cualquier cambio de source data.",
+      "completion_evidence": [
+        "activity_09_renovacion_y_desplazamiento/final_ratification.json"
+      ],
+      "implementation_status": "COMPLETED"
+    },
+    {
+      "revision_id": "RR-031",
+      "activity": "activity_10_experimento_onboarding",
+      "source_revision": "Corregir la Nota de diseño de la entrega 06: la omisión está declarada dos veces, en ambos artefactos, y la operación evaluable es juzgar la justificación, no detectar la ausencia.",
+      "planned_resolution_state": "RECLASSIFIED",
+      "intended_action": "Preservar la submission y reclasificar la operación evaluable conforme a la evidencia explícita.",
+      "source_authority_check": "Verificar contra bytes reales antes de cualquier cambio de source data.",
+      "completion_evidence": [
+        "activity_10_experimento_onboarding/final_ratification.json",
+        "corpus_manifest.md"
+      ],
+      "implementation_status": "COMPLETED"
+    },
+    {
+      "revision_id": "RR-032",
+      "activity": "activity_10_experimento_onboarding",
+      "source_revision": "Actualizar el manifest: la actividad 10 no es un caso de 'hueco conceptual no señalado'.",
+      "planned_resolution_state": "ORACLE_FIXED",
+      "intended_action": "Integrar la corrección o propiedad en final_ratification.json y actualizar la documentación canónica aplicable.",
+      "source_authority_check": "Verificar contra bytes reales antes de cualquier cambio de source data.",
+      "completion_evidence": [
+        "activity_10_experimento_onboarding/final_ratification.json",
+        "corpus_manifest.md"
+      ],
+      "implementation_status": "COMPLETED"
+    },
+    {
+      "revision_id": "RR-033",
+      "activity": "activity_10_experimento_onboarding",
+      "source_revision": "Registrar la delimitación de alcance de la entrega 02 y el siguiente paso irrelevante de la entrega 05 como propiedades adicionales.",
+      "planned_resolution_state": "ORACLE_FIXED",
+      "intended_action": "Integrar la corrección o propiedad en final_ratification.json y actualizar la documentación canónica aplicable.",
+      "source_authority_check": "Verificar contra bytes reales antes de cualquier cambio de source data.",
+      "completion_evidence": [
+        "activity_10_experimento_onboarding/final_ratification.json"
+      ],
+      "implementation_status": "COMPLETED"
+    },
+    {
+      "revision_id": "RR-034",
+      "activity": "activity_11_duplicados_en_pagos",
+      "source_revision": "Reconciliar los rangos de extensión de la consigna con las entregas reales, o declarar la extensión no evaluable en esta actividad.",
+      "planned_resolution_state": "SOURCE_FIXED",
+      "intended_action": "Neutralizar el rango como extensión orientativa/no evaluable sin alterar el contenido de las submissions.",
+      "source_authority_check": "Verificar contra bytes reales antes de cualquier cambio de source data.",
+      "completion_evidence": [
+        "activity_11_duplicados_en_pagos/01_assignment.docx",
+        "activity_11_duplicados_en_pagos/final_ratification.json"
+      ],
+      "implementation_status": "COMPLETED"
+    },
+    {
+      "revision_id": "RR-035",
+      "activity": "activity_11_duplicados_en_pagos",
+      "source_revision": "Registrar como propiedad la ruta de reconciliación de la entrega 01 ligada a la ventana de 24 horas.",
+      "planned_resolution_state": "ORACLE_FIXED",
+      "intended_action": "Integrar la corrección o propiedad en final_ratification.json y actualizar la documentación canónica aplicable.",
+      "source_authority_check": "Verificar contra bytes reales antes de cualquier cambio de source data.",
+      "completion_evidence": [
+        "activity_11_duplicados_en_pagos/final_ratification.json"
+      ],
+      "implementation_status": "COMPLETED"
+    },
+    {
+      "revision_id": "RR-036",
+      "activity": "activity_11_duplicados_en_pagos",
+      "source_revision": "Matizar la comparación de boilerplate entre las entregas 04 y 06: la diferencia es de registro, no de extensión.",
+      "planned_resolution_state": "DOCUMENTED_NON_BLOCKING",
+      "intended_action": "Matizar la comparación como diferencia de registro, no de extensión, sin modificar submissions.",
+      "source_authority_check": "Verificar contra bytes reales antes de cualquier cambio de source data.",
+      "completion_evidence": [
+        "activity_11_duplicados_en_pagos/final_ratification.json"
+      ],
+      "implementation_status": "COMPLETED"
+    },
+    {
+      "revision_id": "RR-037",
+      "activity": "activity_12_clinica_movil",
+      "source_revision": "Registrar la ruta de detección cruzada del allocation_notes de la entrega 05.",
+      "planned_resolution_state": "RECLASSIFIED",
+      "intended_action": "Registrar CROSS_ARTIFACT_RECONCILIATION y EXPLICIT_CROSS_ARTIFACT_CONFLICT, no detección latente.",
+      "source_authority_check": "Verificar contra bytes reales antes de cualquier cambio de source data.",
+      "completion_evidence": [
+        "activity_12_clinica_movil/final_ratification.json",
+        "corpus_manifest.md"
+      ],
+      "implementation_status": "COMPLETED"
+    },
+    {
+      "revision_id": "RR-038",
+      "activity": "activity_12_clinica_movil",
+      "source_revision": "Añadir como propiedad el desplazamiento de columna del allocation_notes de la entrega 03 (Norte=1, Sur=5).",
+      "planned_resolution_state": "ORACLE_FIXED",
+      "intended_action": "Integrar la corrección o propiedad en final_ratification.json y actualizar la documentación canónica aplicable.",
+      "source_authority_check": "Verificar contra bytes reales antes de cualquier cambio de source data.",
+      "completion_evidence": [
+        "activity_12_clinica_movil/final_ratification.json"
+      ],
+      "implementation_status": "COMPLETED"
+    },
+    {
+      "revision_id": "RR-039",
+      "activity": "activity_12_clinica_movil",
+      "source_revision": "Diversificar la identidad simulada de una de las dos actividades para eliminar el acoplamiento entre 08 y 12.",
+      "planned_resolution_state": "SOURCE_FIXED",
+      "intended_action": "Diversificar una identidad sintética manteniendo dominio .invalid, teléfonos e IDs ficticios.",
+      "source_authority_check": "Verificar contra bytes reales antes de cualquier cambio de source data.",
+      "completion_evidence": [
+        "activity_12_clinica_movil/final_ratification.json",
+        "activity_12_clinica_movil/submissions/submission_06_artifact_01.txt",
+        "activity_12_clinica_movil/submissions/submission_06_artifact_02.md"
+      ],
+      "implementation_status": "COMPLETED"
+    },
+    {
+      "revision_id": "RR-040",
+      "activity": "activity_12_clinica_movil",
+      "source_revision": "Convertir en propiedad la comparación de cinco alternativas de la entrega 01.",
+      "planned_resolution_state": "ORACLE_FIXED",
+      "intended_action": "Integrar la corrección o propiedad en final_ratification.json y actualizar la documentación canónica aplicable.",
+      "source_authority_check": "Verificar contra bytes reales antes de cualquier cambio de source data.",
+      "completion_evidence": [
+        "activity_12_clinica_movil/final_ratification.json"
+      ],
+      "implementation_status": "COMPLETED"
+    }
+  ],
+  "completed_item_count": 40,
+  "all_items_resolved": true
+}

@@ -1,0 +1,64 @@
+{
+  "schema_version": "stage2-harness-frozen-product-boundary/1.1.0",
+  "baseline_git_sha": "5698be185355dff48f25b5e791150d232d70eb9f",
+  "classification": "SYNTHETIC_ONLY_NO_STUDENT_DATA",
+  "source_file_sha256": {
+    "specification/models_v1.1(1).py": "72687300eea5661098815feeb6cf636d64124103d0de78c15964486a926d6736",
+    "src/comprehension_verification/blueprint_compiler.py": "fc3c1d45f428d1d1308b319a49840effb40f1b5aea71eeb00bf93c6a2b71a7de",
+    "src/comprehension_verification/canonical.py": "b8f4220f8a272fbc0f2b1183dec4165429864efb4644197ca4f8c25483dc5604",
+    "src/comprehension_verification/diagnostics.py": "de219a296e7a04a37a5e29d797524320f7a9e77fd7ef14e814a0add817d060a4",
+    "src/comprehension_verification/model_gateway/gateway.py": "cbb4add65c9295945c41486f6e8c3de8c2278cff6c1c92fb7726b67dbb3e65c6",
+    "src/comprehension_verification/model_gateway/openai_schema.py": "31f432acc70691eafc7d94809dcacc87c4669eeac578e3ff11f822bf14ff1649",
+    "src/comprehension_verification/model_gateway/prompt_text.py": "f76b2673c3acd4853fcd1df8e0d4b430e1da083eabf54f0a361c3235027904c0",
+    "src/comprehension_verification/model_gateway/registry.py": "140a9cc95f74c9927bbf0093eaaf7f54b8f38dc4b990c9b469b06010fc452419",
+    "src/comprehension_verification/model_gateway/openai_adapter.py": "245bdb5c4f60fab97bfa746b38ed6ea0043c65eb08d45960c54031d8bf6184f1",
+    "src/comprehension_verification/model_gateway/openai_routes.py": "0b0a15e95764d7759723e28dd85ffbf98ad3f02d82536d8c4117075cc033d899",
+    "src/comprehension_verification/validation.py": "a5ad1f04205aa701fff5b0e9d65d78394dc01cb37c40242fe861be86f751ed50",
+    "src/comprehension_verification/planning.py": "4872c2abf163e27135b0d266c4675b197534aa0f7c36c0f7960ebe5a575e8adb",
+    "src/comprehension_verification/web/workflows.py": "c09a52b300161a4b5bb80ee5928f740290580189d5148a1251c9c6cf972f0a1a"
+  },
+  "route_profile_material_hashes": {
+    "LUNA_BASELINE_V1": "sha256:78bfe07f895774811126d8a0e32787a0cb942a168b0f7da3d6fed131ea50574d",
+    "LUNA_XHIGH_V1": "sha256:fb5b178f297d82d3a21c038adc89f6e6d4d41aac5c95c9c40200dd03822ecbd4",
+    "LUNA_MAX_V1": "sha256:f79e5f500ee3c2a55ab0e1d5b0955596e9f686e5b52dedb8f467e2122d681871",
+    "TERRA_MEDIUM_V1": "sha256:23e40ed78bed08e34190e8b850bda030fac44af28b71fba889e153d5f77ebc9f"
+  },
+  "prompts": {
+    "P04_BLUEPRINT_BUILD_V1": {
+      "version": "1.1.12",
+      "hash": "sha256:190b59b43c4cb511b3965da5d6c1cc488c87f61c78759c36fb506a81a1fbff52"
+    },
+    "P05_BLUEPRINT_REVIEW_V1": {
+      "version": "1.1.8",
+      "hash": "sha256:4b38cf144dd44ce235399efdf6938f611bfac820aa3b31497859f5fd5e426bb4"
+    },
+    "P06_EVIDENCE_MAP_V1": {
+      "version": "1.1.5",
+      "hash": "sha256:01bf8fabac2cf3c7aa235b4ecb0e16edf8844a57efe7be2aaac7ffa2948d2e26"
+    },
+    "P07_QUESTION_BUILD_V1": {
+      "version": "1.1.4",
+      "hash": "sha256:db0f6d91ad0357bbd7984e2b7d8564944e969fa8f39c0b95ca88085157d24b6c"
+    },
+    "P08_QUESTION_REVIEW_V1": {
+      "version": "1.1.5",
+      "hash": "sha256:f63230dde5dadbbba78b24ae229fefc61a6b7d072a9c3d7c1ea9044be2463949"
+    },
+    "P09_GUIDE_BUILD_V1": {
+      "version": "1.1.6",
+      "hash": "sha256:a7607fb64499efdbb377469d1078ae758cfd47d09828f35af1ac603b46b5f2d3"
+    }
+  },
+  "question_validation_thresholds": {
+    "minimum_groundedness": 0.9,
+    "minimum_anchor_sufficiency": 0.8,
+    "minimum_answerability": 0.85,
+    "minimum_criterion_relevance": 0.8,
+    "escalate_below_confidence": 0.65
+  },
+  "component_versions": {
+    "parser": "stage2-parser/2.0.0",
+    "planner": "stage2-planner/2.0.0",
+    "assembler": "stage1-assembler/2.0.0"
+  }
+}

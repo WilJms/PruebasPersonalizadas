@@ -1,0 +1,1410 @@
+{
+  "authorization_boundary_hash": "sha256:6c3aa08aea04fbc2f12e32899c7426282e4e8eb846019062512ffcbea9891926",
+  "authorization_hash": "sha256:9c8031b2a9407ab20b38f645073d72fd9eb0942fa823fef34999ba5351b60fc6",
+  "baseline_luna_max_candidate": "62d73ae5f183c0da4fb87a9ba673905c64225880",
+  "baseline_luna_max_consolidated_report_hash": "sha256:74fc1323da3925a9805b4c957bbd597b342909f4b77855fcce706db6afbb17fd",
+  "baseline_luna_max_evidence_head": "b4325b617529739f163471e43af54e125c754b91",
+  "baseline_luna_max_raw_report_hash": "sha256:532ba5e19537c039f9746c177ae3ed17cf9fbc3d6fdb9bf34c5f07f32a6eda0e",
+  "boundary": {
+    "assembler_version": "stage1-assembler/2.0.0",
+    "checkpoints": {
+      "synthetic-choice-justification-v1": {
+        "assessment_valid": "sha256:d46ce6e1808f23568730e21427c12575d9f6d279055a642e69e5babc4845fb98",
+        "blueprint_valid": "sha256:2b63c0f0a9aaaa5d22d5d48c91015d339ebc4961e4c9207ef1bd19ad3b6f0544",
+        "mapping_planning_valid": "sha256:131ecca560ede6f095a05812bf70bc6e3d34190fb2c7ee18c36eba58696884c1",
+        "post_p03": "sha256:bb4e9b3508c866474e48a92591cdf512c0a7472a99e21ac1a0233c4c6a1feff0"
+      },
+      "synthetic-open-short-v1": {
+        "assessment_valid": "sha256:d46ce6e1808f23568730e21427c12575d9f6d279055a642e69e5babc4845fb98",
+        "blueprint_valid": "sha256:5c54e22a5745a5d5a64dd1bf5ced3f924795bf14bb1e19f9fc9df81dde53c2e7",
+        "mapping_planning_valid": "sha256:6e4dfe92a62a4a02e5e91c74a2375e0ed1562c9b5c60ad42d1a636d2e6224063",
+        "post_p03": "sha256:054ce14acf9120cbba9d56c5e031f211de9392c2f0212ec91ee8c075bdb72a2d"
+      }
+    },
+    "openai_route_boundary": {
+      "adapter": "OpenAIResponsesAdapter",
+      "api": "Responses",
+      "gateway_retries": 0,
+      "max_qualification_prompt_ids": [
+        "P04_BLUEPRINT_BUILD_V1",
+        "P05_BLUEPRINT_REVIEW_V1",
+        "P06_EVIDENCE_MAP_V1",
+        "P07_QUESTION_BUILD_V1",
+        "P08_QUESTION_REVIEW_V1",
+        "P09_GUIDE_BUILD_V1"
+      ],
+      "model_ids": [
+        "gpt-5.6-terra"
+      ],
+      "openai_sdk_version": "2.53.0",
+      "route_profile": "TERRA_MEDIUM_V1",
+      "routes": {
+        "P01_ACTIVITY_SPEC_V1": {
+          "fallback_route_id": null,
+          "max_cost_usd": 0.27,
+          "max_input_tokens": 250000,
+          "max_output_tokens": 8000,
+          "model": "gpt-5.6-terra",
+          "model_snapshot": "gpt-5.6-terra",
+          "reason_codes": [
+            "ROUTE_PROFILE_TERRA_MEDIUM_V1",
+            "TERRA_ONLY_EXPERIMENTAL_MEDIUM_QUALIFICATION",
+            "EXPLICIT_APPROVED_MODEL_ID",
+            "NO_DYNAMIC_MODEL_SELECTION",
+            "NO_MODEL_FALLBACK",
+            "GATEWAY_RETRIES_0_MANUAL_EVAL",
+            "FULL_CACHE_WRITE_BUDGET_RESERVATION",
+            "SOL_COMPARISON_REQUIRES_FUTURE_HUMAN_AUTHORIZATION",
+            "NO_DATED_SNAPSHOT_PUBLISHED_MODEL_ID_RECORDED",
+            "RESPONSES_API_STRUCTURED_OUTPUTS",
+            "PARSED_TEXT_ONLY_NO_PROVIDER_IMAGE_OR_PDF",
+            "STORE_FALSE_NOT_ZDR",
+            "BACKGROUND_FALSE",
+            "TOOLS_EMPTY",
+            "TRUNCATION_DISABLED",
+            "TEMPERATURE_NOT_SENT_UNDOCUMENTED_WITH_REASONING",
+            "CONSERVATIVE_PRICE_OBSERVED_20260813"
+          ],
+          "reasoning_effort": "MEDIUM",
+          "route_id": "route_openai_terra_medium_v1_p01_activity_spec_v1"
+        },
+        "P02_RUBRIC_NORMALIZE_V1": {
+          "fallback_route_id": null,
+          "max_cost_usd": 0.27,
+          "max_input_tokens": 250000,
+          "max_output_tokens": 8000,
+          "model": "gpt-5.6-terra",
+          "model_snapshot": "gpt-5.6-terra",
+          "reason_codes": [
+            "ROUTE_PROFILE_TERRA_MEDIUM_V1",
+            "TERRA_ONLY_EXPERIMENTAL_MEDIUM_QUALIFICATION",
+            "EXPLICIT_APPROVED_MODEL_ID",
+            "NO_DYNAMIC_MODEL_SELECTION",
+            "NO_MODEL_FALLBACK",
+            "GATEWAY_RETRIES_0_MANUAL_EVAL",
+            "FULL_CACHE_WRITE_BUDGET_RESERVATION",
+            "SOL_COMPARISON_REQUIRES_FUTURE_HUMAN_AUTHORIZATION",
+            "NO_DATED_SNAPSHOT_PUBLISHED_MODEL_ID_RECORDED",
+            "RESPONSES_API_STRUCTURED_OUTPUTS",
+            "PARSED_TEXT_ONLY_NO_PROVIDER_IMAGE_OR_PDF",
+            "STORE_FALSE_NOT_ZDR",
+            "BACKGROUND_FALSE",
+            "TOOLS_EMPTY",
+            "TRUNCATION_DISABLED",
+            "TEMPERATURE_NOT_SENT_UNDOCUMENTED_WITH_REASONING",
+            "CONSERVATIVE_PRICE_OBSERVED_20260813"
+          ],
+          "reasoning_effort": "MEDIUM",
+          "route_id": "route_openai_terra_medium_v1_p02_rubric_normalize_v1"
+        },
+        "P03_AMBIGUITY_TRIAGE_V1": {
+          "fallback_route_id": null,
+          "max_cost_usd": 0.27,
+          "max_input_tokens": 250000,
+          "max_output_tokens": 8000,
+          "model": "gpt-5.6-terra",
+          "model_snapshot": "gpt-5.6-terra",
+          "reason_codes": [
+            "ROUTE_PROFILE_TERRA_MEDIUM_V1",
+            "TERRA_ONLY_EXPERIMENTAL_MEDIUM_QUALIFICATION",
+            "EXPLICIT_APPROVED_MODEL_ID",
+            "NO_DYNAMIC_MODEL_SELECTION",
+            "NO_MODEL_FALLBACK",
+            "GATEWAY_RETRIES_0_MANUAL_EVAL",
+            "FULL_CACHE_WRITE_BUDGET_RESERVATION",
+            "SOL_COMPARISON_REQUIRES_FUTURE_HUMAN_AUTHORIZATION",
+            "NO_DATED_SNAPSHOT_PUBLISHED_MODEL_ID_RECORDED",
+            "RESPONSES_API_STRUCTURED_OUTPUTS",
+            "PARSED_TEXT_ONLY_NO_PROVIDER_IMAGE_OR_PDF",
+            "STORE_FALSE_NOT_ZDR",
+            "BACKGROUND_FALSE",
+            "TOOLS_EMPTY",
+            "TRUNCATION_DISABLED",
+            "TEMPERATURE_NOT_SENT_UNDOCUMENTED_WITH_REASONING",
+            "CONSERVATIVE_PRICE_OBSERVED_20260813"
+          ],
+          "reasoning_effort": "HIGH",
+          "route_id": "route_openai_terra_medium_v1_p03_ambiguity_triage_v1"
+        },
+        "P04_BLUEPRINT_BUILD_V1": {
+          "fallback_route_id": null,
+          "max_cost_usd": 0.27,
+          "max_input_tokens": 250000,
+          "max_output_tokens": 16000,
+          "model": "gpt-5.6-terra",
+          "model_snapshot": "gpt-5.6-terra",
+          "reason_codes": [
+            "ROUTE_PROFILE_TERRA_MEDIUM_V1",
+            "TERRA_ONLY_EXPERIMENTAL_MEDIUM_QUALIFICATION",
+            "REASONING_EFFORT_OVERRIDE_HIGH_TO_MEDIUM",
+            "EXPLICIT_APPROVED_MODEL_ID",
+            "NO_DYNAMIC_MODEL_SELECTION",
+            "NO_MODEL_FALLBACK",
+            "GATEWAY_RETRIES_0_MANUAL_EVAL",
+            "FULL_CACHE_WRITE_BUDGET_RESERVATION",
+            "SOL_COMPARISON_REQUIRES_FUTURE_HUMAN_AUTHORIZATION",
+            "NO_DATED_SNAPSHOT_PUBLISHED_MODEL_ID_RECORDED",
+            "RESPONSES_API_STRUCTURED_OUTPUTS",
+            "PARSED_TEXT_ONLY_NO_PROVIDER_IMAGE_OR_PDF",
+            "STORE_FALSE_NOT_ZDR",
+            "BACKGROUND_FALSE",
+            "TOOLS_EMPTY",
+            "TRUNCATION_DISABLED",
+            "TEMPERATURE_NOT_SENT_UNDOCUMENTED_WITH_REASONING",
+            "CONSERVATIVE_PRICE_OBSERVED_20260813"
+          ],
+          "reasoning_effort": "MEDIUM",
+          "route_id": "route_openai_terra_medium_v1_p04_blueprint_build_v1"
+        },
+        "P05_BLUEPRINT_REVIEW_V1": {
+          "fallback_route_id": null,
+          "max_cost_usd": 0.27,
+          "max_input_tokens": 250000,
+          "max_output_tokens": 16000,
+          "model": "gpt-5.6-terra",
+          "model_snapshot": "gpt-5.6-terra",
+          "reason_codes": [
+            "ROUTE_PROFILE_TERRA_MEDIUM_V1",
+            "TERRA_ONLY_EXPERIMENTAL_MEDIUM_QUALIFICATION",
+            "REASONING_EFFORT_OVERRIDE_HIGH_TO_MEDIUM",
+            "EXPLICIT_APPROVED_MODEL_ID",
+            "NO_DYNAMIC_MODEL_SELECTION",
+            "NO_MODEL_FALLBACK",
+            "GATEWAY_RETRIES_0_MANUAL_EVAL",
+            "FULL_CACHE_WRITE_BUDGET_RESERVATION",
+            "SOL_COMPARISON_REQUIRES_FUTURE_HUMAN_AUTHORIZATION",
+            "NO_DATED_SNAPSHOT_PUBLISHED_MODEL_ID_RECORDED",
+            "RESPONSES_API_STRUCTURED_OUTPUTS",
+            "PARSED_TEXT_ONLY_NO_PROVIDER_IMAGE_OR_PDF",
+            "STORE_FALSE_NOT_ZDR",
+            "BACKGROUND_FALSE",
+            "TOOLS_EMPTY",
+            "TRUNCATION_DISABLED",
+            "TEMPERATURE_NOT_SENT_UNDOCUMENTED_WITH_REASONING",
+            "CONSERVATIVE_PRICE_OBSERVED_20260813"
+          ],
+          "reasoning_effort": "MEDIUM",
+          "route_id": "route_openai_terra_medium_v1_p05_blueprint_review_v1"
+        },
+        "P06_EVIDENCE_MAP_V1": {
+          "fallback_route_id": null,
+          "max_cost_usd": 0.27,
+          "max_input_tokens": 250000,
+          "max_output_tokens": 16000,
+          "model": "gpt-5.6-terra",
+          "model_snapshot": "gpt-5.6-terra",
+          "reason_codes": [
+            "ROUTE_PROFILE_TERRA_MEDIUM_V1",
+            "TERRA_ONLY_EXPERIMENTAL_MEDIUM_QUALIFICATION",
+            "REASONING_EFFORT_OVERRIDE_HIGH_TO_MEDIUM",
+            "EXPLICIT_APPROVED_MODEL_ID",
+            "NO_DYNAMIC_MODEL_SELECTION",
+            "NO_MODEL_FALLBACK",
+            "GATEWAY_RETRIES_0_MANUAL_EVAL",
+            "FULL_CACHE_WRITE_BUDGET_RESERVATION",
+            "SOL_COMPARISON_REQUIRES_FUTURE_HUMAN_AUTHORIZATION",
+            "NO_DATED_SNAPSHOT_PUBLISHED_MODEL_ID_RECORDED",
+            "RESPONSES_API_STRUCTURED_OUTPUTS",
+            "PARSED_TEXT_ONLY_NO_PROVIDER_IMAGE_OR_PDF",
+            "STORE_FALSE_NOT_ZDR",
+            "BACKGROUND_FALSE",
+            "TOOLS_EMPTY",
+            "TRUNCATION_DISABLED",
+            "TEMPERATURE_NOT_SENT_UNDOCUMENTED_WITH_REASONING",
+            "CONSERVATIVE_PRICE_OBSERVED_20260813"
+          ],
+          "reasoning_effort": "MEDIUM",
+          "route_id": "route_openai_terra_medium_v1_p06_evidence_map_v1"
+        },
+        "P07_QUESTION_BUILD_V1": {
+          "fallback_route_id": null,
+          "max_cost_usd": 0.27,
+          "max_input_tokens": 250000,
+          "max_output_tokens": 10000,
+          "model": "gpt-5.6-terra",
+          "model_snapshot": "gpt-5.6-terra",
+          "reason_codes": [
+            "ROUTE_PROFILE_TERRA_MEDIUM_V1",
+            "TERRA_ONLY_EXPERIMENTAL_MEDIUM_QUALIFICATION",
+            "REASONING_EFFORT_OVERRIDE_HIGH_TO_MEDIUM",
+            "EXPLICIT_APPROVED_MODEL_ID",
+            "NO_DYNAMIC_MODEL_SELECTION",
+            "NO_MODEL_FALLBACK",
+            "GATEWAY_RETRIES_0_MANUAL_EVAL",
+            "FULL_CACHE_WRITE_BUDGET_RESERVATION",
+            "SOL_COMPARISON_REQUIRES_FUTURE_HUMAN_AUTHORIZATION",
+            "NO_DATED_SNAPSHOT_PUBLISHED_MODEL_ID_RECORDED",
+            "RESPONSES_API_STRUCTURED_OUTPUTS",
+            "PARSED_TEXT_ONLY_NO_PROVIDER_IMAGE_OR_PDF",
+            "STORE_FALSE_NOT_ZDR",
+            "BACKGROUND_FALSE",
+            "TOOLS_EMPTY",
+            "TRUNCATION_DISABLED",
+            "TEMPERATURE_NOT_SENT_UNDOCUMENTED_WITH_REASONING",
+            "CONSERVATIVE_PRICE_OBSERVED_20260813"
+          ],
+          "reasoning_effort": "MEDIUM",
+          "route_id": "route_openai_terra_medium_v1_p07_question_build_v1"
+        },
+        "P08_QUESTION_REVIEW_V1": {
+          "fallback_route_id": null,
+          "max_cost_usd": 0.27,
+          "max_input_tokens": 250000,
+          "max_output_tokens": 8000,
+          "model": "gpt-5.6-terra",
+          "model_snapshot": "gpt-5.6-terra",
+          "reason_codes": [
+            "ROUTE_PROFILE_TERRA_MEDIUM_V1",
+            "TERRA_ONLY_EXPERIMENTAL_MEDIUM_QUALIFICATION",
+            "REASONING_EFFORT_OVERRIDE_HIGH_TO_MEDIUM",
+            "EXPLICIT_APPROVED_MODEL_ID",
+            "NO_DYNAMIC_MODEL_SELECTION",
+            "NO_MODEL_FALLBACK",
+            "GATEWAY_RETRIES_0_MANUAL_EVAL",
+            "FULL_CACHE_WRITE_BUDGET_RESERVATION",
+            "SOL_COMPARISON_REQUIRES_FUTURE_HUMAN_AUTHORIZATION",
+            "NO_DATED_SNAPSHOT_PUBLISHED_MODEL_ID_RECORDED",
+            "RESPONSES_API_STRUCTURED_OUTPUTS",
+            "PARSED_TEXT_ONLY_NO_PROVIDER_IMAGE_OR_PDF",
+            "STORE_FALSE_NOT_ZDR",
+            "BACKGROUND_FALSE",
+            "TOOLS_EMPTY",
+            "TRUNCATION_DISABLED",
+            "TEMPERATURE_NOT_SENT_UNDOCUMENTED_WITH_REASONING",
+            "CONSERVATIVE_PRICE_OBSERVED_20260813"
+          ],
+          "reasoning_effort": "MEDIUM",
+          "route_id": "route_openai_terra_medium_v1_p08_question_review_v1"
+        },
+        "P09_GUIDE_BUILD_V1": {
+          "fallback_route_id": null,
+          "max_cost_usd": 0.27,
+          "max_input_tokens": 250000,
+          "max_output_tokens": 10000,
+          "model": "gpt-5.6-terra",
+          "model_snapshot": "gpt-5.6-terra",
+          "reason_codes": [
+            "ROUTE_PROFILE_TERRA_MEDIUM_V1",
+            "TERRA_ONLY_EXPERIMENTAL_MEDIUM_QUALIFICATION",
+            "REASONING_EFFORT_OVERRIDE_HIGH_TO_MEDIUM",
+            "EXPLICIT_APPROVED_MODEL_ID",
+            "NO_DYNAMIC_MODEL_SELECTION",
+            "NO_MODEL_FALLBACK",
+            "GATEWAY_RETRIES_0_MANUAL_EVAL",
+            "FULL_CACHE_WRITE_BUDGET_RESERVATION",
+            "SOL_COMPARISON_REQUIRES_FUTURE_HUMAN_AUTHORIZATION",
+            "NO_DATED_SNAPSHOT_PUBLISHED_MODEL_ID_RECORDED",
+            "RESPONSES_API_STRUCTURED_OUTPUTS",
+            "PARSED_TEXT_ONLY_NO_PROVIDER_IMAGE_OR_PDF",
+            "STORE_FALSE_NOT_ZDR",
+            "BACKGROUND_FALSE",
+            "TOOLS_EMPTY",
+            "TRUNCATION_DISABLED",
+            "TEMPERATURE_NOT_SENT_UNDOCUMENTED_WITH_REASONING",
+            "CONSERVATIVE_PRICE_OBSERVED_20260813"
+          ],
+          "reasoning_effort": "MEDIUM",
+          "route_id": "route_openai_terra_medium_v1_p09_guide_build_v1"
+        },
+        "P11_SCHEMA_REPAIR_V1": {
+          "fallback_route_id": null,
+          "max_cost_usd": 0.27,
+          "max_input_tokens": 80000,
+          "max_output_tokens": 8000,
+          "model": "gpt-5.6-terra",
+          "model_snapshot": "gpt-5.6-terra",
+          "reason_codes": [
+            "ROUTE_PROFILE_TERRA_MEDIUM_V1",
+            "TERRA_ONLY_EXPERIMENTAL_MEDIUM_QUALIFICATION",
+            "EXPLICIT_APPROVED_MODEL_ID",
+            "NO_DYNAMIC_MODEL_SELECTION",
+            "NO_MODEL_FALLBACK",
+            "GATEWAY_RETRIES_0_MANUAL_EVAL",
+            "FULL_CACHE_WRITE_BUDGET_RESERVATION",
+            "P11_INPUT_LIMIT_80000",
+            "SOL_COMPARISON_REQUIRES_FUTURE_HUMAN_AUTHORIZATION",
+            "NO_DATED_SNAPSHOT_PUBLISHED_MODEL_ID_RECORDED",
+            "RESPONSES_API_STRUCTURED_OUTPUTS",
+            "PARSED_TEXT_ONLY_NO_PROVIDER_IMAGE_OR_PDF",
+            "STORE_FALSE_NOT_ZDR",
+            "BACKGROUND_FALSE",
+            "TOOLS_EMPTY",
+            "TRUNCATION_DISABLED",
+            "TEMPERATURE_NOT_SENT_UNDOCUMENTED_WITH_REASONING",
+            "CONSERVATIVE_PRICE_OBSERVED_20260813"
+          ],
+          "reasoning_effort": "LOW",
+          "route_id": "route_openai_terra_medium_v1_p11_schema_repair_v1"
+        }
+      },
+      "sdk_retries": 0,
+      "semantic_retries": 0,
+      "store": false,
+      "terra_medium_qualification_prompt_ids": [
+        "P04_BLUEPRINT_BUILD_V1",
+        "P05_BLUEPRINT_REVIEW_V1",
+        "P06_EVIDENCE_MAP_V1",
+        "P07_QUESTION_BUILD_V1",
+        "P08_QUESTION_REVIEW_V1",
+        "P09_GUIDE_BUILD_V1"
+      ],
+      "tools_enabled": false,
+      "xhigh_qualification_prompt_ids": [
+        "P04_BLUEPRINT_BUILD_V1",
+        "P05_BLUEPRINT_REVIEW_V1",
+        "P06_EVIDENCE_MAP_V1",
+        "P07_QUESTION_BUILD_V1",
+        "P08_QUESTION_REVIEW_V1",
+        "P09_GUIDE_BUILD_V1"
+      ]
+    },
+    "p05_golden": {
+      "fixture_hash": "sha256:9f6849dfc8ff2aceee569d1c44122e589ace1c519fc171c50f3fdf4a05e9e9b0",
+      "fixture_version": "stage2-p05-golden-checkpoints/1.1.0",
+      "negative_expected_critical_categories": [
+        "PLAN_FEASIBILITY"
+      ],
+      "negative_expected_recommendation": "REJECT",
+      "negative_input_hash": "sha256:430295f51b164a6b3ca671ae50180f97c8f1926f4e532eb45cea8cb5c53cf9ff",
+      "negative_output_hash": "sha256:0692536d463be7b0404ece104bff425dc971edd10b470102ad3cf7203f88a8a0",
+      "positive_expected_transition": "APPROVABLE",
+      "positive_input_hash": "sha256:cd6ac2ac5c2b74f810c7f0a3a665027c4c86c1941dca39899a7f200ba47d99af",
+      "positive_output_hash": "sha256:5efb926236c47900bc4155fbd41664a6d0f72c7a10c2aa20937a6e237d4aabdd",
+      "positive_review_status": "SEMANTICALLY_REVIEWED_SYNTHETIC_FIXTURE"
+    },
+    "p10_enabled": false,
+    "planner_version": "stage2-planner/2.0.0",
+    "prompt_pack_version": "1.1.14",
+    "prompts": {
+      "P04_BLUEPRINT_BUILD_V1": {
+        "application_validator": null,
+        "hash": "sha256:f8c12331bacc676920095f353b8a3d7180f90ba2015c23aa3a378cbb505064e0",
+        "input_schema_hash": "sha256:f6153db281661de52271281ad4a1fbae912cee098789543f12b8aee0b02d4471",
+        "output_schema_hash": "sha256:cd58e2ed963d26afb7c5717c00721b3307aaabbd657337cce85faa63d3028aa4",
+        "registry_reasoning_effort": "HIGH",
+        "relationship_validator": "relationship-p04/2.0.0",
+        "route_reasoning_effort": "MEDIUM",
+        "version": "1.1.11"
+      },
+      "P05_BLUEPRINT_REVIEW_V1": {
+        "application_validator": "application-validator-p05/2.2.0",
+        "hash": "sha256:4b38cf144dd44ce235399efdf6938f611bfac820aa3b31497859f5fd5e426bb4",
+        "input_schema_hash": "sha256:90ae4defbfacbf589948bdab373561878fd1474e959a62c1489c1ee410627f71",
+        "output_schema_hash": "sha256:45bd283cf3e318cf968102ae1b509033fcb3fb81f5870de206e9fb51e4e93ac9",
+        "registry_reasoning_effort": "HIGH",
+        "relationship_validator": "relationship-p05/2.2.0",
+        "route_reasoning_effort": "MEDIUM",
+        "version": "1.1.8"
+      },
+      "P06_EVIDENCE_MAP_V1": {
+        "application_validator": "application-validator-p06/2.1.0",
+        "hash": "sha256:01bf8fabac2cf3c7aa235b4ecb0e16edf8844a57efe7be2aaac7ffa2948d2e26",
+        "input_schema_hash": "sha256:c6f91041a415f58309b72addfe2ba8bd2d9d919de667ee7c05e5dfc8ecf96f83",
+        "output_schema_hash": "sha256:e71eae83b54355ded8434dfa6364b075a747066e5b91cde2337d6bbd121714ed",
+        "registry_reasoning_effort": "HIGH",
+        "relationship_validator": "relationship-p06/2.3.0",
+        "route_reasoning_effort": "MEDIUM",
+        "version": "1.1.5"
+      },
+      "P07_QUESTION_BUILD_V1": {
+        "application_validator": "application-validator-p07/2.0.0",
+        "hash": "sha256:db0f6d91ad0357bbd7984e2b7d8564944e969fa8f39c0b95ca88085157d24b6c",
+        "input_schema_hash": "sha256:13406eaefbad9c7e0ec8e064d778ce885ba6a0ac17b4f16bf1a5cd79b9578b9a",
+        "output_schema_hash": "sha256:5cd5d45e2e742de9a16cca6f15cfab876c6dab6aa4eff197178559ffd5cd8448",
+        "registry_reasoning_effort": "HIGH",
+        "relationship_validator": "relationship-p07/2.1.0",
+        "route_reasoning_effort": "MEDIUM",
+        "version": "1.1.4"
+      },
+      "P08_QUESTION_REVIEW_V1": {
+        "application_validator": "application-validator-p08/2.0.0",
+        "hash": "sha256:f63230dde5dadbbba78b24ae229fefc61a6b7d072a9c3d7c1ea9044be2463949",
+        "input_schema_hash": "sha256:3af65fdec7493a6eccc9d8eb636f989fcda5e1774a5dfad717b921be0a4db54d",
+        "output_schema_hash": "sha256:7f9e72c2a44a91e23f09c6ec82675767524ab749124948b2c2ba1ec2c6f45ebb",
+        "registry_reasoning_effort": "HIGH",
+        "relationship_validator": "relationship-p08/2.1.0",
+        "route_reasoning_effort": "MEDIUM",
+        "version": "1.1.5"
+      },
+      "P09_GUIDE_BUILD_V1": {
+        "application_validator": "application-validator-p09/2.0.0",
+        "hash": "sha256:a7607fb64499efdbb377469d1078ae758cfd47d09828f35af1ac603b46b5f2d3",
+        "input_schema_hash": "sha256:93a01654dab803fb865c825d18c561b3ef280b7c82dcf91bfc099375abaee7f7",
+        "output_schema_hash": "sha256:6be4378c31897c852b09936e63f47d84005a93ce8064aadf387635ffad67cc83",
+        "registry_reasoning_effort": "HIGH",
+        "relationship_validator": "relationship-p09/2.0.0",
+        "route_reasoning_effort": "MEDIUM",
+        "version": "1.1.6"
+      }
+    },
+    "rehearsal_version": "stage2-product-rehearsal/1.8.0",
+    "route_delta_from_luna_baseline": {
+      "assembler_changes": [],
+      "baseline_route_profile": "LUNA_BASELINE_V1",
+      "fixture_changes": [],
+      "other_route_field_changes": {
+        "model": [
+          "P01_ACTIVITY_SPEC_V1",
+          "P02_RUBRIC_NORMALIZE_V1",
+          "P03_AMBIGUITY_TRIAGE_V1",
+          "P04_BLUEPRINT_BUILD_V1",
+          "P05_BLUEPRINT_REVIEW_V1",
+          "P06_EVIDENCE_MAP_V1",
+          "P07_QUESTION_BUILD_V1",
+          "P08_QUESTION_REVIEW_V1",
+          "P09_GUIDE_BUILD_V1",
+          "P11_SCHEMA_REPAIR_V1"
+        ],
+        "model_snapshot": [
+          "P01_ACTIVITY_SPEC_V1",
+          "P02_RUBRIC_NORMALIZE_V1",
+          "P03_AMBIGUITY_TRIAGE_V1",
+          "P04_BLUEPRINT_BUILD_V1",
+          "P05_BLUEPRINT_REVIEW_V1",
+          "P06_EVIDENCE_MAP_V1",
+          "P07_QUESTION_BUILD_V1",
+          "P08_QUESTION_REVIEW_V1",
+          "P09_GUIDE_BUILD_V1",
+          "P11_SCHEMA_REPAIR_V1"
+        ]
+      },
+      "planner_changes": [],
+      "prompt_registry_changes": [],
+      "reasoning_effort_changes": {
+        "P04_BLUEPRINT_BUILD_V1": {
+          "from": "HIGH",
+          "to": "MEDIUM"
+        },
+        "P05_BLUEPRINT_REVIEW_V1": {
+          "from": "HIGH",
+          "to": "MEDIUM"
+        },
+        "P06_EVIDENCE_MAP_V1": {
+          "from": "HIGH",
+          "to": "MEDIUM"
+        },
+        "P07_QUESTION_BUILD_V1": {
+          "from": "HIGH",
+          "to": "MEDIUM"
+        },
+        "P08_QUESTION_REVIEW_V1": {
+          "from": "HIGH",
+          "to": "MEDIUM"
+        },
+        "P09_GUIDE_BUILD_V1": {
+          "from": "HIGH",
+          "to": "MEDIUM"
+        }
+      },
+      "route_identity_changed_prompt_ids": [
+        "P01_ACTIVITY_SPEC_V1",
+        "P02_RUBRIC_NORMALIZE_V1",
+        "P03_AMBIGUITY_TRIAGE_V1",
+        "P04_BLUEPRINT_BUILD_V1",
+        "P05_BLUEPRINT_REVIEW_V1",
+        "P06_EVIDENCE_MAP_V1",
+        "P07_QUESTION_BUILD_V1",
+        "P08_QUESTION_REVIEW_V1",
+        "P09_GUIDE_BUILD_V1",
+        "P11_SCHEMA_REPAIR_V1"
+      ],
+      "schema_changes": [],
+      "selected_route_profile": "TERRA_MEDIUM_V1",
+      "validator_changes": []
+    },
+    "route_delta_from_luna_max": {
+      "assembler_changes": [],
+      "baseline_route_profile": "LUNA_MAX_V1",
+      "fixture_changes": [],
+      "other_route_field_changes": {
+        "model": [
+          "P01_ACTIVITY_SPEC_V1",
+          "P02_RUBRIC_NORMALIZE_V1",
+          "P03_AMBIGUITY_TRIAGE_V1",
+          "P04_BLUEPRINT_BUILD_V1",
+          "P05_BLUEPRINT_REVIEW_V1",
+          "P06_EVIDENCE_MAP_V1",
+          "P07_QUESTION_BUILD_V1",
+          "P08_QUESTION_REVIEW_V1",
+          "P09_GUIDE_BUILD_V1",
+          "P11_SCHEMA_REPAIR_V1"
+        ],
+        "model_snapshot": [
+          "P01_ACTIVITY_SPEC_V1",
+          "P02_RUBRIC_NORMALIZE_V1",
+          "P03_AMBIGUITY_TRIAGE_V1",
+          "P04_BLUEPRINT_BUILD_V1",
+          "P05_BLUEPRINT_REVIEW_V1",
+          "P06_EVIDENCE_MAP_V1",
+          "P07_QUESTION_BUILD_V1",
+          "P08_QUESTION_REVIEW_V1",
+          "P09_GUIDE_BUILD_V1",
+          "P11_SCHEMA_REPAIR_V1"
+        ]
+      },
+      "planner_changes": [],
+      "prompt_registry_changes": [],
+      "reasoning_effort_changes": {
+        "P04_BLUEPRINT_BUILD_V1": {
+          "from": "MAX",
+          "to": "MEDIUM"
+        },
+        "P05_BLUEPRINT_REVIEW_V1": {
+          "from": "MAX",
+          "to": "MEDIUM"
+        },
+        "P06_EVIDENCE_MAP_V1": {
+          "from": "MAX",
+          "to": "MEDIUM"
+        },
+        "P07_QUESTION_BUILD_V1": {
+          "from": "MAX",
+          "to": "MEDIUM"
+        },
+        "P08_QUESTION_REVIEW_V1": {
+          "from": "MAX",
+          "to": "MEDIUM"
+        },
+        "P09_GUIDE_BUILD_V1": {
+          "from": "MAX",
+          "to": "MEDIUM"
+        }
+      },
+      "route_identity_changed_prompt_ids": [
+        "P01_ACTIVITY_SPEC_V1",
+        "P02_RUBRIC_NORMALIZE_V1",
+        "P03_AMBIGUITY_TRIAGE_V1",
+        "P04_BLUEPRINT_BUILD_V1",
+        "P05_BLUEPRINT_REVIEW_V1",
+        "P06_EVIDENCE_MAP_V1",
+        "P07_QUESTION_BUILD_V1",
+        "P08_QUESTION_REVIEW_V1",
+        "P09_GUIDE_BUILD_V1",
+        "P11_SCHEMA_REPAIR_V1"
+      ],
+      "schema_changes": [],
+      "selected_route_profile": "TERRA_MEDIUM_V1",
+      "validator_changes": []
+    }
+  },
+  "causal_classification": "MODEL_OWNED_QUALIFICATION_FAILURE",
+  "classification": "SYNTHETIC_ONLY_NO_STUDENT_DATA",
+  "controls": {
+    "actual_cost_usd": 0.4674608,
+    "budget_charged_usd": 3.4597928,
+    "cache_write_input_tokens": 55812,
+    "cached_input_tokens": 40684,
+    "expected_provider_requests": 24,
+    "fallback_calls": 0,
+    "fixture_changes": 0,
+    "gateway_retries": 0,
+    "input_tokens": 96559,
+    "max_call_cost_usd": 0.27,
+    "max_observed_actual_call_cost_usd": 0.034957,
+    "max_observed_budget_charge_usd": 0.203811,
+    "max_provider_requests": 24,
+    "max_total_cost_usd": 5.1,
+    "models": [
+      "gpt-5.6-terra"
+    ],
+    "network_calls": 21,
+    "output_tokens": 26639,
+    "p10_calls": 0,
+    "p11_calls": 0,
+    "prompt_changes": 0,
+    "provider_attempts": 21,
+    "reasoning_efforts_by_prompt": {
+      "P04_BLUEPRINT_BUILD_V1": [
+        "MEDIUM"
+      ],
+      "P05_BLUEPRINT_REVIEW_V1": [
+        "MEDIUM"
+      ],
+      "P06_EVIDENCE_MAP_V1": [
+        "MEDIUM"
+      ],
+      "P07_QUESTION_BUILD_V1": [
+        "MEDIUM"
+      ],
+      "P08_QUESTION_REVIEW_V1": [
+        "MEDIUM"
+      ],
+      "P09_GUIDE_BUILD_V1": [
+        "MEDIUM"
+      ]
+    },
+    "reasoning_tokens": 8567,
+    "route_profile": "TERRA_MEDIUM_V1",
+    "sdk_retries": 0,
+    "semantic_normalizations": 0,
+    "semantic_retries": 0,
+    "store": false,
+    "tools_enabled": false,
+    "unpriced_attempts": 0,
+    "validator_changes": 0
+  },
+  "convergence_outcome": "CONVERGENCE_INCOMPLETE",
+  "deterministic_checks": [
+    {
+      "actual_recommendation": "APPROVE",
+      "actual_status": "READY",
+      "actual_transition": "APPROVABLE",
+      "check_id": "P05_GOLDEN_POSITIVE_OFFLINE",
+      "critical_categories": [],
+      "deterministic_checks": {
+        "COVERAGE": {
+          "critical": false,
+          "status": "PASS"
+        },
+        "FORMAT_FEASIBILITY": {
+          "critical": false,
+          "status": "PASS"
+        },
+        "OPPORTUNITY_CATALOG": {
+          "critical": false,
+          "status": "PASS"
+        },
+        "PLAN_FEASIBILITY": {
+          "critical": false,
+          "status": "PASS"
+        },
+        "TIME": {
+          "critical": false,
+          "status": "PASS"
+        }
+      },
+      "expected_transition": "APPROVABLE",
+      "input_hash": "sha256:cd6ac2ac5c2b74f810c7f0a3a665027c4c86c1941dca39899a7f200ba47d99af",
+      "output_hash": "sha256:5efb926236c47900bc4155fbd41664a6d0f72c7a10c2aa20937a6e237d4aabdd",
+      "product_validator_status": "PASS",
+      "provider_requests": 0,
+      "status": "PASS"
+    },
+    {
+      "actual_deterministic_checks": {
+        "COVERAGE": {
+          "critical": false,
+          "status": "PASS"
+        },
+        "FORMAT_FEASIBILITY": {
+          "critical": false,
+          "status": "PASS"
+        },
+        "OPPORTUNITY_CATALOG": {
+          "critical": false,
+          "status": "PASS"
+        },
+        "PLAN_FEASIBILITY": {
+          "critical": true,
+          "status": "FAIL"
+        },
+        "TIME": {
+          "critical": false,
+          "status": "PASS"
+        }
+      },
+      "actual_recommendation": "REJECT",
+      "check_id": "P05_GOLDEN_NEGATIVE_OFFLINE",
+      "critical_categories": [
+        "PLAN_FEASIBILITY"
+      ],
+      "expected_critical_categories": [
+        "PLAN_FEASIBILITY"
+      ],
+      "expected_deterministic_checks": {
+        "COVERAGE": {
+          "critical": false,
+          "status": "PASS"
+        },
+        "FORMAT_FEASIBILITY": {
+          "critical": false,
+          "status": "PASS"
+        },
+        "OPPORTUNITY_CATALOG": {
+          "critical": false,
+          "status": "PASS"
+        },
+        "PLAN_FEASIBILITY": {
+          "critical": true,
+          "status": "FAIL"
+        },
+        "TIME": {
+          "critical": false,
+          "status": "PASS"
+        }
+      },
+      "expected_failed_preflight_fields": [
+        "catalog_plan_feasible",
+        "policy_constraints_match"
+      ],
+      "expected_recommendation": "REJECT",
+      "failed_preflight_fields": [
+        "catalog_plan_feasible",
+        "policy_constraints_match"
+      ],
+      "input_hash": "sha256:430295f51b164a6b3ca671ae50180f97c8f1926f4e532eb45cea8cb5c53cf9ff",
+      "output_hash": "sha256:0692536d463be7b0404ece104bff425dc971edd10b470102ad3cf7203f88a8a0",
+      "product_expected_deterministic_checks": {
+        "COVERAGE": {
+          "critical": false,
+          "status": "PASS"
+        },
+        "FORMAT_FEASIBILITY": {
+          "critical": false,
+          "status": "PASS"
+        },
+        "OPPORTUNITY_CATALOG": {
+          "critical": false,
+          "status": "PASS"
+        },
+        "PLAN_FEASIBILITY": {
+          "critical": true,
+          "status": "FAIL"
+        },
+        "TIME": {
+          "critical": false,
+          "status": "PASS"
+        }
+      },
+      "product_validator_status": "PASS",
+      "provider_requests": 0,
+      "status": "PASS"
+    }
+  ],
+  "executable_boundary_hash": "sha256:d0fcb2889827ed0fd1c6ca57bd7664aa587bf82152db4b9168da3fee35f2800b",
+  "execution_id": "stage2-terra-medium-9185dba-20260813-01",
+  "execution_sequence": [
+    "independent-sweep:P04-P09",
+    "offline-golden-positive:P05",
+    "offline-golden-negative:P05",
+    "integrated-chain:base:1:P04-P09",
+    "integrated-chain:base:2:P04-P09",
+    "integrated-chain:choice-variant:P04-P09"
+  ],
+  "experimental_hypothesis": "FIRST_TERRA_LADDER_POINT_MODEL_LUNA_TO_TERRA_P04_P09_REASONING_MAX_TO_MEDIUM",
+  "finished_at": "2026-08-13T15:49:59.166328Z",
+  "git_head": "9185dbaccc36cd2150f723525b13e00bf86c3842",
+  "harness_hash": "sha256:fa90edcfeec075081387cc1b63ec55ce4d438e26faba6894b729eefdd744ac66",
+  "manifest_hash": "sha256:d5991a48253eead5a4ba87653323177144fb67a4ae455ec9e2595a3e153ffb11",
+  "mode": "real-terra-medium-qualification",
+  "observations": [
+    {
+      "failure": {
+        "aggregated_failures": [
+          {
+            "codes": [
+              "P05_NOT_APPROVABLE"
+            ],
+            "issues": [],
+            "metadata": {
+              "approval_recommendation": "REJECT",
+              "blueprint_difficulty_counts": {
+                "HIGH": 1,
+                "LOW": 1,
+                "MEDIUM": 2
+              },
+              "blueprint_dimension_count": 1,
+              "blueprint_operation_counts": {
+                "CONNECT_INTERNAL": 1,
+                "EXPLAIN_MECHANISM": 1,
+                "JUSTIFY_DECISION": 1,
+                "RECONSTRUCT_REASONING": 1
+              },
+              "blueprint_template_count": 4,
+              "blueprint_variant_count": 1,
+              "critical_fail_count": 1,
+              "fail_categories": [
+                "SOURCE_FIDELITY"
+              ],
+              "review_status": "READY",
+              "warn_categories": []
+            },
+            "stage": "P05"
+          },
+          {
+            "codes": [
+              "DIAGNOSTIC_INCOMPLETE"
+            ],
+            "issues": [],
+            "stage": "P07"
+          },
+          {
+            "codes": [
+              "P08_DECISION_REJECT"
+            ],
+            "issues": [],
+            "metadata": {
+              "critical_failure_count": 1,
+              "criticality": "CRITICAL",
+              "decision": "REJECT",
+              "diagnostic_codes": [
+                "P08_DECISION_REJECT",
+                "P08_GROUNDEDNESS_BELOW_THRESHOLD",
+                "P08_ANCHOR_SUFFICIENCY_BELOW_THRESHOLD",
+                "P08_CRITERION_RELEVANCE_BELOW_THRESHOLD",
+                "P08_ANSWERABILITY_BELOW_THRESHOLD",
+                "P08_MODEL_DECLARED_CRITICAL_FAILURE"
+              ],
+              "failure_categories": [
+                "GROUNDEDNESS_BELOW_THRESHOLD",
+                "ANCHOR_SUFFICIENCY_BELOW_THRESHOLD",
+                "CRITERION_RELEVANCE_BELOW_THRESHOLD",
+                "ANSWERABILITY_BELOW_THRESHOLD",
+                "MODEL_DECLARED_CRITICAL_FAILURE"
+              ],
+              "provider_critical_code_hashes": [
+                "sha256:77ac8a727c37cc2a7fbe6ce4a4399695d8e7b768560ac4b6a85edba4f8c3ae70"
+              ],
+              "review_status": "READY",
+              "score_thresholds": {
+                "anchor_sufficiency": {
+                  "relation": "BELOW",
+                  "score": 0.45,
+                  "threshold": 0.8
+                },
+                "answerability": {
+                  "relation": "BELOW",
+                  "score": 0.45,
+                  "threshold": 0.85
+                },
+                "confidence": {
+                  "relation": "AT_OR_ABOVE",
+                  "score": 0.93,
+                  "threshold": 0.65
+                },
+                "criterion_relevance": {
+                  "relation": "BELOW",
+                  "score": 0.62,
+                  "threshold": 0.8
+                },
+                "groundedness": {
+                  "relation": "BELOW",
+                  "score": 0.72,
+                  "threshold": 0.9
+                }
+              }
+            },
+            "stage": "P08"
+          }
+        ]
+      },
+      "output_hash": null,
+      "run_id": "real-sweep-base",
+      "run_kind": "INDEPENDENT_SWEEP",
+      "scenario_id": "synthetic-open-short-v1",
+      "stages": [
+        {
+          "actual_cost_usd": 0.034957,
+          "attempts": 1,
+          "cache_write_input_tokens": 4678,
+          "cached_input_tokens": 0,
+          "fallback_route_id": null,
+          "input_hash": "sha256:05c9779a3f330633d61f220e8fce4cd629094c8a281562ecc353f9613a3d374c",
+          "input_tokens": 4681,
+          "model": "gpt-5.6-terra",
+          "output_hash": "sha256:6780f6cba921f455edbb630f4c602d65878d15cd8e46bafb68821714aa16057b",
+          "output_tokens": 1938,
+          "prompt_id": "P04_BLUEPRINT_BUILD_V1",
+          "prompt_version": "1.1.11",
+          "reasoning_effort": "MEDIUM",
+          "reasoning_tokens": 516,
+          "repaired": false,
+          "status": "PASS"
+        },
+        {
+          "actual_cost_usd": 0.027411,
+          "attempts": 1,
+          "cache_write_input_tokens": 4722,
+          "cached_input_tokens": 0,
+          "fallback_route_id": null,
+          "input_hash": "sha256:5c54e22a5745a5d5a64dd1bf5ced3f924795bf14bb1e19f9fc9df81dde53c2e7",
+          "input_tokens": 4725,
+          "model": "gpt-5.6-terra",
+          "output_hash": "sha256:8ee2bf055a3487d6cefa8b92d079fa1945f90cbd5b7ebf4cd270a84aa214e944",
+          "output_tokens": 1300,
+          "prompt_id": "P06_EVIDENCE_MAP_V1",
+          "prompt_version": "1.1.5",
+          "reasoning_effort": "MEDIUM",
+          "reasoning_tokens": 616,
+          "repaired": false,
+          "status": "PASS"
+        },
+        {
+          "actual_cost_usd": 0.0161765,
+          "attempts": 1,
+          "cache_write_input_tokens": 3065,
+          "cached_input_tokens": 0,
+          "fallback_route_id": null,
+          "input_hash": "sha256:d46ce6e1808f23568730e21427c12575d9f6d279055a642e69e5babc4845fb98",
+          "input_tokens": 3068,
+          "model": "gpt-5.6-terra",
+          "output_hash": "sha256:442eaea3f9a136f91141f356cb3633aea94d31c04c3d7ff754b03e2950a05481",
+          "output_tokens": 709,
+          "prompt_id": "P09_GUIDE_BUILD_V1",
+          "prompt_version": "1.1.6",
+          "reasoning_effort": "MEDIUM",
+          "reasoning_tokens": 148,
+          "repaired": false,
+          "status": "PASS"
+        }
+      ],
+      "status": "FAIL"
+    },
+    {
+      "failure": null,
+      "output_hash": "sha256:beca82549a9e4e8230885b4416e34d4b01543d50d3ba518e16fe880bee79fc41",
+      "run_id": "real-chain-base-1",
+      "run_kind": "INTEGRATED_CHAIN",
+      "scenario_id": "synthetic-open-short-v1",
+      "stages": [
+        {
+          "actual_cost_usd": 0.0229256,
+          "attempts": 1,
+          "cache_write_input_tokens": 0,
+          "cached_input_tokens": 4678,
+          "fallback_route_id": null,
+          "input_hash": "sha256:05c9779a3f330633d61f220e8fce4cd629094c8a281562ecc353f9613a3d374c",
+          "input_tokens": 4681,
+          "model": "gpt-5.6-terra",
+          "output_hash": "sha256:304fd5d25d5fdb45eb0a412de0aa0b66e8fce58b9de839494007b12e211e8171",
+          "output_tokens": 1832,
+          "prompt_id": "P04_BLUEPRINT_BUILD_V1",
+          "prompt_version": "1.1.11",
+          "reasoning_effort": "MEDIUM",
+          "reasoning_tokens": 395,
+          "repaired": false,
+          "status": "PASS"
+        },
+        {
+          "actual_cost_usd": 0.0192287,
+          "attempts": 1,
+          "cache_write_input_tokens": 2437,
+          "cached_input_tokens": 2171,
+          "fallback_route_id": null,
+          "input_hash": "sha256:12f03ee1a8e90b593ce24b1888f5cc9e410307ec97dece32c6b05f17c346e189",
+          "input_tokens": 4611,
+          "model": "gpt-5.6-terra",
+          "output_hash": "sha256:bb0c34aa985f82d732a61d52b21ce068ffbddc1ae41f50945df4d799a4021180",
+          "output_tokens": 1058,
+          "prompt_id": "P05_BLUEPRINT_REVIEW_V1",
+          "prompt_version": "1.1.8",
+          "reasoning_effort": "MEDIUM",
+          "reasoning_tokens": 124,
+          "repaired": false,
+          "status": "PASS"
+        },
+        {
+          "actual_cost_usd": 0.0241385,
+          "attempts": 1,
+          "cache_write_input_tokens": 2593,
+          "cached_input_tokens": 2450,
+          "fallback_route_id": null,
+          "input_hash": "sha256:4c916716a5cd3509220687733647e66b9b5196a86c5a6396a7ac05746f5b5d1f",
+          "input_tokens": 5046,
+          "model": "gpt-5.6-terra",
+          "output_hash": "sha256:420067188fb0bfc47cf17c4f47c9820694809a7829fcc139db89f441c8468707",
+          "output_tokens": 1430,
+          "prompt_id": "P06_EVIDENCE_MAP_V1",
+          "prompt_version": "1.1.5",
+          "reasoning_effort": "MEDIUM",
+          "reasoning_tokens": 516,
+          "repaired": false,
+          "status": "PASS"
+        },
+        {
+          "input_hash": "sha256:2faca2596495fd0fb4f09c55d64ef56ce4f31800212321750e99392076653f0a",
+          "output_hash": "sha256:c552369c54428d9114f8e129379a56d2c273b55942741fd1af342a17d08bf534",
+          "stage": "PLANNER",
+          "status": "PASS",
+          "version": "stage2-planner/2.0.0"
+        },
+        {
+          "actual_cost_usd": 0.018703,
+          "attempts": 1,
+          "cache_write_input_tokens": 1468,
+          "cached_input_tokens": 3375,
+          "fallback_route_id": null,
+          "input_hash": "sha256:10317d8305e6fe171a22012b2f14537fb1f661451220afbf5c6fef9a779e5c5e",
+          "input_tokens": 4846,
+          "model": "gpt-5.6-terra",
+          "output_hash": "sha256:9bc9d9ea351f8621ebd04ece69635192aad08cdee2cfc85ac64c24542cdea2e5",
+          "output_tokens": 1196,
+          "prompt_id": "P07_QUESTION_BUILD_V1",
+          "prompt_version": "1.1.4",
+          "reasoning_effort": "MEDIUM",
+          "reasoning_tokens": 116,
+          "repaired": false,
+          "status": "PASS"
+        },
+        {
+          "actual_cost_usd": 0.014046,
+          "attempts": 1,
+          "cache_write_input_tokens": 2434,
+          "cached_input_tokens": 1795,
+          "decision_diagnostics": {
+            "critical_failure_count": 0,
+            "criticality": "NON_CRITICAL",
+            "decision": "ACCEPT",
+            "diagnostic_codes": [
+              "P08_DECISION_ACCEPT"
+            ],
+            "failure_categories": [],
+            "provider_critical_code_hashes": [],
+            "review_status": "READY",
+            "score_thresholds": {
+              "anchor_sufficiency": {
+                "relation": "AT_OR_ABOVE",
+                "score": 0.96,
+                "threshold": 0.8
+              },
+              "answerability": {
+                "relation": "AT_OR_ABOVE",
+                "score": 1.0,
+                "threshold": 0.85
+              },
+              "confidence": {
+                "relation": "AT_OR_ABOVE",
+                "score": 0.96,
+                "threshold": 0.65
+              },
+              "criterion_relevance": {
+                "relation": "AT_OR_ABOVE",
+                "score": 1.0,
+                "threshold": 0.8
+              },
+              "groundedness": {
+                "relation": "AT_OR_ABOVE",
+                "score": 1.0,
+                "threshold": 0.9
+              }
+            }
+          },
+          "fallback_route_id": null,
+          "input_hash": "sha256:09f49d0d2aa8b0f3ffe57f054c6fa1fc875a16ff7521f4965df62f00e9f7ef6e",
+          "input_tokens": 4232,
+          "model": "gpt-5.6-terra",
+          "output_hash": "sha256:bd4c3e3828088a8c124de18743379bb60e401eb853aa8ba2f4a42335ef1c33a6",
+          "output_tokens": 633,
+          "prompt_id": "P08_QUESTION_REVIEW_V1",
+          "prompt_version": "1.1.5",
+          "reasoning_effort": "MEDIUM",
+          "reasoning_tokens": 308,
+          "repaired": false,
+          "status": "PASS"
+        },
+        {
+          "input_hash": "sha256:1b89c28fa502ac8d234f3d6093954f52f331c8dfb786bdbfbb0c28952bee4247",
+          "output_hash": "sha256:13ced73a1b066afd023fa6ff159fe5bf8455996388c1e7c8054e90fdb4650599",
+          "stage": "ASSEMBLY",
+          "status": "PASS",
+          "version": "stage1-assembler/2.0.0"
+        },
+        {
+          "actual_cost_usd": 0.0201165,
+          "attempts": 1,
+          "cache_write_input_tokens": 2671,
+          "cached_input_tokens": 1705,
+          "fallback_route_id": null,
+          "input_hash": "sha256:c27862f26e7bb6e9307cc2b30b69306777e7095879625706097a038bed66f62b",
+          "input_tokens": 4379,
+          "model": "gpt-5.6-terra",
+          "output_hash": "sha256:2302f37ea988eae164302d8e7bfbf99a8e01b7c3a9d390c506e23dfffd51eff7",
+          "output_tokens": 1091,
+          "prompt_id": "P09_GUIDE_BUILD_V1",
+          "prompt_version": "1.1.6",
+          "reasoning_effort": "MEDIUM",
+          "reasoning_tokens": 206,
+          "repaired": false,
+          "status": "PASS"
+        }
+      ],
+      "status": "PASS"
+    },
+    {
+      "failure": {
+        "codes": [
+          "ASSESSMENT_PLAN_INFEASIBLE"
+        ],
+        "issues": [],
+        "metadata": {
+          "diagnostic_codes": [
+            "EVIDENCE_MAPPING_UNCERTAIN"
+          ],
+          "eligible_evidence_fit_count": 0,
+          "mapping_status": "EVIDENCE_MAPPING_UNCERTAIN",
+          "maximum_observed_evidence_fit": null,
+          "maximum_observed_opportunity_quality": null,
+          "minimum_evidence_fit": 0.7,
+          "minimum_observed_evidence_fit": null,
+          "minimum_observed_opportunity_quality": null,
+          "opportunity_count": 0,
+          "plan_status": "EVIDENCE_MAPPING_UNCERTAIN",
+          "question_count": 1
+        },
+        "stage": "PLANNER"
+      },
+      "output_hash": null,
+      "run_id": "real-chain-base-2",
+      "run_kind": "INTEGRATED_CHAIN",
+      "scenario_id": "synthetic-open-short-v1",
+      "stages": [
+        {
+          "actual_cost_usd": 0.0317696,
+          "attempts": 1,
+          "cache_write_input_tokens": 0,
+          "cached_input_tokens": 4678,
+          "fallback_route_id": null,
+          "input_hash": "sha256:05c9779a3f330633d61f220e8fce4cd629094c8a281562ecc353f9613a3d374c",
+          "input_tokens": 4681,
+          "model": "gpt-5.6-terra",
+          "output_hash": "sha256:79a10e12723b547a28783eb7a1a38b2a3258356a9380eb393f3c9b46827494d1",
+          "output_tokens": 2569,
+          "prompt_id": "P04_BLUEPRINT_BUILD_V1",
+          "prompt_version": "1.1.11",
+          "reasoning_effort": "MEDIUM",
+          "reasoning_tokens": 699,
+          "repaired": false,
+          "status": "PASS"
+        },
+        {
+          "actual_cost_usd": 0.0200032,
+          "attempts": 1,
+          "cache_write_input_tokens": 2862,
+          "cached_input_tokens": 2171,
+          "fallback_route_id": null,
+          "input_hash": "sha256:84dc22e8741135235dcf981b3509a073518e6fa8650e8c36ec83b900f483073a",
+          "input_tokens": 5036,
+          "model": "gpt-5.6-terra",
+          "output_hash": "sha256:8b98fe78dedfc92bcd42ba083a18a2dcb6da9b24a21e1e8de578daac7b1216a6",
+          "output_tokens": 1034,
+          "prompt_id": "P05_BLUEPRINT_REVIEW_V1",
+          "prompt_version": "1.1.8",
+          "reasoning_effort": "MEDIUM",
+          "reasoning_tokens": 189,
+          "repaired": false,
+          "status": "PASS"
+        },
+        {
+          "actual_cost_usd": 0.015112,
+          "attempts": 1,
+          "cache_write_input_tokens": 3024,
+          "cached_input_tokens": 2450,
+          "fallback_route_id": null,
+          "input_hash": "sha256:30ef772fc7fbaad6a8667ddccd78d2b6b2e8020ece2ac899dd819a1cfe543ee1",
+          "input_tokens": 5477,
+          "model": "gpt-5.6-terra",
+          "output_hash": "sha256:74436b92fa718b40426ee56311d5432db46cb9f73e59e3371790583891cf870d",
+          "output_tokens": 588,
+          "prompt_id": "P06_EVIDENCE_MAP_V1",
+          "prompt_version": "1.1.5",
+          "reasoning_effort": "MEDIUM",
+          "reasoning_tokens": 443,
+          "repaired": false,
+          "status": "PASS"
+        }
+      ],
+      "status": "FAIL"
+    },
+    {
+      "failure": null,
+      "output_hash": "sha256:4621ad612c0eb01281a47080f4ca047b03829462c85b9a0edcfc11df46da9ff5",
+      "run_id": "real-chain-choice-variant",
+      "run_kind": "INTEGRATED_CHAIN",
+      "scenario_id": "synthetic-choice-justification-v1",
+      "stages": [
+        {
+          "actual_cost_usd": 0.0338325,
+          "attempts": 1,
+          "cache_write_input_tokens": 955,
+          "cached_input_tokens": 3715,
+          "fallback_route_id": null,
+          "input_hash": "sha256:84b0c019bbbd34c03a2c666f07a3fe75574326e82ab019aaa8cd26ce4fd9bb8d",
+          "input_tokens": 4673,
+          "model": "gpt-5.6-terra",
+          "output_hash": "sha256:9cc6ba249b5ed4cd41cf530724912ee1b868b41f17d949579d082980a9038ca3",
+          "output_tokens": 2558,
+          "prompt_id": "P04_BLUEPRINT_BUILD_V1",
+          "prompt_version": "1.1.11",
+          "reasoning_effort": "MEDIUM",
+          "reasoning_tokens": 1111,
+          "repaired": false,
+          "status": "PASS"
+        },
+        {
+          "actual_cost_usd": 0.0247797,
+          "attempts": 1,
+          "cache_write_input_tokens": 2435,
+          "cached_input_tokens": 2171,
+          "fallback_route_id": null,
+          "input_hash": "sha256:29ed47fb06465954cbbd95ef294aa72ea25cec4c597f869de7bea052e8dbe07e",
+          "input_tokens": 4609,
+          "model": "gpt-5.6-terra",
+          "output_hash": "sha256:7f74ce0cb2c1fdd0a000b0421827740f3dc2b52b105825d830fd6dca9946242f",
+          "output_tokens": 1521,
+          "prompt_id": "P05_BLUEPRINT_REVIEW_V1",
+          "prompt_version": "1.1.8",
+          "reasoning_effort": "MEDIUM",
+          "reasoning_tokens": 610,
+          "repaired": false,
+          "status": "PASS"
+        },
+        {
+          "actual_cost_usd": 0.016903,
+          "attempts": 1,
+          "cache_write_input_tokens": 2598,
+          "cached_input_tokens": 2450,
+          "fallback_route_id": null,
+          "input_hash": "sha256:8cec34eecafebaf3a90c19fa0fa3044fe5d50e796e83ebf49fd25237816e1a7e",
+          "input_tokens": 5051,
+          "model": "gpt-5.6-terra",
+          "output_hash": "sha256:0dc00842080fb59abe3d37446aaf713502f9915b4fcd3bcc9dddb00e42264329",
+          "output_tokens": 826,
+          "prompt_id": "P06_EVIDENCE_MAP_V1",
+          "prompt_version": "1.1.5",
+          "reasoning_effort": "MEDIUM",
+          "reasoning_tokens": 283,
+          "repaired": false,
+          "status": "PASS"
+        },
+        {
+          "input_hash": "sha256:324d472d1798ae442c6aac8f14b424dc53dc0babbf9df46ad27802fa4d0cccfb",
+          "output_hash": "sha256:76b5d9b4ee1e7623d46ab0c683d9b17483afb115ecf835681ca28c6fc46a970d",
+          "stage": "PLANNER",
+          "status": "PASS",
+          "version": "stage2-planner/2.0.0"
+        },
+        {
+          "actual_cost_usd": 0.020674,
+          "attempts": 1,
+          "cache_write_input_tokens": 1426,
+          "cached_input_tokens": 3375,
+          "fallback_route_id": null,
+          "input_hash": "sha256:ca49f591c6d00de969016e2c89eac143f05bfc5558509270903cdef3a66f525e",
+          "input_tokens": 4804,
+          "model": "gpt-5.6-terra",
+          "output_hash": "sha256:343504896ad1550816bd8fcf7efd1480073d1b5ac56f7dffe528bcd5e031a75b",
+          "output_tokens": 1369,
+          "prompt_id": "P07_QUESTION_BUILD_V1",
+          "prompt_version": "1.1.4",
+          "reasoning_effort": "MEDIUM",
+          "reasoning_tokens": 94,
+          "repaired": false,
+          "status": "PASS"
+        },
+        {
+          "actual_cost_usd": 0.013925,
+          "attempts": 1,
+          "cache_write_input_tokens": 2592,
+          "cached_input_tokens": 1795,
+          "decision_diagnostics": {
+            "critical_failure_count": 0,
+            "criticality": "NON_CRITICAL",
+            "decision": "ACCEPT",
+            "diagnostic_codes": [
+              "P08_DECISION_ACCEPT"
+            ],
+            "failure_categories": [],
+            "provider_critical_code_hashes": [],
+            "review_status": "READY",
+            "score_thresholds": {
+              "anchor_sufficiency": {
+                "relation": "AT_OR_ABOVE",
+                "score": 0.96,
+                "threshold": 0.8
+              },
+              "answerability": {
+                "relation": "AT_OR_ABOVE",
+                "score": 0.95,
+                "threshold": 0.85
+              },
+              "confidence": {
+                "relation": "AT_OR_ABOVE",
+                "score": 0.93,
+                "threshold": 0.65
+              },
+              "criterion_relevance": {
+                "relation": "AT_OR_ABOVE",
+                "score": 0.98,
+                "threshold": 0.8
+              },
+              "groundedness": {
+                "relation": "AT_OR_ABOVE",
+                "score": 0.97,
+                "threshold": 0.9
+              }
+            }
+          },
+          "fallback_route_id": null,
+          "input_hash": "sha256:64da1486c8489906977653dbddcd28751e93074df2b3802e97983ca7dcaedd41",
+          "input_tokens": 4390,
+          "model": "gpt-5.6-terra",
+          "output_hash": "sha256:64c15e4bf0a9a6594e10e34972ba88de0bcfc0126bc0364687a2b129c0e0992d",
+          "output_tokens": 590,
+          "prompt_id": "P08_QUESTION_REVIEW_V1",
+          "prompt_version": "1.1.5",
+          "reasoning_effort": "MEDIUM",
+          "reasoning_tokens": 234,
+          "repaired": false,
+          "status": "PASS"
+        },
+        {
+          "input_hash": "sha256:240944b7c2cebe3701b84fd4be75c5c7bacaf9dbfc836657b79c56e329a4462c",
+          "output_hash": "sha256:d5b8778a7f9c8936666a89de6a68569da126c20513847ec76c04e8a9c09e4395",
+          "stage": "ASSEMBLY",
+          "status": "PASS",
+          "version": "stage1-assembler/2.0.0"
+        },
+        {
+          "actual_cost_usd": 0.0244535,
+          "attempts": 1,
+          "cache_write_input_tokens": 2889,
+          "cached_input_tokens": 1705,
+          "fallback_route_id": null,
+          "input_hash": "sha256:c13c7cad30c4059b7f1daa1d50570c617758f484156bd31f5d960b2a59e63197",
+          "input_tokens": 4597,
+          "model": "gpt-5.6-terra",
+          "output_hash": "sha256:d362d825de734696c74a72246e5d93d4059b308c7ed445b1f751cff1c532c0ec",
+          "output_tokens": 1407,
+          "prompt_id": "P09_GUIDE_BUILD_V1",
+          "prompt_version": "1.1.6",
+          "reasoning_effort": "MEDIUM",
+          "reasoning_tokens": 516,
+          "repaired": false,
+          "status": "PASS"
+        }
+      ],
+      "status": "PASS"
+    }
+  ],
+  "organization_label_hash": "sha256:025b4e51904f75d324c98001827eba9acb333afed96802466e688247901bd391",
+  "project_label_hash": "sha256:025b4e51904f75d324c98001827eba9acb333afed96802466e688247901bd391",
+  "qualification_outcome": "TERRA_MEDIUM_QUALIFICATION_FAILED",
+  "recommended_next_authority": "INDEPENDENT_REVIEW_BEFORE_ANY_TERRA_HIGH_AUTHORITY",
+  "rehearsal_module_hash": "sha256:b4cd168904e150fe38263e39eac8a39de53a45500511548ba453134e4fb305b5",
+  "rehearsal_version": "stage2-product-rehearsal/1.8.0",
+  "report_schema_version": "stage2-convergence-report/1.8.0",
+  "route_profile": "TERRA_MEDIUM_V1",
+  "runtime_hashes": {
+    "frontend/src/api/generated.ts": "sha256:2ee42d9587897ddc1546308b0541e6aa196b03cb9f5c8bb8ed839af7cfddb303",
+    "pyproject.toml": "sha256:711b08da52fdfb1b4e4c66afdccda2bdaea2592abae4e74bfd6cf33cf0e6653e",
+    "requirements.lock": "sha256:816790c7e78f28667c5e2b81b72d0a7e96b29c28f0992d7715bd418b361dfbe6",
+    "specification/contracts.schema_v1.1(1).json": "sha256:318f1dceee27f919934aa11eab81cfab703bfd5791e7b72c6d3e636f36304e8d",
+    "specification/models_v1.1(1).py": "sha256:3f1a42102b10a558f42885a14034d5d41944f7c23f597d257baa6dd21d2cee0f",
+    "src/comprehension_verification/evaluation_gate.py": "sha256:84ea3757bc757712bfd10dbe12f98361123c019206593f6c1378f2beaf2b4fa1",
+    "src/comprehension_verification/model_gateway/gateway.py": "sha256:f20c7c44fc8fdce4a5b915aa68bb42425f9e929dbf168b185b28d831765d421b",
+    "src/comprehension_verification/model_gateway/openai_adapter.py": "sha256:245bdb5c4f60fab97bfa746b38ed6ea0043c65eb08d45960c54031d8bf6184f1",
+    "src/comprehension_verification/model_gateway/openai_pricing.py": "sha256:e7080e44d3f70e811ce1cb95fe807e89617516a5a118e3d166140e3579c451a7",
+    "src/comprehension_verification/model_gateway/openai_routes.py": "sha256:3d6d680abbebdafacacab726b90424b327b4c5e0be66dfba772ae07ef27831dc",
+    "src/comprehension_verification/planning.py": "sha256:4872c2abf163e27135b0d266c4675b197534aa0f7c36c0f7960ebe5a575e8adb",
+    "src/comprehension_verification/provider_authorization.py": "sha256:b5642f024847a1096b174200ad548d2abac9afbf62c7bbff8540236b2672f340",
+    "src/comprehension_verification/validation.py": "sha256:a5ad1f04205aa701fff5b0e9d65d78394dc01cb37c40242fe861be86f751ed50",
+    "src/comprehension_verification/web/provider_secrets.py": "sha256:7350541f72fcac8eebf0ef29b89455c385d9782a373c0efbbd5da7831e6a0480",
+    "src/comprehension_verification/web/workflows.py": "sha256:1ceb38188e615c844de9f8a8d76b5389c1aa54a8cb53062522015e6c435ebe8a",
+    "tests/fixtures/openapi/stage1-v1.json": "sha256:83cd3dbcc728c613460533fb9841df335524fc44c28242d80b5482d8afafd0a2"
+  },
+  "secret_version_label_hash": "sha256:66608d1df58d11d91c7dfd83ff2f3fa6214eceea93f4b7d0013938f484487ce1",
+  "started_at": "2026-08-13T15:44:36.508812Z",
+  "status": "FAIL",
+  "unchanged_boundary_across_chains": true,
+  "univariate_comparison": false
+}

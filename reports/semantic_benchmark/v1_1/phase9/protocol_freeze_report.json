@@ -1,0 +1,124 @@
+{
+  "adjudication_protocol_hash": "sha256:8ca70d583f7179d732ca227696f3b6855f8ec3c49fee544075a2e48f4c39b332",
+  "adjudicator_calls": 0,
+  "authorization": "NONE",
+  "benchmark_boundary_hash": "sha256:426dda4d560a8d7d53639dfbaa0773c28565450f06e8ff62d51a8cd1bd6f62ff",
+  "billable_authorizations": 0,
+  "budget_plan_hash": "sha256:a366bc80166f5d922aebe513bfe32f25eb759386e0f10450ae060d0397d64a91",
+  "call_projection_totals": {
+    "expected_economic_path_calls": 753,
+    "worst_case_calls": 1554
+  },
+  "candidate_count": 11,
+  "candidate_matrix_hash": "sha256:a1612f10aa72d561a46c8af665df16aef823ab14543cd2e8061ff4ad17a5db6f",
+  "candidate_matrix_status": "FROZEN",
+  "corpus_package_boundary_hash": "21c21f3a53bfb786162dc350dc38c93b7b007d9f23b744a354de4ac2354048a1",
+  "execution_state": "REAL_EXECUTION_NOT_AUTHORIZED",
+  "expected_path_total_usd": 16.9767,
+  "global_cap_usd": 84.4914,
+  "held_out_lock": {
+    "held_out_failure_may_not_create_a_new_candidate": true,
+    "held_out_failure_may_not_widen_the_model_family": true,
+    "held_out_failure_result": "HELD_OUT_CONFIRMATION_FAILED",
+    "held_out_may_not_adjust_thresholds": true,
+    "held_out_may_not_choose_reasoning": true,
+    "held_out_may_not_escalate_reasoning": true,
+    "held_out_may_not_modify_prompts": true,
+    "held_out_may_not_modify_routing": true,
+    "held_out_may_not_select_candidates": true,
+    "phase9_may_read_not_restructure": true,
+    "reasoning_escalation_decided_in": "SMOKE_AND_CORE_ONLY",
+    "splits_frozen_at": "PHASE_8_1_CLOSE"
+  },
+  "phase9_protocol_boundary_hash": "sha256:daa79023de4e3b72a73f31879d481fbedb75492cc5fb4642c7fd2b4a4dbaa540",
+  "phase_8_1_baseline_sha": "76f2724223c0b928450eabe931bd2894d604667f",
+  "pricing_snapshot_hash": "sha256:f283a31324dbc4dbe8b349f319a148e720bec229b6bbbb189d4eb16c77d426ab",
+  "protocol_version": "phase9-qualification-protocol/1.1.0",
+  "provider_calls": 0,
+  "readiness": "PHASE9_PROTOCOL_READY_FOR_EXECUTION",
+  "routing_policy_intent": {
+    "ACTIVITY_SIDE": {
+      "cross_family_fallback": "FORBIDDEN",
+      "default_reasoning": "HIGH",
+      "forbidden_families": [
+        "gpt-5.6-luna",
+        "gpt-5.6-sol"
+      ],
+      "max_reasoning": "XHIGH",
+      "model_family": "gpt-5.6-terra",
+      "qualification_status": {
+        "P01": "PHASE10_OPERATIONAL_VERIFICATION_REQUIRED",
+        "P02": "PHASE10_OPERATIONAL_VERIFICATION_REQUIRED",
+        "P03": "PHASE10_OPERATIONAL_VERIFICATION_REQUIRED",
+        "P04": "PHASE9_SEMANTIC_QUALIFICATION"
+      },
+      "rationale": "P01-P04 run once per activity and the cost amortizes across every deliverable produced from it, so the stronger family buys interpretation and construction quality where it is cheapest to buy.",
+      "reasoning_ladder": [
+        "HIGH",
+        "XHIGH"
+      ],
+      "stages": [
+        "P01",
+        "P02",
+        "P03",
+        "P04"
+      ]
+    },
+    "P05": "HISTORICAL_INACTIVE",
+    "P08": "HISTORICAL_INACTIVE",
+    "P10": "DISABLED",
+    "PLANNER": "DETERMINISTIC_NO_MODEL",
+    "SUBMISSION_SIDE": {
+      "cross_family_fallback": "FORBIDDEN",
+      "default_reasoning": "HIGH",
+      "forbidden_families": [
+        "gpt-5.6-terra",
+        "gpt-5.6-sol"
+      ],
+      "max_reasoning": "MAX",
+      "model_family": "gpt-5.6-luna",
+      "qualification_status": {
+        "P06": "PHASE9_SEMANTIC_QUALIFICATION",
+        "P07": "PHASE9_SEMANTIC_QUALIFICATION",
+        "P09": "PHASE9_SEMANTIC_QUALIFICATION"
+      },
+      "rationale": "P06/P07/P09 multiply by submission and P07 multiplies again by opportunity. Luna is the family deliberately assigned to that surface. Raising reasoning raises output tokens but keeps the per-submission model class, which is the economic property being protected.",
+      "reasoning_ladder": [
+        "HIGH",
+        "XHIGH",
+        "MAX"
+      ],
+      "stages": [
+        "P06",
+        "P07",
+        "P09"
+      ]
+    },
+    "authority": "EXPLICIT_USER_PRODUCT_DECISION",
+    "cross_family_fallback": "FORBIDDEN",
+    "cross_family_fallback_rule": "A stage may never be rescued by a model family other than the one its side owns. Exhausting the ladder yields NO_QUALIFYING_CONFIGURATION. Substituting the other family after observing a failure would convert a frozen economic constraint into a result-driven choice, which is exactly what pre-registration exists to prevent.",
+    "p01_p03_limitation": "semantic-benchmark/1.1.0 carries no qualification property for P01, P02 or P03. Their entry here is target routing policy only. They are not semantically qualified by Phase 9 and P04 passing says nothing about them; Phase 10 must verify them operationally.",
+    "production_routing_locks_after": "PHASE_9_QUALIFICATION_AND_PHASE_10_E2E",
+    "production_runtime_changed_by_this_document": false,
+    "schema_version": "phase9-routing-policy-intent/1.0.0",
+    "status": "TARGET_ROUTING_POLICY_INTENT"
+  },
+  "schema_version": "phase9-protocol-freeze-report/1.1.0",
+  "superseded_protocols": [
+    {
+      "adjudicator_calls_under_this_protocol": 0,
+      "billable_authorizations_under_this_protocol": 0,
+      "candidate_matrix_hash": "sha256:fe9a4d52c516b4103e33b5af36ef7dd121eed8dc286dc86b6cd214c0c2b9c00f",
+      "frozen_at_commit": "e33f916d6e7eda0a491a25856e1543a567333a93",
+      "protocol_boundary_hash": "sha256:e4254b28e9d448334b9288a78f0149f013443fcf5e21f501462801c2a012fffa",
+      "protocol_version": "phase9-qualification-protocol/1.0.0",
+      "provider_calls_under_this_protocol": 0,
+      "qualification_results_produced": false,
+      "status": "SUPERSEDED_PRE_EXECUTION_BY_ROUTING_POLICY_AMENDMENT",
+      "superseded_by": "phase9-qualification-protocol/1.1.0",
+      "superseding_reason": "An explicit product decision constrained each pipeline side to one model family: Terra activity-side, Luna submission-side, with escalation only inside the owning family. The 1.0.0 matrix mixed families per stage and included Sol, so it no longer describes the experiment the product wants to run.",
+      "why_this_is_not_result_driven": "1.0.0 produced no qualification result of any kind. The amendment was authored before the first real call, so no outcome could have motivated it."
+    }
+  ],
+  "thresholds_hash": "sha256:145a925fe4f935fd6fded2a044a103372aa0b9d9d3826e1443a399bdbbb65b9a"
+}

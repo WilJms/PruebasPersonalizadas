@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pruebas-personalizadas.invalid/schemas/phase9/1.0.0/qualification-thresholds.json",
+  "title": "Pre-registered Phase 9 qualification thresholds",
+  "description": "Every number here is fixed before any real output exists and is derived from the frozen benchmark denominators, never from historical qualification results. The denominator unit is PROPERTY_CANDIDATE_REASONING: a property is never multiplied by its cases or its k runs.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "benchmark_version",
+    "benchmark_boundary_hash",
+    "pre_registered_before_any_real_output",
+    "derived_from_historical_qualifications",
+    "denominator_unit",
+    "accepted_semantic_outcomes",
+    "accepted_rate_bar_by_split",
+    "bar_rationale",
+    "rounding_rule",
+    "stability_rule",
+    "deterministic_hard_gate",
+    "rule_based_hard_gate",
+    "max_technical_failure_rate",
+    "max_pending_adjudication_at_promotion",
+    "thresholds"
+  ],
+  "properties": {
+    "schema_version": {"const": "phase9-qualification-thresholds/1.0.0"},
+    "benchmark_version": {"const": "semantic-benchmark/1.1.0"},
+    "benchmark_boundary_hash": {"type": "string", "pattern": "^sha256:[a-f0-9]{64}$"},
+    "pre_registered_before_any_real_output": {"const": true},
+    "derived_from_historical_qualifications": {"const": false},
+    "denominator_unit": {"const": "PROPERTY_CANDIDATE_REASONING"},
+    "accepted_semantic_outcomes": {
+      "type": "array",
+      "prefixItems": [{"const": "PASS"}, {"const": "DEFENSIBLE_ALTERNATIVE"}],
+      "items": false
+    },
+    "accepted_rate_bar_by_split": {"type": "object"},
+    "bar_rationale": {"type": "object"},
+    "rounding_rule": {"type": "string", "minLength": 1},
+    "stability_rule": {"type": "string", "minLength": 1},
+    "deterministic_hard_gate": {
+      "type": "object",
+      "required": ["required_pass_rate"],
+      "properties": {"required_pass_rate": {"const": 1.0}}
+    },
+    "rule_based_hard_gate": {
+      "type": "object",
+      "required": ["required_pass_rate"],
+      "properties": {"required_pass_rate": {"const": 1.0}}
+    },
+    "max_technical_failure_rate": {"type": "number", "exclusiveMinimum": 0, "maximum": 0.1},
+    "max_pending_adjudication_at_promotion": {"const": 0},
+    "thresholds": {
+      "type": "array",
+      "minItems": 12,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "stage",
+          "split",
+          "applicable_property_count",
+          "accepted_semantic_rate_bar",
+          "max_confirmed_model_failures",
+          "accepted_rate_at_max_allowed",
+          "accepted_rate_at_one_more_failure",
+          "zero_tolerance_forced_by_denominator",
+          "hard_safety_property_count",
+          "max_hard_safety_failures",
+          "rule_based_hard_property_count",
+          "oracle_suspect_property_count"
+        ],
+        "properties": {
+          "stage": {"enum": ["P04", "P06", "P07", "P09"]},
+          "split": {"enum": ["SMOKE", "CORE", "HELD_OUT_CONFIRMATION"]},
+          "applicable_property_count": {"type": "integer", "minimum": 0},
+          "accepted_semantic_rate_bar": {"type": "number", "minimum": 0, "maximum": 1},
+          "max_confirmed_model_failures": {"type": "integer", "minimum": 0},
+          "accepted_rate_at_max_allowed": {"type": ["number", "null"]},
+          "accepted_rate_at_one_more_failure": {"type": ["number", "null"]},
+          "zero_tolerance_forced_by_denominator": {"type": "boolean"},
+          "hard_safety_property_count": {"type": "integer", "minimum": 0},
+          "max_hard_safety_failures": {"const": 0},
+          "rule_based_hard_property_count": {"type": "integer", "minimum": 0},
+          "oracle_suspect_property_count": {"type": "integer", "minimum": 0}
+        }
+      }
+    }
+  }
+}

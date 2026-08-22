@@ -1,0 +1,231 @@
+{
+  "authorization": "NONE",
+  "ladder": [
+    {
+      "candidate_ids": [
+        "P04-C1-TERRA-HIGH",
+        "P04-C2-TERRA-XHIGH"
+      ],
+      "cross_family_fallback": "FORBIDDEN",
+      "ladder_exhausted_result": "NO_QUALIFYING_CONFIGURATION",
+      "max_reasoning": "XHIGH",
+      "model_family": "gpt-5.6-terra",
+      "promotion_order": [
+        "P04-C1-TERRA-HIGH",
+        "P04-C2-TERRA-XHIGH"
+      ],
+      "prompt_id": "P04_BLUEPRINT_BUILD_V1",
+      "qualification_status": "PHASE9_SEMANTIC_QUALIFICATION",
+      "reasoning_ladder": [
+        "HIGH",
+        "XHIGH"
+      ],
+      "rungs": {
+        "CORE": {
+          "applicable_semantic_properties": 21,
+          "calls_per_candidate": 18,
+          "cases": 6
+        },
+        "HELD_OUT_CONFIRMATION": {
+          "applicable_semantic_properties": 19,
+          "calls_per_candidate": 15,
+          "cases": 5
+        },
+        "SMOKE": {
+          "applicable_semantic_properties": 4,
+          "calls_per_candidate": 3,
+          "cases": 1
+        }
+      },
+      "stage": "P04"
+    },
+    {
+      "candidate_ids": [
+        "P06-C1-LUNA-HIGH",
+        "P06-C2-LUNA-XHIGH",
+        "P06-C3-LUNA-MAX"
+      ],
+      "cross_family_fallback": "FORBIDDEN",
+      "ladder_exhausted_result": "NO_QUALIFYING_CONFIGURATION",
+      "max_reasoning": "MAX",
+      "model_family": "gpt-5.6-luna",
+      "promotion_order": [
+        "P06-C1-LUNA-HIGH",
+        "P06-C2-LUNA-XHIGH",
+        "P06-C3-LUNA-MAX"
+      ],
+      "prompt_id": "P06_EVIDENCE_MAP_V1",
+      "qualification_status": "PHASE9_SEMANTIC_QUALIFICATION",
+      "reasoning_ladder": [
+        "HIGH",
+        "XHIGH",
+        "MAX"
+      ],
+      "rungs": {
+        "CORE": {
+          "applicable_semantic_properties": 60,
+          "calls_per_candidate": 192,
+          "cases": 64
+        },
+        "HELD_OUT_CONFIRMATION": {
+          "applicable_semantic_properties": 56,
+          "calls_per_candidate": 183,
+          "cases": 61
+        },
+        "SMOKE": {
+          "applicable_semantic_properties": 3,
+          "calls_per_candidate": 6,
+          "cases": 2
+        }
+      },
+      "stage": "P06"
+    },
+    {
+      "candidate_ids": [
+        "P07-C1-LUNA-HIGH",
+        "P07-C2-LUNA-XHIGH",
+        "P07-C3-LUNA-MAX"
+      ],
+      "cross_family_fallback": "FORBIDDEN",
+      "ladder_exhausted_result": "NO_QUALIFYING_CONFIGURATION",
+      "max_reasoning": "MAX",
+      "model_family": "gpt-5.6-luna",
+      "promotion_order": [
+        "P07-C1-LUNA-HIGH",
+        "P07-C2-LUNA-XHIGH",
+        "P07-C3-LUNA-MAX"
+      ],
+      "prompt_id": "P07_QUESTION_BUILD_V1",
+      "qualification_status": "PHASE9_SEMANTIC_QUALIFICATION",
+      "reasoning_ladder": [
+        "HIGH",
+        "XHIGH",
+        "MAX"
+      ],
+      "rungs": {
+        "CORE": {
+          "applicable_semantic_properties": 69,
+          "calls_per_candidate": 165,
+          "cases": 55
+        },
+        "HELD_OUT_CONFIRMATION": {
+          "applicable_semantic_properties": 60,
+          "calls_per_candidate": 141,
+          "cases": 47
+        },
+        "SMOKE": {
+          "applicable_semantic_properties": 6,
+          "calls_per_candidate": 18,
+          "cases": 6
+        }
+      },
+      "stage": "P07"
+    },
+    {
+      "candidate_ids": [
+        "P09-C1-LUNA-HIGH",
+        "P09-C2-LUNA-XHIGH",
+        "P09-C3-LUNA-MAX"
+      ],
+      "cross_family_fallback": "FORBIDDEN",
+      "ladder_exhausted_result": "NO_QUALIFYING_CONFIGURATION",
+      "max_reasoning": "MAX",
+      "model_family": "gpt-5.6-luna",
+      "promotion_order": [
+        "P09-C1-LUNA-HIGH",
+        "P09-C2-LUNA-XHIGH",
+        "P09-C3-LUNA-MAX"
+      ],
+      "prompt_id": "P09_GUIDE_BUILD_V1",
+      "qualification_status": "PHASE9_SEMANTIC_QUALIFICATION",
+      "reasoning_ladder": [
+        "HIGH",
+        "XHIGH",
+        "MAX"
+      ],
+      "rungs": {
+        "CORE": {
+          "applicable_semantic_properties": 4,
+          "calls_per_candidate": 6,
+          "cases": 2
+        },
+        "HELD_OUT_CONFIRMATION": {
+          "applicable_semantic_properties": 1,
+          "calls_per_candidate": 3,
+          "cases": 1
+        },
+        "SMOKE": {
+          "applicable_semantic_properties": 1,
+          "calls_per_candidate": 3,
+          "cases": 1
+        }
+      },
+      "stage": "P09"
+    }
+  ],
+  "metric_denominators": {
+    "accepted_semantic_rate": "accepted_property_count / applicable_property_count, where applicable_property_count counts PROPERTY_CANDIDATE_REASONING units with a VALID oracle and EXTERNAL adjudication, never multiplied by cases or runs.",
+    "confirmed_model_failure_rate": "confirmed_model_failure_count / applicable_property_count.",
+    "technical_failure_rate": "technical_failure_count / attempted PROPERTY_CANDIDATE_REASONING_RUN units, measured after the single permitted technical retry."
+  },
+  "promotion": {
+    "candidates_on_core": "ONLY_THE_SMOKE_QUALIFIED_CURRENT_RUNG",
+    "candidates_on_held_out": "ONLY_THE_SELECTED_STAGE_WINNER",
+    "candidates_on_smoke": "LOWEST_UNTRIED_LADDER_RUNG_ONLY",
+    "core_role": "SELECTION_EVIDENCE",
+    "cross_family_fallback": "FORBIDDEN",
+    "cross_family_fallback_rule": "A stage may never be rescued by a model family other than the one its side owns. Exhausting the ladder yields NO_QUALIFYING_CONFIGURATION. Substituting the other family after observing a failure would convert a frozen economic constraint into a result-driven choice, which is exactly what pre-registration exists to prevent.",
+    "escalation_is_within_family_only": true,
+    "escalation_rule": "Rungs are attempted in promotion order, one at a time. The next reasoning rung is executed only after the current one has failed SMOKE or CORE. A rung that qualifies on CORE is the selected configuration for the stage and no deeper rung is executed at all.",
+    "escalation_trigger": "QUALIFICATION_FAILURE_ONLY",
+    "held_out_failure_policy": "A winner that fails HELD_OUT_CONFIRMATION is rejected for that stage. The next CORE-qualified candidate by tie-break order may attempt held-out exactly once. No candidate may be tuned, and thresholds do not move.",
+    "held_out_failure_result": "HELD_OUT_CONFIRMATION_FAILED",
+    "held_out_fallback_reachable_under_this_matrix": false,
+    "held_out_fallback_vacuity_note": "The fallback clause above is carried over verbatim from 1.0.0 because it was pre-registered, but under family-constrained sequential escalation its precondition can never be met. Escalation is failure-driven, so a deeper rung reaches CORE only once the shallower rung has already failed CORE. Exactly one candidate per stage is therefore CORE-qualified at the moment held-out runs, and there is no second CORE-qualified candidate to fall back to. Running a previously untried rung after seeing a held-out failure would be selection on held-out evidence, which the held-out lock forbids. The reachable outcome is HELD_OUT_CONFIRMATION_FAILED and the stage reports NO_QUALIFYING_CONFIGURATION.",
+    "held_out_multi_candidate_allowed": false,
+    "held_out_role": "CONFIRM_OR_REJECT_THE_ALREADY_SELECTED_WINNER",
+    "ladder": [
+      "SMOKE",
+      "CORE",
+      "HELD_OUT_CONFIRMATION"
+    ],
+    "ladder_exhausted_result": "NO_QUALIFYING_CONFIGURATION",
+    "no_qualifying_configuration_policy": "If every candidate for a stage fails its rung, the stage result is NO_QUALIFYING_CONFIGURATION. Adding a candidate mid-qualification is forbidden; it requires a new candidate matrix hash and protocol boundary. In particular the ladder may not be extended into another model family: NO_QUALIFYING_CONFIGURATION is a reportable product finding, not a fallback trigger.",
+    "pending_adjudication_blocks_promotion": true,
+    "pending_adjudication_rule": "A configuration may not promote while any required adjudication for the rung is unresolved. Promotion never happens on an incomplete scoreboard.",
+    "selection_rule": "LOWEST_REASONING_CONFIGURATION_THAT_QUALIFIES",
+    "selection_rule_note": "Within a stage the candidates differ only in reasoning effort, so a deeper rung is executed only after the shallower one has failed to qualify. A deeper rung can never be selected while a shallower one qualifies, and reasoning is never raised out of curiosity or for comparison.",
+    "skipping_rungs_allowed": false,
+    "smoke_role": "SCREENING",
+    "stage_winners_may_differ": true
+  },
+  "promotion_metrics": [
+    "applicable_property_count",
+    "accepted_property_count",
+    "pass_count",
+    "defensible_alternative_count",
+    "confirmed_model_failure_count",
+    "oracle_suspect_count",
+    "technical_failure_count",
+    "adjudication_pending_count",
+    "hard_safety_failure_count",
+    "stability_disagreement_count",
+    "accepted_semantic_rate",
+    "confirmed_model_failure_rate",
+    "technical_failure_rate"
+  ],
+  "results_present": false,
+  "schema_version": "phase9-candidate-comparison-plan/1.1.0",
+  "stage_winners_may_differ": true,
+  "tie_break_order": [
+    "ZERO_HARD_SAFETY_FAILURES",
+    "MEETS_RUNG_QUALIFICATION_THRESHOLD",
+    "LOWEST_REASONING_RUNG_IN_THE_FAMILY_LADDER",
+    "LOWER_STABILITY_DISAGREEMENT_COUNT",
+    "LOWER_CONFIRMED_MODEL_FAILURE_RATE",
+    "LOWER_TECHNICAL_FAILURE_RATE",
+    "LOWER_PROJECTED_PRODUCTION_COST",
+    "LOWER_P95_END_TO_END_LATENCY",
+    "LEXICOGRAPHICALLY_SMALLEST_CANDIDATE_ID"
+  ]
+}

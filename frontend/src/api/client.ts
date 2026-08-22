@@ -360,8 +360,8 @@ export async function updateBlueprint(
   activityId: string,
   blueprint: AssessmentBlueprint,
   etag: string,
-): Promise<BlueprintView> {
-  const result = await requestWithMeta<unknown>(
+): Promise<JobStatus> {
+  const result = await request<unknown>(
     `/activities/${activityId}/blueprints/${blueprint.blueprint_version}`,
     {
       method: "PATCH",
@@ -369,7 +369,7 @@ export async function updateBlueprint(
       body: JSON.stringify(blueprint),
     },
   );
-  return normalizeBlueprintView(result.data, result.etag);
+  return pick<JobStatus>(result, "job");
 }
 
 export async function approveBlueprint(
@@ -542,6 +542,8 @@ export async function getAssessmentBundle(
       evidence: bundle.evidence ?? [],
       evidence_receipts: bundle.evidence_receipts ?? [],
       guide: bundle.guide,
+      guide_status: bundle.guide_status,
+      guide_job_id: bundle.guide_job_id,
       etag: bundle.etag,
       assessment_version: bundle.assessment_version,
     };
@@ -549,9 +551,9 @@ export async function getAssessmentBundle(
   throw new ApiError(500, "La respuesta de evaluación no tiene el contrato esperado.");
 }
 
-export async function getGuide(assessmentId: string): Promise<EvaluationGuide> {
+export async function getGuide(assessmentId: string): Promise<EvaluationGuide | null> {
   const result = await request<unknown>(`/assessments/${assessmentId}/guide`);
-  return pick<EvaluationGuide>(result, "guide");
+  return pick<EvaluationGuide | null>(result, "guide");
 }
 
 export async function verifyEvidenceFragment(
@@ -591,6 +593,8 @@ export async function approveAssessment(
       evidence: bundle.evidence ?? [],
       evidence_receipts: bundle.evidence_receipts ?? [],
       guide: bundle.guide,
+      guide_status: bundle.guide_status,
+      guide_job_id: bundle.guide_job_id,
       etag: bundle.etag,
       assessment_version: bundle.assessment_version,
     };
@@ -603,7 +607,12 @@ export async function reviewQuestion(
   questionId: string,
   input: QuestionReviewActionInput,
   etag: string,
-): Promise<{ record: QuestionReviewActionRecord; bundle?: AssessmentBundle; etag?: string }> {
+): Promise<{
+  record?: QuestionReviewActionRecord;
+  job?: JobStatus;
+  bundle?: AssessmentBundle;
+  etag?: string;
+}> {
   const result = await requestWithMeta<unknown>(
     `/assessments/${assessmentId}/questions/${questionId}/actions`,
     {
@@ -615,8 +624,14 @@ export async function reviewQuestion(
   const data = unwrap<unknown>(result.data);
   if (data && typeof data === "object") {
     const body = data as JsonObject;
+    const record = body.action_record ?? body.record ?? body.action;
+    const job = body.job as JobStatus | undefined;
+    if (!record && !job) {
+      throw new ApiError(500, "La acción no devolvió un registro ni un job durable.");
+    }
     return {
-      record: (body.action_record ?? body.record ?? body.action ?? data) as QuestionReviewActionRecord,
+      record: record as QuestionReviewActionRecord | undefined,
+      job,
       bundle: body.bundle as AssessmentBundle | undefined,
       etag: result.etag,
     };
@@ -627,11 +642,14 @@ export async function reviewQuestion(
 export async function listQuestionActions(
   assessmentId: string,
   questionId: string,
-): Promise<QuestionReviewActionRecord[]> {
+): Promise<{ items: QuestionReviewActionRecord[]; jobs: JobStatus[] }> {
   const result = await request<unknown>(
     `/assessments/${assessmentId}/questions/${questionId}/actions`,
   );
-  return pick<QuestionReviewActionRecord[]>(result, "items") ?? [];
+  return {
+    items: pick<QuestionReviewActionRecord[]>(result, "items") ?? [],
+    jobs: pick<JobStatus[]>(result, "jobs") ?? [],
+  };
 }
 
 export async function getSubmissionCoverage(submissionId: string): Promise<CoverageReport> {

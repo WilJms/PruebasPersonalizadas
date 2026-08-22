@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 import os
 from uuid import uuid4
 
@@ -9,6 +9,14 @@ from sqlalchemy import delete, select, text, update
 from sqlalchemy.exc import DBAPIError, IntegrityError
 
 from comprehension_verification.canonical import canonical_hash
+from comprehension_verification.model_gateway import (
+    LUNA_MODEL_ID,
+    OPENAI_ROUTE_PROFILE_ID,
+)
+from comprehension_verification.provider_authorization import (
+    SyntheticProviderAuthorizationSpec,
+    synthetic_provider_boundary_hash,
+)
 from comprehension_verification.web.repository import (
     ActivityRow,
     ArtifactRow,
@@ -19,6 +27,8 @@ from comprehension_verification.web.repository import (
     ModelCallRow,
     NotFound,
     Repository,
+    SyntheticProviderAuthorizationRow,
+    SyntheticProviderClaimRow,
 )
 
 
@@ -372,3 +382,110 @@ def test_postgres_model_calls_and_audit_events_are_append_only(
 
     assert postgres_repository.get(ModelCallRow, model_call_id)
     assert postgres_repository.get(AuditEventRow, audit_event_id)
+
+
+def test_postgres_synthetic_provider_authorization_is_exactly_once_and_append_only(
+    postgres_repository: Repository,
+) -> None:
+    tenant_id = _id("tnt_synthetic")
+    activity_id = _id("act_synthetic")
+    artifact_id = _id("art_synthetic")
+    job_id = _id("job_synthetic")
+    authorization_id = _id("authorization_synthetic")
+    artifact_hash = "sha256:" + "a" * 64
+    candidate_sha = "b" * 40
+    boundary_hash = synthetic_provider_boundary_hash()
+    secret_resource = (
+        "projects/test-project/secrets/openai-key/versions/1"
+    )
+    postgres_repository.add(
+        ActivityRow(
+            id=activity_id,
+            tenant_id=tenant_id,
+            status="DRAFT",
+            config={},
+            blueprint_policy={},
+            created_by=_id("operator"),
+        )
+    )
+    postgres_repository.add(
+        ArtifactRow(
+            id=artifact_id,
+            tenant_id=tenant_id,
+            activity_id=activity_id,
+            submission_id=None,
+            scope_key=activity_id,
+            role="ASSIGNMENT_PROMPT",
+            filename="synthetic.md",
+            object_key=f"synthetic/{artifact_id}",
+            declared_media_type="text/markdown",
+            expected_byte_size=32,
+            media_type="text/markdown",
+            byte_size=32,
+            sha256=artifact_hash,
+            status="COMPLETE",
+            upload_expires_at=datetime.now(UTC) + timedelta(hours=1),
+        )
+    )
+    postgres_repository.add(
+        JobRow(
+            id=job_id,
+            tenant_id=tenant_id,
+            kind="ACTIVITY",
+            aggregate_id=activity_id,
+            stage="QUEUED",
+            status="QUEUED",
+        )
+    )
+    spec = SyntheticProviderAuthorizationSpec(
+        authorization_id=authorization_id,
+        tenant_id=tenant_id,
+        job_id=job_id,
+        job_kind="ACTIVITY",
+        aggregate_id=activity_id,
+        expected_claim_attempt=1,
+        artifact_hashes=(artifact_hash,),
+        candidate_sha=candidate_sha,
+        boundary_hash=boundary_hash,
+        secret_version_resource=secret_resource,
+        max_requests=4,
+        max_cost_usd=0.25,
+        expires_at=datetime.now(UTC) + timedelta(minutes=30),
+        created_by=_id("operator"),
+    )
+    postgres_repository.authorize_synthetic_provider_job(spec)
+    assert postgres_repository.claim_job(job_id) is not None
+    arguments = {
+        "job_id": job_id,
+        "candidate_sha": candidate_sha,
+        "boundary_hash": boundary_hash,
+        "route_profile": OPENAI_ROUTE_PROFILE_ID,
+        "model": LUNA_MODEL_ID,
+        "secret_version_resource": secret_resource,
+        "maximum_requests": 4,
+        "maximum_cost_usd": 0.25,
+    }
+    grant = postgres_repository.consume_synthetic_provider_authorization(
+        **arguments
+    )
+    assert grant.authorization_id == authorization_id
+    with pytest.raises(Conflict, match="ALREADY_CONSUMED"):
+        postgres_repository.consume_synthetic_provider_authorization(
+            **arguments
+        )
+    with pytest.raises(DBAPIError):
+        with postgres_repository.session() as session:
+            session.execute(
+                update(SyntheticProviderAuthorizationRow)
+                .where(SyntheticProviderAuthorizationRow.id == authorization_id)
+                .values(max_requests=3)
+            )
+    with postgres_repository.session() as session:
+        claim = session.scalar(
+            select(SyntheticProviderClaimRow).where(
+                SyntheticProviderClaimRow.authorization_id
+                == authorization_id
+            )
+        )
+        assert claim is not None
+        assert claim.job_id == job_id

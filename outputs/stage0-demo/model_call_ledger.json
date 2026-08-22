@@ -5,15 +5,15 @@
     "cached_input_tokens": 0,
     "created_at": "2026-07-31T12:00:00Z",
     "estimated_cost_usd": 0.0,
-    "input_bundle_hash": "sha256:ad99713c672fb9b4f087251856b23f672b0cbd4d7e55dd19530ed109c665092a",
-    "input_tokens": 979,
+    "input_bundle_hash": "sha256:7c108daaaa1868a2c177466d105f3a1d58dea788489b5630ae72a68498da9df5",
+    "input_tokens": 973,
     "job_id": "job_2662005dbbca989e7494",
     "latency_ms": 0,
-    "model_call_id": "modelcall_52a384d55dc36f7472e29f2d",
+    "model_call_id": "modelcall_9f5a3de065808fb2a5ec99d8",
     "output_tokens": 183,
-    "prompt_hash": "sha256:512a926b6eda2157b20820292a340a8437db2969fce861a19aefb930a9076723",
+    "prompt_hash": "sha256:c2848eef5a50b65419d69680fa25ba1a73d2caf181b787f74eb79074840c354d",
     "prompt_id": "P01_ACTIVITY_SPEC_V1",
-    "prompt_version": "1.1.0",
+    "prompt_version": "1.1.1",
     "result": "SCHEMA_VALID",
     "route": {
       "capabilities": {
@@ -48,7 +48,9 @@
       "reason_codes": [
         "MOCK_MODE",
         "NO_NETWORK",
-        "PROMPT_POLICY_P01"
+        "PROMPT_POLICY_P01",
+        "CACHE_WRITE_INPUT_TOKENS_0",
+        "REASONING_TOKENS_0"
       ],
       "reasoning_effort": "MEDIUM",
       "region": "local-offline",
@@ -70,15 +72,15 @@
     "cached_input_tokens": 0,
     "created_at": "2026-07-31T12:00:00Z",
     "estimated_cost_usd": 0.0,
-    "input_bundle_hash": "sha256:3cf166747db2d7f42bc21ec39bdf79b71edf187dff4770126a70aafbdd6d8c57",
+    "input_bundle_hash": "sha256:fc3fddd9dd34ab898edcf9ad2cdc8e285de5181aeec7ecfed1a5a7a8b5d6d587",
     "input_tokens": 1134,
     "job_id": "job_2662005dbbca989e7494",
     "latency_ms": 0,
-    "model_call_id": "modelcall_051037f6d486a1a319baab7f",
+    "model_call_id": "modelcall_bb20385c209fd469f68a00e8",
     "output_tokens": 146,
-    "prompt_hash": "sha256:36f5961646e079075924d7dcd40952298a3724f51472f43ecc2e1a3b0765a71d",
+    "prompt_hash": "sha256:72e8c838bd0bfeab518744b3cbd75d9a3b804baaa8d00c6e78181e86400734f7",
     "prompt_id": "P02_RUBRIC_NORMALIZE_V1",
-    "prompt_version": "1.1.0",
+    "prompt_version": "1.1.1",
     "result": "SCHEMA_VALID",
     "route": {
       "capabilities": {
@@ -113,7 +115,9 @@
       "reason_codes": [
         "MOCK_MODE",
         "NO_NETWORK",
-        "PROMPT_POLICY_P02"
+        "PROMPT_POLICY_P02",
+        "CACHE_WRITE_INPUT_TOKENS_0",
+        "REASONING_TOKENS_0"
       ],
       "reasoning_effort": "MEDIUM",
       "region": "local-offline",
@@ -135,15 +139,15 @@
     "cached_input_tokens": 0,
     "created_at": "2026-07-31T12:00:00Z",
     "estimated_cost_usd": 0.0,
-    "input_bundle_hash": "sha256:0f21368b451a25dfa777a789fd8a0217f40bba3b2c1ddf1c0d497b060ef662e7",
+    "input_bundle_hash": "sha256:0cb7a7bf57f8a20300d8582ecc61eccacf1111b1a0ad77449d91886728df9794",
     "input_tokens": 329,
     "job_id": "job_2662005dbbca989e7494",
     "latency_ms": 0,
-    "model_call_id": "modelcall_bf3687b1579cf7d24639efa2",
+    "model_call_id": "modelcall_3891623ac22bc0b4251f4218",
     "output_tokens": 23,
-    "prompt_hash": "sha256:2764a7bc1fa5cde81ddfda18d5278874b0add496570239a345c73c7f0b30edec",
+    "prompt_hash": "sha256:c9cf0837af3b5bac8ddbc321e6b88e9f7cca70df21fa405277b5a32db7e7e32d",
     "prompt_id": "P03_AMBIGUITY_TRIAGE_V1",
-    "prompt_version": "1.1.0",
+    "prompt_version": "1.1.1",
     "result": "SCHEMA_VALID",
     "route": {
       "capabilities": {
@@ -178,7 +182,9 @@
       "reason_codes": [
         "MOCK_MODE",
         "NO_NETWORK",
-        "PROMPT_POLICY_P03"
+        "PROMPT_POLICY_P03",
+        "CACHE_WRITE_INPUT_TOKENS_0",
+        "REASONING_TOKENS_0"
       ],
       "reasoning_effort": "HIGH",
       "region": "local-offline",
@@ -200,15 +206,15 @@
     "cached_input_tokens": 0,
     "created_at": "2026-07-31T12:00:00Z",
     "estimated_cost_usd": 0.0,
-    "input_bundle_hash": "sha256:615ba96e7d4fd96093bb7a51d0a1a4ce6c1e249825e7e7f52e936f1bc6b46274",
-    "input_tokens": 550,
+    "input_bundle_hash": "sha256:bf2897abac2d270ea15fb696d46c2a1347c1a32e08269d971d74338a7c7c0757",
+    "input_tokens": 543,
     "job_id": "job_2662005dbbca989e7494",
     "latency_ms": 0,
-    "model_call_id": "modelcall_7d63d9a381a7b5f7a9da7299",
+    "model_call_id": "modelcall_1ec3017f58d18094d24b0522",
     "output_tokens": 1440,
-    "prompt_hash": "sha256:cdc297d5d77cf39a08f43ddf148c38f20111bd38d92b35932394ced40c91cdb9",
+    "prompt_hash": "sha256:3f1b4448ea00fec72430642b027f93e91342ec0455aa504adcdcd3e62961d53d",
     "prompt_id": "P04_BLUEPRINT_BUILD_V1",
-    "prompt_version": "1.1.0",
+    "prompt_version": "1.1.1",
     "result": "SCHEMA_VALID",
     "route": {
       "capabilities": {
@@ -243,7 +249,9 @@
       "reason_codes": [
         "MOCK_MODE",
         "NO_NETWORK",
-        "PROMPT_POLICY_P04"
+        "PROMPT_POLICY_P04",
+        "CACHE_WRITE_INPUT_TOKENS_0",
+        "REASONING_TOKENS_0"
       ],
       "reasoning_effort": "HIGH",
       "region": "local-offline",
@@ -265,15 +273,15 @@
     "cached_input_tokens": 0,
     "created_at": "2026-07-31T12:00:00Z",
     "estimated_cost_usd": 0.0,
-    "input_bundle_hash": "sha256:383fd160f96c90408397680b6272bef81593ba7fdda7c51766f3c83c25c2b513",
-    "input_tokens": 1927,
+    "input_bundle_hash": "sha256:c649b05539f3d028f1d07f3feea4078da1c2a662e493fee1c93e26e938c452b4",
+    "input_tokens": 1920,
     "job_id": "job_2662005dbbca989e7494",
     "latency_ms": 0,
-    "model_call_id": "modelcall_dcce550201280d6f0528caeb",
+    "model_call_id": "modelcall_09cf006afbcb1724730f14cd",
     "output_tokens": 191,
-    "prompt_hash": "sha256:1c25af3785aadd78165fd4f9c8ab00316665aab8ef71e73bde37b75f7f05384d",
+    "prompt_hash": "sha256:476346b429b0cbcacde5996b0fc1c9c89392b2d1a923ad8ed00ac178ec8e1726",
     "prompt_id": "P05_BLUEPRINT_REVIEW_V1",
-    "prompt_version": "1.1.0",
+    "prompt_version": "1.1.1",
     "result": "SCHEMA_VALID",
     "route": {
       "capabilities": {
@@ -308,7 +316,9 @@
       "reason_codes": [
         "MOCK_MODE",
         "NO_NETWORK",
-        "PROMPT_POLICY_P05"
+        "PROMPT_POLICY_P05",
+        "CACHE_WRITE_INPUT_TOKENS_0",
+        "REASONING_TOKENS_0"
       ],
       "reasoning_effort": "HIGH",
       "region": "local-offline",
@@ -330,15 +340,15 @@
     "cached_input_tokens": 0,
     "created_at": "2026-07-31T12:00:00Z",
     "estimated_cost_usd": 0.0,
-    "input_bundle_hash": "sha256:28c1a522d5291ff76a8f639ee039b80a189ecc0fb2435ca69e5a2a60d119eb8b",
+    "input_bundle_hash": "sha256:094bdf38edfbc4a4c2782a2b50bfe297968178b5969ff35d2784b5c3a60648e0",
     "input_tokens": 2783,
     "job_id": "job_2662005dbbca989e7494",
     "latency_ms": 0,
-    "model_call_id": "modelcall_8696526af692756d717baf3f",
+    "model_call_id": "modelcall_07cf324b10ece701fd8f3024",
     "output_tokens": 2229,
-    "prompt_hash": "sha256:bac4c542b034616238337a6ce5d89eb3c174cb545a49fd25795f87eada6c0961",
+    "prompt_hash": "sha256:cd544f1692210ae759754bb8d0ee1b50c1d5d4908a97669f0e8fdca368f32fa7",
     "prompt_id": "P06_EVIDENCE_MAP_V1",
-    "prompt_version": "1.1.0",
+    "prompt_version": "1.1.1",
     "result": "SCHEMA_VALID",
     "route": {
       "capabilities": {
@@ -373,7 +383,9 @@
       "reason_codes": [
         "MOCK_MODE",
         "NO_NETWORK",
-        "PROMPT_POLICY_P06"
+        "PROMPT_POLICY_P06",
+        "CACHE_WRITE_INPUT_TOKENS_0",
+        "REASONING_TOKENS_0"
       ],
       "reasoning_effort": "HIGH",
       "region": "local-offline",
@@ -395,15 +407,15 @@
     "cached_input_tokens": 0,
     "created_at": "2026-07-31T12:00:00Z",
     "estimated_cost_usd": 0.0,
-    "input_bundle_hash": "sha256:05a232ed3edc17e20b19ccc8d6187da286e139cd24e88f1a6d2d054c67932808",
+    "input_bundle_hash": "sha256:fe0d86bcdd0aa55549a1c62b7cf2145d07ceda259aa28a20e8954215bc7337cb",
     "input_tokens": 1756,
     "job_id": "job_2662005dbbca989e7494",
     "latency_ms": 0,
-    "model_call_id": "modelcall_32a2fcc0f53f963841ce7611",
+    "model_call_id": "modelcall_91a5cb8f895858a234f4563c",
     "output_tokens": 731,
-    "prompt_hash": "sha256:86fed1632a29177c660f262a31e41b7793cbcb349e39bad444f60aca4785b11e",
+    "prompt_hash": "sha256:af242bec7446aa4cac6d8d8748a95ef21a5021e0987fa64cc9454c3fa3843398",
     "prompt_id": "P07_QUESTION_BUILD_V1",
-    "prompt_version": "1.1.0",
+    "prompt_version": "1.1.1",
     "result": "SCHEMA_VALID",
     "route": {
       "capabilities": {
@@ -438,7 +450,9 @@
       "reason_codes": [
         "MOCK_MODE",
         "NO_NETWORK",
-        "PROMPT_POLICY_P07"
+        "PROMPT_POLICY_P07",
+        "CACHE_WRITE_INPUT_TOKENS_0",
+        "REASONING_TOKENS_0"
       ],
       "reasoning_effort": "HIGH",
       "region": "local-offline",
@@ -460,15 +474,15 @@
     "cached_input_tokens": 0,
     "created_at": "2026-07-31T12:00:00Z",
     "estimated_cost_usd": 0.0,
-    "input_bundle_hash": "sha256:cb8116645bd0d5550a98cb6424006abb9076b81916acddd14326fb6e9d142e61",
+    "input_bundle_hash": "sha256:6ca9d88bfe65d0f3f1266ef752784a725e482923dfe9893af0c3d92cd6f3c3b7",
     "input_tokens": 2355,
     "job_id": "job_2662005dbbca989e7494",
     "latency_ms": 0,
-    "model_call_id": "modelcall_890d37ec40c9296596378476",
+    "model_call_id": "modelcall_2af5ea5d69d4fdfe397585cd",
     "output_tokens": 194,
-    "prompt_hash": "sha256:325062b2fd2b08913ceb12e8063c434386b0f87c781b6dc5a9be971b1b2c2e0a",
+    "prompt_hash": "sha256:544ea94f91b2a022f8b66368557b21ffa873d269fc9daf7ce22216947ca9c939",
     "prompt_id": "P08_QUESTION_REVIEW_V1",
-    "prompt_version": "1.1.0",
+    "prompt_version": "1.1.1",
     "result": "SCHEMA_VALID",
     "route": {
       "capabilities": {
@@ -503,7 +517,9 @@
       "reason_codes": [
         "MOCK_MODE",
         "NO_NETWORK",
-        "PROMPT_POLICY_P08"
+        "PROMPT_POLICY_P08",
+        "CACHE_WRITE_INPUT_TOKENS_0",
+        "REASONING_TOKENS_0"
       ],
       "reasoning_effort": "HIGH",
       "region": "local-offline",
@@ -525,15 +541,15 @@
     "cached_input_tokens": 0,
     "created_at": "2026-07-31T12:00:00Z",
     "estimated_cost_usd": 0.0,
-    "input_bundle_hash": "sha256:bb2dd801fa859e1b80ad91d20ece0a39075d9c79088d3ab263edc80830cb6eea",
+    "input_bundle_hash": "sha256:ff187a0fdaedba73caaf7c0b3af454c3ca4d1baef3a7ca1950d5aeedcbb37bd4",
     "input_tokens": 1758,
     "job_id": "job_2662005dbbca989e7494",
     "latency_ms": 0,
-    "model_call_id": "modelcall_5983ba1abc2c684e258fee2f",
+    "model_call_id": "modelcall_43457ac0b1ac65b6ddbb0025",
     "output_tokens": 677,
-    "prompt_hash": "sha256:86fed1632a29177c660f262a31e41b7793cbcb349e39bad444f60aca4785b11e",
+    "prompt_hash": "sha256:af242bec7446aa4cac6d8d8748a95ef21a5021e0987fa64cc9454c3fa3843398",
     "prompt_id": "P07_QUESTION_BUILD_V1",
-    "prompt_version": "1.1.0",
+    "prompt_version": "1.1.1",
     "result": "SCHEMA_VALID",
     "route": {
       "capabilities": {
@@ -568,7 +584,9 @@
       "reason_codes": [
         "MOCK_MODE",
         "NO_NETWORK",
-        "PROMPT_POLICY_P07"
+        "PROMPT_POLICY_P07",
+        "CACHE_WRITE_INPUT_TOKENS_0",
+        "REASONING_TOKENS_0"
       ],
       "reasoning_effort": "HIGH",
       "region": "local-offline",
@@ -590,15 +608,15 @@
     "cached_input_tokens": 0,
     "created_at": "2026-07-31T12:00:00Z",
     "estimated_cost_usd": 0.0,
-    "input_bundle_hash": "sha256:8f2d1384873a6e2df09c8eb5c88cbf9a9f4706b457736dd2f3c8cac04e485f66",
+    "input_bundle_hash": "sha256:d6b97c8d569de30f7c783816f26568df0d8eb0454f362c471bce5c99cbb5cc6f",
     "input_tokens": 2302,
     "job_id": "job_2662005dbbca989e7494",
     "latency_ms": 0,
-    "model_call_id": "modelcall_a6ba8cad39905faa9f874248",
+    "model_call_id": "modelcall_69a1b9c17b9d25fd61c13c23",
     "output_tokens": 194,
-    "prompt_hash": "sha256:325062b2fd2b08913ceb12e8063c434386b0f87c781b6dc5a9be971b1b2c2e0a",
+    "prompt_hash": "sha256:544ea94f91b2a022f8b66368557b21ffa873d269fc9daf7ce22216947ca9c939",
     "prompt_id": "P08_QUESTION_REVIEW_V1",
-    "prompt_version": "1.1.0",
+    "prompt_version": "1.1.1",
     "result": "SCHEMA_VALID",
     "route": {
       "capabilities": {
@@ -633,7 +651,9 @@
       "reason_codes": [
         "MOCK_MODE",
         "NO_NETWORK",
-        "PROMPT_POLICY_P08"
+        "PROMPT_POLICY_P08",
+        "CACHE_WRITE_INPUT_TOKENS_0",
+        "REASONING_TOKENS_0"
       ],
       "reasoning_effort": "HIGH",
       "region": "local-offline",
@@ -655,15 +675,15 @@
     "cached_input_tokens": 0,
     "created_at": "2026-07-31T12:00:00Z",
     "estimated_cost_usd": 0.0,
-    "input_bundle_hash": "sha256:e637d309bf4baa4fd2340237c3c8580db6c50840bd31ebb68e5af487d29b82fc",
+    "input_bundle_hash": "sha256:71e692992be5a792599815dcb78ea657c8d84c7ab001f7244c4b0c314c35ba4e",
     "input_tokens": 1755,
     "job_id": "job_2662005dbbca989e7494",
     "latency_ms": 0,
-    "model_call_id": "modelcall_eb860d429f2abe9f93cf059c",
+    "model_call_id": "modelcall_daec65d6c35d3d8425697a6b",
     "output_tokens": 716,
-    "prompt_hash": "sha256:86fed1632a29177c660f262a31e41b7793cbcb349e39bad444f60aca4785b11e",
+    "prompt_hash": "sha256:af242bec7446aa4cac6d8d8748a95ef21a5021e0987fa64cc9454c3fa3843398",
     "prompt_id": "P07_QUESTION_BUILD_V1",
-    "prompt_version": "1.1.0",
+    "prompt_version": "1.1.1",
     "result": "SCHEMA_VALID",
     "route": {
       "capabilities": {
@@ -698,7 +718,9 @@
       "reason_codes": [
         "MOCK_MODE",
         "NO_NETWORK",
-        "PROMPT_POLICY_P07"
+        "PROMPT_POLICY_P07",
+        "CACHE_WRITE_INPUT_TOKENS_0",
+        "REASONING_TOKENS_0"
       ],
       "reasoning_effort": "HIGH",
       "region": "local-offline",
@@ -720,15 +742,15 @@
     "cached_input_tokens": 0,
     "created_at": "2026-07-31T12:00:00Z",
     "estimated_cost_usd": 0.0,
-    "input_bundle_hash": "sha256:1da700297935abf888943c85b2e4968d9ffb85f6313b511df6243b9c8bf59d46",
+    "input_bundle_hash": "sha256:399495953965682ad6657550c3ab0c6fd590f3872b144a93a464d13fcbe6dded",
     "input_tokens": 2338,
     "job_id": "job_2662005dbbca989e7494",
     "latency_ms": 0,
-    "model_call_id": "modelcall_14fad8dc34177219019a4954",
+    "model_call_id": "modelcall_2dd647c0e1bd58c0d029b21d",
     "output_tokens": 193,
-    "prompt_hash": "sha256:325062b2fd2b08913ceb12e8063c434386b0f87c781b6dc5a9be971b1b2c2e0a",
+    "prompt_hash": "sha256:544ea94f91b2a022f8b66368557b21ffa873d269fc9daf7ce22216947ca9c939",
     "prompt_id": "P08_QUESTION_REVIEW_V1",
-    "prompt_version": "1.1.0",
+    "prompt_version": "1.1.1",
     "result": "SCHEMA_VALID",
     "route": {
       "capabilities": {
@@ -763,7 +785,9 @@
       "reason_codes": [
         "MOCK_MODE",
         "NO_NETWORK",
-        "PROMPT_POLICY_P08"
+        "PROMPT_POLICY_P08",
+        "CACHE_WRITE_INPUT_TOKENS_0",
+        "REASONING_TOKENS_0"
       ],
       "reasoning_effort": "HIGH",
       "region": "local-offline",
@@ -785,15 +809,15 @@
     "cached_input_tokens": 0,
     "created_at": "2026-07-31T12:00:00Z",
     "estimated_cost_usd": 0.0,
-    "input_bundle_hash": "sha256:ecc48727727c11f8560f2186fe9a61ca839d0e5272262367d595fffc9bc6730e",
+    "input_bundle_hash": "sha256:5c65954b1d1c9df0e3fb2e83cd88240fdb448d1007004fdede23d1a17e844f74",
     "input_tokens": 3847,
     "job_id": "job_2662005dbbca989e7494",
     "latency_ms": 0,
-    "model_call_id": "modelcall_853b03942ab10b5a9b713de1",
+    "model_call_id": "modelcall_7c0692ae0e562f865a8ab042",
     "output_tokens": 1114,
-    "prompt_hash": "sha256:0525a99b24c6944ba89598a0c0d59b83a94e3bef2505f13069ffdb21f52eecbb",
+    "prompt_hash": "sha256:83f096e592186a43625750e006546d352419565cc49df892e314a879003709a9",
     "prompt_id": "P09_GUIDE_BUILD_V1",
-    "prompt_version": "1.1.0",
+    "prompt_version": "1.1.1",
     "result": "SCHEMA_VALID",
     "route": {
       "capabilities": {
@@ -828,7 +852,9 @@
       "reason_codes": [
         "MOCK_MODE",
         "NO_NETWORK",
-        "PROMPT_POLICY_P09"
+        "PROMPT_POLICY_P09",
+        "CACHE_WRITE_INPUT_TOKENS_0",
+        "REASONING_TOKENS_0"
       ],
       "reasoning_effort": "HIGH",
       "region": "local-offline",

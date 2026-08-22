@@ -1,0 +1,21 @@
+{
+  "alters_any_frozen_part_a_artifact": false,
+  "items": [
+    {
+      "action_taken_in_phase_9b4": "NONE",
+      "id": "P07_ADJUDICATION_CONTEXT_HARDENING",
+      "observation": "Phase 9B.3 noted that P07 also exposes an opaque opportunity id to the blind adjudication surface.",
+      "p07_adjudication_context_modified": false,
+      "p07_review_packet_bytes_modified": false,
+      "revisit_when": "An independent blocking defect is demonstrated for P07 without reference to candidate outcomes, or a future stage-context version is planned.",
+      "stage": "P07",
+      "status": "NON_BLOCKING_FUTURE_DEBT",
+      "why_not_blocking": "The audit did not establish a blocking validity failure for the current P07 first-pass evidence, and no new independent blocking defect was demonstrated in Phase 9B.4 without using candidate outcomes."
+    }
+  ],
+  "note": "This record was written after the PART A freeze. It is a debt note only: it carries no authority over the instrument, is not hash-bound into any boundary, and leaves the freeze artifact byte-identical.",
+  "part_a_freeze_sha256": "380e602214b83f6fbeb06ebcd127713d85df17e344e30fd424abc5b3672d6bc3",
+  "phase": "9B.4",
+  "recorded_after_part_a_freeze": true,
+  "schema_version": "phase9-stage-hardening-debt/1.0.0"
+}

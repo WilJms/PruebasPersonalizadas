@@ -1,0 +1,140 @@
+{
+  "adjudicator_calls_performed_in_phase_9a": 0,
+  "benchmark_external_adjudication_property_total": 358,
+  "case_bound_external_valid_property_total": 304,
+  "escalation_effect_on_load": "Sequential escalation changes how many candidates reach a rung, not how the adjudication protocol works. On the expected path one rung per stage is adjudicated; the worst case adjudicates every rung on SMOKE and CORE.",
+  "not_every_benchmark_property_is_adjudicated_per_candidate": "Phase 9 adjudicates only the case-bound, VALID, externally adjudicated properties of the rungs a candidate actually runs.",
+  "rows": [
+    {
+      "applicable_properties": 4,
+      "candidates_running_expected_path": 1,
+      "candidates_running_worst_case": 2,
+      "first_pass_adjudications": 8,
+      "first_pass_adjudications_expected_path": 4,
+      "pass_qa_second_pass_expected": 1.2,
+      "split": "SMOKE",
+      "stage": "P04"
+    },
+    {
+      "applicable_properties": 21,
+      "candidates_running_expected_path": 1,
+      "candidates_running_worst_case": 2,
+      "first_pass_adjudications": 42,
+      "first_pass_adjudications_expected_path": 21,
+      "pass_qa_second_pass_expected": 6.3,
+      "split": "CORE",
+      "stage": "P04"
+    },
+    {
+      "applicable_properties": 19,
+      "candidates_running_expected_path": 1,
+      "candidates_running_worst_case": 1,
+      "first_pass_adjudications": 19,
+      "first_pass_adjudications_expected_path": 19,
+      "pass_qa_second_pass_expected": 2.85,
+      "split": "HELD_OUT_CONFIRMATION",
+      "stage": "P04"
+    },
+    {
+      "applicable_properties": 3,
+      "candidates_running_expected_path": 1,
+      "candidates_running_worst_case": 3,
+      "first_pass_adjudications": 9,
+      "first_pass_adjudications_expected_path": 3,
+      "pass_qa_second_pass_expected": 1.35,
+      "split": "SMOKE",
+      "stage": "P06"
+    },
+    {
+      "applicable_properties": 60,
+      "candidates_running_expected_path": 1,
+      "candidates_running_worst_case": 3,
+      "first_pass_adjudications": 180,
+      "first_pass_adjudications_expected_path": 60,
+      "pass_qa_second_pass_expected": 27.0,
+      "split": "CORE",
+      "stage": "P06"
+    },
+    {
+      "applicable_properties": 56,
+      "candidates_running_expected_path": 1,
+      "candidates_running_worst_case": 1,
+      "first_pass_adjudications": 56,
+      "first_pass_adjudications_expected_path": 56,
+      "pass_qa_second_pass_expected": 8.4,
+      "split": "HELD_OUT_CONFIRMATION",
+      "stage": "P06"
+    },
+    {
+      "applicable_properties": 6,
+      "candidates_running_expected_path": 1,
+      "candidates_running_worst_case": 3,
+      "first_pass_adjudications": 18,
+      "first_pass_adjudications_expected_path": 6,
+      "pass_qa_second_pass_expected": 2.7,
+      "split": "SMOKE",
+      "stage": "P07"
+    },
+    {
+      "applicable_properties": 69,
+      "candidates_running_expected_path": 1,
+      "candidates_running_worst_case": 3,
+      "first_pass_adjudications": 207,
+      "first_pass_adjudications_expected_path": 69,
+      "pass_qa_second_pass_expected": 31.05,
+      "split": "CORE",
+      "stage": "P07"
+    },
+    {
+      "applicable_properties": 60,
+      "candidates_running_expected_path": 1,
+      "candidates_running_worst_case": 1,
+      "first_pass_adjudications": 60,
+      "first_pass_adjudications_expected_path": 60,
+      "pass_qa_second_pass_expected": 9.0,
+      "split": "HELD_OUT_CONFIRMATION",
+      "stage": "P07"
+    },
+    {
+      "applicable_properties": 1,
+      "candidates_running_expected_path": 1,
+      "candidates_running_worst_case": 3,
+      "first_pass_adjudications": 3,
+      "first_pass_adjudications_expected_path": 1,
+      "pass_qa_second_pass_expected": 0.45,
+      "split": "SMOKE",
+      "stage": "P09"
+    },
+    {
+      "applicable_properties": 4,
+      "candidates_running_expected_path": 1,
+      "candidates_running_worst_case": 3,
+      "first_pass_adjudications": 12,
+      "first_pass_adjudications_expected_path": 4,
+      "pass_qa_second_pass_expected": 1.8,
+      "split": "CORE",
+      "stage": "P09"
+    },
+    {
+      "applicable_properties": 1,
+      "candidates_running_expected_path": 1,
+      "candidates_running_worst_case": 1,
+      "first_pass_adjudications": 1,
+      "first_pass_adjudications_expected_path": 1,
+      "pass_qa_second_pass_expected": 0.15,
+      "split": "HELD_OUT_CONFIRMATION",
+      "stage": "P09"
+    }
+  ],
+  "schema_version": "phase9-adjudication-load/1.1.0",
+  "totals": {
+    "expected_pass_qa_second_passes": 92.25,
+    "expected_pass_qa_second_passes_expected_path": 45.6,
+    "failure_confirmation_second_passes": "One per first-pass MODEL_FAILURE. Unbounded in advance by design, but bounded in practice by the rung thresholds, which trigger an early stop once failures exceed the allowance.",
+    "first_pass_adjudications_expected_path": 304,
+    "first_pass_adjudications_worst_case": 615,
+    "pass_qa_sample_percent": 15
+  },
+  "unit": "PROPERTY_ADJUDICATION_PACKET",
+  "unit_note": "One packet is one PROPERTY_CANDIDATE_REASONING decision. It is not a case and not a model call: the k=3 runs of a property collapse into a single adjudicated outcome."
+}

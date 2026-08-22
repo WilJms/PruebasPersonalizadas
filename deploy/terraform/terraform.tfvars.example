@@ -19,6 +19,18 @@ enable_cloud_build_trigger    = false
 enable_runtime_resources = false
 container_image          = ""
 secret_version           = "1"
+synthetic_evaluation_job_name = "cva-synthetic-eval"
+
+# Synthetic-evaluation capability: the worker receives only a pinned Secret
+# Manager resource name. It must first claim the exact job and consume a
+# matching append-only authorization before it may resolve the value. Never
+# place the key value in this file.
+enable_openai_secret_container             = false
+enable_synthetic_evaluation_provider       = false
+openai_api_key_secret_version              = null
+synthetic_evaluation_candidate_sha         = null
+synthetic_evaluation_max_requests          = null
+synthetic_evaluation_max_job_cost_usd      = null
 
 supabase_url             = "https://replace-with-project-ref.supabase.co"
 supabase_publishable_key = "replace-with-publishable-not-secret-key"

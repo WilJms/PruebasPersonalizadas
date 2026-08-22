@@ -28,6 +28,7 @@ export type SupportedOperation = Schema<"SupportedOperation">;
 export type BlueprintVariant = Schema<"EvidenceVariant">;
 export type BlueprintDimension = Schema<"BlueprintDimension">;
 export type AssessmentBlueprint = Schema<"AssessmentBlueprint">;
+export type BlueprintPreflight = Schema<"BlueprintReviewPreflight">;
 export type BlueprintReviewCheck = Schema<"BlueprintReviewCheck">;
 export type BlueprintView = Schema<"BlueprintEnvelope">;
 

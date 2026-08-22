@@ -1,0 +1,88 @@
+{
+  "accepted_decision": "U3",
+  "applicable_benchmark_version": "semantic-benchmark/1.3.3",
+  "candidate_scoring_property_count_by_status": {
+    "INSUFFICIENT": 38,
+    "PARTIAL": 5,
+    "SUFFICIENT": 31,
+    "UNCERTAIN": 0
+  },
+  "claim": "semantic-benchmark/1.3.3 qualifies P06 candidate behaviour on the support statuses SUFFICIENT, PARTIAL and INSUFFICIENT.",
+  "claim_hash": "sha256:49dd08d561ee453b1e9652b4fd1c4c35a293556a2138e9184d036228a6112d36",
+  "claim_semantics_changed_from_v132": false,
+  "decision_source": "reports/semantic_benchmark/phase9b7/product_decision.json",
+  "excluded_support_statuses": [
+    "UNCERTAIN"
+  ],
+  "historical_claim_lineage": [
+    {
+      "benchmark_version": "semantic-benchmark/1.3.0",
+      "claim_named_version": "semantic-benchmark/1.3.0",
+      "correct_when_published": true,
+      "status": "SUPERSEDED_PREEXECUTION_FREEZE_CANDIDATE_NO_RESULTS_EXECUTED",
+      "uncertain_gap_state": "PRODUCT_DECISION_REQUIRED"
+    },
+    {
+      "benchmark_version": "semantic-benchmark/1.3.1",
+      "claim_named_version": "semantic-benchmark/1.3.0",
+      "correct_when_published": false,
+      "defect": "The claim was carried forward verbatim, so an active version published a current claim naming a superseded one.",
+      "status": "SUPERSEDED_PREEXECUTION_FREEZE_CANDIDATE_NO_RESULTS_EXECUTED",
+      "uncertain_gap_state": "PRODUCT_DECISION_REQUIRED"
+    },
+    {
+      "benchmark_version": "semantic-benchmark/1.3.2",
+      "claim_named_version": "semantic-benchmark/1.3.2",
+      "correct_when_published": false,
+      "defect": "The version binding was repaired but the pre-decision coverage gate stayed the active state, so an active field still required a product decision Phase 9B.7 had made.",
+      "status": "SUPERSEDED_PREEXECUTION_FREEZE_CANDIDATE_NO_RESULTS_EXECUTED",
+      "uncertain_gap_state": "PRODUCT_DECISION_REQUIRED"
+    }
+  ],
+  "limitation_count": 4,
+  "limitations": [
+    "semantic-benchmark/1.3.3 does NOT qualify P06 UNCERTAIN behaviour.",
+    "P06 model-selection claims are limited to SUFFICIENT / PARTIAL / INSUFFICIENT.",
+    "UNCERTAIN remains an explicit residual risk.",
+    "Phase 9 alone does not establish full P06 contract coverage."
+  ],
+  "originating_product_decision": {
+    "accepted": true,
+    "decision": "U3",
+    "phase": "9B.7",
+    "reopened_by_this_repair": false,
+    "unchanged_by_this_repair": true
+  },
+  "phase9_alone_is_full_p06_contract_coverage": false,
+  "production_contract_note": "UNCERTAIN remains a first-class member of the P06 support-status contract. 1.3.3 changes no production prompt, DTO, materializer or planner semantics. What it declares is the limit of its own qualification evidence, and what has been decided about that limit.",
+  "production_contract_unchanged": true,
+  "qualified_support_statuses": [
+    "SUFFICIENT",
+    "PARTIAL",
+    "INSUFFICIENT"
+  ],
+  "reader_must_not_infer_applicability_from_lineage": true,
+  "schema_version": "p06-semantic-qualification-claim/1.3.3",
+  "supersedes_claim_binding_from": "semantic-benchmark/1.3.2",
+  "support_status_coverage_hash": "sha256:09b74c8a1d3328c6075038a6f2d844ae57e29418daaec813656195e0347a4fa2",
+  "support_status_coverage_version": "p06-support-status-coverage/1.3.0",
+  "uncertain_coverage_blocks_full_p06_contract_coverage_claim": true,
+  "uncertain_coverage_blocks_phase9_qualification": false,
+  "uncertain_coverage_decision_gap": "P06_UNCERTAIN_SEMANTIC_COVERAGE",
+  "uncertain_coverage_disposition_hash": "sha256:89d39833688d80ebb002ada3660a1bf60de2c4ae6f57ecbe4cc802c08992625c",
+  "uncertain_coverage_disposition_version": "p06-uncertain-coverage-disposition/1.3.3",
+  "uncertain_coverage_product_decision": "U3",
+  "uncertain_coverage_product_decision_status": "RESOLVED",
+  "uncertain_coverage_requires_product_decision": false,
+  "uncertain_coverage_resolution": "NARROW_QUALIFICATION_CLAIM_AND_CARRY_RESIDUAL_RISK",
+  "uncertain_coverage_status": "UNCOVERED",
+  "uncertain_qualification_claimed": false,
+  "uncertain_remains_unqualified": true,
+  "uncertain_removed_from_production_contract": false,
+  "uncertain_scope_census_hash": "sha256:d5180bdd31bb6cd2079ce9e59bf9f895dfe053ff006fd88f6ee2c144a5664998",
+  "uncertain_scope_census_version": "p06-uncertain-scope-census/1.0.0",
+  "uncertain_scoring_property_count": 0,
+  "uncovered_is_not_unresolved": "UNCOVERED is a fact about the instrument: no candidate-scoring P06 property asserts UNCERTAIN, so a qualification run cannot observe that behaviour. UNRESOLVED was a fact about the product: nobody had decided what to do about it. U3 decides what to do. It does not, and must not, make the status covered.",
+  "what_changed": "The claim now carries a resolved disposition of the UNCERTAIN coverage gap instead of the open pre-decision gate. Nothing about which behaviour is qualified changed, and UNCERTAIN is no more covered than it was.",
+  "why_a_new_hash": "The claim's active disposition of the UNCERTAIN gap changed from PRODUCT_DECISION_REQUIRED to RESOLVED-by-U3, and the claim text names the version it applies to, so its material hash must change."
+}

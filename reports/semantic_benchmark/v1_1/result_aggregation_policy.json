@@ -1,0 +1,21 @@
+{
+  "benchmark_version": "semantic-benchmark/1.1.0",
+  "denominator_probe": {
+    "hard_property_denominator": 1,
+    "observation_count": 9,
+    "passed": true,
+    "property_outcome_count": 1,
+    "property_run_outcome_count": 3
+  },
+  "rules": {
+    "contextual_note_policy": "REVIEWABLE_NON_GATE_UNLESS_EXPLICITLY_ADJUDICATED",
+    "defensible_alternative_policy": "NEVER_AUTOMATIC_HARD_FAILURE",
+    "observation_unit": "CASE_PROPERTY_RUN",
+    "prohibited_quantifier": "ANY_APPLICABLE_VIOLATION_FAILS",
+    "property_run_unit": "PROPERTY_CANDIDATE_REASONING_RUN",
+    "qualification_denominator_unit": "PROPERTY_CANDIDATE_REASONING",
+    "required_quantifier": "ALL_APPLICABLE_CASE_OBSERVATIONS",
+    "technical_and_pending_policy": "EXCLUDED_FROM_SEMANTIC_FAILURE_DENOMINATOR"
+  },
+  "schema_version": "semantic-result-aggregation-policy/1.1.0"
+}

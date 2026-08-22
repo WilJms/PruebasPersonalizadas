@@ -1,0 +1,23 @@
+{
+  "candidate": null,
+  "context_mode": "CLOSED",
+  "diagnostics": [
+    {
+      "code": "QUESTION_REPLACEMENT_REQUIRED",
+      "details": {},
+      "evidence_ids": [
+        "ev_4cc57c449655e3cd1cc8",
+        "ev_95913076ce9b66b8fafe",
+        "ev_fa392f99230f506599f1"
+      ],
+      "message": "La evidencia autorizada no contiene cantidades, unidades comparables ni denominadores suficientes para reconstruir una relación o cálculo fila por fila de forma defendible. El fragmento E3 está además truncado en «Con seis».",
+      "retryable": false,
+      "severity": "ERROR",
+      "source_ids": []
+    }
+  ],
+  "opportunity_id": "opportunity_p07_0cd6062857bbe6cbdb81",
+  "schema_version": "1.1.0",
+  "status": "REPLACEMENT_REQUIRED",
+  "submission_id": "submission_05"
+}

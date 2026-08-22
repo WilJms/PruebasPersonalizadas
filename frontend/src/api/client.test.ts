@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { assessmentBundle } from "../test/fixtures";
+import { assessmentBundle, blueprintView } from "../test/fixtures";
 import {
   approveAssessment,
   createSubmissionBatch,
@@ -9,10 +9,12 @@ import {
   exchangeSession,
   getEvidence,
   getJobControl,
+  listQuestionActions,
   login,
   resumeJob,
   retryJob,
   reviewQuestion,
+  updateBlueprint,
 } from "./client";
 
 const session = {
@@ -144,6 +146,39 @@ describe("API client security defaults", () => {
     expect(headers.get("Idempotency-Key")).toMatch(/^[0-9a-f-]{36}$/i);
   });
 
+  it("starts durable blueprint preflight with If-Match and returns the accepted job", async () => {
+    const job = {
+      schema_version: "1.1.0",
+      job_id: "job_blueprint_preflight_01",
+      tenant_id: "tenant_01",
+      aggregate_id: "activity_01",
+      stage: "BLUEPRINT_PREFLIGHT",
+      status: "QUEUED",
+      progress: 0,
+      attempt: 1,
+      diagnostics: [],
+    };
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ job }), {
+        status: 202,
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(
+      updateBlueprint("activity_01", blueprintView.blueprint, blueprintView.etag),
+    ).resolves.toEqual(job);
+
+    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    const headers = new Headers(init.headers);
+    expect(url).toBe("/api/v1/activities/activity_01/blueprints/3");
+    expect(init.method).toBe("PATCH");
+    expect(headers.get("If-Match")).toBe(blueprintView.etag);
+    expect(headers.get("Idempotency-Key")).toMatch(/^[0-9a-f-]{36}$/i);
+    expect(JSON.parse(String(init.body))).toEqual(blueprintView.blueprint);
+  });
+
   it("follows evidence cursors until every signed source is loaded", async () => {
     const first = assessmentBundle.evidence?.[0];
     expect(first).toBeDefined();
@@ -215,6 +250,48 @@ describe("API client security defaults", () => {
     expect(url).toBe(`/api/v1/assessments/assessment_01/questions/${question.question_id}/actions`);
     expect(new Headers(init.headers).get("If-Match")).toBe('"assessment-1"');
     expect(JSON.parse(String(init.body))).toEqual({ action: "EDIT", replacement });
+  });
+
+  it("returns and reloads a queued durable question action without inventing a record", async () => {
+    const job = {
+      schema_version: "1.1.0",
+      job_id: "job_question_action_01",
+      tenant_id: "tenant_01",
+      aggregate_id: "submission_01",
+      stage: "QUESTION_GENERATE",
+      status: "QUEUED",
+      progress: 0,
+      attempt: 0,
+      diagnostics: [],
+    };
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(new Response(JSON.stringify({
+        action_record: null,
+        job,
+        bundle: assessmentBundle,
+      }), {
+        status: 200,
+        headers: { "Content-Type": "application/json", ETag: '"assessment-1"' },
+      }))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ items: [], jobs: [job] }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const queued = await reviewQuestion(
+      "assessment_01",
+      "question_01",
+      { action: "REGENERATE", reason_code: "TEACHER_JUDGMENT" },
+      '"assessment-1"',
+    );
+    expect(queued.record).toBeUndefined();
+    expect(queued.job).toEqual(job);
+
+    await expect(listQuestionActions("assessment_01", "question_01")).resolves.toEqual({
+      items: [],
+      jobs: [job],
+    });
   });
 
   it("identifies DOCX uploads with the OOXML media type even when the browser omits it", async () => {

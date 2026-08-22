@@ -236,6 +236,8 @@ class PolicyDecisionEnvelope(m.StrictModel):
 
 class BlueprintEnvelope(m.StrictModel):
     blueprint: m.AssessmentBlueprint
+    preflight: m.BlueprintReviewPreflight | None = None
+    # Historical P05 evidence remains readable but is not an active gate.
     review: m.BlueprintReview | None = None
     issues: list[m.Diagnostic] = Field(default_factory=list)
     etag: Etag
@@ -347,14 +349,30 @@ class AssessmentEnvelope(m.StrictModel):
     assessment: m.Assessment
     assessment_version: int = Field(ge=1)
     etag: Etag
-    guide: m.EvaluationGuide
+    guide: m.EvaluationGuide | None = None
+    guide_status: m.GuideLifecycleStatus = m.GuideLifecycleStatus.NOT_AVAILABLE
+    guide_job_id: m.Id | None = None
     reviews: list[QuestionReviewResource]
     evidence: list[EvidenceResource] = Field(default_factory=list)
     evidence_receipts: list[EvidenceReceipt] = Field(default_factory=list)
 
 
 class GuideEnvelope(m.StrictModel):
+    guide: m.EvaluationGuide | None = None
+    status: m.GuideLifecycleStatus
+    job_id: m.Id | None = None
+
+
+class GuideHistoryItem(m.StrictModel):
+    lifecycle_status: m.GuideLifecycleStatus
+    assessment_version: int | None = Field(default=None, ge=1)
+    assessment_etag: str | None = None
+    guide_job_id: m.Id | None = None
     guide: m.EvaluationGuide
+
+
+class GuideHistoryEnvelope(m.StrictModel):
+    items: list[GuideHistoryItem] = Field(default_factory=list)
 
 
 class QuestionReviewActionCommand(m.StrictModel):
@@ -380,8 +398,22 @@ class QuestionReviewActionCommand(m.StrictModel):
 
 
 class QuestionReviewActionEnvelope(m.StrictModel):
-    action_record: m.QuestionReviewActionRecord
+    action_record: m.QuestionReviewActionRecord | None = None
+    job: m.JobStatus | None = None
     bundle: AssessmentEnvelope
+
+    @model_validator(mode="after")
+    def action_or_job_is_present(self) -> "QuestionReviewActionEnvelope":
+        if self.action_record is None and self.job is None:
+            raise ValueError("question action response requires a record or job")
+        submission_id = self.bundle.assessment.submission_id
+        if self.action_record is not None and (
+            self.action_record.submission_id != submission_id
+        ):
+            raise ValueError("question action record belongs to another submission")
+        if self.job is not None and self.job.aggregate_id != submission_id:
+            raise ValueError("question action job belongs to another submission")
+        return self
 
 
 class CoverageEnvelope(m.StrictModel):
@@ -428,6 +460,7 @@ class FeedbackListEnvelope(m.StrictModel):
 
 class QuestionReviewActionListEnvelope(m.StrictModel):
     items: list[m.QuestionReviewActionRecord]
+    jobs: list[m.JobStatus] = Field(default_factory=list)
 
 
 class EvidenceVerifyCommand(m.StrictModel):
@@ -526,7 +559,11 @@ class BulkApprovalHistoryEnvelope(m.StrictModel):
 
 class CostEstimate(m.StrictModel):
     estimate_id: m.Id
-    phase: Literal["ACTIVITY_BLUEPRINT", "SUBMISSION_ASSESSMENT"]
+    phase: Literal[
+        "ACTIVITY_BLUEPRINT",
+        "SUBMISSION_ASSESSMENT",
+        "APPROVED_GUIDE_ENRICHMENT",
+    ]
     model_mode: Literal["mock", "real"]
     estimated_model_calls: int = Field(ge=0, le=100)
     estimated_input_tokens: int = Field(ge=0)

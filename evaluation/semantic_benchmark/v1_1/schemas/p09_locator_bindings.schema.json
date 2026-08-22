@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pruebas-personalizadas.invalid/schemas/semantic-benchmark/1.1.0/p09-locator-bindings.json",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema_version", "benchmark_version", "resolver_version", "fixtures"],
+  "properties": {
+    "schema_version": {"const": "semantic-p09-locator-bindings/1.1.0"},
+    "benchmark_version": {"const": "semantic-benchmark/1.1.0"},
+    "resolver_version": {"const": "p09-exact-locator-resolver/1.0.0"},
+    "fixtures": {"type": "array", "minItems": 4, "maxItems": 4, "items": {"$ref": "#/$defs/fixture"}}
+  },
+  "$defs": {
+    "locator": {"type": "object", "additionalProperties": false, "required": ["kind"], "properties": {"kind": {"enum": ["PAGE_BBOX", "DOCUMENT_PATH"]}, "page": {"type": "integer", "minimum": 1}, "bbox": {"type": "array", "minItems": 4, "maxItems": 4, "items": {"type": "number"}}, "block_index": {"type": "integer", "minimum": 0}, "paragraph_index": {"type": "integer", "minimum": 0}, "heading_path": {"type": "array", "items": {"type": "string"}}, "table_index": {"type": "integer", "minimum": 0}, "row": {"type": "integer", "minimum": 0}, "column": {"type": "integer", "minimum": 0}}},
+    "unit": {"type": "object", "additionalProperties": false, "required": ["evidence_id", "normalized_hash", "locator"], "properties": {"evidence_id": {"type": "string", "pattern": "^ev_[a-z0-9]+$"}, "normalized_hash": {"type": "string", "pattern": "^sha256:[a-f0-9]{64}$"}, "locator": {"$ref": "#/$defs/locator"}}},
+    "binding": {"type": "object", "additionalProperties": false, "required": ["declared_ref", "role", "resolved_units"], "properties": {"declared_ref": {"type": "string", "pattern": "^[^#]+#.+$"}, "role": {"enum": ["SUBMISSION_SUPPORT", "SOURCE_CONTEXT"]}, "resolved_units": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/unit"}}}},
+    "question": {"type": "object", "additionalProperties": false, "required": ["question_fixture_id", "support_refs", "visible_anchor_refs"], "properties": {"question_fixture_id": {"type": "string", "pattern": "^P09-A[0-9]{2}-Q[0-9]{2}$"}, "support_refs": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/binding"}}, "visible_anchor_refs": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/binding"}}}},
+    "fixture": {"type": "object", "additionalProperties": false, "required": ["fixture_id", "activity_id", "submission_id", "questions"], "properties": {"fixture_id": {"type": "string", "pattern": "^p09_fixture_act_[0-9]{2}$"}, "activity_id": {"type": "string", "pattern": "^act_[0-9]{2}_[a-z0-9_]+$"}, "submission_id": {"type": "string", "pattern": "^submission_[0-9]{2}$"}, "questions": {"type": "array", "minItems": 3, "maxItems": 3, "items": {"$ref": "#/$defs/question"}}}}
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "benchmark_version": "semantic-benchmark/1.3.5",
+  "execution_boundary_hash": "sha256:e2e001c4dd948dedea717058a4455591d5cefa5bfb5325fd0c110d989797d851",
+  "execution_counters": {
+    "adjudicator_calls": 0,
+    "billable_authorization": "NONE",
+    "credential_resolutions": 0,
+    "high_smoke": "NOT_EXECUTED",
+    "pricing_refresh": "NOT_PERFORMED",
+    "provider_calls": 0,
+    "real_provider_transport": false
+  },
+  "execution_version": "phase9-execution/2.0.0",
+  "high_smoke_decomposition": {
+    "CONTRACTUAL_HARD_SAFETY/P06/N3_SAFETY_SMOKE/HIGH": 3,
+    "SEMANTIC/P04/SMOKE/HIGH": 3,
+    "SEMANTIC/P06/SMOKE/HIGH": 3,
+    "SEMANTIC/P07/SMOKE/HIGH": 18,
+    "SEMANTIC/P09/SMOKE/HIGH": 3
+  },
+  "high_smoke_plan_hash": "sha256:d58461654e16cfd12270115e851a82b759d7254598e72963d873f78ae80c18c6",
+  "protocol_version": "phase9-qualification-protocol/1.3.5",
+  "readiness": "PRICING_REFRESH_REQUIRED_BEFORE_AUTHORIZATION",
+  "report_hash": "sha256:91ddf670b13dd694ca0174fa1ceb4866b1ad4075b47fd74bbcedefa1830eea28",
+  "schema_version": "phase9-execution-cutover-report/2.0.0",
+  "semantic_benchmark_v1_3_5_bytes_modified": false
+}

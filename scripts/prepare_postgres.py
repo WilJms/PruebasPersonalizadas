@@ -166,6 +166,21 @@ def main() -> int:
             """,
             prepare=False,
         )
+        conn.execute(
+            """
+            insert into public.evaluation_guides
+              (guide_id, assessment_id, tenant_id, submission_id, data)
+            values
+              (
+                'guide_phase7_legacy_probe',
+                'assessment_phase7_probe',
+                'tnt_stage2_upgrade_probe',
+                'sub_stage2_upgrade_probe_e1',
+                '{}'::jsonb
+              )
+            """,
+            prepare=False,
+        )
         for _, sql in migration_sql[1:]:
             conn.execute(sql, prepare=False)
 
@@ -182,6 +197,69 @@ def main() -> int:
         )
         if preserved_upgrade_rows != 1:
             raise SystemExit("E1 submission was not preserved by the Stage 2 upgrade")
+
+        phase7_legacy_guide_preserved = bool(
+            conn.execute(
+                """
+                select status = 'HISTORICAL_PREAPPROVAL'
+                  and assessment_version is null
+                  and approval_snapshot_hash is null
+                from public.evaluation_guides
+                where guide_id = 'guide_phase7_legacy_probe'
+                """
+            ).fetchone()[0]
+        )
+        if not phase7_legacy_guide_preserved:
+            raise SystemExit("Phase 7 did not preserve and classify the legacy guide")
+
+        conn.execute(
+            """
+            insert into public.evaluation_guides
+              (
+                guide_id, assessment_id, tenant_id, submission_id, data,
+                assessment_version, status
+              )
+            values
+              (
+                'guide_phase7_bound_probe',
+                'assessment_phase7_probe',
+                'tnt_stage2_upgrade_probe',
+                'sub_stage2_upgrade_probe_e1',
+                '{}'::jsonb,
+                1,
+                'READY'
+              )
+            """,
+            prepare=False,
+        )
+        try:
+            conn.execute(
+                """
+                insert into public.evaluation_guides
+                  (
+                    guide_id, assessment_id, tenant_id, submission_id, data,
+                    assessment_version, status
+                  )
+                values
+                  (
+                    'guide_phase7_bound_duplicate_probe',
+                    'assessment_phase7_probe',
+                    'tnt_stage2_upgrade_probe',
+                    'sub_stage2_upgrade_probe_e1',
+                    '{}'::jsonb,
+                    1,
+                    'READY'
+                  )
+                """,
+                prepare=False,
+            )
+        except psycopg.errors.UniqueViolation:
+            phase7_exact_version_unique = True
+        else:
+            phase7_exact_version_unique = False
+        if not phase7_exact_version_unique:
+            raise SystemExit("Phase 7 exact-version guide uniqueness is not enforced")
+
         conn.execute(
             """
             insert into public.submissions
@@ -335,6 +413,8 @@ def main() -> int:
 
         conn.execute(
             """
+            delete from public.evaluation_guides
+            where tenant_id = 'tnt_stage2_upgrade_probe';
             delete from public.submissions
             where tenant_id = 'tnt_stage2_upgrade_probe';
             delete from public.activities
@@ -361,6 +441,8 @@ def main() -> int:
                     ).hexdigest()
                     for path in MIGRATIONS
                 },
+                "phase7_exact_version_unique": phase7_exact_version_unique,
+                "phase7_legacy_guide_preserved": phase7_legacy_guide_preserved,
                 "rls_table_count": len(rls_tables),
                 "schema_checks": "tables_columns_rls_append_only_triggers",
                 "status": "PASS",

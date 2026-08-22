@@ -1,6 +1,6 @@
 PYTHON ?= .venv/bin/python
 
-.PHONY: install contracts openapi fixtures test test-cov stage0-demo stage0-fail stage0-injection real-smoke frontend-install frontend-typecheck frontend-test frontend-build postgres-prepare postgres-e2e postgres-sensitive postgres-stage2-recovery secrets-check
+.PHONY: install contracts openapi fixtures test test-cov stage0-demo stage0-fail stage0-injection semantic-benchmark-dry-run phase9-protocol-freeze phase9-execution-v2-check phase9-smoke-dry-run phase9-smoke-real phase9-blind-handoff phase9-blind-handoff-verify real-smoke harness-semantic-documents harness-semantic-rehearsal openai-convergence-dry-run openai-convergence-real openai-xhigh-qualification-dry-run openai-xhigh-qualification-real openai-max-qualification-dry-run openai-max-qualification-real openai-terra-medium-qualification-dry-run openai-terra-medium-qualification-real openai-terra-high-qualification-dry-run openai-terra-high-qualification-real openai-terra-xhigh-qualification-dry-run openai-terra-xhigh-qualification-real openai-sol-medium-qualification-dry-run openai-sol-medium-qualification-real openai-sol-high-qualification-dry-run openai-sol-high-qualification-real openai-sol-xhigh-qualification-dry-run openai-sol-xhigh-qualification-real openai-sol-ladder-dry-run openai-canary-dry-run openai-p01-injection-recanary-dry-run openai-p02-v113-recanary-dry-run openai-p04-v116-recanary-dry-run openai-p05-v114-recanary-dry-run openai-blueprint-v119-v115-recanary-dry-run openai-blueprint-v117-v115-timeout-recovery-dry-run openai-p06-v112-decision-lineage-recanary-dry-run openai-p09-v115-recanary-dry-run openai-p11-v114-direct-dry-run openai-qualification-dry-run openai-qualification-v113-continuation-dry-run openai-qualification-v114-continuation-dry-run frontend-install frontend-typecheck frontend-test frontend-build postgres-prepare postgres-e2e postgres-sensitive postgres-stage2-recovery secrets-check
 
 install:
 	$(PYTHON) -m pip install -e '.[dev]'
@@ -29,8 +29,498 @@ stage0-fail:
 stage0-injection:
 	$(PYTHON) -m comprehension_verification.cli run-synthetic --case injection --output outputs/stage0-injection
 
+semantic-benchmark-dry-run:
+	@env -u OPENAI_API_KEY -u CVA_OPENAI_API_KEY \
+		CVA_MODEL_MODE=mock CVA_P10_ENABLED=false $(PYTHON) \
+		scripts/run_semantic_benchmark.py
+
+# Phase 9A only. Freezes the qualification protocol; issues no authorization
+# and performs no provider call.
+phase9-protocol-freeze:
+	@env -u OPENAI_API_KEY -u CVA_OPENAI_API_KEY \
+		CVA_MODEL_MODE=mock CVA_P10_ENABLED=false $(PYTHON) \
+		scripts/build_phase9_protocol.py
+
+# phase9-execution/2.0.3 consumes the immutable semantic-benchmark/1.3.5
+# instrument. The publication check regenerates its request/plan boundary and
+# forensic repair evidence in memory, then requires byte-for-byte equality.
+phase9-execution-v2-check:
+	@env -u OPENAI_API_KEY -u CVA_OPENAI_API_KEY \
+		CVA_MODEL_MODE=mock CVA_P10_ENABLED=false $(PYTHON) \
+		scripts/build_phase9_execution_v2.py
+	@env -u OPENAI_API_KEY -u CVA_OPENAI_API_KEY \
+		CVA_MODEL_MODE=mock CVA_P10_ENABLED=false $(PYTHON) \
+		scripts/build_phase9_forensic_repair.py
+
+# Dry mode validates the complete freeze, current official pricing, and cost
+# projection, then stops explicitly because no billable authorization exists.
+phase9-smoke-dry-run: phase9-execution-v2-check
+	@env -u OPENAI_API_KEY -u CVA_OPENAI_API_KEY \
+		CVA_MODEL_MODE=mock CVA_P10_ENABLED=false $(PYTHON) \
+		scripts/run_phase9_smoke.py
+
+phase9-smoke-real: phase9-execution-v2-check
+	@test -n "$(PRICING)" || { echo "PRICING is required" >&2; exit 2; }
+	@test -n "$(AUTHORIZATION)" || { echo "AUTHORIZATION is required" >&2; exit 2; }
+	@test -n "$(SECRET_VERSION_RESOURCE)" || { echo "SECRET_VERSION_RESOURCE is required" >&2; exit 2; }
+	@test -n "$(REPORT)" || { echo "REPORT is required" >&2; exit 2; }
+	@env -u OPENAI_API_KEY -u CVA_OPENAI_API_KEY $(PYTHON) \
+		scripts/run_phase9_smoke.py \
+		--allow-billable \
+		--pricing "$(PRICING)" \
+		--authorization "$(AUTHORIZATION)" \
+		--secret-version-resource "$(SECRET_VERSION_RESOURCE)" \
+		--created-by "$${CVA_PHASE9_OPERATOR:-phase9b1-operator}" \
+		--report "$(REPORT)"
+
+# Phase 9B.2. Packages the frozen blind bundle so an isolated adjudicator needs
+# nothing else. Touches no packet, calls no provider, decides nothing.
+phase9-blind-handoff:
+	@env -u OPENAI_API_KEY -u CVA_OPENAI_API_KEY \
+		CVA_MODEL_MODE=mock CVA_P10_ENABLED=false $(PYTHON) \
+		scripts/build_phase9_blind_handoff.py
+
+phase9-blind-handoff-verify:
+	@env -u OPENAI_API_KEY -u CVA_OPENAI_API_KEY \
+		CVA_MODEL_MODE=mock CVA_P10_ENABLED=false $(PYTHON) \
+		scripts/build_phase9_blind_handoff.py --verify-only
+
 real-smoke:
 	$(PYTHON) -m comprehension_verification.cli real-provider-smoke --budget-usd "$${CVA_REAL_SMOKE_BUDGET_USD:-0}"
+
+harness-semantic-documents:
+	$(PYTHON) scripts/build_semantic_harness_documents.py
+
+harness-semantic-rehearsal:
+	@env -u CVA_OPENAI_API_KEY -u OPENAI_API_KEY \
+		CVA_MODEL_MODE=mock CVA_P10_ENABLED=false $(PYTHON) \
+		scripts/run_semantic_harness.py
+
+openai-convergence-dry-run:
+	@env -u CVA_OPENAI_API_KEY $(PYTHON) scripts/run_openai_evals.py \
+		--mode convergence-dry-run
+
+openai-convergence-real:
+	@test -n "$(EXECUTION_ID)" || { echo "EXECUTION_ID is required" >&2; exit 2; }
+	@test -n "$(AUTHORIZATION_ID)" || { echo "AUTHORIZATION_ID is required" >&2; exit 2; }
+	@test -n "$(LEDGER)" || { echo "LEDGER is required" >&2; exit 2; }
+	@test -n "$(REPORT)" || { echo "REPORT is required" >&2; exit 2; }
+	@test -n "$(SECRET_VERSION_RESOURCE)" || { echo "SECRET_VERSION_RESOURCE is required" >&2; exit 2; }
+	@env -u CVA_OPENAI_API_KEY $(PYTHON) scripts/run_openai_evals.py \
+		--mode convergence-real \
+		--allow-billable \
+		--execution-id "$(EXECUTION_ID)" \
+		--authorization-id "$(AUTHORIZATION_ID)" \
+		--ledger "$(LEDGER)" \
+		--report-path "$(REPORT)" \
+		--secret-version-resource "$(SECRET_VERSION_RESOURCE)" \
+		--max-total-cost-usd "$${CVA_OPENAI_CONVERGENCE_MAX_TOTAL_USD:-0.75}" \
+		--max-call-cost-usd "$${CVA_OPENAI_CONVERGENCE_MAX_CALL_USD:-0.10}" \
+		--max-provider-requests 33
+
+openai-xhigh-qualification-dry-run:
+	@env -u CVA_OPENAI_API_KEY $(PYTHON) scripts/run_openai_evals.py \
+		--mode xhigh-qualification-dry-run \
+		--max-total-cost-usd 0.75 \
+		--max-call-cost-usd 0.10 \
+		--max-provider-requests 33
+
+openai-xhigh-qualification-real:
+	@test -n "$(EXECUTION_ID)" || { echo "EXECUTION_ID is required" >&2; exit 2; }
+	@test -n "$(AUTHORIZATION_ID)" || { echo "AUTHORIZATION_ID is required" >&2; exit 2; }
+	@test -n "$(LEDGER)" || { echo "LEDGER is required" >&2; exit 2; }
+	@test -n "$(REPORT)" || { echo "REPORT is required" >&2; exit 2; }
+	@test -n "$(SECRET_VERSION_RESOURCE)" || { echo "SECRET_VERSION_RESOURCE is required" >&2; exit 2; }
+	@env -u CVA_OPENAI_API_KEY $(PYTHON) scripts/run_openai_evals.py \
+		--mode xhigh-qualification-real \
+		--allow-billable \
+		--execution-id "$(EXECUTION_ID)" \
+		--authorization-id "$(AUTHORIZATION_ID)" \
+		--ledger "$(LEDGER)" \
+		--report-path "$(REPORT)" \
+		--secret-version-resource "$(SECRET_VERSION_RESOURCE)" \
+		--max-total-cost-usd 0.75 \
+		--max-call-cost-usd 0.10 \
+		--max-provider-requests 33
+
+openai-max-qualification-dry-run:
+	@env -u CVA_OPENAI_API_KEY $(PYTHON) scripts/run_openai_evals.py \
+		--mode max-qualification-dry-run \
+		--max-total-cost-usd 0.75 \
+		--max-call-cost-usd 0.10 \
+		--max-provider-requests 33
+
+openai-max-qualification-real:
+	@test -n "$(EXECUTION_ID)" || { echo "EXECUTION_ID is required" >&2; exit 2; }
+	@test -n "$(AUTHORIZATION_ID)" || { echo "AUTHORIZATION_ID is required" >&2; exit 2; }
+	@test -n "$(LEDGER)" || { echo "LEDGER is required" >&2; exit 2; }
+	@test -n "$(REPORT)" || { echo "REPORT is required" >&2; exit 2; }
+	@test -n "$(SECRET_VERSION_RESOURCE)" || { echo "SECRET_VERSION_RESOURCE is required" >&2; exit 2; }
+	@env -u CVA_OPENAI_API_KEY $(PYTHON) scripts/run_openai_evals.py \
+		--mode max-qualification-real \
+		--allow-billable \
+		--execution-id "$(EXECUTION_ID)" \
+		--authorization-id "$(AUTHORIZATION_ID)" \
+		--ledger "$(LEDGER)" \
+		--report-path "$(REPORT)" \
+		--secret-version-resource "$(SECRET_VERSION_RESOURCE)" \
+		--max-total-cost-usd 0.75 \
+		--max-call-cost-usd 0.10 \
+		--max-provider-requests 33
+
+openai-terra-medium-qualification-dry-run:
+	@env -u CVA_OPENAI_API_KEY $(PYTHON) scripts/run_openai_evals.py \
+		--mode terra-medium-qualification-dry-run \
+		--max-total-cost-usd 25.60 \
+		--max-call-cost-usd 0.82 \
+		--max-provider-requests 33
+
+openai-terra-medium-qualification-real:
+	@test -n "$(EXECUTION_ID)" || { echo "EXECUTION_ID is required" >&2; exit 2; }
+	@test -n "$(AUTHORIZATION_ID)" || { echo "AUTHORIZATION_ID is required" >&2; exit 2; }
+	@test -n "$(LEDGER)" || { echo "LEDGER is required" >&2; exit 2; }
+	@test -n "$(REPORT)" || { echo "REPORT is required" >&2; exit 2; }
+	@test -n "$(SECRET_VERSION_RESOURCE)" || { echo "SECRET_VERSION_RESOURCE is required" >&2; exit 2; }
+	@env -u CVA_OPENAI_API_KEY $(PYTHON) scripts/run_openai_evals.py \
+		--mode terra-medium-qualification-real \
+		--allow-billable \
+		--execution-id "$(EXECUTION_ID)" \
+		--authorization-id "$(AUTHORIZATION_ID)" \
+		--ledger "$(LEDGER)" \
+		--report-path "$(REPORT)" \
+		--secret-version-resource "$(SECRET_VERSION_RESOURCE)" \
+		--max-total-cost-usd 25.60 \
+		--max-call-cost-usd 0.82 \
+		--max-provider-requests 33
+
+openai-terra-high-qualification-dry-run:
+	@env -u CVA_OPENAI_API_KEY $(PYTHON) scripts/run_openai_evals.py \
+		--mode terra-high-qualification-dry-run \
+		--max-total-cost-usd 25.60 \
+		--max-call-cost-usd 0.82 \
+		--max-provider-requests 33
+
+openai-terra-high-qualification-real:
+	@test -n "$(EXECUTION_ID)" || { echo "EXECUTION_ID is required" >&2; exit 2; }
+	@test -n "$(AUTHORIZATION_ID)" || { echo "AUTHORIZATION_ID is required" >&2; exit 2; }
+	@test -n "$(LEDGER)" || { echo "LEDGER is required" >&2; exit 2; }
+	@test -n "$(REPORT)" || { echo "REPORT is required" >&2; exit 2; }
+	@test -n "$(SECRET_VERSION_RESOURCE)" || { echo "SECRET_VERSION_RESOURCE is required" >&2; exit 2; }
+	@env -u CVA_OPENAI_API_KEY $(PYTHON) scripts/run_openai_evals.py \
+		--mode terra-high-qualification-real \
+		--allow-billable \
+		--execution-id "$(EXECUTION_ID)" \
+		--authorization-id "$(AUTHORIZATION_ID)" \
+		--ledger "$(LEDGER)" \
+		--report-path "$(REPORT)" \
+		--secret-version-resource "$(SECRET_VERSION_RESOURCE)" \
+		--max-total-cost-usd 25.60 \
+		--max-call-cost-usd 0.82 \
+		--max-provider-requests 33
+
+openai-terra-xhigh-qualification-dry-run:
+	@env -u CVA_OPENAI_API_KEY $(PYTHON) scripts/run_openai_evals.py \
+		--mode terra-xhigh-qualification-dry-run \
+		--max-total-cost-usd 25.60 \
+		--max-call-cost-usd 0.82 \
+		--max-provider-requests 33
+
+openai-terra-xhigh-qualification-real:
+	@test -n "$(EXECUTION_ID)" || { echo "EXECUTION_ID is required" >&2; exit 2; }
+	@test -n "$(AUTHORIZATION_ID)" || { echo "AUTHORIZATION_ID is required" >&2; exit 2; }
+	@test -n "$(LEDGER)" || { echo "LEDGER is required" >&2; exit 2; }
+	@test -n "$(REPORT)" || { echo "REPORT is required" >&2; exit 2; }
+	@test -n "$(SECRET_VERSION_RESOURCE)" || { echo "SECRET_VERSION_RESOURCE is required" >&2; exit 2; }
+	@env -u CVA_OPENAI_API_KEY $(PYTHON) scripts/run_openai_evals.py \
+		--mode terra-xhigh-qualification-real \
+		--allow-billable \
+		--execution-id "$(EXECUTION_ID)" \
+		--authorization-id "$(AUTHORIZATION_ID)" \
+		--ledger "$(LEDGER)" \
+		--report-path "$(REPORT)" \
+		--secret-version-resource "$(SECRET_VERSION_RESOURCE)" \
+		--max-total-cost-usd 25.60 \
+		--max-call-cost-usd 0.82 \
+		--max-provider-requests 33
+
+openai-sol-medium-qualification-dry-run:
+	@env -u CVA_OPENAI_API_KEY -u OPENAI_API_KEY $(PYTHON) scripts/run_openai_evals.py \
+		--mode sol-medium-qualification-dry-run \
+		--max-total-cost-usd 63.99 \
+		--max-call-cost-usd 2.05 \
+		--max-provider-requests 33
+
+openai-sol-medium-qualification-real:
+	@test -n "$(EXECUTION_ID)" || { echo "EXECUTION_ID is required" >&2; exit 2; }
+	@test -n "$(AUTHORIZATION_ID)" || { echo "AUTHORIZATION_ID is required" >&2; exit 2; }
+	@test -n "$(LEDGER)" || { echo "LEDGER is required" >&2; exit 2; }
+	@test -n "$(REPORT)" || { echo "REPORT is required" >&2; exit 2; }
+	@test -n "$(SECRET_VERSION_RESOURCE)" || { echo "SECRET_VERSION_RESOURCE is required" >&2; exit 2; }
+	@env -u CVA_OPENAI_API_KEY -u OPENAI_API_KEY $(PYTHON) scripts/run_openai_evals.py \
+		--mode sol-medium-qualification-real \
+		--allow-billable \
+		--execution-id "$(EXECUTION_ID)" \
+		--authorization-id "$(AUTHORIZATION_ID)" \
+		--ledger "$(LEDGER)" \
+		--report-path "$(REPORT)" \
+		--secret-version-resource "$(SECRET_VERSION_RESOURCE)" \
+		--max-total-cost-usd 63.99 \
+		--max-call-cost-usd 2.05 \
+		--max-provider-requests 33
+
+openai-sol-high-qualification-dry-run:
+	@env -u CVA_OPENAI_API_KEY -u OPENAI_API_KEY $(PYTHON) scripts/run_openai_evals.py \
+		--mode sol-high-qualification-dry-run \
+		--max-total-cost-usd 63.99 \
+		--max-call-cost-usd 2.05 \
+		--max-provider-requests 33
+
+openai-sol-high-qualification-real:
+	@test -n "$(EXECUTION_ID)" || { echo "EXECUTION_ID is required" >&2; exit 2; }
+	@test -n "$(AUTHORIZATION_ID)" || { echo "AUTHORIZATION_ID is required" >&2; exit 2; }
+	@test -n "$(LEDGER)" || { echo "LEDGER is required" >&2; exit 2; }
+	@test -n "$(REPORT)" || { echo "REPORT is required" >&2; exit 2; }
+	@test -n "$(SECRET_VERSION_RESOURCE)" || { echo "SECRET_VERSION_RESOURCE is required" >&2; exit 2; }
+	@env -u CVA_OPENAI_API_KEY -u OPENAI_API_KEY $(PYTHON) scripts/run_openai_evals.py \
+		--mode sol-high-qualification-real \
+		--allow-billable \
+		--execution-id "$(EXECUTION_ID)" \
+		--authorization-id "$(AUTHORIZATION_ID)" \
+		--ledger "$(LEDGER)" \
+		--report-path "$(REPORT)" \
+		--secret-version-resource "$(SECRET_VERSION_RESOURCE)" \
+		--max-total-cost-usd 63.99 \
+		--max-call-cost-usd 2.05 \
+		--max-provider-requests 33
+
+openai-sol-xhigh-qualification-dry-run:
+	@env -u CVA_OPENAI_API_KEY -u OPENAI_API_KEY $(PYTHON) scripts/run_openai_evals.py \
+		--mode sol-xhigh-qualification-dry-run \
+		--max-total-cost-usd 63.99 \
+		--max-call-cost-usd 2.05 \
+		--max-provider-requests 33
+
+openai-sol-xhigh-qualification-real:
+	@test -n "$(EXECUTION_ID)" || { echo "EXECUTION_ID is required" >&2; exit 2; }
+	@test -n "$(AUTHORIZATION_ID)" || { echo "AUTHORIZATION_ID is required" >&2; exit 2; }
+	@test -n "$(LEDGER)" || { echo "LEDGER is required" >&2; exit 2; }
+	@test -n "$(REPORT)" || { echo "REPORT is required" >&2; exit 2; }
+	@test -n "$(SECRET_VERSION_RESOURCE)" || { echo "SECRET_VERSION_RESOURCE is required" >&2; exit 2; }
+	@env -u CVA_OPENAI_API_KEY -u OPENAI_API_KEY $(PYTHON) scripts/run_openai_evals.py \
+		--mode sol-xhigh-qualification-real \
+		--allow-billable \
+		--execution-id "$(EXECUTION_ID)" \
+		--authorization-id "$(AUTHORIZATION_ID)" \
+		--ledger "$(LEDGER)" \
+		--report-path "$(REPORT)" \
+		--secret-version-resource "$(SECRET_VERSION_RESOURCE)" \
+		--max-total-cost-usd 63.99 \
+		--max-call-cost-usd 2.05 \
+		--max-provider-requests 33
+
+openai-sol-ladder-dry-run: openai-sol-medium-qualification-dry-run openai-sol-high-qualification-dry-run openai-sol-xhigh-qualification-dry-run
+
+openai-canary-dry-run:
+	@test -n "$(CASE_ID)" || { echo "CASE_ID is required" >&2; exit 2; }
+	@env -u CVA_OPENAI_API_KEY \
+		-u CVA_OPENAI_REAL_EVALS_APPROVAL \
+		-u CVA_OPENAI_LUNA_CANARY_APPROVAL \
+		-u CVA_OPENAI_P01_INJECTION_RECANARY_APPROVAL \
+		-u CVA_OPENAI_P01_INJECTION_V112_RECANARY_APPROVAL \
+		-u CVA_OPENAI_P01_V112_REMEDIATION_DECISION \
+		-u CVA_OPENAI_P02_V113_REMEDIATION_DECISION \
+		-u CVA_OPENAI_P02_V113_RECANARY_APPROVAL \
+		-u CVA_OPENAI_P04_V116_REMEDIATION_DECISION \
+		-u CVA_OPENAI_P04_V116_RECANARY_APPROVAL \
+		-u CVA_OPENAI_P04_V116_EVIDENCE_RECOVERY_APPROVAL \
+		-u CVA_OPENAI_P05_V114_REMEDIATION_DECISION \
+		-u CVA_OPENAI_P05_V114_RECANARY_APPROVAL \
+		-u CVA_OPENAI_P09_V115_REMEDIATION_DECISION \
+		-u CVA_OPENAI_P09_V115_RECANARY_APPROVAL \
+		-u CVA_OPENAI_REAL_QUALIFICATION_APPROVAL \
+		-u CVA_OPENAI_REAL_QUALIFICATION_V113_APPROVAL \
+		-u CVA_OPENAI_REAL_QUALIFICATION_V113_CONTINUATION_APPROVAL \
+		-u CVA_OPENAI_REAL_QUALIFICATION_V114_CONTINUATION_APPROVAL \
+		$(PYTHON) scripts/run_openai_evals.py --mode canary-dry-run --case-id "$(CASE_ID)"
+
+openai-p01-injection-recanary-dry-run:
+	@env -u CVA_OPENAI_API_KEY \
+		-u CVA_OPENAI_REAL_EVALS_APPROVAL \
+		-u CVA_OPENAI_LUNA_CANARY_APPROVAL \
+		-u CVA_OPENAI_P01_INJECTION_RECANARY_APPROVAL \
+		-u CVA_OPENAI_P01_INJECTION_V112_RECANARY_APPROVAL \
+		-u CVA_OPENAI_P01_V112_REMEDIATION_DECISION \
+		-u CVA_OPENAI_P02_V113_REMEDIATION_DECISION \
+		-u CVA_OPENAI_P02_V113_RECANARY_APPROVAL \
+		-u CVA_OPENAI_P04_V116_REMEDIATION_DECISION \
+		-u CVA_OPENAI_P04_V116_RECANARY_APPROVAL \
+		-u CVA_OPENAI_P04_V116_EVIDENCE_RECOVERY_APPROVAL \
+		-u CVA_OPENAI_P05_V114_REMEDIATION_DECISION \
+		-u CVA_OPENAI_P05_V114_RECANARY_APPROVAL \
+		-u CVA_OPENAI_P09_V115_REMEDIATION_DECISION \
+		-u CVA_OPENAI_P09_V115_RECANARY_APPROVAL \
+		-u CVA_OPENAI_REAL_QUALIFICATION_APPROVAL \
+		-u CVA_OPENAI_REAL_QUALIFICATION_V113_APPROVAL \
+		-u CVA_OPENAI_REAL_QUALIFICATION_V113_CONTINUATION_APPROVAL \
+		-u CVA_OPENAI_REAL_QUALIFICATION_V114_CONTINUATION_APPROVAL \
+		$(PYTHON) scripts/run_openai_evals.py --mode canary-dry-run --case-id "oa-p01-injection-md"
+
+openai-p02-v113-recanary-dry-run:
+	@env -u CVA_OPENAI_API_KEY \
+		-u CVA_OPENAI_REAL_EVALS_APPROVAL \
+		-u CVA_OPENAI_LUNA_CANARY_APPROVAL \
+		-u CVA_OPENAI_P01_INJECTION_RECANARY_APPROVAL \
+		-u CVA_OPENAI_P01_INJECTION_V112_RECANARY_APPROVAL \
+		-u CVA_OPENAI_P01_V112_REMEDIATION_DECISION \
+		-u CVA_OPENAI_P02_V113_REMEDIATION_DECISION \
+		-u CVA_OPENAI_P02_V113_RECANARY_APPROVAL \
+		-u CVA_OPENAI_P04_V116_REMEDIATION_DECISION \
+		-u CVA_OPENAI_P04_V116_RECANARY_APPROVAL \
+		-u CVA_OPENAI_P04_V116_EVIDENCE_RECOVERY_APPROVAL \
+		-u CVA_OPENAI_P05_V114_REMEDIATION_DECISION \
+		-u CVA_OPENAI_P05_V114_RECANARY_APPROVAL \
+		-u CVA_OPENAI_P09_V115_REMEDIATION_DECISION \
+		-u CVA_OPENAI_P09_V115_RECANARY_APPROVAL \
+		-u CVA_OPENAI_REAL_QUALIFICATION_APPROVAL \
+		-u CVA_OPENAI_REAL_QUALIFICATION_V113_APPROVAL \
+		-u CVA_OPENAI_REAL_QUALIFICATION_V113_CONTINUATION_APPROVAL \
+		-u CVA_OPENAI_REAL_QUALIFICATION_V114_CONTINUATION_APPROVAL \
+		$(PYTHON) scripts/run_openai_evals.py --mode canary-dry-run --case-id "oa-p02-happy-pdf"
+
+openai-p05-v114-recanary-dry-run:
+	@env -u CVA_OPENAI_API_KEY \
+		-u CVA_OPENAI_REAL_EVALS_APPROVAL \
+		-u CVA_OPENAI_LUNA_CANARY_APPROVAL \
+		-u CVA_OPENAI_P01_INJECTION_RECANARY_APPROVAL \
+		-u CVA_OPENAI_P01_INJECTION_V112_RECANARY_APPROVAL \
+		-u CVA_OPENAI_P01_V112_REMEDIATION_DECISION \
+		-u CVA_OPENAI_P02_V113_REMEDIATION_DECISION \
+		-u CVA_OPENAI_P02_V113_RECANARY_APPROVAL \
+		-u CVA_OPENAI_P04_V116_REMEDIATION_DECISION \
+		-u CVA_OPENAI_P04_V116_RECANARY_APPROVAL \
+		-u CVA_OPENAI_P04_V116_EVIDENCE_RECOVERY_APPROVAL \
+		-u CVA_OPENAI_P05_V114_REMEDIATION_DECISION \
+		-u CVA_OPENAI_P05_V114_RECANARY_APPROVAL \
+		-u CVA_OPENAI_P09_V115_REMEDIATION_DECISION \
+		-u CVA_OPENAI_P09_V115_RECANARY_APPROVAL \
+		-u CVA_OPENAI_REAL_QUALIFICATION_APPROVAL \
+		-u CVA_OPENAI_REAL_QUALIFICATION_V113_APPROVAL \
+		-u CVA_OPENAI_REAL_QUALIFICATION_V113_CONTINUATION_APPROVAL \
+		-u CVA_OPENAI_REAL_QUALIFICATION_V114_CONTINUATION_APPROVAL \
+		$(PYTHON) scripts/run_openai_evals.py --mode canary-dry-run --case-id "oa-p05-happy"
+
+openai-p04-v116-recanary-dry-run:
+	@env -u CVA_OPENAI_API_KEY \
+		-u CVA_OPENAI_REAL_EVALS_APPROVAL \
+		-u CVA_OPENAI_LUNA_CANARY_APPROVAL \
+		-u CVA_OPENAI_P01_INJECTION_RECANARY_APPROVAL \
+		-u CVA_OPENAI_P01_INJECTION_V112_RECANARY_APPROVAL \
+		-u CVA_OPENAI_P01_V112_REMEDIATION_DECISION \
+		-u CVA_OPENAI_P02_V113_REMEDIATION_DECISION \
+		-u CVA_OPENAI_P02_V113_RECANARY_APPROVAL \
+		-u CVA_OPENAI_P04_V116_REMEDIATION_DECISION \
+		-u CVA_OPENAI_P04_V116_RECANARY_APPROVAL \
+		-u CVA_OPENAI_P04_V116_EVIDENCE_RECOVERY_APPROVAL \
+		-u CVA_OPENAI_P05_V114_REMEDIATION_DECISION \
+		-u CVA_OPENAI_P05_V114_RECANARY_APPROVAL \
+		-u CVA_OPENAI_P09_V115_REMEDIATION_DECISION \
+		-u CVA_OPENAI_P09_V115_RECANARY_APPROVAL \
+		-u CVA_OPENAI_P11_V114_DIRECT_APPROVAL \
+		-u CVA_OPENAI_REAL_QUALIFICATION_APPROVAL \
+		-u CVA_OPENAI_REAL_QUALIFICATION_V113_APPROVAL \
+		-u CVA_OPENAI_REAL_QUALIFICATION_V113_CONTINUATION_APPROVAL \
+		-u CVA_OPENAI_REAL_QUALIFICATION_V114_CONTINUATION_APPROVAL \
+		$(PYTHON) scripts/run_openai_evals.py --mode canary-dry-run --case-id "oa-p04-happy"
+
+openai-blueprint-v119-v115-recanary-dry-run:
+	@env -u CVA_OPENAI_API_KEY \
+		-u CVA_OPENAI_BLUEPRINT_V119_V115_REMEDIATION_DECISION \
+		-u CVA_OPENAI_BLUEPRINT_V119_V115_RECANARY_APPROVAL \
+		$(PYTHON) scripts/run_openai_evals.py --mode blueprint-recanary-dry-run
+
+openai-blueprint-v117-v115-timeout-recovery-dry-run:
+	@env -u CVA_OPENAI_API_KEY \
+		-u CVA_OPENAI_BLUEPRINT_V117_V115_REMEDIATION_DECISION \
+		-u CVA_OPENAI_BLUEPRINT_V117_V115_RECANARY_APPROVAL \
+		-u CVA_OPENAI_BLUEPRINT_V117_V115_TIMEOUT_REMEDIATION_DECISION \
+		-u CVA_OPENAI_BLUEPRINT_V117_V115_TIMEOUT_RECOVERY_APPROVAL \
+		$(PYTHON) scripts/run_openai_evals.py --mode blueprint-timeout-recovery-dry-run
+
+openai-p06-v112-decision-lineage-recanary-dry-run:
+	@env -u CVA_OPENAI_API_KEY \
+		-u CVA_OPENAI_P06_V112_DECISION_LINEAGE_RECANARY_APPROVAL \
+		$(PYTHON) scripts/run_openai_evals.py --mode canary-dry-run --case-id "oa-p06-happy-docx"
+
+openai-p09-v115-recanary-dry-run:
+	@env -u CVA_OPENAI_API_KEY \
+		-u CVA_OPENAI_REAL_EVALS_APPROVAL \
+		-u CVA_OPENAI_LUNA_CANARY_APPROVAL \
+		-u CVA_OPENAI_P01_INJECTION_RECANARY_APPROVAL \
+		-u CVA_OPENAI_P01_INJECTION_V112_RECANARY_APPROVAL \
+		-u CVA_OPENAI_P01_V112_REMEDIATION_DECISION \
+		-u CVA_OPENAI_P02_V113_REMEDIATION_DECISION \
+		-u CVA_OPENAI_P02_V113_RECANARY_APPROVAL \
+		-u CVA_OPENAI_P04_V116_REMEDIATION_DECISION \
+		-u CVA_OPENAI_P04_V116_RECANARY_APPROVAL \
+		-u CVA_OPENAI_P04_V116_EVIDENCE_RECOVERY_APPROVAL \
+		-u CVA_OPENAI_P05_V114_REMEDIATION_DECISION \
+		-u CVA_OPENAI_P05_V114_RECANARY_APPROVAL \
+		-u CVA_OPENAI_P09_V115_REMEDIATION_DECISION \
+		-u CVA_OPENAI_P09_V115_RECANARY_APPROVAL \
+		-u CVA_OPENAI_REAL_QUALIFICATION_APPROVAL \
+		-u CVA_OPENAI_REAL_QUALIFICATION_V113_APPROVAL \
+		-u CVA_OPENAI_REAL_QUALIFICATION_V113_CONTINUATION_APPROVAL \
+		-u CVA_OPENAI_REAL_QUALIFICATION_V114_CONTINUATION_APPROVAL \
+		$(PYTHON) scripts/run_openai_evals.py --mode canary-dry-run --case-id "oa-p09-happy-docx"
+
+openai-p11-v114-direct-dry-run:
+	@env -u CVA_OPENAI_API_KEY \
+		-u CVA_OPENAI_REAL_EVALS_APPROVAL \
+		-u CVA_OPENAI_LUNA_CANARY_APPROVAL \
+		-u CVA_OPENAI_P01_INJECTION_RECANARY_APPROVAL \
+		-u CVA_OPENAI_P01_INJECTION_V112_RECANARY_APPROVAL \
+		-u CVA_OPENAI_P01_V112_REMEDIATION_DECISION \
+		-u CVA_OPENAI_P02_V113_REMEDIATION_DECISION \
+		-u CVA_OPENAI_P02_V113_RECANARY_APPROVAL \
+		-u CVA_OPENAI_P04_V116_REMEDIATION_DECISION \
+		-u CVA_OPENAI_P04_V116_RECANARY_APPROVAL \
+		-u CVA_OPENAI_P04_V116_EVIDENCE_RECOVERY_APPROVAL \
+		-u CVA_OPENAI_P05_V114_REMEDIATION_DECISION \
+		-u CVA_OPENAI_P05_V114_RECANARY_APPROVAL \
+		-u CVA_OPENAI_P09_V115_REMEDIATION_DECISION \
+		-u CVA_OPENAI_P09_V115_RECANARY_APPROVAL \
+		-u CVA_OPENAI_P11_V114_DIRECT_APPROVAL \
+		-u CVA_OPENAI_REAL_QUALIFICATION_APPROVAL \
+		-u CVA_OPENAI_REAL_QUALIFICATION_V113_APPROVAL \
+		-u CVA_OPENAI_REAL_QUALIFICATION_V113_CONTINUATION_APPROVAL \
+		-u CVA_OPENAI_REAL_QUALIFICATION_V114_CONTINUATION_APPROVAL \
+		$(PYTHON) scripts/run_openai_evals.py --mode canary-dry-run --case-id "oa-p11-happy"
+
+openai-qualification-v113-continuation-dry-run:
+	@printf '%s\n' '{"code":"OPENAI_QUALIFICATION_V113_CONTINUATION_ALREADY_CONSUMED","network_calls":0,"status":"BLOCKED"}'
+	@false
+
+openai-qualification-dry-run openai-qualification-v114-continuation-dry-run:
+	@env -u CVA_OPENAI_API_KEY \
+		-u CVA_OPENAI_REAL_EVALS_APPROVAL \
+		-u CVA_OPENAI_LUNA_CANARY_APPROVAL \
+		-u CVA_OPENAI_P01_INJECTION_RECANARY_APPROVAL \
+		-u CVA_OPENAI_P01_INJECTION_V112_RECANARY_APPROVAL \
+		-u CVA_OPENAI_P01_V112_REMEDIATION_DECISION \
+		-u CVA_OPENAI_P02_V113_REMEDIATION_DECISION \
+		-u CVA_OPENAI_P02_V113_RECANARY_APPROVAL \
+		-u CVA_OPENAI_P04_V116_REMEDIATION_DECISION \
+		-u CVA_OPENAI_P04_V116_RECANARY_APPROVAL \
+		-u CVA_OPENAI_P04_V116_EVIDENCE_RECOVERY_APPROVAL \
+		-u CVA_OPENAI_P05_V114_REMEDIATION_DECISION \
+		-u CVA_OPENAI_P05_V114_RECANARY_APPROVAL \
+		-u CVA_OPENAI_P09_V115_REMEDIATION_DECISION \
+		-u CVA_OPENAI_P09_V115_RECANARY_APPROVAL \
+		-u CVA_OPENAI_REAL_QUALIFICATION_APPROVAL \
+		-u CVA_OPENAI_REAL_QUALIFICATION_V113_APPROVAL \
+		-u CVA_OPENAI_REAL_QUALIFICATION_V113_CONTINUATION_APPROVAL \
+		-u CVA_OPENAI_REAL_QUALIFICATION_V114_CONTINUATION_APPROVAL \
+		$(PYTHON) scripts/run_openai_evals.py --mode qualification-dry-run
 
 frontend-install:
 	cd frontend && npm ci

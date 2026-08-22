@@ -1,0 +1,759 @@
+{
+  "benchmark_version": "semantic-benchmark/1.0.0",
+  "case_assignments": [
+    {
+      "case_id": "PP-A01-P04-001",
+      "split": "SMOKE"
+    },
+    {
+      "case_id": "PP-A01-S01-P06-001",
+      "split": "SMOKE"
+    },
+    {
+      "case_id": "PP-A01-S01-P07-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A01-S01-PLANNER-001",
+      "split": "SMOKE"
+    },
+    {
+      "case_id": "PP-A01-S02-P06-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A01-S02-P07-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A01-S02-PLANNER-001",
+      "split": "SMOKE"
+    },
+    {
+      "case_id": "PP-A01-S03-P06-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A01-S03-P07-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A01-S04-P06-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A01-S04-P07-001",
+      "split": "SMOKE"
+    },
+    {
+      "case_id": "PP-A01-S04-PLANNER-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A01-S05-P06-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A01-S05-P07-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A01-S06-P06-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A01-S06-P07-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A02-P04-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A02-S01-P06-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A02-S01-P07-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A02-S02-P06-001",
+      "split": "SMOKE"
+    },
+    {
+      "case_id": "PP-A02-S02-P07-001",
+      "split": "SMOKE"
+    },
+    {
+      "case_id": "PP-A02-S02-PLANNER-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A02-S03-P06-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A02-S03-P07-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A02-S03-PLANNER-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A02-S04-P06-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A02-S04-P07-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A02-S05-P06-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A02-S05-P07-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A02-S06-P06-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A02-S06-P07-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A02-S06-PLANNER-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A03-P04-001",
+      "split": "HELD_OUT_CONFIRMATION"
+    },
+    {
+      "case_id": "PP-A03-P09-F01",
+      "split": "SMOKE"
+    },
+    {
+      "case_id": "PP-A03-PLANNER-ACT",
+      "split": "HELD_OUT_CONFIRMATION"
+    },
+    {
+      "case_id": "PP-A03-S01-P06-001",
+      "split": "HELD_OUT_CONFIRMATION"
+    },
+    {
+      "case_id": "PP-A03-S01-P07-001",
+      "split": "HELD_OUT_CONFIRMATION"
+    },
+    {
+      "case_id": "PP-A03-S02-P06-001",
+      "split": "HELD_OUT_CONFIRMATION"
+    },
+    {
+      "case_id": "PP-A03-S02-P07-001",
+      "split": "HELD_OUT_CONFIRMATION"
+    },
+    {
+      "case_id": "PP-A03-S03-P06-001",
+      "split": "HELD_OUT_CONFIRMATION"
+    },
+    {
+      "case_id": "PP-A03-S03-P07-001",
+      "split": "HELD_OUT_CONFIRMATION"
+    },
+    {
+      "case_id": "PP-A03-S03-PLANNER-001",
+      "split": "HELD_OUT_CONFIRMATION"
+    },
+    {
+      "case_id": "PP-A03-S04-P06-001",
+      "split": "HELD_OUT_CONFIRMATION"
+    },
+    {
+      "case_id": "PP-A03-S04-P07-001",
+      "split": "HELD_OUT_CONFIRMATION"
+    },
+    {
+      "case_id": "PP-A03-S05-P06-001",
+      "split": "HELD_OUT_CONFIRMATION"
+    },
+    {
+      "case_id": "PP-A03-S05-P07-001",
+      "split": "HELD_OUT_CONFIRMATION"
+    },
+    {
+      "case_id": "PP-A03-S06-P06-001",
+      "split": "HELD_OUT_CONFIRMATION"
+    },
+    {
+      "case_id": "PP-A03-S06-P07-001",
+      "split": "HELD_OUT_CONFIRMATION"
+    },
+    {
+      "case_id": "PP-A04-P04-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A04-P09-F01",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A04-S01-P06-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A04-S01-P07-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A04-S02-P06-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A04-S02-P07-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A04-S03-P06-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A04-S03-P07-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A04-S03-PLANNER-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A04-S04-P06-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A04-S04-P07-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A04-S04-PLANNER-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A04-S05-P06-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A04-S05-P07-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A04-S06-P06-001",
+      "split": "SMOKE"
+    },
+    {
+      "case_id": "PP-A04-S06-P07-001",
+      "split": "SMOKE"
+    },
+    {
+      "case_id": "PP-A05-P04-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A05-S01-P06-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A05-S01-P07-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A05-S02-P06-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A05-S02-P07-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A05-S03-P06-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A05-S03-P07-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A05-S04-P06-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A05-S04-P07-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A05-S05-P07-001",
+      "split": "SMOKE"
+    },
+    {
+      "case_id": "PP-A05-S05-PLANNER-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A05-S06-P06-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A05-S06-P07-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A06-P04-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A06-S01-P06-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A06-S01-P07-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A06-S02-P06-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A06-S02-P07-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A06-S03-P06-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A06-S03-P07-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A06-S04-P06-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A06-S04-P07-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A06-S05-P06-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A06-S05-P07-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A06-S06-P06-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A06-S06-P07-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A06-S06-PLANNER-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A07-P04-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A07-PLANNER-ACT",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A07-S01-P06-001",
+      "split": "SMOKE"
+    },
+    {
+      "case_id": "PP-A07-S01-P07-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A07-S01-PLANNER-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A07-S02-P06-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A07-S02-P07-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A07-S03-P06-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A07-S03-P07-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A07-S03-PLANNER-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A07-S04-P06-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A07-S04-P07-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A07-S05-P06-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A07-S05-P07-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A07-S06-P06-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A07-S06-P07-001",
+      "split": "SMOKE"
+    },
+    {
+      "case_id": "PP-A08-P04-001",
+      "split": "HELD_OUT_CONFIRMATION"
+    },
+    {
+      "case_id": "PP-A08-S01-P06-001",
+      "split": "HELD_OUT_CONFIRMATION"
+    },
+    {
+      "case_id": "PP-A08-S01-P07-001",
+      "split": "HELD_OUT_CONFIRMATION"
+    },
+    {
+      "case_id": "PP-A08-S02-P07-001",
+      "split": "HELD_OUT_CONFIRMATION"
+    },
+    {
+      "case_id": "PP-A08-S02-PLANNER-001",
+      "split": "HELD_OUT_CONFIRMATION"
+    },
+    {
+      "case_id": "PP-A08-S03-P06-001",
+      "split": "HELD_OUT_CONFIRMATION"
+    },
+    {
+      "case_id": "PP-A08-S03-P07-001",
+      "split": "HELD_OUT_CONFIRMATION"
+    },
+    {
+      "case_id": "PP-A08-S04-P06-001",
+      "split": "HELD_OUT_CONFIRMATION"
+    },
+    {
+      "case_id": "PP-A08-S04-P07-001",
+      "split": "HELD_OUT_CONFIRMATION"
+    },
+    {
+      "case_id": "PP-A08-S05-P06-001",
+      "split": "HELD_OUT_CONFIRMATION"
+    },
+    {
+      "case_id": "PP-A08-S05-P07-001",
+      "split": "HELD_OUT_CONFIRMATION"
+    },
+    {
+      "case_id": "PP-A08-S06-P06-001",
+      "split": "HELD_OUT_CONFIRMATION"
+    },
+    {
+      "case_id": "PP-A08-S06-P07-001",
+      "split": "HELD_OUT_CONFIRMATION"
+    },
+    {
+      "case_id": "PP-A08-S06-PLANNER-001",
+      "split": "HELD_OUT_CONFIRMATION"
+    },
+    {
+      "case_id": "PP-A09-P04-001",
+      "split": "HELD_OUT_CONFIRMATION"
+    },
+    {
+      "case_id": "PP-A09-P09-F01",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A09-S01-P06-001",
+      "split": "HELD_OUT_CONFIRMATION"
+    },
+    {
+      "case_id": "PP-A09-S01-P07-001",
+      "split": "HELD_OUT_CONFIRMATION"
+    },
+    {
+      "case_id": "PP-A09-S02-P06-001",
+      "split": "HELD_OUT_CONFIRMATION"
+    },
+    {
+      "case_id": "PP-A09-S02-P07-001",
+      "split": "HELD_OUT_CONFIRMATION"
+    },
+    {
+      "case_id": "PP-A09-S03-P06-001",
+      "split": "HELD_OUT_CONFIRMATION"
+    },
+    {
+      "case_id": "PP-A09-S03-P07-001",
+      "split": "HELD_OUT_CONFIRMATION"
+    },
+    {
+      "case_id": "PP-A09-S04-P06-001",
+      "split": "HELD_OUT_CONFIRMATION"
+    },
+    {
+      "case_id": "PP-A09-S04-P07-001",
+      "split": "HELD_OUT_CONFIRMATION"
+    },
+    {
+      "case_id": "PP-A09-S05-P06-001",
+      "split": "HELD_OUT_CONFIRMATION"
+    },
+    {
+      "case_id": "PP-A09-S05-P07-001",
+      "split": "HELD_OUT_CONFIRMATION"
+    },
+    {
+      "case_id": "PP-A09-S06-P06-001",
+      "split": "HELD_OUT_CONFIRMATION"
+    },
+    {
+      "case_id": "PP-A09-S06-P07-001",
+      "split": "HELD_OUT_CONFIRMATION"
+    },
+    {
+      "case_id": "PP-A10-P04-001",
+      "split": "HELD_OUT_CONFIRMATION"
+    },
+    {
+      "case_id": "PP-A10-PLANNER-ACT",
+      "split": "HELD_OUT_CONFIRMATION"
+    },
+    {
+      "case_id": "PP-A10-S01-P06-001",
+      "split": "HELD_OUT_CONFIRMATION"
+    },
+    {
+      "case_id": "PP-A10-S01-P07-001",
+      "split": "HELD_OUT_CONFIRMATION"
+    },
+    {
+      "case_id": "PP-A10-S02-P06-001",
+      "split": "HELD_OUT_CONFIRMATION"
+    },
+    {
+      "case_id": "PP-A10-S02-P07-001",
+      "split": "HELD_OUT_CONFIRMATION"
+    },
+    {
+      "case_id": "PP-A10-S03-P06-001",
+      "split": "HELD_OUT_CONFIRMATION"
+    },
+    {
+      "case_id": "PP-A10-S03-P07-001",
+      "split": "HELD_OUT_CONFIRMATION"
+    },
+    {
+      "case_id": "PP-A10-S04-P06-001",
+      "split": "HELD_OUT_CONFIRMATION"
+    },
+    {
+      "case_id": "PP-A10-S04-P07-001",
+      "split": "HELD_OUT_CONFIRMATION"
+    },
+    {
+      "case_id": "PP-A10-S05-P06-001",
+      "split": "HELD_OUT_CONFIRMATION"
+    },
+    {
+      "case_id": "PP-A10-S05-P07-001",
+      "split": "HELD_OUT_CONFIRMATION"
+    },
+    {
+      "case_id": "PP-A10-S06-P06-001",
+      "split": "HELD_OUT_CONFIRMATION"
+    },
+    {
+      "case_id": "PP-A10-S06-P07-001",
+      "split": "HELD_OUT_CONFIRMATION"
+    },
+    {
+      "case_id": "PP-A11-P04-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A11-S01-P06-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A11-S01-P07-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A11-S02-P06-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A11-S02-P07-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A11-S03-P06-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A11-S03-P07-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A11-S04-P06-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A11-S04-P07-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A11-S05-P06-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A11-S05-P07-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A11-S05-PLANNER-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A11-S06-P06-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A11-S06-P07-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A11-S06-PLANNER-001",
+      "split": "CORE"
+    },
+    {
+      "case_id": "PP-A12-P04-001",
+      "split": "HELD_OUT_CONFIRMATION"
+    },
+    {
+      "case_id": "PP-A12-P09-F01",
+      "split": "HELD_OUT_CONFIRMATION"
+    },
+    {
+      "case_id": "PP-A12-S01-P06-001",
+      "split": "HELD_OUT_CONFIRMATION"
+    },
+    {
+      "case_id": "PP-A12-S01-P07-001",
+      "split": "HELD_OUT_CONFIRMATION"
+    },
+    {
+      "case_id": "PP-A12-S02-P06-001",
+      "split": "HELD_OUT_CONFIRMATION"
+    },
+    {
+      "case_id": "PP-A12-S02-P07-001",
+      "split": "HELD_OUT_CONFIRMATION"
+    },
+    {
+      "case_id": "PP-A12-S03-P06-001",
+      "split": "HELD_OUT_CONFIRMATION"
+    },
+    {
+      "case_id": "PP-A12-S03-P07-001",
+      "split": "HELD_OUT_CONFIRMATION"
+    },
+    {
+      "case_id": "PP-A12-S04-P06-001",
+      "split": "HELD_OUT_CONFIRMATION"
+    },
+    {
+      "case_id": "PP-A12-S04-P07-001",
+      "split": "HELD_OUT_CONFIRMATION"
+    },
+    {
+      "case_id": "PP-A12-S05-P06-001",
+      "split": "HELD_OUT_CONFIRMATION"
+    },
+    {
+      "case_id": "PP-A12-S05-P07-001",
+      "split": "HELD_OUT_CONFIRMATION"
+    },
+    {
+      "case_id": "PP-A12-S06-P07-001",
+      "split": "HELD_OUT_CONFIRMATION"
+    },
+    {
+      "case_id": "PP-A12-S06-PLANNER-001",
+      "split": "HELD_OUT_CONFIRMATION"
+    }
+  ],
+  "counts_by_split_and_stage": {
+    "CORE": {
+      "P04": 6,
+      "P06": 37,
+      "P07": 37,
+      "P09": 2,
+      "PLANNER": 13
+    },
+    "HELD_OUT_CONFIRMATION": {
+      "P04": 5,
+      "P06": 28,
+      "P07": 30,
+      "P09": 1,
+      "PLANNER": 6
+    },
+    "SMOKE": {
+      "P04": 1,
+      "P06": 4,
+      "P07": 5,
+      "P09": 1,
+      "PLANNER": 2
+    }
+  },
+  "held_out_activity_numbers": [
+    3,
+    8,
+    9,
+    10,
+    12
+  ],
+  "held_out_lock": "HELD_OUT_CONFIRMATION may only confirm or reject a configuration; it cannot tune prompts, routing, thresholds, or candidates.",
+  "p09_exception": {
+    "assignment": {
+      "12": "HELD_OUT_CONFIRMATION",
+      "3": "SMOKE",
+      "4": "CORE",
+      "9": "CORE"
+    },
+    "reason": "ONLY_FOUR_FROZEN_STAGE_LOCAL_FIXTURES"
+  },
+  "schema_version": "semantic-benchmark-splits/1.0.0",
+  "strategy": "ACTIVITY_DISJOINT_HELD_OUT_WITH_AUDITED_P09_EXCEPTION"
+}

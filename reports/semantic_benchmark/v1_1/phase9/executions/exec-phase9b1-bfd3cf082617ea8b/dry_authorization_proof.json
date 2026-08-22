@@ -1,0 +1,56 @@
+{
+  "expected_primary_logical_calls": 30,
+  "fallback_routes_declared": 0,
+  "findings": [],
+  "frozen_rung_cap_total_usd": 1.7952,
+  "generated_at": "2026-08-18T03:41:25Z",
+  "outer_authorization_cap_usd": 2.0,
+  "outer_cap_enforced_before_transport": true,
+  "per_call_cap_enforced_before_transport": true,
+  "primary_logical_calls_reachable": 30,
+  "projected_worst_case_total_usd": 1.401438,
+  "proof_hash": "sha256:f07fcea92422ea80253374205ad0274c56a917ef1acba18b18c5fdf720cdcbe6",
+  "reachable_candidate_ids": [
+    "P04-C1-TERRA-HIGH",
+    "P06-C1-LUNA-HIGH",
+    "P07-C1-LUNA-HIGH",
+    "P09-C1-LUNA-HIGH"
+  ],
+  "reachable_models": [
+    "gpt-5.6-luna",
+    "gpt-5.6-terra"
+  ],
+  "reachable_reasoning_efforts": [
+    "HIGH"
+  ],
+  "reachable_route_profiles": [
+    "LUNA_BASELINE_V1",
+    "TERRA_HIGH_V1"
+  ],
+  "reachable_splits": [
+    "SMOKE"
+  ],
+  "reachable_stages": [
+    "P04",
+    "P06",
+    "P07",
+    "P09"
+  ],
+  "result": "PASS",
+  "schema_version": "phase9-dry-authorization-proof/1.0.0",
+  "semantic_retry_paths_declared": 0,
+  "technical_retry_max_per_logical_call": 1,
+  "unreachable": {
+    "CORE": true,
+    "CROSS_FAMILY_FALLBACK": true,
+    "HELD_OUT_CONFIRMATION": true,
+    "MAX": true,
+    "P01_P02_P03": true,
+    "P05_P08": true,
+    "P10": true,
+    "P11_SEMANTIC_REPAIR": true,
+    "SEMANTIC_RETRY": true,
+    "SOL": true,
+    "XHIGH": true
+  }
+}

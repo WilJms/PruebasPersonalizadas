@@ -1,0 +1,60 @@
+{
+  "authorization": "NONE",
+  "available_cases_by_stage": {
+    "P04": 12,
+    "P06": 69,
+    "P07": 72,
+    "P09": 4,
+    "PLANNER": 21
+  },
+  "benchmark_version": "semantic-benchmark/1.0.0",
+  "candidate_matrix_status": "UNSET",
+  "cases_by_split_and_semantic_stage": {
+    "CORE": {
+      "P04": 6,
+      "P06": 37,
+      "P07": 37,
+      "P09": 2
+    },
+    "HELD_OUT_CONFIRMATION": {
+      "P04": 5,
+      "P06": 28,
+      "P07": 30,
+      "P09": 1
+    },
+    "SMOKE": {
+      "P04": 1,
+      "P06": 4,
+      "P07": 5,
+      "P09": 1
+    }
+  },
+  "pricing_status": "NOT_REFRESHED_PHASE9_REQUIRED",
+  "projections_for_one_hypothetical_candidate": {
+    "k=1": {
+      "calls_by_stage": {
+        "P04": 12,
+        "P06": 69,
+        "P07": 72,
+        "P09": 4
+      },
+      "candidate_count": 1,
+      "planner_calls": 0,
+      "repetitions": 1,
+      "total_model_calls": 157
+    },
+    "k=3": {
+      "calls_by_stage": {
+        "P04": 36,
+        "P06": 207,
+        "P07": 216,
+        "P09": 12
+      },
+      "candidate_count": 1,
+      "planner_calls": 0,
+      "repetitions": 3,
+      "total_model_calls": 471
+    }
+  },
+  "schema_version": "phase9-call-budget/1.0.0"
+}

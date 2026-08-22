@@ -1,0 +1,421 @@
+{
+  "byte_size": 40097,
+  "media_type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "parser_id": "stage2-docx-structural",
+  "parser_version": "stage2-parser/2.0.0",
+  "schema_version": "phase9-blind-source-projection/1.0.0",
+  "source_content_hash": "sha256:8a4b3a84858cc4b6960bfc7385161d3a43b6751ca26d0f8690ad7a28220257b5",
+  "unit_count": 24,
+  "units": [
+    {
+      "content_text": "ACTIVIDAD 02",
+      "evidence_id": "ev_6f5dcc5884387ad5d2b5",
+      "locator": {
+        "column": null,
+        "heading_path": [],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 0,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "PARAGRAPH",
+      "normalized_hash": "sha256:15d988efb28d3ffddb5fca188154f511090a5c886fa9df273f6d96418fdcd89e",
+      "source_order": 0
+    },
+    {
+      "content_text": "La voz y la omisión en un microcuento",
+      "evidence_id": "ev_a9fe3829d0d3c7de2d87",
+      "locator": {
+        "column": null,
+        "heading_path": [],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 1,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "PARAGRAPH",
+      "normalized_hash": "sha256:ceb19b22bac2e8b7391f4a8a6f67d78208694859331ce95b7e7a3e2f8aabd1a1",
+      "source_order": 1
+    },
+    {
+      "content_text": "Comentario argumentativo sobre un texto incluido en la consigna",
+      "evidence_id": "ev_954ed864e88c788716b7",
+      "locator": {
+        "column": null,
+        "heading_path": [],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 2,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "PARAGRAPH",
+      "normalized_hash": "sha256:127acb9ce074ee7e1f824f689dc5394f21c31056f726079615bf5db827d5fa57",
+      "source_order": 2
+    },
+    {
+      "content_text": "Disciplina: Humanidades - literatura   |   Dificultad del paquete: simple",
+      "evidence_id": "ev_3dc9d3e1899f2dfe99ed",
+      "locator": {
+        "column": null,
+        "heading_path": [],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 3,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "PARAGRAPH",
+      "normalized_hash": "sha256:5b86915ac8d7438158225867433886af0d6d8793e188dec3afad4ec2db4f2570",
+      "source_order": 3
+    },
+    {
+      "content_text": "Texto autorizado",
+      "evidence_id": "ev_6785b232f938c34cae44",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Texto autorizado"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 4,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "HEADING",
+      "normalized_hash": "sha256:0b6935f300c7c8578ae24416d1b6387f7f6daad35386fac5c9a8ab44b0b77c69",
+      "source_order": 4
+    },
+    {
+      "content_text": "Lee el siguiente microcuento, escrito para esta actividad. No hay información biográfica adicional ni una interpretación oficial fuera de esta página.",
+      "evidence_id": "ev_d0de4e6e7a2881e3afb0",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Texto autorizado"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 5,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "PARAGRAPH",
+      "normalized_hash": "sha256:dfd3886ddd213b8bcbca1c7c8cc6d435dd8855296477ad6b2044a1f028ffc549",
+      "source_order": 5
+    },
+    {
+      "content_text": "El tercer timbre: Al tercer timbre, Elisa dejó de fingir que buscaba las llaves. Desde el pasillo oyó a su hermano mover una silla y apagar la radio. Llevaban dos semanas turnándose para no abrir. En el sobre, apoyado bajo la puerta, solo se veía su nombre y una esquina azul. Elisa lo empujó con el zapato hasta esconderlo bajo el felpudo. 'Mañana', dijo hacia adentro. Nadie respondió. Por la noche anotó en la libreta: martes, no vino nadie. Luego arrancó la hoja, la dobló cuatro veces y la guardó en el mismo cajón donde estaban las otras.",
+      "evidence_id": "ev_c0e1bcc849c2ae59afed",
+      "locator": {
+        "column": 0,
+        "heading_path": [
+          "Texto autorizado"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 0,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:f3914e20009b0497655511089e932bcc7ae79487a2c4c87450cd0e094ad4212a",
+      "source_order": 6
+    },
+    {
+      "content_text": "Marco de lectura autorizado",
+      "evidence_id": "ev_ef891bb126782ca8f161",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Texto autorizado",
+          "Marco de lectura autorizado"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 6,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "HEADING",
+      "normalized_hash": "sha256:7f42bb44c66e44be4d513af53a47ea04b86e87d4e7b0c19358f45b145a0b0f38",
+      "source_order": 7
+    },
+    {
+      "content_text": "El comentario debe trabajar con la diferencia entre lo que ocurre en la escena, lo que Elisa registra y lo que el relato deja sin confirmar. La voz narrativa permite observar acciones y oír algunas frases, pero no revela el contenido del sobre ni explica por qué los hermanos evitan abrir. La libreta aparece como un registro dentro del propio cuento: puede leerse como evidencia sobre Elisa, no como una narración objetiva de todo lo sucedido.",
+      "evidence_id": "ev_31a0328324df024675fc",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Texto autorizado",
+          "Marco de lectura autorizado"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 7,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "PARAGRAPH",
+      "normalized_hash": "sha256:3d57389c5ef13c911a4f0fc6fba505b9eebfd26927a12e89bf47423d3a71b8f3",
+      "source_order": 8
+    },
+    {
+      "content_text": "No hay una solución única. Una lectura puede centrarse en la confiabilidad del registro de Elisa; otra, en la función de la omisión del visitante o del contenido del sobre; una tercera, en la repetición que sugieren 'las otras' hojas. Lo evaluable es que la interpretación organice detalles concretos y marque la diferencia entre una inferencia plausible y un hecho textual.",
+      "evidence_id": "ev_708220a8fdc95cc18b8b",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Texto autorizado",
+          "Marco de lectura autorizado"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 8,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "PARAGRAPH",
+      "normalized_hash": "sha256:6e6df46aa828b76ef63e79e282fd268fa027e2aeb2d1a6ede33f24c853df2417",
+      "source_order": 9
+    },
+    {
+      "content_text": "Relaciones que conviene examinar",
+      "evidence_id": "ev_1102382dc331d847f2ce",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Texto autorizado",
+          "Relaciones que conviene examinar"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 9,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "HEADING",
+      "normalized_hash": "sha256:1a00396ae0b38d589782667ab7bc5d5c90c7b4b4d1fc0046259e4f88c4c37cb3",
+      "source_order": 10
+    },
+    {
+      "content_text": "La frase 'no vino nadie' puede compararse con los tres timbres, el sobre con su nombre y las acciones de ocultar o arrancar.",
+      "evidence_id": "ev_7cf56e1c9c0d3bfdf22e",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Texto autorizado",
+          "Relaciones que conviene examinar"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 10,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "LIST",
+      "normalized_hash": "sha256:9f42f87a5d6708fcf60ad1677c907e52b8020d1ff0399c5a21289b99083a354c",
+      "source_order": 11
+    },
+    {
+      "content_text": "Dos fragmentos próximos no son automáticamente mejores que dos fragmentos distribuidos. Explica la función de cada uno dentro de la misma tesis.",
+      "evidence_id": "ev_c834595b1e7a30a342ca",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Texto autorizado",
+          "Relaciones que conviene examinar"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 11,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "LIST",
+      "normalized_hash": "sha256:ea6ac6b32f7d145b0399cfa31da25b0e96b5d6f02dae87eeb7498cb43adfa802",
+      "source_order": 12
+    },
+    {
+      "content_text": "Una alternativa no tiene que ser una teoría completa: basta con mostrar otra explicación compatible y decir qué dato faltaría para preferir una lectura.",
+      "evidence_id": "ev_d80736e2c3d25d55b110",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Texto autorizado",
+          "Relaciones que conviene examinar"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 12,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "LIST",
+      "normalized_hash": "sha256:242c8fcb7e7281e1d280cd133074ec08d76657f843ea0725af465a5796805ba6",
+      "source_order": 13
+    },
+    {
+      "content_text": "Evita convertir el color de una esquina, el silencio del hermano o el cajón en pruebas de una historia externa que el texto no narra.",
+      "evidence_id": "ev_607e4002317735e5113c",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Texto autorizado",
+          "Relaciones que conviene examinar"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 13,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "LIST",
+      "normalized_hash": "sha256:54f903be9ca0d6005ca60b3aed1eeb6d61db362bf6549d6ea8bab86293b7cb07",
+      "source_order": 14
+    },
+    {
+      "content_text": "Audiencia y forma",
+      "evidence_id": "ev_ac2695d7fe87b6f50de3",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Texto autorizado",
+          "Audiencia y forma"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 14,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "HEADING",
+      "normalized_hash": "sha256:f51b26344867516ea4fa1b47769e7b7e77a2fa4d45a44e3f5059d90cbf5f225e",
+      "source_order": 15
+    },
+    {
+      "content_text": "Escribe para una revista escolar que publicará comentarios breves junto al cuento. Incluye una tesis visible, análisis en párrafos y un cierre que preserve alguna incertidumbre. Las citas deben ser cortas y quedar integradas a tus propias oraciones; un bloque de citas sin explicación no cumple la tarea.",
+      "evidence_id": "ev_e12a634b8509a5b9ff47",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Texto autorizado",
+          "Audiencia y forma"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 15,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "PARAGRAPH",
+      "normalized_hash": "sha256:40a6a6a130f8c4080ae63ed38ce9bda33ae45df24bec6b91f16dd4fb8632435e",
+      "source_order": 16
+    },
+    {
+      "content_text": "Tarea",
+      "evidence_id": "ev_faf0a09f641f5a054ad2",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Tarea"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 16,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "HEADING",
+      "normalized_hash": "sha256:981fc146f03fe7ac990c6b5cfdf8c0a5d6a0ab859a54c244637d6b47e5a10db7",
+      "source_order": 17
+    },
+    {
+      "content_text": "Propón una interpretación sobre la confiabilidad de la narración o sobre la función de una omisión importante.",
+      "evidence_id": "ev_2a06969d79641171c8e9",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Tarea"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 17,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "LIST",
+      "normalized_hash": "sha256:7a9869829287cdb19f1dd07d0e99205d849287aa9e5828d310510e318e18ce42",
+      "source_order": 18
+    },
+    {
+      "content_text": "Defiende tu interpretación usando dos fragmentos o acciones concretas del microcuento.",
+      "evidence_id": "ev_7801715d292a60250b8a",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Tarea"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 18,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "LIST",
+      "normalized_hash": "sha256:29e76f76e051d851d3d025c8dea26638488e38669d85f331fa3fa7fc0ef096f2",
+      "source_order": 19
+    },
+    {
+      "content_text": "Explica la relación entre esos dos elementos: no basta con copiarlos.",
+      "evidence_id": "ev_c79d80bd29f113a373d4",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Tarea"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 19,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "LIST",
+      "normalized_hash": "sha256:7c6bb72988bfd12e95752ee890027697b85b0a0aeef1fe4e0324e5946348cf8c",
+      "source_order": 20
+    },
+    {
+      "content_text": "Menciona brevemente una lectura alternativa que el texto todavía permita.",
+      "evidence_id": "ev_d574dd095cc4ca491d7f",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Tarea"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 20,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "LIST",
+      "normalized_hash": "sha256:52399ae9e7db204b238b3ba8f67c3b66b5c875abf8a45b7b09c49bc7ae039f08",
+      "source_order": 21
+    },
+    {
+      "content_text": "Entregable",
+      "evidence_id": "ev_5685fb6b754e751e1daa",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Entregable"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 21,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "HEADING",
+      "normalized_hash": "sha256:e06951a515617b7f269d6e9470bb0d8d34e9a530557ee4bd53391503e86be625",
+      "source_order": 22
+    },
+    {
+      "content_text": "Un comentario de 350 a 700 palabras. Puedes citar frases breves. No inventes datos sobre la autora, la deuda, el contenido del sobre ni la historia familiar; si propones una posibilidad, debes marcarla como tal.",
+      "evidence_id": "ev_da661926f563096937a9",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Entregable"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 22,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "PARAGRAPH",
+      "normalized_hash": "sha256:66db7306176409751441df3c05ec1cc9cdd001b52955b83ba4dc191cdf83d579",
+      "source_order": 23
+    }
+  ]
+}

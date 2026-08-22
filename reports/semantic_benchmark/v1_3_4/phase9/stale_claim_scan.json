@@ -1,0 +1,19 @@
+{
+  "active_benchmark_version": "semantic-benchmark/1.3.4",
+  "active_claim_occurrences_checked": 7,
+  "republished_unchanged_artifacts": [
+    "evaluation/semantic_benchmark/v1_3_4/phase9/construct_selection_semantics.json",
+    "evaluation/semantic_benchmark/v1_3_4/phase9/n3_provider_fixtures.json",
+    "evaluation/semantic_benchmark/v1_3_4/phase9/uncertain_coverage_disposition.json",
+    "reports/semantic_benchmark/v1_3_4/phase9/call_budget.json",
+    "reports/semantic_benchmark/v1_3_4/phase9/construct_selection_independence.json",
+    "reports/semantic_benchmark/v1_3_4/phase9/n3_fixture_equality_proof.json",
+    "reports/semantic_benchmark/v1_3_4/phase9/n3_production_representativeness.json",
+    "reports/semantic_benchmark/v1_3_4/phase9/noisy_disposition_census.json"
+  ],
+  "scan_hash": "sha256:4af4b51e048e157a01abd47935960e5da3234983dde52bf982eba6f72b9250cc",
+  "schema_version": "semantic-benchmark-stale-claim-scan/1.3.4",
+  "superseded_version_scanned_for": "semantic-benchmark/1.3.3",
+  "violation_count": 0,
+  "violations": []
+}

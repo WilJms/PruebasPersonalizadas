@@ -417,6 +417,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/assessments/{assessment_id}/guide/estimate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Guide Estimate */
+        get: operations["guide_estimate_api_v1_assessments__assessment_id__guide_estimate_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/assessments/{assessment_id}/guide/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Guide History */
+        get: operations["guide_history_api_v1_assessments__assessment_id__guide_history_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/assessments/{assessment_id}/questions/{question_id}/actions": {
         parameters: {
             query?: never;
@@ -1102,8 +1136,12 @@ export interface components {
              * @default 0.75
              */
             minimum_opportunity_quality: number;
+            /** Priority Criterion Ids */
+            priority_criterion_ids?: string[];
             /** Question Count */
             question_count: number;
+            /** Required Criterion Ids */
+            required_criterion_ids?: string[];
             structured_justification_policy: components["schemas"]["StructuredJustificationPolicy"];
             /** Target Total Minutes */
             target_total_minutes: number;
@@ -1119,7 +1157,11 @@ export interface components {
             evidence?: components["schemas"]["EvidenceResource"][];
             /** Evidence Receipts */
             evidence_receipts?: components["schemas"]["EvidenceReceipt"][];
-            guide: components["schemas"]["EvaluationGuide"];
+            guide?: components["schemas"]["EvaluationGuide"] | null;
+            /** Guide Job Id */
+            guide_job_id?: string | null;
+            /** @default NOT_AVAILABLE */
+            guide_status: components["schemas"]["GuideLifecycleStatus"];
             /** Reviews */
             reviews: components["schemas"]["QuestionReviewResource"][];
         };
@@ -1167,6 +1209,7 @@ export interface components {
             etag: string;
             /** Issues */
             issues?: components["schemas"]["Diagnostic"][];
+            preflight?: components["schemas"]["BlueprintReviewPreflight"] | null;
             review?: components["schemas"]["BlueprintReview"] | null;
             /** Version */
             version: number;
@@ -1217,6 +1260,36 @@ export interface components {
             /** Referenced Ids */
             referenced_ids?: string[];
             status: components["schemas"]["ReviewCheckStatus"];
+        };
+        /**
+         * BlueprintReviewPreflight
+         * @description Server-derived facts that P05 must not ask the model to recompute.
+         */
+        BlueprintReviewPreflight: {
+            /** Blueprint Id */
+            blueprint_id: string;
+            /** Blueprint Version */
+            blueprint_version: number;
+            /** Catalog Plan Feasible */
+            catalog_plan_feasible: boolean;
+            /** Catalog Size Sufficient */
+            catalog_size_sufficient: boolean;
+            /** Format Feasible */
+            format_feasible: boolean;
+            /** Justification Matrix Valid */
+            justification_matrix_valid: boolean;
+            /** Policy Constraints Match */
+            policy_constraints_match: boolean;
+            /**
+             * Schema Version
+             * @default 1.1.0
+             * @constant
+             */
+            schema_version: "1.1.0";
+            /** Source Coverage Complete */
+            source_coverage_complete: boolean;
+            /** Time Feasible */
+            time_feasible: boolean;
         };
         /** BulkApprovalCommand */
         BulkApprovalCommand: {
@@ -1365,7 +1438,7 @@ export interface components {
              * Phase
              * @enum {string}
              */
-            phase: "ACTIVITY_BLUEPRINT" | "SUBMISSION_ASSESSMENT";
+            phase: "ACTIVITY_BLUEPRINT" | "SUBMISSION_ASSESSMENT" | "APPROVED_GUIDE_ENRICHMENT";
             /** Upper Bound Cost Usd */
             upper_bound_cost_usd: number;
             /** Within Limit */
@@ -1549,11 +1622,15 @@ export interface components {
         };
         /**
          * EvaluationGuide
-         * @description Structured guide persisted with the assessment and submission.
+         * @description Structured guide for an exact approved assessment version.
+         *
+         *     ``binding=None`` is accepted only so pre-Phase-7 historical rows remain
+         *     readable. Active selection and export require a complete binding.
          */
         EvaluationGuide: {
             /** Assessment Id */
             assessment_id: string;
+            binding?: components["schemas"]["GuideApprovalBinding"] | null;
             /**
              * Created At
              * Format: date-time
@@ -2036,10 +2113,53 @@ export interface components {
          * @enum {string}
          */
         FeedbackTargetType: "ACTIVITY" | "ASSESSMENT" | "QUESTION";
+        /**
+         * GuideApprovalBinding
+         * @description Server-owned identity tying one guide to one approved assessment version.
+         */
+        GuideApprovalBinding: {
+            /** Approval Event Id */
+            approval_event_id: string;
+            /** Approval Snapshot Hash */
+            approval_snapshot_hash: string;
+            /**
+             * Approved At
+             * Format: date-time
+             */
+            approved_at: string;
+            /** Approved By */
+            approved_by: string;
+            /** Assessment Etag */
+            assessment_etag: string;
+            /** Assessment Id */
+            assessment_id: string;
+            /** Assessment Snapshot Hash */
+            assessment_snapshot_hash: string;
+            /** Assessment Version */
+            assessment_version: number;
+            /**
+             * Binding Version
+             * @default guide-approval-binding/1.0.0
+             * @constant
+             */
+            binding_version: "guide-approval-binding/1.0.0";
+            /** Guide Policy Hash */
+            guide_policy_hash: string;
+            /** Materializer Boundary Hash */
+            materializer_boundary_hash: string;
+            /** Question Set Hash */
+            question_set_hash: string;
+            /** Submission Id */
+            submission_id: string;
+            /** Tenant Id */
+            tenant_id: string;
+        };
         /** GuideDraft */
         GuideDraft: {
             /** Acceptable Alternatives */
             acceptable_alternatives?: string[];
+            /** Acceptance Conditions */
+            acceptance_conditions?: string[];
             /** Cannot Infer */
             cannot_infer?: string[];
             /** Levels */
@@ -2050,10 +2170,31 @@ export interface components {
             observable_elements?: components["schemas"]["ObservableElement"][];
             /** Purpose */
             purpose: string;
+            /** Semantic Uncertainties */
+            semantic_uncertainties?: string[];
         };
         /** GuideEnvelope */
         GuideEnvelope: {
+            guide?: components["schemas"]["EvaluationGuide"] | null;
+            /** Job Id */
+            job_id?: string | null;
+            status: components["schemas"]["GuideLifecycleStatus"];
+        };
+        /** GuideHistoryEnvelope */
+        GuideHistoryEnvelope: {
+            /** Items */
+            items?: components["schemas"]["GuideHistoryItem"][];
+        };
+        /** GuideHistoryItem */
+        GuideHistoryItem: {
+            /** Assessment Etag */
+            assessment_etag?: string | null;
+            /** Assessment Version */
+            assessment_version?: number | null;
             guide: components["schemas"]["EvaluationGuide"];
+            /** Guide Job Id */
+            guide_job_id?: string | null;
+            lifecycle_status: components["schemas"]["GuideLifecycleStatus"];
         };
         /** GuideLevel */
         GuideLevel: {
@@ -2066,6 +2207,11 @@ export interface components {
             /** Observable Element Ids */
             observable_element_ids?: string[];
         };
+        /**
+         * GuideLifecycleStatus
+         * @enum {string}
+         */
+        GuideLifecycleStatus: "NOT_AVAILABLE" | "PENDING" | "BUILDING" | "READY" | "FAILED" | "NEEDS_REVIEW" | "HISTORICAL_PREAPPROVAL";
         /** HealthResource */
         HealthResource: {
             /**
@@ -2558,6 +2704,7 @@ export interface components {
              * @constant
              */
             schema_version: "1.1.0";
+            selected_option?: components["schemas"]["DecisionOption"] | null;
             /** Selected Option Id */
             selected_option_id: string;
         };
@@ -2684,13 +2831,16 @@ export interface components {
         };
         /** QuestionReviewActionEnvelope */
         QuestionReviewActionEnvelope: {
-            action_record: components["schemas"]["QuestionReviewActionRecord"];
+            action_record?: components["schemas"]["QuestionReviewActionRecord"] | null;
             bundle: components["schemas"]["AssessmentEnvelope"];
+            job?: components["schemas"]["JobStatus"] | null;
         };
         /** QuestionReviewActionListEnvelope */
         QuestionReviewActionListEnvelope: {
             /** Items */
             items: components["schemas"]["QuestionReviewActionRecord"][];
+            /** Jobs */
+            jobs?: components["schemas"]["JobStatus"][];
         };
         /**
          * QuestionReviewActionRecord
@@ -2756,7 +2906,10 @@ export interface components {
             estimated_difficulty: components["schemas"]["DifficultyBand"];
             /** Estimated Minutes */
             estimated_minutes: number;
-            /** Evidence Ids */
+            /**
+             * Evidence Ids
+             * @description Only IDs from generation_result.candidate.evidence_ids are authorized; IDs present only elsewhere in the request are forbidden. Use [] when no evidence ID is needed.
+             */
             evidence_ids?: string[];
             /** Justifications */
             justifications?: string[];
@@ -2765,7 +2918,10 @@ export interface components {
             /** Question Id */
             question_id: string;
             scores: components["schemas"]["QuestionScores"];
-            /** Source Ids */
+            /**
+             * Source Ids
+             * @description Only IDs from generation_result.candidate.course_source_ids are authorized; IDs present only elsewhere in the request are forbidden. Use [] when no source ID is needed.
+             */
             source_ids?: string[];
         };
         /** QuestionScores */
@@ -2803,7 +2959,7 @@ export interface components {
          * ReasoningEffort
          * @enum {string}
          */
-        ReasoningEffort: "MINIMAL" | "LOW" | "MEDIUM" | "HIGH";
+        ReasoningEffort: "MINIMAL" | "LOW" | "MEDIUM" | "HIGH" | "XHIGH" | "MAX";
         /**
          * ResponseFormat
          * @enum {string}
@@ -2853,6 +3009,8 @@ export interface components {
             /** Question Text */
             question_text: string;
             response_format: components["schemas"]["ResponseFormat"];
+            /** Semantic Uncertainties */
+            semantic_uncertainties?: string[];
             /** Source Candidate Id */
             source_candidate_id: string;
             /**
@@ -4707,12 +4865,12 @@ export interface operations {
         };
         responses: {
             /** @description Successful Response */
-            200: {
+            202: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["BlueprintEnvelope"];
+                    "application/json": components["schemas"]["JobEnvelope"];
                 };
             };
             /** @description RFC 9457-style problem detail */
@@ -6702,6 +6860,250 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["GuideEnvelope"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    guide_estimate_api_v1_assessments__assessment_id__guide_estimate_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                assessment_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EstimateEnvelope"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description RFC 9457-style problem detail */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    guide_history_api_v1_assessments__assessment_id__guide_history_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                assessment_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GuideHistoryEnvelope"];
                 };
             };
             /** @description RFC 9457-style problem detail */

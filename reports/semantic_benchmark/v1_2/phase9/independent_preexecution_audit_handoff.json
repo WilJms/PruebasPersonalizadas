@@ -1,0 +1,114 @@
+{
+  "auditor_constraints": {
+    "fresh_context_required": true,
+    "may_read": [
+      "the frozen corpus",
+      "semantic-benchmark/1.2.0 fixtures, schemas and reports",
+      "phase9-qualification-protocol/1.2.0",
+      "the executable product surfaces the benchmark projects through",
+      "this handoff and the PART A freeze artifact"
+    ],
+    "must_not_have_seen": [
+      "Phase 9B.1 provider output bodies",
+      "call ledger semantic results",
+      "first-pass adjudication results",
+      "candidate pass/fail counts",
+      "historical Sol/Terra/Luna qualification results used as semantic guidance"
+    ]
+  },
+  "known_risks_to_examine_closely": [
+    "P06 SMOKE retains a single applicable property (A01-S03-P1) at a zero-tolerance denominator; one adjudicated failure rejects the rung.",
+    "Coverage fell from 127 to 77 P06 routes; 50 properties fail closed for want of a declared construct.",
+    "9 safety-tagged P06 properties lost their route; exposure is lower even though policy is unchanged.",
+    "Activities 05 and 12 contribute no executable P06 route because their rubrics are informal prose.",
+    "Construct resolution depends on the corpus naming its criterion in quotes; that is a property of this corpus, not a general guarantee."
+  ],
+  "must_verify": [
+    {
+      "artifacts": [
+        "fixtures/p06_construct_catalog.json",
+        "fixtures/p06_routes.json",
+        "property_alignment.json"
+      ],
+      "check": "Every executable route has one explicit source-grounded target_construct_key that resolves to an authorized rubric/assignment entry, and property/route construct identity are equal.",
+      "item": "P06 construct alignment"
+    },
+    {
+      "artifacts": [
+        "production_representativeness.json"
+      ],
+      "check": "Every model-visible field is reachable on the alias envelope built by the product's own build_evidence_mapping_alias_envelope; no benchmark-only semantic channel exists.",
+      "item": "Production representativeness"
+    },
+    {
+      "artifacts": [
+        "fixtures/p06_routes.json",
+        "tests/test_semantic_benchmark_v12.py"
+      ],
+      "check": "No expected support status, property id, oracle_state, ratification verdict or oracle description reaches model-visible input.",
+      "item": "Oracle isolation"
+    },
+    {
+      "artifacts": [
+        "fixtures/property_bindings.json",
+        "property_alignment.json"
+      ],
+      "check": "Route and binding metadata agree bidirectionally; assigned_arbitrarily_count is derived and equals 0; no orphaned binding or one-way association.",
+      "item": "Binding correctness"
+    },
+    {
+      "artifacts": [
+        "p06_field_authority.json",
+        "src/comprehension_verification/p06_adjudication_context.py"
+      ],
+      "check": "Exactly one companion per adjudicable P06 packet; binding is exact; the three MODEL_FAILURE questions are answerable without guessing architecture; no candidate/outcome metadata leaks.",
+      "item": "Blind adjudication context sufficiency"
+    },
+    {
+      "artifacts": [
+        "safety_gate.json"
+      ],
+      "check": "Hard-safety policy remains 0 permitted confirmed MODEL_FAILUREs and the 9 SAFETY_COVERAGE_DEBT entries are an acceptable exposure reduction under the frozen policy.",
+      "item": "Safety coverage"
+    },
+    {
+      "artifacts": [
+        "stage_boundaries.json",
+        "benchmark_boundary.json"
+      ],
+      "check": "Each stage boundary and the global boundary are deterministic cross-process; a P06-only change does not move P04/P07/P09 hashes; shared authority moves all.",
+      "item": "Stage/global boundary determinism"
+    }
+  ],
+  "next_real_execution_if_audit_passes": {
+    "action": "FRESH_COMPLETE_HIGH_SMOKE",
+    "authorization_issued_by_phase_9b4": false,
+    "benchmark_version": "semantic-benchmark/1.2.0",
+    "legacy_evidence_may_substitute_any_stage": false,
+    "not_performed_by_phase_9b4": true,
+    "protocol_version": "phase9-qualification-protocol/1.2.0",
+    "reason_for_full_smoke": "One clean lineage: one benchmark version, one protocol version, one authorization family, one generation run, one blind adjudication surface, one consolidation history.",
+    "requires_new_exactly_once_authorization": true,
+    "stages": [
+      "P04",
+      "P06",
+      "P07",
+      "P09"
+    ]
+  },
+  "phase": "9B.4",
+  "purpose": "Prepare, but not perform, the independent audit that must precede any real provider execution under semantic-benchmark/1.2.0.",
+  "rule": "Do not authorize provider execution because the repair model says v1.2 is ready. A separate fresh-context audit that has NOT seen v1.1 candidate outputs must verify the instrument first. Phase 9B.4 performed a structural self-check; that is not a substitute.",
+  "schema_version": "phase9-independent-preexecution-audit-handoff/1.0.0",
+  "state_at_handoff": {
+    "adjudicator_calls": 0,
+    "billable_authorizations": 0,
+    "corpus_package_boundary_hash": "21c21f3a53bfb786162dc350dc38c93b7b007d9f23b744a354de4ac2354048a1",
+    "evidence_carryforward_proof_hash": "sha256:acca9c88323323ad03cf661f81f5b2c51b98d2d3c8c4c9d74d14de3a94eab9af",
+    "global_benchmark_boundary_hash": "sha256:0855817997b64fa2357539877978b52140e1e78a949d7c830ef4f70d19e7fe79",
+    "part_a_freeze_sha256": "380e602214b83f6fbeb06ebcd127713d85df17e344e30fd424abc5b3672d6bc3",
+    "protocol_boundary_hash": "sha256:1de8ec9c0359a97784a07a27ccd9a454d895559a59cb34cb6df1154890cf7d82",
+    "provider_calls": 0,
+    "qualification_state": "PAUSED"
+  }
+}

@@ -16,6 +16,12 @@ const configuredAuth: PublicAuthConfig = {
 
 let browserClient: SupabaseClient | null = null;
 
+export const EPHEMERAL_BROWSER_AUTH = {
+  autoRefreshToken: false,
+  detectSessionInUrl: true,
+  persistSession: false,
+} as const;
+
 export function resolveAuthMode(
   config: PublicAuthConfig = configuredAuth,
 ): "cloud" | "local" {
@@ -33,11 +39,7 @@ export function getSupabaseClient(
       config.supabaseUrl!,
       config.supabasePublishableKey!,
       {
-        auth: {
-          autoRefreshToken: true,
-          detectSessionInUrl: true,
-          persistSession: true,
-        },
+        auth: EPHEMERAL_BROWSER_AUTH,
       },
     );
   }
@@ -74,10 +76,14 @@ export async function currentCloudAccessToken(
 }
 
 export function subscribeToCloudSession(
-  onSession: (session: SupabaseSession | null) => void,
+  onAccessToken: (accessToken: string) => void,
   client: SupabaseClient = getSupabaseClient(),
 ): () => void {
-  const { data } = client.auth.onAuthStateChange((_event, session) => onSession(session));
+  const { data } = client.auth.onAuthStateChange((_event, session: SupabaseSession | null) => {
+    // A null INITIAL_SESSION is expected because Supabase tokens are never
+    // persisted. It must not override the backend's HTTP-only session cookie.
+    if (session?.access_token) onAccessToken(session.access_token);
+  });
   return () => data.subscription.unsubscribe();
 }
 

@@ -23,9 +23,11 @@ from sqlalchemy import (
     String,
     Text,
     UniqueConstraint,
+    and_,
     cast,
     create_engine,
     delete,
+    func,
     or_,
     select,
     text,
@@ -36,6 +38,12 @@ from sqlalchemy.pool import StaticPool
 
 from ..canonical import canonical_hash, stable_id
 from ..contracts import models as m
+from ..provider_authorization import (
+    SYNTHETIC_PROVIDER_AUTHORIZATION_VERSION,
+    SYNTHETIC_PROVIDER_CLAIM_VERSION,
+    SyntheticProviderAuthorizationSpec,
+    SyntheticProviderGrant,
+)
 
 
 IDEMPOTENCY_CAPABILITY_CONSTRAINT = "ck_idempotency_keys_safe_response"
@@ -43,6 +51,18 @@ STAGE2_SUBMISSION_CONSTRAINT = "uq_submissions_tenant_activity_subject"
 STAGE2_JOB_CONTROL_CONSTRAINT = "ck_jobs_control_state"
 STAGE2_CONTINUATION_CONSTRAINT = "uq_job_control_records_source_attempt"
 QUESTION_ACTION_DESCRIPTOR_STAGE = "QUESTION_ACTION_DESCRIPTOR"
+QUESTION_ACTION_DESCRIPTOR_VERSION = "stage2-question-action-descriptor/1.0.0"
+QUESTION_ACTION_DESCRIPTOR_POLICY_HASH = canonical_hash(
+    {
+        "kind": QUESTION_ACTION_DESCRIPTOR_STAGE,
+        "version": QUESTION_ACTION_DESCRIPTOR_VERSION,
+    }
+)
+BLUEPRINT_REVIEW_DESCRIPTOR_STAGE = "BLUEPRINT_REVIEW_DESCRIPTOR"
+BLUEPRINT_PREFLIGHT_DESCRIPTOR_STAGE = "BLUEPRINT_PREFLIGHT_DESCRIPTOR"
+PROVIDER_FREE_BLUEPRINT_JOB_KINDS = frozenset(
+    {"BLUEPRINT_PREFLIGHT", "BLUEPRINT_REVIEW"}
+)
 
 JOB_CONTROL_STATES = frozenset({"ACTIVE", "CANCEL_REQUESTED", "CANCELLED"})
 JOB_FAILURE_CLASSES = frozenset(
@@ -58,6 +78,33 @@ JOB_FAILURE_CLASSES = frozenset(
 )
 RETRYABLE_JOB_FAILURE_CLASSES = frozenset({"TRANSIENT", "PROVIDER"})
 MAX_JOB_ATTEMPTS = 3
+
+
+def _question_action_descriptor_input_hash(output: dict[str, Any]) -> str | None:
+    action = output.get("action")
+    if not isinstance(action, dict):
+        return None
+    note = action.get("note")
+    replacement = action.get("replacement")
+    return canonical_hash(
+        {
+            "action_id": action.get("action_id"),
+            "logical_action_id": output.get("logical_action_id"),
+            "assessment_id": output.get("assessment_id"),
+            "assessment_version": output.get("assessment_version"),
+            "assessment_etag": output.get("assessment_etag"),
+            "submission_id": output.get("submission_id"),
+            "activity_id": output.get("activity_id"),
+            "question_id": action.get("question_id"),
+            "action_type": action.get("action"),
+            "actor_id": action.get("actor_id"),
+            "reason_code": action.get("reason_code"),
+            "note_hash": canonical_hash(note) if note else None,
+            "replacement_hash": (
+                canonical_hash(replacement) if replacement is not None else None
+            ),
+        }
+    )
 
 
 def utc_now() -> datetime:
@@ -179,6 +226,9 @@ class BlueprintRow(Base):
     etag: Mapped[str] = mapped_column(String(80), unique=True)
     data: Mapped[dict[str, Any]] = mapped_column(JSON)
     review: Mapped[dict[str, Any] | None] = mapped_column(JSON, nullable=True)
+    # Phase 3 stores the active deterministic gate independently from the
+    # retained, nullable P05 historical snapshot.
+    preflight: Mapped[dict[str, Any] | None] = mapped_column(JSON, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
 
 
@@ -258,10 +308,42 @@ class AssessmentRow(Base):
 
 class GuideRow(Base):
     __tablename__ = "evaluation_guides"
+    __table_args__ = (
+        Index(
+            "uq_evaluation_guides_approved_version",
+            "tenant_id",
+            "assessment_id",
+            "assessment_version",
+            unique=True,
+            postgresql_where=text("assessment_version is not null"),
+            sqlite_where=text("assessment_version is not null"),
+        ),
+    )
     guide_id: Mapped[str] = mapped_column(String(128), primary_key=True)
     assessment_id: Mapped[str] = mapped_column(String(128), index=True)
     tenant_id: Mapped[str] = mapped_column(String(128), index=True)
     submission_id: Mapped[str] = mapped_column(String(128), index=True)
+    assessment_version: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    assessment_etag: Mapped[str | None] = mapped_column(String(80), nullable=True)
+    assessment_snapshot_hash: Mapped[str | None] = mapped_column(
+        String(80), nullable=True
+    )
+    question_set_hash: Mapped[str | None] = mapped_column(String(80), nullable=True)
+    approval_event_id: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    approval_snapshot_hash: Mapped[str | None] = mapped_column(
+        String(80), nullable=True
+    )
+    guide_policy_hash: Mapped[str | None] = mapped_column(String(80), nullable=True)
+    materializer_boundary_hash: Mapped[str | None] = mapped_column(
+        String(80), nullable=True
+    )
+    guide_job_id: Mapped[str | None] = mapped_column(
+        String(128), nullable=True, index=True
+    )
+    status: Mapped[str | None] = mapped_column(String(32), nullable=True, index=True)
+    created_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
     data: Mapped[dict[str, Any]] = mapped_column(JSON)
 
 
@@ -305,6 +387,7 @@ class JobRow(Base):
     progress: Mapped[float] = mapped_column(Float, default=0.0)
     attempt: Mapped[int] = mapped_column(Integer, default=0)
     diagnostics: Mapped[list[dict[str, Any]]] = mapped_column(JSON, default=list)
+    descriptor: Mapped[dict[str, Any] | None] = mapped_column(JSON, nullable=True)
     control_state: Mapped[str] = mapped_column(String(32), default="ACTIVE")
     failure_class: Mapped[str | None] = mapped_column(String(32), nullable=True)
     max_attempts: Mapped[int] = mapped_column(Integer, default=MAX_JOB_ATTEMPTS)
@@ -322,6 +405,81 @@ class JobRow(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
     started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+
+class SyntheticProviderAuthorizationRow(Base):
+    """Append-only server attestation for one exact synthetic job claim."""
+
+    __tablename__ = "synthetic_provider_authorizations"
+    __table_args__ = (
+        UniqueConstraint("job_id", name="uq_synthetic_provider_authorization_job"),
+        UniqueConstraint(
+            "authorization_hash",
+            name="uq_synthetic_provider_authorization_hash",
+        ),
+        CheckConstraint(
+            "expected_claim_attempt between 1 and 10",
+            name="ck_synthetic_provider_authorization_attempt",
+        ),
+        CheckConstraint(
+            "max_requests between 1 and 64",
+            name="ck_synthetic_provider_authorization_requests",
+        ),
+        CheckConstraint(
+            "max_cost_usd between 0.01 and 10.0",
+            name="ck_synthetic_provider_authorization_cost",
+        ),
+        CheckConstraint(
+            "classification = 'SYNTHETIC_ONLY_NO_STUDENT_DATA'",
+            name="ck_synthetic_provider_authorization_classification",
+        ),
+    )
+    id: Mapped[str] = mapped_column(String(128), primary_key=True)
+    tenant_id: Mapped[str] = mapped_column(String(128), index=True)
+    job_id: Mapped[str] = mapped_column(String(128), index=True)
+    job_kind: Mapped[str] = mapped_column(String(32))
+    aggregate_id: Mapped[str] = mapped_column(String(128), index=True)
+    expected_claim_attempt: Mapped[int] = mapped_column(Integer)
+    artifact_hashes: Mapped[list[str]] = mapped_column(JSON)
+    candidate_sha: Mapped[str] = mapped_column(String(40))
+    boundary_hash: Mapped[str] = mapped_column(String(71))
+    route_profile: Mapped[str] = mapped_column(String(128))
+    model: Mapped[str] = mapped_column(String(128))
+    secret_version_resource: Mapped[str] = mapped_column(String(512))
+    max_requests: Mapped[int] = mapped_column(Integer)
+    max_cost_usd: Mapped[float] = mapped_column(Float)
+    classification: Mapped[str] = mapped_column(String(64))
+    schema_version: Mapped[str] = mapped_column(String(128))
+    authorization_hash: Mapped[str] = mapped_column(String(71))
+    created_by: Mapped[str] = mapped_column(String(128))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class SyntheticProviderClaimRow(Base):
+    """Append-only exactly-once consumption fact for an authorization."""
+
+    __tablename__ = "synthetic_provider_claims"
+    __table_args__ = (
+        UniqueConstraint(
+            "authorization_id", name="uq_synthetic_provider_claim_authorization"
+        ),
+        UniqueConstraint("job_id", name="uq_synthetic_provider_claim_job"),
+        CheckConstraint(
+            "claim_attempt between 1 and 10",
+            name="ck_synthetic_provider_claim_attempt",
+        ),
+    )
+    id: Mapped[str] = mapped_column(String(128), primary_key=True)
+    authorization_id: Mapped[str] = mapped_column(String(128), index=True)
+    authorization_hash: Mapped[str] = mapped_column(String(71))
+    tenant_id: Mapped[str] = mapped_column(String(128), index=True)
+    job_id: Mapped[str] = mapped_column(String(128), index=True)
+    claim_attempt: Mapped[int] = mapped_column(Integer)
+    candidate_sha: Mapped[str] = mapped_column(String(40))
+    boundary_hash: Mapped[str] = mapped_column(String(71))
+    schema_version: Mapped[str] = mapped_column(String(128))
+    claimed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
 
 
 class StageRunRow(Base):
@@ -520,7 +678,10 @@ class AuditEventRow(Base):
 
 class IdempotencyRow(Base):
     __tablename__ = "idempotency_keys"
-    __table_args__ = (UniqueConstraint("tenant_id", "key"),)
+    __table_args__ = (
+        UniqueConstraint("tenant_id", "key"),
+        Index("ix_idempotency_keys_expires_at", "expires_at"),
+    )
     id: Mapped[str] = mapped_column(String(128), primary_key=True)
     tenant_id: Mapped[str] = mapped_column(String(128), index=True)
     key: Mapped[str] = mapped_column(String(128))
@@ -532,6 +693,10 @@ class IdempotencyRow(Base):
         JSON(none_as_null=True), nullable=True
     )
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
+    expires_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: utc_now() + timedelta(days=1),
+    )
 
 
 _STAGE2_APPEND_ONLY_TABLES = (
@@ -540,6 +705,8 @@ _STAGE2_APPEND_ONLY_TABLES = (
     "feedback_events",
     "bulk_approval_requests",
     "bulk_approval_records",
+    "synthetic_provider_authorizations",
+    "synthetic_provider_claims",
 )
 
 _POSTGRES_REQUIRED_COLUMNS = frozenset(
@@ -555,11 +722,24 @@ _POSTGRES_REQUIRED_COLUMNS = frozenset(
         ("jobs", "cancel_requested_at"),
         ("jobs", "cancel_requested_by"),
         ("jobs", "cancelled_at"),
+        ("jobs", "descriptor"),
+        ("evaluation_guides", "assessment_version"),
+        ("evaluation_guides", "assessment_etag"),
+        ("evaluation_guides", "assessment_snapshot_hash"),
+        ("evaluation_guides", "question_set_hash"),
+        ("evaluation_guides", "approval_event_id"),
+        ("evaluation_guides", "approval_snapshot_hash"),
+        ("evaluation_guides", "guide_policy_hash"),
+        ("evaluation_guides", "materializer_boundary_hash"),
+        ("evaluation_guides", "guide_job_id"),
+        ("evaluation_guides", "status"),
+        ("evaluation_guides", "created_at"),
         ("stage_runs", "component_version"),
         ("stage_runs", "output_hash"),
         ("stage_runs", "failure_class"),
         ("stage_runs", "next_attempt_at"),
         ("stage_runs", "resumed_from_stage_run_id"),
+        ("blueprints", "preflight"),
         ("exports", "activity_id"),
         ("exports", "assessment_version"),
         ("exports", "assessment_snapshot_hash"),
@@ -570,6 +750,7 @@ _POSTGRES_REQUIRED_COLUMNS = frozenset(
         ("exports", "coverage_snapshot_hash"),
         ("exports", "completed_at"),
         ("exports", "data"),
+        ("idempotency_keys", "expires_at"),
     }
     | {
         (table_name, column.name)
@@ -592,12 +773,44 @@ _POSTGRES_REQUIRED_CONSTRAINTS = {
     ("bulk_approval_requests", "ck_bulk_request_count"): "c",
     ("bulk_approval_records", "uq_bulk_record_request"): "u",
     ("bulk_approval_records", "ck_bulk_record_counts"): "c",
+    (
+        "synthetic_provider_authorizations",
+        "uq_synthetic_provider_authorization_job",
+    ): "u",
+    (
+        "synthetic_provider_authorizations",
+        "uq_synthetic_provider_authorization_hash",
+    ): "u",
+    (
+        "synthetic_provider_authorizations",
+        "ck_synthetic_provider_authorization_attempt",
+    ): "c",
+    (
+        "synthetic_provider_authorizations",
+        "ck_synthetic_provider_authorization_requests",
+    ): "c",
+    (
+        "synthetic_provider_authorizations",
+        "ck_synthetic_provider_authorization_cost",
+    ): "c",
+    (
+        "synthetic_provider_authorizations",
+        "ck_synthetic_provider_authorization_classification",
+    ): "c",
+    (
+        "synthetic_provider_claims",
+        "uq_synthetic_provider_claim_authorization",
+    ): "u",
+    ("synthetic_provider_claims", "uq_synthetic_provider_claim_job"): "u",
+    ("synthetic_provider_claims", "ck_synthetic_provider_claim_attempt"): "c",
 }
 
 # These indexes participate in claim ordering and verified cross-job reuse.
 _POSTGRES_REQUIRED_INDEXES = {
     ("jobs", "ix_jobs_claim_eligible"): False,
     ("stage_runs", "uq_stage_runs_succeeded_stage_key"): True,
+    ("idempotency_keys", "ix_idempotency_keys_expires_at"): False,
+    ("evaluation_guides", "uq_evaluation_guides_approved_version"): True,
 }
 
 _POSTGRES_POLICY_QUAL = "cva_is_workspace_member((tenant_id)::text)"
@@ -1426,6 +1639,307 @@ class Repository:
             activity.updated_at = utc_now()
             session.add(self._job_row(status, "ACTIVITY"))
 
+    def prepare_blueprint_review_job(
+        self,
+        *,
+        status: m.JobStatus,
+        source_version: int,
+        source_etag: str,
+        descriptor_output: dict[str, Any],
+        descriptor_component_version: str,
+        descriptor_policy_hash: str,
+        actor_id: str,
+        occurred_at: datetime,
+    ) -> tuple[JobRow, StageRunRow]:
+        """Reconstruct a legacy P05 job; active runtime uses blueprint preflight."""
+
+        review_request = m.BlueprintReviewRequest.model_validate(
+            descriptor_output.get("review_request")
+        )
+        target = review_request.blueprint
+        if any(
+            (
+                status.stage != "BLUEPRINT_REVIEW",
+                status.status != "QUEUED",
+                status.attempt != 0,
+                status.aggregate_id != target.activity_id,
+                target.blueprint_version != source_version + 1,
+                descriptor_output.get("source_blueprint_version") != source_version,
+                descriptor_output.get("source_etag") != source_etag,
+            )
+        ):
+            raise ValueError("invalid blueprint review preparation state")
+
+        descriptor_inputs = {
+            "job_id": status.job_id,
+            "source_blueprint_version": source_version,
+            "source_etag": source_etag,
+            "review_request": review_request.model_dump(mode="json"),
+        }
+        input_hash = canonical_hash(descriptor_inputs)
+        stage_key = canonical_hash(
+            {
+                "tenant_id": status.tenant_id,
+                "stage": BLUEPRINT_REVIEW_DESCRIPTOR_STAGE,
+                "inputs": descriptor_inputs,
+                "policy_hash": descriptor_policy_hash,
+                "component_version": descriptor_component_version,
+            }
+        )
+        output_hash = canonical_hash(descriptor_output)
+        descriptor_id = stable_id(
+            "stage",
+            status.job_id,
+            BLUEPRINT_REVIEW_DESCRIPTOR_STAGE,
+            stage_key,
+            1,
+        )
+        event_id = stable_id(
+            "evt",
+            status.tenant_id,
+            "blueprint.review_queued",
+            status.job_id,
+        )
+
+        try:
+            with self.session() as session:
+                activity_statement = select(ActivityRow).where(
+                    ActivityRow.id == status.aggregate_id,
+                    ActivityRow.tenant_id == status.tenant_id,
+                )
+                latest_statement = (
+                    select(BlueprintRow)
+                    .where(
+                        BlueprintRow.activity_id == status.aggregate_id,
+                        BlueprintRow.tenant_id == status.tenant_id,
+                    )
+                    .order_by(BlueprintRow.version.desc())
+                    .limit(1)
+                )
+                if self.engine.dialect.name == "postgresql":
+                    activity_statement = activity_statement.with_for_update()
+                    latest_statement = latest_statement.with_for_update()
+                activity = session.scalar(activity_statement)
+                latest = session.scalar(latest_statement)
+                if activity is None or latest is None:
+                    raise NotFound("blueprint not found")
+                if activity.status not in {"BLUEPRINT_READY", "NEEDS_REVIEW"}:
+                    raise Conflict("BLUEPRINT_EDIT_NOT_ALLOWED")
+                if latest.version != source_version:
+                    raise Conflict("BLUEPRINT_VERSION_CONFLICT")
+                if latest.etag != source_etag:
+                    raise Conflict("ETAG_MISMATCH")
+                source = m.AssessmentBlueprint.model_validate(latest.data)
+                if (
+                    source.status != m.WorkflowStatus.READY
+                    or source.approved_by is not None
+                    or source.approved_at is not None
+                ):
+                    raise Conflict("BLUEPRINT_FROZEN")
+                if (
+                    target.activity_id != source.activity_id
+                    or target.blueprint_id != source.blueprint_id
+                ):
+                    raise Conflict("BLUEPRINT_REFERENCE_MISMATCH")
+                if session.get(JobRow, status.job_id) is not None:
+                    raise Conflict("BLUEPRINT_REVIEW_JOB_ALREADY_EXISTS")
+
+                job = self._job_row(status, "BLUEPRINT_REVIEW")
+                descriptor = StageRunRow(
+                    id=descriptor_id,
+                    job_id=status.job_id,
+                    tenant_id=status.tenant_id,
+                    stage=BLUEPRINT_REVIEW_DESCRIPTOR_STAGE,
+                    stage_key=stage_key,
+                    status="SUCCEEDED",
+                    attempt=1,
+                    input_hash=input_hash,
+                    policy_hash=descriptor_policy_hash,
+                    component_version=descriptor_component_version,
+                    output=descriptor_output,
+                    output_hash=output_hash,
+                    diagnostics=[],
+                    started_at=occurred_at,
+                    finished_at=occurred_at,
+                )
+                session.add(job)
+                session.add(descriptor)
+                session.add(
+                    AuditEventRow(
+                        id=event_id,
+                        tenant_id=status.tenant_id,
+                        event_type="blueprint.review_queued",
+                        aggregate_id=status.aggregate_id,
+                        actor_id=actor_id,
+                        payload={
+                            "job_id": status.job_id,
+                            "source_blueprint_version": source_version,
+                            "target_blueprint_version": target.blueprint_version,
+                            "review_request_hash": canonical_hash(
+                                review_request.model_dump(mode="json")
+                            ),
+                            "prompt_version": descriptor_component_version,
+                        },
+                        occurred_at=occurred_at,
+                    )
+                )
+                activity.status = "BLUEPRINT_REVIEW_QUEUED"
+                activity.updated_at = occurred_at
+                session.flush()
+                return job, descriptor
+        except IntegrityError as exc:
+            raise Conflict("BLUEPRINT_REVIEW_PREPARATION_CONFLICT") from exc
+
+    def prepare_blueprint_preflight_job(
+        self,
+        *,
+        status: m.JobStatus,
+        source_version: int,
+        source_etag: str,
+        descriptor_output: dict[str, Any],
+        descriptor_component_version: str,
+        descriptor_policy_hash: str,
+        actor_id: str,
+        occurred_at: datetime,
+    ) -> tuple[JobRow, StageRunRow]:
+        """Atomically freeze an edit and persist its deterministic gate input."""
+
+        target = m.AssessmentBlueprint.model_validate(
+            descriptor_output.get("candidate_blueprint")
+        )
+        if any(
+            (
+                status.stage != "BLUEPRINT_PREFLIGHT",
+                status.status != "QUEUED",
+                status.attempt != 0,
+                status.aggregate_id != target.activity_id,
+                target.blueprint_version != source_version + 1,
+                descriptor_output.get("source_blueprint_version") != source_version,
+                descriptor_output.get("source_etag") != source_etag,
+            )
+        ):
+            raise ValueError("invalid blueprint preflight preparation state")
+
+        descriptor_inputs = {
+            "job_id": status.job_id,
+            "source_blueprint_version": source_version,
+            "source_etag": source_etag,
+            "candidate_blueprint": target.model_dump(mode="json"),
+        }
+        input_hash = canonical_hash(descriptor_inputs)
+        stage_key = canonical_hash(
+            {
+                "tenant_id": status.tenant_id,
+                "stage": BLUEPRINT_PREFLIGHT_DESCRIPTOR_STAGE,
+                "inputs": descriptor_inputs,
+                "policy_hash": descriptor_policy_hash,
+                "component_version": descriptor_component_version,
+            }
+        )
+        output_hash = canonical_hash(descriptor_output)
+        descriptor_id = stable_id(
+            "stage",
+            status.job_id,
+            BLUEPRINT_PREFLIGHT_DESCRIPTOR_STAGE,
+            stage_key,
+            1,
+        )
+        event_id = stable_id(
+            "evt", status.tenant_id, "blueprint.preflight_queued", status.job_id
+        )
+
+        try:
+            with self.session() as session:
+                activity_statement = select(ActivityRow).where(
+                    ActivityRow.id == status.aggregate_id,
+                    ActivityRow.tenant_id == status.tenant_id,
+                )
+                latest_statement = (
+                    select(BlueprintRow)
+                    .where(
+                        BlueprintRow.activity_id == status.aggregate_id,
+                        BlueprintRow.tenant_id == status.tenant_id,
+                    )
+                    .order_by(BlueprintRow.version.desc())
+                    .limit(1)
+                )
+                if self.engine.dialect.name == "postgresql":
+                    activity_statement = activity_statement.with_for_update()
+                    latest_statement = latest_statement.with_for_update()
+                activity = session.scalar(activity_statement)
+                latest = session.scalar(latest_statement)
+                if activity is None or latest is None:
+                    raise NotFound("blueprint not found")
+                if activity.status not in {"BLUEPRINT_READY", "NEEDS_REVIEW"}:
+                    raise Conflict("BLUEPRINT_EDIT_NOT_ALLOWED")
+                if latest.version != source_version:
+                    raise Conflict("BLUEPRINT_VERSION_CONFLICT")
+                if latest.etag != source_etag:
+                    raise Conflict("ETAG_MISMATCH")
+                source = m.AssessmentBlueprint.model_validate(latest.data)
+                if (
+                    source.status not in {
+                        m.WorkflowStatus.READY,
+                        m.WorkflowStatus.NEEDS_REVIEW,
+                    }
+                    or source.approved_by is not None
+                    or source.approved_at is not None
+                ):
+                    raise Conflict("BLUEPRINT_FROZEN")
+                if (
+                    target.activity_id != source.activity_id
+                    or target.blueprint_id != source.blueprint_id
+                ):
+                    raise Conflict("BLUEPRINT_REFERENCE_MISMATCH")
+                if session.get(JobRow, status.job_id) is not None:
+                    raise Conflict("BLUEPRINT_PREFLIGHT_JOB_ALREADY_EXISTS")
+
+                job = self._job_row(status, "BLUEPRINT_PREFLIGHT")
+                descriptor = StageRunRow(
+                    id=descriptor_id,
+                    job_id=status.job_id,
+                    tenant_id=status.tenant_id,
+                    stage=BLUEPRINT_PREFLIGHT_DESCRIPTOR_STAGE,
+                    stage_key=stage_key,
+                    status="SUCCEEDED",
+                    attempt=1,
+                    input_hash=input_hash,
+                    policy_hash=descriptor_policy_hash,
+                    component_version=descriptor_component_version,
+                    output=descriptor_output,
+                    output_hash=output_hash,
+                    diagnostics=[],
+                    started_at=occurred_at,
+                    finished_at=occurred_at,
+                )
+                session.add(job)
+                session.add(descriptor)
+                session.add(
+                    AuditEventRow(
+                        id=event_id,
+                        tenant_id=status.tenant_id,
+                        event_type="blueprint.preflight_queued",
+                        aggregate_id=status.aggregate_id,
+                        actor_id=actor_id,
+                        payload={
+                            "job_id": status.job_id,
+                            "source_blueprint_version": source_version,
+                            "target_blueprint_version": target.blueprint_version,
+                            "candidate_hash": canonical_hash(
+                                target.model_dump(mode="json")
+                            ),
+                            "component_version": descriptor_component_version,
+                        },
+                        occurred_at=occurred_at,
+                    )
+                )
+                activity.status = "BLUEPRINT_PREFLIGHT_QUEUED"
+                activity.updated_at = occurred_at
+                session.flush()
+                return job, descriptor
+        except IntegrityError as exc:
+            raise Conflict("BLUEPRINT_PREFLIGHT_PREPARATION_CONFLICT") from exc
+
     def queue_submission_job(
         self,
         status: m.JobStatus,
@@ -1479,25 +1993,35 @@ class Repository:
         job_id: str,
         tenant_id: str,
         assessment: AssessmentRow,
-        guide: GuideRow,
+        guide: GuideRow | None = None,
     ) -> bool:
-        """Atomically publish review output or acknowledge a winning cancellation."""
+        """Atomically publish the reviewable assessment after deterministic P07.
+
+        ``guide`` is retained only for historical callers. Phase 7 product
+        executions always pass ``None`` and cannot create a pre-approval guide.
+        """
 
         assessment_value = m.Assessment.model_validate(assessment.data)
-        guide_value = m.EvaluationGuide.model_validate(guide.data)
-        if any(
+        inconsistent = any(
             (
                 assessment.tenant_id != tenant_id,
-                guide.tenant_id != tenant_id,
-                assessment.submission_id != guide.submission_id,
-                assessment.assessment_id != guide.assessment_id,
                 assessment_value.submission_id != assessment.submission_id,
                 assessment_value.assessment_id != assessment.assessment_id,
                 assessment_value.status != m.WorkflowStatus.NEEDS_REVIEW,
-                guide_value.assessment_id != assessment.assessment_id,
-                guide_value.status != m.WorkflowStatus.READY,
             )
-        ):
+        )
+        if guide is not None:
+            guide_value = m.EvaluationGuide.model_validate(guide.data)
+            inconsistent = inconsistent or any(
+                (
+                    guide.tenant_id != tenant_id,
+                    assessment.submission_id != guide.submission_id,
+                    assessment.assessment_id != guide.assessment_id,
+                    guide_value.assessment_id != assessment.assessment_id,
+                    guide_value.status != m.WorkflowStatus.READY,
+                )
+            )
+        if inconsistent:
             raise ValueError("assessment finalization references are inconsistent")
 
         now = utc_now()
@@ -1521,7 +2045,8 @@ class Repository:
                 raise Conflict("SUBMISSION_FINALIZATION_STATE_CHANGED")
 
             session.merge(assessment)
-            session.merge(guide)
+            if guide is not None:
+                session.merge(guide)
             submission.state = m.SubmissionProcessingState(
                 submission_id=submission.id,
                 activity_id=submission.activity_id,
@@ -1554,6 +2079,69 @@ class Repository:
                     .order_by(EvidenceRow.id)
                 )
             )
+
+    def save_generated_question(self, question: GeneratedQuestionRow) -> None:
+        """Persist one current P07 result without requiring a P08 review."""
+
+        with self.session() as session:
+            existing_question = session.get(GeneratedQuestionRow, question.id)
+            if existing_question is None:
+                session.add(question)
+            elif any(
+                (
+                    existing_question.tenant_id != question.tenant_id,
+                    existing_question.submission_id != question.submission_id,
+                    existing_question.data != question.data,
+                )
+            ):
+                raise Conflict("GENERATED_QUESTION_ID_COLLISION")
+
+    def save_generated_question_and_review(
+        self,
+        *,
+        question: GeneratedQuestionRow,
+        review: QuestionReviewRow,
+    ) -> None:
+        """Persist a historical P07/P08 pair without ``merge``.
+
+        Candidate IDs are global primary keys for backward compatibility.  A
+        model-supplied collision must therefore fail rather than overwrite a
+        row owned by another tenant/submission (or mutate an observed output).
+
+        New Phase 6 product executions call :meth:`save_generated_question`
+        and never create a ``QuestionReviewRow``. This retained operation keeps
+        historical fixtures, replay, and stored P08 receipts readable.
+        """
+
+        if (
+            question.tenant_id != review.tenant_id
+            or question.submission_id != review.submission_id
+        ):
+            raise ValueError("question and review scopes must match")
+        with self.session() as session:
+            existing_question = session.get(GeneratedQuestionRow, question.id)
+            if existing_question is None:
+                session.add(question)
+            elif any(
+                (
+                    existing_question.tenant_id != question.tenant_id,
+                    existing_question.submission_id != question.submission_id,
+                    existing_question.data != question.data,
+                )
+            ):
+                raise Conflict("GENERATED_QUESTION_ID_COLLISION")
+
+            existing_review = session.get(QuestionReviewRow, review.question_id)
+            if existing_review is None:
+                session.add(review)
+            elif any(
+                (
+                    existing_review.tenant_id != review.tenant_id,
+                    existing_review.submission_id != review.submission_id,
+                    existing_review.data != review.data,
+                )
+            ):
+                raise Conflict("QUESTION_REVIEW_ID_COLLISION")
 
     def save_job_status(self, status: m.JobStatus, *, kind: str | None = None) -> None:
         with self.session() as session:
@@ -1607,13 +2195,26 @@ class Repository:
         if any(
             (
                 status.stage != "QUESTION_GENERATE",
-                status.status != "RUNNING",
-                status.attempt < 1,
+                status.status not in {"QUEUED", "RUNNING"},
+                status.attempt < 0,
+                status.status == "QUEUED" and status.attempt != 0,
+                status.status == "RUNNING" and status.attempt < 1,
                 not 1 <= max_attempts <= 10,
+                descriptor_component_version
+                != QUESTION_ACTION_DESCRIPTOR_VERSION,
+                descriptor_policy_hash
+                != QUESTION_ACTION_DESCRIPTOR_POLICY_HASH,
+                descriptor_output.get("descriptor_version")
+                != QUESTION_ACTION_DESCRIPTOR_VERSION,
             )
         ):
             raise ValueError("invalid question action preparation state")
+        descriptor_attempt = max(1, status.attempt)
         input_hash = canonical_hash(descriptor_inputs)
+        if input_hash != _question_action_descriptor_input_hash(
+            descriptor_output
+        ):
+            raise ValueError("invalid question action descriptor inputs")
         stage_key = canonical_hash(
             {
                 "tenant_id": status.tenant_id,
@@ -1629,11 +2230,22 @@ class Repository:
             status.job_id,
             QUESTION_ACTION_DESCRIPTOR_STAGE,
             stage_key,
-            status.attempt,
+            descriptor_attempt,
         )
         action_id = str(audit_payload.get("action_id") or "")
         if not action_id:
             raise ValueError("question action audit requires action_id")
+        question_reference = {
+            "descriptor_version": descriptor_output.get("descriptor_version"),
+            "assessment_id": descriptor_output.get("assessment_id"),
+            "assessment_version": descriptor_output.get("assessment_version"),
+            "assessment_etag": descriptor_output.get("assessment_etag"),
+            "question_id": audit_payload.get("question_id"),
+            "action_id": action_id,
+            "logical_action_id": audit_payload.get("logical_action_id"),
+            "action_type": audit_payload.get("action_type"),
+            "descriptor_hash": output_hash,
+        }
         event_id = stable_id(
             "evt",
             status.tenant_id,
@@ -1644,12 +2256,43 @@ class Repository:
 
         try:
             with self.session() as session:
+                assessment_statement = (
+                    select(AssessmentRow)
+                    .where(
+                        AssessmentRow.assessment_id
+                        == question_reference["assessment_id"],
+                        AssessmentRow.tenant_id == status.tenant_id,
+                    )
+                    .order_by(AssessmentRow.version.desc())
+                    .limit(1)
+                )
+                if self.engine.dialect.name == "postgresql":
+                    assessment_statement = assessment_statement.with_for_update()
+                assessment = session.scalar(assessment_statement)
+                if assessment is None or any(
+                    (
+                        assessment.submission_id != status.aggregate_id,
+                        assessment.version
+                        != question_reference["assessment_version"],
+                        assessment.etag != question_reference["assessment_etag"],
+                    )
+                ):
+                    raise Conflict("QUESTION_ACTION_VERSION_CHANGED")
+                if self._active_question_action_jobs_in_session(
+                    session,
+                    tenant_id=status.tenant_id,
+                    assessment_id=str(question_reference["assessment_id"]),
+                    submission_id=status.aggregate_id,
+                    exclude_job_id=status.job_id,
+                ):
+                    raise Conflict("QUESTION_ACTION_PENDING")
                 job = session.get(JobRow, status.job_id)
                 if create_job:
                     if job is not None:
                         raise Conflict("QUESTION_ACTION_JOB_ALREADY_EXISTS")
                     job = self._job_row(status, "QUESTION_ACTION")
                     job.max_attempts = max_attempts
+                    job.descriptor = question_reference
                     session.add(job)
                 elif job is None or job.tenant_id != status.tenant_id:
                     raise NotFound("job not found")
@@ -1659,7 +2302,7 @@ class Repository:
                         job.tenant_id != status.tenant_id,
                         job.kind != "QUESTION_ACTION",
                         job.aggregate_id != status.aggregate_id,
-                        job.status != "RUNNING",
+                        job.status != status.status,
                         job.attempt != status.attempt,
                     )
                 ):
@@ -1674,7 +2317,7 @@ class Repository:
                         stage=QUESTION_ACTION_DESCRIPTOR_STAGE,
                         stage_key=stage_key,
                         status="SUCCEEDED",
-                        attempt=status.attempt,
+                        attempt=descriptor_attempt,
                         input_hash=input_hash,
                         policy_hash=descriptor_policy_hash,
                         component_version=descriptor_component_version,
@@ -1692,7 +2335,7 @@ class Repository:
                         descriptor.stage != QUESTION_ACTION_DESCRIPTOR_STAGE,
                         descriptor.stage_key != stage_key,
                         descriptor.status != "SUCCEEDED",
-                        descriptor.attempt != status.attempt,
+                        descriptor.attempt != descriptor_attempt,
                         descriptor.input_hash != input_hash,
                         descriptor.policy_hash != descriptor_policy_hash,
                         descriptor.component_version != descriptor_component_version,
@@ -1754,9 +2397,524 @@ class Repository:
             if len(rows) != 1:
                 raise Conflict("QUESTION_ACTION_DESCRIPTOR_AMBIGUOUS")
             row = rows[0]
-            if row.output is None or row.output_hash != canonical_hash(row.output):
+            if row.output is None or any(
+                (
+                    row.output_hash != canonical_hash(row.output),
+                    row.input_hash
+                    != _question_action_descriptor_input_hash(row.output),
+                    row.policy_hash != QUESTION_ACTION_DESCRIPTOR_POLICY_HASH,
+                    row.component_version != QUESTION_ACTION_DESCRIPTOR_VERSION,
+                )
+            ):
                 raise Conflict("QUESTION_ACTION_DESCRIPTOR_HASH_MISMATCH")
             return row
+
+    @staticmethod
+    def _question_action_reference_in_session(
+        session: Session,
+        job: JobRow,
+        *,
+        seen_job_ids: set[str] | None = None,
+    ) -> dict[str, Any] | None:
+        """Resolve content-free question-action identity across retries."""
+
+        seen = seen_job_ids or set()
+        if job.id in seen:
+            return None
+        seen.add(job.id)
+        reference = job.descriptor
+        if isinstance(reference, dict) and all(
+            reference.get(key)
+            for key in (
+                "assessment_id",
+                "assessment_version",
+                "assessment_etag",
+                "question_id",
+                "action_id",
+                "logical_action_id",
+                "action_type",
+                "descriptor_hash",
+            )
+        ):
+            return dict(reference)
+
+        event = session.scalar(
+            select(AuditEventRow)
+            .where(
+                AuditEventRow.tenant_id == job.tenant_id,
+                AuditEventRow.event_type == "question_action.executed",
+                AuditEventRow.aggregate_id == job.id,
+            )
+            .order_by(AuditEventRow.occurred_at.desc(), AuditEventRow.id.desc())
+            .limit(1)
+        )
+        if event is not None:
+            payload = event.payload
+            if all(
+                payload.get(key)
+                for key in (
+                    "assessment_id",
+                    "assessment_version",
+                    "question_id",
+                    "action_id",
+                    "logical_action_id",
+                    "action_type",
+                    "descriptor_hash",
+                )
+            ):
+                descriptor = session.scalar(
+                    select(StageRunRow)
+                    .where(
+                        StageRunRow.job_id == job.id,
+                        StageRunRow.tenant_id == job.tenant_id,
+                        StageRunRow.stage == QUESTION_ACTION_DESCRIPTOR_STAGE,
+                        StageRunRow.status == "SUCCEEDED",
+                    )
+                    .order_by(StageRunRow.attempt.desc(), StageRunRow.id.desc())
+                    .limit(1)
+                )
+                if descriptor is not None and descriptor.output is not None:
+                    return {
+                        "descriptor_version": descriptor.output.get(
+                            "descriptor_version"
+                        ),
+                        "assessment_id": payload["assessment_id"],
+                        "assessment_version": payload["assessment_version"],
+                        "assessment_etag": descriptor.output.get(
+                            "assessment_etag"
+                        ),
+                        "question_id": payload["question_id"],
+                        "action_id": payload["action_id"],
+                        "logical_action_id": payload["logical_action_id"],
+                        "action_type": payload["action_type"],
+                        "descriptor_hash": payload["descriptor_hash"],
+                    }
+
+        control = session.scalar(
+            select(JobControlRecordRow)
+            .where(
+                JobControlRecordRow.tenant_id == job.tenant_id,
+                JobControlRecordRow.resulting_job_id == job.id,
+                JobControlRecordRow.action.in_({"RETRY", "RESUME"}),
+                JobControlRecordRow.status == "APPLIED",
+            )
+            .order_by(
+                JobControlRecordRow.requested_at.desc(),
+                JobControlRecordRow.id.desc(),
+            )
+            .limit(1)
+        )
+        if control is None:
+            return None
+        source = session.get(JobRow, control.job_id)
+        if source is None or source.tenant_id != job.tenant_id:
+            return None
+        return Repository._question_action_reference_in_session(
+            session, source, seen_job_ids=seen
+        )
+
+    @classmethod
+    def _active_question_action_jobs_in_session(
+        cls,
+        session: Session,
+        *,
+        tenant_id: str,
+        assessment_id: str,
+        submission_id: str,
+        exclude_job_id: str | None = None,
+    ) -> list[JobRow]:
+        rows = list(
+            session.scalars(
+                select(JobRow)
+                .where(
+                    JobRow.tenant_id == tenant_id,
+                    JobRow.kind == "QUESTION_ACTION",
+                    JobRow.aggregate_id == submission_id,
+                    JobRow.status.in_({"QUEUED", "RUNNING"}),
+                    JobRow.control_state == "ACTIVE",
+                )
+                .order_by(JobRow.created_at, JobRow.id)
+            )
+        )
+        return [
+            row
+            for row in rows
+            if row.id != exclude_job_id
+            and (
+                reference := cls._question_action_reference_in_session(
+                    session, row
+                )
+            )
+            is not None
+            and reference.get("assessment_id") == assessment_id
+        ]
+
+    def blueprint_review_descriptor(
+        self, *, job_ids: list[str], tenant_id: str
+    ) -> StageRunRow | None:
+        """Return the single hash-verified P05 request across a retry lineage."""
+
+        if not job_ids:
+            return None
+        with self.session() as session:
+            rows = list(
+                session.scalars(
+                    select(StageRunRow)
+                    .where(
+                        StageRunRow.job_id.in_(job_ids),
+                        StageRunRow.tenant_id == tenant_id,
+                        StageRunRow.stage == BLUEPRINT_REVIEW_DESCRIPTOR_STAGE,
+                        StageRunRow.status == "SUCCEEDED",
+                        StageRunRow.output_hash.is_not(None),
+                    )
+                    .order_by(StageRunRow.started_at, StageRunRow.id)
+                )
+            )
+            if not rows:
+                return None
+            if len(rows) != 1:
+                raise Conflict("BLUEPRINT_REVIEW_DESCRIPTOR_AMBIGUOUS")
+            row = rows[0]
+            if row.output is None or row.output_hash != canonical_hash(row.output):
+                raise Conflict("BLUEPRINT_REVIEW_DESCRIPTOR_HASH_MISMATCH")
+            source_version = row.output.get("source_blueprint_version")
+            source_etag = row.output.get("source_etag")
+            source_status = row.output.get("source_activity_status")
+            try:
+                request = m.BlueprintReviewRequest.model_validate(
+                    row.output.get("review_request")
+                )
+            except Exception as exc:
+                raise Conflict("BLUEPRINT_REVIEW_DESCRIPTOR_INVALID") from exc
+            if any(
+                (
+                    not isinstance(source_version, int),
+                    not isinstance(source_etag, str),
+                    source_status not in {"BLUEPRINT_READY", "NEEDS_REVIEW"},
+                    request.blueprint.blueprint_version != source_version + 1,
+                )
+            ):
+                raise Conflict("BLUEPRINT_REVIEW_DESCRIPTOR_INVALID")
+            return row
+
+    def blueprint_preflight_descriptor(
+        self, *, job_ids: list[str], tenant_id: str
+    ) -> StageRunRow | None:
+        """Return one hash-verified active preflight descriptor across retries."""
+
+        if not job_ids:
+            return None
+        with self.session() as session:
+            rows = list(
+                session.scalars(
+                    select(StageRunRow)
+                    .where(
+                        StageRunRow.job_id.in_(job_ids),
+                        StageRunRow.tenant_id == tenant_id,
+                        StageRunRow.stage == BLUEPRINT_PREFLIGHT_DESCRIPTOR_STAGE,
+                        StageRunRow.status == "SUCCEEDED",
+                        StageRunRow.output_hash.is_not(None),
+                    )
+                    .order_by(StageRunRow.started_at, StageRunRow.id)
+                )
+            )
+            if not rows:
+                return None
+            if len(rows) != 1:
+                raise Conflict("BLUEPRINT_PREFLIGHT_DESCRIPTOR_AMBIGUOUS")
+            row = rows[0]
+            if row.output is None or row.output_hash != canonical_hash(row.output):
+                raise Conflict("BLUEPRINT_PREFLIGHT_DESCRIPTOR_HASH_MISMATCH")
+            source_version = row.output.get("source_blueprint_version")
+            source_etag = row.output.get("source_etag")
+            source_status = row.output.get("source_activity_status")
+            try:
+                candidate = m.AssessmentBlueprint.model_validate(
+                    row.output.get("candidate_blueprint")
+                )
+            except Exception as exc:
+                raise Conflict("BLUEPRINT_PREFLIGHT_DESCRIPTOR_INVALID") from exc
+            if any(
+                (
+                    not isinstance(source_version, int),
+                    not isinstance(source_etag, str),
+                    source_status not in {"BLUEPRINT_READY", "NEEDS_REVIEW"},
+                    candidate.blueprint_version != source_version + 1,
+                )
+            ):
+                raise Conflict("BLUEPRINT_PREFLIGHT_DESCRIPTOR_INVALID")
+            return row
+
+    def finalize_blueprint_preflight_job(
+        self,
+        *,
+        job_id: str,
+        tenant_id: str,
+        source_version: int,
+        source_etag: str,
+        blueprint: BlueprintRow,
+        actor_id: str,
+    ) -> bool:
+        """Publish a deterministically gated edit and finish new or legacy work."""
+
+        value = m.AssessmentBlueprint.model_validate(blueprint.data)
+        preflight = m.BlueprintReviewPreflight.model_validate(blueprint.preflight)
+        passed = preflight.catalog_plan_feasible
+        expected_status = (
+            m.WorkflowStatus.READY if passed else m.WorkflowStatus.NEEDS_REVIEW
+        )
+        if any(
+            (
+                blueprint.tenant_id != tenant_id,
+                blueprint.activity_id != value.activity_id,
+                blueprint.blueprint_id != value.blueprint_id,
+                blueprint.version != source_version + 1,
+                value.blueprint_version != blueprint.version,
+                preflight.blueprint_id != value.blueprint_id,
+                preflight.blueprint_version != value.blueprint_version,
+                value.status != expected_status,
+                value.approved_by is not None,
+                value.approved_at is not None,
+            )
+        ):
+            raise ValueError("blueprint preflight finalization references are inconsistent")
+
+        now = utc_now()
+        try:
+            with self.session() as session:
+                job = self._lock_job(
+                    session, job_id, tenant_id, self.engine.dialect.name
+                )
+                activity_statement = select(ActivityRow).where(
+                    ActivityRow.id == blueprint.activity_id,
+                    ActivityRow.tenant_id == tenant_id,
+                )
+                latest_statement = (
+                    select(BlueprintRow)
+                    .where(
+                        BlueprintRow.activity_id == blueprint.activity_id,
+                        BlueprintRow.tenant_id == tenant_id,
+                    )
+                    .order_by(BlueprintRow.version.desc())
+                    .limit(1)
+                )
+                if self.engine.dialect.name == "postgresql":
+                    activity_statement = activity_statement.with_for_update()
+                    latest_statement = latest_statement.with_for_update()
+                activity = session.scalar(activity_statement)
+                latest = session.scalar(latest_statement)
+                if activity is None or latest is None:
+                    raise NotFound("blueprint not found")
+                if (
+                    job.kind not in {"BLUEPRINT_PREFLIGHT", "BLUEPRINT_REVIEW"}
+                    or job.aggregate_id != activity.id
+                ):
+                    raise Conflict("BLUEPRINT_PREFLIGHT_JOB_MISMATCH")
+                if job.control_state != "ACTIVE":
+                    if job.control_state == "CANCEL_REQUESTED":
+                        self._complete_job_cancellation(session, job, now)
+                    return False
+                if job.status != "RUNNING":
+                    raise Conflict("BLUEPRINT_PREFLIGHT_JOB_NOT_RUNNING")
+                expected_activity_status = (
+                    "BLUEPRINT_PREFLIGHT_QUEUED"
+                    if job.kind == "BLUEPRINT_PREFLIGHT"
+                    else "BLUEPRINT_REVIEW_QUEUED"
+                )
+                if activity.status != expected_activity_status:
+                    raise Conflict("BLUEPRINT_PREFLIGHT_ACTIVITY_STATE_CHANGED")
+                if latest.version != source_version or latest.etag != source_etag:
+                    raise Conflict("BLUEPRINT_PREFLIGHT_SOURCE_CHANGED")
+
+                session.add(blueprint)
+                activity.status = "BLUEPRINT_READY" if passed else "NEEDS_REVIEW"
+                activity.updated_at = now
+                job.status = "SUCCEEDED" if passed else "NEEDS_REVIEW"
+                job.failure_class = None
+                job.diagnostics = [] if passed else list(
+                    value.model_dump(mode="json").get("diagnostics", [])
+                )
+                job.stage = "BLUEPRINT_PREFLIGHT"
+                job.progress = 1.0
+                job.next_attempt_at = None
+                job.finished_at = now
+                event_type = (
+                    "blueprint.preflight.completed"
+                    if passed
+                    else "blueprint.preflight.failed"
+                )
+                session.add(
+                    AuditEventRow(
+                        id=stable_id(
+                            "evt", tenant_id, event_type, blueprint.blueprint_id, job.id
+                        ),
+                        tenant_id=tenant_id,
+                        event_type=event_type,
+                        aggregate_id=blueprint.blueprint_id,
+                        actor_id=actor_id,
+                        payload={
+                            "source_blueprint_version": source_version,
+                            "blueprint_version": blueprint.version,
+                            "job_id": job.id,
+                            "outcome": "PASS" if passed else "FAIL",
+                            "diagnostic_codes": sorted(
+                                item.code for item in value.diagnostics
+                            ),
+                            "legacy_job_kind": job.kind == "BLUEPRINT_REVIEW",
+                        },
+                        occurred_at=now,
+                    )
+                )
+                session.flush()
+                return True
+        except IntegrityError as exc:
+            raise Conflict("BLUEPRINT_VERSION_CONFLICT") from exc
+
+    def finalize_blueprint_review_job(
+        self,
+        *,
+        job_id: str,
+        tenant_id: str,
+        source_version: int,
+        source_etag: str,
+        blueprint: BlueprintRow,
+        actor_id: str,
+    ) -> bool:
+        """Finalize a historical P05 job; retained only for stored-job recovery."""
+
+        value = m.AssessmentBlueprint.model_validate(blueprint.data)
+        review = m.BlueprintReview.model_validate(blueprint.review)
+        if any(
+            (
+                blueprint.tenant_id != tenant_id,
+                blueprint.activity_id != value.activity_id,
+                blueprint.blueprint_id != value.blueprint_id,
+                blueprint.version != source_version + 1,
+                value.blueprint_version != blueprint.version,
+                review.blueprint_id != value.blueprint_id,
+                review.blueprint_version != value.blueprint_version,
+                value.status != m.WorkflowStatus.READY,
+                value.approved_by is not None,
+                value.approved_at is not None,
+            )
+        ):
+            raise ValueError("blueprint review finalization references are inconsistent")
+
+        now = utc_now()
+        try:
+            with self.session() as session:
+                job = self._lock_job(
+                    session, job_id, tenant_id, self.engine.dialect.name
+                )
+                activity_statement = select(ActivityRow).where(
+                    ActivityRow.id == blueprint.activity_id,
+                    ActivityRow.tenant_id == tenant_id,
+                )
+                latest_statement = (
+                    select(BlueprintRow)
+                    .where(
+                        BlueprintRow.activity_id == blueprint.activity_id,
+                        BlueprintRow.tenant_id == tenant_id,
+                    )
+                    .order_by(BlueprintRow.version.desc())
+                    .limit(1)
+                )
+                if self.engine.dialect.name == "postgresql":
+                    activity_statement = activity_statement.with_for_update()
+                    latest_statement = latest_statement.with_for_update()
+                activity = session.scalar(activity_statement)
+                latest = session.scalar(latest_statement)
+                if activity is None or latest is None:
+                    raise NotFound("blueprint not found")
+                if job.kind != "BLUEPRINT_REVIEW" or job.aggregate_id != activity.id:
+                    raise Conflict("BLUEPRINT_REVIEW_JOB_MISMATCH")
+                if job.control_state != "ACTIVE":
+                    if job.control_state == "CANCEL_REQUESTED":
+                        self._complete_job_cancellation(session, job, now)
+                    return False
+                if job.status != "RUNNING":
+                    raise Conflict("BLUEPRINT_REVIEW_JOB_NOT_RUNNING")
+                if activity.status != "BLUEPRINT_REVIEW_QUEUED":
+                    raise Conflict("BLUEPRINT_REVIEW_ACTIVITY_STATE_CHANGED")
+                if latest.version != source_version or latest.etag != source_etag:
+                    raise Conflict("BLUEPRINT_REVIEW_SOURCE_CHANGED")
+
+                review_allows_approval = (
+                    review.status == "READY"
+                    and review.approval_recommendation
+                    != m.BlueprintApprovalRecommendation.REJECT
+                )
+                if review_allows_approval:
+                    session.add(blueprint)
+                    activity.status = "BLUEPRINT_READY"
+                    job.status = "SUCCEEDED"
+                    job.failure_class = None
+                    job.diagnostics = []
+                elif review.status == "TECHNICAL_FAILURE":
+                    activity.status = "TECHNICAL_FAILURE"
+                    job.status = "FAILED"
+                    job.failure_class = m.FailureClass.VALIDATION.value
+                    job.diagnostics = [
+                        item.model_dump(mode="json")
+                        for item in review.diagnostics
+                    ] or [
+                        m.Diagnostic(
+                            code="BLUEPRINT_REVIEW_TECHNICAL_FAILURE",
+                            severity=m.Severity.ERROR,
+                            message=(
+                                "The edited blueprint failed its validated review boundary."
+                            ),
+                            retryable=False,
+                        ).model_dump(mode="json")
+                    ]
+                else:
+                    activity.status = "NEEDS_REVIEW"
+                    job.status = "NEEDS_REVIEW"
+                    job.failure_class = None
+                    job.diagnostics = [
+                        item.model_dump(mode="json")
+                        for item in review.diagnostics
+                    ]
+                activity.updated_at = now
+                job.stage = "BLUEPRINT_REVIEW"
+                job.progress = 1.0
+                job.next_attempt_at = None
+                job.finished_at = now
+                session.add(
+                    AuditEventRow(
+                        id=stable_id(
+                            "evt",
+                            tenant_id,
+                            (
+                                "blueprint.edited"
+                                if review_allows_approval
+                                else "blueprint.review_blocked"
+                            ),
+                            blueprint.blueprint_id,
+                            job.id,
+                        ),
+                        tenant_id=tenant_id,
+                        event_type=(
+                            "blueprint.edited"
+                            if review_allows_approval
+                            else "blueprint.review_blocked"
+                        ),
+                        aggregate_id=blueprint.blueprint_id,
+                        actor_id=actor_id,
+                        payload={
+                            "source_blueprint_version": source_version,
+                            "blueprint_version": blueprint.version,
+                            "review_status": review.status,
+                            "approval_recommendation": review.approval_recommendation,
+                            "job_id": job.id,
+                        },
+                        occurred_at=now,
+                    )
+                )
+                session.flush()
+                return True
+        except IntegrityError as exc:
+            raise Conflict("BLUEPRINT_VERSION_CONFLICT") from exc
 
     def fail_queued_dispatch(
         self,
@@ -1784,7 +2942,7 @@ class Repository:
             row.diagnostics = [failure.model_dump(mode="json")]
             row.next_attempt_at = None
             row.finished_at = now
-            if row.kind == "ACTIVITY":
+            if row.kind in {"ACTIVITY", "BLUEPRINT_REVIEW", "BLUEPRINT_PREFLIGHT"}:
                 statement = select(ActivityRow).where(
                     ActivityRow.id == row.aggregate_id,
                     ActivityRow.tenant_id == tenant_id,
@@ -1816,6 +2974,29 @@ class Repository:
                             "updated_at": now,
                         }
                     ).model_dump(mode="json")
+                    submission.updated_at = now
+            elif row.kind == "GUIDE_BUILD":
+                statement = select(SubmissionRow).where(
+                    SubmissionRow.id == row.aggregate_id,
+                    SubmissionRow.tenant_id == tenant_id,
+                )
+                if self.engine.dialect.name == "postgresql":
+                    statement = statement.with_for_update()
+                submission = session.scalar(statement)
+                if submission is not None:
+                    current = m.SubmissionProcessingState.model_validate(
+                        submission.state
+                    )
+                    submission.state = current.model_copy(
+                        update={
+                            "status": m.SubmissionProcessingStatus.APPROVED,
+                            "current_stage": "GUIDE_FAILED",
+                            "active_job_id": None,
+                            "diagnostics": [failure],
+                            "updated_at": now,
+                        }
+                    ).model_dump(mode="json")
+                    submission.active_job_id = None
                     submission.updated_at = now
             return True
 
@@ -1983,6 +3164,58 @@ class Repository:
             activity.status = "DRAFT"
             activity.updated_at = completed_at
             return
+        if row.kind in {"BLUEPRINT_REVIEW", "BLUEPRINT_PREFLIGHT"}:
+            activity_statement = select(ActivityRow).where(
+                ActivityRow.id == row.aggregate_id,
+                ActivityRow.tenant_id == row.tenant_id,
+            )
+            latest_statement = (
+                select(BlueprintRow)
+                .where(
+                    BlueprintRow.activity_id == row.aggregate_id,
+                    BlueprintRow.tenant_id == row.tenant_id,
+                )
+                .order_by(BlueprintRow.version.desc())
+                .limit(1)
+            )
+            if self.engine.dialect.name == "postgresql":
+                activity_statement = activity_statement.with_for_update()
+                latest_statement = latest_statement.with_for_update()
+            activity = session.scalar(activity_statement)
+            latest = session.scalar(latest_statement)
+            if activity is None or latest is None:
+                raise NotFound("blueprint not found")
+            blueprint = m.AssessmentBlueprint.model_validate(latest.data)
+            activity.status = (
+                "BLUEPRINT_READY"
+                if blueprint.status == m.WorkflowStatus.READY
+                else "NEEDS_REVIEW"
+            )
+            activity.updated_at = completed_at
+            return
+        if row.kind == "GUIDE_BUILD":
+            submission_statement = select(SubmissionRow).where(
+                SubmissionRow.id == row.aggregate_id,
+                SubmissionRow.tenant_id == row.tenant_id,
+            )
+            if self.engine.dialect.name == "postgresql":
+                submission_statement = submission_statement.with_for_update()
+            submission = session.scalar(submission_statement)
+            if submission is None:
+                raise NotFound("submission not found")
+            current = m.SubmissionProcessingState.model_validate(submission.state)
+            submission.state = current.model_copy(
+                update={
+                    "status": m.SubmissionProcessingStatus.APPROVED,
+                    "current_stage": "GUIDE_FAILED",
+                    "active_job_id": None,
+                    "diagnostics": [m.Diagnostic.model_validate(cancellation)],
+                    "updated_at": completed_at,
+                }
+            ).model_dump(mode="json")
+            submission.active_job_id = None
+            submission.updated_at = completed_at
+            return
         if row.kind != "SUBMISSION":
             return
         submission_statement = select(SubmissionRow).where(
@@ -2088,6 +3321,7 @@ class Repository:
                     progress=source.progress,
                     attempt=source.attempt,
                     diagnostics=[],
+                    descriptor=source.descriptor,
                     control_state="ACTIVE",
                     max_attempts=effective_max,
                     next_attempt_at=next_attempt_at,
@@ -2181,6 +3415,7 @@ class Repository:
                     progress=source.progress,
                     attempt=source.attempt,
                     diagnostics=[],
+                    descriptor=source.descriptor,
                     control_state="ACTIVE",
                     max_attempts=source.max_attempts,
                     next_attempt_at=next_attempt_at,
@@ -2217,6 +3452,88 @@ class Repository:
         result: JobRow,
         activated_at: datetime,
     ) -> None:
+        stage_progress = {
+            "ACTIVITY_PARSE": 0.05,
+            "ACTIVITY_SPEC": 0.15,
+            "RUBRIC_NORMALIZE": 0.30,
+            "AMBIGUITY_TRIAGE": 0.45,
+            "BLUEPRINT_BUILD": 0.65,
+            "BLUEPRINT_REVIEW": 0.82,
+            "BLUEPRINT_PREFLIGHT": 0.82,
+            "SUBMISSION_PARSE": 0.08,
+            "EVIDENCE_MAP": 0.20,
+            "ASSESSMENT_PLAN": 0.32,
+            "QUESTION_GENERATE": 0.40,
+            "QUESTION_VALIDATE": 0.55,
+            # Legacy Phase 5 continuation floor; reconciled without P08.
+            "QUESTION_REVIEW": 0.55,
+            "ASSEMBLE": 0.72,
+            "GUIDE_BUILD": 0.82,
+        }
+        result.progress = stage_progress.get(result.stage, 0.0)
+        if source.kind == "ACTIVITY":
+            statement = select(ActivityRow).where(
+                ActivityRow.id == source.aggregate_id,
+                ActivityRow.tenant_id == source.tenant_id,
+            )
+            if self.engine.dialect.name == "postgresql":
+                statement = statement.with_for_update()
+            activity = session.scalar(statement)
+            if activity is None:
+                raise NotFound("activity not found")
+            if activity.status not in {"TECHNICAL_FAILURE", "NEEDS_REVIEW"}:
+                raise Conflict("ACTIVITY_CONTINUATION_NOT_ALLOWED")
+            activity.status = "QUEUED"
+            activity.updated_at = activated_at
+            return
+        if source.kind in {"BLUEPRINT_REVIEW", "BLUEPRINT_PREFLIGHT"}:
+            statement = select(ActivityRow).where(
+                ActivityRow.id == source.aggregate_id,
+                ActivityRow.tenant_id == source.tenant_id,
+            )
+            if self.engine.dialect.name == "postgresql":
+                statement = statement.with_for_update()
+            activity = session.scalar(statement)
+            if activity is None:
+                raise NotFound("activity not found")
+            if activity.status not in {
+                "TECHNICAL_FAILURE",
+                "NEEDS_REVIEW",
+                "BLUEPRINT_READY",
+            }:
+                raise Conflict("BLUEPRINT_REVIEW_CONTINUATION_NOT_ALLOWED")
+            activity.status = (
+                "BLUEPRINT_PREFLIGHT_QUEUED"
+                if source.kind == "BLUEPRINT_PREFLIGHT"
+                else "BLUEPRINT_REVIEW_QUEUED"
+            )
+            activity.updated_at = activated_at
+            return
+        if source.kind == "GUIDE_BUILD":
+            statement = select(SubmissionRow).where(
+                SubmissionRow.id == source.aggregate_id,
+                SubmissionRow.tenant_id == source.tenant_id,
+            )
+            if self.engine.dialect.name == "postgresql":
+                statement = statement.with_for_update()
+            submission = session.scalar(statement)
+            if submission is None:
+                raise NotFound("submission not found")
+            current = m.SubmissionProcessingState.model_validate(submission.state)
+            if current.status != m.SubmissionProcessingStatus.APPROVED:
+                raise Conflict("GUIDE_BUILD_CONTINUATION_NOT_ALLOWED")
+            submission.state = current.model_copy(
+                update={
+                    "current_stage": "GUIDE_PENDING",
+                    "progress": result.progress,
+                    "active_job_id": result.id,
+                    "diagnostics": [],
+                    "updated_at": activated_at,
+                }
+            ).model_dump(mode="json")
+            submission.active_job_id = result.id
+            submission.updated_at = activated_at
+            return
         if source.kind != "SUBMISSION":
             return
         statement = select(SubmissionRow).where(
@@ -2229,10 +3546,27 @@ class Repository:
         if submission is None:
             raise NotFound("submission not found")
         current = m.SubmissionProcessingState.model_validate(submission.state)
+        domain_status = {
+            "SUBMISSION_PARSE": m.SubmissionProcessingStatus.PARSING,
+            "EVIDENCE_MAP": m.SubmissionProcessingStatus.MAPPING_OPPORTUNITIES,
+            "ASSESSMENT_PLAN": m.SubmissionProcessingStatus.PLANNING,
+            "QUESTION_GENERATE": m.SubmissionProcessingStatus.GENERATING,
+            "QUESTION_VALIDATE": (
+                m.SubmissionProcessingStatus.VALIDATING_QUESTIONS
+            ),
+            "QUESTION_REVIEW": (
+                m.SubmissionProcessingStatus.VALIDATING_QUESTIONS
+            ),
+            "ASSEMBLE": m.SubmissionProcessingStatus.VALIDATING_QUESTIONS,
+            "GUIDE_BUILD": m.SubmissionProcessingStatus.VALIDATING_QUESTIONS,
+        }.get(result.stage, m.SubmissionProcessingStatus.PARSING)
         resumed = current.model_copy(
             update={
+                "status": domain_status,
                 "current_stage": result.stage,
+                "progress": result.progress,
                 "active_job_id": result.id,
+                "diagnostics": [],
                 "updated_at": activated_at,
             }
         )
@@ -2311,7 +3645,7 @@ class Repository:
                 row.diagnostics = [failure.model_dump(mode="json")]
                 row.next_attempt_at = None
                 row.finished_at = reconciled_at
-                if row.kind == "ACTIVITY":
+                if row.kind in {"ACTIVITY", "BLUEPRINT_REVIEW", "BLUEPRINT_PREFLIGHT"}:
                     activity = session.scalar(
                         select(ActivityRow).where(
                             ActivityRow.id == row.aggregate_id,
@@ -2341,6 +3675,28 @@ class Repository:
                                 "updated_at": reconciled_at,
                             }
                         ).model_dump(mode="json")
+                        submission.updated_at = reconciled_at
+                elif row.kind == "GUIDE_BUILD":
+                    submission = session.scalar(
+                        select(SubmissionRow).where(
+                            SubmissionRow.id == row.aggregate_id,
+                            SubmissionRow.tenant_id == row.tenant_id,
+                        )
+                    )
+                    if submission is not None:
+                        current = m.SubmissionProcessingState.model_validate(
+                            submission.state
+                        )
+                        submission.state = current.model_copy(
+                            update={
+                                "status": m.SubmissionProcessingStatus.APPROVED,
+                                "current_stage": "GUIDE_FAILED",
+                                "active_job_id": None,
+                                "diagnostics": [failure],
+                                "updated_at": reconciled_at,
+                            }
+                        ).model_dump(mode="json")
+                        submission.active_job_id = None
                         submission.updated_at = reconciled_at
             return len(rows)
 
@@ -2373,6 +3729,679 @@ class Repository:
             row.finished_at = None
             row.next_attempt_at = None
             return row
+
+    def claim_job(
+        self, job_id: str, *, lease_seconds: int = 3900
+    ) -> JobRow | None:
+        """Atomically claim only the content-free ID dispatched to this worker."""
+
+        if not 300 <= lease_seconds <= 7200:
+            raise ValueError("job lease must be between 300 and 7200 seconds")
+        with self.session() as session:
+            now = utc_now()
+            statement = select(JobRow).where(
+                JobRow.id == job_id,
+                JobRow.status == "QUEUED",
+                JobRow.control_state == "ACTIVE",
+                JobRow.attempt < JobRow.max_attempts,
+                or_(
+                    JobRow.next_attempt_at.is_(None),
+                    JobRow.next_attempt_at <= now,
+                ),
+            )
+            if self.engine.dialect.name == "postgresql":
+                statement = statement.with_for_update(skip_locked=True)
+            row = session.scalar(statement)
+            if row is None:
+                return None
+            row.status = "RUNNING"
+            row.attempt += 1
+            row.started_at = now
+            row.finished_at = None
+            row.next_attempt_at = None
+            return row
+
+    @staticmethod
+    def _synthetic_artifact_scope(
+        session: Session,
+        job: JobRow,
+    ) -> tuple[str, list[ArtifactRow]]:
+        """Resolve the exact sealed artifact scope from durable job ownership."""
+
+        submission_id: str | None = None
+        if job.kind in {"ACTIVITY", "BLUEPRINT_REVIEW", "BLUEPRINT_PREFLIGHT"}:
+            activity_id = job.aggregate_id
+            activity = session.scalar(
+                select(ActivityRow).where(
+                    ActivityRow.id == activity_id,
+                    ActivityRow.tenant_id == job.tenant_id,
+                )
+            )
+            if activity is None:
+                raise Conflict("SYNTHETIC_AUTHORIZATION_SCOPE_MISMATCH")
+        elif job.kind in {"SUBMISSION", "QUESTION_ACTION", "GUIDE_BUILD"}:
+            submission = session.scalar(
+                select(SubmissionRow).where(
+                    SubmissionRow.id == job.aggregate_id,
+                    SubmissionRow.tenant_id == job.tenant_id,
+                )
+            )
+            if submission is None:
+                raise Conflict("SYNTHETIC_AUTHORIZATION_SCOPE_MISMATCH")
+            activity_id = submission.activity_id
+            submission_id = submission.id
+        else:
+            raise Conflict("SYNTHETIC_AUTHORIZATION_JOB_KIND_FORBIDDEN")
+
+        artifact_scope = (
+            ArtifactRow.submission_id.is_(None)
+            if submission_id is None
+            else or_(
+                ArtifactRow.submission_id.is_(None),
+                ArtifactRow.submission_id == submission_id,
+            )
+        )
+        artifacts = list(
+            session.scalars(
+                select(ArtifactRow)
+                .where(
+                    ArtifactRow.tenant_id == job.tenant_id,
+                    ArtifactRow.activity_id == activity_id,
+                    artifact_scope,
+                )
+                .order_by(ArtifactRow.id)
+            )
+        )
+        if not artifacts or any(
+            artifact.status != "COMPLETE"
+            or artifact.sha256 is None
+            or artifact.byte_size is None
+            or artifact.media_type is None
+            for artifact in artifacts
+        ):
+            raise Conflict("SYNTHETIC_AUTHORIZATION_ARTIFACTS_NOT_SEALED")
+        return activity_id, artifacts
+
+    def synthetic_artifact_hashes_for_job(self, job_id: str) -> tuple[str, ...]:
+        """Return only hashes, never artifact content, for operator attestation."""
+
+        with self.session() as session:
+            job = session.get(JobRow, job_id)
+            if job is None:
+                raise NotFound("job not found")
+            return self._synthetic_attestation_hashes(session, job)
+
+    def _synthetic_attestation_hashes(
+        self,
+        session: Session,
+        job: JobRow,
+    ) -> tuple[str, ...]:
+        """Bind provider work to sealed files and exact derived P07 inputs."""
+
+        activity_id, artifacts = self._synthetic_artifact_scope(session, job)
+        hashes = {str(artifact.sha256) for artifact in artifacts}
+        if job.kind != "QUESTION_ACTION":
+            return tuple(sorted(hashes))
+
+        reference = self._question_action_reference_in_session(session, job)
+        if reference is None:
+            raise Conflict("SYNTHETIC_AUTHORIZATION_ARTIFACT_HASH_MISMATCH")
+        try:
+            assessment_version = int(reference["assessment_version"])
+            assessment_id = str(reference["assessment_id"])
+            assessment_etag = str(reference["assessment_etag"])
+            descriptor_hash = str(reference["descriptor_hash"])
+        except (KeyError, TypeError, ValueError) as exc:
+            raise Conflict(
+                "SYNTHETIC_AUTHORIZATION_ARTIFACT_HASH_MISMATCH"
+            ) from exc
+
+        descriptors = list(
+            session.scalars(
+                select(StageRunRow).where(
+                    StageRunRow.tenant_id == job.tenant_id,
+                    StageRunRow.stage == QUESTION_ACTION_DESCRIPTOR_STAGE,
+                    StageRunRow.status == "SUCCEEDED",
+                    StageRunRow.output_hash == descriptor_hash,
+                )
+            )
+        )
+        if len(descriptors) != 1 or descriptors[0].output is None:
+            raise Conflict("SYNTHETIC_AUTHORIZATION_ARTIFACT_HASH_MISMATCH")
+        descriptor = descriptors[0]
+        descriptor_action = descriptor.output.get("action")
+        if not isinstance(descriptor_action, dict) or any(
+            (
+                descriptor.output_hash != canonical_hash(descriptor.output),
+                descriptor.input_hash
+                != _question_action_descriptor_input_hash(descriptor.output),
+                descriptor.policy_hash
+                != QUESTION_ACTION_DESCRIPTOR_POLICY_HASH,
+                descriptor.component_version
+                != QUESTION_ACTION_DESCRIPTOR_VERSION,
+                reference.get("descriptor_version")
+                != QUESTION_ACTION_DESCRIPTOR_VERSION,
+                descriptor.output.get("assessment_id") != assessment_id,
+                descriptor.output.get("assessment_version")
+                != assessment_version,
+                descriptor.output.get("assessment_etag") != assessment_etag,
+                descriptor.output.get("logical_action_id")
+                != reference.get("logical_action_id"),
+                descriptor_action.get("assessment_id") != assessment_id,
+                descriptor_action.get("question_id")
+                != reference.get("question_id"),
+                descriptor_action.get("action_id")
+                != reference.get("action_id"),
+                descriptor_action.get("action")
+                != reference.get("action_type"),
+            )
+        ):
+            raise Conflict("SYNTHETIC_AUTHORIZATION_ARTIFACT_HASH_MISMATCH")
+
+        assessment = session.scalar(
+            select(AssessmentRow).where(
+                AssessmentRow.tenant_id == job.tenant_id,
+                AssessmentRow.assessment_id == assessment_id,
+                AssessmentRow.version == assessment_version,
+                AssessmentRow.etag == assessment_etag,
+                AssessmentRow.submission_id == job.aggregate_id,
+            )
+        )
+        latest = session.scalar(
+            select(AssessmentRow)
+            .where(
+                AssessmentRow.tenant_id == job.tenant_id,
+                AssessmentRow.assessment_id == assessment_id,
+            )
+            .order_by(AssessmentRow.version.desc())
+            .limit(1)
+        )
+        submission = session.scalar(
+            select(SubmissionRow).where(
+                SubmissionRow.id == job.aggregate_id,
+                SubmissionRow.tenant_id == job.tenant_id,
+                SubmissionRow.activity_id == activity_id,
+            )
+        )
+        activity = session.scalar(
+            select(ActivityRow).where(
+                ActivityRow.id == activity_id,
+                ActivityRow.tenant_id == job.tenant_id,
+            )
+        )
+        mapping = session.get(EvidenceMapRow, job.aggregate_id)
+        plan = session.get(AssessmentPlanRow, job.aggregate_id)
+        if any(
+            value is None
+            for value in (
+                assessment,
+                latest,
+                submission,
+                activity,
+                mapping,
+                plan,
+            )
+        ):
+            raise Conflict("SYNTHETIC_AUTHORIZATION_ARTIFACT_HASH_MISMATCH")
+        assert assessment is not None
+        assert latest is not None
+        assert submission is not None
+        assert activity is not None
+        assert mapping is not None
+        assert plan is not None
+        if any(
+            (
+                latest.row_id != assessment.row_id,
+                mapping.tenant_id != job.tenant_id,
+                plan.tenant_id != job.tenant_id,
+            )
+        ):
+            raise Conflict("SYNTHETIC_AUTHORIZATION_ARTIFACT_HASH_MISMATCH")
+
+        assessment_value = m.Assessment.model_validate(assessment.data)
+        blueprint = session.scalar(
+            select(BlueprintRow).where(
+                BlueprintRow.tenant_id == job.tenant_id,
+                BlueprintRow.activity_id == activity_id,
+                BlueprintRow.version == assessment_value.lineage.blueprint_version,
+                BlueprintRow.status == "APPROVED",
+            )
+        )
+        evidence = list(
+            session.scalars(
+                select(EvidenceRow)
+                .where(
+                    EvidenceRow.tenant_id == job.tenant_id,
+                    EvidenceRow.submission_id == job.aggregate_id,
+                )
+                .order_by(EvidenceRow.id)
+            )
+        )
+        if blueprint is None or not evidence:
+            raise Conflict("SYNTHETIC_AUTHORIZATION_ARTIFACT_HASH_MISMATCH")
+
+        controls = list(
+            session.scalars(
+                select(JobControlRecordRow)
+                .where(
+                    JobControlRecordRow.tenant_id == job.tenant_id,
+                    JobControlRecordRow.resulting_job_id == job.id,
+                    JobControlRecordRow.status == "APPLIED",
+                )
+                .order_by(JobControlRecordRow.requested_at, JobControlRecordRow.id)
+            )
+        )
+        if controls:
+            hashes.update(
+                canonical_hash(
+                    {
+                        "kind": "QUESTION_ACTION_CONTROL_INPUT",
+                        "control": control.data,
+                    }
+                )
+                for control in controls
+            )
+        elif descriptor.job_id != job.id:
+            raise Conflict("SYNTHETIC_AUTHORIZATION_ARTIFACT_HASH_MISMATCH")
+
+        review_rows = list(
+            session.scalars(
+                select(QuestionReviewActionRow)
+                .where(
+                    QuestionReviewActionRow.tenant_id == job.tenant_id,
+                    QuestionReviewActionRow.assessment_id == assessment_id,
+                    QuestionReviewActionRow.question_id
+                    == reference["question_id"],
+                )
+                .order_by(
+                    QuestionReviewActionRow.occurred_at,
+                    QuestionReviewActionRow.id,
+                )
+            )
+        )
+        execution_events = list(
+            session.scalars(
+                select(AuditEventRow)
+                .where(
+                    AuditEventRow.tenant_id == job.tenant_id,
+                    AuditEventRow.event_type == "question_action.executed",
+                )
+                .order_by(AuditEventRow.occurred_at, AuditEventRow.id)
+            )
+        )
+        relevant_events = [
+            event.payload
+            for event in execution_events
+            if event.payload.get("assessment_id") == assessment_id
+            and event.payload.get("question_id") == reference["question_id"]
+        ]
+        hashes.update(
+            {
+                descriptor_hash,
+                canonical_hash(
+                    {
+                        "kind": "QUESTION_ACTION_DESCRIPTOR_STAGE_INPUT",
+                        "stage_key": descriptor.stage_key,
+                        "input_hash": descriptor.input_hash,
+                        "policy_hash": descriptor.policy_hash,
+                        "component_version": descriptor.component_version,
+                        "output_hash": descriptor.output_hash,
+                    }
+                ),
+                canonical_hash(
+                    {
+                        "kind": "QUESTION_ACTION_REFERENCE_INPUT",
+                        "reference": reference,
+                    }
+                ),
+                canonical_hash(
+                    {
+                        "kind": "QUESTION_ACTION_ASSESSMENT_INPUT",
+                        "version": assessment.version,
+                        "etag": assessment.etag,
+                        "data": assessment.data,
+                    }
+                ),
+                canonical_hash(
+                    {
+                        "kind": "QUESTION_ACTION_SUBMISSION_INPUT",
+                        "submission_id": submission.id,
+                        "activity_id": submission.activity_id,
+                        "blueprint_version": submission.blueprint_version,
+                    }
+                ),
+                canonical_hash(
+                    {
+                        "kind": "QUESTION_ACTION_POLICY_INPUT",
+                        "blueprint_policy": activity.blueprint_policy,
+                    }
+                ),
+                canonical_hash(
+                    {
+                        "kind": "QUESTION_ACTION_BLUEPRINT_INPUT",
+                        "version": blueprint.version,
+                        "etag": blueprint.etag,
+                        "data": blueprint.data,
+                    }
+                ),
+                canonical_hash(
+                    {
+                        "kind": "QUESTION_ACTION_MAPPING_INPUT",
+                        "data": mapping.data,
+                    }
+                ),
+                canonical_hash(
+                    {
+                        "kind": "QUESTION_ACTION_PLAN_INPUT",
+                        "data": plan.data,
+                    }
+                ),
+                canonical_hash(
+                    {
+                        "kind": "QUESTION_ACTION_REVIEW_HISTORY_INPUT",
+                        "records": [row.data for row in review_rows],
+                    }
+                ),
+                canonical_hash(
+                    {
+                        "kind": "QUESTION_ACTION_EXECUTION_HISTORY_INPUT",
+                        "events": relevant_events,
+                    }
+                ),
+            }
+        )
+        hashes.add(
+            canonical_hash(
+                {
+                    "kind": "QUESTION_ACTION_EVIDENCE_INPUT",
+                    "rows": [
+                        {"evidence_id": row.id, "data": row.data}
+                        for row in evidence
+                    ],
+                }
+            )
+        )
+        attested = tuple(sorted(hashes))
+        if len(attested) > 100:
+            raise Conflict("SYNTHETIC_AUTHORIZATION_ARTIFACT_HASH_MISMATCH")
+        return attested
+
+    def authorize_synthetic_provider_job(
+        self,
+        spec: SyntheticProviderAuthorizationSpec,
+    ) -> SyntheticProviderAuthorizationRow:
+        """Persist one immutable authorization before its exact job is claimed."""
+
+        if spec.job_kind in PROVIDER_FREE_BLUEPRINT_JOB_KINDS:
+            raise Conflict("SYNTHETIC_AUTHORIZATION_PROVIDER_FREE_JOB")
+        now = utc_now()
+        if spec.expires_at <= now:
+            raise Conflict("SYNTHETIC_AUTHORIZATION_EXPIRED")
+        try:
+            with self.session() as session:
+                statement = select(JobRow).where(JobRow.id == spec.job_id)
+                if self.engine.dialect.name == "postgresql":
+                    statement = statement.with_for_update()
+                job = session.scalar(statement)
+                if job is None:
+                    raise NotFound("job not found")
+                if any(
+                    (
+                        job.tenant_id != spec.tenant_id,
+                        job.kind != spec.job_kind,
+                        job.aggregate_id != spec.aggregate_id,
+                        job.status != "QUEUED",
+                        job.control_state != "ACTIVE",
+                        job.attempt + 1 != spec.expected_claim_attempt,
+                    )
+                ):
+                    raise Conflict("SYNTHETIC_AUTHORIZATION_JOB_MISMATCH")
+                actual_hashes = self._synthetic_attestation_hashes(session, job)
+                if actual_hashes != spec.artifact_hashes:
+                    raise Conflict("SYNTHETIC_AUTHORIZATION_ARTIFACT_HASH_MISMATCH")
+                row = SyntheticProviderAuthorizationRow(
+                    id=spec.authorization_id,
+                    tenant_id=spec.tenant_id,
+                    job_id=spec.job_id,
+                    job_kind=spec.job_kind,
+                    aggregate_id=spec.aggregate_id,
+                    expected_claim_attempt=spec.expected_claim_attempt,
+                    artifact_hashes=list(spec.artifact_hashes),
+                    candidate_sha=spec.candidate_sha,
+                    boundary_hash=spec.boundary_hash,
+                    route_profile=spec.route_profile,
+                    model=spec.model,
+                    secret_version_resource=spec.secret_version_resource,
+                    max_requests=spec.max_requests,
+                    max_cost_usd=spec.max_cost_usd,
+                    classification=spec.classification,
+                    schema_version=spec.schema_version,
+                    authorization_hash=spec.authorization_hash,
+                    created_by=spec.created_by,
+                    created_at=now,
+                    expires_at=spec.expires_at,
+                )
+                session.add(row)
+                session.flush()
+                return row
+        except IntegrityError as exc:
+            raise Conflict("SYNTHETIC_AUTHORIZATION_ALREADY_EXISTS") from exc
+
+    @staticmethod
+    def _authorization_spec_from_row(
+        row: SyntheticProviderAuthorizationRow,
+    ) -> SyntheticProviderAuthorizationSpec:
+        expires_at = row.expires_at
+        if expires_at.tzinfo is None:
+            expires_at = expires_at.replace(tzinfo=UTC)
+        return SyntheticProviderAuthorizationSpec(
+            authorization_id=row.id,
+            tenant_id=row.tenant_id,
+            job_id=row.job_id,
+            job_kind=row.job_kind,
+            aggregate_id=row.aggregate_id,
+            expected_claim_attempt=row.expected_claim_attempt,
+            artifact_hashes=tuple(row.artifact_hashes),
+            candidate_sha=row.candidate_sha,
+            boundary_hash=row.boundary_hash,
+            route_profile=row.route_profile,
+            model=row.model,
+            secret_version_resource=row.secret_version_resource,
+            max_requests=row.max_requests,
+            max_cost_usd=row.max_cost_usd,
+            classification=row.classification,
+            schema_version=row.schema_version,
+            expires_at=expires_at,
+            created_by=row.created_by,
+        )
+
+    def consume_synthetic_provider_authorization(
+        self,
+        *,
+        job_id: str,
+        candidate_sha: str,
+        boundary_hash: str,
+        route_profile: str,
+        model: str,
+        secret_version_resource: str,
+        maximum_requests: int,
+        maximum_cost_usd: float,
+    ) -> SyntheticProviderGrant:
+        """Atomically consume the exact attestation after an exact job claim."""
+
+        try:
+            with self.session() as session:
+                job_statement = select(JobRow).where(JobRow.id == job_id)
+                auth_statement = select(SyntheticProviderAuthorizationRow).where(
+                    SyntheticProviderAuthorizationRow.job_id == job_id
+                )
+                if self.engine.dialect.name == "postgresql":
+                    job_statement = job_statement.with_for_update()
+                    auth_statement = auth_statement.with_for_update()
+                job = session.scalar(job_statement)
+                if job is None or job.status != "RUNNING":
+                    raise Conflict("SYNTHETIC_AUTHORIZATION_EXACT_CLAIM_REQUIRED")
+                if job.kind in PROVIDER_FREE_BLUEPRINT_JOB_KINDS:
+                    raise Conflict("SYNTHETIC_AUTHORIZATION_PROVIDER_FREE_JOB")
+                authorization = session.scalar(auth_statement)
+                if authorization is None:
+                    raise Conflict("SYNTHETIC_AUTHORIZATION_REQUIRED")
+                if session.scalar(
+                    select(SyntheticProviderClaimRow).where(
+                        SyntheticProviderClaimRow.authorization_id
+                        == authorization.id
+                    )
+                ) is not None:
+                    raise Conflict("SYNTHETIC_AUTHORIZATION_ALREADY_CONSUMED")
+
+                spec = self._authorization_spec_from_row(authorization)
+                now = utc_now()
+                if spec.expires_at <= now:
+                    raise Conflict("SYNTHETIC_AUTHORIZATION_EXPIRED")
+                if authorization.authorization_hash != spec.authorization_hash:
+                    raise Conflict("SYNTHETIC_AUTHORIZATION_HASH_MISMATCH")
+                if any(
+                    (
+                        job.tenant_id != spec.tenant_id,
+                        job.kind != spec.job_kind,
+                        job.aggregate_id != spec.aggregate_id,
+                        job.attempt != spec.expected_claim_attempt,
+                        candidate_sha != spec.candidate_sha,
+                        boundary_hash != spec.boundary_hash,
+                        route_profile != spec.route_profile,
+                        model != spec.model,
+                        secret_version_resource != spec.secret_version_resource,
+                        spec.max_requests > maximum_requests,
+                        spec.max_cost_usd > maximum_cost_usd,
+                    )
+                ):
+                    raise Conflict("SYNTHETIC_AUTHORIZATION_BOUNDARY_MISMATCH")
+                actual_hashes = self._synthetic_attestation_hashes(session, job)
+                if actual_hashes != spec.artifact_hashes:
+                    raise Conflict("SYNTHETIC_AUTHORIZATION_ARTIFACT_HASH_MISMATCH")
+
+                claim = SyntheticProviderClaimRow(
+                    id=stable_id(
+                        "syntheticclaim",
+                        authorization.id,
+                        authorization.authorization_hash,
+                        job.id,
+                        job.attempt,
+                    ),
+                    authorization_id=authorization.id,
+                    authorization_hash=authorization.authorization_hash,
+                    tenant_id=job.tenant_id,
+                    job_id=job.id,
+                    claim_attempt=job.attempt,
+                    candidate_sha=candidate_sha,
+                    boundary_hash=boundary_hash,
+                    schema_version=SYNTHETIC_PROVIDER_CLAIM_VERSION,
+                    claimed_at=now,
+                )
+                session.add(claim)
+                session.flush()
+                return SyntheticProviderGrant(
+                    authorization_id=authorization.id,
+                    authorization_hash=authorization.authorization_hash,
+                    tenant_id=job.tenant_id,
+                    job_id=job.id,
+                    job_kind=job.kind,
+                    aggregate_id=job.aggregate_id,
+                    claim_attempt=job.attempt,
+                    artifact_hashes=frozenset(spec.artifact_hashes),
+                    candidate_sha=candidate_sha,
+                    boundary_hash=boundary_hash,
+                    route_profile=route_profile,
+                    model=model,
+                    secret_version_resource=secret_version_resource,
+                    max_requests=spec.max_requests,
+                    max_cost_usd=spec.max_cost_usd,
+                    classification=spec.classification,
+                )
+        except IntegrityError as exc:
+            raise Conflict("SYNTHETIC_AUTHORIZATION_ALREADY_CONSUMED") from exc
+
+    def fail_claimed_job_security(self, *, job_id: str, code: str) -> None:
+        """Fail a claimed job without preserving exception, artifact, or provider data."""
+
+        allowed_codes = {
+            "SYNTHETIC_AUTHORIZATION_REQUIRED",
+            "SYNTHETIC_AUTHORIZATION_EXACT_CLAIM_REQUIRED",
+            "SYNTHETIC_AUTHORIZATION_ALREADY_CONSUMED",
+            "SYNTHETIC_AUTHORIZATION_EXPIRED",
+            "SYNTHETIC_AUTHORIZATION_HASH_MISMATCH",
+            "SYNTHETIC_AUTHORIZATION_BOUNDARY_MISMATCH",
+            "SYNTHETIC_AUTHORIZATION_ARTIFACT_HASH_MISMATCH",
+            "SYNTHETIC_AUTHORIZATION_SCOPE_MISMATCH",
+            "SYNTHETIC_AUTHORIZATION_ARTIFACTS_NOT_SEALED",
+            "SYNTHETIC_AUTHORIZATION_JOB_KIND_FORBIDDEN",
+            "SYNTHETIC_PROVIDER_CREDENTIAL_UNAVAILABLE",
+        }
+        safe_code = code if code in allowed_codes else "SYNTHETIC_AUTHORIZATION_REJECTED"
+        now = utc_now()
+        failure = m.Diagnostic(
+            code=safe_code,
+            severity=m.Severity.ERROR,
+            message="The synthetic provider boundary rejected the claimed job.",
+            retryable=False,
+        )
+        with self.session() as session:
+            row = session.get(JobRow, job_id)
+            if row is None:
+                raise NotFound("job not found")
+            if row.status != "RUNNING":
+                raise Conflict("SYNTHETIC_AUTHORIZATION_EXACT_CLAIM_REQUIRED")
+            row.status = "FAILED"
+            row.failure_class = m.FailureClass.SECURITY.value
+            row.diagnostics = [failure.model_dump(mode="json")]
+            row.next_attempt_at = None
+            row.finished_at = now
+            if row.kind in {"ACTIVITY", "BLUEPRINT_REVIEW", "BLUEPRINT_PREFLIGHT"}:
+                activity = session.scalar(
+                    select(ActivityRow).where(
+                        ActivityRow.id == row.aggregate_id,
+                        ActivityRow.tenant_id == row.tenant_id,
+                    )
+                )
+                if activity is not None:
+                    activity.status = "TECHNICAL_FAILURE"
+                    activity.updated_at = now
+            elif row.kind in {"SUBMISSION", "GUIDE_BUILD"}:
+                submission = session.scalar(
+                    select(SubmissionRow).where(
+                        SubmissionRow.id == row.aggregate_id,
+                        SubmissionRow.tenant_id == row.tenant_id,
+                    )
+                )
+                if (
+                    submission is not None
+                    and submission.active_job_id == row.id
+                ):
+                    current = m.SubmissionProcessingState.model_validate(
+                        submission.state
+                    )
+                    submission.state = current.model_copy(
+                        update={
+                            "status": (
+                                m.SubmissionProcessingStatus.APPROVED
+                                if row.kind == "GUIDE_BUILD"
+                                else m.SubmissionProcessingStatus.TECHNICAL_FAILURE
+                            ),
+                            "current_stage": (
+                                "GUIDE_FAILED"
+                                if row.kind == "GUIDE_BUILD"
+                                else row.stage
+                            ),
+                            "active_job_id": (
+                                None if row.kind == "GUIDE_BUILD" else row.id
+                            ),
+                            "diagnostics": [failure],
+                            "updated_at": now,
+                        }
+                    ).model_dump(mode="json")
+                    if row.kind == "GUIDE_BUILD":
+                        submission.active_job_id = None
+                    submission.updated_at = now
 
     def save_stage(
         self, *, job_id: str, tenant_id: str, stage: str, inputs: Any,
@@ -2627,6 +4656,47 @@ class Repository:
                 raise NotFound("assessment not found")
             return row
 
+    def assessment_version(
+        self, assessment_id: str, version: int, tenant_id: str
+    ) -> AssessmentRow:
+        with self.session() as session:
+            row = session.scalar(
+                select(AssessmentRow).where(
+                    AssessmentRow.assessment_id == assessment_id,
+                    AssessmentRow.version == version,
+                    AssessmentRow.tenant_id == tenant_id,
+                )
+            )
+            if row is None:
+                raise NotFound("assessment version not found")
+            return row
+
+    def latest_approved_assessments(self) -> list[AssessmentRow]:
+        """Return current APPROVED rows for startup crash-gap reconciliation."""
+
+        with self.session() as session:
+            latest = (
+                select(
+                    AssessmentRow.tenant_id.label("tenant_id"),
+                    AssessmentRow.assessment_id.label("assessment_id"),
+                    func.max(AssessmentRow.version).label("version"),
+                )
+                .group_by(AssessmentRow.tenant_id, AssessmentRow.assessment_id)
+                .subquery()
+            )
+            return list(
+                session.scalars(
+                    select(AssessmentRow).join(
+                        latest,
+                        and_(
+                            AssessmentRow.tenant_id == latest.c.tenant_id,
+                            AssessmentRow.assessment_id == latest.c.assessment_id,
+                            AssessmentRow.version == latest.c.version,
+                        ),
+                    ).where(AssessmentRow.status == m.WorkflowStatus.APPROVED.value)
+                )
+            )
+
     def approve_assessment_atomic(
         self,
         *,
@@ -2662,6 +4732,13 @@ class Repository:
                 current = m.Assessment.model_validate(latest.data)
                 if current.status != m.WorkflowStatus.NEEDS_REVIEW:
                     raise Conflict("ASSESSMENT_NOT_REVIEWABLE")
+                if self._active_question_action_jobs_in_session(
+                    session,
+                    tenant_id=latest.tenant_id,
+                    assessment_id=latest.assessment_id,
+                    submission_id=latest.submission_id,
+                ):
+                    raise Conflict("QUESTION_ACTION_PENDING")
                 if any(
                     (
                         approved_row.version != latest.version + 1,
@@ -2716,6 +4793,256 @@ class Repository:
         except IntegrityError as exc:
             raise Conflict("ASSESSMENT_VERSION_CONFLICT") from exc
 
+    def ensure_guide_build_job(
+        self,
+        *,
+        approved_row: AssessmentRow,
+        binding: m.GuideApprovalBinding,
+        guide_id: str,
+        job_id: str,
+        descriptor: dict[str, Any],
+        actor_id: str,
+        max_attempts: int,
+    ) -> tuple[JobRow, bool]:
+        """Idempotently create the post-approval P09 job.
+
+        Approval is intentionally committed by a prior transaction. This
+        method verifies that durable happens-before edge and can therefore be
+        called by both the request path and crash-gap reconciliation.
+        """
+
+        approved = m.Assessment.model_validate(approved_row.data)
+        if any(
+            (
+                approved.status != m.WorkflowStatus.APPROVED,
+                approved_row.version != binding.assessment_version,
+                approved_row.etag != binding.assessment_etag,
+                approved_row.assessment_id != binding.assessment_id,
+                approved_row.submission_id != binding.submission_id,
+                approved_row.tenant_id != binding.tenant_id,
+                descriptor.get("guide_id") != guide_id,
+                descriptor.get("logical_job_id") != job_id,
+                descriptor.get("binding") != binding.model_dump(mode="json"),
+            )
+        ):
+            raise ValueError("guide job descriptor does not match approval")
+        now = utc_now()
+        try:
+            with self.session() as session:
+                existing = session.get(JobRow, job_id)
+                if existing is not None:
+                    if any(
+                        (
+                            existing.tenant_id != binding.tenant_id,
+                            existing.kind != "GUIDE_BUILD",
+                            existing.aggregate_id != binding.submission_id,
+                            existing.descriptor != descriptor,
+                        )
+                    ):
+                        raise Conflict("GUIDE_BUILD_JOB_ID_COLLISION")
+                    return existing, False
+
+                exact_statement = select(AssessmentRow).where(
+                    AssessmentRow.row_id == approved_row.row_id,
+                    AssessmentRow.tenant_id == binding.tenant_id,
+                    AssessmentRow.assessment_id == binding.assessment_id,
+                    AssessmentRow.version == binding.assessment_version,
+                    AssessmentRow.etag == binding.assessment_etag,
+                    AssessmentRow.status == m.WorkflowStatus.APPROVED.value,
+                )
+                submission_statement = select(SubmissionRow).where(
+                    SubmissionRow.id == binding.submission_id,
+                    SubmissionRow.tenant_id == binding.tenant_id,
+                )
+                if self.engine.dialect.name == "postgresql":
+                    exact_statement = exact_statement.with_for_update()
+                    submission_statement = submission_statement.with_for_update()
+                exact = session.scalar(exact_statement)
+                submission = session.scalar(submission_statement)
+                approval_event = session.get(AuditEventRow, binding.approval_event_id)
+                if exact is None or submission is None or approval_event is None:
+                    raise Conflict("GUIDE_BUILD_APPROVAL_NOT_DURABLE")
+                if any(
+                    (
+                        approval_event.tenant_id != binding.tenant_id,
+                        approval_event.event_type != "assessment.approved",
+                        approval_event.aggregate_id != binding.assessment_id,
+                        approval_event.payload.get("assessment_version")
+                        != binding.assessment_version,
+                    )
+                ):
+                    raise Conflict("GUIDE_BUILD_APPROVAL_EVENT_MISMATCH")
+                state = m.SubmissionProcessingState.model_validate(submission.state)
+                if state.status != m.SubmissionProcessingStatus.APPROVED:
+                    raise Conflict("GUIDE_BUILD_ASSESSMENT_NOT_APPROVED")
+                job = JobRow(
+                    id=job_id,
+                    tenant_id=binding.tenant_id,
+                    kind="GUIDE_BUILD",
+                    aggregate_id=binding.submission_id,
+                    stage="GUIDE_BUILD",
+                    status="QUEUED",
+                    progress=0.0,
+                    attempt=0,
+                    diagnostics=[],
+                    descriptor=descriptor,
+                    control_state="ACTIVE",
+                    max_attempts=max_attempts,
+                )
+                session.add(job)
+                submission.state = state.model_copy(
+                    update={
+                        "current_stage": "GUIDE_PENDING",
+                        "progress": 0.0,
+                        "active_job_id": job_id,
+                        "diagnostics": [],
+                        "updated_at": now,
+                    }
+                ).model_dump(mode="json")
+                submission.active_job_id = job_id
+                submission.updated_at = now
+                session.add(
+                    AuditEventRow(
+                        id=stable_id(
+                            "evt",
+                            binding.tenant_id,
+                            "guide.build_queued",
+                            binding.assessment_id,
+                            binding.assessment_version,
+                            job_id,
+                        ),
+                        tenant_id=binding.tenant_id,
+                        event_type="guide.build_queued",
+                        aggregate_id=binding.assessment_id,
+                        actor_id=actor_id,
+                        payload={
+                            "assessment_version": binding.assessment_version,
+                            "approval_event_id": binding.approval_event_id,
+                            "approval_snapshot_hash": binding.approval_snapshot_hash,
+                            "guide_id": guide_id,
+                            "job_id": job_id,
+                            "request_boundary_hash": descriptor.get(
+                                "request_boundary_hash"
+                            ),
+                        },
+                        occurred_at=now,
+                    )
+                )
+                session.flush()
+                return job, True
+        except IntegrityError:
+            with self.session() as session:
+                existing = session.get(JobRow, job_id)
+                if (
+                    existing is not None
+                    and existing.tenant_id == binding.tenant_id
+                    and existing.kind == "GUIDE_BUILD"
+                    and existing.descriptor == descriptor
+                ):
+                    return existing, False
+            raise Conflict("GUIDE_BUILD_JOB_CONFLICT")
+
+    def finalize_guide_build(
+        self,
+        *,
+        job_id: str,
+        tenant_id: str,
+        guide: GuideRow,
+    ) -> bool:
+        """Publish an all-or-nothing guide without changing approval state."""
+
+        value = m.EvaluationGuide.model_validate(guide.data)
+        if value.binding is None:
+            raise ValueError("active guide requires an approval binding")
+        binding = value.binding
+        if any(
+            (
+                binding.tenant_id != tenant_id,
+                guide.tenant_id != tenant_id,
+                guide.assessment_id != binding.assessment_id,
+                guide.submission_id != binding.submission_id,
+                guide.assessment_version != binding.assessment_version,
+                guide.assessment_etag != binding.assessment_etag,
+                guide.guide_job_id != job_id,
+                guide.status != value.status,
+            )
+        ):
+            raise ValueError("guide row does not match its approval binding")
+        now = utc_now()
+        with self.session() as session:
+            job = self._lock_job(session, job_id, tenant_id, self.engine.dialect.name)
+            if job.control_state != "ACTIVE":
+                if job.control_state == "CANCEL_REQUESTED":
+                    self._complete_job_cancellation(session, job, now)
+                return False
+            if job.kind != "GUIDE_BUILD" or job.status != "RUNNING":
+                raise Conflict("GUIDE_BUILD_FINALIZATION_STATE_CHANGED")
+            assessment = session.scalar(
+                select(AssessmentRow).where(
+                    AssessmentRow.tenant_id == tenant_id,
+                    AssessmentRow.assessment_id == binding.assessment_id,
+                    AssessmentRow.version == binding.assessment_version,
+                    AssessmentRow.etag == binding.assessment_etag,
+                    AssessmentRow.status == m.WorkflowStatus.APPROVED.value,
+                )
+            )
+            submission = session.scalar(
+                select(SubmissionRow).where(
+                    SubmissionRow.id == binding.submission_id,
+                    SubmissionRow.tenant_id == tenant_id,
+                )
+            )
+            if assessment is None or submission is None:
+                raise Conflict("GUIDE_BUILD_APPROVAL_VERSION_CHANGED")
+            state = m.SubmissionProcessingState.model_validate(submission.state)
+            if state.status != m.SubmissionProcessingStatus.APPROVED:
+                raise Conflict("GUIDE_BUILD_APPROVAL_REVOKED")
+            session.merge(guide)
+            ready = value.status == "READY"
+            job.status = "SUCCEEDED" if ready else "NEEDS_REVIEW"
+            job.progress = 1.0
+            job.finished_at = now
+            job.next_attempt_at = None
+            job.failure_class = None if ready else m.FailureClass.VALIDATION.value
+            job.diagnostics = [
+                item.model_dump(mode="json") for item in value.diagnostics
+            ]
+            submission.state = state.model_copy(
+                update={
+                    "current_stage": "GUIDE_READY" if ready else "GUIDE_FAILED",
+                    "progress": 1.0,
+                    "active_job_id": None,
+                    "diagnostics": [] if ready else value.diagnostics,
+                    "updated_at": now,
+                }
+            ).model_dump(mode="json")
+            submission.active_job_id = None
+            submission.updated_at = now
+            session.add(
+                AuditEventRow(
+                    id=stable_id(
+                        "evt",
+                        tenant_id,
+                        "guide.ready" if ready else "guide.needs_review",
+                        value.guide_id,
+                        job_id,
+                    ),
+                    tenant_id=tenant_id,
+                    event_type="guide.ready" if ready else "guide.needs_review",
+                    aggregate_id=binding.assessment_id,
+                    actor_id="system_worker",
+                    payload={
+                        "assessment_version": binding.assessment_version,
+                        "approval_event_id": binding.approval_event_id,
+                        "approval_snapshot_hash": binding.approval_snapshot_hash,
+                        "guide_id": value.guide_id,
+                        "job_id": job_id,
+                    },
+                    occurred_at=now,
+                )
+            )
+            return True
+
     def guide_for_assessment(self, assessment_id: str, tenant_id: str) -> GuideRow:
         with self.session() as session:
             row = session.scalar(
@@ -2727,6 +5054,93 @@ class Repository:
             if row is None:
                 raise NotFound("guide not found")
             return row
+
+    def guide_for_approved_version(
+        self,
+        assessment: AssessmentRow,
+        *,
+        require_ready: bool = True,
+    ) -> GuideRow:
+        """Select only the guide bound to this exact approved row."""
+
+        value = m.Assessment.model_validate(assessment.data)
+        if (
+            value.status != m.WorkflowStatus.APPROVED
+            or value.approved_by is None
+            or value.approved_at is None
+        ):
+            raise NotFound("approved guide not found")
+        from ..guide_generation import (
+            build_guide_approval_binding,
+            guide_id_for_binding,
+        )
+
+        approval_event_id = stable_id(
+            "evt",
+            assessment.tenant_id,
+            "assessment.approved",
+            assessment.assessment_id,
+            value.approved_by,
+            assessment.version,
+        )
+        expected = build_guide_approval_binding(
+            assessment=value,
+            assessment_version=assessment.version,
+            assessment_etag=assessment.etag,
+            approval_event_id=approval_event_id,
+        )
+        expected_guide_id = guide_id_for_binding(expected)
+        with self.session() as session:
+            statement = select(GuideRow).where(
+                GuideRow.guide_id == expected_guide_id,
+                GuideRow.tenant_id == assessment.tenant_id,
+                GuideRow.assessment_id == assessment.assessment_id,
+                GuideRow.submission_id == assessment.submission_id,
+                GuideRow.assessment_version == assessment.version,
+                GuideRow.assessment_etag == assessment.etag,
+                GuideRow.assessment_snapshot_hash
+                == expected.assessment_snapshot_hash,
+                GuideRow.question_set_hash == expected.question_set_hash,
+                GuideRow.approval_event_id == expected.approval_event_id,
+                GuideRow.approval_snapshot_hash == expected.approval_snapshot_hash,
+                GuideRow.guide_policy_hash == expected.guide_policy_hash,
+                GuideRow.materializer_boundary_hash
+                == expected.materializer_boundary_hash,
+            )
+            if require_ready:
+                statement = statement.where(GuideRow.status == "READY")
+            row = session.scalar(statement.limit(1))
+            if row is None:
+                raise NotFound("approved guide not found")
+            guide = m.EvaluationGuide.model_validate(row.data)
+            approval_event = session.get(AuditEventRow, expected.approval_event_id)
+            if (
+                guide.guide_id != expected_guide_id
+                or guide.binding != expected
+                or guide.status != row.status
+                or approval_event is None
+                or approval_event.tenant_id != assessment.tenant_id
+                or approval_event.event_type != "assessment.approved"
+                or approval_event.aggregate_id != assessment.assessment_id
+                or approval_event.actor_id != value.approved_by
+                or approval_event.payload.get("assessment_version")
+                != assessment.version
+            ):
+                raise NotFound("approved guide not found")
+            return row
+
+    def guide_history(self, assessment_id: str, tenant_id: str) -> list[GuideRow]:
+        with self.session() as session:
+            return list(
+                session.scalars(
+                    select(GuideRow)
+                    .where(
+                        GuideRow.assessment_id == assessment_id,
+                        GuideRow.tenant_id == tenant_id,
+                    )
+                    .order_by(GuideRow.created_at, GuideRow.guide_id)
+                )
+            )
 
     def review_rows(self, submission_id: str, tenant_id: str) -> list[QuestionReviewRow]:
         with self.session() as session:
@@ -2791,6 +5205,16 @@ class Repository:
                     or latest.version != record.assessment_version_before
                 ):
                     raise Conflict("QUESTION_REVIEW_STALE_VERSION")
+                if self._active_question_action_jobs_in_session(
+                    session,
+                    tenant_id=record.tenant_id,
+                    assessment_id=record.assessment_id,
+                    submission_id=record.submission_id,
+                    exclude_job_id=(
+                        terminal_job.id if terminal_job is not None else None
+                    ),
+                ):
+                    raise Conflict("QUESTION_ACTION_PENDING")
                 submission = session.scalar(
                     select(SubmissionRow).where(
                         SubmissionRow.id == record.submission_id,
@@ -2940,6 +5364,96 @@ class Repository:
                     )
                 )
             )
+
+    def question_action_jobs(
+        self,
+        *,
+        tenant_id: str,
+        assessment_id: str,
+        question_id: str,
+    ) -> list[JobRow]:
+        """Return pending or unresolved technical jobs for one review action."""
+
+        with self.session() as session:
+            assessment = session.scalar(
+                select(AssessmentRow)
+                .where(
+                    AssessmentRow.tenant_id == tenant_id,
+                    AssessmentRow.assessment_id == assessment_id,
+                )
+                .order_by(AssessmentRow.version.desc())
+                .limit(1)
+            )
+            if assessment is None:
+                raise NotFound("assessment not found")
+            jobs = list(
+                session.scalars(
+                    select(JobRow)
+                    .where(
+                        JobRow.tenant_id == tenant_id,
+                        JobRow.kind == "QUESTION_ACTION",
+                        JobRow.aggregate_id == assessment.submission_id,
+                    )
+                    .order_by(JobRow.created_at, JobRow.id)
+                )
+            )
+            matching: list[tuple[JobRow, dict[str, Any]]] = []
+            for job in jobs:
+                reference = self._question_action_reference_in_session(
+                    session, job
+                )
+                if reference is None or any(
+                    (
+                        reference.get("assessment_id") != assessment_id,
+                        reference.get("question_id") != question_id,
+                    )
+                ):
+                    continue
+                matching.append((job, reference))
+
+            if not matching:
+                return []
+            events = list(
+                session.scalars(
+                    select(AuditEventRow).where(
+                        AuditEventRow.tenant_id == tenant_id,
+                        AuditEventRow.event_type == "question_action.executed",
+                    )
+                )
+            )
+            logical_by_action = {
+                str(event.payload.get("action_id")): str(
+                    event.payload.get("logical_action_id")
+                    or event.payload.get("action_id")
+                )
+                for event in events
+                if event.payload.get("action_id")
+            }
+            recorded_logical_ids: set[str] = set()
+            for row in session.scalars(
+                select(QuestionReviewActionRow).where(
+                    QuestionReviewActionRow.tenant_id == tenant_id,
+                    QuestionReviewActionRow.assessment_id == assessment_id,
+                    QuestionReviewActionRow.question_id == question_id,
+                )
+            ):
+                action_id = str(
+                    row.data.get("action", {}).get("action_id") or ""
+                )
+                if action_id:
+                    recorded_logical_ids.add(
+                        logical_by_action.get(action_id, action_id)
+                    )
+            return [
+                job
+                for job, reference in matching
+                if job.status in {"QUEUED", "RUNNING"}
+                or (
+                    job.status != "SUCCEEDED"
+                    and str(reference.get("logical_action_id"))
+                    not in recorded_logical_ids
+                )
+            ]
 
     def add_feedback_event(
         self, event: m.FeedbackEvent | FeedbackEventRow
@@ -3280,7 +5794,13 @@ class Repository:
         )
 
     def reserve_idempotency(
-        self, tenant_id: str, key: str, fingerprint: str
+        self,
+        tenant_id: str,
+        key: str,
+        fingerprint: str,
+        *,
+        ttl_seconds: int = 86_400,
+        now: datetime | None = None,
     ) -> dict[str, Any] | None:
         """Reserve a key atomically, returning its completed replay descriptor.
 
@@ -3288,6 +5808,11 @@ class Repository:
         is deliberately a conflict instead of permitting duplicate side
         effects while the winning request is still running.
         """
+
+        if not 300 <= ttl_seconds <= 604_800:
+            raise ValueError("idempotency ttl must be between 300 and 604800 seconds")
+        reference_time = now or utc_now()
+        expires_at = reference_time + timedelta(seconds=ttl_seconds)
 
         def inspect(session: Session) -> dict[str, Any] | None:
             row = session.scalar(
@@ -3305,6 +5830,18 @@ class Repository:
             return dict(row.response)
 
         with self.sessions() as session:
+            # Expiration applies only to completed replay descriptors. An
+            # in-flight reservation remains a conflict: reclaiming it could
+            # execute the same domain mutation twice after a process crash.
+            session.execute(
+                delete(IdempotencyRow).where(
+                    IdempotencyRow.tenant_id == tenant_id,
+                    IdempotencyRow.key == key,
+                    IdempotencyRow.response.is_not(None),
+                    IdempotencyRow.expires_at <= reference_time,
+                )
+            )
+            session.flush()
             existing = session.scalar(
                 select(IdempotencyRow).where(
                     IdempotencyRow.tenant_id == tenant_id,
@@ -3320,6 +5857,7 @@ class Repository:
                     key=key,
                     fingerprint=fingerprint,
                     response=None,
+                    expires_at=expires_at,
                 )
             )
             try:
@@ -3335,7 +5873,12 @@ class Repository:
         key: str,
         fingerprint: str,
         response: dict[str, Any],
+        *,
+        ttl_seconds: int = 86_400,
+        now: datetime | None = None,
     ) -> None:
+        if not 300 <= ttl_seconds <= 604_800:
+            raise ValueError("idempotency ttl must be between 300 and 604800 seconds")
         if _contains_transient_capability(response):
             raise ValueError("IDEMPOTENCY_RESPONSE_CONTAINS_TRANSIENT_CAPABILITY")
         with self.session() as session:
@@ -3350,6 +5893,7 @@ class Repository:
             if row.response is not None and row.response != response:
                 raise Conflict("IDEMPOTENCY_RESPONSE_CONFLICT")
             row.response = response
+            row.expires_at = (now or utc_now()) + timedelta(seconds=ttl_seconds)
 
     def release_idempotency(self, tenant_id: str, key: str, fingerprint: str) -> None:
         with self.session() as session:

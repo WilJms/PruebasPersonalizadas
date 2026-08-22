@@ -6,11 +6,11 @@
   "expected_status": "READY",
   "export_hashes": {
     "assessment_html": "sha256:180c25be27f0e3b02c761ee446d9788cac620b8feb8677c38b8461d2d732b89b",
-    "assessment_json": "sha256:ca1b172cd1d191cd90f75dd6c0b226d2f3acadcbca0401235ac19511da734152",
+    "assessment_json": "sha256:e77364715348ab6b7748c693a57b4379789ea2df1a9add774868817b39650f47",
     "assessment_pdf": "sha256:26a5be77a53fa58bc55d180e16b00f43894ab9e325a3653fae2fe23a7622dd69",
-    "guide_html": "sha256:d7d489e28428cbfb5b1043dacdfacd61ce5cd522c5136653746d2da3ec386f18",
+    "guide_html": "sha256:9a7b61dfc7811a2858185a2d549f5441168b03a7e2a04917e5ec5fa275922f79",
     "guide_json": "sha256:87858e8a070a8e5ef7fc0bf18506d5b571bdf272fb7ecb4017d0dbb030938d41",
-    "guide_pdf": "sha256:ba50b5e4a17e7a64fad767b34b24000c38023ff47b55c611a0e7f387a7ad31dd"
+    "guide_pdf": "sha256:3a121a9c78f547b1798ae963e434620e9439d1323ed40fdcb96a9d84a02e7d3d"
   },
   "mode": "mock",
   "model_call_count": 13,

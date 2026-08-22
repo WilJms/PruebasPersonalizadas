@@ -1,0 +1,8 @@
+Variante: 1500/2000 = 75%
+Control: 1380/2000 = 69%
+
+Difference = 75% - 69% = 6 percentage points.
+Count difference = 1500 - 1380 = 120 accounts.
+
+Relative uplift = 6/69 = 8.7%.
+Projected at 20,000 accounts = 1,200 extra activations.

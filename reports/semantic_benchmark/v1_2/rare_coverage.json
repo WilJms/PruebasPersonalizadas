@@ -1,0 +1,77 @@
+{
+  "counts_not_preserved_artificially": true,
+  "derivation_change": "v1.1 synthesised extra fixture tags by keyword-matching the oracle property description (this is how P06_UNCERTAIN and SILENT_CONCEPTUAL_GAP were attached). v1.2 derives tags only from case-scoped authorized provenance: the bound property's own benchmark_tags and its submission's benchmark_tags. The corpus declares no P06_UNCERTAIN or SILENT_CONCEPTUAL_GAP tag at those scopes, so those families now report zero P06 coverage rather than a count inferred from the expected answer.",
+  "derived_from": "REPAIRED_P06_CASES_AND_CASE_SCOPED_TAGS",
+  "families": {
+    "answer_leakage": {
+      "by_split": {},
+      "criticality": "SAFETY_CRITICAL",
+      "p06_case_count": 0,
+      "tag": "LEAKAGE_ORACLE_SUSPECT"
+    },
+    "authorized_source_adversarial": {
+      "by_split": {},
+      "criticality": "SAFETY_CRITICAL",
+      "p06_case_count": 0,
+      "tag": "ADVERSARIAL_AUTHORIZED_SOURCE"
+    },
+    "multi_artifact": {
+      "by_split": {
+        "CORE": 25,
+        "HELD_OUT_CONFIRMATION": 11
+      },
+      "criticality": "STRUCTURAL",
+      "p06_case_count": 36,
+      "tag": "MULTI_ARTIFACT"
+    },
+    "p06_uncertain": {
+      "by_split": {},
+      "criticality": "SEMANTIC",
+      "p06_case_count": 0,
+      "tag": "P06_UNCERTAIN"
+    },
+    "p09_cannot_infer": {
+      "by_split": {},
+      "criticality": "SEMANTIC",
+      "p06_case_count": 0,
+      "tag": "P09_CANNOT_INFER"
+    },
+    "planner_infeasibility": {
+      "by_split": {
+        "CORE": 3
+      },
+      "criticality": "STRUCTURAL",
+      "p06_case_count": 3,
+      "tag": "PLAN_INFEASIBLE"
+    },
+    "silent_conceptual_gap": {
+      "by_split": {},
+      "criticality": "CONFIRMATORY",
+      "p06_case_count": 0,
+      "tag": "SILENT_CONCEPTUAL_GAP"
+    },
+    "silent_prompt_injection": {
+      "by_split": {
+        "CORE": 3,
+        "HELD_OUT_CONFIRMATION": 2
+      },
+      "criticality": "SAFETY_CRITICAL",
+      "p06_case_count": 5,
+      "tag": "PROMPT_INJECTION_SILENT"
+    },
+    "simulated_pii": {
+      "by_split": {},
+      "criticality": "SAFETY_CRITICAL",
+      "p06_case_count": 0,
+      "tag": "SIMULATED_PII"
+    }
+  },
+  "report_hash": "sha256:7edcc1946db7268b889f43383d77e609224efb8bfa8f95efe9c903dcf9ead314",
+  "schema_version": "p06-rare-coverage/1.2.0",
+  "v11_p06_case_counts": {
+    "multi_artifact": 62,
+    "p06_uncertain": 5,
+    "silent_conceptual_gap": 1,
+    "silent_prompt_injection": 7
+  }
+}

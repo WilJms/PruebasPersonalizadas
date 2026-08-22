@@ -1,0 +1,218 @@
+{
+  "adjudicator_calls": 0,
+  "artifact_count": 19,
+  "artifacts": [
+    {
+      "bytes": 7064,
+      "file_sha256": "sha256:1b61a819c8bfe0bbc6830cfd00aca902d64c27ee055896a36edfbc9dcfc8b591",
+      "git_blob_sha": "ecf27ed32c0627ed32b69ce60522875feeac5ce1",
+      "has_self_material_hash": true,
+      "internal_material_hash": "sha256:4b66cb555603311a92d27955da975a7ca7ca94d3e0dc4b4012544caab1a91ffe",
+      "path": "evaluation/semantic_benchmark/v1_3_4/phase9/candidate_matrix.json",
+      "republished_unchanged_from": null,
+      "self_material_hash_field": "candidate_matrix_hash"
+    },
+    {
+      "bytes": 2008,
+      "file_sha256": "sha256:28534d0ac5c6571cad040ebef0825905b93715cbfcefe3b8c1779b550f97cf71",
+      "git_blob_sha": "b09d3ab15edd959c04bf00b3e973e2c2a5e103fe",
+      "has_self_material_hash": true,
+      "internal_material_hash": "sha256:21a535de03c51fc44a84047fc9a4ac7d4df88a9c0b70cc57b6718362cede6e8f",
+      "path": "evaluation/semantic_benchmark/v1_3_4/phase9/construct_selection_semantics.json",
+      "republished_unchanged_from": "semantic-benchmark/1.3.3",
+      "self_material_hash_field": "semantics_hash"
+    },
+    {
+      "bytes": 18791,
+      "file_sha256": "sha256:3ca3e035224ea6ae69d83f4214d761900fc4b1ee865159c65f4f0569794cf893",
+      "git_blob_sha": "6d59729f1f630815fc2334b070a9592673c0db8e",
+      "has_self_material_hash": true,
+      "internal_material_hash": "sha256:2a2ae98be319ef12b6adc821ce6c86ea5895021d1dac441a92d285793976ea70",
+      "path": "evaluation/semantic_benchmark/v1_3_4/phase9/n3_contractual_safety_axis.json",
+      "republished_unchanged_from": null,
+      "self_material_hash_field": "n3_axis_hash"
+    },
+    {
+      "bytes": 62769,
+      "file_sha256": "sha256:8bba4d80200175d8c1f8659ae1d39b58c04ca7ed35d6d57ad2b3ac5f9d4c67a5",
+      "git_blob_sha": "57a996e906c72babb5ca806f64473f935002ed30",
+      "has_self_material_hash": true,
+      "internal_material_hash": "sha256:f53ec77ae4c26732644083d10497e65e1a1bc34f830e675aa4848669d106c62d",
+      "path": "evaluation/semantic_benchmark/v1_3_4/phase9/n3_provider_fixtures.json",
+      "republished_unchanged_from": "semantic-benchmark/1.3.3",
+      "self_material_hash_field": "fixture_set_hash"
+    },
+    {
+      "bytes": 13480,
+      "file_sha256": "sha256:e9cb07e3c935f01945dfcbb4beed6eb8794e44f15fb3da7d9186672efa832b24",
+      "git_blob_sha": "3721df34ca9fd014e651f8562140c54b42656104",
+      "has_self_material_hash": true,
+      "internal_material_hash": "sha256:f01803673b46318a8dc0c493c5c76587d73d91421cd87bfaa64f9805650c3f39",
+      "path": "evaluation/semantic_benchmark/v1_3_4/phase9/qualification_protocol.json",
+      "republished_unchanged_from": null,
+      "self_material_hash_field": "protocol_boundary_hash"
+    },
+    {
+      "bytes": 5445,
+      "file_sha256": "sha256:a77503f54f2ccab89f4d639755569fe3e15ac1a8db6cd5e7c71be7b022ee6348",
+      "git_blob_sha": "9aed68f8ace78e7fccf81f62819fe29f3fd23b7c",
+      "has_self_material_hash": true,
+      "internal_material_hash": "sha256:44ddd8a100536c11187f5657acb9742c6b488239d9a15311d70e9bc5ffc497af",
+      "path": "evaluation/semantic_benchmark/v1_3_4/phase9/semantic_qualification_claim.json",
+      "republished_unchanged_from": null,
+      "self_material_hash_field": "claim_hash"
+    },
+    {
+      "bytes": 5837,
+      "file_sha256": "sha256:6051507db6e12a2d2e4488cec5704ecd69972cc81108a48368348b8efd4bfae3",
+      "git_blob_sha": "655ea89ecea51514bcec1f3de0c35780c5add9f6",
+      "has_self_material_hash": true,
+      "internal_material_hash": "sha256:89d39833688d80ebb002ada3660a1bf60de2c4ae6f57ecbe4cc802c08992625c",
+      "path": "evaluation/semantic_benchmark/v1_3_4/phase9/uncertain_coverage_disposition.json",
+      "republished_unchanged_from": "semantic-benchmark/1.3.3",
+      "self_material_hash_field": "disposition_hash"
+    },
+    {
+      "bytes": 7206,
+      "file_sha256": "sha256:a48946c1e3f4c38bb6ea527e70ce11d02454f3c437db660090e9b4c04f0cf7e4",
+      "git_blob_sha": "24cdcf638aa9a31963cd7f3bcc41f6f24556ae70",
+      "has_self_material_hash": true,
+      "internal_material_hash": "sha256:935af3730da45a358ef360deb45f41c172aed847d5df9b81c0889178c9d2ef4d",
+      "path": "reports/semantic_benchmark/v1_3_4/benchmark_boundary.json",
+      "republished_unchanged_from": null,
+      "self_material_hash_field": "benchmark_boundary_hash"
+    },
+    {
+      "bytes": 5765,
+      "file_sha256": "sha256:c740f9404335d9947d4fa7da32927ffa92fccaff26ae2b7d3760da9abe418d5f",
+      "git_blob_sha": "8ec39fb82416e1d5d7d45a770069550ce7aed18d",
+      "has_self_material_hash": true,
+      "internal_material_hash": "sha256:79b7480870ad96c2766550d3e58cf275124ebbc1f58635d64ecb736c9f253910",
+      "path": "reports/semantic_benchmark/v1_3_4/lineage.json",
+      "republished_unchanged_from": null,
+      "self_material_hash_field": "lineage_hash"
+    },
+    {
+      "bytes": 35200,
+      "file_sha256": "sha256:3b96b987a0a0c42a4eb17b71231a1494d8dffe20aec024b4f74cb0e7912c3662",
+      "git_blob_sha": "ae74796d9a2bfcd1377b1748e4ea81ab42c43801",
+      "has_self_material_hash": true,
+      "internal_material_hash": "sha256:6fdc5eed1e2175abd89fe6c17df2d4ff2cd84503f4acdef18fb8eaae54fddfa7",
+      "path": "reports/semantic_benchmark/v1_3_4/phase9/call_budget.json",
+      "republished_unchanged_from": "semantic-benchmark/1.3.3",
+      "self_material_hash_field": "call_budget_hash"
+    },
+    {
+      "bytes": 2287,
+      "file_sha256": "sha256:9525049c1bfe664027cfae7279325318ac555cf60da57df4c2d7edbbe2b29604",
+      "git_blob_sha": "7ab75c48d96c424cbab6bab516c55cbc178974af",
+      "has_self_material_hash": true,
+      "internal_material_hash": "sha256:2ea943f61b89282aef67f015c35b89d2355f9be56de613b910ae8a45d16fa93a",
+      "path": "reports/semantic_benchmark/v1_3_4/phase9/construct_selection_independence.json",
+      "republished_unchanged_from": "semantic-benchmark/1.3.3",
+      "self_material_hash_field": "proof_hash"
+    },
+    {
+      "bytes": 5378,
+      "file_sha256": "sha256:0540ca56ece290fb4d1189380401cff01ea95fa10428e20c3dd873c83c32d35c",
+      "git_blob_sha": "8544e9c77028fec8f5425242899a1e6d00285f3b",
+      "has_self_material_hash": true,
+      "internal_material_hash": "sha256:c8eb66d84ddb823d289372ceb880f1705676188642558a19bceda326e3a35a15",
+      "path": "reports/semantic_benchmark/v1_3_4/phase9/n3_fixture_equality_proof.json",
+      "republished_unchanged_from": "semantic-benchmark/1.3.3",
+      "self_material_hash_field": "proof_hash"
+    },
+    {
+      "bytes": 5747,
+      "file_sha256": "sha256:cd9807354badbd6398950d1efdd04fa49e0a95e9382b7f18fcdecf2679011d07",
+      "git_blob_sha": "7ec6ef410076413b59907ca371a4e9d0774b46d5",
+      "has_self_material_hash": true,
+      "internal_material_hash": "sha256:eb8951e9d5a5234e3c59a4a88f96905797f94273fa20d5464662d2f64ae96ac8",
+      "path": "reports/semantic_benchmark/v1_3_4/phase9/n3_production_representativeness.json",
+      "republished_unchanged_from": "semantic-benchmark/1.3.3",
+      "self_material_hash_field": "proof_hash"
+    },
+    {
+      "bytes": 4074,
+      "file_sha256": "sha256:0acd727c54af1cb062797feab29fc84381e39e4389d7b7df3d3e781fb7ebf42c",
+      "git_blob_sha": "2933c3b05bb8f941aa02100ce8af82f1fdc788fe",
+      "has_self_material_hash": true,
+      "internal_material_hash": "sha256:dccd4d30d7c577569f119b3dfe873f1fd4a93abc40f8e79782d89b23ee13f7fb",
+      "path": "reports/semantic_benchmark/v1_3_4/phase9/noisy_disposition_census.json",
+      "republished_unchanged_from": "semantic-benchmark/1.3.3",
+      "self_material_hash_field": "census_hash"
+    },
+    {
+      "bytes": 12834,
+      "file_sha256": "sha256:208a39fc65826de1d99fab94e5fd52890ce318c30409d67c40f4abe4495640ec",
+      "git_blob_sha": "4f3cc31059d2b72741dabb60209cd8b687cf9817",
+      "has_self_material_hash": true,
+      "internal_material_hash": "sha256:c6b1d55f11352bf51276f5d7ea3ec416baa201c12b5b5778c27e99f94ff12eaf",
+      "path": "reports/semantic_benchmark/v1_3_4/phase9/pre_results_instrument_freeze.json",
+      "republished_unchanged_from": null,
+      "self_material_hash_field": "freeze_material_hash"
+    },
+    {
+      "bytes": 348,
+      "file_sha256": "sha256:d876a36bfbdbafcd38eb6cf031c78a197c5d8a0cd4a0f60dfc1235bfc43c7fa3",
+      "git_blob_sha": "6b461bd54aaf532a034435572418fad762bec63d",
+      "has_self_material_hash": true,
+      "internal_material_hash": "sha256:9c9e42a5d6b50671a23b2b13227adfbd540cefa00b6ac53fc7fbd637d59177d7",
+      "path": "reports/semantic_benchmark/v1_3_4/phase9/product_decision_state_scan.json",
+      "republished_unchanged_from": null,
+      "self_material_hash_field": "scan_hash"
+    },
+    {
+      "bytes": 5167,
+      "file_sha256": "sha256:6ce3668403c42e26648c78a5d3fda47bad39812d2afa95950e0931572c2c18a9",
+      "git_blob_sha": "0b341c708b2b1fd6b90b5a7523a81653155d255a",
+      "has_self_material_hash": true,
+      "internal_material_hash": "sha256:26e6510bb67e080ce1a9bd119c6ae87ad0dc327e702b38ac32d2c1f83039d739",
+      "path": "reports/semantic_benchmark/v1_3_4/phase9/semantic_carry_forward_equality_proof.json",
+      "republished_unchanged_from": null,
+      "self_material_hash_field": "proof_hash"
+    },
+    {
+      "bytes": 1052,
+      "file_sha256": "sha256:3e621e1929d9422026fe34bf395f2ef58b43cee743209c2b42bf61ad3ff39e48",
+      "git_blob_sha": "111c6c2a9343372ea549dbc5a3ffcd095c312881",
+      "has_self_material_hash": true,
+      "internal_material_hash": "sha256:4af4b51e048e157a01abd47935960e5da3234983dde52bf982eba6f72b9250cc",
+      "path": "reports/semantic_benchmark/v1_3_4/phase9/stale_claim_scan.json",
+      "republished_unchanged_from": null,
+      "self_material_hash_field": "scan_hash"
+    },
+    {
+      "bytes": 110862,
+      "file_sha256": "sha256:2c3182216291e9e977502646fba6af54b7c4e8c9eac20544b78f6227a0b2e6e3",
+      "git_blob_sha": "83fcbf51c391f25e869f0500e2d476df47e8c2ae",
+      "has_self_material_hash": true,
+      "internal_material_hash": "sha256:f89bf6868a69e4c0fbe83e5ed07bcb7d80114b6c918f5e71253abf8b67eed695",
+      "path": "reports/semantic_benchmark/v1_3_4/stage_boundaries.json",
+      "republished_unchanged_from": null,
+      "self_material_hash_field": "stage_boundaries_hash"
+    }
+  ],
+  "artifacts_without_a_self_material_hash": [],
+  "authorization": "NONE",
+  "benchmark_version": "semantic-benchmark/1.3.4",
+  "billable_authorizations": 0,
+  "credentials_resolved": 0,
+  "freeze_artifact_path": "reports/semantic_benchmark/v1_3_4/phase9/pre_results_instrument_freeze.json",
+  "hash_kinds": {
+    "FILE_SHA256": "sha256 over the exact bytes on disk, including indentation and the trailing newline. It answers 'is this file byte-identical'.",
+    "GIT_BLOB_SHA": "git's object id: sha1 over 'blob <len>\\0' followed by the file bytes. It is what `git hash-object` and the index report, and it is neither a sha256 nor comparable with one.",
+    "INTERNAL_MATERIAL_HASH": "sha256 over the canonical JSON serialization of a document's material, computed before the file exists. Two files with different whitespace share it; it is what a boundary compares."
+  },
+  "high_smoke_executed": false,
+  "manifest_excludes_itself": true,
+  "manifest_self_exclusion_reason": "The manifest is written after the artifacts it describes. Its own file and Git-blob hashes are printed by this script.",
+  "never_conflate": "INTERNAL_MATERIAL_HASH, FILE_SHA256 and GIT_BLOB_SHA cover different inputs and are reported separately.",
+  "pricing_refreshed": false,
+  "provider_calls": 0,
+  "real_provider_transport": false,
+  "republished_unchanged_artifact_count": 8,
+  "schema_version": "phase9-freeze-hash-manifest/1.3.4",
+  "self_material_hash_rule": "Every artifact is registered explicitly as path -> self hash field; canonical_hash(document minus that exact field) must equal its value.",
+  "supersedes": "phase9-freeze-hash-manifest/1.3.3"
+}

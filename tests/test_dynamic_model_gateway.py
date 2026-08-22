@@ -3,8 +3,12 @@ from __future__ import annotations
 import asyncio
 from datetime import UTC, datetime
 
-from comprehension_verification.canonical import sha256_text
+from comprehension_verification.canonical import canonical_hash, sha256_text, stable_id
 from comprehension_verification.contracts import models as m
+from comprehension_verification.guide_generation import (
+    build_guide_approval_binding,
+    guide_id_for_binding,
+)
 from comprehension_verification.model_gateway import (
     GatewayConfig,
     ModelGateway,
@@ -12,6 +16,7 @@ from comprehension_verification.model_gateway import (
 )
 from comprehension_verification.planning import build_assessment_plan
 from comprehension_verification.validation import (
+    build_blueprint_review_preflight,
     validate_evaluation_guide,
     validate_evidence_map,
     validate_generation_result,
@@ -95,6 +100,8 @@ def _activity_pipeline_inputs() -> tuple[
     blueprint = _invoke(
         "P04_BLUEPRINT_BUILD_V1",
         m.BlueprintBuildRequest(
+            target_blueprint_id="bp_custom",
+            target_blueprint_version=1,
             activity_spec=activity_spec,
             blueprint_policy=blueprint_policy,
         ),
@@ -176,6 +183,12 @@ def test_p04_and_p05_preserve_non_demo_e1_configuration() -> None:
             blueprint=blueprint,
             activity_spec=activity_spec,
             blueprint_policy=policy,
+            deterministic_preflight=build_blueprint_review_preflight(
+                blueprint=blueprint,
+                activity_spec=activity_spec,
+                rubric_spec=None,
+                blueprint_policy=policy,
+            ),
         ),
     )
     assert review.blueprint_id == blueprint.blueprint_id
@@ -189,10 +202,19 @@ def test_p06_maps_current_blueprint_catalog_to_current_evidence_and_exact_plan()
     bundle = _submission_bundle(blueprint.activity_id)
     mapping = _invoke(
         "P06_EVIDENCE_MAP_V1",
-        m.EvidenceMapRequest(blueprint=blueprint, evidence_bundle=bundle),
+        m.EvidenceMapRequest(
+            blueprint=blueprint,
+            planning_policy=policy.planning_policy,
+            evidence_bundle=bundle,
+        ),
     )
 
-    validate_evidence_map(mapping, blueprint=blueprint, bundle=bundle)
+    validate_evidence_map(
+        mapping,
+        blueprint=blueprint,
+        bundle=bundle,
+        planning_policy=policy.planning_policy,
+    )
     assert mapping.status == "READY"
     assert len(mapping.opportunities) == len(_catalog(blueprint)) == 5
     assert {item.opportunity_template_id for item in mapping.opportunities} == {
@@ -220,7 +242,11 @@ def test_p07_p08_and_p09_derive_ids_anchors_scores_and_guide_from_request() -> N
     bundle = _submission_bundle(blueprint.activity_id)
     mapping = _invoke(
         "P06_EVIDENCE_MAP_V1",
-        m.EvidenceMapRequest(blueprint=blueprint, evidence_bundle=bundle),
+        m.EvidenceMapRequest(
+            blueprint=blueprint,
+            planning_policy=policy.planning_policy,
+            evidence_bundle=bundle,
+        ),
     )
     plan = build_assessment_plan(
         mapping=mapping,
@@ -235,6 +261,7 @@ def test_p07_p08_and_p09_derive_ids_anchors_scores_and_guide_from_request() -> N
         generation = _invoke(
             "P07_QUESTION_BUILD_V1",
             m.QuestionBuildRequest(
+                target_candidate_id=f"candidate_custom_{index}",
                 plan=plan,
                 opportunity=opportunity,
                 evidence_bundle=bundle,
@@ -350,23 +377,41 @@ def test_p07_p08_and_p09_derive_ids_anchors_scores_and_guide_from_request() -> N
         ),
         created_at=FIXED_TIME,
     )
+    approved = assessment.model_copy(
+        update={
+            "status": m.WorkflowStatus.APPROVED,
+            "approved_by": "usr_dynamic_teacher",
+            "approved_at": FIXED_TIME,
+        }
+    )
+    assessment_etag = f'"{canonical_hash(approved)}"'
+    approval_event_id = stable_id(
+        "evt", approved.tenant_id, "assessment.approved", approved.assessment_id
+    )
+    binding = build_guide_approval_binding(
+        assessment=approved,
+        assessment_version=2,
+        assessment_etag=assessment_etag,
+        approval_event_id=approval_event_id,
+    )
     guide = _invoke(
         "P09_GUIDE_BUILD_V1",
         m.GuideBuildRequest(
-            guide_id="guide_custom",
-            assessment=assessment,
+            guide_id=guide_id_for_binding(binding),
+            assessment=approved,
+            binding=binding,
             evidence_bundle=bundle,
         ),
     )
 
-    validate_evaluation_guide(guide, assessment=assessment, bundle=bundle)
-    assert guide.assessment_id == assessment.assessment_id
+    validate_evaluation_guide(guide, assessment=approved, bundle=bundle)
+    assert guide.assessment_id == approved.assessment_id
     assert guide.submission_id == bundle.submission_id
     assert [item.question_id for item in guide.items] == question_ids
     for item in guide.items:
         question = next(
             question
-            for question in assessment.questions
+            for question in approved.questions
             if question.question_id == item.question_id
         )
         assert {

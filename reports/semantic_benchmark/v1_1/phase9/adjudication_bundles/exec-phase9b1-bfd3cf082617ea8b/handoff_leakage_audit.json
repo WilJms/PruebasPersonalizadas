@@ -1,0 +1,8 @@
+{
+  "files_scanned": 72,
+  "metadata_leak_count": 0,
+  "metadata_leaks": [],
+  "result": "PASS",
+  "schema_version": "phase9-blind-handoff-leakage-audit/1.0.0",
+  "source_content_occurrences": 480
+}

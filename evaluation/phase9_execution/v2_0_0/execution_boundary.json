@@ -1,0 +1,151 @@
+{
+  "benchmark_version": "semantic-benchmark/1.3.5",
+  "billable_authorization": "NONE",
+  "execution_boundary_hash": "sha256:e2e001c4dd948dedea717058a4455591d5cefa5bfb5325fd0c110d989797d851",
+  "execution_version": "phase9-execution/2.0.0",
+  "freeze_manifest_file_sha256": "sha256:e57869666a607d1e67ccdfe9b44ff098fbecf86e4647a906a51d57ea78b50a1d",
+  "frozen_artifacts": {
+    "evaluation/semantic_benchmark/v1_3_5/phase9/candidate_execution_contract.json": {
+      "file_sha256": "sha256:1bfb713f376aea5466664972b9c977e1a78fdf585019e6a8e1c99f3c5267d4cd",
+      "internal_material_hash": "sha256:ae260e18b6b0a6918d923ce304ead3869afd767d553828591aa33f1d283d04a5",
+      "self_material_hash_field": "execution_contract_hash"
+    },
+    "evaluation/semantic_benchmark/v1_3_5/phase9/candidate_matrix.json": {
+      "file_sha256": "sha256:ffae63563a1a8d0af4917c8a580b6902d86b2ce8a7304292aff1681d9c2a1018",
+      "internal_material_hash": "sha256:d4c693ec60c4603ea9924daf5146f06d714bb19f1007a5d82fef57d4d5dfb36d",
+      "self_material_hash_field": "candidate_matrix_hash"
+    },
+    "evaluation/semantic_benchmark/v1_3_5/phase9/executable_prompt_authority.json": {
+      "file_sha256": "sha256:a79666f961e0154ba51af14ffdb781bfec06c8d9d648dd61357274fc9d88fbb4",
+      "internal_material_hash": "sha256:820396b80101c79478e6cd1b9914a6cae6931dc055c1199e9e533bc3c6e2c3e9",
+      "self_material_hash_field": "prompt_authority_hash"
+    },
+    "evaluation/semantic_benchmark/v1_3_5/phase9/n3_contractual_safety_axis.json": {
+      "file_sha256": "sha256:88117745c8105f6b442d028a77cb8d78a3b61d1a861cbb07c8c1677cfe76b75c",
+      "internal_material_hash": "sha256:0add76d694432b3a8cc7f53a2f6e0d4cef10aa69e893121a638d7d8ffa8c6eec",
+      "self_material_hash_field": "n3_axis_hash"
+    },
+    "evaluation/semantic_benchmark/v1_3_5/phase9/n3_provider_fixtures.json": {
+      "file_sha256": "sha256:9afe29c489f8b2b3fdcad1fa732ddfe3752d9ddc972726f6f3c84ae7fced3f6d",
+      "internal_material_hash": "sha256:9e00281c1d54a9436766105d6ba27aaae01564bd38182cfb4bd64e427b8ec310",
+      "self_material_hash_field": "fixture_set_hash"
+    },
+    "evaluation/semantic_benchmark/v1_3_5/phase9/p06_property_observation_bindings.json": {
+      "file_sha256": "sha256:75892c9ee945c05359db870e90281df7596c1f08bad316a0f7cb6ccb642d7ce7",
+      "internal_material_hash": "sha256:d0d2bd909dd0b3137387b04c9a38995cb72baf0ce0ca6b442783cf93af76581c",
+      "self_material_hash_field": "observation_bindings_hash"
+    },
+    "evaluation/semantic_benchmark/v1_3_5/phase9/p06_submission_requests.json": {
+      "file_sha256": "sha256:219f47c108f3ed68b0283ca89abb4d35692f0fd4a21f8433f59868c7bb8bbd29",
+      "internal_material_hash": "sha256:7c1698189001ae48f80895cf07390cda811b652574401f4b5d1ce662de9ce960",
+      "self_material_hash_field": "request_set_hash"
+    },
+    "evaluation/semantic_benchmark/v1_3_5/phase9/qualification_protocol.json": {
+      "file_sha256": "sha256:15116654e24fbbdab06aff1fb13f2e992e8d1bdb4a916dbc853081282fac7002",
+      "internal_material_hash": "sha256:711e8f42c13cadab4707b153bb5e987c56330fc9b112a349eaf8330d2dab41cc",
+      "self_material_hash_field": "protocol_boundary_hash"
+    },
+    "evaluation/semantic_benchmark/v1_3_5/phase9/semantic_qualification_claim.json": {
+      "file_sha256": "sha256:752fce3085a1e6d6a94ddb48eb18288824d749f812fee49116151dcecd92918d",
+      "internal_material_hash": "sha256:c983faae448d9c86332f91492522810ab9a382c610f55509046175a9a96a5834",
+      "self_material_hash_field": "claim_hash"
+    },
+    "reports/semantic_benchmark/v1_3_5/benchmark_boundary.json": {
+      "file_sha256": "sha256:27e0b6745d6138daade7edd54f22e5ee992c63dc71d4c1fd8ed5207b5d91f6b3",
+      "internal_material_hash": "sha256:ff6988324a9bd5cd1c4167b0589f8700f19985fca7ef021d0eb5dcfb875fffe5",
+      "self_material_hash_field": "benchmark_boundary_hash"
+    },
+    "reports/semantic_benchmark/v1_3_5/lineage.json": {
+      "file_sha256": "sha256:fb03472f76041a9059e6cc3fec6f49090d588f88acd1d80e28b94cc843d0f90c",
+      "internal_material_hash": "sha256:59f2d789603231fdb19eb96e07f11c363f45deb05c518c6fae74312d2db9a9c5",
+      "self_material_hash_field": "lineage_hash"
+    },
+    "reports/semantic_benchmark/v1_3_5/phase9/call_budget.json": {
+      "file_sha256": "sha256:dba235e18c8257852dc70e9ec2085af3afd17508905b8f8dd092fc0c36233b4b",
+      "internal_material_hash": "sha256:f0ed55246d56362b170aa0b2e29f99f4d1f1660f5f16b90751cc298d18b69dde",
+      "self_material_hash_field": "call_budget_hash"
+    },
+    "reports/semantic_benchmark/v1_3_5/phase9/convergence_delta.json": {
+      "file_sha256": "sha256:c1d44514058719ce9f7194ccbc2ad11dfe5cc276b04b70655b44c5336782f41b",
+      "internal_material_hash": "sha256:bef40e9228cb5cb3a17ccaacfbdaec49e130adabd487fa4b8d56aa8fea1d81ee",
+      "self_material_hash_field": "delta_hash"
+    },
+    "reports/semantic_benchmark/v1_3_5/phase9/pre_results_instrument_freeze.json": {
+      "file_sha256": "sha256:92a8bc58411943afeefdbd26ee3b8c67aedf98428780af95cc98052ad7bd3880",
+      "internal_material_hash": "sha256:c2c2a552780c0cea7af5f7b3097da115de6fc6ee84cdbdfd9ad9943f8d655126",
+      "self_material_hash_field": "freeze_material_hash"
+    },
+    "reports/semantic_benchmark/v1_3_5/phase9/rung_collection_authority.json": {
+      "file_sha256": "sha256:2f3a4319c3a3542cc433b941cfbb5016bf2586b8ef0d9d2e100868801416906c",
+      "internal_material_hash": "sha256:bee091a421683f3e17e54d0118f85cac50f39605b89054324004b0b842a7efcc",
+      "self_material_hash_field": "rung_collection_hash"
+    },
+    "reports/semantic_benchmark/v1_3_5/stage_boundaries.json": {
+      "file_sha256": "sha256:2d1555a8e06e10bf3a541803a00024b61ff82d10b941f5ed68fb3c9d5a0deb0c",
+      "internal_material_hash": "sha256:1393551f498ab97daecb6b40ea0ae93fcae3fcdaa188a683dcc9adf6a8c8b49b",
+      "self_material_hash_field": "stage_boundaries_hash"
+    }
+  },
+  "high_smoke_plan": {
+    "decomposition": {
+      "CONTRACTUAL_HARD_SAFETY/P06/N3_SAFETY_SMOKE/HIGH": 3,
+      "SEMANTIC/P04/SMOKE/HIGH": 3,
+      "SEMANTIC/P06/SMOKE/HIGH": 3,
+      "SEMANTIC/P07/SMOKE/HIGH": 18,
+      "SEMANTIC/P09/SMOKE/HIGH": 3
+    },
+    "held_out_in_plan": false,
+    "k": 3,
+    "n3_provider_call_unit": "EXPOSURE_RUN",
+    "plan_hash": "sha256:d58461654e16cfd12270115e851a82b759d7254598e72963d873f78ae80c18c6",
+    "primary_provider_calls": 30,
+    "result_dependent_selection": false,
+    "semantic_provider_call_unit_by_stage": {
+      "P04": "CASE_RUN",
+      "P06": "SUBMISSION_RUN",
+      "P07": "CASE_RUN",
+      "P09": "CASE_RUN"
+    }
+  },
+  "pricing_state": "PRICING_REFRESH_REQUIRED_BEFORE_AUTHORIZATION",
+  "protocol_version": "phase9-qualification-protocol/1.3.5",
+  "request_authority": {
+    "file_sha256": "sha256:4ea7dbe28be868ce548787dd1f24e46ef98f97ea30e22e2fdcddd35aaf7b220e",
+    "path": "evaluation/phase9_execution/v2_0_0/high_smoke_request_authority.json",
+    "request_authority_hash": "sha256:fb955f7b39f123adb636b91ef70f81c361ebb8f96630bed7a68dfdfe7b9eb7da"
+  },
+  "schema_version": "phase9-execution-boundary/2.0.0",
+  "semantic_benchmark_bindings": {
+    "benchmark_boundary_hash": "sha256:ff6988324a9bd5cd1c4167b0589f8700f19985fca7ef021d0eb5dcfb875fffe5",
+    "call_budget_hash": "sha256:f0ed55246d56362b170aa0b2e29f99f4d1f1660f5f16b90751cc298d18b69dde",
+    "candidate_execution_contract_hash": "sha256:ae260e18b6b0a6918d923ce304ead3869afd767d553828591aa33f1d283d04a5",
+    "candidate_matrix_hash": "sha256:d4c693ec60c4603ea9924daf5146f06d714bb19f1007a5d82fef57d4d5dfb36d",
+    "corpus_package_boundary_hash": "21c21f3a53bfb786162dc350dc38c93b7b007d9f23b744a354de4ac2354048a1",
+    "n3_axis_hash": "sha256:0add76d694432b3a8cc7f53a2f6e0d4cef10aa69e893121a638d7d8ffa8c6eec",
+    "n3_provider_fixture_set_hash": "sha256:9e00281c1d54a9436766105d6ba27aaae01564bd38182cfb4bd64e427b8ec310",
+    "p06_property_observation_bindings_hash": "sha256:d0d2bd909dd0b3137387b04c9a38995cb72baf0ce0ca6b442783cf93af76581c",
+    "p06_submission_request_set_hash": "sha256:7c1698189001ae48f80895cf07390cda811b652574401f4b5d1ce662de9ce960",
+    "pre_results_instrument_freeze_hash": "sha256:c2c2a552780c0cea7af5f7b3097da115de6fc6ee84cdbdfd9ad9943f8d655126",
+    "prompt_authority_hash": "sha256:820396b80101c79478e6cd1b9914a6cae6931dc055c1199e9e533bc3c6e2c3e9",
+    "protocol_boundary_hash": "sha256:711e8f42c13cadab4707b153bb5e987c56330fc9b112a349eaf8330d2dab41cc",
+    "rung_collection_hash": "sha256:bee091a421683f3e17e54d0118f85cac50f39605b89054324004b0b842a7efcc",
+    "stage_boundaries_hash": "sha256:1393551f498ab97daecb6b40ea0ae93fcae3fcdaa188a683dcc9adf6a8c8b49b",
+    "stage_boundary_hashes": {
+      "P04": "sha256:866b95464960123d3e96ab1d713d9980dea127bdbe9f1f07922c37888bb4d761",
+      "P06": "sha256:8bbf07c653435783c21af4257d62df77ac325f5454e2a47c3b570337fde42354",
+      "P07": "sha256:a1cd37d8dec4260ccee1eb5ecaaa8ba4d6e73170f274fca300f2e4669177bef6",
+      "P09": "sha256:0006106e4433124fdea9fddd296346b4dd239e20f10bfa4aa1a670a44d3989c1",
+      "PLANNER": "sha256:961384f7f9c25601b5aea91217849be79400517d7b5960924c79789c93687376"
+    }
+  },
+  "source_bindings": {
+    "scripts/build_phase9_execution_v2.py": "sha256:fc140362828797a0623262ab5b1f74cbed1205e86b112cc23df3d8b0ab185a74",
+    "scripts/run_phase9_smoke.py": "sha256:787c5eef5683752007382482922c5c0db482df2cba1729f034c7a8011fa6cd26",
+    "src/comprehension_verification/n3_provider_fixtures.py": "sha256:cec685f1c5e3ff8ae1c07296a10eb550c48c8ce820f72d7570bff0e6f20de561",
+    "src/comprehension_verification/p06_n3_protocol.py": "sha256:f429a553ac66e1bc23e5d71fb35748d296738cc41bd42cb436ae62475ff1e63c",
+    "src/comprehension_verification/phase9_execution.py": "sha256:254c5f0b3cf5e64c2d326871bc84f8dd7c7cdd9565cca45a7f771fb3ca04a65b",
+    "src/comprehension_verification/semantic_benchmark.py": "sha256:2fe405ca1ab3a2ef1982a496cf2aa2b6777cf7ec132a07a6df64a259327f151e",
+    "src/comprehension_verification/semantic_benchmark_fixtures.py": "sha256:7f873d2d38c62939b3d6933e0b4a9ee11006ffa889fa35243f32c0557dbafee5",
+    "src/comprehension_verification/semantic_benchmark_v135.py": "sha256:87a1ecac79681e1b0f77572406277f379d9f37eae86d47d4b6aae6d9350e03a5"
+  }
+}

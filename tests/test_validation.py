@@ -92,7 +92,12 @@ def test_evidence_map_rejects_invented_evidence_id() -> None:
     mapping = evidence_map(bp, bundle)
     mapping.opportunities[0].evidence_ids = ["ev_invented"]
     with pytest.raises(ContextValidationError, match="unknown evidence"):
-        validate_evidence_map(mapping, blueprint=bp, bundle=bundle)
+        validate_evidence_map(
+            mapping,
+            blueprint=bp,
+            bundle=bundle,
+            planning_policy=planning_policy(),
+        )
 
 
 def test_evidence_map_rejects_cross_dimension_variant_alignment() -> None:
@@ -120,7 +125,12 @@ def test_evidence_map_rejects_cross_dimension_variant_alignment() -> None:
         )
     ]
     with pytest.raises(ContextValidationError, match="unknown dimension"):
-        validate_evidence_map(mapping, blueprint=bp, bundle=bundle)
+        validate_evidence_map(
+            mapping,
+            blueprint=bp,
+            bundle=bundle,
+            planning_policy=planning_policy(),
+        )
 
 
 def test_evidence_map_rejects_template_constraint_rewrite() -> None:
@@ -129,21 +139,54 @@ def test_evidence_map_rejects_template_constraint_rewrite() -> None:
     mapping = evidence_map(bp, bundle)
     mapping.opportunities[0].target_minutes += 1
     with pytest.raises(ContextValidationError, match="source-bound template"):
-        validate_evidence_map(mapping, blueprint=bp, bundle=bundle)
+        validate_evidence_map(
+            mapping,
+            blueprint=bp,
+            bundle=bundle,
+            planning_policy=planning_policy(),
+        )
 
 
-def test_evidence_map_enforces_variant_alignment_and_match_evidence() -> None:
+def test_evidence_map_ignores_legacy_alignment_score_but_enforces_match_evidence() -> None:
     bp = blueprint()
     bundle = evidence_bundle()
     uncertain = evidence_map(bp, bundle, opportunity_count=1)
     uncertain.variant_matches[0].mapping_confidence = 0.1
-    with pytest.raises(ContextValidationError, match="alignment floor"):
-        validate_evidence_map(uncertain, blueprint=bp, bundle=bundle)
+    validate_evidence_map(
+        uncertain,
+        blueprint=bp,
+        bundle=bundle,
+        planning_policy=planning_policy(),
+    )
 
     widened = evidence_map(bp, bundle, opportunity_count=1)
     widened.opportunities[0].evidence_ids = [bundle.evidence_units[1].evidence_id]
     with pytest.raises(ContextValidationError, match="widens the evidence"):
-        validate_evidence_map(widened, blueprint=bp, bundle=bundle)
+        validate_evidence_map(
+            widened,
+            blueprint=bp,
+            bundle=bundle,
+            planning_policy=planning_policy(),
+        )
+
+
+def test_ready_evidence_map_leaves_global_sufficiency_to_planner() -> None:
+    bp = blueprint(question_count=2)
+    bundle = evidence_bundle()
+    policy = planning_policy(minimum_evidence_fit=0.7)
+    mapping = evidence_map(
+        bp,
+        bundle,
+        opportunity_count=2,
+        evidence_fit=0.69,
+    )
+
+    validate_evidence_map(
+        mapping,
+        blueprint=bp,
+        bundle=bundle,
+        planning_policy=policy,
+    )
 
 
 def test_question_rejects_non_derivable_anchor() -> None:
@@ -244,6 +287,46 @@ def test_review_rejects_widened_evidence_and_changed_estimate() -> None:
         ),
     )
     with pytest.raises(ContextValidationError, match="widens candidate evidence"):
+        validate_review_result(
+            review,
+            generation_result=generation,
+            validation_policy=m.QuestionValidationPolicy(
+                policy_id="validation_policy_test"
+            ),
+        )
+
+
+def test_review_rejects_source_present_outside_candidate() -> None:
+    generation, _, _ = _generation_result()
+    assert generation.candidate is not None
+    candidate = generation.candidate
+    review = m.QuestionReviewResult(
+        submission_id=generation.submission_id,
+        opportunity_id=generation.opportunity_id,
+        status="READY",
+        review=m.QuestionSemanticReview(
+            candidate_id=candidate.candidate_id,
+            decision=m.ReviewDecision.ACCEPT,
+            scores=m.QuestionScores(
+                groundedness=0.95,
+                anchor_sufficiency=0.95,
+                criterion_relevance=0.95,
+                answerability=0.95,
+                cognitive_demand=0.9,
+                submission_specificity=0.9,
+                clarity=0.9,
+                accessibility=0.9,
+                discriminative_potential=0.9,
+                guide_observability=0.9,
+            ),
+            estimated_difficulty=candidate.difficulty,
+            estimated_minutes=candidate.estimated_minutes,
+            confidence=0.95,
+            evidence_ids=list(candidate.evidence_ids),
+            source_ids=["source_only_elsewhere_in_request"],
+        ),
+    )
+    with pytest.raises(ContextValidationError, match="widens candidate sources"):
         validate_review_result(
             review,
             generation_result=generation,

@@ -4,7 +4,7 @@
   "filename": "rubric.md",
   "media_type": "text/markdown",
   "parser_id": "stage0-markdown",
-  "parser_version": "stage0-parser/1.0.0",
+  "parser_version": "stage2-parser/2.0.0",
   "role": "RUBRIC",
   "schema_version": "1.1.0",
   "sha256": "sha256:259a0a81303f3fb7ca610eb0c75f4ca286360aa8d4801486f7f3efa2484dce41"

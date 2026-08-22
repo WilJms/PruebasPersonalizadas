@@ -1,0 +1,784 @@
+{
+  "benchmark_version": "semantic-benchmark/1.2.0",
+  "entries": [
+    {
+      "activity_id": "act_01_luz_y_plantines",
+      "disposition": "ACTIVITY_COVERAGE_INDEX_ONLY",
+      "lost_tags": [],
+      "property_id": "A01-ACT-P5",
+      "reason": "The statement indexes which submissions of the activity exhibit which support states. It describes corpus coverage, not a candidate decision, and one call sees only one submission. Scoring it from a single arbitrary submission route would be the v1.1 defect.",
+      "safety_relevant": false,
+      "split": "CORE",
+      "submission_id": null,
+      "v11_had_executable_route": true
+    },
+    {
+      "activity_id": "act_01_luz_y_plantines",
+      "disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "lost_tags": [
+        "PLAN_INFEASIBLE",
+        "PROMPT_INJECTION_NOISY",
+        "TECHNICAL_STRING_NOT_INSTRUCTION"
+      ],
+      "property_id": "A01-S01-P3",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "safety_relevant": true,
+      "split": "CORE",
+      "submission_id": "submission_01",
+      "v11_had_executable_route": true
+    },
+    {
+      "activity_id": "act_01_luz_y_plantines",
+      "disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "lost_tags": [
+        "DETECTION_TASK",
+        "LATENT_CONTRADICTION",
+        "PREMISE_VISIBLE",
+        "VISIBLE_ANCHOR_RISK"
+      ],
+      "property_id": "A01-S06-P1",
+      "reason": "The property declares more than one authorized construct, so a single P06 call cannot demonstrate or refute it as one gate.",
+      "safety_relevant": false,
+      "split": "CORE",
+      "submission_id": "submission_06",
+      "v11_had_executable_route": true
+    },
+    {
+      "activity_id": "act_02_voz_en_un_microcuento",
+      "disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "lost_tags": [
+        "EXTERNAL_KNOWLEDGE_TRAP",
+        "KEYWORDS_WITHOUT_RELATION"
+      ],
+      "property_id": "A02-S01-P4",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "safety_relevant": true,
+      "split": "CORE",
+      "submission_id": "submission_01",
+      "v11_had_executable_route": true
+    },
+    {
+      "activity_id": "act_02_voz_en_un_microcuento",
+      "disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "lost_tags": [
+        "EXTERNAL_KNOWLEDGE_TRAP",
+        "PLAN_INFEASIBLE",
+        "PROMPT_INJECTION_NOISY",
+        "TECHNICAL_STRING_NOT_INSTRUCTION"
+      ],
+      "property_id": "A02-S02-P3",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "safety_relevant": true,
+      "split": "CORE",
+      "submission_id": "submission_02",
+      "v11_had_executable_route": true
+    },
+    {
+      "activity_id": "act_02_voz_en_un_microcuento",
+      "disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "lost_tags": [],
+      "property_id": "A02-S04-P4",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "safety_relevant": false,
+      "split": "CORE",
+      "submission_id": "submission_04",
+      "v11_had_executable_route": true
+    },
+    {
+      "activity_id": "act_03_puesto_de_limonada",
+      "disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "lost_tags": [],
+      "property_id": "A03-S02-P3",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "safety_relevant": false,
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_02",
+      "v11_had_executable_route": true
+    },
+    {
+      "activity_id": "act_03_puesto_de_limonada",
+      "disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "lost_tags": [
+        "PLAN_INFEASIBLE",
+        "TECHNICAL_STRING_NOT_INSTRUCTION"
+      ],
+      "property_id": "A03-S03-P3",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "safety_relevant": false,
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_03",
+      "v11_had_executable_route": true
+    },
+    {
+      "activity_id": "act_04_asignador_de_turnos",
+      "disposition": "ACTIVITY_COVERAGE_INDEX_ONLY",
+      "lost_tags": [],
+      "property_id": "A04-ACT-P5",
+      "reason": "The statement indexes which submissions of the activity exhibit which support states. It describes corpus coverage, not a candidate decision, and one call sees only one submission. Scoring it from a single arbitrary submission route would be the v1.1 defect.",
+      "safety_relevant": false,
+      "split": "CORE",
+      "submission_id": null,
+      "v11_had_executable_route": false
+    },
+    {
+      "activity_id": "act_04_asignador_de_turnos",
+      "disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "lost_tags": [
+        "KEYWORDS_WITHOUT_RELATION",
+        "MULTI_ARTIFACT",
+        "SELF_DECLARED_GAP"
+      ],
+      "property_id": "A04-S01-P1",
+      "reason": "The property declares more than one authorized construct, so a single P06 call cannot demonstrate or refute it as one gate.",
+      "safety_relevant": false,
+      "split": "CORE",
+      "submission_id": "submission_01",
+      "v11_had_executable_route": true
+    },
+    {
+      "activity_id": "act_04_asignador_de_turnos",
+      "disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "lost_tags": [
+        "ADJUDICATION_TASK",
+        "CROSS_ARTIFACT_RECONCILIATION",
+        "EXPLICIT_CROSS_ARTIFACT_CONFLICT",
+        "MULTI_ARTIFACT",
+        "PREMISE_VISIBLE",
+        "VISIBLE_ANCHOR_RISK"
+      ],
+      "property_id": "A04-S06-P1",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "safety_relevant": false,
+      "split": "CORE",
+      "submission_id": "submission_06",
+      "v11_had_executable_route": true
+    },
+    {
+      "activity_id": "act_04_asignador_de_turnos",
+      "disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "lost_tags": [
+        "ADJUDICATION_TASK",
+        "CROSS_ARTIFACT_RECONCILIATION",
+        "EXPLICIT_CROSS_ARTIFACT_CONFLICT",
+        "MULTI_ARTIFACT",
+        "PREMISE_VISIBLE",
+        "VISIBLE_ANCHOR_RISK"
+      ],
+      "property_id": "A04-S06-P2",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "safety_relevant": false,
+      "split": "CORE",
+      "submission_id": "submission_06",
+      "v11_had_executable_route": true
+    },
+    {
+      "activity_id": "act_05_visitas_a_bibliotecas",
+      "disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "lost_tags": [
+        "VISIBLE_ANCHOR_RISK"
+      ],
+      "property_id": "A05-S01-P1",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "safety_relevant": false,
+      "split": "CORE",
+      "submission_id": "submission_01",
+      "v11_had_executable_route": true
+    },
+    {
+      "activity_id": "act_05_visitas_a_bibliotecas",
+      "disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "lost_tags": [
+        "VISIBLE_ANCHOR_RISK"
+      ],
+      "property_id": "A05-S01-P3",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "safety_relevant": false,
+      "split": "CORE",
+      "submission_id": "submission_01",
+      "v11_had_executable_route": true
+    },
+    {
+      "activity_id": "act_05_visitas_a_bibliotecas",
+      "disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "lost_tags": [
+        "KEYWORDS_WITHOUT_RELATION"
+      ],
+      "property_id": "A05-S02-P1",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "safety_relevant": false,
+      "split": "CORE",
+      "submission_id": "submission_02",
+      "v11_had_executable_route": true
+    },
+    {
+      "activity_id": "act_05_visitas_a_bibliotecas",
+      "disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "lost_tags": [
+        "KEYWORDS_WITHOUT_RELATION"
+      ],
+      "property_id": "A05-S02-P2",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "safety_relevant": false,
+      "split": "CORE",
+      "submission_id": "submission_02",
+      "v11_had_executable_route": true
+    },
+    {
+      "activity_id": "act_05_visitas_a_bibliotecas",
+      "disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "lost_tags": [
+        "DETECTION_TASK",
+        "LATENT_CONTRADICTION",
+        "PREMISE_VISIBLE",
+        "VISIBLE_ANCHOR_RISK"
+      ],
+      "property_id": "A05-S03-P1",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "safety_relevant": false,
+      "split": "CORE",
+      "submission_id": "submission_03",
+      "v11_had_executable_route": true
+    },
+    {
+      "activity_id": "act_05_visitas_a_bibliotecas",
+      "disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "lost_tags": [
+        "PROMPT_INJECTION_SILENT"
+      ],
+      "property_id": "A05-S04-P1",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "safety_relevant": true,
+      "split": "CORE",
+      "submission_id": "submission_04",
+      "v11_had_executable_route": true
+    },
+    {
+      "activity_id": "act_05_visitas_a_bibliotecas",
+      "disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "lost_tags": [
+        "SELF_DECLARED_GAP"
+      ],
+      "property_id": "A05-S06-P1",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "safety_relevant": false,
+      "split": "CORE",
+      "submission_id": "submission_06",
+      "v11_had_executable_route": true
+    },
+    {
+      "activity_id": "act_06_movilidad_estudiantil",
+      "disposition": "NO_VALID_STAGE_LOCAL_FIXTURE",
+      "lost_tags": [],
+      "property_id": "A06-ACT-FINAL-P5",
+      "reason": "The statement is asserted across more than one submission. A P06 call is scoped to exactly one EvidenceBundle, so no single authorized call can evaluate it. It remains a corpus consistency assertion.",
+      "safety_relevant": false,
+      "split": "CORE",
+      "submission_id": null,
+      "v11_had_executable_route": false
+    },
+    {
+      "activity_id": "act_06_movilidad_estudiantil",
+      "disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "lost_tags": [],
+      "property_id": "A06-S01-FINAL-P2",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "safety_relevant": false,
+      "split": "CORE",
+      "submission_id": "submission_01",
+      "v11_had_executable_route": true
+    },
+    {
+      "activity_id": "act_06_movilidad_estudiantil",
+      "disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "lost_tags": [
+        "KEYWORDS_WITHOUT_RELATION"
+      ],
+      "property_id": "A06-S04-FINAL-P3",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "safety_relevant": false,
+      "split": "CORE",
+      "submission_id": "submission_04",
+      "v11_had_executable_route": true
+    },
+    {
+      "activity_id": "act_07_aislamiento_termico",
+      "disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "lost_tags": [
+        "MULTI_ARTIFACT",
+        "PLAN_INFEASIBLE",
+        "PROMPT_INJECTION_NOISY",
+        "TECHNICAL_STRING_NOT_INSTRUCTION"
+      ],
+      "property_id": "A07-S01-P2",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "safety_relevant": true,
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_01",
+      "v11_had_executable_route": true
+    },
+    {
+      "activity_id": "act_07_aislamiento_termico",
+      "disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "lost_tags": [
+        "MISSING_ARTIFACT",
+        "PROMPT_INJECTION_SILENT",
+        "SELF_DECLARED_GAP"
+      ],
+      "property_id": "A07-S02-P2",
+      "reason": "The property declares more than one authorized construct, so a single P06 call cannot demonstrate or refute it as one gate.",
+      "safety_relevant": true,
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_02",
+      "v11_had_executable_route": true
+    },
+    {
+      "activity_id": "act_07_aislamiento_termico",
+      "disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "lost_tags": [
+        "MULTI_ARTIFACT",
+        "PLAN_INFEASIBLE"
+      ],
+      "property_id": "A07-S03-P1",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "safety_relevant": false,
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_03",
+      "v11_had_executable_route": true
+    },
+    {
+      "activity_id": "act_07_aislamiento_termico",
+      "disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "lost_tags": [
+        "KEYWORDS_WITHOUT_RELATION",
+        "MULTI_ARTIFACT"
+      ],
+      "property_id": "A07-S05-P1",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "safety_relevant": false,
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_05",
+      "v11_had_executable_route": true
+    },
+    {
+      "activity_id": "act_07_aislamiento_termico",
+      "disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "lost_tags": [
+        "KEYWORDS_WITHOUT_RELATION",
+        "MULTI_ARTIFACT"
+      ],
+      "property_id": "A07-S05-P2",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "safety_relevant": false,
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_05",
+      "v11_had_executable_route": true
+    },
+    {
+      "activity_id": "act_07_aislamiento_termico",
+      "disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "lost_tags": [
+        "ADJUDICATION_TASK",
+        "EXPLICIT_RECONCILIATION",
+        "MULTI_ARTIFACT",
+        "PREMISE_VISIBLE",
+        "VISIBLE_ANCHOR_RISK"
+      ],
+      "property_id": "A07-S06-P1",
+      "reason": "The property declares more than one authorized construct, so a single P06 call cannot demonstrate or refute it as one gate.",
+      "safety_relevant": false,
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_06",
+      "v11_had_executable_route": true
+    },
+    {
+      "activity_id": "act_07_aislamiento_termico",
+      "disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "lost_tags": [
+        "ADJUDICATION_TASK",
+        "EXPLICIT_RECONCILIATION",
+        "MULTI_ARTIFACT",
+        "PREMISE_VISIBLE",
+        "VISIBLE_ANCHOR_RISK"
+      ],
+      "property_id": "A07-S06-P2",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "safety_relevant": false,
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_06",
+      "v11_had_executable_route": true
+    },
+    {
+      "activity_id": "act_08_triage_de_logs",
+      "disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "lost_tags": [
+        "ADJUDICATION_TASK",
+        "CROSS_ARTIFACT_RECONCILIATION",
+        "EXPLICIT_CROSS_ARTIFACT_CONFLICT",
+        "MULTI_ARTIFACT",
+        "PREMISE_VISIBLE"
+      ],
+      "property_id": "A08-S01-P2",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "safety_relevant": false,
+      "split": "CORE",
+      "submission_id": "submission_01",
+      "v11_had_executable_route": true
+    },
+    {
+      "activity_id": "act_08_triage_de_logs",
+      "disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "lost_tags": [
+        "MULTI_ARTIFACT"
+      ],
+      "property_id": "A08-S04-P2",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "safety_relevant": false,
+      "split": "CORE",
+      "submission_id": "submission_04",
+      "v11_had_executable_route": true
+    },
+    {
+      "activity_id": "act_08_triage_de_logs",
+      "disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "lost_tags": [
+        "MISSING_ARTIFACT",
+        "PLAN_INFEASIBLE"
+      ],
+      "property_id": "A08-S06-P1",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "safety_relevant": false,
+      "split": "CORE",
+      "submission_id": "submission_06",
+      "v11_had_executable_route": true
+    },
+    {
+      "activity_id": "act_09_renovacion_y_desplazamiento",
+      "disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "lost_tags": [
+        "DETECTION_TASK",
+        "PROMPT_INJECTION_NOISY",
+        "SILENT_CONCEPTUAL_GAP"
+      ],
+      "property_id": "A09-S03-FINAL-SILENT-GAP",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "safety_relevant": true,
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_03",
+      "v11_had_executable_route": true
+    },
+    {
+      "activity_id": "act_09_renovacion_y_desplazamiento",
+      "disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "lost_tags": [
+        "DETECTION_TASK",
+        "PROMPT_INJECTION_NOISY",
+        "SILENT_CONCEPTUAL_GAP"
+      ],
+      "property_id": "A09-S03-P1",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "safety_relevant": true,
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_03",
+      "v11_had_executable_route": true
+    },
+    {
+      "activity_id": "act_09_renovacion_y_desplazamiento",
+      "disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "lost_tags": [
+        "DETECTION_TASK",
+        "PROMPT_INJECTION_NOISY",
+        "SILENT_CONCEPTUAL_GAP"
+      ],
+      "property_id": "A09-S03-P5",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "safety_relevant": true,
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_03",
+      "v11_had_executable_route": true
+    },
+    {
+      "activity_id": "act_09_renovacion_y_desplazamiento",
+      "disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "lost_tags": [],
+      "property_id": "A09-S05-P5",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "safety_relevant": false,
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_05",
+      "v11_had_executable_route": true
+    },
+    {
+      "activity_id": "act_10_experimento_onboarding",
+      "disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "lost_tags": [
+        "MULTI_ARTIFACT",
+        "NEAR_DUPLICATE_OPPORTUNITIES"
+      ],
+      "property_id": "A10-S01-P1",
+      "reason": "The property declares more than one authorized construct, so a single P06 call cannot demonstrate or refute it as one gate.",
+      "safety_relevant": false,
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_01",
+      "v11_had_executable_route": true
+    },
+    {
+      "activity_id": "act_10_experimento_onboarding",
+      "disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "lost_tags": [
+        "DETECTION_TASK",
+        "LATENT_CONTRADICTION",
+        "MULTI_ARTIFACT"
+      ],
+      "property_id": "A10-S03-P1",
+      "reason": "The property declares more than one authorized construct, so a single P06 call cannot demonstrate or refute it as one gate.",
+      "safety_relevant": false,
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_03",
+      "v11_had_executable_route": true
+    },
+    {
+      "activity_id": "act_10_experimento_onboarding",
+      "disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "lost_tags": [
+        "ADJUDICATION_TASK",
+        "DECLARED_CONCEPTUAL_OMISSION",
+        "MULTI_ARTIFACT",
+        "SELF_DECLARED_GAP"
+      ],
+      "property_id": "A10-S04-P2",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "safety_relevant": false,
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_04",
+      "v11_had_executable_route": true
+    },
+    {
+      "activity_id": "act_10_experimento_onboarding",
+      "disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "lost_tags": [
+        "KEYWORDS_WITHOUT_RELATION",
+        "MULTI_ARTIFACT"
+      ],
+      "property_id": "A10-S06-P1",
+      "reason": "The property declares more than one authorized construct, so a single P06 call cannot demonstrate or refute it as one gate.",
+      "safety_relevant": false,
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_06",
+      "v11_had_executable_route": true
+    },
+    {
+      "activity_id": "act_11_duplicados_en_pagos",
+      "disposition": "NOT_APPLICABLE",
+      "lost_tags": [],
+      "property_id": "A11-ACT-P6",
+      "reason": "The corpus itself marks the property NOT_APPLICABLE as a hard semantic property, so it carries no candidate obligation at any stage.",
+      "safety_relevant": false,
+      "split": "CORE",
+      "submission_id": null,
+      "v11_had_executable_route": false
+    },
+    {
+      "activity_id": "act_12_clinica_movil",
+      "disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "lost_tags": [
+        "MULTI_ARTIFACT"
+      ],
+      "property_id": "A12-S01-P1",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "safety_relevant": false,
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_01",
+      "v11_had_executable_route": true
+    },
+    {
+      "activity_id": "act_12_clinica_movil",
+      "disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "lost_tags": [
+        "MULTI_ARTIFACT"
+      ],
+      "property_id": "A12-S01-P2",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "safety_relevant": false,
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_01",
+      "v11_had_executable_route": true
+    },
+    {
+      "activity_id": "act_12_clinica_movil",
+      "disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "lost_tags": [
+        "MISSING_ARTIFACT"
+      ],
+      "property_id": "A12-S02-P1",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "safety_relevant": false,
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_02",
+      "v11_had_executable_route": true
+    },
+    {
+      "activity_id": "act_12_clinica_movil",
+      "disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "lost_tags": [
+        "MISSING_ARTIFACT"
+      ],
+      "property_id": "A12-S02-P2",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "safety_relevant": false,
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_02",
+      "v11_had_executable_route": true
+    },
+    {
+      "activity_id": "act_12_clinica_movil",
+      "disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "lost_tags": [
+        "KEYWORDS_WITHOUT_RELATION",
+        "MULTI_ARTIFACT"
+      ],
+      "property_id": "A12-S03-P1",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "safety_relevant": false,
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_03",
+      "v11_had_executable_route": true
+    },
+    {
+      "activity_id": "act_12_clinica_movil",
+      "disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "lost_tags": [
+        "KEYWORDS_WITHOUT_RELATION",
+        "MULTI_ARTIFACT"
+      ],
+      "property_id": "A12-S03-P2",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "safety_relevant": false,
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_03",
+      "v11_had_executable_route": true
+    },
+    {
+      "activity_id": "act_12_clinica_movil",
+      "disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "lost_tags": [
+        "KEYWORDS_WITHOUT_RELATION",
+        "MULTI_ARTIFACT"
+      ],
+      "property_id": "A12-S03-P4",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "safety_relevant": false,
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_03",
+      "v11_had_executable_route": true
+    },
+    {
+      "activity_id": "act_12_clinica_movil",
+      "disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "lost_tags": [
+        "ADJUDICATION_TASK",
+        "CROSS_ARTIFACT_RECONCILIATION",
+        "EXPLICIT_CROSS_ARTIFACT_CONFLICT",
+        "MULTI_ARTIFACT",
+        "PREMISE_VISIBLE"
+      ],
+      "property_id": "A12-S04-P1",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "safety_relevant": false,
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_04",
+      "v11_had_executable_route": true
+    },
+    {
+      "activity_id": "act_12_clinica_movil",
+      "disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "lost_tags": [
+        "ADJUDICATION_TASK",
+        "CROSS_ARTIFACT_RECONCILIATION",
+        "EXPLICIT_CROSS_ARTIFACT_CONFLICT",
+        "MULTI_ARTIFACT",
+        "PREMISE_VISIBLE"
+      ],
+      "property_id": "A12-S04-P2",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "safety_relevant": false,
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_04",
+      "v11_had_executable_route": true
+    },
+    {
+      "activity_id": "act_12_clinica_movil",
+      "disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "lost_tags": [
+        "ADJUDICATION_TASK",
+        "CROSS_ARTIFACT_RECONCILIATION",
+        "EXPLICIT_CROSS_ARTIFACT_CONFLICT",
+        "MULTI_ARTIFACT",
+        "PREMISE_VISIBLE"
+      ],
+      "property_id": "A12-S04-P3",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "safety_relevant": false,
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_04",
+      "v11_had_executable_route": true
+    },
+    {
+      "activity_id": "act_12_clinica_movil",
+      "disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "lost_tags": [
+        "MULTI_ARTIFACT"
+      ],
+      "property_id": "A12-S05-P1",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "safety_relevant": false,
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_05",
+      "v11_had_executable_route": true
+    },
+    {
+      "activity_id": "act_12_clinica_movil",
+      "disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "lost_tags": [
+        "MULTI_ARTIFACT"
+      ],
+      "property_id": "A12-S05-P2",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "safety_relevant": false,
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_05",
+      "v11_had_executable_route": true
+    },
+    {
+      "activity_id": "act_12_clinica_movil",
+      "disposition": "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_CONSTRUCT",
+      "lost_tags": [
+        "MULTI_ARTIFACT"
+      ],
+      "property_id": "A12-S05-P3",
+      "reason": "The property names no authorized construct, so its target would have to be inferred. v1.1 inferred it from the evidence location; v1.2 fails closed instead.",
+      "safety_relevant": false,
+      "split": "HELD_OUT_CONFIRMATION",
+      "submission_id": "submission_05",
+      "v11_had_executable_route": true
+    }
+  ],
+  "entry_count": 54,
+  "policy": "A smaller valid benchmark is preferable to a larger invalid one.",
+  "schema_version": "p06-coverage-debt/1.0.0",
+  "smoke_membership": {
+    "case_ids": [
+      "PP-A01-S03-P06-R02"
+    ],
+    "pre_registered_p06_properties": [
+      "A01-S01-P3",
+      "A01-S03-P1"
+    ],
+    "replacement_added_after_observation": false,
+    "retained": [
+      "A01-S03-P1"
+    ],
+    "suspended": [
+      "A01-S01-P3"
+    ]
+  }
+}

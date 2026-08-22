@@ -1,0 +1,40 @@
+{
+  "counts_by_stage": {
+    "P04": {
+      "CORE": 6,
+      "HELD_OUT_CONFIRMATION": 5,
+      "SMOKE": 1
+    },
+    "P06": {
+      "CORE": 45,
+      "HELD_OUT_CONFIRMATION": 31,
+      "SMOKE": 1
+    },
+    "P07": {
+      "CORE": 55,
+      "HELD_OUT_CONFIRMATION": 47,
+      "SMOKE": 6
+    },
+    "P09": {
+      "CORE": 2,
+      "HELD_OUT_CONFIRMATION": 1,
+      "SMOKE": 1
+    },
+    "PLANNER": {
+      "CORE": 12,
+      "HELD_OUT_CONFIRMATION": 7,
+      "SMOKE": 2
+    }
+  },
+  "held_out_activity_numbers": [
+    3,
+    7,
+    9,
+    10,
+    12
+  ],
+  "held_out_partition_changed": false,
+  "held_out_partition_source": "semantic-benchmark/1.1.0",
+  "schema_version": "semantic-benchmark-split-partition/1.2.0",
+  "split_partition_hash": "sha256:9b85b8f9b6c007b773eed59eefcd765ff82200e23dccf212191da543ee189cb8"
+}

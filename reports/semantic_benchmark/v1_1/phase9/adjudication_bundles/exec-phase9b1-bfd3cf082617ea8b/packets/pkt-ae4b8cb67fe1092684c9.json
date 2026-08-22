@@ -1,0 +1,62 @@
+{
+  "binding_scope": "ACTIVITY_WIDE",
+  "candidate_output": {
+    "candidate": null,
+    "context_mode": "CLOSED",
+    "diagnostics": [
+      {
+        "code": "QUESTION_REPLACEMENT_REQUIRED",
+        "details": {},
+        "evidence_ids": [
+          "ev_98bab90120083a02f7b0",
+          "ev_b8e87c4ee89e6d436417",
+          "ev_28f296cc642d42dcc917"
+        ],
+        "message": "La evidencia autorizada no contiene dos fragmentos sustantivos que permitan examinar de forma defendible la relación entre una afirmación y evidencia localizada. E1 contiene instrucciones hostiles y no puede utilizarse como contenido de la pregunta; E2 solo registra un contacto simulado y E3 no aporta una afirmación relacionada. Se requiere evidencia adicional que incluya una afirmación y su evidencia correspondiente, sin exponer datos personales.",
+        "retryable": false,
+        "severity": "ERROR",
+        "source_ids": []
+      }
+    ],
+    "opportunity_id": "opportunity_p07_e8ca86eb8b0b14139918",
+    "schema_version": "1.1.0",
+    "status": "REPLACEMENT_REQUIRED",
+    "submission_id": "submission_02"
+  },
+  "candidate_output_hash": "sha256:fc9357f3db4d8c1f7078d0e015105ba934b0d6100fd512f433df8d9acdf96203",
+  "case_id": "PP-A08-S02-P07-O02",
+  "defensible_alternatives": [],
+  "fixture_id": "P07-A08-S02-O02",
+  "oracle_state": "VALID",
+  "property": {
+    "benchmark_tags": [
+      "VISIBLE_ANCHOR_RISK"
+    ],
+    "confidence": "HIGH",
+    "defensible_alternatives": [],
+    "description": "El anchor no debe reproducir las tres tablas de log completas: con ocho eventos, mostrarlas enteras vuelve trivial cualquier pregunta de correlación. Mostrar una fuente o un par de eventos preserva la operación.",
+    "kind": "REQUIRED",
+    "notes": "",
+    "oracle_state": "VALID",
+    "property_id": "A08-ACT-P4",
+    "source_refs": [
+      {
+        "file": "01_assignment.docx",
+        "section": "gateway.log y storage_audit.log"
+      }
+    ],
+    "stage": "P07"
+  },
+  "relevant_source_refs": [
+    {
+      "file": "01_assignment.docx",
+      "section": "gateway.log y storage_audit.log"
+    }
+  ],
+  "route_or_opportunity_id": "P07-A08-S02-O02",
+  "schema_version": "semantic-review-packet/1.1.0",
+  "source_hashes": {
+    "01_assignment.docx": "sha256:cc66ee343f603cce1617dd7f2d41d1f7b31824ce8633a14144caf739f05f2204"
+  },
+  "stage": "P07"
+}

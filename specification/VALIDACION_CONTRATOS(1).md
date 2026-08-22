@@ -1,4 +1,4 @@
-# Validación de contratos v1.1
+# Validación del bundle de contratos 1.2 (wire runtime 1.1)
 
 ## 1. Fuente primaria
 
@@ -8,9 +8,21 @@
 - `build_schema_bundle()` usa `pydantic.json_schema.models_json_schema`.
 - `contracts.schema_v1.1.json` es un artefacto generado; no se edita manualmente.
 - OpenAPI debe importar los mismos modelos Pydantic o DTOs que los compongan.
-- Prompt registry guarda `input_schema_name`, `output_schema_name` y `schema_version=1.1.0`; no acepta nombres no presentes en `roots`.
+- El bundle usa `CONTRACT_VERSION=1.2.0`; los objetos de prompt conservan
+  `schema_version=1.1.0` durante la convergencia experimental.
+- Prompt registry guarda `input_schema_name`, `output_schema_name`,
+  `provider_output_schema_name` y el marker wire 1.1.0; no acepta nombres no
+  presentes en `roots`.
 
 La documentación explica invariantes contextuales, pero no redefine tipos, enums ni obligatoriedad.
+
+Fases 4/5 implementan fronteras ADR-037 con cambios contractuales mínimos,
+Fase 6 retira P08 y Fase 7 añade la frontera P09 sin borrar contratos:
+los envelopes/drafts provider de P06/P07/P09 quedan separados de
+`EvidenceMapPatch`, `QuestionGenerationResult` y `EvaluationGuide` canónicos.
+El bundle esperado tiene 60 roots, 174 `$defs`, 335 refs y 8 fixtures. Los
+roots/fixtures P05/P08 continúan obligatorios por compatibilidad histórica y
+P10 como contrato deshabilitado; ninguno prueba reachability.
 
 ---
 
@@ -89,17 +101,28 @@ Crear `tests/fixtures/contracts/v1.1/{valid,invalid}` durante la implementación
 - P01 activity con y sin campos opcionales;
 - P02 rúbrica ausente a nivel de workflow y rúbrica contradictoria;
 - P05 `critical FAIL -> REJECT` y abstención sin recommendation;
-- P06 mapeo dimensión-variante y rechazo de operación no soportada;
+- P06 aliases válidos/desconocidos/cross-submission, cuatro estados de soporte,
+  multi-span/cross-artifact/duplicados, materialización, replay y mapping con
+  menos de N que completa antes del fallo del planner;
 - plan `READY` con exactamente \(N\), reserva disjunta y los cuatro fallos sin parcial;
 - P07 closed sin citas y `REPLACEMENT_REQUIRED` sin candidate;
+- P07 provider DTO pequeño, aliases E* válidos/inventados, support completa,
+  visible subset, reconstrucción exacta de texto/locator, hidden support,
+  multi-span/multi-artefacto, leakage objetivo, choice, cache/replay y
+  cross-submission;
 - P10 enriched con igualdad exacta entre `course_source_ids` y citations;
 - P08 `NEEDS_REVIEW` sin scores fabricados;
-- P09 ready completo y `NEEDS_REVIEW` sin items fabricados;
+- P09 approval binding exacto; envelope Q/E/O local; draft sin IDs/texto/
+  anchor/locator; core P07 preservado; niveles 0–3; evidence scope; replay;
+  READY completo y `NEEDS_REVIEW` sin items fabricados;
 - P11 repaired/unrepairable;
 - localizadores de todas las variantes habilitadas;
 - human approval, bulk approval con partición/exclusiones, `SelectedQuestion` editada y `QuestionReviewAction`;
 - ModelRoute/Resolution con modalidad compatible e incompatible;
 - evento válido y rechazo de versión/ID/tipo inválido.
+
+Los casos P05/P08 anteriores son regresión de lectura/contrato histórico, no
+un corpus nuevo ni un gate de selección de modelo.
 
 ---
 
@@ -163,9 +186,53 @@ PROMPT_CONTRACTS = {
     "P10_ENRICHED_CONTEXT_V1": ("QuestionBuildRequest", "QuestionGenerationResult"),
     "P11_SCHEMA_REPAIR_V1": ("SchemaRepairRequest", "SchemaRepairResult"),
 }
+
+PROVIDER_OUTPUT_CONTRACTS = {
+    **{prompt_id: output for prompt_id, (_, output) in PROMPT_CONTRACTS.items()},
+    "P04_BLUEPRINT_BUILD_V1": "BlueprintModelDraft",
+    "P06_EVIDENCE_MAP_V1": "EvidenceMappingModelDraft",
+    "P07_QUESTION_BUILD_V1": "QuestionModelDraft",
+    "P09_GUIDE_BUILD_V1": "GuideModelDraft",
+}
 ```
 
-El test exige que los 20 nombres existan en `roots`, que el registry use versión 1.1.0 y que la llamada valide request, envelope, output y validaciones contextuales en ese orden.
+`PROMPT_CONTRACTS` conserva el output canónico de etapa para compatibilidad. El
+schema estructurado que ve el proveedor se toma de
+`PROVIDER_OUTPUT_CONTRACTS`; P04, P06, P07 y P09 difieren. El gateway compila
+P04 y materializa P06/P07/P09 antes de devolver sus outputs canónicos.
+P06/P07/P09 proyectan los requests a `EvidenceMappingAliasEnvelope`/
+`QuestionAliasEnvelope`/`GuideAliasEnvelope`; esos
+payloads wire son roots exportados y validados, pero no reemplazan los input
+roots de etapa.
+
+El test exige que los nombres distintos de request/stage/provider existan en
+`roots`, además de los roots de envelope alias P06/P07/P09; que el registry use versión
+1.1.0; y que la llamada valide request, payload/envelope, output provider,
+compilación/materialización y contexto en ese orden.
+
+Un test independiente exige que el pipeline objetivo incluya sólo P01-P04,
+P06/P07/P09 como etapas de modelo, marque P05/P08 `inactive`, P10 `disabled` y
+asigne una única autoridad a cada decisión. La presencia de una ruta en el
+registry es compatibilidad histórica, no reachability. Para P05 el cutover ya
+está completo y ninguna ejecución nueva consulta su ruta; el retiro operativo
+de P08 también está completo y su hard guard precede el transporte.
+
+Para P07, tests separados exigen que el provider draft no contenga IDs,
+metadata, locators ni anchor text; que
+`anchor evidence ⊆ candidate.evidence_ids = opportunity.evidence_ids`; que el
+materializador recupere literalmente `display_text`/locator; y que un cache
+canónico recompilado sea idéntico. El runtime debe continuar con validación
+determinista, exactamente N y ASSEMBLE sin llamar P08. Tests históricos pueden
+validar su contrato/replay por una superficie explícitamente no productiva.
+
+Para P09, tests separados exigen que `GuideBuildRequest` sólo se construya
+desde un `Assessment.APPROVED` con binding exacto ya persistido; que el provider
+draft no pueda devolver IDs canónicos, texto/anchor, locators o bookkeeping;
+que cada alias E/O/N permanezca question-local; que el core P07 sea inmutable;
+que niveles sean exactamente 0/1/2/3; y que StageRun replay rematerialice la
+misma `EvaluationGuide`. Un fallo/abstención no revoca aprobación ni puede
+persistir una guía parcial READY. Filas sin binding actual validan sólo como
+historia, no como current authority.
 
 ---
 
@@ -178,13 +245,19 @@ Pydantic/JSON Schema no pueden comprobar por sí solos:
 - que `display_text` es literal/crop/transformación autorizada;
 - que una cita sustenta realmente `supported_claim`;
 - groundedness, answerability y demanda cognitiva;
-- score/redundancia y planificación determinista de exactamente \(N\);
+- semántica de soporte, redundancia y planificación determinista de exactamente
+  \(N\); los floats P06 legacy no son autoridad fuera de schema;
 - autorización del actor, ETag y elegibilidad/partición de aprobación masiva;
 - capabilities/modalidades y políticas de proveedor, región, retención, presupuesto, disponibilidad y fallback;
 - revisión humana antes de aprobación;
 - seguridad de archivos y borrado real.
 
 Estas reglas viven en servicios/validators con códigos estables. P11 nunca las repara.
+
+El clasificador de qualification prueba además los estados `VALID`,
+`ORACLE_SUSPECT`, `INVALID` y `NOT_APPLICABLE`; la sospecha debe producir
+`INCONCLUSIVE` aun ante desacuerdo sistemático. El reporting prueba que sólo la
+clasificación sintética enumera códigos estructurados y su hash.
 
 ---
 
@@ -229,7 +302,7 @@ Se prohíbe:
 - La corrección de blueprint/plan no es wire-compatible con `BlueprintSlot`, candidate batches, selector posterior o guide patches.
 - No se convierten slots en oportunidades mediante un rename: el catálogo y cada plan se regeneran desde consigna, rúbrica, decisiones y evidencia versionadas.
 - `QuestionGenerationResult.context_mode` tiene default `CLOSED`; P10 exige `COURSE_ENRICHED` explícito.
-- P07/P08 usan IDs y roots nuevos; el prompt registry debe actualizarse de forma atómica con el schema.
+- P07/P08 conservan sus IDs y roots contractuales; la presencia de P08 en el registry no lo vuelve callable.
 - P09 persiste `EvaluationGuide` independiente, asociado a assessment/submission.
 - `ActivityConfig` elimina profundidad/operaciones solicitadas y añade modo de justificación.
 - bulk approval y ModelRouteResolution son nuevos roots operacionales.

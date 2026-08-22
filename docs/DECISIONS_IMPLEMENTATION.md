@@ -1,5 +1,11 @@
 # Decisiones menores de implementación
 
+> **Precedencia ADR-037 (2026-08-14):** estas decisiones son un registro
+> temporal. D-074 gobierna la autoridad actual; cualquier mención anterior a
+> evidencia “vigente”, gates abiertos o una autoridad siguiente describe sólo
+> su checkpoint histórico y no convierte el harness legado en gate canónico de
+> selección de modelo.
+
 ## D-001 - Cargar el modelo canónico en su ubicación original
 
 - **Decisión:** `src/comprehension_verification/contracts.py` carga
@@ -485,3 +491,1034 @@
   ligada a evidencia real del mismo candidato; un artifact histórico o una
   intención documental no la sustituye.
 - **Relación:** E2-11, E2-10, D-032, D-042 y auditorías finales E2.
+
+## D-045 - El proveedor OpenAI queda detrás de dos gates humanos
+
+- **Decisión:** el adapter real puede implementarse y probarse offline desde el
+  merge E2 verificado, pero ninguna llamada se ejecuta sin proyecto dedicado,
+  billing/límites, clave privada y aprobación humana. El smoke requiere además
+  dos confirmaciones técnicas independientes y presupuesto preflight. P11 queda
+  fijado a `gpt-5.6-luna` con `reasoning_effort=low`; P10 continúa ausente del
+  router. El Service web no recibe la clave y el worker desactiva los retries
+  internos del SDK.
+- **Razón:** separar implementación, credenciales y gasto hace auditable el
+  primer costo y evita que CI, deploy o un fallback inesperado activen modelos
+  reales. `store=false` se usa sin reclamar ZDR.
+- **Relación:** ADR-035, `OPENAI_PROVIDER_SETUP.md`,
+  `OPENAI_REAL_MODEL_VALIDATION.md` y `OPENAI_COST_BUDGETS.md`.
+
+## D-046 - `LUNA_BASELINE_V1` separa routing de prompt y contrato
+
+- **Decisión:** la primera evaluación real usa Luna en P01-P09/P11 con los
+  esfuerzos autorizados (`medium`, `high`, `low`) y ninguna ruta P10, Sol,
+  fallback o selección heurística. El perfil se identifica en `route_id`,
+  reason codes y metadata de eval. La matriz mixta anterior queda documentada
+  únicamente como comparación futura no callable.
+- **Razón:** evaluar primero la alternativa de menor costo, manteniendo iguales
+  los esfuerzos, permite medir si Luna es suficiente sin convertir la hipótesis
+  en una decisión permanente de producto. Como no cambian instrucciones ni
+  roots Pydantic, `prompt-pack/1.1.1` y contratos conservan su versión.
+- **Relación:** ADR-036 y autorización humana del 2026-08-08.
+
+## D-047 - P01 1.1.2 separa extracción usable de diagnóstico
+
+- **Decisión:** una consigna sintética suficiente y fiel produce `READY` aun
+  cuando alguna lista sourced no sea necesaria. Todo status distinto de
+  `READY` vacía conjuntamente las cinco listas sourced y conserva únicamente
+  el diagnóstico estructurado. El fixture de inyección se hace
+  inequívocamente suficiente, exige `READY` y trata el marcador hostil sólo
+  como dato no propagable. Prompt e input quedan ligados a hashes nuevos y la
+  evidencia real 1.1.1 no se reutiliza para aceptar 1.1.2.
+- **Razón:** un output parcialmente extraído con status de abstención mezcla
+  dos contratos operativos incompatibles, mientras que reutilizar evidencia
+  de otra frontera ocultaría precisamente la regresión remediada.
+- **Relación:** P01, `REAL_MODEL_EVALS.md` y
+  `OPENAI_REAL_MODEL_VALIDATION.md`.
+
+## D-048 - La revisión P05 interactiva se ejecuta como job durable
+
+- **Decisión:** editar un blueprint valida el patch y persiste atómicamente un
+  Job `BLUEPRINT_REVIEW` con descriptor sin datos estudiantiles ligado por
+  hashes. Sólo el
+  worker invoca P05, vuelve a comprobar lineage, política, fuentes y versión,
+  y publica la nueva versión junto al terminal del job en una transacción.
+  Cancel restaura el estado original y retry reconstruye el descriptor desde
+  el ancestro. La API responde `202 JobEnvelope` y la UI espera éxito antes de
+  recuperar la versión publicada.
+- **Razón:** una llamada directa desde el proceso web eludía durabilidad,
+  presupuesto, control de reintentos y la separación web/worker exigida para
+  un proveedor real.
+- **Relación:** P05, D-037, D-038, ADR-032 y
+  `OPENAI_PROVIDER_SETUP.md`.
+
+## D-049 - La decisión P01 y el gasto de qualification son gates distintos
+
+- **Decisión:** `qualification-real` exige primero la aceptación humana de la
+  remediación P01 1.1.2 y luego una approval billable independiente. La primera
+  queda ligada a los hashes exactos del prompt y del input injection; cualquier
+  drift, cap inválido o gate ausente bloquea antes de leer la clave o crear
+  transporte. El reporte conserva sólo la disposición hash-bound y los hashes.
+- **Razón:** aceptar pagar una observación no resuelve una decisión de
+  constructo, y aceptar el constructo tampoco autoriza gasto. Codificar esa
+  separación evita que una variable o un runbook ambiguo cierre ambos gates por
+  accidente.
+- **Relación:** D-045, D-047, P01, `REAL_MODEL_EVALS.md` y
+  `OPENAI_PROVIDER_SETUP.md`.
+
+## D-050 - La rotación termina sólo cuando la clave anterior es rechazada
+
+- **Decisión:** crear y autenticar una credencial nueva no completa la rotación.
+  Antes de la qualification debe observarse que OpenAI rechaza la clave
+  histórica; sólo entonces se deshabilita su versión en Secret Manager. Un
+  intento UI sin efecto o una respuesta administrativa `403` mantiene el gate
+  cerrado, aunque la versión nueva esté `enabled` y vea el modelo autorizado.
+  La evidencia ejecutable usa una sola consulta `models.list`, retries cero,
+  clave sólo por stdin y PASS histórico exclusivamente ante 401; una
+  incertidumbre de red nunca equivale a revocación.
+- **Razón:** deshabilitar sólo la copia local no revoca una credencial todavía
+  válida en el proveedor, y continuar con dos claves activas rompe la secuencia
+  humana autorizada y la evidencia de contención.
+- **Relación:** D-045, D-049, `OPENAI_PROVIDER_SETUP.md` y
+  `REAL_MODEL_EVALS.md`.
+
+## D-051 - El PASS real P01 cierra P0 y el primer fallo P02 detiene el gate
+
+- **Decisión:** la qualification 1.1.2 conserva su evidencia aunque termine en
+  FAIL agregado. El PASS del primer caso `oa-p01-injection-md`, ligado a hashes
+  aceptados y con inyección no propagada, satisface el criterio humano para
+  cerrar P0. El fallo contextual del caso 11 `oa-p02-happy-pdf` se clasifica P1
+  y detiene la secuencia; no autoriza repetición, resume, P11 ni otro gasto.
+- **Razón:** descartar diez PASS por un fallo posterior perdería evidencia
+  observada, mientras continuar tras un blocker violaría el stop fail-closed.
+  Cerrar P01 no convierte un gate parcial en qualification completa.
+- **Relación:** D-047, D-049, P01/P02, `REAL_MODEL_EVALS.md` y
+  `OPENAI_COST_BUDGETS.md`.
+
+## D-052 - P02 1.1.3 alinea la abstención sin invalidar P01 1.1.2
+
+- **Decisión:** `prompt-pack/1.1.3` mantiene P01 y todas las entradas no
+  modificadas en versión individual 1.1.2; sólo P02 avanza a 1.1.3. P02 copia
+  `activity_id`, usa únicamente evidencia de rúbrica y hace explícito que todo
+  status no `READY` lleva `criteria=[]` más diagnóstico. El gateway conserva
+  subtipos contextuales content-free. Contratos, schema, ruta, fixture y
+  expected outcome no cambian.
+- **Gate:** una recanary real P02 requiere aceptación normativa hash-bound y
+  aprobación billable nuevas. La approval 1.1.2 consumida no sirve para 1.1.3;
+  ausencia de cualquiera de los gates bloquea antes de leer la credencial.
+- **Razón:** el prompt ejecutable omitía una regla que la especificación y el
+  validator ya exigían. Versionar sólo la entrada afectada conserva la prueba
+  real P01 exacta y evita presentar la corrección propuesta como aceptada o
+  observada antes del gate humano.
+- **Relación:** D-047, D-049, D-051, P02,
+  `specification/01_Prompt_Pack_v1.1(1).md` y `REAL_MODEL_EVALS.md`.
+
+## D-053 - La continuación reutiliza sólo evidencia real hash-bound
+
+- **Decisión:** el PASS de la única recanary P02 1.1.3 cierra P1. La
+  qualification posterior no repite los diez PASS 1.1.2 ni P02: conserva esos
+  once casos como evidencia real reutilizada sólo mientras coincidan
+  `prompt_id`, versión, prompt hash, input bundle hash, expected outcome,
+  behavior y severidad. La secuencia billable queda reducida a los siete casos
+  no observados, con máximo defensivo ocho requests y cap propuesto USD 0.16.
+- **Gate:** la continuación usa una approval nueva y específica. La approval
+  1.1.2, la recanary P02 consumida y el nombre anterior de qualification 1.1.3
+  no conceden gasto ni acceso a la credencial. Cualquier drift bloquea antes de
+  esos gates.
+- **Razón:** repetir evidencia suficiente añade costo y exposición sin probar
+  una frontera nueva; reutilizarla sin fijar también el manifest permitiría
+  cambiar silenciosamente el criterio de PASS.
+- **Relación:** D-049, D-051, D-052, `REAL_MODEL_EVALS.md` y
+  `OPENAI_COST_BUDGETS.md`.
+
+## D-054 - P05 1.1.4 explicita el estado del review y P11 no adivina invariantes raíz
+
+- **Decisión observada:** la única continuación 1.1.3 autorizada consumió
+  cuatro Responses requests y se detuvo en P05. P03/P04 pasaron; P05 cumplió
+  el schema provider pero falló Pydantic con `value_error` en `/`; la única
+  P11 produjo un target todavía inválido. P06/P08/P09/P11 directo no se
+  ejecutaron. El gate queda consumido y un opt-in histórico no puede reabrirlo.
+- **Remediación:** `prompt-pack/1.1.4` mantiene el contrato canónico y avanza
+  sólo P05/P11. P05 define `status` como finalización del review: una revisión
+  completada usa `READY` y recomendación; critical FAIL exige
+  `READY`+`REJECT`; una abstención usa recomendación nula y ningún critical
+  FAIL. P11 devuelve `UNREPAIRABLE` ante un `value_error` raíz ambiguo y no
+  elige campos semánticos de `BlueprintReview`.
+- **Gate:** observar P05 1.1.4 requiere aceptación normativa P05/P11 y una
+  approval billable nuevas. La recanary queda hash-bound a una sola Responses
+  request, P11 cero y cap máximo USD 0.03; la approval consumida 1.1.3 no se
+  transfiere.
+- **Razón:** el schema del proveedor no expresa `model_validator` entre
+  campos. El prompt primario debe exponer la tabla canónica, mientras una
+  reparación estructural no puede escoger silenciosamente una interpretación
+  semántica para hacer válido el objeto.
+- **Relación:** D-049, D-052, D-053, P05/P11,
+  `specification/01_Prompt_Pack_v1.1(1).md` y `REAL_MODEL_EVALS.md`.
+
+## D-055 - El PASS P05 1.1.4 cierra P1 y reduce la continuación a cuatro casos
+
+- **Decisión observada:** la aceptación normativa y la única recanary P05
+  v1.1.4 autorizada sobre `35ecaf8` quedaron consumidas. P05 terminó `READY` y
+  pasó schema provider, Pydantic, contexto y expected outcome en una Responses
+  request, sin P11/retries/P10/Sol/fallback. El costo calculado fue USD
+  0.00936825 frente al cap USD 0.03. Esta evidencia cierra P1.
+- **Reuso:** los PASS P03/P04 de la continuación v1.1.3 y P05 v1.1.4 se suman
+  a los once casos ya fijados. Los catorce sólo son reutilizables mientras
+  coincidan prompt, versión, prompt hash, input bundle hash, expected outcome,
+  behavior y severidad.
+- **Gate siguiente:** la continuación v1.1.4 programa sólo P06/P08/P09/P11,
+  máximo defensivo cinco Responses requests, P11 máximo uno, stop al primer
+  fallo, retries/P10/Sol/fallback cero y cap propuesto USD 0.10. Exige una
+  approval v1.1.4 distinta; ninguna approval consumida se transfiere.
+- **Razón:** evitar recomprar evidencia real inmutable reduce costo y superficie
+  de exposición, mientras el nuevo nombre de gate impide que una autorización
+  histórica abra una frontera de prompt distinta.
+- **Relación:** D-049, D-053, D-054, P05/P11, `REAL_MODEL_EVALS.md` y
+  `OPENAI_COST_BUDGETS.md`.
+
+## D-056 - El presupuesto preventivo reserva cache-write y el perfil manual no reintenta transportes
+
+- **Hallazgo y cierre:** la auditoría offline previa a deploy encontró que la
+  autorización del gateway tasaba el input como ordinario antes de Responses,
+  aunque las canaries observaron casi todo el input como cache-write a 1.25×.
+  El ledger posterior sí registraba esa categoría, pero una request podía
+  exceder el remanente autorizado antes de quedar persistida. Se clasificó P1
+  de control de gasto y se cerró antes de cualquier nueva request o deploy.
+- **Decisión:** todo input estimado se reserva preventivamente como
+  cache-write y el output al máximo del prompt. El perfil inicial de evaluación
+  manual usa cero retries automáticos de gateway y SDK; un retry durable exige
+  una acción humana explícita. P11 conserva una oportunidad por output inválido
+  y limita su input a 80,000 tokens: cubre la reserva calificada máxima de
+  76,482 y cualquier exceso bloquea antes de transporte.
+- **Evidencia offline:** la ruta real con transporte fake recorrió P01-P09 sobre
+  los fixtures sintéticos de cache con nueve tareas semánticas, jobs de actividad
+  y submission `SUCCEEDED`, máximo observado de input preflight 27,330 y cero
+  red/billable. Para una pregunta y tres reservas, los ceilings agregados son
+  USD 0.253571 por actividad y USD 0.490573 por submission, dentro de USD 0.55
+  por job. La qualification v1.1.4 permanece 4/4 fake y USD 0.092706.
+- **Gate:** esta remediación no autoriza la continuación v1.1.4, build cloud,
+  IAM, Terraform apply, deploy ni E2E facturable. Esas acciones deben fijar el
+  SHA nuevo y conservar sus caps humanos separados.
+- **Relación:** D-045, D-048, D-053, D-055, ADR-035/036,
+  `OPENAI_COST_BUDGETS.md` y `OPENAI_REAL_MODEL_VALIDATION.md`.
+
+## D-057 - P09 1.1.5 explicita relaciones por pregunta y recibe un gate aislado
+
+- **Decisión observada:** la única continuación v1.1.4 autorizada sobre
+  `abca7c5` ejecutó P06/P08 PASS y se detuvo en P09. P09 pasó schema provider y
+  Pydantic, pero falló contexto; P11 directo no se ejecutó. Fueron tres
+  Responses requests, USD 0.00864505 calculados y cero retries/P10/P11/Sol/
+  fallback. La approval quedó consumida y P06/P08 elevan la evidencia
+  hash-bound a 16/18.
+- **Límite epistemológico:** el output no se retuvo. El código histórico
+  `CONTEXT_INVARIANT_FAILED` no identifica cuál relación falló; no se atribuye
+  una causa de campo concreta a partir de una inferencia.
+- **Remediación:** `prompt-pack/1.1.5` avanza sólo P09. Ordena copiar
+  literalmente `guide_id`, `assessment_id` y `submission_id`; cubrir
+  exactamente las preguntas; limitar evidencia y fuentes a cada pregunta; y
+  usar `source_ids=[]` en contexto cerrado. El gateway mantiene validación
+  contextual separada y añade siete códigos content-free. Contratos, schema,
+  ruta, fixture y expected outcome no cambian.
+- **Gate:** la recanary candidata contiene sólo `oa-p09-happy-docx`, máximo una
+  Responses request, P11/P10/Sol/fallback/retries cero, ceiling
+  full-cache-write USD 0.01592350 y cap propuesto USD 0.02. Requiere aceptación
+  normativa y approval facturable nuevas fijadas al SHA candidato. Ninguna
+  approval o remanente anterior se transfiere. P11 directo queda para un gate
+  posterior separado.
+- **Evidencia offline:** el dry-run termina `READY`, pasa schema/Pydantic/
+  contexto/outcome, verifica IDs raíz, cobertura y referencias por pregunta,
+  y usa una request fake con cero red/billable. La frontera prompt/input es
+  `sha256:8d29a13a5ee56b39f6aa5545b602e23ca28b6d60d051852d75ecbc0c664179ff`
+  / `sha256:d85b124990e457e096fbe4851633ee057b662efcbda3ac84837e8c8a78deacc7`.
+- **Relación:** D-049, D-053, D-055, D-056, P09,
+  `OPENAI_COST_BUDGETS.md` y `OPENAI_REAL_MODEL_VALIDATION.md`.
+
+## D-058 - El PASS P09 cierra P1 y P11 directo recibe el último gate de corpus
+
+- **Decisión observada:** la remediación normativa y la única recanary P09
+  v1.1.5 autorizada sobre `2ae0a0a` quedaron consumidas. P09 terminó `READY` y
+  pasó schema provider, Pydantic, contexto y expected outcome en una Responses
+  request, sin retries/P10/P11/Sol/fallback. El costo calculado fue USD
+  0.00443985 frente al cap USD 0.02. Esta evidencia cierra el P1 y lleva la
+  cobertura real hash-bound a 17/18.
+- **Antirrepetición:** los valores históricos no reabren la recanary; el
+  entrypoint devuelve `OPENAI_P09_V115_RECANARY_ALREADY_CONSUMED` antes del
+  adapter. Sólo se conservan usage, latencia y hashes content-free.
+- **Gate siguiente:** P11 directo v1.1.4 se aísla en `oa-p11-happy`, Luna-low,
+  máximo una Responses request, P11 exactamente uno, retries/P10/Sol/fallback
+  cero, ceiling full-cache-write USD 0.01172550 y cap propuesto USD 0.02. Antes
+  del gate se recomputan las 17 fronteras reales anteriores.
+- **Evidencia offline:** el transporte fake termina `REPAIRED`, valida wrapper
+  y modelo objetivo, conserva `target_schema_name` y demuestra que la salida
+  equivale exactamente a eliminar el campo estructural extra. También acepta
+  sólo una abstención `UNREPAIRABLE` diagnóstica y sin `repaired_output`. Usa
+  una request fake y cero red/billable.
+- **Límites:** este checkpoint no autoriza P11 real, build, IAM, Terraform
+  apply, deploy, E2E, datos reales ni main. Cada superficie conserva un gate
+  independiente fijado a SHA/digest y presupuesto.
+- **Relación:** D-049, D-054, D-056, D-057, P09/P11,
+  `REAL_MODEL_EVALS.md` y `OPENAI_COST_BUDGETS.md`.
+
+## D-059 - P11 directo completa 18/18 y separa qualification de deploy/E2E
+
+- **Decisión observada:** la única canary P11 directa v1.1.4 autorizada sobre
+  `976aadc` terminó `REPAIRED` y pasó schema provider, Pydantic, contexto y
+  expected outcome. Conservó el target e hizo exactamente la eliminación
+  estructural mínima. Consumió una Responses request y USD 0.00070015, con
+  P11 uno y retries/P10/Sol/fallback cero.
+- **Antirrepetición:** `P11_V114_DIRECT_CONSUMED=True` bloquea cualquier nuevo
+  intento con `OPENAI_P11_V114_DIRECT_ALREADY_CONSUMED` antes de credencial y
+  adapter. Se conservan usage, latencia y hashes content-free; no payload,
+  output, clave ni request ID en claro.
+- **Evidencia histórica:** las 17 fronteras anteriores se revalidaron antes de
+  la llamada y el mapa hoy llamado `HISTORICAL_COMPLETE_REAL_EVIDENCE` fijó
+  entonces los 18 casos real-eligible. D-065 registra los límites que dejaron
+  de ser actuales tras cambios posteriores.
+- **Separación de gates:** completar el corpus prueba qualification técnica del
+  proveedor, pero no autoriza ni prueba el runtime cloud. Build/digest,
+  IAM/Terraform deploy y E2E sintético real conservan autorizaciones separadas,
+  fijadas al SHA/digest y a sus respectivos límites de mutación y gasto.
+- **Relación:** D-054, D-056, D-058, P11, `REAL_MODEL_EVALS.md`,
+  `OPENAI_COST_BUDGETS.md` y `OPENAI_REAL_MODEL_VALIDATION.md`.
+
+## D-060 - El build manual fija explícitamente la identidad de mínimo privilegio
+
+- **Incidente observado:** el único submit autorizado para `0a521d6` cargó el
+  archivo fuente y falló antes de crear build ID porque Cloud Build seleccionó
+  la cuenta de cómputo predeterminada, sin `storage.objects.get`. No hubo retry,
+  digest, apply, cambio de runtime/IAM, job, E2E ni Responses request; el gate
+  quedó consumido al primer fallo.
+- **Causa:** el trigger Terraform ya fijaba `cva-cloudbuild`, pero el comando
+  manual equivalente de `deploy/README.md` omitía `--service-account`. La CLI
+  documenta que, sin ese flag, usa la identidad predeterminada.
+- **Decisión:** todo submit manual obtiene `cloud_build_service_account` desde
+  el estado Terraform, construye su resource name completo y lo pasa de forma
+  obligatoria a la CLI. También fija 3600 segundos y rechaza un build ID vacío.
+  No se amplían los permisos de la cuenta predeterminada.
+- **Antirrepetición:** una regresión estática liga el runbook a la identidad,
+  timeout y stop sin retry. Un submit fallido no se repite con el mismo gate;
+  el siguiente build requiere una autorización exacta fijada al SHA remediado.
+- **Relación:** D-059, `deploy/README.md`, `TEST_RESULTS.md` y principio de
+  mínimo privilegio de ADR-033/ADR-034.
+
+## D-061 - El gate Cloud Build declara los ejecutables requeridos por su suite
+
+- **Incidente observado:** el build único `ccadfb3c-c645-4de4-879e-7dcaaa8cf8d8`
+  sobre `b8142f5` usó correctamente `cva-cloudbuild`, pero terminó en el paso 0.
+  Pytest registró 540 PASS, 16 skips y ocho fallos del harness porque la imagen
+  Alpine no encontraba `make`. Los pasos posteriores no se ejecutaron y no se
+  produjo imagen, digest, apply, cambio de runtime/IAM, job, E2E o Responses.
+- **Causa:** los tests versionados invocan Make targets para probar gates
+  consumidos y dry-runs, mientras `deploy/cloudbuild.yaml` sólo instalaba
+  `git` y `libmagic`. CI y desarrollo tenían `make` preinstalado, por lo que no
+  cubrían esa diferencia del contenedor Cloud Build.
+- **Decisión:** el gate declara `git`, `libmagic` y `make` en una sola
+  instalación explícita. Una regresión lee el YAML parseado y rechaza la
+  omisión del comando exacto.
+- **Evidencia:** el paso 0 completo se reprodujo desde un contexto fresco de
+  211 archivos, con la misma imagen Python fijada por digest: contratos,
+  fixtures y secretos PASS; 548/16 pytest; 11/11 deploy; 2/2 seguridad.
+- **Gate:** esa reproducción cierra el defecto offline, pero no reabre el
+  build consumido. Cualquier verificación cloud o apply requiere autorización
+  nueva y exacta fijada al SHA remediado.
+- **Relación:** D-059, D-060, `deploy/cloudbuild.yaml`, `TEST_RESULTS.md` y
+  principio de gates herméticos de ADR-033/ADR-034.
+
+## D-062 - Web mock y worker real se despliegan mediante un único plan sellado
+
+- **Decisión observada:** el build único
+  `613270cf-bdfb-4b18-a423-35f68198f471` del SHA `b4ec283…` terminó
+  `SUCCESS/VERIFIED`. Su digest coincidió con Artifact Registry, conservó SLSA
+  3 y fijó el SHA autorizado como label OCI.
+- **Plan sellado:** antes de mutar cloud, el plan guardado y hash-verificado
+  mostró únicamente dos updates in-place —Service y Job— y un create IAM para
+  que sólo la cuenta worker lea `cva-openai-api-key`; 36 recursos quedaron
+  no-op y no hubo delete/replace. El apply de ese plan se ejecutó exactamente
+  una vez y terminó `1 added, 2 changed, 0 destroyed`.
+- **Separación de funciones:** web conserva `CVA_MODEL_MODE=mock` y ninguna
+  referencia a la clave. Worker usa modo real, versión 2 fijada, máximo USD
+  0.55 por job, P10 false, task/paralelismo 1/1 y retries de infraestructura
+  cero. Service y Job usan el mismo digest inmutable.
+- **Verificación:** la revisión web está Ready, health/readiness son 200, la
+  ruta privada anónima es 401, IAM contiene sólo al worker y dos planes
+  consecutivos terminan `No changes`. El conteo de ejecuciones del Job no
+  cambió y no hubo Responses.
+- **Gate restante:** desplegar capacidad no autoriza usarla. El E2E sintético
+  real conserva un gate humano billable independiente, limitado por ceiling
+  USD 0.855444, cap propuesto USD 0.90, máximo 32 Responses, retries cero y
+  stop al primer job no exitoso. Datos estudiantiles reales y P10 permanecen
+  fuera de alcance.
+- **Relación:** D-059, D-060, D-061, ADR-033/ADR-034,
+  `IMPLEMENTATION_STATUS.md`, `TEST_RESULTS.md` y `OPENAI_COST_BUDGETS.md`.
+
+## D-063 - Una ambigüedad P03 válida consume el gate y exige una decisión humana nueva
+
+- **Observación:** el único job de actividad del primer E2E real ejecutó P01,
+  P02 y P03 con Luna; las tres salidas fueron `SCHEMA_VALID`. P03 persistió un
+  reporte `blocked=true` con seis issues, cuatro bloqueantes, y el job terminó
+  `NEEDS_REVIEW`/`ASSIGNMENT_AMBIGUOUS`.
+- **Decisión:** `NEEDS_REVIEW` no se reinterpretará como éxito aunque la task
+  Cloud Run termine `EXECUTION_SUCCEEDED`. La cláusula `stop al primer ... job
+  no SUCCEEDED` detiene el recorrido antes de cualquier decisión P03, P04/P05,
+  submission o ejecución adicional.
+- **Frontera consumida:** hubo una ejecución, intento 1, 3/32 Responses y USD
+  0.01302445/0.90; P10/P11/Sol/fallback/retries fueron cero. El remanente de
+  presupuesto no transfiere autoridad a una reanudación.
+- **Continuación:** la UI `Guardar y reanudar blueprint` crea un nuevo job de
+  actividad. Seleccionar interpretaciones y lanzar ese job requiere decisión
+  docente y autorización nuevas, porque excede la frontera consumida de un
+  único job de actividad.
+- **Relación:** D-062, ADR-030/ADR-034, `REAL_MODEL_EVALS.md`,
+  `OPENAI_COST_BUDGETS.md` y `TEST_RESULTS.md`.
+
+## D-064 - P04 explicita invariantes no expresables y la evidencia perdida no se presume PASS
+
+- **Observación de producto:** seis decisiones P03 recomendadas se
+  persistieron y una sola reanudación reutilizó P01-P03. P04 v1.1.2 cumplió el
+  schema estricto del proveedor, pero falló un `model_validator` raíz de
+  `AssessmentBlueprint`; una P11 estructural no reparó el contrato destino.
+  Job y task terminaron FAIL y no se continuó a P05.
+- **Decisión normativa:** P04 v1.1.6 enumera las referencias allowlist y las
+  relaciones entre IDs únicos, operación soportada, formatos permitidos,
+  selección de justificación, decisiones exactas y campos de aprobación. Estas
+  reglas ya existían en el contrato canónico, pero JSON Schema no puede
+  expresar todas sus relaciones entre campos.
+- **Evidencia fail-closed:** la primera observación P04 v1.1.6 consumió una
+  request, pero su stdout quedó en una sesión de orquestación no archivada.
+  Como `store=false` produjo cero logs recuperables, el resultado se declaró
+  `INCONCLUSIVE`; no se infirió PASS ni se reabrió el gate original.
+- **Recuperación separada:** la autorización amplia posterior se materializó
+  como un gate distinto, fijado a los mismos hashes, una request, cap USD 0.03,
+  P11/retries/P10/Sol/fallback cero y reporte durable precreado. Terminó PASS
+  `READY` con schema/Pydantic/contexto/outcome PASS y USD 0.00537802. Ambos
+  gates quedan permanentemente consumidos.
+- **Alcance:** el PASS focal vuelve a cubrir 18/18 fronteras actuales, pero no
+  cambia el digest desplegado ni sustituye build, plan Terraform o E2E de
+  producto sobre P04 v1.1.6.
+- **Relación:** D-053, D-054, D-056, D-063, ADR-005/ADR-034,
+  `OPENAI_REAL_MODEL_VALIDATION.md` y `REAL_MODEL_EVALS.md`.
+
+## D-065 - Las decisiones P03 viajan autocontenidas y P05 revisa un catálogo, no un plan
+
+- **Observación de producto:** sobre el SHA `dfd102d…` y digest
+  `sha256:9048f9da…`, el E2E nuevo ejecutó P01-P05 en dos Cloud Run
+  executions. P04 produjo y persistió un blueprint `READY`, pero P05 devolvió
+  `READY/REJECT` con fallos críticos de cobertura, catálogo y factibilidad. Se
+  respetó el stop: no hubo edición, aprobación, submission ni tercera
+  ejecución.
+- **Causa normativa:** P05 interpretó `question_count=1` como obligación de que
+  cada oportunidad cubriera todos los criterios y trató la diversidad entre
+  oportunidades como falta de comparabilidad. Eso contradice ADR-030: el
+  catálogo es independiente de N y el planificador selecciona después
+  exactamente N. Además, `PolicyDecision` conservaba sólo un option ID opaco;
+  P04/P05 no recibían la etiqueta y consecuencia elegidas por la persona.
+- **Contrato:** `PolicyDecision.selected_option` conserva ahora el snapshot
+  inmutable de `DecisionOption`. Las requests P04/P05 exigen decisiones
+  autocontenidas; workflows nuevos las persisten y las filas históricas se
+  rehidratan tenant-scoped desde su `AmbiguityReport` sin reescribir historia.
+- **Prompts y validación:** P04 avanza a 1.1.7 y P05 a 1.1.5. Separan cobertura
+  conceptual del catálogo, cobertura obligatoria por plan y factibilidad
+  exacta-N; no inventan oportunidades compuestas ni penalizan diversidad
+  válida. El gateway rechaza cobertura fuente incompleta y catálogos que no
+  pueden formar N dentro del tiempo/calidad configurados.
+- **Gate acoplado:** la recanary preparada ejecuta exactamente P04 y luego P05,
+  usando el output P04 validado como input P05. El dry-run pasó con dos
+  transportes fake, ceiling full-cache-write USD 0.04988775, cap USD 0.06,
+  retries/P10/P11/Sol/fallback cero y stop al primer fallo. Una recanary P06
+  separada, de una request y cap USD 0.03, cubre el nuevo lineage de decisiones.
+- **Evidencia en ese checkpoint:** los hashes invalidados eran P04, P05 y P06;
+  por tanto 15/18 observaciones seguían vigentes antes del gate real. El mapa
+  de 18/18 de D-059/D-064 quedó explícitamente histórico.
+- **Relación:** D-059, D-062, D-063, D-064, ADR-030/ADR-034,
+  `OPENAI_REAL_MODEL_VALIDATION.md`, `REAL_MODEL_EVALS.md` y
+  `OPENAI_COST_BUDGETS.md`.
+
+## D-066 - Un timeout consumido exige remediación y recuperación nueva, no replay
+
+- **Observación:** la recanary acoplada P04 1.1.7→P05 1.1.5 ejecutó
+  exactamente dos Responses. P04 terminó PASS `READY` con schema provider,
+  Pydantic, contexto y outcome PASS. P05 recibió ese output validado como
+  input exacto y terminó `MODEL_TIMEOUT` a 120,016 ms, coincidente con el
+  antiguo timeout del adapter de 120 s. No hubo retry, P10, P11, Sol o
+  fallback; el charge conservador fue USD 0.05106550 bajo cap USD 0.06.
+- **Consumo fail-closed:** la autorización original queda permanentemente
+  consumida. Su reporte content-free está ligado al SHA-256
+  `d0d27500adeee0b4b234a5ee65e3e642f9b85929cd689fc6f86beb87eee2de14`.
+  P04 se promueve como frontera real 1.1.7 y la evidencia vigente sube a
+  16/18; P05 y P06 permanecen pendientes.
+- **Causa y remediación:** el fallo pertenece a la frontera temporal del
+  transporte, no al contrato del modelo. El timeout SDK pasa a 240 s y el
+  timeout exterior del gateway a 245 s, conservando retries automáticos cero
+  y el límite validado de 5–300 s.
+- **Recuperación:** `store=false` impide recuperar el contenido P04 y, por
+  tanto, reconstruir la request P05 sólo desde hashes. Una P05 aislada no
+  probaría acoplamiento. La única recuperación válida repite P04→P05 bajo
+  opt-ins y constante de consumo distintos, máximo dos Responses, cap USD
+  0.06 y stop al primer fallo. P06 sigue bloqueado hasta el PASS completo.
+- **Relación:** D-053, D-064, D-065, ADR-005/ADR-034,
+  `OPENAI_REAL_MODEL_VALIDATION.md`, `REAL_MODEL_EVALS.md` y
+  `OPENAI_COST_BUDGETS.md`.
+
+## D-067 - La recuperación acoplada promueve P05 sin retener contenido
+
+- **Resultado:** el gate distinto P04 1.1.7→P05 1.1.5 con timeout SDK/gateway
+  240/245 s terminó PASS/PASS `READY`. Las dos salidas pasaron schema del
+  proveedor, Pydantic, contexto, outcome y controles semánticos de cadena. No
+  hubo retry, P10, P11, Sol ni fallback.
+- **Frontera:** consumió exactamente 2/2 Responses, USD 0.01645840 actual, USD
+  0.04086520 de charge conservador y USD 0.05147825 de ceiling bajo cap USD
+  0.06. El reporte content-free está ligado al SHA-256
+  `3452b12bf89ea0cb59c29837b054d60db0ef46ceeb950802c680e20001a94df8` y
+  el gate queda permanentemente consumido.
+- **Evidencia:** P04 conserva su input reproducible y output validado
+  `sha256:22dd21e3…`; P05 queda ligado al envelope dinámico
+  `sha256:e8bd0e92…`. Como `store=false` no retiene el contenido del output
+  P04, el mapa valida P05 como frontera provider-derived encadenada al límite
+  P04 actual, sin inventar ni persistir contenido.
+- **Alcance:** `CURRENT_REAL_EVIDENCE` sube a 17/18. P06 no se infiere desde
+  este PASS: requiere su propia observación decision-lineage de una Responses,
+  cap USD 0.03 y rutas laterales/retries cero. Su entrypoint real comprueba
+  además, antes de approval, clave o transporte, que la recuperación esté
+  consumida como PASS y que la frontera P05 1.1.5 siga presente e idéntica.
+- **Relación:** D-065, D-066, ADR-005/ADR-030/ADR-034,
+  `OPENAI_REAL_MODEL_VALIDATION.md`, `REAL_MODEL_EVALS.md` y
+  `OPENAI_COST_BUDGETS.md`.
+
+## D-068 - P06 decision-lineage completa la evidencia real vigente
+
+- **Precondición:** el entrypoint real comprobó antes de approval, clave y
+  transporte que la recuperación P04→P05 estaba consumida como PASS y que la
+  frontera P05 1.1.5 seguía presente e idéntica en la evidencia vigente.
+- **Resultado:** P06 1.1.2 terminó PASS `READY`; schema del proveedor,
+  Pydantic, contexto, outcome y todos los controles de decision lineage
+  pasaron. Consumió exactamente 1/1 Responses, 8,270 ms, USD 0.00148525 real,
+  USD 0.01992085 de charge y USD 0.023361 de ceiling bajo cap USD 0.03, con
+  retries/P10/P11/Sol/fallback cero.
+- **Evidencia:** prompt/input quedaron ligados a `sha256:3fcde330…` y
+  `sha256:3cabdfaa…`; el output content-free a `sha256:876c6be5…`; el reporte
+  tiene SHA-256
+  `5daf7774e0ffee1bbc6b9b834b09f2022a496cdf14daabed303467cd7087c5b3`.
+  El gate queda permanentemente consumido.
+- **Alcance:** `CURRENT_REAL_EVIDENCE` alcanza 18/18 sobre las fronteras
+  actuales. Esto habilita el checkpoint de build/deploy, pero no sustituye la
+  verificación Cloud Build/digest/Terraform ni el E2E fresco de producto.
+- **Relación:** D-065, D-066, D-067, ADR-005/ADR-030/ADR-034,
+  `OPENAI_REAL_MODEL_VALIDATION.md`, `REAL_MODEL_EVALS.md` y
+  `OPENAI_COST_BUDGETS.md`.
+
+## D-069 - El candidato remediado queda fijado por build, digest y plan sellado
+
+- **Fuente:** se construyó exactamente el SHA
+  `88416b522414f316613bea96ad08687e8a335a38` mediante el único Cloud Build
+  `441be72d-04ae-46e9-b150-6eec1032c8d6`, con cuenta dedicada, retries cero y
+  resultado `SUCCESS/VERIFIED`.
+- **Identidad de imagen:** Cloud Build y Artifact Registry coincidieron en
+  `sha256:d31899535c76b08ee79163479530b044783b73956c6fe228a01a3e603008893d`.
+  Artifact Analysis expone procedencia SLSA 3 firmada, Statement/predicate v1,
+  invocation ligada al build y subject ligado al digest.
+- **Mutación sellada:** el plan guardado de SHA-256
+  `64b200559044ecb2e0a44ea68a63f7c174088c12da1209f6624b77f388c1670e`
+  contenía sólo dos updates in-place de imagen para web y worker, 0 create, 0
+  delete/replace y 0 cambios adicionales. Su único apply terminó 0/2/0; dos
+  planes vivos posteriores terminaron exit 0 y `No changes`.
+- **Separación efectiva:** web quedó Ready en mock y sin clave; worker Ready en
+  real con secreto v2, USD 0.55, P10 false, 1/1 y `maxRetries=0`. Sólo la cuenta
+  worker tiene `secretAccessor`; Service y Job usan el mismo digest.
+- **No consumo implícito:** health/readiness y el 401 privado pasaron sin crear
+  jobs, E2E o Responses. El deploy no sustituye el E2E fresco sintético con
+  edición P05 durable y submission requerido para
+  `OPENAI_REAL_MANUAL_EVAL_READY`.
+- **Relación:** D-060, D-061, D-062, D-068, ADR-033/ADR-034,
+  `IMPLEMENTATION_STATUS.md`, `TEST_RESULTS.md`, `OPENAI_PROVIDER_SETUP.md` y
+  `OPENAI_REAL_MODEL_VALIDATION.md`.
+
+## D-070 - P04 separa construcción terminada de aprobación humana posterior
+
+- **Fuente:** el E2E fresco `act_a2d0acdf5d948c365ca8` produjo en P04 un
+  catálogo utilizable, válido y ligado a seis decisiones, pero devolvió
+  `NEEDS_REVIEW` sólo porque `approved_by/approved_at` seguían null. P05 y la
+  aprobación humana ocurren después, por lo que esa condición creó un bucle
+  imposible de resolver mediante resume.
+- **Decisión normativa:** P04 1.1.8 interpreta `status` como finalización de la
+  construcción. Un catálogo completo usa `READY` aunque tenga INFO/WARNING o
+  aprobación posterior pendiente. `NEEDS_REVIEW/BLOCKED` requiere una decisión
+  académica concreta que impida un catálogo utilizable y al menos un diagnóstico
+  ERROR/CRITICAL. `HUMAN_REVIEW_PENDING` no se usa sólo para el gate posterior.
+- **Cierre determinista:** el gateway añade
+  `P04_NONREADY_WITHOUT_BLOCKING_DIAGNOSTIC`; una salida como la observada falla
+  cerrada y no puede reutilizarse como stage run válido.
+- **Evidencia y gate:** el cambio invalidó P04 y el P05 derivado, dejando 16/18
+  fronteras durante la remediación. La recanary P04 1.1.8→P05 1.1.5 reproduce
+  seis decisiones/outcomes vacíos/niveles ausentes y terminó PASS/PASS `READY`:
+  2/2 Responses, USD 0.01433335 real, charge USD 0.04082695 y ceiling USD
+  0.05127050 bajo cap USD 0.06, sin rutas laterales ni retries. El reporte
+  content-free queda ligado a
+  `173169216efb15a0ed797d7297d553c38196219bde60f689dd0ba2a694de8ada`; el gate
+  está consumido y la evidencia vigente vuelve a 18/18.
+- **Relación:** D-068, D-069, ADR-030/ADR-034, `REAL_MODEL_EVALS.md`,
+  `OPENAI_REAL_MODEL_VALIDATION.md` y `OPENAI_COST_BUDGETS.md`.
+
+## D-071 - El smoke del parser usa el mismo deadline acotado que producción
+
+- **Fuente:** el único build del SHA `523b2100c4190a8d7db0a7034e85cbd0b86eec81`,
+  `9e74ef7a-072b-4094-8dec-3368c0d6afa9`, pasó cuatro pasos completos y falló
+  en el smoke final porque el parser aislado agotó 5 s durante el arranque frío
+  del intérprete/libmagic.
+- **Decisión:** el smoke conserva `require_isolation=True`, libmagic, imagen
+  read-only, capabilities retiradas y `no-new-privileges`, pero usa 30 s: el
+  mismo default productivo validado por `Settings`, aún bajo el máximo de 120 s
+  y el límite CPU interno de 20 s. El deadline de 5 s no representaba runtime y
+  convertía contención del builder en falso negativo.
+- **Regresión:** la prueba de artefactos exige literalmente
+  `timeout_seconds=30` y rechaza `timeout_seconds=5`; YAML, Terraform y las 11
+  pruebas de deploy pasan localmente.
+- **Consumo fail-closed:** el build fallido no se reintenta ni publica. No hubo
+  tag/digest, plan, apply, job, E2E o Responses; Cloud Run conserva el digest
+  anterior y el plan vivo terminó `No changes`. Cualquier build posterior debe
+  pertenecer a un SHA nuevo después de CI verde.
+- **Relación:** D-059, D-060, D-069, ADR-033/ADR-034, `deploy/cloudbuild.yaml`,
+  `IMPLEMENTATION_STATUS.md` y `TEST_RESULTS.md`.
+
+## D-072 - Los IDs diagnósticos conservan su tipo y una salida insegura no se normaliza
+
+- **Observación:** el E2E del SHA `fefea94d25a974ddf05e71f7212616e625ee5303`
+  pasó P01-P03 y persistió seis decisiones. P04 1.1.8 cumplió el schema del
+  proveedor, pero colocó un ID de otra clase en
+  `diagnostics[].evidence_ids`. El gateway lo rechazó con
+  `CONTEXT_FAILURE_OUTPUT_EVIDENCE_ID_NOT_ALLOWLISTED`; job y execution
+  terminaron `FAILED/SECURITY`, sin retry ni P05.
+- **Decisión normativa:** P04 1.1.9 exige que `evidence_ids` contenga sólo IDs
+  exactos ya presentes en `ActivitySpec`/`RubricSpec`, y que `source_ids`
+  contenga sólo fuentes exactas autorizadas. IDs de statement, criterion,
+  decision, issue u option nunca cambian de tipo para llenar esos campos; si
+  no existe una referencia autorizada, la lista correcta es vacía.
+- **Fallo cerrado:** el adaptador no elimina, reemplaza ni corrige referencias
+  inválidas. La validación contextual sigue siendo una frontera de seguridad y
+  conserva la razón content-free exacta en el ledger.
+- **Gate:** el cambio invalida P04 y el P05 derivado, por lo que
+  `CURRENT_REAL_EVIDENCE` baja deliberadamente a 16/18. La recanary acoplada
+  reproduce la forma productiva, pasa dry-run con 2 fake Responses y ceiling
+  USD 0.05046625/cap USD 0.06, y sólo una observación real nueva puede volver a
+  promover ambas fronteras.
+- **Relación:** D-065, D-068, D-070, ADR-005/ADR-030/ADR-034,
+  `REAL_MODEL_EVALS.md`, `OPENAI_REAL_MODEL_VALIDATION.md` y
+  `OPENAI_COST_BUDGETS.md`.
+
+## D-073 - El proveedor eval-only exige Job/SA separados y autorización exacta post-claim
+
+- **Autoridad única:** el Service web y el worker ordinario permanecen mock,
+  sin clave y con P10 deshabilitado. Terraform puede aprovisionar un Cloud Run
+  Job y una service account eval-only separados, pero no concede a la web
+  permiso para invocarlo ni a la cuenta ordinaria permiso para leer OpenAI.
+- **Orden de capacidades:** el worker eval-only crea primero sólo repositorio y
+  object store, reclama el `job_id` exacto y consume en PostgreSQL una
+  autorización append-only única. Esa autorización liga tenant, kind,
+  aggregate, attempt, conjunto exacto de hashes sellados, SHA candidato,
+  boundary ejecutable, Luna/ruta, versión numérica del secreto, expiración y
+  caps. Sólo después puede resolver Secret Manager y construir el adapter
+  request-capped. Cualquier ausencia, reuso o divergencia produce `SECURITY`
+  con cero resolver, cero transporte y cero request.
+- **Fixture P05:** el positivo deja de proceder del mock genérico. El golden
+  versionado verifica un constructo causal concreto de invalidación de caché y
+  documenta alineación y cinco razones semánticas inspeccionables. Un negativo
+  separado cambia el catálogo a `CHOICE` contra una política `OPEN_SHORT` y
+  debe resultar `REJECT/PLAN_FEASIBILITY` offline, sin request real.
+- **Observabilidad:** P06 2.3.0 conserva subcódigos estables por cada relación
+  fallida. P08 registra ACCEPT/REJECT/ESCALATE, criticality, categorías,
+  hashes de códigos críticos y cada relación score/threshold; el runtime
+  persiste sólo esa proyección content-free, no prompts ni outputs.
+- **Gate experimental:** el harness final consume una autorización durable
+  antes de resolver una versión numérica de Secret Manager, fija exactamente
+  24 requests y conserva cero P10/P11/fallback/retries/tools/store. Esta
+  decisión prepara una única matriz congelada; no autoriza una segunda matriz
+  ni una mutación de prompts/validators ante fallo.
+- **Relación:** ADR-035/ADR-036, `AGENTS.md`,
+  `OPENAI_PROVIDER_SETUP.md`, `STAGE2_CONVERGENCE_HANDOFF.md` y migración
+  `202608120005_stage2_synthetic_provider_gate.sql`.
+
+## D-074 - La simplificación separa autoridad antes del cutover operativo
+
+- **Objetivo:** actividad
+  P01→P02→P03→P04→preflight determinista→aprobación docente; submission
+  P06→planner→P07→validaciones deterministas→revisión/aprobación docente→P09.
+  P05/P08 quedan inactivos en el objetivo y P10 continúa deshabilitado.
+- **Autoridad:** backend decide identidad, versions/hashes, estado, lineage,
+  pertenencia, allowlists, formatos, conteo, tiempo, restricciones,
+  factibilidad, almacenamiento, transiciones y validación determinista. El
+  modelo propone semántica, estructura pedagógica, relación evidencia/
+  constructo, redacción, observables y alternativas. El docente resuelve
+  ambigüedad y tiene autoridad académica final sobre blueprint y preguntas.
+- **Causalidad:** los únicos estados de oracle nuevos son `VALID`,
+  `ORACLE_SUSPECT`, `INVALID` y `NOT_APPLICABLE`. Un oracle sospechoso vuelve
+  la evidencia inconclusa y prevalece sobre `MODEL_OWNED_*`; receipts con
+  `UNESTABLISHED` sólo se leen por compatibilidad.
+- **Historia/reporting:** el harness y las qualifications existentes no son un
+  gate canónico de selección de modelo y se preservan. Sólo un reporte
+  `SYNTHETIC_ONLY_NO_STUDENT_DATA` enumera códigos diagnósticos estructurados y
+  su hash; no se extrae texto libre ni cambia la política de datos reales.
+- **Frontera:** no se cambian routing, prompts ejecutables, workflows, jobs,
+  persistencia, P04/P06/P07/P09 ni infraestructura. Retirar invocaciones y
+  estados P05/P08, y mover P09 detrás de aprobación docente, requiere una fase
+  posterior compatible.
+- **Relación:** ADR-037, `PIPELINE_AUTHORITY.md`, `pipeline_authority.py` y
+  `qualification_semantics.py`.
+
+## D-075 - P04 propone semántica y el servidor compila el blueprint canónico
+
+- **Frontera:** `P04_BLUEPRINT_BUILD_V1` conserva
+  `AssessmentBlueprint` como output de etapa, pero el proveedor devuelve sólo
+  `BlueprintModelDraft`. Sus aliases `D*`, `V*` y `T*` son locales a una
+  inferencia y no pueden transportar IDs canónicos.
+- **Autoridad del modelo:** dimensiones, relación con criterios/outcomes,
+  variantes y requisitos de evidencia, operaciones soportadas, oportunidades,
+  foco, observable, dificultad, tiempo, anchors, formatos, justificación,
+  diversidad, comparabilidad y accesibilidad.
+- **Autoridad del servidor:** un compilador determinista valida el grafo y las
+  allowlists, rechaza duplicados evidentes/operaciones/formatos/límites
+  inválidos, crea todos los IDs y copia identidad, policy, decisiones,
+  aprobación y estado. `AssessmentBlueprint` no se reemplaza.
+- **Factibilidad:** P04 ya no declara ni demuestra un plan exacto de \(N\).
+  Después de compilar, el preflight/planner existente produce `READY` o un
+  diagnóstico determinista con `correction_scope=P04_BLUEPRINT_BUILD` que
+  permite una futura corrección localizada.
+- **Catálogo y compatibilidad:** `BlueprintPolicy` añade defaults compatibles
+  para `max_variants_per_dimension=6` y
+  `max_templates_per_variant=12`. Son guardrails operacionales provisionales,
+  configurables y server-owned; no límites pedagógicos universales.
+- **Cache:** el draft provider sólo vive dentro de la llamada. El cache de
+  etapa conserva exclusivamente `AssessmentBlueprint`, ligado a request,
+  policy hash, provider-schema boundary y compiler boundary. En replay se
+  recompila su proyección semántica y se exige igualdad canónica exacta. Los
+  snapshots históricos siguen siendo legibles como `AssessmentBlueprint`,
+  pero una frontera anterior no se reinterpreta ni comparte component key.
+- **Evaluación:** no se llamó a ningún proveedor. La frontera hash-bound liga
+  `provider-output-schema-boundary/1.0.0` y
+  `blueprint-compiler-boundary/1.0.0`; los receipts históricos no se
+  reescriben y siguen siendo evidencia no canónica conforme ADR-037.
+- **Relación:** D-074, ADR-037 y `pipeline-authority/1.0.0`.
+
+## D-076 - P05 queda retirado del runtime activo con recovery determinista
+
+- **Flujo activo:** actividad ejecuta P01/P02 opcional/P03/P04, persiste un
+  `BLUEPRINT_PREFLIGHT` determinista y entrega el `AssessmentBlueprint` a la
+  decisión docente. No construye `BlueprintReviewRequest`, no invoca P05 y no
+  consulta recommendation/checks/status P05.
+- **Persistencia:** `blueprints.preflight` conserva el snapshot mecánico; la
+  columna nullable `review` sigue legible como historia. Nuevas versiones
+  activas escriben `review=NULL`. La migración 006 es aditiva y no borra
+  contratos, prompts, routes, fixtures, reports ni receipts.
+- **Edición/aprobación:** editar crea un job durable
+  `BLUEPRINT_PREFLIGHT`, vuelve a ligar spec/rubric/policy/decisiones y publica
+  PASS o FAIL. Aprobar recomputa el preflight, verifica snapshot cuando existe,
+  ETag, versión, ownership y permiso docente; una review P05 histórica no es
+  autoridad.
+- **Recovery:** un job legacy `BLUEPRINT_REVIEW` queued/running/retry/resume
+  conserva su descriptor, pero el worker lo reconcilia por preflight sin
+  gateway. StageRun reuse, lease recovery, cancellation y transición final son
+  tenant-scoped, hash-bound y fail-closed ante lineage o fuente divergente. Aun
+  si el worker eval-only parte configurado como real, estos jobs usan un
+  runtime provider-free: no consumen autorización, no resuelven clave y no
+  construyen transporte; tampoco admiten una autorización real nueva.
+- **Costo/observabilidad:** el presupuesto activo baja de 4/5 a 3/4 llamadas
+  según exista rúbrica; P05 futuro es cero. StageRuns y auditoría exponen
+  outcome PASS/FAIL, códigos deterministas y aprobación docente sin scores
+  semánticos nuevos.
+- **Historia:** el harness congelado conserva el hash archivado del runtime de
+  su baseline y se declara no canónico; el workflow activo puede divergir por
+  este cutover sin reescribir evidencia histórica. El runner sintético de
+  Etapa 0, rehearsal, harness, mocks y tests directos que materializan P05 son
+  `TEST_ONLY`/`HISTORICAL_COMPATIBILITY`, no runtime productivo.
+- **Fuera de alcance:** P06/P07/P08/P09, routing histórico e infraestructura no
+  cambian; P08 y el movimiento de P09 siguen pendientes. P10 permanece
+  deshabilitado y no hubo autorización ni transporte billable.
+- **Relación:** D-074, D-075, ADR-037,
+  `pipeline-authority/1.0.0` y migración
+  `202608150006_phase3_p05_runtime_cutover.sql`.
+
+## D-077 - P06 mapea soporte local y el planner decide la suficiencia global
+
+- **Frontera:** `P06_EVIDENCE_MAP_V1` conserva `EvidenceMapPatch` como output
+  canónico de etapa. El proveedor recibe `EvidenceMappingAliasEnvelope` y
+  devuelve `EvidenceMappingModelDraft`; los aliases de scope, evidencia,
+  dimensión, variante, template y artefacto sólo existen dentro de una llamada.
+- **Autoridad del modelo:** escoger relaciones materiales entre rutas del
+  blueprint y evidence units autorizadas; declarar `SUFFICIENT`, `PARTIAL`,
+  `INSUFFICIENT` o `UNCERTAIN`, tipo/descripción de soporte, incertidumbre y
+  abstención local. No copia IDs, policy, operación, foco, observable,
+  dificultad, tiempo, formatos, anchors, justificación o prioridad.
+- **Autoridad del servidor:** `p06-evidence-materializer/1.0.0` valida scope,
+  membership, template/variant/operation y evidence subset; crea IDs y copia el
+  catálogo aprobado. No inventa relaciones ni eleva categorías. Para
+  `SUFFICIENT` verifica unidades distintas, modalidad, extracción y requisito
+  cross-artifact. El resumen categórico se persiste aunque el Assessment no sea
+  factible.
+- **Planner:** `stage2-planner/3.0.0` es la única autoridad sobre elegibilidad
+  global, cobertura, tiempo, diversidad, N, primarias/reservas y prueba exacta
+  de factibilidad. Sólo `SUFFICIENT` es elegible. P06 puede terminar con cero o
+  menos de N suficientes; el fallo global pertenece al planner.
+- **Scores:** `evidence_fit`, `mapping_confidence` y `opportunity_quality` se
+  retienen en el IR histórico, derivados desde categoría/template únicamente
+  para compatibilidad. No son input del proveedor ni hard gates/ranking activo;
+  no se introdujo un float equivalente.
+- **Claims:** el provider nuevo no crea claim IDs, relationship IDs ni metadata
+  duplicada. El materializador actual escribe `claims=[]` y conserva el valor
+  semántico local en `support_description`/tipo/incertidumbre de cada relación.
+  Claims de patches históricos siguen siendo legibles y no se reescriben.
+- **Cache/recovery:** prompt/schema wire, alias envelope, materializador,
+  blueprint, policy, bundle y submission scope participan en la frontera. El
+  draft provider y el patch canónico no son intercambiables. Replay exige
+  recompilación idéntica; StageRun reuse, retry y resume conservan exactly-once
+  sin duplicar llamada, ledger, stage u oportunidad.
+- **Costo y seguridad:** schema provider 7.789→1.862 bytes, payload mock
+  3.413→1.325 bytes y tokens mock 853/392→520/89; llamadas P06 permanecen 1.
+  No cambian route/modelo/reasoning, no se añadió transporte y hubo cero calls
+  reales/billables.
+- **Fuera de alcance:** P07 conserva semántica/contrato canónico, P08 sigue
+  activo, P09 no se mueve y P10 sigue disabled. La siguiente fase funcional
+  será exclusivamente P07 support evidence/visible anchor + provider DTO.
+- **Relación:** ADR-037, D-074/D-075/D-076,
+  `pipeline-authority/1.0.0`, `PIPELINE_AUTHORITY.md`.
+
+## D-078 - P07 redacta la pregunta y el servidor materializa soporte, identidad y anchor
+
+- **Frontera:** `P07_QUESTION_BUILD_V1` sigue activo. La request canónica es
+  `QuestionBuildRequest`, el payload wire es `QuestionAliasEnvelope`, el output
+  provider es `QuestionModelDraft` y el output de etapa permanece
+  `QuestionGenerationResult`/`QuestionCandidate`.
+- **Dos evidencias:** support evidence es server-owned y coincide exactamente
+  con `QuestionOpportunity.evidence_ids`; sustenta operación, foco, observable,
+  answerability y observables esperados. El visible anchor es el subconjunto
+  `E*` elegido para orientar al estudiante. No se exige que toda support
+  evidence sea visible.
+- **Autoridad del modelo:** texto de pregunta, aliases visibles, observables y
+  sus support aliases, alternativas, misconceptions, choices/rationales,
+  incertidumbre semántica o razón de reemplazo. No produce scores 0–1 ni copia
+  identidad, metadata, policy, operation, format, difficulty, time o lineage.
+- **Autoridad del servidor:** `p07-question-materializer/1.0.0` resuelve aliases,
+  crea IDs de candidate/anchor/option/observable, copia el path y constraints de
+  la oportunidad y reconstruye `display_text`, `transformation` y `locator`
+  desde el `EvidenceUnit`. El modelo no puede escribir un anchor canónico,
+  inventar evidence IDs/locators ni ampliar support.
+- **Validación:** scope y ownership de submission, support exacta, subset
+  visible, aliases, campos inmutables, reconstrucción exacta, choices,
+  PII/secrets y leakage literal/near-literal se prueban determinísticamente. La
+  heurística versionada sólo bloquea evidencia objetiva; la equivalencia
+  semántica, calidad pedagógica y conocimiento externo no se convierten en
+  regex ni en un P08 oculto.
+- **Cache/recovery:** provider draft y stage output no son intercambiables. El
+  fingerprint liga prompt/root/schema, envelope, oportunidad, support/bundle,
+  generation policy, scope, validators y materializador. Replay recompila y
+  exige igualdad exacta; retry/resume, reservas, regeneración y teacher edit
+  conservan exactly-once, lineage y evidence allowlists.
+- **Compatibilidad temporal de Fase 5:** P08 seguía activo sin cambiar scores, decisión,
+  route o rol; revisa answerability contra support completa y anchor visible
+  por separado. P09 no se mueve ni se rediseña. P10 sigue disabled. El harness
+  proyecta goldens históricos sin volverlos autoridad ni cambiar veredictos.
+- **Costo/seguridad:** no cambian modelo, route, reasoning ni número gobernado
+  de llamadas. La superficie provider se reduce y toda validación fue
+  offline/mock, sin secretos resueltos ni requests billables.
+- **Siguiente cambio funcional:** retirar P08 del runtime activo. No mover P09
+  ni iniciar Fase 6 dentro de esta decisión.
+- **Relación:** ADR-037, D-074/D-075/D-076/D-077,
+  `pipeline-authority/1.0.0`, `PIPELINE_AUTHORITY.md`.
+
+## D-079 - P08 queda histórico y la aceptación vuelve a backend más docente
+
+- **Cutover:** el runtime nuevo pasa de P07 materializado a
+  `validate_generation_result`, validaciones objetivas, selección determinista,
+  exactamente N, ASSEMBLE y P09. No construye `QuestionReviewRequest`, no llama
+  P08, no espera `ReviewDecision`, no usa scores/thresholds y no crea
+  `QuestionReviewRow`.
+- **Guard:** `_gateway_stage` rechaza P08 con
+  `P08_ACTIVE_RUNTIME_RETIRED` antes de gateway, trusted context, adapter,
+  secreto o transporte. La policy de autorización separa etapas activas de
+  P05/P08 históricas no callables; P10 continúa disabled.
+- **Autoridad:** P07 propone semántica; el backend decide identidad, scope,
+  membership, support/anchor/locator, path, formato, dificultad, tiempo,
+  justificación, seguridad, choices, leakage, replay y exact-N. El docente
+  conserva claridad/calidad/pertinencia y aceptar, editar, regenerar o rechazar.
+  No se introdujo reviewer, judge, critic ni score sustituto.
+- **Reservas:** sólo `REPLACEMENT_REQUIRED` y defectos question-local objetivos
+  consumen la reserva compatible y finita. Fallos de scope/security no se
+  degradan a reserva. Agotar P07+reservas termina sin Assessment parcial.
+- **Persistencia e historia:** `save_generated_question` permite guardar el
+  resultado vigente sin review. La operación histórica atómica, rows,
+  contratos, prompt, routes, mocks, harness, fixtures, reports y receipts P08
+  permanecen legibles y tenant-scoped. ACCEPT/REJECT/ESCALATE históricos no
+  autorizan ni vetan una pregunta actual.
+- **Recovery:** `QUESTION_REVIEW` permanece únicamente como floor legado. Un
+  retry recompila/revalida el P07 vigente, reutiliza StageRuns compatibles y no
+  llama P08; una salida vieja que no pasa replay no puede ser blanqueada por un
+  ACCEPT histórico. Retry de acción docente liga P09 al logical action para no
+  duplicar la llamada tras rollback terminal.
+- **Costo/observabilidad:** por N sin reservas el total pasa de `2N+2` a `N+2`:
+  P06=1, P07=N, P08=0, P09=1. Runtime nuevo registra READY/replacement,
+  validación determinista y reserva consumida, no decisión/scores P08 activos.
+- **Compatibilidad menor:** visible anchor es un subconjunto, no necesariamente
+  propio, de support evidence. `Anchor.self_containment_score` queda
+  `DERIVED_COMPATIBILITY / LEGACY_NO_ACTIVE_AUTHORITY` y no participa en gates,
+  answerability, aceptación ni aprobación.
+- **Fuera de alcance:** P09 conserva el orden interino posterior a ASSEMBLE y
+  anterior a revisión docente. Su relocación posterior a aprobación pertenece
+  exclusivamente a Fase 7. No cambian DTO, prompt, route, modelo ni reasoning
+  de P09; P10 y datos reales permanecen bloqueados.
+- **Relación:** ADR-037, D-074 a D-078,
+  `pipeline-authority/1.0.0`, `PHASE6_P08_RUNTIME_CUTOVER.md`.
+
+## D-080 - P09 enriquece únicamente una versión ya aprobada
+
+- **Happens-before:** ASSEMBLE persiste primero un `Assessment.NEEDS_REVIEW` y
+  termina sin P09. Editar, regenerar o rechazar preguntas antes de aprobación
+  tampoco llama al modelo. La aprobación docente exacta y su audit event se
+  confirman antes de crear el job durable `GUIDE_BUILD`; el endpoint no espera
+  a P09 y una falla de guía nunca revoca la aprobación.
+- **Identidad e idempotencia:** el servidor deriva binding, `guide_id`, logical
+  job ID y stage key desde tenant/submission, assessment ID, versión, ETag,
+  snapshot, question-set hash, evento/snapshot de aprobación, policy y
+  materializer boundary. Repetir aprobación o reconciliar un crash crea como
+  máximo un trabajo lógico y reutiliza el StageRun compatible.
+- **Frontera provider:** P09 recibe `GuideAliasEnvelope` con preguntas aprobadas
+  y namespaces `Q*`, `E*`, `O*`; devuelve `GuideModelDraft` con enriquecimiento
+  question-local. No puede transportar IDs canónicos, locators, texto/anchor de
+  salida, workflow o approval bookkeeping. No cambia modelo, route ni
+  `reasoning_effort`.
+- **Autoridad:** P07 conserva purpose, observables core, alternativas y
+  misconceptions base. P09 sólo añade condiciones de aceptación, como máximo
+  observables `N*` hasta un total 2–5, alternativas/misconceptions adicionales,
+  niveles exactos 0/1/2/3, `cannot_infer` e incertidumbres. No revisa,
+  acepta, rechaza ni modifica la pregunta o su support evidence.
+- **Materialización y fallo:** `p09-guide-materializer/1.0.0` resuelve aliases,
+  crea IDs y referencias canónicas y exige cobertura completa, evidencia local,
+  core intacto, nivel 2 con todos los observables requeridos y contexto CLOSED.
+  Abstención o defecto deja la guía no lista; nunca persiste un `READY` parcial.
+- **Versiones e historia:** la migración 007 añade columnas nullable y un índice
+  único parcial por tenant/assessment/version. Guías anteriores se preservan
+  como `HISTORICAL_PREAPPROVAL`, visibles en history pero nunca current ni
+  exportables para una versión aprobada actual sin binding exacto.
+- **Costo/seguridad:** el nominal permanece `P06 1 + P07 N + P09 1 = N+2`;
+  el beneficio es evitar P09 sobre versiones editadas o descartadas, sin
+  inventar un ahorro medio. P05/P08 siguen históricos, P10 disabled y toda la
+  implementación/validación de esta decisión es offline/mock.
+- **Relación:** ADR-037, D-074 a D-079,
+  `pipeline-authority/1.1.0`, `PHASE7_POST_APPROVAL_P09.md` y migración
+  `202608160007_phase7_post_approval_p09.sql`.
+
+## D-081 - El corpus Phase 8 se integra como snapshot inmutable de evaluación
+
+- **Decisión:** vendorizar byte a byte
+  `pruebas-personalizadas-corpus/1.0.0` bajo `evaluation/corpora`, fuera de
+  runtime/tenant data, y exigir su validador más package hash exacto
+  `21c21f3…048a1` antes de construir cases.
+- **Razón:** una referencia externa no basta para reproducibilidad CI, pero
+  copiar no concede autoridad para editar, reformatear o volver a ratificar.
+- **Límite:** los 218 archivos/8.384.772 bytes conservan inventario, hashes y
+  audit history. No hay API, UI, tabla, migration ni Git LFS innecesario.
+- **Relación:** ADR-037 y `SEMANTIC_BENCHMARK.md`.
+
+## D-082 - ModelVisibleProjection aplica anti-oracle leakage antes del gateway
+
+- **Decisión:** sólo `SOURCE_INPUT/model_visible=true` admite proyección de
+  archivo completo. `BENCHMARK_AUTHORITY`, `P09_STAGE_FIXTURE` completo y
+  `AUDIT_HISTORY` fallan con `BENCHMARK_ORACLE_LEAKAGE_BLOCKED`.
+- **P09:** una proyección tipada extrae únicamente `questions`; las properties
+  quedan en la referencia disjunta `#p09_properties`. Ningún builder importa
+  gateway/adapter/provider authorization.
+- **Razón:** separar prompts de evaluación y oracle por convención documental
+  no impide contaminación accidental; la allowlist del manifest sí.
+- **Relación:** D-078/D-080, ADR-035/036/037.
+
+## D-083 - Historial: el benchmark v1.0 separó invariantes, semántica y held-out
+
+- **Decisión:** `semantic-benchmark/1.0.0` cataloga P04/P06/P07/P09 y planner,
+  con result states explícitos y evaluator modes determinista, rule-based o
+  adjudicación externa. El dry-run nunca convierte ausencia de output en PASS.
+- **Cases:** 178 totales: 12/69/21/72/4. Cada property queda case-bound o
+  explícitamente excluida; sólo 14 P09 sin fixture congelado tienen esa razón.
+- **Splits:** SMOKE 13, CORE 95 y HELD_OUT 70. El held-out normal reserva
+  actividades 03/08/09/10/12; P09 documenta una excepción por sus cuatro
+  fixtures y reserva actividad 12 para confirmación.
+- **Autoridad:** un input stage-local no es golden del stage anterior. P05/P08
+  permanecen históricos y P10 disabled.
+- **Relación:** pipeline authority 1.1.0 y `SEMANTIC_BENCHMARK.md`.
+- **Estado posterior:** `SUPERSEDED_PRE_QUALIFICATION`; los reports v1 se
+  conservan, pero su alineación fixture/property/tag no es válida para elegir
+  modelos.
+
+## D-084 - Historial: Phase 8 preparó costos sin seleccionar candidatos
+
+- **Decisión:** la plantilla conserva candidates, modelos, snapshots,
+  reasoning, caps, orden y thresholds `UNSET`, con authorization `NONE`.
+- **Calls:** para un candidato hipotético full-corpus, 157 con k=1 y 471 con
+  k=3; planner suma cero. No se consulta ni congela precio en Phase 8.
+- **Promoción:** la infraestructura admite SMOKE→CORE→HELD_OUT; una vez abierta
+  Phase 9, held-out sólo confirma o rechaza y nunca tunea.
+- **Seguridad:** el target offline remueve keys, fuerza mock/P10 false y
+  registra provider calls/transport/billable authorization en 0/false/0.
+- **Relación:** ADR-035/036/037, `OPENAI_COST_BUDGETS.md` y
+  `SEMANTIC_BENCHMARK.md`.
+- **Estado posterior:** la granularidad corregida por D-085/D-086 reemplaza los
+  conteos 157/471 por 251/753; nunca hubo autorización ni ejecución real bajo
+  esos números históricos.
+
+## D-085 - Phase 8.1 fija autoridad explícita de fixture, binding y tag
+
+- **Decisión:** elevar a `semantic-benchmark/1.1.0` sin mutar v1.0 ni el corpus.
+  P04 proyecta todas las unidades source-derived; P06 consume routes explícitas;
+  P07 consume opportunities con support exacto; P09 resuelve EvidenceUnit ID,
+  hash y locator sin fallback.
+- **Bindings:** las 395 properties declaran scope, case primario, cases
+  adicionales, fixture, provenance y estado. El resultado es 354 alineadas, 33
+  excluidas con razón, 8 N/A y cero asignadas arbitrariamente.
+- **Tags:** los agregados de actividad son sólo índice de cobertura. Todo tag de
+  case tiene scope/provenance y los estructurales se derivan del request real.
+- **Métrica:** cases y runs son observaciones. El denominator final es property
+  por candidate/reasoning después de reducir property/run; una property con
+  múltiples bindings no se duplica.
+- **Límite:** benchmark only. Runtime, contracts, prompts, routing, planner,
+  validators, DB, frontend y OpenAPI no cambian.
+
+## D-086 - Phase 8.1 congela splits y budget corregidos sin abrir Phase 9
+
+- **Splits:** 12 SMOKE, 139 CORE y 121 HELD_OUT. Fuera de la excepción P09,
+  held-out reserva actividades 03/07/09/10/12 y queda disjunto de qualification.
+  PII y P06 uncertainty tienen cobertura antes y durante confirmation.
+- **Singletons:** el adversarial autorizado único permanece en CORE por safety;
+  el silent conceptual gap único se reserva como confirmatorio. No se reclama
+  cobertura independiente inexistente.
+- **Calls:** un candidato full-corpus requiere 251 calls con k=1 o 753 con k=3;
+  planner sigue en cero y P09 en cuatro por k=1.
+- **Gate:** 17/17 invariantes evidence-backed, provider calls 0, candidate matrix
+  `UNSET`, authorization `NONE`, qualification `NOT_YET_RUN`.
+- **Stop:** no seleccionar modelos, consultar pricing, fijar thresholds ni
+  ejecutar qualification hasta un freeze Phase 9 separado.
+
+## D-087 - Phase 9A.1 restringe cada lado del pipeline a una familia de modelo
+
+- **Decisión de usuario:** activity side (P01-P04) usa `gpt-5.6-terra` y
+  submission side (P06/P07/P09) usa `gpt-5.6-luna`. La escalación sólo sube
+  reasoning dentro de la familia que ya posee el stage.
+- **Motivo:** P01-P04 corren una vez por actividad y su coste se amortiza entre
+  todos los entregables, así que la calidad se compra donde es barata. P06/P07/
+  P09 se multiplican por submission y P07 además por opportunity; subir
+  reasoning ahí sube output tokens pero preserva la clase económica del modelo,
+  que es justamente la propiedad protegida.
+- **Prohibición:** `cross_family_fallback` = `FORBIDDEN` en ambos lados y
+  `gpt-5.6-sol` deja de ser candidato. Agotar la escalera da
+  `NO_QUALIFYING_CONFIGURATION`; sustituir familia tras ver un resultado
+  convertiría una restricción congelada en una elección dirigida por datos.
+- **Matrix:** 11 candidatos. P04 terra HIGH→XHIGH; P06/P07/P09 luna
+  HIGH→XHIGH→MAX. Sin `LOW`, `MEDIUM` ni `NONE`. Caps productivos intactos;
+  truncar en un rung profundo es `TECHNICAL_FAILURE`, nunca `MODEL_FAILURE`.
+- **Selección:** `LOWEST_REASONING_CONFIGURATION_THAT_QUALIFIES`, con escalación
+  secuencial dirigida por fallo. El fallback de held-out pre-registrado se
+  conserva literal pero queda vacío bajo esa escalación, así que un fallo de
+  held-out termina en `HELD_OUT_CONFIRMATION_FAILED`, no en un candidato nuevo.
+- **P01-P03:** sólo policy intent. El benchmark no los califica; quedan en
+  `PHASE10_OPERATIONAL_VERIFICATION_REQUIRED` y no se fabricaron casos.
+- **Supersession:** `1.0.0` (`sha256:e4254b28...`) nunca ejecutó una llamada, y
+  se registra como `SUPERSEDED_PRE_EXECUTION_BY_ROUTING_POLICY_AMENDMENT` dentro
+  del nuevo boundary en vez de borrarse.
+- **Budget:** recalculado desde cero. Worst case $84.49, expected path $16.98,
+  reportados por separado; los $498.34 anteriores no se heredan.
+- **Límite:** sólo candidate/routing policy. Benchmark, corpus, splits,
+  thresholds, safety gate, adjudication y k quedan bit-idénticos, y el runtime
+  productivo no cambia: el routing final se fija tras Phase 9 y Phase 10.

@@ -1,0 +1,58 @@
+{
+  "benchmark_version": "semantic-benchmark/1.3.5",
+  "closed_blockers": [
+    "CURRENT_PRICING_BINDS_CACHE_WRITE_RATE",
+    "EXECUTOR_PRICES_CACHE_WRITE_PROVIDER_USAGE",
+    "PRIMARY_AND_TECHNICAL_RETRY_RESERVATIONS_SEPARATED",
+    "LONG_CONTEXT_FAILS_CLOSED_BEFORE_TRANSPORT"
+  ],
+  "cost_projection": {
+    "A_PRIMARY_30_CALL_RESERVATION_USD": 1.51876725,
+    "B_MAX_TECHNICAL_RETRY_INCREMENT_USD": 1.51876725,
+    "C_ABSOLUTE_RETRY_INCLUSIVE_RESERVATION_USD": 3.0375345,
+    "cost_projection_hash": "sha256:a27789f76a19dc4fe9f4d9d5124a774be69036f40babf18a0bd934487f605f9e",
+    "status": "PROPOSED_CAPS_NOT_AUTHORIZED"
+  },
+  "execution_boundary_hash": "sha256:41b7d13dbf07da8708f82b28daff7d74d5db73de18508f0a5c464fcc9eae512e",
+  "execution_counters": {
+    "adjudicator_calls": 0,
+    "billable_authorization": "NONE",
+    "credential_resolutions": 0,
+    "high_smoke": "NOT_EXECUTED",
+    "pricing_refresh": "VERIFIED_CURRENT_OFFICIAL_PRICING",
+    "provider_calls": 0,
+    "real_provider_transport": false,
+    "transport_factory_calls": 0
+  },
+  "execution_version": "phase9-execution/2.0.2",
+  "high_smoke_decomposition": {
+    "CONTRACTUAL_HARD_SAFETY/P06/N3_SAFETY_SMOKE/HIGH": 3,
+    "SEMANTIC/P04/SMOKE/HIGH": 3,
+    "SEMANTIC/P06/SMOKE/HIGH": 3,
+    "SEMANTIC/P07/SMOKE/HIGH": 18,
+    "SEMANTIC/P09/SMOKE/HIGH": 3
+  },
+  "high_smoke_plan_hash": "sha256:92f29cf2ac22071eed1c556d7f7dde735e302ccaa5d1b1de2645eee29cb4c869",
+  "ordered_logical_call_population_equal_to_v2_0_1": true,
+  "ordered_logical_call_population_hash": "sha256:fef890ffa1b12e8717edd7cb5e13f7cdbd78b1e3eb9284aea20a21b29f45553e",
+  "p11_provider_execution": "FORBIDDEN",
+  "pricing_snapshot": {
+    "pricing_snapshot_hash": "sha256:473857448d87f6507f3d626af5d8061c62d0830b949f6a489f6e1260feb82d55",
+    "processing_tier": "STANDARD",
+    "retrieved_at": "2026-08-21T18:18:15Z",
+    "status": "VERIFIED_CURRENT_OFFICIAL_PRICING"
+  },
+  "protocol_version": "phase9-qualification-protocol/1.3.5",
+  "published_execution_v2_0_0_or_v2_0_1_bytes_modified": false,
+  "qualification_schema_repair": "FORBIDDEN",
+  "readiness": "AWAITING_EXPLICIT_SPEND_AUTHORIZATION",
+  "report_hash": "sha256:58adacebe1a0b4731b10a52f4c6583a91218dc8d2d99023fcc1ebd0a2bcf1c84",
+  "required_complete_population": {
+    "logical_calls": 30,
+    "n3_packets": 3,
+    "p06_semantic_observations": 6,
+    "semantic_packets": 54
+  },
+  "schema_version": "phase9-execution-cutover-report/2.0.2",
+  "semantic_benchmark_v1_3_5_bytes_modified": false
+}

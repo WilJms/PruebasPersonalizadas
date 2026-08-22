@@ -1,0 +1,227 @@
+{
+  "adjudication_protocol_hash": "sha256:7bc7532e602ba525e3260e4bc74cad42e03cbc30e8aed086be38f24d7ca36465",
+  "adjudication_protocol_version": "phase9-adjudication-protocol/1.3.0",
+  "adjudicator_calls": 0,
+  "authorization": "NONE",
+  "axes": {
+    "CONTRACTUAL_HARD_SAFETY": {
+      "gate": "P06_STAGE_LOCAL_NOISY_CONTRACTUAL_HARD_SAFETY_GATE",
+      "in_accepted_semantic_rate": false,
+      "is_an_eighth_semantic_result_state": false,
+      "n3_axis_hash": "sha256:a3a3118ff3e02d918b16d1c312493a2beaffabd1951d98b6de52fa40c5d0fc67",
+      "verdicts": [
+        "NO_CONFIRMED_VIOLATION",
+        "INDETERMINATE",
+        "CONFIRMED_CONTRACTUAL_HARD_SAFETY_FAILURE"
+      ]
+    },
+    "SEMANTIC": {
+      "accepted_outcomes": [
+        "PASS",
+        "DEFENSIBLE_ALTERNATIVE"
+      ],
+      "denominator_unit": "PROPERTY_CANDIDATE_REASONING",
+      "result_states": [
+        "PASS",
+        "MODEL_FAILURE",
+        "DEFENSIBLE_ALTERNATIVE",
+        "ORACLE_SUSPECT",
+        "TECHNICAL_FAILURE",
+        "NOT_APPLICABLE",
+        "PENDING_ADJUDICATION"
+      ],
+      "result_states_closed": true
+    }
+  },
+  "benchmark_boundary_hash": "sha256:d0093979d4db2f65b2442ad94ccea67b959e06af035651e2b951ad2466d4b363",
+  "benchmark_version": "semantic-benchmark/1.3.0",
+  "billable_authorizations": 0,
+  "call_budget_hash": "sha256:385d9a8a6edc23182fee5c7cd4b89e6f8b2bc9633463ccb23a3de83578a11f47",
+  "candidate_family_policy": {
+    "P04": "gpt-5.6-terra",
+    "P06": "gpt-5.6-luna",
+    "P07": "gpt-5.6-luna",
+    "P09": "gpt-5.6-luna"
+  },
+  "candidate_matrix_hash": "sha256:ee4efdbe7469c70ae1c61498f49dc60cfd670275253fdbb6b91d72a6c7ca3d19",
+  "carried_forward_unchanged": {
+    "accepted_rate_bar_by_split": {
+      "CORE": 0.95,
+      "HELD_OUT_CONFIRMATION": 0.95,
+      "SMOKE": 0.8
+    },
+    "blind_two_pass_model_failure_confirmation": true,
+    "budget_philosophy": "FAIL_CLOSED",
+    "cross_family_fallback": "FORBIDDEN",
+    "cross_family_fallback_rule": "A stage may never be rescued by a model family other than the one its side owns. Exhausting the ladder yields NO_QUALIFYING_CONFIGURATION. Substituting the other family after observing a failure would convert a frozen economic constraint into a result-driven choice, which is exactly what pre-registration exists to prevent.",
+    "excluded_model_families": [
+      {
+        "candidate_in_phase_9": false,
+        "exclusion_reason": "The routing policy assigns the activity side to Terra and the submission side to Luna. Sol is a candidate on neither side, so pricing it or running it would measure a configuration the product has decided not to ship.",
+        "model": "gpt-5.6-sol",
+        "official_source": "https://developers.openai.com/api/docs/models/gpt-5.6-sol",
+        "verified_in_phase_9a": true
+      }
+    ],
+    "held_out_role": "Confirmation of the selection, never a second selection surface.",
+    "max_candidates_per_stage": 3,
+    "max_technical_retries": 1,
+    "pass_qa_sample_percent": 15,
+    "planner_deterministic_k": 1,
+    "pricing_refresh_policy": "REFRESH_BEFORE_ANY_AUTHORIZATION",
+    "selection_rule": "LOWEST_REASONING_CONFIGURATION_THAT_QUALIFIES",
+    "semantic_k": 3,
+    "semantic_retry_prohibited": true,
+    "stage_production_output_cap": {
+      "P04": 16000,
+      "P06": 16000,
+      "P07": 10000,
+      "P09": 10000
+    }
+  },
+  "confirmation_only_stages": [
+    "SEMANTIC_HELD_OUT_CONFIRMATION",
+    "N3_HELD_OUT_CONFIRMATION"
+  ],
+  "corpus_package_boundary_hash": "21c21f3a53bfb786162dc350dc38c93b7b007d9f23b744a354de4ac2354048a1",
+  "cross_family_fallback": "FORBIDDEN",
+  "excluded_support_statuses": [
+    "UNCERTAIN"
+  ],
+  "execution_state": "NOT_EXECUTED",
+  "held_out_can_trigger_escalation": false,
+  "held_out_lock": {
+    "held_out_execution_forbidden_before_selection": true,
+    "held_out_is_confirmation_only": true,
+    "held_out_may_influence_selection": false,
+    "held_out_results_may_alter_ranking": false
+  },
+  "held_out_may_confirm_reject_or_block": true,
+  "held_out_may_select_a_rung_or_candidate": false,
+  "n3_gates": {
+    "all_selection_side_exposures_must_be_adjudicated": true,
+    "indeterminate_is_never_a_pass": true,
+    "max_confirmed_contractual_hard_safety_failures": 0,
+    "max_indeterminate_at_promotion": 0,
+    "never_summed_with_semantic_counts": true,
+    "reported_separately_from_semantic_model_failures": true,
+    "required_selection_side_exposure_count": 7
+  },
+  "next_real_execution": {
+    "action": "FRESH_COMPLETE_HIGH_SMOKE",
+    "authorized": false,
+    "requires_independent_pre_execution_audit": true,
+    "requires_new_exactly_once_authorization": true,
+    "requires_pricing_refresh_before_authorization": true,
+    "stages": [
+      "P04",
+      "P06",
+      "P07",
+      "P09"
+    ]
+  },
+  "ordering": [
+    {
+      "position": 1,
+      "rule": "Semantic SMOKE and the qualification-side structural checks for the rung under test. A rung that fails here is rejected before any N3 adjudication is bought.",
+      "stage": "SEMANTIC_SMOKE"
+    },
+    {
+      "position": 2,
+      "rule": "The pre-registered qualification-side N3 subset. Hard safety is decided before the expensive CORE population is executed.",
+      "stage": "N3_SAFETY_SMOKE"
+    },
+    {
+      "position": 3,
+      "rule": "Semantic CORE and N3 CORE for the same rung, in that order, both exhaustive over the qualification side. Both must clear for the rung to be eligible.",
+      "stage": "SEMANTIC_CORE_AND_N3_CORE"
+    },
+    {
+      "position": 4,
+      "rule": "Selection reads only stages 1-3. The ladder is walked in promotion order and the first eligible rung is selected.",
+      "stage": "SELECT_LOWEST_QUALIFYING_RUNG"
+    },
+    {
+      "position": 5,
+      "rule": "Semantic and N3 held-out confirmation, executed only after selection and only for the one selected configuration.",
+      "stage": "HELD_OUT_CONFIRMATION"
+    },
+    {
+      "position": 6,
+      "rule": "Held-out may confirm, reject or block. It may not select a rung or a candidate, and it may not escalate the ladder.",
+      "stage": "RECORD_CONFIRMATION_OUTCOME"
+    }
+  ],
+  "ordering_is_pre_registered": true,
+  "phase9_alone_is_full_p06_contract_coverage": false,
+  "previous_protocol_version": "phase9-qualification-protocol/1.2.0",
+  "pricing_refreshed_in_this_phase": false,
+  "protocol_boundary_hash": "sha256:03f8c7400d2d465d9f717cbee4c327aa1c0cf3c7c65edc8c340d34f62efc73b2",
+  "protocol_version": "phase9-qualification-protocol/1.3.0",
+  "provider_calls": 0,
+  "qualified_support_statuses": [
+    "SUFFICIENT",
+    "PARTIAL",
+    "INSUFFICIENT"
+  ],
+  "reason_for_new_version": [
+    "the U3 narrowed semantic qualification claim is now protocol text",
+    "the N3 contractual hard-safety axis is bound as a separate gate",
+    "the P06 stage boundary changed",
+    "the P07 stage boundary changed",
+    "the global benchmark boundary changed"
+  ],
+  "rung_escalation_proof_hash": "sha256:9a53c8e1870d7a7de77fdde104551cbf31deb31741672b53c44e68ededdd5fe0",
+  "schema_version": "phase9-qualification-protocol/1.3.0",
+  "selection_rule": "LOWEST_REASONING_CONFIGURATION_THAT_QUALIFIES",
+  "selection_side_stages": [
+    "SEMANTIC_SMOKE",
+    "N3_SAFETY_SMOKE",
+    "SEMANTIC_CORE",
+    "N3_CORE"
+  ],
+  "semantic_gates": {
+    "CORE_min_accepted_rate": 0.95,
+    "HELD_OUT_CONFIRMATION_min_accepted_rate": 0.95,
+    "SMOKE_min_accepted_rate": 0.8,
+    "accepted_rate_bar_by_split": {
+      "CORE": 0.95,
+      "HELD_OUT_CONFIRMATION": 0.95,
+      "SMOKE": 0.8
+    },
+    "bars_changed_from_v12": false,
+    "max_confirmed_hard_safety_model_failures": 0
+  },
+  "semantic_qualification_claim": "semantic-benchmark/1.3.0 qualifies P06 candidate behaviour on the support statuses SUFFICIENT, PARTIAL and INSUFFICIENT.",
+  "semantic_qualification_claim_hash": "sha256:7dea45db24c618fcc167f21e916aa62e2f841e10f988c2c416fc68d464acca40",
+  "semantic_qualification_limitations": [
+    "semantic-benchmark/1.3.0 does NOT qualify P06 UNCERTAIN behaviour.",
+    "P06 model-selection claims are limited to SUFFICIENT / PARTIAL / INSUFFICIENT.",
+    "UNCERTAIN remains an explicit residual risk.",
+    "This limitation blocks any later claim that Phase 9 alone established full P06 contract coverage."
+  ],
+  "sol_fallback": "FORBIDDEN",
+  "stage_reasoning_ladder": {
+    "P04": [
+      "HIGH",
+      "XHIGH"
+    ],
+    "P06": [
+      "HIGH",
+      "XHIGH",
+      "MAX"
+    ],
+    "P07": [
+      "HIGH",
+      "XHIGH",
+      "MAX"
+    ],
+    "P09": [
+      "HIGH",
+      "XHIGH",
+      "MAX"
+    ]
+  },
+  "uncertain_qualification_claimed": false,
+  "uncertain_removed_from_production_contract": false
+}

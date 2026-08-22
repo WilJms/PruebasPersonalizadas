@@ -1,0 +1,172 @@
+{
+  "binding_scope": "SUBMISSION_WIDE",
+  "candidate_output": {
+    "candidate": {
+      "anchor": {
+        "anchor_id": "anchor_95835cc146f11b38921c",
+        "answer_leakage_risk": 0.0,
+        "fragments": [
+          {
+            "display_text": "```python\ndef asignar_turnos(solicitudes, cupos_por_grupo):\n    solicitudes.sort(key=lambda s: (s[\"prioridad\"], s[\"marca\"], s[\"id\"]))\n    unicas = {s[\"id\"]: s for s in solicitudes if s[\"grupo\"] in cupos_por_grupo}\n    asignadas, espera = [], []\n    for grupo in cupos_por_grupo:\n        del_grupo = [s for s in unicas.values() if s[\"grupo\"] == grupo]\n        corte = cupos_por_grupo[grupo]\n        asignadas += [s[\"id\"] for s in del_grupo[:corte]]\n        espera += [s[\"id\"] for s in del_grupo[corte:]]\n    return {\"asignadas\": asignadas, \"espera\": espera}\n```",
+            "evidence_id": "ev_de1cba84544cd04797df",
+            "locator": {
+              "column": null,
+              "heading_path": [],
+              "kind": "DOCUMENT_PATH",
+              "paragraph_index": 0,
+              "row": null,
+              "table_index": null
+            },
+            "transformation": "LITERAL"
+          },
+          {
+            "display_text": "```python\ndemo = [\n    {\"id\": \"q2\", \"grupo\": \"B\", \"prioridad\": 1, \"marca\": \"08:00\"},\n    {\"id\": \"q1\", \"grupo\": \"A\", \"prioridad\": 1, \"marca\": \"08:00\"},\n    {\"id\": \"q2\", \"grupo\": \"B\", \"prioridad\": 2, \"marca\": \"08:10\"},\n]\nantes = list(demo)\nresultado = asignar_turnos(demo, {\"A\": 1, \"B\": 1})\n```",
+            "evidence_id": "ev_249c96141d2ed104b688",
+            "locator": {
+              "column": null,
+              "heading_path": [
+                "Caso de demostración"
+              ],
+              "kind": "DOCUMENT_PATH",
+              "paragraph_index": 2,
+              "row": null,
+              "table_index": null
+            },
+            "transformation": "LITERAL"
+          },
+          {
+            "display_text": "La función es completamente pura: `sorted` crea una lista nueva y nunca toca `solicitudes`. El diccionario conserva la primera aparición de cada id. La clave de tres campos garantiza el orden global incluso después de asignar por grupos.",
+            "evidence_id": "ev_980679b6b5472eebbfbc",
+            "locator": {
+              "column": null,
+              "heading_path": [],
+              "kind": "DOCUMENT_PATH",
+              "paragraph_index": 0,
+              "row": null,
+              "table_index": null
+            },
+            "transformation": "LITERAL"
+          }
+        ],
+        "self_containment_score": 1.0,
+        "structure": "CROSS_ARTIFACT",
+        "student_facing_label": null
+      },
+      "candidate_id": "candidate_p07_577470bb027e1852d6e1",
+      "choices": [],
+      "citations": [],
+      "cognitive_operation": "CONNECT_INTERNAL",
+      "course_source_ids": [],
+      "difficulty": "MEDIUM",
+      "dimension_id": "dimension_p07_577470bb027e1852d6e1",
+      "estimated_minutes": 5,
+      "evidence_ids": [
+        "ev_de1cba84544cd04797df",
+        "ev_7ab196584d594010f750",
+        "ev_249c96141d2ed104b688",
+        "ev_980679b6b5472eebbfbc",
+        "ev_fb54c43c83db40ca984f",
+        "ev_477e6db37c09bfc1f516"
+      ],
+      "opportunity_id": "opportunity_p07_577470bb027e1852d6e1",
+      "opportunity_template_id": "template_p07_577470bb027e1852d6e1",
+      "preliminary_guide": {
+        "acceptable_alternatives": [
+          "La respuesta puede presentarse en prosa, viñetas o una tabla de tres filas, siempre que conecte cada afirmación con una operación o dato de E1/E3 y explicite la consecuencia.",
+          "Para el tercer punto, es aceptable indicar que el ejemplo concreto podría no mostrar una inversión del orden, pero que la concatenación por grupos no basta para sostener la garantía general, si se justifica con E1, E3 y E4."
+        ],
+        "acceptance_conditions": [],
+        "cannot_infer": [],
+        "levels": [],
+        "misconceptions": [
+          "Confundir `sort` del código con `sorted` y concluir que la entrada no se modifica (E1, E4).",
+          "Afirmar que la comprensión de diccionario conserva la primera aparición de `q2` pese a que el caso contiene ese `id` repetido (E1, E3, E4).",
+          "Suponer que una ordenación previa garantiza el orden global después de concatenar elementos por grupo, o tomar el caso concreto como prueba universal de esa garantía (E1, E3, E4)."
+        ],
+        "observable_elements": [
+          {
+            "description": "Identifica la tensión entre el uso de `solicitudes.sort(...)` en el código y la afirmación de que se usa `sorted` sin modificar `solicitudes`; conecta esa operación con la posible diferencia entre `demo` y la copia `antes` después de la llamada.",
+            "element_id": "observable_560fa0740806fba124ee",
+            "evidence_ids": [
+              "ev_de1cba84544cd04797df",
+              "ev_249c96141d2ed104b688",
+              "ev_980679b6b5472eebbfbc"
+            ],
+            "required_for_level_2": true,
+            "source_ids": []
+          },
+          {
+            "description": "Relaciona la comprensión de diccionario y la presencia de dos registros con `id` `q2` en el caso de demostración; explica que una clave repetida no conserva ambas apariciones ni respalda la afirmación de conservar la primera, sino que deja una sola entrada correspondiente a la última aparición recorrida.",
+            "element_id": "observable_8c2ad44f1c580e934b5d",
+            "evidence_ids": [
+              "ev_de1cba84544cd04797df",
+              "ev_249c96141d2ed104b688",
+              "ev_980679b6b5472eebbfbc"
+            ],
+            "required_for_level_2": true,
+            "source_ids": []
+          },
+          {
+            "description": "Explica que, aunque exista una ordenación previa, el bucle por grupos reconstruye `asignadas` y `espera` concatenando resultados según el recorrido de `cupos_por_grupo`; por ello, el código no demuestra una garantía de orden global. Distingue esta limitación de una eventual coincidencia del orden en el caso concreto.",
+            "element_id": "observable_42954bdce115050e9b36",
+            "evidence_ids": [
+              "ev_de1cba84544cd04797df",
+              "ev_249c96141d2ed104b688",
+              "ev_980679b6b5472eebbfbc"
+            ],
+            "required_for_level_2": true,
+            "source_ids": []
+          }
+        ],
+        "purpose": "Conecta unidades localizadas y hace explícita su coherencia o tensión sin elegir silenciosamente una fuente.",
+        "semantic_uncertainties": []
+      },
+      "question_text": "Contrasta el código y el caso de demostración con las tres afirmaciones de A2. Explica brevemente si son coherentes o si existe una tensión en cada punto: (1) que la función sea pura y no modifique `solicitudes`; (2) que el diccionario conserve la primera aparición de cada `id`; y (3) que separar por grupo mantenga exactamente el orden global. Para cada evaluación, señala la operación o dato que la sustenta y la consecuencia observable en la ejecución. En el tercer punto, distingue entre una garantía general y una posible coincidencia en este caso concreto.",
+      "response_format": "OPEN_SHORT",
+      "student_justification_required": true,
+      "submission_id": "submission_06",
+      "uncertainties": [],
+      "variant_id": "variant_p07_577470bb027e1852d6e1"
+    },
+    "context_mode": "CLOSED",
+    "diagnostics": [],
+    "opportunity_id": "opportunity_p07_577470bb027e1852d6e1",
+    "schema_version": "1.1.0",
+    "status": "READY",
+    "submission_id": "submission_06"
+  },
+  "candidate_output_hash": "sha256:16998c25362996b65ca442a0a5a236a0096db63ee78a954c91c73ddbf22e5a11",
+  "case_id": "PP-A04-S06-P07-O01",
+  "defensible_alternatives": [],
+  "fixture_id": "P07-A04-S06-O01",
+  "oracle_state": "VALID",
+  "property": {
+    "benchmark_tags": [],
+    "confidence": "HIGH",
+    "defensible_alternatives": [],
+    "description": "Prohibido preguntar por qué 'eligió accidentalmente' la última aparición: atribuye intención histórica, que la pauta excluye.",
+    "kind": "PROHIBITED",
+    "notes": "",
+    "oracle_state": "VALID",
+    "property_id": "A04-S06-P5",
+    "source_refs": [
+      {
+        "file": "02_rubric.docx",
+        "section": "Cómo usar el checklist"
+      }
+    ],
+    "stage": "P07"
+  },
+  "relevant_source_refs": [
+    {
+      "file": "02_rubric.docx",
+      "section": "Cómo usar el checklist"
+    }
+  ],
+  "route_or_opportunity_id": "P07-A04-S06-O01",
+  "schema_version": "semantic-review-packet/1.1.0",
+  "source_hashes": {
+    "02_rubric.docx": "sha256:bde129b7a90362871b9dc76ad24388a6ded288404a29a79b68c0c2b37bfcb65d"
+  },
+  "stage": "P07"
+}

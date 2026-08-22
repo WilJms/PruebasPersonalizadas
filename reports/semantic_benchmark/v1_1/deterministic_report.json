@@ -1,0 +1,1054 @@
+{
+  "anti_leakage_diagnostic": "BENCHMARK_ORACLE_LEAKAGE_BLOCKED",
+  "benchmark_version": "semantic-benchmark/1.1.0",
+  "deliberate_leakage_attempts_blocked": 3,
+  "invariants": [
+    {
+      "evidence": {
+        "corpus_package_boundary_hash": "21c21f3a53bfb786162dc350dc38c93b7b007d9f23b744a354de4ac2354048a1"
+      },
+      "invariant_id": "CORPUS_BOUNDARY",
+      "result": "PASS"
+    },
+    {
+      "evidence": {
+        "assignment_coverage": 1.0,
+        "complete_activity_count": 12,
+        "rubric_coverage": 1.0
+      },
+      "invariant_id": "P04_SOURCE_COMPLETENESS",
+      "result": "PASS"
+    },
+    {
+      "evidence": {
+        "oracle_reads": 0
+      },
+      "invariant_id": "P04_ORACLE_ISOLATION",
+      "result": "PASS"
+    },
+    {
+      "evidence": {
+        "case_count": 127,
+        "route_fixture_count": 127
+      },
+      "invariant_id": "P06_ROUTE_ALIGNMENT",
+      "result": "PASS"
+    },
+    {
+      "evidence": {
+        "expected_status_in_model_input_count": 0
+      },
+      "invariant_id": "P06_EXPECTED_STATUS_ISOLATION",
+      "result": "PASS"
+    },
+    {
+      "evidence": {
+        "case_count": 108,
+        "opportunity_fixture_count": 108
+      },
+      "invariant_id": "P07_OPPORTUNITY_ALIGNMENT",
+      "result": "PASS"
+    },
+    {
+      "evidence": {
+        "cross_submission_count": 0,
+        "exact_count": 108,
+        "fallback_count": 0,
+        "opportunity_count": 108,
+        "request_mismatch_count": 0,
+        "resolution_mode": "EXACT_DECLARED_EVIDENCE_ID_LOOKUP_NO_FALLBACK",
+        "unresolved_count": 0
+      },
+      "invariant_id": "P07_SUPPORT_RESOLUTION",
+      "result": "PASS"
+    },
+    {
+      "evidence": {
+        "scoped_fixture_count": 4
+      },
+      "invariant_id": "P09_PROPERTY_SCOPE",
+      "result": "PASS"
+    },
+    {
+      "evidence": {
+        "ambiguous_count": 0,
+        "exact_question_count": 12,
+        "fallback_count": 0,
+        "unresolved_count": 0
+      },
+      "invariant_id": "P09_EXACT_LOCATOR_RESOLUTION",
+      "result": "PASS"
+    },
+    {
+      "evidence": {
+        "case_tags_without_provenance": 0,
+        "tag_provenance_count": 365
+      },
+      "invariant_id": "TAG_SCOPE_VALIDITY",
+      "result": "PASS"
+    },
+    {
+      "evidence": {
+        "family_count": 9
+      },
+      "invariant_id": "RARE_COVERAGE_VALIDITY",
+      "result": "PASS"
+    },
+    {
+      "evidence": {
+        "aligned_count": 356,
+        "assigned_arbitrarily_count": 0,
+        "explicitly_excluded_count": 31,
+        "not_applicable_count": 8,
+        "property_count": 395
+      },
+      "invariant_id": "PROPERTY_BINDING_COMPLETENESS",
+      "result": "PASS"
+    },
+    {
+      "evidence": {
+        "hard_property_denominator": 1,
+        "observation_count": 9,
+        "passed": true,
+        "property_outcome_count": 1,
+        "property_run_outcome_count": 3
+      },
+      "invariant_id": "PROPERTY_DENOMINATOR_VALIDITY",
+      "result": "PASS"
+    },
+    {
+      "evidence": {
+        "held_out_activity_disjoint": true,
+        "held_out_activity_numbers": [
+          3,
+          7,
+          9,
+          10,
+          12
+        ],
+        "p06_uncertain_splits": [
+          "CORE",
+          "HELD_OUT_CONFIRMATION",
+          "SMOKE"
+        ],
+        "passed": true,
+        "qualification_activity_numbers": [
+          1,
+          2,
+          4,
+          5,
+          6,
+          8,
+          11
+        ],
+        "smoke_required_families": {
+          "EXTERNAL_KNOWLEDGE": true,
+          "LEAKAGE": true,
+          "MULTI_ARTIFACT": true,
+          "P06_INSUFFICIENT": true,
+          "PROMPT_INJECTION": true,
+          "SAFETY": true
+        },
+        "smoke_stages": [
+          "P04",
+          "P06",
+          "P07",
+          "P09",
+          "PLANNER"
+        ]
+      },
+      "invariant_id": "SPLIT_COVERAGE",
+      "result": "PASS"
+    },
+    {
+      "evidence": {
+        "deliberate_leakage_attempts_blocked": 3
+      },
+      "invariant_id": "ANTI_ORACLE_LEAKAGE",
+      "result": "PASS"
+    },
+    {
+      "evidence": {
+        "authorization": "NONE",
+        "matrix_status": "UNSET"
+      },
+      "invariant_id": "CANDIDATE_MATRIX_UNSET",
+      "result": "PASS"
+    },
+    {
+      "evidence": {
+        "provider_calls": 0,
+        "violations": []
+      },
+      "invariant_id": "PROVIDER_CALL_GRAPH_ABSENT",
+      "result": "PASS"
+    }
+  ],
+  "parser_cases": [
+    {
+      "activity_id": "act_01_luz_y_plantines",
+      "artifact_count": 1,
+      "bundle_hash": "sha256:2b743e639e70a4437d5771dd9fb0cafddb73a4ec9004497180eff76b4515f985",
+      "deterministic": true,
+      "evidence_unit_count": 6,
+      "replay_hash": "sha256:2b743e639e70a4437d5771dd9fb0cafddb73a4ec9004497180eff76b4515f985",
+      "submission_id": "submission_01"
+    },
+    {
+      "activity_id": "act_01_luz_y_plantines",
+      "artifact_count": 1,
+      "bundle_hash": "sha256:2e881264b69d942022b490e6f2a05dd9c15ca60cd3c99d90b1b8d585d9cb2025",
+      "deterministic": true,
+      "evidence_unit_count": 10,
+      "replay_hash": "sha256:2e881264b69d942022b490e6f2a05dd9c15ca60cd3c99d90b1b8d585d9cb2025",
+      "submission_id": "submission_02"
+    },
+    {
+      "activity_id": "act_01_luz_y_plantines",
+      "artifact_count": 1,
+      "bundle_hash": "sha256:bd4102ba1d450088af60bb021d0eaff1fed59aa45f3ca9488a9e90da6fcb0cbb",
+      "deterministic": true,
+      "evidence_unit_count": 7,
+      "replay_hash": "sha256:bd4102ba1d450088af60bb021d0eaff1fed59aa45f3ca9488a9e90da6fcb0cbb",
+      "submission_id": "submission_03"
+    },
+    {
+      "activity_id": "act_01_luz_y_plantines",
+      "artifact_count": 1,
+      "bundle_hash": "sha256:a5e1ebb17e1ec1bfbc01627a6cab6f839a055d9d1431f89344350a6063f90534",
+      "deterministic": true,
+      "evidence_unit_count": 14,
+      "replay_hash": "sha256:a5e1ebb17e1ec1bfbc01627a6cab6f839a055d9d1431f89344350a6063f90534",
+      "submission_id": "submission_04"
+    },
+    {
+      "activity_id": "act_01_luz_y_plantines",
+      "artifact_count": 1,
+      "bundle_hash": "sha256:e5d83d7a667998abeff6343901b1b113ccb6651f08d4b0be0904705d5bad2fa5",
+      "deterministic": true,
+      "evidence_unit_count": 32,
+      "replay_hash": "sha256:e5d83d7a667998abeff6343901b1b113ccb6651f08d4b0be0904705d5bad2fa5",
+      "submission_id": "submission_05"
+    },
+    {
+      "activity_id": "act_01_luz_y_plantines",
+      "artifact_count": 1,
+      "bundle_hash": "sha256:42bb4e80313595c97fde8e547b077981997da94aaa81d32df2dd313690df7022",
+      "deterministic": true,
+      "evidence_unit_count": 21,
+      "replay_hash": "sha256:42bb4e80313595c97fde8e547b077981997da94aaa81d32df2dd313690df7022",
+      "submission_id": "submission_06"
+    },
+    {
+      "activity_id": "act_02_voz_en_un_microcuento",
+      "artifact_count": 1,
+      "bundle_hash": "sha256:ab0f3496bfa570364e6ebe98bd0105a1a369ee4e71bd2a5e875c3765b5868836",
+      "deterministic": true,
+      "evidence_unit_count": 6,
+      "replay_hash": "sha256:ab0f3496bfa570364e6ebe98bd0105a1a369ee4e71bd2a5e875c3765b5868836",
+      "submission_id": "submission_01"
+    },
+    {
+      "activity_id": "act_02_voz_en_un_microcuento",
+      "artifact_count": 1,
+      "bundle_hash": "sha256:0adfcb912f3388a73735df0ed0289aa4989887651778e5963e0c090f7191e2a7",
+      "deterministic": true,
+      "evidence_unit_count": 6,
+      "replay_hash": "sha256:0adfcb912f3388a73735df0ed0289aa4989887651778e5963e0c090f7191e2a7",
+      "submission_id": "submission_02"
+    },
+    {
+      "activity_id": "act_02_voz_en_un_microcuento",
+      "artifact_count": 1,
+      "bundle_hash": "sha256:2e6e9e30d5785863dd0f370179c8b0a4485e48dec9096cff567dc0e9aa8909f0",
+      "deterministic": true,
+      "evidence_unit_count": 14,
+      "replay_hash": "sha256:2e6e9e30d5785863dd0f370179c8b0a4485e48dec9096cff567dc0e9aa8909f0",
+      "submission_id": "submission_03"
+    },
+    {
+      "activity_id": "act_02_voz_en_un_microcuento",
+      "artifact_count": 1,
+      "bundle_hash": "sha256:643812d339e81ea76fc4cb513b35d1548c3df05bbd209910b0e40df06d1ca1e0",
+      "deterministic": true,
+      "evidence_unit_count": 30,
+      "replay_hash": "sha256:643812d339e81ea76fc4cb513b35d1548c3df05bbd209910b0e40df06d1ca1e0",
+      "submission_id": "submission_04"
+    },
+    {
+      "activity_id": "act_02_voz_en_un_microcuento",
+      "artifact_count": 1,
+      "bundle_hash": "sha256:6066e2c42031551f7696e73dd2fc352a374a6b6ce14c6b9007cfce636c94c71a",
+      "deterministic": true,
+      "evidence_unit_count": 19,
+      "replay_hash": "sha256:6066e2c42031551f7696e73dd2fc352a374a6b6ce14c6b9007cfce636c94c71a",
+      "submission_id": "submission_05"
+    },
+    {
+      "activity_id": "act_02_voz_en_un_microcuento",
+      "artifact_count": 1,
+      "bundle_hash": "sha256:a36da040362d3acf1f0eb18aa31a159410b83d0ebc91317757d7e45250bda008",
+      "deterministic": true,
+      "evidence_unit_count": 10,
+      "replay_hash": "sha256:a36da040362d3acf1f0eb18aa31a159410b83d0ebc91317757d7e45250bda008",
+      "submission_id": "submission_06"
+    },
+    {
+      "activity_id": "act_03_puesto_de_limonada",
+      "artifact_count": 1,
+      "bundle_hash": "sha256:45c22169b24cb135280b8157e79bb6fc3db1b7df24c54583eef705bf18e1395c",
+      "deterministic": true,
+      "evidence_unit_count": 24,
+      "replay_hash": "sha256:45c22169b24cb135280b8157e79bb6fc3db1b7df24c54583eef705bf18e1395c",
+      "submission_id": "submission_01"
+    },
+    {
+      "activity_id": "act_03_puesto_de_limonada",
+      "artifact_count": 1,
+      "bundle_hash": "sha256:e853f945dd947120ebab481017b75b52c57af616f72b145e8f999ea308f161e3",
+      "deterministic": true,
+      "evidence_unit_count": 11,
+      "replay_hash": "sha256:e853f945dd947120ebab481017b75b52c57af616f72b145e8f999ea308f161e3",
+      "submission_id": "submission_02"
+    },
+    {
+      "activity_id": "act_03_puesto_de_limonada",
+      "artifact_count": 1,
+      "bundle_hash": "sha256:02a676ed9782d5cdec728fad3dfaffef7011c0d0f072bcf29f25fe9c9f116fef",
+      "deterministic": true,
+      "evidence_unit_count": 5,
+      "replay_hash": "sha256:02a676ed9782d5cdec728fad3dfaffef7011c0d0f072bcf29f25fe9c9f116fef",
+      "submission_id": "submission_03"
+    },
+    {
+      "activity_id": "act_03_puesto_de_limonada",
+      "artifact_count": 1,
+      "bundle_hash": "sha256:29b381b127e940e7ea4385a38081bb9cdd5ecf30446fdcf2eac06840b92fb4a2",
+      "deterministic": true,
+      "evidence_unit_count": 25,
+      "replay_hash": "sha256:29b381b127e940e7ea4385a38081bb9cdd5ecf30446fdcf2eac06840b92fb4a2",
+      "submission_id": "submission_04"
+    },
+    {
+      "activity_id": "act_03_puesto_de_limonada",
+      "artifact_count": 1,
+      "bundle_hash": "sha256:153c5fb31dc14a083ed43d8ee02752f634ea349c5abad47bb4c03d03626e0f1f",
+      "deterministic": true,
+      "evidence_unit_count": 33,
+      "replay_hash": "sha256:153c5fb31dc14a083ed43d8ee02752f634ea349c5abad47bb4c03d03626e0f1f",
+      "submission_id": "submission_05"
+    },
+    {
+      "activity_id": "act_03_puesto_de_limonada",
+      "artifact_count": 1,
+      "bundle_hash": "sha256:bab416c6b089fa9d6443591c825512c5e6ca550ee0a00445e2aabe4a8e25adf5",
+      "deterministic": true,
+      "evidence_unit_count": 7,
+      "replay_hash": "sha256:bab416c6b089fa9d6443591c825512c5e6ca550ee0a00445e2aabe4a8e25adf5",
+      "submission_id": "submission_06"
+    },
+    {
+      "activity_id": "act_04_asignador_de_turnos",
+      "artifact_count": 2,
+      "bundle_hash": "sha256:0cd2c76ccb68cc40b158d44d4dce91fc644762900e5b601778a081e870622e84",
+      "deterministic": true,
+      "evidence_unit_count": 11,
+      "replay_hash": "sha256:0cd2c76ccb68cc40b158d44d4dce91fc644762900e5b601778a081e870622e84",
+      "submission_id": "submission_01"
+    },
+    {
+      "activity_id": "act_04_asignador_de_turnos",
+      "artifact_count": 2,
+      "bundle_hash": "sha256:3c91ab645cf9639ab48b9c841e2b229c2700199da9ae127d33fcc86f18d9d95f",
+      "deterministic": true,
+      "evidence_unit_count": 17,
+      "replay_hash": "sha256:3c91ab645cf9639ab48b9c841e2b229c2700199da9ae127d33fcc86f18d9d95f",
+      "submission_id": "submission_02"
+    },
+    {
+      "activity_id": "act_04_asignador_de_turnos",
+      "artifact_count": 1,
+      "bundle_hash": "sha256:f350f3bbb22b8e4e26522e2dcb3c0627e944a0b13e6221c36962115ea402a8f8",
+      "deterministic": true,
+      "evidence_unit_count": 6,
+      "replay_hash": "sha256:f350f3bbb22b8e4e26522e2dcb3c0627e944a0b13e6221c36962115ea402a8f8",
+      "submission_id": "submission_03"
+    },
+    {
+      "activity_id": "act_04_asignador_de_turnos",
+      "artifact_count": 2,
+      "bundle_hash": "sha256:6a82503b625dd331653ae0fe377905fcf9d09a223215236287deb15e249ddec4",
+      "deterministic": true,
+      "evidence_unit_count": 11,
+      "replay_hash": "sha256:6a82503b625dd331653ae0fe377905fcf9d09a223215236287deb15e249ddec4",
+      "submission_id": "submission_04"
+    },
+    {
+      "activity_id": "act_04_asignador_de_turnos",
+      "artifact_count": 2,
+      "bundle_hash": "sha256:9772e07889f0df97339feba55a2e3d6c9ecf6277a74fa31ecc00d8631d277965",
+      "deterministic": true,
+      "evidence_unit_count": 13,
+      "replay_hash": "sha256:9772e07889f0df97339feba55a2e3d6c9ecf6277a74fa31ecc00d8631d277965",
+      "submission_id": "submission_05"
+    },
+    {
+      "activity_id": "act_04_asignador_de_turnos",
+      "artifact_count": 2,
+      "bundle_hash": "sha256:cc853a53c6c2247f8785b2735d8059b034e9b5b0f0b3e9726eeea81e98c38c25",
+      "deterministic": true,
+      "evidence_unit_count": 10,
+      "replay_hash": "sha256:cc853a53c6c2247f8785b2735d8059b034e9b5b0f0b3e9726eeea81e98c38c25",
+      "submission_id": "submission_06"
+    },
+    {
+      "activity_id": "act_05_visitas_a_bibliotecas",
+      "artifact_count": 1,
+      "bundle_hash": "sha256:bbb41eb7c3f8d313efe3088548b437d35847d02613132b69f85749a010e9461a",
+      "deterministic": true,
+      "evidence_unit_count": 10,
+      "replay_hash": "sha256:bbb41eb7c3f8d313efe3088548b437d35847d02613132b69f85749a010e9461a",
+      "submission_id": "submission_01"
+    },
+    {
+      "activity_id": "act_05_visitas_a_bibliotecas",
+      "artifact_count": 1,
+      "bundle_hash": "sha256:50671f3a2e0c484eff7e74c94db9c1d55bc566deafb312c64a4097c309210f99",
+      "deterministic": true,
+      "evidence_unit_count": 28,
+      "replay_hash": "sha256:50671f3a2e0c484eff7e74c94db9c1d55bc566deafb312c64a4097c309210f99",
+      "submission_id": "submission_02"
+    },
+    {
+      "activity_id": "act_05_visitas_a_bibliotecas",
+      "artifact_count": 1,
+      "bundle_hash": "sha256:d2ae25db0e1965ed7a3230711046b2d4ede6760cd51bbd3d99472851c6fa2e42",
+      "deterministic": true,
+      "evidence_unit_count": 9,
+      "replay_hash": "sha256:d2ae25db0e1965ed7a3230711046b2d4ede6760cd51bbd3d99472851c6fa2e42",
+      "submission_id": "submission_03"
+    },
+    {
+      "activity_id": "act_05_visitas_a_bibliotecas",
+      "artifact_count": 1,
+      "bundle_hash": "sha256:e78c01803aac58339c143cc3f2901ffd1670e350b635a7bebf9f45146a5e7814",
+      "deterministic": true,
+      "evidence_unit_count": 35,
+      "replay_hash": "sha256:e78c01803aac58339c143cc3f2901ffd1670e350b635a7bebf9f45146a5e7814",
+      "submission_id": "submission_04"
+    },
+    {
+      "activity_id": "act_05_visitas_a_bibliotecas",
+      "artifact_count": 1,
+      "bundle_hash": "sha256:5ab1997f13147508795d299c019eb0f2413727628bd7d08832a6ca2d306949bc",
+      "deterministic": true,
+      "evidence_unit_count": 55,
+      "replay_hash": "sha256:5ab1997f13147508795d299c019eb0f2413727628bd7d08832a6ca2d306949bc",
+      "submission_id": "submission_05"
+    },
+    {
+      "activity_id": "act_05_visitas_a_bibliotecas",
+      "artifact_count": 1,
+      "bundle_hash": "sha256:416ff4c2cd3a897e2d5b723167e6ca5411056b2cd30cc4db886fb67cb30cf802",
+      "deterministic": true,
+      "evidence_unit_count": 4,
+      "replay_hash": "sha256:416ff4c2cd3a897e2d5b723167e6ca5411056b2cd30cc4db886fb67cb30cf802",
+      "submission_id": "submission_06"
+    },
+    {
+      "activity_id": "act_06_movilidad_estudiantil",
+      "artifact_count": 1,
+      "bundle_hash": "sha256:1e58e7ec5dbae78ca8dcf31dfa2d60029c0067c6e5a9f7ca709d0181f5207602",
+      "deterministic": true,
+      "evidence_unit_count": 34,
+      "replay_hash": "sha256:1e58e7ec5dbae78ca8dcf31dfa2d60029c0067c6e5a9f7ca709d0181f5207602",
+      "submission_id": "submission_01"
+    },
+    {
+      "activity_id": "act_06_movilidad_estudiantil",
+      "artifact_count": 1,
+      "bundle_hash": "sha256:208411396cf8b2e134eadbb38b7b9df35d104063c4b55e8bbf3d0720ca20b597",
+      "deterministic": true,
+      "evidence_unit_count": 30,
+      "replay_hash": "sha256:208411396cf8b2e134eadbb38b7b9df35d104063c4b55e8bbf3d0720ca20b597",
+      "submission_id": "submission_02"
+    },
+    {
+      "activity_id": "act_06_movilidad_estudiantil",
+      "artifact_count": 1,
+      "bundle_hash": "sha256:20aef7eb3f9209a86bd2e6e162fc89410f2a311859f61b9b53af24ec1d9ddb22",
+      "deterministic": true,
+      "evidence_unit_count": 7,
+      "replay_hash": "sha256:20aef7eb3f9209a86bd2e6e162fc89410f2a311859f61b9b53af24ec1d9ddb22",
+      "submission_id": "submission_03"
+    },
+    {
+      "activity_id": "act_06_movilidad_estudiantil",
+      "artifact_count": 1,
+      "bundle_hash": "sha256:a69976380ec5ed96ad7bcdf7f0248da3d2cd5f4d47801ccfa289c27f38ca9dbd",
+      "deterministic": true,
+      "evidence_unit_count": 7,
+      "replay_hash": "sha256:a69976380ec5ed96ad7bcdf7f0248da3d2cd5f4d47801ccfa289c27f38ca9dbd",
+      "submission_id": "submission_04"
+    },
+    {
+      "activity_id": "act_06_movilidad_estudiantil",
+      "artifact_count": 1,
+      "bundle_hash": "sha256:dcb4a7c7b3d3f2231cc68dae1f705ebcb15a93c50b2001d1a2792d711d5871fc",
+      "deterministic": true,
+      "evidence_unit_count": 21,
+      "replay_hash": "sha256:dcb4a7c7b3d3f2231cc68dae1f705ebcb15a93c50b2001d1a2792d711d5871fc",
+      "submission_id": "submission_05"
+    },
+    {
+      "activity_id": "act_06_movilidad_estudiantil",
+      "artifact_count": 1,
+      "bundle_hash": "sha256:8b5eecd878f1a4d7d84550113fafb21466927a56f33111f5ac6a4cecd5460663",
+      "deterministic": true,
+      "evidence_unit_count": 6,
+      "replay_hash": "sha256:8b5eecd878f1a4d7d84550113fafb21466927a56f33111f5ac6a4cecd5460663",
+      "submission_id": "submission_06"
+    },
+    {
+      "activity_id": "act_07_aislamiento_termico",
+      "artifact_count": 2,
+      "bundle_hash": "sha256:22e5e53abb26e373c3d60e97c8eda69644bb87cb6d2d303b4d5b190a17067acd",
+      "deterministic": true,
+      "evidence_unit_count": 16,
+      "replay_hash": "sha256:22e5e53abb26e373c3d60e97c8eda69644bb87cb6d2d303b4d5b190a17067acd",
+      "submission_id": "submission_01"
+    },
+    {
+      "activity_id": "act_07_aislamiento_termico",
+      "artifact_count": 1,
+      "bundle_hash": "sha256:7b14b34ceaf6e77216c32855580ffbc390a144117363505b8faddebdc8babaee",
+      "deterministic": true,
+      "evidence_unit_count": 13,
+      "replay_hash": "sha256:7b14b34ceaf6e77216c32855580ffbc390a144117363505b8faddebdc8babaee",
+      "submission_id": "submission_02"
+    },
+    {
+      "activity_id": "act_07_aislamiento_termico",
+      "artifact_count": 2,
+      "bundle_hash": "sha256:de0d9ac06c84a8232307066f40a02a361bff6b47c2e557b3483c3c17327ec2b6",
+      "deterministic": true,
+      "evidence_unit_count": 20,
+      "replay_hash": "sha256:de0d9ac06c84a8232307066f40a02a361bff6b47c2e557b3483c3c17327ec2b6",
+      "submission_id": "submission_03"
+    },
+    {
+      "activity_id": "act_07_aislamiento_termico",
+      "artifact_count": 2,
+      "bundle_hash": "sha256:2b0897d1ff95efff67309788e6e6088513cb14f264b876e4eadec55beec4d8d3",
+      "deterministic": true,
+      "evidence_unit_count": 43,
+      "replay_hash": "sha256:2b0897d1ff95efff67309788e6e6088513cb14f264b876e4eadec55beec4d8d3",
+      "submission_id": "submission_04"
+    },
+    {
+      "activity_id": "act_07_aislamiento_termico",
+      "artifact_count": 2,
+      "bundle_hash": "sha256:bc7bc02ab547cd8398141a49f9dea769fe1614c06eca683f580e3ec6a460acce",
+      "deterministic": true,
+      "evidence_unit_count": 30,
+      "replay_hash": "sha256:bc7bc02ab547cd8398141a49f9dea769fe1614c06eca683f580e3ec6a460acce",
+      "submission_id": "submission_05"
+    },
+    {
+      "activity_id": "act_07_aislamiento_termico",
+      "artifact_count": 2,
+      "bundle_hash": "sha256:d1ca28712626c66dcaae4c349d11743be77765ca60fe5853f5bef468c536979d",
+      "deterministic": true,
+      "evidence_unit_count": 26,
+      "replay_hash": "sha256:d1ca28712626c66dcaae4c349d11743be77765ca60fe5853f5bef468c536979d",
+      "submission_id": "submission_06"
+    },
+    {
+      "activity_id": "act_08_triage_de_logs",
+      "artifact_count": 2,
+      "bundle_hash": "sha256:adba766087ff68ea5295bc85a5987b6a625eaa7311098b44473e01bb1fcf583c",
+      "deterministic": true,
+      "evidence_unit_count": 15,
+      "replay_hash": "sha256:adba766087ff68ea5295bc85a5987b6a625eaa7311098b44473e01bb1fcf583c",
+      "submission_id": "submission_01"
+    },
+    {
+      "activity_id": "act_08_triage_de_logs",
+      "artifact_count": 2,
+      "bundle_hash": "sha256:cba3ca17f354353f44b1f464d19e3b62f3fcaecfb0eab8d52ab0b5891bf6e329",
+      "deterministic": true,
+      "evidence_unit_count": 12,
+      "replay_hash": "sha256:cba3ca17f354353f44b1f464d19e3b62f3fcaecfb0eab8d52ab0b5891bf6e329",
+      "submission_id": "submission_02"
+    },
+    {
+      "activity_id": "act_08_triage_de_logs",
+      "artifact_count": 2,
+      "bundle_hash": "sha256:cbbf53133f332239b51e054bd2099bc4c75241b180685ee99e21da6fc9d4e94f",
+      "deterministic": true,
+      "evidence_unit_count": 18,
+      "replay_hash": "sha256:cbbf53133f332239b51e054bd2099bc4c75241b180685ee99e21da6fc9d4e94f",
+      "submission_id": "submission_03"
+    },
+    {
+      "activity_id": "act_08_triage_de_logs",
+      "artifact_count": 2,
+      "bundle_hash": "sha256:94a30b9c5c92ef3c987486378390bfdf23f401b08a43ce3bc550845edf5b3e57",
+      "deterministic": true,
+      "evidence_unit_count": 11,
+      "replay_hash": "sha256:94a30b9c5c92ef3c987486378390bfdf23f401b08a43ce3bc550845edf5b3e57",
+      "submission_id": "submission_04"
+    },
+    {
+      "activity_id": "act_08_triage_de_logs",
+      "artifact_count": 2,
+      "bundle_hash": "sha256:bc95b01bf3fa400c734c892283eeb933221455043593f3cc07e78f8fdc75b83b",
+      "deterministic": true,
+      "evidence_unit_count": 14,
+      "replay_hash": "sha256:bc95b01bf3fa400c734c892283eeb933221455043593f3cc07e78f8fdc75b83b",
+      "submission_id": "submission_05"
+    },
+    {
+      "activity_id": "act_08_triage_de_logs",
+      "artifact_count": 1,
+      "bundle_hash": "sha256:b7c52c4811fbfaa7292444a95c1254e5a4d0df20c7024dd73e4fdd8b8958a416",
+      "deterministic": true,
+      "evidence_unit_count": 25,
+      "replay_hash": "sha256:b7c52c4811fbfaa7292444a95c1254e5a4d0df20c7024dd73e4fdd8b8958a416",
+      "submission_id": "submission_06"
+    },
+    {
+      "activity_id": "act_09_renovacion_y_desplazamiento",
+      "artifact_count": 1,
+      "bundle_hash": "sha256:43578cb259dbacdd589f9f24d9589650988a52b142b113eca1f0b82733730a1f",
+      "deterministic": true,
+      "evidence_unit_count": 27,
+      "replay_hash": "sha256:43578cb259dbacdd589f9f24d9589650988a52b142b113eca1f0b82733730a1f",
+      "submission_id": "submission_01"
+    },
+    {
+      "activity_id": "act_09_renovacion_y_desplazamiento",
+      "artifact_count": 1,
+      "bundle_hash": "sha256:d44d4848adcb16bab865e34a8f0f7245a14431052de9d37f63d9f401931f449a",
+      "deterministic": true,
+      "evidence_unit_count": 22,
+      "replay_hash": "sha256:d44d4848adcb16bab865e34a8f0f7245a14431052de9d37f63d9f401931f449a",
+      "submission_id": "submission_02"
+    },
+    {
+      "activity_id": "act_09_renovacion_y_desplazamiento",
+      "artifact_count": 1,
+      "bundle_hash": "sha256:60642980aa577b650d896e05a1e09d145d2dc445baa76cd68a4fe62b9bb04fb1",
+      "deterministic": true,
+      "evidence_unit_count": 44,
+      "replay_hash": "sha256:60642980aa577b650d896e05a1e09d145d2dc445baa76cd68a4fe62b9bb04fb1",
+      "submission_id": "submission_03"
+    },
+    {
+      "activity_id": "act_09_renovacion_y_desplazamiento",
+      "artifact_count": 1,
+      "bundle_hash": "sha256:874e943945b7792041663a1abccb803415dccbdbb6b6e2cee2f2fb05cab1caf5",
+      "deterministic": true,
+      "evidence_unit_count": 22,
+      "replay_hash": "sha256:874e943945b7792041663a1abccb803415dccbdbb6b6e2cee2f2fb05cab1caf5",
+      "submission_id": "submission_04"
+    },
+    {
+      "activity_id": "act_09_renovacion_y_desplazamiento",
+      "artifact_count": 1,
+      "bundle_hash": "sha256:56e6e7ef74a80b740afe637faf4321470b3ed3ef45ac7e5d29800b13780bd966",
+      "deterministic": true,
+      "evidence_unit_count": 103,
+      "replay_hash": "sha256:56e6e7ef74a80b740afe637faf4321470b3ed3ef45ac7e5d29800b13780bd966",
+      "submission_id": "submission_05"
+    },
+    {
+      "activity_id": "act_09_renovacion_y_desplazamiento",
+      "artifact_count": 1,
+      "bundle_hash": "sha256:a7782b6ec8c8fbc3a5b37d5b9407d01a6ed1ea98467d306af92f614be75ad6b9",
+      "deterministic": true,
+      "evidence_unit_count": 11,
+      "replay_hash": "sha256:a7782b6ec8c8fbc3a5b37d5b9407d01a6ed1ea98467d306af92f614be75ad6b9",
+      "submission_id": "submission_06"
+    },
+    {
+      "activity_id": "act_10_experimento_onboarding",
+      "artifact_count": 2,
+      "bundle_hash": "sha256:31b90f8c7ea7203534246820e0a05dca8a04edb4ddf92c87d44e1d89b87c781f",
+      "deterministic": true,
+      "evidence_unit_count": 17,
+      "replay_hash": "sha256:31b90f8c7ea7203534246820e0a05dca8a04edb4ddf92c87d44e1d89b87c781f",
+      "submission_id": "submission_01"
+    },
+    {
+      "activity_id": "act_10_experimento_onboarding",
+      "artifact_count": 2,
+      "bundle_hash": "sha256:9b9c51db7de55f692bf7032fe95c5da75bdb1cac2bd4ef5ad64f191f681b684a",
+      "deterministic": true,
+      "evidence_unit_count": 13,
+      "replay_hash": "sha256:9b9c51db7de55f692bf7032fe95c5da75bdb1cac2bd4ef5ad64f191f681b684a",
+      "submission_id": "submission_02"
+    },
+    {
+      "activity_id": "act_10_experimento_onboarding",
+      "artifact_count": 2,
+      "bundle_hash": "sha256:254e118d72df3c59ff712eb2f0484b4d8e095744241a19ce2738c9b4039215b5",
+      "deterministic": true,
+      "evidence_unit_count": 25,
+      "replay_hash": "sha256:254e118d72df3c59ff712eb2f0484b4d8e095744241a19ce2738c9b4039215b5",
+      "submission_id": "submission_03"
+    },
+    {
+      "activity_id": "act_10_experimento_onboarding",
+      "artifact_count": 2,
+      "bundle_hash": "sha256:f50b117b1b5b3ce317e3eccb512939882b9fdeb63ab7907f3abd8f69fa728ac4",
+      "deterministic": true,
+      "evidence_unit_count": 44,
+      "replay_hash": "sha256:f50b117b1b5b3ce317e3eccb512939882b9fdeb63ab7907f3abd8f69fa728ac4",
+      "submission_id": "submission_04"
+    },
+    {
+      "activity_id": "act_10_experimento_onboarding",
+      "artifact_count": 2,
+      "bundle_hash": "sha256:6f07516d807ab5a1c5e31643f5f0af1c4f1bf50d9659bd898f3ffb0560412b07",
+      "deterministic": true,
+      "evidence_unit_count": 67,
+      "replay_hash": "sha256:6f07516d807ab5a1c5e31643f5f0af1c4f1bf50d9659bd898f3ffb0560412b07",
+      "submission_id": "submission_05"
+    },
+    {
+      "activity_id": "act_10_experimento_onboarding",
+      "artifact_count": 2,
+      "bundle_hash": "sha256:16163a3e880259ae774a5fe94267bd409d40f9ede744643b7e1ee71b19fb3ea7",
+      "deterministic": true,
+      "evidence_unit_count": 27,
+      "replay_hash": "sha256:16163a3e880259ae774a5fe94267bd409d40f9ede744643b7e1ee71b19fb3ea7",
+      "submission_id": "submission_06"
+    },
+    {
+      "activity_id": "act_11_duplicados_en_pagos",
+      "artifact_count": 3,
+      "bundle_hash": "sha256:93e43b1dd27925450c69a4522ac29f740e32adf11cc544907b59785e71f35939",
+      "deterministic": true,
+      "evidence_unit_count": 26,
+      "replay_hash": "sha256:93e43b1dd27925450c69a4522ac29f740e32adf11cc544907b59785e71f35939",
+      "submission_id": "submission_01"
+    },
+    {
+      "activity_id": "act_11_duplicados_en_pagos",
+      "artifact_count": 3,
+      "bundle_hash": "sha256:5202855713ffe6b243874767b7f441d91ef4eba8581e696aa3c8da9d72059033",
+      "deterministic": true,
+      "evidence_unit_count": 31,
+      "replay_hash": "sha256:5202855713ffe6b243874767b7f441d91ef4eba8581e696aa3c8da9d72059033",
+      "submission_id": "submission_02"
+    },
+    {
+      "activity_id": "act_11_duplicados_en_pagos",
+      "artifact_count": 3,
+      "bundle_hash": "sha256:7ba8ac679a68e95af8848bf66bd7a2671d4edb6ff6270d1cecae4dea17f9410a",
+      "deterministic": true,
+      "evidence_unit_count": 26,
+      "replay_hash": "sha256:7ba8ac679a68e95af8848bf66bd7a2671d4edb6ff6270d1cecae4dea17f9410a",
+      "submission_id": "submission_03"
+    },
+    {
+      "activity_id": "act_11_duplicados_en_pagos",
+      "artifact_count": 3,
+      "bundle_hash": "sha256:f295c81d09d0e9ee4d3bd634b9e33dda5582f8ddce9690c17d20158dc3d95316",
+      "deterministic": true,
+      "evidence_unit_count": 27,
+      "replay_hash": "sha256:f295c81d09d0e9ee4d3bd634b9e33dda5582f8ddce9690c17d20158dc3d95316",
+      "submission_id": "submission_04"
+    },
+    {
+      "activity_id": "act_11_duplicados_en_pagos",
+      "artifact_count": 3,
+      "bundle_hash": "sha256:4a85a044e8fdf7589eadc4cbbc9ae278c5fde9e0ff1de19bdcfbde5d580e45fb",
+      "deterministic": true,
+      "evidence_unit_count": 15,
+      "replay_hash": "sha256:4a85a044e8fdf7589eadc4cbbc9ae278c5fde9e0ff1de19bdcfbde5d580e45fb",
+      "submission_id": "submission_05"
+    },
+    {
+      "activity_id": "act_11_duplicados_en_pagos",
+      "artifact_count": 3,
+      "bundle_hash": "sha256:6921c3a821424280e3b0338f274f46f42901d6f677bab63a94acab0d0efbb3af",
+      "deterministic": true,
+      "evidence_unit_count": 19,
+      "replay_hash": "sha256:6921c3a821424280e3b0338f274f46f42901d6f677bab63a94acab0d0efbb3af",
+      "submission_id": "submission_06"
+    },
+    {
+      "activity_id": "act_12_clinica_movil",
+      "artifact_count": 2,
+      "bundle_hash": "sha256:259395ca512a48980f942158669f3e3379cd77c1dacbbac99df4fb88a9027590",
+      "deterministic": true,
+      "evidence_unit_count": 14,
+      "replay_hash": "sha256:259395ca512a48980f942158669f3e3379cd77c1dacbbac99df4fb88a9027590",
+      "submission_id": "submission_01"
+    },
+    {
+      "activity_id": "act_12_clinica_movil",
+      "artifact_count": 1,
+      "bundle_hash": "sha256:b0fbb9e50f11ace8dbc74d6dfe452e1c71f73d73a51777ab2e1a2e4f58947b6e",
+      "deterministic": true,
+      "evidence_unit_count": 26,
+      "replay_hash": "sha256:b0fbb9e50f11ace8dbc74d6dfe452e1c71f73d73a51777ab2e1a2e4f58947b6e",
+      "submission_id": "submission_02"
+    },
+    {
+      "activity_id": "act_12_clinica_movil",
+      "artifact_count": 2,
+      "bundle_hash": "sha256:4c940f04c6a18cb110eb073edef3853b4cd10bfa350b6eedaaae5caa25ab9238",
+      "deterministic": true,
+      "evidence_unit_count": 29,
+      "replay_hash": "sha256:4c940f04c6a18cb110eb073edef3853b4cd10bfa350b6eedaaae5caa25ab9238",
+      "submission_id": "submission_03"
+    },
+    {
+      "activity_id": "act_12_clinica_movil",
+      "artifact_count": 2,
+      "bundle_hash": "sha256:253942e516a1ceaf4e5a3a09a97d2fcac71f4b9bd00e0abe6a929fd768910c20",
+      "deterministic": true,
+      "evidence_unit_count": 25,
+      "replay_hash": "sha256:253942e516a1ceaf4e5a3a09a97d2fcac71f4b9bd00e0abe6a929fd768910c20",
+      "submission_id": "submission_04"
+    },
+    {
+      "activity_id": "act_12_clinica_movil",
+      "artifact_count": 2,
+      "bundle_hash": "sha256:8289b936e6ac532d165f99abefdfa5b8e01bde62fc576f2085ceb89b07ac9ae3",
+      "deterministic": true,
+      "evidence_unit_count": 70,
+      "replay_hash": "sha256:8289b936e6ac532d165f99abefdfa5b8e01bde62fc576f2085ceb89b07ac9ae3",
+      "submission_id": "submission_05"
+    },
+    {
+      "activity_id": "act_12_clinica_movil",
+      "artifact_count": 2,
+      "bundle_hash": "sha256:6335f3d4c343763388ad5d6b4eae55c66a5dcf6e341b2c74a183855c4caaa5e9",
+      "deterministic": true,
+      "evidence_unit_count": 13,
+      "replay_hash": "sha256:6335f3d4c343763388ad5d6b4eae55c66a5dcf6e341b2c74a183855c4caaa5e9",
+      "submission_id": "submission_06"
+    }
+  ],
+  "pass_rate": 1.0,
+  "passed": 17,
+  "planner_cases": [
+    {
+      "actual_status": "ASSESSMENT_PLAN_INFEASIBLE",
+      "case_id": "PP-A01-S01-PLANNER-001",
+      "expected_status": "ASSESSMENT_PLAN_INFEASIBLE",
+      "plan_hash": "sha256:8b9cc7c63c1775f7e4f6c0a6991ec654cd76074b626c370415b0f3ee299ee38b",
+      "property_id": "A01-S01-P4",
+      "required_count": 3,
+      "result": "PASS",
+      "selected_count": 0
+    },
+    {
+      "actual_status": "READY",
+      "case_id": "PP-A01-S02-PLANNER-001",
+      "expected_status": "READY",
+      "plan_hash": "sha256:b421995054712c2a1c812ab68a395f49de427c54a0d305698ed973d38f174470",
+      "property_id": "A01-S02-P3",
+      "required_count": 3,
+      "result": "PASS",
+      "selected_count": 3
+    },
+    {
+      "actual_status": "ASSESSMENT_PLAN_INFEASIBLE",
+      "case_id": "PP-A01-S04-PLANNER-001",
+      "expected_status": "ASSESSMENT_PLAN_INFEASIBLE",
+      "plan_hash": "sha256:53a0b20eb97f926e3870be506d093542de85fa029762286958d274efcc3386ed",
+      "property_id": "A01-S04-P1",
+      "required_count": 3,
+      "result": "PASS",
+      "selected_count": 0
+    },
+    {
+      "actual_status": "ASSESSMENT_PLAN_INFEASIBLE",
+      "case_id": "PP-A02-S02-PLANNER-001",
+      "expected_status": "ASSESSMENT_PLAN_INFEASIBLE",
+      "plan_hash": "sha256:46064401bc5ba28f423f93ef5b82a525ff7c3856baebe03ed37f0ff71963d917",
+      "property_id": "A02-S02-P4",
+      "required_count": 3,
+      "result": "PASS",
+      "selected_count": 0
+    },
+    {
+      "actual_status": "ASSESSMENT_PLAN_INFEASIBLE",
+      "case_id": "PP-A02-S03-PLANNER-001",
+      "expected_status": "ASSESSMENT_PLAN_INFEASIBLE",
+      "plan_hash": "sha256:f23f760ae14580f0b7811e0b3261929a0b66972b3e2299ff0b18a91522cdac37",
+      "property_id": "A02-S03-P3",
+      "required_count": 3,
+      "result": "PASS",
+      "selected_count": 0
+    },
+    {
+      "actual_status": "READY",
+      "case_id": "PP-A02-S06-PLANNER-001",
+      "expected_status": "READY",
+      "plan_hash": "sha256:9b71d1f13654562464eb0b9f50b58b62b9becffb5e635b7a896ed8c4a37fd433",
+      "property_id": "A02-S06-P3",
+      "required_count": 3,
+      "result": "PASS",
+      "selected_count": 3
+    },
+    {
+      "actual_status": "ASSESSMENT_PLAN_INFEASIBLE",
+      "case_id": "PP-A03-PLANNER-ACT",
+      "expected_status": "ASSESSMENT_PLAN_INFEASIBLE",
+      "plan_hash": "sha256:b68bfd12338dc5e0e629ec153f5541831e55752de84212e6a018424ff540a8e5",
+      "property_id": "A03-ACT-P4",
+      "required_count": 3,
+      "result": "PASS",
+      "selected_count": 0
+    },
+    {
+      "actual_status": "ASSESSMENT_PLAN_INFEASIBLE",
+      "case_id": "PP-A03-S03-PLANNER-001",
+      "expected_status": "ASSESSMENT_PLAN_INFEASIBLE",
+      "plan_hash": "sha256:376abe986ab9cab1b18a21a75016cbc754eb01f4df6a57a5b248b98e663755da",
+      "property_id": "A03-S03-P1",
+      "required_count": 3,
+      "result": "PASS",
+      "selected_count": 0
+    },
+    {
+      "actual_status": "ASSESSMENT_PLAN_INFEASIBLE",
+      "case_id": "PP-A04-S03-PLANNER-001",
+      "expected_status": "ASSESSMENT_PLAN_INFEASIBLE",
+      "plan_hash": "sha256:e0c0629e6a984f2a0521a8a806a6f0b628d61139d0c8c22980260153385911fb",
+      "property_id": "A04-S03-P4",
+      "required_count": 3,
+      "result": "PASS",
+      "selected_count": 0
+    },
+    {
+      "actual_status": "ASSESSMENT_PLAN_INFEASIBLE",
+      "case_id": "PP-A04-S04-PLANNER-001",
+      "expected_status": "ASSESSMENT_PLAN_INFEASIBLE",
+      "plan_hash": "sha256:0edb60c338309c5fb864048c5efcb47c96f31434780893cc77d2453f5f168ace",
+      "property_id": "A04-S04-P4",
+      "required_count": 3,
+      "result": "PASS",
+      "selected_count": 0
+    },
+    {
+      "actual_status": "ASSESSMENT_PLAN_INFEASIBLE",
+      "case_id": "PP-A05-S05-PLANNER-001",
+      "expected_status": "ASSESSMENT_PLAN_INFEASIBLE",
+      "plan_hash": "sha256:288b46e5451a9c5434b338f8fcfcbc5db091ca7df3c8972d980f644069044dc2",
+      "property_id": "A05-S05-P3",
+      "required_count": 3,
+      "result": "PASS",
+      "selected_count": 0
+    },
+    {
+      "actual_status": "ASSESSMENT_PLAN_INFEASIBLE",
+      "case_id": "PP-A06-S06-PLANNER-001",
+      "expected_status": "ASSESSMENT_PLAN_INFEASIBLE",
+      "plan_hash": "sha256:27b3f2b7365baa65982bb793c7ce3dd195dbbf6a2d4174dae98c918dbb72bcbd",
+      "property_id": "A06-S06-P3",
+      "required_count": 3,
+      "result": "PASS",
+      "selected_count": 0
+    },
+    {
+      "actual_status": "ASSESSMENT_PLAN_INFEASIBLE",
+      "case_id": "PP-A07-PLANNER-ACT",
+      "expected_status": "ASSESSMENT_PLAN_INFEASIBLE",
+      "plan_hash": "sha256:96b4ac4351cf87c1c080a20896b55b64346f503ab345daa301fde90cee39a856",
+      "property_id": "A07-ACT-P4",
+      "required_count": 3,
+      "result": "PASS",
+      "selected_count": 0
+    },
+    {
+      "actual_status": "ASSESSMENT_PLAN_INFEASIBLE",
+      "case_id": "PP-A07-S01-PLANNER-001",
+      "expected_status": "ASSESSMENT_PLAN_INFEASIBLE",
+      "plan_hash": "sha256:222d798c0fb84a42c2efe039edfc8a51eef4e7e772c6fac842618d6d06a812eb",
+      "property_id": "A07-S01-P3",
+      "required_count": 3,
+      "result": "PASS",
+      "selected_count": 0
+    },
+    {
+      "actual_status": "ASSESSMENT_PLAN_INFEASIBLE",
+      "case_id": "PP-A07-S03-PLANNER-001",
+      "expected_status": "ASSESSMENT_PLAN_INFEASIBLE",
+      "plan_hash": "sha256:ce9cc3ab537ec2ff1e3ad57ae2e0f44cbcc8a321195b1e1436923eb5a5da9a1f",
+      "property_id": "A07-S03-P4",
+      "required_count": 3,
+      "result": "PASS",
+      "selected_count": 0
+    },
+    {
+      "actual_status": "ASSESSMENT_PLAN_INFEASIBLE",
+      "case_id": "PP-A08-S02-PLANNER-001",
+      "expected_status": "ASSESSMENT_PLAN_INFEASIBLE",
+      "plan_hash": "sha256:dc106c16081d4221a56cd763f9d4a1f04e6423f0f5d72c479df5567c2c8f09fb",
+      "property_id": "A08-S02-P4",
+      "required_count": 3,
+      "result": "PASS",
+      "selected_count": 0
+    },
+    {
+      "actual_status": "ASSESSMENT_PLAN_INFEASIBLE",
+      "case_id": "PP-A08-S06-PLANNER-001",
+      "expected_status": "ASSESSMENT_PLAN_INFEASIBLE",
+      "plan_hash": "sha256:89e7fd05c536132a62dfa75e513d92724c88c1c9e7bea0cdc6e284d8c25039a4",
+      "property_id": "A08-S06-P4",
+      "required_count": 3,
+      "result": "PASS",
+      "selected_count": 0
+    },
+    {
+      "actual_status": "ASSESSMENT_PLAN_INFEASIBLE",
+      "case_id": "PP-A10-PLANNER-ACT",
+      "expected_status": "ASSESSMENT_PLAN_INFEASIBLE",
+      "plan_hash": "sha256:1a06482c722b373909ee93a1ea7a7068a042bd55e9a54b4e754759c4c4dd7f1a",
+      "property_id": "A10-ACT-P4",
+      "required_count": 3,
+      "result": "PASS",
+      "selected_count": 0
+    },
+    {
+      "actual_status": "ASSESSMENT_PLAN_INFEASIBLE",
+      "case_id": "PP-A11-S05-PLANNER-001",
+      "expected_status": "ASSESSMENT_PLAN_INFEASIBLE",
+      "plan_hash": "sha256:b2091aff68a7eac02c7a9fa9677a49d58fa5027eef88fee2831ccac540164ece",
+      "property_id": "A11-S05-P3",
+      "required_count": 3,
+      "result": "PASS",
+      "selected_count": 0
+    },
+    {
+      "actual_status": "ASSESSMENT_PLAN_INFEASIBLE",
+      "case_id": "PP-A11-S06-PLANNER-001",
+      "expected_status": "ASSESSMENT_PLAN_INFEASIBLE",
+      "plan_hash": "sha256:c0dee618d6e276b911cefbf5b9e3d088961073ae85f2987ec026c927af3b7995",
+      "property_id": "A11-S06-P4",
+      "required_count": 3,
+      "result": "PASS",
+      "selected_count": 0
+    },
+    {
+      "actual_status": "ASSESSMENT_PLAN_INFEASIBLE",
+      "case_id": "PP-A12-S06-PLANNER-001",
+      "expected_status": "ASSESSMENT_PLAN_INFEASIBLE",
+      "plan_hash": "sha256:43f23fbd95fca68686372ec4a169959b5e8aa8a51a88d3928d5703fa44ce993c",
+      "property_id": "A12-S06-P4",
+      "required_count": 3,
+      "result": "PASS",
+      "selected_count": 0
+    }
+  ],
+  "provider_calls": 0,
+  "schema_version": "semantic-deterministic-report/1.1.0",
+  "total": 17
+}

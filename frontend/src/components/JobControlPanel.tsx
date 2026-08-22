@@ -22,6 +22,8 @@ interface FeedbackState {
   moveFocus: boolean;
 }
 
+type CopyState = "idle" | "copied" | "failed";
+
 const ACTION_COPY: Record<
   JobAction,
   { button: string; pending: string; success: string }
@@ -89,6 +91,7 @@ export function JobControlPanel({ jobId, onChange }: JobControlPanelProps) {
   const [loading, setLoading] = useState(true);
   const [pending, setPending] = useState<JobAction | null>(null);
   const [feedback, setFeedback] = useState<FeedbackState | null>(null);
+  const [copyState, setCopyState] = useState<CopyState>("idle");
   const [reload, setReload] = useState(0);
   const feedbackRef = useRef<HTMLDivElement>(null);
 
@@ -96,6 +99,7 @@ export function JobControlPanel({ jobId, onChange }: JobControlPanelProps) {
     let cancelled = false;
     setLoading(true);
     setFeedback(null);
+    setCopyState("idle");
     getJobControl(jobId)
       .then((next) => {
         if (cancelled) return;
@@ -149,6 +153,15 @@ export function JobControlPanel({ jobId, onChange }: JobControlPanelProps) {
     }
   };
 
+  const copyJobId = async () => {
+    try {
+      await navigator.clipboard.writeText(jobId);
+      setCopyState("copied");
+    } catch {
+      setCopyState("failed");
+    }
+  };
+
   return (
     <section
       aria-busy={loading || pending !== null}
@@ -171,6 +184,30 @@ export function JobControlPanel({ jobId, onChange }: JobControlPanelProps) {
 
       {view && (
         <>
+          <div className="job-reference">
+            <div>
+              <span className="mini-label">Identificador durable</span>
+              <code>{jobId}</code>
+            </div>
+            <button
+              className="button button-secondary"
+              onClick={() => void copyJobId()}
+              type="button"
+            >
+              {copyState === "copied" ? "Job ID copiado" : "Copiar job ID"}
+            </button>
+          </div>
+          {copyState !== "idle" && (
+            <p
+              aria-live={copyState === "failed" ? "assertive" : "polite"}
+              className={`job-copy-status ${copyState === "failed" ? "error-text" : ""}`}
+              role={copyState === "failed" ? "alert" : undefined}
+            >
+              {copyState === "copied"
+                ? "Identificador copiado al portapapeles."
+                : "No se pudo copiar automáticamente; selecciona el identificador visible."}
+            </p>
+          )}
           <div className="dual-status-grid">
             <article className="status-panel">
               <span className="mini-label">Job actual</span>

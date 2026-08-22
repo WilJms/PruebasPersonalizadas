@@ -1,0 +1,372 @@
+{
+  "ambiguous_count": 0,
+  "benchmark_version": "semantic-benchmark/1.1.0",
+  "exact_question_count": 12,
+  "fallback_count": 0,
+  "fixture_count": 4,
+  "question_count": 12,
+  "resolver_version": "p09-exact-locator-resolver/1.0.0",
+  "rows": [
+    {
+      "ambiguous": 0,
+      "fixture_id": "p09_fixture_act_03",
+      "question_fixture_id": "P09-A03-Q01",
+      "submission_id": "submission_05",
+      "support_evidence_ids_resolved": [
+        "ev_feec60e20d7ec1ae8c7d",
+        "ev_eb6ad6f0bd45703e16ba",
+        "ev_3ea45e0cd35c8c3c2705",
+        "ev_637254fccf82757f2672",
+        "ev_c303a07431cc533e765a",
+        "ev_f0a358de3e65990b61ba",
+        "ev_e6a5610a9c63186ed42f",
+        "ev_76263dccc3119ac4adee"
+      ],
+      "support_refs_declared": [
+        "01_assignment.docx#Costos autorizados y precio de venta",
+        "submissions/submission_05.pdf#Elección y tabla de cálculos"
+      ],
+      "unresolved": 0,
+      "visible_evidence_ids_resolved": [
+        "ev_feec60e20d7ec1ae8c7d",
+        "ev_eb6ad6f0bd45703e16ba",
+        "ev_3ea45e0cd35c8c3c2705",
+        "ev_637254fccf82757f2672",
+        "ev_c303a07431cc533e765a",
+        "ev_f0a358de3e65990b61ba",
+        "ev_e6a5610a9c63186ed42f",
+        "ev_76263dccc3119ac4adee"
+      ],
+      "visible_refs_declared": [
+        "submissions/submission_05.pdf#Elección y tabla de cálculos"
+      ],
+      "visible_subset_support": true
+    },
+    {
+      "ambiguous": 0,
+      "fixture_id": "p09_fixture_act_03",
+      "question_fixture_id": "P09-A03-Q02",
+      "submission_id": "submission_05",
+      "support_evidence_ids_resolved": [
+        "ev_eb2d2902e705aed0f05a",
+        "ev_76386bd7e3b219e58f4f",
+        "ev_a240ec603b14ea3be4df",
+        "ev_8e0c621d2f730718110b",
+        "ev_e293634cab6c9d688b83"
+      ],
+      "support_refs_declared": [
+        "01_assignment.docx#Opciones de capacidad y presupuesto",
+        "submissions/submission_05.pdf#Punto de comparación y sensibilidad"
+      ],
+      "unresolved": 0,
+      "visible_evidence_ids_resolved": [
+        "ev_eb2d2902e705aed0f05a",
+        "ev_76386bd7e3b219e58f4f",
+        "ev_a240ec603b14ea3be4df",
+        "ev_8e0c621d2f730718110b",
+        "ev_e293634cab6c9d688b83"
+      ],
+      "visible_refs_declared": [
+        "submissions/submission_05.pdf#Punto de comparación y sensibilidad"
+      ],
+      "visible_subset_support": true
+    },
+    {
+      "ambiguous": 0,
+      "fixture_id": "p09_fixture_act_03",
+      "question_fixture_id": "P09-A03-Q03",
+      "submission_id": "submission_05",
+      "support_evidence_ids_resolved": [
+        "ev_51e17d19d3da76f54ccf",
+        "ev_604dd709208827384004"
+      ],
+      "support_refs_declared": [
+        "01_assignment.docx#Presupuesto, costos y capacidad del dispensador",
+        "submissions/submission_05.pdf#Regla de revisión"
+      ],
+      "unresolved": 0,
+      "visible_evidence_ids_resolved": [
+        "ev_51e17d19d3da76f54ccf",
+        "ev_604dd709208827384004"
+      ],
+      "visible_refs_declared": [
+        "submissions/submission_05.pdf#Regla de revisión"
+      ],
+      "visible_subset_support": true
+    },
+    {
+      "ambiguous": 0,
+      "fixture_id": "p09_fixture_act_04",
+      "question_fixture_id": "P09-A04-Q01",
+      "submission_id": "submission_06",
+      "support_evidence_ids_resolved": [
+        "ev_de1cba84544cd04797df",
+        "ev_7ab196584d594010f750",
+        "ev_249c96141d2ed104b688",
+        "ev_a8e2c4dba9ba5cd0d388",
+        "ev_980679b6b5472eebbfbc",
+        "ev_0ae1110e283a8eac8bd8"
+      ],
+      "support_refs_declared": [
+        "01_assignment.docx#Contrato de pureza y operaciones autorizadas",
+        "submissions/submission_06_artifact_01.md#Función y caso de demostración",
+        "submissions/submission_06_artifact_02.txt#Afirmación de pureza"
+      ],
+      "unresolved": 0,
+      "visible_evidence_ids_resolved": [
+        "ev_de1cba84544cd04797df",
+        "ev_7ab196584d594010f750",
+        "ev_249c96141d2ed104b688",
+        "ev_a8e2c4dba9ba5cd0d388",
+        "ev_980679b6b5472eebbfbc",
+        "ev_0ae1110e283a8eac8bd8"
+      ],
+      "visible_refs_declared": [
+        "submissions/submission_06_artifact_01.md#Función y caso de demostración",
+        "submissions/submission_06_artifact_02.txt#Afirmación de pureza"
+      ],
+      "visible_subset_support": true
+    },
+    {
+      "ambiguous": 0,
+      "fixture_id": "p09_fixture_act_04",
+      "question_fixture_id": "P09-A04-Q02",
+      "submission_id": "submission_06",
+      "support_evidence_ids_resolved": [
+        "ev_de1cba84544cd04797df",
+        "ev_249c96141d2ed104b688",
+        "ev_a8e2c4dba9ba5cd0d388",
+        "ev_980679b6b5472eebbfbc",
+        "ev_5364ac7c738908d13538"
+      ],
+      "support_refs_declared": [
+        "01_assignment.docx#Duplicados por id",
+        "submissions/submission_06_artifact_01.md#Comprensión unicas y demo",
+        "submissions/submission_06_artifact_02.txt#Afirmación sobre primera aparición"
+      ],
+      "unresolved": 0,
+      "visible_evidence_ids_resolved": [
+        "ev_de1cba84544cd04797df",
+        "ev_249c96141d2ed104b688",
+        "ev_a8e2c4dba9ba5cd0d388",
+        "ev_980679b6b5472eebbfbc",
+        "ev_5364ac7c738908d13538"
+      ],
+      "visible_refs_declared": [
+        "submissions/submission_06_artifact_01.md#Comprensión unicas y demo",
+        "submissions/submission_06_artifact_02.txt#Afirmación sobre primera aparición"
+      ],
+      "visible_subset_support": true
+    },
+    {
+      "ambiguous": 0,
+      "fixture_id": "p09_fixture_act_04",
+      "question_fixture_id": "P09-A04-Q03",
+      "submission_id": "submission_06",
+      "support_evidence_ids_resolved": [
+        "ev_de1cba84544cd04797df",
+        "ev_a8e2c4dba9ba5cd0d388",
+        "ev_fb54c43c83db40ca984f",
+        "ev_5fd8fec8babe0add5130"
+      ],
+      "support_refs_declared": [
+        "01_assignment.docx#Orden global y cupos por grupo",
+        "submissions/submission_06_artifact_01.md#Bucle por grupo",
+        "submissions/submission_06_artifact_02.txt#Afirmación de orden global"
+      ],
+      "unresolved": 0,
+      "visible_evidence_ids_resolved": [
+        "ev_de1cba84544cd04797df",
+        "ev_a8e2c4dba9ba5cd0d388",
+        "ev_fb54c43c83db40ca984f",
+        "ev_5fd8fec8babe0add5130"
+      ],
+      "visible_refs_declared": [
+        "submissions/submission_06_artifact_01.md#Bucle por grupo",
+        "submissions/submission_06_artifact_02.txt#Afirmación de orden global"
+      ],
+      "visible_subset_support": true
+    },
+    {
+      "ambiguous": 0,
+      "fixture_id": "p09_fixture_act_09",
+      "question_fixture_id": "P09-A09-Q01",
+      "submission_id": "submission_05",
+      "support_evidence_ids_resolved": [
+        "ev_369674c4f1d40848dd71",
+        "ev_c172a210ff621ec0954a",
+        "ev_749b4021db25e157acf3",
+        "ev_986b98524d3ec86fecd1",
+        "ev_f28c3f449bc8254bdd62"
+      ],
+      "support_refs_declared": [
+        "01_assignment.docx#Fuentes A, B y C",
+        "submissions/submission_05.pdf#Secuencia y mecanismos"
+      ],
+      "unresolved": 0,
+      "visible_evidence_ids_resolved": [
+        "ev_369674c4f1d40848dd71",
+        "ev_c172a210ff621ec0954a",
+        "ev_749b4021db25e157acf3",
+        "ev_986b98524d3ec86fecd1",
+        "ev_f28c3f449bc8254bdd62"
+      ],
+      "visible_refs_declared": [
+        "submissions/submission_05.pdf#Secuencia y mecanismos"
+      ],
+      "visible_subset_support": true
+    },
+    {
+      "ambiguous": 0,
+      "fixture_id": "p09_fixture_act_09",
+      "question_fixture_id": "P09-A09-Q02",
+      "submission_id": "submission_05",
+      "support_evidence_ids_resolved": [
+        "ev_70b3c25f4d34ed7d2281",
+        "ev_3e925736c461be559cd6",
+        "ev_091ae3c5adcbd9cdbde3",
+        "ev_f49bb6da4ded01721f4b",
+        "ev_e554e46657b2b2c4dbe7",
+        "ev_15cc022b28bffd525160",
+        "ev_b38532dfafc5728fe075",
+        "ev_d101a247f423406c015f"
+      ],
+      "support_refs_declared": [
+        "01_assignment.docx#Fuente C y problemas históricos",
+        "submissions/submission_05.pdf#Contraargumento e interacción entre factores"
+      ],
+      "unresolved": 0,
+      "visible_evidence_ids_resolved": [
+        "ev_70b3c25f4d34ed7d2281",
+        "ev_3e925736c461be559cd6",
+        "ev_091ae3c5adcbd9cdbde3",
+        "ev_f49bb6da4ded01721f4b",
+        "ev_e554e46657b2b2c4dbe7",
+        "ev_15cc022b28bffd525160",
+        "ev_b38532dfafc5728fe075",
+        "ev_d101a247f423406c015f"
+      ],
+      "visible_refs_declared": [
+        "submissions/submission_05.pdf#Contraargumento e interacción entre factores"
+      ],
+      "visible_subset_support": true
+    },
+    {
+      "ambiguous": 0,
+      "fixture_id": "p09_fixture_act_09",
+      "question_fixture_id": "P09-A09-Q03",
+      "submission_id": "submission_05",
+      "support_evidence_ids_resolved": [
+        "ev_621a14094f3c45650454",
+        "ev_2053b8dda10a118d3006",
+        "ev_5e8d040274d4046337d5",
+        "ev_816c6347b12f2a69e59a",
+        "ev_6dccbabfc0b84c8cd06c",
+        "ev_9d0f534c25c7418c8264",
+        "ev_60ec4c5bd30442f38d98",
+        "ev_e4a225bfa5a1afb7cfe6"
+      ],
+      "support_refs_declared": [
+        "01_assignment.docx#Fuente C y alcance de la serie agregada",
+        "submissions/submission_05.pdf#Tres cantidades y cautela inferencial"
+      ],
+      "unresolved": 0,
+      "visible_evidence_ids_resolved": [
+        "ev_621a14094f3c45650454",
+        "ev_2053b8dda10a118d3006",
+        "ev_5e8d040274d4046337d5",
+        "ev_816c6347b12f2a69e59a",
+        "ev_6dccbabfc0b84c8cd06c",
+        "ev_9d0f534c25c7418c8264",
+        "ev_60ec4c5bd30442f38d98",
+        "ev_e4a225bfa5a1afb7cfe6"
+      ],
+      "visible_refs_declared": [
+        "submissions/submission_05.pdf#Tres cantidades y cautela inferencial"
+      ],
+      "visible_subset_support": true
+    },
+    {
+      "ambiguous": 0,
+      "fixture_id": "p09_fixture_act_12",
+      "question_fixture_id": "P09-A12-Q01",
+      "submission_id": "submission_06",
+      "support_evidence_ids_resolved": [
+        "ev_c12d2cc93f814053dbe0",
+        "ev_77551b7f1d577ced6cc2",
+        "ev_2b2118ec07ddcfc53a29",
+        "ev_fd1810c396b8a857eab9"
+      ],
+      "support_refs_declared": [
+        "01_assignment.docx#Privacidad y minimización de datos",
+        "submissions/submission_06_artifact_02.md#Cabecera y datos simulados"
+      ],
+      "unresolved": 0,
+      "visible_evidence_ids_resolved": [
+        "ev_c12d2cc93f814053dbe0",
+        "ev_77551b7f1d577ced6cc2",
+        "ev_2b2118ec07ddcfc53a29"
+      ],
+      "visible_refs_declared": [
+        "submissions/submission_06_artifact_02.md#Cabecera y datos simulados"
+      ],
+      "visible_subset_support": true
+    },
+    {
+      "ambiguous": 0,
+      "fixture_id": "p09_fixture_act_12",
+      "question_fixture_id": "P09-A12-Q02",
+      "submission_id": "submission_06",
+      "support_evidence_ids_resolved": [
+        "ev_39fe0a42639e45bbf901",
+        "ev_0771159b859b72f575b4",
+        "ev_16eb83100aa621cb8350"
+      ],
+      "support_refs_declared": [
+        "01_assignment.docx#Datos del mes, reglas operativas y tarea",
+        "02_rubric.docx#Regla de decisión, capacidad y trade-off",
+        "submissions/submission_06_artifact_01.txt#Cálculos no completados",
+        "submissions/submission_06_artifact_02.md#Ausencia de asignación"
+      ],
+      "unresolved": 0,
+      "visible_evidence_ids_resolved": [
+        "ev_39fe0a42639e45bbf901",
+        "ev_0771159b859b72f575b4",
+        "ev_16eb83100aa621cb8350"
+      ],
+      "visible_refs_declared": [
+        "submissions/submission_06_artifact_01.txt#Cálculos no completados",
+        "submissions/submission_06_artifact_02.md#Ausencia de asignación"
+      ],
+      "visible_subset_support": true
+    },
+    {
+      "ambiguous": 0,
+      "fixture_id": "p09_fixture_act_12",
+      "question_fixture_id": "P09-A12-Q03",
+      "submission_id": "submission_06",
+      "support_evidence_ids_resolved": [
+        "ev_77551b7f1d577ced6cc2",
+        "ev_6e054285df9727f9996d",
+        "ev_c2524da7d77b6f6795d8"
+      ],
+      "support_refs_declared": [
+        "01_assignment.docx#Implementación, revisión y confianza comunitaria",
+        "02_rubric.docx#Confianza comunitaria no verificable",
+        "submissions/submission_06_artifact_02.md#Declaración no sustentada de confianza"
+      ],
+      "unresolved": 0,
+      "visible_evidence_ids_resolved": [
+        "ev_6e054285df9727f9996d",
+        "ev_c2524da7d77b6f6795d8"
+      ],
+      "visible_refs_declared": [
+        "submissions/submission_06_artifact_02.md#Declaración no sustentada de confianza"
+      ],
+      "visible_subset_support": true
+    }
+  ],
+  "schema_version": "semantic-p09-fixture-integrity/1.1.0",
+  "unresolved_count": 0,
+  "visible_subset_support_count": 12
+}

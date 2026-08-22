@@ -1,0 +1,61 @@
+{
+  "adjudication_packets_emitted": 0,
+  "completion": {
+    "complete": false,
+    "completed_attempts": 12,
+    "extra_attempt_logical_call_ids": [],
+    "extra_completed_logical_call_ids": [],
+    "identity_mismatch_logical_call_ids": [],
+    "missing_planned_logical_call_ids": [
+      "CONTRACTUAL_HARD_SAFETY:P06:N3F-act_01_luz_y_plantines-submission_01:P06-C1-LUNA-HIGH:run2",
+      "SEMANTIC:P04:PP-A01-P04-001:P04-C1-TERRA-HIGH:run1",
+      "SEMANTIC:P04:PP-A01-P04-001:P04-C1-TERRA-HIGH:run2",
+      "SEMANTIC:P04:PP-A01-P04-001:P04-C1-TERRA-HIGH:run3",
+      "SEMANTIC:P06:PP-A01-S03-P06-G01:P06-C1-LUNA-HIGH:run1",
+      "SEMANTIC:P06:PP-A01-S03-P06-G01:P06-C1-LUNA-HIGH:run3",
+      "SEMANTIC:P07:PP-A01-S01-P07-O01:P07-C1-LUNA-HIGH:run1",
+      "SEMANTIC:P07:PP-A01-S01-P07-O01:P07-C1-LUNA-HIGH:run3",
+      "SEMANTIC:P07:PP-A01-S05-P07-O02:P07-C1-LUNA-HIGH:run2",
+      "SEMANTIC:P07:PP-A02-S02-P07-O01:P07-C1-LUNA-HIGH:run1",
+      "SEMANTIC:P07:PP-A02-S02-P07-O01:P07-C1-LUNA-HIGH:run3",
+      "SEMANTIC:P07:PP-A04-S04-P07-O01:P07-C1-LUNA-HIGH:run2",
+      "SEMANTIC:P07:PP-A04-S06-P07-O01:P07-C1-LUNA-HIGH:run1",
+      "SEMANTIC:P07:PP-A04-S06-P07-O01:P07-C1-LUNA-HIGH:run3",
+      "SEMANTIC:P07:PP-A08-S02-P07-O02:P07-C1-LUNA-HIGH:run2",
+      "SEMANTIC:P09:PP-A03-P09-F01:P09-C1-LUNA-HIGH:run1",
+      "SEMANTIC:P09:PP-A03-P09-F01:P09-C1-LUNA-HIGH:run2",
+      "SEMANTIC:P09:PP-A03-P09-F01:P09-C1-LUNA-HIGH:run3"
+    ],
+    "n3_packet_count": 2,
+    "off_plan_prompt_logical_call_ids": [],
+    "p06_semantic_observation_count": 2,
+    "planned_logical_calls": 30,
+    "semantic_packet_count": 18,
+    "successfully_completed_logical_calls": 12,
+    "unique_completed_logical_call_identities": 12,
+    "unique_planned_logical_call_identities": 30,
+    "violations": [
+      "SUCCESSFULLY_COMPLETED_LOGICAL_CALL_COUNT",
+      "COMPLETED_LOGICAL_CALL_IDENTITY_UNIQUENESS",
+      "MISSING_PLANNED_LOGICAL_CALL_IDENTITY",
+      "COMPLETED_ATTEMPT_POPULATION",
+      "SEMANTIC_PACKET_POPULATION",
+      "N3_PACKET_POPULATION",
+      "P06_SEMANTIC_OBSERVATION_POPULATION"
+    ]
+  },
+  "execution_dir": "reports/phase9_execution/v2_0_2/executions/exec-phase9v202-b820f4bfa94de537",
+  "execution_id": "exec-phase9v202-b820f4bfa94de537",
+  "manifest_hash": "sha256:3b8647e3226005ccc3bcfa3cf2c3463f1b2499bd3416769fa99a917e7536d49e",
+  "safety_counters": {
+    "adjudicator_calls": 0,
+    "billable_authorization": "phase9-high-smoke-20260821t195155z-3a9043f192fa",
+    "credential_resolutions": 1,
+    "high_smoke": "ATTEMPTED_INCOMPLETE",
+    "pricing_refresh": "VERIFIED_CURRENT_OFFICIAL_PRICING",
+    "provider_calls": 30,
+    "real_provider_transport": true,
+    "transport_factory_calls": 1
+  },
+  "status": "PHASE9_SMOKE_GENERATION_INCOMPLETE"
+}

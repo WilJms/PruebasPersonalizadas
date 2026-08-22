@@ -7,10 +7,16 @@ import pytest
 
 from comprehension_verification.contracts import models as m
 from comprehension_verification.model_gateway import (
+    DeterministicMockAdapter,
+    GatewayConfig,
+    GatewayMode,
     GatewayProviderError,
     GatewayTimeout,
+    ModelGateway,
     PermanentProviderError,
     TransientProviderError,
+    build_mock_request,
+    build_trusted_context,
 )
 from comprehension_verification.parsers import DOCX_MEDIA_TYPE, ParseRejected
 from comprehension_verification.web.auth import Actor
@@ -299,11 +305,18 @@ def test_gateway_failure_persists_failed_stage_without_reusable_output() -> None
     service = _service(repo)
 
     class FailingGateway:
+        @staticmethod
+        def execution_fingerprint(*_args: object, **_kwargs: object) -> str:
+            return "test-failing-gateway/1.0.0"
+
         async def invoke(self, *_args: object, **_kwargs: object) -> object:
             raise GatewayTimeout("provider timeout detail")
 
     service._gateway = (  # type: ignore[method-assign,return-value]
         lambda _job_id: FailingGateway()
+    )
+    service._trusted_prompt_context = (  # type: ignore[method-assign]
+        lambda *, request, **_kwargs: build_trusted_context(request)
     )
 
     async def fail_gateway_stage(running_job: JobRow) -> None:
@@ -329,6 +342,100 @@ def test_gateway_failure_persists_failed_stage_without_reusable_output() -> None
     assert stage_runs[0].diagnostics[0]["retryable"] is True
 
 
+def test_completed_p06_stage_replays_canonical_output_without_duplicate_call_or_stage() -> None:
+    repo = Repository("sqlite+pysqlite://")
+    repo.add(_activity())
+    first_job = _add_submission_job(
+        repo,
+        job_id="job_p06_first",
+        submission_id="sub_p06_reuse",
+    )
+    first_job.attempt = 1
+    with repo.session() as session:
+        persisted_first = session.get(JobRow, first_job.id)
+        assert persisted_first is not None
+        persisted_first.attempt = 1
+    resumed_job = JobRow(
+        id="job_p06_resumed",
+        tenant_id=TENANT_ID,
+        kind="SUBMISSION",
+        aggregate_id="sub_p06_reuse",
+        stage="EVIDENCE_MAP",
+        status="QUEUED",
+        progress=0.0,
+        attempt=1,
+        diagnostics=[],
+        resume_from_stage="EVIDENCE_MAP",
+    )
+    repo.add(resumed_job)
+    service = _service(repo)
+
+    class CountingAdapter(DeterministicMockAdapter):
+        def __init__(self) -> None:
+            super().__init__()
+            self.calls = 0
+
+        async def invoke(self, **kwargs: object):  # type: ignore[no-untyped-def]
+            self.calls += 1
+            return await super().invoke(**kwargs)
+
+    adapter = CountingAdapter()
+    gateway = ModelGateway(
+        GatewayConfig(mode=GatewayMode.MOCK, max_retries=0),
+        mock_adapter=adapter,
+        ledger_sink=repo.model_call_sink,
+    )
+    service.gateway_factory = lambda _job_id: gateway
+    service._trusted_prompt_context = (  # type: ignore[method-assign]
+        lambda *, request, **_kwargs: build_trusted_context(request)
+    )
+    request_data = build_mock_request("P06_EVIDENCE_MAP_V1").model_dump(
+        mode="json"
+    )
+    request_data["blueprint"]["activity_id"] = ACTIVITY_ID
+    request_data["evidence_bundle"].update(
+        {
+            "tenant_id": TENANT_ID,
+            "activity_id": ACTIVITY_ID,
+            "submission_id": "sub_p06_reuse",
+        }
+    )
+    for unit in request_data["evidence_bundle"]["evidence_units"]:
+        unit["tenant_id"] = TENANT_ID
+        unit["submission_id"] = "sub_p06_reuse"
+    request = m.EvidenceMapRequest.model_validate(request_data)
+
+    first = asyncio.run(
+        service._gateway_stage(
+            first_job,
+            "P06_EVIDENCE_MAP_V1",
+            request,
+            m.EvidenceMapPatch,
+        )
+    )
+    resumed = asyncio.run(
+        service._gateway_stage(
+            resumed_job,
+            "P06_EVIDENCE_MAP_V1",
+            request,
+            m.EvidenceMapPatch,
+        )
+    )
+
+    assert first == resumed
+    assert first.mapping_summary is not None
+    assert adapter.calls == 1
+    assert len(repo.model_calls(tenant_id=TENANT_ID)) == 1
+    assert len(repo.stage_runs_for_job(first_job.id, TENANT_ID)) == 1
+    assert repo.stage_runs_for_job(resumed_job.id, TENANT_ID) == []
+    reuse_events = repo.audit_events(
+        tenant_id=TENANT_ID,
+        event_type="stage.reused",
+        aggregate_id=resumed_job.id,
+    )
+    assert len(reuse_events) == 1
+
+
 def test_cancellation_during_gateway_discards_uncommitted_stage_output() -> None:
     repo = Repository("sqlite+pysqlite://")
     activity = _activity()
@@ -349,6 +456,10 @@ def test_cancellation_during_gateway_discards_uncommitted_stage_output() -> None
     service = _service(repo)
 
     class CancellingGateway:
+        @staticmethod
+        def execution_fingerprint(*_args: object, **_kwargs: object) -> str:
+            return "test-cancelling-gateway/1.0.0"
+
         async def invoke(self, *_args: object, **_kwargs: object) -> object:
             repo.request_job_cancel(
                 job_id=job.id,
@@ -360,6 +471,9 @@ def test_cancellation_during_gateway_discards_uncommitted_stage_output() -> None
 
     service._gateway = (  # type: ignore[method-assign,return-value]
         lambda _job_id: CancellingGateway()
+    )
+    service._trusted_prompt_context = (  # type: ignore[method-assign]
+        lambda *, request, **_kwargs: build_trusted_context(request)
     )
 
     async def cancel_gateway_stage(running_job: JobRow) -> None:

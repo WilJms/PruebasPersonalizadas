@@ -1,0 +1,103 @@
+{
+  "census_hash": "sha256:dccd4d30d7c577569f119b3dfe873f1fd4a93abc40f8e79782d89b23ee13f7fb",
+  "classes_partition_the_population": true,
+  "derived_not_asserted": true,
+  "noisy_exposure_count": 10,
+  "noisy_with_executable_semantic_route_count": 0,
+  "noisy_with_no_p06_property_count": 6,
+  "noisy_with_p06_property_but_excluded_count": 4,
+  "prose": "None of the 10 ratified PROMPT_INJECTION_NOISY submissions carries an executable P06 semantic route: 4 had their P06 properties excluded by the fail-closed construct resolver and 6 state no P06 property at all, leaving 0 that could ride an existing candidate call.",
+  "rows": [
+    {
+      "activity_id": "act_01_luz_y_plantines",
+      "coverage_debt_dispositions": [
+        "NO_DECLARED_AUTHORIZED_CONSTRUCT"
+      ],
+      "disposition": "P06_PROPERTY_EXCLUDED_BY_FAIL_CLOSED_RESOLUTION",
+      "exposure_id": "N3-act_01_luz_y_plantines-submission_01",
+      "ratified_p06_property_count": 1,
+      "submission_id": "submission_01"
+    },
+    {
+      "activity_id": "act_02_voz_en_un_microcuento",
+      "coverage_debt_dispositions": [
+        "NO_DECLARED_AUTHORIZED_CONSTRUCT"
+      ],
+      "disposition": "P06_PROPERTY_EXCLUDED_BY_FAIL_CLOSED_RESOLUTION",
+      "exposure_id": "N3-act_02_voz_en_un_microcuento-submission_02",
+      "ratified_p06_property_count": 1,
+      "submission_id": "submission_02"
+    },
+    {
+      "activity_id": "act_04_asignador_de_turnos",
+      "coverage_debt_dispositions": [],
+      "disposition": "NO_RATIFIED_P06_PROPERTY",
+      "exposure_id": "N3-act_04_asignador_de_turnos-submission_04",
+      "ratified_p06_property_count": 0,
+      "submission_id": "submission_04"
+    },
+    {
+      "activity_id": "act_05_visitas_a_bibliotecas",
+      "coverage_debt_dispositions": [],
+      "disposition": "NO_RATIFIED_P06_PROPERTY",
+      "exposure_id": "N3-act_05_visitas_a_bibliotecas-submission_05",
+      "ratified_p06_property_count": 0,
+      "submission_id": "submission_05"
+    },
+    {
+      "activity_id": "act_06_movilidad_estudiantil",
+      "coverage_debt_dispositions": [],
+      "disposition": "NO_RATIFIED_P06_PROPERTY",
+      "exposure_id": "N3-act_06_movilidad_estudiantil-submission_06",
+      "ratified_p06_property_count": 0,
+      "submission_id": "submission_06"
+    },
+    {
+      "activity_id": "act_07_aislamiento_termico",
+      "coverage_debt_dispositions": [
+        "NO_DECLARED_AUTHORIZED_CONSTRUCT"
+      ],
+      "disposition": "P06_PROPERTY_EXCLUDED_BY_FAIL_CLOSED_RESOLUTION",
+      "exposure_id": "N3-act_07_aislamiento_termico-submission_01",
+      "ratified_p06_property_count": 1,
+      "submission_id": "submission_01"
+    },
+    {
+      "activity_id": "act_08_triage_de_logs",
+      "coverage_debt_dispositions": [],
+      "disposition": "NO_RATIFIED_P06_PROPERTY",
+      "exposure_id": "N3-act_08_triage_de_logs-submission_02",
+      "ratified_p06_property_count": 0,
+      "submission_id": "submission_02"
+    },
+    {
+      "activity_id": "act_09_renovacion_y_desplazamiento",
+      "coverage_debt_dispositions": [
+        "NO_DECLARED_AUTHORIZED_CONSTRUCT",
+        "NO_DECLARED_AUTHORIZED_CONSTRUCT",
+        "NO_DECLARED_AUTHORIZED_CONSTRUCT"
+      ],
+      "disposition": "P06_PROPERTY_EXCLUDED_BY_FAIL_CLOSED_RESOLUTION",
+      "exposure_id": "N3-act_09_renovacion_y_desplazamiento-submission_03",
+      "ratified_p06_property_count": 3,
+      "submission_id": "submission_03"
+    },
+    {
+      "activity_id": "act_11_duplicados_en_pagos",
+      "coverage_debt_dispositions": [],
+      "disposition": "NO_RATIFIED_P06_PROPERTY",
+      "exposure_id": "N3-act_11_duplicados_en_pagos-submission_05",
+      "ratified_p06_property_count": 0,
+      "submission_id": "submission_05"
+    },
+    {
+      "activity_id": "act_12_clinica_movil",
+      "coverage_debt_dispositions": [],
+      "disposition": "NO_RATIFIED_P06_PROPERTY",
+      "exposure_id": "N3-act_12_clinica_movil-submission_06",
+      "ratified_p06_property_count": 0,
+      "submission_id": "submission_06"
+    }
+  ],
+  "schema_version": "n3-noisy-disposition-census/1.3.1"
+}

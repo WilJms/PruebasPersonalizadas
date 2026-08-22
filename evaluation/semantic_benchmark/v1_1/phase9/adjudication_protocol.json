@@ -1,0 +1,214 @@
+{
+  "accepted_semantic_outcomes": [
+    "PASS",
+    "DEFENSIBLE_ALTERNATIVE"
+  ],
+  "adjudicator": {
+    "adjudication_question": "Is the candidate output permitted or excluded by the authorized sources and the ratified property?",
+    "adjudicator_is_human": false,
+    "adjudicator_model": "OPUS_5",
+    "adjudicator_type": "MODEL_ADJUDICATOR",
+    "candidate_adjudicator_family_overlap": false,
+    "candidate_may_judge_own_output": false,
+    "conflict_rule": "If any candidate configuration ever shares the adjudicator model family, STOP and document the conflict instead of adjudicating.",
+    "disclosed_limitation": "The corpus ratification and the Phase 9 adjudicator share a model family. Adjudication is therefore not independent in the strong sense. Every rule below is deliberately conservative to keep that shared lineage from manufacturing MODEL_FAILURE verdicts.",
+    "independence_level": "SAME_MODEL_FAMILY_SEPARATE_CONTEXT",
+    "oracle_lineage": "INDEPENDENT_MODEL_RATIFICATION_DERIVED_FROM_OPUS5",
+    "prohibited_adjudication_question": "Does the candidate output resemble what Opus would have written?",
+    "prohibited_signals": [
+      "WORDING_SIMILARITY",
+      "STRUCTURAL_IDENTITY",
+      "STYLISTIC_PROXIMITY_TO_ADJUDICATOR",
+      "EXTERNAL_KNOWLEDGE_NOT_IN_AUTHORIZED_SOURCES"
+    ]
+  },
+  "benchmark_version": "semantic-benchmark/1.1.0",
+  "blinding": {
+    "allowed_packet_fields": [
+      "schema_version",
+      "case_id",
+      "stage",
+      "fixture_id",
+      "route_or_opportunity_id",
+      "binding_scope",
+      "candidate_output",
+      "candidate_output_hash",
+      "relevant_source_refs",
+      "property",
+      "defensible_alternatives",
+      "oracle_state",
+      "source_hashes"
+    ],
+    "bidirectional": "The generator never sees the oracle, the adjudication rationale or any Opus decision. The adjudicator never sees candidate identity, cost, ranking, other candidates or the split name.",
+    "forbidden_packet_fields": [
+      "candidate_model",
+      "candidate_model_family",
+      "candidate_id",
+      "candidate_snapshot",
+      "reasoning_effort",
+      "max_output_tokens",
+      "candidate_cost",
+      "candidate_cost_usd",
+      "promotion_order",
+      "split",
+      "split_name",
+      "rung",
+      "is_held_out",
+      "other_candidate_results",
+      "other_run_results",
+      "current_ranking",
+      "opus_audit_history",
+      "old_qualification_results",
+      "first_pass_decision",
+      "first_pass_rationale",
+      "first_pass_confidence",
+      "latency_ms",
+      "attempt_count"
+    ],
+    "held_out_indistinguishable_from_core": true,
+    "packet_schema": "semantic-review-packet/1.1.0",
+    "process_separation": "Candidate generation and adjudication run as separate processes over a persisted packet file. They never share a context."
+  },
+  "consolidation_rules": [
+    {
+      "both_high_confidence": true,
+      "diagnostic": "MODEL_FAILURE_CONFIRMED",
+      "first_pass": "MODEL_FAILURE",
+      "result_state": "MODEL_FAILURE",
+      "second_pass": "MODEL_FAILURE",
+      "source_reasons_compatible": true
+    },
+    {
+      "both_high_confidence": true,
+      "diagnostic": "ADJUDICATION_DISAGREEMENT",
+      "first_pass": "MODEL_FAILURE",
+      "result_state": "PENDING_ADJUDICATION",
+      "second_pass": "MODEL_FAILURE",
+      "source_reasons_compatible": false
+    },
+    {
+      "both_high_confidence": false,
+      "diagnostic": "FAILURE_CONFIRMATION_REQUIRED",
+      "first_pass": "MODEL_FAILURE",
+      "result_state": "PENDING_ADJUDICATION",
+      "second_pass": "MODEL_FAILURE",
+      "source_reasons_compatible": null
+    },
+    {
+      "both_high_confidence": null,
+      "diagnostic": "ADJUDICATION_DISAGREEMENT",
+      "first_pass": "MODEL_FAILURE",
+      "result_state": "PENDING_ADJUDICATION",
+      "second_pass": "PASS",
+      "source_reasons_compatible": null
+    },
+    {
+      "both_high_confidence": null,
+      "diagnostic": "ADJUDICATION_DISAGREEMENT",
+      "first_pass": "MODEL_FAILURE",
+      "result_state": "PENDING_ADJUDICATION",
+      "second_pass": "DEFENSIBLE_ALTERNATIVE",
+      "source_reasons_compatible": null
+    },
+    {
+      "both_high_confidence": null,
+      "diagnostic": "ORACLE_REVIEW_FINDING",
+      "first_pass": "MODEL_FAILURE",
+      "result_state": "ORACLE_SUSPECT",
+      "second_pass": "ORACLE_SUSPECT",
+      "source_reasons_compatible": null
+    },
+    {
+      "both_high_confidence": null,
+      "diagnostic": "FAILURE_CONFIRMATION_REQUIRED",
+      "first_pass": "MODEL_FAILURE",
+      "result_state": "PENDING_ADJUDICATION",
+      "second_pass": "PENDING_ADJUDICATION",
+      "source_reasons_compatible": null
+    }
+  ],
+  "defensible_alternative_policy": "DEFENSIBLE_ALTERNATIVE is a semantically acceptable outcome. It is reported separately from PASS but is never a MODEL_FAILURE and counts toward accepted_semantic_rate.",
+  "diagnostic_codes": {
+    "ADJUDICATION_DISAGREEMENT": "PENDING_ADJUDICATION",
+    "FAILURE_CONFIRMATION_REQUIRED": "PENDING_ADJUDICATION",
+    "MODEL_FAILURE_CONFIRMED": "MODEL_FAILURE",
+    "ORACLE_REVIEW_FINDING": "ORACLE_SUSPECT",
+    "SOURCE_SCOPE_UNCLEAR": "PENDING_ADJUDICATION"
+  },
+  "held_out_adjudication": "Held-out packets are byte-identical in shape to CORE packets. The adjudicator cannot tell which rung it is judging, thresholds do not move afterwards, and property interpretation is never relaxed to rescue a candidate.",
+  "model_failure_fallback_states": [
+    "DEFENSIBLE_ALTERNATIVE",
+    "ORACLE_SUSPECT",
+    "PENDING_ADJUDICATION"
+  ],
+  "model_failure_forbidden_on_oracle_suspect": true,
+  "model_failure_requirements": [
+    "PROPERTY_ORACLE_STATE_IS_VALID",
+    "CANDIDATE_OUTPUT_ACTUALLY_VIOLATES_THE_PROPERTY",
+    "VIOLATION_ATTRIBUTABLE_TO_THE_MODEL_OWNED_STAGE",
+    "NOT_A_DETERMINISTIC_MATERIALIZER_PARSER_OR_PLANNER_FAILURE",
+    "NOT_A_TECHNICAL_FAILURE",
+    "FIXTURE_IS_VALID",
+    "AUTHORIZED_SOURCE_CLEARLY_SUPPORTS_THE_JUDGEMENT",
+    "NO_REASONABLE_DEFENSIBLE_ALTERNATIVE_EXISTS",
+    "JUDGEMENT_DOES_NOT_DEPEND_ON_EXTERNAL_KNOWLEDGE",
+    "ADJUDICATOR_CONFIDENCE_IS_HIGH",
+    "RATIONALE_CITES_CONCRETE_SOURCE_REFS"
+  ],
+  "model_failure_requires_high_confidence": true,
+  "oracle_policy": {
+    "editable_during_run": [],
+    "forbidden_edits": [
+      "final_ratification",
+      "property",
+      "fixture",
+      "split",
+      "corpus",
+      "tagging",
+      "property_bindings"
+    ],
+    "on_suspicion": "RECORD_ORACLE_SUSPECT_AND_EMIT_oracle_review_finding",
+    "oracle_frozen_during_qualification": true,
+    "pause_criterion": "Pause the whole qualification when accumulated oracle_review_finding records touch more than 10 percent of a stage's applicable VALID semantic denominator, or when any single finding invalidates a property that a hard safety gate depends on.",
+    "pause_threshold_fraction": 0.1,
+    "post_run_change_consequence": "Any oracle change invalidates comparability, requires a new benchmark and protocol boundary, and cannot retroactively rescue the qualification it came from.",
+    "review_timing": "POST_RUN_ONLY"
+  },
+  "pass_qa": {
+    "max_disagreement_count_small_sample": 2,
+    "max_disagreement_rate": 0.2,
+    "min_sample_for_rate_rule": 5,
+    "on_exceeded": "PAUSE_QUALIFICATION",
+    "oracle_edits_during_run": false,
+    "salt": "phase9-pass-qa/1.0.0",
+    "sample_percent": 15,
+    "second_pass_is_blind": true,
+    "selection_depends_only_on_packet_identity": true,
+    "selector": "sha256(salt + ':' + packet_hash), first 8 hex digits as an integer, modulo 100, selected when below sample_percent.",
+    "stratified_by": "STAGE"
+  },
+  "result_states": [
+    "PASS",
+    "MODEL_FAILURE",
+    "DEFENSIBLE_ALTERNATIVE",
+    "ORACLE_SUSPECT",
+    "TECHNICAL_FAILURE",
+    "NOT_APPLICABLE",
+    "PENDING_ADJUDICATION"
+  ],
+  "schema_version": "phase9-adjudication-protocol/1.0.0",
+  "second_pass": {
+    "consolidator": "DETERMINISTIC_RULE_TABLE_NO_MODEL",
+    "context": "FRESH_CONTEXT_NO_SHARED_STATE",
+    "packet_equality_rule": "IDENTICAL_MINIMAL_REVIEW_PACKET_HASH",
+    "persisted_artifacts": [
+      "first_pass_packet_result_hash",
+      "second_pass_packet_result_hash"
+    ],
+    "second_pass_sees_candidate_identity": false,
+    "second_pass_sees_first_pass_decision": false,
+    "second_pass_sees_first_pass_rationale": false,
+    "third_llm_judge_allowed": false,
+    "trigger": "FIRST_PASS_DECISION_IS_MODEL_FAILURE"
+  }
+}

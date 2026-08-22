@@ -1,0 +1,177 @@
+{
+  "authorization": "NONE",
+  "benchmark_boundary_hash": "sha256:981ee8f47928b653a5cf62cb6c305cc767cb37ae88f5611de106bee039212976",
+  "benchmark_version": "semantic-benchmark/1.3.1",
+  "candidate_count": 11,
+  "candidate_identities_changed_from_v12": false,
+  "candidate_identities_changed_from_v130": false,
+  "candidate_identity_fields": [
+    "stage",
+    "model",
+    "reasoning_effort",
+    "max_output_tokens",
+    "route_profile_id"
+  ],
+  "candidate_matrix_hash": "sha256:1a8b3431907082ca1cc4a0783f5b561ae6b1818f24fad37c9bc6cf4bbc57cb6f",
+  "candidates": [
+    {
+      "candidate_id": "P04-C1-TERRA-HIGH",
+      "hypothesis": "The family the activity side has been assigned already meets the blueprint bar at its default reasoning; if it qualifies, no deeper reasoning is justified.",
+      "max_output_tokens": 16000,
+      "model": "gpt-5.6-terra",
+      "promotion_order": 1,
+      "reasoning_effort": "HIGH",
+      "route_profile_id": "TERRA_HIGH_V1",
+      "stage": "P04"
+    },
+    {
+      "candidate_id": "P04-C2-TERRA-XHIGH",
+      "hypothesis": "Residual blueprint defects are reasoning-depth bound within Terra. This is the last rung the activity side may buy.",
+      "max_output_tokens": 16000,
+      "model": "gpt-5.6-terra",
+      "promotion_order": 2,
+      "reasoning_effort": "XHIGH",
+      "route_profile_id": "TERRA_XHIGH_V1",
+      "stage": "P04"
+    },
+    {
+      "candidate_id": "P06-C1-LUNA-HIGH",
+      "hypothesis": "The assigned submission-side family already maps evidence adequately.",
+      "max_output_tokens": 16000,
+      "model": "gpt-5.6-luna",
+      "promotion_order": 1,
+      "reasoning_effort": "HIGH",
+      "route_profile_id": "LUNA_BASELINE_V1",
+      "stage": "P06"
+    },
+    {
+      "candidate_id": "P06-C2-LUNA-XHIGH",
+      "hypothesis": "Residual evidence-mapping errors are reasoning-depth bound, not model-class bound.",
+      "max_output_tokens": 16000,
+      "model": "gpt-5.6-luna",
+      "promotion_order": 2,
+      "reasoning_effort": "XHIGH",
+      "route_profile_id": "LUNA_XHIGH_V1",
+      "stage": "P06"
+    },
+    {
+      "candidate_id": "P06-C3-LUNA-MAX",
+      "hypothesis": "The deepest reasoning the submission-side family offers is the last rung available before NO_QUALIFYING_CONFIGURATION.",
+      "max_output_tokens": 16000,
+      "model": "gpt-5.6-luna",
+      "promotion_order": 3,
+      "reasoning_effort": "MAX",
+      "route_profile_id": "LUNA_MAX_V1",
+      "stage": "P06"
+    },
+    {
+      "candidate_id": "P07-C1-LUNA-HIGH",
+      "hypothesis": "The assigned submission-side family already builds sound questions.",
+      "max_output_tokens": 10000,
+      "model": "gpt-5.6-luna",
+      "promotion_order": 1,
+      "reasoning_effort": "HIGH",
+      "route_profile_id": "LUNA_BASELINE_V1",
+      "stage": "P07"
+    },
+    {
+      "candidate_id": "P07-C2-LUNA-XHIGH",
+      "hypothesis": "Question construction under anti-leakage constraints is the most reasoning-dense per-submission stage; depth closes the residual.",
+      "max_output_tokens": 10000,
+      "model": "gpt-5.6-luna",
+      "promotion_order": 2,
+      "reasoning_effort": "XHIGH",
+      "route_profile_id": "LUNA_XHIGH_V1",
+      "stage": "P07"
+    },
+    {
+      "candidate_id": "P07-C3-LUNA-MAX",
+      "hypothesis": "P07 multiplies by opportunity as well as by submission, so the deepest Luna rung is the last one the economics permit.",
+      "max_output_tokens": 10000,
+      "model": "gpt-5.6-luna",
+      "promotion_order": 3,
+      "reasoning_effort": "MAX",
+      "route_profile_id": "LUNA_MAX_V1",
+      "stage": "P07"
+    },
+    {
+      "candidate_id": "P09-C1-LUNA-HIGH",
+      "hypothesis": "P09 is an alias-only enrichment of an already approved assessment with server-owned identity, so the default rung should suffice.",
+      "max_output_tokens": 10000,
+      "model": "gpt-5.6-luna",
+      "promotion_order": 1,
+      "reasoning_effort": "HIGH",
+      "route_profile_id": "LUNA_BASELINE_V1",
+      "stage": "P09"
+    },
+    {
+      "candidate_id": "P09-C2-LUNA-XHIGH",
+      "hypothesis": "Guide enrichment residuals are reasoning-depth bound.",
+      "max_output_tokens": 10000,
+      "model": "gpt-5.6-luna",
+      "promotion_order": 2,
+      "reasoning_effort": "XHIGH",
+      "route_profile_id": "LUNA_XHIGH_V1",
+      "stage": "P09"
+    },
+    {
+      "candidate_id": "P09-C3-LUNA-MAX",
+      "hypothesis": "The deepest Luna rung, kept for ladder symmetry with the other submission-side stages.",
+      "max_output_tokens": 10000,
+      "model": "gpt-5.6-luna",
+      "promotion_order": 3,
+      "reasoning_effort": "MAX",
+      "route_profile_id": "LUNA_MAX_V1",
+      "stage": "P09"
+    }
+  ],
+  "carried_candidate_identity_hash": "sha256:f93404d60fd5ecd06e63117a10ea912c5f981f8ad69f9b7ce0aa01e7cb4c73d0",
+  "cross_family_fallback": "FORBIDDEN",
+  "cross_family_fallback_rule": "A stage may never be rescued by a model family other than the one its side owns. Exhausting the ladder yields NO_QUALIFYING_CONFIGURATION. Substituting the other family after observing a failure would convert a frozen economic constraint into a result-driven choice, which is exactly what pre-registration exists to prevent.",
+  "excluded_model_families": [
+    {
+      "candidate_in_phase_9": false,
+      "exclusion_reason": "The routing policy assigns the activity side to Terra and the submission side to Luna. Sol is a candidate on neither side, so pricing it or running it would measure a configuration the product has decided not to ship.",
+      "model": "gpt-5.6-sol",
+      "official_source": "https://developers.openai.com/api/docs/models/gpt-5.6-sol",
+      "verified_in_phase_9a": true
+    }
+  ],
+  "execution_state": "NOT_EXECUTED",
+  "max_candidates_per_stage": 3,
+  "new_hash_reason": "The candidate identities did not change and are proved byte-identical to v1.3.0. The matrix hash moves because it binds phase9-qualification-protocol/1.3.1 and the v1.3.1 global boundary, both of which changed when the N3 provider-call authority became bound.",
+  "no_qualifying_configuration_policy": "If every candidate for a stage fails its rung, the stage result is NO_QUALIFYING_CONFIGURATION. Adding a candidate mid-qualification is forbidden; it requires a new candidate matrix hash and protocol boundary. In particular the ladder may not be extended into another model family: NO_QUALIFYING_CONFIGURATION is a reportable product finding, not a fallback trigger.",
+  "pricing_refreshed_in_this_phase": false,
+  "protocol_version": "phase9-qualification-protocol/1.3.1",
+  "reasoning_change_creates_new_candidate": true,
+  "schema_version": "phase9-candidate-matrix/1.3.1",
+  "selection_rule": "LOWEST_REASONING_CONFIGURATION_THAT_QUALIFIES",
+  "sol_fallback": "FORBIDDEN",
+  "stage_model_family": {
+    "P04": "gpt-5.6-terra",
+    "P06": "gpt-5.6-luna",
+    "P07": "gpt-5.6-luna",
+    "P09": "gpt-5.6-luna"
+  },
+  "stage_reasoning_ladder": {
+    "P04": [
+      "HIGH",
+      "XHIGH"
+    ],
+    "P06": [
+      "HIGH",
+      "XHIGH",
+      "MAX"
+    ],
+    "P07": [
+      "HIGH",
+      "XHIGH",
+      "MAX"
+    ],
+    "P09": [
+      "HIGH",
+      "XHIGH",
+      "MAX"
+    ]
+  }
+}

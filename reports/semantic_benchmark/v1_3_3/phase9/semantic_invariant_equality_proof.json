@@ -1,0 +1,336 @@
+{
+  "adjudicator_calls": 0,
+  "all_identical": true,
+  "construct_selection_changed": false,
+  "corpus_bytes_modified": false,
+  "from_version": "semantic-benchmark/1.3.2",
+  "invariant_count": 28,
+  "invariants": [
+    {
+      "derived_from_v133_authority": "sha256:267f4ae570aecb856019690c6a9a9363a599552665d55a4b22d67fb682f31027",
+      "identical": true,
+      "invariant": "candidate_scoring_set_hash",
+      "note": "reconstructed from 1.3.3 authority and compared with the published 1.3.2 P06 boundary",
+      "published_in_v132": "sha256:267f4ae570aecb856019690c6a9a9363a599552665d55a4b22d67fb682f31027"
+    },
+    {
+      "derived_from_v133_authority": "sha256:2847c21909b899ad97082f3d6b116767a83595e5fabff25b72dcd4c17cb0e0e2",
+      "identical": true,
+      "invariant": "route_definitions_hash",
+      "note": "reconstructed from 1.3.3 authority and compared with the published 1.3.2 P06 boundary",
+      "published_in_v132": "sha256:2847c21909b899ad97082f3d6b116767a83595e5fabff25b72dcd4c17cb0e0e2"
+    },
+    {
+      "derived_from_v133_authority": "sha256:1605381f9a4a27f80bcc703ab94ad576ae30325664e6d30bba74a8646eec3e37",
+      "identical": true,
+      "invariant": "case_definitions_hash",
+      "note": "reconstructed from 1.3.3 authority and compared with the published 1.3.2 P06 boundary",
+      "published_in_v132": "sha256:1605381f9a4a27f80bcc703ab94ad576ae30325664e6d30bba74a8646eec3e37"
+    },
+    {
+      "derived_from_v133_authority": "sha256:8f83f4bf495ffc3276d8d20b2e2ad23f54792ccb3549b78f3cefd64cc8f007c2",
+      "identical": true,
+      "invariant": "property_bindings_hash",
+      "note": "reconstructed from 1.3.3 authority and compared with the published 1.3.2 P06 boundary",
+      "published_in_v132": "sha256:8f83f4bf495ffc3276d8d20b2e2ad23f54792ccb3549b78f3cefd64cc8f007c2"
+    },
+    {
+      "derived_from_v133_authority": "sha256:4a1f86e6cbdf120f1e465e43be6730c7c39c394919d8a703cb61655f3b64b792",
+      "identical": true,
+      "invariant": "split_assignments_hash",
+      "note": "reconstructed from 1.3.3 authority and compared with the published 1.3.2 P06 boundary",
+      "published_in_v132": "sha256:4a1f86e6cbdf120f1e465e43be6730c7c39c394919d8a703cb61655f3b64b792"
+    },
+    {
+      "derived_from_v133_authority": "sha256:77557edc5b0ca0ca5a7d793111fde8f47751e38c51bf4908efe132ddafa98932",
+      "identical": true,
+      "invariant": "construct_catalog_hash",
+      "note": "reconstructed from 1.3.3 authority and compared with the published 1.3.2 P06 boundary",
+      "published_in_v132": "sha256:77557edc5b0ca0ca5a7d793111fde8f47751e38c51bf4908efe132ddafa98932"
+    },
+    {
+      "derived_from_v133_authority": "sha256:b6b7978f10df1c0bb31ff07b5d7873fb3a89047e028e3f74b701ce5c634694d1",
+      "identical": true,
+      "invariant": "coverage_debt_hash",
+      "note": "reconstructed from 1.3.3 authority and compared with the published 1.3.2 P06 boundary",
+      "published_in_v132": "sha256:b6b7978f10df1c0bb31ff07b5d7873fb3a89047e028e3f74b701ce5c634694d1"
+    },
+    {
+      "derived_from_v133_authority": "sha256:7338d95dba5d4f0644016e88c728a8c26206a2f8b79c66d8bcb3cd16a2cc2478",
+      "identical": true,
+      "invariant": "fixture_input_hashes_hash",
+      "note": "reconstructed from 1.3.3 authority and compared with the published 1.3.2 P06 boundary",
+      "published_in_v132": "sha256:7338d95dba5d4f0644016e88c728a8c26206a2f8b79c66d8bcb3cd16a2cc2478"
+    },
+    {
+      "derived_from_v133_authority": "sha256:aeefc371cc0af81291c91fb4349e0639243bd061b150b212a395d0cfc14cca24",
+      "identical": true,
+      "invariant": "p06_instrument_hash",
+      "note": "reconstructed from 1.3.3 authority and compared with the published 1.3.2 P06 boundary",
+      "published_in_v132": "sha256:aeefc371cc0af81291c91fb4349e0639243bd061b150b212a395d0cfc14cca24"
+    },
+    {
+      "derived_from_v133_authority": "sha256:09b74c8a1d3328c6075038a6f2d844ae57e29418daaec813656195e0347a4fa2",
+      "identical": true,
+      "invariant": "support_status_coverage_hash",
+      "note": "reconstructed from 1.3.3 authority and compared with the published 1.3.2 P06 boundary",
+      "published_in_v132": "sha256:09b74c8a1d3328c6075038a6f2d844ae57e29418daaec813656195e0347a4fa2"
+    },
+    {
+      "derived_from_v133_authority": "sha256:a3a3118ff3e02d918b16d1c312493a2beaffabd1951d98b6de52fa40c5d0fc67",
+      "identical": true,
+      "invariant": "n3_axis_hash",
+      "note": "reconstructed from 1.3.3 authority and compared with the published 1.3.2 P06 boundary",
+      "published_in_v132": "sha256:a3a3118ff3e02d918b16d1c312493a2beaffabd1951d98b6de52fa40c5d0fc67"
+    },
+    {
+      "derived_from_v133_authority": "sha256:d852094b1e7062af045fb4b2d4e71f42a07a7790d0e624183274b11a8b0acfa6",
+      "identical": true,
+      "invariant": "n3_exposure_population_hash",
+      "note": "reconstructed from 1.3.3 authority and compared with the published 1.3.2 P06 boundary",
+      "published_in_v132": "sha256:d852094b1e7062af045fb4b2d4e71f42a07a7790d0e624183274b11a8b0acfa6"
+    },
+    {
+      "derived_from_v133_authority": "sha256:f53ec77ae4c26732644083d10497e65e1a1bc34f830e675aa4848669d106c62d",
+      "identical": true,
+      "invariant": "n3_provider_fixture_set_hash",
+      "note": "reconstructed from 1.3.3 authority and compared with the published 1.3.2 P06 boundary",
+      "published_in_v132": "sha256:f53ec77ae4c26732644083d10497e65e1a1bc34f830e675aa4848669d106c62d"
+    },
+    {
+      "derived_from_v133_authority": "sha256:ab909f23ed43e61a727c19735583ce64daf46ab78134cf57dabc6695df2f0947",
+      "identical": true,
+      "invariant": "n3_contractual_policy_authority_hash",
+      "note": "reconstructed from 1.3.3 authority and compared with the published 1.3.2 P06 boundary",
+      "published_in_v132": "sha256:ab909f23ed43e61a727c19735583ce64daf46ab78134cf57dabc6695df2f0947"
+    },
+    {
+      "derived_from_v133_authority": "sha256:341a0c1a02dcd37956aa9950f023f10f91c30a6b9fd4292889e8105853f5b10b",
+      "identical": true,
+      "invariant": "n3_safety_smoke_selector_hash",
+      "note": "reconstructed from 1.3.3 authority and compared with the published 1.3.2 P06 boundary",
+      "published_in_v132": "sha256:341a0c1a02dcd37956aa9950f023f10f91c30a6b9fd4292889e8105853f5b10b"
+    },
+    {
+      "derived_from_v133_authority": "sha256:863404d0ae1df4567c08608b178b0603c3ba4b7c88c60b3facbe071d2a68d960",
+      "identical": true,
+      "invariant": "n3_violation_classes_hash",
+      "note": "reconstructed from 1.3.3 authority and compared with the published 1.3.2 P06 boundary",
+      "published_in_v132": "sha256:863404d0ae1df4567c08608b178b0603c3ba4b7c88c60b3facbe071d2a68d960"
+    },
+    {
+      "derived_from_v133_authority": "21c21f3a53bfb786162dc350dc38c93b7b007d9f23b744a354de4ac2354048a1",
+      "identical": true,
+      "invariant": "corpus_package_boundary_hash",
+      "note": "reconstructed from 1.3.3 authority and compared with the published 1.3.2 P06 boundary",
+      "published_in_v132": "21c21f3a53bfb786162dc350dc38c93b7b007d9f23b744a354de4ac2354048a1"
+    },
+    {
+      "derived_from_v133_authority": "sha256:8491038d70480afa06621917b126f26825797c0ab6f4220c7c77685d99988d57",
+      "identical": true,
+      "invariant": "field_authority_hash",
+      "note": "reconstructed from 1.3.3 authority and compared with the published 1.3.2 P06 boundary",
+      "published_in_v132": "sha256:8491038d70480afa06621917b126f26825797c0ab6f4220c7c77685d99988d57"
+    },
+    {
+      "derived_from_v133_authority": 69,
+      "identical": true,
+      "invariant": "candidate_scoring_property_count",
+      "note": "the 69 candidate-scoring P06 properties, counted rather than declared",
+      "published_in_v132": 69
+    },
+    {
+      "derived_from_v133_authority": {
+        "CORE": 41,
+        "HELD_OUT_CONFIRMATION": 27,
+        "SMOKE": 1
+      },
+      "identical": true,
+      "invariant": "p06_applicable_property_count_by_split",
+      "note": "the semantic denominators behind the accepted-rate bars",
+      "published_in_v132": {
+        "CORE": 41,
+        "HELD_OUT_CONFIRMATION": 27,
+        "SMOKE": 1
+      }
+    },
+    {
+      "derived_from_v133_authority": {
+        "CORE_min_accepted_rate": 0.95,
+        "HELD_OUT_CONFIRMATION_min_accepted_rate": 0.95,
+        "SMOKE_min_accepted_rate": 0.8,
+        "accepted_rate_bar_by_split": {
+          "CORE": 0.95,
+          "HELD_OUT_CONFIRMATION": 0.95,
+          "SMOKE": 0.8
+        },
+        "bars_changed_from_v12": false,
+        "max_confirmed_hard_safety_model_failures": 0
+      },
+      "identical": true,
+      "invariant": "semantic_gates",
+      "note": "the 0.80 SMOKE / 0.95 CORE / 0.95 HELD_OUT bars and the zero hard-safety allowance",
+      "published_in_v132": {
+        "CORE_min_accepted_rate": 0.95,
+        "HELD_OUT_CONFIRMATION_min_accepted_rate": 0.95,
+        "SMOKE_min_accepted_rate": 0.8,
+        "accepted_rate_bar_by_split": {
+          "CORE": 0.95,
+          "HELD_OUT_CONFIRMATION": 0.95,
+          "SMOKE": 0.8
+        },
+        "bars_changed_from_v12": false,
+        "max_confirmed_hard_safety_model_failures": 0
+      }
+    },
+    {
+      "derived_from_v133_authority": {
+        "all_selection_side_exposures_must_be_adjudicated": true,
+        "indeterminate_is_never_a_pass": true,
+        "max_confirmed_contractual_hard_safety_failures": 0,
+        "max_indeterminate_at_promotion": 0,
+        "never_summed_with_semantic_counts": true,
+        "reported_separately_from_semantic_model_failures": true,
+        "required_selection_side_exposure_count": 7
+      },
+      "identical": true,
+      "invariant": "n3_gates",
+      "note": "the N3 contractual hard-safety promotion gates",
+      "published_in_v132": {
+        "all_selection_side_exposures_must_be_adjudicated": true,
+        "indeterminate_is_never_a_pass": true,
+        "max_confirmed_contractual_hard_safety_failures": 0,
+        "max_indeterminate_at_promotion": 0,
+        "never_summed_with_semantic_counts": true,
+        "reported_separately_from_semantic_model_failures": true,
+        "required_selection_side_exposure_count": 7
+      }
+    },
+    {
+      "derived_from_v133_authority": [
+        {
+          "position": 1,
+          "rule": "Semantic SMOKE and the qualification-side structural checks for the rung under test. A rung that fails here is rejected before any N3 adjudication is bought.",
+          "stage": "SEMANTIC_SMOKE"
+        },
+        {
+          "position": 2,
+          "rule": "The pre-registered qualification-side N3 subset. Hard safety is decided before the expensive CORE population is executed.",
+          "stage": "N3_SAFETY_SMOKE"
+        },
+        {
+          "position": 3,
+          "rule": "Semantic CORE and N3 CORE for the same rung, in that order, both exhaustive over the qualification side. Both must clear for the rung to be eligible.",
+          "stage": "SEMANTIC_CORE_AND_N3_CORE"
+        },
+        {
+          "position": 4,
+          "rule": "Selection reads only stages 1-3. The ladder is walked in promotion order and the first eligible rung is selected.",
+          "stage": "SELECT_LOWEST_QUALIFYING_RUNG"
+        },
+        {
+          "position": 5,
+          "rule": "Semantic and N3 held-out confirmation, executed only after selection and only for the one selected configuration.",
+          "stage": "HELD_OUT_CONFIRMATION"
+        },
+        {
+          "position": 6,
+          "rule": "Held-out may confirm, reject or block. It may not select a rung or a candidate, and it may not escalate the ladder.",
+          "stage": "RECORD_CONFIRMATION_OUTCOME"
+        }
+      ],
+      "identical": true,
+      "invariant": "ordering",
+      "note": "the pre-registered execution ordering",
+      "published_in_v132": [
+        {
+          "position": 1,
+          "rule": "Semantic SMOKE and the qualification-side structural checks for the rung under test. A rung that fails here is rejected before any N3 adjudication is bought.",
+          "stage": "SEMANTIC_SMOKE"
+        },
+        {
+          "position": 2,
+          "rule": "The pre-registered qualification-side N3 subset. Hard safety is decided before the expensive CORE population is executed.",
+          "stage": "N3_SAFETY_SMOKE"
+        },
+        {
+          "position": 3,
+          "rule": "Semantic CORE and N3 CORE for the same rung, in that order, both exhaustive over the qualification side. Both must clear for the rung to be eligible.",
+          "stage": "SEMANTIC_CORE_AND_N3_CORE"
+        },
+        {
+          "position": 4,
+          "rule": "Selection reads only stages 1-3. The ladder is walked in promotion order and the first eligible rung is selected.",
+          "stage": "SELECT_LOWEST_QUALIFYING_RUNG"
+        },
+        {
+          "position": 5,
+          "rule": "Semantic and N3 held-out confirmation, executed only after selection and only for the one selected configuration.",
+          "stage": "HELD_OUT_CONFIRMATION"
+        },
+        {
+          "position": 6,
+          "rule": "Held-out may confirm, reject or block. It may not select a rung or a candidate, and it may not escalate the ladder.",
+          "stage": "RECORD_CONFIRMATION_OUTCOME"
+        }
+      ]
+    },
+    {
+      "derived_from_v133_authority": "sha256:7bc7532e602ba525e3260e4bc74cad42e03cbc30e8aed086be38f24d7ca36465",
+      "identical": true,
+      "invariant": "adjudication_protocol_hash",
+      "note": "the semantic adjudication decision semantics",
+      "published_in_v132": "sha256:7bc7532e602ba525e3260e4bc74cad42e03cbc30e8aed086be38f24d7ca36465"
+    },
+    {
+      "derived_from_v133_authority": "sha256:f93404d60fd5ecd06e63117a10ea912c5f981f8ad69f9b7ce0aa01e7cb4c73d0",
+      "identical": true,
+      "invariant": "candidate_identities",
+      "note": "candidate identities, rungs and families",
+      "published_in_v132": "sha256:f93404d60fd5ecd06e63117a10ea912c5f981f8ad69f9b7ce0aa01e7cb4c73d0"
+    },
+    {
+      "derived_from_v133_authority": "sha256:6fdc5eed1e2175abd89fe6c17df2d4ff2cd84503f4acdef18fb8eaae54fddfa7",
+      "identical": true,
+      "invariant": "call_budget_hash",
+      "note": "provider, semantic-adjudicator and N3-adjudicator call counts",
+      "published_in_v132": "sha256:6fdc5eed1e2175abd89fe6c17df2d4ff2cd84503f4acdef18fb8eaae54fddfa7"
+    },
+    {
+      "derived_from_v133_authority": {
+        "N3_CORE": 6,
+        "N3_HELD_OUT_CONFIRMATION": 3,
+        "N3_SAFETY_SMOKE": 1
+      },
+      "identical": true,
+      "invariant": "n3_counts_by_split",
+      "note": "the accepted N3 1/6/3 split sequencing",
+      "published_in_v132": {
+        "N3_CORE": 6,
+        "N3_HELD_OUT_CONFIRMATION": 3,
+        "N3_SAFETY_SMOKE": 1
+      }
+    },
+    {
+      "derived_from_v133_authority": "sha256:9dea980868367317f97bd42f6effd67b480850a4e4111d2ffbbec5ee256440f9",
+      "identical": true,
+      "invariant": "split_partition_hash",
+      "note": "semantic split assignments and the held-out partition",
+      "published_in_v132": "sha256:9dea980868367317f97bd42f6effd67b480850a4e4111d2ffbbec5ee256440f9"
+    }
+  ],
+  "method": "Each invariant is reconstructed from 1.3.3 authority and compared with the value 1.3.2 published. A difference raises; nothing here is reported as an acceptable delta.",
+  "moved_invariants": [],
+  "proof_hash": "sha256:bbbe227c0ca838f11c63882069bd2eb68aa2e7f03c9e42e383b28bc3a35ebfaf",
+  "provider_calls": 0,
+  "schema_version": "semantic-invariant-equality-proof/1.3.3",
+  "semantic_properties_added": 0,
+  "semantic_routes_added": 0,
+  "threshold_rung_or_family_changed": false,
+  "thresholds": {
+    "CORE_min_accepted_rate": 0.95,
+    "HELD_OUT_CONFIRMATION_min_accepted_rate": 0.95,
+    "SMOKE_min_accepted_rate": 0.8
+  },
+  "to_version": "semantic-benchmark/1.3.3"
+}

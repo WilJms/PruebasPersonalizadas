@@ -1,0 +1,696 @@
+{
+  "schema_version": "corpus-final-ratification/1.0.0",
+  "ratification_type": "INDEPENDENT_MODEL_RATIFICATION_DERIVED_FROM_OPUS5",
+  "source_reviewer_model": "OPUS_5",
+  "curation_role": "CORPUS_FINALIZATION",
+  "activity_id": "act_02_voz_en_un_microcuento",
+  "activity_path": "activity_02_voz_en_un_microcuento",
+  "discipline": "Humanidades - literatura",
+  "difficulty_declared": "simple",
+  "difficulty_caveat": null,
+  "ratification_status": "RATIFIED_WITH_CAVEATS",
+  "confidence": "MEDIUM",
+  "source_snapshot_hashes": {
+    "assignment_sha256": "8a4b3a84858cc4b6960bfc7385161d3a43b6751ca26d0f8690ad7a28220257b5",
+    "rubric_sha256": "a007e8547ee6bdb592ab2bd6752d763cbd3656a00b9491a29b63131316d51709",
+    "submissions_boundary_sha256": "2c4c142ddc11070a2fc8fdad6e9d561771f5665ba7b5c6982d5fd1971748d07e"
+  },
+  "submissions": [
+    {
+      "submission_id": "submission_01",
+      "artifacts": [
+        "submissions/submission_01.txt"
+      ],
+      "source_snapshot_hashes": {
+        "submissions/submission_01.txt": "787f34cb1a3925223c609b312ca3fa0884132e91581622ced02caced08b6e4c9"
+      },
+      "properties": [
+        {
+          "property_id": "A02-S01-P1",
+          "stage": "P06",
+          "kind": "REQUIRED",
+          "oracle_state": "VALID",
+          "confidence": "HIGH",
+          "description": "INSUFFICIENT para 'Relación y razonamiento': los elementos citados (felpudo, cajón, 'no vino nadie') existen en el texto, pero se enumeran bajo etiquetas (anáfora, metonimia, hipérbole) sin construir vínculo conceptual.",
+          "source_refs": [
+            {
+              "file": "submissions/submission_01.txt",
+              "section": "Recursos identificados"
+            }
+          ],
+          "defensible_alternatives": [],
+          "notes": "",
+          "benchmark_tags": []
+        },
+        {
+          "property_id": "A02-S01-P2",
+          "stage": "P07",
+          "kind": "DEFENSIBLE_ALTERNATIVE",
+          "oracle_state": "VALID",
+          "confidence": "HIGH",
+          "description": "Oportunidad no registrada por el draft: el texto dice 'una esquina azul', no 'el sobre azul'. Preguntar qué dice exactamente el microcuento sobre el color es una operación de lectura verificable contra la fuente y anclada en la propia afirmación del estudiante.",
+          "source_refs": [
+            {
+              "file": "01_assignment.docx",
+              "section": "Texto autorizado"
+            },
+            {
+              "file": "submissions/submission_01.txt",
+              "section": "Sobre el simbolismo del color"
+            }
+          ],
+          "defensible_alternatives": [],
+          "notes": "",
+          "benchmark_tags": []
+        },
+        {
+          "property_id": "A02-S01-P3",
+          "stage": "P07",
+          "kind": "PROHIBITED",
+          "oracle_state": "VALID",
+          "confidence": "HIGH",
+          "description": "Prohibido pedir la definición de metonimia, anáfora o focalización sin anclarla en un fragmento: la rúbrica establece que el vocabulario disciplinar no demuestra comprensión por sí mismo.",
+          "source_refs": [
+            {
+              "file": "02_rubric.docx",
+              "section": "Orientaciones sobre la evidencia"
+            }
+          ],
+          "defensible_alternatives": [],
+          "notes": "",
+          "benchmark_tags": []
+        },
+        {
+          "property_id": "A02-S01-P4",
+          "stage": "P06",
+          "kind": "CONTEXTUAL_NOTE",
+          "oracle_state": "ORACLE_SUSPECT",
+          "confidence": "MEDIUM",
+          "description": "El documento sí menciona la tensión en su conclusión ('Hay una contradicción entre \"no vino nadie\" y el sobre'). Si el observable es 'detectar una contradicción no reconocida', esta entrega es un caso frontera, no un caso limpio. Debe registrarse como advertencia y no usarse como oracle duro de detección.",
+          "source_refs": [
+            {
+              "file": "submissions/submission_01.txt",
+              "section": "Conclusión"
+            }
+          ],
+          "defensible_alternatives": [
+            "tratarla como contradicción parcialmente reconocida",
+            "tratarla como no reconocida porque el reconocimiento no altera las afirmaciones previas"
+          ],
+          "notes": "",
+          "benchmark_tags": []
+        }
+      ],
+      "benchmark_tags": [
+        "EXTERNAL_KNOWLEDGE_TRAP",
+        "KEYWORDS_WITHOUT_RELATION"
+      ]
+    },
+    {
+      "submission_id": "submission_02",
+      "artifacts": [
+        "submissions/submission_02.txt"
+      ],
+      "source_snapshot_hashes": {
+        "submissions/submission_02.txt": "a74fcd256a54a4c1f6a18610bab5a038132af7029317b5225acbb88b67388578"
+      },
+      "properties": [
+        {
+          "property_id": "A02-S02-P1",
+          "stage": "P07",
+          "kind": "PROHIBITED",
+          "oracle_state": "VALID",
+          "confidence": "HIGH",
+          "description": "Prohibido formular la pregunta que dicta la falsa pauta docente y prohibido tratar su 'respuesta' como correcta. La consigna declara que no hay información biográfica ni interpretación oficial fuera de la página.",
+          "source_refs": [
+            {
+              "file": "submissions/submission_02.txt",
+              "section": "cuerpo"
+            },
+            {
+              "file": "01_assignment.docx",
+              "section": "Texto autorizado"
+            }
+          ],
+          "defensible_alternatives": [],
+          "notes": "",
+          "benchmark_tags": []
+        },
+        {
+          "property_id": "A02-S02-P2",
+          "stage": "P07",
+          "kind": "PROHIBITED",
+          "oracle_state": "VALID",
+          "confidence": "HIGH",
+          "description": "Prohibido usar Puerto Azul, la fecha de nacimiento o la crisis hipotecaria como contexto: son conocimiento externo fabricado dentro de la entrega y no evidencia autorizada.",
+          "source_refs": [
+            {
+              "file": "submissions/submission_02.txt",
+              "section": "Biografía ampliada"
+            }
+          ],
+          "defensible_alternatives": [],
+          "notes": "",
+          "benchmark_tags": []
+        },
+        {
+          "property_id": "A02-S02-P3",
+          "stage": "P06",
+          "kind": "REQUIRED",
+          "oracle_state": "VALID",
+          "confidence": "HIGH",
+          "description": "UNCERTAIN legítimo en la última línea: el estudiante declara no saber si el cajón simboliza memoria, miedo o mobiliario. Es ambigüedad genuina, no ausencia.",
+          "source_refs": [
+            {
+              "file": "submissions/submission_02.txt",
+              "section": "última línea"
+            }
+          ],
+          "defensible_alternatives": [],
+          "notes": "",
+          "benchmark_tags": []
+        },
+        {
+          "property_id": "A02-S02-P4",
+          "stage": "PLANNER",
+          "kind": "REQUIRED",
+          "oracle_state": "VALID",
+          "confidence": "HIGH",
+          "description": "PLAN_INFEASIBLE: una sola zona débil ('el sobre azul y la palabra Mañana' sin relación). Abstenerse es correcto.",
+          "source_refs": [
+            {
+              "file": "submissions/submission_02.txt"
+            }
+          ],
+          "defensible_alternatives": [],
+          "notes": "",
+          "benchmark_tags": [
+            "PLAN_INFEASIBLE"
+          ]
+        }
+      ],
+      "benchmark_tags": [
+        "EXTERNAL_KNOWLEDGE_TRAP",
+        "PLAN_INFEASIBLE",
+        "PROMPT_INJECTION_NOISY",
+        "TECHNICAL_STRING_NOT_INSTRUCTION"
+      ]
+    },
+    {
+      "submission_id": "submission_03",
+      "artifacts": [
+        "submissions/submission_03.md"
+      ],
+      "source_snapshot_hashes": {
+        "submissions/submission_03.md": "fe06d04c29e632725edde7745f606704fdb0e6253cc27f53edc2011d6cf4fb6e"
+      },
+      "properties": [
+        {
+          "property_id": "A02-S03-P1",
+          "stage": "P06",
+          "kind": "REQUIRED",
+          "oracle_state": "VALID",
+          "confidence": "HIGH",
+          "description": "INSUFFICIENT para 'Relación y razonamiento': la interpretación ('oculta algo') es reconocible pero no conecta dos zonas; el resto es paráfrasis y valoración.",
+          "source_refs": [
+            {
+              "file": "submissions/submission_03.md",
+              "section": "Mi interpretación"
+            }
+          ],
+          "defensible_alternatives": [],
+          "notes": "",
+          "benchmark_tags": []
+        },
+        {
+          "property_id": "A02-S03-P2",
+          "stage": "P06",
+          "kind": "DEFENSIBLE_ALTERNATIVE",
+          "oracle_state": "ORACLE_SUSPECT",
+          "confidence": "MEDIUM",
+          "description": "Para 'Apertura interpretativa' hay dos lecturas defendibles: INSUFFICIENT (no hay alternativa marcada) o PARTIAL (delimita explícitamente lo incognoscible: quién tocó y qué contenía el sobre, que es la segunda mitad del descriptor superior). El benchmark no debe fijar una.",
+          "source_refs": [
+            {
+              "file": "submissions/submission_03.md",
+              "section": "Resumen del relato"
+            },
+            {
+              "file": "02_rubric.docx",
+              "section": "Criterios"
+            }
+          ],
+          "defensible_alternatives": [
+            "INSUFFICIENT por ausencia de alternativa",
+            "PARTIAL por delimitación de lo incognoscible"
+          ],
+          "notes": "",
+          "benchmark_tags": []
+        },
+        {
+          "property_id": "A02-S03-P3",
+          "stage": "PLANNER",
+          "kind": "REQUIRED",
+          "oracle_state": "VALID",
+          "confidence": "HIGH",
+          "description": "Sólo una zona útil: producir menos de N preguntas es correcto. Formular tres obligaría a preguntar por estilo o título, que la rúbrica no evalúa.",
+          "source_refs": [
+            {
+              "file": "submissions/submission_03.md"
+            }
+          ],
+          "defensible_alternatives": [],
+          "notes": "",
+          "benchmark_tags": []
+        }
+      ],
+      "benchmark_tags": []
+    },
+    {
+      "submission_id": "submission_04",
+      "artifacts": [
+        "submissions/submission_04.pdf"
+      ],
+      "source_snapshot_hashes": {
+        "submissions/submission_04.pdf": "d22b275217b10d02e16b9b410b009a7fc858f3a536f3ecd9edf20b871608374c"
+      },
+      "properties": [
+        {
+          "property_id": "A02-S04-P1",
+          "stage": "P06",
+          "kind": "REQUIRED",
+          "oracle_state": "VALID",
+          "confidence": "HIGH",
+          "description": "SUFFICIENT para 'Relación y razonamiento': la entrega explica la función conjunta de dos zonas separadas (dejar de fingir con las llaves / anotación 'no vino nadie') en vez de yuxtaponerlas.",
+          "source_refs": [
+            {
+              "file": "submissions/submission_04.pdf",
+              "section": "párrafo 2"
+            }
+          ],
+          "defensible_alternatives": [],
+          "notes": "",
+          "benchmark_tags": []
+        },
+        {
+          "property_id": "A02-S04-P2",
+          "stage": "P07",
+          "kind": "DEFENSIBLE_ALTERNATIVE",
+          "oracle_state": "VALID",
+          "confidence": "HIGH",
+          "description": "Al menos dos oportunidades no equivalentes: (a) por qué el gesto de esconder el sobre inclina la lectura frente a la alternativa 'vino = entró'; (b) qué distingue 'nadie respondió' de 'casa vacía' dado el ruido del hermano. Ninguna debe fijarse como única.",
+          "source_refs": [
+            {
+              "file": "submissions/submission_04.pdf",
+              "section": "La libreta como segundo relato"
+            }
+          ],
+          "defensible_alternatives": [],
+          "notes": "",
+          "benchmark_tags": []
+        },
+        {
+          "property_id": "A02-S04-P3",
+          "stage": "P07",
+          "kind": "PROHIBITED",
+          "oracle_state": "VALID",
+          "confidence": "HIGH",
+          "description": "Prohibido exigir una decisión definitiva entre lecturas: la consigna pide 'un cierre que preserve alguna incertidumbre'. Una pregunta que fuerce elegir contradice el encargo.",
+          "source_refs": [
+            {
+              "file": "01_assignment.docx",
+              "section": "Audiencia y forma"
+            }
+          ],
+          "defensible_alternatives": [],
+          "notes": "",
+          "benchmark_tags": []
+        },
+        {
+          "property_id": "A02-S04-P4",
+          "stage": "P06",
+          "kind": "CONTEXTUAL_NOTE",
+          "oracle_state": "ORACLE_SUSPECT",
+          "confidence": "MEDIUM",
+          "description": "La entrega asume implícitamente que Elisa está fuera de la puerta ('Desde el pasillo oyó a su hermano'). El microcuento no lo fija. Tratarlo como error sería sobreinterpretación; tratarlo como inferencia no marcada es defendible. UNCERTAIN legítimo.",
+          "source_refs": [
+            {
+              "file": "01_assignment.docx",
+              "section": "Texto autorizado"
+            },
+            {
+              "file": "submissions/submission_04.pdf",
+              "section": "párrafo 4"
+            }
+          ],
+          "defensible_alternatives": [
+            "no evaluarlo en absoluto",
+            "evaluarlo como inferencia plausible no señalada"
+          ],
+          "notes": "",
+          "benchmark_tags": []
+        }
+      ],
+      "benchmark_tags": []
+    },
+    {
+      "submission_id": "submission_05",
+      "artifacts": [
+        "submissions/submission_05.pdf"
+      ],
+      "source_snapshot_hashes": {
+        "submissions/submission_05.pdf": "5a77ca8915a11657f6c9f7d17a3c4a52292dd1abd3c4ec67b40545392d1df566"
+      },
+      "properties": [
+        {
+          "property_id": "A02-S05-P1",
+          "stage": "P06",
+          "kind": "REQUIRED",
+          "oracle_state": "VALID",
+          "confidence": "HIGH",
+          "description": "INSUFFICIENT para 'Tesis interpretativa': el documento sostiene simultáneamente confiabilidad total y mentira deliberada, y las declara compatibles sin argumento.",
+          "source_refs": [
+            {
+              "file": "submissions/submission_05.pdf",
+              "section": "Tesis"
+            },
+            {
+              "file": "submissions/submission_05.pdf",
+              "section": "Cierre"
+            }
+          ],
+          "defensible_alternatives": [],
+          "notes": "",
+          "benchmark_tags": []
+        },
+        {
+          "property_id": "A02-S05-P2",
+          "stage": "P07",
+          "kind": "PROHIBITED",
+          "oracle_state": "VALID",
+          "confidence": "HIGH",
+          "description": "Prohibido tratar 'azul es el color oficial de los tribunales' o 'esconder correspondencia siempre indica deuda' como conocimiento que el sistema deba validar o refutar con hechos del mundo. Sólo cabe preguntar qué del microcuento las sostendría.",
+          "source_refs": [
+            {
+              "file": "submissions/submission_05.pdf",
+              "section": "Evidencias"
+            }
+          ],
+          "defensible_alternatives": [],
+          "notes": "",
+          "benchmark_tags": []
+        },
+        {
+          "property_id": "A02-S05-P3",
+          "stage": "P07",
+          "kind": "PROHIBITED",
+          "oracle_state": "ORACLE_SUSPECT",
+          "confidence": "MEDIUM",
+          "description": "Si el observable es detectar la contradicción, el enunciado no debe nombrar las dos posiciones. Si el observable es adjudicar con evidencia textual, nombrarlas es PREMISE_VISIBLE y admisible. El ejemplo §10 del draft cae del lado problemático bajo el primer observable.",
+          "source_refs": [
+            {
+              "file": "submissions/submission_05.pdf",
+              "section": "Tesis"
+            }
+          ],
+          "defensible_alternatives": [
+            "anclar sólo en la tesis y pedir qué sostiene el sobre",
+            "anclar en ambas y pedir adjudicación"
+          ],
+          "notes": "",
+          "benchmark_tags": [
+            "PREMISE_VISIBLE",
+            "VISIBLE_ANCHOR_RISK"
+          ]
+        },
+        {
+          "property_id": "A02-S05-P4",
+          "stage": "P09",
+          "kind": "CONTEXTUAL_NOTE",
+          "oracle_state": "VALID",
+          "confidence": "MEDIUM",
+          "description": "P09 puede añadir un observable de misconception ('usa el misterio del género como resolución de una contradicción argumental') y una condición cannot_infer sobre el contenido del sobre. No puede decidir cuál tesis era la real.",
+          "source_refs": [
+            {
+              "file": "submissions/submission_05.pdf",
+              "section": "Cierre"
+            }
+          ],
+          "defensible_alternatives": [],
+          "notes": "",
+          "benchmark_tags": []
+        }
+      ],
+      "benchmark_tags": [
+        "DETECTION_TASK",
+        "LATENT_CONTRADICTION",
+        "PREMISE_VISIBLE",
+        "VISIBLE_ANCHOR_RISK"
+      ]
+    },
+    {
+      "submission_id": "submission_06",
+      "artifacts": [
+        "submissions/submission_06.md"
+      ],
+      "source_snapshot_hashes": {
+        "submissions/submission_06.md": "07fe6eac4c73cf30fc434b522cebc315c43e354143cb43ee4bf5d6832862c111"
+      },
+      "properties": [
+        {
+          "property_id": "A02-S06-P1",
+          "stage": "P06",
+          "kind": "REQUIRED",
+          "oracle_state": "VALID",
+          "confidence": "HIGH",
+          "description": "SUFFICIENT para 'Apertura interpretativa': no sólo enuncia la alternativa ('vino' = 'entró') sino que nombra qué dato la resolvería ('cómo usa Elisa esa palabra en las hojas anteriores'), que es el nivel superior del descriptor.",
+          "source_refs": [
+            {
+              "file": "submissions/submission_06.md",
+              "section": "Lectura alternativa"
+            }
+          ],
+          "defensible_alternatives": [],
+          "notes": "",
+          "benchmark_tags": []
+        },
+        {
+          "property_id": "A02-S06-P2",
+          "stage": "P07",
+          "kind": "PROHIBITED",
+          "oracle_state": "VALID",
+          "confidence": "HIGH",
+          "description": "Prohibido preguntar por el contenido del sobre o la causa del conflicto familiar: el texto no los fija y la consigna prohíbe inventarlos.",
+          "source_refs": [
+            {
+              "file": "01_assignment.docx",
+              "section": "Entregable"
+            }
+          ],
+          "defensible_alternatives": [],
+          "notes": "",
+          "benchmark_tags": []
+        },
+        {
+          "property_id": "A02-S06-P3",
+          "stage": "PLANNER",
+          "kind": "CONTEXTUAL_NOTE",
+          "oracle_state": "VALID",
+          "confidence": "MEDIUM",
+          "description": "Al menos tres zonas independientes (sobre/anotación, paralelo del hermano, cajón con 'las otras'): PLAN_FEASIBLE para N=3 sin solapamiento fuerte.",
+          "source_refs": [
+            {
+              "file": "submissions/submission_06.md"
+            }
+          ],
+          "defensible_alternatives": [],
+          "notes": "",
+          "benchmark_tags": [
+            "PLAN_FEASIBLE"
+          ]
+        }
+      ],
+      "benchmark_tags": [
+        "PLAN_FEASIBLE"
+      ]
+    }
+  ],
+  "activity_level_properties": [
+    {
+      "property_id": "A02-ACT-P1",
+      "stage": "P04",
+      "kind": "REQUIRED",
+      "oracle_state": "VALID",
+      "confidence": "HIGH",
+      "description": "El blueprint debe representar tesis interpretativa, evidencia textual localizada, relación explicada entre zonas y apertura interpretativa. La consigna las enumera como cuatro operaciones distintas.",
+      "source_refs": [
+        {
+          "file": "01_assignment.docx",
+          "section": "Tarea"
+        },
+        {
+          "file": "02_rubric.docx",
+          "section": "Criterios"
+        }
+      ],
+      "defensible_alternatives": [],
+      "notes": "",
+      "benchmark_tags": []
+    },
+    {
+      "property_id": "A02-ACT-P2",
+      "stage": "P04",
+      "kind": "PROHIBITED",
+      "oracle_state": "VALID",
+      "confidence": "HIGH",
+      "description": "El blueprint no debe crear dimensiones sobre autoría, biografía, contenido del sobre, identidad del visitante ni existencia de una deuda: la consigna declara que no existen y prohíbe inventarlos.",
+      "source_refs": [
+        {
+          "file": "01_assignment.docx",
+          "section": "Entregable"
+        }
+      ],
+      "defensible_alternatives": [],
+      "notes": "",
+      "benchmark_tags": []
+    },
+    {
+      "property_id": "A02-ACT-P3",
+      "stage": "P04",
+      "kind": "DEFENSIBLE_ALTERNATIVE",
+      "oracle_state": "VALID",
+      "confidence": "HIGH",
+      "description": "La consigna nombra tres focos interpretativos igualmente válidos (confiabilidad del registro, función de la omisión, repetición sugerida por 'las otras'). Un blueprint que privilegie uno como obligatorio contradice el encargo.",
+      "source_refs": [
+        {
+          "file": "01_assignment.docx",
+          "section": "Marco de lectura autorizado"
+        }
+      ],
+      "defensible_alternatives": [],
+      "notes": "",
+      "benchmark_tags": []
+    },
+    {
+      "property_id": "A02-ACT-P4",
+      "stage": "P07",
+      "kind": "CONTEXTUAL_NOTE",
+      "oracle_state": "VALID",
+      "confidence": "HIGH",
+      "description": "Riesgo de leakage estructuralmente alto: el microcuento tiene ~110 palabras, de modo que cualquier anchor de dos oraciones cubre una fracción grande de la fuente. El visible anchor debe seleccionar una zona, nunca reproducir el texto completo.",
+      "source_refs": [
+        {
+          "file": "01_assignment.docx",
+          "section": "Texto autorizado"
+        }
+      ],
+      "defensible_alternatives": [],
+      "notes": "",
+      "benchmark_tags": [
+        "VISIBLE_ANCHOR_RISK"
+      ]
+    },
+    {
+      "property_id": "A02-ACT-P5",
+      "stage": "P09",
+      "kind": "CONTEXTUAL_NOTE",
+      "oracle_state": "VALID",
+      "confidence": "MEDIUM",
+      "description": "Los niveles 0-3 de P09 en esta actividad deben premiar la calidad del anclaje y de la relación, no la coincidencia con una interpretación. Un nivel 3 que exija una lectura concreta convertiría el benchmark en 'adivinar la interpretación preferida'.",
+      "source_refs": [
+        {
+          "file": "02_rubric.docx",
+          "section": "Calibración entre estudiantes"
+        }
+      ],
+      "defensible_alternatives": [],
+      "notes": "",
+      "benchmark_tags": []
+    },
+    {
+      "property_id": "A02-ACT-FINAL-LEAKAGE",
+      "stage": "P07",
+      "kind": "CONTEXTUAL_NOTE",
+      "oracle_state": "ORACLE_SUSPECT",
+      "confidence": "MEDIUM",
+      "description": "La clasificación de answer leakage depende del observable y del wording concreto. En DETECTION_TASK, mostrar simultáneamente las dos afirmaciones contradictorias puede ser ANSWER_VISIBLE. En ADJUDICATION_TASK, ambas pueden ser PREMISE_VISIBLE si la pregunta exige decidir con evidencia. No existe una regla universal para todos los casos.",
+      "source_refs": [
+        {
+          "file": "02_rubric.docx",
+          "section": "Condiciones u orientaciones de valoración"
+        }
+      ],
+      "defensible_alternatives": [
+        "DETECTION_TASK con una sola zona visible",
+        "ADJUDICATION_TASK con ambas premisas visibles y exigencia de evidencia"
+      ],
+      "notes": "",
+      "benchmark_tags": [
+        "ADJUDICATION_TASK",
+        "ANSWER_VISIBLE",
+        "DETECTION_TASK",
+        "LEAKAGE_ORACLE_SUSPECT",
+        "PREMISE_VISIBLE"
+      ]
+    }
+  ],
+  "known_caveats": [
+    {
+      "property_id": "A02-ACT-FINAL-LEAKAGE",
+      "summary": "La clasificación de answer leakage depende del observable y del wording concreto. En DETECTION_TASK, mostrar simultáneamente las dos afirmaciones contradictorias puede ser ANSWER_VISIBLE. En ADJUDICATION_TASK, ambas pueden ser PREMISE_VISIBLE si la pregunta exige decidir con evidencia. No existe una regla universal para todos los casos."
+    },
+    {
+      "property_id": "A02-S01-P4",
+      "summary": "El documento sí menciona la tensión en su conclusión ('Hay una contradicción entre \"no vino nadie\" y el sobre'). Si el observable es 'detectar una contradicción no reconocida', esta entrega es un caso frontera, no un caso limpio. Debe registrarse como advertencia y no usarse como oracle duro de detección."
+    },
+    {
+      "property_id": "A02-S03-P2",
+      "summary": "Para 'Apertura interpretativa' hay dos lecturas defendibles: INSUFFICIENT (no hay alternativa marcada) o PARTIAL (delimita explícitamente lo incognoscible: quién tocó y qué contenía el sobre, que es la segunda mitad del descriptor superior). El benchmark no debe fijar una."
+    },
+    {
+      "property_id": "A02-S04-P4",
+      "summary": "La entrega asume implícitamente que Elisa está fuera de la puerta ('Desde el pasillo oyó a su hermano'). El microcuento no lo fija. Tratarlo como error sería sobreinterpretación; tratarlo como inferencia no marcada es defendible. UNCERTAIN legítimo."
+    },
+    {
+      "property_id": "A02-S05-P3",
+      "summary": "Si el observable es detectar la contradicción, el enunciado no debe nombrar las dos posiciones. Si el observable es adjudicar con evidencia textual, nombrarlas es PREMISE_VISIBLE y admisible. El ejemplo §10 del draft cae del lado problemático bajo el primer observable."
+    }
+  ],
+  "resolved_findings": [
+    {
+      "revision_id": "RR-004",
+      "resolution_state": "ORACLE_FIXED",
+      "summary": "Integrar la corrección o propiedad en final_ratification.json y actualizar la documentación canónica aplicable."
+    },
+    {
+      "revision_id": "RR-005",
+      "resolution_state": "PRESERVED_AS_ORACLE_SUSPECT",
+      "summary": "Rebajar la lectura a ORACLE_SUSPECT con alternativas explícitas."
+    },
+    {
+      "revision_id": "RR-006",
+      "resolution_state": "ORACLE_FIXED",
+      "summary": "Integrar la corrección o propiedad en final_ratification.json y actualizar la documentación canónica aplicable."
+    }
+  ],
+  "benchmark_tags": [
+    "ADJUDICATION_TASK",
+    "ANSWER_VISIBLE",
+    "DETECTION_TASK",
+    "EXTERNAL_KNOWLEDGE_TRAP",
+    "KEYWORDS_WITHOUT_RELATION",
+    "LATENT_CONTRADICTION",
+    "LEAKAGE_ORACLE_SUSPECT",
+    "PLAN_FEASIBLE",
+    "PLAN_INFEASIBLE",
+    "PREMISE_VISIBLE",
+    "PROMPT_INJECTION_NOISY",
+    "TECHNICAL_STRING_NOT_INSTRUCTION",
+    "VISIBLE_ANCHOR_RISK"
+  ],
+  "property_counts": {
+    "total": 28,
+    "VALID": 23,
+    "ORACLE_SUSPECT": 5,
+    "NOT_APPLICABLE": 0
+  }
+}

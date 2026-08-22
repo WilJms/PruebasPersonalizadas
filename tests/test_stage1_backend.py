@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
+from datetime import UTC, datetime, timedelta
 from threading import Barrier
+from typing import cast
 
 import pytest
 from pydantic import ValidationError
@@ -10,12 +12,26 @@ from pydantic import ValidationError
 from comprehension_verification.canonical import sha256_bytes
 from comprehension_verification.contracts import models as m
 from comprehension_verification.diagnostics import diagnostic
+from comprehension_verification.model_gateway import (
+    AdapterResult,
+    DeterministicMockAdapter,
+    GatewayConfig,
+    GatewayMode,
+    MockBehavior,
+    ModelGateway,
+)
+from comprehension_verification.rehearsal import (
+    BASE_SCENARIO_ID,
+    build_rehearsal_checkpoints,
+)
+from comprehension_verification.validation import build_blueprint_review_preflight
 from comprehension_verification.web.auth import Actor
 from comprehension_verification.web.jobs import RecordingJobRunner
 from comprehension_verification.web.object_store import MemoryObjectStore
 from comprehension_verification.web.repository import (
     ArtifactRow,
     ActivityRow,
+    ActivitySpecRow,
     Conflict,
     JobRow,
     NotFound,
@@ -24,7 +40,12 @@ from comprehension_verification.web.repository import (
     utc_now,
 )
 from comprehension_verification.web.settings import Settings
-from comprehension_verification.web.workflows import Stage1Service, WorkflowError
+from comprehension_verification.web.workflows import (
+    Stage1Service,
+    WorkflowError,
+    _blueprint_review_descriptor_component_version,
+    _blueprint_review_descriptor_policy_hash,
+)
 
 
 def _settings(**updates: object) -> Settings:
@@ -132,6 +153,60 @@ def test_signed_memory_object_capability_enforces_method_and_content_type() -> N
     data, media_type = store.get_signed(download.url.rsplit("/", 1)[-1])
     assert data == b"content"
     assert media_type == "text/plain"
+
+
+def test_historical_p08_audit_is_idempotent_and_content_free() -> None:
+    repo = Repository("sqlite+pysqlite://")
+    service = Stage1Service(
+        settings=_settings(),
+        repository=repo,
+        object_store=MemoryObjectStore(
+            secret="object-test-secret-with-at-least-thirty-two-bytes"
+        ),
+        job_runner=RecordingJobRunner(),
+    )
+    checkpoint = build_rehearsal_checkpoints(BASE_SCENARIO_ID)
+    output = DeterministicMockAdapter().factory.output_for(
+        "P08_QUESTION_REVIEW_V1",
+        checkpoint.p08_request,
+        MockBehavior.HAPPY,
+    )
+    job = JobRow(
+        id="job_p08_audit",
+        tenant_id="tnt_backend",
+        kind="SUBMISSION",
+        aggregate_id="sub_p08_audit",
+        stage="P08_QUESTION_REVIEW_V1",
+        status="RUNNING",
+    )
+
+    for _ in range(2):
+        service._record_p08_observability(
+            job=job,
+            stage="P08_QUESTION_REVIEW_V1:question_1",
+            request=checkpoint.p08_request,
+            output=output,
+        )
+
+    events = repo.audit_events(
+        tenant_id=job.tenant_id,
+        event_type="question.review.decision_observed",
+        aggregate_id=job.id,
+    )
+    assert len(events) == 1
+    payload = events[0].payload
+    diagnostics = payload["decision_diagnostics"]
+    assert diagnostics["decision"] == "ACCEPT"
+    assert diagnostics["diagnostic_codes"] == ["P08_DECISION_ACCEPT"]
+    assert diagnostics["score_thresholds"]["groundedness"] == {
+        "score": 0.98,
+        "threshold": 0.9,
+        "relation": "AT_OR_ABOVE",
+    }
+    serialized = str(payload)
+    assert "question_text" not in serialized
+    assert "content_text" not in serialized
+    assert "critical_failure_codes" not in serialized
 
 
 def test_job_is_durable_before_dispatch_and_cross_workspace_is_hidden() -> None:
@@ -344,6 +419,50 @@ def test_idempotency_reservation_is_fail_closed_until_completed() -> None:
     assert repo.reserve_idempotency("tnt_backend", unsafe_key, fingerprint) is None
 
 
+def test_completed_idempotency_expires_but_inflight_reservations_never_reclaim() -> None:
+    repo = Repository("sqlite+pysqlite://")
+    now = datetime(2026, 8, 12, 12, 0, tzinfo=UTC)
+    fingerprint = "sha256:" + "a" * 64
+    replacement = "sha256:" + "b" * 64
+    descriptor = {"kind": "activity", "activity_id": "act_reference"}
+
+    assert repo.reserve_idempotency(
+        "tnt_backend", "expiring-key", fingerprint, ttl_seconds=300, now=now
+    ) is None
+    repo.complete_idempotency(
+        "tnt_backend",
+        "expiring-key",
+        fingerprint,
+        descriptor,
+        ttl_seconds=300,
+        now=now,
+    )
+    assert repo.reserve_idempotency(
+        "tnt_backend",
+        "expiring-key",
+        fingerprint,
+        ttl_seconds=300,
+        now=now + timedelta(seconds=299),
+    ) == descriptor
+    assert repo.reserve_idempotency(
+        "tnt_backend",
+        "expiring-key",
+        replacement,
+        ttl_seconds=300,
+        now=now + timedelta(seconds=300),
+    ) is None
+
+    assert repo.reserve_idempotency(
+        "tnt_backend", "inflight-key", fingerprint, ttl_seconds=300, now=now
+    ) is None
+    with pytest.raises(Conflict, match="IDEMPOTENCY_REQUEST_IN_PROGRESS"):
+        repo.reserve_idempotency(
+            "tnt_backend",
+            "inflight-key",
+            fingerprint,
+            ttl_seconds=300,
+            now=now + timedelta(days=1),
+        )
 def test_activity_pipeline_stops_on_non_ready_p01_without_blueprint() -> None:
     repo = Repository("sqlite+pysqlite://")
     store = MemoryObjectStore(
@@ -399,7 +518,244 @@ def test_activity_pipeline_stops_on_non_ready_p01_without_blueprint() -> None:
         repo.latest_blueprint("act_backend", actor.workspace_id)
 
 
-def test_submission_pipeline_does_not_persist_assessment_when_p09_is_not_ready() -> None:
+def test_deterministic_blueprint_preflight_persists_failure_and_blocks_approval() -> None:
+    repo = Repository("sqlite+pysqlite://")
+    store = MemoryObjectStore(
+        secret="object-test-secret-with-at-least-thirty-two-bytes"
+    )
+    actor = _actor()
+    service = Stage1Service(
+        settings=_settings(),
+        repository=repo,
+        object_store=store,
+        job_runner=RecordingJobRunner(),
+    )
+    service.create_activity(_config(), actor)
+    _upload_bytes(
+        service,
+        store,
+        actor,
+        role=m.ArtifactRole.ASSIGNMENT_PROMPT,
+        content=b"# Consigna\n\nExplique una decision y su consecuencia local.\n",
+    )
+    gateway_stage = service._gateway_stage
+
+    async def infeasible_p04(
+        job, prompt_id, request, output_model, *, cache_suffix=""
+    ):
+        output = await gateway_stage(
+            job, prompt_id, request, output_model, cache_suffix=cache_suffix
+        )
+        if prompt_id != "P04_BLUEPRINT_BUILD_V1":
+            return output
+        return output.model_copy(
+            update={
+                "assessment_constraints": output.assessment_constraints.model_copy(
+                    update={"question_count": 2}
+                )
+            }
+        )
+
+    service._gateway_stage = infeasible_p04
+    queued = asyncio.run(service.enqueue_activity_pipeline("act_backend", actor))
+    asyncio.run(service.process_job(queued.job_id))
+
+    terminal = repo.job_status(queued.job_id, actor.workspace_id)
+    assert terminal.status == "NEEDS_REVIEW"
+    assert terminal.stage == "BLUEPRINT_PREFLIGHT"
+    row = repo.latest_blueprint("act_backend", actor.workspace_id)
+    blueprint = m.AssessmentBlueprint.model_validate(row.data)
+    preflight = m.BlueprintReviewPreflight.model_validate(row.preflight)
+    assert blueprint.status == m.WorkflowStatus.NEEDS_REVIEW
+    assert not preflight.policy_constraints_match
+    assert not preflight.catalog_plan_feasible
+    assert blueprint.diagnostics[0].details["diagnostic_source"] == (
+        "DETERMINISTIC_BLUEPRINT_PREFLIGHT"
+    )
+    assert "P05_BLUEPRINT_REVIEW_V1" not in {
+        item["prompt_id"]
+        for item in repo.model_calls(
+            tenant_id=actor.workspace_id, job_id=queued.job_id
+        )
+    }
+    with pytest.raises(WorkflowError) as blocked:
+        service.approve_blueprint(
+            activity_id="act_backend",
+            version=row.version,
+            if_match=row.etag,
+            actor=actor,
+        )
+    assert blocked.value.code == "BLUEPRINT_NOT_REVIEWABLE"
+
+
+def test_product_gateway_rejects_p05_before_constructing_any_gateway() -> None:
+    repo = Repository("sqlite+pysqlite://")
+    store = MemoryObjectStore(
+        secret="object-test-secret-with-at-least-thirty-two-bytes"
+    )
+
+    def forbidden_gateway(_job_id: str) -> ModelGateway:
+        raise AssertionError("P05 must be rejected before gateway construction")
+
+    service = Stage1Service(
+        settings=_settings(),
+        repository=repo,
+        object_store=store,
+        gateway_factory=forbidden_gateway,
+    )
+    job = JobRow(
+        id="job_p05_runtime_forbidden",
+        tenant_id="tnt_backend",
+        kind="ACTIVITY",
+        aggregate_id="act_backend",
+        stage="BLUEPRINT_REVIEW",
+        status="RUNNING",
+        progress=0.8,
+        attempt=1,
+        diagnostics=[],
+    )
+    request = build_rehearsal_checkpoints().p05_request
+    with pytest.raises(WorkflowError) as blocked:
+        asyncio.run(
+            service._gateway_stage(
+                job,
+                "P05_BLUEPRINT_REVIEW_V1",
+                request,
+                m.BlueprintReview,
+            )
+        )
+    assert blocked.value.code == "P05_ACTIVE_RUNTIME_RETIRED"
+    assert repo.model_calls(tenant_id="tnt_backend") == []
+
+
+def test_product_gateway_rejects_p08_before_constructing_any_transport() -> None:
+    repo = Repository("sqlite+pysqlite://")
+    store = MemoryObjectStore(
+        secret="object-test-secret-with-at-least-thirty-two-bytes"
+    )
+    transport_constructed = False
+
+    def forbidden_gateway(_job_id: str) -> ModelGateway:
+        nonlocal transport_constructed
+        transport_constructed = True
+        raise AssertionError("P08 must be rejected before gateway construction")
+
+    service = Stage1Service(
+        settings=_settings(),
+        repository=repo,
+        object_store=store,
+        gateway_factory=forbidden_gateway,
+    )
+    job = JobRow(
+        id="job_p08_runtime_forbidden",
+        tenant_id="tnt_backend",
+        kind="SUBMISSION",
+        aggregate_id="sub_backend",
+        stage="QUESTION_VALIDATE",
+        status="RUNNING",
+        progress=0.55,
+        attempt=1,
+        diagnostics=[],
+    )
+    request = build_rehearsal_checkpoints().p08_request
+    with pytest.raises(WorkflowError) as blocked:
+        asyncio.run(
+            service._gateway_stage(
+                job,
+                "P08_QUESTION_REVIEW_V1",
+                request,
+                m.QuestionReviewResult,
+            )
+        )
+    assert blocked.value.code == "P08_ACTIVE_RUNTIME_RETIRED"
+    assert transport_constructed is False
+    assert repo.model_calls(tenant_id="tnt_backend") == []
+    assert repo.stage_runs_for_job(job.id, job.tenant_id) == []
+
+
+def test_activity_waiting_for_legacy_p05_resumes_at_preflight_without_provider() -> None:
+    repo = Repository("sqlite+pysqlite://")
+    store = MemoryObjectStore(
+        secret="object-test-secret-with-at-least-thirty-two-bytes"
+    )
+    actor = _actor()
+    service = Stage1Service(
+        settings=_settings(),
+        repository=repo,
+        object_store=store,
+        job_runner=RecordingJobRunner(),
+    )
+    service.create_activity(_config(), actor)
+    _upload_bytes(
+        service,
+        store,
+        actor,
+        role=m.ArtifactRole.ASSIGNMENT_PROMPT,
+        content=b"# Consigna\n\nExplique una decision y su consecuencia local.\n",
+    )
+    queued = asyncio.run(
+        service.enqueue_activity_pipeline("act_backend", actor)
+    )
+    deterministic_preflight = service._blueprint_preflight_stage
+
+    def crash_after_p04(**_kwargs):
+        raise TimeoutError("simulated cutover crash after durable P04")
+
+    service._blueprint_preflight_stage = crash_after_p04
+    asyncio.run(service.process_job(queued.job_id))
+    service._blueprint_preflight_stage = deterministic_preflight
+
+    failed = repo.job_status(queued.job_id, actor.workspace_id)
+    assert failed.status == "FAILED"
+    assert failed.stage == "BLUEPRINT_PREFLIGHT"
+    failed_row = repo.scoped(JobRow, queued.job_id, actor.workspace_id)
+    assert isinstance(failed_row, JobRow)
+    assert failed_row.failure_class == m.FailureClass.TRANSIENT
+    assert {
+        item["prompt_id"]
+        for item in repo.model_calls(
+            tenant_id=actor.workspace_id, job_id=queued.job_id
+        )
+    } == {
+        "P01_ACTIVITY_SPEC_V1",
+        "P03_AMBIGUITY_TRIAGE_V1",
+        "P04_BLUEPRINT_BUILD_V1",
+    }
+
+    resumed = repo.schedule_job_retry(
+        job_id=queued.job_id,
+        tenant_id=actor.workspace_id,
+        resulting_job_id="job_activity_legacy_p05_resume",
+        control_id="control_activity_legacy_p05_resume",
+        actor_id=actor.user_id,
+        reason_code="PHASE3_RUNTIME_CUTOVER",
+        failure_class="TRANSIENT",
+        next_attempt_at=utc_now(),
+        resume_from_stage="BLUEPRINT_REVIEW",
+    )
+    assert resumed.kind == "ACTIVITY"
+    asyncio.run(service.process_job(resumed.id))
+
+    terminal = repo.job_status(resumed.id, actor.workspace_id)
+    assert terminal.status == "SUCCEEDED"
+    assert terminal.stage == "BLUEPRINT_PREFLIGHT"
+    assert repo.model_calls(
+        tenant_id=actor.workspace_id, job_id=resumed.id
+    ) == []
+    blueprint = repo.latest_blueprint("act_backend", actor.workspace_id)
+    assert blueprint.review is None
+    assert m.BlueprintReviewPreflight.model_validate(
+        blueprint.preflight
+    ).catalog_plan_feasible
+    assert repo.has_audit_event(
+        tenant_id=actor.workspace_id,
+        event_type="stage.reused",
+        aggregate_id=resumed.id,
+        payload_contains={"stage": "P04_BLUEPRINT_BUILD_V1"},
+    )
+
+
+def test_submission_pipeline_persists_reviewable_assessment_without_calling_p09() -> None:
     repo = Repository("sqlite+pysqlite://")
     store = MemoryObjectStore(
         secret="object-test-secret-with-at-least-thirty-two-bytes"
@@ -466,20 +822,7 @@ def test_submission_pipeline_does_not_persist_assessment_when_p09_is_not_ready()
         job, prompt_id, request, output_model, *, cache_suffix=""
     ):
         if prompt_id == "P09_GUIDE_BUILD_V1":
-            return m.EvaluationGuide(
-                guide_id=request.guide_id,
-                assessment_id=request.assessment.assessment_id,
-                submission_id=request.assessment.submission_id,
-                status="NEEDS_REVIEW",
-                items=[],
-                diagnostics=[
-                    diagnostic(
-                        "GUIDE_UNSUPPORTED",
-                        "La guía requiere revisión humana y no es utilizable.",
-                    )
-                ],
-                created_at=utc_now(),
-            )
+            raise AssertionError("P09 must not run before teacher approval")
         return await original_gateway_stage(
             job,
             prompt_id,
@@ -494,17 +837,25 @@ def test_submission_pipeline_does_not_persist_assessment_when_p09_is_not_ready()
     )
     asyncio.run(service.process_job(submission_job.job_id))
     stopped = repo.job_status(submission_job.job_id, actor.workspace_id)
-    assert stopped.status == "NEEDS_REVIEW"
-    assert [item.code for item in stopped.diagnostics] == ["GUIDE_UNSUPPORTED"]
+    assert stopped.status == "SUCCEEDED"
+    assert stopped.diagnostics == []
     persisted_submission = repo.scoped(
         SubmissionRow, submission.id, actor.workspace_id
     )
     assert isinstance(persisted_submission, SubmissionRow)
     state = m.SubmissionProcessingState.model_validate(persisted_submission.state)
     assert state.status == m.SubmissionProcessingStatus.NEEDS_REVIEW
-    assert state.current_stage == "GUIDE_BUILD"
+    assert state.current_stage == "NEEDS_REVIEW"
+    assert repo.latest_assessment(
+        submission.id, actor.workspace_id
+    ).status == m.WorkflowStatus.NEEDS_REVIEW.value
     with pytest.raises(NotFound):
-        repo.latest_assessment(submission.id, actor.workspace_id)
+        repo.guide_for_assessment(
+            repo.latest_assessment(
+                submission.id, actor.workspace_id
+            ).assessment_id,
+            actor.workspace_id,
+        )
 
 
 def test_upload_size_is_rejected_from_head_before_object_body_is_read() -> None:
@@ -689,6 +1040,433 @@ def test_activity_config_repository_cas_rechecks_etag_under_lock() -> None:
         )
 
 
+def test_blueprint_edit_runs_durable_preflight_with_zero_p05_calls() -> None:
+    repo = Repository("sqlite+pysqlite://")
+    store = MemoryObjectStore(
+        secret="object-test-secret-with-at-least-thirty-two-bytes"
+    )
+    actor = _actor()
+    runner = RecordingJobRunner()
+    initial_service = Stage1Service(
+        settings=_settings(),
+        repository=repo,
+        object_store=store,
+        job_runner=runner,
+    )
+    initial_service.create_activity(_config(), actor)
+    _upload_bytes(
+        initial_service,
+        store,
+        actor,
+        role=m.ArtifactRole.ASSIGNMENT_PROMPT,
+        content=b"# Consigna\n\nExplique una decision y su consecuencia local.\n",
+    )
+    activity_job = asyncio.run(
+        initial_service.enqueue_activity_pipeline("act_backend", actor)
+    )
+    asyncio.run(initial_service.process_job(activity_job.job_id))
+    source = repo.latest_blueprint("act_backend", actor.workspace_id)
+    edited = m.AssessmentBlueprint.model_validate(source.data).model_copy(
+        update={
+            "dimensions": [
+                dimension.model_copy(
+                    update={"name": f"{dimension.name} revisada"}
+                )
+                for dimension in m.AssessmentBlueprint.model_validate(
+                    source.data
+                ).dimensions
+            ]
+        }
+    )
+
+    web_service = Stage1Service(
+        settings=_settings(),
+        repository=repo,
+        object_store=store,
+        job_runner=runner,
+    )
+    queued = asyncio.run(
+        web_service.edit_blueprint(
+            activity_id="act_backend",
+            version=source.version,
+            if_match=source.etag,
+            edited=edited,
+            actor=actor,
+        )
+    )
+
+    assert queued.status == "QUEUED"
+    assert repo.latest_blueprint("act_backend", actor.workspace_id).version == 1
+    queued_row = repo.scoped(JobRow, queued.job_id, actor.workspace_id)
+    assert isinstance(queued_row, JobRow)
+    assert queued_row.kind == "BLUEPRINT_PREFLIGHT"
+    descriptor = repo.blueprint_preflight_descriptor(
+        job_ids=[queued.job_id], tenant_id=actor.workspace_id
+    )
+    assert descriptor is not None and descriptor.output is not None
+    assert descriptor.output["source_blueprint_version"] == 1
+    assert descriptor.output["candidate_blueprint"][
+        "blueprint_version"
+    ] == 2
+    assert repo.model_calls(tenant_id=actor.workspace_id, job_id=queued.job_id) == []
+    activity = repo.scoped(ActivityRow, "act_backend", actor.workspace_id)
+    assert isinstance(activity, ActivityRow)
+    assert activity.status == "BLUEPRINT_PREFLIGHT_QUEUED"
+
+    def preflight_worker(
+        job_id: str,
+        *,
+        mock_adapter: DeterministicMockAdapter | None = None,
+    ) -> Stage1Service:
+        claimed = repo.claim_job(job_id)
+        assert claimed is not None
+        return Stage1Service(
+            settings=_settings(),
+            repository=repo,
+            object_store=store,
+            gateway_factory=lambda requested_job_id: ModelGateway(
+                GatewayConfig(mode=GatewayMode.MOCK, job_id=requested_job_id),
+                mock_adapter=mock_adapter,
+                ledger_sink=repo.model_call_sink,
+            ),
+        )
+
+    worker_service = preflight_worker(queued.job_id)
+    asyncio.run(worker_service.process_job(queued.job_id))
+
+    terminal = repo.job_status(queued.job_id, actor.workspace_id)
+    assert terminal.status == "SUCCEEDED", terminal.diagnostics
+    assert terminal.stage == "BLUEPRINT_PREFLIGHT"
+    reviewed = repo.latest_blueprint("act_backend", actor.workspace_id)
+    assert reviewed.version == 2
+    reviewed_value = m.AssessmentBlueprint.model_validate(reviewed.data)
+    assert reviewed_value.dimensions[0].name.endswith("revisada")
+    assert repo.model_calls(
+        tenant_id=actor.workspace_id, job_id=queued.job_id
+    ) == []
+    assert m.BlueprintReviewPreflight.model_validate(
+        reviewed.preflight
+    ).catalog_plan_feasible
+    assert reviewed.review is None
+
+    cancelled_edit = reviewed_value.model_copy(
+        update={
+            "dimensions": [
+                dimension.model_copy(
+                    update={"name": f"{dimension.name} cancelada"}
+                )
+                for dimension in reviewed_value.dimensions
+            ]
+        }
+    )
+    cancelled_job = asyncio.run(
+        web_service.edit_blueprint(
+            activity_id="act_backend",
+            version=reviewed.version,
+            if_match=reviewed.etag,
+            edited=cancelled_edit,
+            actor=actor,
+        )
+    )
+    repo.request_job_cancel(
+        job_id=cancelled_job.job_id,
+        tenant_id=actor.workspace_id,
+        actor_id=actor.user_id,
+    )
+    cancelled_terminal = repo.job_status(cancelled_job.job_id, actor.workspace_id)
+    assert cancelled_terminal.status == "FAILED"
+    assert cancelled_terminal.diagnostics[0].code == "JOB_CANCELLED"
+    assert repo.latest_blueprint("act_backend", actor.workspace_id).version == 2
+    restored = repo.scoped(ActivityRow, "act_backend", actor.workspace_id)
+    assert isinstance(restored, ActivityRow)
+    assert restored.status == "BLUEPRINT_READY"
+
+    retried_edit = reviewed_value.model_copy(
+        update={
+            "dimensions": [
+                dimension.model_copy(
+                    update={"name": f"{dimension.name} reintentada"}
+                )
+                for dimension in reviewed_value.dimensions
+            ]
+        }
+    )
+    failed_dispatch = asyncio.run(
+        web_service.edit_blueprint(
+            activity_id="act_backend",
+            version=reviewed.version,
+            if_match=reviewed.etag,
+            edited=retried_edit,
+            actor=actor,
+        )
+    )
+    assert repo.fail_queued_dispatch(
+        job_id=failed_dispatch.job_id,
+        tenant_id=actor.workspace_id,
+        failure=diagnostic(
+            "JOB_DISPATCH_FAILED",
+            "The synthetic durable dispatch failed.",
+            retryable=True,
+        ),
+    )
+    retry = repo.schedule_job_retry(
+        job_id=failed_dispatch.job_id,
+        tenant_id=actor.workspace_id,
+        resulting_job_id="job_blueprint_preflight_retry",
+        control_id="control_blueprint_preflight_retry",
+        actor_id=actor.user_id,
+        reason_code="TRANSIENT_DISPATCH_FAILURE",
+        failure_class="TRANSIENT",
+        next_attempt_at=utc_now(),
+        resume_from_stage="BLUEPRINT_PREFLIGHT",
+    )
+    assert retry.kind == "BLUEPRINT_PREFLIGHT"
+    assert retry.status == "QUEUED"
+    asyncio.run(preflight_worker(retry.id).process_job(retry.id))
+
+    assert repo.job_status(retry.id, actor.workspace_id).status == "SUCCEEDED"
+    retried = repo.latest_blueprint("act_backend", actor.workspace_id)
+    assert retried.version == 3
+    retried_value = m.AssessmentBlueprint.model_validate(retried.data)
+    assert retried_value.dimensions[0].name.endswith("reintentada")
+    assert repo.model_calls(
+        tenant_id=actor.workspace_id, job_id=failed_dispatch.job_id
+    ) == []
+    assert repo.model_calls(
+        tenant_id=actor.workspace_id, job_id=retry.id
+    ) == []
+
+    class ForbiddenProviderAdapter(DeterministicMockAdapter):
+        async def invoke(self, **kwargs: object) -> AdapterResult:
+            raise AssertionError("the deterministic preflight must not call a provider")
+
+    rejected_edit = retried_value.model_copy(
+        update={
+            "dimensions": [
+                dimension.model_copy(
+                    update={"name": f"{dimension.name} rechazada"}
+                )
+                for dimension in retried_value.dimensions
+            ]
+        }
+    )
+    rejected_job = asyncio.run(
+        web_service.edit_blueprint(
+            activity_id="act_backend",
+            version=retried.version,
+            if_match=retried.etag,
+            edited=rejected_edit,
+            actor=actor,
+        )
+    )
+    rejecting_worker = preflight_worker(
+        rejected_job.job_id,
+        mock_adapter=ForbiddenProviderAdapter(),
+    )
+    asyncio.run(rejecting_worker.process_job(rejected_job.job_id))
+
+    assert repo.job_status(
+        rejected_job.job_id, actor.workspace_id
+    ).status == "SUCCEEDED"
+    assert repo.latest_blueprint(
+        "act_backend", actor.workspace_id
+    ).version == retried.version + 1
+    blocked_activity = repo.scoped(
+        ActivityRow, "act_backend", actor.workspace_id
+    )
+    assert isinstance(blocked_activity, ActivityRow)
+    assert blocked_activity.status == "BLUEPRINT_READY"
+    assert repo.model_calls(
+        tenant_id=actor.workspace_id, job_id=rejected_job.job_id
+    ) == []
+
+
+def test_legacy_p05_job_reconciles_without_provider_and_review_no_longer_gates() -> None:
+    repo = Repository("sqlite+pysqlite://")
+    store = MemoryObjectStore(
+        secret="object-test-secret-with-at-least-thirty-two-bytes"
+    )
+    actor = _actor()
+    service = Stage1Service(
+        settings=_settings(),
+        repository=repo,
+        object_store=store,
+        job_runner=RecordingJobRunner(),
+    )
+    service.create_activity(_config(), actor)
+    _upload_bytes(
+        service,
+        store,
+        actor,
+        role=m.ArtifactRole.ASSIGNMENT_PROMPT,
+        content=b"# Consigna\n\nExplique una decision y su consecuencia local.\n",
+    )
+    activity_job = asyncio.run(
+        service.enqueue_activity_pipeline("act_backend", actor)
+    )
+    asyncio.run(service.process_job(activity_job.job_id))
+    source = repo.latest_blueprint("act_backend", actor.workspace_id)
+    source_value = m.AssessmentBlueprint.model_validate(source.data)
+    candidate = source_value.model_copy(
+        update={
+            "blueprint_version": source.version + 1,
+            "dimensions": [
+                dimension.model_copy(update={"name": f"{dimension.name} heredada"})
+                for dimension in source_value.dimensions
+            ],
+        }
+    )
+    activity_spec = m.ActivitySpec.model_validate(
+        cast(
+            ActivitySpecRow,
+            repo.scoped(ActivitySpecRow, "act_backend", actor.workspace_id),
+        ).data
+    )
+    activity = cast(
+        ActivityRow, repo.scoped(ActivityRow, "act_backend", actor.workspace_id)
+    )
+    policy = m.BlueprintPolicy.model_validate(activity.blueprint_policy)
+    review_request = m.BlueprintReviewRequest(
+        blueprint=candidate,
+        activity_spec=activity_spec,
+        rubric_spec=None,
+        resolved_decisions=[],
+        blueprint_policy=policy,
+        deterministic_preflight=build_blueprint_review_preflight(
+            blueprint=candidate,
+            activity_spec=activity_spec,
+            rubric_spec=None,
+            blueprint_policy=policy,
+        ),
+    )
+    queued = service._new_job(
+        actor.workspace_id,
+        "act_backend",
+        "legacy_blueprint_review",
+        "BLUEPRINT_REVIEW",
+    )
+    repo.prepare_blueprint_review_job(
+        status=queued,
+        source_version=source.version,
+        source_etag=source.etag,
+        descriptor_output={
+            "kind": "BLUEPRINT_REVIEW_DESCRIPTOR",
+            "source_blueprint_version": source.version,
+            "source_etag": source.etag,
+            "source_activity_status": "BLUEPRINT_READY",
+            "actor_id": actor.user_id,
+            "review_request": review_request.model_dump(mode="json"),
+        },
+        descriptor_component_version=(
+            _blueprint_review_descriptor_component_version()
+        ),
+        descriptor_policy_hash=_blueprint_review_descriptor_policy_hash(
+            review_request
+        ),
+        actor_id=actor.user_id,
+        occurred_at=utc_now(),
+    )
+    claimed = repo.claim_job(queued.job_id)
+    assert claimed is not None and claimed.started_at is not None
+
+    def forbidden_gateway(_job_id: str) -> ModelGateway:
+        raise AssertionError("legacy P05 recovery must not construct a gateway")
+
+    worker = Stage1Service(
+        settings=_settings(),
+        repository=repo,
+        object_store=store,
+        gateway_factory=forbidden_gateway,
+    )
+    # Materialize the deterministic output, then model a worker crash before
+    # the aggregate transition. Lease recovery plus legacy resume must reuse it.
+    gated, preflight = worker._blueprint_preflight_stage(
+        job=claimed,
+        blueprint=candidate,
+        activity_spec=activity_spec,
+        rubric_spec=None,
+        resolved_decisions=[],
+        blueprint_policy=policy,
+    )
+    assert gated.status == m.WorkflowStatus.READY
+    assert preflight.catalog_plan_feasible
+    crash_recovery_at = claimed.started_at + timedelta(seconds=301)
+    assert repo.reconcile_stale_jobs(
+        lease_seconds=300, now=crash_recovery_at
+    ) == 1
+    assert repo.job_status(queued.job_id, actor.workspace_id).status == "FAILED"
+    retry = repo.schedule_job_retry(
+        job_id=queued.job_id,
+        tenant_id=actor.workspace_id,
+        resulting_job_id="job_legacy_blueprint_preflight_retry",
+        control_id="control_legacy_blueprint_preflight_retry",
+        actor_id=actor.user_id,
+        reason_code="LEASE_EXPIRED",
+        failure_class="TRANSIENT",
+        next_attempt_at=utc_now(),
+        resume_from_stage="BLUEPRINT_REVIEW",
+    )
+    assert retry.kind == "BLUEPRINT_REVIEW"
+    assert repo.claim_job(retry.id) is not None
+    asyncio.run(worker.process_job(retry.id))
+
+    terminal = repo.job_status(retry.id, actor.workspace_id)
+    assert terminal.status == "SUCCEEDED"
+    assert terminal.stage == "BLUEPRINT_PREFLIGHT"
+    reconciled = repo.latest_blueprint("act_backend", actor.workspace_id)
+    assert reconciled.version == source.version + 1
+    assert reconciled.review is None
+    assert m.BlueprintReviewPreflight.model_validate(
+        reconciled.preflight
+    ).catalog_plan_feasible
+    assert repo.model_calls(
+        tenant_id=actor.workspace_id, job_id=queued.job_id
+    ) == []
+    assert repo.model_calls(
+        tenant_id=actor.workspace_id, job_id=retry.id
+    ) == []
+    assert repo.has_audit_event(
+        tenant_id=actor.workspace_id,
+        event_type="stage.reused",
+        aggregate_id=retry.id,
+        payload_contains={"stage": "BLUEPRINT_PREFLIGHT"},
+    )
+
+    # A completed historical row may carry a P05 failure and no preflight
+    # column. Approval recomputes the deterministic gate and ignores P05.
+    historical_review = m.BlueprintReview(
+        activity_id="act_backend",
+        blueprint_id=candidate.blueprint_id,
+        blueprint_version=reconciled.version,
+        status="TECHNICAL_FAILURE",
+    )
+    with repo.session() as session:
+        persisted = session.get(type(reconciled), reconciled.row_id)
+        assert persisted is not None
+        persisted.review = historical_review.model_dump(mode="json")
+        persisted.preflight = None
+    legacy = repo.latest_blueprint("act_backend", actor.workspace_id)
+    projected_preflight, projected_issues = service.blueprint_review_projection(
+        legacy, actor
+    )
+    assert m.BlueprintReviewPreflight.model_validate(
+        projected_preflight
+    ).catalog_plan_feasible
+    assert projected_issues == []
+    assert legacy.review is not None
+    approved = service.approve_blueprint(
+        activity_id="act_backend",
+        version=legacy.version,
+        if_match=legacy.etag,
+        actor=actor,
+    )
+    assert m.AssessmentBlueprint.model_validate(approved.data).status == "APPROVED"
+    assert approved.review is None
+    assert m.BlueprintReviewPreflight.model_validate(
+        approved.preflight
+    ).catalog_plan_feasible
+
+
 def test_submission_job_is_bound_to_exact_approved_blueprint_version() -> None:
     repo = Repository("sqlite+pysqlite://")
     store = MemoryObjectStore(
@@ -780,10 +1558,17 @@ def test_submission_job_is_bound_to_exact_approved_blueprint_version() -> None:
             "approved_at": None,
         }
     )
-    newer_review = m.BlueprintReview.model_validate(approved.review).model_copy(
-        update={"blueprint_version": newer_version}
+    newer_preflight = m.BlueprintReviewPreflight.model_validate(
+        approved.preflight
+    ).model_copy(update={"blueprint_version": newer_version})
+    repo.add(
+        service._blueprint_row(
+            actor.workspace_id,
+            newer,
+            preflight=newer_preflight,
+            review=None,
+        )
     )
-    repo.add(service._blueprint_row(actor.workspace_id, newer, newer_review))
 
     asyncio.run(service.process_job(submission_job.job_id))
     assert (

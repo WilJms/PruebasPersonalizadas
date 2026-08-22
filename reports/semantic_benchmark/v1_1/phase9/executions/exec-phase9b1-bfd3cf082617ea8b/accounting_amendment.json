@@ -1,0 +1,51 @@
+{
+  "amends": "execution_manifest.json#accounting",
+  "call_ledger_hash": "sha256:2ff7e2e0af19231d98604d51258fcfaf82a58ab3af3a403ba763cc3fc9d4916c",
+  "execution_id": "exec-phase9b1-bfd3cf082617ea8b",
+  "generated_at": "2026-08-18T03:55:44Z",
+  "no_provider_call_performed_for_this_amendment": true,
+  "original_manifest_hash": "sha256:40ad5fd1a998f7baf0c90218a261e347165fcd8bbdaac13e4127f32a6d26e343",
+  "reason": "The manifest emitted by this run reported a single 'technical_failures' count that included deterministic/materializer rejections. The protocol gates technical failure rate at 2% and treats a deterministic rejection as a separate category, so the two must not share a counter. Nothing is rewritten: call_ledger.json stays authoritative and this breakdown is recomputed from it.",
+  "recomputed_accounting": {
+    "attempts_not_completed": 4,
+    "by_stage": {
+      "P04": {
+        "attempted": 3,
+        "completed": 1,
+        "not_completed": 2
+      },
+      "P06": {
+        "attempted": 6,
+        "completed": 6,
+        "not_completed": 0
+      },
+      "P07": {
+        "attempted": 18,
+        "completed": 17,
+        "not_completed": 1
+      },
+      "P09": {
+        "attempted": 3,
+        "completed": 2,
+        "not_completed": 1
+      }
+    },
+    "contract_or_schema_failures": 0,
+    "deterministic_failure_codes": [
+      "P04_DRAFT_COMPILATION_FAILED",
+      "P04_SOURCE_COVERAGE_MISMATCH",
+      "P07_DRAFT_MATERIALIZATION_FAILED",
+      "P09_DRAFT_MATERIALIZATION_FAILED"
+    ],
+    "deterministic_validation_failures": 4,
+    "primary_logical_calls_attempted": 30,
+    "primary_logical_calls_completed": 26,
+    "provider_technical_failures": 0,
+    "semantic_status": "PENDING_ADJUDICATION",
+    "technical_failure_rate": 0.0,
+    "technical_retry_attempts": 0
+  },
+  "schema_version": "phase9-accounting-amendment/1.0.0",
+  "semantic_status": "PENDING_ADJUDICATION",
+  "source_of_truth": "call_ledger.json"
+}

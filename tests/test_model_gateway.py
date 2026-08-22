@@ -5,11 +5,13 @@ from dataclasses import FrozenInstanceError
 from datetime import UTC, datetime
 import json
 
+from pydantic import ValidationError
 import pytest
 
 from comprehension_verification.contracts import model_by_name, models
 from comprehension_verification.model_gateway import (
     CallBudget,
+    ContextFailureCode,
     GatewayBudgetExceeded,
     GatewayConfig,
     GatewayContextError,
@@ -21,15 +23,27 @@ from comprehension_verification.model_gateway import (
     MockBehavior,
     ModelGateway,
     PROMPT_CONTRACTS,
+    PROVIDER_OUTPUT_CONTRACTS,
     PROMPT_SPECS,
     ValidationPhase,
     build_mock_request,
+    build_openai_routes,
     build_trusted_context,
 )
 from comprehension_verification.model_gateway.mock_factory import (
     AdapterResult,
     DeterministicMockAdapter,
 )
+from comprehension_verification.model_gateway.openai_schema import (
+    provider_schema_validation_issues,
+    structured_output_format,
+)
+from comprehension_verification.model_gateway.registry import prompt_spec
+from comprehension_verification.model_gateway.gateway import (
+    PROMPT_RELATIONSHIP_VALIDATOR_VERSIONS,
+)
+from comprehension_verification.rehearsal import blueprint_review_is_approvable
+from comprehension_verification.validation import build_blueprint_review_preflight
 
 
 EXPECTED_PROMPT_CONTRACTS = {
@@ -90,6 +104,18 @@ class ContextBreakingAdapter(DeterministicMockAdapter):
 
 def test_registry_is_exact_complete_and_immutable() -> None:
     assert dict(PROMPT_CONTRACTS) == EXPECTED_PROMPT_CONTRACTS
+    assert PROVIDER_OUTPUT_CONTRACTS["P04_BLUEPRINT_BUILD_V1"] == (
+        "BlueprintModelDraft"
+    )
+    assert PROVIDER_OUTPUT_CONTRACTS["P06_EVIDENCE_MAP_V1"] == (
+        "EvidenceMappingModelDraft"
+    )
+    assert PROVIDER_OUTPUT_CONTRACTS["P07_QUESTION_BUILD_V1"] == (
+        "QuestionModelDraft"
+    )
+    assert PROVIDER_OUTPUT_CONTRACTS["P09_GUIDE_BUILD_V1"] == (
+        "GuideModelDraft"
+    )
     assert set(PROMPT_SPECS) == set(EXPECTED_PROMPT_CONTRACTS)
     for prompt_id, (request_root, output_root) in EXPECTED_PROMPT_CONTRACTS.items():
         spec = PROMPT_SPECS[prompt_id]
@@ -99,12 +125,241 @@ def test_registry_is_exact_complete_and_immutable() -> None:
         )
         assert model_by_name(request_root).__name__ == request_root
         assert model_by_name(output_root).__name__ == output_root
+        assert spec.provider_output_schema_name == (
+            "BlueprintModelDraft"
+            if prompt_id == "P04_BLUEPRINT_BUILD_V1"
+            else "EvidenceMappingModelDraft"
+            if prompt_id == "P06_EVIDENCE_MAP_V1"
+            else "QuestionModelDraft"
+            if prompt_id == "P07_QUESTION_BUILD_V1"
+            else "GuideModelDraft"
+            if prompt_id == "P09_GUIDE_BUILD_V1"
+            else output_root
+        )
+
+    assert {
+        prompt_id: spec.prompt_version for prompt_id, spec in PROMPT_SPECS.items()
+    } == {
+        "P01_ACTIVITY_SPEC_V1": "1.1.3",
+        "P02_RUBRIC_NORMALIZE_V1": "1.1.4",
+        "P03_AMBIGUITY_TRIAGE_V1": "1.1.3",
+        "P04_BLUEPRINT_BUILD_V1": "1.1.12",
+        "P05_BLUEPRINT_REVIEW_V1": "1.1.8",
+        "P06_EVIDENCE_MAP_V1": "1.1.6",
+        "P07_QUESTION_BUILD_V1": "1.1.5",
+        "P08_QUESTION_REVIEW_V1": "1.1.5",
+        "P09_GUIDE_BUILD_V1": "1.1.7",
+        "P10_ENRICHED_CONTEXT_V1": "1.1.3",
+        "P11_SCHEMA_REPAIR_V1": "1.1.5",
+    }
+    assert (
+        PROMPT_SPECS["P01_ACTIVITY_SPEC_V1"].prompt_hash
+        == "sha256:e6406c13c06d52b3e2523166f48206c5cb0f892f26f8dc9258e311d8330d3d3e"
+    )
 
     with pytest.raises(TypeError):
         PROMPT_CONTRACTS["P12_NOT_ALLOWED"] = ("Diagnostic", "Diagnostic")
     with pytest.raises(FrozenInstanceError):
         PROMPT_SPECS["P01_ACTIVITY_SPEC_V1"].temperature = 1.0
 
+
+def test_p04_v112_keeps_only_semantic_work_at_the_provider_boundary() -> None:
+    p04 = PROMPT_SPECS["P04_BLUEPRINT_BUILD_V1"].developer_instruction
+    for exact_rule in (
+        "Devuelve exclusivamente BlueprintModelDraft",
+        "dimensiones verificables",
+        "variantes razonables de evidencia",
+        "foco, observable, dificultad aproximada",
+        "dimensions usa D1, D2",
+        "evidence_variants usa V1, V2",
+        "question_opportunities usa T1, T2",
+        "no excedas blueprint_policy.max_variants_per_dimension",
+        "no clones variantes u oportunidades",
+        "No produzcas ni reproduzcas schema_version",
+        "El servidor crea y valida todo eso",
+        "No demuestres ni declares que existe un plan de N preguntas",
+        "deja conteos exactos, tiempo conjunto, cobertura obligatoria y factibilidad al planner/preflight determinista posterior",
+    ):
+        assert exact_rule in p04
+    assert "Devuelve AssessmentBlueprint" not in p04
+
+
+def test_p05_v117_and_p11_v115_make_root_invariant_handling_explicit() -> None:
+    p05 = PROMPT_SPECS["P05_BLUEPRINT_REVIEW_V1"].developer_instruction
+    assert "estado de finalización de esta revisión" in p05
+    assert "status=READY y approval_recommendation=REJECT" in p05
+    assert "approval_recommendation debe ser null" in p05
+    assert "critical=true con status=FAIL" in p05
+    assert "catálogo independiente de question_count" in p05
+    assert "required_criterion_ids está vacío" in p05
+    assert "No rechaces un catálogo amplio" in p05
+    assert "no exijas identidad global" in p05
+    assert "selected_option snapshot" in p05
+    assert "exactamente 10 checks" in p05
+    assert "APPROVE_WITH_CHANGES" in p05
+    assert "nunca uses REJECT sin un FAIL crítico" in p05
+    assert "activity_id exactamente desde activity_spec.activity_id" in p05
+    assert "cuando status=READY, usa diagnostics=[]" in p05
+    assert "deterministic_preflight" in p05
+    assert "PLAN_FEASIBILITY debe ser PASS" in p05
+    assert "no recalcules ni contradigas sus booleanos" in p05
+
+    p11 = PROMPT_SPECS["P11_SCHEMA_REPAIR_V1"].developer_instruction
+    assert "path=/ y error_type=value_error" in p11
+    assert "usa UNREPAIRABLE" in p11
+    assert "target_schema_name=BlueprintReview" in p11
+    for protected_field in (
+        "status",
+        "approval_recommendation",
+        "checks[].status",
+        "checks[].critical",
+    ):
+        assert protected_field in p11
+
+
+def test_p06_v116_limits_the_provider_to_local_semantic_mapping() -> None:
+    p06 = PROMPT_SPECS["P06_EVIDENCE_MAP_V1"].developer_instruction
+    for exact_rule in (
+        "EvidenceMappingAliasEnvelope cerrado",
+        "aliases locales de esta llamada",
+        "support_status categórico",
+        "No selecciones preguntas finales, reservas ni un conjunto de N",
+        "No declares factibilidad global",
+        "No copies IDs canónicos",
+        "No produzcas evidence_fit, opportunity_quality, confidence, strength",
+        "Devuelve EvidenceMappingModelDraft",
+        "el planner determinista posterior es la única autoridad",
+    ):
+        assert exact_rule in p06
+
+
+def test_p07_v115_p08_v115_separate_support_from_visible_anchor() -> None:
+    p07 = PROMPT_SPECS["P07_QUESTION_BUILD_V1"].developer_instruction
+    p08 = PROMPT_SPECS["P08_QUESTION_REVIEW_V1"].developer_instruction
+    for exact_rule in (
+        "QuestionAliasEnvelope cerrado",
+        "visible_anchor_aliases ⊆ support evidence aliases",
+        "Devuelve únicamente QuestionModelDraft",
+        "No devuelvas IDs canónicos",
+        "El servidor resuelve aliases",
+    ):
+        assert exact_rule in p07
+    for exact_rule in (
+        "submission_id exactamente desde generation_result.submission_id",
+        "review.candidate_id exactamente desde generation_result.candidate.candidate_id",
+        "nunca inventes candidate_id",
+        "candidate.evidence_ids representa support evidence completa",
+        "candidate.anchor representa por separado el visible anchor",
+        "Evalúa answerability contra support evidence",
+        "critical_failure_codes estables",
+        "review.evidence_ids debe ser un subconjunto de generation_result.candidate.evidence_ids",
+        "review.source_ids debe ser un subconjunto de generation_result.candidate.course_source_ids",
+        "aparezca solo en evidence_bundle u opportunity no lo autoriza",
+        "usa [] en el campo correspondiente",
+        "nunca amplía su frontera",
+    ):
+        assert exact_rule in p08
+
+
+def test_p08_schema_describes_candidate_only_review_references() -> None:
+    properties = models.QuestionSemanticReview.model_json_schema()["properties"]
+    evidence_description = properties["evidence_ids"]["description"]
+    source_description = properties["source_ids"]["description"]
+    assert "generation_result.candidate.evidence_ids" in evidence_description
+    assert "present only elsewhere in the request are forbidden" in (
+        evidence_description
+    )
+    assert "Use []" in evidence_description
+    assert "generation_result.candidate.course_source_ids" in (
+        source_description
+    )
+    assert "present only elsewhere in the request are forbidden" in (
+        source_description
+    )
+    assert "Use []" in source_description
+
+
+def test_p06_request_binds_planning_policy_to_blueprint_constraints() -> None:
+    raw = build_mock_request("P06_EVIDENCE_MAP_V1").model_dump(mode="json")
+    raw["planning_policy"]["minimum_opportunity_quality"] = 0.5
+    with pytest.raises(
+        ValidationError,
+        match="planning policy must match",
+    ):
+        models.EvidenceMapRequest.model_validate(raw)
+
+
+def test_p09_v117_is_post_approval_enrichment_only() -> None:
+    p09 = PROMPT_SPECS["P09_GUIDE_BUILD_V1"].developer_instruction
+    for exact_reference in (
+        "ya fue aprobada explícitamente",
+        "no revises, aceptes, rechaces ni modifiques preguntas",
+        "GuideAliasEnvelope",
+        "GuideModelDraft",
+        "aliases locales Q*, O*, N* y E*",
+        "conserva conceptualmente todos los core_observables O*",
+        "niveles 0, 1, 2 y 3",
+        "contexto es CLOSED",
+        "items=[] y abstention_reason",
+    ):
+        assert exact_reference in p09
+
+
+def test_blueprint_requests_require_self_contained_teacher_decisions() -> None:
+    request = build_mock_request("P04_BLUEPRINT_BUILD_V1")
+    decision = request.resolved_decisions[0]
+    assert decision.selected_option is not None
+    assert decision.selected_option.option_id == decision.selected_option_id
+
+    raw = request.model_dump(mode="json")
+    raw["resolved_decisions"][0]["selected_option"] = None
+    with pytest.raises(
+        ValidationError,
+        match="resolved decisions require selected_option snapshots",
+    ):
+        models.BlueprintBuildRequest.model_validate(raw)
+
+    mismatched = decision.model_dump(mode="json")
+    mismatched["selected_option"]["option_id"] = "option_other"
+    with pytest.raises(
+        ValidationError,
+        match="selected_option must match selected_option_id",
+    ):
+        models.PolicyDecision.model_validate(mismatched)
+
+    duplicate_decision = decision.model_dump(mode="json")
+    duplicate_decision["selected_option_id"] = "option_duplicate"
+    duplicate_decision["selected_option"]["option_id"] = "option_duplicate"
+    raw = request.model_dump(mode="json")
+    raw["resolved_decisions"].append(duplicate_decision)
+    with pytest.raises(
+        ValidationError,
+        match="resolved decisions must have unique decision_ids",
+    ):
+        models.BlueprintBuildRequest.model_validate(raw)
+
+    duplicate_decision["decision_id"] = "decision_duplicate"
+    raw = request.model_dump(mode="json")
+    raw["resolved_decisions"].append(duplicate_decision)
+    with pytest.raises(
+        ValidationError,
+        match="resolved decisions must have unique issue_ids",
+    ):
+        models.BlueprintBuildRequest.model_validate(raw)
+
+
+def test_source_contracts_reject_duplicate_statement_and_level_ids() -> None:
+    activity = _invoke("P01_ACTIVITY_SPEC_V1").output.model_dump(mode="json")
+    activity["requirements"].append(dict(activity["learning_outcomes"][0]))
+    with pytest.raises(ValidationError, match="ActivitySpec statement_ids must be unique"):
+        models.ActivitySpec.model_validate(activity)
+
+    rubric = _invoke("P02_RUBRIC_NORMALIZE_V1").output.model_dump(mode="json")
+    duplicate = json.loads(json.dumps(rubric["criteria"][0]))
+    duplicate["criterion_id"] = "criterion_duplicate"
+    rubric["criteria"].append(duplicate)
+    with pytest.raises(ValidationError, match="RubricSpec level_ids must be unique"):
+        models.RubricSpec.model_validate(rubric)
 
 @pytest.mark.parametrize("prompt_id", tuple(EXPECTED_PROMPT_CONTRACTS))
 def test_every_prompt_happy_path_is_canonical_and_deterministic(prompt_id: str) -> None:
@@ -182,6 +437,11 @@ def test_every_prompt_has_contract_valid_abstention(prompt_id: str) -> None:
         assert output.status == "NEEDS_REVIEW"
         assert output.items == []
         assert output.diagnostics
+    elif prompt_id == "P06_EVIDENCE_MAP_V1":
+        assert output.status == "READY"
+        assert output.mapping_summary is not None
+        assert output.mapping_summary.uncertain_count == 1
+        assert output.opportunities[0].abstention_reason
     else:
         assert output.status != "READY"
         if hasattr(output, "diagnostics"):
@@ -203,6 +463,28 @@ def test_p04_cannot_fabricate_human_approval_metadata() -> None:
         )
 
 
+def test_p04_provider_schema_has_no_workflow_or_approval_fields() -> None:
+    spec = prompt_spec("P04_BLUEPRINT_BUILD_V1")
+    schema = structured_output_format(spec, build_mock_request(spec.prompt_id))[
+        "schema"
+    ]
+    assert set(schema["properties"]) == {
+        "dimensions",
+        "evidence_variants",
+        "question_opportunities",
+    }
+    serialized = json.dumps(schema, sort_keys=True)
+    for forbidden in (
+        "blueprint_id",
+        "blueprint_version",
+        "status",
+        "assessment_constraints",
+        "approved_by",
+        "approved_at",
+    ):
+        assert forbidden not in serialized
+
+
 def test_context_invalid_provider_output_is_ledgered_as_invalid() -> None:
     adapter = ContextBreakingAdapter(
         "P01_ACTIVITY_SPEC_V1",
@@ -217,6 +499,411 @@ def test_context_invalid_provider_output_is_ledgered_as_invalid() -> None:
     assert len(captured.value.ledgers) == 1
     assert captured.value.ledgers[0].result == "SCHEMA_INVALID"
     assert sink == list(captured.value.ledgers)
+
+
+def _mutate_p01_context(raw: dict, scenario: str) -> None:
+    diagnostic = {
+        "code": "ASSIGNMENT_FIELD_MISSING",
+        "severity": "ERROR",
+        "message": "Diagnóstico sintético.",
+        "evidence_ids": [],
+        "source_ids": [],
+        "retryable": False,
+        "details": {},
+    }
+    if scenario == "evidence_id":
+        raw["learning_outcomes"][0]["evidence_ids"] = ["ctx_private_value"]
+    elif scenario == "source_id":
+        diagnostic["source_ids"] = ["ctx_private_value"]
+        raw["diagnostics"] = [diagnostic]
+    elif scenario == "diagnostic_missing":
+        raw.update(
+            {
+                "status": "NEEDS_REVIEW",
+                "learning_outcomes": [],
+                "expected_products": [],
+                "requirements": [],
+                "diagnostics": [],
+            }
+        )
+    elif scenario == "sourced_fields_on_abstention":
+        raw["status"] = "NEEDS_REVIEW"
+        raw["diagnostics"] = [diagnostic]
+    elif scenario == "activity_id":
+        raw["activity_id"] = "ctx_private_value"
+    elif scenario == "combined":
+        raw["learning_outcomes"][0]["evidence_ids"] = ["ctx_private_value"]
+        diagnostic["source_ids"] = ["ctx_private_value"]
+        raw["contradictions"] = [diagnostic]
+        raw["status"] = "NEEDS_REVIEW"
+        raw["diagnostics"] = []
+        raw["activity_id"] = "ctx_private_value"
+    else:  # pragma: no cover - guards the test table itself
+        raise AssertionError(f"Unknown P01 contextual scenario: {scenario}")
+
+
+@pytest.mark.parametrize(
+    ("scenario", "expected_code"),
+    (
+        ("evidence_id", ContextFailureCode.EVIDENCE_ID_NOT_ALLOWLISTED),
+        ("source_id", ContextFailureCode.COURSE_SOURCE_ID_NOT_ALLOWLISTED),
+        ("diagnostic_missing", ContextFailureCode.ABSTENTION_DIAGNOSTIC_MISSING),
+        (
+            "sourced_fields_on_abstention",
+            ContextFailureCode.P01_ABSTENTION_SOURCED_FIELDS_PRESENT,
+        ),
+        ("activity_id", ContextFailureCode.P01_ACTIVITY_ID_MISMATCH),
+    ),
+)
+def test_p01_contextual_failures_are_distinct_and_content_free(
+    scenario: str,
+    expected_code: ContextFailureCode,
+) -> None:
+    prompt_id = "P01_ACTIVITY_SPEC_V1"
+    request = build_mock_request(prompt_id)
+    raw = (
+        DeterministicMockAdapter()
+        .factory.output_for(prompt_id, request, MockBehavior.HAPPY)
+        .model_dump(mode="json")
+    )
+    _mutate_p01_context(raw, scenario)
+
+    provider_schema = structured_output_format(
+        prompt_spec(prompt_id), request
+    )["schema"]
+    assert not provider_schema_validation_issues(provider_schema, raw)
+    assert isinstance(models.ActivitySpec.model_validate(raw), models.ActivitySpec)
+
+    gateway = ModelGateway(
+        mock_adapter=ContextBreakingAdapter(
+            prompt_id,
+            lambda output: _mutate_p01_context(output, scenario),
+        )
+    )
+    with pytest.raises(GatewayContextError) as captured:
+        _invoke(prompt_id, gateway=gateway)
+
+    error = captured.value
+    assert error.code == "MODEL_CONTEXT_NOT_ALLOWLISTED"
+    assert error.failure.phase == ValidationPhase.OUTPUT
+    assert error.failure.code == expected_code
+    assert error.failure.codes == (expected_code,)
+    assert len(error.ledgers) == 1
+    ledger = error.ledgers[0]
+    assert ledger.prompt_id == prompt_id
+    assert ledger.result == "SCHEMA_INVALID"
+    assert "OUTPUT_CONTEXT_VALIDATION_FAILED" in ledger.route.reason_codes
+    assert (
+        f"CONTEXT_FAILURE_OUTPUT_{expected_code.value}"
+        in ledger.route.reason_codes
+    )
+    serialized = json.dumps(ledger.model_dump(mode="json"), sort_keys=True)
+    assert "ctx_private_value" not in serialized
+    assert "Diagnóstico sintético" not in serialized
+
+
+def test_p01_context_mode_cannot_match_the_historical_validation_boundary() -> None:
+    prompt_id = "P01_ACTIVITY_SPEC_V1"
+    request = build_mock_request(prompt_id)
+    raw = (
+        DeterministicMockAdapter()
+        .factory.output_for(prompt_id, request, MockBehavior.HAPPY)
+        .model_dump(mode="json")
+    )
+    raw["diagnostics"] = [
+        {
+            "code": "ASSIGNMENT_FIELD_MISSING",
+            "severity": "ERROR",
+            "message": "Diagnóstico sintético.",
+            "evidence_ids": [],
+            "source_ids": [],
+            "retryable": False,
+            "details": {"context_mode": "COURSE_ENRICHED"},
+        }
+    ]
+    provider_schema = structured_output_format(
+        prompt_spec(prompt_id), request
+    )["schema"]
+
+    assert provider_schema_validation_issues(provider_schema, raw)
+    assert isinstance(models.ActivitySpec.model_validate(raw), models.ActivitySpec)
+
+
+def test_p01_context_observability_reports_all_coexisting_classes() -> None:
+    prompt_id = "P01_ACTIVITY_SPEC_V1"
+    request = build_mock_request(prompt_id)
+    raw = (
+        DeterministicMockAdapter()
+        .factory.output_for(prompt_id, request, MockBehavior.HAPPY)
+        .model_dump(mode="json")
+    )
+    _mutate_p01_context(raw, "combined")
+    provider_schema = structured_output_format(
+        prompt_spec(prompt_id), request
+    )["schema"]
+    assert not provider_schema_validation_issues(provider_schema, raw)
+    assert isinstance(models.ActivitySpec.model_validate(raw), models.ActivitySpec)
+
+    gateway = ModelGateway(
+        mock_adapter=ContextBreakingAdapter(
+            prompt_id,
+            lambda output: _mutate_p01_context(output, "combined"),
+        )
+    )
+    with pytest.raises(GatewayContextError) as captured:
+        _invoke(prompt_id, gateway=gateway)
+
+    expected_codes = (
+        ContextFailureCode.EVIDENCE_ID_NOT_ALLOWLISTED,
+        ContextFailureCode.COURSE_SOURCE_ID_NOT_ALLOWLISTED,
+        ContextFailureCode.ABSTENTION_DIAGNOSTIC_MISSING,
+        ContextFailureCode.P01_ABSTENTION_SOURCED_FIELDS_PRESENT,
+        ContextFailureCode.P01_ACTIVITY_ID_MISMATCH,
+    )
+    assert captured.value.failure.codes == expected_codes
+    reason_codes = captured.value.ledgers[0].route.reason_codes
+    assert all(
+        f"CONTEXT_FAILURE_OUTPUT_{code.value}" in reason_codes
+        for code in expected_codes
+    )
+
+
+def _mutate_p02_context(raw: dict, scenario: str) -> None:
+    diagnostic = {
+        "code": "RUBRIC_UNPARSABLE",
+        "severity": "ERROR",
+        "message": "Diagnóstico sintético.",
+        "evidence_ids": [],
+        "source_ids": [],
+        "retryable": False,
+        "details": {},
+    }
+    if scenario == "assignment_evidence_id":
+        raw["criteria"][0]["evidence_ids"] = ["ev_assignment_1"]
+    elif scenario == "diagnostic_missing":
+        raw.update(
+            {
+                "status": "NEEDS_REVIEW",
+                "criteria": [],
+                "diagnostics": [],
+            }
+        )
+    elif scenario == "criteria_on_abstention":
+        raw["status"] = "NEEDS_REVIEW"
+        raw["diagnostics"] = [diagnostic]
+    elif scenario == "activity_id":
+        raw["activity_id"] = "ctx_private_value"
+    elif scenario == "combined":
+        raw["criteria"][0]["evidence_ids"] = ["ev_assignment_1"]
+        raw["status"] = "NEEDS_REVIEW"
+        raw["diagnostics"] = []
+        raw["activity_id"] = "ctx_private_value"
+    else:  # pragma: no cover - guards the test table itself
+        raise AssertionError(f"Unknown P02 contextual scenario: {scenario}")
+
+
+@pytest.mark.parametrize(
+    ("scenario", "expected_code"),
+    (
+        (
+            "assignment_evidence_id",
+            ContextFailureCode.P02_RUBRIC_EVIDENCE_ID_NOT_ALLOWLISTED,
+        ),
+        (
+            "diagnostic_missing",
+            ContextFailureCode.ABSTENTION_DIAGNOSTIC_MISSING,
+        ),
+        (
+            "criteria_on_abstention",
+            ContextFailureCode.P02_ABSTENTION_CRITERIA_PRESENT,
+        ),
+        ("activity_id", ContextFailureCode.P02_ACTIVITY_ID_MISMATCH),
+    ),
+)
+def test_p02_contextual_failures_are_distinct_and_content_free(
+    scenario: str,
+    expected_code: ContextFailureCode,
+) -> None:
+    prompt_id = "P02_RUBRIC_NORMALIZE_V1"
+    request = build_mock_request(prompt_id)
+    raw = (
+        DeterministicMockAdapter()
+        .factory.output_for(prompt_id, request, MockBehavior.HAPPY)
+        .model_dump(mode="json")
+    )
+    _mutate_p02_context(raw, scenario)
+
+    provider_schema = structured_output_format(
+        prompt_spec(prompt_id), request
+    )["schema"]
+    assert not provider_schema_validation_issues(provider_schema, raw)
+    assert isinstance(models.RubricSpec.model_validate(raw), models.RubricSpec)
+
+    gateway = ModelGateway(
+        mock_adapter=ContextBreakingAdapter(
+            prompt_id,
+            lambda output: _mutate_p02_context(output, scenario),
+        )
+    )
+    with pytest.raises(GatewayContextError) as captured:
+        _invoke(prompt_id, gateway=gateway)
+
+    error = captured.value
+    assert error.failure.phase == ValidationPhase.OUTPUT
+    assert error.failure.codes == (expected_code,)
+    assert len(error.ledgers) == 1
+    reason_codes = error.ledgers[0].route.reason_codes
+    assert f"CONTEXT_FAILURE_OUTPUT_{expected_code.value}" in reason_codes
+    serialized = json.dumps(error.ledgers[0].model_dump(mode="json"))
+    assert "ctx_private_value" not in serialized
+    assert "Diagnóstico sintético" not in serialized
+
+
+def test_p02_context_observability_reports_all_coexisting_classes() -> None:
+    prompt_id = "P02_RUBRIC_NORMALIZE_V1"
+    gateway = ModelGateway(
+        mock_adapter=ContextBreakingAdapter(
+            prompt_id,
+            lambda output: _mutate_p02_context(output, "combined"),
+        )
+    )
+
+    with pytest.raises(GatewayContextError) as captured:
+        _invoke(prompt_id, gateway=gateway)
+
+    expected_codes = (
+        ContextFailureCode.P02_RUBRIC_EVIDENCE_ID_NOT_ALLOWLISTED,
+        ContextFailureCode.ABSTENTION_DIAGNOSTIC_MISSING,
+        ContextFailureCode.P02_ABSTENTION_CRITERIA_PRESENT,
+        ContextFailureCode.P02_ACTIVITY_ID_MISMATCH,
+    )
+    assert captured.value.failure.codes == expected_codes
+    reason_codes = captured.value.ledgers[0].route.reason_codes
+    assert all(
+        f"CONTEXT_FAILURE_OUTPUT_{code.value}" in reason_codes
+        for code in expected_codes
+    )
+
+
+def _p09_context_case(scenario: str) -> tuple[models.GuideBuildRequest, dict]:
+    prompt_id = "P09_GUIDE_BUILD_V1"
+    request = build_mock_request(prompt_id)
+    raw = (
+        DeterministicMockAdapter()
+        .factory.output_for(prompt_id, request, MockBehavior.HAPPY)
+        .model_dump(mode="json")
+    )
+    if scenario == "scope_alias":
+        raw["scope_alias"] = "S" + "0" * 24
+    elif scenario == "question_coverage":
+        extra = json.loads(json.dumps(raw["items"][0]))
+        extra["question_alias"] = "Q2"
+        raw["items"].append(extra)
+    elif scenario == "question_alias":
+        raw["items"][0]["question_alias"] = "Q2"
+    elif scenario == "evidence_alias":
+        raw["items"][0]["additional_observables"] = [
+            {
+                "observable_alias": "N1",
+                "description": "Un elemento adicional delimitado.",
+                "support_evidence_aliases": ["E99"],
+                "required_for_level_2": False,
+            }
+        ]
+    elif scenario == "observable_alias":
+        raw["items"][0]["levels"][2]["observable_aliases"] = ["O99"]
+    else:  # pragma: no cover - guards the test table itself
+        raise AssertionError(f"Unknown P09 contextual scenario: {scenario}")
+    return request, raw
+
+
+@pytest.mark.parametrize(
+    ("scenario", "expected_code"),
+    (
+        ("scope_alias", ContextFailureCode.P09_SCOPE_ALIAS_MISMATCH),
+        (
+            "question_coverage",
+            ContextFailureCode.P09_DRAFT_MATERIALIZATION_FAILED,
+        ),
+        (
+            "question_alias",
+            ContextFailureCode.P09_DRAFT_MATERIALIZATION_FAILED,
+        ),
+        (
+            "evidence_alias",
+            ContextFailureCode.P09_ALIAS_REFERENCE_UNKNOWN,
+        ),
+        (
+            "observable_alias",
+            ContextFailureCode.P09_ALIAS_REFERENCE_UNKNOWN,
+        ),
+    ),
+)
+def test_p09_contextual_failures_are_distinct_and_content_free(
+    scenario: str,
+    expected_code: ContextFailureCode,
+) -> None:
+    prompt_id = "P09_GUIDE_BUILD_V1"
+    request, raw = _p09_context_case(scenario)
+    provider_schema = structured_output_format(
+        prompt_spec(prompt_id), request
+    )["schema"]
+    assert not provider_schema_validation_issues(provider_schema, raw)
+    assert isinstance(models.GuideModelDraft.model_validate(raw), models.GuideModelDraft)
+
+    gateway = ModelGateway(
+        mock_adapter=ContextBreakingAdapter(
+            prompt_id,
+            lambda output: output.update(raw),
+        )
+    )
+    with pytest.raises(GatewayContextError) as captured:
+        asyncio.run(
+            gateway.invoke(
+                prompt_id,
+                request,
+                build_trusted_context(request),
+            )
+        )
+
+    error = captured.value
+    assert error.code == "MODEL_CONTEXT_NOT_ALLOWLISTED"
+    assert error.failure.phase == ValidationPhase.OUTPUT
+    assert error.failure.codes == (expected_code,)
+    assert len(error.ledgers) == 1
+    ledger = error.ledgers[0]
+    assert ledger.result == "SCHEMA_INVALID"
+    assert (
+        f"CONTEXT_FAILURE_OUTPUT_{expected_code.value}"
+        in ledger.route.reason_codes
+    )
+    serialized = json.dumps(ledger.model_dump(mode="json"), sort_keys=True)
+    for protected_value in ("S000000000000000000000000", "E99", "O99"):
+        assert protected_value not in serialized
+
+
+def test_p09_provider_dto_cannot_emit_canonical_identity_or_question_content() -> None:
+    request = build_mock_request("P09_GUIDE_BUILD_V1")
+    schema = structured_output_format(
+        prompt_spec("P09_GUIDE_BUILD_V1"), request
+    )["schema"]
+    raw = (
+        DeterministicMockAdapter()
+        .factory.output_for("P09_GUIDE_BUILD_V1", request, MockBehavior.HAPPY)
+        .model_dump(mode="json")
+    )
+    for field in (
+        "guide_id",
+        "assessment_id",
+        "submission_id",
+        "question_text",
+        "anchor",
+        "evidence_ids",
+        "source_ids",
+    ):
+        mutated = json.loads(json.dumps(raw))
+        mutated[field] = "server_owned"
+        assert provider_schema_validation_issues(schema, mutated)
 
 
 def test_p04_rejects_invented_source_ids_and_records_attempt() -> None:
@@ -236,6 +923,306 @@ def test_p04_rejects_invented_source_ids_and_records_attempt() -> None:
     assert [item.result for item in captured.value.ledgers] == ["SCHEMA_INVALID"]
 
 
+def test_p04_rejects_missing_verifiable_source_coverage() -> None:
+    prompt_id = "P04_BLUEPRINT_BUILD_V1"
+    request = build_mock_request(prompt_id)
+    first = request.rubric_spec.criteria[0]
+    request = request.model_copy(
+        update={
+            "rubric_spec": request.rubric_spec.model_copy(
+                update={
+                    "criteria": [
+                        first,
+                        first.model_copy(
+                            update={
+                                "criterion_id": "criterion_2",
+                                "name": "Límite",
+                                "levels": [
+                                    level.model_copy(
+                                        update={"level_id": "level_criterion_2"}
+                                    )
+                                    for level in first.levels
+                                ],
+                            }
+                        ),
+                    ]
+                }
+            )
+        }
+    )
+
+    def omit_second_criterion(raw: dict) -> None:
+        raw["dimensions"][0]["criterion_ids"] = ["criterion_1"]
+
+    gateway = ModelGateway(
+        mock_adapter=ContextBreakingAdapter(prompt_id, omit_second_criterion)
+    )
+    with pytest.raises(GatewayContextError) as captured:
+        asyncio.run(
+            gateway.invoke(
+                prompt_id,
+                request,
+                build_trusted_context(request),
+            )
+        )
+
+    assert captured.value.failure.codes == (
+        ContextFailureCode.P04_SOURCE_COVERAGE_MISMATCH,
+    )
+
+
+def test_p04_preflight_reports_catalog_without_an_exact_n_time_feasible_set() -> None:
+    def exceed_total_time(raw: dict) -> None:
+        for opportunity in raw["question_opportunities"]:
+            opportunity["target_minutes"] = 6
+
+    gateway = ModelGateway(
+        mock_adapter=ContextBreakingAdapter(
+            "P04_BLUEPRINT_BUILD_V1", exceed_total_time
+        )
+    )
+    result = _invoke("P04_BLUEPRINT_BUILD_V1", gateway=gateway)
+
+    assert result.output.status == models.WorkflowStatus.NEEDS_REVIEW
+    assert [item.code for item in result.output.diagnostics] == [
+        "P04_CATALOG_TIME_INFEASIBLE"
+    ]
+    assert result.ledgers[-1].result == "SCHEMA_VALID"
+
+
+@pytest.mark.parametrize(
+    ("mutation", "expected_code"),
+    (
+        (
+            lambda raw: raw.update({"activity_id": "act_outside_review"}),
+            ContextFailureCode.P05_REFERENCE_MISMATCH,
+        ),
+        (
+            lambda raw: raw["checks"][0].update(
+                {"referenced_ids": ["id_outside_review_roots"]}
+            ),
+            ContextFailureCode.P05_REFERENCED_ID_NOT_ALLOWLISTED,
+        ),
+    ),
+)
+def test_p05_reference_failures_have_prompt_local_codes(
+    mutation,
+    expected_code: ContextFailureCode,
+) -> None:  # type: ignore[no-untyped-def]
+    gateway = ModelGateway(
+        mock_adapter=ContextBreakingAdapter(
+            "P05_BLUEPRINT_REVIEW_V1", mutation
+        )
+    )
+
+    with pytest.raises(GatewayContextError) as captured:
+        _invoke("P05_BLUEPRINT_REVIEW_V1", gateway=gateway)
+
+    assert captured.value.failure.codes == (expected_code,)
+
+
+def test_p05_rejects_untrusted_preflight_and_output_disagreement() -> None:
+    prompt_id = "P05_BLUEPRINT_REVIEW_V1"
+    request = build_mock_request(prompt_id)
+    assert request.deterministic_preflight == build_blueprint_review_preflight(
+        blueprint=request.blueprint,
+        activity_spec=request.activity_spec,
+        rubric_spec=request.rubric_spec,
+        blueprint_policy=request.blueprint_policy,
+    )
+    forged = request.model_copy(
+        update={
+            "deterministic_preflight": (
+                request.deterministic_preflight.model_copy(
+                    update={"catalog_plan_feasible": False}
+                )
+            )
+        }
+    )
+    with pytest.raises(GatewayContextError) as forged_error:
+        asyncio.run(
+            ModelGateway().invoke(
+                prompt_id,
+                forged,
+                build_trusted_context(forged),
+            )
+        )
+    assert forged_error.value.failure.codes == (
+        ContextFailureCode.P05_PREFLIGHT_MISMATCH,
+    )
+
+    def contradict_preflight(raw: dict) -> None:
+        for check in raw["checks"]:
+            if check["category"] == "PLAN_FEASIBILITY":
+                check.update({"status": "FAIL", "critical": True})
+        raw["approval_recommendation"] = "REJECT"
+
+    gateway = ModelGateway(
+        mock_adapter=ContextBreakingAdapter(
+            prompt_id, contradict_preflight
+        )
+    )
+    with pytest.raises(GatewayContextError) as output_error:
+        _invoke(prompt_id, gateway=gateway)
+    assert output_error.value.failure.codes == (
+        ContextFailureCode.P05_PREFLIGHT_CHECK_MISMATCH,
+    )
+
+
+def test_blueprint_review_matrix_is_exact_and_matches_product_transition() -> None:
+    valid = _invoke("P05_BLUEPRINT_REVIEW_V1").output
+    raw = valid.model_dump(mode="json")
+
+    raw["checks"][0]["status"] = "WARN"
+    with pytest.raises(ValidationError):
+        models.BlueprintReview.model_validate(raw)
+    raw["approval_recommendation"] = "APPROVE_WITH_CHANGES"
+    warning_review = models.BlueprintReview.model_validate(raw)
+    assert blueprint_review_is_approvable(warning_review) is True
+
+    duplicate_category = valid.model_dump(mode="json")
+    duplicate_category["checks"][-1]["category"] = (
+        duplicate_category["checks"][0]["category"]
+    )
+    with pytest.raises(ValidationError):
+        models.BlueprintReview.model_validate(duplicate_category)
+
+    unjustified_reject = valid.model_dump(mode="json")
+    unjustified_reject["approval_recommendation"] = "REJECT"
+    with pytest.raises(ValidationError):
+        models.BlueprintReview.model_validate(unjustified_reject)
+
+    critical_reject = valid.model_dump(mode="json")
+    critical_reject["checks"][0].update(
+        {"status": "FAIL", "critical": True}
+    )
+    critical_reject["approval_recommendation"] = "REJECT"
+    rejected_review = models.BlueprintReview.model_validate(critical_reject)
+    assert blueprint_review_is_approvable(rejected_review) is False
+
+
+def test_p06_rejects_unknown_template_alias() -> None:
+    def change_template_alias(raw: dict) -> None:
+        raw["mappings"][0]["template_alias"] = "T999"
+
+    gateway = ModelGateway(
+        mock_adapter=ContextBreakingAdapter(
+            "P06_EVIDENCE_MAP_V1", change_template_alias
+        )
+    )
+    with pytest.raises(GatewayContextError) as captured:
+        _invoke("P06_EVIDENCE_MAP_V1", gateway=gateway)
+    assert captured.value.failure.codes == (
+        ContextFailureCode.P06_ALIAS_REFERENCE_UNKNOWN,
+    )
+
+
+def test_p06_rejects_scope_alias_from_another_call() -> None:
+    def change_scope_alias(raw: dict) -> None:
+        raw["scope_alias"] = "S" + "f" * 24
+
+    gateway = ModelGateway(
+        mock_adapter=ContextBreakingAdapter(
+            "P06_EVIDENCE_MAP_V1", change_scope_alias
+        )
+    )
+    with pytest.raises(GatewayContextError) as captured:
+        _invoke("P06_EVIDENCE_MAP_V1", gateway=gateway)
+
+    assert captured.value.failure.codes == (
+        ContextFailureCode.P06_SCOPE_ALIAS_MISMATCH,
+    )
+
+
+def test_p06_relationship_diagnostic_identifies_unknown_evidence_alias() -> None:
+    request = build_mock_request("P06_EVIDENCE_MAP_V1")
+    base = request.evidence_bundle.evidence_units[0]
+    extra = base.model_copy(
+        update={
+            "evidence_id": "ev_submission_2",
+            "artifact_id": "art_submission_2",
+            "artifact_hash": "sha256:" + "d" * 64,
+            "normalized_hash": "sha256:" + "e" * 64,
+        }
+    )
+    request = request.model_copy(
+        update={
+            "evidence_bundle": request.evidence_bundle.model_copy(
+                update={
+                    "allowed_evidence_ids": [
+                        "ev_submission_1",
+                        "ev_submission_2",
+                    ],
+                    "evidence_units": [base, extra],
+                }
+            )
+        }
+    )
+
+    def widen_scope(raw: dict) -> None:
+        raw["mappings"][0]["evidence_aliases"] = ["E999"]
+
+    gateway = ModelGateway(
+        mock_adapter=ContextBreakingAdapter(
+            "P06_EVIDENCE_MAP_V1", widen_scope
+        )
+    )
+    with pytest.raises(GatewayContextError) as captured:
+        asyncio.run(
+            gateway.invoke(
+                "P06_EVIDENCE_MAP_V1",
+                request,
+                build_trusted_context(request),
+            )
+        )
+
+    assert captured.value.failure.codes == (
+        ContextFailureCode.P06_ALIAS_REFERENCE_UNKNOWN,
+    )
+
+
+def test_p06_partial_mapping_is_materialized_without_global_rejection() -> None:
+    def make_partial(raw: dict) -> None:
+        for mapping in raw["mappings"]:
+            mapping["support_status"] = "PARTIAL"
+
+    gateway = ModelGateway(
+        mock_adapter=ContextBreakingAdapter(
+            "P06_EVIDENCE_MAP_V1", make_partial
+        )
+    )
+    result = _invoke("P06_EVIDENCE_MAP_V1", gateway=gateway)
+    assert result.output.status == "READY"
+    assert all(
+        item.support_status == models.EvidenceSupportStatus.PARTIAL
+        for item in result.output.opportunities
+    )
+
+
+def test_p07_unknown_alias_failure_is_content_free() -> None:
+    def invent_visible_anchor_alias(raw: dict) -> None:
+        raw["visible_anchor_aliases"] = ["E999"]
+
+    gateway = ModelGateway(
+        mock_adapter=ContextBreakingAdapter(
+            "P07_QUESTION_BUILD_V1", invent_visible_anchor_alias
+        )
+    )
+    with pytest.raises(GatewayContextError) as captured:
+        _invoke("P07_QUESTION_BUILD_V1", gateway=gateway)
+    assert captured.value.failure.codes == (
+        ContextFailureCode.P07_ALIAS_REFERENCE_UNKNOWN,
+    )
+
+
+def test_p06_local_abstention_materializes_as_uncertain_mapping() -> None:
+    result = _invoke("P06_EVIDENCE_MAP_V1", behavior=MockBehavior.ABSTAIN)
+    assert result.output.status == "READY"
+    assert result.output.mapping_summary is not None
+    assert result.output.mapping_summary.uncertain_count == 1
+    assert result.output.opportunities[0].abstention_reason
+
+
 def test_p08_cannot_accept_below_trusted_validation_thresholds() -> None:
     def lower_scores(raw: dict) -> None:
         raw["review"]["scores"]["groundedness"] = 0.0
@@ -251,6 +1238,9 @@ def test_p08_cannot_accept_below_trusted_validation_thresholds() -> None:
     with pytest.raises(GatewayContextError) as captured:
         _invoke("P08_QUESTION_REVIEW_V1", gateway=gateway)
 
+    assert captured.value.failure.codes == (
+        ContextFailureCode.P08_ACCEPTED_BELOW_POLICY,
+    )
     assert [item.result for item in captured.value.ledgers] == ["SCHEMA_INVALID"]
 
 
@@ -278,6 +1268,165 @@ def test_invalid_once_uses_one_p11_repair_and_revalidates_target() -> None:
     assert sum(ledger.prompt_id == "P11_SCHEMA_REPAIR_V1" for ledger in result.ledgers) == 1
 
 
+def test_value_error_skips_p11_and_preserves_primary_failure_and_ledger() -> None:
+    prompt_id = "P07_QUESTION_BUILD_V1"
+    request = build_mock_request(prompt_id)
+    raw_output = DeterministicMockAdapter().factory.output_for(
+        prompt_id, request, MockBehavior.HAPPY
+    ).model_dump(mode="json")
+    raw_output["question_text"] = None
+
+    class OneInvalidP07Adapter:
+        calls = 0
+
+        async def invoke(self, **_kwargs) -> AdapterResult:  # type: ignore[no-untyped-def]
+            self.calls += 1
+            return AdapterResult(
+                raw_output=raw_output,
+                input_tokens=321,
+                cached_input_tokens=21,
+                output_tokens=45,
+                estimated_cost_usd=0.002,
+                actual_cost_usd=0.001,
+                cache_write_input_tokens=9,
+                reasoning_tokens=17,
+                effective_model="gpt-5.6-luna",
+                output_hash="sha256:" + "1" * 64,
+                provider_request_id_hash="sha256:" + "2" * 64,
+                provider_schema_valid=True,
+                provider_schema_issues=(),
+                reason_codes=("SDK_RETRIES_0", "STRUCTURED_OUTPUT_STRICT"),
+            )
+
+    adapter = OneInvalidP07Adapter()
+    all_routes = build_openai_routes(max_call_cost_usd=1.0)
+    gateway = ModelGateway(
+        GatewayConfig(mode=GatewayMode.REAL, max_retries=0),
+        real_routes={prompt_id: all_routes[prompt_id]},
+        adapters={"openai": adapter},
+    )
+
+    with pytest.raises(GatewaySchemaViolation) as captured:
+        asyncio.run(
+            gateway.invoke(prompt_id, request, build_trusted_context(request))
+        )
+
+    error = captured.value
+    assert error.code == "MODEL_OUTPUT_VALIDATION_FAILED"
+    assert error.repair_disposition == "NOT_STRUCTURALLY_REPAIRABLE"
+    assert error.resolution is None
+    assert adapter.calls == 1
+    assert len(error.ledgers) == 1
+    ledger = error.ledgers[0]
+    assert ledger.prompt_id == prompt_id
+    assert ledger.result == "SCHEMA_INVALID"
+    assert ledger.input_tokens == 321
+    assert ledger.cached_input_tokens == 21
+    assert ledger.output_tokens == 45
+    assert ledger.actual_cost_usd == 0.001
+    assert ledger.route.model_snapshot == "gpt-5.6-luna"
+    assert "OUTPUT_PYDANTIC_VALIDATION_FAILED" in ledger.route.reason_codes
+    assert "PROVIDER_REQUEST_ID_HASH_" + "2" * 64 in ledger.route.reason_codes
+    assert "OUTPUT_HASH_" + "1" * 64 in ledger.route.reason_codes
+    primary = error.primary_failure
+    assert primary is not None
+    assert primary.phase == ValidationPhase.OUTPUT
+    assert primary.code == "OUTPUT_PYDANTIC_VALIDATION_FAILED"
+    assert primary.validation_engine == "PYDANTIC_MODEL_VALIDATE"
+    assert primary.provider_schema_valid is True
+    assert primary.provider_schema_issues == ()
+    assert [(issue.error_type, issue.path) for issue in primary.issues] == [
+        ("value_error", "/")
+    ]
+    assert not isinstance(error.__context__, ValidationError)
+
+
+def test_real_attestation_is_verified_before_adapter_transport() -> None:
+    prompt_id = "P04_BLUEPRINT_BUILD_V1"
+    request = build_mock_request(prompt_id)
+
+    class CountingAdapter(DeterministicMockAdapter):
+        calls = 0
+
+        async def invoke(self, **kwargs) -> AdapterResult:  # type: ignore[no-untyped-def]
+            self.calls += 1
+            return await super().invoke(**kwargs)
+
+    adapter = CountingAdapter()
+    routes = build_openai_routes(max_call_cost_usd=1.0)
+    gateway = ModelGateway(
+        GatewayConfig(mode=GatewayMode.REAL, max_retries=0),
+        real_routes=routes,
+        adapters={"openai": adapter},
+    )
+    forged = build_trusted_context(request).model_copy(
+        update={"attested_input_hash": "sha256:" + "0" * 64}
+    )
+
+    with pytest.raises(GatewayContextError) as captured:
+        asyncio.run(gateway.invoke(prompt_id, request, forged))
+
+    assert captured.value.failure.codes == (
+        ContextFailureCode.SYNTHETIC_ATTESTATION_HASH_MISMATCH,
+    )
+    assert adapter.calls == 0
+    assert captured.value.ledgers == ()
+
+
+def test_execution_fingerprint_invalidates_only_affected_prompt(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    gateway = ModelGateway()
+    p04_before = gateway.execution_fingerprint("P04_BLUEPRINT_BUILD_V1")
+    p07_before = gateway.execution_fingerprint("P07_QUESTION_BUILD_V1")
+
+    monkeypatch.setitem(
+        PROMPT_RELATIONSHIP_VALIDATOR_VERSIONS,
+        "P04_BLUEPRINT_BUILD_V1",
+        "relationship-p04/test-local-change",
+    )
+
+    assert gateway.execution_fingerprint("P04_BLUEPRINT_BUILD_V1") != p04_before
+    assert gateway.execution_fingerprint("P07_QUESTION_BUILD_V1") == p07_before
+
+
+def test_cached_output_replays_context_and_relationship_validation() -> None:
+    prompt_id = "P07_QUESTION_BUILD_V1"
+    request = build_mock_request(prompt_id)
+    context = build_trusted_context(request)
+    output = _invoke(prompt_id).output.model_dump(mode="json")
+    output["candidate"]["candidate_id"] = "candidate_stale_other_scope"
+
+    with pytest.raises(GatewayContextError):
+        ModelGateway().validate_cached_output(
+            prompt_id,
+            request,
+            context,
+            output,
+        )
+
+
+def test_p11_rejects_semantic_mutation_even_when_target_shape_is_valid() -> None:
+    def mutate_semantics(raw: dict) -> None:
+        raw["repaired_output"]["learning_outcomes"][0]["text"] = (
+            "Invented semantic replacement"
+        )
+
+    gateway = ModelGateway(
+        mock_adapter=ContextBreakingAdapter(
+            "P11_SCHEMA_REPAIR_V1", mutate_semantics
+        )
+    )
+
+    with pytest.raises(
+        GatewayContextError,
+        match="failed contextual validation",
+    ) as exc_info:
+        _invoke("P11_SCHEMA_REPAIR_V1", gateway=gateway)
+    assert exc_info.value.__cause__ is not None
+    assert "semantic content" in str(exc_info.value.__cause__)
+
+
 def test_direct_p11_repair_is_structural_and_target_valid() -> None:
     request = build_mock_request("P11_SCHEMA_REPAIR_V1")
     result = _invoke("P11_SCHEMA_REPAIR_V1")
@@ -288,6 +1437,36 @@ def test_direct_p11_repair_is_structural_and_target_valid() -> None:
     )
     assert isinstance(repaired, models.ActivitySpec)
     assert "unexpected_field" not in result.output.repaired_output
+
+
+def test_p11_abstains_from_ambiguous_blueprint_review_root_invariant() -> None:
+    valid_review = _invoke("P05_BLUEPRINT_REVIEW_V1").output.model_dump(
+        mode="json"
+    )
+    valid_review["status"] = "NEEDS_REVIEW"
+    valid_review["approval_recommendation"] = "APPROVE"
+    request = models.SchemaRepairRequest(
+        target_schema_name="BlueprintReview",
+        invalid_output=valid_review,
+        validation_issues=[
+            models.SchemaValidationIssue(
+                path="/",
+                error_type="value_error",
+                message="Canonical output model validation failed",
+            )
+        ],
+    )
+
+    result = asyncio.run(
+        ModelGateway().invoke(
+            "P11_SCHEMA_REPAIR_V1",
+            request,
+            build_trusted_context(request),
+        )
+    )
+
+    assert result.output.repair_status == models.RepairStatus.UNREPAIRABLE
+    assert result.output.repaired_output is None
 
 
 def test_p11_never_repairs_its_own_invalid_output_recursively() -> None:

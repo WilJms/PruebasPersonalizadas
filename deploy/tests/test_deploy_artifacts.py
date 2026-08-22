@@ -10,6 +10,7 @@ import subprocess
 import yaml
 
 from comprehension_verification.web.repository import Base
+from comprehension_verification.web.settings import Settings, WorkerSettings
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -19,6 +20,16 @@ IDEMPOTENCY_HYGIENE_MIGRATION = (
     MIGRATION_DIR / "202608070002_idempotency_capability_hygiene.sql"
 )
 STAGE2_MIGRATION = MIGRATION_DIR / "202608070003_stage2_experimental.sql"
+CONVERGENCE_MIGRATION = MIGRATION_DIR / "202608120004_stage2_convergence.sql"
+SYNTHETIC_PROVIDER_MIGRATION = (
+    MIGRATION_DIR / "202608120005_stage2_synthetic_provider_gate.sql"
+)
+P05_RUNTIME_CUTOVER_MIGRATION = (
+    MIGRATION_DIR / "202608150006_phase3_p05_runtime_cutover.sql"
+)
+PHASE7_POST_APPROVAL_P09_MIGRATION = (
+    MIGRATION_DIR / "202608160007_phase7_post_approval_p09.sql"
+)
 STAGE2_RECOVERY = (
     ROOT
     / "deploy/supabase/rollbacks/202608070003_stage2_experimental_recovery.sql"
@@ -52,8 +63,12 @@ def test_supabase_migration_matches_orm_table_and_column_surface() -> None:
         "feedback_events",
         "job_control_records",
         "question_review_actions",
+        "synthetic_provider_authorizations",
+        "synthetic_provider_claims",
     }
     stage2_columns = {
+        "blueprints": {"preflight"},
+        "idempotency_keys": {"expires_at"},
         "exports": {
             "activity_id", "assessment_version", "assessment_snapshot_hash",
             "renderer_version", "requested_by", "requested_kinds",
@@ -62,7 +77,13 @@ def test_supabase_migration_matches_orm_table_and_column_surface() -> None:
         "jobs": {
             "control_state", "failure_class", "max_attempts", "next_attempt_at",
             "resume_from_stage", "cancel_requested_at", "cancel_requested_by",
-            "cancelled_at",
+            "cancelled_at", "descriptor",
+        },
+        "evaluation_guides": {
+            "assessment_version", "assessment_etag", "assessment_snapshot_hash",
+            "question_set_hash", "approval_event_id", "approval_snapshot_hash",
+            "guide_policy_hash", "materializer_boundary_hash", "guide_job_id",
+            "status", "created_at",
         },
         "stage_runs": {
             "component_version", "output_hash", "failure_class", "next_attempt_at",
@@ -113,6 +134,10 @@ def test_idempotency_hygiene_migration_removes_and_blocks_capabilities() -> None
         "202607310001_stage1.sql",
         "202608070002_idempotency_capability_hygiene.sql",
         "202608070003_stage2_experimental.sql",
+        "202608120004_stage2_convergence.sql",
+        "202608120005_stage2_synthetic_provider_gate.sql",
+        "202608150006_phase3_p05_runtime_cutover.sql",
+        "202608160007_phase7_post_approval_p09.sql",
     ]
     sql = IDEMPOTENCY_HYGIENE_MIGRATION.read_text(encoding="utf-8").lower()
     assert sql.startswith("begin;")
@@ -124,6 +149,48 @@ def test_idempotency_hygiene_migration_removes_and_blocks_capabilities() -> None
     assert "ck_idempotency_keys_safe_response" in sql
     assert "jsonb_typeof(response) = 'object'" in sql
     assert "drop table" not in sql
+
+    convergence_sql = CONVERGENCE_MIGRATION.read_text(encoding="utf-8").lower()
+    assert convergence_sql.startswith("begin;")
+    assert convergence_sql.rstrip().endswith("commit;")
+    assert "add column expires_at timestamptz" in convergence_sql
+    assert "alter column expires_at set not null" in convergence_sql
+    assert "interval '24 hours'" in convergence_sql
+    assert "ix_idempotency_keys_expires_at" in convergence_sql
+    assert "drop table" not in convergence_sql
+    assert "drop column" not in convergence_sql
+
+    phase7_sql = PHASE7_POST_APPROVAL_P09_MIGRATION.read_text(
+        encoding="utf-8"
+    ).lower()
+    assert phase7_sql.startswith("begin;")
+    assert phase7_sql.rstrip().endswith("commit;")
+    assert "add column assessment_version integer" in phase7_sql
+    assert "add column descriptor jsonb" in phase7_sql
+    assert "uq_evaluation_guides_approved_version" in phase7_sql
+    assert "drop table" not in phase7_sql
+    assert "drop column" not in phase7_sql
+
+    provider_sql = SYNTHETIC_PROVIDER_MIGRATION.read_text(
+        encoding="utf-8"
+    ).lower()
+    assert provider_sql.startswith("begin;")
+    assert provider_sql.rstrip().endswith("commit;")
+    assert "synthetic_provider_authorizations_are_append_only" in provider_sql
+    assert "synthetic_provider_claims_are_append_only" in provider_sql
+    assert "synthetic_only_no_student_data" in provider_sql
+
+    cutover_sql = P05_RUNTIME_CUTOVER_MIGRATION.read_text(
+        encoding="utf-8"
+    ).lower()
+    assert cutover_sql.startswith("begin;")
+    assert cutover_sql.rstrip().endswith("commit;")
+    assert "alter table public.blueprints" in cutover_sql
+    assert "add column preflight jsonb" in cutover_sql
+    assert "drop column" not in cutover_sql
+    assert "drop table" not in cutover_sql
+    assert "drop table" not in provider_sql
+    assert "drop column" not in provider_sql
 
 
 def test_runtime_configuration_uses_exact_settings_names_and_safe_defaults() -> None:
@@ -137,6 +204,7 @@ def test_runtime_configuration_uses_exact_settings_names_and_safe_defaults() -> 
         "CVA_OBJECT_STORE_MODE",
         "CVA_JOB_RUNNER_MODE",
         "CVA_MODEL_MODE",
+        "CVA_WORKER_MODEL_MODE",
         "CVA_P10_ENABLED",
         "CVA_SESSION_SECRET",
         "CVA_SUPABASE_JWT_ISSUER",
@@ -153,10 +221,26 @@ def test_runtime_configuration_uses_exact_settings_names_and_safe_defaults() -> 
         "CVA_RENDERER_MODE",
         "CVA_UPLOAD_URL_TTL_SECONDS",
         "CVA_DOWNLOAD_URL_TTL_SECONDS",
+        "CVA_OPENAI_SECRET_VERSION_RESOURCE",
+        "CVA_SYNTHETIC_EVALUATION_CANDIDATE_SHA",
+        "CVA_SYNTHETIC_EVALUATION_MAX_REQUESTS",
     }
 
     assert not {name for name in required if name not in combined}
     assert re.search(r'CVA_MODEL_MODE\s*=\s*"mock"', terraform)
+    assert re.search(r'CVA_WORKER_MODEL_MODE\s*=\s*"mock"', terraform)
+    assert re.search(
+        r"worker_environment\s*=\s*\{.*?"
+        r'CVA_MODEL_MODE\s*=\s*"mock"',
+        terraform,
+        re.DOTALL,
+    )
+    assert re.search(
+        r"synthetic_evaluation_worker_environment\s*=.*?"
+        r'CVA_MODEL_MODE\s*=\s*"real"',
+        terraform,
+        re.DOTALL,
+    )
     assert re.search(r'CVA_P10_ENABLED\s*=\s*"false"', terraform)
     assert "CVA_ENV=" not in combined
     assert "CVA_OBJECT_STORE=" not in combined
@@ -218,12 +302,17 @@ def test_container_and_cloud_build_are_single_image_and_mock_safe() -> None:
         "--cap-drop ALL",
         "--security-opt no-new-privileges",
         "SafeParserService(require_libmagic=True)",
+        "timeout_seconds=30",
         "require_isolation=True",
         "parsed.mime_detector == \"libmagic\"",
     ):
         assert boundary in runtime_smoke
+    assert "timeout_seconds=5" not in runtime_smoke
+    assert Settings.model_fields["parser_timeout_seconds"].default == 30
+    assert WorkerSettings.model_fields["parser_timeout_seconds"].default == 30
 
     python_gate = "\n".join(steps["verify-contracts-backend-deploy-security"]["args"])
+    assert "apk add --no-cache git libmagic make" in python_gate
     for command in (
         "python -m pip install --no-cache-dir --require-hashes -r requirements-dev.lock",
         "git init -q",
@@ -312,6 +401,10 @@ def test_terraform_declares_service_job_secrets_and_job_invocation() -> None:
 
     assert 'resource "google_cloud_run_v2_service" "web"' in terraform
     assert 'resource "google_cloud_run_v2_job" "worker"' in terraform
+    assert (
+        'resource "google_cloud_run_v2_job" "synthetic_evaluation_worker"'
+        in terraform
+    )
     assert 'resource "google_secret_manager_secret" "runtime"' in terraform
     assert 'resource "google_cloud_run_v2_job_iam_member" "web_can_execute_worker"' in terraform
     assert 'role     = "roles/run.invoker"' in terraform
@@ -324,12 +417,17 @@ def test_terraform_declares_service_job_secrets_and_job_invocation() -> None:
     worker = terraform.split(
         'resource "google_cloud_run_v2_job" "worker"', 1
     )[1].split(
+        'resource "google_cloud_run_v2_job" "synthetic_evaluation_worker"', 1
+    )[0]
+    evaluation_worker = terraform.split(
+        'resource "google_cloud_run_v2_job" "synthetic_evaluation_worker"', 1
+    )[1].split(
         'resource "google_cloud_run_v2_service_iam_member" "public_login"', 1
     )[0]
     assert "CVA_SESSION_SECRET" not in worker
     assert 'toset(["session_secret"])' in terraform
     assert re.search(r"max_retries\s*=\s*0", terraform)
-    assert terraform.count("image = var.container_image") == 2
+    assert terraform.count("image = var.container_image") == 3
     assert (
         "${var.region}-docker\\\\.pkg\\\\.dev/${var.project_id}/"
         "${var.repository_id}/application@sha256:[0-9a-f]{64}"
@@ -338,10 +436,11 @@ def test_terraform_declares_service_job_secrets_and_job_invocation() -> None:
     assert "local.expected_container_image_prefix" in terraform
     assert "/application@sha256:" in terraform
     assert "deletion_protection = false" not in terraform
-    assert terraform.count("deletion_protection = true") == 3
-    assert terraform.count("prevent_destroy = true") == 4
+    assert terraform.count("deletion_protection = true") == 5
+    assert terraform.count("prevent_destroy = true") == 6
     assert 'output "service_name"' in outputs
     assert 'output "job_name"' in outputs
+    assert 'output "synthetic_evaluation_job_name"' in outputs
     assert 'output "runtime_container_image"' in outputs
     assert '"roles/run.admin"' not in terraform
     assert "build_can_use_web_identity" not in terraform
@@ -359,7 +458,52 @@ def test_terraform_declares_service_job_secrets_and_job_invocation() -> None:
         'branch = "^(main|fix/stage1-external-readiness|codex/stage2-experimental-mvp)$"'
         in terraform
     )
-    assert terraform.count('CVA_REQUIRE_LIBMAGIC         = "true"') == 2
+    assert terraform.count('CVA_REQUIRE_LIBMAGIC') == 3
+    assert 'name = "CVA_OPENAI_API_KEY"' not in terraform
+    assert terraform.count("CVA_MAX_JOB_COST_USD") == 3
+    assert 'resource "google_secret_manager_secret" "openai_api_key"' in terraform
+    assert (
+        'resource "google_secret_manager_secret_iam_member" "openai_worker_access"'
+        in terraform
+    )
+    web = terraform.split(
+        'resource "google_cloud_run_v2_service" "web"', 1
+    )[1].split('resource "google_cloud_run_v2_job" "worker"', 1)[0]
+    assert "CVA_OPENAI_API_KEY" not in web
+    assert "CVA_OPENAI_API_KEY" not in worker
+    assert "CVA_OPENAI_API_KEY" not in evaluation_worker
+    assert "CVA_OPENAI_SECRET_VERSION_RESOURCE" not in worker
+    assert "local.worker_environment" in worker
+    assert "local.synthetic_evaluation_worker_environment" in evaluation_worker
+    openai_iam = terraform.split(
+        'resource "google_secret_manager_secret_iam_member" "openai_worker_access"', 1
+    )[1].split("\n}\n\nlocals", 1)[0]
+    assert "google_service_account.synthetic_evaluation_worker[0].email" in openai_iam
+    assert "google_service_account.worker.email" not in openai_iam
+    assert "google_service_account.web.email" not in openai_iam
+    web_invoker = terraform.split(
+        'resource "google_cloud_run_v2_job_iam_member" "web_can_execute_worker"',
+        1,
+    )[1].split("# Intentionally no web", 1)[0]
+    assert "google_cloud_run_v2_job.worker[0].name" in web_invoker
+    assert "synthetic_evaluation_worker" not in web_invoker
+    assert "CVA_OPENAI_SECRET_VERSION_RESOURCE" in terraform
+    assert "CVA_SYNTHETIC_EVALUATION_CANDIDATE_SHA" in terraform
+    assert "CVA_SYNTHETIC_EVALUATION_MAX_REQUESTS" in terraform
+    assert "CVA_MAX_JOB_COST_USD" in terraform
+    assert "var.synthetic_evaluation_max_job_cost_usd != null" in terraform
+    assert "var.synthetic_evaluation_max_requests != null" in terraform
+    assert "var.synthetic_evaluation_candidate_sha != null" in terraform
+    assert "synthetic_evaluation_max_job_cost_usd" in (
+        ROOT / "deploy/terraform/terraform.tfvars.example"
+    ).read_text(encoding="utf-8")
+    assert "OPENAI_API_KEY" not in (ROOT / "deploy/cloudbuild.yaml").read_text(
+        encoding="utf-8"
+    )
+    assert "OPENAI_API_KEY" not in (ROOT / "Dockerfile").read_text(encoding="utf-8")
+    assert "openai_api_key =" not in (
+        ROOT / "deploy/terraform/terraform.tfvars.example"
+    ).read_text(encoding="utf-8")
     assert 'filename    = "deploy/cloudbuild.yaml"' in terraform
     assert "google_service_account.build.email" in terraform
     assert "github_oauth_token_secret_version" in terraform
@@ -380,6 +524,7 @@ def test_stage2_deployment_runbook_has_real_digest_and_fail_closed_recovery() ->
         "202607310001_stage1.sql",
         "202608070002_idempotency_capability_hygiene.sql",
         "202608070003_stage2_experimental.sql",
+        "202608120004_stage2_convergence.sql",
     ]
     positions = [readme.index(name) for name in migrations]
     assert positions == sorted(positions)
@@ -398,6 +543,17 @@ def test_stage2_deployment_runbook_has_real_digest_and_fail_closed_recovery() ->
     assert "/workspace/container-image.txt" not in readme
     assert 'COMMIT_SHA="$CVA_STAGE2_SOURCE_SHA"' in readme
     assert 'test -z "$(git status --porcelain=v1)"' in readme
+    assert "output -raw cloud_build_service_account" in readme
+    assert (
+        'CVA_STAGE2_BUILD_SERVICE_ACCOUNT_RESOURCE="projects/'
+        '$CVA_STAGE2_PROJECT/serviceAccounts/$CVA_STAGE2_BUILD_SERVICE_ACCOUNT"'
+        in readme
+    )
+    assert '"cva-cloudbuild@$CVA_STAGE2_PROJECT.iam.gserviceaccount.com"' in readme
+    assert '--service-account="$CVA_STAGE2_BUILD_SERVICE_ACCOUNT_RESOURCE"' in readme
+    assert "--timeout=3600s" in readme
+    assert 'test -n "$CVA_STAGE2_BUILD_ID"' in readme
+    assert "cualquier repetición requiere un gate humano" in readme
     assert readme.count("-detailed-exitcode") == 2
     assert "gcloud run services describe" in readme
     assert "gcloud run jobs describe" in readme

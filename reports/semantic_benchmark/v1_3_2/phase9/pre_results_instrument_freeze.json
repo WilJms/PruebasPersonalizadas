@@ -1,0 +1,167 @@
+{
+  "adjudication_protocol_hash": "sha256:7bc7532e602ba525e3260e4bc74cad42e03cbc30e8aed086be38f24d7ca36465",
+  "adjudication_protocol_policy_core_hash": "sha256:6d96c23d704fc9f6c51eb2e88f27c3a569aa1cdd7bf0047038a3fb561f7a941e",
+  "adjudication_protocol_version": "phase9-adjudication-protocol/1.3.0",
+  "all_hashes_bound_here_are": "INTERNAL_MATERIAL_HASH",
+  "axis_separation_hash": "sha256:f44824de0319301a5fee645efe02b49773e489c99f3ffbcf46051dd00612ef1f",
+  "benchmark_version": "semantic-benchmark/1.3.2",
+  "boundary_status_by_stage": {
+    "P04": "CARRIED_FORWARD_FROM_V131",
+    "P06": "NEW_IN_V132",
+    "P07": "CARRIED_FORWARD_FROM_V131",
+    "P09": "CARRIED_FORWARD_FROM_V131",
+    "PLANNER": "CARRIED_FORWARD_FROM_V131"
+  },
+  "call_budget_hash": "sha256:6fdc5eed1e2175abd89fe6c17df2d4ff2cd84503f4acdef18fb8eaae54fddfa7",
+  "candidate_matrix_hash": "sha256:90459eda031efd54981c1aa791521f469d634a843891ea4b7bc812155384d0c5",
+  "corpus_authority": "comprehension_verification.semantic_benchmark.DEFAULT_CORPUS_ROOT",
+  "corpus_bytes_modified": false,
+  "corpus_package_boundary_hash": "21c21f3a53bfb786162dc350dc38c93b7b007d9f23b744a354de4ac2354048a1",
+  "corpus_root": "evaluation/corpora/pruebas_personalizadas/v1",
+  "excluded_support_statuses": [
+    "UNCERTAIN"
+  ],
+  "execution_counters": {
+    "adjudicator_calls": 0,
+    "authorization": "NONE",
+    "billable_authorizations": 0,
+    "candidate_outcomes_read": false,
+    "credentials_resolved": 0,
+    "high_smoke_authorized": false,
+    "pricing_refreshed": false,
+    "provider_calls": 0,
+    "real_transport_constructed": false,
+    "spend_authorized": false
+  },
+  "field_authority_hashes": {
+    "p06": "sha256:8491038d70480afa06621917b126f26825797c0ab6f4220c7c77685d99988d57",
+    "p07": "sha256:991509f72917a515bdea0f8da0b2d7aeacce5cc71d0b774516a72205a48b0b7d"
+  },
+  "file_sha256_and_git_blob_sha_live_in": "reports/semantic_benchmark/v1_3_2/phase9/freeze_hash_manifest.json",
+  "freeze_material_hash": "sha256:bf6f81b8f8948bd94dcd7f498be1d49f08f108b2b7b7ba7fe3f4de9387d8cfa0",
+  "global_benchmark_boundary_hash": "sha256:4951cc243ff69a534378388fe07a61c41df7fcd83b3869673d06ba38db5cacf1",
+  "hash_kinds": {
+    "FILE_SHA256": "sha256 over the exact bytes on disk, including indentation and the trailing newline. It answers 'is this file byte-identical'.",
+    "GIT_BLOB_SHA": "git's object id: sha1 over 'blob <len>\\0' followed by the file bytes. It is what `git hash-object` and the index report, and it is neither a sha256 nor comparable with one.",
+    "INTERNAL_MATERIAL_HASH": "sha256 over the canonical JSON serialization of a document's material, computed before the file exists. Two files with different whitespace share it; it is what a boundary compares."
+  },
+  "held_out_activity_numbers": [
+    3,
+    7,
+    9,
+    10,
+    12
+  ],
+  "held_out_is_confirmation_only": true,
+  "held_out_partition_changed": false,
+  "high_smoke_authorized": false,
+  "immutable_after_this_point": true,
+  "lineage_hash": "sha256:5f1032d5092c8aa711b5b2ea952d8185234e03e3158006c3daa17dfa45b3ad75",
+  "n3_axis_hash": "sha256:a3a3118ff3e02d918b16d1c312493a2beaffabd1951d98b6de52fa40c5d0fc67",
+  "n3_census": {
+    "N3_CORE": 6,
+    "N3_HELD_OUT_CONFIRMATION": 3,
+    "N3_SAFETY_SMOKE": 1,
+    "core_is_remaining_qualification_side": true,
+    "derived_not_asserted": true,
+    "held_out": 3,
+    "held_out_confirmation_is_all_and_only_held_out": true,
+    "qualification_side": 7,
+    "safety_smoke_is_qualification_side_only": true,
+    "total": 10
+  },
+  "n3_construct_selection_independence_hash": "sha256:2ea943f61b89282aef67f015c35b89d2355f9be56de613b910ae8a45d16fa93a",
+  "n3_construct_selection_rule": "FIRST_AUTHORIZED_CONSTRUCT_IN_CANONICAL_SOURCE_ORDER",
+  "n3_construct_selection_semantics_hash": "sha256:21a535de03c51fc44a84047fc9a4ac7d4df88a9c0b70cc57b6718362cede6e8f",
+  "n3_contractual_policy_authority_hash": "sha256:ab909f23ed43e61a727c19735583ce64daf46ab78134cf57dabc6695df2f0947",
+  "n3_exposure_population_hash": "sha256:d852094b1e7062af045fb4b2d4e71f42a07a7790d0e624183274b11a8b0acfa6",
+  "n3_fixture_equality_proof_hash": "sha256:fa7a5e3fcb152a09470190161739fa363b7b1198e12ee4a9beb4ee979d65e6c3",
+  "n3_gate_version": "p06-noisy-contractual-gate/1.0.0",
+  "n3_noisy_disposition_census_hash": "sha256:dccd4d30d7c577569f119b3dfe873f1fd4a93abc40f8e79782d89b23ee13f7fb",
+  "n3_production_representativeness_hash": "sha256:eb8951e9d5a5234e3c59a4a88f96905797f94273fa20d5464662d2f64ae96ac8",
+  "n3_promotion_gates": {
+    "all_selection_side_exposures_must_be_adjudicated": true,
+    "max_confirmed_failures": 0,
+    "max_indeterminate_at_promotion": 0,
+    "on_confirmed": "REJECT_THE_CANDIDATE_RUNG",
+    "on_indeterminate_or_unadjudicated": "BLOCK_PROMOTION"
+  },
+  "n3_protocol_version": "p06-n3-contractual-safety-protocol/1.1.0",
+  "n3_provider_fixture_count": 10,
+  "n3_provider_fixture_counts_by_split": {
+    "N3_CORE": 6,
+    "N3_HELD_OUT_CONFIRMATION": 3,
+    "N3_SAFETY_SMOKE": 1
+  },
+  "n3_provider_fixture_input_hashes": {
+    "N3F-act_01_luz_y_plantines-submission_01": "sha256:5da964ce012ce27120099f568f12a049c0507bbed9447e8e7b2d20dd18d13ae9",
+    "N3F-act_02_voz_en_un_microcuento-submission_02": "sha256:d8d64b6d1a0165091f8075a31a812e07d8138f3f66d87aecc83c74220c8d0e2a",
+    "N3F-act_04_asignador_de_turnos-submission_04": "sha256:79aa6d1e6ef16f3d6d548ea302760d6af0b082b2f0537cbf746f7d3170aa7226",
+    "N3F-act_05_visitas_a_bibliotecas-submission_05": "sha256:68d9fb60e50e8698f9a42c70500b0abefd205ca60d52b5f82854efaf4b72d8f7",
+    "N3F-act_06_movilidad_estudiantil-submission_06": "sha256:4b1838f8a8e39f72b9e1b1da36b0aa5db003188f464381e0eee669d2765ad38d",
+    "N3F-act_07_aislamiento_termico-submission_01": "sha256:4410103170b0310df9a04ec10090b2b4e866e1823c6ef9da42f59bb97fb8d6ad",
+    "N3F-act_08_triage_de_logs-submission_02": "sha256:9ab2a79bfc749df28192528c1127f016db0b9bf3dfa0126be3d6e6b8e673272b",
+    "N3F-act_09_renovacion_y_desplazamiento-submission_03": "sha256:ecd0b079f1d08d5010da481c9bf71d7aac9c13d82335b48c5c022201a2590e7d",
+    "N3F-act_11_duplicados_en_pagos-submission_05": "sha256:c999bdaa3a4ea7a121999b772da22c6b92d21dd7a8b6a827aec746df49b93e7e",
+    "N3F-act_12_clinica_movil-submission_06": "sha256:f86349115b17281a4f79ee1dfb960b30f6c2b32a0192d13c1182edfc450df407"
+  },
+  "n3_provider_fixture_schema": "n3-provider-fixtures/1.3.1",
+  "n3_provider_fixture_set_hash": "sha256:f53ec77ae4c26732644083d10497e65e1a1bc34f830e675aa4848669d106c62d",
+  "n3_provider_fixture_set_hash_unchanged_from_v131": true,
+  "p06_instrument_hash": "sha256:aeefc371cc0af81291c91fb4349e0639243bd061b150b212a395d0cfc14cca24",
+  "phase": "9B.8B",
+  "previous_version": "semantic-benchmark/1.3.1",
+  "previous_version_status": "SUPERSEDED_PREEXECUTION_FREEZE_CANDIDATE_NO_RESULTS_EXECUTED",
+  "protocol_boundary_hash": "sha256:f2150f35bc13934a4179ee14dcff340fbd5a4c886e9754ebfb29eddaa6b6c17d",
+  "protocol_version": "phase9-qualification-protocol/1.3.2",
+  "purpose": "Freeze the U3 + N3 pre-execution instrument with its semantic qualification claim bound to the version it applies to, before any candidate result exists.",
+  "qualification_run": false,
+  "qualified_support_statuses": [
+    "SUFFICIENT",
+    "PARTIAL",
+    "INSUFFICIENT"
+  ],
+  "results_firewall": {
+    "candidate_outcomes_read": false,
+    "first_pass_adjudication_results_read": false,
+    "historical_qualification_results_used_as_construction_authority": false,
+    "note": "No candidate result exists for any 1.3.x pre-execution candidate. Superseding one is an instrumentation or authority-binding repair, never a response to an outcome.",
+    "provider_outputs_read": false
+  },
+  "schema_version": "phase9-pre-results-instrument-freeze/1.3.2",
+  "semantic_claim_limitations": [
+    "semantic-benchmark/1.3.2 does NOT qualify P06 UNCERTAIN behaviour.",
+    "P06 model-selection claims are limited to SUFFICIENT / PARTIAL / INSUFFICIENT.",
+    "UNCERTAIN remains an explicit residual risk.",
+    "Phase 9 alone does not establish full P06 contract coverage."
+  ],
+  "semantic_qualification_applicable_benchmark_version": "semantic-benchmark/1.3.2",
+  "semantic_qualification_claim": "semantic-benchmark/1.3.2 qualifies P06 candidate behaviour on the support statuses SUFFICIENT, PARTIAL and INSUFFICIENT.",
+  "semantic_qualification_claim_hash": "sha256:1812472f3ebe1f04d82a60e5200da172863fb23035c7fcd50953ff391d112d2d",
+  "semantic_qualification_semantics_changed_from_v131": false,
+  "semantic_qualification_supersedes_claim_binding_from": "semantic-benchmark/1.3.1",
+  "split_partition_hash": "sha256:9dea980868367317f97bd42f6effd67b480850a4e4111d2ffbbec5ee256440f9",
+  "stage_boundaries_hash": "sha256:7ce6e059242e77e0f67bda58f140a785853cc24d27b8adad2a8dd9c9ed5f6a22",
+  "stage_boundary_hashes": {
+    "P04": "sha256:b0ade4a135d1a5d5fb63570953746715e111840b854411b2a79d4b3e8d3f5417",
+    "P06": "sha256:d131900ff7bbed00fd933a1004ccfa457cb5651e0b04b284efb8e0aeff77a3ff",
+    "P07": "sha256:889a2498ddd0194a641f796ed4c82686318602a29a0f5bb2729686dc7690854f",
+    "P09": "sha256:090b17302b711c19ce1067e0c0c041ec29d5d337b4cb462c5a476bb84c5fb926",
+    "PLANNER": "sha256:961384f7f9c25601b5aea91217849be79400517d7b5960924c79789c93687376"
+  },
+  "stale_claim_scan_hash": "sha256:18c936de54217ead31db79bb1ec0c5a2baa556ad7c06d552bba62f1079ad8c1c",
+  "stale_claim_violation_count": 0,
+  "status": "PREEXECUTION_FREEZE_CANDIDATE",
+  "stop_condition": "SEMANTIC_BENCHMARK_V1_3_2_PREEXECUTION_FREEZE_READY_FOR_FRESH_AUDIT",
+  "v12_preserved": {
+    "v12_bytes_modified": false
+  },
+  "v130_preserved": {
+    "status": "SUPERSEDED_PREEXECUTION_FREEZE_CANDIDATE_NO_RESULTS_EXECUTED",
+    "v130_bytes_modified": false
+  },
+  "v131_preserved": {
+    "status": "SUPERSEDED_PREEXECUTION_FREEZE_CANDIDATE_NO_RESULTS_EXECUTED",
+    "v131_bytes_modified": false
+  }
+}

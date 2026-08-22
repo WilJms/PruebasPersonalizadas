@@ -23,7 +23,9 @@
   "dimensions": [
     {
       "criterion_ids": [
-        "criterion_c4e0d78f73bb1f049834"
+        "outcome_908c77ddef69814015d9",
+        "product_908c77ddef69814015d9",
+        "requirement_908c77ddef69814015d9"
       ],
       "dimension_id": "dimension_386080d68583b6611a90",
       "evidence_variants": [

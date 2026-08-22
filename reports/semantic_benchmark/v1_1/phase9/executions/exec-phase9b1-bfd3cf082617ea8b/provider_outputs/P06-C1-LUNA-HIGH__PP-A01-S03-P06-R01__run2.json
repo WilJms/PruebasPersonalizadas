@@ -1,0 +1,61 @@
+{
+  "claims": [],
+  "diagnostics": [],
+  "mapping_summary": {
+    "insufficient_count": 0,
+    "mapped_relation_count": 1,
+    "partial_count": 0,
+    "sufficient_count": 1,
+    "uncertain_count": 0
+  },
+  "opportunities": [
+    {
+      "abstention_reason": null,
+      "activity_priority": 0.9,
+      "allowed_anchor_structures": [
+        "SINGLE_FRAGMENT"
+      ],
+      "allowed_response_formats": [
+        "OPEN_SHORT"
+      ],
+      "cognitive_operation": "INTERPRET_REPRESENTATION",
+      "difficulty": "MEDIUM",
+      "dimension_id": "dimension_p06_route_5bb3220dc4fe8eed228c",
+      "evidence_fit": 1.0,
+      "evidence_ids": [
+        "ev_0b02c8cd484538b07e38",
+        "ev_c579dd16629f81c516ab"
+      ],
+      "focus": "Examinar relación entre afirmación y evidencia: encabezado usando exclusivamente la evidencia localizada y el alcance autorizado de la actividad.",
+      "observable": "Relaciona una afirmación con evidencia localizada sin ampliar fuentes ni atribuir intención.",
+      "opportunity_id": "opportunity_85b20fb74390eab8f9a4",
+      "opportunity_quality": 0.75,
+      "opportunity_template_id": "template_p06_route_5bb3220dc4fe8eed228c",
+      "semantic_uncertainty": null,
+      "student_justification_required": true,
+      "submission_id": "submission_03",
+      "support_description": "E3 compara las alturas de los grupos de 12 y 4 horas y las usa para apoyar la hipótesis; E7 vincula la conclusión con los datos de la tabla y el marco teórico.",
+      "support_status": "SUFFICIENT",
+      "support_type": "COMPOSITE",
+      "target_minutes": 5,
+      "variant_id": "variant_p06_route_5bb3220dc4fe8eed228c"
+    }
+  ],
+  "schema_version": "1.1.0",
+  "status": "READY",
+  "submission_id": "submission_03",
+  "variant_matches": [
+    {
+      "dimension_id": "dimension_p06_route_5bb3220dc4fe8eed228c",
+      "evidence_fit": 1.0,
+      "evidence_ids": [
+        "ev_0b02c8cd484538b07e38",
+        "ev_c579dd16629f81c516ab"
+      ],
+      "justification": "Relaciones categóricas P06 materializadas por el servidor.",
+      "mapping_confidence": 1.0,
+      "support_status": "SUFFICIENT",
+      "variant_id": "variant_p06_route_5bb3220dc4fe8eed228c"
+    }
+  ]
+}

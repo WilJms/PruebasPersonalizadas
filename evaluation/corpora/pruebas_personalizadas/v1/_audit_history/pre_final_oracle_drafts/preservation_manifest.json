@@ -1,0 +1,151 @@
+{
+  "schema_version": "draft-preservation-manifest/1.0.0",
+  "artifact_count": 12,
+  "all_hashes_match": true,
+  "artifacts": [
+    {
+      "activity": "activity_01_luz_y_plantines",
+      "before_path": "activity_01_luz_y_plantines/human_review_draft.md",
+      "archive_path": "_audit_history/pre_final_oracle_drafts/activity_01_luz_y_plantines/human_review_draft.md",
+      "before_sha256": "c39bc81ced6269a5db6dbe2a60f18ebd5b53b3a5e842ef6e73654e27c59cc9d2",
+      "after_sha256": "c39bc81ced6269a5db6dbe2a60f18ebd5b53b3a5e842ef6e73654e27c59cc9d2",
+      "bytes": 9952,
+      "hash_match": true,
+      "role": "PRE_FINAL_ORACLE_DRAFT_HISTORY",
+      "model_input": false,
+      "canonical_oracle": false
+    },
+    {
+      "activity": "activity_02_voz_en_un_microcuento",
+      "before_path": "activity_02_voz_en_un_microcuento/human_review_draft.md",
+      "archive_path": "_audit_history/pre_final_oracle_drafts/activity_02_voz_en_un_microcuento/human_review_draft.md",
+      "before_sha256": "24cc978bb10abef14f8d79bc6a5105e3ef6c59b433613cea54a8a70a1d05b90c",
+      "after_sha256": "24cc978bb10abef14f8d79bc6a5105e3ef6c59b433613cea54a8a70a1d05b90c",
+      "bytes": 9480,
+      "hash_match": true,
+      "role": "PRE_FINAL_ORACLE_DRAFT_HISTORY",
+      "model_input": false,
+      "canonical_oracle": false
+    },
+    {
+      "activity": "activity_03_puesto_de_limonada",
+      "before_path": "activity_03_puesto_de_limonada/human_review_draft.md",
+      "archive_path": "_audit_history/pre_final_oracle_drafts/activity_03_puesto_de_limonada/human_review_draft.md",
+      "before_sha256": "b247a122925a8430484dd2153b1f1d65870b1c857aadb465d6a35207515d5d9c",
+      "after_sha256": "b247a122925a8430484dd2153b1f1d65870b1c857aadb465d6a35207515d5d9c",
+      "bytes": 10076,
+      "hash_match": true,
+      "role": "PRE_FINAL_ORACLE_DRAFT_HISTORY",
+      "model_input": false,
+      "canonical_oracle": false
+    },
+    {
+      "activity": "activity_04_asignador_de_turnos",
+      "before_path": "activity_04_asignador_de_turnos/human_review_draft.md",
+      "archive_path": "_audit_history/pre_final_oracle_drafts/activity_04_asignador_de_turnos/human_review_draft.md",
+      "before_sha256": "a6df83db7b58accce28aa137bd76e2842f9f59f425828b416f81ec0c2b93ff65",
+      "after_sha256": "a6df83db7b58accce28aa137bd76e2842f9f59f425828b416f81ec0c2b93ff65",
+      "bytes": 10969,
+      "hash_match": true,
+      "role": "PRE_FINAL_ORACLE_DRAFT_HISTORY",
+      "model_input": false,
+      "canonical_oracle": false
+    },
+    {
+      "activity": "activity_05_visitas_a_bibliotecas",
+      "before_path": "activity_05_visitas_a_bibliotecas/human_review_draft.md",
+      "archive_path": "_audit_history/pre_final_oracle_drafts/activity_05_visitas_a_bibliotecas/human_review_draft.md",
+      "before_sha256": "61750e9275662d0b0c48798f997abed71480d27200688bb752f02a90dc68c439",
+      "after_sha256": "61750e9275662d0b0c48798f997abed71480d27200688bb752f02a90dc68c439",
+      "bytes": 10761,
+      "hash_match": true,
+      "role": "PRE_FINAL_ORACLE_DRAFT_HISTORY",
+      "model_input": false,
+      "canonical_oracle": false
+    },
+    {
+      "activity": "activity_06_movilidad_estudiantil",
+      "before_path": "activity_06_movilidad_estudiantil/human_review_draft.md",
+      "archive_path": "_audit_history/pre_final_oracle_drafts/activity_06_movilidad_estudiantil/human_review_draft.md",
+      "before_sha256": "ba963820b6754d22e938b376acd1b6e722a99a7ead04e42a8f4cb879f4e5ac4a",
+      "after_sha256": "ba963820b6754d22e938b376acd1b6e722a99a7ead04e42a8f4cb879f4e5ac4a",
+      "bytes": 9726,
+      "hash_match": true,
+      "role": "PRE_FINAL_ORACLE_DRAFT_HISTORY",
+      "model_input": false,
+      "canonical_oracle": false
+    },
+    {
+      "activity": "activity_07_aislamiento_termico",
+      "before_path": "activity_07_aislamiento_termico/human_review_draft.md",
+      "archive_path": "_audit_history/pre_final_oracle_drafts/activity_07_aislamiento_termico/human_review_draft.md",
+      "before_sha256": "30a8a4ee3d73be50cb5a88c1568663cacc944ecdf63447ecd9e73b448fd15f72",
+      "after_sha256": "30a8a4ee3d73be50cb5a88c1568663cacc944ecdf63447ecd9e73b448fd15f72",
+      "bytes": 11386,
+      "hash_match": true,
+      "role": "PRE_FINAL_ORACLE_DRAFT_HISTORY",
+      "model_input": false,
+      "canonical_oracle": false
+    },
+    {
+      "activity": "activity_08_triage_de_logs",
+      "before_path": "activity_08_triage_de_logs/human_review_draft.md",
+      "archive_path": "_audit_history/pre_final_oracle_drafts/activity_08_triage_de_logs/human_review_draft.md",
+      "before_sha256": "3fb36804f02f812d1f6be895f1548994fa40195a63dcb1d0d785357851a90e45",
+      "after_sha256": "3fb36804f02f812d1f6be895f1548994fa40195a63dcb1d0d785357851a90e45",
+      "bytes": 10352,
+      "hash_match": true,
+      "role": "PRE_FINAL_ORACLE_DRAFT_HISTORY",
+      "model_input": false,
+      "canonical_oracle": false
+    },
+    {
+      "activity": "activity_09_renovacion_y_desplazamiento",
+      "before_path": "activity_09_renovacion_y_desplazamiento/human_review_draft.md",
+      "archive_path": "_audit_history/pre_final_oracle_drafts/activity_09_renovacion_y_desplazamiento/human_review_draft.md",
+      "before_sha256": "a77af6f5c5c8e7072b7de1f08a04ebddf46239ea62fa3c0cc32b7a5f0bd7ad37",
+      "after_sha256": "a77af6f5c5c8e7072b7de1f08a04ebddf46239ea62fa3c0cc32b7a5f0bd7ad37",
+      "bytes": 10999,
+      "hash_match": true,
+      "role": "PRE_FINAL_ORACLE_DRAFT_HISTORY",
+      "model_input": false,
+      "canonical_oracle": false
+    },
+    {
+      "activity": "activity_10_experimento_onboarding",
+      "before_path": "activity_10_experimento_onboarding/human_review_draft.md",
+      "archive_path": "_audit_history/pre_final_oracle_drafts/activity_10_experimento_onboarding/human_review_draft.md",
+      "before_sha256": "469b6281c0dbb13231ffe600d5c2d39dc01e1e24f02fdfdca4f6f3647f2da445",
+      "after_sha256": "469b6281c0dbb13231ffe600d5c2d39dc01e1e24f02fdfdca4f6f3647f2da445",
+      "bytes": 11230,
+      "hash_match": true,
+      "role": "PRE_FINAL_ORACLE_DRAFT_HISTORY",
+      "model_input": false,
+      "canonical_oracle": false
+    },
+    {
+      "activity": "activity_11_duplicados_en_pagos",
+      "before_path": "activity_11_duplicados_en_pagos/human_review_draft.md",
+      "archive_path": "_audit_history/pre_final_oracle_drafts/activity_11_duplicados_en_pagos/human_review_draft.md",
+      "before_sha256": "c312bc5342cf960525ebbbd626bacaac3363cf695990e5d5d7bf5a52499b9352",
+      "after_sha256": "c312bc5342cf960525ebbbd626bacaac3363cf695990e5d5d7bf5a52499b9352",
+      "bytes": 11011,
+      "hash_match": true,
+      "role": "PRE_FINAL_ORACLE_DRAFT_HISTORY",
+      "model_input": false,
+      "canonical_oracle": false
+    },
+    {
+      "activity": "activity_12_clinica_movil",
+      "before_path": "activity_12_clinica_movil/human_review_draft.md",
+      "archive_path": "_audit_history/pre_final_oracle_drafts/activity_12_clinica_movil/human_review_draft.md",
+      "before_sha256": "789a913566886f0421906bbbf541fed00c7d052f6e2791b3e97dd850460a8ffe",
+      "after_sha256": "789a913566886f0421906bbbf541fed00c7d052f6e2791b3e97dd850460a8ffe",
+      "bytes": 11915,
+      "hash_match": true,
+      "role": "PRE_FINAL_ORACLE_DRAFT_HISTORY",
+      "model_input": false,
+      "canonical_oracle": false
+    }
+  ]
+}

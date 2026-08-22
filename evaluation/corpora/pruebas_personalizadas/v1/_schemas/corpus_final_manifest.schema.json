@@ -1,0 +1,222 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/schemas/corpus_final_manifest.schema.json",
+  "title": "Corpus final machine-readable manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "created_utc",
+    "readiness",
+    "hash_algorithm",
+    "path_encoding",
+    "boundary_serialization",
+    "normalization_rules",
+    "source_input_file_count",
+    "benchmark_authority_file_count",
+    "p09_stage_fixture_file_count",
+    "audit_history_file_count",
+    "total_package_file_count",
+    "files",
+    "boundary_hashes"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "corpus-final-manifest/1.0.0"
+    },
+    "created_utc": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "readiness": {
+      "const": "CORPUS_READY_FOR_SEMANTIC_BENCHMARK"
+    },
+    "hash_algorithm": {
+      "const": "SHA-256"
+    },
+    "path_encoding": {
+      "const": "UTF-8_POSIX_RELATIVE"
+    },
+    "boundary_serialization": {
+      "const": "SORTED_UTF8_ROWS_V1:path\\0sha256\\0bytes\\n"
+    },
+    "normalization_rules": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "manifest_self_hash",
+        "report_package_hash",
+        "package_membership"
+      ],
+      "properties": {
+        "manifest_self_hash": {
+          "const": "Canonical compact JSON after replacing the manifest self digest, report digest, and corpus_package_boundary_hash with 64 ASCII zeroes."
+        },
+        "report_package_hash": {
+          "const": "SHA-256 after replacing the value on the corpus_package_boundary_hash line with 64 ASCII zeroes."
+        },
+        "package_membership": {
+          "const": "Every manifest entry whose role is not AUDIT_HISTORY."
+        }
+      }
+    },
+    "source_input_file_count": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "benchmark_authority_file_count": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "p09_stage_fixture_file_count": {
+      "type": "integer",
+      "minimum": 4
+    },
+    "audit_history_file_count": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "total_package_file_count": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "files": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/file_entry"
+      }
+    },
+    "boundary_hashes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_corpus_boundary_hash",
+        "semantic_oracle_boundary_hash",
+        "p09_fixture_boundary_hash",
+        "corpus_package_boundary_hash"
+      ],
+      "properties": {
+        "source_corpus_boundary_hash": {
+          "$ref": "#/$defs/sha256"
+        },
+        "semantic_oracle_boundary_hash": {
+          "$ref": "#/$defs/sha256"
+        },
+        "p09_fixture_boundary_hash": {
+          "$ref": "#/$defs/sha256"
+        },
+        "corpus_package_boundary_hash": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "nullable_activity": {
+      "oneOf": [
+        {
+          "type": "string",
+          "pattern": "^act_[0-9]{2}_[a-z0-9_]+$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "nullable_submission": {
+      "oneOf": [
+        {
+          "type": "string",
+          "pattern": "^submission_[0-9]{2}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "nullable_group": {
+      "oneOf": [
+        {
+          "type": "string",
+          "pattern": "^submission_[0-9]{2}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "file_entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "sha256",
+        "hash_mode",
+        "bytes",
+        "media_type",
+        "activity_id",
+        "submission_id",
+        "artifact_group",
+        "role",
+        "model_visible"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$)).+$"
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "hash_mode": {
+          "enum": [
+            "ACTUAL_SHA256",
+            "NORMALIZED_JSON_SELF_SHA256"
+          ]
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "media_type": {
+          "enum": [
+            "application/json",
+            "application/octet-stream",
+            "application/pdf",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            "image/png",
+            "text/markdown",
+            "text/plain",
+            "text/x-python"
+          ]
+        },
+        "activity_id": {
+          "$ref": "#/$defs/nullable_activity"
+        },
+        "submission_id": {
+          "$ref": "#/$defs/nullable_submission"
+        },
+        "artifact_group": {
+          "$ref": "#/$defs/nullable_group"
+        },
+        "role": {
+          "enum": [
+            "SOURCE_INPUT",
+            "BENCHMARK_AUTHORITY",
+            "P09_STAGE_FIXTURE",
+            "AUDIT_HISTORY"
+          ]
+        },
+        "model_visible": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}

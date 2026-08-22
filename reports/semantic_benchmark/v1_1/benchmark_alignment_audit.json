@@ -1,0 +1,138 @@
+{
+  "after_case_counts_by_stage": {
+    "P04": 12,
+    "P06": 127,
+    "P07": 108,
+    "P09": 4,
+    "PLANNER": 21
+  },
+  "assigned_arbitrarily_after": 0,
+  "audit_baseline_sha": "22148a3c5d43c9ab1ac2e7ae06c1e0464155ea1a",
+  "audit_status": "CONFIRMED_ALIGNMENT_DEFECTS_REMEDIATED",
+  "before_case_counts_by_stage": {
+    "P04": 12,
+    "P06": 69,
+    "P07": 72,
+    "P09": 4,
+    "PLANNER": 21
+  },
+  "benchmark_after": "semantic-benchmark/1.1.0",
+  "benchmark_before": "semantic-benchmark/1.0.0",
+  "benchmark_before_boundary_hash": "sha256:9dc8df63b01f1e29a65a7540ceff1359ed037fa240e7c1c1f0e8b485edb35771",
+  "benchmark_before_status": [
+    "SUPERSEDED_PRE_QUALIFICATION",
+    "NOT_VALID_FOR_PHASE9_MODEL_SELECTION"
+  ],
+  "findings": [
+    {
+      "confirmed": true,
+      "evidence": {
+        "contradictory_planner_case_count": 32,
+        "silent_conceptual_gap_case_count": 14,
+        "simulated_pii_case_count": 28
+      },
+      "finding_id": "V1_TAG_SCOPE_ACTIVITY_PROPAGATION",
+      "resolution": "EXPLICIT_CASE_TAG_SCOPE_AND_PROVENANCE"
+    },
+    {
+      "confirmed": true,
+      "evidence": {
+        "baseline_code_authority": "22148a3:semantic_benchmark_fixtures.py:build_p07_fixture",
+        "case_count": 72,
+        "fixture_granularity": "ONE_GENERIC_FIXTURE_PER_SUBMISSION"
+      },
+      "finding_id": "V1_P07_GENERIC_SUBMISSION_FIXTURE",
+      "resolution": "EXPLICIT_SOURCE_GROUNDED_OPPORTUNITY_FIXTURES"
+    },
+    {
+      "confirmed": true,
+      "evidence": {
+        "baseline_code_authority": "22148a3:semantic_benchmark.py:build_benchmark",
+        "case_count": 69
+      },
+      "finding_id": "V1_P06_GENERIC_P04_SCAFFOLD_DEPENDENCY",
+      "resolution": "EXPLICIT_SOURCE_GROUNDED_ROUTE_FIXTURES"
+    },
+    {
+      "confirmed": true,
+      "evidence": {
+        "baseline_code_authority": "22148a3:semantic_benchmark_fixtures.py:build_p04_fixture",
+        "case_count": 12
+      },
+      "finding_id": "V1_P04_FIRST_THREE_UNIT_TRUNCATION",
+      "resolution": "LOSSLESS_ALL_PARSED_UNIT_PROJECTION"
+    },
+    {
+      "confirmed": true,
+      "evidence": {
+        "baseline_code_authority": "22148a3:semantic_benchmark_fixtures.py:build_p09_fixture",
+        "fixture_count": 4,
+        "question_count": 12
+      },
+      "finding_id": "V1_P09_FILENAME_ONLY_WITH_FALLBACK",
+      "resolution": "EXACT_HASHED_EVIDENCE_ID_AND_LOCATOR_BINDINGS_NO_FALLBACK"
+    },
+    {
+      "confirmed": true,
+      "evidence": {
+        "baseline_activity_property_placement": "FIRST_AVAILABLE_SUBMISSION_CASE",
+        "baseline_code_authority": "22148a3:semantic_benchmark.py:property_coverage",
+        "recomputed_violation_count": 0,
+        "representative_selector_counts": {
+          "ACTIVITY_STAGE_EXHAUSTIVE": 1,
+          "CROSS_ARTIFACT_ANCHOR": 2,
+          "FROZEN_FIXTURE_SCOPE": 8,
+          "OWN_FIXTURE": 235,
+          "SHARED_ORACLE_TAGS": 2,
+          "SOURCE_SUBMISSION_REFS": 4,
+          "STAGE_ACTIVITY_FIXTURE": 45,
+          "STAGE_CASE_IDENTITY": 21,
+          "SUBMISSION_EXHAUSTIVE": 28,
+          "TOPICAL_MARKER": 10
+        }
+      },
+      "finding_id": "V1_ACTIVITY_PROPERTY_ASSIGNED_TO_FREE_SUBMISSION",
+      "resolution": "DECLARED_REPRESENTATIVE_SELECTOR_RECOMPUTED_PER_BINDING"
+    },
+    {
+      "confirmed": true,
+      "evidence": {
+        "baseline_denominator_unit": "CASE_PROPERTY_RUN",
+        "denominator_probe": {
+          "hard_property_denominator": 1,
+          "observation_count": 9,
+          "passed": true,
+          "property_outcome_count": 1,
+          "property_run_outcome_count": 3
+        },
+        "properties_bound_to_multiple_cases": 20,
+        "qualification_denominator_unit": "PROPERTY_CANDIDATE_REASONING"
+      },
+      "finding_id": "V1_MULTI_OBSERVATION_DENOMINATOR_INFLATION",
+      "resolution": "PROPERTY_SCOPED_DENOMINATOR_WITH_CASE_AND_RUN_OBSERVATIONS"
+    }
+  ],
+  "schema_version": "semantic-benchmark-alignment-audit/1.1.0",
+  "selected_tag_counts_after": {
+    "ADVERSARIAL_AUTHORIZED_SOURCE": 1,
+    "LEAKAGE_ORACLE_SUSPECT": 8,
+    "MULTI_ARTIFACT": 115,
+    "P06_UNCERTAIN": 5,
+    "P09_CANNOT_INFER": 2,
+    "PLAN_INFEASIBLE": 19,
+    "PROMPT_INJECTION_SILENT": 12,
+    "SILENT_CONCEPTUAL_GAP": 1,
+    "SIMULATED_PII": 4
+  },
+  "selected_tag_counts_before": {
+    "ADVERSARIAL_AUTHORIZED_SOURCE": 14,
+    "LEAKAGE_ORACLE_SUSPECT": 119,
+    "MULTI_ARTIFACT": 89,
+    "P06_UNCERTAIN": 6,
+    "P09_CANNOT_INFER": 2,
+    "PLAN_INFEASIBLE": 151,
+    "PROMPT_INJECTION_SILENT": 74,
+    "SILENT_CONCEPTUAL_GAP": 14,
+    "SIMULATED_PII": 28
+  }
+}

@@ -22,7 +22,7 @@ const PIPELINE_STAGES: Array<{ state: SubmissionDomainState; label: string; deta
   { state: "MAPPING_OPPORTUNITIES", label: "Mapeo", detail: "Variantes y oportunidades" },
   { state: "PLANNING", label: "Plan exacto", detail: "N primarias y reserva" },
   { state: "GENERATING", label: "Preguntas", detail: "Una por oportunidad" },
-  { state: "VALIDATING_QUESTIONS", label: "Revisión", detail: "Reglas y scores P08" },
+  { state: "VALIDATING_QUESTIONS", label: "Validación", detail: "Invariantes deterministas sobre P07" },
   { state: "GUIDE_READY", label: "Guía", detail: "Objeto estructurado" },
   { state: "NEEDS_REVIEW", label: "Revisión humana", detail: "Evidence-first" },
 ];
@@ -180,6 +180,7 @@ export function SubmissionProgressPage() {
   const [error, setError] = useState<unknown>(null);
   const [estimate, setEstimate] = useState<CostEstimate | null>(null);
   const [starting, setStarting] = useState(false);
+  const [pollGeneration, setPollGeneration] = useState(0);
 
   const refresh = useCallback(async () => {
     const nextSubmission = await getSubmission(submissionId);
@@ -211,7 +212,7 @@ export function SubmissionProgressPage() {
       cancelled = true;
       if (timer) window.clearTimeout(timer);
     };
-  }, [refresh]);
+  }, [pollGeneration, refresh]);
 
   useEffect(() => {
     if (submission?.status !== "UPLOADED" || submission.active_job_id || estimate) return;
@@ -258,7 +259,19 @@ export function SubmissionProgressPage() {
         starting={starting}
         submission={submission}
       />
-      {job && <JobControlPanel jobId={job.job_id} onChange={(view) => setJob(view.job)} />}
+      {job && (
+        <JobControlPanel
+          jobId={job.job_id}
+          onChange={(view) => {
+            setJob(view.job);
+            void refresh()
+              .catch(setError)
+              .finally(() => {
+                setPollGeneration((current) => current + 1);
+              });
+          }}
+        />
+      )}
     </>
   );
 }

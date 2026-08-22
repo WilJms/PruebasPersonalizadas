@@ -1,0 +1,11 @@
+La función es completamente pura: `sorted` crea una lista nueva y nunca toca `solicitudes`. El diccionario conserva la primera aparición de cada id. La clave de tres campos garantiza el orden global incluso después de asignar por grupos.
+
+La complejidad es O(n log n) por la ordenación. Separar por grupo mantiene exactamente el mismo orden global, porque cada grupo es independiente y la lista ya venía ordenada. Las prioridades inválidas se descartan en la comprensión del diccionario.
+
+## Decisiones
+
+Elegí ordenar antes de deduplicar para que el diccionario reciba las solicitudes en el orden definitivo. Así la primera que entra por cada id es también la de mejor prioridad, y no hace falta comparar después.
+
+El bucle exterior recorre `cupos_por_grupo` porque es la estructura que define la capacidad. Recorrerla garantiza que ningún grupo consuma lugares de otro y que un grupo con cupo cero envíe todas sus solicitudes a espera sin caso especial.
+
+La copia de la lista de referencias en el caso de demostración muestra que la entrada original se conserva intacta después de la llamada, tal como exige el contrato de función pura.

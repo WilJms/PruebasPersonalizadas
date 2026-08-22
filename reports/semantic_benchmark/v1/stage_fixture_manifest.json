@@ -1,0 +1,2827 @@
+{
+  "benchmark_version": "semantic-benchmark/1.0.0",
+  "fixtures": [
+    {
+      "builder_version": "semantic-benchmark-fixture-p04/1.0.0",
+      "canonical_contract": "BlueprintBuildRequest",
+      "fixture_ref": "benchmark-fixture://p04/act_01_luz_y_plantines",
+      "input_hash": "sha256:ca1541b47e7c88859f63581965372f069a66ccbbdc1254ddc47b9b86ca0b9626",
+      "property_provenance": [
+        "A01-ACT-P1",
+        "A01-ACT-P2",
+        "A01-ACT-P3",
+        "A01-ACT-P4"
+      ],
+      "role": "BENCHMARK_SCAFFOLD_NOT_P01_P02_P03_GOLDEN",
+      "source_provenance": [
+        "activity_01_luz_y_plantines/01_assignment.docx",
+        "activity_01_luz_y_plantines/02_rubric.docx"
+      ],
+      "stage": "P04"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p04/1.0.0",
+      "canonical_contract": "BlueprintBuildRequest",
+      "fixture_ref": "benchmark-fixture://p04/act_02_voz_en_un_microcuento",
+      "input_hash": "sha256:141d4de5549e390b4c52f642bcd468eab39b3165d20d6d3261f5308d1f0fe368",
+      "property_provenance": [
+        "A02-ACT-P1",
+        "A02-ACT-P2",
+        "A02-ACT-P3"
+      ],
+      "role": "BENCHMARK_SCAFFOLD_NOT_P01_P02_P03_GOLDEN",
+      "source_provenance": [
+        "activity_02_voz_en_un_microcuento/01_assignment.docx",
+        "activity_02_voz_en_un_microcuento/02_rubric.docx"
+      ],
+      "stage": "P04"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p04/1.0.0",
+      "canonical_contract": "BlueprintBuildRequest",
+      "fixture_ref": "benchmark-fixture://p04/act_03_puesto_de_limonada",
+      "input_hash": "sha256:dc6494f410d7875d3d43e4e1e3f5158bfdc68d0d54e674c89fd9764cacb61aa5",
+      "property_provenance": [
+        "A03-ACT-FINAL-DIFFICULTY",
+        "A03-ACT-P1",
+        "A03-ACT-P2",
+        "A03-ACT-P3",
+        "A03-ACT-P5",
+        "A03-S01-P4"
+      ],
+      "role": "BENCHMARK_SCAFFOLD_NOT_P01_P02_P03_GOLDEN",
+      "source_provenance": [
+        "activity_03_puesto_de_limonada/01_assignment.docx",
+        "activity_03_puesto_de_limonada/02_rubric.docx"
+      ],
+      "stage": "P04"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p04/1.0.0",
+      "canonical_contract": "BlueprintBuildRequest",
+      "fixture_ref": "benchmark-fixture://p04/act_04_asignador_de_turnos",
+      "input_hash": "sha256:81437827f98138022cd740b093e30d45ee0dcd803e29d25a6801108b2a61dd12",
+      "property_provenance": [
+        "A04-ACT-P1",
+        "A04-ACT-P2",
+        "A04-ACT-P3"
+      ],
+      "role": "BENCHMARK_SCAFFOLD_NOT_P01_P02_P03_GOLDEN",
+      "source_provenance": [
+        "activity_04_asignador_de_turnos/01_assignment.docx",
+        "activity_04_asignador_de_turnos/02_rubric.docx"
+      ],
+      "stage": "P04"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p04/1.0.0",
+      "canonical_contract": "BlueprintBuildRequest",
+      "fixture_ref": "benchmark-fixture://p04/act_05_visitas_a_bibliotecas",
+      "input_hash": "sha256:86242a3c468f7de8be5ea7b3170f20db5d07e9922b27000d66d5adcb02483595",
+      "property_provenance": [
+        "A05-ACT-FINAL-LENGTH",
+        "A05-ACT-P1",
+        "A05-ACT-P2",
+        "A05-ACT-P3",
+        "A05-ACT-P4"
+      ],
+      "role": "BENCHMARK_SCAFFOLD_NOT_P01_P02_P03_GOLDEN",
+      "source_provenance": [
+        "activity_05_visitas_a_bibliotecas/01_assignment.docx",
+        "activity_05_visitas_a_bibliotecas/02_rubric.docx"
+      ],
+      "stage": "P04"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p04/1.0.0",
+      "canonical_contract": "BlueprintBuildRequest",
+      "fixture_ref": "benchmark-fixture://p04/act_06_movilidad_estudiantil",
+      "input_hash": "sha256:edaf2c9f64a597000a7fb4571014d6ed0cf3ba6ebe6a446725ada1d3f40faa34",
+      "property_provenance": [
+        "A06-ACT-FINAL-LENGTH",
+        "A06-ACT-P1",
+        "A06-ACT-P2",
+        "A06-ACT-P3",
+        "A06-ACT-P4"
+      ],
+      "role": "BENCHMARK_SCAFFOLD_NOT_P01_P02_P03_GOLDEN",
+      "source_provenance": [
+        "activity_06_movilidad_estudiantil/01_assignment.docx",
+        "activity_06_movilidad_estudiantil/02_rubric.docx"
+      ],
+      "stage": "P04"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p04/1.0.0",
+      "canonical_contract": "BlueprintBuildRequest",
+      "fixture_ref": "benchmark-fixture://p04/act_07_aislamiento_termico",
+      "input_hash": "sha256:a1dece3231aef93a17ebf2237772f6804b5176bfbf84d26420f83c346b39ebda",
+      "property_provenance": [
+        "A07-ACT-FINAL-LENGTH",
+        "A07-ACT-P1",
+        "A07-ACT-P2",
+        "A07-ACT-P3"
+      ],
+      "role": "BENCHMARK_SCAFFOLD_NOT_P01_P02_P03_GOLDEN",
+      "source_provenance": [
+        "activity_07_aislamiento_termico/01_assignment.docx",
+        "activity_07_aislamiento_termico/02_rubric.docx"
+      ],
+      "stage": "P04"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p04/1.0.0",
+      "canonical_contract": "BlueprintBuildRequest",
+      "fixture_ref": "benchmark-fixture://p04/act_08_triage_de_logs",
+      "input_hash": "sha256:4ada06664c644ee043b5b80a8fe6230654f457cc1cfe1cc0a5fe05a58ab659cf",
+      "property_provenance": [
+        "A08-ACT-P1",
+        "A08-ACT-P2",
+        "A08-ACT-P3"
+      ],
+      "role": "BENCHMARK_SCAFFOLD_NOT_P01_P02_P03_GOLDEN",
+      "source_provenance": [
+        "activity_08_triage_de_logs/01_assignment.docx",
+        "activity_08_triage_de_logs/02_rubric.docx"
+      ],
+      "stage": "P04"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p04/1.0.0",
+      "canonical_contract": "BlueprintBuildRequest",
+      "fixture_ref": "benchmark-fixture://p04/act_09_renovacion_y_desplazamiento",
+      "input_hash": "sha256:2c76350c48be63282fc7347fcb90391e57e001c3420e0328f45b6d3a0094edf1",
+      "property_provenance": [
+        "A09-ACT-FINAL-LENGTH",
+        "A09-ACT-P1",
+        "A09-ACT-P2",
+        "A09-ACT-P3",
+        "A09-ACT-P4",
+        "A09-S04-P4"
+      ],
+      "role": "BENCHMARK_SCAFFOLD_NOT_P01_P02_P03_GOLDEN",
+      "source_provenance": [
+        "activity_09_renovacion_y_desplazamiento/01_assignment.docx",
+        "activity_09_renovacion_y_desplazamiento/02_rubric.docx"
+      ],
+      "stage": "P04"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p04/1.0.0",
+      "canonical_contract": "BlueprintBuildRequest",
+      "fixture_ref": "benchmark-fixture://p04/act_10_experimento_onboarding",
+      "input_hash": "sha256:d766fe6c6c120cfc76df33fb26588fee0474e1a38c5eb9bacd1f6edd2ed6a4d9",
+      "property_provenance": [
+        "A10-ACT-FINAL-LENGTH",
+        "A10-ACT-P1",
+        "A10-ACT-P2",
+        "A10-ACT-P3",
+        "A10-ACT-P6"
+      ],
+      "role": "BENCHMARK_SCAFFOLD_NOT_P01_P02_P03_GOLDEN",
+      "source_provenance": [
+        "activity_10_experimento_onboarding/01_assignment.docx",
+        "activity_10_experimento_onboarding/02_rubric.docx"
+      ],
+      "stage": "P04"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p04/1.0.0",
+      "canonical_contract": "BlueprintBuildRequest",
+      "fixture_ref": "benchmark-fixture://p04/act_11_duplicados_en_pagos",
+      "input_hash": "sha256:9f7b60322af0953bee6e030b3a4efb046d18c8a5c150f4635c8b5a745e5268bc",
+      "property_provenance": [
+        "A11-ACT-FINAL-LENGTH",
+        "A11-ACT-P1",
+        "A11-ACT-P2",
+        "A11-ACT-P3",
+        "A11-ACT-P5"
+      ],
+      "role": "BENCHMARK_SCAFFOLD_NOT_P01_P02_P03_GOLDEN",
+      "source_provenance": [
+        "activity_11_duplicados_en_pagos/01_assignment.docx",
+        "activity_11_duplicados_en_pagos/02_rubric.docx"
+      ],
+      "stage": "P04"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p04/1.0.0",
+      "canonical_contract": "BlueprintBuildRequest",
+      "fixture_ref": "benchmark-fixture://p04/act_12_clinica_movil",
+      "input_hash": "sha256:138d752da2ab2f0ac8035f94356aebcf2b933cee0a65002ba1854d41ff6d0daf",
+      "property_provenance": [
+        "A12-ACT-FINAL-LENGTH",
+        "A12-ACT-P1",
+        "A12-ACT-P2",
+        "A12-ACT-P3",
+        "A12-ACT-P5"
+      ],
+      "role": "BENCHMARK_SCAFFOLD_NOT_P01_P02_P03_GOLDEN",
+      "source_provenance": [
+        "activity_12_clinica_movil/01_assignment.docx",
+        "activity_12_clinica_movil/02_rubric.docx"
+      ],
+      "stage": "P04"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p06/1.0.0",
+      "canonical_contract": "EvidenceMapRequest",
+      "fixture_ref": "benchmark-fixture://p06/act_01_luz_y_plantines/submission_01",
+      "input_hash": "sha256:e8b0ab5e9163ca2943e7378f58cd98b5e3c7ce5e4df508d61640940770b27f02",
+      "property_provenance": [
+        "A01-S01-P3",
+        "A01-ACT-P5"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_01_luz_y_plantines/submissions/submission_01.txt"
+      ],
+      "stage": "P06"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p06/1.0.0",
+      "canonical_contract": "EvidenceMapRequest",
+      "fixture_ref": "benchmark-fixture://p06/act_01_luz_y_plantines/submission_02",
+      "input_hash": "sha256:b079aa4e4e80d5ca67c1953a3a2762359eef8b5fab6a93c0681aee54cf0ae9f4",
+      "property_provenance": [
+        "A01-S02-P1"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_01_luz_y_plantines/submissions/submission_02.md"
+      ],
+      "stage": "P06"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p06/1.0.0",
+      "canonical_contract": "EvidenceMapRequest",
+      "fixture_ref": "benchmark-fixture://p06/act_01_luz_y_plantines/submission_03",
+      "input_hash": "sha256:73eb2d9921483506a72b4ee7788059d7db057ead3f411d9cad167f83d8b19bfd",
+      "property_provenance": [
+        "A01-S03-P1",
+        "A01-S03-P2"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_01_luz_y_plantines/submissions/submission_03.txt"
+      ],
+      "stage": "P06"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p06/1.0.0",
+      "canonical_contract": "EvidenceMapRequest",
+      "fixture_ref": "benchmark-fixture://p06/act_01_luz_y_plantines/submission_04",
+      "input_hash": "sha256:8c3c9a31a09e1922ebc5d875c065a2faf98d0b619ced810ecd070650326c0aff",
+      "property_provenance": [
+        "A01-S04-P2"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_01_luz_y_plantines/submissions/submission_04.md"
+      ],
+      "stage": "P06"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p06/1.0.0",
+      "canonical_contract": "EvidenceMapRequest",
+      "fixture_ref": "benchmark-fixture://p06/act_01_luz_y_plantines/submission_05",
+      "input_hash": "sha256:c3e45af109f4f7ffae0c1269c36b9380a8c4fa7cccc7bdff4fb9d8a9ed464832",
+      "property_provenance": [
+        "A01-S05-P1"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_01_luz_y_plantines/submissions/submission_05.pdf"
+      ],
+      "stage": "P06"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p06/1.0.0",
+      "canonical_contract": "EvidenceMapRequest",
+      "fixture_ref": "benchmark-fixture://p06/act_01_luz_y_plantines/submission_06",
+      "input_hash": "sha256:b267e112d8966ac829eae5e7594df62f2059efc09e6b14dfed87ecae45d5a1c8",
+      "property_provenance": [
+        "A01-S06-P1"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_01_luz_y_plantines/submissions/submission_06.pdf"
+      ],
+      "stage": "P06"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p06/1.0.0",
+      "canonical_contract": "EvidenceMapRequest",
+      "fixture_ref": "benchmark-fixture://p06/act_02_voz_en_un_microcuento/submission_01",
+      "input_hash": "sha256:1a8e3927f6ef11f1dfe09ba576d9d2eb81b03b73d7e07bb91cf5fd8764456c18",
+      "property_provenance": [
+        "A02-S01-P1",
+        "A02-S01-P4"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_02_voz_en_un_microcuento/submissions/submission_01.txt"
+      ],
+      "stage": "P06"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p06/1.0.0",
+      "canonical_contract": "EvidenceMapRequest",
+      "fixture_ref": "benchmark-fixture://p06/act_02_voz_en_un_microcuento/submission_02",
+      "input_hash": "sha256:55a08c3bac056b253e2c9c721535cc1670fe3118790960ff450dbf7c6a21d958",
+      "property_provenance": [
+        "A02-S02-P3"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_02_voz_en_un_microcuento/submissions/submission_02.txt"
+      ],
+      "stage": "P06"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p06/1.0.0",
+      "canonical_contract": "EvidenceMapRequest",
+      "fixture_ref": "benchmark-fixture://p06/act_02_voz_en_un_microcuento/submission_03",
+      "input_hash": "sha256:de7428efff44139c70eb93f64dc183a9eff011e971e77105e75cd35480f7e637",
+      "property_provenance": [
+        "A02-S03-P1",
+        "A02-S03-P2"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_02_voz_en_un_microcuento/submissions/submission_03.md"
+      ],
+      "stage": "P06"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p06/1.0.0",
+      "canonical_contract": "EvidenceMapRequest",
+      "fixture_ref": "benchmark-fixture://p06/act_02_voz_en_un_microcuento/submission_04",
+      "input_hash": "sha256:e460348b9361fda8f05f5811346590bbd493ed4feae782ef63050b76129e982c",
+      "property_provenance": [
+        "A02-S04-P1",
+        "A02-S04-P4"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_02_voz_en_un_microcuento/submissions/submission_04.pdf"
+      ],
+      "stage": "P06"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p06/1.0.0",
+      "canonical_contract": "EvidenceMapRequest",
+      "fixture_ref": "benchmark-fixture://p06/act_02_voz_en_un_microcuento/submission_05",
+      "input_hash": "sha256:e82aeace00718612a899fecfe083542741212ed64b41d7cf7b0042c80d862872",
+      "property_provenance": [
+        "A02-S05-P1"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_02_voz_en_un_microcuento/submissions/submission_05.pdf"
+      ],
+      "stage": "P06"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p06/1.0.0",
+      "canonical_contract": "EvidenceMapRequest",
+      "fixture_ref": "benchmark-fixture://p06/act_02_voz_en_un_microcuento/submission_06",
+      "input_hash": "sha256:2994be56ff9495dfbb6454c1bf56d1ef9d17d16aff21a0dd62156f516cb04c1d",
+      "property_provenance": [
+        "A02-S06-P1"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_02_voz_en_un_microcuento/submissions/submission_06.md"
+      ],
+      "stage": "P06"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p06/1.0.0",
+      "canonical_contract": "EvidenceMapRequest",
+      "fixture_ref": "benchmark-fixture://p06/act_03_puesto_de_limonada/submission_01",
+      "input_hash": "sha256:4fb4bbdebec0c8b23c0d48d1f16885d682cd984eeb13e0d0962d8fb6cb5fe4a7",
+      "property_provenance": [
+        "A03-S01-P1",
+        "A03-S01-P2"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_03_puesto_de_limonada/submissions/submission_01.md"
+      ],
+      "stage": "P06"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p06/1.0.0",
+      "canonical_contract": "EvidenceMapRequest",
+      "fixture_ref": "benchmark-fixture://p06/act_03_puesto_de_limonada/submission_02",
+      "input_hash": "sha256:193cf829eb428ce55fb5c76d211bc05fdff333ef81425c9b9879fdae6e0966e0",
+      "property_provenance": [
+        "A03-S02-P1",
+        "A03-S02-P3"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_03_puesto_de_limonada/submissions/submission_02.md"
+      ],
+      "stage": "P06"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p06/1.0.0",
+      "canonical_contract": "EvidenceMapRequest",
+      "fixture_ref": "benchmark-fixture://p06/act_03_puesto_de_limonada/submission_03",
+      "input_hash": "sha256:9d68ead231e34c960333587884985df64960b86ecef84392a13eaceac3347c2d",
+      "property_provenance": [
+        "A03-S03-P3"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_03_puesto_de_limonada/submissions/submission_03.txt"
+      ],
+      "stage": "P06"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p06/1.0.0",
+      "canonical_contract": "EvidenceMapRequest",
+      "fixture_ref": "benchmark-fixture://p06/act_03_puesto_de_limonada/submission_04",
+      "input_hash": "sha256:02ec9155bf6e6a83ac9215127b3c431ed5e6038f40234672bdbfb903d7f9a67b",
+      "property_provenance": [
+        "A03-S04-P1",
+        "A03-S04-P3"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_03_puesto_de_limonada/submissions/submission_04.pdf"
+      ],
+      "stage": "P06"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p06/1.0.0",
+      "canonical_contract": "EvidenceMapRequest",
+      "fixture_ref": "benchmark-fixture://p06/act_03_puesto_de_limonada/submission_05",
+      "input_hash": "sha256:d9e52420cfb63287917419f593d3bfbc3210c46e396538dc180f978efe429008",
+      "property_provenance": [
+        "A03-S05-P1"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_03_puesto_de_limonada/submissions/submission_05.pdf"
+      ],
+      "stage": "P06"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p06/1.0.0",
+      "canonical_contract": "EvidenceMapRequest",
+      "fixture_ref": "benchmark-fixture://p06/act_03_puesto_de_limonada/submission_06",
+      "input_hash": "sha256:0f07f0f823d67148010c6f3712389d54da4c4780f63a7cef81f2493c3ce4e10d",
+      "property_provenance": [
+        "A03-S06-P1",
+        "A03-S06-P2"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_03_puesto_de_limonada/submissions/submission_06.txt"
+      ],
+      "stage": "P06"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p06/1.0.0",
+      "canonical_contract": "EvidenceMapRequest",
+      "fixture_ref": "benchmark-fixture://p06/act_04_asignador_de_turnos/submission_01",
+      "input_hash": "sha256:8c7fb6aca5f19cab571aa3d3c5b3f3e55ce8e06a6dd12f71418ad7e534b7df25",
+      "property_provenance": [
+        "A04-S01-P1",
+        "A04-S01-P2",
+        "A04-S01-P3",
+        "A04-S01-P5"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_04_asignador_de_turnos/submissions/submission_01_artifact_01.md",
+        "activity_04_asignador_de_turnos/submissions/submission_01_artifact_02.txt"
+      ],
+      "stage": "P06"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p06/1.0.0",
+      "canonical_contract": "EvidenceMapRequest",
+      "fixture_ref": "benchmark-fixture://p06/act_04_asignador_de_turnos/submission_02",
+      "input_hash": "sha256:b1a178f66f47f1052332ea61b43c94587ceaf174aef1c05020cff07ea55f12a0",
+      "property_provenance": [
+        "A04-S02-P1"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_04_asignador_de_turnos/submissions/submission_02_artifact_01.md",
+        "activity_04_asignador_de_turnos/submissions/submission_02_artifact_02.txt"
+      ],
+      "stage": "P06"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p06/1.0.0",
+      "canonical_contract": "EvidenceMapRequest",
+      "fixture_ref": "benchmark-fixture://p06/act_04_asignador_de_turnos/submission_03",
+      "input_hash": "sha256:f529f57c1ae430a82c84e7f5dc2e8bfa2dc3ad388b4808f45afc848671e5979e",
+      "property_provenance": [
+        "A04-S03-P1"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_04_asignador_de_turnos/submissions/submission_03.md"
+      ],
+      "stage": "P06"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p06/1.0.0",
+      "canonical_contract": "EvidenceMapRequest",
+      "fixture_ref": "benchmark-fixture://p06/act_04_asignador_de_turnos/submission_04",
+      "input_hash": "sha256:ccab3d8913f8a6c9a9be46cbe5dd8071ec94411c31e3e76396393f49604ba94d",
+      "property_provenance": [
+        "A04-ACT-P5"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_04_asignador_de_turnos/submissions/submission_04_artifact_01.md",
+        "activity_04_asignador_de_turnos/submissions/submission_04_artifact_02.txt"
+      ],
+      "stage": "P06"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p06/1.0.0",
+      "canonical_contract": "EvidenceMapRequest",
+      "fixture_ref": "benchmark-fixture://p06/act_04_asignador_de_turnos/submission_05",
+      "input_hash": "sha256:4c19d30d0766e285db3ac8fd5a133762206922204452830cc959cfe5c6166438",
+      "property_provenance": [
+        "A04-S05-P1",
+        "A04-S05-P5"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_04_asignador_de_turnos/submissions/submission_05_artifact_01.md",
+        "activity_04_asignador_de_turnos/submissions/submission_05_artifact_02.txt"
+      ],
+      "stage": "P06"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p06/1.0.0",
+      "canonical_contract": "EvidenceMapRequest",
+      "fixture_ref": "benchmark-fixture://p06/act_04_asignador_de_turnos/submission_06",
+      "input_hash": "sha256:ce4040d3293b954c5f17430ce04a7085afed53ca9798af7a4e07176b42fcc95a",
+      "property_provenance": [
+        "A04-S06-P1",
+        "A04-S06-P2",
+        "A04-S06-P4"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_04_asignador_de_turnos/submissions/submission_06_artifact_01.md",
+        "activity_04_asignador_de_turnos/submissions/submission_06_artifact_02.txt"
+      ],
+      "stage": "P06"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p06/1.0.0",
+      "canonical_contract": "EvidenceMapRequest",
+      "fixture_ref": "benchmark-fixture://p06/act_05_visitas_a_bibliotecas/submission_01",
+      "input_hash": "sha256:b811b06cb2a43450729d1753468c8daf6376bf2dbb1602221f88ebf32fb3bff8",
+      "property_provenance": [
+        "A05-S01-P1",
+        "A05-S01-P3"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_05_visitas_a_bibliotecas/submissions/submission_01.md"
+      ],
+      "stage": "P06"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p06/1.0.0",
+      "canonical_contract": "EvidenceMapRequest",
+      "fixture_ref": "benchmark-fixture://p06/act_05_visitas_a_bibliotecas/submission_02",
+      "input_hash": "sha256:e4a83ac17e1d35f52cbd6e3f9be98cf2b6ad9888b5e891307621d6d271d7a3e8",
+      "property_provenance": [
+        "A05-S02-P1",
+        "A05-S02-P2"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_05_visitas_a_bibliotecas/submissions/submission_02.pdf"
+      ],
+      "stage": "P06"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p06/1.0.0",
+      "canonical_contract": "EvidenceMapRequest",
+      "fixture_ref": "benchmark-fixture://p06/act_05_visitas_a_bibliotecas/submission_03",
+      "input_hash": "sha256:2f3a9b4d21187f2a426a797c75ed34e401e20edf32ca61252fabfc1dd449c6fd",
+      "property_provenance": [
+        "A05-S03-P1"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_05_visitas_a_bibliotecas/submissions/submission_03.md"
+      ],
+      "stage": "P06"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p06/1.0.0",
+      "canonical_contract": "EvidenceMapRequest",
+      "fixture_ref": "benchmark-fixture://p06/act_05_visitas_a_bibliotecas/submission_04",
+      "input_hash": "sha256:80ef921a0a518e797046720eccfef7311d36c7ca8e419502d0876123d5b42300",
+      "property_provenance": [
+        "A05-S04-P1"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_05_visitas_a_bibliotecas/submissions/submission_04.pdf"
+      ],
+      "stage": "P06"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p06/1.0.0",
+      "canonical_contract": "EvidenceMapRequest",
+      "fixture_ref": "benchmark-fixture://p06/act_05_visitas_a_bibliotecas/submission_06",
+      "input_hash": "sha256:8b245c5352bd9a7bc4f1144fcf002cdedfc16f0efa3c35aaf0ed68ad13ee6532",
+      "property_provenance": [
+        "A05-S06-P1"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_05_visitas_a_bibliotecas/submissions/submission_06.txt"
+      ],
+      "stage": "P06"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p06/1.0.0",
+      "canonical_contract": "EvidenceMapRequest",
+      "fixture_ref": "benchmark-fixture://p06/act_06_movilidad_estudiantil/submission_01",
+      "input_hash": "sha256:03f3779bf3e7b2d65d11254da6b9f7e5fd5fca9cc07fbd7b6b53100228e8ff2d",
+      "property_provenance": [
+        "A06-S01-FINAL-P2",
+        "A06-S01-P1",
+        "A06-S01-P3"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_06_movilidad_estudiantil/submissions/submission_01.pdf"
+      ],
+      "stage": "P06"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p06/1.0.0",
+      "canonical_contract": "EvidenceMapRequest",
+      "fixture_ref": "benchmark-fixture://p06/act_06_movilidad_estudiantil/submission_02",
+      "input_hash": "sha256:891ace89c465ab874cac6100a8c0fc34800d2cefb30445f9ca11671240358791",
+      "property_provenance": [
+        "A06-S02-P1",
+        "A06-S02-P2"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_06_movilidad_estudiantil/submissions/submission_02.md"
+      ],
+      "stage": "P06"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p06/1.0.0",
+      "canonical_contract": "EvidenceMapRequest",
+      "fixture_ref": "benchmark-fixture://p06/act_06_movilidad_estudiantil/submission_03",
+      "input_hash": "sha256:14929122f98715b82f8543388336318869a9e56c824ba57d27b347e6fa2382b1",
+      "property_provenance": [
+        "A06-S03-P1"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_06_movilidad_estudiantil/submissions/submission_03.md"
+      ],
+      "stage": "P06"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p06/1.0.0",
+      "canonical_contract": "EvidenceMapRequest",
+      "fixture_ref": "benchmark-fixture://p06/act_06_movilidad_estudiantil/submission_04",
+      "input_hash": "sha256:a31664b23445edd9d4a75c26c6669b2bee79a43b57acb3def56d5b73801d92dd",
+      "property_provenance": [
+        "A06-S04-FINAL-P3",
+        "A06-S04-P1",
+        "A06-S04-P2"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_06_movilidad_estudiantil/submissions/submission_04.txt"
+      ],
+      "stage": "P06"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p06/1.0.0",
+      "canonical_contract": "EvidenceMapRequest",
+      "fixture_ref": "benchmark-fixture://p06/act_06_movilidad_estudiantil/submission_05",
+      "input_hash": "sha256:d8dfef6fb81fdd30c5d7ba753314bad1051fb8fb5bae98c1dc37f6aba15bde8a",
+      "property_provenance": [
+        "A06-S05-P1",
+        "A06-S05-P3"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_06_movilidad_estudiantil/submissions/submission_05.pdf"
+      ],
+      "stage": "P06"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p06/1.0.0",
+      "canonical_contract": "EvidenceMapRequest",
+      "fixture_ref": "benchmark-fixture://p06/act_06_movilidad_estudiantil/submission_06",
+      "input_hash": "sha256:1cd7cff7261f28457968bee588add9c102b65aabc4618581cd559853ab17be8b",
+      "property_provenance": [
+        "A06-ACT-FINAL-P5"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_06_movilidad_estudiantil/submissions/submission_06.txt"
+      ],
+      "stage": "P06"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p06/1.0.0",
+      "canonical_contract": "EvidenceMapRequest",
+      "fixture_ref": "benchmark-fixture://p06/act_07_aislamiento_termico/submission_01",
+      "input_hash": "sha256:371a12cfa818b07c80b007e83731430821dd35db7dc2186e51ef6220969990cf",
+      "property_provenance": [
+        "A07-S01-P2"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_07_aislamiento_termico/submissions/submission_01_artifact_01.txt",
+        "activity_07_aislamiento_termico/submissions/submission_01_artifact_02.md"
+      ],
+      "stage": "P06"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p06/1.0.0",
+      "canonical_contract": "EvidenceMapRequest",
+      "fixture_ref": "benchmark-fixture://p06/act_07_aislamiento_termico/submission_02",
+      "input_hash": "sha256:6b3710279de8e9de4e9ca3f7068acc4280ea118e34d86ccec86073ef8bd980de",
+      "property_provenance": [
+        "A07-S02-P2",
+        "A07-S02-P3"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_07_aislamiento_termico/submissions/submission_02.md"
+      ],
+      "stage": "P06"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p06/1.0.0",
+      "canonical_contract": "EvidenceMapRequest",
+      "fixture_ref": "benchmark-fixture://p06/act_07_aislamiento_termico/submission_03",
+      "input_hash": "sha256:c986ec73939970b3edc092a61119a934aacfc8d966df32be3ed2cd066f225696",
+      "property_provenance": [
+        "A07-S03-P1"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_07_aislamiento_termico/submissions/submission_03_artifact_01.txt",
+        "activity_07_aislamiento_termico/submissions/submission_03_artifact_02.md"
+      ],
+      "stage": "P06"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p06/1.0.0",
+      "canonical_contract": "EvidenceMapRequest",
+      "fixture_ref": "benchmark-fixture://p06/act_07_aislamiento_termico/submission_04",
+      "input_hash": "sha256:0a62d803cf424275b0627ca87060ca75dd75e13d0ef222c9b9a07cd469123f52",
+      "property_provenance": [
+        "A07-S04-P1",
+        "A07-S04-P2"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_07_aislamiento_termico/submissions/submission_04_artifact_01.txt",
+        "activity_07_aislamiento_termico/submissions/submission_04_artifact_02.pdf"
+      ],
+      "stage": "P06"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p06/1.0.0",
+      "canonical_contract": "EvidenceMapRequest",
+      "fixture_ref": "benchmark-fixture://p06/act_07_aislamiento_termico/submission_05",
+      "input_hash": "sha256:ed72ea7b478857cc14620ee7e07d770ddf989ae5a125e776e5db18a7e473a577",
+      "property_provenance": [
+        "A07-S05-P1",
+        "A07-S05-P2"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_07_aislamiento_termico/submissions/submission_05_artifact_01.txt",
+        "activity_07_aislamiento_termico/submissions/submission_05_artifact_02.pdf"
+      ],
+      "stage": "P06"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p06/1.0.0",
+      "canonical_contract": "EvidenceMapRequest",
+      "fixture_ref": "benchmark-fixture://p06/act_07_aislamiento_termico/submission_06",
+      "input_hash": "sha256:3e40e20f32984128a568968b663c36dcfa80c769822ef00372f2d91c341d993b",
+      "property_provenance": [
+        "A07-S06-P1",
+        "A07-S06-P2"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_07_aislamiento_termico/submissions/submission_06_artifact_01.txt",
+        "activity_07_aislamiento_termico/submissions/submission_06_artifact_02.pdf"
+      ],
+      "stage": "P06"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p06/1.0.0",
+      "canonical_contract": "EvidenceMapRequest",
+      "fixture_ref": "benchmark-fixture://p06/act_08_triage_de_logs/submission_01",
+      "input_hash": "sha256:c59aea02ea61427887f97d7fa6d649dba0d12316aa39a14e3f266e33b4fafd34",
+      "property_provenance": [
+        "A08-S01-P1",
+        "A08-S01-P2",
+        "A08-S01-P3"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_08_triage_de_logs/submissions/submission_01_artifact_01.txt",
+        "activity_08_triage_de_logs/submissions/submission_01_artifact_02.md"
+      ],
+      "stage": "P06"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p06/1.0.0",
+      "canonical_contract": "EvidenceMapRequest",
+      "fixture_ref": "benchmark-fixture://p06/act_08_triage_de_logs/submission_03",
+      "input_hash": "sha256:ed5691c12da344d39d383fa0842e0d9dd2a1436e043a5bfc0ac8d43505f9c845",
+      "property_provenance": [
+        "A08-S03-P1",
+        "A08-S03-P2"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_08_triage_de_logs/submissions/submission_03_artifact_01.txt",
+        "activity_08_triage_de_logs/submissions/submission_03_artifact_02.md"
+      ],
+      "stage": "P06"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p06/1.0.0",
+      "canonical_contract": "EvidenceMapRequest",
+      "fixture_ref": "benchmark-fixture://p06/act_08_triage_de_logs/submission_04",
+      "input_hash": "sha256:b65e6472aa3917bb832f1cd9a09093cdd5e2383454c27c38200154ddcb132685",
+      "property_provenance": [
+        "A08-S04-P1",
+        "A08-S04-P2"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_08_triage_de_logs/submissions/submission_04_artifact_01.txt",
+        "activity_08_triage_de_logs/submissions/submission_04_artifact_02.md"
+      ],
+      "stage": "P06"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p06/1.0.0",
+      "canonical_contract": "EvidenceMapRequest",
+      "fixture_ref": "benchmark-fixture://p06/act_08_triage_de_logs/submission_05",
+      "input_hash": "sha256:f487828f272411256aadd31eb81afb474c4317f96f3998e5fb10d1bb675f062a",
+      "property_provenance": [
+        "A08-S05-P1",
+        "A08-S05-P2"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_08_triage_de_logs/submissions/submission_05_artifact_01.txt",
+        "activity_08_triage_de_logs/submissions/submission_05_artifact_02.md"
+      ],
+      "stage": "P06"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p06/1.0.0",
+      "canonical_contract": "EvidenceMapRequest",
+      "fixture_ref": "benchmark-fixture://p06/act_08_triage_de_logs/submission_06",
+      "input_hash": "sha256:026d6c75dc230dbb35e48c7671163b2b16594e3481173c9923a263b0ccf1e401",
+      "property_provenance": [
+        "A08-S06-P1"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_08_triage_de_logs/submissions/submission_06.md"
+      ],
+      "stage": "P06"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p06/1.0.0",
+      "canonical_contract": "EvidenceMapRequest",
+      "fixture_ref": "benchmark-fixture://p06/act_09_renovacion_y_desplazamiento/submission_01",
+      "input_hash": "sha256:ef0eced7c07aef10ee0e6ab1b3d34061ada6ff1346e48fc74dfca13227ed0b24",
+      "property_provenance": [
+        "A09-S01-P1",
+        "A09-S01-P2",
+        "A09-S01-P3"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_09_renovacion_y_desplazamiento/submissions/submission_01.pdf"
+      ],
+      "stage": "P06"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p06/1.0.0",
+      "canonical_contract": "EvidenceMapRequest",
+      "fixture_ref": "benchmark-fixture://p06/act_09_renovacion_y_desplazamiento/submission_02",
+      "input_hash": "sha256:5075c19439a819f8be8709435fe163c6f2bfa154f576d42528c17803f5d94ebd",
+      "property_provenance": [
+        "A09-S02-P1",
+        "A09-S02-P3"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_09_renovacion_y_desplazamiento/submissions/submission_02.pdf"
+      ],
+      "stage": "P06"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p06/1.0.0",
+      "canonical_contract": "EvidenceMapRequest",
+      "fixture_ref": "benchmark-fixture://p06/act_09_renovacion_y_desplazamiento/submission_03",
+      "input_hash": "sha256:1f05c452d5fc33ff15658354c9ff01be8e9c3c1ec4227244e58989d47fe8dca4",
+      "property_provenance": [
+        "A09-S03-FINAL-SILENT-GAP",
+        "A09-S03-P1",
+        "A09-S03-P5"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_09_renovacion_y_desplazamiento/submissions/submission_03.pdf"
+      ],
+      "stage": "P06"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p06/1.0.0",
+      "canonical_contract": "EvidenceMapRequest",
+      "fixture_ref": "benchmark-fixture://p06/act_09_renovacion_y_desplazamiento/submission_04",
+      "input_hash": "sha256:eff2701a801a8522c5ce4b42971cd4aa40ea2dccd690dae6de5ed86e6f6a74e2",
+      "property_provenance": [
+        "A09-S04-P1"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_09_renovacion_y_desplazamiento/submissions/submission_04.md"
+      ],
+      "stage": "P06"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p06/1.0.0",
+      "canonical_contract": "EvidenceMapRequest",
+      "fixture_ref": "benchmark-fixture://p06/act_09_renovacion_y_desplazamiento/submission_05",
+      "input_hash": "sha256:6cfae88fb15f7546ed6ddb600da2d02a05abd7300e914d9b6f243fd58c724500",
+      "property_provenance": [
+        "A09-S05-P1",
+        "A09-S05-P2",
+        "A09-S05-P3",
+        "A09-S05-P5"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_09_renovacion_y_desplazamiento/submissions/submission_05.pdf"
+      ],
+      "stage": "P06"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p06/1.0.0",
+      "canonical_contract": "EvidenceMapRequest",
+      "fixture_ref": "benchmark-fixture://p06/act_09_renovacion_y_desplazamiento/submission_06",
+      "input_hash": "sha256:8d274087a9368c678b79be8858d05705884e14d8248caa0df4d0c52773465320",
+      "property_provenance": [
+        "A09-S06-P1",
+        "A09-S06-P4"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_09_renovacion_y_desplazamiento/submissions/submission_06.md"
+      ],
+      "stage": "P06"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p06/1.0.0",
+      "canonical_contract": "EvidenceMapRequest",
+      "fixture_ref": "benchmark-fixture://p06/act_10_experimento_onboarding/submission_01",
+      "input_hash": "sha256:0081db47d179f64683ef9c8db449a66253d1c7041f423d5e95b0f424df08efd6",
+      "property_provenance": [
+        "A10-S01-P1",
+        "A10-S01-P2"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_10_experimento_onboarding/submissions/submission_01_artifact_01.txt",
+        "activity_10_experimento_onboarding/submissions/submission_01_artifact_02.md"
+      ],
+      "stage": "P06"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p06/1.0.0",
+      "canonical_contract": "EvidenceMapRequest",
+      "fixture_ref": "benchmark-fixture://p06/act_10_experimento_onboarding/submission_02",
+      "input_hash": "sha256:a1320de27bbbd05db0ee0f28e1f83202a950e320a05c88fdead7c14a5718e5fb",
+      "property_provenance": [
+        "A10-S02-P1",
+        "A10-S02-P2"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_10_experimento_onboarding/submissions/submission_02_artifact_01.txt",
+        "activity_10_experimento_onboarding/submissions/submission_02_artifact_02.md"
+      ],
+      "stage": "P06"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p06/1.0.0",
+      "canonical_contract": "EvidenceMapRequest",
+      "fixture_ref": "benchmark-fixture://p06/act_10_experimento_onboarding/submission_03",
+      "input_hash": "sha256:e93f3fcbe9d24b88fc5e4387948b14ba0a5a23f10f61b04e6427d764880b8011",
+      "property_provenance": [
+        "A10-S03-P1",
+        "A10-S03-P2"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_10_experimento_onboarding/submissions/submission_03_artifact_01.txt",
+        "activity_10_experimento_onboarding/submissions/submission_03_artifact_02.pdf"
+      ],
+      "stage": "P06"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p06/1.0.0",
+      "canonical_contract": "EvidenceMapRequest",
+      "fixture_ref": "benchmark-fixture://p06/act_10_experimento_onboarding/submission_04",
+      "input_hash": "sha256:d42e95ee638ff9c232edcdeca0472cfa8fe00de7882174b5898db028a95bf414",
+      "property_provenance": [
+        "A10-S04-P1",
+        "A10-S04-P2",
+        "A10-S04-P3"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_10_experimento_onboarding/submissions/submission_04_artifact_01.txt",
+        "activity_10_experimento_onboarding/submissions/submission_04_artifact_02.pdf"
+      ],
+      "stage": "P06"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p06/1.0.0",
+      "canonical_contract": "EvidenceMapRequest",
+      "fixture_ref": "benchmark-fixture://p06/act_10_experimento_onboarding/submission_05",
+      "input_hash": "sha256:0bc35696599c930840810371f02523e4461cb49598f0276c4aabbb04ee9850c6",
+      "property_provenance": [
+        "A10-S05-P1"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_10_experimento_onboarding/submissions/submission_05_artifact_01.txt",
+        "activity_10_experimento_onboarding/submissions/submission_05_artifact_02.pdf"
+      ],
+      "stage": "P06"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p06/1.0.0",
+      "canonical_contract": "EvidenceMapRequest",
+      "fixture_ref": "benchmark-fixture://p06/act_10_experimento_onboarding/submission_06",
+      "input_hash": "sha256:b30951edcec4138c82acc338d71c13470304aeffb46beb97bd4e70337ca99b87",
+      "property_provenance": [
+        "A10-S06-P1",
+        "A10-S06-P2",
+        "A10-S06-P3"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_10_experimento_onboarding/submissions/submission_06_artifact_01.txt",
+        "activity_10_experimento_onboarding/submissions/submission_06_artifact_02.pdf"
+      ],
+      "stage": "P06"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p06/1.0.0",
+      "canonical_contract": "EvidenceMapRequest",
+      "fixture_ref": "benchmark-fixture://p06/act_11_duplicados_en_pagos/submission_01",
+      "input_hash": "sha256:1fe857db5c117d97c6391b16c80544f8ecd7e71db04f8deb8451d915e2fdc5aa",
+      "property_provenance": [
+        "A11-S01-P1",
+        "A11-S01-P2",
+        "A11-S01-P3"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_11_duplicados_en_pagos/submissions/submission_01_artifact_01.md",
+        "activity_11_duplicados_en_pagos/submissions/submission_01_artifact_02.md",
+        "activity_11_duplicados_en_pagos/submissions/submission_01_artifact_03.md"
+      ],
+      "stage": "P06"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p06/1.0.0",
+      "canonical_contract": "EvidenceMapRequest",
+      "fixture_ref": "benchmark-fixture://p06/act_11_duplicados_en_pagos/submission_02",
+      "input_hash": "sha256:9bc3c03717b5661ac51494ab7b71dba9fc93a4549003b440f5a05f0db736b75d",
+      "property_provenance": [
+        "A11-S02-P1"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_11_duplicados_en_pagos/submissions/submission_02_artifact_01.md",
+        "activity_11_duplicados_en_pagos/submissions/submission_02_artifact_02.md",
+        "activity_11_duplicados_en_pagos/submissions/submission_02_artifact_03.md"
+      ],
+      "stage": "P06"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p06/1.0.0",
+      "canonical_contract": "EvidenceMapRequest",
+      "fixture_ref": "benchmark-fixture://p06/act_11_duplicados_en_pagos/submission_03",
+      "input_hash": "sha256:c41148cee483cf0d28db68eedeaaafb09e42d4936a5aa165435dc7fb83aa494a",
+      "property_provenance": [
+        "A11-S03-P1",
+        "A11-S03-P2",
+        "A11-S03-P3"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_11_duplicados_en_pagos/submissions/submission_03_artifact_01.md",
+        "activity_11_duplicados_en_pagos/submissions/submission_03_artifact_02.md",
+        "activity_11_duplicados_en_pagos/submissions/submission_03_artifact_03.md"
+      ],
+      "stage": "P06"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p06/1.0.0",
+      "canonical_contract": "EvidenceMapRequest",
+      "fixture_ref": "benchmark-fixture://p06/act_11_duplicados_en_pagos/submission_04",
+      "input_hash": "sha256:2919c88e60ab583fd120f46ce11500a51c235b1863368edbe56ad9910e674c33",
+      "property_provenance": [
+        "A11-S04-P1",
+        "A11-S04-P2",
+        "A11-S04-P3"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_11_duplicados_en_pagos/submissions/submission_04_artifact_01.md",
+        "activity_11_duplicados_en_pagos/submissions/submission_04_artifact_02.md",
+        "activity_11_duplicados_en_pagos/submissions/submission_04_artifact_03.md"
+      ],
+      "stage": "P06"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p06/1.0.0",
+      "canonical_contract": "EvidenceMapRequest",
+      "fixture_ref": "benchmark-fixture://p06/act_11_duplicados_en_pagos/submission_05",
+      "input_hash": "sha256:2512f2276a09a77b87f973fd6df048eec2678e6c7979477217feb8b94bcb4e79",
+      "property_provenance": [
+        "A11-ACT-P6"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_11_duplicados_en_pagos/submissions/submission_05_artifact_01.md",
+        "activity_11_duplicados_en_pagos/submissions/submission_05_artifact_02.md",
+        "activity_11_duplicados_en_pagos/submissions/submission_05_artifact_03.md"
+      ],
+      "stage": "P06"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p06/1.0.0",
+      "canonical_contract": "EvidenceMapRequest",
+      "fixture_ref": "benchmark-fixture://p06/act_11_duplicados_en_pagos/submission_06",
+      "input_hash": "sha256:d383013b584711bc7e311813ceba20b2dda6f08df16054edf737e299e9ed0ae1",
+      "property_provenance": [
+        "A11-S06-P1"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_11_duplicados_en_pagos/submissions/submission_06_artifact_01.md",
+        "activity_11_duplicados_en_pagos/submissions/submission_06_artifact_02.md",
+        "activity_11_duplicados_en_pagos/submissions/submission_06_artifact_03.md"
+      ],
+      "stage": "P06"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p06/1.0.0",
+      "canonical_contract": "EvidenceMapRequest",
+      "fixture_ref": "benchmark-fixture://p06/act_12_clinica_movil/submission_01",
+      "input_hash": "sha256:0b1ef94a070be754c44cf016c3e930680d836535e5ffbb755e28ed11f1d450c6",
+      "property_provenance": [
+        "A12-S01-P1",
+        "A12-S01-P2"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_12_clinica_movil/submissions/submission_01_artifact_01.txt",
+        "activity_12_clinica_movil/submissions/submission_01_artifact_02.md"
+      ],
+      "stage": "P06"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p06/1.0.0",
+      "canonical_contract": "EvidenceMapRequest",
+      "fixture_ref": "benchmark-fixture://p06/act_12_clinica_movil/submission_02",
+      "input_hash": "sha256:b819c466f15400c155090a5bfed52d2b5b95e41840c872ca11d35a8dfedef15f",
+      "property_provenance": [
+        "A12-S02-P1",
+        "A12-S02-P2"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_12_clinica_movil/submissions/submission_02.md"
+      ],
+      "stage": "P06"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p06/1.0.0",
+      "canonical_contract": "EvidenceMapRequest",
+      "fixture_ref": "benchmark-fixture://p06/act_12_clinica_movil/submission_03",
+      "input_hash": "sha256:26d7ee2a65349bf7a6a2db36e63fb5e7ce3ff8e2086be0f66997db262db9009a",
+      "property_provenance": [
+        "A12-S03-P1",
+        "A12-S03-P2",
+        "A12-S03-P4"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_12_clinica_movil/submissions/submission_03_artifact_01.txt",
+        "activity_12_clinica_movil/submissions/submission_03_artifact_02.pdf"
+      ],
+      "stage": "P06"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p06/1.0.0",
+      "canonical_contract": "EvidenceMapRequest",
+      "fixture_ref": "benchmark-fixture://p06/act_12_clinica_movil/submission_04",
+      "input_hash": "sha256:369fd4228bd81eb060549044b64862fa13271d87e285815023c3b7f47e45e857",
+      "property_provenance": [
+        "A12-S04-P1",
+        "A12-S04-P2",
+        "A12-S04-P3"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_12_clinica_movil/submissions/submission_04_artifact_01.txt",
+        "activity_12_clinica_movil/submissions/submission_04_artifact_02.pdf"
+      ],
+      "stage": "P06"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p06/1.0.0",
+      "canonical_contract": "EvidenceMapRequest",
+      "fixture_ref": "benchmark-fixture://p06/act_12_clinica_movil/submission_05",
+      "input_hash": "sha256:1f175fc0f961d816ad6f3af79dcf42174576de92cc78e82d7ffc1b97bca30693",
+      "property_provenance": [
+        "A12-S05-P1",
+        "A12-S05-P2",
+        "A12-S05-P3"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_12_clinica_movil/submissions/submission_05_artifact_01.txt",
+        "activity_12_clinica_movil/submissions/submission_05_artifact_02.pdf"
+      ],
+      "stage": "P06"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p07/1.0.0",
+      "canonical_contract": "QuestionBuildRequest",
+      "fixture_ref": "benchmark-fixture://p07/act_01_luz_y_plantines/submission_01",
+      "input_hash": "sha256:076e980f8666c10d69a83dfb1b2de1fe020a5bbf0f2b9c9040dc3d5af86c5e7b",
+      "property_provenance": [
+        "A01-S01-P1",
+        "A01-S01-P2",
+        "A01-ACT-FINAL-LEAKAGE"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_01_luz_y_plantines/submissions/submission_01.txt"
+      ],
+      "stage": "P07"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p07/1.0.0",
+      "canonical_contract": "QuestionBuildRequest",
+      "fixture_ref": "benchmark-fixture://p07/act_01_luz_y_plantines/submission_02",
+      "input_hash": "sha256:cbf78e81803842fb59c14f7071a051a6c6748ecaf4f7e6ed8084b32d15ac7dba",
+      "property_provenance": [
+        "A01-S02-P2"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_01_luz_y_plantines/submissions/submission_02.md"
+      ],
+      "stage": "P07"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p07/1.0.0",
+      "canonical_contract": "QuestionBuildRequest",
+      "fixture_ref": "benchmark-fixture://p07/act_01_luz_y_plantines/submission_03",
+      "input_hash": "sha256:db2b55262bf2dd11b7f1ff38a3267fd72ca2d28af83cc214f5691849c5b46ae0",
+      "property_provenance": [
+        "A01-S03-P3",
+        "A01-S03-P4"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_01_luz_y_plantines/submissions/submission_03.txt"
+      ],
+      "stage": "P07"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p07/1.0.0",
+      "canonical_contract": "QuestionBuildRequest",
+      "fixture_ref": "benchmark-fixture://p07/act_01_luz_y_plantines/submission_04",
+      "input_hash": "sha256:b040ee2b6afb1e4b5fb714a068f6404795ac31e82b269279716468c87b876390",
+      "property_provenance": [
+        "A01-S04-P3"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_01_luz_y_plantines/submissions/submission_04.md"
+      ],
+      "stage": "P07"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p07/1.0.0",
+      "canonical_contract": "QuestionBuildRequest",
+      "fixture_ref": "benchmark-fixture://p07/act_01_luz_y_plantines/submission_05",
+      "input_hash": "sha256:efafab10fbd82507eaac8b4ce178942689958bf54de3ee2ca05c425c685b5b9b",
+      "property_provenance": [
+        "A01-S05-P2",
+        "A01-S05-P3"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_01_luz_y_plantines/submissions/submission_05.pdf"
+      ],
+      "stage": "P07"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p07/1.0.0",
+      "canonical_contract": "QuestionBuildRequest",
+      "fixture_ref": "benchmark-fixture://p07/act_01_luz_y_plantines/submission_06",
+      "input_hash": "sha256:fe0cfa300b74f1c1013c34270cbdfc30c038ddf997615e3b36f2784f441dabfa",
+      "property_provenance": [
+        "A01-S06-P2",
+        "A01-S06-P3",
+        "A01-S06-P4"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_01_luz_y_plantines/submissions/submission_06.pdf"
+      ],
+      "stage": "P07"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p07/1.0.0",
+      "canonical_contract": "QuestionBuildRequest",
+      "fixture_ref": "benchmark-fixture://p07/act_02_voz_en_un_microcuento/submission_01",
+      "input_hash": "sha256:0e0eb00f4ad6292eff200278135237581729efb1e409f5777b5f7513dca57bd7",
+      "property_provenance": [
+        "A02-S01-P2",
+        "A02-S01-P3"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_02_voz_en_un_microcuento/submissions/submission_01.txt"
+      ],
+      "stage": "P07"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p07/1.0.0",
+      "canonical_contract": "QuestionBuildRequest",
+      "fixture_ref": "benchmark-fixture://p07/act_02_voz_en_un_microcuento/submission_02",
+      "input_hash": "sha256:c7e248052c4bcdbc3294a61e18bf3ac10624b2dfc0efca8b0b35f952e01d89ff",
+      "property_provenance": [
+        "A02-S02-P1",
+        "A02-S02-P2"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_02_voz_en_un_microcuento/submissions/submission_02.txt"
+      ],
+      "stage": "P07"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p07/1.0.0",
+      "canonical_contract": "QuestionBuildRequest",
+      "fixture_ref": "benchmark-fixture://p07/act_02_voz_en_un_microcuento/submission_03",
+      "input_hash": "sha256:17330cc09bd1bd17c3488ff06d8485b76273e8a6b061462ce79b28d661bed86c",
+      "property_provenance": [
+        "A02-ACT-FINAL-LEAKAGE",
+        "A02-ACT-P4"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_02_voz_en_un_microcuento/submissions/submission_03.md"
+      ],
+      "stage": "P07"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p07/1.0.0",
+      "canonical_contract": "QuestionBuildRequest",
+      "fixture_ref": "benchmark-fixture://p07/act_02_voz_en_un_microcuento/submission_04",
+      "input_hash": "sha256:d0a28ea47f7ace1b570511a0f3bb1a50c6f2b4f323ed670bb43fe89a151a7051",
+      "property_provenance": [
+        "A02-S04-P2",
+        "A02-S04-P3"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_02_voz_en_un_microcuento/submissions/submission_04.pdf"
+      ],
+      "stage": "P07"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p07/1.0.0",
+      "canonical_contract": "QuestionBuildRequest",
+      "fixture_ref": "benchmark-fixture://p07/act_02_voz_en_un_microcuento/submission_05",
+      "input_hash": "sha256:1bbfded49ba6aefff10c959575574ba3a48cf8065030545de65d3cd27316ba9e",
+      "property_provenance": [
+        "A02-S05-P2",
+        "A02-S05-P3"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_02_voz_en_un_microcuento/submissions/submission_05.pdf"
+      ],
+      "stage": "P07"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p07/1.0.0",
+      "canonical_contract": "QuestionBuildRequest",
+      "fixture_ref": "benchmark-fixture://p07/act_02_voz_en_un_microcuento/submission_06",
+      "input_hash": "sha256:1db5fca306eda2578e8a1df22797be2f72fc5bc1fcf8b77c459e3f83063fcc3c",
+      "property_provenance": [
+        "A02-S06-P2"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_02_voz_en_un_microcuento/submissions/submission_06.md"
+      ],
+      "stage": "P07"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p07/1.0.0",
+      "canonical_contract": "QuestionBuildRequest",
+      "fixture_ref": "benchmark-fixture://p07/act_03_puesto_de_limonada/submission_01",
+      "input_hash": "sha256:f6fd41fa2ca9cd770fde49803e989dd3369f99ee26b26be8a26993949803645e",
+      "property_provenance": [
+        "A03-S01-P3",
+        "A03-ACT-FINAL-LEAKAGE"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_03_puesto_de_limonada/submissions/submission_01.md"
+      ],
+      "stage": "P07"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p07/1.0.0",
+      "canonical_contract": "QuestionBuildRequest",
+      "fixture_ref": "benchmark-fixture://p07/act_03_puesto_de_limonada/submission_02",
+      "input_hash": "sha256:7846c371c8a7391f2bec73c6d1daa36573aa752e2ea6d327af3dbf2f77976a15",
+      "property_provenance": [
+        "A03-S02-P2"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_03_puesto_de_limonada/submissions/submission_02.md"
+      ],
+      "stage": "P07"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p07/1.0.0",
+      "canonical_contract": "QuestionBuildRequest",
+      "fixture_ref": "benchmark-fixture://p07/act_03_puesto_de_limonada/submission_03",
+      "input_hash": "sha256:ef152e7c87e8ae0ef8f3db3da1dd8ee9fd39d34baac2d8c9ca0f09605abd9efc",
+      "property_provenance": [
+        "A03-S03-P2"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_03_puesto_de_limonada/submissions/submission_03.txt"
+      ],
+      "stage": "P07"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p07/1.0.0",
+      "canonical_contract": "QuestionBuildRequest",
+      "fixture_ref": "benchmark-fixture://p07/act_03_puesto_de_limonada/submission_04",
+      "input_hash": "sha256:c2b378e7fbab051529505fd834b1fd8125f3d3600f4140b52110661f69b555e6",
+      "property_provenance": [
+        "A03-S04-P2",
+        "A03-S04-P4"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_03_puesto_de_limonada/submissions/submission_04.pdf"
+      ],
+      "stage": "P07"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p07/1.0.0",
+      "canonical_contract": "QuestionBuildRequest",
+      "fixture_ref": "benchmark-fixture://p07/act_03_puesto_de_limonada/submission_05",
+      "input_hash": "sha256:00351845c5dd57df5ae71a9e13203c66ee284d821a1a3d366ef13632fde543a8",
+      "property_provenance": [
+        "A03-S05-P2",
+        "A03-S05-P3",
+        "A03-S05-P4"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_03_puesto_de_limonada/submissions/submission_05.pdf"
+      ],
+      "stage": "P07"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p07/1.0.0",
+      "canonical_contract": "QuestionBuildRequest",
+      "fixture_ref": "benchmark-fixture://p07/act_03_puesto_de_limonada/submission_06",
+      "input_hash": "sha256:21a0c6c94308d74623f4629f926eb9964141689b752428652d3d2f1bda745aae",
+      "property_provenance": [
+        "A03-S06-P3",
+        "A03-S06-P4",
+        "A03-S06-P5"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_03_puesto_de_limonada/submissions/submission_06.txt"
+      ],
+      "stage": "P07"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p07/1.0.0",
+      "canonical_contract": "QuestionBuildRequest",
+      "fixture_ref": "benchmark-fixture://p07/act_04_asignador_de_turnos/submission_01",
+      "input_hash": "sha256:0b622f1c3c533b32d3c4b5093043fdaded6914a4bab2ce59fb67cfc885c7d568",
+      "property_provenance": [
+        "A04-S01-P4",
+        "A04-ACT-P4",
+        "A04-ACT-P6"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_04_asignador_de_turnos/submissions/submission_01_artifact_01.md",
+        "activity_04_asignador_de_turnos/submissions/submission_01_artifact_02.txt"
+      ],
+      "stage": "P07"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p07/1.0.0",
+      "canonical_contract": "QuestionBuildRequest",
+      "fixture_ref": "benchmark-fixture://p07/act_04_asignador_de_turnos/submission_02",
+      "input_hash": "sha256:aa83bedf0609c7045d90da197be62b1e939b4cb6bff66ff592091585e84d72c0",
+      "property_provenance": [
+        "A04-S02-P2",
+        "A04-S02-P3"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_04_asignador_de_turnos/submissions/submission_02_artifact_01.md",
+        "activity_04_asignador_de_turnos/submissions/submission_02_artifact_02.txt"
+      ],
+      "stage": "P07"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p07/1.0.0",
+      "canonical_contract": "QuestionBuildRequest",
+      "fixture_ref": "benchmark-fixture://p07/act_04_asignador_de_turnos/submission_03",
+      "input_hash": "sha256:1d17e8578f62cc6c3ad1559a65479d64bab80d3c7598da2bf2e37a5d96bb95d6",
+      "property_provenance": [
+        "A04-S03-P2",
+        "A04-S03-P3"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_04_asignador_de_turnos/submissions/submission_03.md"
+      ],
+      "stage": "P07"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p07/1.0.0",
+      "canonical_contract": "QuestionBuildRequest",
+      "fixture_ref": "benchmark-fixture://p07/act_04_asignador_de_turnos/submission_04",
+      "input_hash": "sha256:8adcfd53876e5a754ab91aba76d50beffff1e0205c12263955c3f967502d4b33",
+      "property_provenance": [
+        "A04-S04-P1",
+        "A04-S04-P2",
+        "A04-S04-P3"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_04_asignador_de_turnos/submissions/submission_04_artifact_01.md",
+        "activity_04_asignador_de_turnos/submissions/submission_04_artifact_02.txt"
+      ],
+      "stage": "P07"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p07/1.0.0",
+      "canonical_contract": "QuestionBuildRequest",
+      "fixture_ref": "benchmark-fixture://p07/act_04_asignador_de_turnos/submission_05",
+      "input_hash": "sha256:e4ffa312dad1330d4ec8e08dc9aa3f052b4b095f1756280eba2619e7b67d357d",
+      "property_provenance": [
+        "A04-S05-P2",
+        "A04-S05-P3",
+        "A04-S05-P4"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_04_asignador_de_turnos/submissions/submission_05_artifact_01.md",
+        "activity_04_asignador_de_turnos/submissions/submission_05_artifact_02.txt"
+      ],
+      "stage": "P07"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p07/1.0.0",
+      "canonical_contract": "QuestionBuildRequest",
+      "fixture_ref": "benchmark-fixture://p07/act_04_asignador_de_turnos/submission_06",
+      "input_hash": "sha256:996ad7c064965d4fac689fe11b147fb872ce83e594230af3d253a4d5e0d0eb76",
+      "property_provenance": [
+        "A04-S06-FINAL-XAR",
+        "A04-S06-P3",
+        "A04-S06-P5"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_04_asignador_de_turnos/submissions/submission_06_artifact_01.md",
+        "activity_04_asignador_de_turnos/submissions/submission_06_artifact_02.txt"
+      ],
+      "stage": "P07"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p07/1.0.0",
+      "canonical_contract": "QuestionBuildRequest",
+      "fixture_ref": "benchmark-fixture://p07/act_05_visitas_a_bibliotecas/submission_01",
+      "input_hash": "sha256:771f9538fe3b0f46deb3a5903a1731e329197feab8b25e28d1b821cd3d46f974",
+      "property_provenance": [
+        "A05-S01-P2",
+        "A05-ACT-FINAL-LEAKAGE",
+        "A05-ACT-P5"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_05_visitas_a_bibliotecas/submissions/submission_01.md"
+      ],
+      "stage": "P07"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p07/1.0.0",
+      "canonical_contract": "QuestionBuildRequest",
+      "fixture_ref": "benchmark-fixture://p07/act_05_visitas_a_bibliotecas/submission_02",
+      "input_hash": "sha256:430bf0572c053333712086020412010b64ec72e9d2e36a4e515fe7d8f3c3695f",
+      "property_provenance": [
+        "A05-S02-P3",
+        "A05-S02-P4"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_05_visitas_a_bibliotecas/submissions/submission_02.pdf"
+      ],
+      "stage": "P07"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p07/1.0.0",
+      "canonical_contract": "QuestionBuildRequest",
+      "fixture_ref": "benchmark-fixture://p07/act_05_visitas_a_bibliotecas/submission_03",
+      "input_hash": "sha256:cec792bff3f62b6f9b431ce6dee75b370a54d30a201946a22481423949926841",
+      "property_provenance": [
+        "A05-S03-P2",
+        "A05-S03-P3",
+        "A05-S03-P4",
+        "A05-S03-P5"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_05_visitas_a_bibliotecas/submissions/submission_03.md"
+      ],
+      "stage": "P07"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p07/1.0.0",
+      "canonical_contract": "QuestionBuildRequest",
+      "fixture_ref": "benchmark-fixture://p07/act_05_visitas_a_bibliotecas/submission_04",
+      "input_hash": "sha256:c2ce447b2667f5c6ba2220c6018010da93e25b121127664d5d88a6c9570f7cb4",
+      "property_provenance": [
+        "A05-S04-P2",
+        "A05-S04-P3",
+        "A05-S04-P4"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_05_visitas_a_bibliotecas/submissions/submission_04.pdf"
+      ],
+      "stage": "P07"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p07/1.0.0",
+      "canonical_contract": "QuestionBuildRequest",
+      "fixture_ref": "benchmark-fixture://p07/act_05_visitas_a_bibliotecas/submission_05",
+      "input_hash": "sha256:fde8f37a578f0a8b52cd5d69527c2904e257bc8b50917f37430ffac1214ce88a",
+      "property_provenance": [
+        "A05-S05-P1",
+        "A05-S05-P2"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_05_visitas_a_bibliotecas/submissions/submission_05.pdf"
+      ],
+      "stage": "P07"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p07/1.0.0",
+      "canonical_contract": "QuestionBuildRequest",
+      "fixture_ref": "benchmark-fixture://p07/act_05_visitas_a_bibliotecas/submission_06",
+      "input_hash": "sha256:d290f3da3006106aabbcbf570a42401f07c963fb916ae6605941f5a9ac88c3f1",
+      "property_provenance": [
+        "A05-S06-P2",
+        "A05-S06-P3"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_05_visitas_a_bibliotecas/submissions/submission_06.txt"
+      ],
+      "stage": "P07"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p07/1.0.0",
+      "canonical_contract": "QuestionBuildRequest",
+      "fixture_ref": "benchmark-fixture://p07/act_06_movilidad_estudiantil/submission_01",
+      "input_hash": "sha256:dba90b82bb1971382d86a76694acb9534f204beee5024c33c45ce3a2351fa6d7",
+      "property_provenance": [
+        "A06-S01-P4",
+        "A06-S01-P5",
+        "A06-ACT-FINAL-LEAKAGE"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_06_movilidad_estudiantil/submissions/submission_01.pdf"
+      ],
+      "stage": "P07"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p07/1.0.0",
+      "canonical_contract": "QuestionBuildRequest",
+      "fixture_ref": "benchmark-fixture://p07/act_06_movilidad_estudiantil/submission_02",
+      "input_hash": "sha256:49c1066ae2841d8f4aed8ab34598ed43dbca8d657f4725c5be64dbe61131bec1",
+      "property_provenance": [
+        "A06-S02-P3",
+        "A06-S02-P4"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_06_movilidad_estudiantil/submissions/submission_02.md"
+      ],
+      "stage": "P07"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p07/1.0.0",
+      "canonical_contract": "QuestionBuildRequest",
+      "fixture_ref": "benchmark-fixture://p07/act_06_movilidad_estudiantil/submission_03",
+      "input_hash": "sha256:7e9421c4aecd9532bc88ef6d086e4e6cc7b2c5ae0fde24fb535059455dd37364",
+      "property_provenance": [
+        "A06-S03-P2",
+        "A06-S03-P3"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_06_movilidad_estudiantil/submissions/submission_03.md"
+      ],
+      "stage": "P07"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p07/1.0.0",
+      "canonical_contract": "QuestionBuildRequest",
+      "fixture_ref": "benchmark-fixture://p07/act_06_movilidad_estudiantil/submission_04",
+      "input_hash": "sha256:1333536d924f2665341221bdbbc46628a02553123f770dcedc2e5abcdf54c4fc",
+      "property_provenance": [
+        "A06-S04-P4"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_06_movilidad_estudiantil/submissions/submission_04.txt"
+      ],
+      "stage": "P07"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p07/1.0.0",
+      "canonical_contract": "QuestionBuildRequest",
+      "fixture_ref": "benchmark-fixture://p07/act_06_movilidad_estudiantil/submission_05",
+      "input_hash": "sha256:447acac0f8d2e070f804c930e7199cd759ec40dfc8ae6605c4d3ef97460b39d0",
+      "property_provenance": [
+        "A06-S05-P2",
+        "A06-S05-P4"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_06_movilidad_estudiantil/submissions/submission_05.pdf"
+      ],
+      "stage": "P07"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p07/1.0.0",
+      "canonical_contract": "QuestionBuildRequest",
+      "fixture_ref": "benchmark-fixture://p07/act_06_movilidad_estudiantil/submission_06",
+      "input_hash": "sha256:bd83ad39aed8248af3b14649608a7d8b44a792906bfd06e811e80d823e7c555a",
+      "property_provenance": [
+        "A06-S06-P1",
+        "A06-S06-P2"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_06_movilidad_estudiantil/submissions/submission_06.txt"
+      ],
+      "stage": "P07"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p07/1.0.0",
+      "canonical_contract": "QuestionBuildRequest",
+      "fixture_ref": "benchmark-fixture://p07/act_07_aislamiento_termico/submission_01",
+      "input_hash": "sha256:8e6bc7841f55f39bf80c348e0ab1857fdfc032b498477dc5eaf07a0f10f1a9ea",
+      "property_provenance": [
+        "A07-S01-P1",
+        "A07-ACT-FINAL-LEAKAGE",
+        "A07-ACT-P5"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_07_aislamiento_termico/submissions/submission_01_artifact_01.txt",
+        "activity_07_aislamiento_termico/submissions/submission_01_artifact_02.md"
+      ],
+      "stage": "P07"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p07/1.0.0",
+      "canonical_contract": "QuestionBuildRequest",
+      "fixture_ref": "benchmark-fixture://p07/act_07_aislamiento_termico/submission_02",
+      "input_hash": "sha256:f0da6f1ce94faa202456a540e3f3e5374ad7aee04b3ea9f791456291f6ec2392",
+      "property_provenance": [
+        "A07-S02-P1",
+        "A07-S02-P4"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_07_aislamiento_termico/submissions/submission_02.md"
+      ],
+      "stage": "P07"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p07/1.0.0",
+      "canonical_contract": "QuestionBuildRequest",
+      "fixture_ref": "benchmark-fixture://p07/act_07_aislamiento_termico/submission_03",
+      "input_hash": "sha256:328e4bf28210b0bef68d8ea1858ab96dda1114a3c8d4259ce906a2fc101df426",
+      "property_provenance": [
+        "A07-S03-P2",
+        "A07-S03-P3"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_07_aislamiento_termico/submissions/submission_03_artifact_01.txt",
+        "activity_07_aislamiento_termico/submissions/submission_03_artifact_02.md"
+      ],
+      "stage": "P07"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p07/1.0.0",
+      "canonical_contract": "QuestionBuildRequest",
+      "fixture_ref": "benchmark-fixture://p07/act_07_aislamiento_termico/submission_04",
+      "input_hash": "sha256:9a798730d04e5840c9eaaea2f4e2c2cc9ca5dd343625d255e4257d5171e37c99",
+      "property_provenance": [
+        "A07-S04-P3",
+        "A07-S04-P4"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_07_aislamiento_termico/submissions/submission_04_artifact_01.txt",
+        "activity_07_aislamiento_termico/submissions/submission_04_artifact_02.pdf"
+      ],
+      "stage": "P07"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p07/1.0.0",
+      "canonical_contract": "QuestionBuildRequest",
+      "fixture_ref": "benchmark-fixture://p07/act_07_aislamiento_termico/submission_05",
+      "input_hash": "sha256:657243fb8d19af984cbf84b5ebadea4243ce9de275328ac5972fe310f263fdf9",
+      "property_provenance": [
+        "A07-S05-P3",
+        "A07-S05-P4",
+        "A07-S05-P5"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_07_aislamiento_termico/submissions/submission_05_artifact_01.txt",
+        "activity_07_aislamiento_termico/submissions/submission_05_artifact_02.pdf"
+      ],
+      "stage": "P07"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p07/1.0.0",
+      "canonical_contract": "QuestionBuildRequest",
+      "fixture_ref": "benchmark-fixture://p07/act_07_aislamiento_termico/submission_06",
+      "input_hash": "sha256:9b099f3d13e1f9fe45f1fd5c733dca474d54ef26ce9d6a0d472b81a59428fc91",
+      "property_provenance": [
+        "A07-S06-FINAL-RECON",
+        "A07-S06-P3",
+        "A07-S06-P4"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_07_aislamiento_termico/submissions/submission_06_artifact_01.txt",
+        "activity_07_aislamiento_termico/submissions/submission_06_artifact_02.pdf"
+      ],
+      "stage": "P07"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p07/1.0.0",
+      "canonical_contract": "QuestionBuildRequest",
+      "fixture_ref": "benchmark-fixture://p07/act_08_triage_de_logs/submission_01",
+      "input_hash": "sha256:ad31ae3e2cbb17b0b982024fd65e872a6a48f0c91618557a4a645872096929ca",
+      "property_provenance": [
+        "A08-S01-FINAL-XAR",
+        "A08-S01-P4",
+        "A08-ACT-P4",
+        "A08-ACT-P5"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_08_triage_de_logs/submissions/submission_01_artifact_01.txt",
+        "activity_08_triage_de_logs/submissions/submission_01_artifact_02.md"
+      ],
+      "stage": "P07"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p07/1.0.0",
+      "canonical_contract": "QuestionBuildRequest",
+      "fixture_ref": "benchmark-fixture://p07/act_08_triage_de_logs/submission_02",
+      "input_hash": "sha256:b6a6596557c4b9663e1d98a2af85f8c7a96f3abc9a2bad5fd4056f3e3f66e5f2",
+      "property_provenance": [
+        "A08-S02-P1",
+        "A08-S02-P2",
+        "A08-S02-P3"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_08_triage_de_logs/submissions/submission_02_artifact_01.txt",
+        "activity_08_triage_de_logs/submissions/submission_02_artifact_02.md"
+      ],
+      "stage": "P07"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p07/1.0.0",
+      "canonical_contract": "QuestionBuildRequest",
+      "fixture_ref": "benchmark-fixture://p07/act_08_triage_de_logs/submission_03",
+      "input_hash": "sha256:35d28e0a99476fd4affb463e9a7910d5651e24e4620855935d9e0ea2373be3f4",
+      "property_provenance": [
+        "A08-S03-P3",
+        "A08-S03-P4"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_08_triage_de_logs/submissions/submission_03_artifact_01.txt",
+        "activity_08_triage_de_logs/submissions/submission_03_artifact_02.md"
+      ],
+      "stage": "P07"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p07/1.0.0",
+      "canonical_contract": "QuestionBuildRequest",
+      "fixture_ref": "benchmark-fixture://p07/act_08_triage_de_logs/submission_04",
+      "input_hash": "sha256:01bada03a61d2c126411065742e4778e9762cfac91289fcdb0e1500335c1c806",
+      "property_provenance": [
+        "A08-S04-P3"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_08_triage_de_logs/submissions/submission_04_artifact_01.txt",
+        "activity_08_triage_de_logs/submissions/submission_04_artifact_02.md"
+      ],
+      "stage": "P07"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p07/1.0.0",
+      "canonical_contract": "QuestionBuildRequest",
+      "fixture_ref": "benchmark-fixture://p07/act_08_triage_de_logs/submission_05",
+      "input_hash": "sha256:eaddd400a414e92105ab28baa8f5781d44d9b03e7e89cd75fbbf7cf6e55b5a3c",
+      "property_provenance": [
+        "A08-S05-P3",
+        "A08-S05-P4"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_08_triage_de_logs/submissions/submission_05_artifact_01.txt",
+        "activity_08_triage_de_logs/submissions/submission_05_artifact_02.md"
+      ],
+      "stage": "P07"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p07/1.0.0",
+      "canonical_contract": "QuestionBuildRequest",
+      "fixture_ref": "benchmark-fixture://p07/act_08_triage_de_logs/submission_06",
+      "input_hash": "sha256:227f96b65e9941b07e950803620827727bcacd8b85bf0fa3891e3a38bb6916a7",
+      "property_provenance": [
+        "A08-S06-P2",
+        "A08-S06-P3"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_08_triage_de_logs/submissions/submission_06.md"
+      ],
+      "stage": "P07"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p07/1.0.0",
+      "canonical_contract": "QuestionBuildRequest",
+      "fixture_ref": "benchmark-fixture://p07/act_09_renovacion_y_desplazamiento/submission_01",
+      "input_hash": "sha256:bbc50d0cf43b7c63fd389aabf7a63bdfa5526d3705fa8cf1903de58be065acb5",
+      "property_provenance": [
+        "A09-S01-P4",
+        "A09-ACT-FINAL-LEAKAGE",
+        "A09-ACT-P5"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_09_renovacion_y_desplazamiento/submissions/submission_01.pdf"
+      ],
+      "stage": "P07"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p07/1.0.0",
+      "canonical_contract": "QuestionBuildRequest",
+      "fixture_ref": "benchmark-fixture://p07/act_09_renovacion_y_desplazamiento/submission_02",
+      "input_hash": "sha256:5ee2b8a871d953737c4a35ee86831d9d647f3e813f742f4640ba893e1ce57d16",
+      "property_provenance": [
+        "A09-S02-P2",
+        "A09-S02-P4"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_09_renovacion_y_desplazamiento/submissions/submission_02.pdf"
+      ],
+      "stage": "P07"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p07/1.0.0",
+      "canonical_contract": "QuestionBuildRequest",
+      "fixture_ref": "benchmark-fixture://p07/act_09_renovacion_y_desplazamiento/submission_03",
+      "input_hash": "sha256:0623ef80af2240082e275304a56275e76b563bf7408f85e01de815325f8b8565",
+      "property_provenance": [
+        "A09-S03-P2",
+        "A09-S03-P3",
+        "A09-S03-P4"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_09_renovacion_y_desplazamiento/submissions/submission_03.pdf"
+      ],
+      "stage": "P07"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p07/1.0.0",
+      "canonical_contract": "QuestionBuildRequest",
+      "fixture_ref": "benchmark-fixture://p07/act_09_renovacion_y_desplazamiento/submission_04",
+      "input_hash": "sha256:01e7a1384ba8dec266173469daac7e1c3d40aaf8c5ae4d6f6d285439655101ea",
+      "property_provenance": [
+        "A09-S04-P2",
+        "A09-S04-P3"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_09_renovacion_y_desplazamiento/submissions/submission_04.md"
+      ],
+      "stage": "P07"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p07/1.0.0",
+      "canonical_contract": "QuestionBuildRequest",
+      "fixture_ref": "benchmark-fixture://p07/act_09_renovacion_y_desplazamiento/submission_05",
+      "input_hash": "sha256:5c7aec0cb76ce43a634abbe6cf883fe4add2948e185bc7ea1a0924340f5cf7ca",
+      "property_provenance": [
+        "A09-S05-P4",
+        "A09-S05-P6"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_09_renovacion_y_desplazamiento/submissions/submission_05.pdf"
+      ],
+      "stage": "P07"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p07/1.0.0",
+      "canonical_contract": "QuestionBuildRequest",
+      "fixture_ref": "benchmark-fixture://p07/act_09_renovacion_y_desplazamiento/submission_06",
+      "input_hash": "sha256:0c4edf3ebbed7a57693b188fa0148025e3a0bd221854087d9d0ee834ceb3ef26",
+      "property_provenance": [
+        "A09-S06-P2",
+        "A09-S06-P3"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_09_renovacion_y_desplazamiento/submissions/submission_06.md"
+      ],
+      "stage": "P07"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p07/1.0.0",
+      "canonical_contract": "QuestionBuildRequest",
+      "fixture_ref": "benchmark-fixture://p07/act_10_experimento_onboarding/submission_01",
+      "input_hash": "sha256:a632e68c40ea14de2c7edc0af29d617e43d10c0b2ab42d0fcdc7bcabe125bdb0",
+      "property_provenance": [
+        "A10-S01-P3",
+        "A10-ACT-P5"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_10_experimento_onboarding/submissions/submission_01_artifact_01.txt",
+        "activity_10_experimento_onboarding/submissions/submission_01_artifact_02.md"
+      ],
+      "stage": "P07"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p07/1.0.0",
+      "canonical_contract": "QuestionBuildRequest",
+      "fixture_ref": "benchmark-fixture://p07/act_10_experimento_onboarding/submission_02",
+      "input_hash": "sha256:ac982ac2f7ffe653521c9ac3b1d23f753dae58b111b5669f4c52cf98a0d02edd",
+      "property_provenance": [
+        "A10-S02-P3"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_10_experimento_onboarding/submissions/submission_02_artifact_01.txt",
+        "activity_10_experimento_onboarding/submissions/submission_02_artifact_02.md"
+      ],
+      "stage": "P07"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p07/1.0.0",
+      "canonical_contract": "QuestionBuildRequest",
+      "fixture_ref": "benchmark-fixture://p07/act_10_experimento_onboarding/submission_03",
+      "input_hash": "sha256:50a5757218e09efd45c4aedffcd2c6411468384c3810da12bb459d97592827ef",
+      "property_provenance": [
+        "A10-S03-P3",
+        "A10-S03-P4",
+        "A10-S03-P5"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_10_experimento_onboarding/submissions/submission_03_artifact_01.txt",
+        "activity_10_experimento_onboarding/submissions/submission_03_artifact_02.pdf"
+      ],
+      "stage": "P07"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p07/1.0.0",
+      "canonical_contract": "QuestionBuildRequest",
+      "fixture_ref": "benchmark-fixture://p07/act_10_experimento_onboarding/submission_04",
+      "input_hash": "sha256:c8a94ac76b502c99e8e1ee8b555f2008d2479053e955e1bb7c44e653ee1f6950",
+      "property_provenance": [
+        "A10-S04-FINAL-DECLARED-OMISSION",
+        "A10-S04-P4",
+        "A10-S04-P5",
+        "A10-S04-P6"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_10_experimento_onboarding/submissions/submission_04_artifact_01.txt",
+        "activity_10_experimento_onboarding/submissions/submission_04_artifact_02.pdf"
+      ],
+      "stage": "P07"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p07/1.0.0",
+      "canonical_contract": "QuestionBuildRequest",
+      "fixture_ref": "benchmark-fixture://p07/act_10_experimento_onboarding/submission_05",
+      "input_hash": "sha256:5390bdd50a5125f8f51fff728164837cb5aa96e48fc0baa7ccfc57299613bcfb",
+      "property_provenance": [
+        "A10-S05-P2",
+        "A10-S05-P3",
+        "A10-S05-P4",
+        "A10-S05-P5"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_10_experimento_onboarding/submissions/submission_05_artifact_01.txt",
+        "activity_10_experimento_onboarding/submissions/submission_05_artifact_02.pdf"
+      ],
+      "stage": "P07"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p07/1.0.0",
+      "canonical_contract": "QuestionBuildRequest",
+      "fixture_ref": "benchmark-fixture://p07/act_10_experimento_onboarding/submission_06",
+      "input_hash": "sha256:8f704f9244d9d105fae1629dee6b9a2ff9648ed4180d35f5690158e9c9e0afda",
+      "property_provenance": [
+        "A10-S06-P4"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_10_experimento_onboarding/submissions/submission_06_artifact_01.txt",
+        "activity_10_experimento_onboarding/submissions/submission_06_artifact_02.pdf"
+      ],
+      "stage": "P07"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p07/1.0.0",
+      "canonical_contract": "QuestionBuildRequest",
+      "fixture_ref": "benchmark-fixture://p07/act_11_duplicados_en_pagos/submission_01",
+      "input_hash": "sha256:6924cfc3bfab4b8b1a5f14f6fbcd87826a0814885e3dda7c2b9113bf714d2bce",
+      "property_provenance": [
+        "A11-S01-P4",
+        "A11-S01-P5",
+        "A11-ACT-P4"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_11_duplicados_en_pagos/submissions/submission_01_artifact_01.md",
+        "activity_11_duplicados_en_pagos/submissions/submission_01_artifact_02.md",
+        "activity_11_duplicados_en_pagos/submissions/submission_01_artifact_03.md"
+      ],
+      "stage": "P07"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p07/1.0.0",
+      "canonical_contract": "QuestionBuildRequest",
+      "fixture_ref": "benchmark-fixture://p07/act_11_duplicados_en_pagos/submission_02",
+      "input_hash": "sha256:43c4daa9f16d10698bfb4e76bd3e65bcdf5b29eda933961a7d3e0b7c828d2d4b",
+      "property_provenance": [
+        "A11-S02-P2",
+        "A11-S02-P3",
+        "A11-S02-P4"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_11_duplicados_en_pagos/submissions/submission_02_artifact_01.md",
+        "activity_11_duplicados_en_pagos/submissions/submission_02_artifact_02.md",
+        "activity_11_duplicados_en_pagos/submissions/submission_02_artifact_03.md"
+      ],
+      "stage": "P07"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p07/1.0.0",
+      "canonical_contract": "QuestionBuildRequest",
+      "fixture_ref": "benchmark-fixture://p07/act_11_duplicados_en_pagos/submission_03",
+      "input_hash": "sha256:a796b54c88fe46e7646f1db2207909e00889af02677b9259d2c53b117639fb62",
+      "property_provenance": [
+        "A11-S03-P4"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_11_duplicados_en_pagos/submissions/submission_03_artifact_01.md",
+        "activity_11_duplicados_en_pagos/submissions/submission_03_artifact_02.md",
+        "activity_11_duplicados_en_pagos/submissions/submission_03_artifact_03.md"
+      ],
+      "stage": "P07"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p07/1.0.0",
+      "canonical_contract": "QuestionBuildRequest",
+      "fixture_ref": "benchmark-fixture://p07/act_11_duplicados_en_pagos/submission_04",
+      "input_hash": "sha256:a26400d7e609e4391bfe9f93321eeb53e95b9f130363e21df8ac8575268ebefb",
+      "property_provenance": [
+        "A11-S04-P4",
+        "A11-S04-P5"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_11_duplicados_en_pagos/submissions/submission_04_artifact_01.md",
+        "activity_11_duplicados_en_pagos/submissions/submission_04_artifact_02.md",
+        "activity_11_duplicados_en_pagos/submissions/submission_04_artifact_03.md"
+      ],
+      "stage": "P07"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p07/1.0.0",
+      "canonical_contract": "QuestionBuildRequest",
+      "fixture_ref": "benchmark-fixture://p07/act_11_duplicados_en_pagos/submission_05",
+      "input_hash": "sha256:e2fcde73069403f55fd4c92e025fee222a3b6cd2af6622c4b425d98599edbc1d",
+      "property_provenance": [
+        "A11-S05-P1",
+        "A11-S05-P2"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_11_duplicados_en_pagos/submissions/submission_05_artifact_01.md",
+        "activity_11_duplicados_en_pagos/submissions/submission_05_artifact_02.md",
+        "activity_11_duplicados_en_pagos/submissions/submission_05_artifact_03.md"
+      ],
+      "stage": "P07"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p07/1.0.0",
+      "canonical_contract": "QuestionBuildRequest",
+      "fixture_ref": "benchmark-fixture://p07/act_11_duplicados_en_pagos/submission_06",
+      "input_hash": "sha256:8a56552489b525b4d97c3d85ecc518d866011ae48bfd129da42ae667e48d90c2",
+      "property_provenance": [
+        "A11-S06-P2",
+        "A11-S06-P3"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_11_duplicados_en_pagos/submissions/submission_06_artifact_01.md",
+        "activity_11_duplicados_en_pagos/submissions/submission_06_artifact_02.md",
+        "activity_11_duplicados_en_pagos/submissions/submission_06_artifact_03.md"
+      ],
+      "stage": "P07"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p07/1.0.0",
+      "canonical_contract": "QuestionBuildRequest",
+      "fixture_ref": "benchmark-fixture://p07/act_12_clinica_movil/submission_01",
+      "input_hash": "sha256:f047acad164c1262acbda89e13ad7bf3a8bb16c5506ca393f5a617a1d94b79f8",
+      "property_provenance": [
+        "A12-S01-P3",
+        "A12-S01-P4",
+        "A12-ACT-FINAL-LEAKAGE",
+        "A12-ACT-P4",
+        "A12-ACT-P6"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_12_clinica_movil/submissions/submission_01_artifact_01.txt",
+        "activity_12_clinica_movil/submissions/submission_01_artifact_02.md"
+      ],
+      "stage": "P07"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p07/1.0.0",
+      "canonical_contract": "QuestionBuildRequest",
+      "fixture_ref": "benchmark-fixture://p07/act_12_clinica_movil/submission_02",
+      "input_hash": "sha256:016b2a5a756e00c2efac391fea66e8caf35fe281f98ee7d8c10871938286e6ee",
+      "property_provenance": [
+        "A12-S02-P3",
+        "A12-S02-P4"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_12_clinica_movil/submissions/submission_02.md"
+      ],
+      "stage": "P07"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p07/1.0.0",
+      "canonical_contract": "QuestionBuildRequest",
+      "fixture_ref": "benchmark-fixture://p07/act_12_clinica_movil/submission_03",
+      "input_hash": "sha256:90824b26eb2ee526b67956b991c7467b2a1d3a6b569d22c14bc426e14e01d804",
+      "property_provenance": [
+        "A12-S03-P3",
+        "A12-S03-P5"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_12_clinica_movil/submissions/submission_03_artifact_01.txt",
+        "activity_12_clinica_movil/submissions/submission_03_artifact_02.pdf"
+      ],
+      "stage": "P07"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p07/1.0.0",
+      "canonical_contract": "QuestionBuildRequest",
+      "fixture_ref": "benchmark-fixture://p07/act_12_clinica_movil/submission_04",
+      "input_hash": "sha256:547ddb2155b8c09d7bba53c57abbd1fc216d6a486b1987991ee27534d02c3dcb",
+      "property_provenance": [
+        "A12-S04-FINAL-XAR",
+        "A12-S04-P4",
+        "A12-S04-P5"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_12_clinica_movil/submissions/submission_04_artifact_01.txt",
+        "activity_12_clinica_movil/submissions/submission_04_artifact_02.pdf"
+      ],
+      "stage": "P07"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p07/1.0.0",
+      "canonical_contract": "QuestionBuildRequest",
+      "fixture_ref": "benchmark-fixture://p07/act_12_clinica_movil/submission_05",
+      "input_hash": "sha256:7660025174d4629f0371cbed0d1bae5ae54672934cdd56b9b060545565897b1b",
+      "property_provenance": [
+        "A12-S05-P4",
+        "A12-S05-P5"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_12_clinica_movil/submissions/submission_05_artifact_01.txt",
+        "activity_12_clinica_movil/submissions/submission_05_artifact_02.pdf"
+      ],
+      "stage": "P07"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p07/1.0.0",
+      "canonical_contract": "QuestionBuildRequest",
+      "fixture_ref": "benchmark-fixture://p07/act_12_clinica_movil/submission_06",
+      "input_hash": "sha256:acd326f23da1f50dc67b0ab427f4d9b6c830aa9e0defe5d0ceca92dc162b9740",
+      "property_provenance": [
+        "A12-S06-P1",
+        "A12-S06-P2",
+        "A12-S06-P3"
+      ],
+      "role": "BENCHMARK_INPUT_FIXTURE_NOT_EXPECTED_MODEL_OUTPUT",
+      "source_provenance": [
+        "activity_12_clinica_movil/submissions/submission_06_artifact_01.txt",
+        "activity_12_clinica_movil/submissions/submission_06_artifact_02.md"
+      ],
+      "stage": "P07"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p09/1.0.0",
+      "canonical_contract": "GuideBuildRequest",
+      "fixture_ref": "benchmark-fixture://p09/p09_fixture_act_03",
+      "frozen_fixture_hash": "b9aa858b5245ddbe6dec5e6a7df3630778470a1b1a87d7d294be75f9df65fe16",
+      "input_hash": "sha256:4612f6cb07cff0146953bd6fb508c8c70af4f5454a67f3bdcb4b723519fd24c5",
+      "operation_projection": {
+        "ADJUDICATE_ALTERNATIVES_WITH_EVIDENCE": "JUSTIFY_DECISION",
+        "RECONSTRUCT_QUANTITATIVE_CHAIN": "RECONSTRUCT_REASONING",
+        "SOLVE_BUDGET_BOUND": "RECONSTRUCT_REASONING"
+      },
+      "operation_projection_version": "p09-frozen-operation-projection/1.0.0",
+      "property_provenance": [
+        "A03-ACT-P09a",
+        "A03-ACT-P09b"
+      ],
+      "question_count": 3,
+      "role": "FIXED_INPUT_FOR_P09_NOT_QUESTION_GOLDEN_FOR_P07",
+      "source_provenance": [
+        "benchmark_fixtures/p09/p09_fixture_activity_03.json#questions",
+        "activity_03_puesto_de_limonada/submissions/submission_05.pdf"
+      ],
+      "stage": "P09"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p09/1.0.0",
+      "canonical_contract": "GuideBuildRequest",
+      "fixture_ref": "benchmark-fixture://p09/p09_fixture_act_04",
+      "frozen_fixture_hash": "de97e4c92e3a5df76c097099e040d882026e91e597df34e35b59212facc051a6",
+      "input_hash": "sha256:806c82595263b3e1bf7f53b70962ba069aa819fa1d0b3889f2a0549da747ab8e",
+      "operation_projection": {
+        "ADJUDICATE_OUTPUT_ORDER": "JUSTIFY_DECISION",
+        "CROSS_ARTIFACT_ADJUDICATION": "CONNECT_INTERNAL",
+        "TRACE_DEDUPLICATION_SEMANTICS": "TRACE_FLOW"
+      },
+      "operation_projection_version": "p09-frozen-operation-projection/1.0.0",
+      "property_provenance": [
+        "A04-ACT-P09a",
+        "A04-ACT-P09b"
+      ],
+      "question_count": 3,
+      "role": "FIXED_INPUT_FOR_P09_NOT_QUESTION_GOLDEN_FOR_P07",
+      "source_provenance": [
+        "benchmark_fixtures/p09/p09_fixture_activity_04.json#questions",
+        "activity_04_asignador_de_turnos/submissions/submission_06_artifact_01.md",
+        "activity_04_asignador_de_turnos/submissions/submission_06_artifact_02.txt"
+      ],
+      "stage": "P09"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p09/1.0.0",
+      "canonical_contract": "GuideBuildRequest",
+      "fixture_ref": "benchmark-fixture://p09/p09_fixture_act_09",
+      "frozen_fixture_hash": "bd14cac4f37ee0623e617e6225484e9c4cf1f9c1b4dec9ed91f3b169df96bcf5",
+      "input_hash": "sha256:ba5592c26c9b5d5cb8e8d60c584dc386f2c7ceff32b2be1452030b37a5797221",
+      "operation_projection": {
+        "ADJUDICATE_HISTORICAL_EXPLANATION": "CRITIQUE_LIMITATION",
+        "BOUND_CANNOT_INFER": "CRITIQUE_LIMITATION",
+        "INTERPRET_WITH_ALTERNATIVES": "INTERPRET_REPRESENTATION"
+      },
+      "operation_projection_version": "p09-frozen-operation-projection/1.0.0",
+      "property_provenance": [
+        "A09-ACT-P09a",
+        "A09-ACT-P09b"
+      ],
+      "question_count": 3,
+      "role": "FIXED_INPUT_FOR_P09_NOT_QUESTION_GOLDEN_FOR_P07",
+      "source_provenance": [
+        "benchmark_fixtures/p09/p09_fixture_activity_09.json#questions",
+        "activity_09_renovacion_y_desplazamiento/submissions/submission_05.pdf"
+      ],
+      "stage": "P09"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-p09/1.0.0",
+      "canonical_contract": "GuideBuildRequest",
+      "fixture_ref": "benchmark-fixture://p09/p09_fixture_act_12",
+      "frozen_fixture_hash": "4b0ea8a011dfc68a9d199cc341e9d52cca569c82b999ba4059f9dc21038a661c",
+      "input_hash": "sha256:e5196b7eb6eddde2f8c4025a04e07403d923511881277a98518c06b5f9dd5e71",
+      "operation_projection": {
+        "APPLY_PRIVACY_MINIMIZATION": "JUSTIFY_DECISION",
+        "BOUND_CANNOT_INFER": "CRITIQUE_LIMITATION",
+        "SPECIFY_MINIMUM_EVIDENCE": "IDENTIFY_DEPENDENCY"
+      },
+      "operation_projection_version": "p09-frozen-operation-projection/1.0.0",
+      "property_provenance": [
+        "A12-ACT-P09a",
+        "A12-ACT-P09b"
+      ],
+      "question_count": 3,
+      "role": "FIXED_INPUT_FOR_P09_NOT_QUESTION_GOLDEN_FOR_P07",
+      "source_provenance": [
+        "benchmark_fixtures/p09/p09_fixture_activity_12.json#questions",
+        "activity_12_clinica_movil/submissions/submission_06_artifact_01.txt",
+        "activity_12_clinica_movil/submissions/submission_06_artifact_02.md"
+      ],
+      "stage": "P09"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-planner/1.0.0",
+      "canonical_contract": "EvidenceMapPatch+AssessmentBlueprint+AssessmentPlanningPolicy",
+      "fixture_ref": "benchmark-fixture://planner/A01-S01-P4",
+      "input_hash": "sha256:89b12e0d3e4685c60aa8521433efab4fefdcf2d1f153326cf0c20a99eeac3c9c",
+      "property_provenance": [
+        "A01-S01-P4"
+      ],
+      "role": "CONTROLLED_DETERMINISTIC_INPUT_NOT_P06_GOLDEN",
+      "source_provenance": [
+        "activity_01_luz_y_plantines/submissions/submission_01.txt"
+      ],
+      "stage": "PLANNER"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-planner/1.0.0",
+      "canonical_contract": "EvidenceMapPatch+AssessmentBlueprint+AssessmentPlanningPolicy",
+      "fixture_ref": "benchmark-fixture://planner/A01-S02-P3",
+      "input_hash": "sha256:7dd705e7d20937ece093a3286af520d9bb2a1a6eff2362e2a4b8816ea7312a37",
+      "property_provenance": [
+        "A01-S02-P3"
+      ],
+      "role": "CONTROLLED_DETERMINISTIC_INPUT_NOT_P06_GOLDEN",
+      "source_provenance": [
+        "activity_01_luz_y_plantines/submissions/submission_02.md"
+      ],
+      "stage": "PLANNER"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-planner/1.0.0",
+      "canonical_contract": "EvidenceMapPatch+AssessmentBlueprint+AssessmentPlanningPolicy",
+      "fixture_ref": "benchmark-fixture://planner/A01-S04-P1",
+      "input_hash": "sha256:ef7ddc20939e04eaf6a9ce67024d3893452963272117f8aa6c8b91c4d23bef77",
+      "property_provenance": [
+        "A01-S04-P1"
+      ],
+      "role": "CONTROLLED_DETERMINISTIC_INPUT_NOT_P06_GOLDEN",
+      "source_provenance": [
+        "activity_01_luz_y_plantines/submissions/submission_04.md"
+      ],
+      "stage": "PLANNER"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-planner/1.0.0",
+      "canonical_contract": "EvidenceMapPatch+AssessmentBlueprint+AssessmentPlanningPolicy",
+      "fixture_ref": "benchmark-fixture://planner/A02-S02-P4",
+      "input_hash": "sha256:04d3d54fb1c1cac3da19531835ef7d5d40386b5b377f5929afecff4afac42ab5",
+      "property_provenance": [
+        "A02-S02-P4"
+      ],
+      "role": "CONTROLLED_DETERMINISTIC_INPUT_NOT_P06_GOLDEN",
+      "source_provenance": [
+        "activity_02_voz_en_un_microcuento/submissions/submission_02.txt"
+      ],
+      "stage": "PLANNER"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-planner/1.0.0",
+      "canonical_contract": "EvidenceMapPatch+AssessmentBlueprint+AssessmentPlanningPolicy",
+      "fixture_ref": "benchmark-fixture://planner/A02-S03-P3",
+      "input_hash": "sha256:d78a105111475d720c56859fba219405582fe4c4a8aa325ae4a21627fdd7e637",
+      "property_provenance": [
+        "A02-S03-P3"
+      ],
+      "role": "CONTROLLED_DETERMINISTIC_INPUT_NOT_P06_GOLDEN",
+      "source_provenance": [
+        "activity_02_voz_en_un_microcuento/submissions/submission_03.md"
+      ],
+      "stage": "PLANNER"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-planner/1.0.0",
+      "canonical_contract": "EvidenceMapPatch+AssessmentBlueprint+AssessmentPlanningPolicy",
+      "fixture_ref": "benchmark-fixture://planner/A02-S06-P3",
+      "input_hash": "sha256:cb0465da44e21295693fa6819a229188ec7c5140135a99d75857fb97d61fc134",
+      "property_provenance": [
+        "A02-S06-P3"
+      ],
+      "role": "CONTROLLED_DETERMINISTIC_INPUT_NOT_P06_GOLDEN",
+      "source_provenance": [
+        "activity_02_voz_en_un_microcuento/submissions/submission_06.md"
+      ],
+      "stage": "PLANNER"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-planner/1.0.0",
+      "canonical_contract": "EvidenceMapPatch+AssessmentBlueprint+AssessmentPlanningPolicy",
+      "fixture_ref": "benchmark-fixture://planner/A03-ACT-P4",
+      "input_hash": "sha256:5634efd2cd86b60dfb1111f135ed94141c3aa794a06bb3f0e38d5177895d6f63",
+      "property_provenance": [
+        "A03-ACT-P4"
+      ],
+      "role": "CONTROLLED_DETERMINISTIC_INPUT_NOT_P06_GOLDEN",
+      "source_provenance": [
+        "activity_03_puesto_de_limonada/02_rubric.docx"
+      ],
+      "stage": "PLANNER"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-planner/1.0.0",
+      "canonical_contract": "EvidenceMapPatch+AssessmentBlueprint+AssessmentPlanningPolicy",
+      "fixture_ref": "benchmark-fixture://planner/A03-S03-P1",
+      "input_hash": "sha256:1672d9da04df5dabdf32d608eb3b40d93a5895bbf3e725074fc6833efa6a5c63",
+      "property_provenance": [
+        "A03-S03-P1"
+      ],
+      "role": "CONTROLLED_DETERMINISTIC_INPUT_NOT_P06_GOLDEN",
+      "source_provenance": [
+        "activity_03_puesto_de_limonada/02_rubric.docx",
+        "activity_03_puesto_de_limonada/submissions/submission_03.txt"
+      ],
+      "stage": "PLANNER"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-planner/1.0.0",
+      "canonical_contract": "EvidenceMapPatch+AssessmentBlueprint+AssessmentPlanningPolicy",
+      "fixture_ref": "benchmark-fixture://planner/A04-S03-P4",
+      "input_hash": "sha256:1bf1ec9a7b7f4f1a9277c3c1a6a94de1feed95ed02ad0dd0ff0ccd01f2bdc2b2",
+      "property_provenance": [
+        "A04-S03-P4"
+      ],
+      "role": "CONTROLLED_DETERMINISTIC_INPUT_NOT_P06_GOLDEN",
+      "source_provenance": [
+        "activity_04_asignador_de_turnos/submissions/submission_03.md"
+      ],
+      "stage": "PLANNER"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-planner/1.0.0",
+      "canonical_contract": "EvidenceMapPatch+AssessmentBlueprint+AssessmentPlanningPolicy",
+      "fixture_ref": "benchmark-fixture://planner/A04-S04-P4",
+      "input_hash": "sha256:53610d32c17e6d3bfee1bb25f3a056cf62a82d42bc5b0e9b3d20dbd26078d966",
+      "property_provenance": [
+        "A04-S04-P4"
+      ],
+      "role": "CONTROLLED_DETERMINISTIC_INPUT_NOT_P06_GOLDEN",
+      "source_provenance": [
+        "activity_04_asignador_de_turnos/submissions/submission_04_artifact_01.md"
+      ],
+      "stage": "PLANNER"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-planner/1.0.0",
+      "canonical_contract": "EvidenceMapPatch+AssessmentBlueprint+AssessmentPlanningPolicy",
+      "fixture_ref": "benchmark-fixture://planner/A05-S05-P3",
+      "input_hash": "sha256:6b368bd63b27333408693b3dd9a34c119026e3cab4410a8bfead1d8bcda69cf9",
+      "property_provenance": [
+        "A05-S05-P3"
+      ],
+      "role": "CONTROLLED_DETERMINISTIC_INPUT_NOT_P06_GOLDEN",
+      "source_provenance": [
+        "activity_05_visitas_a_bibliotecas/submissions/submission_05.pdf"
+      ],
+      "stage": "PLANNER"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-planner/1.0.0",
+      "canonical_contract": "EvidenceMapPatch+AssessmentBlueprint+AssessmentPlanningPolicy",
+      "fixture_ref": "benchmark-fixture://planner/A06-S06-P3",
+      "input_hash": "sha256:14800708a83420b2d67109f370f6aac154cabcaa410bbd37d605a14eba44e228",
+      "property_provenance": [
+        "A06-S06-P3"
+      ],
+      "role": "CONTROLLED_DETERMINISTIC_INPUT_NOT_P06_GOLDEN",
+      "source_provenance": [
+        "activity_06_movilidad_estudiantil/submissions/submission_06.txt"
+      ],
+      "stage": "PLANNER"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-planner/1.0.0",
+      "canonical_contract": "EvidenceMapPatch+AssessmentBlueprint+AssessmentPlanningPolicy",
+      "fixture_ref": "benchmark-fixture://planner/A07-ACT-P4",
+      "input_hash": "sha256:ba919aa17ae8c6cbe892933c1cd6d71282f8a0e4e80b8b88523ce8117361609b",
+      "property_provenance": [
+        "A07-ACT-P4"
+      ],
+      "role": "CONTROLLED_DETERMINISTIC_INPUT_NOT_P06_GOLDEN",
+      "source_provenance": [
+        "activity_07_aislamiento_termico/02_rubric.docx"
+      ],
+      "stage": "PLANNER"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-planner/1.0.0",
+      "canonical_contract": "EvidenceMapPatch+AssessmentBlueprint+AssessmentPlanningPolicy",
+      "fixture_ref": "benchmark-fixture://planner/A07-S01-P3",
+      "input_hash": "sha256:ae6610d4df085846b236a9d2f2164f9c9fb36d42e95d47f7cf95e1820181fcec",
+      "property_provenance": [
+        "A07-S01-P3"
+      ],
+      "role": "CONTROLLED_DETERMINISTIC_INPUT_NOT_P06_GOLDEN",
+      "source_provenance": [
+        "activity_07_aislamiento_termico/submissions/submission_01_artifact_01.txt"
+      ],
+      "stage": "PLANNER"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-planner/1.0.0",
+      "canonical_contract": "EvidenceMapPatch+AssessmentBlueprint+AssessmentPlanningPolicy",
+      "fixture_ref": "benchmark-fixture://planner/A07-S03-P4",
+      "input_hash": "sha256:19ee31873e0981e7b1a1eafafed303eee0c008d956f6c26b035302face6c959a",
+      "property_provenance": [
+        "A07-S03-P4"
+      ],
+      "role": "CONTROLLED_DETERMINISTIC_INPUT_NOT_P06_GOLDEN",
+      "source_provenance": [
+        "activity_07_aislamiento_termico/submissions/submission_03_artifact_02.md"
+      ],
+      "stage": "PLANNER"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-planner/1.0.0",
+      "canonical_contract": "EvidenceMapPatch+AssessmentBlueprint+AssessmentPlanningPolicy",
+      "fixture_ref": "benchmark-fixture://planner/A08-S02-P4",
+      "input_hash": "sha256:c946e534054b5fa20a7b6cbcdfca27cf7523877159ae64116dd3d0100f6bfe50",
+      "property_provenance": [
+        "A08-S02-P4"
+      ],
+      "role": "CONTROLLED_DETERMINISTIC_INPUT_NOT_P06_GOLDEN",
+      "source_provenance": [
+        "activity_08_triage_de_logs/submissions/submission_02_artifact_01.txt"
+      ],
+      "stage": "PLANNER"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-planner/1.0.0",
+      "canonical_contract": "EvidenceMapPatch+AssessmentBlueprint+AssessmentPlanningPolicy",
+      "fixture_ref": "benchmark-fixture://planner/A08-S06-P4",
+      "input_hash": "sha256:ef47e856cd20d283a2e6de6d8279f469845fb882f63717412e11b3b20280f3c1",
+      "property_provenance": [
+        "A08-S06-P4"
+      ],
+      "role": "CONTROLLED_DETERMINISTIC_INPUT_NOT_P06_GOLDEN",
+      "source_provenance": [
+        "activity_08_triage_de_logs/submissions/submission_06.md"
+      ],
+      "stage": "PLANNER"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-planner/1.0.0",
+      "canonical_contract": "EvidenceMapPatch+AssessmentBlueprint+AssessmentPlanningPolicy",
+      "fixture_ref": "benchmark-fixture://planner/A10-ACT-P4",
+      "input_hash": "sha256:26deaf326a8481a589dc389f6b4f9aae4c32a363d379323c864f31aef1b49881",
+      "property_provenance": [
+        "A10-ACT-P4"
+      ],
+      "role": "CONTROLLED_DETERMINISTIC_INPUT_NOT_P06_GOLDEN",
+      "source_provenance": [
+        "activity_10_experimento_onboarding/02_rubric.docx"
+      ],
+      "stage": "PLANNER"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-planner/1.0.0",
+      "canonical_contract": "EvidenceMapPatch+AssessmentBlueprint+AssessmentPlanningPolicy",
+      "fixture_ref": "benchmark-fixture://planner/A11-S05-P3",
+      "input_hash": "sha256:27580a21ad9dc54fd271d74e66d5991c8f608d7b570ca3865053474449a7d144",
+      "property_provenance": [
+        "A11-S05-P3"
+      ],
+      "role": "CONTROLLED_DETERMINISTIC_INPUT_NOT_P06_GOLDEN",
+      "source_provenance": [
+        "activity_11_duplicados_en_pagos/submissions/submission_05_artifact_01.md"
+      ],
+      "stage": "PLANNER"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-planner/1.0.0",
+      "canonical_contract": "EvidenceMapPatch+AssessmentBlueprint+AssessmentPlanningPolicy",
+      "fixture_ref": "benchmark-fixture://planner/A11-S06-P4",
+      "input_hash": "sha256:3379d31adf889c126bf271e977440ccf42ddf831a45e8cf73f9856ef61fbcc9d",
+      "property_provenance": [
+        "A11-S06-P4"
+      ],
+      "role": "CONTROLLED_DETERMINISTIC_INPUT_NOT_P06_GOLDEN",
+      "source_provenance": [
+        "activity_11_duplicados_en_pagos/submissions/submission_06_artifact_01.md"
+      ],
+      "stage": "PLANNER"
+    },
+    {
+      "builder_version": "semantic-benchmark-fixture-planner/1.0.0",
+      "canonical_contract": "EvidenceMapPatch+AssessmentBlueprint+AssessmentPlanningPolicy",
+      "fixture_ref": "benchmark-fixture://planner/A12-S06-P4",
+      "input_hash": "sha256:1bbef2f6d0fd74bb6ef83ce50ce2739e4b323b46df69ac60d902520a148129be",
+      "property_provenance": [
+        "A12-S06-P4"
+      ],
+      "role": "CONTROLLED_DETERMINISTIC_INPUT_NOT_P06_GOLDEN",
+      "source_provenance": [
+        "activity_12_clinica_movil/02_rubric.docx",
+        "activity_12_clinica_movil/submissions/submission_06_artifact_01.txt"
+      ],
+      "stage": "PLANNER"
+    }
+  ],
+  "schema_version": "semantic-stage-fixtures/1.0.0"
+}

@@ -1,0 +1,67 @@
+{
+  "evidence_class": "DIAGNOSTIC_EVIDENCE_NOT_GOLDEN_EXPECTED_OUTPUT",
+  "files": [
+    {
+      "bytes": 12388,
+      "content_inspected_during_part_a": false,
+      "origin": "PHASE_9B3_AUDIT_LOCAL",
+      "original_path": null,
+      "path": "reports/semantic_benchmark/v1_1/phase9/audits/p06_field_authority_audit.json",
+      "preserved": "BYTE_EXACT",
+      "sha256": "ed68cc50aaa9566a6a6f11f952bbb85f37262f7e515d479ecfd579e69a396ebe"
+    },
+    {
+      "bytes": 30300,
+      "content_inspected_during_part_a": false,
+      "origin": "PHASE_9B3_AUDIT_LOCAL",
+      "original_path": null,
+      "path": "reports/semantic_benchmark/v1_1/phase9/audits/p06_first_pass_reliability_classification.json",
+      "preserved": "BYTE_EXACT",
+      "sha256": "d7c294d7bff9f988e4c6309928a7169a65336d43fca29c106dfced4802e80db5"
+    },
+    {
+      "bytes": 417181,
+      "content_inspected_during_part_a": false,
+      "origin": "PHASE_9B3_AUDIT_LOCAL",
+      "original_path": null,
+      "path": "reports/semantic_benchmark/v1_1/phase9/audits/p06_structural_alignment_audit.json",
+      "preserved": "BYTE_EXACT",
+      "sha256": "ad95ccc60ecfc9553e27c6c67af21ea15746410b42e9e8e8a0becd184948e385"
+    },
+    {
+      "bytes": 417289,
+      "content_inspected_during_part_a": false,
+      "origin": "PHASE_9B3_PRE_RESULTS_TMP_COPY",
+      "original_path": "/tmp/phase9_p06_structural_audit_pre_results.json",
+      "path": "reports/semantic_benchmark/v1_1/phase9/audits/phase9_p06_structural_audit_pre_results.json",
+      "preserved": "BYTE_EXACT",
+      "sha256": "b79a307a6fb912cbe064f44de287c6864c5646e26daa2927a1339f3adcbc8ee7"
+    }
+  ],
+  "mutation_policy": "BYTES_IMMUTABLE",
+  "part_a_usage_policy": "Inventoried and preserved only. Candidate-result-dependent sections were not read and were not used as semantic construction authority for semantic-benchmark/1.2.0.",
+  "phase": "9B.3",
+  "phase_9b3_counts_status": {
+    "counts_reported_by_phase_9b3": {
+      "ALIGNED": 35,
+      "MISALIGNED": 47,
+      "ORACLE_SUSPECT": 11,
+      "PARTIALLY_ALIGNED": 23,
+      "UNRESOLVED": 11
+    },
+    "must_not_be_reproduced_as_test_constants": true,
+    "reason": "These counts describe the defective v1.1 instrument. Reproducing them as expected values would freeze the defect into the repaired benchmark.",
+    "role": "DIAGNOSTIC_EVIDENCE"
+  },
+  "preserved_at_commit_baseline": "d5fb8ef1b50266982b0d8e85aeceef6b50624122",
+  "purpose": "PRESERVE_PHASE_9B3_DIAGNOSIS_BEFORE_P06_REMEDIATION",
+  "regeneration_policy": "NEVER_REGENERATED_TO_MATCH_EXPECTED_HASHES",
+  "reported_pre_results_artifact": {
+    "hash_matches_reported": true,
+    "locally_available": true,
+    "preserved_as": "reports/semantic_benchmark/v1_1/phase9/audits/phase9_p06_structural_audit_pre_results.json",
+    "reported_path": "/tmp/phase9_p06_structural_audit_pre_results.json",
+    "reported_sha256": "b79a307a6fb912cbe064f44de287c6864c5646e26daa2927a1339f3adcbc8ee7"
+  },
+  "schema_version": "phase9-audit-preservation/1.0.0"
+}

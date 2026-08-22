@@ -12,11 +12,13 @@ import argparse
 import asyncio
 from dataclasses import asdict, dataclass
 import json
+import os
 from pathlib import Path
+import re
 import sys
 from typing import Any
 
-from pydantic import BaseModel
+from pydantic import BaseModel, SecretStr
 
 from .canonical import StableClock, canonical_hash, sha256_bytes, stable_id
 from .contract_validation import run_contract_validation_gate
@@ -24,12 +26,30 @@ from .contracts import models as m
 from .diagnostics import diagnostic
 from .exports import RENDERER_VERSION, render_views
 from .fixture_builder import DEFAULT_STAGE0_ROOT, build_stage0_fixtures
-from .model_gateway import GatewayConfig, GatewayMode, ModelGateway, build_trusted_context
+from .guide_generation import build_guide_approval_binding, guide_id_for_binding
+from .model_gateway import (
+    CallBudget,
+    GatewayConfig,
+    GatewayError,
+    GatewayMode,
+    ModelGateway,
+    OPENAI_DEFAULT_REQUEST_TIMEOUT_SECONDS,
+    OPENAI_GATEWAY_TIMEOUT_GRACE_SECONDS,
+    OPENAI_ROUTE_PROFILE_ID,
+    OpenAIAdapterConfig,
+    OpenAIResponsesAdapter,
+    build_mock_request,
+    build_openai_cost_estimator,
+    build_openai_routes,
+    build_trusted_context,
+    estimate_openai_input_tokens,
+)
 from .model_gateway.registry import PROMPT_VERSION
 from .parsers import PARSER_VERSION, ParsedArtifact, SafeParserService
 from .planning import PLANNER_VERSION, build_assessment_plan
 from .storage import LocalArtifactStore
 from .validation import (
+    build_blueprint_review_preflight,
     validate_assessment_plan,
     validate_evaluation_guide,
     validate_evidence_map,
@@ -129,6 +149,7 @@ def _blueprint_policy(config: m.ActivityConfig) -> m.BlueprintPolicy:
     return m.BlueprintPolicy(
         policy_id=stable_id("policy", config.activity_id, "blueprint"),
         activity_id=config.activity_id,
+        context_mode=config.context_mode,
         question_count=config.question_count,
         target_total_minutes=config.target_total_minutes,
         allowed_response_formats=list(config.allowed_response_formats),
@@ -196,6 +217,8 @@ async def _invoke(
 
 def _deduplicate_planning_opportunities(
     mapping: m.EvidenceMapPatch,
+    *,
+    question_count: int,
 ) -> m.EvidenceMapPatch:
     """Collapse opportunities grounded in the exact same evidence set.
 
@@ -214,6 +237,32 @@ def _deduplicate_planning_opportunities(
             continue
         seen.add(signature)
         unique.append(opportunity)
+    if len(unique) < question_count:
+        return m.EvidenceMapPatch(
+            submission_id=mapping.submission_id,
+            status="INSUFFICIENT_DISTINCT_QUESTION_OPPORTUNITIES",
+            claims=[],
+            variant_matches=[],
+            opportunities=[],
+            diagnostics=[
+                diagnostic(
+                    "INSUFFICIENT_DISTINCT_QUESTION_OPPORTUNITIES",
+                    "La deduplicación no conservó oportunidades sustancialmente distintas suficientes.",
+                    evidence_ids=sorted(
+                        {
+                            evidence_id
+                            for opportunity in unique
+                            for evidence_id in opportunity.evidence_ids
+                        }
+                    ),
+                    retryable=False,
+                    details={
+                        "distinct_opportunity_count": len(unique),
+                        "required_question_count": question_count,
+                    },
+                )
+            ],
+        )
     return m.EvidenceMapPatch.model_validate(
         {
             **mapping.model_dump(mode="json"),
@@ -247,15 +296,8 @@ def _selected_question(
         choices=list(candidate.choices),
         student_justification_required=candidate.student_justification_required,
         preliminary_guide=candidate.preliminary_guide,
-        planning_score=min(
-            1.0,
-            (
-                opportunity.activity_priority
-                + opportunity.evidence_fit
-                + opportunity.opportunity_quality
-            )
-            / 3,
-        ),
+        semantic_uncertainties=candidate.uncertainties,
+        planning_score=opportunity.activity_priority,
     )
 
 
@@ -469,6 +511,10 @@ async def _run_synthetic(case: str, output: Path) -> int:
                 gateway,
                 "P04_BLUEPRINT_BUILD_V1",
                 m.BlueprintBuildRequest(
+                    target_blueprint_id=stable_id(
+                        "blueprint", fixture.config.activity_id
+                    ),
+                    target_blueprint_version=1,
                     activity_spec=activity_spec,
                     rubric_spec=rubric_spec,
                     blueprint_policy=policy,
@@ -487,6 +533,14 @@ async def _run_synthetic(case: str, output: Path) -> int:
                     activity_spec=activity_spec,
                     rubric_spec=rubric_spec,
                     blueprint_policy=policy,
+                    deterministic_preflight=(
+                        build_blueprint_review_preflight(
+                            blueprint=blueprint,
+                            activity_spec=activity_spec,
+                            rubric_spec=rubric_spec,
+                            blueprint_policy=policy,
+                        )
+                    ),
                 ),
                 fixture=fixture,
             )
@@ -540,14 +594,31 @@ async def _run_synthetic(case: str, output: Path) -> int:
             await _invoke(
                 gateway,
                 "P06_EVIDENCE_MAP_V1",
-                m.EvidenceMapRequest(blueprint=blueprint, evidence_bundle=bundle),
+                m.EvidenceMapRequest(
+                    blueprint=blueprint,
+                    planning_policy=policy.planning_policy,
+                    evidence_bundle=bundle,
+                ),
                 fixture=fixture,
             )
         ).model_dump(mode="json")
     )
-    validate_evidence_map(model_mapping, blueprint=blueprint, bundle=bundle)
-    mapping = _deduplicate_planning_opportunities(model_mapping)
-    validate_evidence_map(mapping, blueprint=blueprint, bundle=bundle)
+    validate_evidence_map(
+        model_mapping,
+        blueprint=blueprint,
+        bundle=bundle,
+        planning_policy=policy.planning_policy,
+    )
+    mapping = _deduplicate_planning_opportunities(
+        model_mapping,
+        question_count=blueprint.assessment_constraints.question_count,
+    )
+    validate_evidence_map(
+        mapping,
+        blueprint=blueprint,
+        bundle=bundle,
+        planning_policy=policy.planning_policy,
+    )
     _write_stage(store, "model_evidence_map.json", model_mapping)
     _write_stage(store, "evidence_map.json", mapping)
 
@@ -588,6 +659,13 @@ async def _run_synthetic(case: str, output: Path) -> int:
                     gateway,
                     "P07_QUESTION_BUILD_V1",
                     m.QuestionBuildRequest(
+                        target_candidate_id=stable_id(
+                            "candidate",
+                            fixture.submission_id,
+                            plan.plan_id,
+                            opportunity.opportunity_id,
+                            "initial",
+                        ),
                         plan=plan,
                         opportunity=opportunity,
                         evidence_bundle=bundle,
@@ -661,21 +739,49 @@ async def _run_synthetic(case: str, output: Path) -> int:
         ledgers=ledgers,
         clock=clock,
     )
+    # This development-only runner is historical, but its future P09 fixture
+    # still exercises the Phase 7 provider boundary with an explicit synthetic
+    # approval snapshot. The rendered assessment remains the archived
+    # NEEDS_REVIEW artifact and is never a product-runtime transition.
+    approved_for_historical_p09 = assessment.model_copy(
+        update={
+            "status": m.WorkflowStatus.APPROVED,
+            "approved_by": "usr_synthetic_historical_teacher",
+            "approved_at": clock.now(),
+        }
+    )
+    historical_etag = f'"{canonical_hash(approved_for_historical_p09)}"'
+    historical_approval_event_id = stable_id(
+        "evt",
+        approved_for_historical_p09.tenant_id,
+        "assessment.approved",
+        approved_for_historical_p09.assessment_id,
+        "historical_cli",
+    )
+    historical_binding = build_guide_approval_binding(
+        assessment=approved_for_historical_p09,
+        assessment_version=1,
+        assessment_etag=historical_etag,
+        approval_event_id=historical_approval_event_id,
+    )
     guide = m.EvaluationGuide.model_validate(
         (
             await _invoke(
                 gateway,
                 "P09_GUIDE_BUILD_V1",
                 m.GuideBuildRequest(
-                    guide_id=stable_id("guide", assessment.assessment_id),
-                    assessment=assessment,
+                    guide_id=guide_id_for_binding(historical_binding),
+                    assessment=approved_for_historical_p09,
+                    binding=historical_binding,
                     evidence_bundle=bundle,
                 ),
                 fixture=fixture,
             )
         ).model_dump(mode="json")
     )
-    validate_evaluation_guide(guide, assessment=assessment, bundle=bundle)
+    validate_evaluation_guide(
+        guide, assessment=approved_for_historical_p09, bundle=bundle
+    )
     rendered = render_views(assessment, guide, output)
 
     source_contains_injection = any(
@@ -753,18 +859,129 @@ def _real_provider_smoke(args: argparse.Namespace) -> int:
             )
         )
         return 2
-    # No real adapter is installed in Stage 0.  A positive budget alone never
-    # authorizes an implicit provider, credential lookup, or network fallback.
+    api_key = os.environ.get("CVA_OPENAI_API_KEY", "").strip()
+    if not api_key:
+        print(
+            _json_line(
+                {
+                    "status": "BLOCKED",
+                    "code": "OPENAI_CREDENTIALS_REQUIRED",
+                    "network_call_attempted": False,
+                }
+            )
+        )
+        return 2
+    approval = os.environ.get("CVA_OPENAI_BILLABLE_SMOKE_APPROVAL", "")
+    if not args.allow_billable or approval != "OPENAI_BILLABLE_SMOKE_APPROVED":
+        print(
+            _json_line(
+                {
+                    "status": "BLOCKED",
+                    "code": "OPENAI_BILLABLE_SMOKE_APPROVAL_REQUIRED",
+                    "network_call_attempted": False,
+                }
+            )
+        )
+        return 2
+
+    prompt_id = "P11_SCHEMA_REPAIR_V1"
+    routes = build_openai_routes(max_call_cost_usd=args.budget_usd)
+    adapter = OpenAIResponsesAdapter(
+        api_key=SecretStr(api_key),
+        config=OpenAIAdapterConfig(
+            request_timeout_seconds=OPENAI_DEFAULT_REQUEST_TIMEOUT_SECONDS
+        ),
+    )
+    gateway = ModelGateway(
+        GatewayConfig(
+            mode=GatewayMode.REAL,
+            timeout_seconds=(
+                OPENAI_DEFAULT_REQUEST_TIMEOUT_SECONDS
+                + OPENAI_GATEWAY_TIMEOUT_GRACE_SECONDS
+            ),
+            max_retries=0,
+            default_budget_usd=args.budget_usd,
+            job_id="job_openai_low_smoke",
+        ),
+        real_routes=routes,
+        adapters={"openai": adapter},
+        cost_estimator=build_openai_cost_estimator(routes),
+        input_token_estimator=estimate_openai_input_tokens,
+    )
+    request = build_mock_request(prompt_id)
+    try:
+        result = asyncio.run(
+            gateway.invoke(
+                prompt_id,
+                request,
+                build_trusted_context(request),
+                budget=CallBudget(max_cost_usd=args.budget_usd),
+            )
+        )
+    except GatewayError as exc:
+        print(
+            _json_line(
+                {
+                    "status": "FAIL",
+                    "code": exc.code,
+                    "network_call_attempted": bool(exc.ledgers),
+                    "attempts": len(exc.ledgers),
+                    "actual_cost_usd": round(
+                        sum(item.actual_cost_usd or 0.0 for item in exc.ledgers), 8
+                    ),
+                }
+            )
+        )
+        return 1
+    ledger = result.ledgers[-1]
+    reason_codes = ledger.route.reason_codes
+
+    def hashed_reason(prefix: str) -> str | None:
+        for code in reason_codes:
+            if code.startswith(prefix):
+                digest = code.removeprefix(prefix)
+                if re.fullmatch(r"[0-9a-f]{64}", digest):
+                    return f"sha256:{digest}"
+        return None
+
+    reasoning_tokens = 0
+    for code in reason_codes:
+        if code.startswith("REASONING_TOKENS_"):
+            candidate = code.removeprefix("REASONING_TOKENS_")
+            if candidate.isdigit():
+                reasoning_tokens = int(candidate)
+            break
     print(
         _json_line(
             {
-                "status": "BLOCKED",
-                "code": "REAL_PROVIDER_ADAPTER_NOT_CONFIGURED",
-                "network_call_attempted": False,
+                "status": "PASS",
+                "code": "OPENAI_REAL_SMOKE_PASS",
+                "network_call_attempted": True,
+                "prompt_id": ledger.prompt_id,
+                "prompt_version": ledger.prompt_version,
+                "schema_version": ledger.schema_version_used,
+                "route_profile": OPENAI_ROUTE_PROFILE_ID,
+                "requested_model": ledger.route.model,
+                "effective_model": ledger.route.model_snapshot,
+                "reasoning_effort": ledger.route.reasoning_effort,
+                "responses_requests": len(result.ledgers),
+                "attempts": len(result.ledgers),
+                "input_tokens": ledger.input_tokens,
+                "cached_input_tokens": ledger.cached_input_tokens,
+                "output_tokens": ledger.output_tokens,
+                "reasoning_tokens": reasoning_tokens,
+                "latency_ms": ledger.latency_ms,
+                "estimated_cost_usd": ledger.estimated_cost_usd,
+                "calculated_actual_cost_usd": ledger.actual_cost_usd,
+                "schema_validation": ledger.result == "SCHEMA_VALID",
+                "pydantic_validation": isinstance(result.output, BaseModel),
+                "contextual_validation": True,
+                "request_id_hash": hashed_reason("PROVIDER_REQUEST_ID_HASH_"),
+                "output_hash": hashed_reason("OUTPUT_HASH_"),
             }
         )
     )
-    return 2
+    return 0
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -796,6 +1013,11 @@ def _parser() -> argparse.ArgumentParser:
         "real-provider-smoke", help="Governed, opt-in real-provider smoke gate"
     )
     smoke.add_argument("--budget-usd", type=float, default=0.0)
+    smoke.add_argument(
+        "--allow-billable",
+        action="store_true",
+        help="Requires the separate human approval environment guard as well",
+    )
     smoke.set_defaults(handler=_real_provider_smoke)
     return parser
 

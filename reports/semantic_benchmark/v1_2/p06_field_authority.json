@@ -1,0 +1,395 @@
+{
+  "alias_envelope_schema_boundary": {
+    "boundary_hash": "sha256:d4fafd899f10f33d39d99f296c79acabec0b5e5e08768a7c970dbcff23057f76",
+    "format": "p06-alias-envelope-schema-boundary/1.0.0",
+    "schema_hash": "sha256:ab1dc167292a65912b0ad7c2a3da4905060799e13425bba663777fbe0a55e368",
+    "schema_name": "EvidenceMappingAliasEnvelope",
+    "version": "p06-alias-envelope/1.0.0"
+  },
+  "authority_chain": [
+    "EvidenceMappingAliasEnvelope",
+    "EvidenceMappingModelDraft",
+    "materialize_evidence_mapping_draft()",
+    "EvidenceMapPatch"
+  ],
+  "authority_definitions": {
+    "MODEL_OWNED": "The provider decides this value. A wrong value here is a candidate failure.",
+    "SERVER_DERIVED_FROM_MODEL_INPUT": "The server computes this deterministically from provider input. It is NOT independent semantic evidence: it restates a model decision.",
+    "SERVER_OWNED": "The server copies this from the trusted request. The provider cannot influence it, so it can never be a candidate failure."
+  },
+  "benchmark_version": "semantic-benchmark/1.2.0",
+  "executable_source_hashes": {
+    "canonical_contracts": "sha256:2380d0be33b1f49a7b35e724aef8453d1469027b2d0466f9da1e38accdaf6ec3",
+    "evidence_mapping": "sha256:1c4ad999b4fe19d92f4c23cd628fe08921950733c132f85a0d7bb8d88c9ce508",
+    "field_authority": "sha256:929b41e6130601e63c86393f2ebaa11da039f2da4dc9d51cdaa46214cd7fee8b"
+  },
+  "field_authority_hash": "sha256:8491038d70480afa06621917b126f26825797c0ab6f4220c7c77685d99988d57",
+  "fields": [
+    {
+      "authority": "SERVER_OWNED",
+      "contract": "EvidenceMapPatch",
+      "derivation": "always empty at P06",
+      "field": "claims",
+      "independent_semantic_evidence": false
+    },
+    {
+      "authority": "SERVER_OWNED",
+      "contract": "EvidenceMapPatch",
+      "derivation": "always empty at P06",
+      "field": "diagnostics",
+      "independent_semantic_evidence": false
+    },
+    {
+      "authority": "SERVER_OWNED",
+      "contract": "EvidenceMapPatch",
+      "derivation": "constant 'READY' set by the materializer",
+      "field": "status",
+      "independent_semantic_evidence": false
+    },
+    {
+      "authority": "SERVER_OWNED",
+      "contract": "EvidenceMapPatch",
+      "derivation": "copied verbatim from request.evidence_bundle.submission_id",
+      "field": "submission_id",
+      "independent_semantic_evidence": false
+    },
+    {
+      "authority": "SERVER_DERIVED_FROM_MODEL_INPUT",
+      "contract": "EvidenceMappingSummary",
+      "derivation": "count of model relations with INSUFFICIENT",
+      "field": "insufficient_count",
+      "independent_semantic_evidence": false
+    },
+    {
+      "authority": "SERVER_DERIVED_FROM_MODEL_INPUT",
+      "contract": "EvidenceMappingSummary",
+      "derivation": "count of model-emitted relations",
+      "field": "mapped_relation_count",
+      "independent_semantic_evidence": false
+    },
+    {
+      "authority": "SERVER_DERIVED_FROM_MODEL_INPUT",
+      "contract": "EvidenceMappingSummary",
+      "derivation": "count of model relations with PARTIAL",
+      "field": "partial_count",
+      "independent_semantic_evidence": false
+    },
+    {
+      "authority": "SERVER_DERIVED_FROM_MODEL_INPUT",
+      "contract": "EvidenceMappingSummary",
+      "derivation": "count of model relations with SUFFICIENT",
+      "field": "sufficient_count",
+      "independent_semantic_evidence": false
+    },
+    {
+      "authority": "SERVER_DERIVED_FROM_MODEL_INPUT",
+      "contract": "EvidenceMappingSummary",
+      "derivation": "count of model relations with UNCERTAIN",
+      "field": "uncertain_count",
+      "independent_semantic_evidence": false
+    },
+    {
+      "authority": "SERVER_OWNED",
+      "contract": "EvidenceVariantMatch",
+      "derivation": "copied verbatim from trusted dimension.dimension_id",
+      "field": "dimension_id",
+      "independent_semantic_evidence": false
+    },
+    {
+      "authority": "SERVER_DERIVED_FROM_MODEL_INPUT",
+      "contract": "EvidenceVariantMatch",
+      "derivation": "_compatibility_fit(aggregate model support_status)",
+      "field": "evidence_fit",
+      "independent_semantic_evidence": false
+    },
+    {
+      "authority": "SERVER_DERIVED_FROM_MODEL_INPUT",
+      "contract": "EvidenceVariantMatch",
+      "derivation": "ordered union of the model-selected evidence ids for the variant",
+      "field": "evidence_ids",
+      "independent_semantic_evidence": false
+    },
+    {
+      "authority": "SERVER_OWNED",
+      "contract": "EvidenceVariantMatch",
+      "derivation": "constant server string",
+      "field": "justification",
+      "independent_semantic_evidence": false,
+      "note": "Fixed prose ('Relaciones categoricas P06 materializadas por el servidor.'). It is a constant and therefore carries no information about any field's authority. It must never be read as evidence that the neighbouring support_status is server-owned."
+    },
+    {
+      "authority": "SERVER_DERIVED_FROM_MODEL_INPUT",
+      "contract": "EvidenceVariantMatch",
+      "derivation": "0.0 when the aggregate model status is UNCERTAIN, otherwise 1.0",
+      "field": "mapping_confidence",
+      "independent_semantic_evidence": false,
+      "note": "Not a server confidence estimate. It is a two-valued projection of the model's own status."
+    },
+    {
+      "authority": "SERVER_DERIVED_FROM_MODEL_INPUT",
+      "contract": "EvidenceVariantMatch",
+      "derivation": "_aggregate_support_status(model relation statuses)",
+      "field": "support_status",
+      "independent_semantic_evidence": false,
+      "note": "Deterministic precedence over the model's own per-template statuses. It is a restatement, not a second opinion."
+    },
+    {
+      "authority": "SERVER_OWNED",
+      "contract": "EvidenceVariantMatch",
+      "derivation": "copied verbatim from trusted variant.variant_id",
+      "field": "variant_id",
+      "independent_semantic_evidence": false
+    },
+    {
+      "authority": "MODEL_OWNED",
+      "contract": "QuestionOpportunity",
+      "derivation": "copied verbatim from relation.abstention_reason",
+      "field": "abstention_reason",
+      "independent_semantic_evidence": true
+    },
+    {
+      "authority": "SERVER_OWNED",
+      "contract": "QuestionOpportunity",
+      "derivation": "copied verbatim from trusted dimension.verification_priority",
+      "field": "activity_priority",
+      "independent_semantic_evidence": false
+    },
+    {
+      "authority": "SERVER_OWNED",
+      "contract": "QuestionOpportunity",
+      "derivation": "copied verbatim from trusted template.allowed_anchor_structures",
+      "field": "allowed_anchor_structures",
+      "independent_semantic_evidence": false
+    },
+    {
+      "authority": "SERVER_OWNED",
+      "contract": "QuestionOpportunity",
+      "derivation": "copied verbatim from trusted template.allowed_response_formats",
+      "field": "allowed_response_formats",
+      "independent_semantic_evidence": false
+    },
+    {
+      "authority": "SERVER_OWNED",
+      "contract": "QuestionOpportunity",
+      "derivation": "copied verbatim from trusted template.cognitive_operation",
+      "field": "cognitive_operation",
+      "independent_semantic_evidence": false
+    },
+    {
+      "authority": "SERVER_OWNED",
+      "contract": "QuestionOpportunity",
+      "derivation": "copied verbatim from trusted template.difficulty",
+      "field": "difficulty",
+      "independent_semantic_evidence": false
+    },
+    {
+      "authority": "SERVER_OWNED",
+      "contract": "QuestionOpportunity",
+      "derivation": "copied verbatim from trusted dimension.dimension_id",
+      "field": "dimension_id",
+      "independent_semantic_evidence": false
+    },
+    {
+      "authority": "SERVER_DERIVED_FROM_MODEL_INPUT",
+      "contract": "QuestionOpportunity",
+      "derivation": "_compatibility_fit(relation.support_status)",
+      "field": "evidence_fit",
+      "independent_semantic_evidence": false,
+      "note": "A pure function of the model support_status. It restates the model decision as a float and adds no independent server judgement."
+    },
+    {
+      "authority": "MODEL_OWNED",
+      "contract": "QuestionOpportunity",
+      "derivation": "resolved from relation.evidence_aliases against the trusted envelope",
+      "field": "evidence_ids",
+      "independent_semantic_evidence": true,
+      "note": "The model chooses which evidence supports the construct. Unknown aliases are rejected deterministically, so this field cannot carry a silent invention."
+    },
+    {
+      "authority": "SERVER_OWNED",
+      "contract": "QuestionOpportunity",
+      "derivation": "copied verbatim from trusted template.focus",
+      "field": "focus",
+      "independent_semantic_evidence": false
+    },
+    {
+      "authority": "SERVER_OWNED",
+      "contract": "QuestionOpportunity",
+      "derivation": "copied verbatim from trusted template.observable",
+      "field": "observable",
+      "independent_semantic_evidence": false
+    },
+    {
+      "authority": "SERVER_OWNED",
+      "contract": "QuestionOpportunity",
+      "derivation": "stable_id() over submission, blueprint, template and evidence ids",
+      "field": "opportunity_id",
+      "independent_semantic_evidence": false
+    },
+    {
+      "authority": "SERVER_OWNED",
+      "contract": "QuestionOpportunity",
+      "derivation": "copied verbatim from trusted template.minimum_quality",
+      "field": "opportunity_quality",
+      "independent_semantic_evidence": false
+    },
+    {
+      "authority": "SERVER_OWNED",
+      "contract": "QuestionOpportunity",
+      "derivation": "copied verbatim from trusted template.opportunity_template_id",
+      "field": "opportunity_template_id",
+      "independent_semantic_evidence": false
+    },
+    {
+      "authority": "MODEL_OWNED",
+      "contract": "QuestionOpportunity",
+      "derivation": "copied verbatim from relation.semantic_uncertainty",
+      "field": "semantic_uncertainty",
+      "independent_semantic_evidence": true
+    },
+    {
+      "authority": "SERVER_OWNED",
+      "contract": "QuestionOpportunity",
+      "derivation": "copied verbatim from trusted template.student_justification_required",
+      "field": "student_justification_required",
+      "independent_semantic_evidence": false
+    },
+    {
+      "authority": "SERVER_OWNED",
+      "contract": "QuestionOpportunity",
+      "derivation": "copied verbatim from trusted request.evidence_bundle.submission_id",
+      "field": "submission_id",
+      "independent_semantic_evidence": false
+    },
+    {
+      "authority": "MODEL_OWNED",
+      "contract": "QuestionOpportunity",
+      "derivation": "copied verbatim from relation.support_description",
+      "field": "support_description",
+      "independent_semantic_evidence": true
+    },
+    {
+      "authority": "MODEL_OWNED",
+      "contract": "QuestionOpportunity",
+      "derivation": "copied verbatim from relation.support_status",
+      "field": "support_status",
+      "independent_semantic_evidence": true
+    },
+    {
+      "authority": "MODEL_OWNED",
+      "contract": "QuestionOpportunity",
+      "derivation": "copied verbatim from relation.support_type",
+      "field": "support_type",
+      "independent_semantic_evidence": true
+    },
+    {
+      "authority": "SERVER_OWNED",
+      "contract": "QuestionOpportunity",
+      "derivation": "copied verbatim from trusted template.target_minutes",
+      "field": "target_minutes",
+      "independent_semantic_evidence": false
+    },
+    {
+      "authority": "SERVER_OWNED",
+      "contract": "QuestionOpportunity",
+      "derivation": "copied verbatim from trusted variant.variant_id",
+      "field": "variant_id",
+      "independent_semantic_evidence": false
+    }
+  ],
+  "fields_by_authority": {
+    "MODEL_OWNED": [
+      "QuestionOpportunity.abstention_reason",
+      "QuestionOpportunity.evidence_ids",
+      "QuestionOpportunity.semantic_uncertainty",
+      "QuestionOpportunity.support_description",
+      "QuestionOpportunity.support_status",
+      "QuestionOpportunity.support_type"
+    ],
+    "SERVER_DERIVED_FROM_MODEL_INPUT": [
+      "EvidenceMappingSummary.insufficient_count",
+      "EvidenceMappingSummary.mapped_relation_count",
+      "EvidenceMappingSummary.partial_count",
+      "EvidenceMappingSummary.sufficient_count",
+      "EvidenceMappingSummary.uncertain_count",
+      "EvidenceVariantMatch.evidence_fit",
+      "EvidenceVariantMatch.evidence_ids",
+      "EvidenceVariantMatch.mapping_confidence",
+      "EvidenceVariantMatch.support_status",
+      "QuestionOpportunity.evidence_fit"
+    ],
+    "SERVER_OWNED": [
+      "EvidenceMapPatch.claims",
+      "EvidenceMapPatch.diagnostics",
+      "EvidenceMapPatch.status",
+      "EvidenceMapPatch.submission_id",
+      "EvidenceVariantMatch.dimension_id",
+      "EvidenceVariantMatch.justification",
+      "EvidenceVariantMatch.variant_id",
+      "QuestionOpportunity.activity_priority",
+      "QuestionOpportunity.allowed_anchor_structures",
+      "QuestionOpportunity.allowed_response_formats",
+      "QuestionOpportunity.cognitive_operation",
+      "QuestionOpportunity.difficulty",
+      "QuestionOpportunity.dimension_id",
+      "QuestionOpportunity.focus",
+      "QuestionOpportunity.observable",
+      "QuestionOpportunity.opportunity_id",
+      "QuestionOpportunity.opportunity_quality",
+      "QuestionOpportunity.opportunity_template_id",
+      "QuestionOpportunity.student_justification_required",
+      "QuestionOpportunity.submission_id",
+      "QuestionOpportunity.target_minutes",
+      "QuestionOpportunity.variant_id"
+    ]
+  },
+  "materializer_boundary": {
+    "alias_envelope_schema": {
+      "boundary_hash": "sha256:d4fafd899f10f33d39d99f296c79acabec0b5e5e08768a7c970dbcff23057f76",
+      "format": "p06-alias-envelope-schema-boundary/1.0.0",
+      "schema_hash": "sha256:ab1dc167292a65912b0ad7c2a3da4905060799e13425bba663777fbe0a55e368",
+      "schema_name": "EvidenceMappingAliasEnvelope",
+      "version": "p06-alias-envelope/1.0.0"
+    },
+    "boundary_hash": "sha256:54b399d12f1236687cbdd8627afeca8137d31dec2acb46526371699d184ce338",
+    "canonical_contracts_source_hash": "sha256:2380d0be33b1f49a7b35e724aef8453d1469027b2d0466f9da1e38accdaf6ec3",
+    "canonical_identity_source_hash": "sha256:b8f4220f8a272fbc0f2b1183dec4165429864efb4644197ca4f8c25483dc5604",
+    "format": "p06-materializer-boundary/1.0.0",
+    "materializer_source_hash": "sha256:1c4ad999b4fe19d92f4c23cd628fe08921950733c132f85a0d7bb8d88c9ce508",
+    "version": "p06-evidence-materializer/1.0.0"
+  },
+  "materializer_version": "p06-evidence-materializer/1.0.0",
+  "model_draft_schema_hash": "sha256:c315e3350a2366880d645addba95b552db2d60bdbf3f5d0f703c36949f2cc31a",
+  "provider_draft_surface": {
+    "draft_fields": [
+      "mappings",
+      "scope_alias"
+    ],
+    "relation_fields": [
+      "abstention_reason",
+      "evidence_aliases",
+      "semantic_uncertainty",
+      "support_description",
+      "support_status",
+      "support_type",
+      "template_alias",
+      "variant_alias"
+    ],
+    "routing_fields": [
+      "evidence_aliases",
+      "template_alias",
+      "variant_alias"
+    ],
+    "semantic_fields": [
+      "abstention_reason",
+      "semantic_uncertainty",
+      "support_description",
+      "support_status",
+      "support_type"
+    ]
+  },
+  "relation_draft_schema_hash": "sha256:85a0af2b3616201a6210c3647ed66bc30cdf908664cb1966dd705bb6a52afd1a",
+  "schema_version": "p06-field-authority/1.0.0",
+  "server_prose_rule": "Server justification prose never establishes field authority. Only this artifact, derived from the executable materializer, does.",
+  "stage": "P06"
+}

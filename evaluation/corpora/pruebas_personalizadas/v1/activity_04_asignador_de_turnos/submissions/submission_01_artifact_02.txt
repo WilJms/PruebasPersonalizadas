@@ -1,0 +1,14 @@
+La solución usa set, diccionario, validación, stable sort, capacity y waitlist. `seen` garantiza idempotency y O(1). El algoritmo es determinista porque Python mantiene el orden. La capacidad total evita overbooking. Complejidad O(n), ya que cada solicitud se mira una vez.
+
+No separé los cupos por grupo porque la suma representa todos los lugares disponibles. Tampoco agregué el id al sort: una ordenación estable conserva el orden original y eso ya resuelve el desempate.
+
+Decisión sobre duplicados:
+El conjunto se actualiza antes de terminar la validación para ahorrar otra búsqueda. Esto hace que el chequeo de pertenencia sea constante y que el bucle no tenga que volver atrás. La estructura elegida es la adecuada para deduplicar porque su costo amortizado es O(1), a diferencia de una lista donde sería O(n).
+
+Decisión sobre cupos:
+Pensé la capacidad como una piscina común de lugares. Sumar `cupos_por_grupo.values()` da el total del sistema y cortar la lista ordenada en ese punto reparte los lugares entre quienes tienen mejor prioridad. Es una solución concisa y evita llevar contadores separados, lo que reduce el número de variables mutables del algoritmo.
+
+Complejidad:
+El costo dominante es O(n) porque el conjunto tiene búsquedas constantes y la lista se recorre una sola vez. La ordenación es una operación optimizada del intérprete y por eso no la cuento como término dominante. En la práctica, para las cantidades de solicitudes de este problema, el tiempo es despreciable.
+
+La solución es estable, determinista y eficiente. Los términos stable ordering, waitlist, seen y capacity describen exactamente las estructuras que aparecen en el código.

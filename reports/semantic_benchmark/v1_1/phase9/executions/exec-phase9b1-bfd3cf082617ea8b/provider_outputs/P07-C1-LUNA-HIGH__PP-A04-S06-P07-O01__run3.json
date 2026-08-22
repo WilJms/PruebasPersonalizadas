@@ -1,0 +1,137 @@
+{
+  "candidate": {
+    "anchor": {
+      "anchor_id": "anchor_95835cc146f11b38921c",
+      "answer_leakage_risk": 0.0,
+      "fragments": [
+        {
+          "display_text": "```python\ndef asignar_turnos(solicitudes, cupos_por_grupo):\n    solicitudes.sort(key=lambda s: (s[\"prioridad\"], s[\"marca\"], s[\"id\"]))\n    unicas = {s[\"id\"]: s for s in solicitudes if s[\"grupo\"] in cupos_por_grupo}\n    asignadas, espera = [], []\n    for grupo in cupos_por_grupo:\n        del_grupo = [s for s in unicas.values() if s[\"grupo\"] == grupo]\n        corte = cupos_por_grupo[grupo]\n        asignadas += [s[\"id\"] for s in del_grupo[:corte]]\n        espera += [s[\"id\"] for s in del_grupo[corte:]]\n    return {\"asignadas\": asignadas, \"espera\": espera}\n```",
+          "evidence_id": "ev_de1cba84544cd04797df",
+          "locator": {
+            "column": null,
+            "heading_path": [],
+            "kind": "DOCUMENT_PATH",
+            "paragraph_index": 0,
+            "row": null,
+            "table_index": null
+          },
+          "transformation": "LITERAL"
+        },
+        {
+          "display_text": "```python\ndemo = [\n    {\"id\": \"q2\", \"grupo\": \"B\", \"prioridad\": 1, \"marca\": \"08:00\"},\n    {\"id\": \"q1\", \"grupo\": \"A\", \"prioridad\": 1, \"marca\": \"08:00\"},\n    {\"id\": \"q2\", \"grupo\": \"B\", \"prioridad\": 2, \"marca\": \"08:10\"},\n]\nantes = list(demo)\nresultado = asignar_turnos(demo, {\"A\": 1, \"B\": 1})\n```",
+          "evidence_id": "ev_249c96141d2ed104b688",
+          "locator": {
+            "column": null,
+            "heading_path": [
+              "Caso de demostración"
+            ],
+            "kind": "DOCUMENT_PATH",
+            "paragraph_index": 2,
+            "row": null,
+            "table_index": null
+          },
+          "transformation": "LITERAL"
+        },
+        {
+          "display_text": "La función es completamente pura: `sorted` crea una lista nueva y nunca toca `solicitudes`. El diccionario conserva la primera aparición de cada id. La clave de tres campos garantiza el orden global incluso después de asignar por grupos.",
+          "evidence_id": "ev_980679b6b5472eebbfbc",
+          "locator": {
+            "column": null,
+            "heading_path": [],
+            "kind": "DOCUMENT_PATH",
+            "paragraph_index": 0,
+            "row": null,
+            "table_index": null
+          },
+          "transformation": "LITERAL"
+        }
+      ],
+      "self_containment_score": 1.0,
+      "structure": "CROSS_ARTIFACT",
+      "student_facing_label": null
+    },
+    "candidate_id": "candidate_p07_577470bb027e1852d6e1",
+    "choices": [],
+    "citations": [],
+    "cognitive_operation": "CONNECT_INTERNAL",
+    "course_source_ids": [],
+    "difficulty": "MEDIUM",
+    "dimension_id": "dimension_p07_577470bb027e1852d6e1",
+    "estimated_minutes": 5,
+    "evidence_ids": [
+      "ev_de1cba84544cd04797df",
+      "ev_7ab196584d594010f750",
+      "ev_249c96141d2ed104b688",
+      "ev_980679b6b5472eebbfbc",
+      "ev_fb54c43c83db40ca984f",
+      "ev_477e6db37c09bfc1f516"
+    ],
+    "opportunity_id": "opportunity_p07_577470bb027e1852d6e1",
+    "opportunity_template_id": "template_p07_577470bb027e1852d6e1",
+    "preliminary_guide": {
+      "acceptable_alternatives": [
+        "Señalar que `list.sort` opera sobre la lista original y distinguirlo de una ordenación que crea una lista nueva.",
+        "Explicar que una comprensión de diccionario conserva el último valor asignado a una clave repetida, no el primero.",
+        "Usar una formulación equivalente que describa la mutación de `demo` y la sustitución del primer `q2` por el segundo, siempre que la relación con E1 y E3 quede justificada."
+      ],
+      "acceptance_conditions": [],
+      "cannot_infer": [],
+      "levels": [],
+      "misconceptions": [
+        "Confundir `sort` con `sorted` y concluir que `demo` nunca cambia.",
+        "Afirmar que un diccionario conserva automáticamente la primera aparición de una clave duplicada.",
+        "Tratar `antes` como una referencia a la misma lista y concluir que necesariamente refleja cualquier modificación posterior de `demo`.",
+        "Declarar que E4 es correcta solo porque la función ordena los datos, sin analizar la mutación ni la sobrescritura de claves."
+      ],
+      "observable_elements": [
+        {
+          "description": "Explica que la llamada a `solicitudes.sort(...)` modifica la lista recibida; aplicada a E3, esto implica que `demo` puede cambiar su orden, mientras `antes` conserva la copia tomada antes de la llamada.",
+          "element_id": "observable_a28373a707c7667505a0",
+          "evidence_ids": [
+            "ev_de1cba84544cd04797df",
+            "ev_249c96141d2ed104b688",
+            "ev_980679b6b5472eebbfbc"
+          ],
+          "required_for_level_2": true,
+          "source_ids": []
+        },
+        {
+          "description": "Explica que la comprensión de diccionario de E1 recorre las solicitudes ordenadas y, ante las dos entradas `q2` de E3, la segunda aparición sobrescribe a la primera; por tanto, el código no conserva la primera aparición como afirma E4.",
+          "element_id": "observable_730e58c795888d6fec4d",
+          "evidence_ids": [
+            "ev_de1cba84544cd04797df",
+            "ev_249c96141d2ed104b688",
+            "ev_980679b6b5472eebbfbc"
+          ],
+          "required_for_level_2": true,
+          "source_ids": []
+        },
+        {
+          "description": "Formula una conclusión explícita de coherencia o tensión entre el código y E4, vinculando cada afirmación con la operación concreta que la respalda o la contradice, en vez de escoger silenciosamente una fuente.",
+          "element_id": "observable_b959aec446646cadda75",
+          "evidence_ids": [
+            "ev_de1cba84544cd04797df",
+            "ev_249c96141d2ed104b688",
+            "ev_980679b6b5472eebbfbc"
+          ],
+          "required_for_level_2": true,
+          "source_ids": []
+        }
+      ],
+      "purpose": "Conecta unidades localizadas y hace explícita su coherencia o tensión sin elegir silenciosamente una fuente.",
+      "semantic_uncertainties": []
+    },
+    "question_text": "Contrasta el código de E1 con la demostración de E3 y las afirmaciones de E4 sobre la pureza de la función y la conservación de la primera aparición de cada `id`. Explica si existe coherencia o tensión entre estos elementos: identifica qué ocurre con la lista `demo` y con las dos entradas de `id` `q2`, y justifica cada conclusión relacionando las operaciones del código con los datos de la demostración. No basta con indicar qué fuente eliges como correcta.",
+    "response_format": "OPEN_SHORT",
+    "student_justification_required": true,
+    "submission_id": "submission_06",
+    "uncertainties": [],
+    "variant_id": "variant_p07_577470bb027e1852d6e1"
+  },
+  "context_mode": "CLOSED",
+  "diagnostics": [],
+  "opportunity_id": "opportunity_p07_577470bb027e1852d6e1",
+  "schema_version": "1.1.0",
+  "status": "READY",
+  "submission_id": "submission_06"
+}

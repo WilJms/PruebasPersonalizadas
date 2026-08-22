@@ -12,10 +12,21 @@ from pydantic import BaseModel, TypeAdapter, ValidationError
 from sqlalchemy.exc import IntegrityError, OperationalError
 
 from ..canonical import canonical_hash, sha256_bytes, stable_id
+from ..blueprint_compiler import (
+    BLUEPRINT_COMPILER_VERSION,
+    blueprint_compiler_boundary,
+    preflight_compiled_blueprint,
+)
 from ..contracts import models as m
 from ..diagnostics import diagnostic
 from ..exports import RENDERER_VERSION, render_views
+from ..guide_generation import (
+    build_guide_approval_binding,
+    guide_id_for_binding,
+    p09_alias_envelope_boundary,
+)
 from ..model_gateway import (
+    CallBudget,
     GatewayConfig,
     GatewayContextError,
     GatewayMode,
@@ -25,8 +36,15 @@ from ..model_gateway import (
     ModelGateway,
     TransientProviderError,
 )
-from ..model_gateway.mock_factory import build_trusted_context
-from ..model_gateway.registry import PROMPT_VERSION
+from ..model_gateway.openai_pricing import estimate_cost_usd
+from ..model_gateway.openai_routes import (
+    LUNA_MODEL_ID,
+    OPENAI_MAX_INPUT_TOKENS,
+    OPENAI_P11_MAX_INPUT_TOKENS,
+    OPENAI_MODEL_BY_PROMPT,
+    OPENAI_ROUTE_PROFILE_MAX_TRANSIENT_RETRIES,
+)
+from ..model_gateway.registry import prompt_spec
 from ..parsers import (
     DOCX_MEDIA_TYPE,
     PARSER_VERSION,
@@ -36,13 +54,17 @@ from ..parsers import (
     parse_in_subprocess,
 )
 from ..planning import PLANNER_VERSION, build_assessment_plan
+from ..provider_authorization import SyntheticProviderGrant
+from ..question_generation import QuestionGenerationCompilationError
+from ..observability import p08_decision_diagnostics
 from ..validation import (
     ContextValidationError,
+    PROMPT_APPLICATION_VALIDATOR_VERSIONS,
+    build_blueprint_review_preflight,
     validate_assessment_plan,
     validate_evaluation_guide,
     validate_evidence_map,
     validate_generation_result,
-    validate_review_result,
 )
 from .auth import Actor
 from . import dto
@@ -65,7 +87,6 @@ from .repository import (
     JobRow,
     NotFound,
     PolicyDecisionRow,
-    QuestionReviewRow,
     Repository,
     RubricSpecRow,
     StageRunRow,
@@ -79,9 +100,289 @@ ALLOWED_MEDIA_TYPES = frozenset(
     {"text/plain", "text/markdown", "application/pdf", DOCX_MEDIA_TYPE}
 )
 ACTIVITY_UPLOAD_OPEN_STATUSES = frozenset({"DRAFT"})
-ACTIVITY_PIPELINE_VERSION = "stage1-activity-pipeline/1.0.0"
-SUBMISSION_PIPELINE_VERSION = "stage1-submission-pipeline/1.0.0"
-ASSEMBLER_VERSION = "stage1-assembler/1.0.0"
+ACTIVITY_PIPELINE_VERSION = "stage1-activity-pipeline/3.0.0"
+SUBMISSION_PIPELINE_VERSION = "stage1-submission-pipeline/4.0.0"
+GUIDE_BUILD_DESCRIPTOR_VERSION = "guide-build-descriptor/1.0.0"
+ASSEMBLER_VERSION = "stage1-assembler/2.0.0"
+QUESTION_VALIDATION_STAGE_VERSION = "question-validation-stage/1.0.0"
+BLUEPRINT_REVIEW_DESCRIPTOR_VERSION = "blueprint-review-descriptor/3.0.0"
+BLUEPRINT_PREFLIGHT_DESCRIPTOR_VERSION = "blueprint-preflight-descriptor/1.0.0"
+
+
+def _blueprint_review_descriptor_component_version() -> str:
+    return (
+        "blueprint-review-descriptor/3:"
+        + canonical_hash(
+            {
+                "format": BLUEPRINT_REVIEW_DESCRIPTOR_VERSION,
+                "request_schema": m.BlueprintReviewRequest.model_json_schema(
+                    mode="validation"
+                ),
+            }
+        ).removeprefix("sha256:")
+    )
+
+
+def _blueprint_review_descriptor_policy_hash(
+    request: m.BlueprintReviewRequest,
+) -> str:
+    """Bind immutable review inputs without binding them to a worker mode."""
+
+    return canonical_hash(
+        {
+            "format": BLUEPRINT_REVIEW_DESCRIPTOR_VERSION,
+            "blueprint_policy": request.blueprint_policy.model_dump(
+                mode="json"
+            ),
+            "p10_enabled": False,
+        }
+    )
+
+
+def _blueprint_preflight_component_version() -> str:
+    return _component_fingerprint(
+        "blueprint-preflight/1",
+        {
+            "compiler_version": BLUEPRINT_COMPILER_VERSION,
+            "compiler_boundary": blueprint_compiler_boundary(),
+            "preflight_schema": m.BlueprintReviewPreflight.model_json_schema(
+                mode="validation"
+            ),
+        },
+    )
+
+
+def _blueprint_preflight_descriptor_component_version() -> str:
+    return _component_fingerprint(
+        "blueprint-preflight-descriptor/1",
+        {
+            "format": BLUEPRINT_PREFLIGHT_DESCRIPTOR_VERSION,
+            "blueprint_schema": m.AssessmentBlueprint.model_json_schema(
+                mode="validation"
+            ),
+        },
+    )
+
+
+def _blueprint_preflight_descriptor_policy_hash(
+    *, blueprint_policy: m.BlueprintPolicy
+) -> str:
+    return canonical_hash(
+        {
+            "format": BLUEPRINT_PREFLIGHT_DESCRIPTOR_VERSION,
+            "blueprint_policy": blueprint_policy.model_dump(mode="json"),
+            "p10_enabled": False,
+        }
+    )
+
+
+def _component_fingerprint(prefix: str, material: Any) -> str:
+    return f"{prefix}:" + canonical_hash(material).removeprefix("sha256:")
+
+
+def _parser_component_version(*, require_libmagic: bool) -> str:
+    return _component_fingerprint(
+        "safe-parser-stage/2",
+        {
+            "parser_version": PARSER_VERSION,
+            "require_libmagic": require_libmagic,
+            "artifact_schema": m.ArtifactRef.model_json_schema(mode="validation"),
+            "evidence_schema": m.EvidenceUnit.model_json_schema(mode="validation"),
+        },
+    )
+
+
+def _planner_component_version() -> str:
+    return _component_fingerprint(
+        "assessment-planner-stage/2",
+        {
+            "planner_version": PLANNER_VERSION,
+            "mapping_schema": m.EvidenceMapPatch.model_json_schema(
+                mode="validation"
+            ),
+            "blueprint_schema": m.AssessmentBlueprint.model_json_schema(
+                mode="validation"
+            ),
+            "plan_schema": m.AssessmentPlan.model_json_schema(mode="validation"),
+        },
+    )
+
+
+def _assembler_component_version() -> str:
+    return _component_fingerprint(
+        "assessment-assembler-stage/2",
+        {
+            "assembler_version": ASSEMBLER_VERSION,
+            "assessment_schema": m.Assessment.model_json_schema(mode="validation"),
+        },
+    )
+
+
+def _question_validation_component_version() -> str:
+    return _component_fingerprint(
+        "question-validation-stage/1",
+        {
+            "version": QUESTION_VALIDATION_STAGE_VERSION,
+            "application_validator": PROMPT_APPLICATION_VALIDATOR_VERSIONS[
+                "P07_QUESTION_BUILD_V1"
+            ],
+            "generation_schema": m.QuestionGenerationResult.model_json_schema(
+                mode="validation"
+            ),
+            "opportunity_schema": m.QuestionOpportunity.model_json_schema(
+                mode="validation"
+            ),
+            "evidence_bundle_schema": m.EvidenceBundle.model_json_schema(
+                mode="validation"
+            ),
+        },
+    )
+
+
+def assemble_assessment_snapshot(
+    *,
+    tenant_id: str,
+    activity_id: str,
+    submission_id: str,
+    subject_ref: str,
+    created_at: datetime,
+    blueprint: m.AssessmentBlueprint,
+    plan: m.AssessmentPlan,
+    mapping: m.EvidenceMapPatch,
+    questions: list[m.SelectedQuestion],
+    assignment_prompt_hashes: list[str],
+    rubric_hashes: list[str],
+    submission_hashes: list[str],
+    submission_media_type: str,
+    prompt_versions: dict[str, str],
+    model_snapshots: dict[str, str],
+    policy_hash: str,
+) -> m.Assessment:
+    """Build the canonical Assessment used by both product and rehearsals.
+
+    Keeping this deterministic assembler as one production function prevents
+    the evaluation harness from manufacturing a friendlier P09 input shape.
+    """
+
+    required = [
+        question.question_id
+        for question in questions
+        if question.student_justification_required
+    ]
+    mode = blueprint.assessment_constraints.structured_justification_policy.mode
+    opportunity_by_dimension: dict[str, list[m.QuestionOpportunity]] = {}
+    for opportunity in mapping.opportunities:
+        opportunity_by_dimension.setdefault(
+            opportunity.dimension_id, []
+        ).append(opportunity)
+    coverage = [
+        m.CoverageItem(
+            dimension_id=dimension.dimension_id,
+            available_variant_count=len(dimension.evidence_variants),
+            available_opportunity_count=len(
+                opportunity_by_dimension.get(dimension.dimension_id, [])
+            ),
+            selected_opportunity_count=sum(
+                question.dimension_id == dimension.dimension_id
+                for question in questions
+            ),
+            reused_variant_count=0,
+            evidence_unit_count=len(
+                {
+                    evidence_id
+                    for opportunity in opportunity_by_dimension.get(
+                        dimension.dimension_id, []
+                    )
+                    for evidence_id in opportunity.evidence_ids
+                }
+            ),
+            diagnostics=[],
+        )
+        for dimension in blueprint.dimensions
+    ]
+    normalized_created_at = (
+        created_at.replace(tzinfo=UTC)
+        if created_at.tzinfo is None
+        else created_at.astimezone(UTC)
+    )
+
+    assessment_id = stable_id(
+        "assessment",
+        submission_id,
+        plan.plan_id,
+        [question.source_candidate_id for question in questions],
+    )
+    return m.Assessment(
+        assessment_id=assessment_id,
+        tenant_id=tenant_id,
+        activity_id=activity_id,
+        submission_id=submission_id,
+        subject_ref=subject_ref,
+        status=m.WorkflowStatus.NEEDS_REVIEW,
+        context_mode=m.ContextMode.CLOSED,
+        assessment_plan_id=plan.plan_id,
+        question_count=plan.question_count,
+        questions=questions,
+        coverage=coverage,
+        structured_justification=m.StructuredJustificationSummary(
+            mode=mode,
+            required_question_ids=required,
+            limited_evidence_notice_required=(
+                mode != m.StructuredJustificationMode.ALL
+            ),
+        ),
+        diagnostics=[],
+        lineage=m.Lineage(
+            assignment_prompt_hashes=assignment_prompt_hashes,
+            rubric_hashes=rubric_hashes,
+            submission_hashes=submission_hashes,
+            blueprint_id=blueprint.blueprint_id,
+            blueprint_version=blueprint.blueprint_version,
+            parser_versions={submission_media_type: PARSER_VERSION},
+            prompt_versions=prompt_versions,
+            model_snapshots=model_snapshots,
+            policy_hash=policy_hash,
+            planner_version=PLANNER_VERSION,
+            renderer_version=RENDERER_VERSION,
+        ),
+        created_at=normalized_created_at,
+    )
+
+
+def selected_question_from_candidate(
+    candidate: m.QuestionCandidate,
+    opportunity: m.QuestionOpportunity,
+    *,
+    submission_id: str,
+) -> m.SelectedQuestion:
+    """Apply the product's deterministic candidate-to-assessment projection."""
+
+    return m.SelectedQuestion(
+        question_id=stable_id(
+            "question", submission_id, candidate.candidate_id
+        ),
+        source_candidate_id=candidate.candidate_id,
+        opportunity_id=candidate.opportunity_id,
+        opportunity_template_id=candidate.opportunity_template_id,
+        dimension_id=candidate.dimension_id,
+        variant_id=candidate.variant_id,
+        cognitive_operation=candidate.cognitive_operation,
+        response_format=candidate.response_format,
+        difficulty=candidate.difficulty,
+        estimated_minutes=candidate.estimated_minutes,
+        question_text=candidate.question_text,
+        anchor=candidate.anchor,
+        evidence_ids=candidate.evidence_ids,
+        course_source_ids=candidate.course_source_ids,
+        citations=candidate.citations,
+        choices=candidate.choices,
+        student_justification_required=(
+            candidate.student_justification_required
+        ),
+        preliminary_guide=candidate.preliminary_guide,
+        semantic_uncertainties=candidate.uncertainties,
+        planning_score=opportunity.activity_priority,
+    )
 
 _ACTIVITY_RESUME_ORDER = {
     "ACTIVITY_PARSE": 0,
@@ -90,15 +391,30 @@ _ACTIVITY_RESUME_ORDER = {
     "AMBIGUITY_TRIAGE": 3,
     "BLUEPRINT_BUILD": 4,
     "BLUEPRINT_REVIEW": 5,
+    "BLUEPRINT_PREFLIGHT": 5,
 }
 _SUBMISSION_RESUME_ORDER = {
     "SUBMISSION_PARSE": 0,
     "EVIDENCE_MAP": 1,
     "ASSESSMENT_PLAN": 2,
     "QUESTION_GENERATE": 3,
+    "QUESTION_VALIDATE": 4,
+    # Historical Phase 5 jobs can resume from this floor. The Phase 6
+    # pipeline reconciles their current P07 StageRun and never re-enters P08.
     "QUESTION_REVIEW": 4,
+    "ASSEMBLE": 5,
+    # A historical pre-Phase-7 floor now converges at ASSEMBLE and cannot
+    # re-enter P09 before approval.
     "GUIDE_BUILD": 5,
-    "ASSEMBLE": 6,
+}
+_GUIDE_BUILD_RESUME_ORDER = {"GUIDE_BUILD": 0}
+_BLUEPRINT_REVIEW_RESUME_ORDER = {
+    "BLUEPRINT_REVIEW": 0,
+    "BLUEPRINT_PREFLIGHT": 0,
+}
+_BLUEPRINT_PREFLIGHT_RESUME_ORDER = {
+    "BLUEPRINT_REVIEW": 0,
+    "BLUEPRINT_PREFLIGHT": 0,
 }
 _PROMPT_APPLICATION_STAGE = {
     "P01_ACTIVITY_SPEC_V1": "ACTIVITY_SPEC",
@@ -128,12 +444,32 @@ class _CooperativeJobCancellation(RuntimeError):
 
 _SECURITY_FAILURE_CODES = frozenset(
     {
+        "ANCHOR_NOT_DERIVABLE",
         "CROSS_SUBMISSION_EVIDENCE",
         "INGEST_ENCRYPTED_FILE",
+        "INVENTED_EVIDENCE_ID",
+        "INVENTED_ID",
         "IR_PROVENANCE_GAP",
         "MODEL_CONTEXT_NOT_ALLOWLISTED",
         "MODEL_SAFETY_BLOCK",
+        "QUESTION_PII",
+        "QUESTION_SECURITY_FAIL",
         "REJECTED_SECURITY",
+        "SYNTHETIC_ATTESTATION_REQUIRED",
+        "SYNTHETIC_ATTESTATION_SCOPE_MISMATCH",
+        "UNAUTHORIZED_EVIDENCE",
+        "UNAUTHORIZED_SOURCE",
+    }
+)
+
+_QUESTION_LOCAL_REPLACEMENT_CODES = frozenset(
+    {
+        "P07_ANCHOR_STRUCTURE_INCOMPATIBLE",
+        "P07_OBSERVABLE_DUPLICATE",
+        "P07_VISIBLE_ANCHOR_EMPTY",
+        "P07_VISIBLE_ANCHOR_LIMIT_EXCEEDED",
+        "QUESTION_ANSWER_LEAKAGE",
+        "QUESTION_OBSERVABLES_INVALID",
     }
 )
 
@@ -147,6 +483,16 @@ _PRECONDITION_FAILURE_CODES = frozenset(
         "QUESTION_ACTION_ACTOR_REVOKED",
         "QUESTION_ACTION_RETRY_SOURCE_MISSING",
         "QUESTION_ACTION_VERSION_CHANGED",
+        "BLUEPRINT_REVIEW_DESCRIPTOR_MISSING",
+        "BLUEPRINT_REVIEW_DESCRIPTOR_INVALID",
+        "BLUEPRINT_REVIEW_DESCRIPTOR_HASH_MISMATCH",
+        "BLUEPRINT_REVIEW_DESCRIPTOR_VERSION_MISMATCH",
+        "BLUEPRINT_REVIEW_SOURCE_CHANGED",
+        "BLUEPRINT_PREFLIGHT_DESCRIPTOR_MISSING",
+        "BLUEPRINT_PREFLIGHT_DESCRIPTOR_INVALID",
+        "BLUEPRINT_PREFLIGHT_DESCRIPTOR_HASH_MISMATCH",
+        "BLUEPRINT_PREFLIGHT_DESCRIPTOR_VERSION_MISMATCH",
+        "BLUEPRINT_PREFLIGHT_SOURCE_CHANGED",
     }
 )
 
@@ -169,6 +515,7 @@ def build_blueprint_policy(config: m.ActivityConfig) -> m.BlueprintPolicy:
     return m.BlueprintPolicy(
         policy_id=stable_id("policy", config.activity_id, "blueprint"),
         activity_id=config.activity_id,
+        context_mode=config.context_mode,
         question_count=config.question_count,
         target_total_minutes=config.target_total_minutes,
         allowed_response_formats=config.allowed_response_formats,
@@ -249,7 +596,17 @@ class Stage1Service:
         object_store: ObjectStore,
         parser: SafeParserService | None = None,
         job_runner: JobRunner | None = None,
+        gateway_factory: Callable[[str], ModelGateway] | None = None,
+        provider_grant: SyntheticProviderGrant | None = None,
     ) -> None:
+        if settings.model_mode == "real" and (
+            provider_grant is None or gateway_factory is None
+        ):
+            raise ValueError(
+                "real workflow construction requires a consumed synthetic job grant"
+            )
+        if settings.model_mode == "mock" and provider_grant is not None:
+            raise ValueError("mock workflow cannot receive a provider grant")
         self.settings = settings
         self.repository = repository
         self.object_store = object_store
@@ -257,6 +614,8 @@ class Stage1Service:
             require_libmagic=settings.require_libmagic
         )
         self.job_runner = job_runner
+        self.gateway_factory = gateway_factory
+        self.provider_grant = provider_grant
         self._resume_floor_reached: set[str] = set()
         self._question_action_processor: (
             Callable[[JobRow], Awaitable[None]] | None
@@ -418,7 +777,15 @@ class Stage1Service:
         issue = next((item for item in report.issues if item.issue_id == issue_id), None)
         if issue is None:
             raise WorkflowError("INVENTED_ID", "Unknown ambiguity issue", status_code=404)
-        if selected_option_id not in {item.option_id for item in issue.options}:
+        selected_option = next(
+            (
+                item
+                for item in issue.options
+                if item.option_id == selected_option_id
+            ),
+            None,
+        )
+        if selected_option is None:
             raise WorkflowError(
                 "INVENTED_ID", "Selected option does not belong to the issue"
             )
@@ -428,6 +795,7 @@ class Stage1Service:
             ),
             issue_id=issue_id,
             selected_option_id=selected_option_id,
+            selected_option=selected_option,
             decided_by=actor.user_id,
             decided_at=utc_now(),
             note=note,
@@ -460,10 +828,52 @@ class Stage1Service:
     def _resolved_policy_decisions(
         self, activity_id: str, tenant_id: str
     ) -> list[m.PolicyDecision]:
-        return [
+        decisions = [
             m.PolicyDecision.model_validate(row.data)
             for row in self.repository.policy_decisions(activity_id, tenant_id)
         ]
+        if not any(decision.selected_option is None for decision in decisions):
+            return decisions
+
+        # Decisions persisted before the selected-option snapshot became
+        # canonical remain readable.  Rehydrate their immutable view from the
+        # tenant-scoped ambiguity report without mutating historical rows.
+        try:
+            report = m.AmbiguityReport.model_validate(
+                cast(
+                    AmbiguityRow,
+                    self.repository.scoped(
+                        AmbiguityRow, activity_id, tenant_id
+                    ),
+                ).data
+            )
+        except NotFound:
+            return decisions
+        issues_by_id = {issue.issue_id: issue for issue in report.issues}
+        enriched: list[m.PolicyDecision] = []
+        for decision in decisions:
+            if decision.selected_option is not None:
+                enriched.append(decision)
+                continue
+            issue = issues_by_id.get(decision.issue_id)
+            option = (
+                next(
+                    (
+                        item
+                        for item in issue.options
+                        if item.option_id == decision.selected_option_id
+                    ),
+                    None,
+                )
+                if issue is not None
+                else None
+            )
+            enriched.append(
+                decision.model_copy(update={"selected_option": option})
+                if option is not None
+                else decision
+            )
+        return enriched
 
     def create_upload(
         self,
@@ -737,22 +1147,80 @@ class Stage1Service:
         fingerprint_source: dict[str, Any],
     ) -> dto.CostEstimate:
         input_fingerprint = canonical_hash(fingerprint_source)
+        execution_model_mode = getattr(
+            self.settings, "worker_model_mode", self.settings.model_mode
+        )
         # A conservative deterministic envelope: every call may receive the
         # complete bounded native input plus trusted prompt/context overhead.
-        estimated_input_tokens = calls * ((input_bytes + 3) // 4 + 1_000)
-        estimated_output_tokens = calls * 2_000
-        upper_bound_cost_usd = round(calls * 0.01, 6)
-        estimated_cost_usd = (
-            0.0
-            if self.settings.model_mode == "mock"
-            else round(upper_bound_cost_usd * 0.8, 6)
-        )
+        if execution_model_mode == "mock":
+            estimated_input_tokens = calls * ((input_bytes + 3) // 4 + 1_000)
+            estimated_output_tokens = calls * 2_000
+            upper_bound_cost_usd = round(calls * 0.01, 6)
+            estimated_cost_usd = 0.0
+        else:
+            if phase == "ACTIVITY_BLUEPRINT":
+                prompt_ids = [
+                    "P01_ACTIVITY_SPEC_V1",
+                    *(["P02_RUBRIC_NORMALIZE_V1"] if calls == 4 else []),
+                    "P03_AMBIGUITY_TRIAGE_V1",
+                    "P04_BLUEPRINT_BUILD_V1",
+                ]
+            elif phase == "SUBMISSION_ASSESSMENT" and calls >= 2:
+                question_count = max(0, calls - 1)
+                prompt_ids = [
+                    "P06_EVIDENCE_MAP_V1",
+                    *["P07_QUESTION_BUILD_V1" for _ in range(question_count)],
+                ]
+            elif phase == "APPROVED_GUIDE_ENRICHMENT" and calls == 1:
+                prompt_ids = ["P09_GUIDE_BUILD_V1"]
+            else:
+                raise ValueError(f"Unknown real-mode cost phase: {phase}")
+            if len(prompt_ids) != calls:
+                raise ValueError("Real-mode cost profile does not match call count")
+
+            # Thirty thousand tokens conservatively cover the largest current
+            # strict schema, instructions, envelope metadata, and provider
+            # framing before adding every native input byte as one token.
+            per_call_input_ceiling = min(
+                OPENAI_MAX_INPUT_TOKENS, input_bytes + 30_000
+            )
+            estimated_input_tokens = 0
+            estimated_output_tokens = 0
+            upper_bound_cost_usd = 0.0
+            for prompt_id in prompt_ids:
+                spec = prompt_spec(prompt_id)
+                attempts = (
+                    min(
+                        OPENAI_ROUTE_PROFILE_MAX_TRANSIENT_RETRIES,
+                        spec.max_transient_retries,
+                    )
+                    + 1
+                )
+                estimated_input_tokens += (
+                    per_call_input_ceiling * attempts
+                    + OPENAI_P11_MAX_INPUT_TOKENS
+                )
+                estimated_output_tokens += spec.max_output_tokens * attempts + 8_000
+                upper_bound_cost_usd += estimate_cost_usd(
+                    model=OPENAI_MODEL_BY_PROMPT[prompt_id],
+                    input_tokens=per_call_input_ceiling,
+                    output_tokens=spec.max_output_tokens,
+                    cache_write_tokens=per_call_input_ceiling,
+                ) * attempts
+                upper_bound_cost_usd += estimate_cost_usd(
+                    model=LUNA_MODEL_ID,
+                    input_tokens=OPENAI_P11_MAX_INPUT_TOKENS,
+                    output_tokens=8_000,
+                    cache_write_tokens=OPENAI_P11_MAX_INPUT_TOKENS,
+                )
+            upper_bound_cost_usd = round(upper_bound_cost_usd, 6)
+            estimated_cost_usd = upper_bound_cost_usd
         return dto.CostEstimate(
             estimate_id=stable_id(
                 "estimate", phase, aggregate_id, input_fingerprint, calls
             ),
             phase=phase,
-            model_mode=self.settings.model_mode,
+            model_mode=execution_model_mode,
             estimated_model_calls=calls,
             estimated_input_tokens=estimated_input_tokens,
             estimated_output_tokens=estimated_output_tokens,
@@ -762,10 +1230,15 @@ class Stage1Service:
             within_limit=upper_bound_cost_usd <= self.settings.max_job_cost_usd,
             assumptions=[
                 "CVA_MODEL_MODE=mock has zero billable provider cost during Stage 1 closure."
-                if self.settings.model_mode == "mock"
+                if execution_model_mode == "mock"
                 else "Provider pricing is an upper-bound estimate, not a quoted price.",
                 "P10 and course-enriched context remain disabled.",
-                "The estimate covers one durable Stage 1 run and no retry.",
+                "The Luna-only manual-evaluation profile has zero automatic transport retries and reserves one eligible bounded P11 repair per semantic call."
+                if execution_model_mode == "real"
+                else "The mock estimate covers one durable run and no billable retry.",
+                "Every real-mode input token is reserved at the full cache-write rate before transport."
+                if execution_model_mode == "real"
+                else "Mock mode never creates a billable provider transport.",
             ],
             input_fingerprint=input_fingerprint,
             generated_at=utc_now(),
@@ -796,7 +1269,7 @@ class Stage1Service:
             tenant_id=actor.workspace_id,
             submission_id=None,
         )
-        calls = 5 if any(row.role == m.ArtifactRole.RUBRIC.value for row in artifacts) else 4
+        calls = 4 if any(row.role == m.ArtifactRole.RUBRIC.value for row in artifacts) else 3
         return self._cost_estimate(
             phase="ACTIVITY_BLUEPRINT",
             aggregate_id=activity.id,
@@ -827,7 +1300,13 @@ class Stage1Service:
             tenant_id=actor.workspace_id,
             submission_id=submission.id,
         )
-        calls = 2 + 2 * blueprint.assessment_constraints.question_count
+        # Pre-approval work contains P06 once plus P07 for every selected and
+        # maximum reserve opportunity. P08 is historical-only and P09 belongs
+        # to the later, independently approved guide job.
+        constraints = blueprint.assessment_constraints
+        calls = 1 + (
+            constraints.question_count + constraints.max_reserve_opportunities
+        )
         return self._cost_estimate(
             phase="SUBMISSION_ASSESSMENT",
             aggregate_id=submission.id,
@@ -840,6 +1319,33 @@ class Stage1Service:
                 "question_count": blueprint.assessment_constraints.question_count,
                 "artifacts": self._artifact_estimate_fingerprint(artifacts),
                 "pipeline_version": SUBMISSION_PIPELINE_VERSION,
+            },
+        )
+
+    def guide_cost_estimate(
+        self, assessment_id: str, actor: Actor
+    ) -> dto.CostEstimate:
+        assessment_row = self.repository.assessment_by_id(
+            assessment_id, actor.workspace_id
+        )
+        assessment = m.Assessment.model_validate(assessment_row.data)
+        artifacts = self.repository.artifacts_for(
+            activity_id=assessment.activity_id,
+            tenant_id=actor.workspace_id,
+            submission_id=assessment.submission_id,
+        )
+        return self._cost_estimate(
+            phase="APPROVED_GUIDE_ENRICHMENT",
+            aggregate_id=assessment_id,
+            calls=1,
+            input_bytes=sum(row.byte_size or 0 for row in artifacts),
+            fingerprint_source={
+                "assessment_id": assessment_id,
+                "assessment_version": assessment_row.version,
+                "assessment_etag": assessment_row.etag,
+                "assessment_snapshot_hash": canonical_hash(assessment),
+                "pipeline_version": GUIDE_BUILD_DESCRIPTOR_VERSION,
+                "artifacts": self._artifact_estimate_fingerprint(artifacts),
             },
         )
 
@@ -1075,8 +1581,12 @@ class Stage1Service:
                 await self._run_activity_pipeline(job)
             elif job.kind == "SUBMISSION":
                 await self._run_submission_pipeline(job)
+            elif job.kind in {"BLUEPRINT_PREFLIGHT", "BLUEPRINT_REVIEW"}:
+                await self._run_blueprint_preflight_job(job)
             elif job.kind == "QUESTION_ACTION" and self._question_action_processor:
                 await self._question_action_processor(job)
+            elif job.kind == "GUIDE_BUILD":
+                await self._run_guide_build_job(job)
             else:
                 raise WorkflowError("JOB_KIND_INVALID", "Unknown job kind", status_code=500)
         except _CooperativeJobCancellation:
@@ -1102,13 +1612,66 @@ class Stage1Service:
             activity_id=activity.id, tenant_id=job.tenant_id, submission_id=None
         )
         evidence_by_role: dict[str, list[m.EvidenceUnit]] = {}
+        self._set_job(job, "ACTIVITY_PARSE", 0.05)
         for artifact in artifacts:
             self._cancellation_checkpoint(job)
-            parsed = self._parse_bytes(
-                artifact, self._verified_artifact_bytes(artifact)
+            parse_inputs = {
+                "artifact_id": artifact.id,
+                "artifact_sha256": artifact.sha256,
+                "artifact_byte_size": artifact.byte_size,
+                "declared_media_type": artifact.declared_media_type,
+                "media_type": artifact.media_type,
+                "role": artifact.role,
+            }
+            parse_policy_hash = self._stage_policy_hash(job)
+            parse_component_version = _parser_component_version(
+                require_libmagic=self.settings.require_libmagic
             )
+            parse_stage = f"ACTIVITY_PARSE:{artifact.id}"
+            cached_parse = self.repository.stage_by_key(
+                tenant_id=job.tenant_id,
+                stage=parse_stage,
+                inputs=parse_inputs,
+                policy_hash=parse_policy_hash,
+                component_version=parse_component_version,
+            )
+            if cached_parse is not None and cached_parse.output is not None:
+                evidence_units = tuple(
+                    TypeAdapter(list[m.EvidenceUnit]).validate_python(
+                        cached_parse.output.get("evidence_units", [])
+                    )
+                )
+                if not evidence_units:
+                    raise WorkflowError(
+                        "STAGE_RESUME_REUSE_MISSING",
+                        "The reusable activity parse has no verified evidence output.",
+                        status_code=409,
+                    )
+                self._record_stage_reuse(job, cached_parse)
+            else:
+                self._assert_application_stage_may_execute(
+                    job, "ACTIVITY_PARSE"
+                )
+                parsed = self._parse_bytes(
+                    artifact, self._verified_artifact_bytes(artifact)
+                )
+                evidence_units = tuple(parsed.evidence_units)
+                self.repository.save_stage(
+                    job_id=job.id,
+                    tenant_id=job.tenant_id,
+                    stage=parse_stage,
+                    inputs=parse_inputs,
+                    component_version=parse_component_version,
+                    policy_hash=parse_policy_hash,
+                    output={
+                        "evidence_units": [
+                            item.model_dump(mode="json")
+                            for item in evidence_units
+                        ]
+                    },
+                )
             self._cancellation_checkpoint(job)
-            evidence_by_role[artifact.role] = list(parsed.evidence_units)
+            evidence_by_role[artifact.role] = list(evidence_units)
         prompt_evidence = evidence_by_role.get(m.ArtifactRole.ASSIGNMENT_PROMPT.value, [])
         self._set_job(job, "ACTIVITY_SPEC", 0.15)
         p01 = await self._gateway_stage(
@@ -1192,6 +1755,8 @@ class Stage1Service:
             job,
             "P04_BLUEPRINT_BUILD_V1",
             m.BlueprintBuildRequest(
+                target_blueprint_id=stable_id("blueprint", activity.id),
+                target_blueprint_version=1,
                 activity_spec=p01,
                 rubric_spec=rubric,
                 resolved_decisions=resolved_decisions,
@@ -1199,11 +1764,6 @@ class Stage1Service:
             ),
             m.AssessmentBlueprint,
         )
-        if blueprint.status != m.WorkflowStatus.READY:
-            self._stop_activity_output(
-                activity, job, blueprint.status.value, blueprint.diagnostics
-            )
-            return
         if set(blueprint.decision_ids) != {
             decision.decision_id for decision in resolved_decisions
         }:
@@ -1211,50 +1771,353 @@ class Stage1Service:
                 "BLUEPRINT_REFERENCE_MISMATCH",
                 "Blueprint does not bind the exact teacher decisions",
             )
-        self._set_job(job, "BLUEPRINT_REVIEW", 0.82)
-        review = await self._gateway_stage(
-            job,
-            "P05_BLUEPRINT_REVIEW_V1",
-            m.BlueprintReviewRequest(
-                blueprint=blueprint,
-                activity_spec=p01,
-                rubric_spec=rubric,
-                resolved_decisions=resolved_decisions,
-                blueprint_policy=policy,
-            ),
-            m.BlueprintReview,
+        self._set_job(job, "BLUEPRINT_PREFLIGHT", 0.82)
+        blueprint, preflight = self._blueprint_preflight_stage(
+            job=job,
+            blueprint=blueprint,
+            activity_spec=p01,
+            rubric_spec=rubric,
+            resolved_decisions=resolved_decisions,
+            blueprint_policy=policy,
         )
-        row = self._blueprint_row(job.tenant_id, blueprint, review)
+        row = self._blueprint_row(
+            job.tenant_id,
+            blueprint,
+            preflight=preflight,
+            review=None,
+        )
         with self.repository.session() as session:
             session.merge(row)
-        if review.status != "READY" or (
-            review.approval_recommendation
-            == m.BlueprintApprovalRecommendation.REJECT
-        ):
-            if review.status == "TECHNICAL_FAILURE":
-                self._fail_job(
-                    job,
-                    "BLUEPRINT_REVIEW_TECHNICAL_FAILURE",
-                    "Blueprint review failed at a validated boundary.",
-                )
-            else:
-                self.repository.set_activity_status(
-                    activity.id, job.tenant_id, "NEEDS_REVIEW"
-                )
-                self._needs_review_job(
-                    job,
-                    "BLUEPRINT_REVIEW_BLOCKED",
-                    review.diagnostics
-                    or [
-                        diagnostic(
-                            "BLUEPRINT_REVIEW_BLOCKED",
-                            "La revisión del blueprint requiere intervención docente.",
-                        )
-                    ],
-                )
+        if not preflight.catalog_plan_feasible:
+            self.repository.set_activity_status(
+                activity.id, job.tenant_id, "NEEDS_REVIEW"
+            )
+            self._needs_review_job(
+                job,
+                "BLUEPRINT_PREFLIGHT_FAILED",
+                blueprint.diagnostics
+                or [
+                    diagnostic(
+                        "BLUEPRINT_PREFLIGHT_FAILED",
+                        "El blueprint no supera el preflight determinista.",
+                    )
+                ],
+            )
             return
         self.repository.set_activity_status(activity.id, job.tenant_id, "BLUEPRINT_READY")
-        self._complete_job(job, "BLUEPRINT_REVIEW")
+        self._complete_job(job, "BLUEPRINT_PREFLIGHT")
+
+    async def _run_blueprint_preflight_job(self, job: JobRow) -> None:
+        """Gate a teacher edit; legacy P05 jobs are reconciled without transport."""
+
+        self._set_job(job, "BLUEPRINT_PREFLIGHT", 0.25)
+        lineage = self._job_lineage_ids(job)
+        legacy_request: m.BlueprintReviewRequest | None = None
+        if job.kind == "BLUEPRINT_REVIEW":
+            descriptor = self.repository.blueprint_review_descriptor(
+                job_ids=lineage, tenant_id=job.tenant_id
+            )
+            missing_code = "BLUEPRINT_REVIEW_DESCRIPTOR_MISSING"
+            invalid_code = "BLUEPRINT_REVIEW_DESCRIPTOR_INVALID"
+            version_code = "BLUEPRINT_REVIEW_DESCRIPTOR_VERSION_MISMATCH"
+        else:
+            descriptor = self.repository.blueprint_preflight_descriptor(
+                job_ids=lineage, tenant_id=job.tenant_id
+            )
+            missing_code = "BLUEPRINT_PREFLIGHT_DESCRIPTOR_MISSING"
+            invalid_code = "BLUEPRINT_PREFLIGHT_DESCRIPTOR_INVALID"
+            version_code = "BLUEPRINT_PREFLIGHT_DESCRIPTOR_VERSION_MISMATCH"
+        if descriptor is None or descriptor.output is None:
+            raise WorkflowError(
+                missing_code,
+                "The durable blueprint preflight input is unavailable.",
+                status_code=409,
+            )
+        try:
+            if job.kind == "BLUEPRINT_REVIEW":
+                legacy_request = m.BlueprintReviewRequest.model_validate(
+                    descriptor.output.get("review_request")
+                )
+                candidate = legacy_request.blueprint
+            else:
+                candidate = m.AssessmentBlueprint.model_validate(
+                    descriptor.output.get("candidate_blueprint")
+                )
+            source_version = TypeAdapter(int).validate_python(
+                descriptor.output.get("source_blueprint_version")
+            )
+            source_etag = TypeAdapter(str).validate_python(
+                descriptor.output.get("source_etag")
+            )
+            actor_id = TypeAdapter(m.Id).validate_python(
+                descriptor.output.get("actor_id")
+            )
+        except ValidationError as exc:
+            raise WorkflowError(
+                invalid_code,
+                "The durable blueprint preflight input is invalid.",
+                status_code=409,
+            ) from exc
+        if (
+            candidate.activity_id != job.aggregate_id
+            or candidate.blueprint_version != source_version + 1
+        ):
+            raise WorkflowError(
+                invalid_code,
+                "The durable blueprint preflight references are inconsistent.",
+                status_code=409,
+            )
+
+        activity = cast(
+            ActivityRow,
+            self.repository.scoped(ActivityRow, job.aggregate_id, job.tenant_id),
+        )
+        latest = self.repository.latest_blueprint(job.aggregate_id, job.tenant_id)
+        original = m.AssessmentBlueprint.model_validate(latest.data)
+        activity_spec = m.ActivitySpec.model_validate(
+            cast(
+                ActivitySpecRow,
+                self.repository.scoped(
+                    ActivitySpecRow, job.aggregate_id, job.tenant_id
+                ),
+            ).data
+        )
+        try:
+            rubric_spec = m.RubricSpec.model_validate(
+                cast(
+                    RubricSpecRow,
+                    self.repository.scoped(
+                        RubricSpecRow, job.aggregate_id, job.tenant_id
+                    ),
+                ).data
+            )
+        except NotFound:
+            rubric_spec = None
+        blueprint_policy = m.BlueprintPolicy.model_validate(activity.blueprint_policy)
+        resolved_decisions = self._resolved_policy_decisions(
+            job.aggregate_id, job.tenant_id
+        )
+        expected_component = (
+            _blueprint_review_descriptor_component_version()
+            if job.kind == "BLUEPRINT_REVIEW"
+            else _blueprint_preflight_descriptor_component_version()
+        )
+        expected_policy_hash = (
+            _blueprint_review_descriptor_policy_hash(legacy_request)
+            if legacy_request is not None
+            else _blueprint_preflight_descriptor_policy_hash(
+                blueprint_policy=blueprint_policy
+            )
+        )
+        if (
+            descriptor.component_version != expected_component
+            or descriptor.policy_hash != expected_policy_hash
+        ):
+            raise WorkflowError(
+                version_code,
+                "The durable blueprint preflight input no longer matches this worker.",
+                status_code=409,
+            )
+        legacy_inputs_changed = legacy_request is not None and any(
+            (
+                legacy_request.activity_spec != activity_spec,
+                legacy_request.rubric_spec != rubric_spec,
+                legacy_request.blueprint_policy != blueprint_policy,
+                legacy_request.resolved_decisions != resolved_decisions,
+            )
+        )
+        if any(
+            (
+                latest.version != source_version,
+                latest.etag != source_etag,
+                legacy_inputs_changed,
+                _blueprint_structure(candidate) != _blueprint_structure(original),
+            )
+        ):
+            raise WorkflowError(
+                "BLUEPRINT_PREFLIGHT_SOURCE_CHANGED",
+                "The blueprint preflight source changed before worker execution.",
+                status_code=409,
+            )
+
+        gated, preflight = self._blueprint_preflight_stage(
+            job=job,
+            blueprint=candidate,
+            activity_spec=activity_spec,
+            rubric_spec=rubric_spec,
+            resolved_decisions=resolved_decisions,
+            blueprint_policy=blueprint_policy,
+        )
+        row = self._blueprint_row(
+            job.tenant_id, gated, preflight=preflight, review=None
+        )
+        finalized = self.repository.finalize_blueprint_preflight_job(
+            job_id=job.id,
+            tenant_id=job.tenant_id,
+            source_version=source_version,
+            source_etag=source_etag,
+            blueprint=row,
+            actor_id=actor_id,
+        )
+        if not finalized:
+            raise _CooperativeJobCancellation
+
+    @staticmethod
+    def _question_local_replacement_code(exc: BaseException) -> str | None:
+        """Return only correction-local codes; scope/security stays fail-closed."""
+
+        current: BaseException | None = exc
+        visited: set[int] = set()
+        while current is not None and id(current) not in visited:
+            code = str(getattr(current, "code", ""))
+            if code in _QUESTION_LOCAL_REPLACEMENT_CODES:
+                return code
+            if isinstance(current, QuestionGenerationCompilationError):
+                return None
+            visited.add(id(current))
+            current = current.__cause__ or current.__context__
+        return None
+
+    def _record_question_validation_fact(
+        self,
+        *,
+        job: JobRow,
+        opportunity_id: str,
+        generation_hash: str | None,
+        passed: bool,
+        diagnostic_codes: list[str],
+    ) -> None:
+        event_type = (
+            "question.validation.passed"
+            if passed
+            else "question.validation.failed"
+        )
+        payload = {
+            "validator_version": QUESTION_VALIDATION_STAGE_VERSION,
+            "opportunity_id": opportunity_id,
+            "generation_output_hash": generation_hash,
+            "diagnostic_codes": sorted(set(diagnostic_codes)),
+        }
+        if self.repository.has_audit_event(
+            tenant_id=job.tenant_id,
+            event_type=event_type,
+            aggregate_id=job.id,
+            payload_contains=payload,
+        ):
+            return
+        self.repository.audit(
+            tenant_id=job.tenant_id,
+            event_type=event_type,
+            aggregate_id=job.id,
+            actor_id="system_worker",
+            payload=payload,
+        )
+
+    def _validate_question_stage(
+        self,
+        *,
+        job: JobRow,
+        generation: m.QuestionGenerationResult,
+        opportunity: m.QuestionOpportunity,
+        bundle: m.EvidenceBundle,
+    ) -> None:
+        """Persist the active objective P07 validation boundary."""
+
+        stage = f"QUESTION_VALIDATE:{opportunity.opportunity_id}"
+        generation_hash = canonical_hash(generation.model_dump(mode="json"))
+        inputs = {
+            "generation_output_hash": generation_hash,
+            "opportunity_hash": canonical_hash(
+                opportunity.model_dump(mode="json")
+            ),
+            "evidence_bundle_hash": canonical_hash(bundle.model_dump(mode="json")),
+        }
+        component_version = _question_validation_component_version()
+        policy_hash = self._stage_policy_hash(job)
+        try:
+            validate_generation_result(
+                generation,
+                opportunity=opportunity,
+                bundle=bundle,
+            )
+        except Exception as exc:
+            self._record_failed_stage(
+                job=job,
+                stage=stage,
+                inputs=inputs,
+                policy_hash=policy_hash,
+                component_version=component_version,
+                exc=exc,
+            )
+            self._record_question_validation_fact(
+                job=job,
+                opportunity_id=opportunity.opportunity_id,
+                generation_hash=generation_hash,
+                passed=False,
+                diagnostic_codes=[str(getattr(exc, "code", "MODEL_OUTPUT_INVALID"))],
+            )
+            raise
+        diagnostic_codes = [item.code for item in generation.diagnostics]
+        self.repository.save_stage(
+            job_id=job.id,
+            tenant_id=job.tenant_id,
+            stage=stage,
+            inputs=inputs,
+            component_version=component_version,
+            policy_hash=policy_hash,
+            output={
+                "status": "PASSED",
+                "submission_id": generation.submission_id,
+                "opportunity_id": generation.opportunity_id,
+                "candidate_id": (
+                    generation.candidate.candidate_id
+                    if generation.candidate is not None
+                    else None
+                ),
+                "generation_output_hash": generation_hash,
+                "diagnostic_codes": sorted(set(diagnostic_codes)),
+            },
+        )
+        self._record_question_validation_fact(
+            job=job,
+            opportunity_id=opportunity.opportunity_id,
+            generation_hash=generation_hash,
+            passed=True,
+            diagnostic_codes=diagnostic_codes,
+        )
+
+    def _consume_question_reserve(
+        self,
+        *,
+        job: JobRow,
+        rejected_opportunity_id: str,
+        reason_code: str,
+        reserves: list[str],
+        primary_queue: list[str],
+    ) -> bool:
+        if not reserves:
+            return False
+        reserve_id = reserves.pop(0)
+        primary_queue.append(reserve_id)
+        payload = {
+            "rejected_opportunity_id": rejected_opportunity_id,
+            "reserve_opportunity_id": reserve_id,
+            "reason_code": reason_code,
+        }
+        if not self.repository.has_audit_event(
+            tenant_id=job.tenant_id,
+            event_type="question.reserve.consumed",
+            aggregate_id=job.id,
+            payload_contains=payload,
+        ):
+            self.repository.audit(
+                tenant_id=job.tenant_id,
+                event_type="question.reserve.consumed",
+                aggregate_id=job.id,
+                actor_id="system_worker",
+                payload=payload,
+            )
+        return True
 
     async def _run_submission_pipeline(self, job: JobRow) -> None:
         submission = cast(SubmissionRow, self.repository.scoped(SubmissionRow, job.aggregate_id, job.tenant_id))
@@ -1284,12 +2147,15 @@ class Stage1Service:
             "media_type": artifact.media_type,
         }
         parse_policy_hash = self._stage_policy_hash(job)
+        parse_component_version = _parser_component_version(
+            require_libmagic=self.settings.require_libmagic
+        )
         cached_parse = self.repository.stage_by_key(
             tenant_id=job.tenant_id,
             stage="SUBMISSION_PARSE",
             inputs=parse_inputs,
             policy_hash=parse_policy_hash,
-            component_version=PARSER_VERSION,
+            component_version=parse_component_version,
         )
         if cached_parse is not None and cached_parse.output is not None:
             evidence_units = tuple(
@@ -1315,7 +2181,7 @@ class Stage1Service:
                 tenant_id=job.tenant_id,
                 stage="SUBMISSION_PARSE",
                 inputs=parse_inputs,
-                component_version=PARSER_VERSION,
+                component_version=parse_component_version,
                 policy_hash=parse_policy_hash,
                 output={
                     "evidence_units": [
@@ -1349,10 +2215,19 @@ class Stage1Service:
         mapping = await self._gateway_stage(
             job,
             "P06_EVIDENCE_MAP_V1",
-            m.EvidenceMapRequest(blueprint=blueprint, evidence_bundle=bundle),
+            m.EvidenceMapRequest(
+                blueprint=blueprint,
+                planning_policy=policy.planning_policy,
+                evidence_bundle=bundle,
+            ),
             m.EvidenceMapPatch,
         )
-        validate_evidence_map(mapping, blueprint=blueprint, bundle=bundle)
+        validate_evidence_map(
+            mapping,
+            blueprint=blueprint,
+            bundle=bundle,
+            planning_policy=policy.planning_policy,
+        )
         with self.repository.session() as session:
             session.merge(EvidenceMapRow(submission_id=submission.id, tenant_id=job.tenant_id, data=mapping.model_dump(mode="json")))
         self._set_submission(submission, job, m.SubmissionProcessingStatus.PLANNING, "ASSESSMENT_PLAN", 0.32)
@@ -1362,12 +2237,13 @@ class Stage1Service:
             "planning_policy": policy.planning_policy.model_dump(mode="json"),
         }
         plan_policy_hash = self._stage_policy_hash(job)
+        planner_component_version = _planner_component_version()
         cached_plan = self.repository.stage_by_key(
             tenant_id=job.tenant_id,
             stage="ASSESSMENT_PLAN",
             inputs=plan_inputs,
             policy_hash=plan_policy_hash,
-            component_version=PLANNER_VERSION,
+            component_version=planner_component_version,
         )
         if cached_plan is not None and cached_plan.output is not None:
             plan = m.AssessmentPlan.model_validate(cached_plan.output)
@@ -1384,7 +2260,7 @@ class Stage1Service:
                 tenant_id=job.tenant_id,
                 stage="ASSESSMENT_PLAN",
                 inputs=plan_inputs,
-                component_version=PLANNER_VERSION,
+                component_version=planner_component_version,
                 policy_hash=plan_policy_hash,
                 output=plan.model_dump(mode="json"),
             )
@@ -1399,103 +2275,113 @@ class Stage1Service:
         generation_policy = m.QuestionGenerationPolicy(
             policy_id=stable_id("policy", activity.id, "question_generation")
         )
-        validation_policy = m.QuestionValidationPolicy(
-            policy_id=stable_id("policy", activity.id, "question_validation")
-        )
         selected: list[m.SelectedQuestion] = []
-        reviews: dict[str, m.QuestionReviewResult] = {}
         reserves = list(plan.reserve_opportunity_ids)
         primary_queue = list(plan.selected_opportunity_ids)
         self._set_submission(submission, job, m.SubmissionProcessingStatus.GENERATING, "QUESTION_GENERATE", 0.4)
         while primary_queue and len(selected) < plan.question_count:
             opportunity_id = primary_queue.pop(0)
             opportunity = opportunity_by_id[opportunity_id]
-            generation = await self._gateway_stage(
+            try:
+                generation = await self._gateway_stage(
+                    job,
+                    "P07_QUESTION_BUILD_V1",
+                    m.QuestionBuildRequest(
+                        target_candidate_id=stable_id(
+                            "candidate",
+                            submission.id,
+                            plan.plan_id,
+                            opportunity.opportunity_id,
+                            "initial",
+                        ),
+                        plan=plan,
+                        opportunity=opportunity,
+                        evidence_bundle=bundle,
+                        generation_policy=generation_policy,
+                        avoid=[],
+                    ),
+                    m.QuestionGenerationResult,
+                    cache_suffix=opportunity_id,
+                )
+            except Exception as exc:
+                local_code = self._question_local_replacement_code(exc)
+                if local_code is None:
+                    raise
+                self._record_question_validation_fact(
+                    job=job,
+                    opportunity_id=opportunity_id,
+                    generation_hash=None,
+                    passed=False,
+                    diagnostic_codes=[local_code],
+                )
+                if self._consume_question_reserve(
+                    job=job,
+                    rejected_opportunity_id=opportunity_id,
+                    reason_code=local_code,
+                    reserves=reserves,
+                    primary_queue=primary_queue,
+                ):
+                    continue
+                break
+            self._set_submission(
+                submission,
                 job,
-                "P07_QUESTION_BUILD_V1",
-                m.QuestionBuildRequest(
-                    plan=plan,
-                    opportunity=opportunity,
-                    evidence_bundle=bundle,
-                    generation_policy=generation_policy,
-                    avoid=[],
-                ),
-                m.QuestionGenerationResult,
-                cache_suffix=opportunity_id,
+                m.SubmissionProcessingStatus.VALIDATING_QUESTIONS,
+                "QUESTION_VALIDATE",
+                0.55,
             )
-            validate_generation_result(generation, opportunity=opportunity, bundle=bundle)
+            try:
+                self._validate_question_stage(
+                    job=job,
+                    generation=generation,
+                    opportunity=opportunity,
+                    bundle=bundle,
+                )
+            except Exception as exc:
+                local_code = self._question_local_replacement_code(exc)
+                if local_code is None:
+                    raise
+                if self._consume_question_reserve(
+                    job=job,
+                    rejected_opportunity_id=opportunity_id,
+                    reason_code=local_code,
+                    reserves=reserves,
+                    primary_queue=primary_queue,
+                ):
+                    continue
+                break
             self._cancellation_checkpoint(job)
+            if generation.status == "REPLACEMENT_REQUIRED":
+                if self._consume_question_reserve(
+                    job=job,
+                    rejected_opportunity_id=opportunity_id,
+                    reason_code="P07_REPLACEMENT_REQUIRED",
+                    reserves=reserves,
+                    primary_queue=primary_queue,
+                ):
+                    continue
+                break
             if generation.status != "READY" or generation.candidate is None:
-                if reserves:
-                    primary_queue.append(reserves.pop(0))
-                    continue
-                break
-            self._set_submission(submission, job, m.SubmissionProcessingStatus.VALIDATING_QUESTIONS, "QUESTION_REVIEW", 0.55)
-            review = await self._gateway_stage(
-                job,
-                "P08_QUESTION_REVIEW_V1",
-                m.QuestionReviewRequest(
-                    generation_result=generation,
-                    opportunity=opportunity,
-                    evidence_bundle=bundle,
-                    validation_policy=validation_policy,
-                ),
-                m.QuestionReviewResult,
-                cache_suffix=opportunity_id,
-            )
-            validate_review_result(
-                review,
-                generation_result=generation,
-                validation_policy=validation_policy,
-            )
-            self._cancellation_checkpoint(job)
-            if review.status != "READY" or review.review is None or review.review.decision != m.ReviewDecision.ACCEPT:
-                if reserves:
-                    primary_queue.append(reserves.pop(0))
-                    continue
-                break
+                raise WorkflowError(
+                    "QUESTION_GENERATION_TECHNICAL_FAILURE",
+                    "P07 did not produce a READY candidate or an explicit replacement.",
+                    status_code=500,
+                )
             candidate = generation.candidate
-            question_id = stable_id("question", submission.id, candidate.candidate_id)
-            selected_question = m.SelectedQuestion(
-                question_id=question_id,
-                source_candidate_id=candidate.candidate_id,
-                opportunity_id=candidate.opportunity_id,
-                opportunity_template_id=candidate.opportunity_template_id,
-                dimension_id=candidate.dimension_id,
-                variant_id=candidate.variant_id,
-                cognitive_operation=candidate.cognitive_operation,
-                response_format=candidate.response_format,
-                difficulty=candidate.difficulty,
-                estimated_minutes=candidate.estimated_minutes,
-                question_text=candidate.question_text,
-                anchor=candidate.anchor,
-                evidence_ids=candidate.evidence_ids,
-                course_source_ids=candidate.course_source_ids,
-                citations=candidate.citations,
-                choices=candidate.choices,
-                student_justification_required=candidate.student_justification_required,
-                preliminary_guide=candidate.preliminary_guide,
-                planning_score=(opportunity.activity_priority + opportunity.evidence_fit + opportunity.opportunity_quality) / 3,
+            selected_question = selected_question_from_candidate(
+                candidate,
+                opportunity,
+                submission_id=submission.id,
             )
             selected.append(selected_question)
-            reviews[question_id] = review
-            with self.repository.session() as session:
-                session.merge(
-                    GeneratedQuestionRow(
-                        id=candidate.candidate_id,
-                        tenant_id=job.tenant_id,
-                        submission_id=submission.id,
-                        data=generation.model_dump(mode="json"),
-                    )
+            self.repository.save_generated_question(
+                GeneratedQuestionRow(
+                    id=candidate.candidate_id,
+                    tenant_id=job.tenant_id,
+                    submission_id=submission.id,
+                    data=generation.model_dump(mode="json"),
                 )
-                session.merge(
-                    QuestionReviewRow(
-                        question_id=question_id,
-                        tenant_id=job.tenant_id,
-                        submission_id=submission.id,
-                        data=review.model_dump(mode="json"),
-                    )
-                )
+            )
         if len(selected) != plan.question_count:
             self._terminal_domain_failure(
                 submission,
@@ -1504,42 +2390,75 @@ class Stage1Service:
                 [diagnostic("ASSESSMENT_PLAN_INFEASIBLE", "No fue posible validar exactamente N preguntas tras usar la reserva.")],
             )
             return
-        assessment = self._assemble_assessment(
-            activity=activity,
-            submission=submission,
-            blueprint=blueprint,
-            plan=plan,
-            mapping=mapping,
-            questions=selected,
-            artifact=artifact,
-            job=job,
+        self._set_job(job, "ASSEMBLE", 0.72)
+        lineage_calls = [
+            {
+                "prompt_id": item.get("prompt_id"),
+                "model_snapshot": (item.get("route") or {}).get(
+                    "model_snapshot"
+                ),
+            }
+            for lineage_job_id in self._job_lineage_ids(job)
+            for item in self.repository.model_calls(
+                tenant_id=job.tenant_id, job_id=lineage_job_id
+            )
+            if item.get("prompt_id") != "P09_GUIDE_BUILD_V1"
+        ]
+        assembly_inputs = {
+            "activity_id": activity.id,
+            "activity_policy_hash": canonical_hash(activity.blueprint_policy),
+            "submission_id": submission.id,
+            "subject_ref": submission.subject_ref,
+            "submission_created_at": (
+                submission.created_at.replace(tzinfo=UTC)
+                if submission.created_at.tzinfo is None
+                else submission.created_at.astimezone(UTC)
+            ),
+            "blueprint": blueprint.model_dump(mode="json"),
+            "plan": plan.model_dump(mode="json"),
+            "mapping": mapping.model_dump(mode="json"),
+            "questions": [item.model_dump(mode="json") for item in selected],
+            "artifact_id": artifact.id,
+            "artifact_sha256": artifact.sha256,
+            "artifact_media_type": artifact.media_type,
+            "lineage_calls": lineage_calls,
+        }
+        assembly_policy_hash = self._stage_policy_hash(job)
+        assembler_component_version = _assembler_component_version()
+        cached_assembly = self.repository.stage_by_key(
+            tenant_id=job.tenant_id,
+            stage="ASSEMBLE",
+            inputs=assembly_inputs,
+            policy_hash=assembly_policy_hash,
+            component_version=assembler_component_version,
         )
-        guide_id = stable_id("guide", assessment.assessment_id, submission.id)
-        self._set_submission(submission, job, m.SubmissionProcessingStatus.GUIDE_READY, "GUIDE_BUILD", 0.82)
-        guide = await self._gateway_stage(
-            job,
-            "P09_GUIDE_BUILD_V1",
-            m.GuideBuildRequest(guide_id=guide_id, assessment=assessment, evidence_bundle=bundle),
-            m.EvaluationGuide,
-        )
-        validate_evaluation_guide(guide, assessment=assessment, bundle=bundle)
+        if cached_assembly is not None and cached_assembly.output is not None:
+            assessment = m.Assessment.model_validate(
+                cached_assembly.output.get("assessment")
+            )
+            self._record_stage_reuse(job, cached_assembly)
+        else:
+            self._assert_application_stage_may_execute(job, "ASSEMBLE")
+            assessment = self._assemble_assessment(
+                activity=activity,
+                submission=submission,
+                blueprint=blueprint,
+                plan=plan,
+                mapping=mapping,
+                questions=selected,
+                artifact=artifact,
+                job=job,
+            )
+            self.repository.save_stage(
+                job_id=job.id,
+                tenant_id=job.tenant_id,
+                stage="ASSEMBLE",
+                inputs=assembly_inputs,
+                component_version=assembler_component_version,
+                policy_hash=assembly_policy_hash,
+                output={"assessment": assessment.model_dump(mode="json")},
+            )
         self._cancellation_checkpoint(job)
-        if guide.status != "READY":
-            if guide.status == "NEEDS_REVIEW":
-                self._terminal_domain_failure(
-                    submission,
-                    job,
-                    m.SubmissionProcessingStatus.NEEDS_REVIEW.value,
-                    guide.diagnostics,
-                    stage="GUIDE_BUILD",
-                )
-            else:
-                raise WorkflowError(
-                    "GUIDE_TECHNICAL_FAILURE",
-                    "Evaluation guide generation failed at a validated boundary",
-                    status_code=500,
-                )
-            return
         assessment_row = AssessmentRow(
             row_id=stable_id("assessmentrow", assessment.assessment_id, 1),
             assessment_id=assessment.assessment_id,
@@ -1550,18 +2469,10 @@ class Stage1Service:
             etag=_etag(assessment),
             data=assessment.model_dump(mode="json"),
         )
-        self._mark_resume_floor(job, "ASSEMBLE")
         finalized = self.repository.finalize_submission_assessment(
             job_id=job.id,
             tenant_id=job.tenant_id,
             assessment=assessment_row,
-            guide=GuideRow(
-                guide_id=guide.guide_id,
-                assessment_id=assessment.assessment_id,
-                tenant_id=job.tenant_id,
-                submission_id=submission.id,
-                data=guide.model_dump(mode="json"),
-            ),
         )
         if not finalized:
             raise _CooperativeJobCancellation
@@ -1598,7 +2509,7 @@ class Stage1Service:
 
     async def edit_blueprint(
         self, *, activity_id: str, version: int, if_match: str, edited: m.AssessmentBlueprint, actor: Actor
-    ) -> BlueprintRow:
+    ) -> m.JobStatus:
         if actor.role not in {"OWNER", "TEACHER"}:
             raise WorkflowError("ROLE_FORBIDDEN", "Only teachers may edit blueprints", status_code=403)
         current = self.repository.blueprint_version(activity_id, version, actor.workspace_id)
@@ -1613,7 +2524,8 @@ class Stage1Service:
                 status_code=409,
             )
         if (
-            original.status != m.WorkflowStatus.READY
+            original.status
+            not in {m.WorkflowStatus.READY, m.WorkflowStatus.NEEDS_REVIEW}
             or original.approved_by is not None
             or original.approved_at is not None
         ):
@@ -1644,37 +2556,64 @@ class Stage1Service:
                 "Blueprint editing is not allowed in the current activity state",
                 status_code=409,
             )
-        activity_spec = m.ActivitySpec.model_validate(cast(ActivitySpecRow, self.repository.get(ActivitySpecRow, activity_id)).data)
-        try:
-            rubric_spec = m.RubricSpec.model_validate(cast(RubricSpecRow, self.repository.get(RubricSpecRow, activity_id)).data)
-        except NotFound:
-            rubric_spec = None
-        resolved_decisions = self._resolved_policy_decisions(
-            activity_id, actor.workspace_id
+        blueprint_policy = m.BlueprintPolicy.model_validate(
+            activity.blueprint_policy
         )
-        review = await self._direct_gateway(
-            stable_id("job", activity_id, "blueprint_edit", updated.blueprint_version),
+        queued = self._new_job(
             actor.workspace_id,
-            "P05_BLUEPRINT_REVIEW_V1",
-            m.BlueprintReviewRequest(
-                blueprint=updated,
-                activity_spec=activity_spec,
-                rubric_spec=rubric_spec,
-                resolved_decisions=resolved_decisions,
-                blueprint_policy=m.BlueprintPolicy.model_validate(activity.blueprint_policy),
-            ),
-            m.BlueprintReview,
+            activity_id,
+            "blueprint_preflight",
+            "BLUEPRINT_PREFLIGHT",
         )
-        row = self._blueprint_row(actor.workspace_id, updated, review)
+        queued_at = utc_now()
+        descriptor_output = {
+            "kind": "BLUEPRINT_PREFLIGHT_DESCRIPTOR",
+            "source_blueprint_version": current.version,
+            "source_etag": current.etag,
+            "source_activity_status": activity.status,
+            "actor_id": actor.user_id,
+            "candidate_blueprint": updated.model_dump(mode="json"),
+        }
         try:
-            self.repository.add(row)
-        except IntegrityError as exc:
+            self.repository.prepare_blueprint_preflight_job(
+                status=queued,
+                source_version=current.version,
+                source_etag=current.etag,
+                descriptor_output=descriptor_output,
+                descriptor_component_version=(
+                    _blueprint_preflight_descriptor_component_version()
+                ),
+                descriptor_policy_hash=(
+                    _blueprint_preflight_descriptor_policy_hash(
+                        blueprint_policy=blueprint_policy
+                    )
+                ),
+                actor_id=actor.user_id,
+                occurred_at=queued_at,
+            )
+        except Conflict as exc:
+            code = str(exc)
+            status_code = 412 if code == "ETAG_MISMATCH" else 409
             raise WorkflowError(
-                "BLUEPRINT_VERSION_CONFLICT",
-                "Blueprint version was changed concurrently",
-                status_code=409,
+                code,
+                "The blueprint preflight could not be queued from this version.",
+                status_code=status_code,
             ) from exc
-        return row
+        if self.job_runner is None:
+            raise RuntimeError("JobRunner is not configured")
+        try:
+            await self.job_runner.dispatch(queued.job_id)
+        except Exception:
+            self.repository.fail_queued_dispatch(
+                job_id=queued.job_id,
+                tenant_id=actor.workspace_id,
+                failure=diagnostic(
+                    "JOB_DISPATCH_FAILED",
+                    "The durable blueprint preflight could not be dispatched.",
+                    retryable=True,
+                ),
+            )
+        return self.repository.job_status(queued.job_id, actor.workspace_id)
 
     def approve_blueprint(self, *, activity_id: str, version: int, if_match: str, actor: Actor) -> BlueprintRow:
         if actor.role not in {"OWNER", "TEACHER"}:
@@ -1693,7 +2632,6 @@ class Stage1Service:
         if current.etag != if_match:
             raise WorkflowError("ETAG_MISMATCH", "Blueprint has changed", status_code=412)
         blueprint = m.AssessmentBlueprint.model_validate(current.data)
-        review = m.BlueprintReview.model_validate(current.review)
         if (
             blueprint.status != m.WorkflowStatus.READY
             or blueprint.approved_by is not None
@@ -1704,8 +2642,29 @@ class Stage1Service:
                 "Only a server-unapproved READY blueprint may be approved",
                 status_code=409,
             )
-        if review.status != "READY" or review.approval_recommendation == m.BlueprintApprovalRecommendation.REJECT:
-            raise WorkflowError("BLUEPRINT_REVIEW_BLOCKED", "Blueprint review does not permit approval", status_code=409)
+        expected, preflight = self._derive_blueprint_preflight(
+            blueprint=blueprint,
+            activity_id=activity_id,
+            tenant_id=actor.workspace_id,
+        )
+        persisted_preflight = (
+            m.BlueprintReviewPreflight.model_validate(current.preflight)
+            if current.preflight is not None
+            else None
+        )
+        if (
+            expected != blueprint
+            or not preflight.catalog_plan_feasible
+            or (
+                persisted_preflight is not None
+                and persisted_preflight != preflight
+            )
+        ):
+            raise WorkflowError(
+                "BLUEPRINT_PREFLIGHT_BLOCKED",
+                "Blueprint deterministic preflight does not permit approval",
+                status_code=409,
+            )
         approved = blueprint.model_copy(
             update={
                 "blueprint_version": current.version + 1,
@@ -1714,8 +2673,15 @@ class Stage1Service:
                 "approved_at": utc_now(),
             }
         )
-        copied_review = review.model_copy(update={"blueprint_version": approved.blueprint_version})
-        row = self._blueprint_row(actor.workspace_id, approved, copied_review)
+        approved_preflight = preflight.model_copy(
+            update={"blueprint_version": approved.blueprint_version}
+        )
+        row = self._blueprint_row(
+            actor.workspace_id,
+            approved,
+            preflight=approved_preflight,
+            review=None,
+        )
         try:
             self.repository.add(row)
         except IntegrityError as exc:
@@ -1733,6 +2699,94 @@ class Stage1Service:
             payload={"blueprint_version": approved.blueprint_version},
         )
         return row
+
+    def blueprint_review_projection(
+        self, row: BlueprintRow, actor: Actor
+    ) -> tuple[dict[str, Any] | None, list[dict[str, Any]]]:
+        """Expose the active gate for legacy P05 rows without reviving P05."""
+
+        if row.tenant_id != actor.workspace_id:
+            raise WorkflowError(
+                "TENANT_SCOPE_VIOLATION",
+                "Blueprint does not belong to the current workspace",
+                status_code=404,
+            )
+        blueprint = m.AssessmentBlueprint.model_validate(row.data)
+        if row.preflight is not None:
+            preflight = m.BlueprintReviewPreflight.model_validate(row.preflight)
+            return (
+                preflight.model_dump(mode="json"),
+                list(blueprint.model_dump(mode="json").get("diagnostics", [])),
+            )
+        if row.review is None:
+            return (
+                None,
+                list(blueprint.model_dump(mode="json").get("diagnostics", [])),
+            )
+        expected, preflight = self._derive_blueprint_preflight(
+            blueprint=blueprint,
+            activity_id=row.activity_id,
+            tenant_id=actor.workspace_id,
+        )
+        return (
+            preflight.model_dump(mode="json"),
+            list(expected.model_dump(mode="json").get("diagnostics", [])),
+        )
+
+    def _derive_blueprint_preflight(
+        self,
+        *,
+        blueprint: m.AssessmentBlueprint,
+        activity_id: str,
+        tenant_id: str,
+    ) -> tuple[m.AssessmentBlueprint, m.BlueprintReviewPreflight]:
+        activity_spec = m.ActivitySpec.model_validate(
+            cast(
+                ActivitySpecRow,
+                self.repository.scoped(
+                    ActivitySpecRow, activity_id, tenant_id
+                ),
+            ).data
+        )
+        try:
+            rubric_spec = m.RubricSpec.model_validate(
+                cast(
+                    RubricSpecRow,
+                    self.repository.scoped(
+                        RubricSpecRow, activity_id, tenant_id
+                    ),
+                ).data
+            )
+        except NotFound:
+            rubric_spec = None
+        resolved_decisions = self._resolved_policy_decisions(
+            activity_id, tenant_id
+        )
+        scoped_activity = cast(
+            ActivityRow,
+            self.repository.scoped(ActivityRow, activity_id, tenant_id),
+        )
+        blueprint_policy = m.BlueprintPolicy.model_validate(
+            scoped_activity.blueprint_policy
+        )
+        request = m.BlueprintBuildRequest(
+            target_blueprint_id=blueprint.blueprint_id,
+            target_blueprint_version=blueprint.blueprint_version,
+            activity_spec=activity_spec,
+            rubric_spec=rubric_spec,
+            resolved_decisions=resolved_decisions,
+            blueprint_policy=blueprint_policy,
+        )
+        expected = preflight_compiled_blueprint(
+            blueprint=blueprint, request=request
+        )
+        preflight = build_blueprint_review_preflight(
+            blueprint=expected,
+            activity_spec=activity_spec,
+            rubric_spec=rubric_spec,
+            blueprint_policy=blueprint_policy,
+        )
+        return expected, preflight
 
     def evidence_view(self, submission_id: str, actor: Actor) -> list[dict[str, Any]]:
         submission = cast(SubmissionRow, self.repository.scoped(SubmissionRow, submission_id, actor.workspace_id))
@@ -2041,7 +3095,30 @@ class Stage1Service:
                 status_code=409,
             )
         assessment_row = self.repository.latest_assessment(submission.id, actor.workspace_id)
-        guide = self.repository.guide_for_assessment(assessment_row.assessment_id, actor.workspace_id)
+        guide_data: dict[str, Any] | None = None
+        guide_status = m.GuideLifecycleStatus.NOT_AVAILABLE
+        guide_job_id: str | None = None
+        if assessment_row.status == m.WorkflowStatus.APPROVED.value:
+            state = m.SubmissionProcessingState.model_validate(submission.state)
+            guide_job_id = state.active_job_id
+            guide_status = {
+                "GUIDE_PENDING": m.GuideLifecycleStatus.PENDING,
+                "GUIDE_BUILDING": m.GuideLifecycleStatus.BUILDING,
+                "GUIDE_FAILED": m.GuideLifecycleStatus.FAILED,
+                "GUIDE_READY": m.GuideLifecycleStatus.READY,
+            }.get(state.current_stage, m.GuideLifecycleStatus.PENDING)
+            try:
+                guide_row = self.repository.guide_for_approved_version(
+                    assessment_row, require_ready=False
+                )
+                guide_data = guide_row.data
+                guide_job_id = guide_row.guide_job_id
+                guide_status = {
+                    "READY": m.GuideLifecycleStatus.READY,
+                    "NEEDS_REVIEW": m.GuideLifecycleStatus.NEEDS_REVIEW,
+                }.get(guide_row.status, m.GuideLifecycleStatus.FAILED)
+            except NotFound:
+                pass
         reviews = self.repository.review_rows(submission.id, actor.workspace_id)
         review_items: list[dict[str, Any]] = []
         for row in reviews:
@@ -2059,10 +3136,359 @@ class Stage1Service:
             "assessment": assessment_row.data,
             "assessment_version": assessment_row.version,
             "etag": assessment_row.etag,
-            "guide": guide.data,
+            "guide": guide_data,
+            "guide_status": guide_status,
+            "guide_job_id": guide_job_id,
             "reviews": review_items,
             "evidence_receipts": self.evidence_receipts(assessment_row, actor),
         }
+
+    def guide_view(self, assessment_id: str, actor: Actor) -> dict[str, Any]:
+        assessment = self.repository.assessment_by_id(
+            assessment_id, actor.workspace_id
+        )
+        view = self.assessment_view(assessment.submission_id, actor)
+        return {
+            "guide": view["guide"],
+            "status": view["guide_status"],
+            "job_id": view["guide_job_id"],
+        }
+
+    def guide_history(self, assessment_id: str, actor: Actor) -> list[dict[str, Any]]:
+        self.repository.assessment_by_id(assessment_id, actor.workspace_id)
+        return [
+            {
+                "lifecycle_status": (
+                    row.status
+                    if row.assessment_version is not None
+                    and row.approval_snapshot_hash is not None
+                    else m.GuideLifecycleStatus.HISTORICAL_PREAPPROVAL
+                ),
+                "assessment_version": row.assessment_version,
+                "assessment_etag": row.assessment_etag,
+                "guide_job_id": row.guide_job_id,
+                "guide": row.data,
+            }
+            for row in self.repository.guide_history(
+                assessment_id, actor.workspace_id
+            )
+        ]
+
+    def _guide_request_for_approved_row(
+        self, approved_row: AssessmentRow
+    ) -> tuple[m.GuideBuildRequest, dict[str, Any], str]:
+        assessment = m.Assessment.model_validate(approved_row.data)
+        if (
+            assessment.status != m.WorkflowStatus.APPROVED
+            or assessment.approved_by is None
+            or assessment.approved_at is None
+        ):
+            raise WorkflowError(
+                "HUMAN_APPROVAL_REQUIRED",
+                "Guide generation requires an approved assessment version.",
+                status_code=409,
+            )
+        approval_event_id = stable_id(
+            "evt",
+            approved_row.tenant_id,
+            "assessment.approved",
+            approved_row.assessment_id,
+            assessment.approved_by,
+            approved_row.version,
+        )
+        binding = build_guide_approval_binding(
+            assessment=assessment,
+            assessment_version=approved_row.version,
+            assessment_etag=approved_row.etag,
+            approval_event_id=approval_event_id,
+        )
+        evidence_units = [
+            m.EvidenceUnit.model_validate(row.data)
+            for row in self.repository.evidence_for_submission(
+                approved_row.submission_id, approved_row.tenant_id
+            )
+        ]
+        if not evidence_units:
+            raise WorkflowError(
+                "GUIDE_EVIDENCE_MISSING",
+                "The approved assessment has no durable evidence bundle.",
+                status_code=409,
+            )
+        evidence_ids = {item.evidence_id for item in evidence_units}
+        required_ids = {
+            evidence_id
+            for question in assessment.questions
+            for evidence_id in question.evidence_ids
+        }
+        if not required_ids.issubset(evidence_ids):
+            raise WorkflowError(
+                "GUIDE_EVIDENCE_MISSING",
+                "Approved question support is absent from durable evidence.",
+                status_code=409,
+            )
+        bundle = m.EvidenceBundle(
+            bundle_id=stable_id(
+                "bundle",
+                approved_row.tenant_id,
+                approved_row.submission_id,
+                [item.normalized_hash for item in evidence_units],
+            ),
+            tenant_id=approved_row.tenant_id,
+            activity_id=assessment.activity_id,
+            submission_id=approved_row.submission_id,
+            context_mode=m.ContextMode.CLOSED,
+            allowed_evidence_ids=[item.evidence_id for item in evidence_units],
+            evidence_units=evidence_units,
+            course_passages=[],
+        )
+        guide_id = guide_id_for_binding(binding)
+        request = m.GuideBuildRequest(
+            guide_id=guide_id,
+            assessment=assessment,
+            binding=binding,
+            evidence_bundle=bundle,
+        )
+        request_boundary = p09_alias_envelope_boundary(request)
+        artifacts = self.repository.artifacts_for(
+            activity_id=assessment.activity_id,
+            tenant_id=approved_row.tenant_id,
+            submission_id=approved_row.submission_id,
+        )
+        descriptor = {
+            "format": GUIDE_BUILD_DESCRIPTOR_VERSION,
+            "assessment_row_id": approved_row.row_id,
+            "guide_id": guide_id,
+            "binding": binding.model_dump(mode="json"),
+            "request_boundary_hash": request_boundary["request_boundary_hash"],
+            "artifact_hashes": sorted(
+                item.sha256 for item in artifacts if item.sha256 is not None
+            ),
+            "evidence_snapshot_hash": canonical_hash(
+                [
+                    {
+                        "evidence_id": item.evidence_id,
+                        "artifact_hash": item.artifact_hash,
+                        "normalized_hash": item.normalized_hash,
+                    }
+                    for item in evidence_units
+                ]
+            ),
+        }
+        job_id = stable_id(
+            "job",
+            approved_row.tenant_id,
+            "guide_build",
+            binding.approval_snapshot_hash,
+            request_boundary["request_boundary_hash"],
+        )
+        descriptor["logical_job_id"] = job_id
+        return request, descriptor, job_id
+
+    async def ensure_approved_guide_job(
+        self,
+        approved_row: AssessmentRow,
+        *,
+        actor_id: str,
+    ) -> JobRow:
+        """Repair the approval-to-job crash gap and dispatch one durable claim."""
+
+        request, descriptor, job_id = self._guide_request_for_approved_row(
+            approved_row
+        )
+        job, created = self.repository.ensure_guide_build_job(
+            approved_row=approved_row,
+            binding=request.binding,
+            guide_id=request.guide_id,
+            job_id=job_id,
+            descriptor=descriptor,
+            actor_id=actor_id,
+            max_attempts=self.settings.job_max_attempts,
+        )
+        already_dispatched = self.repository.has_audit_event(
+            tenant_id=job.tenant_id,
+            event_type="guide.dispatch_succeeded",
+            aggregate_id=request.binding.assessment_id,
+            payload_contains={"job_id": job.id},
+        )
+        should_dispatch = (
+            (created or actor_id == "system_reconciler")
+            and not already_dispatched
+        )
+        if (
+            should_dispatch
+            and job.status == "QUEUED"
+            and job.control_state == "ACTIVE"
+        ):
+            if self.job_runner is None:
+                raise RuntimeError("JobRunner is not configured")
+            try:
+                await self.job_runner.dispatch(job.id)
+            except Exception:
+                self.repository.fail_queued_dispatch(
+                    job_id=job.id,
+                    tenant_id=job.tenant_id,
+                    failure=diagnostic(
+                        "JOB_DISPATCH_FAILED",
+                        "The post-approval guide job could not be dispatched.",
+                        retryable=True,
+                    ),
+                )
+            else:
+                self.repository.audit(
+                    tenant_id=job.tenant_id,
+                    event_type="guide.dispatch_succeeded",
+                    aggregate_id=request.binding.assessment_id,
+                    actor_id=actor_id,
+                    payload={
+                        "job_id": job.id,
+                        "assessment_version": request.binding.assessment_version,
+                        "approval_snapshot_hash": (
+                            request.binding.approval_snapshot_hash
+                        ),
+                    },
+                )
+        return cast(JobRow, self.repository.get(JobRow, job.id))
+
+    async def reconcile_approved_guide_jobs(self) -> int:
+        """Recover approvals committed before their deterministic job existed."""
+
+        recovered = 0
+        for row in self.repository.latest_approved_assessments():
+            try:
+                request, _descriptor, _job_id = self._guide_request_for_approved_row(
+                    row
+                )
+                try:
+                    self.repository.guide_for_approved_version(row)
+                    continue
+                except NotFound:
+                    pass
+                before = self.repository.has_audit_event(
+                    tenant_id=row.tenant_id,
+                    event_type="guide.build_queued",
+                    aggregate_id=row.assessment_id,
+                    payload_contains={
+                        "assessment_version": row.version,
+                        "guide_id": request.guide_id,
+                    },
+                )
+                await self.ensure_approved_guide_job(
+                    row, actor_id="system_reconciler"
+                )
+                if not before:
+                    recovered += 1
+            except Exception:
+                if not self.repository.has_audit_event(
+                    tenant_id=row.tenant_id,
+                    event_type="guide.reconciliation_deferred",
+                    aggregate_id=row.assessment_id,
+                    payload_contains={"assessment_version": row.version},
+                ):
+                    self.repository.audit(
+                        tenant_id=row.tenant_id,
+                        event_type="guide.reconciliation_deferred",
+                        aggregate_id=row.assessment_id,
+                        actor_id="system_reconciler",
+                        payload={"assessment_version": row.version},
+                    )
+        return recovered
+
+    async def _run_guide_build_job(self, job: JobRow) -> None:
+        descriptor = job.descriptor or {}
+        if descriptor.get("format") != GUIDE_BUILD_DESCRIPTOR_VERSION:
+            raise WorkflowError(
+                "GUIDE_BUILD_DESCRIPTOR_INVALID",
+                "The durable guide descriptor is missing or unsupported.",
+                status_code=409,
+            )
+        try:
+            binding = m.GuideApprovalBinding.model_validate(
+                descriptor.get("binding")
+            )
+        except ValidationError as exc:
+            raise WorkflowError(
+                "GUIDE_BUILD_DESCRIPTOR_INVALID",
+                "The durable guide binding is invalid.",
+                status_code=409,
+            ) from exc
+        approved_row = self.repository.assessment_version(
+            binding.assessment_id,
+            binding.assessment_version,
+            binding.tenant_id,
+        )
+        request, expected_descriptor, expected_job_id = (
+            self._guide_request_for_approved_row(approved_row)
+        )
+        if (
+            descriptor.get("logical_job_id") != expected_job_id
+            or job.aggregate_id != binding.submission_id
+            or descriptor != expected_descriptor
+        ):
+            raise WorkflowError(
+                "GUIDE_BUILD_DESCRIPTOR_HASH_MISMATCH",
+                "The durable job differs from the exact approved snapshot.",
+                status_code=409,
+            )
+        submission = cast(
+            SubmissionRow,
+            self.repository.scoped(
+                SubmissionRow, binding.submission_id, binding.tenant_id
+            ),
+        )
+        self._set_job(job, "GUIDE_BUILD", 0.35)
+        self.repository.set_submission_state(
+            m.SubmissionProcessingState(
+                submission_id=submission.id,
+                activity_id=submission.activity_id,
+                status=m.SubmissionProcessingStatus.APPROVED,
+                current_stage="GUIDE_BUILDING",
+                progress=0.35,
+                active_job_id=job.id,
+                diagnostics=[],
+                updated_at=utc_now(),
+            )
+        )
+        guide = await self._gateway_stage(
+            job,
+            "P09_GUIDE_BUILD_V1",
+            request,
+            m.EvaluationGuide,
+            cache_suffix=request.binding.approval_snapshot_hash,
+        )
+        validate_evaluation_guide(
+            guide,
+            assessment=request.assessment,
+            bundle=request.evidence_bundle,
+        )
+        self._cancellation_checkpoint(job)
+        finalized = self.repository.finalize_guide_build(
+            job_id=job.id,
+            tenant_id=job.tenant_id,
+            guide=GuideRow(
+                guide_id=guide.guide_id,
+                assessment_id=guide.assessment_id,
+                tenant_id=job.tenant_id,
+                submission_id=guide.submission_id,
+                assessment_version=request.binding.assessment_version,
+                assessment_etag=request.binding.assessment_etag,
+                assessment_snapshot_hash=(
+                    request.binding.assessment_snapshot_hash
+                ),
+                question_set_hash=request.binding.question_set_hash,
+                approval_event_id=request.binding.approval_event_id,
+                approval_snapshot_hash=request.binding.approval_snapshot_hash,
+                guide_policy_hash=request.binding.guide_policy_hash,
+                materializer_boundary_hash=(
+                    request.binding.materializer_boundary_hash
+                ),
+                guide_job_id=job.id,
+                status=guide.status,
+                created_at=guide.created_at,
+                data=guide.model_dump(mode="json"),
+            ),
+        )
+        if not finalized:
+            raise _CooperativeJobCancellation
 
     def approve_assessment(self, *, assessment_id: str, if_match: str, actor: Actor) -> AssessmentRow:
         if not actor.can_approve_assessments:
@@ -2071,6 +3497,8 @@ class Stage1Service:
         if current.etag != if_match:
             raise WorkflowError("ETAG_MISMATCH", "Assessment has changed", status_code=412)
         assessment = m.Assessment.model_validate(current.data)
+        if assessment.status == m.WorkflowStatus.APPROVED:
+            return current
         if assessment.status != m.WorkflowStatus.NEEDS_REVIEW:
             raise WorkflowError("ASSESSMENT_NOT_REVIEWABLE", "Assessment is not awaiting review", status_code=409)
         submission = cast(
@@ -2086,17 +3514,6 @@ class Stage1Service:
             raise WorkflowError(
                 "ASSESSMENT_SUBMISSION_NOT_REVIEWABLE",
                 "The submission no longer permits assessment approval.",
-                status_code=409,
-            )
-        guide = m.EvaluationGuide.model_validate(
-            self.repository.guide_for_assessment(
-                assessment_id, actor.workspace_id
-            ).data
-        )
-        if guide.status != "READY":
-            raise WorkflowError(
-                "GUIDE_NOT_READY",
-                "Assessment cannot be approved without a complete READY guide",
                 status_code=409,
             )
         # Approval is blocked unless every anchor still resolves byte-for-byte.
@@ -2136,6 +3553,35 @@ class Stage1Service:
             ) from exc
         return row
 
+    async def approve_assessment_and_enqueue_guide(
+        self, *, assessment_id: str, if_match: str, actor: Actor
+    ) -> AssessmentRow:
+        """Persist approval first; guide enqueue is recoverable and nonblocking."""
+
+        row = self.approve_assessment(
+            assessment_id=assessment_id, if_match=if_match, actor=actor
+        )
+        try:
+            await self.ensure_approved_guide_job(row, actor_id=actor.user_id)
+        except Exception:
+            # Approval is authoritative and must never be rolled back because
+            # enrichment scheduling failed. Startup reconciliation repairs the
+            # durable gap from the approved version and audit event.
+            if not self.repository.has_audit_event(
+                tenant_id=row.tenant_id,
+                event_type="guide.enqueue_deferred",
+                aggregate_id=row.assessment_id,
+                payload_contains={"assessment_version": row.version},
+            ):
+                self.repository.audit(
+                    tenant_id=row.tenant_id,
+                    event_type="guide.enqueue_deferred",
+                    aggregate_id=row.assessment_id,
+                    actor_id=actor.user_id,
+                    payload={"assessment_version": row.version},
+                )
+        return row
+
     def create_export(self, assessment_id: str, actor: Actor) -> ExportRow:
         assessment_row = self.repository.assessment_by_id(assessment_id, actor.workspace_id)
         assessment = m.Assessment.model_validate(assessment_row.data)
@@ -2151,7 +3597,14 @@ class Stage1Service:
             )
         ):
             raise WorkflowError("HUMAN_APPROVAL_REQUIRED", "Export requires human approval", status_code=409)
-        guide_row = self.repository.guide_for_assessment(assessment_id, actor.workspace_id)
+        try:
+            guide_row = self.repository.guide_for_approved_version(assessment_row)
+        except NotFound as exc:
+            raise WorkflowError(
+                "GUIDE_NOT_READY",
+                "Export requires the guide for the exact approved version.",
+                status_code=409,
+            ) from exc
         guide = m.EvaluationGuide.model_validate(guide_row.data)
         if guide.status != "READY":
             raise WorkflowError(
@@ -2397,6 +3850,8 @@ class Stage1Service:
         )
 
     def _gateway(self, job_id: str) -> ModelGateway:
+        if self.gateway_factory is not None:
+            return self.gateway_factory(job_id)
         return ModelGateway(
             GatewayConfig(
                 mode=GatewayMode(self.settings.model_mode),
@@ -2408,38 +3863,424 @@ class Stage1Service:
             ledger_sink=self.repository.model_call_sink,
         )
 
-    async def _direct_gateway(self, job_id: str, tenant_id: str, prompt_id: str, request: BaseModel, output_model: type[T]) -> T:
-        trusted = build_trusted_context(request).model_copy(
-            update={"tenant_id": tenant_id}
+    def _remaining_model_budget_usd(self, job_id: str, tenant_id: str) -> float:
+        spent = sum(
+            max(
+                float(item.get("estimated_cost_usd") or 0.0),
+                float(item.get("actual_cost_usd") or 0.0),
+            )
+            for item in self.repository.model_calls(
+                tenant_id=tenant_id,
+                job_id=job_id,
+            )
         )
-        result = await self._gateway(job_id).invoke(prompt_id, request, trusted)
-        return cast(T, output_model.model_validate(result.output.model_dump(mode="json")))
+        return max(0.0, self.settings.max_job_cost_usd - spent)
+
+    @staticmethod
+    def _walk_contract_dicts(value: Any):
+        if isinstance(value, dict):
+            yield value
+            for child in value.values():
+                yield from Stage1Service._walk_contract_dicts(child)
+        elif isinstance(value, list):
+            for child in value:
+                yield from Stage1Service._walk_contract_dicts(child)
+
+    @classmethod
+    def _evidence_references(cls, value: Any) -> set[str]:
+        references: set[str] = set()
+        for item in cls._walk_contract_dicts(value):
+            evidence_id = item.get("evidence_id")
+            if isinstance(evidence_id, str):
+                references.add(evidence_id)
+            references.update(
+                child
+                for child in item.get("evidence_ids", [])
+                if isinstance(child, str)
+            )
+        return references
+
+    def _trusted_prompt_context(
+        self,
+        *,
+        job: JobRow,
+        prompt_id: str,
+        request: BaseModel,
+    ) -> m.TrustedPromptContext:
+        """Build a product context exclusively from server-owned durable facts.
+
+        Unlike the synthetic mock helper, this boundary never promotes IDs,
+        language, classification, or artifact provenance merely because they
+        appeared in a request assembled for the provider.
+        """
+
+        submission: SubmissionRow | None = None
+        if job.kind in {"ACTIVITY", "BLUEPRINT_REVIEW", "BLUEPRINT_PREFLIGHT"}:
+            activity = cast(
+                ActivityRow,
+                self.repository.scoped(
+                    ActivityRow, job.aggregate_id, job.tenant_id
+                ),
+            )
+        else:
+            submission = cast(
+                SubmissionRow,
+                self.repository.scoped(
+                    SubmissionRow, job.aggregate_id, job.tenant_id
+                ),
+            )
+            activity = cast(
+                ActivityRow,
+                self.repository.scoped(
+                    ActivityRow, submission.activity_id, job.tenant_id
+                ),
+            )
+        config = m.ActivityConfig.model_validate(activity.config)
+        if config.tenant_id != job.tenant_id:
+            raise WorkflowError(
+                "SYNTHETIC_ATTESTATION_SCOPE_MISMATCH",
+                "The durable activity does not match the worker tenant.",
+                status_code=409,
+            )
+
+        activity_artifacts = self.repository.artifacts_for(
+            activity_id=activity.id,
+            tenant_id=job.tenant_id,
+            submission_id=None,
+        )
+        submission_artifacts = (
+            self.repository.artifacts_for(
+                activity_id=activity.id,
+                tenant_id=job.tenant_id,
+                submission_id=submission.id,
+            )
+            if submission is not None
+            else []
+        )
+        artifacts = [*activity_artifacts, *submission_artifacts]
+        artifact_by_id = {artifact.id: artifact for artifact in artifacts}
+        if any(
+            artifact.sha256 is None
+            or artifact.byte_size is None
+            or artifact.media_type is None
+            for artifact in artifacts
+        ):
+            raise WorkflowError(
+                "SYNTHETIC_ATTESTATION_SCOPE_MISMATCH",
+                "Only sealed artifacts may enter a model context.",
+                status_code=409,
+            )
+
+        raw_request = request.model_dump(mode="json")
+        request_objects = list(self._walk_contract_dicts(raw_request))
+        embedded_evidence_ids: set[str] = set()
+        request_artifact_hashes: set[str] = set()
+        for item in request_objects:
+            artifact_hash = item.get("artifact_hash")
+            if artifact_hash is None and "sha256" in item:
+                artifact_hash = item.get("sha256")
+            if artifact_hash is None:
+                continue
+            artifact_id = item.get("artifact_id")
+            artifact = (
+                artifact_by_id.get(artifact_id)
+                if isinstance(artifact_id, str)
+                else None
+            )
+            if artifact is None or artifact.sha256 != artifact_hash:
+                raise WorkflowError(
+                    "SYNTHETIC_ATTESTATION_SCOPE_MISMATCH",
+                    "A model input artifact is outside the sealed job scope.",
+                    status_code=409,
+                )
+            if item.get("tenant_id") not in {None, job.tenant_id}:
+                raise WorkflowError(
+                    "SYNTHETIC_ATTESTATION_SCOPE_MISMATCH",
+                    "A model input artifact belongs to another tenant.",
+                    status_code=409,
+                )
+            item_submission_id = item.get("submission_id")
+            if item_submission_id is not None and (
+                submission is None
+                or item_submission_id != submission.id
+                or artifact.submission_id != submission.id
+            ):
+                raise WorkflowError(
+                    "SYNTHETIC_ATTESTATION_SCOPE_MISMATCH",
+                    "A model input artifact belongs to another submission.",
+                    status_code=409,
+                )
+            source_role = item.get("source_role", item.get("role"))
+            if source_role is not None and source_role != artifact.role:
+                raise WorkflowError(
+                    "SYNTHETIC_ATTESTATION_SCOPE_MISMATCH",
+                    "A model input artifact role differs from its sealed record.",
+                    status_code=409,
+                )
+            request_artifact_hashes.add(str(artifact_hash))
+            if isinstance(item.get("evidence_id"), str):
+                embedded_evidence_ids.add(item["evidence_id"])
+
+        allowed_evidence_ids: set[str] = set()
+        if prompt_id in {
+            "P06_EVIDENCE_MAP_V1",
+            "P07_QUESTION_BUILD_V1",
+            "P08_QUESTION_REVIEW_V1",
+            "P09_GUIDE_BUILD_V1",
+        }:
+            if submission is None:
+                raise WorkflowError(
+                    "SYNTHETIC_ATTESTATION_SCOPE_MISMATCH",
+                    "A submission prompt requires a durable submission scope.",
+                    status_code=409,
+                )
+            persisted_evidence = {
+                row.id: m.EvidenceUnit.model_validate(row.data)
+                for row in self.repository.evidence_for_submission(
+                    submission.id, job.tenant_id
+                )
+            }
+            bundle_ids: set[str] = set()
+            embedded_units: dict[str, m.EvidenceUnit] = {}
+            for item in request_objects:
+                if not {
+                    "bundle_id",
+                    "allowed_evidence_ids",
+                    "evidence_units",
+                }.issubset(item):
+                    continue
+                bundle_ids.update(
+                    value
+                    for value in item.get("allowed_evidence_ids", [])
+                    if isinstance(value, str)
+                )
+                for raw_unit in item.get("evidence_units", []):
+                    unit = m.EvidenceUnit.model_validate(raw_unit)
+                    embedded_units[unit.evidence_id] = unit
+            if (
+                not bundle_ids
+                or bundle_ids != set(embedded_units)
+                or not bundle_ids.issubset(set(persisted_evidence))
+                or any(
+                    persisted_evidence[evidence_id] != unit
+                    for evidence_id, unit in embedded_units.items()
+                )
+            ):
+                raise WorkflowError(
+                    "SYNTHETIC_ATTESTATION_SCOPE_MISMATCH",
+                    "The request evidence bundle differs from durable parser output.",
+                    status_code=409,
+                )
+            allowed_evidence_ids = bundle_ids
+        else:
+            allowed_evidence_ids.update(embedded_evidence_ids)
+            for row_type in (ActivitySpecRow, RubricSpecRow):
+                try:
+                    persisted = self.repository.scoped(
+                        row_type, activity.id, job.tenant_id
+                    )
+                except NotFound:
+                    continue
+                allowed_evidence_ids.update(
+                    self._evidence_references(persisted.data)
+                )
+
+        tenant_ids = {
+            item["tenant_id"]
+            for item in request_objects
+            if isinstance(item.get("tenant_id"), str)
+        }
+        activity_ids = {
+            item["activity_id"]
+            for item in request_objects
+            if isinstance(item.get("activity_id"), str)
+        }
+        submission_ids = {
+            item["submission_id"]
+            for item in request_objects
+            if isinstance(item.get("submission_id"), str)
+        }
+        if (
+            tenant_ids - {job.tenant_id}
+            or activity_ids - {activity.id}
+            or submission_ids
+            - ({submission.id} if submission is not None else set())
+        ):
+            raise WorkflowError(
+                "SYNTHETIC_ATTESTATION_SCOPE_MISMATCH",
+                "The request roots do not match the durable job scope.",
+                status_code=409,
+            )
+
+        blueprint_ids = {
+            item["blueprint_id"]
+            for item in request_objects
+            if isinstance(item.get("blueprint_id"), str)
+        }
+        blueprint_versions = {
+            item["blueprint_version"]
+            for item in request_objects
+            if isinstance(item.get("blueprint_version"), int)
+        }
+        target_blueprint_id = raw_request.get("target_blueprint_id")
+        target_blueprint_version = raw_request.get("target_blueprint_version")
+        if isinstance(target_blueprint_id, str):
+            blueprint_ids.add(target_blueprint_id)
+        if isinstance(target_blueprint_version, int):
+            blueprint_versions.add(target_blueprint_version)
+        if len(blueprint_ids) > 1 or len(blueprint_versions) > 1:
+            raise WorkflowError(
+                "SYNTHETIC_ATTESTATION_SCOPE_MISMATCH",
+                "The request contains conflicting blueprint identities.",
+                status_code=409,
+            )
+        blueprint_id = next(iter(blueprint_ids), None)
+        blueprint_version = next(iter(blueprint_versions), None)
+        if (blueprint_id is None) != (blueprint_version is None):
+            raise WorkflowError(
+                "SYNTHETIC_ATTESTATION_SCOPE_MISMATCH",
+                "The request blueprint identity is incomplete.",
+                status_code=409,
+            )
+
+        context_kwargs: dict[str, Any] = {}
+        if self.settings.model_mode == "real":
+            grant = self.provider_grant
+            if grant is None or any(
+                (
+                    grant.job_id != job.id,
+                    grant.tenant_id != job.tenant_id,
+                    grant.job_kind != job.kind,
+                    grant.aggregate_id != job.aggregate_id,
+                    grant.claim_attempt != job.attempt,
+                )
+            ):
+                raise WorkflowError(
+                    "SYNTHETIC_ATTESTATION_REQUIRED",
+                    "The claimed job has no exact synthetic provider grant.",
+                    status_code=409,
+                )
+            scope_hashes = {
+                cast(str, artifact.sha256) for artifact in artifacts
+            }
+            attested_hashes = set(grant.artifact_hashes)
+            scope_matches = (
+                scope_hashes.issubset(attested_hashes)
+                if job.kind == "QUESTION_ACTION"
+                else scope_hashes == attested_hashes
+            )
+            if not scope_hashes or not scope_matches:
+                raise WorkflowError(
+                    "SYNTHETIC_ATTESTATION_REQUIRED",
+                    "Real provider work is restricted to the server-approved synthetic corpus.",
+                    status_code=409,
+                )
+            if not request_artifact_hashes.issubset(scope_hashes):
+                raise WorkflowError(
+                    "SYNTHETIC_ATTESTATION_SCOPE_MISMATCH",
+                    "The request is not covered by the synthetic corpus attestation.",
+                    status_code=409,
+                )
+            request_hash = canonical_hash(raw_request)
+            context_kwargs = {
+                "data_classification": "SYNTHETIC_ONLY_NO_STUDENT_DATA",
+                "attestation_id": grant.authorization_id,
+                "attested_input_hash": request_hash,
+                "attested_artifact_hashes": sorted(attested_hashes),
+            }
+
+        return m.TrustedPromptContext(
+            tenant_id=job.tenant_id,
+            activity_id=activity.id,
+            submission_id=submission.id if submission is not None else None,
+            blueprint_id=blueprint_id,
+            blueprint_version=blueprint_version,
+            allowed_evidence_ids=sorted(allowed_evidence_ids),
+            allowed_course_source_ids=[],
+            output_language=config.output_language,
+            context_mode=config.context_mode,
+            **context_kwargs,
+        )
 
     async def _gateway_stage(
         self, job: JobRow, prompt_id: str, request: BaseModel, output_model: type[T], *, cache_suffix: str = ""
     ) -> T:
+        if prompt_id == "P09_GUIDE_BUILD_V1" and job.kind != "GUIDE_BUILD":
+            raise WorkflowError(
+                "P09_POST_APPROVAL_JOB_REQUIRED",
+                "P09 can only run from the exact post-approval guide job.",
+                status_code=409,
+            )
+        if job.kind == "GUIDE_BUILD" and prompt_id != "P09_GUIDE_BUILD_V1":
+            raise WorkflowError(
+                "GUIDE_BUILD_PROMPT_FORBIDDEN",
+                "The post-approval guide job can only invoke P09.",
+                status_code=409,
+            )
+        if prompt_id == "P05_BLUEPRINT_REVIEW_V1":
+            raise WorkflowError(
+                "P05_ACTIVE_RUNTIME_RETIRED",
+                "P05 is historical-only and cannot be invoked by the product runtime.",
+                status_code=409,
+            )
+        if prompt_id == "P08_QUESTION_REVIEW_V1":
+            raise WorkflowError(
+                "P08_ACTIVE_RUNTIME_RETIRED",
+                "P08 is historical-only and cannot be invoked by the product runtime.",
+                status_code=409,
+            )
         self._cancellation_checkpoint(job)
         stage = f"{prompt_id}:{cache_suffix}" if cache_suffix else prompt_id
         inputs = request.model_dump(mode="json")
         policy_hash = self._stage_policy_hash(job)
+        gateway = self._gateway(job.id)
+        trusted = self._trusted_prompt_context(
+            job=job,
+            prompt_id=prompt_id,
+            request=request,
+        )
+        application_validator_version = (
+            PROMPT_APPLICATION_VALIDATOR_VERSIONS.get(prompt_id)
+        )
+        component_version = gateway.execution_fingerprint(
+            prompt_id,
+            application_validator_hash=(
+                canonical_hash(application_validator_version)
+                if application_validator_version is not None
+                else None
+            ),
+        )
         cached = self.repository.stage_by_key(
             tenant_id=job.tenant_id,
             stage=stage,
             inputs=inputs,
             policy_hash=policy_hash,
-            component_version=PROMPT_VERSION,
+            component_version=component_version,
         )
         if cached is not None and cached.output is not None:
+            output = output_model.model_validate(
+                gateway.validate_cached_output(
+                    prompt_id,
+                    request,
+                    trusted,
+                    cached.output,
+                ).model_dump(mode="json")
+            )
             self._record_stage_reuse(job, cached)
-            output = output_model.model_validate(cached.output)
             self._cancellation_checkpoint(job)
             return output
         self._assert_resume_may_execute(job, prompt_id)
         try:
-            trusted = build_trusted_context(request).model_copy(
-                update={"tenant_id": job.tenant_id}
+            result = await gateway.invoke(
+                prompt_id,
+                request,
+                trusted,
+                budget=CallBudget(
+                    max_cost_usd=self._remaining_model_budget_usd(
+                        job.id, job.tenant_id
+                    )
+                ),
             )
-            result = await self._gateway(job.id).invoke(prompt_id, request, trusted)
             self._cancellation_checkpoint(job)
             output = output_model.model_validate(
                 result.output.model_dump(mode="json")
@@ -2454,6 +4295,7 @@ class Stage1Service:
                 stage=stage,
                 inputs=inputs,
                 policy_hash=policy_hash,
+                component_version=component_version,
                 exc=exc,
             )
             raise
@@ -2462,20 +4304,172 @@ class Stage1Service:
             tenant_id=job.tenant_id,
             stage=stage,
             inputs=inputs,
-            component_version=PROMPT_VERSION,
+            component_version=component_version,
             policy_hash=policy_hash,
             output=output.model_dump(mode="json"),
         )
         self._cancellation_checkpoint(job)
         return output
 
+    def _blueprint_preflight_stage(
+        self,
+        *,
+        job: JobRow,
+        blueprint: m.AssessmentBlueprint,
+        activity_spec: m.ActivitySpec,
+        rubric_spec: m.RubricSpec | None,
+        resolved_decisions: list[m.PolicyDecision],
+        blueprint_policy: m.BlueprintPolicy,
+    ) -> tuple[m.AssessmentBlueprint, m.BlueprintReviewPreflight]:
+        """Run or reuse the active deterministic gate without provider transport."""
+
+        self._cancellation_checkpoint(job)
+        request = m.BlueprintBuildRequest(
+            target_blueprint_id=blueprint.blueprint_id,
+            target_blueprint_version=blueprint.blueprint_version,
+            activity_spec=activity_spec,
+            rubric_spec=rubric_spec,
+            resolved_decisions=resolved_decisions,
+            blueprint_policy=blueprint_policy,
+        )
+        inputs = {
+            "blueprint": blueprint.model_dump(mode="json"),
+            "request": request.model_dump(mode="json"),
+        }
+        policy_hash = canonical_hash(
+            {
+                "blueprint_policy": blueprint_policy.model_dump(mode="json"),
+                "p10_enabled": False,
+            }
+        )
+        component_version = _blueprint_preflight_component_version()
+        cached = self.repository.stage_by_key(
+            tenant_id=job.tenant_id,
+            stage="BLUEPRINT_PREFLIGHT",
+            inputs=inputs,
+            policy_hash=policy_hash,
+            component_version=component_version,
+        )
+        expected_blueprint = preflight_compiled_blueprint(
+            blueprint=blueprint.model_copy(
+                update={"approved_by": None, "approved_at": None}, deep=True
+            ),
+            request=request,
+        )
+        expected_preflight = build_blueprint_review_preflight(
+            blueprint=expected_blueprint,
+            activity_spec=activity_spec,
+            rubric_spec=rubric_spec,
+            blueprint_policy=blueprint_policy,
+        )
+        if cached is not None and cached.output is not None:
+            gated = m.AssessmentBlueprint.model_validate(
+                cached.output.get("blueprint")
+            )
+            preflight = m.BlueprintReviewPreflight.model_validate(
+                cached.output.get("preflight")
+            )
+            if gated != expected_blueprint or preflight != expected_preflight:
+                raise WorkflowError(
+                    "STAGE_REUSE_HASH_MISMATCH",
+                    "The reusable blueprint preflight no longer matches its deterministic boundary.",
+                    status_code=409,
+                )
+            self._record_stage_reuse(job, cached)
+            stage_run = cached
+        else:
+            self._assert_application_stage_may_execute(job, "BLUEPRINT_PREFLIGHT")
+            stage_run, _ = self.repository.save_stage(
+                job_id=job.id,
+                tenant_id=job.tenant_id,
+                stage="BLUEPRINT_PREFLIGHT",
+                inputs=inputs,
+                component_version=component_version,
+                policy_hash=policy_hash,
+                output={
+                    "blueprint": expected_blueprint.model_dump(mode="json"),
+                    "preflight": expected_preflight.model_dump(mode="json"),
+                },
+            )
+            gated = expected_blueprint
+            preflight = expected_preflight
+        audit_payload = {
+            "stage_run_id": stage_run.id,
+            "blueprint_version": gated.blueprint_version,
+            "outcome": "PASS" if preflight.catalog_plan_feasible else "FAIL",
+            "diagnostic_codes": sorted(item.code for item in gated.diagnostics),
+        }
+        if not self.repository.has_audit_event(
+            tenant_id=job.tenant_id,
+            event_type="blueprint.preflight.observed",
+            aggregate_id=job.id,
+            payload_contains={"stage_run_id": stage_run.id},
+        ):
+            self.repository.audit(
+                tenant_id=job.tenant_id,
+                event_type="blueprint.preflight.observed",
+                aggregate_id=job.id,
+                actor_id="system_worker",
+                payload=audit_payload,
+            )
+        self._cancellation_checkpoint(job)
+        return gated, preflight
+
+    def _record_p08_observability(
+        self,
+        *,
+        job: JobRow,
+        stage: str,
+        request: BaseModel,
+        output: BaseModel,
+    ) -> None:
+        """Persist a historical P08 projection for explicit replay tooling only.
+
+        The active gateway guard returns before this compatibility helper can
+        run. Existing audit rows and direct historical tests remain readable.
+        """
+
+        if not (
+            isinstance(request, m.QuestionReviewRequest)
+            and isinstance(output, m.QuestionReviewResult)
+        ):
+            return
+        output_hash = canonical_hash(output.model_dump(mode="json"))
+        if self.repository.has_audit_event(
+            tenant_id=job.tenant_id,
+            event_type="question.review.decision_observed",
+            aggregate_id=job.id,
+            payload_contains={"review_output_hash": output_hash},
+        ):
+            return
+        self.repository.audit(
+            tenant_id=job.tenant_id,
+            event_type="question.review.decision_observed",
+            aggregate_id=job.id,
+            actor_id="system_worker",
+            payload={
+                "prompt_id": "P08_QUESTION_REVIEW_V1",
+                "stage_scope_hash": canonical_hash(stage),
+                "review_output_hash": output_hash,
+                "decision_diagnostics": p08_decision_diagnostics(
+                    output, request.validation_policy
+                ),
+            },
+        )
+
     def _resume_order(self, job: JobRow) -> dict[str, int]:
         if job.kind == "ACTIVITY":
             return _ACTIVITY_RESUME_ORDER
+        if job.kind == "BLUEPRINT_REVIEW":
+            return _BLUEPRINT_REVIEW_RESUME_ORDER
+        if job.kind == "BLUEPRINT_PREFLIGHT":
+            return _BLUEPRINT_PREFLIGHT_RESUME_ORDER
         if job.kind == "SUBMISSION":
             return _SUBMISSION_RESUME_ORDER
         if job.kind == "QUESTION_ACTION":
             return _SUBMISSION_RESUME_ORDER
+        if job.kind == "GUIDE_BUILD":
+            return _GUIDE_BUILD_RESUME_ORDER
         return {}
 
     def _mark_resume_floor(self, job: JobRow, application_stage: str) -> None:
@@ -2514,8 +4508,6 @@ class Stage1Service:
         self._resume_floor_reached.add(job.id)
 
     def _record_stage_reuse(self, job: JobRow, cached: StageRunRow) -> None:
-        if job.resume_from_stage is None:
-            return
         if self.repository.has_audit_event(
             tenant_id=job.tenant_id,
             event_type="stage.reused",
@@ -2560,8 +4552,21 @@ class Stage1Service:
             )
         self._resume_floor_reached.add(job.id)
 
+    def _model_policy_hash(self, activity: ActivityRow) -> str:
+        return canonical_hash(
+            {
+                "blueprint_policy": activity.blueprint_policy,
+                "model_mode": getattr(
+                    self.settings,
+                    "worker_model_mode",
+                    self.settings.model_mode,
+                ),
+                "p10_enabled": False,
+            }
+        )
+
     def _stage_policy_hash(self, job: JobRow) -> str:
-        if job.kind == "ACTIVITY":
+        if job.kind in {"ACTIVITY", "BLUEPRINT_REVIEW", "BLUEPRINT_PREFLIGHT"}:
             activity = cast(
                 ActivityRow,
                 self.repository.scoped(ActivityRow, job.aggregate_id, job.tenant_id),
@@ -2577,16 +4582,21 @@ class Stage1Service:
                     ActivityRow, submission.activity_id, job.tenant_id
                 ),
             )
-        return canonical_hash(
-            {
-                "blueprint_policy": activity.blueprint_policy,
-                "model_mode": self.settings.model_mode,
-                "p10_enabled": False,
-            }
-        )
+        return self._model_policy_hash(activity)
 
     @staticmethod
-    def _blueprint_row(tenant_id: str, blueprint: m.AssessmentBlueprint, review: m.BlueprintReview) -> BlueprintRow:
+    def _blueprint_row(
+        tenant_id: str,
+        blueprint: m.AssessmentBlueprint,
+        *,
+        preflight: m.BlueprintReviewPreflight,
+        review: m.BlueprintReview | None,
+    ) -> BlueprintRow:
+        if (
+            preflight.blueprint_id != blueprint.blueprint_id
+            or preflight.blueprint_version != blueprint.blueprint_version
+        ):
+            raise ValueError("blueprint preflight identity mismatch")
         data = blueprint.model_dump(mode="json")
         return BlueprintRow(
             row_id=stable_id("blueprintrow", blueprint.activity_id, blueprint.blueprint_version),
@@ -2597,7 +4607,8 @@ class Stage1Service:
             status=blueprint.status.value,
             etag=_etag(data),
             data=data,
-            review=review.model_dump(mode="json"),
+            review=review.model_dump(mode="json") if review is not None else None,
+            preflight=preflight.model_dump(mode="json"),
         )
 
     @staticmethod
@@ -2618,6 +4629,10 @@ class Stage1Service:
         """Map runtime failures to stable, content-free operational classes."""
 
         code = str(getattr(exc, "code", "TECHNICAL_FAILURE"))
+        if isinstance(exc, Conflict):
+            conflict_code = str(exc)
+            if conflict_code in _PRECONDITION_FAILURE_CODES:
+                code = conflict_code
         if isinstance(exc, (GatewaySafetyBlock, GatewayContextError)):
             return m.FailureClass.SECURITY, False, code
         if code in _SECURITY_FAILURE_CODES:
@@ -2626,7 +4641,7 @@ class Stage1Service:
             return m.FailureClass.VALIDATION, False, code
         if isinstance(exc, (ContextValidationError, ValidationError)):
             return m.FailureClass.VALIDATION, False, code
-        if isinstance(exc, WorkflowError) and code in _PRECONDITION_FAILURE_CODES:
+        if isinstance(exc, (WorkflowError, Conflict)) and code in _PRECONDITION_FAILURE_CODES:
             return m.FailureClass.PRECONDITION, False, code
         if isinstance(exc, GatewayTimeout):
             return m.FailureClass.TRANSIENT, True, code
@@ -2660,6 +4675,7 @@ class Stage1Service:
         stage: str,
         inputs: dict[str, Any],
         policy_hash: str,
+        component_version: str,
         exc: BaseException,
     ) -> None:
         failure_class, retryable, code = self._classify_failure(exc)
@@ -2673,7 +4689,7 @@ class Stage1Service:
             tenant_id=job.tenant_id,
             stage=stage,
             inputs=inputs,
-            component_version=PROMPT_VERSION,
+            component_version=component_version,
             policy_hash=policy_hash,
             output=None,
             status="FAILED",
@@ -2791,7 +4807,7 @@ class Stage1Service:
                 raise NotFound("job not found")
             persisted.failure_class = failure_class.value
             persisted.next_attempt_at = None
-        if job.kind == "ACTIVITY":
+        if job.kind in {"ACTIVITY", "BLUEPRINT_REVIEW", "BLUEPRINT_PREFLIGHT"}:
             self.repository.set_activity_status(job.aggregate_id, job.tenant_id, "TECHNICAL_FAILURE")
         elif job.kind == "SUBMISSION":
             submission = cast(
@@ -2806,6 +4822,25 @@ class Stage1Service:
                     current_stage=status.stage,
                     progress=status.progress,
                     active_job_id=job.id,
+                    diagnostics=[failure],
+                    updated_at=utc_now(),
+                )
+            )
+        elif job.kind == "GUIDE_BUILD":
+            submission = cast(
+                SubmissionRow,
+                self.repository.scoped(
+                    SubmissionRow, job.aggregate_id, job.tenant_id
+                ),
+            )
+            self.repository.set_submission_state(
+                m.SubmissionProcessingState(
+                    submission_id=submission.id,
+                    activity_id=submission.activity_id,
+                    status=m.SubmissionProcessingStatus.APPROVED,
+                    current_stage="GUIDE_FAILED",
+                    progress=status.progress,
+                    active_job_id=None,
                     diagnostics=[failure],
                     updated_at=utc_now(),
                 )
@@ -2865,23 +4900,6 @@ class Stage1Service:
         mapping: m.EvidenceMapPatch, questions: list[m.SelectedQuestion],
         artifact: ArtifactRow, job: JobRow,
     ) -> m.Assessment:
-        required = [question.question_id for question in questions if question.student_justification_required]
-        mode = blueprint.assessment_constraints.structured_justification_policy.mode
-        opportunity_by_dimension: dict[str, list[m.QuestionOpportunity]] = {}
-        for opportunity in mapping.opportunities:
-            opportunity_by_dimension.setdefault(opportunity.dimension_id, []).append(opportunity)
-        coverage = [
-            m.CoverageItem(
-                dimension_id=dimension.dimension_id,
-                available_variant_count=len(dimension.evidence_variants),
-                available_opportunity_count=len(opportunity_by_dimension.get(dimension.dimension_id, [])),
-                selected_opportunity_count=sum(q.dimension_id == dimension.dimension_id for q in questions),
-                reused_variant_count=0,
-                evidence_unit_count=len({eid for o in opportunity_by_dimension.get(dimension.dimension_id, []) for eid in o.evidence_ids}),
-                diagnostics=[],
-            )
-            for dimension in blueprint.dimensions
-        ]
         ledgers = [
             ledger
             for lineage_job_id in self._job_lineage_ids(job)
@@ -2911,43 +4929,25 @@ class Stage1Service:
             )
             if row.role == m.ArtifactRole.RUBRIC.value and row.sha256
         ]
-        assessment_id = stable_id("assessment", submission.id, plan.plan_id, [q.source_candidate_id for q in questions])
-        return m.Assessment(
-            assessment_id=assessment_id,
+        return assemble_assessment_snapshot(
             tenant_id=job.tenant_id,
             activity_id=activity.id,
             submission_id=submission.id,
             subject_ref=submission.subject_ref,
-            status=m.WorkflowStatus.NEEDS_REVIEW,
-            context_mode=m.ContextMode.CLOSED,
-            assessment_plan_id=plan.plan_id,
-            question_count=plan.question_count,
+            created_at=submission.created_at,
+            blueprint=blueprint,
+            plan=plan,
+            mapping=mapping,
             questions=questions,
-            coverage=coverage,
-            structured_justification=m.StructuredJustificationSummary(
-                mode=mode,
-                required_question_ids=required,
-                limited_evidence_notice_required=mode != m.StructuredJustificationMode.ALL,
-            ),
-            diagnostics=[],
-            lineage=m.Lineage(
-                assignment_prompt_hashes=prompt_hashes,
-                rubric_hashes=rubric_hashes,
-                submission_hashes=[cast(str, artifact.sha256)],
-                blueprint_id=blueprint.blueprint_id,
-                blueprint_version=blueprint.blueprint_version,
-                parser_versions={artifact.media_type or "unknown": PARSER_VERSION},
-                prompt_versions={key: PROMPT_VERSION for key in snapshots},
-                model_snapshots=snapshots,
-                policy_hash=canonical_hash(activity.blueprint_policy),
-                planner_version=PLANNER_VERSION,
-                renderer_version=RENDERER_VERSION,
-            ),
-            created_at=(
-                submission.created_at.replace(tzinfo=UTC)
-                if submission.created_at.tzinfo is None
-                else submission.created_at.astimezone(UTC)
-            ),
+            assignment_prompt_hashes=prompt_hashes,
+            rubric_hashes=rubric_hashes,
+            submission_hashes=[cast(str, artifact.sha256)],
+            submission_media_type=artifact.media_type or "unknown",
+            prompt_versions={
+                key: prompt_spec(key).prompt_version for key in snapshots
+            },
+            model_snapshots=snapshots,
+            policy_hash=canonical_hash(activity.blueprint_policy),
         )
 
     def _job_lineage_ids(self, job: JobRow) -> list[str]:

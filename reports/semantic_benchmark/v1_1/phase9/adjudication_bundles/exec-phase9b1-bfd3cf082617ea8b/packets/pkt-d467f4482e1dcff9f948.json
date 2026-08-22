@@ -1,0 +1,72 @@
+{
+  "binding_scope": "ACTIVITY_WIDE",
+  "candidate_output": {
+    "candidate": null,
+    "context_mode": "CLOSED",
+    "diagnostics": [
+      {
+        "code": "QUESTION_REPLACEMENT_REQUIRED",
+        "details": {},
+        "evidence_ids": [
+          "ev_4cc57c449655e3cd1cc8",
+          "ev_95913076ce9b66b8fafe",
+          "ev_fa392f99230f506599f1"
+        ],
+        "message": "La evidencia autorizada (E1, E2 y E3) no contiene unidades, cantidades ni denominadores completos para reconstruir una relación cuantitativa localizada y justificar su alcance.",
+        "retryable": false,
+        "severity": "ERROR",
+        "source_ids": []
+      }
+    ],
+    "opportunity_id": "opportunity_p07_0cd6062857bbe6cbdb81",
+    "schema_version": "1.1.0",
+    "status": "REPLACEMENT_REQUIRED",
+    "submission_id": "submission_05"
+  },
+  "candidate_output_hash": "sha256:e8e5e9426fb797c4d487cbc66f5ef9a897d6c51dc9be599c65083c68b058a128",
+  "case_id": "PP-A01-S05-P07-O02",
+  "defensible_alternatives": [
+    "DETECTION_TASK con una sola zona visible",
+    "ADJUDICATION_TASK con ambas premisas visibles y exigencia de evidencia"
+  ],
+  "fixture_id": "P07-A01-S05-O02",
+  "oracle_state": "ORACLE_SUSPECT",
+  "property": {
+    "benchmark_tags": [
+      "ADJUDICATION_TASK",
+      "ANSWER_VISIBLE",
+      "DETECTION_TASK",
+      "LEAKAGE_ORACLE_SUSPECT",
+      "PREMISE_VISIBLE"
+    ],
+    "confidence": "MEDIUM",
+    "defensible_alternatives": [
+      "DETECTION_TASK con una sola zona visible",
+      "ADJUDICATION_TASK con ambas premisas visibles y exigencia de evidencia"
+    ],
+    "description": "La clasificación de answer leakage depende del observable y del wording concreto. En DETECTION_TASK, mostrar simultáneamente las dos afirmaciones contradictorias puede ser ANSWER_VISIBLE. En ADJUDICATION_TASK, ambas pueden ser PREMISE_VISIBLE si la pregunta exige decidir con evidencia. No existe una regla universal para todos los casos.",
+    "kind": "CONTEXTUAL_NOTE",
+    "notes": "",
+    "oracle_state": "ORACLE_SUSPECT",
+    "property_id": "A01-ACT-FINAL-LEAKAGE",
+    "source_refs": [
+      {
+        "file": "02_rubric.docx",
+        "section": "Condiciones u orientaciones de valoración"
+      }
+    ],
+    "stage": "P07"
+  },
+  "relevant_source_refs": [
+    {
+      "file": "02_rubric.docx",
+      "section": "Condiciones u orientaciones de valoración"
+    }
+  ],
+  "route_or_opportunity_id": "P07-A01-S05-O02",
+  "schema_version": "semantic-review-packet/1.1.0",
+  "source_hashes": {
+    "02_rubric.docx": "sha256:4d094045be8e9df0cf35fca1407973b8a71d7c0108cca89da5d60504b5e25126"
+  },
+  "stage": "P07"
+}

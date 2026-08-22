@@ -1,0 +1,496 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pruebas-personalizadas.invalid/schemas/phase9/1.1.0/frozen-candidate-matrix.json",
+  "title": "Frozen Phase 9 candidate matrix",
+  "description": "The Phase 8.1 template at evaluation/semantic_benchmark/v1_1/phase9_candidate_matrix_template.json stays UNSET by design; it is the benchmark-side placeholder. This document is the authoritative frozen matrix. Version 1.1.0 encodes the family-constrained routing policy: the activity side is Terra, the submission side is Luna, escalation only raises reasoning inside the owning family, and gpt-5.6-sol is structurally rejected rather than merely unused. Freezing the matrix does not authorize it: authorization stays NONE until Phase 9B.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "benchmark_version",
+    "benchmark_boundary_hash",
+    "matrix_status",
+    "authorization",
+    "execution_state",
+    "max_candidates_per_stage",
+    "candidate_identity_fields",
+    "reasoning_change_creates_new_candidate",
+    "model_identifier_kind",
+    "model_drift_risk",
+    "output_cap_derivation",
+    "verified_models",
+    "excluded_model_families",
+    "routing_policy_intent",
+    "stage_model_family",
+    "stage_reasoning_ladder",
+    "stage_qualification_status",
+    "cross_family_fallback",
+    "cross_family_fallback_rule",
+    "selection_rule",
+    "selection_rule_note",
+    "candidates",
+    "no_qualifying_configuration_policy"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "phase9-frozen-candidate-matrix/1.1.0"
+    },
+    "benchmark_version": {
+      "const": "semantic-benchmark/1.1.0"
+    },
+    "benchmark_boundary_hash": {
+      "const": "sha256:426dda4d560a8d7d53639dfbaa0773c28565450f06e8ff62d51a8cd1bd6f62ff"
+    },
+    "matrix_status": {
+      "const": "FROZEN"
+    },
+    "authorization": {
+      "const": "NONE"
+    },
+    "execution_state": {
+      "const": "REAL_EXECUTION_NOT_AUTHORIZED"
+    },
+    "max_candidates_per_stage": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 3
+    },
+    "candidate_identity_fields": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "reasoning_change_creates_new_candidate": {
+      "const": true
+    },
+    "model_identifier_kind": {
+      "type": "string",
+      "minLength": 1
+    },
+    "model_drift_risk": {
+      "type": "string",
+      "minLength": 1
+    },
+    "output_cap_derivation": {
+      "type": "string",
+      "minLength": 1
+    },
+    "no_qualifying_configuration_policy": {
+      "type": "string",
+      "minLength": 1
+    },
+    "cross_family_fallback": {
+      "const": "FORBIDDEN"
+    },
+    "cross_family_fallback_rule": {
+      "type": "string",
+      "minLength": 1
+    },
+    "selection_rule": {
+      "const": "LOWEST_REASONING_CONFIGURATION_THAT_QUALIFIES"
+    },
+    "selection_rule_note": {
+      "type": "string",
+      "minLength": 1
+    },
+    "stage_model_family": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "P01",
+        "P02",
+        "P03",
+        "P04",
+        "P06",
+        "P07",
+        "P09"
+      ],
+      "properties": {
+        "P01": {
+          "const": "gpt-5.6-terra"
+        },
+        "P02": {
+          "const": "gpt-5.6-terra"
+        },
+        "P03": {
+          "const": "gpt-5.6-terra"
+        },
+        "P04": {
+          "const": "gpt-5.6-terra"
+        },
+        "P06": {
+          "const": "gpt-5.6-luna"
+        },
+        "P07": {
+          "const": "gpt-5.6-luna"
+        },
+        "P09": {
+          "const": "gpt-5.6-luna"
+        }
+      }
+    },
+    "stage_reasoning_ladder": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "P01",
+        "P02",
+        "P03",
+        "P04",
+        "P06",
+        "P07",
+        "P09"
+      ],
+      "properties": {
+        "P01": {
+          "const": [
+            "HIGH",
+            "XHIGH"
+          ]
+        },
+        "P02": {
+          "const": [
+            "HIGH",
+            "XHIGH"
+          ]
+        },
+        "P03": {
+          "const": [
+            "HIGH",
+            "XHIGH"
+          ]
+        },
+        "P04": {
+          "const": [
+            "HIGH",
+            "XHIGH"
+          ]
+        },
+        "P06": {
+          "const": [
+            "HIGH",
+            "XHIGH",
+            "MAX"
+          ]
+        },
+        "P07": {
+          "const": [
+            "HIGH",
+            "XHIGH",
+            "MAX"
+          ]
+        },
+        "P09": {
+          "const": [
+            "HIGH",
+            "XHIGH",
+            "MAX"
+          ]
+        }
+      }
+    },
+    "stage_qualification_status": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "P01",
+        "P02",
+        "P03",
+        "P04",
+        "P06",
+        "P07",
+        "P09"
+      ],
+      "properties": {
+        "P01": {
+          "const": "PHASE10_OPERATIONAL_VERIFICATION_REQUIRED"
+        },
+        "P02": {
+          "const": "PHASE10_OPERATIONAL_VERIFICATION_REQUIRED"
+        },
+        "P03": {
+          "const": "PHASE10_OPERATIONAL_VERIFICATION_REQUIRED"
+        },
+        "P04": {
+          "const": "PHASE9_SEMANTIC_QUALIFICATION"
+        },
+        "P06": {
+          "const": "PHASE9_SEMANTIC_QUALIFICATION"
+        },
+        "P07": {
+          "const": "PHASE9_SEMANTIC_QUALIFICATION"
+        },
+        "P09": {
+          "const": "PHASE9_SEMANTIC_QUALIFICATION"
+        }
+      }
+    },
+    "routing_policy_intent": {
+      "$ref": "https://pruebas-personalizadas.invalid/schemas/phase9/1.1.0/routing-policy-intent.json"
+    },
+    "verified_models": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": {
+        "type": "object",
+        "required": [
+          "model",
+          "identifier_kind",
+          "responses_api",
+          "structured_outputs",
+          "status",
+          "official_source"
+        ],
+        "properties": {
+          "model": {
+            "enum": [
+              "gpt-5.6-luna",
+              "gpt-5.6-terra"
+            ]
+          },
+          "responses_api": {
+            "const": true
+          },
+          "structured_outputs": {
+            "const": true
+          },
+          "status": {
+            "const": "GA"
+          },
+          "official_source": {
+            "type": "string",
+            "pattern": "^https://developers\\.openai\\.com/"
+          }
+        }
+      }
+    },
+    "excluded_model_families": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "model",
+          "official_source",
+          "verified_in_phase_9a",
+          "candidate_in_phase_9",
+          "exclusion_reason"
+        ],
+        "properties": {
+          "model": {
+            "const": "gpt-5.6-sol"
+          },
+          "official_source": {
+            "type": "string",
+            "pattern": "^https://developers\\.openai\\.com/"
+          },
+          "verified_in_phase_9a": {
+            "const": true
+          },
+          "candidate_in_phase_9": {
+            "const": false
+          },
+          "exclusion_reason": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "candidates": {
+      "type": "array",
+      "minItems": 11,
+      "maxItems": 11,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "candidate_id",
+          "stage",
+          "model",
+          "reasoning_effort",
+          "max_output_tokens",
+          "route_profile_id",
+          "promotion_order",
+          "hypothesis"
+        ],
+        "properties": {
+          "candidate_id": {
+            "type": "string",
+            "pattern": "^P0[4679]-C[0-9]+-(TERRA|LUNA)-(HIGH|XHIGH|MAX)$"
+          },
+          "stage": {
+            "enum": [
+              "P04",
+              "P06",
+              "P07",
+              "P09"
+            ]
+          },
+          "model": {
+            "enum": [
+              "gpt-5.6-luna",
+              "gpt-5.6-terra"
+            ]
+          },
+          "reasoning_effort": {
+            "enum": [
+              "HIGH",
+              "XHIGH",
+              "MAX"
+            ]
+          },
+          "max_output_tokens": {
+            "type": "integer",
+            "minimum": 1000,
+            "maximum": 128000
+          },
+          "route_profile_id": {
+            "enum": [
+              "LUNA_BASELINE_V1",
+              "LUNA_XHIGH_V1",
+              "LUNA_MAX_V1",
+              "TERRA_HIGH_V1",
+              "TERRA_XHIGH_V1"
+            ]
+          },
+          "promotion_order": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 3
+          },
+          "hypothesis": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "stage": {
+                  "const": "P04"
+                }
+              },
+              "required": [
+                "stage"
+              ]
+            },
+            "then": {
+              "properties": {
+                "model": {
+                  "const": "gpt-5.6-terra"
+                },
+                "reasoning_effort": {
+                  "enum": [
+                    "HIGH",
+                    "XHIGH"
+                  ]
+                },
+                "max_output_tokens": {
+                  "const": 16000
+                },
+                "promotion_order": {
+                  "maximum": 2
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "stage": {
+                  "enum": [
+                    "P06",
+                    "P07",
+                    "P09"
+                  ]
+                }
+              },
+              "required": [
+                "stage"
+              ]
+            },
+            "then": {
+              "properties": {
+                "model": {
+                  "const": "gpt-5.6-luna"
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "stage": {
+                  "const": "P06"
+                }
+              },
+              "required": [
+                "stage"
+              ]
+            },
+            "then": {
+              "properties": {
+                "max_output_tokens": {
+                  "const": 16000
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "stage": {
+                  "enum": [
+                    "P07",
+                    "P09"
+                  ]
+                }
+              },
+              "required": [
+                "stage"
+              ]
+            },
+            "then": {
+              "properties": {
+                "max_output_tokens": {
+                  "const": 10000
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "reasoning_effort": {
+                  "const": "MAX"
+                }
+              },
+              "required": [
+                "reasoning_effort"
+              ]
+            },
+            "then": {
+              "properties": {
+                "route_profile_id": {
+                  "const": "LUNA_MAX_V1"
+                },
+                "stage": {
+                  "enum": [
+                    "P06",
+                    "P07",
+                    "P09"
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

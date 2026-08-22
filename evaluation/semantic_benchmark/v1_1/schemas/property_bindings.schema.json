@@ -1,0 +1,154 @@
+{
+  "$id": "https://pruebas-personalizadas.invalid/schemas/semantic-benchmark/1.1.0/property-bindings.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "benchmark_version": {
+      "const": "semantic-benchmark/1.1.0"
+    },
+    "bindings": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "additional_case_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "uniqueItems": true
+          },
+          "alignment_status": {
+            "enum": [
+              "ALIGNED",
+              "EXPLICITLY_EXCLUDED",
+              "NOT_APPLICABLE"
+            ]
+          },
+          "binding_scope": {
+            "enum": [
+              "CASE_SPECIFIC",
+              "SUBMISSION_WIDE",
+              "ACTIVITY_WIDE",
+              "FIXTURE_WIDE",
+              "EXPLICITLY_EXCLUDED"
+            ]
+          },
+          "exclusion_reason": {
+            "enum": [
+              null,
+              "SOURCE_ORACLE_NOT_APPLICABLE",
+              "P04_INPUT_EXCLUDES_SUBMISSIONS_BY_STAGE_CONTRACT",
+              "NO_UNAMBIGUOUS_P06_STAGE_LOCAL_ROUTE_FIXTURE",
+              "NO_P07_OPPORTUNITY_FIXTURE_FOR_SUBMISSION",
+              "NO_P07_OPPORTUNITY_EXERCISES_THE_DECLARED_CONDITION",
+              "ADVISORY_PROPERTY_KIND_IS_NOT_A_CASE_ASSERTION",
+              "CONDITION_CONFINED_TO_SOURCE_OUTSIDE_P07_INPUT",
+              "NO_FROZEN_P09_STAGE_LOCAL_FIXTURE_FOR_SCOPE"
+            ],
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "fixture_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "oracle_state": {
+            "enum": [
+              "VALID",
+              "ORACLE_SUSPECT",
+              "NOT_APPLICABLE"
+            ]
+          },
+          "primary_case_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "property_id": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "representative_selector": {
+            "additionalProperties": false,
+            "properties": {
+              "detail": {
+                "type": "object"
+              },
+              "kind": {
+                "enum": [
+                  "OWN_FIXTURE",
+                  "STAGE_ACTIVITY_FIXTURE",
+                  "STAGE_CASE_IDENTITY",
+                  "FROZEN_FIXTURE_SCOPE",
+                  "SOURCE_SUBMISSION_REFS",
+                  "ACTIVITY_STAGE_EXHAUSTIVE",
+                  "SUBMISSION_EXHAUSTIVE",
+                  "TOPICAL_MARKER",
+                  "CROSS_ARTIFACT_ANCHOR",
+                  "SHARED_ORACLE_TAGS",
+                  "NONE"
+                ]
+              }
+            },
+            "required": [
+              "kind",
+              "detail"
+            ],
+            "type": "object"
+          },
+          "source_provenance": {
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "type": "array"
+          },
+          "stage": {
+            "enum": [
+              "P04",
+              "P06",
+              "PLANNER",
+              "P07",
+              "P09"
+            ]
+          }
+        },
+        "required": [
+          "additional_case_ids",
+          "alignment_status",
+          "binding_scope",
+          "exclusion_reason",
+          "fixture_id",
+          "oracle_state",
+          "primary_case_id",
+          "property_id",
+          "representative_selector",
+          "source_provenance",
+          "stage"
+        ],
+        "type": "object"
+      },
+      "maxItems": 395,
+      "minItems": 395,
+      "type": "array"
+    },
+    "property_count": {
+      "const": 395
+    },
+    "schema_version": {
+      "const": "semantic-property-bindings/1.1.0"
+    }
+  },
+  "required": [
+    "schema_version",
+    "benchmark_version",
+    "property_count",
+    "bindings"
+  ],
+  "type": "object"
+}

@@ -4,6 +4,23 @@
 **Estrategia:** recorridos verticales, revisión humana 100%, un proveedor principal, contexto cerrado  
 **Estado:** plan inmediato; la preparación institucional permanece condicionada a evidencia del piloto
 
+**Aclaración ADR-037 / Fase 7 (2026-08-16):** el flujo funcional vigente es
+P01→P02→P03→P04→preflight determinista→aprobación docente y, por submission,
+P06→planner→P07→validaciones deterministas→revisión/aprobación docente→P09.
+P05/P08 son inactivos en el objetivo y P10 sigue deshabilitado. Fase 3 ya
+retiró P05 del runtime activo con preflight/recovery compatible. Fase 4
+conserva P06 como mapping semántico categórico sobre aliases, lo materializa en
+servidor y hace al planner única autoridad sobre N/factibilidad. Fase 5 reduce
+P07 a redacción semántica y selección de visible anchor por aliases; el servidor
+conserva support evidence completa, identidad y anchor canónico. Fase 6 retira
+P08 con hard guard y persistencia/recovery históricos. Fase 7 hace que ASSEMBLE
+termine primero en `NEEDS_REVIEW`; una aprobación durable exacta crea el job
+idempotente `GUIDE_BUILD` y recién entonces P09 enriquece la guía sin revisar o
+modificar preguntas.
+Las filas cerradas de Etapas
+0/1 se conservan como historia y regresión, no como autoridad para reactivar
+esas etapas.
+
 ---
 
 ## 1. Resultado que se busca
@@ -16,6 +33,7 @@ Construir un laboratorio web cloud donde docentes y ayudantes carguen manualment
 - cero publicación automática, nota o decisión disciplinaria;
 - 100% de assessments exportados fueron aprobados por una persona;
 - 100% de planes `READY` tienen exactamente `question_count` oportunidades primarias; no existe evaluación parcial;
+- 100% de mappings P06 completados preservan su resumen local aunque contengan menos de N oportunidades `SUFFICIENT`; esa insuficiencia sólo la decide el planner;
 - fallos de evidencia, parsing, schema y proveedor se distinguen y se muestran sin fabricar contenido;
 - aceptación docente, tipos de edición, latencia, tokens, costo y minutos de revisión quedan registrados;
 - un cambio de prompt/modelo puede compararse con el baseline sobre fixtures/golden set;
@@ -101,7 +119,7 @@ Un comando procesa una actividad sintética y una entrega; produce JSON y PDFs o
 | E1-05 | Pantalla de blueprint | muestra dimensiones, variantes, operaciones soportadas y catálogo de oportunidades; editar y aprobar crea nueva versión y ETag |
 | E1-06 | Submission pipeline | parser -> mapa/variantes/oportunidades -> plan exacto \(N\) -> preguntas/reviews -> guía corre en Cloud Run Jobs |
 | E1-07 | Progreso | UI diferencia `QUEUED`, `RUNNING`, `NEEDS_REVIEW`, `FAILED` y estado de dominio de la submission |
-| E1-08 | Revisión evidence-first | pregunta muestra ancla, localizador, dimensión, operación, scores y diagnostics |
+| E1-08 | Revisión evidence-first | pregunta muestra ancla, localizador, dimensión, operación, soporte categórico y diagnostics; scores legacy no gobiernan elegibilidad |
 | E1-09 | Guía y export inicial | guía estructurada consultable en plataforma; evaluación/guía PDF opcionales más JSON canónico sin repetir llamadas a modelo |
 | E1-10 | Métricas/rutas mínimas | ledger guarda provider, snapshot, modelo, effort, temperatura, reason codes, tokens, latencia, costo, intentos y resultado |
 | E1-11 | Despliegue cloud | React/Vite + FastAPI en Cloud Run Service, Jobs en Cloud Run Jobs, Supabase PostgreSQL/Auth y R2 privado; GitHub + Cloud Build/Actions despliega; cerrar navegador no detiene job |
@@ -155,12 +173,23 @@ Una persona completa el recorrido solicitado en cloud con una actividad y una en
 | E2-13 | Justificación configurable | `NOT_REQUIRED`/`SELECTED`/`ALL`; cada opción conserva rationale y distractor; reporte muestra alcance limitado cuando no es total |
 | E2-14 | Aprobación masiva | docente o evaluator autorizado confirma una selección; elegibles se aprueban y excepciones quedan excluidas/auditadas para revisión individual |
 | E2-15 | Aviso fijo de producto | footer/callout visible informa límites sobre autoría/IA/historia; no proviene de P09 ni aparece en documentos generados |
+| E2-16 | Autoridad del pipeline formalizada | manifiesto versionado asigna una sola autoridad a cada decisión, marca P05/P08 inactivos y P10 deshabilitado sin cambiar routing/workflows |
+| E2-17 | Evaluación histórica y oracle explícito | harness/qualifications legados no seleccionan modelo; `ORACLE_SUSPECT` nunca produce `MODEL_OWNED_*`; reportes sintéticos enumeran códigos content-free |
+| E2-18 | Cutover runtime P05 | P04→preflight durable→docente; edición, aprobación, costo y recovery legacy producen cero llamadas P05 y conservan lectura histórica |
+| E2-19 | Frontera semántica P06 | provider DTO alias-only y categórico → materializador → patch canónico; mapping 0..N completa, planner decide N, cache/recovery seguro y una sola llamada |
+| E2-20 | Frontera semántica P07 | provider DTO alias-only → materializador server-side; support evidence completa se separa del visible anchor, metadata/locator/texto canónico quedan en backend y cache/replay son hash-bound |
+| E2-21 | Cutover runtime P08 | P07→validaciones deterministas→exactamente N→ASSEMBLE; hard guard pre-transporte, cero calls/ledger/coste/reviews nuevos P08 y recovery histórico idempotente |
+| E2-22 | P09 post-aprobación enrichment-only | ASSEMBLE→Assessment `NEEDS_REVIEW` sin P09; aprobación exacta→job durable→una `GuideModelDraft` alias-only→guía materializada/version-bound; fallo no revoca aprobación y legacy permanece histórico |
 
 ## Dependencias
 
 - observabilidad y datos de Etapa 1;
 - política provisional de datos/retención para el entorno controlado;
 - conjunto de archivos DOCX/PDF representativos y autorizados.
+- `pipeline-authority/1.1.0` como fuente ejecutable; P05 quedó retirado por
+  E2-18, P06 quedó simplificado por E2-19, P07 por E2-20 y P08 fue retirado por
+  E2-21 y P09 quedó movido/enriquecido por E2-22, con migración aditiva,
+  binding exacto, job durable y lectura histórica compatible.
 
 ## Riesgos y mitigaciones
 
@@ -276,11 +305,15 @@ flowchart TB
 
 ## 4. Estrategia de pruebas
 
-- unitarias: invariantes, state machines, costos, score/plan exacto, reserva, rutas y autorización masiva;
+- unitarias: invariantes, state machines, costos, soporte categórico/plan exacto, reserva, rutas y autorización masiva;
 - contrato: Pydantic, JSON Schema, request/output de P01-P11 y OpenAPI;
 - property/fuzz: IDs, locators, Unicode, longitudes, archives cuando se habiliten;
 - integración: Supabase, R2, Cloud Run Service/Jobs, proveedor mock/real y renderer;
 - golden/eval: grounding, answerability, ancla, guía, abstención y seguridad;
+- causalidad de eval: estados `VALID`/`ORACLE_SUSPECT`/`INVALID`/
+  `NOT_APPLICABLE`, precedence conservadora y compatibilidad de receipts;
+- reporting: códigos estructurados en claro sólo para
+  `SYNTHETIC_ONLY_NO_STUDENT_DATA`, con hash de integridad;
 - E2E: actividad -> blueprint -> submission -> review -> export -> borrado;
 - accesibilidad: axe, teclado y revisión manual de PDFs;
 - seguridad: MIME, malware/injection, PII, cross-submission, rate/cost limits.
@@ -302,7 +335,7 @@ Una historia no termina con una pantalla o una respuesta del modelo. Debe inclui
 
 | Decisión | Recomendación provisional | Información faltante | Cierre |
 |---|---|---|---|
-| Proveedor/modelos | matriz P01-P11; Terra solo con ventaja; P10 abierto | calidad/costo/privacidad propios | recalibrar Etapa 3 |
+| Proveedor/modelos | routing retenido sin selección nueva; P10 deshabilitado | corpus/gate nuevo independiente; el harness actual es histórico | recalibrar Etapa 3 |
 | Nube | Cloud Run Service/Jobs + Supabase + R2 | región y cuotas concretas | ratificar antes de datos reales |
 | Jobs | Cloud Run Jobs + tablas PostgreSQL, sin Redis | duración/fallos/volumen | reevaluar E3/E4 |
 | Formatos posteriores | por frecuencia y valor | corpus real | durante E3 |

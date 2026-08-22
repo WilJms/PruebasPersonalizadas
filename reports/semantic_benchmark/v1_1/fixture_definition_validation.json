@@ -1,0 +1,15 @@
+{
+  "benchmark_version": "semantic-benchmark/1.1.0",
+  "result": "PASS",
+  "schema_version": "semantic-fixture-definition-validation/1.1.0",
+  "strict_schema_count": 8,
+  "validated_case_count": 272,
+  "validated_definition_document_count": 5,
+  "validated_definition_documents": [
+    "p06_routes",
+    "p07_opportunities",
+    "p09_locator_bindings",
+    "property_bindings",
+    "tag_scope_registry"
+  ]
+}

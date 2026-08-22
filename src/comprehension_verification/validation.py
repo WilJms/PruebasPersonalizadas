@@ -9,9 +9,30 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 from datetime import datetime, timezone
-from typing import Iterable, Mapping
+from types import MappingProxyType
+from typing import Any, Iterable, Mapping
 
+from .canonical import canonical_hash
 from .contracts import models as m
+from .question_generation import (
+    QuestionGenerationCompilationError,
+    anchor_fragment_for_evidence,
+    assess_answer_leakage,
+    derive_anchor_structure,
+    generated_text_safety_code,
+)
+
+
+PROMPT_APPLICATION_VALIDATOR_VERSIONS: Mapping[str, str] = MappingProxyType(
+    {
+        "P05_BLUEPRINT_REVIEW_V1": "application-validator-p05/2.2.0",
+        "P06_EVIDENCE_MAP_V1": "application-validator-p06/3.0.0",
+        "P07_QUESTION_BUILD_V1": "application-validator-p07/3.0.0",
+        "P08_QUESTION_REVIEW_V1": "application-validator-p08/2.0.0",
+        "P09_GUIDE_BUILD_V1": "application-validator-p09/3.0.0",
+    }
+)
+_MAX_BLUEPRINT_PREFLIGHT_STATES = 50_000
 
 
 class ContextValidationError(ValueError):
@@ -111,24 +132,268 @@ def _blueprint_index(
     return dimensions, variants, templates
 
 
+def build_blueprint_review_preflight(
+    *,
+    blueprint: m.AssessmentBlueprint,
+    activity_spec: m.ActivitySpec,
+    rubric_spec: m.RubricSpec | None,
+    blueprint_policy: m.BlueprintPolicy,
+) -> m.BlueprintReviewPreflight:
+    """Derive the non-semantic P05 facts once, on the trusted server side."""
+
+    constraints = blueprint.assessment_constraints
+    policy_constraints_match = (
+        blueprint.activity_id == activity_spec.activity_id
+        and blueprint_policy.activity_id == activity_spec.activity_id
+        and constraints.question_count == blueprint_policy.question_count
+        and constraints.target_total_minutes
+        == blueprint_policy.target_total_minutes
+        and set(constraints.allowed_response_formats)
+        == set(blueprint_policy.allowed_response_formats)
+        and constraints.minimum_opportunity_quality
+        == blueprint_policy.planning_policy.minimum_opportunity_quality
+        and constraints.max_reserve_opportunities
+        == blueprint_policy.planning_policy.max_reserve_opportunities
+        and set(constraints.priority_criterion_ids)
+        == set(blueprint_policy.priority_criterion_ids)
+        and set(constraints.required_criterion_ids)
+        == set(blueprint_policy.required_criterion_ids)
+        and constraints.structured_justification_policy
+        == blueprint_policy.structured_justification_policy
+    )
+
+    learning_outcome_ids = {
+        item.statement_id for item in activity_spec.learning_outcomes
+    }
+    source_statement_ids = {
+        item.statement_id
+        for collection in (
+            activity_spec.learning_outcomes,
+            activity_spec.expected_products,
+            activity_spec.requirements,
+        )
+        for item in collection
+    }
+    rubric_criterion_ids = (
+        {item.criterion_id for item in rubric_spec.criteria}
+        if rubric_spec is not None
+        else set()
+    )
+    allowed_criterion_ids = rubric_criterion_ids or source_statement_ids
+    verifiable_criterion_ids = (
+        {
+            item.criterion_id
+            for item in rubric_spec.criteria
+            if item.verification_fit != "NOT_VERIFIABLE"
+        }
+        if rubric_spec is not None
+        else set()
+    )
+    blueprint_criterion_ids = {
+        criterion_id
+        for dimension in blueprint.dimensions
+        for criterion_id in dimension.criterion_ids
+    }
+    blueprint_learning_outcome_ids = {
+        outcome_id
+        for dimension in blueprint.dimensions
+        for outcome_id in dimension.learning_outcome_ids
+    }
+    references_are_source_bound = all(
+        set(dimension.criterion_ids).issubset(allowed_criterion_ids)
+        and set(dimension.learning_outcome_ids).issubset(
+            learning_outcome_ids
+        )
+        for dimension in blueprint.dimensions
+    )
+    source_coverage_complete = (
+        references_are_source_bound
+        and verifiable_criterion_ids.issubset(blueprint_criterion_ids)
+        and learning_outcome_ids.issubset(
+            blueprint_learning_outcome_ids
+        )
+        and set(blueprint_policy.required_criterion_ids).issubset(
+            blueprint_criterion_ids
+        )
+        and set(blueprint_policy.priority_criterion_ids).union(
+            blueprint_policy.required_criterion_ids
+        ).issubset(allowed_criterion_ids)
+    )
+
+    catalog = [
+        (dimension, template)
+        for dimension in blueprint.dimensions
+        for variant in dimension.evidence_variants
+        for template in variant.question_opportunities
+    ]
+    allowed_formats = set(constraints.allowed_response_formats)
+    format_feasible = all(
+        set(template.allowed_response_formats).issubset(allowed_formats)
+        for _, template in catalog
+    )
+    eligible = [
+        (dimension, template)
+        for dimension, template in catalog
+        if template.minimum_quality
+        >= constraints.minimum_opportunity_quality
+        and set(template.allowed_response_formats).issubset(allowed_formats)
+    ]
+    catalog_size_sufficient = len(eligible) >= constraints.question_count
+    time_feasible = catalog_size_sufficient and (
+        sum(
+            sorted(template.target_minutes for _, template in eligible)[
+                : constraints.question_count
+            ]
+        )
+        <= constraints.target_total_minutes
+    )
+
+    justification = constraints.structured_justification_policy
+    required_justification_templates = {
+        template.opportunity_template_id
+        for _, template in catalog
+        if template.student_justification_required
+    }
+    if justification.mode == m.StructuredJustificationMode.ALL:
+        expected_justification_templates = {
+            template.opportunity_template_id for _, template in catalog
+        }
+    elif justification.mode == m.StructuredJustificationMode.SELECTED:
+        expected_justification_templates = set(
+            justification.selected_opportunity_template_ids
+        )
+    else:
+        expected_justification_templates = set()
+    justification_matrix_valid = (
+        required_justification_templates
+        == expected_justification_templates
+    )
+
+    required_criterion_ids = set(constraints.required_criterion_ids)
+    required_coverage_feasible = not required_criterion_ids
+    if required_criterion_ids and catalog_size_sufficient:
+        states: dict[tuple[int, frozenset[str]], int] = {
+            (0, frozenset()): 0
+        }
+        for dimension, template in eligible:
+            additions: dict[tuple[int, frozenset[str]], int] = {}
+            covered_here = frozenset(dimension.criterion_ids).intersection(
+                required_criterion_ids
+            )
+            for (count, covered), minutes in tuple(states.items()):
+                if count >= constraints.question_count:
+                    continue
+                key = (count + 1, covered.union(covered_here))
+                candidate_minutes = minutes + template.target_minutes
+                if candidate_minutes <= constraints.target_total_minutes:
+                    additions[key] = min(
+                        candidate_minutes,
+                        additions.get(key, candidate_minutes),
+                        states.get(key, candidate_minutes),
+                    )
+            if len(states) + len(additions) > (
+                _MAX_BLUEPRINT_PREFLIGHT_STATES
+            ):
+                states = {}
+                break
+            states.update(additions)
+        required_coverage_feasible = any(
+            count == constraints.question_count
+            and required_criterion_ids.issubset(covered)
+            for count, covered in states
+        )
+
+    catalog_plan_feasible = all(
+        (
+            policy_constraints_match,
+            source_coverage_complete,
+            catalog_size_sufficient,
+            time_feasible,
+            format_feasible,
+            justification_matrix_valid,
+            required_coverage_feasible,
+        )
+    )
+    return m.BlueprintReviewPreflight(
+        blueprint_id=blueprint.blueprint_id,
+        blueprint_version=blueprint.blueprint_version,
+        policy_constraints_match=policy_constraints_match,
+        source_coverage_complete=source_coverage_complete,
+        catalog_size_sufficient=catalog_size_sufficient,
+        time_feasible=time_feasible,
+        format_feasible=format_feasible,
+        justification_matrix_valid=justification_matrix_valid,
+        catalog_plan_feasible=catalog_plan_feasible,
+    )
+
+
+def validate_blueprint_review_preflight_checks(
+    review: m.BlueprintReview,
+    preflight: m.BlueprintReviewPreflight,
+) -> None:
+    """Keep deterministic P05 categories aligned with their server facts."""
+
+    checks = {check.category: check for check in review.checks}
+    for category, (expected_status, expected_critical) in (
+        blueprint_review_preflight_expected_checks(preflight).items()
+    ):
+        check = checks.get(category)
+        if check is None:
+            raise ContextValidationError(
+                "BLUEPRINT_REVIEW_PREFLIGHT_MISMATCH",
+                "P05 omitted a deterministic review category",
+            )
+        if (
+            check.status != expected_status
+            or check.critical != expected_critical
+        ):
+            raise ContextValidationError(
+                "BLUEPRINT_REVIEW_PREFLIGHT_MISMATCH",
+                "P05 contradicted a deterministic preflight fact",
+            )
+
+
+def blueprint_review_preflight_expected_checks(
+    preflight: m.BlueprintReviewPreflight,
+) -> dict[str, tuple[m.ReviewCheckStatus, bool]]:
+    """Return the product-owned status and criticality for P05 facts."""
+
+    deterministic_results = {
+        "COVERAGE": preflight.source_coverage_complete,
+        "TIME": preflight.time_feasible,
+        "FORMAT_FEASIBILITY": preflight.format_feasible,
+        "OPPORTUNITY_CATALOG": (
+            preflight.catalog_size_sufficient
+            and preflight.justification_matrix_valid
+        ),
+        "PLAN_FEASIBILITY": preflight.catalog_plan_feasible,
+    }
+    return {
+        category: (
+            m.ReviewCheckStatus.PASS
+            if passed
+            else m.ReviewCheckStatus.FAIL,
+            not passed,
+        )
+        for category, passed in deterministic_results.items()
+    }
+
+
 def validate_evidence_map(
     mapping: m.EvidenceMapPatch,
     *,
     blueprint: m.AssessmentBlueprint,
     bundle: m.EvidenceBundle,
+    planning_policy: m.AssessmentPlanningPolicy,
 ) -> None:
     context = validate_evidence_context(bundle)
+    validate_generated_output_safety(mapping)
     if mapping.submission_id != bundle.submission_id:
         raise ContextValidationError(
             "CROSS_SUBMISSION_EVIDENCE", "mapping belongs to another submission"
         )
     if mapping.status != "READY":
-        if mapping.opportunities or mapping.claims or mapping.variant_matches:
-            raise ContextValidationError(
-                "PARTIAL_ASSESSMENT_FORBIDDEN", "failed mapping cannot expose usable annotations"
-            )
         validate_complete_diagnostics(mapping.diagnostics, status=mapping.status)
-        return
     dimensions, variants, templates = _blueprint_index(blueprint)
     variant_dimension_ids = {
         variant.variant_id: dimension.dimension_id
@@ -196,36 +461,11 @@ def validate_evidence_map(
             )
         if any(evidence_id not in context.evidence_by_id for evidence_id in match.evidence_ids):
             raise ContextValidationError("INVENTED_EVIDENCE_ID", "mapping references unknown evidence")
-        variant = variants[match.variant_id]
         _require_unique(
             match.evidence_ids,
             code="DUPLICATE_ID",
             label="variant match evidence IDs",
         )
-        selected = [context.evidence_by_id[evidence_id] for evidence_id in match.evidence_ids]
-        requirement = variant.evidence_requirement
-        if match.mapping_confidence < requirement.min_alignment:
-            raise ContextValidationError(
-                "EVIDENCE_MAPPING_UNCERTAIN",
-                "variant match confidence is below the blueprint alignment floor",
-            )
-        if len(set(match.evidence_ids)) < requirement.min_distinct_units:
-            raise ContextValidationError(
-                "INSUFFICIENT_RELEVANT_EVIDENCE",
-                "variant match does not satisfy the minimum distinct evidence units",
-            )
-        if any(item.modality not in requirement.allowed_modalities for item in selected):
-            raise ContextValidationError(
-                "EVIDENCE_MODALITY_MISMATCH", "variant match uses a disallowed modality"
-            )
-        if any(item.extraction_confidence < requirement.min_extraction_confidence for item in selected):
-            raise ContextValidationError(
-                "EVIDENCE_CONFIDENCE_LOW", "variant match uses evidence below the confidence floor"
-            )
-        if requirement.cross_artifact_required and len({item.artifact_id for item in selected}) < 2:
-            raise ContextValidationError(
-                "INSUFFICIENT_RELEVANT_EVIDENCE", "variant match requires distinct artifacts"
-            )
     matches_by_path = {
         (match.dimension_id, match.variant_id): match
         for match in mapping.variant_matches
@@ -266,11 +506,6 @@ def validate_evidence_map(
                 "UNAUTHORIZED_EVIDENCE",
                 "opportunity widens the evidence of its variant match",
             )
-        if opportunity.evidence_fit != match.evidence_fit:
-            raise ContextValidationError(
-                "BLUEPRINT_REFERENCE_MISMATCH",
-                "opportunity changes the evidence fit of its variant match",
-            )
         supported = {item.cognitive_operation for item in variant.supported_operations}
         if opportunity.cognitive_operation not in supported:
             raise ContextValidationError(
@@ -307,24 +542,72 @@ def validate_evidence_map(
             label="opportunity evidence IDs",
         )
         selected = [context.evidence_by_id[evidence_id] for evidence_id in opportunity.evidence_ids]
-        if len(set(opportunity.evidence_ids)) < requirement.min_distinct_units:
-            raise ContextValidationError(
-                "INSUFFICIENT_RELEVANT_EVIDENCE",
-                "opportunity does not satisfy the variant evidence requirement",
-            )
-        if any(item.modality not in requirement.allowed_modalities for item in selected):
-            raise ContextValidationError(
-                "EVIDENCE_MODALITY_MISMATCH", "opportunity uses a disallowed modality"
-            )
-        if any(item.extraction_confidence < requirement.min_extraction_confidence for item in selected):
-            raise ContextValidationError(
-                "EVIDENCE_CONFIDENCE_LOW", "opportunity uses evidence below the confidence floor"
-            )
-        if requirement.cross_artifact_required and len({item.artifact_id for item in selected}) < 2:
-            raise ContextValidationError(
-                "INSUFFICIENT_RELEVANT_EVIDENCE",
-                "opportunity requires evidence from distinct artifacts",
-            )
+        if opportunity.support_status == m.EvidenceSupportStatus.SUFFICIENT:
+            if len(set(opportunity.evidence_ids)) < requirement.min_distinct_units:
+                raise ContextValidationError(
+                    "INSUFFICIENT_RELEVANT_EVIDENCE",
+                    "sufficient opportunity does not satisfy the evidence requirement",
+                )
+            if any(item.modality not in requirement.allowed_modalities for item in selected):
+                raise ContextValidationError(
+                    "EVIDENCE_MODALITY_MISMATCH",
+                    "sufficient opportunity uses a disallowed modality",
+                )
+            if any(
+                item.extraction_confidence < requirement.min_extraction_confidence
+                for item in selected
+            ):
+                raise ContextValidationError(
+                    "EVIDENCE_CONFIDENCE_LOW",
+                    "sufficient opportunity uses evidence below the extraction floor",
+                )
+            if requirement.cross_artifact_required and len(
+                {item.artifact_id for item in selected}
+            ) < 2:
+                raise ContextValidationError(
+                    "INSUFFICIENT_RELEVANT_EVIDENCE",
+                    "sufficient opportunity requires evidence from distinct artifacts",
+                )
+    semantic_fingerprints = [
+        canonical_hash(
+            {
+                "dimension_id": opportunity.dimension_id,
+                "variant_id": opportunity.variant_id,
+                "evidence_ids": sorted(opportunity.evidence_ids),
+                "cognitive_operation": opportunity.cognitive_operation,
+                "focus": _normalize_generated_text(opportunity.focus),
+                "observable": _normalize_generated_text(opportunity.observable),
+                "difficulty": opportunity.difficulty,
+                "target_minutes": opportunity.target_minutes,
+                "allowed_anchor_structures": sorted(
+                    opportunity.allowed_anchor_structures
+                ),
+                "allowed_response_formats": sorted(
+                    opportunity.allowed_response_formats
+                ),
+                "student_justification_required": (
+                    opportunity.student_justification_required
+                ),
+            }
+        )
+        for opportunity in mapping.opportunities
+    ]
+    _require_unique(
+        semantic_fingerprints,
+        code="DUPLICATE_QUESTION_OPPORTUNITY",
+        label="semantic question opportunities",
+    )
+    constraints = blueprint.assessment_constraints
+    if (
+        planning_policy.minimum_opportunity_quality
+        != constraints.minimum_opportunity_quality
+        or planning_policy.max_reserve_opportunities
+        != constraints.max_reserve_opportunities
+    ):
+        raise ContextValidationError(
+            "P06_PLANNING_POLICY_MISMATCH",
+            "planning policy differs from the approved blueprint constraints",
+        )
 
 
 def validate_assessment_plan(
@@ -357,24 +640,45 @@ def validate_assessment_plan(
         validate_complete_diagnostics(plan.diagnostics, status=plan.status)
 
 
-_SECRET_PATTERNS = [
-    re.compile(r"\bAKIA[0-9A-Z]{16}\b"),
-    re.compile(r"\bsk-[A-Za-z0-9_-]{16,}\b"),
-    re.compile(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b"),
-]
-_PROHIBITED_CLAIMS = re.compile(
-    r"\b(detector de ia|hecho por ia|autor(?:ía)?|fraude|culpable|otro estudiante|system prompt|ignore (?:all |previous )?instructions)\b",
-    flags=re.IGNORECASE,
-)
-
-
 def _check_safe_generated_text(text: str) -> None:
-    if _PROHIBITED_CLAIMS.search(text):
+    code = generated_text_safety_code(text)
+    if code == "QUESTION_SECURITY_FAIL":
         raise ContextValidationError(
             "QUESTION_SECURITY_FAIL", "generated question contains a prohibited claim or instruction"
         )
-    if any(pattern.search(text) for pattern in _SECRET_PATTERNS):
+    if code == "QUESTION_PII":
         raise ContextValidationError("QUESTION_PII", "generated question exposes PII or a secret")
+
+
+_TRUSTED_LITERAL_FIELDS = {"content_text", "display_text"}
+
+
+def _normalize_generated_text(text: str) -> str:
+    return re.sub(r"\s+", " ", text).strip().casefold()
+
+
+def _walk_generated_strings(
+    value: Any, *, field_name: str | None = None
+) -> Iterable[str]:
+    if field_name in _TRUSTED_LITERAL_FIELDS:
+        return
+    if isinstance(value, m.StrictModel):
+        value = value.model_dump(mode="python")
+    if isinstance(value, Mapping):
+        for key, child in value.items():
+            yield from _walk_generated_strings(child, field_name=str(key))
+    elif isinstance(value, (list, tuple)):
+        for child in value:
+            yield from _walk_generated_strings(child, field_name=field_name)
+    elif isinstance(value, str):
+        yield value
+
+
+def validate_generated_output_safety(value: Any) -> None:
+    """Reject generated PII/secrets/instructions while preserving literal anchors."""
+
+    for text in _walk_generated_strings(value):
+        _check_safe_generated_text(text)
 
 
 def validate_question_candidate(
@@ -402,9 +706,10 @@ def validate_question_candidate(
         raise ContextValidationError(
             "UNSUPPORTED_COGNITIVE_OPERATION", "candidate changes the planned operation"
         )
-    if candidate.response_format not in opportunity.allowed_response_formats:
+    if candidate.response_format != opportunity.allowed_response_formats[0]:
         raise ContextValidationError(
-            "RESPONSE_FORMAT_NOT_ALLOWED", "candidate uses a response format outside the opportunity"
+            "RESPONSE_FORMAT_NOT_ALLOWED",
+            "candidate changes the server-selected response format",
         )
     if (
         candidate.difficulty != opportunity.difficulty
@@ -415,16 +720,26 @@ def validate_question_candidate(
         raise ContextValidationError(
             "BLUEPRINT_REFERENCE_MISMATCH", "candidate changes planned difficulty, time or justification"
         )
-    if candidate.anchor.structure not in opportunity.allowed_anchor_structures:
+    if candidate.evidence_ids != opportunity.evidence_ids:
         raise ContextValidationError(
-            "ANCHOR_STRUCTURE_NOT_ALLOWED", "candidate uses an anchor structure outside the opportunity"
-        )
-    if set(candidate.evidence_ids) - set(opportunity.evidence_ids):
-        raise ContextValidationError(
-            "UNAUTHORIZED_EVIDENCE", "candidate widens the opportunity evidence"
+            "UNAUTHORIZED_EVIDENCE",
+            "candidate support evidence must exactly match opportunity evidence",
         )
     if set(candidate.evidence_ids) - set(context.evidence_by_id):
         raise ContextValidationError("INVENTED_EVIDENCE_ID", "candidate uses unknown evidence")
+    if not 1 <= len(candidate.preliminary_guide.observable_elements) <= 5:
+        raise ContextValidationError(
+            "QUESTION_OBSERVABLES_INVALID",
+            "candidate requires one to five expected observables",
+        )
+    _require_unique(
+        (
+            element.element_id
+            for element in candidate.preliminary_guide.observable_elements
+        ),
+        code="DUPLICATE_ID",
+        label="candidate observable element IDs",
+    )
     for element in candidate.preliminary_guide.observable_elements:
         if not set(element.evidence_ids).issubset(set(candidate.evidence_ids)):
             raise ContextValidationError(
@@ -434,26 +749,66 @@ def validate_question_candidate(
             raise ContextValidationError(
                 "UNAUTHORIZED_SOURCE", "candidate guide widens candidate sources"
             )
-    _check_safe_generated_text(candidate.question_text)
+    validate_generated_output_safety(candidate)
+    anchor_evidence: list[m.EvidenceUnit] = []
+    _require_unique(
+        (fragment.evidence_id for fragment in candidate.anchor.fragments),
+        code="DUPLICATE_ID",
+        label="visible anchor evidence IDs",
+    )
     for fragment in candidate.anchor.fragments:
         evidence = context.evidence_by_id.get(fragment.evidence_id)
         if evidence is None:
             raise ContextValidationError("INVENTED_EVIDENCE_ID", "anchor uses unknown evidence")
-        if fragment.locator.model_dump(mode="json") != evidence.locator.model_dump(mode="json"):
-            raise ContextValidationError("ANCHOR_NOT_DERIVABLE", "anchor locator does not match evidence")
-        if fragment.display_text is None:
-            raise ContextValidationError("ANCHOR_NOT_DERIVABLE", "Stage 0 anchor requires display text")
-        source_text = evidence.content_text or ""
-        if fragment.transformation in {"LITERAL", "CROP", "CODE_CONTEXT", "ALT_TEXT"}:
-            if fragment.display_text not in source_text:
-                raise ContextValidationError(
-                    "ANCHOR_NOT_DERIVABLE", "anchor text is not derivable from evidence"
-                )
-        elif fragment.transformation == "TABLE_SLICE":
-            if evidence.structured_content is None:
-                raise ContextValidationError(
-                    "ANCHOR_NOT_DERIVABLE", "table slice has no structured evidence"
-                )
+        if fragment.evidence_id not in candidate.evidence_ids:
+            raise ContextValidationError(
+                "UNAUTHORIZED_EVIDENCE",
+                "visible anchor is outside candidate support evidence",
+            )
+        if fragment != anchor_fragment_for_evidence(evidence):
+            raise ContextValidationError(
+                "ANCHOR_NOT_DERIVABLE",
+                "anchor fragment is not derivable from the exact server reconstruction",
+            )
+        anchor_evidence.append(evidence)
+    try:
+        expected_structure = derive_anchor_structure(
+            anchor_evidence, list(opportunity.allowed_anchor_structures)
+        )
+    except QuestionGenerationCompilationError as exc:
+        raise ContextValidationError(
+            "ANCHOR_STRUCTURE_NOT_ALLOWED",
+            "visible evidence cannot form an allowed anchor structure",
+        ) from exc
+    if candidate.anchor.structure != expected_structure:
+        raise ContextValidationError(
+            "ANCHOR_STRUCTURE_NOT_ALLOWED",
+            "candidate changes the server-derived anchor structure",
+        )
+    leakage = assess_answer_leakage(
+        visible_anchor_text="\n".join(
+            fragment.display_text or "" for fragment in candidate.anchor.fragments
+        ),
+        question_text=candidate.question_text,
+        expected_observables=[
+            item.description
+            for item in candidate.preliminary_guide.observable_elements
+        ],
+        choices=[
+            m.QuestionChoiceDraft(
+                text=item.text,
+                is_best_answer=item.is_best_answer,
+                evaluator_rationale=item.evaluator_rationale,
+                misconception=item.misconception,
+            )
+            for item in candidate.choices
+        ],
+    )
+    if leakage.blocked:
+        raise ContextValidationError(
+            "QUESTION_ANSWER_LEAKAGE",
+            "question or visible anchor contains an objectively recoverable answer",
+        )
     if bundle.context_mode == m.ContextMode.CLOSED:
         if candidate.course_source_ids or candidate.citations:
             raise ContextValidationError("UNAUTHORIZED_SOURCE", "closed question cites course sources")
@@ -470,6 +825,17 @@ def validate_generation_result(
     opportunity: m.QuestionOpportunity,
     bundle: m.EvidenceBundle,
 ) -> None:
+    validate_generated_output_safety(result)
+    if (
+        result.submission_id != bundle.submission_id
+        or result.submission_id != opportunity.submission_id
+        or result.opportunity_id != opportunity.opportunity_id
+        or result.context_mode != bundle.context_mode
+    ):
+        raise ContextValidationError(
+            "CROSS_SUBMISSION_EVIDENCE",
+            "generation result does not match the requested opportunity scope",
+        )
     if result.status == "READY":
         if result.candidate is None:
             raise ContextValidationError("MODEL_OUTPUT_INVALID", "ready generation has no candidate")
@@ -492,6 +858,7 @@ def validate_review_result(
     generation_result: m.QuestionGenerationResult,
     validation_policy: m.QuestionValidationPolicy,
 ) -> None:
+    validate_generated_output_safety(review_result)
     if review_result.status == "READY":
         if review_result.review is None or generation_result.candidate is None:
             raise ContextValidationError("MODEL_OUTPUT_INVALID", "ready review is incomplete")
@@ -511,7 +878,7 @@ def validate_review_result(
             raise ContextValidationError(
                 "UNAUTHORIZED_SOURCE", "review widens candidate sources"
             )
-        if (
+        if review_result.review.decision == m.ReviewDecision.ACCEPT and (
             review_result.review.estimated_difficulty != candidate.difficulty
             or review_result.review.estimated_minutes != candidate.estimated_minutes
         ):
@@ -555,16 +922,61 @@ def validate_evaluation_guide(
     assessment: m.Assessment,
     bundle: m.EvidenceBundle,
 ) -> None:
+    validate_generated_output_safety(guide)
+    if assessment.status != m.WorkflowStatus.APPROVED:
+        raise ContextValidationError(
+            "HUMAN_APPROVAL_REQUIRED", "active guide validation requires approval"
+        )
+    if guide.binding is None:
+        raise ContextValidationError(
+            "GUIDE_APPROVAL_BINDING_REQUIRED",
+            "active guide is not bound to an approved assessment version",
+        )
     if guide.assessment_id != assessment.assessment_id:
         raise ContextValidationError("INVENTED_ID", "guide assessment mismatch")
     if guide.submission_id != assessment.submission_id or guide.submission_id != bundle.submission_id:
         raise ContextValidationError("CROSS_SUBMISSION_EVIDENCE", "guide submission mismatch")
     assessment_questions = {item.question_id: item for item in assessment.questions}
+    if any(
+        (
+            guide.binding.tenant_id != assessment.tenant_id,
+            guide.binding.assessment_id != assessment.assessment_id,
+            guide.binding.submission_id != assessment.submission_id,
+            guide.binding.approved_by != assessment.approved_by,
+            guide.binding.approved_at != assessment.approved_at,
+        )
+    ):
+        raise ContextValidationError(
+            "GUIDE_APPROVAL_BINDING_MISMATCH",
+            "guide binding differs from the approved assessment",
+        )
     if guide.status == "READY":
         if {item.question_id for item in guide.items} != set(assessment_questions):
             raise ContextValidationError("GUIDE_INCOMPLETE", "guide must cover every question exactly")
         for item in guide.items:
             question = assessment_questions[item.question_id]
+            if not 2 <= len(item.guide.observable_elements) <= 5:
+                raise ContextValidationError(
+                    "GUIDE_INCOMPLETE", "guide item must contain 2 to 5 observables"
+                )
+            _require_unique(
+                (element.element_id for element in item.guide.observable_elements),
+                code="DUPLICATE_ID",
+                label="guide observable element IDs",
+            )
+            core = question.preliminary_guide.observable_elements
+            if item.guide.purpose != question.preliminary_guide.purpose or (
+                item.guide.observable_elements[: len(core)] != core
+            ):
+                raise ContextValidationError(
+                    "GUIDE_CORE_MUTATED",
+                    "P09 changed a P07-owned guide core",
+                )
+            if not item.guide.acceptance_conditions or not item.guide.cannot_infer:
+                raise ContextValidationError(
+                    "GUIDE_INCOMPLETE",
+                    "guide requires acceptance conditions and cannot-infer limits",
+                )
             levels = [level.level for level in item.guide.levels]
             if levels != [0, 1, 2, 3]:
                 raise ContextValidationError("GUIDE_INCOMPLETE", "guide levels must be 0,1,2,3")
@@ -572,6 +984,17 @@ def validate_evaluation_guide(
             for level in item.guide.levels:
                 if not set(level.observable_element_ids).issubset(observable_ids):
                     raise ContextValidationError("INVENTED_ID", "guide level uses unknown element")
+            required_level_2 = {
+                element.element_id
+                for element in item.guide.observable_elements
+                if element.required_for_level_2
+            }
+            level_2 = next(level for level in item.guide.levels if level.level == 2)
+            if not required_level_2.issubset(level_2.observable_element_ids):
+                raise ContextValidationError(
+                    "GUIDE_INCOMPLETE",
+                    "level 2 omits an observable marked required for level 2",
+                )
             allowed_evidence = set(question.evidence_ids)
             allowed_sources = set(question.course_source_ids)
             for element in item.guide.observable_elements:
@@ -581,6 +1004,10 @@ def validate_evaluation_guide(
                     )
                 if not set(element.source_ids).issubset(allowed_sources):
                     raise ContextValidationError("UNAUTHORIZED_SOURCE", "guide widens sources")
+                if bundle.context_mode == m.ContextMode.CLOSED and element.source_ids:
+                    raise ContextValidationError(
+                        "UNAUTHORIZED_SOURCE", "CLOSED guide cannot use external sources"
+                    )
     else:
         if guide.items:
             raise ContextValidationError(

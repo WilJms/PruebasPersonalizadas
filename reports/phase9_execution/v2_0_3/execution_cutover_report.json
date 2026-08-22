@@ -1,0 +1,61 @@
+{
+  "benchmark_version": "semantic-benchmark/1.3.5",
+  "closed_blockers": [
+    "ONE_EVENT_LOOP_OWNS_THE_COMPLETE_SEQUENTIAL_POPULATION",
+    "ASYNC_TRANSPORT_CLOSES_IN_ITS_OWNING_EVENT_LOOP",
+    "SANITIZED_PROVIDER_REASON_DRIVES_ONE_OUTER_TECHNICAL_RETRY",
+    "SAFE_INVOCATION_EVIDENCE_SURVIVES_POST_RESPONSE_FAILURE",
+    "REASONING_TOKENS_PERSIST_FOR_COMPLETED_CALLS",
+    "HISTORICAL_V2_0_2_EXECUTION_BYTES_ARE_HASH_PINNED"
+  ],
+  "cost_projection": {
+    "A_PRIMARY_30_CALL_RESERVATION_USD": 1.51876725,
+    "B_MAX_TECHNICAL_RETRY_INCREMENT_USD": 1.51876725,
+    "C_ABSOLUTE_RETRY_INCLUSIVE_RESERVATION_USD": 3.0375345,
+    "cost_projection_hash": "sha256:ad50ca5e2602047670f386adcf877b25d7daa272f8b4b02c8a7b31fc400a38f4",
+    "status": "PROPOSED_CAPS_NOT_AUTHORIZED"
+  },
+  "execution_boundary_hash": "sha256:73e81ae321490b2fe6984a17b687a90181557e368264353c88a68b5418874143",
+  "execution_counters": {
+    "adjudicator_calls": 0,
+    "billable_authorization": "NONE",
+    "credential_resolutions": 0,
+    "high_smoke": "NOT_EXECUTED",
+    "pricing_refresh": "VERIFIED_CURRENT_OFFICIAL_PRICING",
+    "provider_calls": 0,
+    "real_provider_transport": false,
+    "transport_factory_calls": 0
+  },
+  "execution_version": "phase9-execution/2.0.3",
+  "high_smoke_decomposition": {
+    "CONTRACTUAL_HARD_SAFETY/P06/N3_SAFETY_SMOKE/HIGH": 3,
+    "SEMANTIC/P04/SMOKE/HIGH": 3,
+    "SEMANTIC/P06/SMOKE/HIGH": 3,
+    "SEMANTIC/P07/SMOKE/HIGH": 18,
+    "SEMANTIC/P09/SMOKE/HIGH": 3
+  },
+  "high_smoke_plan_hash": "sha256:f3689ccb1710cb43692623eaaee4d2857ef6e4c029951c0885d97cfd8f8901e9",
+  "ordered_logical_call_population_equal_to_v2_0_2": true,
+  "ordered_logical_call_population_hash": "sha256:fef890ffa1b12e8717edd7cb5e13f7cdbd78b1e3eb9284aea20a21b29f45553e",
+  "p11_provider_execution": "FORBIDDEN",
+  "pricing_snapshot": {
+    "pricing_snapshot_hash": "sha256:7189407f8cb41facf157d66c5959efb4d36c2a2c5cee89dec3108c89e46bc642",
+    "processing_tier": "STANDARD",
+    "retrieved_at": "2026-08-21T20:50:38Z",
+    "status": "VERIFIED_CURRENT_OFFICIAL_PRICING"
+  },
+  "protocol_version": "phase9-qualification-protocol/1.3.5",
+  "published_execution_v2_0_0_through_v2_0_2_bytes_modified": false,
+  "qualification_schema_repair": "FORBIDDEN",
+  "readiness": "NOT_EXECUTED_NO_BILLABLE_AUTHORIZATION",
+  "report_hash": "sha256:604935e670effb8ff27483af3f6a825c3a9e60e931ac27c67081b91b293f999f",
+  "required_complete_population": {
+    "logical_calls": 30,
+    "n3_packets": 3,
+    "p06_semantic_observations": 6,
+    "semantic_packets": 54
+  },
+  "schema_version": "phase9-execution-cutover-report/2.0.3",
+  "semantic_benchmark_v1_3_5_bytes_modified": false,
+  "v2_0_2_outputs_carried_forward": false
+}

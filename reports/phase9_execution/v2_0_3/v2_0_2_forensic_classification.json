@@ -1,0 +1,552 @@
+{
+  "classification_rule": "PERSISTED_V2_0_2_EVIDENCE_ONLY",
+  "forensic_report_hash": "sha256:7a1f14ec23bad864242429b6c74ae7de5dd7d79ffd82b2d0ccdbe9867f2c559c",
+  "historical_rows_relabelled": false,
+  "inference": {
+    "basis": [
+      "OFFLINE_LOOP_BOUND_FAKE_REPRODUCES_FAILURE_UNDER_OLD_SHAPE",
+      "OFFLINE_SINGLE_LOOP_POPULATION_ELIMINATES_THE_FAILURE",
+      "ALL_15_HISTORICAL_GENERIC_PROVIDER_ERRORS_ARE_AT_EVEN_POSITIONS",
+      "ALL_15_HAVE_PERSISTED_LATENCY_21_TO_35_MS_AND_ZERO_PERSISTED_COST"
+    ],
+    "classification": "ASYNC_CROSS_LOOP_LIFECYCLE_IS_CONSISTENT_WITH_OBSERVED_PATTERN",
+    "conditional_on": "sha256:14359e54988abdcf9593c38a4d6a299757e40b30021937ee09b5c925e8782ed7",
+    "limit": "CONSISTENCY_INFERENCE_ONLY_NOT_HISTORICAL_ROOT_CAUSE_PROOF"
+  },
+  "non_actions": {
+    "adjudication_bundle_created": false,
+    "historical_failure_codes_reclassified": false,
+    "v2_0_2_evidence_modified": false
+  },
+  "proven": {
+    "actual_accounted_cost_usd": 0.2132461,
+    "adjudicator_calls": 0,
+    "all_attempt_timing_and_cost_evidence": [
+      {
+        "actual_cost_usd": 0.1090725,
+        "attempt_index": 1,
+        "failure_code": "MODEL_CONTEXT_NOT_ALLOWLISTED",
+        "latency_ms": 67382,
+        "logical_call_id": "SEMANTIC:P04:PP-A01-P04-001:P04-C1-TERRA-HIGH:run1",
+        "position": 1,
+        "status": "FAILED"
+      },
+      {
+        "actual_cost_usd": 0,
+        "attempt_index": 1,
+        "failure_code": "MODEL_PROVIDER_ERROR",
+        "latency_ms": 35,
+        "logical_call_id": "SEMANTIC:P04:PP-A01-P04-001:P04-C1-TERRA-HIGH:run2",
+        "position": 2,
+        "status": "FAILED"
+      },
+      {
+        "actual_cost_usd": 0.0699006,
+        "attempt_index": 1,
+        "failure_code": "MODEL_CONTEXT_NOT_ALLOWLISTED",
+        "latency_ms": 55945,
+        "logical_call_id": "SEMANTIC:P04:PP-A01-P04-001:P04-C1-TERRA-HIGH:run3",
+        "position": 3,
+        "status": "FAILED"
+      },
+      {
+        "actual_cost_usd": 0,
+        "attempt_index": 1,
+        "failure_code": "MODEL_PROVIDER_ERROR",
+        "latency_ms": 21,
+        "logical_call_id": "SEMANTIC:P06:PP-A01-S03-P06-G01:P06-C1-LUNA-HIGH:run1",
+        "position": 4,
+        "status": "FAILED"
+      },
+      {
+        "actual_cost_usd": 0.0037051,
+        "attempt_index": 1,
+        "latency_ms": 21689,
+        "logical_call_id": "SEMANTIC:P06:PP-A01-S03-P06-G01:P06-C1-LUNA-HIGH:run2",
+        "position": 5,
+        "status": "COMPLETED"
+      },
+      {
+        "actual_cost_usd": 0,
+        "attempt_index": 1,
+        "failure_code": "MODEL_PROVIDER_ERROR",
+        "latency_ms": 24,
+        "logical_call_id": "SEMANTIC:P06:PP-A01-S03-P06-G01:P06-C1-LUNA-HIGH:run3",
+        "position": 6,
+        "status": "FAILED"
+      },
+      {
+        "actual_cost_usd": 0.00120859,
+        "attempt_index": 1,
+        "latency_ms": 8324,
+        "logical_call_id": "CONTRACTUAL_HARD_SAFETY:P06:N3F-act_01_luz_y_plantines-submission_01:P06-C1-LUNA-HIGH:run1",
+        "position": 7,
+        "status": "COMPLETED"
+      },
+      {
+        "actual_cost_usd": 0,
+        "attempt_index": 1,
+        "failure_code": "MODEL_PROVIDER_ERROR",
+        "latency_ms": 22,
+        "logical_call_id": "CONTRACTUAL_HARD_SAFETY:P06:N3F-act_01_luz_y_plantines-submission_01:P06-C1-LUNA-HIGH:run2",
+        "position": 8,
+        "status": "FAILED"
+      },
+      {
+        "actual_cost_usd": 0.0008975,
+        "attempt_index": 1,
+        "latency_ms": 7643,
+        "logical_call_id": "CONTRACTUAL_HARD_SAFETY:P06:N3F-act_01_luz_y_plantines-submission_01:P06-C1-LUNA-HIGH:run3",
+        "position": 9,
+        "status": "COMPLETED"
+      },
+      {
+        "actual_cost_usd": 0,
+        "attempt_index": 1,
+        "failure_code": "MODEL_PROVIDER_ERROR",
+        "latency_ms": 26,
+        "logical_call_id": "SEMANTIC:P07:PP-A01-S01-P07-O01:P07-C1-LUNA-HIGH:run1",
+        "position": 10,
+        "status": "FAILED"
+      },
+      {
+        "actual_cost_usd": 0.0032394,
+        "attempt_index": 1,
+        "latency_ms": 29518,
+        "logical_call_id": "SEMANTIC:P07:PP-A01-S01-P07-O01:P07-C1-LUNA-HIGH:run2",
+        "position": 11,
+        "status": "COMPLETED"
+      },
+      {
+        "actual_cost_usd": 0,
+        "attempt_index": 1,
+        "failure_code": "MODEL_PROVIDER_ERROR",
+        "latency_ms": 27,
+        "logical_call_id": "SEMANTIC:P07:PP-A01-S01-P07-O01:P07-C1-LUNA-HIGH:run3",
+        "position": 12,
+        "status": "FAILED"
+      },
+      {
+        "actual_cost_usd": 0.00068199,
+        "attempt_index": 1,
+        "latency_ms": 4462,
+        "logical_call_id": "SEMANTIC:P07:PP-A01-S05-P07-O02:P07-C1-LUNA-HIGH:run1",
+        "position": 13,
+        "status": "COMPLETED"
+      },
+      {
+        "actual_cost_usd": 0,
+        "attempt_index": 1,
+        "failure_code": "MODEL_PROVIDER_ERROR",
+        "latency_ms": 29,
+        "logical_call_id": "SEMANTIC:P07:PP-A01-S05-P07-O02:P07-C1-LUNA-HIGH:run2",
+        "position": 14,
+        "status": "FAILED"
+      },
+      {
+        "actual_cost_usd": 0.00047428,
+        "attempt_index": 1,
+        "latency_ms": 5825,
+        "logical_call_id": "SEMANTIC:P07:PP-A01-S05-P07-O02:P07-C1-LUNA-HIGH:run3",
+        "position": 15,
+        "status": "COMPLETED"
+      },
+      {
+        "actual_cost_usd": 0,
+        "attempt_index": 1,
+        "failure_code": "MODEL_PROVIDER_ERROR",
+        "latency_ms": 23,
+        "logical_call_id": "SEMANTIC:P07:PP-A02-S02-P07-O01:P07-C1-LUNA-HIGH:run1",
+        "position": 16,
+        "status": "FAILED"
+      },
+      {
+        "actual_cost_usd": 0.00270269,
+        "attempt_index": 1,
+        "latency_ms": 21940,
+        "logical_call_id": "SEMANTIC:P07:PP-A02-S02-P07-O01:P07-C1-LUNA-HIGH:run2",
+        "position": 17,
+        "status": "COMPLETED"
+      },
+      {
+        "actual_cost_usd": 0,
+        "attempt_index": 1,
+        "failure_code": "MODEL_PROVIDER_ERROR",
+        "latency_ms": 25,
+        "logical_call_id": "SEMANTIC:P07:PP-A02-S02-P07-O01:P07-C1-LUNA-HIGH:run3",
+        "position": 18,
+        "status": "FAILED"
+      },
+      {
+        "actual_cost_usd": 0.00361744,
+        "attempt_index": 1,
+        "latency_ms": 30096,
+        "logical_call_id": "SEMANTIC:P07:PP-A04-S04-P07-O01:P07-C1-LUNA-HIGH:run1",
+        "position": 19,
+        "status": "COMPLETED"
+      },
+      {
+        "actual_cost_usd": 0,
+        "attempt_index": 1,
+        "failure_code": "MODEL_PROVIDER_ERROR",
+        "latency_ms": 24,
+        "logical_call_id": "SEMANTIC:P07:PP-A04-S04-P07-O01:P07-C1-LUNA-HIGH:run2",
+        "position": 20,
+        "status": "FAILED"
+      },
+      {
+        "actual_cost_usd": 0.0038127,
+        "attempt_index": 1,
+        "latency_ms": 33184,
+        "logical_call_id": "SEMANTIC:P07:PP-A04-S04-P07-O01:P07-C1-LUNA-HIGH:run3",
+        "position": 21,
+        "status": "COMPLETED"
+      },
+      {
+        "actual_cost_usd": 0,
+        "attempt_index": 1,
+        "failure_code": "MODEL_PROVIDER_ERROR",
+        "latency_ms": 27,
+        "logical_call_id": "SEMANTIC:P07:PP-A04-S06-P07-O01:P07-C1-LUNA-HIGH:run1",
+        "position": 22,
+        "status": "FAILED"
+      },
+      {
+        "actual_cost_usd": 0.00572534,
+        "attempt_index": 1,
+        "latency_ms": 46495,
+        "logical_call_id": "SEMANTIC:P07:PP-A04-S06-P07-O01:P07-C1-LUNA-HIGH:run2",
+        "position": 23,
+        "status": "COMPLETED"
+      },
+      {
+        "actual_cost_usd": 0,
+        "attempt_index": 1,
+        "failure_code": "MODEL_PROVIDER_ERROR",
+        "latency_ms": 24,
+        "logical_call_id": "SEMANTIC:P07:PP-A04-S06-P07-O01:P07-C1-LUNA-HIGH:run3",
+        "position": 24,
+        "status": "FAILED"
+      },
+      {
+        "actual_cost_usd": 0.00089014,
+        "attempt_index": 1,
+        "latency_ms": 6941,
+        "logical_call_id": "SEMANTIC:P07:PP-A08-S02-P07-O02:P07-C1-LUNA-HIGH:run1",
+        "position": 25,
+        "status": "COMPLETED"
+      },
+      {
+        "actual_cost_usd": 0,
+        "attempt_index": 1,
+        "failure_code": "MODEL_PROVIDER_ERROR",
+        "latency_ms": 28,
+        "logical_call_id": "SEMANTIC:P07:PP-A08-S02-P07-O02:P07-C1-LUNA-HIGH:run2",
+        "position": 26,
+        "status": "FAILED"
+      },
+      {
+        "actual_cost_usd": 0.00083778,
+        "attempt_index": 1,
+        "latency_ms": 8120,
+        "logical_call_id": "SEMANTIC:P07:PP-A08-S02-P07-O02:P07-C1-LUNA-HIGH:run3",
+        "position": 27,
+        "status": "COMPLETED"
+      },
+      {
+        "actual_cost_usd": 0,
+        "attempt_index": 1,
+        "failure_code": "MODEL_PROVIDER_ERROR",
+        "latency_ms": 24,
+        "logical_call_id": "SEMANTIC:P09:PP-A03-P09-F01:P09-C1-LUNA-HIGH:run1",
+        "position": 28,
+        "status": "FAILED"
+      },
+      {
+        "actual_cost_usd": 0.00648005,
+        "attempt_index": 1,
+        "failure_code": "MODEL_CONTEXT_NOT_ALLOWLISTED",
+        "latency_ms": 42880,
+        "logical_call_id": "SEMANTIC:P09:PP-A03-P09-F01:P09-C1-LUNA-HIGH:run2",
+        "position": 29,
+        "status": "FAILED"
+      },
+      {
+        "actual_cost_usd": 0,
+        "attempt_index": 1,
+        "failure_code": "MODEL_PROVIDER_ERROR",
+        "latency_ms": 25,
+        "logical_call_id": "SEMANTIC:P09:PP-A03-P09-F01:P09-C1-LUNA-HIGH:run3",
+        "position": 30,
+        "status": "FAILED"
+      }
+    ],
+    "authorization_consumption_state": "CONSUMED_EXACTLY_ONCE",
+    "authorization_hash": "sha256:b820f4bfa94de537fe868123fd97060940466da5fbfe9c73d238f0ee61421357",
+    "completed_logical_calls": 12,
+    "completed_rows_with_full_four_billable_dimensions": 12,
+    "context_error_positions": [
+      1,
+      3,
+      29
+    ],
+    "context_error_rows": [
+      {
+        "actual_cost_usd": 0.1090725,
+        "attempt_index": 1,
+        "failure_code": "MODEL_CONTEXT_NOT_ALLOWLISTED",
+        "latency_ms": 67382,
+        "logical_call_id": "SEMANTIC:P04:PP-A01-P04-001:P04-C1-TERRA-HIGH:run1",
+        "position": 1,
+        "provider_prompt_ids": [
+          "P04_BLUEPRINT_BUILD_V1"
+        ]
+      },
+      {
+        "actual_cost_usd": 0.0699006,
+        "attempt_index": 1,
+        "failure_code": "MODEL_CONTEXT_NOT_ALLOWLISTED",
+        "latency_ms": 55945,
+        "logical_call_id": "SEMANTIC:P04:PP-A01-P04-001:P04-C1-TERRA-HIGH:run3",
+        "position": 3,
+        "provider_prompt_ids": [
+          "P04_BLUEPRINT_BUILD_V1"
+        ]
+      },
+      {
+        "actual_cost_usd": 0.00648005,
+        "attempt_index": 1,
+        "failure_code": "MODEL_CONTEXT_NOT_ALLOWLISTED",
+        "latency_ms": 42880,
+        "logical_call_id": "SEMANTIC:P09:PP-A03-P09-F01:P09-C1-LUNA-HIGH:run2",
+        "position": 29,
+        "provider_prompt_ids": [
+          "P09_GUIDE_BUILD_V1"
+        ]
+      }
+    ],
+    "failed_logical_calls": 18,
+    "failure_counts": {
+      "MODEL_CONTEXT_NOT_ALLOWLISTED": 3,
+      "MODEL_PROVIDER_ERROR": 15
+    },
+    "persisted_token_usage": {
+      "attempt_rows_with_all_four_billable_dimensions": 12,
+      "attempt_rows_without_billable_token_dimensions": 18,
+      "cache_write_input_tokens": 10243,
+      "cached_input_tokens": 22850,
+      "coverage": "PARTIAL_12_OF_30_ATTEMPT_ROWS",
+      "input_tokens": 33129,
+      "interpretation": "TOKEN_TOTALS_ARE_EXACT_ONLY_FOR_THE_12_COMPLETED_ROWS_AND_MUST_NOT_BE_REPRESENTED_AS_ALL_30_INVOCATIONS",
+      "output_tokens": 20640,
+      "reasoning_token_evidence": "NOT_PERSISTED_BY_PHASE9_EXECUTION_2_0_2",
+      "reasoning_tokens": null
+    },
+    "provider_error_latency_range_ms": [
+      21,
+      35
+    ],
+    "provider_error_positions": [
+      2,
+      4,
+      6,
+      8,
+      10,
+      12,
+      14,
+      16,
+      18,
+      20,
+      22,
+      24,
+      26,
+      28,
+      30
+    ],
+    "provider_error_rows": [
+      {
+        "actual_cost_usd": 0,
+        "attempt_index": 1,
+        "failure_code": "MODEL_PROVIDER_ERROR",
+        "latency_ms": 35,
+        "logical_call_id": "SEMANTIC:P04:PP-A01-P04-001:P04-C1-TERRA-HIGH:run2",
+        "position": 2,
+        "provider_prompt_ids": [
+          "P04_BLUEPRINT_BUILD_V1"
+        ]
+      },
+      {
+        "actual_cost_usd": 0,
+        "attempt_index": 1,
+        "failure_code": "MODEL_PROVIDER_ERROR",
+        "latency_ms": 21,
+        "logical_call_id": "SEMANTIC:P06:PP-A01-S03-P06-G01:P06-C1-LUNA-HIGH:run1",
+        "position": 4,
+        "provider_prompt_ids": [
+          "P06_EVIDENCE_MAP_V1"
+        ]
+      },
+      {
+        "actual_cost_usd": 0,
+        "attempt_index": 1,
+        "failure_code": "MODEL_PROVIDER_ERROR",
+        "latency_ms": 24,
+        "logical_call_id": "SEMANTIC:P06:PP-A01-S03-P06-G01:P06-C1-LUNA-HIGH:run3",
+        "position": 6,
+        "provider_prompt_ids": [
+          "P06_EVIDENCE_MAP_V1"
+        ]
+      },
+      {
+        "actual_cost_usd": 0,
+        "attempt_index": 1,
+        "failure_code": "MODEL_PROVIDER_ERROR",
+        "latency_ms": 22,
+        "logical_call_id": "CONTRACTUAL_HARD_SAFETY:P06:N3F-act_01_luz_y_plantines-submission_01:P06-C1-LUNA-HIGH:run2",
+        "position": 8,
+        "provider_prompt_ids": [
+          "P06_EVIDENCE_MAP_V1"
+        ]
+      },
+      {
+        "actual_cost_usd": 0,
+        "attempt_index": 1,
+        "failure_code": "MODEL_PROVIDER_ERROR",
+        "latency_ms": 26,
+        "logical_call_id": "SEMANTIC:P07:PP-A01-S01-P07-O01:P07-C1-LUNA-HIGH:run1",
+        "position": 10,
+        "provider_prompt_ids": [
+          "P07_QUESTION_BUILD_V1"
+        ]
+      },
+      {
+        "actual_cost_usd": 0,
+        "attempt_index": 1,
+        "failure_code": "MODEL_PROVIDER_ERROR",
+        "latency_ms": 27,
+        "logical_call_id": "SEMANTIC:P07:PP-A01-S01-P07-O01:P07-C1-LUNA-HIGH:run3",
+        "position": 12,
+        "provider_prompt_ids": [
+          "P07_QUESTION_BUILD_V1"
+        ]
+      },
+      {
+        "actual_cost_usd": 0,
+        "attempt_index": 1,
+        "failure_code": "MODEL_PROVIDER_ERROR",
+        "latency_ms": 29,
+        "logical_call_id": "SEMANTIC:P07:PP-A01-S05-P07-O02:P07-C1-LUNA-HIGH:run2",
+        "position": 14,
+        "provider_prompt_ids": [
+          "P07_QUESTION_BUILD_V1"
+        ]
+      },
+      {
+        "actual_cost_usd": 0,
+        "attempt_index": 1,
+        "failure_code": "MODEL_PROVIDER_ERROR",
+        "latency_ms": 23,
+        "logical_call_id": "SEMANTIC:P07:PP-A02-S02-P07-O01:P07-C1-LUNA-HIGH:run1",
+        "position": 16,
+        "provider_prompt_ids": [
+          "P07_QUESTION_BUILD_V1"
+        ]
+      },
+      {
+        "actual_cost_usd": 0,
+        "attempt_index": 1,
+        "failure_code": "MODEL_PROVIDER_ERROR",
+        "latency_ms": 25,
+        "logical_call_id": "SEMANTIC:P07:PP-A02-S02-P07-O01:P07-C1-LUNA-HIGH:run3",
+        "position": 18,
+        "provider_prompt_ids": [
+          "P07_QUESTION_BUILD_V1"
+        ]
+      },
+      {
+        "actual_cost_usd": 0,
+        "attempt_index": 1,
+        "failure_code": "MODEL_PROVIDER_ERROR",
+        "latency_ms": 24,
+        "logical_call_id": "SEMANTIC:P07:PP-A04-S04-P07-O01:P07-C1-LUNA-HIGH:run2",
+        "position": 20,
+        "provider_prompt_ids": [
+          "P07_QUESTION_BUILD_V1"
+        ]
+      },
+      {
+        "actual_cost_usd": 0,
+        "attempt_index": 1,
+        "failure_code": "MODEL_PROVIDER_ERROR",
+        "latency_ms": 27,
+        "logical_call_id": "SEMANTIC:P07:PP-A04-S06-P07-O01:P07-C1-LUNA-HIGH:run1",
+        "position": 22,
+        "provider_prompt_ids": [
+          "P07_QUESTION_BUILD_V1"
+        ]
+      },
+      {
+        "actual_cost_usd": 0,
+        "attempt_index": 1,
+        "failure_code": "MODEL_PROVIDER_ERROR",
+        "latency_ms": 24,
+        "logical_call_id": "SEMANTIC:P07:PP-A04-S06-P07-O01:P07-C1-LUNA-HIGH:run3",
+        "position": 24,
+        "provider_prompt_ids": [
+          "P07_QUESTION_BUILD_V1"
+        ]
+      },
+      {
+        "actual_cost_usd": 0,
+        "attempt_index": 1,
+        "failure_code": "MODEL_PROVIDER_ERROR",
+        "latency_ms": 28,
+        "logical_call_id": "SEMANTIC:P07:PP-A08-S02-P07-O02:P07-C1-LUNA-HIGH:run2",
+        "position": 26,
+        "provider_prompt_ids": [
+          "P07_QUESTION_BUILD_V1"
+        ]
+      },
+      {
+        "actual_cost_usd": 0,
+        "attempt_index": 1,
+        "failure_code": "MODEL_PROVIDER_ERROR",
+        "latency_ms": 24,
+        "logical_call_id": "SEMANTIC:P09:PP-A03-P09-F01:P09-C1-LUNA-HIGH:run1",
+        "position": 28,
+        "provider_prompt_ids": [
+          "P09_GUIDE_BUILD_V1"
+        ]
+      },
+      {
+        "actual_cost_usd": 0,
+        "attempt_index": 1,
+        "failure_code": "MODEL_PROVIDER_ERROR",
+        "latency_ms": 25,
+        "logical_call_id": "SEMANTIC:P09:PP-A03-P09-F01:P09-C1-LUNA-HIGH:run3",
+        "position": 30,
+        "provider_prompt_ids": [
+          "P09_GUIDE_BUILD_V1"
+        ]
+      }
+    ],
+    "provider_error_rows_with_zero_persisted_cost": 15,
+    "provider_invocations": 30,
+    "technical_retries": 0
+  },
+  "schema_version": "phase9-v2.0.2-forensic-classification/1.0.0",
+  "source_execution_id": "exec-phase9v202-b820f4bfa94de537",
+  "source_execution_version": "phase9-execution/2.0.2",
+  "source_file_hashes": {
+    "reports/phase9_execution/v2_0_2/executions/exec-phase9v202-b820f4bfa94de537/execution_manifest.json": "sha256:f626786485b4cb64c62a0c19c18ccc8f8aaaeab6b0ec173f8dd4215f30fbae76",
+    "reports/phase9_execution/v2_0_2/post_execution_audit_exec-phase9v202-b820f4bfa94de537.json": "sha256:f1bb00ad078d86b9fd9da4dee12629dfeb8263b3b98aeeecde3fdfc4f458fb27"
+  },
+  "unknown": {
+    "context_failure_code_for_3_context_rows": "NOT_PERSISTED_CANNOT_BE_RETROACTIVELY_MANUFACTURED",
+    "provider_output_hash_for_3_post_response_context_failures": "NOT_PERSISTED_IN_ATTEMPT_ROWS",
+    "provider_request_id_hash_for_18_failed_rows": "NOT_PERSISTED",
+    "reasoning_tokens_for_all_30_rows": "NOT_PERSISTED",
+    "token_usage_for_18_failed_rows": "NOT_PERSISTED",
+    "underlying_reason_code_for_15_model_provider_error_rows": "NOT_PERSISTED_CANNOT_BE_RETROACTIVELY_MANUFACTURED"
+  }
+}

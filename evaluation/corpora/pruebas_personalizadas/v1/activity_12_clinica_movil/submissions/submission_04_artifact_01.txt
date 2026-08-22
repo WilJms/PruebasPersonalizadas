@@ -1,0 +1,10 @@
+SUR: requests=35, priority=20, travel=70, fixed_days=1.
+If two days in Sur: capacity=48, unused maximum=13.
+CENTER: requests=60, priority=18, travel=20, fixed_days=5.
+NORTH: requests=42, priority=12, travel=55, fixed_days=0.
+Declared in brief: Sur has 60 requests and 20 minutes of travel.
+
+Capacity per day = 24. Two days = 48 slots.
+Priority first, then remaining requests.
+
+Transfer plan: 13 unused slots from Sur reassigned to Norte.

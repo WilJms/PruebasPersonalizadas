@@ -1,0 +1,1555 @@
+{
+  "schema_version": "corpus-finalization-resolution-log/1.0.0",
+  "created_utc": "2026-08-16T00:00:00-04:00",
+  "readiness": "CORPUS_READY_FOR_SEMANTIC_BENCHMARK",
+  "source_audit": "OPUS_5_INDEPENDENT_MODEL_RATIFICATION_PRESERVED_AS_HISTORY",
+  "hash_algorithm": "SHA-256",
+  "old_submission_mapping_disclosure": "ONLY_IN__audit_history/submission_id_mapping.json",
+  "cluster_findings": [
+    {
+      "finding_id": "CL-01",
+      "source_finding": "Dos entregas de la actividad 06 transcribían de manera accidental una distribución distinta de la tabla autorizada.",
+      "affected_files": [
+        {
+          "before_path": "_audit_history/pre_finalization_manifest.json#sha256=fdf731ced4c534d3aa3969e1664cc1c5ea1b51c56b87326fee310ddd786ee2dc",
+          "after_path": "activity_06_movilidad_estudiantil/submissions/submission_01.pdf",
+          "before_sha256": "fdf731ced4c534d3aa3969e1664cc1c5ea1b51c56b87326fee310ddd786ee2dc",
+          "after_sha256": "2e8d40340d18041391021df113789b466bce1fe329579b1ca2861b3bf91af86f"
+        },
+        {
+          "before_path": "_audit_history/pre_finalization_manifest.json#sha256=f7d07c93955b8e029c7f34297927c0e825fd7a7c8ac2bb7c853a505e1436fb1c",
+          "after_path": "activity_06_movilidad_estudiantil/submissions/submission_04.txt",
+          "before_sha256": "f7d07c93955b8e029c7f34297927c0e825fd7a7c8ac2bb7c853a505e1436fb1c",
+          "after_sha256": "879f20ed7b55443616172ef21ca1932c7782d9e45490a4c9b514f85b5bd59d7c"
+        },
+        {
+          "before_path": "_audit_history/opus5/activity_06_movilidad_estudiantil/opus5_ratification.json",
+          "after_path": "activity_06_movilidad_estudiantil/final_ratification.json",
+          "before_sha256": "d57de231872c7652e5521910aa509b58328d2f1947f8ba5eaaface0de4592d52",
+          "after_sha256": "f6f64f920e8cb63de93861088baae505a20c8aac90c28afd63ce36dfb8449238"
+        }
+      ],
+      "action": "Se preservó la tabla del assignment, se corrigieron únicamente las dos entregas y se retiraron las propiedades inválidas derivadas.",
+      "before_hash": "281e2704a9ac5afea62ce464590d56ef65c336b933d6bf4ff0951b3ca82ea322",
+      "after_hash": "16a220ad678282e9f9bdfa57fa67d175d5737c86d823891729d48bf01e03b4bb",
+      "resolution_state": "SOURCE_FIXED",
+      "verification_performed": [
+        "verificación directa contra assignment",
+        "recomputación de razones dependientes",
+        "extracción de texto PDF",
+        "validación del oracle"
+      ],
+      "remaining_caveat": null
+    },
+    {
+      "finding_id": "CL-02",
+      "source_finding": "La omisión de segmentos de la entrega pertinente de actividad 10 estaba declarada en ambos artefactos.",
+      "affected_files": [
+        {
+          "before_path": "_audit_history/pre_finalization_manifest.json#sha256=1193a3f1fcf075ed1fcbf8a7c024f13503a8df9700ea7c02a045184e4c6ad210",
+          "after_path": "activity_10_experimento_onboarding/submissions/submission_04_artifact_01.txt",
+          "before_sha256": "1193a3f1fcf075ed1fcbf8a7c024f13503a8df9700ea7c02a045184e4c6ad210",
+          "after_sha256": "1193a3f1fcf075ed1fcbf8a7c024f13503a8df9700ea7c02a045184e4c6ad210"
+        },
+        {
+          "before_path": "_audit_history/pre_finalization_manifest.json#sha256=df637219d3eeb2288ce024bc17a9980de5946d91f729cfabdf8a35f21d56d0ce",
+          "after_path": "activity_10_experimento_onboarding/submissions/submission_04_artifact_02.pdf",
+          "before_sha256": "df637219d3eeb2288ce024bc17a9980de5946d91f729cfabdf8a35f21d56d0ce",
+          "after_sha256": "df637219d3eeb2288ce024bc17a9980de5946d91f729cfabdf8a35f21d56d0ce"
+        },
+        {
+          "before_path": "_audit_history/opus5/activity_10_experimento_onboarding/opus5_ratification.json",
+          "after_path": "activity_10_experimento_onboarding/final_ratification.json",
+          "before_sha256": "773205c590b2927dd4c717d0092f91e84b4ed674e1050f01c4a43a927b42d35f",
+          "after_sha256": "f693dbfc9333dc1c5e5d724f6209e333d01a287fb8fb0f3e48d8daa97a97dee5"
+        },
+        {
+          "before_path": "_audit_history/pre_final_corpus_manifest.md",
+          "after_path": "corpus_manifest.md",
+          "before_sha256": "e3bdd50c7c6230172ee527c5251ec847baea9a70785c2247abd28ca80dca2cde",
+          "after_sha256": "378c93906656f384c21b005d802c94f50d641a8c463831d092817e912ed1cd6e"
+        }
+      ],
+      "action": "Se preservó la fuente y se reclasificó como omisión conceptual declarada cuya justificación debe adjudicarse.",
+      "before_hash": "0525089ff71025460aa889701eeff31187749c5fc2dd71f5b5909816f3bf2b11",
+      "after_hash": "711a7d2a6a84a9190a9483af73c5619e2fbe30be8d568f30e421daaa17854e57",
+      "resolution_state": "RECLASSIFIED",
+      "verification_performed": [
+        "lectura de ambos artefactos",
+        "conteo global de SILENT_CONCEPTUAL_GAP",
+        "validación de tags"
+      ],
+      "remaining_caveat": null
+    },
+    {
+      "finding_id": "CL-03",
+      "source_finding": "El conteo determinista de palabras de la entrega pertinente de actividad 09 cae dentro del rango orientativo real.",
+      "affected_files": [
+        {
+          "before_path": "_audit_history/pre_finalization_manifest.json#sha256=c4fc05c5cc2d2b8dcec2598780ce2e01c974e92b3ba6e8c8e7691b7b941cd21d",
+          "after_path": "activity_09_renovacion_y_desplazamiento/submissions/submission_05.pdf",
+          "before_sha256": "c4fc05c5cc2d2b8dcec2598780ce2e01c974e92b3ba6e8c8e7691b7b941cd21d",
+          "after_sha256": "c4fc05c5cc2d2b8dcec2598780ce2e01c974e92b3ba6e8c8e7691b7b941cd21d"
+        },
+        {
+          "before_path": "_audit_history/opus5/activity_09_renovacion_y_desplazamiento/opus5_ratification.json",
+          "after_path": "activity_09_renovacion_y_desplazamiento/final_ratification.json",
+          "before_sha256": "bec5a55beb0a98d08b55ae94aceeea36a19df2586e562ddbd71e193d132a8e17",
+          "after_sha256": "aa20a45a89a6ede6833c5fb3ce614c7a5efcd8d14297a93756db97dbd3ca0b23"
+        }
+      ],
+      "action": "Se preservó la submission y se corrigió el oracle para registrar cumplimiento de formato sin convertirlo en propiedad semántica hard.",
+      "before_hash": "27bef53114f96ada5709a98c5cc3e6f6dea6eeb34de970b68accb3190832a707",
+      "after_hash": "5c21c8391431f29ad7aec626e140ca015bb616b3879161af8474497ffff28b12",
+      "resolution_state": "ORACLE_FIXED",
+      "verification_performed": [
+        "extracción y conteo de 1.403 palabras",
+        "lectura del assignment",
+        "búsqueda de formulación obsoleta"
+      ],
+      "remaining_caveat": null
+    },
+    {
+      "finding_id": "CL-04",
+      "source_finding": "Los rangos de extensión no discriminaban comprensión en siete actividades.",
+      "affected_files": [
+        {
+          "before_path": "activity_05_visitas_a_bibliotecas/01_assignment.docx",
+          "after_path": "activity_05_visitas_a_bibliotecas/01_assignment.docx",
+          "before_sha256": "4437dded752c0fc55efada89097d5a787b6ac57f2c8acf14dd2b131048bfaceb",
+          "after_sha256": "200c5282488ae1511149559707372084b40b5fdfd6efe7fb8a5bf675abc310ab"
+        },
+        {
+          "before_path": "activity_06_movilidad_estudiantil/01_assignment.docx",
+          "after_path": "activity_06_movilidad_estudiantil/01_assignment.docx",
+          "before_sha256": "0622e222008ec0c6ae801fbdb09e5895c937ff461e990e679ca4bdc5ec55bd54",
+          "after_sha256": "b323e970d3671a7eee3e20ebb9d670c70c23272c3b79af1b5346accd7777b8d3"
+        },
+        {
+          "before_path": "activity_07_aislamiento_termico/01_assignment.docx",
+          "after_path": "activity_07_aislamiento_termico/01_assignment.docx",
+          "before_sha256": "0d68bd0ded05a12604680af4397466d389e65e96e0ddd0c3c523358a1733dc35",
+          "after_sha256": "79b097a91be2ac08df5ca6469741b6b92d0d35252a61b224226397c732a7981c"
+        },
+        {
+          "before_path": "activity_09_renovacion_y_desplazamiento/01_assignment.docx",
+          "after_path": "activity_09_renovacion_y_desplazamiento/01_assignment.docx",
+          "before_sha256": "c7a912ffe583d4d190eaa56a5cb5279cf54de1c94470003d920201b73aee1954",
+          "after_sha256": "ff2a263bd89bd7ae59e24ad3becded78269afb69dee5fbc810d4208c585bf9c3"
+        },
+        {
+          "before_path": "activity_10_experimento_onboarding/01_assignment.docx",
+          "after_path": "activity_10_experimento_onboarding/01_assignment.docx",
+          "before_sha256": "3813733577cdfb0ecf5600813dac49de1409f7d76e8f1ede1f1cf4a33628b0bb",
+          "after_sha256": "0d50bf98f48a6adf92b710bf60d4bc303b40ad01363f5ae1a96cb769c43bf782"
+        },
+        {
+          "before_path": "activity_11_duplicados_en_pagos/01_assignment.docx",
+          "after_path": "activity_11_duplicados_en_pagos/01_assignment.docx",
+          "before_sha256": "9c3fc121aaaf96888c318afee2244b694011dd7360dfff8546c89e2caf76f841",
+          "after_sha256": "f39546d502486c652c16c937f0d09f9d511801315360462d558710d210eb37b5"
+        },
+        {
+          "before_path": "activity_12_clinica_movil/01_assignment.docx",
+          "after_path": "activity_12_clinica_movil/01_assignment.docx",
+          "before_sha256": "a303e95a80d5098b77ea29c2fb54e613c45463d2f957bb692d02a7bc5104b57e",
+          "after_sha256": "d0bca230658c1866de1143750383de680536d9bdce4b711a77c051e1fdc2cd70"
+        },
+        {
+          "before_path": "_audit_history/opus5/activity_05_visitas_a_bibliotecas/opus5_ratification.json",
+          "after_path": "activity_05_visitas_a_bibliotecas/final_ratification.json",
+          "before_sha256": "d9ca581de4498f3cae7b9d04b1a4a0b959596a13755929afa803c36bfc16aad5",
+          "after_sha256": "21d66859a79a82b083925d0dd559d02e0b0fb765c20a97a227d3b9f032d44f23"
+        },
+        {
+          "before_path": "_audit_history/opus5/activity_06_movilidad_estudiantil/opus5_ratification.json",
+          "after_path": "activity_06_movilidad_estudiantil/final_ratification.json",
+          "before_sha256": "d57de231872c7652e5521910aa509b58328d2f1947f8ba5eaaface0de4592d52",
+          "after_sha256": "f6f64f920e8cb63de93861088baae505a20c8aac90c28afd63ce36dfb8449238"
+        },
+        {
+          "before_path": "_audit_history/opus5/activity_07_aislamiento_termico/opus5_ratification.json",
+          "after_path": "activity_07_aislamiento_termico/final_ratification.json",
+          "before_sha256": "d1de542aba4c0e6b8c378c6e5557f4c1bd452acd46e562602f4c15a3c290469f",
+          "after_sha256": "aa07aa5df1e78b980aa2a3d27eeaf3a9238843cc935641c55ed717f6d5aa96d5"
+        },
+        {
+          "before_path": "_audit_history/opus5/activity_09_renovacion_y_desplazamiento/opus5_ratification.json",
+          "after_path": "activity_09_renovacion_y_desplazamiento/final_ratification.json",
+          "before_sha256": "bec5a55beb0a98d08b55ae94aceeea36a19df2586e562ddbd71e193d132a8e17",
+          "after_sha256": "aa20a45a89a6ede6833c5fb3ce614c7a5efcd8d14297a93756db97dbd3ca0b23"
+        },
+        {
+          "before_path": "_audit_history/opus5/activity_10_experimento_onboarding/opus5_ratification.json",
+          "after_path": "activity_10_experimento_onboarding/final_ratification.json",
+          "before_sha256": "773205c590b2927dd4c717d0092f91e84b4ed674e1050f01c4a43a927b42d35f",
+          "after_sha256": "f693dbfc9333dc1c5e5d724f6209e333d01a287fb8fb0f3e48d8daa97a97dee5"
+        },
+        {
+          "before_path": "_audit_history/opus5/activity_11_duplicados_en_pagos/opus5_ratification.json",
+          "after_path": "activity_11_duplicados_en_pagos/final_ratification.json",
+          "before_sha256": "d2372ed65328541f027ebbe0b352af9e04fd6075af152f72a6b059cf392725af",
+          "after_sha256": "324b9447fd55098c8250a7cc9ddc9f3c162d01ff47ec90a7b6ff8d6821b6f73c"
+        },
+        {
+          "before_path": "_audit_history/opus5/activity_12_clinica_movil/opus5_ratification.json",
+          "after_path": "activity_12_clinica_movil/final_ratification.json",
+          "before_sha256": "60683af4dab76021350ddd6db0e5e30ac909652795a053de2da49c0a89275ee9",
+          "after_sha256": "ba55900c2984d4734b73d2124c3fd360634799363942cd5d0dca56be183e1bf9"
+        }
+      ],
+      "action": "Se mantuvieron los rangos como guía de formato, se declararon no evaluables por sí mismos y LENGTH_COMPLIANCE quedó NOT_APPLICABLE como hard oracle.",
+      "before_hash": "0cbe2a347534b0baee9ddec3679a172f5023611c1ade227f74e884b4b0554bfb",
+      "after_hash": "c07feaaa7234d29fbd614d38cd368d8a3c1199bb1da0f003edc9e5f3f4e3ae18",
+      "resolution_state": "SOURCE_FIXED",
+      "verification_performed": [
+        "extracción de texto DOCX",
+        "render visual de ocho assignments modificados",
+        "validación de propiedades NOT_APPLICABLE"
+      ],
+      "remaining_caveat": "Los rangos se conservan únicamente como orientación editorial."
+    },
+    {
+      "finding_id": "CL-05",
+      "source_finding": "La evaluación de leakage depende de si el observable pide detectar una contradicción o adjudicar premisas ya visibles.",
+      "affected_files": [
+        {
+          "before_path": "_audit_history/opus5/activity_01_luz_y_plantines/opus5_ratification.json",
+          "after_path": "activity_01_luz_y_plantines/final_ratification.json",
+          "before_sha256": "fec100f75e9390244fb3ef23b55d58ed4ce99aa522dbc40497aeda9a47e5daf5",
+          "after_sha256": "3c456cc9a772cccc19f1f542a96fa2554a386c47107ec318abede93a0779917c"
+        },
+        {
+          "before_path": "_audit_history/opus5/activity_02_voz_en_un_microcuento/opus5_ratification.json",
+          "after_path": "activity_02_voz_en_un_microcuento/final_ratification.json",
+          "before_sha256": "cdd79244986781a0a6fd7b68194fd577f255940a979997e292a950537317ab38",
+          "after_sha256": "f2d3a9d5b56825543163a040abeb0828e90b14930b72d10faa5683f895c6f020"
+        },
+        {
+          "before_path": "_audit_history/opus5/activity_03_puesto_de_limonada/opus5_ratification.json",
+          "after_path": "activity_03_puesto_de_limonada/final_ratification.json",
+          "before_sha256": "d9659b65d38d3f0ccbe4ee91201e2850c61c8241604dbeab44391d2fe476dca8",
+          "after_sha256": "b55e495e099d9051912cb1d9079e73c3156de1a457a536b4b95a7a26683d64cf"
+        },
+        {
+          "before_path": "_audit_history/opus5/activity_05_visitas_a_bibliotecas/opus5_ratification.json",
+          "after_path": "activity_05_visitas_a_bibliotecas/final_ratification.json",
+          "before_sha256": "d9ca581de4498f3cae7b9d04b1a4a0b959596a13755929afa803c36bfc16aad5",
+          "after_sha256": "21d66859a79a82b083925d0dd559d02e0b0fb765c20a97a227d3b9f032d44f23"
+        },
+        {
+          "before_path": "_audit_history/opus5/activity_06_movilidad_estudiantil/opus5_ratification.json",
+          "after_path": "activity_06_movilidad_estudiantil/final_ratification.json",
+          "before_sha256": "d57de231872c7652e5521910aa509b58328d2f1947f8ba5eaaface0de4592d52",
+          "after_sha256": "f6f64f920e8cb63de93861088baae505a20c8aac90c28afd63ce36dfb8449238"
+        },
+        {
+          "before_path": "_audit_history/opus5/activity_07_aislamiento_termico/opus5_ratification.json",
+          "after_path": "activity_07_aislamiento_termico/final_ratification.json",
+          "before_sha256": "d1de542aba4c0e6b8c378c6e5557f4c1bd452acd46e562602f4c15a3c290469f",
+          "after_sha256": "aa07aa5df1e78b980aa2a3d27eeaf3a9238843cc935641c55ed717f6d5aa96d5"
+        },
+        {
+          "before_path": "_audit_history/opus5/activity_09_renovacion_y_desplazamiento/opus5_ratification.json",
+          "after_path": "activity_09_renovacion_y_desplazamiento/final_ratification.json",
+          "before_sha256": "bec5a55beb0a98d08b55ae94aceeea36a19df2586e562ddbd71e193d132a8e17",
+          "after_sha256": "aa20a45a89a6ede6833c5fb3ce614c7a5efcd8d14297a93756db97dbd3ca0b23"
+        },
+        {
+          "before_path": "_audit_history/opus5/activity_12_clinica_movil/opus5_ratification.json",
+          "after_path": "activity_12_clinica_movil/final_ratification.json",
+          "before_sha256": "60683af4dab76021350ddd6db0e5e30ac909652795a053de2da49c0a89275ee9",
+          "after_sha256": "ba55900c2984d4734b73d2124c3fd360634799363942cd5d0dca56be183e1bf9"
+        }
+      ],
+      "action": "Se añadió la distinción DETECTION/ADJUDICATION y se preservaron como ORACLE_SUSPECT los casos dependientes del wording.",
+      "before_hash": "5853e504adb51782340d38c57699a1521494ac93cd2117321223c62324429cf2",
+      "after_hash": "b92113290cf28688c7c292c2914ff5a4fcaab1a9579cef8cab9f10a137d7dad8",
+      "resolution_state": "PRESERVED_AS_ORACLE_SUSPECT",
+      "verification_performed": [
+        "revisión de tags PREMise/ANSWER visibles",
+        "conteo de ORACLE_SUSPECT",
+        "validación de estados permitidos"
+      ],
+      "remaining_caveat": "La clasificación final de leakage exige evaluar el wording concreto de cada pregunta."
+    },
+    {
+      "finding_id": "CL-06",
+      "source_finding": "La entrega pertinente de actividad 07 anuncia su propia tensión en el informe y en el cuaderno.",
+      "affected_files": [
+        {
+          "before_path": "_audit_history/pre_finalization_manifest.json#sha256=71517a40f4ac054b98e57ed6496f4728a085edfb14632e7f3c1c3cb0981e4fa4",
+          "after_path": "activity_07_aislamiento_termico/submissions/submission_06_artifact_01.txt",
+          "before_sha256": "71517a40f4ac054b98e57ed6496f4728a085edfb14632e7f3c1c3cb0981e4fa4",
+          "after_sha256": "71517a40f4ac054b98e57ed6496f4728a085edfb14632e7f3c1c3cb0981e4fa4"
+        },
+        {
+          "before_path": "_audit_history/pre_finalization_manifest.json#sha256=d9ed8678b057b9f603fbb54e03d3120c42461c133c7ee2864d4e47ac29c8b2ee",
+          "after_path": "activity_07_aislamiento_termico/submissions/submission_06_artifact_02.pdf",
+          "before_sha256": "d9ed8678b057b9f603fbb54e03d3120c42461c133c7ee2864d4e47ac29c8b2ee",
+          "after_sha256": "d9ed8678b057b9f603fbb54e03d3120c42461c133c7ee2864d4e47ac29c8b2ee"
+        },
+        {
+          "before_path": "_audit_history/opus5/activity_07_aislamiento_termico/opus5_ratification.json",
+          "after_path": "activity_07_aislamiento_termico/final_ratification.json",
+          "before_sha256": "d1de542aba4c0e6b8c378c6e5557f4c1bd452acd46e562602f4c15a3c290469f",
+          "after_sha256": "aa07aa5df1e78b980aa2a3d27eeaf3a9238843cc935641c55ed717f6d5aa96d5"
+        },
+        {
+          "before_path": "_audit_history/pre_final_corpus_manifest.md",
+          "after_path": "corpus_manifest.md",
+          "before_sha256": "e3bdd50c7c6230172ee527c5251ec847baea9a70785c2247abd28ca80dca2cde",
+          "after_sha256": "378c93906656f384c21b005d802c94f50d641a8c463831d092817e912ed1cd6e"
+        }
+      ],
+      "action": "Se preservó la fuente realista y se reclasificó como reconciliación explícita, no detección latente.",
+      "before_hash": "415b9dc56cb3cf4603800ecc93809431279b06f8796259187fb592a55e389a17",
+      "after_hash": "b86bc69b4f972cdac0ff92b6fd5fdc417d48f76f1f12ff0c957907a368d02380",
+      "resolution_state": "RECLASSIFIED",
+      "verification_performed": [
+        "lectura cruzada de informe y cuaderno",
+        "validación de tags EXPLICIT_RECONCILIATION"
+      ],
+      "remaining_caveat": null
+    },
+    {
+      "finding_id": "CL-07",
+      "source_finding": "Otro artefacto ya yuxtapone o señala la discrepancia en tres casos multi-artefacto.",
+      "affected_files": [
+        {
+          "before_path": "_audit_history/pre_finalization_manifest.json#sha256=d8752f762a023dc1ae6aa9a52eb978c86883b43fce9c8a84e0179673d765a51d",
+          "after_path": "activity_04_asignador_de_turnos/submissions/submission_06_artifact_01.md",
+          "before_sha256": "d8752f762a023dc1ae6aa9a52eb978c86883b43fce9c8a84e0179673d765a51d",
+          "after_sha256": "d8752f762a023dc1ae6aa9a52eb978c86883b43fce9c8a84e0179673d765a51d"
+        },
+        {
+          "before_path": "_audit_history/pre_finalization_manifest.json#sha256=398b27ac005011cfb99e2232fb949718e74c1698126dff4c0cd72d1d4ae51496",
+          "after_path": "activity_04_asignador_de_turnos/submissions/submission_06_artifact_02.txt",
+          "before_sha256": "398b27ac005011cfb99e2232fb949718e74c1698126dff4c0cd72d1d4ae51496",
+          "after_sha256": "398b27ac005011cfb99e2232fb949718e74c1698126dff4c0cd72d1d4ae51496"
+        },
+        {
+          "before_path": "_audit_history/pre_finalization_manifest.json#sha256=67646d1243fdb9a4dc167ddebcc55ceefad51d2ac1237aa4834d32bcb319a595",
+          "after_path": "activity_08_triage_de_logs/submissions/submission_01_artifact_01.txt",
+          "before_sha256": "67646d1243fdb9a4dc167ddebcc55ceefad51d2ac1237aa4834d32bcb319a595",
+          "after_sha256": "67646d1243fdb9a4dc167ddebcc55ceefad51d2ac1237aa4834d32bcb319a595"
+        },
+        {
+          "before_path": "_audit_history/pre_finalization_manifest.json#sha256=ab8816dbecd791bf452c6b4bb4f812165d57a5fb13161b6cf8a665b5818fc0ff",
+          "after_path": "activity_08_triage_de_logs/submissions/submission_01_artifact_02.md",
+          "before_sha256": "ab8816dbecd791bf452c6b4bb4f812165d57a5fb13161b6cf8a665b5818fc0ff",
+          "after_sha256": "ab8816dbecd791bf452c6b4bb4f812165d57a5fb13161b6cf8a665b5818fc0ff"
+        },
+        {
+          "before_path": "_audit_history/pre_finalization_manifest.json#sha256=3959475ed19fa7db5940369087af05d0dca26e88bc5e43cfcc829290da2c6426",
+          "after_path": "activity_12_clinica_movil/submissions/submission_04_artifact_01.txt",
+          "before_sha256": "3959475ed19fa7db5940369087af05d0dca26e88bc5e43cfcc829290da2c6426",
+          "after_sha256": "3959475ed19fa7db5940369087af05d0dca26e88bc5e43cfcc829290da2c6426"
+        },
+        {
+          "before_path": "_audit_history/pre_finalization_manifest.json#sha256=0e543d02a5f8bc9a5a1fa6991b1b395427ff38664ff1145f2646f117fcf16c57",
+          "after_path": "activity_12_clinica_movil/submissions/submission_04_artifact_02.pdf",
+          "before_sha256": "0e543d02a5f8bc9a5a1fa6991b1b395427ff38664ff1145f2646f117fcf16c57",
+          "after_sha256": "0e543d02a5f8bc9a5a1fa6991b1b395427ff38664ff1145f2646f117fcf16c57"
+        },
+        {
+          "before_path": "_audit_history/opus5/activity_04_asignador_de_turnos/opus5_ratification.json",
+          "after_path": "activity_04_asignador_de_turnos/final_ratification.json",
+          "before_sha256": "26da73386759f03e1d0b924df5006614f4ea598a954832cc033b3d1867033b26",
+          "after_sha256": "21bb9a4e8ca497fce902e10c186c60bf706e7ee154c2f4952e344aa137f91695"
+        },
+        {
+          "before_path": "_audit_history/opus5/activity_08_triage_de_logs/opus5_ratification.json",
+          "after_path": "activity_08_triage_de_logs/final_ratification.json",
+          "before_sha256": "edd8f71092f0ecc0acdc5e4b9e289919be86e46b1b871e9a054baa6c8378ecb9",
+          "after_sha256": "4c578b9f9aa3d2da614a24eca5576f1156da3811f8a6cc4303d2f000532e5af2"
+        },
+        {
+          "before_path": "_audit_history/opus5/activity_12_clinica_movil/opus5_ratification.json",
+          "after_path": "activity_12_clinica_movil/final_ratification.json",
+          "before_sha256": "60683af4dab76021350ddd6db0e5e30ac909652795a053de2da49c0a89275ee9",
+          "after_sha256": "ba55900c2984d4734b73d2124c3fd360634799363942cd5d0dca56be183e1bf9"
+        },
+        {
+          "before_path": "_audit_history/pre_final_corpus_manifest.md",
+          "after_path": "corpus_manifest.md",
+          "before_sha256": "e3bdd50c7c6230172ee527c5251ec847baea9a70785c2247abd28ca80dca2cde",
+          "after_sha256": "378c93906656f384c21b005d802c94f50d641a8c463831d092817e912ed1cd6e"
+        }
+      ],
+      "action": "Se etiquetaron rutas de reconciliación cruzada explícita y se retiró la lectura de conflicto latente donde no correspondía.",
+      "before_hash": "dbe18a87848de4b3e1544bdc261a6dbb1e3d7736707bdbbe84cf4b6e16426947",
+      "after_hash": "c2727099a157ddfe87ac41fbbe789858d56cdf42495a8555935a35003a6ea85d",
+      "resolution_state": "RECLASSIFIED",
+      "verification_performed": [
+        "lectura de pares de artefactos",
+        "resolución de source_refs cruzados dentro de cada submission",
+        "validación de tags"
+      ],
+      "remaining_caveat": null
+    },
+    {
+      "finding_id": "CL-08",
+      "source_finding": "Varias entregas declaran por sí mismas sus huecos u omisiones.",
+      "affected_files": [
+        {
+          "before_path": "_audit_history/pre_finalization_manifest.json#sha256=0a7b9553a2fce31ace5c767f050f0108f6c2632e17518d92e16023c8b08c1ec6",
+          "after_path": "activity_01_luz_y_plantines/submissions/submission_04.md",
+          "before_sha256": "0a7b9553a2fce31ace5c767f050f0108f6c2632e17518d92e16023c8b08c1ec6",
+          "after_sha256": "0a7b9553a2fce31ace5c767f050f0108f6c2632e17518d92e16023c8b08c1ec6"
+        },
+        {
+          "before_path": "_audit_history/pre_finalization_manifest.json#sha256=8bc81977219f9f4685b21246d8d56ad62952bb65ad238e0aba6506491c03f415",
+          "after_path": "activity_03_puesto_de_limonada/submissions/submission_01.md",
+          "before_sha256": "8bc81977219f9f4685b21246d8d56ad62952bb65ad238e0aba6506491c03f415",
+          "after_sha256": "8bc81977219f9f4685b21246d8d56ad62952bb65ad238e0aba6506491c03f415"
+        },
+        {
+          "before_path": "_audit_history/pre_finalization_manifest.json#sha256=329ada5437eef8c25bdd0a735af8217a474771a4712b81e07d4ab845d1d10a7d",
+          "after_path": "activity_04_asignador_de_turnos/submissions/submission_01_artifact_01.md",
+          "before_sha256": "329ada5437eef8c25bdd0a735af8217a474771a4712b81e07d4ab845d1d10a7d",
+          "after_sha256": "329ada5437eef8c25bdd0a735af8217a474771a4712b81e07d4ab845d1d10a7d"
+        },
+        {
+          "before_path": "_audit_history/pre_finalization_manifest.json#sha256=ddc96031184a173dae254749a3416b343c4a7817b0b849bfcb519166ed5aa4da",
+          "after_path": "activity_04_asignador_de_turnos/submissions/submission_01_artifact_02.txt",
+          "before_sha256": "ddc96031184a173dae254749a3416b343c4a7817b0b849bfcb519166ed5aa4da",
+          "after_sha256": "ddc96031184a173dae254749a3416b343c4a7817b0b849bfcb519166ed5aa4da"
+        },
+        {
+          "before_path": "_audit_history/pre_finalization_manifest.json#sha256=3e84cc0480a359f3c8d6c2c0a98206d5ef4375714fd623d867ae262f6b3e4111",
+          "after_path": "activity_05_visitas_a_bibliotecas/submissions/submission_06.txt",
+          "before_sha256": "3e84cc0480a359f3c8d6c2c0a98206d5ef4375714fd623d867ae262f6b3e4111",
+          "after_sha256": "3e84cc0480a359f3c8d6c2c0a98206d5ef4375714fd623d867ae262f6b3e4111"
+        },
+        {
+          "before_path": "_audit_history/pre_finalization_manifest.json#sha256=bbed7215a39559e8135e2589f7e10b83a31ddd5b9c52f28aa0227a2fe53ce601",
+          "after_path": "activity_06_movilidad_estudiantil/submissions/submission_02.md",
+          "before_sha256": "bbed7215a39559e8135e2589f7e10b83a31ddd5b9c52f28aa0227a2fe53ce601",
+          "after_sha256": "bbed7215a39559e8135e2589f7e10b83a31ddd5b9c52f28aa0227a2fe53ce601"
+        },
+        {
+          "before_path": "_audit_history/pre_finalization_manifest.json#sha256=93f812d3b9f20f5d73e96cc8ca567bde537d7936ecf7f0533f5217865072464d",
+          "after_path": "activity_07_aislamiento_termico/submissions/submission_02.md",
+          "before_sha256": "93f812d3b9f20f5d73e96cc8ca567bde537d7936ecf7f0533f5217865072464d",
+          "after_sha256": "93f812d3b9f20f5d73e96cc8ca567bde537d7936ecf7f0533f5217865072464d"
+        },
+        {
+          "before_path": "_audit_history/pre_finalization_manifest.json#sha256=1193a3f1fcf075ed1fcbf8a7c024f13503a8df9700ea7c02a045184e4c6ad210",
+          "after_path": "activity_10_experimento_onboarding/submissions/submission_04_artifact_01.txt",
+          "before_sha256": "1193a3f1fcf075ed1fcbf8a7c024f13503a8df9700ea7c02a045184e4c6ad210",
+          "after_sha256": "1193a3f1fcf075ed1fcbf8a7c024f13503a8df9700ea7c02a045184e4c6ad210"
+        },
+        {
+          "before_path": "_audit_history/pre_finalization_manifest.json#sha256=df637219d3eeb2288ce024bc17a9980de5946d91f729cfabdf8a35f21d56d0ce",
+          "after_path": "activity_10_experimento_onboarding/submissions/submission_04_artifact_02.pdf",
+          "before_sha256": "df637219d3eeb2288ce024bc17a9980de5946d91f729cfabdf8a35f21d56d0ce",
+          "after_sha256": "df637219d3eeb2288ce024bc17a9980de5946d91f729cfabdf8a35f21d56d0ce"
+        },
+        {
+          "before_path": "_audit_history/opus5/activity_01_luz_y_plantines/opus5_ratification.json",
+          "after_path": "activity_01_luz_y_plantines/final_ratification.json",
+          "before_sha256": "fec100f75e9390244fb3ef23b55d58ed4ce99aa522dbc40497aeda9a47e5daf5",
+          "after_sha256": "3c456cc9a772cccc19f1f542a96fa2554a386c47107ec318abede93a0779917c"
+        },
+        {
+          "before_path": "_audit_history/opus5/activity_03_puesto_de_limonada/opus5_ratification.json",
+          "after_path": "activity_03_puesto_de_limonada/final_ratification.json",
+          "before_sha256": "d9659b65d38d3f0ccbe4ee91201e2850c61c8241604dbeab44391d2fe476dca8",
+          "after_sha256": "b55e495e099d9051912cb1d9079e73c3156de1a457a536b4b95a7a26683d64cf"
+        },
+        {
+          "before_path": "_audit_history/opus5/activity_04_asignador_de_turnos/opus5_ratification.json",
+          "after_path": "activity_04_asignador_de_turnos/final_ratification.json",
+          "before_sha256": "26da73386759f03e1d0b924df5006614f4ea598a954832cc033b3d1867033b26",
+          "after_sha256": "21bb9a4e8ca497fce902e10c186c60bf706e7ee154c2f4952e344aa137f91695"
+        },
+        {
+          "before_path": "_audit_history/opus5/activity_05_visitas_a_bibliotecas/opus5_ratification.json",
+          "after_path": "activity_05_visitas_a_bibliotecas/final_ratification.json",
+          "before_sha256": "d9ca581de4498f3cae7b9d04b1a4a0b959596a13755929afa803c36bfc16aad5",
+          "after_sha256": "21d66859a79a82b083925d0dd559d02e0b0fb765c20a97a227d3b9f032d44f23"
+        },
+        {
+          "before_path": "_audit_history/opus5/activity_06_movilidad_estudiantil/opus5_ratification.json",
+          "after_path": "activity_06_movilidad_estudiantil/final_ratification.json",
+          "before_sha256": "d57de231872c7652e5521910aa509b58328d2f1947f8ba5eaaface0de4592d52",
+          "after_sha256": "f6f64f920e8cb63de93861088baae505a20c8aac90c28afd63ce36dfb8449238"
+        },
+        {
+          "before_path": "_audit_history/opus5/activity_07_aislamiento_termico/opus5_ratification.json",
+          "after_path": "activity_07_aislamiento_termico/final_ratification.json",
+          "before_sha256": "d1de542aba4c0e6b8c378c6e5557f4c1bd452acd46e562602f4c15a3c290469f",
+          "after_sha256": "aa07aa5df1e78b980aa2a3d27eeaf3a9238843cc935641c55ed717f6d5aa96d5"
+        },
+        {
+          "before_path": "_audit_history/opus5/activity_10_experimento_onboarding/opus5_ratification.json",
+          "after_path": "activity_10_experimento_onboarding/final_ratification.json",
+          "before_sha256": "773205c590b2927dd4c717d0092f91e84b4ed674e1050f01c4a43a927b42d35f",
+          "after_sha256": "f693dbfc9333dc1c5e5d724f6209e333d01a287fb8fb0f3e48d8daa97a97dee5"
+        }
+      ],
+      "action": "Se conservaron las submissions y se etiquetaron SELF_DECLARED_GAP para medir aplicación/comprobación, no descubrimiento implícito.",
+      "before_hash": "99a08772e20761d91c49ce5f955de95a6132b8c0ba46f4d3edabfa2ceb4ec16d",
+      "after_hash": "e5badc6260f42dd97a3018e6040f32510de999729498149a34a805349b909492",
+      "resolution_state": "RECLASSIFIED",
+      "verification_performed": [
+        "revisión de declaraciones explícitas",
+        "conteo de SILENT_CONCEPTUAL_GAP",
+        "validación de tags"
+      ],
+      "remaining_caveat": "La dificultad de estos casos no debe sobreestimarse como detección de una ausencia oculta."
+    },
+    {
+      "finding_id": "CL-09",
+      "source_finding": "Una cadena técnica y una identidad simulada producían acoplamientos artificiales entre actividades.",
+      "affected_files": [
+        {
+          "before_path": "_audit_history/pre_finalization_manifest.json#sha256=2ab52d2ae14ef8643c99a3ee3d544990f92c2866151b4014221f3b8acb548b8b",
+          "after_path": "activity_01_luz_y_plantines/submissions/submission_01.txt",
+          "before_sha256": "2ab52d2ae14ef8643c99a3ee3d544990f92c2866151b4014221f3b8acb548b8b",
+          "after_sha256": "f33aa63575b544d7f03e070ad8a2aa3936f4e76d7ebf98922404efa5442818d5"
+        },
+        {
+          "before_path": "_audit_history/pre_finalization_manifest.json#sha256=7cd4fc9abc2394bab5d8d37dfd52032f00a49021ea2bc39e697e28df725cc06b",
+          "after_path": "activity_12_clinica_movil/submissions/submission_06_artifact_01.txt",
+          "before_sha256": "7cd4fc9abc2394bab5d8d37dfd52032f00a49021ea2bc39e697e28df725cc06b",
+          "after_sha256": "7cd4fc9abc2394bab5d8d37dfd52032f00a49021ea2bc39e697e28df725cc06b"
+        },
+        {
+          "before_path": "_audit_history/pre_finalization_manifest.json#sha256=ef063503f195cacb24585c0c137ee00cd5a0eab67992c9728336b22073080385",
+          "after_path": "activity_12_clinica_movil/submissions/submission_06_artifact_02.md",
+          "before_sha256": "ef063503f195cacb24585c0c137ee00cd5a0eab67992c9728336b22073080385",
+          "after_sha256": "0781841eca8e6f1a05d496e803955f7fc2a3cb30db066730ec2178d05dd8523b"
+        },
+        {
+          "before_path": "_audit_history/opus5/activity_01_luz_y_plantines/opus5_ratification.json",
+          "after_path": "activity_01_luz_y_plantines/final_ratification.json",
+          "before_sha256": "fec100f75e9390244fb3ef23b55d58ed4ce99aa522dbc40497aeda9a47e5daf5",
+          "after_sha256": "3c456cc9a772cccc19f1f542a96fa2554a386c47107ec318abede93a0779917c"
+        },
+        {
+          "before_path": "_audit_history/opus5/activity_12_clinica_movil/opus5_ratification.json",
+          "after_path": "activity_12_clinica_movil/final_ratification.json",
+          "before_sha256": "60683af4dab76021350ddd6db0e5e30ac909652795a053de2da49c0a89275ee9",
+          "after_sha256": "ba55900c2984d4734b73d2124c3fd360634799363942cd5d0dca56be183e1bf9"
+        }
+      ],
+      "action": "Se diversificaron la cadena y una identidad, conservando dominio .invalid, teléfono ficticio e identificador clínico simulado.",
+      "before_hash": "a0c02805b8dfbd0427bc10a0fc0c08597f8012230b6d5e00bd2c422e8c9ed9c6",
+      "after_hash": "173cdb6e8f6810470b3d7c692970df397553de14035056fb04dd6be3fb22a32b",
+      "resolution_state": "SOURCE_FIXED",
+      "verification_performed": [
+        "búsqueda global de cadenas",
+        "validación de source_refs",
+        "escaneo de seguridad"
+      ],
+      "remaining_caveat": null
+    },
+    {
+      "finding_id": "CL-10",
+      "source_finding": "La dificultad declarada de actividad 03 es discutible pero no constituye un defecto del corpus.",
+      "affected_files": [
+        {
+          "before_path": "_audit_history/opus5/activity_03_puesto_de_limonada/opus5_ratification.json",
+          "after_path": "activity_03_puesto_de_limonada/final_ratification.json",
+          "before_sha256": "d9659b65d38d3f0ccbe4ee91201e2850c61c8241604dbeab44391d2fe476dca8",
+          "after_sha256": "b55e495e099d9051912cb1d9079e73c3156de1a457a536b4b95a7a26683d64cf"
+        },
+        {
+          "before_path": "_audit_history/pre_final_corpus_manifest.md",
+          "after_path": "corpus_manifest.md",
+          "before_sha256": "e3bdd50c7c6230172ee527c5251ec847baea9a70785c2247abd28ca80dca2cde",
+          "after_sha256": "378c93906656f384c21b005d802c94f50d641a8c463831d092817e912ed1cd6e"
+        }
+      ],
+      "action": "Se preservó dificultad simple y se documentó upper_simple / borderline_intermediate sin alterar la distribución 3/5/4.",
+      "before_hash": "3bba0af95a7d00618ee1b5a01556f23c36cb007bb7478e87b0cfce29ee784c85",
+      "after_hash": "0e081a9958cb2cc6f65feb5c7746fc7ae25617f0a611eecd88ed076c78c3e10a",
+      "resolution_state": "DOCUMENTED_NON_BLOCKING",
+      "verification_performed": [
+        "revisión de distribución de dificultad",
+        "validación de difficulty_caveat"
+      ],
+      "remaining_caveat": "Clasificación fronteriza no bloqueante."
+    }
+  ],
+  "required_revisions": [
+    {
+      "finding_id": "RR-001",
+      "source_finding": "Corregir en el oracle la afirmación 'única zona con anclaje real' de la entrega 03.",
+      "affected_files": [
+        {
+          "before_path": "_audit_history/opus5/activity_01_luz_y_plantines/opus5_ratification.json",
+          "after_path": "activity_01_luz_y_plantines/final_ratification.json",
+          "before_sha256": "fec100f75e9390244fb3ef23b55d58ed4ce99aa522dbc40497aeda9a47e5daf5",
+          "after_sha256": "3c456cc9a772cccc19f1f542a96fa2554a386c47107ec318abede93a0779917c"
+        }
+      ],
+      "action": "Integrar la corrección o propiedad en final_ratification.json y actualizar la documentación canónica aplicable.",
+      "before_hash": "3391c27091945286b93e0f9eed4d5bafe0412362e734900a39a32b6c891386bb",
+      "after_hash": "60f350e6f540550f32996ac00a83078916c910a86d57f7443b707c64fb1988fa",
+      "resolution_state": "ORACLE_FIXED",
+      "verification_performed": [
+        "verificación contra bytes autorizados",
+        "validación de completion_evidence",
+        "validación de final_ratification"
+      ],
+      "remaining_caveat": null
+    },
+    {
+      "finding_id": "RR-002",
+      "source_finding": "Registrar la exclusión asimétrica de A2 en la entrega 05 como oportunidad adicional.",
+      "affected_files": [
+        {
+          "before_path": "_audit_history/opus5/activity_01_luz_y_plantines/opus5_ratification.json",
+          "after_path": "activity_01_luz_y_plantines/final_ratification.json",
+          "before_sha256": "fec100f75e9390244fb3ef23b55d58ed4ce99aa522dbc40497aeda9a47e5daf5",
+          "after_sha256": "3c456cc9a772cccc19f1f542a96fa2554a386c47107ec318abede93a0779917c"
+        }
+      ],
+      "action": "Integrar la corrección o propiedad en final_ratification.json y actualizar la documentación canónica aplicable.",
+      "before_hash": "3391c27091945286b93e0f9eed4d5bafe0412362e734900a39a32b6c891386bb",
+      "after_hash": "60f350e6f540550f32996ac00a83078916c910a86d57f7443b707c64fb1988fa",
+      "resolution_state": "ORACLE_FIXED",
+      "verification_performed": [
+        "verificación contra bytes autorizados",
+        "validación de completion_evidence",
+        "validación de final_ratification"
+      ],
+      "remaining_caveat": null
+    },
+    {
+      "finding_id": "RR-003",
+      "source_finding": "Resolver la tensión §7/§10 del borrador: o el ejemplo se reformula para señalar un solo párrafo, o §7 se relaja explicitando que depende del observable.",
+      "affected_files": [
+        {
+          "before_path": "_audit_history/opus5/activity_01_luz_y_plantines/opus5_ratification.json",
+          "after_path": "activity_01_luz_y_plantines/final_ratification.json",
+          "before_sha256": "fec100f75e9390244fb3ef23b55d58ed4ce99aa522dbc40497aeda9a47e5daf5",
+          "after_sha256": "3c456cc9a772cccc19f1f542a96fa2554a386c47107ec318abede93a0779917c"
+        }
+      ],
+      "action": "Registrar la distinción DETECTION/ADJUDICATION y conservar dependencia del wording como ORACLE_SUSPECT.",
+      "before_hash": "3391c27091945286b93e0f9eed4d5bafe0412362e734900a39a32b6c891386bb",
+      "after_hash": "60f350e6f540550f32996ac00a83078916c910a86d57f7443b707c64fb1988fa",
+      "resolution_state": "PRESERVED_AS_ORACLE_SUSPECT",
+      "verification_performed": [
+        "verificación contra bytes autorizados",
+        "validación de completion_evidence",
+        "validación de final_ratification"
+      ],
+      "remaining_caveat": "La lectura depende del observable y del wording concreto; no se usa como hard oracle."
+    },
+    {
+      "finding_id": "RR-004",
+      "source_finding": "Corregir 'sobre azul' por 'esquina azul' en las propiedades del oracle y añadir la operación de lectura correspondiente.",
+      "affected_files": [
+        {
+          "before_path": "_audit_history/opus5/activity_02_voz_en_un_microcuento/opus5_ratification.json",
+          "after_path": "activity_02_voz_en_un_microcuento/final_ratification.json",
+          "before_sha256": "cdd79244986781a0a6fd7b68194fd577f255940a979997e292a950537317ab38",
+          "after_sha256": "f2d3a9d5b56825543163a040abeb0828e90b14930b72d10faa5683f895c6f020"
+        }
+      ],
+      "action": "Integrar la corrección o propiedad en final_ratification.json y actualizar la documentación canónica aplicable.",
+      "before_hash": "648d71a079ee730816206493db58486ced8c80b14bc4f1ee466095a2940dd01b",
+      "after_hash": "e814205c1682efa4b6863175335807c49f5955581e65996e4ef22962256213c8",
+      "resolution_state": "ORACLE_FIXED",
+      "verification_performed": [
+        "verificación contra bytes autorizados",
+        "validación de completion_evidence",
+        "validación de final_ratification"
+      ],
+      "remaining_caveat": null
+    },
+    {
+      "finding_id": "RR-005",
+      "source_finding": "Rebajar la afirmación 'ninguna sección lo advierte' para la entrega 03 y marcarla ORACLE_SUSPECT.",
+      "affected_files": [
+        {
+          "before_path": "_audit_history/opus5/activity_02_voz_en_un_microcuento/opus5_ratification.json",
+          "after_path": "activity_02_voz_en_un_microcuento/final_ratification.json",
+          "before_sha256": "cdd79244986781a0a6fd7b68194fd577f255940a979997e292a950537317ab38",
+          "after_sha256": "f2d3a9d5b56825543163a040abeb0828e90b14930b72d10faa5683f895c6f020"
+        }
+      ],
+      "action": "Rebajar la lectura a ORACLE_SUSPECT con alternativas explícitas.",
+      "before_hash": "648d71a079ee730816206493db58486ced8c80b14bc4f1ee466095a2940dd01b",
+      "after_hash": "e814205c1682efa4b6863175335807c49f5955581e65996e4ef22962256213c8",
+      "resolution_state": "PRESERVED_AS_ORACLE_SUSPECT",
+      "verification_performed": [
+        "verificación contra bytes autorizados",
+        "validación de completion_evidence",
+        "validación de final_ratification"
+      ],
+      "remaining_caveat": "La lectura depende del observable y del wording concreto; no se usa como hard oracle."
+    },
+    {
+      "finding_id": "RR-006",
+      "source_finding": "Registrar la alternativa PARTIAL para el criterio 4 de la entrega 04.",
+      "affected_files": [
+        {
+          "before_path": "_audit_history/opus5/activity_02_voz_en_un_microcuento/opus5_ratification.json",
+          "after_path": "activity_02_voz_en_un_microcuento/final_ratification.json",
+          "before_sha256": "cdd79244986781a0a6fd7b68194fd577f255940a979997e292a950537317ab38",
+          "after_sha256": "f2d3a9d5b56825543163a040abeb0828e90b14930b72d10faa5683f895c6f020"
+        }
+      ],
+      "action": "Integrar la corrección o propiedad en final_ratification.json y actualizar la documentación canónica aplicable.",
+      "before_hash": "648d71a079ee730816206493db58486ced8c80b14bc4f1ee466095a2940dd01b",
+      "after_hash": "e814205c1682efa4b6863175335807c49f5955581e65996e4ef22962256213c8",
+      "resolution_state": "ORACLE_FIXED",
+      "verification_performed": [
+        "verificación contra bytes autorizados",
+        "validación de completion_evidence",
+        "validación de final_ratification"
+      ],
+      "remaining_caveat": null
+    },
+    {
+      "finding_id": "RR-007",
+      "source_finding": "Corregir la afirmación sobre el criterio 4 de la entrega 04 (sí verifica el presupuesto).",
+      "affected_files": [
+        {
+          "before_path": "_audit_history/opus5/activity_03_puesto_de_limonada/opus5_ratification.json",
+          "after_path": "activity_03_puesto_de_limonada/final_ratification.json",
+          "before_sha256": "d9659b65d38d3f0ccbe4ee91201e2850c61c8241604dbeab44391d2fe476dca8",
+          "after_sha256": "b55e495e099d9051912cb1d9079e73c3156de1a457a536b4b95a7a26683d64cf"
+        }
+      ],
+      "action": "Integrar la corrección o propiedad en final_ratification.json y actualizar la documentación canónica aplicable.",
+      "before_hash": "1bee217914f01fe1c8f9e2f482c8b733ef80fb5b726222ebd14540f987e5a059",
+      "after_hash": "d6567aabdb2b2ca0ba542c4792c78344179386d35dfb986b69d8aa15f5a7dc38",
+      "resolution_state": "ORACLE_FIXED",
+      "verification_performed": [
+        "verificación contra bytes autorizados",
+        "validación de completion_evidence",
+        "validación de final_ratification"
+      ],
+      "remaining_caveat": null
+    },
+    {
+      "finding_id": "RR-008",
+      "source_finding": "Ampliar a cuatro el recuento de incoherencias de la entrega 05 e incluir el intercambio de capacidades.",
+      "affected_files": [
+        {
+          "before_path": "_audit_history/opus5/activity_03_puesto_de_limonada/opus5_ratification.json",
+          "after_path": "activity_03_puesto_de_limonada/final_ratification.json",
+          "before_sha256": "d9659b65d38d3f0ccbe4ee91201e2850c61c8241604dbeab44391d2fe476dca8",
+          "after_sha256": "b55e495e099d9051912cb1d9079e73c3156de1a457a536b4b95a7a26683d64cf"
+        }
+      ],
+      "action": "Integrar la corrección o propiedad en final_ratification.json y actualizar la documentación canónica aplicable.",
+      "before_hash": "1bee217914f01fe1c8f9e2f482c8b733ef80fb5b726222ebd14540f987e5a059",
+      "after_hash": "d6567aabdb2b2ca0ba542c4792c78344179386d35dfb986b69d8aa15f5a7dc38",
+      "resolution_state": "ORACLE_FIXED",
+      "verification_performed": [
+        "verificación contra bytes autorizados",
+        "validación de completion_evidence",
+        "validación de final_ratification"
+      ],
+      "remaining_caveat": null
+    },
+    {
+      "finding_id": "RR-009",
+      "source_finding": "Añadir como propiedades la alternativa viable de 75 vasos con dispensador ($66,50) de la entrega 03 y el máximo real de 82 vasos.",
+      "affected_files": [
+        {
+          "before_path": "_audit_history/opus5/activity_03_puesto_de_limonada/opus5_ratification.json",
+          "after_path": "activity_03_puesto_de_limonada/final_ratification.json",
+          "before_sha256": "d9659b65d38d3f0ccbe4ee91201e2850c61c8241604dbeab44391d2fe476dca8",
+          "after_sha256": "b55e495e099d9051912cb1d9079e73c3156de1a457a536b4b95a7a26683d64cf"
+        }
+      ],
+      "action": "Integrar la corrección o propiedad en final_ratification.json y actualizar la documentación canónica aplicable.",
+      "before_hash": "1bee217914f01fe1c8f9e2f482c8b733ef80fb5b726222ebd14540f987e5a059",
+      "after_hash": "d6567aabdb2b2ca0ba542c4792c78344179386d35dfb986b69d8aa15f5a7dc38",
+      "resolution_state": "ORACLE_FIXED",
+      "verification_performed": [
+        "verificación contra bytes autorizados",
+        "validación de completion_evidence",
+        "validación de final_ratification"
+      ],
+      "remaining_caveat": null
+    },
+    {
+      "finding_id": "RR-010",
+      "source_finding": "Enunciar explícitamente que el defecto de la entrega 02 no es observable en la salida y que el anchor debe apuntar al registro superviviente.",
+      "affected_files": [
+        {
+          "before_path": "_audit_history/opus5/activity_04_asignador_de_turnos/opus5_ratification.json",
+          "after_path": "activity_04_asignador_de_turnos/final_ratification.json",
+          "before_sha256": "26da73386759f03e1d0b924df5006614f4ea598a954832cc033b3d1867033b26",
+          "after_sha256": "21bb9a4e8ca497fce902e10c186c60bf706e7ee154c2f4952e344aa137f91695"
+        }
+      ],
+      "action": "Integrar la corrección o propiedad en final_ratification.json y actualizar la documentación canónica aplicable.",
+      "before_hash": "707fe4c9a45df22c8bc926ecd8d881ee84e863ca2278096bf8c6ce1442f7456a",
+      "after_hash": "d381929cc0c42d9dcd3688aa7e3dd02aac753a1c9ff3a98d36f65e3fb8148208",
+      "resolution_state": "ORACLE_FIXED",
+      "verification_performed": [
+        "verificación contra bytes autorizados",
+        "validación de completion_evidence",
+        "validación de final_ratification"
+      ],
+      "remaining_caveat": null
+    },
+    {
+      "finding_id": "RR-011",
+      "source_finding": "Corregir la afirmación sobre la entrega 05: el archivo de código describe correctamente tres de los comportamientos.",
+      "affected_files": [
+        {
+          "before_path": "_audit_history/opus5/activity_04_asignador_de_turnos/opus5_ratification.json",
+          "after_path": "activity_04_asignador_de_turnos/final_ratification.json",
+          "before_sha256": "26da73386759f03e1d0b924df5006614f4ea598a954832cc033b3d1867033b26",
+          "after_sha256": "21bb9a4e8ca497fce902e10c186c60bf706e7ee154c2f4952e344aa137f91695"
+        }
+      ],
+      "action": "Integrar la corrección o propiedad en final_ratification.json y actualizar la documentación canónica aplicable.",
+      "before_hash": "707fe4c9a45df22c8bc926ecd8d881ee84e863ca2278096bf8c6ce1442f7456a",
+      "after_hash": "d381929cc0c42d9dcd3688aa7e3dd02aac753a1c9ff3a98d36f65e3fb8148208",
+      "resolution_state": "ORACLE_FIXED",
+      "verification_performed": [
+        "verificación contra bytes autorizados",
+        "validación de completion_evidence",
+        "validación de final_ratification"
+      ],
+      "remaining_caveat": null
+    },
+    {
+      "finding_id": "RR-012",
+      "source_finding": "Añadir el fallo por KeyError ante campo faltante en las entregas 03 y 05.",
+      "affected_files": [
+        {
+          "before_path": "_audit_history/opus5/activity_04_asignador_de_turnos/opus5_ratification.json",
+          "after_path": "activity_04_asignador_de_turnos/final_ratification.json",
+          "before_sha256": "26da73386759f03e1d0b924df5006614f4ea598a954832cc033b3d1867033b26",
+          "after_sha256": "21bb9a4e8ca497fce902e10c186c60bf706e7ee154c2f4952e344aa137f91695"
+        }
+      ],
+      "action": "Integrar la corrección o propiedad en final_ratification.json y actualizar la documentación canónica aplicable.",
+      "before_hash": "707fe4c9a45df22c8bc926ecd8d881ee84e863ca2278096bf8c6ce1442f7456a",
+      "after_hash": "d381929cc0c42d9dcd3688aa7e3dd02aac753a1c9ff3a98d36f65e3fb8148208",
+      "resolution_state": "ORACLE_FIXED",
+      "verification_performed": [
+        "verificación contra bytes autorizados",
+        "validación de completion_evidence",
+        "validación de final_ratification"
+      ],
+      "remaining_caveat": null
+    },
+    {
+      "finding_id": "RR-013",
+      "source_finding": "Corregir la transición mensual de Barrio contradicha por la tabla autorizada.",
+      "affected_files": [
+        {
+          "before_path": "_audit_history/opus5/activity_05_visitas_a_bibliotecas/opus5_ratification.json",
+          "after_path": "activity_05_visitas_a_bibliotecas/final_ratification.json",
+          "before_sha256": "d9ca581de4498f3cae7b9d04b1a4a0b959596a13755929afa803c36bfc16aad5",
+          "after_sha256": "21d66859a79a82b083925d0dd559d02e0b0fb765c20a97a227d3b9f032d44f23"
+        }
+      ],
+      "action": "Integrar la corrección o propiedad en final_ratification.json y actualizar la documentación canónica aplicable.",
+      "before_hash": "fe9b1e86c95161418708dc5483d61bfc3e355218161f840ab3bf0641d0bf993d",
+      "after_hash": "70454cf0def80f4811e7b979f063f79f83dcbd20beee31ccdd46acef45e95791",
+      "resolution_state": "ORACLE_FIXED",
+      "verification_performed": [
+        "verificación contra bytes autorizados",
+        "validación de completion_evidence",
+        "validación de final_ratification"
+      ],
+      "remaining_caveat": null
+    },
+    {
+      "finding_id": "RR-014",
+      "source_finding": "Registrar como propiedad la violación del alcance provisional en las entregas 03 y 05.",
+      "affected_files": [
+        {
+          "before_path": "_audit_history/opus5/activity_05_visitas_a_bibliotecas/opus5_ratification.json",
+          "after_path": "activity_05_visitas_a_bibliotecas/final_ratification.json",
+          "before_sha256": "d9ca581de4498f3cae7b9d04b1a4a0b959596a13755929afa803c36bfc16aad5",
+          "after_sha256": "21d66859a79a82b083925d0dd559d02e0b0fb765c20a97a227d3b9f032d44f23"
+        }
+      ],
+      "action": "Integrar la corrección o propiedad en final_ratification.json y actualizar la documentación canónica aplicable.",
+      "before_hash": "fe9b1e86c95161418708dc5483d61bfc3e355218161f840ab3bf0641d0bf993d",
+      "after_hash": "70454cf0def80f4811e7b979f063f79f83dcbd20beee31ccdd46acef45e95791",
+      "resolution_state": "ORACLE_FIXED",
+      "verification_performed": [
+        "verificación contra bytes autorizados",
+        "validación de completion_evidence",
+        "validación de final_ratification"
+      ],
+      "remaining_caveat": null
+    },
+    {
+      "finding_id": "RR-015",
+      "source_finding": "Reconciliar el rango de extensión de la consigna con las entregas reales, o declarar explícitamente que la extensión no es criterio evaluable en esta actividad.",
+      "affected_files": [
+        {
+          "before_path": "activity_05_visitas_a_bibliotecas/01_assignment.docx",
+          "after_path": "activity_05_visitas_a_bibliotecas/01_assignment.docx",
+          "before_sha256": "4437dded752c0fc55efada89097d5a787b6ac57f2c8acf14dd2b131048bfaceb",
+          "after_sha256": "200c5282488ae1511149559707372084b40b5fdfd6efe7fb8a5bf675abc310ab"
+        },
+        {
+          "before_path": "_audit_history/opus5/activity_05_visitas_a_bibliotecas/opus5_ratification.json",
+          "after_path": "activity_05_visitas_a_bibliotecas/final_ratification.json",
+          "before_sha256": "d9ca581de4498f3cae7b9d04b1a4a0b959596a13755929afa803c36bfc16aad5",
+          "after_sha256": "21d66859a79a82b083925d0dd559d02e0b0fb765c20a97a227d3b9f032d44f23"
+        }
+      ],
+      "action": "Neutralizar el rango como extensión orientativa/no evaluable sin alterar el contenido de las submissions.",
+      "before_hash": "71f925ed80797ea178e63492655be100e0084b2faca6ddb53b9987aa34578576",
+      "after_hash": "b73f304575661f3fa574694730d05c64334defb325997cedffb0390ba1ea6b58",
+      "resolution_state": "SOURCE_FIXED",
+      "verification_performed": [
+        "verificación contra bytes autorizados",
+        "validación de completion_evidence",
+        "validación de final_ratification"
+      ],
+      "remaining_caveat": null
+    },
+    {
+      "finding_id": "RR-016",
+      "source_finding": "Resolver el defecto accidental de transcripción del apoyo por banda preservando la tabla autorizada y corrigiendo sólo las dos entregas afectadas.",
+      "affected_files": [
+        {
+          "before_path": "_audit_history/pre_finalization_manifest.json#sha256=fdf731ced4c534d3aa3969e1664cc1c5ea1b51c56b87326fee310ddd786ee2dc",
+          "after_path": "activity_06_movilidad_estudiantil/submissions/submission_01.pdf",
+          "before_sha256": "fdf731ced4c534d3aa3969e1664cc1c5ea1b51c56b87326fee310ddd786ee2dc",
+          "after_sha256": "2e8d40340d18041391021df113789b466bce1fe329579b1ca2861b3bf91af86f"
+        },
+        {
+          "before_path": "_audit_history/pre_finalization_manifest.json#sha256=f7d07c93955b8e029c7f34297927c0e825fd7a7c8ac2bb7c853a505e1436fb1c",
+          "after_path": "activity_06_movilidad_estudiantil/submissions/submission_04.txt",
+          "before_sha256": "f7d07c93955b8e029c7f34297927c0e825fd7a7c8ac2bb7c853a505e1436fb1c",
+          "after_sha256": "879f20ed7b55443616172ef21ca1932c7782d9e45490a4c9b514f85b5bd59d7c"
+        },
+        {
+          "before_path": "_audit_history/opus5/activity_06_movilidad_estudiantil/opus5_ratification.json",
+          "after_path": "activity_06_movilidad_estudiantil/final_ratification.json",
+          "before_sha256": "d57de231872c7652e5521910aa509b58328d2f1947f8ba5eaaface0de4592d52",
+          "after_sha256": "f6f64f920e8cb63de93861088baae505a20c8aac90c28afd63ce36dfb8449238"
+        }
+      ],
+      "action": "Corregir únicamente las submissions 01 y 03 a 15/8/3, recomputar su prosa dependiente y preservar la tabla autorizada.",
+      "before_hash": "281e2704a9ac5afea62ce464590d56ef65c336b933d6bf4ff0951b3ca82ea322",
+      "after_hash": "16a220ad678282e9f9bdfa57fa67d175d5737c86d823891729d48bf01e03b4bb",
+      "resolution_state": "SOURCE_FIXED",
+      "verification_performed": [
+        "verificación contra bytes autorizados",
+        "validación de completion_evidence",
+        "validación de final_ratification"
+      ],
+      "remaining_caveat": null
+    },
+    {
+      "finding_id": "RR-017",
+      "source_finding": "Retirar del oracle pre-final las certificaciones de la transcripción contradicha del apoyo por banda.",
+      "affected_files": [
+        {
+          "before_path": "_audit_history/opus5/activity_06_movilidad_estudiantil/opus5_ratification.json",
+          "after_path": "activity_06_movilidad_estudiantil/final_ratification.json",
+          "before_sha256": "d57de231872c7652e5521910aa509b58328d2f1947f8ba5eaaface0de4592d52",
+          "after_sha256": "f6f64f920e8cb63de93861088baae505a20c8aac90c28afd63ce36dfb8449238"
+        }
+      ],
+      "action": "Integrar la corrección o propiedad en final_ratification.json y actualizar la documentación canónica aplicable.",
+      "before_hash": "b68a77e14ed8402583681c54d65d26a008bfdb580c49e873491bc6207a633c37",
+      "after_hash": "233b8252c93d4b0ab822685d5a23abc443754d64eea69df9db271e924703ffeb",
+      "resolution_state": "ORACLE_FIXED",
+      "verification_performed": [
+        "verificación contra bytes autorizados",
+        "validación de completion_evidence",
+        "validación de final_ratification"
+      ],
+      "remaining_caveat": null
+    },
+    {
+      "finding_id": "RR-018",
+      "source_finding": "Reformular con precisión la falacia de la banda lejana en la entrega 03.",
+      "affected_files": [
+        {
+          "before_path": "_audit_history/opus5/activity_06_movilidad_estudiantil/opus5_ratification.json",
+          "after_path": "activity_06_movilidad_estudiantil/final_ratification.json",
+          "before_sha256": "d57de231872c7652e5521910aa509b58328d2f1947f8ba5eaaface0de4592d52",
+          "after_sha256": "f6f64f920e8cb63de93861088baae505a20c8aac90c28afd63ce36dfb8449238"
+        }
+      ],
+      "action": "Integrar la corrección o propiedad en final_ratification.json y actualizar la documentación canónica aplicable.",
+      "before_hash": "b68a77e14ed8402583681c54d65d26a008bfdb580c49e873491bc6207a633c37",
+      "after_hash": "233b8252c93d4b0ab822685d5a23abc443754d64eea69df9db271e924703ffeb",
+      "resolution_state": "ORACLE_FIXED",
+      "verification_performed": [
+        "verificación contra bytes autorizados",
+        "validación de completion_evidence",
+        "validación de final_ratification"
+      ],
+      "remaining_caveat": null
+    },
+    {
+      "finding_id": "RR-019",
+      "source_finding": "Registrar la cifra inventada '40 de las 60' de la entrega 05 como oportunidad separada del intercambio de columnas.",
+      "affected_files": [
+        {
+          "before_path": "_audit_history/opus5/activity_06_movilidad_estudiantil/opus5_ratification.json",
+          "after_path": "activity_06_movilidad_estudiantil/final_ratification.json",
+          "before_sha256": "d57de231872c7652e5521910aa509b58328d2f1947f8ba5eaaface0de4592d52",
+          "after_sha256": "f6f64f920e8cb63de93861088baae505a20c8aac90c28afd63ce36dfb8449238"
+        }
+      ],
+      "action": "Integrar la corrección o propiedad en final_ratification.json y actualizar la documentación canónica aplicable.",
+      "before_hash": "b68a77e14ed8402583681c54d65d26a008bfdb580c49e873491bc6207a633c37",
+      "after_hash": "233b8252c93d4b0ab822685d5a23abc443754d64eea69df9db271e924703ffeb",
+      "resolution_state": "ORACLE_FIXED",
+      "verification_performed": [
+        "verificación contra bytes autorizados",
+        "validación de completion_evidence",
+        "validación de final_ratification"
+      ],
+      "remaining_caveat": null
+    },
+    {
+      "finding_id": "RR-020",
+      "source_finding": "Registrar explícitamente el auto-señalamiento de la entrega 05 y reclasificarla como caso de reconciliación explícita, no de detección. Si se quiere conservar un caso de detección limpio, eliminar la frase 'Más adelante concluimos lo contrario' y la línea 'revisar: debería ser menos caída'.",
+      "affected_files": [
+        {
+          "before_path": "_audit_history/opus5/activity_07_aislamiento_termico/opus5_ratification.json",
+          "after_path": "activity_07_aislamiento_termico/final_ratification.json",
+          "before_sha256": "d1de542aba4c0e6b8c378c6e5557f4c1bd452acd46e562602f4c15a3c290469f",
+          "after_sha256": "aa07aa5df1e78b980aa2a3d27eeaf3a9238843cc935641c55ed717f6d5aa96d5"
+        },
+        {
+          "before_path": "_audit_history/pre_final_corpus_manifest.md",
+          "after_path": "corpus_manifest.md",
+          "before_sha256": "e3bdd50c7c6230172ee527c5251ec847baea9a70785c2247abd28ca80dca2cde",
+          "after_sha256": "378c93906656f384c21b005d802c94f50d641a8c463831d092817e912ed1cd6e"
+        }
+      ],
+      "action": "Preservar la submission y reclasificar la operación evaluable conforme a la evidencia explícita.",
+      "before_hash": "1c3b002ce3ac0a765b1741e3cfb0d0e99d3346bf10afb53f6f772834257b22a8",
+      "after_hash": "8344614ed665b0d8dbed23c0f44b7091f392789e262ddcb6eab2bf7dc9ec7718",
+      "resolution_state": "RECLASSIFIED",
+      "verification_performed": [
+        "verificación contra bytes autorizados",
+        "validación de completion_evidence",
+        "validación de final_ratification"
+      ],
+      "remaining_caveat": null
+    },
+    {
+      "finding_id": "RR-021",
+      "source_finding": "Añadir la alternativa de nivel para el criterio de comparación de la entrega 03.",
+      "affected_files": [
+        {
+          "before_path": "_audit_history/opus5/activity_07_aislamiento_termico/opus5_ratification.json",
+          "after_path": "activity_07_aislamiento_termico/final_ratification.json",
+          "before_sha256": "d1de542aba4c0e6b8c378c6e5557f4c1bd452acd46e562602f4c15a3c290469f",
+          "after_sha256": "aa07aa5df1e78b980aa2a3d27eeaf3a9238843cc935641c55ed717f6d5aa96d5"
+        }
+      ],
+      "action": "Integrar la corrección o propiedad en final_ratification.json y actualizar la documentación canónica aplicable.",
+      "before_hash": "27f62be1a4876c6613d83aa12c16fc05b581362b4f2358bae8fec9354717a08b",
+      "after_hash": "253c05a5cebe15cb96d9b87db7fbb18194261ca86f97e42f71afa8cb82db1446",
+      "resolution_state": "ORACLE_FIXED",
+      "verification_performed": [
+        "verificación contra bytes autorizados",
+        "validación de completion_evidence",
+        "validación de final_ratification"
+      ],
+      "remaining_caveat": null
+    },
+    {
+      "finding_id": "RR-022",
+      "source_finding": "Registrar como propiedades la temperatura inicial fuera de rango (75 grados) y las líneas temporales no simultáneas de la entrega 03.",
+      "affected_files": [
+        {
+          "before_path": "_audit_history/opus5/activity_07_aislamiento_termico/opus5_ratification.json",
+          "after_path": "activity_07_aislamiento_termico/final_ratification.json",
+          "before_sha256": "d1de542aba4c0e6b8c378c6e5557f4c1bd452acd46e562602f4c15a3c290469f",
+          "after_sha256": "aa07aa5df1e78b980aa2a3d27eeaf3a9238843cc935641c55ed717f6d5aa96d5"
+        }
+      ],
+      "action": "Integrar la corrección o propiedad en final_ratification.json y actualizar la documentación canónica aplicable.",
+      "before_hash": "27f62be1a4876c6613d83aa12c16fc05b581362b4f2358bae8fec9354717a08b",
+      "after_hash": "253c05a5cebe15cb96d9b87db7fbb18194261ca86f97e42f71afa8cb82db1446",
+      "resolution_state": "ORACLE_FIXED",
+      "verification_performed": [
+        "verificación contra bytes autorizados",
+        "validación de completion_evidence",
+        "validación de final_ratification"
+      ],
+      "remaining_caveat": null
+    },
+    {
+      "finding_id": "RR-023",
+      "source_finding": "Registrar la ruta de detección cruzada del índice de evidencia de la entrega 05.",
+      "affected_files": [
+        {
+          "before_path": "_audit_history/opus5/activity_08_triage_de_logs/opus5_ratification.json",
+          "after_path": "activity_08_triage_de_logs/final_ratification.json",
+          "before_sha256": "edd8f71092f0ecc0acdc5e4b9e289919be86e46b1b871e9a054baa6c8378ecb9",
+          "after_sha256": "4c578b9f9aa3d2da614a24eca5576f1156da3811f8a6cc4303d2f000532e5af2"
+        },
+        {
+          "before_path": "_audit_history/pre_final_corpus_manifest.md",
+          "after_path": "corpus_manifest.md",
+          "before_sha256": "e3bdd50c7c6230172ee527c5251ec847baea9a70785c2247abd28ca80dca2cde",
+          "after_sha256": "378c93906656f384c21b005d802c94f50d641a8c463831d092817e912ed1cd6e"
+        }
+      ],
+      "action": "Registrar CROSS_ARTIFACT_RECONCILIATION y EXPLICIT_CROSS_ARTIFACT_CONFLICT, no detección latente.",
+      "before_hash": "21c5ff05be1ce76a220054ae9cc522a27dcf8955a33d36be2bb8b355565f80fb",
+      "after_hash": "8f630252d62331857354ab6e635aa4b1f3f75ee3cdcdff68a2908f0d6688ce10",
+      "resolution_state": "RECLASSIFIED",
+      "verification_performed": [
+        "verificación contra bytes autorizados",
+        "validación de completion_evidence",
+        "validación de final_ratification"
+      ],
+      "remaining_caveat": null
+    },
+    {
+      "finding_id": "RR-024",
+      "source_finding": "Añadir el evento s_18 / ana.perez como dimensión de distractor y de minimización.",
+      "affected_files": [
+        {
+          "before_path": "_audit_history/opus5/activity_08_triage_de_logs/opus5_ratification.json",
+          "after_path": "activity_08_triage_de_logs/final_ratification.json",
+          "before_sha256": "edd8f71092f0ecc0acdc5e4b9e289919be86e46b1b871e9a054baa6c8378ecb9",
+          "after_sha256": "4c578b9f9aa3d2da614a24eca5576f1156da3811f8a6cc4303d2f000532e5af2"
+        }
+      ],
+      "action": "Integrar la corrección o propiedad en final_ratification.json y actualizar la documentación canónica aplicable.",
+      "before_hash": "b5f2a6bd48a6cd64259ade85479e7fbc1c32c72b1985591a841949b8dca3d7a7",
+      "after_hash": "ba9b01ce9df58ad84e8e86a23b374383179562c792444d10567c87759fa13ad5",
+      "resolution_state": "ORACLE_FIXED",
+      "verification_performed": [
+        "verificación contra bytes autorizados",
+        "validación de completion_evidence",
+        "validación de final_ratification"
+      ],
+      "remaining_caveat": null
+    },
+    {
+      "finding_id": "RR-025",
+      "source_finding": "Corregir la imprecisión de la consigna sobre el rango de documentación mediante una dirección TEST-NET coherente.",
+      "affected_files": [
+        {
+          "before_path": "activity_08_triage_de_logs/01_assignment.docx",
+          "after_path": "activity_08_triage_de_logs/01_assignment.docx",
+          "before_sha256": "d998ff1aa9b2a0cf4fec5a95e9806918d42fea54711123cbbd65bc26b263d70d",
+          "after_sha256": "cc66ee343f603cce1617dd7f2d41d1f7b31824ce8633a14144caf739f05f2204"
+        },
+        {
+          "before_path": "_audit_history/opus5/activity_08_triage_de_logs/opus5_ratification.json",
+          "after_path": "activity_08_triage_de_logs/final_ratification.json",
+          "before_sha256": "edd8f71092f0ecc0acdc5e4b9e289919be86e46b1b871e9a054baa6c8378ecb9",
+          "after_sha256": "4c578b9f9aa3d2da614a24eca5576f1156da3811f8a6cc4303d2f000532e5af2"
+        }
+      ],
+      "action": "Reemplazar la IP privada por una dirección TEST-NET y actualizar todas las referencias canónicas relacionadas.",
+      "before_hash": "72886cc3fad90c1096c90334fb28abcebee6bacd4d4138e89604abc9406190d6",
+      "after_hash": "382557fe984f4ed3d48c11a45033730901295a71254a61174f56a62f2c2fc60c",
+      "resolution_state": "SOURCE_FIXED",
+      "verification_performed": [
+        "verificación contra bytes autorizados",
+        "validación de completion_evidence",
+        "validación de final_ratification"
+      ],
+      "remaining_caveat": null
+    },
+    {
+      "finding_id": "RR-026",
+      "source_finding": "Diversificar el prefijo del hash 7f3a9c20b14e para eliminar la coincidencia con la actividad 01.",
+      "affected_files": [
+        {
+          "before_path": "_audit_history/pre_finalization_manifest.json#sha256=2ab52d2ae14ef8643c99a3ee3d544990f92c2866151b4014221f3b8acb548b8b",
+          "after_path": "activity_01_luz_y_plantines/submissions/submission_01.txt",
+          "before_sha256": "2ab52d2ae14ef8643c99a3ee3d544990f92c2866151b4014221f3b8acb548b8b",
+          "after_sha256": "f33aa63575b544d7f03e070ad8a2aa3936f4e76d7ebf98922404efa5442818d5"
+        },
+        {
+          "before_path": "_audit_history/opus5/activity_01_luz_y_plantines/opus5_ratification.json",
+          "after_path": "activity_01_luz_y_plantines/final_ratification.json",
+          "before_sha256": "fec100f75e9390244fb3ef23b55d58ed4ce99aa522dbc40497aeda9a47e5daf5",
+          "after_sha256": "3c456cc9a772cccc19f1f542a96fa2554a386c47107ec318abede93a0779917c"
+        }
+      ],
+      "action": "Cambiar la cadena técnica simulada por otra cadena sintética sin tocar hashes físicos.",
+      "before_hash": "3ad1f7cc4ab2caa691a5b78dcc51b1f723671201d056de8c05f9b613e080c3f5",
+      "after_hash": "c1efde1ccb73f8d71b99c5d66170b1ccab61246c5ecb259a8f87daa9e08e817f",
+      "resolution_state": "SOURCE_FIXED",
+      "verification_performed": [
+        "verificación contra bytes autorizados",
+        "validación de completion_evidence",
+        "validación de final_ratification"
+      ],
+      "remaining_caveat": null
+    },
+    {
+      "finding_id": "RR-027",
+      "source_finding": "Corregir la afirmación sobre la extensión de la entrega 01: cumple el rango declarado por la consigna.",
+      "affected_files": [
+        {
+          "before_path": "_audit_history/opus5/activity_09_renovacion_y_desplazamiento/opus5_ratification.json",
+          "after_path": "activity_09_renovacion_y_desplazamiento/final_ratification.json",
+          "before_sha256": "bec5a55beb0a98d08b55ae94aceeea36a19df2586e562ddbd71e193d132a8e17",
+          "after_sha256": "aa20a45a89a6ede6833c5fb3ce614c7a5efcd8d14297a93756db97dbd3ca0b23"
+        }
+      ],
+      "action": "Integrar la corrección o propiedad en final_ratification.json y actualizar la documentación canónica aplicable.",
+      "before_hash": "f141f50079d962214cdee50b04bcda08b8080bc0324c3c3e666fc567a129f9ca",
+      "after_hash": "dc4044c84b110518888a807002e713caf6c168c9eca4b397d38e0f049ed5fede",
+      "resolution_state": "ORACLE_FIXED",
+      "verification_performed": [
+        "verificación contra bytes autorizados",
+        "validación de completion_evidence",
+        "validación de final_ratification"
+      ],
+      "remaining_caveat": null
+    },
+    {
+      "finding_id": "RR-028",
+      "source_finding": "Registrar como propiedad la renta objetivo de $26 en la entrega 02, inexistente en la Fuente A ($22 a $28).",
+      "affected_files": [
+        {
+          "before_path": "_audit_history/opus5/activity_09_renovacion_y_desplazamiento/opus5_ratification.json",
+          "after_path": "activity_09_renovacion_y_desplazamiento/final_ratification.json",
+          "before_sha256": "bec5a55beb0a98d08b55ae94aceeea36a19df2586e562ddbd71e193d132a8e17",
+          "after_sha256": "aa20a45a89a6ede6833c5fb3ce614c7a5efcd8d14297a93756db97dbd3ca0b23"
+        }
+      ],
+      "action": "Integrar la corrección o propiedad en final_ratification.json y actualizar la documentación canónica aplicable.",
+      "before_hash": "f141f50079d962214cdee50b04bcda08b8080bc0324c3c3e666fc567a129f9ca",
+      "after_hash": "dc4044c84b110518888a807002e713caf6c168c9eca4b397d38e0f049ed5fede",
+      "resolution_state": "ORACLE_FIXED",
+      "verification_performed": [
+        "verificación contra bytes autorizados",
+        "validación de completion_evidence",
+        "validación de final_ratification"
+      ],
+      "remaining_caveat": null
+    },
+    {
+      "finding_id": "RR-029",
+      "source_finding": "Reconciliar el rango de extensión de la consigna con las entregas reales, o declarar que la extensión no es criterio evaluable.",
+      "affected_files": [
+        {
+          "before_path": "activity_09_renovacion_y_desplazamiento/01_assignment.docx",
+          "after_path": "activity_09_renovacion_y_desplazamiento/01_assignment.docx",
+          "before_sha256": "c7a912ffe583d4d190eaa56a5cb5279cf54de1c94470003d920201b73aee1954",
+          "after_sha256": "ff2a263bd89bd7ae59e24ad3becded78269afb69dee5fbc810d4208c585bf9c3"
+        },
+        {
+          "before_path": "_audit_history/opus5/activity_09_renovacion_y_desplazamiento/opus5_ratification.json",
+          "after_path": "activity_09_renovacion_y_desplazamiento/final_ratification.json",
+          "before_sha256": "bec5a55beb0a98d08b55ae94aceeea36a19df2586e562ddbd71e193d132a8e17",
+          "after_sha256": "aa20a45a89a6ede6833c5fb3ce614c7a5efcd8d14297a93756db97dbd3ca0b23"
+        }
+      ],
+      "action": "Neutralizar el rango como extensión orientativa/no evaluable sin alterar el contenido de las submissions.",
+      "before_hash": "2396a3aac99847332465c4567f8fd774a6eda5925f7089879243d07f17366744",
+      "after_hash": "fffd447c7a52dce8a696256bf0bb3e49c3048efe74c69a9266affe22d2f64d31",
+      "resolution_state": "SOURCE_FIXED",
+      "verification_performed": [
+        "verificación contra bytes autorizados",
+        "validación de completion_evidence",
+        "validación de final_ratification"
+      ],
+      "remaining_caveat": null
+    },
+    {
+      "finding_id": "RR-030",
+      "source_finding": "Añadir como propiedad la crítica cuantitativa de 'casi el doble' que realiza la entrega 01.",
+      "affected_files": [
+        {
+          "before_path": "_audit_history/opus5/activity_09_renovacion_y_desplazamiento/opus5_ratification.json",
+          "after_path": "activity_09_renovacion_y_desplazamiento/final_ratification.json",
+          "before_sha256": "bec5a55beb0a98d08b55ae94aceeea36a19df2586e562ddbd71e193d132a8e17",
+          "after_sha256": "aa20a45a89a6ede6833c5fb3ce614c7a5efcd8d14297a93756db97dbd3ca0b23"
+        }
+      ],
+      "action": "Integrar la corrección o propiedad en final_ratification.json y actualizar la documentación canónica aplicable.",
+      "before_hash": "f141f50079d962214cdee50b04bcda08b8080bc0324c3c3e666fc567a129f9ca",
+      "after_hash": "dc4044c84b110518888a807002e713caf6c168c9eca4b397d38e0f049ed5fede",
+      "resolution_state": "ORACLE_FIXED",
+      "verification_performed": [
+        "verificación contra bytes autorizados",
+        "validación de completion_evidence",
+        "validación de final_ratification"
+      ],
+      "remaining_caveat": null
+    },
+    {
+      "finding_id": "RR-031",
+      "source_finding": "Corregir la Nota de diseño de la entrega 06: la omisión está declarada dos veces, en ambos artefactos, y la operación evaluable es juzgar la justificación, no detectar la ausencia.",
+      "affected_files": [
+        {
+          "before_path": "_audit_history/opus5/activity_10_experimento_onboarding/opus5_ratification.json",
+          "after_path": "activity_10_experimento_onboarding/final_ratification.json",
+          "before_sha256": "773205c590b2927dd4c717d0092f91e84b4ed674e1050f01c4a43a927b42d35f",
+          "after_sha256": "f693dbfc9333dc1c5e5d724f6209e333d01a287fb8fb0f3e48d8daa97a97dee5"
+        },
+        {
+          "before_path": "_audit_history/pre_final_corpus_manifest.md",
+          "after_path": "corpus_manifest.md",
+          "before_sha256": "e3bdd50c7c6230172ee527c5251ec847baea9a70785c2247abd28ca80dca2cde",
+          "after_sha256": "378c93906656f384c21b005d802c94f50d641a8c463831d092817e912ed1cd6e"
+        }
+      ],
+      "action": "Preservar la submission y reclasificar la operación evaluable conforme a la evidencia explícita.",
+      "before_hash": "ac9b184cb43a25cabc5242f5380e474bb5ef437187ad93a3aa53499b82abb9c9",
+      "after_hash": "830e7725f9aaa4c5d9ea363c2c5e1fc0c54ed9911b1511127772e255660e0da0",
+      "resolution_state": "RECLASSIFIED",
+      "verification_performed": [
+        "verificación contra bytes autorizados",
+        "validación de completion_evidence",
+        "validación de final_ratification"
+      ],
+      "remaining_caveat": null
+    },
+    {
+      "finding_id": "RR-032",
+      "source_finding": "Actualizar el manifest: la actividad 10 no es un caso de 'hueco conceptual no señalado'.",
+      "affected_files": [
+        {
+          "before_path": "_audit_history/opus5/activity_10_experimento_onboarding/opus5_ratification.json",
+          "after_path": "activity_10_experimento_onboarding/final_ratification.json",
+          "before_sha256": "773205c590b2927dd4c717d0092f91e84b4ed674e1050f01c4a43a927b42d35f",
+          "after_sha256": "f693dbfc9333dc1c5e5d724f6209e333d01a287fb8fb0f3e48d8daa97a97dee5"
+        },
+        {
+          "before_path": "_audit_history/pre_final_corpus_manifest.md",
+          "after_path": "corpus_manifest.md",
+          "before_sha256": "e3bdd50c7c6230172ee527c5251ec847baea9a70785c2247abd28ca80dca2cde",
+          "after_sha256": "378c93906656f384c21b005d802c94f50d641a8c463831d092817e912ed1cd6e"
+        }
+      ],
+      "action": "Integrar la corrección o propiedad en final_ratification.json y actualizar la documentación canónica aplicable.",
+      "before_hash": "ac9b184cb43a25cabc5242f5380e474bb5ef437187ad93a3aa53499b82abb9c9",
+      "after_hash": "830e7725f9aaa4c5d9ea363c2c5e1fc0c54ed9911b1511127772e255660e0da0",
+      "resolution_state": "ORACLE_FIXED",
+      "verification_performed": [
+        "verificación contra bytes autorizados",
+        "validación de completion_evidence",
+        "validación de final_ratification"
+      ],
+      "remaining_caveat": null
+    },
+    {
+      "finding_id": "RR-033",
+      "source_finding": "Registrar la delimitación de alcance de la entrega 02 y el siguiente paso irrelevante de la entrega 05 como propiedades adicionales.",
+      "affected_files": [
+        {
+          "before_path": "_audit_history/opus5/activity_10_experimento_onboarding/opus5_ratification.json",
+          "after_path": "activity_10_experimento_onboarding/final_ratification.json",
+          "before_sha256": "773205c590b2927dd4c717d0092f91e84b4ed674e1050f01c4a43a927b42d35f",
+          "after_sha256": "f693dbfc9333dc1c5e5d724f6209e333d01a287fb8fb0f3e48d8daa97a97dee5"
+        }
+      ],
+      "action": "Integrar la corrección o propiedad en final_ratification.json y actualizar la documentación canónica aplicable.",
+      "before_hash": "24449b14db6e679ebacc30f432e3453db007b346fe2e88a000b3762ec4f7715f",
+      "after_hash": "f65e01b4d95c88b41882eea1bdff4db0236e81035561d1a7aafdf8cdd85f227b",
+      "resolution_state": "ORACLE_FIXED",
+      "verification_performed": [
+        "verificación contra bytes autorizados",
+        "validación de completion_evidence",
+        "validación de final_ratification"
+      ],
+      "remaining_caveat": null
+    },
+    {
+      "finding_id": "RR-034",
+      "source_finding": "Reconciliar los rangos de extensión de la consigna con las entregas reales, o declarar la extensión no evaluable en esta actividad.",
+      "affected_files": [
+        {
+          "before_path": "activity_11_duplicados_en_pagos/01_assignment.docx",
+          "after_path": "activity_11_duplicados_en_pagos/01_assignment.docx",
+          "before_sha256": "9c3fc121aaaf96888c318afee2244b694011dd7360dfff8546c89e2caf76f841",
+          "after_sha256": "f39546d502486c652c16c937f0d09f9d511801315360462d558710d210eb37b5"
+        },
+        {
+          "before_path": "_audit_history/opus5/activity_11_duplicados_en_pagos/opus5_ratification.json",
+          "after_path": "activity_11_duplicados_en_pagos/final_ratification.json",
+          "before_sha256": "d2372ed65328541f027ebbe0b352af9e04fd6075af152f72a6b059cf392725af",
+          "after_sha256": "324b9447fd55098c8250a7cc9ddc9f3c162d01ff47ec90a7b6ff8d6821b6f73c"
+        }
+      ],
+      "action": "Neutralizar el rango como extensión orientativa/no evaluable sin alterar el contenido de las submissions.",
+      "before_hash": "9537c56ca68b49a0ac47b4781ddbfe6737bae747f06798178e38a93da0c10374",
+      "after_hash": "568d1cd43863e8aa0e1fe77fc10fb728a062212dc0a6297b3263c54423e207a4",
+      "resolution_state": "SOURCE_FIXED",
+      "verification_performed": [
+        "verificación contra bytes autorizados",
+        "validación de completion_evidence",
+        "validación de final_ratification"
+      ],
+      "remaining_caveat": null
+    },
+    {
+      "finding_id": "RR-035",
+      "source_finding": "Registrar como propiedad la ruta de reconciliación de la entrega 01 ligada a la ventana de 24 horas.",
+      "affected_files": [
+        {
+          "before_path": "_audit_history/opus5/activity_11_duplicados_en_pagos/opus5_ratification.json",
+          "after_path": "activity_11_duplicados_en_pagos/final_ratification.json",
+          "before_sha256": "d2372ed65328541f027ebbe0b352af9e04fd6075af152f72a6b059cf392725af",
+          "after_sha256": "324b9447fd55098c8250a7cc9ddc9f3c162d01ff47ec90a7b6ff8d6821b6f73c"
+        }
+      ],
+      "action": "Integrar la corrección o propiedad en final_ratification.json y actualizar la documentación canónica aplicable.",
+      "before_hash": "d0c21fc4d85aead168d10c43aae42dafdd71ee82553961415843700b3afab26c",
+      "after_hash": "2450b20a81fbdfb17bb8aaf9acf2fa05cd6aa502a3adbd50053b1b580e3d4128",
+      "resolution_state": "ORACLE_FIXED",
+      "verification_performed": [
+        "verificación contra bytes autorizados",
+        "validación de completion_evidence",
+        "validación de final_ratification"
+      ],
+      "remaining_caveat": null
+    },
+    {
+      "finding_id": "RR-036",
+      "source_finding": "Matizar la comparación de boilerplate entre las entregas 04 y 06: la diferencia es de registro, no de extensión.",
+      "affected_files": [
+        {
+          "before_path": "_audit_history/opus5/activity_11_duplicados_en_pagos/opus5_ratification.json",
+          "after_path": "activity_11_duplicados_en_pagos/final_ratification.json",
+          "before_sha256": "d2372ed65328541f027ebbe0b352af9e04fd6075af152f72a6b059cf392725af",
+          "after_sha256": "324b9447fd55098c8250a7cc9ddc9f3c162d01ff47ec90a7b6ff8d6821b6f73c"
+        }
+      ],
+      "action": "Matizar la comparación como diferencia de registro, no de extensión, sin modificar submissions.",
+      "before_hash": "d0c21fc4d85aead168d10c43aae42dafdd71ee82553961415843700b3afab26c",
+      "after_hash": "2450b20a81fbdfb17bb8aaf9acf2fa05cd6aa502a3adbd50053b1b580e3d4128",
+      "resolution_state": "DOCUMENTED_NON_BLOCKING",
+      "verification_performed": [
+        "verificación contra bytes autorizados",
+        "validación de completion_evidence",
+        "validación de final_ratification"
+      ],
+      "remaining_caveat": "La diferencia observada no bloquea el uso del caso."
+    },
+    {
+      "finding_id": "RR-037",
+      "source_finding": "Registrar la ruta de detección cruzada del allocation_notes de la entrega 05.",
+      "affected_files": [
+        {
+          "before_path": "_audit_history/opus5/activity_12_clinica_movil/opus5_ratification.json",
+          "after_path": "activity_12_clinica_movil/final_ratification.json",
+          "before_sha256": "60683af4dab76021350ddd6db0e5e30ac909652795a053de2da49c0a89275ee9",
+          "after_sha256": "ba55900c2984d4734b73d2124c3fd360634799363942cd5d0dca56be183e1bf9"
+        },
+        {
+          "before_path": "_audit_history/pre_final_corpus_manifest.md",
+          "after_path": "corpus_manifest.md",
+          "before_sha256": "e3bdd50c7c6230172ee527c5251ec847baea9a70785c2247abd28ca80dca2cde",
+          "after_sha256": "378c93906656f384c21b005d802c94f50d641a8c463831d092817e912ed1cd6e"
+        }
+      ],
+      "action": "Registrar CROSS_ARTIFACT_RECONCILIATION y EXPLICIT_CROSS_ARTIFACT_CONFLICT, no detección latente.",
+      "before_hash": "b81d9f9f87a5a7b9373ba01322d2edac8c29c72e32a8e5d75f7e3be7e543879d",
+      "after_hash": "01fa1d738cfeba25421216b7e26a4b7205965eb0e758bd7cac772b178d006a3a",
+      "resolution_state": "RECLASSIFIED",
+      "verification_performed": [
+        "verificación contra bytes autorizados",
+        "validación de completion_evidence",
+        "validación de final_ratification"
+      ],
+      "remaining_caveat": null
+    },
+    {
+      "finding_id": "RR-038",
+      "source_finding": "Añadir como propiedad el desplazamiento de columna del allocation_notes de la entrega 03 (Norte=1, Sur=5).",
+      "affected_files": [
+        {
+          "before_path": "_audit_history/opus5/activity_12_clinica_movil/opus5_ratification.json",
+          "after_path": "activity_12_clinica_movil/final_ratification.json",
+          "before_sha256": "60683af4dab76021350ddd6db0e5e30ac909652795a053de2da49c0a89275ee9",
+          "after_sha256": "ba55900c2984d4734b73d2124c3fd360634799363942cd5d0dca56be183e1bf9"
+        }
+      ],
+      "action": "Integrar la corrección o propiedad en final_ratification.json y actualizar la documentación canónica aplicable.",
+      "before_hash": "6a1df922f240f9a7a951e414ba4a4600e216c2780ab39e6f7de5441d2256eff7",
+      "after_hash": "3bf8b80fd845302758aa75c854708633f335628a75a1be044f49727d82b73c33",
+      "resolution_state": "ORACLE_FIXED",
+      "verification_performed": [
+        "verificación contra bytes autorizados",
+        "validación de completion_evidence",
+        "validación de final_ratification"
+      ],
+      "remaining_caveat": null
+    },
+    {
+      "finding_id": "RR-039",
+      "source_finding": "Diversificar la identidad simulada de una de las dos actividades para eliminar el acoplamiento entre 08 y 12.",
+      "affected_files": [
+        {
+          "before_path": "_audit_history/pre_finalization_manifest.json#sha256=7cd4fc9abc2394bab5d8d37dfd52032f00a49021ea2bc39e697e28df725cc06b",
+          "after_path": "activity_12_clinica_movil/submissions/submission_06_artifact_01.txt",
+          "before_sha256": "7cd4fc9abc2394bab5d8d37dfd52032f00a49021ea2bc39e697e28df725cc06b",
+          "after_sha256": "7cd4fc9abc2394bab5d8d37dfd52032f00a49021ea2bc39e697e28df725cc06b"
+        },
+        {
+          "before_path": "_audit_history/pre_finalization_manifest.json#sha256=ef063503f195cacb24585c0c137ee00cd5a0eab67992c9728336b22073080385",
+          "after_path": "activity_12_clinica_movil/submissions/submission_06_artifact_02.md",
+          "before_sha256": "ef063503f195cacb24585c0c137ee00cd5a0eab67992c9728336b22073080385",
+          "after_sha256": "0781841eca8e6f1a05d496e803955f7fc2a3cb30db066730ec2178d05dd8523b"
+        },
+        {
+          "before_path": "_audit_history/opus5/activity_12_clinica_movil/opus5_ratification.json",
+          "after_path": "activity_12_clinica_movil/final_ratification.json",
+          "before_sha256": "60683af4dab76021350ddd6db0e5e30ac909652795a053de2da49c0a89275ee9",
+          "after_sha256": "ba55900c2984d4734b73d2124c3fd360634799363942cd5d0dca56be183e1bf9"
+        }
+      ],
+      "action": "Diversificar una identidad sintética manteniendo dominio .invalid, teléfonos e IDs ficticios.",
+      "before_hash": "419eed8efc810d933e6a8ca9c744db9504f127a04289112a2552a9aed2156e05",
+      "after_hash": "2fdffcd22ff7ba619cbeb3179c0b37670680bfef012099bbbfb4d6f89744d360",
+      "resolution_state": "SOURCE_FIXED",
+      "verification_performed": [
+        "verificación contra bytes autorizados",
+        "validación de completion_evidence",
+        "validación de final_ratification"
+      ],
+      "remaining_caveat": null
+    },
+    {
+      "finding_id": "RR-040",
+      "source_finding": "Convertir en propiedad la comparación de cinco alternativas de la entrega 01.",
+      "affected_files": [
+        {
+          "before_path": "_audit_history/opus5/activity_12_clinica_movil/opus5_ratification.json",
+          "after_path": "activity_12_clinica_movil/final_ratification.json",
+          "before_sha256": "60683af4dab76021350ddd6db0e5e30ac909652795a053de2da49c0a89275ee9",
+          "after_sha256": "ba55900c2984d4734b73d2124c3fd360634799363942cd5d0dca56be183e1bf9"
+        }
+      ],
+      "action": "Integrar la corrección o propiedad en final_ratification.json y actualizar la documentación canónica aplicable.",
+      "before_hash": "6a1df922f240f9a7a951e414ba4a4600e216c2780ab39e6f7de5441d2256eff7",
+      "after_hash": "3bf8b80fd845302758aa75c854708633f335628a75a1be044f49727d82b73c33",
+      "resolution_state": "ORACLE_FIXED",
+      "verification_performed": [
+        "verificación contra bytes autorizados",
+        "validación de completion_evidence",
+        "validación de final_ratification"
+      ],
+      "remaining_caveat": null
+    }
+  ],
+  "summary": {
+    "cluster_finding_count": 10,
+    "required_revision_count": 40,
+    "required_revision_resolution_states": {
+      "DOCUMENTED_NON_BLOCKING": 1,
+      "ORACLE_FIXED": 26,
+      "PRESERVED_AS_ORACLE_SUSPECT": 2,
+      "RECLASSIFIED": 4,
+      "SOURCE_FIXED": 7
+    },
+    "unresolved_count": 0
+  }
+}

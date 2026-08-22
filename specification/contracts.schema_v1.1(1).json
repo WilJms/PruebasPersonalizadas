@@ -49,6 +49,27 @@
     "BlueprintPolicy": {
       "$ref": "#/$defs/BlueprintPolicy"
     },
+    "BlueprintModelDraft": {
+      "$ref": "#/$defs/BlueprintModelDraft"
+    },
+    "EvidenceMappingAliasEnvelope": {
+      "$ref": "#/$defs/EvidenceMappingAliasEnvelope"
+    },
+    "EvidenceMappingModelDraft": {
+      "$ref": "#/$defs/EvidenceMappingModelDraft"
+    },
+    "QuestionAliasEnvelope": {
+      "$ref": "#/$defs/QuestionAliasEnvelope"
+    },
+    "QuestionModelDraft": {
+      "$ref": "#/$defs/QuestionModelDraft"
+    },
+    "GuideAliasEnvelope": {
+      "$ref": "#/$defs/GuideAliasEnvelope"
+    },
+    "GuideModelDraft": {
+      "$ref": "#/$defs/GuideModelDraft"
+    },
     "QuestionGenerationPolicy": {
       "$ref": "#/$defs/QuestionGenerationPolicy"
     },
@@ -1068,6 +1089,28 @@
           "title": "Max Reserve Opportunities",
           "type": "integer"
         },
+        "priority_criterion_ids": {
+          "items": {
+            "maxLength": 128,
+            "minLength": 3,
+            "pattern": "^[a-z][a-z0-9_-]*$",
+            "type": "string"
+          },
+          "maxItems": 100,
+          "title": "Priority Criterion Ids",
+          "type": "array"
+        },
+        "required_criterion_ids": {
+          "items": {
+            "maxLength": 128,
+            "minLength": 3,
+            "pattern": "^[a-z][a-z0-9_-]*$",
+            "type": "string"
+          },
+          "maxItems": 100,
+          "title": "Required Criterion Ids",
+          "type": "array"
+        },
         "structured_justification_policy": {
           "$ref": "#/$defs/StructuredJustificationPolicy"
         }
@@ -1326,6 +1369,18 @@
           "title": "Schema Version",
           "type": "string"
         },
+        "target_blueprint_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Target Blueprint Id",
+          "type": "string"
+        },
+        "target_blueprint_version": {
+          "minimum": 1,
+          "title": "Target Blueprint Version",
+          "type": "integer"
+        },
         "activity_spec": {
           "$ref": "#/$defs/ActivitySpec"
         },
@@ -1353,6 +1408,8 @@
         }
       },
       "required": [
+        "target_blueprint_id",
+        "target_blueprint_version",
         "activity_spec",
         "blueprint_policy"
       ],
@@ -1446,6 +1503,125 @@
       "title": "BlueprintDimension",
       "type": "object"
     },
+    "BlueprintDimensionDraft": {
+      "additionalProperties": false,
+      "description": "Semantic P04 dimension without canonical identity or workflow data.",
+      "properties": {
+        "dimension_alias": {
+          "pattern": "^D[1-9][0-9]{0,2}$",
+          "title": "Dimension Alias",
+          "type": "string"
+        },
+        "name": {
+          "maxLength": 300,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "criterion_ids": {
+          "items": {
+            "maxLength": 128,
+            "minLength": 3,
+            "pattern": "^[a-z][a-z0-9_-]*$",
+            "type": "string"
+          },
+          "maxItems": 100,
+          "minItems": 1,
+          "title": "Criterion Ids",
+          "type": "array"
+        },
+        "learning_outcome_ids": {
+          "items": {
+            "maxLength": 128,
+            "minLength": 3,
+            "pattern": "^[a-z][a-z0-9_-]*$",
+            "type": "string"
+          },
+          "maxItems": 100,
+          "title": "Learning Outcome Ids",
+          "type": "array"
+        },
+        "grading_weight": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Grading Weight"
+        },
+        "verification_priority": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Verification Priority",
+          "type": "number"
+        },
+        "factors": {
+          "$ref": "#/$defs/VerificationFactors"
+        },
+        "justification": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "title": "Justification",
+          "type": "string"
+        }
+      },
+      "required": [
+        "dimension_alias",
+        "name",
+        "criterion_ids",
+        "verification_priority",
+        "factors",
+        "justification"
+      ],
+      "title": "BlueprintDimensionDraft",
+      "type": "object"
+    },
+    "BlueprintModelDraft": {
+      "additionalProperties": false,
+      "description": "P04 provider output; the server compiles it into AssessmentBlueprint.",
+      "properties": {
+        "dimensions": {
+          "items": {
+            "$ref": "#/$defs/BlueprintDimensionDraft"
+          },
+          "maxItems": 50,
+          "minItems": 1,
+          "title": "Dimensions",
+          "type": "array"
+        },
+        "evidence_variants": {
+          "items": {
+            "$ref": "#/$defs/EvidenceVariantDraft"
+          },
+          "maxItems": 400,
+          "minItems": 1,
+          "title": "Evidence Variants",
+          "type": "array"
+        },
+        "question_opportunities": {
+          "items": {
+            "$ref": "#/$defs/QuestionOpportunityTemplateDraft"
+          },
+          "maxItems": 2000,
+          "minItems": 1,
+          "title": "Question Opportunities",
+          "type": "array"
+        }
+      },
+      "required": [
+        "dimensions",
+        "evidence_variants",
+        "question_opportunities"
+      ],
+      "title": "BlueprintModelDraft",
+      "type": "object"
+    },
     "BlueprintPolicy": {
       "additionalProperties": false,
       "description": "Trusted constraints used by P04; depth is derived rather than selected.",
@@ -1469,6 +1645,10 @@
           "pattern": "^[a-z][a-z0-9_-]*$",
           "title": "Activity Id",
           "type": "string"
+        },
+        "context_mode": {
+          "$ref": "#/$defs/ContextMode",
+          "default": "CLOSED"
         },
         "question_count": {
           "maximum": 20,
@@ -1518,6 +1698,20 @@
         },
         "planning_policy": {
           "$ref": "#/$defs/AssessmentPlanningPolicy"
+        },
+        "max_variants_per_dimension": {
+          "default": 6,
+          "maximum": 20,
+          "minimum": 1,
+          "title": "Max Variants Per Dimension",
+          "type": "integer"
+        },
+        "max_templates_per_variant": {
+          "default": 12,
+          "maximum": 100,
+          "minimum": 1,
+          "title": "Max Templates Per Variant",
+          "type": "integer"
         },
         "max_local_regenerations": {
           "default": 1,
@@ -1690,6 +1884,71 @@
       "title": "BlueprintReviewCheck",
       "type": "object"
     },
+    "BlueprintReviewPreflight": {
+      "additionalProperties": false,
+      "description": "Server-derived facts that P05 must not ask the model to recompute.",
+      "properties": {
+        "schema_version": {
+          "const": "1.1.0",
+          "default": "1.1.0",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "blueprint_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Blueprint Id",
+          "type": "string"
+        },
+        "blueprint_version": {
+          "minimum": 1,
+          "title": "Blueprint Version",
+          "type": "integer"
+        },
+        "policy_constraints_match": {
+          "title": "Policy Constraints Match",
+          "type": "boolean"
+        },
+        "source_coverage_complete": {
+          "title": "Source Coverage Complete",
+          "type": "boolean"
+        },
+        "catalog_size_sufficient": {
+          "title": "Catalog Size Sufficient",
+          "type": "boolean"
+        },
+        "time_feasible": {
+          "title": "Time Feasible",
+          "type": "boolean"
+        },
+        "format_feasible": {
+          "title": "Format Feasible",
+          "type": "boolean"
+        },
+        "justification_matrix_valid": {
+          "title": "Justification Matrix Valid",
+          "type": "boolean"
+        },
+        "catalog_plan_feasible": {
+          "title": "Catalog Plan Feasible",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "blueprint_id",
+        "blueprint_version",
+        "policy_constraints_match",
+        "source_coverage_complete",
+        "catalog_size_sufficient",
+        "time_feasible",
+        "format_feasible",
+        "justification_matrix_valid",
+        "catalog_plan_feasible"
+      ],
+      "title": "BlueprintReviewPreflight",
+      "type": "object"
+    },
     "BlueprintReviewRequest": {
       "additionalProperties": false,
       "properties": {
@@ -1726,12 +1985,16 @@
         },
         "blueprint_policy": {
           "$ref": "#/$defs/BlueprintPolicy"
+        },
+        "deterministic_preflight": {
+          "$ref": "#/$defs/BlueprintReviewPreflight"
         }
       },
       "required": [
         "blueprint",
         "activity_spec",
-        "blueprint_policy"
+        "blueprint_policy",
+        "deterministic_preflight"
       ],
       "title": "BlueprintReviewRequest",
       "type": "object"
@@ -2800,7 +3063,7 @@
     },
     "EvaluationGuide": {
       "additionalProperties": false,
-      "description": "Structured guide persisted with the assessment and submission.",
+      "description": "Structured guide for an exact approved assessment version.\n\n``binding=None`` is accepted only so pre-Phase-7 historical rows remain\nreadable. Active selection and export require a complete binding.",
       "properties": {
         "schema_version": {
           "const": "1.1.0",
@@ -2828,6 +3091,17 @@
           "pattern": "^[a-z][a-z0-9_-]*$",
           "title": "Submission Id",
           "type": "string"
+        },
+        "binding": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/GuideApprovalBinding"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         },
         "status": {
           "enum": [
@@ -3189,6 +3463,17 @@
           "title": "Opportunities",
           "type": "array"
         },
+        "mapping_summary": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EvidenceMappingSummary"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
         "diagnostics": {
           "items": {
             "$ref": "#/$defs/Diagnostic"
@@ -3216,15 +3501,428 @@
         "blueprint": {
           "$ref": "#/$defs/AssessmentBlueprint"
         },
+        "planning_policy": {
+          "$ref": "#/$defs/AssessmentPlanningPolicy"
+        },
         "evidence_bundle": {
           "$ref": "#/$defs/EvidenceBundle"
         }
       },
       "required": [
         "blueprint",
+        "planning_policy",
         "evidence_bundle"
       ],
       "title": "EvidenceMapRequest",
+      "type": "object"
+    },
+    "EvidenceMappingAliasEnvelope": {
+      "additionalProperties": false,
+      "description": "Exact call-local P06 input materialized from one canonical request.",
+      "properties": {
+        "alias_schema_version": {
+          "const": "p06-alias-envelope/1.0.0",
+          "default": "p06-alias-envelope/1.0.0",
+          "title": "Alias Schema Version",
+          "type": "string"
+        },
+        "scope_alias": {
+          "pattern": "^S[a-f0-9]{24}$",
+          "title": "Scope Alias",
+          "type": "string"
+        },
+        "source_scope_hash": {
+          "pattern": "^sha256:[a-f0-9]{64}$",
+          "title": "Source Scope Hash",
+          "type": "string"
+        },
+        "dimensions": {
+          "items": {
+            "$ref": "#/$defs/EvidenceMappingDimensionContext"
+          },
+          "maxItems": 50,
+          "minItems": 1,
+          "title": "Dimensions",
+          "type": "array"
+        },
+        "variants": {
+          "items": {
+            "$ref": "#/$defs/EvidenceMappingVariantContext"
+          },
+          "maxItems": 400,
+          "minItems": 1,
+          "title": "Variants",
+          "type": "array"
+        },
+        "templates": {
+          "items": {
+            "$ref": "#/$defs/EvidenceMappingTemplateContext"
+          },
+          "maxItems": 2000,
+          "minItems": 1,
+          "title": "Templates",
+          "type": "array"
+        },
+        "evidence_units": {
+          "items": {
+            "$ref": "#/$defs/EvidenceMappingEvidenceContext"
+          },
+          "maxItems": 500,
+          "minItems": 1,
+          "title": "Evidence Units",
+          "type": "array"
+        }
+      },
+      "required": [
+        "scope_alias",
+        "source_scope_hash",
+        "dimensions",
+        "variants",
+        "templates",
+        "evidence_units"
+      ],
+      "title": "EvidenceMappingAliasEnvelope",
+      "type": "object"
+    },
+    "EvidenceMappingDimensionContext": {
+      "additionalProperties": false,
+      "description": "P06 semantic dimension exposed only through a call-local alias.",
+      "properties": {
+        "dimension_alias": {
+          "pattern": "^D[1-9][0-9]{0,2}$",
+          "title": "Dimension Alias",
+          "type": "string"
+        },
+        "name": {
+          "maxLength": 300,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "justification": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "title": "Justification",
+          "type": "string"
+        }
+      },
+      "required": [
+        "dimension_alias",
+        "name",
+        "justification"
+      ],
+      "title": "EvidenceMappingDimensionContext",
+      "type": "object"
+    },
+    "EvidenceMappingEvidenceContext": {
+      "additionalProperties": false,
+      "description": "One submission evidence unit with only inference-local identity.",
+      "properties": {
+        "evidence_alias": {
+          "pattern": "^E[1-9][0-9]{0,2}$",
+          "title": "Evidence Alias",
+          "type": "string"
+        },
+        "artifact_alias": {
+          "pattern": "^A[1-9][0-9]{0,2}$",
+          "title": "Artifact Alias",
+          "type": "string"
+        },
+        "modality": {
+          "$ref": "#/$defs/EvidenceModality"
+        },
+        "content_text": {
+          "anyOf": [
+            {
+              "maxLength": 100000,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Content Text"
+        },
+        "structured_content": {
+          "anyOf": [
+            {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Structured Content"
+        },
+        "language": {
+          "anyOf": [
+            {
+              "maxLength": 35,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Language"
+        },
+        "extraction_confidence": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Extraction Confidence",
+          "type": "number"
+        }
+      },
+      "required": [
+        "evidence_alias",
+        "artifact_alias",
+        "modality",
+        "extraction_confidence"
+      ],
+      "title": "EvidenceMappingEvidenceContext",
+      "type": "object"
+    },
+    "EvidenceMappingModelDraft": {
+      "additionalProperties": false,
+      "description": "Reduced P06 provider output compiled into an EvidenceMapPatch.",
+      "properties": {
+        "scope_alias": {
+          "pattern": "^S[a-f0-9]{24}$",
+          "title": "Scope Alias",
+          "type": "string"
+        },
+        "mappings": {
+          "items": {
+            "$ref": "#/$defs/EvidenceMappingRelationDraft"
+          },
+          "maxItems": 2000,
+          "title": "Mappings",
+          "type": "array"
+        }
+      },
+      "required": [
+        "scope_alias"
+      ],
+      "title": "EvidenceMappingModelDraft",
+      "type": "object"
+    },
+    "EvidenceMappingRelationDraft": {
+      "additionalProperties": false,
+      "description": "One semantic P06 relation; aliases are resolved only by the server.",
+      "properties": {
+        "variant_alias": {
+          "pattern": "^V[1-9][0-9]{0,2}$",
+          "title": "Variant Alias",
+          "type": "string"
+        },
+        "template_alias": {
+          "pattern": "^T[1-9][0-9]{0,3}$",
+          "title": "Template Alias",
+          "type": "string"
+        },
+        "evidence_aliases": {
+          "items": {
+            "pattern": "^E[1-9][0-9]{0,2}$",
+            "type": "string"
+          },
+          "maxItems": 50,
+          "minItems": 1,
+          "title": "Evidence Aliases",
+          "type": "array"
+        },
+        "support_status": {
+          "$ref": "#/$defs/EvidenceSupportStatus"
+        },
+        "support_type": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EvidenceSupportType"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "support_description": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "title": "Support Description",
+          "type": "string"
+        },
+        "semantic_uncertainty": {
+          "anyOf": [
+            {
+              "maxLength": 800,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Semantic Uncertainty"
+        },
+        "abstention_reason": {
+          "anyOf": [
+            {
+              "maxLength": 800,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Abstention Reason"
+        }
+      },
+      "required": [
+        "variant_alias",
+        "template_alias",
+        "evidence_aliases",
+        "support_status",
+        "support_description"
+      ],
+      "title": "EvidenceMappingRelationDraft",
+      "type": "object"
+    },
+    "EvidenceMappingSummary": {
+      "additionalProperties": false,
+      "properties": {
+        "mapped_relation_count": {
+          "maximum": 2000,
+          "minimum": 0,
+          "title": "Mapped Relation Count",
+          "type": "integer"
+        },
+        "sufficient_count": {
+          "maximum": 2000,
+          "minimum": 0,
+          "title": "Sufficient Count",
+          "type": "integer"
+        },
+        "partial_count": {
+          "maximum": 2000,
+          "minimum": 0,
+          "title": "Partial Count",
+          "type": "integer"
+        },
+        "insufficient_count": {
+          "maximum": 2000,
+          "minimum": 0,
+          "title": "Insufficient Count",
+          "type": "integer"
+        },
+        "uncertain_count": {
+          "maximum": 2000,
+          "minimum": 0,
+          "title": "Uncertain Count",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "mapped_relation_count",
+        "sufficient_count",
+        "partial_count",
+        "insufficient_count",
+        "uncertain_count"
+      ],
+      "title": "EvidenceMappingSummary",
+      "type": "object"
+    },
+    "EvidenceMappingTemplateContext": {
+      "additionalProperties": false,
+      "description": "P06 opportunity semantics; all mechanical fields remain server-owned.",
+      "properties": {
+        "template_alias": {
+          "pattern": "^T[1-9][0-9]{0,3}$",
+          "title": "Template Alias",
+          "type": "string"
+        },
+        "variant_alias": {
+          "pattern": "^V[1-9][0-9]{0,2}$",
+          "title": "Variant Alias",
+          "type": "string"
+        },
+        "cognitive_operation": {
+          "$ref": "#/$defs/CognitiveOperation"
+        },
+        "focus": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "title": "Focus",
+          "type": "string"
+        },
+        "observable": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "title": "Observable",
+          "type": "string"
+        }
+      },
+      "required": [
+        "template_alias",
+        "variant_alias",
+        "cognitive_operation",
+        "focus",
+        "observable"
+      ],
+      "title": "EvidenceMappingTemplateContext",
+      "type": "object"
+    },
+    "EvidenceMappingVariantContext": {
+      "additionalProperties": false,
+      "description": "P06 semantic route without canonical dimension or variant identity.",
+      "properties": {
+        "variant_alias": {
+          "pattern": "^V[1-9][0-9]{0,2}$",
+          "title": "Variant Alias",
+          "type": "string"
+        },
+        "dimension_alias": {
+          "pattern": "^D[1-9][0-9]{0,2}$",
+          "title": "Dimension Alias",
+          "type": "string"
+        },
+        "name": {
+          "maxLength": 300,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "description": {
+          "maxLength": 1200,
+          "minLength": 1,
+          "title": "Description",
+          "type": "string"
+        },
+        "evidence_requirement": {
+          "$ref": "#/$defs/EvidenceRequirement"
+        },
+        "supported_operations": {
+          "items": {
+            "$ref": "#/$defs/SupportedOperation"
+          },
+          "maxItems": 9,
+          "minItems": 1,
+          "title": "Supported Operations",
+          "type": "array"
+        }
+      },
+      "required": [
+        "variant_alias",
+        "dimension_alias",
+        "name",
+        "description",
+        "evidence_requirement",
+        "supported_operations"
+      ],
+      "title": "EvidenceMappingVariantContext",
       "type": "object"
     },
     "EvidenceModality": {
@@ -3334,6 +4032,26 @@
       ],
       "title": "EvidenceRequirement",
       "type": "object"
+    },
+    "EvidenceSupportStatus": {
+      "enum": [
+        "SUFFICIENT",
+        "PARTIAL",
+        "INSUFFICIENT",
+        "UNCERTAIN"
+      ],
+      "title": "EvidenceSupportStatus",
+      "type": "string"
+    },
+    "EvidenceSupportType": {
+      "enum": [
+        "DIRECT",
+        "COMPOSITE",
+        "CORROBORATING",
+        "CONTRADICTORY"
+      ],
+      "title": "EvidenceSupportType",
+      "type": "string"
     },
     "EvidenceUnit": {
       "additionalProperties": false,
@@ -3577,6 +4295,63 @@
       "title": "EvidenceVariant",
       "type": "object"
     },
+    "EvidenceVariantDraft": {
+      "additionalProperties": false,
+      "description": "Semantic evidence variant linked only through inference-local aliases.",
+      "properties": {
+        "variant_alias": {
+          "pattern": "^V[1-9][0-9]{0,2}$",
+          "title": "Variant Alias",
+          "type": "string"
+        },
+        "dimension_alias": {
+          "pattern": "^D[1-9][0-9]{0,2}$",
+          "title": "Dimension Alias",
+          "type": "string"
+        },
+        "name": {
+          "maxLength": 300,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "description": {
+          "maxLength": 1200,
+          "minLength": 1,
+          "title": "Description",
+          "type": "string"
+        },
+        "evidence_requirement": {
+          "$ref": "#/$defs/EvidenceRequirement"
+        },
+        "verification_potential": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Verification Potential",
+          "type": "number"
+        },
+        "supported_operations": {
+          "items": {
+            "$ref": "#/$defs/SupportedOperation"
+          },
+          "maxItems": 9,
+          "minItems": 1,
+          "title": "Supported Operations",
+          "type": "array"
+        }
+      },
+      "required": [
+        "variant_alias",
+        "dimension_alias",
+        "name",
+        "description",
+        "evidence_requirement",
+        "verification_potential",
+        "supported_operations"
+      ],
+      "title": "EvidenceVariantDraft",
+      "type": "object"
+    },
     "EvidenceVariantMatch": {
       "additionalProperties": false,
       "properties": {
@@ -3623,6 +4398,10 @@
           "minLength": 1,
           "title": "Justification",
           "type": "string"
+        },
+        "support_status": {
+          "$ref": "#/$defs/EvidenceSupportStatus",
+          "default": "SUFFICIENT"
         }
       },
       "required": [
@@ -4141,6 +4920,195 @@
       "title": "FeedbackTargetType",
       "type": "string"
     },
+    "GuideAdditionalObservableDraft": {
+      "additionalProperties": false,
+      "properties": {
+        "observable_alias": {
+          "pattern": "^N[1-9][0-9]{0,2}$",
+          "title": "Observable Alias",
+          "type": "string"
+        },
+        "description": {
+          "maxLength": 1000,
+          "minLength": 3,
+          "title": "Description",
+          "type": "string"
+        },
+        "support_evidence_aliases": {
+          "items": {
+            "pattern": "^E[1-9][0-9]{0,2}$",
+            "type": "string"
+          },
+          "maxItems": 50,
+          "minItems": 1,
+          "title": "Support Evidence Aliases",
+          "type": "array"
+        },
+        "required_for_level_2": {
+          "default": true,
+          "title": "Required For Level 2",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "observable_alias",
+        "description",
+        "support_evidence_aliases"
+      ],
+      "title": "GuideAdditionalObservableDraft",
+      "type": "object"
+    },
+    "GuideAliasEnvelope": {
+      "additionalProperties": false,
+      "description": "Exact P09 input, stripped of canonical IDs and approval bookkeeping.",
+      "properties": {
+        "alias_schema_version": {
+          "const": "p09-alias-envelope/1.0.0",
+          "default": "p09-alias-envelope/1.0.0",
+          "title": "Alias Schema Version",
+          "type": "string"
+        },
+        "scope_alias": {
+          "pattern": "^S[a-f0-9]{24}$",
+          "title": "Scope Alias",
+          "type": "string"
+        },
+        "source_scope_hash": {
+          "pattern": "^sha256:[a-f0-9]{64}$",
+          "title": "Source Scope Hash",
+          "type": "string"
+        },
+        "context_mode": {
+          "const": "CLOSED",
+          "default": "CLOSED",
+          "title": "Context Mode",
+          "type": "string"
+        },
+        "questions": {
+          "items": {
+            "$ref": "#/$defs/GuideQuestionContext"
+          },
+          "maxItems": 20,
+          "minItems": 1,
+          "title": "Questions",
+          "type": "array"
+        },
+        "constraints": {
+          "$ref": "#/$defs/GuideEnrichmentConstraints"
+        }
+      },
+      "required": [
+        "scope_alias",
+        "source_scope_hash",
+        "questions"
+      ],
+      "title": "GuideAliasEnvelope",
+      "type": "object"
+    },
+    "GuideApprovalBinding": {
+      "additionalProperties": false,
+      "description": "Server-owned identity tying one guide to one approved assessment version.",
+      "properties": {
+        "binding_version": {
+          "const": "guide-approval-binding/1.0.0",
+          "default": "guide-approval-binding/1.0.0",
+          "title": "Binding Version",
+          "type": "string"
+        },
+        "tenant_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Tenant Id",
+          "type": "string"
+        },
+        "assessment_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Assessment Id",
+          "type": "string"
+        },
+        "submission_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Submission Id",
+          "type": "string"
+        },
+        "assessment_version": {
+          "minimum": 1,
+          "title": "Assessment Version",
+          "type": "integer"
+        },
+        "assessment_etag": {
+          "pattern": "^\"sha256:[a-f0-9]{64}\"$",
+          "title": "Assessment Etag",
+          "type": "string"
+        },
+        "assessment_snapshot_hash": {
+          "pattern": "^sha256:[a-f0-9]{64}$",
+          "title": "Assessment Snapshot Hash",
+          "type": "string"
+        },
+        "question_set_hash": {
+          "pattern": "^sha256:[a-f0-9]{64}$",
+          "title": "Question Set Hash",
+          "type": "string"
+        },
+        "approval_event_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Approval Event Id",
+          "type": "string"
+        },
+        "approval_snapshot_hash": {
+          "pattern": "^sha256:[a-f0-9]{64}$",
+          "title": "Approval Snapshot Hash",
+          "type": "string"
+        },
+        "approved_by": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^([a-z][a-z0-9_-]*|[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12})$",
+          "title": "Approved By",
+          "type": "string"
+        },
+        "approved_at": {
+          "format": "date-time",
+          "title": "Approved At",
+          "type": "string"
+        },
+        "guide_policy_hash": {
+          "pattern": "^sha256:[a-f0-9]{64}$",
+          "title": "Guide Policy Hash",
+          "type": "string"
+        },
+        "materializer_boundary_hash": {
+          "pattern": "^sha256:[a-f0-9]{64}$",
+          "title": "Materializer Boundary Hash",
+          "type": "string"
+        }
+      },
+      "required": [
+        "tenant_id",
+        "assessment_id",
+        "submission_id",
+        "assessment_version",
+        "assessment_etag",
+        "assessment_snapshot_hash",
+        "question_set_hash",
+        "approval_event_id",
+        "approval_snapshot_hash",
+        "approved_by",
+        "approved_at",
+        "guide_policy_hash",
+        "materializer_boundary_hash"
+      ],
+      "title": "GuideApprovalBinding",
+      "type": "object"
+    },
     "GuideBuildRequest": {
       "additionalProperties": false,
       "properties": {
@@ -4160,6 +5128,9 @@
         "assessment": {
           "$ref": "#/$defs/Assessment"
         },
+        "binding": {
+          "$ref": "#/$defs/GuideApprovalBinding"
+        },
         "evidence_bundle": {
           "$ref": "#/$defs/EvidenceBundle"
         }
@@ -4167,9 +5138,91 @@
       "required": [
         "guide_id",
         "assessment",
+        "binding",
         "evidence_bundle"
       ],
       "title": "GuideBuildRequest",
+      "type": "object"
+    },
+    "GuideChoiceContext": {
+      "additionalProperties": false,
+      "description": "Choice semantics without the canonical option ID.",
+      "properties": {
+        "text": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "title": "Text",
+          "type": "string"
+        },
+        "is_best_answer": {
+          "title": "Is Best Answer",
+          "type": "boolean"
+        },
+        "evaluator_rationale": {
+          "maxLength": 1500,
+          "minLength": 1,
+          "title": "Evaluator Rationale",
+          "type": "string"
+        },
+        "misconception": {
+          "anyOf": [
+            {
+              "maxLength": 1000,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Misconception"
+        }
+      },
+      "required": [
+        "text",
+        "is_best_answer",
+        "evaluator_rationale"
+      ],
+      "title": "GuideChoiceContext",
+      "type": "object"
+    },
+    "GuideCoreObservableContext": {
+      "additionalProperties": false,
+      "description": "P07-owned observable represented by one P09-local alias.",
+      "properties": {
+        "observable_alias": {
+          "pattern": "^O[1-9][0-9]{0,2}$",
+          "title": "Observable Alias",
+          "type": "string"
+        },
+        "description": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "title": "Description",
+          "type": "string"
+        },
+        "support_evidence_aliases": {
+          "items": {
+            "pattern": "^E[1-9][0-9]{0,2}$",
+            "type": "string"
+          },
+          "maxItems": 50,
+          "minItems": 1,
+          "title": "Support Evidence Aliases",
+          "type": "array"
+        },
+        "required_for_level_2": {
+          "title": "Required For Level 2",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "observable_alias",
+        "description",
+        "support_evidence_aliases",
+        "required_for_level_2"
+      ],
+      "title": "GuideCoreObservableContext",
       "type": "object"
     },
     "GuideDraft": {
@@ -4187,6 +5240,14 @@
           },
           "maxItems": 20,
           "title": "Observable Elements",
+          "type": "array"
+        },
+        "acceptance_conditions": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 20,
+          "title": "Acceptance Conditions",
           "type": "array"
         },
         "acceptable_alternatives": {
@@ -4220,12 +5281,152 @@
           "maxItems": 20,
           "title": "Cannot Infer",
           "type": "array"
+        },
+        "semantic_uncertainties": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 20,
+          "title": "Semantic Uncertainties",
+          "type": "array"
         }
       },
       "required": [
         "purpose"
       ],
       "title": "GuideDraft",
+      "type": "object"
+    },
+    "GuideEnrichmentConstraints": {
+      "additionalProperties": false,
+      "properties": {
+        "enrichment_only": {
+          "const": true,
+          "default": true,
+          "title": "Enrichment Only",
+          "type": "boolean"
+        },
+        "preserve_core_observables": {
+          "const": true,
+          "default": true,
+          "title": "Preserve Core Observables",
+          "type": "boolean"
+        },
+        "external_sources_allowed": {
+          "const": false,
+          "default": false,
+          "title": "External Sources Allowed",
+          "type": "boolean"
+        },
+        "required_levels": {
+          "default": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "maxItems": 4,
+          "minItems": 4,
+          "prefixItems": [
+            {
+              "const": 0,
+              "type": "integer"
+            },
+            {
+              "const": 1,
+              "type": "integer"
+            },
+            {
+              "const": 2,
+              "type": "integer"
+            },
+            {
+              "const": 3,
+              "type": "integer"
+            }
+          ],
+          "title": "Required Levels",
+          "type": "array"
+        },
+        "minimum_observables": {
+          "const": 2,
+          "default": 2,
+          "title": "Minimum Observables",
+          "type": "integer"
+        },
+        "maximum_observables": {
+          "const": 5,
+          "default": 5,
+          "title": "Maximum Observables",
+          "type": "integer"
+        }
+      },
+      "title": "GuideEnrichmentConstraints",
+      "type": "object"
+    },
+    "GuideEvidenceContext": {
+      "additionalProperties": false,
+      "description": "Question-local support exposed to P09 without canonical identity.",
+      "properties": {
+        "evidence_alias": {
+          "pattern": "^E[1-9][0-9]{0,2}$",
+          "title": "Evidence Alias",
+          "type": "string"
+        },
+        "artifact_alias": {
+          "pattern": "^A[1-9][0-9]{0,2}$",
+          "title": "Artifact Alias",
+          "type": "string"
+        },
+        "modality": {
+          "$ref": "#/$defs/EvidenceModality"
+        },
+        "content_text": {
+          "anyOf": [
+            {
+              "maxLength": 100000,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Content Text"
+        },
+        "structured_content": {
+          "anyOf": [
+            {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Structured Content"
+        },
+        "language": {
+          "anyOf": [
+            {
+              "maxLength": 35,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Language"
+        }
+      },
+      "required": [
+        "evidence_alias",
+        "artifact_alias",
+        "modality"
+      ],
+      "title": "GuideEvidenceContext",
       "type": "object"
     },
     "GuideLevel": {
@@ -4266,6 +5467,286 @@
         "descriptor"
       ],
       "title": "GuideLevel",
+      "type": "object"
+    },
+    "GuideLevelDraft": {
+      "additionalProperties": false,
+      "properties": {
+        "level": {
+          "maximum": 3,
+          "minimum": 0,
+          "title": "Level",
+          "type": "integer"
+        },
+        "label": {
+          "maxLength": 100,
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "descriptor": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "title": "Descriptor",
+          "type": "string"
+        },
+        "observable_aliases": {
+          "items": {
+            "anyOf": [
+              {
+                "pattern": "^O[1-9][0-9]{0,2}$",
+                "type": "string"
+              },
+              {
+                "pattern": "^N[1-9][0-9]{0,2}$",
+                "type": "string"
+              }
+            ]
+          },
+          "maxItems": 5,
+          "title": "Observable Aliases",
+          "type": "array"
+        }
+      },
+      "required": [
+        "level",
+        "label",
+        "descriptor"
+      ],
+      "title": "GuideLevelDraft",
+      "type": "object"
+    },
+    "GuideModelDraft": {
+      "additionalProperties": false,
+      "description": "Reduced P09 output; the server materializes all canonical identity.",
+      "properties": {
+        "scope_alias": {
+          "pattern": "^S[a-f0-9]{24}$",
+          "title": "Scope Alias",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "READY",
+            "NEEDS_REVIEW"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "items": {
+          "items": {
+            "$ref": "#/$defs/GuideQuestionModelDraft"
+          },
+          "maxItems": 20,
+          "title": "Items",
+          "type": "array"
+        },
+        "abstention_reason": {
+          "anyOf": [
+            {
+              "maxLength": 800,
+              "minLength": 3,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Abstention Reason"
+        }
+      },
+      "required": [
+        "scope_alias",
+        "status"
+      ],
+      "title": "GuideModelDraft",
+      "type": "object"
+    },
+    "GuideQuestionContext": {
+      "additionalProperties": false,
+      "description": "One approved question projected into its own closed P09 namespace.",
+      "properties": {
+        "question_alias": {
+          "pattern": "^Q[1-9][0-9]{0,2}$",
+          "title": "Question Alias",
+          "type": "string"
+        },
+        "cognitive_operation": {
+          "$ref": "#/$defs/CognitiveOperation"
+        },
+        "response_format": {
+          "$ref": "#/$defs/ResponseFormat"
+        },
+        "difficulty": {
+          "$ref": "#/$defs/DifficultyBand"
+        },
+        "question_text": {
+          "maxLength": 4000,
+          "minLength": 5,
+          "title": "Question Text",
+          "type": "string"
+        },
+        "visible_anchor_texts": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 8,
+          "minItems": 1,
+          "title": "Visible Anchor Texts",
+          "type": "array"
+        },
+        "support_evidence": {
+          "items": {
+            "$ref": "#/$defs/GuideEvidenceContext"
+          },
+          "maxItems": 50,
+          "minItems": 1,
+          "title": "Support Evidence",
+          "type": "array"
+        },
+        "purpose": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "title": "Purpose",
+          "type": "string"
+        },
+        "core_observables": {
+          "items": {
+            "$ref": "#/$defs/GuideCoreObservableContext"
+          },
+          "maxItems": 5,
+          "minItems": 1,
+          "title": "Core Observables",
+          "type": "array"
+        },
+        "acceptable_alternatives": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 20,
+          "title": "Acceptable Alternatives",
+          "type": "array"
+        },
+        "misconceptions": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 20,
+          "title": "Misconceptions",
+          "type": "array"
+        },
+        "choices": {
+          "items": {
+            "$ref": "#/$defs/GuideChoiceContext"
+          },
+          "maxItems": 8,
+          "title": "Choices",
+          "type": "array"
+        },
+        "semantic_uncertainties": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 20,
+          "title": "Semantic Uncertainties",
+          "type": "array"
+        },
+        "student_justification_required": {
+          "title": "Student Justification Required",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "question_alias",
+        "cognitive_operation",
+        "response_format",
+        "difficulty",
+        "question_text",
+        "visible_anchor_texts",
+        "support_evidence",
+        "purpose",
+        "core_observables",
+        "student_justification_required"
+      ],
+      "title": "GuideQuestionContext",
+      "type": "object"
+    },
+    "GuideQuestionModelDraft": {
+      "additionalProperties": false,
+      "properties": {
+        "question_alias": {
+          "pattern": "^Q[1-9][0-9]{0,2}$",
+          "title": "Question Alias",
+          "type": "string"
+        },
+        "additional_observables": {
+          "items": {
+            "$ref": "#/$defs/GuideAdditionalObservableDraft"
+          },
+          "maxItems": 4,
+          "title": "Additional Observables",
+          "type": "array"
+        },
+        "acceptance_conditions": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 20,
+          "minItems": 1,
+          "title": "Acceptance Conditions",
+          "type": "array"
+        },
+        "acceptable_alternative_additions": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 20,
+          "title": "Acceptable Alternative Additions",
+          "type": "array"
+        },
+        "misconception_additions": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 20,
+          "title": "Misconception Additions",
+          "type": "array"
+        },
+        "levels": {
+          "items": {
+            "$ref": "#/$defs/GuideLevelDraft"
+          },
+          "maxItems": 4,
+          "minItems": 4,
+          "title": "Levels",
+          "type": "array"
+        },
+        "cannot_infer": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 20,
+          "minItems": 1,
+          "title": "Cannot Infer",
+          "type": "array"
+        },
+        "semantic_uncertainties": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 20,
+          "title": "Semantic Uncertainties",
+          "type": "array"
+        }
+      },
+      "required": [
+        "question_alias",
+        "acceptance_conditions",
+        "levels",
+        "cannot_infer"
+      ],
+      "title": "GuideQuestionModelDraft",
       "type": "object"
     },
     "HumanReviewMetricAggregate": {
@@ -5490,6 +6971,17 @@
           "title": "Selected Option Id",
           "type": "string"
         },
+        "selected_option": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DecisionOption"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
         "decided_by": {
           "maxLength": 128,
           "minLength": 3,
@@ -5641,6 +7133,74 @@
       "title": "QualityMetricAggregate",
       "type": "object"
     },
+    "QuestionAliasEnvelope": {
+      "additionalProperties": false,
+      "description": "Exact call-local P07 input projected from one canonical request.",
+      "properties": {
+        "alias_schema_version": {
+          "const": "p07-alias-envelope/1.0.0",
+          "default": "p07-alias-envelope/1.0.0",
+          "title": "Alias Schema Version",
+          "type": "string"
+        },
+        "scope_alias": {
+          "pattern": "^S[a-f0-9]{24}$",
+          "title": "Scope Alias",
+          "type": "string"
+        },
+        "source_scope_hash": {
+          "pattern": "^sha256:[a-f0-9]{64}$",
+          "title": "Source Scope Hash",
+          "type": "string"
+        },
+        "opportunity": {
+          "$ref": "#/$defs/QuestionOpportunityContext"
+        },
+        "support_evidence": {
+          "items": {
+            "$ref": "#/$defs/QuestionEvidenceContext"
+          },
+          "maxItems": 50,
+          "minItems": 1,
+          "title": "Support Evidence",
+          "type": "array"
+        },
+        "generation_constraints": {
+          "$ref": "#/$defs/QuestionGenerationConstraints"
+        }
+      },
+      "required": [
+        "scope_alias",
+        "source_scope_hash",
+        "opportunity",
+        "support_evidence",
+        "generation_constraints"
+      ],
+      "title": "QuestionAliasEnvelope",
+      "type": "object"
+    },
+    "QuestionAvoidFingerprintContext": {
+      "additionalProperties": false,
+      "description": "Content-free wording fingerprint retained inside one P07 scope.",
+      "properties": {
+        "fingerprint_alias": {
+          "pattern": "^F[1-9][0-9]{0,2}$",
+          "title": "Fingerprint Alias",
+          "type": "string"
+        },
+        "normalized_question_hash": {
+          "pattern": "^sha256:[a-f0-9]{64}$",
+          "title": "Normalized Question Hash",
+          "type": "string"
+        }
+      },
+      "required": [
+        "fingerprint_alias",
+        "normalized_question_hash"
+      ],
+      "title": "QuestionAvoidFingerprintContext",
+      "type": "object"
+    },
     "QuestionBuildRequest": {
       "additionalProperties": false,
       "properties": {
@@ -5648,6 +7208,13 @@
           "const": "1.1.0",
           "default": "1.1.0",
           "title": "Schema Version",
+          "type": "string"
+        },
+        "target_candidate_id": {
+          "maxLength": 128,
+          "minLength": 3,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Target Candidate Id",
           "type": "string"
         },
         "plan": {
@@ -5672,6 +7239,7 @@
         }
       },
       "required": [
+        "target_candidate_id",
         "plan",
         "opportunity",
         "evidence_bundle",
@@ -5824,6 +7392,150 @@
       "title": "QuestionCandidate",
       "type": "object"
     },
+    "QuestionChoiceDraft": {
+      "additionalProperties": false,
+      "description": "Semantic choice content; the server creates the canonical option ID.",
+      "properties": {
+        "text": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "title": "Text",
+          "type": "string"
+        },
+        "is_best_answer": {
+          "title": "Is Best Answer",
+          "type": "boolean"
+        },
+        "evaluator_rationale": {
+          "maxLength": 1500,
+          "minLength": 1,
+          "title": "Evaluator Rationale",
+          "type": "string"
+        },
+        "misconception": {
+          "anyOf": [
+            {
+              "maxLength": 1000,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Misconception"
+        }
+      },
+      "required": [
+        "text",
+        "is_best_answer",
+        "evaluator_rationale"
+      ],
+      "title": "QuestionChoiceDraft",
+      "type": "object"
+    },
+    "QuestionEvidenceContext": {
+      "additionalProperties": false,
+      "description": "One support unit exposed to P07 only through a call-local alias.",
+      "properties": {
+        "evidence_alias": {
+          "pattern": "^E[1-9][0-9]{0,2}$",
+          "title": "Evidence Alias",
+          "type": "string"
+        },
+        "artifact_alias": {
+          "pattern": "^A[1-9][0-9]{0,2}$",
+          "title": "Artifact Alias",
+          "type": "string"
+        },
+        "modality": {
+          "$ref": "#/$defs/EvidenceModality"
+        },
+        "content_text": {
+          "anyOf": [
+            {
+              "maxLength": 100000,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Content Text"
+        },
+        "structured_content": {
+          "anyOf": [
+            {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Structured Content"
+        },
+        "language": {
+          "anyOf": [
+            {
+              "maxLength": 35,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Language"
+        },
+        "extraction_confidence": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Extraction Confidence",
+          "type": "number"
+        }
+      },
+      "required": [
+        "evidence_alias",
+        "artifact_alias",
+        "modality",
+        "extraction_confidence"
+      ],
+      "title": "QuestionEvidenceContext",
+      "type": "object"
+    },
+    "QuestionGenerationConstraints": {
+      "additionalProperties": false,
+      "description": "Server-owned P07 constraints visible to the model but never returned.",
+      "properties": {
+        "max_visible_anchor_fragments": {
+          "maximum": 8,
+          "minimum": 1,
+          "title": "Max Visible Anchor Fragments",
+          "type": "integer"
+        },
+        "require_accessible_alternative": {
+          "title": "Require Accessible Alternative",
+          "type": "boolean"
+        },
+        "avoid_fingerprints": {
+          "items": {
+            "$ref": "#/$defs/QuestionAvoidFingerprintContext"
+          },
+          "maxItems": 100,
+          "title": "Avoid Fingerprints",
+          "type": "array"
+        }
+      },
+      "required": [
+        "max_visible_anchor_fragments",
+        "require_accessible_alternative"
+      ],
+      "title": "QuestionGenerationConstraints",
+      "type": "object"
+    },
     "QuestionGenerationPolicy": {
       "additionalProperties": false,
       "properties": {
@@ -5934,6 +7646,147 @@
         "status"
       ],
       "title": "QuestionGenerationResult",
+      "type": "object"
+    },
+    "QuestionModelDraft": {
+      "additionalProperties": false,
+      "description": "Reduced P07 provider output materialized into QuestionGenerationResult.",
+      "properties": {
+        "scope_alias": {
+          "pattern": "^S[a-f0-9]{24}$",
+          "title": "Scope Alias",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "READY",
+            "REPLACEMENT_REQUIRED"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "question_text": {
+          "anyOf": [
+            {
+              "maxLength": 4000,
+              "minLength": 5,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Question Text"
+        },
+        "visible_anchor_aliases": {
+          "items": {
+            "pattern": "^E[1-9][0-9]{0,2}$",
+            "type": "string"
+          },
+          "maxItems": 8,
+          "title": "Visible Anchor Aliases",
+          "type": "array"
+        },
+        "expected_observables": {
+          "items": {
+            "$ref": "#/$defs/QuestionObservableDraft"
+          },
+          "maxItems": 5,
+          "title": "Expected Observables",
+          "type": "array"
+        },
+        "acceptable_alternatives": {
+          "items": {
+            "maxLength": 1000,
+            "minLength": 1,
+            "type": "string"
+          },
+          "maxItems": 20,
+          "title": "Acceptable Alternatives",
+          "type": "array"
+        },
+        "misconceptions": {
+          "items": {
+            "maxLength": 1000,
+            "minLength": 1,
+            "type": "string"
+          },
+          "maxItems": 20,
+          "title": "Misconceptions",
+          "type": "array"
+        },
+        "choices": {
+          "items": {
+            "$ref": "#/$defs/QuestionChoiceDraft"
+          },
+          "maxItems": 8,
+          "title": "Choices",
+          "type": "array"
+        },
+        "semantic_uncertainties": {
+          "items": {
+            "maxLength": 1000,
+            "minLength": 1,
+            "type": "string"
+          },
+          "maxItems": 20,
+          "title": "Semantic Uncertainties",
+          "type": "array"
+        },
+        "replacement_reason": {
+          "anyOf": [
+            {
+              "maxLength": 800,
+              "minLength": 3,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Replacement Reason"
+        }
+      },
+      "required": [
+        "scope_alias",
+        "status"
+      ],
+      "title": "QuestionModelDraft",
+      "type": "object"
+    },
+    "QuestionObservableDraft": {
+      "additionalProperties": false,
+      "description": "One semantic expected observable linked only through evidence aliases.",
+      "properties": {
+        "description": {
+          "maxLength": 1000,
+          "minLength": 3,
+          "title": "Description",
+          "type": "string"
+        },
+        "support_evidence_aliases": {
+          "items": {
+            "pattern": "^E[1-9][0-9]{0,2}$",
+            "type": "string"
+          },
+          "maxItems": 50,
+          "minItems": 1,
+          "title": "Support Evidence Aliases",
+          "type": "array"
+        },
+        "required_for_level_2": {
+          "default": true,
+          "title": "Required For Level 2",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "description",
+        "support_evidence_aliases"
+      ],
+      "title": "QuestionObservableDraft",
       "type": "object"
     },
     "QuestionOpportunity": {
@@ -6048,6 +7901,60 @@
           "default": false,
           "title": "Student Justification Required",
           "type": "boolean"
+        },
+        "support_status": {
+          "$ref": "#/$defs/EvidenceSupportStatus",
+          "default": "SUFFICIENT"
+        },
+        "support_type": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EvidenceSupportType"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "support_description": {
+          "anyOf": [
+            {
+              "maxLength": 1000,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Support Description"
+        },
+        "semantic_uncertainty": {
+          "anyOf": [
+            {
+              "maxLength": 800,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Semantic Uncertainty"
+        },
+        "abstention_reason": {
+          "anyOf": [
+            {
+              "maxLength": 800,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Abstention Reason"
         }
       },
       "required": [
@@ -6069,6 +7976,64 @@
         "opportunity_quality"
       ],
       "title": "QuestionOpportunity",
+      "type": "object"
+    },
+    "QuestionOpportunityContext": {
+      "additionalProperties": false,
+      "description": "Trusted P07 semantics and constraints without canonical identity.",
+      "properties": {
+        "cognitive_operation": {
+          "$ref": "#/$defs/CognitiveOperation"
+        },
+        "focus": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "title": "Focus",
+          "type": "string"
+        },
+        "observable": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "title": "Observable",
+          "type": "string"
+        },
+        "response_format": {
+          "$ref": "#/$defs/ResponseFormat"
+        },
+        "difficulty": {
+          "$ref": "#/$defs/DifficultyBand"
+        },
+        "target_minutes": {
+          "maximum": 60,
+          "minimum": 1,
+          "title": "Target Minutes",
+          "type": "integer"
+        },
+        "allowed_anchor_structures": {
+          "items": {
+            "$ref": "#/$defs/AnchorStructure"
+          },
+          "maxItems": 7,
+          "minItems": 1,
+          "title": "Allowed Anchor Structures",
+          "type": "array"
+        },
+        "student_justification_required": {
+          "title": "Student Justification Required",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "cognitive_operation",
+        "focus",
+        "observable",
+        "response_format",
+        "difficulty",
+        "target_minutes",
+        "allowed_anchor_structures",
+        "student_justification_required"
+      ],
+      "title": "QuestionOpportunityContext",
       "type": "object"
     },
     "QuestionOpportunityTemplate": {
@@ -6152,6 +8117,89 @@
         "verification_potential"
       ],
       "title": "QuestionOpportunityTemplate",
+      "type": "object"
+    },
+    "QuestionOpportunityTemplateDraft": {
+      "additionalProperties": false,
+      "description": "Semantic question opportunity without a canonical template ID.",
+      "properties": {
+        "template_alias": {
+          "pattern": "^T[1-9][0-9]{0,3}$",
+          "title": "Template Alias",
+          "type": "string"
+        },
+        "variant_alias": {
+          "pattern": "^V[1-9][0-9]{0,2}$",
+          "title": "Variant Alias",
+          "type": "string"
+        },
+        "cognitive_operation": {
+          "$ref": "#/$defs/CognitiveOperation"
+        },
+        "focus": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "title": "Focus",
+          "type": "string"
+        },
+        "observable": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "title": "Observable",
+          "type": "string"
+        },
+        "difficulty": {
+          "$ref": "#/$defs/DifficultyBand"
+        },
+        "target_minutes": {
+          "maximum": 60,
+          "minimum": 1,
+          "title": "Target Minutes",
+          "type": "integer"
+        },
+        "allowed_anchor_structures": {
+          "items": {
+            "$ref": "#/$defs/AnchorStructure"
+          },
+          "maxItems": 7,
+          "minItems": 1,
+          "title": "Allowed Anchor Structures",
+          "type": "array"
+        },
+        "allowed_response_formats": {
+          "items": {
+            "$ref": "#/$defs/ResponseFormat"
+          },
+          "maxItems": 5,
+          "minItems": 1,
+          "title": "Allowed Response Formats",
+          "type": "array"
+        },
+        "verification_potential": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Verification Potential",
+          "type": "number"
+        },
+        "justification_required": {
+          "default": false,
+          "title": "Justification Required",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "template_alias",
+        "variant_alias",
+        "cognitive_operation",
+        "focus",
+        "observable",
+        "difficulty",
+        "target_minutes",
+        "allowed_anchor_structures",
+        "allowed_response_formats",
+        "verification_potential"
+      ],
+      "title": "QuestionOpportunityTemplateDraft",
       "type": "object"
     },
     "QuestionReviewAction": {
@@ -6613,6 +8661,7 @@
           "type": "array"
         },
         "evidence_ids": {
+          "description": "Only IDs from generation_result.candidate.evidence_ids are authorized; IDs present only elsewhere in the request are forbidden. Use [] when no evidence ID is needed.",
           "items": {
             "maxLength": 128,
             "minLength": 3,
@@ -6624,6 +8673,7 @@
           "type": "array"
         },
         "source_ids": {
+          "description": "Only IDs from generation_result.candidate.course_source_ids are authorized; IDs present only elsewhere in the request are forbidden. Use [] when no source ID is needed.",
           "items": {
             "maxLength": 128,
             "minLength": 3,
@@ -6724,7 +8774,9 @@
         "MINIMAL",
         "LOW",
         "MEDIUM",
-        "HIGH"
+        "HIGH",
+        "XHIGH",
+        "MAX"
       ],
       "title": "ReasoningEffort",
       "type": "string"
@@ -7303,6 +9355,14 @@
         },
         "preliminary_guide": {
           "$ref": "#/$defs/GuideDraft"
+        },
+        "semantic_uncertainties": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 20,
+          "title": "Semantic Uncertainties",
+          "type": "array"
         },
         "planning_score": {
           "maximum": 1.0,
@@ -8157,6 +10217,56 @@
         "context_mode": {
           "$ref": "#/$defs/ContextMode",
           "default": "CLOSED"
+        },
+        "data_classification": {
+          "anyOf": [
+            {
+              "const": "SYNTHETIC_ONLY_NO_STUDENT_DATA",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Data Classification"
+        },
+        "attestation_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 3,
+              "pattern": "^[a-z][a-z0-9_-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Attestation Id"
+        },
+        "attested_input_hash": {
+          "anyOf": [
+            {
+              "pattern": "^sha256:[a-f0-9]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Attested Input Hash"
+        },
+        "attested_artifact_hashes": {
+          "items": {
+            "pattern": "^sha256:[a-f0-9]{64}$",
+            "type": "string"
+          },
+          "maxItems": 100,
+          "title": "Attested Artifact Hashes",
+          "type": "array"
         }
       },
       "required": [

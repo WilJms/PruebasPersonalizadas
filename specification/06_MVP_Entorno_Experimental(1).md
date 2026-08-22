@@ -5,6 +5,17 @@
 **Equipo:** dos desarrolladores  
 **Principio:** laboratorio para validar el pipeline; no SaaS institucional terminado
 
+**Aclaración ADR-037 / Fase 7 (2026-08-16):** P05/P08 permanecen legibles como
+contratos/artefactos históricos y no son etapas activas objetivo. El runtime ya
+retiró P05. P06 usa un provider DTO alias-only/categórico, materialización
+server-side y planner como única autoridad de N/factibilidad. P07 usa aliases y
+un draft semántico pequeño; el backend conserva support evidence completa y
+reconstruye el visible anchor exacto. P08 ya no es callable: nuevas ejecuciones
+validan P07, exigen exactamente N y ensamblan sin review P08. ASSEMBLE publica
+primero un Assessment `NEEDS_REVIEW`; sólo una aprobación durable exacta crea
+el job `GUIDE_BUILD`, y P09 enriquece esa versión sin revisar o cambiar las
+preguntas. P10 continúa deshabilitado.
+
 ---
 
 ## 1. Objetivo
@@ -42,10 +53,10 @@ No existe rol estudiante en esta versión. Las evaluaciones se descargan para se
 5. El usuario resuelve asuntos bloqueantes, edita y aprueba el blueprint.
 6. Carga uno o varios entregables con `subject_ref` seudónimo.
 7. Inicia el pipeline; observa progreso por submission y etapa.
-8. Abre una entrega y revisa evidencia, matches de variante, oportunidades, plan y preguntas/reviews.
+8. Abre una entrega y revisa evidencia, matches de variante, oportunidades, plan, preguntas y validaciones deterministas.
 9. En cada pregunta acepta, rechaza, edita o solicita regeneración localizada.
-10. Aprueba el Assessment completo o selecciona varios elegibles, revisa el alcance y confirma una aprobación masiva; las excepciones quedan fuera.
-11. Usa la guía dentro de la plataforma y, si lo necesita, descarga evaluación, guía, cobertura y JSON canónico.
+10. Aprueba el Assessment completo o selecciona varios elegibles, revisa el alcance y confirma una aprobación masiva; las excepciones quedan fuera. La aprobación queda persistida antes de iniciar la guía.
+11. La UI muestra la guía como pending/building/failed/ready; cuando está READY se usa dentro de la plataforma y, si hace falta, se descarga junto con evaluación, cobertura y JSON canónico.
 12. Registra feedback; el sistema agrega métricas técnicas, económicas y de aceptación.
 
 ---
@@ -59,14 +70,15 @@ No existe rol estudiante en esta versión. Las evaluaciones se descargan para se
 - carga de múltiples entregables;
 - jobs asíncronos con progreso, retry controlado y diagnóstico;
 - IR con evidencia/localizadores;
-- P01-P11 detrás de contratos v1.1;
-- mapeo de variantes/oportunidades, plan determinista exacto de \(N\), generación y review semántica;
+- P01-P04/P06/P07/P09 detrás de contratos v1.1; P05/P08 retenidos sólo para compatibilidad histórica y P10 deshabilitado;
+- P06 categórico sobre aliases locales, materialización canónica, resumen durable 0..N y plan determinista exacto de \(N\), seguido de P07 semántico alias-only, materialización server-side, validaciones y revisión;
+- support evidence completa server-owned separada del visible anchor, que es un subconjunto literal reconstruido desde evidencia/localizadores confiables;
 - fail-closed atómico: nunca una evaluación parcial;
 - revisión evidence-first y acciones por pregunta;
 - reemplazo localizado desde una oportunidad de reserva;
 - aprobación masiva explícita con exclusiones auditadas;
 - justificación estructurada `NOT_REQUIRED`/`SELECTED`/`ALL` y aviso de alcance limitado;
-- guía estructurada principal en plataforma; evaluación/guía/coverage/JSON exportables como vistas;
+- guía estructurada post-aprobación con estado independiente; sólo la guía READY ligada a la versión aprobada current entra en evaluación/guía/coverage/JSON exportables;
 - ledger de modelo y métricas básicas;
 - feedback docente estructurado;
 - autenticación sencilla y roles mínimos;
@@ -168,7 +180,7 @@ No se comparten tablas directamente desde el frontend. Los módulos se llaman me
 | Ambigüedades/blueprint | specs fuente, issues, dimensiones, variantes, operaciones soportadas, oportunidades, edit/approve/version |
 | Entregables | carga múltiple, subject refs, estados, filtros, retry/cancel |
 | Detalle de submission | timeline, artifacts, evidence units, matches, oportunidades, plan, coverage y diagnostics |
-| Revisión de Assessment | pregunta, ancla, fuente, oportunidad/variante, scores, guía estructurada y acciones |
+| Revisión de Assessment | pregunta, ancla, fuente, oportunidad/variante, soporte categórico, diagnostics legacy, guía estructurada y acciones |
 | Revisión masiva | selección, elegibilidad, versiones, confirmación, aprobados y excepciones |
 | Exportaciones | vistas opcionales de evaluación/guía, cobertura, JSON, estado/expiración |
 | Métricas experimentales | aceptación, ediciones, fallos, latencia, tokens, costo y review time |
@@ -190,9 +202,9 @@ Prefijo `/api/v1`. Todos los mutables usan `Idempotency-Key`; ediciones versiona
 | GET/PATCH | `/activities/{activity_id}` | lee/edita mientras no haya blueprint aprobado |
 | POST | `/activities/{activity_id}/artifacts/uploads` | crea upload session para consigna/rúbrica |
 | POST | `/activities/{activity_id}/artifacts/{artifact_id}:complete` | verifica hash/MIME y registra |
-| POST | `/activities/{activity_id}/blueprints:generate` | job P01-P05 |
-| GET | `/activities/{activity_id}/blueprints/{version}` | blueprint + review + issues |
-| PATCH | `/activities/{activity_id}/blueprints/{version}` | edición con ETag |
+| POST | `/activities/{activity_id}/blueprints:generate` | P01-P04 + `BLUEPRINT_PREFLIGHT`; cero P05 activo |
+| GET | `/activities/{activity_id}/blueprints/{version}` | blueprint + preflight + issues; review P05 sólo si existe historia |
+| PATCH | `/activities/{activity_id}/blueprints/{version}` | edición con ETag y job `BLUEPRINT_PREFLIGHT` |
 | POST | `/activities/{activity_id}/decisions` | guarda `PolicyDecision` |
 | POST | `/activities/{activity_id}/blueprints/{version}:approve` | congela blueprint |
 
@@ -216,8 +228,9 @@ Prefijo `/api/v1`. Todos los mutables usan `Idempotency-Key`; ediciones versiona
 |---|---|---|
 | POST | `/assessments/{assessment_id}/questions/{question_id}/actions` | `QuestionReviewAction` |
 | POST | `/assessments/{assessment_id}/questions/{question_id}:regenerate` | reemplazo desde oportunidad de reserva |
-| GET | `/assessments/{assessment_id}/guide` | `EvaluationGuide` para roles autorizados |
-| POST | `/assessments/{assessment_id}:approve` | aprobación humana completa |
+| GET | `/assessments/{assessment_id}/guide` | estado current pending/building/failed o `EvaluationGuide` READY para la versión aprobada exacta |
+| GET | `/assessments/{assessment_id}/guides/history` | guías históricas tenant-scoped, incluidas legacy etiquetadas |
+| POST | `/assessments/{assessment_id}:approve` | persiste aprobación humana y encola idempotentemente `GUIDE_BUILD`; no espera P09 |
 | POST | `/assessments:bulk-approve` | `BulkApprovalRequest` -> `BulkApprovalRecord` |
 | POST | `/assessments/{assessment_id}/exports` | crea evaluación/guía/coverage/JSON |
 | GET | `/exports/{export_id}` | estado y URL temporal |
@@ -236,19 +249,27 @@ Prefijo `/api/v1`. Todos los mutables usan `Idempotency-Key`; ediciones versiona
 
 ## 10. Jobs
 
+La tabla distingue el runtime activo de los estados que siguen legibles por
+compatibilidad. Fase 3 reemplazó `BLUEPRINT_BUILD_REVIEW`; Fase 6 convirtió
+`QUESTION_REVIEW` en floor legado y añadió `QUESTION_VALIDATE`; Fase 7 separó
+`GUIDE_BUILD` como job post-aprobación.
+
 | Job/stage | Input | Output | Retry |
 |---|---|---|---|
 | `ACTIVITY_PARSE` | artifacts de consigna/rúbrica | EvidenceUnits fuente | un fallback de parser |
 | `ACTIVITY_SPEC` | `ActivitySpecRequest` | `ActivitySpec` | técnico/P11 |
 | `RUBRIC_NORMALIZE` | request P02 | `RubricSpec` | técnico/P11 |
-| `BLUEPRINT_BUILD_REVIEW` | P03-P05 | blueprint/review/issues | tras decisión/corrección concreta |
+| `BLUEPRINT_BUILD` | request P04 | `AssessmentBlueprint` compilado | provider/cache gobernado existente |
+| `BLUEPRINT_PREFLIGHT` | blueprint + spec/rubric/policy/decisiones | blueprint READY/NEEDS_REVIEW + preflight | determinista; reuse hash-bound |
+| `BLUEPRINT_REVIEW` | descriptor P05 anterior al corte | reconciliación por preflight, sin provider | LEGACY/HISTORICAL; retry/resume compatible |
 | `SUBMISSION_PARSE` | artifacts submission | EvidenceUnits | un fallback aprobado |
-| `EVIDENCE_MAP` | request P06 | claims, variant matches y oportunidades | bundle corregido |
+| `EVIDENCE_MAP` | request P06 -> envelope de aliases | draft categórico -> `EvidenceMapPatch` con resumen 0..N | bundle/policy/blueprint nuevo; reuse exacto si frontera coincide |
 | `ASSESSMENT_PLAN` | oportunidades + policy | exactamente \(N\) primarias + reserva o diagnóstico | no retry sin input/policy nuevo |
-| `QUESTION_GENERATE` | request P07/P10 por oportunidad | `QuestionGenerationResult` | reemplazo desde reserva |
-| `QUESTION_REVIEW` | request P08 | `QuestionReviewResult` | revisión humana si corresponde |
-| `GUIDE_BUILD` | request P09 | `EvaluationGuide` | no reparación semántica |
-| `ASSEMBLE` | plan + preguntas + guía + lineage | Assessment | determinista y atómico |
+| `QUESTION_GENERATE` | request P07 -> envelope aliases; P10 deshabilitado | draft semántico -> `QuestionGenerationResult` materializado | reemplazo desde reserva; reuse sólo con frontera exacta |
+| `QUESTION_VALIDATE` | P07 canónico + opportunity + bundle | PASS/diagnostics objetivos hash-bound | ACTIVE_CURRENT; reserva sólo para defecto local corregible |
+| `QUESTION_REVIEW` | estado/request P08 anterior al corte | reconciliación por P07 vigente | LEGACY/HISTORICAL; nunca invoca P08 |
+| `ASSEMBLE` | plan + exactamente N preguntas + lineage | Assessment `NEEDS_REVIEW` | determinista y atómico |
+| `GUIDE_BUILD` | versión aprobada + binding exacto -> envelope P09 | draft alias-only -> `EvaluationGuide` materializada | logical ID/stage key deterministas; retry/replay exactos, fallo no revoca aprobación |
 | `RENDER_EXPORT` | Assessment | archivos derivados | retry sin LLM |
 
 Cada stage persiste `input_hash`, `component_version`, intento, timestamps, output ref y diagnostics. Un stage completo se reutiliza si su clave coincide.
@@ -265,9 +286,13 @@ Se separan dos ejes para no confundir ejecución y resultado.
 
 ### Submission de dominio
 
-`UPLOADED -> VALIDATING -> PARSING -> EVIDENCE_READY -> MAPPING_OPPORTUNITIES -> PLANNING -> GENERATING -> VALIDATING_QUESTIONS -> GUIDE_READY -> NEEDS_REVIEW -> APPROVED`.
+`UPLOADED -> VALIDATING -> PARSING -> EVIDENCE_READY -> MAPPING_OPPORTUNITIES -> PLANNING -> GENERATING -> VALIDATING_QUESTIONS -> NEEDS_REVIEW -> APPROVED`.
 
 Terminales para una versión: `INSUFFICIENT_RELEVANT_EVIDENCE`, `INSUFFICIENT_DISTINCT_QUESTION_OPPORTUNITIES`, `EVIDENCE_MAPPING_UNCERTAIN`, `ASSESSMENT_PLAN_INFEASIBLE`, `TECHNICAL_FAILURE`, `REJECTED_SECURITY`, `CANCELLED`. Un retry o archivo corregido crea nueva ejecución; no muta el historial.
+
+`GUIDE_READY` en una submission antigua permanece legible como estado legacy.
+La guía actual usa un eje/job separado: `PENDING -> BUILDING -> READY | FAILED`,
+siempre después de `Assessment.APPROVED`.
 
 ### Assessment
 
@@ -292,7 +317,7 @@ Terminales para una versión: `INSUFFICIENT_RELEVANT_EVIDENCE`, `INSUFFICIENT_DI
 | `evidence_claims`, `evidence_variant_matches` | claims, alignments dimensión/variante, patch/version |
 | `question_opportunities`, `assessment_plans` | oportunidades concretas, primarias/reserva y diagnósticos |
 | `generated_questions`, `question_reviews` | preguntas por oportunidad, scores y vetos |
-| `assessments`, `assessment_questions`, `evaluation_guides` | Assessment/version, preguntas y guía estructurada |
+| `assessments`, `assessment_questions`, `evaluation_guides` | Assessment/version, preguntas y guía con binding exacto; filas legacy preservadas como history |
 | `question_review_actions` | acción, actor, motivo, before/after |
 | `bulk_approval_records`, `bulk_approval_exclusions` | actor, fecha, scope, versiones, aprobados y excepciones |
 | `jobs`, `stage_runs` | estado, idempotencia, attempts, diagnostics |
@@ -312,18 +337,26 @@ Los blobs nunca se guardan en PostgreSQL. Los JSONB completos son fuente del sna
 | P01 | actividad | ActivitySpecRequest | ActivitySpec | evidence IDs/roles |
 | P02 | actividad, si hay rúbrica | RubricNormalizeRequest | RubricSpec | pesos/criteria/verification_fit |
 | P03 | actividad | AmbiguityTriageRequest | AmbiguityReport | issue/options/blocking |
-| P04 | actividad | BlueprintBuildRequest | AssessmentBlueprint | catálogo/variantes/operaciones/IDs |
-| P05 | actividad | BlueprintReviewRequest | BlueprintReview | critical FAIL -> REJECT |
-| P06 | submission | EvidenceMapRequest | EvidenceMapPatch | matches/oportunidades/operaciones permitidas |
-| P07 | oportunidad cerrada | QuestionBuildRequest | QuestionGenerationResult | grounding/ancla/citas vacías/justificación |
-| P08 | pregunta | QuestionReviewRequest | QuestionReviewResult | vetos/thresholds |
-| P09 | assessment completo | GuideBuildRequest | EvaluationGuide | question/source/levels; sin aviso global generado |
+| P04 | actividad | BlueprintBuildRequest | BlueprintModelDraft -> AssessmentBlueprint compilado | catálogo semántico propuesto; IDs/policy/estado y preflight en backend + docente |
+| P05 | histórico | BlueprintReviewRequest | BlueprintReview | INACTIVE_TARGET; lectura compatible |
+| P06 | submission | EvidenceMapRequest -> EvidenceMappingAliasEnvelope | EvidenceMappingModelDraft -> EvidenceMapPatch | aliases/scope, soporte categórico, materializador; planner decide N |
+| P07 | oportunidad cerrada | QuestionBuildRequest -> QuestionAliasEnvelope | QuestionModelDraft -> QuestionGenerationResult | redacción/visible aliases del modelo; support, identidad, anchor, locator y metadata en backend |
+| P08 | histórico no callable | QuestionReviewRequest | QuestionReviewResult | HISTORICAL_COMPATIBILITY; hard guard pre-transporte |
+| P09 | job durable post-aprobación | GuideBuildRequest -> GuideAliasEnvelope | GuideModelDraft -> EvaluationGuide | binding exacto, core P07 preservado, aliases locales, niveles 0–3 y no partial READY |
 | P10 | oportunidad enriquecida posterior | QuestionBuildRequest | QuestionGenerationResult | citations/source IDs |
 | P11 | fallo estructural | SchemaRepairRequest | SchemaRepairResult | revalidar schema objetivo |
 
-En el primer prototipo se habilita `CLOSED`; P10 queda implementable por contrato pero detrás de feature flag hasta contar con corpus autorizado.
+En el primer prototipo se habilita `CLOSED`; P10 permanece deshabilitado aunque
+su contrato siga siendo legible. Habilitarlo exige decisión nueva y corpus
+autorizado.
 
-Rutas iniciales: P01/P02 GPT-5.6 Sol-medium; P03 Luna-high; P04/P05 Sol-high; P06/P07/P08/P09 Luna-high; P10 bake-off abierto; P11 Luna-minimal con temperatura 0. Terra solo es alternativa si demuestra ventaja medible frente a Luna-high. P10 compara OpenAI, Claude Sonnet y Gemini 3.6 Flash priorizando grounding, citas y abstención.
+Las rutas iniciales se conservan como historia/configuración compatible y no se
+modifican aquí. P05/P08 ya no son alcanzables por ejecuciones nuevas; P09 sólo
+es alcanzable desde una aprobación durable exacta. `candidate.evidence_ids` lleva la support evidence completa
+y `candidate.anchor` el subconjunto visible, que puede ser menor o igual. El
+harness actual no es
+un gate canónico para escoger modelo. Cualquier comparación futura requiere un
+instrumento nuevo gobernado; no se implementa en este MVP change.
 
 `ModelGateway` no elige dinámicamente. Resuelve una unidad `provider + snapshot + model + reasoning_effort + temperature + output_limits`, comprueba modalidades/capabilities, privacidad, región, retención, presupuesto, disponibilidad y fallback aprobado, y guarda reason codes estables. Una imagen no cambia de proveedor por sí sola; se envía solo el crop sanitizado. Gemini puede aprobarse para PDF/audio/video nativos o ventaja medida, nunca como fallback genérico. Sin ruta compatible: `NEEDS_REVIEW` o `BLOCKED`.
 
@@ -458,13 +491,15 @@ El costo fijo esperado es cercano a USD 0 mientras el uso permanezca dentro de c
 
 | Nivel | Casos obligatorios |
 |---|---|
-| Unit | validators, states, idempotency, score/plan/reserva, rutas, permisos/bulk approval y costos |
+| Unit | validators, states, idempotency, soporte categórico/plan/reserva, rutas, permisos/bulk approval y costos |
 | Contract | cada root, schema generation, extra fields, enums, P01-P11 fixtures |
 | Parser | PDF/DOCX/TXT/MD normales, vacíos, corruptos, injection y tamaños límite |
 | Integration | Supabase/R2/Cloud Run Jobs/provider mock/renderer |
 | E2E | actividad, blueprint, 2 submissions, una insuficiente, review, regen, export |
 | Security | cross-workspace/submission, unsigned upload, PII/log, injection, budget |
 | Golden | grounding, answerability, anchor, guide y abstention |
+| Eval policy | cuatro estados de oracle; sospecha bloquea `MODEL_OWNED_*`; harness histórico no selecciona modelo |
+| Reporting | códigos claros + hash sólo en reportes sintéticos; sin cambio content-free de datos reales |
 | Visual/accessibility | pantallas críticas, teclado, foco y PDFs sin clipping/leakage |
 
 El CI no llama modelos reales. Los smoke/evals reales son jobs manuales con presupuesto y dataset autorizados.
@@ -496,7 +531,7 @@ El entorno experimental usable termina cuando:
 
 | Decisión | Provisional | Falta | Cierre |
 |---|---|---|---|
-| proveedor/modelo | matriz P01-P11; Terra solo con ventaja; P10 abierto | bake-off propio | recalibrar Etapa 3 |
+| proveedor/modelo | sin selección nueva; P10 deshabilitado | corpus y gate independientes del harness histórico | recalibrar Etapa 3 |
 | cloud | Cloud Run Service/Jobs + Supabase + R2 | región y cuotas concretas | ratificar antes de datos reales |
 | orquestación futura | Cloud Run Jobs + tablas, sin Redis | duración/volumen reales | reevaluar Etapa 3/4 |
 | identidad | Supabase Auth invite-only | políticas finales | ratificar antes de datos reales |

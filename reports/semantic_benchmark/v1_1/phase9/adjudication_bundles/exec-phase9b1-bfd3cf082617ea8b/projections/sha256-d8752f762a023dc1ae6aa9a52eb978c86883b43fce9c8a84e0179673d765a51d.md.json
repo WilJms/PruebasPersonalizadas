@@ -1,0 +1,77 @@
+{
+  "byte_size": 1144,
+  "media_type": "text/markdown",
+  "parser_id": "stage0-markdown",
+  "parser_version": "stage2-parser/2.0.0",
+  "schema_version": "phase9-blind-source-projection/1.0.0",
+  "source_content_hash": "sha256:d8752f762a023dc1ae6aa9a52eb978c86883b43fce9c8a84e0179673d765a51d",
+  "unit_count": 4,
+  "units": [
+    {
+      "content_text": "```python\ndef asignar_turnos(solicitudes, cupos_por_grupo):\n    solicitudes.sort(key=lambda s: (s[\"prioridad\"], s[\"marca\"], s[\"id\"]))\n    unicas = {s[\"id\"]: s for s in solicitudes if s[\"grupo\"] in cupos_por_grupo}\n    asignadas, espera = [], []\n    for grupo in cupos_por_grupo:\n        del_grupo = [s for s in unicas.values() if s[\"grupo\"] == grupo]\n        corte = cupos_por_grupo[grupo]\n        asignadas += [s[\"id\"] for s in del_grupo[:corte]]\n        espera += [s[\"id\"] for s in del_grupo[corte:]]\n    return {\"asignadas\": asignadas, \"espera\": espera}\n```",
+      "evidence_id": "ev_de1cba84544cd04797df",
+      "locator": {
+        "column": null,
+        "heading_path": [],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 0,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "PARAGRAPH",
+      "normalized_hash": "sha256:8f3e6b030ac52f3a7be2c8d88815851ed5b0cc86cea4ca5e2152b2ba5d123146",
+      "source_order": 0
+    },
+    {
+      "content_text": "Caso de demostración",
+      "evidence_id": "ev_7ab196584d594010f750",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Caso de demostración"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 1,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "HEADING",
+      "normalized_hash": "sha256:db4ee914045f2c62a3e225e81596023610c9765aa18f57109ee7a3dcf66fac49",
+      "source_order": 1
+    },
+    {
+      "content_text": "```python\ndemo = [\n    {\"id\": \"q2\", \"grupo\": \"B\", \"prioridad\": 1, \"marca\": \"08:00\"},\n    {\"id\": \"q1\", \"grupo\": \"A\", \"prioridad\": 1, \"marca\": \"08:00\"},\n    {\"id\": \"q2\", \"grupo\": \"B\", \"prioridad\": 2, \"marca\": \"08:10\"},\n]\nantes = list(demo)\nresultado = asignar_turnos(demo, {\"A\": 1, \"B\": 1})\n```",
+      "evidence_id": "ev_249c96141d2ed104b688",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Caso de demostración"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 2,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "PARAGRAPH",
+      "normalized_hash": "sha256:8e9b2ea4635af47126f9ddbaba9db75d450816ec6ac48662f2b4eefb3e792596",
+      "source_order": 2
+    },
+    {
+      "content_text": "Después de llamar, `demo` queda ordenada, aunque `antes` conserva el orden de referencias previo. El diccionario elige para `q2` la aparición insertada al final. La salida agrupa primero todo A y luego todo B porque el bucle exterior recorre el mapa de cupos.",
+      "evidence_id": "ev_a8e2c4dba9ba5cd0d388",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Caso de demostración"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 3,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "PARAGRAPH",
+      "normalized_hash": "sha256:d1f6d2c81b150399da8f6c9802942db5ed7d4fe92e046f995cd032ba7fa37718",
+      "source_order": 3
+    }
+  ]
+}

@@ -5,10 +5,13 @@ from __future__ import annotations
 from functools import lru_cache
 from typing import Literal
 
-from pydantic import Field, model_validator
+from pydantic import Field, SecretStr, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from sqlalchemy.engine import make_url
 from sqlalchemy.exc import ArgumentError
+
+from ..model_gateway import OPENAI_DEFAULT_REQUEST_TIMEOUT_SECONDS
+from ..provider_authorization import validate_pinned_secret_resource
 
 
 class Settings(BaseSettings):
@@ -24,9 +27,11 @@ class Settings(BaseSettings):
     database_url: str = "sqlite+pysqlite:///./.local/stage1.db"
     auth_mode: Literal["local", "supabase"] = "local"
     object_store_mode: Literal["memory", "r2"] = "memory"
-    job_runner_mode: Literal["inline", "cloud_run"] = "inline"
+    job_runner_mode: Literal["inline", "manual", "cloud_run"] = "inline"
     model_mode: Literal["mock", "real"] = "mock"
+    worker_model_mode: Literal["mock"] = "mock"
     p10_enabled: bool = False
+    openai_api_key: SecretStr | None = None
 
     session_secret: str = Field(
         default="local-development-secret-change-me", min_length=32
@@ -34,6 +39,11 @@ class Settings(BaseSettings):
     session_cookie_name: str = "cva_session"
     csrf_cookie_name: str = "cva_csrf"
     session_ttl_seconds: int = Field(default=3600, ge=300, le=86_400)
+    idempotency_ttl_seconds: int = Field(
+        default=86_400,
+        ge=300,
+        le=604_800,
+    )
     local_invited_emails: str = "teacher@example.test,assistant@example.test"
     local_workspace_id: str = "tnt_experimental"
 
@@ -74,6 +84,8 @@ class Settings(BaseSettings):
     def experimental_guards(self) -> "Settings":
         if self.p10_enabled:
             raise ValueError("P10 is disabled throughout the experimental environment")
+        if self.openai_api_key and self.openai_api_key.get_secret_value().strip():
+            raise ValueError("web runtime must not receive an OpenAI API key")
         if self.environment == "cloud":
             if self.auth_mode != "supabase":
                 raise ValueError("cloud requires Supabase authentication")
@@ -106,6 +118,8 @@ class Settings(BaseSettings):
                 raise ValueError(
                     "cloud requires a complete postgresql+psycopg database URL"
                 )
+        if self.job_runner_mode == "manual" and self.environment != "local":
+            raise ValueError("manual job runner requires the local environment")
         if self.auth_mode == "supabase" and not (
             self.supabase_jwt_issuer and self.supabase_jwks_url
         ):
@@ -147,6 +161,20 @@ class WorkerSettings(BaseSettings):
     object_store_mode: Literal["memory", "r2"] = "memory"
     model_mode: Literal["mock", "real"] = "mock"
     p10_enabled: bool = False
+    claim_job_id: str | None = Field(
+        default=None, pattern=r"^[a-z][a-z0-9_-]{2,127}$"
+    )
+    openai_secret_version_resource: str | None = None
+    synthetic_evaluation_candidate_sha: str | None = Field(
+        default=None,
+        pattern=r"^[a-f0-9]{40}$",
+    )
+    synthetic_evaluation_max_requests: int = Field(default=32, ge=1, le=64)
+    openai_request_timeout_seconds: float = Field(
+        default=OPENAI_DEFAULT_REQUEST_TIMEOUT_SECONDS,
+        ge=5.0,
+        le=300.0,
+    )
 
     r2_endpoint_url: str | None = None
     r2_bucket: str | None = None
@@ -165,11 +193,37 @@ class WorkerSettings(BaseSettings):
     def experimental_worker_guards(self) -> "WorkerSettings":
         if self.p10_enabled:
             raise ValueError("P10 is disabled throughout the experimental environment")
+        if self.model_mode == "real":
+            if self.claim_job_id is None:
+                raise ValueError(
+                    "synthetic evaluation mode requires the exact dispatched claim job ID"
+                )
+            if self.openai_secret_version_resource is None:
+                raise ValueError(
+                    "synthetic evaluation mode requires a pinned secret resource"
+                )
+            validate_pinned_secret_resource(self.openai_secret_version_resource)
+            if self.synthetic_evaluation_candidate_sha is None:
+                raise ValueError(
+                    "synthetic evaluation mode requires an exact candidate SHA"
+                )
+        elif any(
+            value is not None
+            for value in (
+                self.openai_secret_version_resource,
+                self.synthetic_evaluation_candidate_sha,
+            )
+        ):
+            raise ValueError(
+                "mock worker mode must not receive synthetic provider capability metadata"
+            )
         if self.environment == "cloud":
+            if self.claim_job_id is None:
+                raise ValueError(
+                    "cloud worker requires the exact dispatched claim job ID"
+                )
             if self.object_store_mode != "r2":
                 raise ValueError("cloud worker requires private R2 object storage")
-            if self.model_mode != "mock":
-                raise ValueError("cloud experimental worker requires the mock model gateway")
             try:
                 database = make_url(self.database_url)
             except (ArgumentError, TypeError, ValueError) as exc:

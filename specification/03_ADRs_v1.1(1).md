@@ -402,6 +402,10 @@ La v1.1 conserva las decisiones no sustituidas. ADR-030 a ADR-034 reemplazan exp
 ## ADR-031 - Resolvedor determinista de rutas y matriz P01-P11
 
 **Estado:** Accepted; sustituye ADR-015 y precisa ADR-014  
+**Vigencia tras ADR-037:** la matriz queda retenida como configuración
+histórica, no como autoridad de selección o activación. P05/P08 son inactivos
+en el objetivo y P10 está deshabilitado.
+
 **Decisión:** El router no elige dinámicamente el “mejor modelo”. Resuelve una configuración aprobada `provider + snapshot + model + reasoning_effort + temperature + output_limits`, después de comprobar capacidades/modalidades, privacidad, región, retención, presupuesto, disponibilidad y fallback autorizado. La matriz inicial es: P01/P02 Sol-medium; P03 Luna-high; P04/P05 Sol-high; P06-P09 Luna-high; P10 bake-off abierto; P11 Luna-minimal, temperatura 0.
 
 **Contexto:** Un router heurístico por “dificultad” es difícil de reproducir y puede cruzar proveedor o región sin autorización. Imágenes aisladas tampoco justifican cambiar de proveedor: Sol/Terra/Luna aceptan entrada visual por API.
@@ -458,3 +462,232 @@ este gate están registrados en
 **Alternativas:** aprobación exclusivamente individual; “aprobar todo” sin selección/confirmación; aprobación automática. Se rechazan por ineficiencia o falta de control.
 
 **Consecuencias:** el contrato divide targets aprobados y excluidos, sin solapamiento ni omisiones. Versiones obsoletas, preguntas rechazadas, diagnósticos pendientes o conflictos de concurrencia nunca se fuerzan. No cambia la prohibición de grade passback o sanción automática.
+
+---
+
+## ADR-035 - Gate OpenAI real aislado y P11 Luna-low
+
+**Estado:** Accepted el 2026-08-08; sustituye únicamente la selección
+`minimal` de P11 en ADR-031.
+**Vigencia tras ADR-037:** conserva sus controles fail-closed y configuración
+de routing como defensa en profundidad; su harness y qualifications ya no son
+un gate canónico de selección ni autorización actual.
+
+**Autorización:** decisión humana vinculante del prompt de apertura del gate
+OpenAI posterior a `STAGE2_MERGED_AND_VERIFIED`.
+
+**Decisión:** la integración inicial usa exclusivamente Responses API mediante
+el SDK oficial fijado, modelos explícitos `gpt-5.6-sol` y `gpt-5.6-luna`,
+Structured Outputs estrictos derivados de los contratos canónicos y
+`store=false`. P11 usa `gpt-5.6-luna` con `reasoning_effort=low`, una sola
+oportunidad y cero herramientas. La temperatura deseada de P11 es cero, pero no
+se envía mientras no exista compatibilidad oficial documentada para esa
+combinación. No hay selección dinámica, fallback silencioso, estado de
+conversación ni reintentos internos del SDK.
+
+El Service web y el worker ordinario no reciben la clave y siempre conservan
+`CVA_MODEL_MODE=mock`. El opt-in posterior de evaluación sintética crea un
+Cloud Run Job y una service account eval-only separados; el Service web no
+puede invocar ese Job y la cuenta del worker ordinario no puede leer OpenAI. La
+superficie eval-only recibe una referencia no secreta a una versión numérica
+fijada de Secret Manager, SHA candidato y ceilings; nunca monta
+`CVA_OPENAI_API_KEY` en el entorno. Sólo su service account posee IAM para leer
+esa versión.
+
+Incluso con ese opt-in, el proceso debe primero reclamar el `job_id` exacto y
+consumir transaccionalmente una autorización server-side append-only. La
+autorización liga tenant, kind, aggregate, claim attempt, conjunto exacto de
+hashes de artefactos sellados, SHA candidato, hash de prompts/schemas/
+validators/routing, modelo Luna, versión de secreto, expiración y caps de
+requests/costo. Un segundo registro append-only, único por authorization y
+job, materializa el consumo exactly-once. Sólo después de ambas operaciones se
+permite resolver el secreto y construir el transporte. Un flag, un allowlist
+global o una clave de entorno nunca sustituyen esta attestation. CI y pruebas
+offline nunca necesitan una clave.
+
+**Contexto:** la documentación oficial observada publica esfuerzos
+`low`/`medium`/`high` para GPT-5.6 Luna, pero no acredita `minimal` ni snapshots
+fechados para ese modelo. `store=false` evita almacenamiento de estado de la
+respuesta, pero no se presenta como Zero Data Retention: ZDR requiere aprobación
+separada y los abuse-monitoring logs pueden conservarse hasta 30 días según la
+política aplicable.
+
+**Consecuencias:** P01-P09 conservan exactamente la matriz de ADR-031; P10 sigue
+deshabilitado. P11 nunca repara grounding, IDs, evidencia, fuente, seguridad,
+suficiencia ni significado. Los outputs vuelven a Pydantic y a validación
+contextual; los fallos son fail-closed y se registran sin contenido. El cambio
+es reversible retornando P11 a mock o sustituyendo la ruta mediante una nueva
+decisión autorizada. La aceptación semántica y el despliegue real requieren
+credenciales, presupuesto y checkpoints humanos posteriores; esta ADR no
+autoriza llamadas facturables ni datos reales.
+
+El modo real es por-job y eval-only, no un modo general del producto. Un job
+ordinario, un claim distinto, attestation ausente/consumida/expirada, hash de
+artefacto divergente o boundary/SHA/cap distinto falla como `SECURITY` antes
+del resolver, del adapter y de cualquier request.
+
+**Evidencia requerida:** pruebas de matriz y payload, schemas estrictos,
+refusal/incomplete, retries acotados, presupuesto previo, sanitización de
+errores, aislamiento de secretos, golden set sintético y smoke real
+explícitamente aprobado.
+
+---
+
+## ADR-036 - Baseline experimental OpenAI Luna-only
+
+**Estado:** Accepted el 2026-08-08; sustituye únicamente la matriz activa
+inicial de ADR-031/ADR-035 durante las primeras evaluaciones reales.
+**Vigencia tras ADR-037:** `LUNA_BASELINE_V1` queda retenido para
+compatibilidad/reproducción histórica y no selecciona modelo ni activa P05,
+P08 o P10 en el pipeline objetivo.
+
+**Autorización:** decisión humana explícita posterior a
+`OPENAI_CREDENTIALS_REQUIRED`.
+
+**Decisión:** el perfil reproducible `LUNA_BASELINE_V1` usa exclusivamente
+`gpt-5.6-luna` con `reasoning_effort=medium` para P01/P02, `high` para
+P03-P09 y `low` para P11. P10 no tiene ruta. El proveedor es OpenAI,
+`fallback_route_id=null` para todas las rutas y no existe selector heurístico,
+escalamiento automático ni fallback Luna→Sol. P11 conserva exactamente una
+oportunidad estructural y la temperatura no se envía.
+
+La matriz mixta Sol/Luna de ADR-031/ADR-035 se conserva como decisión histórica
+y posible configuración comparadora futura, pero no es callable, fallback ni
+ruta activa. Sol sigue siendo solamente un candidato de comparación posterior
+que exige nueva autorización humana y presupuesto separado.
+
+**Contexto:** la hipótesis experimental es determinar si el modelo de menor
+costo mantiene calidad suficiente antes de pagar por modelos más caros. P01 y
+P02 conservan `medium` para aislar inicialmente la variable modelo; cualquier
+comparación Luna-medium/Luna-high o Luna/Sol pertenece a un gate posterior.
+
+**Consecuencias:** este baseline no demuestra que Luna sea óptimo ni que Sol sea
+innecesario. Los 20 casos sintéticos y sus resultados esperados se mantienen
+sin relajaciones y registran `route_profile=LUNA_BASELINE_V1`. El cambio
+versiona el perfil de routing, no el texto ejecutable ni los contratos: por eso
+`prompt-pack/1.1.1` y `assessment-contracts/1.1.0` permanecen sin incremento.
+Antes de cualquier llamada se exige precio vigente, presupuesto preflight,
+secreto privado y checkpoint humano de gasto. P10, Etapa 3 y datos reales
+continúan prohibidos.
+
+---
+
+## ADR-037 - Autoridad explícita y simplificación preparada del pipeline
+
+**Estado:** Accepted el 2026-08-14; precisa ADR-002/ADR-030/ADR-034, sustituye
+desde esta fecha cualquier autoridad canónica de selección atribuida al
+harness de ADR-035/ADR-036 y no modifica su configuración de routing retenida.
+
+**Decisión:** el pipeline objetivo de actividad es
+`P01 -> P02 -> P03 -> P04 -> preflight determinista -> aprobación docente`.
+El pipeline objetivo por submission es
+`P06 -> planner determinista -> P07 -> validaciones deterministas -> revisión/aprobación docente -> P09`.
+P05 y P08 dejan de tener autoridad como etapas activas de modelo; P10 permanece
+deshabilitado. Sus contratos, rutas, artefactos y receipts existentes se
+retienen por compatibilidad e historia y no constituyen activación.
+
+El backend es autoridad exclusiva sobre identidad, versiones, hashes, estado,
+lineage, pertenencia de evidencia, allowlists, formatos, conteo, presupuestos
+de tiempo, restricciones, factibilidad del planner, almacenamiento,
+transiciones y validaciones deterministas. El modelo sólo propone
+interpretación semántica, estructura pedagógica, relación
+evidencia/constructo, redacción, observables y alternativas defendibles. El
+docente resuelve ambigüedad académica, aprueba el blueprint, aprueba/edita/
+rechaza preguntas y conserva autoridad académica final, sin poder declarar
+válida una inconsistencia mecánica rechazada por backend.
+
+El harness semántico existente al adoptar esta ADR y sus qualifications se
+clasifican como evidencia histórica no canónica para selección de modelo.
+Reports y receipts se
+preservan. Todo juicio causal nuevo declara `VALID`, `ORACLE_SUSPECT`,
+`INVALID` o `NOT_APPLICABLE`; un oracle sospechoso siempre produce resultado
+inconcluso y tiene precedencia sobre cualquier atribución `MODEL_OWNED_*`.
+Sólo reportes marcados `SYNTHETIC_ONLY_NO_STUDENT_DATA` enumeran códigos
+diagnósticos estructurados en claro, junto a su hash de integridad. La política
+content-free para contenido estudiantil real no cambia.
+
+**Contexto:** la evidencia histórica mostró que P05/P08 mezclaban juicio
+semántico con invariantes que ya pertenecen a preflight, planner, validadores y
+revisión humana. Una discrepancia sistemática con el instrumento no demuestra
+por sí sola un fallo del modelo y no debe impulsar selección de modelo.
+
+**Consecuencias:** la autoridad objetivo queda ejecutable mediante
+`pipeline-authority/1.1.0`. Fase 3 completó el cutover operativo de P05: el
+runtime activo usa `AssessmentBlueprint` compilado, preflight determinista
+durable y decisión docente; reviews/jobs P05 anteriores se leen o reconcilian
+sin una nueva llamada. En el corte de adopción no cambiaban
+P04/P06/P07/P08/P09, provider routing, prompts ejecutables ni despliegue; las
+notas siguientes registran los cutovers posteriores. Fase 6 retiró P08 y Fase 7 ubicó P09 después
+de la aprobación docente conservando lectura histórica, idempotencia, lineage
+y regeneración localizada. No se autoriza un corpus nuevo, llamadas billables
+ni datos reales.
+
+**Nota de implementación — Fase 4, 2026-08-15:** la frase anterior “no cambian
+P06” describe el corte de adopción de ADR-037 y no congela una implementación
+contraria a su reparto de autoridad. Fase 4 ejecuta ese reparto sin cambiar el
+orden del pipeline: el proveedor P06 emite `EvidenceMappingModelDraft` sobre
+aliases locales y estados `SUFFICIENT`, `PARTIAL`, `INSUFFICIENT` o
+`UNCERTAIN`; un materializador determinista crea el `EvidenceMapPatch`
+canónico con identidad y restricciones server-owned. P06 termina correctamente
+con cualquier cantidad de relaciones, preserva estados locales y no decide N.
+El planner es la única autoridad de elegibilidad global, selección y
+factibilidad exacta; `evidence_fit` y `opportunity_quality` quedan sólo como
+proyecciones legacy derivadas y no como gates. P07 no fue rediseñado, P08
+continúa activo en el runtime actual, P09 conserva su orden actual y P10 sigue
+deshabilitado. No cambian routing/modelo/reasoning y no se autoriza proveedor
+real ni gasto.
+
+**Nota de implementación — Fase 5, 2026-08-15:** la frontera P07 conserva la
+etapa y los contratos canónicos, pero el proveedor recibe un namespace local
+`QuestionAliasEnvelope` y devuelve `QuestionModelDraft`. Support evidence es
+server-owned y coincide con la evidencia de la oportunidad planificada; el
+visible anchor es un subconjunto seleccionado por aliases. El servidor crea
+identidad/metadata y reconstruye texto, transformación y locator exactos desde
+`EvidenceUnit`, sin permitir anchor libre ni evidencia adicional. Los
+observables y la redacción siguen siendo semánticos. Leakage objetivo, scope,
+membership y replay se validan determinísticamente. En ese corte de Fase 5,
+P08 continuaba activo de forma temporal sin cambiar scores, decisión o routing; P09 no se mueve y P10
+sigue deshabilitado. La siguiente modificación funcional es retirar P08 del
+runtime. No cambian modelo/reasoning ni se autoriza proveedor real o gasto.
+
+**Nota de implementación — Fase 6, 2026-08-15:** P08 queda retirado de toda
+ejecución nueva. El hard guard `P08_ACTIVE_RUNTIME_RETIRED` precede gateway,
+trusted context y transporte; no se construye request, ledger, StageRun, coste
+ni `QuestionReviewRow` P08. P07 READY pasa por validaciones deterministas y a
+selección; replacement o defecto question-local objetivo consume una reserva
+finita, mientras scope/security falla cerrado. Exactamente N sigue siendo
+precondición de ASSEMBLE. Contratos, prompt, ruta, mocks, rows, reports,
+receipts y qualification P08 se preservan como historia no autoritativa.
+Resume desde `QUESTION_REVIEW` revalida/reutiliza P07 vigente e ignora la
+decisión histórica. El runtime interino conserva
+`P07 validado -> ASSEMBLE -> P09 -> workflow docente`; mover P09 pertenece a
+Fase 7. P10 continúa deshabilitado y no se autorizó proveedor real ni gasto.
+
+**Nota de implementación — Fase 7, 2026-08-16:** queda ejecutado el orden
+objetivo de P09 y `pipeline-authority/1.1.0`. El workflow de submission termina
+ASSEMBLE en `Assessment.NEEDS_REVIEW` sin construir request, StageRun, ledger ni
+guía P09. Editar, regenerar o rechazar antes de aprobación tampoco alcanza
+P09. Una aprobación docente exacta se persiste primero y luego crea, de forma
+idempotente, un job durable `GUIDE_BUILD`; por tanto la aprobación no depende de
+la disponibilidad ni del resultado de la guía.
+
+P09 es una única llamada de enriquecimiento por versión aprobada, no un
+reviewer ni un gate. El proveedor recibe `GuideAliasEnvelope`, devuelve
+`GuideModelDraft` y sólo puede proponer condiciones de aceptación,
+observables adicionales, alternativas/misconceptions adicionales, escala
+0–3, `cannot_infer` e incertidumbres semánticas. No puede devolver IDs
+canónicos, texto o anchor de pregunta, locators, workflow, approval metadata ni
+evidencia fuera del namespace local. `p09-guide-materializer/1.0.0` preserva
+literalmente purpose y observables core de P07, resuelve aliases contra la
+support evidence exacta, crea identidad y exige guía completa o fallo cerrado.
+
+Cada guía activa liga tenant, submission, assessment/version/ETag, hash del
+snapshot y question set, evento/snapshot de aprobación, actor/fecha, policy y
+boundary del materializador. Un fallo P09 deja el Assessment aprobado y no
+publica una guía parcial `READY`. Filas pre-Fase 7 se preservan como
+`HISTORICAL_PREAPPROVAL` y nunca se eligen como guía current sin el binding
+exacto. Retry/recovery reutiliza StageRun y una identidad lógica derivada del
+binding; exports exigen la guía de la versión aprobada vigente. Modelo, route y
+`reasoning_effort` P09 no cambian; el nominal sigue siendo `P06 1 + P07 N +
+P09 1 = N+2`. P05/P08 permanecen históricos, P10 deshabilitado, y no se
+autorizó proveedor real, corpus nuevo ni gasto.

@@ -1,0 +1,45 @@
+{
+  "conclusion": "OLD_SHAPE_REPRODUCES_CROSS_LOOP_FAILURE_NEW_SHAPE_ELIMINATES_IT",
+  "execution_version": "phase9-execution/2.0.3",
+  "fake_transport_property": "REUSABLE_ASYNC_STATE_BINDS_TO_FIRST_LIVE_EVENT_LOOP",
+  "historical_causality_claim": "NOT_PROVEN_BY_OFFLINE_REPRODUCTION_ALONE",
+  "mode": "OFFLINE_IN_PROCESS_NO_NETWORK",
+  "new_single_population_asyncio_run": {
+    "adapter_close_same_live_loop": true,
+    "adapter_closed": true,
+    "attempt_rows": 30,
+    "completed_logical_calls": 30,
+    "cross_loop_lifecycle_failures": 0,
+    "event_loops_seen": 1,
+    "failed_logical_calls": 0,
+    "frozen_order_preserved": true,
+    "orchestration_shape": "ONE_ASYNCIO_RUN_FOR_SEQUENTIAL_AUTHORIZED_POPULATION",
+    "planned_logical_calls": 30,
+    "provider_invocations": 30,
+    "result": "THIRTY_CALL_SINGLE_LOOP_REGRESSION_PASSED"
+  },
+  "old_per_call_asyncio_run": {
+    "adapter_closed": false,
+    "attempt_rows": 30,
+    "bound_loop_closed_after_first_asyncio_run": true,
+    "completed_logical_calls": 1,
+    "cross_loop_lifecycle_failures": 29,
+    "event_loops_seen": 30,
+    "failed_logical_calls": 29,
+    "first_call_established_reusable_async_state": true,
+    "frozen_order_preserved": true,
+    "orchestration_shape": "ONE_PERSISTENT_ADAPTER_PLUS_ASYNCIO_RUN_PER_LOGICAL_CALL",
+    "planned_logical_calls": 30,
+    "provider_invocations": 30,
+    "result": "CROSS_EVENT_LOOP_FAILURE_REPRODUCED"
+  },
+  "reproduction_hash": "sha256:14359e54988abdcf9593c38a4d6a299757e40b30021937ee09b5c925e8782ed7",
+  "safety_counters": {
+    "adjudicator_calls": 0,
+    "credential_resolutions": 0,
+    "provider_calls": 0,
+    "real_provider_transport": false,
+    "transport_factory_calls": 0
+  },
+  "schema_version": "phase9-async-lifecycle-reproduction/1.0.0"
+}

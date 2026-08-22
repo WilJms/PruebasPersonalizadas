@@ -1,0 +1,734 @@
+{
+  "byte_size": 39345,
+  "media_type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "parser_id": "stage2-docx-structural",
+  "parser_version": "stage2-parser/2.0.0",
+  "schema_version": "phase9-blind-source-projection/1.0.0",
+  "source_content_hash": "sha256:bde129b7a90362871b9dc76ad24388a6ded288404a29a79b68c0c2b37bfcb65d",
+  "unit_count": 43,
+  "units": [
+    {
+      "content_text": "CHECKLIST DE REVISIÓN 04",
+      "evidence_id": "ev_53e4997993cd86a26f57",
+      "locator": {
+        "column": null,
+        "heading_path": [],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 0,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "PARAGRAPH",
+      "normalized_hash": "sha256:4d214f585a56c4c48ffeef4ca41ce10c36bdc7a9b96aa5f5587f0fd8d06b1cac",
+      "source_order": 0
+    },
+    {
+      "content_text": "Asignador de turnos: lista de verificación",
+      "evidence_id": "ev_ab69c92d1a1dbf335a9f",
+      "locator": {
+        "column": null,
+        "heading_path": [],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 1,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "PARAGRAPH",
+      "normalized_hash": "sha256:7adb5947be8c7f7dcc7605c8967d7338f85adef7de19d13e4b30daf15c633ce1",
+      "source_order": 1
+    },
+    {
+      "content_text": "Cada línea se marca Sí / No / No verificable con lo entregado.",
+      "evidence_id": "ev_04fcb8ed77e1818324c9",
+      "locator": {
+        "column": null,
+        "heading_path": [],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 2,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "PARAGRAPH",
+      "normalized_hash": "sha256:2c7d2b9597f7c7d101f2197d5e49d3f366be7924f71ce22766c4ba40d13d58fb",
+      "source_order": 2
+    },
+    {
+      "content_text": "Programación   |   Se revisa el entregable, no el proceso de escritura",
+      "evidence_id": "ev_0680c20884a6bcb8f7bb",
+      "locator": {
+        "column": null,
+        "heading_path": [],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 3,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "PARAGRAPH",
+      "normalized_hash": "sha256:751d39a14dc6a273950a408f56bd1b4dac279b3228f7dea97c45ca725d4b9555",
+      "source_order": 3
+    },
+    {
+      "content_text": "Comportamiento del contrato",
+      "evidence_id": "ev_5b5a2fa9f0a5e855fb8b",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Comportamiento del contrato"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 4,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "HEADING",
+      "normalized_hash": "sha256:561aa13e6f8f7210230da1d8493564185b82fd1c9e43314a79e344919f88f4ce",
+      "source_order": 4
+    },
+    {
+      "content_text": "Verificación",
+      "evidence_id": "ev_9e9b4d84faf6e5895e8e",
+      "locator": {
+        "column": 0,
+        "heading_path": [
+          "Comportamiento del contrato"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 0,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:353abbf14094223bee0599c38330cf6f736e063547d74a7a0209a773f8086ad4",
+      "source_order": 5
+    },
+    {
+      "content_text": "Dónde debería poder comprobarse",
+      "evidence_id": "ev_4dcfa346e9b266ccc209",
+      "locator": {
+        "column": 1,
+        "heading_path": [
+          "Comportamiento del contrato"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 0,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:ac47f0bd6113a0e2dc02ab8ce41995e47d1858620daa3c4b8a01deb7cb292a0c",
+      "source_order": 6
+    },
+    {
+      "content_text": "Descarta registros con campo faltante",
+      "evidence_id": "ev_f741459c1f773c1e6399",
+      "locator": {
+        "column": 0,
+        "heading_path": [
+          "Comportamiento del contrato"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 1,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:4b67d9e6467815ccfb69795edbd1dae73ff481fe4567c00ac2b9314eb54c441e",
+      "source_order": 7
+    },
+    {
+      "content_text": "Bloque de validación del código",
+      "evidence_id": "ev_a08953d67364e9c65dc6",
+      "locator": {
+        "column": 1,
+        "heading_path": [
+          "Comportamiento del contrato"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 1,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:8135dffb63de1b96cc9aece120e23a92e2138be35612ba6e4e2c17bdc210860b",
+      "source_order": 8
+    },
+    {
+      "content_text": "Descarta prioridad fuera de {1,2,3}",
+      "evidence_id": "ev_8edf15454c924f5b063d",
+      "locator": {
+        "column": 0,
+        "heading_path": [
+          "Comportamiento del contrato"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 2,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:601a1e43487cc13589c15d5c4ca7afbf6aca12d9e7a0640c3891a4ece5846981",
+      "source_order": 9
+    },
+    {
+      "content_text": "Bloque de validación del código",
+      "evidence_id": "ev_a44c2ea81843a6460f61",
+      "locator": {
+        "column": 1,
+        "heading_path": [
+          "Comportamiento del contrato"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 2,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:8135dffb63de1b96cc9aece120e23a92e2138be35612ba6e4e2c17bdc210860b",
+      "source_order": 10
+    },
+    {
+      "content_text": "Descarta grupo ausente del mapa de cupos",
+      "evidence_id": "ev_c94560c3c0b11bae4caa",
+      "locator": {
+        "column": 0,
+        "heading_path": [
+          "Comportamiento del contrato"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 3,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:70a9920813c6cd9857eb485befa85f944bf7e42e791a0c9a1d9723230ca48100",
+      "source_order": 11
+    },
+    {
+      "content_text": "Bloque de validación del código",
+      "evidence_id": "ev_bef718ab39323da760d8",
+      "locator": {
+        "column": 1,
+        "heading_path": [
+          "Comportamiento del contrato"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 3,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:8135dffb63de1b96cc9aece120e23a92e2138be35612ba6e4e2c17bdc210860b",
+      "source_order": 12
+    },
+    {
+      "content_text": "Conserva la PRIMERA aparición válida de un id repetido",
+      "evidence_id": "ev_d9a1bfaeb415198d5ed3",
+      "locator": {
+        "column": 0,
+        "heading_path": [
+          "Comportamiento del contrato"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 4,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:32db59d22c110bf6336802d8cefc110deca8d8eb66859b0c3a04e6573293b787",
+      "source_order": 13
+    },
+    {
+      "content_text": "Estructura de deduplicación",
+      "evidence_id": "ev_055dbed6f1886a13b4a8",
+      "locator": {
+        "column": 1,
+        "heading_path": [
+          "Comportamiento del contrato"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 4,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:1268a1df5304080881756965bc3fadb68ee0c43b0504193817ea47413138dfde",
+      "source_order": 14
+    },
+    {
+      "content_text": "Una aparición inválida no reserva el id",
+      "evidence_id": "ev_241e5d6d4ba36ef3806e",
+      "locator": {
+        "column": 0,
+        "heading_path": [
+          "Comportamiento del contrato"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 5,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:955544c100f8f487bf37e1dbe43adf2647bbcca5bde342dd3d5149475b67049a",
+      "source_order": 15
+    },
+    {
+      "content_text": "Orden entre validación y deduplicación",
+      "evidence_id": "ev_245d1287c8970634d968",
+      "locator": {
+        "column": 1,
+        "heading_path": [
+          "Comportamiento del contrato"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 5,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:b3b38c627db12a0ca3cec274d0dd3aec250d5ecaecf6b674acdee3498b470988",
+      "source_order": 16
+    },
+    {
+      "content_text": "Ordena por prioridad, luego marca, luego id",
+      "evidence_id": "ev_dbe7363305d0b688dfb7",
+      "locator": {
+        "column": 0,
+        "heading_path": [
+          "Comportamiento del contrato"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 6,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:ec1cb67226cfbc887f2301958a803a8a7e67e3859079f09ac62570184f7767de",
+      "source_order": 17
+    },
+    {
+      "content_text": "Clave de ordenación",
+      "evidence_id": "ev_ece005802159bf5ec446",
+      "locator": {
+        "column": 1,
+        "heading_path": [
+          "Comportamiento del contrato"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 6,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:79cb5ab788ef7d6488b6229794c528e0b62b710bd1bf67443745473acac29871",
+      "source_order": 18
+    },
+    {
+      "content_text": "Los cupos de un grupo no consumen los de otro",
+      "evidence_id": "ev_e7d7c67d4aee23288523",
+      "locator": {
+        "column": 0,
+        "heading_path": [
+          "Comportamiento del contrato"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 7,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:f3d9b8211ac50a565f4b327f93dc4533f5a48f07c26dc6dd50029f9157c53b11",
+      "source_order": 19
+    },
+    {
+      "content_text": "Contador o mapa de capacidad",
+      "evidence_id": "ev_44c70230871ee54992a4",
+      "locator": {
+        "column": 1,
+        "heading_path": [
+          "Comportamiento del contrato"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 7,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:ab948544d1f8b1594817b265c91eec29a8df9439ff5ee8b14fcc1d3fb8be5127",
+      "source_order": 20
+    },
+    {
+      "content_text": "Un grupo con cupo 0 envía todo a espera",
+      "evidence_id": "ev_62f8d62450844ec2698c",
+      "locator": {
+        "column": 0,
+        "heading_path": [
+          "Comportamiento del contrato"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 8,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:b7fc8b10f63d955eb1a0200d6ca66abd9f4de65b76d41743460a8309d342bf29",
+      "source_order": 21
+    },
+    {
+      "content_text": "Comparación de capacidad",
+      "evidence_id": "ev_6837a7dfd4aec2ce313b",
+      "locator": {
+        "column": 1,
+        "heading_path": [
+          "Comportamiento del contrato"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 8,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:013adde000af58f1deed57961e9224ecf5ee951f2bb7d721580f38a3cb5897b5",
+      "source_order": 22
+    },
+    {
+      "content_text": "No muta solicitudes ni cupos_por_grupo",
+      "evidence_id": "ev_2db6790f53d215e07836",
+      "locator": {
+        "column": 0,
+        "heading_path": [
+          "Comportamiento del contrato"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 9,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:29888162ba12cff92627dc1d7dc18b5c30eaea8d2415d7b87e731f4939d66969",
+      "source_order": 23
+    },
+    {
+      "content_text": "Uso de copias o de sorted() en vez de list.sort()",
+      "evidence_id": "ev_4bed15fbedef2b60e37c",
+      "locator": {
+        "column": 1,
+        "heading_path": [
+          "Comportamiento del contrato"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 9,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:f61a80b021a4d8f290166c58f432a17df5a765f44f60e101de26f7cf93802742",
+      "source_order": 24
+    },
+    {
+      "content_text": "Dos llamadas idénticas producen el mismo resultado",
+      "evidence_id": "ev_36a32664f3ea10a34b16",
+      "locator": {
+        "column": 0,
+        "heading_path": [
+          "Comportamiento del contrato"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 10,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:d9588a0230c1ab975a03e0c376114cc4b3712580bad5d0282c7fd0a5cbc31b32",
+      "source_order": 25
+    },
+    {
+      "content_text": "Ausencia de estado externo",
+      "evidence_id": "ev_986395302d2d79177594",
+      "locator": {
+        "column": 1,
+        "heading_path": [
+          "Comportamiento del contrato"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 10,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:03b2f805f06961c9647a6a7accd1c8641a39c5bc01d77077e55b98f365b49f54",
+      "source_order": 26
+    },
+    {
+      "content_text": "Nota técnica",
+      "evidence_id": "ev_1e3fced500cdc4963089",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Nota técnica"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 6,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "HEADING",
+      "normalized_hash": "sha256:4632811b3e5d92477ced81e1473d747de47967240bb16651043ccd64749805a1",
+      "source_order": 27
+    },
+    {
+      "content_text": "Verificación",
+      "evidence_id": "ev_99e508eb1a453fb1fb5f",
+      "locator": {
+        "column": 0,
+        "heading_path": [
+          "Nota técnica"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 0,
+        "table_index": 1
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:353abbf14094223bee0599c38330cf6f736e063547d74a7a0209a773f8086ad4",
+      "source_order": 28
+    },
+    {
+      "content_text": "Dónde debería poder comprobarse",
+      "evidence_id": "ev_33b9e12bedc478799e9a",
+      "locator": {
+        "column": 1,
+        "heading_path": [
+          "Nota técnica"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 0,
+        "table_index": 1
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:ac47f0bd6113a0e2dc02ab8ce41995e47d1858620daa3c4b8a01deb7cb292a0c",
+      "source_order": 29
+    },
+    {
+      "content_text": "Explica la decisión sobre duplicados",
+      "evidence_id": "ev_bf9456e605eac32934a8",
+      "locator": {
+        "column": 0,
+        "heading_path": [
+          "Nota técnica"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 1,
+        "table_index": 1
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:ba8e6ee17943dfc0a5299eac4d49ab92cd3d1a42acd9b5f815e1b0335021569e",
+      "source_order": 30
+    },
+    {
+      "content_text": "Párrafo dedicado, no solo el nombre de la estructura",
+      "evidence_id": "ev_56ec653a128764396e20",
+      "locator": {
+        "column": 1,
+        "heading_path": [
+          "Nota técnica"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 1,
+        "table_index": 1
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:6b193eee663f4dbe92be8ee082fdbe77cdba7c7c8c2154016c6ed4f9c8c98464",
+      "source_order": 31
+    },
+    {
+      "content_text": "Explica la estructura usada para contar cupos",
+      "evidence_id": "ev_b59937b503ad03b78634",
+      "locator": {
+        "column": 0,
+        "heading_path": [
+          "Nota técnica"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 2,
+        "table_index": 1
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:8dedeab2fecd636f61945026244a6651da9b47ec4f0a6ff5de9be15d033476ac",
+      "source_order": 32
+    },
+    {
+      "content_text": "Párrafo dedicado",
+      "evidence_id": "ev_7680f93c0e4b53a9d669",
+      "locator": {
+        "column": 1,
+        "heading_path": [
+          "Nota técnica"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 2,
+        "table_index": 1
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:2683fd1a7af44eda7fe184e45be28bc595e1d5bd383fff13d9e541b0347b5bed",
+      "source_order": 33
+    },
+    {
+      "content_text": "Declara la complejidad dominante con justificación",
+      "evidence_id": "ev_d6cf6e24fc76dda7b7dc",
+      "locator": {
+        "column": 0,
+        "heading_path": [
+          "Nota técnica"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 3,
+        "table_index": 1
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:590ed3b56e24d033c973a610d8570ccf482ab972ecb6c2ea6f9d441a55327cb6",
+      "source_order": 34
+    },
+    {
+      "content_text": "Separando validación, ordenación y recorrido",
+      "evidence_id": "ev_e9f7d3673cc590ecc0e7",
+      "locator": {
+        "column": 1,
+        "heading_path": [
+          "Nota técnica"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 3,
+        "table_index": 1
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:a5fb8e6d768bf14d462ad5d2edc1beeb44f5e7249cca6dc0cfe054091eeed692",
+      "source_order": 35
+    },
+    {
+      "content_text": "El vocabulario en inglés describe el comportamiento real",
+      "evidence_id": "ev_ddb9736b63a29e274e71",
+      "locator": {
+        "column": 0,
+        "heading_path": [
+          "Nota técnica"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 4,
+        "table_index": 1
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:df9137870ad76859e81c94664b367266e341f6b45814705ca456543b38bd2a49",
+      "source_order": 36
+    },
+    {
+      "content_text": "Correspondencia entre término y línea de código",
+      "evidence_id": "ev_2a09a0a7fdd17c327135",
+      "locator": {
+        "column": 1,
+        "heading_path": [
+          "Nota técnica"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 4,
+        "table_index": 1
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:bcfdfcd7fd49ea60de160c719c72000c537cfb8413a9e43fa52deeb757a48e59",
+      "source_order": 37
+    },
+    {
+      "content_text": "Cómo usar el checklist",
+      "evidence_id": "ev_4549f7544560bfed1bb3",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Cómo usar el checklist"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 8,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "HEADING",
+      "normalized_hash": "sha256:3aaf4fa8d4922615cc00b9c01200a6b4ee5be94a739faa2ef5d6b436e4446e34",
+      "source_order": 38
+    },
+    {
+      "content_text": "\"No verificable\" no equivale a \"No\". Se usa cuando el entregable no contiene la parte del artefacto donde esa propiedad se decidiría.",
+      "evidence_id": "ev_0e07b629b9cab4518c58",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Cómo usar el checklist"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 9,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "LIST",
+      "normalized_hash": "sha256:e05f27c86ba37c4b8fc2bf0194f56e6d14582a4c6a629fbca5b24c7f8647b372",
+      "source_order": 39
+    },
+    {
+      "content_text": "Una discrepancia entre lo que la nota afirma y lo que el código hace se marca en ambas secciones y se deja constancia de cuál es cuál.",
+      "evidence_id": "ev_aef255c0f8a418ae14a9",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Cómo usar el checklist"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 10,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "LIST",
+      "normalized_hash": "sha256:e4ae4b4011711bbb360cb0ca4396f54d643341029e1e0d87d80adc904b719255",
+      "source_order": 40
+    },
+    {
+      "content_text": "No se ejecutan pruebas automatizadas: la revisión es por lectura del entregable.",
+      "evidence_id": "ev_5d395aad1583c7039618",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Cómo usar el checklist"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 11,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "LIST",
+      "normalized_hash": "sha256:35a3ebaad0228e81004a6bf4b5a3fdf161bdbdd9389ba8f320cd7bbd003969a3",
+      "source_order": 41
+    },
+    {
+      "content_text": "No se infiere qué quiso hacer quien programó. Solo se registra lo que el código hace.",
+      "evidence_id": "ev_1ab176ccba4110b1fd48",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Cómo usar el checklist"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 12,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "LIST",
+      "normalized_hash": "sha256:6c9190bd7abcbaf5a8525d12b8e9da408717e6dcdeb6aab04e4f92084bb3df45",
+      "source_order": 42
+    }
+  ]
+}

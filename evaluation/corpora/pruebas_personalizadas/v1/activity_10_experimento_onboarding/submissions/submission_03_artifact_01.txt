@@ -1,0 +1,9 @@
+desktop V-C = 1020/1200 - 720/800 = 0.85 - 0.90 = -0.05
+mobile V-C = 480/800 - 660/1200 = 0.60 - 0.55 = +0.05
+overall V-C = 0.75 - 0.69 = +0.06
+desktop share: V 60%, C 40%
+
+Denominators: assigned accounts per version and device.
+Activation window: 24 hours, four steps.
+
+Next step considered: colour preference survey.

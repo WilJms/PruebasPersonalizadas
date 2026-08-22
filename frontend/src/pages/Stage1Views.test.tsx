@@ -21,6 +21,7 @@ import {
   ambiguityView,
   assessmentBundle,
   blueprintView,
+  evaluationGuide,
   failedTechnicalJob,
   submission,
 } from "../test/fixtures";
@@ -200,7 +201,7 @@ describe("Stage 1 durable landing", () => {
   });
 });
 
-describe("Stage 1 blueprint review", () => {
+describe("Stage 1 blueprint preflight", () => {
   beforeEach(() => {
     vi.mocked(getLatestBlueprint).mockReset().mockResolvedValue(structuredClone(blueprintView));
     vi.mocked(getJob).mockReset();
@@ -212,7 +213,21 @@ describe("Stage 1 blueprint review", () => {
       control_state: "ACTIVE",
       failure_class: "PERMANENT",
     });
-    vi.mocked(getActivity).mockReset();
+    vi.mocked(getActivity).mockReset().mockResolvedValue(
+      activityResource({
+        activity_id: "activity_01",
+        title: "Actividad con blueprint",
+        status: "BLUEPRINT_READY",
+        journey: {
+          continue_path: "/activities/activity_01/blueprint",
+          next_action: "REVIEW_BLUEPRINT",
+          blueprint: { version: 3, status: "READY", etag: '"sha256:blueprint-3"' },
+          submission: null,
+          job: null,
+          assessment: null,
+        },
+      }),
+    );
     vi.mocked(getActivityAmbiguity).mockReset();
     vi.mocked(createPolicyDecision).mockReset();
     vi.mocked(generateBlueprint).mockReset();
@@ -233,11 +248,77 @@ describe("Stage 1 blueprint review", () => {
     expect(screen.getAllByText("EXPLAIN MECHANISM").length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText("Efecto de la decisión principal")).toBeInTheDocument();
     expect(screen.getByText(/blueprint-3/)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Catálogo factible" })).toBeInTheDocument();
+    expect(screen.getByText("PASS · Política")).toBeInTheDocument();
+    expect(screen.queryByText("Revisión P05")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Aprobar blueprint" })).toBeEnabled();
 
     await user.click(screen.getByRole("button", { name: "Editar blueprint" }));
     expect(screen.getByRole("textbox", { name: "Nombre de dimensión 1" })).toBeInTheDocument();
     expect(screen.getByRole("textbox", { name: "Foco opportunity_template_01" })).toBeInTheDocument();
     expect(screen.queryByRole("textbox", { name: /operación/i })).not.toBeInTheDocument();
+  });
+
+  it("waits for the durable preflight job before presenting the edited blueprint version", async () => {
+    const user = userEvent.setup();
+    const reviewed = structuredClone(blueprintView);
+    reviewed.etag = '"sha256:blueprint-4"';
+    reviewed.version = 4;
+    reviewed.blueprint.blueprint_version = 4;
+    reviewed.blueprint.dimensions[0].name = "Comprensión causal revisada";
+    vi.mocked(getLatestBlueprint)
+      .mockReset()
+      .mockResolvedValueOnce(structuredClone(blueprintView))
+      .mockResolvedValueOnce(reviewed);
+    vi.mocked(updateBlueprint).mockResolvedValue({
+      ...failedTechnicalJob,
+      job_id: "job_blueprint_preflight",
+      aggregate_id: "activity_01",
+      stage: "BLUEPRINT_PREFLIGHT",
+      status: "QUEUED",
+      progress: 0,
+      attempt: 1,
+      diagnostics: [],
+    });
+    vi.mocked(getJob).mockResolvedValue({
+      ...failedTechnicalJob,
+      job_id: "job_blueprint_preflight",
+      aggregate_id: "activity_01",
+      stage: "BLUEPRINT_PREFLIGHT",
+      status: "SUCCEEDED",
+      progress: 1,
+      attempt: 1,
+      diagnostics: [],
+    });
+
+    render(
+      <MemoryRouter initialEntries={["/activities/activity_01/blueprint"]}>
+        <Route path="/activities/:activityId/blueprint"><BlueprintPage /></Route>
+      </MemoryRouter>,
+    );
+
+    await user.click(await screen.findByRole("button", { name: "Editar blueprint" }));
+    const name = screen.getByRole("textbox", { name: "Nombre de dimensión 1" });
+    await user.clear(name);
+    await user.type(name, "Comprensión causal revisada");
+    await user.click(screen.getByRole("button", { name: "Guardar nueva versión" }));
+
+    await waitFor(() =>
+      expect(updateBlueprint).toHaveBeenCalledWith(
+        "activity_01",
+        expect.objectContaining({
+          blueprint_version: 3,
+          dimensions: expect.arrayContaining([
+            expect.objectContaining({ name: "Comprensión causal revisada" }),
+          ]),
+        }),
+        blueprintView.etag,
+      ),
+    );
+    expect(await screen.findByRole("heading", { name: "Comprensión causal revisada" })).toBeInTheDocument();
+    expect(screen.getByText(/blueprint-4/)).toBeInTheDocument();
+    expect(getJob).toHaveBeenCalledWith("job_blueprint_preflight");
+    expect(getLatestBlueprint).toHaveBeenCalledTimes(2);
   });
 
   it("continues an approved blueprint into the Stage 2 batch dashboard", async () => {
@@ -285,7 +366,7 @@ describe("Stage 1 blueprint review", () => {
         ...failedTechnicalJob,
         job_id: "job_resumed",
         aggregate_id: "activity_01",
-        stage: "BLUEPRINT_REVIEW",
+        stage: "BLUEPRINT_PREFLIGHT",
         status: "SUCCEEDED",
         progress: 1,
         attempt: 1,
@@ -472,7 +553,7 @@ function ReviewHarness({ initialBundle = assessmentBundle }: { initialBundle?: A
 }
 
 describe("Stage 1 evidence-first review", () => {
-  it("shows provenance, semantic review and guide while keeping question actions out of scope", async () => {
+  it("shows provenance and keeps P09 unavailable before approval", async () => {
     const user = userEvent.setup();
     render(
       <MemoryRouter>
@@ -490,12 +571,13 @@ describe("Stage 1 evidence-first review", () => {
     expect(assessmentTab).toHaveFocus();
     expect(assessmentTab).toHaveAttribute("aria-selected", "true");
 
-    expect(screen.getAllByText("¿Cómo produjo la decisión descrita el efecto observado?")).toHaveLength(2);
+    expect(screen.getAllByText("¿Cómo produjo la decisión descrita el efecto observado?")).toHaveLength(1);
     expect(screen.getByText("dimension: dim_causal")).toBeInTheDocument();
     expect(screen.getByText("variant: variant_tradeoff")).toBeInTheDocument();
     expect(screen.getByText("paragraph index: 3", { exact: false })).toBeInTheDocument();
     expect(screen.getByText("QUESTION_GROUNDED")).toBeInTheDocument();
     expect(screen.getByText("Grounding")).toBeInTheDocument();
+    expect(screen.getByText("Review histórico P08 · compatibilidad no autoritativa")).toBeInTheDocument();
 
     const approve = screen.getByRole("button", { name: "Aprobar Assessment" });
     expect(approve).toBeDisabled();
@@ -506,6 +588,26 @@ describe("Stage 1 evidence-first review", () => {
     expect(screen.queryByRole("button", { name: /evaluación pdf|guía pdf|json canónico/i })).not.toBeInTheDocument();
 
     await user.click(screen.getByRole("tab", { name: /Guía estructurada/ }));
+    const guidePanel = screen.getByRole("tabpanel", { name: /Guía estructurada/ });
+    expect(within(guidePanel).getByText("Guía posterior a la aprobación")).toBeInTheDocument();
+    expect(within(guidePanel).getByText(/P09 se ejecutará una sola vez/)).toBeInTheDocument();
+  });
+
+  it("renders the exact post-approval guide once it is ready", async () => {
+    const ready = structuredClone(assessmentBundle);
+    ready.assessment.status = "APPROVED";
+    ready.assessment.approved_by = "teacher_01";
+    ready.assessment.approved_at = "2026-07-31T12:00:00Z";
+    ready.guide = evaluationGuide;
+    ready.guide_status = "READY";
+    render(
+      <MemoryRouter>
+        <ReviewHarness initialBundle={ready} />
+      </MemoryRouter>,
+    );
+    await userEvent.setup().click(
+      screen.getByRole("tab", { name: /Guía estructurada/ }),
+    );
     const guidePanel = screen.getByRole("tabpanel", { name: /Guía estructurada/ });
     expect(within(guidePanel).getByText("Observar una explicación causal basada en la entrega.")).toBeInTheDocument();
     expect(within(guidePanel).getByText("Relaciona la decisión con su efecto y su trade-off.")).toBeInTheDocument();

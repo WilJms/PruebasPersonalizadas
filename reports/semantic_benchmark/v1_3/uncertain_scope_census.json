@@ -1,0 +1,96 @@
+{
+  "census_hash": "sha256:d5180bdd31bb6cd2079ce9e59bf9f895dfe053ff006fd88f6ee2c144a5664998",
+  "counts_are_derived_not_declared": true,
+  "derivation_authority": "FROZEN_ORACLE_PROPERTY_TEXT_AND_ACTIVITY_RUBRIC_SCALE",
+  "derived_from_benchmark_tags": false,
+  "p06_property_record_count": 131,
+  "populations": {
+    "activity_level_describing_uncertain": {
+      "activity_count": 2,
+      "count": 2,
+      "is_a_candidate_gate": false,
+      "property_ids": [
+        "A01-ACT-P5",
+        "A04-ACT-P5"
+      ],
+      "rule": "An activity-level property states which P06 states the activity offers across its submissions. It is a coverage index over the activity, not a claim a candidate can be scored against, and it must never be counted as though it were a gate.",
+      "scope": "ACTIVITY"
+    },
+    "candidate_scoring_executable_asserting_uncertain": {
+      "activity_count": 0,
+      "count": 0,
+      "is_the_blocking_readiness_fact": true,
+      "property_ids": [],
+      "rule": "A submission-level property that reached an executable route with oracle_state VALID. Only this population can be observed by a qualification run.",
+      "scope": "SUBMISSION"
+    },
+    "combined_both_scopes": {
+      "activity_count": 6,
+      "count": 11,
+      "includes_activity_level_coverage_index_statements": true,
+      "property_ids": [
+        "A01-S01-P3",
+        "A02-S02-P3",
+        "A02-S04-P4",
+        "A04-S03-P1",
+        "A07-S01-P2",
+        "A07-S02-P2",
+        "A07-S03-P1",
+        "A08-S06-P1",
+        "A12-S02-P2",
+        "A01-ACT-P5",
+        "A04-ACT-P5"
+      ],
+      "rule": "Reported only with the scope stated. This number is the size of the corpus material that touches UNCERTAIN at any scope; it is not a population of candidate gates.",
+      "scope": "SUBMISSION_LEVEL_AND_ACTIVITY_LEVEL"
+    },
+    "submission_level_asserting_uncertain": {
+      "activity_count": 6,
+      "count": 9,
+      "property_ids": [
+        "A01-S01-P3",
+        "A02-S02-P3",
+        "A02-S04-P4",
+        "A04-S03-P1",
+        "A07-S01-P2",
+        "A07-S02-P2",
+        "A07-S03-P1",
+        "A08-S06-P1",
+        "A12-S02-P2"
+      ],
+      "scope": "SUBMISSION"
+    },
+    "submission_level_asserting_uncertain_oracle_valid": {
+      "activity_count": 6,
+      "count": 8,
+      "property_ids": [
+        "A01-S01-P3",
+        "A02-S02-P3",
+        "A04-S03-P1",
+        "A07-S01-P2",
+        "A07-S02-P2",
+        "A07-S03-P1",
+        "A08-S06-P1",
+        "A12-S02-P2"
+      ],
+      "scope": "SUBMISSION"
+    },
+    "submission_level_asserting_uncertain_oracle_valid_kind_required": {
+      "activity_count": 6,
+      "count": 8,
+      "property_ids": [
+        "A01-S01-P3",
+        "A02-S02-P3",
+        "A04-S03-P1",
+        "A07-S01-P2",
+        "A07-S02-P2",
+        "A07-S03-P1",
+        "A08-S06-P1",
+        "A12-S02-P2"
+      ],
+      "scope": "SUBMISSION"
+    }
+  },
+  "schema_version": "p06-uncertain-scope-census/1.0.0",
+  "scope_rule": "Every count states its scope. A submission-level candidate-gate population is never summed with an activity-wide coverage-index statement without saying so."
+}

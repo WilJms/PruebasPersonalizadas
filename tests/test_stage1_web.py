@@ -15,14 +15,16 @@ from comprehension_verification.contracts import models as m
 from comprehension_verification.web import dto
 from comprehension_verification.web.app import create_app
 from comprehension_verification.web.auth import Actor
-from comprehension_verification.web.jobs import RecordingJobRunner
+from comprehension_verification.web.jobs import ManualJobRunner, RecordingJobRunner
 from comprehension_verification.web.object_store import MemoryObjectStore
 from comprehension_verification.web.repository import (
     ArtifactRow,
+    BlueprintRow,
     EvidenceRow,
     IdempotencyRow,
     JobRow,
     NotFound,
+    PolicyDecisionRow,
     Repository,
     WorkspaceRoleRow,
 )
@@ -414,7 +416,7 @@ def test_activity_configuration_uses_etag_and_locks_after_pipeline_start() -> No
         assert initial_estimate_response.status_code == 200
         initial_estimate = initial_estimate_response.json()["estimate"]
         assert initial_estimate["phase"] == "ACTIVITY_BLUEPRINT"
-        assert initial_estimate["estimated_model_calls"] == 4
+        assert initial_estimate["estimated_model_calls"] == 3
         assert initial_estimate["within_limit"] is True
         edited = client.patch(
             f"/api/v1/activities/{activity_id}",
@@ -609,7 +611,21 @@ def test_blocking_ambiguity_requires_durable_teacher_decision_before_blueprint()
             },
         )
         assert decision.status_code == 201, decision.text
+        assert decision.json()["decision"]["selected_option"] == {
+            "option_id": "option_keep",
+            "label": "Mantener alcance",
+            "consequence": "Conserva el alcance de la consigna.",
+        }
         decision_id = decision.json()["decision"]["decision_id"]
+        # Simulate a pre-1.1.7 JSON row: blueprint generation must rehydrate
+        # the selected option from the tenant-scoped ambiguity report without
+        # rewriting the historical record.
+        with app.state.runtime.repository.session() as session:
+            historical = session.get(PolicyDecisionRow, decision_id)
+            assert historical is not None
+            historical_data = dict(historical.data)
+            historical_data.pop("selected_option")
+            historical.data = historical_data
         resumed = client.post(
             f"/api/v1/activities/{activity_id}/blueprints:generate",
             headers=_mutating(csrf),
@@ -623,6 +639,10 @@ def test_blocking_ambiguity_requires_durable_teacher_decision_before_blueprint()
             f"/api/v1/activities/{activity_id}/blueprints/latest"
         ).json()["blueprint"]
         assert blueprint["decision_ids"] == [decision_id]
+        persisted = app.state.runtime.repository.get(
+            PolicyDecisionRow, decision_id
+        )
+        assert "selected_option" not in persisted.data
 
 
 def test_stage1_single_submission_mock_e2e_survives_new_browser_session() -> None:
@@ -692,7 +712,6 @@ def test_stage1_single_submission_mock_e2e_survives_new_browser_session() -> Non
             "P02_RUBRIC_NORMALIZE_V1",
             "P03_AMBIGUITY_TRIAGE_V1",
             "P04_BLUEPRINT_BUILD_V1",
-            "P05_BLUEPRINT_REVIEW_V1",
         }
 
         latest = client.get(f"/api/v1/activities/{activity_id}/blueprints/latest")
@@ -704,6 +723,31 @@ def test_stage1_single_submission_mock_e2e_survives_new_browser_session() -> Non
             ).json()
         )
         original = latest.json()["blueprint"]
+        assert latest.json()["preflight"]["catalog_plan_feasible"] is True
+        assert latest.json()["review"] is None
+        persisted_blueprint = app.state.runtime.repository.latest_blueprint(
+            activity_id, "tnt_experimental"
+        )
+        with app.state.runtime.repository.session() as session:
+            historical = session.get(BlueprintRow, persisted_blueprint.row_id)
+            assert historical is not None
+            historical.preflight = None
+            historical.review = m.BlueprintReview(
+                activity_id=activity_id,
+                blueprint_id=original["blueprint_id"],
+                blueprint_version=original["blueprint_version"],
+                status="TECHNICAL_FAILURE",
+            ).model_dump(mode="json")
+        legacy_projection = client.get(
+            f"/api/v1/activities/{activity_id}/blueprints/latest"
+        )
+        assert legacy_projection.status_code == 200, legacy_projection.text
+        assert legacy_projection.json()["review"]["status"] == (
+            "TECHNICAL_FAILURE"
+        )
+        assert legacy_projection.json()["preflight"][
+            "catalog_plan_feasible"
+        ] is True
         assert original["assessment_constraints"]["question_count"] == 2
         assert len(
             [
@@ -732,18 +776,49 @@ def test_stage1_single_submission_mock_e2e_survives_new_browser_session() -> Non
             headers=_mutating(headers, **{"If-Match": latest.headers["etag"]}),
             json=original,
         )
-        assert edited.status_code == 200, edited.text
-        dto.BlueprintEnvelope.model_validate(edited.json())
-        assert edited.json()["blueprint"]["blueprint_version"] == 2
+        assert edited.status_code == 202, edited.text
+        queued_edit = dto.JobEnvelope.model_validate(edited.json()).job
+        assert queued_edit.status == "SUCCEEDED"
+        assert queued_edit.stage == "BLUEPRINT_PREFLIGHT"
+        edit_ledger = client.get(
+            f"/api/v1/jobs/{queued_edit.job_id}/model-calls"
+        ).json()["items"]
+        assert edit_ledger == []
+        reviewed_edit = client.get(
+            f"/api/v1/activities/{activity_id}/blueprints/latest"
+        )
+        assert reviewed_edit.status_code == 200, reviewed_edit.text
+        dto.BlueprintEnvelope.model_validate(reviewed_edit.json())
+        assert reviewed_edit.json()["blueprint"]["blueprint_version"] == 2
         approved = client.post(
             f"/api/v1/activities/{activity_id}/blueprints/2:approve",
-            headers=_mutating(headers, **{"If-Match": edited.headers["etag"]}),
+            headers=_mutating(
+                headers, **{"If-Match": reviewed_edit.headers["etag"]}
+            ),
             json={},
         )
         assert approved.status_code == 200, approved.text
         dto.BlueprintEnvelope.model_validate(approved.json())
         assert approved.json()["blueprint"]["status"] == "APPROVED"
         assert approved.json()["blueprint"]["blueprint_version"] == 3
+        activity_metrics = m.ExperimentMetrics.model_validate(
+            client.get(
+                f"/api/v1/activities/{activity_id}/metrics"
+            ).json()["metrics"]
+        )
+        assert "BLUEPRINT_PREFLIGHT" in {
+            item.stage for item in activity_metrics.by_stage
+        }
+        assert not any(
+            "p05_blueprint_review" in item.route_id
+            for item in activity_metrics.by_model
+        )
+        assert app.state.runtime.repository.has_audit_event(
+            tenant_id="tnt_experimental",
+            event_type="blueprint.approved",
+            aggregate_id=approved.json()["blueprint"]["blueprint_id"],
+            payload_contains={"blueprint_version": 3},
+        )
 
         submission_response = client.post(
             f"/api/v1/activities/{activity_id}/submissions",
@@ -802,7 +877,10 @@ def test_stage1_single_submission_mock_e2e_survives_new_browser_session() -> Non
         assessment = review_body["assessment"]
         assert assessment["question_count"] == 2
         assert len(assessment["questions"]) == 2
-        assert review_body["guide"]["status"] == "READY"
+        assert review_body["guide"] is None
+        assert review_body["guide_status"] == "NOT_AVAILABLE"
+        assert review_body["guide_job_id"] is None
+        assert review_body["reviews"] == []
         assert all(question["anchor"]["fragments"] for question in assessment["questions"])
         assert all(question["dimension_id"] for question in assessment["questions"])
         assert all(question["cognitive_operation"] for question in assessment["questions"])
@@ -998,12 +1076,23 @@ def test_stage1_single_submission_mock_e2e_survives_new_browser_session() -> Non
         ledger_before = reopened.get(
             f"/api/v1/jobs/{submission_job}/model-calls"
         ).json()["items"]
-        assert {item["prompt_id"] for item in ledger_before} >= {
+        prompt_sequence = [item["prompt_id"] for item in ledger_before]
+        assert set(prompt_sequence) == {
             "P06_EVIDENCE_MAP_V1",
             "P07_QUESTION_BUILD_V1",
-            "P08_QUESTION_REVIEW_V1",
-            "P09_GUIDE_BUILD_V1",
         }
+        assert len(prompt_sequence) == 3
+        assert prompt_sequence.count("P07_QUESTION_BUILD_V1") == 2
+        assert "P09_GUIDE_BUILD_V1" not in prompt_sequence
+        assert "P08_QUESTION_REVIEW_V1" not in prompt_sequence
+        stages = app.state.runtime.repository.stage_runs_for_job(
+            submission_job, "tnt_experimental"
+        )
+        stage_names = [item.stage for item in stages]
+        assert len(
+            [name for name in stage_names if name.startswith("QUESTION_VALIDATE:")]
+        ) == 2
+        assert "P09_GUIDE_BUILD_V1" not in stage_names
         required_ledger_fields = {
             "provider",
             "model_snapshot",
@@ -1028,7 +1117,17 @@ def test_stage1_single_submission_mock_e2e_survives_new_browser_session() -> Non
             json={},
         )
         assert approved_assessment.status_code == 200, approved_assessment.text
-        assert approved_assessment.json()["assessment"]["status"] == "APPROVED"
+        approved_body = approved_assessment.json()
+        assert approved_body["assessment"]["status"] == "APPROVED"
+        assert approved_body["guide_status"] == "READY"
+        guide_job_id = approved_body["guide_job_id"]
+        assert guide_job_id
+        guide_ledger = reopened.get(
+            f"/api/v1/jobs/{guide_job_id}/model-calls"
+        ).json()["items"]
+        assert [item["prompt_id"] for item in guide_ledger] == [
+            "P09_GUIDE_BUILD_V1"
+        ]
 
         expected_types = {
             "ASSESSMENT_PDF": "application/pdf",
@@ -1069,34 +1168,26 @@ def test_stage1_single_submission_mock_e2e_survives_new_browser_session() -> Non
         assert ledger_after == ledger_before
 
 
-def test_queued_job_survives_browser_close_and_a_new_worker_processes_it(
+def test_manual_job_stays_queued_until_an_exact_worker_claim_after_browser_close(
     tmp_path,
 ) -> None:
     database_url = f"sqlite+pysqlite:///{tmp_path / 'durable-worker.db'}"
     settings = Settings(
-        environment="test",
+        environment="local",
         database_url=database_url,
         session_secret="durable-worker-test-secret-with-32-bytes",
         local_invited_emails="teacher@example.test",
+        job_runner_mode="manual",
         model_mode="mock",
     )
     store = MemoryObjectStore(secret=settings.session_secret)
     api_repository = Repository(database_url)
-    dispatched: list[str] = []
-
-    def assert_queued_before_dispatch(job_id: str) -> None:
-        row = api_repository.get(JobRow, job_id)
-        assert isinstance(row, JobRow)
-        assert row.status == "QUEUED"
-        dispatched.append(job_id)
-
-    api_runner = RecordingJobRunner(assert_persisted=assert_queued_before_dispatch)
     app = create_app(
         settings,
         repository=api_repository,
         object_store=store,
-        job_runner=api_runner,
     )
+    assert isinstance(app.state.runtime.job_runner, ManualJobRunner)
 
     with TestClient(app) as browser:
         headers = _login(browser)
@@ -1135,13 +1226,11 @@ def test_queued_job_survives_browser_close_and_a_new_worker_processes_it(
         assert generated.status_code == 202, generated.text
         job_id = generated.json()["job_id"]
         assert generated.json()["operation"]["status"] == "QUEUED"
-        assert dispatched == [job_id]
-        assert api_runner.dispatched == [job_id]
         assert api_repository.job_status(job_id, settings.local_workspace_id).status == "QUEUED"
 
-    # A Cloud Run Job starts in another process after the API/browser is gone.
+    # A one-shot worker starts in another process after the API/browser is gone.
     worker_repository = Repository(database_url)
-    claimed = worker_repository.claim_next_job()
+    claimed = worker_repository.claim_job(job_id)
     assert claimed is not None
     assert claimed.id == job_id
     assert worker_repository.job_status(job_id, settings.local_workspace_id).status == "RUNNING"

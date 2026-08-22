@@ -1,16 +1,26 @@
-"""Durable job dispatch seam for inline tests and Cloud Run Jobs."""
+"""Durable job dispatch seam for inline, manual, and Cloud Run execution."""
 
 from __future__ import annotations
 
 import asyncio
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
+import re
 from typing import Protocol
 
 import google.auth
 from google.auth.transport.requests import AuthorizedSession
 
 from .settings import Settings
+
+
+_CANONICAL_JOB_ID = re.compile(r"[a-z][a-z0-9_-]{2,127}")
+
+
+def _validate_job_id(job_id: str) -> str:
+    if _CANONICAL_JOB_ID.fullmatch(job_id) is None:
+        raise ValueError("job_id is not a canonical opaque identifier")
+    return job_id
 
 
 class JobRunner(Protocol):
@@ -34,6 +44,14 @@ class RecordingJobRunner:
         assert self.dispatched is not None
         self.dispatched.append(job_id)
         return f"fake-execution/{job_id}"
+
+
+class ManualJobRunner:
+    """Local-only dispatcher that leaves an already durable job queued."""
+
+    async def dispatch(self, job_id: str) -> str:
+        canonical_job_id = _validate_job_id(job_id)
+        return f"manual/{canonical_job_id}"
 
 
 class InlineJobRunner:
@@ -60,10 +78,10 @@ class InlineJobRunner:
 
 
 class CloudRunJobRunner:
-    """Executes the configured Cloud Run Job without sensitive overrides.
+    """Execute the configured Cloud Run Job for one exact durable row.
 
-    The worker claims the oldest durable QUEUED row. The API therefore cannot
-    leak subject references, paths, or content through execution parameters.
+    Only the opaque canonical job ID crosses the control-plane boundary.  No
+    subject reference, path, document content, or provider credential is sent.
     """
 
     def __init__(self, settings: Settings) -> None:
@@ -75,16 +93,33 @@ class CloudRunJobRunner:
         )
 
     async def dispatch(self, job_id: str) -> str | None:
-        del job_id  # Deliberately not transmitted; the worker claims a DB row.
-        return await asyncio.to_thread(self._dispatch_sync)
+        _validate_job_id(job_id)
+        return await asyncio.to_thread(self._dispatch_sync, job_id)
 
-    def _dispatch_sync(self) -> str | None:
+    def _dispatch_sync(self, job_id: str) -> str | None:
         credentials, _project = google.auth.default(
             scopes=["https://www.googleapis.com/auth/cloud-platform"]
         )
         session = AuthorizedSession(credentials)
-        response = session.post(self.endpoint, json={}, timeout=20)
+        response = session.post(
+            self.endpoint,
+            json={
+                "overrides": {
+                    "taskCount": 1,
+                    "containerOverrides": [
+                        {
+                            "env": [
+                                {
+                                    "name": "CVA_CLAIM_JOB_ID",
+                                    "value": job_id,
+                                }
+                            ]
+                        }
+                    ],
+                }
+            },
+            timeout=20,
+        )
         response.raise_for_status()
         payload = response.json()
         return payload.get("name")
-

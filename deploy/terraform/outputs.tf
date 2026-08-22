@@ -41,6 +41,10 @@ output "worker_service_account" {
   value = google_service_account.worker.email
 }
 
+output "synthetic_evaluation_worker_service_account" {
+  value = try(google_service_account.synthetic_evaluation_worker[0].email, null)
+}
+
 output "service_uri" {
   description = "Cloud Run URL after the second apply."
   value       = try(google_cloud_run_v2_service.web[0].uri, null)
@@ -54,6 +58,11 @@ output "service_name" {
 output "job_name" {
   description = "Cloud Run Job name after the second apply."
   value       = try(google_cloud_run_v2_job.worker[0].name, null)
+}
+
+output "synthetic_evaluation_job_name" {
+  description = "Dedicated eval-only Cloud Run Job name when that capability is enabled."
+  value       = try(google_cloud_run_v2_job.synthetic_evaluation_worker[0].name, null)
 }
 
 output "runtime_container_image" {

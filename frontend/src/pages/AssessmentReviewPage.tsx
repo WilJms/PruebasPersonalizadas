@@ -33,6 +33,7 @@ import type {
   CoverageReport,
   FeedbackCategory,
   FeedbackRating,
+  JobStatus,
   QuestionReviewActionInput,
   QuestionReviewActionRecord,
   QuestionReview,
@@ -40,6 +41,7 @@ import type {
   SourceLocator,
 } from "../api/types";
 import { Diagnostics, ErrorNotice } from "../components/Feedback";
+import { JobControlPanel } from "../components/JobControlPanel";
 import { LimitedEvidenceWarning } from "../components/LimitedEvidenceWarning";
 import { StatusBadge } from "../components/StatusBadge";
 
@@ -108,6 +110,7 @@ export function AssessmentReviewPage() {
   const [downloads, setDownloads] = useState<Array<ExportResource | ExportDownloadResource>>([]);
   const [coverage, setCoverage] = useState<CoverageReport | null>(null);
   const [actionHistory, setActionHistory] = useState<Record<string, QuestionReviewActionRecord[]>>({});
+  const [actionJobs, setActionJobs] = useState<Record<string, JobStatus[]>>({});
   const [busy, setBusy] = useState(false);
   const [questionBusy, setQuestionBusy] = useState<string | null>(null);
   const [actionMessage, setActionMessage] = useState("");
@@ -127,7 +130,7 @@ export function AssessmentReviewPage() {
           listExports(next.assessment.assessment_id).catch(() => []),
           Promise.all((next.assessment.questions ?? []).map(async (question) => [
             question.question_id,
-            await listQuestionActions(next.assessment.assessment_id, question.question_id).catch(() => []),
+            await listQuestionActions(next.assessment.assessment_id, question.question_id).catch(() => ({ items: [], jobs: [] })),
           ] as const)),
         ]);
         next.evidence = mergeEvidence(next.evidence ?? [], catalog);
@@ -135,7 +138,12 @@ export function AssessmentReviewPage() {
           setBundle(next);
           setCoverage(nextCoverage);
           setExports(exportHistory);
-          setActionHistory(Object.fromEntries(actionEntries));
+          setActionHistory(Object.fromEntries(
+            actionEntries.map(([questionId, result]) => [questionId, result.items]),
+          ));
+          setActionJobs(Object.fromEntries(
+            actionEntries.map(([questionId, result]) => [questionId, result.jobs]),
+          ));
           setError(null);
         }
       } catch (caught) {
@@ -147,6 +155,42 @@ export function AssessmentReviewPage() {
       cancelled = true;
     };
   }, [submissionId]);
+
+  const guideLifecycle = bundle?.guide_status ?? "NOT_AVAILABLE";
+  useEffect(() => {
+    if (
+      bundle?.assessment.status !== "APPROVED" ||
+      !["PENDING", "BUILDING"].includes(guideLifecycle)
+    ) {
+      return;
+    }
+    let cancelled = false;
+    let timer: number | undefined;
+    const pollGuide = async () => {
+      try {
+        const refreshed = await getAssessmentBundle(submissionId);
+        if (!cancelled) {
+          setBundle((current) => ({
+            ...refreshed,
+            evidence: mergeEvidence(
+              refreshed.evidence ?? [],
+              current?.evidence ?? [],
+            ),
+          }));
+          if (["PENDING", "BUILDING"].includes(refreshed.guide_status)) {
+            timer = window.setTimeout(pollGuide, 1_500);
+          }
+        }
+      } catch (caught) {
+        if (!cancelled) setError(caught);
+      }
+    };
+    timer = window.setTimeout(pollGuide, 1_500);
+    return () => {
+      cancelled = true;
+      if (timer !== undefined) window.clearTimeout(timer);
+    };
+  }, [bundle?.assessment.status, guideLifecycle, submissionId]);
 
   const questions = bundle?.assessment.questions ?? [];
   const receipts = bundle?.evidence_receipts ?? [];
@@ -255,10 +299,44 @@ export function AssessmentReviewPage() {
         input,
         bundle.etag,
       );
+      const actionJob = result.job;
+      if (
+        actionJob &&
+        (!result.record || ["QUEUED", "RUNNING"].includes(actionJob.status))
+      ) {
+        setActionJobs((current) => ({
+          ...current,
+          [question.question_id]: [
+            actionJob,
+            ...(current[question.question_id] ?? []).filter(
+              (job) => job.job_id !== actionJob.job_id,
+            ),
+          ],
+        }));
+      }
+      if (!result.record) {
+        if (result.bundle) {
+          setBundle({
+            ...result.bundle,
+            etag: result.etag ?? result.bundle.etag,
+            evidence: mergeEvidence(result.bundle.evidence ?? [], bundle.evidence ?? []),
+          });
+        }
+        const waiting = actionJob && ["QUEUED", "RUNNING"].includes(actionJob.status);
+        setActionMessage(waiting
+          ? `REGENERATE quedó en cola para ${question.question_id}. Copia el job ID y ejecútalo con autorización independiente.`
+          : `REGENERATE no fue aplicado a ${question.question_id}; revisa el estado durable del job.`);
+        if (!waiting) {
+          setError(new Error("El job de regeneración terminó antes de aplicar una nueva pregunta."));
+        }
+        window.setTimeout(() => actionMessageRef.current?.focus(), 0);
+        return;
+      }
       if (result.record.status === "FAILED") {
+        const failedRecord = result.record;
         setActionHistory((current) => ({
           ...current,
-          [question.question_id]: [result.record, ...(current[question.question_id] ?? [])],
+          [question.question_id]: [failedRecord, ...(current[question.question_id] ?? [])],
         }));
         if (result.bundle) {
           setBundle({
@@ -284,9 +362,10 @@ export function AssessmentReviewPage() {
         refreshed.evidence = mergeEvidence(refreshed.evidence ?? [], bundle.evidence ?? []);
         setBundle(refreshed);
       }
+      const appliedRecord = result.record;
       setActionHistory((current) => ({
         ...current,
-        [question.question_id]: [result.record, ...(current[question.question_id] ?? [])],
+        [question.question_id]: [appliedRecord, ...(current[question.question_id] ?? [])],
       }));
       setActionMessage(
         `${input.action} aplicado a ${question.question_id}; la versión y revalidación quedaron registradas.`,
@@ -344,6 +423,7 @@ export function AssessmentReviewPage() {
     <AssessmentReview
       allEvidenceVerified={allEvidenceVerified}
       actionHistory={actionHistory}
+      actionJobs={actionJobs}
       bundle={bundle}
       busy={busy}
       coverage={coverage}
@@ -373,6 +453,7 @@ export function AssessmentReview({
   onVerify,
   allEvidenceVerified,
   actionHistory = {},
+  actionJobs = {},
   onApprove,
   onExport,
   onFeedback,
@@ -392,6 +473,7 @@ export function AssessmentReview({
   onVerify: (questionId: string, fragmentIndex: number) => void;
   allEvidenceVerified: boolean;
   actionHistory?: Record<string, QuestionReviewActionRecord[]>;
+  actionJobs?: Record<string, JobStatus[]>;
   onApprove: () => void;
   onExport: (kind: ExportKind) => void;
   onFeedback?: (input: {
@@ -415,8 +497,13 @@ export function AssessmentReview({
 }) {
   const { assessment, guide } = bundle;
   const approved = assessment.status === "APPROVED";
+  const guideStatus = bundle.guide_status ?? "NOT_AVAILABLE";
+  const guideReady = guideStatus === "READY" && guide !== null && guide !== undefined;
   const questions = assessment.questions ?? [];
-  const guideItems = guide.items ?? [];
+  const guideItems = guide?.items ?? [];
+  const hasUnresolvedQuestionJob = Object.values(actionJobs).some(
+    (jobs) => jobs.length > 0,
+  );
   const evidence = bundle.evidence ?? [];
   const receipts = bundle.evidence_receipts ?? [];
   const evidenceById = useMemo(
@@ -528,6 +615,8 @@ export function AssessmentReview({
             <QuestionEvidenceCard
               evidenceById={evidenceById}
               actionRecords={actionHistory[question.question_id] ?? []}
+              actionJobs={actionJobs[question.question_id] ?? []}
+              actionsBlocked={hasUnresolvedQuestionJob}
               index={index}
               key={question.question_id}
               onVerify={onVerify}
@@ -551,7 +640,12 @@ export function AssessmentReview({
         role="tabpanel"
         tabIndex={0}
       >
-        <GuideView guide={guide} questions={questions} />
+        <GuideView
+          guide={guide}
+          jobId={bundle.guide_job_id}
+          questions={questions}
+          status={guideStatus}
+        />
       </section>
 
       {!choiceContractsComplete && (
@@ -577,7 +671,7 @@ export function AssessmentReview({
             <h2>Exportar sin repetir llamadas al modelo</h2>
             <p>Los PDF y el JSON se regeneran desde objetos canónicos ya aprobados.</p>
           </div>
-          {approved ? <div className="export-actions">
+          {approved && guideReady ? <div className="export-actions">
             {([
               ["ASSESSMENT_PDF", "Evaluación PDF"],
               ["ASSESSMENT_HTML", "Evaluación HTML"],
@@ -611,7 +705,11 @@ export function AssessmentReview({
                 </button>
               );
             })}
-          </div> : <p>Las nuevas vistas se habilitan cuando la versión queda aprobada.</p>}
+          </div> : approved ? (
+            <p>La aprobación ya quedó congelada. Las vistas se habilitan cuando la guía exacta de esta versión esté lista.</p>
+          ) : (
+            <p>Las nuevas vistas se habilitan cuando la versión queda aprobada y su guía exacta está lista.</p>
+          )}
           <ExportHistory exports={exports} />
       </section>
 
@@ -620,7 +718,11 @@ export function AssessmentReview({
           <strong>{approved ? "Assessment aprobado" : "Revisión humana obligatoria"}</strong>
           <span>
             {approved
-              ? "La versión aprobada quedó congelada."
+              ? guideReady
+                ? "La versión aprobada quedó congelada y su guía exacta está lista."
+                : "La versión aprobada quedó congelada; la guía se enriquece aparte y no revoca la aprobación."
+              : hasUnresolvedQuestionJob
+                ? "Finaliza la regeneración durable y refresca la versión antes de aprobar."
               : allEvidenceVerified
                 ? "Todos los fragmentos tienen confirmación durable para tu identidad."
                 : "Carga y verifica el localizador exacto de cada fragmento antes de aprobar."}
@@ -629,7 +731,7 @@ export function AssessmentReview({
         {!approved && (
           <button
             className="button button-primary"
-            disabled={!allEvidenceVerified || !choiceContractsComplete || busy}
+            disabled={!allEvidenceVerified || !choiceContractsComplete || busy || hasUnresolvedQuestionJob}
             onClick={onApprove}
             type="button"
           >
@@ -646,6 +748,8 @@ function QuestionEvidenceCard({
   review,
   evidenceById,
   actionRecords,
+  actionJobs,
+  actionsBlocked,
   receipts,
   index,
   onVerify,
@@ -658,6 +762,8 @@ function QuestionEvidenceCard({
   review?: QuestionReview;
   evidenceById: Map<string, EvidenceUnit>;
   actionRecords: QuestionReviewActionRecord[];
+  actionJobs: JobStatus[];
+  actionsBlocked: boolean;
   receipts: EvidenceReceipt[];
   index: number;
   onVerify: (questionId: string, fragmentIndex: number) => void;
@@ -786,7 +892,11 @@ function QuestionEvidenceCard({
         </section>
 
         <section className="score-panel">
-          <span className="mini-label">Scores y validación semántica</span>
+          <span className="mini-label">
+            {review
+              ? "Review histórico P08 · compatibilidad no autoritativa"
+              : "Validación determinista activa"}
+          </span>
           {review ? (
             <>
               <div className="chip-row">
@@ -804,11 +914,13 @@ function QuestionEvidenceCard({
                 ))}
               </div>
               {(review.justifications ?? []).map((value) => <p key={value}>{value}</p>)}
-              <ReferenceList label="Evidencia de review" values={review.evidence_ids ?? []} />
+              <ReferenceList label="Evidencia del review histórico" values={review.evidence_ids ?? []} />
               <ReferenceList label="Fuentes de curso" values={review.source_ids ?? []} emptyLabel="Sin fuentes de curso: contexto CLOSED." />
             </>
           ) : (
-            <p className="muted">No hay review semántica asociada.</p>
+            <p className="muted">
+              La pregunta P07 superó las invariantes deterministas activas. El runtime actual no ejecuta P08.
+            </p>
           )}
           <Diagnostics items={review?.diagnostics} />
           {(review?.critical_failure_codes ?? []).length > 0 && (
@@ -821,12 +933,23 @@ function QuestionEvidenceCard({
 
       {onQuestionAction && (
         <section className="question-review-actions" aria-label={`Acciones para ${question.question_id}`}>
+          {actionJobs.length > 0 && (
+            <div aria-live="polite" className="question-action-pending">
+              <h3>Regeneración durable pendiente</h3>
+              <p>
+                La pregunta original permanece vigente. Autoriza y ejecuta el job <code>QUESTION_ACTION</code> exacto fuera del web runtime; luego refresca esta página.
+              </p>
+              {actionJobs.map((job) => (
+                <JobControlPanel jobId={job.job_id} key={job.job_id} />
+              ))}
+            </div>
+          )}
           {!questionEvidenceVerified && <p className="muted">Verifica primero cada fragmento de esta pregunta para habilitar las acciones.</p>}
           <div className="question-action-buttons">
-            <button className="button button-secondary" disabled={questionBusy || !questionEvidenceVerified} onClick={() => void onQuestionAction(question, { action: "ACCEPT" })} type="button">Aceptar pregunta</button>
-            <button aria-expanded={action === "EDIT"} className="button button-secondary" disabled={questionBusy || !questionEvidenceVerified} onClick={() => setAction(action === "EDIT" ? null : "EDIT")} type="button">Editar pregunta</button>
-            <button aria-expanded={action === "REJECT"} className="button button-secondary" disabled={questionBusy || !questionEvidenceVerified} onClick={() => setAction(action === "REJECT" ? null : "REJECT")} type="button">Rechazar pregunta</button>
-            <button aria-expanded={action === "REGENERATE"} className="button button-secondary" disabled={questionBusy || !questionEvidenceVerified} onClick={() => setAction(action === "REGENERATE" ? null : "REGENERATE")} type="button">Regenerar pregunta</button>
+            <button className="button button-secondary" disabled={questionBusy || !questionEvidenceVerified || actionsBlocked} onClick={() => void onQuestionAction(question, { action: "ACCEPT" })} type="button">Aceptar pregunta</button>
+            <button aria-expanded={action === "EDIT"} className="button button-secondary" disabled={questionBusy || !questionEvidenceVerified || actionsBlocked} onClick={() => setAction(action === "EDIT" ? null : "EDIT")} type="button">Editar pregunta</button>
+            <button aria-expanded={action === "REJECT"} className="button button-secondary" disabled={questionBusy || !questionEvidenceVerified || actionsBlocked} onClick={() => setAction(action === "REJECT" ? null : "REJECT")} type="button">Rechazar pregunta</button>
+            <button aria-expanded={action === "REGENERATE"} className="button button-secondary" disabled={questionBusy || !questionEvidenceVerified || actionsBlocked} onClick={() => setAction(action === "REGENERATE" ? null : "REGENERATE")} type="button">Regenerar pregunta</button>
           </div>
           {action && (
             <form className="question-action-form" onSubmit={(event) => void submitAction(event)}>
@@ -1015,11 +1138,42 @@ function ReferenceList({
 
 function GuideView({
   guide,
+  status,
+  jobId,
   questions,
 }: {
-  guide: EvaluationGuide;
+  guide?: EvaluationGuide | null;
+  status: string;
+  jobId?: string | null;
   questions: SelectedQuestion[];
 }) {
+  if (status === "NOT_AVAILABLE") {
+    return (
+      <div className="processing-card" role="status">
+        <h2>Guía posterior a la aprobación</h2>
+        <p>P09 se ejecutará una sola vez sobre la versión que apruebes. La revisión y la aprobación no dependen de una guía previa.</p>
+      </div>
+    );
+  }
+  if (status === "PENDING" || status === "BUILDING") {
+    return (
+      <div className="processing-card" role="status">
+        <span className="spinner" aria-hidden="true" />
+        <h2>{status === "PENDING" ? "Guía pendiente" : "Construyendo guía"}</h2>
+        <p>La aprobación ya es durable. P09 está enriqueciendo únicamente la guía de esta versión.</p>
+        {jobId ? <code>{jobId}</code> : null}
+      </div>
+    );
+  }
+  if (status === "FAILED" || status === "NEEDS_REVIEW" || !guide) {
+    return (
+      <div className="error-notice" role="status">
+        <h2>La guía no quedó lista</h2>
+        <p>La evaluación sigue aprobada. No se publicó una guía parcial; puedes revisar o reintentar el job técnico.</p>
+        {guide ? <Diagnostics items={guide.diagnostics} /> : null}
+      </div>
+    );
+  }
   const textById = new Map(
     questions.map((question) => [question.question_id, question.question_text]),
   );
@@ -1046,9 +1200,11 @@ function GuideView({
               </ul>
             </section>
             <section>
+              <ReferenceList label="Condiciones de aceptación" values={item.guide.acceptance_conditions ?? []} />
               <ReferenceList label="Alternativas aceptables" values={item.guide.acceptable_alternatives ?? []} />
               <ReferenceList label="Posibles errores conceptuales a observar" values={item.guide.misconceptions ?? []} />
               <ReferenceList label="No permite inferir" values={item.guide.cannot_infer ?? []} />
+              <ReferenceList label="Incertidumbres semánticas" values={item.guide.semantic_uncertainties ?? []} />
             </section>
           </div>
           <div className="level-grid">

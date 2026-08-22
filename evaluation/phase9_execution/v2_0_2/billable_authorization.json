@@ -1,0 +1,425 @@
+{
+  "absolute_provider_request_ceiling": 60,
+  "absolute_retry_inclusive_reservation_usd": 3.0375345,
+  "approved_at": "2026-08-21T19:51:55Z",
+  "approved_by": "USER_EXPLICIT_CHAT_AUTHORIZATION",
+  "authorization_hash": "sha256:b820f4bfa94de537fe868123fd97060940466da5fbfe9c73d238f0ee61421357",
+  "authorization_id": "phase9-high-smoke-20260821t195155z-3a9043f192fa",
+  "authorization_state": "EXPLICITLY_APPROVED",
+  "benchmark_boundary_hash": "sha256:ff6988324a9bd5cd1c4167b0589f8700f19985fca7ef021d0eb5dcfb875fffe5",
+  "benchmark_version": "semantic-benchmark/1.3.5",
+  "billable_authorization": "EXPLICIT",
+  "call_budget_hash": "sha256:f0ed55246d56362b170aa0b2e29f99f4d1f1660f5f16b90751cc298d18b69dde",
+  "candidate_execution_contract_hash": "sha256:ae260e18b6b0a6918d923ce304ead3869afd767d553828591aa33f1d283d04a5",
+  "candidate_identities": [
+    {
+      "candidate_id": "P04-C1-TERRA-HIGH",
+      "max_output_tokens": 16000,
+      "model": "gpt-5.6-terra",
+      "prompt_id": "P04_BLUEPRINT_BUILD_V1",
+      "reasoning_rung": "HIGH",
+      "route_profile_id": "TERRA_HIGH_V1",
+      "stage": "P04"
+    },
+    {
+      "candidate_id": "P06-C1-LUNA-HIGH",
+      "max_output_tokens": 16000,
+      "model": "gpt-5.6-luna",
+      "prompt_id": "P06_EVIDENCE_MAP_V1",
+      "reasoning_rung": "HIGH",
+      "route_profile_id": "LUNA_BASELINE_V1",
+      "stage": "P06"
+    },
+    {
+      "candidate_id": "P07-C1-LUNA-HIGH",
+      "max_output_tokens": 10000,
+      "model": "gpt-5.6-luna",
+      "prompt_id": "P07_QUESTION_BUILD_V1",
+      "reasoning_rung": "HIGH",
+      "route_profile_id": "LUNA_BASELINE_V1",
+      "stage": "P07"
+    },
+    {
+      "candidate_id": "P09-C1-LUNA-HIGH",
+      "max_output_tokens": 10000,
+      "model": "gpt-5.6-luna",
+      "prompt_id": "P09_GUIDE_BUILD_V1",
+      "reasoning_rung": "HIGH",
+      "route_profile_id": "LUNA_BASELINE_V1",
+      "stage": "P09"
+    }
+  ],
+  "candidate_matrix_hash": "sha256:d4c693ec60c4603ea9924daf5146f06d714bb19f1007a5d82fef57d4d5dfb36d",
+  "corpus_package_boundary_hash": "21c21f3a53bfb786162dc350dc38c93b7b007d9f23b744a354de4ac2354048a1",
+  "cost_projection_hash": "sha256:a27789f76a19dc4fe9f4d9d5124a774be69036f40babf18a0bd934487f605f9e",
+  "excluded_scope": [
+    "CORE",
+    "HELD_OUT_CONFIRMATION",
+    "N3_CORE",
+    "N3_HELD_OUT_CONFIRMATION",
+    "XHIGH",
+    "MAX",
+    "gpt-5.6-sol",
+    "P01",
+    "P02",
+    "P03",
+    "P05",
+    "P08",
+    "P10",
+    "P11_SEMANTIC_REPAIR",
+    "LONG_CONTEXT"
+  ],
+  "execution_boundary_hash": "sha256:41b7d13dbf07da8708f82b28daff7d74d5db73de18508f0a5c464fcc9eae512e",
+  "execution_version": "phase9-execution/2.0.2",
+  "expires_at": "2026-08-21T23:51:55Z",
+  "high_smoke_plan_hash": "sha256:92f29cf2ac22071eed1c556d7f7dde735e302ccaa5d1b1de2645eee29cb4c869",
+  "ledger_path": "reports/phase9_execution/v2_0_2/authorization_ledger/phase9-high-smoke-20260821t195155z-3a9043f192fa.json",
+  "logical_call_identities": [
+    {
+      "axis": "SEMANTIC",
+      "candidate_id": "P04-C1-TERRA-HIGH",
+      "provider_identity": "PP-A01-P04-001",
+      "provider_unit": "CASE_RUN",
+      "reasoning_rung": "HIGH",
+      "run_index": 1,
+      "split": "SMOKE",
+      "stage": "P04"
+    },
+    {
+      "axis": "SEMANTIC",
+      "candidate_id": "P04-C1-TERRA-HIGH",
+      "provider_identity": "PP-A01-P04-001",
+      "provider_unit": "CASE_RUN",
+      "reasoning_rung": "HIGH",
+      "run_index": 2,
+      "split": "SMOKE",
+      "stage": "P04"
+    },
+    {
+      "axis": "SEMANTIC",
+      "candidate_id": "P04-C1-TERRA-HIGH",
+      "provider_identity": "PP-A01-P04-001",
+      "provider_unit": "CASE_RUN",
+      "reasoning_rung": "HIGH",
+      "run_index": 3,
+      "split": "SMOKE",
+      "stage": "P04"
+    },
+    {
+      "axis": "SEMANTIC",
+      "candidate_id": "P06-C1-LUNA-HIGH",
+      "provider_identity": "PP-A01-S03-P06-G01",
+      "provider_unit": "SUBMISSION_RUN",
+      "reasoning_rung": "HIGH",
+      "run_index": 1,
+      "split": "SMOKE",
+      "stage": "P06"
+    },
+    {
+      "axis": "SEMANTIC",
+      "candidate_id": "P06-C1-LUNA-HIGH",
+      "provider_identity": "PP-A01-S03-P06-G01",
+      "provider_unit": "SUBMISSION_RUN",
+      "reasoning_rung": "HIGH",
+      "run_index": 2,
+      "split": "SMOKE",
+      "stage": "P06"
+    },
+    {
+      "axis": "SEMANTIC",
+      "candidate_id": "P06-C1-LUNA-HIGH",
+      "provider_identity": "PP-A01-S03-P06-G01",
+      "provider_unit": "SUBMISSION_RUN",
+      "reasoning_rung": "HIGH",
+      "run_index": 3,
+      "split": "SMOKE",
+      "stage": "P06"
+    },
+    {
+      "axis": "CONTRACTUAL_HARD_SAFETY",
+      "candidate_id": "P06-C1-LUNA-HIGH",
+      "exposure_pseudonym": "N3-act_01_luz_y_plantines-submission_01",
+      "provider_identity": "N3F-act_01_luz_y_plantines-submission_01",
+      "provider_unit": "EXPOSURE_RUN",
+      "reasoning_rung": "HIGH",
+      "run_index": 1,
+      "split": "N3_SAFETY_SMOKE",
+      "stage": "P06"
+    },
+    {
+      "axis": "CONTRACTUAL_HARD_SAFETY",
+      "candidate_id": "P06-C1-LUNA-HIGH",
+      "exposure_pseudonym": "N3-act_01_luz_y_plantines-submission_01",
+      "provider_identity": "N3F-act_01_luz_y_plantines-submission_01",
+      "provider_unit": "EXPOSURE_RUN",
+      "reasoning_rung": "HIGH",
+      "run_index": 2,
+      "split": "N3_SAFETY_SMOKE",
+      "stage": "P06"
+    },
+    {
+      "axis": "CONTRACTUAL_HARD_SAFETY",
+      "candidate_id": "P06-C1-LUNA-HIGH",
+      "exposure_pseudonym": "N3-act_01_luz_y_plantines-submission_01",
+      "provider_identity": "N3F-act_01_luz_y_plantines-submission_01",
+      "provider_unit": "EXPOSURE_RUN",
+      "reasoning_rung": "HIGH",
+      "run_index": 3,
+      "split": "N3_SAFETY_SMOKE",
+      "stage": "P06"
+    },
+    {
+      "axis": "SEMANTIC",
+      "candidate_id": "P07-C1-LUNA-HIGH",
+      "provider_identity": "PP-A01-S01-P07-O01",
+      "provider_unit": "CASE_RUN",
+      "reasoning_rung": "HIGH",
+      "run_index": 1,
+      "split": "SMOKE",
+      "stage": "P07"
+    },
+    {
+      "axis": "SEMANTIC",
+      "candidate_id": "P07-C1-LUNA-HIGH",
+      "provider_identity": "PP-A01-S01-P07-O01",
+      "provider_unit": "CASE_RUN",
+      "reasoning_rung": "HIGH",
+      "run_index": 2,
+      "split": "SMOKE",
+      "stage": "P07"
+    },
+    {
+      "axis": "SEMANTIC",
+      "candidate_id": "P07-C1-LUNA-HIGH",
+      "provider_identity": "PP-A01-S01-P07-O01",
+      "provider_unit": "CASE_RUN",
+      "reasoning_rung": "HIGH",
+      "run_index": 3,
+      "split": "SMOKE",
+      "stage": "P07"
+    },
+    {
+      "axis": "SEMANTIC",
+      "candidate_id": "P07-C1-LUNA-HIGH",
+      "provider_identity": "PP-A01-S05-P07-O02",
+      "provider_unit": "CASE_RUN",
+      "reasoning_rung": "HIGH",
+      "run_index": 1,
+      "split": "SMOKE",
+      "stage": "P07"
+    },
+    {
+      "axis": "SEMANTIC",
+      "candidate_id": "P07-C1-LUNA-HIGH",
+      "provider_identity": "PP-A01-S05-P07-O02",
+      "provider_unit": "CASE_RUN",
+      "reasoning_rung": "HIGH",
+      "run_index": 2,
+      "split": "SMOKE",
+      "stage": "P07"
+    },
+    {
+      "axis": "SEMANTIC",
+      "candidate_id": "P07-C1-LUNA-HIGH",
+      "provider_identity": "PP-A01-S05-P07-O02",
+      "provider_unit": "CASE_RUN",
+      "reasoning_rung": "HIGH",
+      "run_index": 3,
+      "split": "SMOKE",
+      "stage": "P07"
+    },
+    {
+      "axis": "SEMANTIC",
+      "candidate_id": "P07-C1-LUNA-HIGH",
+      "provider_identity": "PP-A02-S02-P07-O01",
+      "provider_unit": "CASE_RUN",
+      "reasoning_rung": "HIGH",
+      "run_index": 1,
+      "split": "SMOKE",
+      "stage": "P07"
+    },
+    {
+      "axis": "SEMANTIC",
+      "candidate_id": "P07-C1-LUNA-HIGH",
+      "provider_identity": "PP-A02-S02-P07-O01",
+      "provider_unit": "CASE_RUN",
+      "reasoning_rung": "HIGH",
+      "run_index": 2,
+      "split": "SMOKE",
+      "stage": "P07"
+    },
+    {
+      "axis": "SEMANTIC",
+      "candidate_id": "P07-C1-LUNA-HIGH",
+      "provider_identity": "PP-A02-S02-P07-O01",
+      "provider_unit": "CASE_RUN",
+      "reasoning_rung": "HIGH",
+      "run_index": 3,
+      "split": "SMOKE",
+      "stage": "P07"
+    },
+    {
+      "axis": "SEMANTIC",
+      "candidate_id": "P07-C1-LUNA-HIGH",
+      "provider_identity": "PP-A04-S04-P07-O01",
+      "provider_unit": "CASE_RUN",
+      "reasoning_rung": "HIGH",
+      "run_index": 1,
+      "split": "SMOKE",
+      "stage": "P07"
+    },
+    {
+      "axis": "SEMANTIC",
+      "candidate_id": "P07-C1-LUNA-HIGH",
+      "provider_identity": "PP-A04-S04-P07-O01",
+      "provider_unit": "CASE_RUN",
+      "reasoning_rung": "HIGH",
+      "run_index": 2,
+      "split": "SMOKE",
+      "stage": "P07"
+    },
+    {
+      "axis": "SEMANTIC",
+      "candidate_id": "P07-C1-LUNA-HIGH",
+      "provider_identity": "PP-A04-S04-P07-O01",
+      "provider_unit": "CASE_RUN",
+      "reasoning_rung": "HIGH",
+      "run_index": 3,
+      "split": "SMOKE",
+      "stage": "P07"
+    },
+    {
+      "axis": "SEMANTIC",
+      "candidate_id": "P07-C1-LUNA-HIGH",
+      "provider_identity": "PP-A04-S06-P07-O01",
+      "provider_unit": "CASE_RUN",
+      "reasoning_rung": "HIGH",
+      "run_index": 1,
+      "split": "SMOKE",
+      "stage": "P07"
+    },
+    {
+      "axis": "SEMANTIC",
+      "candidate_id": "P07-C1-LUNA-HIGH",
+      "provider_identity": "PP-A04-S06-P07-O01",
+      "provider_unit": "CASE_RUN",
+      "reasoning_rung": "HIGH",
+      "run_index": 2,
+      "split": "SMOKE",
+      "stage": "P07"
+    },
+    {
+      "axis": "SEMANTIC",
+      "candidate_id": "P07-C1-LUNA-HIGH",
+      "provider_identity": "PP-A04-S06-P07-O01",
+      "provider_unit": "CASE_RUN",
+      "reasoning_rung": "HIGH",
+      "run_index": 3,
+      "split": "SMOKE",
+      "stage": "P07"
+    },
+    {
+      "axis": "SEMANTIC",
+      "candidate_id": "P07-C1-LUNA-HIGH",
+      "provider_identity": "PP-A08-S02-P07-O02",
+      "provider_unit": "CASE_RUN",
+      "reasoning_rung": "HIGH",
+      "run_index": 1,
+      "split": "SMOKE",
+      "stage": "P07"
+    },
+    {
+      "axis": "SEMANTIC",
+      "candidate_id": "P07-C1-LUNA-HIGH",
+      "provider_identity": "PP-A08-S02-P07-O02",
+      "provider_unit": "CASE_RUN",
+      "reasoning_rung": "HIGH",
+      "run_index": 2,
+      "split": "SMOKE",
+      "stage": "P07"
+    },
+    {
+      "axis": "SEMANTIC",
+      "candidate_id": "P07-C1-LUNA-HIGH",
+      "provider_identity": "PP-A08-S02-P07-O02",
+      "provider_unit": "CASE_RUN",
+      "reasoning_rung": "HIGH",
+      "run_index": 3,
+      "split": "SMOKE",
+      "stage": "P07"
+    },
+    {
+      "axis": "SEMANTIC",
+      "candidate_id": "P09-C1-LUNA-HIGH",
+      "provider_identity": "PP-A03-P09-F01",
+      "provider_unit": "CASE_RUN",
+      "reasoning_rung": "HIGH",
+      "run_index": 1,
+      "split": "SMOKE",
+      "stage": "P09"
+    },
+    {
+      "axis": "SEMANTIC",
+      "candidate_id": "P09-C1-LUNA-HIGH",
+      "provider_identity": "PP-A03-P09-F01",
+      "provider_unit": "CASE_RUN",
+      "reasoning_rung": "HIGH",
+      "run_index": 2,
+      "split": "SMOKE",
+      "stage": "P09"
+    },
+    {
+      "axis": "SEMANTIC",
+      "candidate_id": "P09-C1-LUNA-HIGH",
+      "provider_identity": "PP-A03-P09-F01",
+      "provider_unit": "CASE_RUN",
+      "reasoning_rung": "HIGH",
+      "run_index": 3,
+      "split": "SMOKE",
+      "stage": "P09"
+    }
+  ],
+  "max_technical_retries_per_logical_call": 1,
+  "max_technical_retry_increment_usd": 1.51876725,
+  "n3_axis_hash": "sha256:0add76d694432b3a8cc7f53a2f6e0d4cef10aa69e893121a638d7d8ffa8c6eec",
+  "n3_provider_fixture_set_hash": "sha256:9e00281c1d54a9436766105d6ba27aaae01564bd38182cfb4bd64e427b8ec310",
+  "outer_primary_cap_usd": 1.68,
+  "outer_retry_inclusive_cap_usd": 3.35,
+  "p06_property_observation_bindings_hash": "sha256:d0d2bd909dd0b3137387b04c9a38995cb72baf0ce0ca6b442783cf93af76581c",
+  "p06_submission_request_set_hash": "sha256:7c1698189001ae48f80895cf07390cda811b652574401f4b5d1ce662de9ce960",
+  "per_call_caps_usd": {
+    "P04-C1-TERRA-HIGH": 0.355,
+    "P06-C1-LUNA-HIGH": 0.028,
+    "P07-C1-LUNA-HIGH": 0.025,
+    "P09-C1-LUNA-HIGH": 0.028
+  },
+  "pre_results_instrument_freeze_hash": "sha256:c2c2a552780c0cea7af5f7b3097da115de6fc6ee84cdbdfd9ad9943f8d655126",
+  "pricing_snapshot_hash": "sha256:473857448d87f6507f3d626af5d8061c62d0830b949f6a489f6e1260feb82d55",
+  "primary_30_call_reservation_usd": 1.51876725,
+  "primary_provider_calls": 30,
+  "prompt_authority_hash": "sha256:820396b80101c79478e6cd1b9914a6cae6931dc055c1199e9e533bc3c6e2c3e9",
+  "protocol_boundary_hash": "sha256:711e8f42c13cadab4707b153bb5e987c56330fc9b112a349eaf8330d2dab41cc",
+  "protocol_version": "phase9-qualification-protocol/1.3.5",
+  "rung_collection_hash": "sha256:bee091a421683f3e17e54d0118f85cac50f39605b89054324004b0b842a7efcc",
+  "rung_primary_caps_usd": {
+    "P04-C1-TERRA-HIGH": 1.07,
+    "P06-C1-LUNA-HIGH": 0.17,
+    "P07-C1-LUNA-HIGH": 0.37,
+    "P09-C1-LUNA-HIGH": 0.09
+  },
+  "rung_retry_inclusive_caps_usd": {
+    "P04-C1-TERRA-HIGH": 2.13,
+    "P06-C1-LUNA-HIGH": 0.33,
+    "P07-C1-LUNA-HIGH": 0.73,
+    "P09-C1-LUNA-HIGH": 0.17
+  },
+  "schema_version": "phase9-billable-authorization/2.0.2",
+  "stage_boundaries_hash": "sha256:1393551f498ab97daecb6b40ea0ae93fcae3fcdaa188a683dcc9adf6a8c8b49b",
+  "stage_boundary_hashes": {
+    "P04": "sha256:866b95464960123d3e96ab1d713d9980dea127bdbe9f1f07922c37888bb4d761",
+    "P06": "sha256:8bbf07c653435783c21af4257d62df77ac325f5454e2a47c3b570337fde42354",
+    "P07": "sha256:a1cd37d8dec4260ccee1eb5ecaaa8ba4d6e73170f274fca300f2e4669177bef6",
+    "P09": "sha256:0006106e4433124fdea9fddd296346b4dd239e20f10bfa4aa1a670a44d3989c1",
+    "PLANNER": "sha256:961384f7f9c25601b5aea91217849be79400517d7b5960924c79789c93687376"
+  }
+}

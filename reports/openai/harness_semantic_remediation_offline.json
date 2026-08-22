@@ -1,0 +1,1374 @@
+{
+  "adversarial_review": {
+    "questions": {
+      "anchor_is_sufficient": "PASS: un único fragmento autosuficiente cubre los tres elementos observables.",
+      "base2_restored": "PASS: base1 y base2 poseen run IDs, llamadas y output hashes independientes.",
+      "canonical_chain_has_zero_golden_injection": "PASS: el adapter offline usa DeterministicMockAdapter sólo como transport substitute para la cadena integrada.",
+      "canonical_chain_uses_current_outputs": "PASS: cada request downstream consume hashes de outputs producidos dentro del mismo run.",
+      "clean_model_owned_is_failed": "PASS: sólo failures model-owned de alta confianza sobre oracle válido agregan FAILED.",
+      "evidence_is_sufficient": "PASS: condición, riesgo y recálculo aparecen literalmente en el positive.",
+      "external_knowledge_absent": "PASS: las inferencias autorizadas se limitan a las fuentes del pack.",
+      "fixture_represents_defensible_task": "PASS: el documento ofrece consigna, rúbrica, mecanismo y traza coherentes.",
+      "hidden_contradiction_absent": "PASS: consigna, rúbrica y submission usan la misma secuencia y el mismo límite de fuentes.",
+      "indeterminate_is_inconclusive": "PASS: CAUSE_INDETERMINATE nunca agrega TERRA_MEDIUM_QUALIFICATION_FAILED.",
+      "legitimate_positive_abstention": "PASS: las únicas razones legítimas registradas son fallas de provenance, allowlist o deriva contractual, no una carencia del fixture limpio.",
+      "mock_is_not_quality_oracle": "PASS: ningún positive del pack se deriva de DeterministicMockFactory.",
+      "not_overfit_to_one_wording": "PASS: el oracle P07 evalúa invariantes y acepta wording alternativo; el golden es ejemplo, no igualdad obligatoria.",
+      "p05_negative_codes_are_distinct": "PASS: NOT_REJECTED y CRITICAL_CATEGORY_MISMATCH poseen códigos separados; el segundo conserva semantic INCORRECT y adherence FAIL.",
+      "p06_alternate_catalog_mapping_passes": "PASS: EXPLAIN_MECHANISM también pasa con su path literal y evidencia suficiente; el oracle no exige un template concreto.",
+      "p06_invented_path_fails_adherence": "PASS: un opportunity_template_id ajeno al blueprint falla contractual adherence antes de la calificación semántica.",
+      "p06_justify_mapping_passes": "PASS: JUSTIFY_DECISION pasa si conserva su path, evidencia causal, mínimos y elegibilidad del planner.",
+      "p06_no_eligible_opportunity_fails_positive": "PASS: una abstención contractualmente válida falla semánticamente cuando el fixture positive sí ofrece rutas elegibles.",
+      "p06_wrong_evidence_fails": "PASS: una oportunidad estructural sobre evidencia insuficiente para su propio focus y observable falla semánticamente.",
+      "p07_bad_candidate_fails": "PASS: conocimiento externo y anchor insuficiente producen failure semántico; vaguedad no decidible produce INDETERMINATE.",
+      "request_cap_is_matrix_derived": "PASS: siete filas suman explícitamente 33 provider calls worst-case.",
+      "review_provenance_is_truthful": "PASS: las reviews declaran CODEX_AUTHORED_SEMANTIC_REVIEW y human_ratification=null.",
+      "technical_only_is_inconclusive": "PASS: technical-only conserva causalidad técnica y outcome INCONCLUSIVE."
+    },
+    "review_id": "SR-ADVERSARIAL-CACHE-002",
+    "review_version": "2.0.0"
+  },
+  "canonical_pack": {
+    "artifact_count": 4,
+    "assessment_assembly": "PRODUCTION_SELECTED_QUESTION_AND_ASSESSMENT_ASSEMBLER",
+    "bundle_construction": "PRODUCT_SUBMISSION_PARSE_BOUNDARY",
+    "document_shaped": true,
+    "insufficient_evidence_unit_count": 7,
+    "pack_id": "canonical-document-cache-invalidation-v1",
+    "parser_version": "stage2-parser/2.0.0",
+    "source_artifact_hashes": {
+      "assignment": "sha256:ac8ade8c3dc529d06d439dcbc3af0b866c6e1deaa3ebaa0552963f7a93d54025",
+      "rubric": "sha256:71c8101a6d1c50acb81c2f04e8479540e9c90a35974819f46af497a81f5361f7",
+      "submission_insufficient": "sha256:67d3ebaff85dfa269c65a8df23d3cc0e18631c6b2a51613c82fadeb2098f8204",
+      "submission_sufficient": "sha256:d4983ba075c625f4c58858db8ec02a603f57b71145517e7160afd29df32be49a"
+    },
+    "sufficient_evidence_unit_count": 9
+  },
+  "causal_classification": "QUALIFICATION_PASSED",
+  "checkpoint_assessments": [
+    {
+      "causal_attribution": "NONE",
+      "causal_confidence": "NOT_APPLICABLE",
+      "checkpoint_class": "SEMANTICALLY_QUALIFIED_POSITIVE",
+      "checkpoint_id": "P04_CANONICAL_POSITIVE",
+      "contractual_adherence": "PASS",
+      "operational_outcome": "PASS",
+      "oracle_validity": "VALID",
+      "reason_codes": [],
+      "semantic_interpretation": "CORRECT",
+      "semantic_review_hash": "sha256:63aabc66a4664d9d4393ab0d4708ff383ce2d17bd21e2be969319e04024b0bf2",
+      "semantic_review_id": "SR-P04-CACHE-POS-001",
+      "semantic_review_version": "1.0.0"
+    },
+    {
+      "causal_attribution": "NONE",
+      "causal_confidence": "NOT_APPLICABLE",
+      "checkpoint_class": "SEMANTICALLY_QUALIFIED_POSITIVE",
+      "checkpoint_id": "P05_CANONICAL_POSITIVE",
+      "contractual_adherence": "PASS",
+      "operational_outcome": "PASS",
+      "oracle_validity": "VALID",
+      "reason_codes": [],
+      "semantic_interpretation": "CORRECT",
+      "semantic_review_hash": "sha256:2f3baf9c64931487f53fcfc6c3d4557e4f634cb776a0a4dd65918f2ffddb42b1",
+      "semantic_review_id": "SR-P05-CACHE-BLUEPRINT-001",
+      "semantic_review_version": "1.0.0"
+    },
+    {
+      "causal_attribution": "CORRECT_NEGATIVE_DECISION",
+      "causal_confidence": "HIGH",
+      "checkpoint_class": "SEMANTICALLY_QUALIFIED_NEGATIVE",
+      "checkpoint_id": "P05_PLAN_FEASIBILITY_NEGATIVE",
+      "contractual_adherence": "PASS",
+      "operational_outcome": "PASS",
+      "oracle_validity": "VALID",
+      "reason_codes": [],
+      "semantic_interpretation": "CORRECT",
+      "semantic_review_hash": "sha256:9d1bba041da78a78600a7645d40cb62aba8294c90e6c1c976e796b4e8490e808",
+      "semantic_review_id": "SR-P05-CACHE-PLAN-NEG-001",
+      "semantic_review_version": "1.0.0"
+    },
+    {
+      "causal_attribution": "NONE",
+      "causal_confidence": "NOT_APPLICABLE",
+      "checkpoint_class": "SEMANTICALLY_QUALIFIED_POSITIVE",
+      "checkpoint_id": "P06_CANONICAL_POSITIVE",
+      "contractual_adherence": "PASS",
+      "operational_outcome": "PASS",
+      "oracle_validity": "VALID",
+      "reason_codes": [],
+      "semantic_interpretation": "CORRECT",
+      "semantic_review_hash": "sha256:43bd2c99778bb0360b3edb1bf93b1f90b9cb33e1f4e9a0517417cabf059f5367",
+      "semantic_review_id": "SR-P06-CACHE-MAP-POS-002",
+      "semantic_review_version": "2.0.0"
+    },
+    {
+      "causal_attribution": "NONE",
+      "causal_confidence": "NOT_APPLICABLE",
+      "checkpoint_class": "SEMANTICALLY_QUALIFIED_POSITIVE",
+      "checkpoint_id": "P07_CANONICAL_POSITIVE",
+      "contractual_adherence": "PASS",
+      "operational_outcome": "PASS",
+      "oracle_validity": "VALID",
+      "reason_codes": [],
+      "semantic_interpretation": "CORRECT",
+      "semantic_review_hash": "sha256:fc20c9360a36707762a91d76d2ce9f9d3c167bc8bcb088d1f94d6e8397e084f1",
+      "semantic_review_id": "SR-P07-CACHE-POS-001",
+      "semantic_review_version": "1.0.0"
+    },
+    {
+      "causal_attribution": "CORRECT_NEGATIVE_DECISION",
+      "causal_confidence": "HIGH",
+      "checkpoint_class": "SEMANTICALLY_QUALIFIED_NEGATIVE",
+      "checkpoint_id": "P07_INSUFFICIENT_NEGATIVE",
+      "contractual_adherence": "PASS",
+      "operational_outcome": "PASS",
+      "oracle_validity": "VALID",
+      "reason_codes": [],
+      "semantic_interpretation": "CORRECT",
+      "semantic_review_hash": "sha256:3a8c665373a3aad141571d8aced682410d5c7d3a8747eac2f91f2f12122006c2",
+      "semantic_review_id": "SR-P07-CACHE-NEG-001",
+      "semantic_review_version": "1.0.0"
+    },
+    {
+      "causal_attribution": "NONE",
+      "causal_confidence": "NOT_APPLICABLE",
+      "checkpoint_class": "SEMANTICALLY_QUALIFIED_POSITIVE",
+      "checkpoint_id": "P08_CANONICAL_POSITIVE",
+      "contractual_adherence": "PASS",
+      "operational_outcome": "PASS",
+      "oracle_validity": "VALID",
+      "reason_codes": [],
+      "semantic_interpretation": "CORRECT",
+      "semantic_review_hash": "sha256:e28976bdc1ad874d4fad0bc465a73eec899354b3edcdebaefc631167d4e36493",
+      "semantic_review_id": "SR-P08-CACHE-POS-001",
+      "semantic_review_version": "1.0.0"
+    },
+    {
+      "causal_attribution": "CORRECT_NEGATIVE_DECISION",
+      "causal_confidence": "HIGH",
+      "checkpoint_class": "SEMANTICALLY_QUALIFIED_NEGATIVE",
+      "checkpoint_id": "P08_UNANSWERABLE_NEGATIVE",
+      "contractual_adherence": "PASS",
+      "operational_outcome": "PASS",
+      "oracle_validity": "VALID",
+      "reason_codes": [],
+      "semantic_interpretation": "CORRECT",
+      "semantic_review_hash": "sha256:a1094aefabd40a9396bda991679f36332adab024e33e667906fc3b2f8d75ef24",
+      "semantic_review_id": "SR-P08-CACHE-NEG-001",
+      "semantic_review_version": "1.0.0"
+    },
+    {
+      "causal_attribution": "NONE",
+      "causal_confidence": "NOT_APPLICABLE",
+      "checkpoint_class": "SEMANTICALLY_QUALIFIED_POSITIVE",
+      "checkpoint_id": "P09_CANONICAL_POSITIVE",
+      "contractual_adherence": "PASS",
+      "operational_outcome": "PASS",
+      "oracle_validity": "VALID",
+      "reason_codes": [],
+      "semantic_interpretation": "CORRECT",
+      "semantic_review_hash": "sha256:515ea95c840e9b8fb430ab744c3c9863fcfe5064c4c222afd32f50c9639710f4",
+      "semantic_review_id": "SR-P09-CACHE-POS-001",
+      "semantic_review_version": "1.0.0"
+    },
+    {
+      "causal_attribution": "NONE",
+      "causal_confidence": "NOT_APPLICABLE",
+      "checkpoint_class": "STRUCTURAL_ORCHESTRATION_CHECKPOINT_ONLY",
+      "checkpoint_id": "LEGACY-P06-MOCK-ORCHESTRATION",
+      "contractual_adherence": "NOT_EVALUATED",
+      "operational_outcome": "PASS",
+      "oracle_validity": "NOT_APPLICABLE",
+      "reason_codes": [],
+      "semantic_interpretation": "NOT_EVALUATED",
+      "semantic_review_hash": null,
+      "semantic_review_id": null,
+      "semantic_review_version": null
+    },
+    {
+      "causal_attribution": "NONE",
+      "causal_confidence": "NOT_APPLICABLE",
+      "checkpoint_class": "STRUCTURAL_ORCHESTRATION_CHECKPOINT_ONLY",
+      "checkpoint_id": "LEGACY-P07-MOCK-ORCHESTRATION",
+      "contractual_adherence": "NOT_EVALUATED",
+      "operational_outcome": "PASS",
+      "oracle_validity": "NOT_APPLICABLE",
+      "reason_codes": [],
+      "semantic_interpretation": "NOT_EVALUATED",
+      "semantic_review_hash": null,
+      "semantic_review_id": null,
+      "semantic_review_version": null
+    },
+    {
+      "causal_attribution": "NONE",
+      "causal_confidence": "NOT_APPLICABLE",
+      "checkpoint_class": "STRUCTURAL_ORCHESTRATION_CHECKPOINT_ONLY",
+      "checkpoint_id": "LEGACY-P08-MOCK-ORCHESTRATION",
+      "contractual_adherence": "NOT_EVALUATED",
+      "operational_outcome": "PASS",
+      "oracle_validity": "NOT_APPLICABLE",
+      "reason_codes": [],
+      "semantic_interpretation": "NOT_EVALUATED",
+      "semantic_review_hash": null,
+      "semantic_review_id": null,
+      "semantic_review_version": null
+    },
+    {
+      "causal_attribution": "NONE",
+      "causal_confidence": "NOT_APPLICABLE",
+      "checkpoint_class": "STRUCTURAL_ORCHESTRATION_CHECKPOINT_ONLY",
+      "checkpoint_id": "LEGACY-P09-MOCK-ORCHESTRATION",
+      "contractual_adherence": "NOT_EVALUATED",
+      "operational_outcome": "PASS",
+      "oracle_validity": "NOT_APPLICABLE",
+      "reason_codes": [],
+      "semantic_interpretation": "NOT_EVALUATED",
+      "semantic_review_hash": null,
+      "semantic_review_id": null,
+      "semantic_review_version": null
+    }
+  ],
+  "checkpoint_provenance": [
+    {
+      "checkpoint_class": "SEMANTICALLY_QUALIFIED_POSITIVE",
+      "checkpoint_id": "P04_CANONICAL_POSITIVE",
+      "current_review_material_hash": "sha256:63aabc66a4664d9d4393ab0d4708ff383ce2d17bd21e2be969319e04024b0bf2",
+      "expected_outcome": "READY",
+      "fixture_hash": "sha256:4cd112377efbb095edd588636b9ca83ab39be2a75b9756c0b9162c1fcd8eb148",
+      "golden_hash": "sha256:6ecf88f553fdf0323f027be16f39b1105c2b434d7b671eb77fcb8ec63235015b",
+      "golden_id": "GOLDEN-P04-CACHE-POS-001",
+      "golden_version": "1.0.0",
+      "human_ratification": null,
+      "independent_review_status": "USER_SUPPLIED_INDEPENDENT_REVIEW_FINDINGS",
+      "legitimate_abstention_reasons": [
+        "La consigna y la rúbrica dejan de ser coherentes.",
+        "El peso no puede representarse sin pérdida.",
+        "La política confiable no permite un catálogo realizable."
+      ],
+      "oracle_origin": "CODEX_AUTHORED_SEMANTIC_REVIEW",
+      "positive_obligation": "Conservar outcome_1, criterion_1, grading_weight=1.0, contexto CLOSED, formato, tiempo y decisiones confiables en un catálogo realizable.",
+      "prior_review_hash": "sha256:63aabc66a4664d9d4393ab0d4708ff383ce2d17bd21e2be969319e04024b0bf2",
+      "prompt_id": "P04_BLUEPRINT_BUILD_V1",
+      "provenance_amendment_hash": "sha256:4dc1a158d8192ee3df1c48dcfc09ca11dfa9d3ce3127a7c072217997b9278b1f",
+      "review_evidence": [
+        "La consigna oficial exige la secuencia causal completa y una respuesta abierta breve de cinco minutos.",
+        "La rúbrica oficial asigna el 100 % a criterion_1 y declara grading_weight=1.0.",
+        "Las oportunidades se limitan al mecanismo y operaciones sustentadas por las fuentes."
+      ],
+      "review_hash": "sha256:63aabc66a4664d9d4393ab0d4708ff383ce2d17bd21e2be969319e04024b0bf2",
+      "review_version": "1.0.0",
+      "semantic_review_id": "SR-P04-CACHE-POS-001",
+      "source_artifact_hashes": [
+        "sha256:71c8101a6d1c50acb81c2f04e8479540e9c90a35974819f46af497a81f5361f7",
+        "sha256:ac8ade8c3dc529d06d439dcbc3af0b866c6e1deaa3ebaa0552963f7a93d54025"
+      ]
+    },
+    {
+      "checkpoint_class": "SEMANTICALLY_QUALIFIED_POSITIVE",
+      "checkpoint_id": "P05_CANONICAL_POSITIVE",
+      "current_review_material_hash": "sha256:a52c9dd7c76177629f089893d9393128c9a2aec14d915b78ee583be1eb93b1db",
+      "expected_outcome": "APPROVABLE",
+      "fixture_hash": "sha256:4cd112377efbb095edd588636b9ca83ab39be2a75b9756c0b9162c1fcd8eb148",
+      "golden_hash": "sha256:e52fbe61c01d25d91010a91ff120f3df741c2400516a90586320e02329e20262",
+      "golden_id": "GOLDEN-P05-CACHE-POS-001",
+      "golden_version": "1.0.0",
+      "human_ratification": null,
+      "independent_review_status": "USER_SUPPLIED_INDEPENDENT_REVIEW_FINDINGS",
+      "legitimate_abstention_reasons": [
+        "Falta alguna categoría canónica.",
+        "El preflight y las fuentes divergen.",
+        "Existe una contradicción académica material no resuelta."
+      ],
+      "oracle_origin": "CODEX_AUTHORED_SEMANTIC_REVIEW",
+      "positive_obligation": "Revisar las diez categorías y reconocer como aprobable el blueprint source-faithful sin exigir artificialmente APPROVE_WITHOUT_WARNINGS.",
+      "prior_review_hash": "sha256:2f3baf9c64931487f53fcfc6c3d4557e4f634cb776a0a4dd65918f2ffddb42b1",
+      "prompt_id": "P05_BLUEPRINT_REVIEW_V1",
+      "provenance_amendment_hash": "sha256:53f9f02ae064e8d6be6c193ecad3a96ea143660001a51481c8ce1d33d36e4d8a",
+      "review_evidence": [
+        "La revisión category-by-category vive en p05_golden_checkpoints.json v1.2.0.",
+        "SOURCE_FIDELITY compara explícitamente grading_weight=1.0 en RubricSpec y BlueprintDimension.",
+        "El preflight determinista y la revisión semántica independiente son ambos necesarios."
+      ],
+      "review_hash": "sha256:2f3baf9c64931487f53fcfc6c3d4557e4f634cb776a0a4dd65918f2ffddb42b1",
+      "review_version": "1.0.0",
+      "semantic_review_id": "SR-P05-CACHE-BLUEPRINT-001",
+      "source_artifact_hashes": [
+        "sha256:71c8101a6d1c50acb81c2f04e8479540e9c90a35974819f46af497a81f5361f7",
+        "sha256:ac8ade8c3dc529d06d439dcbc3af0b866c6e1deaa3ebaa0552963f7a93d54025"
+      ]
+    },
+    {
+      "checkpoint_class": "SEMANTICALLY_QUALIFIED_NEGATIVE",
+      "checkpoint_id": "P05_PLAN_FEASIBILITY_NEGATIVE",
+      "correct_behavior": "REJECT",
+      "current_review_material_hash": "sha256:9d1bba041da78a78600a7645d40cb62aba8294c90e6c1c976e796b4e8490e808",
+      "expected_outcome": "REJECT",
+      "fixture_hash": "sha256:4cd112377efbb095edd588636b9ca83ab39be2a75b9756c0b9162c1fcd8eb148",
+      "golden_hash": "sha256:1e304e40a62e41aa5acb368e667e69bc6dacb02b03dd7d664bffaa2a413e6fbf",
+      "golden_id": "GOLDEN-P05-CACHE-NEG-001",
+      "golden_version": "1.0.0",
+      "human_ratification": null,
+      "independent_review_status": "USER_SUPPLIED_INDEPENDENT_REVIEW_FINDINGS",
+      "negative_condition": "El catálogo mutado permite exclusivamente CHOICE, mientras la política canónica permite exclusivamente OPEN_SHORT.",
+      "oracle_origin": "CODEX_AUTHORED_SEMANTIC_REVIEW",
+      "prior_review_hash": "sha256:9d1bba041da78a78600a7645d40cb62aba8294c90e6c1c976e796b4e8490e808",
+      "prompt_id": "P05_BLUEPRINT_REVIEW_V1",
+      "provenance_amendment_hash": "sha256:b559178edd2b6a8bdb8caa5cc6b04f23c3895547ca61a6ad923c0efe209eee09",
+      "review_evidence": [
+        "La mutación y la matriz esperada permanecen intactas en p05_golden_checkpoints.json.",
+        "Sólo PLAN_FEASIBILITY es crítico; las demás categorías no se degradan artificialmente."
+      ],
+      "review_hash": "sha256:9d1bba041da78a78600a7645d40cb62aba8294c90e6c1c976e796b4e8490e808",
+      "review_version": "1.0.0",
+      "semantic_review_id": "SR-P05-CACHE-PLAN-NEG-001",
+      "source_artifact_hashes": [
+        "sha256:71c8101a6d1c50acb81c2f04e8479540e9c90a35974819f46af497a81f5361f7",
+        "sha256:ac8ade8c3dc529d06d439dcbc3af0b866c6e1deaa3ebaa0552963f7a93d54025"
+      ],
+      "why_no_positive": "No existe un plan que cumpla simultáneamente el catálogo mutado y la política confiable; PLAN_FEASIBILITY debe fallar críticamente."
+    },
+    {
+      "checkpoint_class": "SEMANTICALLY_QUALIFIED_POSITIVE",
+      "checkpoint_id": "P06_CANONICAL_POSITIVE",
+      "current_review_material_hash": "sha256:43bd2c99778bb0360b3edb1bf93b1f90b9cb33e1f4e9a0517417cabf059f5367",
+      "expected_outcome": "READY",
+      "fixture_hash": "sha256:4cd112377efbb095edd588636b9ca83ab39be2a75b9756c0b9162c1fcd8eb148",
+      "golden_hash": "sha256:5579e89a6542cab0d2d9e6e25767bd9070e486ea7d25bb5ec0e32177b6ee4292",
+      "golden_id": "GOLDEN-P06-CACHE-POS-002",
+      "golden_version": "2.0.0",
+      "human_ratification": null,
+      "independent_review_status": "USER_SUPPLIED_INDEPENDENT_REVIEW_FINDINGS",
+      "legitimate_abstention_reasons": [
+        "El fragmento causal no está en el bundle o no pertenece a la submission.",
+        "La extracción no alcanza la confianza o modalidad exigidas.",
+        "La evidencia no sustenta el observable completo."
+      ],
+      "oracle_origin": "CODEX_AUTHORED_SEMANTIC_REVIEW",
+      "positive_obligation": "Producir al menos una oportunidad perteneciente al catálogo del blueprint, sustentada por evidencia suficiente para su propio focus y observable, y seleccionable o reservable por el planner; no se exige un opportunity_template_id concreto.",
+      "prior_review_hash": "sha256:43bd2c99778bb0360b3edb1bf93b1f90b9cb33e1f4e9a0517417cabf059f5367",
+      "prompt_id": "P06_EVIDENCE_MAP_V1",
+      "provenance_amendment_hash": "sha256:84e88de4fc607f1b642c309f7d419e4337efc22744501595972af8a501eca150",
+      "review_evidence": [
+        "Las cuatro rutas del catálogo son defendibles cuando reciben la evidencia mínima documentada; JUSTIFY_DECISION es sólo el ejemplo golden, no el único resultado aceptable.",
+        "El fragmento suficiente satisface focus y observable de JUSTIFY_DECISION y EXPLAIN_MECHANISM sin otra fuente; las rutas que razonan sobre la prueba requieren además la traza suficiente.",
+        "El EvidenceUnit se deriva del DOCX por SafeParserService y sus IDs no se fabrican manualmente.",
+        "La legitimidad estructural se decide con el validator congelado; la suficiencia semántica se contrasta con el focus y observable de la ruta; la elegibilidad se decide con el planner productivo congelado."
+      ],
+      "review_hash": "sha256:43bd2c99778bb0360b3edb1bf93b1f90b9cb33e1f4e9a0517417cabf059f5367",
+      "review_version": "2.0.0",
+      "semantic_review_id": "SR-P06-CACHE-MAP-POS-002",
+      "source_artifact_hashes": [
+        "sha256:d4983ba075c625f4c58858db8ec02a603f57b71145517e7160afd29df32be49a"
+      ]
+    },
+    {
+      "checkpoint_class": "SEMANTICALLY_QUALIFIED_POSITIVE",
+      "checkpoint_id": "P07_CANONICAL_POSITIVE",
+      "current_review_material_hash": "sha256:fc20c9360a36707762a91d76d2ce9f9d3c167bc8bcb088d1f94d6e8397e084f1",
+      "expected_outcome": "READY",
+      "fixture_hash": "sha256:4cd112377efbb095edd588636b9ca83ab39be2a75b9756c0b9162c1fcd8eb148",
+      "golden_hash": "sha256:6baffa267001e9f26478243593b03183e305727edd227089cd67c9d9845eb3e7",
+      "golden_id": "GOLDEN-P07-CACHE-POS-001",
+      "golden_version": "1.0.0",
+      "human_ratification": null,
+      "independent_review_status": "USER_SUPPLIED_INDEPENDENT_REVIEW_FINDINGS",
+      "legitimate_abstention_reasons": [
+        "El selector exacto no está presente o no es único tras el parseo.",
+        "La allowlist no contiene el fragmento causal completo.",
+        "La oportunidad deja de conservar operación, foco u observable del blueprint."
+      ],
+      "oracle_origin": "CODEX_AUTHORED_SEMANTIC_REVIEW",
+      "positive_obligation": "Observar si la respuesta conecta cambio de fuente, invalidación, riesgo de obsolescencia y recálculo sin ampliar la evidencia.",
+      "prior_review_hash": "sha256:fc20c9360a36707762a91d76d2ce9f9d3c167bc8bcb088d1f94d6e8397e084f1",
+      "prompt_id": "P07_QUESTION_BUILD_V1",
+      "provenance_amendment_hash": "sha256:240d8f1726456ccedc20488f272f8eb4c66db515568bbb6fb956025f7c3a95ea",
+      "review_evidence": [
+        "El anchor contiene de forma literal la condición, el riesgo y el recálculo exigidos por el observable.",
+        "La tarea exige explicar una relación ya sustentada, no descubrir hechos externos.",
+        "Una respuesta breve puede cubrir los tres elementos dentro de cinco minutos.",
+        "El anchor no entrega una respuesta evaluativa preformateada ni una guía de puntuación."
+      ],
+      "review_hash": "sha256:fc20c9360a36707762a91d76d2ce9f9d3c167bc8bcb088d1f94d6e8397e084f1",
+      "review_version": "1.0.0",
+      "semantic_review_id": "SR-P07-CACHE-POS-001",
+      "source_artifact_hashes": [
+        "sha256:d4983ba075c625f4c58858db8ec02a603f57b71145517e7160afd29df32be49a"
+      ]
+    },
+    {
+      "checkpoint_class": "SEMANTICALLY_QUALIFIED_NEGATIVE",
+      "checkpoint_id": "P07_INSUFFICIENT_NEGATIVE",
+      "correct_behavior": "REPLACEMENT_REQUIRED",
+      "current_review_material_hash": "sha256:3a8c665373a3aad141571d8aced682410d5c7d3a8747eac2f91f2f12122006c2",
+      "expected_outcome": "REPLACEMENT_REQUIRED",
+      "fixture_hash": "sha256:4cd112377efbb095edd588636b9ca83ab39be2a75b9756c0b9162c1fcd8eb148",
+      "golden_hash": "sha256:0d8b149bdbcff5c0d540cff0214d21b6fdd2516137b462dfdb293de7db3b14c3",
+      "golden_id": "GOLDEN-P07-CACHE-NEG-001",
+      "golden_version": "1.0.0",
+      "human_ratification": null,
+      "independent_review_status": "USER_SUPPLIED_INDEPENDENT_REVIEW_FINDINGS",
+      "negative_condition": "La evidencia autorizada sólo dice cuándo invalidar; no explica el riesgo evitado ni demuestra la nueva consulta o el recálculo.",
+      "oracle_origin": "CODEX_AUTHORED_SEMANTIC_REVIEW",
+      "prior_review_hash": "sha256:3a8c665373a3aad141571d8aced682410d5c7d3a8747eac2f91f2f12122006c2",
+      "prompt_id": "P07_QUESTION_BUILD_V1",
+      "provenance_amendment_hash": "sha256:10e533d17c30a409582c56a14e7f76987667e777a9602a1a6a8cc490b756fcdc",
+      "review_evidence": [
+        "El fragmento autorizado contiene la condición de invalidación, pero no su consecuencia.",
+        "La abstención conserva el contexto CLOSED y evita ampliar evidencia.",
+        "El Diagnostic completo permite distinguir decisión semántica correcta de adherence contractual."
+      ],
+      "review_hash": "sha256:3a8c665373a3aad141571d8aced682410d5c7d3a8747eac2f91f2f12122006c2",
+      "review_version": "1.0.0",
+      "semantic_review_id": "SR-P07-CACHE-NEG-001",
+      "source_artifact_hashes": [
+        "sha256:67d3ebaff85dfa269c65a8df23d3cc0e18631c6b2a51613c82fadeb2098f8204"
+      ],
+      "why_no_positive": "Generar la justificación exigiría añadir el riesgo de obsolescencia o el recálculo fuera de la allowlist."
+    },
+    {
+      "checkpoint_class": "SEMANTICALLY_QUALIFIED_POSITIVE",
+      "checkpoint_id": "P08_CANONICAL_POSITIVE",
+      "current_review_material_hash": "sha256:e28976bdc1ad874d4fad0bc465a73eec899354b3edcdebaefc631167d4e36493",
+      "expected_outcome": "ACCEPT",
+      "fixture_hash": "sha256:4cd112377efbb095edd588636b9ca83ab39be2a75b9756c0b9162c1fcd8eb148",
+      "golden_hash": "sha256:a63efd2c1dad0a0165a4ddf7354412529538ed32209a60bd19df7d81ae32f28e",
+      "golden_id": "GOLDEN-P08-CACHE-POS-001",
+      "golden_version": "1.0.0",
+      "human_ratification": null,
+      "independent_review_status": "USER_SUPPLIED_INDEPENDENT_REVIEW_FINDINGS",
+      "legitimate_abstention_reasons": [
+        "El anchor deja de contener el riesgo de obsolescencia o el recálculo.",
+        "La pregunta exige una causa, implementación o fuente no autorizada.",
+        "Los IDs dejan de corresponder a la oportunidad y al bundle."
+      ],
+      "oracle_origin": "CODEX_AUTHORED_SEMANTIC_REVIEW",
+      "positive_obligation": "ACCEPT",
+      "prior_review_hash": "sha256:e28976bdc1ad874d4fad0bc465a73eec899354b3edcdebaefc631167d4e36493",
+      "prompt_id": "P08_QUESTION_REVIEW_V1",
+      "provenance_amendment_hash": "sha256:69ebd425953af67832581f22770b3a1e8235faa08d7ff457783694c8a15702d9",
+      "review_evidence": [
+        "Groundedness: pregunta, anchor y guía usan únicamente el mecanismo literal del entregable.",
+        "Anchor sufficiency: el fragmento contiene condición, riesgo y recálculo sin referencia faltante.",
+        "Criterion relevance: exige exactamente el criterio de explicación causal con peso 1.0.",
+        "Answerability: los tres elementos esperados están localizados en el mismo fragmento.",
+        "Operation/focus alignment: JUSTIFY_DECISION pide justificar la invalidación y no otra operación.",
+        "No requiere conocimiento externo, no contiene PII o secretos y cabe en cinco minutos.",
+        "No hay answer leakage indebido: se presenta evidencia primaria, no una respuesta modelo ni la pauta de puntaje."
+      ],
+      "review_hash": "sha256:e28976bdc1ad874d4fad0bc465a73eec899354b3edcdebaefc631167d4e36493",
+      "review_version": "1.0.0",
+      "semantic_review_id": "SR-P08-CACHE-POS-001",
+      "source_artifact_hashes": [
+        "sha256:d4983ba075c625f4c58858db8ec02a603f57b71145517e7160afd29df32be49a"
+      ]
+    },
+    {
+      "checkpoint_class": "SEMANTICALLY_QUALIFIED_NEGATIVE",
+      "checkpoint_id": "P08_UNANSWERABLE_NEGATIVE",
+      "correct_behavior": "REJECT",
+      "current_review_material_hash": "sha256:a1094aefabd40a9396bda991679f36332adab024e33e667906fc3b2f8d75ef24",
+      "expected_outcome": "REJECT",
+      "fixture_hash": "sha256:4cd112377efbb095edd588636b9ca83ab39be2a75b9756c0b9162c1fcd8eb148",
+      "golden_hash": "sha256:703cb5251121c64d09c575dfbc838eb77df4fffd0cb5c13d4d65ae776260c6d9",
+      "golden_id": "GOLDEN-P08-CACHE-NEG-001",
+      "golden_version": "1.0.0",
+      "human_ratification": null,
+      "independent_review_status": "USER_SUPPLIED_INDEPENDENT_REVIEW_FINDINGS",
+      "negative_condition": "La pregunta pide identificar el mecanismo interno que detecta el cambio y demostrar consistencia concurrente, hechos ausentes del anchor y de la allowlist.",
+      "oracle_origin": "CODEX_AUTHORED_SEMANTIC_REVIEW",
+      "prior_review_hash": "sha256:a1094aefabd40a9396bda991679f36332adab024e33e667906fc3b2f8d75ef24",
+      "prompt_id": "P08_QUESTION_REVIEW_V1",
+      "provenance_amendment_hash": "sha256:a5207372a11b2823536ebddf5e10b2cd268ca8f1b61935834c04e52b90d720f6",
+      "review_evidence": [
+        "El anchor sólo declara una regla de invalidación.",
+        "No identifica el detector ni describe concurrencia.",
+        "La falla es semántica y representativa; el candidato sigue siendo estructuralmente válido."
+      ],
+      "review_hash": "sha256:a1094aefabd40a9396bda991679f36332adab024e33e667906fc3b2f8d75ef24",
+      "review_version": "1.0.0",
+      "semantic_review_id": "SR-P08-CACHE-NEG-001",
+      "source_artifact_hashes": [
+        "sha256:67d3ebaff85dfa269c65a8df23d3cc0e18631c6b2a51613c82fadeb2098f8204"
+      ],
+      "why_no_positive": "Aceptar penalizaría a un reviewer crítico por rechazar una pregunta clara pero no respondible desde la evidencia autorizada."
+    },
+    {
+      "checkpoint_class": "SEMANTICALLY_QUALIFIED_POSITIVE",
+      "checkpoint_id": "P09_CANONICAL_POSITIVE",
+      "current_review_material_hash": "sha256:515ea95c840e9b8fb430ab744c3c9863fcfe5064c4c222afd32f50c9639710f4",
+      "expected_outcome": "READY",
+      "fixture_hash": "sha256:4cd112377efbb095edd588636b9ca83ab39be2a75b9756c0b9162c1fcd8eb148",
+      "golden_hash": "sha256:75fb4de34312937534365727943e577f46647456313eebcb672173ddce76b3c7",
+      "golden_id": "GOLDEN-P09-CACHE-POS-001",
+      "golden_version": "1.0.0",
+      "human_ratification": null,
+      "independent_review_status": "USER_SUPPLIED_INDEPENDENT_REVIEW_FINDINGS",
+      "legitimate_abstention_reasons": [
+        "El Assessment no contiene la pregunta aceptada o no conserva sus IDs.",
+        "Los evidence_ids de la guía amplían la pregunta.",
+        "No pueden definirse entre dos y cinco observables sustentados."
+      ],
+      "oracle_origin": "CODEX_AUTHORED_SEMANTIC_REVIEW",
+      "positive_obligation": "READY",
+      "prior_review_hash": "sha256:515ea95c840e9b8fb430ab744c3c9863fcfe5064c4c222afd32f50c9639710f4",
+      "prompt_id": "P09_GUIDE_BUILD_V1",
+      "provenance_amendment_hash": "sha256:9c421d9c6959858d372aa58255534ea3a95590c113af04aa43584f380f6efc81",
+      "review_evidence": [
+        "El Assessment se deriva del candidate P08 positive con selected_question_from_candidate.",
+        "assemble_assessment_snapshot fija IDs, cobertura, lineage y política mediante la ruta productiva determinista.",
+        "La guía conserva exactamente los evidence_ids del candidato y contiene tres observables localizables.",
+        "Los niveles 0–3 no agregan hechos disciplinarios ni conocimiento externo."
+      ],
+      "review_hash": "sha256:515ea95c840e9b8fb430ab744c3c9863fcfe5064c4c222afd32f50c9639710f4",
+      "review_version": "1.0.0",
+      "semantic_review_id": "SR-P09-CACHE-POS-001",
+      "source_artifact_hashes": [
+        "sha256:71c8101a6d1c50acb81c2f04e8479540e9c90a35974819f46af497a81f5361f7",
+        "sha256:ac8ade8c3dc529d06d439dcbc3af0b866c6e1deaa3ebaa0552963f7a93d54025",
+        "sha256:d4983ba075c625f4c58858db8ec02a603f57b71145517e7160afd29df32be49a"
+      ]
+    },
+    {
+      "checkpoint_class": "STRUCTURAL_ORCHESTRATION_CHECKPOINT_ONLY",
+      "checkpoint_id": "LEGACY-P06-MOCK-ORCHESTRATION",
+      "expected_outcome": "STRUCTURALLY_VALID_ONLY",
+      "fixture_hash": "sha256:4cd112377efbb095edd588636b9ca83ab39be2a75b9756c0b9162c1fcd8eb148",
+      "oracle_origin": "DeterministicMockFactory",
+      "oracle_validity": "NOT_APPLICABLE",
+      "prompt_id": "P06_EVIDENCE_MAP_V1",
+      "review_evidence": [
+        "El mock prueba shape, IDs y orquestación; no califica calidad pedagógica."
+      ],
+      "review_hash": null,
+      "review_version": null,
+      "semantic_review_id": null,
+      "source_artifact_hashes": []
+    },
+    {
+      "checkpoint_class": "STRUCTURAL_ORCHESTRATION_CHECKPOINT_ONLY",
+      "checkpoint_id": "LEGACY-P07-MOCK-ORCHESTRATION",
+      "expected_outcome": "STRUCTURALLY_VALID_ONLY",
+      "fixture_hash": "sha256:4cd112377efbb095edd588636b9ca83ab39be2a75b9756c0b9162c1fcd8eb148",
+      "oracle_origin": "DeterministicMockFactory",
+      "oracle_validity": "NOT_APPLICABLE",
+      "prompt_id": "P07_QUESTION_BUILD_V1",
+      "review_evidence": [
+        "El mock prueba shape, IDs y orquestación; no califica calidad pedagógica."
+      ],
+      "review_hash": null,
+      "review_version": null,
+      "semantic_review_id": null,
+      "source_artifact_hashes": []
+    },
+    {
+      "checkpoint_class": "STRUCTURAL_ORCHESTRATION_CHECKPOINT_ONLY",
+      "checkpoint_id": "LEGACY-P08-MOCK-ORCHESTRATION",
+      "expected_outcome": "STRUCTURALLY_VALID_ONLY",
+      "fixture_hash": "sha256:4cd112377efbb095edd588636b9ca83ab39be2a75b9756c0b9162c1fcd8eb148",
+      "oracle_origin": "DeterministicMockFactory",
+      "oracle_validity": "NOT_APPLICABLE",
+      "prompt_id": "P08_QUESTION_REVIEW_V1",
+      "review_evidence": [
+        "El mock prueba shape, IDs y orquestación; no califica calidad pedagógica."
+      ],
+      "review_hash": null,
+      "review_version": null,
+      "semantic_review_id": null,
+      "source_artifact_hashes": []
+    },
+    {
+      "checkpoint_class": "STRUCTURAL_ORCHESTRATION_CHECKPOINT_ONLY",
+      "checkpoint_id": "LEGACY-P09-MOCK-ORCHESTRATION",
+      "expected_outcome": "STRUCTURALLY_VALID_ONLY",
+      "fixture_hash": "sha256:4cd112377efbb095edd588636b9ca83ab39be2a75b9756c0b9162c1fcd8eb148",
+      "oracle_origin": "DeterministicMockFactory",
+      "oracle_validity": "NOT_APPLICABLE",
+      "prompt_id": "P09_GUIDE_BUILD_V1",
+      "review_evidence": [
+        "El mock prueba shape, IDs y orquestación; no califica calidad pedagógica."
+      ],
+      "review_hash": null,
+      "review_version": null,
+      "semantic_review_id": null,
+      "source_artifact_hashes": []
+    }
+  ],
+  "checks": [
+    {
+      "check_id": "TERRA_LADDER_HARNESS_FROZEN",
+      "material_hash": "sha256:0984337116a6146da91545d7527669e074658a8bc5e537cd1801dd619e973db9",
+      "status": "PASS"
+    },
+    {
+      "baseline_git_sha": "9dbce36d21ba6b28b32b051862cf8b305ded61e8",
+      "check_id": "PRODUCT_BOUNDARY_FROZEN",
+      "manifest_hash": "sha256:68d1724d1e2c927dc7ca7d40844cdfec833242c2c835e0491934a088d85e217a",
+      "status": "PASS"
+    },
+    {
+      "artifact_count": 4,
+      "check_id": "DOCUMENT_PACK_PRODUCT_PARSER",
+      "parser_version": "stage2-parser/2.0.0",
+      "source_artifact_hashes": {
+        "assignment": "sha256:ac8ade8c3dc529d06d439dcbc3af0b866c6e1deaa3ebaa0552963f7a93d54025",
+        "rubric": "sha256:71c8101a6d1c50acb81c2f04e8479540e9c90a35974819f46af497a81f5361f7",
+        "submission_insufficient": "sha256:67d3ebaff85dfa269c65a8df23d3cc0e18631c6b2a51613c82fadeb2098f8204",
+        "submission_sufficient": "sha256:d4983ba075c625f4c58858db8ec02a603f57b71145517e7160afd29df32be49a"
+      },
+      "status": "PASS"
+    },
+    {
+      "canonical_categories": [
+        "ACCESSIBILITY",
+        "COGNITIVE_DEMAND",
+        "COMPARABILITY",
+        "CONSTRUCT",
+        "COVERAGE",
+        "FORMAT_FEASIBILITY",
+        "OPPORTUNITY_CATALOG",
+        "PLAN_FEASIBILITY",
+        "SOURCE_FIDELITY",
+        "TIME"
+      ],
+      "check_id": "P05_SOURCE_FIDELITY",
+      "grading_weight": {
+        "blueprint": 1.0,
+        "rubric": 1.0
+      },
+      "status": "PASS",
+      "transition": "APPROVABLE"
+    },
+    {
+      "check_id": "P07_POSITIVE_READY",
+      "output_hash": "sha256:6baffa267001e9f26478243593b03183e305727edd227089cd67c9d9845eb3e7",
+      "status": "PASS"
+    },
+    {
+      "check_id": "P07_NEGATIVE_REPLACEMENT_REQUIRED",
+      "output_hash": "sha256:0d8b149bdbcff5c0d540cff0214d21b6fdd2516137b462dfdb293de7db3b14c3",
+      "status": "PASS"
+    },
+    {
+      "check_id": "P08_POSITIVE_ACCEPT",
+      "output_hash": "sha256:a63efd2c1dad0a0165a4ddf7354412529538ed32209a60bd19df7d81ae32f28e",
+      "status": "PASS"
+    },
+    {
+      "check_id": "P08_NEGATIVE_REJECT",
+      "output_hash": "sha256:703cb5251121c64d09c575dfbc838eb77df4fffd0cb5c13d4d65ae776260c6d9",
+      "status": "PASS"
+    },
+    {
+      "assembler_version": "stage1-assembler/2.0.0",
+      "assessment_hash": "sha256:41c435689d1cd08f12cef026ac8a018f8f74024fc0cf5438525b1af55509cb35",
+      "check_id": "P09_PRODUCTION_ASSEMBLY_AND_GUIDE",
+      "guide_hash": "sha256:75fb4de34312937534365727943e577f46647456313eebcb672173ddce76b3c7",
+      "planner_version": "stage2-planner/2.0.0",
+      "status": "PASS"
+    },
+    {
+      "check_id": "CHECKPOINT_PROVENANCE_COMPLETE",
+      "checkpoint_count": 13,
+      "status": "PASS"
+    },
+    {
+      "check_id": "ADVERSARIAL_REVIEW",
+      "review_hash": "sha256:a9dea7e0d9a4bcf4ee001c9cac6162337e2a85e21e25d521537457490fda497e",
+      "status": "PASS"
+    },
+    {
+      "check_id": "DOCUMENT_VISUAL_QA",
+      "page_counts": {
+        "official_assignment.docx": 1,
+        "official_rubric.docx": 1,
+        "submission_insufficient.docx": 1,
+        "submission_sufficient.docx": 1
+      },
+      "review_hash": "sha256:d96e8eb7b05dfe0dc9c25cc8bc1ba0d57fe26f93556f0a4fb52556f011da8abd",
+      "status": "PASS"
+    },
+    {
+      "branch_count": 6,
+      "check_id": "CAUSAL_CLASSIFIER_BRANCHES",
+      "status": "PASS"
+    },
+    {
+      "check_id": "SEMANTIC_SWEEP_RECEIPT_AXES",
+      "mock_gateway_invocations": 33,
+      "network_calls_to_openai": 0,
+      "real_provider_attempts": 0,
+      "semantic_checkpoint_count": 9,
+      "status": "PASS"
+    },
+    {
+      "check_id": "QUALIFICATION_MATRIX_DERIVED_CAP",
+      "derived_max_provider_requests": 33,
+      "matrix_row_count": 7,
+      "monetary_budget_status": "RECALCULATION_FROM_CURRENT_OFFICIAL_PRICES_REQUIRED",
+      "status": "PASS"
+    },
+    {
+      "base_1_output_hash": "sha256:d90bead0bc55dc7d77eb7772d874f49888b74b4ead71c14b6561a615822a7164",
+      "base_2_output_hash": "sha256:d6e42874962836614a8511378cbe158453e90e7a6d3a8c904b7b847624e13b0a",
+      "check_id": "BASE_CHAIN_2_INDEPENDENT_COMPOSITION",
+      "semantic_quality_conclusion_allowed": false,
+      "status": "PASS"
+    },
+    {
+      "check_id": "CANONICAL_DOCUMENT_INTEGRATED_CHAIN",
+      "intermediate_golden_injections": 0,
+      "semantic_quality_conclusion_allowed": false,
+      "stage_count": 8,
+      "status": "PASS"
+    },
+    {
+      "check_id": "TRANSPORT_PROVENANCE_SEPARATION",
+      "integrated_chain_response_origin": "STRUCTURAL_TRANSPORT_SUBSTITUTE",
+      "integrated_chain_semantic_quality_conclusion_allowed": false,
+      "provider_transport_constructed": false,
+      "reviewed_semantic_oracle_invocations": 9,
+      "semantic_sweep_response_origin": "REVIEWED_SEMANTIC_ORACLE",
+      "status": "PASS",
+      "structural_transport_substitute_invocations": 24
+    },
+    {
+      "authoring_class": "CODEX_AUTHORED_SEMANTIC_REVIEW",
+      "check_id": "TRUTHFUL_REVIEW_PROVENANCE",
+      "human_ratification": null,
+      "independent_review_status": "USER_SUPPLIED_INDEPENDENT_REVIEW_FINDINGS",
+      "status": "PASS"
+    }
+  ],
+  "classification": "SYNTHETIC_ONLY_NO_STUDENT_DATA",
+  "classifier_branch_proof": [
+    {
+      "assessment": {
+        "causal_attribution": "MODEL_OWNED_SEMANTIC_FAILURE",
+        "causal_confidence": "HIGH",
+        "checkpoint_class": "SEMANTICALLY_QUALIFIED_POSITIVE",
+        "checkpoint_id": "proof-positive-fail",
+        "contractual_adherence": "PASS",
+        "operational_outcome": "FAIL",
+        "oracle_validity": "VALID",
+        "reason_codes": [],
+        "semantic_interpretation": "INCORRECT",
+        "semantic_review_hash": "sha256:df75d4e9d804df31134561702e6356d68a5accae83ad49efad75f0d70f81a41a",
+        "semantic_review_id": "SR-CLASSIFIER-PROOF-001",
+        "semantic_review_version": "1.0.0"
+      },
+      "case_id": "valid-positive-semantic-failure",
+      "expected_causal_attribution": "MODEL_OWNED_SEMANTIC_FAILURE",
+      "status": "PASS"
+    },
+    {
+      "assessment": {
+        "causal_attribution": "MODEL_OWNED_CONTRACTUAL_ADHERENCE_FAILURE",
+        "causal_confidence": "HIGH",
+        "checkpoint_class": "SEMANTICALLY_QUALIFIED_NEGATIVE",
+        "checkpoint_id": "proof-abstention-adherence",
+        "contractual_adherence": "FAIL",
+        "operational_outcome": "FAIL",
+        "oracle_validity": "VALID",
+        "reason_codes": [],
+        "semantic_interpretation": "DEFENDIBLE",
+        "semantic_review_hash": "sha256:df75d4e9d804df31134561702e6356d68a5accae83ad49efad75f0d70f81a41a",
+        "semantic_review_id": "SR-CLASSIFIER-PROOF-001",
+        "semantic_review_version": "1.0.0"
+      },
+      "case_id": "defendible-abstention-adherence-failure",
+      "expected_causal_attribution": "MODEL_OWNED_CONTRACTUAL_ADHERENCE_FAILURE",
+      "status": "PASS"
+    },
+    {
+      "assessment": {
+        "causal_attribution": "CORRECT_NEGATIVE_DECISION",
+        "causal_confidence": "HIGH",
+        "checkpoint_class": "SEMANTICALLY_QUALIFIED_NEGATIVE",
+        "checkpoint_id": "proof-correct-reject",
+        "contractual_adherence": "PASS",
+        "operational_outcome": "PASS",
+        "oracle_validity": "VALID",
+        "reason_codes": [],
+        "semantic_interpretation": "CORRECT",
+        "semantic_review_hash": "sha256:df75d4e9d804df31134561702e6356d68a5accae83ad49efad75f0d70f81a41a",
+        "semantic_review_id": "SR-CLASSIFIER-PROOF-001",
+        "semantic_review_version": "1.0.0"
+      },
+      "case_id": "correct-negative-rejection",
+      "expected_causal_attribution": "CORRECT_NEGATIVE_DECISION",
+      "status": "PASS"
+    },
+    {
+      "assessment": {
+        "causal_attribution": "ORACLE_OR_CHECKPOINT_INVALID",
+        "causal_confidence": "HIGH",
+        "checkpoint_class": "SEMANTICALLY_QUALIFIED_POSITIVE",
+        "checkpoint_id": "proof-invalid-oracle",
+        "contractual_adherence": "NOT_EVALUATED",
+        "operational_outcome": "INCONCLUSIVE",
+        "oracle_validity": "INVALID",
+        "reason_codes": [],
+        "semantic_interpretation": "NOT_EVALUATED",
+        "semantic_review_hash": null,
+        "semantic_review_id": null,
+        "semantic_review_version": null
+      },
+      "case_id": "invalid-oracle",
+      "expected_causal_attribution": "ORACLE_OR_CHECKPOINT_INVALID",
+      "status": "PASS"
+    },
+    {
+      "assessment": {
+        "causal_attribution": "CAUSE_INDETERMINATE",
+        "causal_confidence": "LOW",
+        "checkpoint_class": "SEMANTICALLY_QUALIFIED_POSITIVE",
+        "checkpoint_id": "proof-indeterminate",
+        "contractual_adherence": "PASS",
+        "operational_outcome": "INCONCLUSIVE",
+        "oracle_validity": "VALID",
+        "reason_codes": [],
+        "semantic_interpretation": "INDETERMINATE",
+        "semantic_review_hash": "sha256:df75d4e9d804df31134561702e6356d68a5accae83ad49efad75f0d70f81a41a",
+        "semantic_review_id": "SR-CLASSIFIER-PROOF-001",
+        "semantic_review_version": "1.0.0"
+      },
+      "case_id": "upstream-cause-indeterminate",
+      "expected_causal_attribution": "CAUSE_INDETERMINATE",
+      "status": "PASS"
+    },
+    {
+      "assessment": {
+        "causal_attribution": "TECHNICAL_FAILURE",
+        "causal_confidence": "HIGH",
+        "checkpoint_class": "STRUCTURAL_ORCHESTRATION_CHECKPOINT_ONLY",
+        "checkpoint_id": "proof-technical",
+        "contractual_adherence": "NOT_EVALUATED",
+        "operational_outcome": "TECHNICAL_FAILURE",
+        "oracle_validity": "NOT_APPLICABLE",
+        "reason_codes": [],
+        "semantic_interpretation": "NOT_EVALUATED",
+        "semantic_review_hash": null,
+        "semantic_review_id": null,
+        "semantic_review_version": null
+      },
+      "case_id": "technical-failure",
+      "expected_causal_attribution": "TECHNICAL_FAILURE",
+      "status": "PASS"
+    }
+  ],
+  "controls": {
+    "assembler_changes": 0,
+    "billable_requests": 0,
+    "deploys": 0,
+    "luna_executions": 0,
+    "mock_gateway_invocations": 33,
+    "network_calls_to_openai": 0,
+    "p10_calls": 0,
+    "p11_calls": 0,
+    "planner_changes": 0,
+    "product_workflow_changes": 0,
+    "prompt_changes": 0,
+    "provider_adapter_constructed": false,
+    "provider_attempts": 0,
+    "provider_secret_resolved": false,
+    "sol_executions": 0,
+    "terra_executions": 0,
+    "threshold_changes": 0,
+    "validator_changes": 0
+  },
+  "document_visual_qa": {
+    "checks": {
+      "classification_visible": "PASS",
+      "header_footer_legible": "PASS",
+      "headings_are_distinct": "PASS",
+      "no_clipping_or_overflow": "PASS",
+      "no_unintended_blank_pages": "PASS",
+      "tables_fit_page": "PASS"
+    },
+    "page_counts": {
+      "official_assignment.docx": 1,
+      "official_rubric.docx": 1,
+      "submission_insufficient.docx": 1,
+      "submission_sufficient.docx": 1
+    },
+    "renderer": "LibreOfficeDev 26.8 headless via render_docx.py",
+    "review_id": "DOCX-QA-CACHE-001",
+    "review_version": "1.0.0",
+    "reviewed_on": "2026-08-13",
+    "status": "PASS"
+  },
+  "fixture_hash": "sha256:4cd112377efbb095edd588636b9ca83ab39be2a75b9756c0b9162c1fcd8eb148",
+  "fixture_version": "stage2-semantic-qualification-pack/1.1.0",
+  "frozen_product_boundary": {
+    "baseline_git_sha": "9dbce36d21ba6b28b32b051862cf8b305ded61e8",
+    "component_versions": {
+      "assembler": "stage1-assembler/2.0.0",
+      "parser": "stage2-parser/2.0.0",
+      "planner": "stage2-planner/2.0.0"
+    },
+    "manifest_hash": "sha256:68d1724d1e2c927dc7ca7d40844cdfec833242c2c835e0491934a088d85e217a",
+    "prompts": {
+      "P04_BLUEPRINT_BUILD_V1": {
+        "hash": "sha256:f8c12331bacc676920095f353b8a3d7180f90ba2015c23aa3a378cbb505064e0",
+        "version": "1.1.11"
+      },
+      "P05_BLUEPRINT_REVIEW_V1": {
+        "hash": "sha256:4b38cf144dd44ce235399efdf6938f611bfac820aa3b31497859f5fd5e426bb4",
+        "version": "1.1.8"
+      },
+      "P06_EVIDENCE_MAP_V1": {
+        "hash": "sha256:01bf8fabac2cf3c7aa235b4ecb0e16edf8844a57efe7be2aaac7ffa2948d2e26",
+        "version": "1.1.5"
+      },
+      "P07_QUESTION_BUILD_V1": {
+        "hash": "sha256:db0f6d91ad0357bbd7984e2b7d8564944e969fa8f39c0b95ca88085157d24b6c",
+        "version": "1.1.4"
+      },
+      "P08_QUESTION_REVIEW_V1": {
+        "hash": "sha256:f63230dde5dadbbba78b24ae229fefc61a6b7d072a9c3d7c1ea9044be2463949",
+        "version": "1.1.5"
+      },
+      "P09_GUIDE_BUILD_V1": {
+        "hash": "sha256:a7607fb64499efdbb377469d1078ae758cfd47d09828f35af1ac603b46b5f2d3",
+        "version": "1.1.6"
+      }
+    },
+    "question_validation_thresholds": {
+      "escalate_below_confidence": 0.65,
+      "minimum_anchor_sufficiency": 0.8,
+      "minimum_answerability": 0.85,
+      "minimum_criterion_relevance": 0.8,
+      "minimum_groundedness": 0.9
+    },
+    "route_profile_material_hashes": {
+      "LUNA_BASELINE_V1": "sha256:78bfe07f895774811126d8a0e32787a0cb942a168b0f7da3d6fed131ea50574d",
+      "LUNA_MAX_V1": "sha256:f79e5f500ee3c2a55ab0e1d5b0955596e9f686e5b52dedb8f467e2122d681871",
+      "LUNA_XHIGH_V1": "sha256:fb5b178f297d82d3a21c038adc89f6e6d4d41aac5c95c9c40200dd03822ecbd4",
+      "TERRA_MEDIUM_V1": "sha256:23e40ed78bed08e34190e8b850bda030fac44af28b71fba889e153d5f77ebc9f"
+    },
+    "source_file_sha256": {
+      "specification/models_v1.1(1).py": "3f1a42102b10a558f42885a14034d5d41944f7c23f597d257baa6dd21d2cee0f",
+      "src/comprehension_verification/model_gateway/openai_adapter.py": "245bdb5c4f60fab97bfa746b38ed6ea0043c65eb08d45960c54031d8bf6184f1",
+      "src/comprehension_verification/model_gateway/prompt_text.py": "afa1feb5b3db898d62641b739803f014ba7c67474f3b9626522b272904abf7e1",
+      "src/comprehension_verification/model_gateway/registry.py": "0260a33fe066fbb5c268eb8b4f6cb0894886ee5a9147344910c26fc29aa27680",
+      "src/comprehension_verification/planning.py": "4872c2abf163e27135b0d266c4675b197534aa0f7c36c0f7960ebe5a575e8adb",
+      "src/comprehension_verification/validation.py": "a5ad1f04205aa701fff5b0e9d65d78394dc01cb37c40242fe861be86f751ed50",
+      "src/comprehension_verification/web/workflows.py": "1ceb38188e615c844de9f8a8d76b5389c1aa54a8cb53062522015e6c435ebe8a"
+    }
+  },
+  "offline_qualification_rehearsal": {
+    "base_chain_2": {
+      "independent_output": true,
+      "output_hash": "sha256:d6e42874962836614a8511378cbe158453e90e7a6d3a8c904b7b847624e13b0a",
+      "status": "PASS"
+    },
+    "billable_requests": 0,
+    "canonical_document_chain": {
+      "current_run_dataflow": true,
+      "intermediate_golden_injections": 0,
+      "semantic_quality_conclusion_allowed": false,
+      "stage_count": 8,
+      "status": "PASS"
+    },
+    "causal_classification": "QUALIFICATION_PASSED",
+    "checkpoint_assessments": [
+      {
+        "causal_attribution": "NONE",
+        "causal_confidence": "NOT_APPLICABLE",
+        "checkpoint_class": "SEMANTICALLY_QUALIFIED_POSITIVE",
+        "checkpoint_id": "P04_CANONICAL_POSITIVE",
+        "contractual_adherence": "PASS",
+        "operational_outcome": "PASS",
+        "oracle_validity": "VALID",
+        "reason_codes": [],
+        "semantic_interpretation": "CORRECT",
+        "semantic_review_hash": "sha256:63aabc66a4664d9d4393ab0d4708ff383ce2d17bd21e2be969319e04024b0bf2",
+        "semantic_review_id": "SR-P04-CACHE-POS-001",
+        "semantic_review_version": "1.0.0"
+      },
+      {
+        "causal_attribution": "NONE",
+        "causal_confidence": "NOT_APPLICABLE",
+        "checkpoint_class": "SEMANTICALLY_QUALIFIED_POSITIVE",
+        "checkpoint_id": "P05_CANONICAL_POSITIVE",
+        "contractual_adherence": "PASS",
+        "operational_outcome": "PASS",
+        "oracle_validity": "VALID",
+        "reason_codes": [],
+        "semantic_interpretation": "CORRECT",
+        "semantic_review_hash": "sha256:2f3baf9c64931487f53fcfc6c3d4557e4f634cb776a0a4dd65918f2ffddb42b1",
+        "semantic_review_id": "SR-P05-CACHE-BLUEPRINT-001",
+        "semantic_review_version": "1.0.0"
+      },
+      {
+        "causal_attribution": "CORRECT_NEGATIVE_DECISION",
+        "causal_confidence": "HIGH",
+        "checkpoint_class": "SEMANTICALLY_QUALIFIED_NEGATIVE",
+        "checkpoint_id": "P05_PLAN_FEASIBILITY_NEGATIVE",
+        "contractual_adherence": "PASS",
+        "operational_outcome": "PASS",
+        "oracle_validity": "VALID",
+        "reason_codes": [],
+        "semantic_interpretation": "CORRECT",
+        "semantic_review_hash": "sha256:9d1bba041da78a78600a7645d40cb62aba8294c90e6c1c976e796b4e8490e808",
+        "semantic_review_id": "SR-P05-CACHE-PLAN-NEG-001",
+        "semantic_review_version": "1.0.0"
+      },
+      {
+        "causal_attribution": "NONE",
+        "causal_confidence": "NOT_APPLICABLE",
+        "checkpoint_class": "SEMANTICALLY_QUALIFIED_POSITIVE",
+        "checkpoint_id": "P06_CANONICAL_POSITIVE",
+        "contractual_adherence": "PASS",
+        "operational_outcome": "PASS",
+        "oracle_validity": "VALID",
+        "reason_codes": [],
+        "semantic_interpretation": "CORRECT",
+        "semantic_review_hash": "sha256:43bd2c99778bb0360b3edb1bf93b1f90b9cb33e1f4e9a0517417cabf059f5367",
+        "semantic_review_id": "SR-P06-CACHE-MAP-POS-002",
+        "semantic_review_version": "2.0.0"
+      },
+      {
+        "causal_attribution": "NONE",
+        "causal_confidence": "NOT_APPLICABLE",
+        "checkpoint_class": "SEMANTICALLY_QUALIFIED_POSITIVE",
+        "checkpoint_id": "P07_CANONICAL_POSITIVE",
+        "contractual_adherence": "PASS",
+        "operational_outcome": "PASS",
+        "oracle_validity": "VALID",
+        "reason_codes": [],
+        "semantic_interpretation": "CORRECT",
+        "semantic_review_hash": "sha256:fc20c9360a36707762a91d76d2ce9f9d3c167bc8bcb088d1f94d6e8397e084f1",
+        "semantic_review_id": "SR-P07-CACHE-POS-001",
+        "semantic_review_version": "1.0.0"
+      },
+      {
+        "causal_attribution": "CORRECT_NEGATIVE_DECISION",
+        "causal_confidence": "HIGH",
+        "checkpoint_class": "SEMANTICALLY_QUALIFIED_NEGATIVE",
+        "checkpoint_id": "P07_INSUFFICIENT_NEGATIVE",
+        "contractual_adherence": "PASS",
+        "operational_outcome": "PASS",
+        "oracle_validity": "VALID",
+        "reason_codes": [],
+        "semantic_interpretation": "CORRECT",
+        "semantic_review_hash": "sha256:3a8c665373a3aad141571d8aced682410d5c7d3a8747eac2f91f2f12122006c2",
+        "semantic_review_id": "SR-P07-CACHE-NEG-001",
+        "semantic_review_version": "1.0.0"
+      },
+      {
+        "causal_attribution": "NONE",
+        "causal_confidence": "NOT_APPLICABLE",
+        "checkpoint_class": "SEMANTICALLY_QUALIFIED_POSITIVE",
+        "checkpoint_id": "P08_CANONICAL_POSITIVE",
+        "contractual_adherence": "PASS",
+        "operational_outcome": "PASS",
+        "oracle_validity": "VALID",
+        "reason_codes": [],
+        "semantic_interpretation": "CORRECT",
+        "semantic_review_hash": "sha256:e28976bdc1ad874d4fad0bc465a73eec899354b3edcdebaefc631167d4e36493",
+        "semantic_review_id": "SR-P08-CACHE-POS-001",
+        "semantic_review_version": "1.0.0"
+      },
+      {
+        "causal_attribution": "CORRECT_NEGATIVE_DECISION",
+        "causal_confidence": "HIGH",
+        "checkpoint_class": "SEMANTICALLY_QUALIFIED_NEGATIVE",
+        "checkpoint_id": "P08_UNANSWERABLE_NEGATIVE",
+        "contractual_adherence": "PASS",
+        "operational_outcome": "PASS",
+        "oracle_validity": "VALID",
+        "reason_codes": [],
+        "semantic_interpretation": "CORRECT",
+        "semantic_review_hash": "sha256:a1094aefabd40a9396bda991679f36332adab024e33e667906fc3b2f8d75ef24",
+        "semantic_review_id": "SR-P08-CACHE-NEG-001",
+        "semantic_review_version": "1.0.0"
+      },
+      {
+        "causal_attribution": "NONE",
+        "causal_confidence": "NOT_APPLICABLE",
+        "checkpoint_class": "SEMANTICALLY_QUALIFIED_POSITIVE",
+        "checkpoint_id": "P09_CANONICAL_POSITIVE",
+        "contractual_adherence": "PASS",
+        "operational_outcome": "PASS",
+        "oracle_validity": "VALID",
+        "reason_codes": [],
+        "semantic_interpretation": "CORRECT",
+        "semantic_review_hash": "sha256:515ea95c840e9b8fb430ab744c3c9863fcfe5064c4c222afd32f50c9639710f4",
+        "semantic_review_id": "SR-P09-CACHE-POS-001",
+        "semantic_review_version": "1.0.0"
+      }
+    ],
+    "derived_max_provider_requests": 33,
+    "execution_sequence": [
+      "semantic-sweep:P04-P09:versioned-positive-and-negative",
+      "offline-golden-positive:P05",
+      "offline-golden-negative:P05",
+      "integrated-chain:base:1:P04-P09",
+      "integrated-chain:base:2:P04-P09",
+      "integrated-chain:choice-variant:P04-P09",
+      "integrated-chain:canonical-document-sufficient:P04-P09"
+    ],
+    "expected_mock_gateway_invocations": 33,
+    "mock_gateway_invocations": 33,
+    "mode": "offline-convergence",
+    "network_calls_to_openai": 0,
+    "qualification_matrix": [
+      {
+        "check_kind": "SEMANTIC_STAGE_LOCAL_ATTRIBUTION",
+        "max_provider_calls": 9,
+        "row_id": "semantic-sweep:P04-P09:versioned-positive-and-negative",
+        "stage_scope": "P04,P05+,P05-,P06,P07+,P07-,P08+,P08-,P09"
+      },
+      {
+        "check_kind": "DETERMINISTIC_OFFLINE_ORACLE_CHECK",
+        "max_provider_calls": 0,
+        "row_id": "offline-golden-positive:P05",
+        "stage_scope": "P05+"
+      },
+      {
+        "check_kind": "DETERMINISTIC_OFFLINE_ORACLE_CHECK",
+        "max_provider_calls": 0,
+        "row_id": "offline-golden-negative:P05",
+        "stage_scope": "P05-"
+      },
+      {
+        "check_kind": "INTEGRATED_COMPOSITIONAL_CHECK",
+        "max_provider_calls": 6,
+        "row_id": "integrated-chain:base:1:P04-P09",
+        "stage_scope": "P04-P09 plus planner/assembly"
+      },
+      {
+        "check_kind": "INTEGRATED_COMPOSITIONAL_CHECK",
+        "max_provider_calls": 6,
+        "row_id": "integrated-chain:base:2:P04-P09",
+        "stage_scope": "P04-P09 plus planner/assembly"
+      },
+      {
+        "check_kind": "INTEGRATED_COMPOSITIONAL_CHECK",
+        "max_provider_calls": 6,
+        "row_id": "integrated-chain:choice-variant:P04-P09",
+        "stage_scope": "P04-P09 plus planner/assembly"
+      },
+      {
+        "check_kind": "INTEGRATED_COMPOSITIONAL_CHECK",
+        "max_provider_calls": 6,
+        "row_id": "integrated-chain:canonical-document-sufficient:P04-P09",
+        "stage_scope": "DOCX parser boundary through P09 plus planner/assembly"
+      }
+    ],
+    "semantic_checkpoint_count": 9,
+    "semantic_sweep_run_kind": "SEMANTIC_QUALIFICATION_SWEEP",
+    "status": "PASS",
+    "transport_provenance": {
+      "integrated_chain_response_origin": "STRUCTURAL_TRANSPORT_SUBSTITUTE",
+      "integrated_chain_semantic_quality_conclusion_allowed": false,
+      "provider_transport_constructed": false,
+      "reviewed_semantic_oracle_invocations": 9,
+      "semantic_sweep_response_origin": "REVIEWED_SEMANTIC_ORACLE",
+      "structural_transport_substitute_invocations": 24
+    }
+  },
+  "phase": "TERRA_HIGH_FINAL_DECISION_GATE",
+  "rehearsal_version": "stage2-semantic-harness-rehearsal/1.1.0",
+  "report_schema_version": "stage2-semantic-harness-report/1.1.0",
+  "status": "PASS",
+  "terra_ladder_harness_freeze": {
+    "assembler": {
+      "hash": "sha256:1ceb38188e615c844de9f8a8d76b5389c1aa54a8cb53062522015e6c435ebe8a",
+      "version": "stage1-assembler/2.0.0"
+    },
+    "classification": "SYNTHETIC_ONLY_NO_STUDENT_DATA",
+    "classifier": {
+      "hash": "sha256:17f71575b3b6c7351272baa50c7d02804e975fcc62962f814cb08731707e2db4"
+    },
+    "docx": {
+      "artifacts": {
+        "assignment": "sha256:ac8ade8c3dc529d06d439dcbc3af0b866c6e1deaa3ebaa0552963f7a93d54025",
+        "rubric": "sha256:71c8101a6d1c50acb81c2f04e8479540e9c90a35974819f46af497a81f5361f7",
+        "submission_insufficient": "sha256:67d3ebaff85dfa269c65a8df23d3cc0e18631c6b2a51613c82fadeb2098f8204",
+        "submission_sufficient": "sha256:d4983ba075c625f4c58858db8ec02a603f57b71145517e7160afd29df32be49a"
+      },
+      "hash": "sha256:31be36973d565e0e56747c0f6b4aed62480edc082f211efb835df9a9b56afb99"
+    },
+    "freeze_version": "1.0.0",
+    "frozen_on": "2026-08-13",
+    "material_hash": "sha256:0984337116a6146da91545d7527669e074658a8bc5e537cd1801dd619e973db9",
+    "matrix": {
+      "hash": "sha256:94fbd798732b057f3ba051144a0f0de5533ce6ffb85b103d766c6abeb660ea49",
+      "rows": [
+        {
+          "check_kind": "SEMANTIC_STAGE_LOCAL_ATTRIBUTION",
+          "max_provider_calls": 9,
+          "row_id": "semantic-sweep:P04-P09:versioned-positive-and-negative",
+          "stage_scope": "P04,P05+,P05-,P06,P07+,P07-,P08+,P08-,P09"
+        },
+        {
+          "check_kind": "DETERMINISTIC_OFFLINE_ORACLE_CHECK",
+          "max_provider_calls": 0,
+          "row_id": "offline-golden-positive:P05",
+          "stage_scope": "P05+"
+        },
+        {
+          "check_kind": "DETERMINISTIC_OFFLINE_ORACLE_CHECK",
+          "max_provider_calls": 0,
+          "row_id": "offline-golden-negative:P05",
+          "stage_scope": "P05-"
+        },
+        {
+          "check_kind": "INTEGRATED_COMPOSITIONAL_CHECK",
+          "max_provider_calls": 6,
+          "row_id": "integrated-chain:base:1:P04-P09",
+          "stage_scope": "P04-P09 plus planner/assembly"
+        },
+        {
+          "check_kind": "INTEGRATED_COMPOSITIONAL_CHECK",
+          "max_provider_calls": 6,
+          "row_id": "integrated-chain:base:2:P04-P09",
+          "stage_scope": "P04-P09 plus planner/assembly"
+        },
+        {
+          "check_kind": "INTEGRATED_COMPOSITIONAL_CHECK",
+          "max_provider_calls": 6,
+          "row_id": "integrated-chain:choice-variant:P04-P09",
+          "stage_scope": "P04-P09 plus planner/assembly"
+        },
+        {
+          "check_kind": "INTEGRATED_COMPOSITIONAL_CHECK",
+          "max_provider_calls": 6,
+          "row_id": "integrated-chain:canonical-document-sufficient:P04-P09",
+          "stage_scope": "DOCX parser boundary through P09 plus planner/assembly"
+        }
+      ]
+    },
+    "oracles": {
+      "p06_hash": "sha256:d559af8784d553a4df56166d27ab309c48064e577438c3e372213f175a857048",
+      "p07_hash": "sha256:25df80e7ee502f95692d800697760dfed10e8ade69488ab84f67bc0d7aa6daeb",
+      "semantic_dispatch_hash": "sha256:7bc4f5a002f697b3596bc89ce6c7e3d3fa6b81cd826ca2429b24e4fca1b738d7"
+    },
+    "parser_boundary": {
+      "hash": "sha256:e9996dd42cba91ad0e01895acdc843b5570ab6e5fca0547d3efe4d377a02a347",
+      "version": "stage2-parser/2.0.0"
+    },
+    "planner": {
+      "hash": "sha256:4872c2abf163e27135b0d266c4675b197534aa0f7c36c0f7960ebe5a575e8adb",
+      "version": "stage2-planner/2.0.0"
+    },
+    "prompts": {
+      "hash": "sha256:13ccb328e02d83631e1b361c96926b839b322993a2a930cd382d40bb540a47bc",
+      "items": {
+        "P04_BLUEPRINT_BUILD_V1": {
+          "hash": "sha256:f8c12331bacc676920095f353b8a3d7180f90ba2015c23aa3a378cbb505064e0",
+          "version": "1.1.11"
+        },
+        "P05_BLUEPRINT_REVIEW_V1": {
+          "hash": "sha256:4b38cf144dd44ce235399efdf6938f611bfac820aa3b31497859f5fd5e426bb4",
+          "version": "1.1.8"
+        },
+        "P06_EVIDENCE_MAP_V1": {
+          "hash": "sha256:01bf8fabac2cf3c7aa235b4ecb0e16edf8844a57efe7be2aaac7ffa2948d2e26",
+          "version": "1.1.5"
+        },
+        "P07_QUESTION_BUILD_V1": {
+          "hash": "sha256:db0f6d91ad0357bbd7984e2b7d8564944e969fa8f39c0b95ca88085157d24b6c",
+          "version": "1.1.4"
+        },
+        "P08_QUESTION_REVIEW_V1": {
+          "hash": "sha256:f63230dde5dadbbba78b24ae229fefc61a6b7d072a9c3d7c1ea9044be2463949",
+          "version": "1.1.5"
+        },
+        "P09_GUIDE_BUILD_V1": {
+          "hash": "sha256:a7607fb64499efdbb377469d1078ae758cfd47d09828f35af1ac603b46b5f2d3",
+          "version": "1.1.6"
+        }
+      }
+    },
+    "semantic_fixture": {
+      "hash": "sha256:4cd112377efbb095edd588636b9ca83ab39be2a75b9756c0b9162c1fcd8eb148",
+      "version": "stage2-semantic-qualification-pack/1.1.0"
+    },
+    "semantic_reviews": {
+      "hash": "sha256:732fc6b7781ef3abd0c7608de0c9fcc49a2be724390ae3039243bc2524156e52",
+      "items": {
+        "SR-P04-CACHE-POS-001": {
+          "current_review_material_hash": "sha256:63aabc66a4664d9d4393ab0d4708ff383ce2d17bd21e2be969319e04024b0bf2",
+          "preserved_review_hash": "sha256:63aabc66a4664d9d4393ab0d4708ff383ce2d17bd21e2be969319e04024b0bf2",
+          "version": "1.0.0"
+        },
+        "SR-P05-CACHE-BLUEPRINT-001": {
+          "current_review_material_hash": "sha256:a52c9dd7c76177629f089893d9393128c9a2aec14d915b78ee583be1eb93b1db",
+          "preserved_review_hash": "sha256:2f3baf9c64931487f53fcfc6c3d4557e4f634cb776a0a4dd65918f2ffddb42b1",
+          "version": "1.0.0"
+        },
+        "SR-P05-CACHE-PLAN-NEG-001": {
+          "current_review_material_hash": "sha256:9d1bba041da78a78600a7645d40cb62aba8294c90e6c1c976e796b4e8490e808",
+          "preserved_review_hash": "sha256:9d1bba041da78a78600a7645d40cb62aba8294c90e6c1c976e796b4e8490e808",
+          "version": "1.0.0"
+        },
+        "SR-P06-CACHE-MAP-POS-002": {
+          "current_review_material_hash": "sha256:43bd2c99778bb0360b3edb1bf93b1f90b9cb33e1f4e9a0517417cabf059f5367",
+          "preserved_review_hash": "sha256:43bd2c99778bb0360b3edb1bf93b1f90b9cb33e1f4e9a0517417cabf059f5367",
+          "version": "2.0.0"
+        },
+        "SR-P07-CACHE-NEG-001": {
+          "current_review_material_hash": "sha256:3a8c665373a3aad141571d8aced682410d5c7d3a8747eac2f91f2f12122006c2",
+          "preserved_review_hash": "sha256:3a8c665373a3aad141571d8aced682410d5c7d3a8747eac2f91f2f12122006c2",
+          "version": "1.0.0"
+        },
+        "SR-P07-CACHE-POS-001": {
+          "current_review_material_hash": "sha256:fc20c9360a36707762a91d76d2ce9f9d3c167bc8bcb088d1f94d6e8397e084f1",
+          "preserved_review_hash": "sha256:fc20c9360a36707762a91d76d2ce9f9d3c167bc8bcb088d1f94d6e8397e084f1",
+          "version": "1.0.0"
+        },
+        "SR-P08-CACHE-NEG-001": {
+          "current_review_material_hash": "sha256:a1094aefabd40a9396bda991679f36332adab024e33e667906fc3b2f8d75ef24",
+          "preserved_review_hash": "sha256:a1094aefabd40a9396bda991679f36332adab024e33e667906fc3b2f8d75ef24",
+          "version": "1.0.0"
+        },
+        "SR-P08-CACHE-POS-001": {
+          "current_review_material_hash": "sha256:e28976bdc1ad874d4fad0bc465a73eec899354b3edcdebaefc631167d4e36493",
+          "preserved_review_hash": "sha256:e28976bdc1ad874d4fad0bc465a73eec899354b3edcdebaefc631167d4e36493",
+          "version": "1.0.0"
+        },
+        "SR-P09-CACHE-POS-001": {
+          "current_review_material_hash": "sha256:515ea95c840e9b8fb430ab744c3c9863fcfe5064c4c222afd32f50c9639710f4",
+          "preserved_review_hash": "sha256:515ea95c840e9b8fb430ab744c3c9863fcfe5064c4c222afd32f50c9639710f4",
+          "version": "1.0.0"
+        }
+      }
+    },
+    "status": "TERRA_LADDER_HARNESS_FROZEN",
+    "thresholds": {
+      "hash": "sha256:2097ef510501f007378fa84ee4c90e1618f2a6f10c9f8ba0b16a071b01c2a419",
+      "items": {
+        "escalate_below_confidence": 0.65,
+        "minimum_anchor_sufficiency": 0.8,
+        "minimum_answerability": 0.85,
+        "minimum_criterion_relevance": 0.8,
+        "minimum_groundedness": 0.9
+      }
+    },
+    "validators": {
+      "application_source_hash": "sha256:a5ad1f04205aa701fff5b0e9d65d78394dc01cb37c40242fe861be86f751ed50",
+      "application_versions": {
+        "P04_BLUEPRINT_BUILD_V1": null,
+        "P05_BLUEPRINT_REVIEW_V1": "application-validator-p05/2.2.0",
+        "P06_EVIDENCE_MAP_V1": "application-validator-p06/2.1.0",
+        "P07_QUESTION_BUILD_V1": "application-validator-p07/2.0.0",
+        "P08_QUESTION_REVIEW_V1": "application-validator-p08/2.0.0",
+        "P09_GUIDE_BUILD_V1": "application-validator-p09/2.0.0"
+      },
+      "hash": "sha256:2ee35412b3e19dac77a1941a7fdb67b4b047c075d509dd3e0156784eded2e250",
+      "relationship_source_hash": "sha256:f20c7c44fc8fdce4a5b915aa68bb42425f9e929dbf168b185b28d831765d421b",
+      "relationship_versions": {
+        "P04_BLUEPRINT_BUILD_V1": "relationship-p04/2.0.0",
+        "P05_BLUEPRINT_REVIEW_V1": "relationship-p05/2.2.0",
+        "P06_EVIDENCE_MAP_V1": "relationship-p06/2.3.0",
+        "P07_QUESTION_BUILD_V1": "relationship-p07/2.1.0",
+        "P08_QUESTION_REVIEW_V1": "relationship-p08/2.1.0",
+        "P09_GUIDE_BUILD_V1": "relationship-p09/2.0.0"
+      }
+    }
+  }
+}

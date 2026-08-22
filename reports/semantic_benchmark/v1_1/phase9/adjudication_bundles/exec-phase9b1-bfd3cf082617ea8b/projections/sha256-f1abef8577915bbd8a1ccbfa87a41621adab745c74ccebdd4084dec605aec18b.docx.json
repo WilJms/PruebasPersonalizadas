@@ -1,0 +1,1069 @@
+{
+  "byte_size": 40467,
+  "media_type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "parser_id": "stage2-docx-structural",
+  "parser_version": "stage2-parser/2.0.0",
+  "schema_version": "phase9-blind-source-projection/1.0.0",
+  "source_content_hash": "sha256:f1abef8577915bbd8a1ccbfa87a41621adab745c74ccebdd4084dec605aec18b",
+  "unit_count": 60,
+  "units": [
+    {
+      "content_text": "ACTIVIDAD 01",
+      "evidence_id": "ev_aa723cf269d87379d0ac",
+      "locator": {
+        "column": null,
+        "heading_path": [],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 0,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "PARAGRAPH",
+      "normalized_hash": "sha256:ff14a198e29e0f897f97e1736f7f3aec8f37dbb48f45bcf906125ad573a7cb79",
+      "source_order": 0
+    },
+    {
+      "content_text": "Luz y crecimiento inicial de plantines",
+      "evidence_id": "ev_1da8cbe78cf23ebda257",
+      "locator": {
+        "column": null,
+        "heading_path": [],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 1,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "PARAGRAPH",
+      "normalized_hash": "sha256:ee1ccc1cbe565b706b1d524eb6d534df842684996e602aca5dbf9d0be85b3fd2",
+      "source_order": 1
+    },
+    {
+      "content_text": "Informe breve a partir de una tabla experimental cerrada",
+      "evidence_id": "ev_c375239253303d7939a0",
+      "locator": {
+        "column": null,
+        "heading_path": [],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 2,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "PARAGRAPH",
+      "normalized_hash": "sha256:e9cfe3fc61676cadc18d28aa259b4e0d6e54ea445731cb62c9857276345f2241",
+      "source_order": 2
+    },
+    {
+      "content_text": "Disciplina: Ciencias naturales   |   Dificultad del paquete: simple",
+      "evidence_id": "ev_143647b9b59ea1f65056",
+      "locator": {
+        "column": null,
+        "heading_path": [],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 3,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "PARAGRAPH",
+      "normalized_hash": "sha256:6b2b39955102ddc2fe424cd6037e99711884d3f7e5d90d1a418429b4b573ac92",
+      "source_order": 3
+    },
+    {
+      "content_text": "Situación",
+      "evidence_id": "ev_c1919a48abdf89dc5300",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Situación"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 4,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "HEADING",
+      "normalized_hash": "sha256:1ceab505f656f53495e2ef33fac2293649724207cff9530ea5c2fd0ba4f0fe4e",
+      "source_order": 4
+    },
+    {
+      "content_text": "Un curso cultivó seis plantines de albahaca durante diez días. Todos recibieron el mismo volumen de agua, el mismo sustrato y macetas del mismo tamaño. Tres plantines estuvieron 12 horas diarias bajo una lámpara y tres estuvieron 4 horas. La siguiente tabla es el único registro autorizado.",
+      "evidence_id": "ev_b15cc6a38d38a5b8adfc",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Situación"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 5,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "PARAGRAPH",
+      "normalized_hash": "sha256:f5a36e6ec0adcb0cf1b862f640a5f0fafd0db15bd01015b44dc71ceab2977529",
+      "source_order": 5
+    },
+    {
+      "content_text": "Registro al día 10",
+      "evidence_id": "ev_52341c4f89619a12f587",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Situación",
+          "Registro al día 10"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 6,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "HEADING",
+      "normalized_hash": "sha256:642cdc295450c8c55e829a76c3b28f234d06495acbe0348063ac69c0839d4b84",
+      "source_order": 6
+    },
+    {
+      "content_text": "Plantín",
+      "evidence_id": "ev_70ee5e7a9e5b8f959ac5",
+      "locator": {
+        "column": 0,
+        "heading_path": [
+          "Situación",
+          "Registro al día 10"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 0,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:d4ea71f393ddd94d067dc02b2c85ffdd4742c084845a28cfb0209178d101f0c3",
+      "source_order": 7
+    },
+    {
+      "content_text": "Luz diaria",
+      "evidence_id": "ev_9239442274554687dffa",
+      "locator": {
+        "column": 1,
+        "heading_path": [
+          "Situación",
+          "Registro al día 10"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 0,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:976d1d123692b857610f1188c1c5a22112afb2df1168a10d35e3a1dde2f7ccb6",
+      "source_order": 8
+    },
+    {
+      "content_text": "Altura final (cm)",
+      "evidence_id": "ev_a16f41405221c6cc7b4e",
+      "locator": {
+        "column": 2,
+        "heading_path": [
+          "Situación",
+          "Registro al día 10"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 0,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:5acb80d116b99f9508622848813213f07f80e5c7034c256d634a49edaeff677b",
+      "source_order": 9
+    },
+    {
+      "content_text": "Hojas nuevas",
+      "evidence_id": "ev_e756fb5ffe5bf0517486",
+      "locator": {
+        "column": 3,
+        "heading_path": [
+          "Situación",
+          "Registro al día 10"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 0,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:beedc7f65313d1430b59510223fe02e8a881e8ec7d391b690c55c6b29c582b87",
+      "source_order": 10
+    },
+    {
+      "content_text": "Observación",
+      "evidence_id": "ev_b77ebf1b5e41e0ba26eb",
+      "locator": {
+        "column": 4,
+        "heading_path": [
+          "Situación",
+          "Registro al día 10"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 0,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:edffe72ec80220b774c1dab7b22e40a160d63fd10b4391cb0d49f72744c0070b",
+      "source_order": 11
+    },
+    {
+      "content_text": "A1",
+      "evidence_id": "ev_db8dad6cc43ebacd1a11",
+      "locator": {
+        "column": 0,
+        "heading_path": [
+          "Situación",
+          "Registro al día 10"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 1,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:16a36e86f6fed5d465ff332511a0ce1a863b55d364b25a7cdaa25db19abf9648",
+      "source_order": 12
+    },
+    {
+      "content_text": "12 h",
+      "evidence_id": "ev_defb67cfb9cdac81d700",
+      "locator": {
+        "column": 1,
+        "heading_path": [
+          "Situación",
+          "Registro al día 10"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 1,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:7b018bf0a8072c5a10b72fda2a4ad1f68cb2f5fde67ac125446ba14da50a3ef4",
+      "source_order": 13
+    },
+    {
+      "content_text": "5,2",
+      "evidence_id": "ev_ad11b35dafdb1f50a9f0",
+      "locator": {
+        "column": 2,
+        "heading_path": [
+          "Situación",
+          "Registro al día 10"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 1,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:65d3cef3dadb5e6f459218ee78c1efa08a92fbb283d72b3bcaceb842a8e049bf",
+      "source_order": 14
+    },
+    {
+      "content_text": "4",
+      "evidence_id": "ev_1e3b9257e56322d3e827",
+      "locator": {
+        "column": 3,
+        "heading_path": [
+          "Situación",
+          "Registro al día 10"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 1,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:4b227777d4dd1fc61c6f884f48641d02b4d121d3fd328cb08b5531fcacdabf8a",
+      "source_order": 15
+    },
+    {
+      "content_text": "sin daño visible",
+      "evidence_id": "ev_fef33e68daf9af3cd175",
+      "locator": {
+        "column": 4,
+        "heading_path": [
+          "Situación",
+          "Registro al día 10"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 1,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:9b2ecc360ab3e79e070b5ea6f2054a414e516fcbcf15d4d53f47975942dae123",
+      "source_order": 16
+    },
+    {
+      "content_text": "A2",
+      "evidence_id": "ev_98e4e2bcb5b64069d7d4",
+      "locator": {
+        "column": 0,
+        "heading_path": [
+          "Situación",
+          "Registro al día 10"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 2,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:c8361f9b468e68c86da024270e0949ce139cb704b8d7cce586681b99f3a7ea56",
+      "source_order": 17
+    },
+    {
+      "content_text": "12 h",
+      "evidence_id": "ev_d8d7d02441ba4aec4953",
+      "locator": {
+        "column": 1,
+        "heading_path": [
+          "Situación",
+          "Registro al día 10"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 2,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:7b018bf0a8072c5a10b72fda2a4ad1f68cb2f5fde67ac125446ba14da50a3ef4",
+      "source_order": 18
+    },
+    {
+      "content_text": "5,8",
+      "evidence_id": "ev_1dd9a7254e3d00f8aaa6",
+      "locator": {
+        "column": 2,
+        "heading_path": [
+          "Situación",
+          "Registro al día 10"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 2,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:22d20804f5c43286bd9001ff2b37f1c5f2fbc7046a8ccea1b87eb03820e61020",
+      "source_order": 19
+    },
+    {
+      "content_text": "5",
+      "evidence_id": "ev_8aeab0990b04124c521e",
+      "locator": {
+        "column": 3,
+        "heading_path": [
+          "Situación",
+          "Registro al día 10"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 2,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:ef2d127de37b942baad06145e54b0c619a1f22327b2ebbcfbec78f5564afe39d",
+      "source_order": 20
+    },
+    {
+      "content_text": "sin daño visible",
+      "evidence_id": "ev_e5827fa8242c59872e2f",
+      "locator": {
+        "column": 4,
+        "heading_path": [
+          "Situación",
+          "Registro al día 10"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 2,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:9b2ecc360ab3e79e070b5ea6f2054a414e516fcbcf15d4d53f47975942dae123",
+      "source_order": 21
+    },
+    {
+      "content_text": "A3",
+      "evidence_id": "ev_37595b4e1d878da45f2a",
+      "locator": {
+        "column": 0,
+        "heading_path": [
+          "Situación",
+          "Registro al día 10"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 3,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:1398b376fdcce25c5a5399367e76891e85121c010ec919cc243b1a519d95bbc6",
+      "source_order": 22
+    },
+    {
+      "content_text": "12 h",
+      "evidence_id": "ev_a1274cceb4bd40a45056",
+      "locator": {
+        "column": 1,
+        "heading_path": [
+          "Situación",
+          "Registro al día 10"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 3,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:7b018bf0a8072c5a10b72fda2a4ad1f68cb2f5fde67ac125446ba14da50a3ef4",
+      "source_order": 23
+    },
+    {
+      "content_text": "5,5",
+      "evidence_id": "ev_2a232d9872669570e5c3",
+      "locator": {
+        "column": 2,
+        "heading_path": [
+          "Situación",
+          "Registro al día 10"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 3,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:5349004f5833228efead066b54a954b8c148928f9d72a0107b95f224c1b85c34",
+      "source_order": 24
+    },
+    {
+      "content_text": "4",
+      "evidence_id": "ev_274cc9d5336514c0d39a",
+      "locator": {
+        "column": 3,
+        "heading_path": [
+          "Situación",
+          "Registro al día 10"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 3,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:4b227777d4dd1fc61c6f884f48641d02b4d121d3fd328cb08b5531fcacdabf8a",
+      "source_order": 25
+    },
+    {
+      "content_text": "tallo levemente inclinado",
+      "evidence_id": "ev_15e8443dbbf7bc947ec1",
+      "locator": {
+        "column": 4,
+        "heading_path": [
+          "Situación",
+          "Registro al día 10"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 3,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:da1a5aa12536f453eb13b10437dcdd0b9babcab02fbad70012337b224f44a8cc",
+      "source_order": 26
+    },
+    {
+      "content_text": "B1",
+      "evidence_id": "ev_fc2261990694c3636deb",
+      "locator": {
+        "column": 0,
+        "heading_path": [
+          "Situación",
+          "Registro al día 10"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 4,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:5b950e77941d01cdf246d00b1ece546bc95234b77d98b44c9187e2733afa696a",
+      "source_order": 27
+    },
+    {
+      "content_text": "4 h",
+      "evidence_id": "ev_0649909bc2d7c938e435",
+      "locator": {
+        "column": 1,
+        "heading_path": [
+          "Situación",
+          "Registro al día 10"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 4,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:1e2e2db5fda936fe1847ea3c4589c264a8a8f2e8f71420cb57160f22f9d2601e",
+      "source_order": 28
+    },
+    {
+      "content_text": "3,0",
+      "evidence_id": "ev_4de08098a3a5b9dca5da",
+      "locator": {
+        "column": 2,
+        "heading_path": [
+          "Situación",
+          "Registro al día 10"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 4,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:95db5026749bfcbbfd2775843c57bd887eaec09902c897a6d766cb7a6d2b4dda",
+      "source_order": 29
+    },
+    {
+      "content_text": "2",
+      "evidence_id": "ev_bae54e86ffde686deebd",
+      "locator": {
+        "column": 3,
+        "heading_path": [
+          "Situación",
+          "Registro al día 10"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 4,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:d4735e3a265e16eee03f59718b9b5d03019c07d8b6c51f90da3a666eec13ab35",
+      "source_order": 30
+    },
+    {
+      "content_text": "sin daño visible",
+      "evidence_id": "ev_a8209871e6a081b7b768",
+      "locator": {
+        "column": 4,
+        "heading_path": [
+          "Situación",
+          "Registro al día 10"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 4,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:9b2ecc360ab3e79e070b5ea6f2054a414e516fcbcf15d4d53f47975942dae123",
+      "source_order": 31
+    },
+    {
+      "content_text": "B2",
+      "evidence_id": "ev_b5dd2a1bb962718fd3c9",
+      "locator": {
+        "column": 0,
+        "heading_path": [
+          "Situación",
+          "Registro al día 10"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 5,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:abdbc2b5cc2c7a519b72bf7a164c58ebf892ab0c2df6468213705cc2f0da8561",
+      "source_order": 32
+    },
+    {
+      "content_text": "4 h",
+      "evidence_id": "ev_e49f6a92fb1289363e8a",
+      "locator": {
+        "column": 1,
+        "heading_path": [
+          "Situación",
+          "Registro al día 10"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 5,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:1e2e2db5fda936fe1847ea3c4589c264a8a8f2e8f71420cb57160f22f9d2601e",
+      "source_order": 33
+    },
+    {
+      "content_text": "3,5",
+      "evidence_id": "ev_074cda34530815a256a7",
+      "locator": {
+        "column": 2,
+        "heading_path": [
+          "Situación",
+          "Registro al día 10"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 5,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:f129ab6516df2cf50bd628a5d4893a12157b6f9f8c9e8268a3406ce616d53f42",
+      "source_order": 34
+    },
+    {
+      "content_text": "3",
+      "evidence_id": "ev_e5d8109bda6f0895ddaf",
+      "locator": {
+        "column": 3,
+        "heading_path": [
+          "Situación",
+          "Registro al día 10"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 5,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:4e07408562bedb8b60ce05c1decfe3ad16b72230967de01f640b7e4729b49fce",
+      "source_order": 35
+    },
+    {
+      "content_text": "una hoja dañada al mover la maceta",
+      "evidence_id": "ev_6560c7da7f660727a3df",
+      "locator": {
+        "column": 4,
+        "heading_path": [
+          "Situación",
+          "Registro al día 10"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 5,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:7f34eab07454fb95a90971315436ccb833e91507b58616e957cacb48222582fc",
+      "source_order": 36
+    },
+    {
+      "content_text": "B3",
+      "evidence_id": "ev_bef04b245359415bdf09",
+      "locator": {
+        "column": 0,
+        "heading_path": [
+          "Situación",
+          "Registro al día 10"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 6,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:0cd20d37dbaa799d1d2f6f04adbab0b9e958b083f38e06512cdefadd20863f98",
+      "source_order": 37
+    },
+    {
+      "content_text": "4 h",
+      "evidence_id": "ev_3379e724ccd65d600786",
+      "locator": {
+        "column": 1,
+        "heading_path": [
+          "Situación",
+          "Registro al día 10"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 6,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:1e2e2db5fda936fe1847ea3c4589c264a8a8f2e8f71420cb57160f22f9d2601e",
+      "source_order": 38
+    },
+    {
+      "content_text": "3,2",
+      "evidence_id": "ev_5bf50374596ef027faca",
+      "locator": {
+        "column": 2,
+        "heading_path": [
+          "Situación",
+          "Registro al día 10"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 6,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:ed0b3c234edde66529913728df99c7d91c2f54b2bb9585a1dbd0c522cb6f49d2",
+      "source_order": 39
+    },
+    {
+      "content_text": "2",
+      "evidence_id": "ev_597d0666e6eb25579c14",
+      "locator": {
+        "column": 3,
+        "heading_path": [
+          "Situación",
+          "Registro al día 10"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 6,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:d4735e3a265e16eee03f59718b9b5d03019c07d8b6c51f90da3a666eec13ab35",
+      "source_order": 40
+    },
+    {
+      "content_text": "sin daño visible",
+      "evidence_id": "ev_a48d1b4772e0d24450f9",
+      "locator": {
+        "column": 4,
+        "heading_path": [
+          "Situación",
+          "Registro al día 10"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 6,
+        "table_index": 0
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:9b2ecc360ab3e79e070b5ea6f2054a414e516fcbcf15d4d53f47975942dae123",
+      "source_order": 41
+    },
+    {
+      "content_text": "Cómo se produjo el registro",
+      "evidence_id": "ev_78fbffa685e7e5914538",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Situación",
+          "Cómo se produjo el registro"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 7,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "HEADING",
+      "normalized_hash": "sha256:5a988139eb3ad60316bcfadda63b26d5634ed5e53c5deebae00ae68bfe7c796d",
+      "source_order": 42
+    },
+    {
+      "content_text": "Los seis plantines se trasplantaron el mismo día y se ubicaron en la misma estantería. El riego se realizó con 40 ml por maceta cada mañana. La lámpara fue la única condición que el curso decidió variar deliberadamente. No se anotó la altura inicial de cada plantín y no hubo fotografías de los días intermedios. La tabla, por tanto, permite comparar resultados finales y observaciones registradas, pero no reconstruir una curva de crecimiento ni demostrar que todos partieron exactamente del mismo tamaño.",
+      "evidence_id": "ev_5eb82cde27d008fd46e2",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Situación",
+          "Cómo se produjo el registro"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 8,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "PARAGRAPH",
+      "normalized_hash": "sha256:395da74e46351599dbc48b068efa7a351b7d15edb675b214cdec5df0cd74325e",
+      "source_order": 43
+    },
+    {
+      "content_text": "La observación sobre B2 se escribió durante el traslado de las macetas al día 8. El curso mantuvo esa fila porque eliminarla después de conocer el resultado habría ocultado una incidencia real. No se sabe si el daño cambió la altura o solo la cuenta de hojas. Esta incertidumbre puede mencionarse, pero no autoriza a corregir el dato ni a inventar un valor alternativo.",
+      "evidence_id": "ev_1378229f4e728d4f6f3e",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Situación",
+          "Cómo se produjo el registro"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 9,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "PARAGRAPH",
+      "normalized_hash": "sha256:2ec269a344115596a06ea73fb8f3af38afdd10dd2569096b73fbefda50304968",
+      "source_order": 44
+    },
+    {
+      "content_text": "Pautas para interpretar",
+      "evidence_id": "ev_8ca3ac9c39c181403428",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Situación",
+          "Pautas para interpretar"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 10,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "HEADING",
+      "normalized_hash": "sha256:58e0fd15749e0d9a6d7ef68dcb385d167d9f417415357bd274e7ba24431ded5e",
+      "source_order": 45
+    },
+    {
+      "content_text": "Distingue entre describir cada fila y resumir un grupo. Si calculas un promedio, conserva las unidades y muestra qué valores incluiste.",
+      "evidence_id": "ev_e7a4d7100bb51d3512b8",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Situación",
+          "Pautas para interpretar"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 11,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "LIST",
+      "normalized_hash": "sha256:0a44601a9ca0ec46773c2a792ae1f52224b2f2fd67af08499164eefb9875d090",
+      "source_order": 46
+    },
+    {
+      "content_text": "No uses 12 y 4 como si fueran medidas de crecimiento: son niveles de la condición de luz. Las medidas de resultado son altura final y hojas nuevas.",
+      "evidence_id": "ev_10a6994514b1ea794950",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Situación",
+          "Pautas para interpretar"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 12,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "LIST",
+      "normalized_hash": "sha256:5c50a7c09f3ceaa86ce43954c2c99d6f6da9ec05234a10a43eb4c4aceaf3a741",
+      "source_order": 47
+    },
+    {
+      "content_text": "Una diferencia observada puede sostener una afirmación sobre este ensayo sin probar un mecanismo biológico universal.",
+      "evidence_id": "ev_1781687c2c0fb161a93a",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Situación",
+          "Pautas para interpretar"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 13,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "LIST",
+      "normalized_hash": "sha256:1a8a6ceaca417d0427106f935a624dee8d46cf1190a25f44db1618d919f048f5",
+      "source_order": 48
+    },
+    {
+      "content_text": "Puedes comparar ambas medidas de resultado o concentrarte en una, siempre que expliques qué aporta la otra al alcance de tu conclusión.",
+      "evidence_id": "ev_fe286aafa37a4c99ea02",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Situación",
+          "Pautas para interpretar"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 14,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "LIST",
+      "normalized_hash": "sha256:421fc9f848ffcaff8083fd1cf2fb5d090797e53e985a70bc66e24fec948c37c0",
+      "source_order": 49
+    },
+    {
+      "content_text": "Audiencia y propósito",
+      "evidence_id": "ev_b65201e7c8b635fbed3e",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Situación",
+          "Audiencia y propósito"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 15,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "HEADING",
+      "normalized_hash": "sha256:8c3d5cb71b178e3bed8e4d252b56b4f1b29ab251b6e7c72a6a7acd8e2a8db9d1",
+      "source_order": 50
+    },
+    {
+      "content_text": "Escribe para otro curso que decidirá si vale la pena repetir el ensayo. Esa audiencia necesita entender el patrón, los cálculos y al menos una precaución concreta. No necesita una definición de fotosíntesis ni una lista de cuidados generales de la albahaca.",
+      "evidence_id": "ev_1ea50d151def288dfc23",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Situación",
+          "Audiencia y propósito"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 16,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "PARAGRAPH",
+      "normalized_hash": "sha256:736ca2b4aef94053ebd3f6d25bfbb6cfe84d2360c1d1e7a4ebc7e3a77112b1ad",
+      "source_order": 51
+    },
+    {
+      "content_text": "Tarea",
+      "evidence_id": "ev_f584849f50634e3aca5e",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Tarea"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 17,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "HEADING",
+      "normalized_hash": "sha256:981fc146f03fe7ac990c6b5cfdf8c0a5d6a0ab859a54c244637d6b47e5a10db7",
+      "source_order": 52
+    },
+    {
+      "content_text": "Formula una afirmación principal sobre el patrón que muestran estos seis plantines.",
+      "evidence_id": "ev_b821cc090f2e34c6daae",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Tarea"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 18,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "LIST",
+      "normalized_hash": "sha256:ad610dd3c471767decd1716eb5cdb2a07a92811f431cc1d98ad571baeeaf17dc",
+      "source_order": 53
+    },
+    {
+      "content_text": "Sustenta la afirmación con al menos dos elementos localizables del registro. Puedes calcular promedios, pero debes mostrar cómo los obtuviste.",
+      "evidence_id": "ev_878ab49405975a76d44e",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Tarea"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 19,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "LIST",
+      "normalized_hash": "sha256:4cce2511f87dc31c0e7456314e1d5e0fb2191e2349d345a0af8000316d848bfa",
+      "source_order": 54
+    },
+    {
+      "content_text": "Identifica la variable que se cambió y una medida de resultado.",
+      "evidence_id": "ev_2544059a7141addf3071",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Tarea"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 20,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "LIST",
+      "normalized_hash": "sha256:fd3eb7a7c12311eec7ab9ce0fedcaf581402706701eada09f1f9593ddeb1c368",
+      "source_order": 55
+    },
+    {
+      "content_text": "Explica una limitación que se desprenda del propio diseño o del registro.",
+      "evidence_id": "ev_72e44ff7f651de6e675d",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Tarea"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 21,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "LIST",
+      "normalized_hash": "sha256:f88ea8fd6655dbdd0fd4094e265221fbb6c99701c98cd5c0be8eca8a5b41229f",
+      "source_order": 56
+    },
+    {
+      "content_text": "Entregable",
+      "evidence_id": "ev_e0c588bb379d01bbc28b",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Entregable"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 22,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "HEADING",
+      "normalized_hash": "sha256:e06951a515617b7f269d6e9470bb0d8d34e9a530557ee4bd53391503e86be625",
+      "source_order": 57
+    },
+    {
+      "content_text": "Un informe de 350 a 650 palabras. Puede incluir una tabla pequeña. No investigues fotosíntesis ni agregues datos externos: aquí se evalúa la interpretación de este registro, no una explicación completa del mecanismo biológico.",
+      "evidence_id": "ev_a7529e209f09b5aebe3b",
+      "locator": {
+        "column": null,
+        "heading_path": [
+          "Entregable"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": 23,
+        "row": null,
+        "table_index": null
+      },
+      "modality": "PARAGRAPH",
+      "normalized_hash": "sha256:4726450160fd06f053a1664cbe6f1a291b97dd54e9d52879e3225db0d202cb3d",
+      "source_order": 58
+    },
+    {
+      "content_text": "Comparabilidad: Todas las personas responden sobre el mismo registro y las mismas cuatro operaciones. Es aceptable una afirmación prudente que no use la palabra causa.",
+      "evidence_id": "ev_525666504747ae64f073",
+      "locator": {
+        "column": 0,
+        "heading_path": [
+          "Entregable"
+        ],
+        "kind": "DOCUMENT_PATH",
+        "paragraph_index": null,
+        "row": 0,
+        "table_index": 1
+      },
+      "modality": "TABLE",
+      "normalized_hash": "sha256:21d7f1cbff3210f56ac6adbd3db9783a30ff2acc88d4377789d887bbfb4d86d8",
+      "source_order": 59
+    }
+  ]
+}

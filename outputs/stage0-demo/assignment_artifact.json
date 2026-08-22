@@ -4,7 +4,7 @@
   "filename": "assignment.md",
   "media_type": "text/markdown",
   "parser_id": "stage0-markdown",
-  "parser_version": "stage0-parser/1.0.0",
+  "parser_version": "stage2-parser/2.0.0",
   "role": "ASSIGNMENT_PROMPT",
   "schema_version": "1.1.0",
   "sha256": "sha256:47dfa375545685e5ef3717b484aed77a7bd9dea22d169b7232f7e5a0c0774f6e"

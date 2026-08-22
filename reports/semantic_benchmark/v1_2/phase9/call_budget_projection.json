@@ -1,0 +1,112 @@
+{
+  "authorization": "NONE",
+  "calls_performed_by_this_task": 0,
+  "estimate_status": "ESTIMATE_NOT_BILL",
+  "not_a_single_number": "expected_economic_path and worst_case describe different outcomes of the same protocol and must never be presented as one figure.",
+  "per_stage": {
+    "P04": {
+      "calls_per_candidate": {
+        "CORE": 18,
+        "HELD_OUT_CONFIRMATION": 15,
+        "SMOKE": 3
+      },
+      "cases": {
+        "CORE": 6,
+        "HELD_OUT_CONFIRMATION": 5,
+        "SMOKE": 1
+      },
+      "expected_economic_path": {
+        "assumption": "The default HIGH rung qualifies on SMOKE and CORE.",
+        "calls": 36,
+        "rungs_executed": 1
+      },
+      "k": 3,
+      "ladder_rungs": 2,
+      "worst_case": {
+        "assumption": "Every rung clears SMOKE and fails CORE until the last, which qualifies and is confirmed on held-out.",
+        "calls": 57,
+        "rungs_executed": 2
+      }
+    },
+    "P06": {
+      "calls_per_candidate": {
+        "CORE": 135,
+        "HELD_OUT_CONFIRMATION": 93,
+        "SMOKE": 3
+      },
+      "cases": {
+        "CORE": 45,
+        "HELD_OUT_CONFIRMATION": 31,
+        "SMOKE": 1
+      },
+      "expected_economic_path": {
+        "assumption": "The default HIGH rung qualifies on SMOKE and CORE.",
+        "calls": 231,
+        "rungs_executed": 1
+      },
+      "k": 3,
+      "ladder_rungs": 3,
+      "worst_case": {
+        "assumption": "Every rung clears SMOKE and fails CORE until the last, which qualifies and is confirmed on held-out.",
+        "calls": 507,
+        "rungs_executed": 3
+      }
+    },
+    "P07": {
+      "calls_per_candidate": {
+        "CORE": 165,
+        "HELD_OUT_CONFIRMATION": 141,
+        "SMOKE": 18
+      },
+      "cases": {
+        "CORE": 55,
+        "HELD_OUT_CONFIRMATION": 47,
+        "SMOKE": 6
+      },
+      "expected_economic_path": {
+        "assumption": "The default HIGH rung qualifies on SMOKE and CORE.",
+        "calls": 324,
+        "rungs_executed": 1
+      },
+      "k": 3,
+      "ladder_rungs": 3,
+      "worst_case": {
+        "assumption": "Every rung clears SMOKE and fails CORE until the last, which qualifies and is confirmed on held-out.",
+        "calls": 690,
+        "rungs_executed": 3
+      }
+    },
+    "P09": {
+      "calls_per_candidate": {
+        "CORE": 6,
+        "HELD_OUT_CONFIRMATION": 3,
+        "SMOKE": 3
+      },
+      "cases": {
+        "CORE": 2,
+        "HELD_OUT_CONFIRMATION": 1,
+        "SMOKE": 1
+      },
+      "expected_economic_path": {
+        "assumption": "The default HIGH rung qualifies on SMOKE and CORE.",
+        "calls": 12,
+        "rungs_executed": 1
+      },
+      "k": 3,
+      "ladder_rungs": 3,
+      "worst_case": {
+        "assumption": "Every rung clears SMOKE and fails CORE until the last, which qualifies and is confirmed on held-out.",
+        "calls": 30,
+        "rungs_executed": 3
+      }
+    }
+  },
+  "planner_cases": 21,
+  "planner_deterministic_k": 1,
+  "planner_model_calls": 0,
+  "schema_version": "phase9-call-budget-projection/1.2.0",
+  "totals": {
+    "expected_economic_path_calls": 603,
+    "worst_case_calls": 1284
+  }
+}

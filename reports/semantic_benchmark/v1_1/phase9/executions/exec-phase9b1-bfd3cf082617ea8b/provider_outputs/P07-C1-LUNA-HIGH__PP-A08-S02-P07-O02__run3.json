@@ -1,0 +1,23 @@
+{
+  "candidate": null,
+  "context_mode": "CLOSED",
+  "diagnostics": [
+    {
+      "code": "QUESTION_REPLACEMENT_REQUIRED",
+      "details": {},
+      "evidence_ids": [
+        "ev_98bab90120083a02f7b0",
+        "ev_b8e87c4ee89e6d436417",
+        "ev_28f296cc642d42dcc917"
+      ],
+      "message": "La evidencia autorizada no permite construir una relación defendible entre una afirmación y evidencia mediante dos fragmentos: E1 contiene instrucciones hostiles en lugar de una afirmación utilizable, E2 contiene datos personales de contacto y E3 solo indica “Texto adicional”. Generar la pregunta requeriría reproducir o depender de contenido no adecuado para este propósito.",
+      "retryable": false,
+      "severity": "ERROR",
+      "source_ids": []
+    }
+  ],
+  "opportunity_id": "opportunity_p07_e8ca86eb8b0b14139918",
+  "schema_version": "1.1.0",
+  "status": "REPLACEMENT_REQUIRED",
+  "submission_id": "submission_02"
+}

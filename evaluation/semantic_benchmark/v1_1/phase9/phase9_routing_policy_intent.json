@@ -1,0 +1,67 @@
+{
+  "ACTIVITY_SIDE": {
+    "cross_family_fallback": "FORBIDDEN",
+    "default_reasoning": "HIGH",
+    "forbidden_families": [
+      "gpt-5.6-luna",
+      "gpt-5.6-sol"
+    ],
+    "max_reasoning": "XHIGH",
+    "model_family": "gpt-5.6-terra",
+    "qualification_status": {
+      "P01": "PHASE10_OPERATIONAL_VERIFICATION_REQUIRED",
+      "P02": "PHASE10_OPERATIONAL_VERIFICATION_REQUIRED",
+      "P03": "PHASE10_OPERATIONAL_VERIFICATION_REQUIRED",
+      "P04": "PHASE9_SEMANTIC_QUALIFICATION"
+    },
+    "rationale": "P01-P04 run once per activity and the cost amortizes across every deliverable produced from it, so the stronger family buys interpretation and construction quality where it is cheapest to buy.",
+    "reasoning_ladder": [
+      "HIGH",
+      "XHIGH"
+    ],
+    "stages": [
+      "P01",
+      "P02",
+      "P03",
+      "P04"
+    ]
+  },
+  "P05": "HISTORICAL_INACTIVE",
+  "P08": "HISTORICAL_INACTIVE",
+  "P10": "DISABLED",
+  "PLANNER": "DETERMINISTIC_NO_MODEL",
+  "SUBMISSION_SIDE": {
+    "cross_family_fallback": "FORBIDDEN",
+    "default_reasoning": "HIGH",
+    "forbidden_families": [
+      "gpt-5.6-terra",
+      "gpt-5.6-sol"
+    ],
+    "max_reasoning": "MAX",
+    "model_family": "gpt-5.6-luna",
+    "qualification_status": {
+      "P06": "PHASE9_SEMANTIC_QUALIFICATION",
+      "P07": "PHASE9_SEMANTIC_QUALIFICATION",
+      "P09": "PHASE9_SEMANTIC_QUALIFICATION"
+    },
+    "rationale": "P06/P07/P09 multiply by submission and P07 multiplies again by opportunity. Luna is the family deliberately assigned to that surface. Raising reasoning raises output tokens but keeps the per-submission model class, which is the economic property being protected.",
+    "reasoning_ladder": [
+      "HIGH",
+      "XHIGH",
+      "MAX"
+    ],
+    "stages": [
+      "P06",
+      "P07",
+      "P09"
+    ]
+  },
+  "authority": "EXPLICIT_USER_PRODUCT_DECISION",
+  "cross_family_fallback": "FORBIDDEN",
+  "cross_family_fallback_rule": "A stage may never be rescued by a model family other than the one its side owns. Exhausting the ladder yields NO_QUALIFYING_CONFIGURATION. Substituting the other family after observing a failure would convert a frozen economic constraint into a result-driven choice, which is exactly what pre-registration exists to prevent.",
+  "p01_p03_limitation": "semantic-benchmark/1.1.0 carries no qualification property for P01, P02 or P03. Their entry here is target routing policy only. They are not semantically qualified by Phase 9 and P04 passing says nothing about them; Phase 10 must verify them operationally.",
+  "production_routing_locks_after": "PHASE_9_QUALIFICATION_AND_PHASE_10_E2E",
+  "production_runtime_changed_by_this_document": false,
+  "schema_version": "phase9-routing-policy-intent/1.0.0",
+  "status": "TARGET_ROUTING_POLICY_INTENT"
+}

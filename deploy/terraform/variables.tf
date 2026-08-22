@@ -53,6 +53,17 @@ variable "job_name" {
   default     = "cva-worker"
 }
 
+variable "synthetic_evaluation_job_name" {
+  description = "Dedicated Cloud Run Job name for manually authorized synthetic evaluation only."
+  type        = string
+  default     = "cva-synthetic-eval"
+
+  validation {
+    condition     = can(regex("^[a-z][a-z0-9-]{1,61}[a-z0-9]$", var.synthetic_evaluation_job_name))
+    error_message = "synthetic_evaluation_job_name must be a valid lowercase Cloud Run Job name."
+  }
+}
+
 variable "enable_cloud_build_connection" {
   description = "Create the regional GitHub connection. OAuth/GitHub App authorization is completed interactively after its first apply."
   type        = bool
@@ -110,6 +121,82 @@ variable "enable_runtime_resources" {
   description = "Create Cloud Run resources after secret versions and an image exist."
   type        = bool
   default     = false
+}
+
+variable "enable_openai_secret_container" {
+  description = "Create only the empty OpenAI API key Secret Manager container. The value is added out-of-band and never enters Terraform."
+  type        = bool
+  default     = false
+}
+
+variable "enable_synthetic_evaluation_provider" {
+  description = "Expose only the post-claim synthetic evaluation capability. A matching append-only job authorization remains mandatory before secret resolution."
+  type        = bool
+  default     = false
+}
+
+variable "openai_api_key_secret_version" {
+  description = "Pinned numeric version of the separately inserted OpenAI project API key. This is a version identifier, never the key value."
+  type        = string
+  default     = null
+  nullable    = true
+
+  validation {
+    condition = (
+      var.openai_api_key_secret_version == null
+      || can(regex("^[1-9][0-9]*$", var.openai_api_key_secret_version))
+    )
+    error_message = "openai_api_key_secret_version must be null or a pinned positive numeric version."
+  }
+}
+
+variable "synthetic_evaluation_candidate_sha" {
+  description = "Exact 40-character source SHA bound to every durable synthetic evaluation authorization."
+  type        = string
+  default     = null
+  nullable    = true
+
+  validation {
+    condition = (
+      var.synthetic_evaluation_candidate_sha == null
+      || can(regex("^[0-9a-f]{40}$", var.synthetic_evaluation_candidate_sha))
+    )
+    error_message = "synthetic_evaluation_candidate_sha must be null or an exact lowercase Git SHA."
+  }
+}
+
+variable "synthetic_evaluation_max_requests" {
+  description = "Infrastructure ceiling for a separately authorized synthetic job; the durable authorization may only reduce it."
+  type        = number
+  default     = null
+  nullable    = true
+
+  validation {
+    condition = (
+      var.synthetic_evaluation_max_requests == null
+      || (
+        var.synthetic_evaluation_max_requests >= 1
+        && var.synthetic_evaluation_max_requests <= 64
+        && floor(var.synthetic_evaluation_max_requests) == var.synthetic_evaluation_max_requests
+      )
+    )
+    error_message = "synthetic_evaluation_max_requests must be null or an integer from 1 through 64."
+  }
+}
+
+variable "synthetic_evaluation_max_job_cost_usd" {
+  description = "Infrastructure cost ceiling for a separately authorized synthetic job; the durable authorization may only reduce it."
+  type        = number
+  default     = null
+  nullable    = true
+
+  validation {
+    condition = (
+      var.synthetic_evaluation_max_job_cost_usd == null
+      || (var.synthetic_evaluation_max_job_cost_usd >= 0.01 && var.synthetic_evaluation_max_job_cost_usd <= 10.0)
+    )
+    error_message = "synthetic_evaluation_max_job_cost_usd must be null or between USD 0.01 and USD 10.00."
+  }
 }
 
 variable "allow_unauthenticated" {
