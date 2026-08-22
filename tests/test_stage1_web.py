@@ -15,7 +15,7 @@ from comprehension_verification.contracts import models as m
 from comprehension_verification.web import dto
 from comprehension_verification.web.app import create_app
 from comprehension_verification.web.auth import Actor
-from comprehension_verification.web.jobs import RecordingJobRunner
+from comprehension_verification.web.jobs import ManualJobRunner, RecordingJobRunner
 from comprehension_verification.web.object_store import MemoryObjectStore
 from comprehension_verification.web.repository import (
     ArtifactRow,
@@ -1168,34 +1168,26 @@ def test_stage1_single_submission_mock_e2e_survives_new_browser_session() -> Non
         assert ledger_after == ledger_before
 
 
-def test_queued_job_survives_browser_close_and_a_new_worker_processes_it(
+def test_manual_job_stays_queued_until_an_exact_worker_claim_after_browser_close(
     tmp_path,
 ) -> None:
     database_url = f"sqlite+pysqlite:///{tmp_path / 'durable-worker.db'}"
     settings = Settings(
-        environment="test",
+        environment="local",
         database_url=database_url,
         session_secret="durable-worker-test-secret-with-32-bytes",
         local_invited_emails="teacher@example.test",
+        job_runner_mode="manual",
         model_mode="mock",
     )
     store = MemoryObjectStore(secret=settings.session_secret)
     api_repository = Repository(database_url)
-    dispatched: list[str] = []
-
-    def assert_queued_before_dispatch(job_id: str) -> None:
-        row = api_repository.get(JobRow, job_id)
-        assert isinstance(row, JobRow)
-        assert row.status == "QUEUED"
-        dispatched.append(job_id)
-
-    api_runner = RecordingJobRunner(assert_persisted=assert_queued_before_dispatch)
     app = create_app(
         settings,
         repository=api_repository,
         object_store=store,
-        job_runner=api_runner,
     )
+    assert isinstance(app.state.runtime.job_runner, ManualJobRunner)
 
     with TestClient(app) as browser:
         headers = _login(browser)
@@ -1234,13 +1226,11 @@ def test_queued_job_survives_browser_close_and_a_new_worker_processes_it(
         assert generated.status_code == 202, generated.text
         job_id = generated.json()["job_id"]
         assert generated.json()["operation"]["status"] == "QUEUED"
-        assert dispatched == [job_id]
-        assert api_runner.dispatched == [job_id]
         assert api_repository.job_status(job_id, settings.local_workspace_id).status == "QUEUED"
 
-    # A Cloud Run Job starts in another process after the API/browser is gone.
+    # A one-shot worker starts in another process after the API/browser is gone.
     worker_repository = Repository(database_url)
-    claimed = worker_repository.claim_next_job()
+    claimed = worker_repository.claim_job(job_id)
     assert claimed is not None
     assert claimed.id == job_id
     assert worker_repository.job_status(job_id, settings.local_workspace_id).status == "RUNNING"

@@ -2728,6 +2728,40 @@ button.source-link {
   max-width: 78rem;
 }
 
+.job-reference {
+  align-items: center;
+  background: #f5f5f1;
+  border: 1px solid var(--line);
+  border-radius: 0.7rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1rem;
+  justify-content: space-between;
+  margin: 0.8rem 0 1rem;
+  padding: 0.8rem;
+}
+
+.job-reference > div {
+  min-width: 0;
+}
+
+.job-reference code {
+  display: block;
+  font-size: 0.72rem;
+  margin-top: 0.25rem;
+  overflow-wrap: anywhere;
+}
+
+.job-copy-status {
+  color: var(--ink-soft);
+  font-size: 0.72rem;
+  margin: -0.45rem 0 1rem;
+}
+
+.job-copy-status.error-text {
+  color: var(--danger);
+}
+
 .job-control-panel .reference-list > ol {
   display: grid;
   gap: 0.6rem;

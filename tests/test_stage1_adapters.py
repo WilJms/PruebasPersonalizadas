@@ -4,10 +4,11 @@ import asyncio
 import base64
 from io import BytesIO
 
+import pytest
 from fastapi import Response
 
 from comprehension_verification.web.auth import AuthService
-from comprehension_verification.web.jobs import CloudRunJobRunner
+from comprehension_verification.web.jobs import CloudRunJobRunner, ManualJobRunner
 from comprehension_verification.web.object_store import R2ObjectStore
 from comprehension_verification.web.repository import Repository
 from comprehension_verification.web.settings import Settings
@@ -134,6 +135,30 @@ def test_cloud_run_dispatch_binds_only_the_exact_opaque_job_id(monkeypatch) -> N
             20,
         )
     ]
+
+
+def test_manual_dispatch_validates_id_and_has_no_execution_side_effects(
+    monkeypatch,
+) -> None:
+    def forbidden(*_args, **_kwargs):
+        raise AssertionError("manual dispatch must not reach execution capabilities")
+
+    monkeypatch.setattr(asyncio, "create_task", forbidden)
+    monkeypatch.setattr(asyncio, "to_thread", forbidden)
+    monkeypatch.setattr(
+        "comprehension_verification.web.jobs.google.auth.default", forbidden
+    )
+
+    runner = ManualJobRunner()
+    result = asyncio.run(runner.dispatch("job_manual_exact"))
+
+    assert result == "manual/job_manual_exact"
+    assert not hasattr(runner, "processor")
+    assert not hasattr(runner, "tasks")
+
+    for invalid in ("", "JOB_UPPER", "1job", "job/subject", "ab"):
+        with pytest.raises(ValueError, match="canonical opaque identifier"):
+            asyncio.run(runner.dispatch(invalid))
 
 
 def test_supabase_exchange_accepts_only_a_persisted_invited_membership(

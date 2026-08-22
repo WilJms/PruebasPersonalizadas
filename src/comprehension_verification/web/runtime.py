@@ -27,7 +27,7 @@ from ..provider_authorization import (
     synthetic_provider_boundary_hash,
 )
 from ..parsers import harden_parent_process
-from .jobs import CloudRunJobRunner, InlineJobRunner, JobRunner
+from .jobs import CloudRunJobRunner, InlineJobRunner, JobRunner, ManualJobRunner
 from .object_store import MemoryObjectStore, ObjectStore, R2ObjectStore
 from .repository import Repository
 from .settings import Settings, WorkerSettings
@@ -106,12 +106,18 @@ def build_runtime(
     service = Stage1Service(settings=settings, repository=repo, object_store=store)
     if job_runner is not None:
         runner = job_runner
-    elif settings.job_runner_mode == "cloud_run":
-        runner = CloudRunJobRunner(settings)
-    else:
+    elif settings.job_runner_mode == "inline":
         runner = InlineJobRunner(
             service.process_job,
             wait_for_completion=inline_wait_for_completion,
+        )
+    elif settings.job_runner_mode == "manual":
+        runner = ManualJobRunner()
+    elif settings.job_runner_mode == "cloud_run":
+        runner = CloudRunJobRunner(settings)
+    else:  # pragma: no cover - Settings validates the closed literal set.
+        raise ValueError(
+            f"unsupported job runner mode: {settings.job_runner_mode}"
         )
     service.set_job_runner(runner)
     stage2 = Stage2Service(service)

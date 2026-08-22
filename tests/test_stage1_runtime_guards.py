@@ -30,9 +30,10 @@ from comprehension_verification.provider_authorization import (
 )
 from comprehension_verification.web import provider_secrets, worker
 from comprehension_verification.web.app import create_app
+from comprehension_verification.web.jobs import ManualJobRunner
 from comprehension_verification.web.object_store import MemoryObjectStore
 from comprehension_verification.web.repository import Conflict, JobRow, Repository
-from comprehension_verification.web.runtime import build_worker_runtime
+from comprehension_verification.web.runtime import build_runtime, build_worker_runtime
 from comprehension_verification.web.settings import Settings, WorkerSettings
 from comprehension_verification.web.workflows import Stage1Service, WorkflowError
 
@@ -124,6 +125,55 @@ def test_cloud_accepts_only_complete_explicit_psycopg_configuration() -> None:
     assert settings.database_url.startswith("postgresql+psycopg://")
     assert settings.model_mode == "mock"
     assert settings.p10_enabled is False
+
+
+def test_manual_runner_is_local_only_and_composes_explicitly() -> None:
+    settings = Settings(
+        environment="local",
+        database_url="sqlite+pysqlite://",
+        job_runner_mode="manual",
+        session_secret="manual-runner-test-secret-with-32-bytes",
+    )
+    runtime = build_runtime(
+        settings,
+        repository=Repository("sqlite+pysqlite://"),
+        object_store=MemoryObjectStore(secret=settings.session_secret),
+    )
+
+    assert isinstance(runtime.job_runner, ManualJobRunner)
+
+    with pytest.raises(ValidationError, match="local environment"):
+        Settings(
+            environment="test",
+            database_url="sqlite+pysqlite://",
+            job_runner_mode="manual",
+            session_secret="manual-runner-test-secret-with-32-bytes",
+        )
+    with pytest.raises(ValidationError, match="Cloud Run Jobs"):
+        Settings(**_cloud_settings(job_runner_mode="manual"))
+
+
+def test_local_manual_mode_accepts_shared_postgres_and_r2_without_cloud_guards() -> None:
+    settings = Settings(
+        environment="local",
+        database_url=(
+            "postgresql+psycopg://pilot:external-secret@db.example.test/pilot"
+        ),
+        auth_mode="local",
+        object_store_mode="r2",
+        job_runner_mode="manual",
+        model_mode="mock",
+        session_secret="manual-pilot-session-secret-with-32-bytes",
+        r2_endpoint_url="https://account.r2.cloudflarestorage.com",
+        r2_bucket="private-pilot",
+        r2_access_key_id="scoped-access-key",
+        r2_secret_access_key="scoped-secret-key",
+    )
+
+    assert settings.environment == "local"
+    assert settings.object_store_mode == "r2"
+    assert settings.job_runner_mode == "manual"
+    assert settings.auth_mode == "local"
 
 
 def test_web_and_ordinary_worker_have_no_key_or_real_execution_path() -> None:

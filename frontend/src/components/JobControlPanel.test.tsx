@@ -82,10 +82,15 @@ const baseView: JobControlView = {
 describe("JobControlPanel", () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: { writeText: vi.fn().mockResolvedValue(undefined) },
+    });
   });
 
   it("renders stage runs, honors server actions and moves focus to durable feedback", async () => {
     const user = userEvent.setup();
+    const writeText = vi.spyOn(navigator.clipboard, "writeText");
     const onChange = vi.fn();
     const resumed: JobControlView = {
       ...baseView,
@@ -104,6 +109,12 @@ describe("JobControlPanel", () => {
     render(<JobControlPanel jobId="job_01" onChange={onChange} />);
 
     const stageRuns = await screen.findByRole("list", { name: "Ejecuciones por etapa" });
+    expect(screen.getByText("job_01")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Copiar job ID" }));
+    expect(writeText).toHaveBeenCalledWith("job_01");
+    expect(
+      await screen.findByText("Identificador copiado al portapapeles."),
+    ).toBeInTheDocument();
     expect(within(stageRuns).getAllByRole("listitem")).toHaveLength(2);
     expect(within(stageRuns).getByText("PARSING")).toBeInTheDocument();
     expect(within(stageRuns).getByText("VALIDATING QUESTIONS")).toBeInTheDocument();

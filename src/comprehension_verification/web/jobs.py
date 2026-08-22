@@ -1,4 +1,4 @@
-"""Durable job dispatch seam for inline tests and Cloud Run Jobs."""
+"""Durable job dispatch seam for inline, manual, and Cloud Run execution."""
 
 from __future__ import annotations
 
@@ -12,6 +12,15 @@ import google.auth
 from google.auth.transport.requests import AuthorizedSession
 
 from .settings import Settings
+
+
+_CANONICAL_JOB_ID = re.compile(r"[a-z][a-z0-9_-]{2,127}")
+
+
+def _validate_job_id(job_id: str) -> str:
+    if _CANONICAL_JOB_ID.fullmatch(job_id) is None:
+        raise ValueError("job_id is not a canonical opaque identifier")
+    return job_id
 
 
 class JobRunner(Protocol):
@@ -35,6 +44,14 @@ class RecordingJobRunner:
         assert self.dispatched is not None
         self.dispatched.append(job_id)
         return f"fake-execution/{job_id}"
+
+
+class ManualJobRunner:
+    """Local-only dispatcher that leaves an already durable job queued."""
+
+    async def dispatch(self, job_id: str) -> str:
+        canonical_job_id = _validate_job_id(job_id)
+        return f"manual/{canonical_job_id}"
 
 
 class InlineJobRunner:
@@ -76,8 +93,7 @@ class CloudRunJobRunner:
         )
 
     async def dispatch(self, job_id: str) -> str | None:
-        if re.fullmatch(r"[a-z][a-z0-9_-]{2,127}", job_id) is None:
-            raise ValueError("job_id is not a canonical opaque identifier")
+        _validate_job_id(job_id)
         return await asyncio.to_thread(self._dispatch_sync, job_id)
 
     def _dispatch_sync(self, job_id: str) -> str | None:

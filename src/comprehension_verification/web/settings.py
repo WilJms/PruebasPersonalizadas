@@ -27,7 +27,7 @@ class Settings(BaseSettings):
     database_url: str = "sqlite+pysqlite:///./.local/stage1.db"
     auth_mode: Literal["local", "supabase"] = "local"
     object_store_mode: Literal["memory", "r2"] = "memory"
-    job_runner_mode: Literal["inline", "cloud_run"] = "inline"
+    job_runner_mode: Literal["inline", "manual", "cloud_run"] = "inline"
     model_mode: Literal["mock", "real"] = "mock"
     worker_model_mode: Literal["mock"] = "mock"
     p10_enabled: bool = False
@@ -118,6 +118,8 @@ class Settings(BaseSettings):
                 raise ValueError(
                     "cloud requires a complete postgresql+psycopg database URL"
                 )
+        if self.job_runner_mode == "manual" and self.environment != "local":
+            raise ValueError("manual job runner requires the local environment")
         if self.auth_mode == "supabase" and not (
             self.supabase_jwt_issuer and self.supabase_jwks_url
         ):
