@@ -121,7 +121,7 @@ def build_runtime(
         )
     service.set_job_runner(runner)
     stage2 = Stage2Service(service)
-    service.set_question_action_processor(stage2.process_question_action_retry)
+    service.set_question_action_processor(stage2.process_question_action_job)
     auth = AuthService(settings, repo)
     auth.seed_local_users()
     return Runtime(
@@ -260,7 +260,7 @@ def build_worker_runtime(
         provider_grant=provider_grant,
     )
     stage2 = Stage2Service(service)
-    service.set_question_action_processor(stage2.process_question_action_retry)
+    service.set_question_action_processor(stage2.process_question_action_job)
     return WorkerRuntime(
         settings=effective_settings,
         repository=repo,

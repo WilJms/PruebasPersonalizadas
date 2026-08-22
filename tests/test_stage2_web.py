@@ -1311,19 +1311,8 @@ def test_question_regeneration_replaces_locally_and_enforces_limit() -> None:
                 "reason_code": "SECOND_REGENERATION_ATTEMPT",
             },
         )
-        assert limited.status_code == 200, limited.text
-        limited_record = m.QuestionReviewActionRecord.model_validate(
-            limited.json()["action_record"]
-        )
-        assert limited_record.status == m.QuestionReviewRecordStatus.FAILED
-        assert limited_record.assessment_version_after is None
-        assert limited_record.after_question is None
-        assert [item.code for item in limited_record.diagnostics] == [
-            "LOCAL_REGENERATION_LIMIT"
-        ]
-        assert limited.json()["bundle"]["assessment_version"] == (
-            first_record.assessment_version_after
-        )
+        assert limited.status_code == 409, limited.text
+        assert limited.json()["code"] == "LOCAL_REGENERATION_LIMIT"
         history = client.get(
             (
                 f"/api/v1/assessments/{assessment_id}/questions/"
@@ -1337,11 +1326,9 @@ def test_question_regeneration_replaces_locally_and_enforces_limit() -> None:
         ]
         assert [item.action.action for item in historical] == [
             m.QuestionReviewActionType.REGENERATE,
-            m.QuestionReviewActionType.REGENERATE,
         ]
         assert [item.status for item in historical] == [
             m.QuestionReviewRecordStatus.APPLIED,
-            m.QuestionReviewRecordStatus.FAILED,
         ]
 
 

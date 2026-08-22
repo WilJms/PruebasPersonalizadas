@@ -677,20 +677,39 @@ def create_app(
                 {"feedback": row.data}
             ).model_dump(mode="json")
         elif kind == "question_action":
-            row = cast(
-                QuestionReviewActionRow,
-                runtime.repository.scoped(
+            row: QuestionReviewActionRow | None
+            try:
+                row = cast(
                     QuestionReviewActionRow,
-                    str(descriptor["record_id"]),
-                    actor.workspace_id,
-                ),
+                    runtime.repository.scoped(
+                        QuestionReviewActionRow,
+                        str(descriptor["record_id"]),
+                        actor.workspace_id,
+                    ),
+                )
+            except NotFound:
+                row = None
+            job_id = descriptor.get("job_id")
+            job = (
+                runtime.repository.job_status(
+                    str(job_id), actor.workspace_id
+                )
+                if job_id is not None
+                else None
             )
-            if row.submission_id != descriptor.get("submission_id"):
+            if row is None and job is None:
+                raise Conflict("IDEMPOTENCY_QUESTION_ACTION_CHANGED")
+            if row is not None and (
+                row.submission_id != descriptor.get("submission_id")
+            ):
                 raise Conflict("IDEMPOTENCY_QUESTION_ACTION_CHANGED")
             body = dto.QuestionReviewActionEnvelope.model_validate(
                 {
-                    "action_record": row.data,
-                    "bundle": current_assessment_bundle(row.submission_id, actor),
+                    "action_record": row.data if row is not None else None,
+                    "job": job,
+                    "bundle": current_assessment_bundle(
+                        str(descriptor["submission_id"]), actor
+                    ),
                 }
             ).model_dump(mode="json")
         elif kind == "assessment":
@@ -856,11 +875,29 @@ def create_app(
                 "feedback_id": body["feedback"]["feedback_id"],
             }
         if route_template.endswith("/questions/{question_id}/actions"):
+            action_record = body.get("action_record")
+            job = body.get("job")
+            if action_record is None and job is None:
+                raise RuntimeError("QUESTION_ACTION_RESPONSE_INVALID")
+            if action_record is not None:
+                record_id = action_record["record_id"]
+                submission_id = action_record["submission_id"]
+            else:
+                persisted_job = runtime.repository.job_control(
+                    str(job["job_id"]), actor.workspace_id
+                )
+                reference = persisted_job.descriptor or {}
+                action_id = str(reference.get("action_id") or "")
+                if not action_id:
+                    raise RuntimeError("QUESTION_ACTION_DESCRIPTOR_MISSING")
+                record_id = stable_id("reviewrecord", action_id)
+                submission_id = persisted_job.aggregate_id
             return {
                 **base,
                 "kind": "question_action",
-                "record_id": body["action_record"]["record_id"],
-                "submission_id": body["action_record"]["submission_id"],
+                "record_id": record_id,
+                "job_id": job["job_id"] if job is not None else None,
+                "submission_id": submission_id,
             }
         if route_template == "/api/v1/assessments/{assessment_id}:approve":
             return {
@@ -1887,7 +1924,7 @@ def create_app(
             raise WorkflowError(
                 "IF_MATCH_REQUIRED", "If-Match is required", status_code=428
             )
-        record = await runtime.stage2.review_question(
+        result = await runtime.stage2.review_question(
             assessment_id=assessment_id,
             question_id=question_id,
             action_type=payload.action,
@@ -1897,10 +1934,16 @@ def create_app(
             note=payload.note,
             replacement=payload.replacement,
         )
-        value = runtime.stage2.assessment_review_view(record.submission_id, actor)
-        value["evidence"] = evidence(record.submission_id, actor)["items"]
+        value = runtime.stage2.assessment_review_view(
+            result.submission_id, actor
+        )
+        value["evidence"] = evidence(result.submission_id, actor)["items"]
         response.headers["ETag"] = str(value["etag"])
-        return {"action_record": record, "bundle": value}
+        return {
+            "action_record": result.record,
+            "job": result.job,
+            "bundle": value,
+        }
 
     @app.get(
         "/api/v1/assessments/{assessment_id}/questions/{question_id}/actions",
@@ -1916,7 +1959,12 @@ def create_app(
                 assessment_id=assessment_id,
                 question_id=question_id,
                 actor=actor,
-            )
+            ),
+            "jobs": runtime.stage2.question_action_jobs(
+                assessment_id=assessment_id,
+                question_id=question_id,
+                actor=actor,
+            ),
         }
 
     @app.post(

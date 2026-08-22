@@ -607,7 +607,12 @@ export async function reviewQuestion(
   questionId: string,
   input: QuestionReviewActionInput,
   etag: string,
-): Promise<{ record: QuestionReviewActionRecord; bundle?: AssessmentBundle; etag?: string }> {
+): Promise<{
+  record?: QuestionReviewActionRecord;
+  job?: JobStatus;
+  bundle?: AssessmentBundle;
+  etag?: string;
+}> {
   const result = await requestWithMeta<unknown>(
     `/assessments/${assessmentId}/questions/${questionId}/actions`,
     {
@@ -619,8 +624,14 @@ export async function reviewQuestion(
   const data = unwrap<unknown>(result.data);
   if (data && typeof data === "object") {
     const body = data as JsonObject;
+    const record = body.action_record ?? body.record ?? body.action;
+    const job = body.job as JobStatus | undefined;
+    if (!record && !job) {
+      throw new ApiError(500, "La acción no devolvió un registro ni un job durable.");
+    }
     return {
-      record: (body.action_record ?? body.record ?? body.action ?? data) as QuestionReviewActionRecord,
+      record: record as QuestionReviewActionRecord | undefined,
+      job,
       bundle: body.bundle as AssessmentBundle | undefined,
       etag: result.etag,
     };
@@ -631,11 +642,14 @@ export async function reviewQuestion(
 export async function listQuestionActions(
   assessmentId: string,
   questionId: string,
-): Promise<QuestionReviewActionRecord[]> {
+): Promise<{ items: QuestionReviewActionRecord[]; jobs: JobStatus[] }> {
   const result = await request<unknown>(
     `/assessments/${assessmentId}/questions/${questionId}/actions`,
   );
-  return pick<QuestionReviewActionRecord[]>(result, "items") ?? [];
+  return {
+    items: pick<QuestionReviewActionRecord[]>(result, "items") ?? [],
+    jobs: pick<JobStatus[]>(result, "jobs") ?? [],
+  };
 }
 
 export async function getSubmissionCoverage(submissionId: string): Promise<CoverageReport> {

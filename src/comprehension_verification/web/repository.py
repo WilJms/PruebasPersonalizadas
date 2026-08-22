@@ -51,6 +51,13 @@ STAGE2_SUBMISSION_CONSTRAINT = "uq_submissions_tenant_activity_subject"
 STAGE2_JOB_CONTROL_CONSTRAINT = "ck_jobs_control_state"
 STAGE2_CONTINUATION_CONSTRAINT = "uq_job_control_records_source_attempt"
 QUESTION_ACTION_DESCRIPTOR_STAGE = "QUESTION_ACTION_DESCRIPTOR"
+QUESTION_ACTION_DESCRIPTOR_VERSION = "stage2-question-action-descriptor/1.0.0"
+QUESTION_ACTION_DESCRIPTOR_POLICY_HASH = canonical_hash(
+    {
+        "kind": QUESTION_ACTION_DESCRIPTOR_STAGE,
+        "version": QUESTION_ACTION_DESCRIPTOR_VERSION,
+    }
+)
 BLUEPRINT_REVIEW_DESCRIPTOR_STAGE = "BLUEPRINT_REVIEW_DESCRIPTOR"
 BLUEPRINT_PREFLIGHT_DESCRIPTOR_STAGE = "BLUEPRINT_PREFLIGHT_DESCRIPTOR"
 PROVIDER_FREE_BLUEPRINT_JOB_KINDS = frozenset(
@@ -71,6 +78,33 @@ JOB_FAILURE_CLASSES = frozenset(
 )
 RETRYABLE_JOB_FAILURE_CLASSES = frozenset({"TRANSIENT", "PROVIDER"})
 MAX_JOB_ATTEMPTS = 3
+
+
+def _question_action_descriptor_input_hash(output: dict[str, Any]) -> str | None:
+    action = output.get("action")
+    if not isinstance(action, dict):
+        return None
+    note = action.get("note")
+    replacement = action.get("replacement")
+    return canonical_hash(
+        {
+            "action_id": action.get("action_id"),
+            "logical_action_id": output.get("logical_action_id"),
+            "assessment_id": output.get("assessment_id"),
+            "assessment_version": output.get("assessment_version"),
+            "assessment_etag": output.get("assessment_etag"),
+            "submission_id": output.get("submission_id"),
+            "activity_id": output.get("activity_id"),
+            "question_id": action.get("question_id"),
+            "action_type": action.get("action"),
+            "actor_id": action.get("actor_id"),
+            "reason_code": action.get("reason_code"),
+            "note_hash": canonical_hash(note) if note else None,
+            "replacement_hash": (
+                canonical_hash(replacement) if replacement is not None else None
+            ),
+        }
+    )
 
 
 def utc_now() -> datetime:
@@ -2161,13 +2195,26 @@ class Repository:
         if any(
             (
                 status.stage != "QUESTION_GENERATE",
-                status.status != "RUNNING",
-                status.attempt < 1,
+                status.status not in {"QUEUED", "RUNNING"},
+                status.attempt < 0,
+                status.status == "QUEUED" and status.attempt != 0,
+                status.status == "RUNNING" and status.attempt < 1,
                 not 1 <= max_attempts <= 10,
+                descriptor_component_version
+                != QUESTION_ACTION_DESCRIPTOR_VERSION,
+                descriptor_policy_hash
+                != QUESTION_ACTION_DESCRIPTOR_POLICY_HASH,
+                descriptor_output.get("descriptor_version")
+                != QUESTION_ACTION_DESCRIPTOR_VERSION,
             )
         ):
             raise ValueError("invalid question action preparation state")
+        descriptor_attempt = max(1, status.attempt)
         input_hash = canonical_hash(descriptor_inputs)
+        if input_hash != _question_action_descriptor_input_hash(
+            descriptor_output
+        ):
+            raise ValueError("invalid question action descriptor inputs")
         stage_key = canonical_hash(
             {
                 "tenant_id": status.tenant_id,
@@ -2183,11 +2230,22 @@ class Repository:
             status.job_id,
             QUESTION_ACTION_DESCRIPTOR_STAGE,
             stage_key,
-            status.attempt,
+            descriptor_attempt,
         )
         action_id = str(audit_payload.get("action_id") or "")
         if not action_id:
             raise ValueError("question action audit requires action_id")
+        question_reference = {
+            "descriptor_version": descriptor_output.get("descriptor_version"),
+            "assessment_id": descriptor_output.get("assessment_id"),
+            "assessment_version": descriptor_output.get("assessment_version"),
+            "assessment_etag": descriptor_output.get("assessment_etag"),
+            "question_id": audit_payload.get("question_id"),
+            "action_id": action_id,
+            "logical_action_id": audit_payload.get("logical_action_id"),
+            "action_type": audit_payload.get("action_type"),
+            "descriptor_hash": output_hash,
+        }
         event_id = stable_id(
             "evt",
             status.tenant_id,
@@ -2198,12 +2256,43 @@ class Repository:
 
         try:
             with self.session() as session:
+                assessment_statement = (
+                    select(AssessmentRow)
+                    .where(
+                        AssessmentRow.assessment_id
+                        == question_reference["assessment_id"],
+                        AssessmentRow.tenant_id == status.tenant_id,
+                    )
+                    .order_by(AssessmentRow.version.desc())
+                    .limit(1)
+                )
+                if self.engine.dialect.name == "postgresql":
+                    assessment_statement = assessment_statement.with_for_update()
+                assessment = session.scalar(assessment_statement)
+                if assessment is None or any(
+                    (
+                        assessment.submission_id != status.aggregate_id,
+                        assessment.version
+                        != question_reference["assessment_version"],
+                        assessment.etag != question_reference["assessment_etag"],
+                    )
+                ):
+                    raise Conflict("QUESTION_ACTION_VERSION_CHANGED")
+                if self._active_question_action_jobs_in_session(
+                    session,
+                    tenant_id=status.tenant_id,
+                    assessment_id=str(question_reference["assessment_id"]),
+                    submission_id=status.aggregate_id,
+                    exclude_job_id=status.job_id,
+                ):
+                    raise Conflict("QUESTION_ACTION_PENDING")
                 job = session.get(JobRow, status.job_id)
                 if create_job:
                     if job is not None:
                         raise Conflict("QUESTION_ACTION_JOB_ALREADY_EXISTS")
                     job = self._job_row(status, "QUESTION_ACTION")
                     job.max_attempts = max_attempts
+                    job.descriptor = question_reference
                     session.add(job)
                 elif job is None or job.tenant_id != status.tenant_id:
                     raise NotFound("job not found")
@@ -2213,7 +2302,7 @@ class Repository:
                         job.tenant_id != status.tenant_id,
                         job.kind != "QUESTION_ACTION",
                         job.aggregate_id != status.aggregate_id,
-                        job.status != "RUNNING",
+                        job.status != status.status,
                         job.attempt != status.attempt,
                     )
                 ):
@@ -2228,7 +2317,7 @@ class Repository:
                         stage=QUESTION_ACTION_DESCRIPTOR_STAGE,
                         stage_key=stage_key,
                         status="SUCCEEDED",
-                        attempt=status.attempt,
+                        attempt=descriptor_attempt,
                         input_hash=input_hash,
                         policy_hash=descriptor_policy_hash,
                         component_version=descriptor_component_version,
@@ -2246,7 +2335,7 @@ class Repository:
                         descriptor.stage != QUESTION_ACTION_DESCRIPTOR_STAGE,
                         descriptor.stage_key != stage_key,
                         descriptor.status != "SUCCEEDED",
-                        descriptor.attempt != status.attempt,
+                        descriptor.attempt != descriptor_attempt,
                         descriptor.input_hash != input_hash,
                         descriptor.policy_hash != descriptor_policy_hash,
                         descriptor.component_version != descriptor_component_version,
@@ -2308,9 +2397,157 @@ class Repository:
             if len(rows) != 1:
                 raise Conflict("QUESTION_ACTION_DESCRIPTOR_AMBIGUOUS")
             row = rows[0]
-            if row.output is None or row.output_hash != canonical_hash(row.output):
+            if row.output is None or any(
+                (
+                    row.output_hash != canonical_hash(row.output),
+                    row.input_hash
+                    != _question_action_descriptor_input_hash(row.output),
+                    row.policy_hash != QUESTION_ACTION_DESCRIPTOR_POLICY_HASH,
+                    row.component_version != QUESTION_ACTION_DESCRIPTOR_VERSION,
+                )
+            ):
                 raise Conflict("QUESTION_ACTION_DESCRIPTOR_HASH_MISMATCH")
             return row
+
+    @staticmethod
+    def _question_action_reference_in_session(
+        session: Session,
+        job: JobRow,
+        *,
+        seen_job_ids: set[str] | None = None,
+    ) -> dict[str, Any] | None:
+        """Resolve content-free question-action identity across retries."""
+
+        seen = seen_job_ids or set()
+        if job.id in seen:
+            return None
+        seen.add(job.id)
+        reference = job.descriptor
+        if isinstance(reference, dict) and all(
+            reference.get(key)
+            for key in (
+                "assessment_id",
+                "assessment_version",
+                "assessment_etag",
+                "question_id",
+                "action_id",
+                "logical_action_id",
+                "action_type",
+                "descriptor_hash",
+            )
+        ):
+            return dict(reference)
+
+        event = session.scalar(
+            select(AuditEventRow)
+            .where(
+                AuditEventRow.tenant_id == job.tenant_id,
+                AuditEventRow.event_type == "question_action.executed",
+                AuditEventRow.aggregate_id == job.id,
+            )
+            .order_by(AuditEventRow.occurred_at.desc(), AuditEventRow.id.desc())
+            .limit(1)
+        )
+        if event is not None:
+            payload = event.payload
+            if all(
+                payload.get(key)
+                for key in (
+                    "assessment_id",
+                    "assessment_version",
+                    "question_id",
+                    "action_id",
+                    "logical_action_id",
+                    "action_type",
+                    "descriptor_hash",
+                )
+            ):
+                descriptor = session.scalar(
+                    select(StageRunRow)
+                    .where(
+                        StageRunRow.job_id == job.id,
+                        StageRunRow.tenant_id == job.tenant_id,
+                        StageRunRow.stage == QUESTION_ACTION_DESCRIPTOR_STAGE,
+                        StageRunRow.status == "SUCCEEDED",
+                    )
+                    .order_by(StageRunRow.attempt.desc(), StageRunRow.id.desc())
+                    .limit(1)
+                )
+                if descriptor is not None and descriptor.output is not None:
+                    return {
+                        "descriptor_version": descriptor.output.get(
+                            "descriptor_version"
+                        ),
+                        "assessment_id": payload["assessment_id"],
+                        "assessment_version": payload["assessment_version"],
+                        "assessment_etag": descriptor.output.get(
+                            "assessment_etag"
+                        ),
+                        "question_id": payload["question_id"],
+                        "action_id": payload["action_id"],
+                        "logical_action_id": payload["logical_action_id"],
+                        "action_type": payload["action_type"],
+                        "descriptor_hash": payload["descriptor_hash"],
+                    }
+
+        control = session.scalar(
+            select(JobControlRecordRow)
+            .where(
+                JobControlRecordRow.tenant_id == job.tenant_id,
+                JobControlRecordRow.resulting_job_id == job.id,
+                JobControlRecordRow.action.in_({"RETRY", "RESUME"}),
+                JobControlRecordRow.status == "APPLIED",
+            )
+            .order_by(
+                JobControlRecordRow.requested_at.desc(),
+                JobControlRecordRow.id.desc(),
+            )
+            .limit(1)
+        )
+        if control is None:
+            return None
+        source = session.get(JobRow, control.job_id)
+        if source is None or source.tenant_id != job.tenant_id:
+            return None
+        return Repository._question_action_reference_in_session(
+            session, source, seen_job_ids=seen
+        )
+
+    @classmethod
+    def _active_question_action_jobs_in_session(
+        cls,
+        session: Session,
+        *,
+        tenant_id: str,
+        assessment_id: str,
+        submission_id: str,
+        exclude_job_id: str | None = None,
+    ) -> list[JobRow]:
+        rows = list(
+            session.scalars(
+                select(JobRow)
+                .where(
+                    JobRow.tenant_id == tenant_id,
+                    JobRow.kind == "QUESTION_ACTION",
+                    JobRow.aggregate_id == submission_id,
+                    JobRow.status.in_({"QUEUED", "RUNNING"}),
+                    JobRow.control_state == "ACTIVE",
+                )
+                .order_by(JobRow.created_at, JobRow.id)
+            )
+        )
+        return [
+            row
+            for row in rows
+            if row.id != exclude_job_id
+            and (
+                reference := cls._question_action_reference_in_session(
+                    session, row
+                )
+            )
+            is not None
+            and reference.get("assessment_id") == assessment_id
+        ]
 
     def blueprint_review_descriptor(
         self, *, job_ids: list[str], tenant_id: str
@@ -3592,8 +3829,302 @@ class Repository:
             job = session.get(JobRow, job_id)
             if job is None:
                 raise NotFound("job not found")
-            _activity_id, artifacts = self._synthetic_artifact_scope(session, job)
-            return tuple(sorted({str(artifact.sha256) for artifact in artifacts}))
+            return self._synthetic_attestation_hashes(session, job)
+
+    def _synthetic_attestation_hashes(
+        self,
+        session: Session,
+        job: JobRow,
+    ) -> tuple[str, ...]:
+        """Bind provider work to sealed files and exact derived P07 inputs."""
+
+        activity_id, artifacts = self._synthetic_artifact_scope(session, job)
+        hashes = {str(artifact.sha256) for artifact in artifacts}
+        if job.kind != "QUESTION_ACTION":
+            return tuple(sorted(hashes))
+
+        reference = self._question_action_reference_in_session(session, job)
+        if reference is None:
+            raise Conflict("SYNTHETIC_AUTHORIZATION_ARTIFACT_HASH_MISMATCH")
+        try:
+            assessment_version = int(reference["assessment_version"])
+            assessment_id = str(reference["assessment_id"])
+            assessment_etag = str(reference["assessment_etag"])
+            descriptor_hash = str(reference["descriptor_hash"])
+        except (KeyError, TypeError, ValueError) as exc:
+            raise Conflict(
+                "SYNTHETIC_AUTHORIZATION_ARTIFACT_HASH_MISMATCH"
+            ) from exc
+
+        descriptors = list(
+            session.scalars(
+                select(StageRunRow).where(
+                    StageRunRow.tenant_id == job.tenant_id,
+                    StageRunRow.stage == QUESTION_ACTION_DESCRIPTOR_STAGE,
+                    StageRunRow.status == "SUCCEEDED",
+                    StageRunRow.output_hash == descriptor_hash,
+                )
+            )
+        )
+        if len(descriptors) != 1 or descriptors[0].output is None:
+            raise Conflict("SYNTHETIC_AUTHORIZATION_ARTIFACT_HASH_MISMATCH")
+        descriptor = descriptors[0]
+        descriptor_action = descriptor.output.get("action")
+        if not isinstance(descriptor_action, dict) or any(
+            (
+                descriptor.output_hash != canonical_hash(descriptor.output),
+                descriptor.input_hash
+                != _question_action_descriptor_input_hash(descriptor.output),
+                descriptor.policy_hash
+                != QUESTION_ACTION_DESCRIPTOR_POLICY_HASH,
+                descriptor.component_version
+                != QUESTION_ACTION_DESCRIPTOR_VERSION,
+                reference.get("descriptor_version")
+                != QUESTION_ACTION_DESCRIPTOR_VERSION,
+                descriptor.output.get("assessment_id") != assessment_id,
+                descriptor.output.get("assessment_version")
+                != assessment_version,
+                descriptor.output.get("assessment_etag") != assessment_etag,
+                descriptor.output.get("logical_action_id")
+                != reference.get("logical_action_id"),
+                descriptor_action.get("assessment_id") != assessment_id,
+                descriptor_action.get("question_id")
+                != reference.get("question_id"),
+                descriptor_action.get("action_id")
+                != reference.get("action_id"),
+                descriptor_action.get("action")
+                != reference.get("action_type"),
+            )
+        ):
+            raise Conflict("SYNTHETIC_AUTHORIZATION_ARTIFACT_HASH_MISMATCH")
+
+        assessment = session.scalar(
+            select(AssessmentRow).where(
+                AssessmentRow.tenant_id == job.tenant_id,
+                AssessmentRow.assessment_id == assessment_id,
+                AssessmentRow.version == assessment_version,
+                AssessmentRow.etag == assessment_etag,
+                AssessmentRow.submission_id == job.aggregate_id,
+            )
+        )
+        latest = session.scalar(
+            select(AssessmentRow)
+            .where(
+                AssessmentRow.tenant_id == job.tenant_id,
+                AssessmentRow.assessment_id == assessment_id,
+            )
+            .order_by(AssessmentRow.version.desc())
+            .limit(1)
+        )
+        submission = session.scalar(
+            select(SubmissionRow).where(
+                SubmissionRow.id == job.aggregate_id,
+                SubmissionRow.tenant_id == job.tenant_id,
+                SubmissionRow.activity_id == activity_id,
+            )
+        )
+        activity = session.scalar(
+            select(ActivityRow).where(
+                ActivityRow.id == activity_id,
+                ActivityRow.tenant_id == job.tenant_id,
+            )
+        )
+        mapping = session.get(EvidenceMapRow, job.aggregate_id)
+        plan = session.get(AssessmentPlanRow, job.aggregate_id)
+        if any(
+            value is None
+            for value in (
+                assessment,
+                latest,
+                submission,
+                activity,
+                mapping,
+                plan,
+            )
+        ):
+            raise Conflict("SYNTHETIC_AUTHORIZATION_ARTIFACT_HASH_MISMATCH")
+        assert assessment is not None
+        assert latest is not None
+        assert submission is not None
+        assert activity is not None
+        assert mapping is not None
+        assert plan is not None
+        if any(
+            (
+                latest.row_id != assessment.row_id,
+                mapping.tenant_id != job.tenant_id,
+                plan.tenant_id != job.tenant_id,
+            )
+        ):
+            raise Conflict("SYNTHETIC_AUTHORIZATION_ARTIFACT_HASH_MISMATCH")
+
+        assessment_value = m.Assessment.model_validate(assessment.data)
+        blueprint = session.scalar(
+            select(BlueprintRow).where(
+                BlueprintRow.tenant_id == job.tenant_id,
+                BlueprintRow.activity_id == activity_id,
+                BlueprintRow.version == assessment_value.lineage.blueprint_version,
+                BlueprintRow.status == "APPROVED",
+            )
+        )
+        evidence = list(
+            session.scalars(
+                select(EvidenceRow)
+                .where(
+                    EvidenceRow.tenant_id == job.tenant_id,
+                    EvidenceRow.submission_id == job.aggregate_id,
+                )
+                .order_by(EvidenceRow.id)
+            )
+        )
+        if blueprint is None or not evidence:
+            raise Conflict("SYNTHETIC_AUTHORIZATION_ARTIFACT_HASH_MISMATCH")
+
+        controls = list(
+            session.scalars(
+                select(JobControlRecordRow)
+                .where(
+                    JobControlRecordRow.tenant_id == job.tenant_id,
+                    JobControlRecordRow.resulting_job_id == job.id,
+                    JobControlRecordRow.status == "APPLIED",
+                )
+                .order_by(JobControlRecordRow.requested_at, JobControlRecordRow.id)
+            )
+        )
+        if controls:
+            hashes.update(
+                canonical_hash(
+                    {
+                        "kind": "QUESTION_ACTION_CONTROL_INPUT",
+                        "control": control.data,
+                    }
+                )
+                for control in controls
+            )
+        elif descriptor.job_id != job.id:
+            raise Conflict("SYNTHETIC_AUTHORIZATION_ARTIFACT_HASH_MISMATCH")
+
+        review_rows = list(
+            session.scalars(
+                select(QuestionReviewActionRow)
+                .where(
+                    QuestionReviewActionRow.tenant_id == job.tenant_id,
+                    QuestionReviewActionRow.assessment_id == assessment_id,
+                    QuestionReviewActionRow.question_id
+                    == reference["question_id"],
+                )
+                .order_by(
+                    QuestionReviewActionRow.occurred_at,
+                    QuestionReviewActionRow.id,
+                )
+            )
+        )
+        execution_events = list(
+            session.scalars(
+                select(AuditEventRow)
+                .where(
+                    AuditEventRow.tenant_id == job.tenant_id,
+                    AuditEventRow.event_type == "question_action.executed",
+                )
+                .order_by(AuditEventRow.occurred_at, AuditEventRow.id)
+            )
+        )
+        relevant_events = [
+            event.payload
+            for event in execution_events
+            if event.payload.get("assessment_id") == assessment_id
+            and event.payload.get("question_id") == reference["question_id"]
+        ]
+        hashes.update(
+            {
+                descriptor_hash,
+                canonical_hash(
+                    {
+                        "kind": "QUESTION_ACTION_DESCRIPTOR_STAGE_INPUT",
+                        "stage_key": descriptor.stage_key,
+                        "input_hash": descriptor.input_hash,
+                        "policy_hash": descriptor.policy_hash,
+                        "component_version": descriptor.component_version,
+                        "output_hash": descriptor.output_hash,
+                    }
+                ),
+                canonical_hash(
+                    {
+                        "kind": "QUESTION_ACTION_REFERENCE_INPUT",
+                        "reference": reference,
+                    }
+                ),
+                canonical_hash(
+                    {
+                        "kind": "QUESTION_ACTION_ASSESSMENT_INPUT",
+                        "version": assessment.version,
+                        "etag": assessment.etag,
+                        "data": assessment.data,
+                    }
+                ),
+                canonical_hash(
+                    {
+                        "kind": "QUESTION_ACTION_SUBMISSION_INPUT",
+                        "submission_id": submission.id,
+                        "activity_id": submission.activity_id,
+                        "blueprint_version": submission.blueprint_version,
+                    }
+                ),
+                canonical_hash(
+                    {
+                        "kind": "QUESTION_ACTION_POLICY_INPUT",
+                        "blueprint_policy": activity.blueprint_policy,
+                    }
+                ),
+                canonical_hash(
+                    {
+                        "kind": "QUESTION_ACTION_BLUEPRINT_INPUT",
+                        "version": blueprint.version,
+                        "etag": blueprint.etag,
+                        "data": blueprint.data,
+                    }
+                ),
+                canonical_hash(
+                    {
+                        "kind": "QUESTION_ACTION_MAPPING_INPUT",
+                        "data": mapping.data,
+                    }
+                ),
+                canonical_hash(
+                    {
+                        "kind": "QUESTION_ACTION_PLAN_INPUT",
+                        "data": plan.data,
+                    }
+                ),
+                canonical_hash(
+                    {
+                        "kind": "QUESTION_ACTION_REVIEW_HISTORY_INPUT",
+                        "records": [row.data for row in review_rows],
+                    }
+                ),
+                canonical_hash(
+                    {
+                        "kind": "QUESTION_ACTION_EXECUTION_HISTORY_INPUT",
+                        "events": relevant_events,
+                    }
+                ),
+            }
+        )
+        hashes.add(
+            canonical_hash(
+                {
+                    "kind": "QUESTION_ACTION_EVIDENCE_INPUT",
+                    "rows": [
+                        {"evidence_id": row.id, "data": row.data}
+                        for row in evidence
+                    ],
+                }
+            )
+        )
+        attested = tuple(sorted(hashes))
+        if len(attested) > 100:
+            raise Conflict("SYNTHETIC_AUTHORIZATION_ARTIFACT_HASH_MISMATCH")
+        return attested
 
     def authorize_synthetic_provider_job(
         self,
@@ -3625,10 +4156,7 @@ class Repository:
                     )
                 ):
                     raise Conflict("SYNTHETIC_AUTHORIZATION_JOB_MISMATCH")
-                _activity_id, artifacts = self._synthetic_artifact_scope(session, job)
-                actual_hashes = tuple(
-                    sorted({str(artifact.sha256) for artifact in artifacts})
-                )
+                actual_hashes = self._synthetic_attestation_hashes(session, job)
                 if actual_hashes != spec.artifact_hashes:
                     raise Conflict("SYNTHETIC_AUTHORIZATION_ARTIFACT_HASH_MISMATCH")
                 row = SyntheticProviderAuthorizationRow(
@@ -3748,10 +4276,7 @@ class Repository:
                     )
                 ):
                     raise Conflict("SYNTHETIC_AUTHORIZATION_BOUNDARY_MISMATCH")
-                _activity_id, artifacts = self._synthetic_artifact_scope(session, job)
-                actual_hashes = tuple(
-                    sorted({str(artifact.sha256) for artifact in artifacts})
-                )
+                actual_hashes = self._synthetic_attestation_hashes(session, job)
                 if actual_hashes != spec.artifact_hashes:
                     raise Conflict("SYNTHETIC_AUTHORIZATION_ARTIFACT_HASH_MISMATCH")
 
@@ -4207,6 +4732,13 @@ class Repository:
                 current = m.Assessment.model_validate(latest.data)
                 if current.status != m.WorkflowStatus.NEEDS_REVIEW:
                     raise Conflict("ASSESSMENT_NOT_REVIEWABLE")
+                if self._active_question_action_jobs_in_session(
+                    session,
+                    tenant_id=latest.tenant_id,
+                    assessment_id=latest.assessment_id,
+                    submission_id=latest.submission_id,
+                ):
+                    raise Conflict("QUESTION_ACTION_PENDING")
                 if any(
                     (
                         approved_row.version != latest.version + 1,
@@ -4673,6 +5205,16 @@ class Repository:
                     or latest.version != record.assessment_version_before
                 ):
                     raise Conflict("QUESTION_REVIEW_STALE_VERSION")
+                if self._active_question_action_jobs_in_session(
+                    session,
+                    tenant_id=record.tenant_id,
+                    assessment_id=record.assessment_id,
+                    submission_id=record.submission_id,
+                    exclude_job_id=(
+                        terminal_job.id if terminal_job is not None else None
+                    ),
+                ):
+                    raise Conflict("QUESTION_ACTION_PENDING")
                 submission = session.scalar(
                     select(SubmissionRow).where(
                         SubmissionRow.id == record.submission_id,
@@ -4822,6 +5364,96 @@ class Repository:
                     )
                 )
             )
+
+    def question_action_jobs(
+        self,
+        *,
+        tenant_id: str,
+        assessment_id: str,
+        question_id: str,
+    ) -> list[JobRow]:
+        """Return pending or unresolved technical jobs for one review action."""
+
+        with self.session() as session:
+            assessment = session.scalar(
+                select(AssessmentRow)
+                .where(
+                    AssessmentRow.tenant_id == tenant_id,
+                    AssessmentRow.assessment_id == assessment_id,
+                )
+                .order_by(AssessmentRow.version.desc())
+                .limit(1)
+            )
+            if assessment is None:
+                raise NotFound("assessment not found")
+            jobs = list(
+                session.scalars(
+                    select(JobRow)
+                    .where(
+                        JobRow.tenant_id == tenant_id,
+                        JobRow.kind == "QUESTION_ACTION",
+                        JobRow.aggregate_id == assessment.submission_id,
+                    )
+                    .order_by(JobRow.created_at, JobRow.id)
+                )
+            )
+            matching: list[tuple[JobRow, dict[str, Any]]] = []
+            for job in jobs:
+                reference = self._question_action_reference_in_session(
+                    session, job
+                )
+                if reference is None or any(
+                    (
+                        reference.get("assessment_id") != assessment_id,
+                        reference.get("question_id") != question_id,
+                    )
+                ):
+                    continue
+                matching.append((job, reference))
+
+            if not matching:
+                return []
+            events = list(
+                session.scalars(
+                    select(AuditEventRow).where(
+                        AuditEventRow.tenant_id == tenant_id,
+                        AuditEventRow.event_type == "question_action.executed",
+                    )
+                )
+            )
+            logical_by_action = {
+                str(event.payload.get("action_id")): str(
+                    event.payload.get("logical_action_id")
+                    or event.payload.get("action_id")
+                )
+                for event in events
+                if event.payload.get("action_id")
+            }
+            recorded_logical_ids: set[str] = set()
+            for row in session.scalars(
+                select(QuestionReviewActionRow).where(
+                    QuestionReviewActionRow.tenant_id == tenant_id,
+                    QuestionReviewActionRow.assessment_id == assessment_id,
+                    QuestionReviewActionRow.question_id == question_id,
+                )
+            ):
+                action_id = str(
+                    row.data.get("action", {}).get("action_id") or ""
+                )
+                if action_id:
+                    recorded_logical_ids.add(
+                        logical_by_action.get(action_id, action_id)
+                    )
+            return [
+                job
+                for job, reference in matching
+                if job.status in {"QUEUED", "RUNNING"}
+                or (
+                    job.status != "SUCCEEDED"
+                    and str(reference.get("logical_action_id"))
+                    not in recorded_logical_ids
+                )
+            ]
 
     def add_feedback_event(
         self, event: m.FeedbackEvent | FeedbackEventRow

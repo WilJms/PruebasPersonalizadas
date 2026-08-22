@@ -133,7 +133,9 @@ def test_question_action_terminal_rollback_survives_lease_and_retries(
             repository, "apply_question_review_action", original_apply
         )
 
-        assert failed.status_code == 500, failed.text
+        assert failed.status_code == 200, failed.text
+        assert failed.json()["action_record"] is None
+        assert failed.json()["job"]["status"] == "FAILED"
         assert "synthetic" not in failed.text.lower()
         source_events = repository.audit_events(
             tenant_id=TENANT_ID,
@@ -145,7 +147,8 @@ def test_question_action_terminal_rollback_survives_lease_and_retries(
         descriptor = repository.question_action_descriptor(
             job_id=source_job.id, tenant_id=TENANT_ID
         )
-        assert source_job.status == "RUNNING"
+        assert source_job.status == "FAILED"
+        assert source_job.failure_class == "TRANSIENT"
         assert descriptor is not None and descriptor.output is not None
         assert descriptor.output_hash == source_event.payload["descriptor_hash"]
         assert "note" not in source_event.payload
@@ -156,10 +159,6 @@ def test_question_action_terminal_rollback_survives_lease_and_retries(
             question_id=question_id,
         ) == []
 
-        assert repository.reconcile_stale_jobs(
-            lease_seconds=300,
-            now=utc_now() + timedelta(seconds=301),
-        ) == 1
         control = client.get(f"/api/v1/jobs/{source_job.id}/control")
         assert control.status_code == 200, control.text
         assert control.json()["failure_class"] == "TRANSIENT"
@@ -218,14 +217,8 @@ def test_question_action_terminal_rollback_survives_lease_and_retries(
                 "reason_code": "SECOND_LOGICAL_REGENERATION",
             },
         )
-        assert limited.status_code == 200, limited.text
-        limited_record = m.QuestionReviewActionRecord.model_validate(
-            limited.json()["action_record"]
-        )
-        assert limited_record.status == m.QuestionReviewRecordStatus.FAILED
-        assert [item.code for item in limited_record.diagnostics] == [
-            "LOCAL_REGENERATION_LIMIT"
-        ]
+        assert limited.status_code == 409, limited.text
+        assert limited.json()["code"] == "LOCAL_REGENERATION_LIMIT"
 
 
 def test_edit_retry_reconstructs_protected_replacement_after_terminal_rollback(
@@ -390,7 +383,9 @@ def test_preprovider_descriptor_reserves_logical_regeneration_budget(
         monkeypatch.setattr(
             repository, "apply_question_review_action", original_apply
         )
-        assert first.status_code == 500, first.text
+        assert first.status_code == 200, first.text
+        assert first.json()["action_record"] is None
+        assert first.json()["job"]["status"] == "FAILED"
         assert repository.question_review_actions(
             tenant_id=TENANT_ID,
             assessment_id=assessment_id,
@@ -408,14 +403,8 @@ def test_preprovider_descriptor_reserves_logical_regeneration_budget(
                 "reason_code": "ROTATED_IDEMPOTENCY_KEY",
             },
         )
-        assert rotated.status_code == 200, rotated.text
-        record = m.QuestionReviewActionRecord.model_validate(
-            rotated.json()["action_record"]
-        )
-        assert record.status == m.QuestionReviewRecordStatus.FAILED
-        assert [item.code for item in record.diagnostics] == [
-            "LOCAL_REGENERATION_LIMIT"
-        ]
+        assert rotated.status_code == 409, rotated.text
+        assert rotated.json()["code"] == "LOCAL_REGENERATION_LIMIT"
 
 
 def test_retry_chain_uses_ancestor_descriptor_when_attempt_two_prepare_fails(

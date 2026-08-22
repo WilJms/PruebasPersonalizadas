@@ -4163,7 +4163,13 @@ class Stage1Service:
             scope_hashes = {
                 cast(str, artifact.sha256) for artifact in artifacts
             }
-            if not scope_hashes or scope_hashes != grant.artifact_hashes:
+            attested_hashes = set(grant.artifact_hashes)
+            scope_matches = (
+                scope_hashes.issubset(attested_hashes)
+                if job.kind == "QUESTION_ACTION"
+                else scope_hashes == attested_hashes
+            )
+            if not scope_hashes or not scope_matches:
                 raise WorkflowError(
                     "SYNTHETIC_ATTESTATION_REQUIRED",
                     "Real provider work is restricted to the server-approved synthetic corpus.",
@@ -4180,7 +4186,7 @@ class Stage1Service:
                 "data_classification": "SYNTHETIC_ONLY_NO_STUDENT_DATA",
                 "attestation_id": grant.authorization_id,
                 "attested_input_hash": request_hash,
-                "attested_artifact_hashes": sorted(scope_hashes),
+                "attested_artifact_hashes": sorted(attested_hashes),
             }
 
         return m.TrustedPromptContext(

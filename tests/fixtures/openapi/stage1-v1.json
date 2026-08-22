@@ -6302,14 +6302,30 @@
         "additionalProperties": false,
         "properties": {
           "action_record": {
-            "$ref": "#/components/schemas/QuestionReviewActionRecord"
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/QuestionReviewActionRecord"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "bundle": {
             "$ref": "#/components/schemas/AssessmentEnvelope"
+          },
+          "job": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/JobStatus"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": [
-          "action_record",
           "bundle"
         ],
         "title": "QuestionReviewActionEnvelope",
@@ -6323,6 +6339,13 @@
               "$ref": "#/components/schemas/QuestionReviewActionRecord"
             },
             "title": "Items",
+            "type": "array"
+          },
+          "jobs": {
+            "items": {
+              "$ref": "#/components/schemas/JobStatus"
+            },
+            "title": "Jobs",
             "type": "array"
           }
         },

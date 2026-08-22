@@ -2831,13 +2831,16 @@ export interface components {
         };
         /** QuestionReviewActionEnvelope */
         QuestionReviewActionEnvelope: {
-            action_record: components["schemas"]["QuestionReviewActionRecord"];
+            action_record?: components["schemas"]["QuestionReviewActionRecord"] | null;
             bundle: components["schemas"]["AssessmentEnvelope"];
+            job?: components["schemas"]["JobStatus"] | null;
         };
         /** QuestionReviewActionListEnvelope */
         QuestionReviewActionListEnvelope: {
             /** Items */
             items: components["schemas"]["QuestionReviewActionRecord"][];
+            /** Jobs */
+            jobs?: components["schemas"]["JobStatus"][];
         };
         /**
          * QuestionReviewActionRecord

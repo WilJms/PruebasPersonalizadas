@@ -33,6 +33,7 @@ import type {
   CoverageReport,
   FeedbackCategory,
   FeedbackRating,
+  JobStatus,
   QuestionReviewActionInput,
   QuestionReviewActionRecord,
   QuestionReview,
@@ -40,6 +41,7 @@ import type {
   SourceLocator,
 } from "../api/types";
 import { Diagnostics, ErrorNotice } from "../components/Feedback";
+import { JobControlPanel } from "../components/JobControlPanel";
 import { LimitedEvidenceWarning } from "../components/LimitedEvidenceWarning";
 import { StatusBadge } from "../components/StatusBadge";
 
@@ -108,6 +110,7 @@ export function AssessmentReviewPage() {
   const [downloads, setDownloads] = useState<Array<ExportResource | ExportDownloadResource>>([]);
   const [coverage, setCoverage] = useState<CoverageReport | null>(null);
   const [actionHistory, setActionHistory] = useState<Record<string, QuestionReviewActionRecord[]>>({});
+  const [actionJobs, setActionJobs] = useState<Record<string, JobStatus[]>>({});
   const [busy, setBusy] = useState(false);
   const [questionBusy, setQuestionBusy] = useState<string | null>(null);
   const [actionMessage, setActionMessage] = useState("");
@@ -127,7 +130,7 @@ export function AssessmentReviewPage() {
           listExports(next.assessment.assessment_id).catch(() => []),
           Promise.all((next.assessment.questions ?? []).map(async (question) => [
             question.question_id,
-            await listQuestionActions(next.assessment.assessment_id, question.question_id).catch(() => []),
+            await listQuestionActions(next.assessment.assessment_id, question.question_id).catch(() => ({ items: [], jobs: [] })),
           ] as const)),
         ]);
         next.evidence = mergeEvidence(next.evidence ?? [], catalog);
@@ -135,7 +138,12 @@ export function AssessmentReviewPage() {
           setBundle(next);
           setCoverage(nextCoverage);
           setExports(exportHistory);
-          setActionHistory(Object.fromEntries(actionEntries));
+          setActionHistory(Object.fromEntries(
+            actionEntries.map(([questionId, result]) => [questionId, result.items]),
+          ));
+          setActionJobs(Object.fromEntries(
+            actionEntries.map(([questionId, result]) => [questionId, result.jobs]),
+          ));
           setError(null);
         }
       } catch (caught) {
@@ -291,10 +299,44 @@ export function AssessmentReviewPage() {
         input,
         bundle.etag,
       );
+      const actionJob = result.job;
+      if (
+        actionJob &&
+        (!result.record || ["QUEUED", "RUNNING"].includes(actionJob.status))
+      ) {
+        setActionJobs((current) => ({
+          ...current,
+          [question.question_id]: [
+            actionJob,
+            ...(current[question.question_id] ?? []).filter(
+              (job) => job.job_id !== actionJob.job_id,
+            ),
+          ],
+        }));
+      }
+      if (!result.record) {
+        if (result.bundle) {
+          setBundle({
+            ...result.bundle,
+            etag: result.etag ?? result.bundle.etag,
+            evidence: mergeEvidence(result.bundle.evidence ?? [], bundle.evidence ?? []),
+          });
+        }
+        const waiting = actionJob && ["QUEUED", "RUNNING"].includes(actionJob.status);
+        setActionMessage(waiting
+          ? `REGENERATE quedó en cola para ${question.question_id}. Copia el job ID y ejecútalo con autorización independiente.`
+          : `REGENERATE no fue aplicado a ${question.question_id}; revisa el estado durable del job.`);
+        if (!waiting) {
+          setError(new Error("El job de regeneración terminó antes de aplicar una nueva pregunta."));
+        }
+        window.setTimeout(() => actionMessageRef.current?.focus(), 0);
+        return;
+      }
       if (result.record.status === "FAILED") {
+        const failedRecord = result.record;
         setActionHistory((current) => ({
           ...current,
-          [question.question_id]: [result.record, ...(current[question.question_id] ?? [])],
+          [question.question_id]: [failedRecord, ...(current[question.question_id] ?? [])],
         }));
         if (result.bundle) {
           setBundle({
@@ -320,9 +362,10 @@ export function AssessmentReviewPage() {
         refreshed.evidence = mergeEvidence(refreshed.evidence ?? [], bundle.evidence ?? []);
         setBundle(refreshed);
       }
+      const appliedRecord = result.record;
       setActionHistory((current) => ({
         ...current,
-        [question.question_id]: [result.record, ...(current[question.question_id] ?? [])],
+        [question.question_id]: [appliedRecord, ...(current[question.question_id] ?? [])],
       }));
       setActionMessage(
         `${input.action} aplicado a ${question.question_id}; la versión y revalidación quedaron registradas.`,
@@ -380,6 +423,7 @@ export function AssessmentReviewPage() {
     <AssessmentReview
       allEvidenceVerified={allEvidenceVerified}
       actionHistory={actionHistory}
+      actionJobs={actionJobs}
       bundle={bundle}
       busy={busy}
       coverage={coverage}
@@ -409,6 +453,7 @@ export function AssessmentReview({
   onVerify,
   allEvidenceVerified,
   actionHistory = {},
+  actionJobs = {},
   onApprove,
   onExport,
   onFeedback,
@@ -428,6 +473,7 @@ export function AssessmentReview({
   onVerify: (questionId: string, fragmentIndex: number) => void;
   allEvidenceVerified: boolean;
   actionHistory?: Record<string, QuestionReviewActionRecord[]>;
+  actionJobs?: Record<string, JobStatus[]>;
   onApprove: () => void;
   onExport: (kind: ExportKind) => void;
   onFeedback?: (input: {
@@ -455,6 +501,9 @@ export function AssessmentReview({
   const guideReady = guideStatus === "READY" && guide !== null && guide !== undefined;
   const questions = assessment.questions ?? [];
   const guideItems = guide?.items ?? [];
+  const hasUnresolvedQuestionJob = Object.values(actionJobs).some(
+    (jobs) => jobs.length > 0,
+  );
   const evidence = bundle.evidence ?? [];
   const receipts = bundle.evidence_receipts ?? [];
   const evidenceById = useMemo(
@@ -566,6 +615,8 @@ export function AssessmentReview({
             <QuestionEvidenceCard
               evidenceById={evidenceById}
               actionRecords={actionHistory[question.question_id] ?? []}
+              actionJobs={actionJobs[question.question_id] ?? []}
+              actionsBlocked={hasUnresolvedQuestionJob}
               index={index}
               key={question.question_id}
               onVerify={onVerify}
@@ -670,6 +721,8 @@ export function AssessmentReview({
               ? guideReady
                 ? "La versión aprobada quedó congelada y su guía exacta está lista."
                 : "La versión aprobada quedó congelada; la guía se enriquece aparte y no revoca la aprobación."
+              : hasUnresolvedQuestionJob
+                ? "Finaliza la regeneración durable y refresca la versión antes de aprobar."
               : allEvidenceVerified
                 ? "Todos los fragmentos tienen confirmación durable para tu identidad."
                 : "Carga y verifica el localizador exacto de cada fragmento antes de aprobar."}
@@ -678,7 +731,7 @@ export function AssessmentReview({
         {!approved && (
           <button
             className="button button-primary"
-            disabled={!allEvidenceVerified || !choiceContractsComplete || busy}
+            disabled={!allEvidenceVerified || !choiceContractsComplete || busy || hasUnresolvedQuestionJob}
             onClick={onApprove}
             type="button"
           >
@@ -695,6 +748,8 @@ function QuestionEvidenceCard({
   review,
   evidenceById,
   actionRecords,
+  actionJobs,
+  actionsBlocked,
   receipts,
   index,
   onVerify,
@@ -707,6 +762,8 @@ function QuestionEvidenceCard({
   review?: QuestionReview;
   evidenceById: Map<string, EvidenceUnit>;
   actionRecords: QuestionReviewActionRecord[];
+  actionJobs: JobStatus[];
+  actionsBlocked: boolean;
   receipts: EvidenceReceipt[];
   index: number;
   onVerify: (questionId: string, fragmentIndex: number) => void;
@@ -876,12 +933,23 @@ function QuestionEvidenceCard({
 
       {onQuestionAction && (
         <section className="question-review-actions" aria-label={`Acciones para ${question.question_id}`}>
+          {actionJobs.length > 0 && (
+            <div aria-live="polite" className="question-action-pending">
+              <h3>Regeneración durable pendiente</h3>
+              <p>
+                La pregunta original permanece vigente. Autoriza y ejecuta el job <code>QUESTION_ACTION</code> exacto fuera del web runtime; luego refresca esta página.
+              </p>
+              {actionJobs.map((job) => (
+                <JobControlPanel jobId={job.job_id} key={job.job_id} />
+              ))}
+            </div>
+          )}
           {!questionEvidenceVerified && <p className="muted">Verifica primero cada fragmento de esta pregunta para habilitar las acciones.</p>}
           <div className="question-action-buttons">
-            <button className="button button-secondary" disabled={questionBusy || !questionEvidenceVerified} onClick={() => void onQuestionAction(question, { action: "ACCEPT" })} type="button">Aceptar pregunta</button>
-            <button aria-expanded={action === "EDIT"} className="button button-secondary" disabled={questionBusy || !questionEvidenceVerified} onClick={() => setAction(action === "EDIT" ? null : "EDIT")} type="button">Editar pregunta</button>
-            <button aria-expanded={action === "REJECT"} className="button button-secondary" disabled={questionBusy || !questionEvidenceVerified} onClick={() => setAction(action === "REJECT" ? null : "REJECT")} type="button">Rechazar pregunta</button>
-            <button aria-expanded={action === "REGENERATE"} className="button button-secondary" disabled={questionBusy || !questionEvidenceVerified} onClick={() => setAction(action === "REGENERATE" ? null : "REGENERATE")} type="button">Regenerar pregunta</button>
+            <button className="button button-secondary" disabled={questionBusy || !questionEvidenceVerified || actionsBlocked} onClick={() => void onQuestionAction(question, { action: "ACCEPT" })} type="button">Aceptar pregunta</button>
+            <button aria-expanded={action === "EDIT"} className="button button-secondary" disabled={questionBusy || !questionEvidenceVerified || actionsBlocked} onClick={() => setAction(action === "EDIT" ? null : "EDIT")} type="button">Editar pregunta</button>
+            <button aria-expanded={action === "REJECT"} className="button button-secondary" disabled={questionBusy || !questionEvidenceVerified || actionsBlocked} onClick={() => setAction(action === "REJECT" ? null : "REJECT")} type="button">Rechazar pregunta</button>
+            <button aria-expanded={action === "REGENERATE"} className="button button-secondary" disabled={questionBusy || !questionEvidenceVerified || actionsBlocked} onClick={() => setAction(action === "REGENERATE" ? null : "REGENERATE")} type="button">Regenerar pregunta</button>
           </div>
           {action && (
             <form className="question-action-form" onSubmit={(event) => void submitAction(event)}>

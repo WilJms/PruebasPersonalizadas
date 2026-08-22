@@ -8,6 +8,7 @@ Persisted domain objects always use the canonical contract module.
 from __future__ import annotations
 
 from collections import Counter, defaultdict
+from dataclasses import dataclass
 from datetime import UTC, datetime
 import csv
 import io
@@ -44,6 +45,8 @@ from .repository import (
     JobRow,
     ModelCallRow,
     NotFound,
+    QUESTION_ACTION_DESCRIPTOR_POLICY_HASH as _QUESTION_ACTION_DESCRIPTOR_POLICY_HASH,
+    QUESTION_ACTION_DESCRIPTOR_VERSION as _QUESTION_ACTION_DESCRIPTOR_VERSION,
     QuestionReviewActionRow,
     StageRunRow,
     SubmissionRow,
@@ -60,13 +63,13 @@ _FAIL_CLOSED_STATUSES = {
     m.SubmissionProcessingStatus.REJECTED_SECURITY,
 }
 
-_QUESTION_ACTION_DESCRIPTOR_VERSION = "stage2-question-action-descriptor/1.0.0"
-_QUESTION_ACTION_DESCRIPTOR_POLICY_HASH = canonical_hash(
-    {
-        "kind": "QUESTION_ACTION_DESCRIPTOR",
-        "version": _QUESTION_ACTION_DESCRIPTOR_VERSION,
-    }
-)
+@dataclass(frozen=True, slots=True)
+class QuestionActionResult:
+    """API-facing outcome for an immediate or worker-backed review action."""
+
+    submission_id: str
+    record: m.QuestionReviewActionRecord | None = None
+    job: m.JobStatus | None = None
 
 
 def _etag(value: Any) -> str:
@@ -906,7 +909,24 @@ class Stage2Service:
     ) -> None:
         """Block individual approval after a rejection or failed revalidation."""
 
-        self.repository.assessment_by_id(assessment_id, actor.workspace_id)
+        assessment = m.Assessment.model_validate(
+            self.repository.assessment_by_id(
+                assessment_id, actor.workspace_id
+            ).data
+        )
+        if any(
+            self.repository.question_action_jobs(
+                tenant_id=actor.workspace_id,
+                assessment_id=assessment_id,
+                question_id=question.question_id,
+            )
+            for question in assessment.questions
+        ):
+            raise WorkflowError(
+                "QUESTION_ACTION_PENDING",
+                "A durable question action must finish before approval.",
+                status_code=409,
+            )
         latest: dict[str, m.QuestionReviewActionRecord] = {}
         for row in self.repository.question_review_actions(
             tenant_id=actor.workspace_id, assessment_id=assessment_id
@@ -1020,6 +1040,7 @@ class Stage2Service:
         logical_action_id: str,
         assessment_version: int,
         assessment_etag: str,
+        queued: bool = False,
     ) -> JobRow:
         job_id = stable_id(
             "job", submission.tenant_id, action.action_id, "QUESTION_ACTION"
@@ -1029,11 +1050,11 @@ class Stage2Service:
             tenant_id=submission.tenant_id,
             aggregate_id=submission.id,
             stage="QUESTION_GENERATE",
-            status="RUNNING",
+            status="QUEUED" if queued else "RUNNING",
             progress=0.0,
-            attempt=1,
+            attempt=0 if queued else 1,
             diagnostics=[],
-            started_at=utc_now(),
+            started_at=None if queued else utc_now(),
         )
         self._prepare_question_action(
             status=status,
@@ -1198,6 +1219,178 @@ class Stage2Service:
             )
         return record
 
+    def _question_action_record(
+        self, action_id: str, tenant_id: str
+    ) -> m.QuestionReviewActionRecord | None:
+        try:
+            row = cast(
+                QuestionReviewActionRow,
+                self.repository.scoped(
+                    QuestionReviewActionRow,
+                    stable_id("reviewrecord", action_id),
+                    tenant_id,
+                ),
+            )
+        except NotFound:
+            return None
+        return m.QuestionReviewActionRecord.model_validate(row.data)
+
+    def _regeneration_request(
+        self,
+        *,
+        action: m.QuestionReviewAction,
+        logical_action_id: str,
+        assessment: m.Assessment,
+        before: m.SelectedQuestion,
+        actor: Actor,
+        plan: m.AssessmentPlan,
+        opportunities: dict[str, m.QuestionOpportunity],
+        bundle: m.EvidenceBundle,
+    ) -> tuple[m.QuestionBuildRequest, m.QuestionOpportunity]:
+        """Build the sole canonical localized P07 request, without invoking it."""
+
+        policy = m.BlueprintPolicy.model_validate(
+            cast(
+                ActivityRow,
+                self.repository.scoped(
+                    ActivityRow, assessment.activity_id, actor.workspace_id
+                ),
+            ).blueprint_policy
+        )
+        previous_records = self.repository.question_review_actions(
+            tenant_id=actor.workspace_id,
+            assessment_id=assessment.assessment_id,
+            question_id=before.question_id,
+        )
+        execution_events = self.repository.audit_events(
+            tenant_id=actor.workspace_id,
+            event_type="question_action.executed",
+            aggregate_id=None,
+        )
+        logical_by_action = {
+            str(event.payload.get("action_id")): str(
+                event.payload.get("logical_action_id")
+                or event.payload.get("action_id")
+            )
+            for event in execution_events
+            if event.payload.get("action_id")
+        }
+        regeneration_attempts: set[str] = {
+            str(
+                event.payload.get("logical_action_id")
+                or event.payload.get("action_id")
+            )
+            for event in execution_events
+            if event.payload.get("action_type")
+            == m.QuestionReviewActionType.REGENERATE.value
+            and event.payload.get("action_id") != action.action_id
+            and event.payload.get("assessment_id") == assessment.assessment_id
+            and event.payload.get("question_id") == before.question_id
+            and (
+                event.payload.get("logical_action_id")
+                or event.payload.get("action_id")
+            )
+        }
+        used_opportunities = {
+            item.opportunity_id for item in assessment.questions
+        }
+        rejected: list[m.RejectedQuestionFingerprint] = []
+        for row_value in previous_records:
+            try:
+                value = m.QuestionReviewActionRecord.model_validate(row_value.data)
+            except ValidationError:
+                continue
+            if value.action.action == m.QuestionReviewActionType.REGENERATE:
+                regeneration_attempts.add(
+                    logical_by_action.get(
+                        value.action.action_id,
+                        value.action.action_id,
+                    )
+                )
+            if value.after_question is not None:
+                used_opportunities.add(value.after_question.opportunity_id)
+            rejected.append(
+                m.RejectedQuestionFingerprint(
+                    fingerprint_id=stable_id(
+                        "rejected",
+                        value.record_id,
+                        value.before_question.question_id,
+                    ),
+                    opportunity_id=value.before_question.opportunity_id,
+                    evidence_ids=value.before_question.evidence_ids,
+                    normalized_question_hash=canonical_hash(
+                        value.before_question.question_text.strip().lower()
+                    ),
+                    rejection_codes=[
+                        value.action.reason_code or "TEACHER_REGENERATE"
+                    ],
+                )
+            )
+        if (
+            logical_action_id not in regeneration_attempts
+            and len(regeneration_attempts) >= policy.max_local_regenerations
+        ):
+            raise WorkflowError(
+                "LOCAL_REGENERATION_LIMIT",
+                "The configured localized regeneration limit was reached.",
+                status_code=409,
+            )
+        reserve_id = next(
+            (
+                value
+                for value in plan.reserve_opportunity_ids
+                if value not in used_opportunities
+                and opportunities[value].student_justification_required
+                == before.student_justification_required
+            ),
+            None,
+        )
+        if reserve_id is None:
+            raise WorkflowError(
+                "ASSESSMENT_PLAN_INFEASIBLE",
+                "No unused reserve opportunity can preserve exactly N.",
+                status_code=409,
+            )
+        opportunity = opportunities[reserve_id]
+        rejected.append(
+            m.RejectedQuestionFingerprint(
+                fingerprint_id=stable_id(
+                    "rejected", action.action_id, before.question_id
+                ),
+                opportunity_id=before.opportunity_id,
+                evidence_ids=before.evidence_ids,
+                normalized_question_hash=canonical_hash(
+                    before.question_text.strip().lower()
+                ),
+                rejection_codes=[
+                    action.reason_code or "TEACHER_REGENERATE"
+                ],
+            )
+        )
+        return (
+            m.QuestionBuildRequest(
+                target_candidate_id=stable_id(
+                    "candidate",
+                    assessment.submission_id,
+                    logical_action_id,
+                    opportunity.opportunity_id,
+                ),
+                plan=plan,
+                opportunity=opportunity,
+                evidence_bundle=bundle,
+                generation_policy=m.QuestionGenerationPolicy(
+                    policy_id=stable_id(
+                        "policy",
+                        assessment.activity_id,
+                        "question_generation",
+                    ),
+                    max_local_regenerations=policy.max_local_regenerations,
+                ),
+                avoid=rejected[-100:],
+            ),
+            opportunity,
+        )
+
     async def review_question(
         self,
         *,
@@ -1212,7 +1405,8 @@ class Stage2Service:
         _execution_job: JobRow | None = None,
         _logical_action_id: str | None = None,
         _logical_occurred_at: datetime | None = None,
-    ) -> m.QuestionReviewActionRecord:
+        _prepared_action: m.QuestionReviewAction | None = None,
+    ) -> QuestionActionResult:
         """Apply one canonical question action with server-side revalidation."""
 
         self._require_reviewer(actor)
@@ -1266,9 +1460,13 @@ class Stage2Service:
                 status_code=404,
             )
         before = assessment.questions[question_index]
-        occurred_at = utc_now()
+        occurred_at = (
+            _prepared_action.occurred_at
+            if _prepared_action is not None
+            else utc_now()
+        )
         logical_occurred_at = _logical_occurred_at or occurred_at
-        action = m.QuestionReviewAction(
+        action = _prepared_action or m.QuestionReviewAction(
             action_id=stable_id(
                 "reviewaction",
                 actor.workspace_id,
@@ -1287,6 +1485,22 @@ class Stage2Service:
             note=note,
             replacement=replacement,
         )
+        if _prepared_action is not None and any(
+            (
+                action.assessment_id != assessment_id,
+                action.question_id != question_id,
+                action.action != action_type,
+                action.actor_id != actor.user_id,
+                action.reason_code != reason_code,
+                action.note != note,
+                action.replacement != replacement,
+            )
+        ):
+            raise WorkflowError(
+                "QUESTION_ACTION_RETRY_SOURCE_INVALID",
+                "The prepared localized action does not match its worker command.",
+                status_code=409,
+            )
 
         if action_type == m.QuestionReviewActionType.ACCEPT:
             record = m.QuestionReviewActionRecord(
@@ -1308,7 +1522,10 @@ class Stage2Service:
                 recorded_at=utc_now(),
             )
             self.repository.apply_question_review_action(record)
-            return record
+            return QuestionActionResult(
+                submission_id=assessment.submission_id,
+                record=record,
+            )
 
         if action_type == m.QuestionReviewActionType.REJECT:
             revised = assessment.model_copy(update={"created_at": utc_now()})
@@ -1334,14 +1551,16 @@ class Stage2Service:
                 recorded_at=utc_now(),
             )
             self.repository.apply_question_review_action(record, row)
-            return record
+            return QuestionActionResult(
+                submission_id=assessment.submission_id,
+                record=record,
+            )
 
-        blueprint_row, blueprint = self.legacy._approved_blueprint(
+        self.legacy._approved_blueprint(
             activity_id=assessment.activity_id,
             tenant_id=actor.workspace_id,
             version=assessment.lineage.blueprint_version,
         )
-        del blueprint_row
         mapping = m.EvidenceMapPatch.model_validate(
             cast(
                 EvidenceMapRow,
@@ -1361,6 +1580,58 @@ class Stage2Service:
         opportunities = {item.opportunity_id: item for item in mapping.opportunities}
         bundle = self._evidence_bundle(submission, assessment)
         logical_action_id = _logical_action_id or action.action_id
+        if (
+            action_type == m.QuestionReviewActionType.REGENERATE
+            and _execution_job is None
+        ):
+            self._regeneration_request(
+                action=action,
+                logical_action_id=logical_action_id,
+                assessment=assessment,
+                before=before,
+                actor=actor,
+                plan=plan,
+                opportunities=opportunities,
+                bundle=bundle,
+            )
+            job = self._question_action_job(
+                submission=submission,
+                action=action,
+                logical_action_id=logical_action_id,
+                assessment_version=current.version,
+                assessment_etag=current.etag,
+                queued=True,
+            )
+            if self.legacy.job_runner is None:
+                raise RuntimeError("JobRunner is not configured")
+            try:
+                await self.legacy.job_runner.dispatch(job.id)
+            except Exception:
+                self.repository.fail_queued_dispatch(
+                    job_id=job.id,
+                    tenant_id=actor.workspace_id,
+                    failure=diagnostic(
+                        "JOB_DISPATCH_FAILED",
+                        "The durable question action could not be dispatched.",
+                        retryable=True,
+                    ),
+                )
+            persisted_job = self.repository.job_control(
+                job.id, actor.workspace_id
+            )
+            if persisted_job.control_state == "CANCELLED":
+                raise WorkflowError(
+                    "JOB_CANCELLED",
+                    "The localized question action stopped at a cancellation boundary.",
+                    status_code=409,
+                )
+            return QuestionActionResult(
+                submission_id=assessment.submission_id,
+                record=self._question_action_record(
+                    action.action_id, actor.workspace_id
+                ),
+                job=self.repository.job_status(job.id, actor.workspace_id),
+            )
         if _execution_job is None:
             job = self._question_action_job(
                 submission=submission,
@@ -1371,15 +1642,16 @@ class Stage2Service:
             )
         else:
             job = _execution_job
-            self._prepare_question_action(
-                status=self.repository.job_status(job.id, job.tenant_id),
-                submission=submission,
-                action=action,
-                logical_action_id=logical_action_id,
-                assessment_version=current.version,
-                assessment_etag=current.etag,
-                create_job=False,
-            )
+            if _prepared_action is None:
+                self._prepare_question_action(
+                    status=self.repository.job_status(job.id, job.tenant_id),
+                    submission=submission,
+                    action=action,
+                    logical_action_id=logical_action_id,
+                    assessment_version=current.version,
+                    assessment_etag=current.etag,
+                    create_job=False,
+                )
         after: m.SelectedQuestion | None = None
         try:
             if action_type == m.QuestionReviewActionType.EDIT:
@@ -1423,167 +1695,20 @@ class Stage2Service:
                     bundle=bundle,
                 )
             else:
-                policy = m.BlueprintPolicy.model_validate(
-                    cast(
-                        ActivityRow,
-                        self.repository.scoped(
-                            ActivityRow, assessment.activity_id, actor.workspace_id
-                        ),
-                    ).blueprint_policy
-                )
-                previous_records = self.repository.question_review_actions(
-                    tenant_id=actor.workspace_id,
-                    assessment_id=assessment_id,
-                    question_id=question_id,
-                )
-                execution_events = self.repository.audit_events(
-                    tenant_id=actor.workspace_id,
-                    event_type="question_action.executed",
-                    aggregate_id=None,
-                )
-                logical_by_action = {
-                    str(event.payload.get("action_id")): str(
-                        event.payload.get("logical_action_id")
-                        or event.payload.get("action_id")
-                    )
-                    for event in execution_events
-                    if event.payload.get("action_id")
-                }
-                # New descriptors reserve the bounded logical regeneration
-                # budget before provider work.  This remains enforceable even
-                # when every terminal action transaction rolls back and there
-                # is consequently no QuestionReviewActionRecord to count.
-                regeneration_attempts: set[str] = {
-                    str(
-                        event.payload.get("logical_action_id")
-                        or event.payload.get("action_id")
-                    )
-                    for event in execution_events
-                    if event.payload.get("action_type")
-                    == m.QuestionReviewActionType.REGENERATE.value
-                    and event.payload.get("action_id") != action.action_id
-                    and event.payload.get("assessment_id") == assessment_id
-                    and event.payload.get("question_id") == question_id
-                    and (
-                        event.payload.get("logical_action_id")
-                        or event.payload.get("action_id")
-                    )
-                }
-                used_opportunities = {item.opportunity_id for item in assessment.questions}
-                rejected: list[m.RejectedQuestionFingerprint] = []
-                for row_value in previous_records:
-                    try:
-                        value = m.QuestionReviewActionRecord.model_validate(row_value.data)
-                    except ValidationError:
-                        continue
-                    if (
-                        value.action.action
-                        == m.QuestionReviewActionType.REGENERATE
-                    ):
-                        # Failed provider/validation attempts consume the same
-                        # bounded local budget as successful replacements.  A
-                        # caller cannot evade the denial-of-wallet guard by
-                        # rotating idempotency keys after failures.
-                        regeneration_attempts.add(
-                            logical_by_action.get(
-                                value.action.action_id,
-                                value.action.action_id,
-                            )
-                        )
-                    if value.after_question is not None:
-                        used_opportunities.add(value.after_question.opportunity_id)
-                    rejected.append(
-                        m.RejectedQuestionFingerprint(
-                            fingerprint_id=stable_id(
-                                "rejected", value.record_id, value.before_question.question_id
-                            ),
-                            opportunity_id=value.before_question.opportunity_id,
-                            evidence_ids=value.before_question.evidence_ids,
-                            normalized_question_hash=canonical_hash(
-                                value.before_question.question_text.strip().lower()
-                            ),
-                            rejection_codes=[
-                                value.action.reason_code or "TEACHER_REGENERATE"
-                            ],
-                        )
-                    )
-                if (
-                    logical_action_id not in regeneration_attempts
-                    and len(regeneration_attempts)
-                    >= policy.max_local_regenerations
-                ):
-                    return self._failed_question_action(
-                        action=action,
-                        assessment=assessment,
-                        assessment_version=current.version,
-                        question=before,
-                        diagnostics=[
-                            diagnostic(
-                                "LOCAL_REGENERATION_LIMIT",
-                                "The configured localized regeneration limit was reached.",
-                            )
-                        ],
-                        job=job,
-                    )
-                reserve_id = next(
-                    (
-                        value
-                        for value in plan.reserve_opportunity_ids
-                        if value not in used_opportunities
-                        and opportunities[value].student_justification_required
-                        == before.student_justification_required
-                    ),
-                    None,
-                )
-                if reserve_id is None:
-                    return self._failed_question_action(
-                        action=action,
-                        assessment=assessment,
-                        assessment_version=current.version,
-                        question=before,
-                        diagnostics=[
-                            diagnostic(
-                                "ASSESSMENT_PLAN_INFEASIBLE",
-                                "No unused reserve opportunity can preserve exactly N.",
-                            )
-                        ],
-                        job=job,
-                    )
-                opportunity = opportunities[reserve_id]
-                rejected.append(
-                    m.RejectedQuestionFingerprint(
-                        fingerprint_id=stable_id(
-                            "rejected", action.action_id, before.question_id
-                        ),
-                        opportunity_id=before.opportunity_id,
-                        evidence_ids=before.evidence_ids,
-                        normalized_question_hash=canonical_hash(
-                            before.question_text.strip().lower()
-                        ),
-                        rejection_codes=[reason_code or "TEACHER_REGENERATE"],
-                    )
+                request, opportunity = self._regeneration_request(
+                    action=action,
+                    logical_action_id=logical_action_id,
+                    assessment=assessment,
+                    before=before,
+                    actor=actor,
+                    plan=plan,
+                    opportunities=opportunities,
+                    bundle=bundle,
                 )
                 generation = await self.legacy._gateway_stage(
                     job,
                     "P07_QUESTION_BUILD_V1",
-                    m.QuestionBuildRequest(
-                        target_candidate_id=stable_id(
-                            "candidate",
-                            assessment.submission_id,
-                            logical_action_id,
-                            opportunity.opportunity_id,
-                        ),
-                        plan=plan,
-                        opportunity=opportunity,
-                        evidence_bundle=bundle,
-                        generation_policy=m.QuestionGenerationPolicy(
-                            policy_id=stable_id(
-                                "policy", assessment.activity_id, "question_generation"
-                            ),
-                            max_local_regenerations=policy.max_local_regenerations,
-                        ),
-                        avoid=rejected[-100:],
-                    ),
+                    request,
                     m.QuestionGenerationResult,
                     cache_suffix=f"local-{logical_action_id}",
                 )
@@ -1593,7 +1718,7 @@ class Stage2Service:
                     bundle=bundle,
                 )
                 if generation.status != "READY" or generation.candidate is None:
-                    return self._failed_question_action(
+                    record = self._failed_question_action(
                         action=action,
                         assessment=assessment,
                         assessment_version=current.version,
@@ -1606,6 +1731,13 @@ class Stage2Service:
                             )
                         ],
                         job=job,
+                    )
+                    return QuestionActionResult(
+                        submission_id=assessment.submission_id,
+                        record=record,
+                        job=self.repository.job_status(
+                            job.id, actor.workspace_id
+                        ),
                     )
             if generation.candidate is None:  # guarded by current contracts
                 raise ContextValidationError(
@@ -1655,7 +1787,7 @@ class Stage2Service:
             )
         except (ContextValidationError, ValidationError, WorkflowError) as exc:
             failure_class, retryable, code = self.legacy._classify_failure(exc)
-            return self._failed_question_action(
+            record = self._failed_question_action(
                 action=action,
                 assessment=assessment,
                 assessment_version=current.version,
@@ -1671,11 +1803,16 @@ class Stage2Service:
                 failure_class=failure_class,
                 retryable=retryable,
             )
+            return QuestionActionResult(
+                submission_id=assessment.submission_id,
+                record=record,
+                job=self.repository.job_status(job.id, actor.workspace_id),
+            )
         except Exception as exc:
             # Provider and adapter exceptions are deliberately collapsed so
             # neither hostile content nor provider detail enters persistence.
             failure_class, retryable, code = self.legacy._classify_failure(exc)
-            return self._failed_question_action(
+            record = self._failed_question_action(
                 action=action,
                 assessment=assessment,
                 assessment_version=current.version,
@@ -1690,6 +1827,11 @@ class Stage2Service:
                 job=job,
                 failure_class=failure_class,
                 retryable=retryable,
+            )
+            return QuestionActionResult(
+                submission_id=assessment.submission_id,
+                record=record,
+                job=self.repository.job_status(job.id, actor.workspace_id),
             )
 
         assert after is not None
@@ -1729,7 +1871,7 @@ class Stage2Service:
                 )
         except Exception as exc:
             failure_class, retryable, code = self.legacy._classify_failure(exc)
-            return self._failed_question_action(
+            failed = self._failed_question_action(
                 action=action,
                 assessment=assessment,
                 assessment_version=current.version,
@@ -1745,10 +1887,19 @@ class Stage2Service:
                 failure_class=failure_class,
                 retryable=retryable,
             )
-        return record
+            return QuestionActionResult(
+                submission_id=assessment.submission_id,
+                record=failed,
+                job=self.repository.job_status(job.id, actor.workspace_id),
+            )
+        return QuestionActionResult(
+            submission_id=assessment.submission_id,
+            record=record,
+            job=self.repository.job_status(job.id, actor.workspace_id),
+        )
 
-    async def process_question_action_retry(self, job: JobRow) -> None:
-        """Execute one bounded durable retry of a localized review action."""
+    async def process_question_action_job(self, job: JobRow) -> None:
+        """Execute an initial or continued localized action from durable state."""
 
         controls = self.repository.job_control_records(
             tenant_id=job.tenant_id,
@@ -1758,14 +1909,18 @@ class Stage2Service:
             (
                 item
                 for item in controls
-                if item.action == "RETRY" and item.status == "APPLIED"
+                if item.action in {"RETRY", "RESUME"}
+                and item.status == "APPLIED"
             ),
             None,
         )
-        if control is None:
+        own_descriptor = self.repository.question_action_descriptor(
+            job_id=job.id, tenant_id=job.tenant_id
+        )
+        if control is None and own_descriptor is None:
             raise WorkflowError(
                 "QUESTION_ACTION_RETRY_SOURCE_MISSING",
-                "The localized retry has no durable source control record.",
+                "The localized action has no durable reconstructible source.",
                 status_code=409,
             )
         source_action: m.QuestionReviewAction | None = None
@@ -1773,7 +1928,8 @@ class Stage2Service:
         source_assessment_version: int | None = None
         source_assessment_etag: str | None = None
         logical_action_id: str | None = None
-        source_job_id = control.job_id
+        source_job_id = job.id if own_descriptor is not None else control.job_id
+        descriptor_job_id: str | None = None
         seen_job_ids: set[str] = set()
 
         # A retry can itself fail before its descriptor transaction commits.
@@ -1883,6 +2039,7 @@ class Stage2Service:
                 source_assessment_version = descriptor_version
                 source_assessment_etag = descriptor_etag
                 logical_action_id = descriptor_logical_id
+                descriptor_job_id = source_job_id
                 break
 
             # Backward compatibility for terminal records created before the
@@ -1926,6 +2083,7 @@ class Stage2Service:
                             source_event.payload.get("logical_action_id")
                             or source_action_id
                         )
+                        descriptor_job_id = source_job_id
                         break
 
             predecessor = next(
@@ -1935,7 +2093,8 @@ class Stage2Service:
                         tenant_id=job.tenant_id,
                         resulting_job_id=source_job_id,
                     )
-                    if item.action == "RETRY" and item.status == "APPLIED"
+                    if item.action in {"RETRY", "RESUME"}
+                    and item.status == "APPLIED"
                 ),
                 None,
             )
@@ -2018,6 +2177,9 @@ class Stage2Service:
             _execution_job=job,
             _logical_action_id=logical_action_id,
             _logical_occurred_at=source_action.occurred_at,
+            _prepared_action=(
+                source_action if descriptor_job_id == job.id else None
+            ),
         )
 
     @staticmethod
@@ -2344,6 +2506,23 @@ class Stage2Service:
         return [
             m.QuestionReviewActionRecord.model_validate(row.data)
             for row in self.repository.question_review_actions(
+                tenant_id=actor.workspace_id,
+                assessment_id=assessment_id,
+                question_id=question_id,
+            )
+        ]
+
+    def question_action_jobs(
+        self,
+        *,
+        assessment_id: str,
+        question_id: str,
+        actor: Actor,
+    ) -> list[m.JobStatus]:
+        self.repository.assessment_by_id(assessment_id, actor.workspace_id)
+        return [
+            self.repository.job_status(row.id, actor.workspace_id)
+            for row in self.repository.question_action_jobs(
                 tenant_id=actor.workspace_id,
                 assessment_id=assessment_id,
                 question_id=question_id,

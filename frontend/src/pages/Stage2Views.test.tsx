@@ -8,6 +8,7 @@ import {
   createSubmissionBatch,
   getActivityCoverage,
   getActivityMetrics,
+  getJobControl,
   listActivityFeedback,
   listActivitySubmissions,
   listBulkApprovalHistory,
@@ -18,6 +19,8 @@ import type {
   CoverageReport,
   ExperimentMetrics,
   FeedbackEvent,
+  JobControlView,
+  JobStatus,
   Stage2Submission,
 } from "../api/types";
 import { MemoryRouter } from "../routing";
@@ -34,6 +37,7 @@ vi.mock("../api/client", async (importOriginal) => {
     createSubmissionBatch: vi.fn(),
     getActivityCoverage: vi.fn(),
     getActivityMetrics: vi.fn(),
+    getJobControl: vi.fn(),
     listActivityFeedback: vi.fn(),
     listActivitySubmissions: vi.fn(),
     listBulkApprovalHistory: vi.fn(),
@@ -140,6 +144,26 @@ const reviewable: Stage2Submission = {
   ...submission,
   artifact_uploaded: true,
   assessment_version: 1,
+};
+
+const queuedQuestionActionJob: JobStatus = {
+  schema_version: "1.1.0",
+  job_id: "job_question_action_01",
+  tenant_id: "tenant_01",
+  aggregate_id: "submission_01",
+  stage: "QUESTION_GENERATE",
+  status: "QUEUED",
+  progress: 0,
+  attempt: 0,
+  diagnostics: [],
+};
+
+const queuedQuestionActionControl: JobControlView = {
+  job: queuedQuestionActionJob,
+  stage_runs: [],
+  control_records: [],
+  allowed_actions: ["CANCEL"],
+  control_state: "ACTIVE",
 };
 
 describe("Stage 2 activity lab", () => {
@@ -254,6 +278,10 @@ describe("Stage 2 activity lab", () => {
 });
 
 describe("Stage 2 question actions", () => {
+  beforeEach(() => {
+    vi.mocked(getJobControl).mockResolvedValue(queuedQuestionActionControl);
+  });
+
   it("edits only question_text over a complete canonical copy", async () => {
     const user = userEvent.setup();
     const onQuestionAction = vi.fn().mockResolvedValue(undefined);
@@ -323,6 +351,83 @@ describe("Stage 2 question actions", () => {
       expect.objectContaining({ question_id: "question_01" }),
       { action: "REGENERATE", reason_code: "NOT_ANSWERABLE", note: undefined },
     );
+  });
+
+  it("keeps the original question visible and blocks review while a durable regeneration job is pending", async () => {
+    const user = userEvent.setup();
+    const onApprove = vi.fn();
+    const originalQuestion = assessmentBundle.assessment.questions?.[0];
+    if (!originalQuestion) throw new Error("fixture question missing");
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: { writeText: vi.fn().mockResolvedValue(undefined) },
+    });
+
+    const { rerender } = render(
+      <AssessmentReview
+        actionJobs={{ [originalQuestion.question_id]: [queuedQuestionActionJob] }}
+        allEvidenceVerified
+        bundle={structuredClone(assessmentBundle)}
+        busy={false}
+        exports={[]}
+        onApprove={onApprove}
+        onExport={vi.fn()}
+        onQuestionAction={vi.fn()}
+        onTabChange={vi.fn()}
+        onVerify={vi.fn()}
+        tab="assessment"
+        verifying={null}
+      />,
+    );
+
+    expect(screen.getByRole("heading", { name: originalQuestion.question_text })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Regeneración durable pendiente" })).toBeInTheDocument();
+    expect(screen.getByText(/La pregunta original permanece vigente/)).toBeInTheDocument();
+    expect(screen.getByText("QUESTION_ACTION")).toBeInTheDocument();
+    expect(await screen.findByText("job_question_action_01")).toBeInTheDocument();
+    expect(screen.getByText("En cola")).toBeInTheDocument();
+
+    for (const label of [
+      "Aceptar pregunta",
+      "Editar pregunta",
+      "Rechazar pregunta",
+      "Regenerar pregunta",
+      "Aprobar Assessment",
+    ]) {
+      expect(screen.getByRole("button", { name: label })).toBeDisabled();
+    }
+
+    await user.click(screen.getByRole("button", { name: "Copiar job ID" }));
+    expect(navigator.clipboard.writeText).toHaveBeenCalledWith("job_question_action_01");
+    expect(onApprove).not.toHaveBeenCalled();
+
+    const refreshedBundle = structuredClone(assessmentBundle);
+    refreshedBundle.assessment_version = 2;
+    refreshedBundle.etag = `sha256:${"b".repeat(64)}`;
+    const refreshedQuestion = refreshedBundle.assessment.questions?.[0];
+    if (!refreshedQuestion) throw new Error("refreshed fixture question missing");
+    refreshedQuestion.question_text = "¿Qué mecanismo alternativo explica la evidencia sellada?";
+    rerender(
+      <AssessmentReview
+        actionJobs={{}}
+        allEvidenceVerified
+        bundle={refreshedBundle}
+        busy={false}
+        exports={[]}
+        onApprove={onApprove}
+        onExport={vi.fn()}
+        onQuestionAction={vi.fn()}
+        onTabChange={vi.fn()}
+        onVerify={vi.fn()}
+        tab="assessment"
+        verifying={null}
+      />,
+    );
+
+    expect(screen.queryByText("Regeneración durable pendiente")).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: originalQuestion.question_text })).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: refreshedQuestion.question_text })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Aprobar Assessment" })).toBeEnabled();
   });
 
   it("associates governed feedback with an exact assessment question", async () => {

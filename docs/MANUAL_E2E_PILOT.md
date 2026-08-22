@@ -5,22 +5,18 @@ Runbook local para recorrer actividad, submissions, revisión docente,
 job. Este documento no es una autorización de gasto y no debe usarse con datos
 estudiantiles reales.
 
-## Gate conocido antes de comenzar
+## Frontera del piloto
 
-El recorrido principal actividad → submission → `GUIDE_BUILD` usa el provider
-real únicamente en el worker autorizado por job. `ACCEPT`, `EDIT` y `REJECT`
-no necesitan provider. La implementación vigente de la acción inicial
-`REGENERATE`, en cambio, ejecuta P07 síncronamente en el web runtime mock y no
-entrega antes un job `QUEUED` que pueda autorizar el operador. Por lo tanto:
+Actividad, submission, una regeneración P07 y `GUIDE_BUILD` usan el provider
+real únicamente en un worker autorizado para el job exacto. El web permanece
+en `CVA_MODEL_MODE=mock`: sólo valida, persiste y despacha operaciones
+durables. `ACCEPT`, `EDIT` y `REJECT` no necesitan provider. Una acción
+`REGENERATE` crea primero un `QUESTION_ACTION` `QUEUED`; la pregunta vigente no
+cambia hasta que el worker exacto termina validación y materialización.
 
-- no atribuya provider real a una regeneración iniciada desde la UI;
-- si una pregunta necesita `REGENERATE` para continuar el piloto real, detenga
-  el run y registre esta limitación;
-- no cambie el web a `CVA_MODEL_MODE=real`, no le entregue una clave y no
-  improvise una autorización.
-
-El resto del runbook se puede ensayar completamente offline/mock. Un piloto
-que necesite `REGENERATE` no cumple todavía el gate E2E real completo.
+No cambie el web a `CVA_MODEL_MODE=real`, no le entregue una clave y no
+improvise una autorización. Este runbook tampoco autoriza gasto: cada job
+provider-bearing requiere una aprobación operativa externa y explícita.
 
 ## 1. Preconditions
 
@@ -29,8 +25,8 @@ Use exclusivamente:
 - repositorio `WilJms/PruebasPersonalizadas`;
 - PR `#3`, todavía `OPEN`, `DRAFT` y no mergeado;
 - rama `codex/openai-real-provider-gate`;
-- baseline de esta tarea
-  `e2ed6c3b4971ddb6a75e469230d2094aa284110c`;
+- baseline durable/manual
+  `5ab776f9a95e1b1d2fe23405e7e1c960564c0dbb`;
 - un `PILOT_CANDIDATE_SHA` exacto de 40 hex que sea el HEAD revisado del PR y
   descendiente de ese baseline.
 
@@ -40,7 +36,7 @@ Compruebe el checkout antes de cada run:
 git branch --show-current
 git rev-parse HEAD
 git merge-base --is-ancestor \
-  e2ed6c3b4971ddb6a75e469230d2094aa284110c HEAD
+  5ab776f9a95e1b1d2fe23405e7e1c960564c0dbb HEAD
 gh pr view 3 --repo WilJms/PruebasPersonalizadas \
   --json state,isDraft,mergedAt,headRefName,headRefOid
 git status --short
@@ -155,8 +151,9 @@ de R2; nunca poniendo credenciales R2 en el frontend.
 ## 4. Ciclo exacto para un job con provider
 
 Use este ciclo sólo para jobs cuyo kind activo requiere modelo: `ACTIVITY`,
-`SUBMISSION`, `GUIDE_BUILD` y una continuación provider-bearing creada por
-retry/resume. No lo use para `BLUEPRINT_PREFLIGHT` o `BLUEPRINT_REVIEW`.
+`SUBMISSION`, `QUESTION_ACTION`, `GUIDE_BUILD` y una continuación
+provider-bearing creada por retry/resume. No lo use para
+`BLUEPRINT_PREFLIGHT` o `BLUEPRINT_REVIEW`.
 
 En una tercera terminal, vuelva a fijar la ruta, cargue los valores compartidos
 y añada los inputs aprobados del operador. Todos los IDs deben ser canónicos
@@ -302,15 +299,39 @@ Las acciones actuales significan:
   revalidación determinista. No llama al provider.
 - `REJECT`: registra el rechazo y su motivo; no inventa reemplazo. La
   aprobación queda bloqueada hasta una resolución posterior de esa pregunta.
-- `REGENERATE`: intenta reemplazar la pregunta mediante una oportunidad de
-  reserva y P07, preservando exactamente N y el presupuesto local. En el
-  runtime actual, la primera regeneración se ejecuta síncronamente en el web
-  mock. Para un piloto real gobernado, deténgase antes de pulsarla según el
-  gate inicial de este documento.
+- `REGENERATE`: prepara una oportunidad de reserva y crea un
+  `QUESTION_ACTION` durable `QUEUED`. P07 sólo se ejecuta después en el worker
+  exacto; la versión y pregunta vigentes permanecen visibles mientras espera.
+  Una aplicación válida preserva el question ID, exactamente N preguntas,
+  justificación, evidencia, lineage y límites de regeneración.
 
 Use `ACCEPT` cuando la pregunta ya sea adecuada, `EDIT` para una corrección de
 texto compatible con la misma evidencia, y `REJECT` cuando no deba aprobarse.
 No use `REGENERATE` como retry genérico.
+
+Para una regeneración gobernada:
+
+1. Pulse `Regenerar pregunta`, elija el motivo y confirme.
+2. Compruebe que la UI muestra `Regeneración durable pendiente`, el
+   `QUESTION_ACTION` en `En cola` y la pregunta original sin reemplazo
+   optimista.
+3. Copie el `job_id` desde `Control durable del job`. Puede cerrar o refrescar
+   la pantalla: la operación pending se recupera desde persistencia.
+4. Ejecute la sección 4 con una synthetic authorization nueva ligada a ESE
+   job. Una autorización anterior del `SUBMISSION` no es reutilizable.
+5. Antes de ejecutar, verifique en la salida de autorización el job ID,
+   candidate SHA, provider boundary, request/cost caps y expiry exactos, además
+   de `key_resolved=false`, `transport_constructed=false` y
+   `provider_requests=0`.
+6. Ejecute una sola vez el worker con `CVA_CLAIM_JOB_ID` igual al ID copiado.
+   No permita fallback a mock. Una regeneración nominal consume una llamada
+   P07 por esta autorización independiente.
+7. Vuelva a la UI y refresque la página de revisión.
+8. Confirme la nueva versión del Assessment, la pregunta regenerada, exactamente
+   N preguntas y la acción aplicada en el historial durable.
+9. Cargue y verifique los localizadores de la evidencia de reemplazo. Después
+   continúe aceptando/editando/rechazando preguntas o apruebe el Assessment
+   cuando todas las precondiciones estén satisfechas.
 
 Un retry/resume técnico crea un job durable nuevo. Si ese job volverá a tocar
 provider, necesita otro authorization ID, una nueva attestation y un worker
@@ -376,7 +397,7 @@ los resultados por separado.
 | `NEEDS_REVIEW` | Resultado de dominio accionable por docente; no equivale a fallo técnico ni justifica retry automático. |
 | `FAILED` | Estado técnico terminal. Use únicamente acciones server-authorized de retry/resume y nunca cambie la fila a mano. |
 | Teacher retry | El nuevo job conserva lineage y stage runs; si requiere provider, necesita attestation nueva. |
-| Teacher `REGENERATE` | Stop condition del piloto real actual: la primera acción no expone antes un job autorizable y usa el web mock. |
+| Teacher `REGENERATE` pendiente | La pregunta anterior sigue vigente. Copie el `QUESTION_ACTION` visible, cree su autorización independiente y ejecute sólo el worker exacto; no autorice de nuevo el `SUBMISSION`. |
 
 Un worker one-shot que no encuentra el job exacto puede salir sin procesar
 otro job. Aun así, confirme siempre el estado en la UI; no use el exit code
@@ -398,7 +419,6 @@ hechos:
 - cualquier necesidad de relajar exactly-once, scope, expiry, caps o checks de
   artefactos;
 - CORS ampliado más allá del origen local exacto;
-- necesidad de `REGENERATE` durante el piloto real actual;
 - datos no sintéticos o cualquier historia de Etapa 3.
 
 Al cerrar el piloto, detenga web y Vite, retire el origen CORS local mediante un

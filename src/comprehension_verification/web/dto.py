@@ -398,8 +398,22 @@ class QuestionReviewActionCommand(m.StrictModel):
 
 
 class QuestionReviewActionEnvelope(m.StrictModel):
-    action_record: m.QuestionReviewActionRecord
+    action_record: m.QuestionReviewActionRecord | None = None
+    job: m.JobStatus | None = None
     bundle: AssessmentEnvelope
+
+    @model_validator(mode="after")
+    def action_or_job_is_present(self) -> "QuestionReviewActionEnvelope":
+        if self.action_record is None and self.job is None:
+            raise ValueError("question action response requires a record or job")
+        submission_id = self.bundle.assessment.submission_id
+        if self.action_record is not None and (
+            self.action_record.submission_id != submission_id
+        ):
+            raise ValueError("question action record belongs to another submission")
+        if self.job is not None and self.job.aggregate_id != submission_id:
+            raise ValueError("question action job belongs to another submission")
+        return self
 
 
 class CoverageEnvelope(m.StrictModel):
@@ -446,6 +460,7 @@ class FeedbackListEnvelope(m.StrictModel):
 
 class QuestionReviewActionListEnvelope(m.StrictModel):
     items: list[m.QuestionReviewActionRecord]
+    jobs: list[m.JobStatus] = Field(default_factory=list)
 
 
 class EvidenceVerifyCommand(m.StrictModel):
